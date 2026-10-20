@@ -403,10 +403,10 @@
    "model": "the_oldest_house:block/stanley_tub_1"
   },
   "facing=north,kind=tub,stage=2": {
-   "model": "the_oldest_house:block/stanley_tub_0"
+   "model": "the_oldest_house:block/stanley_tub_2"
   },
   "facing=north,kind=tub,stage=3": {
-   "model": "the_oldest_house:block/stanley_tub_0"
+   "model": "the_oldest_house:block/stanley_tub_3"
   },
   "facing=north,kind=sink,stage=0": {
    "model": "the_oldest_house:block/stanley_sink"
@@ -969,11 +969,11 @@
    "y": 90
   },
   "facing=east,kind=tub,stage=2": {
-   "model": "the_oldest_house:block/stanley_tub_0",
+   "model": "the_oldest_house:block/stanley_tub_2",
    "y": 90
   },
   "facing=east,kind=tub,stage=3": {
-   "model": "the_oldest_house:block/stanley_tub_0",
+   "model": "the_oldest_house:block/stanley_tub_3",
    "y": 90
   },
   "facing=east,kind=sink,stage=0": {
@@ -1561,11 +1561,11 @@
    "y": 180
   },
   "facing=south,kind=tub,stage=2": {
-   "model": "the_oldest_house:block/stanley_tub_0",
+   "model": "the_oldest_house:block/stanley_tub_2",
    "y": 180
   },
   "facing=south,kind=tub,stage=3": {
-   "model": "the_oldest_house:block/stanley_tub_0",
+   "model": "the_oldest_house:block/stanley_tub_3",
    "y": 180
   },
   "facing=south,kind=sink,stage=0": {
@@ -2153,11 +2153,11 @@
    "y": 270
   },
   "facing=west,kind=tub,stage=2": {
-   "model": "the_oldest_house:block/stanley_tub_0",
+   "model": "the_oldest_house:block/stanley_tub_2",
    "y": 270
   },
   "facing=west,kind=tub,stage=3": {
-   "model": "the_oldest_house:block/stanley_tub_0",
+   "model": "the_oldest_house:block/stanley_tub_3",
    "y": 270
   },
   "facing=west,kind=sink,stage=0": {

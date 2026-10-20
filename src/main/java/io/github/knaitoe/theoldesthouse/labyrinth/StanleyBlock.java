@@ -22,7 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The hotel rebuilt (0.4.105): its siding, roof, papers, tiles and fittings in vanilla-style pixels. {@link Kind} picks the
  * piece, {@code facing} turns it and {@code stage} is its variant: how high the snow stands at a window (0 at the sill, 3 near
- * the top), which half of the tub, whether the table for two is laid, served or cleared.
+ * the top), which half of the tub (low bit) and whether her remains fill it (high bit), whether the table for two is laid,
+ * served or cleared.
  * <p>A window's front is the room side, painted night and snow; its back is the outside, lit panes. Wall pieces face the room
  * they are seen from; everything else faces the way its front looks.
  */

@@ -683,7 +683,7 @@ def model_of(kind, stage):
     if kind in ('window_low', 'window_high'):
         return f'stanley_{kind}_{stage}'
     if kind == 'tub':
-        return f'stanley_tub_{1 if stage == 1 else 0}'
+        return f'stanley_tub_{stage}'
     if kind == 'table_set':
         return f'stanley_table_set_{stage if stage < 3 else 0}'
     return f'stanley_{kind}'

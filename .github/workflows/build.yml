@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,6 +44,7 @@ jobs:
           python3 tools/draw_harrigan_funeral_assets.py --check
           python3 tools/draw_night_ward_assets.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
+          python3 tools/generate_bath_decay_assets.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
@@ -1399,11 +1404,29 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native Borrasca atlas, cast and machine
-        timeout-minutes: 5
+      - name: Install native preview display
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+      - name: Native photographed hotel fitting repairs
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhotelFixSmoke --no-daemon
+          test -s build/font-smoke/hotel-fitting-passed.txt
+          for page in 0 1 2 3 4 5; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hotel-fitting-views-${{ github.sha }}
+          path: |
+            build/font-smoke/native-hotel-fitting-*.png
+            build/font-smoke/hotel-fitting-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
+      - name: Native Borrasca atlas, cast and machine
+        timeout-minutes: 5
+        run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PborrascaSmoke --no-daemon
           test -s build/font-smoke/borrasca-assets-passed.txt
           for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes; do test -s build/font-smoke/native-borrasca-$view.png; done
@@ -1445,22 +1468,6 @@ jobs:
           path: |
             build/font-smoke/native-goatman-child-eyes.png
             build/font-smoke/goatman-child-eyes-passed.txt
-            run/logs/latest.log
-            run/crash-reports/
-          if-no-files-found: warn
-      - name: Native photographed hotel fitting repairs
-        timeout-minutes: 5
-        run: |
-          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhotelFixSmoke --no-daemon
-          test -s build/font-smoke/hotel-fitting-passed.txt
-          for page in 0 1 2 3 4 5; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: hotel-fitting-views-${{ github.sha }}
-          path: |
-            build/font-smoke/native-hotel-fitting-*.png
-            build/font-smoke/hotel-fitting-passed.txt
             run/logs/latest.log
             run/crash-reports/
           if-no-files-found: warn

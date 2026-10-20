@@ -293,6 +293,13 @@ public final class HotelTests {
     }
     @AfterBatch(batch="stanley_dance") public static void stanleyDanceDone(ServerLevel l){if(stanleyDance!=null){stanleyDance.close();stanleyDance=null;}}
 
+    private static void assertBathContents(GameTestHelper h,Fixture f,boolean present){
+        for(int half=0;half<2;half++){
+            var at=f.b.offset(-27,6,-25+half);var actual=f.l.getBlockState(at);var clean=StanleyBlock.of(StanleyBlock.Kind.TUB,Direction.NORTH,half);
+            h.assertTrue(StanleyBlock.is(actual,StanleyBlock.Kind.TUB)&&actual.getValue(StanleyBlock.FACING)==Direction.NORTH&&actual.getValue(StanleyBlock.STAGE)==half+(present?2:0),"both native tub halves show remains only during her appearance");
+            h.assertTrue(actual.getCollisionShape(f.l,at).bounds().equals(clean.getCollisionShape(f.l,at).bounds()),"filled bath keeps the physical escape route unchanged");
+        }
+    }
     @AfterBatch(batch="hotel_bath_contact") public static void bathContactDone(ServerLevel l){if(bathContact!=null){bathContact.close();bathContact=null;}}
     @AfterBatch(batch="hotel_bath_route") public static void bathRouteDone(ServerLevel l){if(bathRoute!=null){bathRoute.close();bathRoute=null;}}
     @GameTest(template="empty",batch="hotel_bath_contact",timeoutTicks=500)
@@ -300,23 +307,23 @@ public final class HotelTests {
         bathContact=new Fixture(h,53400,true);var f=bathContact;var p=f.player("bath_reader");var peer=f.player("bath_peer");HotelVignette.onArrive(p,LabyrinthPlace.HOTEL);f.at(peer,0,0,-3);
         var chunks=new NativeTestChunks();chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOTEL));UUID[] id={null};float[] health={0};
         h.startSequence().thenWaitUntil(()->h.assertTrue(chunks.ready()&&HotelBathHaunt.original(f.l)!=null,"original and bath sections loaded"))
-            .thenExecute(()->{var a=HotelBathHaunt.original(f.l);id[0]=a.getUUID();h.assertTrue(a.bathPhase()==0&&!a.isPickable(),"she is absent between encounters");f.at(p,-24.5,6.0625,-25.5);h.assertTrue(HotelBathHaunt.begin(p,true),"operator fixture reuses the original");health[0]=p.getHealth();})
-            .thenIdle(30).thenExecute(()->{var a=HotelBathHaunt.original(f.l);h.assertTrue(a.getY()>HotelBathHaunt.submerged(f.b).y&&a.getY()<f.b.getY()+6.625,"the original rises through the actual tub surface");a.load(a.saveWithoutId(new CompoundTag()));f.reload();h.assertTrue(a.getUUID().equals(id[0])&&a.bathPhase()==1&&HotelBathHaunt.state(f.l).getInt("Age")>=25,"native entity and SavedData reload retain emergence");})
+            .thenExecute(()->{var a=HotelBathHaunt.original(f.l);id[0]=a.getUUID();h.assertTrue(a.bathPhase()==0&&!a.isPickable(),"she is absent between encounters");assertBathContents(h,f,false);f.at(p,-24.5,6.0625,-25.5);h.assertTrue(HotelBathHaunt.begin(p,true),"operator fixture reuses the original");assertBathContents(h,f,true);health[0]=p.getHealth();})
+            .thenIdle(30).thenExecute(()->{var a=HotelBathHaunt.original(f.l);h.assertTrue(a.getY()>HotelBathHaunt.submerged(f.b).y&&a.getY()<f.b.getY()+6.625,"the original rises through the actual tub surface");a.load(a.saveWithoutId(new CompoundTag()));f.reload();h.assertTrue(a.getUUID().equals(id[0])&&a.bathPhase()==1&&HotelBathHaunt.state(f.l).getInt("Age")>=25,"native entity and SavedData reload retain emergence");assertBathContents(h,f,true);})
             .thenWaitUntil(()->h.assertTrue(HotelBathHaunt.original(f.l).bathPhase()==2,"the native rise completes"))
             .thenExecute(()->{p.moveTo(HotelBathHaunt.original(f.l).position().add(.3,0,.2));p.setNoGravity(true);})
             .thenWaitUntil(()->h.assertTrue(HotelBathHaunt.state(f.l).getString("LastEnd").equals("touched_the_reader"),"native contact reaches the reader"))
-            .thenExecute(()->{h.assertTrue(p.getTicksFrozen()>0&&p.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN)&&peer.getTicksFrozen()==0,"native frost and brief slowing reach only the touched reader");h.assertTrue(p.getHealth()==health[0]&&WitnessAccount.count(f.data(),p.getUUID())==0,"no injury or Witness shortcut");})
-            .thenIdle(35).thenExecute(()->{var a=HotelBathHaunt.original(f.l);h.assertTrue(a.getUUID().equals(id[0])&&a.bathPhase()==0,"the same creature vanishes into submerged custody");h.assertTrue(f.l.getEntitiesOfClass(HotelActor.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOTEL),v->v.role()==6).size()==1,"no replacement");f.at(p,-24.5,6.0625,-25.5);})
+            .thenExecute(()->{assertBathContents(h,f,true);h.assertTrue(p.getTicksFrozen()>0&&p.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN)&&peer.getTicksFrozen()==0,"native frost and brief slowing reach only the touched reader");h.assertTrue(p.getHealth()==health[0]&&WitnessAccount.count(f.data(),p.getUUID())==0,"no injury or Witness shortcut");})
+            .thenIdle(35).thenExecute(()->{var a=HotelBathHaunt.original(f.l);h.assertTrue(a.getUUID().equals(id[0])&&a.bathPhase()==0,"the same creature vanishes into submerged custody");assertBathContents(h,f,false);h.assertTrue(f.l.getEntitiesOfClass(HotelActor.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOTEL),v->v.role()==6).size()==1,"no replacement");f.at(p,-24.5,6.0625,-25.5);})
             .thenIdle(20).thenExecute(()->{h.assertTrue(f.own(p).getInt("BathRest04113")>3400&&HotelBathHaunt.state(f.l).getInt("Phase")==0,"lingering cannot reroll during the saved three-minute rest");chunks.close();}).thenSucceed();
     }
     @GameTest(template="empty",batch="hotel_bath_route",timeoutTicks=1400)
     public static void theActualCreatureClimbsOutOfTheTubAndFollowsThroughBothRealOpenings(GameTestHelper h){
         bathRoute=new Fixture(h,53700,true);var f=bathRoute;var p=f.player("bath_escape");HotelVignette.onArrive(p,LabyrinthPlace.HOTEL);var chunks=new NativeTestChunks();chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.HOTEL));UUID[] id={null};boolean[] opening={false},room={false},hall={false};
-        h.onEachTick(()->{var a=HotelBathHaunt.original(f.l);if(id[0]==null||a==null||a.bathPhase()!=2)return;h.assertTrue(a.getUUID().equals(id[0])&&!a.noPhysics,"the same original keeps native pursuit collision");if(a.getZ()>f.b.getZ()-23)opening[0]=true;if(a.getX()>f.b.getX()-23&&a.getX()<f.b.getX()-17)room[0]=true;if(a.getX()>f.b.getX()-15.4)hall[0]=true;});
+        h.onEachTick(()->{var a=HotelBathHaunt.original(f.l);if(id[0]==null||a==null||a.bathPhase()!=2)return;h.assertTrue(a.getUUID().equals(id[0])&&!a.noPhysics,"the same original keeps native pursuit collision");assertBathContents(h,f,true);if(a.getZ()>f.b.getZ()-23)opening[0]=true;if(a.getX()>f.b.getX()-23&&a.getX()<f.b.getX()-17)room[0]=true;if(a.getX()>f.b.getX()-15.4)hall[0]=true;});
         h.startSequence().thenWaitUntil(()->h.assertTrue(chunks.ready()&&HotelBathHaunt.original(f.l)!=null,"native hotel and original loaded"))
             .thenExecute(()->{id[0]=HotelBathHaunt.original(f.l).getUUID();f.at(p,-24.5,6.0625,-25.5);h.assertTrue(HotelBathHaunt.begin(p,true),"controlled occasional appearance");UncannyStories.setDoor(f.l,f.b.offset(HotelRooms.ROOM_DOOR),true);f.at(p,-14.5,6.0625,-14.5);})
             .thenWaitUntil(()->h.assertTrue(HotelBathHaunt.state(f.l).getString("LastEnd").equals("followed_into_the_hall"),"physical tub-to-hall passage: "+HotelBathHaunt.state(f.l)+" body="+HotelBathHaunt.original(f.l).position().subtract(Vec3.atLowerCornerOf(f.b))))
-            .thenIdle(30).thenExecute(()->{h.assertTrue(opening[0]&&room[0]&&hall[0],"the real bathroom, bedroom and hall were traversed");h.assertTrue(HotelBathHaunt.original(f.l).getUUID().equals(id[0])&&HotelBathHaunt.original(f.l).bathPhase()==0&&p.getTicksFrozen()==0,"escaping retains the original and leaves the reader untouched");chunks.close();}).thenSucceed();
+            .thenIdle(30).thenExecute(()->{h.assertTrue(opening[0]&&room[0]&&hall[0],"the real bathroom, bedroom and hall were traversed");h.assertTrue(HotelBathHaunt.original(f.l).getUUID().equals(id[0])&&HotelBathHaunt.original(f.l).bathPhase()==0&&p.getTicksFrozen()==0,"escaping retains the original and leaves the reader untouched");assertBathContents(h,f,false);chunks.close();}).thenSucceed();
     }
 
 }
