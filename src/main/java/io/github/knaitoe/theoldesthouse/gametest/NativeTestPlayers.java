@@ -39,6 +39,15 @@ final class NativeTestPlayers {
         }
         return out;
     }
+    static java.util.List<net.minecraft.network.protocol.game.ClientboundSoundPacket> sounds(ServerPlayer p){
+        var channel=CHANNELS.get(p.getUUID());channel.runPendingTasks();
+        var out=new java.util.ArrayList<net.minecraft.network.protocol.game.ClientboundSoundPacket>();
+        Object packet;while((packet=channel.readOutbound())!=null){
+            if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound)out.add(sound);
+            io.netty.util.ReferenceCountUtil.release(packet);
+        }
+        return out;
+    }
     static void remove(ServerPlayer p){
         p.server.getPlayerList().remove(p);var connection=CONNECTIONS.remove(p.getUUID());
         if(connection!=null)connection.disconnect(Component.literal("Native test complete"));
