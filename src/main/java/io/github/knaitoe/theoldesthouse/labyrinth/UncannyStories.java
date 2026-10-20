@@ -33,7 +33,7 @@ public final class UncannyStories {
     public static @Nullable LiteraryActor actor(ServerPlayer p,CompoundTag own,String key){return own.hasUUID(key)&&p.serverLevel().getEntity(own.getUUID(key)) instanceof LiteraryActor a?a:null;}
     private static @Nullable LiteraryActor create(ServerLevel l,BlockPos b,LabyrinthPlace place,CompoundTag tag,String key,int role,BlockPos rel,@Nullable UUID reader){
         if(tag.hasUUID(key))return l.getEntity(tag.getUUID(key)) instanceof LiteraryActor a?a:null;
-        var at=b.offset(rel);if(!l.areEntitiesLoaded(at))return null;
+        var at=b.offset(rel);if(!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at)))return null;
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(place,reader);a.appearance(role,0);a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,180,0);a.setDeltaMovement(Vec3.ZERO);
         if(role==LiteraryActor.UNCANNY_FALSE_WAITRESS){a.noPhysics=true;a.setNoGravity(true);}
