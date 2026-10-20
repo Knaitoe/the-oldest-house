@@ -57,6 +57,13 @@ public final class GoatmanChildEyesProof extends Screen {
         }
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);StringBuilder evidence=new StringBuilder();
         try(var shot=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            var view=dir.resolve("native-goatman-child-eyes.png");shot.writeToFile(view);
+            if(Boolean.getBoolean("the_oldest_house.goatmanEyesSmoke")){
+                String data=java.util.Base64.getEncoder().encodeToString(Files.readAllBytes(view));
+                TheOldestHouse.LOGGER.info("GOATMAN_EYES_VIEW_BEGIN");
+                for(int i=0;i<data.length();i+=3800)TheOldestHouse.LOGGER.info("GOATMAN_EYES_VIEW_DATA {}",data.substring(i,Math.min(i+3800,data.length())));
+                TheOldestHouse.LOGGER.info("GOATMAN_EYES_VIEW_END");
+            }
             double factor=shot.getWidth()/(double)proof.width;
             for(int skin=0;skin<9;skin++){
                 int left=(int)Math.round(proof.center(skin,false)*factor),right=(int)Math.round(proof.center(skin,true)*factor),base=(int)Math.round(proof.baseline(skin)*factor),changed=0;
@@ -69,7 +76,6 @@ public final class GoatmanChildEyesProof extends Screen {
                 if(changed<20)throw new IllegalStateException("The child disguise has no visible emissive eye pixels: skin="+skin+" changed="+changed);
                 evidence.append("Child ").append(skin).append(": ").append(changed).append(" visible emissive pixels at minimum packed light.\n");
             }
-            shot.writeToFile(dir.resolve("native-goatman-child-eyes.png"));
         }
         Files.writeString(dir.resolve("goatman-child-eyes-passed.txt"),evidence.toString());
         if(Boolean.getBoolean("the_oldest_house.goatmanEyesSmoke"))mc.stop();else mc.setScreen(new PlaytestVisualProof());
