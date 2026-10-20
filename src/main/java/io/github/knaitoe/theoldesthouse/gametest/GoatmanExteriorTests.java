@@ -1,7 +1,6 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
-import io.github.knaitoe.theoldesthouse.house.HouseFurnishings;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.*;
 import net.minecraft.core.BlockPos;
@@ -24,11 +23,10 @@ public final class GoatmanExteriorTests {
     public static void theFinishedCamperKeepsItsOriginalMovingFromEveningThroughDawnWithSimultaneousDoorPressure(GameTestHelper h){
         finished=new GoatmanTests.Fixture(h,53700);var f=finished;
         // Exactly the production construction order, before a visitor can defer exterior dressing.
-        HouseFurnishings.decorate(f.l,f.b,LabyrinthPlace.GOATMAN);
-        VignetteArchitecture.decorateOnce(f.l,f.origin,LabyrinthPlace.GOATMAN);
+        f.finishedCamper();
         var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        boolean[] begun={false},loaded={false},closed={false},overlap={false},lateOverlap={false},approached={false};
-        UUID[] original={null};int[] eveningSerial={0},nightSerial={0},pulse={0};
+        boolean[] begun={false},loaded={false},closed={false},overlap={false},lateOverlap={false},approached={false},childKnock={false};
+        UUID[] original={null};int[] eveningSerial={0},nightSerial={0},pulse={0},impact={0};
         var eveningPanes=new HashSet<Long>();var children=new HashSet<Integer>();var forms=new HashSet<Integer>();
         h.onEachTick(()->{
             if(!begun[0])return;var r=f.run();if(r.getInt("Phase")==GoatmanVignette.DAWN)return;
@@ -44,7 +42,7 @@ public final class GoatmanExteriorTests {
                 last[0]=serial;var feet=f.rel(body);
                 h.assertTrue(Math.abs(feet.y-1.5)<.11&&!f.l.noCollision(body,body.getBoundingBox().move(0,-.02,0)),"the original actually stands on the finished stone sill, above the tire: feet="+feet);
                 if(r.getInt("Phase")==GoatmanVignette.GATHERING)eveningPanes.add(lap.getLong("LastImpactPos0465"));
-                else {forms.add(lap.getInt("WindowSkin0497"));if(lap.getInt("WindowSkin0497")>=0)children.add(lap.getInt("WindowSkin0497"));}
+                else {forms.add(lap.getInt("WindowSkin0497"));if(lap.getInt("WindowSkin0497")>=0){children.add(lap.getInt("WindowSkin0497"));if(r.getInt("DemandStage0465")>0)childKnock[0]=true;}}
                 if(!loaded[0]){
                     var actor=body.saveWithoutId(new CompoundTag());body.load(actor);
                     var data=LabyrinthData.get(f.server);var restored=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());
@@ -53,7 +51,8 @@ public final class GoatmanExteriorTests {
             }
             if(r.getInt("Phase")==GoatmanVignette.VIGIL){
                 boolean distant=body.distanceToSqr(Vec3.atCenterOf(f.b.offset(GoatmanWoods.DOOR)))>16;
-                if(distant&&r.getLong("LastImpactPos0465")==f.b.offset(GoatmanWoods.DOOR).asLong()&&r.getInt("ImpactClock0472")==r.getInt("Clock"))overlap[0]=true;
+                if(distant&&r.getLong("LastImpactPos0465")==f.b.offset(GoatmanWoods.DOOR).asLong()&&r.getInt("ImpactSerial0472")>impact[0])overlap[0]=true;
+                impact[0]=r.getInt("ImpactSerial0472");
                 int next=r.getInt("DoorPulseSerial04112");if(next>pulse[0]&&distant)lateOverlap[0]=true;pulse[0]=next;
                 approached[0]|=GoatmanStalking.circuitDone(r)&&GoatmanStalking.windowApproachDone(r);
             }
@@ -73,8 +72,8 @@ public final class GoatmanExteriorTests {
             h.assertTrue(loaded[0]&&closed[0],"the native body and run were saved on a real finished sill, and the reader shut the actual door before quiet");
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.DAWN,"all three native circuits and the complete porch/window approach reach dawn: "+status(f))).thenExecute(()->{
             var r=f.run();h.assertTrue(approached[0]&&r.getInt("Circuits0494")==GoatmanStalking.CIRCUITS,"all three physical circuits and every bathroom approach leg finish");
-            h.assertTrue(overlap[0]&&lateOverlap[0]&&pulse[0]>0,"actual front-door contacts continue while the original is elsewhere, including after all seven demands");
-            h.assertTrue(forms.contains(-2)&&children.size()>=2,"the complete native night retains the monster and different child disguises: "+forms);
+            h.assertTrue(overlap[0]&&lateOverlap[0]&&pulse[0]>0,"actual front-door contacts continue while the original is elsewhere, including after all seven demands: overlap="+overlap[0]+" late="+lateOverlap[0]+" pulses="+pulse[0]);
+            h.assertTrue(forms.contains(-2)&&children.size()>=2&&childKnock[0],"the complete native night retains the monster and different child disguises, including a real child-visage window strike during the door-knocking demands: "+forms);
             h.assertTrue(r.getBoolean("Right")&&WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"only the complete closed-door and closed-window vigil resolves survival");
         }).thenSucceed();
     }

@@ -230,6 +230,7 @@ public final class GoatmanTests {
             server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
             b=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);GoatmanVignette.build(server,l,b);LabyrinthBuilder.registerDoors(data,LabyrinthPlace.GOATMAN,b);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);
         }
+        void finishedCamper(){HouseFurnishings.decorate(l,b,LabyrinthPlace.GOATMAN);VignetteArchitecture.decorateOnce(l,origin,LabyrinthPlace.GOATMAN);}
         ServerPlayer player(){var p=h.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-.5,180,0);p.hasChangedDimension();players.add(p);return p;}
         ServerPlayer nativePlayer(String name){var p=NativeTestPlayers.survival(h,name);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-.5,180,0);p.hasChangedDimension();players.add(p);nativePlayers.add(p);return p;}
         void at(ServerPlayer p,double progress){p.moveTo(GoatmanWoods.path(progress).add(b.getX(),b.getY(),b.getZ()));}
@@ -338,12 +339,13 @@ public final class GoatmanTests {
             h.assertTrue(f.cousins().stream().noneMatch(GoatmanChild::cowering),"confusion and early fear do not put children in hiding");h.succeed();
         });
     }
-    @GameTest(template="empty",batch="goat_pressure0472",timeoutTicks=5000)
+    @GameTest(template="empty",batch="goat_pressure0472",timeoutTicks=6500)
     public static void blockedMovementCannotSilenceTheNightAndTheSameBodyStillFinishesEveryLeg(GameTestHelper h){
-        pressure=new Fixture(h,31900);var f=pressure;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        var barriers=new HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();var demands=new HashSet<Integer>();UUID[] body={null};boolean[] begun={false};
+        pressure=new Fixture(h,31900);var f=pressure;f.finishedCamper();var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        var barriers=new HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();var demands=new HashSet<Integer>();UUID[] body={null};boolean[] begun={false},entered={false};
         h.onEachTick(()->{
             if(!begun[0])return;var r=f.run();var packet=GoatmanVignette.scenePayload(r);if(packet.demand()>=101){demands.add(packet.demand());h.assertTrue(packet.cousinLine()==0,"the actual demand packets suppress cousin words even while movement is blocked");}
+            if(r.getInt("ExtraState")>=GoatmanVignette.X_WINDOW)f.cousin(r.getInt("Wrong")).ifPresent(c->{if(GoatmanWoods.indoors(f.rel(c))&&c.getBoundingBox().maxX<f.b.getX()+8)entered[0]=true;});
             if(r.getInt("Clock")<120)h.assertTrue(GoatmanFear.stage(r)==0&&packet.cousinLine()==0&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the occupied night is ordinary until an actual audible disturbance");
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native collision and entity sections are ready")).thenExecute(()->{
@@ -363,7 +365,7 @@ public final class GoatmanTests {
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("ExtraState")==GoatmanVignette.X_WINDOW,"the already open window admits the same body only after its complete physical approach")).thenExecute(()->{
             var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("NightWindowAt0472")>=GoatmanVignette.VIGIL0465+200,"the delayed native window attempt keeps its original response time before dawn");
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.DAWN,"the delayed night still reaches its ordinary morning outcome")).thenExecute(()->{
-            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(r.getInt("Clock")>=r.getInt("NightWindowAt0472")+400&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"the open window preserves its original haunting outcome and cannot award a successful vigil");h.succeed();
+            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(entered[0]&&r.getInt("Clock")>=r.getInt("NightWindowAt0472")+400&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"despite the shut front door, the original physically entered the finished camper through its open bathroom window; the haunting outcome awards no survival credit");h.succeed();
         });
     }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
