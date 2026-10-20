@@ -61,7 +61,7 @@ public final class UncannySocketClient {
                     }
                 }
                 if(feedMask==15&&age>160){
-                    var renderer=mc.getEntityRenderDispatcher().getRenderer(actor(mc,LiteraryActor.UNCANNY_MARIONETTE));require(renderer instanceof LiteraryRenderers.CastRenderer,"the production saved actor renderer is used");
+                    var renderer=mc.getEntityRenderDispatcher().getRenderer(actor(mc,LiteraryActor.UNCANNY_MARIONETTE));require(renderer.getClass().getEnclosingClass()==LiteraryRenderers.class&&renderer.getClass().getSimpleName().equals("CastRenderer"),"the production saved actor renderer is used");
                     try{Files.writeString(UncannySocketProof.folder().resolve(role()+"-cctv-"+(phase==11?"reconnected-":"")+"pixels.txt"),"Native same-frame masked-body head pixels="+UncannyCameras.verifiedHeadPixels()+"; actual skin="+mc.player.getSkin().texture()+"; model="+mc.player.getSkin().model()+"; four native captures="+feedMask+"\n");}catch(Exception ex){throw new IllegalStateException(ex);}
                     ack(mc,phase==11?"bedroom-cctv-reconnected":"bedroom-cctv");
                 }

@@ -222,6 +222,7 @@ public final class UncannyStories {
                 HousePackets.send(p,new HouseFadePayload(8,8,16));var target=b.offset(sleeps%2==1?-7:1,5,sleeps%2==1?-13:-20);p.teleportTo(p.serverLevel(),target.getX()+.5,target.getY(),target.getZ()+.5,180,0);p.hasChangedDimension();cue(p,"06:00 / The bed was empty.");return true;
             }
             if((rel.equals(UncannyRooms.PARENTS_DOOR)||rel.equals(UncannyRooms.PARENTS_DOOR.above()))&&own.getInt("Sleeps")>=2){
+                if(own.getBoolean("BlockedDoor"))return true;
                 if(own.getBoolean("MarionetteSeen")&&own.getBoolean("OwnFaceSeen")&&own.getInt("MonitorTicks")>=40&&own.getInt("FeedsSeen")==15&&p.serverLevel().getBlockState(b.offset(UncannyRooms.PARENTS_DOOR)).getValue(DoorBlock.OPEN)){setDoor(p.serverLevel(),b.offset(UncannyRooms.PARENTS_DOOR),false);own.putBoolean("BlockedDoor",true);ready(p,place,own,"closed_the_door_on_the_other_feed");}
                 else if(own.getBoolean("MarionetteSeen")&&own.getBoolean("OwnFaceSeen")&&own.getInt("FeedsSeen")==15){setDoor(p.serverLevel(),b.offset(UncannyRooms.PARENTS_DOOR),true);cue(p,"Your hand raises the latch.");}
                 else cue(p,"On the screen, your hand reaches for this handle.");
