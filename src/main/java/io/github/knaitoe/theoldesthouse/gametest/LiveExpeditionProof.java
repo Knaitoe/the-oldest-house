@@ -311,6 +311,12 @@ public final class LiveExpeditionProof {
             require(WitnessAccount.count(d,a.getUUID())==1&&WitnessAccount.count(d,b.getUUID())==1,"visibility and collection alone confer no additional ending credit");
             var l=s.getLevel(HouseDimensions.INTERIOR);var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);
             GoatmanVignette.build(s,l,camp);LabyrinthBuilder.registerDoors(d,LabyrinthPlace.GOATMAN,camp);IndianLakeRooms.keepLoaded(l,camp,LabyrinthPlace.GOATMAN);
+            // This explicit fresh fixture must include the production exterior before either client enters.
+            // Its bare rebuild above invalidates only this scene's prior decoration checkpoints.
+            var camperKey=ORIGIN.asLong()+":"+LabyrinthPlace.GOATMAN.id();
+            for(var state:List.of(VignetteArchitecture.STATE,SceneShells.STATE,SceneExteriors.STATE,SceneReview.STATE)){var done=d.state(state);done.remove(camperKey);d.setState(state,done);}
+            HouseFurnishings.decorate(l,camp,LabyrinthPlace.GOATMAN);VignetteArchitecture.decorateOnce(l,ORIGIN,LabyrinthPlace.GOATMAN);
+            require(l.getBlockState(camp.offset(-9,1,-59)).is(Blocks.SMOOTH_STONE_SLAB)&&l.getBlockState(camp.offset(-9,2,-58)).is(Blocks.IRON_BARS),"both actual clients enter the finished camper with its real raised sills and iron-bar frames");
             var source=d.door("alcove_hall/far");require(source!=null,"the trailer arrival uses a real shared House door");
             for(var p:List.of(a,b)){d.deal(p.getUUID(),source,LabyrinthPlace.GOATMAN.id(),false);at(p,source.lower.south(p==a?2:3),180,0);}
             step(s,31,source.lower);

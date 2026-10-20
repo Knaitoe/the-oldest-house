@@ -27,13 +27,17 @@ public final class GoatmanExteriorTests {
         HouseFurnishings.decorate(f.l,f.b,LabyrinthPlace.GOATMAN);
         VignetteArchitecture.decorateOnce(f.l,f.origin,LabyrinthPlace.GOATMAN);
         var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        boolean[] begun={false},loaded={false},overlap={false},lateOverlap={false},approached={false};
+        boolean[] begun={false},loaded={false},closed={false},overlap={false},lateOverlap={false},approached={false};
         UUID[] original={null};int[] eveningSerial={0},nightSerial={0},pulse={0};
         var eveningPanes=new HashSet<Long>();var children=new HashSet<Integer>();var forms=new HashSet<Integer>();
         h.onEachTick(()->{
             if(!begun[0])return;var r=f.run();if(r.getInt("Phase")==GoatmanVignette.DAWN)return;
             var body=f.cousin(r.getInt("Wrong")).orElseThrow();
             h.assertTrue(body.getUUID().equals(original[0])&&!body.noPhysics,"the same original keeps native collision through every exterior route and save");
+            // A successful ordinary visit closes the real front door after the returning child is inside.
+            if(!closed[0]&&r.getInt("Phase")==GoatmanVignette.GATHERING&&r.getInt("WindowRun0464")>0&&r.getInt("RunnerState")==GoatmanVignette.R_INSIDE){
+                f.use(p,GoatmanWoods.DOOR);h.assertTrue(!GoatmanWoods.doorOpen(f.l,f.b),"the reader's reachable native door interaction closes the latch after both children cross");closed[0]=true;
+            }
             var lap=r.getInt("Phase")==GoatmanVignette.GATHERING?r.getCompound("EveningCircuit0497"):r;
             int serial=lap.getInt("WindowSerial0497");int[] last=r.getInt("Phase")==GoatmanVignette.GATHERING?eveningSerial:nightSerial;
             if(serial>last[0]){
@@ -66,7 +70,7 @@ public final class GoatmanExteriorTests {
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.VIGIL,"ordinary evening reaches nightfall after every actual sill: "+status(f))).thenExecute(()->{
             for(var at:List.of(new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)))
                 h.assertTrue(eveningPanes.contains(f.b.offset(at).asLong()),"the saved original left the photographed first sill and struck the other panes: "+eveningPanes.size()+"/5");
-            h.assertTrue(loaded[0],"the native body and run were saved and restored on a real finished sill");
+            h.assertTrue(loaded[0]&&closed[0],"the native body and run were saved on a real finished sill, and the reader shut the actual door before quiet");
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.DAWN,"all three native circuits and the complete porch/window approach reach dawn: "+status(f))).thenExecute(()->{
             var r=f.run();h.assertTrue(approached[0]&&r.getInt("Circuits0494")==GoatmanStalking.CIRCUITS,"all three physical circuits and every bathroom approach leg finish");
             h.assertTrue(overlap[0]&&lateOverlap[0]&&pulse[0]>0,"actual front-door contacts continue while the original is elsewhere, including after all seven demands");
