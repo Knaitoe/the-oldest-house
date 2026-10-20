@@ -1,4 +1,13 @@
 {
+  "home.knock": {
+    "subtitle": "subtitles.the_oldest_house.home_knock",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cabin_knock",
+        "attenuation_distance": 18
+      }
+    ]
+  },
   "vignette.heartbeat": {
     "sounds": [
       {

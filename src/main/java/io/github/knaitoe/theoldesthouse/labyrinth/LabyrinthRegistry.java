@@ -31,6 +31,7 @@ public final class LabyrinthRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> FLOORBOARD_HEARTBEAT=SOUNDS.register("vignette.heartbeat",()->SoundEvent.createVariableRangeEvent(HEARTBEAT_ID));
     public static final DeferredHolder<SoundEvent,SoundEvent> HALL_PIPES=sound("hall.pipes"), HALL_STONE=sound("hall.stone"), HALL_SETTLE=sound("hall.settle");
     public static final DeferredHolder<SoundEvent,SoundEvent> STAIRCASE_SCORE=sound("staircase.descent");
+    public static final DeferredHolder<SoundEvent,SoundEvent> HOME_KNOCK=sound("home.knock");
     /** The cave's breath, its stone, the line and what is heard behind a shut door (0.4.71). */
     public static final DeferredHolder<SoundEvent,SoundEvent> CAVER_EXHALE=sound("caver.exhale"),CAVER_INHALE=sound("caver.inhale"),CAVER_SCRAPE=sound("caver.scrape"),
             CAVER_LINE=sound("caver.line_taut"),CAVER_STONE=sound("caver.stone_roll"),CAVER_CHISEL=sound("caver.chisel"),
