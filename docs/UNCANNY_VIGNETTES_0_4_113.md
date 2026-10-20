@@ -51,9 +51,21 @@ Start uses existing built geometry and saves the operator's exact return locatio
 
 ## Validation gates
 
-19 new focused native cases, 714 total declarations; previous 695 cases and 95 focused multiplayer cases remain. The exact-source twelve-job matrix, complete native suite, native GPU figures, architecture exports, both actual clients and existing reconnects remain mandatory. CCTV needs additional real-client evidence and reconnect coverage. This document records implementation intent; no new-room test pass is claimed yet.
+19 new focused native cases, 716 total declarations; previous 695 cases and 95 focused multiplayer cases remain. The exact-source twelve-job matrix, complete native suite, native GPU figures, architecture exports, both actual clients and existing reconnects remain mandatory. CCTV needs additional real-client evidence and reconnect coverage. This document records implementation intent; no new-room test pass is claimed yet.
 
 Previous 0.4.112 repair baseline: `71a90f5c35f340d9a90a52d8e3c43fcadbea75e1`, all twelve source jobs passed in [run 39491525825](https://github.com/Knaitoe/the-oldest-house/actions/runs/39491525825).
 
 
 Hotel screenshot follow-up: the wall sconce now has a broad flush backplate, a visible horizontal brass arm and an overlapping vertical shade stem. The native outline follows the same pieces. The existing hotel native case checks every actual interior/porch placement against its backing wall; the fitting proof adds eight front/side views across all four facings. These changes reuse the original shade and brass textures. Native validation remains pending.
+
+The hotel follow-up replaces the permanently seated guest with a dedicated decayed creature, using an original 64×64 texture and an eight-pixel face. The saved original hides under the tub's opaque water surface. One bathroom-entry roll has a one-in-three chance and a three-minute occupied cooldown. The rise lasts 60 ticks; she then uses real collision to follow through the bathroom opening and Room 217's door into the hallway. She fades after reaching the hall, or after contact applies native frost and 80 ticks of slowing to her target. The encounter adds no damage or Witness credit. A missing original is never replaced.
+
+Two native cases cover emergence/reload/contact/cooldown/peer isolation and her actual tub-to-hall route. The hotel now has fourteen focused cases; the full corpus has 716. Six fitting GPU pages include all four lamp orientations and six creature pose views.
+
+Operator commands, while inside the existing built hotel:
+```text
+/ghosthouse vignette hotel_bath start
+/ghosthouse vignette hotel_bath status
+/ghosthouse vignette hotel_bath dismiss
+```
+Start forces the existing loaded dormant original's encounter. Dismiss fades the caller's encounter. Neither operation restocks, rebuilds or grants credit. Validation remains pending.

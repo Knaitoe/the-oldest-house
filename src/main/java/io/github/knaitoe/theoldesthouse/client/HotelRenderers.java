@@ -15,9 +15,9 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class HotelRenderers {
     public static final ModelLayerLocation CAST=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel_cast"),"main"),HOSE=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel_hose"),"main");
-    public static ResourceLocation skin(int role){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/stanley_"+new String[]{"porter","bartender","scarred_guest","pianist","dancer","dancer_dress","bath_ghost"}[Math.max(0,Math.min(6,role))]+".png");}
+    public static ResourceLocation skin(int role){if(role==6)return HotelBathRenderer.skin();return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/stanley_"+new String[]{"porter","bartender","scarred_guest","pianist","dancer","dancer_dress","bath_ghost"}[Math.max(0,Math.min(6,role))]+".png");}
     public static ResourceLocation rubber(){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/hotel_hose.png");}
-    @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(HOSE,HoseModel::layer);}
+    @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(HotelBathRenderer.LAYER,HotelBathRenderer.Model::layer);e.registerLayerDefinition(HOSE,HoseModel::layer);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(HotelRegistry.ACTOR.get(),CastRenderer::new);e.registerEntityRenderer(HotelRegistry.HOSE.get(),HoseRenderer::new);e.registerBlockEntityRenderer(HotelRegistry.PHOTO_ENTITY.get(),HotelPhotoRenderer::new);}
     public static final class CastModel extends HumanoidModel<HotelActor> {
         private final ModelPart tails,apron,skirt,cap,leftElbow,rightElbow,leftKnee,rightKnee,glass,bottleGrip,bottleAim,bottle,cloth;
@@ -63,7 +63,7 @@ public final class HotelRenderers {
         }
         @Override public void setupAnim(HotelActor a,float walk,float amount,float time,float yaw,float pitch){reset();super.setupAnim(a,walk,amount,time,yaw,pitch);pose(a.role(),a.dancing(),time,a.gesture(),a.gestureProgress(time-a.tickCount));}
     }
-    private static final class CastRenderer extends MobRenderer<HotelActor,CastModel>{CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.2F);}@Override public ResourceLocation getTextureLocation(HotelActor a){return skin(a.role());}@Override protected boolean shouldShowName(HotelActor a){return false;}}
+    private static final class CastRenderer extends MobRenderer<HotelActor,CastModel>{private final HotelBathRenderer bath;CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.2F);bath=new HotelBathRenderer(c);}@Override public void render(HotelActor a,float yaw,float partial,PoseStack p,net.minecraft.client.renderer.MultiBufferSource buffers,int light){if(a.role()==6){bath.render(a,yaw,partial,p,buffers,light);return;}super.render(a,yaw,partial,p,buffers,light);}@Override public ResourceLocation getTextureLocation(HotelActor a){return skin(a.role());}@Override protected boolean shouldShowName(HotelActor a){return false;}}
     public static final class HoseModel extends EntityModel<HotelHose>{private final ModelPart root;public HoseModel(ModelPart r){root=r;}
         public static final int SEGMENTS=32;
         public static LayerDefinition layer(){var m=new MeshDefinition();var r=m.getRoot();for(int i=0;i<SEGMENTS;i++)r.addOrReplaceChild("segment"+i,CubeListBuilder.create().texOffs(i==0?16:0,0).addBox(-.75F,-.5F,-1.5F,1.5F,1,3),PartPose.offset(0,23.4F,0));return LayerDefinition.create(m,32,16);}
