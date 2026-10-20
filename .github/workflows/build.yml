@@ -832,6 +832,9 @@ jobs:
           test -s build/font-smoke/goatman-passed.txt
           test -s build/font-smoke/playtest-assets-passed.txt
           test -s build/font-smoke/native-playtest-0464.png
+          test -s build/font-smoke/plains-crouch-passed.txt
+          test -s build/font-smoke/native-plains-crouch.png
+          test -s build/font-smoke/native-plains-crouch-fallback.png
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
           test -s build/font-smoke/cousin-gaits-0497-passed.txt

@@ -54,13 +54,14 @@ public final class LiteraryPhaseVisualProof extends Screen {
             if(state.role==LiteraryActor.KILLER)model.animateKiller(state.phase,frames*.45F,.75F,frames,state.attack);
             else if(state.role==LiteraryActor.FATHER)model.animateFather(state.phase,frames*.4F,.65F,frames);
             else model.preview(state.role,state.phase,frames);
+            net.minecraft.client.model.HumanoidModel<?> posed=PlainFigureModel.matches(state.role,state.phase)?new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER)):model;
             float size=state.role==LiteraryActor.BROTHER||state.role==LiteraryActor.FAMILY_CHILD||state.role==LiteraryActor.SILHOUETTE&&state.phase==4?.58F:1;
             float cx=10+(n%columns+.5F)*cellWidth,top=29+(n/columns)*cellHeight;
             var pose=g.pose();pose.pushPose();pose.translate(cx,top+scale*(group==3?.95F:.52F)+cellHeight*.06F+scale*1.5F*(1-size),190);pose.scale(scale*size,scale*size,scale*size);
             pose.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,145}[view]));
             if(state.role==LiteraryActor.COFFIN_WOMAN&&state.phase==1)LiteraryRenderers.coffinPose(pose);
             if(state.role==LiteraryActor.BROTHER&&state.phase>0)LiteraryRenderers.bedPose(pose,.58F);
-            if(!(state.role==LiteraryActor.COFFIN_WOMAN&&state.phase==2))model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin)),view==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
+            if(!(state.role==LiteraryActor.COFFIN_WOMAN&&state.phase==2))posed.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin)),view==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
             if(state.role==LiteraryActor.FATHER&&state.phase==4)LiteraryRenderers.crutches(model,mc.getEntityModels().bakeLayer(LiteraryRenderers.CRUTCH).getChild("pole"),pose,buffers,view==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT);
             buffers.endBatch();pose.popPose();var lines=font.split(Component.literal(state.label),(int)cellWidth-6);for(int line=0;line<Math.min(2,lines.size());line++)g.drawString(font,lines.get(line),(int)cx-font.width(lines.get(line))/2,(int)(top+cellHeight-22)+line*9,0xffeee0c4,false);n++;
         }
