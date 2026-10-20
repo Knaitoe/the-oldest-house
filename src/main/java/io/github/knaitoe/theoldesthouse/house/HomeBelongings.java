@@ -11,6 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.*;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -261,8 +262,10 @@ public final class HomeBelongings {
                 || level.getBlockEntity(at) != null || !level.getBlockState(at.above()).getCollisionShape(level, at.above()).isEmpty()) return false;
         var shape = level.getBlockState(at).getCollisionShape(level, at);
         if (!shape.isEmpty() && shape.max(Direction.Axis.Y) > .125) return false;
-        if (HazardVariety.watched(level, at) || !level.getEntitiesOfClass(LivingEntity.class, new AABB(at).inflate(.3)).isEmpty()) return false;
-        return level.getEntities(null, new AABB(at).inflate(.15)).isEmpty();
+        if (HazardVariety.watched(level, at) || HazardVariety.watched(level.getServer().overworld(), at)
+                || !level.getEntitiesOfClass(LivingEntity.class, new AABB(at).inflate(.3)).isEmpty()) return false;
+        // Loose items can share floor space. A reader leaving theirs here cannot starve a peer's event.
+        return level.getEntities(null, new AABB(at).inflate(.15), e -> !(e instanceof ItemEntity)).isEmpty();
     }
 
     private static void hold(ServerPlayer player, BlockPos at) {
