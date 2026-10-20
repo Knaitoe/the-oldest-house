@@ -735,13 +735,12 @@ public final class GoatmanTests {
             // Neither reader needs to be looking out of a window: one sits in the aisle, the other faces the back of the trailer.
             a.moveTo(f.b.getX()-3.5,f.b.getY()+1,f.b.getZ()-62.5,0,0);a.setYHeadRot(0);peer.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-60.5,180,0);peer.setYHeadRot(180);
             var own=r.getCompound("Cohort").getCompound(a.getUUID().toString());var other=r.getCompound("Cohort").getCompound(peer.getUUID().toString());
-            r.putLong("LastImpact0465",f.l.getGameTime());GoatmanStalking.dash(f.l,f.b,r,a,own);
-            h.assertTrue(own.getInt("Laps0484")==0,"never just after a knock: it cannot be at the door and round the back at once");
-            r.putLong("LastImpact0465",0);r.putInt("AssaultAt0465",100);GoatmanStalking.dash(f.l,f.b,r,a,own);
-            h.assertTrue(own.getInt("Laps0484")==0,"never while it is still hammering at the door");
-            r.remove("AssaultAt0465");GoatmanStalking.dash(f.l,f.b,r,a,own);GoatmanStalking.dash(f.l,f.b,r,peer,other);
+            r.putInt("AssaultAt0465",100);GoatmanStalking.dash(f.l,f.b,r,a,own);
+            h.assertTrue(own.getInt("Laps0484")==0,"the private late-night lap cannot skip the original body's independent seven-demand sequence");
+            r.putBoolean("AssaultDone0465",true);GoatmanStalking.impact(f.l,f.b,r,null,GoatmanWoods.DOOR,2);
+            GoatmanStalking.dash(f.l,f.b,r,a,own);GoatmanStalking.dash(f.l,f.b,r,peer,other);
             var laps=f.l.getEntitiesOfClass(GoatmanFigure.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),s->s.purpose.equals("lap"));
-            h.assertTrue(laps.size()==2&&laps.stream().anyMatch(s->s.viewer().filter(a.getUUID()::equals).isPresent())&&laps.stream().anyMatch(s->s.viewer().filter(peer.getUUID()::equals).isPresent())&&own.getInt("Laps0484")==1&&other.getInt("Laps0484")==1,"each reader inside gets their own lap, wherever they are looking");
+            h.assertTrue(laps.size()==2&&laps.stream().anyMatch(s->s.viewer().filter(a.getUUID()::equals).isPresent())&&laps.stream().anyMatch(s->s.viewer().filter(peer.getUUID()::equals).isPresent())&&own.getInt("Laps0484")==1&&other.getInt("Laps0484")==1&&r.getLong("LastImpact0465")==f.l.getGameTime()&&r.getLong("LastImpactPos0465")==f.b.offset(GoatmanWoods.DOOR).asLong(),"each reader sees their own lap in the same native tick as an actual front-door impact");
             var it=laps.stream().filter(s->s.viewer().filter(a.getUUID()::equals).isPresent()).findFirst().orElseThrow();mine[0]=it;var start=f.rel(it);
             h.assertTrue(Math.abs(Math.abs(start.x)-9.5)<.01&&(Math.abs(start.z+51.5)<.01||Math.abs(start.z+78.5)<.01),"it starts at a corner just off the walls: "+start);
             GoatmanStalking.dash(f.l,f.b,r,a,own);h.assertTrue(own.getInt("Laps0484")==1,"not again while it is still going round");
