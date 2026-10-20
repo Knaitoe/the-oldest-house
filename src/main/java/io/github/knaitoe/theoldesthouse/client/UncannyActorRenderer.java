@@ -28,7 +28,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         return angle>=half*.52&&angle<=half*1.04;
     }
     @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack poses,MultiBufferSource buffers,int light){
-        if(!visible(a))return;
+        if(!visible(a)||UncannyCameras.maskDoll()&&a.getId()==UncannyClient.doll())return;
         var mc=Minecraft.getInstance();boolean feed=a.role()==LiteraryActor.UNCANNY_MARIONETTE&&UncannyCameras.recording()&&!UncannyClient.mirror();
         model=feed&&mc.player!=null&&mc.player.getSkin().model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:wide;
         model.feed=feed;

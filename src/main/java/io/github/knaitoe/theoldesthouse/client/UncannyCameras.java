@@ -29,14 +29,30 @@ public final class UncannyCameras {
     private static final int W=256,H=192;
     private static final DynamicTexture[] images=new DynamicTexture[4];private static final ResourceLocation[] ids=new ResourceLocation[4];
     private static final int[] frames=new int[4];private static final boolean[] dollFrames=new boolean[4];
+    private static boolean diagnosticMask;private static int headPixels;private static final int[] headRect=new int[4];
     private static TextureTarget target;private static Lens lens;private static boolean recording,dollDrawn;private static int cycle,channel;
     private UncannyCameras(){}
     public static boolean recording(){return recording;}
+    public static boolean maskDoll(){return diagnosticMask;}
+    public static int verifiedHeadPixels(){return headPixels;}
+    public static NativeImage copyFrame(int channel){if(images[channel]==null)return null;var copy=new NativeImage(W,H,false);copy.copyFrom(images[channel].getPixels());return copy;}
     public static RenderTarget target(){return target;}
     public static Camera camera(){return lens==null?Minecraft.getInstance().gameRenderer.getMainCamera():lens;}
     public static int frames(int camera){return frames[camera];}
     public static boolean ownFace(int camera){return dollFrames[camera];}
-    public static void dollDrawn(LiteraryActor a){if(recording&&a.getId()==UncannyClient.doll())dollDrawn=true;}
+    public static void dollDrawn(LiteraryActor a){
+        if(!recording||diagnosticMask||a.getId()!=UncannyClient.doll())return;dollDrawn=true;
+        var d=a.getEyePosition().subtract(lens.getPosition());var view=new Matrix4f().rotation(lens.rotation().conjugate(new Quaternionf()));
+        var projection=new Matrix4f().setPerspective((float)Math.toRadians(62),(float)W/H,.05F,128);
+        int x0=W,y0=H,x1=0,y1=0;
+        for(int x:new int[]{-1,1})for(int y:new int[]{-1,1})for(int z:new int[]{-1,1}){
+            var point=new org.joml.Vector4f((float)d.x+x*.34F,(float)d.y+y*.34F,(float)d.z+z*.34F,1);
+            new Matrix4f(projection).mul(view).transform(point);if(point.w<=0)continue;
+            int px=(int)((point.x/point.w+1)*W/2),py=(int)((1-point.y/point.w)*H/2);
+            x0=Math.min(x0,px);x1=Math.max(x1,px);y0=Math.min(y0,py);y1=Math.max(y1,py);
+        }
+        headRect[0]=Math.max(0,x0);headRect[1]=Math.max(0,y0);headRect[2]=Math.min(W,x1+1);headRect[3]=Math.min(H,y1+1);
+    }
     private static final class Lens extends Camera {
         void aim(Vec3 at,Vec3 towards){var mc=Minecraft.getInstance();setup(mc.level,mc.player,true,false,mc.getTimer().getGameTimeDeltaPartialTick(false));var d=towards.subtract(at);setPosition(at);setRotation((float)Math.toDegrees(Math.atan2(d.z,d.x))-90,(float)-Math.toDegrees(Math.atan2(d.y,Math.hypot(d.x,d.z))));}
     }
@@ -63,6 +79,22 @@ public final class UncannyCameras {
             mc.levelRenderer.renderLevel(mc.getTimer(),false,lens,mc.gameRenderer,mc.gameRenderer.lightTexture(),view,projection);
             try(var shot=Screenshot.takeScreenshot(target)){images[channel].getPixels().copyFrom(shot);images[channel].upload();}
             frames[channel]++;dollFrames[channel]|=dollDrawn;
+            if(Boolean.getBoolean("the_oldest_house.uncannySocketSmoke")&&channel==1&&dollDrawn&&headPixels<12){
+                diagnosticMask=true;
+                try{
+                    target.bindWrite(true);target.clear(Minecraft.ON_OSX);
+                    mc.levelRenderer.prepareCullFrustum(lens.getPosition(),view,projection);
+                    mc.levelRenderer.renderLevel(mc.getTimer(),false,lens,mc.gameRenderer,mc.gameRenderer.lightTexture(),view,projection);
+                    try(var masked=Screenshot.takeScreenshot(target)){
+                        var normal=images[channel].getPixels();int changed=0;
+                        for(int y=headRect[1];y<headRect[3];y++)for(int x=headRect[0];x<headRect[2];x++){
+                            int a=normal.getPixelRGBA(x,y),b=masked.getPixelRGBA(x,y);
+                            int difference=Math.abs((a&255)-(b&255))+Math.abs((a>>8&255)-(b>>8&255))+Math.abs((a>>16&255)-(b>>16&255));
+                            if(difference>24)changed++;
+                        }headPixels=Math.max(headPixels,changed);
+                    }
+                }finally{diagnosticMask=false;}
+            }
         }finally{
             recording=false;modelView.popMatrix();RenderSystem.applyModelViewMatrix();mc.getMainRenderTarget().bindWrite(true);RenderSystem.setProjectionMatrix(oldProjection,sorting);
             mc.levelRenderer.prepareCullFrustum(main.getPosition(),oldView,oldProjection);
@@ -107,6 +139,6 @@ public final class UncannyCameras {
     }
     public static void clear(){
         var mc=Minecraft.getInstance();for(int i=0;i<4;i++){if(ids[i]!=null)mc.getTextureManager().release(ids[i]);ids[i]=null;images[i]=null;frames[i]=0;dollFrames[i]=false;}
-        if(target!=null)target.destroyBuffers();target=null;lens=null;recording=false;cycle=0;channel=0;
+        if(target!=null)target.destroyBuffers();target=null;lens=null;recording=false;diagnosticMask=false;headPixels=0;cycle=0;channel=0;
     }
 }

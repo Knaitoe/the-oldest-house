@@ -62,7 +62,7 @@ public final class StanleyBlock extends Block {
         case TABLE,TABLE_SET->Block.box(0,0,0,16,16,16);
         case EASEL->Block.box(2,0,6,14,16,10);
         case CHANDELIER->Block.box(2,2,2,14,16,14);
-        case SCONCE->Block.box(5,4,12,11,13,16);
+        case SCONCE->Shapes.or(Block.box(5.5,4,15,10.5,13,16),Block.box(7,5,9,9,7,15.5),Block.box(7,6,8,9,10,10),Block.box(4,9,6,12,15,13));
         case CARD->Block.box(4,0,5,12,1,11);
         case BOOK->Block.box(3,0,4,13,2,12);
         case NOTICE->Block.box(3,3,15,13,14,16);

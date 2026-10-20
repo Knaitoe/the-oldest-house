@@ -29,8 +29,9 @@ tasks.named('jar', Jar) {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 def borrascaSocketSmoke = providers.gradleProperty('borrascaSocketSmoke').isPresent()
-def proofRoot = borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
-def proofReport = borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
+def uncannySocketSmoke = providers.gradleProperty('uncannySocketSmoke').isPresent()
+def proofRoot = uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
+def proofReport = uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
 
 neoForge {
     version = project.neo_version
@@ -117,6 +118,7 @@ neoForge {
             // Keep the watchdog and every reconnect check; allow room for the complete fixtures.
             jvmArgument '-Xmx3g'
             systemProperty 'the_oldest_house.liveProof', 'true'
+            systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.borrascaSocketSmoke', borrascaSocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofDir', project.file(proofReport).absolutePath
         }
@@ -125,6 +127,7 @@ neoForge {
             gameDirectory = project.file("${proofRoot}/a")
             jvmArgument '-Xmx1100m'
             systemProperty 'the_oldest_house.liveProof', 'true'
+            systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'A'
             // Each client extracts LWJGL's natives to its own folder; two clients starting together
             // in the shared temp folder can find a half-written library.
@@ -137,6 +140,7 @@ neoForge {
             gameDirectory = project.file("${proofRoot}/b")
             jvmArgument '-Xmx1100m'
             systemProperty 'the_oldest_house.liveProof', 'true'
+            systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'B'
             systemProperty 'org.lwjgl.system.SharedLibraryExtractPath', project.file("${proofRoot}/natives-b").absolutePath
             systemProperty 'the_oldest_house.liveProofDir', project.file(proofReport).absolutePath

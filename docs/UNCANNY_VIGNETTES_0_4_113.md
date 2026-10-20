@@ -54,3 +54,6 @@ Start uses existing built geometry and saves the operator's exact return locatio
 19 new focused native cases, 714 total declarations; previous 695 cases and 95 focused multiplayer cases remain. The exact-source twelve-job matrix, complete native suite, native GPU figures, architecture exports, both actual clients and existing reconnects remain mandatory. CCTV needs additional real-client evidence and reconnect coverage. This document records implementation intent; no new-room test pass is claimed yet.
 
 Previous 0.4.112 repair baseline: `71a90f5c35f340d9a90a52d8e3c43fcadbea75e1`, all twelve source jobs passed in [run 39491525825](https://github.com/Knaitoe/the-oldest-house/actions/runs/39491525825).
+
+
+Hotel screenshot follow-up: the wall sconce now has a broad flush backplate, a visible horizontal brass arm and an overlapping vertical shade stem. The native outline follows the same pieces. The existing hotel native case checks every actual interior/porch placement against its backing wall; the fitting proof adds eight front/side views across all four facings. These changes reuse the original shade and brass textures. Native validation remains pending.

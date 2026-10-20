@@ -36,6 +36,14 @@ public final class HotelTests {
             var saved=ghost.saveWithoutId(new CompoundTag());var restored=HotelRegistry.ACTOR.get().create(f.l);restored.load(saved);h.assertTrue(ghost.role()==6&&restored.role()==6&&restored.getUUID().equals(ghost.getUUID())&&ghost.isNoGravity()&&ghost.position().distanceToSqr(new Vec3(f.b.getX()-26.5,f.b.getY()+6.45,f.b.getZ()-24.1))<.01,"the old woman occupies the bath and retains her saved original identity and appearance");
             f.at(p,.5,0,-27.5);HotelVignette.photograph(p);var tile=(HotelPhotoBlockEntity)f.l.getBlockEntity(f.b.offset(HotelRooms.PHOTO));var fresh=new HotelPhotoBlockEntity(tile.getBlockPos(),tile.getBlockState());fresh.loadWithComponents(tile.getUpdateTag(f.l.registryAccess()),f.l.registryAccess());h.assertTrue(fresh.sitter()!=null&&fresh.sitter().equals(tile.sitter())&&fresh.sitter().owner().equals(p.getUUID()),"native disk and late-tracking tile data retain the real flat sitter profile");
             h.assertTrue(!f.l.getBlockState(f.b.offset(HotelRooms.FRONT_ROW)).is(Blocks.PLAYER_WALL_HEAD)&&p.getInventory().countItem(HotelRegistry.PHOTOGRAPH.get())==1,"one personally owned print is issued and no three-dimensional head protrudes from the wall");
+            int sconces=0;for(var site:List.of(LabyrinthPlace.HOTEL,LabyrinthPlace.HOTEL_GROUNDS)){
+                var level=site==LabyrinthPlace.HOTEL?f.l:f.outside;var base=site==LabyrinthPlace.HOTEL?f.b:f.gb;var bounds=site.room();
+                for(var at:BlockPos.betweenClosed(base.offset(bounds.minX(),bounds.minY(),bounds.minZ()),base.offset(bounds.maxX(),bounds.maxY(),bounds.maxZ()))){
+                    var state=level.getBlockState(at);if(!StanleyBlock.is(state,StanleyBlock.Kind.SCONCE))continue;sconces++;
+                    var support=at.relative(state.getValue(StanleyBlock.FACING).getOpposite());var backing=level.getBlockState(support).getCollisionShape(level,support);
+                    h.assertTrue(!backing.isEmpty()&&backing.max(state.getValue(StanleyBlock.FACING).getAxis())>=.999,"every actual hotel sconce has its native backing wall, including "+site+" "+at.subtract(base));
+                }
+            }h.assertTrue(sconces>=10,"all authored interior and porch lamps were checked against real support");
             chunks.close();h.succeed();
         });
     }

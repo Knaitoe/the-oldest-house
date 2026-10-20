@@ -11,8 +11,10 @@ os.environ.setdefault("ALSOFT_DRIVERS", "null")
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 borrasca_only = "--borrasca-only" in sys.argv[1:]
-proof_root = ROOT / ("run-borrasca-live" if borrasca_only else "run-live")
-report = ROOT / ("build/borrasca-live-proof" if borrasca_only else "build/live-proof")
+uncanny_only = "--uncanny-only" in sys.argv[1:]
+proof_flags = ["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else [])
+proof_root = ROOT / ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live"))
+report = ROOT / ("build/uncanny-live-proof" if uncanny_only else ("build/borrasca-live-proof" if borrasca_only else "build/live-proof"))
 report.mkdir(parents=True, exist_ok=True)
 server = proof_root / "server"
 server.mkdir(parents=True, exist_ok=True)
@@ -28,7 +30,7 @@ logs = []
 def launch(task, name):
     log = open(report / f"{name}.log", "w")
     logs.append(log)
-    p = subprocess.Popen(["gradle", task, "--no-daemon", "--max-workers=1", "-Dorg.gradle.jvmargs=-Xmx256m"] + (["-PborrascaSocketSmoke"] if borrasca_only else []), stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+    p = subprocess.Popen(["gradle", task, "--no-daemon", "--max-workers=1", "-Dorg.gradle.jvmargs=-Xmx256m"] + proof_flags, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
     processes.append(p)
     return p
 
@@ -48,7 +50,7 @@ def wait_for(check, seconds, context):
     raise RuntimeError(f"Timed out waiting for {context}")
 
 try:
-    subprocess.run(["gradle", "classes", "prepareProofServerRun", "prepareProofARun", "prepareProofBRun", "--no-daemon", "--max-workers=2"] + (["-PborrascaSocketSmoke"] if borrasca_only else []), check=True)
+    subprocess.run(["gradle", "classes", "prepareProofServerRun", "prepareProofARun", "prepareProofBRun", "--no-daemon", "--max-workers=2"] + proof_flags, check=True)
     host = launch("runProofServer", "server")
     wait_for(lambda: "Done (" in (server / "logs/latest.log").read_text(errors="replace") if (server / "logs/latest.log").exists() else False, 180, "dedicated server startup")
     first = launch("runProofA", "client-a")
@@ -57,6 +59,24 @@ try:
     # The expedition itself still requires both live clients together.
     wait_for(lambda: "joined the game" in (server / "logs/latest.log").read_text(errors="replace"), 180, "first native client window and socket login")
     second = launch("runProofB", "client-b-first")
+    if uncanny_only:
+        wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "both actual clients' native bedroom actions and four CCTV feeds")
+        reconnected = launch("runProofB", "client-b-reconnected")
+        wait_for(lambda: (report / "passed.txt").exists(), 360, "same-profile CCTV recovery, native door/account and actual health fuel")
+        for p in processes:
+            p.wait(timeout=90)
+            assert p.returncode == 0, p.returncode
+        for role in ("A", "B"):
+            for view in ("boarded-periphery", "diner-translucent", "diner-solid", "giant-folded", "bedroom-source", "bedroom-first-cut", "bedroom-second-cut", "bedroom-direct", "bedroom-cctv", "bedroom-cctv-reconnected", "bedroom-door-closed", "bedroom-account", "cellar-growth", "foyer-lit", "foyer-dark", "ring-and-mirror"):
+                assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
+            for prefix in ("", "reconnected-"):
+                for channel in range(4):
+                    assert (report / f"{role}-cctv-{prefix}{channel}.png").stat().st_size > 500, (role, prefix, channel)
+                assert (report / f"{role}-cctv-{prefix}pixels.txt").stat().st_size > 30, (role, prefix)
+        native_log = (server / "logs/latest.log").read_text(errors="replace")
+        assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
+        print((report / "passed.txt").read_text(), flush=True)
+        raise SystemExit(0)
     if borrasca_only:
         wait_for(lambda: (report / "passed.txt").exists(), 300, "targeted production Borrasca source, ladder, original record, low pipe and native return")
         for p in processes:
