@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.*;
@@ -16,6 +17,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -24,10 +27,11 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /** The actual baked assets and fear pose, in the same native client used for writing proof. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class PlaytestVisualProof extends Screen {
-    private int frames;
+    private int page,frames;
     public PlaytestVisualProof(){super(Component.literal("October 9 native assets"));}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
+        if(page==1){plains(g);return;}
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb5b8ab);g.drawString(font,"New cousins: standing / cowering. Distant boy. Native pixel items and furniture.",10,8,0xff1b2527,false);g.flush();
         var out=mc.renderBuffers().bufferSource();
         for(int i=0;i<6;i++){
@@ -35,7 +39,7 @@ public final class PlaytestVisualProof extends Screen {
             var p=g.pose();p.pushPose();p.translate(28+i*(width-100)/7F,height*.55F,120);p.scale(38,38,38);p.mulPose(Axis.YP.rotationDegrees(165));p.translate(0,-1.5,0);
             model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+(6+i%3)+".png"))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
         }
-        var boy=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));boy.young=false;boy.pose(LiteraryActor.SILHOUETTE,4,0);
+        var boy=new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));
         var p=g.pose();p.pushPose();p.translate(width-50,height*.55F,120);p.scale(30,30,30);p.mulPose(Axis.YP.rotationDegrees(180));p.translate(0,-1.5,0);
         boy.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(LiteraryRenderers.skin(LiteraryActor.SILHOUETTE,4))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();out.endBatch();
         int n=0;for(var stack:new ItemStack[]{new ItemStack(NovelRegistry.CAMERA.get()),new ItemStack(NovelRegistry.ARCHIVE_KEY.get()),new ItemStack(DrownedTownRegistry.CHURCH_KEY.get()),new ItemStack(NovelRegistry.RIBBON.get()),new ItemStack(GoatmanRegistry.FRANKS.get())}){
@@ -44,9 +48,40 @@ public final class PlaytestVisualProof extends Screen {
         for(int i=0;i<states.length;i++){if(mc.getBlockRenderer().getBlockModel(states[i])==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing 0.4.64 native model "+states[i]);
             p.pushPose();p.translate(width-146+i*47,height-22,150);p.scale(26,-26,26);p.mulPose(Axis.XP.rotationDegrees(20));p.mulPose(Axis.YP.rotationDegrees(25));mc.getBlockRenderer().renderSingleBlock(states[i],p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}out.endBatch();
     }
+    private void plains(GuiGraphics g){
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb5b8ab);g.drawString(font,"Plains / folded knees, bowed head and hands by the knees / original pixel texture",10,9,0xff1b2527,false);g.flush();
+        var out=mc.renderBuffers().bufferSource();float scale=Math.min(width/4F*.8F,height*.48F)*PlainFigureModel.SCALE;
+        for(int view=0;view<4;view++){
+            var model=new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));var p=g.pose();p.pushPose();
+            p.translate((view+.5F)*width/4,height*.72F-scale*1.5F,180);p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,145}[view]));
+            model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(LiteraryRenderers.skin(LiteraryActor.SILHOUETTE,4))),view==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);p.popPose();out.endBatch();
+            g.drawCenteredString(font,new String[]{"Front","Side","Back","Dim light"}[view],(int)((view+.5F)*width/4),height-24,0xff1b2527);
+        }
+    }
+    private static void verifyPlains(Path dir)throws Exception{
+        var mc=Minecraft.getInstance();var model=new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));var bounds=new Bounds();
+        model.renderToBuffer(PlainFigureModel.atFeet(),bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+        if(bounds.y0<-.02F||bounds.y0>.03F||bounds.y1<.65F||bounds.y1>.9F||bounds.x1-bounds.x0<.35F||bounds.z1-bounds.z0<.45F)throw new IllegalStateException("Plains crouch must be low, folded and grounded: "+bounds);
+        try(var image=new NativeImage(128,128,false)){
+            for(int y=0;y<128;y++)for(int x=0;x<128;x++)image.setPixelRGBA(x,y,0xffb5b8ab);
+            PlainCameraClient.silhouette(image,new Matrix4f().setOrtho(-.6F,.6F,-.6F,.6F,.1F,100),new Vec3(0,-.5,-5));
+            int pixels=0,top=128,bottom=0;
+            for(int y=0;y<128;y++)for(int x=0;x<128;x++)if(image.getPixelRGBA(x,y)==0xFF1A1616){pixels++;top=Math.min(top,y);bottom=Math.max(bottom,y);}
+            if(pixels<100||bottom-top>98)throw new IllegalStateException("Long-lens fallback lost the crouched mesh: pixels="+pixels+", height="+(bottom-top));
+            image.writeToFile(dir.resolve("native-plains-crouch-fallback.png"));
+        }
+        Files.writeString(dir.resolve("plains-crouch-passed.txt"),"Native production crouch: front, side, back and dim light; original child scale and unchanged pixel atlas. Actual baked vertex bounds: "+bounds+". The untracked-body photograph projects the same mesh. Existing personal camera, finite photo, Witness and connected-client checks remain required.\n");
+    }
+    private static final class Bounds implements VertexConsumer {
+        float x0=Float.POSITIVE_INFINITY,y0=x0,z0=x0,x1=Float.NEGATIVE_INFINITY,y1=x1,z1=x1;
+        public VertexConsumer addVertex(float x,float y,float z){x0=Math.min(x0,x);y0=Math.min(y0,y);z0=Math.min(z0,z);x1=Math.max(x1,x);y1=Math.max(y1,y);z1=Math.max(z1,z);return this;}
+        public VertexConsumer setColor(int r,int g,int b,int a){return this;}public VertexConsumer setUv(float u,float v){return this;}public VertexConsumer setUv1(int u,int v){return this;}public VertexConsumer setUv2(int u,int v){return this;}public VertexConsumer setNormal(float x,float y,float z){return this;}
+        @Override public String toString(){return x0+","+y0+","+z0+" -> "+x1+","+y1+","+z1;}
+    }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof PlaytestVisualProof proof)||++proof.frames<16)return;
-        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-playtest-0464.png"));}
+        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve(proof.page==0?"native-playtest-0464.png":"native-plains-crouch.png"));}
+        if(proof.page++==0){proof.frames=0;return;}verifyPlains(dir);
         Files.writeString(dir.resolve("playtest-assets-passed.txt"),"Additional cousin skins, shared cowering pose, distant boy, camera, keys, ribbon, packets, chess table, varied paper and boarded window rendered by the native client.\n");mc.setScreen(new TrailerVisualProof());
     }
 }

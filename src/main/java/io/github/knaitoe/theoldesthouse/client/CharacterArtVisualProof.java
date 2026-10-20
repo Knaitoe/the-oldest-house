@@ -81,7 +81,7 @@ public final class CharacterArtVisualProof extends Screen {
         var mc=Minecraft.getInstance();int phase=row.get("phase").getAsInt();int number=row.get("number").getAsInt();
         return switch(row.get("model").getAsString()){
             case "harrigan"->{var m=new HouseHumanRenderers.HarriganModel(mc.getEntityModels().bakeLayer(HouseHumanRenderers.HARRIGAN_LAYER));m.preview(number);yield m;}
-            case "literary"->{var m=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));m.preview(role(row),phase,0);yield m;}
+            case "literary"->{if(PlainFigureModel.matches(role(row),phase))yield new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));var m=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));m.preview(role(row),phase,0);yield m;}
             case "corpse"->{var m=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));m.young=false;m.corpse(row.get("name").getAsString().contains("crew_"),number,0);yield m;}
             case "ghosts"->{var m=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));m.preview(role(row),phase,0);yield m;}
             case "club"->{var m=new NightclubRenderers.CastModel(mc.getEntityModels().bakeLayer(NightclubRenderers.CAST));m.preview(number==8?Nightclub.DANCERS:number,0,phase);yield m;}

@@ -1,12 +1,15 @@
 package io.github.knaitoe.theoldesthouse.client;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.PlainCameraItem;
 import io.github.knaitoe.theoldesthouse.network.*;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
@@ -33,7 +36,7 @@ public final class PlainCameraClient {
         if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_LEVEL||pending==null)return;var mc=Minecraft.getInstance();
         if(mc.level!=world||!active()){pending=null;return;}if(++frames<2)return;
         boolean boy=false;for(var entity:mc.level.entitiesForRendering())if(entity instanceof io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor actor&&actor.role()==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.SILHOUETTE&&actor.phase()==4&&actor.owner().filter(mc.player.getUUID()::equals).isPresent()){boy=true;break;}
-        // Past this client's view distance the body never arrives; the long lens still records the figure where it stands.
+        // Past this client's view distance the body never arrives; the long lens records the same crouched mesh at its feet.
         if(!boy&&frames<BOY_WAIT)return;
         UUID nonce=pending;pending=null;
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
@@ -53,22 +56,36 @@ public final class PlainCameraClient {
             PacketDistributor.sendToServer(new PlainFramePayload(nonce,pixels));
         }catch(java.io.IOException problem){throw new IllegalStateException("Could not record the native camera proof",problem);}
     }
-    /** A dark standing figure, scaled to its distance, drawn over this frame where the body itself would have been drawn. */
+    /** Project the production mesh so the long lens cannot turn an untracked crouched child into a standing adult. */
     private static void silhouette(NativeImage image,RenderLevelStageEvent e,Vec3 feet){
-        var eye=e.getCamera().getPosition();float[] foot=screen(image,e,feet.subtract(eye)),head=screen(image,e,feet.add(0,1.8,0).subtract(eye));
-        if(foot==null||head==null)return;float h=Math.max(4,foot[1]-head[1]);
-        int x0=(int)Math.floor(foot[0]-h*.2F),x1=(int)Math.ceil(foot[0]+h*.2F),y0=(int)Math.floor(foot[1]-h),y1=(int)Math.ceil(foot[1]);
-        for(int y=Math.max(0,y0);y<=Math.min(image.getHeight()-1,y1);y++)for(int x=Math.max(0,x0);x<=Math.min(image.getWidth()-1,x1);x++){
-            float u=(x+.5F-foot[0])/h,v=(y+.5F-(foot[1]-h))/h;
-            boolean figure=u*u+(v-.1F)*(v-.1F)<.0064F||v>=.18F&&v<.52F&&Math.abs(u)<.16F||v>=.52F&&v<=1&&Math.abs(u)>.02F&&Math.abs(u)<.1F;
-            if(figure)image.setPixelRGBA(x,y,0xFF1A1616);
-        }
-    }
-    /** Projects a camera-relative point as the level was just drawn: the camera's own rotation, then the level's projection. */
-    private static float[] screen(NativeImage image,RenderLevelStageEvent e,Vec3 at){
         var view=new Matrix4f().rotation(e.getCamera().rotation().conjugate(new Quaternionf()));
-        var clip=new Matrix4f(RenderSystem.getProjectionMatrix()).transform(view.transform(new Vector4f((float)at.x,(float)at.y,(float)at.z,1)));
-        if(clip.w<=.01F)return null;return new float[]{(clip.x/clip.w+1)/2*image.getWidth(),(1-clip.y/clip.w)/2*image.getHeight()};
+        silhouette(image,new Matrix4f(RenderSystem.getProjectionMatrix()).mul(view),feet.subtract(e.getCamera().getPosition()));
+    }
+    static void silhouette(NativeImage image,Matrix4f projection,Vec3 feet){
+        var model=new PlainFigureModel(Minecraft.getInstance().getEntityModels().bakeLayer(PlainFigureModel.LAYER));
+        model.renderToBuffer(PlainFigureModel.atFeet(feet),new Silhouette(image,projection),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+    }
+    private static final class Silhouette implements VertexConsumer {
+        private final NativeImage image;private final Matrix4f projection;private final float[][] quad=new float[4][];private int next;
+        Silhouette(NativeImage image,Matrix4f projection){this.image=image;this.projection=projection;}
+        @Override public VertexConsumer addVertex(float x,float y,float z){
+            var clip=projection.transform(new Vector4f(x,y,z,1));
+            quad[next++]=clip.w<=.01F?null:new float[]{(clip.x/clip.w+1)*image.getWidth()/2,(1-clip.y/clip.w)*image.getHeight()/2};
+            if(next==4){next=0;if(quad[0]!=null&&quad[1]!=null&&quad[2]!=null&&quad[3]!=null){triangle(quad[0],quad[1],quad[2]);triangle(quad[0],quad[2],quad[3]);}}
+            return this;
+        }
+        private static float edge(float[] a,float[] b,float x,float y){return (x-a[0])*(b[1]-a[1])-(y-a[1])*(b[0]-a[0]);}
+        private void triangle(float[] a,float[] b,float[] c){
+            float area=edge(a,b,c[0],c[1]);if(Math.abs(area)<.00001F)return;float sign=area<0?-1:1;
+            int x0=Math.max(0,(int)Math.floor(Math.min(a[0],Math.min(b[0],c[0])))),x1=Math.min(image.getWidth()-1,(int)Math.ceil(Math.max(a[0],Math.max(b[0],c[0]))));
+            int y0=Math.max(0,(int)Math.floor(Math.min(a[1],Math.min(b[1],c[1])))),y1=Math.min(image.getHeight()-1,(int)Math.ceil(Math.max(a[1],Math.max(b[1],c[1]))));
+            for(int y=y0;y<=y1;y++)for(int x=x0;x<=x1;x++)if(edge(a,b,x+.5F,y+.5F)*sign>=0&&edge(b,c,x+.5F,y+.5F)*sign>=0&&edge(c,a,x+.5F,y+.5F)*sign>=0)image.setPixelRGBA(x,y,0xFF1A1616);
+        }
+        @Override public VertexConsumer setColor(int r,int g,int b,int a){return this;}
+        @Override public VertexConsumer setUv(float u,float v){return this;}
+        @Override public VertexConsumer setUv1(int u,int v){return this;}
+        @Override public VertexConsumer setUv2(int u,int v){return this;}
+        @Override public VertexConsumer setNormal(float x,float y,float z){return this;}
     }
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {
