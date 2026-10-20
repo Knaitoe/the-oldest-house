@@ -1,0 +1,13 @@
+# The woman in the bath — art revision
+
+The owner requested a decaying human whose flesh is slipping away, with her remains filling the bath during her appearance.
+
+The production mesh retains a recognizable human face, nose and slack jaw, full torso and human limbs. Warm grey, bruised skin surrounds exposed tissue; loose cheek, chest, belly, forearm and shin skin hangs from the same joints as the body. Wet hair remains attached to the head. The skeletal ribs, thin stick limbs and large black mouth are removed. The texture remains native 64×64 with an eight-pixel face.
+
+The two existing tub halves use their low stage bit for head/foot and their previously unused high bit for her remains. Three additive 16×16 materials show dark, opaque fluid and ragged floating tissue, with shallow physical detail above the surface. All prior PNG bytes remain intact. Filling begins with emergence, persists through pursuit and fading, and clears when she disappears. Save/reload and late tracking use the actual synchronized blocks. The state change only touches existing tub blocks at the authored two positions; it preserves facing and collision, and does not restore a removed or replaced fitting. The starting body is lowered to keep the taller human head beneath the opaque surface.
+
+This is presentation for the same occasional original body: no added actor, drops, rewards, damage, Witness source or progression rule. `/ghosthouse vignette hotel_bath start|status|dismiss` still controls testing in the actual built hotel.
+
+Existing native contact/reload and physical bathroom-to-hall cases now assert the two filled halves, exact facing, unchanged collision and clearing on disappearance. The six native fitting pages use the production model and actual filled tub models. The front/side pose page's preview coordinate inversion is corrected. Asset generation is reproducible with `python3 tools/generate_bath_decay_assets.py`; `--check` compares the materials, models and all tub states. All 716 native cases, 95 multiplayer cases, existing proofs and twelve source jobs remain required. Verification is pending.
+
+Protocol 86 / labyrinth layout 46 / manor layout 2; 52 fixed-kind sources / 39 resolutions across two kinds / three endings are unchanged. The previous pool-size regression is corrected to the current 32 eligible literary rooms and 52 total sources without weakening its original resolution or optional-closure assertions.
