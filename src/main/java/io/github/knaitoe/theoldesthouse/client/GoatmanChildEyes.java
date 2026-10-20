@@ -14,7 +14,7 @@ public final class GoatmanChildEyes {
     public static boolean visible(GoatmanChild child){return child.stalkingAppearance()&&!child.monsterAppearance()&&!child.girl();}
     public static void render(GoatmanChildModel model,PoseStack poses,MultiBufferSource buffers){
         poses.pushPose();model.head.translateAndRotate(poses);
-        var out=buffers.getBuffer(RenderType.entityTranslucentEmissive(GoatmanFigureRenderer.EYES));
+        var out=buffers.getBuffer(RenderType.eyes(GoatmanFigureRenderer.EYES));
         // The painted 16-pixel face occupies the native eight-pixel head.
         // Eye bands are x=3..5 / 10..12, y=7..8 on that face.
         eye(poses.last(),out,-2.5F,-1F);eye(poses.last(),out,1F,2.5F);

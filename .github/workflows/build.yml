@@ -1566,7 +1566,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused trailer, funeral and hospital native cases passed; the complete suite remains required.')
           PY
