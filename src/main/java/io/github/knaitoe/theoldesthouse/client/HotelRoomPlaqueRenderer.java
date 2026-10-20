@@ -54,7 +54,7 @@ public final class HotelRoomPlaqueRenderer implements BlockEntityRenderer<HotelR
         // The base model faces south and sits against the north wall edge.
         poseStack.translate(0.0D, 0.0D, -0.40525D);
         float scale=Math.min(.020F,.64F/font.width(text));
-        poseStack.scale(-scale,-scale,scale);
+        poseStack.scale(scale,-scale,scale);
 
         float width = font.width(text);
         // The original bitmap glyphs are ink on the explicit brass plane.
