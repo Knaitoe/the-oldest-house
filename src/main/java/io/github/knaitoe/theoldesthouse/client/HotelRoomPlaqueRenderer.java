@@ -53,21 +53,23 @@ public final class HotelRoomPlaqueRenderer implements BlockEntityRenderer<HotelR
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
         // The base model faces south and sits against the north wall edge.
         poseStack.translate(0.0D, 0.0D, -0.40525D);
-        poseStack.scale(-0.020F, -0.020F, 0.020F);
+        float scale=Math.min(.020F,.64F/font.width(text));
+        poseStack.scale(-scale,-scale,scale);
 
         float width = font.width(text);
-        font.drawInBatch(
-                text,
-                -width / 2.0F,
-                -4.5F,
-                0x2A1608,
-                false,
-                poseStack.last().pose(),
-                bufferSource,
-                Font.DisplayMode.POLYGON_OFFSET,
-                0,
-                packedLight
-        );
+        // The original bitmap glyphs are ink on the explicit brass plane.
+        // Font's polygon-offset text layer can bury that plane at oblique angles.
+        var texture=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/font/hotel.png");
+        var out=bufferSource.getBuffer(net.minecraft.client.renderer.RenderType.entityCutoutNoCull(texture));
+        float x=-width/2,top=-56/9F,glyphWidth=128/9F;
+        for(char digit:Integer.toString(number).toCharArray()){
+            int index=digit-33;float u0=(index%16)*16/256F,u1=u0+16/256F,v0=(index/16)*18/126F,v1=v0+18/126F;var p=poseStack.last();
+            out.addVertex(p,x,top+16,0).setColor(0xff2a1608).setUv(u0,v1).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(packedLight).setNormal(p,0,0,1);
+            out.addVertex(p,x+glyphWidth,top+16,0).setColor(0xff2a1608).setUv(u1,v1).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(packedLight).setNormal(p,0,0,1);
+            out.addVertex(p,x+glyphWidth,top,0).setColor(0xff2a1608).setUv(u1,v0).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(packedLight).setNormal(p,0,0,1);
+            out.addVertex(p,x,top,0).setColor(0xff2a1608).setUv(u0,v0).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(packedLight).setNormal(p,0,0,1);
+            x+=font.width(Component.literal(Character.toString(digit)).withStyle(style->style.withFont(FONT)));
+        }
         poseStack.popPose();
     }
 }
