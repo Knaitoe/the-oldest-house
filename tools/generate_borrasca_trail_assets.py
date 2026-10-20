@@ -143,7 +143,7 @@ def model(elements):
     return {'textures': {'atlas': ATLAS, 'particle': ATLAS}, 'elements': elements}
 
 
-def letters(word, x, y, z, size, tile):
+def letters(word, x, y, z, size, tile, mirror=True):
     result = []
     start=x; width=(len(word)*4-1)*size
     for char in word:
@@ -151,7 +151,8 @@ def letters(word, x, y, z, size, tile):
         for row, line in enumerate(rows):
             for col, pixel in enumerate(line):
                 if pixel == '1':
-                    a, b = start+width-(x-start+col*size)-size, y + (len(rows) - row - 1) * size
+                    a = start+width-(x-start+col*size)-size if mirror else x+col*size
+                    b = y + (len(rows) - row - 1) * size
                     result.append(cube((a,b,z,a+size*.88,b+size*.88,z+.08),tile))
         x += 4 * size
     return result
@@ -210,10 +211,10 @@ def outputs():
                'thirdperson_righthand': {'rotation':[0,0,0],'translation':[0,2,0],'scale':[.5,.5,.5]},
                'firstperson_righthand': {'rotation':[0,-30,0],'translation':[0,2,0],'scale':[.8,.8,.8]}}
     compass = model([cube((2,2,7,14,14,9),7),cube((6,14,7,10,16,9),8)])
-    patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('KIMBER',1.1,6,7.35,.6,12)])
+    patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('KIMBER',1.1,6,7.35,.6,12,mirror=False)])
     flashlight = model([cube((6,0,6,10,12,10),5),cube((5.5,2,5.5,10.5,10,10.5),10),cube((4,10,4,12,16,12),14)])
     for name, asset in (('compass',compass),('name_patch',patch),('flashlight',flashlight)):
-        asset['display'] = {**display, 'gui': {**display['gui'], 'rotation': [0,0,0]}} if name == 'name_patch' else display
+        asset['display'] = display
         out[f'models/item/borrasca_{name}.json'] = asset
     atlas_file = ROOT / 'src/main/resources/assets/minecraft/atlases/blocks.json'
     atlas = json.loads(atlas_file.read_text())
