@@ -19,8 +19,17 @@ public final class GoatmanWindowCircuit {
         for(int x:new int[]{-9,9}){var at=b.offset(x,0,-67);if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;var s=l.getBlockState(at);if(s.is(GoatmanRegistry.WHEEL.get()))continue;if(!s.isAir()||!l.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.05)).isEmpty())return false;for(var p:l.players()){if(!p.isAlive()||p.isSleeping())continue;var camera=p.getCamera();var delta=at.getCenter().subtract(camera.getEyePosition());if(delta.lengthSqr()<72*72&&camera.getLookAngle().dot(delta.normalize())>.26&&GoatmanStalking.visible(l,camera,camera.getEyePosition(),at.getCenter()))return false;}}
         for(int x:new int[]{-9,9}){var at=b.offset(x,0,-67);if(l.getBlockState(at).isAir())l.setBlock(at,GoatmanRegistry.WHEEL.get().defaultBlockState().setValue(TrailerFixtureBlock.FACING,x<0?Direction.WEST:Direction.EAST),F);}built(l,b);return true;
     }
-    public static boolean sideWindow(int leg){return leg==2||leg==3||leg==4||leg==9||leg==10;}
-    public static Vec3 via(int leg){return switch(leg){case 3->new Vec3(-9.5,0,-62.5);case 4->new Vec3(-9.5,0,-69.5);case 9->new Vec3(10.25,0,-70.5);case 10->new Vec3(10.25,0,-62.5);default->null;};}
+    public static boolean sideWindow(int leg){return leg==5||leg==6||leg==7||leg==12||leg==13;}
+    /** The finished exterior adds a half-block sill above the wheel. Read its
+     * actual support instead of aiming the feet into that slab. */
+    public static Vec3 landing(ServerLevel level,BlockPos base,Vec3 local){
+        double x=base.getX()+local.x,z=base.getZ()+local.z,top=base.getY()+local.y;
+        var foot=new AABB(x-.20,base.getY()+.9,z-.20,x+.20,base.getY()+1.61,z+.20);
+        for(var shape:level.getBlockCollisions(null,foot))for(var box:shape.toAabbs())if(box.maxY<=base.getY()+1.61)top=Math.max(top,box.maxY);
+        return new Vec3(local.x,top-base.getY(),local.z);
+    }
+    /** Align outside the iron-bar frame before rising inward onto its sill. */
+    public static Vec3 via(int leg){return switch(leg){case 5->new Vec3(-9.5,0,-58.5);case 6->new Vec3(-9.5,0,-66.5);case 7->new Vec3(-9.5,0,-72.5);case 12->new Vec3(10.25,0,-66.5);case 13->new Vec3(10.25,0,-58.5);default->null;};}
     public static boolean atPane(BlockPos b,GoatmanChild c){var p=c.position().subtract(b.getX(),b.getY(),b.getZ());if(p.y<.8||Math.abs(p.x)<8||Math.abs(p.x)>10)return false;for(double z:new double[]{-58.5,-66.5,-72.5})if(Math.abs(p.z-z)<1.2)return true;return false;}
     /**
      * October 15 visibility follow-up. Each side pane is one block wide, so it can only be seen from a narrow wedge of the

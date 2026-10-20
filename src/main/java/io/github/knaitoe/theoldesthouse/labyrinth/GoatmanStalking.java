@@ -15,13 +15,15 @@ import net.minecraft.world.entity.Entity;
 /** One saved cousin body circles the house. Only its presentation changes, between unseen sightings. */
 public final class GoatmanStalking {
     private static final Vec3[] CIRCUIT={
+        new Vec3(.5,.5,-52.6),new Vec3(.5,0,-51.5),new Vec3(-5.5,0,-51.5),
         new Vec3(-5.5,0,-53.5),new Vec3(-9.25,0,-54.5),new Vec3(-8.5,1,-58.5),
         new Vec3(-9.25,0,-66.5),new Vec3(-8.5,1,-72.5),new Vec3(-9.25,0,-78.5),
         new Vec3(.5,0,-78.5),new Vec3(10.25,0,-78.5),new Vec3(10.25,0,-74.5),
         new Vec3(10.25,0,-66.5),new Vec3(9.5,1,-58.5),new Vec3(10.25,0,-53.5),
-        new Vec3(5.5,0,-53.5),new Vec3(.5,0,-51.5),new Vec3(.5,.5,-52.6),new Vec3(.5,1,-53.8)
+        new Vec3(10.25,0,-48.5),new Vec3(.5,0,-48.5),new Vec3(.5,0,-51.5),new Vec3(.5,.5,-52.6),new Vec3(.5,1,-53.8)
     };
-    private static final Vec3[] TO_WINDOW={new Vec3(5.5,0,-53.5),new Vec3(10.25,0,-53.5),new Vec3(10.25,0,-66.5),new Vec3(10.25,0,-74.5)};
+    private static final Vec3[] TO_WINDOW={new Vec3(.5,.5,-52.6),new Vec3(.5,0,-51.5),new Vec3(.5,0,-48.5),new Vec3(10.25,0,-48.5),new Vec3(10.25,0,-53.5),new Vec3(10.25,0,-66.5),new Vec3(10.25,0,-74.5)};
+    public static boolean windowApproachDone(CompoundTag run){return run.getInt("StalkWindowLeg0465")>=TO_WINDOW.length;}
     public static final int[] DEMAND_TICKS={0,160,330,500,665,830,1000};
     public static final int ASSAULT_END=1080;
     public static final int CIRCUITS=3;
@@ -74,11 +76,11 @@ public final class GoatmanStalking {
      * 0.4.84: while the impostor waits unseen behind the closed door, it is also seen as it is, tearing round the trailer:
      * for each reader inside, a private, unsaved figure runs a whole lap just off the walls, past every side window, striking
      * each one and the back wall as it goes, loud enough to hear from anywhere inside. It starts and ends at a corner the
-     * reader cannot see, never near a knock at the door (it cannot be in two places at once), at most three times a night.
+     * reader cannot see, at most three times a night. Door pressure deliberately continues during these laps.
      */
     public static void dash(ServerLevel l,BlockPos b,CompoundTag r,ServerPlayer p,CompoundTag own){
         long now=l.getGameTime();
-        if(p.isSpectator()||own.getInt("Laps0484")>=LAPS||now<own.getLong("LapAt0484")||now-r.getLong("LastImpact0465")<60)return;
+        if(p.isSpectator()||own.getInt("Laps0484")>=LAPS||now<own.getLong("LapAt0484"))return;
         boolean waiting=r.getInt("Phase")==GoatmanVignette.VIGIL?circuitDone(r)&&r.getInt("StalkWindowLeg0465")==0&&(!r.contains("AssaultAt0465")||r.getBoolean("AssaultDone0465")):r.getBoolean("Silence");
         if(!waiting||!GoatmanWoods.indoors(p.position().subtract(b.getX(),b.getY(),b.getZ())))return;
         if(!l.getEntitiesOfClass(GoatmanFigure.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),f->f.purpose.equals("lap")&&f.viewer().filter(p.getUUID()::equals).isPresent()).isEmpty())return;
@@ -103,13 +105,14 @@ public final class GoatmanStalking {
     public static final int PANE_SLAM=10,PANE_WAIT=46,PANE_WATCHED=24,PANE_MAX=72;
     /** Where the figure stands on a side window's tire, just off the glass. */
     public static Vec3 paneSpot(BlockPos b,int window){var w=SIDE_WINDOWS[window];return abs(b,new Vec3(w.getX()<0?-8.5:9.5,1,w.getZ()+.5));}
+    private static Vec3 paneSpot(ServerLevel l,BlockPos b,int window){var w=SIDE_WINDOWS[window];return abs(b,GoatmanWindowCircuit.landing(l,b,new Vec3(w.getX()<0?-8.5:9.5,1,w.getZ()+.5)));}
     public static int sideWindows(){return SIDE_WINDOWS.length;}
     /** One tick of a lap: on round at a run, striking the windows it passes; gone at its corner once it is out of sight there. */
     static void lapStep(ServerLevel l,GoatmanFigure f,ServerPlayer p,long now){
         Vec3 to=f.lap.peekFirst();if(to==null||f.lapBase==null){f.discard();return;}
         if(f.pane>=0){atPane(l,f,p,now,to);return;}
         int ahead=paneAhead(f,to);
-        if(ahead>=0&&canSee(l,p,paneSpot(f.lapBase,ahead).add(0,FACE,0))){f.pane=ahead;f.paneAt=-1;f.paneSeen=0;f.paneExit=null;atPane(l,f,p,now,to);return;}
+        if(ahead>=0&&canSee(l,p,paneSpot(l,f.lapBase,ahead).add(0,FACE,0))){f.pane=ahead;f.paneAt=-1;f.paneSeen=0;f.paneExit=null;atPane(l,f,p,now,to);return;}
         Vec3 d=to.subtract(f.position());double len=d.length();float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:f.getYRot();
         if(len<=LAP_SPEED){
             f.step(to,yaw);f.lap.pollFirst();f.lapCorner=Math.floorMod(f.lapCorner+f.lapDir,4);
@@ -151,7 +154,7 @@ public final class GoatmanStalking {
             if(len<=VAULT){f.step(f.paneExit,yaw);f.pane=-1;f.paneAt=-1;f.paneExit=null;}else f.step(f.position().add(d.scale(VAULT/len)),yaw);
             return;
         }
-        Vec3 spot=paneSpot(b,f.pane),glass=Vec3.atCenterOf(b.offset(w)).add(west?-.45:.45,0,0);
+        Vec3 spot=paneSpot(l,b,f.pane),glass=Vec3.atCenterOf(b.offset(w)).add(west?-.45:.45,0,0);
         if(f.paneAt<0){
             Vec3 d=spot.subtract(f.position());double len=d.length();
             if(len>VAULT){f.step(f.position().add(d.scale(VAULT/len)),(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90);return;}
@@ -246,7 +249,8 @@ public final class GoatmanStalking {
         }
         if(leg>=route.length){c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.WINDOW)));return;}
         if(GoatmanWindowCircuit.hold(l,r,c,clock)||clock<r.getInt("StalkPause0465")){c.pose(false);return;}
-        Vec3 local=route[leg];if(!window&&supported){if(leg==3)local=new Vec3(-8.5,1,-66.5);if(leg==9)local=new Vec3(9.5,1,-66.5);}
+        Vec3 local=route[leg];if(!window&&supported){if(leg==6)local=new Vec3(-8.5,1,-66.5);if(leg==12)local=new Vec3(9.5,1,-66.5);}
+        if(!window&&GoatmanWindowCircuit.sideWindow(leg)&&local.y>=1)local=GoatmanWindowCircuit.landing(l,b,local);
         Vec3 via=!window&&supported?GoatmanWindowCircuit.via(leg):null;boolean approaching=via!=null&&r.getInt("StalkVia0497")!=leg;
         Vec3 target=abs(b,approaching?via:local),delta=target.subtract(c.position());double length=delta.length();
         double speed=(r.contains("StalkSpeed0497")?r.getFloat("StalkSpeed0497"):.42)*(r.getInt("DemandStage0465")>=4?.52/.42:1);
@@ -266,7 +270,7 @@ public final class GoatmanStalking {
         if(!window&&leg==route.length-1&&r.contains("CircuitGoal0494"))r.putInt("Circuits0494",r.getInt("Circuits0494")+1);
         if(window&&leg==route.length-1){impact(l,b,r,c,GoatmanWoods.WINDOW,2);return;}
         if(!window){
-            BlockPos hit=switch(leg){case 2->new BlockPos(-8,2,-59);case 3->new BlockPos(-8,2,-67);case 4->new BlockPos(-8,2,-73);case 6->new BlockPos(0,2,-77);case 8->GoatmanWoods.WINDOW;case 9->new BlockPos(8,2,-67);case 10->new BlockPos(8,2,-59);default->null;};
+            BlockPos hit=switch(leg){case 5->new BlockPos(-8,2,-59);case 6->new BlockPos(-8,2,-67);case 7->new BlockPos(-8,2,-73);case 9->new BlockPos(0,2,-77);case 11->GoatmanWoods.WINDOW;case 12->new BlockPos(8,2,-67);case 13->new BlockPos(8,2,-59);default->null;};
             if(hit!=null){face(c,Vec3.atCenterOf(b.offset(hit)));impact(l,b,r,c,hit,leg%3==0?2:1);r.putInt("StalkPause0465",clock+18+c.getRandom().nextInt(29));
                 if(GoatmanWindowCircuit.sideWindow(leg)){GoatmanWindowCircuit.start(l,r,c,clock);r.putBoolean("StalkChange0465",true);}
                 else if(!r.contains("CircuitGoal0494"))r.putBoolean("StalkChange0465",true);}
@@ -282,7 +286,8 @@ public final class GoatmanStalking {
         }
         if(!r.contains("AssaultAt0465")){if(clock<450)return;r.putInt("AssaultAt0465",clock);}
         int elapsed=clock-r.getInt("AssaultAt0465");
-        if(elapsed>=ASSAULT_END){r.putBoolean("AssaultDone0465",true);return;}
+        if(elapsed>=ASSAULT_END){r.putBoolean("AssaultDone0465",true);int beat=(elapsed-ASSAULT_END)%80;
+            if(beat==0||beat==7||beat==15){impact(l,b,r,null,GoatmanWoods.DOOR,beat==0?2:1);r.putInt("DoorPulseSerial04112",r.getInt("DoorPulseSerial04112")+1);}return;}
         int stage=0;while(stage+1<DEMAND_TICKS.length&&elapsed>=DEMAND_TICKS[stage+1])stage++;
         int beat=elapsed-DEMAND_TICKS[stage];
         if(beat==0){GoatmanFear.begin(r);r.putInt("Demand",101+stage);r.putInt("DemandAt",clock);r.putInt("DemandStage0465",stage+1);}

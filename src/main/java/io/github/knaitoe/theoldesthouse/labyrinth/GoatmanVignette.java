@@ -613,7 +613,7 @@ public final class GoatmanVignette {
     private static boolean dawnReady(CompoundTag r,int clock){
         if(clock<vigilTicks(r))return false;
         if(!fresh(r))return true;
-        if(outside(r)&&(!GoatmanStalking.circuitDone(r)||r.getInt("StalkWindowLeg0465")<4))return false;
+        if(outside(r)&&(!GoatmanStalking.circuitDone(r)||!GoatmanStalking.windowApproachDone(r)))return false;
         // A delayed arrival retains the original occupied window-to-dawn interval.
         return !r.contains("NightWindowAt0472")||clock>=r.getInt("NightWindowAt0472")+VIGIL0465-WINDOW0465;
     }
@@ -625,7 +625,7 @@ public final class GoatmanVignette {
                 if(beat==0){r.putInt("Demand",1+((clock-KNOCK_FROM)/200)%LEGACY_MIMIC_LINES.length);r.putInt("DemandAt",clock);}}
             // The window: left open, it is how it gets in.
             // A timed admission cannot cancel a physically unfinished circuit.
-            if(fresh(r)&&clock>=WINDOW0465&&GoatmanStalking.circuitDone(r)&&r.getInt("StalkWindowLeg0465")>=4&&!r.contains("NightWindowAt0472"))r.putInt("NightWindowAt0472",clock);
+            if(fresh(r)&&clock>=WINDOW0465&&GoatmanStalking.circuitDone(r)&&GoatmanStalking.windowApproachDone(r)&&!r.contains("NightWindowAt0472"))r.putInt("NightWindowAt0472",clock);
             int windowAt=WINDOW_TRY;
             if(fresh(r))windowAt=r.contains("NightWindowAt0472")?r.getInt("NightWindowAt0472"):-1;
             if(windowAt>=0&&clock>=windowAt&&clock<(fresh(r)?windowAt+WINDOW_FOR0465:KNOCK_UNTIL)){
