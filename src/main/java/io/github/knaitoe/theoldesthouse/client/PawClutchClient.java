@@ -41,12 +41,13 @@ public final class PawClutchClient {
             r.addOrReplaceChild("wrist",CubeListBuilder.create().texOffs(24,0).addBox(-2.5F,5,-1,5,5,2),PartPose.ZERO);
             for(int i=0;i<3;i++){var finger=r.addOrReplaceChild("finger"+i,CubeListBuilder.create().texOffs(0,14).addBox(-1,-4,-1,2,4,2),PartPose.offset((i-1)*2.65F,-2,0));
                 finger.addOrReplaceChild("tip",CubeListBuilder.create().texOffs(12,14).addBox(-.9F,-3,-.9F,1.8F,3,1.8F),PartPose.offset(0,-4,0));}
-            r.addOrReplaceChild("thumb",CubeListBuilder.create().texOffs(24,14).addBox(-1,-4,-1,2,4,2),PartPose.offsetAndRotation(-4,2,0,.8F,0,-.7F));
+            r.addOrReplaceChild("thumb",CubeListBuilder.create().texOffs(24,14).addBox(-1,-4,-1,2,4,2),PartPose.offsetAndRotation(-3.8F,1.3F,-.2F,0,-.35F,-1.15F));
             root=LayerDefinition.create(mesh,64,32).bakeRoot();
         }
         public void curl(int left,float progress){root.getAllParts().forEach(ModelPart::resetPose);float smooth=Mth.clamp(progress,0,1);smooth=smooth*smooth*(3-2*smooth);
             for(int i=0;i<3;i++){float bend=i>left?1:i==left?smooth:0;var f=root.getChild("finger"+i);f.xRot=-bend*1.7F;f.getChild("tip").xRot=-bend*1.9F;}
-            root.getChild("thumb").xRot+=smooth*.2F;
+            // Opposable digit sweeps across the palm rather than rising as a fourth finger.
+            var thumb=root.getChild("thumb");thumb.zRot-=smooth*.35F;thumb.yRot-=smooth*.45F;thumb.xRot+=smooth*.25F;
         }
     }
     public static final class Focus extends Screen {
