@@ -805,7 +805,7 @@ jobs:
           test -s build/font-smoke/hotel-passed.txt
           test -s build/font-smoke/native-hotel.png
           test -s build/font-smoke/hotel-fitting-passed.txt
-          for page in 0 1 2 3 4 5; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
+          for page in 0 1 2 3 4 5 6; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
           test -s build/font-smoke/stanley-passed.txt
           for view in cast actions fixtures comparison; do test -s build/font-smoke/native-stanley-$view.png; done
           test -s build/font-smoke/ghosts-passed.txt
@@ -1413,7 +1413,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhotelFixSmoke --no-daemon
           test -s build/font-smoke/hotel-fitting-passed.txt
-          for page in 0 1 2 3 4 5; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
+          for page in 0 1 2 3 4 5 6; do test -s build/font-smoke/native-hotel-fitting-$page.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
