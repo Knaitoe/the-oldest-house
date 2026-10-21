@@ -25,24 +25,26 @@ public final class HotelBathRenderer extends MobRenderer<HotelActor,HotelBathRen
         if(texture!=null)return texture;
         var image=new NativeImage(64,64,false);
         // Low-contrast islands of swollen, bruised skin, rather than green skeletal striping.
-        int[] flesh={0xb5a18d,0xc4b09b,0xa49083,0xcdbba4,0x968583};
+        int[] flesh={0xb3a29a,0xc5b5a7,0x9f8a88,0xcabcb0,0x8b777c};
         for(int y=0;y<64;y++)for(int x=0;x<64;x++){int n=Math.floorMod(x/3*37+y/3*71,19);put(image,x,y,flesh[n<8?0:n<13?1:n<16?2:n<18?3:4]);}
         for(int[] patch:new int[][]{{14,13,2},{22,23,2},{26,29,2},{17,21,1},{46,23,2},{46,32,1},{5,22,1},{5,30,2},{27,37,1}})
             for(int dy=-patch[2];dy<=patch[2];dy++)for(int dx=-patch[2];dx<=patch[2];dx++){
                 int q=dx*dx+dy*dy;if(q>patch[2]*patch[2])continue;
                 put(image,patch[0]+dx,patch[1]+dy,q<2?0x674644:q<4?0x8d6057:0xa88870);
             }
-        // Eight-pixel human face: hooded eyes, bridge, intact cheek and a small slack mouth.
-        for(int x=8;x<16;x++)put(image,x,8,0xb6a08a);
-        for(int x:new int[]{9,10,13,14})put(image,x,9,0x85736a);
-        for(int x:new int[]{9,13}){put(image,x,10,0xd6cdbc);put(image,x+1,10,0xb9b4a5);put(image,x,11,0x9a8280);}
-        put(image,10,10,0x787b76);put(image,13,10,0x83847a);
-        put(image,11,11,0xc6b09a);put(image,12,11,0x998274);put(image,11,12,0x9c8075);put(image,12,12,0xaa8d7c);
-        put(image,10,13,0xb89988);put(image,11,13,0x735754);put(image,12,13,0x674b49);put(image,11,14,0x997568);put(image,12,14,0xa98b77);
-        // One cheek has slipped down, exposing tissue rather than a skull cavity.
-        put(image,14,11,0x897174);put(image,14,12,0x9b6b60);put(image,15,12,0x704945);put(image,14,13,0x86554d);put(image,15,13,0x563e3c);put(image,14,14,0xb99b7c);put(image,15,14,0x9f7c68);
-        for(int y=32;y<44;y++)for(int x=0;x<24;x++)put(image,x,y,(x+y)%5==0?0xa78f7b:0xbba28b);
-        put(image,8,39,0x795b54);put(image,9,39,0x886257);
+        // The upper face uses eight texels (u 7..14, v 7..12). The nose is painted flat into the face.
+        for(int y=7;y<=12;y++)for(int x=7;x<=14;x++)put(image,x,y,x==7||x==14?0x9f8984:y<9?0xb8a49a:0xb09a90);
+        put(image,8,8,0x6d5b5c);put(image,9,8,0x7a6667);put(image,12,8,0x736163);put(image,13,8,0x6b575b);
+        put(image,8,9,0xcac8ba);put(image,9,9,0x989b91);put(image,12,9,0xb7b9b0);put(image,13,9,0x959d96);
+        put(image,8,10,0x887274);put(image,9,10,0x9b7f7d);put(image,12,10,0x72595f);put(image,13,10,0x805d62);
+        put(image,10,10,0xc2aea0);put(image,11,10,0xa08b81);put(image,10,11,0xad9488);put(image,11,11,0x92776e);
+        put(image,7,11,0x8d7370);put(image,8,11,0xa68a80);put(image,9,12,0x9b7d73);
+        // One eyelid and cheek have slipped: raw plum-red tissue, a narrow remaining skin edge.
+        put(image,13,11,0x815257);put(image,14,10,0x78565d);put(image,14,11,0x6a454b);put(image,13,12,0x9b665e);put(image,14,12,0x70504d);
+        for(int y=32;y<44;y++)for(int x=0;x<24;x++)put(image,x,y,(x+y)%5==0?0xa18a7e:0xb39c8e);
+        // Recessed, narrow human chin. The off-center opening belongs to the jaw, below the painted nose.
+        for(int x=6;x<=10;x++)put(image,x,37,0xa08277);
+        put(image,7,38,0x6f4c4e);put(image,8,38,0x503a3c);put(image,9,38,0x674648);put(image,9,39,0x855a57);
         for(int y=40;y<56;y++)for(int x=48;x<64;x++)put(image,x,y,(x+y)%5==0?0x996d5d:(x/2+y/3)%3==0?0xc5aa88:0xb79a7d);
         for(int y=48;y<64;y++)for(int x=0;x<16;x++)put(image,x,y,(x+y/4)%4==0?0x696056:0x484440);
         for(int y=0;y<16;y++)for(int x=32;x<38;x++)put(image,x,y,(x+y/4)%4==0?0x696056:0x484440);
@@ -55,13 +57,14 @@ public final class HotelBathRenderer extends MobRenderer<HotelActor,HotelBathRen
         public static LayerDefinition layer(){
             var mesh=new MeshDefinition();var r=mesh.getRoot();
             var torso=r.addOrReplaceChild("body",CubeListBuilder.create().texOffs(16,16).addBox(-4,0,-2,8,12,4),PartPose.ZERO);
-            var head=torso.addOrReplaceChild("head",CubeListBuilder.create().texOffs(0,0).addBox(-4,-8,-4,8,8,8).texOffs(24,32).addBox(-1,-4,-4.6F,2,2,1),PartPose.ZERO);
-            head.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(0,32).addBox(-3,0,-3.9F,6,2,6),PartPose.offset(0,-1.4F,0));
-            head.addOrReplaceChild("cheek",CubeListBuilder.create().texOffs(48,40).addBox(0,0,-.3F,2,3.5F,.6F),PartPose.offsetAndRotation(1.8F,-2.8F,-4.05F,.12F,0,-.13F));
+            var head=torso.addOrReplaceChild("head",CubeListBuilder.create().texOffs(0,0).addBox(-4,-8,-3.5F,8,6,7),PartPose.ZERO);
+            head.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(0,32).addBox(-3,0,-3.5F,6,2.5F,5),PartPose.offset(0,-2,0));
+            head.addOrReplaceChild("cheek",CubeListBuilder.create().texOffs(48,40).addBox(0,0,-.2F,1.4F,2.8F,.4F),PartPose.offsetAndRotation(2.5F,-2.8F,-3.55F,.10F,0,-.16F));
             torso.addOrReplaceChild("chest_skin",CubeListBuilder.create().texOffs(48,40).addBox(-1.4F,0,-.3F,2.8F,4.5F,.6F),PartPose.offsetAndRotation(-1.6F,2.5F,-2.2F,-.11F,0,.08F));
             torso.addOrReplaceChild("belly_skin",CubeListBuilder.create().texOffs(48,46).addBox(-1.8F,0,-.3F,3.6F,3,.6F),PartPose.offsetAndRotation(1.5F,8,-2.15F,-.16F,0,-.12F));
-            head.addOrReplaceChild("hair_back",CubeListBuilder.create().texOffs(0,48).addBox(-3.5F,0,-.4F,7,9,.8F),PartPose.offset(0,-7,3.7F));
-            for(int i=0;i<3;i++)head.addOrReplaceChild("hair"+i,CubeListBuilder.create().texOffs(32,0).addBox(-.4F,0,-.35F,.8F,9+i,.7F),PartPose.offset(i==0?-3.8F:i==1?3.8F:2.8F,-7,i==2?-3.8F:.7F));
+            head.addOrReplaceChild("hair_back",CubeListBuilder.create().texOffs(0,48).addBox(-3.5F,0,-.4F,7,10,.8F),PartPose.offset(0,-7.5F,3.35F));
+            head.addOrReplaceChild("hair_crown",CubeListBuilder.create().texOffs(0,48).addBox(-3.5F,-.2F,-1,7,.4F,4),PartPose.offset(0,-8,0));
+            for(int i=0;i<4;i++)head.addOrReplaceChild("hair"+i,CubeListBuilder.create().texOffs(32,0).addBox(-.4F,0,-.35F,.8F,9+i%2,.7F),PartPose.offset(i<2?-3.9F:3.9F,-7,i%2==0?-2.8F:1.2F));
             for(boolean left:new boolean[]{true,false}){
                 var arm=torso.addOrReplaceChild(left?"left_arm":"right_arm",CubeListBuilder.create().texOffs(40,16).addBox(-1.5F,-1.5F,-1.5F,3,6.5F,3),PartPose.offset(left?5:-5,2,0));
                 var elbow=arm.addOrReplaceChild("elbow",CubeListBuilder.create().texOffs(40,26).addBox(-1.35F,0,-1.35F,2.7F,6,2.7F).texOffs(40,36).addBox(-1.4F,5.4F,-1.5F,2.8F,2,2),PartPose.offset(0,4.5F,0));
@@ -75,14 +78,16 @@ public final class HotelBathRenderer extends MobRenderer<HotelActor,HotelBathRen
         }
         public void pose(int phase,int age,float time,float walk,float amount){
             root.getAllParts().forEach(ModelPart::resetPose);this.phase=phase;this.age=age;
-            body.xRot=.10F;head.xRot=.08F;head.zRot=.045F;jaw.xRot=.035F+.012F*Mth.sin(time*.1F);
-            leftArm.xRot=-1.03F;rightArm.xRot=-1.23F;leftArm.yRot=.12F;rightArm.yRot=-.13F;leftElbow.xRot=-.3F;rightElbow.xRot=-.12F;
+            body.xRot=.20F;head.xRot=-.18F;head.zRot=-.035F;jaw.xRot=.08F+.015F*Mth.sin(time*.1F);jaw.zRot=.025F;
+            leftArm.xRot=-1.43F;rightArm.xRot=-1.58F;leftArm.yRot=.10F;rightArm.yRot=-.16F;leftElbow.xRot=-.18F;rightElbow.xRot=-.32F;
             float drag=Mth.cos(walk*.6662F)*Math.min(.24F,amount);leftLeg.xRot=.04F+drag;rightLeg.xRot=.06F-drag;leftKnee.xRot=.08F+Math.max(0,-drag);rightKnee.xRot=.1F+Math.max(0,drag);
-            for(int i=0;i<3;i++){leftElbow.getChild("finger"+i).xRot=-.32F-.14F*Mth.sin(time*.09F+i);rightElbow.getChild("finger"+i).xRot=-.4F-.18F*Mth.sin(time*.08F+i);}
-            if(phase==HotelBathHaunt.RISING){body.xRot=.23F;head.xRot=.12F;leftLeg.xRot=rightLeg.xRot=-.45F;leftKnee.xRot=rightKnee.xRot=.65F;leftArm.xRot=-.55F;rightArm.xRot=-.85F;}
+            for(int i=0;i<3;i++){leftElbow.getChild("finger"+i).xRot=-.62F-.14F*Mth.sin(time*.09F+i);rightElbow.getChild("finger"+i).xRot=-.72F-.18F*Mth.sin(time*.08F+i);}
+            if(phase==HotelBathHaunt.RISING){body.xRot=.28F;head.xRot=-.22F;leftLeg.xRot=rightLeg.xRot=-.45F;leftKnee.xRot=rightKnee.xRot=.65F;leftArm.xRot=-1.2F;rightArm.xRot=-1.5F;}
             if(phase==HotelBathHaunt.FADING){body.xRot+=.15F;head.xRot+=.18F;}
         }
         @Override public void setupAnim(HotelActor a,float walk,float amount,float time,float yaw,float pitch){pose(a.bathPhase(),a.bathAge(),time,walk,amount);}
+        /** The native face review draws the same head, jaw, hair and hanging cheek used by the living scene. */
+        public void renderHead(PoseStack p,VertexConsumer out,int light){head.render(p,out,light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,-1);}
         @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int color){int alpha=phase==HotelBathHaunt.FADING?Math.max(0,(int)(255*(1-age/(float)HotelBathHaunt.FADE_TICKS))):255;root.render(p,out,light,overlay,(color&0xffffff)|alpha<<24);}
     }
 }
