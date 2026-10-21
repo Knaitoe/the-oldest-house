@@ -62,7 +62,9 @@ public final class UncannyRooms {
         box(l,b,-27,-3,-56,27,-2,0,Blocks.STONE);box(l,b,-27,-1,-56,27,-1,0,Blocks.GRAVEL);
         room(l,b,-10,10,-32,-3,0,5,Blocks.WHITE_TERRACOTTA,Blocks.SMOOTH_QUARTZ);
         for(int x=-9;x<=9;x++)for(int z=-31;z<=-4;z++)if((x+z&1)==0)at(l,b,x,-1,z,Blocks.BLACK_CONCRETE);
-        door(l,b,new BlockPos(0,0,-2),Direction.SOUTH,true);
+        // The diner wall stands at z=-3. Place the working entrance in that wall,
+        // rather than one block out in the forecourt with solid terracotta behind it.
+        door(l,b,new BlockPos(0,0,-3),Direction.SOUTH,true);
         for(int z=-7;z>=-28;z--)at(l,b,-6,0,z,Blocks.SMOOTH_QUARTZ);
         fit(l,b,source(LabyrinthPlace.SECOND_WAITRESS),REGISTER,Direction.EAST);fit(l,b,new BlockPos(-6,1,-22),PIE_CASE,Direction.EAST);
         for(int z:new int[]{-10,-19,-27}){
