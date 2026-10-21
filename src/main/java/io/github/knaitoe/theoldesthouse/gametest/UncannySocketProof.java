@@ -59,6 +59,16 @@ public final class UncannySocketProof {
         var own=own(p,place);UncannyStories.arrive(p,place,own);own.putBoolean("Read_Source",true);own.putInt("UncannyAge",age);save(p,place,own);
     }
     private static boolean both(ServerPlayer a,ServerPlayer b){return a!=null&&b!=null&&ACKS.contains(a.getUUID())&&ACKS.contains(b.getUUID());}
+    /** A stalled native monitor must report what each genuine socket client actually sent. */
+    private static String monitorState(ServerPlayer p){
+        if(p==null)return "offline";
+        var own=own(p,LabyrinthPlace.MISSING_SLEEP);
+        var lens=p.getPersistentData().getCompound(UncannySenses.LENS);
+        return "pos="+p.position()+" feeds=0x"+Integer.toHexString(own.getInt("FeedsSeen"))
+            +" face="+own.getBoolean("OwnFaceSeen")+" monitorTicks="+own.getInt("MonitorTicks")
+            +" marionette="+own.getBoolean("MarionetteSeen")+" lensChannel="+lens.getInt("Monitor")
+            +" lensFresh="+UncannySenses.fresh(p)+" ack="+ACKS.contains(p.getUUID());
+    }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         if(!enabled())return;var s=e.getServer();var a=player(s,"A");var b=player(s,"B");
         try{
@@ -68,7 +78,7 @@ public final class UncannySocketProof {
                 for(var p:List.of(a,b)){at(p,LabyrinthPlace.PAINTED_INTERIOR,.5,0,-20.5);sourceFixture(p,LabyrinthPlace.PAINTED_INTERIOR,120);}
                 step(s,1);return;
             }
-            if(s.getTickCount()-changed>2400)throw new IllegalStateException("phase timed out "+phase+"; A="+(a==null?"offline":a.position())+" B="+(b==null?"offline":b.position()));
+            if(s.getTickCount()-changed>2400)throw new IllegalStateException("phase timed out "+phase+"; A=["+monitorState(a)+"] B=["+monitorState(b)+"]");
             if(phase==10){
                 if(b==null){offline=true;return;}
                 if(offline){
