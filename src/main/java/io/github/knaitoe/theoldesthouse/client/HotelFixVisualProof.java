@@ -68,7 +68,7 @@ public final class HotelFixVisualProof extends Screen {
                 g.drawCenteredString(font,new String[]{"Under the water","Reaching in the hall","Disappearing"}[i],(int)((i+.5)*width/3),190+side*160,0xffe9dfcd);
             }
             var image=((DynamicTexture)mc.getTextureManager().getTexture(HotelBathRenderer.skin())).getPixels();
-            if(image==null||image.getWidth()!=64||image.getHeight()!=64||image.getPixelRGBA(8,9)==image.getPixelRGBA(11,10))throw new IllegalStateException("The decayed woman lost her hooded eight-pixel eyes");
+            if(image==null||image.getWidth()!=64||image.getHeight()!=64||image.getPixelRGBA(9,10)==image.getPixelRGBA(11,11))throw new IllegalStateException("The decayed woman lost her hooded eight-pixel eyes");
         }else{
             for(int i=0;i<3;i++){
                 p.pushPose();p.translate((i+.5)*width/3,height*.55,180);p.scale(210,210,-210);p.mulPose(Axis.YP.rotationDegrees(i*35));
