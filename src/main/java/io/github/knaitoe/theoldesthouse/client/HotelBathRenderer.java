@@ -47,7 +47,7 @@ public final class HotelBathRenderer extends MobRenderer<HotelActor,HotelBathRen
         put(image,7,38,0x6f4c4e);put(image,8,38,0x503a3c);put(image,9,38,0x674648);put(image,9,39,0x855a57);
         for(int y=40;y<56;y++)for(int x=48;x<64;x++)put(image,x,y,(x+y)%5==0?0x996d5d:(x/2+y/3)%3==0?0xc5aa88:0xb79a7d);
         for(int y=48;y<64;y++)for(int x=0;x<16;x++)put(image,x,y,(x+y/4)%4==0?0x696056:0x484440);
-        for(int y=0;y<16;y++)for(int x=32;x<38;x++)put(image,x,y,(x+y/4)%4==0?0x696056:0x484440);
+        for(int y=0;y<16;y++)for(int x=32;x<62;x++)put(image,x,y,(x+y/4)%4==0?0x696056:0x484440);
         var dynamic=new DynamicTexture(image);dynamic.setFilter(false,false);texture=Minecraft.getInstance().getTextureManager().register("hotel_bath_decayed_human",dynamic);return texture;
     }
     private static void put(NativeImage image,int x,int y,int rgb){if(x>=0&&x<64&&y>=0&&y<64)image.setPixelRGBA(x,y,0xff000000|(rgb&255)<<16|(rgb&0xff00)|(rgb>>16&255));}
@@ -63,7 +63,7 @@ public final class HotelBathRenderer extends MobRenderer<HotelActor,HotelBathRen
             torso.addOrReplaceChild("chest_skin",CubeListBuilder.create().texOffs(48,40).addBox(-1.4F,0,-.3F,2.8F,4.5F,.6F),PartPose.offsetAndRotation(-1.6F,2.5F,-2.2F,-.11F,0,.08F));
             torso.addOrReplaceChild("belly_skin",CubeListBuilder.create().texOffs(48,46).addBox(-1.8F,0,-.3F,3.6F,3,.6F),PartPose.offsetAndRotation(1.5F,8,-2.15F,-.16F,0,-.12F));
             head.addOrReplaceChild("hair_back",CubeListBuilder.create().texOffs(0,48).addBox(-3.5F,0,-.4F,7,10,.8F),PartPose.offset(0,-7.5F,3.35F));
-            head.addOrReplaceChild("hair_crown",CubeListBuilder.create().texOffs(0,48).addBox(-3.5F,-.2F,-1,7,.4F,4),PartPose.offset(0,-8,0));
+            head.addOrReplaceChild("hair_crown",CubeListBuilder.create().texOffs(38,0).addBox(-3.5F,-.2F,-1,7,.4F,4),PartPose.offset(0,-8,0));
             for(int i=0;i<4;i++)head.addOrReplaceChild("hair"+i,CubeListBuilder.create().texOffs(32,0).addBox(-.4F,0,-.35F,.8F,9+i%2,.7F),PartPose.offset(i<2?-3.9F:3.9F,-7,i%2==0?-2.8F:1.2F));
             for(boolean left:new boolean[]{true,false}){
                 var arm=torso.addOrReplaceChild(left?"left_arm":"right_arm",CubeListBuilder.create().texOffs(40,16).addBox(-1.5F,-1.5F,-1.5F,3,6.5F,3),PartPose.offset(left?5:-5,2,0));
