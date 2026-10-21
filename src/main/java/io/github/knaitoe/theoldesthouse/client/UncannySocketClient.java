@@ -54,9 +54,14 @@ public final class UncannySocketClient {
         if((phase==9||phase==11)&&UncannyClient.room().equals("missing_sleep")){
             if(!(mc.screen instanceof UncannyCameras.MonitorScreen)){click(mc,b.offset(UncannyRooms.MONITOR_AT));}
             else if(age>30){
-                var monitor=(UncannyCameras.MonitorScreen)mc.screen;selected=(age/35)%4;monitor.keyPressed(49+selected,0,0);
-                if(UncannyCameras.frames(selected)>1&&age%35==25){
-                    if(selected!=1||UncannyCameras.verifiedHeadPixels()>=12){
+                var monitor=(UncannyCameras.MonitorScreen)mc.screen;
+                // Hold a feed until its actual native framebuffer has been captured.
+                // Fixed 35-tick rotations used to skip the one viable frame on slow GPU runners.
+                selected=0;
+                while(selected<3&&(feedMask&(1<<selected))!=0)selected++;
+                monitor.keyPressed(49+selected,0,0);
+                if((feedMask&(1<<selected))==0&&UncannyCameras.frames(selected)>1&&age%10==0){
+                    if(selected!=1||UncannyCameras.ownFace(1)&&UncannyCameras.verifiedHeadPixels()>=12){
                         try(var image=UncannyCameras.copyFrame(selected)){require(image!=null,"actual native channel exists");Files.createDirectories(UncannySocketProof.folder());image.writeToFile(UncannySocketProof.folder().resolve(role()+"-cctv-"+(phase==11?"reconnected-":"")+selected+".png"));}catch(Exception ex){throw new IllegalStateException(ex);}feedMask|=1<<selected;
                     }
                 }
