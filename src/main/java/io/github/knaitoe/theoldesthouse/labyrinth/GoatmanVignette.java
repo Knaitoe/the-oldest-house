@@ -452,7 +452,16 @@ public final class GoatmanVignette {
                     continue;
                 }
                 if(xs==X_DOOR&&phase==GATHERING&&open){r.putInt("ExtraState",X_INSIDE);setRoute(c,inFrom("step",i,r),seatName(i,r));}
-                if(xs==X_WINDOW){if(walk(c,b,CREEP,l)){r.putInt("ExtraState",X_FLOOR);settle(c,b,"floor");}continue;}
+                if(xs==X_WINDOW){
+                    // The impostor must finish the whole route, even after the admission timer expires.
+                    // Its scripted body has no AI, so do not let the ordinary cousin goal overwrite the crawl.
+                    if(walk(c,b,CREEP,l)){
+                        c.setPose(Pose.STANDING);
+                        r.putInt("ExtraState",X_FLOOR);
+                        settle(c,b,"floor");
+                    }
+                    continue;
+                }
                 c.heave(xs==X_FIRE&&watched(c,present)&&clock%240<120);
             }
             if(!want.equals(goal(c))){
