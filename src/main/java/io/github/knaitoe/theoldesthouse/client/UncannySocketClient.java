@@ -44,7 +44,7 @@ public final class UncannySocketClient {
         var custom=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(custom==null)return;var data=custom.copyTag();int next=data.getInt("UncannyStep");if(next==0)return;
         if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;closed=false;paid=false;paperOpened=false;paperSent=-1;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
         stop(mc);var b=UncannyClient.base();
-        if(age%100==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} phase={} room={} eye={} feeds={} headPixels={} screen={}",role(),phase,UncannyClient.room(),mc.player.getEyePosition(),feedMask,UncannyCameras.verifiedHeadPixels(),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
+        if(age%100==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} phase={} room={} eye={} feeds={} headPixels={} health={} ring={} mirror={} screen={}",role(),phase,UncannyClient.room(),mc.player.getEyePosition(),feedMask,UncannyCameras.verifiedHeadPixels(),mc.player.getHealth(),UncannyClient.ring(),UncannyClient.mirror(),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
         for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&UncannyStories.role(a.role())&&a.owner().isPresent())require(a.owner().get().equals(mc.player.getUUID()),"another reader's private original was tracked");
         if(phase==1&&age>30&&UncannyClient.room().equals("painted_interior")){
             mc.player.setYRot(180);mc.player.setXRot(0);var propped=actor(mc,LiteraryActor.UNCANNY_PROPPED);if(propped!=null&&propped.phase()==1)ack(mc,"boarded-periphery");
@@ -88,7 +88,7 @@ public final class UncannySocketClient {
             }
         }
         if(phase==16){
-            if(age>15&&!paid){mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);paid=true;}
+            if(age>15&&!paid&&mc.player.getMainHandItem().is(UncannyRegistry.SMOKY_MIRROR.get())&&mc.player.getOffhandItem().is(UncannyRegistry.BONE_RING.get())){mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);paid=true;}
             var doll=actor(mc,LiteraryActor.UNCANNY_MARIONETTE);if(doll!=null)look(mc,doll.getEyePosition());
             if(age>35&&UncannyClient.ring()&&UncannyClient.mirror()&&mc.player.getHealth()<=18){require(doll!=null&&UncannyClient.outline(doll),"the ring outlines the original only on its own client");ack(mc,"ring-and-mirror");}
         }

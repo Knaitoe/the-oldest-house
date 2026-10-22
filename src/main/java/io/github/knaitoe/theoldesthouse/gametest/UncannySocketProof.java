@@ -69,7 +69,8 @@ public final class UncannySocketProof {
         return "pos="+p.position()+" feeds=0x"+Integer.toHexString(own.getInt("FeedsSeen"))
             +" face="+own.getBoolean("OwnFaceSeen")+" monitorTicks="+own.getInt("MonitorTicks")
             +" marionette="+own.getBoolean("MarionetteSeen")+" lensChannel="+lens.getInt("Monitor")
-            +" lensFresh="+UncannySenses.fresh(p)+" ack="+ACKS.contains(p.getUUID());
+            +" lensFresh="+UncannySenses.fresh(p)+" health="+p.getHealth()+" ring="+UncannySenses.ring(p)
+            +" mirror="+UncannySenses.mirror(p)+" heldMirror="+UncannySenses.heldMirror(p)+" ack="+ACKS.contains(p.getUUID());
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         if(!enabled())return;var s=e.getServer();var a=player(s,"A");var b=player(s,"B");
@@ -116,7 +117,10 @@ public final class UncannySocketProof {
             else if(phase==12){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("BlockedDoor")&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Ready"),"each reader closes the actual door after their own evidence");at(p,LabyrinthPlace.MISSING_SLEEP,3.5,0,-2.5);}step(s,13);}
             else if(phase==13){for(var p:List.of(a,b)){require(WitnessAccount.has(LabyrinthData.get(s),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"native final account earns the personal memory");require(p.getInventory().countItem(UncannyRegistry.SMOKY_MIRROR.get())==1,"exactly one finite mirror");at(p,LabyrinthPlace.LAYERED_MAN,3.5,-5,-15.5);sourceFixture(p,LabyrinthPlace.LAYERED_MAN,50);}step(s,14);}
             else if(phase==14){for(var p:List.of(a,b)){at(p,LabyrinthPlace.MOTION_LIGHT,.5,0,-10.5);sourceFixture(p,LabyrinthPlace.MOTION_LIGHT,5);}step(s,15);}
-            else if(phase==15){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MOTION_LIGHT).getInt("DarkSeen")>=2,"actual native floodlight cycles");at(p,LabyrinthPlace.MISSING_SLEEP,1.5,5,-20.5);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(UncannyRegistry.BONE_RING.get()));p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.invulnerableTime=0;}step(s,16);}
+            else if(phase==15){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MOTION_LIGHT).getInt("DarkSeen")>=2,"actual native floodlight cycles");at(p,LabyrinthPlace.MISSING_SLEEP,1.5,5,-20.5);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(UncannyRegistry.BONE_RING.get()));p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.invulnerableTime=0;
+                    // Keep natural regeneration from healing the real two-point payment before the client captures it.
+                    p.getFoodData().setFoodLevel(17);
+                }step(s,16);}
             else if(phase==16){for(var p:List.of(a,b)){require(p.getHealth()<=18&&UncannySenses.mirror(p)&&UncannySenses.ring(p),"native use spends actual health and sends personal true view");require(WitnessAccount.count(LabyrinthData.get(s),p.getUUID())==1,"visual fixture staging grants no other Witness");}
                 write("passed.txt","Two actual socket clients rendered all six production-built spaces and original cast. Board/diner/giant/basement/foyer source and positions were explicitly staged visual fixtures; those stages earned no Witness. Each bedroom source, two bed actions, four native CCTV channels, naked-eye sight, personal door close and final account used actual client packets. Hallway head pixels were required on both clients, including same-profile reconnect, retaining the exact saved night and original doll UUID. Mirror use paid actual health and ring sight retained private ownership. Earlier full expedition/reconnects remain separately required.\n");step(s,17);
             }
