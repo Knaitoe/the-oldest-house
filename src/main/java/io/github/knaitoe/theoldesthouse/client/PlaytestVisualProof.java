@@ -35,7 +35,7 @@ public final class PlaytestVisualProof extends Screen {
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb5b8ab);g.drawString(font,"New cousins: standing / cowering. Distant boy. Native pixel items and furniture.",10,8,0xff1b2527,false);g.flush();
         var out=mc.renderBuffers().bufferSource();
         for(int i=0;i<6;i++){
-            var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER));model.young=false;if(i>=3)model.cowerPose();
+            var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));model.young=false;if(i>=3)model.cowerPose();
             var p=g.pose();p.pushPose();p.translate(28+i*(width-100)/7F,height*.55F,120);p.scale(38,38,38);p.mulPose(Axis.YP.rotationDegrees(165));p.translate(0,-1.5,0);
             model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+(6+i%3)+".png"))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
         }

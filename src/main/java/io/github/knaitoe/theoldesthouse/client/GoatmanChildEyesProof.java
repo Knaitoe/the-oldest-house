@@ -34,7 +34,7 @@ public final class GoatmanChildEyesProof extends Screen {
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff14161a);
         g.drawString(font,"All nine child faces / ordinary eyes, then Goatman's amber glow",10,10,0xffeee0c4,false);g.flush();
-        var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER));
+        var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));
         var buffers=mc.renderBuffers().bufferSource();
         for(int skin=0;skin<9;skin++){
             var texture=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+skin+".png");

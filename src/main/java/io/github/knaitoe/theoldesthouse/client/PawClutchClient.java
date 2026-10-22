@@ -47,7 +47,7 @@ public final class PawClutchClient {
         public void curl(int left,float progress){root.getAllParts().forEach(ModelPart::resetPose);float smooth=Mth.clamp(progress,0,1);smooth=smooth*smooth*(3-2*smooth);
             for(int i=0;i<3;i++){float bend=i>left?1:i==left?smooth:0;var f=root.getChild("finger"+i);f.xRot=-bend*1.7F;f.getChild("tip").xRot=-bend*1.9F;}
             // Opposable digit sweeps across the palm rather than rising as a fourth finger.
-            var thumb=root.getChild("thumb");thumb.zRot-=smooth*.35F;thumb.yRot-=smooth*.45F;thumb.xRot+=smooth*.25F;
+            var thumb=root.getChild("thumb");thumb.zRot+=smooth*2.05F;thumb.yRot-=smooth*.15F;thumb.xRot-=smooth*.7F;
         }
     }
     public static final class Focus extends Screen {

@@ -46,7 +46,7 @@ public final class TrailerVisualProof extends Screen {
         if(page<3||page==4){
             int total=page==0?9:8,columns=page==0?3:4,rows=page==0?3:2;
             for(int i=0;i<total;i++){
-                var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER));float phase=(i%4)*((float)Math.PI/2);
+                var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));float phase=(i%4)*((float)Math.PI/2);
                 boolean seat=page==2&&i<2,cower=page==2&&i>=2&&i<5,heave=page==2&&i>=5;
                 float speed=page==1?(i<4?.075F:.18F):0;
                 if(page==4){float[] turns={-179,-135,-91,-80,80,91,135,179};m.lookPose(turns[i],25,i>=4);if(!Float.isFinite(m.head.zRot)||Math.abs(m.head.zRot)>Math.PI/2)throw new IllegalStateException("Folded head at player tracking boundary "+turns[i]);}else m.pose(phase,speed,i*11,seat,cower,heave);joints(m);
@@ -82,7 +82,7 @@ public final class TrailerVisualProof extends Screen {
             g.drawCenteredString(font,"Cousin "+(i+1),(int)(8+(i%3+.5F)*cw),(int)(28+(i/3+1)*ch-10),0xffe8e0d3);
         }out.endBatch();
     }
-    private static GoatmanChildModel childModel(){return new GoatmanChildModel(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.PLAYER));}
+    private static GoatmanChildModel childModel(){return new GoatmanChildModel(Minecraft.getInstance().getEntityModels().bakeLayer(GoatmanChildModel.LAYER));}
     private static float[] snapshot(GoatmanChildModel m){
         float[] out=new float[42];int at=0;
         for(var p:new net.minecraft.client.model.geom.ModelPart[]{m.head,m.hat,m.body,m.leftArm,m.rightArm,m.leftLeg,m.rightLeg}){
@@ -133,7 +133,7 @@ public final class TrailerVisualProof extends Screen {
         else if(stage==GoatmanFear.FEAR)labels[5]="listening from the back";
         float cw=(width-16F)/3,ch=(height-30F)/3;
         for(int i=0;i<7;i++){
-            var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER));m.fearPose(i+1,stage,1.3F,i==2&&stage>=GoatmanFear.FEAR?.075F:0,42+i*11);joints(m);
+            var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));m.fearPose(i+1,stage,1.3F,i==2&&stage>=GoatmanFear.FEAR?.075F:0,42+i*11);joints(m);
             var p=g.pose();p.pushPose();p.translate(8+(i%3+.5F)*cw,30+(i/3+1)*ch-10,150);float scale=Math.min(32,ch/2.1F);p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(165));p.translate(0,-1.5,0);
             m.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin(i))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();g.drawCenteredString(font,labels[i],(int)(8+(i%3+.5F)*cw),(int)(30+(i/3+1)*ch-9),0xffe8e0d3);
         }out.endBatch();
@@ -169,6 +169,6 @@ public final class TrailerVisualProof extends Screen {
         Files.writeString(dir.resolve("goatman-fear0472-passed.txt"),"Seven distinct connected gestures at confusion, fear and terror; centered priority Goatman subtitle with a competing cousin suppressed; continuing cousin subtitle between demands; the actual departure reaction during gathering.\n");
         Files.writeString(dir.resolve("streetlights-0469-passed.txt"),"Three assembled native streetlights: both street-arm directions and the fitted waterlogged lamps of the submerged street.\n");
         TheOldestHouse.LOGGER.info("TRAILER PROOF PASSED: four native views and connected joints");
-        Files.writeString(dir.resolve("trailer-0465-passed.txt"),"All nine native cousin atlases; eight walking/running stride poses; connected hips, shoulders and neck in fear/laughter/seating; actual toilet, sink states, sash states, raw/cooked food and door stress rendered in four GPU views.\n");Files.writeString(dir.resolve("playtest-0468-passed.txt"),"Three additional native GPU views: bounded tracking at eight wrap/shoulder boundaries, the cooler/wheels/cars/note post, and all twelve institute signs and number plates.\n");mc.setScreen(new InstituteVisualProof());
+        Files.writeString(dir.resolve("trailer-0465-passed.txt"),"All nine native cousin atlases; eight walking/running stride poses; connected hips, shoulders and neck in fear/laughter/seating; actual toilet, sink states, sash states, raw/cooked food and door stress rendered in four GPU views.\n");Files.writeString(dir.resolve("playtest-0468-passed.txt"),"Three additional native GPU views: bounded tracking at eight wrap/shoulder boundaries, the cooler/wheels/cars/note post, and all twelve institute signs and number plates.\n");mc.setScreen(new WindowEntryVisualProof());
     }
 }

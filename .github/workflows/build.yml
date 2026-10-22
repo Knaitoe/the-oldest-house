@@ -1408,6 +1408,22 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+      - name: Native window entry joints and opposable paw thumb
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PwindowEntrySmoke --no-daemon
+          test -s build/font-smoke/window-entry-passed.txt
+          for view in reach sill pull recover paw-open paw-curl paw-closed; do test -s build/font-smoke/native-window-entry-$view.png; done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: window-entry-views-${{ github.sha }}
+          path: |
+            build/font-smoke/native-window-entry-*.png
+            build/font-smoke/window-entry-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
       - name: Native photographed hotel fitting repairs
         timeout-minutes: 5
         run: |
