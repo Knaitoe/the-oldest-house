@@ -1,0 +1,9 @@
+# Live CCTV actor rendering, 0.4.114
+
+Source `62c91474` passes ten of twelve CI jobs. Its uncanny socket preflight times out in phase 9: both genuine clients capture the hallway geometry and report the original actor's renderer, but normal and masked-body head images have zero changed pixels. A renderer callback alone is insufficient evidence that the subject appears on screen. The full native suite and font job also failed separately; this is not a verified release.
+
+The earlier clear-then-bind correction remains. After each native room render, the feed now flushes the same tracked original through the native entity dispatcher with the lens view, its interpolated actual position, normal skin/model renderer, lightmap and real scene depth buffer. The pass restores shader color, lightmap and model-view state afterwards. The masked comparison invokes the identical path while suppressing the same actor; it never substitutes a painted subject or ignores occlusion. Ordinary camera rendering and the original actor's server identity, ownership, movement and outcomes remain intact.
+
+The socket driver sends each bed action once and requires the exact sleep count. Door acknowledgement waits for the authoritative personal BlockedDoor and Ready state. Both clients discard earlier camera frames before phase 9 and again before phase 11, so the reconnect pass must supply fresh images and head pixels.
+
+Validation is pending. Require the existing two actual clients to complete all four feeds, at least twelve genuine masked-body head pixels, native source/bed/door/account actions, private tracking and the same-profile reconnect with the original night and actor UUID. Keep all 717 gameplay cases, 95 multiplayer cases, nine Goatman entry/paw GPU pages, earlier architecture and full expedition proofs. Protocol 88 / labyrinth 46 / manor 2 and Witness 52 / 39 / two kinds / three endings remain unchanged. No PNG is modified.
