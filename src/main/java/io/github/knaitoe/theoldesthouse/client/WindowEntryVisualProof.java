@@ -11,16 +11,17 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.*;
 import org.joml.Vector3f;
 
-/** Native shipped joints at the entry's four physical beats, followed by the actual opposable thumb. */
+/** Native shipped cousin joints at four window beats and both crawl strides, followed by the actual opposable thumb. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class WindowEntryVisualProof extends Screen {
-    private static final String[] VIEWS={"reach","sill","pull","recover","paw-open","paw-curl","paw-closed"};
+    private static final String[] VIEWS={"reach","sill","pull","lower","crawl-left","crawl-right","paw-open","paw-curl","paw-closed"};
     private static boolean launched;
     private int page,frames;
     private final PawClutchClient.Model paw=new PawClutchClient.Model();
@@ -37,24 +38,35 @@ public final class WindowEntryVisualProof extends Screen {
                 if(!Float.isFinite(part.xRot+part.yRot+part.zRot+part.x+part.y+part.z))throw new IllegalStateException("Non-finite window joint at "+i);
         }
         model.windowPose(.5F);if(model.leftKnee.xRot<2.5F||model.rightElbow.xRot>-.5F)throw new IllegalStateException("The sill pull must fold actual knees and elbows");
+        model.windowPose(1);var end=model.body.storePose();var hand=model.rightArm.storePose();model.crawlPose(0,0);
+        if(Math.abs(model.body.xRot-end.xRot)+Math.abs(model.body.y-end.y)+Math.abs(model.rightArm.xRot-hand.xRot)>.0001F)throw new IllegalStateException("The window drop must join the floor crawl without a standing frame");
+        for(int i=0;i<=64;i++){
+            model.crawlPose(i*Mth.TWO_PI/64,1);
+            for(boolean left:new boolean[]{false,true}){
+                var a=tip(left?model.leftArm:model.rightArm,left?model.leftElbow:model.rightElbow);
+                var f=tip(left?model.leftLeg:model.rightLeg,left?model.leftKnee:model.rightKnee);
+                if(!Float.isFinite(a.x+a.y+a.z+f.x+f.y+f.z)||a.y>1.5001F||f.y>1.5001F||a.y<1.4F||f.y<1.4F)throw new IllegalStateException("Crawl hands/feet must alternate above their real floor: "+a+" "+f);
+            }
+        }
         model.pose(0,0,0,0,false,false,false);if(model.leftKnee.xRot!=0||model.rightElbow.xRot!=0)throw new IllegalStateException("Window joints leaked into an ordinary cousin");
         paw.curl(2,0);var open=thumbTip(paw);paw.curl(2,1);var closed=thumbTip(paw);
         if(open.x>=-5/16F||closed.x<=-3/16F||closed.z<=1.5F/16)throw new IllegalStateException("Thumb must begin outside the palm and oppose across its front: "+open+" -> "+closed);
         paw.curl(0,1);paw.curl(2,0);if(thumbTip(paw).distance(open)>.00001F)throw new IllegalStateException("A previous clutch changed the thumb's rest orientation");
     }
+    private static Vector3f tip(net.minecraft.client.model.geom.ModelPart upper,net.minecraft.client.model.geom.ModelPart lower){var p=new PoseStack();upper.translateAndRotate(p);lower.translateAndRotate(p);return new Vector3f(0,6/16F,0).mulPosition(p.last().pose());}
     private static Vector3f thumbTip(PawClutchClient.Model paw){var p=new PoseStack();paw.root.getChild("thumb").translateAndRotate(p);return new Vector3f(0,-4/16F,0).mulPosition(p.last().pose());}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff252b30);g.drawString(font,"Window entry / "+VIEWS[page],10,10,0xffede1ca,false);g.flush();var out=mc.renderBuffers().bufferSource();
-        if(page<4){
-            float progress=new float[]{.12F,.38F,.61F,.9F}[page];
+        if(page<6){
+            float progress=new float[]{.12F,.48F,.65F,.9F}[Math.min(3,page)];
             for(int i=0;i<4;i++){
                 var p=g.pose();p.pushPose();p.translate(width*(.14F+i*.24F),height*.7F,150);p.scale(68,68,68);p.mulPose(Axis.YP.rotationDegrees(i%2==0?155:95));p.translate(0,-1.5,0);
-                if(i<2){var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));model.windowPose(progress);model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_4.png"))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);}
-                else{var model=new GoatmanFigureModel<>(mc.getEntityModels().bakeLayer(GoatmanFigureModel.LAYER));model.windowPose(progress);model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(GoatmanFigureRenderer.SKIN)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);}
+                var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));if(page<4)model.windowPose(progress);else model.crawlPose(page==4?0:Mth.PI,1);
+                model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+(i<2?4:0)+".png"))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
                 p.popPose();
             }
         }else{
-            paw.curl(page==6?0:2,page==4?0:page==5?.55F:1);
+            paw.curl(page==8?0:2,page==6?0:page==7?.55F:1);
             for(int i=0;i<2;i++){var p=g.pose();p.pushPose();p.translate(width*(i==0?.3F:.7F),height*.48F,150);float scale=Math.min(width,height)*.48F;p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(i==0?18:-35));paw.root.render(p,out.getBuffer(RenderType.entityCutoutNoCull(PawClutchClient.TEXTURE)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();}
         }
         out.endBatch();
@@ -63,7 +75,7 @@ public final class WindowEntryVisualProof extends Screen {
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof WindowEntryVisualProof proof)||++proof.frames<20)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-window-entry-"+VIEWS[proof.page]+".png"));}
         if(++proof.page<VIEWS.length){proof.frames=0;return;}
-        Files.writeString(dir.resolve("window-entry-passed.txt"),"Seven native GPU pages: child and monster reach, sill fit, pull and standing recovery in two angles; actual paw at open, half curl and closed in two angles. 101 native child joint samples, reused-cousin reset and thumb opposition/rest geometry passed.\n");
+        Files.writeString(dir.resolve("window-entry-passed.txt"),"Nine native GPU pages: two cousin disguises reach, fit the sill, pull, lower into the floor crawl and take both crawling strides in two angles; actual paw at open, half curl and closed in two angles. 101 window and 65 crawl samples, continuous window/crawl transition, native hand/foot floor geometry, reused-cousin reset and thumb opposition/rest geometry passed.\n");
         if(Boolean.getBoolean("the_oldest_house.windowEntrySmoke"))mc.stop();else mc.setScreen(new InstituteVisualProof());
     }
 }

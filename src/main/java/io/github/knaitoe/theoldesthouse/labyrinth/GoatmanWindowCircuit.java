@@ -28,6 +28,14 @@ public final class GoatmanWindowCircuit {
         for(var shape:level.getBlockCollisions(null,foot))for(var box:shape.toAabbs())if(box.maxY<=base.getY()+1.61)top=Math.max(top,box.maxY);
         return new Vec3(local.x,top-base.getY(),local.z);
     }
+    /** Read the finished tread under the whole foot box; a saved full tread must not leave a target inside its wood. */
+    public static Vec3 porchLanding(ServerLevel level,BlockPos base,Vec3 local){
+        if(local.x<0||local.x>1||local.z<-54.5||local.z>-51.5)return local;
+        double x=base.getX()+local.x,z=base.getZ()+local.z,top=base.getY()+local.y;
+        var foot=new AABB(x-.21,base.getY()-.02,z-.21,x+.21,base.getY()+1.01,z+.21);
+        for(var shape:level.getBlockCollisions(null,foot))for(var box:shape.toAabbs())if(box.maxY<=base.getY()+1.01)top=Math.max(top,box.maxY);
+        return new Vec3(local.x,top-base.getY(),local.z);
+    }
     /** Align outside the iron-bar frame before rising inward onto its sill. */
     public static Vec3 via(int leg){return switch(leg){case 5->new Vec3(-9.5,0,-58.5);case 6->new Vec3(-9.5,0,-66.5);case 7->new Vec3(-9.5,0,-72.5);case 12->new Vec3(10.25,0,-66.5);case 13->new Vec3(10.25,0,-58.5);default->null;};}
     public static boolean atPane(BlockPos b,GoatmanChild c){var p=c.position().subtract(b.getX(),b.getY(),b.getZ());if(p.y<.8||Math.abs(p.x)<8||Math.abs(p.x)>10)return false;for(double z:new double[]{-58.5,-66.5,-72.5})if(Math.abs(p.z-z)<1.2)return true;return false;}

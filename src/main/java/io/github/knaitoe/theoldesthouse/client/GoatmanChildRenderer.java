@@ -31,7 +31,7 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
         if(e.stalkingAppearance())light=net.minecraft.client.renderer.LightTexture.pack(Math.max(7,net.minecraft.client.renderer.LightTexture.block(light)),net.minecraft.client.renderer.LightTexture.sky(light));
         if(e.monsterAppearance()){stalker.render(e,yaw,partial,poses,buffers,light);return;}
         float old=e.yBodyRot,previous=e.yBodyRotO;
-        if(!e.enteringWindow()&&!e.stalkingAppearance()&&e.tell(GoatmanVignette.FACE)&&Minecraft.getInstance().player!=null){
+        if(!e.enteringWindow()&&!e.crawling()&&!e.stalkingAppearance()&&e.tell(GoatmanVignette.FACE)&&Minecraft.getInstance().player!=null){
             var at=Minecraft.getInstance().player.position().subtract(e.position());e.yBodyRot=e.yBodyRotO=(float)(Math.atan2(at.z,at.x)*180/Math.PI)-90;
         }
         // A seated child is set on the seat's surface; the bent pose puts its hips there, not its feet.
@@ -45,7 +45,7 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
             super(c,new GoatmanFigureModel<>(c.bakeLayer(GoatmanFigureModel.LAYER)),.35F);
             addLayer(new net.minecraft.client.renderer.entity.layers.EyesLayer<>(this){@Override public net.minecraft.client.renderer.RenderType renderType(){return net.minecraft.client.renderer.RenderType.eyes(GoatmanFigureRenderer.EYES);}});
         }
-        @Override protected void scale(GoatmanChild e,com.mojang.blaze3d.vertex.PoseStack p,float partial){float s=e.enteringWindow()?net.minecraft.util.Mth.lerp(GoatmanChildModel.windowFold(e.windowEntry(partial)),1/.7F,1):1/.7F;p.scale(s,s,s);}
+        @Override protected void scale(GoatmanChild e,com.mojang.blaze3d.vertex.PoseStack p,float partial){float s=1/.7F;p.scale(s,s,s);}
         @Override public ResourceLocation getTextureLocation(GoatmanChild e){return GoatmanFigureRenderer.SKIN;}
         @Override protected boolean shouldShowName(GoatmanChild e){return false;}
     }

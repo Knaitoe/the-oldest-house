@@ -96,6 +96,7 @@ jobs:
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               assert 'data/the_oldest_house_borrasca/structure/empty.nbt' in z.namelist()
               assert 'data/the_oldest_house_goatman_windows/structure/empty.nbt' in z.namelist()
+              assert 'data/the_oldest_house_goatman_entry/structure/empty.nbt' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/gametest/GoatmanWindowViews.class' in z.namelist()
               assert z.read('assets/the_oldest_house/textures/entity/borrasca_atlas.png').startswith(b'\x89PNG')
               assert 'assets/minecraft/atlases/blocks.json' in z.namelist()
@@ -1413,7 +1414,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PwindowEntrySmoke --no-daemon
           test -s build/font-smoke/window-entry-passed.txt
-          for view in reach sill pull recover paw-open paw-curl paw-closed; do test -s build/font-smoke/native-window-entry-$view.png; done
+          for view in reach sill pull lower crawl-left crawl-right paw-open paw-curl paw-closed; do test -s build/font-smoke/native-window-entry-$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1641,7 +1642,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_nightward,the_oldest_house_goatman_windows --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_nightward,the_oldest_house_goatman_windows,the_oldest_house_goatman_entry --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re

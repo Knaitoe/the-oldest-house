@@ -16,6 +16,39 @@ import net.neoforged.neoforge.gametest.*;
 @PrefixGameTestTemplate(false)
 public final class GoatmanExteriorTests {
     private static GoatmanTests.Fixture finished;
+    private static GoatmanTests.Fixture porch;
+    @AfterBatch(batch="goat_post_knock_steps04114")
+    public static void cleanPorch(ServerLevel level){if(porch!=null){porch.close();porch=null;}}
+
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_entry",batch="goat_post_knock_steps04114",timeoutTicks=600)
+    public static void theOriginalChildLeavesTheFinishedPorchAfterItsLastKnocksWithoutStickingOnEitherStep(GameTestHelper h){
+        porch=new GoatmanTests.Fixture(h,54100);var f=porch;f.finishedCamper();
+        f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        var route=new CompoundTag();route.putBoolean("StalkStarted0465",true);route.putInt("StalkLeg0465",18);
+        route.putInt("CircuitGoal0494",GoatmanStalking.CIRCUITS);route.putInt("Circuits0494",GoatmanStalking.CIRCUITS-1);
+        route.putInt("WindowSerial0497",1);route.putBoolean("AssaultDone0465",true);
+        GoatmanChild[] original={null};UUID[] id={null};int[] elapsed={0};boolean[] restored={false};
+        h.onEachTick(()->{
+            if(original[0]==null)return;var c=original[0];
+            GoatmanStalking.step(f.l,f.b,route,c,1900+elapsed[0]++);
+            h.assertTrue(c.getUUID().equals(id[0])&&!c.noPhysics&&f.l.noCollision(c,c.getBoundingBox().deflate(1e-7)),"the child retains its original colliding body on both finished steps (native contact epsilon): "+f.rel(c));
+            if(!restored[0]&&route.getBoolean("DoorPressureDone0497")){
+                c.load(c.saveWithoutId(new CompoundTag()));restored[0]=true;
+            }
+            if(elapsed[0]==60)h.assertTrue(route.getInt("StalkLeg0465")>=19,"the original child clears the actual first tread within sixty ticks instead of walking into its wood: "+f.rel(c));
+            if(elapsed[0]%60==0)TheOldestHouse.LOGGER.info("GOATMAN POST-KNOCK STEPS: ticks={} leg={} feet={}",elapsed[0],route.getInt("StalkWindowLeg0465"),f.rel(c));
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the finished porch and native collision sections are ready")).thenExecute(()->{
+            var c=GoatmanRegistry.CHILD.get().create(f.l);h.assertTrue(c!=null,"the native original child can be created");c.appearance(4,0,null);c.disguise(4);
+            // A full-height tread is valid saved/player-edited geometry. A hard-coded y=.5 aims inside it forever.
+            f.l.setBlockAndUpdate(f.b.offset(0,0,-53),Blocks.OAK_PLANKS.defaultBlockState());
+            c.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-51.5,180,0);f.l.addFreshEntity(c);original[0]=c;id[0]=c.getUUID();
+            GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,false);
+        }).thenWaitUntil(()->h.assertTrue(GoatmanStalking.windowApproachDone(route),"the post-knock child descends both finished steps and reaches the bathroom window: leg="+route.getInt("StalkWindowLeg0465")+" feet="+(original[0]==null?"absent":f.rel(original[0])))).thenExecute(()->{
+            h.assertTrue(restored[0]&&route.getInt("DoorPressureHits0497")==6&&f.rel(original[0]).distanceToSqr(new Vec3(10.25,0,-74.5))<.02,"the same saved original completes every front-step blow and the entire physical window approach");
+            original[0].discard();
+        }).thenSucceed();
+    }
     @AfterBatch(batch="goat_finished_camper04112")
     public static void clean(ServerLevel level){if(finished!=null){finished.close();finished=null;}}
 

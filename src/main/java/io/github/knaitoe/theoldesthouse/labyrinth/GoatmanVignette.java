@@ -174,8 +174,8 @@ public final class GoatmanVignette {
     static final Vec3[] UP={new Vec3(.5,0,-50.5),new Vec3(.5,0,-51.5),new Vec3(.5,.5,-52.6),new Vec3(.5,1,-53.8),new Vec3(.5,1,-54.5)};
     /** From the fire, clear of its seats, round the trailer's north-west corner to the window and up onto the sill. */
     static final Vec3[] WINDOW_PATH={new Vec3(-7.5,0,-52.5),new Vec3(-10.5,0,-54.5),new Vec3(-10.5,0,-58.5),new Vec3(-10,1.5,-58.5)};
-    private static final Vec3[] WINDOW_ENTRY={new Vec3(10.25,0,-74.5),new Vec3(10.25,3.05,-74.5),new Vec3(8.5,3.05,-74.5),new Vec3(7.5,3.05,-74.5),new Vec3(6.5,1,-75.5)};
-    private static final float[] ENTRY_BEATS={.12F,.38F,.61F,.78F,1F};
+    private static final Vec3[] WINDOW_ENTRY={new Vec3(10.25,0,-74.5),new Vec3(10.25,1.1,-74.5),new Vec3(10.25,2.55,-74.5),new Vec3(8.5,3.05,-74.5),new Vec3(7.5,3.05,-74.5),new Vec3(6.5,1,-75.5)};
+    private static final float[] ENTRY_BEATS={.12F,.25F,.42F,.62F,.78F,1F};
     static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed","fireS","firelight","cupboard"};
     private static final Map<String,Spot> SPOTS=new HashMap<>();
     private static void spot(String key,Vec3 at,float yaw,boolean inside,int pose,Vec3... access){SPOTS.put(key,new Spot(at,yaw,inside,pose,access,null));}
@@ -265,7 +265,7 @@ public final class GoatmanVignette {
         if(hurried)speed=1000;
         ListTag route=c.getPersistentData().getList("Route",Tag.TAG_COMPOUND);
         if(route.isEmpty())return true;
-        CompoundTag next=route.getCompound(0);Vec3 target=abs(new Vec3(next.getDouble("X"),next.getDouble("Y"),next.getDouble("Z")),b);
+        CompoundTag next=route.getCompound(0);Vec3 target=abs(GoatmanWindowCircuit.porchLanding(l,b,new Vec3(next.getDouble("X"),next.getDouble("Y"),next.getDouble("Z"))),b);
         Vec3 here=c.position(),delta=target.subtract(here);double length=delta.length();
         Vec3 to=length<=speed?target:here.add(delta.scale(speed/length));
         float yaw=Math.abs(delta.x)+Math.abs(delta.z)>.01?(float)(Math.atan2(delta.z,delta.x)*180/Math.PI)-90:c.getYRot();
@@ -283,7 +283,7 @@ public final class GoatmanVignette {
         int count=state.getInt("WindowRoute04114"),left=state.getList("Route",Tag.TAG_COMPOUND).size(),leg=count-left;
         if(fresh(r)&&count>0&&leg<WINDOW_ENTRY.length){
             int reach=state.getInt("WindowReach04114");
-            c.setPose(Pose.SWIMMING);
+            c.setCrawling(false);c.setPose(Pose.SWIMMING);
             if(reach<12&&!hurried){state.putInt("WindowReach04114",reach+1);c.setWindowEntry(.12F*(reach+1)/12);c.pose(false);face(c,abs(new Vec3(7.5,c.getY()-b.getY(),-74.5),b));return;}
             if(walk(c,b,CREEP,l,true)){finishWindowEntry(c,b,r);return;}
             left=state.getList("Route",Tag.TAG_COMPOUND).size();leg=count-left;
@@ -293,11 +293,14 @@ public final class GoatmanVignette {
                 float before=leg==0?.12F:ENTRY_BEATS[leg-1];c.setWindowEntry(Mth.lerp(part,before,ENTRY_BEATS[leg]));
                 return;
             }
-        }else if(walk(c,b,CREEP,l,true)){finishWindowEntry(c,b,r);return;}
-        c.setWindowEntry(-1);c.setPose(Pose.STANDING);
+        }else{
+            c.setWindowEntry(-1);c.setCrawling(true);c.setPose(Pose.SWIMMING);
+            if(walk(c,b,CREEP,l,true)){finishWindowEntry(c,b,r);return;}
+        }
+        c.setWindowEntry(-1);c.setCrawling(true);c.setPose(Pose.SWIMMING);
     }
     private static void finishWindowEntry(GoatmanChild c,BlockPos b,CompoundTag r){
-        c.setWindowEntry(-1);c.setPose(Pose.STANDING);c.getPersistentData().remove("WindowRoute04114");c.getPersistentData().remove("WindowReach04114");r.putInt("ExtraState",X_FLOOR);settle(c,b,"floor");
+        c.setWindowEntry(-1);c.setCrawling(false);c.setPose(Pose.STANDING);c.getPersistentData().remove("WindowRoute04114");c.getPersistentData().remove("WindowReach04114");r.putInt("ExtraState",X_FLOOR);settle(c,b,"floor");
     }
     private static float facing(Vec3 from,Vec3 at){Vec3 v=at.subtract(from);return (float)(Math.atan2(v.z,v.x)*180/Math.PI)-90;}
     private static void face(Entity c,Vec3 at){float yaw=facing(c.position(),at);c.setYRot(yaw);c.setYHeadRot(yaw);if(c instanceof LivingEntity e)e.yBodyRot=yaw;}
@@ -455,7 +458,7 @@ public final class GoatmanVignette {
                 windowEntry(c,b,r,l);
                 continue;
             }
-            if(!outside(r)&&c.stalkingAppearance()&&GoatmanStalking.obscured(l,c))c.disguise(-1);
+            if(!outside(r)&&!r.contains("AdmissionSkin04114")&&c.stalkingAppearance()&&GoatmanStalking.obscured(l,c))c.disguise(-1);
             if((phase==GATHERING||phase==VIGIL)&&i!=wrong)GoatmanFear.pose(c,r);else {c.fear(0);c.fearStage(0);}
             String want=place(i,r);double speed=WALK;
             if(i==runner){int rs=r.getInt("RunnerState");
@@ -665,14 +668,16 @@ public final class GoatmanVignette {
             if(fresh(r))windowAt=r.contains("NightWindowAt0472")?r.getInt("NightWindowAt0472"):-1;
             if(windowAt>=0&&clock>=windowAt&&clock<(fresh(r)?windowAt+WINDOW_FOR0465:KNOCK_UNTIL)){
                 if(!GoatmanWoods.windowShut(l,b)){
+                    var entrant=cousinsOf(l,b).stream().filter(c->c.getPersistentData().getInt(INDEX)==r.getInt("Wrong")).findFirst().orElse(null);
+                    if(entrant==null||!GoatmanStalking.admissionDisguise(l,r,entrant))return;
                     r.putInt("ExtraState",X_WINDOW);GoatmanWoods.bathroomDoor(l,b,true);
                     for(var c:cousinsOf(l,b))if(c.getPersistentData().getInt(INDEX)==r.getInt("Wrong")){
                         // In under the sash, out through the bathroom door (its doorway is the cell at z -75), up the east aisle.
                         var through=new ArrayList<Vec3>();
                         if(fresh(r)){
-                            through.addAll(List.of(WINDOW_ENTRY));c.setPose(Pose.SWIMMING);c.setWindowEntry(0);c.getPersistentData().putInt("WindowReach04114",0);
+                            through.addAll(List.of(WINDOW_ENTRY));c.setCrawling(false);c.setPose(Pose.SWIMMING);c.setWindowEntry(0);c.getPersistentData().putInt("WindowReach04114",0);
                         }else{Vec3 at=abs(new Vec3(6.5,1,-75.5),b);c.moveTo(at.x,at.y,at.z);}
-                        c.getPersistentData().putString("At","bath");through.addAll(List.of(new Vec3(4.5,1,-74.5),new Vec3(3.5,1,-74.5),new Vec3(2.5,1,-74.5),new Vec3(2.5,1,-72.5),new Vec3(4,1,-71.5),new Vec3(4,1,-57.5),ENTRY,SPOTS.get("floor").at()));setRoute(c,through,"floor");c.getPersistentData().putInt("WindowRoute04114",fresh(r)?through.size():0);}
+                        c.getPersistentData().putString("At","bath");through.addAll(List.of(new Vec3(4.5,1,-75.5),new Vec3(4.5,1,-74.5),new Vec3(3.5,1,-74.5),new Vec3(2.5,1,-74.5),new Vec3(2.5,1,-72.5),new Vec3(4,1,-71.5),new Vec3(4,1,-57.5),ENTRY,SPOTS.get("floor").at()));setRoute(c,through,"floor");c.getPersistentData().putInt("WindowRoute04114",fresh(r)?through.size():0);}
                 }else if(!fresh(r)&&clock==windowAt){
                     Vec3 w=Vec3.atCenterOf(b.offset(GoatmanWoods.WINDOW));
                     for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,w.x,w.y,w.z,3.2F,1.15F,p.getRandom().nextLong()));

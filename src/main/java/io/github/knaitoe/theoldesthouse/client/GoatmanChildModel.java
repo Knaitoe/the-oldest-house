@@ -30,6 +30,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     @Override public void setupAnim(GoatmanChild e,float walk,float amount,float age,float yaw,float pitch){
         HumanoidMotion.reset(this);
         if(e.enteringWindow()){windowPose(e.windowEntry(age-e.tickCount));return;}
+        if(e.crawling()){crawlPose(e.walk(age-e.tickCount)*.78F,Math.min(1,Math.abs(e.speed())/.48F));return;}
         boolean still=e.tell(GoatmanVignette.STILL)&&!e.stalkingAppearance();
         float speed=Math.abs(e.speed())/8,phase=e.walk(age-e.tickCount)*.78F;
         super.setupAnim(e,0,0,still?0:age,yaw,pitch);
@@ -70,21 +71,45 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     }
     public void cowerPose(){pose(0,0,0,false,true,false);}
     public static float ease(float from,float to,float progress){float t=Mth.clamp((progress-from)/(to-from),0,1);return t*t*(3-2*t);}
-    /** Full horizontal fit only while passing the sash, with a gradual rise on the bathroom side. */
-    public static float windowFold(float progress){return ease(.12F,.38F,progress)*(1-ease(.78F,1,progress));}
+    /** Stay low after the sill: the pull leads into a floor crawl rather than standing up. */
+    public static float windowFold(float progress){return ease(.22F,.48F,progress);}
     public void windowPose(float progress){
         HumanoidMotion.reset(this);young=false;float fold=windowFold(progress),lean=1.43F*fold;
-        float pull=ease(.38F,.61F,progress)*(1-ease(.61F,.85F,progress)),recover=1-ease(.78F,1,progress);
+        float pull=ease(.38F,.61F,progress)*(1-ease(.61F,.85F,progress));
         float leg=-1.3F*fold,knee=2.8F*fold;
         leftLeg.y=rightLeg.y=24-6*Mth.cos(leg)-6*Mth.cos(leg+knee);leftLeg.z=rightLeg.z=10*fold;
         leftLeg.xRot=leg+.12F*pull;rightLeg.xRot=leg-.12F*pull;leftKnee.xRot=knee-.12F*pull;rightKnee.xRot=knee+.12F*pull;
         body.xRot=lean;body.zRot=.035F*Mth.sin(progress*Mth.PI)*fold;
         head.xRot=-lean-.55F*fold;head.yRot=.08F*Mth.sin(progress*Mth.PI*2)*fold;
-        float reach=Mth.lerp(ease(0,.12F,progress),-.1F,-2.65F)*recover;
+        float reach=Mth.lerp(ease(0,.12F,progress),-.1F,-2.65F);
         rightArm.xRot=-lean+Mth.lerp(fold,reach,-1.25F+.5F*pull);leftArm.xRot=rightArm.xRot-.13F*pull;
         rightArm.zRot=.12F*fold;leftArm.zRot=-.12F*fold;
         rightElbow.xRot=(-.1F-.95F*pull)*fold;leftElbow.xRot=(-.1F-.7F*pull)*fold;
+        if(progress>.78F){
+            var joints=joints();var sill=new PartPose[joints.length];for(int i=0;i<joints.length;i++)sill[i]=joints[i].storePose();
+            HumanoidMotion.reset(this);crawlMotion(0,0);float blend=ease(.78F,1,progress);
+            for(int i=0;i<joints.length;i++){var p=joints[i];var from=sill[i];p.setPos(Mth.lerp(blend,from.x,p.x),Mth.lerp(blend,from.y,p.y),Mth.lerp(blend,from.z,p.z));p.xRot=Mth.lerp(blend,from.xRot,p.xRot);p.yRot=Mth.lerp(blend,from.yRot,p.yRot);p.zRot=Mth.lerp(blend,from.zRot,p.zRot);}
+        }
         HumanoidMotion.connect(this);
+    }
+    private ModelPart[] joints(){return new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg,leftElbow,rightElbow,leftKnee,rightKnee};}
+    /** Opposite hands and knees take turns; planted hand/foot tips stay at the floor. Phase follows actual travel. */
+    public void crawlPose(float phase,float moving){HumanoidMotion.reset(this);young=false;crawlMotion(phase,Mth.clamp(moving,0,1));HumanoidMotion.connect(this);}
+    private void crawlMotion(float phase,float moving){
+        float lean=1.43F,hipY=21.5F-.2F*moving*Mth.sin(phase*2);
+        leftLeg.y=rightLeg.y=hipY;leftLeg.z=rightLeg.z=0;
+        body.xRot=lean;body.yRot=.025F*moving*Mth.sin(phase);head.xRot=-lean-.08F;head.yRot=.045F*moving*Mth.sin(phase);
+        for(boolean left:new boolean[]{false,true}){
+            float beat=phase+(left?Mth.PI:0),stride=moving*Mth.cos(beat),lift=moving*Math.max(0,Mth.sin(beat));
+            var legPart=left?leftLeg:rightLeg;var kneePart=left?leftKnee:rightKnee;
+            float dy=23.99F-hipY-.65F*lift,dz=.25F+.35F*stride;
+            float knee=(float)Math.acos(Mth.clamp((dy*dy+dz*dz-72)/72,-1,1));
+            legPart.xRot=(float)Math.atan2(dz,dy)-(float)Math.atan2(6*Mth.sin(knee),6+6*Mth.cos(knee));kneePart.xRot=knee;
+            var armPart=left?leftArm:rightArm;var elbowPart=left?leftElbow:rightElbow;
+            float upper=-1.15F+.2F*stride,shoulderY=hipY-10*Mth.cos(lean);
+            float forearm=-(float)Math.acos(Mth.clamp((23.99F-1.2F*lift-shoulderY-4*Mth.cos(upper))/6,-1,1));
+            armPart.xRot=upper-lean;elbowPart.xRot=forearm-upper;
+        }
     }
     private void animateFear(int role,int stage,float age){
         if(stage==0||role==0)return;
