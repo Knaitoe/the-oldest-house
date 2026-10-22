@@ -29,7 +29,7 @@ public final class UncannyCameras {
     private static final int W=256,H=192;
     private static final DynamicTexture[] images=new DynamicTexture[4];private static final ResourceLocation[] ids=new ResourceLocation[4];
     private static final int[] frames=new int[4];private static final boolean[] dollFrames=new boolean[4];
-    private static boolean diagnosticMask;private static int headPixels;private static final int[] headRect=new int[4];
+    private static boolean diagnosticMask,headReadbackSaved;private static int headPixels;private static final int[] headRect=new int[4];
     private static TextureTarget target;private static Lens lens;private static boolean recording,dollDrawn;private static int cycle,channel;
     private UncannyCameras(){}
     public static boolean recording(){return recording;}
@@ -94,11 +94,12 @@ public final class UncannyCameras {
                             int difference=Math.abs((a&255)-(b&255))+Math.abs((a>>8&255)-(b>>8&255))+Math.abs((a>>16&255)-(b>>16&255));
                             if(difference>24)changed++;
                         }headPixels=Math.max(headPixels,changed);
-                        if(frames[1]==2){
+                        if(!headReadbackSaved||changed>=12){
                             try{
                                 var dir=java.nio.file.Path.of(System.getProperty("the_oldest_house.liveProofDir","build/uncanny-live-proof"));java.nio.file.Files.createDirectories(dir);var role=System.getProperty("the_oldest_house.liveProofRole","");
                                 normal.writeToFile(dir.resolve(role+"-cctv-head-normal.png"));masked.writeToFile(dir.resolve(role+"-cctv-head-masked.png"));
                                 java.nio.file.Files.writeString(dir.resolve(role+"-cctv-head-bounds.txt"),"Native head rectangle="+Arrays.toString(headRect)+" changed="+changed+" lens="+lens.getPosition()+"\n");
+                                headReadbackSaved=true;
                             }catch(java.io.IOException ex){throw new IllegalStateException("Cannot retain native CCTV head readbacks",ex);}
                         }
                     }
@@ -148,6 +149,6 @@ public final class UncannyCameras {
     }
     public static void clear(){
         var mc=Minecraft.getInstance();for(int i=0;i<4;i++){if(ids[i]!=null)mc.getTextureManager().release(ids[i]);ids[i]=null;images[i]=null;frames[i]=0;dollFrames[i]=false;}
-        if(target!=null)target.destroyBuffers();target=null;lens=null;recording=false;diagnosticMask=false;headPixels=0;cycle=0;channel=0;
+        if(target!=null)target.destroyBuffers();target=null;lens=null;recording=false;diagnosticMask=false;headReadbackSaved=false;headPixels=0;cycle=0;channel=0;
     }
 }

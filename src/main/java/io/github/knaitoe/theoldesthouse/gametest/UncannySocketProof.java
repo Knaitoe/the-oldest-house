@@ -44,6 +44,7 @@ public final class UncannySocketProof {
     @SubscribeEvent public static void commands(RegisterCommandsEvent e){if(!enabled())return;e.getDispatcher().register(Commands.literal("uncannyproof").then(Commands.argument("phase",IntegerArgumentType.integer(1,17)).executes(c->{var p=c.getSource().getPlayerOrException();if(p.getGameProfile().getName().startsWith("OTHProof")&&IntegerArgumentType.getInteger(c,"phase")==phase)ACKS.add(p.getUUID());return 1;})));}
     private static void marker(ServerPlayer p,int step){
         var tag=new CompoundTag();tag.putInt("UncannyStep",step);tag.putInt("ServerAge",p.server.getTickCount()-changed);
+        tag.putBoolean("PaperRead",step==5?own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"):step==13&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP));
         var stick=new ItemStack(Items.STICK);stick.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));p.getInventory().setItem(8,stick);p.inventoryMenu.broadcastChanges();
     }
     private static void step(MinecraftServer s,int next){phase=next;changed=s.getTickCount();ACKS.clear();for(var p:s.getPlayerList().getPlayers())marker(p,next);TheOldestHouse.LOGGER.info("UNCANNY SOCKET phase {}",next);}
