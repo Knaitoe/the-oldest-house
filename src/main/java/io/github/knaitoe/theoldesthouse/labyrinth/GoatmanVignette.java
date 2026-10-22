@@ -174,6 +174,8 @@ public final class GoatmanVignette {
     static final Vec3[] UP={new Vec3(.5,0,-50.5),new Vec3(.5,0,-51.5),new Vec3(.5,.5,-52.6),new Vec3(.5,1,-53.8),new Vec3(.5,1,-54.5)};
     /** From the fire, clear of its seats, round the trailer's north-west corner to the window and up onto the sill. */
     static final Vec3[] WINDOW_PATH={new Vec3(-7.5,0,-52.5),new Vec3(-10.5,0,-54.5),new Vec3(-10.5,0,-58.5),new Vec3(-10,1.5,-58.5)};
+    private static final Vec3[] WINDOW_ENTRY={new Vec3(10.25,0,-74.5),new Vec3(10.25,3.05,-74.5),new Vec3(8.5,3.05,-74.5),new Vec3(7.5,3.05,-74.5),new Vec3(6.5,1,-75.5)};
+    private static final float[] ENTRY_BEATS={.12F,.38F,.61F,.78F,1F};
     static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed","fireS","firelight","cupboard"};
     private static final Map<String,Spot> SPOTS=new HashMap<>();
     private static void spot(String key,Vec3 at,float yaw,boolean inside,int pose,Vec3... access){SPOTS.put(key,new Spot(at,yaw,inside,pose,access,null));}
@@ -257,6 +259,9 @@ public final class GoatmanVignette {
     }
     /** One tick along its route; true once it has arrived. */
     private static boolean walk(GoatmanChild c,BlockPos b,double speed,ServerLevel l){
+        return walk(c,b,speed,l,false);
+    }
+    private static boolean walk(GoatmanChild c,BlockPos b,double speed,ServerLevel l,boolean physical){
         if(hurried)speed=1000;
         ListTag route=c.getPersistentData().getList("Route",Tag.TAG_COMPOUND);
         if(route.isEmpty())return true;
@@ -264,11 +269,35 @@ public final class GoatmanVignette {
         Vec3 here=c.position(),delta=target.subtract(here);double length=delta.length();
         Vec3 to=length<=speed?target:here.add(delta.scale(speed/length));
         float yaw=Math.abs(delta.x)+Math.abs(delta.z)>.01?(float)(Math.atan2(delta.z,delta.x)*180/Math.PI)-90:c.getYRot();
-        c.moveTo(to.x,to.y,to.z,yaw,0);c.setYHeadRot(yaw);c.yBodyRot=yaw;c.animate(Math.min(speed,length),false,false);
-        if(!c.tell(SILENT)){double step=c.getPersistentData().getDouble("Step")+Math.min(speed,length);
+        if(physical&&!hurried){c.move(MoverType.SELF,to.subtract(here));c.setDeltaMovement(Vec3.ZERO);c.setYRot(yaw);}
+        else c.moveTo(to.x,to.y,to.z,yaw,0);
+        double moved=c.position().distanceTo(here);c.setYHeadRot(yaw);c.yBodyRot=yaw;c.animate(moved,false,false);
+        if(!c.tell(SILENT)){double step=c.getPersistentData().getDouble("Step")+moved;
             if(step>.7){l.playSound(null,c.blockPosition(),c.getY()>=b.getY()+.7?SoundEvents.WOOD_STEP:SoundEvents.GRASS_STEP,SoundSource.NEUTRAL,.3F,1.2F);step=0;}c.getPersistentData().putDouble("Step",step);}
-        if(length<=speed){route.remove(0);c.getPersistentData().put("Route",route);}
+        if(c.position().distanceToSqr(target)<1e-6){route.remove(0);c.getPersistentData().put("Route",route);}
         return route.isEmpty();
+    }
+    /** Admission owns its route until the same body is indoors; morning cannot interrupt it. */
+    private static void windowEntry(GoatmanChild c,BlockPos b,CompoundTag r,ServerLevel l){
+        var state=c.getPersistentData();c.heave(false);c.cower(false);c.fear(0);c.fearStage(0);
+        int count=state.getInt("WindowRoute04114"),left=state.getList("Route",Tag.TAG_COMPOUND).size(),leg=count-left;
+        if(fresh(r)&&count>0&&leg<WINDOW_ENTRY.length){
+            int reach=state.getInt("WindowReach04114");
+            c.setPose(Pose.SWIMMING);
+            if(reach<12&&!hurried){state.putInt("WindowReach04114",reach+1);c.setWindowEntry(.12F*(reach+1)/12);c.pose(false);face(c,abs(new Vec3(7.5,c.getY()-b.getY(),-74.5),b));return;}
+            if(walk(c,b,CREEP,l,true)){finishWindowEntry(c,b,r);return;}
+            left=state.getList("Route",Tag.TAG_COMPOUND).size();leg=count-left;
+            if(leg<WINDOW_ENTRY.length){
+                Vec3 start=WINDOW_ENTRY[Math.max(0,leg-1)],end=WINDOW_ENTRY[leg];
+                float part=start.distanceToSqr(end)<1e-8?1:(float)Mth.clamp(rel(c,b).distanceTo(start)/start.distanceTo(end),0,1);
+                float before=leg==0?.12F:ENTRY_BEATS[leg-1];c.setWindowEntry(Mth.lerp(part,before,ENTRY_BEATS[leg]));
+                return;
+            }
+        }else if(walk(c,b,CREEP,l,true)){finishWindowEntry(c,b,r);return;}
+        c.setWindowEntry(-1);c.setPose(Pose.STANDING);
+    }
+    private static void finishWindowEntry(GoatmanChild c,BlockPos b,CompoundTag r){
+        c.setWindowEntry(-1);c.setPose(Pose.STANDING);c.getPersistentData().remove("WindowRoute04114");c.getPersistentData().remove("WindowReach04114");r.putInt("ExtraState",X_FLOOR);settle(c,b,"floor");
     }
     private static float facing(Vec3 from,Vec3 at){Vec3 v=at.subtract(from);return (float)(Math.atan2(v.z,v.x)*180/Math.PI)-90;}
     private static void face(Entity c,Vec3 at){float yaw=facing(c.position(),at);c.setYRot(yaw);c.setYHeadRot(yaw);if(c instanceof LivingEntity e)e.yBodyRot=yaw;}
@@ -423,11 +452,7 @@ public final class GoatmanVignette {
             // Admission changes ExtraState to X_WINDOW while the clock remains in VIGIL.
             // Do not let the ordinary staging branch reset the route before the window crawl completes.
             if(i==wrong&&r.getInt("ExtraState")==X_WINDOW){
-                if(walk(c,b,CREEP,l)){
-                    c.setPose(Pose.STANDING);
-                    r.putInt("ExtraState",X_FLOOR);
-                    settle(c,b,"floor");
-                }
+                windowEntry(c,b,r,l);
                 continue;
             }
             if(!outside(r)&&c.stalkingAppearance()&&GoatmanStalking.obscured(l,c))c.disguise(-1);
@@ -462,16 +487,6 @@ public final class GoatmanVignette {
                     continue;
                 }
                 if(xs==X_DOOR&&phase==GATHERING&&open){r.putInt("ExtraState",X_INSIDE);setRoute(c,inFrom("step",i,r),seatName(i,r));}
-                if(xs==X_WINDOW){
-                    // The impostor must finish the whole route, even after the admission timer expires.
-                    // Its scripted body has no AI, so do not let the ordinary cousin goal overwrite the crawl.
-                    if(walk(c,b,CREEP,l)){
-                        c.setPose(Pose.STANDING);
-                        r.putInt("ExtraState",X_FLOOR);
-                        settle(c,b,"floor");
-                    }
-                    continue;
-                }
                 c.heave(xs==X_FIRE&&watched(c,present)&&clock%240<120);
             }
             if(!want.equals(goal(c))){
@@ -631,6 +646,7 @@ public final class GoatmanVignette {
     private static boolean outside(CompoundTag r){int xs=r.getInt("ExtraState");return xs==X_FIRE||xs==X_APPROACH||xs==X_DOOR;}
     private static boolean dawnReady(CompoundTag r,int clock){
         if(clock<vigilTicks(r))return false;
+        if(r.getInt("ExtraState")==X_WINDOW)return false;
         if(!fresh(r))return true;
         if(outside(r)&&(!GoatmanStalking.circuitDone(r)||!GoatmanStalking.windowApproachDone(r)))return false;
         // A delayed arrival retains the original occupied window-to-dawn interval.
@@ -654,9 +670,9 @@ public final class GoatmanVignette {
                         // In under the sash, out through the bathroom door (its doorway is the cell at z -75), up the east aisle.
                         var through=new ArrayList<Vec3>();
                         if(fresh(r)){
-                            through.add(new Vec3(10.25,0,-74.5));through.add(new Vec3(10.25,3.05,-74.5));through.add(new Vec3(8.5,3.05,-74.5));through.add(new Vec3(7.5,3.05,-74.5));through.add(new Vec3(6.5,1,-75.5));c.setPose(Pose.SWIMMING);
+                            through.addAll(List.of(WINDOW_ENTRY));c.setPose(Pose.SWIMMING);c.setWindowEntry(0);c.getPersistentData().putInt("WindowReach04114",0);
                         }else{Vec3 at=abs(new Vec3(6.5,1,-75.5),b);c.moveTo(at.x,at.y,at.z);}
-                        c.getPersistentData().putString("At","bath");through.addAll(List.of(new Vec3(4.5,1,-74.5),new Vec3(3.5,1,-74.5),new Vec3(2.5,1,-74.5),new Vec3(2.5,1,-72.5),new Vec3(4,1,-71.5),new Vec3(4,1,-57.5),ENTRY,SPOTS.get("floor").at()));setRoute(c,through,"floor");}
+                        c.getPersistentData().putString("At","bath");through.addAll(List.of(new Vec3(4.5,1,-74.5),new Vec3(3.5,1,-74.5),new Vec3(2.5,1,-74.5),new Vec3(2.5,1,-72.5),new Vec3(4,1,-71.5),new Vec3(4,1,-57.5),ENTRY,SPOTS.get("floor").at()));setRoute(c,through,"floor");c.getPersistentData().putInt("WindowRoute04114",fresh(r)?through.size():0);}
                 }else if(!fresh(r)&&clock==windowAt){
                     Vec3 w=Vec3.atCenterOf(b.offset(GoatmanWoods.WINDOW));
                     for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,w.x,w.y,w.z,3.2F,1.15F,p.getRandom().nextLong()));

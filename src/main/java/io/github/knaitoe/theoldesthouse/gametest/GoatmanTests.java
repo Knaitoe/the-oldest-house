@@ -10,6 +10,7 @@ import net.minecraft.core.*;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.*;
 import net.minecraft.util.Mth;
 import net.minecraft.world.*;
@@ -342,10 +343,23 @@ public final class GoatmanTests {
     @GameTest(template="empty",batch="goat_pressure0472",timeoutTicks=6500)
     public static void blockedMovementCannotSilenceTheNightAndTheSameBodyStillFinishesEveryLeg(GameTestHelper h){
         pressure=new Fixture(h,31900);var f=pressure;f.finishedCamper();var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        var barriers=new HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();var demands=new HashSet<Integer>();UUID[] body={null};boolean[] begun={false},entered={false};
+        var barriers=new HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();var demands=new HashSet<Integer>();var entryBeats=new HashSet<Integer>();UUID[] body={null};boolean[] begun={false},entered={false},entrySaved={false},stood={false},rested={false};
         h.onEachTick(()->{
             if(!begun[0])return;var r=f.run();var packet=GoatmanVignette.scenePayload(r);if(packet.demand()>=101){demands.add(packet.demand());h.assertTrue(packet.cousinLine()==0,"the actual demand packets suppress cousin words even while movement is blocked");}
-            if(r.getInt("ExtraState")>=GoatmanVignette.X_WINDOW)f.cousin(r.getInt("Wrong")).ifPresent(c->{if(GoatmanWoods.indoors(f.rel(c))&&c.getBoundingBox().maxX<f.b.getX()+8)entered[0]=true;});
+            if(r.getInt("ExtraState")>=GoatmanVignette.X_WINDOW)f.cousin(r.getInt("Wrong")).ifPresent(c->{
+                h.assertTrue(c.getUUID().equals(body[0])&&!c.noPhysics,"the admission keeps its original colliding body");
+                if(GoatmanWoods.indoors(f.rel(c))&&c.getBoundingBox().maxX<f.b.getX()+8)entered[0]=true;
+                if(c.enteringWindow()){
+                    float progress=c.windowEntry(1);entryBeats.add(Math.min(3,(int)(progress*4)));
+                    h.assertTrue(c.hasPose(Pose.SWIMMING)&&f.l.noCollision(c),"the articulated entry fits the real camper's sash and fixtures: "+f.rel(c));
+                    if(!entrySaved[0]&&progress>.45F&&progress<.6F){
+                        var at=c.position();var route=c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).copy();var saved=c.saveWithoutId(new CompoundTag());c.load(saved);
+                        h.assertTrue(c.getUUID().equals(body[0])&&c.position().distanceToSqr(at)<1e-8&&c.enteringWindow()&&c.hasPose(Pose.SWIMMING)&&c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).equals(route),"native mid-sash entity reload retains the same body, position, low pose, progress and remaining route");
+                        entrySaved[0]=true;
+                    }
+                }else if(r.getInt("ExtraState")==GoatmanVignette.X_WINDOW)stood[0]|=entered[0]&&c.hasPose(Pose.STANDING);
+                if(r.getInt("ExtraState")==GoatmanVignette.X_FLOOR)rested[0]=entered[0]&&c.hasPose(Pose.SLEEPING)&&!c.enteringWindow();
+            });
             if(r.getInt("Clock")<120)h.assertTrue(GoatmanFear.stage(r)==0&&packet.cousinLine()==0&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the occupied night is ordinary until an actual audible disturbance");
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native collision and entity sections are ready")).thenExecute(()->{
@@ -365,7 +379,7 @@ public final class GoatmanTests {
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("ExtraState")==GoatmanVignette.X_WINDOW,"the already open window admits the same body only after its complete physical approach")).thenExecute(()->{
             var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("NightWindowAt0472")>=GoatmanVignette.VIGIL0465+200,"the delayed native window attempt keeps its original response time before dawn");
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.DAWN,"the delayed night still reaches its ordinary morning outcome")).thenExecute(()->{
-            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(entered[0]&&r.getInt("Clock")>=r.getInt("NightWindowAt0472")+400&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"despite the shut front door, the original physically entered the finished camper through its open bathroom window; the haunting outcome awards no survival credit");h.succeed();
+            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(entered[0]&&entrySaved[0]&&stood[0]&&rested[0]&&entryBeats.size()==4&&r.getInt("Clock")>=r.getInt("NightWindowAt0472")+400&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"despite the shut front door, the same original completes all entry beats, native reload, standing bathroom exit and its floor route before dawn; the haunting outcome awards no survival credit: entered="+entered[0]+" reload="+entrySaved[0]+" stood="+stood[0]+" rested="+rested[0]+" beats="+entryBeats);h.succeed();
         });
     }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;

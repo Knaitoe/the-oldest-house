@@ -18,10 +18,11 @@ import io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild;
  */
 public final class GoatmanFigureModel<T extends LivingEntity> extends HierarchicalModel<T> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"goatman"),"main");
-    private final ModelPart root,head,body,rightArm,leftArm,rightLeg,leftLeg;
+    private final ModelPart root,head,body,rightArm,leftArm,rightLeg,leftLeg,rightElbow,leftElbow,rightKnee,leftKnee;
     public GoatmanFigureModel(ModelPart baked){
         root=baked.getChild("root");head=root.getChild("head");body=root.getChild("body");
         rightArm=root.getChild("right_arm");leftArm=root.getChild("left_arm");rightLeg=root.getChild("right_leg");leftLeg=root.getChild("left_leg");
+        rightElbow=rightArm.getChild("elbow");leftElbow=leftArm.getChild("elbow");rightKnee=rightLeg.getChild("knee");leftKnee=leftLeg.getChild("knee");
     }
     @Override public ModelPart root(){return root;}
     public static LayerDefinition createBodyLayer(){
@@ -37,16 +38,32 @@ public final class GoatmanFigureModel<T extends LivingEntity> extends Hierarchic
             PartPose.offsetAndRotation(2.2F,-6.5F,-1,-.55F,0,.25F));
         head.addOrReplaceChild("right_ear",CubeListBuilder.create().texOffs(48,6).addBox(-3,-.5F,-1,3,1,2),PartPose.offsetAndRotation(-3.5F,-5,.5F,0,0,-.35F));
         head.addOrReplaceChild("left_ear",CubeListBuilder.create().mirror().texOffs(48,6).addBox(0,-.5F,-1,3,1,2),PartPose.offsetAndRotation(3.5F,-5,.5F,0,0,.35F));
-        root.addOrReplaceChild("right_arm",CubeListBuilder.create().texOffs(20,16).addBox(-1.5F,-1,-1.5F,3,15,3),PartPose.offset(-5,-26,0));
-        root.addOrReplaceChild("left_arm",CubeListBuilder.create().texOffs(32,16).addBox(-1.5F,-1,-1.5F,3,15,3),PartPose.offset(5,-26,0));
-        root.addOrReplaceChild("right_leg",CubeListBuilder.create().texOffs(0,34).addBox(-1.5F,0,-1.5F,3,14,3),PartPose.offset(-1.8F,-14,0));
-        root.addOrReplaceChild("left_leg",CubeListBuilder.create().texOffs(12,34).addBox(-1.5F,0,-1.5F,3,14,3),PartPose.offset(1.8F,-14,0));
+        for(boolean left:new boolean[]{false,true}){
+            int u=left?32:20;
+            var arm=root.addOrReplaceChild(left?"left_arm":"right_arm",CubeListBuilder.create().texOffs(u,16).addBox(-1.5F,-1,-1.5F,3,7,3),PartPose.offset(left?5:-5,-26,0));
+            arm.addOrReplaceChild("elbow",CubeListBuilder.create().texOffs(u,23).addBox(-1.5F,0,-1.5F,3,8,3),PartPose.offset(0,6,0));
+            u=left?12:0;
+            var leg=root.addOrReplaceChild(left?"left_leg":"right_leg",CubeListBuilder.create().texOffs(u,34).addBox(-1.5F,0,-1.5F,3,7,3),PartPose.offset(left?1.8F:-1.8F,-14,0));
+            leg.addOrReplaceChild("knee",CubeListBuilder.create().texOffs(u,41).addBox(-1.5F,0,-1.5F,3,7,3),PartPose.offset(0,7,0));
+        }
         return LayerDefinition.create(mesh,64,64);
     }
     @Override public void setupAnim(T e,float swing,float amount,float age,float yaw,float pitch){
         float partial=age-e.tickCount;
+        if(e instanceof GoatmanChild c&&c.enteringWindow()){windowPose(c.windowEntry(partial));return;}
         if(e instanceof GoatmanFigure f)pose(age,f.walk(partial),Math.min(1,Math.abs(f.speed())*2.5F),f.heaving(),yaw,pitch);
         else if(e instanceof GoatmanChild c)pose(age,c.walk(partial),Math.min(1,Math.abs(c.speed())),c.heaving(),yaw,pitch);
+    }
+    public void windowPose(float progress){
+        root.getAllParts().forEach(ModelPart::resetPose);float fold=GoatmanChildModel.windowFold(progress),lean=1.43F*fold;
+        float pull=GoatmanChildModel.ease(.38F,.61F,progress)*(1-GoatmanChildModel.ease(.61F,.85F,progress));
+        float leg=-1.3F*fold,knee=2.8F*fold,hip=Mth.lerp(fold,-14,-7*Mth.cos(leg)-7*Mth.cos(leg+knee));
+        rightLeg.y=leftLeg.y=hip;rightLeg.z=leftLeg.z=10*fold;rightLeg.xRot=leftLeg.xRot=leg;
+        rightKnee.xRot=leftKnee.xRot=knee;body.xRot=lean;body.y=hip-13*Mth.cos(lean);body.z=10*fold-13*Mth.sin(lean);
+        head.y=body.y;head.z=body.z;head.xRot=-.45F*fold;head.zRot=.16F*(1-fold);
+        float reach=Mth.lerp(GoatmanChildModel.ease(0,.12F,progress),-.12F,-2.6F)*(1-GoatmanChildModel.ease(.78F,1,progress));
+        for(var arm:new ModelPart[]{rightArm,leftArm}){arm.y=body.y+Mth.cos(lean);arm.z=body.z+Mth.sin(lean);arm.xRot=Mth.lerp(fold,reach,-1.35F+.5F*pull);}
+        rightElbow.xRot=-.65F*pull;leftElbow.xRot=-.8F*pull;
     }
     /** The whole pose from plain numbers, so the client proof can draw it without a world. */
     public void pose(float age,float walk,float pace,boolean heaving,float yaw,float pitch){

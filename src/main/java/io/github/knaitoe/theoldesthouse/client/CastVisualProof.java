@@ -36,7 +36,7 @@ public final class CastVisualProof extends Screen {
             g.flush();var pose=g.pose();pose.pushPose();pose.translate(left+width/8-8,i==2?96:75,100);pose.scale(78,78,78);pose.mulPose(Axis.YP.rotationDegrees(i==1?150:170));
             var buffers=mc.renderBuffers().bufferSource();var consumer=buffers.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/"+textures[i]+".png")));
             if(i==2)new MotherModel(mc.getEntityModels().bakeLayer(MotherModel.LAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
-            else if(i==3)new GoatmanChildModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
+            else if(i==3)new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER)).renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
             else {var model=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));model.young=false;if(i==0){grounded(model);model.huntPose(0,.5F,0,LakeWitchEntity.STALK,false);if(model.body.xRot<1.5F||model.head.y<15)throw new IllegalStateException("Hunt model is not on all fours");}model.renderToBuffer(pose,consumer,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);}
             buffers.endBatch();pose.popPose();
         }
