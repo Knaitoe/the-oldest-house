@@ -420,6 +420,16 @@ public final class GoatmanVignette {
             if(fresh(r)&&phase==GATHERING&&r.getBoolean("Exchange0497")&&!open
                     &&(!r.contains("ExchangeOut0497")||!r.contains("ExchangeIn0497"))&&(i==wrong||i==runner)){c.pose(false);continue;}
             if(fresh(r)&&phase==VIGIL&&i==wrong&&outside(r)){GoatmanStalking.step(l,b,r,c,clock);continue;}
+            // Admission changes ExtraState to X_WINDOW while the clock remains in VIGIL.
+            // Do not let the ordinary staging branch reset the route before the window crawl completes.
+            if(i==wrong&&r.getInt("ExtraState")==X_WINDOW){
+                if(walk(c,b,CREEP,l)){
+                    c.setPose(Pose.STANDING);
+                    r.putInt("ExtraState",X_FLOOR);
+                    settle(c,b,"floor");
+                }
+                continue;
+            }
             if(!outside(r)&&c.stalkingAppearance()&&GoatmanStalking.obscured(l,c))c.disguise(-1);
             if((phase==GATHERING||phase==VIGIL)&&i!=wrong)GoatmanFear.pose(c,r);else {c.fear(0);c.fearStage(0);}
             String want=place(i,r);double speed=WALK;
