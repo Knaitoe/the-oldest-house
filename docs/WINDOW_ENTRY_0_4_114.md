@@ -17,3 +17,9 @@ Seven additional native GPU pages show the child and monster at reach, sill, pul
 The declared gameplay corpus remains 716, including 95 multiplayer cases. All twelve exact-source CI jobs, existing 99 architecture views, both actual clients and reconnect checks remain required. Compilation and native validation are pending; this document does not claim a verified release.
 
 Version 0.4.114; protocol 87 because the child gains tracked entry progress; labyrinth layout 46 and manor layout 2. The playable Witness pool remains 52, requiring 39 personal resolutions across at least two kinds, with three House endings. No new source, geometry migration, actor replacement, inventory replenishment or PNG repaint is introduced. The six uncanny rooms and earlier Claude, Borrasca, hotel, home and portrait work remain in the branch.
+
+## CCTV rendering follow-up
+
+The prior native client preflight captured an entirely cleared feed and therefore correctly failed its head-pixel requirement. Minecraft's `RenderTarget.clear` unbinds that framebuffer. Both the real and masked camera passes now bind after clearing; the global model-view stack remains identity because the native renderer receives the camera view explicitly. The same original, four actual framebuffer captures and twelve changed head pixels remain required on both clients, including reconnect. The first normal/masked hallway readback and projected head rectangle are retained for diagnosis.
+
+At source `88bf9304`, all 44 focused trailer/funeral/hospital native cases passed, including the strengthened delayed admission; all seven added GPU pages and native pose/thumb checks passed and were visually inspected. These results precede the CCTV follow-up and do not substitute for its pending full exact-source matrix.

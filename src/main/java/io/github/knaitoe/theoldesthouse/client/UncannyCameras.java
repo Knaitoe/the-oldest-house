@@ -71,10 +71,12 @@ public final class UncannyCameras {
         var oldProjection=new Matrix4f(RenderSystem.getProjectionMatrix());var sorting=RenderSystem.getVertexSorting();var main=mc.gameRenderer.getMainCamera();
         var oldView=new Matrix4f().rotation(main.rotation().conjugate(new Quaternionf()));var view=new Matrix4f().rotation(lens.rotation().conjugate(new Quaternionf()));
         var projection=new Matrix4f().setPerspective((float)Math.toRadians(62),(float)W/H,.05F,128);
-        var modelView=RenderSystem.getModelViewStack();modelView.pushMatrix();modelView.set(view);RenderSystem.applyModelViewMatrix();
+        // renderLevel receives the camera view itself; the global stack must not apply it a second time.
+        var modelView=RenderSystem.getModelViewStack();modelView.pushMatrix();modelView.identity();RenderSystem.applyModelViewMatrix();
         recording=true;dollDrawn=false;
         try{
-            target.bindWrite(true);target.clear(Minecraft.ON_OSX);RenderSystem.setProjectionMatrix(projection,VertexSorting.DISTANCE_TO_ORIGIN);
+            // RenderTarget.clear unbinds its framebuffer. Bind after clearing so the native passes draw into the feed.
+            target.clear(Minecraft.ON_OSX);target.bindWrite(true);RenderSystem.setProjectionMatrix(projection,VertexSorting.DISTANCE_TO_ORIGIN);
             mc.levelRenderer.prepareCullFrustum(lens.getPosition(),view,projection);
             mc.levelRenderer.renderLevel(mc.getTimer(),false,lens,mc.gameRenderer,mc.gameRenderer.lightTexture(),view,projection);
             try(var shot=Screenshot.takeScreenshot(target)){images[channel].getPixels().copyFrom(shot);images[channel].upload();}
@@ -82,7 +84,7 @@ public final class UncannyCameras {
             if(Boolean.getBoolean("the_oldest_house.uncannySocketSmoke")&&channel==1&&dollDrawn&&headPixels<12){
                 diagnosticMask=true;
                 try{
-                    target.bindWrite(true);target.clear(Minecraft.ON_OSX);
+                    target.clear(Minecraft.ON_OSX);target.bindWrite(true);
                     mc.levelRenderer.prepareCullFrustum(lens.getPosition(),view,projection);
                     mc.levelRenderer.renderLevel(mc.getTimer(),false,lens,mc.gameRenderer,mc.gameRenderer.lightTexture(),view,projection);
                     try(var masked=Screenshot.takeScreenshot(target)){
@@ -92,6 +94,13 @@ public final class UncannyCameras {
                             int difference=Math.abs((a&255)-(b&255))+Math.abs((a>>8&255)-(b>>8&255))+Math.abs((a>>16&255)-(b>>16&255));
                             if(difference>24)changed++;
                         }headPixels=Math.max(headPixels,changed);
+                        if(frames[1]==2){
+                            try{
+                                var dir=java.nio.file.Path.of(System.getProperty("the_oldest_house.liveProofDir","build/uncanny-live-proof"));java.nio.file.Files.createDirectories(dir);var role=System.getProperty("the_oldest_house.liveProofRole","");
+                                normal.writeToFile(dir.resolve(role+"-cctv-head-normal.png"));masked.writeToFile(dir.resolve(role+"-cctv-head-masked.png"));
+                                java.nio.file.Files.writeString(dir.resolve(role+"-cctv-head-bounds.txt"),"Native head rectangle="+Arrays.toString(headRect)+" changed="+changed+" lens="+lens.getPosition()+"\n");
+                            }catch(java.io.IOException ex){throw new IllegalStateException("Cannot retain native CCTV head readbacks",ex);}
+                        }
                     }
                 }finally{diagnosticMask=false;}
             }
