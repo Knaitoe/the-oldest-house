@@ -79,6 +79,7 @@ public final class UncannyCameras {
             target.clear(Minecraft.ON_OSX);target.bindWrite(true);RenderSystem.setProjectionMatrix(projection,VertexSorting.DISTANCE_TO_ORIGIN);
             mc.levelRenderer.prepareCullFrustum(lens.getPosition(),view,projection);
             mc.levelRenderer.renderLevel(mc.getTimer(),false,lens,mc.gameRenderer,mc.gameRenderer.lightTexture(),view,projection);
+            renderOriginal(mc,view,projection);
             try(var shot=Screenshot.takeScreenshot(target)){images[channel].getPixels().copyFrom(shot);images[channel].upload();}
             frames[channel]++;dollFrames[channel]|=dollDrawn;
             if(Boolean.getBoolean("the_oldest_house.uncannySocketSmoke")&&channel==1&&dollDrawn&&headPixels<12){
@@ -87,6 +88,7 @@ public final class UncannyCameras {
                     target.clear(Minecraft.ON_OSX);target.bindWrite(true);
                     mc.levelRenderer.prepareCullFrustum(lens.getPosition(),view,projection);
                     mc.levelRenderer.renderLevel(mc.getTimer(),false,lens,mc.gameRenderer,mc.gameRenderer.lightTexture(),view,projection);
+                    renderOriginal(mc,view,projection);
                     try(var masked=Screenshot.takeScreenshot(target)){
                         var normal=images[channel].getPixels();int changed=0;
                         for(int y=headRect[1];y<headRect[3];y++)for(int x=headRect[0];x<headRect[2];x++){
@@ -111,6 +113,19 @@ public final class UncannyCameras {
             mc.getEntityRenderDispatcher().prepare(mc.level,main,mc.crosshairPickEntity);
             RenderSystem.viewport(0,0,mc.getWindow().getWidth(),mc.getWindow().getHeight());
         }
+    }
+    /** Flush the original actor under this lens, retaining the room's real depth and native skin/model renderer. */
+    private static void renderOriginal(Minecraft mc,Matrix4f view,Matrix4f projection){
+        if(!(mc.level.getEntity(UncannyClient.doll()) instanceof LiteraryActor actor)||!UncannyActorRenderer.visible(actor))return;
+        target.bindWrite(true);RenderSystem.setProjectionMatrix(projection,VertexSorting.DISTANCE_TO_ORIGIN);RenderSystem.enableDepthTest();RenderSystem.depthMask(true);
+        var matrix=RenderSystem.getModelViewStack();matrix.pushMatrix();matrix.set(view);RenderSystem.applyModelViewMatrix();
+        var color=RenderSystem.getShaderColor().clone();RenderSystem.setShaderColor(1,1,1,1);mc.gameRenderer.lightTexture().turnOnLightLayer();
+        var dispatcher=mc.getEntityRenderDispatcher();dispatcher.prepare(mc.level,lens,mc.crosshairPickEntity);
+        try{
+            float partial=mc.getTimer().getGameTimeDeltaPartialTick(false);var at=actor.getPosition(partial).subtract(lens.getPosition());var buffers=mc.renderBuffers().bufferSource();
+            dispatcher.render(actor,at.x,at.y,at.z,net.minecraft.util.Mth.lerp(partial,actor.yRotO,actor.getYRot()),partial,new PoseStack(),buffers,dispatcher.getPackedLightCoords(actor,partial));
+            buffers.endBatch();
+        }finally{mc.gameRenderer.lightTexture().turnOffLightLayer();RenderSystem.setShaderColor(color[0],color[1],color[2],color[3]);matrix.popMatrix();RenderSystem.applyModelViewMatrix();}
     }
     public static void monitor(PoseStack p,MultiBufferSource buffers,int light){
         if(ids[0]==null||recording)return;
