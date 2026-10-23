@@ -29,6 +29,11 @@ public final class UncannyRooms {
     public static void build(ServerLevel l,BlockPos b,LabyrinthPlace p){
         var r=p.room();box(l,b,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ(),Blocks.AIR);
         switch(p){case PAINTED_INTERIOR->boarded(l,b);case SECOND_WAITRESS->diner(l,b);case TUNNEL_PERIPHERY->tunnel(l,b);case MISSING_SLEEP->bedroom(l,b);case LAYERED_MAN->cellar(l,b);case MOTION_LIGHT->foyer(l,b);default->throw new IllegalArgumentException(p.id());}
+        // The return vestibule opens at z=0; several authored front walls stand at z=-1.
+        // Join both cells without deleting the diner's own door farther inside the forecourt.
+        box(l,b,0,0,-1,0,1,0,Blocks.AIR);
+        Block threshold=switch(p){case PAINTED_INTERIOR->Blocks.COARSE_DIRT;case SECOND_WAITRESS->Blocks.GRAVEL;case TUNNEL_PERIPHERY->Blocks.SMOOTH_STONE;case MISSING_SLEEP->Blocks.SPRUCE_PLANKS;default->Blocks.DARK_OAK_PLANKS;};
+        for(int z=-1;z<=0;z++)if(BuildBlocks.state(l,b.offset(0,-1,z)).isAir())at(l,b,0,-1,z,threshold);
         fit(l,b,account(p),LEDGER,Direction.SOUTH);
     }
     private static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),FLAGS);}
@@ -46,7 +51,7 @@ public final class UncannyRooms {
         for(int z=-2;z>=-35;z-=5)for(int x:new int[]{-13,13}){box(l,b,x,0,z,x,2,z,Blocks.ROOTED_DIRT);at(l,b,x,3,z,Blocks.HANGING_ROOTS);}
         room(l,b,-8,8,-28,-7,0,5,Blocks.SPRUCE_PLANKS,Blocks.DARK_OAK_PLANKS);
         box(l,b,-8,0,-15,8,4,-15,Blocks.SPRUCE_PLANKS);door(l,b,new BlockPos(0,0,-15),Direction.SOUTH,true);
-        door(l,b,new BlockPos(0,0,-6),Direction.SOUTH,true);
+        door(l,b,new BlockPos(0,0,-7),Direction.SOUTH,true);
         for(int z:new int[]{-11,-19,-24})for(int x:new int[]{-9,9})for(int y=1;y<=2;y++)fit(l,b,new BlockPos(x,y,z),PAINTED_BOARD,x<0?Direction.EAST:Direction.WEST);
         for(int x=-2;x<=2;x++)for(int y=1;y<=2;y++)fit(l,b,new BlockPos(x,y,-28),PAINTED_BOARD,Direction.SOUTH);
         door(l,b,PARLOR_DOOR,Direction.WEST,false);

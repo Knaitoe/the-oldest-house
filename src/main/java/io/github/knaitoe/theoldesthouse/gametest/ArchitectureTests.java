@@ -276,6 +276,8 @@ public final class ArchitectureTests {
 
     /** The six authored uncanny spaces have their own flooring, including tile and concrete rather than parlor rugs. */
     private static void uncannyFloor(GameTestHelper h,net.minecraft.server.level.ServerLevel level,BlockPos b,LabyrinthPlace scene){
+        h.assertTrue(level.noCollision(null,new AABB(b.getX()+.2,b.getY()+.01,b.getZ()-.8,b.getX()+.8,b.getY()+1.81,b.getZ()+.8)),scene.id()+" connects its return doorway through the actual front wall");
+        h.assertTrue(level.getBlockState(b.offset(0,-1,0)).isCollisionShapeFullBlock(level,b.offset(0,-1,0)),scene.id()+" supports the body crossing its return threshold");
         BlockPos start=switch(scene){
             case PAINTED_INTERIOR->new BlockPos(-1,-1,-22);
             case SECOND_WAITRESS->new BlockPos(-1,-1,-16);
