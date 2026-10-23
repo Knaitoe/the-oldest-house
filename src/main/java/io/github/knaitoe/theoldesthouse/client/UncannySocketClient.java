@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.*;
 /** Native socket-client source/menu/bed/feed/door/health actions and genuine GPU readback. Opt-in only. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class UncannySocketClient {
-    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1;private static String shot;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
+    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg;private static String shot;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
     private UncannySocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("UNCANNY CLIENT: "+message);}
@@ -39,10 +39,26 @@ public final class UncannySocketClient {
         // The native menu and final-page round trip must happen; elapsed phase time alone proves neither.
         if(paperOpened&&paperSent>=0&&verified&&mc.screen==null)ack(mc,view);
     }
+    /** Walk the actual doorway, stair flight and landing with ordinary native movement packets. */
+    private static boolean bedroomWalk(Minecraft mc,BlockPos b){
+        Vec3[] route={new Vec3(.5,0,-2.5),new Vec3(-6.5,0,-2.5),new Vec3(-6.5,5,-10.5),new Vec3(-5.5,5,-20.5)};
+        if(bedroomLeg>=route.length)return true;
+        var target=route[bedroomLeg].add(Vec3.atLowerCornerOf(b));var delta=target.subtract(mc.player.position());
+        if(delta.horizontalDistanceSqr()<.09&&Math.abs(delta.y)<.3&&mc.player.onGround()){
+            TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} native bedroom waypoint {} at {}",role(),bedroomLeg,mc.player.position());
+            if(++bedroomLeg==route.length){
+                require(!mc.player.isNoGravity(),"the doorway and stairs use real gravity");
+                try{Files.createDirectories(UncannySocketProof.folder());Files.writeString(UncannySocketProof.folder().resolve(role()+"-bedroom-native-route.txt"),"Four native walking waypoints completed from the return doorway, up the five real stair treads and onto the notebook landing; no teleport, flight or no-gravity movement. Final body="+mc.player.position()+" grounded="+mc.player.onGround()+"\n");}catch(Exception ex){throw new IllegalStateException(ex);}
+                return true;
+            }
+            return false;
+        }
+        look(mc,new Vec3(target.x,mc.player.getEyeY(),target.z));mc.options.keyUp.setDown(true);return false;
+    }
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         if(!UncannySocketProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var custom=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(custom==null)return;var data=custom.copyTag();int next=data.getInt("UncannyStep");if(next==0)return;
-        if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;closed=false;paid=false;paperOpened=false;paperSent=-1;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
+        if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
         stop(mc);var b=UncannyClient.base();
         if(age%100==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} phase={} room={} eye={} feeds={} headPixels={} health={} ring={} mirror={} screen={}",role(),phase,UncannyClient.room(),mc.player.getEyePosition(),feedMask,UncannyCameras.verifiedHeadPixels(),mc.player.getHealth(),UncannyClient.ring(),UncannyClient.mirror(),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
         for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&UncannyStories.role(a.role())&&a.owner().isPresent())require(a.owner().get().equals(mc.player.getUUID()),"another reader's private original was tracked");
@@ -51,7 +67,7 @@ public final class UncannySocketClient {
         }
         if((phase==2||phase==3)&&age>30){var fake=actor(mc,LiteraryActor.UNCANNY_FALSE_WAITRESS);if(fake!=null){look(mc,fake.getEyePosition());if(phase==2&&fake.phase()==1||phase==3&&fake.phase()>=2)ack(mc,phase==2?"diner-translucent":"diner-solid");}}
         if(phase==4&&age>25){var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null){look(mc,giant.getEyePosition());require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");ack(mc,"giant-folded");}}
-        if(phase==5&&UncannyClient.room().equals("missing_sleep"))paper(mc,b.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)),"bedroom-source",data.getBoolean("PaperRead"));
+        if(phase==5&&UncannyClient.room().equals("missing_sleep")&&bedroomWalk(mc,b))paper(mc,b.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)),"bedroom-source",data.getBoolean("PaperRead"));
         if(phase==6||phase==7){if(age>15&&clicked<0)click(mc,b.offset(UncannyRooms.BED_AT));if(age>35&&UncannyClient.sleeps()==(phase==6?1:2))ack(mc,phase==6?"bedroom-first-cut":"bedroom-second-cut");}
         if(phase==8&&age>30){var doll=actor(mc,LiteraryActor.UNCANNY_MARIONETTE);if(doll!=null&&doll.phase()==1){look(mc,doll.getEyePosition());require(UncannyActorRenderer.visible(doll),"the direct form is visible to its owner");ack(mc,"bedroom-direct");}}
         if((phase==9||phase==11)&&UncannyClient.room().equals("missing_sleep")){

@@ -67,6 +67,7 @@ try:
             p.wait(timeout=90)
             assert p.returncode == 0, p.returncode
         for role in ("A", "B"):
+            assert (report / f"{role}-bedroom-native-route.txt").stat().st_size > 50, role
             for view in ("boarded-periphery", "diner-translucent", "diner-solid", "giant-folded", "bedroom-source", "bedroom-first-cut", "bedroom-second-cut", "bedroom-direct", "bedroom-cctv", "bedroom-cctv-reconnected", "bedroom-door-closed", "bedroom-account", "cellar-growth", "foyer-lit", "foyer-dark", "ring-and-mirror"):
                 assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
             for prefix in ("", "reconnected-"):
