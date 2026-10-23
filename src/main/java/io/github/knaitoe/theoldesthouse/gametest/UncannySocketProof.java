@@ -76,7 +76,10 @@ public final class UncannySocketProof {
         if(!enabled())return;var s=e.getServer();var a=player(s,"A");var b=player(s,"B");
         try{
             if(phase==0){
-                if(a==null||b==null)return;var house=new HouseSavedData();house.markSpawned(ORIGIN);s.overworld().getDataStorage().set("the_oldest_house",house);
+                if(a==null||b==null)return;
+                // This fixture builds six vignettes, not the manor at its otherwise empty origin.
+                // Match the full expedition host: do not start an unrelated eighty-chunk terrain copy.
+                var house=new HouseSavedData();house.markSpawned(ORIGIN);house.markInteriorInitialized();s.overworld().getDataStorage().set("the_oldest_house",house);
                 var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,ORIGIN);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
                 for(var p:List.of(a,b)){at(p,LabyrinthPlace.PAINTED_INTERIOR,.5,0,-20.5);sourceFixture(p,LabyrinthPlace.PAINTED_INTERIOR,120);}
                 step(s,1);return;
