@@ -221,7 +221,8 @@ public final class ArchitectureTests {
                 }
             }
             h.assertTrue(squares==0,scene.id()+" keeps no lattice of lone carpet squares: "+squares);
-            if(scene==LabyrinthPlace.GHOSTS_SET){int floors=0;for(var at:BlockPos.betweenClosed(b.offset(-19,-1,-45),b.offset(19,-1,-1))){var surface=level.getBlockState(at);if(surface.is(LiteraryRegistry.GHOST_SET.get())&&surface.getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.FLOOR)floors++;}h.assertTrue(floors>=100&&level.getBlockState(b.offset(0,0,-28)).is(LiteraryRegistry.GHOST_SET.get()),"the furnished filming home retains its laid native floor and continuous dining table");}
+            if(UncannyRooms.isUncanny(scene))uncannyFloor(h,level,b,scene);
+            else if(scene==LabyrinthPlace.GHOSTS_SET){int floors=0;for(var at:BlockPos.betweenClosed(b.offset(-19,-1,-45),b.offset(19,-1,-1))){var surface=level.getBlockState(at);if(surface.is(LiteraryRegistry.GHOST_SET.get())&&surface.getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.FLOOR)floors++;}h.assertTrue(floors>=100&&level.getBlockState(b.offset(0,0,-28)).is(LiteraryRegistry.GHOST_SET.get()),"the furnished filming home retains its laid native floor and continuous dining table");}
             else if(scene!=LabyrinthPlace.WINCHESTER&&scene!=LabyrinthPlace.MASQUE)h.assertTrue(rugs>=9,scene.id()+" has a laid rug: "+rugs);
             // The discovery paper and the ending can both be reached from the entrance.
             var reached=reachable(level,b,scene);
@@ -273,6 +274,31 @@ public final class ArchitectureTests {
         h.assertTrue(interior.getBlockState(grate).isAir(),"a completed composition does not rebuild what was taken away");
     }
 
+    /** The six authored uncanny spaces have their own flooring, including tile and concrete rather than parlor rugs. */
+    private static void uncannyFloor(GameTestHelper h,net.minecraft.server.level.ServerLevel level,BlockPos b,LabyrinthPlace scene){
+        BlockPos start=switch(scene){
+            case PAINTED_INTERIOR->new BlockPos(-1,-1,-22);
+            case SECOND_WAITRESS->new BlockPos(-1,-1,-16);
+            case TUNNEL_PERIPHERY->new BlockPos(-1,-1,-34);
+            case MISSING_SLEEP->new BlockPos(-1,4,-20);
+            case LAYERED_MAN->new BlockPos(-1,-6,-16);
+            case MOTION_LIGHT->new BlockPos(-1,-1,-7);
+            default->throw new IllegalArgumentException(scene.id());
+        };
+        for(var rel:BlockPos.betweenClosed(start,start.offset(2,0,2))){
+            Block expected=switch(scene){
+                case PAINTED_INTERIOR,MOTION_LIGHT->Blocks.DARK_OAK_PLANKS;
+                case SECOND_WAITRESS->((rel.getX()+rel.getZ())&1)==0?Blocks.BLACK_CONCRETE:Blocks.SMOOTH_QUARTZ;
+                case TUNNEL_PERIPHERY,LAYERED_MAN->Blocks.SMOOTH_STONE;
+                case MISSING_SLEEP->Blocks.SPRUCE_PLANKS;
+                default->throw new IllegalArgumentException(scene.id());
+            };
+            var at=b.offset(rel);var floor=level.getBlockState(at);
+            h.assertTrue(floor.is(expected)&&floor.isCollisionShapeFullBlock(level,at),scene.id()+" retains its continuous, supporting authored floor at "+rel+": "+floor);
+        }
+        if(scene==LabyrinthPlace.MISSING_SLEEP)h.assertTrue(level.getBlockState(b.offset(0,-1,-20)).is(Blocks.SPRUCE_PLANKS),"the bedroom keeps a supported ground floor beneath its real upper hallway");
+        if(scene==LabyrinthPlace.MOTION_LIGHT)h.assertTrue(level.getBlockState(b.offset(0,-1,-20)).is(Blocks.GRAVEL),"the foyer gives way to the actual gravel floodlight courtyard");
+    }
     /** Open space connected to a scene's doorways, through its doors. */
     private static Set<BlockPos> reachable(net.minecraft.server.level.ServerLevel level,BlockPos b,LabyrinthPlace scene){
         var r=scene.room();var seen=new HashSet<BlockPos>();var todo=new ArrayDeque<BlockPos>();
