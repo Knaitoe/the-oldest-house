@@ -75,6 +75,7 @@ try:
                     assert (report / f"{role}-cctv-{prefix}{channel}.png").stat().st_size > 500, (role, prefix, channel)
                 assert (report / f"{role}-cctv-{prefix}pixels.txt").stat().st_size > 30, (role, prefix)
         native_log = (server / "logs/latest.log").read_text(errors="replace")
+        assert "Seeding the house interior in the background." not in native_log, "The isolated uncanny fixture started an unrelated manor terrain copy."
         assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
         print((report / "passed.txt").read_text(), flush=True)
         raise SystemExit(0)
