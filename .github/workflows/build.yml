@@ -914,6 +914,7 @@ jobs:
           test -s build/font-smoke/borrasca-assets-passed.txt
           for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes; do test -s build/font-smoke/native-borrasca-$view.png; done
           for view in borrasca borrasca_treehouse borrasca_refinery borrasca_gully borrasca_taking; do test -s build/font-smoke/scenes/$view.png; done
+          for view in painted_interior second_waitress tunnel_periphery missing_sleep layered_man motion_light; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
           for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done

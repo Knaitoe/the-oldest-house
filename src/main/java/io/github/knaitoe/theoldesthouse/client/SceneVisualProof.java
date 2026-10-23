@@ -5,6 +5,8 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.math.Axis;
 import com.mojang.serialization.JsonOps;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.UncannyRegistry;
+import io.github.knaitoe.theoldesthouse.labyrinth.UncannyRooms;
 import java.nio.file.*;
 import java.util.*;
 import net.minecraft.client.*;
@@ -32,7 +34,10 @@ public final class SceneVisualProof extends Screen {
         super(Component.literal("Native scene architecture"));
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of("../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        if(files.size()!=99)throw new IllegalStateException("Expected ninety-nine generated architecture views, found "+files.size());load();
+        int expected=99+UncannyRooms.PLACES.size();
+        if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier plus every uncanny room), found "+files.size());
+        for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
+        load();
     }
     private void load()throws Exception{
         var json=JsonParser.parseString(Files.readString(files.get(index))).getAsJsonObject();name=json.get("name").getAsString();
@@ -51,7 +56,8 @@ public final class SceneVisualProof extends Screen {
         pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(32));pose.mulPose(Axis.YP.rotationDegrees(-45));pose.translate(-cx,-cy,-cz);
         var buffers=mc.renderBuffers().bufferSource();
         for(var v:voxels){pose.pushPose();pose.translate(v.x,v.y,v.z);
-            if(v.state.is(io.github.knaitoe.theoldesthouse.labyrinth.NovelRegistry.WELL_COVER.get()))WellCoverRenderer.draw(0,false,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+            if(v.state.is(UncannyRegistry.PROP.get()))UncannyPropRenderer.draw(v.state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+            else if(v.state.is(io.github.knaitoe.theoldesthouse.labyrinth.NovelRegistry.WELL_COVER.get()))WellCoverRenderer.draw(0,false,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             else if(v.state.is(net.minecraft.world.level.block.Blocks.WATER))water(pose,buffers,v.state);else if(v.state.getBlock() instanceof net.minecraft.world.level.block.BedBlock bed){if(v.state.getValue(net.minecraft.world.level.block.BedBlock.PART)==net.minecraft.world.level.block.state.properties.BedPart.FOOT){var entity=(net.minecraft.world.level.block.entity.BedBlockEntity)bed.newBlockEntity(net.minecraft.core.BlockPos.ZERO,v.state);mc.getBlockEntityRenderDispatcher().getRenderer(entity).render(entity,0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);}}else if(dead(v.state)){var kind=v.state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.KIND);long seed=net.minecraft.util.Mth.getSeed(v.x,v.y,v.z);
                 // The carcasses and the dead are drawn by their block entity renderer in play; draw them the same way here.
                 if(kind==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CARCASS)LiteraryRenderers.ModelRenderer.carcass(elk,v.state,seed,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
@@ -70,7 +76,7 @@ public final class SceneVisualProof extends Screen {
         Path folder=Path.of("../build/font-smoke/scenes");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
         if(++s.index<s.files.size())s.load();else{
-            Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All ninety-nine native generated architecture views rendered successfully.\n");
+            Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All "+s.files.size()+" native generated architecture views rendered successfully, including the 99 earlier views and all six uncanny rooms.\n");
             TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: {} native architecture screenshots saved",s.files.size());mc.setScreen(new OutsideSkyProof());
         }
     }
