@@ -56,6 +56,10 @@ def paintings():
         for y in (4,27):d.line((x-1,y,x+1,y),fill='#738985')
     # A red cross sits above the existing native call button, at its unchanged position.
     d.rectangle((14,3,17,8),fill='#a9504e');d.rectangle((12,5,19,6),fill='#a9504e')
+    # The call button itself: an enamel bezel (left half) and a red cap (right half).
+    d=tile('call_button',(0,0,0,0));d.rectangle((0,0,13,11),fill='#e2e1d4',outline='#7c9591');d.line((1,1,12,1),fill='#f3efe0')
+    d.rectangle((0,12,13,13),fill='#9fb1ab');d.rectangle((18,2,23,7),fill='#b8423d');d.line((18,2,23,2),fill='#de7268');d.line((18,2,18,7),fill='#de7268')
+    d.line((19,7,23,7),fill='#7d2a28');d.line((23,3,23,7),fill='#7d2a28');d.point((20,4),fill='#f0a097');d.rectangle((18,10,23,12),fill='#8e302c')
     d=tile('controls','#d9ddd2');d.rectangle((1,0,16,3),fill='#435e5e');d.line((3,2,7,2,8,0,10,3,12,1,14,1),fill='#acd0b3')
     d.rectangle((20,0,23,3),fill='#ad5551');d.rectangle((25,1,27,2),fill='#7b9e83')
     d=tile('door_lower','#c4d2c8');d.rectangle((1,1,30,30),outline='#809a94');d.rectangle((5,5,26,28),outline='#e0e2d2')
@@ -118,6 +122,21 @@ def models():
     for bounds in rails:
         part=cube('frame');part['from']=bounds[:3];part['to']=bounds[3:];incubator['elements'].append(part)
     put('models/block/novel_incubator.json',incubator)
+    bezel={'from':[5,0,5.5],'to':[11,1,10.5],'faces':{'down':{'uv':[0,0,7,6],'texture':'#call_button','cullface':'down'},'up':{'uv':[0,0,7,6],'texture':'#call_button'},
+        **{f:{'uv':[0,6,7,7],'texture':'#call_button'} for f in ('north','south','east','west')}}}
+    for name,height in (('night_ward_call_button',2.25),('night_ward_call_button_pressed',1.4)):
+        cap={'from':[6.5,1,6.5],'to':[9.5,height,9.5],'faces':{'up':{'uv':[9,1,12,4],'texture':'#call_button'},**{f:{'uv':[9,5,12,6],'texture':'#call_button'} for f in ('north','south','east','west')}}}
+        put(f'models/block/{name}.json',{'textures':{'call_button':PREFIX+'call_button','particle':PREFIX+'call_button'},'elements':[copy.deepcopy(bezel),cap]})
+    variants={}
+    for face,x in (('floor',0),('wall',90),('ceiling',180)):
+        for facing,y in (('north',0),('east',90),('south',180),('west',270)):
+            if face=='ceiling':y=(y+180)%360
+            for powered in ('false','true'):
+                v={'model':'the_oldest_house:block/night_ward_call_button'+('_pressed' if powered=='true' else '')}
+                if x:v['x']=x
+                if y:v['y']=y
+                variants[f'face={face},facing={facing},powered={powered}']=v
+    put('blockstates/night_ward_call_button.json',{'variants':variants})
     return result
 
 def main():
@@ -131,6 +150,6 @@ def main():
         path=A/name
         if check:assert json.loads(path.read_text())==obj,name
         else:path.write_text(json.dumps(obj,indent=2)+'\n')
-    print(('Verified' if check else 'Painted')+' fifteen night-duty ward materials and their native models.')
+    print(('Verified' if check else 'Painted')+' sixteen night-duty ward materials and their native models.')
 
 if __name__=='__main__':main()

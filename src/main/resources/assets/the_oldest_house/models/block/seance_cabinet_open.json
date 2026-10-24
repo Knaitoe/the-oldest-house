@@ -1,0 +1,168 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "cabinet_front": "the_oldest_house:block/seance/cabinet_front",
+    "cabinet_side": "the_oldest_house:block/seance/cabinet_side",
+    "cabinet_top": "the_oldest_house:block/seance/cabinet_top",
+    "cabinet_inside": "the_oldest_house:block/seance/cabinet_inside",
+    "cabinet_door": "the_oldest_house:block/seance/cabinet_door",
+    "wood": "the_oldest_house:block/seance/wood",
+    "particle": "the_oldest_house:block/seance/wood"
+  },
+  "elements": [
+    {
+      "from": [
+        0.5,
+        0,
+        3.5
+      ],
+      "to": [
+        15.5,
+        1.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cabinet_front"
+        },
+        "south": {
+          "texture": "#cabinet_side"
+        },
+        "east": {
+          "texture": "#cabinet_side"
+        },
+        "west": {
+          "texture": "#cabinet_side"
+        },
+        "up": {
+          "texture": "#cabinet_side"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        14,
+        3
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cabinet_front"
+        },
+        "south": {
+          "texture": "#cabinet_side"
+        },
+        "east": {
+          "texture": "#cabinet_side"
+        },
+        "west": {
+          "texture": "#cabinet_side"
+        },
+        "up": {
+          "texture": "#cabinet_top"
+        },
+        "down": {
+          "texture": "#cabinet_side"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        1.5,
+        4
+      ],
+      "to": [
+        15,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cabinet_inside"
+        },
+        "south": {
+          "texture": "#cabinet_side"
+        },
+        "east": {
+          "texture": "#cabinet_side"
+        },
+        "west": {
+          "texture": "#cabinet_side"
+        }
+      }
+    },
+    {
+      "from": [
+        0.2,
+        2,
+        -3
+      ],
+      "to": [
+        1,
+        14,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cabinet_door"
+        },
+        "south": {
+          "texture": "#cabinet_door"
+        },
+        "east": {
+          "texture": "#cabinet_door"
+        },
+        "west": {
+          "texture": "#cabinet_door"
+        },
+        "up": {
+          "texture": "#cabinet_door"
+        },
+        "down": {
+          "texture": "#cabinet_door"
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        2,
+        -3
+      ],
+      "to": [
+        15.8,
+        14,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cabinet_door"
+        },
+        "south": {
+          "texture": "#cabinet_door"
+        },
+        "east": {
+          "texture": "#cabinet_door"
+        },
+        "west": {
+          "texture": "#cabinet_door"
+        },
+        "up": {
+          "texture": "#cabinet_door"
+        },
+        "down": {
+          "texture": "#cabinet_door"
+        }
+      }
+    }
+  ]
+}

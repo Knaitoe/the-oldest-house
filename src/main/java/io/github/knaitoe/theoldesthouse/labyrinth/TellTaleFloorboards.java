@@ -95,15 +95,12 @@ public final class TellTaleFloorboards {
         BlockState ceiling = Blocks.DARK_OAK_PLANKS.defaultBlockState();
         LabyrinthBuilder.room(level, base, -5, 5, 3, -9, -1, wall, floor, ceiling);
 
-        // Under the boards: sculk, and a few sensors that click when he stirs.
+        // Under the boards: sculk. The room listens for itself; nothing under the floor makes a sound but the heart.
         for (int x = -5; x <= 5; x++) {
             for (int z = -9; z <= -1; z++) {
                 level.setBlock(base.offset(x, -2, z), Blocks.SCULK.defaultBlockState(), flags);
                 level.setBlock(base.offset(x, -3, z), wall, flags);
             }
-        }
-        for (BlockPos sensor : List.of(new BlockPos(-3, -2, -3), new BlockPos(3, -2, -7), new BlockPos(0, -2, -5))) {
-            level.setBlock(base.offset(sensor), Blocks.SCULK_SENSOR.defaultBlockState(), flags);
         }
 
         level.setBlock(base.offset(LOOSE_BOARD), withBoard

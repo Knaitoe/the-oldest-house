@@ -14,10 +14,10 @@ public final class HolyRabbitDialogue {
         if(night==1&&ticks>=15&&once(own,1))p.displayClientMessage(Component.literal("Before you woke, a small rabbit sat beside you in the hollow. One ear had a brown tip. You can still remember its warmth."),false);
         // As in Jones's story, the boy names the rabbit and the boy believes it will come back; Father goes along with it.
         if(night==1&&(own.getInt("RabbitMornings")&2)!=0&&once(own,2)){voice(p,father,"The little one from your dream. Has he got a name?");p.displayClientMessage(Component.literal("You tell him: "+name(own)+". A thing with a name is real."),false);}
-        if(night==1&&own.getInt("AteNight")==1&&once(own,4)){p.displayClientMessage(Component.literal("You fold the skin and push it into the snow past the tree. He'll come back."),false);voice(p,father,"Maybe he will.");}
+        if(night==1&&own.getInt("AteNight")==1&&once(own,4)){p.displayClientMessage(Component.literal("You tell Father the little one from your dream will come back."),false);voice(p,father,"Maybe he will.");}
         if(night==2&&(own.getInt("RabbitMornings")&4)!=0&&own.getInt("Meals")>=1&&once(own,8)){
             own.putBoolean("RabbitBelief0490",true);own.putBoolean("RabbitBelieved0490",true);
-            p.displayClientMessage(Component.literal(name(own)+" is beside the tree again, one ear brown at the tip. Last night you ate. This morning he came back."),false);
+            p.displayClientMessage(Component.literal(name(own)+" is beside the tree again, one ear brown at the tip."),false);
             voice(p,father,"There he is. I told you he could find us. We only have to get through another night.");
         }
         if(night>=2&&own.getInt("MealNight")>=2&&!own.getBoolean("WoundSeen0488")&&once(own,16))voice(p,father,"I went by the creek. That's why my trousers are wet. It's a good sign; water runs to people. Don't let the meat get cold while you worry about me.");
@@ -42,7 +42,7 @@ public final class HolyRabbitDialogue {
             if(now.getBoolean("LastHunt0490"))words=slot==4?"I have to get you one more morning.":"Hunting.";
             else if(now.getBoolean("WoundSeen0488"))words=slot==0?"You needed to eat. I couldn't let the snow have you.":slot==2?"The poles will hold me. You go ahead. Keep looking for the light.":"I will be right behind you. Keep going when you see the light.";
             else if(today>=3)words=slot==0?name(now)+" is by the tree. My arm won't lift. Look where I looked yesterday.":slot==2?"I'm only tired. You must save your strength. You're the one who has to walk.":"One more try. I can still get you one more morning.";
-            else if(today==2)words=slot==0?"You've seen him. Same little mark, same tree. Some things keep finding their way back to us.":slot==2?"I went by the creek. Don't worry about my trousers. Keep the skin folded and eat while it's warm.":"You keep eating. I'll keep looking. We don't need to solve the whole forest tonight.";
+            else if(today==2)words=slot==0?"You've seen him. Same little mark, same tree. Some things keep finding their way back to us.":slot==2?"I went by the creek. Don't worry about my trousers. Eat while it's warm.":"You keep eating. I'll keep looking. We don't need to solve the whole forest tonight.";
             else words=slot==0?"If he can find us under all this snow, he can find us tomorrow. Hold on to that.":slot==2?"We wait here until it eases. The tree keeps the worst of it off. Stay where I can see you.":"Your mother will be waiting. Tell her about the rabbit when we're home.";
             if(slot!=8)voice(p,father,words);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.HOLY_RABBIT,now);return true;
         });

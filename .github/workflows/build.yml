@@ -43,6 +43,7 @@ jobs:
           python3 tools/verify_character_art.py
           python3 tools/draw_harrigan_funeral_assets.py --check
           python3 tools/draw_night_ward_assets.py --check
+          python3 tools/draw_seance_fittings.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
           python3 tools/generate_bath_decay_assets.py --check
 

@@ -34,7 +34,8 @@ public final class ClassicsVignettes {
     public static final int SITTING_TICKS=720,NIGHT_PERIOD=320;
     /** The shared family moves once per server tick however many readers are in the room. */
     private static int seanceTick=-1;
-    private static final int[][] CHAIRS={{0,-13},{-3,-15},{2,-15},{0,-18}};
+    /** Each of them stands at the table in front of their own chair, hands on the wood. Rows are x,z block centres. */
+    private static final double[][] STANDS={{.5,-13.5},{-1.5,-14.5},{1.5,-14.5},{.5,-16.5}};
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private ClassicsVignettes(){}
     public static boolean isClassic(LabyrinthPlace place){return place==LabyrinthPlace.SEANCE||place==LabyrinthPlace.WALLPAPER_NURSERY;}
@@ -53,11 +54,11 @@ public final class ClassicsVignettes {
     public static void ensureCast(ServerLevel level,BlockPos base){
         var data=LabyrinthData.get(level.getServer());var all=data.state(STATE);
         if(all.getBoolean("CastMade"))return;
-        int[][] positions=CHAIRS;float[] facing={180,-90,90,0};
+        float[] facing={180,-90,90,0};
         for(int role=0;role<4;role++){
             if(all.hasUUID("Actor"+role))continue;
-            var actor=ClassicsRegistry.ACTOR.get().create(level);if(actor==null)return;actor.appearance(role,true,false);
-            actor.moveTo(base.getX()+positions[role][0]+.5,base.getY()+.48,base.getZ()+positions[role][1]+.5,facing[role],0);actor.setYHeadRot(facing[role]);actor.yBodyRot=facing[role];
+            var actor=ClassicsRegistry.ACTOR.get().create(level);if(actor==null)return;actor.appearance(role,false,false);
+            actor.moveTo(base.getX()+STANDS[role][0],base.getY(),base.getZ()+STANDS[role][1],facing[role],0);actor.setYHeadRot(facing[role]);actor.yBodyRot=facing[role];
             if(!level.addFreshEntity(actor))return;all.putUUID("Actor"+role,actor.getUUID());data.setState(STATE,all);
         }
         all.putBoolean("CastMade",true);data.setState(STATE,all);
@@ -98,7 +99,7 @@ public final class ClassicsVignettes {
         else if(rel.equals(ClassicsRooms.GRACE)){open(p,place,"Grace",ClassicsTexts.grace(),false);handled=true;}
         else if(rel.equals(ClassicsRooms.SITTING)){open(p,place,"Sitting",ClassicsTexts.medium(),false);handled=true;}
         else if(rel.equals(ClassicsRooms.ALBUM)){open(p,place,"Album",ClassicsTexts.albumRead(),true);handled=true;}
-        else if(rel.equals(ClassicsRooms.CUPBOARD)){disturb(p,0);}
+        else if(rel.equals(ClassicsRooms.CUPBOARD)){var cupboard=p.serverLevel().getBlockState(event.getPos());if(cupboard.is(ClassicsRegistry.FITTING.get())){boolean open=!cupboard.getValue(SeanceFittingBlock.OPEN);p.serverLevel().setBlock(event.getPos(),cupboard.setValue(SeanceFittingBlock.OPEN,open),F);p.serverLevel().playSound(null,event.getPos(),open?SoundEvents.WOODEN_DOOR_OPEN:SoundEvents.WOODEN_DOOR_CLOSE,SoundSource.BLOCKS,.6F,1.3F);}disturb(p,0);handled=true;}
         else if(ClassicsRooms.CANDLES.contains(rel)&&p.getMainHandItem().isEmpty()){int index=ClassicsRooms.CANDLES.indexOf(rel);var state=p.serverLevel().getBlockState(event.getPos());if(state.is(Blocks.CANDLE)&&state.getValue(CandleBlock.LIT)){p.serverLevel().setBlock(event.getPos(),state.setValue(CandleBlock.LIT,false),F);p.serverLevel().playSound(null,event.getPos(),SoundEvents.CANDLE_EXTINGUISH,SoundSource.BLOCKS,.6F,1);disturb(p,index+1);}handled=true;}
         else if(rel.distManhattan(ClassicsRooms.GATE)<=1){handled=true;if(wingReady(p.serverLevel(),b))NovelRooms.door(p.serverLevel(),b.offset(ClassicsRooms.GATE),Direction.SOUTH,Blocks.IRON_DOOR,true);else say(p,1,"Shut the other door. And the shutters. All of them.");}
         if(handled){event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);}
@@ -124,16 +125,14 @@ public final class ClassicsVignettes {
         HousePackets.send(p,new SeanceViewPayload(-1,0,false));
     }
     // ------------------------------------------------------------------------------------------------ 0.4.77: the family leaves
-    /** Each one's way from their chair, round the table, through the west door and into the back room. Rows are x,z. */
+    /** Each one's way from their place at the table, round it, through the west door and into the back room. Rows are x,z. */
     private static final double[][][] FLIGHT={
         {{.5,-13.5},{-4.5,-13.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-8.5,-29.5}},
         {{-1.5,-14.5},{-1.5,-13.5},{-4.5,-13.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-3.5,-29.5}},
         {{1.5,-14.5},{1.5,-13.5},{-4.5,-13.5},{-4.5,-19.5},{-4.5,-21.5},{-4.5,-23.5},{-9.5,-24.5}},
-        {{-1.5,-17.5},{-4.5,-19.5},{-4.5,-20.5},{-4.5,-21.5},{-4.5,-23.5},{-2.5,-28.5}}};
+        {{.5,-16.5},{-1.5,-16.5},{-1.5,-17.5},{-4.5,-19.5},{-4.5,-20.5},{-4.5,-21.5},{-4.5,-23.5},{-2.5,-28.5}}};
     private static final String FLEE="Flee0477";
     private static int flightLeg(SeanceActor a,BlockPos b){
-        var chair=CHAIRS[a.role()];
-        if(new AABB(b.offset(chair[0],0,chair[1])).contains(a.getX(),b.getY()+.1,a.getZ()))return 0;
         var route=FLIGHT[a.role()];int nearest=1;double distance=Double.MAX_VALUE;
         for(int n=1;n<route.length;n++){double d=a.position().distanceToSqr(new Vec3(b.getX()+route[n][0],a.getY(),b.getZ()+route[n][1]));if(d<distance){nearest=n;distance=d;}}
         return nearest;
@@ -158,9 +157,7 @@ public final class ClassicsVignettes {
                 a.getPersistentData().putInt(FLEE,flightLeg(a,b));a.getPersistentData().putBoolean("FlightRoute0492",true);a.setNoGravity(true);
             }
             var route=FLIGHT[a.role()];int i=a.getPersistentData().getInt(FLEE);if(i>=route.length)continue;done=false;
-            // Clear the actual 9/16 seat top before taking the first step. Only descend after the body is off it.
-            double y=b.getY()+(i==0?9/16D+.001:0);
-            if(i==0&&a.getY()<y-.001){a.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,Math.min(.12,y-a.getY()),0));a.setDeltaMovement(Vec3.ZERO);continue;}
+            double y=b.getY();
             Vec3 to=new Vec3(b.getX()+route[i][0],y,b.getZ()+route[i][1]),d=to.subtract(a.position());double len=d.horizontalDistance();
             Vec3 next=a.position().add(len<.001?0:d.x/len*Math.min(.16,len),Math.clamp(to.y-a.getY(),-.08,.12),len<.001?0:d.z/len*Math.min(.16,len));
             float yaw=len>.01?(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90:a.getYRot();a.move(net.minecraft.world.entity.MoverType.SELF,next.subtract(a.position()));a.setDeltaMovement(Vec3.ZERO);a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;

@@ -36,7 +36,9 @@ public final class SeanceRenderers {
             veil.visible=role==0;skirt.visible=role!=2;collar.visible=true;
             if(seated){leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftKnee.xRot=rightKnee.xRot=(float)Math.PI/2;leftKnee.yScale=rightKnee.yScale=4F/3;rightLeg.yRot=.12F;leftLeg.yRot=-.12F;leftArm.xRot=rightArm.xRot=-.72F;leftArm.zRot=-.12F;rightArm.zRot=.12F;skirt.xRot=-.4F;}
             else if(scared){leftArm.xRot=-1.1F;rightArm.xRot=-.9F;leftArm.zRot=-.35F;rightArm.zRot=.35F;head.xRot=.14F+(float)Math.sin(time*.35)*.04F;}
-            if(role==0&&seated){head.xRot=.18F;leftArm.xRot=rightArm.xRot=-1.2F;leftArm.yRot=.35F;rightArm.yRot=-.35F;}
+            else {leftArm.xRot=rightArm.xRot=-.62F;leftArm.zRot=-.1F;rightArm.zRot=.1F;}
+            // Standing at the table, the medium leans in with both hands flat on the wood; the others rest theirs on it.
+            if(role==0&&!scared){head.xRot=.22F;leftArm.xRot=rightArm.xRot=-.95F;leftArm.yRot=.3F;rightArm.yRot=-.3F;}
         }
         @Override public void setupAnim(SeanceActor actor,float walk,float amount,float time,float yaw,float pitch){HumanoidMotion.reset(this);super.setupAnim(actor,walk,amount,time,yaw,pitch);pose(actor.role(),actor.seated(),actor.afraid(),time);
             if(actor.role()==3){var motion=HumanoidMotion.sample(actor,time-actor.tickCount);if(!actor.seated())HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.yRot+=.025F*(float)Math.sin(time*.04F+actor.getId());HumanoidMotion.connect(this);}}

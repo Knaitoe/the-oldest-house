@@ -24,6 +24,8 @@ public final class ClassicsRegistry {
     public static final DeferredBlock<Block> TABLE=BLOCKS.registerBlock("seance_table",p->new Block(p){
         @Override protected net.minecraft.world.phys.shapes.VoxelShape getShape(net.minecraft.world.level.block.state.BlockState s,net.minecraft.world.level.BlockGetter l,net.minecraft.core.BlockPos b,net.minecraft.world.phys.shapes.CollisionContext c){return Block.box(0,0,0,16,16,16);}
     },BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noOcclusion().noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SeanceFittingBlock>> FITTING_TYPE=CODECS.register("seance_fitting",()->SeanceFittingBlock.CODEC);
+    public static final DeferredBlock<SeanceFittingBlock> FITTING=BLOCKS.registerBlock("seance_fitting",SeanceFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noOcclusion().noLootTable());
     public static final DeferredItem<Item> PLANCHETTE=ITEMS.registerSimpleItem("seance_planchette",new Item.Properties().stacksTo(1));
     public static final DeferredItem<ClassicsFolioItem> FOLIO=ITEMS.register("wallpaper_folio",()->new ClassicsFolioItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<EntityType<?>,EntityType<SeanceActor>> ACTOR=TYPES.register("seance_actor",()->EntityType.Builder.<SeanceActor>of(SeanceActor::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(16).updateInterval(2).build("seance_actor"));
