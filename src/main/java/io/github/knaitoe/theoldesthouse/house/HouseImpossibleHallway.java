@@ -6,9 +6,9 @@ import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.LanternBlock;
-import net.minecraft.core.Direction;
+import net.minecraft.world.Containers;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.phys.AABB;
 
 public final class HouseImpossibleHallway {
@@ -77,7 +77,7 @@ public final class HouseImpossibleHallway {
         purgeConstructionDebris(level, origin);
     }
 
-    /** Ordinary cupboards and continuous plaster precede the first dealt room. */
+    /** Continuous wood paneling and plaster precede the first dealt room. */
     public static void dressDomesticApproach(ServerLevel level, BlockPos origin) {
         for (int z = START_Z_OFFSET; z < END_Z_OFFSET; z++) {
             for (int x : new int[]{LEFT_WALL_X_OFFSET, RIGHT_WALL_X_OFFSET}) {
@@ -86,12 +86,7 @@ public final class HouseImpossibleHallway {
                     level.setBlock(pos, Blocks.SPRUCE_PLANKS.defaultBlockState(), QUIET_FLAGS);
             }
         }
-        for (int step = 12; step <= 14; step++) {
-            BlockPos pos = origin.offset(LEFT_WALL_X_OFFSET, 1, START_Z_OFFSET + step);
-            if (level.getBlockState(pos).is(Blocks.SPRUCE_PLANKS))
-                level.setBlock(pos, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.EAST), QUIET_FLAGS);
-        }
-        dressCupboardFronts(level, origin);
+        removeWallBarrels(level, origin);
         for (int step = 26; step <= 31; step++) for (int y = 2; y <= 4; y++) {
             BlockPos pos = origin.offset(RIGHT_WALL_X_OFFSET, y, START_Z_OFFSET + step);
             if (level.getBlockState(pos).is(Blocks.YELLOW_TERRACOTTA))
@@ -99,14 +94,17 @@ public final class HouseImpossibleHallway {
         }
     }
 
-    /** Fit the old storage without replacing a barrel, its inventory, or anything placed in front of it. */
-    public static void dressCupboardFronts(ServerLevel level, BlockPos origin) {
+    /** Replace the three old decorative barrels with exactly the same paneling as the rest of the wall. */
+    public static void removeWallBarrels(ServerLevel level, BlockPos origin) {
         for (int step = 12; step <= 14; step++) {
-            BlockPos storage = origin.offset(LEFT_WALL_X_OFFSET, 1, START_Z_OFFSET + step);
-            BlockPos front = storage.east();
-            if (level.getBlockState(storage).is(Blocks.BARREL) && level.getBlockState(front).isAir())
-                level.setBlock(front, HouseBlocks.HALL_CUPBOARD.get().defaultBlockState()
-                        .setValue(HallCupboardBlock.FACING, Direction.EAST), QUIET_FLAGS);
+            BlockPos pos = origin.offset(LEFT_WALL_X_OFFSET, 1, START_Z_OFFSET + step);
+            if (!level.getBlockState(pos).is(Blocks.BARREL)) continue;
+            if (level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) {
+                // If a player used an old decorative barrel, leave their items on the accessible side.
+                Containers.dropContents(level, pos.east(), barrel);
+                barrel.clearContent();
+            }
+            level.setBlock(pos, Blocks.SPRUCE_PLANKS.defaultBlockState(), QUIET_FLAGS);
         }
     }
 

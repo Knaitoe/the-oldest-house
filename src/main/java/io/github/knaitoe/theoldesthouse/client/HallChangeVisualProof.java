@@ -44,6 +44,6 @@ public final class HallChangeVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-hall-changes.png"));}
         Files.writeString(dir.resolve("hall-changes-passed.txt"),"Six native before/after hall meshes and all 24 oriented states rendered.\n");
-        TheOldestHouse.LOGGER.info("HALL CHANGES CHECK PASSED: six native meshes and 24 oriented states");mc.setScreen(new HallCupboardVisualProof());
+        TheOldestHouse.LOGGER.info("HALL CHANGES CHECK PASSED: six native meshes and 24 oriented states");mc.setScreen(new SceneVisualProof());
     }
 }

@@ -920,8 +920,6 @@ jobs:
           for view in painted_interior second_waitress tunnel_periphery missing_sleep layered_man motion_light; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
-          test -s build/font-smoke/hall-cupboards-passed.txt
-          test -s build/font-smoke/native-hall-cupboards.png
           for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done
 
       - name: Publish native views to the log

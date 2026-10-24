@@ -27,9 +27,9 @@ public final class WallNotesRepairs {
         if(house.isImpossibleDoorRevealed()&&!state.getBoolean(approach)&&vacant(inside,hall)&&loaded(inside,hall,origin)){
             HouseImpossibleHallway.dressDomesticApproach(inside,origin);state.putBoolean(approach,true);
         }
-        String cupboards=prefix+"cupboard_fronts_0121";
-        if(house.isImpossibleDoorRevealed()&&!state.getBoolean(cupboards)&&vacant(inside,hall)&&loaded(inside,hall,origin)){
-            HouseImpossibleHallway.dressCupboardFronts(inside,origin);state.putBoolean(cupboards,true);
+        String plainWall=prefix+"plain_hall_wall_0121";
+        if(house.isImpossibleDoorRevealed()&&!state.getBoolean(plainWall)&&vacant(inside,hall)&&loaded(inside,hall,origin)){
+            HouseImpossibleHallway.removeWallBarrels(inside,origin);state.putBoolean(plainWall,true);
         }
         for(var place:List.of(LabyrinthPlace.BENT_HALL,LabyrinthPlace.GOATMAN,LabyrinthPlace.PLAIN)){
             String key=prefix+place.id();if(state.getBoolean(key)||data.door(place.entryDoorId())==null)continue;

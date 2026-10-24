@@ -490,4 +490,97 @@ public final class ArchitectureTests {
         file.add("palette",palette);file.add("blocks",blocks);Path folder=Path.of("../build/architecture-proof");Files.createDirectories(folder);
         Files.writeString(folder.resolve(name+".json"),new Gson().toJson(file));
     }
+
+    @GameTest(template="empty") public static void nativeHallPatchAndBedroomFinishPreserveTheOriginalFurnishings(GameTestHelper h){
+        var l=h.getLevel();var o=h.absolutePos(BlockPos.ZERO).offset(10,20,100);HouseImpossibleHallway.build(l,o);
+        var patch=o.offset(HouseLayout.AXIS_X+2,2,HouseImpossibleHallway.START_Z_OFFSET+26);l.setBlock(patch,Blocks.YELLOW_TERRACOTTA.defaultBlockState(),2);
+        var custom=patch.above();l.setBlock(custom,Blocks.BRICKS.defaultBlockState(),2);
+        var first=o.offset(HouseLayout.AXIS_X-2,1,HouseImpossibleHallway.START_Z_OFFSET+12);
+        for(int step=12;step<=14;step++){
+            var at=o.offset(HouseLayout.AXIS_X-2,1,HouseImpossibleHallway.START_Z_OFFSET+step);
+            h.assertTrue(l.getBlockState(at).equals(l.getBlockState(first.north()))&&l.getBlockState(at).is(Blocks.SPRUCE_PLANKS)
+                            &&l.getBlockEntity(at)==null&&l.getBlockState(at.east()).isAir(),
+                    "a fresh hallway has continuous matching paneling with no barrel, cupboard or protruding fitting");
+            l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);
+            var contents=new ItemStack(Items.EMERALD,step);contents.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Hallway fixture"));
+            ((BarrelBlockEntity)l.getBlockEntity(at)).setItem(4,contents);
+        }
+        HouseImpossibleHallway.dressDomesticApproach(l,o);
+        HouseImpossibleHallway.removeWallBarrels(l,o);
+        var reader=NativeTestPlayers.survival(h,"plain_hall_wall");
+        try{
+            for(int step=12;step<=14;step++){
+                var at=o.offset(HouseLayout.AXIS_X-2,1,HouseImpossibleHallway.START_Z_OFFSET+step);
+                h.assertTrue(l.getBlockState(at).is(Blocks.SPRUCE_PLANKS)&&l.getBlockEntity(at)==null,
+                        "each old barrel becomes the same paneling as the rest of the hallway");
+                reader.moveTo(at.getX()+1.5,at.getY(),at.getZ()+.5);
+                h.assertTrue(l.noCollision(reader,reader.getBoundingBox()),"the full hallway width stays clear beside the repaired wall");
+            }
+            int kept=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(first).inflate(5),e->{
+                var name=e.getItem().get(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+                return e.getItem().is(Items.EMERALD)&&name!=null&&name.getString().equals("Hallway fixture");
+            }).stream().mapToInt(e->e.getItem().getCount()).sum();
+            h.assertTrue(kept==39,"any stored originals keep their exact components and quantity after removal; repetition creates no extra items");
+        }finally{
+            NativeTestPlayers.remove(reader);
+            l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(first).inflate(5),e->e.getItem().is(Items.EMERALD)).forEach(net.minecraft.world.entity.item.ItemEntity::discard);
+        }
+        var b=o.offset(80,0,0);LabyrinthHalls.build(l,b,LabyrinthPlace.BENT_HALL);
+        var bedPos=b.offset(-9,0,-28);var bed=l.getBlockState(bedPos);var wall=b.offset(-13,1,-27);l.setBlock(wall,Blocks.PINK_TERRACOTTA.defaultBlockState(),2);WallNotesRepairs.neutralBedroom(l,b);
+        h.assertTrue(l.getBlockState(patch).is(Blocks.WHITE_TERRACOTTA)&&l.getBlockState(custom).is(Blocks.BRICKS)&&l.getBlockState(first).is(Blocks.SPRUCE_PLANKS),"the old yellow patch and barrel section become matching wall while an unrelated edit remains");
+        h.assertTrue(bed.getBlock() instanceof BedBlock&&l.getBlockState(wall).is(Blocks.LIGHT_GRAY_TERRACOTTA)&&l.getBlockState(bedPos).equals(bed),"the red-looking bedroom gets an ordinary neutral finish without rebuilding its actual bed");h.succeed();
+    }
+    @GameTest(template="empty") public static void ordinaryRoomsKeepOneReadingAndDoNotRemoveAuthoredBooks(GameTestHelper h){
+        try(var f=new MarginaliaTests.Fixture(h,205600)){
+            var l=f.level;var place=LabyrinthPlace.QUIET_ROOM;var b=LabyrinthPlaces.base(f.origin,place);
+            LabyrinthHalls.build(l,b,place);
+            var source=b.offset(4,0,-13);var lectern=(net.minecraft.world.level.block.entity.LecternBlockEntity)l.getBlockEntity(source);
+            var book=lectern.getBook().copy();
+            var paper=b.offset(-3,1,-12);var second=b.offset(2,1,-13);
+            l.setBlock(paper,NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,Direction.SOUTH),2);
+            l.setBlock(second.below(),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.NORTH),2);
+            l.setBlock(second,NoteSurfaceBlock.state(HouseMarginalia.Thread.HOUSEKEEPING,Direction.NORTH),2);
+            var room=RoomNotes.scopes(l,b,place).getFirst();
+            h.assertTrue(RoomNotes.prune(l,room)==2&&l.getBlockState(paper).isAir()&&l.getBlockState(second).isAir(),
+                    "the reproduced table/sideboard clutter is removed because this room already has its reading");
+            HouseFurnishings.decorate(l,b,place);
+            h.assertTrue(!RoomNotes.canAdd(l,paper)&&l.getBlockState(paper).isAir()&&l.getBlockState(second).isAir()
+                            &&l.getBlockEntity(source)==lectern&&ItemStack.isSameItemSameComponents(book,lectern.getBook()),
+                    "new decoration respects the original readable book, its exact components and its native lectern");
+            h.assertTrue(RoomNotes.scopes(l,b,LabyrinthPlace.GOATMAN).isEmpty(),
+                    "an authored vignette is explicitly outside incidental-note reduction");
+            h.succeed();
+        }
+    }
+    @GameTest(template="empty") public static void separateSideRoomsKeepTheirOwnSingleOriginalAndCollectedNotesStayGone(GameTestHelper h){
+        try(var f=new MarginaliaTests.Fixture(h,206200)){
+            var l=f.level;var place=LabyrinthPlace.BENT_HALL;var b=LabyrinthPlaces.base(f.origin,place);
+            LabyrinthHalls.build(l,b,place);
+            var scopes=RoomNotes.scopes(l,b,place);
+            var originals=new ArrayList<BlockPos>();
+            for(var room:LabyrinthDomestic.fragments(place)){
+                var first=b.offset(room.x0(),1,room.z0());var next=first.east();
+                for(var at:List.of(first,next)){
+                    l.setBlock(at.below(),Blocks.SPRUCE_PLANKS.defaultBlockState(),2);
+                    l.setBlock(at,NoteSurfaceBlock.state(HouseMarginalia.Thread.ROOM,Direction.SOUTH),2);
+                }
+                originals.add(first);
+            }
+            for(var room:scopes)RoomNotes.prune(l,room);
+            for(var room:scopes.subList(0,2)){
+                int papers=0;
+                for(var at:BlockPos.betweenClosed(BlockPos.containing(room.bounds().minX,room.bounds().minY,room.bounds().minZ),
+                        BlockPos.containing(room.bounds().maxX-1,room.bounds().maxY-1,room.bounds().maxZ-1)))
+                    if(room.contains(at)&&l.getBlockState(at).is(HouseBlocks.NOTE_SURFACE.get()))papers++;
+                h.assertTrue(papers==1,"each actual room across a wall retains one original, independently of the corridor");
+            }
+            for(var at:originals){h.assertTrue(l.getBlockState(at).is(HouseBlocks.NOTE_SURFACE.get()),"the retained sheet stays at its original coordinates");l.setBlock(at,Blocks.AIR.defaultBlockState(),2);}
+            var saved=LabyrinthData.FACTORY.deserializer().apply(f.data().save(new CompoundTag(),l.registryAccess()),l.registryAccess());
+            f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",saved);
+            for(var room:scopes)RoomNotes.prune(l,room);
+            h.assertTrue(originals.stream().allMatch(at->l.getBlockState(at).isAir()),"a repeated cleanup after native saved-data reload never replenishes a collected sheet");
+            h.succeed();
+        }
+    }
+
 }
