@@ -39,7 +39,9 @@ final class CousinGait {
     /** Apply before the torso connects its shoulders and neck. A copied face copies that cousin's gait, too. */
     static void apply(HumanoidModel<?> m,int skin,float phase,float amount,boolean running){
         var s=STYLES[Math.floorMod(skin,STYLES.length)];float a=Mth.clamp(amount,0,1);
-        m.leftLeg.xRot*=s.stride;m.rightLeg.xRot*=s.stride;
+        // A run is already near full reach; the long-legged walkers only stretch it a little further (under 1.2 radians).
+        float stride=running?Math.min(s.stride,1.04F):s.stride;
+        m.leftLeg.xRot*=stride;m.rightLeg.xRot*=stride;
         // Arms: scaled, delayed behind the legs for the loose walkers, or pinned for hands in pockets.
         float swing=-Mth.cos(phase-s.lag)*(running?1F:.55F)*a*s.arms;
         m.rightArm.xRot=swing*(1-s.pockets)+.18F*s.pockets*a;m.leftArm.xRot=-swing*(1-s.pockets)+.18F*s.pockets*a;

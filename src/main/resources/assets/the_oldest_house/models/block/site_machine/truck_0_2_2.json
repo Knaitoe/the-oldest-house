@@ -1,0 +1,154 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "sheet": "the_oldest_house:block/site_machine/truck_sheet",
+  "paint": "the_oldest_house:block/site_machine/truck_paint",
+  "galv": "the_oldest_house:block/site_machine/galv",
+  "particle": "the_oldest_house:block/site_machine/truck_paint"
+ },
+ "elements": [
+  {
+   "from": [
+    3.0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    10.0,
+    13.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#sheet",
+     "uv": [
+      6.0,
+      2.0,
+      7.625,
+      3.25
+     ]
+    },
+    "west": {
+     "texture": "#sheet",
+     "uv": [
+      6.625,
+      4.0,
+      8.25,
+      5.25
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      3.0,
+      0,
+      16,
+      13.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    2.5,
+    10.0,
+    0
+   ],
+   "to": [
+    16,
+    11.5,
+    13.5
+   ],
+   "faces": {
+    "south": {
+     "texture": "#paint",
+     "uv": [
+      2.5,
+      4.5,
+      16,
+      6.0
+     ]
+    },
+    "west": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      4.5,
+      13.5,
+      6.0
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      2.5,
+      0,
+      16,
+      13.5
+     ]
+    },
+    "down": {
+     "texture": "#paint",
+     "uv": [
+      2.5,
+      2.5,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    2.0,
+    0,
+    14.0
+   ],
+   "to": [
+    16,
+    8.0,
+    15.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#sheet",
+     "uv": [
+      3.75,
+      8.0,
+      5.5,
+      9.0
+     ]
+    },
+    "south": {
+     "texture": "#sheet",
+     "uv": [
+      0.0,
+      8.0,
+      1.75,
+      9.0
+     ]
+    },
+    "west": {
+     "texture": "#galv",
+     "uv": [
+      14.0,
+      8.0,
+      15.5,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#galv",
+     "uv": [
+      2.0,
+      14.0,
+      16,
+      15.5
+     ]
+    }
+   }
+  }
+ ]
+}

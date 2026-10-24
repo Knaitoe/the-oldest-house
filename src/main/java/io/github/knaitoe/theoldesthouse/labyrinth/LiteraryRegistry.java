@@ -41,6 +41,9 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<RoadhouseBlock>> ROADHOUSE_TYPE=CODECS.register("roadhouse",()->RoadhouseBlock.CODEC);
     /** The Last Stop (0.4.78): the bar's furniture, its highway and lot, the field's stalks and the pickups. */
     public static final DeferredBlock<RoadhouseBlock> ROADHOUSE=BLOCKS.registerBlock("roadhouse",RoadhouseBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(RoadhouseBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SiteMachineBlock>> SITE_MACHINE_TYPE=CODECS.register("site_machine",()->SiteMachineBlock.CODEC);
+    /** The elk carcass site (0.4.120): the road crew's skid steer and flatbed, one cell of either machine per block. */
+    public static final DeferredBlock<SiteMachineBlock> SITE_MACHINE=BLOCKS.registerBlock("site_machine",SiteMachineBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CottageBlock>> COTTAGE_TYPE=CODECS.register("cottage",()->CottageBlock.CODEC);
     /** Three Fingers (0.4.81): the cottage's walls, floor and thatch, its range, dresser and mantel, the papers and the lamp on the road. */
     public static final DeferredBlock<CottageBlock> COTTAGE=BLOCKS.registerBlock("cottage",CottageBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(CottageBlock::light));

@@ -1,0 +1,919 @@
+{
+ "variants": {
+  "facing=north,kind=skid_0_0_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_0_0"
+  },
+  "facing=east,kind=skid_0_0_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_0_0",
+   "y": 90
+  },
+  "facing=south,kind=skid_0_0_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_0_0",
+   "y": 180
+  },
+  "facing=west,kind=skid_0_0_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_0_0",
+   "y": 270
+  },
+  "facing=north,kind=skid_1_0_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_0_0"
+  },
+  "facing=east,kind=skid_1_0_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_0_0",
+   "y": 90
+  },
+  "facing=south,kind=skid_1_0_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_0_0",
+   "y": 180
+  },
+  "facing=west,kind=skid_1_0_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_0_0",
+   "y": 270
+  },
+  "facing=north,kind=skid_0_1_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_1_0"
+  },
+  "facing=east,kind=skid_0_1_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_1_0",
+   "y": 90
+  },
+  "facing=south,kind=skid_0_1_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_1_0",
+   "y": 180
+  },
+  "facing=west,kind=skid_0_1_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_1_0",
+   "y": 270
+  },
+  "facing=north,kind=skid_1_1_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_1_0"
+  },
+  "facing=east,kind=skid_1_1_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_1_0",
+   "y": 90
+  },
+  "facing=south,kind=skid_1_1_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_1_0",
+   "y": 180
+  },
+  "facing=west,kind=skid_1_1_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_1_0",
+   "y": 270
+  },
+  "facing=north,kind=skid_0_2_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_2_0"
+  },
+  "facing=east,kind=skid_0_2_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_2_0",
+   "y": 90
+  },
+  "facing=south,kind=skid_0_2_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_2_0",
+   "y": 180
+  },
+  "facing=west,kind=skid_0_2_0": {
+   "model": "the_oldest_house:block/site_machine/skid_0_2_0",
+   "y": 270
+  },
+  "facing=north,kind=skid_1_2_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_2_0"
+  },
+  "facing=east,kind=skid_1_2_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_2_0",
+   "y": 90
+  },
+  "facing=south,kind=skid_1_2_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_2_0",
+   "y": 180
+  },
+  "facing=west,kind=skid_1_2_0": {
+   "model": "the_oldest_house:block/site_machine/skid_1_2_0",
+   "y": 270
+  },
+  "facing=north,kind=skid_0_0_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_0_1"
+  },
+  "facing=east,kind=skid_0_0_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_0_1",
+   "y": 90
+  },
+  "facing=south,kind=skid_0_0_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_0_1",
+   "y": 180
+  },
+  "facing=west,kind=skid_0_0_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_0_1",
+   "y": 270
+  },
+  "facing=north,kind=skid_1_0_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_0_1"
+  },
+  "facing=east,kind=skid_1_0_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_0_1",
+   "y": 90
+  },
+  "facing=south,kind=skid_1_0_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_0_1",
+   "y": 180
+  },
+  "facing=west,kind=skid_1_0_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_0_1",
+   "y": 270
+  },
+  "facing=north,kind=skid_0_1_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_1_1"
+  },
+  "facing=east,kind=skid_0_1_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_1_1",
+   "y": 90
+  },
+  "facing=south,kind=skid_0_1_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_1_1",
+   "y": 180
+  },
+  "facing=west,kind=skid_0_1_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_1_1",
+   "y": 270
+  },
+  "facing=north,kind=skid_1_1_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_1_1"
+  },
+  "facing=east,kind=skid_1_1_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_1_1",
+   "y": 90
+  },
+  "facing=south,kind=skid_1_1_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_1_1",
+   "y": 180
+  },
+  "facing=west,kind=skid_1_1_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_1_1",
+   "y": 270
+  },
+  "facing=north,kind=skid_0_2_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_2_1"
+  },
+  "facing=east,kind=skid_0_2_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_2_1",
+   "y": 90
+  },
+  "facing=south,kind=skid_0_2_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_2_1",
+   "y": 180
+  },
+  "facing=west,kind=skid_0_2_1": {
+   "model": "the_oldest_house:block/site_machine/skid_0_2_1",
+   "y": 270
+  },
+  "facing=north,kind=skid_1_2_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_2_1"
+  },
+  "facing=east,kind=skid_1_2_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_2_1",
+   "y": 90
+  },
+  "facing=south,kind=skid_1_2_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_2_1",
+   "y": 180
+  },
+  "facing=west,kind=skid_1_2_1": {
+   "model": "the_oldest_house:block/site_machine/skid_1_2_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_0_0"
+  },
+  "facing=east,kind=truck_0_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_0_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_0_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_0_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_0_0"
+  },
+  "facing=east,kind=truck_1_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_0_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_0_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_0_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_0_0"
+  },
+  "facing=east,kind=truck_2_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_0_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_0_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_0_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_0_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_0"
+  },
+  "facing=east,kind=truck_0_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_0"
+  },
+  "facing=east,kind=truck_1_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_0"
+  },
+  "facing=east,kind=truck_2_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_1_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_0"
+  },
+  "facing=east,kind=truck_0_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_0"
+  },
+  "facing=east,kind=truck_1_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_0"
+  },
+  "facing=east,kind=truck_2_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_2_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_3_0"
+  },
+  "facing=east,kind=truck_0_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_3_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_3_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_3_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_3_0"
+  },
+  "facing=east,kind=truck_1_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_3_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_3_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_3_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_3_0"
+  },
+  "facing=east,kind=truck_2_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_3_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_3_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_3_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_3_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_4_0"
+  },
+  "facing=east,kind=truck_0_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_4_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_4_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_4_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_4_0"
+  },
+  "facing=east,kind=truck_1_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_4_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_4_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_4_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_4_0"
+  },
+  "facing=east,kind=truck_2_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_4_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_4_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_4_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_4_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_5_0"
+  },
+  "facing=east,kind=truck_0_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_5_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_5_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_5_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_5_0"
+  },
+  "facing=east,kind=truck_1_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_5_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_5_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_5_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_5_0"
+  },
+  "facing=east,kind=truck_2_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_5_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_5_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_5_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_5_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_6_0"
+  },
+  "facing=east,kind=truck_0_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_6_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_6_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_6_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_6_0"
+  },
+  "facing=east,kind=truck_1_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_6_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_6_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_6_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_6_0"
+  },
+  "facing=east,kind=truck_2_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_6_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_6_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_6_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_6_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_7_0"
+  },
+  "facing=east,kind=truck_0_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_7_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_7_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_0_7_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_7_0"
+  },
+  "facing=east,kind=truck_1_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_7_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_7_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_1_7_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_7_0"
+  },
+  "facing=east,kind=truck_2_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_7_0",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_7_0",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_7_0": {
+   "model": "the_oldest_house:block/site_machine/truck_2_7_0",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_0_1"
+  },
+  "facing=east,kind=truck_0_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_0_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_0_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_0_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_0_1"
+  },
+  "facing=east,kind=truck_1_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_0_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_0_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_0_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_0_1"
+  },
+  "facing=east,kind=truck_2_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_0_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_0_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_0_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_0_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_1"
+  },
+  "facing=east,kind=truck_0_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_1"
+  },
+  "facing=east,kind=truck_1_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_1"
+  },
+  "facing=east,kind=truck_2_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_1_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_1"
+  },
+  "facing=east,kind=truck_0_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_1"
+  },
+  "facing=east,kind=truck_1_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_1"
+  },
+  "facing=east,kind=truck_2_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_2_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_3_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_3_1"
+  },
+  "facing=east,kind=truck_0_3_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_3_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_3_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_3_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_3_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_3_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_3_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_3_1"
+  },
+  "facing=east,kind=truck_2_3_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_3_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_3_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_3_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_3_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_3_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_4_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_4_1"
+  },
+  "facing=east,kind=truck_0_4_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_4_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_4_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_4_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_4_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_4_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_4_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_4_1"
+  },
+  "facing=east,kind=truck_2_4_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_4_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_4_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_4_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_4_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_4_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_5_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_5_1"
+  },
+  "facing=east,kind=truck_0_5_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_5_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_5_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_5_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_5_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_5_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_5_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_5_1"
+  },
+  "facing=east,kind=truck_2_5_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_5_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_5_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_5_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_5_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_5_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_6_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_6_1"
+  },
+  "facing=east,kind=truck_0_6_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_6_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_6_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_6_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_6_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_6_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_6_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_6_1"
+  },
+  "facing=east,kind=truck_2_6_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_6_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_6_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_6_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_6_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_6_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_7_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_7_1"
+  },
+  "facing=east,kind=truck_0_7_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_7_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_7_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_7_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_7_1": {
+   "model": "the_oldest_house:block/site_machine/truck_0_7_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_7_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_7_1"
+  },
+  "facing=east,kind=truck_2_7_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_7_1",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_7_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_7_1",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_7_1": {
+   "model": "the_oldest_house:block/site_machine/truck_2_7_1",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_2"
+  },
+  "facing=east,kind=truck_0_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_2",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_2",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_0_1_2",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_2"
+  },
+  "facing=east,kind=truck_1_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_2",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_2",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_1_1_2",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_2"
+  },
+  "facing=east,kind=truck_2_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_2",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_2",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_1_2": {
+   "model": "the_oldest_house:block/site_machine/truck_2_1_2",
+   "y": 270
+  },
+  "facing=north,kind=truck_0_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_2"
+  },
+  "facing=east,kind=truck_0_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_2",
+   "y": 90
+  },
+  "facing=south,kind=truck_0_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_2",
+   "y": 180
+  },
+  "facing=west,kind=truck_0_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_0_2_2",
+   "y": 270
+  },
+  "facing=north,kind=truck_1_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_2"
+  },
+  "facing=east,kind=truck_1_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_2",
+   "y": 90
+  },
+  "facing=south,kind=truck_1_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_2",
+   "y": 180
+  },
+  "facing=west,kind=truck_1_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_1_2_2",
+   "y": 270
+  },
+  "facing=north,kind=truck_2_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_2"
+  },
+  "facing=east,kind=truck_2_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_2",
+   "y": 90
+  },
+  "facing=south,kind=truck_2_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_2",
+   "y": 180
+  },
+  "facing=west,kind=truck_2_2_2": {
+   "model": "the_oldest_house:block/site_machine/truck_2_2_2",
+   "y": 270
+  }
+ }
+}

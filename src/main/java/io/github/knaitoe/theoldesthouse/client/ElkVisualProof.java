@@ -82,21 +82,25 @@ public final class ElkVisualProof extends Screen {
         for (String name : new String[]{"killer", "elk_carcass", "elk_carcass_skinned", "guest_0", "guest_1", "guest_2", "guest_3", "crew_0", "crew_1", "crew_2", "crew_3"})
             if (mc.getResourceManager().getResource(texture(name)).isEmpty()) throw new IllegalStateException("Missing elk atlas " + name);
         g.fill(0, 0, width, height, 0xFF1F1C19);
-        g.drawString(font, "The elk carcasses / the killer: watching, searching, running, at the pile, striking", 10, 8, 0xFFEEE0C4, false);
+        g.drawString(font, "The killer: watching, searching, running, at the pile, striking; hacking, hauling, shoved, axe up, dragging", 10, 8, 0xFFEEE0C4, false);
         g.drawString(font, "The carcasses and the dead, as the cave and the yacht hold them", 10, height / 2 + 4, 0xFFEEE0C4, false);
         g.flush();
         var buffers = mc.renderBuffers().bufferSource();
         var model = new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));
-        float[][] states = {{ElkHunt.WATCH, 0, 0, 0}, {ElkHunt.WALK, frames * .5F, .8F, 0}, {ElkHunt.RUN, frames * .9F, 1, 0}, {ElkHunt.PEER, 0, 0, 0}, {ElkHunt.RUN, 0, 0, .15F}}; // the strike at its wind-up, axe over the head
+        float[][] states = {{ElkHunt.WATCH, 0, 0, 0}, {ElkHunt.WALK, frames * .5F, .8F, 0}, {ElkHunt.RUN, frames * .9F, 1, 0}, {ElkHunt.PEER, 0, 0, 0}, {ElkHunt.RUN, 0, 0, .15F}, // the strike just begun
+                {ElkHunt.HACK, 0, 0, .55F}, {ElkHunt.HAUL, frames * .5F, .8F, 0}, {ElkHunt.STAGGER, 0, 0, 0}, {ElkHunt.RAISE, 0, 0, 0}, {ElkHunt.DRAG, frames * .5F, .8F, 0}};
+        var hauled = new LiteraryRenderers.ElkModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.ELK));
+        float row = Math.max(64, (height / 2F - 50) / 2);
         for (int i = 0; i < states.length; i++) {
             float[] s = states[i];
             model.animateKiller((int) s[0], s[1], s[2], frames, s[3]);
             var p = g.pose();
             p.pushPose();
-            p.translate(45 + i * (width - 70) / 5F, 52, 180);
-            p.scale(36, 36, 36);
-            p.mulPose(Axis.YP.rotationDegrees(i == 3 ? 120 : 150));
+            p.translate(45 + i % 5 * (width - 70) / 5F, 46 + i / 5 * row, 180);
+            p.scale(30, 30, 30);
+            p.mulPose(Axis.YP.rotationDegrees(i == 3 ? 120 : i == 9 ? 200 : 150));
             model.renderToBuffer(p, buffers.getBuffer(RenderType.entityCutoutNoCull(texture("killer"))), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+            if (s[0] == ElkHunt.HAUL) LiteraryRenderers.haul(hauled, p, buffers, LightTexture.FULL_BRIGHT, s[1]);
             buffers.endBatch();
             p.popPose();
         }

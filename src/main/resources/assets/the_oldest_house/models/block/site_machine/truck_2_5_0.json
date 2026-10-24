@@ -1,0 +1,95 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "frame": "the_oldest_house:block/site_machine/frame",
+  "rail": "the_oldest_house:block/site_machine/truck_rail",
+  "deck": "the_oldest_house:block/site_machine/deck",
+  "particle": "the_oldest_house:block/site_machine/deck"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    8.0,
+    0
+   ],
+   "to": [
+    6.0,
+    12.0,
+    16
+   ],
+   "faces": {
+    "east": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      4.0,
+      16,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      6.0,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      6.0,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    12.0,
+    0.0
+   ],
+   "to": [
+    16.0,
+    16.0,
+    16.0
+   ],
+   "faces": {
+    "east": {
+     "texture": "#rail",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      4.0
+     ]
+    },
+    "up": {
+     "texture": "#deck",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ]
+    },
+    "down": {
+     "texture": "#frame",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ]
+    }
+   }
+  }
+ ]
+}

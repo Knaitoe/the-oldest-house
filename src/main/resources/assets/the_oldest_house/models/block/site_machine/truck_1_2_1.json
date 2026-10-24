@@ -1,0 +1,118 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "paint": "the_oldest_house:block/site_machine/truck_paint",
+  "sheet": "the_oldest_house:block/site_machine/truck_sheet",
+  "galv": "the_oldest_house:block/site_machine/galv",
+  "particle": "the_oldest_house:block/site_machine/truck_paint"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    14.0,
+    14.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      2.0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      0,
+      16,
+      14.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    14.0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    13.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#sheet",
+     "uv": [
+      7.625,
+      3.25,
+      9.625,
+      3.5
+     ]
+    },
+    "down": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      3.0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0.0,
+    14.0
+   ],
+   "to": [
+    16,
+    16,
+    15.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#sheet",
+     "uv": [
+      1.75,
+      9.0,
+      3.75,
+      11.0
+     ]
+    },
+    "south": {
+     "texture": "#sheet",
+     "uv": [
+      1.75,
+      9.0,
+      3.75,
+      11.0
+     ]
+    },
+    "down": {
+     "texture": "#galv",
+     "uv": [
+      0,
+      0.5,
+      16,
+      2.0
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,138 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "galv": "the_oldest_house:block/site_machine/galv",
+  "particle": "the_oldest_house:block/site_machine/galv"
+ },
+ "elements": [
+  {
+   "from": [
+    0.0,
+    0.0,
+    2.0
+   ],
+   "to": [
+    2.0,
+    11.0,
+    4.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#galv",
+     "uv": [
+      14.0,
+      5.0,
+      16.0,
+      16.0
+     ]
+    },
+    "south": {
+     "texture": "#galv",
+     "uv": [
+      0.0,
+      5.0,
+      2.0,
+      16.0
+     ]
+    },
+    "west": {
+     "texture": "#galv",
+     "uv": [
+      2.0,
+      5.0,
+      4.0,
+      16.0
+     ]
+    },
+    "east": {
+     "texture": "#galv",
+     "uv": [
+      12.0,
+      5.0,
+      14.0,
+      16.0
+     ]
+    },
+    "up": {
+     "texture": "#galv",
+     "uv": [
+      0.0,
+      2.0,
+      2.0,
+      4.0
+     ]
+    },
+    "down": {
+     "texture": "#galv",
+     "uv": [
+      0.0,
+      12.0,
+      2.0,
+      14.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    9.0,
+    0
+   ],
+   "to": [
+    1.5,
+    11.0,
+    15.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#galv",
+     "uv": [
+      0.0,
+      5.0,
+      1.5,
+      7.0
+     ]
+    },
+    "west": {
+     "texture": "#galv",
+     "uv": [
+      0,
+      5.0,
+      15.0,
+      7.0
+     ]
+    },
+    "east": {
+     "texture": "#galv",
+     "uv": [
+      1.0,
+      5.0,
+      16,
+      7.0
+     ]
+    },
+    "up": {
+     "texture": "#galv",
+     "uv": [
+      0.0,
+      0,
+      1.5,
+      15.0
+     ]
+    },
+    "down": {
+     "texture": "#galv",
+     "uv": [
+      0.0,
+      1.0,
+      1.5,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

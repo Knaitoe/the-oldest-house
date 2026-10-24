@@ -935,6 +935,78 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             var peerKiller=elkKiller(f,peer);h.assertTrue(peer.getHealth()==peer.getMaxHealth()&&peerKiller.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START)))<4,"the peer's killer still waits below their own yacht deck");h.succeed();});
     }
     @AfterBatch(batch="literary_elk_betrayal") public static void elkBetrayalDone(ServerLevel l){close();}
+    /** Ashore and landed, with nothing else pending: the plain woods hunt. */
+    private static void elkAshore(Fixture f,ServerPlayer p){var own=f.own(p,LabyrinthPlace.ELK_CARCASSES);own.putInt("ElkStage",ElkHunt.ASHORE);own.putBoolean("ElkLanded",true);own.putBoolean("EscapedYacht",true);own.putBoolean("ElkResetPending",false);own.putInt("ElkEmerge",0);own.putLong("ElkGraceUntil",0);LiteraryVignettes.save(f.data(),p.getUUID(),LabyrinthPlace.ELK_CARCASSES,own);}
+    @GameTest(template="empty",batch="literary_elk_shove",timeoutTicks=300)
+    public static void elkReaderShovesTheKillerOffAndStopsHisRaisedAxeButCannotHurtHim(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("shove_reader",place);var b=f.base(place);
+        final boolean[] staged={false};
+        h.startSequence().thenIdle(10).thenExecute(()->{elkAshore(f,p);p.setInvulnerable(false);p.hasChangedDimension();p.connection.resetPosition();staged[0]=true;})
+        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("ElkWindup")>0,"face to face, he raises the axe: "+f.own(p,place)))
+        .thenExecute(()->{var killer=elkKiller(f,p);float health=killer.getHealth();var before=killer.position();
+            h.assertTrue(killer.phase()==ElkHunt.RAISE,"the axe is up before it comes down");
+            p.attack(killer);
+            var own=f.own(p,place);
+            h.assertTrue(own.getInt("ElkWindup")==0&&own.getInt("ElkStagger")>0&&killer.phase()==ElkHunt.STAGGER,"a real blow rocks him back and the raised axe never falls: "+own);
+            var push=killer.getDeltaMovement();var away=before.subtract(p.position());
+            h.assertTrue(push.x*away.x+push.z*away.z>0&&killer.isAlive()&&killer.getHealth()==health,"he is pushed away from the reader and is not hurt at all");
+            long shoved=own.getLong("ElkShovedAt");ElkHunt.shoved(p,killer);
+            h.assertTrue(f.own(p,place).getLong("ElkShovedAt")==shoved,"a second blow straight after only nudges him; he cannot be held off for ever");
+            staged[0]=false;})
+        .thenIdle(ElkHunt.STAGGER_TICKS+10).thenExecute(()->{h.assertTrue(f.own(p,place).getInt("ElkStagger")<=0&&elkKiller(f,p).isAlive(),"he comes on again after the stagger");h.succeed();});
+        h.onEachTick(()->{if(!staged[0])return;var a=elkKiller(f,p);if(a==null)return;f.at(p,place,50.5,ElkCarcassMap.SITE_TOP+1,-138.5);p.setYRot(180);a.moveTo(b.getX()+50.5,b.getY()+ElkCarcassMap.SITE_TOP+1,b.getZ()-140,0,0);a.setDeltaMovement(Vec3.ZERO);});
+    }
+    @AfterBatch(batch="literary_elk_shove") public static void elkShoveDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_elk_drag",timeoutTicks=700)
+    public static void elkKillingBlowDragsTheReaderIntoThePileAndTheyTearTheirWayOut(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("drag_reader",place);var b=f.base(place);
+        var wake=ElkCarcassMap.WAKE.add(b.getX(),b.getY(),b.getZ());
+        h.startSequence().thenIdle(10).thenExecute(()->{elkAshore(f,p);p.setInvulnerable(false);
+            var killer=elkKiller(f,p);f.at(p,place,50.5,ElkCarcassMap.SITE_TOP+1,-138.5);killer.moveTo(b.getX()+50.5,b.getY()+ElkCarcassMap.SITE_TOP+1,b.getZ()-140);
+            p.setHealth(2);p.hurt(p.damageSources().mobAttack(killer),10);
+            var own=f.own(p,place);
+            h.assertTrue(p.isAlive()&&p.getHealth()>0&&own.getInt("ElkStage")==ElkHunt.DRAGGED&&ElkDrag.active(p)&&own.getInt("ElkDrags")==1,"his killing blow does not kill: the drag begins: "+own);
+            h.assertTrue(p.position().distanceToSqr(wake)<.5,"the body is already where it will wake, under the pile");})
+        .thenIdle(ElkDrag.BLACKOUT+100).thenExecute(()->{var killer=elkKiller(f,p);
+            h.assertTrue(killer.phase()==ElkHunt.DRAG,"he is pulling them along");
+            var on=ElkCarcassMap.drag(ElkDrag.along(100)+1.6).add(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(killer.position().distanceToSqr(on)<4,"he walks the drag's real line, ahead of the reader's head: "+killer.position()+" / "+on);
+            var world=LiteraryVignettes.shared(f.data(),place);var camera=world.hasUUID("DragCamera_"+p.getUUID())?f.out.getEntity(world.getUUID("DragCamera_"+p.getUUID())):null;
+            h.assertTrue(camera instanceof LiteraryActor a&&a.role()==LiteraryActor.CAMERA&&a.isInvisible()&&a.owner().orElseThrow().equals(p.getUUID()),"the reader's own camera rides the drag");
+            float health=p.getHealth();h.assertTrue(!p.hurt(p.damageSources().generic(),5)&&p.getHealth()==health&&p.position().distanceToSqr(wake)<.5,"nothing reaches them during it, and the body stays put");})
+        .thenIdle(ElkDrag.DRAGGING-100+ElkDrag.DARK+10).thenExecute(()->{var own=f.own(p,place);long now=f.out.getGameTime();
+            h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getLong("ElkGraceUntil")>now&&p.getHealth()>=ElkDrag.WAKE_HEALTH&&!ElkDrag.active(p),"they wake in the pile, hurt but alive, and he leaves them a while: "+own);
+            h.assertTrue(own.getInt("ElkBurial")==15&&ElkDrag.buried(p),"the gap and the cell beyond it are packed with their own carcasses");
+            h.assertTrue(f.out.getBlockState(b.offset(ElkCarcassMap.BURIAL.get(0))).isAir(),"the shared pile itself is not touched");
+            for(int i=0;i<ElkDrag.HITS-1;i++)ElkDrag.hit(p,b.offset(ElkCarcassMap.BURIAL.get(0)),false);
+            h.assertTrue((f.own(p,place).getInt("ElkBurial")&1)!=0,"one blow does not tear a carcass loose");
+            ElkDrag.hit(p,b.offset(ElkCarcassMap.BURIAL.get(0)),false);
+            h.assertTrue((f.own(p,place).getInt("ElkBurial")&1)==0,"a few do");
+            h.assertTrue(!ElkDrag.hit(p,b.offset(ElkCarcassMap.BURIAL.get(0)),false),"a torn-out carcass takes no more blows");
+            ElkDrag.hit(p,b.offset(ElkCarcassMap.BURIAL.get(2)),true);
+            h.assertTrue(f.own(p,place).getInt("ElkBurial")==0b1010,"one carcass the reader's own tool broke out clears its cell; a way through is open");
+            f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-186.5);})
+        .thenIdle(5).thenExecute(()->{h.assertTrue(!ElkDrag.buried(p)&&f.own(p,place).getInt("ElkBurial")==0,"out of the pile, the carcasses only they saw go too");
+            var killer=elkKiller(f,p);h.assertTrue(killer.isAlive()&&killer.phase()!=ElkHunt.RUN&&killer.phase()!=ElkHunt.RAISE,"he is walking away for now, still alive and still theirs");h.succeed();});
+    }
+    @AfterBatch(batch="literary_elk_drag") public static void elkDragDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_elk_work",timeoutTicks=400)
+    public static void elkKillerHacksAndHaulsCarcassesWhenNoOneIsInSight(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("work_reader",place);var b=f.base(place);
+        final int[] chops={0};final boolean[] watching={false};
+        h.startSequence().thenIdle(10).thenExecute(()->{elkAshore(f,p);var far=ElkCarcassMap.standAt(-50,-100);f.at(p,place,far.getX()+.5,far.getY(),far.getZ()+.5);p.setYRot(90);
+            var killer=elkKiller(f,p);var feet=b.offset(ElkCarcassMap.WORK.get(0).feet());killer.moveTo(Vec3.atBottomCenterOf(feet));
+            var own=f.own(p,place);own.putInt("ElkWork",1);own.putInt("ElkWorkTicks",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);watching[0]=true;})
+        .thenIdle(80).thenExecute(()->{var killer=elkKiller(f,p);
+            h.assertTrue(killer.phase()==ElkHunt.HACK&&chops[0]>=2,"with no one in sight he stands over the carcass and hacks at it: chops="+chops[0]+", phase="+killer.phase());
+            var feet=b.offset(ElkCarcassMap.WORK.get(3).feet());killer.moveTo(Vec3.atBottomCenterOf(feet));
+            var own=f.own(p,place);own.putInt("ElkWork",4);own.putInt("ElkWorkTicks",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);})
+        .thenIdle(40).thenExecute(()->{var killer=elkKiller(f,p);
+            h.assertTrue(killer.phase()==ElkHunt.HAUL&&f.own(p,place).getInt("ElkWork")==4,"unseen, he takes another by the leg and hauls it off toward the cave");
+            h.assertTrue(f.out.getBlockState(b.offset(40,ElkCarcassMap.SITE_TOP+2,-142)).is(LiteraryRegistry.PROP.get()),"the shared carcasses stay where they lie");h.succeed();});
+        h.onEachTick(()->{if(!watching[0])return;var a=elkKiller(f,p);if(a!=null&&a.swinging&&a.swingTime==1)chops[0]++;});
+    }
+    @AfterBatch(batch="literary_elk_work") public static void elkWorkDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_elk_upgrade",timeoutTicks=200)
     public static void elkRebuildKeepsTheSceneKillerPetsAndDroppedThings(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;f.build(place);var b=f.base(place);var l=f.out;

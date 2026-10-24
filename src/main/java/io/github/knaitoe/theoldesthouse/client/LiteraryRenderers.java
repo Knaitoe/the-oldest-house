@@ -116,27 +116,59 @@ public final class LiteraryRenderers {
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
             young=false;walk=stride;amount=strength;pose(LiteraryActor.FATHER,phase,age);
         }
-        /** Watching (0), searching (1), running (2), crouched at the pile (3); a strike is an overhead chop. */
+        /**
+         * Watching (0), searching (1), running (2), crouched at the pile (3); and (0.4.120) hacking at a carcass (4), hauling
+         * one by a leg (5), rocked back by a shove (6), the axe up in both hands (7) and dragging a reader (8). He carries
+         * himself low and heavy and makes no sound of his own; a blow is a two-handed overhead chop out of the raised axe.
+         */
         private void killer(int phase,float age){
             float breath=(float)Math.sin(age*.07F);
-            body.xRot+=.16F;head.xRot+=.1F;rightArm.zRot+=.08F;leftArm.zRot-=.08F;
+            rightArm.zRot+=.1F;leftArm.zRot-=.1F;
             switch(phase){
-                case 1->{float stride=walk*.45F;float swing=(float)Math.cos(stride);
-                    leftLeg.xRot=swing*1.05F*amount;rightLeg.xRot=-swing*1.05F*amount;leftArm.xRot=swing*.4F*amount;
-                    rightArm.xRot=-.42F-swing*.18F*amount;body.zRot=(float)Math.sin(stride)*.07F*amount;
-                    head.yRot+=(float)Math.sin(age*.05F)*.65F;head.xRot+=.08F;}
-                case 2->{float stride=walk*.6662F;float swing=(float)Math.cos(stride);
-                    body.xRot=.42F;head.xRot=-.18F;leftLeg.xRot=swing*1.35F*amount;rightLeg.xRot=-swing*1.35F*amount;
-                    leftArm.xRot=-swing*1.2F*amount-.2F;rightArm.xRot=-2.15F+swing*.15F*amount;rightArm.zRot=.2F;}
+                case 1->{float stride=walk*.42F,swing=(float)Math.cos(stride),plant=Math.abs((float)Math.sin(stride));
+                    body.xRot+=.2F;head.xRot+=.18F;
+                    leftLeg.xRot=swing*1.0F*amount;rightLeg.xRot=-swing*1.0F*amount;
+                    leftArm.xRot=swing*.35F*amount;rightArm.xRot=-.22F-swing*.12F*amount;rightArm.zRot=.18F;
+                    body.zRot=(float)Math.sin(stride)*.08F*amount;body.yRot=(float)Math.sin(stride)*.1F*amount;
+                    lower(plant*.8F*amount);head.yRot+=(float)Math.sin(age*.045F)*.7F;}
+                case 2->{float stride=walk*.6662F,swing=(float)Math.cos(stride);
+                    body.xRot=.62F;head.xRot=-.42F;leftLeg.xRot=swing*1.4F*amount;rightLeg.xRot=-swing*1.4F*amount;
+                    leftArm.xRot=-1.15F-swing*.35F*amount;leftArm.zRot=-.28F;rightArm.xRot=-2.7F+swing*.12F*amount;rightArm.zRot=.25F;
+                    body.yRot=swing*.12F*amount;lower(Math.abs((float)Math.sin(stride))*.7F*amount);}
                 case 3->{body.xRot=.62F;head.xRot=.5F;head.zRot=.34F;leftArm.xRot=-1.3F;leftArm.yRot=.25F;rightArm.xRot=-.55F;
                     leftLeg.xRot=-.5F;rightLeg.xRot=.28F;}
-                default->{head.yRot+=(float)Math.sin(age*.025F)*.3F;rightArm.xRot=-.2F+breath*.03F;leftArm.xRot=.04F-breath*.03F;body.y+=breath*.25F;}
+                case 4->{body.xRot=.72F;head.xRot=.6F;head.zRot=.1F;leftLeg.xRot=-.45F;rightLeg.xRot=.3F;leftLeg.zRot=-.08F;rightLeg.zRot=.08F;
+                    leftArm.xRot=-1.15F;leftArm.zRot=-.22F;rightArm.xRot=-2.55F+breath*.05F;rightArm.zRot=.12F;lower(1.2F+breath*.3F);}
+                case 5->{float stride=walk*.4F,swing=(float)Math.cos(stride);
+                    body.xRot=.58F;head.xRot=-.15F;leftLeg.xRot=swing*.75F*amount;rightLeg.xRot=-swing*.75F*amount;
+                    leftArm.xRot=.7F;leftArm.zRot=-.14F;leftArm.yRot=.12F;rightArm.xRot=-.3F-swing*.15F*amount;rightArm.zRot=.2F;
+                    body.yRot=-.12F;lower(Math.abs((float)Math.sin(stride))*.6F*amount);}
+                case 6->{body.xRot=-.2F;head.xRot=-.38F;head.zRot=.14F;leftArm.xRot=-.6F;leftArm.zRot=-.85F;rightArm.xRot=-.9F;rightArm.zRot=.6F;
+                    rightLeg.xRot=.5F;leftLeg.xRot=-.18F;}
+                case 7->{float tremble=(float)Math.sin(age*1.7F)*.03F;
+                    body.xRot=-.14F;head.xRot=-.18F;rightArm.xRot=-3.05F+tremble;rightArm.zRot=-.08F;leftArm.xRot=-2.75F+tremble;leftArm.zRot=.38F;
+                    leftLeg.xRot=-.32F;rightLeg.xRot=.32F;}
+                case 8->{float stride=walk*.45F,swing=(float)Math.cos(stride);
+                    body.xRot=.55F;head.xRot=.08F;leftLeg.xRot=swing*.85F*amount;rightLeg.xRot=-swing*.85F*amount;
+                    leftArm.xRot=.9F;leftArm.zRot=-.06F;rightArm.xRot=-.22F-swing*.1F*amount;rightArm.zRot=.2F;
+                    // Now and then he looks back over his shoulder at what he is pulling.
+                    float glance=net.minecraft.util.Mth.clamp(((float)Math.sin(age*.035F)-.82F)*8,0,1);head.yRot+=glance*1.9F;head.xRot-=glance*.3F;
+                    lower(Math.abs((float)Math.sin(stride))*.8F*amount);}
+                default->{body.xRot+=.2F;head.xRot+=.12F;
+                    float tic=net.minecraft.util.Mth.clamp(((float)Math.sin(age*.031F)-.96F)*25,0,1);
+                    head.yRot+=(float)Math.sin(age*.025F)*.3F;head.zRot=(float)Math.sin(age*.013F)*.18F+tic*.4F;
+                    rightArm.xRot=-.15F+breath*.03F;leftArm.xRot=.04F-breath*.03F;lower(breath*.35F);}
             }
-            if(attackTime>0){float t=attackTime;rightArm.xRot=-2.9F+t*3.4F;rightArm.yRot=0;rightArm.zRot=.1F;leftArm.xRot=-1.2F+t*1.4F;body.xRot+=(float)Math.sin(t*Math.PI)*.35F;}
+            if(attackTime>0){float t=attackTime;rightArm.xRot=-3.05F+t*3.6F;rightArm.yRot=0;rightArm.zRot=.1F;leftArm.xRot=-2.75F+t*3.15F;leftArm.zRot=.38F*(1-t);
+                body.xRot+=(float)Math.sin(t*Math.PI)*.45F;head.xRot+=t*.25F;}
             // Coat tails trail the stride; they hang a little behind whichever leg is forward.
             tailRight.xRot=Math.max(0,-rightLeg.xRot)*.35F;tailLeft.xRot=Math.max(0,-leftLeg.xRot)*.35F;
         }
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftLeg.getAllParts().forEach(ModelPart::resetPose);rightLeg.getAllParts().forEach(ModelPart::resetPose);leftArm.getAllParts().forEach(ModelPart::resetPose);rightArm.getAllParts().forEach(ModelPart::resetPose);this.walk=walk;this.amount=amount;crouching=a.getPose()==net.minecraft.world.entity.Pose.CROUCHING||(a.role()==LiteraryActor.KILLER&&a.phase()==3);super.setupAnim(a,walk,amount,age,yaw,pitch);pose(a.role(),a.phase(),age);
+        /** The killer's leaning phases take the native crouch's offsets, so the torso stays on the legs. */
+        static boolean crouches(int phase){return switch(phase){case 2,3,4,5,8->true;default->false;};}
+        /** Down from the hips: the head, torso and arms together, the feet where they are. */
+        private void lower(float by){head.y+=by;body.y+=by;leftArm.y+=by;rightArm.y+=by;}
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftLeg.getAllParts().forEach(ModelPart::resetPose);rightLeg.getAllParts().forEach(ModelPart::resetPose);leftArm.getAllParts().forEach(ModelPart::resetPose);rightArm.getAllParts().forEach(ModelPart::resetPose);this.walk=walk;this.amount=amount;crouching=a.getPose()==net.minecraft.world.entity.Pose.CROUCHING||(a.role()==LiteraryActor.KILLER&&crouches(a.phase()));super.setupAnim(a,walk,amount,age,yaw,pitch);pose(a.role(),a.phase(),age);
             if(a.role()==LiteraryActor.FATHER){switch(a.gesture()){
                 case 1->{rightArm.xRot=-1.45F;rightArm.yRot=-.45F;rightArm.zRot=.18F;head.yRot-=.25F;}
                 case 2->{leftArm.xRot=rightArm.xRot=-1.2F;leftArm.yRot=.3F;rightArm.yRot=-.3F;body.xRot+=.12F;head.xRot+=.2F;}
@@ -175,7 +207,7 @@ public final class LiteraryRenderers {
         public void reaching(){leftArm.xRot=rightArm.xRot=-1.45F;leftArm.yRot=.28F;rightArm.yRot=-.28F;body.xRot+=.12F;}
         /** The killer's motion as the renderer drives it, for native proofs: phase, stride, swing and an attack in progress. */
         public void animateKiller(int phase,float walk,float amount,float age,float attack){for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
-            this.walk=walk;this.amount=amount;attackTime=attack;crouching=phase==3;young=false;riding=false;
+            this.walk=walk;this.amount=amount;attackTime=attack;crouching=crouches(phase);young=false;riding=false;
             dress(LiteraryActor.KILLER,phase);
             float swing=(float)Math.cos(walk*.6662F)*amount;rightLeg.xRot=swing*1.4F;leftLeg.xRot=-swing*1.4F;rightArm.xRot=-swing;leftArm.xRot=swing;
             if(crouching){body.xRot=.5F;rightArm.xRot+=.4F;leftArm.xRot+=.4F;rightLeg.z=4.0F;leftLeg.z=4.0F;rightLeg.y=12.2F;leftLeg.y=12.2F;head.y=4.2F;body.y=3.2F;leftArm.y=5.2F;rightArm.y=5.2F;}
@@ -203,7 +235,21 @@ public final class LiteraryRenderers {
         static LayerDefinition layer(){var mesh=new MeshDefinition();mesh.getRoot().addOrReplaceChild("pole",CubeListBuilder.create().texOffs(0,0).addBox(-.7F,-1,-1,1.4F,22,1.4F).texOffs(0,0).addBox(-2,-1,-1,4,1.4F,1.4F),PartPose.ZERO);return LayerDefinition.create(mesh,16,16);}
         @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.role()!=LiteraryActor.FATHER||a.phase()!=4)return;crutches(getParentModel(),pole,p,out,light);}
     }
-    private static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{private final ModelPart eyes;private final PlainFigureModel.Renderer plain;private final GhostsCastModel.Renderer ghosts;private final GhostsPropRenderer ghostsProps;private final BorrascaNativeArt.CastRenderer borrasca;private final UncannyActorRenderer uncanny;private final HouseHumanRenderers.ActorRenderer harrigan;CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.2F);eyes=c.bakeLayer(CAST).getChild("herd_eyes");plain=new PlainFigureModel.Renderer(c);ghosts=new GhostsCastModel.Renderer(c);ghostsProps=new GhostsPropRenderer(c);borrasca=new BorrascaNativeArt.CastRenderer(c);harrigan=new HouseHumanRenderers.ActorRenderer(c);uncanny=new UncannyActorRenderer(c);addLayer(new CrutchLayer(this,c));}@Override public void render(LiteraryActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){if(UncannyStories.role(a.role())){uncanny.render(a,yaw,partial,p,out,light);return;}if(PlainFigureModel.matches(a.role(),a.phase())){plain.render(a,yaw,partial,p,out,light);return;}if(a.role()==LiteraryActor.HARRIGAN||a.role()==LiteraryActor.HARRIGAN_MOURNER){harrigan.render(a,yaw,partial,p,out,light);return;}if(a.role()>=LiteraryActor.BORRASCA_KYLE&&a.role()<=LiteraryActor.BORRASCA_PRESCOTT){borrasca.render(a,yaw,partial,p,out,light);return;}if(a.role()>=LiteraryActor.GHOST_PLAYHOUSE&&a.role()<=LiteraryActor.GHOST_DRAWER){ghostsProps.render(a,yaw,partial,p,out,light);return;}if(a.role()>=LiteraryActor.GHOST_MARJORIE&&a.role()<=LiteraryActor.GHOST_PRIEST){ghosts.render(a,yaw,partial,p,out,light);return;}if(a.role()==LiteraryActor.RED_FIGURE&&a.phase()==3){p.pushPose();p.translate(0,1.45,0);p.mulPose(Axis.YP.rotationDegrees(-yaw));eyes.render(p,out.getBuffer(RenderType.eyes(texture("herd_eyes"))),LightTexture.FULL_BRIGHT,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);p.popPose();return;}super.render(a,yaw,partial,p,out,light);}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(a.role(),a.phase());}@Override protected void setupRotations(LiteraryActor a,PoseStack p,float age,float yaw,float partial,float scale){var chair=seat(a);var facing=chair==null?null:chair.facing();boolean lying=a.role()==LiteraryActor.COFFIN_WOMAN&&a.phase()==1;super.setupRotations(a,p,age,(lying||a.role()==LiteraryActor.BROTHER&&a.phase()>0)?0:facing==null?yaw:facing.toYRot(),partial,scale);if(a.role()==LiteraryActor.LAKE_TESS&&(a.phase()==2||a.phase()==6)){p.mulPose(Axis.XP.rotationDegrees(-90-a.getViewXRot(partial)));p.translate(0,-1,.3);}if(lying)coffinPose(p);if(a.role()==LiteraryActor.BROTHER&&a.phase()>0)bedPose(p,.58F);}@Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){var p=Minecraft.getInstance().player;return !(a.role()==LiteraryActor.COFFIN_WOMAN&&a.phase()==2)&&(a.scene().equals(LabyrinthPlace.FAMILY_COPY.id())||a.scene().equals(LabyrinthPlace.OLD_CABIN.id())||a.owner().isEmpty()||p!=null&&a.owner().get().equals(p.getUUID()))&&super.shouldRender(a,f,x,y,z);}}
+    /** The carcass he hauls off by a hind leg (0.4.120), drawn behind his left hand. */
+    private static final class HaulLayer extends net.minecraft.client.renderer.entity.layers.RenderLayer<LiteraryActor,CastModel>{
+        private final ElkModel elk;
+        HaulLayer(CastRenderer parent,EntityRendererProvider.Context c){super(parent);elk=new ElkModel(c.bakeLayer(ELK));}
+        @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
+            if(a.role()!=LiteraryActor.KILLER||a.phase()!=ElkHunt.HAUL)return;haul(elk,p,out,light,walk);}
+    }
+    /** From a cast layer's model space: a carcass on its side behind the left hand, head away, swaying as it drags. */
+    public static void haul(ElkModel elk,PoseStack p,MultiBufferSource out,int light,float walk){
+        p.pushPose();p.translate(0,1.501,0);p.scale(-1,-1,1);
+        p.translate(-.3,0,1.55);p.mulPose(Axis.YP.rotationDegrees((float)Math.sin(walk*.4F)*5));p.scale(.85F,.85F,.85F);p.translate(-.5,0,-.5);
+        ModelRenderer.carcassPose(p,Direction.NORTH,0,1);elk.dead(1,11L);
+        elk.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(texture("elk_carcass"))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
+    }
+    private static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{private final ModelPart eyes;private final PlainFigureModel.Renderer plain;private final GhostsCastModel.Renderer ghosts;private final GhostsPropRenderer ghostsProps;private final BorrascaNativeArt.CastRenderer borrasca;private final UncannyActorRenderer uncanny;private final HouseHumanRenderers.ActorRenderer harrigan;CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.2F);eyes=c.bakeLayer(CAST).getChild("herd_eyes");plain=new PlainFigureModel.Renderer(c);ghosts=new GhostsCastModel.Renderer(c);ghostsProps=new GhostsPropRenderer(c);borrasca=new BorrascaNativeArt.CastRenderer(c);harrigan=new HouseHumanRenderers.ActorRenderer(c);uncanny=new UncannyActorRenderer(c);addLayer(new CrutchLayer(this,c));addLayer(new HaulLayer(this,c));}@Override public void render(LiteraryActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){if(UncannyStories.role(a.role())){uncanny.render(a,yaw,partial,p,out,light);return;}if(PlainFigureModel.matches(a.role(),a.phase())){plain.render(a,yaw,partial,p,out,light);return;}if(a.role()==LiteraryActor.HARRIGAN||a.role()==LiteraryActor.HARRIGAN_MOURNER){harrigan.render(a,yaw,partial,p,out,light);return;}if(a.role()>=LiteraryActor.BORRASCA_KYLE&&a.role()<=LiteraryActor.BORRASCA_PRESCOTT){borrasca.render(a,yaw,partial,p,out,light);return;}if(a.role()>=LiteraryActor.GHOST_PLAYHOUSE&&a.role()<=LiteraryActor.GHOST_DRAWER){ghostsProps.render(a,yaw,partial,p,out,light);return;}if(a.role()>=LiteraryActor.GHOST_MARJORIE&&a.role()<=LiteraryActor.GHOST_PRIEST){ghosts.render(a,yaw,partial,p,out,light);return;}if(a.role()==LiteraryActor.RED_FIGURE&&a.phase()==3){p.pushPose();p.translate(0,1.45,0);p.mulPose(Axis.YP.rotationDegrees(-yaw));eyes.render(p,out.getBuffer(RenderType.eyes(texture("herd_eyes"))),LightTexture.FULL_BRIGHT,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);p.popPose();return;}super.render(a,yaw,partial,p,out,light);}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(a.role(),a.phase());}@Override protected void setupRotations(LiteraryActor a,PoseStack p,float age,float yaw,float partial,float scale){var chair=seat(a);var facing=chair==null?null:chair.facing();boolean lying=a.role()==LiteraryActor.COFFIN_WOMAN&&a.phase()==1;super.setupRotations(a,p,age,(lying||a.role()==LiteraryActor.BROTHER&&a.phase()>0)?0:facing==null?yaw:facing.toYRot(),partial,scale);if(a.role()==LiteraryActor.LAKE_TESS&&(a.phase()==2||a.phase()==6)){p.mulPose(Axis.XP.rotationDegrees(-90-a.getViewXRot(partial)));p.translate(0,-1,.3);}if(lying)coffinPose(p);if(a.role()==LiteraryActor.BROTHER&&a.phase()>0)bedPose(p,.58F);}@Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){var p=Minecraft.getInstance().player;return !(a.role()==LiteraryActor.COFFIN_WOMAN&&a.phase()==2)&&(a.scene().equals(LabyrinthPlace.FAMILY_COPY.id())||a.scene().equals(LabyrinthPlace.OLD_CABIN.id())||a.owner().isEmpty()||p!=null&&a.owner().get().equals(p.getUUID()))&&super.shouldRender(a,f,x,y,z);}}
     public static final class ElkModel extends EntityModel<LiteraryElk>{private final ModelPart root;public ElkModel(ModelPart r){root=r;}
         public static LayerDefinition layer(){var m=new MeshDefinition();var r=m.getRoot();r.addOrReplaceChild("body",CubeListBuilder.create().texOffs(0,0).addBox(-5,-6,-10,10,12,23),PartPose.offset(0,11,0));r.addOrReplaceChild("neck",CubeListBuilder.create().texOffs(0,36).addBox(-3.5F,-6,-4,7,15,8),PartPose.offsetAndRotation(0,7,-9,-.4F,0,0));var h=r.addOrReplaceChild("head",CubeListBuilder.create().texOffs(68,0).addBox(-4,-3.5F,-8,8,7,10).texOffs(68,20).addBox(-3,0,-12,6,4,5),PartPose.offset(0,3,-12));h.addOrReplaceChild("ear_left",CubeListBuilder.create().texOffs(100,20).addBox(0,-2,-1,6,3,2),PartPose.offsetAndRotation(3,-2,0,0,0,-.4F));h.addOrReplaceChild("ear_right",CubeListBuilder.create().texOffs(100,20).addBox(-6,-2,-1,6,3,2),PartPose.offsetAndRotation(-3,-2,0,0,0,.4F));for(int i=0;i<4;i++)r.addOrReplaceChild("leg"+i,CubeListBuilder.create().texOffs(32,38).addBox(-1.5F,0,-1.5F,3,13,3).texOffs(48,38).addBox(-2,11,-2,4,2,4),PartPose.offset(i%2==0?-3.5F:3.5F,11,i<2?-7:9));r.addOrReplaceChild("tail",CubeListBuilder.create().texOffs(68,38).addBox(-1,-1,0,2,2,5),PartPose.offsetAndRotation(0,8,12,.2F,0,0));return LayerDefinition.create(m,128,64);}
         @Override public void setupAnim(LiteraryElk a,float walk,float amount,float age,float yaw,float pitch){root.getAllParts().forEach(ModelPart::resetPose);root.getChild("head").yRot=yaw*.01745F;root.getChild("head").xRot=pitch*.01745F;for(int i=0;i<4;i++)root.getChild("leg"+i).xRot=(float)Math.cos(walk*.6662F+(i==0||i==3?0:Math.PI))*amount*.8F;}

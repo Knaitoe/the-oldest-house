@@ -32,10 +32,19 @@ import net.minecraft.world.phys.Vec3;
  * changes another reader's state or the shared scene.
  */
 public final class ElkHunt {
-    public static final int ABOARD = 0, HUNTED = 1, IN_WATER = 2, ASHORE = 3, SEARCH = 4, SPENT = 5;
-    /** Watching, searching, running, crouched at the pile: the killer's model phases. */
-    public static final int WATCH = 0, WALK = 1, RUN = 2, PEER = 3;
+    public static final int ABOARD = 0, HUNTED = 1, IN_WATER = 2, ASHORE = 3, SEARCH = 4, SPENT = 5, DRAGGED = 6;
+    /**
+     * The killer's model phases: watching, searching, running, crouched at the pile; and (0.4.120) hacking at a carcass,
+     * hauling one, rocked back by a shove, the axe raised, and dragging the reader.
+     */
+    public static final int WATCH = 0, WALK = 1, RUN = 2, PEER = 3, HACK = 4, HAUL = 5, STAGGER = 6, RAISE = 7, DRAG = 8;
     public static final int ATTACK_DELAY=90;
+    /** The axe goes up this long before it comes down; a shove in that time stops the blow. */
+    public static final int WINDUP = 10;
+    /** A shove rocks him back this long, and can only do so this often. */
+    public static final int STAGGER_TICKS = 25, SHOVE_EVERY = 50;
+    /** After the drag he walks away out of the cave; for this long he hunts no one. */
+    public static final int GRACE = 200;
     private static final double SEARCH_SPEED = .75, CHASE_SPEED = 1.35;
     /** Cover the visible body beyond the House's short-range scenery observation rule. */
     private static final double RELOCATION_VIEW_RANGE=128;
@@ -127,6 +136,18 @@ public final class ElkHunt {
         }
         noticeBodies(p, b, own);
         boolean moved = moved(p, own);
+        ElkDrag.resume(p, b, own);
+        if (stage == DRAGGED) {
+            // The drag runs every tick on its own clock; a save in the middle of it wakes the reader where it left them.
+            if (!ElkDrag.active(p)) ElkDrag.wake(p, b, own, killer);
+            return;
+        }
+        int stagger = own.getInt("ElkStagger");
+        if (stagger > 0) {
+            own.putInt("ElkStagger", stagger - 5);
+            killer.appearance(LiteraryActor.KILLER, STAGGER);
+            return;
+        }
         switch (stage) {
             case ABOARD -> {
                 KillerNavigation.stop(killer);
@@ -149,7 +170,10 @@ public final class ElkHunt {
                     own.putInt("ElkLand", 0);
                 }
             }
-            case ASHORE -> hunt(p, b, killer, own, r, moved);
+            case ASHORE -> {
+                if (p.serverLevel().getGameTime() < own.getLong("ElkGraceUntil")) leave(b, killer, own);
+                else hunt(p, b, killer, own, r, moved);
+            }
             case SEARCH -> search(p, b, killer, own, r, moved);
             case SPENT -> {
                 if (killer.getNavigation().isDone()) {
@@ -168,7 +192,7 @@ public final class ElkHunt {
     public static void noise(ServerPlayer p,BlockPos at){
         if(!LiteraryVignettes.participant(p)||!LiteraryVignettes.inside(p,PLACE))return;
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
-        if(!own.getBoolean("Here")||own.getInt("ElkStage")<ASHORE)return;
+        if(!own.getBoolean("Here")||own.getInt("ElkStage")<ASHORE||own.getInt("ElkStage")==DRAGGED||p.serverLevel().getGameTime()<own.getLong("ElkGraceUntil"))return;
         var world=LiteraryVignettes.shared(d,PLACE);String key="Killer_"+p.getUUID();
         if(!world.hasUUID(key)||!(p.serverLevel().getEntity(world.getUUID(key)) instanceof LiteraryActor a)||a.position().distanceToSqr(at.getCenter())>=32*32)return;
         own.putLong("ElkLastSeen",p.serverLevel().getGameTime());own.putDouble("ElkSeenX",at.getX()+.5);own.putDouble("ElkSeenY",at.getY());own.putDouble("ElkSeenZ",at.getZ()+.5);
@@ -243,15 +267,73 @@ public final class ElkHunt {
         strike(p, killer, own);
     }
 
+    private static boolean reach(ServerPlayer p, LiteraryActor killer, double range) {
+        return !KillerDoors.active(killer) && killer.distanceToSqr(p) <= range && LiteraryVignettes.participant(p)
+                && killer.level().clip(new net.minecraft.world.level.ClipContext(killer.getEyePosition(),p.getEyePosition(),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,killer)).getType()==net.minecraft.world.phys.HitResult.Type.MISS;
+    }
+
+    /**
+     * The axe goes up, then comes down (0.4.120): the wind-up is the reader's moment to shove him or get out of reach. Blows
+     * stay a saved ATTACK_DELAY apart. The falling blow reaches a little further than he had to be to start it.
+     */
     private static boolean strike(ServerPlayer p, LiteraryActor killer, CompoundTag own) {
         long now = p.serverLevel().getGameTime();
-        if (KillerDoors.active(killer)||killer.distanceToSqr(p) > 3.4 || now - own.getLong("ElkStrikeAt") < ATTACK_DELAY || !LiteraryVignettes.participant(p)
-                || killer.level().clip(new net.minecraft.world.level.ClipContext(killer.getEyePosition(),p.getEyePosition(),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,killer)).getType()!=net.minecraft.world.phys.HitResult.Type.MISS) return false;
-        own.putLong("ElkStrikeAt", now);
-        killer.swing(InteractionHand.MAIN_HAND);
-        p.serverLevel().playSound(null, killer.blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1, .7F);
-        p.hurt(p.damageSources().mobAttack(killer), 4);
+        int windup = own.getInt("ElkWindup");
+        if (windup > 0) {
+            own.putInt("ElkWindup", windup - 5);
+            if (windup - 5 > 0) { killer.appearance(LiteraryActor.KILLER, RAISE); killer.getLookControl().setLookAt(p, 30, 30); return true; }
+            own.putLong("ElkStrikeAt", now);
+            killer.swing(InteractionHand.MAIN_HAND);
+            if (reach(p, killer, 4.6)) {
+                p.serverLevel().playSound(null, killer.blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1, .7F);
+                p.hurt(p.damageSources().mobAttack(killer), 4);
+                if (ElkDrag.active(p)) ElkDrag.mark(own);
+            } else ElkDrag.sound(p, killer.position(), SoundEvents.PLAYER_ATTACK_SWEEP, .9F, .55F);
+            return true;
+        }
+        if (now - own.getLong("ElkStrikeAt") < ATTACK_DELAY - WINDUP || !reach(p, killer, 3.4)) return false;
+        own.putInt("ElkWindup", WINDUP);
+        killer.appearance(LiteraryActor.KILLER, RAISE);
+        killer.getLookControl().setLookAt(p, 30, 30);
+        ElkDrag.sound(p, killer.position(), SoundEvents.ARMOR_EQUIP_LEATHER, 1, .55F);
         return true;
+    }
+
+    /**
+     * A blow from his reader (0.4.120). It cannot hurt him, but it pushes him off them: a real shove backward, a stagger
+     * that stops a raised axe, and a moment before he can swing again. He can only be rocked this way so often; between
+     * times a blow just moves him a little.
+     */
+    public static void shoved(ServerPlayer p, LiteraryActor killer) {
+        var d = LabyrinthData.get(p.server);
+        var own = LiteraryVignettes.personal(d, p.getUUID(), PLACE);
+        if (own.getInt("ElkStage") == DRAGGED) return;
+        long now = p.serverLevel().getGameTime();
+        boolean rock = now - own.getLong("ElkShovedAt") >= SHOVE_EVERY;
+        double force = (rock ? .85 : .3) * (p.getMainHandItem().isEmpty() ? .7 : 1);
+        KillerNavigation.stop(killer);
+        killer.knockback(force, p.getX() - killer.getX(), p.getZ() - killer.getZ());
+        killer.hasImpulse = true;
+        ElkDrag.sound(p, killer.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1, .75F);
+        if (rock) {
+            own.putLong("ElkShovedAt", now);
+            own.putInt("ElkStagger", STAGGER_TICKS);
+            own.putInt("ElkWindup", 0);
+            own.putLong("ElkStrikeAt", Math.max(own.getLong("ElkStrikeAt"), now - ATTACK_DELAY + WINDUP + 40));
+            killer.appearance(LiteraryActor.KILLER, STAGGER);
+            ElkDrag.sound(p, killer.position(), SoundEvents.GRAVEL_STEP, 1, .6F);
+            if (!own.getBoolean("ElkShoveHint")) {
+                own.putBoolean("ElkShoveHint", true);
+                p.displayClientMessage(Component.literal("He rocks back a step. It does nothing to him."), true);
+            }
+        }
+        // Whatever he was doing, he knows where they are now.
+        own.putInt("ElkWork", 0);
+        own.putLong("ElkLastSeen", now);
+        own.putDouble("ElkSeenX", p.getX());
+        own.putDouble("ElkSeenY", p.getY());
+        own.putDouble("ElkSeenZ", p.getZ());
+        LiteraryVignettes.save(d, p.getUUID(), PLACE, own);
     }
 
     private static boolean ashore(ServerPlayer p, Vec3 r) {
@@ -279,10 +361,13 @@ public final class ElkHunt {
     private static boolean sees(ServerPlayer p, LiteraryActor killer, BlockPos b) {
         if (hidden(p, b) || !LiteraryVignettes.participant(p) || killer.distanceToSqr(p)>9&&CarcassHunt.concealed(p,b)) return false;
         double range = p.isShiftKeyDown() ? (cover(p) ? 5 : 12) : 28;
+        // Bent over his work he sees only what is close and in front of him.
+        boolean busy = killer.phase() == HACK || killer.phase() == HAUL;
+        if (busy) range = Math.min(range, 9);
         Vec3 to = p.getEyePosition().subtract(killer.getEyePosition());
         double d = to.length();
         if (d > range) return false;
-        if (d > 5 && killer.getLookAngle().dot(to.scale(1 / d)) < .2) return false;
+        if (d > (busy ? 3 : 5) && killer.getLookAngle().dot(to.scale(1 / d)) < (busy ? .55 : .2)) return false;
         return killer.hasLineOfSight(p);
     }
 
@@ -313,6 +398,7 @@ public final class ElkHunt {
                     own.putLong("ElkStrikeAt", now);
                     killer.swing(InteractionHand.MAIN_HAND);
                     p.hurt(p.damageSources().mobAttack(killer), 3);
+                    if (ElkDrag.active(p)) ElkDrag.mark(own);
                 }
             }
             return;
@@ -400,6 +486,7 @@ public final class ElkHunt {
     }
 
     private static void patrol(ServerPlayer p, BlockPos b, LiteraryActor killer, CompoundTag own) {
+        if (own.getInt("ElkWork") > 0 && work(p, b, killer, own)) return;
         List<BlockPos> points = ElkCarcassMap.patrol();
         int i = own.getInt("ElkWaypoint");
         if (i < 0 || i >= points.size()) {
@@ -417,6 +504,9 @@ public final class ElkHunt {
         }
         if (killer.position().distanceToSqr(target) < 6) {
             own.putInt("ElkPause", 40 + p.getRandom().nextInt(50));
+            // Between legs he often goes back to the dead nearby: hacking at one, or hauling one off to the cave.
+            int job = nearestWork(b, killer);
+            if (job >= 0 && p.getRandom().nextInt(3) > 0) { own.putInt("ElkWork", job + 1); own.putInt("ElkWorkTicks", 0); own.putInt("ElkPause", 0); }
             // Every other leg he drifts toward the part of the valley the reader is in.
             int next = (i + 1) % points.size();
             if (p.getRandom().nextBoolean()) next = nearest(points, p.position().subtract(b.getX(), b.getY(), b.getZ()), i);
@@ -428,6 +518,79 @@ public final class ElkHunt {
         }
         killer.appearance(LiteraryActor.KILLER, WALK);
         if (killer.getNavigation().isDone()) KillerNavigation.request(killer,new Vec3(target.x, target.y, target.z), SEARCH_SPEED);
+    }
+
+    private static int nearestWork(BlockPos b, LiteraryActor killer) {
+        int best = -1;
+        double bestDistance = 40 * 40;
+        for (int i = 0; i < ElkCarcassMap.WORK.size(); i++) {
+            double distance = at(b, ElkCarcassMap.WORK.get(i).feet()).distanceToSqr(killer.position());
+            if (distance < bestDistance) { bestDistance = distance; best = i; }
+        }
+        return best;
+    }
+
+    /**
+     * His idle work (0.4.120), the times between his attention to the reader. At a hacking place he stands over a carcass
+     * and chops at it for a while. At a hauling place he takes one by a leg and drags it off down the trail into the cave,
+     * where he lets it go. He starts a haul only while nobody can see him take it up, and the reader alone hears and sees
+     * any of it. Returns false once the work is done.
+     */
+    private static boolean work(ServerPlayer p, BlockPos b, LiteraryActor killer, CompoundTag own) {
+        int index = own.getInt("ElkWork") - 1;
+        if (index < 0 || index >= ElkCarcassMap.WORK.size()) { own.putInt("ElkWork", 0); return false; }
+        var job = ElkCarcassMap.WORK.get(index);
+        var level = p.serverLevel();
+        int ticks = own.getInt("ElkWorkTicks");
+        if (ticks == 0) {
+            var feet = at(b, job.feet());
+            if (killer.position().distanceToSqr(feet) > 2.2) {
+                killer.appearance(LiteraryActor.KILLER, WALK);
+                if (killer.getNavigation().isDone()) KillerNavigation.request(killer, feet, SEARCH_SPEED);
+                own.putInt("ElkWorkWalk", own.getInt("ElkWorkWalk") + 5);
+                if (own.getInt("ElkWorkWalk") > 600) { own.putInt("ElkWork", 0); own.putInt("ElkWorkWalk", 0); return false; }
+                return true;
+            }
+            if (job.haul() && watched(level, killer, killer.position())) { killer.appearance(LiteraryActor.KILLER, WATCH); return true; }
+            KillerNavigation.stop(killer);
+            own.putInt("ElkWorkWalk", 0);
+            own.putInt("ElkWorkLength", job.haul() ? 0 : 140 + p.getRandom().nextInt(90));
+        }
+        own.putInt("ElkWorkTicks", ticks + 5);
+        var work = job.at().add(b.getX(), b.getY(), b.getZ());
+        if (!job.haul()) {
+            killer.appearance(LiteraryActor.KILLER, HACK);
+            killer.getLookControl().setLookAt(work.x, work.y, work.z);
+            if (ticks % 20 == 10) {
+                killer.swing(InteractionHand.MAIN_HAND);
+                ElkDrag.sound(p, work, SoundEvents.PLAYER_ATTACK_STRONG, .8F, .55F + p.getRandom().nextFloat() * .1F);
+                ElkDrag.sound(p, work, SoundEvents.SLIME_SQUISH_SMALL, .9F, .5F);
+                level.sendParticles(p, new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.42F, .05F, .04F), 1.1F), true, work.x, work.y, work.z, 7, .25, .15, .25, .02);
+            }
+            if (ticks + 5 >= own.getInt("ElkWorkLength")) { own.putInt("ElkWork", 0); own.putInt("ElkPause", 20); }
+            return true;
+        }
+        // Hauling: down the trail to the mouth and in, slow under the weight.
+        var inside = at(b, ElkCarcassMap.CAVE_ENTRY);
+        if (killer.position().distanceToSqr(inside) < 4 || ticks > 2400) {
+            killer.appearance(LiteraryActor.KILLER, WALK);
+            own.putInt("ElkWork", 0);
+            own.putInt("ElkWaypoint", -1);
+            own.putInt("ElkPause", 30);
+            return false;
+        }
+        killer.appearance(LiteraryActor.KILLER, HAUL);
+        if (killer.getNavigation().isDone()) KillerNavigation.request(killer, inside, .55);
+        if (ticks % 15 == 0) ElkDrag.sound(p, killer.position(), SoundEvents.ROOTED_DIRT_STEP, .8F, .55F);
+        return true;
+    }
+
+    /** After the drag: out of the cave, unhurried, then back to his round. */
+    private static void leave(BlockPos b, LiteraryActor killer, CompoundTag own) {
+        var out = at(b, route(ROUTE.length - 1));
+        if (killer.position().distanceToSqr(out) < 6) { KillerNavigation.stop(killer); killer.appearance(LiteraryActor.KILLER, WATCH); return; }
+        killer.appearance(LiteraryActor.KILLER, WALK);
+        if (killer.getNavigation().isDone()) KillerNavigation.request(killer, out, SEARCH_SPEED);
     }
 
     private static int nearest(List<BlockPos> points, Vec3 rel) {

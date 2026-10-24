@@ -192,8 +192,8 @@ public final class LiteraryVignettes {
         save(d,p.getUUID(),place,own);
     }
     public static void attacked(ServerPlayer p,LiteraryActor actor){var place=current(p);if(place==null||!actor.scene().equals(place.id())||actor.owner().isPresent()&&!actor.owner().get().equals(p.getUUID()))return;
-        // Blows do not stop him and do not end the visit: the only way through is to get away, or to hide.
-        if(place==LabyrinthPlace.ELK_CARCASSES&&actor.role()==LiteraryActor.KILLER)return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
+        // Blows do not hurt him and do not end the visit; they only push him off (0.4.120). The way through is to get away, or to hide.
+        if(place==LabyrinthPlace.ELK_CARCASSES&&actor.role()==LiteraryActor.KILLER){ElkHunt.shoved(p,actor);return;}var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
         if(place==LabyrinthPlace.HOLY_RABBIT&&actor.role()==LiteraryActor.FATHER){actor.appearance(actor.role(),actor.phase());actor.say("I'm awake. I'm here.");own.putInt("FatherAwake",own.getInt("FatherAwake")+1);own.putInt("Drowse",Math.max(0,own.getInt("Drowse")-100));}
         else{own.putBoolean("Interrupted",true);p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,80));actor.say("You need to leave.");LabyrinthDoors.goToJunction(p);}
         save(d,p.getUUID(),place,own);
@@ -235,7 +235,7 @@ public final class LiteraryVignettes {
         else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
     }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();MovieNight.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();}
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);HolyRabbit.release(p);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}

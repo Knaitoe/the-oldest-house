@@ -1,0 +1,182 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "sheet": "the_oldest_house:block/site_machine/truck_sheet",
+  "paint": "the_oldest_house:block/site_machine/truck_paint",
+  "frame": "the_oldest_house:block/site_machine/frame",
+  "parts": "the_oldest_house:block/site_machine/parts",
+  "particle": "the_oldest_house:block/site_machine/truck_paint"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    3.0
+   ],
+   "to": [
+    8.0,
+    14.0,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#sheet",
+     "uv": [
+      2.0,
+      0.0,
+      3.0,
+      1.75
+     ]
+    },
+    "east": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      2.0,
+      13.0,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      3.0,
+      8.0,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    8.0,
+    0.0,
+    6.0
+   ],
+   "to": [
+    14.0,
+    6.0,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#paint",
+     "uv": [
+      2.0,
+      10.0,
+      8.0,
+      16.0
+     ]
+    },
+    "west": {
+     "texture": "#paint",
+     "uv": [
+      6.0,
+      10.0,
+      16,
+      16.0
+     ]
+    },
+    "east": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      10.0,
+      10.0,
+      16.0
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      8.0,
+      6.0,
+      14.0,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#frame",
+     "uv": [
+      8.0,
+      0,
+      14.0,
+      10.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    10.5,
+    3.0,
+    5.5
+   ],
+   "to": [
+    13.5,
+    5.0,
+    6.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#parts",
+     "uv": [
+      10,
+      10,
+      14,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      10,
+      10,
+      14,
+      14
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      10,
+      10,
+      14,
+      14
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      10,
+      10,
+      14,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      10,
+      10,
+      14,
+      14
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      10,
+      10,
+      14,
+      14
+     ]
+    }
+   }
+  }
+ ]
+}

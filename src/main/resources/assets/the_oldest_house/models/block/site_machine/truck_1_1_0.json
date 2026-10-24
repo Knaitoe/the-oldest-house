@@ -1,0 +1,158 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "paint": "the_oldest_house:block/site_machine/truck_paint",
+  "frame": "the_oldest_house:block/site_machine/frame",
+  "particle": "the_oldest_house:block/site_machine/truck_paint"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    13.0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    10.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      0,
+      16,
+      3.0
+     ]
+    },
+    "down": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      6.0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    8.0,
+    0
+   ],
+   "to": [
+    16,
+    13.0,
+    10.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      3.0,
+      16,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      16,
+      10.0
+     ]
+    },
+    "down": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      6.0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    14.0,
+    10.0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      0,
+      16,
+      2.0
+     ]
+    },
+    "down": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      0,
+      16,
+      6.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    8.0,
+    10.0
+   ],
+   "to": [
+    16,
+    12.0,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      4.0,
+      16,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      10.0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      16,
+      6.0
+     ]
+    }
+   }
+  }
+ ]
+}

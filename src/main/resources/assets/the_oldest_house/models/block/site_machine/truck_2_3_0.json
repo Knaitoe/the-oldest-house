@@ -1,0 +1,173 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "plate": "the_oldest_house:block/site_machine/plate",
+  "frame": "the_oldest_house:block/site_machine/frame",
+  "rail": "the_oldest_house:block/site_machine/truck_rail",
+  "deck": "the_oldest_house:block/site_machine/deck",
+  "particle": "the_oldest_house:block/site_machine/deck"
+ },
+ "elements": [
+  {
+   "from": [
+    5.0,
+    6.0,
+    2.0
+   ],
+   "to": [
+    10.0,
+    12.0,
+    16.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#plate",
+     "uv": [
+      6.0,
+      4.0,
+      11.0,
+      10.0
+     ]
+    },
+    "south": {
+     "texture": "#plate",
+     "uv": [
+      5.0,
+      4.0,
+      10.0,
+      10.0
+     ]
+    },
+    "west": {
+     "texture": "#plate",
+     "uv": [
+      2.0,
+      4.0,
+      16.0,
+      10.0
+     ]
+    },
+    "east": {
+     "texture": "#plate",
+     "uv": [
+      0.0,
+      4.0,
+      14.0,
+      10.0
+     ]
+    },
+    "up": {
+     "texture": "#plate",
+     "uv": [
+      5.0,
+      2.0,
+      10.0,
+      16.0
+     ]
+    },
+    "down": {
+     "texture": "#plate",
+     "uv": [
+      5.0,
+      0.0,
+      10.0,
+      14.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    8.0,
+    0
+   ],
+   "to": [
+    6.0,
+    12.0,
+    16
+   ],
+   "faces": {
+    "east": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      4.0,
+      16,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      6.0,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      6.0,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    12.0,
+    0.0
+   ],
+   "to": [
+    16.0,
+    16.0,
+    16.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#rail",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      4.0
+     ]
+    },
+    "east": {
+     "texture": "#rail",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      4.0
+     ]
+    },
+    "up": {
+     "texture": "#deck",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ]
+    },
+    "down": {
+     "texture": "#frame",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ]
+    }
+   }
+  }
+ ]
+}
