@@ -65,6 +65,20 @@ public final class ChildRoom {
             new BlockPos(-4,0,-10),new BlockPos(-4,0,-9),new BlockPos(-4,0,-8),new BlockPos(-5,0,-8),new BlockPos(-6,0,-8),new BlockPos(-7,0,-8),
             new BlockPos(-7,0,-9),new BlockPos(-7,0,-10));
     public static final int SEAL_EVERY=120,LOOK=20,LOOK_REACH=14;
+    /** The doorway in the south wall that leads back to the House's own door, and the ceiling corner where Dinnerbone stands. */
+    public static final List<BlockPos> DOORWAY=List.of(new BlockPos(0,0,0),new BlockPos(0,1,0));
+    public static final Vec3 DINNERBONE=new Vec3(-7.5,4.1,-4.5);
+    /**
+     * What the reader hears through the house, in their parents' voices, as the room closes: the card says to wait until
+     * morning; the voices do not agree with it, or with each other. Each line once, in order, for that reader alone.
+     */
+    private static final String[] PARENTS={
+            "Through the floor, Dad's voice: Are you still up? Go back to bed.",
+            "From downstairs, Mum: Did you hear something? Is that you?",
+            "Dad, nearer, as if inside the wall: Where's your door gone? Can you see your door?",
+            "Mum, from under the bed: Come down here, sweetheart. Under the bed. Come down to us.",
+            "Dad, very quietly: Don't. Wait until morning. That isn't your mum.",
+            "Both of them, together, from below the floor: We're awake now. You can come down."};
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private static final String[] SEEN={
             "Where the window was there is only wallpaper. It is cold to touch.",
@@ -99,7 +113,8 @@ public final class ChildRoom {
         NovelRooms.door(l,b.offset(-11,0,-12),Direction.EAST,Blocks.BIRCH_DOOR,false);NovelRooms.door(l,b.offset(11,0,-8),Direction.WEST,Blocks.BIRCH_DOOR,false);
         // The bed stands on legs against the north wall. Under it there is room for a child, and a gap in the boards.
         toy(l,b,BED_HEAD,Kind.BED_HEAD,Direction.NORTH);toy(l,b,BED_FOOT,Kind.BED_FOOT,Direction.NORTH);
-        set(l,b,GAP,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH));
+        // The way down is a floorboard like the others until somebody gets down and looks under the bed.
+        set(l,b,GAP,Blocks.BIRCH_PLANKS.defaultBlockState());
         toy(l,b,1,0,-23,Kind.NIGHT_LIGHT,Direction.SOUTH);toy(l,b,0,5,-22,Kind.MOBILE,Direction.NORTH);toy(l,b,0,5,-12,Kind.CEILING_LAMP,Direction.NORTH);toy(l,b,-6,5,-19,Kind.CEILING_LAMP,Direction.NORTH);toy(l,b,6,5,-19,Kind.CEILING_LAMP,Direction.NORTH);
         // Desk and chair, the bedtime card left on the desk.
         toy(l,b,8,0,-18,Kind.DESK,Direction.WEST);toy(l,b,7,0,-18,Kind.CHAIR,Direction.EAST);toy(l,b,CARD,Kind.CARD,Direction.WEST);
@@ -172,9 +187,52 @@ public final class ChildRoom {
             if(own.getBoolean("Crawled0474"))LiteraryVignettes.ready(p,PLACE,own,own.getInt("ExitsAtArrival0474")==0
                     ?"examined_the_lost_exits_and_crawled_below_the_bed":"examined_the_sealed_thresholds_and_found_the_remaining_crawl");
         }
+        // The House's own door goes with the room's: while the room is shut around a reader who has not finished, the doorway
+        // back to it is wall to that reader. Their peers see whatever their own progress shows them.
+        boolean shut=own.getBoolean("Read_Source")&&mask==ALL&&!own.getBoolean("Ready");
+        if(shut&&(own.getInt("Present")%20==0||!own.getBoolean("DoorShut0119"))){doorway(p,b,true);own.putBoolean("DoorShut0119",true);}
+        else if(!shut&&own.getBoolean("DoorShut0119")){doorway(p,b,false);own.remove("DoorShut0119");}
+        // The parents' voices: one as each exit goes, a warning twenty seconds after the reader is shut in, and the last once
+        // they have gone under the floor. Each line once, in order, to that reader alone.
+        if(own.getBoolean("Read_Source")&&!own.getBoolean("Ready")){
+            if(mask==ALL&&!own.contains("ShutAt0119"))own.putInt("ShutAt0119",own.getInt("Present"));
+            int due=Integer.bitCount(mask);
+            if(mask==ALL&&own.getInt("Present")-own.getInt("ShutAt0119")>=400)due=5;
+            if(mask==ALL&&own.getBoolean("UnderFloor0474"))due=PARENTS.length;
+            int heard=own.getInt("Parents0119");
+            for(int i=0;i<due;i++)if((heard&(1<<i))==0){own.putInt("Parents0119",heard|1<<i);
+                p.displayClientMessage(Component.literal(PARENTS[i]).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),false);
+                var at=Vec3.atCenterOf(b.offset(i==3||i==5?GAP:new BlockPos(0,-2,-12)));p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.7F,.8F,p.getRandom().nextLong()));break;}
+        }
+        if(mask==ALL)dinnerbone(p,b,l);
         // Once the room is shut, something above the bed speaks now and then. Only the reader hears it.
         if(mask==ALL&&own.getInt("Present")%600==300&&!inBasement(p,b)){var at=Vec3.atCenterOf(b.offset(0,5,-21));
             p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.55F,.9F+p.getRandom().nextFloat()*.15F,p.getRandom().nextLong()));}
+    }
+    /** Sends one reader the doorway as wall (shut) or as it really is. */
+    static void doorway(ServerPlayer p,BlockPos b,boolean shut){for(var c:DOORWAY){var at=b.offset(c);p.connection.send(new net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket(at,shut?wallAt(c.getY()):p.serverLevel().getBlockState(at)));}}
+    /**
+     * Dinnerbone: once the room is shut, a dark figure stands on the ceiling in the far corner, upside down. It comes only
+     * while nobody can see the corner and turns to the nearest reader only unseen. Being named Dinnerbone, the game itself
+     * renders it the wrong way up.
+     */
+    static void dinnerbone(ServerPlayer p,BlockPos b,ServerLevel l){
+        var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);var at=DINNERBONE.add(b.getX(),b.getY(),b.getZ());
+        if(!world.hasUUID("Dinnerbone")){if(seen(l,at.add(0,1,0)))return;}
+        else if(!(l.getEntity(world.getUUID("Dinnerbone")) instanceof LiteraryActor))return;
+        var figure=LiteraryVignettes.actor(p,PLACE,"Dinnerbone",LiteraryActor.SILHOUETTE,BlockPos.containing(DINNERBONE),false);if(figure==null)return;
+        if(!"Dinnerbone".equals(figure.getName().getString())){figure.setCustomName(Component.literal("Dinnerbone"));figure.setCustomNameVisible(false);figure.setNoGravity(true);figure.moveTo(at.x,at.y,at.z);}
+        if(!seen(l,at.add(0,1,0))){var reader=l.getNearestPlayer(at.x,at.y,at.z,24,e->e instanceof ServerPlayer r&&!r.isSpectator()&&LiteraryVignettes.inside(r,PLACE));
+            if(reader!=null){var dx=reader.getX()-at.x;var dz=reader.getZ()-at.z;float yaw=(float)(Math.atan2(dz,dx)*180/Math.PI)-90;figure.setYRot(yaw);figure.setYHeadRot(yaw);figure.yBodyRot=yaw;}}
+    }
+    /** Looking under the bed finds the little trapdoor in the boards. */
+    public static void lookUnder(ServerPlayer p,ServerLevel l,BlockPos b){
+        var gap=b.offset(GAP);var s=l.getBlockState(gap);
+        if(s.getBlock() instanceof TrapDoorBlock){p.displayClientMessage(Component.literal("The little door under the bed is open. The air coming up is colder than the room."),true);return;}
+        if(!s.is(Blocks.BIRCH_PLANKS)){p.displayClientMessage(Component.literal("The quilt is cold and smooth, as if nobody has slept under it."),true);return;}
+        l.setBlock(gap,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,true),F);
+        l.playSound(null,gap,net.minecraft.sounds.SoundEvents.WOODEN_TRAPDOOR_OPEN,SoundSource.BLOCKS,.7F,.8F);
+        p.displayClientMessage(Component.literal("You get down and look under the bed. One of the boards has a finger hole. It lifts."),true);
     }
     /** Whether the reader has the exit in view: any of its own cells, each a whole block whose face answers the look. */
     static boolean looksAt(ServerPlayer p,BlockPos b,int i){for(var c:EXITS.get(i))if(HouseWatchers.sees(p,Vec3.atCenterOf(b.offset(c))))return true;return false;}
@@ -229,7 +287,7 @@ public final class ChildRoom {
         if(world.hasUUID("CeilingToy")&&l.getEntity(world.getUUID("CeilingToy")) instanceof LiteraryActor old)old.discard();
         for(var actor:l.getEntitiesOfClass(LiteraryActor.class,area))actor.discard();
         LiteraryRooms.build(l,b,PLACE);
-        world=LiteraryVignettes.shared(d,PLACE);world.remove("CeilingToy");world.remove("LostExits");world.putInt("Exits0474",0);world.putInt("SealClock",0);LiteraryVignettes.shared(d,PLACE,world);
+        world=LiteraryVignettes.shared(d,PLACE);world.remove("CeilingToy");world.remove("Dinnerbone");world.remove("LostExits");world.putInt("Exits0474",0);world.putInt("SealClock",0);LiteraryVignettes.shared(d,PLACE,world);
         for(var key:d.stateKeys(LiteraryVignettes.stateId(PLACE))){java.util.UUID id;try{id=java.util.UUID.fromString(key);}catch(IllegalArgumentException notReader){continue;}var own=LiteraryVignettes.personal(d,id,PLACE);
             if(own.getBoolean("Completed"))continue;
             for(var k:List.of("Ready","Outcome","ExaminedLostExits","CrawledUnderBed","ExitSeen0474","Crawled0474","AllSeen0474","StoodUp0474","UnderFloor0474","ExitsAtArrival0474"))own.remove(k);
