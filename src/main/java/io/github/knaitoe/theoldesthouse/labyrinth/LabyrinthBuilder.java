@@ -291,6 +291,7 @@ public final class LabyrinthBuilder {
     public static void tick(MinecraftServer server) {
         DomesticHallUpgrade.tick(server);
         WallNotesRepairs.tick(server);
+        io.github.knaitoe.theoldesthouse.house.RoomNotes.tick(server);
         ScenePolish.tick(server);
         SceneCraft.tick(server);
         if (pending == null || pendingOrigin == null) {

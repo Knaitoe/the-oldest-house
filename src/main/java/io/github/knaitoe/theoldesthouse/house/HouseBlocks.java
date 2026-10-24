@@ -57,6 +57,11 @@ public final class HouseBlocks {
     public static final DeferredBlock<HouseholdFurnitureBlock> HOUSEHOLD_FURNITURE = BLOCKS.registerBlock(
             "household_furniture", HouseholdFurnitureBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<HallCupboardBlock>> HALL_CUPBOARD_TYPE =
+            BLOCK_TYPES.register("hall_cupboard", () -> HallCupboardBlock.CODEC);
+    public static final DeferredBlock<HallCupboardBlock> HALL_CUPBOARD = BLOCKS.registerBlock(
+            "hall_cupboard", HallCupboardBlock::new,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable());
     public static final DeferredBlock<NoteSurfaceBlock> NOTE_SURFACE = BLOCKS.registerBlock(
             "note_surface", NoteSurfaceBlock::new,
             BlockBehaviour.Properties.of().noCollission().noOcclusion().instabreak().noLootTable());
