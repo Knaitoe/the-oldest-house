@@ -809,6 +809,8 @@ jobs:
           for view in 0 1 2; do test -s build/font-smoke/native-winter-$view.png; done
           test -s build/font-smoke/phone-passed.txt
           for view in 0 1 2; do test -s build/font-smoke/native-phone-$view.png; done
+          test -s build/font-smoke/phone-playback-passed.txt
+          for view in 1 2 5; do test -s build/font-smoke/native-phone-playback-$view.png; done
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png
