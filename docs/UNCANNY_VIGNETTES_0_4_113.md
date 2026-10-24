@@ -1,5 +1,7 @@
 # Six uncanny rooms — 0.4.113 development draft
 
+Revised against the supplied concepts and texts in 0.4.116: see [the six rooms against their texts](UNCANNY_TEXT_PASS_0_4_116.md).
+
 The owner supplied the six concepts, complete found texts and artifact tags. This implementation adds those rooms to new House builds while retaining all earlier Claude, funeral, hospital, Borrasca, Plains, home-encounter, portrait and Goatman changes. This is an unverified development candidate.
 
 | Room | Discovery surface | Required resolution | Fixed Witness kind |
