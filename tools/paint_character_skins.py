@@ -134,6 +134,8 @@ LOOKS = {
     'seance_mother': Look('#d2ae8e','#61442d','bun','#824954','#56393f','dress','#d0b999'),
     'seance_father': Look('#c39a7a','#584535','part','#514a3f','#3d3b34','suit','#baa48a',age=1,beard='stubble'),
     'seance_daughter': Look('#d9b69c','#6d4f38','long','#68869d','#4d6477','dress','#d7ceba'),
+    # Miniatures (0.4.121): the mother in the upper corner, in a slept-in nightgown, the eyes turned up white.
+    'literary_miniature_mother': Look('#d6c6b6','#231a16','long','#d3cbbb','#c9c1b0','dress','#a99f8f',eyes='#2a2624',mark='possessed'),
 }
 
 for group in ('crew', 'guest'):
@@ -267,6 +269,11 @@ def face(look):
     d.line((6,13,9,13),fill=shade(skin,-42));d.line((6,14,9,14),fill=shade(skin,-9))
     if look.mark in ('dead','wax'):
         for x in (3,10):d.line((x,8,x+2,8),fill=dark)
+    elif look.mark=='possessed':
+        # Sunken sockets with the whites showing and no iris; a bloodless mouth held a little open.
+        for x in (3,10):
+            d.rectangle((x-1,6,x+3,9),fill=shade(skin,-58));d.rectangle((x,7,x+2,8),fill='#e2ded2');d.line((x,6,x+2,6),fill=shade(skin,-80));d.point((x+1,8),fill='#b9b2a4')
+        d.rectangle((6,12,9,13),fill='#3a2a2c');d.line((6,12,9,12),fill='#8f7b7a');d.line((4,10,4,11),fill=shade(skin,-30));d.line((11,10,11,11),fill=shade(skin,-30))
     elif look.mark=='witch':
         for x in (2,10):
             d.rectangle((x,6,x+3,9),fill='#333e34');d.rectangle((x+1,7,x+2,7),fill='#c2c197')
@@ -318,6 +325,9 @@ def face(look):
     else:
         d.polygon([(0,0),(15,0),(15,3),(12,2),(8,2),(5,4),(2,3),(0,4)],fill=hair)
         d.line((2,1,7,1),fill=hhi);d.line((10,0,10,2),fill=hlo)
+    if look.mark=='possessed':
+        for x,y0,y1 in ((2,4,15),(13,4,15)):d.line((x,y0,x,y1),fill=hair)
+        d.line((6,3,6,5),fill=hlo);d.line((11,3,11,5),fill=hlo)
     if look.mark=='freckles':
         for x,y in ((3,10),(5,10),(11,10),(12,11)):d.point((x,y),fill=shade(skin,-28))
     if look.mark=='scar':
@@ -578,11 +588,14 @@ def paint(look):
                 if side=='back':d.rectangle((1,2,w-2,5),outline=shade(look.pants,-15))
                 if look.style=='swim':
                     d.rectangle((0,2,w-1,h-1),fill=rgb(look.skin));d.line((0,1,w-1,1),fill=rgb(look.accent))
+                elif look.mark=='possessed':
+                    # Barefoot under the hem: a pale shin and a dirty sole line, no shoes.
+                    d.rectangle((0,h-9,w-1,h-1),fill=rgb(look.skin));d.line((0,h-9,w-1,h-9),fill=shade(look.pants,-24));d.line((0,h-1,w-1,h-1),fill=shade(look.skin,-40))
                 else:
                     if look.mark=='cottage_walter':d.rectangle((0,h-7,w-1,h-6),fill='#673c3a')
                     if look.mark=='cottage_bowler':d.line((2,1,2,h-7),fill=shade(look.pants,13))
                     d.rectangle((0,h-5,w-1,h-1),fill='#34302c');d.line((1,h-4,w-2,h-4),fill='#635442');d.line((0,h-1,w-1,h-1),fill='#222522')
-            if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' else '#292c28','skin')
+            if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' or look.mark=='possessed' else '#292c28','skin')
             put(box,art)
     if look.mark=='winter':
         def over(box,art):im.paste(art,(round(box[0]*S),round(box[1]*S)),art)

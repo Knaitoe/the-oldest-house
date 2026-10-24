@@ -463,6 +463,14 @@
     "role": "LAKE_WAX"
   },
   {
+    "name": "literary_miniature_mother",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "LADY"
+  },
+  {
     "name": "literary_mother",
     "logical": 128,
     "model": "literary",
