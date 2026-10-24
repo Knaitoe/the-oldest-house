@@ -67,6 +67,8 @@ public final class LiteraryRooms {
         // The corridor's own wall stands behind each nursery door: open it, or the nurseries are sealed.
         for(int x:new int[]{-3,3})box(l,b,x,0,-16,x,1,-16,Blocks.AIR);
         room(l,b,-13,13,-42,-30,-4,3,Blocks.MOSSY_STONE_BRICKS,Blocks.STONE_BRICKS);steps(l,b,0,-25,0,5,true);box(l,b,-1,-4,-33,1,-2,-30,Blocks.AIR);box(l,b,-1,-5,-33,1,-5,-30,Blocks.STONE_BRICKS);
+        // The cellar stair runs between its own walls: nothing beyond the house shows from the steps.
+        for(int z=-29;z<=-24;z++)for(int y=-6;y<=-1;y++)for(int x:new int[]{-2,2})if(l.getBlockState(b.offset(x,y,z)).isAir())at(l,b,x,y,z,Blocks.MOSSY_STONE_BRICKS);
         prop(l,b,HILL_WALL,LiteraryPropBlock.Kind.PHOTO,Direction.EAST);BuildBlocks.set(l,b.offset(HILL_WALL),BuildBlocks.state(l,b.offset(HILL_WALL)).setValue(LiteraryPropBlock.STAGE,3),F);at(l,b,-10,-4,-36,Blocks.CHISELED_STONE_BRICKS);desk(l,b,8,-4,-36);light(l,b,0,3,-8);light(l,b,0,3,-36);
     }
     private static void miniatures(ServerLevel l,BlockPos b){

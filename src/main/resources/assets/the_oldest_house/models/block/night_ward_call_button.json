@@ -1,0 +1,136 @@
+{
+  "textures": {
+    "call_button": "the_oldest_house:block/night_ward/call_button",
+    "particle": "the_oldest_house:block/night_ward/call_button"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        5.5
+      ],
+      "to": [
+        11,
+        1,
+        10.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            7,
+            6
+          ],
+          "texture": "#call_button",
+          "cullface": "down"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            7,
+            6
+          ],
+          "texture": "#call_button"
+        },
+        "north": {
+          "uv": [
+            0,
+            6,
+            7,
+            7
+          ],
+          "texture": "#call_button"
+        },
+        "south": {
+          "uv": [
+            0,
+            6,
+            7,
+            7
+          ],
+          "texture": "#call_button"
+        },
+        "east": {
+          "uv": [
+            0,
+            6,
+            7,
+            7
+          ],
+          "texture": "#call_button"
+        },
+        "west": {
+          "uv": [
+            0,
+            6,
+            7,
+            7
+          ],
+          "texture": "#call_button"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        1,
+        6.5
+      ],
+      "to": [
+        9.5,
+        2.25,
+        9.5
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            9,
+            1,
+            12,
+            4
+          ],
+          "texture": "#call_button"
+        },
+        "north": {
+          "uv": [
+            9,
+            5,
+            12,
+            6
+          ],
+          "texture": "#call_button"
+        },
+        "south": {
+          "uv": [
+            9,
+            5,
+            12,
+            6
+          ],
+          "texture": "#call_button"
+        },
+        "east": {
+          "uv": [
+            9,
+            5,
+            12,
+            6
+          ],
+          "texture": "#call_button"
+        },
+        "west": {
+          "uv": [
+            9,
+            5,
+            12,
+            6
+          ],
+          "texture": "#call_button"
+        }
+      }
+    }
+  ]
+}

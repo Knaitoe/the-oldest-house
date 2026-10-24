@@ -114,7 +114,7 @@ public final class NovelRooms {
         room(l,b,-9,9,-23,0,0,5,NovelRegistry.INSTITUTE.get(),Blocks.WHITE_CONCRETE);door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);
         BuildBlocks.set(l,b.offset(0,0,-14),prop(NovelPropBlock.Kind.INCUBATOR,Direction.SOUTH),F);
         furniture(l,b.offset(3,0,-12),HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
-        BuildBlocks.set(l,b.offset(BUTTON),Blocks.STONE_BUTTON.defaultBlockState().setValue(ButtonBlock.FACING,Direction.WEST).setValue(ButtonBlock.FACE,AttachFace.WALL),F);
+        BuildBlocks.set(l,b.offset(BUTTON),NovelRegistry.NIGHT_WARD_CALL_BUTTON.get().defaultBlockState().setValue(ButtonBlock.FACING,Direction.WEST).setValue(ButtonBlock.FACE,AttachFace.WALL),F);
         at(l,b,6,1,-14,NovelRegistry.INSTITUTE.get());lectern(l,b.offset(WARD_NOTE),NovelTexts.hospitalOpening());
         at(l,b,0,4,-10,Blocks.SEA_LANTERN);at(l,b,0,4,-19,Blocks.SEA_LANTERN);
     }

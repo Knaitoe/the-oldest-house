@@ -4,9 +4,7 @@ import io.github.knaitoe.theoldesthouse.house.*;
 import java.util.*;
 import net.minecraft.core.*;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.*;
-import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
 
@@ -22,7 +20,6 @@ public final class ClassicsRooms {
     public static void build(ServerLevel level,BlockPos base,LabyrinthPlace place){if(place==LabyrinthPlace.SEANCE)seance(level,base);else nursery(level,base);}
     private static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){l.setBlock(b.offset(x,y,z),block.defaultBlockState(),F);}
     private static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,Block block){NovelRooms.box(l,b,x0,y0,z0,x1,y1,z1,block.defaultBlockState());}
-    private static void lectern(ServerLevel l,BlockPos at,ItemStack book){l.setBlock(at,Blocks.LECTERN.defaultBlockState(),F);if(l.getBlockEntity(at) instanceof LecternBlockEntity d){d.setBook(book);d.setChanged();}}
     private static void frame(ServerLevel l,BlockPos b,int x,int z,Direction direction){
         if(direction.getAxis()==Direction.Axis.Z){for(int side:new int[]{-1,1})box(l,b,x+side,0,z,x+side,3,z,Blocks.STRIPPED_DARK_OAK_LOG);box(l,b,x-1,3,z,x+1,3,z,Blocks.DARK_OAK_PLANKS);}
         else {for(int side:new int[]{-1,1})box(l,b,x,0,z+side,x,3,z+side,Blocks.STRIPPED_DARK_OAK_LOG);box(l,b,x,3,z-1,x,3,z+1,Blocks.DARK_OAK_PLANKS);}
@@ -49,8 +46,11 @@ public final class ClassicsRooms {
         for(int z=-19;z<=-17;z++)box(l,b,7,0,z,7,2,z,Blocks.BOOKSHELF);
         furniture(l,b,-7,0,-19,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.EAST);
         for(BlockPos candle:CANDLES)l.setBlock(b.offset(candle),Blocks.CANDLE.defaultBlockState().setValue(CandleBlock.LIT,true).setValue(CandleBlock.CANDLES,2),F);
-        at(l,b,CUPBOARD.getX(),0,CUPBOARD.getZ(),Blocks.CHEST);
-        lectern(l,b.offset(SITTING),ClassicsTexts.medium());lectern(l,b.offset(GRACE),ClassicsTexts.grace());lectern(l,b.offset(ALBUM),ClassicsTexts.album());
+        // The cupboard the family watches, her letters on a side table, the medium's record on its stand and the album.
+        l.setBlock(b.offset(CUPBOARD),SeanceFittingBlock.of(SeanceFittingBlock.Kind.CABINET,Direction.EAST),F);
+        l.setBlock(b.offset(SITTING),SeanceFittingBlock.of(SeanceFittingBlock.Kind.SITTING,Direction.SOUTH),F);
+        l.setBlock(b.offset(GRACE),SeanceFittingBlock.of(SeanceFittingBlock.Kind.LETTERS,Direction.SOUTH),F);
+        l.setBlock(b.offset(ALBUM),SeanceFittingBlock.of(SeanceFittingBlock.Kind.ALBUM,Direction.SOUTH),F);
         furniture(l,b,-7,0,-27,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
         box(l,b,7,0,-29,7,2,-29,Blocks.BOOKSHELF);
         for(int z=-26;z<=-24;z++){at(l,b,11,2,z,Blocks.GLASS);at(l,b,12,2,z,Blocks.BLACK_CONCRETE);}

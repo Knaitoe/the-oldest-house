@@ -41,6 +41,7 @@ public final class PlainCameraClient {
         UUID nonce=pending;pending=null;
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
             if(!boy&&boyAt!=null)silhouette(image,e,boyAt);
+            if(boyAt!=null)vulture(image,e,boyAt);
             if(io.github.knaitoe.theoldesthouse.gametest.LiveExpeditionProof.enabled()){
                 java.nio.file.Files.createDirectories(io.github.knaitoe.theoldesthouse.gametest.LiveExpeditionProof.folder());
                 image.writeToFile(io.github.knaitoe.theoldesthouse.gametest.LiveExpeditionProof.folder().resolve(System.getProperty("the_oldest_house.liveProofRole","")+"-actual-exposure.png"));
@@ -55,6 +56,25 @@ public final class PlainCameraClient {
             }
             PacketDistributor.sendToServer(new PlainFramePayload(nonce,pixels));
         }catch(java.io.IOException problem){throw new IllegalStateException("Could not record the native camera proof",problem);}
+    }
+    /**
+     * The vulture is in every print. When the circling bird is outside the print's square, or too far for this client to
+     * track, the same production mesh is drawn soaring above the child, up and to one side in proportion to the distance.
+     */
+    private static void vulture(NativeImage image,RenderLevelStageEvent e,Vec3 feet){
+        var mc=Minecraft.getInstance();var camera=e.getCamera();var eye=camera.getPosition();
+        var projection=new Matrix4f(RenderSystem.getProjectionMatrix()).mul(new Matrix4f().rotation(camera.rotation().conjugate(new Quaternionf())));
+        int side=(int)(Math.min(image.getWidth(),image.getHeight())*.70),left=(image.getWidth()-side)/2,top=(image.getHeight()-side)/2;
+        for(var entity:mc.level.entitiesForRendering())if(entity instanceof io.github.knaitoe.theoldesthouse.labyrinth.NovelVulture bird&&bird.position().distanceToSqr(feet)<30*30){
+            var clip=projection.transform(new Vector4f((float)(bird.getX()-eye.x),(float)(bird.getY()+.4-eye.y),(float)(bird.getZ()-eye.z),1));
+            if(clip.w>.01F){float x=(clip.x/clip.w+1)*image.getWidth()/2,y=(1-clip.y/clip.w)*image.getHeight()/2;if(x>=left&&x<left+side&&y>=top&&y<top+side)return;}
+        }
+        var leftward=camera.getLeftVector();double distance=Math.sqrt(feet.distanceToSqr(eye));
+        var at=feet.add(0,Math.min(9,Math.max(2.5,distance*.09)),0).subtract(leftward.x()*Math.min(7,Math.max(1.2,distance*.05)),0,leftward.z()*Math.min(7,Math.max(1.2,distance*.05))).subtract(eye);
+        var poses=new com.mojang.blaze3d.vertex.PoseStack();poses.translate(at.x,at.y,at.z);
+        poses.mulPose(com.mojang.math.Axis.YP.rotationDegrees(90-camera.getYRot()));poses.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(20));poses.scale(-1,-1,1);poses.translate(0,-1.501,0);
+        var model=new NovelCreatureRenderers.VultureModel(mc.getEntityModels().bakeLayer(NovelCreatureRenderers.VULTURE));model.preview(mc.level.getGameTime());
+        model.renderToBuffer(poses,new Silhouette(image,projection),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
     }
     /** Project the production mesh so the long lens cannot turn an untracked crouched child into a standing adult. */
     private static void silhouette(NativeImage image,RenderLevelStageEvent e,Vec3 feet){

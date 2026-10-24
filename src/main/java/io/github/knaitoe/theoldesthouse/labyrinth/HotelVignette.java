@@ -194,7 +194,9 @@ public final class HotelVignette {
         if(actor.role()==0){actor.gesture(HotelActor.GREET,50);p.displayClientMessage(Component.literal("The porter: "+(signed?"Good evening, caretaker. Your keys are on their hook.":closed(own)?(ending(own).equals("walked")?"We keep what we hold.":"Your account is settled. Your things are at the desk whenever you want them."):due(own)?"Your account is due tonight. Ring when you are ready.":"Your property is labelled; crouch at the desk to collect it. Your account is kept here.")),false);return;}
         if(actor.role()==1){long now=p.serverLevel().getGameTime();if(now-own.getLong("LastDrink")<40&&own.contains("LastDrink"))return;own.putLong("LastDrink",now);actor.gesture(HotelActor.POUR,60);give(p,new ItemStack(HotelRegistry.DRINK.get()));int line=own.getInt("BarLine04112");own.putInt("BarLine04112",line+1);String[] words=signed?new String[]{"For the caretaker. On the house.","Your usual, sir.","We keep your place ready.","A quiet evening. We prefer it that way."}:closed(own)?new String[]{"On the house.","There is nothing left to settle.","Another? We have all evening."}:new String[]{"Complimentary. Drink it here; it goes on your account.","A little something against the cold.","I remember what you drink.","The others will be along shortly.","No need to pay tonight. We keep an account."};save(d,p.getUUID(),own);p.displayClientMessage(Component.literal("The bartender: "+words[line%words.length]),false);return;}
         if(actor.role()==2||(actor.role()==4&&!actor.dancing())){actor.gesture(HotelActor.LISTEN,80);var deaths=own.getList("Deaths",Tag.TAG_COMPOUND);if(deaths.isEmpty())p.displayClientMessage(Component.literal("The scarred guest: I have no story of your death. Sit long enough and somebody will offer me one."),false);
-            else{var death=deaths.getCompound(deaths.size()-1);p.displayClientMessage(Component.literal("The scarred guest: They say "+death.getString("Name")+" died from "+death.getString("Cause")+". I heard it was "+(actor.role()==2?"a fall from the bandstand":"a walk into the frozen hedges")+". They always change the room."),false);}return;}
+            else{var death=deaths.getCompound(deaths.size()-1);String told=death.contains("Message")?death.getString("Message")+(death.getString("Place").isEmpty()?"":", "+death.getString("Place")):death.getString("Name")+" died";
+                long inside=own.getLong("HouseDeathsTotal");String count=inside<=0?"":" They tell me you have died "+inside+(inside==1?" time":" times")+" in this house.";
+                p.displayClientMessage(Component.literal("The scarred guest: They say "+told+". I heard it was "+(actor.role()==2?"a fall from the bandstand":"a walk into the frozen hedges")+". They always change the room."+count),false);}return;}
         p.displayClientMessage(Component.literal(actor.role()==3?(signed?"The pianist: There you are. We kept your place.":"The pianist: The second place has been kept all season."):"The dancer's hand passes through yours. The music continues."),false);
     }
     public static boolean hotelBed(Level level,BlockPos at){if(!level.dimension().equals(HouseDimensions.INTERIOR)||level.getServer()==null)return false;var b=IndianLakeRooms.base(level.getServer(),LabyrinthPlace.HOTEL);return b!=null&&(at.equals(b.offset(HotelRooms.BED))||at.equals(b.offset(HotelRooms.BED_HEAD)))&&level.getBlockState(at).getBlock() instanceof BedBlock&&!world(LabyrinthData.get(level.getServer())).getBoolean("Cold");}
@@ -318,13 +320,22 @@ public final class HotelVignette {
     private static void dine(ServerPlayer p,BlockPos b,CompoundTag own){var d=LabyrinthData.get(p.server);
         if(own.getBoolean("MealServed")&&!own.getBoolean("Dinner")){own.putBoolean("Dinner",true);charge(own);save(d,p.getUUID(),own);p.heal(3);p.getFoodData().eat(6,.5F);views(p,b,own);return;}
         p.displayClientMessage(Component.literal(own.getBoolean("Dinner")?"Your plate has been cleared. The other place is still laid.":"The table is laid for two. Sit, and dinner will be served."),true);}
+    /** Where in the House a death happened, as the House names its rooms; out in the world it is somewhere else. */
+    private static String where(ServerPlayer p){
+        if(!io.github.knaitoe.theoldesthouse.house.HouseDimensions.isHouseDimension(p.level().dimension()))return "out in the world";
+        LabyrinthPlace place=LiteraryVignettes.current(p);if(place==null)place=NovelVignettes.current(p);if(place==null)place=ClassicsVignettes.current(p);if(place==null)place=current(p);
+        var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();if(place==null&&origin!=null)place=LabyrinthPlaces.placeAt(origin,p.blockPosition());
+        return place==null?"in the House":"in "+StaircaseProse.place(place.id());
+    }
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void death(LivingDeathEvent e){
         if(e.isCanceled()||!(e.getEntity().level() instanceof ServerLevel l)||e.getEntity().getTags().contains(LiteraryCopies.PROJECTION))return;
         UUID id=null;String key=null;
         if(e.getEntity() instanceof ServerPlayer p){id=p.getUUID();key="Deaths";}
         else if(e.getEntity() instanceof TamableAnimal t&&t.isTame()&&t.getOwnerUUID()!=null&&!t.getTags().contains(MotherOfStrays.PET)){id=t.getOwnerUUID();key="LostPets";}
         if(id==null)return;var d=LabyrinthData.get(l.getServer());var own=personal(d,id);var list=own.getList(key,Tag.TAG_COMPOUND);
-        var row=new CompoundTag();row.putUUID("Entity",e.getEntity().getUUID());row.putString("Name",e.getEntity().getName().getString());row.putString("Cause",e.getSource().getMsgId());row.putLong("At",l.getGameTime());list.add(row);
+        var row=new CompoundTag();row.putUUID("Entity",e.getEntity().getUUID());row.putString("Name",e.getEntity().getName().getString());row.putString("Cause",e.getSource().getMsgId());row.putLong("At",l.getGameTime());
+        // How and where, in words the strangers can retell: the game's own death message and the room it happened in.
+        row.putString("Message",e.getSource().getLocalizedDeathMessage(e.getEntity()).getString());if(e.getEntity() instanceof ServerPlayer p){row.putString("Place",where(p));if(io.github.knaitoe.theoldesthouse.house.HouseDimensions.isHouseDimension(p.level().dimension()))own.putLong("HouseDeathsTotal",own.getLong("HouseDeathsTotal")+1);}list.add(row);
         own.putLong(key+"Total",Math.max(own.getLong(key+"Total"),list.size()-1L)+1);
         while(list.size()>(key.equals("Deaths")?DEATH_HISTORY:PET_HISTORY))list.remove(0);
         own.put(key,list);save(d,id,own);
