@@ -1,0 +1,13 @@
+# Uncanny environments — 0.4.122
+
+The six recent rooms need the same care as the established bespoke scenes. This pass replaces placeholder stairs, slabs, bare shells and mismatched runtime waitress skins with fitted native models and a coordinated material palette.
+
+The diner has four upholstered booths, pedestal Formica tables, napkin caddies, counter stools, a service pass, an enclosed kitchen with cold storage and washing-up, framed glazing, steel entrance leaves, housed fluorescent fittings, and a roadside pavement and marked parking. Booth four remains at the original meal/draft anchor. The original till, source, account, waitress identities and finite meal remain.
+
+The buried house uses wallpaper, woodwork and a furnished sitting room with actual earth behind the painted openings. The bedroom has furnished ground and upper floors around the original five stair treads, source, beds, camera locations and monitor. The tunnel keeps its clear central route and signal mechanics, with edge utilities. The basement has upper storage and a lower work area around the original mass, worker, tool and key cavity. The apartment foyer has mailboxes and a bench; its service yard is open overhead and retains the floodlight as its sole dynamic light.
+
+`tools/draw_uncanny_environments.py` paints the sixteen-pixel materials and generates both native JSON cuboids and the Java collision boxes. Tall panels have explicit local UVs to prevent atlas bleeding. Seats use the existing native sitting entity. Opening a cabinet creates no food, item or story credit. The two waitresses and split-mouth phase use the established `paint_character_skins.py` painter, standard player UVs and the same pixel density as the human cast. No existing PNG is repainted.
+
+A focused native fixture tests the serving aisle, kitchen door, real booth sitting and cabinet use without rewards. It exports ten actual room, exterior, kitchen and floor-specific cutaways. These are rendered with production native block and fitting renderers, followed by the existing actor/material views. Full-bright cutaways establish geometry and texture appearance; they do not establish in-world lighting quality. The existing actual-client six-room/CCTV preflight remains required.
+
+Validation: local generator, skin and character-art consistency checks pass. Native compilation, all 730 declared cases, the ten new views, prior 105 architecture views, actual clients/reconnects and all twelve exact-source jobs remain pending. Protocol 88 / labyrinth 46 / manor 2 / Witness 52 sources, 39 required, two kinds and three endings remain unchanged.

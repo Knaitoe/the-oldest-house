@@ -47,6 +47,8 @@ public final class UncannyTextures {
         return register("materials",image);
     }
     public static ResourceLocation skin(int role,int phase){
+        if(role==LiteraryActor.UNCANNY_WAITRESS)return ResourceLocation.fromNamespaceAndPath("the_oldest_house","textures/entity/uncanny_waitress.png");
+        if(role==LiteraryActor.UNCANNY_FALSE_WAITRESS)return ResourceLocation.fromNamespaceAndPath("the_oldest_house",phase>=2?"textures/entity/uncanny_second_waitress_split.png":"textures/entity/uncanny_second_waitress.png");
         int variant=role==LiteraryActor.UNCANNY_FALSE_WAITRESS&&phase>=2?1:0;String key="skin_"+role+"_"+variant;
         if(TEXTURES.containsKey(key))return TEXTURES.get(key);
         var image=new NativeImage(64,64,true);int flesh=role==LiteraryActor.UNCANNY_PROPPED?0x9b927a:role==LiteraryActor.UNCANNY_GIANT?0xada592:0xb18d73;

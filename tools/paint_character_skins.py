@@ -48,6 +48,9 @@ class Look:
 
 # Each row is a character design, rather than an index into a repeated picture.
 LOOKS = {
+    'uncanny_waitress': Look('#cba083','#795039','bun','#496d80','#496d80','dress','#e0d4b8',eyes='#596456',age=1,mark='diner_apron',sleeve=4,logical=64),
+    'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_apron',sleeve=4,logical=64),
+    'uncanny_second_waitress_split': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_split',sleeve=4,logical=64),
     'literary_paw_walter': Look('#d6a88a','#cecbc4','receding','#47513c','#5a4c3e','coat','#9e8350',eyes='#5c6c78',age=2,beard='short',glasses=True,mark='cottage_walter'),
     'literary_paw_ruth': Look('#deb496','#76665a','bun','#523240','#5f4b4e','dress','#d8cebb',eyes='#544a3e',age=2,mark='cottage_apron'),
     'literary_paw_will': Look('#daac8a','#3e2c20','messy','#d6ceba','#585046','braces','#962e28',eyes='#465c42',mark='cottage_braces',sleeve=6),
@@ -328,6 +331,14 @@ def face(look):
     if look.mark=='possessed':
         for x,y0,y1 in ((2,4,15),(13,4,15)):d.line((x,y0,x,y1),fill=hair)
         d.line((6,3,6,5),fill=hlo);d.line((11,3,11,5),fill=hlo)
+    if look.mark=='diner_split':
+        # The same woman's features remain above a mouth pulled through both cheeks.
+        d.line((2,10,4,11,6,11,8,12,11,11,13,10),fill='#936650')
+        d.polygon([(2,11),(5,11),(7,12),(10,11),(13,11),(14,14),(11,15),(5,15),(1,13)],fill='#442d2b')
+        d.line((2,11,5,12,8,12,11,11,13,11),fill='#c8ae8c')
+        for x,y in ((3,12),(5,12),(8,13),(10,12),(12,12)):d.point((x,y),fill='#e0d0a8')
+        d.line((3,14,6,14,9,15,12,14),fill='#9d6e5d')
+        d.line((1,10,1,12),fill=shade(skin,-31));d.line((14,10,14,13),fill=shade(skin,-31))
     if look.mark=='freckles':
         for x,y in ((3,10),(5,10),(11,10),(12,11)):d.point((x,y),fill=shade(skin,-28))
     if look.mark=='scar':
@@ -368,6 +379,10 @@ def cloth_face(size,look,side='front'):
             d.line((2,0,w//2,h-4,w-3,0),fill='#58402f',width=2)
         if look.mark=='cottage_apron':
             d.line((1,h-7,w-2,h-7),fill=a);d.line((w//2,h-7,w//2-2,h-2),fill=a)
+        if look.mark.startswith('diner_'):
+            d.line((0,h-7,w-1,h-7),fill=a,width=2)
+            d.line((w//2,h-7,w//2-3,h-4,w//2-1,h-3),fill=shade(a,-18))
+            d.line((w//2,h-7,w//2+3,h-5,w//2+1,h-3),fill=a)
         if look.mark=='movie_stripes':
             for y in range(3,h-1,4):d.line((0,y,w-1,y),fill=a);d.line((0,y+1,w-1,y+1),fill=shade(a,-14))
         return im
@@ -421,6 +436,16 @@ def cloth_face(size,look,side='front'):
         d.polygon([(2,6),(mid-1,5),(mid,7),(mid+1,5),(w-3,6),(w-3,10),(2,10)],fill=c)
         d.line((3,6,mid-2,6),fill=a);d.line((mid+1,6,w-4,6),fill=a)
         d.rectangle((0,h-6,w-1,h-1),fill=c);d.line((0,h-6,w-1,h-6),fill=a)
+    if look.mark.startswith('diner_'):
+        # A work dress, small collar/name pin, bib and tied waist apron, in the shared cast's pixel language.
+        d.polygon([(mid-4,1),(mid-1,4),(mid-3,5)],fill=a)
+        d.polygon([(mid+3,1),(mid,4),(mid+2,5)],fill=shade(a,9))
+        for y in (5,8,11):d.point((mid,y),fill=shade(a,-12))
+        d.rectangle((w-6,5,w-3,6),fill='#d1bb8a');d.line((w-5,6,w-3,6),fill='#716046')
+        d.rectangle((3,10,w-4,h-1),fill=a)
+        d.line((3,10,3,h-1),fill=shade(a,-17));d.line((w-4,10,w-4,h-1),fill=shade(a,-10))
+        d.line((0,h-7,w-1,h-7),fill=shade(a,9),width=2)
+        d.rectangle((5,h-6,w-6,h-3),outline=shade(a,-22))
     # Cottage garments use deliberate pixel marks, with their original period details.
     if look.mark=='mourner_flower':
         d.line((w-5,5,w-5,9),fill='#69745e');d.point((w-6,8),fill='#899477')
@@ -552,6 +577,11 @@ def paint(look):
         d.polygon([(5,4),(10,4),(12,6),(12,9),(10,11),(5,11),(3,9),(3,6)],fill=rgb(look.hair))
         d.line((5,5,9,5,11,7),fill=shade(look.hair,15))
         put(net(32,0,8,8,8)['back'],art)
+    if look.mark.startswith('diner_'):
+        art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+        d.rectangle((5,5,11,11),fill=rgb(look.hair));d.line((6,5,10,5),fill=shade(look.hair,13))
+        d.line((5,7,5,10),fill=shade(look.hair,-13));d.point((11,8),fill=shade(look.hair,8))
+        put(net(32,0,8,8,8)['back'],art)
     torso=net(16,16,8,12,4)
     for side,box in torso.items():put(box,cloth_face((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look,side))
     # Classic humanoids mirror one arm/leg; player models have the two extra left nets.
@@ -588,6 +618,14 @@ def paint(look):
                 if side=='back':d.rectangle((1,2,w-2,5),outline=shade(look.pants,-15))
                 if look.style=='swim':
                     d.rectangle((0,2,w-1,h-1),fill=rgb(look.skin));d.line((0,1,w-1,1),fill=rgb(look.accent))
+                elif look.mark.startswith('diner_'):
+                    d.rectangle((0,0,w-1,12),fill=rgb(look.cloth))
+                    if side=='front':
+                        d.rectangle((0,0,w-1,7),fill=rgb(look.accent));d.line((0,7,w-1,7),fill=shade(look.accent,-19))
+                    d.line((0,12,w-1,12),fill=shade(look.cloth,-20))
+                    d.rectangle((0,13,w-1,h-6),fill=shade(look.skin,-7))
+                    d.rectangle((0,h-5,w-1,h-1),fill='#292f33');d.line((1,h-4,w-2,h-4),fill='#505858')
+                    d.line((0,h-1,w-1,h-1),fill='#1b2023')
                 elif look.mark=='possessed':
                     # Barefoot under the hem: a pale shin and a dirty sole line, no shoes.
                     d.rectangle((0,h-9,w-1,h-1),fill=rgb(look.skin));d.line((0,h-9,w-1,h-9),fill=shade(look.pants,-24));d.line((0,h-1,w-1,h-1),fill=shade(look.skin,-40))

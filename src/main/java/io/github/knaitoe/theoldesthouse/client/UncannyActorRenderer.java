@@ -74,7 +74,8 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             if(role==LiteraryActor.UNCANNY_PEELER){body.xRot=.35F;head.xRot=.3F;rightArm.xRot=phase>=1?-1.8F:-.8F-Mth.abs(Mth.sin(age*.27F));leftArm.xRot=-.65F;}
             if(role==LiteraryActor.UNCANNY_VISITOR){leftLeg.xRot=rightLeg.xRot=leftArm.xRot=rightArm.xRot=0;head.xRot=-.08F;}
             hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
-            hat.visible=jacket.visible=leftSleeve.visible=rightSleeve.visible=leftPants.visible=rightPants.visible=feed;
+            hat.visible=feed||role==LiteraryActor.UNCANNY_WAITRESS||role==LiteraryActor.UNCANNY_FALSE_WAITRESS;
+            jacket.visible=leftSleeve.visible=rightSleeve.visible=leftPants.visible=rightPants.visible=feed;
         }
     }
 }

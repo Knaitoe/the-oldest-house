@@ -22,6 +22,10 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
     private final Font font;
     public UncannyPropRenderer(BlockEntityRendererProvider.Context context){font=context.getFont();}
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(UncannyRegistry.FITTING.get(),UncannyPropRenderer::new);}
+    @SubscribeEvent public static void setup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e){e.enqueueWork(()->{
+        ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.FURNITURE.get(),RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.DINER_DOOR.get(),RenderType.cutout());
+    });}
     @Override public void render(UncannyPropBlock.Fitting fitting,float partial,PoseStack p,MultiBufferSource buffers,int light,int overlay){
         draw(fitting.getBlockState(),p,buffers,light,overlay);
         var kind=fitting.getBlockState().getValue(UncannyPropBlock.KIND);
@@ -45,7 +49,7 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
             case CAMERA->{box(p,out,4,8,6,12,13,12,METAL,light,overlay);box(p,out,6,9,12,10,12,14,BLACK,light,overlay);}
             case SIGNAL->{box(p,out,2,3,6,14,15,10,BLACK,light,overlay);box(p,out,5,6,10,11,12,10.2F,UncannyClient.green()?GREEN:RED,LightTexture.FULL_BRIGHT,overlay);}
             case SIGN->{box(p,out,0,4,6,16,14,10,METAL,light,overlay);box(p,out,1,5,10,15,13,10.2F,BLACK,light,overlay);}
-            case FLOODLIGHT->{box(p,out,2,7,6,14,15,10,METAL,light,overlay);box(p,out,3,8,10,13,14,10.2F,state.getValue(UncannyPropBlock.STAGE)==0?BONE:BLACK,state.getValue(UncannyPropBlock.STAGE)==0?LightTexture.FULL_BRIGHT:light,overlay);}
+            case FLOODLIGHT->{box(p,out,6,9,7,10,10,16,METAL,light,overlay);box(p,out,2,7,6,14,15,10,METAL,light,overlay);box(p,out,3,8,10,13,14,10.2F,state.getValue(UncannyPropBlock.STAGE)==0?BONE:BLACK,state.getValue(UncannyPropBlock.STAGE)==0?LightTexture.FULL_BRIGHT:light,overlay);}
             case BUZZER->{box(p,out,3,3,6,13,14,9,METAL,light,overlay);box(p,out,6,5,9,10,8,10,BONE,light,overlay);box(p,out,5,10,9,11,12,9.5F,BLACK,light,overlay);}
             case REGISTER->{box(p,out,1,0,2,15,5,14,METAL,light,overlay);box(p,out,3,5,3,13,13,10,BLACK,light,overlay);box(p,out,4,8,10,12,11,10.2F,CRT,LightTexture.FULL_BRIGHT,overlay);box(p,out,0,.5F,10,7,1,15,PAPER,light,overlay);}
             case PIE_CASE->{box(p,out,0,0,0,16,2,16,METAL,light,overlay);box(p,out,0,14,0,16,15,16,METAL,light,overlay);for(int x:new int[]{0,15})for(int z:new int[]{0,15})box(p,out,x,2,z,x+1,14,z+1,METAL,light,overlay);box(p,out,3,3,4,13,6,12,BONE,light,overlay);}
