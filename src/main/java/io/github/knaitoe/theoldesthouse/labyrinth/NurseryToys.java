@@ -69,7 +69,7 @@ public final class NurseryToys {
     /** What a toy or a piece of furniture does when a reader's hand is on it. */
     public static void play(ServerPlayer p,ServerLevel l,BlockPos at,BlockState s,BlockPos b){
         var kind=s.getValue(NurseryBlock.KIND);int stage=s.getValue(NurseryBlock.STAGE);var key=at.immutable();
-        if(kind.ceilingToy()&&stage==NurseryBlock.CEILING){say(p,"It is stuck fast to the ceiling, upside down.");return;}
+        if(kind.ceilingToy()&&stage==NurseryBlock.CEILING){say(p,"It hangs out of reach over the bed, turning a little on its strings. Someone made it from what was on the floor.");return;}
         switch(kind){
             case TRAIN->train(l,b);
             case TOP->{if(stage==0&&!TICKERS.containsKey(key)){sound(l,at,LiteraryRegistry.NURSERY_TOP.value(),.8F,1F);spin(l,key);}

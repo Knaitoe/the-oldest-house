@@ -320,6 +320,51 @@ def mobile():
     return img
 
 
+def paper_dolls():
+    """Two paper dolls cut from one folded sheet, holding hands: cream paper, pencil faces, a crayon dress each; the rest clear."""
+    img = canvas()
+    paper, edge, pencil = (238, 228, 204), (196, 184, 160), (70, 66, 64)
+    for ox, dress in ((0, (210, 90, 90)), (8, (90, 130, 200))):
+        for y in range(1, 4):  # head
+            for x in range(2, 6):
+                if not ((x in (2, 5)) and y in (1, 3)):
+                    px(img, ox + x, y, paper)
+        px(img, ox + 3, 2, pencil); px(img, ox + 4, 2, pencil)
+        for y in range(4, 11):  # dress, wider toward the hem
+            w = 1 + (y - 4) // 2
+            for x in range(4 - w, 4 + w):
+                px(img, ox + x, y, dress if y > 4 else paper)
+        for y in range(11, 15):  # legs
+            px(img, ox + 3, y, paper); px(img, ox + 5 if y < 14 else ox + 5, y, paper)
+        for x in range(0, 8):  # arms out to the next doll's hands
+            px(img, ox + x, 5, paper)
+        for y in range(1, 15):
+            for x in range(8):
+                c = img.getpixel((ox + x, y))
+                if c[3] and c[:3] == paper and (y == 14 or x in (0, 7)):
+                    px(img, ox + x, y, edge)
+    return img
+
+
+def letter_blocks():
+    """Four alphabet-block faces, eight pixels each: A, B, C and D raised in colour on bare wood with a painted border."""
+    img = canvas()
+    wood = (214, 184, 132)
+    glyphs = {'A': ['.##.', '#..#', '####', '#..#', '#..#'], 'B': ['###.', '#..#', '###.', '#..#', '###.'],
+              'C': ['.###', '#...', '#...', '#...', '.###'], 'D': ['###.', '#..#', '#..#', '#..#', '###.']}
+    for i, (letter, colour) in enumerate((('A', (196, 52, 48)), ('B', (60, 104, 196)), ('C', (80, 160, 80)), ('D', (232, 170, 40)))):
+        ox, oy = (i % 2) * 8, (i // 2) * 8
+        for y in range(8):
+            for x in range(8):
+                border = x in (0, 7) or y in (0, 7)
+                px(img, ox + x, oy + y, mul(colour, .8) if border else mul(wood, 1 - .04 * ((x + y) % 3 == 0)))
+        for gy, row in enumerate(glyphs[letter]):
+            for gx, ch in enumerate(row):
+                if ch == '#':
+                    px(img, ox + 2 + gx, oy + 1 + gy + 1 if gy < 5 else oy + 6, colour)
+    return img
+
+
 def lamp(on):
     img = canvas()
     base = (250, 232, 170) if on else (200, 196, 184)
@@ -402,6 +447,8 @@ TEXTURES = {
     'nursery_dollhouse_inside': lambda: dollhouse(True),
     'nursery_cardboard': cardboard,
     'nursery_mobile': mobile,
+    'nursery_paper_dolls': paper_dolls,
+    'nursery_letter_blocks': letter_blocks,
     'nursery_lamp': lambda: lamp(True),
     'nursery_lamp_off': lambda: lamp(False),
     'nursery_card': card,
@@ -546,16 +593,43 @@ def models():
     model('blocks_1', [color((5, 0, 5), (9, 4, 9), 'red'), color((5, 4, 5), (9, 8, 9), 'blue'), color((10, 0, 10), (13, 3, 13), 'yellow')], W)
     model('blocks_2', [color((6, 0, 6), (10, 4, 10), 'red'), color((6, 4, 6), (10, 8, 10), 'blue'), color((6, 8, 6), (10, 12, 10), 'yellow')], W)
     model('ball', [color((5, 0, 5), (11, 6, 11), 'red'), color((4.9, 2.5, 4.9), (11.1, 3.5, 11.1), 'white')], W)
-    # The toys the room takes hang from the ceiling on a thread, a hand's width below it, rather than lying flat against it;
-    # the blocks hang as their stacked tower.
-    for base, name in (('teddy', 'teddy'), ('doll', 'doll'), ('blocks_2', 'blocks'), ('ball', 'ball')):
-        data = json.loads((MODELS / f'nursery_{base}.json').read_text())
-        for e in data['elements']:
-            e['from'][1] += 5; e['to'][1] += 5
-            if 'rotation' in e:
-                e['rotation']['origin'][1] += 5
-        data['elements'].append(color((7.75, 0, 7.75), (8.25, 5, 8.25), 'white'))
-        (MODELS / f'nursery_{name}_hanging.json').write_text(json.dumps(data, indent=1) + '\n')
+    # What the room makes of the toys it takes (0.4.120): a mobile above the bed for each, hung from the ceiling on strings,
+    # the right way up. The bears for the teddy, a garland of paper dolls for the doll, alphabet blocks for the blocks and
+    # the planets for the ball.
+    def string(x, z, low, high=14):
+        return color((x - .15, low, z - .15), (x + .15, high, z + .15), 'white')
+    hook = [color((7.75, 14, 7.75), (8.25, 16, 8.25), 'black')]
+    cross = [box((2, 13.5, 7.75), (14, 14, 8.25), 'w'), box((7.75, 13.5, 2), (8.25, 14, 14), 'w')]
+    def bear(x, z, low):
+        return [color((x - 1.25, low, z - 1), (x + 1.25, low + 2.5, z + 1), 'fur'), color((x - 1, low + 2.5, z - 1), (x + 1, low + 4.3, z + 1), 'fur'),
+                color((x - .5, low + 3, z - 1.4), (x + .5, low + 3.8, z - 1), 'darkfur'), color((x - 1.2, low + 4.1, z - .3), (x - .5, low + 4.8, z + .3), 'darkfur'),
+                color((x + .5, low + 4.1, z - .3), (x + 1.2, low + 4.8, z + .3), 'darkfur'), string(x, z, low + 4.3, 13.5),
+                color((x - .8, low + 3.6, z - 1.1), (x - .4, low + 4, z - 1), 'black'), color((x + .4, low + 3.6, z - 1.1), (x + .8, low + 4, z - 1), 'black')]
+    bears = hook + cross
+    for x, z, low in ((2.6, 8, 6), (13.4, 8, 8), (8, 2.6, 5), (8, 13.4, 7)):
+        bears += bear(x, z, low)
+    model('teddy_hanging', bears, {**W})
+    # A square frame on four strings to the ceiling, a chain of paper dolls hanging from each side of it.
+    frame = [box((3, 12.5, 2.75), (13, 13, 3.25), 'w'), box((3, 12.5, 12.75), (13, 13, 13.25), 'w'),
+             box((2.75, 12.5, 3), (3.25, 13, 13), 'w'), box((12.75, 12.5, 3), (13.25, 13, 13), 'w')]
+    dolls = frame + [string(x, z, 13, 16) for x in (3, 13) for z in (3, 13)]
+    for lo, hi, plane in (((3.5, 5.5, 3), (12.5, 12.5, 3), 'z'), ((3.5, 5, 13), (12.5, 12, 13), 'z'), ((3, 5.5, 3.5), (3, 12.5, 12.5), 'x'), ((13, 6, 3.5), (13, 13, 12.5), 'x')):
+        sides = ('north', 'south') if plane == 'z' else ('east', 'west')
+        dolls.append(box(lo, hi, 'p', [0, 0, 16, 14], faces_=sides))
+    model('doll_hanging', dolls, {**W, 'p': 'nursery_paper_dolls'})
+    def block(x, z, low, first):
+        faces = {d: ('b', [((first + n) % 2) * 8, ((first + n) // 2 % 2) * 8, ((first + n) % 2) * 8 + 8, ((first + n) // 2 % 2) * 8 + 8])
+                 for n, d in enumerate(('north', 'east', 'south', 'west'))}
+        return [box((x - 1.5, low, z - 1.5), (x + 1.5, low + 3, z + 1.5), 'b', [1, 1, 7, 7], overrides=faces), string(x, z, low + 3, 13.5)]
+    blocks = hook + [box((2, 13.5, 7.75), (14, 14, 8.25), 'w')]
+    for x, low, first in ((3.5, 7, 0), (8, 4.5, 1), (12.5, 8, 2)):
+        blocks += block(x, 8, low, first)
+    model('blocks_hanging', blocks, {**W, 'b': 'nursery_letter_blocks'})
+    planets = hook + cross + [color((6.5, 6, 6.5), (9.5, 9, 9.5), 'yellow'), string(8, 8, 9, 13.5), color((7, 5.4, 7), (9, 6, 9), 'orange')]
+    for x, z, low, size, colour in ((2.6, 8, 8, 1.6, 'blue'), (13.4, 8, 6.5, 1.2, 'red'), (8, 2.6, 9, 2, 'orange'), (8, 13.4, 7.5, 1.4, 'green')):
+        planets += [color((x - size / 2, low, z - size / 2), (x + size / 2, low + size, z + size / 2), colour), string(x, z, low + size, 13.5)]
+    planets.append(box((5.8, 9.6, 0.6), (10.2, 9.8, 4.6), 's', sw('gold'), faces_=('up', 'down')))  # the ringed one's ring
+    model('ball_hanging', planets, {**W})
 
 
 KINDS = ['bed_head', 'bed_foot', 'desk', 'chair', 'toy_chest', 'shelf', 'wardrobe_low', 'wardrobe_high', 'dollhouse', 'rocking_horse', 'night_light',
@@ -573,8 +647,10 @@ def blockstate():
         for kind in KINDS:
             for stage in range(4):
                 if kind in CEILING and stage == 3:
-                    name = f'nursery_{kind}_hanging'
-                    variants[f'facing={facing},kind={kind},stage={stage}'] = {'model': f'the_oldest_house:block/{name}', 'x': 180, 'y': (y + 180) % 360}
+                    v = {'model': f'the_oldest_house:block/nursery_{kind}_hanging'}
+                    if y:
+                        v['y'] = y
+                    variants[f'facing={facing},kind={kind},stage={stage}'] = v
                     continue
                 if kind == 'doll' and stage in (1, 2):
                     name = 'nursery_doll_' + ('shelf' if stage == 1 else 'chest')

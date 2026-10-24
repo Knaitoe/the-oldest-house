@@ -238,14 +238,14 @@ public final class ChildRoom {
     static boolean looksAt(ServerPlayer p,BlockPos b,int i){for(var c:EXITS.get(i))if(HouseWatchers.sees(p,Vec3.atCenterOf(b.offset(c))))return true;return false;}
     public static Vec3 centre(BlockPos b,int i){var cells=EXITS.get(i);double x=0,y=0,z=0;for(var c:cells){x+=c.getX()+.5;y+=c.getY()+.5;z+=c.getZ()+.5;}
         return new Vec3(b.getX()+x/cells.size(),b.getY()+y/cells.size(),b.getZ()+z/cells.size());}
-    /** Seals one exit if nobody can see it and no body is in it; moves its toy to the ceiling and turns the dolls toward it. */
+    /** Seals one exit if nobody can see it and no body is in it; takes its toy for a mobile over the bed and turns the dolls toward it. */
     public static boolean seal(ServerLevel l,BlockPos b,int i){
         var cells=EXITS.get(i);
         for(var c:cells){var at=b.offset(c);
             if(!l.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.05),e->e.isAlive()&&!e.isSpectator()).isEmpty()||seen(l,Vec3.atCenterOf(at)))return false;}
         for(var c:cells)set(l,b,c,wallAt(c.getY()));
         var at=centre(b,i);l.playSound(null,at.x,at.y,at.z,LiteraryRegistry.NURSERY_EXIT.value(),SoundSource.BLOCKS,.8F,.9F+l.getRandom().nextFloat()*.2F);
-        // The paired toy leaves the floor; it is found stuck to the ceiling above the bed.
+        // The paired toy leaves the floor; what hangs over the bed afterwards is a mobile made of it.
         var kind=PAIRED.get(i);var found=nearest(l,b,kind,TOY_HOMES.get(i));if(found!=null)l.setBlock(found,Blocks.AIR.defaultBlockState(),F);
         set(l,b,CEILING_SLOTS.get(i),NurseryBlock.of(kind,Direction.SOUTH,NurseryBlock.CEILING));
         for(var doll:all(l,b,Kind.DOLL))if(l.getBlockState(doll).getValue(NurseryBlock.STAGE)!=NurseryBlock.CEILING)

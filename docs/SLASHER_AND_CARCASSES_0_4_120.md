@@ -68,6 +68,18 @@ The reader's body waits in the pile from the first moment; what they see is a ca
 drag, with their own killer pulling ahead of it, and nothing reaches them while it runs. The drag's clock is kept in
 memory; a save or a departure in the middle of it wakes the reader in the pile. No death is recorded.
 
+## The child's room: mobiles, not flipped toys
+
+The owner meant mobiles and the like by toys hanging from the ceiling, not the floor toys hung upside down (0.4.119).
+Each exit still takes its toy from the floor as it seals; what hangs over the bed afterwards is a mobile the room made
+of it, the right way up on strings: four felt bears on a cross for the teddy, a square frame hung with a chain of paper
+dolls for the doll, three alphabet blocks on a bar for the blocks, and the planets round a sun (one with a ring) for the
+ball. `tools/generate_nursery_assets.py` draws them, with two new textures (the paper dolls, the alphabet faces), and
+points the ceiling stage at them without the old flip. Touching one: "It hangs out of reach over the bed, turning a
+little on its strings. Someone made it from what was on the floor." Rendered from three sides for review; the first
+garland's octagon hoop read as loose sticks and its hook plate as a black slab, so it hangs from a square frame on four
+strings, and the bears were given eyes.
+
 ## Tests
 
 - ArchitectureTests: the walk up the trail into the mouth; every cell of both machines; the carcasses on the deck and
