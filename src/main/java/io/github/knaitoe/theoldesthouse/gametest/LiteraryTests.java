@@ -344,7 +344,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.runAfterDelay(10,()->{
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.GLASS)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(0))),NurseryBlock.Kind.TEDDY)
                     &&l.getBlockState(b.offset(ChildRoom.EXITS.get(2).get(0))).getBlock() instanceof DoorBlock,"the room stands whole: two windows, its own doors, the bear by the bed");
-            h.assertTrue(l.getBlockState(b.offset(ChildRoom.BED_HEAD.below())).isAir()&&l.getBlockState(b.offset(ChildRoom.GAP)).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"a child fits under the bed, there is a gap in the boards and a basement below");
+            h.assertTrue(l.getBlockState(b.offset(ChildRoom.BED_HEAD.below())).isAir()&&l.getBlockState(b.offset(ChildRoom.GAP)).is(Blocks.BIRCH_PLANKS)&&l.getBlockState(b.offset(ChildRoom.GAP.below())).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"a child fits under the bed, the way down is a floorboard like the rest, and there is a basement below");
             f.source(p,place);
             // Both readers face the door they came in by; the spectator watches the hall door.
             f.at(p,place,.5,0,-4.5);f.look(p,b.offset(0,1,1));f.at(peer,place,-.5,0,-4.5);f.look(peer,b.offset(0,1,1));
@@ -360,13 +360,19 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(f.own(p,place).getInt("ExitSeen0474")==0,"nothing counts as seen until the reader looks");});
         examine(h,f,p,710);
         h.runAfterDelay(840,()->{h.assertTrue(f.own(p,place).getInt("ExitSeen0474")==ChildRoom.ALL&&f.own(p,place).getBoolean("AllSeen0474")&&f.own(peer,place).getInt("ExitSeen0474")==0,"the reader has seen every exit themselves; the peer, who never read the card, has not");
-            f.at(p,place,.5,0,-22.5);f.at(peer,place,6.5,-4,-12.5);});
+            h.assertTrue(f.own(p,place).getBoolean("DoorShut0119")&&!f.own(peer,place).getBoolean("DoorShut0119"),"the doorway back to the House is wall to the reader shut in, not to the peer who never read the card");
+            h.assertTrue(Integer.bitCount(f.own(p,place).getInt("Parents0119"))>=4&&f.own(peer,place).getInt("Parents0119")==0,"the reader heard a parent's voice as each exit went; the peer heard nothing");
+            f.at(p,place,.5,0,-22.5);f.at(peer,place,6.5,-4,-12.5);
+            NurseryToys.play(p,l,b.offset(ChildRoom.BED_FOOT),l.getBlockState(b.offset(ChildRoom.BED_FOOT)),b);
+            h.assertTrue(l.getBlockState(b.offset(ChildRoom.GAP)).getBlock() instanceof TrapDoorBlock&&l.getBlockState(b.offset(ChildRoom.GAP)).getValue(TrapDoorBlock.OPEN),"looking under the bed finds the trapdoor in the boards");});
         h.runAfterDelay(852,()->{h.assertTrue(!f.own(p,place).getBoolean("Ready"),"under the bed is not yet the way out");f.at(p,place,.5,-2,-22.5);});
         h.runAfterDelay(864,()->{h.assertTrue(f.own(p,place).getBoolean("Crawled0474"),"the reader has gone below the floor");f.at(p,place,6.5,-2,-18.5);});
         h.runAfterDelay(876,()->f.at(p,place,6.5,-4,-12.5));
         h.runAfterDelay(890,()->{
             h.assertTrue(f.own(p,place).getBoolean("Ready")&&"examined_the_lost_exits_and_crawled_below_the_bed".equals(f.own(p,place).getString("Outcome")),"seen, crawled and stood up below: the last account is the reader's");
             h.assertTrue(!f.own(peer,place).getBoolean("Ready")&&!f.own(observer,place).getBoolean("Ready"),"a peer who walked into the basement and a spectator have nothing");
+            h.assertTrue(!f.own(p,place).getBoolean("DoorShut0119"),"finished, the reader sees the doorway again");
+            var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Dinnerbone")&&l.getEntity(world.getUUID("Dinnerbone")) instanceof LiteraryActor figure&&"Dinnerbone".equals(figure.getName().getString())&&figure.isNoGravity()&&Math.abs(figure.getY()-b.getY()-4.1)<.01,"Dinnerbone stands on the ceiling of the shut room, the wrong way up");
             f.read(p,place,LiteraryRooms.ending(place));
             h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"only the reader's own reading resolves the room");
             // The way back up: the hatch opens from below and shuts itself once nobody is in it.

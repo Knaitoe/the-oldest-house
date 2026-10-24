@@ -2,42 +2,61 @@
 from pathlib import Path
 import argparse
 import json
+import math
+import random
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 A = ROOT / 'src/main/resources/assets/the_oldest_house'
 PREFIX = 'the_oldest_house:block/trailer/'
 
+def shade(c, k):
+    c = c.lstrip('#'); r, g, b = (int(c[i:i + 2], 16) for i in (0, 2, 4))
+    return (max(0, min(255, r + k)), max(0, min(255, g + k)), max(0, min(255, b + k)), 255)
+
+def grain(im, base, seed, streaks=7, knots=1, seams=()):
+    """Plank grain like the native planks: tone noise, long wavy streaks, oval knots and optional plank seams."""
+    rnd = random.Random(seed); px = im.load()
+    for y in range(32):
+        row = rnd.randint(-6, 6)
+        for x in range(32):
+            px[x, y] = shade(base, row + rnd.randint(-4, 4))
+    for _ in range(streaks):
+        y0, amp, period, phase, k = rnd.randint(0, 31), rnd.choice((0, 1, 1, 2)), rnd.uniform(6, 14), rnd.uniform(0, 6), rnd.choice((-18, -13, -9, 9))
+        x0 = rnd.randint(0, 31)
+        for i in range(rnd.randint(10, 32)):
+            x = (x0 + i) % 32; y = (y0 + round(math.sin((x + phase) / period * math.pi) * amp)) % 32
+            px[x, y] = shade(base, k + rnd.randint(-2, 2))
+    for _ in range(knots):
+        kx, ky = rnd.randint(4, 27), rnd.randint(4, 27)
+        for dx in range(-2, 3):
+            for dy in range(-1, 2):
+                if abs(dx) + abs(dy) <= 2:
+                    px[kx + dx, ky + dy] = shade(base, -30 if dy == 0 and abs(dx) <= 1 else -14)
+    for y in seams:
+        for x in range(32):
+            px[x, y] = shade(base, -34); px[x, (y + 1) % 32] = shade(base, 10)
+
 def paintings():
     out = {}
-    def tile(name, color):
-        im = Image.new('RGBA', (32, 32), color)
-        out[name] = im
-        return ImageDraw.Draw(im)
     # Warm knotty pine for the chairs.
-    d = tile('chair_wood', '#b9824c')
-    for y in (3, 9, 14, 20, 26, 30):
-        d.line((0, y, 31, y), fill='#a5703f')
-    for x, y in ((7, 6), (22, 17), (13, 27)):
-        d.ellipse((x - 2, y - 1, x + 2, y + 1), fill='#7f4f2a')
-    d.line((0, 0, 31, 0), fill='#d29a62')
-    # A worn plaid cushion: rust, brown and cream.
-    d = tile('chair_cushion', '#9a3f2b')
-    for x in range(0, 32, 8):
-        d.rectangle((x, 0, x + 2, 31), fill='#6e2c1f')
-    for y in range(0, 32, 8):
-        d.rectangle((0, y, 31, y + 2), fill='#6e2c1f')
-    for n in range(4, 32, 8):
-        d.line((n, 0, n, 31), fill='#d8c39a'); d.line((0, n, 31, n), fill='#d8c39a')
-    for x, y in ((11, 13), (27, 29), (19, 5)):
-        d.point((x, y), fill='#c6735a')
-    # Darker stained bunk timber, nail heads at the joints.
-    d = tile('bunk_wood', '#6b4429')
-    for y in (2, 8, 15, 21, 28):
-        d.line((0, y, 31, y), fill='#5a3820')
-    for x, y in ((3, 3), (28, 3), (3, 28), (28, 28)):
-        d.point((x, y), fill='#a9a39a')
-    d.line((0, 31, 31, 31), fill='#47301c')
+    im = Image.new('RGBA', (32, 32)); grain(im, '#b9824c', 31, knots=2); out['chair_wood'] = im
+    # A worn tartan cushion: rust ground, brown bands, a thin mustard and cream overcheck, two tufting buttons.
+    im = Image.new('RGBA', (32, 32), '#9a3f2b'); out['chair_cushion'] = im; d = ImageDraw.Draw(im); rnd = random.Random(32); px = im.load()
+    for n in range(0, 32, 10):
+        d.rectangle((n, 0, n + 3, 31), fill='#7a3022'); d.rectangle((0, n, 31, n + 3), fill='#7a3022')
+        d.rectangle((n, n, n + 3, n + 3), fill='#5e2419')
+    for n in range(6, 32, 10):
+        d.line((n, 0, n, 31), fill='#a8843e'); d.line((0, n + 2, 31, n + 2), fill='#b49a74')
+    for y in range(32):
+        for x in range(32):
+            r, g, b, a = px[x, y]; k = rnd.randint(-6, 6); px[x, y] = (max(0, min(255, r + k)), max(0, min(255, g + k)), max(0, min(255, b + k)), a)
+    for x, y in ((9, 9), (23, 23)):
+        d.ellipse((x - 1, y - 1, x + 1, y + 1), fill='#4e1d14'); d.point((x, y - 1), fill='#b8664e')
+    # Darker stained bunk timber, plank seams and nail heads at the joints.
+    im = Image.new('RGBA', (32, 32)); grain(im, '#6b4429', 33, knots=1, seams=(15,)); out['bunk_wood'] = im; d = ImageDraw.Draw(im)
+    for x, y in ((3, 3), (28, 3), (3, 28), (28, 28), (3, 12), (28, 19)):
+        d.point((x, y), fill='#b0aaa0'); d.point((x + 1, y + 1), fill='#3a2616')
     return out
 
 def box(lo, hi, texture, skip=()):

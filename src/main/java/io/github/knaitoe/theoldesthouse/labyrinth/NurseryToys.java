@@ -95,7 +95,7 @@ public final class NurseryToys {
             case WARDROBE_LOW,WARDROBE_HIGH->{var other=kind==Kind.WARDROBE_LOW?at.above():at.below();stage(l,at,stage==0?1:0);stage(l,other,stage==0?1:0);
                 sound(l,at,LiteraryRegistry.NURSERY_CREAK.value(),.7F,.8F);if(stage==0)say(p,"Small clothes on small hangers. Nothing else.");}
             case SHELF->say(p,"Picture books. In one, a house where every door is drawn on the wall.");
-            case BED_HEAD,BED_FOOT->say(p,"The quilt is cold and smooth, as if nobody has slept under it.");
+            case BED_HEAD,BED_FOOT->ChildRoom.lookUnder(p,l,b);
             case DESK->say(p,"Crayons, a ruler, a drawing of the room with no door in it.");
             case DRAWINGS->say(p,stage==0?"A house in crayon. It has windows, but no door.":"The same house, from underneath. A ladder goes up to where the door is.");
             case BOXES->say(p,"OUTGROWN, in marker. Clothes, and a box of baby things.");

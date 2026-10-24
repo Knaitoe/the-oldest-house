@@ -546,6 +546,16 @@ def models():
     model('blocks_1', [color((5, 0, 5), (9, 4, 9), 'red'), color((5, 4, 5), (9, 8, 9), 'blue'), color((10, 0, 10), (13, 3, 13), 'yellow')], W)
     model('blocks_2', [color((6, 0, 6), (10, 4, 10), 'red'), color((6, 4, 6), (10, 8, 10), 'blue'), color((6, 8, 6), (10, 12, 10), 'yellow')], W)
     model('ball', [color((5, 0, 5), (11, 6, 11), 'red'), color((4.9, 2.5, 4.9), (11.1, 3.5, 11.1), 'white')], W)
+    # The toys the room takes hang from the ceiling on a thread, a hand's width below it, rather than lying flat against it;
+    # the blocks hang as their stacked tower.
+    for base, name in (('teddy', 'teddy'), ('doll', 'doll'), ('blocks_2', 'blocks'), ('ball', 'ball')):
+        data = json.loads((MODELS / f'nursery_{base}.json').read_text())
+        for e in data['elements']:
+            e['from'][1] += 5; e['to'][1] += 5
+            if 'rotation' in e:
+                e['rotation']['origin'][1] += 5
+        data['elements'].append(color((7.75, 0, 7.75), (8.25, 5, 8.25), 'white'))
+        (MODELS / f'nursery_{name}_hanging.json').write_text(json.dumps(data, indent=1) + '\n')
 
 
 KINDS = ['bed_head', 'bed_foot', 'desk', 'chair', 'toy_chest', 'shelf', 'wardrobe_low', 'wardrobe_high', 'dollhouse', 'rocking_horse', 'night_light',
@@ -563,7 +573,7 @@ def blockstate():
         for kind in KINDS:
             for stage in range(4):
                 if kind in CEILING and stage == 3:
-                    name = f'nursery_{kind}_0' if kind in STAGED else f'nursery_{kind}'
+                    name = f'nursery_{kind}_hanging'
                     variants[f'facing={facing},kind={kind},stage={stage}'] = {'model': f'the_oldest_house:block/{name}', 'x': 180, 'y': (y + 180) % 360}
                     continue
                 if kind == 'doll' and stage in (1, 2):
