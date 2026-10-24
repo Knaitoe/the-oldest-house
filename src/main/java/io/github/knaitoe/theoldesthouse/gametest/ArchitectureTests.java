@@ -403,8 +403,36 @@ public final class ArchitectureTests {
         h.assertTrue(Math.abs(ElkCarcassMap.MOUTH.getX())>=8&&ElkCarcassMap.MOUTH.getZ()<-150&&!ElkCarcassMap.wooded(ElkCarcassMap.MOUTH.getX()-8,ElkCarcassMap.MOUTH.getZ()-8),"the cave is off-centre on the outer edge of the western wood");
         int water=0;for(int z=-240;z<=-80;z+=8){double t=ElkCarcassMap.along(0,z);for(int x=-40;x<=60;x++)if(ElkCarcassMap.stream(x,z)&&l.getBlockState(b.offset(x,ElkCarcassMap.streamLevel(ElkCarcassMap.along(x,z)),z)).is(Blocks.WATER)){water++;break;}}
         h.assertTrue(water>=18,"a stream runs the length of the valley: "+water);
+        // 0.4.120: the mouth is walked into from the trail, a block at a time; nothing to climb, nothing to break.
+        // Down the trail's own line, a step at a time, to the open cell before the passage roof.
+        int px=2,pz=-167,ground=elkGround(l,b,px,pz);
+        for(int[] to:new int[][]{{-6,-174},{-10,-178}})while(px!=to[0]||pz!=to[1]){
+            if(Math.abs(to[0]-px)>=Math.abs(to[1]-pz))px+=Integer.signum(to[0]-px);else pz+=Integer.signum(to[1]-pz);
+            int next=elkGround(l,b,px,pz);
+            h.assertTrue(Math.abs(next-ground)<=1,"the way into the cave rises or falls one block at a time at "+px+","+pz+": "+ground+" to "+next);
+            for(int y=1;y<=2;y++)h.assertTrue(l.getBlockState(b.offset(px,next+y,pz)).getCollisionShape(l,b.offset(px,next+y,pz)).isEmpty(),"headroom on the way in at "+px+","+pz);
+            ground=next;
+        }
+        var mouth=b.offset(ElkCarcassMap.MOUTH);
+        h.assertTrue(ground==ElkCarcassMap.MOUTH_Y-1&&!l.getBlockState(mouth.below()).getCollisionShape(l,mouth.below()).isEmpty(),"the mouth's floor is level with the ground in front of it: "+ground);
+        for(int y=0;y<=2;y++)h.assertTrue(l.getBlockState(mouth.above(y)).getCollisionShape(l,mouth.above(y)).isEmpty(),"the mouth is open three high");
+        h.assertTrue(l.getBlockState(b.offset(ElkCarcassMap.SKID_STEER)).is(LiteraryRegistry.SITE_MACHINE.get())&&l.getBlockState(b.offset(ElkCarcassMap.SKID_STEER)).getValue(SiteMachineBlock.KIND)==SiteMachineBlock.Kind.SKID_0_0_0,"the skid steer is the crew's own machine, bucket down");
+        var cab=b.offset(ElkCarcassMap.FLATBED.offset(-1,0,0));
+        h.assertTrue(l.getBlockState(cab).is(LiteraryRegistry.SITE_MACHINE.get())&&l.getBlockState(cab).getValue(SiteMachineBlock.KIND)==SiteMachineBlock.Kind.TRUCK_0_0_0&&l.getBlockState(cab).getValue(SiteMachineBlock.FACING)==net.minecraft.core.Direction.EAST,"the flatbed faces the road");
+        int machines=0;for(var at:BlockPos.betweenClosed(b.offset(36,ElkCarcassMap.SITE_TOP,-162),b.offset(50,ElkCarcassMap.SITE_TOP+4,-138)))if(l.getBlockState(at).is(LiteraryRegistry.SITE_MACHINE.get()))machines++;
+        h.assertTrue(machines==SiteMachineBlock.Kind.values().length,"every cell of both machines stands: "+machines);
+        for(var deck:new BlockPos[]{new BlockPos(42,ElkCarcassMap.SITE_TOP+2,-142),new BlockPos(40,ElkCarcassMap.SITE_TOP+2,-142)})
+            h.assertTrue(l.getBlockState(b.offset(deck)).is(LiteraryRegistry.PROP.get())&&l.getBlockState(b.offset(deck).below()).is(LiteraryRegistry.SITE_MACHINE.get()),"two carcasses still lie on the deck");
+        for(var field:new BlockPos[]{ElkCarcassMap.FIELD_ONE,ElkCarcassMap.FIELD_TWO}){var at=b.offset(field.getX(),ElkCarcassMap.surface(field.getX(),field.getZ())+1,field.getZ());
+            h.assertTrue(l.getBlockState(at).is(LiteraryRegistry.PROP.get())&&l.getBlockState(at).getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.CARCASS,"a half-dressed carcass lies beside the trail at "+field);}
+        for(var work:ElkCarcassMap.WORK){var feet=b.offset(work.feet());h.assertTrue(!l.getBlockState(feet.below()).getCollisionShape(l,feet.below()).isEmpty()&&l.noCollision(new net.minecraft.world.phys.AABB(feet).inflate(-.2,0,-.2).expandTowards(0,.8,0)),"he has standing room where he works at "+work);}
         export(l,b,LabyrinthPlace.ELK_CARCASSES,"elk_yacht");
         export(l,b,LabyrinthPlace.ELK_CARCASSES,"elk_cave");
+    }
+    /** The height of the first solid ground under the open air at a cell of the elk valley. */
+    private static int elkGround(net.minecraft.server.level.ServerLevel l,BlockPos b,int x,int z){
+        int y=24;while(y>-10&&(l.getBlockState(b.offset(x,y,z)).getCollisionShape(l,b.offset(x,y,z)).isEmpty()||l.getBlockState(b.offset(x,y,z)).is(net.minecraft.tags.BlockTags.LEAVES)))y--;
+        return y;
     }
     public static void export(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene)throws Exception{
         export(l,b,scene,scene.id());

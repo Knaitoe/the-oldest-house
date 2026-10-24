@@ -1,0 +1,44 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "sheet": "the_oldest_house:block/site_machine/truck_sheet",
+  "paint": "the_oldest_house:block/site_machine/truck_paint",
+  "particle": "the_oldest_house:block/site_machine/truck_paint"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    3.0
+   ],
+   "to": [
+    16,
+    14.0,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#sheet",
+     "uv": [
+      3.0,
+      0.0,
+      5.0,
+      1.75
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      3.0,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

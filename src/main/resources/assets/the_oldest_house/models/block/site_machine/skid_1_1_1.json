@@ -1,0 +1,323 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "sheet": "the_oldest_house:block/site_machine/skid_sheet",
+  "roof": "the_oldest_house:block/site_machine/roof",
+  "paint": "the_oldest_house:block/site_machine/skid_paint",
+  "parts": "the_oldest_house:block/site_machine/parts",
+  "particle": "the_oldest_house:block/site_machine/skid_paint"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    4.0
+   ],
+   "to": [
+    9.0,
+    14.0,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#sheet",
+     "uv": [
+      4.0,
+      0.0,
+      6.25,
+      3.5
+     ]
+    },
+    "east": {
+     "texture": "#sheet",
+     "uv": [
+      4.75,
+      4.0,
+      7.75,
+      7.5
+     ]
+    },
+    "up": {
+     "texture": "#roof",
+     "uv": [
+      0,
+      4.0,
+      9.0,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    14.0,
+    3.5
+   ],
+   "to": [
+    9.5,
+    15.5,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#roof",
+     "uv": [
+      6.5,
+      0.5,
+      16,
+      2.0
+     ]
+    },
+    "east": {
+     "texture": "#roof",
+     "uv": [
+      0,
+      0.5,
+      12.5,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#roof",
+     "uv": [
+      0,
+      3.5,
+      9.5,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#roof",
+     "uv": [
+      0,
+      0,
+      9.5,
+      12.5
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    11.0,
+    6.5,
+    0
+   ],
+   "to": [
+    14.5,
+    10.5,
+    16
+   ],
+   "faces": {
+    "west": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      5.5,
+      16,
+      9.5
+     ]
+    },
+    "east": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      5.5,
+      16,
+      9.5
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      11.0,
+      0,
+      14.5,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#paint",
+     "uv": [
+      11.0,
+      0,
+      14.5,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    11.0,
+    0,
+    0
+   ],
+   "to": [
+    14.5,
+    6.5,
+    1.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#paint",
+     "uv": [
+      11.0,
+      9.5,
+      14.5,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      9.5,
+      1.0,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#paint",
+     "uv": [
+      15.0,
+      9.5,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      11.0,
+      0,
+      14.5,
+      1.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    1.0,
+    0
+   ],
+   "to": [
+    11.0,
+    4.0,
+    0.5
+   ],
+   "faces": {
+    "south": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      12.0,
+      11.0,
+      15.0
+     ]
+    },
+    "east": {
+     "texture": "#paint",
+     "uv": [
+      15.5,
+      12.0,
+      16,
+      15.0
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      0,
+      11.0,
+      0.5
+     ]
+    },
+    "down": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      15.5,
+      11.0,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    6.0,
+    12.0,
+    3.0
+   ],
+   "to": [
+    8.5,
+    14.0,
+    4.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      10,
+      6,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      10,
+      6,
+      14
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      10,
+      6,
+      14
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      10,
+      6,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      10,
+      6,
+      14
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      10,
+      6,
+      14
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -41,6 +41,66 @@ public final class ElkCarcassMap {
     public static final BlockPos CAVE_ENTRY = new BlockPos(-15, CAVE_Y, -185), PASS_WEST = new BlockPos(-28, CAVE_Y, -187),
             PASS_EAST = new BlockPos(-15, CAVE_Y, -187), PEER = new BlockPos(-23, CAVE_Y, -188), CAVE_EXIT = new BlockPos(8, 0, -202);
     /** The crawl space beneath the carcasses: x -24..-22, z -192..-191, one block high. */
+    /** Two carcasses he left half-dressed beside the trail (0.4.120), where he comes back to work on them. */
+    public static final BlockPos FIELD_ONE = new BlockPos(27, 0, -154), FIELD_TWO = new BlockPos(8, 0, -166);
+    /**
+     * Where he works when nobody is in his sight (0.4.120): where he stands, the point he works at, and whether he hacks
+     * there or hauls a carcass from there into the cave. y is filled in from the ground.
+     */
+    public record Work(int x, int z, double atX, double atY, double atZ, boolean haul) {
+        public BlockPos feet() { return standAt(x, z); }
+        /** The point he works at; atY is above his feet. */
+        public Vec3 at() { return new Vec3(atX, ElkCarcassMap.stand(x, z) + atY, atZ); }
+    }
+    public static final List<Work> WORK = List.of(
+            new Work(38, -142, 40.5, .9, -141.5, false), new Work(26, -152, 27.5, .3, -153.5, false), new Work(8, -164, 8.5, .3, -165.5, false),
+            new Work(38, -143, 40.5, .9, -141.5, true), new Work(9, -165, 8.5, .3, -165.5, true));
+    /** The drag (0.4.120): from the mouth's pad, down the passage, to the pile's gap. x and z; the floor is found. */
+    private static final double[][] DRAG = {{-5.5, -173.5}, {-8.5, -176.5}, {-10.5, -178.5}, {-11.9, -179.9}, {-13.3, -181.3}, {-14.7, -182.7},
+            {-16.1, -184.2}, {-18, -186}, {-20.3, -187.9}, {-22.5, -189.2}};
+    public static final double DRAG_LENGTH;
+    static {
+        double length = 0;
+        for (int i = 1; i < DRAG.length; i++) length += Math.hypot(DRAG[i][0] - DRAG[i - 1][0], DRAG[i][1] - DRAG[i - 1][1]);
+        DRAG_LENGTH = length;
+    }
+    /** Where the reader comes to, inside the hollow facing the gap; and the carcasses packed into the gap and in front of it. */
+    public static final Vec3 WAKE = new Vec3(-22.5, CAVE_Y, -191.5);
+    public static final List<BlockPos> BURIAL = List.of(new BlockPos(-23, CAVE_Y, -190), new BlockPos(-22, CAVE_Y, -190),
+            new BlockPos(-23, CAVE_Y, -189), new BlockPos(-22, CAVE_Y, -189));
+
+    /** The floor under a point of the drag: the passage's steps, the chamber, or the ground outside. */
+    static double floor(double x, double z) {
+        if (passage(x, z)) {
+            double ax = x - MOUTH.getX() - .5, az = z - MOUTH.getZ() - .5, in = ax * -0.706 + az * -0.708;
+            return MOUTH_Y - (int) Math.max(0, Math.min(3, Math.floor((in - 1.5) / 2)));
+        }
+        if (chamber(x, z) < 1) return CAVE_Y;
+        return stand((int) Math.floor(x), (int) Math.floor(z));
+    }
+
+    /** The point s blocks along the drag, on its floor; and its heading in degrees. */
+    public static Vec3 drag(double s) {
+        s = Math.max(0, Math.min(DRAG_LENGTH, s));
+        for (int i = 1; i < DRAG.length; i++) {
+            double dx = DRAG[i][0] - DRAG[i - 1][0], dz = DRAG[i][1] - DRAG[i - 1][1], leg = Math.hypot(dx, dz);
+            if (s <= leg || i == DRAG.length - 1) {
+                double t = Math.min(1, s / leg), x = DRAG[i - 1][0] + dx * t, z = DRAG[i - 1][1] + dz * t;
+                return new Vec3(x, floor(x, z), z);
+            }
+            s -= leg;
+        }
+        return new Vec3(DRAG[0][0], floor(DRAG[0][0], DRAG[0][1]), DRAG[0][1]);
+    }
+
+    public static float dragHeading(double s) {
+        var a = drag(s - .4);
+        var b = drag(s + .4);
+        return (float) Math.toDegrees(Math.atan2(-(b.x - a.x), b.z - a.z));
+    }
+
+    /** The machines' front-left corners: the flatbed faces east along x, the skid steer north. */
+    public static final BlockPos FLATBED = new BlockPos(47, SITE_TOP + 1, -143), SKID_STEER = new BlockPos(46, SITE_TOP + 1, -159);
     public static final int HOLLOW_X0 = -24, HOLLOW_X1 = -22, HOLLOW_Z0 = -192, HOLLOW_Z1 = -191;
     /** The gap at the front of the pile the hollow is watched through (and crawled into). */
     public static final int GAP_X0 = -23, GAP_X1 = -22, GAP_Z = -190;
@@ -143,7 +203,8 @@ public final class ElkCarcassMap {
         // Level pads where people built: the crew's site, their service gate and the cave mouth.
         h = pad(h, x, z, 49, -142, 13, 20, SITE_TOP, 4);
         h = pad(h, x, z, 44, -245, 6, 4, GATE_Y - 1, 3);
-        h = pad(h, x, z, MOUTH.getX() + 1, MOUTH.getZ() + 1, 3.5, 3.5, MOUTH_Y - 1, 2);
+        // The mouth's pad eases down to the wood a block at a time, so a reader walks up to it and in.
+        h = pad(h, x, z, MOUTH.getX() + 1, MOUTH.getZ() + 1, 3.5, 3.5, MOUTH_Y - 1, 4.5);
         return h;
     }
 
@@ -427,7 +488,7 @@ public final class ElkCarcassMap {
             if (Math.abs(side(x, z)) < 4 && along(x, z) > -4) return true;
             if (Math.abs(x - 49) < 16 && Math.abs(z + 142) < 23) return true;
             if (Math.abs(x - 44) < 9 && Math.abs(z + 245) < 7) return true;
-            if (Math.abs(x - MOUTH.getX()) < 6 && Math.abs(z - MOUTH.getZ()) < 6) return true;
+            if (Math.abs(x - MOUTH.getX() - 1) < 9 && Math.abs(z - MOUTH.getZ() - 1) < 9) return true;
             if (chamber(x, z) < 1.6) return true;
             if (onTrail(x, z, 2.5) || onPath(x, z, 2) || onRoad(x, z, 2.5)) return true;
             return rocky(x, z);
@@ -622,7 +683,7 @@ public final class ElkCarcassMap {
                         if (onRoad(x, z, 1.6)) { set(x, Math.max(w + 2, h), z, Blocks.SPRUCE_PLANKS); }
                         continue;
                     }
-                    boolean trail = onTrail(x, z, 1.1) && !passage(x, z) && !(x >= 39 && x <= 45 && z >= -145 && z <= -139);
+                    boolean trail = onTrail(x, z, 1.1) && !passage(x, z) && !(x >= FLATBED.getX() - 8 && x < FLATBED.getX() && z >= FLATBED.getZ() && z < FLATBED.getZ() + 3);
                     if (trail) set(x, h, z, LiteraryRegistry.DRAG_MUD.get().defaultBlockState());
                     else if (onPath(x, z, .8)) set(x, h, z, Blocks.DIRT_PATH);
                     else if (onRoad(x, z, 1.6)) set(x, h, z, (hash(x, z) & 3) == 0 ? Blocks.COARSE_DIRT : Blocks.GRAVEL);
@@ -636,6 +697,13 @@ public final class ElkCarcassMap {
                     if (trail && (hash(x, z) & 31) == 0) prop(x, h + 1, z, LiteraryPropBlock.Kind.STAIN, Direction.from2DDataValue((int) (hash(x, z) >>> 6 & 3)), 1);
                 }
             prop(2, surface(2, -167) + 1, -166, LiteraryPropBlock.Kind.HARD_HAT, Direction.WEST, 1);
+            // The two he left half-dressed beside the trail, opened and staining the ground under them.
+            for (var f : new BlockPos[]{FIELD_ONE, FIELD_TWO}) {
+                int h = surface(f.getX(), f.getZ());
+                set(f.getX(), h + 2, f.getZ(), Blocks.AIR);
+                prop(f.getX(), h + 1, f.getZ(), LiteraryPropBlock.Kind.CARCASS, f == FIELD_ONE ? Direction.EAST : Direction.SOUTH, 2);
+                prop(f.getX() - 1, h + 1, f.getZ() + 1, LiteraryPropBlock.Kind.STAIN, Direction.NORTH, 2);
+            }
             prop(-7, surface(-7, -176) + 1, -174, LiteraryPropBlock.Kind.STAIN, Direction.NORTH, 3);
         }
 
@@ -663,13 +731,12 @@ public final class ElkCarcassMap {
             set(54, y, -153, Blocks.BARREL);
             prop(55, y, -150, LiteraryPropBlock.Kind.HARD_HAT, Direction.NORTH, 0);
             NovelRooms.sign(l, b.offset(51, y + 2, -153), Direction.WEST, new String[]{"ROAD CREW", "Elk to the cut", "below the ridge.", "Sign in at gate"});
-            // A flatbed with what the crew were hauling off the road, and the drag marks leaving it.
-            fill(40, y, -145, 44, y, -139, Blocks.BLACK_CONCRETE);
-            fill(39, y + 1, -145, 45, y + 1, -139, Blocks.SPRUCE_PLANKS);
-            for (int x : new int[]{39, 45}) fill(x, y + 2, -145, x, y + 2, -139, Blocks.SPRUCE_FENCE);
-            prop(41, y + 2, -143, LiteraryPropBlock.Kind.CARCASS, Direction.SOUTH, 0);
-            prop(43, y + 2, -141, LiteraryPropBlock.Kind.CARCASS, Direction.NORTH, 3);
-            prop(39, y, -141, LiteraryPropBlock.Kind.STAIN, Direction.WEST, 1);
+            // The crew's flatbed, nose to the road and tail to the trail, two carcasses still on the deck where the stains are,
+            // and the drag marks leaving it.
+            machine(SiteMachineBlock.Machine.TRUCK, FLATBED, Direction.EAST);
+            prop(42, y + 1, -142, LiteraryPropBlock.Kind.CARCASS, Direction.SOUTH, 0);
+            prop(40, y + 1, -142, LiteraryPropBlock.Kind.CARCASS, Direction.NORTH, 3);
+            prop(38, y, -142, LiteraryPropBlock.Kind.STAIN, Direction.WEST, 1);
             // Culverts waiting by the trench, stacked lumber, the safety fence along the cut.
             for (int x = 44; x <= 50; x += 3) {
                 for (int dy = 0; dy < 2; dy++) for (int dz = 0; dz < 2; dz++) set(x, y + dy, -126 - dz * 2, Blocks.LIGHT_GRAY_CONCRETE);
@@ -683,18 +750,18 @@ public final class ElkCarcassMap {
             for (int x = 39; x <= 53; x++) for (int z : new int[]{-132, -128}) set(x, y, z, LiteraryRegistry.SAFETY_FENCE.get().defaultBlockState());
             // The ends stay open where the steps come up, so nobody is kept in the cut.
             for (int z : new int[]{-131, -129}) for (int x : new int[]{39, 53}) set(x, y, z, LiteraryRegistry.SAFETY_FENCE.get().defaultBlockState());
-            // A small skid steer, parked where it stopped, bucket down.
-            fill(46, y, -158, 48, y, -156, Blocks.BLACK_CONCRETE);
-            fill(46, y + 1, -158, 48, y + 2, -157, Blocks.YELLOW_CONCRETE);
-            set(47, y + 1, -156, Blocks.AIR);
-            set(47, y + 2, -156, Blocks.BLACK_STAINED_GLASS_PANE);
-            fill(45, y, -159, 49, y, -159, Blocks.YELLOW_TERRACOTTA);
+            // A small skid steer, parked where it stopped, bucket down with a load of mud still in it.
+            machine(SiteMachineBlock.Machine.SKID, SKID_STEER, Direction.NORTH);
             // A portable toilet, door shut.
             fill(60, y, -138, 60, y + 2, -138, Blocks.BLUE_CONCRETE);
             set(59, y, -138, Blocks.BLUE_TERRACOTTA);
             set(60, y + 3, -138, Blocks.WHITE_CONCRETE);
             lamp(50, y, -136);
             lamp(42, y, -152);
+        }
+
+        void machine(SiteMachineBlock.Machine m, BlockPos corner, Direction facing) {
+            SiteMachineBlock.place(m, corner, facing, (at, state) -> set(at.getX(), at.getY(), at.getZ(), state));
         }
 
         void lamp(int x, int y, int z) {

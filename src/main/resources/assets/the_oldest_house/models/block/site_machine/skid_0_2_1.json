@@ -1,0 +1,341 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "sheet": "the_oldest_house:block/site_machine/skid_sheet",
+  "roof": "the_oldest_house:block/site_machine/roof",
+  "paint": "the_oldest_house:block/site_machine/skid_paint",
+  "parts": "the_oldest_house:block/site_machine/parts",
+  "particle": "the_oldest_house:block/site_machine/skid_paint"
+ },
+ "elements": [
+  {
+   "from": [
+    7.0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    14.0,
+    3.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#sheet",
+     "uv": [
+      9.0,
+      0.0,
+      11.25,
+      3.5
+     ]
+    },
+    "west": {
+     "texture": "#sheet",
+     "uv": [
+      3.0,
+      4.0,
+      3.75,
+      7.5
+     ]
+    },
+    "up": {
+     "texture": "#roof",
+     "uv": [
+      7.0,
+      0,
+      16,
+      3.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    6.5,
+    14.0,
+    0
+   ],
+   "to": [
+    16,
+    15.5,
+    3.5
+   ],
+   "faces": {
+    "south": {
+     "texture": "#roof",
+     "uv": [
+      6.5,
+      0.5,
+      16,
+      2.0
+     ]
+    },
+    "west": {
+     "texture": "#roof",
+     "uv": [
+      0,
+      0.5,
+      3.5,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#roof",
+     "uv": [
+      6.5,
+      0,
+      16,
+      3.5
+     ]
+    },
+    "down": {
+     "texture": "#roof",
+     "uv": [
+      6.5,
+      12.5,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    6.0,
+    0,
+    3.0
+   ],
+   "to": [
+    16,
+    7.0,
+    15.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      9.0,
+      10.0,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#sheet",
+     "uv": [
+      0.0,
+      8.0,
+      2.5,
+      9.75
+     ]
+    },
+    "west": {
+     "texture": "#paint",
+     "uv": [
+      3.0,
+      9.0,
+      15.0,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      6.0,
+      3.0,
+      16,
+      15.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    5.0,
+    0,
+    5.0
+   ],
+   "to": [
+    8.0,
+    11.0,
+    13.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#paint",
+     "uv": [
+      8.0,
+      5.0,
+      11.0,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#paint",
+     "uv": [
+      5.0,
+      5.0,
+      8.0,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#paint",
+     "uv": [
+      5.0,
+      5.0,
+      13.0,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#paint",
+     "uv": [
+      3.0,
+      5.0,
+      11.0,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      5.0,
+      5.0,
+      8.0,
+      13.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    1.5,
+    6.5,
+    0
+   ],
+   "to": [
+    5.0,
+    10.5,
+    12.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#paint",
+     "uv": [
+      1.5,
+      5.5,
+      5.0,
+      9.5
+     ]
+    },
+    "west": {
+     "texture": "#paint",
+     "uv": [
+      0,
+      5.5,
+      12.0,
+      9.5
+     ]
+    },
+    "east": {
+     "texture": "#paint",
+     "uv": [
+      4.0,
+      5.5,
+      16,
+      9.5
+     ]
+    },
+    "up": {
+     "texture": "#paint",
+     "uv": [
+      1.5,
+      0,
+      5.0,
+      12.0
+     ]
+    },
+    "down": {
+     "texture": "#paint",
+     "uv": [
+      1.5,
+      4.0,
+      5.0,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    1.0,
+    7.5,
+    9.0
+   ],
+   "to": [
+    5.5,
+    9.5,
+    11.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      2,
+      6,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      2,
+      6,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      2,
+      6,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      2,
+      6,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      2,
+      6,
+      6
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      2,
+      6,
+      6
+     ]
+    }
+   }
+  }
+ ]
+}
