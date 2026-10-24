@@ -22,7 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The child's room (0.4.74): its own furniture and toys, each one of a kind, in vanilla-style pixels. One block carries them
  * all: {@link Kind} picks the piece, {@code facing} turns it, and {@code stage} is its state of play (a lid open, a top
- * fallen over, a tower of blocks one higher). Stage 3 of the small toys is the same toy stuck to the ceiling.
+ * fallen over, a tower of blocks one higher). Stage 3 of the small toys is the mobile the room made of that toy, hanging
+ * from the ceiling above the bed (0.4.120): bears, a garland of paper dolls, alphabet blocks, planets.
  */
 public final class NurseryBlock extends Block {
     public static final MapCodec<NurseryBlock> CODEC=simpleCodec(NurseryBlock::new);
@@ -30,7 +31,7 @@ public final class NurseryBlock extends Block {
         BED_HEAD,BED_FOOT,DESK,CHAIR,TOY_CHEST,SHELF,WARDROBE_LOW,WARDROBE_HIGH,DOLLHOUSE,ROCKING_HORSE,NIGHT_LIGHT,CEILING_LAMP,MOBILE,
         RUG,TRACK,DRAWINGS,CARD,ACCOUNT,BOXES,CRIB,TRAIN,TOP,JACK_BOX,MUSIC_BOX,TEDDY,BLOCKS,BALL,DOLL;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
-        /** The small toys a reader can find stuck to the ceiling. */
+        /** The small toys the room takes, each found again as a mobile hanging from the ceiling. */
         public boolean ceilingToy(){return this==TEDDY||this==DOLL||this==BLOCKS||this==BALL;}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -68,10 +69,11 @@ public final class NurseryBlock extends Block {
             out[0]=Shapes.or(out[0],Shapes.box(a0,y0,b0,a1,y1,b1));});
         return out[0];
     }
-    private static VoxelShape ceiling(VoxelShape shape){var out=new VoxelShape[]{Shapes.empty()};shape.forAllBoxes((x0,y0,z0,x1,y1,z1)->out[0]=Shapes.or(out[0],Shapes.box(x0,1-y1,z0,x1,1-y0,z1)));return out[0];}
+    /** A mobile, from the ceiling down to its lowest piece. */
+    private static final VoxelShape HANGING=Block.box(2,4,2,14,16,14);
     private static VoxelShape shape(BlockState s){
         var k=s.getValue(KIND);int stage=s.getValue(STAGE);var all=SHAPES.computeIfAbsent(k,x->new VoxelShape[16]);int i=s.getValue(FACING).get2DDataValue()*4+stage;
-        if(all[i]==null){var shape=rotated(base(k,k.ceilingToy()&&stage==CEILING?0:stage),s.getValue(FACING));all[i]=k.ceilingToy()&&stage==CEILING?ceiling(shape):shape;}
+        if(all[i]==null)all[i]=k.ceilingToy()&&stage==CEILING?HANGING:rotated(base(k,stage),s.getValue(FACING));
         return all[i];
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return shape(s);}
