@@ -961,7 +961,8 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void elkKillingBlowDragsTheReaderIntoThePileAndTheyTearTheirWayOut(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("drag_reader",place);var b=f.base(place);
         var wake=ElkCarcassMap.WAKE.add(b.getX(),b.getY(),b.getZ());
-        h.startSequence().thenIdle(10).thenExecute(()->{elkAshore(f,p);p.setInvulnerable(false);
+        // Past the native three seconds of spawn protection, so the blow can land at all.
+        h.startSequence().thenIdle(70).thenExecute(()->{elkAshore(f,p);p.setInvulnerable(false);
             var killer=elkKiller(f,p);f.at(p,place,50.5,ElkCarcassMap.SITE_TOP+1,-138.5);killer.moveTo(b.getX()+50.5,b.getY()+ElkCarcassMap.SITE_TOP+1,b.getZ()-140);
             p.setHealth(2);p.hurt(p.damageSources().mobAttack(killer),10);
             var own=f.own(p,place);
