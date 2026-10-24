@@ -126,7 +126,7 @@ public final class GoatmanWoods {
         for(int x=-7;x<=-3;x++)put(l,b,x,4,-76,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
         // The long supper table, its top a hand above the chairs, five chairs a side turned in to it.
         for(int x=-1;x<=1;x++)for(int z=-69;z<=-61;z++)BuildBlocks.set(l,b.offset(x,1,z),TrailerTableBlock.tile(x,z),F);
-        for(int z:CHAIR_Z){put(l,b,-2,1,z,seat(Blocks.SPRUCE_STAIRS,Direction.WEST));put(l,b,2,1,z,seat(Blocks.SPRUCE_STAIRS,Direction.EAST));}
+        for(int z:CHAIR_Z){put(l,b,-2,1,z,seat(GoatmanRegistry.CHAIR.get(),Direction.WEST));put(l,b,2,1,z,seat(GoatmanRegistry.CHAIR.get(),Direction.EAST));}
         // The bathroom in the north-east corner, behind a partition, with its awning window propped open.
         BlockState partition=Blocks.BIRCH_PLANKS.defaultBlockState();
         box(l,b,3,1,-73,7,5,-73,partition);box(l,b,3,1,-76,3,5,-74,partition);
@@ -186,7 +186,11 @@ public final class GoatmanWoods {
         var at=b.offset(PORCH_LIGHT);var s=l.getBlockState(at);
         if(on&&s.isAir())l.setBlock(at,hanging(),F);else if(!on&&s.is(Blocks.LANTERN))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
     }
-    public static BlockPos bunk(int i){int side=i%2==0?-6:5;int row=i/2;return new BlockPos(side,1+(row/8)*3,-58-(row%8)*2);}
+    /**
+     * Beds stand in stacks three apart, west and east, in rows clear of the side windows (z -59, -67, -73) so an upper
+     * bunk never hides a pane. The twelve lower beds fill first; uppers go on a bunk frame above the same rows.
+     */
+    public static BlockPos bunk(int i){int side=i%2==0?-6:5;int n=i/2,row=n%6;return new BlockPos(side,n<6?1:3,-57-row*3);}
     /** A place at the table: before each chair for the first ten, then down the middle. */
     public static Vec3 plate(int i){return i<10?new Vec3(i%2==0?-.55:1.55,2.02,-60.5-2*(i/2)):new Vec3(i%2==0?-12.8:-12.2,1.02,-60.5-2*((i-10)/2));}
     /** Four fresh servings lie entirely over the actual griddle, never over the adjacent sink. */
@@ -196,9 +200,12 @@ public final class GoatmanWoods {
         count=Math.max(5,Math.min(24,count));
         for(int i=0;i<24;i++){
             BlockPos bed=b.offset(bunk(i));
+            boolean upper=bunk(i).getY()>1;
             if(i<count){var s=Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.EAST);
                 l.setBlock(bed,s.setValue(BedBlock.PART,BedPart.FOOT),F);l.setBlock(bed.east(),s.setValue(BedBlock.PART,BedPart.HEAD),F);
-            }else {if(l.getBlockState(bed).getBlock() instanceof BedBlock)l.setBlock(bed,Blocks.AIR.defaultBlockState(),F);if(l.getBlockState(bed.east()).getBlock() instanceof BedBlock)l.setBlock(bed.east(),Blocks.AIR.defaultBlockState(),F);}
+                if(upper)for(var part:TrailerBunkBlock.Part.values()){var at=part==TrailerBunkBlock.Part.FOOT?bed.below():bed.below().east();if(l.getBlockState(at).isAir())l.setBlock(at,TrailerBunkBlock.of(part),F);}
+            }else {if(l.getBlockState(bed).getBlock() instanceof BedBlock)l.setBlock(bed,Blocks.AIR.defaultBlockState(),F);if(l.getBlockState(bed.east()).getBlock() instanceof BedBlock)l.setBlock(bed.east(),Blocks.AIR.defaultBlockState(),F);
+                if(upper)for(var at:new BlockPos[]{bed.below(),bed.below().east()})if(l.getBlockState(at).is(GoatmanRegistry.BUNK.get()))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);}
         }
         var displays=l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(PLATE)&&!e.getTags().contains(BRAT));
         for(var d:displays)if(d.getPersistentData().getInt("Plate")>=count)d.discard();
@@ -208,14 +215,15 @@ public final class GoatmanWoods {
             d.addTag(PLATE);d.getPersistentData().putInt("Plate",i);d.moveTo(plate(i).add(b.getX(),b.getY(),b.getZ()));l.addFreshEntity(d);
         }
     }
-    /** Fresh rounds have one actual chair and supported place setting per expected diner. */
+    /** All ten table chairs always stand, the far end included; only the overflow chairs follow the expected diners. */
     public static void supperChairs(ServerLevel l,BlockPos b,int count){
         count=Math.max(0,Math.min(24,count));
         for(int i=0;i<24;i++){
             boolean west=i%2==0;int row=i<10?i/2:(i-10)/2,z=-61-row*2,x=i<10?(west?-2:2):(west?-14:-12),y=i<10?1:0;
             var at=b.offset(x,y,z);var s=l.getBlockState(at);
-            if(i<count){if(s.isAir()||s.is(Blocks.SPRUCE_STAIRS))l.setBlock(at,seat(Blocks.SPRUCE_STAIRS,west?Direction.WEST:Direction.EAST),F);}
-            else if(s.is(Blocks.SPRUCE_STAIRS))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
+            boolean chair=s.is(Blocks.SPRUCE_STAIRS)||s.is(GoatmanRegistry.CHAIR.get());
+            if(i<count||i<10){if(s.isAir()||chair)l.setBlock(at,seat(GoatmanRegistry.CHAIR.get(),west?Direction.WEST:Direction.EAST),F);}
+            else if(chair)l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
         }
         if(count>10)for(int z=-61;z>=-61-2*((count-11)/2);z--)for(int x=-13;x<=-13;x++){
             var at=b.offset(x,0,z);if(l.getBlockState(at).isAir())l.setBlock(at,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);

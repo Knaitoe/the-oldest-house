@@ -8,6 +8,8 @@ import net.minecraft.nbt.CompoundTag;
 public final class GoatmanFear {
     public static final int BRACE=1,WATCH=2,PACE=3,COMFORT=4,TREMBLE=5,EARS=6,STARTLE=7;
     public static final int CONFUSION=1,FEAR=2,TERROR=3,LINE_TICKS=100;
+    /** Set by the first real knock on the front door; until then nobody talks about the door being knocked or pushed. */
+    public static final String DOOR_KNOCKED="DoorKnocked0117";
     private static final String[][] WORDS={
         {"Near the door: Was somebody going back outside?","At the latch: It's pushing back. Can somebody help me?","At the latch: No. No, we're not opening it."},
         {"By the window: Who was that going past?","By the window: It was here. Now it's on the other side.","By the window: Don't make me look again."},
@@ -95,6 +97,7 @@ public final class GoatmanFear {
                 for(int attempt=0;attempt<7;attempt++){
                     int role=1+Math.floorMod(cursor++,7);
                     if(children.stream().noneMatch(c->role(c.getPersistentData().getInt(GoatmanVignette.INDEX),run)==role))continue;
+                    if(!run.getBoolean(DOOR_KNOCKED)&&(role==STARTLE||role==BRACE&&stage(run)>CONFUSION))continue;
                     pending=(role-1)*3+stage(run);break;
                 }
                 run.putInt("FearCursor0472",cursor);

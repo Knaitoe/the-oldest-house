@@ -280,7 +280,7 @@ public final class GoatmanStalking {
         if(!window&&leg==route.length-1&&r.contains("CircuitGoal0494"))r.putInt("Circuits0494",r.getInt("Circuits0494")+1);
         if(window&&leg==route.length-1){impact(l,b,r,c,GoatmanWoods.WINDOW,2);return;}
         if(!window){
-            BlockPos hit=switch(leg){case 5->new BlockPos(-8,2,-59);case 6->new BlockPos(-8,2,-67);case 7->new BlockPos(-8,2,-73);case 9->new BlockPos(0,2,-77);case 11->GoatmanWoods.WINDOW;case 12->new BlockPos(8,2,-67);case 13->new BlockPos(8,2,-59);default->null;};
+            BlockPos hit=switch(leg){case 0->r.getInt("Circuits0494")==0?GoatmanWoods.DOOR:null;case 5->new BlockPos(-8,2,-59);case 6->new BlockPos(-8,2,-67);case 7->new BlockPos(-8,2,-73);case 9->new BlockPos(0,2,-77);case 11->GoatmanWoods.WINDOW;case 12->new BlockPos(8,2,-67);case 13->new BlockPos(8,2,-59);default->null;};
             if(hit!=null){face(c,Vec3.atCenterOf(b.offset(hit)));impact(l,b,r,c,hit,leg%3==0?2:1);r.putInt("StalkPause0465",clock+18+c.getRandom().nextInt(29));
                 if(GoatmanWindowCircuit.sideWindow(leg)){GoatmanWindowCircuit.start(l,r,c,clock);r.putBoolean("StalkChange0465",true);}
                 else if(!r.contains("CircuitGoal0494"))r.putBoolean("StalkChange0465",true);}
@@ -289,10 +289,12 @@ public final class GoatmanStalking {
     private static void face(GoatmanChild c,Vec3 p){var d=p.subtract(c.position());float yaw=(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90;c.setYRot(yaw);c.setYHeadRot(yaw);c.yBodyRot=yaw;}
     public static void assault(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> players,int clock){
         // These native world sounds remain audible when the body is blocked or temporarily untracked.
-        BlockPos[] sides={new BlockPos(-8,2,-67),new BlockPos(0,2,-77),new BlockPos(8,2,-67)};
+        // It starts at the front door, then races round: one side, the back, the other side.
+        BlockPos[] sides={GoatmanWoods.DOOR,new BlockPos(-8,2,-67),new BlockPos(0,2,-77),new BlockPos(8,2,-67)};
+        int[] at={120,190,250,310};
         int cues=r.getInt("PressureCues0472");
-        for(int i=0;i<sides.length;i++)if(clock>=120*(i+1)&&(cues&(1<<i))==0){
-            impact(l,b,r,null,sides[i],i==1?2:1);r.putInt("PressureCues0472",cues|(1<<i));break;
+        for(int i=0;i<sides.length;i++)if(clock>=at[i]&&(cues&(1<<i))==0){
+            impact(l,b,r,null,sides[i],i==2?2:1);r.putInt("PressureCues0472",cues|(1<<i));break;
         }
         if(!r.contains("AssaultAt0465")){if(clock<450)return;r.putInt("AssaultAt0465",clock);}
         int elapsed=clock-r.getInt("AssaultAt0465");
@@ -317,7 +319,7 @@ public final class GoatmanStalking {
     }
     public static void impact(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,BlockPos relative,int force){
         var at=b.offset(relative);var state=l.getBlockState(at);var center=Vec3.atCenterOf(at);boolean door=relative.equals(GoatmanWoods.DOOR);
-        GoatmanFear.begin(r);
+        GoatmanFear.begin(r);if(door)r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);
         var toward=c==null?new Vec3(relative.getX()< -4?-1:relative.getX()>4?1:0,0,relative.getZ()<=-77?-1:1):c.position().subtract(center);double x=center.x,z=center.z;
         if(Math.abs(toward.x)>Math.abs(toward.z))x+=Math.signum(toward.x)*.49;else z+=Math.signum(toward.z)*.49;
         double y=center.y+(door?.55:0);
