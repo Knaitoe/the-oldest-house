@@ -160,7 +160,8 @@ public final class SceneExteriors {
         }
         for(int x:new int[]{-6,6})for(int z:new int[]{-57,-75}){set(x,0,z,Blocks.POLISHED_ANDESITE);set(x,-1,z,Blocks.STONE_BRICKS);}
         for(int x=-3;x<=3;x++)for(int z=-54;z<=-52;z++)if(x!=0){set(x,0,z,Blocks.SPRUCE_SLAB);set(x,-1,z,Blocks.SPRUCE_LOG);}
-        for(int x:new int[]{-3,3}){for(int y=1;y<=3;y++)add(x,y,-53,Blocks.SPRUCE_FENCE);}
+        // The porch posts stand on the log sill, through the deck, rather than hovering over the slab.
+        for(int x:new int[]{-3,3}){set(x,0,-53,Blocks.SPRUCE_FENCE);for(int y=1;y<=3;y++)add(x,y,-53,Blocks.SPRUCE_FENCE);}
         for(int x=-3;x<=3;x++)for(int z=-55;z<=-52;z++)add(x,4,z,Blocks.SPRUCE_SLAB);
         // The porch light, which goes out when the woods go quiet.
         add(0,3,-53,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));

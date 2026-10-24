@@ -177,6 +177,15 @@ public final class ElkLotNight {
     // ------------------------------------------------------------------------------------------------ the elk
     private static final double[][] CHARGE={{13.5,-6.5},{1.5,-12.5},{-2,-15.5},{-2,-21.0}},STUMBLE={{-2,-15.5},{-3.5,-13.5}},
         GO={{-2,-16.0},{-2,-25.0},{1.5,-36.5},{1.5,-41.0},{1.5,-44.0},{3.5,-52.0},{4.5,-72.5}};
+    /** The way out, rounded off so the elk runs it in one long curve rather than corner to corner. */
+    private static final double[][] GO_PATH=smooth(GO,3);
+    private static double[][] smooth(double[][] points,int passes){
+        var out=new ArrayList<double[]>(Arrays.asList(points));
+        for(int n=0;n<passes;n++){var next=new ArrayList<double[]>();next.add(out.get(0));
+            for(int i=0;i+1<out.size();i++){var a=out.get(i);var c=out.get(i+1);next.add(new double[]{a[0]*.75+c[0]*.25,a[1]*.75+c[1]*.25});next.add(new double[]{a[0]*.25+c[0]*.75,a[1]*.25+c[1]*.75});}
+            next.add(out.get(out.size()-1));out=next;}
+        return out.toArray(double[][]::new);
+    }
     /** Where the elk waits in the field, ahead of anyone walking the lane. */
     public static final Vec3 REST=new Vec3(4.5,0,-72.5);
     static void hide(ServerLevel l,BlockPos b,LiteraryElk e){e.setInvisible(true);e.setNoGravity(true);e.moveTo(b.getX()+24.5,b.getY(),b.getZ()+.5,90,0);turn(e,90);e.setDeltaMovement(Vec3.ZERO);}
@@ -205,9 +214,10 @@ public final class ElkLotNight {
                 boolean close=p!=null&&p.distanceToSqr(e)<25;
                 if(seen>=LOOKED||close||t-w.getInt("ElkLook")>=LOOK_MAX){w.putInt("ElkStage",5);w.putInt("ElkLeg",0);l.playSound(null,e.blockPosition(),SoundEvents.CAMEL_AMBIENT,SoundSource.NEUTRAL,1F,.5F);}
             }
-            case 5->{ // Through the broken gap, over the ditch, up the lane.
-                if(walk(e,rel(b,GO[leg][0],GO[leg][1]),leg<2?.24:.16)){if(leg+1<GO.length)w.putInt("ElkLeg",leg+1);else w.putInt("ElkStage",6);}
-                if(t%10==0)l.playSound(null,e.blockPosition(),LiteraryRegistry.HOOVES.get(),SoundSource.NEUTRAL,.6F,1F);
+            case 5->{ // Through the broken gap, over the ditch and up the lane at a run, in one curve.
+                double speed=leg<GO_PATH.length/3?.5:.42;
+                for(int k=0;k<3&&w.getInt("ElkStage")==5;k++){leg=w.getInt("ElkLeg");if(!walk(e,rel(b,GO_PATH[leg][0],GO_PATH[leg][1]),speed))break;if(leg+1<GO_PATH.length)w.putInt("ElkLeg",leg+1);else w.putInt("ElkStage",6);}
+                if(t%5==0)l.playSound(null,e.blockPosition(),LiteraryRegistry.HOOVES.get(),SoundSource.NEUTRAL,.8F,1.15F);
             }
             default->{ // Waiting in the field, watching whoever comes.
                 var at=rel(b,REST.x,REST.z);if(e.position().distanceToSqr(at)>.04)walk(e,at,.16);
@@ -240,12 +250,18 @@ public final class ElkLotNight {
             var who=MEN.get(i);var a=cast(l,w,who);if(a==null)continue;var data=a.getPersistentData();int leg=data.getInt("Leg0478");
             var capture=ElkLotEnding.menTarget(l.getServer());if(capture!=null){beam(l,b,w,i,a,capture);continue;}
             if(a.gesture()==4){a.gesture(0);data.remove("ReturnToBar0492");}
+            // A man left inside (after a capture, or held up) goes out the same way, by the side door, which he opens.
+            if(leg>=OUT[i].length&&inBar(a.position(),b)){leg=1;data.putInt("Leg0478",leg);}
+            openSideDoor(l,b,a);
             if(leg<OUT[i].length){if(walk(a,rel(b,OUT[i][leg][0],OUT[i][leg][1]),.16))data.putInt("Leg0478",leg+1);beam(l,b,w,i,a,null);continue;}
             var p=nearest(a,here,24);
             var spot=(stage>=2?HERDING:SEARCHING)[i];var goal=rel(b,spot[0],spot[1]);
-            if(stage>=3&&p!=null&&!ElkLotNight.inField(p.position(),b)&&!ElkLotNight.inBar(p.position(),b)){var away=a.position().subtract(p.position()).multiply(1,0,1);goal=away.lengthSqr()>3.3*3.3?p.position().add(away.normalize().scale(3.3)):a.position();}
-            // They keep their distance and never touch anyone: near a reader a man steps back and round them toward where he is going.
-            if(p!=null&&p.distanceToSqr(a)<2.8*2.8){var away=new Vec3(a.getX()-p.getX(),0,a.getZ()-p.getZ());away=away.lengthSqr()<1e-4?new Vec3(1,0,0):away.normalize();
+            // Once they have stopped asking, they close in round the reader, as the herd does; their hands end it.
+            boolean hostile=stage>=3&&p!=null&&!ElkLotNight.inField(p.position(),b)&&!ElkLotNight.inBar(p.position(),b);
+            if(hostile){double angle=i*Math.PI*2/3;goal=p.position().add(Math.cos(angle)*.85,0,Math.sin(angle)*.85);}
+            // Before that they keep their distance and never touch anyone: near a reader a man steps back and round them.
+            if(hostile)walk(a,goal,.2);
+            else if(p!=null&&p.distanceToSqr(a)<2.8*2.8){var away=new Vec3(a.getX()-p.getX(),0,a.getZ()-p.getZ());away=away.lengthSqr()<1e-4?new Vec3(1,0,0):away.normalize();
                 var side=new Vec3(-away.z,0,away.x);if(side.dot(goal.subtract(a.position()))<0)side=side.scale(-1);var step=side.scale(.8).add(away.scale(.5)).normalize().scale(.6);
                 walk(a,new Vec3(a.getX()+step.x,b.getY(),a.getZ()+step.z),.14);}
             else walk(a,goal,.12);
@@ -258,6 +274,10 @@ public final class ElkLotNight {
             if(a!=null&&p!=null){var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),p.getUUID(),PLACE);
                 String[] pool=own.getBoolean("ElkWounded")&&n%4==3?WOUNDED:OUTSIDE[Math.max(0,stage)][i];speak(a,who,said(who,pool[(n/MEN.size())%pool.length],p),here);}
         }
+    }
+    static void openSideDoor(ServerLevel l,BlockPos b,LivingEntity a){
+        var doorway=b.offset(ElkLot.SIDE_DOOR);if(a.distanceToSqr(Vec3.atCenterOf(doorway))>6.25)return;var state=l.getBlockState(doorway);
+        if(state.getBlock() instanceof DoorBlock door&&!state.getValue(DoorBlock.OPEN))door.setOpen(a,l,state,doorway,true);
     }
     /** A flashlight: a real light where its beam lands, moved as it swings, and a few motes along the way. */
     private static void beam(ServerLevel l,BlockPos b,CompoundTag w,int i,LiteraryActor a,@Nullable ServerPlayer target){

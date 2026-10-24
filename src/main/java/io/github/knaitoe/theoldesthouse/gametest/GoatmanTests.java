@@ -355,6 +355,16 @@ public final class GoatmanTests {
             h.assertTrue(!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"fear and dialogue do not award the unfinished vigil");h.succeed();
         });
     }
+    /** 0.4.118: nobody says the door is being knocked or pushed until something has actually knocked on it. */
+    @GameTest(template="empty")
+    public static void nobodyTalksAboutTheDoorUntilSomethingKnocksOnIt(GameTestHelper h){
+        var children=new ArrayList<GoatmanChild>();for(int i=0;i<8;i++){var c=GoatmanRegistry.CHILD.get().create(h.getLevel());h.assertTrue(c!=null,"a native cousin exists");c.getPersistentData().putInt(GoatmanVignette.INDEX,i);children.add(c);}
+        var run=new CompoundTag();run.putInt("Wrong",0);GoatmanFear.begin(run);run.putInt("FearAge0472",400);var before=new HashSet<Integer>();var after=new HashSet<Integer>();
+        for(int t=0;t<3000;t++){GoatmanFear.tick(run,children,t);int line=run.getInt("FearLine0472");if(line>0)before.add(line);}
+        h.assertTrue(!before.isEmpty()&&before.stream().noneMatch(n->n==2||n==3||n>=19&&n<=21),"no line about knocking or the door pushing back before a knock: "+before);
+        run.putBoolean(GoatmanFear.DOOR_KNOCKED,true);for(int t=3000;t<6000;t++){GoatmanFear.tick(run,children,t);int line=run.getInt("FearLine0472");if(line>0)after.add(line);}
+        h.assertTrue(after.stream().anyMatch(n->n==3||n==21),"after the first knock the door lines come back: "+after);h.succeed();
+    }
     @GameTest(template="empty")
     public static void deferredCousinWordsSurviveAPriorityDemandAndTheActualPacketCodec(GameTestHelper h){
         var r=new CompoundTag();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",110);r.putInt("Demand",104);r.putInt("DemandAt",100);r.putInt("FearLine0472",7);r.putInt("FearAt0472",105);
@@ -420,9 +430,9 @@ public final class GoatmanTests {
             var it=f.cousin(r.getInt("Wrong")).orElseThrow();body[0]=it.getUUID();var cell=f.b.offset(-6,0,-50);it.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+.5);
             for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++)if(Math.abs(x)==1||Math.abs(z)==1)for(int y=0;y<4;y++){var at=cell.offset(x,y,z);barriers.put(at,f.l.getBlockState(at));f.l.setBlockAndUpdate(at,Blocks.OBSIDIAN.defaultBlockState());}begun[0]=true;
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>135,"the first spatial cue has sounded")).thenExecute(()->{
-            h.assertTrue(GoatmanFear.stage(f.run())==GoatmanFear.CONFUSION&&f.run().getInt("PressureCues0472")==1&&f.run().getInt("StalkLeg0465")==0,"a real collision stall cannot suppress the first knock or confused response");
+            h.assertTrue(GoatmanFear.stage(f.run())==GoatmanFear.CONFUSION&&f.run().getInt("PressureCues0472")==1&&f.run().getBoolean(GoatmanFear.DOOR_KNOCKED)&&f.run().getLong("LastImpactPos0465")==f.b.offset(GoatmanWoods.DOOR).asLong()&&f.run().getInt("StalkLeg0465")==0,"a real collision stall cannot suppress the first knock, on the front door, or the confused response");
         }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465"),"all seven audible demands finish on their own occupied clock")).thenExecute(()->{
-            var r=f.run();h.assertTrue(demands.size()==7&&r.getInt("PressureCues0472")==7&&r.getInt("FinalBlows0465")>=12&&r.getInt("StalkLeg0465")==0&&r.getInt("StalkWindowLeg0465")==0,"words, surrounding cues and hard blows remain present without skipping any blocked circuit leg");
+            var r=f.run();h.assertTrue(demands.size()==7&&r.getInt("PressureCues0472")==15&&r.getInt("FinalBlows0465")>=12&&r.getInt("StalkLeg0465")==0&&r.getInt("StalkWindowLeg0465")==0,"words, surrounding cues and hard blows remain present without skipping any blocked circuit leg");
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.VIGIL0465+200,"the physical obstruction remains beyond the original dawn time")).thenExecute(()->{
             var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("ExtraState")==GoatmanVignette.X_DOOR&&!r.contains("NightWindowAt0472")&&r.getInt("StalkLeg0465")==0,"neither an already open window nor the dawn deadline can skip the stalled circuit");
             var d=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(d.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "part=foot": {
+      "model": "the_oldest_house:block/trailer_bunk_foot"
+    },
+    "part=head": {
+      "model": "the_oldest_house:block/trailer_bunk_head"
+    }
+  }
+}

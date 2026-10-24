@@ -61,6 +61,9 @@ public final class ElkLotEnding {
         if(side.isEmpty()){
             if(ElkLotNight.inBar(p.position(),b)&&ElkLotNight.stage(night)>=3){side=MEN;own.putString("EndingSide0492",side);p.displayClientMessage(Component.literal("You go back to the lights. The men turn with you. Their hands are out."),false);}
             else if(p.getZ()<b.getZ()-54){side=HERD;own.putString("EndingSide0492",side);p.displayClientMessage(Component.literal("You leave the voices behind. The stalks part without wind. There are bodies beneath the eyes."),false);}
+            // Contact chooses too: a man's hand outside, or a shoulder of the herd by the gap.
+            else if(ElkLotNight.stage(night)>=3&&men(p).stream().anyMatch(a->touches(p,a))){side=MEN;own.putString("EndingSide0492",side);p.displayClientMessage(Component.literal("A hand closes on your arm. Their lights are in your eyes."),false);}
+            else if(herdTouches(p)){side=HERD;own.putString("EndingSide0492",side);p.displayClientMessage(Component.literal("Something warm presses against your side. The eyes are at your height now."),false);}
         }
         var bodies=new ArrayList<LivingEntity>();
         if(MEN.equals(side)){
@@ -69,7 +72,8 @@ public final class ElkLotEnding {
             var men=men(p);for(int i=0;i<men.size();i++){var a=men.get(i);a.gesture(4);a.setNoGravity(true);double angle=i*Math.PI*2/3;int leg=a.getPersistentData().getInt("ReturnToBar0492");double[][] route={{-12.5,ElkLot.SIDE_DOOR.getZ()+.5},{-14.5,ElkLot.SIDE_DOOR.getZ()+.5},{-16.5,-22.5}};
                 var doorway=b.offset(ElkLot.SIDE_DOOR);var state=p.serverLevel().getBlockState(doorway);
                 if(a.distanceToSqr(Vec3.atCenterOf(doorway))<6.25&&state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock door&&!state.getValue(net.minecraft.world.level.block.DoorBlock.OPEN))door.setOpen(a,p.serverLevel(),state,doorway,true);
-                if(leg==0&&ElkLotNight.inBar(a.position(),b))leg=route.length;
+                // Outside, they come to the reader where the reader stands; only a reader in the bar is walked back to.
+                if(leg==0&&ElkLotNight.inBar(a.position(),b)||!ElkLotNight.inBar(p.position(),b))leg=route.length;
                 if(leg<route.length){var goal=new Vec3(b.getX()+route[leg][0],b.getY(),b.getZ()+route[leg][1]);if(step(a,goal,.35))a.getPersistentData().putInt("ReturnToBar0492",leg+1);}
                 else step(a,p.position().add(Math.cos(angle)*.85,0,Math.sin(angle)*.85),.35);bodies.add(a);}
         }else{
@@ -78,7 +82,7 @@ public final class ElkLotEnding {
         }
         if(side.isEmpty())return;
         int ticks=own.getInt("CaptureTicks0492");
-        if(ticks==0){if(bodies.stream().filter(a->touches(p,a)).count()<2)return;own.putBoolean("CaptureWitness0492",true);own.putDouble("CaptureX0492",p.getX());own.putDouble("CaptureZ0492",p.getZ());}
+        if(ticks==0){if(bodies.stream().noneMatch(a->touches(p,a)))return;own.putBoolean("CaptureWitness0492",true);own.putDouble("CaptureX0492",p.getX());own.putDouble("CaptureZ0492",p.getZ());}
         if(bodies.stream().noneMatch(a->a.distanceToSqr(p)<36)){release(p);own.putInt("CaptureTicks0492",0);return;}
         boolean resume=!HELD.containsKey(p.getUUID());ticks+=5;own.putInt("CaptureTicks0492",ticks);HELD.put(p.getUUID(),p);var speed=p.getAttribute(Attributes.MOVEMENT_SPEED);if(speed!=null&&!speed.hasModifier(HOLD))speed.addTransientModifier(new AttributeModifier(HOLD,-.9,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         p.stopRiding();p.stopFallFlying();
@@ -90,6 +94,8 @@ public final class ElkLotEnding {
         p.teleportTo(p.serverLevel(),porch.getX()+.5,porch.getY(),porch.getZ()+.5,180,0);release(p);own.putInt("CaptureTicks0492",0);LiteraryVignettes.ready(p,ElkLot.PLACE,own,side);hide(p);
         p.displayClientMessage(Component.literal("On the noticeboard, the clipping has been turned over. It gives your name."),false);
     }
+    private static boolean herdTouches(ServerPlayer p){var w=LiteraryVignettes.shared(LabyrinthData.get(p.server),ElkLot.PLACE);
+        for(int i=0;i<3;i++){String key="EndingHerd0492_"+i+"_"+p.getUUID();if(w.hasUUID(key)&&p.serverLevel().getEntity(w.getUUID(key)) instanceof LiteraryElk elk&&!elk.isInvisible()&&touches(p,elk))return true;}return false;}
     private static void hide(ServerPlayer p){var w=LiteraryVignettes.shared(LabyrinthData.get(p.server),ElkLot.PLACE);for(int i=0;i<3;i++){String key="EndingHerd0492_"+i+"_"+p.getUUID();if(w.hasUUID(key)&&p.serverLevel().getEntity(w.getUUID(key)) instanceof LiteraryElk elk)elk.setInvisible(true);}for(int side:new int[]{-1,1}){String key="Herd"+side+"_"+p.getUUID();if(w.hasUUID(key)&&p.serverLevel().getEntity(w.getUUID(key)) instanceof LiteraryActor eye)eye.setInvisible(true);}if(menTarget(p.server)==null)for(var a:men(p))if(a.gesture()==4){a.gesture(0);a.getPersistentData().remove("ReturnToBar0492");}}
     public static String account(String name,CompoundTag own){return switch(own.getString("Outcome")){
         case MEN->"LAST SEEN AT THE LAST STOP\n\nThe paper gave my name as "+name+". The men said they had taken me inside to calm me down. Marla said she had gone to wash the glasses. There was no photograph from inside the bar.\n\nI chose the hands I could recognise. In the doorway, one held each arm. The third took the light away. The jukebox never stopped."+ElkLotNight.tab(own);

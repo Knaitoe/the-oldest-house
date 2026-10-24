@@ -269,6 +269,11 @@ public final class GoatmanVignette {
         Vec3 here=c.position(),delta=target.subtract(here);double length=delta.length();
         Vec3 to=length<=speed?target:here.add(delta.scale(speed/length));
         float yaw=Math.abs(delta.x)+Math.abs(delta.z)>.01?(float)(Math.atan2(delta.z,delta.x)*180/Math.PI)-90:c.getYRot();
+        // Walking cousins file in rather than stepping through one another: wait while another walking cousin is just
+        // ahead. Head-on, the higher index gives way; nobody waits more than a second and a half.
+        if(!hurried&&!physical&&length>1e-4&&waitBehind(c,b,l,here,to,delta)){int wait=c.getPersistentData().getInt("Yield0118")+1;c.getPersistentData().putInt("Yield0118",wait);
+            if(wait<30){c.setYRot(yaw);c.setYHeadRot(yaw);c.yBodyRot=yaw;c.animate(0,false,false);return false;}}
+        c.getPersistentData().remove("Yield0118");
         if(physical&&!hurried){c.move(MoverType.SELF,to.subtract(here));c.setDeltaMovement(Vec3.ZERO);c.setYRot(yaw);}
         else c.moveTo(to.x,to.y,to.z,yaw,0);
         double moved=c.position().distanceTo(here);c.setYHeadRot(yaw);c.yBodyRot=yaw;c.animate(moved,false,false);
@@ -276,6 +281,18 @@ public final class GoatmanVignette {
             if(step>.7){l.playSound(null,c.blockPosition(),c.getY()>=b.getY()+.7?SoundEvents.WOOD_STEP:SoundEvents.GRASS_STEP,SoundSource.NEUTRAL,.3F,1.2F);step=0;}c.getPersistentData().putDouble("Step",step);}
         if(c.position().distanceToSqr(target)<1e-6){route.remove(0);c.getPersistentData().put("Route",route);}
         return route.isEmpty();
+    }
+    private static boolean waitBehind(GoatmanChild c,BlockPos b,ServerLevel l,Vec3 here,Vec3 to,Vec3 delta){
+        // Only the supper walk in files through the door; the runner's exchange keeps its own timing.
+        if(!goal(c).startsWith("seat"))return false;int mine=c.getPersistentData().getInt(INDEX);
+        for(var o:l.getEntitiesOfClass(GoatmanChild.class,new AABB(to,to).inflate(.8),e->e!=c&&e.isAlive()&&!e.isSleeping()&&e.getTags().contains(ACTOR)&&e.getPersistentData().contains("Route")&&goal(e).startsWith("seat"))){
+            Vec3 at=o.position();if(at.distanceToSqr(to)>.49||at.subtract(here).dot(delta)<=0)continue;
+            var route=o.getPersistentData().getList("Route",Tag.TAG_COMPOUND);if(route.isEmpty())continue;
+            var next=route.getCompound(0);Vec3 heading=abs(new Vec3(next.getDouble("X"),next.getDouble("Y"),next.getDouble("Z")),b);
+            boolean headOn=heading.subtract(at).dot(here.subtract(at))>0;
+            if(!headOn||mine>o.getPersistentData().getInt(INDEX))return true;
+        }
+        return false;
     }
     /** Admission owns its route until the same body is indoors; morning cannot interrupt it. */
     private static void windowEntry(GoatmanChild c,BlockPos b,CompoundTag r,ServerLevel l){
@@ -610,7 +627,9 @@ public final class GoatmanVignette {
         if(serves&&clock==SERVE_HINT)say(enrolled,"A cousin: Go grab 'em from the cooler by the kitchen counter. Four in each pack. Cook them on the griddle, then put one on everybody's plate.");
         if(serves&&clock==(fresh(r)?2460:WINDOW_HINT))say(enrolled,"A cousin: Is anyone else getting cold back there?");
         if(!serves&&clock==OLD_WINDOW_HINT)say(enrolled,"A cousin: Somebody shut the bathroom window. Bugs are getting in.");
-        if(clock==leaves&&r.getInt("RunnerState")==R_HOME){r.putInt("RunnerState",R_LEAVING);say(enrolled,"A cousin: Generator's out of gas. I'll run get some from the truck. Back before dark.");}
+        // The last frank on its plate sends him for gas straight away; the clock still sends him if nobody serves.
+        boolean served=fresh(r)&&serves&&r.getBoolean("MealReady0465")&&clock<leaves;
+        if((clock==leaves||served)&&r.getInt("RunnerState")==R_HOME){r.putInt("RunnerState",R_LEAVING);say(enrolled,"A cousin: Generator's out of gas. I'll run get some from the truck. Back before dark.");}
         if(clock==supper){if(r.getInt("ExtraState")==X_ACTIVITY)r.putInt("ExtraState",X_SUPPER);GoatmanWoods.door(l,b,true);say(enrolled,"A cousin: Food's on the table. Come inside before it gets cold.");}
         if(!fresh(r)&&clock==GRUMBLE)say(enrolled,"A cousin: Who had two? There was one for everybody.");
         if(!fresh(r)&&clock==EXTRA_OUT&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
@@ -621,7 +640,7 @@ public final class GoatmanVignette {
                 setRoute(c,back,"step");r.putInt("RunnerState",R_RETURNING);say(enrolled,"From the trail: “Wait up! Don't lock it!”");}
         }
         if(r.getInt("RunnerState")==R_KNOCKING&&!GoatmanWoods.doorOpen(l,b)){
-            int beat=clock%60;if(beat==0||beat==4||beat==9)knock(l,b,enrolled);
+            int beat=clock%60;if(beat==0||beat==4||beat==9){knock(l,b,enrolled);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);}
             if(beat==0){int line=(clock/60)%RUNNER_LINES.length;r.putInt("Demand",-(line+1));r.putInt("DemandAt",clock);}
         }
         if(clock==silence){
@@ -659,7 +678,7 @@ public final class GoatmanVignette {
         GoatmanWoods.door(l,b,false);
         if(outside(r)){
             if(fresh(r))GoatmanStalking.assault(l,b,r,enrolled,clock);
-            else if(clock>=KNOCK_FROM&&clock<KNOCK_UNTIL){int beat=(clock-KNOCK_FROM)%80;if(beat==0||beat==7||beat==15){GoatmanFear.begin(r);hammer(l,b,enrolled,beat==0);}
+            else if(clock>=KNOCK_FROM&&clock<KNOCK_UNTIL){int beat=(clock-KNOCK_FROM)%80;if(beat==0||beat==7||beat==15){GoatmanFear.begin(r);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);hammer(l,b,enrolled,beat==0);}
                 if(beat==0){r.putInt("Demand",1+((clock-KNOCK_FROM)/200)%LEGACY_MIMIC_LINES.length);r.putInt("DemandAt",clock);}}
             // The window: left open, it is how it gets in.
             // A timed admission cannot cancel a physically unfinished circuit.

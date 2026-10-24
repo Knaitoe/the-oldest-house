@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "the_oldest_house:block/trailer_chair"
+    },
+    "facing=south": {
+      "model": "the_oldest_house:block/trailer_chair",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "the_oldest_house:block/trailer_chair",
+      "y": 180
+    },
+    "facing=north": {
+      "model": "the_oldest_house:block/trailer_chair",
+      "y": 270
+    }
+  }
+}
