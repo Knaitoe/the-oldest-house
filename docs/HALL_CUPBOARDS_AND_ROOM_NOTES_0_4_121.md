@@ -14,6 +14,8 @@ The impossible approach used three vanilla barrels as cupboard fronts. They rema
 
 Two native regression cases reproduce the quiet room's book plus two papers and the separate side-room case. They verify original lectern/book identity, independence across walls, stable paper coordinates, authored-scene exclusion and no restocking after saved-data reload. The existing hallway/bedroom regression now uses each of the three fronts to open its original native inventory and checks physical passage beside them.
 
+The native client proof also draws the original barrel row and the fitted row side by side with production block models, checks all four cupboard facings, and requires `native-hall-cupboards.png` plus its completion marker before the existing 105-view architecture proof.
+
 Resource JSON parsing, model bounds and the unchanged tracked PNG check pass locally. The workspace does not have JDK 21 or Gradle, so compilation and native execution run in the repository's existing CI. The 729-case corpus, twelve exact-source jobs and prior native architecture/GPU/client/reconnect proofs remain required before calling this candidate verified.
 
 No protocol, layout or Witness change: protocol 88; labyrinth 46; manor 2; 52 eligible sources, 39 required, at least two kinds, three endings.
