@@ -20,23 +20,32 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** Cutaways of server-generated scenes, rendered with the shipped native block models and textures. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class SceneVisualProof extends Screen {
     private record Voxel(int x,int y,int z,BlockState state){}
     private final List<Path> files;
+    private final boolean environment;
+    private static boolean environmentLaunched;
     private final List<Voxel> voxels=new ArrayList<>();
     private int index,frames;private String name;private double cx,cz,cy,span;
     private final LiteraryRenderers.CastModel body;private final LiteraryRenderers.ElkModel elk;
     private static boolean dead(BlockState s){if(!s.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.PROP.get()))return false;var k=s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.KIND);return k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CARCASS||k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.GUEST_BODY||k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CREW_BODY;}
-    public SceneVisualProof()throws Exception{
+    @SubscribeEvent public static void launch(ClientTickEvent.Post e)throws Exception{
+        var mc=Minecraft.getInstance();
+        if(Boolean.getBoolean("the_oldest_house.uncannyEnvironmentSmoke")&&!environmentLaunched&&mc.screen!=null&&mc.getOverlay()==null){environmentLaunched=true;mc.options.guiScale().set(2);mc.resizeDisplay();mc.setScreen(new SceneVisualProof(true));}
+    }
+    public SceneVisualProof()throws Exception{this(false);}
+    private SceneVisualProof(boolean environment)throws Exception{
         super(Component.literal("Native scene architecture"));
+        this.environment=environment;
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
-        try(var stream=Files.list(Path.of("../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=99+UncannyRooms.PLACES.size();
+        try(var stream=Files.list(Path.of(environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
+        int expected=environment?10:99+UncannyRooms.PLACES.size();
         if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier plus every uncanny room), found "+files.size());
-        for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
+        if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
         load();
     }
     private void load()throws Exception{
@@ -72,10 +81,11 @@ public final class SceneVisualProof extends Screen {
         for(var p:points)out.addVertex(matrix,p[0],p[1],p[2]).setColor(63,118,228,185).setUv(p[3],p[4]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(0,1,0);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof SceneVisualProof s)||++s.frames<3)return;
-        Path folder=Path.of("../build/font-smoke/scenes");Files.createDirectories(folder);
+        var mc=Minecraft.getInstance();if(!(mc.screen instanceof SceneVisualProof s)||(!s.environment&&!Boolean.getBoolean("the_oldest_house.fontSmoke"))||++s.frames<3)return;
+        Path folder=Path.of(s.environment?"../build/font-smoke/uncanny-environments":"../build/font-smoke/scenes");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
         if(++s.index<s.files.size())s.load();else{
+            if(s.environment){Files.writeString(Path.of("../build/font-smoke/uncanny-environments-passed.txt"),"Ten native room, kitchen, exterior and floor-specific cutaways rendered with shipped textures and collision-authored models. Full-bright views; not a lighting proof.\n");mc.setScreen(new UncannyAssetProof());return;}
             Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All "+s.files.size()+" native generated architecture views rendered successfully, including the 99 earlier views and all six uncanny rooms.\n");
             TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: {} native architecture screenshots saved",s.files.size());mc.setScreen(new OutsideSkyProof());
         }

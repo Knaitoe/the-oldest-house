@@ -801,6 +801,27 @@
     "phase": 0
   },
   {
+    "name": "uncanny_second_waitress",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "uncanny_second_waitress_split",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "uncanny_waitress",
+    "logical": 64,
+    "model": "player",
+    "number": 0,
+    "phase": 0
+  },
+  {
     "name": "literary_paw_walter",
     "logical": 128,
     "model": "literary",

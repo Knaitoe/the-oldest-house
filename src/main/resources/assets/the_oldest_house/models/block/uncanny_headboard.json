@@ -1,0 +1,145 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "the_oldest_house:block/uncanny/walnut",
+    "walnut": "the_oldest_house:block/uncanny/walnut"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        13
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            2,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            2,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            2,
+            3,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#walnut",
+          "uv": [
+            13,
+            2,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            13,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            0,
+            16,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        14,
+        12
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            0,
+            4,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#walnut",
+          "uv": [
+            12,
+            0,
+            16,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#walnut",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ]
+        }
+      }
+    }
+  ]
+}

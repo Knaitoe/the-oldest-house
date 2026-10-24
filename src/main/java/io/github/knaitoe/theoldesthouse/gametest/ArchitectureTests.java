@@ -290,8 +290,9 @@ public final class ArchitectureTests {
         for(var rel:BlockPos.betweenClosed(start,start.offset(2,0,2))){
             Block expected=switch(scene){
                 case PAINTED_INTERIOR,MOTION_LIGHT->Blocks.DARK_OAK_PLANKS;
-                case SECOND_WAITRESS->((rel.getX()+rel.getZ())&1)==0?Blocks.BLACK_CONCRETE:Blocks.SMOOTH_QUARTZ;
-                case TUNNEL_PERIPHERY,LAYERED_MAN->Blocks.SMOOTH_STONE;
+                case SECOND_WAITRESS->UncannyRegistry.material("diner_tile");
+                case TUNNEL_PERIPHERY->Blocks.SMOOTH_STONE;
+                case LAYERED_MAN->UncannyRegistry.material("workshop_floor");
                 case MISSING_SLEEP->Blocks.SPRUCE_PLANKS;
                 default->throw new IllegalArgumentException(scene.id());
             };

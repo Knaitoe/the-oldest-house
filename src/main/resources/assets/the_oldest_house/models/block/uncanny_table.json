@@ -1,0 +1,283 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "the_oldest_house:block/uncanny/black",
+    "black": "the_oldest_house:block/uncanny/black",
+    "formica": "the_oldest_house:block/uncanny/formica",
+    "steel": "the_oldest_house:block/uncanny/steel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        14,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#formica",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#formica",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#formica",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#formica",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#formica",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#formica",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        13,
+        0
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        2,
+        7
+      ],
+      "to": [
+        9,
+        14,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            7,
+            2,
+            9,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            7,
+            2,
+            9,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            7,
+            2,
+            9,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            7,
+            2,
+            9,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        2,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#black",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#black",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#black",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#black",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#black",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#black",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    }
+  ]
+}
