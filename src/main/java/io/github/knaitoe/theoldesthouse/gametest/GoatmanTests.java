@@ -7,6 +7,7 @@ import io.github.knaitoe.theoldesthouse.opening.CompanionOrders;
 import java.util.*;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.*;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
