@@ -115,7 +115,10 @@ public final class PhoneCanoeTests {
             var recovered=owner.getInventory().items.stream().filter(s->s.is(DrownedTownRegistry.LAKE_PHONE.get())).findFirst().orElseThrow();
             h.assertTrue(ItemStack.isSameItemSameComponents(original,recovered),"recovery does not synthesize a replacement recording");
             for(int slot=0;slot<9;slot++)if(owner.getInventory().getItem(slot)==recovered){owner.getInventory().selected=slot;break;}
-            DrownedTownRegistry.LAKE_PHONE.get().use(caveLevel,owner,InteractionHand.MAIN_HAND);
+            // 0.4.121: a plain use plays the clip back on the phone's own screen; crouching opens its frame record.
+            owner.setShiftKeyDown(false);DrownedTownRegistry.LAKE_PHONE.get().use(caveLevel,owner,InteractionHand.MAIN_HAND);
+            h.assertTrue(!recovered.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().getLast().raw().getString().contains("The same sky"),"playing the clip back writes nothing into the record");
+            owner.setShiftKeyDown(true);DrownedTownRegistry.LAKE_PHONE.get().use(caveLevel,owner,InteractionHand.MAIN_HAND);owner.setShiftKeyDown(false);
             h.assertTrue(recovered.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().getLast().raw().getString().contains("The same sky"),"the recovered phone exposes its real saved frame record through the native reader");h.succeed();
         });
     }
