@@ -1435,6 +1435,10 @@ jobs:
           set -o pipefail
           python3 tools/draw_uncanny_environments.py --check
           timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny_environment --no-daemon 2>&1 | tee build/uncanny-environment-native.log
+      - name: Native uncanny room and waitress visual review
+        if: always()
+        timeout-minutes: 5
+        run: |
           test "$(find build/uncanny-environment-proof -name '*.json' | wc -l)" = 10
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannyEnvironmentSmoke --no-daemon
           test -s build/font-smoke/uncanny-environments-passed.txt
