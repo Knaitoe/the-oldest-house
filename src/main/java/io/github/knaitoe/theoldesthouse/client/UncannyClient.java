@@ -60,7 +60,7 @@ public final class UncannyClient {
         if(!active())return;var mc=Minecraft.getInstance();var g=event.getGuiGraphics();String text="";
         switch(room()){
             case "painted_interior"->{int side=view.getInt("Edge");if(side!=0)text=side<0?"< Wood creaks":"Wood creaks >";}
-            case "second_waitress"->{if(view.getInt("Age")>0)text="Frost gathers at booth four  /  Silverware rattles";}
+            case "second_waitress"->{if(view.getInt("Age")>0)text="Black frost at booth four  /  Butter knives rattle";}
             case "tunnel_periphery"->text=green()?"||  GREEN — She is still":"—  RED — Footsteps behind you";
             case "missing_sleep"->{if(view.getInt("Sleeps")>0)text=sign();}
             case "layered_man"->{if(view.getInt("Growth")>0)text="A heartbeat in the cellar";}
@@ -68,7 +68,7 @@ public final class UncannyClient {
             default->{}
         }
         if(!text.isEmpty())g.drawCenteredString(mc.font,text,mc.getWindow().getGuiScaledWidth()/2,mc.getWindow().getGuiScaledHeight()-54,0xffe2dccb);
-        if(room().equals("second_waitress")&&view.getInt("Age")>0){int w=mc.getWindow().getGuiScaledWidth(),h=mc.getWindow().getGuiScaledHeight();g.fill(0,0,3,h,0x667ca5b0);g.fill(w-3,0,w,h,0x667ca5b0);}
+        if(room().equals("second_waitress")&&view.getInt("Age")>0){int w=mc.getWindow().getGuiScaledWidth(),h=mc.getWindow().getGuiScaledHeight();g.fill(0,0,3,h,0x99101418);g.fill(w-3,0,w,h,0x99101418);}
         // The growth pulse has a static visual equivalent; it does not require forced camera shake.
         if(room().equals("layered_man")&&view.getInt("Age")%80<12){int h=mc.getWindow().getGuiScaledHeight();g.fill(0,h-4,mc.getWindow().getGuiScaledWidth(),h,0x99855e53);}
     }

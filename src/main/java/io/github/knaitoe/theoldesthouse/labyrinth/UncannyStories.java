@@ -78,7 +78,7 @@ public final class UncannyStories {
         if(failed(own))return;own.putBoolean("UncannyFailed",true);own.putString("Failure",outcome);own.putBoolean("Ready",false);
         HousePackets.send(p,new HouseFadePayload(10,8,16));var safe=Vec3.atBottomCenterOf(b.offset(0,0,-3));
         p.teleportTo(p.serverLevel(),safe.x,safe.y,safe.z,0,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);
-        cue(p,switch(place){case SECOND_WAITRESS->"The place setting in front of you is empty.";case TUNNEL_PERIPHERY->"A hand on the back of your neck.";case MISSING_SLEEP->"The monitor is still showing the empty bed.";case MOTION_LIGHT->"The buzzer stops.";default->"You are facing the painted sun again.";});
+        cue(p,switch(place){case SECOND_WAITRESS->"The place setting in front of you is empty.";case TUNNEL_PERIPHERY->"A hand on the back of your neck.";case MISSING_SLEEP->"The monitor is still showing the empty bed.";case MOTION_LIGHT->"The buzzer stops.";case LAYERED_MAN->"Warm tallow closes over your boots.";default->"You are facing the painted sun again.";});
     }
     private static void boarded(ServerPlayer p,BlockPos b,CompoundTag own){
         int age=own.getInt("UncannyAge");if(age==0)return;int nearest=0;double proximity=100;
@@ -90,7 +90,8 @@ public final class UncannyStories {
                 own.putInt("EdgeSeen",own.getInt("EdgeSeen")|1<<i);
             }else if(age%30==0&&!UncannySenses.mirror(p)){
                 double yaw=Math.atan2(UncannySenses.look(p).z,UncannySenses.look(p).x)+(i%2==0?-1:1)*half*.91;
-                double radius=Math.max(1.15,4-age/650.);var target=p.position().add(Math.cos(yaw)*radius,0,Math.sin(yaw)*radius);
+                // "Until you back into a corner": there the edges of the view have nowhere left to push them.
+                double radius=corner(p)?1:Math.max(1.15,4-age/650.);var target=p.position().add(Math.cos(yaw)*radius,0,Math.sin(yaw)*radius);
                 // The original crosses physical floor space while hidden by the direct-gaze rule.
                 if(target.x>b.getX()-7&&target.x<b.getX()+7&&target.z<b.getZ()-15&&target.z>b.getZ()-27)SceneFootpaths.step(a,target,.32);
             }
@@ -98,15 +99,18 @@ public final class UncannyStories {
         own.putInt("Edge",nearest);
         if(nearest!=0&&age%30==0){var right=new Vec3(-p.getLookAngle().z,0,p.getLookAngle().x).scale(nearest*2.5);heard(p,SoundEvents.WOOD_STEP,p.position().add(right),.65F,.8F);cue(p,nearest<0?"< Wood creaks":"Wood creaks >");}
         if(own.getInt("EdgeSeen")!=0&&own.getBoolean("BoardOpened")&&p.getX()>b.getX()+8.5&&p.getZ()<b.getZ()-16)ready(p,LabyrinthPlace.PAINTED_INTERIOR,own,"left_by_the_unpainted_door");
-        if(proximity<1.1&&corner(p)&&!own.getBoolean("Ready"))caught(p,b,LabyrinthPlace.PAINTED_INTERIOR,own,"backed_into_the_corners");
+        if(proximity<2.25&&corner(p)&&!own.getBoolean("Ready"))caught(p,b,LabyrinthPlace.PAINTED_INTERIOR,own,"backed_into_the_corners");
     }
     private static boolean corner(ServerPlayer p){
-        var at=p.blockPosition();int sides=0;for(var d:Direction.Plane.HORIZONTAL)if(!p.serverLevel().getBlockState(at.relative(d)).getCollisionShape(p.serverLevel(),at.relative(d)).isEmpty())sides++;return sides>=2;
+        // A real corner: a wall on one side and another at right angles to it. A doorway's two jambs are not one.
+        var at=p.blockPosition();boolean z=false,x=false;
+        for(var d:Direction.Plane.HORIZONTAL)if(!p.serverLevel().getBlockState(at.relative(d)).getCollisionShape(p.serverLevel(),at.relative(d)).isEmpty()){if(d.getAxis()==Direction.Axis.Z)z=true;else x=true;}
+        return z&&x;
     }
     private static void diner(ServerPlayer p,BlockPos b,CompoundTag own){
         int age=own.getInt("UncannyAge");var fake=actor(p,own,"CastFake");if(fake==null)return;
         int stage=age<240?0:age<600?1:age<1200?2:3;own.putInt("UncannyStage",stage);fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,stage);fake.noPhysics=stage<2;fake.setNoGravity(stage<2);
-        if(age>0&&age%60==0){heard(p,SoundEvents.CHAIN_STEP,Vec3.atCenterOf(b.offset(UncannyRooms.DINER_TABLE)),.55F,1.65F);p.serverLevel().sendParticles(p,ParticleTypes.SNOWFLAKE,true,b.getX()+8,b.getY()+1.1,b.getZ()-19,7,.35,.2,.4,.005);cue(p,"Silverware rattles. Frost gathers by booth four.");}
+        if(age>0&&age%60==0){heard(p,SoundEvents.CHAIN_STEP,Vec3.atCenterOf(b.offset(UncannyRooms.DINER_TABLE)),.55F,1.65F);p.serverLevel().sendParticles(p,ParticleTypes.ASH,true,b.getX()+8,b.getY()+1.1,b.getZ()-19,9,.35,.2,.4,.005);cue(p,"Butter knives rattle. Black frost by booth four.");}
         if(stage==0&&age>0&&age%100==0){var wind=p.position().subtract(Vec3.atCenterOf(b.offset(8,1,-19))).normalize().scale(.045);p.push(wind.x,0,wind.z);p.hurtMarked=true;}
         if(stage==1){var target=Vec3.atBottomCenterOf(b.offset(-5,0,-20));nativeStep(fake,target,.35);}
         if(stage>=2&&!own.getBoolean("MealReleased")){
@@ -119,13 +123,16 @@ public final class UncannyStories {
         if(own.getBoolean("MealReleased")&&!own.getBoolean("MealServed")&&!fake.getMainHandItem().isEmpty()){
             fake.gesture(1);var plate=fake.getMainHandItem();fake.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
             var e=new ItemEntity(p.serverLevel(),b.getX()+5.5,b.getY()+1.08,b.getZ()-18.5,plate);e.setTarget(p.getUUID());e.setNoGravity(true);e.setDeltaMovement(Vec3.ZERO);
-            if(p.serverLevel().addFreshEntity(e)){own.putUUID("PlateEntity",e.getUUID());own.putBoolean("MealServed",true);}else fake.setItemSlot(EquipmentSlot.MAINHAND,plate);
+            if(p.serverLevel().addFreshEntity(e)){own.putUUID("PlateEntity",e.getUUID());own.putBoolean("MealServed",true);ask(p,fake,own);}else fake.setItemSlot(EquipmentSlot.MAINHAND,plate);
         }
+        if(stage>=3&&own.getBoolean("MealServed")&&!own.getBoolean("AskedAgain")){own.putBoolean("AskedAgain",true);ask(p,fake,own);}
         if(stage>=3&&!own.getBoolean("Refused")&&!own.getBoolean("Ready")){
             SceneFootpaths.step(fake,p.position(),.52);if(fake.distanceToSqr(p)<1.1)caught(p,b,LabyrinthPlace.SECOND_WAITRESS,own,"let_her_clear_the_table");
         }
         if(own.getBoolean("Refused")&&own.getBoolean("MealServed"))ready(p,LabyrinthPlace.SECOND_WAITRESS,own,"left_the_second_waitress_meal");
     }
+    /** "Don't answer her when she asks how your meal is." */
+    private static void ask(ServerPlayer p,LiteraryActor fake,CompoundTag own){own.putBoolean("AskedMeal",true);fake.say("How's your meal?");p.displayClientMessage(Component.literal("“How’s your meal?”"),false);}
     public static void ate(ServerPlayer p,ItemStack s){
         var c=s.get(DataComponents.CUSTOM_DATA);if(c==null||!c.copyTag().hasUUID("UncannyMealOwner")||!c.copyTag().getUUID("UncannyMealOwner").equals(p.getUUID())||!LiteraryVignettes.inside(p,LabyrinthPlace.SECOND_WAITRESS))return;
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS);caught(p,LiteraryVignettes.base(p,LabyrinthPlace.SECOND_WAITRESS),LabyrinthPlace.SECOND_WAITRESS,own,"ate_what_she_brought");LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS,own);
@@ -144,7 +151,7 @@ public final class UncannyStories {
         if(p.getZ()<b.getZ()-66&&own.getInt("GreenSteps")>=5)ready(p,LabyrinthPlace.TUNNEL_PERIPHERY,own,"passed_the_last_green_signal");
     }
     private static void bedroom(ServerPlayer p,BlockPos b,CompoundTag own){
-        int sleeps=own.getInt("Sleeps");if(sleeps==1&&own.getInt("UncannyAge")>own.getInt("FirstSleepAge")+1800){caught(p,b,LabyrinthPlace.MISSING_SLEEP,own,"waited_out_the_first_interval");return;}var doll=actor(p,own,"CastDoll");if(doll==null)return;
+        int sleeps=own.getInt("Sleeps");if(sleeps==1&&own.getInt("UncannyAge")>own.getInt("FirstSleepAge")+1800){own.putInt("Sleeps",0);own.remove("FirstSleepAge");cue(p,"The house is ordinary again. The bed is still there.");return;}var doll=actor(p,own,"CastDoll");if(doll==null)return;
         doll.appearance(LiteraryActor.UNCANNY_MARIONETTE,sleeps>=2?1:0);own.putInt("UncannyStage",sleeps>=2?2:sleeps);
         var lens=p.getPersistentData().getCompound(UncannySenses.LENS);
         if(UncannySenses.fresh(p)&&lens.getInt("Monitor")>=0&&p.distanceToSqr(b.offset(UncannyRooms.MONITOR_AT).getCenter())<25&&UncannySenses.clear(p,Vec3.atLowerCornerOf(b.offset(UncannyRooms.MONITOR_AT)).add(.5,.6,.93))){
@@ -155,30 +162,54 @@ public final class UncannyStories {
             var delta=doll.getEyePosition().subtract(UncannySenses.eye(p));if(delta.lengthSqr()<100&&UncannySenses.look(p).dot(delta.normalize())>.8&&UncannySenses.clear(p,doll.getEyePosition()))own.putBoolean("MarionetteSeen",true);
             if(!own.getBoolean("BlockedDoor")){
                 var target=doll.getZ()<b.getZ()-15.5?new Vec3(b.getX()+1.5,b.getY()+5,b.getZ()-15.5):new Vec3(b.getX()+4,b.getY()+5,b.getZ()-15.5);
-                SceneFootpaths.step(doll,target,.13);if(doll.getX()>b.getX()+3.1){doll.gesture(2);if(own.getInt("UncannyAge")>own.getInt("SecondSleepAge")+300)caught(p,b,LabyrinthPlace.MISSING_SLEEP,own,"watched_the_hand_reach_the_door");}
+                SceneFootpaths.step(doll,target,.07);if(doll.getX()>b.getX()+3.1){doll.gesture(2);if(own.getInt("UncannyAge")>own.getInt("SecondSleepAge")+300)caught(p,b,LabyrinthPlace.MISSING_SLEEP,own,"watched_the_hand_reach_the_door");}
             }
             if(own.getInt("UncannyAge")>own.getInt("SecondSleepAge")+2400&&!own.getBoolean("BlockedDoor"))caught(p,b,LabyrinthPlace.MISSING_SLEEP,own,"waited_out_the_empty_bed");
             if(own.getInt("UncannyAge")%45==0){heard(p,SoundEvents.FOX_SCREECH,doll.getEyePosition(),.12F,.55F);cue(p,"Hallway / clicking. CAM 02 / subject whistling.");}
         }
     }
+    /** The authored mass: three wide, high and deep around the key's cavity. */
+    private static boolean authoredMass(int x,int y,int z){return Math.abs(x)<=1&&y>=-5&&y<=-3&&z>=-21&&z<=-19&&!(x==0&&y==-4&&z==-20);}
+    /** An empty cellar goes back to the night the ledger describes: the man as he was, the worker's worn blade, no new folds. */
+    private static void resetCellar(ServerLevel l,BlockPos b,CompoundTag shared){
+        for(int x=-6;x<=6;x++)for(int y=-5;y<=-1;y++)for(int z=-28;z<=-10;z++){
+            var at=b.offset(x,y,z);var s=l.getBlockState(at);
+            if(authoredMass(x,y,z)){if(s.isAir())l.setBlock(at,UncannyPropBlock.of(FLESH,Direction.SOUTH),F);}
+            else if(s.is(UncannyRegistry.PROP.get())&&s.getValue(UncannyPropBlock.KIND)==FLESH)l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
+        }
+        for(String key:List.of("Age","Layers","Growth","Beats","LastPeel"))shared.remove(key);shared.putBoolean("ToolGiven",false);
+    }
     private static void cellar(ServerPlayer p,BlockPos b,CompoundTag own){
-        var place=LabyrinthPlace.LAYERED_MAN;prepare(p.serverLevel(),b,place);var shared=world(p.serverLevel(),b,place);
+        var place=LabyrinthPlace.LAYERED_MAN;var l=p.serverLevel();long now=l.getGameTime();var shared=world(l,b,place);
+        if(shared.contains("Tick")&&now-shared.getLong("Tick")>200){resetCellar(l,b,shared);shared.remove("Tick");world(l,b,place,shared);}
+        prepare(l,b,place);shared=world(l,b,place);
         if(own.getInt("UncannyAge")==0)return;
-        long now=p.serverLevel().getGameTime();
         if(shared.getLong("Tick")!=now){
-            shared.putLong("Tick",now);shared.putInt("Age",shared.getInt("Age")+5);
-            var worker=shared.hasUUID("Peeler")&&p.serverLevel().getEntity(shared.getUUID("Peeler")) instanceof LiteraryActor a?a:null;
-            if(worker!=null){int stage=shared.getInt("Age")<400?0:shared.getInt("Age")<800?1:2;worker.appearance(LiteraryActor.UNCANNY_PEELER,stage);worker.gesture(1);if(stage>=1)worker.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
-                if(stage==0&&shared.getInt("Age")%40==0){var cut=b.offset(-1,-3,-19);var skin=p.serverLevel().getBlockState(cut);if(skin.is(UncannyRegistry.PROP.get())&&skin.getValue(UncannyPropBlock.KIND)==FLESH)p.serverLevel().setBlock(cut,Blocks.AIR.defaultBlockState(),F);if(!worker.getMainHandItem().isEmpty())worker.getMainHandItem().hurtAndBreak(1,worker,EquipmentSlot.MAINHAND);}}
-            if(shared.getInt("Age")%80==0){
-                int growth=Math.min(9,shared.getInt("Age")/160+1);shared.putInt("Growth",growth);
-                for(int x=-growth;x<=growth;x++)for(int y=-5;y<=Math.min(-1,-5+growth);y++)for(int z=-20-growth;z<=-20+growth;z++){
-                    if(Math.abs(x)>6||z<-28||z>-10||x==0&&y==-4&&z==-20)continue;
-                    var at=b.offset(x,y,z);if(worker!=null&&shared.getInt("Age")<800&&worker.getBoundingBox().inflate(.15).intersects(new AABB(at)))continue;if(p.serverLevel().getBlockState(at).isAir())p.serverLevel().setBlock(at,UncannyPropBlock.of(FLESH,Direction.SOUTH),F);
+            shared.putLong("Tick",now);int age=shared.getInt("Age")+5;shared.putInt("Age",age);int stage=age<400?0:age<800?1:2;
+            var worker=shared.hasUUID("Peeler")&&l.getEntity(shared.getUUID("Peeler")) instanceof LiteraryActor a?a:null;
+            if(worker!=null){worker.appearance(LiteraryActor.UNCANNY_PEELER,stage);worker.gesture(1);if(stage>=1)worker.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
+                if(stage==0&&age%40==0){var cut=b.offset(-1,-3,-19);var skin=l.getBlockState(cut);if(skin.is(UncannyRegistry.PROP.get())&&skin.getValue(UncannyPropBlock.KIND)==FLESH)l.setBlock(cut,Blocks.AIR.defaultBlockState(),F);if(!worker.getMainHandItem().isEmpty())worker.getMainHandItem().hurtAndBreak(1,worker,EquipmentSlot.MAINHAND);shared.putLong("LastPeel",now);}}
+            if(age%120==0){
+                // "Stop for five minutes to catch your breath and he lays down three new coats": he grows only while nobody peels.
+                // The worker's nails, after his blade snaps, hold every other fold.
+                int beats=shared.getInt("Beats")+1;shared.putInt("Beats",beats);
+                boolean held=shared.contains("LastPeel")&&now-shared.getLong("LastPeel")<100||worker!=null&&stage==1&&beats%2==0;
+                if(!held){
+                    int layers=shared.getInt("Layers")+1;shared.putInt("Layers",layers);int growth=Math.min(9,layers/2+1);shared.putInt("Growth",growth);
+                    var readers=l.players().stream().filter(o->o.isAlive()&&!o.isSpectator()&&LiteraryVignettes.inside(o,place)).toList();var swallowed=new LinkedHashSet<ServerPlayer>();
+                    for(int x=-growth;x<=growth;x++)for(int y=-5;y<=Math.min(-1,-5+growth);y++)for(int z=-20-growth;z<=-20+growth;z++){
+                        if(Math.abs(x)>6||z<-28||z>-10||x==0&&y==-4&&z==-20)continue;
+                        var at=b.offset(x,y,z);var cell=new AABB(at);if(worker!=null&&age<800&&worker.getBoundingBox().inflate(.15).intersects(cell))continue;if(!l.getBlockState(at).isAir())continue;
+                        // A fold never closes inside a living body; it takes the reader instead, as it took Marcus by the sump.
+                        boolean body=false;for(var o:readers)if(o.getBoundingBox().intersects(cell)){body=true;swallowed.add(o);}
+                        if(!body)l.setBlock(at,UncannyPropBlock.of(FLESH,Direction.SOUTH),F);
+                    }
+                    for(var o:swallowed){var d=LabyrinthData.get(o.server);var theirs=o==p?own:LiteraryVignettes.personal(d,o.getUUID(),place);
+                        if(theirs.getBoolean("Read_Source")&&!theirs.getBoolean("Ready")&&!theirs.getBoolean("Completed")){caught(o,b,place,theirs,"knitted_into_the_mass");if(o!=p)LiteraryVignettes.save(d,o.getUUID(),place,theirs);}}
+                    shared.putInt("Pulse",shared.getInt("Pulse")+1);
                 }
-                shared.putInt("Pulse",shared.getInt("Pulse")+1);
             }
-            world(p.serverLevel(),b,place,shared);
+            world(l,b,place,shared);
         }
         own.putInt("GrowthCue",shared.getInt("Pulse"));
         if(own.getInt("LastGrowth")!=shared.getInt("Pulse")){own.putInt("LastGrowth",shared.getInt("Pulse"));heard(p,SoundEvents.WARDEN_HEARTBEAT,Vec3.atCenterOf(b.offset(UncannyRooms.MASS)),.65F,.55F);cue(p,"A new fold presses against the cellar steps.");}
@@ -202,13 +233,33 @@ public final class UncannyStories {
             boolean all=true;for(var rel:UncannyRooms.FALSE_DOORS){var at=b.offset(rel);if(LiteraryVignettes.watched(p.serverLevel(),at.getCenter())){all=false;continue;}var s=p.serverLevel().getBlockState(at);if(s.is(UncannyRegistry.PROP.get())&&s.getValue(UncannyPropBlock.KIND)==FALSE_DOOR)continue;if(s.is(Blocks.SMOOTH_SANDSTONE)||s.isAir()){p.serverLevel().setBlock(at,UncannyPropBlock.of(FALSE_DOOR,rel.getX()<0?Direction.EAST:Direction.SOUTH),F);p.serverLevel().setBlock(at.above(),UncannyPropBlock.of(FALSE_DOOR,rel.getX()<0?Direction.EAST:Direction.SOUTH).setValue(UncannyPropBlock.STAGE,1),F);}}
             own.putBoolean("FalseDoors",all);
         }
+        if(own.getBoolean("FalseDoors")){
+            // "Don't back up without looking behind you first." In the dark, a frame the reader is not facing clicks open;
+            // it shuts again with the light. A frame the reader opened by hand stays as they left it.
+            int auto=own.getInt("FalseAuto");
+            for(int i=0;i<UncannyRooms.FALSE_DOORS.size();i++){
+                var at=b.offset(UncannyRooms.FALSE_DOORS.get(i));var lower=p.serverLevel().getBlockState(at);
+                if(!lower.is(UncannyRegistry.PROP.get())||lower.getValue(UncannyPropBlock.KIND)!=FALSE_DOOR)continue;int bit=1<<i;
+                boolean behind=UncannySenses.angle(p,at.getCenter())>UncannySenses.halfFov(p);
+                if(dark&&behind&&(auto&bit)==0&&lower.getValue(UncannyPropBlock.STAGE)<2){falseDoor(p.serverLevel(),at,true);auto|=bit;heard(p,SoundEvents.WOODEN_TRAPDOOR_OPEN,at.getCenter(),.45F,.6F);cue(p,"A latch clicks behind you.");}
+                else if(!dark&&(auto&bit)!=0){falseDoor(p.serverLevel(),at,false);auto&=~bit;}
+            }
+            own.putInt("FalseAuto",auto);
+        }
         for(var rel:UncannyRooms.FALSE_DOORS)if(p.distanceToSqr(b.offset(rel).getCenter())<1.5&&p.serverLevel().getBlockState(b.offset(rel)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(rel)).getValue(UncannyPropBlock.STAGE)>=2){
             own.putInt("Loops",own.getInt("Loops")+1);HousePackets.send(p,new HouseFadePayload(5,5,10));var safe=Vec3.atBottomCenterOf(b.offset(0,0,-6));p.teleportTo(p.serverLevel(),safe.x,safe.y,safe.z,180,0);p.hasChangedDimension();break;
         }
         if(p.getX()>b.getX()+4.6&&p.getZ()<b.getZ()-3&&p.getZ()>b.getZ()-8&&own.getInt("DarkSeen")>=2&&own.getBoolean("HingeSeen"))ready(p,place,own,"opened_the_hinged_service_door");
     }
+    private static void falseDoor(ServerLevel l,BlockPos at,boolean open){for(int y=0;y<2;y++){var s=l.getBlockState(at.above(y));if(s.is(UncannyRegistry.PROP.get())&&s.getValue(UncannyPropBlock.KIND)==FALSE_DOOR)l.setBlock(at.above(y),s.setValue(UncannyPropBlock.STAGE,(open?2:0)+y),F);}}
     public static String sign(ServerPlayer p,BlockPos b,CompoundTag own){
-        var place=LiteraryVignettes.current(p);if(place==LabyrinthPlace.TUNNEL_PERIPHERY){if(own.getInt("UncannyAge")<120)return "PEDESTRIAN UNDERPASS";int steps=Math.max(0,(int)Math.ceil(-66-(p.getZ()-b.getZ()))*-1);return green(own)?"WALK / ||":"RED / "+steps+" STEPS";}
+        var place=LiteraryVignettes.current(p);if(place==LabyrinthPlace.TUNNEL_PERIPHERY){
+            // "They stopped flashing detour warnings ten minutes ago. Now they just flicker on and off, counting down how many steps I have left."
+            // A blank (a space, not an empty line, which the sign renderer reads as the diner's own lettering) is the sign switched off.
+            int age=own.getInt("UncannyAge");if(age<120)return "DETOUR / USE OTHER CROSSING";if(age/10%4==3)return " ";
+            var giant=actor(p,own,"CastGiant");if(giant==null)return " ";
+            return Math.max(0,(int)Math.ceil((Math.sqrt(giant.distanceToSqr(p))-1.3)/.8))+" STEPS";
+        }
         if(place==LabyrinthPlace.MISSING_SLEEP)return own.getInt("Sleeps")>=2?"CAM 02 / Subject whistling":"CAM 01 / Bed empty / 00:00 → 06:00";
         return "";
     }
@@ -219,7 +270,7 @@ public final class UncannyStories {
             if(p.serverLevel().getBlockState(b.offset(rel)).getBlock() instanceof BedBlock){
                 if(!own.getBoolean("Read_Source")){cue(p,"The notebook is taped beside the monitor.");return true;}
                 int sleeps=Math.min(3,own.getInt("Sleeps")+1);own.putInt("Sleeps",sleeps);own.putInt("NightClock",own.getInt("NightClock")+7200);if(sleeps==1)own.putInt("FirstSleepAge",own.getInt("UncannyAge"));if(sleeps==2)own.putInt("SecondSleepAge",own.getInt("UncannyAge"));
-                HousePackets.send(p,new HouseFadePayload(8,8,16));var target=b.offset(sleeps%2==1?-7:1,5,sleeps%2==1?-13:-20);p.teleportTo(p.serverLevel(),target.getX()+.5,target.getY(),target.getZ()+.5,180,0);p.hasChangedDimension();cue(p,"06:00 / The bed was empty.");return true;
+                HousePackets.send(p,new HouseFadePayload(8,8,16));var target=b.offset(sleeps%2==1?-7:1,5,sleeps%2==1?-13:-20);p.teleportTo(p.serverLevel(),target.getX()+.5,target.getY(),target.getZ()+.5,180,0);p.hasChangedDimension();cue(p,sleeps==1?"06:00. Dried mud between your toes.":"06:00. On the monitor, the mattress is empty.");return true;
             }
             if((rel.equals(UncannyRooms.PARENTS_DOOR)||rel.equals(UncannyRooms.PARENTS_DOOR.above()))&&own.getInt("Sleeps")>=2){
                 if(own.getBoolean("BlockedDoor"))return true;
@@ -235,7 +286,7 @@ public final class UncannyStories {
             if((rel.equals(UncannyRooms.CELLAR_DOOR)||rel.equals(UncannyRooms.CELLAR_DOOR.above()))&&p.getY()>=b.getY()&&world(p.serverLevel(),b,place).getInt("Age")>=800&&!own.getBoolean("Helped")){setDoor(p.serverLevel(),b.offset(UncannyRooms.CELLAR_DOOR),false);ready(p,place,own,"closed_the_cellar_after_the_blade_broke");return true;}
         }
         if(place==LabyrinthPlace.MOTION_LIGHT){
-            if(rel.equals(UncannyRooms.INTERCOM)){caught(p,b,place,own,"pressed_the_buzzer_release");return true;}
+            if(rel.equals(UncannyRooms.INTERCOM)){if(!own.getBoolean("Read_Source")){cue(p,"Black marker on the wallpaper beside the panel.");return true;}caught(p,b,place,own,"pressed_the_buzzer_release");return true;}
             if(rel.equals(UncannyRooms.HINGED)||rel.equals(UncannyRooms.HINGED.above())){own.putBoolean("HingeSeen",true);setDoor(p.serverLevel(),b.offset(UncannyRooms.HINGED),true);return true;}
             if(UncannyRooms.FALSE_DOORS.contains(rel)||UncannyRooms.FALSE_DOORS.stream().anyMatch(r->r.above().equals(rel))){own.putBoolean("FalseExamined",true);var lower=UncannyRooms.FALSE_DOORS.stream().filter(r->r.equals(rel)||r.above().equals(rel)).findFirst().orElse(rel);for(int y=0;y<2;y++){var at=b.offset(lower.above(y));var state=p.serverLevel().getBlockState(at);if(state.is(UncannyRegistry.PROP.get()))p.serverLevel().setBlock(at,state.setValue(UncannyPropBlock.STAGE,2+y),F);}cue(p,"The frame has no hinge pins.");return true;}
         }
@@ -244,7 +295,7 @@ public final class UncannyStories {
     public static boolean peel(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var held=p.getMainHandItem();if(!held.is(UncannyRegistry.CLEAVER.get())&&!(held.getItem() instanceof AxeItem)){cue(p,"The cleaver is on the workbench.");return true;}
         var at=b.offset(rel);var s=p.serverLevel().getBlockState(at);if(!s.is(UncannyRegistry.PROP.get())||s.getValue(UncannyPropBlock.KIND)!=FLESH)return false;
-        if(p.distanceToSqr(at.getCenter())>36)return false;long now=p.serverLevel().getGameTime();if(own.contains("LastPeelAt")&&now-own.getLong("LastPeelAt")<3)return true;own.putLong("LastPeelAt",now);p.serverLevel().setBlock(at,Blocks.AIR.defaultBlockState(),F);own.putInt("Peeled",own.getInt("Peeled")+1);
+        if(p.distanceToSqr(at.getCenter())>36)return false;long now=p.serverLevel().getGameTime();if(own.contains("LastPeelAt")&&now-own.getLong("LastPeelAt")<3)return true;own.putLong("LastPeelAt",now);p.serverLevel().setBlock(at,Blocks.AIR.defaultBlockState(),F);own.putInt("Peeled",own.getInt("Peeled")+1);var shared=world(p.serverLevel(),b,LabyrinthPlace.LAYERED_MAN);shared.putLong("LastPeel",now);world(p.serverLevel(),b,LabyrinthPlace.LAYERED_MAN,shared);
         held.hurtAndBreak(1,p,EquipmentSlot.MAINHAND);heard(p,SoundEvents.HONEY_BLOCK_BREAK,at.getCenter(),.7F,.7F);return true;
     }
     public static void talk(ServerPlayer p,LiteraryActor a,LabyrinthPlace place,CompoundTag own){
@@ -252,6 +303,7 @@ public final class UncannyStories {
             if(own.getBoolean("MealServed")){own.putBoolean("Refused",true);p.displayClientMessage(Component.literal("“Leave it on the table. Staff door’s beside the till.”"),false);}
             else p.displayClientMessage(Component.literal("“Don't eat what she brings you, and don't let her clear your table.”"),false);
         }
+        if(place==LabyrinthPlace.SECOND_WAITRESS&&a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS&&own.getBoolean("AskedMeal")&&!own.getBoolean("Ready")){var b=LiteraryVignettes.base(p,place);if(b!=null)caught(p,b,place,own,"answered_her");}
         if(place==LabyrinthPlace.LAYERED_MAN&&a.role()==LiteraryActor.UNCANNY_PEELER)p.displayClientMessage(Component.literal(a.phase()<1?"“My hands won’t last. The cleaver’s on the bench.”":"“Don’t stop at the steps.”"),false);
     }
     public static boolean locked(ServerPlayer p){if(!LiteraryVignettes.inside(p,LabyrinthPlace.MISSING_SLEEP))return false;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.MISSING_SLEEP);return own.getInt("Sleeps")>0&&!own.getBoolean("BlockedDoor")&&!failed(own)&&!own.getBoolean("Completed");}
