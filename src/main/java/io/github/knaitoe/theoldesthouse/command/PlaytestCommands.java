@@ -40,6 +40,7 @@ public final class PlaytestCommands {
         return Commands.literal("test").requires(s -> s.hasPermission(2)).executes(c -> help(c.getSource()))
                 .then(vignettes)
                 .then(HomeTestCommands.build())
+                .then(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanCommands.build())
                 .then(Commands.literal("minotaur").executes(c -> queue(c.getSource(), Start.CELL)))
                 .then(Commands.literal("boy").executes(c -> queue(c.getSource(), Start.CELL)))
                 .then(Commands.literal("ending").executes(c -> help(c.getSource()))
@@ -57,6 +58,7 @@ public final class PlaytestCommands {
     }
 
     private static int help(CommandSourceStack source) {
+        source.sendSuccess(() -> Component.literal("/ghosthouse test goatman plate (also /ghosthouse vignette goatman plate) serves the current supper and releases its cooking wait; use it after reaching the campsite. The knocking and ending continue normally."), false);
         source.sendSuccess(() -> Component.literal("/ghosthouse test home tests positional knocking and returned belongings in the main manor; its help lists start, status and reset controls."), false);
         source.sendSuccess(() -> Component.literal("Testing: /ghosthouse test vignette <id> puts a door two blocks ahead; use Tab for every scene. 'vignette remove' removes the nearest test door."), false);
         source.sendSuccess(() -> Component.literal("/ghosthouse test minotaur (or boy) takes you to the closed cell. /ghosthouse test ending defeat|escape|witness starts a real ending; collapse is an alias for escape."), false);
