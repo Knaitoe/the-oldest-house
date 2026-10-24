@@ -23,7 +23,9 @@ final class SupperSocketProof {
         var data=LabyrinthData.get(a.server);var base=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);var level=a.server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR);
         for(var p:List.of(a,b)){
             p.stopRiding();p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);p.setNoGravity(true);p.setInvulnerable(false);p.getFoodData().setFoodLevel(20);
-            var at=GoatmanWoods.plate(seat(p)).add(base.getX(),base.getY(),base.getZ());p.teleportTo(level,at.x,base.getY()+1,at.z+1.15,180,0);p.hasChangedDimension();p.connection.resetPosition();GoatmanVignette.enter(p);
+            // The trailer's child scale puts the eye a hand above the tabletop, so the plate is watched from a little above and
+            // south of it, close enough to look down onto it and clear of the chair rows (0.4.120).
+            var at=GoatmanWoods.plate(seat(p)).add(base.getX(),base.getY(),base.getZ());p.teleportTo(level,at.x,base.getY()+1.45,at.z+.85,180,0);p.hasChangedDimension();p.connection.resetPosition();GoatmanVignette.enter(p);
             p.getInventory().setItem(0,ItemStack.EMPTY);p.getInventory().setItem(7,ItemStack.EMPTY);p.inventoryMenu.broadcastChanges();GoatmanWoods.served(level,base,seat(p),false);
         }
         var run=GoatmanVignette.run(data);run.putInt("Phase",GoatmanVignette.GATHERING);run.putInt("Clock",850);run.putBoolean("PlayerServes0464",true);run.putInt("Plated0464",0);run.putInt("EmptyPlates0465",0);run.putBoolean("MealReady0465",false);run.putBoolean("MealFrozen0465",false);

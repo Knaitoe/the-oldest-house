@@ -49,7 +49,8 @@ public final class SupperSocketClient {
                 for(int i=0;i<pixels.length;i++){int before=empty[i],after=pixels[i],r=after&255,g=after>>8&255,b=after>>16&255,br=before&255,bg=before>>8&255,bb=before>>16&255;
                     if(br>65&&bg>60&&bb>40&&Math.abs(br-bg)<35&&r>g+8&&g>b+8&&Math.abs(r-br)+Math.abs(g-bg)+Math.abs(b-bb)>45)changed++;
                 }
-                if(changed<6){if(age<180)return;throw new IllegalStateException("LIVE SUPPER: tracked food has no visible brown pixels over the actual white plate; changed="+changed);}
+                if(changed<6){if(age<180)return;int white=0,brown=0;for(int i=0;i<pixels.length;i++){int br=empty[i]&255,bg=empty[i]>>8&255,bb=empty[i]>>16&255,r=pixels[i]&255,g=pixels[i]>>8&255,b=pixels[i]>>16&255;if(br>65&&bg>60&&bb>40&&Math.abs(br-bg)<35)white++;if(r>g+8&&g>b+8)brown++;}
+                    throw new IllegalStateException("LIVE SUPPER: tracked food has no visible brown pixels over the actual white plate; changed="+changed+" white-before="+white+" brown-after="+brown+" eye="+mc.player.getEyePosition()+" plate="+plate);}
                 Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-supper-pixels-"+step+".txt"),"Actual child-eye native world render: "+changed+" white-plate pixels changed to visible food.\n");
             }
             var label=step==43?"empty":step==44?"served":step==45?"picked-up":"old-original-repaired";Files.createDirectories(LiveExpeditionProof.folder());image.writeToFile(LiveExpeditionProof.folder().resolve(role+"-supper-"+label+".png"));verified=step;pending=false;
