@@ -33,6 +33,52 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_goatman")
 @PrefixGameTestTemplate(false)
 public final class GoatmanTests {
+    private static Fixture plateFixture;
+    @AfterBatch(batch="goat_plate_command04115") public static void plateCommandDone(ServerLevel ignored){if(plateFixture!=null){plateFixture.close();plateFixture=null;}}
+    @AfterBatch(batch="goat_plate_guards04115") public static void plateGuardsDone(ServerLevel ignored){plateCommandDone(ignored);}
+    private static int plateCommand(ServerPlayer p,String path,int permission){
+        var commands=new com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack>();
+        io.github.knaitoe.theoldesthouse.command.HouseCommands.register(commands);
+        try{return commands.execute("ghosthouse "+path,p.createCommandSourceStack().withPermission(permission));}
+        catch(com.mojang.brigadier.exceptions.CommandSyntaxException denied){return 0;}
+    }
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_entry",batch="goat_plate_command04115",timeoutTicks=400)
+    public static void operatorPlatingServesEveryDinerOnceAndPreservesTheOriginalMealAndCast(GameTestHelper h){
+        plateFixture=new Fixture(h,56300);var f=plateFixture;f.finishedCamper();var p=f.nativePlayer("plate_operator");var peer=f.nativePlayer("plate_peer");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native plates and actor sections are loaded")).thenExecute(()->{
+            h.assertTrue(GoatmanVignette.enter(p)&&GoatmanVignette.enter(peer),"both readers join the same native round");
+            var r=f.run();f.cohort(r,List.of(p,peer),0);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);r.putInt("Expected",8);r.putInt("RunnerState",GoatmanVignette.R_AWAY);r.putInt("PacketsIssued0464",1);
+            var raw=new ItemStack(GoatmanRegistry.RAW_FRANK.get());var cooking=new ListTag();var entry=new CompoundTag();entry.put("Item",raw.save(f.l.registryAccess()));entry.putInt("Left",90);cooking.add(entry);r.put("Cooking0465",cooking);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanWoods.cookingPan(f.l,f.b,r);
+            var original=new ItemStack(GoatmanRegistry.BRAT.get());original.set(DataComponents.ITEM_NAME,net.minecraft.network.chat.Component.literal("Original supper"));
+            net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA,original,t->{t.putUUID(GoatmanVignette.ROUND,r.getUUID("Id"));t.putBoolean(GoatmanSupper.BURNT,true);t.putString("Custody","kept exactly");});
+            var first=GoatmanWoods.served(f.l,f.b,0,original);var originalId=first.getUUID();var cast=f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
+            p.getInventory().setItem(4,new ItemStack(Items.DIAMOND,3));p.containerMenu.setCarried(new ItemStack(Items.EMERALD,7));var held=p.getInventory().getItem(4).copy();var cursor=p.containerMenu.getCarried().copy();var before=f.run();
+            h.assertTrue(plateCommand(p,"test goatman plate",0)==0&&f.run().equals(before)&&GoatmanWoods.serving(f.l,f.b,1)==null,"a non-operator cannot run the shortcut or mutate the supper");
+            h.assertTrue(plateCommand(p,"test goatman plate",2)==1,"the real registered test command succeeds");var after=f.run();
+            h.assertTrue(after.getInt("Expected")==9&&Integer.bitCount(after.getInt("Plated0464")&~after.getInt("EmptyPlates0465"))==9&&after.getBoolean("MealReady0465")&&after.getBoolean("MealFrozen0465"),"the actual saved cohort, including the newly joined peer, gets all nine servings");
+            h.assertTrue(after.getUUID("Id").equals(before.getUUID("Id"))&&after.getInt("Clock")==before.getInt("Clock")&&after.getInt("Phase")==before.getInt("Phase")&&after.getInt("Wrong")==before.getInt("Wrong")&&after.getInt("Runner")==before.getInt("Runner")&&after.getInt("RunnerState")==before.getInt("RunnerState")&&after.getInt("Tells")==before.getInt("Tells")&&after.getCompound("Cohort").equals(before.getCompound("Cohort")),"plating skips no event, vigil or original round identity");
+            h.assertTrue(after.getInt("PacketsIssued0464")==1&&after.getList("Cooking0465",10).equals(cooking)&&ItemStack.matches(held,p.getInventory().getItem(4))&&ItemStack.matches(cursor,p.containerMenu.getCarried()),"finite packs, cooking originals, inventory and cursor remain exact");
+            h.assertTrue(GoatmanWoods.serving(f.l,f.b,0).getUUID().equals(originalId)&&ItemStack.matches(original,GoatmanWoods.food(f.l,first))&&(after.getInt("BurntPlates0476")&1)!=0&&cast.equals(f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the original burnt serving and every original cousin retain their actual UUIDs and components");
+            var ids=new HashSet<UUID>();for(int seat=0;seat<9;seat++){var shown=GoatmanWoods.serving(f.l,f.b,seat);h.assertTrue(shown!=null&&ids.add(shown.getUUID()),"every place has its own real native food display");if(seat>0){var tag=GoatmanWoods.food(f.l,shown).get(DataComponents.CUSTOM_DATA).copyTag();h.assertTrue(tag.getUUID(GoatmanVignette.ROUND).equals(after.getUUID("Id"))&&tag.getBoolean("GoatmanTest04115"),"new test food belongs to this round");}}
+            var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
+            h.assertTrue(plateCommand(p,"vignette goatman plate",2)==1&&ids.equals(f.l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Seat")).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the usual vignette alias remains idempotent after native saved-data reload");
+            h.assertTrue(WitnessAccount.count(loaded,p.getUUID())==0&&WitnessAccount.count(loaded,peer.getUUID())==0,"a prepared meal grants neither reader a resolution");
+        }).thenIdle(2).thenExecute(()->h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.SUPPER0465,"the native evening resumes past the actual supper gate")).thenSucceed();
+    }
+    @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_entry",batch="goat_plate_guards04115",timeoutTicks=400)
+    public static void operatorPlatingRefusesBrokenPlacesAndNeverRefillsAnEatenOrFinishedSupper(GameTestHelper h){
+        plateFixture=new Fixture(h,56600);var f=plateFixture;f.finishedCamper();var p=f.nativePlayer("plate_guard");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the real place settings are loaded")).thenExecute(()->{
+            h.assertTrue(GoatmanVignette.enter(p),"the operator joins normally");var r=f.run();f.cohort(r,List.of(p),0);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);f.run(r);var before=f.run();
+            var support=BlockPos.containing(GoatmanWoods.plate(7).add(f.b.getX(),f.b.getY(),f.b.getZ())).below();var table=f.l.getBlockState(support);f.l.setBlock(support,Blocks.AIR.defaultBlockState(),2);
+            h.assertTrue(plateCommand(p,"vignette goatman plate",2)==0&&f.run().equals(before)&&f.l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Seat")).isEmpty(),"preflight of every place prevents partial plating or a floating serving on an edited table");
+            f.l.setBlock(support,table,2);h.assertTrue(plateCommand(p,"vignette goatman plate",2)==1,"the same round can be prepared after its support is restored");
+            var eaten=GoatmanWoods.serving(f.l,f.b,0);eaten.discard();r=f.run();r.putInt("EmptyPlates0465",1);r.putInt("Clock",GoatmanVignette.SUPPER0465);f.run(r);var consumed=f.run();
+            h.assertTrue(plateCommand(p,"test goatman plate",2)==1&&GoatmanWoods.serving(f.l,f.b,0)==null&&f.run().equals(consumed),"repeating the command after supper neither refills the eaten original nor restarts the clock");
+            for(int phase:new int[]{GoatmanVignette.VIGIL,GoatmanVignette.DAWN}){r=f.run();r.putInt("Phase",phase);f.run(r);var stopped=f.run();h.assertTrue(plateCommand(p,"test goatman plate",2)==0&&f.run().equals(stopped)&&GoatmanWoods.serving(f.l,f.b,0)==null,"the command cannot reset the knocking or a finished round");}
+            p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);h.assertTrue(plateCommand(p,"test goatman plate",2)==0,"an observer cannot prepare the shared meal");
+        }).thenSucceed();
+    }
     private static Fixture exchange;
     @AfterBatch(batch="goat_exchange_open0497") public static void cleanExchange(ServerLevel l){if(exchange!=null){exchange.close();exchange=null;}}
     @AfterBatch(batch="goat_exchange_late0497") public static void cleanLateExchange(ServerLevel l){cleanExchange(l);}
