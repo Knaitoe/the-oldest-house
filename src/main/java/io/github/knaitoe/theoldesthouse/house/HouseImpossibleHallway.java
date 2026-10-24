@@ -91,10 +91,22 @@ public final class HouseImpossibleHallway {
             if (level.getBlockState(pos).is(Blocks.SPRUCE_PLANKS))
                 level.setBlock(pos, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.EAST), QUIET_FLAGS);
         }
+        dressCupboardFronts(level, origin);
         for (int step = 26; step <= 31; step++) for (int y = 2; y <= 4; y++) {
             BlockPos pos = origin.offset(RIGHT_WALL_X_OFFSET, y, START_Z_OFFSET + step);
             if (level.getBlockState(pos).is(Blocks.YELLOW_TERRACOTTA))
                 level.setBlock(pos, Blocks.WHITE_TERRACOTTA.defaultBlockState(), QUIET_FLAGS);
+        }
+    }
+
+    /** Fit the old storage without replacing a barrel, its inventory, or anything placed in front of it. */
+    public static void dressCupboardFronts(ServerLevel level, BlockPos origin) {
+        for (int step = 12; step <= 14; step++) {
+            BlockPos storage = origin.offset(LEFT_WALL_X_OFFSET, 1, START_Z_OFFSET + step);
+            BlockPos front = storage.east();
+            if (level.getBlockState(storage).is(Blocks.BARREL) && level.getBlockState(front).isAir())
+                level.setBlock(front, HouseBlocks.HALL_CUPBOARD.get().defaultBlockState()
+                        .setValue(HallCupboardBlock.FACING, Direction.EAST), QUIET_FLAGS);
         }
     }
 
