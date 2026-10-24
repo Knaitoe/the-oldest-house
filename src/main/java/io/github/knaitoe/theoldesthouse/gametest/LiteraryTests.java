@@ -991,6 +991,32 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             var killer=elkKiller(f,p);h.assertTrue(killer.isAlive()&&killer.phase()!=ElkHunt.RUN&&killer.phase()!=ElkHunt.RAISE,"he is walking away for now, still alive and still theirs");h.succeed();});
     }
     @AfterBatch(batch="literary_elk_drag") public static void elkDragDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="literary_miniature_cards",timeoutTicks=100)
+    public static void miniatureCardsTellTheReaderWhatTheyDidInEachRoom(GameTestHelper h){
+        try(var f=new Fixture(h)){
+            var mini=LabyrinthPlace.MINIATURES;var hill=LabyrinthPlace.HILL_NURSERY;var p=f.player("card_reader",mini);var d=f.data();var b=f.base(mini);
+            d.visit(p.getUUID(),hill);d.visit(p.getUUID(),mini);
+            var own=LiteraryVignettes.personal(d,p.getUUID(),hill);own.putInt("Visit",2);own.putInt("Present",2400);own.putBoolean("Read_Source",true);own.putBoolean("Ready",true);own.putBoolean("Completed",true);own.putString("Outcome","heard_each_cellar_knock_return");LiteraryVignettes.save(d,p.getUUID(),hill,own);
+            String name=p.getGameProfile().getName(),card=MiniatureNotes.card(p,hill,false,true);
+            h.assertTrue(card.startsWith(name+", in the Hill House nursery. Came in twice; the last time, stayed about two minutes. The room just before this one."),"the card names the reader, the room, the visits and the stay: "+card);
+            h.assertTrue(card.contains("Read what had been left out to read. Knocked, and heard every knock come back from the cellar. Read the last account before leaving."),"it says what they read, what they did and how it ended: "+card);
+            h.assertTrue(card.endsWith("No one came in with "+name+"."),"the room crossed alone says so, under the model with the second figure: "+card);
+            h.assertTrue(!card.matches("(?s).*\\b(he|she|his|hers|him|they|them|their)\\b.*"),"no pronoun is guessed for the reader: "+card);
+            own.putBoolean("Completed",false);own.putBoolean("Ready",false);own.putBoolean("Read_Source",false);LiteraryVignettes.save(d,p.getUUID(),hill,own);
+            card=MiniatureNotes.card(p,hill,false,false);
+            h.assertTrue(card.contains("Did not read what had been left out. Left before it was finished.")&&!card.contains("No one came in"),"an unfinished room is told as unfinished: "+card);
+            h.assertTrue(MiniatureNotes.card(p,LabyrinthPlace.WINCHESTER,true,false).contains("Has not been here."),"a room still ahead is not described as walked");
+            var state=LiteraryVignettes.personal(d,p.getUUID(),mini);var models=new ListTag();var sample=new CompoundTag();sample.putString("Room",hill.id());sample.putBoolean("Behind",true);models.add(sample);state.put("Models",models);
+            h.assertTrue(MiniatureNotes.click(p,b,new BlockPos(-8,1,-18),state)&&(state.getInt("CardsRead")&1)==1,"the left stand answers a touch with its card");
+            h.assertTrue(MiniatureNotes.click(p,b,new BlockPos(0,1,-18),state)&&(state.getInt("CardsRead")&2)==0,"an empty board answers without a card");
+            h.assertTrue(!MiniatureNotes.click(p,b,new BlockPos(3,1,-18),state),"nothing else in the workshop is a stand");
+            state.putInt("ThisVisitTicks",MiniatureNotes.MOTHER_AFTER-5);h.assertTrue(MiniatureNotes.mother(p,b,state)==null,"the mother keeps out of sight for the first twenty seconds");
+            state.putInt("ThisVisitTicks",MiniatureNotes.MOTHER_AFTER);var mother=MiniatureNotes.mother(p,b,state);
+            h.assertTrue(mother!=null&&mother.getCompound("MiniatureMother").getLongArray("Corners").length==4&&mother.getCompound("MiniatureMother").getUUID("Reader").equals(p.getUUID()),"then the reader's own client is told the four upper corners");
+            for(long c:mother.getCompound("MiniatureMother").getLongArray("Corners")){var at=BlockPos.of(c);h.assertTrue(f.level(mini).getBlockState(at).isAir()&&!f.level(mini).getBlockState(at.above()).isAir(),"each corner is open air under the ceiling: "+at.subtract(b));}
+            h.succeed();
+        }
+    }
     @GameTest(template="empty",batch="literary_elk_work",timeoutTicks=400)
     public static void elkKillerHacksAndHaulsCarcassesWhenNoOneIsInSight(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("work_reader",place);var b=f.base(place);
