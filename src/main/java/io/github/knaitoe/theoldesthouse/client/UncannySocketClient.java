@@ -65,6 +65,9 @@ public final class UncannySocketClient {
         if(phase==1&&age>30&&UncannyClient.room().equals("painted_interior")){
             mc.player.setYRot(180);mc.player.setXRot(0);var propped=actor(mc,LiteraryActor.UNCANNY_PROPPED);if(propped!=null&&propped.phase()==1)ack(mc,"boarded-periphery");
         }
+        if(phase==2&&!captures.contains("2:diner-room")){
+            look(mc,b.offset(1,1,-5).getCenter());if(age>25&&UncannyClient.room().equals("second_waitress"))ack(mc,"diner-room");return;
+        }
         if((phase==2||phase==3)&&age>30){var fake=actor(mc,LiteraryActor.UNCANNY_FALSE_WAITRESS);if(fake!=null){look(mc,fake.getEyePosition());if(phase==2&&fake.phase()==1||phase==3&&fake.phase()>=2)ack(mc,phase==2?"diner-translucent":"diner-solid");}}
         if(phase==4&&age>25){var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null){look(mc,giant.getEyePosition());require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");ack(mc,"giant-folded");}}
         if(phase==5&&UncannyClient.room().equals("missing_sleep")&&bedroomWalk(mc,b))paper(mc,b.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)),"bedroom-source",data.getBoolean("PaperRead"));
@@ -114,7 +117,7 @@ public final class UncannySocketClient {
         if(!UncannySocketProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(UncannySocketProof.folder());
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(UncannySocketProof.folder().resolve(shot+".png"));}
         String view=shot.substring(role().length()+1);captures.add(phase+":"+view);
-        if(!view.equals("foyer-lit")&&!view.equals("foyer-dark"))mc.player.connection.sendCommand("uncannyproof "+phase);
+        if(!view.equals("foyer-lit")&&!view.equals("foyer-dark")&&!view.equals("diner-room"))mc.player.connection.sendCommand("uncannyproof "+phase);
         shot=null;if(stopAfter){stopAfter=false;mc.stop();}
     }
 }

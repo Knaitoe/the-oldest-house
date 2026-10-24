@@ -75,7 +75,8 @@ public final class UncannyEnvironmentTests {
             source[0]=l.getBlockEntity(b.offset(UncannyRooms.source(place)));
             h.assertTrue(!UncannyEnvironmentRepairs.step(l,f.origin,place)&&!l.getBlockState(b.offset(-2,-1,-16)).is(UncannyRegistry.material("diner_tile")),"a reader in the room prevents every refit edit");
             l.setBlock(b.offset(-1,-1,-16),Blocks.GOLD_BLOCK.defaultBlockState(),3);
-            f.at(p,place,0,0,20);
+            // Scene bounds include eighteen blocks of approach; leave that and the eight-block watch margin.
+            f.at(p,place,0,0,40);
             var cb=f.base(LabyrinthPlace.LAYERED_MAN);f.level(LabyrinthPlace.LAYERED_MAN).setBlock(cb.offset(-1,-3,-19),Blocks.AIR.defaultBlockState(),3);
             var world=f.data().stateEntry(UncannyStories.WORLD,LabyrinthPlace.LAYERED_MAN.id()+":"+cb.asLong());world.putInt("Layers",2);world.putInt("Pulse",7);f.data().setStateEntry(UncannyStories.WORLD,LabyrinthPlace.LAYERED_MAN.id()+":"+cb.asLong(),world);
         }).thenWaitUntil(()->h.assertTrue(UncannyEnvironmentRepairs.step(l,f.origin,place),"the bounded native diner refit completed"))
