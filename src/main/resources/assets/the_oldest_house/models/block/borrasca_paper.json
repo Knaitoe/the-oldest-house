@@ -1,7 +1,7 @@
 {
   "textures": {
-    "atlas": "the_oldest_house:entity/borrasca_cast_pixels",
-    "particle": "the_oldest_house:entity/borrasca_cast_pixels"
+    "paper": "the_oldest_house:block/borrasca/paper",
+    "particle": "the_oldest_house:block/borrasca/paper"
   },
   "elements": [
     {
@@ -17,58 +17,34 @@
       ],
       "faces": {
         "north": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#paper"
         },
         "south": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#paper"
         },
         "east": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#paper"
         },
         "west": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#paper"
         },
         "up": {
+          "texture": "#paper",
           "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
+            1,
+            1,
+            15,
+            15
+          ]
         },
         "down": {
+          "texture": "#paper",
           "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
+            1,
+            1,
+            15,
+            15
+          ]
         }
       }
     }

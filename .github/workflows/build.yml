@@ -52,6 +52,7 @@ jobs:
           python3 tools/draw_winchester.py --check
           python3 tools/draw_barrett_home.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
+          python3 tools/draw_borrasca_cast.py --check
           python3 tools/generate_bath_decay_assets.py --check
 
       - name: Verify playtest journey measurements
@@ -111,6 +112,11 @@ jobs:
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 104
               trail_png = z.read('assets/the_oldest_house/textures/entity/borrasca_trail_atlas.png')
               assert trail_png.startswith(b'\x89PNG') and trail_png[16:24] == bytes.fromhex('0000004000000040')
+              for person in ('kimber','kyle','sheriff','prescott','worker'):
+                  skin = z.read(f'assets/the_oldest_house/textures/entity/borrasca_{person}.png')
+                  assert skin.startswith(b'\x89PNG') and skin[16:24] == bytes.fromhex('0000004000000040'), person
+              for material in ('timber','steel','rust','paper','notice','notice_frame','carving','drawers','drawers_side','belt','belt_frame','truck','machine'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/borrasca/{material}.png').startswith(b'\x89PNG'), material
               cast_png = z.read('assets/the_oldest_house/textures/entity/borrasca_cast_pixels.png')
               assert cast_png.startswith(b'\x89PNG') and cast_png[16:24] == bytes.fromhex('0000002000000020')
               for cue in ('grinder','grinder_muffled','motor_stop','tree_creak','town_wind'):

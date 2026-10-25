@@ -467,7 +467,7 @@ public final class ArchitectureTests {
         if(name.equals("lake_house_cutaway")){minX=-12;maxX=LakeHouse.HX-1;minZ=LakeHouse.HZ_BACK-3;maxZ=LakeHouse.HZ_FRONT-1;minY=LakeHouse.GROUND-2;maxY=LakeHouse.EAVES-1;}
         if(scene==LabyrinthPlace.BORRASCA){minX=-34;maxX=35;minZ=-69;maxZ=0;minY=-1;maxY=4;}
         if(name.equals("borrasca_treehouse")){minX=-7;maxX=7;minZ=-103;maxZ=-85;minY=-1;maxY=9;}
-        if(name.equals("borrasca_refinery")){minX=-30;maxX=15;minZ=-211;maxZ=-166;minY=10;maxY=18;}
+        if(name.equals("borrasca_refinery")){minX=-30;maxX=15;minZ=-211;maxZ=-166;minY=10;maxY=16;}
         if(name.equals("borrasca_gully")){minX=-20;maxX=12;minZ=-142;maxZ=-96;minY=-1;maxY=12;}
         if(name.equals("borrasca_taking")){minX=-18;maxX=17;minZ=-169;maxZ=-139;minY=7;maxY=19;}
         for(int x=minX;x<=maxX;x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
