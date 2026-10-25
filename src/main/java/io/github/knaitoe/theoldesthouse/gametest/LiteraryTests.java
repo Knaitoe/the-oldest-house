@@ -651,7 +651,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(own.getInt("Stage")==ThreeFingers.TAKEN&&!paw.isEmpty()&&WitheredPawItem.fingers(paw)==3&&p.getHealth()<20&&p.getHealth()>=19,"pulled from the coals: a burn of half a heart and the reader's own three-fingered paw");
             h.assertTrue(pawOf(peer,f.own(peer,place)).isEmpty()&&!WitheredPawItem.owned(paw,peer),"nobody else has it, and it is not theirs");
             ThreeFingers.use(p,paw);
-            h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu menu&&!menu.getSlot(2).getItem().isEmpty()&&menu.getSlot(4).getItem().isEmpty()&&!menu.getSlot(6).getItem().isEmpty(),"with no companion lost, the paw offers money and the storm, not a name");
+            h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu menu&&!menu.getSlot(2).getItem().isEmpty()&&menu.getSlot(3).getItem().isEmpty()&&!menu.getSlot(6).getItem().isEmpty()&&!menu.getSlot(0).getItem().isEmpty()&&!menu.getSlot(4).getItem().isEmpty()&&!menu.getSlot(8).getItem().isEmpty(),"with no companion lost, the paw offers money, the storm, the larder, Will safe and the fire, not a name");
             p.closeContainer();
             // A real tamed wolf of the peer's dies: the House's own record of it is what the peer's paw may name.
             var world=p.server.overworld();var wolf=EntityType.WOLF.create(world);h.assertTrue(wolf!=null,"a native wolf exists");

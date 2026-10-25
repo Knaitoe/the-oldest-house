@@ -19,7 +19,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.*;
 
-/** A brief close focus on a jointed paw: wrist twists, one finger curls, the remaining count stays exact. */
+/** A brief close focus on a jointed paw: wrist twists, one finger curls and the thumb stays still; the remaining count stays exact. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class PawClutchClient {
     public static final ResourceLocation TEXTURE=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/paw_clutch.png");
@@ -46,8 +46,7 @@ public final class PawClutchClient {
         }
         public void curl(int left,float progress){root.getAllParts().forEach(ModelPart::resetPose);float smooth=Mth.clamp(progress,0,1);smooth=smooth*smooth*(3-2*smooth);
             for(int i=0;i<3;i++){float bend=i>left?1:i==left?smooth:0;var f=root.getChild("finger"+i);f.xRot=-bend*1.7F;f.getChild("tip").xRot=-bend*1.9F;}
-            // Opposable digit sweeps across the palm rather than rising as a fourth finger.
-            var thumb=root.getChild("thumb");thumb.zRot+=smooth*2.05F;thumb.yRot-=smooth*.15F;thumb.xRot-=smooth*.7F;
+            // 0.4.121: the thumb is not one of the three; it stays where it lies while a finger goes down.
         }
     }
     public static final class Focus extends Screen {

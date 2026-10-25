@@ -1430,7 +1430,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
-      - name: Native window entry joints and opposable paw thumb
+      - name: Native window entry joints and the paw thumb held still
         timeout-minutes: 5
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PwindowEntrySmoke --no-daemon
