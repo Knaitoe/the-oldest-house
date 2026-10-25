@@ -54,7 +54,7 @@ LOOKS = {
     'borrasca_prescott': Look('#d5a38a','#aaa69c','receding','#88433b','#8a7d5c','flannel','#786049',eyes='#62717c',age=2,mark='borrasca_prescott',sleeve=10,logical=64),
     'borrasca_worker': Look('#bc9479','#4a3c31','close','#627174','#4a595d','crew','#be8748',eyes='#514e43',glasses=True,mark='borrasca_worker',sleeve=10,logical=64),
     'uncanny_waitress': Look('#cba083','#795039','bun','#496d80','#496d80','dress','#e0d4b8',eyes='#596456',age=1,mark='diner_apron',sleeve=4,logical=64),
-    'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_apron',sleeve=4,logical=64),
+    'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_second',sleeve=4,logical=64),
     'uncanny_second_waitress_split': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_split',sleeve=4,logical=64),
     'uncanny_peeler': Look('#c7a087','#8d8879','receding','#737766','#4f5145','shirt','#a99e7b',eyes='#665d4d',age=2,beard='stubble',sleeve=10,logical=64),
     'uncanny_peeler_exhausted': Look('#c79c82','#8d8879','receding','#5b6254','#484b40','shirt','#a99e7b',eyes='#665d4d',age=2,beard='stubble',mark='cellar_exhausted',sleeve=10,logical=64),
@@ -417,6 +417,10 @@ def face(look):
         for x,y in ((3,12),(5,12),(8,13),(10,12),(12,12)):d.point((x,y),fill='#e0d0a8')
         d.line((3,14,6,14,9,15,12,14),fill='#9d6e5d')
         d.line((1,10,1,12),fill=shade(skin,-31));d.line((14,10,14,13),fill=shade(skin,-31))
+    if look.mark in ('diner_second','diner_split'):
+        for x in (3,10):
+            d.rectangle((x,7,x+2,8),fill='#718b60')
+            d.line((x+1,7,x+1,8),fill='#e6ead8')
     if look.mark in ('freckles','borrasca_kimber'):
         for x,y in ((3,10),(5,10),(11,10),(12,11)):d.point((x,y),fill=shade(skin,-28))
     if look.mark=='scar':
