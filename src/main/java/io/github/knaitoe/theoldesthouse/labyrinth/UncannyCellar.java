@@ -86,7 +86,7 @@ public final class UncannyCellar {
         int leg=Math.min(points.size()-1,shared.getInt("EscortLeg"));var target=points.get(leg).add(b.getX(),b.getY(),b.getZ());
         worker.appearance(LiteraryActor.UNCANNY_PEELER,3);worker.gesture(0);if(SceneFootpaths.step(worker,target,.28)){
             if(leg<points.size()-1)shared.putInt("EscortLeg",leg+1);
-            else if(worker.getY()>=b.getY()-.1&&worker.getZ()>b.getZ()-5){shared.putBoolean("Rescued",true);shared.remove("EscortOwner");}
+            else if(worker.getY()>=b.getY()-.1&&worker.getZ()>b.getZ()-5){shared.putBoolean("Rescued",true);shared.putUUID("RescuedBy",owner.getUUID());shared.remove("EscortOwner");}
         }
     }
     /** Completed readers can carry an old original away from the cellar; this is independent of story ticking. */
@@ -143,7 +143,7 @@ public final class UncannyCellar {
         contact(p,b,own);
         if(hasKey&&own.getInt("Peeled")>=6&&p.getY()>=b.getY()&&p.getZ()>b.getZ()-7){
             if(own.getBoolean("Escorting")&&!shared.getBoolean("Rescued"))return;
-            own.putBoolean("Helped",true);own.putBoolean("WorkerRescued",own.getBoolean("Escorting")&&shared.getBoolean("Rescued"));own.putBoolean("WorkerAlreadySafe",!own.getBoolean("Escorting")&&shared.getBoolean("Rescued"));
+            own.putBoolean("Helped",true);boolean rescued=own.getBoolean("Escorting")&&shared.getBoolean("Rescued")&&shared.hasUUID("RescuedBy")&&shared.getUUID("RescuedBy").equals(p.getUUID());own.putBoolean("WorkerRescued",rescued);own.putBoolean("WorkerAlreadySafe",shared.getBoolean("Rescued")&&!rescued);
             UncannyStories.ready(p,PLACE,own,own.getBoolean("WorkerRescued")?"walked_the_worker_out":"brought_the_cellar_key_up");
         }
     }
