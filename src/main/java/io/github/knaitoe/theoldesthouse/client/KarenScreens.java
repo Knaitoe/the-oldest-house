@@ -49,7 +49,7 @@ public final class KarenScreens {
     private static final RandomSource RANDOM=RandomSource.create();
     private static final List<ResourceLocation> slides=new ArrayList<>();
     private static boolean loading,snapPending;
-    private static int slide,slideTicks,lastMap=Integer.MIN_VALUE,untilSnap=-1,generation;
+    private static int slide,slideTicks,lastMap=Integer.MIN_VALUE,untilSnap=-1,generation,preferences=-1;
     private KarenScreens(){}
 
     static Path snapshots(){return Minecraft.getInstance().gameDirectory.toPath().resolve("the_oldest_house").resolve("karen");}
@@ -107,9 +107,16 @@ public final class KarenScreens {
     private static void release(){
         var mc=Minecraft.getInstance();for(var id:slides)mc.getTextureManager().release(id);slides.clear();generation++;loading=false;slide=0;slideTicks=0;lastMap=Integer.MIN_VALUE;
     }
+    private static void refreshPreferences(){
+        int selected=(KarenClientConfig.SCREENSHOTS.get()?1:0)|(KarenClientConfig.SNAPSHOTS.get()?2:0);
+        if(selected==preferences)return;
+        release();preferences=selected;
+        if((selected&2)==0){snapPending=false;untilSnap=-1;}
+    }
 
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var mc=Minecraft.getInstance();
+        refreshPreferences();
         var wall=PersonalProjectionClient.wall();
         if(wall==null){if(!slides.isEmpty()||loading)release();lastMap=Integer.MIN_VALUE;}
         else{
@@ -125,7 +132,7 @@ public final class KarenScreens {
     }
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e){
-        if(!snapPending)return;snapPending=false;var mc=Minecraft.getInstance();if(mc.player==null||mc.screen!=null)return;
+        if(!snapPending)return;snapPending=false;var mc=Minecraft.getInstance();if(!KarenClientConfig.SNAPSHOTS.get()||mc.player==null||mc.screen!=null)return;
         NativeImage small;
         try(var full=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
             int w=full.getWidth(),h=full.getHeight();if(w<16||h<9)return;int cw=Math.min(w,h*16/9),ch=Math.min(h,w*9/16);
@@ -172,6 +179,13 @@ public final class KarenScreens {
             // The squarer old screenshot is cut from its middle, so the bands at its top and bottom are left out, not squeezed in.
             if(file==order.get(2)&&((fitted.getPixelRGBA(128,0)&0xffffff)==0x101010||(fitted.getPixelRGBA(128,HEIGHT-1)&0xffffff)==0x101010))throw new IllegalStateException("Karen's slide kept the screenshot's cut-away edge");}
         if(fit(shots.resolve("notes.txt"))!=null||!newest(dir.resolve("missing"),SHOW).isEmpty())throw new IllegalStateException("Karen's slides read something that is not a picture");
+        boolean keptShots=KarenClientConfig.SCREENSHOTS.get(),keptSnaps=KarenClientConfig.SNAPSHOTS.get();
+        try{
+            KarenClientConfig.SCREENSHOTS.set(true);KarenClientConfig.SNAPSHOTS.set(true);refreshPreferences();
+            var id=Minecraft.getInstance().getTextureManager().register("oth_karen_preference_proof",new DynamicTexture(new NativeImage(16,9,true)));slides.add(id);snapPending=true;
+            KarenClientConfig.SCREENSHOTS.set(false);KarenClientConfig.SNAPSHOTS.set(false);refreshPreferences();
+            if(!slides.isEmpty()||snapPending||loading)throw new IllegalStateException("Karen's disabled settings retained a loaded slide or queued snapshot");
+        }finally{KarenClientConfig.SCREENSHOTS.set(keptShots);KarenClientConfig.SNAPSHOTS.set(keptSnaps);refreshPreferences();}
     }
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){release();snapPending=false;untilSnap=-1;}
 }

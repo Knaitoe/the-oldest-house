@@ -97,12 +97,15 @@ public final class UncannySocketProof {
             if(a==null||b==null)return;
             if(s.getTickCount()%20==0){marker(a,phase);marker(b,phase);}
             if(!CHUNKS.ready()||!both(a,b))return;
-            if(phase==1){for(var p:List.of(a,b)){at(p,LabyrinthPlace.SECOND_WAITRESS,.5,0,-17.5);sourceFixture(p,LabyrinthPlace.SECOND_WAITRESS,270);}step(s,2);}
+            if(phase==1){for(var p:List.of(a,b)){at(p,LabyrinthPlace.SECOND_WAITRESS,.5,0,p==a?-17.5:-22.5);sourceFixture(p,LabyrinthPlace.SECOND_WAITRESS,270);}step(s,2);}
             else if(phase==2){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.SECOND_WAITRESS);FAKES.put(p.getUUID(),own.getUUID("CastFake"));own.putInt("UncannyAge",620);save(p,LabyrinthPlace.SECOND_WAITRESS,own);}step(s,3);}
             else if(phase==3){for(var p:List.of(a,b)){require(FAKES.get(p.getUUID()).equals(own(p,LabyrinthPlace.SECOND_WAITRESS).getUUID("CastFake")),"the translucent and solid waitress are the same original");at(p,LabyrinthPlace.TUNNEL_PERIPHERY,.5,0,-10.5);sourceFixture(p,LabyrinthPlace.TUNNEL_PERIPHERY,170);}step(s,4);}
             else if(phase==4){for(var p:List.of(a,b))at(p,LabyrinthPlace.MISSING_SLEEP,.5,0,.5);step(s,5);}
             else if(phase==5){
-                for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"),"native final source page");require(p.onGround()&&!p.isNoGravity()&&Math.abs(p.getY()-base(LabyrinthPlace.MISSING_SLEEP).getY()-5)<.3,"native doorway and stair walking reaches the notebook floor");DOLLS.put(p.getUUID(),own(p,LabyrinthPlace.MISSING_SLEEP).getUUID("CastDoll"));at(p,LabyrinthPlace.MISSING_SLEEP,-5.5,5,-23.5);}step(s,6);
+                for(var p:List.of(a,b))require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"),"native final source page");
+                // Both real bodies must have settled after closing their menus before either is moved.
+                for(var p:List.of(a,b))if(!p.onGround()||p.isNoGravity()||Math.abs(p.getY()-base(LabyrinthPlace.MISSING_SLEEP).getY()-5)>=.3)return;
+                for(var p:List.of(a,b)){DOLLS.put(p.getUUID(),own(p,LabyrinthPlace.MISSING_SLEEP).getUUID("CastDoll"));at(p,LabyrinthPlace.MISSING_SLEEP,p==a?-5.5:-6.5,5,-23.5);}step(s,6);
             }
             else if(phase==6){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getInt("Sleeps")==1,"first native bed use");at(p,LabyrinthPlace.MISSING_SLEEP,-5.5,5,-23.5);}step(s,7);}
             else if(phase==7){

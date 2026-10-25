@@ -37,7 +37,7 @@ public final class CharacterArtVisualProof extends Screen {
             for(var row:JsonParser.parseReader(reader).getAsJsonArray())cast.add(row.getAsJsonObject());
         }catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
         if(cast.size()<100)throw new IllegalStateException("Incomplete character art review: "+cast.size());
-        for(var row:cast){String name=row.get("name").getAsString();if(name.contains("borrasca"))throw new IllegalStateException("Borrasca is outside this review");
+        for(var row:cast){String name=row.get("name").getAsString();
             try(var stream=mc.getResourceManager().open(texture(name));var image=NativeImage.read(stream)){
                 int logical=row.get("logical").getAsInt();if(image.getWidth()!=logical*4||image.getHeight()!=256)throw new IllegalStateException("Character UV dimensions do not match its native layer: "+name);
             }catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
@@ -77,9 +77,11 @@ public final class CharacterArtVisualProof extends Screen {
         @Override public String toString(){return x0+","+y0+","+z0+" -> "+x1+","+y1+","+z1;}
     }
     private static int role(JsonObject row){try{return LiteraryActor.class.getField(row.get("role").getAsString()).getInt(null);}catch(ReflectiveOperationException e){throw new IllegalStateException("Unknown native cast role "+row,e);}}
-    private static EntityModel<?> model(JsonObject row){
+    static EntityModel<?> model(JsonObject row){
         var mc=Minecraft.getInstance();int phase=row.get("phase").getAsInt();int number=row.get("number").getAsInt();
         return switch(row.get("model").getAsString()){
+            case "borrasca"->{var m=new BorrascaNativeArt.CastModel(mc.getEntityModels().bakeLayer(BorrascaNativeArt.CAST));m.preview(number,0,0);yield m;}
+            case "uncanny"->{var m=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);m.pose(number,phase,false,0,0,0,0,0);yield m;}
             case "harrigan"->{var m=new HouseHumanRenderers.HarriganModel(mc.getEntityModels().bakeLayer(HouseHumanRenderers.HARRIGAN_LAYER));m.preview(number);yield m;}
             case "literary"->{if(PlainFigureModel.matches(role(row),phase))yield new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));var m=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));m.preview(role(row),phase,0);yield m;}
             case "corpse"->{var m=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));m.young=false;m.corpse(row.get("name").getAsString().contains("crew_"),number,0);yield m;}
@@ -126,7 +128,7 @@ public final class CharacterArtVisualProof extends Screen {
             else{var model=new HouseHumanRenderers.HarriganModel(mc.getEntityModels().bakeLayer(HouseHumanRenderers.HARRIGAN_LAYER));model.preview(i+3);draw(g,model,HouseHumanRenderers.mourner(i-1),x,height*.47F,column*.86F,height*.74F,165,0);}
         }
     }
-    private static void draw(GuiGraphics g,EntityModel<?> model,ResourceLocation skin,float cx,float cy,float width,float height,float yaw,float pitch){
+    static void draw(GuiGraphics g,EntityModel<?> model,ResourceLocation skin,float cx,float cy,float width,float height,float yaw,float pitch){
         var p=g.pose();var out=Minecraft.getInstance().renderBuffers().bufferSource();var sample=new PoseStack();sample.mulPose(Axis.YP.rotationDegrees(yaw));sample.mulPose(Axis.XP.rotationDegrees(pitch));
         var bounds=new Bounds();model.renderToBuffer(sample,bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
         float scale=Math.min(width/Math.max(.01F,bounds.x1-bounds.x0),height/Math.max(.01F,bounds.y1-bounds.y0));
@@ -158,7 +160,7 @@ public final class CharacterArtVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve(String.format(java.util.Locale.ROOT,"native-character-art-%02d.png",proof.page)));}
         if(++proof.page<7+(proof.cast.size()+7)/8){proof.frames=0;return;}
-        Files.writeString(dir.resolve("character-art-passed.txt"),proof.cast.size()+" human skins on production layers, front and back; native coffin/pillow and three close views, seated original, bounded corpse vertices, joint and renderer-reuse reset checks. Existing character-phase views cover all sixteen Mother stages, witch attacks, cloth girl and earlier creature views. Borrasca excluded. These are staged mesh/UV views, not uninterrupted ordinary playthroughs.\n");
+        Files.writeString(dir.resolve("character-art-passed.txt"),proof.cast.size()+" human skins on production layers, front and back; native coffin/pillow and three close views, seated original, bounded corpse vertices, joint and renderer-reuse reset checks. Existing character-phase views cover all sixteen Mother stages, witch attacks, cloth girl and earlier creature views. Drisking is included on its production humanoid layer. These are staged mesh/UV views, not uninterrupted ordinary playthroughs.\n");
         TheOldestHouse.LOGGER.info("CHARACTER ART CHECK PASSED: {} human sheets and native coffin bounds",proof.cast.size());
         if(Boolean.getBoolean("the_oldest_house.characterArtSmoke"))mc.stop();else mc.setScreen(new ShallowsVisualProof());
     }

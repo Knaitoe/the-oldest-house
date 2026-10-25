@@ -18,6 +18,16 @@ public final class UncannyRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<UncannyPropBlock>> PROP_TYPE=CODECS.register("uncanny_fitting",()->UncannyPropBlock.CODEC);
     public static final DeferredBlock<UncannyPropBlock> PROP=BLOCKS.registerBlock("uncanny_fitting",UncannyPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(UncannyPropBlock::light));
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<UncannyPropBlock.Fitting>> FITTING=BES.register("uncanny_fitting",()->BlockEntityType.Builder.of(UncannyPropBlock.Fitting::new,PROP.get()).build(null));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<UncannyFurnitureBlock>> FURNITURE_TYPE=CODECS.register("uncanny_furniture",()->UncannyFurnitureBlock.CODEC);
+    public static final DeferredBlock<UncannyFurnitureBlock> FURNITURE=BLOCKS.registerBlock("uncanny_furniture",UncannyFurnitureBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(UncannyFurnitureBlock::light));
+    public static final DeferredBlock<DoorBlock> DINER_DOOR=BLOCKS.register("uncanny_diner_door",()->new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_DOOR).noOcclusion().noLootTable()));
+    public static final DeferredBlock<CarpetBlock> PARLOR_RUG=BLOCKS.registerBlock("uncanny_parlor_rug",CarpetBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GREEN_CARPET).noLootTable());
+    private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
+    static {
+        for(String name:new String[]{"diner_wall","diner_dado","diner_tile","roof","asphalt","pavement","parlor_paper","dark_wood","bedroom_paper","workshop_wall","workshop_floor","lobby_wall","courtyard_wall"})
+            MATERIALS.put(name,BLOCKS.registerSimpleBlock("uncanny_"+name,BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_TERRACOTTA).strength(1.2F).noLootTable()));
+    }
+    public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredItem<UncannyArtifactItem> BONE_RING=ITEMS.registerItem("bone_ring",p->new UncannyArtifactItem(p,false),new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<UncannyArtifactItem> SMOKY_MIRROR=ITEMS.registerItem("smoky_mirror",p->new UncannyArtifactItem(p,true),new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<Item> BAT=ITEMS.registerSimpleItem("hallway_bat",new Item.Properties().stacksTo(1));

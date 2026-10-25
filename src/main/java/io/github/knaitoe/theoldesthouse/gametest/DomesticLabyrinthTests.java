@@ -164,7 +164,7 @@ public final class DomesticLabyrinthTests {
             h.assertTrue(level.getBlockState(spentLight).is(Blocks.TORCH), "a resumed upgrade cannot clear a finished alcove");
             BlockPos hallOrigin = h.absolutePos(BlockPos.ZERO).offset(4100, 5, 0);
             HouseImpossibleHallway.build(level, hallOrigin);
-            h.assertTrue(level.getBlockState(hallOrigin.offset(HouseLayout.AXIS_X - 2, 1, HouseImpossibleHallway.START_Z_OFFSET + 12)).is(Blocks.BARREL), "the approach contains an ordinary cupboard");
+            for(int dz=12;dz<=14;dz++)h.assertTrue(level.getBlockState(hallOrigin.offset(HouseLayout.AXIS_X - 2,1,HouseImpossibleHallway.START_Z_OFFSET+dz)).is(Blocks.SPRUCE_PLANKS), "the entire approach wall has matching paneling");
             var data = new LabyrinthData(); UUID player = UUID.randomUUID();
             WitnessAccount.resolve(data, player, WitnessAccount.Story.FLOORBOARDS, "the ending");
             data.setCompleted(TellTaleFloorboards.ID, true);
