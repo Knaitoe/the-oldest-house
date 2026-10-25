@@ -180,19 +180,34 @@
       "model": "the_oldest_house:block/uncanny_shelf",
       "y": 270
     },
-    "kind=fluorescent,facing=north": {
+    "kind=fluorescent,facing=north,open=false": {
       "model": "the_oldest_house:block/uncanny_fluorescent"
     },
-    "kind=fluorescent,facing=east": {
+    "kind=fluorescent,facing=east,open=false": {
       "model": "the_oldest_house:block/uncanny_fluorescent",
       "y": 90
     },
-    "kind=fluorescent,facing=south": {
+    "kind=fluorescent,facing=south,open=false": {
       "model": "the_oldest_house:block/uncanny_fluorescent",
       "y": 180
     },
-    "kind=fluorescent,facing=west": {
+    "kind=fluorescent,facing=west,open=false": {
       "model": "the_oldest_house:block/uncanny_fluorescent",
+      "y": 270
+    },
+    "kind=fluorescent,facing=north,open=true": {
+      "model": "the_oldest_house:block/uncanny_fluorescent_open"
+    },
+    "kind=fluorescent,facing=east,open=true": {
+      "model": "the_oldest_house:block/uncanny_fluorescent_open",
+      "y": 90
+    },
+    "kind=fluorescent,facing=south,open=true": {
+      "model": "the_oldest_house:block/uncanny_fluorescent_open",
+      "y": 180
+    },
+    "kind=fluorescent,facing=west,open=true": {
+      "model": "the_oldest_house:block/uncanny_fluorescent_open",
       "y": 270
     },
     "kind=window_frame,facing=north": {

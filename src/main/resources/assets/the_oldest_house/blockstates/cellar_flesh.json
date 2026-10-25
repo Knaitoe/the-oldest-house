@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "layer=0": {
+      "model": "the_oldest_house:block/uncanny_flesh_skin"
+    },
+    "layer=1": {
+      "model": "the_oldest_house:block/uncanny_flesh_fat"
+    },
+    "layer=2": {
+      "model": "the_oldest_house:block/uncanny_flesh_veins"
+    },
+    "layer=3": {
+      "model": "the_oldest_house:block/uncanny_flesh_raw"
+    }
+  }
+}

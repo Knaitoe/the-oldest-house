@@ -57,6 +57,7 @@ LOOKS = {
     'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_apron',sleeve=4,logical=64),
     'uncanny_second_waitress_split': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_split',sleeve=4,logical=64),
     'uncanny_peeler': Look('#c7a087','#8d8879','receding','#737766','#4f5145','shirt','#a99e7b',eyes='#665d4d',age=2,beard='stubble',sleeve=10,logical=64),
+    'uncanny_peeler_exhausted': Look('#c79c82','#8d8879','receding','#5b6254','#484b40','shirt','#a99e7b',eyes='#665d4d',age=2,beard='stubble',mark='cellar_exhausted',sleeve=10,logical=64),
     'uncanny_visitor': Look('#cbb194','#473f37','part','#45494a','#343a3d','coat','#afa78e',eyes='#62685d',age=1,sleeve=11,logical=64),
     'literary_paw_walter': Look('#d6a88a','#cecbc4','receding','#47513c','#5a4c3e','coat','#9e8350',eyes='#5c6c78',age=2,beard='short',glasses=True,mark='cottage_walter'),
     'literary_paw_ruth': Look('#deb496','#76665a','bun','#523240','#5f4b4e','dress','#d8cebb',eyes='#544a3e',age=2,mark='cottage_apron'),
@@ -802,6 +803,13 @@ def paint(look):
             d=ImageDraw.Draw(im)
             for y in (5,7,8):d.line((112*S,y*S,128*S-1,y*S),fill='#978e76',width=S)
             if look.mark=='wound':d.rectangle((116*S,5*S,119*S,8*S),fill='#763e37')
+    if look.mark=='cellar_exhausted':
+        d=ImageDraw.Draw(im)
+        # Two clustered sweat trails and a wet collar on the same native face/cloth grid.
+        for x,y in ((9*S,10*S),(14*S,9*S)):
+            d.rectangle((x,y,x+S-1,y+2*S-1),fill='#a7b9aa');d.point((x,y),fill='#d5dfc5')
+        d.line((21*S,21*S,23*S,24*S,25*S,22*S,26*S,21*S),fill='#434e44',width=S)
+        d.line((20*S,24*S,21*S,27*S),fill='#454f43',width=S)
     # Native 256-square / 512x256 archive dimensions; art itself remains the exact two-pixel grid.
     return im.resize((look.logical*4,256),Image.Resampling.NEAREST)
 

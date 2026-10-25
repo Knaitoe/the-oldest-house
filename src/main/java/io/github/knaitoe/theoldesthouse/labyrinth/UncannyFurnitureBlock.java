@@ -37,7 +37,7 @@ public final class UncannyFurnitureBlock extends HorizontalDirectionalBlock {
     public static BlockState of(Kind kind,Direction facing){return UncannyRegistry.FURNITURE.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     public static boolean isSeat(BlockState s){return s.is(UncannyRegistry.FURNITURE.get())&&s.getValue(KIND).seat();}
     public static int light(BlockState s){return switch(s.getValue(KIND)){
-        case FLUORESCENT->12;case EXTERIOR_LAMP->9;case SCONCE->8;case DESK_LAMP->s.getValue(OPEN)?0:8;
+        case FLUORESCENT->s.getValue(OPEN)?0:12;case EXTERIOR_LAMP->9;case SCONCE->8;case DESK_LAMP->s.getValue(OPEN)?0:8;
         case SIGN_LEFT,SIGN_CENTER,SIGN_RIGHT->7;default->0;
     };}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

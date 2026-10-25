@@ -81,7 +81,7 @@ public final class UncannySocketProof {
                 // Match the full expedition host: do not start an unrelated eighty-chunk terrain copy.
                 var house=new HouseSavedData();house.markSpawned(ORIGIN);house.markInteriorInitialized();s.overworld().getDataStorage().set("the_oldest_house",house);
                 var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,ORIGIN);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
-                for(var p:List.of(a,b)){at(p,LabyrinthPlace.PAINTED_INTERIOR,.5,0,-20.5);sourceFixture(p,LabyrinthPlace.PAINTED_INTERIOR,120);}
+                for(var p:List.of(a,b)){at(p,LabyrinthPlace.PAINTED_INTERIOR,p==a?-1.5:1.5,0,-20.5);sourceFixture(p,LabyrinthPlace.PAINTED_INTERIOR,120);}
                 step(s,1);return;
             }
             if(s.getTickCount()-changed>2400)throw new IllegalStateException("phase timed out "+phase+"; A=["+monitorState(a)+"] B=["+monitorState(b)+"]");
@@ -99,7 +99,7 @@ public final class UncannySocketProof {
             if(!CHUNKS.ready()||!both(a,b))return;
             if(phase==1){for(var p:List.of(a,b)){at(p,LabyrinthPlace.SECOND_WAITRESS,.5,0,p==a?-17.5:-22.5);sourceFixture(p,LabyrinthPlace.SECOND_WAITRESS,270);}step(s,2);}
             else if(phase==2){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.SECOND_WAITRESS);FAKES.put(p.getUUID(),own.getUUID("CastFake"));own.putInt("UncannyAge",620);save(p,LabyrinthPlace.SECOND_WAITRESS,own);}step(s,3);}
-            else if(phase==3){for(var p:List.of(a,b)){require(FAKES.get(p.getUUID()).equals(own(p,LabyrinthPlace.SECOND_WAITRESS).getUUID("CastFake")),"the translucent and solid waitress are the same original");at(p,LabyrinthPlace.TUNNEL_PERIPHERY,.5,0,-10.5);sourceFixture(p,LabyrinthPlace.TUNNEL_PERIPHERY,170);}step(s,4);}
+            else if(phase==3){for(var p:List.of(a,b)){require(FAKES.get(p.getUUID()).equals(own(p,LabyrinthPlace.SECOND_WAITRESS).getUUID("CastFake")),"the translucent and solid waitress are the same original");at(p,LabyrinthPlace.TUNNEL_PERIPHERY,p==a?-.8:.8,0,p==a?-14.5:-20.5);sourceFixture(p,LabyrinthPlace.TUNNEL_PERIPHERY,170);}step(s,4);}
             else if(phase==4){for(var p:List.of(a,b))at(p,LabyrinthPlace.MISSING_SLEEP,.5,0,.5);step(s,5);}
             else if(phase==5){
                 for(var p:List.of(a,b))require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"),"native final source page");
@@ -111,7 +111,7 @@ public final class UncannySocketProof {
             else if(phase==7){
                 for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.MISSING_SLEEP);require(own.getInt("Sleeps")==2,"second native bed use");
                     // Explicit timeout fixture lets slow software-rendered clients inspect four real feeds.
-                    own.putInt("SecondSleepAge",own.getInt("UncannyAge")+3600);save(p,LabyrinthPlace.MISSING_SLEEP,own);at(p,LabyrinthPlace.MISSING_SLEEP,1.5,5,-20.5);
+                    own.putInt("SecondSleepAge",own.getInt("UncannyAge")+3600);save(p,LabyrinthPlace.MISSING_SLEEP,own);at(p,LabyrinthPlace.MISSING_SLEEP,p==a?1.2:2.8,5,-20.5);
                 }step(s,8);
             }
             else if(phase==8){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("MarionetteSeen"),"the reader personally saw the direct form");at(p,LabyrinthPlace.MISSING_SLEEP,-5.5,5,-19.5);}step(s,9);}
@@ -121,9 +121,9 @@ public final class UncannySocketProof {
             }
             else if(phase==11){for(var p:List.of(a,b)){require(DOLLS.get(p.getUUID()).equals(own(p,LabyrinthPlace.MISSING_SLEEP).getUUID("CastDoll")),"reconnect never fabricates a replacement doll");at(p,LabyrinthPlace.MISSING_SLEEP,2.5,5,-15.5);}step(s,12);}
             else if(phase==12){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("BlockedDoor")&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Ready"),"each reader closes the actual door after their own evidence");at(p,LabyrinthPlace.MISSING_SLEEP,3.5,0,-2.5);}step(s,13);}
-            else if(phase==13){for(var p:List.of(a,b)){require(WitnessAccount.has(LabyrinthData.get(s),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"native final account earns the personal memory");require(p.getInventory().countItem(UncannyRegistry.SMOKY_MIRROR.get())==1,"exactly one finite mirror");at(p,LabyrinthPlace.LAYERED_MAN,3.5,-5,-15.5);sourceFixture(p,LabyrinthPlace.LAYERED_MAN,50);}step(s,14);}
-            else if(phase==14){for(var p:List.of(a,b)){at(p,LabyrinthPlace.MOTION_LIGHT,.5,0,-10.5);sourceFixture(p,LabyrinthPlace.MOTION_LIGHT,5);}step(s,15);}
-            else if(phase==15){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MOTION_LIGHT).getInt("DarkSeen")>=2,"actual native floodlight cycles");at(p,LabyrinthPlace.MISSING_SLEEP,1.5,5,-20.5);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(UncannyRegistry.BONE_RING.get()));p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.invulnerableTime=0;
+            else if(phase==13){for(var p:List.of(a,b)){require(WitnessAccount.has(LabyrinthData.get(s),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"native final account earns the personal memory");require(p.getInventory().countItem(UncannyRegistry.SMOKY_MIRROR.get())==1,"exactly one finite mirror");at(p,LabyrinthPlace.LAYERED_MAN,p==a?3.42:-2.42,-5,-20.5);sourceFixture(p,LabyrinthPlace.LAYERED_MAN,50);}step(s,14);}
+            else if(phase==14){for(var p:List.of(a,b)){require(p.hasEffect(UncannyRegistry.ENGULFED)&&own(p,LabyrinthPlace.LAYERED_MAN).getInt("Engulfment")>0,"real tissue contact applies the custom status and screen pressure");at(p,LabyrinthPlace.MOTION_LIGHT,p==a?-1.5:1.5,0,-10.5);sourceFixture(p,LabyrinthPlace.MOTION_LIGHT,5);}step(s,15);}
+            else if(phase==15){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MOTION_LIGHT).getInt("DarkSeen")>=2,"actual native floodlight cycles");at(p,LabyrinthPlace.MISSING_SLEEP,p==a?1.2:2.8,5,-20.5);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(UncannyRegistry.BONE_RING.get()));p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.invulnerableTime=0;
                     // Keep natural regeneration from healing the real two-point payment before the client captures it.
                     p.getFoodData().setFoodLevel(17);
                 }step(s,16);}

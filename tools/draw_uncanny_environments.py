@@ -183,7 +183,7 @@ def furniture():
     out['cup']=[p((5,0,5),(11,1,11),'ceramic'),p((4,1,4),(12,6,12),'ceramic'),p((5,6,5),(11,7,11),'black'),p((12,2,6),(14,5,10),'ceramic')]
     return out
 
-INTERACTIVE={'cabinet','fridge','sideboard','wardrobe','mailbox','desk_lamp'}
+INTERACTIVE={'cabinet','fridge','sideboard','wardrobe','mailbox','desk_lamp','fluorescent'}
 SEATS={'booth','stool','armchair','sofa','sofa_left','sofa_right','diner_chair','lobby_bench'}
 LIGHTS={'fluorescent':12,'exterior_lamp':9,'sconce':8,'desk_lamp':8,'sign_left':7,'sign_center':7,'sign_right':7}
 
@@ -196,6 +196,9 @@ def pieces_for(name,opened):
     elif name=='sideboard':parts[-2]['from']=[1,5,2];parts[-2]['to']=[2,13,14];parts[-1]['from']=[0,8,11];parts[-1]['to']=[1,10,12]
     elif name=='fridge':parts[1]['from']=[0,1,1];parts[1]['to']=[1,22,15];parts[2]['from']=[0,6,12];parts[2]['to']=[2,19,13]
     elif name=='mailbox':parts[1]['from']=[1,1,4];parts[1]['to']=[2,7,10]
+    if name=='fluorescent':
+        for part in parts:
+            if part['material']=='lamp':part['material']='black'
     return parts
 
 def models():
@@ -269,5 +272,7 @@ def main():
     if check:assert JAVA.read_text()==shape_source(),'Native furniture collision differs from its generated meshes'
     else:JAVA.write_text(shape_source())
     print(('Verified' if check else 'Painted')+f' {len(paintings())} native materials, {len(furniture())} fitted furnishings and the glazed diner entrance.')
+    from draw_uncanny_cellar import main as cellar_main
+    cellar_main()
 
 if __name__=='__main__':main()

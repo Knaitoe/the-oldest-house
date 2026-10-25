@@ -45,8 +45,10 @@ public final class PhonePlaybackProof {
         if(!active||!(mc.screen instanceof PhonePlaybackScreen screen)||++frames<6)return;
         Files.createDirectories(dir);
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
-            var colours=new HashSet<Integer>();int cx=image.getWidth()/2,cy=image.getHeight()/2;
-            for(int y=-40;y<40;y+=2)for(int x=-70;x<70;x+=2)colours.add(image.getPixelRGBA(cx+x,cy+y)&0xF0F0F0);
+            var colours=new HashSet<Integer>();
+            // Sample the actual picture broadly: the old centre crop missed the cross and bell,
+            // falsely rejecting a correctly drawn dark steeple when its moving grain quantized to eleven colours.
+            for(int y=image.getHeight()/5;y<image.getHeight()*4/5;y+=4)for(int x=image.getWidth()/5;x<image.getWidth()*4/5;x+=4)colours.add(image.getPixelRGBA(x,y)&0xF0F0F0);
             if(colours.size()<12)throw new IllegalStateException("PHONE PLAYBACK CHECK FAILED: frame "+HELD[stage]+" draws flat ("+colours.size()+" colours)");
             image.writeToFile(dir.resolve("native-phone-playback-"+HELD[stage]+".png"));
         }

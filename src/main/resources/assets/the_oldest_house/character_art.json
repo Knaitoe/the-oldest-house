@@ -840,7 +840,14 @@
     "logical": 64,
     "model": "uncanny",
     "number": 37,
-    "phase": 1
+    "phase": 0
+  },
+  {
+    "name": "uncanny_peeler_exhausted",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 37,
+    "phase": 2
   },
   {
     "name": "uncanny_second_waitress",
