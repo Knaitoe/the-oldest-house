@@ -292,7 +292,7 @@ public final class ArchitectureTests {
                 case PAINTED_INTERIOR,MOTION_LIGHT->Blocks.DARK_OAK_PLANKS;
                 case SECOND_WAITRESS->UncannyRegistry.material("diner_tile");
                 case TUNNEL_PERIPHERY->Blocks.SMOOTH_STONE;
-                case LAYERED_MAN->UncannyRegistry.material("workshop_floor");
+                case LAYERED_MAN->UncannyRegistry.material("cellar_floor");
                 case MISSING_SLEEP->Blocks.SPRUCE_PLANKS;
                 default->throw new IllegalArgumentException(scene.id());
             };

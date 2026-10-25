@@ -375,5 +375,8 @@
   "item.the_oldest_house.hallway_bat": "Wooden Bat",
   "subtitles.the_oldest_house.winchester_hammer": "A hammer drives a nail behind the wall",
   "subtitles.the_oldest_house.winchester_saw": "A saw works through a board behind the wall",
-  "subtitles.the_oldest_house.winchester_chime": "The clock strikes"
+  "subtitles.the_oldest_house.winchester_chime": "The clock strikes",
+  "item.the_oldest_house.cellar_key": "Cellar key",
+  "effect.the_oldest_house.engulfed": "Engulfed",
+  "block.the_oldest_house.cellar_flesh": "Living flesh"
 }

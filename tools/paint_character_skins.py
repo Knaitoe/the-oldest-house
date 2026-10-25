@@ -57,6 +57,7 @@ LOOKS = {
     'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_apron',sleeve=4,logical=64),
     'uncanny_second_waitress_split': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_split',sleeve=4,logical=64),
     'uncanny_peeler': Look('#c7a087','#8d8879','receding','#737766','#4f5145','shirt','#a99e7b',eyes='#665d4d',age=2,beard='stubble',sleeve=10,logical=64),
+    'uncanny_peeler_exhausted': Look('#c79c82','#8d8879','receding','#5b6254','#484b40','shirt','#a99e7b',eyes='#665d4d',age=2,beard='stubble',mark='cellar_exhausted',sleeve=10,logical=64),
     'uncanny_visitor': Look('#cbb194','#473f37','part','#45494a','#343a3d','coat','#afa78e',eyes='#62685d',age=1,sleeve=11,logical=64),
     'literary_paw_walter': Look('#d6a88a','#cecbc4','receding','#47513c','#5a4c3e','coat','#9e8350',eyes='#5c6c78',age=2,beard='short',glasses=True,mark='cottage_walter'),
     'literary_paw_ruth': Look('#deb496','#76665a','bun','#523240','#5f4b4e','dress','#d8cebb',eyes='#544a3e',age=2,mark='cottage_apron'),
@@ -125,9 +126,9 @@ LOOKS = {
     'literary_father': Look('#b98f70','#4b3628','short','#695a42','#4b463a','field','#9b8460',age=1,beard='stubble'),
     'literary_visitor': Look('#c8a381','#7b5c40','part','#75644d','#4e493c','coat','#b6a588',age=1),
     'literary_killer': Look('#b9ad8f','#282722','close','#484a38','#34362d','killer','#797354',mark='killer'),
-    'literary_family_father': Look('#c49f81','#68513b','part','#4f5a47','#3d4436','suit','#ac9b79',age=1),
-    'literary_family_mother': Look('#cea78c','#6c4435','bun','#9c625d','#624c46','dress','#c7a791'),
-    'literary_family_child': Look('#d4ad8c','#6c4830','messy','#536d81','#3c4d5d','tee','#a4bac0',sleeve=4),
+    'literary_family_father': Look('#b8ad92','#514a3a','part','#505846','#3d4235','suit','#a49a7d',eyes='#797d67',age=1,mark='family_father'),
+    'literary_family_mother': Look('#c3b4a1','#594035','bun','#8b625d','#5d4843','dress','#b5a48c',eyes='#858679',mark='family_mother'),
+    'literary_family_child': Look('#c7bfa5','#63513b','messy','#596c78','#3e4c56','tee','#a2aea9',eyes='#7c8676',mark='family_child',sleeve=4),
     'literary_old_man': Look('#bda188','#b7af99','receding','#6c5b42','#4c473a','coat','#a28a64',age=2,beard='full'),
     'literary_stranger_0': Look('#c6a586','#6a533c','part','#62664a','#4b4e3a','coat','#b4aa86',age=1),
     'literary_stranger_1': Look('#c8aa8c','#674a39','part','#795944','#4c4035','shirt','#a98a6b',age=1,glasses=True),
@@ -207,8 +208,8 @@ LOOKS['ghosts_marjorie_dinner']=replace(LOOKS['ghosts_marjorie'],mark='sauce')
 LOOKS['ghosts_john_hand']=replace(LOOKS['ghosts_john'],mark='hand')
 LOOKS['literary_father_bandaged']=replace(LOOKS['literary_father'],mark='bandaged')
 LOOKS['literary_father_mangled']=replace(LOOKS['literary_father'],mark='wound')
-for role in ('father','mother','child'):
-    LOOKS[f'literary_family_{role}_changed']=replace(LOOKS[f'literary_family_{role}'],mark='changed')
+for role,skin in [('father','#a6a28c'),('mother','#b5ada1'),('child','#b8baa2')]:
+    LOOKS[f'literary_family_{role}_changed']=replace(LOOKS[f'literary_family_{role}'],skin=skin,mark=f'family_{role}_changed')
 
 
 def net(u,v,w,h,d):
@@ -269,7 +270,77 @@ def costume_face(look):
     return None
 
 
+def family_face(look):
+    """Three drawn, bloodless faces; the later forms distort the same people, not a mirrored mask."""
+    im=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(im)
+    changed=look.mark.endswith('_changed');role=look.mark.split('_')[1]
+    skin=rgb(look.skin);hollow=shade(skin,-30);crease=shade(skin,-49)
+    socket='#44453c';inside='#302f2b';rim='#807367';bone='#d0cbb6'
+    hair=rgb(look.hair);hlo=shade(hair,-12);hhi=shade(hair,13)
+    # Hair clusters and face placement stay on the common sixteen-pixel front plane.
+    if role=='father':
+        d.polygon([(0,0),(15,0),(15,4),(13,3),(10,2),(7,3),(5,5),(2,4),(0,5)],fill=hair)
+        d.line((2,1,7,1),fill=hhi);d.line((10,0,10,2),fill=hlo)
+        d.line((2,9,2,12,4,14),fill=hollow);d.line((12,10,11,12),fill=hollow)
+        d.line((5,4,9,4),fill=shade(skin,-16))
+        if changed:
+            d.polygon([(2,6),(6,6),(6,8),(5,10),(3,10),(2,8)],fill=socket)
+            d.line((3,7,4,7),fill='#acae99');d.point((4,7),fill=inside)
+            d.rectangle((10,7,12,9),fill=socket);d.line((10,8,11,8),fill=bone)
+            d.line((7,9,7,11,6,12),fill=crease)
+            d.polygon([(5,12),(8,12),(10,11),(12,12),(11,15),(7,15),(4,14)],fill=inside)
+            d.line((5,12,7,12),fill=bone);d.point((10,12),fill='#b7b39b')
+            d.line((4,11,3,13,3,14),fill=rim);d.line((11,15,12,14),fill=crease)
+            d.line((12,4,12,5,13,6),fill=shade(skin,-22))
+        else:
+            d.line((2,6,6,6),fill=socket);d.rectangle((3,7,5,8),fill=hollow)
+            d.line((3,7,5,7),fill=bone);d.point((4,7),fill=inside)
+            d.line((10,7,13,7),fill=socket);d.line((10,8,12,8),fill=bone);d.point((11,8),fill=inside)
+            d.line((3,9,5,9),fill=crease);d.line((11,9,12,9),fill=hollow)
+            d.line((8,9,8,11),fill=crease);d.point((7,10),fill=shade(skin,6))
+            d.line((5,13,8,13,10,12),fill='#665d50');d.line((6,14,9,14),fill=hollow)
+    elif role=='mother':
+        d.rectangle((0,0,15,2),fill=hair)
+        d.polygon([(0,2),(7,2),(5,4),(3,5),(2,11),(0,14)],fill=hair)
+        d.polygon([(11,2),(15,2),(15,15),(13,13),(13,5)],fill=hair)
+        d.line((1,2,1,9),fill=hhi);d.line((14,4,14,12),fill=hlo)
+        d.line((4,10,3,12,4,14),fill=hollow);d.line((11,10,11,12),fill=hollow)
+        if changed:
+            d.polygon([(3,6),(6,6),(6,9),(4,10),(3,9)],fill=socket)
+            d.line((4,7,5,7),fill=bone);d.point((5,7),fill=inside)
+            d.rectangle((10,8,12,10),fill=socket);d.line((11,9,12,9),fill='#b7b7a7')
+            d.line((8,9,8,11,9,12),fill=crease)
+            d.polygon([(4,12),(6,13),(8,13),(11,11),(12,12),(10,15),(6,15),(4,14)],fill=inside)
+            d.point((5,13),fill=bone);d.line((9,13,10,12),fill='#bbb6a0')
+            d.line((3,11,3,13),fill=rim);d.line((11,14,12,13),fill=crease)
+        else:
+            d.line((3,6,6,6),fill=socket);d.line((3,7,5,7),fill=bone);d.point((5,7),fill=inside)
+            d.line((10,7,12,7),fill=socket);d.line((10,8,12,8),fill=bone);d.point((11,8),fill=inside)
+            d.line((4,8,5,8),fill=hollow);d.line((10,9,12,9),fill=crease)
+            d.line((8,9,8,11),fill=crease);d.point((7,10),fill=shade(skin,5))
+            d.line((5,12,6,13,9,13,11,12),fill='#756558');d.line((7,14,9,14),fill=hollow)
+    else:
+        d.polygon([(0,0),(15,0),(15,4),(13,3),(12,5),(10,3),(8,4),(6,2),(4,5),(2,3),(0,5)],fill=hair)
+        d.line((2,1,5,1),fill=hhi);d.line((9,1,11,1),fill=hhi);d.line((14,1,14,3),fill=hlo)
+        d.line((2,10,3,12),fill=hollow);d.line((13,9,12,12),fill=hollow)
+        if changed:
+            d.rectangle((3,6,6,9),fill=socket);d.rectangle((10,7,12,10),fill=socket)
+            d.point((5,7),fill=bone);d.line((10,8,11,8),fill='#babcaa')
+            d.line((7,9,7,11),fill=crease)
+            d.polygon([(6,12),(9,11),(10,12),(10,15),(7,15),(6,14)],fill=inside)
+            d.point((8,12),fill=bone);d.line((5,12,5,14),fill=crease)
+            d.line((11,11,11,13),fill=hollow)
+        else:
+            d.line((3,6,6,6),fill=socket);d.line((3,7,6,7),fill=bone);d.point((5,7),fill=inside)
+            d.line((10,7,12,7),fill=socket);d.line((10,8,12,8),fill=bone);d.point((10,8),fill=inside)
+            d.line((4,8,6,8),fill=hollow);d.line((11,9,12,9),fill=hollow)
+            d.line((8,9,8,10),fill=crease);d.line((6,12,8,12,9,13),fill='#776e5a')
+            d.line((6,13,7,13),fill=hollow)
+    return im
+
+
 def face(look):
+    if look.mark.startswith('family_'):return family_face(look)
     im=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(im)
     skin=rgb(look.skin);dark=shade(look.skin,-36);cheek=shade(look.skin,-12)
     hair=rgb(look.hair);hlo=shade(hair,-13);hhi=shade(hair,16)
@@ -802,6 +873,13 @@ def paint(look):
             d=ImageDraw.Draw(im)
             for y in (5,7,8):d.line((112*S,y*S,128*S-1,y*S),fill='#978e76',width=S)
             if look.mark=='wound':d.rectangle((116*S,5*S,119*S,8*S),fill='#763e37')
+    if look.mark=='cellar_exhausted':
+        d=ImageDraw.Draw(im)
+        # Two clustered sweat trails and a wet collar on the same native face/cloth grid.
+        for x,y in ((9*S,10*S),(14*S,9*S)):
+            d.rectangle((x,y,x+S-1,y+2*S-1),fill='#a7b9aa');d.point((x,y),fill='#d5dfc5')
+        d.line((21*S,21*S,23*S,24*S,25*S,22*S,26*S,21*S),fill='#434e44',width=S)
+        d.line((20*S,24*S,21*S,27*S),fill='#454f43',width=S)
     # Native 256-square / 512x256 archive dimensions; art itself remains the exact two-pixel grid.
     return im.resize((look.logical*4,256),Image.Resampling.NEAREST)
 

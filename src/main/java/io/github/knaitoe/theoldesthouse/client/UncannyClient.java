@@ -9,6 +9,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -17,7 +19,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-/** Redundant directional, shape/text and sound information, bound to one actual reader and world. */
+/** Local camera, native visual effects and item senses, bound to one actual reader and world. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class UncannyClient {
     private static CompoundTag view=new CompoundTag();private static ClientLevel world;private static int lease;private static float fov=70;
@@ -57,20 +59,20 @@ public final class UncannyClient {
         }
     }
     @SubscribeEvent public static void overlay(RenderGuiEvent.Post event){
-        if(!active())return;var mc=Minecraft.getInstance();var g=event.getGuiGraphics();String text="";
-        switch(room()){
-            case "painted_interior"->{int side=view.getInt("Edge");if(side!=0)text=side<0?"< Wood creaks":"Wood creaks >";}
-            case "second_waitress"->{if(view.getInt("Age")>0)text="Black frost at booth four  /  Butter knives rattle";}
-            case "tunnel_periphery"->text=green()?"||  GREEN — She is still":"—  RED — Footsteps behind you";
-            case "missing_sleep"->{if(view.getInt("Sleeps")>0)text=sign();}
-            case "layered_man"->{if(view.getInt("Growth")>0)text="A heartbeat in the cellar";}
-            case "motion_light"->text=view.getBoolean("Dark")?"Floodlight OFF / Stillness outside":"Floodlight ON / Wind in the courtyard";
-            default->{}
-        }
-        if(!text.isEmpty())g.drawCenteredString(mc.font,text,mc.getWindow().getGuiScaledWidth()/2,mc.getWindow().getGuiScaledHeight()-54,0xffe2dccb);
+        if(!active())return;var mc=Minecraft.getInstance();var g=event.getGuiGraphics();
         if(room().equals("second_waitress")&&view.getInt("Age")>0){int w=mc.getWindow().getGuiScaledWidth(),h=mc.getWindow().getGuiScaledHeight();g.fill(0,0,3,h,0x99101418);g.fill(w-3,0,w,h,0x99101418);}
-        // The growth pulse has a static visual equivalent; it does not require forced camera shake.
-        if(room().equals("layered_man")&&view.getInt("Age")%80<12){int h=mc.getWindow().getGuiScaledHeight();g.fill(0,h-4,mc.getWindow().getGuiScaledWidth(),h,0x99855e53);}
+        if(room().equals("layered_man")&&!UncannyCameras.recording())engulfed(g,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight(),view.getInt("Engulfment")/100F,mc.player.tickCount);
+    }
+    static void engulfed(net.minecraft.client.gui.GuiGraphics g,int w,int h,float amount,float time){
+        if(amount<=0)return;float pulse=1+.025F*Mth.sin(time*.14F);float edge=Mth.clamp((.035F+amount*.47F)*pulse,0,.52F);
+        var texture=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/misc/engulfed.png");
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();g.setColor(1,1,1,Math.min(1,.35F+amount*.8F));
+        var p=g.pose();
+        p.pushPose();p.scale(w/64F,h*edge/16F,1);g.blit(texture,0,0,0,0,64,16,64,64);p.popPose();
+        p.pushPose();p.translate(0,h*(1-edge),0);p.scale(w/64F,h*edge/16F,1);g.blit(texture,0,0,0,48,64,16,64,64);p.popPose();
+        p.pushPose();p.scale(w*edge/16F,h/64F,1);g.blit(texture,0,0,0,0,16,64,64,64);p.popPose();
+        p.pushPose();p.translate(w*(1-edge),0,0);p.scale(w*edge/16F,h/64F,1);g.blit(texture,0,0,48,0,16,64,64,64);p.popPose();
+        g.setColor(1,1,1,1);com.mojang.blaze3d.systems.RenderSystem.disableBlend();
     }
     @SubscribeEvent public static void labels(RenderLevelStageEvent event){
         if(event.getStage()!=RenderLevelStageEvent.Stage.AFTER_ENTITIES||!ring()||UncannyCameras.recording())return;

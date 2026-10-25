@@ -33,6 +33,8 @@ public final class UncannySocketProof {
     private static final Set<UUID> ACKS=new HashSet<>();
     private static final Map<UUID,UUID> DOLLS=new HashMap<>(),FAKES=new HashMap<>();
     private static final Map<UUID,CompoundTag> NIGHTS=new HashMap<>();
+    private record Arrival(LabyrinthPlace place,Vec3 at){}
+    private static final Map<UUID,Arrival> ARRIVING=new HashMap<>();
     private static int phase,changed;private static boolean offline;
     private UncannySocketProof(){}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("UNCANNY SOCKET: "+message);}
@@ -41,11 +43,18 @@ public final class UncannySocketProof {
     private static void save(ServerPlayer p,LabyrinthPlace place,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),place,own);}
     private static BlockPos base(LabyrinthPlace place){return LabyrinthPlaces.base(ORIGIN,place);}
     private static void write(String name,String message){try{Files.createDirectories(folder());Files.writeString(folder().resolve(name),message);}catch(Exception ex){throw new IllegalStateException(ex);}}
-    @SubscribeEvent public static void commands(RegisterCommandsEvent e){if(!enabled())return;e.getDispatcher().register(Commands.literal("uncannyproof").then(Commands.argument("phase",IntegerArgumentType.integer(1,17)).executes(c->{var p=c.getSource().getPlayerOrException();if(p.getGameProfile().getName().startsWith("OTHProof")&&IntegerArgumentType.getInteger(c,"phase")==phase)ACKS.add(p.getUUID());return 1;})));}
+    @SubscribeEvent public static void commands(RegisterCommandsEvent e){if(!enabled())return;
+        e.getDispatcher().register(Commands.literal("uncannyproof").then(Commands.argument("phase",IntegerArgumentType.integer(1,18)).executes(c->{var p=c.getSource().getPlayerOrException();if(p.getGameProfile().getName().startsWith("OTHProof")&&IntegerArgumentType.getInteger(c,"phase")==phase&&!ARRIVING.containsKey(p.getUUID()))ACKS.add(p.getUUID());return 1;})));
+        e.getDispatcher().register(Commands.literal("uncannyready").then(Commands.argument("phase",IntegerArgumentType.integer(1,18)).executes(c->{var p=c.getSource().getPlayerOrException();var arrival=ARRIVING.get(p.getUUID());
+            if(arrival!=null&&p.getGameProfile().getName().startsWith("OTHProof")&&IntegerArgumentType.getInteger(c,"phase")==phase&&p.serverLevel().dimension().equals(NovelRooms.dimension(arrival.place))&&p.position().distanceToSqr(arrival.at)<.25&&p.onGround()&&!p.isNoGravity()){
+                ARRIVING.remove(p.getUUID());marker(p,phase);TheOldestHouse.LOGGER.info("UNCANNY SOCKET {} native terrain ready at {}",p.getGameProfile().getName(),p.position());
+            }return 1;})));
+    }
     private static void marker(ServerPlayer p,int step){
         var tag=new CompoundTag();tag.putInt("UncannyStep",step);tag.putInt("ServerAge",p.server.getTickCount()-changed);
         tag.putBoolean("PaperRead",step==5?own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"):step==13&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP));
         tag.putBoolean("DoorBlocked",step==12&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("BlockedDoor")&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Ready"));
+        var arrival=ARRIVING.get(p.getUUID());tag.putBoolean("TerrainPending",arrival!=null);if(arrival!=null){tag.putString("ArrivalDimension",NovelRooms.dimension(arrival.place).location().toString());tag.putDouble("ArrivalX",arrival.at.x);tag.putDouble("ArrivalY",arrival.at.y);tag.putDouble("ArrivalZ",arrival.at.z);}
         var stick=new ItemStack(Items.STICK);stick.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));p.getInventory().setItem(8,stick);p.inventoryMenu.broadcastChanges();
     }
     private static void step(MinecraftServer s,int next){phase=next;changed=s.getTickCount();ACKS.clear();for(var p:s.getPlayerList().getPlayers())marker(p,next);TheOldestHouse.LOGGER.info("UNCANNY SOCKET phase {}",next);}
@@ -55,7 +64,11 @@ public final class UncannySocketProof {
     }
     private static void at(ServerPlayer p,LabyrinthPlace place,double x,double y,double z){
         build(p.server,place);p.closeContainer();p.stopUsingItem();p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setHealth(20);p.setInvulnerable(false);p.setNoGravity(false);p.getFoodData().setFoodLevel(20);
-        var b=base(place);p.teleportTo(p.server.getLevel(NovelRooms.dimension(place)),b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
+        var b=base(place);var feet=BlockPos.containing(b.getX()+x,b.getY()+y,b.getZ()+z);
+        require(!p.server.getLevel(NovelRooms.dimension(place)).getBlockState(feet.below()).getCollisionShape(p.server.getLevel(NovelRooms.dimension(place)),feet.below()).isEmpty(),"supported fixture arrival in "+place.id()+" at "+feet+"; floor="+p.server.getLevel(NovelRooms.dimension(place)).getBlockState(feet.below()));
+        boolean changing=!p.serverLevel().dimension().equals(NovelRooms.dimension(place));
+        if(changing)ARRIVING.put(p.getUUID(),new Arrival(place,new Vec3(b.getX()+x,b.getY()+y,b.getZ()+z)));
+        p.teleportTo(p.server.getLevel(NovelRooms.dimension(place)),b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
     }
     private static void sourceFixture(ServerPlayer p,LabyrinthPlace place,int age){
         var own=own(p,place);UncannyStories.arrive(p,place,own);own.putBoolean("Read_Source",true);own.putInt("UncannyAge",age);save(p,place,own);
@@ -81,7 +94,7 @@ public final class UncannySocketProof {
                 // Match the full expedition host: do not start an unrelated eighty-chunk terrain copy.
                 var house=new HouseSavedData();house.markSpawned(ORIGIN);house.markInteriorInitialized();s.overworld().getDataStorage().set("the_oldest_house",house);
                 var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,ORIGIN);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);
-                for(var p:List.of(a,b)){at(p,LabyrinthPlace.PAINTED_INTERIOR,.5,0,-20.5);sourceFixture(p,LabyrinthPlace.PAINTED_INTERIOR,120);}
+                for(var p:List.of(a,b)){at(p,LabyrinthPlace.PAINTED_INTERIOR,p==a?-1.5:1.5,0,-20.5);sourceFixture(p,LabyrinthPlace.PAINTED_INTERIOR,120);}
                 step(s,1);return;
             }
             if(s.getTickCount()-changed>2400)throw new IllegalStateException("phase timed out "+phase+"; A=["+monitorState(a)+"] B=["+monitorState(b)+"]");
@@ -95,11 +108,17 @@ public final class UncannySocketProof {
             }
             if(phase==17){if(s.getTickCount()-changed>100){CHUNKS.close();s.halt(false);}return;}
             if(a==null||b==null)return;
+            if(!ARRIVING.isEmpty())for(var p:List.of(a,b)){
+                var arrival=ARRIVING.get(p.getUUID());if(arrival!=null&&s.getTickCount()%20==0){p.teleportTo(p.serverLevel(),arrival.at.x,arrival.at.y,arrival.at.z,180,0);p.connection.resetPosition();}
+                // These are explicitly staged visual phases. Hold their chosen age only during native terrain arrival.
+                var place=phase==1?LabyrinthPlace.PAINTED_INTERIOR:phase==2?LabyrinthPlace.SECOND_WAITRESS:phase==4?LabyrinthPlace.TUNNEL_PERIPHERY:null;
+                if(place!=null){var own=own(p,place);own.putInt("UncannyAge",phase==1?120:phase==2?270:170);save(p,place,own);}
+            }
             if(s.getTickCount()%20==0){marker(a,phase);marker(b,phase);}
             if(!CHUNKS.ready()||!both(a,b))return;
             if(phase==1){for(var p:List.of(a,b)){at(p,LabyrinthPlace.SECOND_WAITRESS,.5,0,p==a?-17.5:-22.5);sourceFixture(p,LabyrinthPlace.SECOND_WAITRESS,270);}step(s,2);}
             else if(phase==2){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.SECOND_WAITRESS);FAKES.put(p.getUUID(),own.getUUID("CastFake"));own.putInt("UncannyAge",620);save(p,LabyrinthPlace.SECOND_WAITRESS,own);}step(s,3);}
-            else if(phase==3){for(var p:List.of(a,b)){require(FAKES.get(p.getUUID()).equals(own(p,LabyrinthPlace.SECOND_WAITRESS).getUUID("CastFake")),"the translucent and solid waitress are the same original");at(p,LabyrinthPlace.TUNNEL_PERIPHERY,.5,0,-10.5);sourceFixture(p,LabyrinthPlace.TUNNEL_PERIPHERY,170);}step(s,4);}
+            else if(phase==3){for(var p:List.of(a,b)){require(FAKES.get(p.getUUID()).equals(own(p,LabyrinthPlace.SECOND_WAITRESS).getUUID("CastFake")),"the translucent and solid waitress are the same original");at(p,LabyrinthPlace.TUNNEL_PERIPHERY,p==a?-.8:.8,0,p==a?-14.5:-20.5);sourceFixture(p,LabyrinthPlace.TUNNEL_PERIPHERY,170);}step(s,4);}
             else if(phase==4){for(var p:List.of(a,b))at(p,LabyrinthPlace.MISSING_SLEEP,.5,0,.5);step(s,5);}
             else if(phase==5){
                 for(var p:List.of(a,b))require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"),"native final source page");
@@ -111,7 +130,7 @@ public final class UncannySocketProof {
             else if(phase==7){
                 for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.MISSING_SLEEP);require(own.getInt("Sleeps")==2,"second native bed use");
                     // Explicit timeout fixture lets slow software-rendered clients inspect four real feeds.
-                    own.putInt("SecondSleepAge",own.getInt("UncannyAge")+3600);save(p,LabyrinthPlace.MISSING_SLEEP,own);at(p,LabyrinthPlace.MISSING_SLEEP,1.5,5,-20.5);
+                    own.putInt("SecondSleepAge",own.getInt("UncannyAge")+3600);save(p,LabyrinthPlace.MISSING_SLEEP,own);at(p,LabyrinthPlace.MISSING_SLEEP,p==a?1.2:2.8,5,-20.5);
                 }step(s,8);
             }
             else if(phase==8){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("MarionetteSeen"),"the reader personally saw the direct form");at(p,LabyrinthPlace.MISSING_SLEEP,-5.5,5,-19.5);}step(s,9);}
@@ -121,9 +140,10 @@ public final class UncannySocketProof {
             }
             else if(phase==11){for(var p:List.of(a,b)){require(DOLLS.get(p.getUUID()).equals(own(p,LabyrinthPlace.MISSING_SLEEP).getUUID("CastDoll")),"reconnect never fabricates a replacement doll");at(p,LabyrinthPlace.MISSING_SLEEP,2.5,5,-15.5);}step(s,12);}
             else if(phase==12){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("BlockedDoor")&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Ready"),"each reader closes the actual door after their own evidence");at(p,LabyrinthPlace.MISSING_SLEEP,3.5,0,-2.5);}step(s,13);}
-            else if(phase==13){for(var p:List.of(a,b)){require(WitnessAccount.has(LabyrinthData.get(s),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"native final account earns the personal memory");require(p.getInventory().countItem(UncannyRegistry.SMOKY_MIRROR.get())==1,"exactly one finite mirror");at(p,LabyrinthPlace.LAYERED_MAN,3.5,-5,-15.5);sourceFixture(p,LabyrinthPlace.LAYERED_MAN,50);}step(s,14);}
-            else if(phase==14){for(var p:List.of(a,b)){at(p,LabyrinthPlace.MOTION_LIGHT,.5,0,-10.5);sourceFixture(p,LabyrinthPlace.MOTION_LIGHT,5);}step(s,15);}
-            else if(phase==15){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MOTION_LIGHT).getInt("DarkSeen")>=2,"actual native floodlight cycles");at(p,LabyrinthPlace.MISSING_SLEEP,1.5,5,-20.5);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(UncannyRegistry.BONE_RING.get()));p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.invulnerableTime=0;
+            else if(phase==13){for(var p:List.of(a,b)){require(WitnessAccount.has(LabyrinthData.get(s),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"native final account earns the personal memory");require(p.getInventory().countItem(UncannyRegistry.SMOKY_MIRROR.get())==1,"exactly one finite mirror");at(p,LabyrinthPlace.LAYERED_MAN,p==a?4.5:-4.5,-5,-14.5);sourceFixture(p,LabyrinthPlace.LAYERED_MAN,50);}step(s,14);}
+            else if(phase==14){for(var p:List.of(a,b))at(p,LabyrinthPlace.LAYERED_MAN,p==a?3.42:-2.42,-5,-20.5);step(s,18);}
+            else if(phase==18){for(var p:List.of(a,b)){require(p.hasEffect(UncannyRegistry.ENGULFED)&&own(p,LabyrinthPlace.LAYERED_MAN).getInt("Engulfment")>0,"real tissue contact applies the custom status and screen pressure");at(p,LabyrinthPlace.MOTION_LIGHT,p==a?-1.5:1.5,0,-12.5);sourceFixture(p,LabyrinthPlace.MOTION_LIGHT,5);}step(s,15);}
+            else if(phase==15){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MOTION_LIGHT).getInt("DarkSeen")>=2,"actual native floodlight cycles");at(p,LabyrinthPlace.MISSING_SLEEP,p==a?1.2:2.8,5,-20.5);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(UncannyRegistry.BONE_RING.get()));p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.invulnerableTime=0;
                     // Keep natural regeneration from healing the real two-point payment before the client captures it.
                     p.getFoodData().setFoodLevel(17);
                 }step(s,16);}

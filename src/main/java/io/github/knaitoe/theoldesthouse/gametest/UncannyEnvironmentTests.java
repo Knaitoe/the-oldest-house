@@ -71,8 +71,15 @@ public final class UncannyEnvironmentTests {
         var place=LabyrinthPlace.SECOND_WAITRESS;var p=f.player("refit_reader",place);var l=f.level(place);var b=f.base(place);
         UncannyRooms0121.build(l,b,place);f.build(LabyrinthPlace.LAYERED_MAN);UncannyRooms0121.build(f.level(LabyrinthPlace.LAYERED_MAN),f.base(LabyrinthPlace.LAYERED_MAN),LabyrinthPlace.LAYERED_MAN);
         f.chunks.hold(l,IndianLakeRooms.bounds(b,place));f.chunks.hold(f.level(LabyrinthPlace.LAYERED_MAN),IndianLakeRooms.bounds(f.base(LabyrinthPlace.LAYERED_MAN),LabyrinthPlace.LAYERED_MAN));
+        var yard=f.base(LabyrinthPlace.MOTION_LIGHT);var yardLevel=f.level(LabyrinthPlace.MOTION_LIGHT);
+        f.chunks.hold(yardLevel,IndianLakeRooms.bounds(yard,LabyrinthPlace.MOTION_LIGHT));
+        LiteraryActor[] settledVisitor={null};
         var kept=new CompoundTag();var meal=new ItemEntity[1];var source=new net.minecraft.world.level.block.entity.BlockEntity[1];
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both original room slots are loaded")).thenExecute(()->{
+            // Native gravity creates falling entities. Start it only after their destination sections
+            // are loaded, rather than losing the legacy floor during the full suite's disk backlog.
+            UncannyRooms0121.build(yardLevel,yard,LabyrinthPlace.MOTION_LIGHT);f.built.add(LabyrinthPlace.MOTION_LIGHT);
+            for(var at:BlockPos.betweenClosed(yard.offset(-7,-3,-25),yard.offset(7,-3,-15)))yardLevel.setBlock(at,Blocks.STONE.defaultBlockState(),3);
             f.source(p,place);var own=f.own(p,place);own.putInt("UncannyAge",300);
             for(int i=0;i<18;i++)UncannyStories.reader(p,b,place,own);
             own.putInt("UncannyAge",600);for(int i=0;i<90&&!own.getBoolean("MealServed");i++)UncannyStories.reader(p,b,place,own);
@@ -87,7 +94,12 @@ public final class UncannyEnvironmentTests {
             var world=f.data().stateEntry(UncannyStories.WORLD,LabyrinthPlace.LAYERED_MAN.id()+":"+cb.asLong());world.putInt("Layers",2);world.putInt("Pulse",7);f.data().setStateEntry(UncannyStories.WORLD,LabyrinthPlace.LAYERED_MAN.id()+":"+cb.asLong(),world);
         }).thenWaitUntil(()->h.assertTrue(UncannyEnvironmentRepairs.step(l,f.origin,place),"the bounded native diner refit completed"))
         .thenWaitUntil(()->h.assertTrue(UncannyEnvironmentRepairs.step(f.level(LabyrinthPlace.LAYERED_MAN),f.origin,LabyrinthPlace.LAYERED_MAN),"the bounded native cellar refit completed"))
+        .thenWaitUntil(()->h.assertTrue(yardLevel.getBlockState(yard.offset(0,-1,-20)).isAir()&&yardLevel.getBlockState(yard.offset(0,-2,-20)).is(Blocks.GRAVEL),"the legacy unsupported gravel actually settles into the cleared row; floor="+yardLevel.getBlockState(yard.offset(0,-1,-20))+", below="+yardLevel.getBlockState(yard.offset(0,-2,-20))))
+        .thenExecute(()->{settledVisitor[0]=LiteraryRegistry.ACTOR.get().create(yardLevel);h.assertTrue(settledVisitor[0]!=null,"the original visitor is created for the settled-floor fixture");settledVisitor[0].bind(LabyrinthPlace.MOTION_LIGHT,p.getUUID());settledVisitor[0].appearance(LiteraryActor.UNCANNY_VISITOR,1);settledVisitor[0].moveTo(yard.getX()+.5,yard.getY()-1,yard.getZ()-19.5,180,0);yardLevel.addFreshEntity(settledVisitor[0]);})
+        .thenWaitUntil(()->h.assertTrue(UncannyEnvironmentRepairs.step(yardLevel,f.origin,LabyrinthPlace.MOTION_LIGHT),"the bounded native courtyard repair completed"))
         .thenExecute(()->{
+            h.assertTrue(yardLevel.getEntity(settledVisitor[0].getUUID())==settledVisitor[0]&&Math.abs(settledVisitor[0].getY()-yard.getY())<.1,"the same settled visitor is lifted onto its restored native floor");
+            for(int x=-6;x<=6;x++)for(int z=-24;z<=-16;z++)h.assertTrue(yardLevel.getBlockState(yard.offset(x,-1,z)).is(Blocks.GRAVEL)&&yardLevel.getBlockState(yard.offset(x,-2,z)).is(Blocks.STONE),"settled legacy gravel returns to a fully supported yard without changing its surface");
             h.assertTrue(l.getBlockState(b.offset(-2,-1,-16)).is(UncannyRegistry.material("diner_tile"))&&l.getBlockState(b.offset(-1,-1,-16)).is(Blocks.GOLD_BLOCK),"authored tile changes while a player's edit remains");
             var own=f.own(p,place);h.assertTrue(own.getBoolean("Read_Source")&&own.getBoolean("MealServed")&&!own.contains("OriginalMeal")&&own.getCompound("Original_Source").equals(kept.getCompound("Source")),"reading and exhausted original custody survive");
             h.assertTrue(l.getBlockEntity(b.offset(UncannyRooms.source(place)))==source[0]&&UncannyStories.actor(p,own,"CastFake").getUUID().equals(kept.getUUID("Actor")),"the actual source block entity and actor survive, not replacements");

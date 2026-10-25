@@ -19,8 +19,10 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * over, is through a doorway; behind the stairs are the laundry and the pantry; upstairs are John and Sarah's bedroom,
  * the bathroom, John's office with his job listings, the girls' bathroom and a spare room full of the crew's cases.
  * Everything is painted, lit and furnished like a home somebody lives in, and the production's cables, softboxes and
- * chairs are spread through it. Every routed cell the days walk (the crew's exit, Merry's last walk, the pickup up the
- * stairs) is left clear.
+ * chairs are spread through it. The big open rooms are furnished along their walls (a front-room sofa under the window,
+ * the living room's sofa and shelves, a kitchen table, a sideboard by the dining table, the family computer and a sitting
+ * corner under the back window), so the middle stays open to a moving camera. Every routed cell the days walk (the crew's
+ * exit, Merry's last walk, the pickup up the stairs, Marjorie's crawl from the table) is left clear.
  */
 public final class BarrettHome {
     private BarrettHome() {}
@@ -111,11 +113,13 @@ public final class BarrettHome {
         den(l, b);
         backRooms(l, b);
         kitchenAndLiving(l, b);
+        familyRoom(l, b);
         upstairs(l, b);
         basement(l, b);
     }
 
-    /** The front hall: the console with the mail, coats and shoes by the door, school portraits, the stairs at the end. */
+    /** The front hall: the console with the mail, coats and shoes by the door, school portraits, the stairs at the end, and the
+     *  front room at its west end with the good sofa under the window. */
     private static void hall(ServerLevel l, BlockPos b) {
         put(l, b, -3, 0, -1, Kind.CONSOLE, Direction.NORTH);
         put(l, b, -3, 2, -1, Kind.PHOTOS, Direction.NORTH);
@@ -131,6 +135,17 @@ public final class BarrettHome {
         put(l, b, 0, 0, -12, Kind.CABLE_CORNER, Direction.NORTH);
         set(l, b, 0, 0, -13, BarrettHomeBlock.of(Kind.CABLE, Direction.EAST));
         cable(l, b, 0, 0, -24, 0, -15);
+        // The front room: the good sofa under the window and its end table, radiators under the side window, the shelves and
+        // the sideboard under the portraits.
+        furniture(l, b, -10, 0, -1, HouseholdFurnitureBlock.Kind.BLUE_SOFA, Direction.NORTH);
+        furniture(l, b, -9, 0, -1, HouseholdFurnitureBlock.Kind.BLUE_SOFA, Direction.NORTH);
+        furniture(l, b, -11, 0, -1, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.NORTH);
+        set(l, b, -11, 1, -1, Blocks.POTTED_FERN.defaultBlockState());
+        furniture(l, b, -19, 0, -6, HouseholdFurnitureBlock.Kind.RADIATOR, Direction.EAST);
+        furniture(l, b, -19, 0, -5, HouseholdFurnitureBlock.Kind.RADIATOR, Direction.EAST);
+        put(l, b, -13, 0, -13, Kind.BOOKSHELF, Direction.SOUTH);
+        put(l, b, -12, 0, -13, Kind.BOOKSHELF, Direction.SOUTH);
+        put(l, b, -11, 0, -13, Kind.DRESSER, Direction.SOUTH);
     }
 
     /** The garage: the family's shelves and Christmas boxes, the crew's craft table, chairs, cases and the call sheets. */
@@ -178,7 +193,8 @@ public final class BarrettHome {
         put(l, b, -15, 0, -44, Kind.SANDBAGS, Direction.WEST);
     }
 
-    /** The open kitchen's fridge and back counter, the living room's television, the softboxes trained on the table. */
+    /** The open kitchen's fridge, back counter and table, the living room's television, sofa and shelves, the softboxes
+     *  trained on the dining table. */
     private static void kitchenAndLiving(ServerLevel l, BlockPos b) {
         put(l, b, -13, 0, -45, Kind.FRIDGE, Direction.SOUTH);
         put(l, b, -13, 1, -45, Kind.FRIDGE_TOP, Direction.SOUTH);
@@ -190,6 +206,37 @@ public final class BarrettHome {
         put(l, b, -13, 2, -25, Kind.PHOTOS, Direction.EAST);
         put(l, b, 5, 0, -32, Kind.SOFTBOX, Direction.SOUTH);
         put(l, b, -4, 0, -32, Kind.SOFTBOX, Direction.SOUTH);
+        // The living room's sofa along its wall, the end table with the girls' library books, the family's shelves.
+        put(l, b, -13, 0, -20, Kind.SOFA_A, Direction.EAST);
+        put(l, b, -13, 0, -19, Kind.SOFA_B, Direction.EAST);
+        furniture(l, b, -13, 0, -21, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.EAST);
+        set(l, b, -13, 1, -21, GhostsSetBlock.of(GhostsSetBlock.Kind.BOOKS, Direction.EAST));
+        put(l, b, -13, 0, -23, Kind.BOOKSHELF, Direction.EAST);
+        put(l, b, -13, 0, -24, Kind.BOOKSHELF, Direction.EAST);
+        put(l, b, -3, 0, -15, Kind.PLANT, Direction.SOUTH);
+        // The kitchen table they eat at when nobody is filming.
+        furniture(l, b, -9, 0, -37, HouseholdFurnitureBlock.Kind.FORMICA_TABLE, Direction.SOUTH);
+        furniture(l, b, -10, 0, -37, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.EAST);
+        furniture(l, b, -8, 0, -37, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.WEST);
+    }
+
+    /** The east half of the open plan, along its walls: the sideboard by the dining table, the family computer, and the
+     *  sitting corner under the back window. The basement stair, the den door and the gap through to the den stay open. */
+    private static void familyRoom(ServerLevel l, BlockPos b) {
+        put(l, b, 12, 0, -27, Kind.DRESSER, Direction.WEST);
+        put(l, b, 12, 0, -28, Kind.DRESSER, Direction.WEST);
+        put(l, b, 12, 2, -28, Kind.PHOTOS, Direction.WEST);
+        put(l, b, 12, 0, -21, Kind.DESK, Direction.WEST);
+        put(l, b, 11, 0, -21, Kind.OFFICE_CHAIR, Direction.EAST);
+        put(l, b, 12, 0, -16, Kind.PLANT, Direction.WEST);
+        put(l, b, 2, 0, -45, Kind.PLANT, Direction.SOUTH);
+        furniture(l, b, 4, 0, -45, HouseholdFurnitureBlock.Kind.RADIATOR, Direction.SOUTH);
+        furniture(l, b, 7, 0, -45, HouseholdFurnitureBlock.Kind.BLUE_SOFA, Direction.SOUTH);
+        furniture(l, b, 8, 0, -45, HouseholdFurnitureBlock.Kind.BLUE_SOFA, Direction.SOUTH);
+        furniture(l, b, 9, 0, -45, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.SOUTH);
+        set(l, b, 9, 1, -45, Blocks.POTTED_FERN.defaultBlockState());
+        furniture(l, b, 10, 0, -43, HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR, Direction.WEST);
+        furniture(l, b, 8, 0, -43, HouseholdFurnitureBlock.Kind.FOOTSTOOL, Direction.SOUTH);
     }
 
     /** Upstairs: the landing, the girls' rooms lived in, John and Sarah's room, the bathrooms, John's office, the spare room. */

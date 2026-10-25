@@ -12,6 +12,8 @@ import net.minecraft.util.Mth;
 
 /** The same saved actors in direct sight, the owner's live CCTV, and the blood-fuelled mirror. */
 public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,UncannyActorRenderer.Model> {
+    private static final java.util.WeakHashMap<LiteraryActor,Integer> proofRenders=new java.util.WeakHashMap<>();
+    public static boolean proofDrawn(LiteraryActor a){return a!=null&&a.tickCount-proofRenders.getOrDefault(a,-1000)<=3;}
     private final Model wide,slim;
     public UncannyActorRenderer(EntityRendererProvider.Context c){
         super(c,new Model(c.bakeLayer(ModelLayers.PLAYER),false),.25F);wide=model;slim=new Model(c.bakeLayer(ModelLayers.PLAYER_SLIM),true);
@@ -39,6 +41,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             model.renderToBuffer(poses,buffers.getBuffer(RenderType.entityTranslucent(getTextureLocation(a))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,UncannyClient.mirror()?0xb0ffffff:0x50ffffff);poses.popPose();return;
         }
         super.render(a,yaw,partial,poses,buffers,light);
+        if(io.github.knaitoe.theoldesthouse.gametest.UncannySocketProof.enabled()&&!UncannyCameras.recording())proofRenders.put(a,a.tickCount);
         if(feed)UncannyCameras.dollDrawn(a);
     }
     @Override public ResourceLocation getTextureLocation(LiteraryActor a){
@@ -49,6 +52,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         return super.getRenderType(a,body,translucent,glowing);
     }
     @Override protected boolean shouldShowName(LiteraryActor a){return false;}
+    @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){if(!visible(a))return false;return a.role()==LiteraryActor.UNCANNY_GIANT?a.shouldRender(x,y,z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
     public static final class Model extends PlayerModel<LiteraryActor> {
         boolean feed;
         public Model(ModelPart part,boolean slim){super(part,slim);}
@@ -62,7 +66,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             if(role==LiteraryActor.UNCANNY_WAITRESS){head.xRot+=.12F;body.xRot=.06F;rightArm.xRot=-.35F;}
             if(role==LiteraryActor.UNCANNY_FALSE_WAITRESS){leftArm.xRot=rightArm.xRot=phase>=2?-1.1F:-.15F;if(phase>=2){head.xScale=1.18F;head.yScale=1.06F;}head.zRot=.025F*Mth.sin(age*.04F);}
             if(role==LiteraryActor.UNCANNY_GIANT){
-                body.y=12;body.xRot=-(float)Math.PI/2;head.y=12;head.z=-12;head.xRot=(float)Math.PI/2;
+                body.y=12;body.xRot=-(float)Math.PI/2;head.y=14;head.z=-10;head.xRot=.6F;
                 leftArm.y=rightArm.y=13;leftArm.z=rightArm.z=-5;leftArm.xRot=rightArm.xRot=-.15F;leftArm.zRot=-.08F;rightArm.zRot=.08F;
                 leftLeg.xRot=phase==1?0:-step*.28F;rightLeg.xRot=phase==1?0:step*.28F;
             }
@@ -71,7 +75,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 head.zRot=twitch;head.xRot=.1F+twitch;body.y=-.45F;leftLeg.xRot=-.08F;rightLeg.xRot=.08F;
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&feed){head.xRot=0;head.yRot=0;head.zRot=0;body.yRot=.04F*Mth.sin(age*.07F);}
-            if(role==LiteraryActor.UNCANNY_PEELER){body.xRot=.35F;head.xRot=.3F;rightArm.xRot=phase>=1?-1.8F:-.8F-Mth.abs(Mth.sin(age*.27F));leftArm.xRot=-.65F;}
+            if(role==LiteraryActor.UNCANNY_PEELER){float breath=Mth.sin(age*(phase>=1?.17F:.09F));body.xRot=.27F+breath*(phase>=1?.045F:.015F);head.xRot=.24F+breath*.025F;rightArm.xRot=phase>=1?-1.4F+Mth.sin(age*.21F)*.12F:-.8F-Mth.abs(Mth.sin(age*.27F));leftArm.xRot=-.65F;leftArm.zRot=phase>=1?Mth.sin(age*.71F)*.025F:0;}
             if(role==LiteraryActor.UNCANNY_VISITOR){leftLeg.xRot=rightLeg.xRot=leftArm.xRot=rightArm.xRot=0;head.xRot=-.08F;}
             hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
             hat.visible=feed||role==LiteraryActor.UNCANNY_WAITRESS||role==LiteraryActor.UNCANNY_FALSE_WAITRESS;

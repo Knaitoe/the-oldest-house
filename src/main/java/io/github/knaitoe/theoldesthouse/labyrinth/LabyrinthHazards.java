@@ -228,8 +228,10 @@ public final class LabyrinthHazards {
             }
         }
 
-        LabyrinthBuilder.hangLantern(level, base.offset(1, 3, -7), true);
-        LabyrinthBuilder.hangLantern(level, base.offset(1, 3, -21), true);
+        for(int z:new int[]{-7,-21}){
+            BuildBlocks.set(level,base.offset(1,4,z),Blocks.CHAIN.defaultBlockState(),FLAGS);
+            LabyrinthBuilder.hangLantern(level,base.offset(1,3,z),true);
+        }
         LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.GRAVITY_DRIFT);
     }

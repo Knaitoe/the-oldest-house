@@ -1,0 +1,11 @@
+# Painted family texture follow-up
+
+The owner requests that the painted family match the established NPC style while remaining ghoulish and frightening; the faces may be asymmetric. This pass repaints the father, mother and child in both their initial and changed forms, using the same deterministic cast painter and native pixel density as the other literary humans.
+
+The family keeps its olive suit, faded rose dress and blue shirt. Bloodless skin, hollow cheeks and uneven lids make the initial faces uneasy. The changed father has one collapsed socket and a crooked, slack jaw; the changed mother has a lower eye and a mouth pulled to one side; the changed child has a small hollow stare and an off-centre open mouth. Hair and clothes continue to identify the same people. Deliberate flat pixel clusters supply these features; no gradients, resampled portraits or random grain are added.
+
+Only the six `literary_family_{father,mother,child}{,_changed}.png` sheets change. Each remains 512 by 256 pixels with its exact previous alpha. Existing production models, proportions, role/phase selection, saved actors, visits and transformation timing remain unchanged.
+
+The historical 0.4.100 inventory stays intact. `art/inventory/painted_family_04123.json` records the six explicitly authorized replacements and their original review hashes. Source and playable-JAR verification share the same approval selector. It checks that exact set, matching atlas dimensions and alpha, all other catalogued paintings, and all 649 protected historical PNGs. `paint_character_skins.py --check` still checks the entire current painter output.
+
+Local painter, character-art, all 67 playable-package artwork approvals, 1318 PNG decode/CRC checks, workflow parsing and diff checks pass. The native 149-human production-model catalog passed on texture commit `574c5564`; all six family variants were inspected front and back in `native-character-art-11.png`. The packaging-selector follow-up leaves those texture bytes and meshes identical. The existing native literary views also cover the changed child behind the lens. Full exact-source CI remains pending; these asset/render checks are not a complete ordinary playthrough of the family visits.
