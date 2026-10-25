@@ -60,8 +60,10 @@ jobs:
 
       - name: Decode packaged positional Goatman contacts
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
           python3 tools/verify_goatman_impacts.py --jar
 
       - name: Verify packaged character paintings and exclusions
