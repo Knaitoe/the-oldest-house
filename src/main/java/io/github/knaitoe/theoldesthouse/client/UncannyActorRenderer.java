@@ -12,6 +12,8 @@ import net.minecraft.util.Mth;
 
 /** The same saved actors in direct sight, the owner's live CCTV, and the blood-fuelled mirror. */
 public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,UncannyActorRenderer.Model> {
+    private static final java.util.WeakHashMap<LiteraryActor,Integer> proofRenders=new java.util.WeakHashMap<>();
+    public static boolean proofDrawn(LiteraryActor a){return a!=null&&a.tickCount-proofRenders.getOrDefault(a,-1000)<=3;}
     private final Model wide,slim;
     public UncannyActorRenderer(EntityRendererProvider.Context c){
         super(c,new Model(c.bakeLayer(ModelLayers.PLAYER),false),.25F);wide=model;slim=new Model(c.bakeLayer(ModelLayers.PLAYER_SLIM),true);
@@ -39,6 +41,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             model.renderToBuffer(poses,buffers.getBuffer(RenderType.entityTranslucent(getTextureLocation(a))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,UncannyClient.mirror()?0xb0ffffff:0x50ffffff);poses.popPose();return;
         }
         super.render(a,yaw,partial,poses,buffers,light);
+        if(io.github.knaitoe.theoldesthouse.gametest.UncannySocketProof.enabled()&&!UncannyCameras.recording())proofRenders.put(a,a.tickCount);
         if(feed)UncannyCameras.dollDrawn(a);
     }
     @Override public ResourceLocation getTextureLocation(LiteraryActor a){
@@ -49,7 +52,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         return super.getRenderType(a,body,translucent,glowing);
     }
     @Override protected boolean shouldShowName(LiteraryActor a){return false;}
-    @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){return a.role()==LiteraryActor.UNCANNY_GIANT?a.shouldRenderAtSqrDistance(x*x+y*y+z*z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
+    @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){return a.role()==LiteraryActor.UNCANNY_GIANT?a.shouldRender(x,y,z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
     public static final class Model extends PlayerModel<LiteraryActor> {
         boolean feed;
         public Model(ModelPart part,boolean slim){super(part,slim);}

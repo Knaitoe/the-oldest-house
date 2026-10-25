@@ -50,6 +50,8 @@ public final class CharacterArtVisualProof extends Screen {
         var p=new PoseStack();p.translate(.5,.9,.5);HouseHumanRenderers.casketPose(p);p.scale(-1,-1,1);p.translate(0,-1.501,0);
         var bounds=new Bounds();model.renderToBuffer(p,bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
         if(bounds.x0<-.04F||bounds.x1>1.04F||bounds.z0<-.7F||bounds.z1>1.7F||bounds.y0<.54F)throw new IllegalStateException("Harrigan clips the native casket: "+bounds);
+        var culling=HouseHumanRenderers.ActorRenderer.casketBounds(new net.minecraft.world.phys.AABB(.2,.9,.2,.8,1.4,.8));
+        if(!culling.contains(bounds.x0,bounds.y0,bounds.z0)||!culling.contains(bounds.x1,bounds.y1,bounds.z1))throw new IllegalStateException("The native casket mesh exceeds its actual culling bounds: "+bounds);
         if(model.leftElbow.zRot<1||model.rightElbow.zRot> -1)throw new IllegalStateException("Casket hands have not folded across the torso");
         model.preview(1);if(model.head.z!=0||model.leftElbow.zRot!=0||Math.abs(model.leftKnee.xRot-(float)Math.PI/2)>.001F)throw new IllegalStateException("Casket pose leaked into the seated original");
         // 0.4.105: mourners stand with their hands clasped, so their elbows bend; the seated pose is knees up and elbows at +0.5.

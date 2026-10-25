@@ -104,6 +104,11 @@ public final class HouseHumanRenderers {
     /** Draws Mr. Harrigan and his mourners for the scene actors' own renderer. */
     public static final class ActorRenderer extends LivingEntityRenderer<LiteraryActor,HarriganModel> {
         public ActorRenderer(EntityRendererProvider.Context context){super(context,new HarriganModel(context.bakeLayer(HARRIGAN_LAYER)),.3F);}
+        /** The horizontal casket body extends beyond its short physical hitbox. */
+        public static net.minecraft.world.phys.AABB casketBounds(net.minecraft.world.phys.AABB body){return body.inflate(1.1,.5,1.1);}
+        @Override public boolean shouldRender(LiteraryActor actor,net.minecraft.client.renderer.culling.Frustum frustum,double x,double y,double z){
+            return variant(actor)==3?actor.shouldRender(x,y,z)&&frustum.isVisible(casketBounds(actor.getBoundingBox())):super.shouldRender(actor,frustum,x,y,z);
+        }
         @Override public ResourceLocation getTextureLocation(LiteraryActor actor){int role=variant(actor);return role>=4&&role<=6?mourner(role-4):role>=2?HARRIGAN_DEAD:HARRIGAN;}
         @Override protected boolean shouldShowName(LiteraryActor actor){return false;}
         @Override protected void setupRotations(LiteraryActor actor,com.mojang.blaze3d.vertex.PoseStack poses,float age,float yaw,float partial,float scale){

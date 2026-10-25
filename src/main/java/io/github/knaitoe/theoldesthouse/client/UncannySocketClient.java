@@ -70,7 +70,7 @@ public final class UncannySocketClient {
             look(mc,b.offset(1,1,-5).getCenter());if(age>25&&UncannyClient.room().equals("second_waitress"))ack(mc,"diner-room");return;
         }
         if((phase==2||phase==3)&&age>30){var fake=actor(mc,LiteraryActor.UNCANNY_FALSE_WAITRESS);if(fake!=null){look(mc,fake.getEyePosition());if(phase==2&&fake.phase()==1||phase==3&&fake.phase()>=2)ack(mc,phase==2?"diner-translucent":"diner-solid");}}
-        if(phase==4&&age>25&&UncannyClient.room().equals("tunnel_periphery")){require(mc.player.onGround()&&Math.abs(mc.player.getY()-b.getY())<.1,"a grounded reader sees the tunnel woman from the actual floor");var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null){look(mc,giant.position().add(0,1.8,-2));require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");ack(mc,"giant-folded");}}
+        if(phase==4&&age>25&&UncannyClient.room().equals("tunnel_periphery")){require(mc.player.onGround()&&Math.abs(mc.player.getY()-b.getY())<.1,"a grounded reader sees the tunnel woman from the actual floor");var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null){look(mc,giant.position().add(0,1.8,-2));require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");if(UncannyActorRenderer.proofDrawn(giant))ack(mc,"giant-folded");}}
         if(phase==5&&UncannyClient.room().equals("missing_sleep")&&bedroomWalk(mc,b))paper(mc,b.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)),"bedroom-source",data.getBoolean("PaperRead"));
         if(phase==6||phase==7){if(age>15&&clicked<0)click(mc,b.offset(UncannyRooms.BED_AT));if(age>35&&UncannyClient.sleeps()==(phase==6?1:2))ack(mc,phase==6?"bedroom-first-cut":"bedroom-second-cut");}
         if(phase==8&&age>30){var doll=actor(mc,LiteraryActor.UNCANNY_MARIONETTE);if(doll!=null&&doll.phase()==1){look(mc,doll.getEyePosition());require(UncannyActorRenderer.visible(doll),"the direct form is visible to its owner");ack(mc,"bedroom-direct");}}
@@ -103,7 +103,7 @@ public final class UncannySocketClient {
         if(phase==15){
             var visitor=actor(mc,LiteraryActor.UNCANNY_VISITOR);if(visitor==null)return;look(mc,visitor.getEyePosition());var state=mc.level.getBlockState(b.offset(UncannyRooms.FLOOD));
             if(state.is(UncannyRegistry.PROP.get())){
-                boolean dark=state.getValue(UncannyPropBlock.STAGE)>0;if(dark&&(visitor.phase()!=1||!UncannyActorRenderer.visible(visitor)))return;String view=dark?"foyer-dark":"foyer-lit";
+                boolean dark=state.getValue(UncannyPropBlock.STAGE)>0;if(dark&&(visitor.phase()!=1||!UncannyActorRenderer.proofDrawn(visitor)))return;String view=dark?"foyer-dark":"foyer-lit";
                 if(!captures.contains("15:"+view)&&age>20){shot=role()+"-"+view;}
                 if(age>410&&captures.contains("15:foyer-dark")&&captures.contains("15:foyer-lit"))ack(mc,"foyer-cycles");
             }

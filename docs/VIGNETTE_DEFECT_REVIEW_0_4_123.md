@@ -1,0 +1,32 @@
+# Vignette defect review, 0.4.123
+
+This review continues on the active `feature/borrasca-four-visits-0.4.108` line, preserving the latest depot changes and previous hallway, note, cast and quiet-cue corrections. The review distinguishes native structure inspection, model/render inspection, scripted gameplay and actual socket-client actions. A cutaway omits actors and uses full-bright lighting; it cannot verify visibility or atmosphere.
+
+## Confirmed corrections
+
+- **Second waitress:** a separate native staff exit and supported outside landing, in addition to the front exit. The kitchen door remains internal.
+- **Tunnel woman:** presence and red-light pursuit no longer depend on reading the clipboard. The original starts within the tunnel. The production dispatcher now reaches her enlarged folded-body rendering bounds; distance uses the actual camera position relative to the actor, preserving native distance behavior away from world zero.
+- **Foyer:** remove the solid courtyard front wall immediately behind the lobby glazing. This was a genuine blocked sightline and light-propagation defect. Keep the glazing and usable door, add real foyer spill, and check actual propagated light at the visitor while the floodlight is off. The native visitor becomes active without reading and recovers its same UUID only after loaded entity sections settle.
+- **Layered man:** see `UNCANNY_PRESENCE_AND_CELLAR_0_4_123.md` for the home/basement, supported stair and ladder, tissue, finite key, worker, physical lighting and personal contact effect.
+- **Harrigan:** the laid-out casket mesh extends beyond its short physical body. Its renderer uses enlarged bounds, reached through the production dispatcher. The existing native vertex measurement now requires the actual posed body to fit those bounds, alongside casket clearance, folded hands, seated/standing isolation and closed joint caps.
+- **Review evidence:** actual client captures now require the tunnel reader to remain on the native floor, and the giant/visitor to pass through the production renderer before capture. The cellar has a separate room overview before the contact close-up. Every fixture arrival must have a real supporting block. The full native scene-audit report is retained as a downloadable diagnostic rather than only temporary CI annotations.
+
+## Wider scope inspected
+
+| Scenes | Review performed and retained checks |
+| --- | --- |
+| Goatman / trailer | Native shell and porch cutaway, existing window-entry/crawl GPU checks, native supper/door/cousin regressions and actual-client expedition stages. |
+| Ghosts set | Ground/upper/basement cutaways; dispatch, prop dimensions and pose paths; retain the existing twenty-case vignette-animation namespace and native filming/death/reconnect stages. |
+| Lake house / Tess / canoe | Full house cutaway and existing native pushing, submersion, canoe seating and actual-client recording/playback checks. |
+| Drowned town / slasher scenes | Town, forest/camp and hotel cutaways; existing actual survival-player pursuit/contact/refuge/door-path checks, plus client expedition stages. |
+| Hotel / bath guest | Floor and cellar cutaways, shared versus bath renderer dispatch; retain fourteen focused native hotel cases, creature GPU pages and actual bath pursuit/contact/reload tests. |
+| Farm / well | Farm and well cutaway, existing descent/cover-darkness/native sky tests and physical return/animal support checks. |
+| Winchester / Masque / Wheel / child's room | Existing native cutaways reviewed for structure and approaches; retain actual scene-specific construction, interaction, route and finite-original regressions. |
+| Borrasca | Native refinery cutaway and the latest source changes; prior full common-style cast pages and actual four-visit native/client progression remain required. Kyle and Kimber keep child proportions. |
+| Remaining registered scenes and hazard halls | Full native architecture audit and gameplay suite cover door approaches, supported furnishings/floors, source/account connectivity, loaded old-save repairs and preserved original identities. Full-bright cutaways and passing tests do not establish that every ordinary playthrough is defect-free. |
+
+## Validation status
+
+The first compiling cellar candidate passed all 25 focused uncanny cases, native environment/model pages, focused literary/hotel/caver/staircase/seam/exploration/Goatman and multiplayer-story jobs. Its broader architecture run caught an outdated workshop-floor expectation; the assertion now requires the new cellar material and still requires full native support. The later font-client failure was downstream of that interrupted prerequisite and lacked its generated server corpus.
+
+Reviewing the actual two-client captures rejected the tunnel and foyer images despite the old fixture reporting success: the tunnel reader had left the authored floor and the foyer visitor was hidden behind masonry. Strengthened gates must pass and refreshed images must be inspected before verification. The complete exact-source 741-case suite, 105 architecture views, native asset/font pages, actual clients and original-profile reconnects, and all twelve CI jobs remain required. This document does not claim completed ordinary playthroughs of all 52 source stories.
