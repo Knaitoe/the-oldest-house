@@ -1,0 +1,44 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "o": "the_oldest_house:block/barrett/oak",
+  "s": "the_oldest_house:block/barrett/shoes",
+  "particle": "the_oldest_house:block/barrett/shoes"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    9
+   ],
+   "to": [
+    16,
+    8,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s"
+    },
+    "south": {
+     "texture": "#o"
+    },
+    "east": {
+     "texture": "#o"
+    },
+    "west": {
+     "texture": "#o"
+    },
+    "up": {
+     "texture": "#o"
+    },
+    "down": {
+     "texture": "#o"
+    }
+   }
+  }
+ ]
+}

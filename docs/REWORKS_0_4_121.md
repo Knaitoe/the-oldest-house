@@ -174,6 +174,36 @@ resolutions / two kinds / three endings.
 - No polish, craft, review, dressing or playtest pass touches the house; the rail ledges the polish used to add are built
   with it.
 
+## Part five: the Barretts' house (A Head Full of Ghosts)
+
+- **No more soundstage.** The film crew are in the family's actual home. The filming rooms stay exactly where the seven
+  days need them (the dining table, the living room, the open kitchen, Marjorie's and Merry's rooms upstairs, the basement
+  under the kitchen, the den), so every take, mark, framing rule and route is unchanged. `BarrettHome` closes the cutaway
+  and turns the soundstage that stood round the house into the rest of it:
+  - the front door opens on a hall with the stairs to one side: a console with the mail, coats and backpacks on hooks,
+    a shoe rack, the girls' school portraits, a runner, a basket of laundry at the foot of the stairs;
+  - the garage, through a doorway off the hall: a concrete slab, drywall, the roll-up door, the family's shelves and
+    Christmas boxes, and the crew's base (craft services, director's chairs, apple boxes, sandbags, their cases, and the
+    call sheets on a folding table: the source);
+  - the den as the crew's video village: the family's sofa, television and shelves, the monitor cart, a softbox, the
+    producer's chairs, the private-interview corner;
+  - behind the stairs the laundry (washer, dryer, baskets) and the pantry off the kitchen (shelves, boxes, the water
+    heater); the kitchen gains its fridge (magnets, a crayon drawing, the lunch menu) and a back counter, the living room
+    its television;
+  - upstairs John and Sarah's room (a double bed, nightstands, a dresser, laundry), the family bathroom, John's office
+    (the classifieds with jobs circled, a laptop on a job site, filing boxes), the girls' bathroom, and the spare room
+    where the crew keep their gear; the girls' rooms gain a desk, a poster each and clothes on the floor.
+- **A house, not a set.** Every wall is painted; there are two whole storeys with a plastered ceiling under the floor
+  above; windows on every outside wall have their blinds drawn; ceiling lights in the new rooms; the crew's taped cables
+  run from the garage through the hall, under the living-room door, into the den and up the stairs to Marjorie's door,
+  and their softboxes stand by the dining table and in her room.
+- **Routes kept clear.** The crew's exit, the bedroom pickup up the stairs and Merry's last walk out of the front door are
+  walked by the new native test; cables and wall pictures have no collision.
+- **Pieces:** one `barrett_home` block (46 kinds: paint, concrete, drywall, windows, the garage door, the storey block,
+  ceiling lights, the family's things, bathroom fixtures and the crew's gear) and 74 textures drawn in code by
+  `tools/draw_barrett_home.py`. The double bed and the tubs draw past their own block, and `BED_FILL` gives the cells they
+  cover their body.
+
 ## Fixes from the owner's notes ("Need to fix this")
 
 ### Fridge corridor (and the other hazard halls)
@@ -263,5 +293,8 @@ resolutions / two kinds / three endings.
   the thirteen steps into the ceiling, the doors onto the wall and onto nothing, the séance room's table, chair and
   thirteen robes, the clock; nothing is rebuilt while a second reader is inside; an empty, unwatched house swaps which
   side doors open onto wall and moves the sawhorse; the clock strikes thirteen once and the carpenters are heard.
+- `theBarrettsHouseIsAHomeWithTheCrewInItAndEveryFilmingRouteStaysClear`: the closed front, two storeys, the garage, the
+  call sheet on the crew's table, the fridge, mail and washer, the village cart and cables, sixty-odd windows, every
+  bed and tub's body, and a body clear at every mark and between marks of every route the cast walks.
 - The rewritten `ModelHomeTests` cover the three visits, the locked door, the stacking chairs, the set and the limb.
 - The Goatman, child's room and paw cases follow the new counts, gates and menus.

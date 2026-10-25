@@ -1,0 +1,74 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "p": "the_oldest_house:block/barrett/photos",
+  "k": "the_oldest_house:block/barrett/black",
+  "particle": "the_oldest_house:block/barrett/photos"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    2,
+    15.5
+   ],
+   "to": [
+    16,
+    14,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#p"
+    },
+    "south": {
+     "texture": "#k",
+     "uv": [
+      0,
+      1,
+      16,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#k",
+     "uv": [
+      0,
+      1,
+      16,
+      13
+     ]
+    },
+    "west": {
+     "texture": "#k",
+     "uv": [
+      0,
+      1,
+      16,
+      13
+     ]
+    },
+    "up": {
+     "texture": "#k",
+     "uv": [
+      0,
+      1,
+      16,
+      13
+     ]
+    },
+    "down": {
+     "texture": "#k",
+     "uv": [
+      0,
+      1,
+      16,
+      13
+     ]
+    }
+   }
+  }
+ ]
+}

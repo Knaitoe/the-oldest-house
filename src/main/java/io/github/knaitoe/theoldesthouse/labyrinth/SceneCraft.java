@@ -77,10 +77,10 @@ public final class SceneCraft {
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN);
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
-    // The Masque and Bly (0.4.105) are built whole by MasqueSuite and BlyManor, and the Wheel and the Winchester house (0.4.121) by WheelHouse and WinchesterHouse.
+    // The Masque and Bly (0.4.105) are built whole by MasqueSuite and BlyManor, and the Wheel, the Winchester house and the Barretts' house (0.4.121) by WheelHouse, WinchesterHouse and BarrettHome.
     static final Set<LabyrinthPlace> ROOMS = EnumSet.of(LabyrinthPlace.HILL_NURSERY, LabyrinthPlace.MINIATURES,
             LabyrinthPlace.USHER, LabyrinthPlace.CRIMSON_HALL,
-            LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK, LabyrinthPlace.GHOSTS_SET);
+            LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK);
     // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore, the Last Stop (0.4.78) its own road,
     // lot, field and woods, Movie Night (0.4.102) its own banks, woods and piers, Costume Night (0.4.103) its beach, lake and
     // park, and Winter Lake (0.4.104) its frozen lake and snowy banks: nothing generic is planted over them.
@@ -91,7 +91,7 @@ public final class SceneCraft {
     private static final int REACH = 6;
 
     public static boolean applies(LabyrinthPlace place) {
-        return place != LabyrinthPlace.GHOSTS_SET && (ROOMS.contains(place) || GROUNDS.contains(place));
+        return ROOMS.contains(place) || GROUNDS.contains(place);
     }
 
     private static String key(BlockPos origin, LabyrinthPlace place) {
@@ -282,7 +282,6 @@ public final class SceneCraft {
             case ELK_FAN -> new int[][]{{-2, 2, -20, -14, 0, 8}, {-1, 1, -13, -1, 0, 3}};
             case CONFESSION -> new int[][]{{0, 2, -23, -16, 0, 3}, {-1, 1, -15, -1, 0, 3}};
             case DEVILS_ROCK -> new int[][]{{-15, 15, -19, -17, 0, 2}, {-2, 2, -30, -26, 0, 3}, {-3, 1, -22, -18, -1, 2}, {-1, 1, -16, -1, 0, 3}};
-            case GHOSTS_SET -> new int[][]{{-3, 3, -31, -25, 0, 3}, {-6, 6, -21, -19, 0, 2}, {-7, 7, -36, -30, 0, 3}, {1, 8, -32, -20, 0, 3}, {-1, 1, -13, -1, 0, 3}};
             default -> new int[0][];
         };
     }
@@ -799,7 +798,6 @@ public final class SceneCraft {
             case ELK_FAN -> List.of(new Rect(-11, 11, -28, 0, 0, 9));
             case CONFESSION -> List.of(new Rect(-12, 12, -33, 0, 0, 9));
             case DEVILS_ROCK -> List.of(new Rect(-16, 16, -42, 0, 0, 8), new Rect(-14, -3, -38, -20, 0, 4));
-            case GHOSTS_SET -> List.of(new Rect(-20, 20, -46, 0, 0, 10), new Rect(-16, 9, -39, -14, 0, 5), new Rect(12, 18, -42, -31, 0, 4));
             default -> List.of();
         };
     }
@@ -816,7 +814,6 @@ public final class SceneCraft {
             case BLY_ROUTE -> List.of(new BlockPos(0, 4, -6), new BlockPos(0, 4, -17), new BlockPos(0, 4, -28));
             case CONFESSION -> List.of(new BlockPos(0, 4, -21));
             case DEVILS_ROCK -> List.of(new BlockPos(0, 4, -8), new BlockPos(8, 4, -32));
-            case GHOSTS_SET -> List.of(new BlockPos(0, 5, -8));
             default -> List.of();
         };
     }
@@ -835,7 +832,6 @@ public final class SceneCraft {
             case ELK_FAN -> fan();
             case CONFESSION -> confession();
             case DEVILS_ROCK -> diary();
-            case GHOSTS_SET -> studio();
             default -> { }
         }
         structure();
@@ -1138,29 +1134,6 @@ public final class SceneCraft {
         chandelier(8, -12, 0, Blocks.DARK_OAK_FENCE);
         detail(15, 2, -24, SceneDetailBlock.Kind.CLOCK, Direction.WEST);
         detail(-15, 2, -10, SceneDetailBlock.Kind.FRAME, Direction.EAST);
-    }
-
-    private void studio() {
-        // A lighting truss across the studio, lamps hung from it.
-        for (int z : new int[]{-6, -43})
-            for (int x = -18; x <= 18; x++) {
-                Direction[] sides = x == -18 ? new Direction[]{Direction.EAST} : x == 18 ? new Direction[]{Direction.WEST} : new Direction[]{Direction.EAST, Direction.WEST};
-                if (put(x, 9, z, fence(Blocks.IRON_BARS, sides)) && Math.floorMod(x, 4) == 2) put(x, 8, z, lantern(true));
-            }
-        // Crew chairs by the set door, catering by the entrance, flight cases in the corner.
-        seat(-5, 0, -10, CANE_CHAIR, Direction.NORTH);
-        seat(-3, 0, -10, CANE_CHAIR, Direction.NORTH);
-        piece(14, 0, -3, FORMICA_TABLE, Direction.NORTH, SceneDetailBlock.Kind.TEA_SET);
-        piece(15, 0, -3, FORMICA_TABLE, Direction.NORTH, SceneDetailBlock.Kind.BOTTLES);
-        seat(14, 0, -5, KITCHEN_STOOL, Direction.SOUTH);
-        for (int[] crate : new int[][]{{-19, -3}, {-19, -4}, {-18, -3}, {-19, -44}, {-18, -44}, {19, -44}}) detail(crate[0], 0, crate[1], SceneDetailBlock.Kind.CRATE, Direction.SOUTH);
-        for (int[] coil : new int[][]{{-15, -9}, {15, -25}, {-15, -25}}) detail(coil[0], 0, coil[1], SceneDetailBlock.Kind.ROPE_COIL, Direction.SOUTH);
-        // The family's set: a rug under the sitting group, a lamp, shelves on its flats.
-        rug(-12, -2, -35, -25, 0, BROWN);
-        lamp(-14, 0, -37);
-        shelves(-15, -37, Direction.SOUTH, 4, Direction.WEST, 0, 2);
-        for (int z : new int[]{-30, -22}) detail(-15, 2, z, SceneDetailBlock.Kind.FRAME, Direction.EAST);
-        chandelier(-6, -21, 0, Blocks.DARK_OAK_FENCE);
     }
 
     // ------------------------------------------------------------------
