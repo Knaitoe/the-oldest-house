@@ -615,6 +615,9 @@ public final class LabyrinthTests {
                 "the trench has a ladder back out");
         helper.assertTrue(level.getBlockState(gravity.offset(0, 0, -28)).getBlock() instanceof DoorBlock,
                 "gravity drift still has a normal exit");
+        for(int z:new int[]{-7,-21}){var lamp=gravity.offset(1,3,z);helper.assertTrue(level.getBlockState(lamp).canSurvive(level,lamp)&&level.getBlockState(lamp.above()).is(Blocks.CHAIN),"each gravity-room lamp hangs from a real ceiling chain");level.setBlock(lamp.above(),Blocks.AIR.defaultBlockState(),18);}
+        helper.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.SceneSupportRepairs.gravity(level,gravity),"the small old-save lamp repair completes without rebuilding the room");
+        for(int z:new int[]{-7,-21}){var lamp=gravity.offset(1,3,z);helper.assertTrue(level.getBlockState(lamp).is(Blocks.SOUL_LANTERN)&&level.getBlockState(lamp).canSurvive(level,lamp),"both original native lanterns survive their support repair");}
 
         helper.succeed();
     }
