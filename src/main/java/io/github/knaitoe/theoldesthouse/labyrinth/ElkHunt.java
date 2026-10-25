@@ -44,8 +44,6 @@ public final class ElkHunt {
     public static final int WINDUP = 10;
     /** A shove rocks him back this long, and can only do so this often. */
     public static final int STAGGER_TICKS = 25, SHOVE_EVERY = 50;
-    /** After the drag he walks away out of the cave; for this long he hunts no one. */
-    public static final int GRACE = 200;
     private static final double SEARCH_SPEED = .75, CHASE_SPEED = 1.35;
     /** Cover the visible body beyond the House's short-range scenery observation rule. */
     private static final double RELOCATION_VIEW_RANGE=128;
@@ -68,6 +66,9 @@ public final class ElkHunt {
         own.putBoolean("ElkHintCrawl", false);
         own.putBoolean("ElkFound", false);
         own.remove("ElkLastSeen");
+        own.putBoolean("ElkDraggedThisCrossing", false);
+        own.putLong("ElkGraceUntil", 0);
+        own.putInt("ElkBurial", 0);
     }
 
     /** The reader's own killer, adopting the scene's earlier shared one (with its identity) when there is one. */

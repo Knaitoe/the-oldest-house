@@ -989,7 +989,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.onEachTick(()->{if(!staged[0])return;var a=elkKiller(f,p);if(a==null)return;f.at(p,place,50.5,ElkCarcassMap.SITE_TOP+1,-138.5);p.setYRot(180);a.moveTo(b.getX()+50.5,b.getY()+ElkCarcassMap.SITE_TOP+1,b.getZ()-140,0,0);a.setDeltaMovement(Vec3.ZERO);});
     }
     @AfterBatch(batch="literary_elk_shove") public static void elkShoveDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_drag",timeoutTicks=700)
+    @GameTest(template="empty",batch="literary_elk_drag",timeoutTicks=760)
     public static void elkKillingBlowDragsTheReaderIntoThePileAndTheyTearTheirWayOut(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("drag_reader",place);var b=f.base(place);
         var wake=ElkCarcassMap.WAKE.add(b.getX(),b.getY(),b.getZ());
@@ -1006,9 +1006,10 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(killer.position().distanceToSqr(on)<4,"he walks the drag's real line, ahead of the reader's head: "+killer.position()+" / "+on);
             var world=LiteraryVignettes.shared(f.data(),place);var camera=world.hasUUID("DragCamera_"+p.getUUID())?f.out.getEntity(world.getUUID("DragCamera_"+p.getUUID())):null;
             h.assertTrue(camera instanceof LiteraryActor a&&a.role()==LiteraryActor.CAMERA&&a.isInvisible()&&a.owner().orElseThrow().equals(p.getUUID()),"the reader's own camera rides the drag");
+            h.assertTrue(!f.out.getBlockState(BlockPos.containing(camera.getX(),camera.getEyeY()-.6,camera.getZ())).isAir(),"their eyes are dragged along the ground, not carried at standing height: "+camera.getEyeY());
             float health=p.getHealth();h.assertTrue(!p.hurt(p.damageSources().generic(),5)&&p.getHealth()==health&&p.position().distanceToSqr(wake)<.5,"nothing reaches them during it, and the body stays put");})
         .thenIdle(ElkDrag.DRAGGING-100+ElkDrag.DARK+10).thenExecute(()->{var own=f.own(p,place);long now=f.out.getGameTime();
-            h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getLong("ElkGraceUntil")>now&&p.getHealth()>=ElkDrag.WAKE_HEALTH&&!ElkDrag.active(p),"they wake in the pile, hurt but alive, and he leaves them a while: "+own);
+            h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getLong("ElkGraceUntil")>now+ElkDrag.BURIED_GRACE/2&&p.getHealth()>=ElkDrag.WAKE_HEALTH&&!ElkDrag.active(p),"they wake in the pile, hurt but alive, and he keeps away while they are in it: "+own);
             h.assertTrue(own.getInt("ElkBurial")==15&&ElkDrag.buried(p),"the gap and the cell beyond it are packed with their own carcasses");
             h.assertTrue(f.out.getBlockState(b.offset(ElkCarcassMap.BURIAL.get(0))).isAir(),"the shared pile itself is not touched");
             for(int i=0;i<ElkDrag.HITS-1;i++)ElkDrag.hit(p,b.offset(ElkCarcassMap.BURIAL.get(0)),false);
@@ -1020,7 +1021,11 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(f.own(p,place).getInt("ElkBurial")==0b1010,"one carcass the reader's own tool broke out clears its cell; a way through is open");
             f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-186.5);})
         .thenIdle(5).thenExecute(()->{h.assertTrue(!ElkDrag.buried(p)&&f.own(p,place).getInt("ElkBurial")==0,"out of the pile, the carcasses only they saw go too");
-            var killer=elkKiller(f,p);h.assertTrue(killer.isAlive()&&killer.phase()!=ElkHunt.RUN&&killer.phase()!=ElkHunt.RAISE,"he is walking away for now, still alive and still theirs");h.succeed();});
+            h.assertTrue(f.own(p,place).getLong("ElkGraceUntil")>=f.out.getGameTime()+ElkDrag.ESCAPE_GRACE-10,"once out they have a head start before he hunts again: "+f.own(p,place));
+            var killer=elkKiller(f,p);h.assertTrue(killer.isAlive()&&killer.phase()!=ElkHunt.RUN&&killer.phase()!=ElkHunt.RAISE,"he is walking away for now, still alive and still theirs");
+            // A second killing blow on the same crossing is a death.
+            elkAshore(f,p);killer.moveTo(p.getX(),p.getY(),p.getZ()-1.5);p.setHealth(2);p.hurt(p.damageSources().mobAttack(killer),10);
+            h.assertTrue(p.isDeadOrDying()&&!ElkDrag.active(p)&&f.own(p,place).getInt("ElkDrags")==1,"he does not drag them twice in one crossing: the second blow kills: "+f.own(p,place));h.succeed();});
     }
     @AfterBatch(batch="literary_elk_drag") public static void elkDragDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_miniature_cards",timeoutTicks=100)
