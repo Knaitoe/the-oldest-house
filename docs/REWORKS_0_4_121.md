@@ -120,6 +120,8 @@ resolutions / two kinds / three endings.
 - **Texts.** Each room keeps one short text, shown in the chat when touched: the baby book, the drawing, the diary, the
   letter, her own baby book and the chart.
 - The old generic Wheel could not be finished on foot: its cross walls had doors only from one side. The new one can.
+- **Fix (after Part six):** the nursery's big mobile hung its shapes below what a block model may reach, so the model never
+  loaded; its threads are shorter and it now draws.
 
 ## Part three: Camp Blood
 
