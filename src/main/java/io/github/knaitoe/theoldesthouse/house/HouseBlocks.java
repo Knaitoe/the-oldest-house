@@ -116,6 +116,14 @@ public final class HouseBlocks {
     public static final DeferredBlock<CarpetBlock> MODEL_HOME_RUG = carpet("model_home_rug", Blocks.LIGHT_GRAY_CARPET);
     public static final DeferredBlock<Block> MODEL_HOME_TELEVISION = BLOCKS.registerBlock("model_home_television", Block::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.BLACK_CONCRETE).lightLevel(s -> 1).noLootTable());
+    // 0.4.121: the model home as a 1980s tract house: its furnishings in one block, and its walls, floors and ceiling.
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TractHouseBlock>> TRACT_HOUSE_TYPE=BLOCK_TYPES.register("tract_house",()->TractHouseBlock.CODEC);
+    public static final DeferredBlock<TractHouseBlock> TRACT_HOUSE=BLOCKS.registerBlock("tract_house",TractHouseBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(TractHouseBlock::light));
+    public static final DeferredBlock<Block> TRACT_PANELING=BLOCKS.registerBlock("tract_paneling",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noLootTable());
+    public static final DeferredBlock<Block> TRACT_SHAG=BLOCKS.registerBlock("tract_shag",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.ORANGE_WOOL).noLootTable());
+    public static final DeferredBlock<Block> TRACT_LINOLEUM=BLOCKS.registerBlock("tract_linoleum",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_TERRACOTTA).noLootTable());
+    public static final DeferredBlock<Block> TRACT_POPCORN=BLOCKS.registerBlock("tract_popcorn",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE).noLootTable());
+    public static final DeferredBlock<Block> TRACT_KITCHEN_PAPER=BLOCKS.registerBlock("tract_kitchen_paper",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_CONCRETE).noLootTable());
 
     private static DeferredBlock<CarpetBlock> carpet(String id, Block vanilla) {
         return BLOCKS.registerBlock(id, CarpetBlock::new,
