@@ -59,6 +59,14 @@ public final class UncannySocketClient {
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         if(!UncannySocketProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var custom=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(custom==null)return;var data=custom.copyTag();int next=data.getInt("UncannyStep");if(next==0)return;
+        // Preserve the native dimension-loading screen. A scripted menu close must not release an empty destination.
+        if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen){stop(mc);return;}
+        if(data.getBoolean("TerrainPending")){
+            stop(mc);var target=new Vec3(data.getDouble("ArrivalX"),data.getDouble("ArrivalY"),data.getDouble("ArrivalZ"));var floor=BlockPos.containing(target).below();
+            if(mc.level.dimension().location().toString().equals(data.getString("ArrivalDimension"))&&mc.player.onGround()&&!mc.player.isNoGravity()&&mc.player.position().distanceToSqr(target)<.25
+                    &&!mc.level.getBlockState(floor).getCollisionShape(mc.level,floor).isEmpty()&&mc.levelRenderer.isSectionCompiled(floor))mc.player.connection.sendCommand("uncannyready "+next);
+            return;
+        }
         if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;lightPhase=-1;lightTicks=0;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
         stop(mc);var b=UncannyClient.base();
         if(age%100==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} phase={} room={} eye={} feeds={} headPixels={} health={} ring={} mirror={} screen={}",role(),phase,UncannyClient.room(),mc.player.getEyePosition(),feedMask,UncannyCameras.verifiedHeadPixels(),mc.player.getHealth(),UncannyClient.ring(),UncannyClient.mirror(),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
