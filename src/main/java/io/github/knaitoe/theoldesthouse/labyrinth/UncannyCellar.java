@@ -72,7 +72,7 @@ public final class UncannyCellar {
         if(b==null||own.getInt("Peeled")<6||!carriesKey(p))return false;
         var shared=UncannyStories.world(p.serverLevel(),b,PLACE);if(shared.getBoolean("Rescued"))return false;
         if(shared.hasUUID("EscortOwner")&&!shared.getUUID("EscortOwner").equals(p.getUUID())){
-            var other=p.server.getPlayerList().getPlayer(shared.getUUID("EscortOwner"));if(other!=null&&LiteraryVignettes.inside(other,PLACE))return false;
+            var other=p.server.getPlayerList().getPlayer(shared.getUUID("EscortOwner"));if(other!=null&&LiteraryVignettes.inside(other,PLACE)&&!UncannyStories.failed(LiteraryVignettes.personal(LabyrinthData.get(p.server),other.getUUID(),PLACE)))return false;
         }
         shared.putUUID("EscortOwner",p.getUUID());own.putBoolean("Escorting",true);UncannyStories.world(p.serverLevel(),b,PLACE,shared);
         p.displayClientMessage(net.minecraft.network.chat.Component.literal("“I can walk. Keep the way clear.”"),false);return true;
@@ -84,7 +84,7 @@ public final class UncannyCellar {
         if(owner==null||!LiteraryVignettes.inside(owner,PLACE)||UncannyStories.failed(LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),owner.getUUID(),PLACE)))return;
         var points=List.of(new Vec3(-2.5,-5,-13.5),new Vec3(.5,-5,-11.5),new Vec3(.5,0,-4.5),new Vec3(-2.5,0,-3.5));
         int leg=Math.min(points.size()-1,shared.getInt("EscortLeg"));var target=points.get(leg).add(b.getX(),b.getY(),b.getZ());
-        worker.gesture(0);if(SceneFootpaths.step(worker,target,.28)){
+        worker.appearance(LiteraryActor.UNCANNY_PEELER,3);worker.gesture(0);if(SceneFootpaths.step(worker,target,.28)){
             if(leg<points.size()-1)shared.putInt("EscortLeg",leg+1);
             else if(worker.getY()>=b.getY()-.1&&worker.getZ()>b.getZ()-5){shared.putBoolean("Rescued",true);shared.remove("EscortOwner");}
         }
