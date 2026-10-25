@@ -14,7 +14,7 @@ public final class UncannyRooms {
     public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.PAINTED_INTERIOR,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.TUNNEL_PERIPHERY,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.LAYERED_MAN,LabyrinthPlace.MOTION_LIGHT);
     public static final BlockPos PARLOR_BOARD=new BlockPos(0,1,-28),PARLOR_DOOR=new BlockPos(8,0,-23);
     public static final BlockPos DINER_TABLE=new BlockPos(5,1,-19),MONITOR_AT=new BlockPos(-5,6,-22),BED_AT=new BlockPos(-6,5,-26),PARENTS_DOOR=new BlockPos(4,5,-15);
-    public static final BlockPos CELLAR_DOOR=new BlockPos(0,0,-6),MASS=new BlockPos(0,-5,-20),TOOL=new BlockPos(5,-4,-13),KEY_CAVITY=new BlockPos(0,-4,-22);
+    public static final BlockPos CELLAR_DOOR=new BlockPos(0,0,-5),MASS=new BlockPos(0,-5,-20),TOOL=new BlockPos(5,-4,-13),KEY_CAVITY=new BlockPos(0,-4,-22);
     public static final BlockPos INTERCOM=new BlockPos(3,1,-10),FLOOD=new BlockPos(0,4,-20),HINGED=new BlockPos(4,0,-5);
     public static final List<BlockPos> FALSE_DOORS=List.of(new BlockPos(-4,0,-4),new BlockPos(-4,0,-8),new BlockPos(0,0,-2));
     public static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
@@ -254,6 +254,8 @@ public final class UncannyRooms {
         box(l,b,-1,-5,-12,1,2,-6,Blocks.AIR);
         for(int i=0;i<5;i++){int z=-6-i,y=-i-1;box(l,b,-1,-6,z,1,y-1,z,Blocks.STONE_BRICKS);for(int x=-1;x<=1;x++)state(l,b,new BlockPos(x,y,z),Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));}
         for(int x:new int[]{-2,2}){box(l,b,x,-5,-12,x,0,-7,material("cellar_brick"));box(l,b,x,1,-12,x,1,-7,Blocks.OAK_FENCE);}
+        for(int x:new int[]{-1,1})box(l,b,x,0,-5,x,2,-5,material("cellar_plaster"));
+        box(l,b,-1,2,-5,1,2,-5,material("cellar_plaster"));
         door(l,b,CELLAR_DOOR,Direction.SOUTH,true);
         // A backed ladder reaches a real upper landing; its one-cell shaft has no side pit.
         box(l,b,-7,-5,-10,-7,1,-10,material("cellar_brick"));box(l,b,-6,-5,-10,-6,1,-10,Blocks.AIR);
@@ -290,6 +292,7 @@ public final class UncannyRooms {
         furnishing(l,b,3,0,-12,UncannyFurnitureBlock.Kind.RADIATOR,Direction.WEST);
         furnishing(l,b,0,4,-5,UncannyFurnitureBlock.Kind.FLUORESCENT);
         // Warm spill at the glass keeps a silhouette readable after the yard floodlight dies.
+        furnishing(l,b,0,4,-12,UncannyFurnitureBlock.Kind.FLUORESCENT);
         furnishing(l,b,-3,3,-12,UncannyFurnitureBlock.Kind.SCONCE,Direction.EAST);
         furnishing(l,b,3,3,-12,UncannyFurnitureBlock.Kind.SCONCE,Direction.WEST);
         for(int z=-18;z>=-24;z--)furnishing(l,b,-6,0,z,UncannyFurnitureBlock.Kind.DRAIN);

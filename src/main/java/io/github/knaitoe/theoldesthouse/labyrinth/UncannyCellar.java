@@ -1,6 +1,5 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
-import io.github.knaitoe.theoldesthouse.house.BuildBlocks;
 import java.util.*;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
