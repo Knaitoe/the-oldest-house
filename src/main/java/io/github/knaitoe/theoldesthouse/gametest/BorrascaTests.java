@@ -64,6 +64,7 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_custody") public static void custodyDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_escort") public static void escortDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_taking_walk") public static void takingWalkDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_town") public static void townDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="borrasca_registration")
     public static void oneFixedUnderstandingSourceKeepsThePoolAndOrdinaryRecord(GameTestHelper h){
@@ -168,6 +169,40 @@ public final class BorrascaTests {
             int corner=detour[0];boolean rounding=corner<timberEnds.length&&own.getInt("TakingStep")>=(corner<2?6:10);var target=rounding?Vec3.atBottomCenterOf(f.base(p).offset(timberEnds[corner])):a.position();var d=target.subtract(p.position());
             if(rounding&&d.horizontalDistance()<.2){detour[0]++;p.travel(Vec3.ZERO);}else if(d.horizontalDistance()>(rounding?.2:2)){p.setYRot((float)Math.toDegrees(Math.atan2(-d.x,d.z)));p.travel(new Vec3(0,0,1));}else p.travel(Vec3.ZERO);
         });
+    }
+
+    /** A standing adult body fits the cell: no collision from just above a carpet to 1.8 over the floor. */
+    private static boolean clear(Fixture f,ServerPlayer p,BlockPos b,int x,int y,int z){return f.out.noCollision(p,new AABB(b.getX()+x+.2,b.getY()+y+.1,b.getZ()+z+.2,b.getX()+x+.8,b.getY()+y+1.8,b.getZ()+z+.8));}
+    private static ItemStack opened(Fixture f,ServerPlayer p,BlockPos rel,String what){f.click(p,rel);f.h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,what+" opens as native pages at "+rel);var book=((LiteraryVignettes.Pages)p.containerMenu).original();p.closeContainer();return book;}
+    private static String text(ItemStack book){return book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);}
+    private static String title(ItemStack book){return book.get(DataComponents.WRITTEN_BOOK_CONTENT).title().raw();}
+
+    @GameTest(template="empty",batch="borrasca_town",timeoutTicks=600)
+    public static void theTownFortAndDepotAreRealBuildingsAndTheTownsPapersChangeBetweenVisits(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("drisking_reader");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original cast loaded")).thenExecute(()->{
+            var b=f.base(p);
+            h.assertTrue(f.out.getBlockState(b.offset(7,1,-6)).is(BorrascaRegistry.FITTING.get())&&f.out.getBlockState(b.offset(0,6,-6)).getBlock() instanceof SlabBlock&&f.out.getBlockEntity(b.offset(BorrascaRooms.SOURCE)) instanceof LecternBlockEntity,"the reader arrives inside the trailhead station, under its roof, with the trail notice");
+            for(int z=-3;z>=-14;z--)h.assertTrue(clear(f,p,b,0,0,z),"the station aisle and doorway stay open at z "+z);
+            h.assertTrue(RoadhouseBlock.is(f.out.getBlockState(b.offset(-19,1,-26)),RoadhouseBlock.Kind.REGISTER)&&f.out.getBlockState(b.offset(-16,0,-23)).getBlock() instanceof DoorBlock,"Drisking General has its till and its door");
+            h.assertTrue(f.out.getBlockState(b.offset(27,0,-26)).is(Blocks.IRON_BARS)&&f.out.getBlockState(b.offset(18,0,-23)).getBlock() instanceof DoorBlock,"the Sheriff's office has its cell and its door");
+            h.assertTrue(f.out.getBlockState(b.offset(1,6,-89)).isAir()&&f.out.getBlockState(b.offset(2,7,-89)).isAir()&&f.out.getBlockState(b.offset(0,10,-100)).is(Blocks.SPRUCE_LOG)&&f.out.getBlockState(b.offset(0,12,-94)).getBlock() instanceof SlabBlock,"the fort is walled and roofed, its doorway open, a trunk through its back wall");
+            h.assertTrue(clear(f,p,b,-4,0,-99)&&clear(f,p,b,3,0,-99)&&!clear(f,p,b,0,0,-99),"the trail forks round the Triple Tree's burl");
+            for(int z=-170;z>=-204;z--){if(z==-181||z==-198){h.assertTrue(f.out.getBlockState(b.offset(-17,12,z)).getBlock() instanceof DoorBlock,"a door in the depot partition at z "+z);continue;}h.assertTrue(clear(f,p,b,-17,12,z),"the depot aisle stays open from the front door to the service exit at z "+z);}
+            h.assertTrue(f.out.getBlockState(b.offset(-28,12,-183)).is(BorrascaRegistry.FITTING.get())&&f.out.getBlockState(b.offset(-17,12,-169)).getBlock() instanceof DoorBlock&&f.out.getBlockState(b.offset(4,14,-190)).is(BorrascaRegistry.FITTING.get()),"the depot's drawers, front door and machine shed stand");
+            // The papers: the trail map, the store's board in childhood, Kimber's notes.
+            f.at(p,5,0,-6);var map=opened(f,p,BorrascaRooms.TRAIL_MAP,"the trail map");h.assertTrue(text(map).contains("Marker 2"),"the map shows where the public walk ends");
+            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[3],"the noticeboard");h.assertTrue(text(board).contains("DANA PRUITT")&&!text(board).contains("KIMBER"),"the childhood board has an older child's poster and not hers");
+            f.at(p,-1,6,-96);var notes=opened(f,p,BorrascaRooms.NOTES,"Kimber's notes");h.assertTrue(title(notes).equals("Kimber's notes"),"her notes are pinned in the fort");
+            f.stage(p,3);
+        }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult cast recalled")).thenExecute(()->{
+            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[0],"the later noticeboard");h.assertTrue(text(board).contains("KIMBER")&&text(board).contains("CLOSED"),"years later her own poster is up, closed");
+            f.at(p,-1,6,-96);h.assertTrue(title(opened(f,p,BorrascaRooms.NOTES,"the aged notes")).contains("water-stained"),"her notes are still there, damp through");
+            f.stage(p,4);
+        }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"last cast recalled")).thenExecute(()->{
+            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[1],"the last noticeboard");h.assertTrue(text(board).contains("MARA"),"the last night's board has a new poster");
+            var own=f.own(p);h.assertTrue(own.contains("Original_Board")&&own.contains("Original_Board3")&&own.contains("Original_Board4")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BORRASCA),"each visit's board is its own original, and reading confers nothing");
+        }).thenSucceed();
     }
 
     @GameTest(template="empty",batch="borrasca_escort",timeoutTicks=750)

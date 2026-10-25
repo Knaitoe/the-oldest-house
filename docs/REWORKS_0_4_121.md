@@ -204,6 +204,47 @@ resolutions / two kinds / three endings.
   `tools/draw_barrett_home.py`. The double bed and the tubs draw past their own block, and `BED_FILL` gives the cells they
   cover their body.
 
+## Part six: Borrasca
+
+- **Four visits kept.** The promise, the taking, the denial and the last night run as before, on the same marks:
+  Kimber's walk and carving, the ladder, the taking, the gully, the Sheriff's blockade, the gate, the register, the pack,
+  the breaker, the service pipe and the way back down. `BorrascaTown` builds the buildings round them, and a native test
+  walks the station aisle, the forks round the Triple Tree and the depot aisle.
+- **The town edge.** The reader now steps out of the House into County Trails' station, a board-and-batten lean-to
+  against the House's wall: the trail notice on its lectern, the account on its desk, a stove and woodpile, a bench under
+  the window, pamphlets, the lost and found, and a trail map on the wall. Out of its doorway the trailhead board stands by
+  the path. Round the gravel lot, where the county pickup and Prescott's truck (the Last Stop's pickups, tan and dark
+  green) are nosed in, stand Drisking General (a false front, a porch with the town's noticeboard, counter and till, stock
+  behind it, two aisles, the cooler) and the Sheriff's office (brick, a counter with a swing gate, two desks and the radio,
+  the files, the county map and a holding cell). A rail fence and hedge close the town's back edge, with pines behind the
+  buildings.
+- **The fort and the Triple Tree.** The three trunks now grow from one burl, and the trail forks round it. The fort in
+  their crotch has walls with a window each side, a doorway beside the ladder's hatch, a covered landing with a rail and a
+  gabled roof; the trunks run up through the floor, the back wall and the roof and crown together above it. Inside: the
+  chair, a barrel, a shelf, a rug, a candle, a lantern under the ridge and Kimber's notes pinned up on the back wall. On
+  the adult visits the walls age with the floor.
+- **The ridge depot.** The old stone room becomes a steel depot with a copper gable roof, windows and a front lever by the
+  office door: an office (filing drawers, two desks, the route board, the receiving counter, a water cooler and a bench), a
+  sorting room (tagged property drawers, the long sorting tables with bundled effects on them, the register and the pack on
+  their desks, shelved effects behind a wire cage) and a back room (lockers, a bench, a table and the coffee), along one
+  aisle from the front door to the service exit. The machine stands in its own steel shed with an open bay on the yard and
+  the lamp; the belt runs through both ends into a spoil bin. A gate hut stands inside the wire, and the yard has drums,
+  pallets, a fuel tank and lamp posts, all off the line from the taking to the lamp. The way back down now starts west of
+  the depot instead of under its corner.
+- **The papers.** The trail notice and a trail map are rewritten as County Trails' notices. The store's noticeboard is the
+  town's own paper and changes between visits: a church supper, a lost dog, the curfew, Prescott's night work and an older
+  girl's sun-faded poster in childhood; Kimber's own poster, gone soft, with CLOSED written across it, years later; and on
+  the last night a new poster for Mara over what is left of hers. Kimber's notes in her own hand give the fort's rules,
+  what the children know of the Shiny Gentleman, the word the big kids use for the top of the ridge, the sound and the
+  trucks after it, and what she keeps there; on the adult visits the damp has taken words out of them. The property
+  receipt is rewritten: collected at Marker 3 at 6:40, released by the Sheriff's office, carried by Prescott, release to
+  family none, and the next tag. Each visit's board and the aged notes are their own originals; reading them confers
+  nothing.
+- **Pieces.** The cast wear their own 64x64 skins on the standard humanoid mesh (`tools/draw_borrasca_cast.py`): Kimber,
+  Kyle, the Sheriff, Prescott and the plant's coveralls. The town's fittings (siding, steel, rust, paper, the noticeboard,
+  filing drawers, the belt, truck paint and the machine frame) get 13 block textures of their own in
+  `textures/block/borrasca/`, and the sixteen trail tiles are redrawn, all in `tools/generate_borrasca_trail_assets.py`.
+
 ## Fixes from the owner's notes ("Need to fix this")
 
 ### Fridge corridor (and the other hazard halls)
@@ -296,5 +337,9 @@ resolutions / two kinds / three endings.
 - `theBarrettsHouseIsAHomeWithTheCrewInItAndEveryFilmingRouteStaysClear`: the closed front, two storeys, the garage, the
   call sheet on the crew's table, the fridge, mail and washer, the village cart and cables, sixty-odd windows, every
   bed and tub's body, and a body clear at every mark and between marks of every route the cast walks.
+- `theTownFortAndDepotAreRealBuildingsAndTheTownsPapersChangeBetweenVisits`: the station roof, notice and aisle, the store
+  and office, the fort's walls, doorway, trunk and roof, the forks round the burl, the depot aisle and its doors, drawers
+  and shed; the trail map, the childhood board and Kimber's notes, then the later board and the aged notes, then the last
+  night's board, each its own original and none of them credit.
 - The rewritten `ModelHomeTests` cover the three visits, the locked door, the stacking chairs, the set and the limb.
 - The Goatman, child's room and paw cases follow the new counts, gates and menus.
