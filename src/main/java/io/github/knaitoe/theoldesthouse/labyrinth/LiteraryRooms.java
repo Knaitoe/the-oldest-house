@@ -46,8 +46,8 @@ public final class LiteraryRooms {
     public static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),F);}
     public static void prop(ServerLevel l,BlockPos b,BlockPos rel,LiteraryPropBlock.Kind kind,Direction facing){BuildBlocks.set(l,b.offset(rel),LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,kind).setValue(LiteraryPropBlock.FACING,facing),F);}
     public static void paper(ServerLevel l,BlockPos b,BlockPos rel,ItemStack book){BuildBlocks.set(l,b.offset(rel),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true),F);BuildBlocks.after(l,()->{if(l.getBlockEntity(b.offset(rel)) instanceof LecternBlockEntity d){d.setBook(book);d.setChanged();}});}
-    private static Block wall(LabyrinthPlace p){return switch(p){case USHER->Blocks.DEEPSLATE_BRICKS;case MAPPING_INTERIOR->LiteraryRegistry.SIDING.get();case CRIMSON_HALL->Blocks.POLISHED_BLACKSTONE_BRICKS;case MINIATURES,DEVILS_ROCK,GHOSTS_SET,WHEEL->Blocks.CALCITE;case LAKE_HOUSE->Blocks.SPRUCE_PLANKS;default->LiteraryRegistry.DARK_PANEL.get();};}
-    private static Block floor(LabyrinthPlace p){return switch(p){case USHER->Blocks.POLISHED_DEEPSLATE;case CRIMSON_HALL->LiteraryRegistry.RED_FLOOR.get();case MAPPING_INTERIOR->Blocks.BIRCH_PLANKS;case LAKE_HOUSE->Blocks.SPRUCE_PLANKS;default->Blocks.DARK_OAK_PLANKS;};}
+    private static Block wall(LabyrinthPlace p){return switch(p){case USHER->Blocks.DEEPSLATE_BRICKS;case MAPPING_INTERIOR->LiteraryRegistry.SIDING.get();case CRIMSON_HALL->Blocks.POLISHED_BLACKSTONE_BRICKS;case MINIATURES,DEVILS_ROCK,GHOSTS_SET,WHEEL->Blocks.CALCITE;case LAKE_HOUSE->Blocks.SPRUCE_PLANKS;case WINCHESTER->LiteraryRegistry.WINCHESTER_WALLPAPER.get();default->LiteraryRegistry.DARK_PANEL.get();};}
+    private static Block floor(LabyrinthPlace p){return switch(p){case USHER->Blocks.POLISHED_DEEPSLATE;case CRIMSON_HALL->LiteraryRegistry.RED_FLOOR.get();case MAPPING_INTERIOR->Blocks.BIRCH_PLANKS;case LAKE_HOUSE->Blocks.SPRUCE_PLANKS;case WINCHESTER->LiteraryRegistry.WINCHESTER_PARQUET.get();default->Blocks.DARK_OAK_PLANKS;};}
     private static void room(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int y,int h,Block walls,Block flooring){
         NovelRooms.room(l,b,x0,x1,z0,z1,y,h,walls,flooring);
         // Timber bays, sills and a recessed coffer construction rather than featureless boxes.
@@ -86,8 +86,10 @@ public final class LiteraryRooms {
         box(l,b,11,2,-41,14,5,-41,Blocks.BLACK_STAINED_GLASS);at(l,b,-13,0,-33,Blocks.CANDLE);
     }
     private static void winchester(ServerLevel l,BlockPos b){
-        room(l,b,-30,30,-77,0,0,15,Blocks.RED_TERRACOTTA,Blocks.DARK_OAK_PLANKS);
-        for(int z:new int[]{-16,-32,-48,-64}){box(l,b,-29,0,z,29,7,z,Blocks.OAK_PLANKS);for(int x:new int[]{-25,0,25})door(l,b,x,0,z,Direction.SOUTH,x==0);}
+        // 0.4.121: damask wallpaper on parquet; WinchesterHouse adds the unfinished house.
+        var paper=LiteraryRegistry.WINCHESTER_WALLPAPER.get();
+        room(l,b,-30,30,-77,0,0,15,paper,LiteraryRegistry.WINCHESTER_PARQUET.get());
+        for(int z:new int[]{-16,-32,-48,-64}){box(l,b,-29,0,z,29,7,z,paper);for(int x:new int[]{-25,0,25})door(l,b,x,0,z,Direction.SOUTH,x==0);}
         // Long opposing flights gain half a block at each turn, not a full floor per flight.
         for(int flight=0;flight<16;flight++){int y=flight/2,z=-8-flight*4;var type=flight%2==0?SlabType.BOTTOM:SlabType.TOP;int turn=flight%2==0?23:-23;
             box(l,b,-24,y-1,z,24,y-1,z,Blocks.OAK_PLANKS);box(l,b,-24,y,z-1,24,y+2,z+1,Blocks.AIR);
@@ -97,12 +99,12 @@ public final class LiteraryRooms {
         }
         // The following flight's clearance cuts reach the preceding turn: lay every turn last.
         for(int flight=0;flight<15;flight++){int y=flight/2,z=-8-flight*4,turn=flight%2==0?23:-23;var type=flight%2==0?SlabType.BOTTOM:SlabType.TOP;for(int zz=z-1;zz>=z-3;zz--)for(int x=turn-1;x<=turn+1;x++){box(l,b,x,y,zz,x,y+3,zz,Blocks.AIR);BuildBlocks.set(l,b.offset(x,y,zz),Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,type),F);}}
-        box(l,b,-25,-1,-8,-22,-1,-3,Blocks.OAK_PLANKS);box(l,b,-25,0,-7,-22,3,-3,Blocks.AIR);
+        box(l,b,-25,-1,-8,-22,-1,-3,LiteraryRegistry.WINCHESTER_PARQUET.get());box(l,b,-25,0,-7,-22,3,-3,Blocks.AIR);
         box(l,b,-24,7,-73,28,7,-70,Blocks.OAK_PLANKS);box(l,b,-24,8,-73,28,10,-70,Blocks.AIR);
         box(l,b,-24,7,-70,-22,10,-69,Blocks.AIR);box(l,b,-24,7,-70,-22,7,-69,Blocks.OAK_PLANKS);
-        steps(l,b,-28,-5,0,6,false);box(l,b,-29,5,-10,-27,7,-10,Blocks.OAK_PLANKS);
         box(l,b,24,7,-74,28,7,-63,Blocks.DARK_OAK_PLANKS);door(l,b,25,8,-63,Direction.SOUTH,true);box(l,b,24,0,-62,28,8,-59,Blocks.AIR);box(l,b,24,-1,-62,28,-1,-59,Blocks.HAY_BLOCK);
-        desk(l,b,26,8,-70);for(int z:new int[]{-8,-26,-44,-60})light(l,b,0,11,z);NovelRooms.sign(l,b.offset(-28,5,-9),Direction.SOUTH,new String[]{"ATTIC","Continue upward","",""});
+        desk(l,b,26,8,-70);for(int z:new int[]{-8,-26,-44,-60})light(l,b,0,11,z);
+        WinchesterHouse.build(l,b);
     }
     private static void crimson(ServerLevel l,BlockPos b){
         room(l,b,-18,18,-43,0,0,13,Blocks.POLISHED_BLACKSTONE_BRICKS,LiteraryRegistry.RED_FLOOR.get());box(l,b,-3,13,-27,3,15,-21,Blocks.AIR);

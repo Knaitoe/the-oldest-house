@@ -49,6 +49,7 @@ jobs:
           python3 tools/draw_tract_house.py --check
           python3 tools/draw_wheel_house.py --check
           python3 tools/draw_camp_session.py --check
+          python3 tools/draw_winchester.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
           python3 tools/generate_bath_decay_assets.py --check
 

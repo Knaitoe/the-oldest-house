@@ -347,6 +347,47 @@ public final class VignetteAnimationTests {
     }
     @AfterBatch(batch="literary_wheel_sequence") public static void wheelDone(ServerLevel l){close();}
 
+    @GameTest(template="empty",batch="literary_winchester_house",timeoutTicks=200)
+    public static void theWinchesterIsNeverFinishedAndItsCarpentersRebuildOnlyAnEmptyUnwatchedHouse(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.WINCHESTER;var p=f.player("winchester_reader",place);var b=f.base(place);var in=f.in;
+        h.startSequence().thenExecute(()->{
+            h.assertTrue(in.getBlockState(b.offset(-30,3,-12)).is(LiteraryRegistry.WINCHESTER_WALLPAPER.get())&&in.getBlockState(b.offset(5,-1,-30)).is(LiteraryRegistry.WINCHESTER_PARQUET.get()),"damask walls on a parquet floor");
+            h.assertTrue(in.getBlockState(b.offset(WinchesterHouse.FLOOR_WINDOW)).is(LiteraryRegistry.WINCHESTER_LEADED_GLASS.get()),"a window in the ledger's floor");
+            h.assertTrue(in.getBlockState(b.offset(-30,3,-22)).is(LiteraryRegistry.WINCHESTER_LEADED_GLASS.get())&&in.getBlockState(b.offset(-31,3,-22)).is(LiteraryRegistry.WINCHESTER_WALLPAPER.get()),"a leaded window looks onto more wallpaper");
+            for(int k=0;k<WinchesterHouse.STAIR_STEPS;k++)h.assertTrue(in.getBlockState(b.offset(-28,k,WinchesterHouse.STAIR_Z-k)).getBlock() instanceof net.minecraft.world.level.block.StairBlock,"step "+(k+1)+" of thirteen");
+            h.assertTrue(!in.getBlockState(b.offset(-28,13,WinchesterHouse.STAIR_Z-12)).isAir()&&!in.getBlockState(b.offset(-28,12,WinchesterHouse.STAIR_Z-11)).isAir(),"the last two steps go on into the ceiling");
+            var wallDoor=b.offset(-29,0,-40);
+            h.assertTrue(in.getBlockState(wallDoor).getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!in.getBlockState(wallDoor.west()).isAir(),"a door opens onto the wall");
+            var highDoor=b.offset(29,9,-40);
+            h.assertTrue(in.getBlockState(highDoor).getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&in.getBlockState(highDoor.west()).isAir()&&in.getBlockState(highDoor.west().below()).isAir(),"a door high in the east wall opens onto nothing");
+            int robes=0;for(int x=25;x<=29;x++)for(int z=-76;z<=-65;z++){var s=in.getBlockState(b.offset(x,2,z));if(s.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.SCENE_DETAIL.get())&&s.getValue(io.github.knaitoe.theoldesthouse.house.SceneDetailBlock.KIND)==io.github.knaitoe.theoldesthouse.house.SceneDetailBlock.Kind.COAT)robes++;}
+            h.assertTrue(robes==13&&WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.TABLE)),WinchesterFittingBlock.Kind.SEANCE_TABLE)&&WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.CHAIR)),WinchesterFittingBlock.Kind.SEANCE_CHAIR)&&in.getBlockState(b.offset(24,3,-70)).is(LiteraryRegistry.WINCHESTER_SEANCE_PAPER.get()),"the blue séance room keeps its table, one chair and thirteen robes: "+robes);
+            h.assertTrue(WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.CLOCK.above())),WinchesterFittingBlock.Kind.CLOCK_TOP),"the hall clock stands in the entrance bay");
+            var doors=WinchesterHouse.CHANGING_DOORS;
+            for(var d:doors)h.assertTrue(in.getBlockState(b.offset(d)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock,"every side passage keeps its own door");
+            h.assertTrue(!WinchesterHouse.walled(in,b,doors.get(0))&&WinchesterHouse.walled(in,b,doors.get(1))&&WinchesterHouse.walled(in,b,doors.get(2))&&!WinchesterHouse.walled(in,b,doors.get(3)),"on the first visit two side doors open onto wall");
+            // Another reader is in the house: the carpenters wait.
+            var peer=f.player("winchester_peer",place);f.at(peer,place,.5,0,-40.5);
+            p.teleportTo(in,b.getX()+.5,b.getY(),b.getZ()-2.5,0,0);LiteraryVignettes.onArrive(p,place);
+            h.assertTrue(WinchesterHouse.layout(f.data(),b)==0&&WinchesterHouse.walled(in,b,doors.get(1)),"nothing is rebuilt while someone else is inside");
+            // The house to themselves, facing the front door: the carpenters have been at work since the last visit.
+            f.at(peer,place,.5,0,160.5);
+            p.teleportTo(in,b.getX()+.5,b.getY(),b.getZ()-2.5,0,0);LiteraryVignettes.onArrive(p,place);
+            h.assertTrue(WinchesterHouse.layout(f.data(),b)==1,"an empty, unwatched house is rebuilt between visits");
+            h.assertTrue(WinchesterHouse.walled(in,b,doors.get(0))&&!WinchesterHouse.walled(in,b,doors.get(1))&&!WinchesterHouse.walled(in,b,doors.get(2))&&WinchesterHouse.walled(in,b,doors.get(3)),"the other two side doors open onto wall now");
+            for(var d:doors)h.assertTrue(in.getBlockState(b.offset(d)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock,"the doors themselves stay");
+            h.assertTrue(WinchesterFittingBlock.is(in.getBlockState(b.offset(-27,0,-40)),WinchesterFittingBlock.Kind.SAWHORSE)&&in.getBlockState(b.offset(27,0,-40)).isAir(),"the sawhorse has moved across the house");
+            // The clock and the carpenters are the reader's own.
+            var own=f.own(p,place);h.assertTrue(own.getInt("Strikes")==0&&own.getInt("StrikeAt")==WinchesterHouse.STRIKE_AT,"the clock waits for its hour on a new visit");
+            int heard=0;for(int t=0;t<=1200;t+=5){own.putInt("ThisVisitTicks",t);int before=own.getInt("Carpenter");WinchesterHouse.reader(p,b,own);if(own.getInt("Carpenter")!=before)heard++;
+                if(t==WinchesterHouse.STRIKE_AT-5)h.assertTrue(own.getInt("Strikes")==0,"not before its hour");}
+            h.assertTrue(own.getInt("Strikes")==13,"the clock strikes thirteen, and no more: "+own.getInt("Strikes"));
+            h.assertTrue(heard>=5,"the carpenters are heard again and again behind the walls: "+heard);
+            h.succeed();
+        });
+    }
+    @AfterBatch(batch="literary_winchester_house") public static void winchesterDone(ServerLevel l){close();}
+
     private static final java.util.List<net.minecraft.world.level.ChunkPos> FORCED=new java.util.ArrayList<>();
     @GameTest(template="empty",batch="literary_movie_cast",timeoutTicks=520)
     public static void theAudienceTalksAndGoesMissingOnlyInTheDarkWhileNobodyLooks(GameTestHelper h){
