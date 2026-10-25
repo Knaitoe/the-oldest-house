@@ -336,16 +336,23 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         if(chapter==3){own.putInt("AskTicks",ConfessionAnswers.SILENCE_TICKS-15);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);}
         else{var early=new net.neoforged.neoforge.event.ServerChatEvent(p,"My answer to "+chapter+": the cellar door was open.",net.minecraft.network.chat.Component.literal("answer"));NeoForge.EVENT_BUS.post(early);
             h.assertTrue(early.isCanceled(),"the answer to the listener never reaches public chat");h.assertTrue(f.own(p,place).getString("Answer").startsWith("My answer to "+chapter),"his question takes the reader's own words");}
-        h.runAfterDelay(60,()->{var after=f.own(p,place);h.assertTrue(after.getInt("Chapter")==chapter+1,"the answer, or the silence, completes the chapter, then he waits for a return");
+        afterAnswer(h,f,p,chapter,own.getInt("Visit"),0);});}
+    /** 0.4.123: the answer settles the chapter; he rests a moment and goes on in the same sitting. */
+    private static void afterAnswer(GameTestHelper h,Fixture f,ServerPlayer p,int chapter,int visit,int waited){h.runAfterDelay(5,()->{var place=LabyrinthPlace.CONFESSION;var after=f.own(p,place);
+            if(after.getInt("Chapter")==chapter){h.assertTrue(waited<80,"the answer, or the silence, completes the chapter");afterAnswer(h,f,p,chapter,visit,waited+5);return;}
+            h.assertTrue(after.getInt("Chapter")==chapter+1,"the answer, or the silence, completes the chapter");
             h.assertTrue(after.getString("JournalText").contains(ConfessionAnswers.QUESTIONS[chapter])&&after.getString("JournalText").contains(chapter==3?ConfessionAnswers.SILENCE:"My answer to "+chapter),"the journal takes down his question and the reply exactly");
             if(chapter<7){h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==1,"the same carried native quill remains through the spoken chapters");
+                h.assertTrue(after.getInt("RestTicks")>0&&after.getInt("Visit")==visit,"he rests a moment and goes on in the same sitting, without waiting for a return");
                 var idle=new net.neoforged.neoforge.event.ServerChatEvent(p,"hello, anyone",net.minecraft.network.chat.Component.literal("hello"));NeoForge.EVENT_BUS.post(idle);h.assertTrue(!idle.isCanceled(),"between chapters, ordinary chat is the reader's own again");
-                f.arrive(p,place);f.at(p,place,1,0,-18);f.look(p,f.base(place).offset(1,1,-22));journalChapter(h,f,p,chapter+1);return;}
+                // Leaving and coming back still resumes where he stopped.
+                if(chapter==1){f.arrive(p,place);f.at(p,place,1,0,-18);f.look(p,f.base(place).offset(1,1,-22));}
+                journalChapter(h,f,p,chapter+1);return;}
             h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==0&&after.contains("SignedJournal")&&!after.getBoolean("Ready"),"the actual quill is sealed once, without earning an unread ending");
             var journal=ItemStack.parseOptional(p.registryAccess(),after.getCompound("SignedJournal")).get(DataComponents.WRITTEN_BOOK_CONTENT);String pages=journal==null?"":journal.pages().stream().map(page->page.raw().getString()).collect(java.util.stream.Collectors.joining("\n"));
             h.assertTrue(pages.contains("My answer to 0")&&pages.contains("My answer to 7")&&pages.contains(ConfessionAnswers.SILENCE)&&pages.contains(ConfessionAnswers.QUESTIONS[5]),"the sealed journal is made of his questions and the reader's own answers: "+pages);
             h.assertTrue(ConfessionAnswers.last(after).startsWith("My answer to 7"),"the account will end on the reader's last answer");
-            f.arrive(p,place);f.read(p,place,new BlockPos(10,1,-29));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("Read_Journal")&&f.own(p,place).getBoolean("Ready"),"personally reading the exact sealed journal resolves the later return");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.CONFESSION),"the owned final account yields this one source");h.succeed();});});});}
+            f.arrive(p,place);f.read(p,place,new BlockPos(10,1,-29));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("Read_Journal")&&f.own(p,place).getBoolean("Ready"),"personally reading the exact sealed journal resolves the later return");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.CONFESSION),"the owned final account yields this one source");h.succeed();});});}
     @GameTest(template="empty",batch="literary_confession_words",timeoutTicks=100)
     public static void theListenerRepeatsAFragmentOfTheReadersOwnWords(GameTestHelper h){
         h.assertTrue(ConfessionAnswers.fragment("I opened the cellar door, twice.").equals("opened the cellar"),"he repeats the longest word and the two after it");

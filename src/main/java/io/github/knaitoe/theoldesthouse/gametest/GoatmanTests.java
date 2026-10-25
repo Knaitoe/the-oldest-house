@@ -48,7 +48,7 @@ public final class GoatmanTests {
         plateFixture=new Fixture(h,56300);var f=plateFixture;f.finishedCamper();var p=f.nativePlayer("plate_operator");var peer=f.nativePlayer("plate_peer");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native plates and actor sections are loaded")).thenExecute(()->{
             h.assertTrue(GoatmanVignette.enter(p)&&GoatmanVignette.enter(peer),"both readers join the same native round");
-            var r=f.run();f.cohort(r,List.of(p,peer),0);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);r.putInt("Expected",8);r.putInt("RunnerState",GoatmanVignette.R_AWAY);r.putInt("PacketsIssued0464",1);
+            var r=f.run();f.cohort(r,List.of(p,peer),0);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER-1);r.putInt("Expected",8);r.putInt("RunnerState",GoatmanVignette.R_AWAY);r.putInt("PacketsIssued0464",1);
             var raw=new ItemStack(GoatmanRegistry.RAW_FRANK.get());var cooking=new ListTag();var entry=new CompoundTag();entry.put("Item",raw.save(f.l.registryAccess()));entry.putInt("Left",90);cooking.add(entry);r.put("Cooking0465",cooking);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanWoods.cookingPan(f.l,f.b,r);
             var original=new ItemStack(GoatmanRegistry.BRAT.get());original.set(DataComponents.ITEM_NAME,net.minecraft.network.chat.Component.literal("Original supper"));
             net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA,original,t->{t.putUUID(GoatmanVignette.ROUND,r.getUUID("Id"));t.putBoolean(GoatmanSupper.BURNT,true);t.putString("Custody","kept exactly");});
@@ -64,17 +64,17 @@ public final class GoatmanTests {
             var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
             h.assertTrue(plateCommand(p,"vignette goatman plate",2)==1&&ids.equals(f.l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Seat")).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the usual vignette alias remains idempotent after native saved-data reload");
             h.assertTrue(WitnessAccount.count(loaded,p.getUUID())==0&&WitnessAccount.count(loaded,peer.getUUID())==0,"a prepared meal grants neither reader a resolution");
-        }).thenIdle(2).thenExecute(()->h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.SUPPER0465,"the native evening resumes past the actual supper gate")).thenSucceed();
+        }).thenIdle(2).thenExecute(()->h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.BRISK_SUPPER,"the native evening resumes past the actual supper gate")).thenSucceed();
     }
     @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_entry",batch="goat_plate_guards04115",timeoutTicks=400)
     public static void operatorPlatingRefusesBrokenPlacesAndNeverRefillsAnEatenOrFinishedSupper(GameTestHelper h){
         plateFixture=new Fixture(h,56600);var f=plateFixture;f.finishedCamper();var p=f.nativePlayer("plate_guard");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the real place settings are loaded")).thenExecute(()->{
-            h.assertTrue(GoatmanVignette.enter(p),"the operator joins normally");var r=f.run();f.cohort(r,List.of(p),0);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);f.run(r);var before=f.run();
+            h.assertTrue(GoatmanVignette.enter(p),"the operator joins normally");var r=f.run();f.cohort(r,List.of(p),0);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER-1);f.run(r);var before=f.run();
             var support=BlockPos.containing(GoatmanWoods.plate(7).add(f.b.getX(),f.b.getY(),f.b.getZ())).below();var table=f.l.getBlockState(support);f.l.setBlock(support,Blocks.AIR.defaultBlockState(),2);
             h.assertTrue(plateCommand(p,"vignette goatman plate",2)==0&&f.run().equals(before)&&f.l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Seat")).isEmpty(),"preflight of every place prevents partial plating or a floating serving on an edited table");
             f.l.setBlock(support,table,2);h.assertTrue(plateCommand(p,"vignette goatman plate",2)==1,"the same round can be prepared after its support is restored");
-            var eaten=GoatmanWoods.serving(f.l,f.b,0);eaten.discard();r=f.run();r.putInt("EmptyPlates0465",1);r.putInt("Clock",GoatmanVignette.SUPPER0465);f.run(r);var consumed=f.run();
+            var eaten=GoatmanWoods.serving(f.l,f.b,0);eaten.discard();r=f.run();r.putInt("EmptyPlates0465",1);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER);f.run(r);var consumed=f.run();
             h.assertTrue(plateCommand(p,"test goatman plate",2)==1&&GoatmanWoods.serving(f.l,f.b,0)==null&&f.run().equals(consumed),"repeating the command after supper neither refills the eaten original nor restarts the clock");
             for(int phase:new int[]{GoatmanVignette.VIGIL,GoatmanVignette.DAWN}){r=f.run();r.putInt("Phase",phase);f.run(r);var stopped=f.run();h.assertTrue(plateCommand(p,"test goatman plate",2)==0&&f.run().equals(stopped)&&GoatmanWoods.serving(f.l,f.b,0)==null,"the command cannot reset the knocking or a finished round");}
             p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);h.assertTrue(plateCommand(p,"test goatman plate",2)==0,"an observer cannot prepare the shared meal");
@@ -89,7 +89,7 @@ public final class GoatmanTests {
     public static void aLateOpenedDoorAndSavedApproachKeepTheSameTwoChildrenInTheExchange(GameTestHelper h){exchange(h,true);}
     private static void exchange(GameTestHelper h,boolean late){
         exchange=new Fixture(h,late?50900:50600);var f=exchange;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        boolean[] started={false},loaded={false};UUID[] impostor={null},runner={null};int[] skin={-1},outAt={-1},inAt={-1},waiting={0},lastImpact={0};
+        boolean[] started={false},loaded={false};UUID[] impostor={null},runner={null};int[] skin={-1},outAt={-1},inAt={-1},waiting={0},sighting={0};long[] crossed={-1},dark={-1},firstWord={-1};var words=new HashSet<Integer>();
         var panes=new HashSet<Long>();var expected=new HashSet<Long>();for(var at:List.of(new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)))expected.add(f.b.offset(at).asLong());
         h.onEachTick(()->{
             if(!started[0])return;var r=f.run();var extra=f.cousin(r.getInt("Wrong")).orElseThrow();var real=f.cousin(r.getInt("Runner"));
@@ -106,18 +106,24 @@ public final class GoatmanTests {
                 }
             }
             if(outAt[0]<0&&f.rel(extra).z>=GoatmanWoods.DOOR.getZ()+3/32D)outAt[0]=r.getInt("Clock");
-            if(inAt[0]>=0&&outAt[0]>=0)h.assertTrue(Math.abs(inAt[0]-outAt[0])<=1,"the actual opposing doorway crossings share the same native tick (within one tick's sampling): in="+inAt[0]+" out="+outAt[0]);
-            if(r.getInt("ImpactSerial0472")>lastImpact[0]){
-                lastImpact[0]=r.getInt("ImpactSerial0472");long at=r.getLong("LastImpactPos0465");
-                if(expected.contains(at)){h.assertTrue(extra.position().distanceToSqr(Vec3.atCenterOf(BlockPos.of(at)))<6&&!f.l.noCollision(extra,extra.getBoundingBox().move(0,-.02,0)),"each pane's actual sound is struck by the original body standing on its physical tire support");panes.add(at);}
+            if(inAt[0]>=0&&outAt[0]>=0){h.assertTrue(Math.abs(inAt[0]-outAt[0])<=1,"the actual opposing doorway crossings share the same native tick (within one tick's sampling): in="+inAt[0]+" out="+outAt[0]);if(crossed[0]<0)crossed[0]=f.l.getGameTime();}
+            if(dark[0]<0&&r.getInt("Phase")==GoatmanVignette.VIGIL)dark[0]=f.l.getGameTime();
+            if(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("Demand")>=101){words.add(r.getInt("Demand"));if(firstWord[0]<0)firstWord[0]=f.l.getGameTime();}
+            // The original body's own pane strikes open a window sighting.
+            if(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("WindowSerial0497")>sighting[0]){
+                sighting[0]=r.getInt("WindowSerial0497");long at=r.getLong("LastImpactPos0465");
+                h.assertTrue(expected.contains(at)&&extra.position().distanceToSqr(Vec3.atCenterOf(BlockPos.of(at)))<6&&!f.l.noCollision(extra,extra.getBoundingBox().move(0,-.02,0)),"each pane's actual sound is struck by the original body standing on its physical tire support");panes.add(at);
             }
             h.assertTrue(!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"the doorway exchange and window knocks alone award no survival credit");
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the original trailer and all native actor sections are ready")).thenExecute(()->{
-            h.assertTrue(GoatmanVignette.enter(p),"the reader joins the actual fresh evening");var r=f.run();r.putInt("Wrong",late?7:0);r.putInt("Runner",late?0:7);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BACK0465-1);r.putInt("ExtraState",GoatmanVignette.X_SUPPER);r.putInt("RunnerState",GoatmanVignette.R_AWAY);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.hurry(f.l,f.b);GoatmanWoods.door(f.l,f.b,!late);GoatmanWoods.setWindow(f.l,f.b,true);
+            h.assertTrue(GoatmanVignette.enter(p),"the reader joins the actual fresh evening");var r=f.run();r.putInt("Wrong",late?7:0);r.putInt("Runner",late?0:7);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",1000);r.putInt("SupperAt04123",1001-GoatmanVignette.TABLE_BACK);r.putBoolean("CalledIn04123",true);r.putBoolean("Shut04123",true);r.putBoolean("MealReady0465",true);r.putInt("ExtraState",GoatmanVignette.X_SUPPER);r.putInt("RunnerState",GoatmanVignette.R_AWAY);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.hurry(f.l,f.b);GoatmanWoods.door(f.l,f.b,!late);GoatmanWoods.setWindow(f.l,f.b,true);
             var extra=f.cousin(r.getInt("Wrong")).orElseThrow();impostor[0]=extra.getUUID();skin[0]=extra.skin();h.assertTrue(GoatmanWoods.indoors(f.rel(extra)),"the disguised original begins in the returning child's actual supper seat");started[0]=true;
-        }).thenWaitUntil(()->h.assertTrue(inAt[0]>=0&&outAt[0]>=0,"both original bodies physically cross the doorway")).thenWaitUntil(()->h.assertTrue(panes.containsAll(expected),"that same disguised child physically circles and strikes all five separate side panes during gathering: "+panes.size()+"/5 clock="+f.run().getInt("Clock"))).thenExecute(()->{
-            h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.GATHERING&&(!late||loaded[0]),"all five panes are reached before nightfall, including the saved late-opened exchange");
+        }).thenWaitUntil(()->h.assertTrue(inAt[0]>=0&&outAt[0]>=0,"both original bodies physically cross the doorway")).thenWaitUntil(()->h.assertTrue(dark[0]>=0,"night follows the exchange")).thenExecute(()->{
+            h.assertTrue(dark[0]-crossed[0]<=GoatmanVignette.DARK_AFTER+3,"the woods go quiet and night falls within seconds of the cousin coming in: "+(dark[0]-crossed[0])+" ticks");
+        }).thenWaitUntil(()->h.assertTrue(panes.containsAll(expected),"that same disguised original physically circles and strikes all five separate side panes in the night: "+panes.size()+"/5 clock="+f.run().getInt("Clock"))).thenExecute(()->{
+            h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.VIGIL&&(!late||loaded[0]),"all five panes are struck on the night's circuit, including after the saved late-opened exchange");
+            h.assertTrue(firstWord[0]>=0&&firstWord[0]-dark[0]<=GoatmanStalking.BRISK_ASSAULT_FROM+3&&words.size()>=2,"its words at the door start at once and continue while it circles: first after "+(firstWord[0]-dark[0])+" ticks, words="+words);
             TheOldestHouse.LOGGER.info("GOATMAN EXCHANGE PASSED: late={} in={} out={} panes={} original={} runner={}",late,inAt[0],outAt[0],panes.size(),impostor[0],runner[0]);
         }).thenSucceed();
     }
@@ -160,7 +166,7 @@ public final class GoatmanTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the meal's native item and entity sections are ready")).thenExecute(()->{
         h.assertTrue(GoatmanVignette.enter(p),"the child joins a fresh evening");
         var r=f.run();h.assertTrue(GoatmanVignette.count(r)==8&&GoatmanVignette.fresh(r),"a fresh round stages eight apparent cousins with the new evening");
-        r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);r.putInt("Expected",8);r.putInt("Pan",0);f.cohort(r,List.of(p),0);f.run(r);
+        r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER-1);r.putInt("Expected",8);r.putInt("Pan",0);f.cohort(r,List.of(p),0);f.run(r);
         GoatmanVignette.stage(f.l,f.b,r);for(var c:f.cousins())h.assertTrue(!c.getBoundingBox().intersects(new AABB(Vec3.atLowerCornerOf(f.b.offset(-1,1,-56)),Vec3.atLowerCornerOf(f.b.offset(2,4,-52)))),"no starting cousin blocks the actual trailer doorway");
         h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.COOLER)).is(GoatmanRegistry.COOLER.get()),"a real cooler stands beside the kitchen counter");
         p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.click(p,GoatmanWoods.STOVE);h.assertTrue(p.getMainHandItem().isEmpty()&&f.run().getInt("PacketsIssued0464")==0,"the empty stove directs the player to the cooler");f.click(p,GoatmanWoods.COOLER);
@@ -176,7 +182,7 @@ public final class GoatmanTests {
         h.assertTrue(f.run().getList("Cooking0465",10).getCompound(0).getInt("Left")==left,"an empty scene cannot cook food or advance the meal");
         var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);f.indoors(p);GoatmanVignette.enter(p);
         h.runAfterDelay(GoatmanSupper.COOK_TICKS+4,()->{
-            h.assertTrue(f.run().getInt("Clock")==GoatmanVignette.SUPPER0465-1&&f.run().getList("CookedPan0465",10).size()==4,"the saved pan cooks once while the story waits for player plating");
+            h.assertTrue(f.run().getInt("Clock")==GoatmanVignette.BRISK_SUPPER-1&&f.run().getList("CookedPan0465",10).size()==4,"the saved pan cooks once while the story waits for player plating");
             for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);
             h.assertTrue(p.getInventory().countItem(GoatmanRegistry.BRAT.get())==4,"the player takes four cooked physical originals from the pan");
             var early=new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start(p,p.getMainHandItem(),32);NeoForge.EVENT_BUS.post(early);
@@ -208,7 +214,7 @@ public final class GoatmanTests {
             h.assertTrue(!late.isCanceled(),"once supper is plated a spare frank can be eaten");
             f.click(p,GoatmanWoods.COOLER);h.assertTrue(f.run().getInt("PacketsIssued0464")==2&&p.getInventory().countItem(GoatmanRegistry.FRANKS.get())==0,"the saved wrappers cannot replenish supplies");
         });
-        h.runAfterDelay(GoatmanSupper.COOK_TICKS*2+18,()->{h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.SUPPER0465,"supper advances after the actual plating actions");h.succeed();});
+        h.runAfterDelay(GoatmanSupper.COOK_TICKS*2+18,()->{h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.BRISK_SUPPER,"supper advances after the actual plating actions");h.succeed();});
         });
     }
     @AfterBatch(batch="goat_supper") public static void supperDone(ServerLevel level){if(supper!=null){supper.close();supper=null;}}
@@ -218,7 +224,7 @@ public final class GoatmanTests {
     public static void actualGriddleFranksPlateThroughBlockAirAndCousinClicksWithoutEatingOrLosingTheirChar(GameTestHelper h){
         plating=new Fixture(h,32600);var f=plating;var p=f.nativePlayer("supper_aim_reader");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native supper and entity sections are ready")).thenExecute(()->{
-            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.SUPPER0465-1);r.putInt("Expected",8);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER-1);r.putInt("Expected",8);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
             f.click(p,GoatmanWoods.COOLER);f.click(p,GoatmanWoods.STOVE);for(int i=0;i<4;i++)f.click(p,GoatmanWoods.STOVE);
         }).thenWaitUntil(()->h.assertTrue(f.run().getList("CookedPan0465",10).size()==4,"the actual raw originals finish on the occupied griddle")).thenExecute(()->{
             var r=f.run();var pan=r.getList("CookedPan0465",10);pan.getCompound(3).putInt("Heat",GoatmanSupper.BURN_TICKS-1);r.put("CookedPan0465",pan);f.run(r);
@@ -335,22 +341,23 @@ public final class GoatmanTests {
             if(!begun[0])return;var r=f.run();var packet=GoatmanVignette.scenePayload(r);
             if(packet.demand()>=101){demands.add(packet.demand());h.assertTrue(packet.cousinLine()==0&&packet.cousinRemaining()==0,"the Goatman voice has exclusive subtitle priority");}
             if(packet.cousinLine()>0)lines.add(packet.cousinLine());
-            f.cousins().stream().filter(c->c.fear()==GoatmanFear.PACE).findFirst().ifPresent(c->{if(r.getInt("Clock")%120==0)paced.add(c.position());});
+            f.cousins().stream().filter(c->c.fear()==GoatmanFear.PACE).findFirst().ifPresent(c->{if(r.getInt("Clock")%40==0)paced.add(c.position());});
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the complete actual scene is natively loaded")).thenExecute(()->{
-            GoatmanVignette.enter(p);GoatmanVignette.enter(q);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.GATHER0465-1);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
+            GoatmanVignette.enter(p);GoatmanVignette.enter(q);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER+300);r.putBoolean("CalledIn04123",true);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
             GoatmanWoods.door(f.l,f.b,true);GoatmanVignette.hurry(f.l,f.b);ids.addAll(f.cousins().stream().map(Entity::getUUID).toList());GoatmanWoods.setWindow(f.l,f.b,true);GoatmanWoods.door(f.l,f.b,false);begun[0]=true;
-        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>800&&f.run().getInt("Phase")==GoatmanVignette.VIGIL,"the normal evening transition reaches the occupied vigil")).thenExecute(()->{
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.VIGIL&&f.run().getInt("DemandStage0465")==3,"with the cousin safely in, the evening goes quiet and the night's third word is spoken")).thenExecute(()->{
             var roles=f.cousins().stream().map(GoatmanChild::fear).filter(role->role>0).collect(java.util.stream.Collectors.toSet());
             h.assertTrue(roles.size()==7&&f.cousins().stream().filter(GoatmanChild::cowering).count()==0,"seven real cousins are afraid but still upright before the later demands: "+roles);
             h.assertTrue(paced.size()>2&&paced.stream().anyMatch(at->at.distanceToSqr(paced.getFirst())>4),"the frightened pacer keeps physically moving in the clear aisle");
             h.assertTrue(ids.equals(f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the entire sequence preserves all eight original cast UUIDs");
             var shivering=f.cousins().stream().filter(c->c.fear()==GoatmanFear.TREMBLE).findFirst().orElseThrow();var saved=shivering.saveWithoutId(new CompoundTag());var restored=GoatmanRegistry.CHILD.get().create(f.l);restored.load(saved);
             h.assertTrue(restored.fear()==shivering.fear()&&restored.fearStage()==shivering.fearStage()&&restored.skin()==shivering.skin()&&restored.getUUID().equals(shivering.getUUID()),"native actor serialization keeps its own reaction stage, gesture and identity");
-        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>1000,"the later demands escalate the same cousins to terror")).thenExecute(()->{
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("DemandStage0465")>=5,"the later demands escalate the same cousins to terror")).thenExecute(()->{
             h.assertTrue(f.cousins().stream().filter(c->c.fearStage()==GoatmanFear.TERROR).count()==7&&f.cousins().stream().filter(GoatmanChild::cowering).count()==1,"terror has seven distinct behaviors, with only one cousin covering their ears");
         }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465")&&GoatmanStalking.circuitDone(f.run()),"all physical circuit legs and the independent door assault finish from normal nightfall")).thenExecute(()->{
-            h.assertTrue(demands.size()==7&&lines.size()>=5,"all seven priority demands and continued distinct cousin dialogue reach the real scene packets: "+demands+" / "+lines);
+            // 0.4.123: a brisk night is about a minute long, its words closer together; the cousins still talk between them.
+            h.assertTrue(demands.size()==7&&lines.size()>=4,"all seven priority demands and continued distinct cousin dialogue reach the real scene packets: "+demands+" / "+lines);
             h.assertTrue(f.run().getInt("ImpactSerial0472")>=15&&f.run().getInt("FinalBlows0465")>=6,"the one native body produces the surrounding knocks and final hard impacts (0.4.121: far fewer of them)");
             h.assertTrue(!WitnessAccount.has(LabyrinthData.get(f.server),p.getUUID(),WitnessAccount.Story.GOATMAN),"fear and dialogue do not award the unfinished vigil");h.succeed();
         });
@@ -382,19 +389,22 @@ public final class GoatmanTests {
     @GameTest(template="empty",batch="goat_confusion0472",timeoutTicks=2200)
     public static void anActualDepartureStartsQuestionsAndTheReturnedCousinGetsAResponse(GameTestHelper h){
         confusion=new Fixture(h,32200);var f=confusion;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        var lines=new HashSet<Integer>();boolean[] begun={false};
+        var lines=new HashSet<Integer>();boolean[] begun={false},opened={false};
         h.onEachTick(()->{if(begun[0]){int line=GoatmanVignette.scenePayload(f.run()).cousinLine();if(line>0)lines.add(line);}});
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the real departure scene is loaded")).thenExecute(()->{
-            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BACK0465-1);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.hurry(f.l,f.b);GoatmanWoods.door(f.l,f.b,false);
+            // 0.4.123: supper is on the table and he is due back from the truck; the door has been pulled to.
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",1000);r.putInt("SupperAt04123",1001-GoatmanVignette.TABLE_BACK);r.putBoolean("CalledIn04123",true);r.putBoolean("Shut04123",true);r.putBoolean("MealReady0465",true);
+            r.putInt("ExtraState",GoatmanVignette.X_SUPPER);r.putInt("RunnerState",GoatmanVignette.R_AWAY);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.hurry(f.l,f.b);GoatmanWoods.door(f.l,f.b,false);
             h.assertTrue(GoatmanFear.stage(f.run())==0&&GoatmanVignette.scenePayload(f.run()).cousinLine()==0&&f.cousins().stream().noneMatch(c->c.fear()>0||c.cowering()),"ordinary supper has no premature frightened dialogue or hiding");begun[0]=true;
-        }).thenWaitUntil(()->h.assertTrue(lines.contains(22),"the actual kid running from the fire toward the glass triggers 'Who just ran out, then?'")).thenExecute(()->{
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("RunnerState")==GoatmanVignette.R_KNOCKING&&f.run().getInt("Demand")<0,"he comes back up the trail and knocks, asking in his own voice to be let in")).thenExecute(()->{
+            h.assertTrue(GoatmanFear.stage(f.run())==0,"his knock alone frightens nobody");f.indoors(p);f.use(p,GoatmanWoods.DOOR);opened[0]=true;
+        }).thenWaitUntil(()->h.assertTrue(lines.contains(22),"the actual kid running out past him triggers 'Who just ran out, then?'")).thenExecute(()->{
             h.assertTrue(GoatmanFear.stage(f.run())==GoatmanFear.CONFUSION&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the first disturbance starts questions rather than terror");
             var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
-            h.assertTrue(f.run().getBoolean("FearDeparture0472")&&f.run().getIntArray("FearQueue0472").length==2,"the remaining contradictory reactions survive native world-state reload");
-        }).thenWaitUntil(()->h.assertTrue(lines.containsAll(Set.of(22,23,24)),"children continue: you were just here; who came back in?")).thenExecute(()->{
-            var r=f.run();r.putInt("RunnerState",GoatmanVignette.R_KNOCKING);f.run(r);var runner=f.cousin(r.getInt("Runner")).orElseThrow();runner.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-53.8);runner.getPersistentData().remove("Route");f.use(p,GoatmanWoods.DOOR);
-        }).thenWaitUntil(()->h.assertTrue(lines.contains(26)&&f.run().getInt("RunnerState")==GoatmanVignette.R_INSIDE,"the cousin's actual admission prompts a reaction to his return")).thenExecute(()->{
-            h.assertTrue(f.cousins().stream().noneMatch(GoatmanChild::cowering),"confusion and early fear do not put children in hiding");h.succeed();
+            var queue=Arrays.stream(f.run().getIntArray("FearQueue0472")).boxed().toList();
+            h.assertTrue(f.run().getBoolean("FearDeparture0472")&&queue.containsAll(List.of(23,24)),"the remaining contradictory reactions survive native world-state reload: "+queue);
+        }).thenWaitUntil(()->h.assertTrue(lines.containsAll(Set.of(22,23,24)),"children continue: you were just here; who came back in?")).thenWaitUntil(()->h.assertTrue(lines.contains(26)&&f.run().getInt("RunnerState")==GoatmanVignette.R_INSIDE,"the cousin's actual admission prompts a reaction to his return")).thenExecute(()->{
+            h.assertTrue(opened[0]&&f.run().getInt("Phase")==GoatmanVignette.VIGIL&&f.run().getInt("Demand")>=101,"the questions carry on into the night, under the thing's own words at the door");h.succeed();
         });
     }
     @GameTest(template="empty",templateNamespace=TheOldestHouse.MOD_ID+"_goatman_entry",batch="goat_pressure0472",timeoutTicks=6500)
@@ -424,28 +434,28 @@ public final class GoatmanTests {
                 }
                 if(r.getInt("ExtraState")==GoatmanVignette.X_FLOOR)rested[0]=entered[0]&&c.hasPose(Pose.SLEEPING)&&!c.enteringWindow()&&!c.crawling();
             });
-            if(r.getInt("Clock")<450)h.assertTrue(GoatmanFear.stage(r)==0&&packet.cousinLine()==0&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the occupied night is ordinary until his voice at the door");
+            if(r.getInt("Clock")<GoatmanStalking.BRISK_ASSAULT_FROM)h.assertTrue(GoatmanFear.stage(r)==0&&packet.cousinLine()==0&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the occupied night is ordinary until his voice at the door");
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native collision and entity sections are ready")).thenExecute(()->{
             GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",0);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p),0);f.run(r);GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,false);GoatmanVignette.stage(f.l,f.b,r);
             var it=f.cousin(r.getInt("Wrong")).orElseThrow();body[0]=it.getUUID();var cell=f.b.offset(-6,0,-50);it.moveTo(cell.getX()+.5,cell.getY(),cell.getZ()+.5);
             for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++)if(Math.abs(x)==1||Math.abs(z)==1)for(int y=0;y<4;y++){var at=cell.offset(x,y,z);barriers.put(at,f.l.getBlockState(at));f.l.setBlockAndUpdate(at,Blocks.OBSIDIAN.defaultBlockState());}begun[0]=true;
-        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>460,"his first words have been spoken")).thenExecute(()->{
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>GoatmanStalking.BRISK_ASSAULT_FROM+2,"his first words have been spoken")).thenExecute(()->{
             h.assertTrue(f.run().getInt("DemandStage0465")==1&&!f.run().getBoolean(GoatmanFear.DOOR_KNOCKED)&&f.run().getInt("ImpactSerial0472")==0,"0.4.121: the night begins with his voice, not a knock");
-        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>500,"the first blow after his words has fallen")).thenExecute(()->{
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>GoatmanStalking.BRISK_ASSAULT_FROM+10,"the first blow after his words has fallen")).thenExecute(()->{
             h.assertTrue(GoatmanFear.stage(f.run())>=GoatmanFear.CONFUSION&&f.run().getBoolean(GoatmanFear.DOOR_KNOCKED)&&f.run().getLong("LastImpactPos0465")==f.b.offset(GoatmanWoods.DOOR).asLong()&&f.run().getInt("StalkLeg0465")==0,"a real collision stall cannot suppress the first knock, on the front door, or the frightened response");
         }).thenWaitUntil(()->h.assertTrue(f.run().getBoolean("AssaultDone0465"),"all seven audible demands finish on their own occupied clock")).thenExecute(()->{
             var r=f.run();h.assertTrue(demands.size()==7&&r.getInt("FinalBlows0465")>=6&&r.getInt("StalkLeg0465")==0&&r.getInt("StalkWindowLeg0465")==0,"words and hard blows remain present without skipping any blocked circuit leg");
-        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.VIGIL0465+200,"the physical obstruction remains beyond the original dawn time")).thenExecute(()->{
+        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Clock")>=GoatmanVignette.BRISK_VIGIL+200,"the physical obstruction remains beyond the original dawn time")).thenExecute(()->{
             var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("ExtraState")==GoatmanVignette.X_DOOR&&!r.contains("NightWindowAt0472")&&r.getInt("StalkLeg0465")==0,"neither an already open window nor the dawn deadline can skip the stalled circuit");
             var d=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(d.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
             barriers.forEach(f.l::setBlockAndUpdate);
         }).thenWaitUntil(()->h.assertTrue(GoatmanStalking.circuitDone(f.run())&&GoatmanStalking.windowApproachDone(f.run()),"after the obstruction clears, the original native body completes all circuit legs before its full window approach: leg="+f.run().getInt("StalkLeg0465")+" window="+f.run().getInt("StalkWindowLeg0465")+" clock="+f.run().getInt("Clock"))).thenExecute(()->{
             h.assertTrue(f.cousin(f.run().getInt("Wrong")).orElseThrow().getUUID().equals(body[0]),"independent cue timing never replaces or teleports the original Goatman body");
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("ExtraState")==GoatmanVignette.X_WINDOW,"the already open window admits the same body only after its complete physical approach")).thenExecute(()->{
-            var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("NightWindowAt0472")>=GoatmanVignette.VIGIL0465+200,"the delayed native window attempt keeps its original response time before dawn");
+            var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("NightWindowAt0472")>=GoatmanVignette.BRISK_VIGIL+200,"the delayed native window attempt keeps its original response time before dawn");
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.DAWN,"the delayed night still reaches its ordinary morning outcome: clock="+f.run().getInt("Clock")+" actor="+f.cousin(f.run().getInt("Wrong")).map(c->f.rel(c)+" entry="+c.windowEntry(1)+" crawl="+c.crawling()+" route="+c.getPersistentData().getList("Route",Tag.TAG_COMPOUND)).orElse("absent"))).thenExecute(()->{
-            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(entered[0]&&entrySaved[0]&&crawled[0]&&crawlSaved[0]&&rested[0]&&entryBeats.size()==4&&r.getInt("Clock")>=r.getInt("NightWindowAt0472")+400&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"despite the shut front door, the same original cousin completes all entry beats, native sash/indoor reloads and its walk back among them before dawn; the haunting outcome awards no survival credit: entered="+entered[0]+" reload="+entrySaved[0]+" crawled="+crawled[0]+" crawlReload="+crawlSaved[0]+" rested="+rested[0]+" beats="+entryBeats);h.succeed();
+            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(entered[0]&&entrySaved[0]&&crawled[0]&&crawlSaved[0]&&rested[0]&&entryBeats.size()==4&&r.getInt("Clock")>=r.getInt("NightWindowAt0472")+GoatmanVignette.dawnAfterWindow(r)&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"despite the shut front door, the same original cousin completes all entry beats, native sash/indoor reloads and its walk back among them before dawn; the haunting outcome awards no survival credit: entered="+entered[0]+" reload="+entrySaved[0]+" crawled="+crawled[0]+" crawlReload="+crawlSaved[0]+" rested="+rested[0]+" beats="+entryBeats);h.succeed();
         });
     }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
