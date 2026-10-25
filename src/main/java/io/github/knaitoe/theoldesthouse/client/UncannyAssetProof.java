@@ -60,7 +60,7 @@ public final class UncannyAssetProof extends Screen {
             var key=new ItemStack(UncannyRegistry.CELLAR_KEY.get());p.pushPose();p.translate(width*.45F,height*.72F,0);p.scale(4,4,1);g.renderItem(key,0,0);p.popPose();g.drawCenteredString(font,key.getHoverName(),width/2,(int)(height*.72F)+75,0xffe4d9bf);
             var icon=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/mob_effect/engulfed.png");g.blit(icon,20,height-60,0,0,18,18,18,18);
         }else{
-            g.fill(0,0,width,height,0xff424c47);for(int x=0;x<width;x+=32)g.fill(x,height/2,x+16,height/2+2,0xffc9c4af);
+            g.fill(0,0,width,height,0xff424c47);for(int column=0;column<width;column+=32)g.fill(column,height/2,column+16,height/2+2,0xffc9c4af);
             UncannyClient.engulfed(g,width,height,new float[]{.2F,.6F,.95F}[page-4],24);
         }
     }
