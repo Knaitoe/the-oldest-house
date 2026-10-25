@@ -18,7 +18,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.*;
 import org.joml.Vector3f;
 
-/** Native shipped cousin joints at four window beats and both crawl strides, followed by the actual opposable thumb. */
+/** Native shipped cousin joints at four window beats and both crawl strides, followed by the paw's thumb, which stays still while a finger curls. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class WindowEntryVisualProof extends Screen {
     private static final String[] VIEWS={"reach","sill","pull","lower","crawl-left","crawl-right","paw-open","paw-curl","paw-closed"};
@@ -50,7 +50,8 @@ public final class WindowEntryVisualProof extends Screen {
         }
         model.pose(0,0,0,0,false,false,false);if(model.leftKnee.xRot!=0||model.rightElbow.xRot!=0)throw new IllegalStateException("Window joints leaked into an ordinary cousin");
         paw.curl(2,0);var open=thumbTip(paw);paw.curl(2,1);var closed=thumbTip(paw);
-        if(open.x>=-5/16F||closed.x<=-3/16F||closed.z<=1.5F/16)throw new IllegalStateException("Thumb must begin outside the palm and oppose across its front: "+open+" -> "+closed);
+        // 0.4.121: the thumb is not one of the three wishes; it lies outside the palm and stays there while a finger curls.
+        if(open.x>=-5/16F||closed.distance(open)>.00001F)throw new IllegalStateException("The thumb must lie outside the palm and stay still while a finger curls: "+open+" -> "+closed);
         paw.curl(0,1);paw.curl(2,0);if(thumbTip(paw).distance(open)>.00001F)throw new IllegalStateException("A previous clutch changed the thumb's rest orientation");
     }
     private static Vector3f tip(net.minecraft.client.model.geom.ModelPart upper,net.minecraft.client.model.geom.ModelPart lower){var p=new PoseStack();upper.translateAndRotate(p);lower.translateAndRotate(p);return new Vector3f(0,6/16F,0).mulPosition(p.last().pose());}
@@ -75,7 +76,7 @@ public final class WindowEntryVisualProof extends Screen {
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof WindowEntryVisualProof proof)||++proof.frames<20)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-window-entry-"+VIEWS[proof.page]+".png"));}
         if(++proof.page<VIEWS.length){proof.frames=0;return;}
-        Files.writeString(dir.resolve("window-entry-passed.txt"),"Nine native GPU pages: two cousin disguises reach, fit the sill, pull, lower into the floor crawl and take both crawling strides in two angles; actual paw at open, half curl and closed in two angles. 101 window and 65 crawl samples, continuous window/crawl transition, native hand/foot floor geometry, reused-cousin reset and thumb opposition/rest geometry passed.\n");
+        Files.writeString(dir.resolve("window-entry-passed.txt"),"Nine native GPU pages: two cousin disguises reach, fit the sill, pull, lower into the floor crawl and take both crawling strides in two angles; actual paw at open, half curl and closed in two angles. 101 window and 65 crawl samples, continuous window/crawl transition, native hand/foot floor geometry, reused-cousin reset and a thumb that stays at rest through every curl passed.\n");
         if(Boolean.getBoolean("the_oldest_house.windowEntrySmoke"))mc.stop();else mc.setScreen(new InstituteVisualProof());
     }
 }
