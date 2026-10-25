@@ -516,14 +516,15 @@ def rotated(elements, axis, angle, origin=(8, 0, 8)):
 def models():
     MODELS.mkdir(parents=True, exist_ok=True)
     W = {'w': 'nursery_white_wood', 'b': 'nursery_blue_wood', 'r': 'nursery_red_wood', 'y': 'nursery_yellow_wood'}
-    # The loft-legged bed. Its legs reach down a block, so a child fits beneath the deck.
-    model('bed_head', [box((0, 0, 0), (16, 3, 16), 'w'), box((1, 3, 1), (15, 6, 16), 'm'), box((1, 5.5, 7), (15, 6.5, 16), 'q'),
-                       color((3, 6, 2), (13, 8, 6), 'white'), box((0, 0, 0), (16, 14, 2), 'b'),
-                       box((0, -16, 0), (2, 0, 2), 'w'), box((14, -16, 0), (16, 0, 2), 'w'), color((7, 11, -0.01), (9, 13, 0), 'yellow')],
+    # The child's bed (0.4.121): an ordinary low bed on short legs, the quilt hanging over its long sides. The space under
+    # it is just high enough for a child lying flat, and open at the foot between the legs.
+    model('bed_head', [box((0, 0, 0), (16, 20, 2), 'b'), box((0, 6, 2), (16, 9, 16), 'w'), box((1, 9, 2), (15, 12, 16), 'm'),
+                       box((1, 11.5, 7), (15, 12.5, 16), 'q'), box((0.5, 5, 7), (1, 12.5, 16), 'q'), box((15, 5, 7), (15.5, 12.5, 16), 'q'),
+                       color((3, 12, 2.5), (13, 14, 6.5), 'white'), color((7, 16, -0.01), (9, 18, 0), 'yellow')],
           {**W, 'm': 'nursery_mattress', 'q': 'nursery_quilt'})
-    model('bed_foot', [box((0, 0, 0), (16, 3, 16), 'w'), box((1, 3, 0), (15, 6, 15), 'm'), box((1, 5.5, 0), (15, 6.5, 15), 'q'),
-                       box((0.5, 2, 0), (1, 6.5, 15), 'q'), box((15, 2, 0), (15.5, 6.5, 15), 'q'), box((0, 0, 14), (16, 10, 16), 'b'),
-                       box((0, -16, 14), (2, 0, 16), 'w'), box((14, -16, 14), (16, 0, 16), 'w')],
+    model('bed_foot', [box((0, 6, 0), (16, 9, 14), 'w'), box((1, 9, 0), (15, 12, 14), 'm'), box((1, 11.5, 0), (15, 12.5, 14), 'q'),
+                       box((0.5, 5, 0), (1, 12.5, 14), 'q'), box((15, 5, 0), (15.5, 12.5, 14), 'q'), box((0, 6, 14), (16, 15, 16), 'b'),
+                       box((0, 0, 14), (2, 6, 16), 'w'), box((14, 0, 14), (16, 6, 16), 'w')],
           {**W, 'm': 'nursery_mattress', 'q': 'nursery_quilt'})
     legs = lambda h, x0=1, x1=13, z0=2, z1=12, t='w': [box((x, 0, z), (x + 2, h, z + 2), t) for x in (x0, x1) for z in (z0, z1)]
     model('desk', [box((0, 14, 1), (16, 16, 15), 'y'), *legs(14), box((4, 7, 1), (12, 10, 2), 'r'), color((7.5, 8, .5), (8.5, 9, 1), 'gold')], W)
