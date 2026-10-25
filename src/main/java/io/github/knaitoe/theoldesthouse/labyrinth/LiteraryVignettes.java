@@ -73,6 +73,7 @@ public final class LiteraryVignettes {
         if (place == LabyrinthPlace.END_WORLD_CABIN) { CabinBargain.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.THREE_FINGERS) { ThreeFingers.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.GHOSTS_SET) { GhostsSet.arrive(p, own); save(d, p.getUUID(), place, own); }
+        if (place == LabyrinthPlace.WHEEL) { WheelHouse.arrive(own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.LAKE_HOUSE) { LakeHouse.arrive(p, own); save(d, p.getUUID(), place, own); }
         if(UncannyRooms.isUncanny(place)){UncannyStories.arrive(p,place,own);save(d,p.getUUID(),place,own);}
     }
@@ -127,7 +128,7 @@ public final class LiteraryVignettes {
             case CRIMSON_HALL->{int i=List.of(new BlockPos(-12,0,-35),new BlockPos(12,0,-35),new BlockPos(0,7,-39)).indexOf(rel);if(i>=0){Item[] discs={LiteraryRegistry.CYLINDER_ONE.get(),LiteraryRegistry.CYLINDER_TWO.get(),LiteraryRegistry.CYLINDER_THREE.get()};reward(p,place,own,"Cylinder"+i,playable(p,new ItemStack(discs[i]),"wax_cylinder_"+(i+1)));open(p,place,own,"CylinderText"+i,LiteraryTexts.cylinder(i),e.getPos());handled=true;}}
             case DEVILS_ROCK->{int index=diaryIndex(rel);if(index>=0&&(own.getInt("DiaryPlaced")&(1<<index))!=0){open(p,place,own,"Diary"+index,LiteraryTexts.diary(index),e.getPos());handled=true;}else if(rel.equals(LiteraryRooms.CAMERA)){camera(p,place,own,45);own.putInt("CameraPrints",own.getInt("CameraPrints")+1);var arrivals=new StringBuilder("MOTION PRINT\n\n");for(int i=0;i<8;i++)if(own.contains("ArrivalTime"+i))arrivals.append("Page ").append(i+1).append(": ").append(own.getLong("ArrivalTime"+i)).append(" ticks\n");arrivals.append("\nThe paper was behind the lens before the image became mine.");open(p,place,own,"CameraPrint",HouseWriting.book("Motion print",p.getGameProfile().getName(),HouseWriting.WritingStyle.WILL,List.of(arrivals.toString())),e.getPos());handled=true;}}
             case MINIATURES->handled=MiniatureNotes.click(p,b,rel,own);
-            case WHEEL->{handled=wheelDoor(p,own,rel);}
+            case WHEEL->handled=WheelHouse.click(p,b,rel,own);
             case GHOSTS_SET->{if(rel.equals(LiteraryRooms.BOOTH)){own.putBoolean("Booth",true);if(p.isShiftKeyDown()&&!own.contains("Confession"))own.putString("Confession","I chose to let the tape run in silence.");p.displayClientMessage(Component.literal("The booth is recording. Type your own words in chat, or crouch and touch the receiver to leave silence."),false);handled=true;}else handled=GhostsSetInteractions.click(p,b,rel,own);}
             case CONFESSION->{if(p.serverLevel().getBlockState(e.getPos()).is(Blocks.BOOKSHELF)&&Math.abs(rel.getX())==11){ConfessionBooks.shelf(p,own);handled=true;}
                 else if(rel.equals(SceneReview.BOOK_TRAY)&&p.serverLevel().getBlockState(e.getPos()).is(HouseBlocks.VIGNETTE_DETAIL.get())){ConfessionBooks.table(p,own);handled=true;}
@@ -248,7 +249,7 @@ public final class LiteraryVignettes {
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){var server=event.getServer();LiteraryCopies.tick(server);LiteraryCabinChoices.reconcileClosure(server);ElkLotNight.tick(server);if(server.getTickCount()%5!=0)return;
         for(var p:server.getPlayerList().getPlayers()){var place=current(p);if(place!=LabyrinthPlace.HOLY_RABBIT)HolyRabbit.release(p);if(place==null){crawl(p,false);scale(p,false);continue;}var d=LabyrinthData.get(server);var own=personal(d,p.getUUID(),place);if(!own.getBoolean("Here"))continue;var b=base(p,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);own.putInt("Present",Math.min(72000,own.getInt("Present")+5));own.putInt("ThisVisitTicks",Math.min(72000,own.getInt("ThisVisitTicks")+5));
             boolean child=place==LabyrinthPlace.CHILD_ROOM||place==LabyrinthPlace.HOLY_RABBIT||(place==LabyrinthPlace.BORRASCA&&own.getInt("Visit")<=2)||(place==LabyrinthPlace.WHEEL&&own.getBoolean("Memory"));scale(p,child);crawl(p,(place==LabyrinthPlace.GHOSTS_SET&&GhostsSet.cameraCrawl(p,b))||(place==LabyrinthPlace.MAPPING_INTERIOR&&p.getY()<b.getY()-2)||(place==LabyrinthPlace.CHILD_ROOM&&ChildRoom.crawling(p,b))||(place==LabyrinthPlace.ELK_CARCASSES&&ElkHunt.crawl(p,b,CRAWLS.containsKey(p.getUUID()))));
-            if(!own.getBoolean("Interrupted"))switch(place){case PAINTED_INTERIOR,SECOND_WAITRESS,TUNNEL_PERIPHERY,MISSING_SLEEP,LAYERED_MAN,MOTION_LIGHT->UncannyStories.reader(p,b,place,own);case HILL_NURSERY->hill(p,b,own);case MINIATURES->miniatures(p,b,own);case MASQUE->masque(p,b,own);case USHER->usher(p,b,own);case WINCHESTER->{if(p.getY()>=b.getY()+7&&p.getZ()<b.getZ()-65&&own.getInt("Present")>=100)ready(p,place,own,"reached_the_upper_construction_ledger");}case CHILD_ROOM->child(p,b,own);case CRIMSON_HALL->crimson(p,b,own);case BLY_ROUTE->bly(p,b,own);case ELK_LOT->{if(ElkLot.built(d,b))ElkLotNight.reader(p,b,own);else lot(p,b,own);}case ELK_FAN->fan(p,b,own);case MAPPING_INTERIOR->mapping(p,b,own);case HOLY_RABBIT->rabbit(p,b,own);case CONFESSION->confession(p,b,own);case ELK_CARCASSES->ElkHunt.tick(p,b,own);case WINTER_LAKE->WinterLake.reader(p,b,own);case COSTUME_NIGHT,MOVIE_NIGHT,CAMP_BLOOD->hunt(p,b,place,own);case DEVILS_ROCK->diary(p,b,own);case WHEEL->{var mother=actor(p,place,"Mother",LiteraryActor.MOTHER,new BlockPos(14,0,-59),true);if(own.getBoolean("ReachedMother")&&mother!=null&&p.distanceToSqr(mother)<36&&HouseWatchers.sees(p,mother.getEyePosition())){own.putBoolean("LeftMother",true);mother.say("You can leave now. The door will open.");}if(own.getBoolean("LeftMother")&&p.getZ()>b.getZ()-6){own.putBoolean("Memory",false);ready(p,place,own,"left_after_finding_mothers_room");}}case GHOSTS_SET->GhostsSet.reader(p,b,own);case END_WORLD_CABIN->CabinBargain.tick(p,b,own);case FAMILY_COPY,OLD_CABIN->LiteraryCopies.sceneTick(p,place,own);case THREE_FINGERS->ThreeFingers.reader(p,b,own);case LAKE_HOUSE->LakeHouse.reader(p,b,own);case BORRASCA->BorrascaStory.reader(p,b,own);default->{}}
+            if(!own.getBoolean("Interrupted"))switch(place){case PAINTED_INTERIOR,SECOND_WAITRESS,TUNNEL_PERIPHERY,MISSING_SLEEP,LAYERED_MAN,MOTION_LIGHT->UncannyStories.reader(p,b,place,own);case HILL_NURSERY->hill(p,b,own);case MINIATURES->miniatures(p,b,own);case MASQUE->masque(p,b,own);case USHER->usher(p,b,own);case WINCHESTER->{if(p.getY()>=b.getY()+7&&p.getZ()<b.getZ()-65&&own.getInt("Present")>=100)ready(p,place,own,"reached_the_upper_construction_ledger");}case CHILD_ROOM->child(p,b,own);case CRIMSON_HALL->crimson(p,b,own);case BLY_ROUTE->bly(p,b,own);case ELK_LOT->{if(ElkLot.built(d,b))ElkLotNight.reader(p,b,own);else lot(p,b,own);}case ELK_FAN->fan(p,b,own);case MAPPING_INTERIOR->mapping(p,b,own);case HOLY_RABBIT->rabbit(p,b,own);case CONFESSION->confession(p,b,own);case ELK_CARCASSES->ElkHunt.tick(p,b,own);case WINTER_LAKE->WinterLake.reader(p,b,own);case COSTUME_NIGHT,MOVIE_NIGHT,CAMP_BLOOD->hunt(p,b,place,own);case DEVILS_ROCK->diary(p,b,own);case WHEEL->WheelHouse.reader(p,b,own);case GHOSTS_SET->GhostsSet.reader(p,b,own);case END_WORLD_CABIN->CabinBargain.tick(p,b,own);case FAMILY_COPY,OLD_CABIN->LiteraryCopies.sceneTick(p,place,own);case THREE_FINGERS->ThreeFingers.reader(p,b,own);case LAKE_HOUSE->LakeHouse.reader(p,b,own);case BORRASCA->BorrascaStory.reader(p,b,own);default->{}}
             HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.EndingBookPayload(b.offset(place==LabyrinthPlace.ELK_LOT&&!ElkLot.built(d,b)?ElkLot.OLD_ENDING:LiteraryRooms.ending(place)),own.getBoolean("Ready")&&!own.getBoolean("Taken_Ending")));
             save(d,p.getUUID(),place,own);
         }
@@ -377,36 +378,6 @@ public final class LiteraryVignettes {
     private static void diary(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.DEVILS_ROCK;int target=Math.min(8,own.getInt("Visit")*3);if(own.getInt("ThisVisitTicks")>=100){for(int i=0;i<target;i++){if((own.getInt("DiaryPlaced")&(1<<i))!=0)continue;var at=b.offset(diaryPosition(i));if(watched(p.serverLevel(),at.getCenter())||watched(p.serverLevel(),at.above().getCenter()))continue;LiteraryRooms.prop(p.serverLevel(),b,diaryPosition(i),LiteraryPropBlock.Kind.PAGE,Direction.SOUTH);own.putInt("DiaryPlaced",own.getInt("DiaryPlaced")|(1<<i));own.putLong("ArrivalTime"+i,p.serverLevel().getGameTime());var plate=b.offset(i%2==0?-5:5,0,-14);var ps=p.serverLevel().getBlockState(plate);if(ps.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED)){p.serverLevel().setBlock(plate,ps.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED,true),3);p.serverLevel().scheduleTick(plate,ps.getBlock(),20);}sound(p,SoundEvents.STONE_PRESSURE_PLATE_CLICK_ON,plate,.35F,1);p.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.SCULK_CHARGE_POP,at.getX()+.5,at.getY()+.1,at.getZ()+.5,3,.1,.1,.1,0);break;}}
         if(own.getInt("ThisVisitTicks")>=900&&Integer.bitCount(own.getInt("DiaryPlaced"))<target){int i=0;while(i<target&&(own.getInt("DiaryPlaced")&(1<<i))!=0)i++;if(i<target){own.putInt("DiaryPlaced",own.getInt("DiaryPlaced")|(1<<i));reward(p,place,own,"Diary"+i,LiteraryTexts.diary(i));}}
         int expected=(1<<target)-1;if((own.getInt("DiaryRead")&expected)==expected)own.putInt("Beat",own.getInt("Visit"));
-    }
-    private static boolean wheelDoor(ServerPlayer p,CompoundTag own,BlockPos rel){
-        var b=base(p,LabyrinthPlace.WHEEL);
-        if(rel.equals(new BlockPos(0,0,-7))&&!own.getBoolean("LeftMother")){
-            var landing=wheelLanding(p,new Vec3(b.getX()-13.5,b.getY(),b.getZ()-8.5));
-            if(landing!=null){p.teleportTo(p.serverLevel(),landing.x,landing.y,landing.z,180,0);if(p.position().distanceToSqr(landing)<.01)own.putBoolean("FrontLoop",true);}return true;
-        }
-        if(Math.abs(rel.getX())!=14||!(rel.getZ()==-17||rel.getZ()==-34||rel.getZ()==-51))return false;
-        int door=(-rel.getZ()/17-1)*2+(rel.getX()>0?1:0),seen=own.getInt("WheelDoors")|(1<<door);
-        int target=switch(door){case 0->1;case 1->0;case 2->4;case 3->1;case 4->5;default->3;};
-        boolean mother=door==4&&Integer.bitCount(seen)>=4;
-        int x=target%2==0?-14:14,z=-8-(target/2)*17;
-        var landing=wheelLanding(p,mother?new Vec3(b.getX()+14.5,b.getY(),b.getZ()-58.5):new Vec3(b.getX()+x+.5,b.getY(),b.getZ()+z+.5));
-        if(landing==null)return true;
-        p.teleportTo(p.serverLevel(),landing.x,landing.y,landing.z,mother?0:180,0);
-        if(p.position().distanceToSqr(landing)>=.01)return true;
-        own.putInt("WheelDoors",seen);own.putBoolean("Memory",door==0||door==2||door==4);
-        if(mother)own.putBoolean("ReachedMother",true);else if((seen&2)!=0)LiteraryRooms.at(p.serverLevel(),b,-10,0,-9,Blocks.FLOWER_POT);
-        return true;
-    }
-    /** One authored landing shared a cell with its armchair. Keep the room, but use loaded clear floor. */
-    private static @Nullable Vec3 wheelLanding(ServerPlayer p,Vec3 target){
-        var level=p.serverLevel();
-        for(int forward=0;forward<=1;forward++){
-            var at=target.add(0,0,forward);var cell=BlockPos.containing(at);
-            if(!level.hasChunkAt(cell)||!level.areEntitiesLoaded(ChunkPos.asLong(cell.getX()>>4,cell.getZ()>>4)))continue;
-            if(level.getBlockState(cell.below()).getCollisionShape(level,cell.below()).isEmpty())continue;
-            if(level.noCollision(p,p.getBoundingBox().move(at.subtract(p.position()))))return at;
-        }
-        p.displayClientMessage(Component.literal("There is no clear space beyond this door yet."),true);return null;
     }
     private static void set(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.GHOSTS_SET;boolean mark=Math.abs(p.getX()-b.getX())<=6&&p.getZ()<b.getZ()-19&&p.getZ()>b.getZ()-21&&p.serverLevel().getBlockState(p.blockPosition()).is(LiteraryRegistry.PROP.get());
         var mother=actor(p,place,"Mother",LiteraryActor.FAMILY_MOTHER,new BlockPos(-6,0,-31),false);var father=actor(p,place,"Father",LiteraryActor.FAMILY_FATHER,new BlockPos(3,0,-34),false);var child=actor(p,place,"Child",LiteraryActor.FAMILY_CHILD,new BlockPos(5,0,-33),false);

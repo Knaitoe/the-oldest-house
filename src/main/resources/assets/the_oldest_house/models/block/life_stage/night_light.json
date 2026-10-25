@@ -1,0 +1,83 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "n": "the_oldest_house:block/life_stage/moon_light",
+  "particle": "the_oldest_house:block/life_stage/moon_light"
+ },
+ "elements": [
+  {
+   "from": [
+    5,
+    2,
+    14.5
+   ],
+   "to": [
+    11,
+    9,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#n",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#n",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#n",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#n",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#n",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#n",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 12,
+    "sky_light": 0
+   }
+  }
+ ]
+}

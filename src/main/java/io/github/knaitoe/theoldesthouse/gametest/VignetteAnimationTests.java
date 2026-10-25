@@ -315,25 +315,35 @@ public final class VignetteAnimationTests {
     }
     @AfterBatch(batch="literary_diary_sequence") public static void diaryDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="literary_wheel_sequence",timeoutTicks=350)
-    public static void sixNativeStoryDoorsKeepTheMotherGatePrivateAndRequireTheRealFrontReturn(GameTestHelper h){
+    @GameTest(template="empty",batch="literary_wheel_sequence",timeoutTicks=420)
+    public static void theWheelGoesRoundUntilTheReaderGoesBackThenOpensOnMotherAndLetsThemOutGrown(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.WHEEL;var p=f.player("wheel_route",place);var peer=f.player("wheel_peer",place);var b=f.base(place);f.source(p,place);
-        h.startSequence().thenWaitUntil(()->{for(int x:new int[]{-14,14})for(int z:new int[]{-8,-25,-42,-59}){var cell=b.offset(x,0,z);h.assertTrue(f.in.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(cell.getX()>>4,cell.getZ()>>4)),"actual destination sections are entity-ready before native door use");}}).thenExecute(()->{
-        f.click(p,place,new BlockPos(0,0,-7));h.assertTrue(f.own(p,place).getBoolean("FrontLoop")&&!f.own(p,place).getBoolean("Ready"),"the actual front door loops before Mother is found");
-        int[] order={4,0,1,2,3,5,4};
-        for(int n=0;n<order.length;n++){final int at=n;h.runAfterDelay(20+n*15,()->{
-            int door=order[at];var rel=new BlockPos(door%2==0?-14:14,0,-17*(door/2+1));
-            h.assertTrue(f.in.getBlockState(b.offset(rel)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock,"each numbered story threshold is an actual native door");
-            f.click(p,place,rel);h.assertTrue((f.own(p,place).getInt("WheelDoors")&(1<<door))!=0,"the actual use of door "+door+" records its own route bit");
-            h.assertTrue(f.in.noCollision(p,p.getBoundingBox()),"native story door "+door+" lands a real reader in clear supported space");
-            if(at==0)h.assertTrue(!f.own(p,place).getBoolean("ReachedMother"),"using Mother's door too early does not skip the four-room gate");
-        });}
-        h.runAfterDelay(135,()->{var own=f.own(p,place);h.assertTrue(own.getInt("WheelDoors")==63&&own.getBoolean("ReachedMother")&&!own.getBoolean("Ready"),"all six native doors still require seeing Mother and returning");
-            var world=LiteraryVignettes.shared(f.data(),place);var mother=(LiteraryActor)f.in.getEntity(world.getUUID("Mother_"+p.getUUID()));h.assertTrue(mother!=null&&mother.owner().orElseThrow().equals(p.getUUID()),"the route finds the same privately bound native Mother");p.lookAt(EntityAnchorArgument.Anchor.EYES,mother.getEyePosition());
+        java.util.function.IntSupplier room=()->f.own(p,place).getInt("WheelRoom");
+        h.startSequence().thenWaitUntil(()->{
+            var cells=new java.util.ArrayList<BlockPos>();for(var r:WheelHouse.ROOMS){cells.add(r.back());cells.add(r.forward());}cells.add(WheelHouse.MOTHERS.back());
+            for(var rel:cells){var cell=b.offset(rel);h.assertTrue(f.in.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(cell.getX()>>4,cell.getZ()>>4)),"the rooms behind every door are entity-ready before it is used");}
+        }).thenExecute(()->{
+            f.click(p,place,WheelHouse.FRONT_DOOR);var own=f.own(p,place);
+            h.assertTrue(room.getAsInt()==1&&own.getBoolean("Memory")&&own.getBoolean("FrontLoop")&&!own.getBoolean("Ready"),"the front door takes them to the beginning, the nursery, as a child: "+own);
+            for(int k=1;k<=5;k++){var r=WheelHouse.ROOMS.get(k-1);h.assertTrue(f.in.getBlockState(b.offset(r.forward())).getBlock() instanceof net.minecraft.world.level.block.DoorBlock,"room "+k+"'s way on is a real door");
+                f.click(p,place,r.forward());h.assertTrue(room.getAsInt()==k+1&&f.own(p,place).getBoolean("Memory")==(k+1==2),"door "+(k+1)+" opens on room "+(k+1)+", a child only in the childhood rooms: "+f.own(p,place));
+                h.assertTrue(f.in.noCollision(p,p.getBoundingBox()),"room "+(k+1)+" lands them in clear space");}
+            f.click(p,place,WheelHouse.ROOMS.get(5).forward());own=f.own(p,place);
+            h.assertTrue(room.getAsInt()==1&&!own.getBoolean("ReachedMother")&&own.getBoolean("Memory"),"the hospital room's door says 1 and goes round to the nursery: the wheel: "+own);
+            f.click(p,place,WheelHouse.ROOMS.get(0).forward());f.click(p,place,WheelHouse.ROOMS.get(1).back());own=f.own(p,place);
+            h.assertTrue(room.getAsInt()==1&&own.getBoolean("WentBack")&&!own.getBoolean("Memory"),"going back through two, they are their own height in one: "+own);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.house.LifeStageBlock.is(f.in.getBlockState(b.offset(WheelHouse.BIG_CHAIRS.get(0))),io.github.knaitoe.theoldesthouse.house.LifeStageBlock.Kind.CHAIR_BIG_LOWER),"the chair is smaller only on that reader's screen; the room keeps its own");
+            for(int k=1;k<=5;k++)f.click(p,place,WheelHouse.ROOMS.get(k-1).forward());
+            f.click(p,place,WheelHouse.ROOMS.get(5).forward());own=f.own(p,place);
+            h.assertTrue(room.getAsInt()==7&&own.getBoolean("ReachedMother")&&own.getBoolean("Memory")&&!own.getBoolean("LeftMother"),"having gone back and seen all six, the 1 opens on Mother's room, and they are small again: "+own);
+            f.click(p,place,WheelHouse.MOTHERS.back());h.assertTrue(room.getAsInt()==7,"her door does not open before she has been seen");
+            f.at(p,place,.5,0,-54.5);
         });
-        h.runAfterDelay(155,()->{h.assertTrue(f.own(p,place).getBoolean("LeftMother")&&!f.own(peer,place).getBoolean("ReachedMother"),"only the actual reader has seen Mother at the end of their route");f.at(p,place,.5,0,-4.5);});
-        h.runAfterDelay(180,()->{h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Memory")&&p.getBbHeight()>1.5&&!f.own(peer,place).getBoolean("Ready"),"the physical front return ends only that reader's memory and restores the actual full-height native body");f.reload();f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the actual original account completes only this route's reader");h.succeed();});
-        });
+        h.runAfterDelay(140,()->{var world=LiteraryVignettes.shared(f.data(),place);var mother=(LiteraryActor)f.in.getEntity(world.getUUID("Mother_"+p.getUUID()));
+            h.assertTrue(mother!=null&&mother.owner().orElseThrow().equals(p.getUUID()),"the reader's own Mother waits in her room");p.lookAt(EntityAnchorArgument.Anchor.EYES,mother.getEyePosition());});
+        h.runAfterDelay(170,()->{h.assertTrue(f.own(p,place).getBoolean("LeftMother")&&!f.own(peer,place).getBoolean("ReachedMother"),"only the reader has seen her");
+            f.click(p,place,WheelHouse.MOTHERS.back());h.assertTrue(room.getAsInt()==0,"the door with no number lets them out to the hall");});
+        h.runAfterDelay(200,()->{h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Memory")&&p.getBbHeight()>1.5&&!f.own(peer,place).getBoolean("Ready"),"out in the hall they are their own height again, and only they");f.reload();f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the account completes only this reader");h.succeed();});
     }
     @AfterBatch(batch="literary_wheel_sequence") public static void wheelDone(ServerLevel l){close();}
 

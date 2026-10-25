@@ -28,7 +28,7 @@ public final class SceneReview {
     private static Work work;private static int cursor;
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}
     private SceneReview(){}
-    public static boolean applies(LabyrinthPlace p){if(UncannyRooms.isUncanny(p))return false;if(p==LabyrinthPlace.GHOSTS_SET||p==LabyrinthPlace.ELK_CARCASSES||p==LabyrinthPlace.CHILD_ROOM||p==LabyrinthPlace.MASQUE||p==LabyrinthPlace.BLY_ROUTE||p==LabyrinthPlace.HOTEL||p==LabyrinthPlace.HOTEL_GROUNDS||p==LabyrinthPlace.ELK_LOT||p==LabyrinthPlace.THREE_FINGERS||p==LabyrinthPlace.MOVIE_NIGHT||p==LabyrinthPlace.COSTUME_NIGHT||p==LabyrinthPlace.WINTER_LAKE||p==LabyrinthPlace.LAKE_HOUSE||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.BORRASCA)return false;return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL
+    public static boolean applies(LabyrinthPlace p){if(UncannyRooms.isUncanny(p))return false;if(p==LabyrinthPlace.GHOSTS_SET||p==LabyrinthPlace.WHEEL||p==LabyrinthPlace.ELK_CARCASSES||p==LabyrinthPlace.CHILD_ROOM||p==LabyrinthPlace.MASQUE||p==LabyrinthPlace.BLY_ROUTE||p==LabyrinthPlace.HOTEL||p==LabyrinthPlace.HOTEL_GROUNDS||p==LabyrinthPlace.ELK_LOT||p==LabyrinthPlace.THREE_FINGERS||p==LabyrinthPlace.MOVIE_NIGHT||p==LabyrinthPlace.COSTUME_NIGHT||p==LabyrinthPlace.WINTER_LAKE||p==LabyrinthPlace.LAKE_HOUSE||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.BORRASCA)return false;return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL
             ||LiteraryRooms.isLiterary(p)&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.OLD_CABIN;}
     public static AABB area(BlockPos b,LabyrinthPlace p){var r=p.room();return new AABB(Vec3.atLowerCornerOf(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2)),Vec3.atLowerCornerOf(b.offset(r.maxX()+3,r.maxY()+4,8)));}
     private static String key(BlockPos o,LabyrinthPlace p){return o.asLong()+":"+p.id();}
@@ -62,7 +62,7 @@ public final class SceneReview {
         case USHER,MASQUE,HOLY_RABBIT,CRIMSON_HALL,CONFESSION->VignetteDetailBlock.Kind.BOOK_TRAY;
         case CHILD_ROOM,HILL_NURSERY,ELK_FAN,MINIATURES->FIELD_NOTEBOOK;
         case ELK_CARCASSES->MISSING_NOTICE;
-        case WHEEL,END_WORLD_CABIN->DIARY_STACK;
+        case END_WORLD_CABIN->DIARY_STACK;
         default->FIELD_NOTEBOOK;};}
     public static boolean readingAlias(ServerLevel l,BlockPos b,LabyrinthPlace p,BlockPos rel){
         if(p==LabyrinthPlace.END_WORLD_CABIN&&rel.equals(new BlockPos(-8,0,-31))){var old=l.getBlockState(b.offset(rel));if(old.is(Blocks.LECTERN)||old.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())||old.is(HouseBlocks.VIGNETTE_DETAIL.get()))return true;}

@@ -63,7 +63,6 @@ final class SceneDressing {
             case ELK_FAN -> new Theme(Blocks.GRAY_CARPET, List.of(DRAWERS, GREEN), List.of(BOTTLES, CRATE), List.of(COAT), false, false, false);
             case CONFESSION -> new Theme(Blocks.RED_CARPET, List.of(DESK, GREEN), List.of(BOOKS, INK, LAMP), List.of(FRAME, CLOCK), true, true, false);
             case DEVILS_ROCK -> new Theme(Blocks.BLUE_CARPET, List.of(DRAWERS, FORMICA, CANE), List.of(FILES, BOOKS, LAMP), List.of(FRAME, CLOCK), false, false, false);
-            case WHEEL -> new Theme(null, List.of(BEDSIDE, CANE, RADIATOR), List.of(MEDICAL, VASE, BOOKS), List.of(CLOCK), false, false, false);
             case GHOSTS_SET -> new Theme(null, List.of(FORMICA, KITCHEN), List.of(FILES, CRATE, INK), List.of(), false, false, false);
             case HOSPITAL -> new Theme(null, List.of(BEDSIDE, RADIATOR, CANE), List.of(MEDICAL, TOWELS, VASE), List.of(CLOCK), false, false, false);
             case KAREN_ROOM -> new Theme(Blocks.LIGHT_GRAY_CARPET, List.of(DRAWERS, BEDSIDE), List.of(VASE, BOOKS, LAMP), List.of(FRAME), false, false, false);

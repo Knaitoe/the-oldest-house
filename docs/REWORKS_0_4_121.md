@@ -92,6 +92,35 @@ resolutions / two kinds / three endings.
   limb of block displays reaches toward them.
 - The tree outside stands one stage closer each visit. The resolution is unchanged.
 
+## Part two: the Wheel
+
+- **The rooms.** Behind the front door the numbered rooms are the stages of a daughter's life, each built whole by
+  `WheelHouse` from one `life_stage` block (60 kinds) and fourteen materials drawn in code by `tools/draw_wheel_house.py`:
+  1. her nursery: duckling paper, a crib with a turning-shapes mobile, drawers with a lamp and the baby book, alphabet
+     blocks, the child's chair;
+  2. her childhood room: buttercup paper, a bed with a star headboard, crayons, a drawing on the wall, a moon night light,
+     glow stars on a painted ceiling;
+  3. her teenage room: violet walls, an iron bed, the diary forced open, a lava lamp, a stereo, two posters, KEEP OUT;
+  4. her first flat: bare boards, a mattress on the floor, boxes (KITCHEN crossed out), a hot plate, a bare bulb, Mother's
+     letter;
+  5. her own daughter's nursery: the same paper, an ordinary crib she leans over, the chair at its own size;
+  6. the hospital room where her mother lay: ward tile, the bed and its chart, the drip, the monitor, carnations, a
+     visitor's chair.
+  The first two are built at twice the size and the reader is a child in them. The other rooms are ordinary size, and
+  Mother's room has her bed, wardrobe, lamp, armchair and the chair once more. No polish, craft, review or dressing pass
+  touches the house.
+- **The doors.** Every room has two doors, each with a brass plaque naming the room it opens on: back the way she came,
+  on to the next. Rooms are reached only by their doors. Going forward into the first two rooms makes the reader a child;
+  going back, they keep their own height, and the child's chair there is drawn at its ordinary size on their screen alone
+  ("When I went back through two, the chair in one was smaller"). The front door takes them to the nursery.
+- **The wheel.** The hospital room's door says 1 and goes round to the nursery. A reader who has gone back through a door
+  and seen all six rooms finds that it opens on Mother's room instead, farther in than the numbers suggest. There they are
+  small again. Once they have seen her she says they may leave, and her door, the one with no number, lets them out to the
+  hall at their own height, ready to read the account. The resolution is unchanged.
+- **Texts.** Each room keeps one short text, shown in the chat when touched: the baby book, the drawing, the diary, the
+  letter, her own baby book and the chart.
+- The old generic Wheel could not be finished on foot: its cross walls had doors only from one side. The new one can.
+
 ## Fixes from the owner's notes ("Need to fix this")
 
 ### Fridge corridor (and the other hazard halls)
@@ -172,5 +201,8 @@ resolutions / two kinds / three endings.
 - The recovered phone case: a plain use plays back without writing the record; crouching writes and opens it.
 - `elkKillingBlowDragsTheReaderIntoThePileAndTheyTearTheirWayOut` now also checks the camera rides at ground height,
   the long grace under the pile and the head start once out, and that a second killing blow on the same crossing kills.
+- `theWheelGoesRoundUntilTheReaderGoesBackThenOpensOnMotherAndLetsThemOutGrown`: the front door, six rooms forward with the
+  child's height only in the first two, the wrap to the nursery, going back through two at full height (the room keeps its
+  big chair), round again to Mother, her door shut until she is seen, and out to the hall grown.
 - The rewritten `ModelHomeTests` cover the three visits, the locked door, the stacking chairs, the set and the limb.
 - The Goatman, child's room and paw cases follow the new counts, gates and menus.
