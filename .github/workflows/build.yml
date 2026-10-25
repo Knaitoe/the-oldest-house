@@ -529,8 +529,11 @@ jobs:
                            'assets/the_oldest_house/models/item/trailer_plate.json',
                            'assets/the_oldest_house/textures/item/trailer_plate.png' ):
                   assert name in z.namelist(), name
-              # October 16 explicitly supersedes the old artwork only for the reviewed character repaints.
-              repaint = {r['path']: r for r in json.loads(pathlib.Path('art/inventory/character_review_04100.json').read_text())['repainted']}
+              # Use the same narrowly checked approvals as source verification, including the six family sheets.
+              import sys
+              sys.path.insert(0, 'tools')
+              from verify_character_art import reviewed_repaints
+              repaint = reviewed_repaints(json.loads(pathlib.Path('art/inventory/character_review_04100.json').read_text()))
               # Unrelated 0.4.65 assets still retain their exact original bytes and alpha.
               art = json.loads(pathlib.Path('art/inventory/cast_0465.json').read_text())
               assert len(art['approved_textures']) == 67 and art['entity_count'] == 61
