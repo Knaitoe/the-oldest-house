@@ -36,7 +36,7 @@ public final class BorrascaNativeArt {
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);}
     public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{public CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.25F);addLayer(new ItemInHandLayer<>(this,c.getItemInHandRenderer()));}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE)),a.phase()>=BorrascaStory.WORKER);}@Override protected boolean shouldShowName(LiteraryActor a){return false;}}
     public static final class CastModel extends HumanoidModel<LiteraryActor>{public CastModel(ModelPart root){super(root);hat.visible=false;}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);young=false;super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
             pose(a.gesture(),a.role()==LiteraryActor.BORRASCA_SHERIFF,age);HumanoidMotion.connect(this);}
         private void pose(int gesture,boolean sheriff,float age){
             switch(gesture){
@@ -47,7 +47,8 @@ public final class BorrascaNativeArt {
                 case 5->{body.xRot=.42F;leftLeg.xRot=-.3F;rightLeg.xRot=-.3F;leftArm.xRot=-.35F;rightArm.xRot=-.35F;head.xRot=-.1F;}
                 default->{}
             }}
-        public void preview(int person,float age,float stride){HumanoidMotion.reset(this);HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
+        /** Keep the approved child review poses; adults use the same full-length body as their live renderer. */
+        public void preview(int person,float age,float stride){HumanoidMotion.reset(this);young=person<2;crouching=false;riding=false;attackTime=0;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
         public void previewPose(int person,int gesture,float age){preview(person,age,0);pose(gesture,person==2,age);HumanoidMotion.connect(this);}
     }
     public static void cube(PoseStack p,VertexConsumer out,float x0,float y0,float z0,float x1,float y1,float z1,int tile,int light,int overlay,int colour){
