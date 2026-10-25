@@ -23,6 +23,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_uncanny_environment") @PrefixGameTestTemplate(false)
 public final class UncannyEnvironmentTests {
     private static LiteraryTests.Fixture fixture;
+    private static final List<net.minecraft.world.level.ChunkPos> FORCED=new ArrayList<>();private static ServerLevel forcedLevel;
     @GameTest(template="empty",batch="uncanny_environment",timeoutTicks=600)
     public static void fittedRoomsKeepTheirServingAislesOriginalsAndNativeSeats(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);fixture=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();
@@ -80,6 +81,9 @@ public final class UncannyEnvironmentTests {
             // are loaded, rather than losing the legacy floor during the full suite's disk backlog.
             UncannyRooms0121.build(yardLevel,yard,LabyrinthPlace.MOTION_LIGHT);f.built.add(LabyrinthPlace.MOTION_LIGHT);
             for(var at:BlockPos.betweenClosed(yard.offset(-7,-3,-25),yard.offset(7,-3,-15)))yardLevel.setBlock(at,Blocks.STONE.defaultBlockState(),3);
+            // The yard is in the interior while the reader is outside, and a level with no player or forced chunk stops
+            // ticking entities after 300 ticks: the falling gravel would hang in the air. Force the yard until the batch ends.
+            forcedLevel=yardLevel;for(int x:new int[]{-7,7})for(int z:new int[]{-25,-15}){var c=new net.minecraft.world.level.ChunkPos(yard.offset(x,0,z));if(!yardLevel.getForcedChunks().contains(c.toLong())&&yardLevel.setChunkForced(c.x,c.z,true))FORCED.add(c);}
             f.source(p,place);var own=f.own(p,place);own.putInt("UncannyAge",300);
             for(int i=0;i<18;i++)UncannyStories.reader(p,b,place,own);
             own.putInt("UncannyAge",600);for(int i=0;i<90&&!own.getBoolean("MealServed");i++)UncannyStories.reader(p,b,place,own);
@@ -127,5 +131,5 @@ public final class UncannyEnvironmentTests {
         file.add("palette",palette);file.add("blocks",blocks);var folder=Path.of("../build/uncanny-environment-proof");Files.createDirectories(folder);Files.writeString(folder.resolve(name+".json"),new Gson().toJson(file));
     }
     @AfterBatch(batch="uncanny_environment") public static void close(ServerLevel l){if(fixture!=null){fixture.close();fixture=null;}}
-    @AfterBatch(batch="uncanny_environment_refit") public static void closeRefit(ServerLevel l){close(l);}
+    @AfterBatch(batch="uncanny_environment_refit") public static void closeRefit(ServerLevel l){if(forcedLevel!=null)for(var c:FORCED)forcedLevel.setChunkForced(c.x,c.z,false);FORCED.clear();forcedLevel=null;close(l);}
 }
