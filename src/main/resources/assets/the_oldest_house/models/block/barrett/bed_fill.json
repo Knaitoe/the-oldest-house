@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "particle": "the_oldest_house:block/barrett/duvet"
+ },
+ "elements": []
+}

@@ -1,0 +1,43 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "p": "the_oldest_house:block/barrett/poster_b",
+  "particle": "the_oldest_house:block/barrett/poster_b"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    2,
+    15.6
+   ],
+   "to": [
+    15,
+    14,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#p"
+    },
+    "south": {
+     "texture": "#p"
+    },
+    "east": {
+     "texture": "#p"
+    },
+    "west": {
+     "texture": "#p"
+    },
+    "up": {
+     "texture": "#p"
+    },
+    "down": {
+     "texture": "#p"
+    }
+   }
+  }
+ ]
+}

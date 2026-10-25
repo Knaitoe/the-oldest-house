@@ -62,6 +62,8 @@ public final class LiteraryRegistry {
     public static final DeferredBlock<Block> WINCHESTER_WALLPAPER=BLOCKS.registerBlock("winchester_wallpaper",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.RED_TERRACOTTA).noLootTable());
     public static final DeferredBlock<Block> WINCHESTER_SEANCE_PAPER=BLOCKS.registerBlock("winchester_seance_paper",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.BLUE_TERRACOTTA).noLootTable());
     public static final DeferredBlock<Block> WINCHESTER_PARQUET=BLOCKS.registerBlock("winchester_parquet",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BarrettHomeBlock>> BARRETT_HOME_TYPE=CODECS.register("barrett_home",()->BarrettHomeBlock.CODEC);
+    public static final DeferredBlock<BarrettHomeBlock> BARRETT_HOME=BLOCKS.registerBlock("barrett_home",BarrettHomeBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable().lightLevel(BarrettHomeBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<WinchesterFittingBlock>> WINCHESTER_FITTING_TYPE=CODECS.register("winchester_fitting",()->WinchesterFittingBlock.CODEC);
     public static final DeferredBlock<WinchesterFittingBlock> WINCHESTER_FITTING=BLOCKS.registerBlock("winchester_fitting",WinchesterFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noOcclusion().noLootTable());
     public static final DeferredBlock<net.minecraft.world.level.block.TransparentBlock> WINCHESTER_LEADED_GLASS=BLOCKS.registerBlock("winchester_leaded_glass",net.minecraft.world.level.block.TransparentBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noLootTable());

@@ -41,6 +41,41 @@ public final class GhostsSetTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="ghosts_room0490") public static void room0490Done(ServerLevel ignored){if(active!=null){active.close();active=null;}}
+    @AfterBatch(batch="ghosts_home0121") public static void homeDone(ServerLevel ignored){if(active!=null){active.close();active=null;}}
+    @GameTest(template="empty",batch="ghosts_home0121",timeoutTicks=300)
+    public static void theBarrettsHouseIsAHomeWithTheCrewInItAndEveryFilmingRouteStaysClear(GameTestHelper h){
+        var f=fixture(h);var p=f.player("barrett_home",P);var b=f.base(P);var in=f.in;
+        h.startSequence().thenExecute(()->{
+            for(int x=-19;x<=19;x++)h.assertTrue(!in.getBlockState(b.offset(x,6,-14)).isAir(),"the front of the house is closed upstairs; no cutaway onto a set at x="+x);
+            h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(5,4,-8)),BarrettHomeBlock.Kind.STOREY)&&BarrettHomeBlock.is(in.getBlockState(b.offset(17,4,-20)),BarrettHomeBlock.Kind.STOREY)&&BarrettHomeBlock.is(in.getBlockState(b.offset(-3,4,-30)),BarrettHomeBlock.Kind.STOREY),"two whole storeys: the hall, the den and the dining room all have rooms above them");
+            h.assertTrue(in.getBlockState(b.offset(0,10,-8)).is(LiteraryRegistry.GHOST_SET.get())&&BarrettHomeBlock.is(in.getBlockState(b.offset(-20,3,-10)),BarrettHomeBlock.Kind.PAINT),"one ceiling over the whole house, painted walls");
+            h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(12,-1,-6)),BarrettHomeBlock.Kind.CONCRETE)&&BarrettHomeBlock.is(in.getBlockState(b.offset(12,1,0)),BarrettHomeBlock.Kind.GARAGE_DOOR),"the garage has its slab and its door");
+            h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(LiteraryRooms.source(P)).below()),BarrettHomeBlock.Kind.FOLDING_TABLE)&&in.getBlockEntity(b.offset(LiteraryRooms.source(P))) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity,"the call sheet sits on the crew's folding table in the garage");
+            h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(-13,1,-45)),BarrettHomeBlock.Kind.FRIDGE_TOP)&&BarrettHomeBlock.is(in.getBlockState(b.offset(-3,0,-1)),BarrettHomeBlock.Kind.CONSOLE)&&BarrettHomeBlock.is(in.getBlockState(b.offset(-19,0,-25)),BarrettHomeBlock.Kind.WASHER),"the fridge, the mail on the console and the washer: somebody lives here");
+            h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(18,0,-29)),BarrettHomeBlock.Kind.VILLAGE_CART)&&BarrettHomeBlock.is(in.getBlockState(b.offset(0,0,-20)),BarrettHomeBlock.Kind.CABLE)&&in.getBlockState(b.offset(0,0,-20)).getCollisionShape(in,b.offset(0,0,-20)).isEmpty(),"the crew's monitors in the den and their cables on the floor, which nobody trips on");
+            // Models drawn past their block have bodies in every cell they cover.
+            int windows=0,missing=0;
+            for(var at:BlockPos.betweenClosed(b.offset(-20,-5,-46),b.offset(20,11,0))){var s=in.getBlockState(at);if(!s.is(LiteraryRegistry.BARRETT_HOME.get()))continue;var kind=s.getValue(BarrettHomeBlock.KIND);
+                if(kind==BarrettHomeBlock.Kind.WINDOW)windows++;
+                for(var c:BarrettHomeBlock.covers(at,kind,s.getValue(BarrettHomeBlock.FACING)))if(!BarrettHomeBlock.is(in.getBlockState(c),BarrettHomeBlock.Kind.BED_FILL))missing++;}
+            h.assertTrue(windows>=60&&missing==0,"windows with their blinds drawn on every outside wall ("+windows+") and every bed and tub has its body ("+missing+" missing)");
+            // Every route the days walk the cast along: a body fits at each mark and all the way between marks on one floor.
+            List<double[]> routes=GhostsSet.filmingRoutes();double[] last=null;int checked=0;
+            for(var at:routes){
+                if(at==null){last=null;continue;}
+                boolean level=at[1]==0||at[1]==5||at[1]==-4;
+                if(level){
+                    int steps=last!=null&&last[1]==at[1]?(int)Math.ceil(Math.hypot(at[0]-last[0],at[2]-last[2])/.4):0;
+                    for(int i=0;i<=steps;i++){double t=steps==0?1:(double)i/steps,x=last==null||steps==0?at[0]:last[0]+(at[0]-last[0])*t,z=last==null||steps==0?at[2]:last[2]+(at[2]-last[2])*t;
+                        var box=new AABB(b.getX()+x-.3,b.getY()+at[1]+.01,b.getZ()+z-.3,b.getX()+x+.3,b.getY()+at[1]+1.8,b.getZ()+z+.3);
+                        h.assertTrue(in.noCollision(null,box),"the cast's route is clear at "+x+","+at[1]+","+z);checked++;}
+                }
+                last=level?at:null;
+            }
+            h.assertTrue(checked>40,"the routes were walked: "+checked);
+            h.succeed();
+        });
+    }
     @GameTest(template="empty",batch="ghosts_days",timeoutTicks=200)
     public static void followingDayRequiresDoorExitAndInterruptedDayResumes(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_days",P);var t=f.own(p,P);t.putInt("ShotClock",315);save(f,p,t);LiteraryVignettes.onArrive(p,P);h.assertTrue(f.own(p,P).getInt("ShotClock")==315,"an interrupted arrival retains the occupied filming clock");t=f.own(p,P);t.putBoolean("DayDone",true);t.putInt("Beat",t.getInt("Visit"));save(f,p,t);LiteraryVignettes.onArrive(p,P);h.assertTrue(f.own(p,P).getInt("FilmDay")==1,"a timer or repeated arrival inside cannot advance the day");GhostsSet.depart(p);f.at(p,P,0,0,2);f.arrive(p,P);h.assertTrue(f.own(p,P).getInt("FilmDay")==2&&f.own(p,P).getInt("ShotClock")==0,"door departure followed by actual later arrival starts the following day");f.reload();h.assertTrue(f.own(p,P).getInt("FilmDay")==2,"the personal filming day survives native SavedData reload");h.succeed();}
     @GameTest(template="empty",batch="ghosts_lens",timeoutTicks=240)

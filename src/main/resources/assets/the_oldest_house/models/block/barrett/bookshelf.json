@@ -1,0 +1,44 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "s": "the_oldest_house:block/barrett/shelf_side",
+  "g": "the_oldest_house:block/barrett/games",
+  "particle": "the_oldest_house:block/barrett/shelf_side"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    4
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g"
+    },
+    "south": {
+     "texture": "#s"
+    },
+    "east": {
+     "texture": "#s"
+    },
+    "west": {
+     "texture": "#s"
+    },
+    "up": {
+     "texture": "#s"
+    },
+    "down": {
+     "texture": "#s"
+    }
+   }
+  }
+ ]
+}

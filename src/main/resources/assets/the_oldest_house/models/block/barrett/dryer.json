@@ -1,0 +1,44 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "a": "the_oldest_house:block/barrett/appliance",
+  "f": "the_oldest_house:block/barrett/dryer",
+  "particle": "the_oldest_house:block/barrett/appliance"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    2
+   ],
+   "to": [
+    15,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#f"
+    },
+    "south": {
+     "texture": "#a"
+    },
+    "east": {
+     "texture": "#a"
+    },
+    "west": {
+     "texture": "#a"
+    },
+    "up": {
+     "texture": "#a"
+    },
+    "down": {
+     "texture": "#a"
+    }
+   }
+  }
+ ]
+}
