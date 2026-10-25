@@ -275,6 +275,7 @@ public final class UncannyRooms {
     }
     private static void foyer(ServerLevel l,BlockPos b){
         room(l,b,-4,4,-14,-1,0,5,material("lobby_wall"),Blocks.DARK_OAK_PLANKS);
+        box(l,b,-7,-2,-25,7,-2,-15,Blocks.STONE);
         room(l,b,-7,7,-25,-15,0,7,material("courtyard_wall"),Blocks.GRAVEL);
         // An open service yard. Its one working light remains the reverse-motion floodlight.
         box(l,b,-6,7,-24,6,7,-16,Blocks.AIR);
