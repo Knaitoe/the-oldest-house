@@ -91,6 +91,7 @@ public final class UncannySenses {
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
         if(event.getServer().getTickCount()%5!=0)return;
         for(var p:event.getServer().getPlayerList().getPlayers()){
+            if(event.getServer().getTickCount()%20==0)UncannyCellar.migrateKeys(p);
             if(LiteraryVignettes.current(p)!=LabyrinthPlace.LAYERED_MAN&&p.hasEffect(UncannyRegistry.ENGULFED))p.removeEffect(UncannyRegistry.ENGULFED);
             var d=LabyrinthData.get(p.server);var own=d.stateEntry(STATE,p.getUUID().toString());int fuel=own.getInt("MirrorTicks");if(!p.isAlive())fuel=0;if(fuel>0){own.putInt("MirrorTicks",Math.max(0,fuel-5));d.setStateEntry(STATE,p.getUUID().toString(),own);}
             boolean active=p.isAlive()&&!p.isSpectator()&&(UncannyRooms.isUncanny(LiteraryVignettes.current(p))||ring(p)||heldMirror(p));

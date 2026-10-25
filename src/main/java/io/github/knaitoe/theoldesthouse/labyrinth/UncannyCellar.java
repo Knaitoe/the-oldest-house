@@ -68,6 +68,10 @@ public final class UncannyCellar {
         var s=new ItemStack(UncannyRegistry.CELLAR_KEY.get(),old.getCount());s.applyComponents(old.getComponentsPatch());s.set(DataComponents.CUSTOM_NAME,Component.translatable("item.the_oldest_house.cellar_key"));return s;
     }
     private static boolean ownedKey(ServerPlayer p,ItemStack s){var c=s.get(DataComponents.CUSTOM_DATA);return c!=null&&c.copyTag().hasUUID("UncannyKeyOwner")&&c.copyTag().getUUID("UncannyKeyOwner").equals(p.getUUID());}
+    /** Completed readers can carry an old original away from the cellar; this is independent of story ticking. */
+    public static void migrateKeys(ServerPlayer p){
+        for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);if(s.is(LiteraryRegistry.KEY.get())&&ownedKey(p,s))p.getInventory().setItem(i,key(s));}
+    }
     private static void contact(ServerPlayer p,BlockPos b,CompoundTag own){
         int pressure=own.getInt("Engulfment");boolean touching=false;var box=p.getBoundingBox().inflate(.14,.06,.14);
         if(p.getY()<b.getY()-1)for(var at:BlockPos.betweenClosed(BlockPos.containing(box.minX,box.minY,box.minZ),BlockPos.containing(box.maxX,box.maxY,box.maxZ)))if(UncannyFleshBlock.is(p.serverLevel().getBlockState(at))){touching=true;break;}
@@ -77,7 +81,7 @@ public final class UncannyCellar {
     }
     private static void reset(ServerLevel l,BlockPos b,CompoundTag shared){
         for(int x=-6;x<=6;x++)for(int y=-5;y<=-2;y++)for(int z=-28;z<=-10;z++){var r=new BlockPos(x,y,z);var at=b.offset(r);var s=l.getBlockState(at);
-            if(authored(x,y,z)){if(s.isAir())l.setBlock(at,UncannyFleshBlock.at(r),F);}
+            if(authored(x,y,z)){if(s.isAir()&&!body(l,at))l.setBlock(at,UncannyFleshBlock.at(r),F);}
             else if(UncannyFleshBlock.is(s))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
         }
         for(String k:List.of("Age","Layers","Growth","Beats","LastPeel","LastPlayerPeel","Regrow"))shared.remove(k);shared.putBoolean("ToolGiven",false);
