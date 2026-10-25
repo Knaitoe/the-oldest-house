@@ -49,10 +49,33 @@ public final class GoatmanVignette {
     public static final int GATHER_TICKS=1800,VIGIL_TICKS=1600;
     public static final int SUPPER0465=1500,LEAVES0465=1200,BACK0465=1900,SILENCE0465=2700,GATHER0465=3300,VIGIL0465=2500;
     private static final int WINDOW0465=2100,WINDOW_FOR0465=200;
+    /**
+     * 0.4.123, the owner's pacing for new rounds (October 25: the sequence still drags). The others come in with the first
+     * plate and the cousin goes for gas with the last, as before; once supper is on the table there is only a little talk
+     * while everyone eats. Then he knocks at the shut door asking to be let in, and the reader decides. A few seconds after
+     * he is in (or his voice stops) the woods go quiet and night falls, and the thing outside starts at once: each of its
+     * words comes with its own run of knocks on the door while the same body circles the windows. Older saved rounds keep
+     * the evening they began.
+     */
+    public static final int BRISK_SUPPER=600,BRISK_COOK_TALK=420;
+    /** After supper is on the table, by ticks since it began: talk while they eat, the door pulled to, his call from the trail. */
+    public static final int TABLE_MUSTARD=30,TABLE_COLD=80,TABLE_SHUT=130,TABLE_PLACE=170,TABLE_BACK=210,TABLE_LATEST=1400;
+    /** His three lines at the door (one every RUNNER_KNOCK_EVERY) before his voice stops; the quiet and the dark follow his coming in by these. */
+    public static final int KNOCK_FOR=300,QUIET_AFTER=40,DARK_AFTER=80;
+    /** The night: the shortest whole vigil, and how soon morning follows a bathroom window found shut. */
+    public static final int BRISK_VIGIL=900,BRISK_REFUSED=60;
+    /** Where on the trail he goes out of sight for gas, and where he is heard calling on the way back. */
+    private static final double BRISK_GONE=48,BRISK_CALL=45;
+    private static final double JOG=.12;
     public static boolean fresh(CompoundTag r){return r.getBoolean("Fresh0465");}
-    public static int supperAt(CompoundTag r){return fresh(r)?SUPPER0465:SUPPER;}
-    private static int gatherTicks(CompoundTag r){return fresh(r)?GATHER0465:GATHER_TICKS;}
-    public static int vigilTicks(CompoundTag r){return fresh(r)?VIGIL0465:VIGIL_TICKS;}
+    public static boolean brisk(CompoundTag r){return fresh(r)&&r.getBoolean("Brisk04123");}
+    public static int supperAt(CompoundTag r){return brisk(r)?BRISK_SUPPER:fresh(r)?SUPPER0465:SUPPER;}
+    private static int gatherTicks(CompoundTag r){return brisk(r)?(r.contains("NightAt04123")?r.getInt("NightAt04123"):Integer.MAX_VALUE):fresh(r)?GATHER0465:GATHER_TICKS;}
+    public static int vigilTicks(CompoundTag r){return brisk(r)?BRISK_VIGIL:fresh(r)?VIGIL0465:VIGIL_TICKS;}
+    /** The earliest night tick at which the bathroom window is tried, once every circuit and approach leg is done. */
+    public static int windowFrom(CompoundTag r){return brisk(r)?0:WINDOW0465;}
+    /** How long after the window is tried morning may come: briefly if it was found shut, else the whole attempt. */
+    public static int dawnAfterWindow(CompoundTag r){return !brisk(r)?VIGIL0465-WINDOW0465:r.getBoolean("WindowRefused04123")?BRISK_REFUSED:WINDOW_FOR0465;}
     /** The evening, by the gathering clock. */
     public static final int WINDOW_HINT=880,RUNNER_LEAVES=360,SUPPER=600,GRUMBLE=1000,EXTRA_OUT=1100,RUNNER_BACK=1300,SILENCE=1500;
     /** Rounds saved before 0.4.64 keep the evening they began: the cousins serve themselves, and the window is mentioned early. */
@@ -108,7 +131,7 @@ public final class GoatmanVignette {
     }
     private static CompoundTag newRun(ServerPlayer p){
         CompoundTag r=new CompoundTag();r.putUUID("Id",UUID.randomUUID());r.putInt("Phase",PATH);r.putInt("Version",VERSION);
-        r.putInt("Cousins0464",8);r.putBoolean("PlayerServes0464",true);r.putBoolean("Fresh0465",true);int wrong=p.getRandom().nextInt(8),runner=(wrong+1+p.getRandom().nextInt(7))%8;r.putInt("Wrong",wrong);r.putInt("Runner",runner);
+        r.putInt("Cousins0464",8);r.putBoolean("PlayerServes0464",true);r.putBoolean("Fresh0465",true);r.putBoolean("Brisk04123",true);int wrong=p.getRandom().nextInt(8),runner=(wrong+1+p.getRandom().nextInt(7))%8;r.putInt("Wrong",wrong);r.putInt("Runner",runner);
         List<Integer> tells=new ArrayList<>(List.of(FACE,SILENT,LATE_LAUGH,STILL,FIRELIGHT,HEAD,PET));
         Collections.shuffle(tells,new Random(p.getRandom().nextLong()));int mask=0,n=2+p.getRandom().nextInt(2);for(int tell:tells){if(tell==HEAD&&(mask&FACE)!=0||tell==FACE&&(mask&HEAD)!=0)continue;mask|=tell;if(Integer.bitCount(mask)==n)break;}r.putInt("Tells",mask);
         List<Integer> skins=new ArrayList<>(List.of(0,1,2,3,4,6,7,8));Collections.shuffle(skins,new Random(p.getRandom().nextLong()));for(int i=0;i<count(r);i++)r.putInt("Skin"+i,skins.get(i));
@@ -342,7 +365,7 @@ public final class GoatmanVignette {
         if(i==runner&&r.getInt("RunnerState")!=R_HOME&&r.getInt("RunnerState")!=R_INSIDE)return "step";
         if((phase==GATHERING||phase==VIGIL)&&GoatmanFear.stage(r)>=GoatmanFear.FEAR)return drawBack(i,r,GoatmanFear.destination(i,r));
         if(phase==VIGIL)return drawBack(i,r,seatName(i,r));
-        if(phase>=VIGIL||clock>=supperAt(r))return seatName(i,r);
+        if(phase>=VIGIL||clock>=supperAt(r)||r.getBoolean("CalledIn04123"))return seatName(i,r);
         return ACTIVITY[i];
     }
     /**
@@ -477,6 +500,25 @@ public final class GoatmanVignette {
         }
         if(r.contains("ExchangeOut0497")&&r.contains("ExchangeIn0497"))GoatmanFear.returned(r);
     }
+    /**
+     * 0.4.123: indoors when the night begins, the same body leaves its place only while no camera, spectators included, is
+     * turned toward it or toward the porch step it goes to. From the step it begins its circuit. A seat left empty is noticed.
+     */
+    private static boolean slipOut(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c){
+        Vec3 step=abs(GoatmanWindowCircuit.porchLanding(l,b,SPOTS.get("step").at()),b);
+        if(!unlooked(l,c.position())||!unlooked(l,step))return false;
+        boolean seated=r.getInt("ExtraState")==X_SUPPER;settle(c,b,"step");c.moveTo(step.x,step.y,step.z,180,0);c.setYHeadRot(180);c.yBodyRot=180;
+        c.pose(false);c.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);c.getPersistentData().remove("EatingUntil0465");r.putInt("ExtraState",X_DOOR);
+        if(seated)GoatmanFear.queue(r,27);
+        return true;
+    }
+    /** No camera, spectators included, is turned toward a body standing here with a clear line (native glazing is clear). */
+    private static boolean unlooked(ServerLevel l,Vec3 feet){
+        for(var p:l.players()){Entity camera=p.getCamera();Vec3 eye=camera.getEyePosition(),look=camera.getLookAngle();
+            for(double y:new double[]{.3,1,1.7}){Vec3 point=feet.add(0,y,0),to=point.subtract(eye);double d=to.length();
+                if(d>.01&&d<72&&look.dot(to.scale(1/d))>.35&&GoatmanStalking.visible(l,camera,eye,point))return false;}}
+        return true;
+    }
     private static void cousins(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> present){
         int phase=r.getInt("Phase"),clock=r.getInt("Clock"),wrong=r.getInt("Wrong"),runner=r.getInt("Runner");
         boolean open=GoatmanWoods.doorOpen(l,b);var cast=cousinsOf(l,b);exchange(l,b,r,open,cast);
@@ -484,6 +526,11 @@ public final class GoatmanVignette {
             int i=c.getPersistentData().getInt(INDEX);if(i>=count(r))continue;
             if(fresh(r)&&phase==GATHERING&&r.getBoolean("Exchange0497")&&!open
                     &&(!r.contains("ExchangeOut0497")||!r.contains("ExchangeIn0497"))&&(i==wrong||i==runner)){c.pose(false);continue;}
+            // 0.4.123: still indoors when night falls (he was never let in, or the door shut on it), it leaves unseen first.
+            if(brisk(r)&&phase==VIGIL&&i==wrong&&(r.getInt("ExtraState")==X_SUPPER||outside(r))&&GoatmanWoods.indoors(rel(c,b))){
+                if(slipOut(l,b,r,c))continue;
+                if(outside(r)){c.pose(false);continue;}
+            }
             if(fresh(r)&&phase==VIGIL&&i==wrong&&outside(r)){GoatmanStalking.step(l,b,r,c,clock);continue;}
             // Admission changes ExtraState to X_WINDOW while the clock remains in VIGIL.
             // Do not let the ordinary staging branch reset the route before the window crawl completes.
@@ -493,19 +540,22 @@ public final class GoatmanVignette {
             }
             if(!outside(r)&&!r.contains("AdmissionSkin04114")&&c.stalkingAppearance()&&GoatmanStalking.obscured(l,c))c.disguise(-1);
             if((phase==GATHERING||phase==VIGIL)&&i!=wrong)GoatmanFear.pose(c,r);else {c.fear(0);c.fearStage(0);}
-            String want=place(i,r);double speed=WALK;
+            String want=place(i,r);double speed=brisk(r)&&phase==GATHERING&&want.startsWith("seat")?JOG:WALK;
             if(i==runner){int rs=r.getInt("RunnerState");
+                // 0.4.123: on a brisk evening he runs for the truck and is out of sight at the bend.
                 if(rs==R_LEAVING){if(!goal(c).equals("_trail")&&!at(c).equals("_trail")){List<Vec3> out=toYard(at(c));
-                        for(double s:new double[]{66,63,58,53,48,43,41,37,33,30,27})out.add(GoatmanWoods.path(s));setRoute(c,out,"_trail");}
-                    if(walk(c,b,WALK,l)){c.getPersistentData().putString("At","_trail");if(!watched(c,present)){c.discard();r.putInt("RunnerState",R_AWAY);}}continue;}
+                        for(double s:new double[]{66,63,58,53,48,43,41,37,33,30,27})if(!brisk(r)||s>=BRISK_GONE)out.add(GoatmanWoods.path(s));setRoute(c,out,"_trail");}
+                    if(walk(c,b,brisk(r)?RUN:WALK,l)){c.getPersistentData().putString("At","_trail");if(!watched(c,present)){c.discard();r.putInt("RunnerState",R_AWAY);}}continue;}
                 if(rs==R_RETURNING){speed=RUN;if(walk(c,b,RUN,l)){c.getPersistentData().putString("At","step");boolean enter=open&&admit(r);r.putInt("RunnerState",enter?R_INSIDE:R_KNOCKING);if(enter){GoatmanFear.returned(r);setRoute(c,inFrom("step",i,r),seatName(i,r));}}continue;}
                 if(rs==R_KNOCKING){face(c,abs(new Vec3(.5,1,-55.5),b));c.pose(false);if(open&&admit(r)){r.putInt("RunnerState",R_INSIDE);GoatmanFear.returned(r);setRoute(c,inFrom("step",i,r),seatName(i,r));walk(c,b,RUN,l);}continue;}
                 if(rs==R_INSIDE&&c.getPersistentData().contains("Route"))speed=RUN;
             }
             if(i==wrong){int xs=r.getInt("ExtraState");
-                if(fresh(r)&&xs==X_FIRE&&phase==GATHERING&&clock>=BACK0465
+                // 0.4.123: out at a run as he comes in, to wait by the fire for the dark. The circuit is the night's, with its words.
+                if(brisk(r)&&xs==X_FIRE&&phase==GATHERING)speed=RUN;
+                else if(fresh(r)&&xs==X_FIRE&&phase==GATHERING&&clock>=BACK0465
                         &&GoatmanStalking.evening(l,b,r,c,clock,at(c).equals("byFire")&&c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).isEmpty()))continue;
-                if(xs==X_FIRE&&phase==GATHERING&&clock>=(fresh(r)?BACK0465:RUNNER_BACK)&&clock<(fresh(r)?SILENCE0465:SILENCE)){speed=RUN;
+                else if(xs==X_FIRE&&phase==GATHERING&&clock>=(fresh(r)?BACK0465:RUNNER_BACK)&&clock<(fresh(r)?SILENCE0465:SILENCE)){speed=RUN;
                     // Once it is out by the fire, it runs to the nearest window, scrapes at the glass where it stands, and goes back.
                     int run=r.getInt("WindowRun0464");
                     if(!fresh(r)&&run==0&&at(c).equals("byFire")){r.putInt("WindowRun0464",run=1);GoatmanFear.departed(r);}
@@ -596,7 +646,8 @@ public final class GoatmanVignette {
         for(ServerPlayer p:enrolled){
             String key=p.getUUID().toString();CompoundTag own=cohort.getCompound(key);scale(p,true);
             if(phase<VIGIL)path(p,b,r,own);
-            if(fresh(r)&&outside(r)&&(phase==VIGIL||phase==GATHERING))GoatmanStalking.dash(l,b,r,p,own);
+            // The private lap filled long waits behind the door; a brisk night's own body never stops circling.
+            if(fresh(r)&&!brisk(r)&&outside(r)&&(phase==VIGIL||phase==GATHERING))GoatmanStalking.dash(l,b,r,p,own);
             arrived&=own.getBoolean("Arrived");
             if(phase==VIGIL){
                 if(!GoatmanWoods.indoors(rel(p,b))){
@@ -611,7 +662,7 @@ public final class GoatmanVignette {
         if(phase==PATH)clock++;
         else if(phase==GATHERING){
             GoatmanSupper.tick(l,b,r,enrolled);cookingChatter(r,enrolled);
-            if(!fresh(r)||clock!=SUPPER0465-1||GoatmanSupper.ready(r)){clock++;evening(l,b,r,enrolled,clock);}
+            if(!fresh(r)||clock!=supperAt(r)-1||GoatmanSupper.ready(r)){clock++;evening(l,b,r,enrolled,clock);}
             if(clock>=gatherTicks(r)&&!GoatmanStalking.eveningActive(r)){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}
         }
         else if(phase==VIGIL){clock++;night(l,b,r,enrolled,clock);if(dawnReady(r,clock)){r.putInt("Clock",clock);dawn(l,b,r,enrolled,d);phase=DAWN;}}
@@ -629,7 +680,7 @@ public final class GoatmanVignette {
         return switch(k){case 0,4->GoatmanSupper.onGriddle(r);case 6->{int rs=r.getInt("RunnerState");yield rs==R_LEAVING||rs==R_AWAY||rs==R_RETURNING||rs==R_KNOCKING;}default->true;};
     }
     private static void cookingChatter(CompoundTag r,List<ServerPlayer> readers){
-        if(!fresh(r)||GoatmanSupper.ready(r)||r.getInt("Clock")<850)return;
+        if(!fresh(r)||GoatmanSupper.ready(r)||r.getInt("Clock")<(brisk(r)?BRISK_COOK_TALK:850))return;
         int ticks=r.getInt("CookingChatTicks0490")+1;r.putInt("CookingChatTicks0490",ticks);if(ticks%220!=0)return;
         String[] lines=COOKING_LINES;int next=r.getInt("CookingChatLine0490");
         // 0.4.121: a line is said only if it is true now: nobody asks for theirs to stay on a griddle that is empty.
@@ -638,8 +689,11 @@ public final class GoatmanVignette {
         r.putInt("CookingChatLine0490",next);
     }
     private static void evening(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
+        boolean brisk=brisk(r);
         int supper=supperAt(r),leaves=fresh(r)?LEAVES0465:RUNNER_LEAVES,backAt=fresh(r)?BACK0465:RUNNER_BACK,silence=fresh(r)?SILENCE0465:SILENCE;
-        if(fresh(r)){
+        if(brisk){
+            if(clock==220)say(enrolled,"A cousin: You should've heard his story. The scary part was how long it took.");
+        }else if(fresh(r)){
             if(clock==220)say(enrolled,"A cousin: You should've heard his story. The scary part was how long it took.");
             if(clock==520)say(enrolled,"A cousin: Can somebody pass the plates? We brought enough for all of us.");
             if(clock==820&&GoatmanSupper.onGriddle(r))say(enrolled,"A cousin: You always burn them on one side. Turn them over this time.");
@@ -649,11 +703,12 @@ public final class GoatmanVignette {
         if(!r.getBoolean("PlayerServes0464")&&clock<SUPPER&&r.getInt("PanFor")!=r.getInt("Expected")){r.putInt("Pan",r.getInt("Pan")+r.getInt("Expected")-r.getInt("PanFor"));r.putInt("PanFor",r.getInt("Expected"));GoatmanWoods.pan(l,b,r.getInt("Pan"));}
         boolean serves=r.getBoolean("PlayerServes0464");
         if(serves&&clock==SERVE_HINT)say(enrolled,"A cousin: Go grab 'em from the cooler by the kitchen counter. Four in each pack. Cook them on the griddle, then put one on everybody's plate.");
-        if(serves&&clock==(fresh(r)?2460:WINDOW_HINT))say(enrolled,"A cousin: Is anyone else getting cold back there?");
+        if(serves&&!brisk&&clock==(fresh(r)?2460:WINDOW_HINT))say(enrolled,"A cousin: Is anyone else getting cold back there?");
         if(!serves&&clock==OLD_WINDOW_HINT)say(enrolled,"A cousin: Somebody shut the bathroom window. Bugs are getting in.");
         // The last frank on its plate sends him for gas straight away; the clock still sends him if nobody serves.
         boolean served=fresh(r)&&serves&&r.getBoolean("MealReady0465")&&clock<leaves;
         if((clock==leaves||served)&&r.getInt("RunnerState")==R_HOME){r.putInt("RunnerState",R_LEAVING);say(enrolled,"A cousin: Generator's out of gas. I'll run get some from the truck. Back before dark.");}
+        if(brisk){table(l,b,r,enrolled,clock);return;}
         if(clock==supper){if(r.getInt("ExtraState")==X_ACTIVITY)r.putInt("ExtraState",X_SUPPER);GoatmanWoods.door(l,b,true);say(enrolled,"A cousin: Food's on the table. Come inside before it gets cold.");}
         if(!fresh(r)&&clock==GRUMBLE)say(enrolled,"A cousin: Who had two? There was one for everybody.");
         if(!fresh(r)&&clock==EXTRA_OUT&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
@@ -670,18 +725,83 @@ public final class GoatmanVignette {
             if(beat==20||beat==26){knock(l,b,enrolled);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);GoatmanFear.heard(r);}
             if(beat==0){int line=Math.floorMod(since/RUNNER_KNOCK_EVERY,RUNNER_LINES.length);r.putInt("Demand",-(line+1));r.putInt("DemandAt",clock);}
         }else r.remove("RunnerKnockFrom");
-        if(clock==silence){
-            GoatmanFear.quiet(r);
-            r.putBoolean("Silence",true);GoatmanWoods.porchLight(l,b,false);
-            for(var p:enrolled){p.connection.send(new ClientboundStopSoundPacket(GoatmanRegistry.CRICKETS.getId(),SoundSource.AMBIENT));p.connection.send(new ClientboundStopSoundPacket(GoatmanRegistry.WOODS.getId(),SoundSource.AMBIENT));}
-            int rs=r.getInt("RunnerState");
-            // The cousin who was still outside stops knocking in the middle of a word, and is not there.
-            if(rs==R_LEAVING||rs==R_AWAY||rs==R_RETURNING||rs==R_KNOCKING){r.putInt("RunnerState",R_LOST);
-                for(var c:cousinsOf(l,b))if(c.getPersistentData().getInt(INDEX)==r.getInt("Runner"))c.discard();
-                if(rs==R_KNOCKING){r.putInt("Demand",-99);r.putInt("DemandAt",clock);}}
-            if(fresh(r)&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
-            if(r.getInt("ExtraState")==X_FIRE&&!GoatmanStalking.eveningActive(r))r.putInt("ExtraState",X_APPROACH);
+        if(clock==silence)quiet(l,b,r,enrolled,clock);
+    }
+    /** The woods go quiet: the porch light goes out, and a cousin still outside stops in the middle of a word and is not there. */
+    private static void quiet(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
+        GoatmanFear.quiet(r);
+        r.putBoolean("Silence",true);GoatmanWoods.porchLight(l,b,false);
+        for(var p:enrolled){p.connection.send(new ClientboundStopSoundPacket(GoatmanRegistry.CRICKETS.getId(),SoundSource.AMBIENT));p.connection.send(new ClientboundStopSoundPacket(GoatmanRegistry.WOODS.getId(),SoundSource.AMBIENT));}
+        int rs=r.getInt("RunnerState");
+        if(rs==R_LEAVING||rs==R_AWAY||rs==R_RETURNING||rs==R_KNOCKING){r.putInt("RunnerState",R_LOST);
+            for(var c:cousinsOf(l,b))if(c.getPersistentData().getInt(INDEX)==r.getInt("Runner"))c.discard();
+            if(rs==R_KNOCKING){r.putInt("Demand",-99);r.putInt("DemandAt",clock);}}
+        // A brisk evening's thing waits where it is for the dark, a few seconds off; the night takes it from there.
+        if(brisk(r))return;
+        if(fresh(r)&&r.getInt("ExtraState")==X_SUPPER)r.putInt("ExtraState",X_FIRE);
+        if(r.getInt("ExtraState")==X_FIRE&&!GoatmanStalking.eveningActive(r))r.putInt("ExtraState",X_APPROACH);
+    }
+    /**
+     * 0.4.123: the brisk evening. The others come in as the first frank is plated; the cousin goes for gas with the last, and
+     * the one who doesn't belong comes in to take his chair once he is out past the porch. With supper on the table there is
+     * a little talk while they eat, the door is pulled to, and he is heard on the trail. At the shut door he says his line
+     * and knocks, and the reader decides. Let in (the thing slipping out past him as he comes), or left until his voice stops
+     * mid-word, the woods go quiet and the night follows in seconds.
+     */
+    private static void table(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
+        if(!r.getBoolean("CalledIn04123")&&(Integer.bitCount(r.getInt("Plated0464")&~r.getInt("EmptyPlates0465"))>0||clock>=BRISK_SUPPER)){
+            r.putBoolean("CalledIn04123",true);GoatmanWoods.door(l,b,true);say(enrolled,"A cousin: Food's coming. Everybody inside.");
         }
+        int rs=r.getInt("RunnerState");
+        if(r.getInt("ExtraState")==X_ACTIVITY&&r.getBoolean("CalledIn04123")&&rs!=R_HOME&&runnerOut(l,b,r))r.putInt("ExtraState",X_SUPPER);
+        if(!r.contains("SupperAt04123")&&clock>=BRISK_SUPPER&&GoatmanSupper.ready(r)){
+            r.putInt("SupperAt04123",clock);say(enrolled,"A cousin: Food's on the table. Sit down before it gets cold.");
+        }
+        if(r.contains("SupperAt04123")){
+            int since=clock-r.getInt("SupperAt04123");
+            if(since==TABLE_MUSTARD)say(enrolled,"A cousin: Pass the mustard, will you?");
+            if(since==TABLE_COLD)say(enrolled,"A cousin: Is anyone else getting cold back there?");
+            // Pulled to before he is heard on the trail, never once he is coming or across him.
+            if(since>=TABLE_SHUT&&!r.getBoolean("Shut04123")&&(rs==R_AWAY||rs==R_LEAVING)&&shutDoor(l,b,r,enrolled))r.putBoolean("Shut04123",true);
+            if(since==TABLE_PLACE)say(enrolled,"A cousin: Save his place. He'll be back.");
+            if(since>=TABLE_BACK&&rs==R_AWAY&&!r.contains("QuietAt04123")){
+                Vec3 at=abs(GoatmanWoods.path(BRISK_CALL),b);GoatmanChild c=GoatmanRegistry.CHILD.get().create(l);
+                if(c!=null){int i=r.getInt("Runner");c.addTag(ACTOR);c.getPersistentData().putUUID(ROUND,r.getUUID("Id"));c.getPersistentData().putInt(INDEX,i);c.appearance(r.getInt("Skin"+i),0,null);
+                    c.moveTo(at.x,at.y,at.z);l.addFreshEntity(c);List<Vec3> back=new ArrayList<>();for(double s:new double[]{48,53,58,63,66})back.add(GoatmanWoods.path(s));back.addAll(List.of(UP[0],UP[1],UP[2],UP[3]));
+                    setRoute(c,back,"step");r.putInt("RunnerState",rs=R_RETURNING);say(enrolled,"From the trail: “Wait up! Don't lock it!”");}
+            }
+            // Something went wrong upstream (he never got away to come back): the dark still comes.
+            if(since>=TABLE_LATEST&&!r.contains("QuietAt04123"))schedule(r,clock,0);
+        }
+        // His line the moment he reaches the shut door, then two knocks, every five seconds (0.4.121).
+        if(rs==R_KNOCKING&&!GoatmanWoods.doorOpen(l,b)&&!r.getBoolean("Silence")){
+            if(!r.contains("RunnerKnockFrom"))r.putInt("RunnerKnockFrom",clock);
+            if(!r.contains("KnockAt04123"))r.putInt("KnockAt04123",clock);
+            int knocked=clock-r.getInt("RunnerKnockFrom"),beat=Math.floorMod(knocked,RUNNER_KNOCK_EVERY);
+            if(beat==20||beat==26){knock(l,b,enrolled);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);GoatmanFear.heard(r);}
+            if(beat==0){r.putInt("Demand",-(Math.floorMod(knocked/RUNNER_KNOCK_EVERY,RUNNER_LINES.length)+1));r.putInt("DemandAt",clock);}
+        }else r.remove("RunnerKnockFrom");
+        if(!r.contains("QuietAt04123")){
+            boolean in=rs==R_INSIDE&&(!r.getBoolean("Exchange0497")||r.contains("ExchangeOut0497")&&r.contains("ExchangeIn0497"));
+            if(in)schedule(r,clock,QUIET_AFTER);
+            // Once the door has opened for him he is not cut off, even if the thing is still crossing the other way.
+            else if(rs==R_KNOCKING&&!r.getBoolean("Exchange0497")&&r.contains("KnockAt04123")&&clock-r.getInt("KnockAt04123")>=KNOCK_FOR)schedule(r,clock,0);
+        }
+        if(!r.getBoolean("Silence")&&r.contains("QuietAt04123")&&clock>=r.getInt("QuietAt04123"))quiet(l,b,r,enrolled,clock);
+    }
+    private static void schedule(CompoundTag r,int clock,int quiet){r.putInt("QuietAt04123",clock+quiet);r.putInt("NightAt04123",clock+quiet+DARK_AFTER-QUIET_AFTER);}
+    /** He is gone, or out past the porch on his way: the one who doesn't belong can come in to his chair without passing him. */
+    private static boolean runnerOut(ServerLevel l,BlockPos b,CompoundTag r){
+        int rs=r.getInt("RunnerState");if(rs!=R_LEAVING)return rs!=R_HOME;
+        return cousinsOf(l,b).stream().filter(c->c.getPersistentData().getInt(INDEX)==r.getInt("Runner")).allMatch(c->rel(c,b).z>-52);
+    }
+    /** A cousin pulls the door to once everyone at the table is in, never through somebody standing in it. */
+    private static boolean shutDoor(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled){
+        if(!GoatmanWoods.doorOpen(l,b))return true;
+        for(var c:cousinsOf(l,b))if(c.getPersistentData().getInt(INDEX)!=r.getInt("Runner")&&(!GoatmanWoods.indoors(rel(c,b))||!c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).isEmpty()))return false;
+        var doorway=new AABB(b.offset(GoatmanWoods.DOOR)).expandTowards(0,1,0).inflate(.1);
+        if(!l.getEntitiesOfClass(LivingEntity.class,doorway,LivingEntity::isAlive).isEmpty())return false;
+        GoatmanWoods.door(l,b,false);say(enrolled,"A cousin: Can somebody get the door? The bugs are getting in.");return true;
     }
     /** Night falls: a cousin locks the door on whatever is outside, and anyone outside finds themselves in. */
     private static void nightfall(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled){
@@ -699,7 +819,7 @@ public final class GoatmanVignette {
         if(!fresh(r))return true;
         if(outside(r)&&(!GoatmanStalking.circuitDone(r)||!GoatmanStalking.windowApproachDone(r)))return false;
         // A delayed arrival retains the original occupied window-to-dawn interval.
-        return !r.contains("NightWindowAt0472")||clock>=r.getInt("NightWindowAt0472")+VIGIL0465-WINDOW0465;
+        return !r.contains("NightWindowAt0472")||clock>=r.getInt("NightWindowAt0472")+dawnAfterWindow(r);
     }
     private static void night(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
         GoatmanWoods.door(l,b,false);
@@ -709,7 +829,7 @@ public final class GoatmanVignette {
                 if(beat==0){r.putInt("Demand",1+((clock-KNOCK_FROM)/200)%LEGACY_MIMIC_LINES.length);r.putInt("DemandAt",clock);}}
             // The window: left open, it is how it gets in.
             // A timed admission cannot cancel a physically unfinished circuit.
-            if(fresh(r)&&clock>=WINDOW0465&&GoatmanStalking.circuitDone(r)&&GoatmanStalking.windowApproachDone(r)&&!r.contains("NightWindowAt0472"))r.putInt("NightWindowAt0472",clock);
+            if(fresh(r)&&clock>=windowFrom(r)&&GoatmanStalking.circuitDone(r)&&GoatmanStalking.windowApproachDone(r)&&!r.contains("NightWindowAt0472"))r.putInt("NightWindowAt0472",clock);
             int windowAt=WINDOW_TRY;
             if(fresh(r))windowAt=r.contains("NightWindowAt0472")?r.getInt("NightWindowAt0472"):-1;
             if(windowAt>=0&&clock>=windowAt&&clock<(fresh(r)?windowAt+WINDOW_FOR0465:KNOCK_UNTIL)){
@@ -724,6 +844,9 @@ public final class GoatmanVignette {
                             through.addAll(List.of(WINDOW_ENTRY));c.setCrawling(false);c.setPose(Pose.SWIMMING);c.setWindowEntry(0);c.getPersistentData().putInt("WindowReach04114",0);
                         }else{Vec3 at=abs(new Vec3(6.5,1,-75.5),b);c.moveTo(at.x,at.y,at.z);}
                         c.getPersistentData().putString("At","bath");through.addAll(List.of(new Vec3(4.5,1,-75.5),new Vec3(4.5,1,-74.5),new Vec3(3.5,1,-74.5),new Vec3(2.5,1,-74.5),new Vec3(2.5,1,-72.5),new Vec3(4,1,-71.5),new Vec3(4,1,-57.5),ENTRY,SPOTS.get("floor").at()));setRoute(c,through,"floor");c.getPersistentData().putInt("WindowRoute04114",fresh(r)?through.size():0);}
+                }else if(brisk(r)&&clock==windowAt){
+                    // Found shut when it is tried: morning comes soon after, rather than after the whole attempt.
+                    r.putBoolean("WindowRefused04123",true);
                 }else if(!fresh(r)&&clock==windowAt){
                     Vec3 w=Vec3.atCenterOf(b.offset(GoatmanWoods.WINDOW));
                     for(var p:enrolled)p.connection.send(new ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(GoatmanRegistry.CLAW.get()),SoundSource.BLOCKS,w.x,w.y,w.z,3.2F,1.15F,p.getRandom().nextLong()));
@@ -775,12 +898,14 @@ public final class GoatmanVignette {
     }
     /** What a child's client shows: the phase, a line at the door, and whether the woods have gone quiet. */
     public static int speechTicks(int demand){return demand>=107?150:demand>=101?100:60;}
-    public static boolean speaking(CompoundTag r){int demand=r.getInt("Demand"),since=r.getInt("Clock")-r.getInt("DemandAt");return demand!=0&&since>=0&&since<speechTicks(demand);}
+    /** A brisk night's words come closer together, so each holds the middle of the screen a little less long. */
+    public static int speechTicks(CompoundTag r,int demand){return brisk(r)&&demand>=101?(demand>=107?110:70):speechTicks(demand);}
+    public static boolean speaking(CompoundTag r){int demand=r.getInt("Demand"),since=r.getInt("Clock")-r.getInt("DemandAt");return demand!=0&&since>=0&&since<speechTicks(r,demand);}
     public static GoatmanScenePayload scenePayload(CompoundTag r){
         int clock=r.getInt("Clock"),demand=r.getInt("Demand"),since=clock-r.getInt("DemandAt");
         boolean voice=speaking(r);int child=r.getInt("FearLine0472"),remaining=GoatmanFear.remaining(r),phase=r.getInt("Phase");
         boolean childSpeaking=!voice&&(phase==GATHERING||phase==VIGIL)&&remaining>0;
-        return new GoatmanScenePayload(phase,voice?demand:0,voice?speechTicks(demand)-since:0,r.getBoolean("Silence")?1:0,childSpeaking?child:0,childSpeaking?remaining:0);
+        return new GoatmanScenePayload(phase,voice?demand:0,voice?speechTicks(r,demand)-since:0,r.getBoolean("Silence")?1:0,childSpeaking?child:0,childSpeaking?remaining:0);
     }
     private static void scene(ServerPlayer p,CompoundTag r){HousePackets.send(p,scenePayload(r));}
     static void say(List<ServerPlayer> players,String line){for(var p:players)p.displayClientMessage(Component.literal(line),false);}
