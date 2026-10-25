@@ -34,6 +34,30 @@ public final class GoatmanStalking {
     }
     /** 0.4.121: two laps of the trailer, not three; there was far too much knocking. */
     public static final int CIRCUITS=2;
+    /**
+     * 0.4.123 (owner: the night dragged; its words belong to the circuit and to its knocks at the door). A brisk night's
+     * thing speaks at once and its words run across both laps, one every 130 ticks.
+     */
+    public static final int[] BRISK_DEMANDS={0,130,260,390,520,650,780};
+    public static final int BRISK_ASSAULT_END=860,BRISK_ASSAULT_FROM=20;
+    /** On a brisk night the first lone knock after the words comes three seconds after the last, then one every twenty. */
+    public static final int BRISK_AFTER_FIRST=60;
+    public static int[] demandTicks(CompoundTag r){return GoatmanVignette.brisk(r)?BRISK_DEMANDS:DEMAND_TICKS;}
+    public static int assaultEnd(CompoundTag r){return GoatmanVignette.brisk(r)?BRISK_ASSAULT_END:ASSAULT_END;}
+    /**
+     * Still words first, but the knocking now comes with them: a quick run of knocks straight after each line, three raps
+     * for "let me in", one blow to each word of "let. me. in", short runs after that, and a fast run under the last.
+     */
+    public static boolean briskBlow(int stage,int beat){
+        return switch(stage){
+            case 0->beat==8||beat==13||beat==18;
+            case 1->beat==10||beat==32||beat==54;
+            case 2,5->beat>=8&&beat<=16&&beat%4==0;
+            case 3->beat>=8&&beat<=20&&beat%4==0;
+            case 4->beat==8||beat==14||beat==20;
+            default->beat>=8&&beat<=68&&(beat-8)%6==0;
+        };
+    }
     public static boolean circuitDone(CompoundTag r){return r.getInt("StalkLeg0465")>=CIRCUIT.length
             &&(!r.contains("CircuitGoal0494")||r.getInt("Circuits0494")>=r.getInt("CircuitGoal0494"))
             &&(!r.contains("WindowSerial0497")||r.getBoolean("DoorPressureDone0497"));}
@@ -245,7 +269,7 @@ public final class GoatmanStalking {
         // 0.4.121: the night begins with his voice. Until the first demand has been spoken he stands silent on the step.
         if(!evening&&r.getInt("DemandStage0465")==0){c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)));return;}
         boolean supported=GoatmanWindowCircuit.stepsReady(l,b);
-        boolean window=!evening&&circuitDone(r)&&r.getBoolean("AssaultDone0465")&&clock>=1900;
+        boolean window=!evening&&circuitDone(r)&&r.getBoolean("AssaultDone0465")&&clock>=(GoatmanVignette.brisk(r)?0:1900);
         if(!window&&!GoatmanWindowCircuit.atPane(b,c))change(l,r,c);
         // Longer glimpses cannot move the voice clock or make a distant wall strike stress the door.
         // Finish on this original body's real front step, then permit its bathroom-window approach.
@@ -308,15 +332,16 @@ public final class GoatmanStalking {
     public static void assault(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> players,int clock){
         // These native world sounds remain audible when the body is blocked or temporarily untracked.
         // 0.4.121: nothing is struck before he speaks. Each demand is said first, and the blows come after the words.
-        if(!r.contains("AssaultAt0465")){if(clock<450)return;r.putInt("AssaultAt0465",clock);}
+        boolean brisk=GoatmanVignette.brisk(r);int[] demands=demandTicks(r);int end=assaultEnd(r);
+        if(!r.contains("AssaultAt0465")){if(clock<(brisk?BRISK_ASSAULT_FROM:450))return;r.putInt("AssaultAt0465",clock);}
         int elapsed=clock-r.getInt("AssaultAt0465");
         // Afterwards, now and then, one more knock: he is still there.
-        if(elapsed>=ASSAULT_END){r.putBoolean("AssaultDone0465",true);
-            if((elapsed-ASSAULT_END)%AFTER_KNOCK==AFTER_KNOCK/2){impact(l,b,r,null,GoatmanWoods.DOOR,1);r.putInt("DoorPulseSerial04112",r.getInt("DoorPulseSerial04112")+1);}return;}
-        int stage=0;while(stage+1<DEMAND_TICKS.length&&elapsed>=DEMAND_TICKS[stage+1])stage++;
-        int beat=elapsed-DEMAND_TICKS[stage];
+        if(elapsed>=end){r.putBoolean("AssaultDone0465",true);
+            if((elapsed-end)%AFTER_KNOCK==(brisk?BRISK_AFTER_FIRST:AFTER_KNOCK/2)){impact(l,b,r,null,GoatmanWoods.DOOR,1);r.putInt("DoorPulseSerial04112",r.getInt("DoorPulseSerial04112")+1);}return;}
+        int stage=0;while(stage+1<demands.length&&elapsed>=demands[stage+1])stage++;
+        int beat=elapsed-demands[stage];
         if(beat==0){GoatmanFear.begin(r);r.putInt("Demand",101+stage);r.putInt("DemandAt",clock);r.putInt("DemandStage0465",stage+1);}
-        boolean hit=demandBlow(stage,beat);
+        boolean hit=brisk?briskBlow(stage,beat):demandBlow(stage,beat);
         if(!hit)return;
         var it=l.getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.getTags().contains(GoatmanVignette.ACTOR)&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==r.getInt("Wrong")&&c.getPersistentData().hasUUID(GoatmanVignette.ROUND)&&c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(r.getUUID("Id"))).stream().findFirst().orElse(null);
         // The door answers while the same original body is seen circling outside.
