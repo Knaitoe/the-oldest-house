@@ -24,7 +24,7 @@ public final class BorrascaNativeArt {
     public static final ModelLayerLocation CAST=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca_cast"),"main");
     private BorrascaNativeArt(){}
     private static final String[] PEOPLE={"kyle","kimber","sheriff","prescott"};
-    /** tools/draw_borrasca_cast.py: one 64x64 skin per person on the standard humanoid net, and the plant's coveralls. */
+    /** Shared cast painter: five 256-pixel exports on the original 64x64 humanoid UV layout. */
     public static ResourceLocation skin(int person,boolean worker){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_"+(worker?"worker":PEOPLE[Math.max(0,Math.min(3,person))])+".png");}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,()->LayerDefinition.create(HumanoidModel.createMesh(CubeDeformation.NONE,0),64,64));}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);}

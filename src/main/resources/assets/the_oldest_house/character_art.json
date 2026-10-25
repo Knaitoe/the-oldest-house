@@ -1,5 +1,40 @@
 [
   {
+    "name": "borrasca_kimber",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_kyle",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_prescott",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_sheriff",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_worker",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 4,
+    "phase": 0
+  },
+  {
     "name": "caged_child",
     "logical": 64,
     "model": "player",

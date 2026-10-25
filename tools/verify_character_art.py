@@ -1,4 +1,4 @@
-"""Check exact reviewed paintings, native base-face coverage and unchanged excluded art."""
+"""Check the historical baseline, shared-painter skins and native production mesh catalog."""
 from pathlib import Path
 from io import BytesIO
 import hashlib
@@ -16,6 +16,8 @@ CATALOG=ROOT/'art/inventory/character_review_04100.json'
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--jar',action='store_true');args=parser.parse_args()
     review=json.loads(CATALOG.read_text());changed={r['path']:r for r in review['repainted']}
+    # Preserve the historical 0.4.100 inventory, including its original machine atlas.
+    # The five later Drisking human sheets are now explicitly included in LOOKS below.
     assert review['excluded']==['Borrasca']
     assert set(changed).isdisjoint(review['unchanged_png_sha256'])
     assert len(changed)+len(review['unchanged_png_sha256'])==review['png_count']==769
@@ -48,8 +50,8 @@ def main():
                 assert alpha.getextrema()==(255,255),('Unpainted native base face',name,face,box)
     runtime=json.loads(read('src/main/resources/assets/the_oldest_house/character_art.json'))
     assert runtime==entries(),'Native review catalog differs from the actual production mesh selection'
-    assert all('borrasca' not in r['name'] for r in runtime)
-    print(f"Verified {len(changed)} pixel-painted sheets, {len(runtime)} human model selections, all opaque native base faces and {len(review['unchanged_png_sha256'])} unchanged PNGs, including Borrasca.")
+    assert {r['name'] for r in runtime if r['model']=='borrasca'}=={'borrasca_'+p for p in ('kyle','kimber','sheriff','prescott','worker')}
+    print(f"Verified {len(changed)} historical paintings, {len(runtime)} human model selections including Drisking, all opaque native base faces and {len(review['unchanged_png_sha256'])} unchanged historical PNGs.")
     if packaged:packaged.close()
 
 
