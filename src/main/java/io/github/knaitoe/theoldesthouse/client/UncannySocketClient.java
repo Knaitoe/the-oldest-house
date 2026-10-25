@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.*;
 /** Native socket-client source/menu/bed/feed/door/health actions and genuine GPU readback. Opt-in only. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class UncannySocketClient {
-    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,terrainStep=-1,terrainSentAt=-1000;private static String shot;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
+    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,terrainStep=-1,terrainSentAge=-1000;private static String shot;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
     private UncannySocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("UNCANNY CLIENT: "+message);}
@@ -62,9 +62,12 @@ public final class UncannySocketClient {
         // Preserve the native dimension-loading screen. A scripted menu close must not release an empty destination.
         if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen){stop(mc);return;}
         if(data.getBoolean("TerrainPending")){
-            stop(mc);if(terrainStep!=next){terrainStep=next;terrainSentAt=-1000;}var target=new Vec3(data.getDouble("ArrivalX"),data.getDouble("ArrivalY"),data.getDouble("ArrivalZ"));var floor=BlockPos.containing(target).below();
+            stop(mc);if(terrainStep!=next){terrainStep=next;terrainSentAge=-1000;}var target=new Vec3(data.getDouble("ArrivalX"),data.getDouble("ArrivalY"),data.getDouble("ArrivalZ"));var floor=BlockPos.containing(target).below();
+            // The native spam budget drains on server ticks. Client ticks can outrun a busy room build;
+            // retry only after a newer host marker proves that forty real server ticks have passed.
+            int hostAge=data.getInt("ServerAge");
             if(mc.level.dimension().location().toString().equals(data.getString("ArrivalDimension"))&&mc.player.onGround()&&!mc.player.isNoGravity()&&mc.player.position().distanceToSqr(target)<.25
-                    &&!mc.level.getBlockState(floor).getCollisionShape(mc.level,floor).isEmpty()&&mc.levelRenderer.isSectionCompiled(floor)&&mc.player.tickCount-terrainSentAt>=20){terrainSentAt=mc.player.tickCount;mc.player.connection.sendCommand("uncannyready "+next);}
+                    &&!mc.level.getBlockState(floor).getCollisionShape(mc.level,floor).isEmpty()&&mc.levelRenderer.isSectionCompiled(floor)&&hostAge-terrainSentAge>=40){terrainSentAge=hostAge;mc.player.connection.sendCommand("uncannyready "+next);TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} readiness phase={} hostAge={}",role(),next,hostAge);}
             return;
         }
         if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;lightPhase=-1;lightTicks=0;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
