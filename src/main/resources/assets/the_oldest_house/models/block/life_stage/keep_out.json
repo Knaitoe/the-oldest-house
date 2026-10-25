@@ -1,0 +1,79 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "k": "the_oldest_house:block/life_stage/keep_out",
+  "particle": "the_oldest_house:block/life_stage/keep_out"
+ },
+ "elements": [
+  {
+   "from": [
+    3.5,
+    5,
+    15.6
+   ],
+   "to": [
+    12.5,
+    12,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#k",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#k",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#k",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#k",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#k",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,44 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "b": "the_oldest_house:block/life_stage/baby_book",
+  "c": "the_oldest_house:block/life_stage/cloth_blue",
+  "particle": "the_oldest_house:block/life_stage/cloth_blue"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    4
+   ],
+   "to": [
+    14,
+    1,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c"
+    },
+    "south": {
+     "texture": "#c"
+    },
+    "east": {
+     "texture": "#c"
+    },
+    "west": {
+     "texture": "#c"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#c"
+    }
+   }
+  }
+ ]
+}
