@@ -5,7 +5,6 @@ import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.*;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.*;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
@@ -65,7 +64,7 @@ public final class UncannyCellar {
         }
     }
     private static ItemStack key(ItemStack old){
-        var s=new ItemStack(UncannyRegistry.CELLAR_KEY.get(),old.getCount());s.applyComponents(old.getComponentsPatch());s.set(DataComponents.CUSTOM_NAME,Component.translatable("item.the_oldest_house.cellar_key"));return s;
+        var s=new ItemStack(UncannyRegistry.CELLAR_KEY.get(),old.getCount());s.applyComponents(old.getComponentsPatch());return s;
     }
     private static boolean ownedKey(ServerPlayer p,ItemStack s){var c=s.get(DataComponents.CUSTOM_DATA);return c!=null&&c.copyTag().hasUUID("UncannyKeyOwner")&&c.copyTag().getUUID("UncannyKeyOwner").equals(p.getUUID());}
     /** Completed readers can carry an old original away from the cellar; this is independent of story ticking. */
