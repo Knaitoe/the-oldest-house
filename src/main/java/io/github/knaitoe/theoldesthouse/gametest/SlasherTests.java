@@ -64,7 +64,9 @@ public final class SlasherTests {
             CampBedCrawl.begin(p,bed);CampBedCrawl.clear(p);h.assertTrue(p.getForcedPose()==null,"lifecycle cleanup is repeatable");f.done();
         });
     });}
-    @GameTest(template="empty",batch="camp_clock0483",timeoutTicks=400)
+    // Its own batch: every slasher fixture is the one static active fixture, and a second in the same batch takes it over.
+    @AfterBatch(batch="camp_session0121") public static void sessionDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="camp_session0121",timeoutTicks=400)
     public static void theLastSessionKeepsItsScheduleAndTheMessHallBellCallsHimOnce(GameTestHelper h){run(h,1268000,f->{
         f.corridor();var p=f.player("camp_session_reader",.5,-28.5);f.hide(p);var a=f.actor(.5,-43.5);
         h.startSequence().thenWaitUntil(()->h.assertTrue(CampSession.clock(a)>0,"the session's clock runs while a reader is in the camp"))
