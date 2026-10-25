@@ -373,8 +373,11 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.runAfterDelay(10,()->{
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.GLASS)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(0))),NurseryBlock.Kind.TEDDY)
                     &&l.getBlockState(b.offset(ChildRoom.EXITS.get(2).get(0))).getBlock() instanceof DoorBlock,"the room stands whole: two windows, its own doors, the bear by the bed");
-            h.assertTrue(l.getBlockState(b.offset(ChildRoom.BED_HEAD.below())).isAir()&&l.getBlockState(b.offset(ChildRoom.GAP)).is(Blocks.BIRCH_PLANKS)&&l.getBlockState(b.offset(ChildRoom.GAP.below())).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"a child fits under the bed, the way down is a floorboard like the rest, and there is a basement below");
-            f.source(p,place);
+            h.assertTrue(l.noCollision(new AABB(b.getX()+.3,b.getY()+.01,b.getZ()-21.7,b.getX()+.7,b.getY()+.34,b.getZ()-21.3))&&!l.noCollision(new AABB(b.getX()+.3,b.getY()+.4,b.getZ()-21.7,b.getX()+.7,b.getY()+.9,b.getZ()-21.3))
+                    &&ChildRoom.besideBed(new BlockPos(0,0,-21))&&l.getBlockState(b.offset(ChildRoom.GAP)).is(Blocks.BIRCH_PLANKS)&&l.getBlockState(b.offset(ChildRoom.GAP.below())).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"the bed is low: a child lying flat fits under it, standing does not; the way down is a floorboard like the rest, and there is a basement below");
+            h.assertTrue(!NurseryBlock.is(l.getBlockState(b.offset(-9,1,-20)),NurseryBlock.Kind.DOLL)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(1))),NurseryBlock.Kind.DOLL),"one doll, on the shelf, and nothing on the toy chest");
+            // 0.4.121: a hand on the desk finds the small card, and opening it starts the room, read to the end or not.
+            f.click(p,place,ChildRoom.CARD.below());h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages&&ChildRoom.readCard(f.own(p,place))&&!f.own(p,place).getBoolean("Read_Source"),"the desk opens the bedtime card, and opening it is enough to start the room");p.closeContainer();
             // Both readers face the door they came in by; the spectator watches the hall door.
             f.at(p,place,.5,0,-4.5);f.look(p,b.offset(0,1,1));f.at(peer,place,-.5,0,-4.5);f.look(peer,b.offset(0,1,1));
             f.at(observer,place,-8.5,0,-11.5);f.look(observer,b.offset(-11,0,-12));
@@ -391,7 +394,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.runAfterDelay(840,()->{h.assertTrue(f.own(p,place).getInt("ExitSeen0474")==ChildRoom.ALL&&f.own(p,place).getBoolean("AllSeen0474")&&f.own(peer,place).getInt("ExitSeen0474")==0,"the reader has seen every exit themselves; the peer, who never read the card, has not");
             h.assertTrue(f.own(p,place).getBoolean("DoorShut0119")&&!f.own(peer,place).getBoolean("DoorShut0119"),"the doorway back to the House is wall to the reader shut in, not to the peer who never read the card");
             h.assertTrue(Integer.bitCount(f.own(p,place).getInt("Parents0119"))>=4&&f.own(peer,place).getInt("Parents0119")==0,"the reader heard a parent's voice as each exit went; the peer heard nothing");
-            f.at(p,place,.5,0,-22.5);f.at(peer,place,6.5,-4,-12.5);
+            f.source(p,place);p.closeContainer();f.at(p,place,.5,0,-22.5);f.at(peer,place,6.5,-4,-12.5);
             NurseryToys.play(p,l,b.offset(ChildRoom.BED_FOOT),l.getBlockState(b.offset(ChildRoom.BED_FOOT)),b);
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.GAP)).getBlock() instanceof TrapDoorBlock&&l.getBlockState(b.offset(ChildRoom.GAP)).getValue(TrapDoorBlock.OPEN),"looking under the bed finds the trapdoor in the boards");});
         h.runAfterDelay(852,()->{h.assertTrue(!f.own(p,place).getBoolean("Ready"),"under the bed is not yet the way out");f.at(p,place,.5,-2,-22.5);});
