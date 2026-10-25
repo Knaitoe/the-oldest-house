@@ -664,10 +664,12 @@ public final class GoatmanVignette {
                 setRoute(c,back,"step");r.putInt("RunnerState",R_RETURNING);say(enrolled,"From the trail: “Wait up! Don't lock it!”");}
         }
         if(r.getInt("RunnerState")==R_KNOCKING&&!GoatmanWoods.doorOpen(l,b)){
-            // 0.4.121: the words first, then two knocks, every five seconds rather than three knocks every three.
-            int beat=clock%RUNNER_KNOCK_EVERY;if(beat==20||beat==26){knock(l,b,enrolled);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);GoatmanFear.heard(r);}
-            if(beat==0){int line=(clock/RUNNER_KNOCK_EVERY)%RUNNER_LINES.length;r.putInt("Demand",-(line+1));r.putInt("DemandAt",clock);}
-        }
+            // 0.4.121: the words first, the moment he reaches the door, then two knocks, every five seconds rather than three every three.
+            if(!r.contains("RunnerKnockFrom"))r.putInt("RunnerKnockFrom",clock);
+            int since=clock-r.getInt("RunnerKnockFrom"),beat=Math.floorMod(since,RUNNER_KNOCK_EVERY);
+            if(beat==20||beat==26){knock(l,b,enrolled);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);GoatmanFear.heard(r);}
+            if(beat==0){int line=Math.floorMod(since/RUNNER_KNOCK_EVERY,RUNNER_LINES.length);r.putInt("Demand",-(line+1));r.putInt("DemandAt",clock);}
+        }else r.remove("RunnerKnockFrom");
         if(clock==silence){
             GoatmanFear.quiet(r);
             r.putBoolean("Silence",true);GoatmanWoods.porchLight(l,b,false);

@@ -69,8 +69,8 @@ public final class SlasherTests {
         f.corridor();var p=f.player("camp_clock_reader",.5,-33.5);var peer=f.player("camp_clock_peer",1.2,-33.5);var a=f.actor(.5,-34.5);
         int[] swings={0},last={0};h.onEachTick(()->{if(active==f){int delay=a.getPersistentData().getCompound("CarcassSearch0455").getInt("AttackDelay");if(delay==CarcassHunt.ATTACK_DELAY&&last[0]!=delay)swings[0]++;last[0]=delay;}});
         h.startSequence().thenWaitUntil(()->h.assertTrue(swings[0]==1,"one physical swing starts the shared clock"))
-        .thenIdle(80).thenExecute(()->h.assertTrue(swings[0]==1,"two eligible readers cannot shorten the 90-tick interval"))
-        .thenWaitUntil(()->h.assertTrue(swings[0]==2,"the same hunter attacks again after 4.5 seconds, not every 1.5 seconds"))
+        .thenIdle(CarcassHunt.ATTACK_DELAY-10).thenExecute(()->h.assertTrue(swings[0]==1,"two eligible readers cannot shorten the "+CarcassHunt.ATTACK_DELAY+"-tick interval"))
+        .thenWaitUntil(()->h.assertTrue(swings[0]==2,"the same hunter attacks again after the full interval, not every 1.5 seconds"))
         .thenExecute(()->{h.assertTrue(ElkHunt.ATTACK_DELAY==CarcassHunt.ATTACK_DELAY&&Math.abs(KillerNavigation.CHASE_STEP-.2403)<.000001,"both slasher circuits share the longer interval and ten-percent speed reduction");f.done();});
     });}
     private static void privateRun(GameTestHelper h,int coordinate,Consumer<Fixture> check){var f=new Fixture(h,coordinate,LabyrinthPlace.ELK_CARCASSES);h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native private hunt chunks ready")).thenExecute(()->{f.start();check.accept(f);});}
