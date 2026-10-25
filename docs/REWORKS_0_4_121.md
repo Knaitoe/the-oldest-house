@@ -121,6 +121,32 @@ resolutions / two kinds / three endings.
   letter, her own baby book and the chart.
 - The old generic Wheel could not be finished on foot: its cross walls had doors only from one side. The new one can.
 
+## Part three: Camp Blood
+
+- **Its history.** Camp Wanaki's third session was closed the morning after a camper went missing at lights out, and
+  nobody told the director, R. Hale. He keeps its day still. The camp's papers tell it, and J.'s essay is still the source:
+  - the daily schedule, on a stand by the flagpole and on every cabin's noticeboard;
+  - three counselors' journals (Dana, Ray, Pat), each on a crate in its cabin;
+  - a letter home in every footlocker, a different camper in each cabin;
+  - the nurse's log in the first-aid cabinets, dated on past the last entry;
+  - the director's unsigned incident report on the mess-hall table, which the radio beside it also gives.
+- **The schedule clock** (`CampSession`). One shared clock runs while anyone is in the camp and goes through the six
+  periods of the posted schedule, 45 seconds each: reveille at the flagpole, breakfast at the mess hall, cabin inspection
+  on the west row, crafts on the east row, campfire at the fire circle, and lights out with rounds to the road. At each
+  period the mess-hall bell rings and the PA reads the next line to everyone in the camp. His walk follows the period, so a
+  reader who has read the schedule knows where he will be. The session never ends; the day goes round.
+- **The bell.** Ringing the bell outside the mess hall calls him there for 30 seconds, off the schedule, dropping whatever
+  he was following. It works once for each reader; after that it is only a bell.
+- **Hiding.** Under a bunk he never sees a reader, but the boards tell on anyone moving within six blocks, and found that
+  way he can reach in. His boots going past are heard close by, with a reminder to keep still.
+- **The mess hall** stands west of the path between the middle and last cabins: two benches either side of a long table,
+  the radio, the report and a flashlight. A PA horn on a pole points down the camp, and a flag flies at the gate.
+- **Pieces:** one `camp_session` block (nine kinds: radio, PA horn, flashlight, mess table, bench, clipboard, schedule
+  stand, journal crate, carved plank) and twelve textures drawn in code by `tools/draw_camp_session.py`. Every cabin wall
+  gains two planks with initials cut into them.
+- **The ending** is still the service road past the last cabins. It now opens to a reader who was chased, who read the
+  schedule, or who rang the bell.
+
 ## Fixes from the owner's notes ("Need to fix this")
 
 ### Fridge corridor (and the other hazard halls)
@@ -204,5 +230,7 @@ resolutions / two kinds / three endings.
 - `theWheelGoesRoundUntilTheReaderGoesBackThenOpensOnMotherAndLetsThemOutGrown`: the front door, six rooms forward with the
   child's height only in the first two, the wrap to the nursery, going back through two at full height (the room keeps its
   big chair), round again to Mother, her door shut until she is seen, and out to the hall grown.
+- `theLastSessionKeepsItsScheduleAndTheMessHallBellCallsHimOnce`: the session clock runs, the schedule names its places, the
+  walk follows the period, and the bell calls him once for each reader.
 - The rewritten `ModelHomeTests` cover the three visits, the locked door, the stacking chairs, the set and the limb.
 - The Goatman, child's room and paw cases follow the new counts, gates and menus.

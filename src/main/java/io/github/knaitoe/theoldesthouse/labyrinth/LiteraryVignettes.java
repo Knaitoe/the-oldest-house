@@ -122,6 +122,7 @@ public final class LiteraryVignettes {
             case USHER->{if(rel.distManhattan(LiteraryRooms.COFFIN)<=1){chooseLid(p,own);handled=true;}}
             case ELK_LOT->{if(!oldLot)handled=ElkLotNight.click(p,b,rel,own);}
             case THREE_FINGERS->handled=ThreeFingers.click(p,b,rel,own);
+            case CAMP_BLOOD->handled=CampSession.click(p,b,rel,own);
             case ELK_FAN->handled=ElkFanSequence.click(p,b,rel,own);
             case LAKE_HOUSE->handled=LakeHouse.click(p,b,rel,own);case BORRASCA->handled=BorrascaStory.click(p,b,rel,own);
             case MAPPING_INTERIOR->{if(rel.equals(LiteraryRooms.PILE)&&own.getBoolean("BeyondRoof")&&!own.getBoolean("PileChosen")){own.putBoolean("PileChosen",true);own.putBoolean("PileBroken",false);own.putInt("ChoiceVisit",own.getInt("Visit"));own.putInt("Beat",own.getInt("Visit"));reward(p,place,own,"Photograph",new ItemStack(LiteraryRegistry.PHOTOGRAPH.get()));handled=true;}}
@@ -365,7 +366,7 @@ public final class LiteraryVignettes {
     public static @Nullable LakeWitchEntity huntBody(ServerPlayer p,LabyrinthPlace place,BlockPos rel){var d=LabyrinthData.get(p.server);var world=shared(d,place);if(world.hasUUID("Witch")){var e=p.serverLevel().getEntity(world.getUUID("Witch"));if(e instanceof LakeWitchEntity w){w.literaryHunt(base(p,place),place);return w;}return null;}var w=DrownedTownRegistry.LAKE_WITCH.get().create(p.serverLevel());if(w==null)return null;w.setNoAi(true);w.setNoGravity(true);w.literaryHunt(base(p,place),place);w.setPersistenceRequired();w.addTag("LiteraryHunt");w.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(rel)));if(!p.serverLevel().addFreshEntity(w))return null;world.putUUID("Witch",w.getUUID());shared(d,place,world);return w;}
     private static void pursue(ServerPlayer p,Entity body,double speed,boolean water){Vec3 delta=p.position().subtract(body.position()).multiply(1,0,1);if(delta.lengthSqr()<.01)return;body.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));body.move(MoverType.SELF,delta.normalize().scale(speed*5));if(water)body.setPos(body.getX(),base(p,current(p)).getY(),body.getZ());}
     private static void hunt(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){
-        if(place==LabyrinthPlace.CAMP_BLOOD){var killer=actor(p,place,"Killer",LiteraryActor.KILLER,new BlockPos(12,0,-48),false);if(killer==null)return;if(own.getBoolean("Pursued")&&p.getZ()<b.getZ()-95&&own.getInt("Present")>180)ready(p,place,own,"escaped_past_the_last_cabins");return;}
+        if(place==LabyrinthPlace.CAMP_BLOOD){var killer=actor(p,place,"Killer",LiteraryActor.KILLER,new BlockPos(12,0,-48),false);if(killer==null)return;if((own.getBoolean("Pursued")||own.getBoolean("Schedule")||own.getBoolean("RangBell"))&&p.getZ()<b.getZ()-95&&own.getInt("Present")>180)ready(p,place,own,"escaped_past_the_last_cabins");return;}
         var witch=huntBody(p,place,place==LabyrinthPlace.MOVIE_NIGHT?MovieNight.WITCH_START:CostumeNight.WITCH_START);
         // The canoes, the pier and the film (and the costume party) go on whether or not her body is loaded here.
         if(witch==null){if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNight.reader(p,b,own,null);if(place==LabyrinthPlace.COSTUME_NIGHT)CostumeNight.reader(p,b,own,null);return;}

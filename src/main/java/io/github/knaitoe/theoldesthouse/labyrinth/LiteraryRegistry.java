@@ -55,6 +55,9 @@ public final class LiteraryRegistry {
     public static final DeferredBlock<ManorBlock> MANOR=BLOCKS.registerBlock("manor",ManorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(ManorBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CampDecorBlock>> CAMP_DECOR_TYPE=CODECS.register("camp_decor",()->CampDecorBlock.CODEC);
     public static final DeferredBlock<CampDecorBlock> CAMP_DECOR=BLOCKS.registerBlock("camp_decor",CampDecorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable().lightLevel(CampDecorBlock::light));
+    // 0.4.121: the camp's last session: its radio and horn, the mess hall, the schedule and the papers' surfaces.
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CampSessionBlock>> CAMP_SESSION_TYPE=CODECS.register("camp_session",()->CampSessionBlock.CODEC);
+    public static final DeferredBlock<CampSessionBlock> CAMP_SESSION=BLOCKS.registerBlock("camp_session",CampSessionBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable());
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());
     public static final DeferredBlock<LiteraryPropBlock> PROP=BLOCKS.registerBlock("literary_prop",LiteraryPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable().lightLevel(s->s.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.FAN&&s.getValue(LiteraryPropBlock.STAGE)!=1?11:0));
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<LiteraryModelBlockEntity>> MODEL=BES.register("literary_model",()->BlockEntityType.Builder.of(LiteraryModelBlockEntity::new,PROP.get(),FROZEN.get()).build(null));
