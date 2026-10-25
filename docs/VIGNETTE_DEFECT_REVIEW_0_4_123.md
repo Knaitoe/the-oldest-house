@@ -38,3 +38,5 @@ Reviewing the actual two-client captures rejected the tunnel and foyer images de
 The complete exact-source 741-case suite, 105 architecture views, native asset/font pages, actual clients and original-profile reconnects, and all twelve CI jobs remain required. This document does not claim completed ordinary playthroughs of all 52 source stories.
 
 Audit annotations also flag deliberate off-floor interaction targets, cutaway leaf clusters, dark scenes and small vanilla plants that cannot survive their final light/ground state. These are not silently treated as route or actor failures. No scene is declared wholly free of defects from this report.
+
+The actual-client fixture now retains the native dimension-loading screen and acknowledges initial cross-dimension arrivals only after the real destination floor is loaded/compiled and the reader is grounded with gravity enabled. Until that acknowledgement, the host may resend that same initial fixture placement and holds only its explicitly staged visual age. This does not move a reader during the subsequent four-waypoint bedroom walk, replace terrain, change production transitions or award progress.
