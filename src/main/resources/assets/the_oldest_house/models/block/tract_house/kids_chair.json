@@ -1,0 +1,363 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "oak": "the_oldest_house:block/tract_house/oak",
+  "particle": "the_oldest_house:block/tract_house/oak"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    2
+   ],
+   "to": [
+    3.5,
+    4.6,
+    3.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    0,
+    12.5
+   ],
+   "to": [
+    3.5,
+    4.6,
+    14.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    12.5,
+    0,
+    2
+   ],
+   "to": [
+    14.0,
+    4.6,
+    3.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    12.5,
+    0,
+    12.5
+   ],
+   "to": [
+    14.0,
+    4.6,
+    14.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    4.6,
+    2
+   ],
+   "to": [
+    14,
+    6.6,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    6.6,
+    12
+   ],
+   "to": [
+    4,
+    13.299999999999999,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    12,
+    6.6,
+    12
+   ],
+   "to": [
+    14,
+    13.299999999999999,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    10.799999999999999,
+    12.5
+   ],
+   "to": [
+    13,
+    12.799999999999999,
+    13.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    5.5,
+    6.6,
+    12.5
+   ],
+   "to": [
+    6.5,
+    10.799999999999999,
+    13.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    7.5,
+    6.6,
+    12.5
+   ],
+   "to": [
+    8.5,
+    10.799999999999999,
+    13.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    9.5,
+    6.6,
+    12.5
+   ],
+   "to": [
+    10.5,
+    10.799999999999999,
+    13.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  }
+ ]
+}

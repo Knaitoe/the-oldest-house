@@ -44,7 +44,9 @@ public final class VignetteArchitecture {
         SceneExteriors.forget(l,origin,p);
     }
     private void dress(){switch(scene){
-        case FLOORBOARDS->floorboards();case HIDE_AND_CLAP->childRoom();case MODEL_HOME->modelHome();
+        case FLOORBOARDS->floorboards();case HIDE_AND_CLAP->childRoom();
+        // 0.4.121: the model home is a tract house, furnished whole by ModelHome.
+        case MODEL_HOME->{ }
         case HARRIGAN->harrigan();case MOTHER_DEN->mother();case EXPLORER_CAMP->camp();
         case ZAMPANO_COURTYARD->archive();case BARN_WELL->barn();
         // 0.4.66: the institute authors its own rooms, furniture and windows.
@@ -144,18 +146,6 @@ public final class VignetteArchitecture {
         detail(-4,0,-9,SHOES);detail(5,2,-9,FRAME,Direction.WEST);
         table(4,0,-5,INK_PAPERS);detail(4,1,-8,BOOKS);pendant(0,3,-6,4);
         // The open middle remains available to the dynamically placed wardrobe and clap cues.
-    }
-    private void modelHome(){
-        wainscot(-9,9,-19,0,5,Blocks.OAK_PLANKS,Blocks.STRIPPED_OAK_WOOD);
-        furniture(6,0,-3,BLUE_SOFA,Direction.WEST);furniture(6,0,-4,BLUE_SOFA,Direction.WEST);
-        table(4,0,-4,TEA_SET);cabinet(7,0,-7,VASE);detail(8,2,-5,CLOCK,Direction.WEST);
-        furniture(-7,0,-4,CHEST_OF_DRAWERS,Direction.EAST);detail(-7,1,-4,FILE_TRAY);
-        detail(-8,2,-3,COAT,Direction.EAST);detail(-7,0,-2,SHOES);
-        cabinet(7,0,-17,DISH_RACK);cabinet(6,0,-17,CROCK);detail(5,1,-13,TEA_SET);
-        furniture(2,0,-17,RADIATOR,Direction.SOUTH);cabinet(-7,0,-16,TOYS);detail(-6,0,-16,BLANKET);
-        rug(-2,1,-6,-3,Blocks.GRAY_CARPET,Blocks.LIGHT_GRAY_CARPET);
-        pot(8,0,-9,Blocks.POTTED_FERN);pot(-8,0,-7,Blocks.POTTED_OAK_SAPLING);
-        // Nothing is added to the tree's swept yard or the animated chair stack.
     }
     private void harrigan(){
         // Earlier native builds registered this threshold but left its authored timber wall in place.

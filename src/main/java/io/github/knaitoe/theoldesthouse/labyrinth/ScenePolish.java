@@ -83,7 +83,8 @@ public final class ScenePolish {
         if(UncannyRooms.isUncanny(place))return false;
         // The child's room (0.4.74) is furnished, lit and dressed whole by ChildRoom, the Last Stop (0.4.78) by ElkLot, and
         // the Three Fingers cottage (0.4.81) by ThreeFingers, the house at the bottom of the lake by LakeHouse, Movie Night (0.4.102) by MovieNight, Costume Night (0.4.103) by CostumeNight and Winter Lake (0.4.104) by WinterLake.
-        return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM
+        // The model home (0.4.121) is a tract house ModelHome builds and lights whole.
+        return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM && place != LabyrinthPlace.MODEL_HOME
                 && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM && place != LabyrinthPlace.MASQUE && place != LabyrinthPlace.BLY_ROUTE && place != LabyrinthPlace.HOTEL && place != LabyrinthPlace.HOTEL_GROUNDS
                 && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.MOVIE_NIGHT && place != LabyrinthPlace.COSTUME_NIGHT && place != LabyrinthPlace.WINTER_LAKE && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && place != LabyrinthPlace.BORRASCA && !HazardVariety.added(place);
     }

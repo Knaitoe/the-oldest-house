@@ -1,0 +1,140 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "plaid": "the_oldest_house:block/tract_house/plaid",
+  "oak": "the_oldest_house:block/tract_house/tv_wood",
+  "particle": "the_oldest_house:block/tract_house/plaid"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    1
+   ],
+   "to": [
+    16,
+    3,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#oak"
+    },
+    "south": {
+     "texture": "#oak"
+    },
+    "east": {
+     "texture": "#oak"
+    },
+    "west": {
+     "texture": "#oak"
+    },
+    "up": {
+     "texture": "#oak"
+    },
+    "down": {
+     "texture": "#oak"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    3,
+    1
+   ],
+   "to": [
+    16,
+    8,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#plaid"
+    },
+    "south": {
+     "texture": "#plaid"
+    },
+    "east": {
+     "texture": "#plaid"
+    },
+    "west": {
+     "texture": "#plaid"
+    },
+    "up": {
+     "texture": "#plaid"
+    },
+    "down": {
+     "texture": "#plaid"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    3,
+    12
+   ],
+   "to": [
+    16,
+    17,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#plaid"
+    },
+    "south": {
+     "texture": "#plaid"
+    },
+    "east": {
+     "texture": "#plaid"
+    },
+    "west": {
+     "texture": "#plaid"
+    },
+    "up": {
+     "texture": "#plaid"
+    },
+    "down": {
+     "texture": "#plaid"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    3,
+    1
+   ],
+   "to": [
+    3,
+    12,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#plaid"
+    },
+    "south": {
+     "texture": "#plaid"
+    },
+    "east": {
+     "texture": "#plaid"
+    },
+    "west": {
+     "texture": "#plaid"
+    },
+    "up": {
+     "texture": "#plaid"
+    },
+    "down": {
+     "texture": "#plaid"
+    }
+   }
+  }
+ ]
+}

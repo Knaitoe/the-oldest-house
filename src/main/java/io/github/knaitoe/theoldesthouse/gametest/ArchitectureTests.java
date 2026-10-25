@@ -96,7 +96,7 @@ public final class ArchitectureTests {
                 for(var at:BlockPos.betweenClosed(base.offset(bounds.minX(),bounds.minY(),bounds.minZ()),base.offset(bounds.maxX(),bounds.maxY(),bounds.maxZ()))){
                     var s=level.getBlockState(at);if(s.is(HouseBlocks.SCENE_DETAIL.get())){
                         h.assertTrue(SceneDetailBlock.supported(level,at,s),scene.id()+" has no floating "+s.getValue(SceneDetailBlock.KIND));count++;
-                    }
+                    }else if(scene==LabyrinthPlace.MODEL_HOME&&s.is(HouseBlocks.TRACT_HOUSE.get()))count++; // 0.4.121: the tract house is furnished whole.
                 }
                 if(scene!=LabyrinthPlace.RED_ROOM){h.assertTrue(count>=2,scene.id()+" has intentional, grounded ambient detail");dressed++;props+=count;}
                 for(var door:scene.doors()){
@@ -330,7 +330,7 @@ public final class ArchitectureTests {
             h.assertTrue(grates==1,scene.id()+" has exactly one fireplace: "+grates);
         }
         // Windows: glass set back behind the wall plane, so each opening has a real reveal.
-        for(var scene:List.of(LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOSPITAL,LabyrinthPlace.MODEL_HOME,LabyrinthPlace.WHALE)){
+        for(var scene:List.of(LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOSPITAL,LabyrinthPlace.WHALE)){
             var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var b=LabyrinthPlaces.base(origin,scene);var r=scene==LabyrinthPlace.WHALE?WhaleInstitute.INTERIOR:SceneShells.interior(scene);int panes=0;
             for(var at:BlockPos.betweenClosed(b.offset(r.minX()-3,r.minY(),r.minZ()-3),b.offset(r.maxX()+3,r.maxY(),r.maxZ()))){
                 var rel=at.subtract(b);boolean outside=rel.getX()<r.minX()-1||rel.getX()>r.maxX()+1||rel.getZ()<r.minZ()-1;

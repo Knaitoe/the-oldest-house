@@ -77,13 +77,6 @@ public final class SceneShells {
                     Blocks.OAK_PLANKS, null, null,
                     Blocks.BIRCH_SLAB, Blocks.GLASS_PANE, Blocks.YELLOW_WOOL, Blocks.WHITE_CONCRETE,
                     null, 0, true, 4));
-            // The show home is new and bright: no exposed timber, a quartz rail, frosted daylight in every outer wall.
-            case MODEL_HOME -> new Spec(-8, 0, -18, 8, 5, -1, new Palette(
-                    null, null, Blocks.SMOOTH_QUARTZ, 1, null,
-                    null, 0, false, false, null,
-                    null, null, null,
-                    Blocks.SMOOTH_QUARTZ_SLAB, Blocks.WHITE_STAINED_GLASS_PANE, null, Blocks.WHITE_CONCRETE,
-                    null, 0, true, 0));
             // A panelled study: wood to the rail, green plaster above, coffered ceiling, books built in.
             case HARRIGAN -> new Spec(-7, 0, -24, 7, 5, 0, new Palette(
                     Blocks.STRIPPED_DARK_OAK_LOG, null, Blocks.STRIPPED_DARK_OAK_WOOD, 2, Blocks.GREEN_TERRACOTTA,
@@ -127,9 +120,6 @@ public final class SceneShells {
     static boolean reserved(LabyrinthPlace scene, int x, int y, int z) {
         if (VignetteArchitecture.storyReserved(scene, x, y, z)) return true;
         return switch (scene) {
-            // The yard wall, the kid's window and the branch's path, and the chair stack over the table.
-            case MODEL_HOME -> x <= -9 || (x <= -4 && z >= -16 && z <= -10)
-                    || (x >= 2 && x <= 7 && z >= -16 && z <= -10 && y >= 1);
             // Bunks rise in both side bays as the gathering grows.
             case GOATMAN -> y >= 1 && ((x <= -4 || x >= 4) && z >= -74 && z <= -56 || x >= 3 && z <= -73);
             case HOSPITAL -> Math.abs(x) <= 2 && z >= -16 && z <= -12;

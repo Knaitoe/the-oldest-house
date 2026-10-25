@@ -1,0 +1,108 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "g": "the_oldest_house:block/tract_house/frosted",
+  "b": "the_oldest_house:block/tract_house/brass",
+  "particle": "the_oldest_house:block/tract_house/frosted"
+ },
+ "elements": [
+  {
+   "from": [
+    4,
+    15,
+    4
+   ],
+   "to": [
+    12,
+    16,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    5,
+    13,
+    5
+   ],
+   "to": [
+    11,
+    15,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g"
+    },
+    "south": {
+     "texture": "#g"
+    },
+    "east": {
+     "texture": "#g"
+    },
+    "west": {
+     "texture": "#g"
+    },
+    "up": {
+     "texture": "#g"
+    },
+    "down": {
+     "texture": "#g"
+    }
+   }
+  },
+  {
+   "from": [
+    6.5,
+    12.5,
+    6.5
+   ],
+   "to": [
+    9.5,
+    13,
+    9.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  }
+ ]
+}
