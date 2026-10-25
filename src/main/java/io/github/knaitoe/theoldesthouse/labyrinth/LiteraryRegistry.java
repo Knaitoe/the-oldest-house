@@ -58,6 +58,13 @@ public final class LiteraryRegistry {
     // 0.4.121: the camp's last session: its radio and horn, the mess hall, the schedule and the papers' surfaces.
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CampSessionBlock>> CAMP_SESSION_TYPE=CODECS.register("camp_session",()->CampSessionBlock.CODEC);
     public static final DeferredBlock<CampSessionBlock> CAMP_SESSION=BLOCKS.registerBlock("camp_session",CampSessionBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable());
+    // 0.4.121: the Winchester house's Victorian paper, the séance room's blue, parquet and leaded glass.
+    public static final DeferredBlock<Block> WINCHESTER_WALLPAPER=BLOCKS.registerBlock("winchester_wallpaper",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.RED_TERRACOTTA).noLootTable());
+    public static final DeferredBlock<Block> WINCHESTER_SEANCE_PAPER=BLOCKS.registerBlock("winchester_seance_paper",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.BLUE_TERRACOTTA).noLootTable());
+    public static final DeferredBlock<Block> WINCHESTER_PARQUET=BLOCKS.registerBlock("winchester_parquet",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<WinchesterFittingBlock>> WINCHESTER_FITTING_TYPE=CODECS.register("winchester_fitting",()->WinchesterFittingBlock.CODEC);
+    public static final DeferredBlock<WinchesterFittingBlock> WINCHESTER_FITTING=BLOCKS.registerBlock("winchester_fitting",WinchesterFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noOcclusion().noLootTable());
+    public static final DeferredBlock<net.minecraft.world.level.block.TransparentBlock> WINCHESTER_LEADED_GLASS=BLOCKS.registerBlock("winchester_leaded_glass",net.minecraft.world.level.block.TransparentBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noLootTable());
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());
     public static final DeferredBlock<LiteraryPropBlock> PROP=BLOCKS.registerBlock("literary_prop",LiteraryPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable().lightLevel(s->s.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.FAN&&s.getValue(LiteraryPropBlock.STAGE)!=1?11:0));
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<LiteraryModelBlockEntity>> MODEL=BES.register("literary_model",()->BlockEntityType.Builder.of(LiteraryModelBlockEntity::new,PROP.get(),FROZEN.get()).build(null));
@@ -97,6 +104,8 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> GHOST_LOW=sound("ghost_low"),GHOST_THIN=sound("ghost_thin"),GHOST_SCRAPE=sound("ghost_scrape"),GHOST_CARD=sound("ghost_card");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredItem<Item> item(String id){var props=new Item.Properties().stacksTo(1);if(id.startsWith("wax_cylinder_")||id.equals("family_film"))props.jukeboxPlayable(net.minecraft.resources.ResourceKey.create(Registries.JUKEBOX_SONG,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id.replace("one","1").replace("two","2").replace("three","3"))));return ITEMS.registerSimpleItem(id,props);}
+    // The Winchester house (0.4.121): the carpenters behind the walls and the clock that strikes thirteen.
+    public static final DeferredHolder<SoundEvent,SoundEvent> WINCHESTER_HAMMER=sound("winchester_hammer"),WINCHESTER_SAW=sound("winchester_saw"),WINCHESTER_CHIME=sound("winchester_chime");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register("literary."+name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"literary."+name)));}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);BES.register(bus);SOUNDS.register(bus);PARTICLES.register(bus);bus.addListener(LiteraryRegistry::attributes);}
     private static void attributes(EntityAttributeCreationEvent e){e.put(ACTOR.get(),LiteraryActor.attributes().build());e.put(ELK.get(),LiteraryElk.attributes().build());}

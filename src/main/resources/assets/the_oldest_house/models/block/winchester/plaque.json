@@ -1,0 +1,79 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "b": "the_oldest_house:block/winchester/plaque",
+  "particle": "the_oldest_house:block/winchester/plaque"
+ },
+ "elements": [
+  {
+   "from": [
+    4,
+    5,
+    15
+   ],
+   "to": [
+    12,
+    12,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b",
+     "uv": [
+      2,
+      2,
+      14,
+      13
+     ]
+    },
+    "south": {
+     "texture": "#b",
+     "uv": [
+      2,
+      2,
+      14,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#b",
+     "uv": [
+      2,
+      2,
+      14,
+      13
+     ]
+    },
+    "west": {
+     "texture": "#b",
+     "uv": [
+      2,
+      2,
+      14,
+      13
+     ]
+    },
+    "up": {
+     "texture": "#b",
+     "uv": [
+      2,
+      2,
+      14,
+      13
+     ]
+    },
+    "down": {
+     "texture": "#b",
+     "uv": [
+      2,
+      2,
+      14,
+      13
+     ]
+    }
+   }
+  }
+ ]
+}

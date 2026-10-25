@@ -1,0 +1,124 @@
+{
+ "variants": {
+  "facing=north,kind=seance_table": {
+   "model": "the_oldest_house:block/winchester/seance_table"
+  },
+  "facing=north,kind=seance_chair": {
+   "model": "the_oldest_house:block/winchester/seance_chair"
+  },
+  "facing=north,kind=clock": {
+   "model": "the_oldest_house:block/winchester/clock"
+  },
+  "facing=north,kind=clock_top": {
+   "model": "the_oldest_house:block/winchester/clock_top"
+  },
+  "facing=north,kind=sawhorse": {
+   "model": "the_oldest_house:block/winchester/sawhorse"
+  },
+  "facing=north,kind=lumber": {
+   "model": "the_oldest_house:block/winchester/lumber"
+  },
+  "facing=north,kind=nail_keg": {
+   "model": "the_oldest_house:block/winchester/nail_keg"
+  },
+  "facing=north,kind=plaque": {
+   "model": "the_oldest_house:block/winchester/plaque"
+  },
+  "facing=east,kind=seance_table": {
+   "model": "the_oldest_house:block/winchester/seance_table",
+   "y": 90
+  },
+  "facing=east,kind=seance_chair": {
+   "model": "the_oldest_house:block/winchester/seance_chair",
+   "y": 90
+  },
+  "facing=east,kind=clock": {
+   "model": "the_oldest_house:block/winchester/clock",
+   "y": 90
+  },
+  "facing=east,kind=clock_top": {
+   "model": "the_oldest_house:block/winchester/clock_top",
+   "y": 90
+  },
+  "facing=east,kind=sawhorse": {
+   "model": "the_oldest_house:block/winchester/sawhorse",
+   "y": 90
+  },
+  "facing=east,kind=lumber": {
+   "model": "the_oldest_house:block/winchester/lumber",
+   "y": 90
+  },
+  "facing=east,kind=nail_keg": {
+   "model": "the_oldest_house:block/winchester/nail_keg",
+   "y": 90
+  },
+  "facing=east,kind=plaque": {
+   "model": "the_oldest_house:block/winchester/plaque",
+   "y": 90
+  },
+  "facing=south,kind=seance_table": {
+   "model": "the_oldest_house:block/winchester/seance_table",
+   "y": 180
+  },
+  "facing=south,kind=seance_chair": {
+   "model": "the_oldest_house:block/winchester/seance_chair",
+   "y": 180
+  },
+  "facing=south,kind=clock": {
+   "model": "the_oldest_house:block/winchester/clock",
+   "y": 180
+  },
+  "facing=south,kind=clock_top": {
+   "model": "the_oldest_house:block/winchester/clock_top",
+   "y": 180
+  },
+  "facing=south,kind=sawhorse": {
+   "model": "the_oldest_house:block/winchester/sawhorse",
+   "y": 180
+  },
+  "facing=south,kind=lumber": {
+   "model": "the_oldest_house:block/winchester/lumber",
+   "y": 180
+  },
+  "facing=south,kind=nail_keg": {
+   "model": "the_oldest_house:block/winchester/nail_keg",
+   "y": 180
+  },
+  "facing=south,kind=plaque": {
+   "model": "the_oldest_house:block/winchester/plaque",
+   "y": 180
+  },
+  "facing=west,kind=seance_table": {
+   "model": "the_oldest_house:block/winchester/seance_table",
+   "y": 270
+  },
+  "facing=west,kind=seance_chair": {
+   "model": "the_oldest_house:block/winchester/seance_chair",
+   "y": 270
+  },
+  "facing=west,kind=clock": {
+   "model": "the_oldest_house:block/winchester/clock",
+   "y": 270
+  },
+  "facing=west,kind=clock_top": {
+   "model": "the_oldest_house:block/winchester/clock_top",
+   "y": 270
+  },
+  "facing=west,kind=sawhorse": {
+   "model": "the_oldest_house:block/winchester/sawhorse",
+   "y": 270
+  },
+  "facing=west,kind=lumber": {
+   "model": "the_oldest_house:block/winchester/lumber",
+   "y": 270
+  },
+  "facing=west,kind=nail_keg": {
+   "model": "the_oldest_house:block/winchester/nail_keg",
+   "y": 270
+  },
+  "facing=west,kind=plaque": {
+   "model": "the_oldest_house:block/winchester/plaque",
+   "y": 270
+  }
+ }
+}

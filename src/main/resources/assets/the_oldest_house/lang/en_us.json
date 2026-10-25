@@ -267,6 +267,11 @@
   "item.the_oldest_house.withered_paw": "Withered paw",
   "block.the_oldest_house.camp_decor": "Camp furnishing",
   "block.the_oldest_house.camp_session": "Camp fitting",
+  "block.the_oldest_house.winchester_wallpaper": "Damask wallpaper",
+  "block.the_oldest_house.winchester_seance_paper": "Blue damask wallpaper",
+  "block.the_oldest_house.winchester_parquet": "Parquet",
+  "block.the_oldest_house.winchester_leaded_glass": "Leaded glass",
+  "block.the_oldest_house.winchester_fitting": "Winchester fitting",
   "item.the_oldest_house.mill_letter": "Envelope from the mill",
   "subtitles.the_oldest_house.finale.minotaur_bellow": "The Minotaur bellows",
   "subtitles.the_oldest_house.finale.minotaur_hoof": "A hoof strikes stone",
@@ -366,5 +371,8 @@
   "item.the_oldest_house.smoky_mirror": "Smoky Mirror",
   "item.the_oldest_house.cellar_cleaver": "Cellar Cleaver",
   "item.the_oldest_house.second_waitress_meal": "A meal from the second apron",
-  "item.the_oldest_house.hallway_bat": "Wooden Bat"
+  "item.the_oldest_house.hallway_bat": "Wooden Bat",
+  "subtitles.the_oldest_house.winchester_hammer": "A hammer drives a nail behind the wall",
+  "subtitles.the_oldest_house.winchester_saw": "A saw works through a board behind the wall",
+  "subtitles.the_oldest_house.winchester_chime": "The clock strikes"
 }

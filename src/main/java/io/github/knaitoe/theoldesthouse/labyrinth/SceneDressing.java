@@ -56,7 +56,6 @@ final class SceneDressing {
             case MINIATURES -> new Theme(Blocks.BROWN_CARPET, List.of(DRAWERS, DESK), List.of(TOOLS, INK, BOTTLES), List.of(FRAME), true, false, false);
             case MASQUE -> new Theme(null, List.of(FLORAL, BEDSIDE), List.of(VASE, BOTTLES, TEA), List.of(), false, false, false);
             case USHER -> new Theme(Blocks.GRAY_CARPET, List.of(DRAWERS, BEDSIDE), List.of(BOOKS, BOTTLES, INK), List.of(FRAME, CLOCK), true, true, false);
-            case WINCHESTER -> new Theme(Blocks.RED_CARPET, List.of(DRAWERS, CANE), List.of(VASE, BOOKS), List.of(FRAME), false, true, false);
             case CHILD_ROOM -> new Theme(Blocks.PINK_CARPET, List.of(DRAWERS, STOOL), List.of(TOYS, BOOKS), List.of(FRAME), false, false, false);
             case CRIMSON_HALL -> new Theme(null, List.of(FLORAL, BEDSIDE), List.of(VASE, TEA, BOTTLES), List.of(FRAME, CLOCK), true, true, false);
             case BLY_ROUTE -> new Theme(Blocks.GREEN_CARPET, List.of(DRAWERS, BEDSIDE, CANE), List.of(BOOKS, VASE, LAMP), List.of(FRAME, COAT), false, false, false);

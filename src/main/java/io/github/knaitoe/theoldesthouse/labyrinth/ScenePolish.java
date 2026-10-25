@@ -55,7 +55,7 @@ public final class ScenePolish {
     public static final String REPAIR_STATE = "scene_polish_repairs_0443";
     private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.PHONE_CANOE,
             LabyrinthPlace.MASQUE, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.ELK_FAN, LabyrinthPlace.HILL_NURSERY,
-            LabyrinthPlace.ZAMPANO_COURTYARD, LabyrinthPlace.WINCHESTER, LabyrinthPlace.BLY_ROUTE,
+            LabyrinthPlace.ZAMPANO_COURTYARD, LabyrinthPlace.BLY_ROUTE,
             LabyrinthPlace.MOTHER_DEN);
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     /** Darkness is the point of these. */
@@ -83,8 +83,8 @@ public final class ScenePolish {
         if(UncannyRooms.isUncanny(place))return false;
         // The child's room (0.4.74) is furnished, lit and dressed whole by ChildRoom, the Last Stop (0.4.78) by ElkLot, and
         // the Three Fingers cottage (0.4.81) by ThreeFingers, the house at the bottom of the lake by LakeHouse, Movie Night (0.4.102) by MovieNight, Costume Night (0.4.103) by CostumeNight and Winter Lake (0.4.104) by WinterLake.
-        // The model home (0.4.121) is a tract house ModelHome builds and lights whole, and the Wheel (0.4.121) is WheelHouse's.
-        return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM && place != LabyrinthPlace.MODEL_HOME && place != LabyrinthPlace.WHEEL
+        // The model home (0.4.121) is a tract house ModelHome builds and lights whole, the Wheel (0.4.121) is WheelHouse's and the Winchester house WinchesterHouse's.
+        return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM && place != LabyrinthPlace.MODEL_HOME && place != LabyrinthPlace.WHEEL && place != LabyrinthPlace.WINCHESTER
                 && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM && place != LabyrinthPlace.MASQUE && place != LabyrinthPlace.BLY_ROUTE && place != LabyrinthPlace.HOTEL && place != LabyrinthPlace.HOTEL_GROUNDS
                 && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.MOVIE_NIGHT && place != LabyrinthPlace.COSTUME_NIGHT && place != LabyrinthPlace.WINTER_LAKE && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && place != LabyrinthPlace.BORRASCA && !HazardVariety.added(place);
     }
@@ -295,20 +295,6 @@ public final class ScenePolish {
             }
             // The cell wall's gouged block reaches the floor.
             case ZAMPANO_COURTYARD -> changed += support(level, base.offset(5, 0, -33), Blocks.DEEPSLATE_TILES.defaultBlockState());
-            // The stair railings rest on a ledge along each flight instead of hanging in the air.
-            case WINCHESTER -> {
-                BoundingBox r = place.room();
-                for (BlockPos at : BlockPos.betweenClosed(base.offset(r.minX(), r.minY(), r.minZ()), base.offset(r.maxX(), r.maxY(), r.maxZ()))) {
-                    if (!level.getBlockState(at).is(Blocks.DARK_OAK_FENCE) || !level.getBlockState(at.below()).isAir()) continue;
-                    BlockPos ledge = at.below();
-                    boolean beside = false;
-                    for (Direction side : Direction.Plane.HORIZONTAL) beside |= !level.getBlockState(ledge.relative(side)).isAir();
-                    if (!beside) continue;
-                    level.setBlock(ledge, Blocks.DARK_OAK_SLAB.defaultBlockState()
-                            .setValue(net.minecraft.world.level.block.SlabBlock.TYPE, net.minecraft.world.level.block.state.properties.SlabType.TOP), FLAGS);
-                    changed++;
-                }
-            }
             // The garden pool is a basin with walls, not water hanging over the space under the floor.
             case BLY_ROUTE -> {
                 for (int y = -4; y <= -2; y++)

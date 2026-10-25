@@ -1,0 +1,76 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "m": "the_oldest_house:block/winchester/mahogany",
+  "p": "the_oldest_house:block/winchester/pendulum",
+  "particle": "the_oldest_house:block/winchester/mahogany"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    4
+   ],
+   "to": [
+    14,
+    3,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#m"
+    },
+    "south": {
+     "texture": "#m"
+    },
+    "east": {
+     "texture": "#m"
+    },
+    "west": {
+     "texture": "#m"
+    },
+    "up": {
+     "texture": "#m"
+    },
+    "down": {
+     "texture": "#m"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    3,
+    5
+   ],
+   "to": [
+    13,
+    16,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#p"
+    },
+    "south": {
+     "texture": "#m"
+    },
+    "east": {
+     "texture": "#m"
+    },
+    "west": {
+     "texture": "#m"
+    },
+    "up": {
+     "texture": "#m"
+    },
+    "down": {
+     "texture": "#m"
+    }
+   }
+  }
+ ]
+}

@@ -147,6 +147,33 @@ resolutions / two kinds / three endings.
 - **The ending** is still the service road past the last cabins. It now opens to a reader who was chased, who read the
   schedule, or who rang the bell.
 
+## Part four: the Winchester house
+
+- **Always unfinished.** The switchbacks (sixteen long flights with half-block turns), the upper ledger and its resolution
+  are unchanged; `WinchesterHouse` adds the house that was never done:
+  - a stair of thirteen steps up the west wall of the entrance bay, closed string and balusters, whose last two steps go
+    on into a bulkhead under the ceiling (the ATTIC sign is on it);
+  - a door onto the west wall with a brass 13 beside it, and a door high in the east wall, on a sill, onto nothing; the
+    door off the upper ledger still opens onto the drop into the hay;
+  - leaded windows in both side walls that look onto more wallpaper, and a window in the floor of the upper ledger over
+    the carpenters' sawhorse, lumber and keg of nails below.
+- **The séance room.** Under the ledger, behind the last partition's east door (the one the hay drop leads to): blue
+  damask on every wall, a table with a hand bell, one chair, thirteen robes on their hooks (five on each long wall, three
+  at the end) and a dim light.
+- **Thirteen.** The steps, the robes, the brass 13s, and the hall clock in the entrance bay, whose dial has thirteen hours:
+  ten seconds into a visit's thirtieth it strikes thirteen, for each reader on their own.
+- **The carpenters** are never seen. Each reader hears them, privately, behind the nearer side wall a few blocks along:
+  a hammer driving a nail, or a saw, every five to eleven seconds.
+- **Between visits they rebuild.** The four side-passage doors in the middle partitions keep their doors, but two of them
+  open onto wallpaper; when a reader comes in to a house nobody else is in, and no camera can see those doors or the
+  carpenters' work, the other two are walled instead and the sawhorse and lumber have moved across the house.
+- **Materials:** damask wallpaper (oxblood and old gold) on the walls and partitions, basket-weave oak parquet, blue
+  damask, leaded glass; and one `winchester_fitting` block (eight kinds: séance table, séance chair, clock and clock top,
+  sawhorse, lumber, nail keg, the 13 plaque). Fifteen textures and the models are drawn in code by
+  `tools/draw_winchester.py`; three subtitled sounds (hammer, saw, clock) by `tools/generate_winchester_audio.py`.
+- No polish, craft, review, dressing or playtest pass touches the house; the rail ledges the polish used to add are built
+  with it.
+
 ## Fixes from the owner's notes ("Need to fix this")
 
 ### Fridge corridor (and the other hazard halls)
@@ -232,5 +259,9 @@ resolutions / two kinds / three endings.
   big chair), round again to Mother, her door shut until she is seen, and out to the hall grown.
 - `theLastSessionKeepsItsScheduleAndTheMessHallBellCallsHimOnce`: the session clock runs, the schedule names its places, the
   walk follows the period, and the bell calls him once for each reader.
+- `theWinchesterIsNeverFinishedAndItsCarpentersRebuildOnlyAnEmptyUnwatchedHouse`: the wallpaper, parquet and leaded glass,
+  the thirteen steps into the ceiling, the doors onto the wall and onto nothing, the séance room's table, chair and
+  thirteen robes, the clock; nothing is rebuilt while a second reader is inside; an empty, unwatched house swaps which
+  side doors open onto wall and moves the sawhorse; the clock strikes thirteen once and the carpenters are heard.
 - The rewritten `ModelHomeTests` cover the three visits, the locked door, the stacking chairs, the set and the limb.
 - The Goatman, child's room and paw cases follow the new counts, gates and menus.
