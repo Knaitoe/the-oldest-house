@@ -13,7 +13,8 @@ import net.minecraft.server.level.ServerPlayer;
  * The listener's questions (0.4.121). After each chapter he has dictated, he asks the person holding the pen one question,
  * and the reader answers by typing in chat. The answer never reaches public chat: only the reader sees their own words and
  * the fragment he repeats while he writes it down. Thirty seconds of silence in front of him is written down as that. The
- * sealed journal is made of the questions and the reader's own answers.
+ * sealed journal is made of the questions and the reader's own answers. 0.4.123: once a question is settled he rests a
+ * moment and goes on to the next chapter in the same sitting, rather than falling silent until the reader's next visit.
  */
 public final class ConfessionAnswers {
     private ConfessionAnswers() {}
@@ -32,10 +33,16 @@ public final class ConfessionAnswers {
     /** Thirty seconds, counted only while the reader stands before him. */
     public static final int SILENCE_TICKS = 600;
     static final int LONGEST = 180;
+    /** The pause between one chapter's answer and his next words, counted while the reader stands before him. */
+    public static final int REST_TICKS = 60;
 
-    /** Whether this reader is in the middle of a chapter with him, so anything they say in chat is said to him alone. */
+    /**
+     * Whether this reader is in the middle of a chapter with him, so anything they say in chat is said to him alone. While he
+     * rests between chapters, ordinary chat is the reader's own again.
+     */
     public static boolean engaged(CompoundTag own) {
-        return own.hasUUID("Journal") && own.getInt("Chapter") < LiteraryTexts.CONFESSION.length && own.getInt("ChapterVisit") != own.getInt("Visit");
+        return own.hasUUID("Journal") && own.getInt("Chapter") < LiteraryTexts.CONFESSION.length && own.getInt("ChapterVisit") != own.getInt("Visit")
+            && own.getInt("RestTicks") <= 0;
     }
 
     /**
@@ -81,6 +88,10 @@ public final class ConfessionAnswers {
             p.displayClientMessage(Component.literal("He waits a while longer. Then he writes down that you did not answer."), false);
         }
         String answer = own.getString("Answer");
+        // The question leaves his name tag as he writes; then a short rest before he goes on.
+        String written = answer.equals(SILENCE) ? "" : fragment(answer);
+        visitor.say(written.isEmpty() ? "…" : "…" + written + "…");
+        own.putInt("RestTicks", REST_TICKS);
         own.putString("JournalText", own.getString("JournalText") + "\n\n“" + question + "”\n" + answer + "\n\n");
         var answers = own.getList("Answers", Tag.TAG_STRING);
         while (answers.size() < chapter) answers.add(StringTag.valueOf(SILENCE));
