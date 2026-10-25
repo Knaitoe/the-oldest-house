@@ -37,6 +37,7 @@ public final class LiteraryRooms {
         var note=source(p);if(p!=LabyrinthPlace.CHILD_ROOM&&p!=LabyrinthPlace.ELK_LOT&&p!=LabyrinthPlace.THREE_FINGERS&&p!=LabyrinthPlace.MASQUE&&p!=LabyrinthPlace.BLY_ROUTE){if(note.getY()>0&&BuildBlocks.state(l,b.offset(note.below())).isAir())furniture(l,b,note.getX(),note.getY()-1,note.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);paper(l,b,note,LiteraryTexts.source(p));}
         if(p!=LabyrinthPlace.OLD_CABIN&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.CHILD_ROOM&&p!=LabyrinthPlace.ELK_LOT&&p!=LabyrinthPlace.THREE_FINGERS){var end=ending(p);if(end.getY()>0&&BuildBlocks.state(l,b.offset(end.below())).isAir())furniture(l,b,end.getX(),end.getY()-1,end.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,end,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);}
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,wall(p).defaultBlockState(),floor(p).defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,p);
+        if(p==LabyrinthPlace.ELK_CARCASSES)ElkCarcassMap.deckhouse(l,b);
         // The elk arrival is aboard a yacht: its hull is the arrival's support, never earth heaped in the lake.
         if(outside(p)&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.OLD_CABIN&&p!=LabyrinthPlace.ELK_CARCASSES)ScenePlaytestRepairs.arrivalGround(l,b);
         StaceyCover.fresh(l,b,p);

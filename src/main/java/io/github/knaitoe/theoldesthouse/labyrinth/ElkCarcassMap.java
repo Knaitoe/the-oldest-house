@@ -35,6 +35,8 @@ public final class ElkCarcassMap {
     static final int SKIRT_X = 72, SKIRT_SOUTH = 21, SKIRT_NORTH = -258;
     // Decks, in stand levels (the y a player's feet are at).
     public static final int LOWER = 0, MAIN = 4, SUN = 9;
+    /** How high an arrival's copied doorway reaches here: the guest cabin's height. Above it is the deckhouse's own face. */
+    public static final int ARRIVAL_TOP = 2;
     // The cave: mouth, chamber floor, and the hollow under the pile.
     public static final int MOUTH_Y = 8, CAVE_Y = 5, GATE_Y = 11, SITE_TOP = 2;
     public static final BlockPos MOUTH = new BlockPos(-11, MOUTH_Y, -179), CHAMBER = new BlockPos(-21, CAVE_Y, -189);
@@ -332,6 +334,19 @@ public final class ElkCarcassMap {
 
     // ------------------------------------------------------------------
     // Construction
+
+    /**
+     * 0.4.121: the deckhouse's forward face above the guest cabin, and its fill above the arrival corridor, are the yacht's
+     * own, laid after the generic entrance so no copied doorway can take a bite out of the boat seen from the deck.
+     */
+    public static void deckhouse(ServerLevel l, BlockPos b) {
+        var hull = LiteraryRegistry.YACHT_HULL.get().defaultBlockState();var glass = LiteraryRegistry.YACHT_WINDOW.get().defaultBlockState();
+        for (int x = -7; x <= 7; x++) {
+            for (int y = ARRIVAL_TOP + 1; y <= 7; y++) BuildBlocks.set(l, b.offset(x, y, 1), (Math.abs(x) == 4 || Math.abs(x) == 5) && (y == 5 || y == 6) ? glass : hull, F);
+            for (int z = 2; z <= 17; z++) for (int y = 5; y <= 7; y++)
+                BuildBlocks.set(l, b.offset(x, y, z), z == 2 && (Math.abs(x) == 4 || Math.abs(x) == 5) && y <= 6 ? Blocks.BLACK_CONCRETE.defaultBlockState() : hull, F);
+        }
+    }
 
     public static void build(ServerLevel l, BlockPos b) {
         new Builder(l, b).run();

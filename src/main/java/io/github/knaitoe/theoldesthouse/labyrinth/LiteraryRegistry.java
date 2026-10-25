@@ -65,7 +65,7 @@ public final class LiteraryRegistry {
         SITE_SIDING=material("site_siding",Blocks.IRON_BLOCK),DRAG_MUD=material("cave_drag_mud",Blocks.PACKED_MUD);
     public static final DeferredBlock<YachtGlazingBlock> YACHT_WINDOW=BLOCKS.registerBlock("yacht_window",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noOcclusion().noLootTable()),
         // Glass to hear and see, but as slow to break out as the approved concrete porthole: about nine seconds, tool or not.
-        YACHT_PORTHOLE=BLOCKS.registerBlock("yacht_porthole",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).strength(1.8F).requiresCorrectToolForDrops().noOcclusion().noLootTable());
+        YACHT_PORTHOLE=BLOCKS.registerBlock("yacht_porthole",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).strength(.6F).noOcclusion().noLootTable()); // 0.4.121: under a second by hand
     public static final DeferredBlock<IronBarsBlock> YACHT_RAIL=BLOCKS.registerBlock("yacht_rail",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noLootTable()),
         SAFETY_FENCE=BLOCKS.registerBlock("safety_fence",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).sound(net.minecraft.world.level.block.SoundType.WOOL).noLootTable());
     public static final DeferredItem<Item> LIGHTBULB=item("fan_lightbulb");
