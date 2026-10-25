@@ -114,7 +114,7 @@ jobs:
               assert trail_png.startswith(b'\x89PNG') and trail_png[16:24] == bytes.fromhex('0000004000000040')
               for person in ('kimber','kyle','sheriff','prescott','worker'):
                   skin = z.read(f'assets/the_oldest_house/textures/entity/borrasca_{person}.png')
-                  assert skin.startswith(b'\x89PNG') and skin[16:24] == bytes.fromhex('0000004000000040'), person
+                  assert skin.startswith(b'\x89PNG') and skin[16:24] == bytes.fromhex('0000010000000100'), person
               for material in ('timber','steel','rust','paper','notice','notice_frame','carving','drawers','drawers_side','belt','belt_frame','truck','machine'):
                   assert z.read(f'assets/the_oldest_house/textures/block/borrasca/{material}.png').startswith(b'\x89PNG'), material
               cast_png = z.read('assets/the_oldest_house/textures/entity/borrasca_cast_pixels.png')

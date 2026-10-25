@@ -32,10 +32,10 @@ public final class UncannyAssetProof extends Screen {
             int[] roles={32,33,34,34,35,36,37,38};int[] phases={1,0,1,3,2,1,1,1};
             for(int i=0;i<roles.length;i++){
                 var texture=UncannyTextures.skin(roles[i],phases[i]);
-                if(roles[i]==LiteraryActor.UNCANNY_WAITRESS||roles[i]==LiteraryActor.UNCANNY_FALSE_WAITRESS){
+                if(roles[i]==LiteraryActor.UNCANNY_WAITRESS||roles[i]==LiteraryActor.UNCANNY_FALSE_WAITRESS||roles[i]==LiteraryActor.UNCANNY_PEELER||roles[i]==LiteraryActor.UNCANNY_VISITOR){
                     try(var stream=mc.getResourceManager().open(texture);var painting=NativeImage.read(stream)){
-                        if(painting.getWidth()!=256||painting.getHeight()!=256||(painting.getPixelRGBA(40,44)>>>24)!=255)throw new IllegalStateException("The waitress must use a complete standard-UV cast painting");
-                    }catch(java.io.IOException e){throw new IllegalStateException("Missing waitress painting",e);}
+                        if(painting.getWidth()!=256||painting.getHeight()!=256||(painting.getPixelRGBA(40,44)>>>24)!=255)throw new IllegalStateException("The human cast must use complete standard-UV paintings");
+                    }catch(java.io.IOException e){throw new IllegalStateException("Missing human cast painting",e);}
                 }else{
                     var nativeTexture=mc.getTextureManager().getTexture(texture);if(!(nativeTexture instanceof DynamicTexture d)||d.getPixels()==null)throw new IllegalStateException("Uncanny skin is not a native pixel painting");
                     if((d.getPixels().getPixelRGBA(10,11)>>>24)!=255)throw new IllegalStateException("A native eight-pixel face has a hole");
