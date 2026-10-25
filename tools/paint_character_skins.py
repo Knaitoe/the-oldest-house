@@ -2,8 +2,8 @@
 
 No source pictures, resampled portraits, noise, filters or generated fabric tiles.
 All marks below describe a face, garment panel, seam, hair cluster or accessory.
-The final integer nearest-neighbour export is only storage scaling. Borrasca is
-deliberately excluded. Run with --check to verify the committed paintings.
+The final integer nearest-neighbour export is only storage scaling. Borrasca's
+five new human sheets now use this painter too. Run with --check to verify the committed paintings.
 """
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -48,6 +48,11 @@ class Look:
 
 # Each row is a character design, rather than an index into a repeated picture.
 LOOKS = {
+    'borrasca_kyle': Look('#d7ac8b','#846444','part','#d8d4bc','#aa9673','tee','#52677e',eyes='#5d7183',mark='borrasca_kyle',sleeve=4,logical=64),
+    'borrasca_kimber': Look('#ddb397','#975739','long','#477d79','#4d6271','jacket','#d8d3b8',eyes='#52745b',mark='borrasca_kimber',sleeve=10,logical=64),
+    'borrasca_sheriff': Look('#caa17e','#8d897e','receding','#b09c71','#5f5543','shirt','#bdad70',eyes='#675a46',age=2,beard='moustache',mark='borrasca_sheriff',sleeve=10,logical=64),
+    'borrasca_prescott': Look('#d5a38a','#aaa69c','receding','#88433b','#8a7d5c','flannel','#786049',eyes='#62717c',age=2,mark='borrasca_prescott',sleeve=10,logical=64),
+    'borrasca_worker': Look('#bc9479','#4a3c31','close','#627174','#4a595d','crew','#be8748',eyes='#514e43',glasses=True,mark='borrasca_worker',sleeve=10,logical=64),
     'uncanny_waitress': Look('#cba083','#795039','bun','#496d80','#496d80','dress','#e0d4b8',eyes='#596456',age=1,mark='diner_apron',sleeve=4,logical=64),
     'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_apron',sleeve=4,logical=64),
     'uncanny_second_waitress_split': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_split',sleeve=4,logical=64),
@@ -339,7 +344,7 @@ def face(look):
         for x,y in ((3,12),(5,12),(8,13),(10,12),(12,12)):d.point((x,y),fill='#e0d0a8')
         d.line((3,14,6,14,9,15,12,14),fill='#9d6e5d')
         d.line((1,10,1,12),fill=shade(skin,-31));d.line((14,10,14,13),fill=shade(skin,-31))
-    if look.mark=='freckles':
+    if look.mark in ('freckles','borrasca_kimber'):
         for x,y in ((3,10),(5,10),(11,10),(12,11)):d.point((x,y),fill=shade(skin,-28))
     if look.mark=='scar':
         d.line((11,5,10,7,12,9,11,11),fill='#9d705e');d.point((12,8),fill=shade(skin,14))
@@ -359,6 +364,45 @@ def face(look):
         d.rectangle((0,0,15,2),fill=cloth);d.rectangle((0,0,1,15),fill=cloth);d.rectangle((14,0,15,15),fill=cloth)
         for x in (3,5,8,10,12):d.line((x,3,x,6+x%3),fill=hair)
         for x in (4,9,12):d.point((x,3),fill='#a8acae')
+    return im
+
+
+def borrasca_cloth(im,look,side):
+    """The five Drisking outfits, using the same clustered marks as the rest of the cast."""
+    d=ImageDraw.Draw(im);w,h=im.size;mid=w//2
+    if side in ('top','bottom'):return im
+    if look.mark=='borrasca_kyle':
+        for y in range(5,h,6):d.rectangle((0,y,w-1,min(h-1,y+1)),fill=rgb(look.accent))
+    elif look.mark=='borrasca_kimber':
+        if side=='front':
+            d.line((mid,3,mid,h-1),fill=rgb(look.accent));d.point((mid+1,9),fill='#eee5c8')
+            for x in (2,w-5):d.line((x,h-8,x+2,h-10),fill=shade(look.cloth,-24))
+        if side=='back':
+            d.line((1,5,w-2,5),fill=shade(look.cloth,-14))
+            d.rectangle((mid-2,0,mid+1,7),fill=rgb(look.hair));d.line((mid-2,3,mid+1,3),fill='#52615c')
+    elif look.mark=='borrasca_sheriff':
+        d.rectangle((0,h-4,w-1,h-1),fill='#393a32')
+        if side=='front':
+            d.line((1,1,4,1),fill=shade(look.cloth,-25));d.line((w-5,1,w-2,1),fill=shade(look.cloth,-25))
+            d.line((4,7,4,11),fill='#c9b879');d.line((2,9,6,9),fill='#c9b879');d.point((4,9),fill='#8c7b4c')
+            d.rectangle((w-6,8,w-3,9),fill='#625c47');d.line((w-5,8,w-3,8),fill='#c1bc9b')
+            d.rectangle((mid-2,h-3,mid+1,h-2),fill='#b9a16c')
+    elif look.mark=='borrasca_prescott':
+        vest='#786149'
+        if side=='front':
+            d.rectangle((0,0,mid-3,h-1),fill=vest);d.rectangle((mid+2,0,w-1,h-1),fill=vest)
+            for y in (5,11,17):d.line((0,y,mid-3,y),fill='#66513d');d.line((mid+2,y,w-1,y),fill='#66513d')
+            d.rectangle((1,6,4,9),fill='#c2b699');d.rectangle((2,7,3,8),fill='#56664c')
+        else:
+            d.rectangle((0,0,w-1,h-1),fill=vest)
+            for y in (5,11,17):d.line((0,y,w-1,y),fill='#66513d')
+    elif look.mark=='borrasca_worker':
+        d.rectangle((0,0,w-1,h-4),fill='#b97d42')
+        if side=='front':d.rectangle((mid-1,1,mid,h-4),fill=rgb(look.cloth))
+        d.line((0,13,w-1,13),fill='#d2cfb7');d.line((0,14,w-1,14),fill='#a9b2a5')
+        if side in ('front','back'):
+            for x in (2,w-4):d.line((x,2,x,12),fill='#c6c6ae')
+            if side=='front':d.rectangle((w-6,7,w-3,10),outline='#85663e')
     return im
 
 
@@ -385,8 +429,8 @@ def cloth_face(size,look,side='front'):
             d.line((w//2,h-7,w//2+3,h-5,w//2+1,h-3),fill=a)
         if look.mark=='movie_stripes':
             for y in range(3,h-1,4):d.line((0,y,w-1,y),fill=a);d.line((0,y+1,w-1,y+1),fill=shade(a,-14))
-        return im
-    if side!='front':return im
+        return borrasca_cloth(im,look,side) if look.mark.startswith('borrasca_') else im
+    if side!='front':return borrasca_cloth(im,look,side) if look.mark.startswith('borrasca_') else im
     mid=w//2
     d.rectangle((mid-2,0,mid+1,1),fill=rgb(look.skin))
     if look.style in ('suit','coat','uniform','waistcoat','apron'):
@@ -499,7 +543,7 @@ def cloth_face(size,look,side='front'):
                 for col,bit in enumerate(bits):
                     if bit=='1':d.point((x+col,y0+2+row),fill='#a8322c')
             x+=4
-    return im
+    return borrasca_cloth(im,look,side) if look.mark.startswith('borrasca_') else im
 
 
 def costume_marks(d,look,w,h):
@@ -577,6 +621,26 @@ def paint(look):
         d.polygon([(5,4),(10,4),(12,6),(12,9),(10,11),(5,11),(3,9),(3,6)],fill=rgb(look.hair))
         d.line((5,5,9,5,11,7),fill=shade(look.hair,15))
         put(net(32,0,8,8,8)['back'],art)
+    if look.mark.startswith('borrasca_'):
+        if look.mark=='borrasca_kimber':
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            d.rectangle((5,4,10,13),fill=rgb(look.hair));d.line((5,6,10,6),fill='#52615c');d.line((6,8,6,12),fill=shade(look.hair,14))
+            put(net(32,0,8,8,8)['back'],art)
+        else:
+            cap={'borrasca_kyle':'#51677b','borrasca_sheriff':'#97805a','borrasca_prescott':'#4d6650','borrasca_worker':'#bba158'}[look.mark]
+            for side,box in net(32,0,8,8,8).items():
+                art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+                if side=='top':
+                    art=panel((16,16),cap,'cloth',side);d=ImageDraw.Draw(art)
+                    d.line((7,1,7,14),fill=shade(cap,-16))
+                    if look.mark=='borrasca_worker':d.line((5,1,5,14),fill=shade(cap,18));d.line((10,1,10,14),fill=shade(cap,18))
+                elif side!='bottom':
+                    height=7 if look.mark=='borrasca_sheriff' else 5
+                    d.rectangle((0,0,15,height),fill=rgb(cap));d.line((0,height,15,height),fill=shade(cap,-27));d.line((1,1,14,1),fill=shade(cap,14))
+                    if look.mark=='borrasca_sheriff':d.line((0,4,15,4),fill='#55483a',width=2)
+                    if look.mark=='borrasca_prescott' and side=='front':
+                        d.rectangle((5,0,10,4),fill='#d6d1b9');d.line((7,1,7,4),fill='#4d6650');d.line((7,1,9,1,9,2,7,2),fill='#4d6650')
+                put(box,art)
     if look.mark.startswith('diner_'):
         art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
         d.rectangle((5,5,11,11),fill=rgb(look.hair));d.line((6,5,10,5),fill=shade(look.hair,13))
@@ -602,7 +666,11 @@ def paint(look):
                 if h>=20:
                     d.line((1,h-2,w-2,h-2),fill=shade(look.skin,-18));d.point((w-2,h-4),fill=shade(look.skin,7))
                     if side in ('left','right'):d.line((1,h-5,1,h-3),fill=shade(look.skin,-22))
-            elif side=='bottom':art=panel((w,h),look.skin,'skin',side)
+            elif side=='bottom':art=panel((w,h),'#a48f64' if look.mark=='borrasca_worker' else look.skin,'skin',side)
+            if look.mark=='borrasca_worker' and side not in ('top','bottom'):
+                d=ImageDraw.Draw(art);d.rectangle((0,h-4,w-1,h-1),fill='#a48f64');d.line((0,h-4,w-1,h-4),fill='#786b51')
+            if look.mark=='borrasca_kyle' and side not in ('top','bottom'):
+                ImageDraw.Draw(art).rectangle((0,2,w-1,3),fill=rgb(look.accent))
             put(box,art)
     # Elbow/knee cut surfaces are real model faces, with their own flat pigments.
     d=ImageDraw.Draw(im)
@@ -618,6 +686,9 @@ def paint(look):
                 if side=='back':d.rectangle((1,2,w-2,5),outline=shade(look.pants,-15))
                 if look.style=='swim':
                     d.rectangle((0,2,w-1,h-1),fill=rgb(look.skin));d.line((0,1,w-1,1),fill=rgb(look.accent))
+                elif look.mark=='borrasca_kyle':
+                    d.line((0,11,w-1,11),fill=shade(look.pants,-22));d.rectangle((0,12,w-1,h-6),fill=rgb(look.skin))
+                    d.rectangle((0,h-6,w-1,h-4),fill='#d8d6c3');d.rectangle((0,h-3,w-1,h-1),fill='#666d6b');d.line((0,h-1,w-1,h-1),fill='#333a3b')
                 elif look.mark.startswith('diner_'):
                     d.rectangle((0,0,w-1,12),fill=rgb(look.cloth))
                     if side=='front':
@@ -809,7 +880,7 @@ def main():
             with Image.open(path) as saved:
                 assert saved.size==im.size and saved.convert('RGBA').tobytes()==im.tobytes(),name
         else:im.save(path,optimize=True)
-    print(f'{"Verified" if args.check else "Painted"} {len(paintings)} face-fitted character sheets; Borrasca excluded.')
+    print(f'{"Verified" if args.check else "Painted"} {len(paintings)} face-fitted character sheets, including the five Drisking paintings.')
 
 
 if __name__=='__main__':main()

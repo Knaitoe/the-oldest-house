@@ -928,7 +928,7 @@ jobs:
           for view in cast fixtures gear; do test -s build/font-smoke/native-lake-house-$view.png; done
           test -s build/font-smoke/lake-house-passed.txt
           test -s build/font-smoke/borrasca-assets-passed.txt
-          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes; do test -s build/font-smoke/native-borrasca-$view.png; done
+          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style; do test -s build/font-smoke/native-borrasca-$view.png; done
           for view in borrasca borrasca_treehouse borrasca_refinery borrasca_gully borrasca_taking; do test -s build/font-smoke/scenes/$view.png; done
           for view in painted_interior second_waitress tunnel_periphery missing_sleep layered_man motion_light; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
@@ -1509,7 +1509,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PborrascaSmoke --no-daemon
           test -s build/font-smoke/borrasca-assets-passed.txt
-          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes; do test -s build/font-smoke/native-borrasca-$view.png; done
+          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style; do test -s build/font-smoke/native-borrasca-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - name: Native uncanny faces, joints, fittings and item models
         timeout-minutes: 5

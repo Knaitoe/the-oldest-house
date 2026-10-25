@@ -1,4 +1,4 @@
-"""The native mesh/phase used to review each human painting. Borrasca is excluded."""
+"""The native mesh/phase used to review each human painting, including the Drisking cast."""
 from paint_character_skins import LOOKS
 
 HOTEL = ['porter','bartender','scarred_guest','pianist','dancer','dancer_dress','bath_ghost']
@@ -12,7 +12,9 @@ CLUB=['dancer_male','dancer_female','dancer_vest','dancer_copper','dancer_mustar
 
 def entry(name,logical):
     row={'name':name,'logical':logical,'model':'player','number':0,'phase':0}
-    if name.startswith('harrigan'):
+    if name.startswith('borrasca_'):
+        row.update(model='borrasca',number=['kyle','kimber','sheriff','prescott','worker'].index(name[9:]))
+    elif name.startswith('harrigan'):
         row.update(model='harrigan',number=4+int(name[-1]) if 'mourner' in name else 2 if name.endswith('dead') else 1)
     elif name.startswith('ghosts_'):
         role=name[7:];phase=0
