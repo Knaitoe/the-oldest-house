@@ -64,7 +64,7 @@ public final class ThreeFingers {
     public static final String PAW_OWNER=LiteraryVignettes.OWNER,FINGERS="Fingers",ISSUE="PawIssue";
     /** Ticks on the reader's own clock, which runs only while they are in the cottage. */
     public static final int TALE_EVERY=300,THROW_AFTER=100,SERGEANT_GOES=200,NEWS_AT=120,KNOCK_AT=400,LOUDER=800,HAMMER=1200;
-    public static final String MONEY="money",COMPANION="companion",STORM="storm",LARDER="larder",SAFE="safe",FIRE="fire";
+    public static final String MONEY="money",COMPANION="companion",STORM="storm",LARDER="larder",SAFE="safe",HEARTH="fire";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private static final Set<String> KINDS=Set.of("Wolf","Cat","Parrot","Horse","Donkey","Mule","Llama","Trader Llama","Camel","Ocelot","Fox","Skeleton Horse","Zombie Horse");
     private ThreeFingers(){}
@@ -318,7 +318,7 @@ public final class ThreeFingers {
             case COMPANION->new String[]{"I was asked to call. I come from Fenwick's.","I'm sorry. Your son was caught in the machinery. He went down to the race after something in the night.","This was on your step when I came. It's soaked through. There's a name on the tag."};
             case LARDER->new String[]{"I was asked to call. I come from Fenwick's.","I'm sorry. Your son was caught in the machinery.","The men took up a collection, for after the funeral. There's enough to feed the street."};
             case SAFE->new String[]{"I was asked to call. I come from Fenwick's.","I'm sorry. Your son was caught in the machinery. The foreman says he never felt it.","He's out of all harm now. Nothing at the mill can touch him. This was in his pocket."};
-            case FIRE->new String[]{"I was asked to call. I come from Fenwick's.","There was a fire at the mill in the night that nothing would put out. They sent your son in for the ledgers.","It went out by itself when they carried him through the yard. I'm sorry."};
+            case HEARTH->new String[]{"I was asked to call. I come from Fenwick's.","There was a fire at the mill in the night that nothing would put out. They sent your son in for the ledgers.","It went out by itself when they carried him through the yard. I'm sorry."};
             default->new String[]{"I was asked to call. I come from Fenwick's.","The wind dropped all at once last night. The wheel stopped, and they sent him down to free it.","Then the water came back. I'm sorry. I'm very sorry."};
         };
         if(line<lines.length&&t>=NEWS_AT+40+line*100){
@@ -351,7 +351,7 @@ public final class ThreeFingers {
             var watch=new ItemStack(Items.CLOCK);watch.set(DataComponents.ITEM_NAME,Component.literal("Will's watch"));
             watch.set(DataComponents.LORE,new ItemLore(List.of(Component.literal("Stopped at ten past four."))));
             var tag=new CompoundTag();tag.putUUID(PAW_OWNER,p.getUUID());watch.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));LiteraryVignettes.give(p,watch);
-        }else if(FIRE.equals(wish)){
+        }else if(HEARTH.equals(wish)){
             var coal=new ItemStack(Items.CHARCOAL);coal.set(DataComponents.ITEM_NAME,Component.literal("A coal from the mill"));
             coal.set(DataComponents.LORE,new ItemLore(List.of(Component.literal("Still warm. It does not cool."))));
             var tag=new CompoundTag();tag.putUUID(PAW_OWNER,p.getUUID());coal.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));LiteraryVignettes.give(p,coal);
@@ -391,7 +391,7 @@ public final class ThreeFingers {
                 case WISHED->"Will. Off to bed, you've the early shift.";case MOURNING->PLEA[n%PLEA.length];case KNOCKING->"It's him. It's my boy. Let him in!";case DONE->"Go. Please go.";
                 default->SAYS[1][n%SAYS[1].length];});
             case SON->speak(p,a,"Will Dunning",stage==WISHED?switch(own.getString("Wish1")){case MONEY->"I don't see any money. I bet I never shall.";case COMPANION->"Well? Where's the dog, then?";
-                case LARDER->"Still nothing in the larder but the larder.";case SAFE->"Safe from what? It's a mill, not a war.";case FIRE->"It's a good fire. It'll see us to morning, anyway.";default->"Listen to that. Not a breath of wind.";}:SAYS[2][n%SAYS[2].length]);
+                case LARDER->"Still nothing in the larder but the larder.";case SAFE->"Safe from what? It's a mill, not a war.";case HEARTH->"It's a good fire. It'll see us to morning, anyway.";default->"Listen to that. Not a breath of wind.";}:SAYS[2][n%SAYS[2].length]);
             case MESSENGER->speak(p,a,"The man from the mill","I'm sorry. I'm only sent.");
             default->{}
         }
@@ -459,7 +459,7 @@ public final class ThreeFingers {
                 icons.put(6,LiteraryChoiceMenu.icon(Items.FEATHER,"Wish for the storm to stop"));
                 icons.put(8,LiteraryChoiceMenu.icon(Items.FLINT_AND_STEEL,"Wish the fire would never go out"));
                 LiteraryChoiceMenu.open(p,"Hold it up and wish",icons,()->LiteraryVignettes.current(p)==PLACE&&stage(LiteraryVignettes.personal(d,p.getUUID(),PLACE))==TAKEN,slot->{
-                    String wish=switch(slot){case 0->LARDER;case 2->MONEY;case 3->companion!=null?COMPANION:null;case 4->SAFE;case 6->STORM;case 8->FIRE;default->null;};
+                    String wish=switch(slot){case 0->LARDER;case 2->MONEY;case 3->companion!=null?COMPANION:null;case 4->SAFE;case 6->STORM;case 8->HEARTH;default->null;};
                     if(wish==null)return false;first(p,wish,COMPANION.equals(wish)?companion:null);return true;});
             }
             case WISHED->p.displayClientMessage(Component.literal("Nothing yet. The first wish is still on its way."),true);
@@ -492,7 +492,7 @@ public final class ThreeFingers {
             case COMPANION->speak(p,cast(l,own,"CastSon"),"Will Dunning","Well? Where is it, then?");
             case LARDER->speak(p,cast(l,own,"CastSon"),"Will Dunning","Nothing in the larder but the larder. Where's this feast, then?");
             case SAFE->speak(p,cast(l,own,"CastSon"),"Will Dunning","Safe from what? It's a mill, not a war.");
-            case FIRE->{p.displayClientMessage(Component.literal("The fire settles and burns on, bright and even, as if it has been fed."),false);speak(p,cast(l,own,"CastSon"),"Will Dunning","That's a good fire. It'll see us to morning, anyway.");}
+            case HEARTH->{p.displayClientMessage(Component.literal("The fire settles and burns on, bright and even, as if it has been fed."),false);speak(p,cast(l,own,"CastSon"),"Will Dunning","That's a good fire. It'll see us to morning, anyway.");}
             default->{p.displayClientMessage(Component.literal("The wind stops at once, the way a held breath stops."),false);speak(p,cast(l,own,"CastSon"),"Will Dunning","Listen to that. Not a breath. I'll be down at the wheel early, then.");}
         }
         if(!own.getBoolean("SergeantGone")){speak(p,cast(l,own,"CastSergeant"),"Sergeant Coyle","Well. You've done it now. Goodnight.");own.putBoolean("SergeantGone",true);dismiss(l,own,"CastSergeant");}
@@ -523,7 +523,7 @@ public final class ThreeFingers {
             case STORM->"The wind never came back to that cottage.";
             case LARDER->"There was food in that house for a week after the funeral. Nobody could eat any of it.";
             case SAFE->"Will is safe now. Nothing can reach him where he is.";
-            case FIRE->"The fire in that grate has never gone out. She has tried.";
+            case HEARTH->"The fire in that grate has never gone out. She has tried.";
             default->"I made the first wish on a dead thing's fingers.";};
         return switch(own.getString("Outcome")){
             case "opened_the_door_onto_the_empty_road"->"THE ROAD\n\n"+first+" I drew the bolt myself. There was nobody on the step, only wet road and a lamp that would not stay lit. In my hand the last finger had fallen without my asking.";
