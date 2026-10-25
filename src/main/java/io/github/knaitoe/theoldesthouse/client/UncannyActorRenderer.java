@@ -52,7 +52,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         return super.getRenderType(a,body,translucent,glowing);
     }
     @Override protected boolean shouldShowName(LiteraryActor a){return false;}
-    @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){return a.role()==LiteraryActor.UNCANNY_GIANT?a.shouldRender(x,y,z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
+    @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){if(!visible(a))return false;return a.role()==LiteraryActor.UNCANNY_GIANT?a.shouldRender(x,y,z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
     public static final class Model extends PlayerModel<LiteraryActor> {
         boolean feed;
         public Model(ModelPart part,boolean slim){super(part,slim);}

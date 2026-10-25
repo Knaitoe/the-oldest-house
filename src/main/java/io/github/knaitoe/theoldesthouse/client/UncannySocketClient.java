@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.*;
 /** Native socket-client source/menu/bed/feed/door/health actions and genuine GPU readback. Opt-in only. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class UncannySocketClient {
-    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg;private static String shot;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
+    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks;private static String shot;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
     private UncannySocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("UNCANNY CLIENT: "+message);}
@@ -59,7 +59,7 @@ public final class UncannySocketClient {
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         if(!UncannySocketProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var custom=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(custom==null)return;var data=custom.copyTag();int next=data.getInt("UncannyStep");if(next==0)return;
-        if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
+        if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;lightPhase=-1;lightTicks=0;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
         stop(mc);var b=UncannyClient.base();
         if(age%100==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} phase={} room={} eye={} feeds={} headPixels={} health={} ring={} mirror={} screen={}",role(),phase,UncannyClient.room(),mc.player.getEyePosition(),feedMask,UncannyCameras.verifiedHeadPixels(),mc.player.getHealth(),UncannyClient.ring(),UncannyClient.mirror(),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
         for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&UncannyStories.role(a.role())&&a.owner().isPresent())require(a.owner().get().equals(mc.player.getUUID()),"another reader's private original was tracked");
@@ -103,7 +103,7 @@ public final class UncannySocketClient {
         if(phase==15){
             var visitor=actor(mc,LiteraryActor.UNCANNY_VISITOR);if(visitor==null)return;look(mc,visitor.getEyePosition());var state=mc.level.getBlockState(b.offset(UncannyRooms.FLOOD));
             if(state.is(UncannyRegistry.PROP.get())){
-                boolean dark=state.getValue(UncannyPropBlock.STAGE)>0;if(dark&&(visitor.phase()!=1||!UncannyActorRenderer.proofDrawn(visitor)))return;String view=dark?"foyer-dark":"foyer-lit";
+                boolean dark=state.getValue(UncannyPropBlock.STAGE)>0;int lampPhase=dark?1:0;if(lightPhase!=lampPhase){lightPhase=lampPhase;lightTicks=0;}if(++lightTicks<20)return;if(!dark&&UncannyActorRenderer.proofDrawn(visitor))return;if(dark&&(visitor.phase()!=1||!UncannyActorRenderer.proofDrawn(visitor)))return;String view=dark?"foyer-dark":"foyer-lit";
                 if(!captures.contains("15:"+view)&&age>20){shot=role()+"-"+view;}
                 if(age>410&&captures.contains("15:foyer-dark")&&captures.contains("15:foyer-lit"))ack(mc,"foyer-cycles");
             }
