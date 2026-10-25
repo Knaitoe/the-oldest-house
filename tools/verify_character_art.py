@@ -11,6 +11,7 @@ from character_art_catalog import entries
 
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=ROOT/'art/inventory/character_review_04100.json'
+FAMILY_REVIEW=ROOT/'art/inventory/painted_family_04123.json'
 
 
 def main():
@@ -28,9 +29,19 @@ def main():
         packaged=zipfile.ZipFile(jars[0]);assert packaged.testzip() is None
     def read(path):
         return packaged.read(path.removeprefix('src/main/resources/')) if packaged else (ROOT/path).read_bytes()
+    # The later, explicitly requested family pass keeps the historical review intact.
+    # Only these six known paintings may replace its recorded human-sheet hashes.
+    family={r['path']:r for r in json.loads(FAMILY_REVIEW.read_text())['repainted']}
+    expected={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
+              for role in ('father','mother','child') for phase in ('','_changed')}
+    assert set(family)==expected
+    for path,row in family.items():
+        assert row['review_04100_sha256']==changed[path]['sha256'],('Historical family review changed',path)
+        assert row['size']==changed[path]['size'] and row['alpha_sha256']==changed[path]['alpha_sha256'],('Family UV/alpha changed',path)
     for path,digest in review['unchanged_png_sha256'].items():
         assert hashlib.sha256(read(path)).hexdigest()==digest,('Unreviewed/excluded painting changed',path)
     for path,row in changed.items():
+        row=family.get(path,row)
         raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],path
         im=Image.open(BytesIO(raw)).convert('RGBA');assert list(im.size)==row['size'],path
         assert hashlib.sha256(im.getchannel('A').tobytes()).hexdigest()==row['alpha_sha256'],path
@@ -51,7 +62,7 @@ def main():
     runtime=json.loads(read('src/main/resources/assets/the_oldest_house/character_art.json'))
     assert runtime==entries(),'Native review catalog differs from the actual production mesh selection'
     assert {r['name'] for r in runtime if r['model']=='borrasca'}=={'borrasca_'+p for p in ('kyle','kimber','sheriff','prescott','worker')}
-    print(f"Verified {len(changed)} historical paintings, {len(runtime)} human model selections including Drisking, all opaque native base faces and {len(review['unchanged_png_sha256'])} unchanged historical PNGs.")
+    print(f"Verified {len(changed)} catalogued paintings including {len(family)} refreshed family sheets, {len(runtime)} human model selections including Drisking, all opaque native base faces and {len(review['unchanged_png_sha256'])} unchanged historical PNGs.")
     if packaged:packaged.close()
 
 
