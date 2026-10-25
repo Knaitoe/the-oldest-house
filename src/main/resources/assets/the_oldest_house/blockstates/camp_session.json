@@ -1,0 +1,139 @@
+{
+ "variants": {
+  "facing=north,kind=radio": {
+   "model": "the_oldest_house:block/camp_session/radio"
+  },
+  "facing=north,kind=pa_horn": {
+   "model": "the_oldest_house:block/camp_session/pa_horn"
+  },
+  "facing=north,kind=flashlight": {
+   "model": "the_oldest_house:block/camp_session/flashlight"
+  },
+  "facing=north,kind=mess_table": {
+   "model": "the_oldest_house:block/camp_session/mess_table"
+  },
+  "facing=north,kind=bench": {
+   "model": "the_oldest_house:block/camp_session/bench"
+  },
+  "facing=north,kind=clipboard": {
+   "model": "the_oldest_house:block/camp_session/clipboard"
+  },
+  "facing=north,kind=schedule_stand": {
+   "model": "the_oldest_house:block/camp_session/schedule_stand"
+  },
+  "facing=north,kind=journal": {
+   "model": "the_oldest_house:block/camp_session/journal"
+  },
+  "facing=north,kind=initials": {
+   "model": "the_oldest_house:block/camp_session/initials"
+  },
+  "facing=east,kind=radio": {
+   "model": "the_oldest_house:block/camp_session/radio",
+   "y": 90
+  },
+  "facing=east,kind=pa_horn": {
+   "model": "the_oldest_house:block/camp_session/pa_horn",
+   "y": 90
+  },
+  "facing=east,kind=flashlight": {
+   "model": "the_oldest_house:block/camp_session/flashlight",
+   "y": 90
+  },
+  "facing=east,kind=mess_table": {
+   "model": "the_oldest_house:block/camp_session/mess_table",
+   "y": 90
+  },
+  "facing=east,kind=bench": {
+   "model": "the_oldest_house:block/camp_session/bench",
+   "y": 90
+  },
+  "facing=east,kind=clipboard": {
+   "model": "the_oldest_house:block/camp_session/clipboard",
+   "y": 90
+  },
+  "facing=east,kind=schedule_stand": {
+   "model": "the_oldest_house:block/camp_session/schedule_stand",
+   "y": 90
+  },
+  "facing=east,kind=journal": {
+   "model": "the_oldest_house:block/camp_session/journal",
+   "y": 90
+  },
+  "facing=east,kind=initials": {
+   "model": "the_oldest_house:block/camp_session/initials",
+   "y": 90
+  },
+  "facing=south,kind=radio": {
+   "model": "the_oldest_house:block/camp_session/radio",
+   "y": 180
+  },
+  "facing=south,kind=pa_horn": {
+   "model": "the_oldest_house:block/camp_session/pa_horn",
+   "y": 180
+  },
+  "facing=south,kind=flashlight": {
+   "model": "the_oldest_house:block/camp_session/flashlight",
+   "y": 180
+  },
+  "facing=south,kind=mess_table": {
+   "model": "the_oldest_house:block/camp_session/mess_table",
+   "y": 180
+  },
+  "facing=south,kind=bench": {
+   "model": "the_oldest_house:block/camp_session/bench",
+   "y": 180
+  },
+  "facing=south,kind=clipboard": {
+   "model": "the_oldest_house:block/camp_session/clipboard",
+   "y": 180
+  },
+  "facing=south,kind=schedule_stand": {
+   "model": "the_oldest_house:block/camp_session/schedule_stand",
+   "y": 180
+  },
+  "facing=south,kind=journal": {
+   "model": "the_oldest_house:block/camp_session/journal",
+   "y": 180
+  },
+  "facing=south,kind=initials": {
+   "model": "the_oldest_house:block/camp_session/initials",
+   "y": 180
+  },
+  "facing=west,kind=radio": {
+   "model": "the_oldest_house:block/camp_session/radio",
+   "y": 270
+  },
+  "facing=west,kind=pa_horn": {
+   "model": "the_oldest_house:block/camp_session/pa_horn",
+   "y": 270
+  },
+  "facing=west,kind=flashlight": {
+   "model": "the_oldest_house:block/camp_session/flashlight",
+   "y": 270
+  },
+  "facing=west,kind=mess_table": {
+   "model": "the_oldest_house:block/camp_session/mess_table",
+   "y": 270
+  },
+  "facing=west,kind=bench": {
+   "model": "the_oldest_house:block/camp_session/bench",
+   "y": 270
+  },
+  "facing=west,kind=clipboard": {
+   "model": "the_oldest_house:block/camp_session/clipboard",
+   "y": 270
+  },
+  "facing=west,kind=schedule_stand": {
+   "model": "the_oldest_house:block/camp_session/schedule_stand",
+   "y": 270
+  },
+  "facing=west,kind=journal": {
+   "model": "the_oldest_house:block/camp_session/journal",
+   "y": 270
+  },
+  "facing=west,kind=initials": {
+   "model": "the_oldest_house:block/camp_session/initials",
+   "y": 270
+  }
+ }
+}
