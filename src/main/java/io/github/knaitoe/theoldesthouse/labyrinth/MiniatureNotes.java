@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 /**
  * The workshop's models answer a touch (0.4.121). Each model is a room the reader walked, and its card says, in the third
  * person and only from what the House recorded, what the reader did there: how often they came, how long they stayed, what
- * they read and how it ended. A model of a room still ahead says only that they have not been there yet. The mother in the
+ * they read and how it ended. Before the card, each model is described as it looks up close, in a line of its own. A model of a room still ahead says only that they have not been there yet. The mother in the
  * upper corner is the client's; the server only says where the corners are and when she may come.
  */
 public final class MiniatureNotes {
@@ -38,6 +38,8 @@ public final class MiniatureNotes {
         }
         var model = models.getCompound(index);
         var place = LabyrinthPlace.byId(model.getString("Room"));
+        // First what the model itself looks like up close, then the card under it.
+        if (place != null) p.displayClientMessage(Component.literal(flavour(place)).withStyle(ChatFormatting.DARK_GRAY), false);
         String card = place == null ? "The card under it is blank." : card(p, place, model.getBoolean("Preview"), model.getBoolean("Behind"));
         p.displayClientMessage(Component.literal(card).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
         own.putInt("CardsRead", own.getInt("CardsRead") | (1 << index));
@@ -102,6 +104,96 @@ public final class MiniatureNotes {
         }
         return out;
     }
+
+    /** What the model of a room looks like up close: one line of its own for every story room, a plainer one for a hall. */
+    public static String flavour(LabyrinthPlace place) {
+        String own = FLAVOUR.get(place);
+        return own != null ? own : HALLS[Math.floorMod(place.slot() * 31 + place.ordinal(), HALLS.length)];
+    }
+
+    /** Whether a room has a line of its own rather than a hall's. */
+    public static boolean ownFlavour(LabyrinthPlace place) { return FLAVOUR.containsKey(place); }
+
+    private static final String[] HALLS = {
+        "Plain walls, a plain floor, and at the far end a door left open a crack.",
+        "The wallpaper is a scrap of something older, glued down crooked.",
+        "Grey card, scored lightly where the lamps should go.",
+        "The doors are cut to really open, and every one opens inward.",
+        "Dust has been brushed into the corners, carefully, with a single bristle.",
+        "The floor slopes, very slightly, toward the next room."};
+
+    private static final Map<LabyrinthPlace, String> FLAVOUR = Map.ofEntries(
+        Map.entry(LabyrinthPlace.FLOORBOARDS, "The boards are real wood shavings, and one has been lifted with a pin."),
+        Map.entry(LabyrinthPlace.RED_ROOM, "The walls are the red of a fingernail, and the tiny curtains do not quite meet."),
+        Map.entry(LabyrinthPlace.HIDE_AND_CLAP, "A strip of black thread is tied round the little figure's eyes."),
+        Map.entry(LabyrinthPlace.MODEL_HOME, "A dollhouse inside the dollhouse. The smaller one has a light on upstairs."),
+        Map.entry(LabyrinthPlace.HARRIGAN, "A chair no bigger than a thimble, turned to face a window painted on the wall."),
+        Map.entry(LabyrinthPlace.MOTHER_DEN, "Every kennel has a name painted over its door, too small to read."),
+        Map.entry(LabyrinthPlace.DROWNED_TOWN, "The streets are varnished to a shine like water; the school's windows are pinpricks."),
+        Map.entry(LabyrinthPlace.PRESERVED_CAVE, "Grey felt for stone, and on a ledge a phone the size of a grain of rice."),
+        Map.entry(LabyrinthPlace.SHALLOWS, "The water is a sheet of glass over blue paper. Something small has been drawn underneath it."),
+        Map.entry(LabyrinthPlace.PHONE_CANOE, "A canoe carved from a seed pod, with a phone lying in it, face down."),
+        Map.entry(LabyrinthPlace.GOATMAN, "The trailer's windows are lit by one glowing bead. There are more figures round the fire than places to sit."),
+        Map.entry(LabyrinthPlace.TED_CAVER, "The crawl is a drinking straw pushed through clay, and the figure's knees are scuffed white."),
+        Map.entry(LabyrinthPlace.ZAMPANO_COURTYARD, "A cat no bigger than a lentil sleeps by the fountain."),
+        Map.entry(LabyrinthPlace.WHALE, "The pigeonholes are numbered one to twelve. The seventh has nothing in it, not even a number."),
+        Map.entry(LabyrinthPlace.BARN_WELL, "The well is a bead with its hole left open, and its lid lies beside it."),
+        Map.entry(LabyrinthPlace.PLAIN, "Sand glued thin over card, and far out a speck that might be someone standing."),
+        Map.entry(LabyrinthPlace.HOSPITAL, "The beds are made up with real thread, and every clock on the walls shows a different hour."),
+        Map.entry(LabyrinthPlace.KAREN_ROOM, "A projector the size of a die points at a wall left blank."),
+        Map.entry(LabyrinthPlace.HOLLOWAY_CAMP, "Three tents, and a shield no bigger than a coin propped against the last tent."),
+        Map.entry(LabyrinthPlace.SEANCE, "The chairs are pushed back from the round table, as if everyone stood up at once."),
+        Map.entry(LabyrinthPlace.WALLPAPER_NURSERY, "The paper is real, cut from a sample book, and someone has drawn over the pattern by hand."),
+        Map.entry(LabyrinthPlace.BLIND_STRETCH, "The inside is painted black all over. A bell hangs where the light should be."),
+        Map.entry(LabyrinthPlace.HOTEL, "The corridors are carpeted in red felt and every door is numbered. One door has two numbers."),
+        Map.entry(LabyrinthPlace.HOTEL_GROUNDS, "Cotton snow, and hedges cut from green sponge into shapes that look away."),
+        Map.entry(LabyrinthPlace.HILL_NURSERY, "The cellar door is a fleck of grey paint, and the air above it is cold to the finger."),
+        Map.entry(LabyrinthPlace.MINIATURES, "A workshop with a model on its bench, and on that bench a smaller workshop still."),
+        Map.entry(LabyrinthPlace.MASQUE, "Seven rooms in a row, each a different colour of tissue paper. The last is black."),
+        Map.entry(LabyrinthPlace.USHER, "A crack drawn in pencil runs from the roof down into the water."),
+        Map.entry(LabyrinthPlace.WINCHESTER, "The stairs climb to the lid of the box and stop. A doorway opens onto nothing."),
+        Map.entry(LabyrinthPlace.CHILD_ROOM, "A mobile hangs over the bed from a single hair. The windows are painted shut."),
+        Map.entry(LabyrinthPlace.CRIMSON_HALL, "Red velvet glued over card, and three tiny cylinders lying on the gallery stairs."),
+        Map.entry(LabyrinthPlace.BLY_ROUTE, "The lake is a pocket mirror. Across it stands a figure too far off to name."),
+        Map.entry(LabyrinthPlace.ELK_LOT, "Three pickups the size of beetles, headlights picked out in gold leaf. One door is dented."),
+        Map.entry(LabyrinthPlace.ELK_FAN, "A ceiling fan made of four petals. It turns if you breathe on it."),
+        Map.entry(LabyrinthPlace.MAPPING_INTERIOR, "Every wall is drawn on graph paper, and none of the measurements add up."),
+        Map.entry(LabyrinthPlace.HOLY_RABBIT, "A white rabbit carved from soap, worn smooth on one side by a thumb."),
+        Map.entry(LabyrinthPlace.CONFESSION, "A screen of pricked card divides the booth. A word has been written inside one of the holes."),
+        Map.entry(LabyrinthPlace.ELK_CARCASSES, "The hides are scraps of real leather. One has been lifted at the corner."),
+        Map.entry(LabyrinthPlace.COSTUME_NIGHT, "Every figure on the beach wears a mask, and one of the masks is only a face."),
+        Map.entry(LabyrinthPlace.MOVIE_NIGHT, "A screen of silk stretched between matchsticks, the projector's beam drawn on in chalk."),
+        Map.entry(LabyrinthPlace.WINTER_LAKE, "The ice is a disc of sugar glass, cracked once from the middle out."),
+        Map.entry(LabyrinthPlace.CAMP_BLOOD, "Bunks of balsa and a mess-hall bell made from a sequin. One cabin door stands open."),
+        Map.entry(LabyrinthPlace.DEVILS_ROCK, "A pebble painted to look like a far larger rock, with a thread of red down one side."),
+        Map.entry(LabyrinthPlace.WHEEL, "Six tiny rooms on a turntable, each with the same chair in it at a different size."),
+        Map.entry(LabyrinthPlace.GHOSTS_SET, "A family's house cut open like a set, with tape marks on every floor."),
+        Map.entry(LabyrinthPlace.END_WORLD_CABIN, "A cabin in a drift of salt; inside, a television glows from one grain of glass."),
+        Map.entry(LabyrinthPlace.FAMILY_COPY, "A house exactly like another, down to the scratch beside the door."),
+        Map.entry(LabyrinthPlace.OLD_CABIN, "A cabin of twigs with a lamp lit in the window."),
+        Map.entry(LabyrinthPlace.THREE_FINGERS, "On the mantel lies a paw no bigger than a fingernail, its fingers curled."),
+        Map.entry(LabyrinthPlace.NIGHTCLUB, "The dance floor is a square of foil, and every figure on it is turned the same way."),
+        Map.entry(LabyrinthPlace.LAKE_HOUSE, "A whole house under a dome of water, with a light on in the bathroom."),
+        Map.entry(LabyrinthPlace.LAKE_HOUSE_EMPTY, "The same house, high and dry, emptied down to the last chair."),
+        Map.entry(LabyrinthPlace.BORRASCA, "Three pins grown from one root, a fort lashed between the three, and a name scratched small on the bark."),
+        Map.entry(LabyrinthPlace.PAINTED_INTERIOR, "Every surface has been painted over, and the paint is still tacky."),
+        Map.entry(LabyrinthPlace.SECOND_WAITRESS, "Two waitresses behind the counter, the same down to the pencil behind the ear."),
+        Map.entry(LabyrinthPlace.TUNNEL_PERIPHERY, "A tunnel of rolled paper. At the very edge of the far end, someone is standing."),
+        Map.entry(LabyrinthPlace.MISSING_SLEEP, "A bed with the covers turned back and no one in it, though the pillow is dented."),
+        Map.entry(LabyrinthPlace.LAYERED_MAN, "The house has a cellar under it, and the cellar is filled with candle wax."),
+        Map.entry(LabyrinthPlace.MOTION_LIGHT, "A pinhead bulb over the door. It comes on when you lean close."),
+        Map.entry(LabyrinthPlace.QUIET_ROOM, "A bare room with one chair in it, and the chair is turned toward you."),
+        Map.entry(LabyrinthPlace.EXPLORER_CAMP, "A tent pegged at the top of a long spiral of card, and a ladder going down out of sight."),
+        Map.entry(LabyrinthPlace.LONG_HALLWAY, "The corridor runs further into the box than the box is deep."),
+        Map.entry(LabyrinthPlace.SPIRAL_STAIR, "A stair of coiled wire that turns more times than it should."),
+        Map.entry(LabyrinthPlace.HOTEL_HALLWAY, "A hotel corridor in red felt, all its doors painted shut."),
+        Map.entry(LabyrinthPlace.FLOODED_PASSAGE, "A passage half full of resin water, perfectly clear and perfectly still."),
+        Map.entry(LabyrinthPlace.HALLWAY_END, "A corridor that ends at a door painted the same colour as the wall."),
+        Map.entry(LabyrinthPlace.COLD_STORE, "The hooks are bent pins, and white paint lies over everything like frost."),
+        Map.entry(LabyrinthPlace.MIRROR_HALL, "The mirrors are flakes of mica. The figure in the nearest one faces the other way."),
+        Map.entry(LabyrinthPlace.COUNTING_STAIR, "Someone has numbered the steps in pencil and skipped one."),
+        Map.entry(LabyrinthPlace.LAST_SCONCE, "A row of sconces, and only the last one lit."),
+        Map.entry(LabyrinthPlace.UNWATCHED_MAZE, "A maze laid out in matchsticks. A few have moved since the glue dried."));
 
     static String room(LabyrinthPlace place) {
         String name = UncannyRooms.isUncanny(place) ? UncannyTexts.title(place) : StaircaseProse.place(place.id());

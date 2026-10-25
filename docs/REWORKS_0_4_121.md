@@ -19,6 +19,10 @@ resolutions / two kinds / three endings.
   - how it ended: the last account read, left where it lay, or left before it was finished.
   A model of a room still ahead says the reader has not been there. The room crossed alone (the model with the second
   figure) adds that no one came in with them. Reading a card sets a bit in `CardsRead`; it grants nothing.
+- **Flavour.** Before the card, the touch gives one dark-grey line describing the model itself, the way a miniature is
+  made (`MiniatureNotes.flavour`): every story room's model has its own line ("The hides are scraps of real leather. One
+  has been lifted at the corner."), and a hall or other room uses one of six general lines. The
+  lines name things, never a person, so no pronoun is guessed.
 - **The mother.** After twenty seconds in the room (`MOTHER_AFTER`, the visit's own ticks), the server names the room's
   four upper corners to that reader's client, inside the models payload. The client (`MiniatureMotherClient`) may then
   put her in one corner whose whole body already sits at the edge of the screen (74–97% of the half-width or height) with
@@ -195,6 +199,13 @@ resolutions / two kinds / three endings.
   - upstairs John and Sarah's room (a double bed, nightstands, a dresser, laundry), the family bathroom, John's office
     (the classifieds with jobs circled, a laptop on a job site, filing boxes), the girls' bathroom, and the spare room
     where the crew keep their gear; the girls' rooms gain a desk, a poster each and clothes on the floor.
+- **Furnished, not bare.** The big ground-floor rooms are furnished along their walls so the middle stays open to a
+  moving camera: the hall's front room has the good sofa under the window with an end table and a fern, radiators under
+  the side window, shelves and a sideboard under the school portraits; the living room a sofa along its wall, an end
+  table with library books, two bookshelves and a plant by the door; the kitchen a table with two chairs; the east half
+  of the open plan a sideboard with photographs by the dining table, the family computer at a desk, and a sitting corner
+  under the back window (a sofa, end table, armchair, footstool, radiator and plants). Nothing stands on a route the
+  cast walks, on Marjorie's crawl from the table, at the den door or in the gap through to the den.
 - **A house, not a set.** Every wall is painted; there are two whole storeys with a plastered ceiling under the floor
   above; windows on every outside wall have their blinds drawn; ceiling lights in the new rooms; the crew's taped cables
   run from the garage through the hall, under the living-room door, into the den and up the stairs to Marjorie's door,
@@ -318,7 +329,8 @@ resolutions / two kinds / three endings.
 
 ## Tests
 
-- `miniatureCardsTellTheReaderWhatTheyDidInEachRoom`: the card's wording from recorded facts, an unfinished room, a room
+- `miniatureCardsTellTheReaderWhatTheyDidInEachRoom`: every model's flavour line (its own for each story room, none with a
+  pronoun), the card's wording from recorded facts, an unfinished room, a room
   still ahead, the stands, the mother's twenty seconds and the four corners in open air under the ceiling.
 - `theActualCarriedQuillResumesAcrossVisitsAndTheSealedJournalIsReadPersonally` now answers each question with a real
   chat event (cancelled from public chat), leaves the fourth in silence, checks ordinary chat between chapters and the
