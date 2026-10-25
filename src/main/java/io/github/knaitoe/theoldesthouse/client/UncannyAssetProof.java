@@ -45,12 +45,23 @@ public final class UncannyAssetProof extends Screen {
                 model.renderToBuffer(p,buffers.getBuffer(roles[i]==34&&phases[i]<2?RenderType.entityTranslucent(texture):RenderType.entityCutoutNoCull(texture)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,roles[i]==34&&phases[i]<2?0x50ffffff:0xffffffff);buffers.endBatch();p.popPose();
                 g.drawCenteredString(font,new String[]{"The Propped","The waitress","The draft","The second apron","Stooping","Direct hallway","The peeler","On the step"}[i],(int)((i%4+.5)*width/4),(int)(75+(i/4+1)*(height-100)/2.),0xffe4d9bf);
             }
-        }else{
+        }else if(page==2){
             int i=0;for(var kind:UncannyPropBlock.Kind.values()){
                 p.pushPose();p.translate((i%5+.5)*width/5,60+(i/5)*(height-120)/4.,150);p.scale(43,-43,43);p.mulPose(Axis.XP.rotationDegrees(22));p.mulPose(Axis.YP.rotationDegrees(28));p.translate(-.5,0,-.5);
                 UncannyPropRenderer.draw(UncannyPropBlock.of(kind,Direction.SOUTH),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();g.drawCenteredString(font,kind.getSerializedName(),(int)((i%5+.5)*width/5),75+(i/5)*(height-120)/4,0xffe4d9bf);i++;
             }
             int n=0;for(var item:new ItemStack[]{new ItemStack(UncannyRegistry.BONE_RING.get()),new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()),new ItemStack(UncannyRegistry.CLEAVER.get()),new ItemStack(UncannyRegistry.BAT.get()),new ItemStack(UncannyRegistry.MEAL.get())}){p.pushPose();p.translate(24+n*80,height-65,0);p.scale(3,3,1);g.renderItem(item,0,0);p.popPose();n++;}
+        }else if(page==3){
+            for(int i=0;i<4;i++){
+                var state=UncannyRegistry.FLESH.get().defaultBlockState().setValue(UncannyFleshBlock.LAYER,i);
+                if(mc.getBlockRenderer().getBlockModel(state)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing native tissue model "+i);
+                p.pushPose();p.translate((i+.5F)*width/4,height*.5F,150);p.scale(62,-62,62);p.mulPose(Axis.XP.rotationDegrees(22));p.mulPose(Axis.YP.rotationDegrees(30));p.translate(-.5,0,-.5);mc.getBlockRenderer().renderSingleBlock(state,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
+            }
+            var key=new ItemStack(UncannyRegistry.CELLAR_KEY.get());p.pushPose();p.translate(width*.45F,height*.72F,0);p.scale(4,4,1);g.renderItem(key,0,0);p.popPose();g.drawCenteredString(font,key.getHoverName(),width/2,(int)(height*.72F)+75,0xffe4d9bf);
+            var icon=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/mob_effect/engulfed.png");g.blit(icon,20,height-60,0,0,18,18,18,18);
+        }else{
+            g.fill(0,0,width,height,0xff424c47);for(int x=0;x<width;x+=32)g.fill(x,height/2,x+16,height/2+2,0xffc9c4af);
+            UncannyClient.engulfed(g,width,height,new float[]{.2F,.6F,.95F}[page-4],24);
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post ignored)throws Exception{
@@ -58,9 +69,9 @@ public final class UncannyAssetProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);var file=dir.resolve("native-uncanny-"+proof.page+".png");
         try(var shot=Screenshot.takeScreenshot(mc.getMainRenderTarget())){shot.writeToFile(file);}
         if(Boolean.getBoolean("the_oldest_house.uncannySmoke")){String data=java.util.Base64.getEncoder().encodeToString(Files.readAllBytes(file));TheOldestHouse.LOGGER.info("UNCANNY_ASSET_VIEW_BEGIN {}",proof.page);for(int i=0;i<data.length();i+=3800)TheOldestHouse.LOGGER.info("UNCANNY_ASSET_VIEW_DATA {}",data.substring(i,Math.min(i+3800,data.length())));TheOldestHouse.LOGGER.info("UNCANNY_ASSET_VIEW_END");}
-        proof.frames=0;if(++proof.page<3)return;
+        proof.frames=0;if(++proof.page<7)return;
         var atlas=mc.getTextureManager().getTexture(UncannyTextures.atlas());if(!(atlas instanceof DynamicTexture d)||d.getPixels()==null||d.getPixels().getWidth()!=64||d.getPixels().getHeight()!=64)throw new IllegalStateException("The native sixteen-pixel material atlas changed");
-        d.getPixels().writeToFile(dir.resolve("native-uncanny-materials.png"));Files.writeString(dir.resolve("uncanny-assets-passed.txt"),"Native front/side poses, eight pixel-painted skin variants, nineteen fitted props, a 64-pixel material atlas and five physical item models. Existing PNG resources are unchanged.\n");
+        d.getPixels().writeToFile(dir.resolve("native-uncanny-materials.png"));Files.writeString(dir.resolve("uncanny-assets-passed.txt"),"Seven native pages: front/side poses, eight skin variants including the exhausted worker, nineteen fitted props, material atlas, four actual tissue models, the dedicated cellar key and status icon, and three engulfment overlay levels.\n");
         if(Boolean.getBoolean("the_oldest_house.uncannySmoke")||Boolean.getBoolean("the_oldest_house.uncannyEnvironmentSmoke"))mc.stop();else mc.setScreen(new PlaytestVisualProof());
     }
 }

@@ -73,6 +73,7 @@ public final class UncannySenses {
             view.putString("Room",place.id());view.putLong("Base",b.asLong());view.putInt("Age",own.getInt("UncannyAge"));view.putInt("Stage",own.getInt("UncannyStage"));view.putInt("Sleeps",own.getInt("Sleeps"));view.putInt("Night",own.getInt("NightClock"));
             view.putBoolean("Green",UncannyStories.green(own));view.putBoolean("Dark",p.serverLevel().getBlockState(b.offset(UncannyRooms.FLOOD)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(UncannyRooms.FLOOD)).getValue(UncannyPropBlock.STAGE)>0);
             view.putInt("Edge",own.getInt("Edge"));view.putInt("Growth",own.getInt("GrowthCue"));view.putBoolean("Ready",own.getBoolean("Ready"));view.putBoolean("Failed",own.getBoolean("UncannyFailed"));
+            view.putInt("Engulfment",own.getInt("Engulfment"));
             view.putString("Sign",UncannyStories.sign(p,b,own));view.putInt("Doll",own.contains("CastDoll")&&own.hasUUID("CastDoll")&&p.serverLevel().getEntity(own.getUUID("CastDoll")) instanceof LiteraryActor a?a.getId():-1);
         }
         view.putBoolean("Mirror",mirror(p));view.putBoolean("Ring",ring(p));
@@ -90,6 +91,7 @@ public final class UncannySenses {
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
         if(event.getServer().getTickCount()%5!=0)return;
         for(var p:event.getServer().getPlayerList().getPlayers()){
+            if(LiteraryVignettes.current(p)!=LabyrinthPlace.LAYERED_MAN&&p.hasEffect(UncannyRegistry.ENGULFED))p.removeEffect(UncannyRegistry.ENGULFED);
             var d=LabyrinthData.get(p.server);var own=d.stateEntry(STATE,p.getUUID().toString());int fuel=own.getInt("MirrorTicks");if(!p.isAlive())fuel=0;if(fuel>0){own.putInt("MirrorTicks",Math.max(0,fuel-5));d.setStateEntry(STATE,p.getUUID().toString(),own);}
             boolean active=p.isAlive()&&!p.isSpectator()&&(UncannyRooms.isUncanny(LiteraryVignettes.current(p))||ring(p)||heldMirror(p));
             if(active)send(p,false);else if(p.getPersistentData().getBoolean("UncannyViewActive"))HousePackets.send(p,new UncannyViewPayload(new CompoundTag()));

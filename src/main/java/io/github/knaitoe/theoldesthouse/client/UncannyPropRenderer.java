@@ -38,6 +38,7 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
         }
     }
     public static void draw(BlockState state,PoseStack p,MultiBufferSource buffers,int light,int overlay){
+        if(state.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.FLESH){Minecraft.getInstance().getBlockRenderer().renderSingleBlock(UncannyRegistry.FLESH.get().defaultBlockState(),p,buffers,light,overlay);return;}
         var out=buffers.getBuffer(RenderType.entityCutoutNoCull(UncannyTextures.atlas()));p.pushPose();p.translate(.5,0,.5);p.mulPose(Axis.YP.rotationDegrees(-state.getValue(UncannyPropBlock.FACING).toYRot()));p.translate(-.5,0,-.5);
         switch(state.getValue(UncannyPropBlock.KIND)){
             case FLESH->{box(p,out,0,0,0,16,16,16,FLESH,light,overlay);box(p,out,1,5,0,15,7,1,FLESH,light,overlay);}

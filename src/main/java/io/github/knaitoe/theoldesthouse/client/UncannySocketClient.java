@@ -70,7 +70,7 @@ public final class UncannySocketClient {
             look(mc,b.offset(1,1,-5).getCenter());if(age>25&&UncannyClient.room().equals("second_waitress"))ack(mc,"diner-room");return;
         }
         if((phase==2||phase==3)&&age>30){var fake=actor(mc,LiteraryActor.UNCANNY_FALSE_WAITRESS);if(fake!=null){look(mc,fake.getEyePosition());if(phase==2&&fake.phase()==1||phase==3&&fake.phase()>=2)ack(mc,phase==2?"diner-translucent":"diner-solid");}}
-        if(phase==4&&age>25){var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null){look(mc,giant.getEyePosition());require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");ack(mc,"giant-folded");}}
+        if(phase==4&&age>25){var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null){look(mc,giant.position().add(0,1.8,-2));require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");ack(mc,"giant-folded");}}
         if(phase==5&&UncannyClient.room().equals("missing_sleep")&&bedroomWalk(mc,b))paper(mc,b.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)),"bedroom-source",data.getBoolean("PaperRead"));
         if(phase==6||phase==7){if(age>15&&clicked<0)click(mc,b.offset(UncannyRooms.BED_AT));if(age>35&&UncannyClient.sleeps()==(phase==6?1:2))ack(mc,phase==6?"bedroom-first-cut":"bedroom-second-cut");}
         if(phase==8&&age>30){var doll=actor(mc,LiteraryActor.UNCANNY_MARIONETTE);if(doll!=null&&doll.phase()==1){look(mc,doll.getEyePosition());require(UncannyActorRenderer.visible(doll),"the direct form is visible to its owner");ack(mc,"bedroom-direct");}}
@@ -98,7 +98,7 @@ public final class UncannySocketClient {
         if(phase==10&&age>20&&!captures.contains("10:bedroom-reconnect")){stopAfter=role().equals("B");ack(mc,"bedroom-reconnect");}
         if(phase==12){if(mc.screen!=null)mc.setScreen(null);if(age>15&&!data.getBoolean("DoorBlocked"))click(mc,b.offset(UncannyRooms.PARENTS_DOOR));if(age>75&&data.getBoolean("DoorBlocked"))ack(mc,"bedroom-door-closed");}
         if(phase==13)paper(mc,b.offset(UncannyRooms.account(LabyrinthPlace.MISSING_SLEEP)),"bedroom-account",data.getBoolean("PaperRead"));
-        if(phase==14&&age>35){look(mc,b.offset(UncannyRooms.MASS).getCenter());ack(mc,"cellar-growth");}
+        if(phase==14&&age>120){look(mc,b.offset(UncannyRooms.MASS).getCenter());ack(mc,"cellar-growth");}
         if(phase==15){
             look(mc,b.offset(0,1,-17).getCenter());var state=mc.level.getBlockState(b.offset(UncannyRooms.FLOOD));
             if(state.is(UncannyRegistry.PROP.get())){
