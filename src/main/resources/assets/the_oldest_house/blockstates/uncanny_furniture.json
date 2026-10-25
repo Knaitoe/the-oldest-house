@@ -1,0 +1,769 @@
+{
+  "variants": {
+    "kind=booth,facing=north": {
+      "model": "the_oldest_house:block/uncanny_booth"
+    },
+    "kind=booth,facing=east": {
+      "model": "the_oldest_house:block/uncanny_booth",
+      "y": 90
+    },
+    "kind=booth,facing=south": {
+      "model": "the_oldest_house:block/uncanny_booth",
+      "y": 180
+    },
+    "kind=booth,facing=west": {
+      "model": "the_oldest_house:block/uncanny_booth",
+      "y": 270
+    },
+    "kind=table,facing=north": {
+      "model": "the_oldest_house:block/uncanny_table"
+    },
+    "kind=table,facing=east": {
+      "model": "the_oldest_house:block/uncanny_table",
+      "y": 90
+    },
+    "kind=table,facing=south": {
+      "model": "the_oldest_house:block/uncanny_table",
+      "y": 180
+    },
+    "kind=table,facing=west": {
+      "model": "the_oldest_house:block/uncanny_table",
+      "y": 270
+    },
+    "kind=stool,facing=north": {
+      "model": "the_oldest_house:block/uncanny_stool"
+    },
+    "kind=stool,facing=east": {
+      "model": "the_oldest_house:block/uncanny_stool",
+      "y": 90
+    },
+    "kind=stool,facing=south": {
+      "model": "the_oldest_house:block/uncanny_stool",
+      "y": 180
+    },
+    "kind=stool,facing=west": {
+      "model": "the_oldest_house:block/uncanny_stool",
+      "y": 270
+    },
+    "kind=counter,facing=north": {
+      "model": "the_oldest_house:block/uncanny_counter"
+    },
+    "kind=counter,facing=east": {
+      "model": "the_oldest_house:block/uncanny_counter",
+      "y": 90
+    },
+    "kind=counter,facing=south": {
+      "model": "the_oldest_house:block/uncanny_counter",
+      "y": 180
+    },
+    "kind=counter,facing=west": {
+      "model": "the_oldest_house:block/uncanny_counter",
+      "y": 270
+    },
+    "kind=cabinet,facing=north,open=false": {
+      "model": "the_oldest_house:block/uncanny_cabinet"
+    },
+    "kind=cabinet,facing=east,open=false": {
+      "model": "the_oldest_house:block/uncanny_cabinet",
+      "y": 90
+    },
+    "kind=cabinet,facing=south,open=false": {
+      "model": "the_oldest_house:block/uncanny_cabinet",
+      "y": 180
+    },
+    "kind=cabinet,facing=west,open=false": {
+      "model": "the_oldest_house:block/uncanny_cabinet",
+      "y": 270
+    },
+    "kind=cabinet,facing=north,open=true": {
+      "model": "the_oldest_house:block/uncanny_cabinet_open"
+    },
+    "kind=cabinet,facing=east,open=true": {
+      "model": "the_oldest_house:block/uncanny_cabinet_open",
+      "y": 90
+    },
+    "kind=cabinet,facing=south,open=true": {
+      "model": "the_oldest_house:block/uncanny_cabinet_open",
+      "y": 180
+    },
+    "kind=cabinet,facing=west,open=true": {
+      "model": "the_oldest_house:block/uncanny_cabinet_open",
+      "y": 270
+    },
+    "kind=fridge,facing=north,open=false": {
+      "model": "the_oldest_house:block/uncanny_fridge"
+    },
+    "kind=fridge,facing=east,open=false": {
+      "model": "the_oldest_house:block/uncanny_fridge",
+      "y": 90
+    },
+    "kind=fridge,facing=south,open=false": {
+      "model": "the_oldest_house:block/uncanny_fridge",
+      "y": 180
+    },
+    "kind=fridge,facing=west,open=false": {
+      "model": "the_oldest_house:block/uncanny_fridge",
+      "y": 270
+    },
+    "kind=fridge,facing=north,open=true": {
+      "model": "the_oldest_house:block/uncanny_fridge_open"
+    },
+    "kind=fridge,facing=east,open=true": {
+      "model": "the_oldest_house:block/uncanny_fridge_open",
+      "y": 90
+    },
+    "kind=fridge,facing=south,open=true": {
+      "model": "the_oldest_house:block/uncanny_fridge_open",
+      "y": 180
+    },
+    "kind=fridge,facing=west,open=true": {
+      "model": "the_oldest_house:block/uncanny_fridge_open",
+      "y": 270
+    },
+    "kind=coffee_maker,facing=north": {
+      "model": "the_oldest_house:block/uncanny_coffee_maker"
+    },
+    "kind=coffee_maker,facing=east": {
+      "model": "the_oldest_house:block/uncanny_coffee_maker",
+      "y": 90
+    },
+    "kind=coffee_maker,facing=south": {
+      "model": "the_oldest_house:block/uncanny_coffee_maker",
+      "y": 180
+    },
+    "kind=coffee_maker,facing=west": {
+      "model": "the_oldest_house:block/uncanny_coffee_maker",
+      "y": 270
+    },
+    "kind=griddle,facing=north": {
+      "model": "the_oldest_house:block/uncanny_griddle"
+    },
+    "kind=griddle,facing=east": {
+      "model": "the_oldest_house:block/uncanny_griddle",
+      "y": 90
+    },
+    "kind=griddle,facing=south": {
+      "model": "the_oldest_house:block/uncanny_griddle",
+      "y": 180
+    },
+    "kind=griddle,facing=west": {
+      "model": "the_oldest_house:block/uncanny_griddle",
+      "y": 270
+    },
+    "kind=sink,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sink"
+    },
+    "kind=sink,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sink",
+      "y": 90
+    },
+    "kind=sink,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sink",
+      "y": 180
+    },
+    "kind=sink,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sink",
+      "y": 270
+    },
+    "kind=shelf,facing=north": {
+      "model": "the_oldest_house:block/uncanny_shelf"
+    },
+    "kind=shelf,facing=east": {
+      "model": "the_oldest_house:block/uncanny_shelf",
+      "y": 90
+    },
+    "kind=shelf,facing=south": {
+      "model": "the_oldest_house:block/uncanny_shelf",
+      "y": 180
+    },
+    "kind=shelf,facing=west": {
+      "model": "the_oldest_house:block/uncanny_shelf",
+      "y": 270
+    },
+    "kind=fluorescent,facing=north": {
+      "model": "the_oldest_house:block/uncanny_fluorescent"
+    },
+    "kind=fluorescent,facing=east": {
+      "model": "the_oldest_house:block/uncanny_fluorescent",
+      "y": 90
+    },
+    "kind=fluorescent,facing=south": {
+      "model": "the_oldest_house:block/uncanny_fluorescent",
+      "y": 180
+    },
+    "kind=fluorescent,facing=west": {
+      "model": "the_oldest_house:block/uncanny_fluorescent",
+      "y": 270
+    },
+    "kind=window_frame,facing=north": {
+      "model": "the_oldest_house:block/uncanny_window_frame"
+    },
+    "kind=window_frame,facing=east": {
+      "model": "the_oldest_house:block/uncanny_window_frame",
+      "y": 90
+    },
+    "kind=window_frame,facing=south": {
+      "model": "the_oldest_house:block/uncanny_window_frame",
+      "y": 180
+    },
+    "kind=window_frame,facing=west": {
+      "model": "the_oldest_house:block/uncanny_window_frame",
+      "y": 270
+    },
+    "kind=sign_left,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sign_left"
+    },
+    "kind=sign_left,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sign_left",
+      "y": 90
+    },
+    "kind=sign_left,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sign_left",
+      "y": 180
+    },
+    "kind=sign_left,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sign_left",
+      "y": 270
+    },
+    "kind=sign_center,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sign_center"
+    },
+    "kind=sign_center,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sign_center",
+      "y": 90
+    },
+    "kind=sign_center,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sign_center",
+      "y": 180
+    },
+    "kind=sign_center,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sign_center",
+      "y": 270
+    },
+    "kind=sign_right,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sign_right"
+    },
+    "kind=sign_right,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sign_right",
+      "y": 90
+    },
+    "kind=sign_right,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sign_right",
+      "y": 180
+    },
+    "kind=sign_right,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sign_right",
+      "y": 270
+    },
+    "kind=exterior_lamp,facing=north": {
+      "model": "the_oldest_house:block/uncanny_exterior_lamp"
+    },
+    "kind=exterior_lamp,facing=east": {
+      "model": "the_oldest_house:block/uncanny_exterior_lamp",
+      "y": 90
+    },
+    "kind=exterior_lamp,facing=south": {
+      "model": "the_oldest_house:block/uncanny_exterior_lamp",
+      "y": 180
+    },
+    "kind=exterior_lamp,facing=west": {
+      "model": "the_oldest_house:block/uncanny_exterior_lamp",
+      "y": 270
+    },
+    "kind=sconce,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sconce"
+    },
+    "kind=sconce,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sconce",
+      "y": 90
+    },
+    "kind=sconce,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sconce",
+      "y": 180
+    },
+    "kind=sconce,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sconce",
+      "y": 270
+    },
+    "kind=armchair,facing=north": {
+      "model": "the_oldest_house:block/uncanny_armchair"
+    },
+    "kind=armchair,facing=east": {
+      "model": "the_oldest_house:block/uncanny_armchair",
+      "y": 90
+    },
+    "kind=armchair,facing=south": {
+      "model": "the_oldest_house:block/uncanny_armchair",
+      "y": 180
+    },
+    "kind=armchair,facing=west": {
+      "model": "the_oldest_house:block/uncanny_armchair",
+      "y": 270
+    },
+    "kind=sofa,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sofa"
+    },
+    "kind=sofa,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sofa",
+      "y": 90
+    },
+    "kind=sofa,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sofa",
+      "y": 180
+    },
+    "kind=sofa,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sofa",
+      "y": 270
+    },
+    "kind=sofa_left,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sofa_left"
+    },
+    "kind=sofa_left,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sofa_left",
+      "y": 90
+    },
+    "kind=sofa_left,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sofa_left",
+      "y": 180
+    },
+    "kind=sofa_left,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sofa_left",
+      "y": 270
+    },
+    "kind=sofa_right,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sofa_right"
+    },
+    "kind=sofa_right,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sofa_right",
+      "y": 90
+    },
+    "kind=sofa_right,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sofa_right",
+      "y": 180
+    },
+    "kind=sofa_right,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sofa_right",
+      "y": 270
+    },
+    "kind=coffee_table,facing=north": {
+      "model": "the_oldest_house:block/uncanny_coffee_table"
+    },
+    "kind=coffee_table,facing=east": {
+      "model": "the_oldest_house:block/uncanny_coffee_table",
+      "y": 90
+    },
+    "kind=coffee_table,facing=south": {
+      "model": "the_oldest_house:block/uncanny_coffee_table",
+      "y": 180
+    },
+    "kind=coffee_table,facing=west": {
+      "model": "the_oldest_house:block/uncanny_coffee_table",
+      "y": 270
+    },
+    "kind=diner_chair,facing=north": {
+      "model": "the_oldest_house:block/uncanny_diner_chair"
+    },
+    "kind=diner_chair,facing=east": {
+      "model": "the_oldest_house:block/uncanny_diner_chair",
+      "y": 90
+    },
+    "kind=diner_chair,facing=south": {
+      "model": "the_oldest_house:block/uncanny_diner_chair",
+      "y": 180
+    },
+    "kind=diner_chair,facing=west": {
+      "model": "the_oldest_house:block/uncanny_diner_chair",
+      "y": 270
+    },
+    "kind=desk,facing=north": {
+      "model": "the_oldest_house:block/uncanny_desk"
+    },
+    "kind=desk,facing=east": {
+      "model": "the_oldest_house:block/uncanny_desk",
+      "y": 90
+    },
+    "kind=desk,facing=south": {
+      "model": "the_oldest_house:block/uncanny_desk",
+      "y": 180
+    },
+    "kind=desk,facing=west": {
+      "model": "the_oldest_house:block/uncanny_desk",
+      "y": 270
+    },
+    "kind=sideboard,facing=north,open=false": {
+      "model": "the_oldest_house:block/uncanny_sideboard"
+    },
+    "kind=sideboard,facing=east,open=false": {
+      "model": "the_oldest_house:block/uncanny_sideboard",
+      "y": 90
+    },
+    "kind=sideboard,facing=south,open=false": {
+      "model": "the_oldest_house:block/uncanny_sideboard",
+      "y": 180
+    },
+    "kind=sideboard,facing=west,open=false": {
+      "model": "the_oldest_house:block/uncanny_sideboard",
+      "y": 270
+    },
+    "kind=sideboard,facing=north,open=true": {
+      "model": "the_oldest_house:block/uncanny_sideboard_open"
+    },
+    "kind=sideboard,facing=east,open=true": {
+      "model": "the_oldest_house:block/uncanny_sideboard_open",
+      "y": 90
+    },
+    "kind=sideboard,facing=south,open=true": {
+      "model": "the_oldest_house:block/uncanny_sideboard_open",
+      "y": 180
+    },
+    "kind=sideboard,facing=west,open=true": {
+      "model": "the_oldest_house:block/uncanny_sideboard_open",
+      "y": 270
+    },
+    "kind=bookcase,facing=north": {
+      "model": "the_oldest_house:block/uncanny_bookcase"
+    },
+    "kind=bookcase,facing=east": {
+      "model": "the_oldest_house:block/uncanny_bookcase",
+      "y": 90
+    },
+    "kind=bookcase,facing=south": {
+      "model": "the_oldest_house:block/uncanny_bookcase",
+      "y": 180
+    },
+    "kind=bookcase,facing=west": {
+      "model": "the_oldest_house:block/uncanny_bookcase",
+      "y": 270
+    },
+    "kind=picture,facing=north": {
+      "model": "the_oldest_house:block/uncanny_picture"
+    },
+    "kind=picture,facing=east": {
+      "model": "the_oldest_house:block/uncanny_picture",
+      "y": 90
+    },
+    "kind=picture,facing=south": {
+      "model": "the_oldest_house:block/uncanny_picture",
+      "y": 180
+    },
+    "kind=picture,facing=west": {
+      "model": "the_oldest_house:block/uncanny_picture",
+      "y": 270
+    },
+    "kind=wardrobe,facing=north,open=false": {
+      "model": "the_oldest_house:block/uncanny_wardrobe"
+    },
+    "kind=wardrobe,facing=east,open=false": {
+      "model": "the_oldest_house:block/uncanny_wardrobe",
+      "y": 90
+    },
+    "kind=wardrobe,facing=south,open=false": {
+      "model": "the_oldest_house:block/uncanny_wardrobe",
+      "y": 180
+    },
+    "kind=wardrobe,facing=west,open=false": {
+      "model": "the_oldest_house:block/uncanny_wardrobe",
+      "y": 270
+    },
+    "kind=wardrobe,facing=north,open=true": {
+      "model": "the_oldest_house:block/uncanny_wardrobe_open"
+    },
+    "kind=wardrobe,facing=east,open=true": {
+      "model": "the_oldest_house:block/uncanny_wardrobe_open",
+      "y": 90
+    },
+    "kind=wardrobe,facing=south,open=true": {
+      "model": "the_oldest_house:block/uncanny_wardrobe_open",
+      "y": 180
+    },
+    "kind=wardrobe,facing=west,open=true": {
+      "model": "the_oldest_house:block/uncanny_wardrobe_open",
+      "y": 270
+    },
+    "kind=bedside,facing=north": {
+      "model": "the_oldest_house:block/uncanny_bedside"
+    },
+    "kind=bedside,facing=east": {
+      "model": "the_oldest_house:block/uncanny_bedside",
+      "y": 90
+    },
+    "kind=bedside,facing=south": {
+      "model": "the_oldest_house:block/uncanny_bedside",
+      "y": 180
+    },
+    "kind=bedside,facing=west": {
+      "model": "the_oldest_house:block/uncanny_bedside",
+      "y": 270
+    },
+    "kind=headboard,facing=north": {
+      "model": "the_oldest_house:block/uncanny_headboard"
+    },
+    "kind=headboard,facing=east": {
+      "model": "the_oldest_house:block/uncanny_headboard",
+      "y": 90
+    },
+    "kind=headboard,facing=south": {
+      "model": "the_oldest_house:block/uncanny_headboard",
+      "y": 180
+    },
+    "kind=headboard,facing=west": {
+      "model": "the_oldest_house:block/uncanny_headboard",
+      "y": 270
+    },
+    "kind=hamper,facing=north": {
+      "model": "the_oldest_house:block/uncanny_hamper"
+    },
+    "kind=hamper,facing=east": {
+      "model": "the_oldest_house:block/uncanny_hamper",
+      "y": 90
+    },
+    "kind=hamper,facing=south": {
+      "model": "the_oldest_house:block/uncanny_hamper",
+      "y": 180
+    },
+    "kind=hamper,facing=west": {
+      "model": "the_oldest_house:block/uncanny_hamper",
+      "y": 270
+    },
+    "kind=radiator,facing=north": {
+      "model": "the_oldest_house:block/uncanny_radiator"
+    },
+    "kind=radiator,facing=east": {
+      "model": "the_oldest_house:block/uncanny_radiator",
+      "y": 90
+    },
+    "kind=radiator,facing=south": {
+      "model": "the_oldest_house:block/uncanny_radiator",
+      "y": 180
+    },
+    "kind=radiator,facing=west": {
+      "model": "the_oldest_house:block/uncanny_radiator",
+      "y": 270
+    },
+    "kind=pipe,facing=north": {
+      "model": "the_oldest_house:block/uncanny_pipe"
+    },
+    "kind=pipe,facing=east": {
+      "model": "the_oldest_house:block/uncanny_pipe",
+      "y": 90
+    },
+    "kind=pipe,facing=south": {
+      "model": "the_oldest_house:block/uncanny_pipe",
+      "y": 180
+    },
+    "kind=pipe,facing=west": {
+      "model": "the_oldest_house:block/uncanny_pipe",
+      "y": 270
+    },
+    "kind=pipe_horizontal,facing=north": {
+      "model": "the_oldest_house:block/uncanny_pipe_horizontal"
+    },
+    "kind=pipe_horizontal,facing=east": {
+      "model": "the_oldest_house:block/uncanny_pipe_horizontal",
+      "y": 90
+    },
+    "kind=pipe_horizontal,facing=south": {
+      "model": "the_oldest_house:block/uncanny_pipe_horizontal",
+      "y": 180
+    },
+    "kind=pipe_horizontal,facing=west": {
+      "model": "the_oldest_house:block/uncanny_pipe_horizontal",
+      "y": 270
+    },
+    "kind=vent,facing=north": {
+      "model": "the_oldest_house:block/uncanny_vent"
+    },
+    "kind=vent,facing=east": {
+      "model": "the_oldest_house:block/uncanny_vent",
+      "y": 90
+    },
+    "kind=vent,facing=south": {
+      "model": "the_oldest_house:block/uncanny_vent",
+      "y": 180
+    },
+    "kind=vent,facing=west": {
+      "model": "the_oldest_house:block/uncanny_vent",
+      "y": 270
+    },
+    "kind=switchbox,facing=north": {
+      "model": "the_oldest_house:block/uncanny_switchbox"
+    },
+    "kind=switchbox,facing=east": {
+      "model": "the_oldest_house:block/uncanny_switchbox",
+      "y": 90
+    },
+    "kind=switchbox,facing=south": {
+      "model": "the_oldest_house:block/uncanny_switchbox",
+      "y": 180
+    },
+    "kind=switchbox,facing=west": {
+      "model": "the_oldest_house:block/uncanny_switchbox",
+      "y": 270
+    },
+    "kind=workbench,facing=north": {
+      "model": "the_oldest_house:block/uncanny_workbench"
+    },
+    "kind=workbench,facing=east": {
+      "model": "the_oldest_house:block/uncanny_workbench",
+      "y": 90
+    },
+    "kind=workbench,facing=south": {
+      "model": "the_oldest_house:block/uncanny_workbench",
+      "y": 180
+    },
+    "kind=workbench,facing=west": {
+      "model": "the_oldest_house:block/uncanny_workbench",
+      "y": 270
+    },
+    "kind=tool_rack,facing=north": {
+      "model": "the_oldest_house:block/uncanny_tool_rack"
+    },
+    "kind=tool_rack,facing=east": {
+      "model": "the_oldest_house:block/uncanny_tool_rack",
+      "y": 90
+    },
+    "kind=tool_rack,facing=south": {
+      "model": "the_oldest_house:block/uncanny_tool_rack",
+      "y": 180
+    },
+    "kind=tool_rack,facing=west": {
+      "model": "the_oldest_house:block/uncanny_tool_rack",
+      "y": 270
+    },
+    "kind=mailbox,facing=north,open=false": {
+      "model": "the_oldest_house:block/uncanny_mailbox"
+    },
+    "kind=mailbox,facing=east,open=false": {
+      "model": "the_oldest_house:block/uncanny_mailbox",
+      "y": 90
+    },
+    "kind=mailbox,facing=south,open=false": {
+      "model": "the_oldest_house:block/uncanny_mailbox",
+      "y": 180
+    },
+    "kind=mailbox,facing=west,open=false": {
+      "model": "the_oldest_house:block/uncanny_mailbox",
+      "y": 270
+    },
+    "kind=mailbox,facing=north,open=true": {
+      "model": "the_oldest_house:block/uncanny_mailbox_open"
+    },
+    "kind=mailbox,facing=east,open=true": {
+      "model": "the_oldest_house:block/uncanny_mailbox_open",
+      "y": 90
+    },
+    "kind=mailbox,facing=south,open=true": {
+      "model": "the_oldest_house:block/uncanny_mailbox_open",
+      "y": 180
+    },
+    "kind=mailbox,facing=west,open=true": {
+      "model": "the_oldest_house:block/uncanny_mailbox_open",
+      "y": 270
+    },
+    "kind=lobby_bench,facing=north": {
+      "model": "the_oldest_house:block/uncanny_lobby_bench"
+    },
+    "kind=lobby_bench,facing=east": {
+      "model": "the_oldest_house:block/uncanny_lobby_bench",
+      "y": 90
+    },
+    "kind=lobby_bench,facing=south": {
+      "model": "the_oldest_house:block/uncanny_lobby_bench",
+      "y": 180
+    },
+    "kind=lobby_bench,facing=west": {
+      "model": "the_oldest_house:block/uncanny_lobby_bench",
+      "y": 270
+    },
+    "kind=drain,facing=north": {
+      "model": "the_oldest_house:block/uncanny_drain"
+    },
+    "kind=drain,facing=east": {
+      "model": "the_oldest_house:block/uncanny_drain",
+      "y": 90
+    },
+    "kind=drain,facing=south": {
+      "model": "the_oldest_house:block/uncanny_drain",
+      "y": 180
+    },
+    "kind=drain,facing=west": {
+      "model": "the_oldest_house:block/uncanny_drain",
+      "y": 270
+    },
+    "kind=bin,facing=north": {
+      "model": "the_oldest_house:block/uncanny_bin"
+    },
+    "kind=bin,facing=east": {
+      "model": "the_oldest_house:block/uncanny_bin",
+      "y": 90
+    },
+    "kind=bin,facing=south": {
+      "model": "the_oldest_house:block/uncanny_bin",
+      "y": 180
+    },
+    "kind=bin,facing=west": {
+      "model": "the_oldest_house:block/uncanny_bin",
+      "y": 270
+    },
+    "kind=desk_lamp,facing=north,open=false": {
+      "model": "the_oldest_house:block/uncanny_desk_lamp"
+    },
+    "kind=desk_lamp,facing=east,open=false": {
+      "model": "the_oldest_house:block/uncanny_desk_lamp",
+      "y": 90
+    },
+    "kind=desk_lamp,facing=south,open=false": {
+      "model": "the_oldest_house:block/uncanny_desk_lamp",
+      "y": 180
+    },
+    "kind=desk_lamp,facing=west,open=false": {
+      "model": "the_oldest_house:block/uncanny_desk_lamp",
+      "y": 270
+    },
+    "kind=desk_lamp,facing=north,open=true": {
+      "model": "the_oldest_house:block/uncanny_desk_lamp_open"
+    },
+    "kind=desk_lamp,facing=east,open=true": {
+      "model": "the_oldest_house:block/uncanny_desk_lamp_open",
+      "y": 90
+    },
+    "kind=desk_lamp,facing=south,open=true": {
+      "model": "the_oldest_house:block/uncanny_desk_lamp_open",
+      "y": 180
+    },
+    "kind=desk_lamp,facing=west,open=true": {
+      "model": "the_oldest_house:block/uncanny_desk_lamp_open",
+      "y": 270
+    },
+    "kind=napkin_caddy,facing=north": {
+      "model": "the_oldest_house:block/uncanny_napkin_caddy"
+    },
+    "kind=napkin_caddy,facing=east": {
+      "model": "the_oldest_house:block/uncanny_napkin_caddy",
+      "y": 90
+    },
+    "kind=napkin_caddy,facing=south": {
+      "model": "the_oldest_house:block/uncanny_napkin_caddy",
+      "y": 180
+    },
+    "kind=napkin_caddy,facing=west": {
+      "model": "the_oldest_house:block/uncanny_napkin_caddy",
+      "y": 270
+    },
+    "kind=cup,facing=north": {
+      "model": "the_oldest_house:block/uncanny_cup"
+    },
+    "kind=cup,facing=east": {
+      "model": "the_oldest_house:block/uncanny_cup",
+      "y": 90
+    },
+    "kind=cup,facing=south": {
+      "model": "the_oldest_house:block/uncanny_cup",
+      "y": 180
+    },
+    "kind=cup,facing=west": {
+      "model": "the_oldest_house:block/uncanny_cup",
+      "y": 270
+    }
+  }
+}

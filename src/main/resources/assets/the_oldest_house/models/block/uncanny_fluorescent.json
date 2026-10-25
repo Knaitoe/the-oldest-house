@@ -1,0 +1,282 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "the_oldest_house:block/uncanny/lamp",
+    "lamp": "the_oldest_house:block/uncanny/lamp",
+    "steel": "the_oldest_house:block/uncanny/steel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        14,
+        3
+      ],
+      "to": [
+        16,
+        16,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            3,
+            0,
+            13,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            3,
+            0,
+            13,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            3,
+            16,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            3,
+            16,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        11,
+        4
+      ],
+      "to": [
+        15,
+        14,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp",
+          "uv": [
+            1,
+            2,
+            15,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#lamp",
+          "uv": [
+            1,
+            2,
+            15,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#lamp",
+          "uv": [
+            4,
+            2,
+            12,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#lamp",
+          "uv": [
+            4,
+            2,
+            12,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#lamp",
+          "uv": [
+            1,
+            4,
+            15,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#lamp",
+          "uv": [
+            1,
+            4,
+            15,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        11,
+        3
+      ],
+      "to": [
+        1,
+        14,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            15,
+            2,
+            16,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            2,
+            1,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            3,
+            2,
+            13,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            3,
+            2,
+            13,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            3,
+            1,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            3,
+            1,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        11,
+        3
+      ],
+      "to": [
+        16,
+        14,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            2,
+            1,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            15,
+            2,
+            16,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            3,
+            2,
+            13,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            3,
+            2,
+            13,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            15,
+            3,
+            16,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            15,
+            3,
+            16,
+            13
+          ]
+        }
+      }
+    }
+  ]
+}

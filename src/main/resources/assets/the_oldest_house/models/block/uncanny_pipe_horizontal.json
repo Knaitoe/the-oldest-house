@@ -1,0 +1,214 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "the_oldest_house:block/uncanny/steel",
+    "steel": "the_oldest_house:block/uncanny/steel",
+    "utility": "the_oldest_house:block/uncanny/utility"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        6,
+        11
+      ],
+      "to": [
+        16,
+        10,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#utility",
+          "uv": [
+            0,
+            6,
+            16,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#utility",
+          "uv": [
+            0,
+            6,
+            16,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#utility",
+          "uv": [
+            1,
+            6,
+            5,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#utility",
+          "uv": [
+            11,
+            6,
+            15,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#utility",
+          "uv": [
+            0,
+            11,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#utility",
+          "uv": [
+            0,
+            1,
+            16,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        5,
+        10
+      ],
+      "to": [
+        4,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            12,
+            5,
+            14,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            2,
+            5,
+            4,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            5,
+            6,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            10,
+            5,
+            16,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            2,
+            10,
+            4,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            2,
+            0,
+            4,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        5,
+        10
+      ],
+      "to": [
+        14,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            2,
+            5,
+            4,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            12,
+            5,
+            14,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            0,
+            5,
+            6,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            10,
+            5,
+            16,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            12,
+            10,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            12,
+            0,
+            14,
+            6
+          ]
+        }
+      }
+    }
+  ]
+}

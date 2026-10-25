@@ -1,0 +1,282 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "the_oldest_house:block/uncanny/dark_wood",
+    "dark_wood": "the_oldest_house:block/uncanny/dark_wood",
+    "parlor_cloth": "the_oldest_house:block/uncanny/parlor_cloth"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        3
+      ],
+      "to": [
+        2,
+        3,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_wood",
+          "uv": [
+            14,
+            13,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dark_wood",
+          "uv": [
+            0,
+            13,
+            2,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#dark_wood",
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dark_wood",
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#dark_wood",
+          "uv": [
+            0,
+            3,
+            2,
+            5
+          ]
+        },
+        "down": {
+          "texture": "#dark_wood",
+          "uv": [
+            0,
+            11,
+            2,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        0,
+        3
+      ],
+      "to": [
+        16,
+        3,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_wood",
+          "uv": [
+            0,
+            13,
+            2,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dark_wood",
+          "uv": [
+            14,
+            13,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#dark_wood",
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dark_wood",
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#dark_wood",
+          "uv": [
+            14,
+            3,
+            16,
+            5
+          ]
+        },
+        "down": {
+          "texture": "#dark_wood",
+          "uv": [
+            14,
+            11,
+            16,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        3,
+        2
+      ],
+      "to": [
+        16,
+        9,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            7,
+            16,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            7,
+            16,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            1,
+            7,
+            14,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            2,
+            7,
+            15,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            2,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            1,
+            16,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        9,
+        12
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            0,
+            16,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            0,
+            16,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            0,
+            4,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            12,
+            0,
+            16,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#parlor_cloth",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ]
+        }
+      }
+    }
+  ]
+}

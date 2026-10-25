@@ -1,5 +1,40 @@
 [
   {
+    "name": "borrasca_kimber",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 1,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_kyle",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 0,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_prescott",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 3,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_sheriff",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 2,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_worker",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 4,
+    "phase": 0
+  },
+  {
     "name": "caged_child",
     "logical": 64,
     "model": "player",
@@ -798,6 +833,41 @@
     "logical": 64,
     "model": "cousin",
     "number": 8,
+    "phase": 0
+  },
+  {
+    "name": "uncanny_peeler",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 37,
+    "phase": 1
+  },
+  {
+    "name": "uncanny_second_waitress",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 34,
+    "phase": 1
+  },
+  {
+    "name": "uncanny_second_waitress_split",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 34,
+    "phase": 3
+  },
+  {
+    "name": "uncanny_visitor",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 38,
+    "phase": 1
+  },
+  {
+    "name": "uncanny_waitress",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 33,
     "phase": 0
   },
   {

@@ -114,7 +114,7 @@ jobs:
               assert trail_png.startswith(b'\x89PNG') and trail_png[16:24] == bytes.fromhex('0000004000000040')
               for person in ('kimber','kyle','sheriff','prescott','worker'):
                   skin = z.read(f'assets/the_oldest_house/textures/entity/borrasca_{person}.png')
-                  assert skin.startswith(b'\x89PNG') and skin[16:24] == bytes.fromhex('0000004000000040'), person
+                  assert skin.startswith(b'\x89PNG') and skin[16:24] == bytes.fromhex('0000010000000100'), person
               for material in ('timber','steel','rust','paper','notice','notice_frame','carving','drawers','drawers_side','belt','belt_frame','truck','machine'):
                   assert z.read(f'assets/the_oldest_house/textures/block/borrasca/{material}.png').startswith(b'\x89PNG'), material
               cast_png = z.read('assets/the_oldest_house/textures/entity/borrasca_cast_pixels.png')
@@ -928,7 +928,7 @@ jobs:
           for view in cast fixtures gear; do test -s build/font-smoke/native-lake-house-$view.png; done
           test -s build/font-smoke/lake-house-passed.txt
           test -s build/font-smoke/borrasca-assets-passed.txt
-          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes; do test -s build/font-smoke/native-borrasca-$view.png; done
+          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style; do test -s build/font-smoke/native-borrasca-$view.png; done
           for view in borrasca borrasca_treehouse borrasca_refinery borrasca_gully borrasca_taking; do test -s build/font-smoke/scenes/$view.png; done
           for view in painted_interior second_waitress tunnel_periphery missing_sleep layered_man motion_light; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
@@ -1440,6 +1440,38 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+      - name: Native fitted uncanny environments and matching waitress paintings
+        timeout-minutes: 10
+        run: |
+          python3 -m pip install Pillow
+          mkdir -p build
+          set -o pipefail
+          python3 tools/draw_uncanny_environments.py --check
+          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny_environment --no-daemon 2>&1 | tee build/uncanny-environment-native.log
+      - name: Native uncanny room and waitress visual review
+        if: always()
+        timeout-minutes: 5
+        run: |
+          test "$(find build/uncanny-environment-proof -name '*.json' | wc -l)" = 10
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannyEnvironmentSmoke --no-daemon
+          test -s build/font-smoke/uncanny-environments-passed.txt
+          test "$(find build/font-smoke/uncanny-environments -name '*.png' | wc -l)" = 10
+          test -s build/font-smoke/uncanny-assets-passed.txt
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: uncanny-environments-${{ github.sha }}
+          path: |
+            build/uncanny-environment-native.log
+            build/uncanny-environment-proof/
+            build/font-smoke/uncanny-environments/
+            build/font-smoke/uncanny-environments-passed.txt
+            build/font-smoke/native-uncanny-*.png
+            build/font-smoke/uncanny-assets-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
       - name: Native window entry joints and the paw thumb held still
         timeout-minutes: 5
         run: |
@@ -1477,7 +1509,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PborrascaSmoke --no-daemon
           test -s build/font-smoke/borrasca-assets-passed.txt
-          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes; do test -s build/font-smoke/native-borrasca-$view.png; done
+          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style; do test -s build/font-smoke/native-borrasca-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - name: Native uncanny faces, joints, fittings and item models
         timeout-minutes: 5

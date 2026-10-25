@@ -41,7 +41,8 @@ public final class UncannySocketClient {
     }
     /** Walk the actual doorway, stair flight and landing with ordinary native movement packets. */
     private static boolean bedroomWalk(Minecraft mc,BlockPos b){
-        Vec3[] route={new Vec3(.5,0,-2.5),new Vec3(-6.5,0,-2.5),new Vec3(-6.5,5,-10.5),new Vec3(-5.5,5,-20.5)};
+        boolean peer=role().equals("B");
+        Vec3[] route={new Vec3(peer?-.5:.5,0,-2.5),new Vec3(peer?-7.3:-6.5,0,-2.5),new Vec3(peer?-7.3:-6.5,5,-10.5),new Vec3(peer?-6.3:-5.5,5,-20.5)};
         if(bedroomLeg>=route.length)return true;
         var target=route[bedroomLeg].add(Vec3.atLowerCornerOf(b));var delta=target.subtract(mc.player.position());
         if(delta.horizontalDistanceSqr()<.09&&Math.abs(delta.y)<.3&&mc.player.onGround()){
@@ -64,6 +65,9 @@ public final class UncannySocketClient {
         for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&UncannyStories.role(a.role())&&a.owner().isPresent())require(a.owner().get().equals(mc.player.getUUID()),"another reader's private original was tracked");
         if(phase==1&&age>30&&UncannyClient.room().equals("painted_interior")){
             mc.player.setYRot(180);mc.player.setXRot(0);var propped=actor(mc,LiteraryActor.UNCANNY_PROPPED);if(propped!=null&&propped.phase()==1)ack(mc,"boarded-periphery");
+        }
+        if(phase==2&&!captures.contains("2:diner-room")){
+            look(mc,b.offset(1,1,-5).getCenter());if(age>25&&UncannyClient.room().equals("second_waitress"))ack(mc,"diner-room");return;
         }
         if((phase==2||phase==3)&&age>30){var fake=actor(mc,LiteraryActor.UNCANNY_FALSE_WAITRESS);if(fake!=null){look(mc,fake.getEyePosition());if(phase==2&&fake.phase()==1||phase==3&&fake.phase()>=2)ack(mc,phase==2?"diner-translucent":"diner-solid");}}
         if(phase==4&&age>25){var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null){look(mc,giant.getEyePosition());require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");ack(mc,"giant-folded");}}
@@ -114,7 +118,7 @@ public final class UncannySocketClient {
         if(!UncannySocketProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(UncannySocketProof.folder());
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(UncannySocketProof.folder().resolve(shot+".png"));}
         String view=shot.substring(role().length()+1);captures.add(phase+":"+view);
-        if(!view.equals("foyer-lit")&&!view.equals("foyer-dark"))mc.player.connection.sendCommand("uncannyproof "+phase);
+        if(!view.equals("foyer-lit")&&!view.equals("foyer-dark")&&!view.equals("diner-room"))mc.player.connection.sendCommand("uncannyproof "+phase);
         shot=null;if(stopAfter){stopAfter=false;mc.stop();}
     }
 }

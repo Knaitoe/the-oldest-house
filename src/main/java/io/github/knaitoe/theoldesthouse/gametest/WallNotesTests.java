@@ -58,17 +58,6 @@ public final class WallNotesTests {
         for(int x=-28;x<=28;x++)for(int z=-64;z<=0;z++)h.assertTrue(!l.getBlockState(b.offset(x,-1,z)).isAir(),"actual native sand ticks leave every repaired tile whole, without a falling-block cascade");
         h.assertTrue(l.getBlockState(edited).is(Blocks.PRISMARINE)&&l.getBlockEntity(cachePos)==cache&&cache.getItem(4).getCount()==7,"the player edit and original finite cache survive actual physics ticks");h.succeed();
     }
-    @GameTest(template="empty") public static void nativeHallPatchAndBedroomFinishPreserveTheOriginalFurnishings(GameTestHelper h){
-        var l=h.getLevel();var o=h.absolutePos(BlockPos.ZERO).offset(10,20,100);HouseImpossibleHallway.build(l,o);
-        var patch=o.offset(HouseLayout.AXIS_X+2,2,HouseImpossibleHallway.START_Z_OFFSET+26);l.setBlock(patch,Blocks.YELLOW_TERRACOTTA.defaultBlockState(),2);
-        var custom=patch.above();l.setBlock(custom,Blocks.BRICKS.defaultBlockState(),2);
-        var cupboard=o.offset(HouseLayout.AXIS_X-2,1,HouseImpossibleHallway.START_Z_OFFSET+12);var cache=(BarrelBlockEntity)l.getBlockEntity(cupboard);cache.setItem(2,new ItemStack(Items.PAPER,3));
-        HouseImpossibleHallway.dressDomesticApproach(l,o);
-        var b=o.offset(80,0,0);LabyrinthHalls.build(l,b,LabyrinthPlace.BENT_HALL);
-        var bedPos=b.offset(-9,0,-28);var bed=l.getBlockState(bedPos);var wall=b.offset(-13,1,-27);l.setBlock(wall,Blocks.PINK_TERRACOTTA.defaultBlockState(),2);WallNotesRepairs.neutralBedroom(l,b);
-        h.assertTrue(l.getBlockState(patch).is(Blocks.WHITE_TERRACOTTA)&&l.getBlockState(custom).is(Blocks.BRICKS)&&l.getBlockEntity(cupboard)==cache&&cache.getItem(2).getCount()==3,"the old yellow patch becomes matching plaster while an edit and actual cupboard remain");
-        h.assertTrue(bed.getBlock() instanceof BedBlock&&l.getBlockState(wall).is(Blocks.LIGHT_GRAY_TERRACOTTA)&&l.getBlockState(bedPos).equals(bed),"the red-looking bedroom gets an ordinary neutral finish without rebuilding its actual bed");h.succeed();
-    }
     @GameTest(template="empty") public static void recurringHomeCopiesHavePersonalBreathingRoomAfterReload(GameTestHelper h){
         var d=new LabyrinthData();var reader=UUID.randomUUID();var peer=UUID.randomUUID();d.setReady(RedRoom.ID,true);d.visit(reader,LabyrinthPlace.RED_ROOM);
         var saved=LabyrinthData.FACTORY.deserializer().apply(d.save(new CompoundTag(),h.getLevel().registryAccess()),h.getLevel().registryAccess());

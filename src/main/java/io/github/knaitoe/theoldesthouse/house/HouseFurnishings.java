@@ -24,7 +24,8 @@ public final class HouseFurnishings {
         level.setBlock(pos,HouseholdFurnitureBlock.state(kind,facing),HouseCanvas.BUILD_FLAGS);
     }
     public static void paper(ServerLevel level,BlockPos pos,HouseMarginalia.Thread thread,Direction facing) {
-        if(level.getBlockState(pos).isAir() && NoteSurfaceBlock.supported(level,pos) && keepPaper(level,pos,thread))
+        if(level.getBlockState(pos).isAir() && NoteSurfaceBlock.supported(level,pos) && keepPaper(level,pos,thread)
+                && RoomNotes.canAdd(level,pos))
             level.setBlock(pos,NoteSurfaceBlock.state(thread,facing),HouseCanvas.BUILD_FLAGS);
     }
     /** One early mundane list, then roughly one third of the former scenery papers. */

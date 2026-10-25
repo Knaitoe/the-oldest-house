@@ -1,0 +1,146 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "the_oldest_house:block/uncanny/dark_wood",
+    "dark_wood": "the_oldest_house:block/uncanny/dark_wood",
+    "picture": "the_oldest_house:block/uncanny/picture"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        14
+      ],
+      "to": [
+        14,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_wood",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#dark_wood",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#dark_wood",
+          "uv": [
+            0,
+            2,
+            2,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#dark_wood",
+          "uv": [
+            14,
+            2,
+            16,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#dark_wood",
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#dark_wood",
+          "uv": [
+            2,
+            0,
+            14,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        3,
+        13
+      ],
+      "to": [
+        13,
+        13,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#picture",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#picture",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#picture",
+          "uv": [
+            2,
+            3,
+            3,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#picture",
+          "uv": [
+            13,
+            3,
+            14,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#picture",
+          "uv": [
+            3,
+            13,
+            13,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#picture",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}
