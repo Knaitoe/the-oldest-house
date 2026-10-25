@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.*;
 /** Native socket-client source/menu/bed/feed/door/health actions and genuine GPU readback. Opt-in only. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class UncannySocketClient {
-    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,terrainStep=-1,terrainSentAge=-1000;private static String shot;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
+    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,terrainStep=-1,terrainSentAge=-1000;private static String extraShot,shot;private static boolean archiveRequested;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
     private UncannySocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("UNCANNY CLIENT: "+message);}
@@ -33,8 +33,15 @@ public final class UncannySocketClient {
     private static LiteraryActor actor(Minecraft mc,int wanted){for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&a.role()==wanted&&a.owner().filter(id->id.equals(mc.player.getUUID())).isPresent())return a;return null;}
     private static void paper(Minecraft mc,BlockPos at,String view,boolean verified){
         if(mc.screen instanceof LecternScreen){
-            paperOpened=true;if(paperSent<0&&lastPage(mc))paperSent=age;
-            if(paperSent>=0&&age-paperSent>=20)mc.player.closeContainer();
+            if(phase==5){
+                var stack=mc.player.containerMenu.getSlot(0).getItem();var content=stack.get(DataComponents.WRITTEN_BOOK_CONTENT);var custom=stack.get(DataComponents.CUSTOM_DATA);if(content==null||custom==null)return;
+                if(custom.copyTag().getBoolean(UncannyReading.VIEW)){
+                    net.minecraft.client.gui.components.Button full=null;for(var child:mc.screen.children())if(child instanceof net.minecraft.client.gui.components.Button button&&button.getMessage().getString().equals("Full account"))full=button;
+                    if(full==null)return;require(content.pages().size()==1,"the initial native passage has one page");paperOpened=true;
+                    if(paperSent<0){extraShot=role()+"-short-passage";paperSent=age;}
+                    if(age-paperSent>=20){if(role().equals("A")&&!archiveRequested){archiveRequested=true;full.onPress();}else mc.player.closeContainer();}
+                }else if(archiveRequested){require(content.pages().size()>=9,"Full account preserves the original notebook");if(!captures.contains("archive")){extraShot=role()+"-full-account";captures.add("archive");paperSent=age;}if(age-paperSent>=20)mc.player.closeContainer();}
+            }else{paperOpened=true;if(paperSent<0&&lastPage(mc))paperSent=age;if(paperSent>=0&&age-paperSent>=20)mc.player.closeContainer();}
         }else if(!paperOpened||paperSent<0)click(mc,at);
         // The native menu and final-page round trip must happen; elapsed phase time alone proves neither.
         if(paperOpened&&paperSent>=0&&verified&&mc.screen==null)ack(mc,view);
@@ -127,7 +134,8 @@ public final class UncannySocketClient {
         if(phase==17&&age>30)mc.stop();
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        if(!UncannySocketProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(UncannySocketProof.folder());
+        if(!UncannySocketProof.enabled()||shot==null&&extraShot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(UncannySocketProof.folder());
+        if(extraShot!=null){try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(UncannySocketProof.folder().resolve(extraShot+".png"));}extraShot=null;}if(shot==null)return;
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(UncannySocketProof.folder().resolve(shot+".png"));}
         String view=shot.substring(role().length()+1);captures.add(phase+":"+view);
         if(!view.equals("foyer-lit")&&!view.equals("foyer-dark")&&!view.equals("diner-room"))mc.player.connection.sendCommand("uncannyproof "+phase);

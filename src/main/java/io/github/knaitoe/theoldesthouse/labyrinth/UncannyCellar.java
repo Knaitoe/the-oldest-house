@@ -67,6 +67,28 @@ public final class UncannyCellar {
         var s=new ItemStack(UncannyRegistry.CELLAR_KEY.get(),old.getCount());s.applyComponents(old.getComponentsPatch());return s;
     }
     private static boolean ownedKey(ServerPlayer p,ItemStack s){var c=s.get(DataComponents.CUSTOM_DATA);return c!=null&&c.copyTag().hasUUID("UncannyKeyOwner")&&c.copyTag().getUUID("UncannyKeyOwner").equals(p.getUUID());}
+    private static boolean carriesKey(ServerPlayer p){for(int i=0;i<p.getInventory().getContainerSize();i++)if(ownedKey(p,p.getInventory().getItem(i)))return true;return false;}
+    public static boolean askToLeave(ServerPlayer p,BlockPos b,CompoundTag own){
+        if(b==null||own.getInt("Peeled")<6||!carriesKey(p))return false;
+        var shared=UncannyStories.world(p.serverLevel(),b,PLACE);if(shared.getBoolean("Rescued"))return false;
+        if(shared.hasUUID("EscortOwner")&&!shared.getUUID("EscortOwner").equals(p.getUUID())){
+            var other=p.server.getPlayerList().getPlayer(shared.getUUID("EscortOwner"));if(other!=null&&LiteraryVignettes.inside(other,PLACE))return false;
+        }
+        shared.putUUID("EscortOwner",p.getUUID());own.putBoolean("Escorting",true);UncannyStories.world(p.serverLevel(),b,PLACE,shared);
+        p.displayClientMessage(net.minecraft.network.chat.Component.literal("“I can walk. Keep the way clear.”"),false);return true;
+    }
+    /** The original worker follows supported floor and the real stairs. No flag substitutes for his arrival. */
+    private static void escort(ServerLevel l,BlockPos b,CompoundTag shared,LiteraryActor worker){
+        if(worker==null||!shared.hasUUID("EscortOwner")||shared.getBoolean("Rescued"))return;
+        var owner=l.getServer().getPlayerList().getPlayer(shared.getUUID("EscortOwner"));
+        if(owner==null||!LiteraryVignettes.inside(owner,PLACE)||UncannyStories.failed(LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),owner.getUUID(),PLACE)))return;
+        var points=List.of(new Vec3(-2.5,-5,-13.5),new Vec3(.5,-5,-11.5),new Vec3(.5,0,-4.5),new Vec3(-2.5,0,-3.5));
+        int leg=Math.min(points.size()-1,shared.getInt("EscortLeg"));var target=points.get(leg).add(b.getX(),b.getY(),b.getZ());
+        worker.gesture(0);if(SceneFootpaths.step(worker,target,.28)){
+            if(leg<points.size()-1)shared.putInt("EscortLeg",leg+1);
+            else if(worker.getY()>=b.getY()-.1&&worker.getZ()>b.getZ()-5){shared.putBoolean("Rescued",true);shared.remove("EscortOwner");}
+        }
+    }
     /** Completed readers can carry an old original away from the cellar; this is independent of story ticking. */
     public static void migrateKeys(ServerPlayer p){
         for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);if(s.is(LiteraryRegistry.KEY.get())&&ownedKey(p,s))p.getInventory().setItem(i,key(s));}
@@ -96,7 +118,7 @@ public final class UncannyCellar {
         if(shared.getLong("Tick")!=now){
             shared.putLong("Tick",now);int age=shared.getInt("Age")+5;shared.putInt("Age",age);int stage=age<400?0:age<800?1:2;
             var worker=shared.hasUUID("Peeler")&&l.getEntity(shared.getUUID("Peeler")) instanceof LiteraryActor a?a:null;
-            if(worker!=null){
+            if(worker!=null&&!shared.getBoolean("Rescued")&&!shared.hasUUID("EscortOwner")){
                 worker.appearance(LiteraryActor.UNCANNY_PEELER,stage);worker.gesture(1);
                 var to=Vec3.atCenterOf(b.offset(0,-3,-20));float yaw=(float)(Math.toDegrees(Math.atan2(to.z-worker.getZ(),to.x-worker.getX()))-90);
                 worker.setYRot(yaw);worker.setYHeadRot(yaw);worker.yBodyRot=yaw;
@@ -104,7 +126,7 @@ public final class UncannyCellar {
                 if(age%40==0&&stage<2){var r=new BlockPos(-1,-3,-19);var at=b.offset(r);if(UncannyFleshBlock.is(l.getBlockState(at))){l.setBlock(at,Blocks.AIR.defaultBlockState(),F);cut(l,b,r,shared);}if(stage==0&&!worker.getMainHandItem().isEmpty())worker.getMainHandItem().hurtAndBreak(1,worker,EquipmentSlot.MAINHAND);shared.putLong("LastPeel",now);}
                 if(age%20==0)l.sendParticles(ParticleTypes.DRIPPING_WATER,worker.getX(),worker.getY()+1.5,worker.getZ(),1,.12,.05,.12,0);
             }
-            regrow(l,b,shared);spread(l,b,shared,age);lamps(l,b,age);UncannyStories.world(l,b,PLACE,shared);
+            escort(l,b,shared,worker);regrow(l,b,shared);spread(l,b,shared,age);lamps(l,b,age);UncannyStories.world(l,b,PLACE,shared);
         }
         own.putInt("GrowthCue",shared.getInt("Pulse"));
         int age=shared.getInt("Age");
@@ -119,6 +141,10 @@ public final class UncannyCellar {
         boolean hasKey=false;for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);if(ownedKey(p,s)){hasKey=true;if(!s.is(UncannyRegistry.CELLAR_KEY.get()))p.getInventory().setItem(i,key(s));}}
         if(own.hasUUID("KeyEntity")&&l.getEntity(own.getUUID("KeyEntity")) instanceof ItemEntity e&&ownedKey(p,e.getItem())&&!e.getItem().is(UncannyRegistry.CELLAR_KEY.get()))e.setItem(key(e.getItem()));
         contact(p,b,own);
-        if(hasKey&&own.getInt("Peeled")>=6&&p.getY()>=b.getY()&&p.getZ()>b.getZ()-7){own.putBoolean("Helped",true);UncannyStories.ready(p,PLACE,own,"brought_the_cellar_key_up");}
+        if(hasKey&&own.getInt("Peeled")>=6&&p.getY()>=b.getY()&&p.getZ()>b.getZ()-7){
+            if(own.getBoolean("Escorting")&&!shared.getBoolean("Rescued"))return;
+            own.putBoolean("Helped",true);own.putBoolean("WorkerRescued",own.getBoolean("Escorting")&&shared.getBoolean("Rescued"));own.putBoolean("WorkerAlreadySafe",!own.getBoolean("Escorting")&&shared.getBoolean("Rescued"));
+            UncannyStories.ready(p,PLACE,own,own.getBoolean("WorkerRescued")?"walked_the_worker_out":"brought_the_cellar_key_up");
+        }
     }
 }
