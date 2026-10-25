@@ -5,7 +5,7 @@ the cousins eat, then a knock at the door, "let me in", which the player may ope
 circuit round the windows start, with the Goatman's words playing as it circles and tied to its knocks at the door.
 Confession: "What name did you come here under?" and then it stalls; it does not progress.
 
-Built on 062f6a3e, the common base of the 0.4.121 and 0.4.122 lines, and merged into the 0.4.122 line. No layout, protocol or
+Built on 062f6a3e, the common base of the 0.4.121 and 0.4.122 lines, and merged into the 0.4.122 line and its 0.4.123 continuation (through a539df84). No layout, protocol or
 Witness change: 52 sources / 39 resolutions / two kinds / three endings.
 
 ## Goatman

@@ -14,14 +14,15 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
-/** Two small, saved geometry repairs; no actor, inventory, writing or story reconstruction. */
+/** Small, saved geometry repairs; no actor, inventory, writing or story reconstruction. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class SceneSupportRepairs {
     public static final String STATE="scene_supports_0453";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private SceneSupportRepairs(){}
-    private static boolean applies(LabyrinthPlace p){return p==LabyrinthPlace.TED_CAVER||p==LabyrinthPlace.BARN_WELL;}
+    private static boolean applies(LabyrinthPlace p){return p==LabyrinthPlace.TED_CAVER||p==LabyrinthPlace.BARN_WELL||p==LabyrinthPlace.GRAVITY_DRIFT;}
     public static AABB area(BlockPos b,LabyrinthPlace p){
+        if(p==LabyrinthPlace.GRAVITY_DRIFT)return new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(0,3,-23)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(3,6,-5)));
         return p==LabyrinthPlace.TED_CAVER?new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-9,-4,-47)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(0,5,-35)))
                 :new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-18,-1,-40)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(18,5,0)));
     }
@@ -73,6 +74,14 @@ public final class SceneSupportRepairs {
         }
         return ready;
     }
+    /** Hang the two original lamps from the actual ceiling, without moving or replacing them. */
+    public static boolean gravity(ServerLevel l,BlockPos b){
+        var bodies=l.getEntitiesOfClass(LivingEntity.class,area(b,LabyrinthPlace.GRAVITY_DRIFT),e->e.isAlive()&&!e.isSpectator());boolean ready=true;
+        for(int z:new int[]{-7,-21}){var at=b.offset(1,3,z);var lamp=BuildBlocks.state(l,at);var support=at.above();
+            if(lamp.is(Blocks.SOUL_LANTERN)&&lamp.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HANGING)&&BuildBlocks.state(l,support).isAir()
+                    &&BuildBlocks.state(l,support.above()).isFaceSturdy(l,support.above(),Direction.DOWN))ready&=change(l,support,Blocks.CHAIN.defaultBlockState(),bodies);
+        }return ready;
+    }
     public static boolean repairOnce(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!applies(p)||!l.dimension().equals(NovelRooms.dimension(p)))return false;
         var data=LabyrinthData.get(l.getServer());String key=origin.asLong()+":"+p.id();
@@ -82,7 +91,7 @@ public final class SceneSupportRepairs {
         for(int x=(int)Math.floor(area.minX)>>4;x<=((int)Math.ceil(area.maxX)-1)>>4;x++)
             for(int z=(int)Math.floor(area.minZ)>>4;z<=((int)Math.ceil(area.maxZ)-1)>>4;z++)
                 if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
-        boolean ready=p==LabyrinthPlace.TED_CAVER?cave(l,b):barn(l,b);
+        boolean ready=p==LabyrinthPlace.TED_CAVER?cave(l,b):p==LabyrinthPlace.GRAVITY_DRIFT?gravity(l,b):barn(l,b);
         if(ready){var done=data.state(STATE);done.putBoolean(key,true);data.setState(STATE,done);}return ready;
     }
     public static void forget(net.minecraft.server.MinecraftServer s,BlockPos origin,LabyrinthPlace p){
@@ -91,7 +100,7 @@ public final class SceneSupportRepairs {
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
         var s=event.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=19||LabyrinthBuilder.isCarving())return;
         var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;var data=LabyrinthData.get(s);
-        for(var p:List.of(LabyrinthPlace.TED_CAVER,LabyrinthPlace.BARN_WELL))if(data.door(p.entryDoorId())!=null&&LabyrinthBuilder.isPlaceReady(data,p)){
+        for(var p:List.of(LabyrinthPlace.TED_CAVER,LabyrinthPlace.BARN_WELL,LabyrinthPlace.GRAVITY_DRIFT))if(data.door(p.entryDoorId())!=null&&LabyrinthBuilder.isPlaceReady(data,p)){
             var l=s.getLevel(NovelRooms.dimension(p));if(l!=null)repairOnce(l,origin,p);
         }
     }

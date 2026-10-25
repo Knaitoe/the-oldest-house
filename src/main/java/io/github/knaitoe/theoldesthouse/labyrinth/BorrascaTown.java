@@ -36,8 +36,8 @@ final class BorrascaTown {
     private static void prop(ServerLevel l,BlockPos b,int x,int y,int z,LiteraryPropBlock.Kind k,Direction d,int stage){set(l,b,x,y,z,LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,k).setValue(LiteraryPropBlock.FACING,d).setValue(LiteraryPropBlock.STAGE,stage));}
     private static void road(ServerLevel l,BlockPos b,int x,int y,int z,RoadhouseBlock.Kind k,Direction d){set(l,b,x,y,z,RoadhouseBlock.of(k,d));}
     private static int hash(int x,int y,int z){int h=x*73856093^y*19349663^z*83492791;return (h^h>>>13)&0x7fffffff;}
-    /** Corrugated steel, every few sheets rusted through. */
-    private static BlockState sheet(int x,int y,int z){return fit(hash(x,y,z)%6==0?BorrascaFittingBlock.Kind.RUST:BorrascaFittingBlock.Kind.STEEL);}
+    /** Corrugated steel; one sheet run in six has rusted up from the base, where the rain stands against it. */
+    private static BlockState sheet(int x,int y,int z){int run=hash(x,0,z);return fit(run%6==0&&y<=13+run/6%3?BorrascaFittingBlock.Kind.RUST:BorrascaFittingBlock.Kind.STEEL);}
     /** A slab roof in half-block steps; on a wall line an odd step is a double slab, so no slit opens over the wall. */
     private static void roofCell(ServerLevel l,BlockPos b,int x,int z,int half,Block slab,boolean wall){
         set(l,b,x,half/2,z,slab(slab,half%2==0?SlabType.BOTTOM:wall?SlabType.DOUBLE:SlabType.TOP));

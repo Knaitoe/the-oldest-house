@@ -49,7 +49,7 @@ public final class UncannyTextures {
     public static ResourceLocation skin(int role,int phase){
         if(role==LiteraryActor.UNCANNY_WAITRESS)return ResourceLocation.fromNamespaceAndPath("the_oldest_house","textures/entity/uncanny_waitress.png");
         if(role==LiteraryActor.UNCANNY_FALSE_WAITRESS)return ResourceLocation.fromNamespaceAndPath("the_oldest_house",phase>=2?"textures/entity/uncanny_second_waitress_split.png":"textures/entity/uncanny_second_waitress.png");
-        if(role==LiteraryActor.UNCANNY_PEELER)return ResourceLocation.fromNamespaceAndPath("the_oldest_house","textures/entity/uncanny_peeler.png");
+        if(role==LiteraryActor.UNCANNY_PEELER)return ResourceLocation.fromNamespaceAndPath("the_oldest_house",phase>=1?"textures/entity/uncanny_peeler_exhausted.png":"textures/entity/uncanny_peeler.png");
         if(role==LiteraryActor.UNCANNY_VISITOR)return ResourceLocation.fromNamespaceAndPath("the_oldest_house","textures/entity/uncanny_visitor.png");
         int variant=role==LiteraryActor.UNCANNY_FALSE_WAITRESS&&phase>=2?1:0;String key="skin_"+role+"_"+variant;
         if(TEXTURES.containsKey(key))return TEXTURES.get(key);

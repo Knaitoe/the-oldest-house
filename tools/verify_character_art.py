@@ -11,11 +11,26 @@ from character_art_catalog import entries
 
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=ROOT/'art/inventory/character_review_04100.json'
+FAMILY_REVIEW=ROOT/'art/inventory/painted_family_04123.json'
+FAMILY_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
+              for role in ('father','mother','child') for phase in ('','_changed')}
+
+
+def reviewed_repaints(review):
+    """Current approved paintings, shared by source and actual playable-JAR checks."""
+    changed={r['path']:r for r in review['repainted']}
+    # Only the six explicitly requested family sheets supersede their historical hashes.
+    family={r['path']:r for r in json.loads(FAMILY_REVIEW.read_text())['repainted']}
+    assert set(family)==FAMILY_PATHS
+    for path,row in family.items():
+        assert row['review_04100_sha256']==changed[path]['sha256'],('Historical family review changed',path)
+        assert row['size']==changed[path]['size'] and row['alpha_sha256']==changed[path]['alpha_sha256'],('Family UV/alpha changed',path)
+    return {**changed,**family}
 
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--jar',action='store_true');args=parser.parse_args()
-    review=json.loads(CATALOG.read_text());changed={r['path']:r for r in review['repainted']}
+    review=json.loads(CATALOG.read_text());changed=reviewed_repaints(review)
     # Preserve the historical 0.4.100 inventory, including its original machine atlas.
     # The five later Drisking human sheets are now explicitly included in LOOKS below.
     assert review['excluded']==['Borrasca']
@@ -51,7 +66,7 @@ def main():
     runtime=json.loads(read('src/main/resources/assets/the_oldest_house/character_art.json'))
     assert runtime==entries(),'Native review catalog differs from the actual production mesh selection'
     assert {r['name'] for r in runtime if r['model']=='borrasca'}=={'borrasca_'+p for p in ('kyle','kimber','sheriff','prescott','worker')}
-    print(f"Verified {len(changed)} historical paintings, {len(runtime)} human model selections including Drisking, all opaque native base faces and {len(review['unchanged_png_sha256'])} unchanged historical PNGs.")
+    print(f"Verified {len(changed)} catalogued paintings including {len(FAMILY_PATHS)} refreshed family sheets, {len(runtime)} human model selections including Drisking, all opaque native base faces and {len(review['unchanged_png_sha256'])} unchanged historical PNGs.")
     if packaged:packaged.close()
 
 

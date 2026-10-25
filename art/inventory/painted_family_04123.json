@@ -1,0 +1,66 @@
+{
+  "authorization": "Owner requested that the painted family match the common NPC style while remaining ghoulish and frightening, with asymmetric faces.",
+  "source_commit": "ebc03cee0afb19b1a3fb61fe907491a5c4fe953d",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_child.png",
+      "review_04100_sha256": "f007934f90a1808e19e77d573d7ae5bea836eb124ce1796bb26d25eae6bdb079",
+      "sha256": "ff6ddd3d3ae9b5e2353762360d237ef601dcb25bceabbc7a8acda765b311826e",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_child_changed.png",
+      "review_04100_sha256": "13cd4c18ae252a92d382f3761ffcd36a0087a15492d32dc0e975a03e90a0d57e",
+      "sha256": "0c86a87e774cd7f237393d3ca1744293271569099540c49dd5e56f30abf90185",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_father.png",
+      "review_04100_sha256": "77619b9e2461d0bbfab6fe67c0e907e73ae430bfa7aac5d0aef805e6c9fed409",
+      "sha256": "3c4323f65ff8d288b83c860d038529ba767d9a3158155fb13e2bd793b813ee49",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_father_changed.png",
+      "review_04100_sha256": "386e9d80043e74c35af2c8b071dd80e86c0dfdd2a5740293677e964fd3e66965",
+      "sha256": "e2a68cfb9972467f2b6a6d32f009d85c23e8393852d9416505abd8bbe1491ea1",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_mother.png",
+      "review_04100_sha256": "11a716c3ca10d2621ea4282565f48f1cd078368fa6ed93e03b346d0a3e60617f",
+      "sha256": "fd6f1754cca82aa2ad36647021070aad275f20f5be6237a3d127e4ac55a5ec9a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_family_mother_changed.png",
+      "review_04100_sha256": "1317c614bf2be0de2edfb8e54a20c5ee1f239361709727c220581d14c9dbb244",
+      "sha256": "3e7cd249154ed25d8c31e01f9d4d3d7afac00444ba13979bcdba9ee35134ff0d",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    }
+  ]
+}

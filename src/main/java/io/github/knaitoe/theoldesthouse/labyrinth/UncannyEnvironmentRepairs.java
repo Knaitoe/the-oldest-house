@@ -14,15 +14,23 @@ import net.minecraft.world.phys.AABB;
 
 /** One bounded, loaded and unobserved refit. Never executes either construction plan's callbacks. */
 public final class UncannyEnvironmentRepairs {
-    public static final String STATE="uncanny_environment_0122";
+    public static final String STATE="uncanny_environment_0123";
     private static Work work;
     private static final class Work {
         final ServerLevel level;final BlockPos origin,base;final LabyrinthPlace place;
-        final BuildBlocks.Plan before,after;final AABB area;final int width,depth,total;int cursor;
+        final java.util.Set<BlockPos> settledYard=new java.util.HashSet<>();
+        final BuildBlocks.Plan before,previous,after;final AABB area;final boolean cellarDoorOpen;final int width,depth,total;int cursor;
         Work(ServerLevel level,BlockPos origin,LabyrinthPlace place){
             this.level=level;this.origin=origin.immutable();this.place=place;base=LabyrinthPlaces.base(origin,place);area=IndianLakeRooms.bounds(base,place);
             before=BuildBlocks.record(level,()->UncannyRooms0121.build(level,base,place));
+            previous=BuildBlocks.record(level,()->UncannyRooms0122.build(level,base,place));
             after=BuildBlocks.record(level,()->UncannyRooms.build(level,base,place));
+            var cellarDoor=level.getBlockState(base.offset(UncannyRooms0122.CELLAR_DOOR));cellarDoorOpen=!(cellarDoor.getBlock() instanceof DoorBlock)||cellarDoor.getValue(DoorBlock.OPEN);
+            // The old unsupported gravel can fall one row into the cleared slot above its solid backing.
+            // Recognize that exact natural state; unrelated floor edits still remain untouched.
+            if(place==LabyrinthPlace.MOTION_LIGHT)for(int x=-6;x<=6;x++)for(int z=-24;z<=-16;z++){
+                var floor=base.offset(x,-1,z);if(level.getBlockState(floor).isAir()&&level.getBlockState(floor.below()).is(Blocks.GRAVEL))settledYard.add(floor);
+            }
             var r=place.room();width=r.maxX()-r.minX()+1;depth=r.maxZ()-r.minZ()+1;total=width*depth*(r.maxY()-r.minY()+1);
         }
     }
@@ -59,19 +67,30 @@ public final class UncannyEnvironmentRepairs {
         if(!loaded(l,area)||!vacant(l,area))return false;
         if(work==null)work=new Work(l,origin,place);
         if(work.level!=l||work.place!=place||!work.origin.equals(origin))return false;
-        // Saved NPCs, dropped originals and other real entities keep their bodies and locations.
-        List<AABB> occupied=l.getEntities((Entity)null,area,Entity::isAlive).stream().map(Entity::getBoundingBox).toList();
+        // Keep original bodies and custody; only the recognized one-row gravel settling is corrected below.
+        List<Entity> occupied=l.getEntities((Entity)null,area,Entity::isAlive);
         var r=place.room();long end=System.nanoTime()+4_000_000L;int visits=0;
         while(work.cursor<work.total&&visits++<512&&System.nanoTime()<end){
             int i=work.cursor++;var at=work.base.offset(r.minX()+i%work.width,r.minY()+i/(work.width*work.depth),r.minZ()+i/work.width%work.depth);
-            var old=work.before.plannedState(at);var next=work.after.plannedState(at);var actual=l.getBlockState(at);
-            if(old==null||next==null||old.equals(next)||actual.equals(next))continue;
-            if(occupied.stream().anyMatch(a->a.intersects(new AABB(at))))continue;
+            var old=work.before.plannedState(at);var recent=work.previous.plannedState(at);var next=work.after.plannedState(at);var actual=l.getBlockState(at);
+            if(old==null||recent==null||next==null||actual.equals(next))continue;
+            if(work.settledYard.contains(at)&&actual.isAir()&&next.is(Blocks.GRAVEL)){
+                // A visitor may have settled with the gravel. Raise the same physical body only
+                // when its exact one-row lift is clear, then support it in this same visit.
+                for(var body:occupied)if(body instanceof net.minecraft.world.entity.LivingEntity&&body.getBoundingBox().intersects(new AABB(at))&&Math.abs(body.getY()-(work.base.getY()-1))<.1
+                        &&!l.getBlockCollisions(body,body.getBoundingBox().move(0,1,0)).iterator().hasNext())body.move(net.minecraft.world.entity.MoverType.SELF,new net.minecraft.world.phys.Vec3(0,1,0));
+            }
+            if(occupied.stream().anyMatch(a->a.getBoundingBox().intersects(new AABB(at))))continue;
             // Peel holes, moving doors, switches, staged fittings and player edits are never reset.
             if(actual.getBlock() instanceof DoorBlock&&old.getBlock()==actual.getBlock()&&next.getBlock() instanceof DoorBlock){
                 next=next.setValue(DoorBlock.FACING,actual.getValue(DoorBlock.FACING)).setValue(DoorBlock.HALF,actual.getValue(DoorBlock.HALF))
                     .setValue(DoorBlock.HINGE,actual.getValue(DoorBlock.HINGE)).setValue(DoorBlock.OPEN,actual.getValue(DoorBlock.OPEN)).setValue(DoorBlock.POWERED,actual.getValue(DoorBlock.POWERED));
-            }else if(!actual.equals(old))continue;
+            }else if(!actual.equals(old)&&!actual.equals(recent)){
+                boolean fallenFloor=work.settledYard.contains(at)&&actual.isAir()&&next.is(Blocks.GRAVEL);
+                boolean fallenBacking=work.settledYard.contains(at.above())&&actual.is(Blocks.GRAVEL)&&next.is(Blocks.STONE);
+                if(!fallenFloor&&!fallenBacking)continue;
+            }
+            if(place==LabyrinthPlace.LAYERED_MAN&&next.getBlock() instanceof DoorBlock&&(at.equals(work.base.offset(UncannyRooms.CELLAR_DOOR))||at.equals(work.base.offset(UncannyRooms.CELLAR_DOOR.above()))))next=next.setValue(DoorBlock.OPEN,work.cellarDoorOpen);
             var be=l.getBlockEntity(at);if(be!=null&&(!(be instanceof Container c)||!c.isEmpty()))continue;
             l.setBlock(at,next,UncannyRooms.FLAGS);
         }
