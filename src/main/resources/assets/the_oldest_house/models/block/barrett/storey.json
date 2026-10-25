@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "up": "the_oldest_house:block/ghosts/floor",
+  "down": "the_oldest_house:block/barrett/ceiling_plaster",
+  "north": "the_oldest_house:block/barrett/paint",
+  "south": "the_oldest_house:block/barrett/paint",
+  "east": "the_oldest_house:block/barrett/paint",
+  "west": "the_oldest_house:block/barrett/paint",
+  "particle": "the_oldest_house:block/barrett/paint"
+ }
+}

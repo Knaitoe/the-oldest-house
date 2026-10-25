@@ -1,0 +1,694 @@
+{
+ "variants": {
+  "facing=north,kind=paint": {
+   "model": "the_oldest_house:block/barrett/paint"
+  },
+  "facing=north,kind=concrete": {
+   "model": "the_oldest_house:block/barrett/concrete"
+  },
+  "facing=north,kind=drywall": {
+   "model": "the_oldest_house:block/barrett/drywall"
+  },
+  "facing=north,kind=window": {
+   "model": "the_oldest_house:block/barrett/window"
+  },
+  "facing=north,kind=garage_door": {
+   "model": "the_oldest_house:block/barrett/garage_door"
+  },
+  "facing=north,kind=storey": {
+   "model": "the_oldest_house:block/barrett/storey"
+  },
+  "facing=north,kind=ceiling_light": {
+   "model": "the_oldest_house:block/barrett/ceiling_light"
+  },
+  "facing=north,kind=console": {
+   "model": "the_oldest_house:block/barrett/console"
+  },
+  "facing=north,kind=coat_hooks": {
+   "model": "the_oldest_house:block/barrett/coat_hooks"
+  },
+  "facing=north,kind=shoe_rack": {
+   "model": "the_oldest_house:block/barrett/shoe_rack"
+  },
+  "facing=north,kind=photos": {
+   "model": "the_oldest_house:block/barrett/photos"
+  },
+  "facing=north,kind=calendar": {
+   "model": "the_oldest_house:block/barrett/calendar"
+  },
+  "facing=north,kind=fridge": {
+   "model": "the_oldest_house:block/barrett/fridge"
+  },
+  "facing=north,kind=fridge_top": {
+   "model": "the_oldest_house:block/barrett/fridge_top"
+  },
+  "facing=north,kind=sofa_a": {
+   "model": "the_oldest_house:block/barrett/sofa_a"
+  },
+  "facing=north,kind=sofa_b": {
+   "model": "the_oldest_house:block/barrett/sofa_b"
+  },
+  "facing=north,kind=tv_stand": {
+   "model": "the_oldest_house:block/barrett/tv_stand"
+  },
+  "facing=north,kind=bookshelf": {
+   "model": "the_oldest_house:block/barrett/bookshelf"
+  },
+  "facing=north,kind=plant": {
+   "model": "the_oldest_house:block/barrett/plant"
+  },
+  "facing=north,kind=laundry": {
+   "model": "the_oldest_house:block/barrett/laundry"
+  },
+  "facing=north,kind=clothes": {
+   "model": "the_oldest_house:block/barrett/clothes"
+  },
+  "facing=north,kind=desk": {
+   "model": "the_oldest_house:block/barrett/desk"
+  },
+  "facing=north,kind=desk_kid": {
+   "model": "the_oldest_house:block/barrett/desk_kid"
+  },
+  "facing=north,kind=poster_a": {
+   "model": "the_oldest_house:block/barrett/poster_a"
+  },
+  "facing=north,kind=poster_b": {
+   "model": "the_oldest_house:block/barrett/poster_b"
+  },
+  "facing=north,kind=dresser": {
+   "model": "the_oldest_house:block/barrett/dresser"
+  },
+  "facing=north,kind=double_bed": {
+   "model": "the_oldest_house:block/barrett/double_bed"
+  },
+  "facing=north,kind=bed_fill": {
+   "model": "the_oldest_house:block/barrett/bed_fill"
+  },
+  "facing=north,kind=toilet": {
+   "model": "the_oldest_house:block/barrett/toilet"
+  },
+  "facing=north,kind=tub": {
+   "model": "the_oldest_house:block/barrett/tub"
+  },
+  "facing=north,kind=vanity": {
+   "model": "the_oldest_house:block/barrett/vanity"
+  },
+  "facing=north,kind=washer": {
+   "model": "the_oldest_house:block/barrett/washer"
+  },
+  "facing=north,kind=dryer": {
+   "model": "the_oldest_house:block/barrett/dryer"
+  },
+  "facing=north,kind=boxes": {
+   "model": "the_oldest_house:block/barrett/boxes"
+  },
+  "facing=north,kind=water_heater": {
+   "model": "the_oldest_house:block/barrett/water_heater"
+  },
+  "facing=north,kind=shelves": {
+   "model": "the_oldest_house:block/barrett/shelves"
+  },
+  "facing=north,kind=cable": {
+   "model": "the_oldest_house:block/barrett/cable"
+  },
+  "facing=north,kind=cable_corner": {
+   "model": "the_oldest_house:block/barrett/cable_corner"
+  },
+  "facing=north,kind=softbox": {
+   "model": "the_oldest_house:block/barrett/softbox"
+  },
+  "facing=north,kind=directors_chair": {
+   "model": "the_oldest_house:block/barrett/directors_chair"
+  },
+  "facing=north,kind=village_cart": {
+   "model": "the_oldest_house:block/barrett/village_cart"
+  },
+  "facing=north,kind=apple_boxes": {
+   "model": "the_oldest_house:block/barrett/apple_boxes"
+  },
+  "facing=north,kind=sandbags": {
+   "model": "the_oldest_house:block/barrett/sandbags"
+  },
+  "facing=north,kind=craft_table": {
+   "model": "the_oldest_house:block/barrett/craft_table"
+  },
+  "facing=north,kind=folding_table": {
+   "model": "the_oldest_house:block/barrett/folding_table"
+  },
+  "facing=north,kind=office_chair": {
+   "model": "the_oldest_house:block/barrett/office_chair"
+  },
+  "facing=east,kind=paint": {
+   "model": "the_oldest_house:block/barrett/paint",
+   "y": 90
+  },
+  "facing=east,kind=concrete": {
+   "model": "the_oldest_house:block/barrett/concrete",
+   "y": 90
+  },
+  "facing=east,kind=drywall": {
+   "model": "the_oldest_house:block/barrett/drywall",
+   "y": 90
+  },
+  "facing=east,kind=window": {
+   "model": "the_oldest_house:block/barrett/window",
+   "y": 90
+  },
+  "facing=east,kind=garage_door": {
+   "model": "the_oldest_house:block/barrett/garage_door",
+   "y": 90
+  },
+  "facing=east,kind=storey": {
+   "model": "the_oldest_house:block/barrett/storey",
+   "y": 90
+  },
+  "facing=east,kind=ceiling_light": {
+   "model": "the_oldest_house:block/barrett/ceiling_light",
+   "y": 90
+  },
+  "facing=east,kind=console": {
+   "model": "the_oldest_house:block/barrett/console",
+   "y": 90
+  },
+  "facing=east,kind=coat_hooks": {
+   "model": "the_oldest_house:block/barrett/coat_hooks",
+   "y": 90
+  },
+  "facing=east,kind=shoe_rack": {
+   "model": "the_oldest_house:block/barrett/shoe_rack",
+   "y": 90
+  },
+  "facing=east,kind=photos": {
+   "model": "the_oldest_house:block/barrett/photos",
+   "y": 90
+  },
+  "facing=east,kind=calendar": {
+   "model": "the_oldest_house:block/barrett/calendar",
+   "y": 90
+  },
+  "facing=east,kind=fridge": {
+   "model": "the_oldest_house:block/barrett/fridge",
+   "y": 90
+  },
+  "facing=east,kind=fridge_top": {
+   "model": "the_oldest_house:block/barrett/fridge_top",
+   "y": 90
+  },
+  "facing=east,kind=sofa_a": {
+   "model": "the_oldest_house:block/barrett/sofa_a",
+   "y": 90
+  },
+  "facing=east,kind=sofa_b": {
+   "model": "the_oldest_house:block/barrett/sofa_b",
+   "y": 90
+  },
+  "facing=east,kind=tv_stand": {
+   "model": "the_oldest_house:block/barrett/tv_stand",
+   "y": 90
+  },
+  "facing=east,kind=bookshelf": {
+   "model": "the_oldest_house:block/barrett/bookshelf",
+   "y": 90
+  },
+  "facing=east,kind=plant": {
+   "model": "the_oldest_house:block/barrett/plant",
+   "y": 90
+  },
+  "facing=east,kind=laundry": {
+   "model": "the_oldest_house:block/barrett/laundry",
+   "y": 90
+  },
+  "facing=east,kind=clothes": {
+   "model": "the_oldest_house:block/barrett/clothes",
+   "y": 90
+  },
+  "facing=east,kind=desk": {
+   "model": "the_oldest_house:block/barrett/desk",
+   "y": 90
+  },
+  "facing=east,kind=desk_kid": {
+   "model": "the_oldest_house:block/barrett/desk_kid",
+   "y": 90
+  },
+  "facing=east,kind=poster_a": {
+   "model": "the_oldest_house:block/barrett/poster_a",
+   "y": 90
+  },
+  "facing=east,kind=poster_b": {
+   "model": "the_oldest_house:block/barrett/poster_b",
+   "y": 90
+  },
+  "facing=east,kind=dresser": {
+   "model": "the_oldest_house:block/barrett/dresser",
+   "y": 90
+  },
+  "facing=east,kind=double_bed": {
+   "model": "the_oldest_house:block/barrett/double_bed",
+   "y": 90
+  },
+  "facing=east,kind=bed_fill": {
+   "model": "the_oldest_house:block/barrett/bed_fill",
+   "y": 90
+  },
+  "facing=east,kind=toilet": {
+   "model": "the_oldest_house:block/barrett/toilet",
+   "y": 90
+  },
+  "facing=east,kind=tub": {
+   "model": "the_oldest_house:block/barrett/tub",
+   "y": 90
+  },
+  "facing=east,kind=vanity": {
+   "model": "the_oldest_house:block/barrett/vanity",
+   "y": 90
+  },
+  "facing=east,kind=washer": {
+   "model": "the_oldest_house:block/barrett/washer",
+   "y": 90
+  },
+  "facing=east,kind=dryer": {
+   "model": "the_oldest_house:block/barrett/dryer",
+   "y": 90
+  },
+  "facing=east,kind=boxes": {
+   "model": "the_oldest_house:block/barrett/boxes",
+   "y": 90
+  },
+  "facing=east,kind=water_heater": {
+   "model": "the_oldest_house:block/barrett/water_heater",
+   "y": 90
+  },
+  "facing=east,kind=shelves": {
+   "model": "the_oldest_house:block/barrett/shelves",
+   "y": 90
+  },
+  "facing=east,kind=cable": {
+   "model": "the_oldest_house:block/barrett/cable",
+   "y": 90
+  },
+  "facing=east,kind=cable_corner": {
+   "model": "the_oldest_house:block/barrett/cable_corner",
+   "y": 90
+  },
+  "facing=east,kind=softbox": {
+   "model": "the_oldest_house:block/barrett/softbox",
+   "y": 90
+  },
+  "facing=east,kind=directors_chair": {
+   "model": "the_oldest_house:block/barrett/directors_chair",
+   "y": 90
+  },
+  "facing=east,kind=village_cart": {
+   "model": "the_oldest_house:block/barrett/village_cart",
+   "y": 90
+  },
+  "facing=east,kind=apple_boxes": {
+   "model": "the_oldest_house:block/barrett/apple_boxes",
+   "y": 90
+  },
+  "facing=east,kind=sandbags": {
+   "model": "the_oldest_house:block/barrett/sandbags",
+   "y": 90
+  },
+  "facing=east,kind=craft_table": {
+   "model": "the_oldest_house:block/barrett/craft_table",
+   "y": 90
+  },
+  "facing=east,kind=folding_table": {
+   "model": "the_oldest_house:block/barrett/folding_table",
+   "y": 90
+  },
+  "facing=east,kind=office_chair": {
+   "model": "the_oldest_house:block/barrett/office_chair",
+   "y": 90
+  },
+  "facing=south,kind=paint": {
+   "model": "the_oldest_house:block/barrett/paint",
+   "y": 180
+  },
+  "facing=south,kind=concrete": {
+   "model": "the_oldest_house:block/barrett/concrete",
+   "y": 180
+  },
+  "facing=south,kind=drywall": {
+   "model": "the_oldest_house:block/barrett/drywall",
+   "y": 180
+  },
+  "facing=south,kind=window": {
+   "model": "the_oldest_house:block/barrett/window",
+   "y": 180
+  },
+  "facing=south,kind=garage_door": {
+   "model": "the_oldest_house:block/barrett/garage_door",
+   "y": 180
+  },
+  "facing=south,kind=storey": {
+   "model": "the_oldest_house:block/barrett/storey",
+   "y": 180
+  },
+  "facing=south,kind=ceiling_light": {
+   "model": "the_oldest_house:block/barrett/ceiling_light",
+   "y": 180
+  },
+  "facing=south,kind=console": {
+   "model": "the_oldest_house:block/barrett/console",
+   "y": 180
+  },
+  "facing=south,kind=coat_hooks": {
+   "model": "the_oldest_house:block/barrett/coat_hooks",
+   "y": 180
+  },
+  "facing=south,kind=shoe_rack": {
+   "model": "the_oldest_house:block/barrett/shoe_rack",
+   "y": 180
+  },
+  "facing=south,kind=photos": {
+   "model": "the_oldest_house:block/barrett/photos",
+   "y": 180
+  },
+  "facing=south,kind=calendar": {
+   "model": "the_oldest_house:block/barrett/calendar",
+   "y": 180
+  },
+  "facing=south,kind=fridge": {
+   "model": "the_oldest_house:block/barrett/fridge",
+   "y": 180
+  },
+  "facing=south,kind=fridge_top": {
+   "model": "the_oldest_house:block/barrett/fridge_top",
+   "y": 180
+  },
+  "facing=south,kind=sofa_a": {
+   "model": "the_oldest_house:block/barrett/sofa_a",
+   "y": 180
+  },
+  "facing=south,kind=sofa_b": {
+   "model": "the_oldest_house:block/barrett/sofa_b",
+   "y": 180
+  },
+  "facing=south,kind=tv_stand": {
+   "model": "the_oldest_house:block/barrett/tv_stand",
+   "y": 180
+  },
+  "facing=south,kind=bookshelf": {
+   "model": "the_oldest_house:block/barrett/bookshelf",
+   "y": 180
+  },
+  "facing=south,kind=plant": {
+   "model": "the_oldest_house:block/barrett/plant",
+   "y": 180
+  },
+  "facing=south,kind=laundry": {
+   "model": "the_oldest_house:block/barrett/laundry",
+   "y": 180
+  },
+  "facing=south,kind=clothes": {
+   "model": "the_oldest_house:block/barrett/clothes",
+   "y": 180
+  },
+  "facing=south,kind=desk": {
+   "model": "the_oldest_house:block/barrett/desk",
+   "y": 180
+  },
+  "facing=south,kind=desk_kid": {
+   "model": "the_oldest_house:block/barrett/desk_kid",
+   "y": 180
+  },
+  "facing=south,kind=poster_a": {
+   "model": "the_oldest_house:block/barrett/poster_a",
+   "y": 180
+  },
+  "facing=south,kind=poster_b": {
+   "model": "the_oldest_house:block/barrett/poster_b",
+   "y": 180
+  },
+  "facing=south,kind=dresser": {
+   "model": "the_oldest_house:block/barrett/dresser",
+   "y": 180
+  },
+  "facing=south,kind=double_bed": {
+   "model": "the_oldest_house:block/barrett/double_bed",
+   "y": 180
+  },
+  "facing=south,kind=bed_fill": {
+   "model": "the_oldest_house:block/barrett/bed_fill",
+   "y": 180
+  },
+  "facing=south,kind=toilet": {
+   "model": "the_oldest_house:block/barrett/toilet",
+   "y": 180
+  },
+  "facing=south,kind=tub": {
+   "model": "the_oldest_house:block/barrett/tub",
+   "y": 180
+  },
+  "facing=south,kind=vanity": {
+   "model": "the_oldest_house:block/barrett/vanity",
+   "y": 180
+  },
+  "facing=south,kind=washer": {
+   "model": "the_oldest_house:block/barrett/washer",
+   "y": 180
+  },
+  "facing=south,kind=dryer": {
+   "model": "the_oldest_house:block/barrett/dryer",
+   "y": 180
+  },
+  "facing=south,kind=boxes": {
+   "model": "the_oldest_house:block/barrett/boxes",
+   "y": 180
+  },
+  "facing=south,kind=water_heater": {
+   "model": "the_oldest_house:block/barrett/water_heater",
+   "y": 180
+  },
+  "facing=south,kind=shelves": {
+   "model": "the_oldest_house:block/barrett/shelves",
+   "y": 180
+  },
+  "facing=south,kind=cable": {
+   "model": "the_oldest_house:block/barrett/cable",
+   "y": 180
+  },
+  "facing=south,kind=cable_corner": {
+   "model": "the_oldest_house:block/barrett/cable_corner",
+   "y": 180
+  },
+  "facing=south,kind=softbox": {
+   "model": "the_oldest_house:block/barrett/softbox",
+   "y": 180
+  },
+  "facing=south,kind=directors_chair": {
+   "model": "the_oldest_house:block/barrett/directors_chair",
+   "y": 180
+  },
+  "facing=south,kind=village_cart": {
+   "model": "the_oldest_house:block/barrett/village_cart",
+   "y": 180
+  },
+  "facing=south,kind=apple_boxes": {
+   "model": "the_oldest_house:block/barrett/apple_boxes",
+   "y": 180
+  },
+  "facing=south,kind=sandbags": {
+   "model": "the_oldest_house:block/barrett/sandbags",
+   "y": 180
+  },
+  "facing=south,kind=craft_table": {
+   "model": "the_oldest_house:block/barrett/craft_table",
+   "y": 180
+  },
+  "facing=south,kind=folding_table": {
+   "model": "the_oldest_house:block/barrett/folding_table",
+   "y": 180
+  },
+  "facing=south,kind=office_chair": {
+   "model": "the_oldest_house:block/barrett/office_chair",
+   "y": 180
+  },
+  "facing=west,kind=paint": {
+   "model": "the_oldest_house:block/barrett/paint",
+   "y": 270
+  },
+  "facing=west,kind=concrete": {
+   "model": "the_oldest_house:block/barrett/concrete",
+   "y": 270
+  },
+  "facing=west,kind=drywall": {
+   "model": "the_oldest_house:block/barrett/drywall",
+   "y": 270
+  },
+  "facing=west,kind=window": {
+   "model": "the_oldest_house:block/barrett/window",
+   "y": 270
+  },
+  "facing=west,kind=garage_door": {
+   "model": "the_oldest_house:block/barrett/garage_door",
+   "y": 270
+  },
+  "facing=west,kind=storey": {
+   "model": "the_oldest_house:block/barrett/storey",
+   "y": 270
+  },
+  "facing=west,kind=ceiling_light": {
+   "model": "the_oldest_house:block/barrett/ceiling_light",
+   "y": 270
+  },
+  "facing=west,kind=console": {
+   "model": "the_oldest_house:block/barrett/console",
+   "y": 270
+  },
+  "facing=west,kind=coat_hooks": {
+   "model": "the_oldest_house:block/barrett/coat_hooks",
+   "y": 270
+  },
+  "facing=west,kind=shoe_rack": {
+   "model": "the_oldest_house:block/barrett/shoe_rack",
+   "y": 270
+  },
+  "facing=west,kind=photos": {
+   "model": "the_oldest_house:block/barrett/photos",
+   "y": 270
+  },
+  "facing=west,kind=calendar": {
+   "model": "the_oldest_house:block/barrett/calendar",
+   "y": 270
+  },
+  "facing=west,kind=fridge": {
+   "model": "the_oldest_house:block/barrett/fridge",
+   "y": 270
+  },
+  "facing=west,kind=fridge_top": {
+   "model": "the_oldest_house:block/barrett/fridge_top",
+   "y": 270
+  },
+  "facing=west,kind=sofa_a": {
+   "model": "the_oldest_house:block/barrett/sofa_a",
+   "y": 270
+  },
+  "facing=west,kind=sofa_b": {
+   "model": "the_oldest_house:block/barrett/sofa_b",
+   "y": 270
+  },
+  "facing=west,kind=tv_stand": {
+   "model": "the_oldest_house:block/barrett/tv_stand",
+   "y": 270
+  },
+  "facing=west,kind=bookshelf": {
+   "model": "the_oldest_house:block/barrett/bookshelf",
+   "y": 270
+  },
+  "facing=west,kind=plant": {
+   "model": "the_oldest_house:block/barrett/plant",
+   "y": 270
+  },
+  "facing=west,kind=laundry": {
+   "model": "the_oldest_house:block/barrett/laundry",
+   "y": 270
+  },
+  "facing=west,kind=clothes": {
+   "model": "the_oldest_house:block/barrett/clothes",
+   "y": 270
+  },
+  "facing=west,kind=desk": {
+   "model": "the_oldest_house:block/barrett/desk",
+   "y": 270
+  },
+  "facing=west,kind=desk_kid": {
+   "model": "the_oldest_house:block/barrett/desk_kid",
+   "y": 270
+  },
+  "facing=west,kind=poster_a": {
+   "model": "the_oldest_house:block/barrett/poster_a",
+   "y": 270
+  },
+  "facing=west,kind=poster_b": {
+   "model": "the_oldest_house:block/barrett/poster_b",
+   "y": 270
+  },
+  "facing=west,kind=dresser": {
+   "model": "the_oldest_house:block/barrett/dresser",
+   "y": 270
+  },
+  "facing=west,kind=double_bed": {
+   "model": "the_oldest_house:block/barrett/double_bed",
+   "y": 270
+  },
+  "facing=west,kind=bed_fill": {
+   "model": "the_oldest_house:block/barrett/bed_fill",
+   "y": 270
+  },
+  "facing=west,kind=toilet": {
+   "model": "the_oldest_house:block/barrett/toilet",
+   "y": 270
+  },
+  "facing=west,kind=tub": {
+   "model": "the_oldest_house:block/barrett/tub",
+   "y": 270
+  },
+  "facing=west,kind=vanity": {
+   "model": "the_oldest_house:block/barrett/vanity",
+   "y": 270
+  },
+  "facing=west,kind=washer": {
+   "model": "the_oldest_house:block/barrett/washer",
+   "y": 270
+  },
+  "facing=west,kind=dryer": {
+   "model": "the_oldest_house:block/barrett/dryer",
+   "y": 270
+  },
+  "facing=west,kind=boxes": {
+   "model": "the_oldest_house:block/barrett/boxes",
+   "y": 270
+  },
+  "facing=west,kind=water_heater": {
+   "model": "the_oldest_house:block/barrett/water_heater",
+   "y": 270
+  },
+  "facing=west,kind=shelves": {
+   "model": "the_oldest_house:block/barrett/shelves",
+   "y": 270
+  },
+  "facing=west,kind=cable": {
+   "model": "the_oldest_house:block/barrett/cable",
+   "y": 270
+  },
+  "facing=west,kind=cable_corner": {
+   "model": "the_oldest_house:block/barrett/cable_corner",
+   "y": 270
+  },
+  "facing=west,kind=softbox": {
+   "model": "the_oldest_house:block/barrett/softbox",
+   "y": 270
+  },
+  "facing=west,kind=directors_chair": {
+   "model": "the_oldest_house:block/barrett/directors_chair",
+   "y": 270
+  },
+  "facing=west,kind=village_cart": {
+   "model": "the_oldest_house:block/barrett/village_cart",
+   "y": 270
+  },
+  "facing=west,kind=apple_boxes": {
+   "model": "the_oldest_house:block/barrett/apple_boxes",
+   "y": 270
+  },
+  "facing=west,kind=sandbags": {
+   "model": "the_oldest_house:block/barrett/sandbags",
+   "y": 270
+  },
+  "facing=west,kind=craft_table": {
+   "model": "the_oldest_house:block/barrett/craft_table",
+   "y": 270
+  },
+  "facing=west,kind=folding_table": {
+   "model": "the_oldest_house:block/barrett/folding_table",
+   "y": 270
+  },
+  "facing=west,kind=office_chair": {
+   "model": "the_oldest_house:block/barrett/office_chair",
+   "y": 270
+  }
+ }
+}

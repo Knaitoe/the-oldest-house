@@ -142,9 +142,9 @@ public final class PhoneCanoe {
     private static void finish(ServerPlayer player,CompoundTag state){
         state.putInt("Phase",0);state.putBoolean("Finished",true);save(LabyrinthData.get(player.server),player.getUUID(),state);
         player.stopRiding();BlockPos base=IndianLakeRooms.base(player.server,LabyrinthPlace.PHONE_CANOE);Vec3 at=Vec3.atBottomCenterOf(base.offset(DOCK));
-        player.connection.teleport(at.x,at.y,at.z,180,0);player.setDeltaMovement(Vec3.ZERO);clearCamera(player,base);send(player,0,-1,0);
+        player.connection.teleport(at.x,at.y,at.z,180,0);player.setDeltaMovement(Vec3.ZERO);clearCamera(player,base);send(player,0,-1,END);
         LakeCanoeEntity canoe=stage(player.serverLevel(),base);if(canoe!=null){canoe.fixedView(false);canoe.setDeltaMovement(Vec3.ZERO);canoe.moveTo(Vec3.atBottomCenterOf(base.offset(BOAT)));}
-        WitnessAccount.resolve(player,WitnessAccount.Story.PHONE_CANOE,"lost_recording");player.displayClientMessage(Component.literal("Your hands are empty. Something wooden scrapes against stone, far away."),false);
+        WitnessAccount.resolve(player,WitnessAccount.Story.PHONE_CANOE,"lost_recording");player.displayClientMessage(Component.literal("You come to on the jetty, soaked through, with the lake in your mouth. Your hands are empty. Something wooden scrapes against stone, far away."),false);
     }
     private static void clearCamera(ServerPlayer player,BlockPos base){
         if(base==null)return;ServerLevel level=player.server.getLevel(io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE);if(level==null)return;

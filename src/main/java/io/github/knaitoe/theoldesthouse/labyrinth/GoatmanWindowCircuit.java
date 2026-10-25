@@ -83,11 +83,12 @@ public final class GoatmanWindowCircuit {
         return hold;
     }
     public static void nextLap(CompoundTag r,GoatmanChild c,int clock){r.putInt("StalkLeg0465",0);r.putInt("StalkPause0465",clock+22+c.getRandom().nextInt(70));r.putInt("StalkVia0497",-1);if(!r.contains("WindowSerial0497"))r.putBoolean("StalkChange0465",true);r.putFloat("StalkSpeed0497",.38F+c.getRandom().nextFloat()*.08F);}
-    /** Six real blows after the last physical lap; the independent seven-demand clock never waits. */
+    /** Real blows after the last physical lap (0.4.121: three, not six); the independent seven-demand clock never waits. */
+    public static final int DOOR_BLOWS=3;
     public static void frontDoor(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,int clock){
         if(!r.contains("DoorPressureAt0497"))r.putInt("DoorPressureAt0497",clock);
         int elapsed=clock-r.getInt("DoorPressureAt0497"),hits=r.getInt("DoorPressureHits0497");
-        if(hits<6&&elapsed>=hits*6){GoatmanStalking.impact(l,b,r,c,GoatmanWoods.DOOR,3);r.putInt("DoorPressureHits0497",hits+1);}
-        if(elapsed>=36)r.putBoolean("DoorPressureDone0497",true);
+        if(hits<DOOR_BLOWS&&elapsed>=hits*8){GoatmanStalking.impact(l,b,r,c,GoatmanWoods.DOOR,3);r.putInt("DoorPressureHits0497",hits+1);}
+        if(elapsed>=DOOR_BLOWS*8+12)r.putBoolean("DoorPressureDone0497",true);
     }
 }

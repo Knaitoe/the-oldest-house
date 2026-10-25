@@ -16,9 +16,11 @@ import java.util.*;
 public final class SecretPhotographs {
     private SecretPhotographs(){}
     public static void project(ServerPlayer p,CompoundTag own){
-        var b=IndianLakeRooms.base(p.server,LabyrinthPlace.KAREN_ROOM);if(b==null)return;var photos=own.getList("Record",Tag.TAG_COMPOUND);if(photos.isEmpty())return;
-        var stack=ItemStack.parseOptional(p.registryAccess(),photos.getCompound(Math.floorMod(own.getInt("Projection"),photos.size())));var id=stack.get(DataComponents.MAP_ID);if(id==null)return;
-        var data=p.serverLevel().getMapData(id);if(data==null)return;
+        var b=IndianLakeRooms.base(p.server,LabyrinthPlace.KAREN_ROOM);if(b==null)return;var photos=own.getList("Record",Tag.TAG_COMPOUND);
+        // 0.4.121: the wall is named even with no photograph ready, so the reader's own client can project its own pictures.
+        if(photos.isEmpty()){HousePackets.send(p,new PersonalProjectionPayload(b.offset(0,2,-15),-1));return;}
+        var stack=ItemStack.parseOptional(p.registryAccess(),photos.getCompound(Math.floorMod(own.getInt("Projection"),photos.size())));var id=stack.get(DataComponents.MAP_ID);
+        var data=id==null?null:p.serverLevel().getMapData(id);if(data==null){HousePackets.send(p,new PersonalProjectionPayload(b.offset(0,2,-15),-1));return;}
         p.connection.send(new ClientboundMapItemDataPacket(id,data.scale,data.locked,Collections.emptyList(),new MapItemSavedData.MapPatch(0,0,128,128,data.colors.clone())));
         HousePackets.send(p,new PersonalProjectionPayload(b.offset(0,2,-15),id.id()));
     }

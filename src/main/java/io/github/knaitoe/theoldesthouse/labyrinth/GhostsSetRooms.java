@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import static io.github.knaitoe.theoldesthouse.labyrinth.GhostsSetBlock.Kind.*;
 
-/** A furnished Barrett home inside the production shell: downstairs, landing, two bedrooms and a basement. */
+/** The Barretts' home where the days are filmed: downstairs, landing, two bedrooms and a basement; BarrettHome makes the rest of the house (0.4.121). */
 public final class GhostsSetRooms {
     public static final BlockPos TABLE=new BlockPos(0,0,-28),MARJORIE_ROOM=new BlockPos(-10,5,-33),
             MERRY_ROOM=new BlockPos(9,5,-32),BASEMENT=new BlockPos(7,-4,-25),MONITOR_AT=new BlockPos(16,0,-33);
@@ -27,7 +27,8 @@ public final class GhostsSetRooms {
     private static void literary(ServerLevel l,BlockPos b,BlockPos rel,LiteraryPropBlock.Kind k,Direction f){set(l,b,rel.getX(),rel.getY(),rel.getZ(),LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,k).setValue(LiteraryPropBlock.FACING,f));}
     private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction f){var state=Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,f).setValue(DoorBlock.OPEN,true);set(l,b,x,y,z,state);set(l,b,x,y+1,z,state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));}
     public static void build(ServerLevel l,BlockPos b) {
-        var wall=GhostsSetBlock.of(WALLPAPER,Direction.NORTH); var floor=GhostsSetBlock.of(FLOOR,Direction.NORTH);
+        // 0.4.121: painted walls; the old wallpaper was the production's.
+        var wall=BarrettHomeBlock.of(BarrettHomeBlock.Kind.PAINT); var floor=GhostsSetBlock.of(FLOOR,Direction.NORTH);
         fill(l,b,-20,-1,-46,20,-1,0,floor);fill(l,b,-20,11,-46,20,11,0,GhostsSetBlock.of(CEILING,Direction.NORTH));
         for(int y=0;y<=10;y++) {
             fill(l,b,-20,y,-46,20,y,-46,wall);fill(l,b,-20,y,0,20,y,0,wall);
@@ -36,7 +37,7 @@ public final class GhostsSetRooms {
         // The family lives behind an ordinary front door; equipment occupies the arrival passage and east service wing.
         fill(l,b,-14,0,-14,13,4,-14,wall);door(l,b,0,0,-14,Direction.SOUTH);
         fill(l,b,-14,0,-44,-14,3,-15,wall);door(l,b,-14,0,-18,Direction.WEST);
-        fill(l,b,13,0,-44,13,10,-15,GhostsSetBlock.of(PANEL,Direction.WEST));
+        fill(l,b,13,0,-44,13,10,-15,wall);
         door(l,b,13,0,-35,Direction.EAST);
         fill(l,b,-14,4,-44,12,4,-15,floor);
         fill(l,b,-14,5,-23,12,9,-23,wall);
@@ -53,8 +54,8 @@ public final class GhostsSetRooms {
         }
         fill(l,b,-18,4,-22,-15,4,-21,floor);for(int i=0;i<5;i++)prop(l,b,-19,i+1,-16-i,RAIL,Direction.NORTH);
         fill(l,b,-19,5,-22,-19,5,-21,GhostsSetBlock.of(RAIL,Direction.NORTH));
-        // A real balcony guard above the open foyer, with the stair entrance kept clear.
-        for(int x=-12;x<=-7;x++)prop(l,b,x,5,-15,RAIL,Direction.EAST);
+        // The landing's guard along the stairwell, with the stair's head kept clear.
+        for(int z=-19;z<=-15;z++)prop(l,b,-14,5,z,RAIL,Direction.NORTH);
         for(int x:new int[]{-12,10})for(int z:new int[]{-41,-26}) {
             prop(l,b,x,3,z,LAMP,Direction.NORTH);prop(l,b,x,9,z,LAMP,Direction.NORTH);
         }
@@ -94,7 +95,8 @@ public final class GhostsSetRooms {
         literary(l,b,LiteraryRooms.BOOTH,LiteraryPropBlock.Kind.RECEIVER,Direction.WEST);
         for(int x:new int[]{-18,18})for(int z:new int[]{-10,-40})literary(l,b,new BlockPos(x,0,z),LiteraryPropBlock.Kind.LIGHT_STAND,Direction.SOUTH);
         fill(l,b,14,4,-41,19,4,-32,GhostsSetBlock.of(CEILING,Direction.NORTH));
-        prop(l,b,16,3,-38,LAMP,Direction.NORTH);prop(l,b,0,10,-9,LAMP,Direction.NORTH);
+        prop(l,b,16,3,-38,LAMP,Direction.NORTH);
+        BarrettHome.build(l,b);
         BuildBlocks.after(l,()->{var data=LabyrinthData.get(l.getServer());GhostsSet.markBuilt(data,b);GhostsSetDressing.markBuilt(data,b);GhostsSetFinish.markBuilt(l,b);});
     }
     public static net.minecraft.world.level.block.state.BlockState tableState(int x,int z){

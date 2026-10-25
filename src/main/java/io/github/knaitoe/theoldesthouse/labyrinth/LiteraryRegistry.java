@@ -55,6 +55,18 @@ public final class LiteraryRegistry {
     public static final DeferredBlock<ManorBlock> MANOR=BLOCKS.registerBlock("manor",ManorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(ManorBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CampDecorBlock>> CAMP_DECOR_TYPE=CODECS.register("camp_decor",()->CampDecorBlock.CODEC);
     public static final DeferredBlock<CampDecorBlock> CAMP_DECOR=BLOCKS.registerBlock("camp_decor",CampDecorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable().lightLevel(CampDecorBlock::light));
+    // 0.4.121: the camp's last session: its radio and horn, the mess hall, the schedule and the papers' surfaces.
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CampSessionBlock>> CAMP_SESSION_TYPE=CODECS.register("camp_session",()->CampSessionBlock.CODEC);
+    public static final DeferredBlock<CampSessionBlock> CAMP_SESSION=BLOCKS.registerBlock("camp_session",CampSessionBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable());
+    // 0.4.121: the Winchester house's Victorian paper, the séance room's blue, parquet and leaded glass.
+    public static final DeferredBlock<Block> WINCHESTER_WALLPAPER=BLOCKS.registerBlock("winchester_wallpaper",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.RED_TERRACOTTA).noLootTable());
+    public static final DeferredBlock<Block> WINCHESTER_SEANCE_PAPER=BLOCKS.registerBlock("winchester_seance_paper",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.BLUE_TERRACOTTA).noLootTable());
+    public static final DeferredBlock<Block> WINCHESTER_PARQUET=BLOCKS.registerBlock("winchester_parquet",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BarrettHomeBlock>> BARRETT_HOME_TYPE=CODECS.register("barrett_home",()->BarrettHomeBlock.CODEC);
+    public static final DeferredBlock<BarrettHomeBlock> BARRETT_HOME=BLOCKS.registerBlock("barrett_home",BarrettHomeBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable().lightLevel(BarrettHomeBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<WinchesterFittingBlock>> WINCHESTER_FITTING_TYPE=CODECS.register("winchester_fitting",()->WinchesterFittingBlock.CODEC);
+    public static final DeferredBlock<WinchesterFittingBlock> WINCHESTER_FITTING=BLOCKS.registerBlock("winchester_fitting",WinchesterFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noOcclusion().noLootTable());
+    public static final DeferredBlock<net.minecraft.world.level.block.TransparentBlock> WINCHESTER_LEADED_GLASS=BLOCKS.registerBlock("winchester_leaded_glass",net.minecraft.world.level.block.TransparentBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noLootTable());
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());
     public static final DeferredBlock<LiteraryPropBlock> PROP=BLOCKS.registerBlock("literary_prop",LiteraryPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable().lightLevel(s->s.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.FAN&&s.getValue(LiteraryPropBlock.STAGE)!=1?11:0));
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<LiteraryModelBlockEntity>> MODEL=BES.register("literary_model",()->BlockEntityType.Builder.of(LiteraryModelBlockEntity::new,PROP.get(),FROZEN.get()).build(null));
@@ -65,7 +77,7 @@ public final class LiteraryRegistry {
         SITE_SIDING=material("site_siding",Blocks.IRON_BLOCK),DRAG_MUD=material("cave_drag_mud",Blocks.PACKED_MUD);
     public static final DeferredBlock<YachtGlazingBlock> YACHT_WINDOW=BLOCKS.registerBlock("yacht_window",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noOcclusion().noLootTable()),
         // Glass to hear and see, but as slow to break out as the approved concrete porthole: about nine seconds, tool or not.
-        YACHT_PORTHOLE=BLOCKS.registerBlock("yacht_porthole",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).strength(1.8F).requiresCorrectToolForDrops().noOcclusion().noLootTable());
+        YACHT_PORTHOLE=BLOCKS.registerBlock("yacht_porthole",YachtGlazingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).strength(.6F).noOcclusion().noLootTable()); // 0.4.121: under a second by hand
     public static final DeferredBlock<IronBarsBlock> YACHT_RAIL=BLOCKS.registerBlock("yacht_rail",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noLootTable()),
         SAFETY_FENCE=BLOCKS.registerBlock("safety_fence",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).sound(net.minecraft.world.level.block.SoundType.WOOL).noLootTable());
     public static final DeferredItem<Item> LIGHTBULB=item("fan_lightbulb");
@@ -94,6 +106,8 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> GHOST_LOW=sound("ghost_low"),GHOST_THIN=sound("ghost_thin"),GHOST_SCRAPE=sound("ghost_scrape"),GHOST_CARD=sound("ghost_card");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredItem<Item> item(String id){var props=new Item.Properties().stacksTo(1);if(id.startsWith("wax_cylinder_")||id.equals("family_film"))props.jukeboxPlayable(net.minecraft.resources.ResourceKey.create(Registries.JUKEBOX_SONG,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id.replace("one","1").replace("two","2").replace("three","3"))));return ITEMS.registerSimpleItem(id,props);}
+    // The Winchester house (0.4.121): the carpenters behind the walls and the clock that strikes thirteen.
+    public static final DeferredHolder<SoundEvent,SoundEvent> WINCHESTER_HAMMER=sound("winchester_hammer"),WINCHESTER_SAW=sound("winchester_saw"),WINCHESTER_CHIME=sound("winchester_chime");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register("literary."+name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"literary."+name)));}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);BES.register(bus);SOUNDS.register(bus);PARTICLES.register(bus);bus.addListener(LiteraryRegistry::attributes);}
     private static void attributes(EntityAttributeCreationEvent e){e.put(ACTOR.get(),LiteraryActor.attributes().build());e.put(ELK.get(),LiteraryElk.attributes().build());}

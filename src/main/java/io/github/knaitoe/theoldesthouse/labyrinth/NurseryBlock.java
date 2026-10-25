@@ -50,8 +50,9 @@ public final class NurseryBlock extends Block {
 
     /** Outline shapes, authored facing north (front toward -z) in sixteenths. */
     private static VoxelShape base(Kind k,int stage){return switch(k){
-        case BED_HEAD->Shapes.or(Block.box(0,0,0,16,6,16),Block.box(0,0,0,16,14,2));
-        case BED_FOOT->Shapes.or(Block.box(0,0,0,16,6,16),Block.box(0,0,14,16,10,16));
+        // The bed (0.4.121) is low: under its frame, six sixteenths of floor for a child lying flat.
+        case BED_HEAD->Shapes.or(Block.box(0,6,0,16,12.5,16),Block.box(0,0,0,16,16,2));
+        case BED_FOOT->Shapes.or(Block.box(0,6,0,16,12.5,16),Block.box(0,6,14,16,15,16),Block.box(0,0,14,2,6,16),Block.box(14,0,14,16,6,16));
         case DESK->Block.box(0,0,1,16,16,15);case CHAIR->Block.box(3,0,3,13,8,13);case TOY_CHEST->Block.box(1,0,3,15,stage==1?14:9,13);
         case SHELF->Block.box(0,0,6,16,16,16);case WARDROBE_LOW->Block.box(1,0,4,15,16,16);case WARDROBE_HIGH->Block.box(1,0,4,15,14,16);
         case DOLLHOUSE->Block.box(1,0,3,15,15,16);case ROCKING_HORSE->Block.box(4,0,1,12,13,15);case NIGHT_LIGHT->Block.box(5,0,5,11,7,11);

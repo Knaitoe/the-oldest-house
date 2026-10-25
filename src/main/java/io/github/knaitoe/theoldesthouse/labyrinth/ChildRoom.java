@@ -44,7 +44,7 @@ public final class ChildRoom {
     /** Saved-world rebuild checkpoint, keyed by the room's base. */
     public static final String STATE="child_room_0474";
     public static final BlockPos CARD=new BlockPos(8,1,-18),ACCOUNT=new BlockPos(8,-3,-10),HATCH=new BlockPos(4,-1,-4),
-            BED_HEAD=new BlockPos(0,1,-23),BED_FOOT=new BlockPos(0,1,-22),GAP=new BlockPos(0,-1,-23),BASEMENT_DROP=new BlockPos(6,-2,-17);
+            BED_HEAD=new BlockPos(0,0,-23),BED_FOOT=new BlockPos(0,0,-22),GAP=new BlockPos(0,-1,-23),BASEMENT_DROP=new BlockPos(6,-2,-17);
     /** The four exits, in the order they go: two windows, then two doors. */
     public static final List<List<BlockPos>> EXITS=List.of(
             List.of(new BlockPos(-7,2,-24),new BlockPos(-6,2,-24),new BlockPos(-7,3,-24),new BlockPos(-6,3,-24)),
@@ -54,7 +54,7 @@ public final class ChildRoom {
     public static final int ALL=(1<<EXITS.size())-1;
     /** The floor toy each exit takes to the ceiling, where it starts, and where it ends up. */
     public static final List<Kind> PAIRED=List.of(Kind.TEDDY,Kind.DOLL,Kind.BLOCKS,Kind.BALL);
-    public static final List<BlockPos> TOY_HOMES=List.of(new BlockPos(-2,0,-22),new BlockPos(-9,1,-20),new BlockPos(3,0,-12),new BlockPos(2,0,-15)),
+    public static final List<BlockPos> TOY_HOMES=List.of(new BlockPos(-2,0,-22),new BlockPos(-10,1,-16),new BlockPos(3,0,-12),new BlockPos(2,0,-15)),
             CEILING_SLOTS=List.of(new BlockPos(-2,5,-21),new BlockPos(2,5,-21),new BlockPos(-1,5,-19),new BlockPos(1,5,-19));
     /** The crawlspace, from the gap under the bed to the opening into the basement, and its one dead end. */
     public static final List<BlockPos> CRAWLSPACE=List.of(new BlockPos(0,-2,-23),new BlockPos(1,-2,-23),new BlockPos(2,-2,-23),new BlockPos(3,-2,-23),
@@ -111,7 +111,7 @@ public final class ChildRoom {
         for(int x:new int[]{-7,6})set(l,b,x,1,-23,Blocks.BIRCH_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,net.minecraft.world.level.block.state.properties.SlabType.TOP));
         for(int x:new int[]{-6,7})set(l,b,x,1,-23,Blocks.BIRCH_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,net.minecraft.world.level.block.state.properties.SlabType.TOP));
         NovelRooms.door(l,b.offset(-11,0,-12),Direction.EAST,Blocks.BIRCH_DOOR,false);NovelRooms.door(l,b.offset(11,0,-8),Direction.WEST,Blocks.BIRCH_DOOR,false);
-        // The bed stands on legs against the north wall. Under it there is room for a child, and a gap in the boards.
+        // The bed stands against the north wall on short legs. A child who gets down can crawl under it, to a gap in the boards.
         toy(l,b,BED_HEAD,Kind.BED_HEAD,Direction.NORTH);toy(l,b,BED_FOOT,Kind.BED_FOOT,Direction.NORTH);
         // The way down is a floorboard like the others until somebody gets down and looks under the bed.
         set(l,b,GAP,Blocks.BIRCH_PLANKS.defaultBlockState());
@@ -119,11 +119,11 @@ public final class ChildRoom {
         // Desk and chair, the bedtime card left on the desk.
         toy(l,b,8,0,-18,Kind.DESK,Direction.WEST);toy(l,b,7,0,-18,Kind.CHAIR,Direction.EAST);toy(l,b,CARD,Kind.CARD,Direction.WEST);
         toy(l,b,-9,0,-20,Kind.TOY_CHEST,Direction.EAST);toy(l,b,-10,0,-16,Kind.SHELF,Direction.EAST);toy(l,b,-10,0,-15,Kind.SHELF,Direction.EAST);
-        toy(l,b,-10,1,-15,Kind.MUSIC_BOX,Direction.EAST);toy(l,b,-10,1,-16,Kind.DOLL,Direction.EAST);toy(l,b,10,0,-13,Kind.WARDROBE_LOW,Direction.WEST);toy(l,b,10,1,-13,Kind.WARDROBE_HIGH,Direction.WEST);
+        toy(l,b,-10,1,-15,Kind.MUSIC_BOX,Direction.EAST);toy(l,b,10,0,-13,Kind.WARDROBE_LOW,Direction.WEST);toy(l,b,10,1,-13,Kind.WARDROBE_HIGH,Direction.WEST);
         toy(l,b,-9,0,-6,Kind.DOLLHOUSE,Direction.EAST);toy(l,b,6,0,-7,Kind.ROCKING_HORSE,Direction.WEST);toy(l,b,10,2,-20,Kind.DRAWINGS,Direction.WEST);
         for(int x=-2;x<=2;x++)for(int z=-12;z<=-9;z++)toy(l,b,x,0,z,Kind.RUG,Direction.NORTH);
         // The toys, where a child left them.
-        toy(l,b,TOY_HOMES.get(0),Kind.TEDDY,Direction.EAST);toy(l,b,TOY_HOMES.get(1),Kind.DOLL,Direction.EAST);toy(l,b,TOY_HOMES.get(2),Kind.BLOCKS,Direction.NORTH);
+        toy(l,b,TOY_HOMES.get(0),Kind.TEDDY,Direction.EAST);set(l,b,TOY_HOMES.get(1),NurseryBlock.of(Kind.DOLL,Direction.EAST,1));toy(l,b,TOY_HOMES.get(2),Kind.BLOCKS,Direction.NORTH);
         toy(l,b,TOY_HOMES.get(3),Kind.BALL,Direction.NORTH);toy(l,b,-6,0,-14,Kind.JACK_BOX,Direction.SOUTH);toy(l,b,3,0,-8,Kind.TOP,Direction.NORTH);
         for(int i=0;i<TRACK.size();i++){var at=TRACK.get(i);var next=TRACK.get((i+1)%TRACK.size());var f=Direction.getNearest(next.getX()-at.getX(),0,next.getZ()-at.getZ());toy(l,b,at,i==0?Kind.TRAIN:Kind.TRACK,f);}
         // The crawlspace: packed earth underfoot, the underside of the floor overhead, one candle somebody left.
@@ -148,9 +148,11 @@ public final class ChildRoom {
 
     // ------------------------------------------------------------------------------------------------ where a reader is
     private static BlockPos rel(ServerPlayer p,BlockPos b){return BlockPos.containing(p.getX(),p.getY()+.05,p.getZ()).subtract(b);}
-    /** Below the bed, or in the crawlspace: the body crawls there. */
+    /** Below the bed, or in the crawlspace: the body crawls there. Crouching right beside the bed gets a reader down to it. */
     public static boolean crawling(ServerPlayer p,BlockPos b){var r=rel(p,b);return r.getY()==-2&&CRAWLSPACE.contains(r)||r.getY()==-1&&r.equals(GAP)
-            ||r.getY()==0&&r.getX()==0&&(r.getZ()==-23||r.getZ()==-22);}
+            ||r.getY()==0&&r.getX()==0&&(r.getZ()==-23||r.getZ()==-22)||p.isShiftKeyDown()&&besideBed(r);}
+    /** The floor cells a reader can get down from: at the foot of the bed and along either side. */
+    public static boolean besideBed(BlockPos r){return r.getY()==0&&(r.getX()==0&&r.getZ()==-21||Math.abs(r.getX())==1&&(r.getZ()==-23||r.getZ()==-22));}
     public static boolean inCrawlspace(ServerPlayer p,BlockPos b){var r=rel(p,b);return (r.getY()==-2||r.getY()==-1)&&(CRAWLSPACE.contains(r.atY(-2)));}
     public static boolean inBasement(ServerPlayer p,BlockPos b){var r=rel(p,b);return r.getY()>=-4&&r.getY()<=-2&&r.getX()>=3&&r.getX()<=10&&r.getZ()>=-16&&r.getZ()<=-4;}
 
@@ -162,15 +164,18 @@ public final class ChildRoom {
     /** A reader's scene tick, every five ticks while they are present. */
     public static void tick(ServerPlayer p,BlockPos b,CompoundTag own){
         var l=p.serverLevel();var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);int mask=world.getInt("Exits0474");
-        // The room goes on its own clock once anyone present has read the card; it never goes while it is watched.
-        if(own.getBoolean("Read_Source")&&mask!=ALL&&world.getLong("SealTick")!=p.server.getTickCount()){
+        // The room goes on its own clock once anyone present has opened the card (0.4.121: opening it is enough; a reader who
+        // closes it after the first page has still been told good night); it never goes while it is watched.
+        boolean read=readCard(own);
+        if(read&&mask!=ALL&&world.getLong("SealTick")!=p.server.getTickCount()){
+            if(!world.getBoolean("ClockStarted0121")){world.putBoolean("ClockStarted0121",true);TheOldestHouse.LOGGER.info("The child's room is closing: {} opened the bedtime card.",p.getGameProfile().getName());}
             world.putLong("SealTick",p.server.getTickCount());int clock=world.getInt("SealClock")+5;
-            if(clock>=SEAL_EVERY){int i=Integer.numberOfTrailingZeros(~mask);if(i<EXITS.size()&&seal(l,b,i)){mask|=1<<i;world.putInt("Exits0474",mask);clock=0;}}
+            if(clock>=SEAL_EVERY){int i=Integer.numberOfTrailingZeros(~mask);if(i<EXITS.size()&&seal(l,b,i)){mask|=1<<i;world.putInt("Exits0474",mask);clock=0;TheOldestHouse.LOGGER.info("The child's room sealed exit {} unseen.",i);}}
             world.putInt("SealClock",clock);LiteraryVignettes.shared(d,PLACE,world);
         }
         // Each reader must see for themselves what has become of every exit.
         int seen=own.getInt("ExitSeen0474");
-        if(own.getBoolean("Read_Source"))for(int i=0;i<EXITS.size();i++){
+        if(read)for(int i=0;i<EXITS.size();i++){
             if((mask&(1<<i))==0||(seen&(1<<i))!=0)continue;
             if(p.position().distanceTo(centre(b,i))>LOOK_REACH||!looksAt(p,b,i))continue;
             int look=own.getInt("ExitLook0474_"+i)+5;own.putInt("ExitLook0474_"+i,look);
@@ -189,12 +194,12 @@ public final class ChildRoom {
         }
         // The House's own door goes with the room's: while the room is shut around a reader who has not finished, the doorway
         // back to it is wall to that reader. Their peers see whatever their own progress shows them.
-        boolean shut=own.getBoolean("Read_Source")&&mask==ALL&&!own.getBoolean("Ready");
+        boolean shut=read&&mask==ALL&&!own.getBoolean("Ready");
         if(shut&&(own.getInt("Present")%20==0||!own.getBoolean("DoorShut0119"))){doorway(p,b,true);own.putBoolean("DoorShut0119",true);}
         else if(!shut&&own.getBoolean("DoorShut0119")){doorway(p,b,false);own.remove("DoorShut0119");}
         // The parents' voices: one as each exit goes, a warning twenty seconds after the reader is shut in, and the last once
         // they have gone under the floor. Each line once, in order, to that reader alone.
-        if(own.getBoolean("Read_Source")&&!own.getBoolean("Ready")){
+        if(read&&!own.getBoolean("Ready")){
             if(mask==ALL&&!own.contains("ShutAt0119"))own.putInt("ShutAt0119",own.getInt("Present"));
             int due=Integer.bitCount(mask);
             if(mask==ALL&&own.getInt("Present")-own.getInt("ShutAt0119")>=400)due=5;
@@ -209,6 +214,8 @@ public final class ChildRoom {
         if(mask==ALL&&own.getInt("Present")%600==300&&!inBasement(p,b)){var at=Vec3.atCenterOf(b.offset(0,5,-21));
             p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.55F,.9F+p.getRandom().nextFloat()*.15F,p.getRandom().nextLong()));}
     }
+    /** The reader has opened the bedtime card: read to the end, or opened at all. */
+    public static boolean readCard(CompoundTag own){return own.getBoolean("Read_Source")||own.contains("Original_Source");}
     /** Sends one reader the doorway as wall (shut) or as it really is. */
     static void doorway(ServerPlayer p,BlockPos b,boolean shut){for(var c:DOORWAY){var at=b.offset(c);p.connection.send(new net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket(at,shut?wallAt(c.getY()):p.serverLevel().getBlockState(at)));}}
     /**
@@ -218,8 +225,9 @@ public final class ChildRoom {
      */
     static void dinnerbone(ServerPlayer p,BlockPos b,ServerLevel l){
         var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);var at=DINNERBONE.add(b.getX(),b.getY(),b.getZ());
-        if(!world.hasUUID("Dinnerbone")){if(seen(l,at.add(0,1,0)))return;}
-        else if(!(l.getEntity(world.getUUID("Dinnerbone")) instanceof LiteraryActor))return;
+        // A figure that was lost (unloaded with the room, or removed) comes back, but only while nobody can see the corner.
+        if(world.hasUUID("Dinnerbone")&&!(l.getEntity(world.getUUID("Dinnerbone")) instanceof LiteraryActor)){world.remove("Dinnerbone");LiteraryVignettes.shared(d,PLACE,world);}
+        if(!world.hasUUID("Dinnerbone")&&seen(l,at.add(0,1,0)))return;
         var figure=LiteraryVignettes.actor(p,PLACE,"Dinnerbone",LiteraryActor.SILHOUETTE,BlockPos.containing(DINNERBONE),false);if(figure==null)return;
         if(!"Dinnerbone".equals(figure.getName().getString())){figure.setCustomName(Component.literal("Dinnerbone"));figure.setCustomNameVisible(false);figure.setNoGravity(true);figure.moveTo(at.x,at.y,at.z);}
         if(!seen(l,at.add(0,1,0))){var reader=l.getNearestPlayer(at.x,at.y,at.z,24,e->e instanceof ServerPlayer r&&!r.isSpectator()&&LiteraryVignettes.inside(r,PLACE));

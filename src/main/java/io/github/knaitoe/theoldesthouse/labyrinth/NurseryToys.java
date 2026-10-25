@@ -96,7 +96,9 @@ public final class NurseryToys {
                 sound(l,at,LiteraryRegistry.NURSERY_CREAK.value(),.7F,.8F);if(stage==0)say(p,"Small clothes on small hangers. Nothing else.");}
             case SHELF->say(p,"Picture books. In one, a house where every door is drawn on the wall.");
             case BED_HEAD,BED_FOOT->ChildRoom.lookUnder(p,l,b);
-            case DESK->say(p,"Crayons, a ruler, a drawing of the room with no door in it.");
+            // The card is small on the desk top: a hand on the desk finds it, so reading it never hinges on a precise click.
+            case DESK->{if(NurseryBlock.is(l.getBlockState(at.above()),Kind.CARD))LiteraryVignettes.open(p,ChildRoom.PLACE,"Source",SceneHuntReview.sourceBook(l,b,ChildRoom.PLACE),at.above());
+                else say(p,"Crayons, a ruler, a drawing of the room with no door in it.");}
             case DRAWINGS->say(p,stage==0?"A house in crayon. It has windows, but no door.":"The same house, from underneath. A ladder goes up to where the door is.");
             case BOXES->say(p,"OUTGROWN, in marker. Clothes, and a box of baby things.");
             case CRIB->say(p,"The crib has been taken apart and put back together wrong.");

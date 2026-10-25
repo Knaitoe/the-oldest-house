@@ -1,0 +1,76 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "c": "the_oldest_house:block/camp_session/crate",
+  "j": "the_oldest_house:block/camp_session/journal",
+  "particle": "the_oldest_house:block/camp_session/journal"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    2
+   ],
+   "to": [
+    14,
+    10,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c"
+    },
+    "south": {
+     "texture": "#c"
+    },
+    "east": {
+     "texture": "#c"
+    },
+    "west": {
+     "texture": "#c"
+    },
+    "up": {
+     "texture": "#c"
+    },
+    "down": {
+     "texture": "#c"
+    }
+   }
+  },
+  {
+   "from": [
+    4,
+    10,
+    5
+   ],
+   "to": [
+    11,
+    11.5,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#j"
+    },
+    "south": {
+     "texture": "#j"
+    },
+    "east": {
+     "texture": "#j"
+    },
+    "west": {
+     "texture": "#j"
+    },
+    "up": {
+     "texture": "#j"
+    },
+    "down": {
+     "texture": "#j"
+    }
+   }
+  }
+ ]
+}

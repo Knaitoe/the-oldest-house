@@ -41,7 +41,8 @@ public final class UncannySocketClient {
     }
     /** Walk the actual doorway, stair flight and landing with ordinary native movement packets. */
     private static boolean bedroomWalk(Minecraft mc,BlockPos b){
-        Vec3[] route={new Vec3(.5,0,-2.5),new Vec3(-6.5,0,-2.5),new Vec3(-6.5,5,-10.5),new Vec3(-5.5,5,-20.5)};
+        boolean peer=role().equals("B");
+        Vec3[] route={new Vec3(peer?-.5:.5,0,-2.5),new Vec3(peer?-7.3:-6.5,0,-2.5),new Vec3(peer?-7.3:-6.5,5,-10.5),new Vec3(peer?-6.3:-5.5,5,-20.5)};
         if(bedroomLeg>=route.length)return true;
         var target=route[bedroomLeg].add(Vec3.atLowerCornerOf(b));var delta=target.subtract(mc.player.position());
         if(delta.horizontalDistanceSqr()<.09&&Math.abs(delta.y)<.3&&mc.player.onGround()){

@@ -61,7 +61,7 @@ public final class SceneVisualProof extends Screen {
     @Override public void render(GuiGraphics g,int x,int y,float delta){
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xFF292723);g.drawString(font,TheOldestHouse.displayName()+" / "+net.neoforged.fml.ModList.get().getModContainerById(TheOldestHouse.MOD_ID).orElseThrow().getModInfo().getVersion(),16,12,0xFFE0D5BF,false);
         g.drawString(font,name.replace('_',' '),16,29,0xFFF3EEE3,false);g.drawString(font,"Native geometry / full-bright cutaway / actors omitted",16,height-19,0xFFD4C8B3,false);g.flush();
-        var pose=g.pose();pose.pushPose();pose.translate(width/2.,height/2.+12,200);float scale=(float)Math.min((width-40)/span,(height-85)/(span*.62));
+        var pose=g.pose();pose.pushPose();pose.translate(width/2.,height/2.+12,500);float scale=(float)Math.min((width-40)/span,(height-85)/(span*.62));
         pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(32));pose.mulPose(Axis.YP.rotationDegrees(-45));pose.translate(-cx,-cy,-cz);
         var buffers=mc.renderBuffers().bufferSource();
         for(var v:voxels){pose.pushPose();pose.translate(v.x,v.y,v.z);
