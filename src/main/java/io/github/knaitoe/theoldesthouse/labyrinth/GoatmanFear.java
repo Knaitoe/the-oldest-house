@@ -7,7 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 /** The cousins first question a real disturbance, then become afraid. Their words yield to the outside voice. */
 public final class GoatmanFear {
     public static final int BRACE=1,WATCH=2,PACE=3,COMFORT=4,TREMBLE=5,EARS=6,STARTLE=7;
-    public static final int CONFUSION=1,FEAR=2,TERROR=3,LINE_TICKS=100;
+    public static final int CONFUSION=1,FEAR=2,TERROR=3,LINE_TICKS=100,BRISK_GAP=120;
     /** Set by the first real knock on the front door; until then nobody talks about the door being knocked or pushed. */
     public static final String DOOR_KNOCKED="DoorKnocked0117";
     private static final String[][] WORDS={
@@ -116,6 +116,8 @@ public final class GoatmanFear {
         }
         if(remaining(run)>0)return;
         int pending=run.getInt("FearPending0472"),lease=pending>0&&run.contains("FearPendingLease0472")?run.getInt("FearPendingLease0472"):LINE_TICKS;
+        // 0.4.123: on a brisk night a line the voice interrupted finishes without pushing the next one back.
+        boolean resumed=pending>0,brisk=GoatmanVignette.brisk(run);
         if(pending==0){
             int[] queue=run.getIntArray("FearQueue0472");
             // A queued reaction that is no longer true is dropped, not said late; the quiet waits a while for the quiet.
@@ -136,6 +138,6 @@ public final class GoatmanFear {
         }
         if(pending==0)return;
         run.putInt("FearLine0472",pending);run.putInt("FearAt0472",clock);run.putInt("FearAtAge0472",age);run.putInt("FearLease0472",lease);
-        run.putInt("FearNext0472",age+160);run.remove("FearPending0472");run.remove("FearPendingLease0472");
+        if(!brisk||!resumed)run.putInt("FearNext0472",age+(brisk?BRISK_GAP:160));run.remove("FearPending0472");run.remove("FearPendingLease0472");
     }
 }
