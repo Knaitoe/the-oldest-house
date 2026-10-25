@@ -1144,8 +1144,8 @@ def m_mobile():
 
 @spec('mobile_big', {'w': 'white_paint', 'm': 'mobile'}, 'mobile')
 def m_mobile_big():
-    """The nursery's mobile, twice the size: its shapes hang into the cells around it."""
-    return mobile_shapes(14, 22)
+    """The nursery's mobile, twice the size: its shapes hang into the cells around it, no lower than a model may reach."""
+    return mobile_shapes(14, 18)
 
 
 @spec('mobile_string', {'w': 'white_paint'}, 'white_paint')

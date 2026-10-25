@@ -64,8 +64,8 @@ final class BorrascaTown {
         for(int z=-13;z<=0;z++)for(int x=-8;x<=8;x++)roofCell(l,b,x,z,stationRoof(z),Blocks.DARK_OAK_SLAB,Math.abs(x)==7||z==-12);
         for(int z:new int[]{-4,-8})box(l,b,-6,stationRoof(z)/2-1,z,6,stationRoof(z)/2-1,z,log(Blocks.STRIPPED_SPRUCE_LOG,Direction.Axis.X));
         set(l,b,0,4,-4,hanging());set(l,b,0,3,-8,hanging());set(l,b,-4,4,-4,hanging());
-        // Inside: a runner down the aisle, a stove and its woodpile, a bench under the window, pamphlets, the trail map.
-        box(l,b,-1,0,-10,1,0,-1,Blocks.BROWN_CARPET);
+        // Inside: a runner down the aisle (stopping short of where the reader steps in), a stove and its woodpile, a bench under the window, pamphlets, the trail map.
+        box(l,b,-1,0,-10,1,0,-5,Blocks.BROWN_CARPET);
         set(l,b,-6,0,-1,Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));box(l,b,-6,1,-1,-6,stationRoof(-1)/2-1,-1,Blocks.IRON_BARS);
         box(l,b,-6,0,0,-4,0,0,log(Blocks.SPRUCE_LOG,Direction.Axis.X));set(l,b,-6,1,0,log(Blocks.SPRUCE_LOG,Direction.Axis.X));
         for(int z=-8;z<=-6;z++)set(l,b,-6,0,z,stair(Blocks.SPRUCE_STAIRS,Direction.WEST,Half.BOTTOM));
