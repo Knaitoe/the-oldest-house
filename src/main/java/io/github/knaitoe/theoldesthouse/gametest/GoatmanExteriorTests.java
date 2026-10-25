@@ -26,7 +26,7 @@ public final class GoatmanExteriorTests {
         f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         var route=new CompoundTag();route.putBoolean("StalkStarted0465",true);route.putInt("StalkLeg0465",18);
         route.putInt("CircuitGoal0494",GoatmanStalking.CIRCUITS);route.putInt("Circuits0494",GoatmanStalking.CIRCUITS-1);
-        route.putInt("WindowSerial0497",1);route.putBoolean("AssaultDone0465",true);
+        route.putInt("WindowSerial0497",1);route.putBoolean("AssaultDone0465",true);route.putInt("DemandStage0465",7);
         GoatmanChild[] original={null};UUID[] id={null};int[] elapsed={0};boolean[] restored={false};
         h.onEachTick(()->{
             if(original[0]==null)return;var c=original[0];
@@ -45,7 +45,7 @@ public final class GoatmanExteriorTests {
             c.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-51.5,180,0);f.l.addFreshEntity(c);original[0]=c;id[0]=c.getUUID();
             GoatmanWoods.door(f.l,f.b,false);GoatmanWoods.setWindow(f.l,f.b,false);
         }).thenWaitUntil(()->h.assertTrue(GoatmanStalking.windowApproachDone(route),"the post-knock child descends both finished steps and reaches the bathroom window: leg="+route.getInt("StalkWindowLeg0465")+" feet="+(original[0]==null?"absent":f.rel(original[0])))).thenExecute(()->{
-            h.assertTrue(restored[0]&&route.getInt("DoorPressureHits0497")==6&&f.rel(original[0]).distanceToSqr(new Vec3(10.25,0,-74.5))<.02,"the same saved original completes every front-step blow and the entire physical window approach");
+            h.assertTrue(restored[0]&&route.getInt("DoorPressureHits0497")==GoatmanWindowCircuit.DOOR_BLOWS&&f.rel(original[0]).distanceToSqr(new Vec3(10.25,0,-74.5))<.02,"the same saved original completes every front-step blow and the entire physical window approach");
             original[0].discard();
         }).thenSucceed();
     }

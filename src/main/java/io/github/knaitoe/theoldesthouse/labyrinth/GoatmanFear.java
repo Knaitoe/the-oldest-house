@@ -41,7 +41,34 @@ public final class GoatmanFear {
         if(!run.getBoolean("HorrorStarted0472")||run.getBoolean("FearReturn0472"))return;
         run.putBoolean("FearReturn0472",true);queue(run,26);
     }
-    public static void quiet(CompoundTag run){begin(run);queue(run,25);}
+    public static void quiet(CompoundTag run){begin(run);queue(run,25);run.putInt("QuietAge0121",run.getInt("FearAge0472"));}
+    /** Something was just heard against the trailer: a knock, a blow, a scrape. */
+    public static void heard(CompoundTag run){run.putInt("HeardAge0121",run.getInt("FearAge0472"));}
+    /** Ticks since anything was last heard against the trailer, or a long time if nothing has been. */
+    static int sinceHeard(CompoundTag run){return run.contains("HeardAge0121")?run.getInt("FearAge0472")-run.getInt("HeardAge0121"):Integer.MAX_VALUE;}
+    /**
+     * 0.4.121: whether a line is true to what is happening now. Nobody asks why it has gone quiet while something is
+     * knocking, or why it keeps saying it like that before it has said anything; a queued line that has gone stale is
+     * dropped rather than said late.
+     */
+    public static boolean relevant(int id,CompoundTag run){
+        boolean voice=run.getInt("DemandStage0465")>0,knocked=run.getBoolean(DOOR_KNOCKED),departed=run.getBoolean("FearDeparture0472");
+        int impacts=run.getInt("ImpactSerial0472"),since=sinceHeard(run);
+        return switch(id){
+            case 2->since<200;
+            case 4->departed||run.getBoolean("StalkStarted0465")||!run.getCompound("EveningCircuit0497").isEmpty();
+            case 5,17->impacts>=2;
+            case 10->departed;
+            case 12,14->voice;
+            case 13->knocked||departed;
+            case 18->since<200;
+            case 25->since>=QUIET_AFTER&&!GoatmanVignette.speaking(run);
+            default->true;
+        };
+    }
+    public static final int QUIET_AFTER=120;
+    /** A line not yet true that may still come true: the woods' quiet, for half a minute after it fell. */
+    static boolean waits(int id,CompoundTag run){return id==25&&run.getInt("FearAge0472")-run.getInt("QuietAge0121")<600;}
     public static void queue(CompoundTag run,int line){
         int[] old=run.getIntArray("FearQueue0472"),next=Arrays.copyOf(old,old.length+1);next[old.length]=line;run.putIntArray("FearQueue0472",next);
     }
@@ -91,13 +118,17 @@ public final class GoatmanFear {
         int pending=run.getInt("FearPending0472"),lease=pending>0&&run.contains("FearPendingLease0472")?run.getInt("FearPendingLease0472"):LINE_TICKS;
         if(pending==0){
             int[] queue=run.getIntArray("FearQueue0472");
-            if(queue.length>0){pending=queue[0];run.putIntArray("FearQueue0472",Arrays.copyOfRange(queue,1,queue.length));}
-            else if(age>=run.getInt("FearNext0472")){
+            // A queued reaction that is no longer true is dropped, not said late; the quiet waits a while for the quiet.
+            var keep=new java.util.ArrayList<Integer>();
+            for(int q:queue){if(pending==0&&relevant(q,run))pending=q;else if(pending!=0||waits(q,run))keep.add(q);}
+            if(queue.length>0)run.putIntArray("FearQueue0472",keep.stream().mapToInt(Integer::intValue).toArray());
+            if(pending==0&&age>=run.getInt("FearNext0472")){
                 int cursor=run.getInt("FearCursor0472");
                 for(int attempt=0;attempt<7;attempt++){
                     int role=1+Math.floorMod(cursor++,7);
                     if(children.stream().noneMatch(c->role(c.getPersistentData().getInt(GoatmanVignette.INDEX),run)==role))continue;
                     if(!run.getBoolean(DOOR_KNOCKED)&&(role==STARTLE||role==BRACE&&stage(run)>CONFUSION))continue;
+                    if(!relevant((role-1)*3+stage(run),run))continue;
                     pending=(role-1)*3+stage(run);break;
                 }
                 run.putInt("FearCursor0472",cursor);

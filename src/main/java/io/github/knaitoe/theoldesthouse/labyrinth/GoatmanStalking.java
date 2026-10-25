@@ -26,7 +26,14 @@ public final class GoatmanStalking {
     public static boolean windowApproachDone(CompoundTag run){return run.getInt("StalkWindowLeg0465")>=TO_WINDOW.length;}
     public static final int[] DEMAND_TICKS={0,160,330,500,665,830,1000};
     public static final int ASSAULT_END=1080;
-    public static final int CIRCUITS=3;
+    /** Ticks between the single knocks once the demands are over. */
+    public static final int AFTER_KNOCK=400;
+    /** Whether a demand's blow falls on this beat of it: always after the words, a few to a demand, the last one fast. */
+    public static boolean demandBlow(int stage,int beat){
+        return switch(stage){case 0->beat==40;case 1->beat==40||beat==70;case 2->beat==50;case 3->beat==40||beat==52;case 4->beat==50;case 5->beat==50;default->beat>=30&&beat<=78&&(beat-30)%8==0;};
+    }
+    /** 0.4.121: two laps of the trailer, not three; there was far too much knocking. */
+    public static final int CIRCUITS=2;
     public static boolean circuitDone(CompoundTag r){return r.getInt("StalkLeg0465")>=CIRCUIT.length
             &&(!r.contains("CircuitGoal0494")||r.getInt("Circuits0494")>=r.getInt("CircuitGoal0494"))
             &&(!r.contains("WindowSerial0497")||r.getBoolean("DoorPressureDone0497"));}
@@ -68,7 +75,7 @@ public final class GoatmanStalking {
     private static final BlockPos[] SIDE_WINDOWS={new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)};
     /** The four corners of a lap, just off the trailer's walls: front west, back west, back east, front east. */
     private static final Vec3[] CORNERS={new Vec3(-9.5,0,-51.5),new Vec3(-9.5,0,-78.5),new Vec3(9.5,0,-78.5),new Vec3(9.5,0,-51.5)};
-    public static final int LAPS=3,LAP_GAP=300;
+    public static final int LAPS=1,LAP_GAP=300;
     public static final double LAP_SPEED=.8;
     /** Every window struck on the way round, and the back wall. */
     public static final int ALL_STRUCK=(1<<SIDE_WINDOWS.length+1)-1;
@@ -235,6 +242,8 @@ public final class GoatmanStalking {
             if(r.getInt("StalkLeg0465")==0)r.putInt("CircuitGoal0494",CIRCUITS);
             if(!c.stalkingAppearance())c.disguise(c.skin());c.getPersistentData().remove("Route");c.pose(false);c.cower(false);c.heave(false);
         }
+        // 0.4.121: the night begins with his voice. Until the first demand has been spoken he stands silent on the step.
+        if(!evening&&r.getInt("DemandStage0465")==0){c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)));return;}
         boolean supported=GoatmanWindowCircuit.stepsReady(l,b);
         boolean window=!evening&&circuitDone(r)&&r.getBoolean("AssaultDone0465")&&clock>=1900;
         if(!window&&!GoatmanWindowCircuit.atPane(b,c))change(l,r,c);
@@ -272,6 +281,13 @@ public final class GoatmanStalking {
         c.setOnGround(true);c.move(net.minecraft.world.entity.MoverType.SELF,movement);c.setDeltaMovement(Vec3.ZERO);
         // A wheel approach rises physically before the next horizontal step; collision never teleports the body.
         if(c.position().distanceToSqr(before)<.000004&&delta.y>.03)c.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,Math.min(.08,delta.y),0));
+        // 0.4.121: a body caught on the lip of a tread steps up it as a walker would, physically: up at most half a block and
+        // across. A real wall stays a wall (the step back down is undone if nothing was gained).
+        else if(c.position().distanceToSqr(before)<.000004&&movement.horizontalDistanceSqr()>1e-4){
+            var start=c.position();c.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,.55,0));c.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(movement.x,0,movement.z));
+            if(c.position().subtract(start).horizontalDistanceSqr()<1e-5)c.setPos(start);
+            else c.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,-.6,0));
+        }
         float yaw=length>.01?(float)(Math.atan2(delta.z,delta.x)*180/Math.PI)-90:c.getYRot();
         c.setYRot(yaw);c.setYHeadRot(yaw);c.yBodyRot=yaw;c.animate(c.position().distanceTo(before),false,false);
         if(c.position().distanceToSqr(target)>.012)return;
@@ -280,7 +296,9 @@ public final class GoatmanStalking {
         if(!window&&leg==route.length-1&&r.contains("CircuitGoal0494"))r.putInt("Circuits0494",r.getInt("Circuits0494")+1);
         if(window&&leg==route.length-1){impact(l,b,r,c,GoatmanWoods.WINDOW,2);return;}
         if(!window){
-            BlockPos hit=switch(leg){case 0->r.getInt("Circuits0494")==0?GoatmanWoods.DOOR:null;case 5->new BlockPos(-8,2,-59);case 6->new BlockPos(-8,2,-67);case 7->new BlockPos(-8,2,-73);case 9->new BlockPos(0,2,-77);case 11->GoatmanWoods.WINDOW;case 12->new BlockPos(8,2,-67);case 13->new BlockPos(8,2,-59);default->null;};
+            // 0.4.121: six surfaces a lap (the five side windows he is seen at and the back wall), not eight; the front door is his
+            // to knock only after he has spoken, and the bathroom window waits for the end.
+            BlockPos hit=switch(leg){case 5->new BlockPos(-8,2,-59);case 6->new BlockPos(-8,2,-67);case 7->new BlockPos(-8,2,-73);case 9->new BlockPos(0,2,-77);case 12->new BlockPos(8,2,-67);case 13->new BlockPos(8,2,-59);default->null;};
             if(hit!=null){face(c,Vec3.atCenterOf(b.offset(hit)));impact(l,b,r,c,hit,leg%3==0?2:1);r.putInt("StalkPause0465",clock+18+c.getRandom().nextInt(29));
                 if(GoatmanWindowCircuit.sideWindow(leg)){GoatmanWindowCircuit.start(l,r,c,clock);r.putBoolean("StalkChange0465",true);}
                 else if(!r.contains("CircuitGoal0494"))r.putBoolean("StalkChange0465",true);}
@@ -289,21 +307,16 @@ public final class GoatmanStalking {
     private static void face(GoatmanChild c,Vec3 p){var d=p.subtract(c.position());float yaw=(float)(Math.atan2(d.z,d.x)*180/Math.PI)-90;c.setYRot(yaw);c.setYHeadRot(yaw);c.yBodyRot=yaw;}
     public static void assault(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> players,int clock){
         // These native world sounds remain audible when the body is blocked or temporarily untracked.
-        // It starts at the front door, then races round: one side, the back, the other side.
-        BlockPos[] sides={GoatmanWoods.DOOR,new BlockPos(-8,2,-67),new BlockPos(0,2,-77),new BlockPos(8,2,-67)};
-        int[] at={120,190,250,310};
-        int cues=r.getInt("PressureCues0472");
-        for(int i=0;i<sides.length;i++)if(clock>=at[i]&&(cues&(1<<i))==0){
-            impact(l,b,r,null,sides[i],i==2?2:1);r.putInt("PressureCues0472",cues|(1<<i));break;
-        }
+        // 0.4.121: nothing is struck before he speaks. Each demand is said first, and the blows come after the words.
         if(!r.contains("AssaultAt0465")){if(clock<450)return;r.putInt("AssaultAt0465",clock);}
         int elapsed=clock-r.getInt("AssaultAt0465");
-        if(elapsed>=ASSAULT_END){r.putBoolean("AssaultDone0465",true);int beat=(elapsed-ASSAULT_END)%80;
-            if(beat==0||beat==7||beat==15){impact(l,b,r,null,GoatmanWoods.DOOR,beat==0?2:1);r.putInt("DoorPulseSerial04112",r.getInt("DoorPulseSerial04112")+1);}return;}
+        // Afterwards, now and then, one more knock: he is still there.
+        if(elapsed>=ASSAULT_END){r.putBoolean("AssaultDone0465",true);
+            if((elapsed-ASSAULT_END)%AFTER_KNOCK==AFTER_KNOCK/2){impact(l,b,r,null,GoatmanWoods.DOOR,1);r.putInt("DoorPulseSerial04112",r.getInt("DoorPulseSerial04112")+1);}return;}
         int stage=0;while(stage+1<DEMAND_TICKS.length&&elapsed>=DEMAND_TICKS[stage+1])stage++;
         int beat=elapsed-DEMAND_TICKS[stage];
         if(beat==0){GoatmanFear.begin(r);r.putInt("Demand",101+stage);r.putInt("DemandAt",clock);r.putInt("DemandStage0465",stage+1);}
-        boolean hit=switch(stage){case 0->beat==0||beat==14;case 1->beat==0||beat==22||beat==44;case 2->beat==12;case 3->beat==0||beat==10||beat==20;case 4->beat==30;case 5->beat==12;default->beat<80&&beat%6==0;};
+        boolean hit=demandBlow(stage,beat);
         if(!hit)return;
         var it=l.getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.getTags().contains(GoatmanVignette.ACTOR)&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==r.getInt("Wrong")&&c.getPersistentData().hasUUID(GoatmanVignette.ROUND)&&c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(r.getUUID("Id"))).stream().findFirst().orElse(null);
         // The door answers while the same original body is seen circling outside.
@@ -319,7 +332,7 @@ public final class GoatmanStalking {
     }
     public static void impact(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,BlockPos relative,int force){
         var at=b.offset(relative);var state=l.getBlockState(at);var center=Vec3.atCenterOf(at);boolean door=relative.equals(GoatmanWoods.DOOR);
-        GoatmanFear.begin(r);if(door)r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);
+        GoatmanFear.begin(r);GoatmanFear.heard(r);if(door)r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);
         var toward=c==null?new Vec3(relative.getX()< -4?-1:relative.getX()>4?1:0,0,relative.getZ()<=-77?-1:1):c.position().subtract(center);double x=center.x,z=center.z;
         if(Math.abs(toward.x)>Math.abs(toward.z))x+=Math.signum(toward.x)*.49;else z+=Math.signum(toward.z)*.49;
         double y=center.y+(door?.55:0);
