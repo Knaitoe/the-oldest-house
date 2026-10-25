@@ -41,7 +41,7 @@ public final class UncannySocketProof {
     private static void save(ServerPlayer p,LabyrinthPlace place,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),place,own);}
     private static BlockPos base(LabyrinthPlace place){return LabyrinthPlaces.base(ORIGIN,place);}
     private static void write(String name,String message){try{Files.createDirectories(folder());Files.writeString(folder().resolve(name),message);}catch(Exception ex){throw new IllegalStateException(ex);}}
-    @SubscribeEvent public static void commands(RegisterCommandsEvent e){if(!enabled())return;e.getDispatcher().register(Commands.literal("uncannyproof").then(Commands.argument("phase",IntegerArgumentType.integer(1,17)).executes(c->{var p=c.getSource().getPlayerOrException();if(p.getGameProfile().getName().startsWith("OTHProof")&&IntegerArgumentType.getInteger(c,"phase")==phase)ACKS.add(p.getUUID());return 1;})));}
+    @SubscribeEvent public static void commands(RegisterCommandsEvent e){if(!enabled())return;e.getDispatcher().register(Commands.literal("uncannyproof").then(Commands.argument("phase",IntegerArgumentType.integer(1,18)).executes(c->{var p=c.getSource().getPlayerOrException();if(p.getGameProfile().getName().startsWith("OTHProof")&&IntegerArgumentType.getInteger(c,"phase")==phase)ACKS.add(p.getUUID());return 1;})));}
     private static void marker(ServerPlayer p,int step){
         var tag=new CompoundTag();tag.putInt("UncannyStep",step);tag.putInt("ServerAge",p.server.getTickCount()-changed);
         tag.putBoolean("PaperRead",step==5?own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"):step==13&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP));
@@ -55,7 +55,9 @@ public final class UncannySocketProof {
     }
     private static void at(ServerPlayer p,LabyrinthPlace place,double x,double y,double z){
         build(p.server,place);p.closeContainer();p.stopUsingItem();p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setHealth(20);p.setInvulnerable(false);p.setNoGravity(false);p.getFoodData().setFoodLevel(20);
-        var b=base(place);p.teleportTo(p.server.getLevel(NovelRooms.dimension(place)),b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
+        var b=base(place);var feet=BlockPos.containing(b.getX()+x,b.getY()+y,b.getZ()+z);
+        require(!p.server.getLevel(NovelRooms.dimension(place)).getBlockState(feet.below()).getCollisionShape(p.server.getLevel(NovelRooms.dimension(place)),feet.below()).isEmpty(),"supported fixture arrival in "+place.id()+" at "+feet+"; floor="+p.server.getLevel(NovelRooms.dimension(place)).getBlockState(feet.below()));
+        p.teleportTo(p.server.getLevel(NovelRooms.dimension(place)),b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
     }
     private static void sourceFixture(ServerPlayer p,LabyrinthPlace place,int age){
         var own=own(p,place);UncannyStories.arrive(p,place,own);own.putBoolean("Read_Source",true);own.putInt("UncannyAge",age);save(p,place,own);
@@ -121,8 +123,9 @@ public final class UncannySocketProof {
             }
             else if(phase==11){for(var p:List.of(a,b)){require(DOLLS.get(p.getUUID()).equals(own(p,LabyrinthPlace.MISSING_SLEEP).getUUID("CastDoll")),"reconnect never fabricates a replacement doll");at(p,LabyrinthPlace.MISSING_SLEEP,2.5,5,-15.5);}step(s,12);}
             else if(phase==12){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("BlockedDoor")&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Ready"),"each reader closes the actual door after their own evidence");at(p,LabyrinthPlace.MISSING_SLEEP,3.5,0,-2.5);}step(s,13);}
-            else if(phase==13){for(var p:List.of(a,b)){require(WitnessAccount.has(LabyrinthData.get(s),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"native final account earns the personal memory");require(p.getInventory().countItem(UncannyRegistry.SMOKY_MIRROR.get())==1,"exactly one finite mirror");at(p,LabyrinthPlace.LAYERED_MAN,p==a?3.42:-2.42,-5,-20.5);sourceFixture(p,LabyrinthPlace.LAYERED_MAN,50);}step(s,14);}
-            else if(phase==14){for(var p:List.of(a,b)){require(p.hasEffect(UncannyRegistry.ENGULFED)&&own(p,LabyrinthPlace.LAYERED_MAN).getInt("Engulfment")>0,"real tissue contact applies the custom status and screen pressure");at(p,LabyrinthPlace.MOTION_LIGHT,p==a?-1.5:1.5,0,-10.5);sourceFixture(p,LabyrinthPlace.MOTION_LIGHT,5);}step(s,15);}
+            else if(phase==13){for(var p:List.of(a,b)){require(WitnessAccount.has(LabyrinthData.get(s),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"native final account earns the personal memory");require(p.getInventory().countItem(UncannyRegistry.SMOKY_MIRROR.get())==1,"exactly one finite mirror");at(p,LabyrinthPlace.LAYERED_MAN,p==a?4.5:-4.5,-5,-14.5);sourceFixture(p,LabyrinthPlace.LAYERED_MAN,50);}step(s,14);}
+            else if(phase==14){for(var p:List.of(a,b))at(p,LabyrinthPlace.LAYERED_MAN,p==a?3.42:-2.42,-5,-20.5);step(s,18);}
+            else if(phase==18){for(var p:List.of(a,b)){require(p.hasEffect(UncannyRegistry.ENGULFED)&&own(p,LabyrinthPlace.LAYERED_MAN).getInt("Engulfment")>0,"real tissue contact applies the custom status and screen pressure");at(p,LabyrinthPlace.MOTION_LIGHT,p==a?-1.5:1.5,0,-12.5);sourceFixture(p,LabyrinthPlace.MOTION_LIGHT,5);}step(s,15);}
             else if(phase==15){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MOTION_LIGHT).getInt("DarkSeen")>=2,"actual native floodlight cycles");at(p,LabyrinthPlace.MISSING_SLEEP,p==a?1.2:2.8,5,-20.5);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(UncannyRegistry.BONE_RING.get()));p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.invulnerableTime=0;
                     // Keep natural regeneration from healing the real two-point payment before the client captures it.
                     p.getFoodData().setFoodLevel(17);

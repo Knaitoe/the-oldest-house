@@ -279,6 +279,8 @@ public final class UncannyRooms {
         // An open service yard. Its one working light remains the reverse-motion floodlight.
         box(l,b,-6,7,-24,6,7,-16,Blocks.AIR);
         for(int x=-6;x<=6;x++)furnishing(l,b,x,4,-20,UncannyFurnitureBlock.Kind.PIPE_HORIZONTAL,Direction.NORTH);
+        // Join the yard through its front wall; glass alone left solid masonry immediately behind it.
+        box(l,b,-3,0,-15,3,3,-15,Blocks.AIR);
         box(l,b,-3,0,-14,3,3,-14,Blocks.GLASS);door(l,b,new BlockPos(0,0,-14),Direction.SOUTH,false);
         fit(l,b,INTERCOM,BUZZER,Direction.WEST);fit(l,b,source(LabyrinthPlace.MOTION_LIGHT),SCRAWL,Direction.WEST);fit(l,b,FLOOD,FLOODLIGHT,Direction.SOUTH);
         for(int z=-3;z>=-9;z--)box(l,b,5,0,z,7,3,z,Blocks.AIR);
