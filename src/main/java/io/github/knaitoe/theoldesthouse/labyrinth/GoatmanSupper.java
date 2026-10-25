@@ -193,6 +193,8 @@ public final class GoatmanSupper {
             else if(t.getInt("Heat")>=HOT_TICKS)l.sendParticles(ParticleTypes.SMOKE,at.x,at.y,at.z,2,.05,.02,.05,.01);}
     }
     /** The cousins turn toward the smell for five seconds after something burns. */
+    /** Whether anything is on the griddle right now: raw franks cooking, or cooked ones nobody has taken off. */
+    public static boolean onGriddle(CompoundTag r){return !r.getList("Cooking0465",Tag.TAG_COMPOUND).isEmpty()||!r.getList("CookedPan0465",Tag.TAG_COMPOUND).isEmpty();}
     public static boolean smelled(CompoundTag r,long now){return r.contains("BurntAt0476")&&now-r.getLong("BurntAt0476")<100;}
     static boolean interact(ServerPlayer player,PlayerInteractEvent.RightClickBlock event){
         var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(data);
