@@ -152,7 +152,7 @@ public final class ChildRoom {
     public static boolean crawling(ServerPlayer p,BlockPos b){var r=rel(p,b);return r.getY()==-2&&CRAWLSPACE.contains(r)||r.getY()==-1&&r.equals(GAP)
             ||r.getY()==0&&r.getX()==0&&(r.getZ()==-23||r.getZ()==-22)||p.isShiftKeyDown()&&besideBed(r);}
     /** The floor cells a reader can get down from: at the foot of the bed and along either side. */
-    static boolean besideBed(BlockPos r){return r.getY()==0&&(r.getX()==0&&r.getZ()==-21||Math.abs(r.getX())==1&&(r.getZ()==-23||r.getZ()==-22));}
+    public static boolean besideBed(BlockPos r){return r.getY()==0&&(r.getX()==0&&r.getZ()==-21||Math.abs(r.getX())==1&&(r.getZ()==-23||r.getZ()==-22));}
     public static boolean inCrawlspace(ServerPlayer p,BlockPos b){var r=rel(p,b);return (r.getY()==-2||r.getY()==-1)&&(CRAWLSPACE.contains(r.atY(-2)));}
     public static boolean inBasement(ServerPlayer p,BlockPos b){var r=rel(p,b);return r.getY()>=-4&&r.getY()<=-2&&r.getX()>=3&&r.getX()<=10&&r.getZ()>=-16&&r.getZ()<=-4;}
 
