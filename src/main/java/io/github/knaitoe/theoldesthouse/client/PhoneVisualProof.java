@@ -37,6 +37,6 @@ public final class PhoneVisualProof {
         active=false;
         Files.writeString(dir.resolve("phone-passed.txt"),"Three native phone views: the home screen with the clock back home and Harrigan's card, the thread with him, and his voicemail ready for a name.\n");
         TheOldestHouse.LOGGER.info("PHONE VIEW CHECK PASSED: three native views");
-        mc.setScreen(new CastVisualProof());
+        PhonePlaybackProof.start();
     }
 }

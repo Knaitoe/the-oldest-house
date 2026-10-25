@@ -33,6 +33,12 @@ public final class UncannyEnvironmentTests {
             for(int z=-4;z>=-24;z--)body(h,l,b,0,0,z,"the entrance and main serving aisle");
             for(int x=-5;x<=3;x++)body(h,l,b,x,0,-20,"the original waitress's solid serving route");
             body(h,l,b,-8,0,-25,"the working kitchen door");
+            var sleep=f.base(LabyrinthPlace.MISSING_SLEEP);var home=f.level(LabyrinthPlace.MISSING_SLEEP);
+            for(boolean peer:new boolean[]{false,true})for(int i=0;i<=20;i++){
+                double t=i/20.,x=(peer?-7.3:-6.5)+t,z=-10.5-10*t;
+                var feet=new Vec3(sleep.getX()+x,sleep.getY()+5,sleep.getZ()+z);
+                h.assertTrue(home.noCollision(null,new AABB(feet.x-.3,feet.y+.01,feet.z-.3,feet.x+.3,feet.y+1.8,feet.z+.3)),"both notebook approaches clear a real standing body at "+feet);
+            }
             f.at(p,place,4,0,-17);h.assertTrue(HouseSitting.sit(p,b.offset(5,0,-18))&&p.getVehicle() instanceof SeatEntity,"a real reader sits on the actual fourth booth");p.stopRiding();
             var cabinet=b.offset(-9,0,-13);p.moveTo(cabinet.getX()+2, cabinet.getY(),cabinet.getZ()+.5);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
             var before=f.own(p,place).copy();var count=p.getInventory().countItem(UncannyRegistry.MEAL.get());

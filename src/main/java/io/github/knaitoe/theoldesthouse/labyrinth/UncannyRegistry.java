@@ -21,6 +21,7 @@ public final class UncannyRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<UncannyFurnitureBlock>> FURNITURE_TYPE=CODECS.register("uncanny_furniture",()->UncannyFurnitureBlock.CODEC);
     public static final DeferredBlock<UncannyFurnitureBlock> FURNITURE=BLOCKS.registerBlock("uncanny_furniture",UncannyFurnitureBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(UncannyFurnitureBlock::light));
     public static final DeferredBlock<DoorBlock> DINER_DOOR=BLOCKS.register("uncanny_diner_door",()->new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_DOOR).noOcclusion().noLootTable()));
+    public static final DeferredBlock<CarpetBlock> PARLOR_RUG=BLOCKS.registerBlock("uncanny_parlor_rug",CarpetBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GREEN_CARPET).noLootTable());
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     static {
         for(String name:new String[]{"diner_wall","diner_dado","diner_tile","roof","asphalt","pavement","parlor_paper","dark_wood","bedroom_paper","workshop_wall","workshop_floor","lobby_wall","courtyard_wall"})

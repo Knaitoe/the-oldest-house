@@ -1,0 +1,78 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "c": "the_oldest_house:block/life_stage/cardboard",
+  "t": "the_oldest_house:block/life_stage/cardboard_top",
+  "h": "the_oldest_house:block/life_stage/hot_plate",
+  "w": "the_oldest_house:block/life_stage/white_paint",
+  "particle": "the_oldest_house:block/life_stage/cardboard"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    1
+   ],
+   "to": [
+    15,
+    12,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c"
+    },
+    "south": {
+     "texture": "#c"
+    },
+    "east": {
+     "texture": "#c"
+    },
+    "west": {
+     "texture": "#c"
+    },
+    "up": {
+     "texture": "#t"
+    },
+    "down": {
+     "texture": "#c"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    12,
+    4
+   ],
+   "to": [
+    13,
+    14,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#w"
+    },
+    "south": {
+     "texture": "#w"
+    },
+    "east": {
+     "texture": "#w"
+    },
+    "west": {
+     "texture": "#w"
+    },
+    "up": {
+     "texture": "#h"
+    },
+    "down": {
+     "texture": "#w"
+    }
+   }
+  }
+ ]
+}

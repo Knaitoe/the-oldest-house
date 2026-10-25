@@ -17,7 +17,7 @@ import net.neoforged.neoforge.event.EventHooks;
 public final class CarcassHunt {
     private static final String STATE="CarcassSearch0455";
     public static final int BLOCKED_LIMIT=80;
-    public static final int ATTACK_DELAY=90;
+    public static final int ATTACK_DELAY=ElkHunt.ATTACK_DELAY;
     private final Map<UUID,Vec3> lastPositions=new HashMap<>();
     private final Deque<BlockPos> route=new ArrayDeque<>();
     private BlockPos routeGoal;
@@ -45,6 +45,8 @@ public final class CarcassHunt {
     public static boolean tracks(LiteraryActor a,UUID id){var s=state(a);return s.getInt("Memory")>0&&s.hasUUID("Reader")&&s.getUUID("Reader").equals(id);}
     public static BlockPos searchPoint(LiteraryActor a){var s=state(a);return s.contains("Point")?BlockPos.of(s.getLong("Point")):null;}
     public static int blockedTicks(LiteraryActor a){return state(a).getInt("BlockedTicks0459");}
+    /** The mess-hall bell (0.4.121): he drops what he was following and goes where the bell calls him. */
+    public static void divert(LiteraryActor a){var s=state(a);s.putInt("Memory",0);s.remove("Point");s.putInt("Patrol",0);a.getPersistentData().put(STATE,s);}
     private static void remember(LiteraryActor a,ServerPlayer p){
         var s=state(a);s.putUUID("Reader",p.getUUID());s.putLong("Point",p.blockPosition().asLong());s.putInt("Memory",220);
         a.getPersistentData().put(STATE,s);
@@ -133,14 +135,21 @@ public final class CarcassHunt {
         if(readers.isEmpty()){route.clear();routeGoal=null;return;}
         var s=state(a);if(s.getInt("AttackDelay")>0)s.putInt("AttackDelay",s.getInt("AttackDelay")-1);
         if(s.getInt("AvoidTicks0459")>0)s.putInt("AvoidTicks0459",s.getInt("AvoidTicks0459")-1);a.getPersistentData().put(STATE,s);
-        ServerPlayer found=null;double nearest=Double.MAX_VALUE;
+        // 0.4.121: Camp Blood keeps its last session's schedule; each new period starts his walk over.
+        boolean camp=scene(a)==LabyrinthPlace.CAMP_BLOOD;
+        if(camp&&CampSession.advance(l,b,a,readers)){s.putInt("Patrol",0);a.getPersistentData().put(STATE,s);}
+        ServerPlayer found=null;double nearest=Double.MAX_VALUE;boolean byEar=false;
         for(var p:readers){var last=lastPositions.put(p.getUUID(),p.position());double moved=last==null?0:last.distanceToSqr(p.position());
-            boolean heard=moved>.004&&!CampBedCrawl.under(p)&&(p.isSprinting()||!p.isShiftKeyDown())&&a.distanceToSqr(p)<(p.isSprinting()?32*32:12*12);
+            // Under a bunk only stillness hides a reader: the boards tell on anyone moving close by.
+            boolean under=CampBedCrawl.under(p);
+            boolean heard=moved>.004&&(under?a.distanceToSqr(p)<6*6:(p.isSprinting()||!p.isShiftKeyDown())&&a.distanceToSqr(p)<(p.isSprinting()?32*32:12*12));
             boolean rejected=s.getInt("AvoidTicks0459")>0&&s.contains("RejectedPoint0459")&&p.blockPosition().distSqr(BlockPos.of(s.getLong("RejectedPoint0459")))<=4;
-            if(!rejected&&(sees(a,p)||heard)&&a.distanceToSqr(p)<nearest){found=p;nearest=a.distanceToSqr(p);}}
+            boolean seen=sees(a,p);
+            if(!rejected&&(seen||heard)&&a.distanceToSqr(p)<nearest){found=p;nearest=a.distanceToSqr(p);byEar=!seen;}}
         if(found!=null){remember(a,found);s=state(a);}else if(s.getInt("Memory")>0)s.putInt("Memory",s.getInt("Memory")-1);
-        boolean chasing=s.getInt("Memory")>0&&s.contains("Point");a.appearance(LiteraryActor.KILLER,chasing?ElkHunt.RUN:ElkHunt.WALK);int stop=Math.floorMod(s.getInt("Patrol"),PATROL.size());
-        var goal=chasing?new BlockPos(BlockPos.of(s.getLong("Point")).getX(),b.getY(),BlockPos.of(s.getLong("Point")).getZ()):b.offset(PATROL.get(stop));
+        var walk=camp?CampSession.walk(a):PATROL;
+        boolean chasing=s.getInt("Memory")>0&&s.contains("Point");a.appearance(LiteraryActor.KILLER,chasing?ElkHunt.RUN:ElkHunt.WALK);int stop=Math.floorMod(s.getInt("Patrol"),walk.size());
+        var goal=chasing?new BlockPos(BlockPos.of(s.getLong("Point")).getX(),b.getY(),BlockPos.of(s.getLong("Point")).getZ()):b.offset(walk.get(stop));
         if(!walkable(a,b,goal)){double best=Double.MAX_VALUE;BlockPos fallback=null;
             for(var n:BlockPos.betweenClosed(goal.offset(-3,0,-3),goal.offset(3,0,3)))if(walkable(a,b,n)&&n.distSqr(goal)<best){best=n.distSqr(goal);fallback=n.immutable();}
             if(fallback!=null)goal=fallback;}
@@ -156,12 +165,13 @@ public final class CarcassHunt {
                 var standing=box(before,a.getDimensions(Pose.STANDING).height());boolean low=!fits(a,standing.minmax(standing.move(movement)));
                 a.setPose(low?Pose.CROUCHING:Pose.STANDING);a.refreshDimensions();clearLeaves(a,movement);a.move(MoverType.SELF,movement);
                 a.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));a.yBodyRot=a.getYRot();a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4F);}}
+        if(camp)CampSession.boots(a,readers,a.position().distanceToSqr(before)>.0001);
         boolean blocked=!arrived&&a.position().distanceToSqr(before)<.0001;
         int failures=blocked?s.getInt("BlockedTicks0459")+1:0;s.putInt("BlockedTicks0459",failures);
         if(failures>=BLOCKED_LIMIT){if(chasing){s.putLong("RejectedPoint0459",s.getLong("Point"));s.putInt("AvoidTicks0459",100);s.putInt("Memory",0);s.remove("Point");}
             s.putInt("Patrol",stop+1);s.putInt("BlockedTicks0459",0);route.clear();routeGoal=null;}
-        if(found!=null&&a.distanceToSqr(found)<3.5&&s.getInt("AttackDelay")==0&&sees(a,found)){
-            a.swing(InteractionHand.MAIN_HAND);found.hurt(found.damageSources().mobAttack(a),5);s.putInt("AttackDelay",ATTACK_DELAY);}
+        if(found!=null&&a.distanceToSqr(found)<3.5&&s.getInt("AttackDelay")==0&&(sees(a,found)||byEar&&CampBedCrawl.under(found))){
+            a.swing(InteractionHand.MAIN_HAND);if(found.hurt(found.damageSources().mobAttack(a),5)&&a.level() instanceof net.minecraft.server.level.ServerLevel sl)ElkHunt.blood(sl,found,a);s.putInt("AttackDelay",ATTACK_DELAY);}
         a.getPersistentData().put(STATE,s);
     }
 }

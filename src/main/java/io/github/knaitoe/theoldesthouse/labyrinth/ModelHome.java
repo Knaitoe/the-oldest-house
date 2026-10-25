@@ -2,25 +2,30 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import com.mojang.math.Transformation;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
-import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
+import io.github.knaitoe.theoldesthouse.house.TractHouseBlock;
+import io.github.knaitoe.theoldesthouse.house.TractHouseBlock.Kind;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Display;
@@ -31,21 +36,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CrossCollisionBlock;
 import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.FenceBlock;
-import net.minecraft.world.level.block.LanternBlock;
-import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
-import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
@@ -57,45 +57,45 @@ import org.joml.Vector3f;
 /**
  * Poltergeist: the model home. Multi-visit; verb: turning around.
  *
- * A furnished show home, bright and empty: a living room, a kitchen with a
- * table and six chairs, a kid's room whose window looks onto a small yard at
- * night. The salesman's binder lies on the kitchen counter (the headstones
- * were moved, the bodies weren't); it is this vignette's object, and can be
- * taken on any visit.
+ * A Cuesta Verde show home, as built in 1982 (0.4.121): wood-paneled living room on shag carpet with a plaid sofa, two
+ * recliners and a console television; a linoleum kitchen in harvest gold with a honey-oak table and six chairs; a child's
+ * room in pink whose window looks onto a small yard at night. The salesman's binder lies on the kitchen counter (the
+ * headstones were moved, the bodies weren't); it is this vignette's object, and can be taken on any visit. Everything is
+ * the tract_house block and its materials, drawn by tools/draw_tract_house.py; no pass dresses it.
  *
  * One beat per visit ({@link LabyrinthPlace.Kind#MULTI_VISIT}):
  * <ol>
- *   <li>Once a player has seen the table set, turning away from it for a
- *   second stacks every chair on it, nearly to the ceiling (block displays,
- *   so the stack can sway). It teeters more the closer they come. Seeing the
- *   stack is the visit's beat; the next time nobody is looking, the chairs
- *   are back where they were, and they stay there.</li>
- *   <li>Again, and the living room's armchairs are in the stack too.</li>
- *   <li>Again, with the kid's chair as well. A branch taps at the kid's
- *   window, and the grass in the yard has sunk in one long patch.</li>
- *   <li>The last visit: the chairs stay put. The kid's door stands open, the
- *   window is broken, and a branch has come in over the bed. Seeing it
- *   finishes the model home.</li>
+ *   <li>The child's door is locked. Once a player has seen the table set, turning away from it for a second stacks every
+ *   kitchen chair on it, nearly to the ceiling (block displays, so the stack can sway). Seeing the stack is the beat; the
+ *   next time nobody is looking, the chairs are back where they were.</li>
+ *   <li>Nothing stacks. The television is on, all static; watching it for a few seconds is the beat, and behind the
+ *   watcher the child's door comes open, unlocked from now on.</li>
+ *   <li>Nothing stacks. The tree in the yard has come to the window; whoever goes into the child's room sets it off: the
+ *   glass breaks in and a limb reaches through toward them. Seeing it finishes the model home, and each later reader who
+ *   goes in sees it reach for them too.</li>
  * </ol>
- * All the while the tree in the yard stands a stage closer on every visit.
+ * The tree in the yard stands a stage closer on every visit.
  *
- * The house lies north of its entry door (see {@link LabyrinthPlace}):
- * inside, x -8..8, z -18..-1, six high; the yard is west of the kid's room,
- * x -22..-10, z -20..-6, walled and roofed in black.
+ * The house lies north of its entry door (see {@link LabyrinthPlace}): inside, x -8..8, z -18..-1, five high, the living
+ * room south of a double wall at z -8..-9, the kitchen east and the child's room west of a double wall at x -1..0; the
+ * yard is west of the child's room, x -22..-10, z -20..-6, walled and roofed in black.
  */
 public final class ModelHome {
     public static final String ID = "model_home";
-    /** The visit on which the tree is in and the model home is finished. */
-    public static final int FINAL_VISIT = 4;
+    /** The visit on which the tree comes in and the model home is finished. */
+    public static final int FINAL_VISIT = 3;
 
-    /** A chair where it belongs: a stair block, its tall back to {@code back}. */
-    public record Chair(BlockPos pos, Direction back) {
+    /** A chair where it belongs, its back to {@code back}. */
+    public record Chair(BlockPos pos, Direction back, Kind kind) {
+        public Chair(BlockPos pos, Direction back) {
+            this(pos, back, Kind.DINING_CHAIR);
+        }
         BlockState state() {
-            return LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS, back);
+            return TractHouseBlock.of(kind, back.getOpposite());
         }
     }
 
-    /** The table: two posts side by side, their tops the table top. */
+    /** The table: two halves side by side, their tops the table top. */
     public static final BlockPos[] TABLE = {new BlockPos(4, 0, -13), new BlockPos(5, 0, -13)};
     public static final Chair[] KITCHEN_CHAIRS = {
             new Chair(new BlockPos(3, 0, -13), Direction.WEST),
@@ -105,26 +105,27 @@ public final class ModelHome {
             new Chair(new BlockPos(4, 0, -12), Direction.SOUTH),
             new Chair(new BlockPos(5, 0, -12), Direction.SOUTH)
     };
-    public static final Chair[] ARMCHAIRS = {
-            new Chair(new BlockPos(2, 0, -3), Direction.WEST),
-            new Chair(new BlockPos(2, 0, -5), Direction.WEST)
-    };
-    public static final Chair KIDS_CHAIR = new Chair(new BlockPos(-3, 0, -11), Direction.EAST);
+    public static final Chair KIDS_CHAIR = new Chair(new BlockPos(-3, 0, -11), Direction.EAST, Kind.KIDS_CHAIR);
     public static final BlockPos BINDER = new BlockPos(8, 1, -12);
-    /** The kid's window, lower pane; the upper is above it. */
+    /** The kid's window, lower pane; the upper is above it, the second pair north of these. */
     public static final BlockPos WINDOW = new BlockPos(-9, 1, -13);
     public static final BlockPos KIDS_DOOR = new BlockPos(-4, 0, -8);
     public static final BlockPos BED_FOOT = new BlockPos(-8, 0, -12);
-    /** Where the tree's trunk stands on each visit: further off, then at the window, then in it. */
-    private static final int[] TRUNK_X = {-20, -20, -16, -12, -11};
+    public static final BlockPos TV = new BlockPos(8, 0, -4);
+    /** Where the tree's trunk stands on each visit: off across the yard, nearer, then at the window. */
+    private static final int[] TRUNK_X = {-20, -20, -16, -12};
     private static final int TRUNK_Z = -13;
 
-    private static final int HEIGHT = 5;
+    static final int HEIGHT = 4;
     private static final String TAG = TheOldestHouse.MOD_ID + "_model_home_chair";
     private static final String INDEX_TAG = TAG + "_";
-    private static final BlockState WALL = HouseBlocks.MODEL_HOME_WALLPAPER.get().defaultBlockState();
-    private static final BlockState FLOOR = Blocks.BIRCH_PLANKS.defaultBlockState();
-    private static final BlockState CEILING = Blocks.SMOOTH_QUARTZ.defaultBlockState();
+    private static final String LIMB_TAG = TheOldestHouse.MOD_ID + "_model_home_limb";
+    private static final BlockState PANELING = HouseBlocks.TRACT_PANELING.get().defaultBlockState();
+    private static final BlockState SHAG = HouseBlocks.TRACT_SHAG.get().defaultBlockState();
+    private static final BlockState LINOLEUM = HouseBlocks.TRACT_LINOLEUM.get().defaultBlockState();
+    private static final BlockState POPCORN = HouseBlocks.TRACT_POPCORN.get().defaultBlockState();
+    private static final BlockState KITCHEN_PAPER = HouseBlocks.TRACT_KITCHEN_PAPER.get().defaultBlockState();
+    private static final BlockState KIDS_PAPER = HouseBlocks.MODEL_HOME_KIDS_WALLPAPER.get().defaultBlockState();
     private static final BlockState NIGHT = Blocks.BLACK_CONCRETE.defaultBlockState();
     private static final BlockState GRASS = Blocks.GRASS_BLOCK.defaultBlockState();
 
@@ -134,8 +135,16 @@ public final class ModelHome {
     private static final double NOTICE = 10.0D;
     private static final double TURNED_AWAY_WITHIN = 9.0D;
     private static final int TEETER_INTERVAL = 4;
+    /** Checks (every other tick) of watching the static before the child's door comes open: three seconds. */
+    public static final int STATIC_WATCH = 30;
+    /** The limb: its segments, how far it can reach from outside the window, and the ticks it takes to reach. */
+    public static final int LIMB_SEGMENTS = 7;
+    public static final double LIMB_REACH = 5.2D;
+    static final int LIMB_GROW = 40;
+    private static final Holder<SoundEvent> STATIC = Holder.direct(SoundEvent.createVariableRangeEvent(
+            ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "leak.television")));
 
-    /** What is going on in the house right now; not saved (a restart puts the chairs back). */
+    /** What is going on in the house right now; not saved (a restart puts the chairs back and the limb out). */
     private static final class Scene {
         boolean stacked;
         boolean sawNeat;
@@ -143,6 +152,12 @@ public final class ModelHome {
         boolean doneForVisit;
         int unwatched;
         long nextTap;
+        int watchedStatic;
+        long nextHiss;
+        /** Ticks since the limb came in, or -1 while it is outside; it grows, holds, and goes back when the room empties. */
+        int limbAge = -1;
+        int limbEmpty;
+        Vec3 limbTarget;
     }
 
     private static Scene scene = new Scene();
@@ -162,20 +177,15 @@ public final class ModelHome {
         return beatDone && visit < FINAL_VISIT ? visit + 1 : visit;
     }
 
-    /** The chairs the stack is made of on a visit. */
+    /** The chairs the stack is made of on a visit: the kitchen's six, on the first visit only. */
     public static List<Chair> stackedChairs(int visit) {
-        List<Chair> chairs = new ArrayList<>(List.of(KITCHEN_CHAIRS));
-        if (visit >= 2) {
-            chairs.addAll(List.of(ARMCHAIRS));
-        }
-        if (visit >= 3) {
-            chairs.add(KIDS_CHAIR);
-        }
-        return chairs;
+        return visit == 1 ? List.of(KITCHEN_CHAIRS) : List.of();
     }
 
     private static List<Chair> allChairs() {
-        return stackedChairs(FINAL_VISIT);
+        List<Chair> chairs = new ArrayList<>(List.of(KITCHEN_CHAIRS));
+        chairs.add(KIDS_CHAIR);
+        return chairs;
     }
 
     /**
@@ -191,7 +201,6 @@ public final class ModelHome {
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
         BlockPos base = base(server);
         if (level == null || base == null) return;
-        upgradeMaterials(level, base);
         if (visitors(level, base).stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()))) {
             return;
         }
@@ -202,17 +211,24 @@ public final class ModelHome {
             if (visit != state.getInt("Visit")) {
                 state.putInt("Visit", visit);
                 state.putBoolean("BeatDone", false);
+                state.remove("Unlocked");
                 data.setState(ID, state);
                 TheOldestHouse.LOGGER.info("{} is in the model home: visit {} of {}.", player.getGameProfile().getName(), visit, FINAL_VISIT);
             }
         }
-        stage(level, base, visitFor(data));
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal(visitFor(data)>=FINAL_VISIT?"The child's door is open. Something has reached the window.":"Six chairs around the kitchen table. The television offers something else to look at."),false);
+        int visit = visitFor(data);
+        stage(level, base, visit);
+        String line = switch (visit) {
+            case 1 -> "Six chairs around the kitchen table. The child's door is locked.";
+            case 2 -> "The television is on. Nobody is watching it.";
+            default -> data.isCompleted(ID) ? "The child's window is broken. The tree is right outside it." : "The child's door stands open. Something taps at the glass.";
+        };
+        player.displayClientMessage(Component.literal(line), false);
     }
 
     /** The visit the house is set for: the saved one, at least the first; the last once finished. */
     static int visitFor(LabyrinthData data) {
-        return data.isCompleted(ID) ? FINAL_VISIT : Math.max(1, data.state(ID).getInt("Visit"));
+        return data.isCompleted(ID) ? FINAL_VISIT : Math.max(1, Math.min(FINAL_VISIT, data.state(ID).getInt("Visit")));
     }
 
     // ------------------------------------------------------------------
@@ -226,112 +242,128 @@ public final class ModelHome {
         placeBinderIfLoaded(level, base, LabyrinthData.get(server));
     }
 
-    /** The house, its furniture and the yard's walls, as they are on every visit. */
-    public static void buildHome(ServerLevel level, BlockPos base) {
-        int flags = LabyrinthBuilder.flags();
-        // The yard first: the house's west wall is laid over the yard's east one.
-        LabyrinthBuilder.room(level, base, -22, -10, 9, -20, -6, NIGHT, GRASS, NIGHT);
-        LabyrinthBuilder.room(level, base, -8, 8, HEIGHT, -18, -1, WALL, FLOOR, CEILING);
-
-        // Across the house at z -8, with an archway into the kitchen and the
-        // kid's door; between the kid's room and the kitchen at x -1.
-        for (int y = 0; y <= HEIGHT; y++) {
-            for (int x = -8; x <= 8; x++) {
-                level.setBlock(base.offset(x, y, -8), WALL, flags);
-            }
-            for (int z = -18; z <= -9; z++) {
-                level.setBlock(base.offset(-1, y, z), WALL, flags);
-            }
-        }
-        for (int x = 1; x <= 3; x++) {
-            for (int y = 0; y <= 3; y++) {
-                level.setBlock(base.offset(x, y, -8), Blocks.AIR.defaultBlockState(), flags);
-            }
-        }
-        setKidsDoor(level, base, false);
-
-        // Light: a show home is lit everywhere.
-        for (BlockPos light : new BlockPos[]{new BlockPos(-4, HEIGHT + 1, -4), new BlockPos(4, HEIGHT + 1, -4),
-                new BlockPos(4, HEIGHT + 1, -13), new BlockPos(4, HEIGHT + 1, -17)}) {
-            level.setBlock(base.offset(light), Blocks.SEA_LANTERN.defaultBlockState(), flags);
-        }
-        level.setBlock(base.offset(-5, HEIGHT, -13), Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true), flags);
-
-        // The living room: a sofa and two armchairs facing a television, a rug, a fern.
-        for (int z = -5; z <= -3; z++) {
-            level.setBlock(base.offset(-7, 0, z), LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS, Direction.WEST), flags);
-        }
-        for (int x = -3; x <= 0; x++) {
-            for (int z = -5; z <= -3; z++) {
-                level.setBlock(base.offset(x, 0, z), Blocks.LIGHT_GRAY_CARPET.defaultBlockState(), flags);
-            }
-        }
-        level.setBlock(base.offset(7, 0, -4), LabyrinthBuilder.barrel(Direction.UP), flags);
-        level.setBlock(base.offset(7, 1, -4), Blocks.BLACK_CONCRETE.defaultBlockState(), flags);
-        level.setBlock(base.offset(-7, 0, -7), Blocks.POTTED_FERN.defaultBlockState(), flags);
-
-        // The kitchen: the table, a counter along the east wall with a sink,
-        // a stove and a refrigerator.
-        level.setBlock(base.offset(TABLE[0]), Blocks.SPRUCE_FENCE.defaultBlockState().setValue(FenceBlock.EAST, true), flags);
-        level.setBlock(base.offset(TABLE[1]), Blocks.SPRUCE_FENCE.defaultBlockState().setValue(FenceBlock.WEST, true), flags);
-        for (BlockPos leg : TABLE) {
-            level.setBlock(base.offset(leg).above(), Blocks.SPRUCE_PRESSURE_PLATE.defaultBlockState(), flags);
-        }
-        for (int z = -17; z <= -10; z++) {
-            level.setBlock(base.offset(8, 0, z), CEILING, flags);
-        }
-        level.setBlock(base.offset(8, 0, -15), Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), flags);
-        level.setBlock(base.offset(8, 0, -17), Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, Direction.WEST), flags);
-        level.setBlock(base.offset(8, 0, -18), Blocks.IRON_BLOCK.defaultBlockState(), flags);
-        level.setBlock(base.offset(8, 1, -18), Blocks.IRON_BLOCK.defaultBlockState(), flags);
-
-        // The kid's room: the bed under the window, a little table and chair.
-        LabyrinthBuilder.bed(level, base.offset(BED_FOOT), Direction.NORTH, Blocks.RED_BED);
-        level.setBlock(base.offset(-4, 0, -11), Blocks.SPRUCE_FENCE.defaultBlockState(), flags);
-        level.setBlock(base.offset(-4, 1, -11), Blocks.SPRUCE_PRESSURE_PLATE.defaultBlockState(), flags);
-        for (int x = -6; x <= -4; x++) {
-            level.setBlock(base.offset(x, 0, -16), Blocks.YELLOW_CARPET.defaultBlockState(), flags);
-        }
-
-        LabyrinthBuilder.entrance(level, base, WALL, FLOOR, CEILING);
-        LabyrinthBuilder.doors(level, base, LabyrinthPlace.MODEL_HOME);
-        upgradeMaterials(level, base);
+    private static void put(ServerLevel level, BlockPos base, int x, int y, int z, BlockState state) {
+        level.setBlock(base.offset(x, y, z), state, LabyrinthBuilder.flags());
     }
 
-    /** Cosmetic replacement preserves furniture, scene state and anything the player dropped. */
-    public static void upgradeMaterials(ServerLevel level, BlockPos base) {
-        int flags = LabyrinthBuilder.flags();
-        for (int x = -9; x <= 9; x++) for (int z = -19; z <= 0; z++) for (int y = 0; y <= HEIGHT; y++) {
-            BlockPos pos = base.offset(x, y, z);
-            BlockState old = level.getBlockState(pos);
-            if (old.is(Blocks.WHITE_CONCRETE) || old.is(HouseBlocks.MODEL_HOME_WALLPAPER.get())) {
-                boolean kids = x <= -1 && z <= -8 && y >= 1 && y <= 3;
-                level.setBlock(pos, (kids ? HouseBlocks.MODEL_HOME_KIDS_WALLPAPER : HouseBlocks.MODEL_HOME_WALLPAPER)
-                        .get().defaultBlockState(), flags);
-            } else if (x >= -3 && x <= 0 && z >= -5 && z <= -3 && y == 0 && old.is(Blocks.LIGHT_GRAY_CARPET)) {
-                level.setBlock(pos, HouseBlocks.MODEL_HOME_RUG.get().defaultBlockState(), flags);
+    private static void furnish(ServerLevel level, BlockPos base, int x, int y, int z, Kind kind, Direction facing) {
+        put(level, base, x, y, z, TractHouseBlock.of(kind, facing));
+    }
+
+    /** The house, its furniture and the yard's walls, as they are on every visit. */
+    public static void buildHome(ServerLevel level, BlockPos base) {
+        // The yard first: the house's west wall is laid over the yard's east one.
+        LabyrinthBuilder.room(level, base, -22, -10, 9, -20, -6, NIGHT, GRASS, NIGHT);
+        LabyrinthBuilder.room(level, base, -8, 8, HEIGHT, -18, -1, PANELING, SHAG, POPCORN);
+
+        // The kitchen's and the child's own walls and floors, and the double walls between the rooms.
+        for (int y = -1; y <= HEIGHT + 1; y++) {
+            for (int z = -19; z <= -9; z++) {
+                put(level, base, 9, y, z, KITCHEN_PAPER);
+                put(level, base, -9, y, z, KIDS_PAPER);
+            }
+            for (int x = -9; x <= 9; x++) put(level, base, x, y, -19, x <= -1 ? KIDS_PAPER : KITCHEN_PAPER);
+        }
+        for (int y = 0; y <= HEIGHT; y++) {
+            for (int x = -8; x <= 8; x++) {
+                put(level, base, x, y, -8, PANELING);
+                put(level, base, x, y, -9, x <= -1 ? KIDS_PAPER : KITCHEN_PAPER);
+            }
+            for (int z = -18; z <= -10; z++) {
+                put(level, base, -1, y, z, KIDS_PAPER);
+                put(level, base, 0, y, z, KITCHEN_PAPER);
             }
         }
-        BlockPos tv = base.offset(7, 1, -4);
-        if (level.getBlockState(tv).is(Blocks.BLACK_CONCRETE))
-            level.setBlock(tv, HouseBlocks.MODEL_HOME_TELEVISION.get().defaultBlockState(), flags);
+        for (int x = -8; x <= 8; x++) {
+            for (int z = -18; z <= -10; z++) {
+                if (x >= 1) put(level, base, x, -1, z, LINOLEUM);
+                else if (x <= -2) put(level, base, x, -1, z, Blocks.PINK_WOOL.defaultBlockState());
+            }
+        }
+        for (int x = -1; x <= 1; x++) for (int z = -2; z <= -1; z++) put(level, base, x, -1, z, LINOLEUM);
+        // An archway from the living room into the kitchen; the child's door is in the double wall's south face.
+        for (int x = 1; x <= 3; x++) for (int y = 0; y <= 2; y++) for (int z = -9; z <= -8; z++) put(level, base, x, y, z, Blocks.AIR.defaultBlockState());
+        for (int y = 0; y <= 1; y++) put(level, base, KIDS_DOOR.getX(), y, -9, Blocks.AIR.defaultBlockState());
+        setKidsDoor(level, base, false);
+
+        // Windows: the living room's onto the same dark yard as the child's, so the tree is seen coming from both; a small
+        // one in the kitchen's back wall onto the night, backed in black inside the slot.
+        BlockState along = Blocks.GLASS_PANE.defaultBlockState().setValue(CrossCollisionBlock.NORTH, true).setValue(CrossCollisionBlock.SOUTH, true);
+        BlockState across = Blocks.GLASS_PANE.defaultBlockState().setValue(CrossCollisionBlock.EAST, true).setValue(CrossCollisionBlock.WEST, true);
+        for (int z = -7; z <= -6; z++) for (int y = 1; y <= 2; y++) put(level, base, -9, y, z, along);
+        for (int x = 3; x <= 6; x++) for (int y = 0; y <= 3; y++) put(level, base, x, y, -20, NIGHT);
+        for (int x = 4; x <= 5; x++) put(level, base, x, 2, -19, across);
+
+        // Light: a show home is lit in every room.
+        for (BlockPos light : new BlockPos[]{new BlockPos(-3, HEIGHT, -4), new BlockPos(4, HEIGHT, -4), new BlockPos(6, HEIGHT, -16), new BlockPos(-5, HEIGHT, -14)}) {
+            put(level, base, light.getX(), light.getY(), light.getZ(), TractHouseBlock.of(Kind.CEILING_LIGHT, Direction.NORTH));
+        }
+        furnish(level, base, 3, HEIGHT, -11, Kind.PENDANT_LIGHT, Direction.NORTH);
+
+        // The living room: the sofa against the west wall facing the console set, a recliner either side of the coffee
+        // table, lamps at the sofa's ends, family photographs, a curtain at the window onto the yard.
+        furnish(level, base, -8, 0, -5, Kind.SOFA_LEFT, Direction.EAST);
+        furnish(level, base, -8, 0, -4, Kind.SOFA_MIDDLE, Direction.EAST);
+        furnish(level, base, -8, 0, -3, Kind.SOFA_RIGHT, Direction.EAST);
+        furnish(level, base, -8, 0, -6, Kind.END_TABLE_LAMP, Direction.EAST);
+        furnish(level, base, -8, 0, -2, Kind.END_TABLE_LAMP, Direction.EAST);
+        furnish(level, base, -6, 0, -4, Kind.COFFEE_TABLE, Direction.EAST);
+        furnish(level, base, -6, 0, -6, Kind.RECLINER, Direction.SOUTH);
+        furnish(level, base, -6, 0, -2, Kind.RECLINER, Direction.NORTH);
+        furnish(level, base, -8, 2, -4, Kind.FAMILY_PHOTO, Direction.EAST);
+        furnish(level, base, -3, 2, -1, Kind.FAMILY_PHOTO, Direction.NORTH);
+        furnish(level, base, 2, 2, -1, Kind.FAMILY_PHOTO, Direction.NORTH);
+        furnish(level, base, 5, 2, -1, Kind.FAMILY_PHOTO, Direction.NORTH);
+        furnish(level, base, -8, 2, -5, Kind.CURTAIN_LEFT, Direction.EAST);
+        put(level, base, 8, 0, -7, Blocks.POTTED_FERN.defaultBlockState());
+        put(level, base, 8, 0, -1, Blocks.POTTED_FERN.defaultBlockState());
+
+        // The kitchen: the table, counters down the east wall with the sink, the range and the fridge, cabinets above, the
+        // phone on the north wall beside the window.
+        furnish(level, base, TABLE[0].getX(), 0, TABLE[0].getZ(), Kind.TABLE_WEST, Direction.NORTH);
+        furnish(level, base, TABLE[1].getX(), 0, TABLE[1].getZ(), Kind.TABLE_EAST, Direction.NORTH);
+        for (int z = -16; z <= -10; z++) furnish(level, base, 8, 0, z, z == -15 ? Kind.COUNTER_SINK : Kind.COUNTER, Direction.WEST);
+        furnish(level, base, 8, 0, -17, Kind.STOVE, Direction.WEST);
+        furnish(level, base, 8, 0, -18, Kind.FRIDGE_LOWER, Direction.WEST);
+        furnish(level, base, 8, 1, -18, Kind.FRIDGE_UPPER, Direction.WEST);
+        for (int z = -18; z <= -10; z++) if (z != -17) furnish(level, base, 8, z == -18 ? 3 : 2, z, Kind.WALL_CABINET, Direction.WEST);
+        furnish(level, base, 2, 1, -18, Kind.WALL_PHONE, Direction.SOUTH);
+
+        // The child's room: the bed under the window, curtains either side of it, the toy chest, the clown on the floor.
+        LabyrinthBuilder.bed(level, base.offset(BED_FOOT), Direction.NORTH, Blocks.PINK_BED);
+        furnish(level, base, -8, 2, -15, Kind.CURTAIN_RIGHT, Direction.EAST);
+        furnish(level, base, -8, 2, -12, Kind.CURTAIN_LEFT, Direction.EAST);
+        furnish(level, base, -5, 0, -18, Kind.TOY_CHEST, Direction.SOUTH);
+        furnish(level, base, -7, 0, -16, Kind.CLOWN_DOLL, Direction.EAST);
+
+        LabyrinthBuilder.entrance(level, base, PANELING, SHAG, POPCORN);
+        LabyrinthBuilder.doors(level, base, LabyrinthPlace.MODEL_HOME);
     }
 
     /**
-     * Sets the house for a visit: every chair in its place, the tree where it
-     * stands this visit, the window whole or broken, the kid's door shut or
-     * standing open.
+     * Sets the house for a visit: every chair in its place, the television on or off, the tree where it stands this visit,
+     * the window whole or broken, the kid's door shut or standing open.
      */
     public static void stage(ServerLevel level, BlockPos base, int visit) {
+        LabyrinthData data = LabyrinthData.get(level.getServer());
+        stage(level, base, visit, data.isCompleted(ID), data.state(ID).getBoolean("Unlocked"));
+    }
+
+    /** As {@link #stage(ServerLevel, BlockPos, int)}, with the window already broken in or the static's door unlocked. */
+    public static void stage(ServerLevel level, BlockPos base, int visit, boolean broken, boolean unlocked) {
         clearStack(level, base);
+        clearLimb(level, base);
         for (Chair chair : allChairs()) {
             level.setBlock(base.offset(chair.pos()), chair.state(), LabyrinthBuilder.flags());
         }
-        yard(level, base, Math.min(FINAL_VISIT, Math.max(1, visit)));
+        int v = Math.min(FINAL_VISIT, Math.max(1, visit));
+        level.setBlock(base.offset(TV), TractHouseBlock.of(v == 2 ? Kind.TV_STATIC : Kind.TV_OFF, Direction.WEST), LabyrinthBuilder.flags());
+        yard(level, base, v, v >= FINAL_VISIT && broken);
+        setKidsDoor(level, base, v >= FINAL_VISIT || v == 2 && unlocked);
         scene = new Scene();
     }
 
-    private static void yard(ServerLevel level, BlockPos base, int visit) {
+    private static void yard(ServerLevel level, BlockPos base, int visit, boolean broken) {
         int flags = LabyrinthBuilder.flags();
         for (int x = -22; x <= -10; x++) {
             for (int z = -20; z <= -6; z++) {
@@ -341,18 +373,7 @@ public final class ModelHome {
                 }
             }
         }
-        // Whatever of the tree came into the kid's room last time goes back out.
-        for (int x = -9; x <= -5; x++) {
-            for (int y = 1; y <= 3; y++) {
-                for (int z = TRUNK_Z - 1; z <= TRUNK_Z + 1; z++) {
-                    BlockState here = level.getBlockState(base.offset(x, y, z));
-                    if (here.is(Blocks.OAK_LOG) || here.is(Blocks.OAK_LEAVES)||here.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.TREE_TENDRIL.get())) {
-                        level.setBlock(base.offset(x, y, z), Blocks.AIR.defaultBlockState(), flags);
-                    }
-                }
-            }
-        }
-        if (visit >= 3) {
+        if (visit >= FINAL_VISIT) {
             // Where the grass has sunk, the length of someone.
             for (int x = -19; x <= -18; x++) {
                 for (int z = -18; z <= -16; z++) {
@@ -390,43 +411,33 @@ public final class ModelHome {
         level.setBlock(base.offset(Math.min(-10, trunk + 2), 4, TRUNK_Z + 2),
                 Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, 7), flags);
 
-        // A low branch towards the kid's window: at the glass, then through it.
-        boolean inside = visit >= FINAL_VISIT;
-        if (visit >= 3) {
-            int reach = inside ? -6 : -10;
-            for (int x = trunk + 1; x <= reach; x++) {
-                if (x != -9 || inside) {
-                    level.setBlock(base.offset(x, 2, TRUNK_Z), across, flags);
-                }
+        // On the last visit a low branch has come to the glass; the rest of it comes in when someone goes into the room.
+        if (visit >= FINAL_VISIT) {
+            for (int x = trunk + 1; x <= -10; x++) {
+                level.setBlock(base.offset(x, 2, TRUNK_Z), across, flags);
             }
-            for (int x = reach - 2; x <= reach; x++) {
+            for (int x = -12; x <= -10; x++) {
                 for (int y = 1; y <= 3; y++) {
                     for (int z = TRUNK_Z - 1; z <= TRUNK_Z + 1; z++) {
                         BlockPos at = base.offset(x, y, z);
-                        if (x != -9 && level.getBlockState(at).isAir()) {
+                        if (level.getBlockState(at).isAir()) {
                             level.setBlock(at, leaves, flags);
                         }
                     }
                 }
             }
-            for(int[] tip:new int[][]{{reach+1,2,TRUNK_Z},{reach,3,TRUNK_Z-1},{reach-1,1,TRUNK_Z+1}}){
-                BlockPos at=base.offset(tip[0],tip[1],tip[2]);
-                if(tip[0]!=-9&&tip[0]<=-5&&(level.getBlockState(at).isAir()||level.getBlockState(at).is(Blocks.OAK_LEAVES)))level.setBlock(at,io.github.knaitoe.theoldesthouse.house.HouseBlocks.TREE_TENDRIL.get().defaultBlockState().setValue(io.github.knaitoe.theoldesthouse.house.TreeTendrilBlock.FACING,Direction.EAST),flags);
-            }
         }
 
-        // The window: whole, or broken in.
+        // The window: whole, or already broken in by the limb on an earlier reader's visit.
         BlockState pane = Blocks.GLASS_PANE.defaultBlockState()
                 .setValue(CrossCollisionBlock.NORTH, true).setValue(CrossCollisionBlock.SOUTH, true);
-        for (BlockPos glass : new BlockPos[]{WINDOW, WINDOW.above(), WINDOW.north(), WINDOW.north().above()}) {
-            BlockPos at = base.offset(glass);
-            if (!inside) {
-                level.setBlock(at, pane, flags);
-            } else if (!level.getBlockState(at).is(Blocks.OAK_LOG)) {
-                level.setBlock(at, Blocks.AIR.defaultBlockState(), flags);
-            }
+        for (BlockPos glass : windowPanes()) {
+            level.setBlock(base.offset(glass), broken ? Blocks.AIR.defaultBlockState() : pane, flags);
         }
-        setKidsDoor(level, base, inside);
+    }
+
+    public static BlockPos[] windowPanes() {
+        return new BlockPos[]{WINDOW, WINDOW.above(), WINDOW.north(), WINDOW.north().above()};
     }
 
     private static void setKidsDoor(ServerLevel level, BlockPos base, boolean open) {
@@ -438,8 +449,8 @@ public final class ModelHome {
         level.setBlock(base.offset(KIDS_DOOR).above(), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), LabyrinthBuilder.flags());
     }
 
-    /** The third visit brings the child's chair and window into the actual sequence. */
-    public static boolean kidsRoomRelevant(LabyrinthData data){return visitFor(data)>=3;}
+    /** The child's room is open once the static has unlocked it on the second visit, and from then on. */
+    public static boolean kidsRoomRelevant(LabyrinthData data){int v=visitFor(data);return v>=FINAL_VISIT||v==2&&data.state(ID).getBoolean("Unlocked");}
     public static void onRightClickBlock(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock event){
         if(!(event.getEntity() instanceof ServerPlayer p)||!p.serverLevel().dimension().equals(HouseDimensions.INTERIOR))return;
         BlockPos b=base(p.server);if(b==null)return;BlockPos door=b.offset(KIDS_DOOR);
@@ -450,6 +461,7 @@ public final class ModelHome {
         event.setCanceled(true);event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
         setKidsDoor(p.serverLevel(),b,false);
         p.serverLevel().playSound(null,door,SoundEvents.WOODEN_TRAPDOOR_CLOSE,SoundSource.BLOCKS,.35F,.8F);
+        p.displayClientMessage(Component.literal("The handle turns a little way and stops. Locked from inside."),true);
     }
 
     @Nullable
@@ -463,7 +475,7 @@ public final class ModelHome {
     }
 
     private static AABB kidsRoom(BlockPos base) {
-        return new AABB(base.getX() - 8, base.getY(), base.getZ() - 18, base.getX() - 1, base.getY() + HEIGHT + 1, base.getZ() - 8);
+        return new AABB(base.getX() - 8, base.getY(), base.getZ() - 18, base.getX() - 1, base.getY() + HEIGHT + 1, base.getZ() - 9);
     }
 
     public static boolean isInHouse(BlockPos base, Vec3 pos) {
@@ -489,6 +501,10 @@ public final class ModelHome {
         return new Vec3(base.getX() + WINDOW.getX() + 0.5D, base.getY() + WINDOW.getY() + 1.0D, base.getZ() + WINDOW.getZ());
     }
 
+    static Vec3 screen(BlockPos base) {
+        return Vec3.atCenterOf(base.offset(TV)).add(-0.35D, 0.1D, 0.0D);
+    }
+
     // ------------------------------------------------------------------
     // The stack
 
@@ -505,8 +521,7 @@ public final class ModelHome {
         }
         Vec3 pivot = tableTop(base);
         for (int i = 0; i < chairs.size(); i++) {
-            BlockState state = chairs.get(i).state().setValue(StairBlock.HALF, i % 2 == 0 ? Half.BOTTOM : Half.TOP);
-            spawnChair(level, pivot, state, i, chairs.size());
+            spawnChair(level, pivot, chairs.get(i).state(), i, chairs.size());
         }
         scene.stacked = true;
     }
@@ -528,16 +543,16 @@ public final class ModelHome {
         stackedDisplays(level, base).forEach(Entity::discard);
     }
 
-    /** How far apart the chairs sit in the stack, so that it reaches almost to the ceiling. */
+    /** How far apart the chairs sit in the stack, so that it reaches almost to the ceiling; a chair stands 1.2 high. */
     private static float step(int count) {
-        float room = HEIGHT + 1 - 0.1F - 1.07F - 1.0F;
+        float room = HEIGHT + 1 - 0.1F - 1.07F - 1.2F;
         return count <= 1 ? 0.0F : Math.min(0.7F, room / (count - 1));
     }
 
     /**
      * Chair {@code i} of the stack, leaning with the whole stack by {@code lean}
      * about the table top: set on the ones below it, turned a quarter more
-     * each time, a little off true.
+     * each time, a little off true, and every other one upside down.
      */
     static Transformation chairTransform(int i, int count, Quaternionf lean) {
         float yaw = (float) Math.toRadians(i * 90.0D + (i % 2 == 0 ? 8.0D : -11.0D));
@@ -545,8 +560,11 @@ public final class ModelHome {
         Matrix4f matrix = new Matrix4f()
                 .translate(offset)
                 .rotate(lean)
-                .rotateY(yaw)
-                .translate(-0.5F, 0.0F, -0.5F);
+                .rotateY(yaw);
+        if (i % 2 == 1) {
+            matrix.translate(0.0F, 1.2F, 0.0F).rotateZ((float) Math.PI);
+        }
+        matrix.translate(-0.5F, 0.0F, -0.5F);
         return new Transformation(matrix);
     }
 
@@ -559,17 +577,35 @@ public final class ModelHome {
     }
 
     @Nullable
-    private static Display.BlockDisplay spawnChair(ServerLevel level, Vec3 pivot, BlockState state, int index, int count) {
+    private static Display.BlockDisplay spawnDisplay(ServerLevel level, Vec3 at, BlockState state, Transformation transformation, int interpolation,
+                                                     float width, float height) {
         CompoundTag tag = new CompoundTag();
         tag.putString("id", "minecraft:block_display");
         tag.put("block_state", NbtUtils.writeBlockState(state));
-        tag.put("transformation", encode(chairTransform(index, count, new Quaternionf())));
-        tag.putInt("interpolation_duration", TEETER_INTERVAL);
+        tag.put("transformation", encode(transformation));
+        tag.putInt("interpolation_duration", interpolation);
+        // The box the client culls it by, from its feet up: the whole stack, or the limb's whole sweep.
+        tag.putFloat("width", width);
+        tag.putFloat("height", height);
         Entity entity = EntityType.loadEntityRecursive(tag, level, created -> {
-            created.moveTo(pivot.x, pivot.y, pivot.z, 0.0F, 0.0F);
+            created.moveTo(at.x, at.y, at.z, 0.0F, 0.0F);
             return created;
         });
-        if (!(entity instanceof Display.BlockDisplay display)) {
+        return entity instanceof Display.BlockDisplay display ? display : null;
+    }
+
+    private static void retransform(Display.BlockDisplay display, Transformation transformation, int interpolation) {
+        CompoundTag tag = display.saveWithoutId(new CompoundTag());
+        tag.put("transformation", encode(transformation));
+        tag.putInt("interpolation_duration", interpolation);
+        tag.putInt("start_interpolation", 0);
+        display.load(tag);
+    }
+
+    @Nullable
+    private static Display.BlockDisplay spawnChair(ServerLevel level, Vec3 pivot, BlockState state, int index, int count) {
+        Display.BlockDisplay display = spawnDisplay(level, pivot, state, chairTransform(index, count, new Quaternionf()), TEETER_INTERVAL, 3.0F, HEIGHT + 1.0F);
+        if (display == null) {
             return null;
         }
         display.addTag(TAG);
@@ -578,7 +614,7 @@ public final class ModelHome {
         return level.addFreshEntity(display) ? display : null;
     }
 
-    private static int tagNumber(Display.BlockDisplay display, String prefix, int fallback) {
+    private static int tagNumber(Display display, String prefix, int fallback) {
         for (String tag : display.getTags()) {
             if (tag.startsWith(prefix)) {
                 try {
@@ -614,11 +650,7 @@ public final class ModelHome {
             if (index < 0) {
                 continue;
             }
-            CompoundTag tag = display.saveWithoutId(new CompoundTag());
-            tag.put("transformation", encode(chairTransform(index, count, lean)));
-            tag.putInt("interpolation_duration", TEETER_INTERVAL);
-            tag.putInt("start_interpolation", 0);
-            display.load(tag);
+            retransform(display, chairTransform(index, count, lean), TEETER_INTERVAL);
         }
     }
 
@@ -628,6 +660,113 @@ public final class ModelHome {
             return 0.004D;
         }
         return 0.004D + Math.min(1.0D, (7.0D - distance) / 5.0D) * 0.09D;
+    }
+
+    // ------------------------------------------------------------------
+    // The limb
+
+    /** Where the limb comes from: the low branch outside the child's window. */
+    public static Vec3 limbRoot(BlockPos base) {
+        return new Vec3(base.getX() - 10.6D, base.getY() + 2.45D, base.getZ() + TRUNK_Z + 0.0D);
+    }
+
+    /** Where the limb's displays stand: under the root, on the floor, so their culling box holds the whole reach. */
+    private static Vec3 limbAnchor(BlockPos base) {
+        return new Vec3(limbRoot(base).x, base.getY(), limbRoot(base).z);
+    }
+
+    public static List<Display.BlockDisplay> limbDisplays(ServerLevel level, BlockPos base) {
+        return level.getEntitiesOfClass(Display.BlockDisplay.class, house(base).inflate(16.0D), display -> display.getTags().contains(LIMB_TAG));
+    }
+
+    private static void clearLimb(ServerLevel level, BlockPos base) {
+        limbDisplays(level, base).forEach(Entity::discard);
+    }
+
+    /**
+     * The limb's spine at {@code reach} (0 outside, 1 at full stretch) toward {@code target}: a curve from the branch out
+     * of the window, bowing up a little, reaching no further than {@link #LIMB_REACH}, with a slow sideways sway.
+     */
+    public static Vec3[] limbSpine(Vec3 root, Vec3 target, double reach, double time) {
+        Vec3 to = target.subtract(root);
+        double length = Math.min(LIMB_REACH, to.length()) * Math.max(0.05D, reach);
+        Vec3 tip = root.add(to.normalize().scale(length));
+        Vec3 side = new Vec3(-to.z, 0, to.x).normalize();
+        Vec3 control = root.add(tip).scale(0.5D).add(0, 0.35D * reach, 0).add(side.scale(Math.sin(time * 0.09D) * 0.25D * reach));
+        Vec3[] points = new Vec3[LIMB_SEGMENTS + 1];
+        for (int i = 0; i <= LIMB_SEGMENTS; i++) {
+            double s = i / (double) LIMB_SEGMENTS, u = 1 - s;
+            points[i] = root.scale(u * u).add(control.scale(2 * u * s)).add(tip.scale(s * s));
+        }
+        return points;
+    }
+
+    /** One segment of bark from {@code from} to {@code to}, {@code width} thick, relative to the display's own position {@code root}. */
+    static Transformation segment(Vec3 root, Vec3 from, Vec3 to, float width) {
+        Vector3f dir = new Vector3f((float) (to.x - from.x), (float) (to.y - from.y), (float) (to.z - from.z));
+        float length = Math.max(0.05F, dir.length());
+        Quaternionf turn = new Quaternionf().rotationTo(new Vector3f(0, 0, 1), dir.normalize());
+        Vector3f centre = new Vector3f(-width / 2, -width / 2, 0).rotate(turn);
+        Vector3f translation = new Vector3f((float) (from.x - root.x), (float) (from.y - root.y), (float) (from.z - root.z)).add(centre);
+        return new Transformation(translation, turn, new Vector3f(width, width, length * 1.08F), null);
+    }
+
+    private static void spawnLimb(ServerLevel level, BlockPos base) {
+        clearLimb(level, base);
+        Vec3 anchor = limbAnchor(base);
+        BlockState bark = Blocks.OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z);
+        for (int i = 0; i <= LIMB_SEGMENTS + 1; i++) {
+            BlockState state = i >= LIMB_SEGMENTS ? Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true) : bark;
+            Display.BlockDisplay display = spawnDisplay(level, anchor, state, new Transformation(null, null, new Vector3f(0.01F), null), 2,
+                    (float) LIMB_REACH * 2.0F + 2.0F, HEIGHT + 1.0F);
+            if (display == null) continue;
+            display.addTag(LIMB_TAG);
+            display.addTag(LIMB_TAG + "_" + i);
+            level.addFreshEntity(display);
+        }
+    }
+
+    private static void poseLimb(ServerLevel level, BlockPos base, double reach, double time) {
+        Vec3 root = limbRoot(base), anchor = limbAnchor(base);
+        Vec3[] spine = limbSpine(root, scene.limbTarget, reach, time);
+        for (Display.BlockDisplay display : limbDisplays(level, base)) {
+            int i = tagNumber(display, LIMB_TAG + "_", -1);
+            if (i < 0) continue;
+            Transformation t;
+            if (i < LIMB_SEGMENTS) {
+                float width = (float) (0.36D - 0.26D * i / LIMB_SEGMENTS);
+                t = segment(anchor, spine[i], spine[i + 1], width);
+            } else {
+                // Two clumps of leaves at the end, as on a branch torn in through glass.
+                Vec3 tip = spine[LIMB_SEGMENTS];
+                float size = (float) (0.55D * Math.max(0.2D, reach));
+                Vec3 at = tip.subtract(anchor).add(i == LIMB_SEGMENTS ? -size / 2 : -size / 3, -size / 2 + (i == LIMB_SEGMENTS ? 0 : 0.2D), -size / 2);
+                t = new Transformation(new Vector3f((float) at.x, (float) at.y, (float) at.z), null, new Vector3f(size), null);
+            }
+            retransform(display, t, 2);
+        }
+    }
+
+    /** The glass comes in and the limb starts through, toward whoever stepped into the room. */
+    public static void breakIn(ServerLevel level, BlockPos base, ServerPlayer toward) {
+        boolean glassBroke = false;
+        for (BlockPos glass : windowPanes()) {
+            BlockPos at = base.offset(glass);
+            BlockState state = level.getBlockState(at);
+            if (!state.isAir()) {
+                level.levelEvent(2001, at, Block.getId(state));
+                level.setBlock(at, Blocks.AIR.defaultBlockState(), LabyrinthBuilder.flags());
+                glassBroke = true;
+            }
+        }
+        if (glassBroke) {
+            level.playSound(null, BlockPos.containing(window(base)), SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, 0.7F);
+        }
+        level.playSound(null, BlockPos.containing(window(base)), SoundEvents.AZALEA_LEAVES_BREAK, SoundSource.BLOCKS, 1.0F, 0.6F);
+        scene.limbAge = 0;
+        scene.limbEmpty = 0;
+        scene.limbTarget = toward.getEyePosition().subtract(0, 0.5D, 0);
+        spawnLimb(level, base);
     }
 
     // ------------------------------------------------------------------
@@ -647,32 +786,27 @@ public final class ModelHome {
         placeBinderIfLoaded(level, base, data);
         List<ServerPlayer> visitors = visitors(level, base);
         int visit = visitFor(data);
-        if(visit<3&&server.getTickCount()%20==0&&visitors.stream().noneMatch(p->p.getX()-base.getX()<-1&&p.getZ()-base.getZ()<-8)){
+        if(!kidsRoomRelevant(data)&&server.getTickCount()%20==0&&visitors.stream().noneMatch(p->p.getX()-base.getX()<-1&&p.getZ()-base.getZ()<-8)){
             for(var at:java.util.List.of(base.offset(KIDS_DOOR),base.offset(KIDS_DOOR).above())){var door=level.getBlockState(at);if(door.getBlock() instanceof DoorBlock&&door.getValue(DoorBlock.OPEN))level.setBlock(at,door.setValue(DoorBlock.OPEN,false),LabyrinthBuilder.flags());}
         }
         if (visitors.isEmpty()) {
             if (scene.stacked) {
                 unstack(level, base, visit);
             }
+            if (scene.limbAge >= 0) {
+                clearLimb(level, base);
+                scene.limbAge = -1;
+            }
             return;
-        }
-        CompoundTag materials = data.state(ID);
-        if (!materials.getBoolean("Materials747")) {
-            upgradeMaterials(level, base);
-            materials.putBoolean("Materials747", true);
-            data.setState(ID, materials);
         }
         if (server.getTickCount() % 20 == 0) {
             checkBinder(level, base, data);
         }
-        if (visit >= FINAL_VISIT) {
-            tickLastVisit(level, base, data, visitors);
-            return;
+        switch (visit) {
+            case 1 -> tickChairs(level, base, data, visit, visitors);
+            case 2 -> tickTelevision(level, base, data, visitors);
+            default -> tickLastVisit(level, base, data, visitors);
         }
-        if (visit >= 3) {
-            tapAtTheWindow(level, base, visitors);
-        }
-        tickChairs(level, base, data, visit, visitors);
     }
 
     private static void tickChairs(ServerLevel level, BlockPos base, LabyrinthData data, int visit, List<ServerPlayer> visitors) {
@@ -700,13 +834,8 @@ public final class ModelHome {
             scene.unwatched = 0;
             if (!scene.seenStacked) {
                 scene.seenStacked = true;
-                CompoundTag state = data.state(ID);
-                if (!state.getBoolean("BeatDone")) {
-                    state.putBoolean("BeatDone", true);
-                    data.setState(ID, state);
-                    for(ServerPlayer visitor:visitors)visitor.displayClientMessage(net.minecraft.network.chat.Component.literal("You saw it. ").append(net.minecraft.network.chat.Component.literal("The doorway will remember this when you leave and return.").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC)),false);
-                    TheOldestHouse.LOGGER.info("The chairs in the model home were stacked on visit {}.", visit);
-                }
+                beat(data, visitors);
+                TheOldestHouse.LOGGER.info("The chairs in the model home were stacked on visit {}.", visit);
             }
         } else if (scene.seenStacked && ++scene.unwatched >= UNSTACK_AFTER) {
             unstack(level, base, visit);
@@ -724,34 +853,100 @@ public final class ModelHome {
         }
     }
 
-    private static void tapAtTheWindow(ServerLevel level, BlockPos base, List<ServerPlayer> visitors) {
-        long now = level.getGameTime();
-        if (now < scene.nextTap) {
+    private static void beat(LabyrinthData data, List<ServerPlayer> visitors) {
+        CompoundTag state = data.state(ID);
+        if (state.getBoolean("BeatDone")) {
             return;
         }
-        AABB kids = kidsRoom(base);
-        for (ServerPlayer player : visitors) {
-            if (kids.contains(player.position())) {
-                level.playSound(null, BlockPos.containing(window(base)), SoundEvents.GLASS_HIT, SoundSource.BLOCKS, 0.7F,
-                        0.6F + level.getRandom().nextFloat() * 0.2F);
-                scene.nextTap = now + 40 + level.getRandom().nextInt(80);
-                return;
-            }
-        }
+        state.putBoolean("BeatDone", true);
+        data.setState(ID, state);
+        for(ServerPlayer visitor:visitors)visitor.displayClientMessage(Component.literal("You saw it. ").append(Component.literal("The doorway will remember this when you leave and return.").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC)),false);
     }
 
+    /** The second visit: the set hisses; three seconds of watching it, and the child's door comes open behind the watcher. */
+    private static void tickTelevision(ServerLevel level, BlockPos base, LabyrinthData data, List<ServerPlayer> visitors) {
+        long now = level.getGameTime();
+        if (now >= scene.nextHiss) {
+            level.playSound(null, base.offset(TV), STATIC.value(), SoundSource.BLOCKS, 0.8F, 0.85F + level.getRandom().nextFloat() * 0.1F);
+            scene.nextHiss = now + 60;
+        }
+        CompoundTag state = data.state(ID);
+        if (state.getBoolean("Unlocked")) {
+            return;
+        }
+        Vec3 screen = screen(base);
+        if (visitors.stream().anyMatch(p -> p.getEyePosition().distanceToSqr(screen) < 100.0D && HouseWatchers.sees(p, screen))) {
+            scene.watchedStatic++;
+        }
+        if (scene.watchedStatic < STATIC_WATCH) {
+            return;
+        }
+        state.putBoolean("Unlocked", true);
+        data.setState(ID, state);
+        setKidsDoor(level, base, true);
+        level.playSound(null, base.offset(KIDS_DOOR), SoundEvents.WOODEN_DOOR_OPEN, SoundSource.BLOCKS, 0.9F, 0.55F);
+        for (ServerPlayer visitor : visitors) {
+            visitor.displayClientMessage(Component.literal("Behind you, down the hall, a door has come open."), false);
+        }
+        beat(data, visitors);
+        TheOldestHouse.LOGGER.info("The static in the model home opened the child's door.");
+    }
+
+    /** The third visit: taps at the glass; then, for whoever goes into the child's room, the limb. */
     private static void tickLastVisit(ServerLevel level, BlockPos base, LabyrinthData data, List<ServerPlayer> visitors) {
         AABB kids = kidsRoom(base);
+        ServerPlayer inside = null;
         for (ServerPlayer player : visitors) {
-            if (!WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.MODEL_HOME)&&kids.contains(player.position()) && HouseWatchers.sees(player, window(base))) {
+            if (kids.contains(player.position()) && (inside == null || player.position().distanceToSqr(window(base)) < inside.position().distanceToSqr(window(base)))) {
+                inside = player;
+            }
+        }
+        long now = level.getGameTime();
+        if (scene.limbAge < 0) {
+            if (inside == null) {
+                if (now >= scene.nextTap && visitors.stream().anyMatch(p -> p.position().distanceToSqr(window(base)) < 144.0D)) {
+                    level.playSound(null, BlockPos.containing(window(base)), SoundEvents.GLASS_HIT, SoundSource.BLOCKS, 0.7F, 0.6F + level.getRandom().nextFloat() * 0.2F);
+                    scene.nextTap = now + 40 + level.getRandom().nextInt(80);
+                }
+                return;
+            }
+            breakIn(level, base, inside);
+        }
+        scene.limbAge += 2;
+        if (inside != null) {
+            scene.limbEmpty = 0;
+            // It follows whoever it is reaching for, slowly.
+            Vec3 want = inside.getEyePosition().subtract(0, 0.5D, 0);
+            scene.limbTarget = scene.limbTarget.add(want.subtract(scene.limbTarget).scale(0.15D));
+        } else {
+            scene.limbEmpty += 2;
+        }
+        double reach = Math.min(1.0D, scene.limbAge / (double) LIMB_GROW);
+        reach = 1 - (1 - reach) * (1 - reach);
+        if (scene.limbEmpty > 0) {
+            reach *= Math.max(0.0D, 1.0D - scene.limbEmpty / 60.0D);
+        }
+        if (scene.limbEmpty >= 60) {
+            // Nobody in the room for three seconds: it has gone back out; the next one in sets it off again.
+            clearLimb(level, base);
+            scene.limbAge = -1;
+            return;
+        }
+        poseLimb(level, base, reach, now);
+        if (scene.limbAge < 20) {
+            return;
+        }
+        Vec3 tip = limbSpine(limbRoot(base), scene.limbTarget, reach, now)[LIMB_SEGMENTS];
+        for (ServerPlayer player : visitors) {
+            if (!WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.MODEL_HOME)&&kids.contains(player.position()) && (HouseWatchers.sees(player, tip) || HouseWatchers.sees(player, window(base)))) {
                 CompoundTag state = data.state(ID);
                 state.putBoolean("BeatDone", true);
                 data.setState(ID, state);
                 data.setCompleted(ID, true);
                 WitnessAccount.resolve(player,WitnessAccount.Story.MODEL_HOME,"saw_tree");
                 level.playSound(null, BlockPos.containing(window(base)), SoundEvents.AZALEA_LEAVES_STEP, SoundSource.BLOCKS, 0.8F, 0.7F);
-                TheOldestHouse.LOGGER.info("{} saw the tree in the kid's room; the model home is finished.", player.getGameProfile().getName());
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("The tree has reached the bed. This visit is finished; the doorway is behind you."),false);
+                TheOldestHouse.LOGGER.info("{} saw the tree reach into the kid's room; the model home is finished.", player.getGameProfile().getName());
+                player.displayClientMessage(Component.literal("The tree has come in through the window, reaching for you. This visit is finished; the doorway is behind you."),false);
             }
         }
     }
@@ -818,7 +1013,6 @@ public final class ModelHome {
 
     // ------------------------------------------------------------------
     // Status and testing
-
     public static List<String> describe(MinecraftServer server) {
         LabyrinthData data = LabyrinthData.get(server);
         CompoundTag state = data.state(ID);
@@ -841,6 +1035,7 @@ public final class ModelHome {
         CompoundTag state = data.state(ID);
         state.putInt("Visit", Math.max(0, Math.min(FINAL_VISIT, visit)));
         state.putBoolean("BeatDone", false);
+        state.remove("Unlocked");
         data.setState(ID, state);
         data.setCompleted(ID, false);
         stage(level, base, Math.max(1, visit));

@@ -323,9 +323,38 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.succeed();
     }
     @AfterBatch(batch="literary_closure_personal") public static void closurePersonalDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_confession",timeoutTicks=3500)
+    @GameTest(template="empty",batch="literary_confession",timeoutTicks=7000)
     public static void theActualCarriedQuillResumesAcrossVisitsAndTheSealedJournalIsReadPersonally(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.CONFESSION;var p=f.player("quill_reader",place);f.source(p,place);p.getInventory().add(new ItemStack(Items.WRITABLE_BOOK));f.at(p,place,1,0,-18);f.look(p,f.base(place).offset(1,1,-22));journalChapter(h,f,p,0);}
-    private static void journalChapter(GameTestHelper h,Fixture f,ServerPlayer p,int chapter){h.runAfterDelay(360,()->{var place=LabyrinthPlace.CONFESSION;var own=f.own(p,place);h.assertTrue(own.getInt("Chapter")==chapter+1,"actual present speech advances one complete chapter, then waits for a return");if(chapter<7){h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==1,"the same carried native quill remains through the spoken chapters");f.arrive(p,place);f.at(p,place,1,0,-18);f.look(p,f.base(place).offset(1,1,-22));journalChapter(h,f,p,chapter+1);}else{h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==0&&own.contains("SignedJournal")&&!own.getBoolean("Ready"),"the actual quill is sealed once, without earning an unread ending");f.arrive(p,place);f.read(p,place,new BlockPos(10,1,-29));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("Read_Journal")&&f.own(p,place).getBoolean("Ready"),"personally reading the exact sealed journal resolves the later return");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.CONFESSION),"the owned final account yields this one source");h.succeed();});}});}
+    /**
+     * 0.4.121: each chapter ends in the listener's question. The reader answers by actual chat, which never reaches public
+     * chat; the fourth question is left in silence and goes down as unanswered.
+     */
+    private static void journalChapter(GameTestHelper h,Fixture f,ServerPlayer p,int chapter){answerWhenAsked(h,f,p,chapter,0);}
+    private static void answerWhenAsked(GameTestHelper h,Fixture f,ServerPlayer p,int chapter,int waited){h.runAfterDelay(15,()->{var place=LabyrinthPlace.CONFESSION;var own=f.own(p,place);
+        if(!own.getBoolean("Asked")){h.assertTrue(waited<700,"the listener reaches chapter "+chapter+"'s question while the reader stays before him");answerWhenAsked(h,f,p,chapter,waited+15);return;}
+        h.assertTrue(own.getInt("Chapter")==chapter,"he waits on the question before the chapter is done");
+        if(chapter==3){own.putInt("AskTicks",ConfessionAnswers.SILENCE_TICKS-15);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);}
+        else{var early=new net.neoforged.neoforge.event.ServerChatEvent(p,"My answer to "+chapter+": the cellar door was open.",net.minecraft.network.chat.Component.literal("answer"));NeoForge.EVENT_BUS.post(early);
+            h.assertTrue(early.isCanceled(),"the answer to the listener never reaches public chat");h.assertTrue(f.own(p,place).getString("Answer").startsWith("My answer to "+chapter),"his question takes the reader's own words");}
+        h.runAfterDelay(60,()->{var after=f.own(p,place);h.assertTrue(after.getInt("Chapter")==chapter+1,"the answer, or the silence, completes the chapter, then he waits for a return");
+            h.assertTrue(after.getString("JournalText").contains(ConfessionAnswers.QUESTIONS[chapter])&&after.getString("JournalText").contains(chapter==3?ConfessionAnswers.SILENCE:"My answer to "+chapter),"the journal takes down his question and the reply exactly");
+            if(chapter<7){h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==1,"the same carried native quill remains through the spoken chapters");
+                var idle=new net.neoforged.neoforge.event.ServerChatEvent(p,"hello, anyone",net.minecraft.network.chat.Component.literal("hello"));NeoForge.EVENT_BUS.post(idle);h.assertTrue(!idle.isCanceled(),"between chapters, ordinary chat is the reader's own again");
+                f.arrive(p,place);f.at(p,place,1,0,-18);f.look(p,f.base(place).offset(1,1,-22));journalChapter(h,f,p,chapter+1);return;}
+            h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==0&&after.contains("SignedJournal")&&!after.getBoolean("Ready"),"the actual quill is sealed once, without earning an unread ending");
+            var journal=ItemStack.parseOptional(p.registryAccess(),after.getCompound("SignedJournal")).get(DataComponents.WRITTEN_BOOK_CONTENT);String pages=journal==null?"":journal.pages().stream().map(page->page.raw().getString()).collect(java.util.stream.Collectors.joining("\n"));
+            h.assertTrue(pages.contains("My answer to 0")&&pages.contains("My answer to 7")&&pages.contains(ConfessionAnswers.SILENCE)&&pages.contains(ConfessionAnswers.QUESTIONS[5]),"the sealed journal is made of his questions and the reader's own answers: "+pages);
+            h.assertTrue(ConfessionAnswers.last(after).startsWith("My answer to 7"),"the account will end on the reader's last answer");
+            f.arrive(p,place);f.read(p,place,new BlockPos(10,1,-29));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("Read_Journal")&&f.own(p,place).getBoolean("Ready"),"personally reading the exact sealed journal resolves the later return");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.CONFESSION),"the owned final account yields this one source");h.succeed();});});});}
+    @GameTest(template="empty",batch="literary_confession_words",timeoutTicks=100)
+    public static void theListenerRepeatsAFragmentOfTheReadersOwnWords(GameTestHelper h){
+        h.assertTrue(ConfessionAnswers.fragment("I opened the cellar door, twice.").equals("opened the cellar"),"he repeats the longest word and the two after it");
+        h.assertTrue(ConfessionAnswers.fragment("Me.").equals("me")&&ConfessionAnswers.fragment("...").isEmpty(),"a short answer is repeated whole, punctuation alone not at all");
+        h.assertTrue(ConfessionAnswers.QUESTIONS.length==LiteraryTexts.CONFESSION.length,"one question for every chapter he dictates");
+        var own=new CompoundTag();var pages=ConfessionAnswers.pages(own,"Counts.","Reader");
+        h.assertTrue(pages.size()==ConfessionAnswers.QUESTIONS.length+1&&pages.get(0).contains(ConfessionAnswers.SILENCE)&&pages.get(pages.size()-1).endsWith("Signed: Reader"),"a journal with no answers says so under every question, and is still signed");
+        h.succeed();
+    }
     @AfterBatch(batch="literary_confession") public static void confessionDone(ServerLevel l){close();}
 
 
@@ -344,8 +373,11 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.runAfterDelay(10,()->{
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.GLASS)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(0))),NurseryBlock.Kind.TEDDY)
                     &&l.getBlockState(b.offset(ChildRoom.EXITS.get(2).get(0))).getBlock() instanceof DoorBlock,"the room stands whole: two windows, its own doors, the bear by the bed");
-            h.assertTrue(l.getBlockState(b.offset(ChildRoom.BED_HEAD.below())).isAir()&&l.getBlockState(b.offset(ChildRoom.GAP)).is(Blocks.BIRCH_PLANKS)&&l.getBlockState(b.offset(ChildRoom.GAP.below())).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"a child fits under the bed, the way down is a floorboard like the rest, and there is a basement below");
-            f.source(p,place);
+            h.assertTrue(l.noCollision(new AABB(b.getX()+.3,b.getY()+.01,b.getZ()-21.7,b.getX()+.7,b.getY()+.34,b.getZ()-21.3))&&!l.noCollision(new AABB(b.getX()+.3,b.getY()+.4,b.getZ()-21.7,b.getX()+.7,b.getY()+.9,b.getZ()-21.3))
+                    &&ChildRoom.besideBed(new BlockPos(0,0,-21))&&l.getBlockState(b.offset(ChildRoom.GAP)).is(Blocks.BIRCH_PLANKS)&&l.getBlockState(b.offset(ChildRoom.GAP.below())).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"the bed is low: a child lying flat fits under it, standing does not; the way down is a floorboard like the rest, and there is a basement below");
+            h.assertTrue(!NurseryBlock.is(l.getBlockState(b.offset(-9,1,-20)),NurseryBlock.Kind.DOLL)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(1))),NurseryBlock.Kind.DOLL),"one doll, on the shelf, and nothing on the toy chest");
+            // 0.4.121: a hand on the desk finds the small card, and opening it starts the room, read to the end or not.
+            f.click(p,place,ChildRoom.CARD.below());h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages&&ChildRoom.readCard(f.own(p,place))&&!f.own(p,place).getBoolean("Read_Source"),"the desk opens the bedtime card, and opening it is enough to start the room");p.closeContainer();
             // Both readers face the door they came in by; the spectator watches the hall door.
             f.at(p,place,.5,0,-4.5);f.look(p,b.offset(0,1,1));f.at(peer,place,-.5,0,-4.5);f.look(peer,b.offset(0,1,1));
             f.at(observer,place,-8.5,0,-11.5);f.look(observer,b.offset(-11,0,-12));
@@ -362,7 +394,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.runAfterDelay(840,()->{h.assertTrue(f.own(p,place).getInt("ExitSeen0474")==ChildRoom.ALL&&f.own(p,place).getBoolean("AllSeen0474")&&f.own(peer,place).getInt("ExitSeen0474")==0,"the reader has seen every exit themselves; the peer, who never read the card, has not");
             h.assertTrue(f.own(p,place).getBoolean("DoorShut0119")&&!f.own(peer,place).getBoolean("DoorShut0119"),"the doorway back to the House is wall to the reader shut in, not to the peer who never read the card");
             h.assertTrue(Integer.bitCount(f.own(p,place).getInt("Parents0119"))>=4&&f.own(peer,place).getInt("Parents0119")==0,"the reader heard a parent's voice as each exit went; the peer heard nothing");
-            f.at(p,place,.5,0,-22.5);f.at(peer,place,6.5,-4,-12.5);
+            f.source(p,place);p.closeContainer();f.at(p,place,.5,0,-22.5);f.at(peer,place,6.5,-4,-12.5);
             NurseryToys.play(p,l,b.offset(ChildRoom.BED_FOOT),l.getBlockState(b.offset(ChildRoom.BED_FOOT)),b);
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.GAP)).getBlock() instanceof TrapDoorBlock&&l.getBlockState(b.offset(ChildRoom.GAP)).getValue(TrapDoorBlock.OPEN),"looking under the bed finds the trapdoor in the boards");});
         h.runAfterDelay(852,()->{h.assertTrue(!f.own(p,place).getBoolean("Ready"),"under the bed is not yet the way out");f.at(p,place,.5,-2,-22.5);});
@@ -619,7 +651,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(own.getInt("Stage")==ThreeFingers.TAKEN&&!paw.isEmpty()&&WitheredPawItem.fingers(paw)==3&&p.getHealth()<20&&p.getHealth()>=19,"pulled from the coals: a burn of half a heart and the reader's own three-fingered paw");
             h.assertTrue(pawOf(peer,f.own(peer,place)).isEmpty()&&!WitheredPawItem.owned(paw,peer),"nobody else has it, and it is not theirs");
             ThreeFingers.use(p,paw);
-            h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu menu&&!menu.getSlot(2).getItem().isEmpty()&&menu.getSlot(4).getItem().isEmpty()&&!menu.getSlot(6).getItem().isEmpty(),"with no companion lost, the paw offers money and the storm, not a name");
+            h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu menu&&!menu.getSlot(2).getItem().isEmpty()&&menu.getSlot(3).getItem().isEmpty()&&!menu.getSlot(6).getItem().isEmpty()&&!menu.getSlot(0).getItem().isEmpty()&&!menu.getSlot(4).getItem().isEmpty()&&!menu.getSlot(8).getItem().isEmpty(),"with no companion lost, the paw offers money, the storm, the larder, Will safe and the fire, not a name");
             p.closeContainer();
             // A real tamed wolf of the peer's dies: the House's own record of it is what the peer's paw may name.
             var world=p.server.overworld();var wolf=EntityType.WOLF.create(world);h.assertTrue(wolf!=null,"a native wolf exists");
@@ -957,7 +989,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.onEachTick(()->{if(!staged[0])return;var a=elkKiller(f,p);if(a==null)return;f.at(p,place,50.5,ElkCarcassMap.SITE_TOP+1,-138.5);p.setYRot(180);a.moveTo(b.getX()+50.5,b.getY()+ElkCarcassMap.SITE_TOP+1,b.getZ()-140,0,0);a.setDeltaMovement(Vec3.ZERO);});
     }
     @AfterBatch(batch="literary_elk_shove") public static void elkShoveDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_drag",timeoutTicks=700)
+    @GameTest(template="empty",batch="literary_elk_drag",timeoutTicks=760)
     public static void elkKillingBlowDragsTheReaderIntoThePileAndTheyTearTheirWayOut(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("drag_reader",place);var b=f.base(place);
         var wake=ElkCarcassMap.WAKE.add(b.getX(),b.getY(),b.getZ());
@@ -974,9 +1006,10 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(killer.position().distanceToSqr(on)<4,"he walks the drag's real line, ahead of the reader's head: "+killer.position()+" / "+on);
             var world=LiteraryVignettes.shared(f.data(),place);var camera=world.hasUUID("DragCamera_"+p.getUUID())?f.out.getEntity(world.getUUID("DragCamera_"+p.getUUID())):null;
             h.assertTrue(camera instanceof LiteraryActor a&&a.role()==LiteraryActor.CAMERA&&a.isInvisible()&&a.owner().orElseThrow().equals(p.getUUID()),"the reader's own camera rides the drag");
+            h.assertTrue(!f.out.getBlockState(BlockPos.containing(camera.getX(),camera.getEyeY()-.6,camera.getZ())).isAir(),"their eyes are dragged along the ground, not carried at standing height: "+camera.getEyeY());
             float health=p.getHealth();h.assertTrue(!p.hurt(p.damageSources().generic(),5)&&p.getHealth()==health&&p.position().distanceToSqr(wake)<.5,"nothing reaches them during it, and the body stays put");})
         .thenIdle(ElkDrag.DRAGGING-100+ElkDrag.DARK+10).thenExecute(()->{var own=f.own(p,place);long now=f.out.getGameTime();
-            h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getLong("ElkGraceUntil")>now&&p.getHealth()>=ElkDrag.WAKE_HEALTH&&!ElkDrag.active(p),"they wake in the pile, hurt but alive, and he leaves them a while: "+own);
+            h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getLong("ElkGraceUntil")>now+ElkDrag.BURIED_GRACE/2&&p.getHealth()>=ElkDrag.WAKE_HEALTH&&!ElkDrag.active(p),"they wake in the pile, hurt but alive, and he keeps away while they are in it: "+own);
             h.assertTrue(own.getInt("ElkBurial")==15&&ElkDrag.buried(p),"the gap and the cell beyond it are packed with their own carcasses");
             h.assertTrue(f.out.getBlockState(b.offset(ElkCarcassMap.BURIAL.get(0))).isAir(),"the shared pile itself is not touched");
             for(int i=0;i<ElkDrag.HITS-1;i++)ElkDrag.hit(p,b.offset(ElkCarcassMap.BURIAL.get(0)),false);
@@ -988,7 +1021,11 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(f.own(p,place).getInt("ElkBurial")==0b1010,"one carcass the reader's own tool broke out clears its cell; a way through is open");
             f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-186.5);})
         .thenIdle(5).thenExecute(()->{h.assertTrue(!ElkDrag.buried(p)&&f.own(p,place).getInt("ElkBurial")==0,"out of the pile, the carcasses only they saw go too");
-            var killer=elkKiller(f,p);h.assertTrue(killer.isAlive()&&killer.phase()!=ElkHunt.RUN&&killer.phase()!=ElkHunt.RAISE,"he is walking away for now, still alive and still theirs");h.succeed();});
+            h.assertTrue(f.own(p,place).getLong("ElkGraceUntil")>=f.out.getGameTime()+ElkDrag.ESCAPE_GRACE-10,"once out they have a head start before he hunts again: "+f.own(p,place));
+            var killer=elkKiller(f,p);h.assertTrue(killer.isAlive()&&killer.phase()!=ElkHunt.RUN&&killer.phase()!=ElkHunt.RAISE,"he is walking away for now, still alive and still theirs");
+            // A second killing blow on the same crossing is a death.
+            elkAshore(f,p);killer.moveTo(p.getX(),p.getY(),p.getZ()-1.5);p.setHealth(2);p.hurt(p.damageSources().mobAttack(killer),10);
+            h.assertTrue(p.isDeadOrDying()&&!ElkDrag.active(p)&&f.own(p,place).getInt("ElkDrags")==1,"he does not drag them twice in one crossing: the second blow kills: "+f.own(p,place));h.succeed();});
     }
     @AfterBatch(batch="literary_elk_drag") public static void elkDragDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_miniature_cards",timeoutTicks=100)

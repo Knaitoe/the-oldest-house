@@ -23,6 +23,7 @@ COLORS = {
     'workshop_wall': '#777c73', 'workshop_floor': '#8e9185', 'utility': '#62726a',
     'lobby_wall': '#c5c3b3', 'courtyard_wall': '#5b625e', 'lamp': '#e1ddbf',
     'books': '#70634e', 'black': '#292f30', 'ceramic': '#d9d6c6',
+    'parlor_rug': '#62664f', 'picture': '#bbb08f',
 }
 FULL = ['diner_wall', 'diner_dado', 'diner_tile', 'roof', 'asphalt', 'pavement',
         'parlor_paper', 'dark_wood', 'bedroom_paper', 'workshop_wall', 'workshop_floor', 'lobby_wall', 'courtyard_wall']
@@ -95,6 +96,15 @@ def paintings():
         elif name=='lamp':
             d.rectangle((0,0,15,1),fill='#969d8d');d.rectangle((0,14,15,15),fill='#969d8d')
             for x in (4,11):d.line((x,2,x,13),fill='#c6c7ac')
+        elif name=='parlor_rug':
+            d.line((0,0,15,0),fill='#555943');d.line((0,8,15,8),fill='#6f7256')
+            for x,y in ((4,4),(12,12)):
+                d.line((x-2,y,x,y-2,x+2,y,x,y+2,x-2,y),fill='#929270')
+                d.point((x,y),fill='#b1a27e');d.point((x-3,y+3),fill='#7b6850')
+        elif name=='picture':
+            d.rectangle((3,3,12,7),fill='#9eaaa0');d.rectangle((3,8,12,12),fill='#73775c')
+            d.rectangle((5,7,10,10),fill='#c0b28b');d.polygon(((4,7),(7,4),(11,7)),fill='#625448')
+            d.rectangle((7,8,8,10),fill='#5b6259');d.point((9,8),fill='#ddd1ad');d.line((3,12,12,12),fill='#99926d')
         elif name=='ceramic':
             d.line((0,0,15,0),fill='#eee9d4');d.line((0,15,15,15),fill='#9faaa2')
         out[name]=im
@@ -145,10 +155,14 @@ def furniture():
     out['sconce']=[p((6,4,14),(10,14,16),'dark_wood'),p((7,6,7),(9,8,15),'steel'),p((4,8,5),(12,15,12),'lamp')]
     out['armchair']=[p((2,0,3),(4,3,5),'dark_wood'),p((12,0,3),(14,3,5),'dark_wood'),p((2,0,12),(4,3,15),'dark_wood'),p((12,0,12),(14,3,15),'dark_wood'),p((1,3,3),(15,9,15),'parlor_cloth'),p((1,9,12),(15,17,16),'parlor_cloth'),p((0,7,2),(3,12,15),'parlor_cloth'),p((13,7,2),(16,12,15),'parlor_cloth')]
     out['sofa']=[p((0,0,3),(2,3,5),'dark_wood'),p((14,0,3),(16,3,5),'dark_wood'),p((0,3,2),(16,9,15),'parlor_cloth'),p((0,9,12),(16,16,16),'parlor_cloth')]
+    out['sofa_left']=out['sofa']+[p((0,7,2),(3,13,15),'parlor_cloth')]
+    out['sofa_right']=out['sofa']+[p((13,7,2),(16,13,15),'parlor_cloth')]
+    out['coffee_table']=[p((0,9,0),(16,11,16),'walnut'),leg(1,2,'walnut',9),leg(13,2,'walnut',9),leg(1,12,'walnut',9),leg(13,12,'walnut',9)]
+    out['diner_chair']=[leg(2,3,'steel',7),leg(12,3,'steel',7),leg(2,12,'steel',7),leg(12,12,'steel',7),p((1,7,2),(15,9,15),'vinyl'),p((2,9,13),(4,18,15),'steel'),p((12,9,13),(14,18,15),'steel'),p((1,12,12),(15,18,16),'vinyl')]
     out['desk']=[p((0,14,1),(16,16,16),'walnut'),p((1,0,3),(7,14,15),'walnut'),leg(12,3,'walnut'),leg(12,12,'walnut'),p((2,3,1),(6,7,2),'walnut'),p((3,5,0),(5,6,1),'steel')]
     out['sideboard']=[p((1,0,3),(3,3,5),'dark_wood'),p((13,0,3),(15,3,5),'dark_wood'),p((0,3,2),(16,15,16),'dark_wood'),p((0,15,1),(16,16,16),'walnut'),p((2,5,1),(14,13,2),'walnut'),p((11,8,0),(12,10,1),'steel')]
     out['bookcase']=[p((0,0,4),(2,16,16),'dark_wood'),p((14,0,4),(16,16,16),'dark_wood'),p((2,0,5),(14,2,16),'dark_wood'),p((2,8,5),(14,9,16),'dark_wood'),p((2,15,5),(14,16,16),'dark_wood'),p((2,2,7),(14,8,15),'books'),p((2,9,7),(14,15,15),'books')]
-    out['picture']=[p((2,2,14),(14,14,16),'dark_wood'),p((3,3,13),(13,13,14),'parlor_paper')]
+    out['picture']=[p((2,2,14),(14,14,16),'dark_wood'),p((3,3,13),(13,13,14),'picture')]
     out['wardrobe']=[p((1,0,3),(15,32,16),'walnut'),p((2,1,2),(14,31,3),'dark_wood'),p((10,14,1),(11,18,2),'steel')]
     out['bedside']=[p((1,1,3),(3,5,5),'walnut'),p((13,1,3),(15,5,5),'walnut'),p((0,5,2),(16,15,16),'walnut'),p((0,15,1),(16,16,16),'walnut'),p((11,8,1),(13,9,2),'steel')]
     out['headboard']=[p((0,0,13),(16,14,16),'walnut'),p((0,14,12),(16,16,16),'walnut')]
@@ -170,8 +184,8 @@ def furniture():
     return out
 
 INTERACTIVE={'cabinet','fridge','sideboard','wardrobe','mailbox','desk_lamp'}
-SEATS={'booth','stool','armchair','sofa','lobby_bench'}
-LIGHTS={'fluorescent':10,'exterior_lamp':9,'sconce':8,'desk_lamp':8,'sign_left':7,'sign_center':7,'sign_right':7}
+SEATS={'booth','stool','armchair','sofa','sofa_left','sofa_right','diner_chair','lobby_bench'}
+LIGHTS={'fluorescent':12,'exterior_lamp':9,'sconce':8,'desk_lamp':8,'sign_left':7,'sign_center':7,'sign_right':7}
 
 def pieces_for(name,opened):
     parts=furniture()[name]
@@ -214,6 +228,8 @@ def models():
                 key='kind='+name+',facing='+facing+(',open='+str(opened).lower() if name in INTERACTIVE else '')
                 variants[key]={'model':'the_oldest_house:block/'+path,**({'y':y} if y else {})}
     result['blockstates/uncanny_furniture.json']={'variants':variants}
+    result['models/block/uncanny_parlor_rug.json']={'parent':'minecraft:block/carpet','textures':{'wool':PREFIX+'parlor_rug'}}
+    result['blockstates/uncanny_parlor_rug.json']={'variants':{'':{'model':'the_oldest_house:block/uncanny_parlor_rug'}}}
     for half in ('lower','upper'):
         for hinge in ('left','right'):
             for opened in (False,True):

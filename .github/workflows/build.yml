@@ -46,7 +46,13 @@ jobs:
           python3 tools/draw_seance_fittings.py --check
           python3 tools/draw_trailer_furniture.py --check
           python3 tools/draw_site_machines.py --check
+          python3 tools/draw_tract_house.py --check
+          python3 tools/draw_wheel_house.py --check
+          python3 tools/draw_camp_session.py --check
+          python3 tools/draw_winchester.py --check
+          python3 tools/draw_barrett_home.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
+          python3 tools/draw_borrasca_cast.py --check
           python3 tools/generate_bath_decay_assets.py --check
 
       - name: Verify playtest journey measurements
@@ -106,6 +112,11 @@ jobs:
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 104
               trail_png = z.read('assets/the_oldest_house/textures/entity/borrasca_trail_atlas.png')
               assert trail_png.startswith(b'\x89PNG') and trail_png[16:24] == bytes.fromhex('0000004000000040')
+              for person in ('kimber','kyle','sheriff','prescott','worker'):
+                  skin = z.read(f'assets/the_oldest_house/textures/entity/borrasca_{person}.png')
+                  assert skin.startswith(b'\x89PNG') and skin[16:24] == bytes.fromhex('0000004000000040'), person
+              for material in ('timber','steel','rust','paper','notice','notice_frame','carving','drawers','drawers_side','belt','belt_frame','truck','machine'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/borrasca/{material}.png').startswith(b'\x89PNG'), material
               cast_png = z.read('assets/the_oldest_house/textures/entity/borrasca_cast_pixels.png')
               assert cast_png.startswith(b'\x89PNG') and cast_png[16:24] == bytes.fromhex('0000002000000020')
               for cue in ('grinder','grinder_muffled','motor_stop','tree_creak','town_wind'):
@@ -809,6 +820,8 @@ jobs:
           for view in 0 1 2; do test -s build/font-smoke/native-winter-$view.png; done
           test -s build/font-smoke/phone-passed.txt
           for view in 0 1 2; do test -s build/font-smoke/native-phone-$view.png; done
+          test -s build/font-smoke/phone-playback-passed.txt
+          for view in 1 2 5; do test -s build/font-smoke/native-phone-playback-$view.png; done
           test -s build/font-smoke/cast-passed.txt
           test -s build/font-smoke/stacey-scrabble-passed.txt
           test -s build/font-smoke/native-stacey-scrabble.png
@@ -1459,7 +1472,7 @@ jobs:
             run/logs/latest.log
             run/crash-reports/
           if-no-files-found: warn
-      - name: Native window entry joints and opposable paw thumb
+      - name: Native window entry joints and the paw thumb held still
         timeout-minutes: 5
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PwindowEntrySmoke --no-daemon

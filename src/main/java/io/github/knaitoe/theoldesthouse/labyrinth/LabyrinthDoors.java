@@ -808,8 +808,10 @@ public final class LabyrinthDoors {
         Direction g = entry.facing;
         Direction gSide = g.getClockWise();
         BoundingBox v = LabyrinthPlaces.localVestibule();
+        // 0.4.121: an arrival built into a scene's own shell (the yacht's deckhouse) takes the copy only as high as its doorway.
+        int top = LabyrinthPlace.ELK_CARCASSES.entryDoorId().equals(entry.id) ? ElkCarcassMap.ARRIVAL_TOP : v.maxY();
         for (int s = Math.max(v.minX(), -halfWidth); s <= Math.min(v.maxX(), halfWidth); s++) {
-            for (int y = v.minY(); y <= v.maxY(); y++) {
+            for (int y = v.minY(); y <= top; y++) {
                 for (int k = 0; k <= v.maxZ() - v.minZ(); k++) {
                     BlockPos src = from.lower.relative(f, k).relative(fSide, s).above(y);
                     BlockPos dst = entry.lower.relative(g, k).relative(gSide, s).above(y);

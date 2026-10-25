@@ -315,6 +315,66 @@
       "model": "the_oldest_house:block/uncanny_sofa",
       "y": 270
     },
+    "kind=sofa_left,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sofa_left"
+    },
+    "kind=sofa_left,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sofa_left",
+      "y": 90
+    },
+    "kind=sofa_left,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sofa_left",
+      "y": 180
+    },
+    "kind=sofa_left,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sofa_left",
+      "y": 270
+    },
+    "kind=sofa_right,facing=north": {
+      "model": "the_oldest_house:block/uncanny_sofa_right"
+    },
+    "kind=sofa_right,facing=east": {
+      "model": "the_oldest_house:block/uncanny_sofa_right",
+      "y": 90
+    },
+    "kind=sofa_right,facing=south": {
+      "model": "the_oldest_house:block/uncanny_sofa_right",
+      "y": 180
+    },
+    "kind=sofa_right,facing=west": {
+      "model": "the_oldest_house:block/uncanny_sofa_right",
+      "y": 270
+    },
+    "kind=coffee_table,facing=north": {
+      "model": "the_oldest_house:block/uncanny_coffee_table"
+    },
+    "kind=coffee_table,facing=east": {
+      "model": "the_oldest_house:block/uncanny_coffee_table",
+      "y": 90
+    },
+    "kind=coffee_table,facing=south": {
+      "model": "the_oldest_house:block/uncanny_coffee_table",
+      "y": 180
+    },
+    "kind=coffee_table,facing=west": {
+      "model": "the_oldest_house:block/uncanny_coffee_table",
+      "y": 270
+    },
+    "kind=diner_chair,facing=north": {
+      "model": "the_oldest_house:block/uncanny_diner_chair"
+    },
+    "kind=diner_chair,facing=east": {
+      "model": "the_oldest_house:block/uncanny_diner_chair",
+      "y": 90
+    },
+    "kind=diner_chair,facing=south": {
+      "model": "the_oldest_house:block/uncanny_diner_chair",
+      "y": 180
+    },
+    "kind=diner_chair,facing=west": {
+      "model": "the_oldest_house:block/uncanny_diner_chair",
+      "y": 270
+    },
     "kind=desk,facing=north": {
       "model": "the_oldest_house:block/uncanny_desk"
     },

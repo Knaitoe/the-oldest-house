@@ -69,6 +69,10 @@ public final class BorrascaStory {
         if(rel.equals(BorrascaRooms.PACK)){
             if(visit==4){if(BorrascaBelongings.takeAt(p,own,"Patch",b.offset(rel))&&carriesEvidence(p,own))own.putBoolean("PatchRecovered",true);if(own.getBoolean("CompassConfiscated"))BorrascaBelongings.reclaim(p,own);p.displayClientMessage(Component.literal("The same teal pack. Her name is stitched inside the flap."),false);}return true;
         }
+        // 0.4.121: the town's papers. Each visit's noticeboard and the aged notes are their own originals.
+        if(rel.equals(BorrascaRooms.TRAIL_MAP)){LiteraryVignettes.open(p,PLACE,own,"Map",BorrascaTexts.document("Map"),b.offset(rel));return true;}
+        if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.boardKey(visit),BorrascaTexts.board(visit),b.offset(rel));return true;}
+        if(rel.equals(BorrascaRooms.NOTES)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.notesKey(visit>=3),BorrascaTexts.notes(visit>=3),b.offset(rel));return true;}
         if(rel.equals(BorrascaRooms.EVIDENCE)){if(visit==4)LiteraryVignettes.open(p,PLACE,own,"Evidence",BorrascaTexts.document("Evidence",own.getBoolean("CompassEverConfiscated")),b.offset(rel));return true;}
         if(rel.equals(FRONT_LEVER)){if(visit==4){own.putBoolean("OfficeOpened",true);openDoor(p.serverLevel(),b.offset(BorrascaRooms.FACTORY_DOOR),true);}return true;}
         if(rel.equals(BorrascaRooms.POWER)){
@@ -189,7 +193,7 @@ public final class BorrascaStory {
         int visit=own.getInt("Visit");if(!p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.CARVING))||visit==4&&!p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.GATE)))return;
         int stage=own.getBoolean("RestoredName")?4:visit>=3?3:own.getBoolean("PactCarved")?2:own.getBoolean("FriendCarved")?1:0;bark(p,b,stage);
         if(own.getInt("SceneryVisit")==visit)return;
-        if(visit>=3){for(int x=-5;x<=5;x++)for(int z=-100;z<=-88;z++)if(p.serverLevel().getBlockState(b.offset(x,5,z)).is(Blocks.SPRUCE_PLANKS))fit(p,b,new BlockPos(x,5,z),BorrascaFittingBlock.Kind.AGED_WOOD);for(int x=-1;x<=5;x++)fit(p,b,new BlockPos(x,5,-125),BorrascaFittingBlock.Kind.TAPE);}
+        if(visit>=3){for(int x=-5;x<=5;x++)for(int y=5;y<=11;y++)for(int z=-100;z<=-88;z++){var s=p.serverLevel().getBlockState(b.offset(x,y,z));if(s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.OAK_PLANKS))fit(p,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.AGED_WOOD);}for(int x=-1;x<=5;x++)fit(p,b,new BlockPos(x,5,-125),BorrascaFittingBlock.Kind.TAPE);}
         if(visit==2){p.serverLevel().setBlock(b.offset(2,0,-98),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,3),F);var source=b.offset(BorrascaRooms.SOURCE);if(p.serverLevel().getBlockEntity(source) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){lectern.setBook(BorrascaTexts.contentNote());lectern.setChanged();p.serverLevel().sendBlockUpdated(source,lectern.getBlockState(),lectern.getBlockState(),F);}}
         if(visit==4){for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)p.serverLevel().setBlock(b.offset(x,y,-167),Blocks.AIR.defaultBlockState(),F);p.serverLevel().setBlock(b.offset(BorrascaRooms.LOCK),Blocks.AIR.defaultBlockState(),F);fit(p,b,new BlockPos(2,12,-168),BorrascaFittingBlock.Kind.LOCK);openDoor(p.serverLevel(),b.offset(BorrascaRooms.FACTORY_DOOR),true);}
         own.putInt("SceneryVisit",visit);

@@ -1,7 +1,8 @@
 {
   "textures": {
-    "atlas": "the_oldest_house:entity/borrasca_cast_pixels",
-    "particle": "the_oldest_house:entity/borrasca_cast_pixels"
+    "frame": "the_oldest_house:block/borrasca/notice_frame",
+    "board": "the_oldest_house:block/borrasca/notice",
+    "particle": "the_oldest_house:block/borrasca/notice"
   },
   "elements": [
     {
@@ -17,58 +18,22 @@
       ],
       "faces": {
         "north": {
-          "uv": [
-            0.03,
-            12.03,
-            3.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#frame"
         },
         "south": {
-          "uv": [
-            0.03,
-            12.03,
-            3.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#frame"
         },
         "east": {
-          "uv": [
-            0.03,
-            12.03,
-            3.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#frame"
         },
         "west": {
-          "uv": [
-            0.03,
-            12.03,
-            3.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#frame"
         },
         "up": {
-          "uv": [
-            0.03,
-            12.03,
-            3.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#frame"
         },
         "down": {
-          "uv": [
-            0.03,
-            12.03,
-            3.97,
-            15.97
-          ],
-          "texture": "#atlas"
+          "texture": "#frame"
         }
       }
     },
@@ -85,58 +50,13 @@
       ],
       "faces": {
         "north": {
+          "texture": "#board",
           "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
-        },
-        "south": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
-        },
-        "east": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
-        },
-        "west": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
-        },
-        "up": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
-        },
-        "down": {
-          "uv": [
-            12.03,
-            12.03,
-            15.97,
-            15.97
-          ],
-          "texture": "#atlas"
+            0,
+            0,
+            16,
+            16
+          ]
         }
       }
     }

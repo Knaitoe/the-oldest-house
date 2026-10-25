@@ -38,13 +38,12 @@ public final class ElkHunt {
      * hauling one, rocked back by a shove, the axe raised, and dragging the reader.
      */
     public static final int WATCH = 0, WALK = 1, RUN = 2, PEER = 3, HACK = 4, HAUL = 5, STAGGER = 6, RAISE = 7, DRAG = 8;
-    public static final int ATTACK_DELAY=90;
+    /** Ticks between his blows (0.4.121: 75, a little quicker than the 90 of 0.4.83). */
+    public static final int ATTACK_DELAY=75;
     /** The axe goes up this long before it comes down; a shove in that time stops the blow. */
     public static final int WINDUP = 10;
     /** A shove rocks him back this long, and can only do so this often. */
     public static final int STAGGER_TICKS = 25, SHOVE_EVERY = 50;
-    /** After the drag he walks away out of the cave; for this long he hunts no one. */
-    public static final int GRACE = 200;
     private static final double SEARCH_SPEED = .75, CHASE_SPEED = 1.35;
     /** Cover the visible body beyond the House's short-range scenery observation rule. */
     private static final double RELOCATION_VIEW_RANGE=128;
@@ -67,6 +66,9 @@ public final class ElkHunt {
         own.putBoolean("ElkHintCrawl", false);
         own.putBoolean("ElkFound", false);
         own.remove("ElkLastSeen");
+        own.putBoolean("ElkDraggedThisCrossing", false);
+        own.putLong("ElkGraceUntil", 0);
+        own.putInt("ElkBurial", 0);
     }
 
     /** The reader's own killer, adopting the scene's earlier shared one (with its identity) when there is one. */
@@ -276,6 +278,26 @@ public final class ElkHunt {
      * The axe goes up, then comes down (0.4.120): the wind-up is the reader's moment to shove him or get out of reach. Blows
      * stay a saved ATTACK_DELAY apart. The falling blow reaches a little further than he had to be to start it.
      */
+    /**
+     * 0.4.121: a blow lands in a spray of blood: a burst of dark red off the struck side, thrown on in the swing's direction,
+     * and gouts falling to the ground, with a wet sound. Everyone nearby sees it.
+     */
+    public static void blood(net.minecraft.server.level.ServerLevel l, net.minecraft.world.entity.LivingEntity victim, net.minecraft.world.entity.Entity from) {
+        var chest = victim.position().add(0, victim.getBbHeight() * .62, 0);
+        var away = victim.position().subtract(from.position()).multiply(1, 0, 1);
+        away = away.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : away.normalize();
+        var dark = new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.42F, .02F, .02F), 1.7F);
+        var bright = new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.68F, .04F, .03F), 1.2F);
+        for (int i = 0; i < 6; i++) {
+            var at = chest.add(away.scale(.15 + i * .14)).add(0, -i * .05, 0);
+            l.sendParticles(i % 2 == 0 ? dark : bright, at.x, at.y, at.z, 5, .16 + i * .03, .12, .16 + i * .03, 0);
+        }
+        l.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK, net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState()),
+                chest.x + away.x * .3, chest.y, chest.z + away.z * .3, 16, .22, .2, .22, .18);
+        l.sendParticles(net.minecraft.core.particles.ParticleTypes.DAMAGE_INDICATOR, chest.x, chest.y + .2, chest.z, 3, .2, .1, .2, .1);
+        l.playSound(null, victim.blockPosition(), SoundEvents.SLIME_BLOCK_BREAK, SoundSource.HOSTILE, .7F, .55F);
+    }
+
     private static boolean strike(ServerPlayer p, LiteraryActor killer, CompoundTag own) {
         long now = p.serverLevel().getGameTime();
         int windup = own.getInt("ElkWindup");
@@ -286,7 +308,7 @@ public final class ElkHunt {
             killer.swing(InteractionHand.MAIN_HAND);
             if (reach(p, killer, 4.6)) {
                 p.serverLevel().playSound(null, killer.blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1, .7F);
-                p.hurt(p.damageSources().mobAttack(killer), 4);
+                if (p.hurt(p.damageSources().mobAttack(killer), 4)) blood(p.serverLevel(), p, killer);
                 if (ElkDrag.active(p)) ElkDrag.mark(own);
             } else ElkDrag.sound(p, killer.position(), SoundEvents.PLAYER_ATTACK_SWEEP, .9F, .55F);
             return true;
@@ -397,7 +419,7 @@ public final class ElkHunt {
                 if (now - own.getLong("ElkStrikeAt") >= ATTACK_DELAY) {
                     own.putLong("ElkStrikeAt", now);
                     killer.swing(InteractionHand.MAIN_HAND);
-                    p.hurt(p.damageSources().mobAttack(killer), 3);
+                    if (p.hurt(p.damageSources().mobAttack(killer), 3)) blood(p.serverLevel(), p, killer);
                     if (ElkDrag.active(p)) ElkDrag.mark(own);
                 }
             }

@@ -89,6 +89,8 @@ public final class IndianLakeArchitecture {
             if(Math.abs(x)==2||z==-39||z==-35)level.setBlock(base.offset(x,y,z),Blocks.DEEPSLATE_BRICKS.defaultBlockState(),F);
         level.setBlock(base.offset(0,-2,-37),Blocks.BELL.defaultBlockState(),F);
         light(level,base.offset(0,-3,-37),8);light(level,base.offset(0,4,-8),5);
+        // 0.4.121: moonlight on the water over the steeple, so the phone finds its pale top in the dark (unseen, waterlogged).
+        for(int x:new int[]{-3,3})for(int z:new int[]{-34,-40})level.setBlock(base.offset(x,-1,z),Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,7).setValue(LightBlock.WATERLOGGED,true),F);
         LabyrinthBuilder.doors(level,base,LabyrinthPlace.PHONE_CANOE);
     }
     private static BlockState stone(int x,int y,int z){

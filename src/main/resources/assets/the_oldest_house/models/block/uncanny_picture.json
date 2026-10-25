@@ -3,7 +3,7 @@
   "textures": {
     "particle": "the_oldest_house:block/uncanny/dark_wood",
     "dark_wood": "the_oldest_house:block/uncanny/dark_wood",
-    "parlor_paper": "the_oldest_house:block/uncanny/parlor_paper"
+    "picture": "the_oldest_house:block/uncanny/picture"
   },
   "elements": [
     {
@@ -87,7 +87,7 @@
       ],
       "faces": {
         "north": {
-          "texture": "#parlor_paper",
+          "texture": "#picture",
           "uv": [
             3,
             3,
@@ -96,7 +96,7 @@
           ]
         },
         "south": {
-          "texture": "#parlor_paper",
+          "texture": "#picture",
           "uv": [
             3,
             3,
@@ -105,7 +105,7 @@
           ]
         },
         "east": {
-          "texture": "#parlor_paper",
+          "texture": "#picture",
           "uv": [
             2,
             3,
@@ -114,7 +114,7 @@
           ]
         },
         "west": {
-          "texture": "#parlor_paper",
+          "texture": "#picture",
           "uv": [
             13,
             3,
@@ -123,7 +123,7 @@
           ]
         },
         "up": {
-          "texture": "#parlor_paper",
+          "texture": "#picture",
           "uv": [
             3,
             13,
@@ -132,7 +132,7 @@
           ]
         },
         "down": {
-          "texture": "#parlor_paper",
+          "texture": "#picture",
           "uv": [
             3,
             2,

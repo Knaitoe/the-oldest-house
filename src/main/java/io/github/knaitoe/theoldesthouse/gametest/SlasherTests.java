@@ -64,13 +64,31 @@ public final class SlasherTests {
             CampBedCrawl.begin(p,bed);CampBedCrawl.clear(p);h.assertTrue(p.getForcedPose()==null,"lifecycle cleanup is repeatable");f.done();
         });
     });}
+    // Its own batch: every slasher fixture is the one static active fixture, and a second in the same batch takes it over.
+    @AfterBatch(batch="camp_session0121") public static void sessionDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="camp_session0121",timeoutTicks=400)
+    public static void theLastSessionKeepsItsScheduleAndTheMessHallBellCallsHimOnce(GameTestHelper h){run(h,1268000,f->{
+        f.corridor();var p=f.player("camp_session_reader",.5,-28.5);f.hide(p);var a=f.actor(.5,-43.5);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(CampSession.clock(a)>0,"the session's clock runs while a reader is in the camp"))
+        .thenExecute(()->{h.assertTrue(CampSession.period(a)==0&&CampSession.walk(a).equals(CampSession.PERIODS.get(0).walk()),"the day begins at reveille, and his walk goes to the flagpole");
+            var page=CampSession.schedule().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().get(0).raw().getString();
+            h.assertTrue(page.contains("Mess hall")&&page.contains("Rounds to the road"),"the posted schedule says where each period is held: "+page);
+            CampSession.clock(a,CampSession.PERIOD-2);})
+        .thenIdle(4).thenExecute(()->{h.assertTrue(CampSession.period(a)==1&&CampSession.walk(a).equals(CampSession.PERIODS.get(1).walk()),"at the next period his walk follows the schedule to breakfast, at the mess hall");
+            CampSession.clock(a,2*CampSession.PERIOD+5);
+            var d=LabyrinthData.get(f.l.getServer());var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.CAMP_BLOOD);
+            CampSession.ring(p,f.base,own);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.CAMP_BLOOD,own);
+            h.assertTrue(CampSession.period(a)==2&&CampSession.bellCalling(a)&&CampSession.walk(a).equals(CampSession.PERIODS.get(1).walk())&&own.getBoolean("RangBell"),"the mess-hall bell calls him there, off the schedule");
+            int until=a.getPersistentData().getCompound("CampSession0121").getInt("BellUntil");CampSession.ring(p,f.base,own);
+            h.assertTrue(a.getPersistentData().getCompound("CampSession0121").getInt("BellUntil")==until,"it calls him only once for each reader");f.done();});
+    });}
     @GameTest(template="empty",batch="camp_clock0483",timeoutTicks=1800)
     public static void sharedSlasherWaitsAnAdditionalThreeSecondsBetweenSwings(GameTestHelper h){run(h,1265000,f->{
         f.corridor();var p=f.player("camp_clock_reader",.5,-33.5);var peer=f.player("camp_clock_peer",1.2,-33.5);var a=f.actor(.5,-34.5);
         int[] swings={0},last={0};h.onEachTick(()->{if(active==f){int delay=a.getPersistentData().getCompound("CarcassSearch0455").getInt("AttackDelay");if(delay==CarcassHunt.ATTACK_DELAY&&last[0]!=delay)swings[0]++;last[0]=delay;}});
         h.startSequence().thenWaitUntil(()->h.assertTrue(swings[0]==1,"one physical swing starts the shared clock"))
-        .thenIdle(80).thenExecute(()->h.assertTrue(swings[0]==1,"two eligible readers cannot shorten the 90-tick interval"))
-        .thenWaitUntil(()->h.assertTrue(swings[0]==2,"the same hunter attacks again after 4.5 seconds, not every 1.5 seconds"))
+        .thenIdle(CarcassHunt.ATTACK_DELAY-10).thenExecute(()->h.assertTrue(swings[0]==1,"two eligible readers cannot shorten the "+CarcassHunt.ATTACK_DELAY+"-tick interval"))
+        .thenWaitUntil(()->h.assertTrue(swings[0]==2,"the same hunter attacks again after the full interval, not every 1.5 seconds"))
         .thenExecute(()->{h.assertTrue(ElkHunt.ATTACK_DELAY==CarcassHunt.ATTACK_DELAY&&Math.abs(KillerNavigation.CHASE_STEP-.2403)<.000001,"both slasher circuits share the longer interval and ten-percent speed reduction");f.done();});
     });}
     private static void privateRun(GameTestHelper h,int coordinate,Consumer<Fixture> check){var f=new Fixture(h,coordinate,LabyrinthPlace.ELK_CARCASSES);h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native private hunt chunks ready")).thenExecute(()->{f.start();check.accept(f);});}

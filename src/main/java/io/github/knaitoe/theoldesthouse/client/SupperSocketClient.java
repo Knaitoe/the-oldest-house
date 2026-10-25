@@ -24,6 +24,9 @@ public final class SupperSocketClient {
     public static boolean ready(Minecraft mc,int next,int ticks,String viewer,BlockPos base){
         if(step!=next){step=next;verified=0;clicked=0;pending=false;}age=ticks;role=viewer;plate=GoatmanWoods.plate(viewer.equals("A")?0:1).add(base.getX(),base.getY(),base.getZ());
         mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.player.getInventory().selected=next==45?7:0;
+        // The child's eye is held a little above the tabletop, where the server put it, so it looks down onto the plate; left
+        // to fall it settles on the floor a hand below the plate and sees only the table's edge (0.4.121).
+        double feet=plate.y-.57;mc.player.setNoGravity(true);mc.player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);if(Math.abs(mc.player.getY()-feet)>.05)mc.player.setPos(mc.player.getX(),feet,mc.player.getZ());
         var to=plate.subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z))));
         if((next==44||next==45)&&ticks>40&&clicked==0){
             var hit=mc.level.clip(new net.minecraft.world.level.ClipContext(mc.player.getEyePosition(),mc.player.getEyePosition().add(mc.player.getLookAngle().scale(mc.player.blockInteractionRange())),net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,mc.player));

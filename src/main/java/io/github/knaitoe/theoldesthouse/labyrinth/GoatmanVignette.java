@@ -63,6 +63,7 @@ public final class GoatmanVignette {
     public static final int KNOCK_FROM=60,KNOCK_UNTIL=1150,WINDOW_TRY=700,CHECK=720,BEDTIME=1000,KEEN=1250;
     public static final int FACE=1,SILENT=2,LATE_LAUGH=4,STILL=8,FIRELIGHT=16,HEAD=32,PET=64;
     /** The cousin who went for gas, in an ordinary voice; and the same words from the thing that heard him. */
+    public static final int RUNNER_KNOCK_EVERY=100;
     public static final String[] RUNNER_LINES={"Hey! Let me in!","Come on, stop playing! Open the door!","It's me! It's getting dark out here!"};
     public static final String[] LEGACY_MIMIC_LINES={"Let me. In.","in","stop playing","Let me in stop. playing","It's. me.","open the. Door."};
     public static final String[] MIMIC_LINES={"let me in","let. me. in","seriously i'm not playing","i'm not fucking playing let me in","i'm not fucking playing","let me in","let me in let me in let me in let me in"};
@@ -201,6 +202,8 @@ public final class GoatmanVignette {
         spot("fearComfort",new Vec3(4,1,-66.5),90,true,STAND,new Vec3(4,1,-57.5));
         spot("fearEars",new Vec3(4.7,1,-71.5),180,true,COWER,new Vec3(4,1,-57.5),new Vec3(4,1,-71.5));
         spot("fearStartle",new Vec3(4.5,1,-59.5),0,true,STAND,new Vec3(4,1,-57.5));
+        // 0.4.121: where the cousins draw back to, up by the door, facing the back, while something comes in by the bathroom.
+        for(int i=0;i<8;i++)spot("shy"+i,new Vec3(i%2==0?-3.3:4.3,1,-57.6-(i/2)*1.2),180,true,STAND,new Vec3(i%2==0?-3:4,1,-57.5));
         for(int i=0;i<8;i++)spot("cower"+i,new Vec3(i%2==0?-3.8:4.8,1,-65.5-(i/2)*2),180,true,COWER,new Vec3(i%2==0?-3:4,1,-57.5),new Vec3(i%2==0?-3:4,1,-65.5-(i/2)*2));
         for(int s=0;s<10;s++){boolean west=s%2==0;double z=GoatmanWoods.CHAIR_Z[s/2]+.5;
             spot("seat"+s,new Vec3(west?-1.25:2.25,1.5,z),west?270:90,true,SIT,new Vec3(west?-3:4,1,-57.5),new Vec3(west?-3:4,1,z));}
@@ -310,14 +313,14 @@ public final class GoatmanVignette {
                 float before=leg==0?.12F:ENTRY_BEATS[leg-1];c.setWindowEntry(Mth.lerp(part,before,ENTRY_BEATS[leg]));
                 return;
             }
-        }else{
-            c.setWindowEntry(-1);c.setCrawling(true);c.setPose(Pose.SWIMMING);
-            if(walk(c,b,CREEP,l,true)){finishWindowEntry(c,b,r);return;}
         }
-        c.setWindowEntry(-1);c.setCrawling(true);c.setPose(Pose.SWIMMING);
+        // 0.4.121: he crawls only through the sash. Once down inside he is a cousin again: he gets up in the bathroom and walks
+        // out among them, never crawling on the ground outside or up the aisle.
+        c.setWindowEntry(-1);c.setCrawling(false);if(!c.hasPose(Pose.STANDING))c.setPose(Pose.STANDING);
+        if(walk(c,b,WALK,l,true))finishWindowEntry(c,b,r);
     }
     private static void finishWindowEntry(GoatmanChild c,BlockPos b,CompoundTag r){
-        c.setWindowEntry(-1);c.setCrawling(false);c.setPose(Pose.STANDING);c.getPersistentData().remove("WindowRoute04114");c.getPersistentData().remove("WindowReach04114");r.putInt("ExtraState",X_FLOOR);settle(c,b,"floor");
+        c.setWindowEntry(-1);c.setCrawling(false);c.setPose(Pose.STANDING);c.getPersistentData().remove("WindowRoute04114");c.getPersistentData().remove("WindowReach04114");r.putInt("ExtraState",X_FLOOR);r.putInt("FloorAt0121",r.getInt("Clock"));settle(c,b,"floor");
     }
     private static float facing(Vec3 from,Vec3 at){Vec3 v=at.subtract(from);return (float)(Math.atan2(v.z,v.x)*180/Math.PI)-90;}
     private static void face(Entity c,Vec3 at){float yaw=facing(c.position(),at);c.setYRot(yaw);c.setYHeadRot(yaw);if(c instanceof LivingEntity e)e.yBodyRot=yaw;}
@@ -337,10 +340,23 @@ public final class GoatmanVignette {
             };
         }
         if(i==runner&&r.getInt("RunnerState")!=R_HOME&&r.getInt("RunnerState")!=R_INSIDE)return "step";
-        if((phase==GATHERING||phase==VIGIL)&&GoatmanFear.stage(r)>=GoatmanFear.FEAR)return GoatmanFear.destination(i,r);
+        if((phase==GATHERING||phase==VIGIL)&&GoatmanFear.stage(r)>=GoatmanFear.FEAR)return drawBack(i,r,GoatmanFear.destination(i,r));
+        if(phase==VIGIL)return drawBack(i,r,seatName(i,r));
         if(phase>=VIGIL||clock>=supperAt(r))return seatName(i,r);
         return ACTIVITY[i];
     }
+    /**
+     * 0.4.121: while something comes in through the bathroom window, and for fifteen seconds after it has lain down, the
+     * cousins in the back half of the trailer draw away from it, up toward the door.
+     */
+    static String drawBack(int i,CompoundTag r,String usual){
+        int xs=r.getInt("ExtraState");
+        boolean coming=xs==X_WINDOW||xs==X_FLOOR&&r.contains("FloorAt0121")&&r.getInt("Clock")-r.getInt("FloorAt0121")<DRAW_BACK;
+        return coming&&backSpot(usual)?"shy"+Math.floorMod(i,8):usual;
+    }
+    /** A place in the back half of the trailer, nearer the bathroom than the door. */
+    public static boolean backSpot(String key){var spot=SPOTS.get(key);return spot!=null&&spot.inside()&&spot.at().z<-63;}
+    static final int DRAW_BACK=300;
     static String seatName(int i,CompoundTag r){
         if(!fresh(r))return "seat"+i;int real=i==r.getInt("Wrong")?r.getInt("Runner"):i;
         return "seat"+(real<r.getInt("Wrong")?real:real-1);
@@ -607,18 +623,26 @@ public final class GoatmanVignette {
         if(server.getTickCount()%20==0||speaking(r)||clock==r.getInt("FearAt0472"))for(var p:enrolled)scene(p,r);
         ambience(l,b,r,enrolled,server.getTickCount());
     }
+    static final String[] COOKING_LINES={"A cousin: Leave mine another minute. I like the edges dark.","A cousin: Who packed three bottles of mustard and no forks?","A cousin: They're in the drawer. Try the other one.","A cousin: My dad used to cook these on a stick. Half of them fell in the fire.","A cousin: Turn that one. It's catching underneath.","A cousin: We can wait. There's still light outside.","A cousin: Save one for him when he gets back.","A cousin: That's plenty. We can split the last ones."};
+    /** Whether a cooking line fits the moment: the griddle lines need franks on it; the saved one needs someone away. */
+    static boolean cookingLineTrue(int k,CompoundTag r){
+        return switch(k){case 0,4->GoatmanSupper.onGriddle(r);case 6->{int rs=r.getInt("RunnerState");yield rs==R_LEAVING||rs==R_AWAY||rs==R_RETURNING||rs==R_KNOCKING;}default->true;};
+    }
     private static void cookingChatter(CompoundTag r,List<ServerPlayer> readers){
         if(!fresh(r)||GoatmanSupper.ready(r)||r.getInt("Clock")<850)return;
         int ticks=r.getInt("CookingChatTicks0490")+1;r.putInt("CookingChatTicks0490",ticks);if(ticks%220!=0)return;
-        String[] lines={"A cousin: Leave mine another minute. I like the edges dark.","A cousin: Who packed three bottles of mustard and no forks?","A cousin: They're in the drawer. Try the other one.","A cousin: My dad used to cook these on a stick. Half of them fell in the fire.","A cousin: Turn that one. It's catching underneath.","A cousin: We can wait. There's still light outside.","A cousin: Save one for him when he gets back.","A cousin: That's plenty. We can split the last ones."};
-        int next=r.getInt("CookingChatLine0490");say(readers,lines[Math.floorMod(next,lines.length)]);r.putInt("CookingChatLine0490",next+1);
+        String[] lines=COOKING_LINES;int next=r.getInt("CookingChatLine0490");
+        // 0.4.121: a line is said only if it is true now: nobody asks for theirs to stay on a griddle that is empty.
+        for(int tries=0;tries<lines.length;tries++,next++){int k=Math.floorMod(next,lines.length);
+            if(cookingLineTrue(k,r)){say(readers,lines[k]);r.putInt("CookingChatLine0490",next+1);return;}}
+        r.putInt("CookingChatLine0490",next);
     }
     private static void evening(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
         int supper=supperAt(r),leaves=fresh(r)?LEAVES0465:RUNNER_LEAVES,backAt=fresh(r)?BACK0465:RUNNER_BACK,silence=fresh(r)?SILENCE0465:SILENCE;
         if(fresh(r)){
             if(clock==220)say(enrolled,"A cousin: You should've heard his story. The scary part was how long it took.");
             if(clock==520)say(enrolled,"A cousin: Can somebody pass the plates? We brought enough for all of us.");
-            if(clock==820)say(enrolled,"A cousin: You always burn them on one side. Turn them over this time.");
+            if(clock==820&&GoatmanSupper.onGriddle(r))say(enrolled,"A cousin: You always burn them on one side. Turn them over this time.");
             if(clock==1340)say(enrolled,"A cousin: He knows where the gas is. He'll be back in a minute.");
         }
         // Late joiners before supper get a brat counted for them; nobody gets one counted after.
@@ -640,9 +664,12 @@ public final class GoatmanVignette {
                 setRoute(c,back,"step");r.putInt("RunnerState",R_RETURNING);say(enrolled,"From the trail: “Wait up! Don't lock it!”");}
         }
         if(r.getInt("RunnerState")==R_KNOCKING&&!GoatmanWoods.doorOpen(l,b)){
-            int beat=clock%60;if(beat==0||beat==4||beat==9){knock(l,b,enrolled);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);}
-            if(beat==0){int line=(clock/60)%RUNNER_LINES.length;r.putInt("Demand",-(line+1));r.putInt("DemandAt",clock);}
-        }
+            // 0.4.121: the words first, the moment he reaches the door, then two knocks, every five seconds rather than three every three.
+            if(!r.contains("RunnerKnockFrom"))r.putInt("RunnerKnockFrom",clock);
+            int since=clock-r.getInt("RunnerKnockFrom"),beat=Math.floorMod(since,RUNNER_KNOCK_EVERY);
+            if(beat==20||beat==26){knock(l,b,enrolled);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);GoatmanFear.heard(r);}
+            if(beat==0){int line=Math.floorMod(since/RUNNER_KNOCK_EVERY,RUNNER_LINES.length);r.putInt("Demand",-(line+1));r.putInt("DemandAt",clock);}
+        }else r.remove("RunnerKnockFrom");
         if(clock==silence){
             GoatmanFear.quiet(r);
             r.putBoolean("Silence",true);GoatmanWoods.porchLight(l,b,false);
@@ -678,7 +705,7 @@ public final class GoatmanVignette {
         GoatmanWoods.door(l,b,false);
         if(outside(r)){
             if(fresh(r))GoatmanStalking.assault(l,b,r,enrolled,clock);
-            else if(clock>=KNOCK_FROM&&clock<KNOCK_UNTIL){int beat=(clock-KNOCK_FROM)%80;if(beat==0||beat==7||beat==15){GoatmanFear.begin(r);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);hammer(l,b,enrolled,beat==0);}
+            else if(clock>=KNOCK_FROM&&clock<KNOCK_UNTIL){int beat=(clock-KNOCK_FROM)%80;if(beat==0||beat==7||beat==15){GoatmanFear.begin(r);r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);GoatmanFear.heard(r);hammer(l,b,enrolled,beat==0);}
                 if(beat==0){r.putInt("Demand",1+((clock-KNOCK_FROM)/200)%LEGACY_MIMIC_LINES.length);r.putInt("DemandAt",clock);}}
             // The window: left open, it is how it gets in.
             // A timed admission cannot cancel a physically unfinished circuit.

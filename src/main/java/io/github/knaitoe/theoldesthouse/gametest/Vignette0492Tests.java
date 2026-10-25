@@ -39,10 +39,8 @@ public final class Vignette0492Tests {
     @GameTest(template="empty",batch="review492_nursery",timeoutTicks=300)
     public static void chestAndShelfToysTouchTheirOriginalSupportsAndTheChairSeatsANativePlayer(GameTestHelper h){
         var f=fixture(h);var place=ChildRoom.PLACE;var p=f.player("nursery_support",place);var b=f.base(place);var l=f.in;
-        var chest=b.offset(ChildRoom.TOY_HOMES.get(1));var shelf=b.offset(-10,1,-16);var music=b.offset(-10,1,-15);
-        h.assertTrue(l.getBlockState(chest).getValue(NurseryBlock.STAGE)==2&&l.getBlockState(shelf).getValue(NurseryBlock.STAGE)==1,"fresh toys use fitted variants without replacing any original prop");
-        var doll=l.getBlockState(chest).getShape(l,chest).bounds();var lid=l.getBlockState(chest.below()).getShape(l,chest.below()).bounds();
-        h.assertTrue(Math.abs(1+doll.minY-lid.maxY)<.001,"the doll's feet meet the chest lid");
+        var chest=b.offset(-9,1,-20);var shelf=b.offset(ChildRoom.TOY_HOMES.get(1));var music=b.offset(-10,1,-15);
+        h.assertTrue(l.getBlockState(chest).isAir()&&NurseryBlock.is(l.getBlockState(shelf),NurseryBlock.Kind.DOLL)&&l.getBlockState(shelf).getValue(NurseryBlock.STAGE)==1,"0.4.121: the one doll sits fitted on the shelf; the toy chest's lid is bare");
         for(var at:List.of(shelf,music)){var top=l.getBlockState(at.below()).getShape(l,at.below()).bounds();var toy=l.getBlockState(at).getShape(l,at).bounds();h.assertTrue(toy.minX>=top.minX&&toy.maxX<=top.maxX&&toy.minZ>=top.minZ&&toy.maxZ<=top.maxZ&&toy.minY==0&&top.maxY==1,"shelf footprint supports the entire toy: "+at);}
         var mobile=b.offset(0,5,-22);h.assertTrue(NurseryBlock.is(l.getBlockState(mobile),NurseryBlock.Kind.MOBILE)&&!l.getBlockState(mobile.above()).isAir(),"the original mobile already reaches its ceiling");
         var chair=b.offset(7,0,-18);use(p,chair,InteractionHand.MAIN_HAND);h.assertTrue(p.getVehicle() instanceof SeatEntity,"the actual child's chair creates a native seat");p.stopRiding();h.assertTrue(!p.isPassenger(),"ordinary dismount releases the player");
@@ -53,14 +51,14 @@ public final class Vignette0492Tests {
     @GameTest(template="empty",batch="review492_nursery_saved",timeoutTicks=400)
     public static void aSavedToyRepairWaitsForNativeSectionsCamerasAndBodiesAndNeverRestocksAnEdit(GameTestHelper h){
         var f=fixture(h);var place=ChildRoom.PLACE;var p=f.player("nursery_camera",place);var b=f.base(place);var l=f.in;lease(f,place);
-        var chest=b.offset(ChildRoom.TOY_HOMES.get(1));var shelf=b.offset(-10,1,-16);var t=f.data().state(NurserySupport0492.STATE);t.remove(Long.toString(b.asLong()));f.data().setState(NurserySupport0492.STATE,t);
-        l.setBlock(chest,l.getBlockState(chest).setValue(NurseryBlock.STAGE,0),18);l.setBlock(shelf,l.getBlockState(shelf).setValue(NurseryBlock.STAGE,3),18);
+        var shelf=b.offset(ChildRoom.TOY_HOMES.get(1));var t=f.data().state(NurserySupport0492.STATE);t.remove(Long.toString(b.asLong()));f.data().setState(NurserySupport0492.STATE,t);
+        l.setBlock(shelf,l.getBlockState(shelf).setValue(NurseryBlock.STAGE,0),18);
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native entity sections load")).thenExecute(()->{
             p.setGameMode(GameType.SPECTATOR);f.at(p,place,-9,2,-20);h.assertTrue(!NurserySupport0492.repair(l,b),"a spectator's actual camera protects the props");
-            var body=LiteraryRegistry.ACTOR.get().create(l);f.extras.add(body);body.bind(place,null);body.setNoGravity(true);body.moveTo(chest.getX()+.5,chest.getY(),chest.getZ()+.5);h.assertTrue(l.addFreshEntity(body),"the fixture body joins the native level");f.at(p,place,0,0,100);
+            var body=LiteraryRegistry.ACTOR.get().create(l);f.extras.add(body);body.bind(place,null);body.setNoGravity(true);body.moveTo(shelf.getX()+.5,shelf.getY(),shelf.getZ()+.5);h.assertTrue(l.addFreshEntity(body),"the fixture body joins the native level");f.at(p,place,0,0,100);
             h.assertTrue(!NurserySupport0492.repair(l,b),"an actual living body blocks the changed cell");body.discard();
-            h.assertTrue(NurserySupport0492.repair(l,b)&&l.getBlockState(chest).getValue(NurseryBlock.STAGE)==2&&l.getBlockState(shelf).getValue(NurseryBlock.STAGE)==3,"only the recognised original mount changes; an advanced hanging toy stays intact");
-            l.setBlock(chest,Blocks.AIR.defaultBlockState(),18);f.reload();h.assertTrue(NurserySupport0492.repair(l,b)&&l.getBlockState(chest).isAir(),"the saved checkpoint never restores a later removal");
+            h.assertTrue(NurserySupport0492.repair(l,b)&&l.getBlockState(shelf).getValue(NurseryBlock.STAGE)==1,"the recognised original mount is fitted");
+            l.setBlock(shelf,Blocks.AIR.defaultBlockState(),18);f.reload();h.assertTrue(NurserySupport0492.repair(l,b)&&l.getBlockState(shelf).isAir(),"the saved checkpoint never restores a later removal");
         }).thenSucceed();
     }
     @AfterBatch(batch="review492_nursery_saved") public static void savedNurseryDone(ServerLevel l){close();}

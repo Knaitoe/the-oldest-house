@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "the_oldest_house:block/winchester/leaded_glass"
+  },
+  "render_type": "minecraft:translucent"
+}

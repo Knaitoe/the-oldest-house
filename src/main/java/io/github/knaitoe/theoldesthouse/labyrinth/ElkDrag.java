@@ -38,7 +38,8 @@ import org.joml.Vector3f;
  * Dying at the elk killer's hand (0.4.120). The killing blow does not kill. The reader's sight goes in pulses; they come
  * to on their back, dragged by the ankle down the passage into the cave, his back and boots above them; it goes dark
  * again; and they wake inside the pile of carcasses with the gap packed shut. They fight their way out through the meat.
- * He walks away out of the cave and goes back to his round: he is still hunting them.
+ * He walks away out of the cave while they are under it and for a while after they are out, then goes back to his round:
+ * he is still hunting them. It happens once a crossing; a second killing blow on the same crossing kills (0.4.121).
  *
  * <p>Their body waits in the pile from the first moment; what they see is a camera of their own carried along the drag,
  * with their own killer pulling ahead of it. The carcasses packed into the gap are theirs alone (the shared pile is not
@@ -47,9 +48,16 @@ import org.joml.Vector3f;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class ElkDrag {
     /** The pulsing blackout, the drag, the dark before waking; then the hits it takes to tear one carcass loose. */
-    public static final int BLACKOUT = 50, DRAGGING = 230, DARK = 40, HITS = 3;
+    public static final int BLACKOUT = 50, DRAGGING = 230, DARK = 40, HITS = 2;
+    /**
+     * How long he keeps away while they are under the pile, and once they are out; and when the pile settles by itself,
+     * so no one is left in it for good.
+     */
+    public static final int BURIED_GRACE = 6000, ESCAPE_GRACE = 600, SETTLE = 1200;
     /** How far ahead of the reader's head he walks, holding the ankle. */
     static final double LEAD = 1.6;
+    /** The reader is on their back: their eyes ride this far above the ground. */
+    static final double EYE = .3;
     /** The reader wakes with this much health, however little the blow left. */
     public static final float WAKE_HEALTH = 6;
     private static final LabyrinthPlace PLACE = LabyrinthPlace.ELK_CARCASSES;
@@ -112,6 +120,8 @@ public final class ElkDrag {
         // Already dying here, so the scene is checked by place, not by the living-reader rule.
         var b = base(p);
         if (b == null || !p.level().dimension().equals(NovelRooms.dimension(PLACE)) || !IndianLakeRooms.bounds(b, PLACE).contains(p.position())) return;
+        // He has dragged them once this crossing: this time the blow is what it looks like.
+        if (LiteraryVignettes.personal(LabyrinthData.get(p.server), p.getUUID(), PLACE).getBoolean("ElkDraggedThisCrossing")) return;
         e.setCanceled(true);
         begin(p, b, (LiteraryActor) e.getSource().getEntity());
     }
@@ -127,6 +137,7 @@ public final class ElkDrag {
      * the record afterwards, so the blow's caller marks that copy too (ElkHunt does, after any blow that began a drag).
      */
     public static void mark(CompoundTag own) {
+        own.putBoolean("ElkDraggedThisCrossing", true);
         if (own.getInt("ElkStage") == ElkHunt.DRAGGED) return;
         own.putInt("ElkStage", ElkHunt.DRAGGED);
         own.putInt("ElkWindup", 0);
@@ -182,9 +193,10 @@ public final class ElkDrag {
             var wake = ElkCarcassMap.WAKE.add(r.b().getX(), r.b().getY(), r.b().getZ());
             boolean away = !LiteraryVignettes.inside(p, PLACE) || p.position().distanceToSqr(wake) > 9;
             if (left == 0 || away && free(left)) {
-                // Out: the carcasses no one else ever saw go with them.
+                // Out: the carcasses no one else ever saw go with them, and he stays away a little longer.
                 show(p, r.b(), 0);
                 own.putInt("ElkBurial", 0);
+                own.putLong("ElkGraceUntil", p.serverLevel().getGameTime() + ESCAPE_GRACE);
                 LiteraryVignettes.save(d, p.getUUID(), PLACE, own);
                 BURIED.remove(entry.getKey());
                 continue;
@@ -194,7 +206,16 @@ public final class ElkDrag {
                 show(p, r.b(), left);
                 if (own.getBoolean("ElkBurialResend")) { own.putBoolean("ElkBurialResend", false); LiteraryVignettes.save(d, p.getUUID(), PLACE, own); }
             }
-            if (t == 160 && own.getInt("ElkBurialHitsTotal") == 0) p.displayClientMessage(Component.literal("Strike at them. Tear a way through."), true);
+            if (t == 60 && own.getInt("ElkBurialHitsTotal") == 0) p.displayClientMessage(Component.literal("Strike at them. Tear a way through."), true);
+            if (t == SETTLE && !free(left)) {
+                // The pile slumps under its own weight and one side of the gap opens.
+                left &= Integer.bitCount(left & 0b0101) <= Integer.bitCount(left & 0b1010) ? ~0b0101 : ~0b1010;
+                own.putInt("ElkBurial", left);
+                LiteraryVignettes.save(d, p.getUUID(), PLACE, own);
+                show(p, r.b(), left);
+                sound(p, wake, SoundEvents.MUD_BREAK, 1, .5F);
+                p.displayClientMessage(Component.literal("The pile slumps. A seam of air opens to one side."), true);
+            }
         }
     }
 
@@ -208,7 +229,8 @@ public final class ElkDrag {
         if (camera == null) return;
         camera.setInvisible(true);
         camera.setNoGravity(true);
-        camera.moveTo(head.x, head.y + .3, head.z, yaw, -24);
+        // Flat on their back, a hand above the ground, looking down their own body at him.
+        camera.moveTo(head.x, head.y + EYE - camera.getEyeHeight(), head.z, yaw, -22);
         camera.setYHeadRot(yaw);
         camera.setYBodyRot(yaw);
         double ahead = Math.min(ElkCarcassMap.DRAG_LENGTH, s + LEAD);
@@ -244,7 +266,7 @@ public final class ElkDrag {
         long now = p.serverLevel().getGameTime();
         own.putInt("ElkStage", ElkHunt.ASHORE);
         own.putBoolean("ElkLanded", true);
-        own.putLong("ElkGraceUntil", now + ElkHunt.GRACE);
+        own.putLong("ElkGraceUntil", now + BURIED_GRACE);
         own.putInt("ElkHidden", 0);
         own.putBoolean("ElkFound", false);
         own.putBoolean("ElkBetrayed", false);

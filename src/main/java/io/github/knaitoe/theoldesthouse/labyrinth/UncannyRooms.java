@@ -61,11 +61,11 @@ public final class UncannyRooms {
         for(int x=-2;x<=2;x++)for(int y=1;y<=2;y++)fit(l,b,new BlockPos(x,y,-28),PAINTED_BOARD,Direction.SOUTH);
         door(l,b,PARLOR_DOOR,Direction.WEST,false);
         furnishing(l,b,3,0,-11,UncannyFurnitureBlock.Kind.DESK,Direction.SOUTH);chair(l,b,3,0,-9,Direction.NORTH);note(l,b,LabyrinthPlace.PAINTED_INTERIOR,PAPER);
-        for(int x=-3;x<=2;x++)for(int z=-24;z<=-18;z++)at(l,b,x,0,z,(x==-3||x==2||z==-24||z==-18)?Blocks.BROWN_CARPET:Blocks.GREEN_CARPET);
-        for(int z:new int[]{-20,-21,-22})furnishing(l,b,-6,0,z,UncannyFurnitureBlock.Kind.SOFA,Direction.EAST);
+        for(int x=-3;x<=2;x++)for(int z=-24;z<=-18;z++)at(l,b,x,0,z,(x==-3||x==2||z==-24||z==-18)?Blocks.BROWN_CARPET:UncannyRegistry.PARLOR_RUG.get());
+        sofa(l,b,-6,0,-22,Direction.EAST);
         furnishing(l,b,4,0,-20,UncannyFurnitureBlock.Kind.ARMCHAIR,Direction.WEST);
         furnishing(l,b,4,0,-23,UncannyFurnitureBlock.Kind.ARMCHAIR,Direction.WEST);
-        for(int z=-21;z>=-22;z--)furnishing(l,b,0,0,z,UncannyFurnitureBlock.Kind.SIDEBOARD,Direction.EAST);
+        for(int z=-21;z>=-22;z--)furnishing(l,b,0,0,z,UncannyFurnitureBlock.Kind.COFFEE_TABLE,Direction.EAST);
         for(int x=-6;x<=-4;x++)for(int y=0;y<=1;y++)furnishing(l,b,x,y,-27,UncannyFurnitureBlock.Kind.BOOKCASE,Direction.SOUTH);
         furnishing(l,b,6,0,-16,UncannyFurnitureBlock.Kind.SIDEBOARD,Direction.WEST);
         furnishing(l,b,6,1,-16,UncannyFurnitureBlock.Kind.DESK_LAMP);
@@ -80,6 +80,9 @@ public final class UncannyRooms {
     private static Block material(String name){return UncannyRegistry.material(name);}
     private static void furnishing(ServerLevel l,BlockPos b,int x,int y,int z,UncannyFurnitureBlock.Kind kind,Direction facing){state(l,b,new BlockPos(x,y,z),UncannyFurnitureBlock.of(kind,facing));}
     private static void furnishing(ServerLevel l,BlockPos b,int x,int y,int z,UncannyFurnitureBlock.Kind kind){furnishing(l,b,x,y,z,kind,Direction.NORTH);}
+    private static void sofa(ServerLevel l,BlockPos b,int x,int y,int z,Direction facing){
+        for(int i=0;i<3;i++){var at=new BlockPos(x,y,z).relative(facing.getClockWise(),i);furnishing(l,b,at.getX(),at.getY(),at.getZ(),i==0?UncannyFurnitureBlock.Kind.SOFA_LEFT:i==2?UncannyFurnitureBlock.Kind.SOFA_RIGHT:UncannyFurnitureBlock.Kind.SOFA,facing);}
+    }
     private static void diner(ServerLevel l,BlockPos b){
         // A roadside site: a narrow road, marked parking and paving, with rough ground beyond.
         box(l,b,-27,-3,-56,27,-2,0,Blocks.STONE);
@@ -116,6 +119,13 @@ public final class UncannyRooms {
             furnishing(l,b,7,1,z,UncannyFurnitureBlock.Kind.NAPKIN_CADDY);
             if(z!=-19)furnishing(l,b,5,1,z,UncannyFurnitureBlock.Kind.CUP);
         }
+        for(int z:new int[]{-8,-14})for(int x=1;x<=2;x++){
+            furnishing(l,b,x,0,z,UncannyFurnitureBlock.Kind.TABLE);
+            furnishing(l,b,x,0,z-1,UncannyFurnitureBlock.Kind.DINER_CHAIR,Direction.SOUTH);
+            furnishing(l,b,x,0,z+1,UncannyFurnitureBlock.Kind.DINER_CHAIR,Direction.NORTH);
+        }
+        furnishing(l,b,2,1,-8,UncannyFurnitureBlock.Kind.NAPKIN_CADDY);
+        furnishing(l,b,1,1,-14,UncannyFurnitureBlock.Kind.CUP);
         // Booth four's cold caddy stands where the authored draft and black frost begin.
         furnishing(l,b,8,0,-19,UncannyFurnitureBlock.Kind.TABLE);
         furnishing(l,b,8,1,-19,UncannyFurnitureBlock.Kind.NAPKIN_CADDY);
@@ -135,7 +145,7 @@ public final class UncannyRooms {
         for(int z:new int[]{-27,-29,-31}){furnishing(l,b,9,0,z,UncannyFurnitureBlock.Kind.SHELF,Direction.WEST);furnishing(l,b,9,2,z,UncannyFurnitureBlock.Kind.SHELF,Direction.WEST);}
         furnishing(l,b,7,0,-27,UncannyFurnitureBlock.Kind.BIN);
         furnishing(l,b,-9,3,-28,UncannyFurnitureBlock.Kind.VENT,Direction.EAST);
-        for(int z:new int[]{-7,-13,-19,-28})for(int x=-2;x<=0;x++)furnishing(l,b,x,4,z,UncannyFurnitureBlock.Kind.FLUORESCENT);
+        for(int z:new int[]{-7,-13,-19,-28})for(int x:new int[]{-6,-5,3,4})furnishing(l,b,x,4,z,UncannyFurnitureBlock.Kind.FLUORESCENT);
         for(int x:new int[]{-8,8})furnishing(l,b,x,3,-2,UncannyFurnitureBlock.Kind.EXTERIOR_LAMP,Direction.SOUTH);
         furnishing(l,b,-1,6,-3,UncannyFurnitureBlock.Kind.SIGN_LEFT,Direction.SOUTH);
         furnishing(l,b,0,6,-3,UncannyFurnitureBlock.Kind.SIGN_CENTER,Direction.SOUTH);
@@ -169,10 +179,18 @@ public final class UncannyRooms {
         for(int i=0;i<5;i++){int z=-4-i;box(l,b,-8,0,z,-6,i-1,z,Blocks.SPRUCE_PLANKS);for(int x=-8;x<=-6;x++)state(l,b,new BlockPos(x,i,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));box(l,b,-8,i+1,z,-6,5,z,Blocks.AIR);}
         box(l,b,-8,4,-11,-4,4,-9,Blocks.SPRUCE_PLANKS);
         door(l,b,new BlockPos(-3,5,-16),Direction.WEST,true);door(l,b,PARENTS_DOOR,Direction.EAST,true);
+        for(int z=-4;z>=-9;z--)state(l,b,new BlockPos(-5,5,z),Blocks.SPRUCE_FENCE.defaultBlockState().setValue(FenceBlock.NORTH,z>-9).setValue(FenceBlock.SOUTH,z<-4));
+        for(int x=-8;x<=-5;x++)state(l,b,new BlockPos(x,5,-3),Blocks.SPRUCE_FENCE.defaultBlockState().setValue(FenceBlock.EAST,x<-5).setValue(FenceBlock.WEST,x>-8));
+        for(int x=2;x<=4;x++)furnishing(l,b,x,5,-2,UncannyFurnitureBlock.Kind.SIDEBOARD);
+        furnishing(l,b,4,6,-2,UncannyFurnitureBlock.Kind.DESK_LAMP);
+        furnishing(l,b,3,7,-2,UncannyFurnitureBlock.Kind.PICTURE);
+        for(int z=-13;z>=-26;z--)for(int x=0;x<=1;x++)at(l,b,x,5,z,UncannyRegistry.PARLOR_RUG.get());
         // A furnished home below the five real stair treads, rather than an empty plinth.
         box(l,b,-8,0,-12,8,3,-12,material("bedroom_paper"));door(l,b,new BlockPos(1,0,-12),Direction.SOUTH,true);
-        for(int z=-18;z>=-20;z--)furnishing(l,b,6,0,z,UncannyFurnitureBlock.Kind.SOFA,Direction.WEST);
+        sofa(l,b,6,0,-18,Direction.WEST);
         for(int x=-2;x<=2;x++)for(int z=-23;z<=-17;z++)at(l,b,x,0,z,Blocks.LIGHT_GRAY_CARPET);
+        furnishing(l,b,0,0,-20,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
+        furnishing(l,b,1,0,-20,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
         furnishing(l,b,-5,0,-20,UncannyFurnitureBlock.Kind.DESK,Direction.EAST);
         furnishing(l,b,-5,1,-20,UncannyFurnitureBlock.Kind.DESK_LAMP);
         furnishing(l,b,-4,0,-18,UncannyFurnitureBlock.Kind.ARMCHAIR,Direction.NORTH);
@@ -186,11 +204,12 @@ public final class UncannyRooms {
         furnishing(l,b,6,5,-27,UncannyFurnitureBlock.Kind.HEADBOARD,Direction.SOUTH);
         for(int x:new int[]{-7,7}){furnishing(l,b,x,5,-27,UncannyFurnitureBlock.Kind.BEDSIDE,Direction.SOUTH);furnishing(l,b,x,6,-27,UncannyFurnitureBlock.Kind.DESK_LAMP);}
         furnishing(l,b,-8,5,-17,UncannyFurnitureBlock.Kind.WARDROBE,Direction.EAST);
-        furnishing(l,b,-7,5,-19,UncannyFurnitureBlock.Kind.HAMPER);
+        furnishing(l,b,-8,5,-25,UncannyFurnitureBlock.Kind.HAMPER);
         furnishing(l,b,8,5,-19,UncannyFurnitureBlock.Kind.WARDROBE,Direction.WEST);
         furnishing(l,b,8,7,-23,UncannyFurnitureBlock.Kind.PICTURE,Direction.WEST);
         for(int x=-6;x<=-5;x++)furnishing(l,b,x,5,-22,UncannyFurnitureBlock.Kind.DESK,Direction.SOUTH);
-        chair(l,b,-5,5,-20,Direction.NORTH);
+        furnishing(l,b,-6,5,-23,UncannyFurnitureBlock.Kind.DESK,Direction.WEST);
+        chair(l,b,-7,5,-23,Direction.EAST);
         fit(l,b,MONITOR_AT,MONITOR,Direction.SOUTH);fit(l,b,source(LabyrinthPlace.MISSING_SLEEP),PAPER,Direction.SOUTH);
         for(var camera:List.of(new BlockPos(-8,8,-24),new BlockPos(0,8,-28),new BlockPos(8,8,-12),new BlockPos(0,3,-4)))fit(l,b,camera,CAMERA,Direction.SOUTH);
         for(int z:new int[]{-8,-18,-27}){furnishing(l,b,0,9,z,UncannyFurnitureBlock.Kind.FLUORESCENT);furnishing(l,b,0,3,z,UncannyFurnitureBlock.Kind.FLUORESCENT);}
