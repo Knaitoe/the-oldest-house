@@ -1,7 +1,7 @@
 # Reworks, 0.4.121
 
 The fifth batch of the owner's notes: ten reworks, each planned and approved before it was built ("Batch 5 plans sound
-great. Run with them."). They are built in four parts. Nothing here changes the Witness pool: 52 sources / 39
+great. Run with them."). They are built in four parts. The owner's later list of fixes is built alongside them. Nothing here changes the Witness pool: 52 sources / 39
 resolutions / two kinds / three endings.
 
 ## Part one: Miniatures, Confession, Karen's room, the phone in the canoe
@@ -79,6 +79,88 @@ resolutions / two kinds / three endings.
   behind its trees, and the underwater moon grew.
 - The native phone proof chain adds three held playback frames and the viewfinder over the water.
 
+## Part two: Poltergeist
+
+- **The house.** The model home is rebuilt whole as a Cuesta Verde show home of the early 1980s: wood paneling and shag in
+  the living room, linoleum and harvest-gold paper in the kitchen, a pink child's room. Every fitting is one `tract_house`
+  block (26 kinds) with five materials drawn in code by `tools/draw_tract_house.py`. No polish, shell or dressing pass
+  touches it. Its windows look onto the night yard, or onto a black backing.
+- **Visit one.** The child's door is locked and the six kitchen chairs stack while nobody watches.
+- **Visit two.** Nothing stacks. The set shows static; three seconds of watching it opens the child's door behind the
+  watcher.
+- **Visit three.** Nothing stacks. Whoever goes into the child's room sets the tree off: the glass breaks in and a jointed
+  limb of block displays reaches toward them.
+- The tree outside stands one stage closer each visit. The resolution is unchanged.
+
+## Fixes from the owner's notes ("Need to fix this")
+
+### Fridge corridor (and the other hazard halls)
+
+- The cold store's heat lamps and meat hooks hung a block below the ceiling, and its two condensing units floated off the
+  floor and the end wall. They now sit directly under the ceiling (`HazardMaps.underCeiling`), the units in the corner of
+  the ceiling and the end wall, either side of the latch door.
+- The same goes for the loose lamps in the listing, quiet, weighing, nested, spiral, threshold, duplicate and gravity
+  halls. The counting stair's lamps go onto its west wall. The quiet hall's sweep darkens its lamps at the new height.
+
+### Goatman
+
+- The night begins with his voice. Nothing is struck before the first demand; he waits silent on the step and only then
+  goes round the trailer. Every demand is spoken first and its blows follow it.
+- Much less knocking:
+  - two laps of the trailer instead of three, six surfaces a lap instead of eight;
+  - three front-door blows instead of six, and about half the blows per demand;
+  - one knock every twenty seconds after the demands, instead of three every four;
+  - one private lap a night instead of three;
+  - the real cousin at the door says his line, then knocks twice every five seconds.
+- He crawls only through the bathroom sash. Once inside he stands up and walks out among them as a cousin. While he comes
+  in, and for fifteen seconds after he lies down, the cousins in the back half draw away toward the door.
+- A body caught on a tread lip steps up it physically; walls stay walls.
+- Dialogue is checked against the moment:
+  - nobody asks why it has gone quiet while something is knocking (the line waits up to thirty seconds for real quiet);
+  - nobody asks for theirs to stay on an empty griddle;
+  - lines about his voice, who went out or what went past wait until those things have happened.
+
+### Monkey's paw
+
+- Only the three fingers are wishes: the thumb no longer sweeps across the palm as a finger curls. The window-entry proof
+  checks that it stays put.
+- Three new first wishes, each taken the worst way, each with its own words from Will, the man from the mill and the
+  account:
+  - a full larder (the men at the mill take up a collection for the funeral tea);
+  - Will kept safe (he is out of all harm now; his watch stopped at ten past four);
+  - a fire that never goes out (a fire at the mill that nothing would put out; a coal that does not cool).
+
+### Yacht and slasher
+
+- The arrival copies the last room's doorway only as high as the guest cabin. The deckhouse's forward face above it
+  (with two dark windows) and its fill over the arrival corridor are the yacht's own, so the boat no longer shows a patch
+  of the previous room from the deck or the water.
+- A blow that lands throws a spray of blood off the struck side in the swing's direction, with gouts falling and a wet
+  sound.
+- Both slashers strike every 75 ticks instead of 90.
+- Portholes break by hand in under a second (hardness 0.6, no tool).
+
+### The drag and the pile
+
+- The reader's view rides a hand above the ground while they are dragged (`ElkDrag.EYE`), looking down their own body at
+  him, not at standing height.
+- One drag a crossing: a second killing blow on the same crossing is a real death (`ElkDraggedThisCrossing`, cleared on
+  arrival).
+- He keeps away for as long as they are under the pile (`BURIED_GRACE`, five minutes at most), then for thirty seconds
+  once they are out (`ESCAPE_GRACE`): he walks out of the cave and the noise of the carcasses does not bring him back.
+- Two blows tear a carcass loose (three before), and the hint comes after three seconds. If a minute passes and no way
+  through is open, the pile slumps open on one side by itself (`SETTLE`), so no one is left in it for good.
+
+### Child's room
+
+- The bed stands on short legs at floor level, the quilt over its long sides. Crouching at its foot or either side gets a
+  child-sized reader down to crawl under it; the gap fits only someone lying flat.
+- The doll on the toy chest is gone; the doll on the shelf is the one the room takes for its mobile.
+- The bedtime card is small on the desk, so a hand on the desk now opens it. Opening the card starts the room's clock
+  (reading to the last page is no longer needed for that); the account still asks for the card read.
+- Dinnerbone comes back, unseen, if the figure was lost with the room.
+- The server log notes when the room starts closing and each exit it seals.
+
 ## Tests
 
 - `miniatureCardsTellTheReaderWhatTheyDidInEachRoom`: the card's wording from recorded facts, an unfinished room, a room
@@ -88,3 +170,7 @@ resolutions / two kinds / three endings.
   sealed journal's pages.
 - `theListenerRepeatsAFragmentOfTheReadersOwnWords`: the fragment, one question per chapter, an unanswered journal.
 - The recovered phone case: a plain use plays back without writing the record; crouching writes and opens it.
+- `elkKillingBlowDragsTheReaderIntoThePileAndTheyTearTheirWayOut` now also checks the camera rides at ground height,
+  the long grace under the pile and the head start once out, and that a second killing blow on the same crossing kills.
+- The rewritten `ModelHomeTests` cover the three visits, the locked door, the stacking chairs, the set and the limb.
+- The Goatman, child's room and paw cases follow the new counts, gates and menus.
