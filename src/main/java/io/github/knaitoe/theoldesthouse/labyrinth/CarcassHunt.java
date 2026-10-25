@@ -17,7 +17,7 @@ import net.neoforged.neoforge.event.EventHooks;
 public final class CarcassHunt {
     private static final String STATE="CarcassSearch0455";
     public static final int BLOCKED_LIMIT=80;
-    public static final int ATTACK_DELAY=90;
+    public static final int ATTACK_DELAY=ElkHunt.ATTACK_DELAY;
     private final Map<UUID,Vec3> lastPositions=new HashMap<>();
     private final Deque<BlockPos> route=new ArrayDeque<>();
     private BlockPos routeGoal;
@@ -161,7 +161,7 @@ public final class CarcassHunt {
         if(failures>=BLOCKED_LIMIT){if(chasing){s.putLong("RejectedPoint0459",s.getLong("Point"));s.putInt("AvoidTicks0459",100);s.putInt("Memory",0);s.remove("Point");}
             s.putInt("Patrol",stop+1);s.putInt("BlockedTicks0459",0);route.clear();routeGoal=null;}
         if(found!=null&&a.distanceToSqr(found)<3.5&&s.getInt("AttackDelay")==0&&sees(a,found)){
-            a.swing(InteractionHand.MAIN_HAND);found.hurt(found.damageSources().mobAttack(a),5);s.putInt("AttackDelay",ATTACK_DELAY);}
+            a.swing(InteractionHand.MAIN_HAND);if(found.hurt(found.damageSources().mobAttack(a),5)&&a.level() instanceof net.minecraft.server.level.ServerLevel sl)ElkHunt.blood(sl,found,a);s.putInt("AttackDelay",ATTACK_DELAY);}
         a.getPersistentData().put(STATE,s);
     }
 }
