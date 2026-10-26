@@ -23,6 +23,8 @@ public final class GoatmanClient {
     public static int priorityDemand(){return active()&&remaining>0?demand:0;}
     public static boolean cousinSubtitle(){return active()&&demand==0&&cousinRemaining>0&&cousinLine>0;}
     private static boolean quiet(){return (flags&GoatmanScenePayload.QUIET)!=0;}
+    @SubscribeEvent public static void watchFromBed(RenderGuiLayerEvent.Pre e){if(active()&&(flags&GoatmanScenePayload.BED_WATCH)!=0&&Minecraft.getInstance().player.isSleeping()&&e.getName().equals(net.neoforged.neoforge.client.gui.VanillaGuiLayers.SLEEP_OVERLAY))e.setCanceled(true);}
+    @SubscribeEvent public static void bedView(ViewportEvent.ComputeCameraAngles e){var mc=Minecraft.getInstance();if(active()&&(flags&GoatmanScenePayload.BED_WATCH)!=0&&mc.player.isSleeping()&&mc.options.getCameraType().isFirstPerson()){e.setYaw(e.getYaw()+180);e.setPitch(0);}}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         if(lease>0)lease--;if(remaining>0)remaining--;if(cousinRemaining>0)cousinRemaining--;if(!active()){phase=0;demand=0;flags=0;cousinLine=0;cousinRemaining=0;return;}
         // Once the woods go quiet the air fills with copper motes, thickest at dusk.

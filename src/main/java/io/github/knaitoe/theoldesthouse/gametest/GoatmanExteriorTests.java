@@ -63,6 +63,7 @@ public final class GoatmanExteriorTests {
         var nightPanes=new HashSet<Long>();var children=new HashSet<Integer>();var forms=new HashSet<Integer>();
         h.onEachTick(()->{
             if(!begun[0])return;var r=f.run();if(r.getInt("Phase")==GoatmanVignette.DAWN)return;
+            if(r.getBoolean("BedtimeCalled131")&&!p.isSleeping()){var head=GoatmanWoods.bunkHead(8);p.moveTo(f.b.getX()-3.5,f.b.getY()+1,f.b.getZ()+head.getZ()+.5);f.use(p,head);}
             var body=f.cousin(r.getInt("Wrong")).orElseThrow();
             h.assertTrue(body.getUUID().equals(original[0])&&!body.noPhysics,"the same original keeps native collision through every exterior route and save");
             // 0.4.123: the returning child is let in through the open door; within seconds the night locks it behind him.
