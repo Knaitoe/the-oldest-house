@@ -393,6 +393,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(world.getInt("Exits0474")==3&&l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.BIRCH_PLANKS)==false&&!l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.GLASS),"after the card, the windows went unseen: "+world.getInt("Exits0474"));
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.EXITS.get(2).get(0))).getBlock() instanceof DoorBlock&&f.own(observer,place).getInt("ExitSeen0474")==0,"a spectator's gaze keeps the hall door, and earns nothing");
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.CEILING_SLOTS.get(0))).getValue(NurseryBlock.STAGE)==NurseryBlock.CEILING&&!NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(0))),NurseryBlock.Kind.TEDDY),"the bear has left the floor for the ceiling");
+            h.assertTrue(Integer.bitCount(f.own(p,place).getInt("Parents0119"))==1&&f.own(p,place).getLong("ParentsNext127")>l.getGameTime(),"the parents leave a real pause after the first line while the exits continue disappearing");
             f.at(observer,place,-8.5,0,-4.5);f.look(observer,b.offset(-8,1,1));
         });
         h.runAfterDelay(700,()->{h.assertTrue(LiteraryVignettes.shared(f.data(),place).getInt("Exits0474")==ChildRoom.ALL&&!(l.getBlockState(b.offset(ChildRoom.EXITS.get(3).get(0))).getBlock() instanceof DoorBlock),"once unwatched the doors went too");
@@ -400,7 +401,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         examine(h,f,p,710);
         h.runAfterDelay(840,()->{h.assertTrue(f.own(p,place).getInt("ExitSeen0474")==ChildRoom.ALL&&f.own(p,place).getBoolean("AllSeen0474")&&f.own(peer,place).getInt("ExitSeen0474")==0,"the reader has seen every exit themselves; the peer, who never read the card, has not");
             h.assertTrue(f.own(p,place).getBoolean("DoorShut0119")&&!f.own(peer,place).getBoolean("DoorShut0119"),"the doorway back to the House is wall to the reader shut in, not to the peer who never read the card");
-            h.assertTrue(Integer.bitCount(f.own(p,place).getInt("Parents0119"))>=4&&f.own(peer,place).getInt("Parents0119")==0,"the reader heard a parent's voice as each exit went; the peer heard nothing");
+            h.assertTrue(Integer.bitCount(f.own(p,place).getInt("Parents0119"))==2&&f.own(p,place).getLong("ParentsNext127")>l.getGameTime()&&f.own(peer,place).getInt("Parents0119")==0,"the reader hears only two spaced parental lines before crawling; the peer hears nothing");
             f.source(p,place);p.closeContainer();f.at(p,place,.5,0,-22.5);f.at(peer,place,6.5,-4,-12.5);
             NurseryToys.play(p,l,b.offset(ChildRoom.BED_FOOT),l.getBlockState(b.offset(ChildRoom.BED_FOOT)),b);
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.GAP)).getBlock() instanceof TrapDoorBlock&&l.getBlockState(b.offset(ChildRoom.GAP)).getValue(TrapDoorBlock.OPEN),"looking under the bed finds the trapdoor in the boards");});

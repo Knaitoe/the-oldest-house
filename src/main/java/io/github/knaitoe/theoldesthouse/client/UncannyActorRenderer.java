@@ -84,6 +84,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 leftLeg.y=rightLeg.y=16;leftLeg.yScale=rightLeg.yScale=2F/3;
                 head.x=-1.5F;head.y=10.8F;head.z=-1.5F;head.zRot=1.55F;head.xRot=.12F;
                 leftArm.y=rightArm.y=10;leftArm.xRot=rightArm.xRot=.08F;
+                leftArm.x=2.35F;rightArm.x=-2.35F;
                 leftArm.xScale=rightArm.xScale=.45F;leftArm.zScale=rightArm.zScale=.55F;leftLeg.xScale=rightLeg.xScale=.5F;leftLeg.zScale=rightLeg.zScale=.6F;
                 leftArm.zRot=-.025F;rightArm.zRot=.025F;
                 leftLeg.xRot=phase==1?0:-step*.16F;rightLeg.xRot=phase==1?0:step*.16F;

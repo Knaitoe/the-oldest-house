@@ -34,11 +34,38 @@ def launch(task, name):
     processes.append(p)
     return p
 
+def capture_login_threads():
+    """Observe the real handshake before a timeout; do not retry or bypass it."""
+    try:
+        listing = subprocess.run(["jcmd", "-l"], capture_output=True, text=True, timeout=5)
+        (report / "login-jvms.txt").write_text(listing.stdout + listing.stderr)
+        for line in listing.stdout.splitlines():
+            fields = line.split(maxsplit=1)
+            if len(fields) != 2 or not fields[0].isdigit():
+                continue
+            if not any(name in fields[1] for name in ("devlaunch", "BootstrapLauncher", "modlauncher")):
+                continue
+            pid = fields[0]
+            dump = subprocess.run(["jcmd", pid, "Thread.print", "-l"], capture_output=True, text=True, timeout=8)
+            (report / f"login-threads-{pid}.txt").write_text(dump.stdout + dump.stderr)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        (report / "login-diagnostics-error.txt").write_text(str(exc))
+
 def wait_for(check, seconds, context):
     deadline = time.monotonic() + seconds
+    connecting_at = None
+    captured_login = False
     while time.monotonic() < deadline:
         if check():
             return
+        if context == "first native client window and socket login" and not captured_login:
+            client_log = report / "client-a.log"
+            if client_log.exists() and "Connecting to 127.0.0.1, 25578" in client_log.read_text(errors="replace"):
+                if connecting_at is None:
+                    connecting_at = time.monotonic()
+                elif time.monotonic() - connecting_at >= 4:
+                    captured_login = True
+                    capture_login_threads()
         for p in processes:
             if p.poll() is not None and p.returncode != 0:
                 raise RuntimeError(f"Native process failed during {context}: {p.returncode}")
