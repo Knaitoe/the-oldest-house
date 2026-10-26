@@ -86,7 +86,7 @@ public final class UncannyEnvironmentTests {
             forcedLevel=yardLevel;for(int x:new int[]{-7,7})for(int z:new int[]{-25,-15}){var c=new net.minecraft.world.level.ChunkPos(yard.offset(x,0,z));if(!yardLevel.getForcedChunks().contains(c.toLong())&&yardLevel.setChunkForced(c.x,c.z,true))FORCED.add(c);}
             f.source(p,place);var own=f.own(p,place);own.putInt("UncannyAge",300);
             for(int i=0;i<18;i++)UncannyStories.reader(p,b,place,own);
-            own.putInt("UncannyAge",600);for(int i=0;i<90&&!own.getBoolean("MealServed");i++)UncannyStories.reader(p,b,place,own);
+            own.putInt("UncannyAge",600);own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);for(int i=0;i<90&&!own.getBoolean("MealServed");i++)UncannyStories.reader(p,b,place,own);
             LiteraryVignettes.save(f.data(),p.getUUID(),place,own);h.assertTrue(own.getBoolean("MealServed"),"the legacy room served its actual original meal before refitting");
             meal[0]=(ItemEntity)l.getEntity(own.getUUID("PlateEntity"));h.assertTrue(meal[0]!=null,"the original exists as a native item entity");kept.putUUID("Meal",meal[0].getUUID());kept.put("Stack",meal[0].getItem().save(p.registryAccess()));kept.putUUID("Actor",own.getUUID("CastFake"));kept.put("Source",own.getCompound("Original_Source").copy());
             source[0]=l.getBlockEntity(b.offset(UncannyRooms.source(place)));

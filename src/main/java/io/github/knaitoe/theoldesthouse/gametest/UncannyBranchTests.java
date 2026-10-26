@@ -27,7 +27,7 @@ public final class UncannyBranchTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual room and original bodies loaded")).thenExecute(()->{step(f,p,place);test.accept(f,p);}).thenSucceed();
     }
     private static CompoundTag step(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place){var own=f.own(p,place);UncannyStories.reader(p,f.base(place),place,own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);return own;}
-    private static void age(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,int age){var own=f.own(p,place);own.putInt("UncannyAge",age);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);}
+    private static void age(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,int age){var own=f.own(p,place);own.putInt("UncannyAge",age);if(place==LabyrinthPlace.SECOND_WAITRESS){own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);}LiteraryVignettes.save(f.data(),p.getUUID(),place,own);}
     private static void door(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,BlockPos rel){var at=f.base(place).offset(rel);p.gameMode.useItemOn(p,f.level(place),p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));}
     private static void look(ServerPlayer p,LiteraryActor a){p.lookAt(EntityAnchorArgument.Anchor.EYES,a.getEyePosition());}
     private static void close(){if(fixture!=null){fixture.close();fixture=null;}}
@@ -68,7 +68,7 @@ public final class UncannyBranchTests {
         var place=LabyrinthPlace.TUNNEL_PERIPHERY;var peer=f.player("branch_tunnel_peer",place);age(f,p,place,150);f.at(p,place,.5,0,-64);step(f,p,place);
         for(int i=0;i<8;i++){p.move(MoverType.SELF,new Vec3(0,0,-.4));step(f,p,place);}var own=f.own(p,place);
         h.assertTrue(own.getBoolean("Completed")&&!own.getBoolean("StoopingSeen")&&!own.getBoolean("Read_Source"),"moving through actual green signals needs neither archive nor a compulsory look back");
-        age(f,peer,place,150);f.at(peer,place,.5,0,-10);var other=step(f,peer,place);look(peer,UncannyStories.actor(peer,other,"CastGiant"));other=step(f,peer,place);
+        age(f,peer,place,150);f.at(peer,place,.5,0,-16);step(f,peer,place);var other=step(f,peer,place);look(peer,UncannyStories.actor(peer,other,"CastGiant"));other=step(f,peer,place);
         h.assertTrue(other.getBoolean("StoopingSeen")&&!other.getBoolean("Completed")&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY),"looking back unlocks knowledge, not another player's escape credit");
     });}
     @AfterBatch(batch="branch_tunnel") public static void tunnelDone(ServerLevel l){close();}

@@ -32,7 +32,7 @@ public final class UncannyAssetProof extends Screen {
             int[] roles={32,33,34,34,35,36,37,38};int[] phases={1,0,1,3,2,1,1,1};
             for(int i=0;i<roles.length;i++){
                 var texture=UncannyTextures.skin(roles[i],phases[i]);
-                if(roles[i]==LiteraryActor.UNCANNY_WAITRESS||roles[i]==LiteraryActor.UNCANNY_FALSE_WAITRESS||roles[i]==LiteraryActor.UNCANNY_PEELER||roles[i]==LiteraryActor.UNCANNY_VISITOR){
+                if(roles[i]==LiteraryActor.UNCANNY_PROPPED||roles[i]==LiteraryActor.UNCANNY_GIANT||roles[i]==LiteraryActor.UNCANNY_WAITRESS||roles[i]==LiteraryActor.UNCANNY_FALSE_WAITRESS||roles[i]==LiteraryActor.UNCANNY_PEELER||roles[i]==LiteraryActor.UNCANNY_VISITOR){
                     try(var stream=mc.getResourceManager().open(texture);var painting=NativeImage.read(stream)){
                         if(painting.getWidth()!=256||painting.getHeight()!=256||(painting.getPixelRGBA(40,44)>>>24)!=255)throw new IllegalStateException("The human cast must use complete standard-UV paintings");
                     }catch(java.io.IOException e){throw new IllegalStateException("Missing human cast painting",e);}
@@ -40,7 +40,7 @@ public final class UncannyAssetProof extends Screen {
                     var nativeTexture=mc.getTextureManager().getTexture(texture);if(!(nativeTexture instanceof DynamicTexture d)||d.getPixels()==null)throw new IllegalStateException("Uncanny skin is not a native pixel painting");
                     if((d.getPixels().getPixelRGBA(10,11)>>>24)!=255)throw new IllegalStateException("A native eight-pixel face has a hole");
                 }
-                var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);model.pose(roles[i],phases[i],false,24,1,.5F,0,0);
+                var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(UncannyActorRenderer.WIDE),false);model.pose(roles[i],phases[i],false,24,1,.5F,0,0);
                 p.pushPose();p.translate((i%4+.5)*width/4,70+(i/4+1)*(height-100)/2.,150);float size=roles[i]==35?38:58;p.scale(size,size,-size);if(page==1)p.mulPose(Axis.YP.rotationDegrees(80));if(roles[i]==35)p.scale(2.5F,2.5F,2.5F);p.translate(0,-1.501,0);
                 model.renderToBuffer(p,buffers.getBuffer(roles[i]==34&&phases[i]<2?RenderType.entityTranslucent(texture):RenderType.entityCutoutNoCull(texture)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,roles[i]==34&&phases[i]<2?0x50ffffff:0xffffffff);buffers.endBatch();p.popPose();
                 g.drawCenteredString(font,new String[]{"The Propped","The waitress","The draft","The second apron","Stooping","Direct hallway","The peeler","On the step"}[i],(int)((i%4+.5)*width/4),(int)(75+(i/4+1)*(height-100)/2.),0xffe4d9bf);

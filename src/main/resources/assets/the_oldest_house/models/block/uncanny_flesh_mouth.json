@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "the_oldest_house:block/uncanny/flesh_skin",
+    "up": "the_oldest_house:block/uncanny/flesh_skin",
+    "north": "the_oldest_house:block/uncanny/flesh_skin",
+    "south": "the_oldest_house:block/uncanny/flesh_mouth",
+    "east": "the_oldest_house:block/uncanny/flesh_skin",
+    "west": "the_oldest_house:block/uncanny/flesh_skin",
+    "particle": "the_oldest_house:block/uncanny/flesh_skin"
+  }
+}

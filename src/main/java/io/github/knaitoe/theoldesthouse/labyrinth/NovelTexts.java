@@ -54,7 +54,7 @@ public final class NovelTexts {
         "At the bottom, two pairs of initials are cut into the stone facing the ladder. I had to look up.\n\nThe cover opens from above.\n\nI remember waiting more clearly than I remember the hands."));}
     public static ItemStack apology(){return HouseWriting.book("What the frame kept","Will Navidson",HouseWriting.WritingStyle.WILL,List.of(
         "I found the angle before I found the words.\n\nThat sounds like an excuse.\n\nIt is one.",
-        "The bird circles something beyond the dunes.\n\nUse the spyglass. Hold the shape in its centre.\n\nA picture is easier to carry than the thing it leaves out."));}
+        "The bird circles something beyond the dunes.\n\nUse the camera. Hold the shape in the centre of the viewfinder.\n\nA picture is easier to carry than the thing it leaves out."));}
     public static ItemStack hospitalOpening(){return HouseWriting.book("Night duty","?",HouseWriting.WritingStyle.PLAIN,List.of(
         "The call button is beside the incubator.\n\nPress it when the monitor calls.\n\nSomeone should come.",
         "The night is shorter here. Stay until morning.\n\nIf you leave, the ward will begin again."));}

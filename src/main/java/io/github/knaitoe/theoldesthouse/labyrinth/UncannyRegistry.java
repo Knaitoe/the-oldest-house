@@ -36,7 +36,7 @@ public final class UncannyRegistry {
     public static final DeferredItem<UncannyArtifactItem> BONE_RING=ITEMS.registerItem("bone_ring",p->new UncannyArtifactItem(p,false),new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<UncannyArtifactItem> SMOKY_MIRROR=ITEMS.registerItem("smoky_mirror",p->new UncannyArtifactItem(p,true),new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<Item> BAT=ITEMS.registerSimpleItem("hallway_bat",new Item.Properties().stacksTo(1));
-    public static final DeferredItem<Item> CLEAVER=ITEMS.registerSimpleItem("cellar_cleaver",new Item.Properties().stacksTo(1).durability(96));
+    public static final DeferredItem<Item> CLEAVER=ITEMS.registerSimpleItem("cellar_cleaver",new Item.Properties().stacksTo(1).durability(96).component(net.minecraft.core.component.DataComponents.UNBREAKABLE,new net.minecraft.world.item.component.Unbreakable(false)));
     public static final DeferredItem<Item> CELLAR_KEY=ITEMS.registerSimpleItem("cellar_key",new Item.Properties().stacksTo(1));
     public static final DeferredItem<UncannyMealItem> MEAL=ITEMS.registerItem("second_waitress_meal",UncannyMealItem::new,new Item.Properties().stacksTo(1).food(new FoodProperties.Builder().nutrition(1).saturationModifier(0).alwaysEdible().build()));
     private UncannyRegistry(){}

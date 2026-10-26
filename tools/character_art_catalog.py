@@ -15,8 +15,9 @@ def entry(name,logical):
     if name.startswith('borrasca_'):
         row.update(model='borrasca',number=['kyle','kimber','sheriff','prescott','worker'].index(name[9:]))
     elif name.startswith('uncanny_'):
-        role=37 if name.startswith('uncanny_peeler') else 38 if name=='uncanny_visitor' else 34 if name.startswith('uncanny_second_') else 33
-        row.update(model='uncanny',number=role,phase=3 if name.endswith('_split') else 0 if role==33 or name=='uncanny_peeler' else 2 if name.endswith('_exhausted') else 1)
+        role=32 if name.startswith('uncanny_family_') else 35 if name=='uncanny_bent_neck' else 37 if name.startswith('uncanny_peeler') else 38 if name=='uncanny_visitor' else 34 if name.startswith('uncanny_second_') else 33
+        phase=int(name[-1])+1 if role==32 else 3 if name.endswith('_split') else 0 if role==33 or name=='uncanny_peeler' else 2 if name.endswith('_exhausted') else 1
+        row.update(model='uncanny',number=role,phase=phase)
     elif name.startswith('harrigan'):
         row.update(model='harrigan',number=4+int(name[-1]) if 'mourner' in name else 2 if name.endswith('dead') else 1)
     elif name.startswith('ghosts_'):
