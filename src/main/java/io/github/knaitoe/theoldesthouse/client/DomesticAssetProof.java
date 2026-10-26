@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /** Production baked models, including the reported open mailbox and pictured projector. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class DomesticAssetProof extends Screen {
-    private int page,frames;
+    private int page,frames;private NativeImage unlitJar;
     public DomesticAssetProof(){super(Component.literal("Native domestic objects"));}
     private record View(String label,BlockState state){}
     private List<View> views(){
@@ -58,7 +58,7 @@ public final class DomesticAssetProof extends Screen {
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb1b3a2);g.drawString(font,"Native household states / empty homes / matching collision cuboids",12,10,0xff252e2b,false);g.flush();
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,page==6?0xff252827:0xffb1b3a2);g.drawString(font,"Native household states / empty homes / matching collision cuboids",12,10,page==6?0xffe4d9bf:0xff252e2b,false);g.flush();
         var views=views();int columns=4,rows=(views.size()+columns-1)/columns;float cellW=width/(float)columns,cellH=(height-50F)/rows,scale=Math.min(cellW*.65F,cellH*.63F);
         var buffers=mc.renderBuffers().bufferSource();
         for(int i=0;i<views.size();i++){
@@ -67,22 +67,28 @@ public final class DomesticAssetProof extends Screen {
             var p=g.pose();p.pushPose();p.translate((i%columns+.5)*cellW,35+(i/columns+.7)*cellH,150);p.scale(size,-size,size);p.mulPose(Axis.XP.rotationDegrees(24));p.mulPose(Axis.YP.rotationDegrees(page>=5?155:25));p.translate(-.5,tall?-.8:-.3,-.5);
             if(v.state.is(LiteraryRegistry.PROP.get())&&v.state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.LEDGER)mc.getBlockRenderer().getModelRenderer().renderModel(p.last(),buffers.getBuffer(RenderType.cutout()),v.state,mc.getBlockRenderer().getBlockModel(v.state),1F,1F,1F,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             else mc.getBlockRenderer().renderSingleBlock(v.state,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
-            if(page==6&&v.state.is(LiteraryRegistry.PROP.get())&&v.state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.JAR)FireflyJar.render(p,buffers,v.state.getValue(LiteraryPropBlock.STAGE)*80,net.minecraft.core.BlockPos.ZERO,OverlayTexture.NO_OVERLAY);
+            if(page==6&&frames>=6&&v.state.is(LiteraryRegistry.PROP.get())&&v.state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.JAR)FireflyJar.render(p,buffers,v.state.getValue(LiteraryPropBlock.STAGE)*80,net.minecraft.core.BlockPos.ZERO,OverlayTexture.NO_OVERLAY);
             buffers.endBatch();p.popPose();
-            g.drawCenteredString(font,v.label,(int)((i%columns+.5)*cellW),(int)(35+(i/columns+1)*cellH),0xff25302a);
+            g.drawCenteredString(font,v.label,(int)((i%columns+.5)*cellW),(int)(35+(i/columns+1)*cellH),page==6?0xffe4d9bf:0xff25302a);
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        var mc=Minecraft.getInstance();if(!(mc.screen instanceof DomesticAssetProof s)||++s.frames<12)return;
+        var mc=Minecraft.getInstance();if(!(mc.screen instanceof DomesticAssetProof s))return;
+        if(s.page==6&&++s.frames==6)s.unlitJar=Screenshot.takeScreenshot(mc.getMainRenderTarget());else if(s.page!=6)s.frames++;
+        if(s.frames<12)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
-            if(s.page==6)for(int cell:new int[]{10,11,12}){
+            im.writeToFile(dir.resolve("native-domestic-"+s.page+".png"));
+            if(s.page==6){
+              if(s.unlitJar==null)throw new IllegalStateException("Missing native unlit jar comparison");s.unlitJar.writeToFile(dir.resolve("native-domestic-6-unlit.png"));
+              for(int cell:new int[]{10,11,12}){
                 double scale=im.getWidth()/(double)s.width,cellW=s.width/4.,cellH=(s.height-50.)/4;int count=0;
                 for(int x=(int)(cell%4*cellW*scale);x<(cell%4+1)*cellW*scale;x++)for(int y=(int)((35+cell/4*cellH)*scale);y<Math.min(im.getHeight(),(35+(cell/4+1)*cellH)*scale);y++){
-                    int color=im.getPixelRGBA(x,y),r=color&255,g=color>>>8&255,b=color>>>16&255;if(g>r+2&&r>b+35&&g>165)count++;
+                    int color=im.getPixelRGBA(x,y),before=s.unlitJar.getPixelRGBA(x,y);int difference=Math.max(Math.abs((color&255)-(before&255)),Math.max(Math.abs((color>>>8&255)-(before>>>8&255)),Math.abs((color>>>16&255)-(before>>>16&255))));if(difference>12)count++;
                 }
                 if(count==0)throw new IllegalStateException("The native jar glow is invisible at sample "+(cell-10));
+              }
+              s.unlitJar.close();s.unlitJar=null;
             }
-            im.writeToFile(dir.resolve("native-domestic-"+s.page+".png"));
         }
         if(++s.page<7){s.frames=0;return;}
         Files.writeString(dir.resolve("domestic-assets-passed.txt"),"Seven native baked-model views: household handling, materials, optical fittings/mailboxes, hollow cupboards/red chairs, cabin/sink/jar glow and steel dumpster states. Full bright model review, not a lighting playthrough.\n");mc.setScreen(new DinerAssetProof());
