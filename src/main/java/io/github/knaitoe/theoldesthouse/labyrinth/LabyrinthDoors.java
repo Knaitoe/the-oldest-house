@@ -624,8 +624,13 @@ public final class LabyrinthDoors {
      * Used when a vignette throws them out.
      */
     public static void sendBack(ServerPlayer player, int fadeIn, int hold, int fadeOut) {
+        sendBack(player,fadeIn,hold,fadeOut,p->{ });
+    }
+
+    /** Completion runs only after the native move succeeds and the original return is consumed. */
+    public static boolean sendBack(ServerPlayer player, int fadeIn, int hold, int fadeOut,Consumer<ServerPlayer> arrived) {
         if (!player.isAlive() || isBusy(player)) {
-            return;
+            return false;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
         LabyrinthData.Waypoint back = data.peekReturn(player.getUUID());
@@ -633,7 +638,7 @@ public final class LabyrinthDoors {
         if (back == null) {
             LabyrinthData.Door junction = data.door(LabyrinthPlace.JUNCTION.entryDoorId());
             if (junction == null) {
-                return;
+                return false;
             }
             target = insideRoom(junction);
         } else if (back.door()) {
@@ -647,7 +652,9 @@ public final class LabyrinthDoors {
         fadeTo(player, target, fadeIn, hold, fadeOut,p->{
             if(back!=null)LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back);
             INSIDE.remove(p.getUUID());
+            arrived.accept(p);
         });
+        return true;
     }
 
     /** Fades out, moves the player while the screen is dark, and fades back in. */

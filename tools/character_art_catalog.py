@@ -12,7 +12,9 @@ CLUB=['dancer_male','dancer_female','dancer_vest','dancer_copper','dancer_mustar
 
 def entry(name,logical):
     row={'name':name,'logical':logical,'model':'player','number':0,'phase':0}
-    if name.startswith('borrasca_'):
+    if name=='backseat_stowaway':
+        row.update(model='backseat',phase=1)
+    elif name.startswith('borrasca_'):
         row.update(model='borrasca',number=['kyle','kimber','sheriff','prescott','worker'].index(name[9:]))
     elif name.startswith('uncanny_'):
         role=32 if name.startswith('uncanny_family_') else 35 if name=='uncanny_bent_neck' else 37 if name.startswith('uncanny_peeler') else 38 if name=='uncanny_visitor' else 34 if name.startswith('uncanny_second_') else 33

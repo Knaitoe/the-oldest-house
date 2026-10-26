@@ -1,5 +1,12 @@
 [
   {
+    "name": "backseat_stowaway",
+    "logical": 64,
+    "model": "backseat",
+    "number": 0,
+    "phase": 1
+  },
+  {
     "name": "borrasca_kimber",
     "logical": 64,
     "model": "borrasca",

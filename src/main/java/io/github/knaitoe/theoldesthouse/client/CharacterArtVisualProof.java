@@ -82,6 +82,7 @@ public final class CharacterArtVisualProof extends Screen {
     static EntityModel<?> model(JsonObject row){
         var mc=Minecraft.getInstance();int phase=row.get("phase").getAsInt();int number=row.get("number").getAsInt();
         return switch(row.get("model").getAsString()){
+            case "backseat"->{var m=new BackseatStowawayModel(mc.getEntityModels().bakeLayer(BackseatStowawayModel.LAYER));m.pose(1);yield m;}
             case "borrasca"->{var m=new BorrascaNativeArt.CastModel(mc.getEntityModels().bakeLayer(BorrascaNativeArt.CAST));m.preview(number,0,0);yield m;}
             case "uncanny"->{var m=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(number==LiteraryActor.UNCANNY_GIANT?UncannyActorRenderer.BENT:UncannyActorRenderer.WIDE),false);m.pose(number,phase,false,0,0,0,0,0);yield m;}
             case "harrigan"->{var m=new HouseHumanRenderers.HarriganModel(mc.getEntityModels().bakeLayer(HouseHumanRenderers.HARRIGAN_LAYER));m.preview(number);yield m;}

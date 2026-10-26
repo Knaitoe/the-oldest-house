@@ -25,12 +25,13 @@ public final class BackseatCarBlock extends BaseEntityBlock {
     public static final MapCodec<BackseatCarBlock> CODEC=simpleCodec(BackseatCarBlock::new);
     public static final IntegerProperty CELL=IntegerProperty.create("cell",0,BackseatCarCells.COUNT-1);
     public static final BooleanProperty OPEN=BlockStateProperties.OPEN;
+    public static final BooleanProperty RUNNING=BooleanProperty.create("running");
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    public BackseatCarBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(CELL,BackseatCarCells.ROOT).setValue(OPEN,true));}
+    public BackseatCarBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(CELL,BackseatCarCells.ROOT).setValue(OPEN,true).setValue(RUNNING,false));}
     @Override protected MapCodec<? extends BaseEntityBlock> codec(){return CODEC;}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(CELL,OPEN);}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(CELL,OPEN,RUNNING);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.ENTITYBLOCK_ANIMATED;}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return BackseatCarCells.shape(s.getValue(CELL),s.getValue(OPEN));}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return s.getValue(RUNNING)?Shapes.empty():BackseatCarCells.shape(s.getValue(CELL),s.getValue(OPEN));}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return getShape(s,l,at,c);}
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos at,BlockState s){return s.getValue(CELL)==BackseatCarCells.ROOT?new Car(at,s):null;}
     @Override public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level l,BlockState s,BlockEntityType<T> type){return l.isClientSide?null:createTickerHelper(type,BackseatRegistry.CAR_ENTITY.get(),(world,at,state,car)->car.tick());}
@@ -45,9 +46,12 @@ public final class BackseatCarBlock extends BaseEntityBlock {
         if(!(l.getBlockEntity(root) instanceof Car car))return false;car.owner=owner;car.sync();return true;
     }
     public static final class Car extends BlockEntity {
-        public static final int PARKED=0,SEATED=1,CLOSING=2,LOCKED=3,REVEAL=4;
+        public static final int PARKED=0,SEATED=1,CLOSING=2,LOCKED=3,REVEAL=4,IMPACT=5,RETURNING=6,DONE=7;
+        public static final double SPEED=1.78816D; // 80 mph at twenty native ticks per second
         public @Nullable UUID owner,seatId;
         public int phase=PARKED,clock;
+        public double travel;
+        public boolean sequenceEnabled;
         public long syncedAt;
         private float lockYaw,lockPitch;
         private long lastRattle=-40;
@@ -56,7 +60,10 @@ public final class BackseatCarBlock extends BaseEntityBlock {
         public Car(BlockPos at,BlockState state){super(BackseatRegistry.CAR_ENTITY.get(),at,state);}
         public boolean mine(Player p){return owner!=null&&owner.equals(p.getUUID())&&p.isAlive()&&!p.isSpectator();}
         public @Nullable BackseatSeat seat(){return level instanceof ServerLevel l&&seatId!=null&&l.getEntity(seatId) instanceof BackseatSeat s?s:null;}
-        public boolean committed(){return phase>=CLOSING;}
+        public boolean committed(){return phase>=CLOSING&&phase<RETURNING;}
+        public boolean moving(){return sequenceEnabled&&phase>=REVEAL;}
+        /** A scene may arm the crash only with this actual driver's saved House return. */
+        public boolean arm(ServerPlayer p){if(!mine(p)||phase>PARKED)return false;var back=LabyrinthData.get(p.server).peekReturn(p.getUUID());if(back==null||p.server.getLevel(back.dimension())==null)return false;sequenceEnabled=true;sync();return true;}
         public boolean board(ServerPlayer p){
             if(!mine(p)||phase!=PARKED||p.isPassenger()||p.distanceToSqr(worldPosition.getCenter())>36||!(level instanceof ServerLevel l))return false;
             if(!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(worldPosition)))return false;
@@ -76,10 +83,11 @@ public final class BackseatCarBlock extends BaseEntityBlock {
             if(phase==SEATED){phase=CLOSING;clock=0;sync();return true;}
             rattle(p);return true;
         }
-        private void play(ServerPlayer p,SoundEvent sound,float volume){p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.BLOCKS,worldPosition.getX()+.5,worldPosition.getY()+1,worldPosition.getZ()-.5,volume,1,p.getRandom().nextLong()));}
+        private void play(ServerPlayer p,SoundEvent sound,float volume){p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.BLOCKS,worldPosition.getX()+.5,worldPosition.getY()+1,worldPosition.getZ()-.5-travel,volume,1,p.getRandom().nextLong()));}
         private void stop(ServerPlayer p,String kind){p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(io.github.knaitoe.theoldesthouse.TheOldestHouse.MOD_ID,"backseat."+kind),SoundSource.BLOCKS));}
         public void rattle(ServerPlayer p){if(level==null||level.getGameTime()-lastRattle<20)return;lastRattle=level.getGameTime();play(p,BackseatRegistry.LOCK.get(),.6F);}
         private void ambient(ServerPlayer p){
+            if(phase>=IMPACT)return;
             if(p.distanceToSqr(worldPosition.getCenter())>24*24){if(audible)for(String sound:new String[]{"radio","idle","wiper"})stop(p,sound);audible=false;return;}
             if(!audible){soundAge=0;audible=true;}
             if(soundAge%80==0)play(p,BackseatRegistry.IDLE.get(),.2F);
@@ -106,19 +114,56 @@ public final class BackseatCarBlock extends BaseEntityBlock {
             }
             return false;
         }
+        private void reveal(ServerPlayer p){
+            phase=REVEAL;clock=0;
+            if(sequenceEnabled&&level instanceof ServerLevel l)for(int i=0;i<BackseatCarCells.COUNT;i++){
+                var at=worldPosition.offset(BackseatCarCells.offset(i));var state=l.getBlockState(at);
+                if(state.is(BackseatRegistry.CAR.get())&&state.getValue(CELL)==i)l.setBlock(at,state.setValue(RUNNING,true),FLAGS);
+            }
+            play(p,BackseatRegistry.RISE.get(),.8F);sync();
+        }
+        private void crash(ServerPlayer p){
+            phase=IMPACT;clock=0;for(String kind:new String[]{"radio","idle","wiper"})stop(p,kind);
+            play(p,BackseatRegistry.GLASS.get(),1);play(p,BackseatRegistry.IMPACT.get(),1);
+            io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(0,40,0));sync();
+        }
+        private void drive(ServerPlayer p,BackseatSeat seat,ServerLevel l){
+            // The rendered car and actual rider advance together. Native blocks, rather than a
+            // countdown or travelled-distance threshold, determine the impact.
+            var swept=new AABB(worldPosition.getX()-.9,worldPosition.getY()+.125,worldPosition.getZ()-2.35-travel-SPEED,
+                    worldPosition.getX()+1.9,worldPosition.getY()+2.38,worldPosition.getZ()+3.2-travel);
+            for(var at:BlockPos.betweenClosed(BlockPos.containing(swept.minX,swept.minY,swept.minZ),BlockPos.containing(swept.maxX,swept.maxY,swept.maxZ)))
+                if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))return;
+            if(l.getBlockCollisions(null,swept).iterator().hasNext()){crash(p);return;}
+            travel+=SPEED;clock++;seat.setPos(worldPosition.getX()+.5,worldPosition.getY(),worldPosition.getZ()+.5-travel);
+            seat.positionRider(p);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();sync();
+        }
+        private void returnHome(ServerPlayer p){
+            if(LabyrinthDoors.isBusy(p))return;
+            phase=RETURNING;sync();p.stopRiding();
+            if(!LabyrinthDoors.sendBack(p,0,12,30,arrived->{
+                if(level instanceof ServerLevel l&&l.getBlockEntity(worldPosition) instanceof Car original&&original.mine(arrived)){
+                    original.phase=DONE;original.clock=0;original.sync();
+                }
+            })){phase=IMPACT;sync();}
+        }
         private void tick(){
             if(!(level instanceof ServerLevel l)||owner==null)return;var p=l.getServer().getPlayerList().getPlayer(owner);var seat=seat();
-            if(p==null||p.serverLevel()!=l||!mine(p)){audible=false;return;}ambient(p);if(seat==null)return;
+            if(p==null||p.serverLevel()!=l||!mine(p)){audible=false;return;}
+            if(phase==DONE)return;
+            if(phase==RETURNING){if(!LabyrinthDoors.isBusy(p))returnHome(p);return;}
+            ambient(p);if(seat==null)return;
             if(phase==SEATED&&p.getVehicle()!=seat){phase=PARKED;clock=0;sync();return;}
-            if(phase>=CLOSING&&p.getVehicle()!=seat){if(p.distanceToSqr(worldPosition.getCenter())<36&&!p.isPassenger())p.startRiding(seat,true);return;}
+            if(committed()&&p.getVehicle()!=seat){if(p.distanceToSqr(seat.position())<36&&!p.isPassenger())p.startRiding(seat,true);return;}
             if(p.getVehicle()!=seat)return;
             if(phase==CLOSING){clock++;if(clock>=6){if(door(false)){phase=LOCKED;lockYaw=p.getYRot();lockPitch=p.getXRot();play(p,BackseatRegistry.LATCH.get(),.65F);stop(p,"radio");stop(p,"wiper");rattle(p);}else phase=SEATED;clock=0;sync();}}
-            else if(phase==LOCKED&&turned(p)){phase=REVEAL;clock=0;play(p,BackseatRegistry.RISE.get(),.8F);sync();}
-            else if(phase==REVEAL){clock++;setChanged();}
+            else if(phase==LOCKED&&turned(p))reveal(p);
+            else if(phase==REVEAL){if(sequenceEnabled)drive(p,seat,l);else{clock++;setChanged();}}
+            else if(phase==IMPACT){clock++;if(clock>=4)returnHome(p);else setChanged();}
         }
         public void sync(){setChanged();if(level instanceof ServerLevel){syncedAt=level.getGameTime();level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),Block.UPDATE_CLIENTS);}}
-        @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);if(owner!=null)t.putUUID("Driver",owner);if(seatId!=null)t.putUUID("Seat",seatId);t.putInt("Phase",phase);t.putInt("Clock",clock);t.putFloat("LockYaw",lockYaw);t.putFloat("LockPitch",lockPitch);t.putLong("SyncedAt",level==null?syncedAt:level.getGameTime());}
-        @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);owner=t.hasUUID("Driver")?t.getUUID("Driver"):null;seatId=t.hasUUID("Seat")?t.getUUID("Seat"):null;phase=Mth.clamp(t.getInt("Phase"),PARKED,REVEAL);clock=Math.max(0,t.getInt("Clock"));lockYaw=t.getFloat("LockYaw");lockPitch=t.getFloat("LockPitch");syncedAt=t.getLong("SyncedAt");}
+        @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);if(owner!=null)t.putUUID("Driver",owner);if(seatId!=null)t.putUUID("Seat",seatId);t.putInt("Phase",phase);t.putInt("Clock",clock);t.putBoolean("Sequence",sequenceEnabled);t.putDouble("Travel",travel);t.putFloat("LockYaw",lockYaw);t.putFloat("LockPitch",lockPitch);t.putLong("SyncedAt",level==null?syncedAt:level.getGameTime());}
+        @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);owner=t.hasUUID("Driver")?t.getUUID("Driver"):null;seatId=t.hasUUID("Seat")?t.getUUID("Seat"):null;phase=Mth.clamp(t.getInt("Phase"),PARKED,DONE);clock=Math.max(0,t.getInt("Clock"));sequenceEnabled=t.getBoolean("Sequence");travel=Math.max(0,t.getDouble("Travel"));lockYaw=t.getFloat("LockYaw");lockPitch=t.getFloat("LockPitch");syncedAt=t.getLong("SyncedAt");}
         @Override public CompoundTag getUpdateTag(HolderLookup.Provider r){return saveWithoutMetadata(r);}
         @Override public ClientboundBlockEntityDataPacket getUpdatePacket(){return ClientboundBlockEntityDataPacket.create(this);}
     }
