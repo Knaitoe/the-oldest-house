@@ -50,7 +50,7 @@ public final class SeanceRenderers {
         /** Seated, the hips rest on the seat rather than the feet: the model sits down by its leg length. */
         @Override public net.minecraft.world.phys.Vec3 getRenderOffset(SeanceActor actor,float partial){
             if(!actor.seated())return super.getRenderOffset(actor,partial);
-            var at=actor.blockPosition();var state=actor.level().getBlockState(at);double seat=.5;
+            var at=actor.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity?actor.getVehicle().blockPosition():actor.blockPosition();var state=actor.level().getBlockState(at);double seat=.5;
             if(state.getBlock() instanceof io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock)
                 seat=state.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND).seatHeight/16D;
             double scale=actor.role()==3?.72:1;

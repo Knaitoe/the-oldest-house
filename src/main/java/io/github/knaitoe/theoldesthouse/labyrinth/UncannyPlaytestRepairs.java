@@ -13,9 +13,9 @@ import net.minecraft.world.phys.AABB;
 
 /** Once-only, recognized-cell repairs for the tunnel and foyer, including their old dynamic false frame. */
 public final class UncannyPlaytestRepairs {
-    public static final String STATE="uncanny_playtest_shell_0130";
+    public static final String STATE="uncanny_playtest_shell_0131";
     private static Work work;
-    private static final List<LabyrinthPlace> ROOMS=List.of(LabyrinthPlace.TUNNEL_PERIPHERY,LabyrinthPlace.MOTION_LIGHT);
+    private static final List<LabyrinthPlace> ROOMS=List.of(LabyrinthPlace.PAINTED_INTERIOR,LabyrinthPlace.TUNNEL_PERIPHERY,LabyrinthPlace.MOTION_LIGHT);
     private static final class Work {
         final ServerLevel l;final BlockPos origin,b;final LabyrinthPlace place;final BuildBlocks.Plan before,after;final int width,depth,total;int cursor;
         Work(ServerLevel l,BlockPos origin,LabyrinthPlace p,int cursor){this.l=l;this.origin=origin.immutable();place=p;b=LabyrinthPlaces.base(origin,p);before=BuildBlocks.record(l,()->UncannyRooms0129.build(l,b,p));after=BuildBlocks.record(l,()->UncannyRooms.build(l,b,p));var r=p.room();width=r.maxX()-r.minX()+1;depth=r.maxZ()-r.minZ()+1;total=width*depth*(r.maxY()-r.minY()+1);this.cursor=cursor;}
@@ -41,7 +41,7 @@ public final class UncannyPlaytestRepairs {
             if(bodies.stream().anyMatch(a->a.getBoundingBox().intersects(new AABB(at))))continue;
             var be=l.getBlockEntity(at);if(be!=null&&!(be instanceof UncannyPropBlock.Fitting))continue;
             // Real door state, stored papers and authored used controls are never rebuilt.
-            if(actual.getBlock() instanceof DoorBlock)continue;
+            if(actual.getBlock() instanceof DoorBlock&&!(p==LabyrinthPlace.PAINTED_INTERIOR&&rel.getX()==0&&rel.getZ()==-15&&next.is(UncannyRegistry.PROP.get())&&next.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.SUN_BOARD))continue;
             l.setBlock(at,next,UncannyRooms.FLAGS);
         }
         state.putInt(key+":cursor",work.cursor);if(work.cursor>=work.total){state.putBoolean(key,true);work=null;}d.setState(STATE,state);return true;

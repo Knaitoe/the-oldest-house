@@ -51,6 +51,10 @@ public final class SceneFootpaths {
         var points=new ArrayList<Vec3>();for(var n=best;n.previous!=null;n=n.previous)points.add(new Vec3(n.x*.5,n.y,n.z*.5));Collections.reverse(points);return points;
     }
     public static boolean step(LivingEntity body,Vec3 target,double speed){
+        return advance(body,target,speed,24,false);
+    }
+    public static boolean walk(LivingEntity body,Vec3 target,double speed){return advance(body,target,speed,10,true);}
+    private static boolean advance(LivingEntity body,Vec3 target,double speed,float turn,boolean faceFirst){
         if(!loaded(body,target))return false;var before=body.position();var delta=target.subtract(before);
         if(delta.horizontalDistanceSqr()<.025&&Math.abs(delta.y)<.7){ROUTES.remove(body);return true;}
         Vec3 next=target;
@@ -63,7 +67,8 @@ public final class SceneFootpaths {
             if(route.next>=route.points.size())return false;next=route.points.get(route.next);if(before.distanceToSqr(next)<.035){route.next++;return false;}
         }else ROUTES.remove(body);
         var floor=feet(body,next.x,before.y,next.z);if(floor!=null)next=new Vec3(next.x,floor.y,next.z);
-        var d=next.subtract(before);double length=d.horizontalDistance();face(body,next,24);
+        var d=next.subtract(before);double length=d.horizontalDistance();face(body,next,turn);
+        if(faceFirst&&length>.01&&Math.abs(net.minecraft.util.Mth.wrapDegrees((float)Math.toDegrees(Math.atan2(-d.x,d.z))-body.getYRot()))>35){body.setDeltaMovement(Vec3.ZERO);return false;}
         body.setOnGround(true);double dy=net.minecraft.util.Mth.clamp(d.y,-.25,.25);
         if(dy>0)body.move(MoverType.SELF,new Vec3(0,dy,0));
         body.move(MoverType.SELF,new Vec3(length>.001?d.x*Math.min(speed,length)/length:0,dy<=0?dy:0,length>.001?d.z*Math.min(speed,length)/length:0));

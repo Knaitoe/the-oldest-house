@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.properties.*;
 import static io.github.knaitoe.theoldesthouse.labyrinth.UncannyPropBlock.Kind.*;
 
 /** Six complete authored spaces. Every placement participates in the bounded native construction plan. */
-final class UncannyRooms0129 {
+public final class UncannyRooms0129 {
     public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.PAINTED_INTERIOR,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.TUNNEL_PERIPHERY,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.LAYERED_MAN,LabyrinthPlace.MOTION_LIGHT);
     public static final BlockPos PARLOR_BOARD=new BlockPos(0,1,-28),PARLOR_DOOR=new BlockPos(8,0,-23);
     public static final BlockPos DINER_TABLE=new BlockPos(5,1,-19),MONITOR_AT=new BlockPos(-5,6,-22),BED_AT=new BlockPos(-6,5,-26),PARENTS_DOOR=new BlockPos(4,5,-15);

@@ -66,7 +66,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     public static final class Model extends PlayerModel<LiteraryActor> {
         boolean feed;private final ModelPart neck;
         public Model(ModelPart part,boolean slim){super(part,slim);neck=body.hasChild("bent_neck")?body.getChild("bent_neck"):null;}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch);if(!feed)RecentActorMotion.blend(a,age,this);}
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch);if(!feed&&a.role()!=LiteraryActor.UNCANNY_WAITRESS)RecentActorMotion.blend(a,age,this);}
         public void pose(int role,int phase,boolean feed,float age,float walk,float amount,float yaw,float pitch){
             for(var p:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg}){p.getAllParts().forEach(ModelPart::resetPose);p.xScale=p.yScale=p.zScale=1;}
             if(neck!=null)neck.visible=false;
@@ -74,7 +74,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             head.yRot=yaw*Mth.DEG_TO_RAD;head.xRot=pitch*Mth.DEG_TO_RAD;
             float step=Mth.cos(walk*.6662F)*Math.min(.65F,amount*1.4F);leftLeg.xRot=-step;rightLeg.xRot=step;leftArm.xRot=step*.5F;rightArm.xRot=-step*.5F;
             if(role==LiteraryActor.UNCANNY_PROPPED){body.zRot=.08F;head.zRot=-.16F;leftArm.zRot=-.12F;rightArm.zRot=.12F;leftLeg.xRot=rightLeg.xRot=0;}
-            if(role==LiteraryActor.UNCANNY_WAITRESS){head.xRot+=.12F;body.xRot=.06F;rightArm.xRot=-.35F;}
+            if(role==LiteraryActor.UNCANNY_WAITRESS){head.xRot+=.025F;body.xRot=0;leftArm.xRot=step*.7F;rightArm.xRot=-step*.7F;}
             if(role==LiteraryActor.UNCANNY_FALSE_WAITRESS){leftArm.xRot=rightArm.xRot=phase>=3?-1.1F:-.15F;head.zRot=.025F*Mth.sin(age*.04F);}
             if(role==LiteraryActor.UNCANNY_GIANT){
                 // Upright ribcage and dragging legs; the break is in her neck.
@@ -96,7 +96,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&feed){head.xRot=0;head.yRot=0;head.zRot=0;body.yRot=.04F*Mth.sin(age*.07F);}
             if(role==LiteraryActor.UNCANNY_PEELER){float breath=Mth.sin(age*(phase>=1?.17F:.09F));body.xRot=.27F+breath*(phase>=1?.045F:.015F);head.xRot=.24F+breath*.025F;if(phase<3){rightArm.xRot=phase>=1?-1.4F+Mth.sin(age*.21F)*.12F:-.8F-Mth.abs(Mth.sin(age*.27F));leftArm.xRot=-.65F;leftArm.zRot=phase>=1?Mth.sin(age*.71F)*.025F:0;}}
-            if(role==LiteraryActor.UNCANNY_VISITOR){leftLeg.xRot=-step*.35F;rightLeg.xRot=step*.35F;leftArm.xRot=step*.08F;rightArm.xRot=-step*.06F;head.xRot=-.08F;body.xRot=.015F*Mth.sin(age*.04F);}
+            if(role==LiteraryActor.UNCANNY_VISITOR){leftLeg.xRot=phase>0?0:-step*.35F;rightLeg.xRot=phase>0?0:step*.35F;leftArm.xRot=phase>0?0:step*.08F;rightArm.xRot=phase>=3?-1.4F:phase>0?0:-step*.06F;rightArm.zRot=phase>=3?.08F:0;rightArm.z=phase>=3?1.6F:0;head.xRot=phase>=2?.12F:-.08F;body.xRot=phase>0?0:.015F*Mth.sin(age*.04F);}
             hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
             hat.visible=feed||role==LiteraryActor.UNCANNY_WAITRESS||role==LiteraryActor.UNCANNY_FALSE_WAITRESS;
             jacket.visible=leftSleeve.visible=rightSleeve.visible=leftPants.visible=rightPants.visible=feed;

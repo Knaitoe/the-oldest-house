@@ -59,6 +59,15 @@
     },
     "kind=stoplight": {
       "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=pull_chain": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=courtyard_pendulum": {
+      "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=sun_board": {
+      "model": "the_oldest_house:block/uncanny_fitting"
     }
   }
 }
