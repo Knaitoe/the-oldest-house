@@ -102,6 +102,18 @@ public final class UncannyTests {
             .thenExecute(()->{h.assertTrue(froze[0]&&f.own(p,place).getInt("GreenSteps")>=5,"green really freezes the pursuer while the reader gains ground");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY),"only the completed passage and own account resolve survival");}).thenSucceed();
     }
     @AfterBatch(batch="uncanny_giant_walk") public static void giantWalkDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="uncanny_great_stride131",timeoutTicks=400) public static void theFarOriginalTakesHeavyPhysicalStridesButFreezesWithoutAnotherImpactAtGreen(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("great_stride",place);var b=f.base(place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(b,place));UUID[] id={null};Vec3[] stopped={null};int[] impacts={0};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual tunnel and its recessed lamps are loaded")).thenExecute(()->{
+            f.source(p,place);f.at(p,place,.5,0,-50);var own=f.own(p,place);own.putBoolean("TunnelStarted127",true);own.putInt("UncannyAge",245);var a=UncannyStories.actor(p,own,"CastGiant");a.moveTo(b.getX()+.5,b.getY(),b.getZ()-10);a.appearance(LiteraryActor.UNCANNY_GIANT,2);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);id[0]=a.getUUID();
+        }).thenWaitUntil(()->{var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getPersistentData().getInt("TunnelSteps131")>0,"the distant original covers a whole great stride before its impact");}).thenExecute(()->{
+            var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getUUID().equals(id[0])&&a.gesture()==1&&a.getZ()<b.getZ()-12.7&&f.level(place).noCollision(a,a.getBoundingBox().deflate(1e-7)),"the same colliding original catches up with the long-stride pose");
+            h.assertTrue(UncannySenses.view(p).getLong("TunnelQuakeUntil131")>f.level(place).getGameTime(),"a real heavy step supplies the owning reader's short quake");age(f,p,place,160);step(f,p,place);stopped[0]=a.position();impacts[0]=a.getPersistentData().getInt("TunnelSteps131");
+        }).thenIdle(30).thenExecute(()->{
+            var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getUUID().equals(id[0])&&a.phase()==1&&a.gesture()==0&&a.position().distanceToSqr(stopped[0])<.00001&&a.getPersistentData().getInt("TunnelSteps131")==impacts[0],"green freezes even the great-stride body without inventing further impacts");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="uncanny_great_stride131") public static void greatStrideDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_giant_reload",timeoutTicks=300) public static void savedSignalsAndTheStoopedBodyKeepTheirScaleAndKind(GameTestHelper h){run(h,LabyrinthPlace.TUNNEL_PERIPHERY,(f,p)->{
         var place=LabyrinthPlace.TUNNEL_PERIPHERY;f.source(p,place);age(f,p,place,160);var own=step(f,p,place);var a=UncannyStories.actor(p,own,"CastGiant");var id=a.getUUID();a.load(a.saveWithoutId(new CompoundTag()));f.reload();h.assertTrue(a.getUUID().equals(id)&&a.getBbHeight()<=2.8&&a.getScale()==2.5F,"the five-block standing mesh fits the tunnel in its folded native bounds");h.assertTrue(UncannyStories.green(f.own(p,place))&&WitnessAccount.Story.TUNNEL_PERIPHERY.kind.equals("survival"),"save/load preserves signal phase and a fixed Witness kind");
     });}

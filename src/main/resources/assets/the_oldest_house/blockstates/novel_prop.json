@@ -47,6 +47,22 @@
     "facing=west,kind=mail_slot": {
       "model": "the_oldest_house:block/novel_mail_slot",
       "y": 270
+    },
+    "facing=north,kind=archive_files": {
+      "model": "the_oldest_house:block/novel_archive_files",
+      "y": 0
+    },
+    "facing=east,kind=archive_files": {
+      "model": "the_oldest_house:block/novel_archive_files",
+      "y": 90
+    },
+    "facing=south,kind=archive_files": {
+      "model": "the_oldest_house:block/novel_archive_files",
+      "y": 180
+    },
+    "facing=west,kind=archive_files": {
+      "model": "the_oldest_house:block/novel_archive_files",
+      "y": 270
     }
   }
 }

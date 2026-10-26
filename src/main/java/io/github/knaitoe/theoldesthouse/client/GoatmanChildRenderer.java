@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Pose;
 
 public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,GoatmanChildModel> {
+    public static final float CRAWL_HEIGHT=.78F;
     private final StalkerRenderer stalker;
     public GoatmanChildRenderer(EntityRendererProvider.Context c){
         super(c,new GoatmanChildModel(c.bakeLayer(GoatmanChildModel.LAYER)),.25F);stalker=new StalkerRenderer(c);
@@ -36,6 +37,7 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
         }
         // A seated child is set on the seat's surface; the bent pose puts its hips there, not its feet.
         poses.pushPose();if(e.seated()&&!e.isSleeping()&&!e.hasPose(Pose.SLEEPING))poses.translate(0,-GoatmanChild.HIPS,0);
+        if(e.crawling())poses.scale(1,CRAWL_HEIGHT,1);
         super.render(e,yaw,partial,poses,buffers,light);poses.popPose();e.yBodyRot=old;e.yBodyRotO=previous;
     }
     @Override public ResourceLocation getTextureLocation(GoatmanChild e){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+e.visibleSkin()+".png");}

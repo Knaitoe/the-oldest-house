@@ -153,9 +153,10 @@ public final class UncannyStories {
         if(!UncannyDiner.host(p,b,own)){fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,0);return;}
         int service=Math.max(0,age-own.getInt("DinerHostedAt127"));
         var serving=Vec3.atBottomCenterOf(b.offset(3,0,-19));
-        if(!own.getBoolean("SecondPlaced131")&&!own.getBoolean("MealReleased")&&fake.phase()==0){
+        if(!own.getBoolean("SecondPlaced131")&&!own.getBoolean("MealReleased")&&fake.phase()<2){
             var box=fake.getBoundingBox().move(serving.subtract(fake.position()));
             if(p.serverLevel().getBlockCollisions(fake,box).iterator().hasNext()||!p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,box,e->e!=fake&&e.isAlive()&&!(e instanceof LiteraryActor other&&other.owner().isPresent()&&!other.owner().get().equals(p.getUUID()))).isEmpty())return;
+            if(fake.phase()>0){fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,0);own.putInt("SecondManifestAge131",age);}
             fake.moveTo(serving);fake.setDeltaMovement(Vec3.ZERO);own.putBoolean("SecondPlaced131",true);
         }
         int manifestation=Math.max(0,age-own.getInt(own.contains("SecondManifestAge131")?"SecondManifestAge131":"DinerHostedAt127"));

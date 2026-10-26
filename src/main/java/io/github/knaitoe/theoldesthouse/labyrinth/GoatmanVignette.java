@@ -374,7 +374,7 @@ public final class GoatmanVignette {
         if(i==wrong){
             return switch(r.getInt("ExtraState")){
                 case X_ACTIVITY->(r.getInt("Tells")&FIRELIGHT)!=0?"firelight":ACTIVITY[i];
-                case X_SUPPER,X_INSIDE->seatName(i,r);case X_FIRE->"byFire";case X_APPROACH,X_DOOR->"step";default->r.contains("AdmissionSkin04114")?"admitted131":"floor";
+                case X_SUPPER,X_INSIDE->seatName(i,r);case X_FIRE->"byFire";case X_APPROACH,X_DOOR->"step";default->fresh(r)&&r.contains("AdmissionSkin04114")?"admitted131":"floor";
             };
         }
         if(i==runner&&r.getInt("RunnerState")!=R_HOME&&r.getInt("RunnerState")!=R_INSIDE)return "step";

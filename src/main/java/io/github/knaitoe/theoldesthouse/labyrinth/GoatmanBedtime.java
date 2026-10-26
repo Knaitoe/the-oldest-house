@@ -136,7 +136,7 @@ public final class GoatmanBedtime {
         if(c.position().distanceToSqr(target.add(b.getX(),b.getY(),b.getZ()))>1){GoatmanVignette.script(c,List.of(target),"morning_trail131");GoatmanVignette.advance(c,b,.12,l,true);}else c.pose(false);
         if(index==checker(r)){
             int line=progress<8?3:progress<24?2:progress<40?1:0;
-            if(line>r.getInt("MorningLine131")){String text=switch(line){case 1->"A cousin: Stay together. No one goes back alone.";case 2->"A cousin: I heard it at the window after everybody went quiet.";default->"A cousin: There's the end of the trail. Keep walking.";};GoatmanVignette.say(readers,text);r.putInt("MorningLine131",line);}
+            if(line>r.getInt("MorningLine131")){String text=switch(line){case 1->"A cousin: I'm only waiting because you walk so slow.";case 2->"A cousin: You heard it too, right? At the window? ... Never mind.";default->"A cousin: There. See? Told you we'd get out.";};GoatmanVignette.say(readers,text);r.putInt("MorningLine131",line);}
         }
     }
     private static int checker(CompoundTag r){for(int i=0;i<GoatmanVignette.count(r);i++)if(i!=r.getInt("Wrong")&&i!=r.getInt("Runner"))return i;return 0;}

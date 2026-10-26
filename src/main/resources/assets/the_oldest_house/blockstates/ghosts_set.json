@@ -605,6 +605,38 @@
     "kind=table_leg,facing=west": {
       "model": "the_oldest_house:block/ghosts_table_leg",
       "y": 270
+    },
+    "kind=stair_rail,facing=north": {
+      "model": "the_oldest_house:block/ghosts_stair_rail",
+      "y": 0
+    },
+    "kind=stair_rail,facing=east": {
+      "model": "the_oldest_house:block/ghosts_stair_rail",
+      "y": 90
+    },
+    "kind=stair_rail,facing=south": {
+      "model": "the_oldest_house:block/ghosts_stair_rail",
+      "y": 180
+    },
+    "kind=stair_rail,facing=west": {
+      "model": "the_oldest_house:block/ghosts_stair_rail",
+      "y": 270
+    },
+    "kind=stair_rail_top,facing=north": {
+      "model": "the_oldest_house:block/ghosts_stair_rail_top",
+      "y": 0
+    },
+    "kind=stair_rail_top,facing=east": {
+      "model": "the_oldest_house:block/ghosts_stair_rail_top",
+      "y": 90
+    },
+    "kind=stair_rail_top,facing=south": {
+      "model": "the_oldest_house:block/ghosts_stair_rail_top",
+      "y": 180
+    },
+    "kind=stair_rail_top,facing=west": {
+      "model": "the_oldest_house:block/ghosts_stair_rail_top",
+      "y": 270
     }
   }
 }

@@ -22,7 +22,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     public static LayerDefinition bentLayer(){return layer(false,true);}
     private static LayerDefinition layer(boolean slim,boolean bent){
         var mesh=PlayerModel.createMesh(CubeDeformation.NONE,slim);
-        mesh.getRoot().getChild("body").addOrReplaceChild("bent_neck",CubeListBuilder.create().texOffs(8,16).addBox(-1.5F,-3,-1.5F,3,5,3),PartPose.ZERO);
+        mesh.getRoot().addOrReplaceChild("bent_neck",CubeListBuilder.create().texOffs(0,32).addBox(-.65F,-1.7F,-.65F,1.3F,3.4F,1.3F),PartPose.offsetAndRotation(-.75F,7.2F,-1,.0F,.0F,.36F));
         if(bent)for(boolean left:new boolean[]{false,true}){var leg=mesh.getRoot().addOrReplaceChild(left?"left_leg":"right_leg",SegmentedSkin.limb(left?16:0,left?48:16,0,-2,0,-2,4,6,4,left,false),PartPose.offset(left?1.9F:-1.9F,12,0));leg.addOrReplaceChild("bent_knee",SegmentedSkin.limb(left?16:0,left?48:16,6,-2,0,-2,4,6,4,left,false),PartPose.offset(0,6,0));}
         return LayerDefinition.create(mesh,64,64);
     }
@@ -70,10 +70,14 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     @Override protected boolean shouldShowName(LiteraryActor a){return false;}
     @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){if(!visible(a))return false;return a.role()==LiteraryActor.UNCANNY_GIANT?a.shouldRender(x,y,z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
     public static final class Model extends PlayerModel<LiteraryActor> {
-        boolean feed;private final ModelPart neck;
-        public Model(ModelPart part,boolean slim){super(part,slim);neck=body.hasChild("bent_neck")?body.getChild("bent_neck"):null;}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){if(a.role()==LiteraryActor.UNCANNY_GIANT){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/2.5F;amount=motion.amount();}pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch);if(!feed&&a.role()!=LiteraryActor.UNCANNY_WAITRESS)RecentActorMotion.blend(a,age,this);}
+        boolean feed;public final ModelPart neck;
+        public Model(ModelPart part,boolean slim){super(part,slim);neck=part.hasChild("bent_neck")?part.getChild("bent_neck"):null;}
+        @Override protected Iterable<ModelPart> bodyParts(){return neck==null?super.bodyParts():com.google.common.collect.Iterables.concat(super.bodyParts(),java.util.List.of(neck));}
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){boolean great=a.role()==LiteraryActor.UNCANNY_GIANT&&a.gesture()==1;if(a.role()==LiteraryActor.UNCANNY_GIANT){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/(great?6F:2.5F);amount=motion.amount();}pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch,great);if(!feed&&a.role()!=LiteraryActor.UNCANNY_WAITRESS)RecentActorMotion.blend(a,age,this);}
         public void pose(int role,int phase,boolean feed,float age,float walk,float amount,float yaw,float pitch){
+            pose(role,phase,feed,age,walk,amount,yaw,pitch,false);
+        }
+        public void pose(int role,int phase,boolean feed,float age,float walk,float amount,float yaw,float pitch,boolean great){
             for(var p:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg}){p.getAllParts().forEach(ModelPart::resetPose);p.xScale=p.yScale=p.zScale=1;}
             if(neck!=null)neck.visible=false;
             young=false;attackTime=0;crouching=false;riding=false;
@@ -85,7 +89,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             if(role==LiteraryActor.UNCANNY_GIANT){
                 // Upright ribcage and dragging legs; the break is in her neck.
                 // The folded head stays within the actual 2.7-block tunnel body.
-                float gait=phase==2?Mth.sin(walk)*Math.min(1,amount*2):0,bob=Mth.abs(gait)*.12F;
+                float gait=phase==2?Mth.sin(walk)*Math.min(1,amount*2):0,bob=Mth.abs(gait)*(great?.2F:.12F);
                 body.y=7+bob;body.yScale=.6F;body.xRot=.12F;body.zRot=gait*.04F;
                 body.xScale=.42F;body.zScale=.6F;head.xScale=.58F;head.yScale=.9F;head.zScale=.62F;
                 leftLeg.y=rightLeg.y=14;leftLeg.yScale=rightLeg.yScale=5F/6;
@@ -94,9 +98,9 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 leftArm.x=2.1F;rightArm.x=-2.1F;
                 leftArm.xScale=rightArm.xScale=.45F;leftArm.zScale=rightArm.zScale=.55F;leftLeg.xScale=rightLeg.xScale=.5F;leftLeg.zScale=rightLeg.zScale=.6F;
                 leftArm.zRot=-.025F;rightArm.zRot=.025F;
-                leftLeg.xRot=gait*.4F;rightLeg.xRot=-gait*.24F-.06F;
+                leftLeg.xRot=gait*(great?.68F:.4F);rightLeg.xRot=-gait*(great?.48F:.24F)-.06F;
                 if(leftLeg.hasChild("bent_knee")){leftLeg.getChild("bent_knee").xRot=.08F+Math.max(0,-gait)*.35F;rightLeg.getChild("bent_knee").xRot=.22F+Math.max(0,gait)*.45F;}
-                if(neck!=null){neck.visible=true;neck.zRot=-.28F;}
+                if(neck!=null){neck.visible=true;neck.y=7.2F+bob;neck.zRot=.36F+gait*.025F;}
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&!feed){
                 float twitch=Mth.sin(age*.7F)*.045F;leftArm.zRot=-(float)Math.PI/2;rightArm.zRot=(float)Math.PI/2;
