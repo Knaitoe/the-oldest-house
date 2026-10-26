@@ -27,10 +27,14 @@ public final class UncannyReadingClient {
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof LecternScreen screen)){initialized=null;return;}
         // The opening packet arrives before the book's native slot synchronization.
-        if(initialized!=screen&&(view().getBoolean(UncannyReading.VIEW)||view().getBoolean(UncannyBreakfast.VIEW))){initialized=screen;screen.init(mc,screen.width,screen.height);}
+        if(initialized!=screen&&(view().getBoolean(UncannyReading.VIEW)||view().getBoolean(UncannyBreakfast.VIEW)||view().getBoolean("StairLeafBound131"))){initialized=screen;screen.init(mc,screen.width,screen.height);}
     }
     @SubscribeEvent public static void init(ScreenEvent.Init.Post e){
         if(!(e.getScreen() instanceof LecternScreen screen))return;var data=view();
+        if(data.getBoolean("StairLeafBound131")){
+            for(var child:screen.children())if(child instanceof AbstractWidget widget&&widget.getMessage().getString().equals(Component.translatable("lectern.take_book").getString())){widget.visible=false;widget.active=false;}
+            return;
+        }
         if(data.getBoolean(UncannyBreakfast.VIEW)){
             int mid=screen.width/2,col=Math.min(148,screen.width/2-12);
             for(var child:screen.children())if(child instanceof AbstractWidget widget){

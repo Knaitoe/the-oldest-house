@@ -24,9 +24,21 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.gametest.*;
 
-@GameTestHolder(TheOldestHouse.MOD_ID+"_multiplayer")
+@GameTestHolder(TheOldestHouse.MOD_ID+"_multiplayer_story")
 @PrefixGameTestTemplate(false)
 public final class MultiplayerStoryTests {
+    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    public static void packedLeavesBindOnceAndTheShelfNeverMultipliesCarriedDroppedOrInventoryFullBindings(GameTestHelper h){run(h,529000,MultiplayerStoryTests::holdLeaves,f->{
+        StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"packed_binding_reader");ready(p,f);var lighter=p.getMainHandItem();var book=issued(p);
+        book.set(DataComponents.CUSTOM_NAME,Component.literal("My marked binding"));p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.getInventory().setItem(26,lighter);p.getInventory().setItem(27,book);p.getInventory().setItem(28,book.copy());
+        StaircaseStory.sync(p);h.assertTrue(p.getInventory().getItem(27)==book&&p.getInventory().getItem(28).isEmpty()&&book.getHoverName().getString().equals("My marked binding"),"one actual original survives duplicate reconciliation with its unrelated components");
+        h.assertTrue(find(p,f,0)&&pages(book).size()==2&&burn(p,f,0)&&p.getMainHandItem().isEmpty()&&lighter.getDamageValue()==1,"the native leaf binds and its fire consumes it while both originals stay in ordinary inventory");
+        var at=StaircaseFire.shelf(f.origin);p.teleportTo(f.level,at.getX()+1.5,at.getY(),at.getZ()+.5,0,0);p.getInventory().setItem(27,ItemStack.EMPTY);var dropped=p.drop(book,false);h.assertTrue(dropped!=null,"the real binding is dropped beside the shelf");
+        try{var identity=StaircaseStory.record(p).getUUID("Original");h.assertTrue(StaircaseStory.shelf(p)==StaircaseStory.Shelf.NEARBY&&StaircaseStory.record(p).getUUID("Original").equals(identity),"the shelf recognizes the actual dropped original and creates no replacement");dropped.discard();
+            for(int i=0;i<36;i++)p.getInventory().setItem(i,new ItemStack(Items.COBBLESTONE,64));h.assertTrue(StaircaseStory.shelf(p)==StaircaseStory.Shelf.FULL&&StaircaseStory.record(p).getUUID("Original").equals(identity),"a full inventory never produces repeated ground copies or rotates the original");
+            p.getInventory().setItem(27,ItemStack.EMPTY);h.assertTrue(StaircaseStory.shelf(p)==StaircaseStory.Shelf.REBOUND&&StaircaseStory.found(StaircaseStory.record(p))==1&&StaircaseStory.burned(StaircaseStory.record(p))==1,"a genuinely lost original can be rebound when there is room, without replenishing spent leaves");
+        }finally{dropped.discard();}
+    });}
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
     public static void aCabinGiverBurnsTheirOwnLeavesWithTheKeptHandAndAPackedLighter(GameTestHelper h){run(h,528000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"one_hand_reader");var peer=f.player(h,"two_hand_reader");ready(p,f);ready(peer,f);
@@ -41,6 +53,8 @@ public final class MultiplayerStoryTests {
         var book2=p.getMainHandItem();int slot=-1;for(int i=0;i<p.getInventory().items.size();i++)if(p.getInventory().items.get(i)==packed)slot=i;
         h.assertTrue(slot>=0,"the lighter is in the pack");p.getInventory().items.set(slot,book2);p.setItemInHand(InteractionHand.MAIN_HAND,packed);
         h.assertTrue(find(p,f,2)&&burn(p,f,2)&&packed.getDamageValue()==3&&StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID()))==3,"with the lighter in the one hand, the House of Leaves burns its leaf from the pack");
+        var hand=p.getMainHandItem();p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.getInventory().setItem(26,hand);
+        h.assertTrue(find(p,f,3)&&burn(p,f,3)&&p.getMainHandItem().isEmpty()&&p.getOffhandItem().isEmpty()&&packed.getDamageValue()==4,"the one-armed reader lights a hearth with both originals packed and the kept hand empty");
         // Two hands may hold them either way round.
         var peerBook=issued(peer);var peerLighter=peer.getMainHandItem();peer.setItemInHand(InteractionHand.MAIN_HAND,peerBook);peer.setItemInHand(InteractionHand.OFF_HAND,peerLighter);
         h.assertTrue(find(peer,f,0)&&burn(peer,f,0)&&peerLighter.getDamageValue()==1&&StaircaseFire.flames(FinaleProgress.player(peer.server,peer.getUUID()))==1,"a reader with both hands can hold the book in either one");
@@ -74,8 +88,8 @@ public final class MultiplayerStoryTests {
             h.assertTrue(StaircaseFire.take(p)&&p.getInventory().countItem(NovelRegistry.LIGHTER.get())==0&&p.getInventory().countItem(Items.FLINT_AND_STEEL)==0,"the shelf issues only the binding, without automatically handing out fire");
             peer.teleportTo(f.level,p.getX(),p.getY(),p.getZ(),0,0);NovelVignettes.meetTom(peer,tom);
             h.assertTrue(peer.getInventory().countItem(NovelRegistry.LIGHTER.get())==0,"another explorer cannot take this Tom's finite lighter");
-            NovelVignettes.meetTom(p,tom);NovelVignettes.meetTom(p,tom);f.reload();NovelVignettes.meetTom(p,tom);
-            h.assertTrue(p.getInventory().countItem(NovelRegistry.LIGHTER.get())==1&&tom.getMainHandItem().is(NovelRegistry.LIGHTER.get()),"Tom holds the registered lighter and hands one to his own explorer across repeated visits and reload");
+            NovelVignettes.meetTom(p,tom);tom.load(tom.saveWithoutId(new CompoundTag()));NovelVignettes.meetTom(p,tom);f.reload();NovelVignettes.meetTom(p,tom);
+            h.assertTrue(p.getInventory().countItem(NovelRegistry.LIGHTER.get())==1&&tom.getMainHandItem().isEmpty(),"Tom transfers his finite lighter and keeps an empty hand across repeated visits and reload");
             p.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);NovelVignettes.meetTom(p,tom);
             h.assertTrue(p.getInventory().countItem(NovelRegistry.LIGHTER.get())==1,"spectator interaction cannot repeat the handoff");
         }finally{tom.discard();}
@@ -121,7 +135,7 @@ public final class MultiplayerStoryTests {
     private static boolean find(ServerPlayer p,StaircaseAccessTests.Fixture f,int i) {
         var at=StaircaseLeaves.positions(f.origin).get(i);p.teleportTo(f.level,at.getX()+1.5,at.getY(),at.getZ()+.5,0,0);
         if(!StaircaseLeaves.open(p,at)||!(p.containerMenu instanceof net.minecraft.world.inventory.LecternMenu menu))return false;
-        boolean taken=menu.clickMenuButton(p,3);p.closeContainer();return taken;
+        boolean taken=StaircaseStory.found(StaircaseStory.record(p))==i+1&&!menu.clickMenuButton(p,3);p.closeContainer();return taken;
     }
     private static void serverTick(StaircaseAccessTests.Fixture f) { LabyrinthDoors.onServerTick(new ServerTickEvent.Post(()->true,f.level.getServer())); }
     private static void run(GameTestHelper h,int at,java.util.function.Consumer<StaircaseAccessTests.Fixture> setup,java.util.function.Consumer<StaircaseAccessTests.Fixture> test) { StaircaseAccessTests.run(h,at,setup,test); }
@@ -194,7 +208,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(StaircaseFire.tick(p,f.origin,record),"the next flight's leaf lies beyond the reach of the unlit dark");
         h.assertTrue(burn(p,f,0),"the bound first leaf lights the first hearth");
         record=FinaleProgress.player(p.server,p.getUUID());p.teleportTo(f.level,leaf.getX()+.5,leaf.getY(),leaf.getZ()+.5,0,0);
-        h.assertTrue(!StaircaseFire.tick(p,f.origin,record)&&find(p,f,1),"the lit hearth lets the reader down to the next flight's leaf");
+        h.assertTrue(!StaircaseFire.tick(p,f.origin,record)&&StaircaseStory.found(StaircaseStory.record(p))==2&&!find(p,f,1),"the lit hearth lets the actual nearby next leaf bind automatically, exactly once");
     }); }
 
     @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)

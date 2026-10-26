@@ -67,6 +67,14 @@ public final class StaircaseLeaves {
         p.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.BOOK_PAGE_TURN),SoundSource.BLOCKS,
                 at.getX()+.5,at.getY()+.1,at.getZ()+.5,.6F,.55F+p.getRandom().nextFloat()*.15F,p.getRandom().nextLong()));
     }
+    /** Actual nearby sheets bind directly into the carried original, including when it is packed. */
+    public static void gather(ServerPlayer p,BlockPos origin,int fires){
+        if(fires>=StaircaseFire.REQUIRED||StaircaseStory.found(StaircaseStory.record(p))!=fires)return;
+        var at=positions(origin).get(fires);if(p.distanceToSqr(at.getCenter())>2.5||!p.serverLevel().getBlockState(at).is(HouseBlocks.NOTE_SURFACE.get()))return;
+        var hit=p.serverLevel().clip(new net.minecraft.world.level.ClipContext(p.getEyePosition(),at.getCenter(),net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,p));
+        if(!hit.getBlockPos().equals(at))return;
+        if(StaircaseStory.takeLeaf(p,fires)==StaircaseStory.Take.BOUND)p.displayClientMessage(Component.literal("A loose leaf settles into your House of Leaves."),true);
+    }
 
     /** Opens this flight's leaf for its reader, or says plainly why it is blank to them. */
     public static boolean open(ServerPlayer p,BlockPos pos){
@@ -82,36 +90,23 @@ public final class StaircaseLeaves {
             default->null;};
         if(refusal!=null){if(!refusal.isEmpty())p.displayClientMessage(Component.literal(refusal),true);return true;}
         if(state==StaircaseStory.Take.NOT_CARRIED)ExpeditionRhythm.refuse(p,pos,"leaf_binding","Bring your own House of Leaves to bind this leaf. The camp shelf can rebind it.");
+        if(state==StaircaseStory.Take.BOUND&&StaircaseStory.takeLeaf(p,k)==StaircaseStory.Take.BOUND)p.displayClientMessage(Component.literal("The leaf settles into your House of Leaves."),true);
         p.openMenu(new SimpleMenuProvider((id,inv,player)->new LeafMenu(id,p,pos,k),Component.literal("A loose leaf")));return true;
     }
 
-    /** The reader's own leaf on a native lectern page; taking it binds it into their carried original. */
+    /** Read-only view of the leaf already bound into this reader's carried original. */
     private static final class LeafMenu extends LecternMenu {
         private final ServerPlayer reader;private final BlockPos pos;private final int index;
         LeafMenu(int id,ServerPlayer p,BlockPos pos,int index){this(id,p,pos,index,new SimpleContainer(1));}
         LeafMenu(int id,ServerPlayer p,BlockPos pos,int index,SimpleContainer display){
             super(id,display,new SimpleContainerData(1));reader=p;this.pos=pos.immutable();this.index=index;
             var own=StaircaseStory.record(p);
-            display.setItem(0,HouseWriting.book("A loose leaf",p.getGameProfile().getName(),List.of(StaircaseStory.leafPage(own,index))));
+            var view=HouseWriting.book("A loose leaf",p.getGameProfile().getName(),List.of(StaircaseStory.leafPage(own,index)));net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,view,t->t.putBoolean("StairLeafBound131",true));display.setItem(0,view);
         }
         @Override public boolean stillValid(Player p){return p==reader&&reader.isAlive()&&reader.distanceToSqr(pos.getCenter())<25&&reader.level().getBlockState(pos).is(HouseBlocks.NOTE_SURFACE.get());}
-        @Override public boolean clickMenuButton(Player p,int button){
-            if(!stillValid(p))return false;
-            if(button==3){
-                var result=StaircaseStory.takeLeaf(reader,index);
-                String text=switch(result){case BOUND->"You bind the leaf into your House of Leaves.";
-                    case NOT_CARRIED->"Bring your own House of Leaves. The camp shelf can rebind it.";
-                    case NO_BINDING->"Your House of Leaves is on the camp shelf above.";
-                    case EARLIER->"Find and bind your earlier loose leaf first.";
-                    case TAKEN->"You have already bound this leaf.";
-                    case FINISHED->"Your story has already burned.";default->"The leaf stays where it is.";};
-                if(result==StaircaseStory.Take.BOUND)reader.displayClientMessage(Component.literal(text),true);
-                else ExpeditionRhythm.refuse(reader,pos,"leaf_binding",text);
-                if(result==StaircaseStory.Take.BOUND)reader.closeContainer();
-                return result==StaircaseStory.Take.BOUND;
-            }
-            return false;
-        }
+        @Override public boolean clickMenuButton(Player p,int button){return false;}
+        @Override public void clicked(int slot,int button,net.minecraft.world.inventory.ClickType type,Player p){}
+        @Override public net.minecraft.world.item.ItemStack quickMoveStack(Player p,int slot){return net.minecraft.world.item.ItemStack.EMPTY;}
     }
     public static void clearCache(){cachedOrigin=null;cached=null;}
 }

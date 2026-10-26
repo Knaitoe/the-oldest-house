@@ -1321,7 +1321,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_multiplayer --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/multiplayer-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_multiplayer,the_oldest_house_multiplayer_story --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/multiplayer-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
