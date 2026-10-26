@@ -134,10 +134,16 @@ public final class DomesticLivesTests {
             var chosen=DomesticLives.selection(seed);h.assertTrue(chosen.equals(DomesticLives.selection(seed))&&chosen.size()>=1&&chosen.size()<=2,"home rarity is stable per world and bounded");
             h.assertTrue(!(chosen.contains("students")&&chosen.contains("drinker")),"two full homes are never put in the same ordinary hall");
         }
-        for(var k:DomesticFittingBlock.Kind.values())for(var f:Direction.Plane.HORIZONTAL)for(int n=0;n<16;n++){var s=DomesticFittingBlock.of(k,f).setValue(DomesticFittingBlock.STAGE,n);var shape=s.getCollisionShape(l,at);
+        var shapes=new IdentityHashMap<BlockState,net.minecraft.world.phys.shapes.VoxelShape>();
+        for(var k:DomesticFittingBlock.Kind.values())for(var f:Direction.Plane.HORIZONTAL)for(int n=0;n<16;n++){var s=DomesticFittingBlock.of(k,f).setValue(DomesticFittingBlock.STAGE,n);var shape=s.getCollisionShape(l,at);shapes.put(s,shape);
+            h.assertTrue(s.getShape(l,at)==shape&&s.getShape(l,at.above())==shape,"repeated native support/picking queries reuse the same immutable state mesh");
             if(k==DomesticFittingBlock.Kind.SCRAPES){h.assertTrue(shape.isEmpty(),"floor scrapes never catch feet");continue;}
             h.assertTrue(!shape.isEmpty()&&shape.min(Direction.Axis.X)>=0&&shape.max(Direction.Axis.X)<=1&&shape.min(Direction.Axis.Y)>=0&&shape.max(Direction.Axis.Y)<=1&&shape.min(Direction.Axis.Z)>=0&&shape.max(Direction.Axis.Z)<=1,"rendered household cuboids have bounded matching native collision: "+k+" "+f+" "+n);
-        }h.succeed();
+        }
+        long refreshStarted=System.nanoTime();Blocks.rebuildCache();
+        for(var entry:shapes.entrySet())h.assertTrue(entry.getKey().getShape(l,at)==entry.getValue()&&entry.getKey().getCollisionShape(l,at)==entry.getValue(),"the actual login registry refresh retains every original household collision mesh");
+        TheOldestHouse.LOGGER.info("Native registry refresh retained all {} household state meshes in {} ms",shapes.size(),(System.nanoTime()-refreshStarted)/1_000_000);
+        h.succeed();
     }
     @AfterBatch(batch="domestic_lives_geometry") public static void geometryDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="domestic_lives_repair",timeoutTicks=800)
