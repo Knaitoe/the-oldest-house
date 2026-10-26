@@ -55,7 +55,10 @@ public final class PlaytestScenery130Tests {
             var p=NativeTestPlayers.survival(h,"bin130");f.players.add(p);p.teleportTo(out,eb.getX()-12,eb.getY(),eb.getZ()-29,0,0);p.hasChangedDimension();var at=eb.offset(-12,0,-31);
             h.assertTrue(VignetteInteriorBlock.is(out.getBlockState(at),VignetteInteriorBlock.Kind.DUMPSTER_LEFT)&&out.isEmptyBlock(at.above()),"steel bin replaces the exact green cube and wooden lid");h.assertTrue(VignetteInteriorBlock.interact(out,at,p)==InteractionResult.CONSUME&&out.getBlockState(at).getValue(VignetteInteriorBlock.ACTIVE),"the actual bin lid opens through native use");
             f.reload();PlaytestScenery130.step(out,f.origin,elk);h.assertTrue(out.getBlockState(at).getValue(VignetteInteriorBlock.ACTIVE),"the saved once-only repair retains an opened lid");
-            try{ArchitectureTests.export(l,b,quiet);ArchitectureTests.export(out,eb,elk);}catch(Exception e){throw new RuntimeException(e);}
+            try{
+                var folder=java.nio.file.Path.of("../build/interior-environment-proof");java.nio.file.Files.createDirectories(folder);
+                ArchitectureTests.export(out,eb,elk);VignetteInteriorTests.slice(folder,"../architecture-proof/"+elk.id(),"last_stop_dumpster",-14,-9,-33,-29,-1,2);
+            }catch(Exception e){throw new RuntimeException(e);}
         }).thenSucceed();
     }
     @AfterBatch(batch="scenery130_legacy") public static void legacyDone(ServerLevel l){close();}
