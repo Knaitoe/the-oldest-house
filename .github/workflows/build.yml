@@ -877,6 +877,7 @@ jobs:
           for view in front back night ladder-front ladder-side deer-outline; do test -s build/font-smoke/native-elk-fan0480-$view.png; done
           test -s build/font-smoke/goatman-passed.txt
           test -s build/font-smoke/playtest-assets-passed.txt
+          test -s build/font-smoke/native-dinnerbone-idle.png
           test -s build/font-smoke/native-playtest-0464.png
           test -s build/font-smoke/plains-crouch-passed.txt
           test -s build/font-smoke/native-plains-crouch.png
