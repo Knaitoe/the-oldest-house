@@ -39,7 +39,11 @@ public final class VignetteInteriorTests {
    for(var p:VignetteInteriors.PLACES){
     build(f,p);var l=f.level(p);var b=f.base(p);int fittings=0;
     for(var edit:VignetteInteriors.plan(p)){
-     var kind=edit.next().getValue(VignetteInteriorBlock.KIND);if(kind.surface())continue;
+     var kind=edit.next().getValue(VignetteInteriorBlock.KIND);
+     if(kind.surface()){
+      if(edit.expected().isAir()&&!l.getBlockState(b.offset(edit.relative())).equals(edit.next()))missing.add(p.id()+" incomplete authored partition at "+edit.relative()+" found "+l.getBlockState(b.offset(edit.relative())));
+      continue;
+     }
      var at=b.offset(edit.relative());var state=l.getBlockState(at);
      if(!VignetteInteriorBlock.is(state,kind)){missing.add(p.id()+" "+kind+" at "+edit.relative()+" found "+state+" over "+l.getBlockState(at.below())+" back "+l.getBlockState(at.relative(edit.next().getValue(VignetteInteriorBlock.FACING).getOpposite()))+" occupants "+l.getEntities((net.minecraft.world.entity.Entity)null,new AABB(at).inflate(.01),net.minecraft.world.entity.Entity::isAlive));continue;}
      fittings++;var shape=state.getCollisionShape(l,at);h.assertTrue(!shape.isEmpty()&&shape.min(Direction.Axis.Y)>=0&&shape.max(Direction.Axis.Y)<=1,"the fitting uses contained native collision: "+kind);
@@ -55,6 +59,9 @@ public final class VignetteInteriorTests {
      h.assertTrue(!SceneHuntReview.sourceBook(l,b,p).isEmpty(),p.id()+" keeps its finite original source");
      for(int z=-3;z>=-6;z--)body(h,l,b,0,0,z,p.id()+" arrival");
     }
+    if(p==LabyrinthPlace.CONFESSION){body(h,l,b,1,0,-12,"interview entrance");body(h,l,b,-3,0,-24,"archive-to-interview side opening");}
+    if(p==LabyrinthPlace.USHER)for(int side:new int[]{-1,1}){body(h,l,b,side*6,0,-13,"study-to-vault opening");body(h,l,b,side*10,0,-8,"study's front arch");}
+    if(p==LabyrinthPlace.DEVILS_ROCK){body(h,l,b,-4,0,-8,"kitchen entrance");h.assertTrue(l.getBlockState(b.offset(-9,0,-12)).isAir(),"the first loose page retains its original landing inside the kitchen");}
     if(p==LabyrinthPlace.MINIATURES)for(int x:new int[]{-8,0,8})body(h,l,b,x,0,-16,"model examination front");
     if(p==LabyrinthPlace.MAPPING_INTERIOR){body(h,l,b,0,0,-16,"original hatch approach");var c=b.offset(0,-5,-40);h.assertTrue(l.noCollision(null,new AABB(c.getX()+.2,c.getY()+.01,c.getZ()+.2,c.getX()+.8,c.getY()+.6,c.getZ()+.8)),"the low crawl stays traversable while crawling");}
     if(p==LabyrinthPlace.CONFESSION){body(h,l,b,1,0,-19,"the two original interview chairs");h.assertTrue(l.getBlockState(b.offset(11,0,-20)).is(Blocks.BOOKSHELF),"the original shelf still receives the blank-book story interaction");}
@@ -64,6 +71,10 @@ public final class VignetteInteriorTests {
    h.assertTrue(missing.isEmpty(),"Every authored fitting has an unobstructed position: "+missing);
    try{var folder=java.nio.file.Path.of("../build/interior-environment-proof");java.nio.file.Files.createDirectories(folder);
     for(var p:VignetteInteriors.PLACES)java.nio.file.Files.copy(java.nio.file.Path.of("../build/architecture-proof",p.id()+".json"),folder.resolve(p.id()+".json"),java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+    slice(folder,"mapping_interior","mapping_living_rooms",-13,13,-36,-8,-1,3);
+    slice(folder,"end_world_cabin","holiday_living_rooms",-12,12,-35,-13,-1,3);
+    slice(folder,"usher","usher_vault",-8,8,-35,-18,-4,-2);
+    slice(folder,"hill_nursery","hill_cellar",-13,13,-42,-30,-5,-2);
    }catch(Exception ex){throw new RuntimeException(ex);}h.succeed();
   });
  }
@@ -95,6 +106,13 @@ public final class VignetteInteriorTests {
    var state=VignetteInteriorBlock.of(kind,f).setValue(VignetteInteriorBlock.ACTIVE,active);var shape=state.getCollisionShape(l,at);
    h.assertTrue(!shape.isEmpty()&&shape.min(Direction.Axis.X)>=0&&shape.max(Direction.Axis.X)<=1&&shape.min(Direction.Axis.Y)>=0&&shape.max(Direction.Axis.Y)<=1&&shape.min(Direction.Axis.Z)>=0&&shape.max(Direction.Axis.Z)<=1,"every model state is bounded and solid: "+kind+" "+f+" "+active);
   }h.succeed();
+ }
+ /** A documented crop of the same actual server export; never invented geometry or a lighting simulation. */
+ private static void slice(java.nio.file.Path folder,String source,String name,int x0,int x1,int z0,int z1,int y0,int y1)throws Exception{
+  var root=com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(folder.resolve(source+".json"))).getAsJsonObject();var blocks=new com.google.gson.JsonArray();
+  for(var element:root.getAsJsonArray("blocks")){var row=element.getAsJsonArray();int x=row.get(0).getAsInt(),y=row.get(1).getAsInt(),z=row.get(2).getAsInt();
+   if(x<x0||x>x1||z<z0||z>z1||y<y0||y>y1||y>y0&&(x==x1||z==z1))continue;blocks.add(row);
+  }root.addProperty("name",name);root.add("blocks",blocks);java.nio.file.Files.writeString(folder.resolve(name+".json"),root.toString());
  }
  private static void body(GameTestHelper h,ServerLevel l,BlockPos b,int x,int y,int z,String what){var at=b.offset(x,y,z);h.assertTrue(l.noCollision(null,new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8)),what+" remains physically clear");}
  @AfterBatch(batch="interior_rooms") public static void closeRooms(ServerLevel l){close();}

@@ -13,7 +13,7 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.K
 
 /** Explicit authored refits of older rooms, including bounded, resident-only saved-world migration. */
 public final class VignetteInteriors {
- public static final String STATE="vignette_interiors_0125";
+ public static final String STATE="vignette_interiors_0125b";
  public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.FLOORBOARDS,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY,
   LabyrinthPlace.HILL_NURSERY,LabyrinthPlace.MINIATURES,LabyrinthPlace.USHER,LabyrinthPlace.CRIMSON_HALL,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CONFESSION,
   LabyrinthPlace.DEVILS_ROCK,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOLLOWAY_CAMP);
@@ -35,6 +35,10 @@ public final class VignetteInteriors {
  }
  private static void fit(List<Edit> e,int x,int y,int z,VignetteInteriorBlock.Kind k,Direction f){e.add(new Edit(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),VignetteInteriorBlock.of(k,f)));}
  private static void fit(List<Edit> e,int x,int y,int z,VignetteInteriorBlock.Kind k){fit(e,x,y,z,k,Direction.SOUTH);}
+ /** Human-scaled partitions, with deliberate full-height openings; never sealed fake doors. */
+ private static void partition(List<Edit> e,int x,int z,VignetteInteriorBlock.Kind dado,VignetteInteriorBlock.Kind paper){
+  fill(e,x,0,z,x,0,z,Blocks.AIR,dado);fill(e,x,1,z,x,3,z,Blocks.AIR,paper);
+ }
  /** No note spawns or invented lore. Story actors, finite originals and routes retain their existing anchors. */
  public static List<Edit> plan(LabyrinthPlace p){var e=new ArrayList<Edit>();switch(p){
   case FLOORBOARDS->{
@@ -45,7 +49,7 @@ public final class VignetteInteriors {
    shell(e,-6,6,-13,0,1,3,Blocks.LIGHT_BLUE_TERRACOTTA,CLAP_STARS);fill(e,-5,-1,-12,5,-1,-1,Blocks.BIRCH_PLANKS,CLAP_BOARDS);
    fit(e,5,0,-12,TOY_CUPBOARD,Direction.WEST);fit(e,5,1,-12,TOY_PIANO,Direction.WEST);
   }
-  case SEANCE->{fit(e,8,0,-12,SEANCE_SIDEBOARD);fit(e,8,1,-12,TEA_SERVICE);fit(e,7,0,-12,SEANCE_SIDEBOARD);fit(e,7,1,-12,PARLOUR_MUSIC_BOX);}
+  case SEANCE->{fit(e,8,0,-12,SEANCE_SIDEBOARD);fit(e,8,1,-12,TEA_SERVICE);fit(e,7,0,-12,SEANCE_SIDEBOARD);fit(e,7,1,-12,PARLOUR_MUSIC_BOX);fit(e,8,0,-29,LINEN_PRESS);fit(e,8,1,-29,SEWING_BASKET);}
   case WALLPAPER_NURSERY->{
    // The original yellow paper, peel seams and all their textures are the story.
    fit(e,6,0,-25,LINEN_PRESS,Direction.WEST);fit(e,6,1,-25,SEWING_BASKET,Direction.WEST);fit(e,-7,0,-16,ROCKING_HORSE,Direction.EAST);
@@ -64,6 +68,9 @@ public final class VignetteInteriors {
    for(int z:new int[]{-9,-10,-11})fit(e,-10,0,z,CRAFT_BENCH);
    fit(e,-10,1,-9,DRAFTING_BOARD);fit(e,-10,1,-10,MODEL_TOOLS);fit(e,-10,1,-11,TASK_LAMP);fit(e,-11,0,-11,MODEL_DRAWERS,Direction.EAST);
    fit(e,10,0,-23,CRAFT_BENCH);fit(e,10,1,-23,MODEL_TOOLS);fit(e,11,0,-23,MODEL_DRAWERS,Direction.WEST);
+   for(int x:new int[]{-8,-7,-6})for(int z:new int[]{-7,-8})fit(e,x,0,z,CRAFT_BENCH);
+   fit(e,-8,1,-7,DRAFTING_BOARD);fit(e,-7,1,-7,MODEL_TOOLS);fit(e,-6,1,-8,MODEL_DRAWERS);fit(e,-8,1,-8,TASK_LAMP);
+   for(int x:new int[]{5,6})fit(e,x,0,-8,CRAFT_BENCH);fit(e,5,1,-8,DRAFTING_BOARD);fit(e,6,1,-8,MODEL_TOOLS);
    fit(e,-13,4,-11,MODEL_PLAN,Direction.EAST);fit(e,-13,4,-10,MODEL_PLAN,Direction.EAST);fit(e,13,3,-23,MODEL_PLAN,Direction.WEST);
   }
   case USHER->{
@@ -71,6 +78,10 @@ public final class VignetteInteriors {
    shell(e,-8,8,-35,-20,-3,-1,Blocks.DEEPSLATE_BRICKS,VAULT_STONE);
    fit(e,11,0,-14,USHER_SPINET);fit(e,14,0,-14,USHER_PRESS,Direction.WEST);fit(e,-12,0,-13,DICTATION_DESK);fit(e,-12,1,-13,INK_SET);
    fit(e,16,2,-14,USHER_PORTRAIT,Direction.WEST);
+   // Enclosed study bays flank the actual central vault stair. Both side passages remain open.
+   for(int x:new int[]{-6,6})for(int z=-17;z<=-8;z++)if(z!=-13&&z!=-12)partition(e,x,z,USHER_BOARDS,USHER_LINEN);
+   for(int side:new int[]{-1,1})for(int x=6;x<=16;x++)if(x!=10&&x!=11&&x!=14)partition(e,side*x,-8,USHER_BOARDS,USHER_LINEN);
+
   }
   case CRIMSON_HALL->{
    shell(e,-18,18,-43,0,1,5,Blocks.POLISHED_BLACKSTONE_BRICKS,CRIMSON_SILK);
@@ -84,10 +95,19 @@ public final class VignetteInteriors {
   }
   case CONFESSION->{
    shell(e,-12,12,-33,0,1,7,LiteraryRegistry.DARK_PANEL.get(),CONFESSION_PAPER);shell(e,-12,12,-33,0,0,0,Blocks.DARK_OAK_PLANKS,CONFESSION_OAK);
+   // An interview room inside the archive: central entrance and a two-block side opening to the blank-book shelves.
+   for(int x:new int[]{-3,5})for(int z=-27;z<=-12;z++)if(!(x==-3&&(z==-24||z==-23)))partition(e,x,z,CONFESSION_OAK,CONFESSION_PAPER);
+   for(int x=-3;x<=5;x++)for(int z:new int[]{-27,-12})if(!(z==-12&&x>=0&&x<=2))partition(e,x,z,CONFESSION_OAK,CONFESSION_PAPER);
    for(int z:new int[]{-12,-13})fit(e,-8,0,z,DICTATION_DESK);fit(e,-8,1,-12,INK_SET);fit(e,-8,1,-13,BEDSIDE_LAMP);fit(e,-9,0,-12,DICTATION_FILES,Direction.EAST);fit(e,8,0,-12,DICTATION_FILES,Direction.WEST);fit(e,8,1,-12,DESK_BELL);
   }
   case DEVILS_ROCK->{
    shell(e,-16,16,-42,0,1,6,Blocks.CALCITE,WATCHROOM_FLOWERS);shell(e,-14,-3,-38,-20,1,3,Blocks.CALCITE,WATCHROOM_FLOWERS);fill(e,-15,-1,-41,15,-1,-1,Blocks.OAK_PLANKS,WATCHROOM_BOARDS);
+   // A real domestic kitchen beside the arrival, away from the camera, string and plate line at -18.
+   for(int z=-13;z<=-3;z++)if(z!=-9&&z!=-8)partition(e,-4,z,WATCHROOM_BOARDS,WATCHROOM_FLOWERS);
+   for(int x=-14;x<=-4;x++)partition(e,x,-13,WATCHROOM_BOARDS,WATCHROOM_FLOWERS);
+   for(int z:new int[]{-6,-7,-8})fit(e,-14,0,z,WATCHROOM_CUPBOARD,Direction.EAST);
+   fit(e,-14,0,-9,TRAILER_SINK,Direction.EAST);fit(e,-14,1,-6,HOLIDAY_CROCKERY);
+   for(int x:new int[]{-10,-9})fit(e,x,0,-8,KITCHEN_WORKTABLE);fit(e,-10,1,-8,HOLIDAY_CROCKERY);
    fit(e,11,0,-27,CRAFT_BENCH);fit(e,11,1,-27,WATCHROOM_TRIPOD_CASE);fit(e,12,0,-27,WATCHROOM_DRAWER,Direction.WEST);fit(e,12,1,-27,WATCHROOM_TAPE);
    fit(e,-12,0,-35,WATCHROOM_DRAWER,Direction.EAST);fit(e,-12,1,-35,BEDSIDE_LAMP);
   }
