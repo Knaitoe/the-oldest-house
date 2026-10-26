@@ -1,0 +1,33 @@
+name: Development runtime bootstrap
+on:
+  push:
+    branches: [feature/vignette-environment-audit-0.4.125]
+    paths: [.github/workflows/dev-runtime.yml]
+permissions:
+  contents: read
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Package public build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_gradle_root="$(dirname "$(dirname "$(readlink -f "$(command -v gradle)")")")"
+          mkdir -p build/dev-runtime
+          tar -czf build/dev-runtime/java21.tar.gz -C "$JAVA_HOME" .
+          tar -czf build/dev-runtime/gradle.tar.gz -C "$task_gradle_root" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dev-runtime-java21-gradle
+          path: build/dev-runtime/*.tar.gz
+          retention-days: 1
+          compression-level: 0

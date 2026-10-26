@@ -79,7 +79,7 @@ public final class PlaytestVisualProof extends Screen {
         float[] clocks={0,500,1000,1390};
         for(int i=0;i<4;i++){
             var model=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));model.preview(LiteraryActor.SILHOUETTE,0,0);DinnerboneIdle.pose(model,clocks[i],0);
-            var bounds=new Bounds();model.renderToBuffer(new PoseStack(),bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+            var bounds=new Bounds();model.renderToBuffer(new com.mojang.blaze3d.vertex.PoseStack(),bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
             if(Math.abs(bounds.y1-1.5F)>.002F)throw new IllegalStateException("Ceiling idle moved the planted feet: "+bounds);
             var p=g.pose();p.pushPose();p.translate((i+.5F)*width/4,58,150);p.scale(size,size,size);p.mulPose(Axis.ZP.rotationDegrees(180));p.translate(0,-1.5,0);p.mulPose(Axis.YP.rotationDegrees(i==3?55:180));
             model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(LiteraryRenderers.skin(LiteraryActor.SILHOUETTE,0))),i==3?LightTexture.pack(5,0):LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);out.endBatch();p.popPose();
