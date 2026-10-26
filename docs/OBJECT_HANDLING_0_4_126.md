@@ -1,0 +1,26 @@
+# Object handling — 0.4.126
+
+The owner rejected treating a large count of generic click toggles as equivalent to Last Stop's pool-table interaction. This follow-up implements the four specifically approved corrections on PR #10's 0.4.125 branch. It changes incidental objects at their existing addresses; the earlier room refits and story branches remain.
+
+| Object | Actual handling | Visible and audible response |
+| --- | --- | --- |
+| Toy piano and Usher's spinet | Pick an individual white or raised black key. All twelve semitones in an octave have their own physical hit region. | The selected key depresses and releases on native time. Each uses its own pitched note; the toy's struck-tine recording and spinet's detuned string/wood recording are different original samples. |
+| Karen's slide sorter | Use the left/right controls to change slides, the central handle to eject/return the tray, and the back-corner switch to light it. Crouch-use also handles the tray. | Four different original pixel slide images remain on the tray, the selected image changes, the tray physically moves, and the lamp changes actual emitted light. Mechanical handling sounds replace the generic barrel sound. |
+| Workshop's spare model kit | Pick the chair, table or figure, then pick an empty grid position to place it. Crouch-use rotates the chosen piece. | The chosen piece lifts, moves to the selected position and rotates independently. Its arrangement is saved. Three existing recorded-room models remain entirely separate and unchanged. A temporary pick expires safely and cannot be taken over by another reader. |
+| Devil's Rock recorder | Three actual buttons operate rewind, play and pause. The cover can also be handled; opening it stops transport. | Reels turn and tape packs change with position. Play advances a finite sixteen-second room recording; pause holds position, rewind visibly runs backward to the start, and the recording stops at its end. Each recorder owns its own client sound instance. |
+
+The recorder contains original room tone: tape hiss, a clock, cloth/chair movement and paper. There is no invented voice, new hint, mandatory reading or extra story disclosure. Audio is in short contiguous segments so resuming uses the saved tape region, rather than restarting the recording. Pause stops that recorder's sound immediately; segment granularity is half a second, so resuming within a segment can repeat less than half a second of audio. No sound-stop packet globally silences another recorder.
+
+The textures use a new native-pixel atlas with worn key surfaces, film frames and recognizable transport symbols, plus materials shared with the room painter. Original PNGs are unchanged. Production render, picking and collision use the same authored cuboids. Moving parts remain in the original prop cell. Newly occupied geometry is checked against bodies and dropped items before changing state.
+
+The native block entity saves selected slide/tray/lamp, model positions and rotations, tape position and transport. Temporary model picks and transient piano key-down state are released safely on reload. Vanilla block-entity updates synchronize these views; no new custom network packet or protocol change is introduced. Existing player screenshot projection and privacy options are untouched; the sorter's four slide paintings are shipped artwork, not captured user images.
+
+Fresh rooms place the new native handled object directly. A loaded/entity-resident/unwatched upgrade only recognizes the five earlier incidental prop kinds at their authored addresses. It preserves an old switched-on sorter and old open tape cover, waits for occupied cells, keeps edits and every existing block entity, and records its own once-only checkpoint. It never replaces original story books, containers, actors or recorded-room model entities.
+
+## Required evidence
+
+Four focused native cases cover actual world ray picks and native block use, all twelve key pitches and distinct instrument sound packets, all object orientations, slides/tray/light serialization, independently placed/rotated spare pieces, temporary ownership and native update packets, original model BE identities and data, transport timing/pause/rewind/end/reload, two independent recorders, and an occupied/edited saved-room upgrade.
+
+The cases export 24 actual server-use snapshots. The native client renders those same states through the production renderer at a standing view angle, loads and plays their registered production sounds, and retains individual close-ups. These are full-bright model/control evidence, not claims of normal lighting or exhaustive ordinary playthroughs. The previous fourteen room views and four floor cuts remain required. The complete native suite now declares 757 cases; all prior gameplay/client/reconnect gates remain.
+
+`tools/draw_vignette_handling.py --check` verifies the native atlas, registry model resources, original canonical PCM hashes and shipped Ogg hashes. The compressed-file hashes are recorded at generation rather than requiring a particular ffmpeg build on every machine. The original sound-generation recipe is checked without substituting stock barrel/harp playback for the actual objects.
