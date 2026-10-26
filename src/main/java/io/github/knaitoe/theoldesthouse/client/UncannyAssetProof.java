@@ -53,10 +53,10 @@ public final class UncannyAssetProof extends Screen {
             }
             int n=0;for(var item:new ItemStack[]{new ItemStack(UncannyRegistry.BONE_RING.get()),new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()),new ItemStack(UncannyRegistry.CLEAVER.get()),new ItemStack(UncannyRegistry.BAT.get()),new ItemStack(UncannyRegistry.MEAL.get())}){p.pushPose();p.translate(24+n*80,height-65,0);p.scale(3,3,1);g.renderItem(item,0,0);p.popPose();n++;}
         }else if(page==3){
-            for(int i=0;i<4;i++){
+            for(int i=0;i<8;i++){
                 var state=UncannyRegistry.FLESH.get().defaultBlockState().setValue(UncannyFleshBlock.LAYER,i);
                 if(mc.getBlockRenderer().getBlockModel(state)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing native tissue model "+i);
-                p.pushPose();p.translate((i+.5F)*width/4,height*.5F,150);p.scale(62,-62,62);p.mulPose(Axis.XP.rotationDegrees(22));p.mulPose(Axis.YP.rotationDegrees(30));p.translate(-.5,0,-.5);mc.getBlockRenderer().renderSingleBlock(state,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
+                p.pushPose();p.translate((i%4+.5F)*width/4,height*(.3F+i/4*.3F),150);p.scale(48,-48,48);p.mulPose(Axis.XP.rotationDegrees(22));p.mulPose(Axis.YP.rotationDegrees(30));p.translate(-.5,0,-.5);mc.getBlockRenderer().renderSingleBlock(state,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
             }
             var key=new ItemStack(UncannyRegistry.CELLAR_KEY.get());p.pushPose();p.translate(width*.45F,height*.72F,0);p.scale(4,4,1);g.renderItem(key,0,0);p.popPose();g.drawCenteredString(font,key.getHoverName(),width/2,(int)(height*.72F)+75,0xffe4d9bf);
             var icon=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/mob_effect/engulfed.png");g.blit(icon,20,height-60,0,0,18,18,18,18);
@@ -71,12 +71,21 @@ public final class UncannyAssetProof extends Screen {
             g.drawCenteredString(font,"Production segmented model / uneven stride / front and side",width/2,27,0xffe4d9bf);
             for(int i=0;i<6;i++){
                 var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(UncannyActorRenderer.BENT),false);model.pose(LiteraryActor.UNCANNY_GIANT,2,false,24,(i%3)*2.1F,.65F,0,0);
+                checkTunnelHeight(model);
                 p.pushPose();p.translate((i%3+.5)*width/3,58+(i/3+.9)*(height-88)/2.,150);p.scale(42,42,-42);if(i>=3)p.mulPose(Axis.YP.rotationDegrees(90));p.scale(2.5F,2.5F,2.5F);p.translate(0,-1.501,0);model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(UncannyTextures.skin(LiteraryActor.UNCANNY_GIANT,2))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
             }
         }else{
             g.fill(0,0,width,height,0xff424c47);for(int column=0;column<width;column+=32)g.fill(column,height/2,column+16,height/2+2,0xffc9c4af);
             UncannyClient.engulfed(g,width,height,new float[]{.2F,.6F,.95F}[page-4],24);
         }
+    }
+    private static void checkTunnelHeight(UncannyActorRenderer.Model model){
+        for(var part:new net.minecraft.client.model.geom.ModelPart[]{model.head,model.body,model.leftArm,model.rightArm,model.leftLeg,model.rightLeg})part.visit(new com.mojang.blaze3d.vertex.PoseStack(),(pose,path,index,cube)->{
+            for(float x:new float[]{cube.minX,cube.maxX})for(float y:new float[]{cube.minY,cube.maxY})for(float z:new float[]{cube.minZ,cube.maxZ}){
+                var vertex=pose.pose().transformPosition(new org.joml.Vector3f(x/16,y/16,z/16));float height=(1.501F-vertex.y)*2.5F;
+                if(height>=3)throw new IllegalStateException("The production injured-woman gait crosses the actual recessed-light ceiling: "+height+" at "+path);
+            }
+        });
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post ignored)throws Exception{
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof UncannyAssetProof proof)||++proof.frames<16)return;

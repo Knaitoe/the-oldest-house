@@ -77,7 +77,7 @@ public final class UncannySocketClient {
                     &&!mc.level.getBlockState(floor).getCollisionShape(mc.level,floor).isEmpty()&&mc.levelRenderer.isSectionCompiled(floor)&&hostAge-terrainSentAge>=40){terrainSentAge=hostAge;mc.player.connection.sendCommand("uncannyready "+next);TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} readiness phase={} hostAge={}",role(),next,hostAge);}
             return;
         }
-        if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;lightPhase=-1;lightTicks=0;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
+        if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;lightPhase=-1;lightTicks=0;motionPulls=0;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
         stop(mc);var b=UncannyClient.base();
         if(age%100==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} phase={} room={} eye={} feeds={} headPixels={} health={} ring={} mirror={} screen={}",role(),phase,UncannyClient.room(),mc.player.getEyePosition(),feedMask,UncannyCameras.verifiedHeadPixels(),mc.player.getHealth(),UncannyClient.ring(),UncannyClient.mirror(),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
         for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&UncannyStories.role(a.role())&&a.owner().isPresent())require(a.owner().get().equals(mc.player.getUUID()),"another reader's private original was tracked");
@@ -122,9 +122,9 @@ public final class UncannySocketClient {
             var visitor=actor(mc,LiteraryActor.UNCANNY_VISITOR);if(visitor==null)return;look(mc,visitor.getEyePosition());var state=mc.level.getBlockState(b.offset(UncannyRooms.FLOOD));
             if(state.is(UncannyRegistry.PROP.get())){
                 boolean dark=state.getValue(UncannyPropBlock.STAGE)>0;int lampPhase=dark?1:0;if(lightPhase!=lampPhase){lightPhase=lampPhase;lightTicks=0;}if(++lightTicks<20)return;if(!dark&&UncannyActorRenderer.proofDrawn(visitor))return;if(dark&&(visitor.phase()<1||!UncannyActorRenderer.proofDrawn(visitor)))return;String view=dark?"foyer-dark":"foyer-lit";
-                if(!captures.contains("15:"+view)&&age>20){shot=role()+"-"+view;}
-                if(!dark&&motionPulls>0&&!captures.contains("15:foyer-swing")){look(mc,b.offset(FoyerMotion.PENDULUM).getCenter());shot=role()+"-foyer-swing";}
-                if(dark&&visitor.phase()>=3&&!captures.contains("15:foyer-palm"))shot=role()+"-foyer-palm";
+                if(!captures.contains("15:"+view)&&age>20){shot=role()+"-"+view;return;}
+                if(!dark&&motionPulls>0&&!captures.contains("15:foyer-swing")){look(mc,b.offset(FoyerMotion.PENDULUM).getCenter());shot=role()+"-foyer-swing";return;}
+                if(dark&&visitor.phase()>=3&&!captures.contains("15:foyer-palm")){shot=role()+"-foyer-palm";return;}
                 if(dark&&lightTicks>=50&&role().equals("A")&&motionPulls<2&&data.getInt("FoyerStillness")>motionPulls&&age-clicked>=25){click(mc,b.offset(FoyerMotion.PULL));motionPulls++;}
                 if(data.getInt("FoyerStillness")>=3&&captures.contains("15:foyer-dark")&&captures.contains("15:foyer-lit")&&captures.contains("15:foyer-palm"))ack(mc,"foyer-cycles");
             }
