@@ -1791,3 +1791,64 @@ jobs:
         with:
           name: caver-diagnostics-${{ github.sha }}
           path: build/caver-native.log
+
+  interior-gameplay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Install native renderer dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0
+      - name: Check authored interior assets and shared collision
+        run: |
+          python3 -m pip install Pillow
+          python3 tools/draw_vignette_interiors.py --check
+      - name: Native fitting use, original routes and old-save custody
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p build
+          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_interior_review --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/interior-native.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          log=Path('build/interior-native.log').read_text()
+          declared=len(re.findall(r'@GameTest\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/VignetteInteriorTests.java').read_text()))
+          completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
+          assert completed and int(completed[-1])==declared, 'Every native interior case must finish.'
+          assert not re.search(r'[1-9]\d* required tests failed',log), 'A required interior case failed.'
+          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==14
+          print(f'All {declared} native interior cases passed; the complete suite remains required.')
+          PY
+      - name: Render and retain all fourteen actual rooms
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          ALSOFT_DRIVERS: 'null'
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 5m xvfb-run -a -s '-screen 0 1280x800x24' gradle runClient -PinteriorEnvironmentSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/interior-client.log
+          test -s build/font-smoke/interior-environments-passed.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==14
+          log=Path('build/interior-client.log').read_text()
+          assert 'Unable to load model' not in log and 'Missing textures in model' not in log
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: interior-review-${{ github.sha }}
+          path: |
+            build/interior-native.log
+            build/interior-client.log
+            build/interior-environment-proof
+            build/font-smoke/interior-environments
+            build/font-smoke/interior-environments-passed.txt

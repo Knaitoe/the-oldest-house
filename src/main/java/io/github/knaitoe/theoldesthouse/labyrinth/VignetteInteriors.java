@@ -42,7 +42,7 @@ public final class VignetteInteriors {
    fit(e,-5,0,-2,MEDICINE_PRESS,Direction.EAST);fit(e,-5,0,-3,SICKROOM_WASHSTAND,Direction.EAST);
   }
   case HIDE_AND_CLAP->{
-   shell(e,-6,6,-13,0,1,3,Blocks.LIGHT_BLUE_TERRACOTTA,CLAP_STARS);
+   shell(e,-6,6,-13,0,1,3,Blocks.LIGHT_BLUE_TERRACOTTA,CLAP_STARS);fill(e,-5,-1,-12,5,-1,-1,Blocks.BIRCH_PLANKS,CLAP_BOARDS);
    fit(e,5,0,-12,TOY_CUPBOARD,Direction.WEST);fit(e,5,1,-12,TOY_PIANO,Direction.WEST);
   }
   case SEANCE->{fit(e,8,0,-12,SEANCE_SIDEBOARD);fit(e,8,1,-12,TEA_SERVICE);fit(e,7,0,-12,SEANCE_SIDEBOARD);fit(e,7,1,-12,PARLOUR_MUSIC_BOX);}
@@ -64,7 +64,7 @@ public final class VignetteInteriors {
    for(int z:new int[]{-9,-10,-11})fit(e,-10,0,z,CRAFT_BENCH);
    fit(e,-10,1,-9,DRAFTING_BOARD);fit(e,-10,1,-10,MODEL_TOOLS);fit(e,-10,1,-11,TASK_LAMP);fit(e,-11,0,-11,MODEL_DRAWERS,Direction.EAST);
    fit(e,10,0,-23,CRAFT_BENCH);fit(e,10,1,-23,MODEL_TOOLS);fit(e,11,0,-23,MODEL_DRAWERS,Direction.WEST);
-   fit(e,-13,3,-11,MODEL_PLAN,Direction.EAST);fit(e,-13,3,-10,MODEL_PLAN,Direction.EAST);fit(e,13,3,-23,MODEL_PLAN,Direction.WEST);
+   fit(e,-13,4,-11,MODEL_PLAN,Direction.EAST);fit(e,-13,4,-10,MODEL_PLAN,Direction.EAST);fit(e,13,3,-23,MODEL_PLAN,Direction.WEST);
   }
   case USHER->{
    shell(e,-17,17,-41,0,1,7,Blocks.DEEPSLATE_BRICKS,USHER_LINEN);fill(e,-16,-1,-40,16,-1,-1,Blocks.POLISHED_DEEPSLATE,USHER_BOARDS);
@@ -80,11 +80,11 @@ public final class VignetteInteriors {
   case MAPPING_INTERIOR->{
    shell(e,-13,13,-36,-8,1,4,LiteraryRegistry.SIDING.get(),TRAILER_PAPER);fill(e,-12,0,-24,12,4,-24,Blocks.CALCITE,TRAILER_PAPER);
    fill(e,-12,-1,-23,-6,-1,-9,Blocks.BIRCH_PLANKS,TRAILER_VINYL);
-   fit(e,-11,0,-12,TRAILER_SINK,Direction.EAST);fit(e,-11,0,-13,TRAILER_CUPBOARD,Direction.EAST);fit(e,-11,0,-14,TRAILER_CUPBOARD,Direction.EAST);fit(e,-11,1,-14,HOLIDAY_CROCKERY,Direction.EAST);
+   fit(e,-10,0,-13,TRAILER_SINK,Direction.EAST);fit(e,-11,0,-13,TRAILER_CUPBOARD,Direction.EAST);fit(e,-11,0,-14,TRAILER_CUPBOARD,Direction.EAST);fit(e,-11,1,-14,HOLIDAY_CROCKERY,Direction.EAST);
   }
   case CONFESSION->{
-   shell(e,-12,12,-33,0,1,7,LiteraryRegistry.DARK_PANEL.get(),CONFESSION_PAPER);
-   for(int z:new int[]{-12,-13})fit(e,-8,0,z,DICTATION_DESK);fit(e,-8,1,-12,INK_SET);fit(e,-8,1,-13,BEDSIDE_LAMP);fit(e,-9,0,-12,DICTATION_FILES,Direction.EAST);fit(e,8,0,-12,DICTATION_FILES,Direction.WEST);
+   shell(e,-12,12,-33,0,1,7,LiteraryRegistry.DARK_PANEL.get(),CONFESSION_PAPER);shell(e,-12,12,-33,0,0,0,Blocks.DARK_OAK_PLANKS,CONFESSION_OAK);
+   for(int z:new int[]{-12,-13})fit(e,-8,0,z,DICTATION_DESK);fit(e,-8,1,-12,INK_SET);fit(e,-8,1,-13,BEDSIDE_LAMP);fit(e,-9,0,-12,DICTATION_FILES,Direction.EAST);fit(e,8,0,-12,DICTATION_FILES,Direction.WEST);fit(e,8,1,-12,DESK_BELL);
   }
   case DEVILS_ROCK->{
    shell(e,-16,16,-42,0,1,6,Blocks.CALCITE,WATCHROOM_FLOWERS);shell(e,-14,-3,-38,-20,1,3,Blocks.CALCITE,WATCHROOM_FLOWERS);fill(e,-15,-1,-41,15,-1,-1,Blocks.OAK_PLANKS,WATCHROOM_BOARDS);
@@ -97,9 +97,9 @@ public final class VignetteInteriors {
   }
   case KAREN_ROOM->{
    shell(e,-9,9,-18,0,1,4,Blocks.BIRCH_PLANKS,KAREN_PAPER);fill(e,-8,-1,-17,8,-1,-1,Blocks.OAK_PLANKS,KAREN_CORK);
-   fit(e,7,0,-10,SLIDE_CABINET,Direction.WEST);fit(e,7,1,-10,KAREN_SLIDE_SORTER,Direction.WEST);fit(e,7,0,-11,SLIDE_CABINET,Direction.WEST);fit(e,7,1,-11,KAREN_LAMP,Direction.WEST);fit(e,8,2,-11,KAREN_NOTICEBOARD,Direction.WEST);
+   fit(e,7,0,-10,SLIDE_CABINET,Direction.WEST);fit(e,7,1,-10,KAREN_SLIDE_SORTER,Direction.WEST);fit(e,7,0,-11,SLIDE_CABINET,Direction.WEST);fit(e,7,1,-11,KAREN_LAMP,Direction.WEST);fit(e,8,3,-5,KAREN_NOTICEBOARD,Direction.WEST);
   }
-  case HOLLOWAY_CAMP->{fit(e,-5,0,-5,CAMP_KIT,Direction.EAST);fit(e,4,0,-10,CAMP_WORKTABLE);fit(e,4,1,-10,DRAFTING_BOARD);fit(e,5,0,-10,CAMP_WORKTABLE);fit(e,5,1,-10,TASK_LAMP);}
+  case HOLLOWAY_CAMP->{fit(e,-5,0,-6,CAMP_KIT,Direction.EAST);fit(e,4,0,-10,CAMP_WORKTABLE);fit(e,4,1,-10,DRAFTING_BOARD);fit(e,5,0,-10,CAMP_WORKTABLE);fit(e,5,1,-10,TASK_LAMP);}
   default->{}
  }
  var unique=new LinkedHashMap<BlockPos,Edit>();for(var edit:e)unique.put(edit.relative(),edit);return List.copyOf(unique.values());
