@@ -26,6 +26,7 @@ public final class GoatmanChild extends PathfinderMob {
     private static final EntityDataAccessor<Integer> FEAR_STAGE=SynchedEntityData.defineId(GoatmanChild.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> WINDOW_ENTRY=SynchedEntityData.defineId(GoatmanChild.class,EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> CRAWLING=SynchedEntityData.defineId(GoatmanChild.class,EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> INDOORS=SynchedEntityData.defineId(GoatmanChild.class,EntityDataSerializers.BOOLEAN);
     private float entryVisual=-1,entryPrevious=-1;
     /** A seated child's hips sit this far above its feet (seven model pixels at child scale). */
     public static final double HIPS=7/16D*.7;
@@ -34,8 +35,10 @@ public final class GoatmanChild extends PathfinderMob {
     }
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,20).add(Attributes.SCALE,.7).add(Attributes.MOVEMENT_SPEED,0);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){
-        super.defineSynchedData(b);b.define(SKIN,0);b.define(TELLS,0);b.define(VIEWER,Optional.empty());b.define(WALK,0F);b.define(SPEED,0F);b.define(SEATED,false);b.define(HEAVE,false);b.define(COWER,false);b.define(DISGUISE,-1);b.define(FEAR,0);b.define(FEAR_STAGE,0);b.define(WINDOW_ENTRY,-1F);b.define(CRAWLING,false);
+        super.defineSynchedData(b);b.define(SKIN,0);b.define(TELLS,0);b.define(VIEWER,Optional.empty());b.define(WALK,0F);b.define(SPEED,0F);b.define(SEATED,false);b.define(HEAVE,false);b.define(COWER,false);b.define(DISGUISE,-1);b.define(FEAR,0);b.define(FEAR_STAGE,0);b.define(WINDOW_ENTRY,-1F);b.define(CRAWLING,false);b.define(INDOORS,false);
     }
+    public boolean indoors(){return entityData.get(INDOORS);}
+    public void indoors(boolean inside){entityData.set(INDOORS,inside);}
     public boolean enteringWindow(){return entityData.get(WINDOW_ENTRY)>=0;}
     public boolean crawling(){return entityData.get(CRAWLING);}
     public void setCrawling(boolean crawling){if(crawling&&!crawling()){entityData.set(WALK,0F);entityData.set(SPEED,0F);}entityData.set(CRAWLING,crawling);}
@@ -83,9 +86,9 @@ public final class GoatmanChild extends PathfinderMob {
     @Override public boolean hurt(DamageSource source,float damage){return false;}
     @Override public boolean removeWhenFarAway(double distance){return false;}
     @Override public void addAdditionalSaveData(CompoundTag t){
-        super.addAdditionalSaveData(t);t.putInt("Skin",skin());t.putInt("Tells",tells());t.putFloat("Walk",entityData.get(WALK));t.putBoolean("Seated",seated());t.putBoolean("Cowering",cowering());t.putBoolean("Heaving",heaving());t.putInt("Disguise0465",entityData.get(DISGUISE));t.putInt("Fear0472",fear());t.putInt("FearStage0472",fearStage());t.putFloat("WindowEntry04114",entityData.get(WINDOW_ENTRY));t.putBoolean("Crawling04114",crawling());viewer().ifPresent(id->t.putUUID("Viewer",id));
+        super.addAdditionalSaveData(t);t.putInt("Skin",skin());t.putInt("Tells",tells());t.putFloat("Walk",entityData.get(WALK));t.putBoolean("Seated",seated());t.putBoolean("Cowering",cowering());t.putBoolean("Heaving",heaving());t.putInt("Disguise0465",entityData.get(DISGUISE));t.putInt("Fear0472",fear());t.putInt("FearStage0472",fearStage());t.putFloat("WindowEntry04114",entityData.get(WINDOW_ENTRY));t.putBoolean("Crawling04114",crawling());t.putBoolean("Indoors131",indoors());viewer().ifPresent(id->t.putUUID("Viewer",id));
     }
     @Override public void readAdditionalSaveData(CompoundTag t){
-        super.readAdditionalSaveData(t);fear(t.getInt("Fear0472"));fearStage(t.getInt("FearStage0472"));appearance(t.getInt("Skin"),t.getInt("Tells"),t.hasUUID("Viewer")?t.getUUID("Viewer"):null);entityData.set(WALK,t.getFloat("Walk"));entityData.set(SEATED,t.getBoolean("Seated"));entityData.set(COWER,t.getBoolean("Cowering"));heave(t.getBoolean("Heaving"));disguise(t.contains("Disguise0465")?t.getInt("Disguise0465"):-1);setWindowEntry(t.contains("WindowEntry04114")?t.getFloat("WindowEntry04114"):-1);entityData.set(CRAWLING,t.getBoolean("Crawling04114"));if(enteringWindow()||crawling())setPose(Pose.SWIMMING);
+        super.readAdditionalSaveData(t);fear(t.getInt("Fear0472"));fearStage(t.getInt("FearStage0472"));appearance(t.getInt("Skin"),t.getInt("Tells"),t.hasUUID("Viewer")?t.getUUID("Viewer"):null);entityData.set(WALK,t.getFloat("Walk"));entityData.set(SEATED,t.getBoolean("Seated"));entityData.set(COWER,t.getBoolean("Cowering"));heave(t.getBoolean("Heaving"));disguise(t.contains("Disguise0465")?t.getInt("Disguise0465"):-1);setWindowEntry(t.contains("WindowEntry04114")?t.getFloat("WindowEntry04114"):-1);entityData.set(CRAWLING,t.getBoolean("Crawling04114"));indoors(t.getBoolean("Indoors131"));if(enteringWindow()||crawling())setPose(Pose.SWIMMING);
     }
 }

@@ -421,7 +421,7 @@ public final class GoatmanTests {
                 if(GoatmanWoods.indoors(f.rel(c))&&c.getBoundingBox().maxX<f.b.getX()+8)entered[0]=true;
                 if(c.enteringWindow()){
                     float progress=c.windowEntry(1);entryBeats.add(Math.min(3,(int)(progress*4)));
-                    h.assertTrue(c.hasPose(Pose.SWIMMING)&&f.l.noCollision(c),"the articulated entry fits the real camper's sash and fixtures: "+f.rel(c));
+                    h.assertTrue(c.hasPose(Pose.SWIMMING)&&f.l.noCollision(c,c.getBoundingBox().deflate(1e-7)),"the articulated entry fits the real camper's sash and fixtures (native contact epsilon): "+f.rel(c));
                     if(!entrySaved[0]&&progress>.45F&&progress<.6F){
                         var at=c.position();var route=c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).copy();var saved=c.saveWithoutId(new CompoundTag());c.load(saved);
                         h.assertTrue(c.getUUID().equals(body[0])&&c.position().distanceToSqr(at)<1e-8&&c.enteringWindow()&&c.hasPose(Pose.SWIMMING)&&c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).equals(route),"native mid-sash entity reload retains the same body, position, low pose, progress and remaining route");
@@ -430,10 +430,11 @@ public final class GoatmanTests {
                 }else if(r.getInt("ExtraState")==GoatmanVignette.X_WINDOW){
                     h.assertTrue(!c.crawling()&&!c.hasPose(Pose.SWIMMING)&&f.l.noCollision(c),"0.4.121: through the sash it is a cousin again, walking out of the bathroom and up the aisle: "+f.rel(c));crawled[0]|=entered[0]&&f.rel(c).z>-70;
                     if(!crawlSaved[0]&&f.rel(c).z>-70){var at=c.position();var saved=c.saveWithoutId(new CompoundTag());c.load(saved);h.assertTrue(c.getUUID().equals(body[0])&&c.position().distanceToSqr(at)<1e-8&&!c.crawling()&&c.visibleSkin()==admissionSkin[0],"native indoor reload keeps the same walking cousin and physical position");crawlSaved[0]=true;}
-                    if(f.rel(c).z>-70)h.assertTrue(f.cousins().stream().filter(o->o!=c).noneMatch(o->GoatmanVignette.backSpot(o.getPersistentData().getString("Goal"))),"the cousins in the back draw away from it toward the door");
+                    if(f.rel(c).z>-70&&!r.getBoolean("BedtimeCalled131"))h.assertTrue(f.cousins().stream().filter(o->o!=c).noneMatch(o->GoatmanVignette.backSpot(o.getPersistentData().getString("Goal"))),"before bedtime, the cousins in the back draw away from it toward the door");
                 }
-                if(r.getInt("ExtraState")==GoatmanVignette.X_FLOOR)rested[0]=entered[0]&&c.hasPose(Pose.SLEEPING)&&!c.enteringWindow()&&!c.crawling();
+                if(r.getInt("ExtraState")==GoatmanVignette.X_FLOOR)rested[0]|=entered[0]&&c.isSleeping()&&!c.enteringWindow()&&!c.crawling();
             });
+            if(r.getBoolean("BedtimeCalled131")&&!p.isSleeping()&&!r.getCompound("Cohort").getCompound(p.getUUID().toString()).getBoolean("BedsideEnded131")){var head=GoatmanWoods.bunkHead(8);p.moveTo(f.b.getX()-3.5,f.b.getY()+1,f.b.getZ()+head.getZ()+.5);f.use(p,head);}
             if(r.getInt("Clock")<GoatmanStalking.BRISK_ASSAULT_FROM)h.assertTrue(GoatmanFear.stage(r)==0&&packet.cousinLine()==0&&f.cousins().stream().noneMatch(GoatmanChild::cowering),"the occupied night is ordinary until his voice at the door");
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native collision and entity sections are ready")).thenExecute(()->{

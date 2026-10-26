@@ -260,6 +260,7 @@ public final class GoatmanStalking {
     public static void step(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,int clock){
         boolean evening=r.getBoolean("Evening0497");
         if(!r.getBoolean("StalkStarted0465")){
+            c.indoors(false);
             r.putBoolean("StalkStarted0465",true);r.putInt("StalkUsed0465",r.getInt("StalkUsed0465")|1<<c.skin());r.putBoolean("StalkChange0465",true);
             // An already-started saved circuit keeps its progress. New nights circle repeatedly
             // with this same saved actor, rather than waiting invisibly through the whole assault.
@@ -267,7 +268,7 @@ public final class GoatmanStalking {
             if(!c.stalkingAppearance())c.disguise(c.skin());c.getPersistentData().remove("Route");c.pose(false);c.cower(false);c.heave(false);
         }
         // 0.4.121: the night begins with his voice. Until the first demand has been spoken he stands silent on the step.
-        if(!evening&&r.getInt("DemandStage0465")==0){c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)));return;}
+        if(!evening&&r.getInt("DemandStage0465")==0&&!r.getBoolean("AssaultDone0465")){c.pose(false);face(c,Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)));return;}
         boolean supported=GoatmanWindowCircuit.stepsReady(l,b);
         boolean window=!evening&&circuitDone(r)&&r.getBoolean("AssaultDone0465")&&clock>=(GoatmanVignette.brisk(r)?0:1900);
         if(!window&&!GoatmanWindowCircuit.atPane(b,c))change(l,r,c);

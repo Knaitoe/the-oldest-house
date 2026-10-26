@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
  */
 public record GoatmanScenePayload(int phase,int demand,int remaining,int flags,int cousinLine,int cousinRemaining) implements CustomPacketPayload {
     public GoatmanScenePayload(int phase,int demand,int remaining,int flags){this(phase,demand,remaining,flags,0,0);}
-    public static final int QUIET=1;
+    public static final int QUIET=1,BED_WATCH=2;
     public static final Type<GoatmanScenePayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"trailer_scene"));
     public static final StreamCodec<ByteBuf,GoatmanScenePayload> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.VAR_INT,GoatmanScenePayload::phase,ByteBufCodecs.VAR_INT,GoatmanScenePayload::demand,ByteBufCodecs.VAR_INT,GoatmanScenePayload::remaining,ByteBufCodecs.VAR_INT,GoatmanScenePayload::flags,ByteBufCodecs.VAR_INT,GoatmanScenePayload::cousinLine,ByteBufCodecs.VAR_INT,GoatmanScenePayload::cousinRemaining,GoatmanScenePayload::new);
     @Override public Type<GoatmanScenePayload> type(){return TYPE;}

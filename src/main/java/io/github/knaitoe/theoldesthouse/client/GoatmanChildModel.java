@@ -66,6 +66,8 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
             // Laughing with no sound coming out: the shoulders and head jerk together.
             float h=Mth.abs(Mth.sin(age*.9F))*Mth.abs(Mth.sin(age*.37F));
             body.xRot+=.1F+.16F*h;head.xRot+=.22F*h;
+            body.zRot+=.025F*Mth.sin(age*.9F);leftArm.xRot-=.24F+.22F*h;rightArm.xRot-=.3F+.12F*h;
+            leftElbow.xRot=-.4F-.35F*h;rightElbow.xRot=-.55F-.25F*h;leftKnee.xRot+=.08F*h;rightKnee.xRot+=.12F*h;
         }
         if(attackTime>0&&!seated&&!cower)rightArm.xRot=-1.8F-Mth.sin(attackTime*Mth.PI)*.65F;
     }
@@ -82,12 +84,13 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
         body.xRot=lean;body.zRot=.035F*Mth.sin(progress*Mth.PI)*fold;
         head.xRot=-lean-.55F*fold;head.yRot=.08F*Mth.sin(progress*Mth.PI*2)*fold;
         float reach=Mth.lerp(ease(0,.12F,progress),-.1F,-2.65F);
-        rightArm.xRot=-lean+Mth.lerp(fold,reach,-1.25F+.5F*pull);leftArm.xRot=rightArm.xRot-.13F*pull;
+        float rightPull=ease(.38F,.53F,progress)*(1-ease(.53F,.69F,progress)),leftPull=ease(.49F,.64F,progress)*(1-ease(.64F,.8F,progress));
+        rightArm.xRot=-lean+Mth.lerp(fold,reach,-1.25F+.65F*rightPull);leftArm.xRot=-lean+Mth.lerp(fold,reach,-1.35F+.65F*leftPull);
         rightArm.zRot=.12F*fold;leftArm.zRot=-.12F*fold;
-        rightElbow.xRot=(-.1F-.95F*pull)*fold;leftElbow.xRot=(-.1F-.7F*pull)*fold;
+        rightElbow.xRot=(-.1F-1.15F*rightPull)*fold;leftElbow.xRot=(-.1F-1.15F*leftPull)*fold;
         if(progress>.78F){
             var joints=joints();var sill=new PartPose[joints.length];for(int i=0;i<joints.length;i++)sill[i]=joints[i].storePose();
-            HumanoidMotion.reset(this);crawlMotion(0,0);float blend=ease(.78F,1,progress);
+            HumanoidMotion.reset(this);animatePose(0,0,0,0,false,false,false,false);float blend=ease(.78F,1,progress);
             for(int i=0;i<joints.length;i++){var p=joints[i];var from=sill[i];p.setPos(Mth.lerp(blend,from.x,p.x),Mth.lerp(blend,from.y,p.y),Mth.lerp(blend,from.z,p.z));p.xRot=Mth.lerp(blend,from.xRot,p.xRot);p.yRot=Mth.lerp(blend,from.yRot,p.yRot);p.zRot=Mth.lerp(blend,from.zRot,p.zRot);}
         }
         HumanoidMotion.connect(this);

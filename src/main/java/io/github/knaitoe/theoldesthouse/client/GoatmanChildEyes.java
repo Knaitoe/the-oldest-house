@@ -11,7 +11,7 @@ public final class GoatmanChildEyes {
     // Front-left glowing texel of the shipped 64-pixel goatman_eyes atlas.
     private static final float U=8.5F/64,V=10.5F/64;
     private GoatmanChildEyes(){}
-    public static boolean visible(GoatmanChild child){return child.stalkingAppearance()&&!child.monsterAppearance()&&!child.girl();}
+    public static boolean visible(GoatmanChild child){return child.stalkingAppearance()&&!child.indoors()&&!child.monsterAppearance()&&!child.girl();}
     public static void render(GoatmanChildModel model,PoseStack poses,MultiBufferSource buffers){
         poses.pushPose();model.head.translateAndRotate(poses);
         var out=buffers.getBuffer(RenderType.eyes(GoatmanFigureRenderer.EYES));
