@@ -18,3 +18,10 @@ Owner's combined scope:
 - House disturbances: sparse inert overturned furniture and directional floor scrapes, clear of doors and normal walking routes, preserving original usable furniture/custody.
 
 Validation still required: native gameplay regressions, saved-world/peer preservation, native visual inspection and complete exact-source CI. Keep 52 eligible sources / 39 required / two kinds / three endings, protocol 88 and layout 46/manor 2.
+
+
+## Implementation checkpoint
+
+The source now includes the listed encounter, mining, anatomy, hostile/friendly, projector, Plains pose/camera wording, junction note, and child-bed/dialogue corrections. Ten new native cases exercise actual controller use, contact, original custody and reader isolation; declared corpus 767. The added standard-UV family and bent-neck sheets pass the shared painter/art catalog check (154 human selections, all 649 protected PNGs unchanged). The body refit is loaded, vacant, 128 visits / 3 ms per tick, saved and once-only; it preserves recorded cuts, existing block entities, original worker/key/progress and player edits. Native and visual verification is pending.
+
+Owner's additional house scope follows this repair build: only a small selection of domestic fragments becomes deeper handcrafted homes; most remain shallow glimpses. Four distinct households (parents with several children, student rental, solitary drinker, grandmother), contextual physical interactions, custom materials as needed. Sparse inert tossed furniture/floor scrapes are separate atmosphere. The latest composition photograph also calls for purposeful positioning of room furnishings instead of isolated stock cubes surrounding a lectern. These additions remain in progress; they are not claimed implemented by this checkpoint.

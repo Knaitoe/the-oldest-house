@@ -21,16 +21,23 @@ public final class UncannyCellar {
     private UncannyCellar(){}
     public static boolean authored(int x,int y,int z){
         if(x==0&&y==UncannyRooms.KEY_CAVITY.getY()&&z==UncannyRooms.KEY_CAVITY.getZ())return false;
-        if(y==-2)return Math.abs(x)<=1&&z>=-22&&z<=-20;
-        if(y==-3)return Math.abs(x)<=1&&z>=-23&&z<=-19;
-        return y>=-5&&y<=-4&&Math.abs(x)<=2&&z>=-23&&z<=-18&&(Math.abs(x)<2||z>=-22&&z<=-19);
+        // Reclined, swollen human anatomy: distinct feet and shins, abdomen,
+        // shoulders, two lowered arms and a face above the ribs. The original
+        // key cavity stays inside his abdomen, approached through real tissue.
+        boolean legs=y>=-5&&y<=-4&&Math.abs(x)==1&&z>=-20&&z<=-17;
+        boolean belly=y>=-5&&y<=-3&&Math.abs(x)<=2&&z>=-23&&z<=-19;
+        boolean shoulders=y==-2&&Math.abs(x)<=2&&z>=-23&&z<=-21;
+        boolean arms=Math.abs(x)==3&&y>=-5&&y<=-3&&z>=-23&&z<=-20;
+        boolean head=Math.abs(x)<=1&&y>=-3&&y<=-2&&z>=-25&&z<=-24;
+        boolean nose=x==0&&y==-2&&z==-23;
+        return legs||belly||shoulders||arms||head||nose;
     }
     private static boolean inMass(BlockPos r){return Math.abs(r.getX())<=6&&r.getY()>=-5&&r.getY()<=-2&&r.getZ()>=-28&&r.getZ()<=-10;}
     private static boolean protectedCell(BlockPos r){return r.equals(UncannyRooms.KEY_CAVITY)||Math.abs(r.getX())<=1&&r.getZ()>=-12||r.getX()==-6&&r.getZ()==-10;}
     public static void cut(ServerLevel l,BlockPos b,BlockPos r,CompoundTag shared){
         var queue=shared.getList("Regrow",Tag.TAG_COMPOUND);
         for(var t:queue)if(((CompoundTag)t).getLong("At")==r.asLong())return;
-        if(queue.size()<320){var entry=new CompoundTag();entry.putLong("At",r.asLong());entry.putLong("Due",l.getGameTime()+80);queue.add(entry);shared.put("Regrow",queue);}
+        if(queue.size()<320){var entry=new CompoundTag();entry.putLong("At",r.asLong());entry.putLong("Due",l.getGameTime()+110);queue.add(entry);shared.put("Regrow",queue);}
     }
     private static boolean body(ServerLevel l,BlockPos at){return !l.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.04),LivingEntity::isAlive).isEmpty();}
     private static void regrow(ServerLevel l,BlockPos b,CompoundTag shared){
@@ -45,7 +52,7 @@ public final class UncannyCellar {
     }
     private static void spread(ServerLevel l,BlockPos b,CompoundTag shared,int age){
         boolean worked=shared.contains("LastPlayerPeel")&&l.getGameTime()-shared.getLong("LastPlayerPeel")<100;
-        if(age%(worked?40:20)!=0)return;
+        if(age%(worked?60:30)!=0)return;
         var candidates=new ArrayList<BlockPos>();
         for(int x=-6;x<=6;x++)for(int y=-5;y<=-2;y++)for(int z=-28;z<=-10;z++){
             var r=new BlockPos(x,y,z);var at=b.offset(r);if(protectedCell(r)||!l.isEmptyBlock(at))continue;
@@ -53,9 +60,19 @@ public final class UncannyCellar {
         }
         // The frontier favours the stairs but grows along floors/walls too. No volume is filled in one tick.
         candidates.sort(Comparator.comparingInt(r->Math.floorMod((r.asLong()^age*7919L)*31,997)));
-        int limit=worked?1:age<800?1:age<1800?2:3;
+        int limit=worked?1:age<1200?1:age<2400?2:3;
         for(int i=0;i<Math.min(limit,candidates.size());i++){var r=candidates.get(i);l.setBlock(b.offset(r),UncannyFleshBlock.at(r),F);shared.putInt("Layers",shared.getInt("Layers")+1);}
         if(!candidates.isEmpty()){shared.putInt("Pulse",shared.getInt("Pulse")+1);shared.putInt("Growth",Math.min(9,1+shared.getInt("Layers")/15));}
+    }
+    /** Actual tissue reaching the cellar's inner wall/approach is a lost containment attempt. */
+    private static void containment(ServerLevel l,BlockPos b,CompoundTag shared){
+        if(shared.getBoolean("ContainmentFailed127"))return;
+        for(int x=-6;x<=6;x++)for(int z=-28;z<=-13;z++){
+            if(Math.abs(x)!=6&&z!=-28&&z!=-13)continue;
+            for(int y=-5;y<=-2;y++)if(UncannyFleshBlock.is(l.getBlockState(b.offset(x,y,z)))){
+                shared.putBoolean("ContainmentFailed127",true);shared.putLong("ContainmentAt127",l.getGameTime());return;
+            }
+        }
     }
     private static void lamps(ServerLevel l,BlockPos b,int age){
         boolean brownout=age%190<10||age%430>=395&&age%430<415||age>1200&&age%275>=255;
@@ -91,7 +108,9 @@ public final class UncannyCellar {
     }
     /** Completed readers can carry an old original away from the cellar; this is independent of story ticking. */
     public static void migrateKeys(ServerPlayer p){
-        for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);if(s.is(LiteraryRegistry.KEY.get())&&ownedKey(p,s))p.getInventory().setItem(i,key(s));}
+        for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);if(s.is(LiteraryRegistry.KEY.get())&&ownedKey(p,s))p.getInventory().setItem(i,key(s));
+            if(s.is(UncannyRegistry.CLEAVER.get())){s.set(DataComponents.UNBREAKABLE,new net.minecraft.world.item.component.Unbreakable(false));if(s.getDamageValue()!=0)s.setDamageValue(0);}
+        }
     }
     private static void contact(ServerPlayer p,BlockPos b,CompoundTag own){
         int pressure=own.getInt("Engulfment");boolean touching=false;var box=p.getBoundingBox().inflate(.14,.06,.14);
@@ -105,7 +124,7 @@ public final class UncannyCellar {
             if(authored(x,y,z)){if(s.isAir()&&!body(l,at))l.setBlock(at,UncannyFleshBlock.at(r),F);}
             else if(UncannyFleshBlock.is(s))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
         }
-        for(String k:List.of("Age","Layers","Growth","Beats","LastPeel","LastPlayerPeel","Regrow"))shared.remove(k);shared.putBoolean("ToolGiven",false);
+        for(String k:List.of("Age","Layers","Growth","Beats","LastPeel","LastPlayerPeel","Regrow","ContainmentFailed127","ContainmentAt127"))shared.remove(k);shared.putBoolean("ToolGiven",false);
     }
     public static void arrive(ServerPlayer p,BlockPos b){
         var l=p.serverLevel();if(!UncannyStories.actorsLoaded(l,b,PLACE))return;var shared=UncannyStories.world(l,b,PLACE);long now=l.getGameTime();
@@ -123,10 +142,14 @@ public final class UncannyCellar {
                 var to=Vec3.atCenterOf(b.offset(0,-3,-20));float yaw=(float)(Math.toDegrees(Math.atan2(to.z-worker.getZ(),to.x-worker.getX()))-90);
                 worker.setYRot(yaw);worker.setYHeadRot(yaw);worker.yBodyRot=yaw;
                 if(stage>=1)worker.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
-                if(age%40==0&&stage<2){var r=new BlockPos(-1,-3,-19);var at=b.offset(r);if(UncannyFleshBlock.is(l.getBlockState(at))){l.setBlock(at,Blocks.AIR.defaultBlockState(),F);cut(l,b,r,shared);}if(stage==0&&!worker.getMainHandItem().isEmpty())worker.getMainHandItem().hurtAndBreak(1,worker,EquipmentSlot.MAINHAND);shared.putLong("LastPeel",now);}
+                if(age%40==0&&stage<2){var r=new BlockPos(-2,-3,-22);var at=b.offset(r);if(UncannyFleshBlock.is(l.getBlockState(at))){l.setBlock(at,Blocks.AIR.defaultBlockState(),F);cut(l,b,r,shared);}if(stage==0&&!worker.getMainHandItem().isEmpty())worker.getMainHandItem().hurtAndBreak(1,worker,EquipmentSlot.MAINHAND);shared.putLong("LastPeel",now);}
                 if(age%20==0)l.sendParticles(ParticleTypes.DRIPPING_WATER,worker.getX(),worker.getY()+1.5,worker.getZ(),1,.12,.05,.12,0);
             }
-            escort(l,b,shared,worker);regrow(l,b,shared);spread(l,b,shared,age);lamps(l,b,age);UncannyStories.world(l,b,PLACE,shared);
+            escort(l,b,shared,worker);regrow(l,b,shared);spread(l,b,shared,age);containment(l,b,shared);lamps(l,b,age);UncannyStories.world(l,b,PLACE,shared);
+        }
+        if(shared.getBoolean("ContainmentFailed127")){
+            p.removeEffect(UncannyRegistry.ENGULFED);own.putInt("Engulfment",0);
+            UncannyStories.caught(p,b,PLACE,own,"basement_overrun");return;
         }
         own.putInt("GrowthCue",shared.getInt("Pulse"));
         int age=shared.getInt("Age");

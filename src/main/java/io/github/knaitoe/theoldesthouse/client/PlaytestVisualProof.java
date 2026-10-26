@@ -49,7 +49,7 @@ public final class PlaytestVisualProof extends Screen {
             p.pushPose();p.translate(width-146+i*47,height-22,150);p.scale(26,-26,26);p.mulPose(Axis.XP.rotationDegrees(20));p.mulPose(Axis.YP.rotationDegrees(25));mc.getBlockRenderer().renderSingleBlock(states[i],p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}out.endBatch();
     }
     private void plains(GuiGraphics g){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb5b8ab);g.drawString(font,"Plains / folded knees, bowed head and hands by the knees / original pixel texture",10,9,0xff1b2527,false);g.flush();
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb5b8ab);g.drawString(font,"Plains / seated on the ground, arms round raised knees / original pixel texture",10,9,0xff1b2527,false);g.flush();
         var out=mc.renderBuffers().bufferSource();float scale=Math.min(width/4F*.8F,height*.48F)*PlainFigureModel.SCALE;
         for(int view=0;view<4;view++){
             var model=new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));var p=g.pose();p.pushPose();
@@ -61,7 +61,7 @@ public final class PlaytestVisualProof extends Screen {
     private static void verifyPlains(Path dir)throws Exception{
         var mc=Minecraft.getInstance();var model=new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));var bounds=new Bounds();
         model.renderToBuffer(PlainFigureModel.atFeet(),bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
-        if(bounds.y0<-.02F||bounds.y0>.03F||bounds.y1<.65F||bounds.y1>.9F||bounds.x1-bounds.x0<.35F||bounds.z1-bounds.z0<.45F)throw new IllegalStateException("Plains crouch must be low, folded and grounded: "+bounds);
+        if(bounds.y0<-.02F||bounds.y0>.03F||bounds.y1<.5F||bounds.y1>.85F||bounds.x1-bounds.x0<.35F||bounds.z1-bounds.z0<.45F)throw new IllegalStateException("Plains seated curl must be low, folded and grounded: "+bounds);
         try(var image=new NativeImage(128,128,false)){
             for(int y=0;y<128;y++)for(int x=0;x<128;x++)image.setPixelRGBA(x,y,0xffb5b8ab);
             PlainCameraClient.silhouette(image,new Matrix4f().setOrtho(-.6F,.6F,-.6F,.6F,.1F,100),new Vec3(0,-.5,-5));

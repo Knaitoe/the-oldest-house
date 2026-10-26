@@ -293,6 +293,8 @@ def main():
     if check:assert JAVA.read_text()==shape_source(),'Native furniture collision differs from its generated meshes'
     else:JAVA.write_text(shape_source())
     print(('Verified' if check else 'Painted')+f' {len(paintings())} native materials, {len(furniture())} fitted furnishings and the glazed diner entrance.')
+    from draw_optical_fittings import main as optical_main
+    optical_main()
     from draw_uncanny_cellar import main as cellar_main
     cellar_main()
 

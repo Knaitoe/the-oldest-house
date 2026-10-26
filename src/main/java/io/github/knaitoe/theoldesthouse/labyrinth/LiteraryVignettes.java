@@ -154,13 +154,15 @@ public final class LiteraryVignettes {
         // 0.4.77: nothing in the House hands out a shovel, so snow comes away by hand too; with anything else held, say so.
         else if(place==LabyrinthPlace.CRIMSON_HALL&&p.serverLevel().getBlockState(e.getPos()).is(Blocks.SNOW)&&!mayBreak(p,e.getPos()))p.displayClientMessage(Component.literal("Dig the snow away with a shovel, or with your bare hands."),true);
     }
-    public static boolean mayBreak(ServerPlayer p,BlockPos pos){var place=current(p);if(place==null)return false;var b=base(p,place);var s=p.serverLevel().getBlockState(pos);return (place==LabyrinthPlace.CRIMSON_HALL&&s.is(Blocks.SNOW)&&(p.getMainHandItem().getItem() instanceof ShovelItem||p.getMainHandItem().isEmpty()))
+    public static boolean mayBreak(ServerPlayer p,BlockPos pos){var place=current(p);if(place==null)return false;var b=base(p,place);var s=p.serverLevel().getBlockState(pos);return (place==LabyrinthPlace.LAYERED_MAN&&participant(p)&&UncannyFleshBlock.is(s)&&p.distanceToSqr(pos.getCenter())<=36&&(p.getMainHandItem().is(UncannyRegistry.CLEAVER.get())||p.getMainHandItem().getItem() instanceof AxeItem))
+        ||(place==LabyrinthPlace.CRIMSON_HALL&&s.is(Blocks.SNOW)&&(p.getMainHandItem().getItem() instanceof ShovelItem||p.getMainHandItem().isEmpty()))
         ||(place==LabyrinthPlace.ELK_CARCASSES&&participant(p)&&!YachtGlazingBlock.shattered(s)&&
                 (ElkCarcassMap.porthole(pos.subtract(b))&&s.is(LiteraryRegistry.YACHT_PORTHOLE.get())||s.is(LiteraryRegistry.YACHT_WINDOW.get())&&ElkCarcassMap.aboard(pos.subtract(b).getCenter())))
         ||(place==LabyrinthPlace.MAPPING_INTERIOR&&pos.equals(b.offset(LiteraryRooms.PILE))&&s.is(LiteraryRegistry.PROP.get())&&personal(LabyrinthData.get(p.server),p.getUUID(),place).getBoolean("BeyondRoof"))
         ||(place==LabyrinthPlace.ELK_FAN&&personal(LabyrinthData.get(p.server),p.getUUID(),place).getList("Platforms",Tag.TAG_LONG).stream().anyMatch(t->((LongTag)t).getAsLong()==pos.asLong()));}
     public static boolean mayPlace(ServerPlayer p,BlockPos pos){if(!inside(p,LabyrinthPlace.ELK_FAN))return false;var b=base(p,LabyrinthPlace.ELK_FAN);var rel=pos.subtract(b);return rel.getX()>=-2&&rel.getX()<=2&&rel.getZ()>=-18&&rel.getZ()<=-15&&rel.getY()>=0&&rel.getY()<=4;}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void broken(BlockEvent.BreakEvent e){if(e.isCanceled()||!(e.getPlayer() instanceof ServerPlayer p)||!mayBreak(p,e.getPos()))return;var place=current(p);var own=personal(LabyrinthData.get(p.server),p.getUUID(),place);
+        if(place==LabyrinthPlace.LAYERED_MAN)UncannyStories.recordCut(p,base(p,place),e.getPos().subtract(base(p,place)),own);
         if(place==LabyrinthPlace.CRIMSON_HALL)own.putBoolean("ClearedSnow",true);
         if(place==LabyrinthPlace.MAPPING_INTERIOR&&!own.getBoolean("PileChosen")){own.putBoolean("PileChosen",true);own.putBoolean("PileBroken",true);own.putInt("ChoiceVisit",own.getInt("Visit"));own.putInt("Beat",own.getInt("Visit"));}
         save(LabyrinthData.get(p.server),p.getUUID(),place,own);

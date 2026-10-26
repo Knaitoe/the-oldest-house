@@ -211,6 +211,13 @@ LOOKS['literary_father_mangled']=replace(LOOKS['literary_father'],mark='wound')
 for role,skin in [('father','#a6a28c'),('mother','#b5ada1'),('child','#b8baa2')]:
     LOOKS[f'literary_family_{role}_changed']=replace(LOOKS[f'literary_family_{role}'],skin=skin,mark=f'family_{role}_changed')
 
+# The peripheral family's production mesh uses the standard 64x64 human UV,
+# not the older literary family's wider costume atlas. Preserve those originals.
+for index,role in enumerate(('father','mother','child')):
+    LOOKS[f'uncanny_family_{index}']=replace(LOOKS[f'literary_family_{role}_changed'],logical=64)
+LOOKS['uncanny_family_3']=replace(LOOKS['uncanny_family_2'],hair='#332e2b',cut='long',cloth='#777365',pants='#565247',style='dress',sleeve=9)
+LOOKS['uncanny_bent_neck']=Look('#afa99a','#292b29','long','#424641','#424641','dress','#817c6c',eyes='#666c61',age=1,mark='family_mother_changed',sleeve=10,logical=64)
+
 
 def net(u,v,w,h,d):
     return {'top':(u+d,v,u+d+w,v+d),'bottom':(u+d+w,v,u+d+2*w,v+d),

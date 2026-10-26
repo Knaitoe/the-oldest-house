@@ -22,6 +22,9 @@ variants={}
 for kind,(parts,textures) in props.items():
  textures['particle']=next(iter(textures.values()))
  model={'parent':'minecraft:block/block','textures':textures,'elements':[cube(b,t) for b,t in parts]}
+ if kind=='projector':
+  from draw_optical_fittings import projector_model
+  model=projector_model()
  if kind=='incubator':model['render_type']='minecraft:translucent'
  write(f'models/block/novel_{kind}.json',model)
  for facing,angle in [('north',0),('east',90),('south',180),('west',270)]:variants[f'facing={facing},kind={kind}']={'model':f'the_oldest_house:block/novel_{kind}','y':angle}

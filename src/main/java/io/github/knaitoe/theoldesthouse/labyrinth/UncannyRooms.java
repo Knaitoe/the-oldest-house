@@ -267,7 +267,7 @@ public final class UncannyRooms {
         furnishing(l,b,6,-3,-17,UncannyFurnitureBlock.Kind.TOOL_RACK,Direction.WEST);
         furnishing(l,b,5,-5,-13,UncannyFurnitureBlock.Kind.WORKBENCH,Direction.WEST);fit(l,b,TOOL,CLEAVER,Direction.SOUTH);
         at(l,b,-5,-5,-23,Blocks.CAULDRON);
-        for(int x=-2;x<=2;x++)for(int y=-5;y<=-2;y++)for(int z=-22;z<=-18;z++)if(UncannyCellar.authored(x,y,z))state(l,b,new BlockPos(x,y,z),UncannyFleshBlock.at(new BlockPos(x,y,z)));
+        for(int x=-3;x<=3;x++)for(int y=-5;y<=-2;y++)for(int z=-25;z<=-17;z++)if(UncannyCellar.authored(x,y,z))state(l,b,new BlockPos(x,y,z),UncannyFleshBlock.at(new BlockPos(x,y,z)));
         at(l,b,KEY_CAVITY.getX(),KEY_CAVITY.getY(),KEY_CAVITY.getZ(),Blocks.AIR);
         for(int x:new int[]{-3,3})furnishing(l,b,x,-2,-14,UncannyFurnitureBlock.Kind.FLUORESCENT);
         furnishing(l,b,3,-2,-25,UncannyFurnitureBlock.Kind.FLUORESCENT);

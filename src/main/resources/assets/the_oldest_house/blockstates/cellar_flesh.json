@@ -11,6 +11,18 @@
     },
     "layer=3": {
       "model": "the_oldest_house:block/uncanny_flesh_raw"
+    },
+    "layer=4": {
+      "model": "the_oldest_house:block/uncanny_flesh_eye_left"
+    },
+    "layer=5": {
+      "model": "the_oldest_house:block/uncanny_flesh_eye_right"
+    },
+    "layer=6": {
+      "model": "the_oldest_house:block/uncanny_flesh_mouth"
+    },
+    "layer=7": {
+      "model": "the_oldest_house:block/uncanny_flesh_nose"
     }
   }
 }
