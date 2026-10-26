@@ -42,12 +42,12 @@ public final class WindowEntryVisualProof extends Screen {
         if(Math.abs(model.body.xRot-end.xRot)+Math.abs(model.body.y-end.y)+Math.abs(model.rightArm.xRot-hand.xRot)>.0001F)throw new IllegalStateException("The window drop must finish in the ordinary standing cousin pose before the indoor walk");
         for(int i=0;i<=64;i++){
             model.crawlPose(i*Mth.TWO_PI/64,1);
-            var floor=new PoseStack();floor.scale(.7F,-.7F,.7F);floor.translate(0,-1.5,0);var bounds=new Bounds();model.renderToBuffer(floor,bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
-            if(bounds.min<-.002F||bounds.max>.62F)throw new IllegalStateException("The actual child crawl mesh must stay grounded and below the in-bed view: "+bounds.min+" -> "+bounds.max);
+            var floor=new PoseStack();floor.scale(.7F,-.7F*GoatmanChildRenderer.CRAWL_HEIGHT,.7F);floor.translate(0,-1.5,0);var bounds=new Bounds();model.renderToBuffer(floor,bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+            if(bounds.min<-.002F||bounds.min>.015F||bounds.max>.58F)throw new IllegalStateException("The actual child crawl mesh must plant on the floor and stay below the in-bed view: "+bounds.min+" -> "+bounds.max);
             for(boolean left:new boolean[]{false,true}){
                 var a=tip(left?model.leftArm:model.rightArm,left?model.leftElbow:model.rightElbow);
                 var f=tip(left?model.leftLeg:model.rightLeg,left?model.leftKnee:model.rightKnee);
-                if(!Float.isFinite(a.x+a.y+a.z+f.x+f.y+f.z)||a.y>1.5001F||f.y>1.5001F||a.y<1.4F||f.y<1.4F)throw new IllegalStateException("Crawl hands/feet must alternate above their real floor: "+a+" "+f);
+                if(!Float.isFinite(a.x+a.y+a.z+f.x+f.y+f.z)||a.y>1.5001F||f.y>1.5001F||a.y<1.24F||f.y<1.24F)throw new IllegalStateException("Crawl hand/foot centres must clear their planted mesh thickness and alternate above the floor: "+a+" "+f);
             }
         }
         model.pose(0,0,0,0,false,false,false);if(model.leftKnee.xRot!=0||model.rightElbow.xRot!=0)throw new IllegalStateException("Window joints leaked into an ordinary cousin");
@@ -68,7 +68,7 @@ public final class WindowEntryVisualProof extends Screen {
         if(page<6||page>=9){
             float progress=new float[]{.12F,.48F,.65F,.9F}[Math.min(3,page)];
             for(int i=0;i<4;i++){
-                var p=g.pose();p.pushPose();p.translate(width*(.14F+i*.24F),height*.7F,150);p.scale(68,68,68);p.mulPose(Axis.YP.rotationDegrees(i%2==0?155:95));p.translate(0,-1.5,0);
+                var p=g.pose();p.pushPose();p.translate(width*(.14F+i*.24F),height*.7F,150);p.scale(68,68,68);p.mulPose(Axis.YP.rotationDegrees(i%2==0?155:95));if(page==4||page==5)p.scale(1,GoatmanChildRenderer.CRAWL_HEIGHT,1);p.translate(0,-1.5,0);
                 var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));if(page<4)model.windowPose(progress);else if(page<6)model.crawlPose(page==4?0:Mth.PI,1);else if(page==9)model.windowPose(1);else model.pose(i<2?4:0,0,0,page==10?17:24,false,false,true);
                 model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+(i<2?4:0)+".png"))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
                 p.popPose();

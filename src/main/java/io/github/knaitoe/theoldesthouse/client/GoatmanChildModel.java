@@ -99,18 +99,18 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     /** Opposite hands and knees take turns; planted hand/foot tips stay at the floor. Phase follows actual travel. */
     public void crawlPose(float phase,float moving){HumanoidMotion.reset(this);young=false;crawlMotion(phase,Mth.clamp(moving,0,1));HumanoidMotion.connect(this);}
     private void crawlMotion(float phase,float moving){
-        float lean=1.43F,hipY=21.5F-.2F*moving*Mth.sin(phase*2);
+        float lean=1.43F,hipY=18.5F-.2F*moving*Mth.sin(phase*2);
         leftLeg.y=rightLeg.y=hipY;leftLeg.z=rightLeg.z=0;
         body.xRot=lean;body.yRot=.025F*moving*Mth.sin(phase);head.xRot=-lean-.08F;head.yRot=.045F*moving*Mth.sin(phase);
         for(boolean left:new boolean[]{false,true}){
             float beat=phase+(left?Mth.PI:0),stride=moving*Mth.cos(beat),lift=moving*Math.max(0,Mth.sin(beat));
             var legPart=left?leftLeg:rightLeg;var kneePart=left?leftKnee:rightKnee;
-            float dy=23.99F-hipY-.65F*lift,dz=.25F+.35F*stride;
-            float knee=(float)Math.acos(Mth.clamp((dy*dy+dz*dz-72)/72,-1,1));
-            legPart.xRot=(float)Math.atan2(dz,dy)-(float)Math.atan2(6*Mth.sin(knee),6+6*Mth.cos(knee));kneePart.xRot=knee;
+            float dz=.25F+.35F*stride,shin=0;
+            // The underside of the actual four-pixel shin, rather than its centre line, plants on the floor.
+            for(int solve=0;solve<12;solve++){float dy=23.98F-2*Mth.abs(Mth.sin(shin))-hipY-.65F*lift;float knee=(float)Math.acos(Mth.clamp((dy*dy+dz*dz-72)/72,-1,1));legPart.xRot=(float)Math.atan2(dz,dy)-(float)Math.atan2(6*Mth.sin(knee),6+6*Mth.cos(knee));kneePart.xRot=knee;shin=legPart.xRot+knee;}
             var armPart=left?leftArm:rightArm;var elbowPart=left?leftElbow:rightElbow;
             float upper=-1.15F+.2F*stride,shoulderY=hipY-10*Mth.cos(lean);
-            float forearm=-(float)Math.acos(Mth.clamp((23.99F-1.2F*lift-shoulderY-4*Mth.cos(upper))/6,-1,1));
+            float forearm=0;for(int solve=0;solve<12;solve++)forearm=-(float)Math.acos(Mth.clamp((23.98F-2*Mth.abs(Mth.sin(forearm))-1.2F*lift-shoulderY-4*Mth.cos(upper))/6,-1,1));
             armPart.xRot=upper-lean;elbowPart.xRot=forearm-upper;
         }
     }

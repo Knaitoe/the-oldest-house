@@ -51,9 +51,10 @@ public final class UncannyClient {
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event){clear();UncannyTextures.clear();}
     @SubscribeEvent public static void fov(ViewportEvent.ComputeFov event){if(!UncannyCameras.recording())fov=(float)event.getFOV();}
     @SubscribeEvent public static void rumble(ViewportEvent.ComputeCameraAngles event){
-        if(!active()||!room().equals("layered_man")||UncannyCameras.recording())return;double t=world.getGameTime()+event.getPartialTick();float left=(float)(view.getLong("RumbleUntil130")-t);if(left<=0)return;
-        float strength=Mth.clamp(left/60F,0,1)*(float)(double)Minecraft.getInstance().options.screenEffectScale().get();
-        event.setPitch(event.getPitch()+(float)Math.sin(t*1.91)*.24F*strength);event.setYaw(event.getYaw()+(float)Math.sin(t*1.37)*.17F*strength);event.setRoll(event.getRoll()+(float)Math.sin(t*2.13)*.19F*strength);
+        if(!active()||UncannyCameras.recording())return;boolean tunnel=room().equals("tunnel_periphery");if(!tunnel&&!room().equals("layered_man"))return;
+        double t=world.getGameTime()+event.getPartialTick();float left=(float)(view.getLong(tunnel?"TunnelQuakeUntil131":"RumbleUntil130")-t);if(left<=0)return;
+        float strength=Mth.clamp(left/(tunnel?12F:60F),0,1)*(float)(double)Minecraft.getInstance().options.screenEffectScale().get(),weight=tunnel?2.8F:1;
+        event.setPitch(event.getPitch()+(float)Math.sin(t*1.91)*.24F*strength*weight);event.setYaw(event.getYaw()+(float)Math.sin(t*1.37)*.17F*strength*weight);event.setRoll(event.getRoll()+(float)Math.sin(t*2.13)*.19F*strength*weight);
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
         var mc=Minecraft.getInstance();if(lease>0)lease--;if(!active()){if(world!=null)clear();return;}

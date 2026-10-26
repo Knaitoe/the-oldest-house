@@ -52,7 +52,7 @@ public final class GhostsSetRooms {
             fill(l,b,x,-1,-16-i,x,i-1,-16-i,floor);
             set(l,b,x,i,-16-i,GhostsSetBlock.of(STAIR,Direction.NORTH));
         }
-        fill(l,b,-18,4,-22,-15,4,-21,floor);for(int i=0;i<5;i++)prop(l,b,-19,i+1,-16-i,RAIL,Direction.NORTH);
+        fill(l,b,-18,4,-22,-15,4,-21,floor);for(int i=0;i<5;i++)prop(l,b,-19,i+1,-16-i,i==4?STAIR_RAIL_TOP:STAIR_RAIL,Direction.NORTH);
         fill(l,b,-19,5,-22,-19,5,-21,GhostsSetBlock.of(RAIL,Direction.NORTH));
         // The landing's guard along the stairwell, with the stair's head kept clear.
         for(int z=-19;z<=-15;z++)prop(l,b,-14,5,z,RAIL,Direction.NORTH);

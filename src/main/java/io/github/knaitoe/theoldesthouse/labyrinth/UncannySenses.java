@@ -75,6 +75,7 @@ public final class UncannySenses {
             view.putInt("Edge",own.getInt("Edge"));view.putInt("Growth",own.getInt("GrowthCue"));view.putBoolean("Ready",own.getBoolean("Ready"));view.putBoolean("Failed",own.getBoolean("UncannyFailed"));
             view.putInt("Engulfment",own.getInt("Engulfment"));
             view.putLong("RumbleUntil130",own.getLong("CellarRumbleUntil130"));
+            if(place==LabyrinthPlace.TUNNEL_PERIPHERY&&own.hasUUID("CastGiant")&&p.serverLevel().getEntity(own.getUUID("CastGiant")) instanceof LiteraryActor a)view.putLong("TunnelQuakeUntil131",a.getPersistentData().getLong("TunnelQuakeUntil131"));
             view.putString("Sign",UncannyStories.sign(p,b,own));view.putInt("Doll",own.contains("CastDoll")&&own.hasUUID("CastDoll")&&p.serverLevel().getEntity(own.getUUID("CastDoll")) instanceof LiteraryActor a?a.getId():-1);
         }
         view.putBoolean("Mirror",mirror(p));view.putBoolean("Ring",ring(p));

@@ -914,6 +914,9 @@ def paint(look):
         d.line((20*S,24*S,21*S,27*S),fill='#454f43',width=S)
     if look.mark=='bent_injury':
         d=ImageDraw.Draw(im)
+        # Unused right-pants overlay: the independent broken-neck mesh has its own native UV island.
+        d.rectangle((0,32*S,7*S-1,39*S-1),fill=look.skin)
+        d.rectangle((S,34*S,3*S-1,37*S-1),fill='#79616b');d.line((4*S,33*S,4*S,37*S),fill='#95877b',width=S)
         d.rectangle((21*S,20*S,25*S-1,23*S-1),fill=look.skin);d.rectangle((23*S,21*S,25*S-1,23*S-1),fill='#79616b')
         d.line((21*S,24*S,22*S,26*S,21*S,28*S),fill='#242928',width=S);d.line((25*S,28*S,26*S,30*S),fill='#746f64',width=S)
         d.rectangle((44*S,22*S,46*S-1,25*S-1),fill='#78616a');d.line((45*S,25*S,46*S,27*S),fill='#b19e90',width=S)

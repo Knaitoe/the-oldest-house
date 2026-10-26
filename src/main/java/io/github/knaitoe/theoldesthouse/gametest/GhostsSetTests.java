@@ -38,6 +38,9 @@ public final class GhostsSetTests {
             f.at(p,P,-7,5,-28);GhostsSet.reader(p,b,own);h.assertTrue(own.getInt("ShotClock")==5&&GhostsSet.inRoom(p,b,3,false),"entering the real upstairs bedroom starts its occupied take: "+status(f,p));
             h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).getScale()<actor(f,p,LiteraryActor.GHOST_JOHN).getScale(),"the teenager's native model and collider are smaller than the adults");
             var father=actor(f,p,LiteraryActor.GHOST_JOHN);own.putInt("ShotClock",335);GhostsSet.reader(p,b,own);h.assertTrue(father.phase()==GhostsSet.HELP,"the original father reaches up to help his struggling daughter");save(f,p,own);
+            var idle=own.copy();idle.remove("AcceptedScene131");idle.putBoolean("Rolling",false);h.assertTrue(!GhostsSet.objectiveAccepted(idle)&&GhostsSet.idleLine(idle,3).equals("John: That bulb's going again."),"before acceptance the actual idle pool concerns the household");
+            h.assertTrue(GhostsSet.start(p,idle)&&GhostsSet.objectiveAccepted(idle)&&GhostsSet.idleLine(idle,3).equals("John: Is everyone in the frame?"),"accepting this exact take enables its filming-wait dialogue");
+            idle.putInt("FilmDay",4);h.assertTrue(!GhostsSet.objectiveAccepted(idle),"a different day's objective is not accepted by an earlier take");GhostsSet.start(p,idle);idle.putBoolean("BedroomPickup",true);h.assertTrue(!GhostsSet.objectiveAccepted(idle),"the bedroom pickup requires its own accepted objective after the basement scene");
         }).thenSucceed();
     }
     @AfterBatch(batch="ghosts_room0490") public static void room0490Done(ServerLevel ignored){if(active!=null){active.close();active=null;}}
@@ -60,6 +63,7 @@ public final class GhostsSetTests {
                 for(var c:BarrettHomeBlock.covers(at,kind,s.getValue(BarrettHomeBlock.FACING)))if(!BarrettHomeBlock.is(in.getBlockState(c),BarrettHomeBlock.Kind.BED_FILL))missing++;}
             h.assertTrue(windows>=60&&missing==0,"windows with their blinds drawn on every outside wall ("+windows+") and every bed and tub has its body ("+missing+" missing)");
             // Every route the days walk the cast along: a body fits at each mark and all the way between marks on one floor.
+            for(int i=0;i<5;i++)h.assertTrue(in.getBlockState(b.offset(-19,i+1,-16-i)).getValue(GhostsSetBlock.KIND)==(i==4?GhostsSetBlock.Kind.STAIR_RAIL_TOP:GhostsSetBlock.Kind.STAIR_RAIL),"each native stair tread has its connected slope, including the landing joint");
             List<double[]> routes=GhostsSet.filmingRoutes();double[] last=null;int checked=0;
             for(var at:routes){
                 if(at==null){last=null;continue;}

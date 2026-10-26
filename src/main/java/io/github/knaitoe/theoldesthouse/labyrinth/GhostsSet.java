@@ -147,8 +147,12 @@ public final class GhostsSet {
     private static void waiting(ServerPlayer p,CompoundTag own,LiteraryActor[] cast){
         long now=p.level().getGameTime();if(own.contains("FilmIdle0490")&&now-own.getLong("FilmIdle0490")<260)return;
         int next=own.getInt("FilmIdleLine0490"),speaker=next%4;var a=cast[speaker];if(p.distanceToSqr(a)>14*14)return;
-        String[] words={"Merry: Can we have a minute before you start?","Sarah: We're still getting everyone settled.","John: Is the camera ready?","Barry: We'll wait until you're in the room."};
-        p.displayClientMessage(Component.literal(words[next%words.length]),false);own.putLong("FilmIdle0490",now);own.putInt("FilmIdleLine0490",next+1);
+        p.displayClientMessage(Component.literal(idleLine(own,next)),false);own.putLong("FilmIdle0490",now);own.putInt("FilmIdleLine0490",next+1);
+    }
+    private static int objective(CompoundTag own){return day(own)*2+(day(own)==4&&own.getBoolean("BedroomPickup")?1:0);}
+    public static boolean objectiveAccepted(CompoundTag own){return own.contains("AcceptedScene131")&&own.getInt("AcceptedScene131")==objective(own);}
+    public static String idleLine(CompoundTag own,int next){
+        String[] words=objectiveAccepted(own)?new String[]{"Marjorie: Like this?","Merry: Are you getting this?","Sarah: Do you need us back where we were?","John: Is everyone in the frame?"}:new String[]{"Marjorie: Merry, did you move my book?","Merry: I left it where you put it.","Sarah: Mind the glasses, please.","John: That bulb's going again."};return words[Math.floorMod(next,words.length)];
     }
     private static final double[][] CREW_EXIT={{16.5,0,-21.5},{16.5,0,-12.5},{.5,0,-12.5},{.5,0,-6.5}};
     private static boolean crewExit(BlockPos b,LiteraryActor[] cast,CompoundTag own){
@@ -183,7 +187,7 @@ public final class GhostsSet {
     }
     public static boolean start(ServerPlayer p,CompoundTag own) {
         if(!LiteraryVignettes.inside(p,PLACE)||own.getBoolean("DayDone")||!own.getBoolean("Read_Source"))return false;
-        own.putBoolean("Rolling",true);return true;
+        own.putBoolean("Rolling",true);own.putInt("AcceptedScene131",objective(own));return true;
     }
     private static final double[][] PICKUP_ROUTE={{8.5,-4,-25.5},{8.5,-4,-24.5},{8.5,-3,-23.5},{8.5,-2,-22.5},{8.5,-1,-21.5},{8.5,0,-20.5},{8.5,0,-19.5},{8.5,0,-16.5},{-12.5,0,-16.5},{-12.5,0,-17.5},{-14.5,0,-17.5},{-14.5,0,-14.5},{-17.5,0,-14.5},{-17.5,1,-15.5},{-17.5,2,-16.5},{-17.5,3,-17.5},{-17.5,4,-18.5},{-17.5,5,-19.5},{-17.5,5,-20.5},{-16,5,-21.5},{8.5,5,-21.5},{8.5,5,-25},{8.5,5,-29.5}};
     /** Every waypoint the days walk the cast along: the crew's exit, the bedroom pickup, Merry's last walk (0.4.121: kept clear by the house). */
@@ -249,6 +253,7 @@ public final class GhostsSet {
     }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own) {
         if(!own.getBoolean("Filming0485")||!built(LabyrinthData.get(p.server),b))return;
+        if(!own.contains("AcceptedScene131")&&own.getBoolean("Rolling"))own.putInt("AcceptedScene131",objective(own));
         if(own.getBoolean("Completed")){
             // Fit only saved originals; a concluded take must never create or restage a missing actor.
             var saved=new LiteraryActor[6];var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE);

@@ -29,6 +29,9 @@ for kind,(parts,textures) in props.items():
  write(f'models/block/novel_{kind}.json',model)
  for facing,angle in [('north',0),('east',90),('south',180),('west',270)]:variants[f'facing={facing},kind={kind}']={'model':f'the_oldest_house:block/novel_{kind}','y':angle}
 write('blockstates/novel_prop.json',{'variants':variants})
+from generate_archive_files import main as archive_files
+# Preserve the archive-file variants when this older all-novel generator is run again.
+archive_files()
 for name,texture in [('cat_collar','minecraft:item/lead')]:write(f'models/item/{name}.json',{'parent':'minecraft:item/generated','textures':{'layer0':texture}})
 write('models/item/walkie_talkie.json',{'parent':'minecraft:block/block','textures':{'case':'minecraft:block/gray_concrete','metal':'minecraft:block/iron_block','particle':'minecraft:block/gray_concrete'},'elements':[cube([4,2,5,12,13,11],'case'),cube([5,13,7,6,20,8],'metal'),cube([5,8,4.6,11,12,5],'metal')],'display':{'gui':{'rotation':[20,35,0],'translation':[0,-2,0],'scale':[.85,.85,.85]},'firstperson_righthand':{'rotation':[0,-45,0],'translation':[1,3,0],'scale':[.5,.5,.5]}}})
 # A distinct compressed bitmap provider in the established handwriting system.

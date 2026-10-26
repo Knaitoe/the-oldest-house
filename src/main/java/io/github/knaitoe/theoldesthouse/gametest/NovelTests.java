@@ -22,7 +22,7 @@ import net.neoforged.neoforge.event.entity.player.*;
 import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID) @PrefixGameTestTemplate(false)
 public final class NovelTests {
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final ServerLevel l;final BlockPos origin,b;final LabyrinthPlace place;
         final HouseSavedData oldHouse;final LabyrinthData oldData;final MotherCollection oldMother;final long oldDayTime;
         final List<ServerPlayer> players=new ArrayList<>();final List<Entity> extra=new ArrayList<>();final NativeTestChunks chunks=new NativeTestChunks();

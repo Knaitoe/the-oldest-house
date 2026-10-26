@@ -68,9 +68,9 @@ public final class UncannyAssetProof extends Screen {
                 p.pushPose();p.translate((i+.5)*width/3,height*.82F,150);p.scale(64,-64,64);p.translate(-.5,0,-.5);UncannyPropRenderer.draw(UncannyPropBlock.of(UncannyPropBlock.Kind.COURTYARD_PENDULUM,Direction.SOUTH),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,new float[]{-.38F,0,.38F}[i]);buffers.endBatch();p.popPose();
             }
         }else if(page==8){
-            g.drawCenteredString(font,"Production segmented model / uneven stride / front and side",width/2,27,0xffe4d9bf);
+            g.drawCenteredString(font,"Broken neck / normal stride above / great catch-up stride below",width/2,27,0xffe4d9bf);
             for(int i=0;i<6;i++){
-                var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(UncannyActorRenderer.BENT),false);model.pose(LiteraryActor.UNCANNY_GIANT,2,false,24,(i%3)*2.1F,.65F,0,0);
+                var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(UncannyActorRenderer.BENT),false);model.pose(LiteraryActor.UNCANNY_GIANT,2,false,24,(i%3)*2.1F,.65F,0,0,i>=3);
                 checkTunnelHeight(model);
                 p.pushPose();p.translate((i%3+.5)*width/3,58+(i/3+.9)*(height-88)/2.,150);p.scale(42,42,-42);if(i>=3)p.mulPose(Axis.YP.rotationDegrees(90));p.scale(2.5F,2.5F,2.5F);p.translate(0,-1.501,0);model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(UncannyTextures.skin(LiteraryActor.UNCANNY_GIANT,2))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
             }
@@ -80,7 +80,7 @@ public final class UncannyAssetProof extends Screen {
         }
     }
     private static void checkTunnelHeight(UncannyActorRenderer.Model model){
-        for(var part:new net.minecraft.client.model.geom.ModelPart[]{model.head,model.body,model.leftArm,model.rightArm,model.leftLeg,model.rightLeg})part.visit(new com.mojang.blaze3d.vertex.PoseStack(),(pose,path,index,cube)->{
+        for(var part:new net.minecraft.client.model.geom.ModelPart[]{model.head,model.body,model.leftArm,model.rightArm,model.leftLeg,model.rightLeg,model.neck})part.visit(new com.mojang.blaze3d.vertex.PoseStack(),(pose,path,index,cube)->{
             for(float x:new float[]{cube.minX,cube.maxX})for(float y:new float[]{cube.minY,cube.maxY})for(float z:new float[]{cube.minZ,cube.maxZ}){
                 var vertex=pose.pose().transformPosition(new org.joml.Vector3f(x/16,y/16,z/16));float height=(1.501F-vertex.y)*2.5F;
                 if(height>=3)throw new IllegalStateException("The production injured-woman gait crosses the actual recessed-light ceiling: "+height+" at "+path);
