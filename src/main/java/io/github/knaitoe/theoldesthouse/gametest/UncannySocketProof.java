@@ -52,7 +52,7 @@ public final class UncannySocketProof {
     }
     private static void marker(ServerPlayer p,int step){
         var tag=new CompoundTag();tag.putInt("UncannyStep",step);tag.putInt("ServerAge",p.server.getTickCount()-changed);
-        tag.putBoolean("PaperRead",step==5?own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"):step==13&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP));
+        tag.putBoolean("PaperRead",step==5?UncannyReading.readPassage(own(p,LabyrinthPlace.MISSING_SLEEP)):step==13&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP));
         tag.putBoolean("DoorBlocked",step==12&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("BlockedDoor")&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Ready"));
         var arrival=ARRIVING.get(p.getUUID());tag.putBoolean("TerrainPending",arrival!=null);if(arrival!=null){tag.putString("ArrivalDimension",NovelRooms.dimension(arrival.place).location().toString());tag.putDouble("ArrivalX",arrival.at.x);tag.putDouble("ArrivalY",arrival.at.y);tag.putDouble("ArrivalZ",arrival.at.z);}
         var stick=new ItemStack(Items.STICK);stick.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));p.getInventory().setItem(8,stick);p.inventoryMenu.broadcastChanges();
@@ -121,7 +121,7 @@ public final class UncannySocketProof {
             else if(phase==3){for(var p:List.of(a,b)){require(FAKES.get(p.getUUID()).equals(own(p,LabyrinthPlace.SECOND_WAITRESS).getUUID("CastFake")),"the translucent and solid waitress are the same original");at(p,LabyrinthPlace.TUNNEL_PERIPHERY,p==a?-.8:.8,0,p==a?-14.5:-20.5);sourceFixture(p,LabyrinthPlace.TUNNEL_PERIPHERY,170);}step(s,4);}
             else if(phase==4){for(var p:List.of(a,b))at(p,LabyrinthPlace.MISSING_SLEEP,.5,0,.5);step(s,5);}
             else if(phase==5){
-                for(var p:List.of(a,b))require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"),"native final source page");
+                for(var p:List.of(a,b))require(UncannyReading.readPassage(own(p,LabyrinthPlace.MISSING_SLEEP))&&!own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"),"native short passage without completing the archive");
                 // Both real bodies must have settled after closing their menus before either is moved.
                 for(var p:List.of(a,b))if(!p.onGround()||p.isNoGravity()||Math.abs(p.getY()-base(LabyrinthPlace.MISSING_SLEEP).getY()-5)>=.3)return;
                 for(var p:List.of(a,b)){DOLLS.put(p.getUUID(),own(p,LabyrinthPlace.MISSING_SLEEP).getUUID("CastDoll"));at(p,LabyrinthPlace.MISSING_SLEEP,p==a?-5.5:-6.5,5,-23.5);}step(s,6);

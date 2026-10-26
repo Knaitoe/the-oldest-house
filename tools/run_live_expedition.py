@@ -68,12 +68,13 @@ try:
             assert p.returncode == 0, p.returncode
         for role in ("A", "B"):
             assert (report / f"{role}-bedroom-native-route.txt").stat().st_size > 50, role
-            for view in ("boarded-periphery", "diner-translucent", "diner-solid", "giant-folded", "bedroom-source", "bedroom-first-cut", "bedroom-second-cut", "bedroom-direct", "bedroom-cctv", "bedroom-cctv-reconnected", "bedroom-door-closed", "bedroom-account", "cellar-growth", "foyer-lit", "foyer-dark", "ring-and-mirror"):
+            for view in ("short-passage", "boarded-periphery", "diner-translucent", "diner-solid", "giant-folded", "bedroom-source", "bedroom-first-cut", "bedroom-second-cut", "bedroom-direct", "bedroom-cctv", "bedroom-cctv-reconnected", "bedroom-door-closed", "bedroom-account", "cellar-growth", "foyer-lit", "foyer-dark", "ring-and-mirror"):
                 assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
             for prefix in ("", "reconnected-"):
                 for channel in range(4):
                     assert (report / f"{role}-cctv-{prefix}{channel}.png").stat().st_size > 500, (role, prefix, channel)
                 assert (report / f"{role}-cctv-{prefix}pixels.txt").stat().st_size > 30, (role, prefix)
+        assert (report / "A-full-account.png").stat().st_size > 500, "native Full account button"
         native_log = (server / "logs/latest.log").read_text(errors="replace")
         assert "Seeding the house interior in the background." not in native_log, "The isolated uncanny fixture started an unrelated manor terrain copy."
         assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
