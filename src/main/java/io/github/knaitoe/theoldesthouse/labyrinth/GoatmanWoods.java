@@ -201,8 +201,9 @@ public final class GoatmanWoods {
         for(int i=0;i<24;i++){
             BlockPos bed=b.offset(bunk(i));
             boolean upper=bunk(i).getY()>1;
-            if(i<count){var s=Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.EAST);
-                l.setBlock(bed,s.setValue(BedBlock.PART,BedPart.FOOT),F);l.setBlock(bed.east(),s.setValue(BedBlock.PART,BedPart.HEAD),F);
+            if(i<count){var left=l.getBlockState(bed);var right=l.getBlockState(bed.east());if(left.getBlock() instanceof BedBlock&&left.getValue(BedBlock.OCCUPIED)||right.getBlock() instanceof BedBlock&&right.getValue(BedBlock.OCCUPIED))continue;
+                boolean west=i%2==0;var s=Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,west?Direction.EAST:Direction.WEST);
+                l.setBlock(bed,s.setValue(BedBlock.PART,west?BedPart.FOOT:BedPart.HEAD),F);l.setBlock(bed.east(),s.setValue(BedBlock.PART,west?BedPart.HEAD:BedPart.FOOT),F);
                 if(upper)for(var part:TrailerBunkBlock.Part.values()){var at=part==TrailerBunkBlock.Part.FOOT?bed.below():bed.below().east();if(l.getBlockState(at).isAir())l.setBlock(at,TrailerBunkBlock.of(part),F);}
             }else {if(l.getBlockState(bed).getBlock() instanceof BedBlock)l.setBlock(bed,Blocks.AIR.defaultBlockState(),F);if(l.getBlockState(bed.east()).getBlock() instanceof BedBlock)l.setBlock(bed.east(),Blocks.AIR.defaultBlockState(),F);
                 if(upper)for(var at:new BlockPos[]{bed.below(),bed.below().east()})if(l.getBlockState(at).is(GoatmanRegistry.BUNK.get()))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);}

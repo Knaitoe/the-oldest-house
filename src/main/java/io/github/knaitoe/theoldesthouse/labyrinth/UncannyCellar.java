@@ -43,7 +43,7 @@ public final class UncannyCellar {
     private static boolean neighbor(ServerLevel l,BlockPos at){for(var d:Direction.values())if(UncannyFleshBlock.is(l.getBlockState(at.relative(d))))return true;return false;}
     public static boolean remains(ServerLevel l,BlockPos b){for(int x=-6;x<=6;x++)for(int y=-5;y<=-2;y++)for(int z=-28;z<=-10;z++)if(UncannyFleshBlock.is(l.getBlockState(b.offset(x,y,z))))return true;return false;}
     private static boolean restingCut(CompoundTag shared,BlockPos r,long now){for(var t:shared.getList("Regrow",Tag.TAG_COMPOUND)){var e=(CompoundTag)t;if(e.getLong("At")==r.asLong()&&e.getLong("Due")>now)return true;}return false;}
-    private static void grow(ServerLevel l,BlockPos at,BlockPos r){if(l.setBlock(at,UncannyFleshBlock.at(r),F))l.playSound(null,at,UncannyRegistry.FLESH_GROW.get(),net.minecraft.sounds.SoundSource.BLOCKS,.7F,.85F+l.random.nextFloat()*.2F);}
+    private static void grow(ServerLevel l,BlockPos at,BlockPos r){if(l.setBlock(at,UncannyFleshBlock.at(r),F))l.playSound(null,at,CellarSounds.grow(),net.minecraft.sounds.SoundSource.BLOCKS,.55F+l.random.nextFloat()*.15F,.82F+l.random.nextFloat()*.26F);}
     private static void regrow(ServerLevel l,BlockPos b,CompoundTag shared){
         var queue=shared.getList("Regrow",Tag.TAG_COMPOUND);int changed=0;
         if(!shared.getBoolean("RegrowthBudget130")){for(var row:queue){var e=(CompoundTag)row;e.putLong("Due",Math.max(e.getLong("Due"),l.getGameTime()+360));}shared.putBoolean("RegrowthBudget130",true);}
@@ -122,6 +122,7 @@ public final class UncannyCellar {
     private static void contact(ServerPlayer p,BlockPos b,CompoundTag own){
         int pressure=own.getInt("Engulfment");boolean touching=false;var box=p.getBoundingBox().inflate(.14,.06,.14);
         if(p.getY()<b.getY()-1)for(var at:BlockPos.betweenClosed(BlockPos.containing(box.minX,box.minY,box.minZ),BlockPos.containing(box.maxX,box.maxY,box.maxZ)))if(UncannyFleshBlock.is(p.serverLevel().getBlockState(at))){touching=true;break;}
+        if(touching&&pressure==0)CellarDialogue.touched(p,own);
         pressure=Math.max(0,Math.min(100,pressure+(touching?2:-2)));own.putInt("Engulfment",pressure);
         if(pressure>0)p.addEffect(new MobEffectInstance(UncannyRegistry.ENGULFED,40,Math.min(3,pressure/25),false,true,true));else p.removeEffect(UncannyRegistry.ENGULFED);
         if(pressure>=100){p.removeEffect(UncannyRegistry.ENGULFED);own.putInt("Engulfment",0);UncannyStories.caught(p,b,PLACE,own,"overtaken_by_the_cellar");}

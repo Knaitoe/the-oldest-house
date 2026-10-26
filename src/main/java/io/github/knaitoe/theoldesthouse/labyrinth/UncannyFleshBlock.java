@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 /** Native full tissue cells without a block entity for each growing fold. */
 public final class UncannyFleshBlock extends Block {
-    public static final net.minecraft.world.level.block.SoundType SOUNDS=new net.minecraft.world.level.block.SoundType(.8F,1,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_BREAK,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_STEP,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_PLACE,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_HIT,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_FALL){@Override public net.minecraft.sounds.SoundEvent getBreakSound(){return UncannyRegistry.FLESH_TEAR.get();}};
+    public static final net.minecraft.world.level.block.SoundType SOUNDS=new net.minecraft.world.level.block.SoundType(.75F,1,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_BREAK,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_STEP,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_PLACE,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_HIT,net.minecraft.sounds.SoundEvents.SLIME_BLOCK_FALL){@Override public net.minecraft.sounds.SoundEvent getBreakSound(){return CellarSounds.tear();}};
     public static final MapCodec<UncannyFleshBlock> CODEC=simpleCodec(UncannyFleshBlock::new);
     public static final IntegerProperty LAYER=IntegerProperty.create("layer",0,7);
     public UncannyFleshBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(LAYER,0));}

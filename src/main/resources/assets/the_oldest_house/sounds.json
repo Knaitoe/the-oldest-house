@@ -1838,6 +1838,22 @@
       {
         "name": "the_oldest_house:literary/cellar_flesh_grow_2",
         "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_3",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_4",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_5",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_6",
+        "attenuation_distance": 16
       }
     ]
   },
@@ -1851,6 +1867,22 @@
       {
         "name": "the_oldest_house:literary/cellar_flesh_tear_2",
         "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_3",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_4",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_5",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_6",
+        "attenuation_distance": 16
       }
     ]
   },
@@ -1863,6 +1895,158 @@
       },
       {
         "name": "the_oldest_house:literary/cellar_flesh_gurgle_2",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_gurgle_3",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_gurgle_4",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_grow_1": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_grow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_1",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_grow_2": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_grow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_2",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_grow_3": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_grow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_3",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_grow_4": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_grow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_4",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_grow_5": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_grow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_5",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_grow_6": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_grow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_grow_6",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_tear_1": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_tear",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_1",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_tear_2": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_tear",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_2",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_tear_3": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_tear",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_3",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_tear_4": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_tear",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_4",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_tear_5": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_tear",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_5",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_tear_6": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_tear",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_tear_6",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_gurgle_1": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_gurgle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_gurgle_1",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_gurgle_2": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_gurgle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_gurgle_2",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_gurgle_3": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_gurgle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_gurgle_3",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "cellar_flesh_gurgle_4": {
+    "subtitle": "subtitles.the_oldest_house.cellar_flesh_gurgle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/cellar_flesh_gurgle_4",
         "attenuation_distance": 16
       }
     ]
