@@ -38,7 +38,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class LabyrinthLighting {
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
-    public static final BlockPos TOM_NOTE = new BlockPos(-3, 0, -6);
+    public static final BlockPos TOM_NOTE = new BlockPos(-3, 0, -3);
     public static final BlockPos TOM_CACHE = new BlockPos(3, 0, -9);
 
     private static final Map<UUID, Integer> DEPTH = new HashMap<>();

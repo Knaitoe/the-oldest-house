@@ -63,6 +63,7 @@ public final class LiteraryActor extends PathfinderMob {
         // overlapping cast must not remain on this client and intercept its entity pick.
         boolean sharedCopy=scene.equals(LabyrinthPlace.FAMILY_COPY.id())||scene.equals(LabyrinthPlace.OLD_CABIN.id());
         if(owner().isPresent()&&!sharedCopy&&!owner().get().equals(p.getUUID()))return false;
+        if(scene.equals(ElkLot.PLACE.id())&&role()==STRANGER&&phase()>=5&&phase()<=8){var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),ElkLot.PLACE);if(own.getBoolean("Ready")||own.getBoolean("Completed"))return false;}
         if((role()==LAKE_TESS||role()==LAKE_WAX)&&owner().isPresent()&&p.isSpectator())return false;
         return super.broadcastToPlayer(p);
     }

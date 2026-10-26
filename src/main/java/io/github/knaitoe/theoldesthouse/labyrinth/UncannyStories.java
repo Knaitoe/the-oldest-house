@@ -105,7 +105,8 @@ public final class UncannyStories {
     private static void boarded(ServerPlayer p,BlockPos b,CompoundTag own){
         int age=own.getInt("UncannyAge");if(age==0)return;int nearest=0;double proximity=100;
         for(int i=0;i<4;i++){
-            var a=actor(p,own,"CastP"+i);if(a==null)continue;a.appearance(LiteraryActor.UNCANNY_PROPPED,1);
+            var a=actor(p,own,"CastP"+i);if(a==null)continue;a.appearance(LiteraryActor.UNCANNY_PROPPED,i+1);
+            if(a.getBoundingBox().inflate(.12,.03,.12).intersects(p.getBoundingBox())&&UncannySenses.clear(p,a.getEyePosition())){caught(p,b,LabyrinthPlace.PAINTED_INTERIOR,own,"touched_by_the_family");return;}
             double angle=UncannySenses.angle(p,a.getEyePosition()),half=UncannySenses.halfFov(p);
             if(angle>half*.52&&angle<half*1.04&&UncannySenses.clear(p,a.getEyePosition())){
                 double d=a.distanceToSqr(p);if(d<proximity){proximity=d;var look=UncannySenses.look(p);var delta=a.position().subtract(p.position());nearest=look.x*delta.z-look.z*delta.x>0?1:-1;}
@@ -212,7 +213,7 @@ public final class UncannyStories {
         }
         if(own.getBoolean("FalseDoors")){
             // "Don't back up without looking behind you first." In the dark, a frame the reader is not facing clicks open;
-            // it shuts again with the light. A frame the reader opened by hand stays as they left it.
+            // it shuts again with the light. A hand can examine it, but cannot open it.
             int auto=own.getInt("FalseAuto");
             for(int i=0;i<UncannyRooms.FALSE_DOORS.size();i++){
                 var at=b.offset(UncannyRooms.FALSE_DOORS.get(i));var lower=p.serverLevel().getBlockState(at);
@@ -264,7 +265,7 @@ public final class UncannyStories {
         if(place==LabyrinthPlace.MOTION_LIGHT){
             if(rel.equals(UncannyRooms.INTERCOM)){if(!own.getBoolean("Read_Source")&&!own.getBoolean("BuzzerWarned")){own.putBoolean("BuzzerWarned",true);cue(p,"Black marker beside the panel: do not touch the brass button.");return true;}caught(p,b,place,own,"pressed_the_buzzer_release");return true;}
             if(rel.equals(UncannyRooms.HINGED)||rel.equals(UncannyRooms.HINGED.above())){own.putBoolean("HingeSeen",true);setDoor(p.serverLevel(),b.offset(UncannyRooms.HINGED),true);return true;}
-            if((UncannyRooms.FALSE_DOORS.contains(rel)||UncannyRooms.FALSE_DOORS.stream().anyMatch(r->r.above().equals(rel)))&&p.serverLevel().getBlockState(b.offset(rel)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(rel)).getValue(UncannyPropBlock.KIND)==FALSE_DOOR){own.putBoolean("FalseExamined",true);var lower=UncannyRooms.FALSE_DOORS.stream().filter(r->r.equals(rel)||r.above().equals(rel)).findFirst().orElse(rel);for(int y=0;y<2;y++){var at=b.offset(lower.above(y));var state=p.serverLevel().getBlockState(at);if(state.is(UncannyRegistry.PROP.get()))p.serverLevel().setBlock(at,state.setValue(UncannyPropBlock.STAGE,2+y),F);}cue(p,"The frame has no hinge pins.");return true;}
+            if((UncannyRooms.FALSE_DOORS.contains(rel)||UncannyRooms.FALSE_DOORS.stream().anyMatch(r->r.above().equals(rel)))&&p.serverLevel().getBlockState(b.offset(rel)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(rel)).getValue(UncannyPropBlock.KIND)==FALSE_DOOR){own.putBoolean("FalseExamined",true);cue(p,"The frame has no hinge pins.");return true;}
         }
         return false;
     }

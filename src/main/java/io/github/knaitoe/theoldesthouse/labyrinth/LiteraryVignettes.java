@@ -201,8 +201,20 @@ public final class LiteraryVignettes {
         // Blows do not hurt him and do not end the visit; they only push him off (0.4.120). The way through is to get away, or to hide.
         if(place==LabyrinthPlace.ELK_CARCASSES&&actor.role()==LiteraryActor.KILLER){ElkHunt.shoved(p,actor);return;}var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
         if(place==LabyrinthPlace.HOLY_RABBIT&&actor.role()==LiteraryActor.FATHER){actor.appearance(actor.role(),actor.phase());actor.say("I'm awake. I'm here.");own.putInt("FatherAwake",own.getInt("FatherAwake")+1);own.putInt("Drowse",Math.max(0,own.getInt("Drowse")-100));}
-        else{own.putBoolean("Interrupted",true);p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,80));actor.say("You need to leave.");LabyrinthDoors.goToJunction(p);}
+        else if(!hostile(p,actor)){
+            long now=p.serverLevel().getGameTime();
+            if(own.contains("FriendlyStrikeAt127")&&now-own.getLong("FriendlyStrikeAt127")<10)return;
+            int strikes=own.contains("FriendlyStrikeAt127")&&now-own.getLong("FriendlyStrikeAt127")>6000?0:own.getInt("FriendlyStrikes127");
+            own.putLong("FriendlyStrikeAt127",now);own.putInt("FriendlyStrikes127",++strikes);
+            if(strikes<4)p.displayClientMessage(Component.literal(switch(strikes){case 1->"Do you really want to do this?";case 2->"You have been noticed.";default->"Put it down.";}).withStyle(net.minecraft.ChatFormatting.GRAY),true);
+            else{own.putBoolean("Interrupted",true);p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,80));LabyrinthDoors.goToJunction(p);}
+        }
         save(d,p.getUUID(),place,own);
+    }
+    /** An attacking creature is never protected by the House's courtesy warning. */
+    public static boolean hostile(ServerPlayer p,LiteraryActor a){
+        if(a.role()==LiteraryActor.UNCANNY_GIANT||a.role()==LiteraryActor.UNCANNY_PROPPED||a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS||a.role()==LiteraryActor.UNCANNY_MARIONETTE||a.role()==LiteraryActor.UNCANNY_VISITOR||a.role()==LiteraryActor.KILLER)return true;
+        return a.scene().equals(ElkLot.PLACE.id())&&a.role()==LiteraryActor.STRANGER&&a.phase()>=5&&a.phase()<=7&&ElkLotNight.stage(shared(LabyrinthData.get(p.server),ElkLot.PLACE))>=3;
     }
     public static @Nullable LiteraryActor actor(ServerPlayer p,LabyrinthPlace place,String key,int role,BlockPos relative,boolean privateActor){var d=LabyrinthData.get(p.server);var s=shared(d,place);String id=privateActor?key+"_"+p.getUUID():key;
         if(s.hasUUID(id)){var e=p.serverLevel().getEntity(s.getUUID(id));return e instanceof LiteraryActor a?a:null;}
