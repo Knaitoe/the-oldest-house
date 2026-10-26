@@ -64,8 +64,9 @@ public final class DomesticAssetProof extends Screen {
         for(int i=0;i<views.size();i++){
             var v=views.get(i);if(mc.getBlockRenderer().getBlockModel(v.state)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing production model "+v.label);
             boolean tall=v.state.is(UncannyRegistry.FURNITURE.get())&&(v.state.getValue(UncannyFurnitureBlock.KIND)==UncannyFurnitureBlock.Kind.WARDROBE||v.state.getValue(UncannyFurnitureBlock.KIND)==UncannyFurnitureBlock.Kind.FRIDGE);float size=tall?scale*.65F:scale;
-            var p=g.pose();p.pushPose();p.translate((i%columns+.5)*cellW,35+(i/columns+.7)*cellH,150);p.scale(size,-size,size);p.mulPose(Axis.XP.rotationDegrees(24));p.mulPose(Axis.YP.rotationDegrees(page==5?155:25));p.translate(-.5,tall?-.8:-.3,-.5);
-            mc.getBlockRenderer().renderSingleBlock(v.state,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+            var p=g.pose();p.pushPose();p.translate((i%columns+.5)*cellW,35+(i/columns+.7)*cellH,150);p.scale(size,-size,size);p.mulPose(Axis.XP.rotationDegrees(24));p.mulPose(Axis.YP.rotationDegrees(page>=5?155:25));p.translate(-.5,tall?-.8:-.3,-.5);
+            if(v.state.is(LiteraryRegistry.PROP.get())&&v.state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.LEDGER)mc.getBlockRenderer().getModelRenderer().renderModel(p.last(),buffers.getBuffer(RenderType.cutout()),v.state,mc.getBlockRenderer().getBlockModel(v.state),1F,1F,1F,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+            else mc.getBlockRenderer().renderSingleBlock(v.state,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             if(page==6&&v.state.is(LiteraryRegistry.PROP.get())&&v.state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.JAR)FireflyJar.render(p,buffers,v.state.getValue(LiteraryPropBlock.STAGE)*80,net.minecraft.core.BlockPos.ZERO,OverlayTexture.NO_OVERLAY);
             buffers.endBatch();p.popPose();
             g.drawCenteredString(font,v.label,(int)((i%columns+.5)*cellW),(int)(35+(i/columns+1)*cellH),0xff25302a);
@@ -73,7 +74,16 @@ public final class DomesticAssetProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof DomesticAssetProof s)||++s.frames<12)return;
-        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-domestic-"+s.page+".png"));}
+        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            if(s.page==6)for(int cell:new int[]{10,11,12}){
+                double scale=im.getWidth()/(double)s.width,cellW=s.width/4.,cellH=(s.height-50.)/4;int count=0;
+                for(int x=(int)(cell%4*cellW*scale);x<(cell%4+1)*cellW*scale;x++)for(int y=(int)((35+cell/4*cellH)*scale);y<Math.min(im.getHeight(),(35+(cell/4+1)*cellH)*scale);y++){
+                    int color=im.getPixelRGBA(x,y),r=color&255,g=color>>>8&255,b=color>>>16&255;if(g>r+2&&r>b+35&&g>165)count++;
+                }
+                if(count==0)throw new IllegalStateException("The native jar glow is invisible at sample "+(cell-10));
+            }
+            im.writeToFile(dir.resolve("native-domestic-"+s.page+".png"));
+        }
         if(++s.page<7){s.frames=0;return;}
         Files.writeString(dir.resolve("domestic-assets-passed.txt"),"Seven native baked-model views: household handling, materials, optical fittings/mailboxes, hollow cupboards/red chairs, cabin/sink/jar glow and steel dumpster states. Full bright model review, not a lighting playthrough.\n");mc.setScreen(new DinerAssetProof());
     }

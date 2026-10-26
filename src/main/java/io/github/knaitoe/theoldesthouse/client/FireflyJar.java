@@ -1,8 +1,8 @@
 package io.github.knaitoe.theoldesthouse.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -21,16 +21,21 @@ public final class FireflyJar {
         return new Fly(x,y,z,(float)(pulse*pulse*pulse));
     }
     public static void render(PoseStack pose,MultiBufferSource out,double age,BlockPos at,int overlay){
-        var vertices=out.getBuffer(RenderType.entityTranslucent(TEXTURE));
+        var vertices=out.getBuffer(RenderType.entityTranslucentEmissive(TEXTURE));
         for(int i=0;i<6;i++){
             var f=sample(i,age,at.asLong());if(f.glow()<.015F)continue;
             pose.pushPose();pose.translate(f.x(),f.y(),f.z());
-            var facing=Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation();if(facing!=null)pose.mulPose(facing);
-            var p=pose.last();float r=.022F;int alpha=(int)(255*f.glow());
-            vertices.addVertex(p,-r,-r,0).setColor(255,255,255,alpha).setUv(0,1).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
-            vertices.addVertex(p,r,-r,0).setColor(255,255,255,alpha).setUv(1,1).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
-            vertices.addVertex(p,r,r,0).setColor(255,255,255,alpha).setUv(1,0).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
-            vertices.addVertex(p,-r,r,0).setColor(255,255,255,alpha).setUv(0,0).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
+            // Crossed emissive planes keep a tiny body visible from every side,
+            // including item/model previews with no world camera dispatcher.
+            for(int axis=0;axis<3;axis++){
+                pose.pushPose();if(axis==1)pose.mulPose(Axis.YP.rotationDegrees(90));if(axis==2)pose.mulPose(Axis.XP.rotationDegrees(90));
+                var p=pose.last();float r=.032F;int alpha=(int)(255*f.glow());
+                vertices.addVertex(p,-r,-r,0).setColor(255,255,255,alpha).setUv(0,1).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
+                vertices.addVertex(p,r,-r,0).setColor(255,255,255,alpha).setUv(1,1).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
+                vertices.addVertex(p,r,r,0).setColor(255,255,255,alpha).setUv(1,0).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
+                vertices.addVertex(p,-r,r,0).setColor(255,255,255,alpha).setUv(0,0).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
+                pose.popPose();
+            }
             pose.popPose();
         }
     }

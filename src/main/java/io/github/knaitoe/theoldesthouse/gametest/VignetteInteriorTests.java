@@ -34,6 +34,7 @@ public final class VignetteInteriorTests {
  public static void individualFittingsWorkAndLeaveTheOriginalStoryRoutesClear(GameTestHelper h){
   var f=new LiteraryTests.Fixture(h);fixture=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();
   for(var p:VignetteInteriors.PLACES)f.chunks.hold(f.level(p),SceneReview.area(f.base(p),p));
+  f.chunks.hold(f.in,SceneReview.area(f.base(LabyrinthPlace.QUIET_ROOM),LabyrinthPlace.QUIET_ROOM));
   h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"all authored room sections are resident")).thenExecute(()->{
    var reader=NativeTestPlayers.survival(h,"interior_reader");f.players.add(reader);var missing=new ArrayList<String>();
    for(var p:VignetteInteriors.PLACES){
@@ -78,6 +79,8 @@ public final class VignetteInteriorTests {
     slice(folder,"end_world_cabin","holiday_living_rooms",-12,12,-35,-13,-1,3);
     slice(folder,"usher","usher_vault",-8,8,-35,-18,-4,-2);
     slice(folder,"hill_nursery","hill_cellar",-13,13,-42,-30,-5,-2);
+    var quiet=LabyrinthPlace.QUIET_ROOM;f.built.add(quiet);var qb=f.base(quiet);LabyrinthHalls.build(f.in,qb,quiet);ScenePolish.polishOnce(f.in,f.origin,quiet);ArchitectureTests.export(f.in,qb,quiet);
+    java.nio.file.Files.move(java.nio.file.Path.of("../build/architecture-proof",quiet.id()+".json"),folder.resolve(quiet.id()+".json"),java.nio.file.StandardCopyOption.REPLACE_EXISTING);
    }catch(Exception ex){throw new RuntimeException(ex);}h.succeed();
   });
  }
@@ -111,7 +114,7 @@ public final class VignetteInteriorTests {
   }h.succeed();
  }
  /** A documented crop of the same actual server export; never invented geometry or a lighting simulation. */
- private static void slice(java.nio.file.Path folder,String source,String name,int x0,int x1,int z0,int z1,int y0,int y1)throws Exception{
+ static void slice(java.nio.file.Path folder,String source,String name,int x0,int x1,int z0,int z1,int y0,int y1)throws Exception{
   var root=com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(folder.resolve(source+".json"))).getAsJsonObject();var blocks=new com.google.gson.JsonArray();
   for(var element:root.getAsJsonArray("blocks")){var row=element.getAsJsonArray();int x=row.get(0).getAsInt(),y=row.get(1).getAsInt(),z=row.get(2).getAsInt();
    if(x<x0||x>x1||z<z0||z>z1||y<y0||y>y1||y>y0&&(x==x1||z==z1))continue;blocks.add(row);
