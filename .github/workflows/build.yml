@@ -98,7 +98,9 @@ jobs:
                   assert name in z.namelist(), name
               assert f'version="{expected_version}"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               ghosts = json.loads(z.read('assets/the_oldest_house/blockstates/ghosts_set.json'))['variants']
-              assert len(ghosts) == 152
+              expected_ghost_kinds = {'wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg','stair_rail','stair_rail_top'}
+              assert len(ghosts) == len(expected_ghost_kinds)*4
+              assert {frozenset(key.split(',')) for key in ghosts} == {frozenset((f'kind={kind}',f'facing={face}')) for kind in expected_ghost_kinds for face in ('north','east','south','west')}
               for variant in ghosts.values():
                   assert json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':')[1]+'.json'))['elements']
               for name in ('marjorie','merry','john','sarah','barry','father_wanderly','marjorie_dinner','john_hand'):
@@ -855,7 +857,7 @@ jobs:
           test -s build/font-smoke/native-ghosts-fixtures.png
           test -s build/font-smoke/native-ghosts-paper-and-cases.png
           test -s build/font-smoke/native-ghosts-final-dinner.png
-          for view in all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions; do test -s build/font-smoke/native-ghosts-$view.png; done
+          for view in all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions connected-stairs; do test -s build/font-smoke/native-ghosts-$view.png; done
           test -s build/font-smoke/scenes/ghosts_upstairs.png
           test -s build/font-smoke/scenes/ghosts_basement.png
           test -s build/font-smoke/literary-passed.txt
@@ -1489,7 +1491,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PwindowEntrySmoke --no-daemon
           test -s build/font-smoke/window-entry-passed.txt
-          for view in reach sill pull lower crawl-left crawl-right paw-open paw-curl paw-closed; do test -s build/font-smoke/native-window-entry-$view.png; done
+          for view in reach sill pull lower crawl-left crawl-right paw-open paw-curl paw-closed window-stand bed-heave-left bed-heave-right; do test -s build/font-smoke/native-window-entry-$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1722,7 +1724,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','GoatmanBedtimeTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused trailer, funeral and hospital native cases passed; the complete suite remains required.')
           PY
@@ -1829,7 +1831,7 @@ jobs:
           import re
           from pathlib import Path
           log=Path('build/interior-native.log').read_text()
-          declared=sum(len(re.findall(r'@GameTest\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('VignetteInteriorTests.java','DomesticLivesTests.java','PlaytestScenery130Tests.java'))
+          declared=sum(len(re.findall(r'@GameTest\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('VignetteInteriorTests.java','DomesticLivesTests.java','PlaytestScenery130Tests.java','ArchiveReaderFilesTests.java'))
           completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
           assert completed and int(completed[-1])==declared, 'Every native interior case must finish.'
           assert not re.search(r'[1-9]\d* required tests failed',log), 'A required interior case failed.'
