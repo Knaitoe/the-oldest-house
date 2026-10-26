@@ -19,7 +19,7 @@ public final class BackseatArt {
     }
     public static void draw(PoseStack p,MultiBufferSource out,int light,int overlay,float door,float wiper){
         for(var box:BackseatCarMesh.SHELL)box(p,out,box,light,overlay);
-        p.pushPose();p.translate(-19/16D,0,-20/16D);p.mulPose(Axis.YP.rotationDegrees(-door*72));p.translate(19/16D,0,20/16D);
+        p.pushPose();p.translate(-19/16D,0,-20/16D);p.mulPose(Axis.YP.rotationDegrees(-door*90));p.translate(19/16D,0,20/16D);
         for(var box:BackseatCarMesh.DRIVER_DOOR)box(p,out,box,light,overlay);p.popPose();
         for(var box:BackseatCarMesh.STEERING)box(p,out,box,light,overlay);
         for(int x:new int[]{-12,6}){

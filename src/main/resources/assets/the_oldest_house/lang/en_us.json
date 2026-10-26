@@ -394,5 +394,13 @@
   "item.the_oldest_house.diner_breakfast": "Breakfast",
   "subtitles.the_oldest_house.cellar_flesh_grow": "Flesh swells",
   "subtitles.the_oldest_house.cellar_flesh_tear": "Wet flesh tears",
-  "subtitles.the_oldest_house.cellar_flesh_gurgle": "Wet gurgling"
+  "subtitles.the_oldest_house.cellar_flesh_gurgle": "Wet gurgling",
+  "subtitles.the_oldest_house.backseat.idle": "Engine idles",
+  "subtitles.the_oldest_house.backseat.radio": "Soft chords from the dashboard",
+  "subtitles.the_oldest_house.backseat.wiper": "Rubber wipers drag over glass",
+  "subtitles.the_oldest_house.backseat.latch": "Car door clicks shut",
+  "subtitles.the_oldest_house.backseat.lock": "Child locks slam down",
+  "subtitles.the_oldest_house.backseat.rise": "Cloth snaps behind you",
+  "subtitles.the_oldest_house.backseat.glass": "Windshield bursts inward",
+  "subtitles.the_oldest_house.backseat.impact": "Steel folds around the cabin"
 }

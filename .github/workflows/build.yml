@@ -1508,13 +1508,27 @@ jobs:
           python3 tools/draw_backseat_materials.py --check
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbackseatArtSmoke --no-daemon
           test -s build/backseat-art/passed.txt
-          for view in front-open rear-open side-closed front-closed door-half rear-quarter; do test -s build/backseat-art/native-backseat-$view.png; done
+          for view in front-open rear-open side-closed front-closed door-half rear-quarter driver-forward driver-mirror; do test -s build/backseat-art/native-backseat-$view.png; done
+      - name: Native Backseat seat, door, collision and original-custody checks
+        timeout-minutes: 6
+        run: |
+          python3 tools/generate_backseat_audio.py --check
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_backseat --no-daemon 2>&1 | tee build/backseat-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/BackseatCarTests.java').read_text()))
+          complete=re.findall(r'All (\d+) required tests passed',Path('build/backseat-native.log').read_text())
+          assert complete and int(complete[-1])==declared,(declared,complete)
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backseat-native-art-${{ github.sha }}
           path: |
             build/backseat-art/
+            build/backseat-native.log
             run/logs/latest.log
             run/crash-reports/
           if-no-files-found: warn

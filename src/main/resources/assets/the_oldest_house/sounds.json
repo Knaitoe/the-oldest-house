@@ -2050,5 +2050,77 @@
         "attenuation_distance": 16
       }
     ]
+  },
+  "backseat.idle": {
+    "subtitle": "subtitles.the_oldest_house.backseat.idle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/idle",
+        "attenuation_distance": 18
+      }
+    ]
+  },
+  "backseat.radio": {
+    "subtitle": "subtitles.the_oldest_house.backseat.radio",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/radio",
+        "attenuation_distance": 18
+      }
+    ]
+  },
+  "backseat.wiper": {
+    "subtitle": "subtitles.the_oldest_house.backseat.wiper",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/wiper",
+        "attenuation_distance": 18
+      }
+    ]
+  },
+  "backseat.latch": {
+    "subtitle": "subtitles.the_oldest_house.backseat.latch",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/latch",
+        "attenuation_distance": 18
+      }
+    ]
+  },
+  "backseat.lock": {
+    "subtitle": "subtitles.the_oldest_house.backseat.lock",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/lock",
+        "attenuation_distance": 18
+      }
+    ]
+  },
+  "backseat.rise": {
+    "subtitle": "subtitles.the_oldest_house.backseat.rise",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/rise",
+        "attenuation_distance": 18
+      }
+    ]
+  },
+  "backseat.glass": {
+    "subtitle": "subtitles.the_oldest_house.backseat.glass",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/glass",
+        "attenuation_distance": 18
+      }
+    ]
+  },
+  "backseat.impact": {
+    "subtitle": "subtitles.the_oldest_house.backseat.impact",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/impact",
+        "attenuation_distance": 18
+      }
+    ]
   }
 }

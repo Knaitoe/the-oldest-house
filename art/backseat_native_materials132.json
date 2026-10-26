@@ -19,7 +19,12 @@
   "native_model": "BackseatCarMesh",
   "native_renderer": "BackseatArt",
   "native_proof": "gradle runClient -PbackseatArtSmoke",
-  "native_views": 6,
+  "native_views": 8,
   "preview": "art/review_04132/backseat-native-materials.png",
-  "playable_scene": "Not implemented. Art foundation only; excluded from Witness."
+  "playable_scene": "Full encounter not implemented; excluded from Witness.",
+  "native_component_tests": 2,
+  "driver_preview": "art/review_04132/backseat-driver-view.png",
+  "physical_component": "Working owner-bound native seat, fitted collision and door; private radio and lock sounds; camera-driven reveal phase. Full road/figure/crash/return encounter remains pending.",
+  "audio_source": "tools/generate_backseat_audio.py",
+  "original_subtitled_cues": 8
 }

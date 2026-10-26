@@ -962,18 +962,20 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     @GameTest(template="empty",batch="literary_elk_betrayal",timeoutTicks=500)
     public static void elkKillersArePrivateAndMovingUnderThePileGivesTheReaderAway(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("elk_hider",place);var peer=f.player("elk_peer",place);var b=f.base(place);
-        h.runAfterDelay(10,()->{var mine=elkKiller(f,p);var theirs=elkKiller(f,peer);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(elkKiller(f,p)!=null&&elkKiller(f,peer)!=null,"both original private killers are loaded")).thenExecute(()->{var mine=elkKiller(f,p);var theirs=elkKiller(f,peer);
             h.assertTrue(mine!=null&&theirs!=null&&!mine.getUUID().equals(theirs.getUUID())&&mine.owner().get().equals(p.getUUID())&&theirs.owner().get().equals(peer.getUUID()),"each reader is hunted by their own killer");
-            var own=f.own(p,place);own.putInt("ElkStage",ElkHunt.ASHORE);own.putBoolean("ElkLanded",true);own.putBoolean("EscapedYacht",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            // This case starts with an UNSEEN arrival under the pile. The opening yacht ticks can already
+            // have recorded a sighting; carrying it across the fixture's relocation correctly betrays the reader.
+            elkAshore(f,p);var own=f.own(p,place);own.remove("ElkLastSeen");own.putBoolean("ElkBetrayed",false);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);KillerNavigation.stop(mine);
             mine.moveTo(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.CAVE_ENTRY)));
-            f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-191.5);f.look(p,b.offset(-22,ElkCarcassMap.CAVE_Y,-186));});
-        h.runAfterDelay(100,()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.SEARCH,"held still under the pile, the search begins: "+own.getInt("ElkStage"));
-            elkKiller(f,p).moveTo(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.PEER)));});
-        h.runAfterDelay(110,()->f.at(p,place,-23.4,ElkCarcassMap.CAVE_Y,-191.5));
-        h.runAfterDelay(125,()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getBoolean("ElkFound")&&!own.getBoolean("PassedSearch"),"moving while he is at the pile gives the reader away: "+own);
-            h.assertTrue(f.own(peer,place).getInt("ElkStage")==ElkHunt.ABOARD&&!f.own(peer,place).getBoolean("ElkFound"),"another reader's crossing is untouched");});
-        h.runAfterDelay(240,()->{h.assertTrue(p.getHealth()<p.getMaxHealth(),"found under the hides, he reaches in");
-            var peerKiller=elkKiller(f,peer);h.assertTrue(peer.getHealth()==peer.getMaxHealth()&&peerKiller.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START)))<4,"the peer's killer still waits below their own yacht deck");h.succeed();});
+            f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-191.5);f.look(p,b.offset(-22,ElkCarcassMap.CAVE_Y,-186));})
+        .thenWaitUntil(()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.SEARCH,"held still under the pile, the search begins: "+own.getInt("ElkStage"));})
+        .thenExecute(()->{KillerNavigation.stop(elkKiller(f,p));elkKiller(f,p).moveTo(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.PEER)));})
+        .thenIdle(10).thenExecute(()->f.at(p,place,-23.4,ElkCarcassMap.CAVE_Y,-191.5))
+        .thenWaitUntil(()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getBoolean("ElkFound")&&!own.getBoolean("PassedSearch"),"moving while he is at the pile gives the reader away: "+own);})
+        .thenExecute(()->h.assertTrue(f.own(peer,place).getInt("ElkStage")==ElkHunt.ABOARD&&!f.own(peer,place).getBoolean("ElkFound"),"another reader's crossing is untouched"))
+        .thenWaitUntil(()->h.assertTrue(p.getHealth()<p.getMaxHealth(),"found under the hides, he reaches in"))
+        .thenExecute(()->{var peerKiller=elkKiller(f,peer);h.assertTrue(peer.getHealth()==peer.getMaxHealth()&&peerKiller.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START)))<4,"the peer's killer still waits below their own yacht deck");}).thenSucceed();
     }
     @AfterBatch(batch="literary_elk_betrayal") public static void elkBetrayalDone(ServerLevel l){close();}
     /** Ashore and landed, with nothing else pending: the plain woods hunt. */

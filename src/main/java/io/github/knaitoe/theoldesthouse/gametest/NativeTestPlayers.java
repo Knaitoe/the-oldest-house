@@ -48,6 +48,12 @@ final class NativeTestPlayers {
         }
         return out;
     }
+    /** Mixed native effects, for actions that must start one sound and stop another in the same tick. */
+    static java.util.List<net.minecraft.network.protocol.Packet<?>> packets(ServerPlayer p){
+        var channel=CHANNELS.get(p.getUUID());channel.runPendingTasks();var out=new java.util.ArrayList<net.minecraft.network.protocol.Packet<?>>();
+        Object packet;while((packet=channel.readOutbound())!=null){if(packet instanceof net.minecraft.network.protocol.Packet<?> nativePacket)out.add(nativePacket);io.netty.util.ReferenceCountUtil.release(packet);}
+        return out;
+    }
     static void remove(ServerPlayer p){
         p.server.getPlayerList().remove(p);var connection=CONNECTIONS.remove(p.getUUID());
         if(connection!=null)connection.disconnect(Component.literal("Native test complete"));
