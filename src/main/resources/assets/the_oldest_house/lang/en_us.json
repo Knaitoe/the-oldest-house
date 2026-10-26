@@ -378,5 +378,9 @@
   "subtitles.the_oldest_house.winchester_chime": "The clock strikes",
   "item.the_oldest_house.cellar_key": "Cellar key",
   "effect.the_oldest_house.engulfed": "Engulfed",
-  "block.the_oldest_house.cellar_flesh": "Living flesh"
+  "block.the_oldest_house.cellar_flesh": "Living flesh",
+  "gui.the_oldest_house.previous_passage": "Earlier passage",
+  "gui.the_oldest_house.next_passage": "Later passage",
+  "gui.the_oldest_house.full_account": "Full account",
+  "gui.the_oldest_house.keep_account": "Keep full account"
 }

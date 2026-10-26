@@ -1032,7 +1032,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/uncanny-native.log').read_text())
-          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/UncannyTests.java').read_text()))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('UncannyTests.java','UncannyBranchTests.java'))
           assert completed and int(completed[-1])==declared,(completed,declared)
           PY
       - uses: actions/upload-artifact@v4
