@@ -217,7 +217,7 @@ for role,skin in [('father','#a6a28c'),('mother','#b5ada1'),('child','#b8baa2')]
 for index,role in enumerate(('father','mother','child')):
     LOOKS[f'uncanny_family_{index}']=replace(LOOKS[f'literary_family_{role}_changed'],logical=64,face_style='hollow_'+str(index))
 LOOKS['uncanny_family_3']=replace(LOOKS['uncanny_family_2'],hair='#332e2b',cut='long',cloth='#777365',pants='#565247',style='dress',sleeve=9,face_style='hollow_3')
-LOOKS['uncanny_bent_neck']=Look('#afa99a','#292b29','long','#424641','#424641','dress','#817c6c',eyes='#666c61',age=1,mark='family_mother_changed',sleeve=10,logical=64,face_style='frail')
+LOOKS['uncanny_bent_neck']=Look('#b19e90','#252625','long','#484c48','#3a3d3b','dress','#95877b',eyes='#666c61',age=1,mark='bent_injury',sleeve=10,logical=64,face_style='injured_neck')
 
 
 def net(u,v,w,h,d):
@@ -355,10 +355,12 @@ def hollow_face(look):
     d.line((7,1,7,5),fill=shade(hair,-9));d.point((1,1),fill=shade(hair,10))
     d.line((1,4,1,6),fill=shade(skin,-27));d.line((6,4,6,7),fill=shade(skin,-34))
     dark='#272b29';crease=shade(skin,-52)
-    if look.face_style=='frail':
+    if look.face_style in ('frail','injured_neck'):
         d.line((1,3,2,3),fill=crease);d.line((5,4,6,4),fill=crease)
         d.line((4,4,4,6),fill=shade(skin,-24));d.point((3,7),fill=dark)
         d.line((6,1,6,3),fill=hair)
+        if look.face_style=='injured_neck':
+            d.rectangle((1,2,2,5),fill='#705e65');d.point((2,4),fill='#574e55');d.line((5,3,6,3),fill='#3b3836');d.point((5,4),fill='#c7bbb0');d.rectangle((3,6,4,7),fill='#473a3b');d.point((4,5),fill='#927569')
     else:
         d.rectangle((1,2,6,7),fill=skin)
         d.point((2,3),fill='#32352f');d.point((5,3),fill='#32352f')
@@ -910,6 +912,12 @@ def paint(look):
             d.rectangle((x,y,x+S-1,y+2*S-1),fill='#a7b9aa');d.point((x,y),fill='#d5dfc5')
         d.line((21*S,21*S,23*S,24*S,25*S,22*S,26*S,21*S),fill='#434e44',width=S)
         d.line((20*S,24*S,21*S,27*S),fill='#454f43',width=S)
+    if look.mark=='bent_injury':
+        d=ImageDraw.Draw(im)
+        d.rectangle((21*S,20*S,25*S-1,23*S-1),fill=look.skin);d.rectangle((23*S,21*S,25*S-1,23*S-1),fill='#79616b')
+        d.line((21*S,24*S,22*S,26*S,21*S,28*S),fill='#242928',width=S);d.line((25*S,28*S,26*S,30*S),fill='#746f64',width=S)
+        d.rectangle((44*S,22*S,46*S-1,25*S-1),fill='#78616a');d.line((45*S,25*S,46*S,27*S),fill='#b19e90',width=S)
+        for x in (1,25):d.rectangle((x*S,11*S,(x+2)*S-1,14*S-1),fill='#79656c');d.point(((x+1)*S,12*S),fill='#59515b')
     # Native 256-square / 512x256 archive dimensions; art itself remains the exact two-pixel grid.
     return im.resize((look.logical*4,256),Image.Resampling.NEAREST)
 

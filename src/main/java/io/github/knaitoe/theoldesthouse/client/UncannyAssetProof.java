@@ -40,15 +40,16 @@ public final class UncannyAssetProof extends Screen {
                     var nativeTexture=mc.getTextureManager().getTexture(texture);if(!(nativeTexture instanceof DynamicTexture d)||d.getPixels()==null)throw new IllegalStateException("Uncanny skin is not a native pixel painting");
                     if((d.getPixels().getPixelRGBA(10,11)>>>24)!=255)throw new IllegalStateException("A native eight-pixel face has a hole");
                 }
-                var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(UncannyActorRenderer.WIDE),false);model.pose(roles[i],phases[i],false,24,1,.5F,0,0);
+                var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(roles[i]==LiteraryActor.UNCANNY_GIANT?UncannyActorRenderer.BENT:UncannyActorRenderer.WIDE),false);model.pose(roles[i],phases[i],false,24,1,.5F,0,0);
                 p.pushPose();p.translate((i%4+.5)*width/4,70+(i/4+1)*(height-100)/2.,150);float size=roles[i]==35?38:58;p.scale(size,size,-size);if(page==1)p.mulPose(Axis.YP.rotationDegrees(80));if(roles[i]==35)p.scale(2.5F,2.5F,2.5F);p.translate(0,-1.501,0);
                 model.renderToBuffer(p,buffers.getBuffer(roles[i]==34&&phases[i]<2?RenderType.entityTranslucent(texture):RenderType.entityCutoutNoCull(texture)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,roles[i]==34&&phases[i]<2?0x50ffffff:0xffffffff);buffers.endBatch();p.popPose();
                 g.drawCenteredString(font,new String[]{"The Propped","The waitress","The draft","The second apron","Stooping","Direct hallway","The peeler","On the step"}[i],(int)((i%4+.5)*width/4),(int)(75+(i/4+1)*(height-100)/2.),0xffe4d9bf);
             }
         }else if(page==2){
             int i=0;for(var kind:UncannyPropBlock.Kind.values()){
-                p.pushPose();p.translate((i%5+.5)*width/5,60+(i/5)*(height-120)/4.,150);p.scale(43,-43,43);p.mulPose(Axis.XP.rotationDegrees(22));p.mulPose(Axis.YP.rotationDegrees(28));p.translate(-.5,0,-.5);
-                UncannyPropRenderer.draw(UncannyPropBlock.of(kind,Direction.SOUTH),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();g.drawCenteredString(font,kind.getSerializedName(),(int)((i%5+.5)*width/5),75+(i/5)*(height-120)/4,0xffe4d9bf);i++;
+                int rows=(UncannyPropBlock.Kind.values().length+4)/5;float spacing=(height-130F)/rows;
+                p.pushPose();p.translate((i%5+.5)*width/5,50+(i/5)*spacing,150);p.scale(36,-36,36);p.mulPose(Axis.XP.rotationDegrees(22));p.mulPose(Axis.YP.rotationDegrees(28));p.translate(-.5,0,-.5);
+                UncannyPropRenderer.draw(UncannyPropBlock.of(kind,Direction.SOUTH),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();g.drawCenteredString(font,kind.getSerializedName(),(int)((i%5+.5)*width/5),(int)(63+(i/5)*spacing),0xffe4d9bf);i++;
             }
             int n=0;for(var item:new ItemStack[]{new ItemStack(UncannyRegistry.BONE_RING.get()),new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()),new ItemStack(UncannyRegistry.CLEAVER.get()),new ItemStack(UncannyRegistry.BAT.get()),new ItemStack(UncannyRegistry.MEAL.get())}){p.pushPose();p.translate(24+n*80,height-65,0);p.scale(3,3,1);g.renderItem(item,0,0);p.popPose();n++;}
         }else if(page==3){
@@ -59,6 +60,19 @@ public final class UncannyAssetProof extends Screen {
             }
             var key=new ItemStack(UncannyRegistry.CELLAR_KEY.get());p.pushPose();p.translate(width*.45F,height*.72F,0);p.scale(4,4,1);g.renderItem(key,0,0);p.popPose();g.drawCenteredString(font,key.getHoverName(),width/2,(int)(height*.72F)+75,0xffe4d9bf);
             var icon=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/mob_effect/engulfed.png");g.blit(icon,20,height-60,0,0,18,18,18,18);
+        }else if(page==7){
+            for(int i=0;i<3;i++){
+                var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(UncannyActorRenderer.WIDE),false);model.pose(LiteraryActor.UNCANNY_VISITOR,i+1,false,24,0,0,0,0);
+                p.pushPose();p.translate((i+.5)*width/3,height*.52F,150);p.scale(67,67,-67);p.translate(0,-1.501,0);model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(UncannyTextures.skin(LiteraryActor.UNCANNY_VISITOR,i+1))),LightTexture.pack(9,0),OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
+                g.drawCenteredString(font,new String[]{"First stillness: distant","Second stillness: closer","Third stillness: hand to glass"}[i],(int)((i+.5)*width/3),(int)(height*.57F),0xffe4d9bf);
+                p.pushPose();p.translate((i+.5)*width/3,height*.82F,150);p.scale(64,-64,64);p.translate(-.5,0,-.5);UncannyPropRenderer.draw(UncannyPropBlock.of(UncannyPropBlock.Kind.COURTYARD_PENDULUM,Direction.SOUTH),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,new float[]{-.38F,0,.38F}[i]);buffers.endBatch();p.popPose();
+            }
+        }else if(page==8){
+            g.drawCenteredString(font,"Production segmented model / uneven stride / front and side",width/2,27,0xffe4d9bf);
+            for(int i=0;i<6;i++){
+                var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(UncannyActorRenderer.BENT),false);model.pose(LiteraryActor.UNCANNY_GIANT,2,false,24,(i%3)*2.1F,.65F,0,0);
+                p.pushPose();p.translate((i%3+.5)*width/3,58+(i/3+.9)*(height-88)/2.,150);p.scale(42,42,-42);if(i>=3)p.mulPose(Axis.YP.rotationDegrees(90));p.scale(2.5F,2.5F,2.5F);p.translate(0,-1.501,0);model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(UncannyTextures.skin(LiteraryActor.UNCANNY_GIANT,2))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
+            }
         }else{
             g.fill(0,0,width,height,0xff424c47);for(int column=0;column<width;column+=32)g.fill(column,height/2,column+16,height/2+2,0xffc9c4af);
             UncannyClient.engulfed(g,width,height,new float[]{.2F,.6F,.95F}[page-4],24);
@@ -69,9 +83,9 @@ public final class UncannyAssetProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);var file=dir.resolve("native-uncanny-"+proof.page+".png");
         try(var shot=Screenshot.takeScreenshot(mc.getMainRenderTarget())){shot.writeToFile(file);}
         if(Boolean.getBoolean("the_oldest_house.uncannySmoke")){String data=java.util.Base64.getEncoder().encodeToString(Files.readAllBytes(file));TheOldestHouse.LOGGER.info("UNCANNY_ASSET_VIEW_BEGIN {}",proof.page);for(int i=0;i<data.length();i+=3800)TheOldestHouse.LOGGER.info("UNCANNY_ASSET_VIEW_DATA {}",data.substring(i,Math.min(i+3800,data.length())));TheOldestHouse.LOGGER.info("UNCANNY_ASSET_VIEW_END");}
-        proof.frames=0;if(++proof.page<7)return;
+        proof.frames=0;if(++proof.page<9)return;
         var atlas=mc.getTextureManager().getTexture(UncannyTextures.atlas());if(!(atlas instanceof DynamicTexture d)||d.getPixels()==null||d.getPixels().getWidth()!=64||d.getPixels().getHeight()!=64)throw new IllegalStateException("The native sixteen-pixel material atlas changed");
-        d.getPixels().writeToFile(dir.resolve("native-uncanny-materials.png"));Files.writeString(dir.resolve("uncanny-assets-passed.txt"),"Seven native pages: front/side poses, eight skin variants including the exhausted worker, nineteen fitted props, material atlas, four actual tissue models, the dedicated cellar key and status icon, and three engulfment overlay levels.\n");
+        d.getPixels().writeToFile(dir.resolve("native-uncanny-materials.png"));Files.writeString(dir.resolve("uncanny-assets-passed.txt"),"Nine native pages: front/side poses, eight skin variants including the exhausted worker, fitted props, material atlas, four actual tissue models, the dedicated cellar key and status icon, three engulfment overlay levels, three courtyard visitor stages and physical pendulum angles, and six production segmented injured-woman gait views.\n");
         if(Boolean.getBoolean("the_oldest_house.uncannySmoke")||Boolean.getBoolean("the_oldest_house.uncannyEnvironmentSmoke"))mc.stop();else mc.setScreen(new PlaytestVisualProof());
     }
 }

@@ -13,7 +13,7 @@ public final class SeanceSeating {
     private SeanceSeating(){}
     public static boolean seat(SeanceActor a,BlockPos b){
         var l=(ServerLevel)a.level();var at=b.offset(CHAIRS.get(a.role()));var s=l.getBlockState(at);
-        if(!HouseSitting.isSeat(s)||!l.getEntitiesOfClass(SeatEntity.class,new AABB(at),e->e.isVehicle()&&e!=a.getVehicle()).isEmpty())return false;
+        if(!(s.getBlock() instanceof HouseholdFurnitureBlock)||!HouseSitting.isSeat(s)||!l.getEntitiesOfClass(SeatEntity.class,new AABB(at),e->e.isVehicle()&&e!=a.getVehicle()).isEmpty())return false;
         if(a.getVehicle() instanceof SeatEntity){a.appearance(a.role(),true,a.afraid());return true;}
         var anchor=HouseSitting.SEAT.get().create(l);if(anchor==null)return false;anchor.support(at);
         double height=s.getBlock() instanceof HouseholdFurnitureBlock?s.getValue(HouseholdFurnitureBlock.KIND).seatHeight/16D:.5;

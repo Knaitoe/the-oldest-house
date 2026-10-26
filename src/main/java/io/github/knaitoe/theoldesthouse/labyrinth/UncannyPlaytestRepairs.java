@@ -13,9 +13,9 @@ import net.minecraft.world.phys.AABB;
 
 /** Once-only, recognized-cell repairs for the tunnel and foyer, including their old dynamic false frame. */
 public final class UncannyPlaytestRepairs {
-    public static final String STATE="uncanny_playtest_shell_0131";
+    public static final String STATE="uncanny_playtest_shell_0131b";
     private static Work work;
-    private static final List<LabyrinthPlace> ROOMS=List.of(LabyrinthPlace.PAINTED_INTERIOR,LabyrinthPlace.TUNNEL_PERIPHERY,LabyrinthPlace.MOTION_LIGHT);
+    private static final List<LabyrinthPlace> ROOMS=List.of(LabyrinthPlace.PAINTED_INTERIOR,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.TUNNEL_PERIPHERY,LabyrinthPlace.MOTION_LIGHT);
     private static final class Work {
         final ServerLevel l;final BlockPos origin,b;final LabyrinthPlace place;final BuildBlocks.Plan before,after;final int width,depth,total;int cursor;
         Work(ServerLevel l,BlockPos origin,LabyrinthPlace p,int cursor){this.l=l;this.origin=origin.immutable();place=p;b=LabyrinthPlaces.base(origin,p);before=BuildBlocks.record(l,()->UncannyRooms0129.build(l,b,p));after=BuildBlocks.record(l,()->UncannyRooms.build(l,b,p));var r=p.room();width=r.maxX()-r.minX()+1;depth=r.maxZ()-r.minZ()+1;total=width*depth*(r.maxY()-r.minY()+1);this.cursor=cursor;}
@@ -36,6 +36,12 @@ public final class UncannyPlaytestRepairs {
         while(work.cursor<work.total&&visits++<256&&(visits==1||System.nanoTime()<end)){
             int n=work.cursor++;var rel=new BlockPos(r.minX()+n%work.width,r.minY()+n/(work.width*work.depth),r.minZ()+n/work.width%work.depth);var at=work.b.offset(rel);var old=work.before.plannedState(at);var next=work.after.plannedState(at);var actual=l.getBlockState(at);
             boolean retired=p==LabyrinthPlace.MOTION_LIGHT&&rel.getX()==0&&rel.getZ()==-2&&rel.getY()>=0&&rel.getY()<=1&&actual.is(UncannyRegistry.PROP.get())&&actual.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.FALSE_DOOR;
+            boolean oldLamp=p==LabyrinthPlace.TUNNEL_PERIPHERY&&rel.getX()==0&&rel.getY()==2&&java.util.Set.of(-6,-20,-36,-52).contains(rel.getZ())&&actual.is(UncannyRegistry.FURNITURE.get())&&actual.getValue(UncannyFurnitureBlock.KIND)==UncannyFurnitureBlock.Kind.FLUORESCENT;
+            if(oldLamp){state.putBoolean(key+":lamp:"+rel.getZ(),actual.getValue(UncannyFurnitureBlock.OPEN));next=Blocks.AIR.defaultBlockState();retired=true;}
+            if(p==LabyrinthPlace.TUNNEL_PERIPHERY&&rel.getX()==0&&rel.getY()==3&&java.util.Set.of(-6,-20,-36,-52).contains(rel.getZ())&&next!=null&&next.is(UncannyRegistry.FURNITURE.get())&&next.getValue(UncannyFurnitureBlock.KIND)==UncannyFurnitureBlock.Kind.FLUSH_LIGHT){
+                next=next.setValue(UncannyFurnitureBlock.OPEN,state.getBoolean(key+":lamp:"+rel.getZ()));
+                if(actual.is(UncannyRegistry.material("workshop_wall"))||actual.is(Blocks.SMOOTH_STONE))old=actual;
+            }
             if(retired)next=Blocks.AIR.defaultBlockState();
             if(next==null||actual.equals(next)||!retired&&(old==null||!actual.equals(old)))continue;
             if(bodies.stream().anyMatch(a->a.getBoundingBox().intersects(new AABB(at))))continue;

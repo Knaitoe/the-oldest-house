@@ -210,6 +210,36 @@
       "model": "the_oldest_house:block/uncanny_fluorescent_open",
       "y": 270
     },
+    "kind=flush_light,facing=north,open=false": {
+      "model": "the_oldest_house:block/uncanny_flush_light"
+    },
+    "kind=flush_light,facing=east,open=false": {
+      "model": "the_oldest_house:block/uncanny_flush_light",
+      "y": 90
+    },
+    "kind=flush_light,facing=south,open=false": {
+      "model": "the_oldest_house:block/uncanny_flush_light",
+      "y": 180
+    },
+    "kind=flush_light,facing=west,open=false": {
+      "model": "the_oldest_house:block/uncanny_flush_light",
+      "y": 270
+    },
+    "kind=flush_light,facing=north,open=true": {
+      "model": "the_oldest_house:block/uncanny_flush_light_open"
+    },
+    "kind=flush_light,facing=east,open=true": {
+      "model": "the_oldest_house:block/uncanny_flush_light_open",
+      "y": 90
+    },
+    "kind=flush_light,facing=south,open=true": {
+      "model": "the_oldest_house:block/uncanny_flush_light_open",
+      "y": 180
+    },
+    "kind=flush_light,facing=west,open=true": {
+      "model": "the_oldest_house:block/uncanny_flush_light_open",
+      "y": 270
+    },
     "kind=window_frame,facing=north": {
       "model": "the_oldest_house:block/uncanny_window_frame"
     },

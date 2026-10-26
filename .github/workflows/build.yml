@@ -909,7 +909,7 @@ jobs:
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/uncanny-assets-passed.txt
-          for page in 0 1 2; do test -s build/font-smoke/native-uncanny-$page.png; done
+          for page in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-uncanny-$page.png; done
           test -s build/font-smoke/native-uncanny-materials.png
           test -s build/font-smoke/goatman-child-eyes-passed.txt
           test -s build/font-smoke/native-goatman-child-eyes.png
@@ -1038,7 +1038,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/uncanny-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('UncannyTests.java','UncannyBranchTests.java','Playtest0127Tests.java','Playtest0130Tests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('UncannyTests.java','UncannyBranchTests.java','Playtest0127Tests.java','Playtest0130Tests.java','FoyerMotionTests.java','Playtest0131Tests.java'))
           assert completed and int(completed[-1])==declared,(completed,declared)
           PY
       - uses: actions/upload-artifact@v4
@@ -1528,7 +1528,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannySmoke --no-daemon
           test -s build/font-smoke/uncanny-assets-passed.txt
-          for page in 0 1 2; do test -s build/font-smoke/native-uncanny-$page.png; done
+          for page in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-uncanny-$page.png; done
           test -s build/font-smoke/native-uncanny-materials.png
       - uses: actions/upload-artifact@v4
         if: always()

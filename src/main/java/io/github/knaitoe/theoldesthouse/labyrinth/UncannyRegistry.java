@@ -12,6 +12,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.*;
 /** Physical fittings and finite artifacts for the six uncanny rooms. */
 public final class UncannyRegistry {
+    private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> FLESH_GROW=sound("cellar_flesh_grow"),FLESH_TEAR=sound("cellar_flesh_tear"),FLESH_GURGLE=sound("cellar_flesh_gurgle");
+    private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String name){return SOUNDS.register(name,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,name)));}
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MobEffect> EFFECTS=DeferredRegister.create(Registries.MOB_EFFECT,TheOldestHouse.MOD_ID);
@@ -22,7 +25,7 @@ public final class UncannyRegistry {
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<UncannyPropBlock.Fitting>> FITTING=BES.register("uncanny_fitting",()->BlockEntityType.Builder.of(UncannyPropBlock.Fitting::new,PROP.get()).build(null));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<UncannyFurnitureBlock>> FURNITURE_TYPE=CODECS.register("uncanny_furniture",()->UncannyFurnitureBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<UncannyFleshBlock>> FLESH_TYPE=CODECS.register("cellar_flesh",()->UncannyFleshBlock.CODEC);
-    public static final DeferredBlock<UncannyFleshBlock> FLESH=BLOCKS.registerBlock("cellar_flesh",UncannyFleshBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.MUD).strength(.35F).sound(SoundType.SLIME_BLOCK).noLootTable());
+    public static final DeferredBlock<UncannyFleshBlock> FLESH=BLOCKS.registerBlock("cellar_flesh",UncannyFleshBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.MUD).strength(.35F).sound(UncannyFleshBlock.SOUNDS).noLootTable());
     public static final DeferredHolder<MobEffect,EngulfedEffect> ENGULFED=EFFECTS.register("engulfed",EngulfedEffect::new);
     public static final DeferredBlock<UncannyFurnitureBlock> FURNITURE=BLOCKS.registerBlock("uncanny_furniture",UncannyFurnitureBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(UncannyFurnitureBlock::light));
     public static final DeferredBlock<DoorBlock> DINER_DOOR=BLOCKS.register("uncanny_diner_door",()->new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_DOOR).noOcclusion().noLootTable()));
@@ -42,5 +45,5 @@ public final class UncannyRegistry {
     public static final DeferredItem<UncannyMenuItem> MENU=ITEMS.registerItem("second_waitress_menu",UncannyMenuItem::new,new Item.Properties().stacksTo(1));
     public static final DeferredItem<Item> BREAKFAST_ICON=ITEMS.registerSimpleItem("diner_breakfast",new Item.Properties().stacksTo(1));
     private UncannyRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);ITEMS.register(bus);EFFECTS.register(bus);}
+    public static void register(IEventBus bus){SOUNDS.register(bus);CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);ITEMS.register(bus);EFFECTS.register(bus);}
 }
