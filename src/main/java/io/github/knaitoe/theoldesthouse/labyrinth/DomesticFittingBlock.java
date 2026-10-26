@@ -2,6 +2,8 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.*;
@@ -25,6 +27,9 @@ public final class DomesticFittingBlock extends HorizontalDirectionalBlock {
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,15);
+    // Registry/tag refresh asks for each support face and collision shape again during login.
+    // These meshes depend only on the immutable state, never on the world or touching body.
+    private static final Map<BlockState,VoxelShape> SHAPES=new ConcurrentHashMap<>();
     public DomesticFittingBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.BREAKFAST).setValue(FACING,Direction.NORTH).setValue(STAGE,0));}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,FACING,STAGE);}
@@ -32,11 +37,14 @@ public final class DomesticFittingBlock extends HorizontalDirectionalBlock {
     public static int light(BlockState s){return s.getValue(KIND)==Kind.RADIO&&(s.getValue(STAGE)&4)!=0?2:0;}
     private static Vec3 local(BlockState s,BlockPos at,Vec3 hit){return VignetteHandlingBlock.local(at,s.getValue(FACING),hit);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
+        return SHAPES.computeIfAbsent(s,DomesticFittingBlock::buildShape);
+    }
+    private static VoxelShape buildShape(BlockState s){
         var result=Shapes.empty();int turns=VignetteHandlingBlock.turns(s.getValue(FACING));
         for(var b:DomesticFittingShapes.boxes(s.getValue(KIND),s.getValue(STAGE))){
             double x0=b[0],z0=b[2],x1=b[3],z1=b[5];
             for(int i=0;i<turns;i++){double a=16-z1,e=16-z0;z0=x0;z1=x1;x0=a;x1=e;}
-            result=Shapes.or(result,Block.box(x0,b[1],z0,x1,b[4],z1));
+            result=Shapes.joinUnoptimized(result,Block.box(x0,b[1],z0,x1,b[4],z1),BooleanOp.OR);
         }
         return result.optimize();
     }
