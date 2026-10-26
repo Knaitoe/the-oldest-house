@@ -48,7 +48,8 @@ public final class UncannyCellar {
         var queue=shared.getList("Regrow",Tag.TAG_COMPOUND);int changed=0;
         if(!shared.getBoolean("RegrowthBudget130")){for(var row:queue){var e=(CompoundTag)row;e.putLong("Due",Math.max(e.getLong("Due"),l.getGameTime()+360));}shared.putBoolean("RegrowthBudget130",true);}
         if(l.getGameTime()%100!=0)return;
-        for(int i=queue.size()-1;i>=0&&changed<1;i--){var e=queue.getCompound(i);if(e.getLong("Due")>l.getGameTime())continue;var r=BlockPos.of(e.getLong("At"));var at=b.offset(r);
+        queue.sort(Comparator.comparingLong(t->((CompoundTag)t).getLong("Due")));
+        for(int i=0;i<queue.size()&&changed<1;i++){var e=queue.getCompound(i);if(e.getLong("Due")>l.getGameTime())continue;var r=BlockPos.of(e.getLong("At"));var at=b.offset(r);
             if(!inMass(r)||protectedCell(r)){queue.remove(i);continue;}
             if(body(l,at)){e.putLong("Due",l.getGameTime()+30);continue;}
             if(l.isEmptyBlock(at)&&neighbor(l,at)){grow(l,at,r);changed++;}

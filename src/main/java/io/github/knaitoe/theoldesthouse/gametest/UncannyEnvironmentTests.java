@@ -85,10 +85,10 @@ public final class UncannyEnvironmentTests {
             // ticking entities after 300 ticks: the falling gravel would hang in the air. Force the yard until the batch ends.
             forcedLevel=yardLevel;for(int x:new int[]{-7,7})for(int z:new int[]{-25,-15}){var c=new net.minecraft.world.level.ChunkPos(yard.offset(x,0,z));if(!yardLevel.getForcedChunks().contains(c.toLong())&&yardLevel.setChunkForced(c.x,c.z,true))FORCED.add(c);}
             f.source(p,place);var own=f.own(p,place);own.putInt("UncannyAge",300);
-            for(int i=0;i<18;i++)UncannyStories.reader(p,b,place,own);
-            own.putInt("UncannyAge",600);own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);for(int i=0;i<90&&!own.getBoolean("MealServed");i++)UncannyStories.reader(p,b,place,own);
-            LiteraryVignettes.save(f.data(),p.getUUID(),place,own);h.assertTrue(own.getBoolean("MealServed"),"the legacy room served its actual original meal before refitting");
-            meal[0]=(ItemEntity)l.getEntity(own.getUUID("PlateEntity"));h.assertTrue(meal[0]!=null,"the original exists as a native item entity");kept.putUUID("Meal",meal[0].getUUID());kept.put("Stack",meal[0].getItem().save(p.registryAccess()));kept.putUUID("Actor",own.getUUID("CastFake"));kept.put("Source",own.getCompound("Original_Source").copy());
+            // This is the actual pre-0.4.131 floating original, before the new placed-plate migration.
+            var legacy=ItemStack.parseOptional(p.registryAccess(),own.getCompound("OriginalMeal"));var oldPlate=new ItemEntity(l,b.getX()+5.5,b.getY()+1.015,b.getZ()-18.5,legacy);oldPlate.setTarget(p.getUUID());oldPlate.setNoGravity(true);l.addFreshEntity(oldPlate);
+            own.remove("OriginalMeal");own.putBoolean("MealReleased",true);own.putBoolean("MealServed",true);own.putUUID("PlateEntity",oldPlate.getUUID());LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            meal[0]=oldPlate;kept.putUUID("Meal",oldPlate.getUUID());kept.put("Stack",oldPlate.getItem().save(p.registryAccess()));kept.putUUID("Actor",own.getUUID("CastFake"));kept.put("Source",own.getCompound("Original_Source").copy());
             source[0]=l.getBlockEntity(b.offset(UncannyRooms.source(place)));
             h.assertTrue(!UncannyEnvironmentRepairs.step(l,f.origin,place)&&!l.getBlockState(b.offset(-2,-1,-16)).is(UncannyRegistry.material("diner_tile")),"a reader in the room prevents every refit edit");
             l.setBlock(b.offset(-1,-1,-16),Blocks.GOLD_BLOCK.defaultBlockState(),3);

@@ -27,7 +27,7 @@ public final class UncannyBranchTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual room and original bodies loaded")).thenExecute(()->{step(f,p,place);test.accept(f,p);}).thenSucceed();
     }
     private static CompoundTag step(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place){var own=f.own(p,place);UncannyStories.reader(p,f.base(place),place,own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);return own;}
-    private static void age(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,int age){var own=f.own(p,place);own.putInt("UncannyAge",age);if(place==LabyrinthPlace.SECOND_WAITRESS){own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);}LiteraryVignettes.save(f.data(),p.getUUID(),place,own);}
+    private static void age(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,int age){var own=f.own(p,place);own.putInt("UncannyAge",age);if(place==LabyrinthPlace.SECOND_WAITRESS){if(!own.contains("SecondManifestAge131"))own.putInt("SecondManifestAge131",age-10);own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);}LiteraryVignettes.save(f.data(),p.getUUID(),place,own);}
     private static void door(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,BlockPos rel){var at=f.base(place).offset(rel);p.gameMode.useItemOn(p,f.level(place),p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));}
     private static void look(ServerPlayer p,LiteraryActor a){p.lookAt(EntityAnchorArgument.Anchor.EYES,a.getEyePosition());}
     private static void close(){if(fixture!=null){fixture.close();fixture=null;}}
@@ -58,7 +58,7 @@ public final class UncannyBranchTests {
     @AfterBatch(batch="branch_board") public static void boardDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="branch_diner",timeoutTicks=300) public static void seeingTheTranslucentWaitressPermitsAnActualEarlyFrontExit(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
         var place=LabyrinthPlace.SECOND_WAITRESS;var peer=f.player("branch_diner_peer",place);age(f,p,place,300);var own=step(f,p,place);var fake=UncannyStories.actor(p,own,"CastFake");
-        f.at(p,place,-7.5,0,-21.5);look(p,fake);own=step(f,p,place);h.assertTrue(own.getBoolean("SawSecond"),"the reader actually sees the original translucent body: reader="+p.position()+" waitress="+fake.position()+" phase="+fake.phase());var meal=own.getCompound("OriginalMeal").copy();
+        f.at(p,place,.5,0,-17.5);look(p,fake);own=step(f,p,place);h.assertTrue(own.getBoolean("SawSecond"),"the reader actually sees the original translucent body: reader="+p.position()+" waitress="+fake.position()+" phase="+fake.phase());var meal=own.getCompound("OriginalMeal").copy();
         f.at(p,place,.5,0,-4.5);p.move(MoverType.SELF,new Vec3(0,0,3));own=step(f,p,place);
         h.assertTrue(own.getBoolean("Completed")&&own.getString("Outcome").equals("left_before_the_plate")&&!own.getBoolean("MealServed")&&!own.getBoolean("Read_Source"),"crossing the native front door before service is a distinct escape");
         h.assertTrue(meal.equals(own.getCompound("OriginalMeal"))&&!own.getBoolean("MealReleased")&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.SECOND_WAITRESS),"early departure neither manufactures a plate nor assigns a peer its history");

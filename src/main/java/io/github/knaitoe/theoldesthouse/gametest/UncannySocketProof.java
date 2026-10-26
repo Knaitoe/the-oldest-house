@@ -115,6 +115,8 @@ public final class UncannySocketProof {
                 var place=phase==1?LabyrinthPlace.PAINTED_INTERIOR:phase==2?LabyrinthPlace.SECOND_WAITRESS:phase==4?LabyrinthPlace.TUNNEL_PERIPHERY:null;
                 if(place!=null){var own=own(p,place);own.putInt("UncannyAge",phase==1?120:phase==2?270:170);save(p,place,own);}
             }
+            // This is explicitly the translucent object view; hold its short production fade for native capture.
+            if(phase==2)for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.SECOND_WAITRESS);own.putInt("SecondManifestAge131",own.getInt("UncannyAge")-10);save(p,LabyrinthPlace.SECOND_WAITRESS,own);}
             if(s.getTickCount()%20==0){marker(a,phase);marker(b,phase);}
             if(!CHUNKS.ready()||!both(a,b))return;
             if(phase==1){for(var p:List.of(a,b)){at(p,LabyrinthPlace.SECOND_WAITRESS,.5,0,p==a?-17.5:-22.5);sourceFixture(p,LabyrinthPlace.SECOND_WAITRESS,270);}step(s,2);}

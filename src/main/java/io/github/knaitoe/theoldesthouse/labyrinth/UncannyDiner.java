@@ -74,7 +74,7 @@ public final class UncannyDiner {
             if(w.hasUUID("Host127")&&w.getUUID("Host127").equals(p.getUUID())&&own.getInt("UncannyAge")-own.getInt("DinerHostedAt127")>=500){
                 kitchenDoor(p,a,b,true);int leg=own.getInt("DinerReturnLeg130");
                 if(leg<RETURN.size()&&DinerWalk.toward(a,point(b,RETURN.get(leg))))own.putInt("DinerReturnLeg130",++leg);
-                if(leg>=RETURN.size()){own.putBoolean("DinerRealReturned130",true);w.remove("Host127");UncannyStories.world(p.serverLevel(),b,PLACE,w);DinerWalk.register(a,b,false);}
+                if(leg>=RETURN.size()){own.putBoolean("DinerRealReturned130",true);if(!own.contains("SecondManifestAge131"))own.putInt("SecondManifestAge131",own.getInt("UncannyAge"));w.remove("Host127");UncannyStories.world(p.serverLevel(),b,PLACE,w);DinerWalk.register(a,b,false);}
             }return true;
         }
         if(!w.hasUUID("Host127")||!w.getUUID("Host127").equals(p.getUUID())){if(!busy(p,w))DinerWalk.register(a,b,false);return false;}
