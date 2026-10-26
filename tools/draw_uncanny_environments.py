@@ -142,7 +142,7 @@ def furniture():
     out['stool']=[p((2,10,2),(14,13,14),'vinyl'),p((3,9,3),(13,10,13),'steel'),p((7,1,7),(9,9,9),'steel'),p((3,0,3),(13,1,13),'black')]
     out['counter']=[p((0,0,2),(16,14,16),'diner_dado'),p((0,14,0),(16,16,16),'formica'),p((0,13,0),(16,14,2),'steel'),p((0,1,1),(16,3,2),'steel')]
     out['cabinet']=[p((0,0,2),(16,2,16),'steel'),p((0,2,15),(16,15,16),'enamel'),p((0,2,2),(1,15,15),'enamel'),p((15,2,2),(16,15,15),'enamel'),p((0,15,1),(16,16,16),'steel'),p((1,2,1),(15,15,2),'enamel'),p((11,8,0),(13,10,1),'steel')]
-    out['fridge']=[p((0,0,1),(16,32,16),'enamel'),p((1,1,0),(15,22,1),'ceramic'),p((12,6,0),(13,19,2),'steel'),p((1,23,0),(15,31,1),'ceramic'),p((12,25,0),(13,29,2),'steel')]
+    out['fridge']=[p((0,0,1),(1,32,16),'enamel'),p((15,0,1),(16,32,16),'enamel'),p((1,0,1),(15,1,16),'enamel'),p((1,31,1),(15,32,16),'enamel'),p((1,1,15),(15,31,16),'enamel'),p((1,22,1),(15,23,15),'enamel'),p((1,10,2),(15,11,15),'steel'),p((1,1,0),(15,22,1),'ceramic'),p((12,6,-1),(13,19,0),'steel'),p((1,23,0),(15,31,1),'ceramic'),p((12,25,-1),(13,29,0),'steel')]
     out['coffee_maker']=[p((2,0,4),(14,2,14),'steel'),p((3,2,11),(13,13,14),'enamel'),p((3,11,3),(13,14,14),'steel'),p((5,2,4),(11,8,10),'black'),p((11,4,5),(13,7,8),'steel'),p((5,8,4),(11,9,10),'black')]
     out['griddle']=[p((0,0,0),(16,14,16),'enamel'),p((0,14,0),(16,16,16),'steel'),p((2,15,2),(14,16,13),'black'),p((2,10,0),(5,12,1),'black'),p((10,10,0),(13,12,1),'black')]
     out['sink']=[p((0,0,3),(16,12,16),'enamel'),p((0,12,1),(16,14,16),'steel'),p((2,14,3),(4,15,13),'steel'),p((12,14,3),(14,15,13),'steel'),p((4,14,3),(12,15,5),'steel'),p((4,14,11),(12,15,13),'steel'),p((6,14,13),(8,16,15),'steel')]
@@ -158,12 +158,16 @@ def furniture():
     out['sofa_left']=out['sofa']+[p((0,7,2),(3,13,15),'parlor_cloth')]
     out['sofa_right']=out['sofa']+[p((13,7,2),(16,13,15),'parlor_cloth')]
     out['coffee_table']=[p((0,9,0),(16,11,16),'walnut'),leg(1,2,'walnut',9),leg(13,2,'walnut',9),leg(1,12,'walnut',9),leg(13,12,'walnut',9)]
-    out['diner_chair']=[leg(2,3,'steel',7),leg(12,3,'steel',7),leg(2,12,'steel',7),leg(12,12,'steel',7),p((1,7,2),(15,9,15),'vinyl'),p((2,9,13),(4,18,15),'steel'),p((12,9,13),(14,18,15),'steel'),p((1,12,12),(15,18,16),'vinyl')]
+    # The posts end under the backrest. Their former y=18 caps were coplanar
+    # with the vinyl top and flickered through it as the camera moved.
+    out['diner_chair']=[leg(2,3,'steel',7),leg(12,3,'steel',7),leg(2,12,'steel',7),leg(12,12,'steel',7),p((1,7,2),(15,9,15),'vinyl'),p((2,9,13),(4,12,15),'steel'),p((12,9,13),(14,12,15),'steel'),p((1,12,12),(15,18,16),'vinyl')]
     out['desk']=[p((0,14,1),(16,16,16),'walnut'),p((1,0,3),(7,14,15),'walnut'),leg(12,3,'walnut'),leg(12,12,'walnut'),p((2,3,1),(6,7,2),'walnut'),p((3,5,0),(5,6,1),'steel')]
-    out['sideboard']=[p((1,0,3),(3,3,5),'dark_wood'),p((13,0,3),(15,3,5),'dark_wood'),p((0,3,2),(16,15,16),'dark_wood'),p((0,15,1),(16,16,16),'walnut'),p((2,5,1),(14,13,2),'walnut'),p((11,8,0),(12,10,1),'steel')]
+    out['sideboard']=[p((1,0,3),(3,3,5),'dark_wood'),p((13,0,3),(15,3,5),'dark_wood'),p((0,3,2),(1,15,16),'dark_wood'),p((15,3,2),(16,15,16),'dark_wood'),p((1,3,15),(15,15,16),'dark_wood'),p((1,3,2),(15,5,15),'dark_wood'),p((1,13,2),(15,15,15),'dark_wood'),p((0,15,1),(16,16,16),'walnut'),p((2,5,1),(14,13,2),'walnut'),p((11,8,0),(12,10,1),'steel')]
     out['bookcase']=[p((0,0,4),(2,16,16),'dark_wood'),p((14,0,4),(16,16,16),'dark_wood'),p((2,0,5),(14,2,16),'dark_wood'),p((2,8,5),(14,9,16),'dark_wood'),p((2,15,5),(14,16,16),'dark_wood'),p((2,2,7),(14,8,15),'books'),p((2,9,7),(14,15,15),'books')]
     out['picture']=[p((2,2,14),(14,14,16),'dark_wood'),p((3,3,13),(13,13,14),'picture')]
-    out['wardrobe']=[p((1,0,3),(15,32,16),'walnut'),p((2,1,2),(14,31,3),'dark_wood'),p((10,14,1),(11,18,2),'steel')]
+    # A real shell, shelf and rail. Swinging the door exposes this cavity;
+    # the old full backing cube hid the moved leaf and looked like a lost handle.
+    out['wardrobe']=[p((1,0,3),(2,32,16),'walnut'),p((14,0,3),(15,32,16),'walnut'),p((2,0,3),(14,1,16),'walnut'),p((2,31,3),(14,32,16),'walnut'),p((2,1,15),(14,31,16),'walnut'),p((2,7,3),(14,8,15),'dark_wood'),p((3,27,9),(13,28,10),'steel'),p((4,1,7),(12,3,14),'linen'),p((2,1,2),(14,31,3),'dark_wood'),p((10,14,1),(11,18,2),'steel')]
     out['bedside']=[p((1,1,3),(3,5,5),'walnut'),p((13,1,3),(15,5,5),'walnut'),p((0,5,2),(16,15,16),'walnut'),p((0,15,1),(16,16,16),'walnut'),p((11,8,1),(13,9,2),'steel')]
     out['headboard']=[p((0,0,13),(16,14,16),'walnut'),p((0,14,12),(16,16,16),'walnut')]
     out['hamper']=[p((2,0,3),(14,12,15),'linen'),p((1,12,2),(15,14,16),'walnut')]
@@ -201,9 +205,9 @@ def pieces_for(name,opened):
     if not opened:return parts
     parts=json.loads(json.dumps(parts))
     if name=='cabinet':parts[-2]['from']=[1,2,2];parts[-2]['to']=[2,15,15];parts[-1]['from']=[0,8,11];parts[-1]['to']=[1,10,13]
-    elif name=='wardrobe':parts[-2]['from']=[1,1,3];parts[-2]['to']=[2,31,15];parts[-1]['from']=[0,14,10];parts[-1]['to']=[1,18,11]
-    elif name=='sideboard':parts[-2]['from']=[1,5,2];parts[-2]['to']=[2,13,14];parts[-1]['from']=[0,8,11];parts[-1]['to']=[1,10,12]
-    elif name=='fridge':parts[1]['from']=[0,1,1];parts[1]['to']=[1,22,15];parts[2]['from']=[0,6,12];parts[2]['to']=[2,19,13]
+    elif name=='wardrobe':parts[-2]['from']=[2,1,-9];parts[-2]['to']=[3,31,3];parts[-1]['from']=[1,14,-7];parts[-1]['to']=[2,18,-6]
+    elif name=='sideboard':parts[-2]['from']=[2,5,-10];parts[-2]['to']=[3,13,2];parts[-1]['from']=[1,8,-8];parts[-1]['to']=[2,10,-7]
+    elif name=='fridge':parts[-4]['from']=[1,1,-13];parts[-4]['to']=[2,22,1];parts[-3]['from']=[0,6,-11];parts[-3]['to']=[1,19,-10]
     elif name=='mailbox':
         # Ninety degrees about the lower-left door's actual hinge. The handle
         # moves with the leaf instead of remaining suspended across the opening.
@@ -234,7 +238,7 @@ def models():
                     uvs={'north':[16-x1,v0,16-x0,v1],'south':[x0,v0,x1,v1],
                          'east':[16-z1,v0,16-z0,v1],'west':[z0,v0,z1,v1],
                          'up':[x0,z0,x1,z1],'down':[x0,16-z1,x1,16-z0]}
-                    if name=='mailbox':
+                    if name=='mailbox' or min(x0,z0)<0 or max(x1,z1)>16:
                         # The swung leaf extends in front of its block. Geometry
                         # coordinates there are not sprite coordinates: negative
                         # UVs sample a neighbouring stitched-atlas texture.

@@ -26,7 +26,11 @@ public final class DomesticLivesTests {
     private static LiteraryTests.Fixture fixture;
     private static void close(){if(fixture!=null){fixture.close();fixture=null;}}
     private static LiteraryTests.Fixture fixture(GameTestHelper h){var f=new LiteraryTests.Fixture(h,192);fixture=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();return f;}
-    private static void build(LiteraryTests.Fixture f,LabyrinthPlace p){if(f.built.add(p)){LabyrinthHalls.build(f.in,f.base(p),p);LabyrinthBuilder.registerDoors(f.data(),p,f.base(p));}}
+    private static void build(LiteraryTests.Fixture f,LabyrinthPlace p){if(f.built.add(p)){
+        // Review every authored variant; production selects only one, occasionally two.
+        var chosen=f.data().state(DomesticLives.STATE);for(var home:DomesticLives.HOMES)if(home.hall()==p)chosen.putBoolean(DomesticLives.key(f.base(p),home),true);f.data().setState(DomesticLives.STATE,chosen);
+        LabyrinthHalls.build(f.in,f.base(p),p);LabyrinthBuilder.registerDoors(f.data(),p,f.base(p));
+    }}
     private static ServerPlayer player(LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(f.h,name);f.players.add(p);p.setNoGravity(true);return p;}
     private static boolean clear(ServerLevel l,BlockPos at){
         return !l.getBlockState(at.below()).getCollisionShape(l,at.below()).isEmpty()&&l.noCollision(null,new AABB(at.getX()+.2,at.getY()+.001,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8));
@@ -35,10 +39,10 @@ public final class DomesticLivesTests {
         for(int i=1;i<=5;i++){double t=i/5.0;var p=Vec3.atBottomCenterOf(a).lerp(Vec3.atBottomCenterOf(b),t);if(!l.noCollision(null,new AABB(p.x-.3,p.y+.001,p.z-.3,p.x+.3,p.y+1.8,p.z+.3)))return false;}return true;
     }
     private static List<BlockPos> route(ServerLevel l,BlockPos base,DomesticLives.Home h,BlockPos goal){
-        var outside=h.id().equals("family")?h.opening().east():h.id().equals("grandmother")?h.opening().north():h.opening().west();
+        var outside=DomesticLives.approach(h);var bounds=DomesticLives.workBounds(h);
         var start=base.offset(outside);goal=base.offset(goal);var queue=new ArrayDeque<BlockPos>();var previous=new HashMap<BlockPos,BlockPos>();queue.add(start);previous.put(start,start);
         while(!queue.isEmpty()&&previous.size()<10000){var at=queue.remove();if(at.equals(goal)){var path=new ArrayList<BlockPos>();while(!at.equals(start)){path.add(at);at=previous.get(at);}Collections.reverse(path);return path;}
-            for(var d:Direction.Plane.HORIZONTAL){var n=at.relative(d);var r=n.subtract(base);if(r.getX()<h.x0()-1||r.getX()>h.x1()+1||r.getZ()<h.z0()-1||r.getZ()>h.z1()+1||previous.containsKey(n)||!clear(l,n)||!crosses(l,at,n))continue;previous.put(n,at);queue.add(n);}
+            for(var d:Direction.Plane.HORIZONTAL){var n=at.relative(d);if(!bounds.isInside(n.subtract(base))||previous.containsKey(n)||!clear(l,n)||!crosses(l,at,n))continue;previous.put(n,at);queue.add(n);}
         }return List.of();
     }
     @GameTest(template="empty",batch="domestic_lives_rooms",timeoutTicks=700)
@@ -56,9 +60,14 @@ public final class DomesticLivesTests {
                 };
                 var p=player(f,"walk_"+home.id());
                 for(var target:targets){var path=route(f.in,b,home,target);h.assertTrue(!path.isEmpty(),"body route through the real fragment to "+home.id()+" "+target);
-                    var outside=home.id().equals("family")?home.opening().east():home.id().equals("grandmother")?home.opening().north():home.opening().west();var at=b.offset(outside);
+                    var at=b.offset(DomesticLives.approach(home));
                     p.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+.5,0,0);
                     for(var n:path){p.move(MoverType.SELF,Vec3.atBottomCenterOf(n).subtract(p.position()));h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(n))<.001,"native collision permits each authored step in "+home.id()+": local="+n.subtract(b)+", actual="+p.position().subtract(Vec3.atLowerCornerOf(b))+", target="+target+", block="+f.in.getBlockState(n));}
+                }
+                for(var edit:DomesticLives.plan(home))if(edit.next().is(UncannyRegistry.FURNITURE.get())){
+                    var kind=edit.next().getValue(UncannyFurnitureBlock.KIND);
+                    if(kind==UncannyFurnitureBlock.Kind.WINDOW_FRAME)h.assertTrue(f.in.getBlockState(b.offset(edit.at()).relative(edit.next().getValue(UncannyFurnitureBlock.FACING).getOpposite())).is(Blocks.BLACK_WOOL),"every expanded-home window reveals a sealed black recess");
+                    if(kind==UncannyFurnitureBlock.Kind.SOFA_LEFT||kind==UncannyFurnitureBlock.Kind.SOFA_RIGHT)h.assertTrue(edit.next().getValue(UncannyFurnitureBlock.FACING)==Direction.NORTH,"the sofa faces its coffee table rather than the wall");
                 }
                 try{export(f.in,b,home);}catch(Exception e){throw new RuntimeException(e);}
             }
@@ -121,12 +130,35 @@ public final class DomesticLivesTests {
     @GameTest(template="empty",batch="domestic_lives_geometry",timeoutTicks=50)
     public static void everyHouseholdStateKeepsCollisionInsideItsOwnNativeCell(GameTestHelper h){
         var l=h.getLevel();var at=h.absolutePos(BlockPos.ZERO);
+        for(long seed=0;seed<1000;seed++){
+            var chosen=DomesticLives.selection(seed);h.assertTrue(chosen.equals(DomesticLives.selection(seed))&&chosen.size()>=1&&chosen.size()<=2,"home rarity is stable per world and bounded");
+            h.assertTrue(!(chosen.contains("students")&&chosen.contains("drinker")),"two full homes are never put in the same ordinary hall");
+        }
         for(var k:DomesticFittingBlock.Kind.values())for(var f:Direction.Plane.HORIZONTAL)for(int n=0;n<16;n++){var s=DomesticFittingBlock.of(k,f).setValue(DomesticFittingBlock.STAGE,n);var shape=s.getCollisionShape(l,at);
             if(k==DomesticFittingBlock.Kind.SCRAPES){h.assertTrue(shape.isEmpty(),"floor scrapes never catch feet");continue;}
             h.assertTrue(!shape.isEmpty()&&shape.min(Direction.Axis.X)>=0&&shape.max(Direction.Axis.X)<=1&&shape.min(Direction.Axis.Y)>=0&&shape.max(Direction.Axis.Y)<=1&&shape.min(Direction.Axis.Z)>=0&&shape.max(Direction.Axis.Z)<=1,"rendered household cuboids have bounded matching native collision: "+k+" "+f+" "+n);
         }h.succeed();
     }
     @AfterBatch(batch="domestic_lives_geometry") public static void geometryDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="domestic_lives_repair",timeoutTicks=800)
+    public static void olderHomeRepairClearsTheRealSnippetRouteWithoutReplacingOriginalsOrEdits(GameTestHelper h){
+        var f=fixture(h);var home=DomesticLives.HOMES.getFirst();var b=f.base(home.hall());f.chunks.hold(f.in,IndianLakeRooms.bounds(b,home.hall()));Object[] original={null};ServerPlayer[] observer={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"legacy home and original approach are resident")).thenExecute(()->{
+            build(f,home.hall());var old=new HashSet<BlockPos>();for(var e:DomesticHomeRepairs.legacyPlan(home)){old.add(e.at());f.in.setBlock(b.offset(e.at()),e.next(),2);}
+            for(var e:DomesticLives.plan(home))if(!old.contains(e.at())&&f.in.getBlockEntity(b.offset(e.at()))==null)f.in.setBlock(b.offset(e.at()),Blocks.WHITE_TERRACOTTA.defaultBlockState(),2);
+            var state=f.data().state(DomesticHomeRepairs.STATE);state.remove(DomesticLives.key(b,home));state.remove(DomesticLives.key(b,home)+":cursor");f.data().setState(DomesticHomeRepairs.STATE,state);
+            original[0]=f.in.getBlockEntity(b.offset(-6,0,-17));((net.minecraft.world.Container)original[0]).setItem(0,new ItemStack(Items.EMERALD,3));
+            f.in.setBlock(b.offset(-17,0,-15),Blocks.CHEST.defaultBlockState(),3);((net.minecraft.world.Container)f.in.getBlockEntity(b.offset(-17,0,-15))).setItem(0,new ItemStack(Items.DIAMOND));
+            observer[0]=player(f,"home_repair_camera");observer[0].setGameMode(GameType.SPECTATOR);observer[0].teleportTo(f.in,b.getX()-3.5,b.getY()+1,b.getZ()-20.5,0,0);
+            h.assertTrue(!DomesticHomeRepairs.step(f.in,b,home),"a camera in the original snippet pauses its adjoining work");observer[0].teleportTo(f.in,b.getX()+60,b.getY()+2,b.getZ(),0,0);
+        }).thenWaitUntil(()->{DomesticHomeRepairs.step(f.in,b,home);h.assertTrue(f.data().state(DomesticHomeRepairs.STATE).getBoolean(DomesticLives.key(b,home)),"the bounded original-state repair finishes");}).thenExecute(()->{
+            h.assertTrue(!route(f.in,b,home,new BlockPos(-13,0,-24)).isEmpty(),"there is a real route from the main corridor, through the original kitchen, into the home");
+            h.assertTrue(f.in.getBlockEntity(b.offset(-6,0,-17))==original[0]&&((net.minecraft.world.Container)original[0]).getItem(0).getCount()==3,"the original snippet's finite barrel is never moved or restocked");
+            h.assertTrue(((net.minecraft.world.Container)f.in.getBlockEntity(b.offset(-17,0,-15))).getItem(0).is(Items.DIAMOND),"a player's replacement chest is preserved where a wardrobe used to stand");
+            var at=b.offset(-12,0,-15);f.in.setBlock(at,Blocks.GOLD_BLOCK.defaultBlockState(),3);f.reload();DomesticHomeRepairs.step(f.in,b,home);h.assertTrue(f.in.getBlockState(at).is(Blocks.GOLD_BLOCK),"the saved repair checkpoint never repeats");h.succeed();
+        });
+    }
+    @AfterBatch(batch="domestic_lives_repair") public static void repairDone(ServerLevel l){close();}
     private static void export(ServerLevel l,BlockPos b,DomesticLives.Home home)throws Exception{
         var file=new JsonObject();file.addProperty("name","domestic_"+home.id());var palette=new JsonArray();var blocks=new JsonArray();var lookup=new LinkedHashMap<BlockState,Integer>();
         for(int y=-1;y<=2;y++)for(int z=home.z0();z<home.z1();z++)for(int x=home.x0();x<=home.x1();x++){

@@ -26,6 +26,26 @@ public final class DomesticLives {
             new Home("students",LabyrinthPlace.BENT_HALL,7,20,-18,-7,new BlockPos(7,0,-14),"student_paper"),
             new Home("drinker",LabyrinthPlace.BENT_HALL,-8,1,-36,-24,new BlockPos(-8,0,-29),"smoked_paper"),
             new Home("grandmother",LabyrinthPlace.CROSS_HALL,-19,-8,-8,3,new BlockPos(-10,0,-8),"rose_paper"));
+    /** A fixed discovery for this world, rather than extending most ordinary snippets. */
+    public static Set<String> selection(long seed){
+        var random=new Random(seed^0x4d3e91b80c92a167L);var rows=new ArrayList<>(HOMES);Collections.shuffle(rows,random);
+        var chosen=new LinkedHashSet<String>();var first=rows.getFirst();chosen.add(first.id);
+        if(random.nextInt(4)==0)for(var h:rows)if(h.hall!=first.hall){chosen.add(h.id);break;}
+        return Set.copyOf(chosen);
+    }
+    public static boolean selected(ServerLevel l,BlockPos b,Home h){
+        // Never seal an extension already made in 0.4.128, including on an old save.
+        var state=LabyrinthData.get(l.getServer()).state(STATE);String key=key(b,h);
+        return state.getBoolean(key)||state.getBoolean(key+":chosen")||state.contains(key+":cursor")||selection(l.getSeed()).contains(h.id);
+    }
+    public static BlockPos approach(Home h){return switch(h.id){
+        case "family"->new BlockPos(-1,0,-18);case "students"->new BlockPos(1,0,-12);
+        case "drinker"->new BlockPos(-14,0,-27);default->new BlockPos(-8,0,-14);
+    };}
+    public static BoundingBox workBounds(Home h){
+        var a=approach(h);return new BoundingBox(Math.min(h.x0,a.getX()-1),-1,Math.min(h.z0,a.getZ()-1),Math.max(h.x1,a.getX()+1),4,Math.max(h.z1,a.getZ()+1));
+    }
+    public static AABB workArea(BlockPos b,Home h){var a=workBounds(h);return new AABB(b.getX()+a.minX(),b.getY()-1,b.getZ()+a.minZ(),b.getX()+a.maxX()+1,b.getY()+5,b.getZ()+a.maxZ()+1);}
     public record Edit(BlockPos at,BlockState next){}
     private static final Map<String,List<Edit>> PLANS=new HashMap<>();
     private DomesticLives(){}
@@ -53,8 +73,9 @@ public final class DomesticLives {
     }
     private static void lamp(Map<BlockPos,BlockState> e,int x,int z){put(e,x,3,z,Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HANGING,true));}
     private static void window(Map<BlockPos,BlockState> e,int x,int z,Direction inward){
-        // The same opaque native frame as the earlier houses, with a solid outer backing.
         fit(e,x,1,z,UncannyFurnitureBlock.Kind.WINDOW_FRAME,inward);
+        var behind=new BlockPos(x,1,z).relative(inward.getOpposite());
+        put(e,behind.getX(),behind.getY(),behind.getZ(),Blocks.BLACK_WOOL.defaultBlockState());
     }
     public static List<Edit> plan(Home h){return PLANS.computeIfAbsent(h.id,ignored->{
         var e=new LinkedHashMap<BlockPos,BlockState>();
@@ -69,15 +90,15 @@ public final class DomesticLives {
                 for(int i=0;i<3;i++)bed(e,-19+i*2,-24,new Block[]{Blocks.ORANGE_BED,Blocks.LIGHT_BLUE_BED,Blocks.PURPLE_BED}[i]);
                 fit(e,-18,0,-21,UncannyFurnitureBlock.Kind.WARDROBE);interior(e,-16,0,-21,VignetteInteriorBlock.Kind.TOY_CUPBOARD,Direction.SOUTH);
                 bed(e,-18,-18,Blocks.GREEN_BED);bed(e,-17,-18,Blocks.GREEN_BED);
-                closet(e,-19,-16,Direction.EAST);handled(e,-16,0,-16,DomesticFittingBlock.Kind.PACKED_CLOTHES);handled(e,-15,0,-16,DomesticFittingBlock.Kind.PACKED_CLOTHES);
-                fit(e,-19,0,-19,UncannyFurnitureBlock.Kind.BEDSIDE);handled(e,-19,1,-19,DomesticFittingBlock.Kind.PHOTO_FAMILY);fit(e,-16,0,-19,UncannyFurnitureBlock.Kind.BEDSIDE);fit(e,-16,1,-19,UncannyFurnitureBlock.Kind.DESK_LAMP);fit(e,-17,0,-15,UncannyFurnitureBlock.Kind.WARDROBE,Direction.SOUTH);
+                closet(e,-19,-16,Direction.EAST);handled(e,-18,0,-15,DomesticFittingBlock.Kind.PACKED_CLOTHES);
+                fit(e,-19,0,-19,UncannyFurnitureBlock.Kind.BEDSIDE);handled(e,-19,1,-19,DomesticFittingBlock.Kind.PHOTO_FAMILY);fit(e,-16,0,-19,UncannyFurnitureBlock.Kind.BEDSIDE);fit(e,-16,1,-19,UncannyFurnitureBlock.Kind.DESK_LAMP);fit(e,-15,0,-16,UncannyFurnitureBlock.Kind.WARDROBE,Direction.WEST);
                 interior(e,-15,1,-21,VignetteInteriorBlock.Kind.HILL_HEIGHT_MARKS,Direction.WEST);
                 for(int x=-13;x<=-9;x++)interior(e,x,0,-25,VignetteInteriorBlock.Kind.HOLIDAY_LARDER,Direction.NORTH);
-                interior(e,-12,0,-25,VignetteInteriorBlock.Kind.HOLIDAY_SINK,Direction.NORTH);fit(e,-8,0,-25,UncannyFurnitureBlock.Kind.FRIDGE);handled(e,-13,1,-25,DomesticFittingBlock.Kind.BREAKFAST);
+                interior(e,-12,0,-25,VignetteInteriorBlock.Kind.HOLIDAY_SINK,Direction.NORTH);fit(e,-8,0,-25,UncannyFurnitureBlock.Kind.FRIDGE,Direction.SOUTH);handled(e,-13,1,-25,DomesticFittingBlock.Kind.BREAKFAST);
                 for(int x=-11;x<=-10;x++)fit(e,x,0,-22,UncannyFurnitureBlock.Kind.TABLE);
                 for(int x:new int[]{-11,-10}){fit(e,x,0,-21,UncannyFurnitureBlock.Kind.DINER_CHAIR);fit(e,x,0,-23,UncannyFurnitureBlock.Kind.DINER_CHAIR,Direction.SOUTH);}
                 fit(e,-9,0,-22,UncannyFurnitureBlock.Kind.DINER_CHAIR,Direction.WEST);
-                fit(e,-12,0,-15,UncannyFurnitureBlock.Kind.SOFA_LEFT,Direction.SOUTH);fit(e,-11,0,-15,UncannyFurnitureBlock.Kind.SOFA_RIGHT,Direction.SOUTH);fit(e,-11,0,-17,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
+                fit(e,-12,0,-15,UncannyFurnitureBlock.Kind.SOFA_LEFT);fit(e,-11,0,-15,UncannyFurnitureBlock.Kind.SOFA_RIGHT);fit(e,-11,0,-17,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
                 window(e,-8,-17,Direction.WEST);lamp(e,-11,-19);lamp(e,-17,-22);lamp(e,-17,-17);
             }
             case "students"->{
@@ -88,26 +109,26 @@ public final class DomesticLives {
                 fit(e,15,0,-8,UncannyFurnitureBlock.Kind.DESK);fit(e,15,1,-8,UncannyFurnitureBlock.Kind.DESK_LAMP);handled(e,19,0,-8,DomesticFittingBlock.Kind.PACKED_CLOTHES);
                 closet(e,19,-12,Direction.WEST);handled(e,12,0,-17,DomesticFittingBlock.Kind.RECORD_PLAYER);fit(e,13,0,-17,UncannyFurnitureBlock.Kind.BOOKCASE);
                 for(int x=8;x<=10;x++)interior(e,x,0,-17,VignetteInteriorBlock.Kind.TRAILER_CUPBOARD,Direction.NORTH);
-                interior(e,8,0,-17,VignetteInteriorBlock.Kind.TRAILER_SINK,Direction.NORTH);fit(e,11,0,-17,UncannyFurnitureBlock.Kind.FRIDGE);
-                fit(e,9,0,-8,UncannyFurnitureBlock.Kind.SOFA_LEFT,Direction.SOUTH);fit(e,10,0,-8,UncannyFurnitureBlock.Kind.SOFA_RIGHT,Direction.SOUTH);fit(e,10,0,-10,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
+                interior(e,8,0,-17,VignetteInteriorBlock.Kind.TRAILER_SINK,Direction.NORTH);fit(e,11,0,-17,UncannyFurnitureBlock.Kind.FRIDGE,Direction.SOUTH);
+                fit(e,9,0,-8,UncannyFurnitureBlock.Kind.SOFA_LEFT);fit(e,10,0,-8,UncannyFurnitureBlock.Kind.SOFA_RIGHT);fit(e,10,0,-10,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
                 handled(e,8,0,-9,DomesticFittingBlock.Kind.EMPTY_BOTTLES);window(e,19,-9,Direction.WEST);lamp(e,11,-13);lamp(e,17,-14);lamp(e,17,-9);
             }
             case "drinker"->{
                 wallZ(e,h,-32,-7,0,-2,-1);
-                bed(e,-6,-34,Blocks.GRAY_BED);fit(e,-3,0,-35,UncannyFurnitureBlock.Kind.WARDROBE);
+                bed(e,-6,-34,Blocks.GRAY_BED);fit(e,-3,0,-35,UncannyFurnitureBlock.Kind.WARDROBE,Direction.SOUTH);
                 fit(e,-7,0,-34,UncannyFurnitureBlock.Kind.BEDSIDE);handled(e,-7,1,-34,DomesticFittingBlock.Kind.FOLDED_SHIRT);
                 for(int z=-31;z<=-29;z++)interior(e,0,0,z,VignetteInteriorBlock.Kind.TRAILER_CUPBOARD,Direction.WEST);
                 interior(e,0,0,-30,VignetteInteriorBlock.Kind.TRAILER_SINK,Direction.WEST);handled(e,0,1,-29,DomesticFittingBlock.Kind.DIRTY_DISHES);fit(e,0,0,-28,UncannyFurnitureBlock.Kind.FRIDGE,Direction.WEST);
                 fit(e,-1,0,-26,UncannyFurnitureBlock.Kind.ARMCHAIR,Direction.SOUTH);fit(e,-2,0,-28,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
-                handled(e,0,0,-26,DomesticFittingBlock.Kind.EMPTY_BOTTLES);handled(e,-6,0,-30,DomesticFittingBlock.Kind.BOTTLE_RETURNS);
+                handled(e,0,0,-26,DomesticFittingBlock.Kind.EMPTY_BOTTLES);handled(e,-7,0,-28,DomesticFittingBlock.Kind.BOTTLE_RETURNS);
                 put(e,-1,-1,-26,DomesticRegistry.material("parquet_worn").defaultBlockState());put(e,-1,-1,-28,DomesticRegistry.material("parquet_worn").defaultBlockState());put(e,-1,-1,-30,DomesticRegistry.material("parquet_worn").defaultBlockState());window(e,0,-27,Direction.WEST);lamp(e,-4,-29);lamp(e,-3,-34);
             }
             case "grandmother"->{
                 wallX(e,h,-14,-7,2,-4,0);wallZ(e,h,-2,-18,-15);
-                bed(e,-18,-5,Blocks.PINK_BED);fit(e,-15,0,-7,UncannyFurnitureBlock.Kind.WARDROBE);fit(e,-17,0,-6,UncannyFurnitureBlock.Kind.BEDSIDE);fit(e,-17,1,-6,UncannyFurnitureBlock.Kind.DESK_LAMP);
-                fit(e,-18,0,0,UncannyFurnitureBlock.Kind.ARMCHAIR);fit(e,-16,0,0,UncannyFurnitureBlock.Kind.ARMCHAIR);
-                fit(e,-17,0,2,UncannyFurnitureBlock.Kind.COUNTER,Direction.SOUTH);handled(e,-17,1,2,DomesticFittingBlock.Kind.RADIO,Direction.SOUTH);
-                fit(e,-15,0,2,UncannyFurnitureBlock.Kind.SIDEBOARD,Direction.SOUTH);fit(e,-15,1,2,UncannyFurnitureBlock.Kind.CUP);interior(e,-15,0,1,VignetteInteriorBlock.Kind.SEWING_BASKET,Direction.SOUTH);window(e,-18,1,Direction.EAST);
+                bed(e,-18,-5,Blocks.PINK_BED);fit(e,-15,0,-7,UncannyFurnitureBlock.Kind.WARDROBE,Direction.SOUTH);fit(e,-17,0,-6,UncannyFurnitureBlock.Kind.BEDSIDE);fit(e,-17,1,-6,UncannyFurnitureBlock.Kind.DESK_LAMP);
+                fit(e,-18,0,0,UncannyFurnitureBlock.Kind.ARMCHAIR,Direction.SOUTH);fit(e,-16,0,0,UncannyFurnitureBlock.Kind.ARMCHAIR,Direction.SOUTH);
+                fit(e,-17,0,2,UncannyFurnitureBlock.Kind.COUNTER);handled(e,-17,1,2,DomesticFittingBlock.Kind.RADIO,Direction.SOUTH);
+                fit(e,-15,0,2,UncannyFurnitureBlock.Kind.SIDEBOARD);fit(e,-15,1,2,UncannyFurnitureBlock.Kind.CUP);interior(e,-15,0,1,VignetteInteriorBlock.Kind.SEWING_BASKET,Direction.SOUTH);window(e,-18,1,Direction.EAST);
                 fit(e,-15,0,-3,UncannyFurnitureBlock.Kind.BEDSIDE);put(e,-15,1,-3,DomesticFittingBlock.of(DomesticFittingBlock.Kind.PHOTO_COUPLE,Direction.SOUTH).setValue(DomesticFittingBlock.STAGE,1));
                 for(int x=-13;x<=-11;x++)interior(e,x,0,-7,VignetteInteriorBlock.Kind.HOLIDAY_LARDER,Direction.NORTH);
                 interior(e,-13,0,-7,VignetteInteriorBlock.Kind.HOLIDAY_SINK,Direction.NORTH);fit(e,-9,0,-5,UncannyFurnitureBlock.Kind.FRIDGE,Direction.WEST);
@@ -116,23 +137,35 @@ public final class DomesticLives {
             }
             default->throw new IllegalArgumentException(h.id);
         }
-        // Keep a genuinely solid exterior behind every dark window frame.
-        // The existing fragment's free column is joined last, after the whole home is enclosed.
-        for(int y=-1;y<3;y++){
-            e.remove(h.opening.above(y));
-            e.put(h.opening.above(y),y==-1?DomesticRegistry.material("parquet").defaultBlockState():Blocks.AIR.defaultBlockState());
+        // Extend a free edge of the snippet into a two-wide passage, around its
+        // original counter/bed and finite container, rather than through them.
+        int x0,x1,z0,z1;boolean sideways=!h.id.equals("grandmother");
+        switch(h.id){
+            case "family"->{x0=-6;x1=-3;z0=-21;z1=-21;}
+            case "students"->{x0=3;x1=6;z0=-15;z1=-15;}
+            case "drinker"->{x0=-12;x1=-9;z0=-30;z1=-30;}
+            default->{x0=-11;x1=-11;z0=-12;z1=-9;}
+        }
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++){
+            put(e,x,-1,z,DomesticRegistry.material(h.id.equals("family")||h.id.equals("grandmother")?"linoleum":"parquet").defaultBlockState());
+            for(int y=0;y<4;y++)put(e,x,y,z,Blocks.AIR.defaultBlockState());put(e,x,4,z,Blocks.BIRCH_PLANKS.defaultBlockState());
+            for(int y=0;y<4;y++)put(e,sideways?x:x-1,y,sideways?z-1:z,DomesticRegistry.material(h.paper).defaultBlockState());
+        }
+        for(int n=0;n<2;n++)for(int y=-1;y<4;y++){
+            var at=h.opening.relative(sideways?Direction.NORTH:Direction.WEST,n).above(y);e.remove(at);
+            e.put(at,y==-1?DomesticRegistry.material("parquet").defaultBlockState():Blocks.AIR.defaultBlockState());
         }
         return e.entrySet().stream().map(v->new Edit(v.getKey(),v.getValue())).toList();
     });}
     private static boolean fabric(BlockState s){return s.isAir()||s.is(Blocks.WHITE_TERRACOTTA)||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.STONE)||s.is(Blocks.SMOOTH_STONE);}
     public static void fresh(ServerLevel l,BlockPos base,LabyrinthPlace place){
         var d=LabyrinthData.get(l.getServer());var tag=d.state(STATE);
-        for(var h:HOMES)if(h.hall==place){for(var edit:plan(h))l.setBlock(base.offset(edit.at),edit.next,LabyrinthBuilder.flags());tag.putBoolean(key(base,h),true);}
+        for(var h:HOMES)if(h.hall==place&&selected(l,base,h)){for(var edit:plan(h))l.setBlock(base.offset(edit.at),edit.next,LabyrinthBuilder.flags());tag.putBoolean(key(base,h),true);tag.putBoolean(key(base,h)+":chosen",true);DomesticHomeRepairs.complete(l,base,h);}
         d.setState(STATE,tag);
     }
     public static boolean step(ServerLevel l,BlockPos base,Home h){
         var d=LabyrinthData.get(l.getServer());var tag=d.state(STATE);String key=key(base,h);if(tag.getBoolean(key))return true;
-        var area=h.area(base);
+        if(!selected(l,base,h))return true;var area=workArea(base,h);
         for(int x=(int)Math.floor(area.minX)>>4;x<=((int)Math.ceil(area.maxX)-1)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=((int)Math.ceil(area.maxZ)-1)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
         if(l.players().stream().anyMatch(p->area.inflate(16).intersects(p.getCamera().getBoundingBox())))return false;
         if(!l.getEntitiesOfClass(LivingEntity.class,area,e->e.isAlive()).isEmpty())return false;
@@ -141,14 +174,14 @@ public final class DomesticLives {
             var edit=plan.get(cursor++);var at=base.offset(edit.at);var old=l.getBlockState(at);
             if(l.getBlockEntity(at)==null&&fabric(old))l.setBlock(at,edit.next,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
         }
-        tag.putInt(key+":cursor",cursor);if(cursor>=plan.size())tag.putBoolean(key,true);d.setState(STATE,tag);return cursor>=plan.size();
+        tag.putInt(key+":cursor",cursor);if(cursor>=plan.size()){tag.putBoolean(key,true);DomesticHomeRepairs.complete(l,base,h);}d.setState(STATE,tag);return cursor>=plan.size();
     }
     public static void tick(MinecraftServer s){
         if(s instanceof net.minecraft.gametest.framework.GameTestServer||LabyrinthBuilder.isCarving())return;
         var origin=HouseSavedData.get(s).houseOrigin();if(origin==null||!origin.equals(LabyrinthData.get(s).builtOrigin()))return;
         var l=s.getLevel(HouseDimensions.INTERIOR);if(l==null)return;
-        for(var h:HOMES){if(LabyrinthData.get(s).door(h.hall.entryDoorId())==null)continue;var b=LabyrinthPlaces.base(origin,h.hall);
-            var state=LabyrinthData.get(s).state(STATE);String key=key(b,h);if(state.getBoolean(key))continue;int before=state.getInt(key+":cursor");
+        for(var h:HOMES){if(LabyrinthData.get(s).door(h.hall.entryDoorId())==null)continue;var b=LabyrinthPlaces.base(origin,h.hall);if(!selected(l,b,h))continue;
+            var state=LabyrinthData.get(s).state(STATE);String key=key(b,h);if(state.getBoolean(key)){if(DomesticHomeRepairs.step(l,b,h))return;continue;}int before=state.getInt(key+":cursor");
             step(l,b,h);
             // An unloaded earlier home must not starve a different, resident hall.
             // Only one actual slice may run in this server tick.

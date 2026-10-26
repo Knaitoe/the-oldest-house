@@ -57,7 +57,12 @@ public final class UncannyFurnitureBlock extends HorizontalDirectionalBlock {
         var kind=s.getValue(KIND);
         if(!kind.opens()&&!kind.switches()||user.isSpectator()||!user.isAlive()||user.distanceToSqr(at.getCenter())>16)return InteractionResult.PASS;
         if(!l.isClientSide){
-            l.setBlock(at,s.cycle(OPEN),3);
+            var next=s.cycle(OPEN);
+            if(kind.opens()){
+                var added=Shapes.join(next.getCollisionShape(l,at),s.getCollisionShape(l,at),BooleanOp.ONLY_FIRST);
+                for(var box:added.toAabbs())if(!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,box.move(at),e->e.isAlive()&&!e.isSpectator()).isEmpty())return InteractionResult.CONSUME;
+            }
+            l.setBlock(at,next,3);
             l.playSound(null,at,kind.switches()?SoundEvents.LEVER_CLICK:s.getValue(OPEN)?SoundEvents.IRON_DOOR_CLOSE:SoundEvents.IRON_DOOR_OPEN,SoundSource.BLOCKS,.22F,kind.switches()?(s.getValue(OPEN)?.6F:.5F):1.1F);
         }
         return InteractionResult.sidedSuccess(l.isClientSide);

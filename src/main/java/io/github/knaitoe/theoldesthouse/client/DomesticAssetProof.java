@@ -44,6 +44,10 @@ public final class DomesticAssetProof extends Screen {
             for(var k:List.of(DomesticFittingBlock.Kind.PACKED_CLOTHES,DomesticFittingBlock.Kind.BOOK_BOX,DomesticFittingBlock.Kind.CLOSET_LOWER,DomesticFittingBlock.Kind.CLOSET_UPPER,DomesticFittingBlock.Kind.DESK_REMNANTS,DomesticFittingBlock.Kind.PHOTO_FAMILY,DomesticFittingBlock.Kind.PHOTO_COUPLE,DomesticFittingBlock.Kind.BOTTLE_RETURNS))for(int n=0;n<2;n++)out.add(new View(k.getSerializedName()+" "+n,DomesticFittingBlock.of(k,Direction.NORTH).setValue(DomesticFittingBlock.STAGE,n)));
             for(var k:List.of(DomesticFittingBlock.Kind.EMPTY_BOTTLES,DomesticFittingBlock.Kind.DIRTY_DISHES,DomesticFittingBlock.Kind.FOLDED_SHIRT))out.add(new View(k.getSerializedName(),DomesticFittingBlock.of(k,Direction.NORTH)));
         }
+        if(page==5){
+            for(var k:List.of(UncannyFurnitureBlock.Kind.WARDROBE,UncannyFurnitureBlock.Kind.FRIDGE,UncannyFurnitureBlock.Kind.SIDEBOARD))for(boolean open:new boolean[]{false,true})out.add(new View(k.getSerializedName()+" "+(open?"open":"closed"),UncannyFurnitureBlock.of(k,Direction.NORTH).setValue(UncannyFurnitureBlock.OPEN,open)));
+            for(var f:Direction.Plane.HORIZONTAL)out.add(new View("red chair "+f,UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.DINER_CHAIR,f)));
+        }
         return out;
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
@@ -53,7 +57,8 @@ public final class DomesticAssetProof extends Screen {
         var buffers=mc.renderBuffers().bufferSource();
         for(int i=0;i<views.size();i++){
             var v=views.get(i);if(mc.getBlockRenderer().getBlockModel(v.state)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing production model "+v.label);
-            var p=g.pose();p.pushPose();p.translate((i%columns+.5)*cellW,35+(i/columns+.7)*cellH,150);p.scale(scale,-scale,scale);p.mulPose(Axis.XP.rotationDegrees(24));p.mulPose(Axis.YP.rotationDegrees(25));p.translate(-.5,-.3,-.5);
+            boolean tall=v.state.is(UncannyRegistry.FURNITURE.get())&&(v.state.getValue(UncannyFurnitureBlock.KIND)==UncannyFurnitureBlock.Kind.WARDROBE||v.state.getValue(UncannyFurnitureBlock.KIND)==UncannyFurnitureBlock.Kind.FRIDGE);float size=tall?scale*.65F:scale;
+            var p=g.pose();p.pushPose();p.translate((i%columns+.5)*cellW,35+(i/columns+.7)*cellH,150);p.scale(size,-size,size);p.mulPose(Axis.XP.rotationDegrees(24));p.mulPose(Axis.YP.rotationDegrees(page==5?155:25));p.translate(-.5,tall?-.8:-.3,-.5);
             mc.getBlockRenderer().renderSingleBlock(v.state,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);buffers.endBatch();p.popPose();
             g.drawCenteredString(font,v.label,(int)((i%columns+.5)*cellW),(int)(35+(i/columns+1)*cellH),0xff25302a);
         }
@@ -61,7 +66,7 @@ public final class DomesticAssetProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof DomesticAssetProof s)||++s.frames<12)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-domestic-"+s.page+".png"));}
-        if(++s.page<5){s.frames=0;return;}
-        Files.writeString(dir.resolve("domestic-assets-passed.txt"),"Five native baked-model views: independent cups and bottles, record lid/arm/side, tuner/power, inert disturbances, household materials, inspectable boxes/closets/photographs, actual projector/camera and eight open/closed mailbox facings. Full bright model review, not a lighting playthrough.\n");mc.stop();
+        if(++s.page<6){s.frames=0;return;}
+        Files.writeString(dir.resolve("domestic-assets-passed.txt"),"Six native baked-model views: household handling, materials, optical fittings/mailboxes, actual hollow cupboards and red chair facings. Full bright model review, not a lighting playthrough.\n");mc.stop();
     }
 }
