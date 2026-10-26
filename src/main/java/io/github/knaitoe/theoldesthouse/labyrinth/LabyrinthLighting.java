@@ -90,7 +90,7 @@ public final class LabyrinthLighting {
             var book=original.getBook();int page=original.getPage();
             original.setBook(ItemStack.EMPTY);level.setBlock(from,Blocks.AIR.defaultBlockState(),FLAGS|Block.UPDATE_SUPPRESS_DROPS);
             level.setBlock(to,state.setValue(LecternBlock.FACING,Direction.EAST),FLAGS);
-            if(level.getBlockEntity(to) instanceof LecternBlockEntity moved){moved.setBook(book);moved.setPage(page);}
+            if(level.getBlockEntity(to) instanceof LecternBlockEntity moved){moved.setBook(book);var saved=moved.saveWithoutMetadata(level.registryAccess());saved.putInt("Page",page);moved.loadWithComponents(saved,level.registryAccess());moved.setChanged();}
         }
         done.putBoolean(key,true);data.setState("junction_note_0127",done);return true;
     }

@@ -28,7 +28,7 @@ public final class UncannyAnatomyUpgrade {
     }
     public static boolean step(ServerLevel level,BlockPos b){
         var data=LabyrinthData.get(level.getServer());String key=Long.toString(b.asLong());var progress=data.stateEntry(STATE,key);if(progress.getBoolean("Done"))return true;
-        var area=new AABB(b.offset(-8,-7,-30),b.offset(9,6,1));
+        var area=new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-8,-7,-30)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(9,6,1)));
         for(int x=(b.getX()-8)>>4;x<=(b.getX()+8)>>4;x++)for(int z=(b.getZ()-30)>>4;z<=b.getZ()>>4;z++)if(!level.hasChunk(x,z)||!level.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
         if(level.players().stream().anyMatch(p->area.inflate(12).contains(p.getCamera().position())))return false;
         var world=data.stateEntry(UncannyStories.WORLD,LabyrinthPlace.LAYERED_MAN.id()+":"+b.asLong());var cuts=world.getList("Regrow",Tag.TAG_COMPOUND);
