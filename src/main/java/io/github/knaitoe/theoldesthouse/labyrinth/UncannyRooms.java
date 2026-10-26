@@ -50,6 +50,7 @@ public final class UncannyRooms {
         // The earth occupies the whole outside volume, pressed against the house and its ceiling.
         box(l,b,-14,-1,-38,14,9,0,Blocks.DIRT);
         box(l,b,-1,0,-6,1,2,0,Blocks.AIR);
+        box(l,b,-7,0,-27,7,4,-8,Blocks.AIR);
         room(l,b,-8,8,-28,-7,0,5,material("parlor_paper"),Blocks.DARK_OAK_PLANKS);
         box(l,b,-8,0,-15,8,4,-15,material("parlor_paper"));
         for(int z=-28;z<=-7;z++)for(int x:new int[]{-8,8})at(l,b,x,0,z,material("dark_wood"));
@@ -57,6 +58,7 @@ public final class UncannyRooms {
         door(l,b,new BlockPos(0,0,-7),Direction.SOUTH,true);
         fit(l,b,new BlockPos(0,0,-15),SUN_BOARD,Direction.SOUTH);state(l,b,PARLOR_BOARD,UncannyPropBlock.of(SUN_BOARD,Direction.SOUTH).setValue(UncannyPropBlock.STAGE,1));
         // A cramped service passage reaches the original ledger bay and the unpainted side door.
+        box(l,b,9,0,-13,11,2,-9,Blocks.AIR);
         room(l,b,8,12,-14,-8,0,3,material("parlor_paper"),Blocks.DARK_OAK_PLANKS);
         box(l,b,8,0,-11,8,1,-11,Blocks.AIR);
         box(l,b,9,0,-24,10,2,-13,Blocks.AIR);box(l,b,9,-1,-24,10,-1,-13,Blocks.DARK_OAK_PLANKS);

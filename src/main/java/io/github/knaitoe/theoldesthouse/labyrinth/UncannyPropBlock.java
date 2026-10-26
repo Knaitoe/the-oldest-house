@@ -24,6 +24,7 @@ public final class UncannyPropBlock extends BaseEntityBlock {
     @Override protected MapCodec<? extends BaseEntityBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,FACING,STAGE);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.ENTITYBLOCK_ANIMATED;}
+    @Override public SoundType getSoundType(BlockState s,LevelReader l,BlockPos at,net.minecraft.world.entity.Entity entity){return s.getValue(KIND)==Kind.FLESH?UncannyFleshBlock.SOUNDS:super.getSoundType(s,l,at,entity);}
     public static int light(BlockState s){return switch(s.getValue(KIND)){case FLOODLIGHT->s.getValue(STAGE)==0?15:0;case SIGNAL,STOPLIGHT->10;case MONITOR->3;default->0;};}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
         return switch(s.getValue(KIND)){

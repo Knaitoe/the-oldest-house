@@ -30,6 +30,7 @@ public final class Playtest0131Tests {
     public static void theOriginalWorkerActuallyCutsAndTheManReactsToTheRealBladeFaceAndMouth(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.LAYERED_MAN;var p=f.player("helping_cut_reader",place);var l=f.level(place);var b=f.base(place);f.chunks.hold(l,IndianLakeRooms.bounds(b,place));UUID[] worker={null};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the real worker and flesh are resident"))
+            .thenWaitUntil(()->h.assertTrue(world(f,place).hasUUID("Peeler")&&l.getEntity(world(f,place).getUUID("Peeler")) instanceof LiteraryActor,"the original worker has actually entered its native entity section"))
             .thenExecute(()->worker[0]=world(f,place).getUUID("Peeler"))
             .thenWaitUntil(()->h.assertTrue(world(f,place).getInt("WorkerCuts131")>0,"the original worker finishes mining an exposed native flesh cell"))
             .thenExecute(()->{
@@ -51,13 +52,13 @@ public final class Playtest0131Tests {
         var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.LAYERED_MAN;var p=f.player("eradication_reader",place);var l=f.level(place);var b=f.base(place);f.chunks.hold(l,IndianLakeRooms.bounds(b,place));
         var previous=new HashSet<BlockPos>();boolean[] tracking={false};int[] grew={0};var isolated=new BlockPos(5,-2,-11);UUID[] worker={null};
         h.onEachTick(()->{if(!tracking[0])return;var current=flesh(f);for(var r:current)if(!previous.contains(r)){boolean adjacent=false;for(var d:Direction.values())adjacent|=previous.contains(r.relative(d));h.assertTrue(adjacent,"a new cell must come from surviving neighboring flesh: "+r);grew[0]++;}previous.clear();previous.addAll(current);});
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native cellar sections loaded"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&world(f,place).hasUUID("Peeler")&&l.getEntity(world(f,place).getUUID("Peeler")) instanceof LiteraryActor,"native cellar and original worker sections loaded"))
             .thenExecute(()->{
-                worker[0]=world(f,place).getUUID("Peeler");removeFlesh(f);l.setBlock(b.offset(0,-4,-23),UncannyFleshBlock.at(new BlockPos(0,-4,-23)),3);
+                worker[0]=world(f,place).getUUID("Peeler");removeFlesh(f);l.setBlock(b.offset(4,-4,-26),UncannyFleshBlock.at(new BlockPos(4,-4,-26)),3);
                 var shared=world(f,place);UncannyCellar.cut(l,b,isolated,shared);for(var row:shared.getList("Regrow",Tag.TAG_COMPOUND))((CompoundTag)row).putLong("Due",0);shared.putBoolean("RegrowthBudget130",true);f.data().setStateEntry(UncannyStories.WORLD,place.id()+":"+b.asLong(),shared);
                 previous.addAll(flesh(f));tracking[0]=true;
             }).thenIdle(120).thenExecute(()->{
-                tracking[0]=false;h.assertTrue(grew[0]>0&&l.isEmptyBlock(b.offset(isolated)),"actual growth occurs but an isolated overdue cut cannot seed new flesh");
+                tracking[0]=false;h.assertTrue(grew[0]>0&&l.isEmptyBlock(b.offset(isolated)),"actual growth occurs but an isolated overdue cut cannot seed new flesh: grew="+grew[0]+" isolated="+l.getBlockState(b.offset(isolated))+" shared="+world(f,place));
                 removeFlesh(f);
             }).thenIdle(6).thenExecute(()->{
                 h.assertTrue(world(f,place).getBoolean("Eradicated131")&&!UncannyCellar.remains(l,b),"removing the final real tissue cell permanently ends growth");
@@ -89,11 +90,21 @@ public final class Playtest0131Tests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both actual furnished rooms are resident"))
             .thenExecute(()->{
                 for(var r:List.of(new BlockPos(-9,2,-22),new BlockPos(9,2,-27),new BlockPos(0,6,-22),new BlockPos(0,2,-29)))h.assertTrue(l.getBlockState(b.offset(r)).is(Blocks.DIRT),"packed earth touches the house's walls and roof: "+r);
-                var body=new AABB(b.getX()+.2,b.getY()+.01,b.getZ()-15.8,b.getX()+.8,b.getY()+1.8,b.getZ()-14.8);h.assertTrue(!l.noCollision(null,body),"painted sun boards physically block the real family-room entrance");var original=l.getBlockEntity(b.offset(UncannyRooms.source(place)));
-                f.click(p,place,UncannyRooms.PARLOR_BOARD);h.assertTrue(l.isEmptyBlock(b.offset(0,0,-15))&&l.isEmptyBlock(b.offset(0,1,-15))&&l.noCollision(null,body)&&l.getBlockEntity(b.offset(UncannyRooms.source(place)))==original,"actual board removal clears both halves and preserves the original source");
+                var body=new AABB(b.getX()+.2,b.getY()+.01,b.getZ()-14.8,b.getX()+.8,b.getY()+1.8,b.getZ()-14.2);h.assertTrue(!l.noCollision(null,body),"painted sun boards physically block the real family-room entrance");var original=l.getBlockEntity(b.offset(UncannyRooms.source(place)));
+                f.click(p,place,UncannyRooms.PARLOR_BOARD);h.assertTrue(l.isEmptyBlock(b.offset(0,0,-15))&&l.isEmptyBlock(b.offset(0,1,-15))&&l.noCollision(null,body)&&l.getBlockEntity(b.offset(UncannyRooms.source(place)))==original,"actual board removal clears both halves and preserves the original source: lower="+l.getBlockState(b.offset(0,0,-15))+" upper="+l.getBlockState(b.offset(0,1,-15))+" clear="+l.noCollision(null,body)+" sourceSame="+(l.getBlockEntity(b.offset(UncannyRooms.source(place)))==original)+" own="+f.own(p,place));
                 for(int z=-23;z>=-26;z--)h.assertTrue(l.noCollision(null,new AABB(bed.getX()-4.8,bed.getY()+5.01,bed.getZ()+z+.2,bed.getX()-4.2,bed.getY()+6.8,bed.getZ()+z+.8)),"a full native body has an open aisle between the monitoring desk and bed at "+z);
                 h.assertTrue(l.isEmptyBlock(bed.offset(-6,5,-23))&&l.getBlockState(bed.offset(-5,5,-21)).getBlock() instanceof HouseholdFurnitureBlock&&l.getBlockState(bed.offset(-5,5,-21)).getValue(HouseholdFurnitureBlock.FACING)==Direction.NORTH,"one chair faces the straight CCTV desk; the overlapping third desk is absent");
                 h.assertTrue(l.getBlockEntity(bed.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)))!=null&&l.getBlockState(bed.offset(UncannyRooms.BED_AT)).getBlock() instanceof net.minecraft.world.level.block.BedBlock,"the actual monitor/source and native bed remain usable originals");
+                f.at(p,place,80,0,40);
+                // Simulate the bad fill in an already-checkpointed 0.4.131 house, retaining its real props.
+                for(var r:BlockPos.betweenClosed(-7,0,-27,7,4,-8))if(!(r.getX()==0&&r.getZ()==-15&&r.getY()<=1)&&l.isEmptyBlock(b.offset(r)))l.setBlock(b.offset(r),Blocks.DIRT.defaultBlockState(),3);
+                for(var r:BlockPos.betweenClosed(9,0,-13,11,2,-9))if(l.isEmptyBlock(b.offset(r)))l.setBlock(b.offset(r),Blocks.DIRT.defaultBlockState(),3);
+                l.setBlock(b.offset(5,0,-10),Blocks.GOLD_BLOCK.defaultBlockState(),3);var prior=f.data().state("uncanny_playtest_shell_0131b");prior.putBoolean(f.origin.asLong()+":"+place.id(),true);f.data().setState("uncanny_playtest_shell_0131b",prior);
+                h.assertTrue(l.getBlockState(b.offset(0,0,-16)).is(Blocks.DIRT),"the recognized bad checkpoint begins with actual erroneous dirt inside");
+            }).thenWaitUntil(()->{UncannyPlaytestRepairs.step(l,f.origin,place);h.assertTrue(f.data().state(UncannyPlaytestRepairs.STATE).getBoolean(f.origin.asLong()+":"+place.id()),"the loaded vacant house receives its bounded saved repair");})
+            .thenExecute(()->{
+                h.assertTrue(l.isEmptyBlock(b.offset(0,0,-16))&&l.isEmptyBlock(b.offset(10,1,-12))&&l.getBlockState(b.offset(5,0,-10)).is(Blocks.GOLD_BLOCK),"the saved repair clears recognized internal fill while keeping a player's edited cell");
+                h.assertTrue(l.getBlockEntity(b.offset(UncannyRooms.source(place)))!=null&&l.isEmptyBlock(b.offset(0,0,-15))&&l.isEmptyBlock(b.offset(0,1,-15)),"the repair preserves the actual source and already-removed sun boards");
             }).thenSucceed();
     }
     @AfterBatch(batch="review131_rooms") public static void roomsDone(ServerLevel l){close();}

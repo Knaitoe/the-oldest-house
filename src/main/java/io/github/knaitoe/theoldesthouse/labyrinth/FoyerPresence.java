@@ -6,7 +6,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 /** The original private visitor approaches during the light and becomes still when it drops out. */
 public final class FoyerPresence {
-    private static final Vec3[] PATH={new Vec3(.5,0,-18.5),new Vec3(-.6,0,-16.5),new Vec3(.2,0,-14.9)};
+    private static final Vec3[] PATH={new Vec3(.5,0,-18.5),new Vec3(-.6,0,-16.5),new Vec3(.2,0,-14.4)};
     private FoyerPresence(){}
     public static void tick(ServerPlayer p,BlockPos b,CompoundTag own,boolean dark){
         var a=UncannyStories.actor(p,own,"CastVisitor");if(a==null)return;a.appearance(LiteraryActor.UNCANNY_VISITOR,dark?Math.max(1,Math.min(3,own.getInt("FoyerStill131"))):0);

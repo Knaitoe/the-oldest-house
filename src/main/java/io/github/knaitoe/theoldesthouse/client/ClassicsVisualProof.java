@@ -3,6 +3,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
+import io.github.knaitoe.theoldesthouse.house.*;
 import java.nio.file.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
@@ -13,6 +14,7 @@ import org.joml.Vector3f;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -37,8 +39,12 @@ public final class ClassicsVisualProof extends Screen {
         for(int i=0;i<4;i++){
             var model=new SeanceRenderers.FamilyModel(mc.getEntityModels().bakeLayer(SeanceRenderers.LAYER));model.young=false;model.pose(i,page/4==0,page/4==1,frames);
             if(page/4==1){model.leftLeg.xRot=(float)Math.cos(frames*.66F)*.5F;model.rightLeg.xRot=-model.leftLeg.xRot;if(i==3){HumanoidMotion.gait(model,frames*.4F,.6F,true);HumanoidMotion.connect(model);}}
-            var pose=g.pose();pose.pushPose();float size=65*(i==3?.72F:1);pose.translate(70+i*(width-45)/4,45+65*.52F+1.5F*(65-size),180);pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,145}[page%4]));
-            var buffers=mc.renderBuffers().bufferSource();model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(SeanceRenderers.skin(i))),page%4==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);buffers.endBatch();pose.popPose();
+            var pose=g.pose();var buffers=mc.renderBuffers().bufferSource();float size=65*(i==3?.72F:1),cx=70+i*(width-45)/4F,floor=45+65*.52F+1.5F*65,yaw=new float[]{180,90,0,145}[page%4];int light=page%4==3?LightTexture.pack(7,0):LightTexture.FULL_BRIGHT;
+            var chair=HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,HouseholdFurnitureBlock.Kind.CANE_CHAIR).setValue(HouseholdFurnitureBlock.FACING,Direction.NORTH);
+            pose.pushPose();pose.translate(cx,floor,180);pose.scale(65,-65,65);pose.mulPose(Axis.YP.rotationDegrees(yaw));pose.translate(-.5,0,page/4==0?-.5:.4);mc.getBlockRenderer().renderSingleBlock(chair,pose,buffers,light,OverlayTexture.NO_OVERLAY);buffers.endBatch();pose.popPose();
+            float sit=page/4==0?size*.751F-HouseholdFurnitureBlock.Kind.CANE_CHAIR.seatHeight/16F*65:0;
+            pose.pushPose();pose.translate(cx,floor-1.5F*size+sit,180);pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(yaw));
+            model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(SeanceRenderers.skin(i))),light,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);buffers.endBatch();pose.popPose();
         }
         for(int i=0;i<4;i++){
             var state=ClassicsRegistry.WALLPAPER.get().defaultBlockState().setValue(WallpaperPanelBlock.FIGURE,(i&1)!=0).setValue(WallpaperPanelBlock.PEELED,(i&2)!=0);
