@@ -26,5 +26,5 @@ public final class NovelActor extends PathfinderMob {
     @Override public boolean removeWhenFarAway(double d){return false;}
     @Override public boolean isPushable(){return false;}
     @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);owner().ifPresent(id->t.putUUID("Explorer",id));t.putInt("Role",role());}
-    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);if(t.hasUUID("Explorer"))appearance(t.getUUID("Explorer"),t.getInt("Role"));}
+    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);if(t.hasUUID("Explorer")){entityData.set(OWNER,Optional.of(t.getUUID("Explorer")));entityData.set(ROLE,t.getInt("Role"));}}
 }

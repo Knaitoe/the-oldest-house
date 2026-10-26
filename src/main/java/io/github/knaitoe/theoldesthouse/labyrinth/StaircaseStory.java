@@ -184,6 +184,7 @@ public final class StaircaseStory {
     public static void sync(ServerPlayer p) {
         if(!participant(p))return;
         var inv=p.getInventory();var own=record(p);
+        int keep=isCurrent(p,p.getMainHandItem(),own)?inv.selected:isCurrent(p,p.getOffhandItem(),own)?inv.getContainerSize()-1:-1;
         for(int i=0;i<inv.getContainerSize();i++){
             var book=inv.getItem(i);if(book.isEmpty()||!book.is(Items.WRITTEN_BOOK))continue;
             if(!exists(own)&&legacy(p,book)){
@@ -192,6 +193,7 @@ public final class StaircaseStory {
                 bind(p,own,book);continue;
             }
             if(exists(own)&&isCurrent(p,book,own)){
+                if(keep<0)keep=i;else if(i!=keep){inv.setItem(i,ItemStack.EMPTY);continue;}
                 own=reconcile(p,own);
                 if(burned(own)>=StaircaseFire.REQUIRED){inv.setItem(i,ItemStack.EMPTY);continue;}
                 bind(p,own,book);
@@ -201,7 +203,7 @@ public final class StaircaseStory {
 
     // ------------------------------------------------------------------ shelf, leaves, fire
 
-    public enum Shelf { ISSUED, REBOUND, CARRIED, FINISHED, REFUSED }
+    public enum Shelf { ISSUED, REBOUND, CARRIED, NEARBY, FULL, FINISHED, REFUSED }
     /** The camp shelf: the first binding, or the same story bound again if the original is lost. */
     public static Shelf shelf(ServerPlayer p) {
         if(!participant(p))return Shelf.REFUSED;
@@ -212,6 +214,9 @@ public final class StaircaseStory {
         own=existed?reconcile(p,own):snapshot(p,flames(p),flames(p));
         if(burned(own)>=StaircaseFire.REQUIRED)return Shelf.FINISHED;
         if(carries(p))return Shelf.CARRIED;
+        var origin=HouseSavedData.get(p.server).houseOrigin();var shelf=origin==null?p.blockPosition():StaircaseFire.shelf(origin);var issued=own;
+        if(!p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(shelf).inflate(24),e->isCurrent(p,e.getItem(),issued)).isEmpty())return Shelf.NEARBY;
+        if(p.getInventory().getFreeSlot()<0)return Shelf.FULL;
         // A lost original is bound again from the record; the copy left behind goes cold.
         if(!first&&existed){own.putUUID("Original",UUID.randomUUID());save(p,own);}
         give(p,binding(p,own));

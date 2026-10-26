@@ -116,6 +116,8 @@ public final class StaircaseFire {
                 case ISSUED->"Your House of Leaves. Its five leaves are loose on the stairs below, one on each flight.";
                 case REBOUND->"The shelf binds your story again, as far as you had found it.";
                 case CARRIED->"Your House of Leaves is already with you. Its leaves are on the stairs below.";
+                case NEARBY->"Your original House of Leaves is still lying here. Pick it up.";
+                case FULL->"Make room in your pack for your House of Leaves.";
                 case FINISHED->"Your story has already burned. The stairs are open.";
                 case REFUSED->"The shelf is empty.";}),true);
         }else if(braziers(origin).contains(event.getPos())){
@@ -131,20 +133,17 @@ public final class StaircaseFire {
         if(index<0||!player.serverLevel().getBlockState(at).is(Blocks.CAMPFIRE))return false;
         if(index<flames(record)){player.displayClientMessage(Component.literal("This fire already burns for you."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_already_lit",at);return false;}
         if(index>flames(record)){player.displayClientMessage(Component.literal("An earlier fire is still cold for you."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_earlier_cold",at);return false;}
-        // 0.4.84: the leaf goes into the fire from the reader's own House of Leaves, held in a hand they have; the flame is any
-        // lighter they carry, held or packed. A reader who gave an arm at the cabin may hold either one and keep the other in
-        // their pack: one hand strikes the lighter or holds the book, and the other thing comes out of the pack when it is needed.
+        // Both finite originals can stay in the pack, including after the cabin takes the off-hand arm.
         boolean oneHand=BodyLoss.oneArmed(player);ItemStack flame=lighter(player,oneHand);
         if(!(flame.getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)){
             player.displayClientMessage(Component.literal("The hearth needs a flame. Any lighter you carry will do; Tom has one."),true);
             io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_no_flame",at);return false;}
         // Only the explorer's own story burns here: no paper, no copy, no one else's leaves.
-        StaircaseStory.sync(player);ItemStack fuel=story(player,oneHand);
+        StaircaseStory.sync(player);ItemStack fuel=story(player);
         if(fuel.isEmpty()){
             boolean foreign=StaircaseStory.foreign(player,player.getMainHandItem())||!oneHand&&StaircaseStory.foreign(player,player.getOffhandItem());
             player.displayClientMessage(Component.literal(foreign?"Another reader's story will not catch for you."
-                    :StaircaseStory.carries(player)?"Hold your House of Leaves to the fire. The lighter can stay in your pack."
-                    :"Only your own House of Leaves will catch."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_own_book",at);return false;
+                    :"Bring your own House of Leaves. It can stay in your pack."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_own_book",at);return false;
         }
         if(!StaircaseStory.ready(player,index)){
             player.displayClientMessage(Component.literal("Your House of Leaves has no unburned leaf. This flight's leaf is somewhere in the dark above."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_missing_leaf",at);return false;
@@ -168,12 +167,9 @@ public final class StaircaseFire {
         for(var stack:player.getInventory().items)if(stack.getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)return stack;
         return ItemStack.EMPTY;
     }
-    /** The reader's own House of Leaves, held in either hand; with one hand, from their pack when the hand holds the lighter. */
-    private static ItemStack story(ServerPlayer player,boolean oneHand){
-        if(StaircaseStory.isCurrent(player,player.getMainHandItem()))return player.getMainHandItem();
-        if(!oneHand&&StaircaseStory.isCurrent(player,player.getOffhandItem()))return player.getOffhandItem();
-        if(oneHand&&player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FlintAndSteelItem)
-            for(var stack:player.getInventory().items)if(StaircaseStory.isCurrent(player,stack))return stack;
+    /** Find the actual owned original throughout inventory; no held-book requirement. */
+    private static ItemStack story(ServerPlayer player){
+        for(int i=0;i<player.getInventory().getContainerSize();i++){var stack=player.getInventory().getItem(i);if(StaircaseStory.isCurrent(player,stack))return stack;}
         return ItemStack.EMPTY;
     }
     /** A saved visit already deep in the old staircase stays traversable on upgrade. */
@@ -197,7 +193,7 @@ public final class StaircaseFire {
             if(player.tickCount%20==0)player.displayClientMessage(Component.literal("The stairs vanish into the dark. Bind this flight's leaf, then feed the fire."),true);
         }else if(!open(record)&&player.tickCount%5==0&&player.onGround()&&player.getY()>edge.getY()+1)
             record.putLong("StairLastSafe",player.blockPosition().asLong());
-        StaircaseLeaves.cue(player,origin,fires);
+        StaircaseLeaves.gather(player,origin,fires);StaircaseLeaves.cue(player,origin,fires);
         if(player.tickCount%10==0){
             float sight=open(record)?32:Math.max(1.2F,Math.min(12,(float)(player.getY()-edge.getY())+2));
             HousePackets.send(player,new StaircaseLightPayload(true,fires,sight));
