@@ -45,7 +45,7 @@ public final class SceneVisualProof extends Screen {
         interiors=environment&&Boolean.getBoolean("the_oldest_house.interiorEnvironmentSmoke");
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of(interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size():environment?10:99+UncannyRooms.PLACES.size();
+        int expected=interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+4:environment?10:99+UncannyRooms.PLACES.size();
         if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier plus every uncanny room), found "+files.size());
         if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
         load();
@@ -87,7 +87,7 @@ public final class SceneVisualProof extends Screen {
         Path folder=Path.of(s.interiors?"../build/font-smoke/interior-environments":s.environment?"../build/font-smoke/uncanny-environments":"../build/font-smoke/scenes");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
         if(++s.index<s.files.size())s.load();else{
-            if(s.interiors){Files.writeString(Path.of("../build/font-smoke/interior-environments-passed.txt"),"Fourteen actual native room cutaways. Full bright architecture views; not a lighting proof.\n");mc.stop();return;}
+            if(s.interiors){Files.writeString(Path.of("../build/font-smoke/interior-environments-passed.txt"),"Fourteen actual native rooms plus four floor-specific cutaways. Full bright architecture views; not a lighting proof.\n");mc.stop();return;}
             if(s.environment){Files.writeString(Path.of("../build/font-smoke/uncanny-environments-passed.txt"),"Ten native room, kitchen, exterior and floor-specific cutaways rendered with shipped textures and collision-authored models. Full-bright views; not a lighting proof.\n");mc.setScreen(new UncannyAssetProof());return;}
             Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All "+s.files.size()+" native generated architecture views rendered successfully, including the 99 earlier views and all six uncanny rooms.\n");
             TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: {} native architecture screenshots saved",s.files.size());mc.setScreen(new OutsideSkyProof());

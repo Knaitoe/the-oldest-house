@@ -1824,10 +1824,10 @@ jobs:
           completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
           assert completed and int(completed[-1])==declared, 'Every native interior case must finish.'
           assert not re.search(r'[1-9]\d* required tests failed',log), 'A required interior case failed.'
-          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==14
+          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==18
           print(f'All {declared} native interior cases passed; the complete suite remains required.')
           PY
-      - name: Render and retain all fourteen actual rooms
+      - name: Render fourteen actual rooms and four floor-specific views
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
           ALSOFT_DRIVERS: 'null'
@@ -1838,7 +1838,7 @@ jobs:
           test -s build/font-smoke/interior-environments-passed.txt
           python3 - <<'PY'
           from pathlib import Path
-          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==14
+          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==18
           log=Path('build/interior-client.log').read_text()
           assert 'Unable to load model' not in log and 'Missing textures in model' not in log
           PY
