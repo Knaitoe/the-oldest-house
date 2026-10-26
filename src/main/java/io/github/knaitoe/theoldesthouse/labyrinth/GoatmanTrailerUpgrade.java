@@ -20,6 +20,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class GoatmanTrailerUpgrade {
     public static final String STATE="trailer_fixtures_0465";
     public static final String WINDOW_STATE="trailer_window_spill_0495";
+    public static final String BED_STATE="trailer_inward_beds_0131";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private GoatmanTrailerUpgrade(){}
     public static boolean apply(ServerLevel l,BlockPos b){
@@ -65,11 +66,23 @@ public final class GoatmanTrailerUpgrade {
         for(var e:changes.entrySet())l.setBlock(e.getKey(),e.getValue(),F);
         done.putBoolean(key,true);data.setState(WINDOW_STATE,done);return true;
     }
+    public static boolean inwardBeds(ServerLevel l,BlockPos b){
+        var d=LabyrinthData.get(l.getServer());var done=d.state(BED_STATE);String key=Long.toString(b.asLong());if(done.getBoolean(key))return true;
+        var area=IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN);if(l.players().stream().anyMatch(p->area.inflate(12).intersects(p.getCamera().getBoundingBox())))return false;
+        boolean complete=true;
+        for(int i=1;i<24;i+=2){var at=b.offset(GoatmanWoods.bunk(i));if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;
+            var left=l.getBlockState(at);var right=l.getBlockState(at.east());
+            if(!left.is(Blocks.RED_BED)||!right.is(Blocks.RED_BED)||left.getValue(BedBlock.FACING)!=Direction.EAST||right.getValue(BedBlock.FACING)!=Direction.EAST||left.getValue(BedBlock.PART)!=net.minecraft.world.level.block.state.properties.BedPart.FOOT||right.getValue(BedBlock.PART)!=net.minecraft.world.level.block.state.properties.BedPart.HEAD)continue;
+            var pair=new AABB(at).expandTowards(1,1,0);if(left.getValue(BedBlock.OCCUPIED)||right.getValue(BedBlock.OCCUPIED)||!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,pair,net.minecraft.world.entity.LivingEntity::isAlive).isEmpty()){complete=false;continue;}
+            l.setBlock(at,left.setValue(BedBlock.FACING,Direction.WEST).setValue(BedBlock.PART,net.minecraft.world.level.block.state.properties.BedPart.HEAD),F);l.setBlock(at.east(),right.setValue(BedBlock.FACING,Direction.WEST).setValue(BedBlock.PART,net.minecraft.world.level.block.state.properties.BedPart.FOOT),F);
+        }
+        if(complete){done.putBoolean(key,true);d.setState(BED_STATE,done);}return complete;
+    }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=0||LabyrinthBuilder.isCarving())return;
         var l=s.getLevel(HouseDimensions.INTERIOR);var b=GoatmanVignette.base(s);if(l==null||b==null)return;
         var area=IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN);
         for(int x=(int)Math.floor(area.minX)>>4;x<=(int)Math.floor(area.maxX)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=(int)Math.floor(area.maxZ)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return;
-        apply(l,b);clearWindowSpill(l,b);
+        apply(l,b);clearWindowSpill(l,b);inwardBeds(l,b);
     }
 }

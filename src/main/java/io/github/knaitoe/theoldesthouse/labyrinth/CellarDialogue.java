@@ -16,7 +16,12 @@ public final class CellarDialogue {
         String text=shared.getBoolean("Eradicated131")?"There's nothing left. It's finally quiet.":!own.getBoolean("CleaverTaken")?"The cleaver's on the bench, by the stairs. My hands won't last.":shared.getBoolean("MouthCut131")?"He can't speak now. Keep cutting. Don't leave any of it.":own.getInt("Peeled")>0?"I'm cutting what I can. You need to get deeper.":WORKER[Math.floorMod(line,WORKER.length)];
         p.displayClientMessage(Component.literal("“"+text+"”"),false);
     }
-    private static void gurgle(ServerPlayer p,BlockPos b,CompoundTag own){UncannyStories.heard(p,UncannyRegistry.FLESH_GURGLE.get(),b.offset(0,-3,-21).getCenter(),.8F,.85F);own.putLong("CellarRumbleUntil130",p.serverLevel().getGameTime()+70);}
+    private static void gurgle(ServerPlayer p,BlockPos b,CompoundTag own){UncannyStories.heard(p,CellarSounds.gurgle(),b.offset(0,-3,-21).getCenter(),.65F+p.getRandom().nextFloat()*.15F,.76F+p.getRandom().nextFloat()*.24F);own.putLong("CellarRumbleUntil130",p.serverLevel().getGameTime()+70);}
+    public static void touched(ServerPlayer p,CompoundTag own){
+        long now=p.serverLevel().getGameTime();if(own.contains("NextTouchWarning131")&&now<own.getLong("NextTouchWarning131"))return;
+        own.putLong("NextTouchWarning131",now+1200);own.putInt("TouchWarnings131",own.getInt("TouchWarnings131")+1);
+        p.displayClientMessage(Component.literal("“Don't - don't let him touch you, he'll consume you too.”"),false);
+    }
     public static void actions(ServerPlayer p,BlockPos b,CompoundTag own,CompoundTag shared){
         long now=p.serverLevel().getGameTime();
         if(own.getBoolean("Escorting")&&shared.getBoolean("Rescued")&&shared.hasUUID("RescuedBy")&&shared.getUUID("RescuedBy").equals(p.getUUID()))own.putBoolean("WorkerRescued",true);
