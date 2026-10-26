@@ -1857,7 +1857,7 @@ jobs:
           timeout --signal=QUIT --kill-after=20s 5m xvfb-run -a -s '-screen 0 1280x800x24' gradle runClient -PinteriorEnvironmentSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/interior-client.log
           test -s build/font-smoke/interior-environments-passed.txt
           test -s build/font-smoke/domestic-assets-passed.txt
-          for page in 0 1 2 3 4; do test -s build/font-smoke/native-domestic-$page.png; done
+          for page in 0 1 2 3 4 5; do test -s build/font-smoke/native-domestic-$page.png; done
           python3 - <<'PY'
           from pathlib import Path
           assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==22
