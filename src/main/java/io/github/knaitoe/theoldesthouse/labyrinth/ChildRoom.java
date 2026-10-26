@@ -249,16 +249,16 @@ public final class ChildRoom {
         if(world.getBoolean("BedShifted127"))return true;
         var head=b.offset(BED_HEAD);var foot=b.offset(BED_FOOT);var hs=l.getBlockState(head);var fs=l.getBlockState(foot);
         if(!NurseryBlock.is(hs,Kind.BED_HEAD)||!NurseryBlock.is(fs,Kind.BED_FOOT))return true;
-        for(var at:List.of(head.east(),foot.east())){
+        for(var at:List.of(head.west(),foot.west())){
             if(!l.hasChunkAt(at)||!l.isEmptyBlock(at)||l.getBlockState(at.below()).getCollisionShape(l,at.below()).isEmpty())return false;
-            var state=at.equals(head.east())?hs:fs;
+            var state=at.equals(head.west())?hs:fs;
             var shape=state.getCollisionShape(l,at).move(at.getX(),at.getY(),at.getZ());
             if(!l.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.02),LivingEntity::isAlive).stream().noneMatch(body->shape.toAabbs().stream().anyMatch(box->box.intersects(body.getBoundingBox())))){
                 p.displayClientMessage(Component.literal("Something is in the way of the bed."),true);return false;
             }
         }
         l.setBlock(head,Blocks.AIR.defaultBlockState(),F);l.setBlock(foot,Blocks.AIR.defaultBlockState(),F);
-        l.setBlock(head.east(),hs,F);l.setBlock(foot.east(),fs,F);
+        l.setBlock(head.west(),hs,F);l.setBlock(foot.west(),fs,F);
         world.putBoolean("BedShifted127",true);LiteraryVignettes.shared(data,PLACE,world);
         l.playSound(null,head,net.minecraft.sounds.SoundEvents.WOOD_PLACE,SoundSource.BLOCKS,.65F,.55F);
         return true;

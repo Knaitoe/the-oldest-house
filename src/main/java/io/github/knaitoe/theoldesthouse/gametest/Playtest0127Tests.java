@@ -129,7 +129,7 @@ public final class Playtest0127Tests {
 
     @GameTest(template="empty",batch="review127_lot",timeoutTicks=700)
     public static void oneRealPatronContactConcludesWithoutAnElkSightingAndHidesOnlyForThatReader(GameTestHelper h){run(h,LabyrinthPlace.ELK_LOT,(f,p)->{
-        var scene=LabyrinthPlace.ELK_LOT;var peer=f.player("lot_peer127",scene);var b=f.base(scene);f.at(p,scene,.5,0,-20.5);ElkLotNight.reader(p,b,f.own(p,scene));
+        var scene=LabyrinthPlace.ELK_LOT;var peer=f.player("lot_peer127",scene);var b=f.base(scene);f.at(p,scene,.5,0,-8.5);ElkLotNight.reader(p,b,f.own(p,scene));
         var d=f.data();var night=LiteraryVignettes.shared(d,scene);night.putInt("CrashAt",0);night.putInt("Night",ElkLotNight.MEN_OUT+ElkLotNight.SEARCH+2*ElkLotNight.STAGE);LiteraryVignettes.shared(d,scene,night);
         var own=f.own(p,scene);own.putBoolean("ElkSeen",false);var men=new ArrayList<LiteraryActor>();
         for(var person:ElkLotNight.MEN){var a=LiteraryVignettes.actor(p,scene,person.key(),LiteraryActor.STRANGER,BlockPos.containing(person.home(BlockPos.ZERO)),false);h.assertTrue(a!=null,"the original patron exists");a.appearance(LiteraryActor.STRANGER,person.phase());a.moveTo(p.position().add(.7,0,0));men.add(a);}
@@ -142,8 +142,8 @@ public final class Playtest0127Tests {
     @GameTest(template="empty",batch="review127_bed",timeoutTicks=700)
     public static void pushingTheBedMovesBothOriginalHalvesAndLeavesTheHatchClear(GameTestHelper h){run(h,LabyrinthPlace.CHILD_ROOM,(f,p)->{
         var scene=LabyrinthPlace.CHILD_ROOM;var l=f.level(scene);var b=f.base(scene);var head=l.getBlockState(b.offset(ChildRoom.BED_HEAD));var foot=l.getBlockState(b.offset(ChildRoom.BED_FOOT));f.at(p,scene,-1.5,0,-21.5);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);use(p,b.offset(ChildRoom.BED_FOOT));
-        h.assertTrue(l.isEmptyBlock(b.offset(ChildRoom.BED_HEAD))&&l.isEmptyBlock(b.offset(ChildRoom.BED_FOOT))&&l.getBlockState(b.offset(ChildRoom.BED_HEAD.east())).equals(head)&&l.getBlockState(b.offset(ChildRoom.BED_FOOT.east())).equals(foot),"the actual paired bed slides aside, preserving its native states");
-        h.assertTrue(l.getBlockState(b.offset(ChildRoom.GAP)).getBlock() instanceof TrapDoorBlock,"the discovered hatch is no longer obscured by the bed");f.reload();use(p,b.offset(ChildRoom.BED_FOOT.east()));h.assertTrue(l.isEmptyBlock(b.offset(ChildRoom.BED_FOOT))&&l.getBlockState(b.offset(ChildRoom.BED_FOOT.east())).equals(foot),"a saved interaction never moves or duplicates the bed again");
+        h.assertTrue(l.isEmptyBlock(b.offset(ChildRoom.BED_HEAD))&&l.isEmptyBlock(b.offset(ChildRoom.BED_FOOT))&&l.getBlockState(b.offset(ChildRoom.BED_HEAD.west())).equals(head)&&l.getBlockState(b.offset(ChildRoom.BED_FOOT.west())).equals(foot),"the actual paired bed slides aside, preserving its native states");
+        h.assertTrue(l.getBlockState(b.offset(ChildRoom.GAP)).getBlock() instanceof TrapDoorBlock,"the discovered hatch is no longer obscured by the bed");f.reload();use(p,b.offset(ChildRoom.BED_FOOT.west()));h.assertTrue(l.isEmptyBlock(b.offset(ChildRoom.BED_FOOT))&&l.getBlockState(b.offset(ChildRoom.BED_FOOT.west())).equals(foot),"a saved interaction never moves or duplicates the bed again");
     });}
     @AfterBatch(batch="review127_bed") public static void bedDone(ServerLevel l){close();}
 }

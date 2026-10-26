@@ -90,7 +90,7 @@ public final class UncannyStories {
     private static boolean seen(ServerPlayer p,LiteraryActor a){return a!=null&&HouseWatchers.sees(p,a.getEyePosition());}
     private static void observe(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){
         if(place==LabyrinthPlace.SECOND_WAITRESS){var a=actor(p,own,"CastFake");if(a!=null&&a.phase()>=1&&seen(p,a))own.putBoolean("SawSecond",true);}
-        if(place==LabyrinthPlace.TUNNEL_PERIPHERY&&green(own)&&seen(p,actor(p,own,"CastGiant")))own.putBoolean("StoopingSeen",true);
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY&&green(own)){var a=actor(p,own,"CastGiant");if(a!=null&&a.phase()>0&&seen(p,a))own.putBoolean("StoopingSeen",true);}
         if(place==LabyrinthPlace.MOTION_LIGHT){var a=actor(p,own,"CastVisitor");if(a!=null&&a.phase()>=1&&seen(p,a))own.putBoolean("VisitorSeen",true);}
         if(place==LabyrinthPlace.LAYERED_MAN&&p.getY()<b.getY()-1){own.putBoolean("CellarEntered",true);var shared=world(p.serverLevel(),b,place);if(shared.hasUUID("Peeler")&&p.serverLevel().getEntity(shared.getUUID("Peeler")) instanceof LiteraryActor a&&seen(p,a)){own.putBoolean("WorkerSeen",true);if(shared.getInt("Age")>=400)own.putBoolean("BladeSeen",true);}}
     }
@@ -183,29 +183,39 @@ public final class UncannyStories {
         LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS,own);
     }
     private static void tunnel(ServerPlayer p,BlockPos b,CompoundTag own){
-        int age=own.getInt("UncannyAge");var giant=actor(p,own,"CastGiant");if(age==0||giant==null)return;
+        int age=own.getInt("UncannyAge");var giant=actor(p,own,"CastGiant");if(age==0)return;
+        double moved=own.contains("LastX")?Math.hypot(p.getX()-own.getDouble("LastX"),p.getZ()-own.getDouble("LastZ")):0;
+        if(green(own)&&own.contains("LastZ")&&p.getZ()<own.getDouble("LastZ")-.08)own.putInt("GreenSteps",own.getInt("GreenSteps")+1);
+        own.putDouble("LastX",p.getX());own.putDouble("LastZ",p.getZ());
+        // Moving through real green signals is a route, even if the reader never
+        // gives the dormant woman an unseen opportunity to appear behind them.
+        if(p.getZ()<b.getZ()-66&&own.getInt("GreenSteps")>=5)ready(p,LabyrinthPlace.TUNNEL_PERIPHERY,own,"passed_the_last_green_signal");
+        if(giant==null)return;
         if(!own.getBoolean("TunnelStarted127")){
             if(giant.phase()>0&&own.contains("LastZ"))own.putBoolean("TunnelStarted127",true);
             else{
                 giant.appearance(LiteraryActor.UNCANNY_GIANT,0);
                 if(age<160||p.getZ()>b.getZ()-12)return;
-                var spot=new Vec3(b.getX()+.5,b.getY(),Math.min(b.getZ()-6.5,p.getZ()+10));
-                if(UncannySenses.angle(p,spot.add(0,2.1,0))<UncannySenses.halfFov(p)&&UncannySenses.clear(p,spot.add(0,2.1,0)))return;
-                if(!p.serverLevel().noCollision(giant,giant.getBoundingBox().move(spot.subtract(giant.position()))))return;
+                Vec3 spot=null;
+                // The tall body needs a genuinely clear bay between the ceiling fittings.
+                // Try behind the reader; never make an appearance in their current view.
+                for(int offset=0;offset<=6;offset+=2){
+                    var candidate=new Vec3(b.getX()+.5,b.getY(),Math.min(b.getZ()-8.5,p.getZ()+10-offset));
+                    if(UncannySenses.angle(p,candidate.add(0,2.1,0))<UncannySenses.halfFov(p)&&UncannySenses.clear(p,candidate.add(0,2.1,0)))continue;
+                    if(p.serverLevel().noCollision(giant,giant.getBoundingBox().move(candidate.subtract(giant.position())))){spot=candidate;break;}
+                }
+                if(spot==null)return;
                 giant.moveTo(spot);giant.setDeltaMovement(Vec3.ZERO);own.putBoolean("TunnelStarted127",true);
             }
         }
         int stage=green(own)?1:2;
         if(own.getInt("UncannyStage")!=stage)heard(p,green(own)?SoundEvents.NOTE_BLOCK_HAT.value():SoundEvents.NOTE_BLOCK_BASS.value(),p.position().add(0,2,-4),.2F,green(own)?1.7F:.6F);
         giant.appearance(LiteraryActor.UNCANNY_GIANT,stage);own.putInt("UncannyStage",stage);
-        if(green(own)){own.putInt("GreenSteps",own.getInt("GreenSteps")+(own.contains("LastZ")&&p.getZ()<own.getDouble("LastZ")-.08?1:0));giant.setDeltaMovement(Vec3.ZERO);}
+        if(green(own)){giant.setDeltaMovement(Vec3.ZERO);}
         else{
-            double moved=own.contains("LastX")?Math.hypot(p.getX()-own.getDouble("LastX"),p.getZ()-own.getDouble("LastZ")):0;
             SceneFootpaths.step(giant,p.position().add(0,0,1),Math.max(.55,Math.min(1.65,moved)));
             if(giant.distanceToSqr(p)<1.7&&age>120&&!own.getBoolean("Ready"))caught(p,b,LabyrinthPlace.TUNNEL_PERIPHERY,own,"paced_to_the_last_red_light");
         }
-        own.putDouble("LastX",p.getX());own.putDouble("LastZ",p.getZ());
-        if(p.getZ()<b.getZ()-66&&own.getInt("GreenSteps")>=5)ready(p,LabyrinthPlace.TUNNEL_PERIPHERY,own,"passed_the_last_green_signal");
     }
     private static void bedroom(ServerPlayer p,BlockPos b,CompoundTag own){
         int sleeps=own.getInt("Sleeps");if(sleeps==1&&own.getInt("UncannyAge")>own.getInt("FirstSleepAge")+1800){own.putInt("Sleeps",0);own.remove("FirstSleepAge");return;}var doll=actor(p,own,"CastDoll");if(doll==null)return;
@@ -252,9 +262,6 @@ public final class UncannyStories {
                 else if(!dark&&(auto&bit)!=0){falseDoor(p.serverLevel(),at,false);auto&=~bit;}
             }
             own.putInt("FalseAuto",auto);
-        }
-        for(var rel:UncannyRooms.FALSE_DOORS)if(p.distanceToSqr(b.offset(rel).getCenter())<1.5&&p.serverLevel().getBlockState(b.offset(rel)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(rel)).getValue(UncannyPropBlock.STAGE)>=2){
-            own.putInt("Loops",own.getInt("Loops")+1);HousePackets.send(p,new HouseFadePayload(5,5,10));var safe=Vec3.atBottomCenterOf(b.offset(0,0,-6));p.teleportTo(p.serverLevel(),safe.x,safe.y,safe.z,180,0);p.hasChangedDimension();break;
         }
         if(p.getX()>b.getX()+4.6&&p.getZ()<b.getZ()-3&&p.getZ()>b.getZ()-8&&own.getBoolean("HingeSeen")&&(own.getBoolean("VisitorSeen")||own.getBoolean("FalseExamined")))ready(p,place,own,"opened_the_hinged_service_door");
     }
