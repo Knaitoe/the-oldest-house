@@ -135,7 +135,7 @@ for name,(normal,active) in M.items():
   for x0,y0,z0,x1,y1,z1,mat in parts:
    assert 0<=x0<x1<=16 and 0<=y0<y1<=16 and 0<=z0<z1<=16,(name,mat)
    uvs={'north':[16-x1,16-y1,16-x0,16-y0],'south':[x0,16-y1,x1,16-y0],'east':[16-z1,16-y1,16-z0,16-y0],'west':[z0,16-y1,z1,16-y0],'up':[x0,z0,x1,z1],'down':[x0,16-z1,x1,16-z0]}
-   elements.append({'from':[x0,y0,z0],'to':[x1,y1,z1],'faces':{f:{'texture':'#'+mat,'uv':uv} for f,uv in uvs.items()}})
+   elements.append({'from':[x0,y0,z0],'to':[x1,y1,z1],'faces':{f:{'texture':'#'+mat,'uv':uv,**({'cullface':f} if name in SURFACES else {})} for f,uv in uvs.items()}})
   mats=sorted({b[6] for b in parts});assert all(m in PAINT for m in mats)
   obj={'ambientocclusion':True,'textures':{**{m:P+m for m in mats},'particle':P+mats[0]},'elements':elements}
   OUT[A/f'models/block/interiors/{modelname}.json']=json.dumps(obj,separators=(',',':'))+'\n'

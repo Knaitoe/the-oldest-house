@@ -39,7 +39,7 @@ public final class LiteraryRegistry {
     /** The child's room (0.4.74): its own furniture and toys, and its wallpaper. */
     public static final DeferredBlock<NurseryBlock> NURSERY=BLOCKS.registerBlock("nursery",NurseryBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(NurseryBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<VignetteInteriorBlock>> INTERIOR_TYPE=CODECS.register("vignette_interior",()->VignetteInteriorBlock.CODEC);
-    public static final DeferredBlock<VignetteInteriorBlock> INTERIOR=BLOCKS.registerBlock("vignette_interior",VignetteInteriorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable().lightLevel(VignetteInteriorBlock::light));
+    public static final DeferredBlock<VignetteInteriorBlock> INTERIOR=BLOCKS.registerBlock("vignette_interior",VignetteInteriorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noLootTable().lightLevel(VignetteInteriorBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<RoadhouseBlock>> ROADHOUSE_TYPE=CODECS.register("roadhouse",()->RoadhouseBlock.CODEC);
     /** The Last Stop (0.4.78): the bar's furniture, its highway and lot, the field's stalks and the pickups. */
     public static final DeferredBlock<RoadhouseBlock> ROADHOUSE=BLOCKS.registerBlock("roadhouse",RoadhouseBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(RoadhouseBlock::light));
