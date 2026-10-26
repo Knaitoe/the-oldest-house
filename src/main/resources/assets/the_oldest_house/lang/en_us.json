@@ -382,5 +382,12 @@
   "gui.the_oldest_house.previous_passage": "Earlier passage",
   "gui.the_oldest_house.next_passage": "Later passage",
   "gui.the_oldest_house.full_account": "Full account",
-  "gui.the_oldest_house.keep_account": "Keep full account"
+  "gui.the_oldest_house.keep_account": "Keep full account",
+  "subtitles.the_oldest_house.handling_toy": "Toy piano plays",
+  "subtitles.the_oldest_house.handling_spinet": "Spinet plays",
+  "subtitles.the_oldest_house.handling_click": "Control clicks",
+  "subtitles.the_oldest_house.handling_slide": "Slide tray clicks",
+  "subtitles.the_oldest_house.handling_wood": "Model piece taps",
+  "subtitles.the_oldest_house.handling_wind": "Tape rewinds",
+  "subtitles.the_oldest_house.handling_tape": "Recording plays"
 }

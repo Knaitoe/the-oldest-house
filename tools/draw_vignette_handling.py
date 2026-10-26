@@ -50,7 +50,7 @@ def sound(name,samples):
   assert entry.get('pcm_sha256')==pcm_sha and entry.get('ogg_sha256')==hashlib.sha256(data).hexdigest() and data.startswith(b'OggS'), 'Stale or corrupt handling sound '+name
  else:data=encode(samples)
  manifest[name]={'pcm_sha256':pcm_sha,'ogg_sha256':hashlib.sha256(data).hexdigest(),'sample_rate':RATE,'samples':len(samples)}
- out[path]=data;sounds['literary.handling_'+name]={'sounds':[{'name':'the_oldest_house:handling/'+name,'attenuation_distance':12}]}
+ out[path]=data;sounds['literary.handling_'+name]={'subtitle':'subtitles.the_oldest_house.handling_'+('tape' if name.startswith('tape_') else name),'sounds':[{'name':'the_oldest_house:handling/'+name,'attenuation_distance':12}]}
 # Struck toy tines and a slightly detuned, wooden spinet. Both roots are C4; native per-key pitch supplies the octave.
 for name,seconds,toy in [('toy',.85,True),('spinet',2.2,False)]:
  samples=[];rng=random.Random(94 if toy else 95)
@@ -80,6 +80,13 @@ for i in range(16*RATE):
  room.append(v)
 for n in range(32):sound(f'tape_{n:02}',room[n*RATE//2:(n+1)*RATE//2])
 out[manifest_path]=(json.dumps(manifest,indent=2)+'\n').encode()
+labels={'toy':'Toy piano plays','spinet':'Spinet plays','click':'Control clicks','slide':'Slide tray clicks','wood':'Model piece taps','wind':'Tape rewinds','tape':'Recording plays'}
+lang_path=A/'lang/en_us.json';language=json.loads(lang_path.read_text())
+for key,value in labels.items():
+ name='subtitles.the_oldest_house.handling_'+key
+ if args.check:assert language.get(name)==value, 'Missing handling subtitle '+name
+ else:language[name]=value
+if not args.check:lang_path.write_text(json.dumps(language,indent=2,ensure_ascii=False)+'\n')
 master=A/'sounds.json';current=json.loads(master.read_text())
 if args.check:
  assert all(current.get(k)==v for k,v in sounds.items()),'Missing handling sound registration'

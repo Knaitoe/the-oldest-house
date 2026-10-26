@@ -1492,7 +1492,8 @@
         "name": "the_oldest_house:handling/toy",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_toy"
   },
   "literary.handling_spinet": {
     "sounds": [
@@ -1500,7 +1501,8 @@
         "name": "the_oldest_house:handling/spinet",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_spinet"
   },
   "literary.handling_click": {
     "sounds": [
@@ -1508,7 +1510,8 @@
         "name": "the_oldest_house:handling/click",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_click"
   },
   "literary.handling_slide": {
     "sounds": [
@@ -1516,7 +1519,8 @@
         "name": "the_oldest_house:handling/slide",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_slide"
   },
   "literary.handling_wood": {
     "sounds": [
@@ -1524,7 +1528,8 @@
         "name": "the_oldest_house:handling/wood",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_wood"
   },
   "literary.handling_wind": {
     "sounds": [
@@ -1532,7 +1537,8 @@
         "name": "the_oldest_house:handling/wind",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_wind"
   },
   "literary.handling_tape_00": {
     "sounds": [
@@ -1540,7 +1546,8 @@
         "name": "the_oldest_house:handling/tape_00",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_01": {
     "sounds": [
@@ -1548,7 +1555,8 @@
         "name": "the_oldest_house:handling/tape_01",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_02": {
     "sounds": [
@@ -1556,7 +1564,8 @@
         "name": "the_oldest_house:handling/tape_02",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_03": {
     "sounds": [
@@ -1564,7 +1573,8 @@
         "name": "the_oldest_house:handling/tape_03",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_04": {
     "sounds": [
@@ -1572,7 +1582,8 @@
         "name": "the_oldest_house:handling/tape_04",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_05": {
     "sounds": [
@@ -1580,7 +1591,8 @@
         "name": "the_oldest_house:handling/tape_05",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_06": {
     "sounds": [
@@ -1588,7 +1600,8 @@
         "name": "the_oldest_house:handling/tape_06",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_07": {
     "sounds": [
@@ -1596,7 +1609,8 @@
         "name": "the_oldest_house:handling/tape_07",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_08": {
     "sounds": [
@@ -1604,7 +1618,8 @@
         "name": "the_oldest_house:handling/tape_08",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_09": {
     "sounds": [
@@ -1612,7 +1627,8 @@
         "name": "the_oldest_house:handling/tape_09",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_10": {
     "sounds": [
@@ -1620,7 +1636,8 @@
         "name": "the_oldest_house:handling/tape_10",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_11": {
     "sounds": [
@@ -1628,7 +1645,8 @@
         "name": "the_oldest_house:handling/tape_11",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_12": {
     "sounds": [
@@ -1636,7 +1654,8 @@
         "name": "the_oldest_house:handling/tape_12",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_13": {
     "sounds": [
@@ -1644,7 +1663,8 @@
         "name": "the_oldest_house:handling/tape_13",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_14": {
     "sounds": [
@@ -1652,7 +1672,8 @@
         "name": "the_oldest_house:handling/tape_14",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_15": {
     "sounds": [
@@ -1660,7 +1681,8 @@
         "name": "the_oldest_house:handling/tape_15",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_16": {
     "sounds": [
@@ -1668,7 +1690,8 @@
         "name": "the_oldest_house:handling/tape_16",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_17": {
     "sounds": [
@@ -1676,7 +1699,8 @@
         "name": "the_oldest_house:handling/tape_17",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_18": {
     "sounds": [
@@ -1684,7 +1708,8 @@
         "name": "the_oldest_house:handling/tape_18",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_19": {
     "sounds": [
@@ -1692,7 +1717,8 @@
         "name": "the_oldest_house:handling/tape_19",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_20": {
     "sounds": [
@@ -1700,7 +1726,8 @@
         "name": "the_oldest_house:handling/tape_20",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_21": {
     "sounds": [
@@ -1708,7 +1735,8 @@
         "name": "the_oldest_house:handling/tape_21",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_22": {
     "sounds": [
@@ -1716,7 +1744,8 @@
         "name": "the_oldest_house:handling/tape_22",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_23": {
     "sounds": [
@@ -1724,7 +1753,8 @@
         "name": "the_oldest_house:handling/tape_23",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_24": {
     "sounds": [
@@ -1732,7 +1762,8 @@
         "name": "the_oldest_house:handling/tape_24",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_25": {
     "sounds": [
@@ -1740,7 +1771,8 @@
         "name": "the_oldest_house:handling/tape_25",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_26": {
     "sounds": [
@@ -1748,7 +1780,8 @@
         "name": "the_oldest_house:handling/tape_26",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_27": {
     "sounds": [
@@ -1756,7 +1789,8 @@
         "name": "the_oldest_house:handling/tape_27",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_28": {
     "sounds": [
@@ -1764,7 +1798,8 @@
         "name": "the_oldest_house:handling/tape_28",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_29": {
     "sounds": [
@@ -1772,7 +1807,8 @@
         "name": "the_oldest_house:handling/tape_29",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_30": {
     "sounds": [
@@ -1780,7 +1816,8 @@
         "name": "the_oldest_house:handling/tape_30",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   },
   "literary.handling_tape_31": {
     "sounds": [
@@ -1788,6 +1825,7 @@
         "name": "the_oldest_house:handling/tape_31",
         "attenuation_distance": 12
       }
-    ]
+    ],
+    "subtitle": "subtitles.the_oldest_house.handling_tape"
   }
 }
