@@ -33,7 +33,7 @@ public final class VignetteInteriors {
  private static void shell(List<Edit> e,int x0,int x1,int z0,int z1,int y0,int y1,Block old,VignetteInteriorBlock.Kind next){
   fill(e,x0,y0,z0,x1,y1,z0,old,next);fill(e,x0,y0,z1,x1,y1,z1,old,next);fill(e,x0,y0,z0+1,x0,y1,z1-1,old,next);fill(e,x1,y0,z0+1,x1,y1,z1-1,old,next);
  }
- private static void fit(List<Edit> e,int x,int y,int z,VignetteInteriorBlock.Kind k,Direction f){e.add(new Edit(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),VignetteInteriorBlock.of(k,f)));}
+ private static void fit(List<Edit> e,int x,int y,int z,VignetteInteriorBlock.Kind k,Direction f){e.add(new Edit(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),VignetteHandlingBlock.replacement(k)==null?VignetteInteriorBlock.of(k,f):VignetteHandlingBlock.of(VignetteHandlingBlock.replacement(k),f)));}
  private static void fit(List<Edit> e,int x,int y,int z,VignetteInteriorBlock.Kind k){fit(e,x,y,z,k,Direction.SOUTH);}
  /** Human-scaled partitions, with deliberate full-height openings; never sealed fake doors. */
  private static void partition(List<Edit> e,int x,int z,VignetteInteriorBlock.Kind dado,VignetteInteriorBlock.Kind paper){
@@ -127,7 +127,7 @@ public final class VignetteInteriors {
  private static boolean safe(ServerLevel l,BlockPos at,Edit e,boolean recording){
   var actual=recording?BuildBlocks.state(l,at):l.getBlockState(at);if(!actual.equals(e.expected())||l.getBlockEntity(at)!=null)return false;
   if(e.expected().isAir()){
-   var support=e.next().getValue(VignetteInteriorBlock.KIND).wall()?at.relative(e.next().getValue(VignetteInteriorBlock.FACING).getOpposite()):at.below();
+   var support=!e.next().is(LiteraryRegistry.HANDLING.get())&&e.next().getValue(VignetteInteriorBlock.KIND).wall()?at.relative(e.next().getValue(VignetteInteriorBlock.FACING).getOpposite()):at.below();
    var below=recording?BuildBlocks.state(l,support):l.getBlockState(support);
    if(below.getCollisionShape(l,support).isEmpty()||below.getCollisionShape(l,support).max(Direction.Axis.Y)<.99)return false;
   }

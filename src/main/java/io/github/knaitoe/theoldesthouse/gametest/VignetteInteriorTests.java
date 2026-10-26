@@ -39,6 +39,9 @@ public final class VignetteInteriorTests {
    for(var p:VignetteInteriors.PLACES){
     build(f,p);var l=f.level(p);var b=f.base(p);int fittings=0;
     for(var edit:VignetteInteriors.plan(p)){
+     if(edit.next().is(LiteraryRegistry.HANDLING.get())){
+      var at=b.offset(edit.relative());h.assertTrue(l.getBlockState(at).is(LiteraryRegistry.HANDLING.get())&&l.getBlockEntity(at) instanceof VignetteHandlingBlockEntity,"the original fitting address receives its native handled object: "+p+" "+edit.relative());fittings++;continue;
+     }
      var kind=edit.next().getValue(VignetteInteriorBlock.KIND);
      if(kind.surface()){
       if(edit.expected().isAir()&&!l.getBlockState(b.offset(edit.relative())).equals(edit.next()))missing.add(p.id()+" incomplete authored partition at "+edit.relative()+" found "+l.getBlockState(b.offset(edit.relative())));
