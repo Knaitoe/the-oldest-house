@@ -148,6 +148,7 @@ def furniture():
     out['sink']=[p((0,0,3),(16,12,16),'enamel'),p((0,12,1),(16,14,16),'steel'),p((2,14,3),(4,15,13),'steel'),p((12,14,3),(14,15,13),'steel'),p((4,14,3),(12,15,5),'steel'),p((4,14,11),(12,15,13),'steel'),p((6,14,13),(8,16,15),'steel')]
     out['shelf']=[p((0,1,4),(16,2,16),'steel'),p((0,8,4),(16,9,16),'steel'),p((0,15,4),(16,16,16),'steel'),p((0,2,14),(1,15,16),'steel'),p((15,2,14),(16,15,16),'steel'),p((2,9,6),(7,14,14),'enamel'),p((9,2,7),(14,7,14),'dark_wood')]
     out['fluorescent']=[p((0,14,3),(16,16,13),'steel'),p((1,11,4),(15,14,12),'lamp'),p((0,11,3),(1,14,13),'steel'),p((15,11,3),(16,14,13),'steel')]
+    out['flush_light']=[p((0,1,0),(16,16,16),'workshop_wall'),p((0,0,3),(1,1,13),'steel'),p((15,0,3),(16,1,13),'steel'),p((1,0,3),(15,1,4),'steel'),p((1,0,12),(15,1,13),'steel'),p((1,.01,4),(15,.25,12),'lamp')]
     out['window_frame']=[p((0,0,13),(16,2,16),'steel'),p((0,14,13),(16,16,16),'steel'),p((0,2,13),(2,14,16),'steel'),p((14,2,13),(16,14,16),'steel'),p((7,2,14),(8,14,15),'steel'),p((2,2,15),(14,14,16),'glass')]
     for part in ('left','center','right'):
         out['sign_'+part]=[p((0,0,13),(16,16,16),'steel'),p((0,0,12),(16,16,13),'sign_'+part)]
@@ -196,9 +197,9 @@ def furniture():
     out['cup']=[p((5,0,5),(11,1,11),'ceramic'),p((4,1,4),(12,6,12),'ceramic'),p((5,6,5),(11,7,11),'black'),p((12,2,6),(14,5,10),'ceramic')]
     return out
 
-INTERACTIVE={'cabinet','fridge','sideboard','wardrobe','mailbox','desk_lamp','fluorescent'}
+INTERACTIVE={'cabinet','fridge','sideboard','wardrobe','mailbox','desk_lamp','fluorescent','flush_light'}
 SEATS={'booth','stool','armchair','sofa','sofa_left','sofa_right','diner_chair','lobby_bench'}
-LIGHTS={'fluorescent':12,'exterior_lamp':9,'sconce':8,'desk_lamp':8,'sign_left':7,'sign_center':7,'sign_right':7}
+LIGHTS={'fluorescent':12,'flush_light':12,'exterior_lamp':9,'sconce':8,'desk_lamp':8,'sign_left':7,'sign_center':7,'sign_right':7}
 
 def pieces_for(name,opened):
     parts=furniture()[name]
@@ -213,7 +214,7 @@ def pieces_for(name,opened):
         # moves with the leaf instead of remaining suspended across the opening.
         parts[8]['from']=[1,1,-3];parts[8]['to']=[2,7,3]
         parts[9]['from']=[0,4,-2];parts[9]['to']=[1,5,2]
-    if name=='fluorescent':
+    if name in ('fluorescent','flush_light'):
         for part in parts:
             if part['material']=='lamp':part['material']='black'
     return parts

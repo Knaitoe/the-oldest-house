@@ -62,7 +62,7 @@ public final class UncannyReading {
                 case 1->"His blade is gone. Marcus never made it past the sump. There is still a man stripping the layers beside him.";
                 case 2->"The cut edges are knitting together. There is something brass farther in. Keep the steps clear.";
                 case 3->"He said he could walk. I told him to try the stairs. The wet edges were already closing behind us.";
-                default->own.getBoolean("WorkerRescued")?"He reached the upper landing on his own feet. Something below kept pressing against the stairwell.":own.getBoolean("Helped")?"The recovered key was in my hand upstairs. The cellar had not stopped growing.":"I shut the door from the upper landing. The frame was still taking the weight.";
+                default->own.getBoolean("WorkerRescued")?"He reached the upper landing on his own feet. Something below kept pressing against the stairwell.":own.getBoolean("Helped")?"The key came out into my hand. Behind it, the cut edges moved.":"I shut the door from the upper landing. The frame was still taking the weight.";
             };
             case MOTION_LIGHT->switch(index){
                 case 0->"Do not touch the brass button. The motion light stays on in the wind. When it goes out, watch the glass.";

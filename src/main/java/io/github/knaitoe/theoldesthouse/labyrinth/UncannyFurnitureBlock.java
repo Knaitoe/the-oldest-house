@@ -22,7 +22,7 @@ public final class UncannyFurnitureBlock extends HorizontalDirectionalBlock {
         WINDOW_FRAME,SIGN_LEFT,SIGN_CENTER,SIGN_RIGHT,EXTERIOR_LAMP,SCONCE,ARMCHAIR,SOFA,DESK,
         SIDEBOARD,BOOKCASE,PICTURE,WARDROBE,BEDSIDE,HEADBOARD,HAMPER,RADIATOR,PIPE,PIPE_HORIZONTAL,
         VENT,SWITCHBOX,WORKBENCH,TOOL_RACK,MAILBOX,LOBBY_BENCH,DRAIN,BIN,DESK_LAMP,NAPKIN_CADDY,CUP,
-        SOFA_LEFT,SOFA_RIGHT,COFFEE_TABLE,DINER_CHAIR;
+        SOFA_LEFT,SOFA_RIGHT,COFFEE_TABLE,DINER_CHAIR,FLUSH_LIGHT;
         @Override public String getSerializedName(){return name().toLowerCase(Locale.ROOT);}
         public boolean seat(){return this==BOOTH||this==STOOL||this==ARMCHAIR||this==SOFA||this==SOFA_LEFT||this==SOFA_RIGHT||this==DINER_CHAIR||this==LOBBY_BENCH;}
         public double seatHeight(){return this==STOOL?13:9;}
@@ -37,7 +37,7 @@ public final class UncannyFurnitureBlock extends HorizontalDirectionalBlock {
     public static BlockState of(Kind kind,Direction facing){return UncannyRegistry.FURNITURE.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     public static boolean isSeat(BlockState s){return s.is(UncannyRegistry.FURNITURE.get())&&s.getValue(KIND).seat();}
     public static int light(BlockState s){return switch(s.getValue(KIND)){
-        case FLUORESCENT->s.getValue(OPEN)?0:12;case EXTERIOR_LAMP->9;case SCONCE->8;case DESK_LAMP->s.getValue(OPEN)?0:8;
+        case FLUORESCENT,FLUSH_LIGHT->s.getValue(OPEN)?0:12;case EXTERIOR_LAMP->9;case SCONCE->8;case DESK_LAMP->s.getValue(OPEN)?0:8;
         case SIGN_LEFT,SIGN_CENTER,SIGN_RIGHT->7;default->0;
     };}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

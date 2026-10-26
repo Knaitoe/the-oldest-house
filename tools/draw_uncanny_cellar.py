@@ -20,9 +20,10 @@ def tissue(kind):
             d.rectangle((7,low,9,low+2),fill='#413e37');d.point((8,low),fill='#9e9c83')
             d.line((1,low-2,7,low-4,14,low-1),fill='#8e7067',width=2)
         elif kind=='flesh_mouth':
-            d.polygon(((2,5),(8,6),(13,4),(14,10),(10,13),(5,12)),fill='#5a3c43')
-            d.line((4,6,9,7,12,6),fill='#c6b399',width=2)
-            d.line((5,13,10,14,14,11),fill='#d5a596')
+            d.rectangle((0,0,15,15),fill='#ba9184')
+            d.polygon(((6,2),(9,2),(12,5),(12,11),(9,14),(6,14),(3,11),(3,5)),fill='#89656a')
+            d.polygon(((6,3),(9,3),(11,6),(11,11),(9,13),(6,13),(4,10),(4,6)),fill='#342a2c')
+            d.line((5,4,6,3,9,3,10,4),fill='#c0a896')
         else:
             d.polygon(((6,0),(9,0),(12,11),(9,14),(3,12)),fill='#cda18e')
             d.rectangle((3,11,5,12),fill='#775556');d.rectangle((9,11,11,12),fill='#775556')
