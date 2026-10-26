@@ -25,6 +25,7 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
     @SubscribeEvent public static void setup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e){e.enqueueWork(()->{
         ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.FURNITURE.get(),RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(DomesticRegistry.FITTING.get(),RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(LiteraryRegistry.PROP.get(),RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.DINER_DOOR.get(),RenderType.cutout());
     });}
     @Override public void render(UncannyPropBlock.Fitting fitting,float partial,PoseStack p,MultiBufferSource buffers,int light,int overlay){
@@ -50,6 +51,14 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
             case MONITOR->{box(p,out,1,0,2,15,13,14,BLACK,light,overlay);box(p,out,2,2,13.9F,14,11,14.1F,CRT,LightTexture.FULL_BRIGHT,overlay);}
             case CAMERA->{box(p,out,4,8,6,12,13,12,METAL,light,overlay);box(p,out,6,9,12,10,12,14,BLACK,light,overlay);}
             case SIGNAL->{box(p,out,2,3,6,14,15,10,BLACK,light,overlay);box(p,out,5,6,10,11,12,10.2F,UncannyClient.green()?GREEN:RED,LightTexture.FULL_BRIGHT,overlay);}
+            case STOPLIGHT->{
+                boolean green=UncannyClient.room().equals(LabyrinthPlace.TUNNEL_PERIPHERY.id())?UncannyClient.green():state.getValue(UncannyPropBlock.STAGE)==1;
+                box(p,out,4,0,6,12,16,10,METAL,light,overlay);box(p,out,5,1,10,11,15,10.5F,BLACK,light,overlay);
+                box(p,out,5.5F,10.5F,10.5F,10.5F,14,11,green?BLACK:RED,LightTexture.FULL_BRIGHT,overlay);
+                box(p,out,5.5F,6.5F,10.5F,10.5F,9.5F,11,BLACK,light,overlay);
+                box(p,out,5.5F,2,10.5F,10.5F,5.5F,11,green?GREEN:BLACK,LightTexture.FULL_BRIGHT,overlay);
+                for(float y:new float[]{5.5F,9.5F,14})box(p,out,4.5F,y,10.5F,11.5F,y+.5F,13,BLACK,light,overlay);
+            }
             case SIGN->{box(p,out,0,4,6,16,14,10,METAL,light,overlay);box(p,out,1,5,10,15,13,10.2F,BLACK,light,overlay);}
             case FLOODLIGHT->{box(p,out,6,9,7,10,10,16,METAL,light,overlay);box(p,out,2,7,6,14,15,10,METAL,light,overlay);box(p,out,3,8,10,13,14,10.2F,state.getValue(UncannyPropBlock.STAGE)==0?BONE:BLACK,state.getValue(UncannyPropBlock.STAGE)==0?LightTexture.FULL_BRIGHT:light,overlay);}
             case BUZZER->{box(p,out,3,3,6,13,14,9,METAL,light,overlay);box(p,out,6,5,9,10,8,10,BONE,light,overlay);box(p,out,5,10,9,11,12,9.5F,BLACK,light,overlay);}

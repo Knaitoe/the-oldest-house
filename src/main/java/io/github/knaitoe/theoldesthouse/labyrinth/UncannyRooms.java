@@ -16,7 +16,7 @@ public final class UncannyRooms {
     public static final BlockPos DINER_TABLE=new BlockPos(5,1,-19),MONITOR_AT=new BlockPos(-5,6,-22),BED_AT=new BlockPos(-6,5,-26),PARENTS_DOOR=new BlockPos(4,5,-15);
     public static final BlockPos CELLAR_DOOR=new BlockPos(0,0,-5),MASS=new BlockPos(0,-5,-20),TOOL=new BlockPos(5,-4,-13),KEY_CAVITY=new BlockPos(0,-4,-22);
     public static final BlockPos INTERCOM=new BlockPos(3,1,-10),FLOOD=new BlockPos(0,4,-20),HINGED=new BlockPos(4,0,-5);
-    public static final List<BlockPos> FALSE_DOORS=List.of(new BlockPos(-4,0,-4),new BlockPos(-4,0,-8),new BlockPos(0,0,-2));
+    public static final List<BlockPos> FALSE_DOORS=List.of(new BlockPos(-4,0,-4),new BlockPos(-4,0,-8),new BlockPos(4,0,-11));
     public static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private UncannyRooms(){}
     public static boolean isUncanny(LabyrinthPlace p){return p!=null&&PLACES.contains(p);}
@@ -171,8 +171,9 @@ public final class UncannyRooms {
         furnishing(l,b,-2,1,-7,UncannyFurnitureBlock.Kind.SWITCHBOX,Direction.EAST);
         for(int z:new int[]{-6,-20,-36,-52})furnishing(l,b,0,2,z,UncannyFurnitureBlock.Kind.FLUORESCENT);
         at(l,b,-3,0,-5,material("workshop_wall"));note(l,b,LabyrinthPlace.TUNNEL_PERIPHERY,CLIPBOARD);
-        at(l,b,3,0,-69,material("workshop_wall"));box(l,b,-3,3,-73,3,6,-65,Blocks.AIR);box(l,b,-3,6,-73,3,6,-65,material("workshop_wall"));
-        furnishing(l,b,0,5,-69,UncannyFurnitureBlock.Kind.FLUORESCENT);
+        at(l,b,3,0,-69,material("workshop_wall"));box(l,b,-3,3,-73,3,6,-65,material("workshop_wall"));
+        box(l,b,-3,3,-73,3,3,-1,material("workshop_wall"));
+        fit(l,b,new BlockPos(0,1,-72),STOPLIGHT,Direction.SOUTH);
         furnishing(l,b,2,0,-71,UncannyFurnitureBlock.Kind.BIN,Direction.WEST);
     }
     private static void bedroom(ServerLevel l,BlockPos b){
@@ -287,9 +288,9 @@ public final class UncannyRooms {
         for(int z=-3;z>=-9;z--)box(l,b,5,0,z,7,3,z,Blocks.AIR);
         box(l,b,5,-1,-10,7,-1,-1,Blocks.DARK_OAK_PLANKS);box(l,b,5,4,-10,7,4,-1,material("lobby_wall"));
         box(l,b,8,0,-10,8,4,-1,material("lobby_wall"));box(l,b,5,0,-10,7,4,-10,material("lobby_wall"));
-        door(l,b,HINGED,Direction.WEST,false);box(l,b,4,0,-2,7,3,0,Blocks.AIR);
+        door(l,b,HINGED,Direction.WEST,false);box(l,b,4,0,-2,7,3,0,material("lobby_wall"));
         furnishing(l,b,6,0,-3,UncannyFurnitureBlock.Kind.SIDEBOARD,Direction.SOUTH);
-        for(int z=-6;z>=-8;z--)furnishing(l,b,-3,0,z,UncannyFurnitureBlock.Kind.LOBBY_BENCH,Direction.EAST);
+        for(int z=-5;z>=-7;z--)furnishing(l,b,-3,0,z,UncannyFurnitureBlock.Kind.LOBBY_BENCH,Direction.EAST);
         furnishing(l,b,-3,1,-11,UncannyFurnitureBlock.Kind.MAILBOX,Direction.EAST);
         furnishing(l,b,-3,2,-11,UncannyFurnitureBlock.Kind.MAILBOX,Direction.EAST);
         furnishing(l,b,3,0,-12,UncannyFurnitureBlock.Kind.RADIATOR,Direction.WEST);

@@ -92,11 +92,14 @@ def cabinet(n,mat,inside):
  opened=base+[(3,2,9,7,6,13,inside),(9,8,10,12,13,13,inside),(13,2,0,15,14,12,mat),(12,7,1,13,9,2,'brass')]
  put(n,shut,opened)
 for n,mat,inside in [('medicine_press','darkwood','enamel'),('toy_cupboard','bluewood','amber'),('linen_press','nursery_paint','nursery_linen'),('model_drawers','bench','paper'),('usher_press','darkwood','linen'),('dictation_files','confession_oak','paper'),('watchroom_drawer','whitewood','spools'),('trailer_cupboard','oak','enamel'),('holiday_larder','holiday_pine','blue_enamel'),('slide_cabinet','bluewood','photo')]:cabinet(n,mat,inside)
-base=desk('darkwood','darkwood')+[(2,14,3,14,16,13,'enamel'),(3,15,4,13,16,12,'ink'),(11,14,13,13,16,15,'brass')]
-put('sickroom_washstand',base,base+[(4,15.5,5,12,16,11,'water')])
-for n,woodmat,enamel in [('trailer_sink','whitewood','enamel'),('holiday_sink','holiday_pine','blue_enamel')]:
- base=[(0,0,0,16,14,16,woodmat),(0,14,0,16,16,16,enamel),(2,15,3,14,16,12,'ink'),(11,15,13,13,16,15,'iron')]
- put(n,base,base+[(3,15.5,4,13,16,11,'water')])
+def basin(mat,enamel):
+ # A real open well: rim, recessed bowl floor and water occupy separate heights.
+ return [(0,0,0,16,12,16,mat),(0,12,0,2,16,16,enamel),(14,12,0,16,16,16,enamel),
+         (2,12,0,14,16,3,enamel),(2,12,13,14,16,16,enamel),(2,12,3,14,12.5,13,'ink'),
+         (11,16-2,13,12,16,14,'iron'),(9,15,12,12,16,13,'iron')]
+for n,mat,enamel in [('sickroom_washstand','darkwood','enamel'),('trailer_sink','whitewood','enamel'),('holiday_sink','holiday_pine','blue_enamel')]:
+ base=basin(mat,enamel)
+ put(n,base,base+[(2.1,13,3.1,13.9,13.15,12.9,'water'),(9.3,13.2,11.8,9.6,15,12.1,'water')])
 for n,mat in [('bedside_lamp','brass'),('task_lamp','iron'),('karen_lamp','bluewood'),('hill_lamp','whitewood')]:
  base=[(4,0,4,12,1,12,mat),(7,1,7,9,9,9,mat),(3,7,3,13,12,13,'linen')];put(n,base,base[:-1]+[(3,7,3,13,12,13,'amber')])
 base=[(1,0,2,15,2,14,'darkwood'),(2,2,3,14,3,11,'keys'),(2,3,11,14,12,14,'bluewood')];put('toy_piano',base,base+[(8,3,3,10,3.5,9,'ink')])
@@ -126,6 +129,32 @@ put('tea_service',[(1,0,2,15,1,14,'brass'),(3,1,6,7,4,10,'enamel'),(8,1,4,13,7,9
 put('parlour_music_box',[(2,0,3,14,5,13,'darkwood'),(3,5,4,13,6,12,'oak')],[(2,0,3,14,5,13,'darkwood'),(3,5,12,13,13,13,'oak'),(4,3,6,12,5,10,'brass'),(6,5,6,10,6,10,'iron')])
 cabinet('watchroom_cupboard','whitewood','enamel')
 put('kitchen_worktable',desk('oak','enamel'))
+# Cabin furniture: cut planks and log rails, made for this room rather than diner formica.
+wood('cabin_planks','#795333','#4d3826','#a17449')
+wood('cabin_bark','#59432f','#322d24','#7a5d3c',True)
+d=tile('log_end','#b49460');d.rectangle((1,1,14,14),outline='#5b432e');d.rectangle((3,3,12,12),outline='#927046');d.rectangle((6,6,9,9),outline='#725137')
+d=tile('pot_clay','#79543c');d.line((1,2,14,2),fill='#ae7c52');d.line((2,14,13,14),fill='#4e3d30')
+d=tile('fern_leaf','#4c6240');d.line((2,14,13,1),fill='#768554')
+for x,y in ((4,11),(7,8),(10,5)):d.line((x-3,y-2,x+2,y+2),fill='#303f30')
+put('cabin_table',[(0,13,0,16,16,16,'cabin_planks')]+[(x,0,z,x+3,13,z+3,'cabin_bark') for x in (1,12) for z in (1,12)]+[(2,4,7,14,6,9,'cabin_bark')])
+seat=[(1,6,2,15,9,14,'cabin_planks')]+[(x,0,z,x+3,6,z+3,'cabin_bark') for x in (1,12) for z in (2,11)]
+put('cabin_stool',seat)
+put('cabin_chair',seat+[(1,9,12,4,16,15,'cabin_bark'),(12,9,12,15,16,15,'cabin_bark'),(4,11,13,12,15,15,'cabin_planks')])
+put('cabin_fern',[(4,0,4,12,6,12,'pot_clay'),(3,5,3,13,7,13,'pot_clay'),(5,7,5,11,7.5,11,'ink'),(7,7.5,7,8,14,8,'fern_leaf'),(3,10,7,12,11,8,'fern_leaf'),(6,12,4,7,13,12,'fern_leaf'),(9,8,5,10,12,6,'fern_leaf')])
+# One continuous two-cell steel bin, with a cavity and separate ribbed rubber lids.
+d=tile('bin_steel','#576345');d.line((0,0,15,0),fill='#86916b');d.line((0,15,15,15),fill='#303b30')
+for x in (3,8,13):d.line((x,2,x,13),fill='#3e4e38');d.line((x+1,3,x+1,12),fill='#657353')
+for x,y in ((1,12),(11,3),(7,14),(14,9)):d.point((x,y),fill='#98704a');d.point((x,y-1),fill='#b49263')
+d=tile('bin_lid','#30382f')
+for x in (2,6,10,14):d.line((x,1,x,14),fill='#4d5847');d.line((x+1,2,x+1,14),fill='#232c27')
+d.line((1,1,14,1),fill='#68705c')
+for name,left in [('dumpster_left',True),('dumpster_right',False)]:
+ base=[(1,2,1,16 if left else 15,3,15,'bin_steel'),(0 if left else 1,3,1,16,13,3,'bin_steel'),(0 if left else 1,3,13,16,13,15,'bin_steel'),
+       (0 if left else 14,3,3,2 if left else 16,13,13,'bin_steel'),(2,0,3,5,2,6,'iron'),(2,0,10,5,2,13,'iron'),(11,0,3,14,2,6,'iron'),(11,0,10,14,2,13,'iron'),
+       (0,12,0,16,13,3,'bin_steel'),(0,12,13,16,14,16,'bin_steel')]
+ closed=base+[(0,14,0,16,16,16,'bin_lid'),(5,13,0,11,14,1,'iron')]
+ opened=base+[(0,3,14,16,16,16,'bin_lid'),(5,7,13,11,8,14,'iron'),(3,3,5,10,6,11,'paper'),(10,3,4,14,5,8,'camp_canvas')]
+ put(name,closed,opened)
 ACTIVE=[n for n,(parts,a) in M.items() if a is not None]
 # North-facing solids. One source drives native JSON models and the game's actual collision.
 geo=['package io.github.knaitoe.theoldesthouse.labyrinth;','/** Generated by tools/draw_vignette_interiors.py; mesh and collision share cuboids. */','final class VignetteInteriorGeometry {',' static double[][] boxes(VignetteInteriorBlock.Kind kind,boolean active){return switch(kind){']

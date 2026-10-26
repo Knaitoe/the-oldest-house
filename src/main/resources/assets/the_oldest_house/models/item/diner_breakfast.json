@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/diner/icon_pancakes"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/diner/icon_pancakes"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/diner/icon_waffles"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "the_oldest_house:item/diner/icon_eggs_cheese"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "the_oldest_house:item/diner/icon_grits"
+    }
+  ]
+}

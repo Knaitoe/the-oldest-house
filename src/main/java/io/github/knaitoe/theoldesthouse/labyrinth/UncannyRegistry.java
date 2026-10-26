@@ -39,6 +39,8 @@ public final class UncannyRegistry {
     public static final DeferredItem<Item> CLEAVER=ITEMS.registerSimpleItem("cellar_cleaver",new Item.Properties().stacksTo(1).durability(96).component(net.minecraft.core.component.DataComponents.UNBREAKABLE,new net.minecraft.world.item.component.Unbreakable(false)));
     public static final DeferredItem<Item> CELLAR_KEY=ITEMS.registerSimpleItem("cellar_key",new Item.Properties().stacksTo(1));
     public static final DeferredItem<UncannyMealItem> MEAL=ITEMS.registerItem("second_waitress_meal",UncannyMealItem::new,new Item.Properties().stacksTo(1).food(new FoodProperties.Builder().nutrition(1).saturationModifier(0).alwaysEdible().build()));
+    public static final DeferredItem<UncannyMenuItem> MENU=ITEMS.registerItem("second_waitress_menu",UncannyMenuItem::new,new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> BREAKFAST_ICON=ITEMS.registerSimpleItem("diner_breakfast",new Item.Properties().stacksTo(1));
     private UncannyRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);ITEMS.register(bus);EFFECTS.register(bus);}
 }

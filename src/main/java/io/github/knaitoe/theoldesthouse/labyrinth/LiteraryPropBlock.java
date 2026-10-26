@@ -27,7 +27,7 @@ public final class LiteraryPropBlock extends BaseEntityBlock {
         case CLOCK->Block.box(2,0,2,14,30,14);case COFFIN,ELK_HIDE->Block.box(1,0,0,15,9,16);
         case FAN->Shapes.or(Block.box(5,9.52,5,11,13.52,11),Block.box(6,13.52,6,10,16,10));case MINIATURE->Block.box(0,0,0,16,7,16);
         case CAMERA,TRIPOD,LIGHT_STAND->Block.box(5,0,5,11,23,11);
-        case TAPE_X,PAGE->Block.box(0,0,0,16,1,16);case LEDGER->Block.box(2,0,3,14,2,13);case STAIN,LIFE_RING->Shapes.empty();case CARCASS->Block.box(0,0,0,16,13,16);case GUEST_BODY,CREW_BODY->s.getValue(STAGE)==2?Block.box(2,0,2,14,15,14):Block.box(0,0,0,16,5,16);case HARD_HAT->Block.box(3,0,3,13,5,13);case PHOTO->Block.box(1,0,13,15,16,16);case TRUNK_MARK->Shapes.block();
-        case CYLINDER,JAR->Block.box(5,0,5,11,9,11);case BELONGINGS->Block.box(1,0,1,15,12,15);
+        case TAPE_X,PAGE->Block.box(0,0,0,16,1,16);case LEDGER->s.getValue(STAGE)==3?Block.box(2,0,2,14,3.1,14):Block.box(2,0,3,14,2,13);case STAIN,LIFE_RING->Shapes.empty();case CARCASS->Block.box(0,0,0,16,13,16);case GUEST_BODY,CREW_BODY->s.getValue(STAGE)==2?Block.box(2,0,2,14,15,14):Block.box(0,0,0,16,5,16);case HARD_HAT->Block.box(3,0,3,13,5,13);case PHOTO->Block.box(1,0,13,15,16,16);case TRUNK_MARK->Shapes.block();
+        case JAR->Block.box(4,0,4,12,11.5,12);case CYLINDER->Block.box(5,0,5,11,9,11);case BELONGINGS->Block.box(1,0,1,15,12,15);
         default->Block.box(1,0,1,15,16,15);};}
 }

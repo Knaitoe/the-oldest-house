@@ -50,6 +50,11 @@ public final class UncannyClient {
     private static void clear(){view=new CompoundTag();lease=0;world=null;UncannyCameras.clear();}
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event){clear();UncannyTextures.clear();}
     @SubscribeEvent public static void fov(ViewportEvent.ComputeFov event){if(!UncannyCameras.recording())fov=(float)event.getFOV();}
+    @SubscribeEvent public static void rumble(ViewportEvent.ComputeCameraAngles event){
+        if(!active()||!room().equals("layered_man")||UncannyCameras.recording())return;double t=world.getGameTime()+event.getPartialTick();float left=(float)(view.getLong("RumbleUntil130")-t);if(left<=0)return;
+        float strength=Mth.clamp(left/60F,0,1)*(float)(double)Minecraft.getInstance().options.screenEffectScale().get();
+        event.setPitch(event.getPitch()+(float)Math.sin(t*1.91)*.24F*strength);event.setYaw(event.getYaw()+(float)Math.sin(t*1.37)*.17F*strength);event.setRoll(event.getRoll()+(float)Math.sin(t*2.13)*.19F*strength);
+    }
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
         var mc=Minecraft.getInstance();if(lease>0)lease--;if(!active()){if(world!=null)clear();return;}
         if(!room().equals("missing_sleep")&&mc.screen instanceof UncannyCameras.MonitorScreen)mc.setScreen(null);
@@ -57,6 +62,16 @@ public final class UncannyClient {
             var c=mc.gameRenderer.getMainCamera();var at=c.getPosition();var d=c.getLookVector();
             PacketDistributor.sendToServer(new UncannyCameraPayload(at.x,at.y,at.z,d.x(),d.y(),d.z(),fov,(float)mc.getWindow().getWidth()/mc.getWindow().getHeight(),mc.screen instanceof UncannyCameras.MonitorScreen m&&UncannyCameras.frames(m.selected())>0&&(m.selected()!=1||UncannyCameras.ownFace(1))?m.selected():-1));
         }
+    }
+    @SubscribeEvent public static void tunnelFog(ViewportEvent.ComputeFogColor event){
+        if(!active()||!room().equals("tunnel_periphery"))return;
+        float r=green()?.12F:.34F,g=green()?.32F:.075F,b=green()?.19F:.065F;
+        event.setRed(event.getRed()*.25F+r*.75F);event.setGreen(event.getGreen()*.25F+g*.75F);event.setBlue(event.getBlue()*.25F+b*.75F);
+    }
+    @SubscribeEvent public static void tunnelHue(RenderGuiEvent.Pre event){
+        if(!active()||!room().equals("tunnel_periphery")||UncannyCameras.recording())return;var mc=Minecraft.getInstance();
+        int alpha=(int)(48*(double)mc.options.screenEffectScale().get());int rgb=green()?0x286a43:0x761c18;
+        event.getGuiGraphics().fill(0,0,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight(),alpha<<24|rgb);
     }
     @SubscribeEvent public static void overlay(RenderGuiEvent.Post event){
         if(!active())return;var mc=Minecraft.getInstance();var g=event.getGuiGraphics();

@@ -13,6 +13,9 @@ public final class SceneFootpaths {
     private static final class Route {final Vec3 goal;final List<Vec3> points;int next;Route(Vec3 goal,List<Vec3> points){this.goal=goal;this.points=points;}}
     private record Node(int x,int z,double y,double cost,double score,Node previous){}
     private static long key(int x,int z){return (long)x<<32|(z&0xffffffffL);}
+    public static void face(LivingEntity body,Vec3 target,float limit){
+        var d=target.subtract(body.position());if(d.horizontalDistanceSqr()<.0001)return;float wanted=(float)Math.toDegrees(Math.atan2(-d.x,d.z));float yaw=net.minecraft.util.Mth.approachDegrees(body.getYRot(),wanted,limit);body.setYRot(yaw);body.setYHeadRot(yaw);body.yBodyRot=yaw;
+    }
     private static boolean loaded(LivingEntity body,Vec3 at){var p=BlockPos.containing(at);return body.level().hasChunkAt(p)&&(!(body.level() instanceof ServerLevel l)||l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(p.getX()>>4,p.getZ()>>4)));}
     private static AABB box(LivingEntity body,double x,double y,double z){double half=body.getBbWidth()*.5+.001;return new AABB(x-half,y+.002,z-half,x+half,y+body.getBbHeight(),z+half);}
     /** Real support can rise over the fallen rail or carpet; an open ditch is never a floor. */
@@ -60,7 +63,7 @@ public final class SceneFootpaths {
             if(route.next>=route.points.size())return false;next=route.points.get(route.next);if(before.distanceToSqr(next)<.035){route.next++;return false;}
         }else ROUTES.remove(body);
         var floor=feet(body,next.x,before.y,next.z);if(floor!=null)next=new Vec3(next.x,floor.y,next.z);
-        var d=next.subtract(before);double length=d.horizontalDistance();float yaw=(float)Math.toDegrees(Math.atan2(-d.x,d.z));body.setYRot(yaw);body.setYHeadRot(yaw);body.yBodyRot=yaw;
+        var d=next.subtract(before);double length=d.horizontalDistance();face(body,next,24);
         body.setOnGround(true);double dy=net.minecraft.util.Mth.clamp(d.y,-.25,.25);
         if(dy>0)body.move(MoverType.SELF,new Vec3(0,dy,0));
         body.move(MoverType.SELF,new Vec3(length>.001?d.x*Math.min(speed,length)/length:0,dy<=0?dy:0,length>.001?d.z*Math.min(speed,length)/length:0));

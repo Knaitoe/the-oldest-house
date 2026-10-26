@@ -58,7 +58,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.ELK_FAN&&!personal(d,p,LabyrinthPlace.ELK_LOT).getBoolean("Ready"))return false;
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)return d.isReady("literary_copy_"+p+"_"+place.id())&&!personal(d,p,place).getBoolean("Completed");
         return place.kind()==LabyrinthPlace.Kind.RECURRING||!personal(d,p,place).getBoolean("Completed");}
-    public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY)place=LabyrinthPlace.LAKE_HOUSE;if(!LiteraryRooms.isLiterary(place)||!participant(p))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
+    public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY)place=LabyrinthPlace.LAKE_HOUSE;if(!LiteraryRooms.isLiterary(place)||!participant(p))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);FriendlyNpcWarnings.enter(own);
         int visit=own.getInt("Visit");if(place==LabyrinthPlace.BORRASCA){BorrascaStory.arrive(p,own);save(d,p.getUUID(),place,own);return;}if(place==LabyrinthPlace.LAKE_HOUSE)own.putBoolean("LakeFreshVisit",visit==0||own.getBoolean("LakeDeparted"));if(visit==0||own.getInt("Beat")>=visit&&(place!=LabyrinthPlace.LAKE_HOUSE||own.getBoolean("LakeDeparted")))own.putInt("Visit",visit+1);own.putBoolean("Here",true);own.putInt("Present",0);own.putInt("ThisVisitTicks",0);own.putInt("ExamineTicks",0);own.putInt("FanTicks",0);own.putInt("StillTicks",0);own.putBoolean("Betrayed",false);own.remove("LastPosition");own.remove("CameraLease");own.putBoolean("Interrupted",false);
         save(d,p.getUUID(),place,own);if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.arrived(p,place);
         if (place == LabyrinthPlace.HOLY_RABBIT && !rabbitCommitted(own)) {
@@ -206,9 +206,9 @@ public final class LiteraryVignettes {
         else if(!hostile(p,actor)){
             long now=p.serverLevel().getGameTime();
             if(own.contains("FriendlyStrikeAt127")&&now-own.getLong("FriendlyStrikeAt127")<10)return;
-            int strikes=own.contains("FriendlyStrikeAt127")&&now-own.getLong("FriendlyStrikeAt127")>6000?0:own.getInt("FriendlyStrikes127");
+            int strikes=own.getInt("FriendlyStrikes127");
             own.putLong("FriendlyStrikeAt127",now);own.putInt("FriendlyStrikes127",++strikes);
-            if(strikes<4)p.displayClientMessage(Component.literal(switch(strikes){case 1->"Do you really want to do this?";case 2->"You have been noticed.";default->"Put it down.";}).withStyle(net.minecraft.ChatFormatting.GRAY),true);
+            if(strikes<4)p.displayClientMessage(Component.literal(FriendlyNpcWarnings.pick(p,own,strikes)).withStyle(net.minecraft.ChatFormatting.GRAY),true);
             else{own.putBoolean("Interrupted",true);p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,80));LabyrinthDoors.goToJunction(p);}
         }
         save(d,p.getUUID(),place,own);

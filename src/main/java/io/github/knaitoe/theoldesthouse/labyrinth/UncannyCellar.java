@@ -37,12 +37,14 @@ public final class UncannyCellar {
     public static void cut(ServerLevel l,BlockPos b,BlockPos r,CompoundTag shared){
         var queue=shared.getList("Regrow",Tag.TAG_COMPOUND);
         for(var t:queue)if(((CompoundTag)t).getLong("At")==r.asLong())return;
-        if(queue.size()<320){var entry=new CompoundTag();entry.putLong("At",r.asLong());entry.putLong("Due",l.getGameTime()+110);queue.add(entry);shared.put("Regrow",queue);}
+        if(queue.size()<320){var entry=new CompoundTag();entry.putLong("At",r.asLong());entry.putLong("Due",l.getGameTime()+360);queue.add(entry);shared.put("Regrow",queue);}
     }
     private static boolean body(ServerLevel l,BlockPos at){return !l.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.04),LivingEntity::isAlive).isEmpty();}
     private static void regrow(ServerLevel l,BlockPos b,CompoundTag shared){
         var queue=shared.getList("Regrow",Tag.TAG_COMPOUND);int changed=0;
-        for(int i=queue.size()-1;i>=0&&changed<2;i--){var e=queue.getCompound(i);if(e.getLong("Due")>l.getGameTime())continue;var r=BlockPos.of(e.getLong("At"));var at=b.offset(r);
+        if(!shared.getBoolean("RegrowthBudget130")){for(var row:queue){var e=(CompoundTag)row;e.putLong("Due",Math.max(e.getLong("Due"),l.getGameTime()+360));}shared.putBoolean("RegrowthBudget130",true);}
+        if(l.getGameTime()%100!=0)return;
+        for(int i=queue.size()-1;i>=0&&changed<1;i--){var e=queue.getCompound(i);if(e.getLong("Due")>l.getGameTime())continue;var r=BlockPos.of(e.getLong("At"));var at=b.offset(r);
             if(!inMass(r)||protectedCell(r)){queue.remove(i);continue;}
             if(body(l,at)){e.putLong("Due",l.getGameTime()+30);continue;}
             if(l.isEmptyBlock(at)){l.setBlock(at,UncannyFleshBlock.at(r),F);changed++;}
@@ -51,8 +53,8 @@ public final class UncannyCellar {
         shared.put("Regrow",queue);
     }
     private static void spread(ServerLevel l,BlockPos b,CompoundTag shared,int age){
-        boolean worked=shared.contains("LastPlayerPeel")&&l.getGameTime()-shared.getLong("LastPlayerPeel")<100;
-        if(age%(worked?60:30)!=0)return;
+        boolean worked=shared.contains("LastPlayerPeel")&&l.getGameTime()-shared.getLong("LastPlayerPeel")<240;
+        if(age%(worked?180:age<2400?100:60)!=0)return;
         var candidates=new ArrayList<BlockPos>();
         for(int x=-6;x<=6;x++)for(int y=-5;y<=-2;y++)for(int z=-28;z<=-10;z++){
             var r=new BlockPos(x,y,z);var at=b.offset(r);if(protectedCell(r)||!l.isEmptyBlock(at))continue;
@@ -60,7 +62,7 @@ public final class UncannyCellar {
         }
         // The frontier favours the stairs but grows along floors/walls too. No volume is filled in one tick.
         candidates.sort(Comparator.comparingInt(r->Math.floorMod((r.asLong()^age*7919L)*31,997)));
-        int limit=worked?1:age<1200?1:age<2400?2:3;
+        int limit=1;
         for(int i=0;i<Math.min(limit,candidates.size());i++){var r=candidates.get(i);l.setBlock(b.offset(r),UncannyFleshBlock.at(r),F);shared.putInt("Layers",shared.getInt("Layers")+1);}
         if(!candidates.isEmpty()){shared.putInt("Pulse",shared.getInt("Pulse")+1);shared.putInt("Growth",Math.min(9,1+shared.getInt("Layers")/15));}
     }
@@ -152,6 +154,7 @@ public final class UncannyCellar {
             UncannyStories.caught(p,b,PLACE,own,"basement_overrun");return;
         }
         own.putInt("GrowthCue",shared.getInt("Pulse"));
+        CellarDialogue.tick(p,b,own,shared);
         int age=shared.getInt("Age");
         if(age%(age>=400?60:100)==0){var worker=shared.hasUUID("Peeler")&&l.getEntity(shared.getUUID("Peeler")) instanceof LiteraryActor a?a:null;if(worker!=null)UncannyStories.heard(p,NovelRegistry.WELL_BREATH.get(),worker.getEyePosition(),age<400?.28F:.5F,.72F);}
         if(own.getInt("LastGrowth")!=shared.getInt("Pulse")){own.putInt("LastGrowth",shared.getInt("Pulse"));if(age%80==0)UncannyStories.heard(p,net.minecraft.sounds.SoundEvents.WARDEN_HEARTBEAT,Vec3.atCenterOf(b.offset(UncannyRooms.MASS)),.28F,.55F);}

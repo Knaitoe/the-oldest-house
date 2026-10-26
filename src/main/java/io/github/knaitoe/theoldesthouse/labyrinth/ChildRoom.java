@@ -73,12 +73,12 @@ public final class ChildRoom {
      * morning; the voices do not agree with it, or with each other. Each line once, in order, for that reader alone.
      */
     private static final String[] PARENTS={
-            "Through the floor, Dad's voice: Are you still up? Go back to bed.",
-            "From downstairs, Mum: Did you hear something? Is that you?",
-            "Dad, nearer, as if inside the wall: Where's your door gone? Can you see your door?",
-            "Mum, from under the bed: Come down here, sweetheart. Under the bed. Come down to us.",
+            "Dad: Are you still up? Go back to bed.",
+            "Mum: Did you hear something? Is that you?",
+            "Dad: Where's your door gone? Can you see your door?",
+            "Mum: Sweetheart? We're still here.",
             "Dad, very quietly: Don't. Wait until morning. That isn't your mum.",
-            "Both of them, together, from below the floor: We're awake now. You can come down."};
+            "Both of them, together: We're awake now."};
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private static final String[] SEEN={
             "Where the window was there is only wallpaper. It is cold to touch.",
@@ -205,7 +205,7 @@ public final class ChildRoom {
             if(mask==ALL&&own.getInt("Present")-own.getInt("ShutAt0119")>=400)due=5;
             if(mask==ALL&&own.getBoolean("UnderFloor0474"))due=PARENTS.length;
             int heard=own.getInt("Parents0119");
-            for(int i=0;i<due;i++)if((heard&(1<<i))==0&&(!own.contains("ParentsNext127")||l.getGameTime()>=own.getLong("ParentsNext127"))){own.putInt("Parents0119",heard|1<<i);own.putLong("ParentsNext127",l.getGameTime()+200);
+            for(int i=0;i<due;i++)if((heard&(1<<i))==0&&(!own.contains("ParentsNext127")||l.getGameTime()>=own.getLong("ParentsNext127"))){own.putInt("Parents0119",heard|1<<i);own.putLong("ParentsNext127",l.getGameTime()+420+(i%2)*60);
                 p.displayClientMessage(Component.literal(PARENTS[i]).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),false);
                 var at=Vec3.atCenterOf(b.offset(i==3||i==5?GAP:new BlockPos(0,-2,-12)));p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.7F,.8F,p.getRandom().nextLong()));break;}
         }

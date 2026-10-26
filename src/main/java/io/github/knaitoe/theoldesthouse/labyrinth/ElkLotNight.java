@@ -114,7 +114,7 @@ public final class ElkLotNight {
     }
     private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0478",a.level().getGameTime());}
     /** A line said to the readers near enough to hear it. */
-    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,line);for(var p:near)if(p.distanceToSqr(a)<400)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
+    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,line);for(var p:near)if(LiteraryVignettes.inside(p,PLACE)&&p.distanceToSqr(a)<400)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
     private static @Nullable ServerPlayer nearest(Entity a,List<ServerPlayer> here,double reach){ServerPlayer best=null;double d=reach*reach;for(var p:here){double e=p.distanceToSqr(a);if(e<d){d=e;best=p;}}return best;}
     static List<ServerPlayer> here(MinecraftServer s){var out=new ArrayList<ServerPlayer>();for(var p:s.getPlayerList().getPlayers())if(LiteraryVignettes.inside(p,PLACE)&&LiteraryVignettes.personal(LabyrinthData.get(s),p.getUUID(),PLACE).getBoolean("Here"))out.add(p);return out;}
     /** In the bar itself, under its roof. */
@@ -331,9 +331,12 @@ public final class ElkLotNight {
     }
     // ------------------------------------------------------------------------------------------------ talking and drinking
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
-        var who=person(a);if(who==null)return;var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);var near=List.of(p);
+        var who=person(a);if(who==null||!LiteraryVignettes.inside(p,PLACE))return;var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);var near=List.of(p);
         if(who==MARLA){
-            if(own.getBoolean("Ready")||own.getBoolean("Completed")){speak(a,who,"Past close now, hon. Go on home.",near);return;}
+            if(own.getBoolean("Ready")||own.getBoolean("Completed")){
+                String[] after={"Past close now, hon. Go on home.","Leave the glass. I'll see to it.","There's nothing left for you out in that field.","You look cold. Button your coat before you go.","You don't owe me for tonight.","Mind the ditch. Keep to the road."};
+                int last=own.contains("MarlaLast130")?own.getInt("MarlaLast130"):-1;int n=p.getRandom().nextInt(last<0?after.length:after.length-1);if(last>=0&&n>=last)n++;own.putInt("MarlaLast130",n);speak(a,who,after[n],near);return;
+            }
             var held=p.getMainHandItem();
             if(held.is(Items.GLASS_BOTTLE)){held.shrink(1);speak(a,who,"Thanks, hon.",near);return;}
             speak(a,who,w.contains("CrashAt")?MARLA_AFTER[own.getInt("Talk_Marla")%MARLA_AFTER.length]:IDLE.get("Marla")[own.getInt("Talk_Marla")%IDLE.get("Marla").length],near);own.putInt("Talk_Marla",own.getInt("Talk_Marla")+1);

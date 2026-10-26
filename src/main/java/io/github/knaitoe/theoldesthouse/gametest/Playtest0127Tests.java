@@ -52,11 +52,11 @@ public final class Playtest0127Tests {
     public static void touchingEitherFalseDoorHalfExaminesItAndItsAutomaticOpeningStillStopsANativeBody(GameTestHelper h){run(h,LabyrinthPlace.MOTION_LIGHT,(f,p)->{
         var scene=LabyrinthPlace.MOTION_LIGHT;var peer=f.player("frame_peer127",scene);var l=f.level(scene);var b=f.base(scene);var rel=UncannyRooms.FALSE_DOORS.get(2);var at=b.offset(rel);
         for(int y=0;y<2;y++)l.setBlock(at.above(y),UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,Direction.SOUTH).setValue(UncannyPropBlock.STAGE,y),3);
-        p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.at(p,scene,.5,0,-.5);use(p,at);use(p,at.above());
+        p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.at(p,scene,rel.getX()+.5,0,rel.getZ()+2.5);use(p,at);use(p,at.above());
         h.assertTrue(f.own(p,scene).getBoolean("FalseExamined")&&!f.own(peer,scene).getBoolean("FalseExamined"),"examination belongs to the actual reader");
         h.assertTrue(l.getBlockState(at).getValue(UncannyPropBlock.STAGE)==0&&l.getBlockState(at.above()).getValue(UncannyPropBlock.STAGE)==1,"neither half is opened by a hand");
         for(int y=0;y<2;y++)l.setBlock(at.above(y),l.getBlockState(at.above(y)).setValue(UncannyPropBlock.STAGE,y+2),3);
-        p.move(MoverType.SELF,new Vec3(0,0,-4));h.assertTrue(p.getZ()>b.getZ()-1.4&&p.getY()>=b.getY(),"the visible black backing stops actual movement into the unbuilt space");
+        p.move(MoverType.SELF,new Vec3(0,0,-4));h.assertTrue(p.getZ()>at.getZ()+.6&&p.getY()>=b.getY(),"the visible black backing stops actual movement into the unbuilt space");
         for(var facing:Direction.Plane.HORIZONTAL){var state=UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,facing).setValue(UncannyPropBlock.STAGE,2);h.assertTrue(!state.getCollisionShape(l,at).isEmpty(),"every automatic opening retains real backing: "+facing);}
     });}
     @AfterBatch(batch="review127_frames") public static void framesDone(ServerLevel l){close();}
@@ -118,13 +118,13 @@ public final class Playtest0127Tests {
     @GameTest(template="empty",batch="review127_hosting",timeoutTicks=1800)
     public static void theOriginalWaitressWalksTheReaderToTheBoothAndReturnsBeforeTheSecondAppears(GameTestHelper h){
         var f=make(h);var scene=LabyrinthPlace.SECOND_WAITRESS;var p=f.player("seated127",scene);f.chunks.hold(f.level(scene),IndianLakeRooms.bounds(f.base(scene),scene));boolean[] begun={false};
-        h.onEachTick(()->{if(!begun[0])return;var own=f.own(p,scene);if(own.getBoolean("DinerHosted127")||own.getBoolean("DinerSeated127"))return;var a=UncannyDiner.waitress(p,f.base(scene));if(a==null)return;
+        h.onEachTick(()->{if(!begun[0])return;var own=f.own(p,scene);if(own.getBoolean("DinerMenuGiven130")&&!own.contains("Breakfast130")){h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu,"the handed menu stays open for its actual reader: "+p.containerMenu.getClass().getSimpleName()+" canOrder="+UncannyBreakfast.canOrder(p)+" position="+p.position().subtract(Vec3.atLowerCornerOf(f.base(scene))));h.assertTrue(UncannyBreakfast.canOrder(p),"the booth order remains authorized while its waitress waits: "+p.position().subtract(Vec3.atLowerCornerOf(f.base(scene))));}if(p.containerMenu instanceof LiteraryChoiceMenu&&UncannyBreakfast.canOrder(p))p.containerMenu.clicked(1,0,net.minecraft.world.inventory.ClickType.PICKUP,p);if(own.getBoolean("DinerHosted127")||own.getBoolean("DinerSeated127"))return;var a=UncannyDiner.waitress(p,f.base(scene));if(a==null)return;
             if(own.getInt("DinerHostLeg127")>=4){var seat=f.base(scene).offset(UncannyDiner.SEAT);if(p.distanceToSqr(seat.getCenter())>9)SceneFootpaths.step(p,new Vec3(seat.getX()-1,seat.getY(),seat.getZ()+.5),.18);else use(p,seat);}
             else SceneFootpaths.step(p,a.position().add(.8,0,.8),.18);
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native diner is loaded")).thenExecute(()->{UncannyStories.prepare(f.level(scene),f.base(scene),scene);var a=UncannyDiner.waitress(p,f.base(scene));h.assertTrue(a!=null,"the actual waitress exists");p.moveTo(a.position().add(0,0,1));p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.interactOn(a,InteractionHand.MAIN_HAND);begun[0]=true;})
         .thenWaitUntil(()->h.assertTrue(f.own(p,scene).getBoolean("DinerHosted127"),"the same waitress completes her collision-bound seating and return route: "+f.own(p,scene)))
-        .thenExecute(()->{var own=f.own(p,scene);var a=UncannyDiner.waitress(p,f.base(scene));var fake=UncannyStories.actor(p,own,"CastFake");h.assertTrue(own.getBoolean("DinerSeated127")&&p.getVehicle() instanceof SeatEntity&&a.getZ()>f.base(scene).getZ()-10&&fake!=null&&fake.phase()==0&&!own.getBoolean("Read_Source"),"actual seating and the original waitress's return precede the second's appearance, without a book gate");p.stopRiding();}).thenSucceed();
+        .thenExecute(()->{var own=f.own(p,scene);var a=UncannyDiner.waitress(p,f.base(scene));var fake=UncannyStories.actor(p,own,"CastFake");h.assertTrue(own.getBoolean("DinerSeated127")&&p.getVehicle() instanceof SeatEntity&&a.getZ()<f.base(scene).getZ()-26&&own.getString("Breakfast130").equals("pancakes")&&fake!=null&&fake.phase()==0&&!own.getBoolean("Read_Source"),"actual seating, the real order and the original waitress's trip into the kitchen precede the second's appearance");p.stopRiding();}).thenSucceed();
     }
     @AfterBatch(batch="review127_hosting") public static void hostingDone(ServerLevel l){close();}
 

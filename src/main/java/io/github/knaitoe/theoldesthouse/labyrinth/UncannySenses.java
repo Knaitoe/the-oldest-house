@@ -74,6 +74,7 @@ public final class UncannySenses {
             view.putBoolean("Green",UncannyStories.green(own));view.putBoolean("Dark",p.serverLevel().getBlockState(b.offset(UncannyRooms.FLOOD)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(UncannyRooms.FLOOD)).getValue(UncannyPropBlock.STAGE)>0);
             view.putInt("Edge",own.getInt("Edge"));view.putInt("Growth",own.getInt("GrowthCue"));view.putBoolean("Ready",own.getBoolean("Ready"));view.putBoolean("Failed",own.getBoolean("UncannyFailed"));
             view.putInt("Engulfment",own.getInt("Engulfment"));
+            view.putLong("RumbleUntil130",own.getLong("CellarRumbleUntil130"));
             view.putString("Sign",UncannyStories.sign(p,b,own));view.putInt("Doll",own.contains("CastDoll")&&own.hasUUID("CastDoll")&&p.serverLevel().getEntity(own.getUUID("CastDoll")) instanceof LiteraryActor a?a.getId():-1);
         }
         view.putBoolean("Mirror",mirror(p));view.putBoolean("Ring",ring(p));
