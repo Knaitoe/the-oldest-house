@@ -348,7 +348,7 @@ def family_face(look):
 
 
 def hollow_face(look):
-    # Eight native pixels, deliberate missing/asymmetric features, no teeth or grin.
+    # Eight native pixels. The propped family retains its original simple, gaping faces.
     skin=rgb(look.skin);hair=rgb(look.hair)
     im=Image.new('RGB',(8,8),skin);d=ImageDraw.Draw(im)
     d.rectangle((0,0,7,1),fill=hair);d.line((0,2,0,6),fill=hair)
@@ -360,15 +360,10 @@ def hollow_face(look):
         d.line((4,4,4,6),fill=shade(skin,-24));d.point((3,7),fill=dark)
         d.line((6,1,6,3),fill=hair)
     else:
-        n=int(look.face_style[-1]);left=(2,3 if n%2==0 else 4);right=(5,4 if n%2==0 else 3)
-        d.point(left,fill=dark);d.line((right[0],right[1],right[0]+1,right[1]),fill=dark)
-        if n in (1,3):d.point((left[0],left[1]+1),fill=crease)
-        d.line((4,4,4,5),fill=shade(skin,-20));d.point((3,5),fill=shade(skin,6))
-        # Mouths are displaced interruptions in a pale plane, never a smiling arc.
-        if n==0:d.line((3,6,3,7),fill=dark)
-        elif n==1:d.line((4,6,5,6),fill=crease)
-        elif n==2:d.point((2,6),fill=dark)
-        else:d.line((4,5,4,7),fill=dark)
+        d.rectangle((1,2,6,7),fill=skin)
+        d.point((2,3),fill='#32352f');d.point((5,3),fill='#32352f')
+        d.rectangle((2,4,5,7),fill='#bdb499')
+        d.rectangle((2,5,5,6),fill='#302d27')
     return im.resize((16,16),Image.Resampling.NEAREST)
 
 

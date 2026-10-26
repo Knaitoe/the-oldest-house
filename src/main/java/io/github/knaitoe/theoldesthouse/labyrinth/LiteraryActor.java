@@ -33,7 +33,7 @@ public final class LiteraryActor extends PathfinderMob {
     @Override protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,EntityDimensions dimensions,float partial){if(role()==FATHER&&passenger instanceof net.minecraft.world.entity.animal.Rabbit)return new net.minecraft.world.phys.Vec3(0,.8,.4).yRot(-getYRot()*(float)Math.PI/180);return super.getPassengerAttachmentPoint(passenger,dimensions,partial);}
     public int role(){return entityData.get(ROLE);}public int phase(){return entityData.get(PHASE);}public Optional<UUID> owner(){return entityData.get(OWNER);}public String scene(){return scene;}
     @Override public void lerpTo(double x,double y,double z,float yaw,float pitch,int steps){
-        if(level().isClientSide&&UncannyStories.role(role())&&distanceToSqr(x,y,z)<16)steps=Math.max(steps,5);
+        if(level().isClientSide&&UncannyStories.role(role())&&role()!=UNCANNY_WAITRESS&&distanceToSqr(x,y,z)<16)steps=Math.max(steps,5);
         super.lerpTo(x,y,z,yaw,pitch,steps);
     }
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE||key==GESTURE)refreshDimensions();}
@@ -44,7 +44,7 @@ public final class LiteraryActor extends PathfinderMob {
     @Override public void tick(){
         boolean privateKiller=!level().isClientSide&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent();
         var before=position();boolean active=!privateKiller||privateHunt.prepare(this);if(!level().isClientSide)BorrascaStory.actorTick(this);super.tick();
-        if(!level().isClientSide){GhostsMotion.tick(this);LiteraryMotion.tick(this);}
+        if(!level().isClientSide){GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);}
         if(role()==LAKE_TESS)setAirSupply(getMaxAirSupply());
         if(privateKiller){if(active)privateHunt.tick(this,before);}
         else if(!level().isClientSide&&role()==KILLER&&(scene.equals(LabyrinthPlace.CAMP_BLOOD.id())||scene.equals(LabyrinthPlace.ELK_CARCASSES.id())))carcassHunt.tick(this);

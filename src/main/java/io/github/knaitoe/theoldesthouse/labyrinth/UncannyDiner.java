@@ -47,7 +47,7 @@ public final class UncannyDiner {
         if(own.getBoolean("DinerMenuGiven130")&&!own.contains("Breakfast130")&&seated(p,b))for(var item:p.getInventory().items)if(item.is(UncannyRegistry.MENU.get())){UncannyBreakfast.open(p,item);break;}
     }
     private static Vec3 point(BlockPos b,Vec3 local){return local.add(b.getX(),b.getY(),b.getZ());}
-    private static void faceBooth(LiteraryActor a,BlockPos b){SceneFootpaths.face(a,Vec3.atCenterOf(b.offset(SEAT)),18);}
+    private static void faceBooth(LiteraryActor a,BlockPos b){DinerWalk.look(a,Vec3.atCenterOf(b.offset(SEAT)));}
     private static void kitchenDoor(ServerPlayer p,LiteraryActor a,BlockPos b,boolean open){
         var at=b.offset(-8,0,-25);var l=p.serverLevel();var s=l.getBlockState(at);if(!(s.getBlock() instanceof DoorBlock door))return;
         if(!open&&!l.getEntitiesOfClass(LivingEntity.class,new AABB(at).expandTowards(0,2,0).inflate(.5),e->e.isAlive()).isEmpty())return;
@@ -73,14 +73,14 @@ public final class UncannyDiner {
         if(own.getBoolean("DinerHosted127")){
             if(w.hasUUID("Host127")&&w.getUUID("Host127").equals(p.getUUID())&&own.getInt("UncannyAge")-own.getInt("DinerHostedAt127")>=500){
                 kitchenDoor(p,a,b,true);int leg=own.getInt("DinerReturnLeg130");
-                if(leg<RETURN.size()&&SceneFootpaths.step(a,point(b,RETURN.get(leg)),.18))own.putInt("DinerReturnLeg130",++leg);
-                if(leg>=RETURN.size()){own.putBoolean("DinerRealReturned130",true);w.remove("Host127");UncannyStories.world(p.serverLevel(),b,PLACE,w);SceneFootpaths.face(a,point(b,new Vec3(-9,0,-8.5)),15);}
+                if(leg<RETURN.size()&&DinerWalk.toward(a,point(b,RETURN.get(leg))))own.putInt("DinerReturnLeg130",++leg);
+                if(leg>=RETURN.size()){own.putBoolean("DinerRealReturned130",true);w.remove("Host127");UncannyStories.world(p.serverLevel(),b,PLACE,w);DinerWalk.register(a,b,false);}
             }return true;
         }
-        if(!w.hasUUID("Host127")||!w.getUUID("Host127").equals(p.getUUID())){if(!busy(p,w))SceneFootpaths.face(a,point(b,new Vec3(-9,0,-8.5)),15);return false;}
+        if(!w.hasUUID("Host127")||!w.getUUID("Host127").equals(p.getUUID())){if(!busy(p,w))DinerWalk.register(a,b,false);return false;}
         if(!own.getBoolean("DinerSeating127"))return false;
         int leg=own.getInt("DinerHostLeg127");if(leg<WALK.size()){
-            if(a.distanceToSqr(p)<14*14&&SceneFootpaths.step(a,point(b,WALK.get(leg)),.18))own.putInt("DinerHostLeg127",leg+1);return false;
+            if(a.distanceToSqr(p)<14*14&&DinerWalk.toward(a,point(b,WALK.get(leg))))own.putInt("DinerHostLeg127",leg+1);return false;
         }
         if(!own.contains("Breakfast130")){
             faceBooth(a,b);
@@ -90,9 +90,9 @@ public final class UncannyDiner {
             if(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-wanted))<8)handMenu(p,b,own);return false;
         }
         kitchenDoor(p,a,b,true);int back=own.getInt("DinerKitchenLeg130");
-        if(back<KITCHEN.size()&&SceneFootpaths.step(a,point(b,KITCHEN.get(back)),.18))own.putInt("DinerKitchenLeg130",++back);
+        if(back<KITCHEN.size()&&DinerWalk.toward(a,point(b,KITCHEN.get(back))))own.putInt("DinerKitchenLeg130",++back);
         if(back>=KITCHEN.size()){
-            kitchenDoor(p,a,b,false);own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",own.getInt("UncannyAge"));SceneFootpaths.face(a,point(b,new Vec3(-8.5,0,-28.5)),18);return true;
+            kitchenDoor(p,a,b,false);own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",own.getInt("UncannyAge"));DinerWalk.look(a,point(b,new Vec3(-8.5,0,-28.5)));return true;
         }return false;
     }
     /** Pressure is tied to the actual booth and its one private served plate, not a room-wide text loop. */

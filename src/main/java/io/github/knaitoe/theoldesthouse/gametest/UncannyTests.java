@@ -145,9 +145,9 @@ public final class UncannyTests {
         var l=f.level(place);var b=f.base(place);var behind=UncannyRooms.FALSE_DOORS.get(0);var door=b.offset(behind);
         l.setBlock(door,UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,Direction.SOUTH),3);l.setBlock(door.above(),UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,Direction.SOUTH).setValue(UncannyPropBlock.STAGE,1),3);
         var own=f.own(p,place);own.putBoolean("FalseDoors",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);var key=place.id()+":"+b.asLong();var data=LabyrinthData.get(l.getServer());
-        f.at(p,place,.5,0,-8.5);p.setYRot(180);p.setYHeadRot(180);p.setXRot(0);var shared=data.stateEntry(UncannyStories.WORLD,key);shared.putInt("Age",150);data.setStateEntry(UncannyStories.WORLD,key,shared);step(f,p,place);
+        f.at(p,place,.5,0,-8.5);p.setYRot(180);p.setYHeadRot(180);p.setXRot(0);var pendulum=FoyerMotion.fitting(l,b);var motion=pendulum.swing.save();motion.putBoolean("Initialized",true);motion.putLong("Epoch",l.getGameTime()-2000);motion.putLong("LastSensed",l.getGameTime()-1000);pendulum.swing.load(motion);step(f,p,place);
         h.assertTrue(l.getBlockState(door).getValue(UncannyPropBlock.STAGE)==2&&(f.own(p,place).getInt("FalseAuto")&1)!=0,"with the light out in front of the reader, the unhinged frame behind them clicks open");
-        shared=data.stateEntry(UncannyStories.WORLD,key);shared.putInt("Age",10);data.setStateEntry(UncannyStories.WORLD,key,shared);step(f,p,place);
+        click(f,p,place,FoyerMotion.PULL);step(f,p,place);
         h.assertTrue(l.getBlockState(door).getValue(UncannyPropBlock.STAGE)==0&&f.own(p,place).getInt("FalseAuto")==0,"the frame shuts again when the floodlight comes back on");
     });}
     @AfterBatch(batch="uncanny_light") public static void lightDone(ServerLevel l){close();}

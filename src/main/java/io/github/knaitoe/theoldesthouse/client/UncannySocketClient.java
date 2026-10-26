@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.*;
 /** Native socket-client source/menu/bed/feed/door/health actions and genuine GPU readback. Opt-in only. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class UncannySocketClient {
-    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,terrainStep=-1,terrainSentAge=-1000;private static String extraShot,shot;private static boolean archiveRequested;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
+    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,motionPulls,terrainStep=-1,terrainSentAge=-1000;private static String extraShot,shot;private static boolean archiveRequested;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
     private UncannySocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("UNCANNY CLIENT: "+message);}
@@ -121,9 +121,12 @@ public final class UncannySocketClient {
         if(phase==15){
             var visitor=actor(mc,LiteraryActor.UNCANNY_VISITOR);if(visitor==null)return;look(mc,visitor.getEyePosition());var state=mc.level.getBlockState(b.offset(UncannyRooms.FLOOD));
             if(state.is(UncannyRegistry.PROP.get())){
-                boolean dark=state.getValue(UncannyPropBlock.STAGE)>0;int lampPhase=dark?1:0;if(lightPhase!=lampPhase){lightPhase=lampPhase;lightTicks=0;}if(++lightTicks<20)return;if(!dark&&UncannyActorRenderer.proofDrawn(visitor))return;if(dark&&(visitor.phase()!=1||!UncannyActorRenderer.proofDrawn(visitor)))return;String view=dark?"foyer-dark":"foyer-lit";
+                boolean dark=state.getValue(UncannyPropBlock.STAGE)>0;int lampPhase=dark?1:0;if(lightPhase!=lampPhase){lightPhase=lampPhase;lightTicks=0;}if(++lightTicks<20)return;if(!dark&&UncannyActorRenderer.proofDrawn(visitor))return;if(dark&&(visitor.phase()<1||!UncannyActorRenderer.proofDrawn(visitor)))return;String view=dark?"foyer-dark":"foyer-lit";
                 if(!captures.contains("15:"+view)&&age>20){shot=role()+"-"+view;}
-                if(age>410&&captures.contains("15:foyer-dark")&&captures.contains("15:foyer-lit"))ack(mc,"foyer-cycles");
+                if(!dark&&motionPulls>0&&!captures.contains("15:foyer-swing")){look(mc,b.offset(FoyerMotion.PENDULUM).getCenter());shot=role()+"-foyer-swing";}
+                if(dark&&visitor.phase()>=3&&!captures.contains("15:foyer-palm"))shot=role()+"-foyer-palm";
+                if(dark&&lightTicks>=50&&role().equals("A")&&motionPulls<2&&data.getInt("FoyerStillness")>motionPulls&&age-clicked>=25){click(mc,b.offset(FoyerMotion.PULL));motionPulls++;}
+                if(data.getInt("FoyerStillness")>=3&&captures.contains("15:foyer-dark")&&captures.contains("15:foyer-lit")&&captures.contains("15:foyer-palm"))ack(mc,"foyer-cycles");
             }
         }
         if(phase==16){
@@ -138,7 +141,7 @@ public final class UncannySocketClient {
         if(extraShot!=null){try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(UncannySocketProof.folder().resolve(extraShot+".png"));}extraShot=null;}if(shot==null)return;
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(UncannySocketProof.folder().resolve(shot+".png"));}
         String view=shot.substring(role().length()+1);captures.add(phase+":"+view);
-        if(!view.equals("foyer-lit")&&!view.equals("foyer-dark")&&!view.equals("diner-room"))mc.player.connection.sendCommand("uncannyproof "+phase);
+        if((!view.startsWith("foyer-")||view.equals("foyer-cycles"))&&!view.equals("diner-room"))mc.player.connection.sendCommand("uncannyproof "+phase);
         shot=null;if(stopAfter){stopAfter=false;mc.stop();}
     }
 }

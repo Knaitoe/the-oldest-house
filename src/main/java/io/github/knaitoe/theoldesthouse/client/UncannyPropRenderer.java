@@ -29,7 +29,7 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
         ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.DINER_DOOR.get(),RenderType.cutout());
     });}
     @Override public void render(UncannyPropBlock.Fitting fitting,float partial,PoseStack p,MultiBufferSource buffers,int light,int overlay){
-        draw(fitting.getBlockState(),p,buffers,light,overlay);
+        draw(fitting.getBlockState(),p,buffers,light,overlay,(float)fitting.swing.sample(fitting.getLevel()==null?0:fitting.getLevel().getGameTime()+partial).angle());
         var kind=fitting.getBlockState().getValue(UncannyPropBlock.KIND);
         if(kind==UncannyPropBlock.Kind.MONITOR)UncannyCameras.monitor(p,buffers,light);
         if(kind==UncannyPropBlock.Kind.SIGN||kind==UncannyPropBlock.Kind.SIGNAL){
@@ -40,11 +40,22 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
         }
     }
     public static void draw(BlockState state,PoseStack p,MultiBufferSource buffers,int light,int overlay){
+        draw(state,p,buffers,light,overlay,0);
+    }
+    public static void draw(BlockState state,PoseStack p,MultiBufferSource buffers,int light,int overlay,float swing){
         if(state.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.FLESH){Minecraft.getInstance().getBlockRenderer().renderSingleBlock(UncannyRegistry.FLESH.get().defaultBlockState(),p,buffers,light,overlay);return;}
         var out=buffers.getBuffer(RenderType.entityCutoutNoCull(UncannyTextures.atlas()));p.pushPose();p.translate(.5,0,.5);p.mulPose(Axis.YP.rotationDegrees(-state.getValue(UncannyPropBlock.FACING).toYRot()));p.translate(-.5,0,-.5);
         switch(state.getValue(UncannyPropBlock.KIND)){
             case FLESH->{box(p,out,0,0,0,16,16,16,FLESH,light,overlay);box(p,out,1,5,0,15,7,1,FLESH,light,overlay);}
             case PAINTED_BOARD->box(p,out,0,0,6,16,16,10,PAINT,light,overlay);
+            case SUN_BOARD->{
+                box(p,out,0,0,6,16,16,10,WOOD,light,overlay);
+                for(float y:new float[]{0,5.3F,10.6F})box(p,out,0,y,10,16,y+.3F,10.1F,BLACK,light,overlay);
+                if(state.getValue(UncannyPropBlock.STAGE)==1){
+                    box(p,out,4,6,10.12F,12,12,10.16F,BONE,light,overlay);box(p,out,6,4,10.12F,10,14,10.16F,BONE,light,overlay);
+                    box(p,out,7.5F,1,10.12F,8.5F,3,10.16F,BONE,light,overlay);box(p,out,1,8.5F,10.12F,3,9.5F,10.16F,BONE,light,overlay);box(p,out,13,8.5F,10.12F,15,9.5F,10.16F,BONE,light,overlay);
+                }
+            }
             case FALSE_DOOR->{if(state.getValue(UncannyPropBlock.STAGE)>=2){box(p,out,0,0,6,16,16,10,BLACK,light,overlay);p.translate(.05,0,.5);p.mulPose(Axis.YP.rotationDegrees(90));p.translate(-.05,0,-.5);}box(p,out,0,0,6,16,16,10,WOOD,light,overlay);box(p,out,3,2,10,13,14,10.25F,WOOD,light,overlay);if(UncannyClient.mirror())box(p,out,0,0,10.3F,1,16,10.5F,FROST,LightTexture.FULL_BRIGHT,overlay);}
             case PAPER,RECEIPT,CLIPBOARD,LEDGER,CLEAVER->{box(p,out,1,0,2,15,.5F,14,state.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.CLEAVER?METAL:PAPER,light,overlay);if(state.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.LEDGER)box(p,out,1,0,2,3,1,14,WOOD,light,overlay);}
             case SCRAWL->{box(p,out,2,3,6,14,15,6.4F,PAPER,light,overlay);}
@@ -62,6 +73,8 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
             case SIGN->{box(p,out,0,4,6,16,14,10,METAL,light,overlay);box(p,out,1,5,10,15,13,10.2F,BLACK,light,overlay);}
             case FLOODLIGHT->{box(p,out,6,9,7,10,10,16,METAL,light,overlay);box(p,out,2,7,6,14,15,10,METAL,light,overlay);box(p,out,3,8,10,13,14,10.2F,state.getValue(UncannyPropBlock.STAGE)==0?BONE:BLACK,state.getValue(UncannyPropBlock.STAGE)==0?LightTexture.FULL_BRIGHT:light,overlay);}
             case BUZZER->{box(p,out,3,3,6,13,14,9,METAL,light,overlay);box(p,out,6,5,9,10,8,10,BONE,light,overlay);box(p,out,5,10,9,11,12,9.5F,BLACK,light,overlay);}
+            case PULL_CHAIN->{box(p,out,5,13,6,11,16,10,METAL,light,overlay);box(p,out,7.7F,5,7.7F,8.3F,14,8.3F,METAL,light,overlay);box(p,out,6,1,7,7,6,9,METAL,light,overlay);box(p,out,9,1,7,10,6,9,METAL,light,overlay);box(p,out,7,1,7,9,2,9,METAL,light,overlay);box(p,out,7,5,7,9,6,9,METAL,light,overlay);}
+            case COURTYARD_PENDULUM->{box(p,out,5,14,6.5F,11,16,9.5F,METAL,light,overlay);p.pushPose();p.translate(.5,14F/16,.5);p.mulPose(Axis.ZP.rotation(swing));p.translate(-.5,-14F/16,-.5);box(p,out,7.6F,8.5F,7.6F,8.4F,14,8.4F,METAL,light,overlay);box(p,out,5.5F,3.5F,7,10.5F,8.5F,9,METAL,light,overlay);box(p,out,6,4,9,10,4.7F,9.2F,BLACK,light,overlay);p.popPose();}
             case REGISTER->{box(p,out,1,0,2,15,5,14,METAL,light,overlay);box(p,out,3,5,3,13,13,10,BLACK,light,overlay);box(p,out,4,8,10,12,11,10.2F,CRT,LightTexture.FULL_BRIGHT,overlay);box(p,out,0,.5F,10,7,1,15,PAPER,light,overlay);}
             case PIE_CASE->{box(p,out,0,0,0,16,2,16,METAL,light,overlay);box(p,out,0,14,0,16,15,16,METAL,light,overlay);for(int x:new int[]{0,15})for(int z:new int[]{0,15})box(p,out,x,2,z,x+1,14,z+1,METAL,light,overlay);box(p,out,3,3,4,13,6,12,BONE,light,overlay);}
             case PLATE->{box(p,out,2,0,2,14,1,14,BONE,light,overlay);box(p,out,4,1,4,12,2,12,FLESH,light,overlay);}
