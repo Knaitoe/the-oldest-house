@@ -184,7 +184,8 @@ public final class LiteraryRenderers {
                 if(chair==null&&!(a.role()==LiteraryActor.BROTHER&&a.phase()>0))HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());
                 body.yRot+=.02F*net.minecraft.util.Mth.sin(age*.037F+a.getId()*1.7F);HumanoidMotion.connect(this);
             }
-            if(a.gesture()==io.github.knaitoe.theoldesthouse.labyrinth.CostumeNight.CRAWL)crawl(walk,amount);}
+            if(a.gesture()==io.github.knaitoe.theoldesthouse.labyrinth.CostumeNight.CRAWL)crawl(walk,amount);
+            if(a.role()==LiteraryActor.SILHOUETTE&&a.scene().equals(LabyrinthPlace.CHILD_ROOM.id())&&a.hasCustomName()&&"Dinnerbone".equals(a.getCustomName().getString()))DinnerboneIdle.pose(this,a.level().getGameTime()+age-a.tickCount,a.getUUID().hashCode());}
         /** On all fours, the way she goes (Costume Night's crawl, 0.4.103): the torso level at hip height, the head up, arms and legs as four legs. */
         public void crawl(float walk,float amount){
             float step=net.minecraft.util.Mth.cos(walk*.9F)*.5F*Math.min(1,amount*1.6F);
