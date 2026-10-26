@@ -1453,11 +1453,11 @@ jobs:
       - name: Install native preview display
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri ffmpeg
       - name: Native fitted uncanny environments and matching waitress paintings
         timeout-minutes: 10
         run: |
-          python3 -m pip install Pillow
+          python3 -m pip install Pillow numpy
           mkdir -p build
           set -o pipefail
           python3 tools/draw_uncanny_environments.py --check
