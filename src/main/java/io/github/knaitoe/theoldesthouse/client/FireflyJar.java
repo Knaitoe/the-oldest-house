@@ -24,7 +24,8 @@ public final class FireflyJar {
         var vertices=out.getBuffer(RenderType.entityTranslucent(TEXTURE));
         for(int i=0;i<6;i++){
             var f=sample(i,age,at.asLong());if(f.glow()<.015F)continue;
-            pose.pushPose();pose.translate(f.x(),f.y(),f.z());pose.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+            pose.pushPose();pose.translate(f.x(),f.y(),f.z());
+            var facing=Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation();if(facing!=null)pose.mulPose(facing);
             var p=pose.last();float r=.022F;int alpha=(int)(255*f.glow());
             vertices.addVertex(p,-r,-r,0).setColor(255,255,255,alpha).setUv(0,1).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);
             vertices.addVertex(p,r,-r,0).setColor(255,255,255,alpha).setUv(1,1).setOverlay(overlay).setLight(LightTexture.FULL_BRIGHT).setNormal(p,0,0,1);

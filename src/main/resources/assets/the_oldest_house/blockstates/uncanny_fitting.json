@@ -56,6 +56,9 @@
     },
     "kind=box": {
       "model": "the_oldest_house:block/uncanny_fitting"
+    },
+    "kind=stoplight": {
+      "model": "the_oldest_house:block/uncanny_fitting"
     }
   }
 }
