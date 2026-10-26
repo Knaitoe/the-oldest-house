@@ -155,6 +155,10 @@ public final class ClassicsVignettes {
         if(!all.getBoolean("Fleeing0477")){startFlight(level,b,data);all=data.state(STATE);}
         boolean done=true;
         for(var a:cast(level)){
+            // A saved pose can say standing while its native seat still owns the body; pre-seat saves can also leave
+            // feet at cushion height. Both must take the supported floor step before their route can advance.
+            var chair=Vec3.atBottomCenterOf(b.offset(SeanceSeating.CHAIRS.get(a.role())));
+            if(!a.getPersistentData().getBoolean("SeanceRaised131")&&(a.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity||a.getY()>b.getY()+.15&&a.position().subtract(chair).horizontalDistanceSqr()<4))SeanceSeating.scare(a);
             if(a.seated()||a.getPersistentData().contains("SeanceRiseAt131")||level.getGameTime()<a.getPersistentData().getLong("SeanceFlightAt131")){done=false;continue;}
             a.setNoGravity(true);
             // Older routes began by lowering feet into a seat or steering through its back. Resume the same body.
