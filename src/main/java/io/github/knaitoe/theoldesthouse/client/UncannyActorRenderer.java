@@ -79,7 +79,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 // Upright ribcage and dragging legs; the break is in her neck.
                 // The folded head stays within the actual 2.7-block tunnel body.
                 body.y=9;body.yScale=.6F;body.xRot=.08F;
-                leftLeg.y=rightLeg.y=16;leftLeg.yScale=rightLeg.yScale=.67F;
+                leftLeg.y=rightLeg.y=16;leftLeg.yScale=rightLeg.yScale=2F/3;
                 head.x=-2.5F;head.y=10.8F;head.z=-1.5F;head.zRot=1.4F;head.xRot=.22F;
                 leftArm.y=rightArm.y=10;leftArm.xRot=rightArm.xRot=.08F;
                 leftArm.zRot=-.025F;rightArm.zRot=.025F;
