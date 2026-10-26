@@ -1,0 +1,25 @@
+{
+  "source": "tools/draw_backseat_materials.py",
+  "style": "Native vanilla-adjacent 16x16 material tiles. No generated image, photographs or resampling. Model faces repeat at 16 texture pixels per block.",
+  "materials": {
+    "cream": "four flat enamel colors matching the existing uncanny enamel palette",
+    "vinyl": "five flat brown upholstery colors",
+    "rubber": "three flat dark colors",
+    "gauges": "six flat dashboard/dial colors",
+    "chrome": "four flat steel colors",
+    "mirror": "three flat reflective-glass colors",
+    "headliner": "three flat fabric colors"
+  },
+  "reused": [
+    "uncanny/dark_wood",
+    "uncanny/glass",
+    "uncanny/lamp",
+    "uncanny/vinyl"
+  ],
+  "native_model": "BackseatCarMesh",
+  "native_renderer": "BackseatArt",
+  "native_proof": "gradle runClient -PbackseatArtSmoke",
+  "native_views": 6,
+  "preview": "art/review_04132/backseat-native-materials.png",
+  "playable_scene": "Not implemented. Art foundation only; excluded from Witness."
+}
