@@ -9,14 +9,21 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /** The descent keeps its own ambience; footsteps and gameplay sounds remain audible. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class StaircaseSoundscape {
     private StaircaseSoundscape(){}
+    private static boolean whale(){
+        var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)||!HouseSightlineState.hasOrigin())return false;
+        var room=LabyrinthPlaces.placeBounds(HouseSightlineState.origin(),LabyrinthPlace.WHALE);return room!=null&&room.isInside(mc.player.blockPosition());
+    }
+    @SubscribeEvent public static void quietInstitute(ClientTickEvent.Post event){if(whale()){var mc=Minecraft.getInstance();mc.getMusicManager().stopPlaying();mc.getSoundManager().stop(null,SoundSource.MUSIC);}}
     @SubscribeEvent public static void sound(PlaySoundEvent event){
         var mc=Minecraft.getInstance();var sound=event.getSound();
         if(sound==null||mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR))return;
+        if(whale()&&sound.getSource()==SoundSource.MUSIC){event.setSound(null);return;}
         if(sound.getLocation().getNamespace().equals("minecraft")&&sound.getLocation().getPath().equals("ambient.cave")){
             var whale=LabyrinthPlaces.placeBounds(HouseSightlineState.origin(),LabyrinthPlace.WHALE);
             if(whale!=null&&whale.isInside(mc.player.blockPosition())){event.setSound(null);return;}

@@ -29,6 +29,9 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
         ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.DINER_DOOR.get(),RenderType.cutout());
     });}
     @Override public void render(UncannyPropBlock.Fitting fitting,float partial,PoseStack p,MultiBufferSource buffers,int light,int overlay){
+        if(fitting.getBlockState().getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.PLATE&&!fitting.meal.isEmpty()){
+            p.pushPose();p.translate(.5,.505,.5);Minecraft.getInstance().getItemRenderer().renderStatic(fitting.meal,net.minecraft.world.item.ItemDisplayContext.FIXED,light,overlay,p,buffers,fitting.getLevel(),0);p.popPose();return;
+        }
         draw(fitting.getBlockState(),p,buffers,light,overlay,(float)fitting.swing.sample(fitting.getLevel()==null?0:fitting.getLevel().getGameTime()+partial).angle());
         var kind=fitting.getBlockState().getValue(UncannyPropBlock.KIND);
         if(kind==UncannyPropBlock.Kind.MONITOR)UncannyCameras.monitor(p,buffers,light);
