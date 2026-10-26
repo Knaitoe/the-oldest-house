@@ -44,6 +44,7 @@ jobs:
           python3 tools/draw_harrigan_funeral_assets.py --check
           python3 tools/draw_night_ward_assets.py --check
           python3 tools/draw_seance_fittings.py --check
+          python3 tools/draw_vignette_interiors.py --check
           python3 tools/draw_trailer_furniture.py --check
           python3 tools/draw_site_machines.py --check
           python3 tools/draw_tract_house.py --check
