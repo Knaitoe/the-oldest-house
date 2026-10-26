@@ -8,7 +8,9 @@ import net.minecraft.world.phys.Vec3;
  * Materials repeat at Minecraft's sixteen-pixels-per-block density. */
 public final class BackseatCarMesh {
     public record Box(float x0,float y0,float z0,float x1,float y1,float z1,String material) {}
-    public static final Vec3 DRIVER = new Vec3(-10/16D,9/16D,-3/16D);
+    // The native riding pose puts the hips 12px above the player's origin.
+    // Four pixels of origin height seats those hips on the 16px cushion.
+    public static final Vec3 DRIVER = new Vec3(-10/16D,4/16D,-3/16D);
     public static final Vec3 MIRROR = new Vec3(0,32/16D,-19/16D);
     public static final List<Box> SHELL=shell(),DRIVER_DOOR=door(),STEERING=wheel();
     private BackseatCarMesh() {}
@@ -97,6 +99,7 @@ public final class BackseatCarMesh {
         add(b,-14,25,-14,-13,30,-13,"rubber");
         add(b,-7,25,-14,-6,30,-13,"rubber");
         add(b,-11,26,-16,-9,29,-12.9F,"chrome");
-        return List.copyOf(b);
+        // Keep the wheel below the native seated eye, at the driver's chest.
+        return b.stream().map(q->new Box(q.x0,q.y0-4,q.z0,q.x1,q.y1-4,q.z1,q.material)).toList();
     }
 }
