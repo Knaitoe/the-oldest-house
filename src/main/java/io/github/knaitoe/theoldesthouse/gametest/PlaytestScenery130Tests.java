@@ -35,7 +35,7 @@ public final class PlaytestScenery130Tests {
             var jar=b.offset(-7,0,-9);h.assertTrue(l.getBlockState(jar).is(LiteraryRegistry.PROP.get())&&l.getBlockEntity(jar)!=null,"the original interactive jar and its block entity are retained");
             for(int z=-16;z>=-28;z--)h.assertTrue(l.noCollision(null,new AABB(b.getX()+.2,b.getY()+.01,b.getZ()+z+.2,b.getX()+.8,b.getY()+1.8,b.getZ()+z+.8)),"the cabin's real doorway-to-table route is unobstructed");
             f.reload();PlaytestScenery130.fresh(l,f.origin,scene);for(var e:originals.entrySet())h.assertTrue(l.getBlockEntity(e.getKey())==e.getValue(),"the original source/account block entity survives repeated repair and native reload");h.assertTrue(l.getBlockState(sink).getValue(VignetteInteriorBlock.ACTIVE),"the repaired scenery never switches off a used tap");
-            try{ArchitectureTests.export(l,b,scene);java.nio.file.Files.copy(java.nio.file.Path.of("../build/architecture-proof",scene.id()+".json"),java.nio.file.Path.of("../build/interior-environment-proof",scene.id()+".json"),java.nio.file.StandardCopyOption.REPLACE_EXISTING);}catch(Exception e){throw new RuntimeException(e);}
+            try{var folder=java.nio.file.Path.of("../build/interior-environment-proof");java.nio.file.Files.createDirectories(folder);ArchitectureTests.export(l,b,scene);java.nio.file.Files.copy(java.nio.file.Path.of("../build/architecture-proof",scene.id()+".json"),folder.resolve(scene.id()+".json"),java.nio.file.StandardCopyOption.REPLACE_EXISTING);}catch(Exception e){throw new RuntimeException(e);}
         }).thenSucceed();
     }
     @AfterBatch(batch="scenery130_cabin") public static void cabinDone(ServerLevel l){close();}

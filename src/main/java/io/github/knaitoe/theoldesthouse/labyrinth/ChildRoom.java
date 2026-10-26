@@ -197,8 +197,8 @@ public final class ChildRoom {
         boolean shut=read&&mask==ALL&&!own.getBoolean("Ready");
         if(shut&&(own.getInt("Present")%20==0||!own.getBoolean("DoorShut0119"))){doorway(p,b,true);own.putBoolean("DoorShut0119",true);}
         else if(!shut&&own.getBoolean("DoorShut0119")){doorway(p,b,false);own.remove("DoorShut0119");}
-        // The parents' voices: one as each exit goes, a warning twenty seconds after the reader is shut in, and the last once
-        // they have gone under the floor. Each line once, in order, to that reader alone.
+        // Each lost exit queues a parent's line; being shut in and crawling queue the final two.
+        // Deliver each once, in order, 21–24 seconds apart, to that reader alone.
         if(read&&!own.getBoolean("Ready")){
             if(mask==ALL&&!own.contains("ShutAt0119"))own.putInt("ShutAt0119",own.getInt("Present"));
             int due=Integer.bitCount(mask);
