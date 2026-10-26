@@ -290,6 +290,8 @@ public final class LabyrinthBuilder {
     /** One place per tick. */
     public static void tick(MinecraftServer server) {
         DomesticHallUpgrade.tick(server);
+        DomesticLives.tick(server);
+        DomesticDisturbances.tick(server);
         WallNotesRepairs.tick(server);
         UncannyEnvironmentRepairs.tick(server);
         UncannyAnatomyUpgrade.tick(server);

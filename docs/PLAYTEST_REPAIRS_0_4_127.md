@@ -31,3 +31,6 @@ Dinnerbone follow-up: retain the original ceiling actor, native inversion, dark 
 
 
 Repair validation checkpoint: local Java 21 compilation and all 44 native uncanny cases pass after correcting the bed push to the side clear of its nightlight, moving the patron-contact fixture out of a parked pickup, and following the new human anatomy in both original-key routes. The tunnel now progresses through green signals independently of appearance, cannot credit sight of a dormant invisible body, and chooses an unseen collision-free bay between ceiling fittings. The obsolete proximity teleport beside false frames is removed. Full exact-source CI and inspection of the new Dinnerbone/Plains views remain required. The temporary tooling bootstrap workflow has been removed.
+
+
+0.4.128 follow-up: the selected extensions are implemented as EMPTY homes, following the owner’s explicit clarification. No new household residents, skins or dialogue are retained. The room layouts, native physical handling and inert disturbances are recorded in [the empty-home follow-up](EMPTY_DOMESTIC_HOMES_0_4_128.md). The first anatomy view also revealed buried facial surfaces; the narrower exposed head and its guarded saved refit are corrected there.

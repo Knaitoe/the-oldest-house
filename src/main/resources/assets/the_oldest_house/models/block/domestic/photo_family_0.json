@@ -1,0 +1,111 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "family_paper": "the_oldest_house:block/domestic/family_paper",
+    "student_paper": "the_oldest_house:block/domestic/student_paper",
+    "smoked_paper": "the_oldest_house:block/domestic/smoked_paper",
+    "rose_paper": "the_oldest_house:block/domestic/rose_paper",
+    "parquet": "the_oldest_house:block/domestic/parquet",
+    "parquet_worn": "the_oldest_house:block/domestic/parquet_worn",
+    "linoleum": "the_oldest_house:block/domestic/linoleum",
+    "wood": "the_oldest_house:block/domestic/wood",
+    "chair_cloth": "the_oldest_house:block/domestic/chair_cloth",
+    "ceramic": "the_oldest_house:block/domestic/ceramic",
+    "cup_blue": "the_oldest_house:block/domestic/cup_blue",
+    "cup_red": "the_oldest_house:block/domestic/cup_red",
+    "cup_green": "the_oldest_house:block/domestic/cup_green",
+    "milk": "the_oldest_house:block/domestic/milk",
+    "liquid": "the_oldest_house:block/domestic/liquid",
+    "dark_metal": "the_oldest_house:block/domestic/dark_metal",
+    "record": "the_oldest_house:block/domestic/record",
+    "record_b": "the_oldest_house:block/domestic/record_b",
+    "speaker": "the_oldest_house:block/domestic/speaker",
+    "dial": "the_oldest_house:block/domestic/dial",
+    "glass": "the_oldest_house:block/domestic/glass",
+    "spill": "the_oldest_house:block/domestic/spill",
+    "scrapes": "the_oldest_house:block/domestic/scrapes",
+    "cardboard": "the_oldest_house:block/domestic/cardboard",
+    "tape": "the_oldest_house:block/domestic/tape",
+    "folded_blue": "the_oldest_house:block/domestic/folded_blue",
+    "folded_cream": "the_oldest_house:block/domestic/folded_cream",
+    "folded_red": "the_oldest_house:block/domestic/folded_red",
+    "book_pages": "the_oldest_house:block/domestic/book_pages",
+    "book_spines": "the_oldest_house:block/domestic/book_spines",
+    "screen": "the_oldest_house:block/domestic/screen",
+    "keyboard": "the_oldest_house:block/domestic/keyboard",
+    "dirty_ceramic": "the_oldest_house:block/domestic/dirty_ceramic",
+    "beer_label": "the_oldest_house:block/domestic/beer_label",
+    "empty_glass": "the_oldest_house:block/domestic/empty_glass",
+    "dust": "the_oldest_house:block/domestic/dust",
+    "photo_family": "the_oldest_house:block/domestic/photo_family",
+    "photo_couple": "the_oldest_house:block/domestic/photo_couple",
+    "particle": "the_oldest_house:block/domestic/wood"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        1,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        1,
+        5
+      ],
+      "to": [
+        10,
+        1.1,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cardboard"
+        },
+        "south": {
+          "texture": "#cardboard"
+        },
+        "east": {
+          "texture": "#cardboard"
+        },
+        "west": {
+          "texture": "#cardboard"
+        },
+        "up": {
+          "texture": "#cardboard"
+        },
+        "down": {
+          "texture": "#cardboard"
+        }
+      }
+    }
+  ]
+}

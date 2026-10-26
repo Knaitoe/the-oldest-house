@@ -112,6 +112,8 @@ public final class LabyrinthHalls {
         LabyrinthDomestic.decorateHall(level,base,place);
         LabyrinthBuilder.doors(level,base,place);
         DomesticHallUpgrade.apply(level,base,place);
+        DomesticLives.fresh(level,base,place);
+        DomesticDisturbances.apply(level,base,place);
     }
     public static int height(LabyrinthPlace place){return place==LabyrinthPlace.CROSS_HALL||place==LabyrinthPlace.QUIET_ROOM||HallVariations.domestic(place)?4:3;}
     public static net.minecraft.world.level.block.state.BlockState floorState(LabyrinthPlace place){

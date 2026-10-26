@@ -12,10 +12,17 @@ import net.minecraft.world.phys.AABB;
 
 /** A bounded, vacant-room anatomy refit; actual cuts, original bodies and finite keys remain. */
 public final class UncannyAnatomyUpgrade {
-    public static final String STATE="uncanny_anatomy_0127";
+    public static final String STATE="uncanny_anatomy_0128";
     private UncannyAnatomyUpgrade(){}
     private static boolean old(BlockPos r){
         int x=r.getX(),y=r.getY(),z=r.getZ();if(r.equals(UncannyRooms.KEY_CAVITY))return false;
+        // The earlier 0.4.127 checkpoint put its face behind raised shoulders.
+        boolean v127=y>=-5&&y<=-4&&Math.abs(x)==1&&z>=-20&&z<=-17
+                ||y>=-5&&y<=-3&&Math.abs(x)<=2&&z>=-23&&z<=-19
+                ||y==-2&&Math.abs(x)<=2&&z>=-23&&z<=-21
+                ||Math.abs(x)==3&&y>=-5&&y<=-3&&z>=-23&&z<=-20
+                ||Math.abs(x)<=1&&y>=-3&&y<=-2&&z>=-25&&z<=-24;
+        if(v127)return true;
         if(y==-2)return Math.abs(x)<=1&&z>=-22&&z<=-20;
         if(y==-3)return Math.abs(x)<=1&&z>=-23&&z<=-19;
         return y>=-5&&y<=-4&&Math.abs(x)<=2&&z>=-23&&z<=-18&&(Math.abs(x)<2||z>=-22&&z<=-19);
