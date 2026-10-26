@@ -80,7 +80,7 @@ public final class UncannyTests {
     @AfterBatch(batch="uncanny_answer") public static void answerDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_folds",timeoutTicks=1200) public static void tissueRegrowsByContactAndKeepsTheCutBodyAcrossVacancy(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.LAYERED_MAN;var p=f.player("fold_reader",place);var late=f.player("fold_latecomer",place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(f.base(place),place));
-        var l=f.level(place);var b=f.base(place);var cut=new BlockPos(2,-4,-20);var stood=b.offset(4,-5,-21);long[] left={0};var refuge=b.offset(2,-5,-21);net.minecraft.world.entity.animal.Pig[] animal={null};
+        var l=f.level(place);var b=f.base(place);var cut=new BlockPos(0,-2,-20);var stood=b.offset(4,-5,-21);long[] left={0};var refuge=b.offset(2,-5,-21);net.minecraft.world.entity.animal.Pig[] animal={null};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"cellar loaded"))
             .thenExecute(()->{f.at(late,place,40,0,40);f.source(p,place);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.CLEAVER.get()));f.at(p,place,4.8,-5,-18.5);var own=f.own(p,place);h.assertTrue(UncannyStories.peel(p,b,cut,own),"the held blade cuts an actual tissue cell");LiteraryVignettes.save(f.data(),p.getUUID(),place,own);h.assertTrue(l.isEmptyBlock(b.offset(cut)),"cut tissue leaves real open space");})
             .thenWaitUntil(()->h.assertTrue(UncannyFleshBlock.is(l.getBlockState(b.offset(cut))),"the saved cut grows back after its occupied regrowth delay"))
