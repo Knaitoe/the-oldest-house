@@ -71,7 +71,8 @@ public final class Playtest0127Tests {
         }
         h.assertTrue(f.own(p,scene).getInt("Peeled")==before+8&&f.own(peer,scene).getInt("Peeled")==0,"ordinary completed mining records only its actual cutter");
         cleaver.hurtAndBreak(200,p,EquipmentSlot.MAINHAND);h.assertTrue(!cleaver.isEmpty()&&cleaver.getDamageValue()==0&&cleaver.has(DataComponents.UNBREAKABLE),"the actual held cleaver has hidden native unbreakability");
-        h.assertTrue(l.getBlockState(b.offset(-1,-2,-24)).getValue(UncannyFleshBlock.LAYER)==4&&l.getBlockState(b.offset(1,-2,-24)).getValue(UncannyFleshBlock.LAYER)==5&&l.getBlockState(b.offset(0,-3,-24)).getValue(UncannyFleshBlock.LAYER)==6,"the actual authored man has two eyes and a mouth above his abdomen");
+        h.assertTrue(l.getBlockState(b.offset(-1,-2,-21)).getValue(UncannyFleshBlock.LAYER)==4&&l.getBlockState(b.offset(1,-2,-21)).getValue(UncannyFleshBlock.LAYER)==5&&l.getBlockState(b.offset(0,-3,-21)).getValue(UncannyFleshBlock.LAYER)==6,"the actual authored man has two eyes and a mouth above his abdomen");
+        h.assertTrue(l.getBlockState(b.offset(-1,-2,-20)).isAir()&&l.getBlockState(b.offset(1,-2,-20)).isAir()&&l.getBlockState(b.offset(0,-3,-20)).isAir(),"neither the shoulders nor the abdomen bury the visible facial surfaces");
         h.assertTrue(l.isEmptyBlock(b.offset(UncannyRooms.KEY_CAVITY))&&UncannyFleshBlock.is(l.getBlockState(b.offset(0,-4,-21))),"the original key cavity remains inside actual tissue");f.reload();h.assertTrue(cleaver.getDamageValue()==0&&f.own(p,scene).getInt("Peeled")==before+8,"native reload retains cutting history and the same tool");
     });}
     @AfterBatch(batch="review127_cuts") public static void cutsDone(ServerLevel l){close();}

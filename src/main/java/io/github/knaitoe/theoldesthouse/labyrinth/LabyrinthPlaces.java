@@ -154,6 +154,7 @@ public final class LabyrinthPlaces {
         if (base == null || room == null) {
             return null;
         }
+        room = DomesticLives.extend(place, room);
         BoundingBox local = new BoundingBox(
                 Math.min(room.minX(), -VESTIBULE_HALF_WIDTH), Math.min(room.minY(), -1), room.minZ(),
                 Math.max(room.maxX(), VESTIBULE_HALF_WIDTH), Math.max(room.maxY(), VESTIBULE_TOP), 1 + VESTIBULE_DEPTH

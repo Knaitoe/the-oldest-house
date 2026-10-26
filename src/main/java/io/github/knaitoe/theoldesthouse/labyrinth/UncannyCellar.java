@@ -25,11 +25,11 @@ public final class UncannyCellar {
         // shoulders, two lowered arms and a face above the ribs. The original
         // key cavity stays inside his abdomen, approached through real tissue.
         boolean legs=y>=-5&&y<=-4&&Math.abs(x)==1&&z>=-20&&z<=-17;
-        boolean belly=y>=-5&&y<=-3&&Math.abs(x)<=2&&z>=-23&&z<=-19;
-        boolean shoulders=y==-2&&Math.abs(x)<=2&&z>=-23&&z<=-21;
+        boolean belly=y>=-5&&y<=-3&&Math.abs(x)<=2&&z>=-23&&z<=-19&&!(x==0&&y==-3&&z>=-20);
+        boolean shoulders=y>=-4&&y<=-3&&Math.abs(x)==2&&z>=-24&&z<=-21;
         boolean arms=Math.abs(x)==3&&y>=-5&&y<=-3&&z>=-23&&z<=-20;
-        boolean head=Math.abs(x)<=1&&y>=-3&&y<=-2&&z>=-25&&z<=-24;
-        boolean nose=x==0&&y==-2&&z==-23;
+        boolean head=Math.abs(x)<=1&&y>=-3&&y<=-2&&z>=-23&&z<=-21;
+        boolean nose=x==0&&y==-2&&z==-20;
         return legs||belly||shoulders||arms||head||nose;
     }
     private static boolean inMass(BlockPos r){return Math.abs(r.getX())<=6&&r.getY()>=-5&&r.getY()<=-2&&r.getZ()>=-28&&r.getZ()<=-10;}

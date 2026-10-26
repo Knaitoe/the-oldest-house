@@ -1,0 +1,1039 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "family_paper": "the_oldest_house:block/domestic/family_paper",
+    "student_paper": "the_oldest_house:block/domestic/student_paper",
+    "smoked_paper": "the_oldest_house:block/domestic/smoked_paper",
+    "rose_paper": "the_oldest_house:block/domestic/rose_paper",
+    "parquet": "the_oldest_house:block/domestic/parquet",
+    "parquet_worn": "the_oldest_house:block/domestic/parquet_worn",
+    "linoleum": "the_oldest_house:block/domestic/linoleum",
+    "wood": "the_oldest_house:block/domestic/wood",
+    "chair_cloth": "the_oldest_house:block/domestic/chair_cloth",
+    "ceramic": "the_oldest_house:block/domestic/ceramic",
+    "cup_blue": "the_oldest_house:block/domestic/cup_blue",
+    "cup_red": "the_oldest_house:block/domestic/cup_red",
+    "cup_green": "the_oldest_house:block/domestic/cup_green",
+    "milk": "the_oldest_house:block/domestic/milk",
+    "liquid": "the_oldest_house:block/domestic/liquid",
+    "dark_metal": "the_oldest_house:block/domestic/dark_metal",
+    "record": "the_oldest_house:block/domestic/record",
+    "record_b": "the_oldest_house:block/domestic/record_b",
+    "speaker": "the_oldest_house:block/domestic/speaker",
+    "dial": "the_oldest_house:block/domestic/dial",
+    "glass": "the_oldest_house:block/domestic/glass",
+    "spill": "the_oldest_house:block/domestic/spill",
+    "scrapes": "the_oldest_house:block/domestic/scrapes",
+    "cardboard": "the_oldest_house:block/domestic/cardboard",
+    "tape": "the_oldest_house:block/domestic/tape",
+    "folded_blue": "the_oldest_house:block/domestic/folded_blue",
+    "folded_cream": "the_oldest_house:block/domestic/folded_cream",
+    "folded_red": "the_oldest_house:block/domestic/folded_red",
+    "book_pages": "the_oldest_house:block/domestic/book_pages",
+    "book_spines": "the_oldest_house:block/domestic/book_spines",
+    "screen": "the_oldest_house:block/domestic/screen",
+    "keyboard": "the_oldest_house:block/domestic/keyboard",
+    "dirty_ceramic": "the_oldest_house:block/domestic/dirty_ceramic",
+    "beer_label": "the_oldest_house:block/domestic/beer_label",
+    "empty_glass": "the_oldest_house:block/domestic/empty_glass",
+    "dust": "the_oldest_house:block/domestic/dust",
+    "photo_family": "the_oldest_house:block/domestic/photo_family",
+    "photo_couple": "the_oldest_house:block/domestic/photo_couple",
+    "particle": "the_oldest_house:block/domestic/wood"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cardboard"
+        },
+        "south": {
+          "texture": "#cardboard"
+        },
+        "east": {
+          "texture": "#cardboard"
+        },
+        "west": {
+          "texture": "#cardboard"
+        },
+        "up": {
+          "texture": "#cardboard"
+        },
+        "down": {
+          "texture": "#cardboard"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        1,
+        0
+      ],
+      "to": [
+        1,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cardboard"
+        },
+        "south": {
+          "texture": "#cardboard"
+        },
+        "east": {
+          "texture": "#cardboard"
+        },
+        "west": {
+          "texture": "#cardboard"
+        },
+        "up": {
+          "texture": "#cardboard"
+        },
+        "down": {
+          "texture": "#cardboard"
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        1,
+        0
+      ],
+      "to": [
+        16,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cardboard"
+        },
+        "south": {
+          "texture": "#cardboard"
+        },
+        "east": {
+          "texture": "#cardboard"
+        },
+        "west": {
+          "texture": "#cardboard"
+        },
+        "up": {
+          "texture": "#cardboard"
+        },
+        "down": {
+          "texture": "#cardboard"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        1,
+        0
+      ],
+      "to": [
+        15,
+        10,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cardboard"
+        },
+        "south": {
+          "texture": "#cardboard"
+        },
+        "east": {
+          "texture": "#cardboard"
+        },
+        "west": {
+          "texture": "#cardboard"
+        },
+        "up": {
+          "texture": "#cardboard"
+        },
+        "down": {
+          "texture": "#cardboard"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        1,
+        15
+      ],
+      "to": [
+        15,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cardboard"
+        },
+        "south": {
+          "texture": "#cardboard"
+        },
+        "east": {
+          "texture": "#cardboard"
+        },
+        "west": {
+          "texture": "#cardboard"
+        },
+        "up": {
+          "texture": "#cardboard"
+        },
+        "down": {
+          "texture": "#cardboard"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        10,
+        0
+      ],
+      "to": [
+        1,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cardboard"
+        },
+        "south": {
+          "texture": "#cardboard"
+        },
+        "east": {
+          "texture": "#cardboard"
+        },
+        "west": {
+          "texture": "#cardboard"
+        },
+        "up": {
+          "texture": "#cardboard"
+        },
+        "down": {
+          "texture": "#cardboard"
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        10,
+        0
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cardboard"
+        },
+        "south": {
+          "texture": "#cardboard"
+        },
+        "east": {
+          "texture": "#cardboard"
+        },
+        "west": {
+          "texture": "#cardboard"
+        },
+        "up": {
+          "texture": "#cardboard"
+        },
+        "down": {
+          "texture": "#cardboard"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        1,
+        2
+      ],
+      "to": [
+        5,
+        7,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        2.8,
+        7,
+        2.8
+      ],
+      "to": [
+        4.2,
+        10,
+        4.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        3,
+        2
+      ],
+      "to": [
+        5,
+        5,
+        2.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#beer_label"
+        },
+        "south": {
+          "texture": "#beer_label"
+        },
+        "east": {
+          "texture": "#beer_label"
+        },
+        "west": {
+          "texture": "#beer_label"
+        },
+        "up": {
+          "texture": "#beer_label"
+        },
+        "down": {
+          "texture": "#beer_label"
+        }
+      }
+    },
+    {
+      "from": [
+        2.9,
+        9.9,
+        2.9
+      ],
+      "to": [
+        4.1,
+        10,
+        4.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_metal"
+        },
+        "south": {
+          "texture": "#dark_metal"
+        },
+        "east": {
+          "texture": "#dark_metal"
+        },
+        "west": {
+          "texture": "#dark_metal"
+        },
+        "up": {
+          "texture": "#dark_metal"
+        },
+        "down": {
+          "texture": "#dark_metal"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        1,
+        9
+      ],
+      "to": [
+        5,
+        7,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        2.8,
+        7,
+        9.8
+      ],
+      "to": [
+        4.2,
+        10,
+        11.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        3,
+        9
+      ],
+      "to": [
+        5,
+        5,
+        9.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#beer_label"
+        },
+        "south": {
+          "texture": "#beer_label"
+        },
+        "east": {
+          "texture": "#beer_label"
+        },
+        "west": {
+          "texture": "#beer_label"
+        },
+        "up": {
+          "texture": "#beer_label"
+        },
+        "down": {
+          "texture": "#beer_label"
+        }
+      }
+    },
+    {
+      "from": [
+        2.9,
+        9.9,
+        9.9
+      ],
+      "to": [
+        4.1,
+        10,
+        11.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_metal"
+        },
+        "south": {
+          "texture": "#dark_metal"
+        },
+        "east": {
+          "texture": "#dark_metal"
+        },
+        "west": {
+          "texture": "#dark_metal"
+        },
+        "up": {
+          "texture": "#dark_metal"
+        },
+        "down": {
+          "texture": "#dark_metal"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        1,
+        2
+      ],
+      "to": [
+        9,
+        7,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        6.8,
+        7,
+        2.8
+      ],
+      "to": [
+        8.2,
+        10,
+        4.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        3,
+        2
+      ],
+      "to": [
+        9,
+        5,
+        2.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#beer_label"
+        },
+        "south": {
+          "texture": "#beer_label"
+        },
+        "east": {
+          "texture": "#beer_label"
+        },
+        "west": {
+          "texture": "#beer_label"
+        },
+        "up": {
+          "texture": "#beer_label"
+        },
+        "down": {
+          "texture": "#beer_label"
+        }
+      }
+    },
+    {
+      "from": [
+        6.9,
+        9.9,
+        2.9
+      ],
+      "to": [
+        8.1,
+        10,
+        4.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_metal"
+        },
+        "south": {
+          "texture": "#dark_metal"
+        },
+        "east": {
+          "texture": "#dark_metal"
+        },
+        "west": {
+          "texture": "#dark_metal"
+        },
+        "up": {
+          "texture": "#dark_metal"
+        },
+        "down": {
+          "texture": "#dark_metal"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        1,
+        9
+      ],
+      "to": [
+        9,
+        7,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        6.8,
+        7,
+        9.8
+      ],
+      "to": [
+        8.2,
+        10,
+        11.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        3,
+        9
+      ],
+      "to": [
+        9,
+        5,
+        9.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#beer_label"
+        },
+        "south": {
+          "texture": "#beer_label"
+        },
+        "east": {
+          "texture": "#beer_label"
+        },
+        "west": {
+          "texture": "#beer_label"
+        },
+        "up": {
+          "texture": "#beer_label"
+        },
+        "down": {
+          "texture": "#beer_label"
+        }
+      }
+    },
+    {
+      "from": [
+        6.9,
+        9.9,
+        9.9
+      ],
+      "to": [
+        8.1,
+        10,
+        11.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_metal"
+        },
+        "south": {
+          "texture": "#dark_metal"
+        },
+        "east": {
+          "texture": "#dark_metal"
+        },
+        "west": {
+          "texture": "#dark_metal"
+        },
+        "up": {
+          "texture": "#dark_metal"
+        },
+        "down": {
+          "texture": "#dark_metal"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        1,
+        2
+      ],
+      "to": [
+        13,
+        7,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        10.8,
+        7,
+        2.8
+      ],
+      "to": [
+        12.2,
+        10,
+        4.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        3,
+        2
+      ],
+      "to": [
+        13,
+        5,
+        2.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#beer_label"
+        },
+        "south": {
+          "texture": "#beer_label"
+        },
+        "east": {
+          "texture": "#beer_label"
+        },
+        "west": {
+          "texture": "#beer_label"
+        },
+        "up": {
+          "texture": "#beer_label"
+        },
+        "down": {
+          "texture": "#beer_label"
+        }
+      }
+    },
+    {
+      "from": [
+        10.9,
+        9.9,
+        2.9
+      ],
+      "to": [
+        12.1,
+        10,
+        4.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_metal"
+        },
+        "south": {
+          "texture": "#dark_metal"
+        },
+        "east": {
+          "texture": "#dark_metal"
+        },
+        "west": {
+          "texture": "#dark_metal"
+        },
+        "up": {
+          "texture": "#dark_metal"
+        },
+        "down": {
+          "texture": "#dark_metal"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        1,
+        9
+      ],
+      "to": [
+        13,
+        7,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        10.8,
+        7,
+        9.8
+      ],
+      "to": [
+        12.2,
+        10,
+        11.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#empty_glass"
+        },
+        "south": {
+          "texture": "#empty_glass"
+        },
+        "east": {
+          "texture": "#empty_glass"
+        },
+        "west": {
+          "texture": "#empty_glass"
+        },
+        "up": {
+          "texture": "#empty_glass"
+        },
+        "down": {
+          "texture": "#empty_glass"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        3,
+        9
+      ],
+      "to": [
+        13,
+        5,
+        9.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#beer_label"
+        },
+        "south": {
+          "texture": "#beer_label"
+        },
+        "east": {
+          "texture": "#beer_label"
+        },
+        "west": {
+          "texture": "#beer_label"
+        },
+        "up": {
+          "texture": "#beer_label"
+        },
+        "down": {
+          "texture": "#beer_label"
+        }
+      }
+    },
+    {
+      "from": [
+        10.9,
+        9.9,
+        9.9
+      ],
+      "to": [
+        12.1,
+        10,
+        11.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark_metal"
+        },
+        "south": {
+          "texture": "#dark_metal"
+        },
+        "east": {
+          "texture": "#dark_metal"
+        },
+        "west": {
+          "texture": "#dark_metal"
+        },
+        "up": {
+          "texture": "#dark_metal"
+        },
+        "down": {
+          "texture": "#dark_metal"
+        }
+      }
+    }
+  ]
+}

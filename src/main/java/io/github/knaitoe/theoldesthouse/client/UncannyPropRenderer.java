@@ -24,6 +24,7 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(UncannyRegistry.FITTING.get(),UncannyPropRenderer::new);}
     @SubscribeEvent public static void setup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e){e.enqueueWork(()->{
         ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.FURNITURE.get(),RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(DomesticRegistry.FITTING.get(),RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.DINER_DOOR.get(),RenderType.cutout());
     });}
     @Override public void render(UncannyPropBlock.Fitting fitting,float partial,PoseStack p,MultiBufferSource buffers,int light,int overlay){
