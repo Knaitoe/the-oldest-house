@@ -43,7 +43,7 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
         switch(state.getValue(UncannyPropBlock.KIND)){
             case FLESH->{box(p,out,0,0,0,16,16,16,FLESH,light,overlay);box(p,out,1,5,0,15,7,1,FLESH,light,overlay);}
             case PAINTED_BOARD->box(p,out,0,0,6,16,16,10,PAINT,light,overlay);
-            case FALSE_DOOR->{if(state.getValue(UncannyPropBlock.STAGE)>=2){p.translate(.05,0,.5);p.mulPose(Axis.YP.rotationDegrees(90));p.translate(-.05,0,-.5);}box(p,out,0,0,6,16,16,10,WOOD,light,overlay);box(p,out,3,2,10,13,14,10.25F,WOOD,light,overlay);if(UncannyClient.mirror())box(p,out,0,0,10.3F,1,16,10.5F,FROST,LightTexture.FULL_BRIGHT,overlay);}
+            case FALSE_DOOR->{if(state.getValue(UncannyPropBlock.STAGE)>=2){box(p,out,0,0,6,16,16,10,BLACK,light,overlay);p.translate(.05,0,.5);p.mulPose(Axis.YP.rotationDegrees(90));p.translate(-.05,0,-.5);}box(p,out,0,0,6,16,16,10,WOOD,light,overlay);box(p,out,3,2,10,13,14,10.25F,WOOD,light,overlay);if(UncannyClient.mirror())box(p,out,0,0,10.3F,1,16,10.5F,FROST,LightTexture.FULL_BRIGHT,overlay);}
             case PAPER,RECEIPT,CLIPBOARD,LEDGER,CLEAVER->{box(p,out,1,0,2,15,.5F,14,state.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.CLEAVER?METAL:PAPER,light,overlay);if(state.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.LEDGER)box(p,out,1,0,2,3,1,14,WOOD,light,overlay);}
             case SCRAWL->{box(p,out,2,3,6,14,15,6.4F,PAPER,light,overlay);}
             case MONITOR->{box(p,out,1,0,2,15,13,14,BLACK,light,overlay);box(p,out,2,2,13.9F,14,11,14.1F,CRT,LightTexture.FULL_BRIGHT,overlay);}

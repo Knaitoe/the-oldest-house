@@ -174,7 +174,16 @@ def furniture():
     out['switchbox']=[p((3,3,10),(13,15,16),'utility'),p((4,4,9),(12,14,10),'steel'),p((8,8,8),(10,12,9),'black')]
     out['workbench']=[p((0,13,0),(16,16,16),'dark_wood'),leg(1,2,'utility',13),leg(13,2,'utility',13),leg(1,12,'utility',13),leg(13,12,'utility',13),p((1,4,3),(15,5,15),'utility')]
     out['tool_rack']=[p((1,2,14),(15,15,16),'dark_wood'),p((3,4,12),(4,12,14),'steel'),p((7,5,12),(8,13,14),'steel'),p((11,3,12),(13,11,14),'steel')]
-    out['mailbox']=[p((0,0,4),(16,16,16),'steel')]+[p((x+1,y+1,3),(x+7,y+7,4),'utility') for x in (0,8) for y in (0,8)]+[p((x+2,y+4,2),(x+6,y+5,3),'black') for x in (0,8) for y in (0,8)]
+    # A real four-compartment shell. The opening must reveal a recess, not the
+    # solid front of the old backing cube. Keep doors and their handles paired.
+    out['mailbox']=[p((0,0,4),(1,16,16),'steel'),p((15,0,4),(16,16,16),'steel'),
+        p((1,0,4),(15,1,16),'steel'),p((1,15,4),(15,16,16),'steel'),
+        p((1,1,15),(15,15,16),'steel'),p((1,1,14),(15,15,15),'black'),
+        p((7,1,4),(9,15,15),'steel'),p((1,7,4),(15,9,15),'steel')]
+    for x in (0,8):
+        for y in (0,8):
+            out['mailbox'] += [p((x+1,y+1,3),(x+7,y+7,4),'utility'),
+                p((x+2,y+4,2),(x+6,y+5,3),'black')]
     out['lobby_bench']=[p((0,7,2),(16,9,15),'dark_wood'),p((0,9,13),(16,15,16),'dark_wood'),leg(2,3,'steel',7),leg(12,3,'steel',7),leg(2,12,'steel',7),leg(12,12,'steel',7)]
     out['drain']=[p((0,0,0),(16,1,16),'steel')]+[p((x,1,2),(x+1,2,14),'black') for x in (3,6,9,12)]
     out['bin']=[p((3,0,3),(13,13,13),'utility'),p((2,13,2),(14,15,14),'steel'),p((5,15,6),(11,16,10),'black')]
@@ -195,7 +204,11 @@ def pieces_for(name,opened):
     elif name=='wardrobe':parts[-2]['from']=[1,1,3];parts[-2]['to']=[2,31,15];parts[-1]['from']=[0,14,10];parts[-1]['to']=[1,18,11]
     elif name=='sideboard':parts[-2]['from']=[1,5,2];parts[-2]['to']=[2,13,14];parts[-1]['from']=[0,8,11];parts[-1]['to']=[1,10,12]
     elif name=='fridge':parts[1]['from']=[0,1,1];parts[1]['to']=[1,22,15];parts[2]['from']=[0,6,12];parts[2]['to']=[2,19,13]
-    elif name=='mailbox':parts[1]['from']=[1,1,4];parts[1]['to']=[2,7,10]
+    elif name=='mailbox':
+        # Ninety degrees about the lower-left door's actual hinge. The handle
+        # moves with the leaf instead of remaining suspended across the opening.
+        parts[8]['from']=[1,1,-3];parts[8]['to']=[2,7,3]
+        parts[9]['from']=[0,4,-2];parts[9]['to']=[1,5,2]
     if name=='fluorescent':
         for part in parts:
             if part['material']=='lamp':part['material']='black'
@@ -221,6 +234,14 @@ def models():
                     uvs={'north':[16-x1,v0,16-x0,v1],'south':[x0,v0,x1,v1],
                          'east':[16-z1,v0,16-z0,v1],'west':[z0,v0,z1,v1],
                          'up':[x0,z0,x1,z1],'down':[x0,16-z1,x1,16-z0]}
+                    if name=='mailbox':
+                        # The swung leaf extends in front of its block. Geometry
+                        # coordinates there are not sprite coordinates: negative
+                        # UVs sample a neighbouring stitched-atlas texture.
+                        w,h,d=x1-x0,high-low,z1-z0
+                        uvs={'north':[0,16-h,w,16],'south':[0,16-h,w,16],
+                             'east':[0,16-h,d,16],'west':[0,16-h,d,16],
+                             'up':[0,0,w,d],'down':[0,0,w,d]}
                     faces={face:{'texture':'#'+part['faces'].get(face,part['material']),'uv':uvs[face]} for face in uvs}
                     if name.startswith('sign_'):
                         for face in ('north','south'):faces[face]['uv']=[0,0,16,16]
