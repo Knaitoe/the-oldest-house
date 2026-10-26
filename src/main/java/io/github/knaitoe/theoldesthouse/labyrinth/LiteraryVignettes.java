@@ -91,7 +91,14 @@ public final class LiteraryVignettes {
         Pages(int id,ServerPlayer p,LabyrinthPlace place,String key,ItemStack book,boolean owned,boolean surface,BlockPos at){super(id,container(book),new SimpleContainerData(1));this.reader=p;this.place=place;this.key=key;this.book=book.copy();this.owned=owned;this.surface=surface;this.at=at;}
         private static Container container(ItemStack s){var c=new SimpleContainer(1);c.setItem(0,s.copy());return c;}
         public ItemStack original(){return book.copy();}
+        private boolean breakfast(){var c=book.get(DataComponents.CUSTOM_DATA);return c!=null&&c.copyTag().getBoolean(UncannyBreakfast.VIEW);}
+        @Override public void clicked(int slot,int button,net.minecraft.world.inventory.ClickType type,Player who){if(!breakfast())super.clicked(slot,button,type,who);}
+        @Override public ItemStack quickMoveStack(Player who,int slot){return breakfast()?ItemStack.EMPTY:super.quickMoveStack(who,slot);}
         @Override public boolean clickMenuButton(Player who,int button){if(who!=reader||!participant(reader)||(surface&&(!inside(reader,place)||reader.distanceToSqr(at.getCenter())>36)))return false;var d=LabyrinthData.get(reader.server);var own=personal(d,reader.getUUID(),place);
+            var menuData=book.get(DataComponents.CUSTOM_DATA);if(menuData!=null&&menuData.copyTag().getBoolean(UncannyBreakfast.VIEW)){
+                if(button>=UncannyBreakfast.ORDER)return UncannyBreakfast.button(reader,book,button);
+                if(button==3)return false;
+            }
             var custom=book.get(DataComponents.CUSTOM_DATA);if(surface&&custom!=null&&custom.copyTag().getBoolean(UncannyReading.VIEW)&&(button==3||button>=400))return UncannyReading.button(reader,place,own,at,book,button);
             if(button==3){if(!surface||!owned||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),place,own);give(reader,book.copy());if(place==LabyrinthPlace.BORRASCA)BorrascaStory.took(reader,key,at);return true;}
             if(!super.clickMenuButton(who,button))return false;if(getPage()==book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1)reached(d,own);return true;}
