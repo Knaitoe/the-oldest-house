@@ -44,6 +44,7 @@ class Look:
     costume: str = ''
     number: int = 0
     scarf: str = ''
+    face_style: str = ''
 
 
 # Each row is a character design, rather than an index into a repeated picture.
@@ -214,9 +215,9 @@ for role,skin in [('father','#a6a28c'),('mother','#b5ada1'),('child','#b8baa2')]
 # The peripheral family's production mesh uses the standard 64x64 human UV,
 # not the older literary family's wider costume atlas. Preserve those originals.
 for index,role in enumerate(('father','mother','child')):
-    LOOKS[f'uncanny_family_{index}']=replace(LOOKS[f'literary_family_{role}_changed'],logical=64)
-LOOKS['uncanny_family_3']=replace(LOOKS['uncanny_family_2'],hair='#332e2b',cut='long',cloth='#777365',pants='#565247',style='dress',sleeve=9)
-LOOKS['uncanny_bent_neck']=Look('#afa99a','#292b29','long','#424641','#424641','dress','#817c6c',eyes='#666c61',age=1,mark='family_mother_changed',sleeve=10,logical=64)
+    LOOKS[f'uncanny_family_{index}']=replace(LOOKS[f'literary_family_{role}_changed'],logical=64,face_style='hollow_'+str(index))
+LOOKS['uncanny_family_3']=replace(LOOKS['uncanny_family_2'],hair='#332e2b',cut='long',cloth='#777365',pants='#565247',style='dress',sleeve=9,face_style='hollow_3')
+LOOKS['uncanny_bent_neck']=Look('#afa99a','#292b29','long','#424641','#424641','dress','#817c6c',eyes='#666c61',age=1,mark='family_mother_changed',sleeve=10,logical=64,face_style='frail')
 
 
 def net(u,v,w,h,d):
@@ -346,7 +347,33 @@ def family_face(look):
     return im
 
 
+def hollow_face(look):
+    # Eight native pixels, deliberate missing/asymmetric features, no teeth or grin.
+    skin=rgb(look.skin);hair=rgb(look.hair)
+    im=Image.new('RGB',(8,8),skin);d=ImageDraw.Draw(im)
+    d.rectangle((0,0,7,1),fill=hair);d.line((0,2,0,6),fill=hair)
+    d.line((7,1,7,5),fill=shade(hair,-9));d.point((1,1),fill=shade(hair,10))
+    d.line((1,4,1,6),fill=shade(skin,-27));d.line((6,4,6,7),fill=shade(skin,-34))
+    dark='#272b29';crease=shade(skin,-52)
+    if look.face_style=='frail':
+        d.line((1,3,2,3),fill=crease);d.line((5,4,6,4),fill=crease)
+        d.line((4,4,4,6),fill=shade(skin,-24));d.point((3,7),fill=dark)
+        d.line((6,1,6,3),fill=hair)
+    else:
+        n=int(look.face_style[-1]);left=(2,3 if n%2==0 else 4);right=(5,4 if n%2==0 else 3)
+        d.point(left,fill=dark);d.line((right[0],right[1],right[0]+1,right[1]),fill=dark)
+        if n in (1,3):d.point((left[0],left[1]+1),fill=crease)
+        d.line((4,4,4,5),fill=shade(skin,-20));d.point((3,5),fill=shade(skin,6))
+        # Mouths are displaced interruptions in a pale plane, never a smiling arc.
+        if n==0:d.line((3,6,3,7),fill=dark)
+        elif n==1:d.line((4,6,5,6),fill=crease)
+        elif n==2:d.point((2,6),fill=dark)
+        else:d.line((4,5,4,7),fill=dark)
+    return im.resize((16,16),Image.Resampling.NEAREST)
+
+
 def face(look):
+    if look.face_style:return hollow_face(look)
     if look.mark.startswith('family_'):return family_face(look)
     im=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(im)
     skin=rgb(look.skin);dark=shade(look.skin,-36);cheek=shade(look.skin,-12)
@@ -417,13 +444,10 @@ def face(look):
         for x,y0,y1 in ((2,4,15),(13,4,15)):d.line((x,y0,x,y1),fill=hair)
         d.line((6,3,6,5),fill=hlo);d.line((11,3,11,5),fill=hlo)
     if look.mark=='diner_split':
-        # The same woman's features remain above a mouth pulled through both cheeks.
-        d.line((2,10,4,11,6,11,8,12,11,11,13,10),fill='#936650')
-        d.polygon([(2,11),(5,11),(7,12),(10,11),(13,11),(14,14),(11,15),(5,15),(1,13)],fill='#442d2b')
-        d.line((2,11,5,12,8,12,11,11,13,11),fill='#c8ae8c')
-        for x,y in ((3,12),(5,12),(8,13),(10,12),(12,12)):d.point((x,y),fill='#e0d0a8')
-        d.line((3,14,6,14,9,15,12,14),fill='#9d6e5d')
-        d.line((1,10,1,12),fill=shade(skin,-31));d.line((14,10,14,13),fill=shade(skin,-31))
+        # A slack, off-axis opening in the same face; no decorative rows of teeth.
+        d.rectangle((5,11,8,15),fill='#382d2b');d.rectangle((7,13,9,15),fill='#382d2b')
+        d.line((4,11,4,14),fill=shade(skin,-28));d.line((10,12,10,15),fill=shade(skin,-36))
+        d.line((5,10,7,10),fill='#967967');d.line((10,14,12,13),fill=shade(skin,-16))
     if look.mark in ('diner_second','diner_split'):
         for x in (3,10):
             d.rectangle((x,7,x+2,8),fill='#718b60')

@@ -71,7 +71,7 @@ public final class UncannySocketProof {
         p.teleportTo(p.server.getLevel(NovelRooms.dimension(place)),b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
     }
     private static void sourceFixture(ServerPlayer p,LabyrinthPlace place,int age){
-        var own=own(p,place);UncannyStories.arrive(p,place,own);own.putBoolean("Read_Source",true);own.putInt("UncannyAge",age);if(place==LabyrinthPlace.SECOND_WAITRESS){own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);}if(place==LabyrinthPlace.TUNNEL_PERIPHERY){own.putBoolean("TunnelStarted127",true);var giant=UncannyStories.actor(p,own,"CastGiant");if(giant!=null)giant.moveTo(Vec3.atBottomCenterOf(LiteraryVignettes.base(p,place).offset(0,0,-4)));}save(p,place,own);
+        var own=own(p,place);UncannyStories.arrive(p,place,own);own.putBoolean("Read_Source",true);own.putInt("UncannyAge",age);if(place==LabyrinthPlace.SECOND_WAITRESS){own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);own.putBoolean("DinerFlow130",true);own.putString("Breakfast130","pancakes");own.putBoolean("DinerRealReturned130",true);}if(place==LabyrinthPlace.TUNNEL_PERIPHERY){own.putBoolean("TunnelStarted127",true);var giant=UncannyStories.actor(p,own,"CastGiant");if(giant!=null)giant.moveTo(Vec3.atBottomCenterOf(LiteraryVignettes.base(p,place).offset(0,0,-4)));}save(p,place,own);
     }
     private static boolean both(ServerPlayer a,ServerPlayer b){return a!=null&&b!=null&&ACKS.contains(a.getUUID())&&ACKS.contains(b.getUUID());}
     /** A stalled native monitor must report what each genuine socket client actually sent. */

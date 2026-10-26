@@ -294,8 +294,10 @@ public final class LabyrinthBuilder {
         DomesticDisturbances.tick(server);
         WallNotesRepairs.tick(server);
         UncannyEnvironmentRepairs.tick(server);
+        UncannyPlaytestRepairs.tick(server);
         UncannyAnatomyUpgrade.tick(server);
         VignetteInteriors.tick(server);
+        PlaytestScenery130.tick(server);
         VignetteHandlingUpgrade.tick(server);
         io.github.knaitoe.theoldesthouse.house.RoomNotes.tick(server);
         ScenePolish.tick(server);

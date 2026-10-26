@@ -197,3 +197,8 @@ for i,path in enumerate(paths):
  x=(i%8)*96;y=(i//8)*118;preview.paste(Image.open(path).convert('RGB').resize((88,88),Image.Resampling.NEAREST),(x+4,y+4));draw.text((x+3,y+94),path.stem[:16],fill=(217,205,181))
 p=ROOT/'art/literary_materials_0436.png';p.parent.mkdir(parents=True,exist_ok=True);preview.save(p)
 print(json.dumps({'prop_variants':len(variants),'keepsakes':len(items),'cast_atlases':len(skins),'recording_seconds':lengths}))
+
+# Preserve the reviewed hollow jar and cabin-only journal after the legacy export.
+from draw_cabin_objects import outputs as cabin_outputs
+for path,data in cabin_outputs().items():
+ path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
