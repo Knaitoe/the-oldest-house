@@ -18,7 +18,13 @@ public final class BackseatArt {
         return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/block/"+path+".png");
     }
     public static void draw(PoseStack p,MultiBufferSource out,int light,int overlay,float door,float wiper){
-        for(var box:BackseatCarMesh.SHELL)box(p,out,box,light,overlay);
+        draw(p,out,light,overlay,door,wiper,true);
+    }
+    static void draw(PoseStack p,MultiBufferSource out,int light,int overlay,float door,float wiper,boolean mirror){
+        draw(p,out,light,overlay,door,wiper,mirror,-1);
+    }
+    static void draw(PoseStack p,MultiBufferSource out,int light,int overlay,float door,float wiper,boolean mirror,float shatter){
+        for(var box:BackseatCarMesh.SHELL)if((mirror||!box.material().equals("mirror"))&&!(shatter>=0&&box.material().equals("glass")&&box.x0()==-17&&box.z0()==-22))box(p,out,box,light,overlay);
         p.pushPose();p.translate(-19/16D,0,-20/16D);p.mulPose(Axis.YP.rotationDegrees(-door*90));p.translate(19/16D,0,20/16D);
         for(var box:BackseatCarMesh.DRIVER_DOOR)box(p,out,box,light,overlay);p.popPose();
         for(var box:BackseatCarMesh.STEERING)box(p,out,box,light,overlay);
@@ -26,6 +32,17 @@ public final class BackseatArt {
             p.pushPose();p.translate(x/16D,25/16D,-22/16D);p.mulPose(Axis.ZP.rotationDegrees(wiper));
             box(p,out,new BackseatCarMesh.Box(0,0,-.6F,1,9,-.2F,"rubber"),light,overlay);p.popPose();
         }
+        if(shatter>=0){float t=Math.min(1,shatter);for(int i=0;i<8;i++){
+            p.pushPose();float x=(i%4*8-12)/16F,y=(27+i/4*4)/16F;
+            p.translate(x*(1-t)-.35F*t,y*(1-t)+(1.3F+(i%3)*.12F)*t,(-21.4F/16)*(1-t)-.05F*t);
+            p.mulPose(Axis.YP.rotationDegrees((i*47+80)*t));p.mulPose(Axis.ZP.rotationDegrees((i*31-80)*t));
+            var shard=out.getBuffer(RenderType.entityCutoutNoCull(texture("glass")));
+            // The window tile is mostly transparent. Sample one of its actual opaque
+            // reflection pixels so a tiny native fragment cannot disappear in an empty UV patch.
+            float u=(i%2==0?6.5F:14.5F)/16,v=(i%2==0?2.5F:10.5F)/16;
+            for(int corner=0;corner<4;corner++)shard.addVertex(p.last(),corner==0||corner==3?-1.5F/16:1.5F/16,corner<2?-2/16F:2/16F,0).setColor(-1).setUv(u,v).setOverlay(overlay).setLight(light).setNormal(p.last(),0,0,1);
+            p.popPose();
+        }}
     }
     private static void box(PoseStack p,MultiBufferSource buffers,BackseatCarMesh.Box b,int light,int overlay){
         var out=buffers.getBuffer(RenderType.entityCutoutNoCull(texture(b.material())));

@@ -24,8 +24,10 @@ public final class BackseatCarRenderer implements BlockEntityRenderer<BackseatCa
         float elapsed=car.clock+Math.max(0,age-car.syncedAt);
         float door=car.phase<BackseatCarBlock.Car.CLOSING?1:car.phase>BackseatCarBlock.Car.CLOSING?0:Math.max(0,1-elapsed/6F);
         float wiper=car.phase<BackseatCarBlock.Car.LOCKED?12+66*(.5F+.5F*(float)Math.sin(age*.13F)):12;
-        p.pushPose();p.translate(.5,0,.5);BackseatArt.draw(p,out,light,overlay,door,wiper);p.popPose();
+        double travel=car.travel+(car.sequenceEnabled&&car.phase==BackseatCarBlock.Car.REVEAL?BackseatCarBlock.Car.SPEED*Math.min(1,Math.max(0,age-car.syncedAt)):0);
+        float shatter=car.phase>=BackseatCarBlock.Car.IMPACT?Math.min(1,elapsed/4): -1;
+        p.pushPose();p.translate(.5,0,.5-travel);BackseatArt.draw(p,out,light,overlay,door,wiper,true,shatter);BackseatMirror.body().draw(p,out,BackseatMirror.cabinLight(light),overlay,BackseatMirror.rise(car,partial));BackseatMirror.draw(p,out,light,overlay);p.popPose();
     }
     @Override public boolean shouldRenderOffScreen(BackseatCarBlock.Car car){return true;}
-    @Override public AABB getRenderBoundingBox(BackseatCarBlock.Car car){var b=car.getBlockPos();return new AABB(b.getX()-3,b.getY(),b.getZ()-3,b.getX()+2,b.getY()+3,b.getZ()+4);}
+    @Override public AABB getRenderBoundingBox(BackseatCarBlock.Car car){var b=car.getBlockPos();return new AABB(b.getX()-3,b.getY(),b.getZ()-3-car.travel-BackseatCarBlock.Car.SPEED,b.getX()+2,b.getY()+3,b.getZ()+4);}
 }
