@@ -220,6 +220,10 @@ def pieces_for(name,opened):
 
 def models():
     result={}
+    # Every native fitting kind needs a baked-state entry, including BE-rendered lights.
+    prop=(ROOT/'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/UncannyPropBlock.java').read_text()
+    names=prop.split('enum Kind implements StringRepresentable {',1)[1].split(';',1)[0]
+    result['blockstates/uncanny_fitting.json']={'variants':{'kind='+name.strip().lower():{'model':'the_oldest_house:block/uncanny_flesh' if name.strip()=='FLESH' else 'the_oldest_house:block/uncanny_fitting'} for name in names.split(',')}}
     for name in FULL:
         result['models/block/uncanny_'+name+'.json']={'parent':'minecraft:block/cube_all','textures':{'all':PREFIX+name}}
         result['blockstates/uncanny_'+name+'.json']={'variants':{'':{'model':'the_oldest_house:block/uncanny_'+name}}}

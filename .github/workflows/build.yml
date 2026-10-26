@@ -1868,7 +1868,7 @@ jobs:
           from pathlib import Path
           assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==22
           log=Path('build/interior-client.log').read_text()
-          assert 'Unable to load model' not in log and 'Missing textures in model' not in log
+          assert 'Unable to load model' not in log and 'Missing textures in model' not in log and 'missing model for variant' not in log
           PY
       - name: Native close-ups and production sounds for every handled state
         env:
@@ -1900,3 +1900,7 @@ jobs:
             build/interior-environment-proof
             build/font-smoke/interior-environments
             build/font-smoke/interior-environments-passed.txt
+            build/font-smoke/native-domestic-*.png
+            build/font-smoke/domestic-assets-passed.txt
+            build/font-smoke/native-diner-breakfasts.png
+            build/font-smoke/diner-assets-passed.txt
