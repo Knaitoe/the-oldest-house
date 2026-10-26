@@ -65,6 +65,19 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_escort") public static void escortDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_taking_walk") public static void takingWalkDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_town") public static void townDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_diagnostics") public static void diagnosticsDone(ServerLevel l){cleanup();}
+
+    @GameTest(template="empty",batch="borrasca_diagnostics")
+    public static void preEntrySocketDiagnosticsNeverGeneratePrivateCoordinatesInEitherDimension(GameTestHelper h){
+        var f=new Fixture(h);var a=NativeTestPlayers.survival(h,"pine_status_a");var b=NativeTestPlayers.survival(h,"pine_status_b");f.players.add(a);f.players.add(b);
+        for(var p:List.of(a,b)){
+            h.assertTrue(BorrascaSites.prepareEntry(p)==null,"the real private site is still queued before entry");
+            var at=f.base(p).offset(-17,12,-206);for(var level:List.of(p.server.overworld(),f.out))h.assertTrue(level.getChunkSource().getChunkNow(at.getX()>>4,at.getZ()>>4)==null,"the site coordinate starts unloaded in "+level.dimension().location());
+        }
+        BorrascaSocketProof.status(a,b,54);
+        for(var p:List.of(a,b)){var at=f.base(p).offset(-17,12,-206);for(var level:List.of(p.server.overworld(),f.out))h.assertTrue(level.getChunkSource().getChunkNow(at.getX()>>4,at.getZ()>>4)==null,"reading diagnostic status must not load or generate a chunk in "+level.dimension().location());}
+        h.succeed();
+    }
 
     @GameTest(template="empty",batch="borrasca_registration")
     public static void oneFixedUnderstandingSourceKeepsThePoolAndOrdinaryRecord(GameTestHelper h){
