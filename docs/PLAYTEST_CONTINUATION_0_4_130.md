@@ -10,6 +10,8 @@ The second remains human until the reader eats. At the occupied booth she delive
 
 Turning is limited per native motion step. Recent cast poses are blended per actual actor/model and frame time, without advancing a second time during a repeated camera render. Remove the marionette's quantized head tick and avoid enlarging the changed waitress's head. Preserve private actors, NPC UUIDs, original visible identities and CCTV skin projection.
 
+The separate production Drisking model also calls the shared smoother after its gait/gesture and joint attachment; it does not pass through the generic cast renderer. Its established continuous gait, skins and head accessories remain.
+
 ## Cellar, tunnel, foyer and child room
 
 Cellar spread adds one frontier cell at a time, substantially slower while cutting. Cut cells wait at least 360 ticks before regrowth, with at most one regrowth per 100-tick interval; old pending cuts receive that grace once. Preserve the cleaver, original key and recovery route, cut history, body exclusions and overrun failure. The worker directs an entering reader to the cleaver and has brief replies; the man speaks sparingly, with a short private rumble and fluid at the base.
@@ -40,4 +42,4 @@ First CI follow-up: all ten interior cases and all four handling cases pass; 22 
 
 Direct scenery review adds the actual quiet room and a native crop of the Last Stop dumpster: 24 interior views in total. Keep those exports in the interior catalog; the established main architecture catalog remains 105 scenes. The two extra captures do not add gameplay cases or Witness sources.
 
-Pixel review of the first successful object page exposed an invisible glow and a blank journal preview. Fireflies now use crossed emissive planes, independent of the camera, and the GPU proof requires visible warm-green glow pixels in each of three pulse samples. The journal preview draws its production baked model explicitly, matching its entity-rendered use in play. Open containers are viewed from their actual fronts.
+Pixel review of the first successful object page exposed an invisible glow and a blank journal preview. Fireflies now use crossed emissive planes, independent of the camera. The GPU proof compares otherwise identical native lights-off/lights-on frames and requires visible changed pixels inside each of three jar samples; both images are saved even on failure. This avoids depending on a specific resulting color under additive blending. The journal preview draws its production baked model explicitly, matching its entity-rendered use in play. Open containers are viewed from their actual fronts.
