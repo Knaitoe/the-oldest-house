@@ -29,6 +29,8 @@ public final class BackseatSites {
     public static CompoundTag state(MinecraftServer s,UUID id){return LabyrinthData.get(s).stateEntry(STATE,id.toString());}
     public static @Nullable BlockPos base(MinecraftServer s,UUID id){var t=state(s,id);var o=HouseSavedData.get(s).houseOrigin();return o==null||!t.contains("Index")?null:new BlockPos(o.getX()+8192+t.getInt("Index")*256,80,o.getZ()-450560);}
     public static boolean inside(ServerPlayer p){var b=base(p.server,p.getUUID());return b!=null&&p.level().dimension().equals(HouseDimensions.OUTSIDE)&&state(p.server,p.getUUID()).getBoolean("Built")&&BackseatRooms.bounds(b).contains(p.position());}
+    public static List<net.minecraft.world.phys.AABB> areas(MinecraftServer s){var out=new ArrayList<net.minecraft.world.phys.AABB>();for(var key:LabyrinthData.get(s).state(STATE).getAllKeys())try{var b=base(s,UUID.fromString(key));if(b!=null)out.add(BackseatRooms.bounds(b));}catch(IllegalArgumentException ignored){}return out;}
+    public static boolean protectedPosition(MinecraftServer s,BlockPos at){return areas(s).stream().anyMatch(box->box.contains(Vec3.atCenterOf(at)));}
     public static @Nullable LabyrinthData.Door entry(ServerPlayer p){return LabyrinthData.get(p.server).door("backseat/"+p.getUUID()+"/entry");}
     public static @Nullable BackseatCarBlock.Car car(ServerPlayer p){var b=base(p.server,p.getUUID());var l=p.server.getLevel(HouseDimensions.OUTSIDE);if(b==null||l==null)return null;var at=b.offset(BackseatRooms.CAR);var chunk=l.getChunkSource().getChunkNow(at.getX()>>4,at.getZ()>>4);return chunk!=null&&chunk.getBlockEntity(at) instanceof BackseatCarBlock.Car c&&c.mine(p)?c:null;}
     public static @Nullable LabyrinthData.Door prepareEntry(ServerPlayer p){

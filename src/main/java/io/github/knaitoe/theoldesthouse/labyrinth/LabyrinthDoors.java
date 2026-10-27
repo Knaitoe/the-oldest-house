@@ -1011,7 +1011,7 @@ public final class LabyrinthDoors {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         if (origin == null) return false;
         if (level.dimension().equals(HouseDimensions.OUTSIDE)) {
-            if(LiteraryCopies.protectedPosition(server,pos)||BorrascaSites.protectedPosition(server,pos))return true;
+            if(LiteraryCopies.protectedPosition(server,pos)||BorrascaSites.protectedPosition(server,pos)||BackseatSites.protectedPosition(server,pos))return true;
             for (LabyrinthPlace place : LabyrinthPlace.values()) if (NovelRooms.outside(place)) {
                 BlockPos base=LabyrinthPlaces.base(origin, place);
                 if (base!=null && IndianLakeRooms.bounds(base, place).contains(Vec3.atCenterOf(pos))) return true;

@@ -505,9 +505,14 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.assertTrue(ElkLot.built(f.data(),b)&&RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.REGISTER)),RoadhouseBlock.Kind.REGISTER)&&RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.BOARD)),RoadhouseBlock.Kind.CORKBOARD)
                 &&l.getBlockState(b.offset(ElkLot.JUKEBOX)).is(Blocks.JUKEBOX)&&RoadhouseBlock.is(l.getBlockState(b.offset(ElkLot.dent())),RoadhouseBlock.Kind.PU_DOOR),"a fresh lot is the bar: its register, its noticeboard, its jukebox and the pickups outside");
         f.at(p,place,-21.5,0,-22.5);f.at(peer,place,-18.5,0,-20.5);
-        h.runAfterDelay(15,()->{
+        var room=place.room();f.chunks.hold(l,new AABB(b.getX()+room.minX()-1,b.getY()+room.minY()-1,b.getZ()+room.minZ()-1,b.getX()+room.maxX()+2,b.getY()+room.maxY()+2,b.getZ()+room.maxZ()+2));
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready()&&ElkLot.loaded(l,b),"the actual bar chunks and native cast sections are resident");
             var world=LiteraryVignettes.shared(f.data(),place);
-            for(var who:ElkLotNight.CAST)h.assertTrue(world.hasUUID(who.key())&&l.getEntity(world.getUUID(who.key())) instanceof LiteraryActor a&&a.phase()==who.phase()&&a.position().distanceToSqr(who.home(b))<.1,who.name()+" is in her or his place with their own skin");
+            for(var who:ElkLotNight.CAST){var original=world.hasUUID(who.key())?l.getEntity(world.getUUID(who.key())):null;
+                h.assertTrue(original instanceof LiteraryActor a&&a.phase()==who.phase()&&a.position().distanceToSqr(who.home(b))<.1,who.name()+" is in her or his place with their own skin; original="+original);}
+        }).thenExecute(()->{
+            var world=LiteraryVignettes.shared(f.data(),place);
             var marla=(LiteraryActor)l.getEntity(world.getUUID(ElkLotNight.MARLA.key()));
             order(p,marla,1);
             h.assertTrue(drinks(p).size()==1&&f.own(p,place).getInt("Tab")==250&&f.own(p,place).getInt("Drinks")==1&&f.own(peer,place).getInt("Tab")==0,"a beer goes on the reader's own tab and nobody else's");
@@ -527,8 +532,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(l.getBlockState(b.offset(ElkLot.POOL_L)).getValue(RoadhouseBlock.STAGE)==1&&l.getBlockState(b.offset(ElkLot.POOL_R)).getValue(RoadhouseBlock.STAGE)==1,"the break scatters the balls across both halves of the table");
             f.click(p,place,ElkLot.BOARD);h.assertTrue(!(p.containerMenu instanceof LiteraryVignettes.Pages),"the clipping is not anyone's yet");
             f.source(p,place);h.assertTrue(f.own(p,place).getBoolean("Read_Source")&&!f.own(peer,place).getBoolean("Read_Source"),"the till receipt by the register is the source, read by its own reader");
-            h.succeed();
-        });
+        }).thenSucceed();
     }
     @AfterBatch(batch="literary_last_stop_bar") public static void lastStopBarDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_last_stop_night",timeoutTicks=1200)
