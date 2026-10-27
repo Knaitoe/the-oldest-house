@@ -14,7 +14,11 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
     private final StalkerRenderer stalker;
     public GoatmanChildRenderer(EntityRendererProvider.Context c){
         super(c,new GoatmanChildModel(c.bakeLayer(GoatmanChildModel.LAYER)),.25F);stalker=new StalkerRenderer(c);
-        addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<>(this,c.getItemInHandRenderer()));
+        addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<GoatmanChild,GoatmanChildModel>(this,c.getItemInHandRenderer()){
+            @Override public void render(com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light,GoatmanChild child,float walk,float amount,float partial,float age,float yaw,float pitch){
+                if(child.showsHeldItems())super.render(poses,buffers,light,child,walk,amount,partial,age,yaw,pitch);
+            }
+        });
         addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<GoatmanChild,GoatmanChildModel>(this){
             @Override public void render(com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light,GoatmanChild child,float walk,float amount,float partial,float age,float yaw,float pitch){
                 if(GoatmanChildEyes.visible(child)){GoatmanChildEyes.render(getParentModel(),poses,buffers);GoatmanWindowClient.disguiseEyesDrawn(child);}
@@ -32,7 +36,7 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
         if(e.stalkingAppearance()&&!e.indoors())light=net.minecraft.client.renderer.LightTexture.pack(Math.max(7,net.minecraft.client.renderer.LightTexture.block(light)),net.minecraft.client.renderer.LightTexture.sky(light));
         if(e.monsterAppearance()){stalker.render(e,yaw,partial,poses,buffers,light);return;}
         float old=e.yBodyRot,previous=e.yBodyRotO;
-        if(!e.enteringWindow()&&!e.crawling()&&!e.stalkingAppearance()&&e.tell(GoatmanVignette.FACE)&&Minecraft.getInstance().player!=null){
+        if(e.showsHeldItems()&&!e.enteringWindow()&&!e.crawling()&&!e.stalkingAppearance()&&e.tell(GoatmanVignette.FACE)&&Minecraft.getInstance().player!=null){
             var at=Minecraft.getInstance().player.position().subtract(e.position());e.yBodyRot=e.yBodyRotO=(float)(Math.atan2(at.z,at.x)*180/Math.PI)-90;
         }
         // A seated child is set on the seat's surface; the bent pose puts its hips there, not its feet.

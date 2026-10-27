@@ -894,6 +894,8 @@ jobs:
           test -s build/font-smoke/native-death-portraits-dim.png
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+          test -s build/font-smoke/native-cousin-sleeping-0134.png
+          test -s build/font-smoke/cousin-sleeping-0134-passed.txt
           test -s build/font-smoke/cousin-gaits-0497-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-cousin-gaits-0497-$page.png; done
           test -s build/font-smoke/streetlights-0469-passed.txt
@@ -1510,7 +1512,7 @@ jobs:
           python3 tools/draw_backseat_materials.py --check
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbackseatArtSmoke --no-daemon
           test -s build/backseat-art/passed.txt
-          for view in front-open rear-open side-closed front-closed door-half rear-quarter driver-forward driver-mirror body-floorboard body-raised body-half-rise driver-reveal mirror-flat mirror-raised driver-impact body-front body-profile body-dim; do test -s build/backseat-art/native-backseat-$view.png; done
+          for view in front-open rear-open side-closed front-closed door-half rear-quarter driver-forward driver-mirror body-floorboard body-raised body-half-rise driver-reveal mirror-flat mirror-raised driver-impact body-front body-profile body-dim dashboard-left dashboard-center dashboard-right; do test -s build/backseat-art/native-backseat-$view.png; done
           test -s build/backseat-art/mirror-pixels.txt
       - name: Native Backseat seat, door, moving impact, House return and original-custody checks
         timeout-minutes: 6
@@ -1673,6 +1675,8 @@ jobs:
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text(), 'A native mod model has a missing texture'"
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+          test -s build/font-smoke/native-cousin-sleeping-0134.png
+          test -s build/font-smoke/cousin-sleeping-0134-passed.txt
           test -s build/font-smoke/cousin-gaits-0497-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-cousin-gaits-0497-$page.png; done
           test -s build/font-smoke/streetlights-0469-passed.txt
@@ -1717,6 +1721,8 @@ jobs:
             build/font-smoke/native-trailer-0465-*.png
             build/font-smoke/trailer-0465-passed.txt
             build/font-smoke/native-cousin-gaits-0497-*.png
+            build/font-smoke/native-cousin-sleeping-0134.png
+            build/font-smoke/cousin-sleeping-0134-passed.txt
             build/font-smoke/cousin-gaits-0497-passed.txt
             build/font-smoke/native-playtest-0468-*.png
             build/font-smoke/playtest-0468-passed.txt

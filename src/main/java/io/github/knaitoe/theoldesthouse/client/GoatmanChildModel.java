@@ -29,6 +29,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     }
     @Override public void setupAnim(GoatmanChild e,float walk,float amount,float age,float yaw,float pitch){
         HumanoidMotion.reset(this);
+        if(e.isSleeping()||e.hasPose(net.minecraft.world.entity.Pose.SLEEPING)){sleepPose(e.sleepPose(),age);return;}
         if(e.enteringWindow()){windowPose(e.windowEntry(age-e.tickCount));return;}
         if(e.crawling()){crawlPose(e.walk(age-e.tickCount)*.78F,Math.min(1,Math.abs(e.speed())/.48F));return;}
         boolean still=e.tell(GoatmanVignette.STILL)&&!e.stalkingAppearance();
@@ -70,6 +71,31 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
             leftElbow.xRot=-.4F-.35F*h;rightElbow.xRot=-.55F-.25F*h;leftKnee.xRot+=.08F*h;rightKnee.xRot+=.12F*h;
         }
         if(attackTime>0&&!seated&&!cower)rightArm.xRot=-1.8F-Mth.sin(attackTime*Mth.PI)*.65F;
+    }
+    /** Native bed rotation lays the spine down. Roll around that spine before connecting the original joints. */
+    public void sleepPose(int variant,float age){
+        HumanoidMotion.reset(this);young=false;float roll=0;
+        switch(Math.floorMod(variant,4)){
+            case 0->{ // Back, hands resting over the stomach, one knee loose.
+                leftArm.xRot=-.35F;rightArm.xRot=-.3F;leftArm.zRot=.15F;rightArm.zRot=-.15F;
+                leftElbow.xRot=-.7F;rightElbow.xRot=-.65F;rightLeg.xRot=-.13F;rightKnee.xRot=.24F;
+            }
+            case 1->{ // Curled on the left side.
+                roll=1.3F;leftLeg.xRot=-.55F;rightLeg.xRot=-.45F;leftKnee.xRot=.95F;rightKnee.xRot=.8F;
+                leftArm.xRot=-1.1F;rightArm.xRot=-.85F;leftElbow.xRot=-1.25F;rightElbow.xRot=-1.05F;head.xRot=.13F;
+            }
+            case 2->{ // Right side, one hand tucked near the cheek.
+                roll=-1.3F;leftLeg.xRot=-.15F;rightLeg.xRot=-.38F;leftKnee.xRot=.3F;rightKnee.xRot=.65F;
+                rightArm.xRot=-2.1F;rightElbow.xRot=-.8F;leftArm.xRot=-.55F;leftElbow.xRot=-1.15F;head.xRot=-.08F;
+            }
+            default->{ // Stomach, face turned and one arm above the pillow.
+                roll=Mth.PI;leftArm.xRot=-2.4F;leftElbow.xRot=-.6F;rightArm.xRot=-.45F;rightElbow.xRot=-.9F;
+                head.yRot=.6F;rightLeg.xRot=-.08F;rightKnee.xRot=.4F;
+            }
+        }
+        body.yRot=roll;leftLeg.yRot=rightLeg.yRot=roll;
+        leftLeg.x=1.9F*Mth.cos(roll);leftLeg.z=-1.9F*Mth.sin(roll);rightLeg.x=-leftLeg.x;rightLeg.z=-leftLeg.z;
+        head.xRot+=.012F*Mth.sin(age*.025F);HumanoidMotion.connect(this);
     }
     public void cowerPose(){pose(0,0,0,false,true,false);}
     public static float ease(float from,float to,float progress){float t=Mth.clamp((progress-from)/(to-from),0,1);return t*t*(3-2*t);}

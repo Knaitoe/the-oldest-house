@@ -89,10 +89,11 @@ public final class GoatmanTests {
     public static void aLateOpenedDoorAndSavedApproachKeepTheSameTwoChildrenInTheExchange(GameTestHelper h){exchange(h,true);}
     private static void exchange(GameTestHelper h,boolean late){
         exchange=new Fixture(h,late?50900:50600);var f=exchange;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        boolean[] started={false},loaded={false};UUID[] impostor={null},runner={null};int[] skin={-1},outAt={-1},inAt={-1},waiting={0},sighting={0};long[] crossed={-1},dark={-1},firstWord={-1};var words=new HashSet<Integer>();
+        boolean[] started={false},loaded={false},fastExit={false};Vec3[] previousExtra={null};UUID[] impostor={null},runner={null};int[] skin={-1},outAt={-1},inAt={-1},waiting={0},sighting={0};long[] crossed={-1},dark={-1},firstWord={-1};var words=new HashSet<Integer>();
         var panes=new HashSet<Long>();var expected=new HashSet<Long>();for(var at:List.of(new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)))expected.add(f.b.offset(at).asLong());
         h.onEachTick(()->{
             if(!started[0])return;var r=f.run();var extra=f.cousin(r.getInt("Wrong")).orElseThrow();var real=f.cousin(r.getInt("Runner"));
+            if(previousExtra[0]!=null&&r.getInt("Phase")==GoatmanVignette.GATHERING&&r.getInt("ExtraState")==GoatmanVignette.X_FIRE&&extra.position().distanceTo(previousExtra[0])>.4)fastExit[0]=true;previousExtra[0]=extra.position();
             h.assertTrue(extra.getUUID().equals(impostor[0])&&extra.skin()==skin[0],"the outgoing figure retains the original saved Goatman body and underlying identity");
             if(outAt[0]<0||inAt[0]<0)h.assertTrue(!extra.stalkingAppearance()&&extra.visibleSkin()==skin[0],"the Goatman is still disguised as the original child throughout the opposing doorway crossing");
             if(real.isPresent()){
@@ -120,6 +121,7 @@ public final class GoatmanTests {
             h.assertTrue(GoatmanVignette.enter(p),"the reader joins the actual fresh evening");var r=f.run();r.putInt("Wrong",late?7:0);r.putInt("Runner",late?0:7);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",1000);r.putInt("SupperAt04123",1001-GoatmanVignette.TABLE_BACK);r.putBoolean("CalledIn04123",true);r.putBoolean("Shut04123",true);r.putBoolean("MealReady0465",true);r.putInt("ExtraState",GoatmanVignette.X_SUPPER);r.putInt("RunnerState",GoatmanVignette.R_AWAY);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.hurry(f.l,f.b);GoatmanWoods.door(f.l,f.b,!late);GoatmanWoods.setWindow(f.l,f.b,true);
             var extra=f.cousin(r.getInt("Wrong")).orElseThrow();impostor[0]=extra.getUUID();skin[0]=extra.skin();h.assertTrue(GoatmanWoods.indoors(f.rel(extra)),"the disguised original begins in the returning child's actual supper seat");started[0]=true;
         }).thenWaitUntil(()->h.assertTrue(inAt[0]>=0&&outAt[0]>=0,"both original bodies physically cross the doorway")).thenWaitUntil(()->h.assertTrue(dark[0]>=0,"night follows the exchange")).thenExecute(()->{
+            h.assertTrue(fastExit[0],"the disguised impostor actually covers more than twice the real runner\'s distance per native tick");
             h.assertTrue(dark[0]-crossed[0]<=GoatmanVignette.DARK_AFTER+3,"the woods go quiet and night falls within seconds of the cousin coming in: "+(dark[0]-crossed[0])+" ticks");
         }).thenWaitUntil(()->h.assertTrue(panes.containsAll(expected),"that same disguised original physically circles and strikes all five separate side panes in the night: "+panes.size()+"/5 clock="+f.run().getInt("Clock"))).thenExecute(()->{
             h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.VIGIL&&(!late||loaded[0]),"all five panes are struck on the night's circuit, including after the saved late-opened exchange");
@@ -430,7 +432,7 @@ public final class GoatmanTests {
                 }else if(r.getInt("ExtraState")==GoatmanVignette.X_WINDOW){
                     h.assertTrue(!c.crawling()&&!c.hasPose(Pose.SWIMMING)&&f.l.noCollision(c),"0.4.121: through the sash it is a cousin again, walking out of the bathroom and up the aisle: "+f.rel(c));crawled[0]|=entered[0]&&f.rel(c).z>-70;
                     if(!crawlSaved[0]&&f.rel(c).z>-70){var at=c.position();var saved=c.saveWithoutId(new CompoundTag());c.load(saved);h.assertTrue(c.getUUID().equals(body[0])&&c.position().distanceToSqr(at)<1e-8&&!c.crawling()&&c.visibleSkin()==admissionSkin[0],"native indoor reload keeps the same walking cousin and physical position");crawlSaved[0]=true;}
-                    if(f.rel(c).z>-70&&!r.getBoolean("BedtimeCalled131"))h.assertTrue(f.cousins().stream().filter(o->o!=c).noneMatch(o->GoatmanVignette.backSpot(o.getPersistentData().getString("Goal"))),"before bedtime, the cousins in the back draw away from it toward the door");
+                    if(f.rel(c).z>-70)h.assertTrue(f.cousins().stream().filter(o->o!=c).noneMatch(o->o.getPersistentData().getString("Goal").startsWith("shy")),"the admitted bedtime scene never runs the retired table-retreat route");
                 }
                 if(r.getInt("ExtraState")==GoatmanVignette.X_FLOOR)rested[0]|=entered[0]&&c.isSleeping()&&!c.enteringWindow()&&!c.crawling();
             });

@@ -58,6 +58,9 @@ public final class GoatmanChild extends PathfinderMob {
     public int fearStage(){return entityData.get(FEAR_STAGE);}
     public void fearStage(int stage){entityData.set(FEAR_STAGE,Math.max(0,Math.min(3,stage)));}
     public int skin(){return entityData.get(SKIN);}
+    /** The saved, synchronized base skin gives each original a stable sleep pose across disguises/reloads. */
+    public int sleepPose(){return Math.floorMod(skin(),4);}
+    public boolean showsHeldItems(){return !isSleeping()&&!hasPose(Pose.SLEEPING);}
     public int visibleSkin(){return entityData.get(DISGUISE)>=0?entityData.get(DISGUISE):skin();}
     public boolean monsterAppearance(){return entityData.get(DISGUISE)==-2;}
     public boolean stalkingAppearance(){return entityData.get(DISGUISE)!=-1;}

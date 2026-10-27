@@ -24,6 +24,7 @@ public final class BackseatCarTests {
     private record CarFixture(LiteraryTests.Fixture f,BlockPos at,ServerPlayer p,ServerPlayer peer){
         BackseatCarBlock.Car car(){return (BackseatCarBlock.Car)f.in.getBlockEntity(at);}
         void place(GameTestHelper h){
+            dashboardClearance(h);
             for(int x=-5;x<=2;x++)for(int z=-4;z<=4;z++)f.in.setBlock(at.offset(x,-1,z),Blocks.STONE.defaultBlockState(),18);
             h.assertTrue(BackseatCarBlock.place(f.in,at,p.getUUID()),"the fresh car is fitted to actual loaded cells: "+java.util.stream.IntStream.range(0,BackseatCarCells.COUNT).mapToObj(i->at.offset(BackseatCarCells.offset(i))).filter(pos->!f.in.hasChunkAt(pos)||!f.in.getBlockState(pos).isAir()).limit(4).map(pos->pos+":"+f.in.hasChunkAt(pos)+":"+f.in.getBlockState(pos)).toList()+" root="+f.in.getBlockEntity(at));
             for(var who:new ServerPlayer[]{p,peer}){who.teleportTo(f.in,at.getX()-2.3,at.getY(),at.getZ()+1,180,0);who.setNoGravity(true);who.setDeltaMovement(Vec3.ZERO);who.connection.resetPosition();}
@@ -35,6 +36,34 @@ public final class BackseatCarTests {
         }
         Vec3 seatPoint(){return at.getCenter().add(-.625,.5,-.2);}
         Vec3 doorPoint(){return at.getCenter().add(-1.1875,.7,0);}
+    }
+    /** No-cull cuboids draw both orientations, so opposite coplanar faces also compete for depth. */
+    private static int competingDashboardFaces(java.util.List<BackseatCarMesh.Box> boxes){
+        int conflicts=0;
+        for(int i=0;i<boxes.size();i++)for(int j=i+1;j<boxes.size();j++){
+            var a=boxes.get(i);var b=boxes.get(j);if(a.material().equals(b.material()))continue;
+            float[] lo={a.x0(),a.y0(),a.z0()},hi={a.x1(),a.y1(),a.z1()},otherLo={b.x0(),b.y0(),b.z0()},otherHi={b.x1(),b.y1(),b.z1()};
+            for(int axis=0;axis<3;axis++){
+                int u=(axis+1)%3,v=(axis+2)%3;
+                if(Math.min(hi[u],otherHi[u])-Math.max(lo[u],otherLo[u])<.0001F||Math.min(hi[v],otherHi[v])-Math.max(lo[v],otherLo[v])<.0001F)continue;
+                for(float face:new float[]{lo[axis],hi[axis]})for(float other:new float[]{otherLo[axis],otherHi[axis]})if(Math.abs(face-other)<.0001F)conflicts++;
+            }
+        }
+        return conflicts;
+    }
+    private static void dashboardClearance(GameTestHelper h){
+        var current=new java.util.ArrayList<>(BackseatCarMesh.DASHBOARD);current.addAll(BackseatCarMesh.STEERING);
+        h.assertTrue(competingDashboardFaces(current)==0,"all actual dashboard and steering faces have separate depth planes");
+        // Reintroduce each reported defect independently: a texture replacement could not satisfy these checks.
+        for(int defect=0;defect<3;defect++){
+            var old=new java.util.ArrayList<>(current);
+            for(int i=0;i<old.size();i++){var q=old.get(i);
+                if(defect==0&&q.material().equals("wood"))old.set(i,new BackseatCarMesh.Box(q.x0(),q.y0(),q.z0(),q.x1(),q.y1(),-16,q.material()));
+                if(defect==1&&q.material().equals("chrome")&&q.x0()==-2)old.set(i,new BackseatCarMesh.Box(q.x0(),q.y0(),-16.7F,q.x1(),q.y1(),q.z1(),q.material()));
+                if(defect==2&&q.material().equals("chrome")&&q.x0()==-11)old.set(i,new BackseatCarMesh.Box(q.x0(),q.y0(),-16,q.x1(),q.y1(),q.z1(),q.material()));
+            }
+            h.assertTrue(competingDashboardFaces(old)>0,"the actual former dashboard defect "+defect+" is detected by the geometry regression");
+        }
     }
     private static CarFixture fixture(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);active=f;var at=f.origin.offset(0,40,-80);

@@ -28,6 +28,9 @@ public final class GoatmanFear {
         "At the table: Wasn't he sitting with us a second ago?"
     };
     private GoatmanFear(){}
+    public static void clearDialogue(CompoundTag run){
+        for(var key:new String[]{"FearLine0472","FearPending0472","FearPendingLease0472","FearQueue0472","FearLease0472"})run.remove(key);
+    }
     public static void begin(CompoundTag run){
         if(run.getBoolean("HorrorStarted0472"))return;
         run.putBoolean("HorrorStarted0472",true);run.putInt("FearAge0472",0);run.putInt("FearNext0472",0);
@@ -103,6 +106,7 @@ public final class GoatmanFear {
         int since=run.getInt("FearAge0472")-run.getInt("FearAtAge0472"),lease=run.contains("FearLease0472")?run.getInt("FearLease0472"):LINE_TICKS;return since>=0?Math.max(0,lease-since):0;
     }
     public static void tick(CompoundTag run,List<GoatmanChild> children,int clock){
+        if(GoatmanBedtime.quiet(run)){clearDialogue(run);return;}
         if(stage(run)==0)return;
         int age=run.getInt("FearAge0472")+1;run.putInt("FearAge0472",age);
         // An occupied age survives the gathering-to-night clock reset and saved-state reload.

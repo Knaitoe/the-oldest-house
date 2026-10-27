@@ -13,13 +13,29 @@ import io.github.knaitoe.theoldesthouse.house.PlaytestLog;
 
 /** A real bed, the original extra child, and the original cousins on the morning trail. */
 public final class GoatmanBedtime {
-    public static final int QUIET_TICKS=160;
+    public static final int QUIET_TICKS=240,TALK_GAP=160,SETTLED=600;
+    private static final Set<UUID> ending=new HashSet<>();
     private GoatmanBedtime(){}
     public static boolean enabled(CompoundTag r){return GoatmanVignette.brisk(r);}
     public static boolean called(CompoundTag r){return enabled(r)&&r.getBoolean("BedtimeCalled131");}
+    public static boolean quiet(CompoundTag r){return enabled(r)&&r.contains("BedQuietAt131")&&r.getInt("Phase")==GoatmanVignette.VIGIL;}
+    private static boolean admitted(CompoundTag r){int x=r.getInt("ExtraState");return x==GoatmanVignette.X_WINDOW||x==GoatmanVignette.X_INSIDE||x==GoatmanVignette.X_FLOOR;}
+    public static boolean locked(ServerPlayer p){return locked(p,GoatmanVignette.run(LabyrinthData.get(p.server)));}
+    private static boolean locked(ServerPlayer p,CompoundTag r){
+        var own=r.getCompound("Cohort").getCompound(p.getUUID().toString());
+        return !ending.contains(p.getUUID())&&GoatmanVignette.inside(p)&&enabled(r)&&r.getInt("Phase")==GoatmanVignette.VIGIL&&admitted(r)&&own.getBoolean("Active")&&!own.getBoolean("Failed")&&own.contains("Bed131");
+    }
+    /** Only the actual vignette conclusion may release a committed reader. Respawn metadata is untouched. */
+    static void wake(ServerPlayer p){ending.add(p.getUUID());try{if(p.isSleeping())p.stopSleepInBed(true,false);}finally{ending.remove(p.getUUID());}}
+    static void restore(ServerPlayer p,CompoundTag r){
+        if(p.isSleeping()||!locked(p,r))return;var head=BlockPos.of(r.getCompound("Cohort").getCompound(p.getUUID().toString()).getLong("Bed131"));
+        if(p.serverLevel().getBlockState(head).getBlock() instanceof BedBlock)p.startSleeping(head);
+    }
     static int bunk(CompoundTag r,int child){int wrong=r.getInt("Wrong");return child==wrong?GoatmanVignette.count(r)-1:child<wrong?child:child-1;}
     static void call(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
-        if(enabled(r)&&!r.contains("BedQuietAt131"))r.putInt("BedQuietAt131",r.getInt("Clock"));
+        if(!enabled(r)||r.contains("BedQuietAt131"))return;
+        r.putInt("BedQuietAt131",r.getInt("Clock"));r.remove("Demand");r.remove("DemandAt");GoatmanFear.clearDialogue(r);
+        for(var p:readers)GoatmanVignette.scene(p,r);
     }
     /** Uses LivingEntity's bed pose directly: it never assigns a respawn position or skips the world's night. */
     public static boolean use(ServerPlayer p,BlockPos b,BlockPos clicked){
@@ -37,7 +53,7 @@ public final class GoatmanBedtime {
         if(r.getInt("Phase")==GoatmanVignette.DAWN&&r.getBoolean("Right")){morning(l,b,r,c,readers);return true;}
         if(!called(r)||r.getInt("Phase")!=GoatmanVignette.VIGIL)return false;
         int i=c.getPersistentData().getInt(GoatmanVignette.INDEX);
-        if(!c.isSleeping()&&r.getInt("Clock")-r.getInt("BedCallAt131")<20+8*bunk(r,i))return false;
+        if(!c.isSleeping()&&r.getInt("Clock")-r.getInt("BedCallAt131")<TALK_GAP*2+8*bunk(r,i))return false;
         if(i==r.getInt("Wrong")){
             int xs=r.getInt("ExtraState");if(xs!=GoatmanVignette.X_INSIDE&&xs!=GoatmanVignette.X_FLOOR)return false;
             if(r.getInt("BedStage131")==0)GoatmanVignette.bunk(c,b,bunk(r,i),l);
@@ -59,14 +75,14 @@ public final class GoatmanBedtime {
             if(!r.contains("BedQuietAt131")||r.getInt("Clock")-r.getInt("BedQuietAt131")<QUIET_TICKS)return;
             r.putBoolean("BedtimeCalled131",true);r.putInt("BedCallAt131",r.getInt("Clock"));r.putInt("BedTalk131",1);
             GoatmanWoods.beds(l,b,GoatmanVignette.count(r)+r.getCompound("Cohort").getAllKeys().size());
-            GoatmanVignette.say(readers,"A cousin: It got bored. Told you it would.");
+            GoatmanVignette.say(readers,"A cousin: I'm not going out there. We've got to stay here.");
         }
         int settling=r.getInt("Clock")-r.getInt("BedCallAt131"),talk=r.getInt("BedTalk131");
-        if(talk==1&&settling>=70){GoatmanVignette.say(readers,"A cousin: Yeah? You sleep by the window, then.");r.putInt("BedTalk131",2);}
-        else if(talk==2&&settling>=140){GoatmanVignette.say(readers,"A cousin: Shut up. Just leave that light on.");r.putInt("BedTalk131",3);}
-        else if(talk==3&&settling>=210){GoatmanVignette.say(readers,"A cousin: If you hear it again... wake me up, okay?");r.putInt("BedTalk131",4);}
+        if(talk==1&&settling>=TALK_GAP){GoatmanVignette.say(readers,"A cousin: Are you sure? What if it comes back?");r.putInt("BedTalk131",2);}
+        else if(talk==2&&settling>=TALK_GAP*2){GoatmanVignette.say(readers,"A cousin: We'll leave as soon as it's light. All of us.");r.putInt("BedTalk131",3);}
+        else if(talk==3&&settling>=TALK_GAP*3){GoatmanVignette.say(readers,"A cousin: Okay. Leave that light on. Please.");r.putInt("BedTalk131",4);}
         var cohort=r.getCompound("Cohort");
-        for(var p:readers){var own=cohort.getCompound(p.getUUID().toString());boolean sleeping=own.contains("Bed131")&&p.getSleepingPos().filter(BlockPos.of(own.getLong("Bed131"))::equals).isPresent();own.putInt("SleepTicks131",sleeping?own.getInt("SleepTicks131")+1:0);cohort.put(p.getUUID().toString(),own);}
+        for(var p:readers){restore(p,r);var own=cohort.getCompound(p.getUUID().toString());boolean sleeping=own.contains("Bed131")&&p.getSleepingPos().filter(BlockPos.of(own.getLong("Bed131"))::equals).isPresent();own.putInt("SleepTicks131",sleeping?own.getInt("SleepTicks131")+1:0);cohort.put(p.getUUID().toString(),own);}
         r.put("Cohort",cohort);
         for(var c:cast)if(c.isSleeping()){c.fear(0);c.fearStage(0);c.cower(false);}
         r.putBoolean("CousinsAsleep131",cast.stream().filter(c->c.getPersistentData().getInt(GoatmanVignette.INDEX)!=r.getInt("Wrong")).allMatch(GoatmanChild::isSleeping));
@@ -82,7 +98,7 @@ public final class GoatmanBedtime {
         if(!target.isSleeping()&&!own.getBoolean("BedsideEnded131")){original.heave(false);original.pose(false);return;}
         int t=r.getInt("BedBeat131");
         switch(stage){
-            case 0->{if(!original.isSleeping()||settling<240)return;rise(original,b,bunk(r,r.getInt("Wrong")));stage=1;t=0;}
+            case 0->{if(!original.isSleeping()||!r.getBoolean("CousinsAsleep131")||r.getInt("BedTalk131")<4||settling<SETTLED)return;rise(original,b,bunk(r,r.getInt("Wrong")));stage=1;t=0;}
             case 1,3->{
                 if(!GoatmanVignette.advance(original,b,.09,l,true))return;
                 original.pose(false);original.heave(true);face(original,target.position());
@@ -102,10 +118,10 @@ public final class GoatmanBedtime {
                 if(t>=16){
                     var d=LabyrinthData.get(l.getServer());GoatmanHaunt.haunt(target,original.visibleSkin(),r.getInt("Tells"));own.putBoolean("BedsideEnded131",true);own.putBoolean("TookItHome",true);
                     cohort=r.getCompound("Cohort");cohort.put(target.getUUID().toString(),own);r.put("Cohort",cohort);
-                    var personal=GoatmanVignette.personal(d,target.getUUID());personal.putBoolean("EncounterEnded131",true);GoatmanVignette.savePersonal(d,target.getUUID(),personal);PlaytestLog.event(target,"goatman_bedside");stage=7;t=0;
+                    PlaytestLog.event(target,"goatman_bedside");stage=7;t=0;
                 }
             }
-            case 7->{if(++t>=30){if(target.isSleeping())target.stopSleepInBed(true,false);r.remove("BedTarget131");stage=8;t=0;}}
+            case 7->{if(++t>=30){r.remove("BedTarget131");stage=8;t=0;}}
             default->{}
         }
         r.putInt("BedStage131",stage);r.putInt("BedBeat131",t);
