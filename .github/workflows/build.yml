@@ -1529,6 +1529,10 @@ jobs:
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbackseatRoadSmoke --no-daemon
           test -s build/backseat-road/passed.txt
           for view in native-road native-approach native-notebook; do test -s build/backseat-road/$view.png; done
+      - name: Two actual Backseat clients, locked-seat reconnect and independent physical impacts
+        timeout-minutes: 13
+        run: |
+          LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expedition.py --backseat-only
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1537,6 +1541,9 @@ jobs:
             build/backseat-art/
             build/backseat-road/
             build/backseat-native.log
+            build/backseat-live-proof/
+            run-backseat-live/*/logs/latest.log
+            run-backseat-live/*/crash-reports/
             run/logs/latest.log
             run/crash-reports/
           if-no-files-found: warn

@@ -65,6 +65,8 @@ public final class BackseatCarBlock extends BaseEntityBlock {
         public @Nullable BackseatSeat seat(){return level instanceof ServerLevel l&&seatId!=null&&l.getEntity(seatId) instanceof BackseatSeat s?s:null;}
         public boolean committed(){return phase>=CLOSING&&phase<RETURNING;}
         public boolean moving(){return sequenceEnabled&&phase>=REVEAL;}
+        /** Shared native movement sample for the rendered body and its actual client-side riding anchor. */
+        public double visualTravel(float partial){double age=level==null?syncedAt:level.getGameTime()+partial;return travel+(sequenceEnabled&&phase==REVEAL?SPEED*Math.min(1,Math.max(0,age-syncedAt)):0);}
         /** A scene may arm the crash only with this actual driver's saved House return. */
         public boolean arm(ServerPlayer p){if(!mine(p)||phase>PARKED)return false;var back=LabyrinthData.get(p.server).peekReturn(p.getUUID());if(back==null||p.server.getLevel(back.dimension())==null)return false;sequenceEnabled=true;sync();return true;}
         public boolean board(ServerPlayer p){
@@ -162,7 +164,7 @@ public final class BackseatCarBlock extends BaseEntityBlock {
             if(phase==SEATED&&p.getVehicle()!=seat){phase=PARKED;clock=0;sync();return;}
             if(committed()&&p.getVehicle()!=seat){if(p.distanceToSqr(seat.position())<36&&!p.isPassenger())p.startRiding(seat,true);return;}
             if(p.getVehicle()!=seat)return;
-            if(phase==CLOSING){clock++;if(clock>=6){if(door(false)){phase=LOCKED;lockYaw=p.getYRot();lockPitch=p.getXRot();play(p,BackseatRegistry.LATCH.get(),.65F);stop(p,"radio");stop(p,"wiper");rattle(p);}else phase=SEATED;clock=0;sync();}}
+            if(phase==CLOSING){clock++;if(clock>=6){if(door(false)){phase=LOCKED;lockYaw=p.getYRot();lockPitch=p.getXRot();play(p,BackseatRegistry.LATCH.get(),.65F);stop(p,"radio");stop(p,"wiper");p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(null,SoundSource.WEATHER));rattle(p);}else phase=SEATED;clock=0;sync();}}
             else if(phase==LOCKED&&turned(p))reveal(p);
             else if(phase==REVEAL){if(sequenceEnabled)drive(p,seat,l);else{clock++;setChanged();}}
             else if(phase==IMPACT){clock++;if(clock>=4)returnHome(p);else setChanged();}

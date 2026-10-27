@@ -31,6 +31,8 @@ public final class BackseatClient {
         return world==mc.level&&approach!=null&&!approach.isRemoved()&&approach.road&&approach.owner!=null&&approach.owner.equals(mc.player.getUUID())&&mc.player.distanceToSqr(approach.getBlockPos().getCenter())<64*64?approach:null;
     }
     private static boolean road(){var car=nearby();return car!=null&&car.road&&car.phase<BackseatCarBlock.Car.DONE;}
+    /** The outside uses the dry void biome; only this reader's open car road receives native precipitation. */
+    public static boolean precipitating(){var car=nearby();return com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()&&car!=null&&car.road&&car.phase<BackseatCarBlock.Car.LOCKED;}
     public static long time(net.minecraft.world.level.Level level,long nativeTime){return level==Minecraft.getInstance().level&&road()?18000:nativeTime;}
     public static float rain(net.minecraft.world.level.Level level,float nativeRain){
         if(level!=Minecraft.getInstance().level)return nativeRain;var car=nearby();if(car==null)return nativeRain;
@@ -50,6 +52,18 @@ public final class BackseatClient {
         if(previous==null)previous=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);
     }
     @SubscribeEvent public static void music(SelectMusicEvent e){if(road())e.setMusic(null);}
+    /** Native vehicle packets can trail the BE's per-tick motion. Use one authoritative
+     * movement sample for this original seat, its driver and the rendered cabin. */
+    @SubscribeEvent public static void frame(net.neoforged.neoforge.client.event.RenderFrameEvent.Pre ignored){
+        var mc=Minecraft.getInstance();
+        if(mc.player==null||mc.level==null||!(mc.player.getVehicle() instanceof BackseatSeat seat)||seat.owner().filter(mc.player.getUUID()::equals).isEmpty())return;
+        var car=seat.car();if(car==null||!car.road||!car.sequenceEnabled||car.phase<BackseatCarBlock.Car.REVEAL||car.phase>BackseatCarBlock.Car.IMPACT)return;
+        var root=seat.root();double travel=car.visualTravel(mc.getTimer().getGameTimeDeltaPartialTick(false));
+        double x=root.getX()+.5,y=root.getY(),z=root.getZ()+.5-travel;
+        seat.setPos(x,y,z);seat.xo=x;seat.yo=y;seat.zo=z;
+        var at=new net.minecraft.world.phys.Vec3(x,y,z).add(io.github.knaitoe.theoldesthouse.labyrinth.BackseatCarMesh.DRIVER);
+        mc.player.setPos(at);mc.player.xo=at.x;mc.player.yo=at.y;mc.player.zo=at.z;
+    }
     @SubscribeEvent public static void music(PlaySoundEvent e){if(road()&&e.getSound()!=null&&e.getSound().getSource()==SoundSource.MUSIC)e.setSound(null);}
     @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(road()){e.setRed(.025F);e.setGreen(.035F);e.setBlue(.04F);}}
     @SubscribeEvent public static void fog(ViewportEvent.RenderFog e){if(road()&&e.getMode()==FogRenderer.FogMode.FOG_TERRAIN){e.setNearPlaneDistance(7);e.setFarPlaneDistance(48);e.setCanceled(true);}}

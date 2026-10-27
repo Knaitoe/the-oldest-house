@@ -33,6 +33,7 @@ bin/
 
 ### Minecraft Modding ###
 run/
+run-backseat-live/
 !**/src/**/run/
 **/src/generated/**/.cache/
 repo/

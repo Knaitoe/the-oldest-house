@@ -68,6 +68,7 @@ public final class BackseatCarTests {
             var packets=NativeTestPlayers.packets(f.p);
             h.assertTrue(packets.stream().anyMatch(packet->packet instanceof net.minecraft.network.protocol.game.ClientboundStopSoundPacket stop&&stop.getName()!=null&&stop.getName().equals(BackseatRegistry.RADIO.getId())),"the actual door-close packet cuts the driver's radio: "+packets.stream().map(packet->packet.getClass().getSimpleName()+(packet instanceof net.minecraft.network.protocol.game.ClientboundStopSoundPacket stop?":"+stop.getName():"")).toList());
             h.assertTrue(packets.stream().anyMatch(packet->packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&sound.getSound().value()==BackseatRegistry.LATCH.get()),"the fitted door has its own original latch cue");
+            h.assertTrue(packets.stream().anyMatch(packet->packet instanceof net.minecraft.network.protocol.game.ClientboundStopSoundPacket stop&&stop.getSource()==net.minecraft.sounds.SoundSource.WEATHER),"locking cuts the driver's actual already-playing rain audio");
             h.assertTrue(NativeTestPlayers.sounds(f.peer).stream().noneMatch(sound->sound.getSound().value().getLocation().getPath().startsWith("backseat.")),"the peer hears none of the driver's private car cues");
             f.p.stopRiding();h.assertTrue(f.p.isPassenger(),"the native dismount event keeps this committed driver in the car");
             var saved=f.car().saveWithoutMetadata(f.f.in.registryAccess());f.car().loadWithComponents(saved,f.f.in.registryAccess());

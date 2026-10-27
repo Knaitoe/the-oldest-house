@@ -173,9 +173,14 @@ public final class StaircaseFire {
         return ItemStack.EMPTY;
     }
     /** A saved visit already deep in the old staircase stays traversable on upgrade. */
+    private static final class LegacyDepth {
+        // The height is independent of manor coordinates. Rebuilding the zero-origin
+        // route for each unsaved first-visit tick evicts the live manor's route cache.
+        private static final int OPEN_BELOW=landings(BlockPos.ZERO).getLast().getY()-4;
+    }
     public static void initialize(CompoundTag record,double y){
         if(record.getBoolean("StairFireVersion"))return;
-        if(y<landings(BlockPos.ZERO).getLast().getY()-4)record.putInt("StairFires",REQUIRED);
+        if(y<LegacyDepth.OPEN_BELOW)record.putInt("StairFires",REQUIRED);
         record.putBoolean("StairFireVersion",true);
     }
     public static boolean tick(ServerPlayer player,BlockPos origin,CompoundTag record){
