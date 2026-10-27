@@ -181,6 +181,7 @@ public final class StaircaseProse {
     // ---------------------------------------------------------------- places and names
 
     private static final Map<String,String> PLACES = new HashMap<>();
+    static { PLACES.put("backseat","the car among the pines"); }
     static {
         String[][] names = {
             {"junction","the junction"},{"gray_corridor","the gray corridor"},{"floorboards","the room of loose boards"},

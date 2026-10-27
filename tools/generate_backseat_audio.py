@@ -102,7 +102,7 @@ def main():
         file = target/(kind+'.ogg')
         event = 'backseat.'+kind
         subtitle = 'subtitles.the_oldest_house.'+event
-        definition = {'subtitle':subtitle,'sounds':[{'name':'the_oldest_house:backseat/'+kind,'attenuation_distance':18}]}
+        definition = {'subtitle':subtitle,'sounds':[{'name':'the_oldest_house:backseat/'+kind,'attenuation_distance':18,**({'preload':True} if kind in ('rise','glass','impact','latch','lock') else {})}]}
         if args.check:
             decoded = subprocess.run(['ffmpeg','-v','error','-i',str(file),'-f','s16le','-ar',str(RATE),'-ac','1','-'],check=True,capture_output=True)
             pcm = np.frombuffer(decoded.stdout,dtype='<i2')

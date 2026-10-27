@@ -48,6 +48,7 @@ jobs:
           python3 tools/draw_vignette_handling.py --check
           python3 tools/draw_domestic_lives.py --check
           python3 tools/draw_diner_breakfasts.py --check
+          python3 tools/draw_vignette_details.py --check
           python3 tools/draw_cabin_objects.py --check
           python3 tools/draw_trailer_furniture.py --check
           python3 tools/draw_site_machines.py --check
@@ -1294,7 +1295,7 @@ jobs:
           from pathlib import Path
           declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/StaircaseAccessTests.java').read_text()))
           completed=re.findall(r'All (\d+) required tests passed',Path('build/staircase-native.log').read_text())
-          assert declared==10 and completed and int(completed[-1])==declared, (completed,declared)
+          assert declared==11 and completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} native staircase entrance cases passed.')
           PY_CHECK
       - name: Upload staircase diagnostics
@@ -1466,7 +1467,7 @@ jobs:
         if: always()
         timeout-minutes: 5
         run: |
-          test "$(find build/uncanny-environment-proof -name '*.json' | wc -l)" = 10
+          test "$(find build/uncanny-environment-proof -name '*.json' | wc -l)" = 11
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannyEnvironmentSmoke --no-daemon
           test -s build/font-smoke/uncanny-environments-passed.txt
           test "$(find build/font-smoke/uncanny-environments -name '*.png' | wc -l)" = 10
@@ -1865,6 +1866,7 @@ jobs:
           python3 tools/draw_vignette_handling.py --check
           python3 tools/draw_domestic_lives.py --check
           python3 tools/draw_diner_breakfasts.py --check
+          python3 tools/draw_vignette_details.py --check
           python3 tools/draw_cabin_objects.py --check
       - name: Native fitting use, original routes and old-save custody
         shell: bash
@@ -1883,6 +1885,20 @@ jobs:
           assert len(list(Path('build/interior-environment-proof').glob('*.json')))==24
           print(f'All {declared} native interior cases passed; the complete suite remains required.')
           PY
+      - name: Native diner, archive, painted sun and retreat follow-up
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_service --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/service-native.log
+          python3 - <<'PY_CHECK'
+          import re
+          from pathlib import Path
+          log=Path('build/service-native.log').read_text()
+          declared=len(re.findall(r'@GameTest\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/ServiceFollowupTests.java').read_text()))
+          completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
+          assert completed and int(completed[-1])==declared
+          assert not re.search(r'[1-9]\d* required tests failed',log)
+          PY_CHECK
       - name: Native object-specific keys, slides, model kit and tape transport
         shell: bash
         run: |
@@ -1937,6 +1953,7 @@ jobs:
         with:
           name: interior-review-${{ github.sha }}
           path: |
+            build/service-native.log
             build/interior-native.log
             build/interior-client.log
             build/handling-native.log

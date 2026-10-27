@@ -662,6 +662,150 @@
         "custom_model_data": 4
       },
       "model": "the_oldest_house:item/diner/grits"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 11
+      },
+      "model": "the_oldest_house:item/diner/pancakes_bite_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 12
+      },
+      "model": "the_oldest_house:item/diner/waffles_bite_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13
+      },
+      "model": "the_oldest_house:item/diner/eggs_cheese_bite_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 14
+      },
+      "model": "the_oldest_house:item/diner/grits_bite_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 21
+      },
+      "model": "the_oldest_house:item/diner/pancakes_bite_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 22
+      },
+      "model": "the_oldest_house:item/diner/waffles_bite_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 23
+      },
+      "model": "the_oldest_house:item/diner/eggs_cheese_bite_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 24
+      },
+      "model": "the_oldest_house:item/diner/grits_bite_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 31
+      },
+      "model": "the_oldest_house:item/diner/pancakes_bite_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 32
+      },
+      "model": "the_oldest_house:item/diner/waffles_bite_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 33
+      },
+      "model": "the_oldest_house:item/diner/eggs_cheese_bite_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 34
+      },
+      "model": "the_oldest_house:item/diner/grits_bite_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 41
+      },
+      "model": "the_oldest_house:item/diner/pancakes_bite_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 42
+      },
+      "model": "the_oldest_house:item/diner/waffles_bite_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 43
+      },
+      "model": "the_oldest_house:item/diner/eggs_cheese_bite_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 44
+      },
+      "model": "the_oldest_house:item/diner/grits_bite_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 51
+      },
+      "model": "the_oldest_house:item/diner/pancakes_bite_5"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 52
+      },
+      "model": "the_oldest_house:item/diner/waffles_bite_5"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 53
+      },
+      "model": "the_oldest_house:item/diner/eggs_cheese_bite_5"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 54
+      },
+      "model": "the_oldest_house:item/diner/grits_bite_5"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 61
+      },
+      "model": "the_oldest_house:item/diner/pancakes_bite_6"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 62
+      },
+      "model": "the_oldest_house:item/diner/waffles_bite_6"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 63
+      },
+      "model": "the_oldest_house:item/diner/eggs_cheese_bite_6"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 64
+      },
+      "model": "the_oldest_house:item/diner/grits_bite_6"
     }
   ]
 }

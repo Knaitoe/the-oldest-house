@@ -32,7 +32,15 @@ public final class CellarDialogue {
         if(UncannyCellar.carriesKey(p)&&!own.getBoolean("Completed")&&!UncannyStories.failed(own)){own.putBoolean("Helped",true);own.putBoolean("KeyRecovered131",true);UncannyStories.ready(p,LabyrinthPlace.LAYERED_MAN,own,"retrieved_the_cellar_key");}
         if(p.getY()<b.getY()-3&&p.getZ()<b.getZ()-13)own.putBoolean("CellarWorkedBelow131",true);
         if(own.getBoolean("CellarWorkedBelow131")&&p.getY()>=b.getY()-3&&p.getZ()>b.getZ()-13&&!shared.getBoolean("Eradicated131")&&now>=own.getLong("NextLeavePlea131")){
-            own.putBoolean("CellarWorkedBelow131",false);own.putLong("NextLeavePlea131",now+400);p.displayClientMessage(Component.literal("“Don't go. Please. He'll keep growing. I can't do this alone.”"),false);
+            own.putBoolean("CellarWorkedBelow131",false);own.putLong("NextLeavePlea131",now+400);own.putLong("RetreatPleaAt133",now);own.putDouble("RetreatPleaZ133",p.getZ());own.putInt("RetreatPleaStage133",1);p.displayClientMessage(Component.literal("“Come back. Please. I can't do this alone.”"),false);
+        }
+        int plea=own.getInt("RetreatPleaStage133");
+        if(plea>0&&!shared.getBoolean("Eradicated131")&&!shared.getBoolean("Rescued")&&!own.getBoolean("Completed")){
+            if(p.getY()<b.getY()-3||p.getZ()<b.getZ()-14)own.remove("RetreatPleaStage133");
+            else if(now-own.getLong("RetreatPleaAt133")>=(plea==1?45:110)&&p.getZ()>own.getDouble("RetreatPleaZ133")+(plea==1?1.25:3.0)){
+                p.displayClientMessage(Component.literal(plea==1?"“Please! ...please.”":"“Don't leave me here. Please.”"),false);
+                if(plea==1)own.putInt("RetreatPleaStage133",2);else own.remove("RetreatPleaStage133");
+            }
         }
     }
     public static void cut(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own,CompoundTag shared){

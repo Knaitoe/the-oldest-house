@@ -34,7 +34,7 @@ public final class UncannyRegistry {
     public static final DeferredBlock<CarpetBlock> PARLOR_RUG=BLOCKS.registerBlock("uncanny_parlor_rug",CarpetBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GREEN_CARPET).noLootTable());
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     static {
-        for(String name:new String[]{"diner_wall","diner_dado","diner_tile","roof","asphalt","pavement","parlor_paper","dark_wood","bedroom_paper","workshop_wall","workshop_floor","lobby_wall","courtyard_wall","cellar_brick","cellar_floor","cellar_plaster"})
+        for(String name:new String[]{"diner_wall","diner_dado","diner_tile","roof","asphalt","pavement","parlor_paper","dark_wood","bedroom_paper","workshop_wall","workshop_floor","lobby_wall","courtyard_wall","cellar_brick","cellar_floor","cellar_plaster","bathroom_wall","bathroom_floor"})
             MATERIALS.put(name,BLOCKS.registerSimpleBlock("uncanny_"+name,BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_TERRACOTTA).strength(1.2F).noLootTable()));
     }
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}

@@ -50,6 +50,7 @@ public final class UncannyEnvironmentTests {
             try{
                 export(f,LabyrinthPlace.SECOND_WAITRESS,"second_waitress_interior",-10,10,-32,-3,-1,4,true,0,0);
                 export(f,LabyrinthPlace.SECOND_WAITRESS,"second_waitress_exterior",-16,26,-43,0,-1,7,false,0,0);
+                export(f,LabyrinthPlace.SECOND_WAITRESS,"second_waitress_bathroom",10,15,-28,-21,-1,3,true,0,0);
                 export(f,LabyrinthPlace.SECOND_WAITRESS,"second_waitress_kitchen",-10,10,-32,-25,-1,4,true,0,0);
                 export(f,LabyrinthPlace.PAINTED_INTERIOR,"painted_interior",-8,8,-28,-7,-1,4,true,0,-15);
                 export(f,LabyrinthPlace.TUNNEL_PERIPHERY,"tunnel_periphery",-3,3,-40,-1,-1,2,true,0,0);
