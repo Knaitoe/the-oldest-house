@@ -48,6 +48,7 @@ public final class BackseatCarBlock extends BaseEntityBlock {
     public static final class Car extends BlockEntity {
         public static final int PARKED=0,SEATED=1,CLOSING=2,LOCKED=3,REVEAL=4,IMPACT=5,RETURNING=6,DONE=7;
         public static final double SPEED=1.78816D; // 80 mph at twenty native ticks per second
+        public static final int ACCELERATION_TICKS=72,IMPACT_HOLD_TICKS=36;
         public @Nullable UUID owner,seatId;
         public int phase=PARKED,clock;
         public double travel;
@@ -66,7 +67,9 @@ public final class BackseatCarBlock extends BaseEntityBlock {
         public boolean committed(){return phase>=CLOSING&&phase<RETURNING;}
         public boolean moving(){return sequenceEnabled&&phase>=REVEAL;}
         /** Shared native movement sample for the rendered body and its actual client-side riding anchor. */
-        public double visualTravel(float partial){double age=level==null?syncedAt:level.getGameTime()+partial;return travel+(sequenceEnabled&&phase==REVEAL?SPEED*Math.min(1,Math.max(0,age-syncedAt)):0);}
+        public static double speed(double tick){double q=Mth.clamp(tick/ACCELERATION_TICKS,0,1);return SPEED*(.02+.98*q*q*q);}
+        public float acceleration(float partial){double age=level==null?syncedAt:level.getGameTime()+partial;return Mth.clamp((clock+(float)Math.min(1,Math.max(0,age-syncedAt)))/ACCELERATION_TICKS,0,1);}
+        public double visualTravel(float partial){double age=level==null?syncedAt:level.getGameTime()+partial;return travel+(sequenceEnabled&&phase==REVEAL?speed(clock)*Math.min(1,Math.max(0,age-syncedAt)):0);}
         /** A scene may arm the crash only with this actual driver's saved House return. */
         public boolean arm(ServerPlayer p){if(!mine(p)||phase>PARKED)return false;var back=LabyrinthData.get(p.server).peekReturn(p.getUUID());if(back==null||p.server.getLevel(back.dimension())==null)return false;sequenceEnabled=true;sync();return true;}
         public boolean board(ServerPlayer p){
@@ -130,19 +133,20 @@ public final class BackseatCarBlock extends BaseEntityBlock {
             play(p,BackseatRegistry.RISE.get(),.8F);sync();
         }
         private void crash(ServerPlayer p){
-            phase=IMPACT;clock=0;for(String kind:new String[]{"radio","idle","wiper"})stop(p,kind);
-            play(p,BackseatRegistry.GLASS.get(),1);play(p,BackseatRegistry.IMPACT.get(),1);
-            io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(0,40,0));sync();
+            phase=IMPACT;clock=0;for(String kind:new String[]{"radio","idle","wiper","wind"})stop(p,kind);
+            play(p,BackseatRegistry.GLASS.get(),1.5F);play(p,BackseatRegistry.IMPACT.get(),2.5F);
+            io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(4,50,0));sync();
         }
         private void drive(ServerPlayer p,BackseatSeat seat,ServerLevel l){
             // The rendered car and actual rider advance together. Native blocks, rather than a
             // countdown or travelled-distance threshold, determine the impact.
-            var swept=new AABB(worldPosition.getX()-.9,worldPosition.getY()+.125,worldPosition.getZ()-2.35-travel-SPEED,
+            double step=speed(clock);
+            var swept=new AABB(worldPosition.getX()-.9,worldPosition.getY()+.125,worldPosition.getZ()-2.35-travel-step,
                     worldPosition.getX()+1.9,worldPosition.getY()+2.38,worldPosition.getZ()+3.2-travel);
             for(var at:BlockPos.betweenClosed(BlockPos.containing(swept.minX,swept.minY,swept.minZ),BlockPos.containing(swept.maxX,swept.maxY,swept.maxZ)))
                 if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))return;
             if(l.getBlockCollisions(null,swept).iterator().hasNext()){crash(p);return;}
-            travel+=SPEED;clock++;seat.setPos(worldPosition.getX()+.5,worldPosition.getY(),worldPosition.getZ()+.5-travel);
+            travel+=step;clock++;seat.setPos(worldPosition.getX()+.5,worldPosition.getY(),worldPosition.getZ()+.5-travel);
             seat.positionRider(p);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();sync();
         }
         private void returnHome(ServerPlayer p){
@@ -167,7 +171,7 @@ public final class BackseatCarBlock extends BaseEntityBlock {
             if(phase==CLOSING){clock++;if(clock>=6){if(door(false)){phase=LOCKED;lockYaw=p.getYRot();lockPitch=p.getXRot();play(p,BackseatRegistry.LATCH.get(),.65F);stop(p,"radio");stop(p,"wiper");p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(null,SoundSource.WEATHER));rattle(p);}else phase=SEATED;clock=0;sync();}}
             else if(phase==LOCKED&&turned(p))reveal(p);
             else if(phase==REVEAL){if(sequenceEnabled)drive(p,seat,l);else{clock++;setChanged();}}
-            else if(phase==IMPACT){clock++;if(clock>=4)returnHome(p);else setChanged();}
+            else if(phase==IMPACT){clock++;if(clock>=IMPACT_HOLD_TICKS)returnHome(p);else setChanged();}
         }
         public void sync(){setChanged();if(level instanceof ServerLevel){syncedAt=level.getGameTime();level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),Block.UPDATE_CLIENTS);}}
         @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);if(owner!=null)t.putUUID("Driver",owner);if(seatId!=null)t.putUUID("Seat",seatId);t.putInt("Phase",phase);t.putInt("Clock",clock);t.putBoolean("Sequence",sequenceEnabled);t.putDouble("Travel",travel);t.putBoolean("Road",road);t.putBoolean("NotebookCreated",notebookCreated);if(!notebook.isEmpty())t.put("Notebook",notebook.save(r));t.putFloat("LockYaw",lockYaw);t.putFloat("LockPitch",lockPitch);t.putLong("SyncedAt",level==null?syncedAt:level.getGameTime());}

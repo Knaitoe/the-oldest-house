@@ -4,6 +4,7 @@
   "package": "io.github.knaitoe.theoldesthouse.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "BackseatCameraMixin",
     "HouseFontMixin",
     "HouseSceneClockMixin",
     "HouseSceneSkyMixin",

@@ -97,9 +97,10 @@ try:
             p.wait(timeout=90)
             assert p.returncode == 0, p.returncode
         for role in ("A", "B"):
-            for view in ("rainy-approach", "standing-before-lock", "seated", "locked", "locked-reconnected", "reveal", "house-return", "mirror-before", "mirror-raised"):
+            for view in ("rainy-approach", "standing-before-lock", "seated", "locked", "locked-reconnected", "reveal", "acceleration", "house-return", "mirror-before", "mirror-raised"):
                 assert (report / f"{role}-{view}.png").stat().st_size > 100, (role, view)
             assert (report / f"{role}-mirror-pixels.txt").stat().st_size > 40, role
+            assert (report / f"{role}-speed-camera.txt").stat().st_size > 40, role
         for name in ("A-notebook.png", "A-notebook-kept.png", "B-notebook-unread.png", "B-locked-before-reconnect.png", "B-peer-still-locked.png", "A-peer-still-home.png", "reconnect-originals.txt", "peer-independent.txt"):
             assert (report / name).stat().st_size > 40, name
         native_log = (server / "logs/latest.log").read_text(errors="replace")
