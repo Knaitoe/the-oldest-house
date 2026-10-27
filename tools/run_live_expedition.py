@@ -12,9 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 borrasca_only = "--borrasca-only" in sys.argv[1:]
 uncanny_only = "--uncanny-only" in sys.argv[1:]
-proof_flags = ["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else [])
-proof_root = ROOT / ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live"))
-report = ROOT / ("build/uncanny-live-proof" if uncanny_only else ("build/borrasca-live-proof" if borrasca_only else "build/live-proof"))
+backseat_only = "--backseat-only" in sys.argv[1:]
+proof_flags = ["-PbackseatSocketSmoke"] if backseat_only else (["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else []))
+proof_root = ROOT / ("run-backseat-live" if backseat_only else ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live")))
+report = ROOT / ("build/backseat-live-proof" if backseat_only else ("build/uncanny-live-proof" if uncanny_only else ("build/borrasca-live-proof" if borrasca_only else "build/live-proof")))
+if backseat_only and ((proof_root / "server/world/level.dat").exists() or any((report / name).exists() for name in ("passed.txt", "failed.txt", "restart-b.txt"))):
+    raise SystemExit("Backseat proof requires a fresh isolated world and report. Preserve the previous run-backseat-live and build/backseat-live-proof folders elsewhere before rerunning.")
 report.mkdir(parents=True, exist_ok=True)
 server = proof_root / "server"
 server.mkdir(parents=True, exist_ok=True)
@@ -86,6 +89,24 @@ try:
     # The expedition itself still requires both live clients together.
     wait_for(lambda: "joined the game" in (server / "logs/latest.log").read_text(errors="replace"), 180, "first native client window and socket login")
     second = launch("runProofB", "client-b-first")
+    if backseat_only:
+        wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "two physical Backseat entries, private weather/audio, notebook, native locks and actual logout")
+        reconnected = launch("runProofB", "client-b-reconnected")
+        wait_for(lambda: (report / "passed.txt").exists(), 360, "same-profile original locked seat, native mirror reveals, independent tree impacts and confirmed House returns")
+        for p in processes:
+            p.wait(timeout=90)
+            assert p.returncode == 0, p.returncode
+        for role in ("A", "B"):
+            for view in ("rainy-approach", "standing-before-lock", "seated", "locked", "locked-reconnected", "reveal", "house-return", "mirror-before", "mirror-raised"):
+                assert (report / f"{role}-{view}.png").stat().st_size > 100, (role, view)
+            assert (report / f"{role}-mirror-pixels.txt").stat().st_size > 40, role
+        for name in ("A-notebook.png", "A-notebook-kept.png", "B-notebook-unread.png", "B-locked-before-reconnect.png", "B-peer-still-locked.png", "A-peer-still-home.png", "reconnect-originals.txt", "peer-independent.txt"):
+            assert (report / name).stat().st_size > 40, name
+        native_log = (server / "logs/latest.log").read_text(errors="replace")
+        assert "Seeding the house interior in the background." not in native_log
+        assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
+        print((report / "passed.txt").read_text(), flush=True)
+        raise SystemExit(0)
     if uncanny_only:
         wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "both actual clients' native bedroom actions and four CCTV feeds")
         reconnected = launch("runProofB", "client-b-reconnected")

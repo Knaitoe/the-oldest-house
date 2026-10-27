@@ -444,6 +444,13 @@ public final class VignetteAnimationTests {
     @GameTest(template="empty",batch="literary_costume_still",timeoutTicks=420)
     public static void theThirteenthWitchHoldsStillWhileWatchedAndHuntsOnlyOnceTheLightsAreOut(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_judge",place);var peer=f.player("costume_peer",place);var b=f.base(place);
+        var room=place.room();
+        f.chunks.hold(f.out,new net.minecraft.world.phys.AABB(b.getX()+room.minX(),b.getY()+room.minY(),b.getZ()+room.minZ(),b.getX()+room.maxX()+1,b.getY()+room.maxY()+1,b.getZ()+room.maxZ()+1));
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"the contest's actual native entity sections are resident");
+            for(var who:CostumeNight.EVERYONE)h.assertTrue(CostumeNight.cast(f.out,who)!=null,"the original contestant has loaded: "+who.name());
+            h.assertTrue(CostumeNight.witch(f.out)!=null,"the original thirteenth witch has loaded");
+        }).thenExecute(()->{
         f.at(p,place,13.5,0,-23.5);f.at(peer,place,.5,0,-4);final int[] stage={0};final Vec3[] still={null};final double[] reach={0};
         h.onEachTick(()->{var witch=CostumeNight.witch(f.out);if(witch==null)return;lookUp(peer);
             // She may strike and go straight back to the very spot she waited in, so measure how far she came, not where she ends.
@@ -465,7 +472,8 @@ public final class VignetteAnimationTests {
         h.runAfterDelay(175,()->{var witch=CostumeNight.witch(f.out);
             h.assertTrue(reach[0]>1&&p.getHealth()<20&&f.own(p,place).getBoolean("Struck0503"),"the moment nobody looks she comes, fast, and strikes the reader unseen: health="+p.getHealth()+" came="+reach[0]);
             p.setHealth(20);f.at(p,place,.5,0,-60.5);});
-        h.runAfterDelay(300,()->{h.assertTrue(p.getHealth()==20&&peer.getHealth()==20,"on the park grass, and where she cannot come by the entrance, nobody is hurt");h.succeed();});
+        h.runAfterDelay(300,()->{h.assertTrue(p.getHealth()==20&&peer.getHealth()==20,"on the park grass, and where she cannot come by the entrance, nobody is hurt");h.succeed();TheOldestHouse.LOGGER.info("COSTUME NATIVE PASS: original cast, watched stillness, unseen strike and living-grass refuge");});
+        });
     }
     @AfterBatch(batch="literary_costume_still") public static void costumeStillDone(ServerLevel l){close();}
 

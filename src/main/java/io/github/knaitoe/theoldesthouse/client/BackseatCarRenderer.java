@@ -24,7 +24,7 @@ public final class BackseatCarRenderer implements BlockEntityRenderer<BackseatCa
         float elapsed=car.clock+Math.max(0,age-car.syncedAt);
         float door=car.phase<BackseatCarBlock.Car.CLOSING?1:car.phase>BackseatCarBlock.Car.CLOSING?0:Math.max(0,1-elapsed/6F);
         float wiper=car.phase<BackseatCarBlock.Car.LOCKED?12+66*(.5F+.5F*(float)Math.sin(age*.13F)):12;
-        double travel=car.travel+(car.sequenceEnabled&&car.phase==BackseatCarBlock.Car.REVEAL?BackseatCarBlock.Car.SPEED*Math.min(1,Math.max(0,age-car.syncedAt)):0);
+        double travel=car.visualTravel(partial);
         float shatter=car.phase>=BackseatCarBlock.Car.IMPACT?Math.min(1,elapsed/4): -1;
         p.pushPose();p.translate(.5,0,.5-travel);BackseatArt.draw(p,out,light,overlay,door,wiper,true,shatter);if(!car.notebook.isEmpty())BackseatArt.notebook(p,out,light,overlay);BackseatMirror.body().draw(p,out,BackseatMirror.cabinLight(light),overlay,BackseatMirror.rise(car,partial));BackseatMirror.draw(p,out,light,overlay);p.popPose();
     }

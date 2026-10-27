@@ -30,8 +30,9 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 def borrascaSocketSmoke = providers.gradleProperty('borrascaSocketSmoke').isPresent()
 def uncannySocketSmoke = providers.gradleProperty('uncannySocketSmoke').isPresent()
-def proofRoot = uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
-def proofReport = uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
+def backseatSocketSmoke = providers.gradleProperty('backseatSocketSmoke').isPresent()
+def proofRoot = backseatSocketSmoke ? 'run-backseat-live' : uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
+def proofReport = backseatSocketSmoke ? 'build/backseat-live-proof' : uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
 
 neoForge {
     version = project.neo_version
@@ -144,6 +145,7 @@ neoForge {
             systemProperty 'the_oldest_house.liveProof', 'true'
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.borrascaSocketSmoke', borrascaSocketSmoke.toString()
+            systemProperty 'the_oldest_house.backseatSocketSmoke', backseatSocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofDir', project.file(proofReport).absolutePath
         }
         proofA {
@@ -153,6 +155,7 @@ neoForge {
             systemProperty 'the_oldest_house.liveProof', 'true'
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'A'
+            systemProperty 'the_oldest_house.backseatSocketSmoke', backseatSocketSmoke.toString()
             // Each client extracts LWJGL's natives to its own folder; two clients starting together
             // in the shared temp folder can find a half-written library.
             systemProperty 'org.lwjgl.system.SharedLibraryExtractPath', project.file("${proofRoot}/natives-a").absolutePath
@@ -166,6 +169,7 @@ neoForge {
             systemProperty 'the_oldest_house.liveProof', 'true'
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'B'
+            systemProperty 'the_oldest_house.backseatSocketSmoke', backseatSocketSmoke.toString()
             systemProperty 'org.lwjgl.system.SharedLibraryExtractPath', project.file("${proofRoot}/natives-b").absolutePath
             systemProperty 'the_oldest_house.liveProofDir', project.file(proofReport).absolutePath
             programArguments.addAll '--username', 'OTHProofB', '--quickPlayMultiplayer', '127.0.0.1:25578', '--width', '960', '--height', '640'
