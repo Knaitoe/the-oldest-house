@@ -90,7 +90,7 @@ public final class SceneVisualProof extends Screen {
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
         if(++s.index<s.files.size())s.load();else{
             if(s.interiors){Files.writeString(Path.of("../build/font-smoke/interior-environments-passed.txt"),"Fourteen actual native rooms, four floor-specific cutaways, four selected empty domestic extensions, the quiet room and the steel dumpster. Full bright architecture views; not a lighting proof.\n");mc.setScreen(new DomesticAssetProof());return;}
-            if(s.environment){Files.writeString(Path.of("../build/font-smoke/uncanny-environments-passed.txt"),"Ten native room, kitchen, exterior and floor-specific cutaways rendered with shipped textures and collision-authored models. Full-bright views; not a lighting proof.\n");mc.setScreen(new UncannyAssetProof());return;}
+            if(s.environment){Files.writeString(Path.of("../build/font-smoke/uncanny-environments-passed.txt"),"Eleven native room, kitchen, bathroom, exterior and floor-specific cutaways rendered with shipped textures and collision-authored models. Full-bright views; not a lighting proof.\n");mc.setScreen(new UncannyAssetProof());return;}
             Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All "+s.files.size()+" native generated architecture views rendered successfully, including the 99 earlier views and all six uncanny rooms.\n");
             TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: {} native architecture screenshots saved",s.files.size());mc.setScreen(new OutsideSkyProof());
         }

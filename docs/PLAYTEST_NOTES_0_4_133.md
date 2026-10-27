@@ -24,4 +24,8 @@ A broader prior run completed 68 cases with one stale fixture: it still opened d
 
 The earlier staircase CI failure was a stale expected declaration count (10 instead of the 11 passing native cases). Backseat collision cues now preload to prevent decoding latency on slow clients. Actual audio samples are unchanged and the generator check remains required.
 
+The first 0.4.133 CI exploration run on cabeafe3 passed 54 of 55 cases. Its remaining map assertion still expected 105 slots ending at 104, predating Backseat's appended slot 105. The corrected assertion requires 106 unique slots and explicitly pins every scene from Three Fingers at 94 through Backseat at 105; hazard depth, route stability and pacing checks remain. All 55 native exploration cases pass locally after correction, including clean server shutdown.
+
+The client job produced all eleven scene JSON exports and matching native PNGs, including the new bathroom, and completed all nine uncanny asset pages. Its shell check still required ten rendered PNGs. Both scene-count checks now require eleven; the completion text names the bathroom. The actual bathroom and kitchen GPU cutaways were inspected. Full CI on the correction remains pending.
+
 The Silo and the separate complicity-hallway structural rewrite remain unfinished; this update does not claim otherwise.
