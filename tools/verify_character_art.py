@@ -64,6 +64,8 @@ def main():
                 rect=tuple(round(v*4) for v in box);alpha=im.getchannel('A').crop(rect)
                 assert alpha.getextrema()==(255,255),('Unpainted native base face',name,face,box)
     from draw_backseat_stowaway import NETS, net as creature_net
+    neck=Image.open(BytesIO(read('src/main/resources/assets/the_oldest_house/textures/entity/uncanny_bent_neck.png'))).convert('RGBA')
+    for box in net(0,32,2,4,2).values():assert neck.crop(tuple(v*4 for v in box)).getchannel('A').getextrema()==(255,255),'injured neck has an opaque dedicated net'
     creature=Image.open(BytesIO(read('src/main/resources/assets/the_oldest_house/textures/entity/backseat_stowaway.png'))).convert('RGBA')
     assert creature.size==(256,256)
     native=creature.resize((64,64),Image.Resampling.NEAREST)

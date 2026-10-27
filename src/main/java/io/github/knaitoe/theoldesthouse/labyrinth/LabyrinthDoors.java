@@ -282,6 +282,7 @@ public final class LabyrinthDoors {
             return;
         }
         LabyrinthData data = LabyrinthData.get(server);
+        DomesticDisturbances.prepare(player,toLevel,place,from);
         Rotation turn = rotationFrom(from.facing, entry.facing);
 
         // Someone else may be standing in this entry's doorway: it stays open

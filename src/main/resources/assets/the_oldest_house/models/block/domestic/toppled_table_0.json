@@ -1,205 +1,358 @@
 {
   "parent": "minecraft:block/block",
-  "ambientocclusion": true,
   "textures": {
-    "family_paper": "the_oldest_house:block/domestic/family_paper",
-    "student_paper": "the_oldest_house:block/domestic/student_paper",
-    "smoked_paper": "the_oldest_house:block/domestic/smoked_paper",
-    "rose_paper": "the_oldest_house:block/domestic/rose_paper",
-    "parquet": "the_oldest_house:block/domestic/parquet",
-    "parquet_worn": "the_oldest_house:block/domestic/parquet_worn",
-    "linoleum": "the_oldest_house:block/domestic/linoleum",
-    "wood": "the_oldest_house:block/domestic/wood",
-    "chair_cloth": "the_oldest_house:block/domestic/chair_cloth",
-    "ceramic": "the_oldest_house:block/domestic/ceramic",
-    "cup_blue": "the_oldest_house:block/domestic/cup_blue",
-    "cup_red": "the_oldest_house:block/domestic/cup_red",
-    "cup_green": "the_oldest_house:block/domestic/cup_green",
-    "milk": "the_oldest_house:block/domestic/milk",
-    "liquid": "the_oldest_house:block/domestic/liquid",
-    "dark_metal": "the_oldest_house:block/domestic/dark_metal",
-    "record": "the_oldest_house:block/domestic/record",
-    "record_b": "the_oldest_house:block/domestic/record_b",
-    "speaker": "the_oldest_house:block/domestic/speaker",
-    "dial": "the_oldest_house:block/domestic/dial",
-    "glass": "the_oldest_house:block/domestic/glass",
-    "spill": "the_oldest_house:block/domestic/spill",
-    "scrapes": "the_oldest_house:block/domestic/scrapes",
-    "cardboard": "the_oldest_house:block/domestic/cardboard",
-    "tape": "the_oldest_house:block/domestic/tape",
-    "folded_blue": "the_oldest_house:block/domestic/folded_blue",
-    "folded_cream": "the_oldest_house:block/domestic/folded_cream",
-    "folded_red": "the_oldest_house:block/domestic/folded_red",
-    "book_pages": "the_oldest_house:block/domestic/book_pages",
-    "book_spines": "the_oldest_house:block/domestic/book_spines",
-    "screen": "the_oldest_house:block/domestic/screen",
-    "keyboard": "the_oldest_house:block/domestic/keyboard",
-    "dirty_ceramic": "the_oldest_house:block/domestic/dirty_ceramic",
-    "beer_label": "the_oldest_house:block/domestic/beer_label",
-    "empty_glass": "the_oldest_house:block/domestic/empty_glass",
-    "dust": "the_oldest_house:block/domestic/dust",
-    "photo_family": "the_oldest_house:block/domestic/photo_family",
-    "photo_couple": "the_oldest_house:block/domestic/photo_couple",
-    "particle": "the_oldest_house:block/domestic/wood"
+    "formica": "the_oldest_house:block/formica",
+    "metal_legs": "the_oldest_house:block/metal_legs",
+    "particle": "the_oldest_house:block/formica"
   },
   "elements": [
     {
       "from": [
         0,
         0,
-        11
+        14
       ],
       "to": [
         16,
+        16,
+        16
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#formica"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#formica"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#formica",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#formica",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#formica"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#formica"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        12,
+        0
+      ],
+      "to": [
+        4,
         14,
-        13
+        14
       ],
       "faces": {
-        "north": {
-          "texture": "#wood"
-        },
-        "south": {
-          "texture": "#wood"
-        },
-        "east": {
-          "texture": "#wood"
-        },
-        "west": {
-          "texture": "#wood"
-        },
         "up": {
-          "texture": "#wood"
+          "uv": [
+            12,
+            2,
+            14,
+            16
+          ],
+          "texture": "#metal_legs"
         },
         "down": {
-          "texture": "#wood"
+          "uv": [
+            2,
+            2,
+            4,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            4,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            12,
+            2,
+            14,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            4,
+            4
+          ],
+          "texture": "#metal_legs"
+        },
+        "north": {
+          "uv": [
+            2,
+            12,
+            4,
+            14
+          ],
+          "texture": "#metal_legs"
         }
       }
     },
     {
       "from": [
-        1,
-        1,
-        2
+        12,
+        12,
+        0
       ],
       "to": [
-        3,
-        3,
-        11
+        14,
+        14,
+        14
       ],
       "faces": {
-        "north": {
-          "texture": "#wood"
-        },
-        "south": {
-          "texture": "#wood"
-        },
-        "east": {
-          "texture": "#wood"
-        },
-        "west": {
-          "texture": "#wood"
-        },
         "up": {
-          "texture": "#wood"
+          "uv": [
+            2,
+            2,
+            4,
+            16
+          ],
+          "texture": "#metal_legs"
         },
         "down": {
-          "texture": "#wood"
+          "uv": [
+            12,
+            2,
+            14,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            4,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            12,
+            2,
+            14,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            12,
+            2,
+            14,
+            4
+          ],
+          "texture": "#metal_legs"
+        },
+        "north": {
+          "uv": [
+            12,
+            12,
+            14,
+            14
+          ],
+          "texture": "#metal_legs"
         }
       }
     },
     {
       "from": [
-        1,
-        11,
-        2
+        2,
+        2,
+        0
       ],
       "to": [
-        3,
-        13,
-        11
+        4,
+        4,
+        14
       ],
       "faces": {
-        "north": {
-          "texture": "#wood"
-        },
-        "south": {
-          "texture": "#wood"
-        },
-        "east": {
-          "texture": "#wood"
-        },
-        "west": {
-          "texture": "#wood"
-        },
         "up": {
-          "texture": "#wood"
+          "uv": [
+            12,
+            2,
+            14,
+            16
+          ],
+          "texture": "#metal_legs"
         },
         "down": {
-          "texture": "#wood"
+          "uv": [
+            2,
+            2,
+            4,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "west": {
+          "uv": [
+            12,
+            2,
+            14,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            4,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            2,
+            12,
+            4,
+            14
+          ],
+          "texture": "#metal_legs"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            4,
+            4
+          ],
+          "texture": "#metal_legs"
         }
       }
     },
     {
       "from": [
-        13,
-        1,
-        2
+        12,
+        2,
+        0
       ],
       "to": [
-        15,
-        3,
-        11
+        14,
+        4,
+        14
       ],
       "faces": {
-        "north": {
-          "texture": "#wood"
-        },
-        "south": {
-          "texture": "#wood"
-        },
-        "east": {
-          "texture": "#wood"
-        },
-        "west": {
-          "texture": "#wood"
-        },
         "up": {
-          "texture": "#wood"
+          "uv": [
+            2,
+            2,
+            4,
+            16
+          ],
+          "texture": "#metal_legs"
         },
         "down": {
-          "texture": "#wood"
-        }
-      }
-    },
-    {
-      "from": [
-        13,
-        11,
-        2
-      ],
-      "to": [
-        15,
-        13,
-        11
-      ],
-      "faces": {
-        "north": {
-          "texture": "#wood"
-        },
-        "south": {
-          "texture": "#wood"
-        },
-        "east": {
-          "texture": "#wood"
+          "uv": [
+            12,
+            2,
+            14,
+            16
+          ],
+          "texture": "#metal_legs"
         },
         "west": {
-          "texture": "#wood"
+          "uv": [
+            12,
+            2,
+            14,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 270
         },
-        "up": {
-          "texture": "#wood"
+        "east": {
+          "uv": [
+            2,
+            2,
+            4,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 90
         },
-        "down": {
-          "texture": "#wood"
+        "south": {
+          "uv": [
+            12,
+            12,
+            14,
+            14
+          ],
+          "texture": "#metal_legs"
+        },
+        "north": {
+          "uv": [
+            12,
+            2,
+            14,
+            4
+          ],
+          "texture": "#metal_legs"
         }
       }
     }

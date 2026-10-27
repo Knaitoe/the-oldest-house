@@ -54,6 +54,8 @@ public final class DomesticAssetProof extends Screen {
             for(int n=0;n<3;n++)out.add(new View("glass / independent glow "+n,LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,LiteraryPropBlock.Kind.JAR).setValue(LiteraryPropBlock.STAGE,n)));
             out.add(new View("cabin journal",LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,LiteraryPropBlock.Kind.LEDGER).setValue(LiteraryPropBlock.STAGE,3)));
         }
+        if(page==7){var kinds=List.of(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.CANE_CHAIR,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.BLUE_SOFA,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.FOOTSTOOL);for(int n=0;n<6;n++){out.add(new View(kinds.get(n).getSerializedName(),io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.state(kinds.get(n),Direction.NORTH)));out.add(new View("same, fallen",DomesticFittingBlock.of(DomesticFittingBlock.Kind.TOPPLED_CHAIR,Direction.NORTH).setValue(DomesticFittingBlock.STAGE,n)));}}
+        if(page==8)for(var kind:DomesticRecordBlock.Kind.values())for(boolean present:new boolean[]{true,false})out.add(new View(kind.getSerializedName()+(present?" original":" taken"),DomesticRecordBlock.of(kind,Direction.NORTH).setValue(DomesticRecordBlock.PRESENT,present)));
         return out;
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
@@ -90,7 +92,7 @@ public final class DomesticAssetProof extends Screen {
               s.unlitJar.close();s.unlitJar=null;
             }
         }
-        if(++s.page<7){s.frames=0;return;}
-        Files.writeString(dir.resolve("domestic-assets-passed.txt"),"Seven native baked-model views: household handling, materials, optical fittings/mailboxes, hollow cupboards/red chairs, cabin/sink/jar glow and steel dumpster states. Full bright model review, not a lighting playthrough.\n");mc.setScreen(new DinerAssetProof());
+        if(++s.page<9){s.frames=0;return;}
+        Files.writeString(dir.resolve("domestic-assets-passed.txt"),"Nine native baked-model views, including six upright/fallen same-material pairs and fourteen original/empty household record mounts: household handling, materials, optical fittings/mailboxes, hollow cupboards/red chairs, cabin/sink/jar glow and steel dumpster states. Full bright model review, not a lighting playthrough.\n");mc.setScreen(new DinerAssetProof());
     }
 }

@@ -25,31 +25,38 @@ def cue(kind,variant):
         out=(body*.16+wet*.095+fibres*.012)*env*envelope
         count=rng.integers(8,17)
     elif kind=='tear':
-        env=np.minimum(t/.015,1)*np.exp(-t*rng.uniform(1.7,3.2))
-        out=(body*.19+wet*.10+fibres*.055)*env*(.25+envelope)
+        # A wet pull, suction letting go, then separate strands; avoid a dry hiss/crunch.
+        env=np.minimum(t/.035,1)*np.exp(-t*rng.uniform(1.3,2.2))
+        out=(body*.29+wet*.23+fibres*.012)*env*(.4+envelope)
         count=rng.integers(13,25)
-        # Uneven membrane failures; each tiny rip has its own attack and decay.
-        for at in sorted(rng.uniform(.01,seconds*.86,rng.integers(12,22))):
-            start=int(at*RATE);length=min(n-start,int(RATE*rng.uniform(.008,.055)))
-            u=np.arange(length)/RATE;out[start:start+length]+=fibres[start:start+length]*rng.uniform(.035,.12)*np.exp(-u*rng.uniform(60,180))
+        membrane=band(280,2700)
+        for at in sorted(rng.uniform(.025,seconds*.86,rng.integers(7,13))):
+            start=int(at*RATE);length=min(n-start,int(RATE*rng.uniform(.025,.09)))
+            u=np.arange(length)/RATE;out[start:start+length]+=membrane[start:start+length]*rng.uniform(.035,.09)*np.minimum(u/.004,1)*np.exp(-u*rng.uniform(24,70))
+        for at in rng.uniform(.02,seconds*.65,3):
+            u=np.maximum(0,t-at);frequency=rng.uniform(135,225)*np.exp(-u*5)
+            phase=2*np.pi*np.cumsum(frequency)/RATE
+            out+=np.sin(phase)*np.exp(-u*rng.uniform(10,17))*(t>=at)*.16
     else:
         env=np.minimum(t/.07,1)*np.minimum((seconds-t)/.2,1)
         out=(body*.15+wet*.055+fibres*.008)*env*envelope
         count=rng.integers(12,24)
     # Irregular collapsing bubbles, without a repeating oscillation or a fixed pulse pattern.
     for at in rng.uniform(.015,seconds*.92,count):
-        start=int(at*RATE);length=min(n-start,int(RATE*rng.uniform(.025,.13)));u=np.arange(length)/RATE
-        frequency=rng.uniform(95,330)*np.exp(-u*rng.uniform(7,22))
+        start=int(at*RATE);length=min(n-start,int(RATE*rng.uniform(.045,.2) if kind=='tear' else RATE*rng.uniform(.025,.13)));u=np.arange(length)/RATE
+        frequency=rng.uniform(65,220) if kind=='tear' else rng.uniform(95,330)
+        frequency=frequency*np.exp(-u*rng.uniform(7,22))
         phase=2*np.pi*np.cumsum(frequency)/RATE
         burst=(np.sin(phase)+.3*np.sin(phase*1.53)+rng.normal(0,.15,length))*np.exp(-u*rng.uniform(22,65))
-        out[start:start+length]+=burst*rng.uniform(.05,.18)
+        out[start:start+length]+=burst*rng.uniform(.10,.25) if kind=='tear' else burst*rng.uniform(.05,.18)
     out=np.tanh(out*1.35);out=out/max(np.abs(out).max(),1e-9)*rng.uniform(.65,.84)
     out*=np.minimum(t/.005,1)*np.minimum((seconds-t)/.035,1)
     return np.asarray(out*32767,dtype='<i2').tobytes()
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument('--check',action='store_true');args=ap.parse_args();out=ROOT/'sounds/literary';out.mkdir(parents=True,exist_ok=True)
+    ap=argparse.ArgumentParser();ap.add_argument('--check',action='store_true');ap.add_argument('--only',choices=CAPTIONS,nargs='+');args=ap.parse_args();out=ROOT/'sounds/literary';out.mkdir(parents=True,exist_ok=True)
     sounds=json.loads((ROOT/'sounds.json').read_text());language=json.loads((ROOT/'lang/en_us.json').read_text())
-    for kind,caption in CAPTIONS.items():
+    for kind in args.only or CAPTIONS:
+        caption=CAPTIONS[kind]
         event='cellar_flesh_'+kind;files=[]
         for v in range(COUNTS[kind]):
             name=event+'_'+str(v+1);dest=out/(name+'.ogg');files.append({'name':'the_oldest_house:literary/'+name,'attenuation_distance':16})

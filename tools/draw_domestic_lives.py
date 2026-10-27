@@ -4,7 +4,7 @@ The ordinary fragments keep their original blocks. These assets belong only to
 four deeper rooms and a few inert disturbances. No random noise or photo filters.
 """
 from pathlib import Path
-import argparse,json
+import argparse,json,copy
 from PIL import Image,ImageDraw
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -114,12 +114,8 @@ def parts(kind,stage):
         add((11,2,13),(13,4,14),'dark_metal');add((4,2,13),(6,4,14),'dark_metal')
         x=3+(stage&3)*3;add((x,6,13.1),(x+.4,7.5,13.2),'ceramic')
         if stage&4:add((13,6.1,13.1),(14,7.1,13.2),'liquid')
-    elif kind=='toppled_chair':
-        add((2,0,9),(14,2,14),'chair_cloth');add((2,2,12),(14,12,14),'wood');add((3,3,4),(5,5,12),'wood');add((11,3,4),(13,5,12),'wood');add((3,9,4),(5,11,12),'wood');add((11,9,4),(13,11,12),'wood')
-    elif kind=='toppled_table':
-        add((0,0,11),(16,14,13),'wood')
-        for x in (1,13):
-            for y in (1,11):add((x,y,2),(x+2,y+2,11),'wood')
+    elif kind in ('toppled_chair','toppled_table'):
+        return tipped(kind,stage)['elements']
     elif kind=='scrapes':add((0,.01,0),(16,.02,16),'scrapes')
     elif kind in ('packed_clothes','book_box','bottle_returns'):
         add((0,0,0),(16,1,16),'cardboard');add((0,1,0),(1,10,16),'cardboard');add((15,1,0),(16,10,16),'cardboard');add((1,1,0),(15,10,1),'cardboard');add((1,1,15),(15,10,16),'cardboard')
@@ -168,7 +164,26 @@ def parts(kind,stage):
         add((3,0,3),(13,2,13),'folded_blue');add((4,2,4),(12,3,12),'folded_blue');add((6,3,4),(10,3.6,6),'folded_cream')
     return p
 
+CHAIRS=['cane_chair','kitchen_stool','green_armchair','floral_armchair','blue_sofa','footstool']
+def tipped(kind,stage):
+    source='formica_table' if kind=='toppled_table' else CHAIRS[stage%len(CHAIRS)]
+    model=copy.deepcopy(json.loads((A/f'models/block/furniture_{source}.json').read_text()))
+    # Rigid 90-degree fall around X; retain every original material and native face UV.
+    # Normal mapping: (x,y,z) -> (x,16-z,y). Set the actual low edge on the floor.
+    low=min(16-e['to'][2] for e in model['elements'])
+    normals={'north':'up','south':'down','up':'south','down':'north','east':'east','west':'west'}
+    for e in model['elements']:
+        a,b=e['from'],e['to'];e['from']=[a[0],16-b[2]-low,a[1]];e['to']=[b[0],16-a[2]-low,b[1]]
+        faces={}
+        for side,face in e['faces'].items():
+            face.pop('cullface',None)
+            if side in ('east','west'):face['rotation']=(face.get('rotation',0)+(90 if side=='east' else 270))%360
+            faces[normals[side]]=face
+        e['faces']=faces
+    return model
+
 def effective(kind,stage):
+    if kind=='toppled_chair':return stage%6
     if kind=='bottles':return stage
     if kind in KINDS[:4]:return stage&7
     if kind in ('packed_clothes','book_box','closet_lower','closet_upper','desk_remnants','photo_family','photo_couple','bottle_returns'):return stage&1
@@ -180,7 +195,7 @@ def generated():
         states=sorted({effective(kind,n) for n in range(16)})
         for stage in states:
             ps=parts(kind,stage);name=f'domestic/{kind}_{stage}'
-            out[A/f'models/block/{name}.json']={'parent':'minecraft:block/block','ambientocclusion':True,'textures':{**textures,'particle':textures['wood']},'elements':ps}
+            out[A/f'models/block/{name}.json']=tipped(kind,stage) if kind in ('toppled_chair','toppled_table') else {'parent':'minecraft:block/block','ambientocclusion':True,'textures':{**textures,'particle':textures['wood']},'elements':ps}
             shapes[kind,stage]=[] if kind=='scrapes' else [b['from']+b['to'] for b in ps]
         for stage in range(16):
             for facing,y in [('north',0),('east',90),('south',180),('west',270)]:
@@ -191,7 +206,7 @@ def generated():
         out[A/f'blockstates/domestic_{name}.json']={'variants':{'':{'model':'the_oldest_house:block/domestic_'+name}}}
     java='package io.github.knaitoe.theoldesthouse.labyrinth;\n/** Generated with the baked native cuboids by tools/draw_domestic_lives.py. */\npublic final class DomesticFittingShapes {\n private DomesticFittingShapes(){}\n public static double[][] boxes(DomesticFittingBlock.Kind k,int stage){return switch(k){\n'
     for kind in KINDS:
-        mask='stage' if kind=='bottles' else '(stage&7)' if kind in KINDS[:4] else '(stage&1)' if kind in ('packed_clothes','book_box','closet_lower','closet_upper','desk_remnants','photo_family','photo_couple','bottle_returns') else '(stage%3)' if kind=='empty_bottles' else '0'
+        mask='(stage%6)' if kind=='toppled_chair' else 'stage' if kind=='bottles' else '(stage&7)' if kind in KINDS[:4] else '(stage&1)' if kind in ('packed_clothes','book_box','closet_lower','closet_upper','desk_remnants','photo_family','photo_couple','bottle_returns') else '(stage%3)' if kind=='empty_bottles' else '0'
         java+='  case '+kind.upper()+' -> switch('+mask+'){\n'
         for (k,s),boxes in shapes.items():
             if k==kind:java+='   case '+str(s)+' -> new double[][]{'+','.join('{'+','.join(str(x) for x in b)+'}' for b in boxes)+'};\n'

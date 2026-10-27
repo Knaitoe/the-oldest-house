@@ -2137,5 +2137,15 @@
         "preload": true
       }
     ]
+  },
+  "tunnel_traffic": {
+    "subtitle": "subtitles.the_oldest_house.tunnel_traffic",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/tunnel_traffic",
+        "preload": true,
+        "attenuation_distance": 48
+      }
+    ]
   }
 }

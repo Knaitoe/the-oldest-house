@@ -65,7 +65,7 @@ public final class UncannyBranchTests {
     });}
     @AfterBatch(batch="branch_diner") public static void dinerDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="branch_tunnel",timeoutTicks=300) public static void advancingAndLookingBackAreSeparatePersonalDiscoveries(GameTestHelper h){run(h,LabyrinthPlace.TUNNEL_PERIPHERY,(f,p)->{
-        var place=LabyrinthPlace.TUNNEL_PERIPHERY;var peer=f.player("branch_tunnel_peer",place);age(f,p,place,150);f.at(p,place,.5,0,-64);step(f,p,place);
+        var place=LabyrinthPlace.TUNNEL_PERIPHERY;var peer=f.player("branch_tunnel_peer",place);age(f,p,place,150);f.at(p,place,.5,0,-136);step(f,p,place);
         for(int i=0;i<8;i++){p.move(MoverType.SELF,new Vec3(0,0,-.4));step(f,p,place);}var own=f.own(p,place);
         h.assertTrue(own.getBoolean("Completed")&&!own.getBoolean("StoopingSeen")&&!own.getBoolean("Read_Source"),"moving through actual green signals needs neither archive nor a compulsory look back");
         age(f,peer,place,150);f.at(peer,place,.5,0,-16);peer.setYRot(180);peer.setYHeadRot(180);step(f,peer,place);var other=step(f,peer,place);look(peer,UncannyStories.actor(peer,other,"CastGiant"));other=step(f,peer,place);

@@ -18,7 +18,7 @@ public final class UncannyPlaytestRepairs {
     private static final List<LabyrinthPlace> ROOMS=List.of(LabyrinthPlace.PAINTED_INTERIOR,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.TUNNEL_PERIPHERY,LabyrinthPlace.MOTION_LIGHT);
     private static final class Work {
         final ServerLevel l;final BlockPos origin,b;final LabyrinthPlace place;final BuildBlocks.Plan before,after;final int width,depth,total;final boolean filled131;int cursor;
-        Work(ServerLevel l,BlockPos origin,LabyrinthPlace p,int cursor){this.l=l;this.origin=origin.immutable();place=p;b=LabyrinthPlaces.base(origin,p);before=BuildBlocks.record(l,()->UncannyRooms0129.build(l,b,p));after=BuildBlocks.record(l,()->UncannyRooms.build(l,b,p));var r=p.room();width=r.maxX()-r.minX()+1;depth=r.maxZ()-r.minZ()+1;total=width*depth*(r.maxY()-r.minY()+1);this.cursor=cursor;
+        Work(ServerLevel l,BlockPos origin,LabyrinthPlace p,int cursor){this.l=l;this.origin=origin.immutable();place=p;b=LabyrinthPlaces.base(origin,p);before=BuildBlocks.record(l,()->UncannyRooms0129.build(l,b,p));after=BuildBlocks.record(l,()->{if(p==LabyrinthPlace.TUNNEL_PERIPHERY)UncannyRooms0132.build(l,b,p);else UncannyRooms.build(l,b,p);});var r=p.room();width=r.maxX()-r.minX()+1;depth=r.maxZ()-r.minZ()+1;total=width*depth*(r.maxY()-r.minY()+1);this.cursor=cursor;
             var data=LabyrinthData.get(l.getServer());String k=key(origin,p);boolean prior=data.state("uncanny_playtest_shell_0131").getBoolean(k)||data.state("uncanny_playtest_shell_0131b").getBoolean(k);
             // Fresh 0.4.131 rooms could be entered before the vacant repair checkpoint ran.
             // Recognize the whole erroneous fill pattern, rather than treating a lone dirt edit as authored.
