@@ -1470,7 +1470,7 @@ jobs:
           test "$(find build/uncanny-environment-proof -name '*.json' | wc -l)" = 11
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannyEnvironmentSmoke --no-daemon
           test -s build/font-smoke/uncanny-environments-passed.txt
-          test "$(find build/font-smoke/uncanny-environments -name '*.png' | wc -l)" = 10
+          test "$(find build/font-smoke/uncanny-environments -name '*.png' | wc -l)" = 11
           test -s build/font-smoke/uncanny-assets-passed.txt
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - uses: actions/upload-artifact@v4
