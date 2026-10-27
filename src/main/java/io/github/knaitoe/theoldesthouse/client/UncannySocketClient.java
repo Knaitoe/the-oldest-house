@@ -49,7 +49,9 @@ public final class UncannySocketClient {
     /** Walk the actual doorway, stair flight and landing with ordinary native movement packets. */
     private static boolean bedroomWalk(Minecraft mc,BlockPos b){
         boolean peer=role().equals("B");
-        Vec3[] route={new Vec3(peer?-.5:.5,0,-2.5),new Vec3(peer?-7.3:-6.5,0,-2.5),new Vec3(peer?-7.3:-6.5,5,-10.5),new Vec3(peer?-6.3:-5.5,5,-20.5)};
+        // Leave a full clear standing bay before the desk. Native walking inertia
+        // otherwise carries the last step into its low fittings while the paper opens.
+        Vec3[] route={new Vec3(peer?-.5:.5,0,-2.5),new Vec3(peer?-7.3:-6.5,0,-2.5),new Vec3(peer?-7.3:-6.5,5,-10.5),new Vec3(peer?-6.3:-5.5,5,-19.5)};
         if(bedroomLeg>=route.length)return true;
         var target=route[bedroomLeg].add(Vec3.atLowerCornerOf(b));var delta=target.subtract(mc.player.position());
         if(delta.horizontalDistanceSqr()<.09&&Math.abs(delta.y)<.3&&mc.player.onGround()){
@@ -79,6 +81,7 @@ public final class UncannySocketClient {
         }
         if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;lightPhase=-1;lightTicks=0;motionPulls=0;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
         stop(mc);var b=UncannyClient.base();
+        if(phase==5&&age%100==0){var at=mc.player.blockPosition();TheOldestHouse.LOGGER.info("UNCANNY BEDROOM WALK {} base={} leg={} feet={} below={} body={} head={} height={} step={}",role(),b,bedroomLeg,mc.player.position(),mc.level.getBlockState(at.below()),mc.level.getBlockState(at),mc.level.getBlockState(at.above()),mc.player.getBbHeight(),mc.player.maxUpStep());}
         if(age%100==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} phase={} room={} eye={} feeds={} headPixels={} health={} ring={} mirror={} screen={}",role(),phase,UncannyClient.room(),mc.player.getEyePosition(),feedMask,UncannyCameras.verifiedHeadPixels(),mc.player.getHealth(),UncannyClient.ring(),UncannyClient.mirror(),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
         for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&UncannyStories.role(a.role())&&a.owner().isPresent())require(a.owner().get().equals(mc.player.getUUID()),"another reader's private original was tracked");
         if(phase==1&&age>30&&UncannyClient.room().equals("painted_interior")){
