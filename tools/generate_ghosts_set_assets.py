@@ -11,7 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
 T=A/'textures/block/ghosts';T.mkdir(parents=True,exist_ok=True)
 M=A/'models/block';S=A/'blockstates';E=A/'textures/entity'
-K=['wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','plain_plate','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg']
+K=['wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','plain_plate','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg','stair_rail','stair_rail_top']
 palette={'wallpaper':(199,185,159),'floor':(118,85,53),'ceiling':(216,210,188),'tile':(122,135,122),'panel':(107,82,58),
          'wood':(105,75,48),'formica':(161,171,151),'metal':(56,64,61),'cream':(225,215,183),'cardboard':(164,133,90),
          'denim':(64,82,114),'red':(126,47,36),'green':(89,115,61),'cloth':(126,139,155),'white':(220,218,199)}

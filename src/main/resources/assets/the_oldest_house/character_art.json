@@ -1,5 +1,12 @@
 [
   {
+    "name": "backseat_stowaway",
+    "logical": 64,
+    "model": "backseat",
+    "number": 0,
+    "phase": 1
+  },
+  {
     "name": "borrasca_kimber",
     "logical": 64,
     "model": "borrasca",
@@ -834,6 +841,41 @@
     "model": "cousin",
     "number": 8,
     "phase": 0
+  },
+  {
+    "name": "uncanny_bent_neck",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 35,
+    "phase": 1
+  },
+  {
+    "name": "uncanny_family_0",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 32,
+    "phase": 1
+  },
+  {
+    "name": "uncanny_family_1",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 32,
+    "phase": 2
+  },
+  {
+    "name": "uncanny_family_2",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 32,
+    "phase": 3
+  },
+  {
+    "name": "uncanny_family_3",
+    "logical": 64,
+    "model": "uncanny",
+    "number": 32,
+    "phase": 4
   },
   {
     "name": "uncanny_peeler",

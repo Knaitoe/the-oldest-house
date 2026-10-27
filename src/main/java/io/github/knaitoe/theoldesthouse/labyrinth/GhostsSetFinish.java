@@ -18,7 +18,12 @@ public final class GhostsSetFinish {
     private static final String STATE="ghosts_finish0490";
     private static final Map<ServerLevel,BuildBlocks.Plan> PLANS=new WeakHashMap<>();
     private GhostsSetFinish(){}
-    public static void markBuilt(ServerLevel l,BlockPos b){var d=LabyrinthData.get(l.getServer());var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);t.putBoolean("Balcony0495_"+b.asLong(),true);d.setState(STATE,t);}
+    public static void markBuilt(ServerLevel l,BlockPos b){var d=LabyrinthData.get(l.getServer());var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);t.putBoolean("Balcony0495_"+b.asLong(),true);t.putBoolean("StairRail131_"+b.asLong(),true);d.setState(STATE,t);}
+    private static boolean stairRail(ServerLevel l,BlockPos b){
+        var d=LabyrinthData.get(l.getServer());var saved=d.state(STATE);String key="StairRail131_"+b.asLong();if(saved.getBoolean(key))return true;if(!safe(l,b))return false;
+        for(int i=0;i<5;i++){var at=b.offset(-19,i+1,-16-i);var state=l.getBlockState(at);if(state.is(LiteraryRegistry.GHOST_SET.get())&&state.getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.RAIL&&state.getValue(GhostsSetBlock.FACING)==Direction.NORTH)l.setBlock(at,GhostsSetBlock.of(i==4?GhostsSetBlock.Kind.STAIR_RAIL_TOP:GhostsSetBlock.Kind.STAIR_RAIL,Direction.NORTH),18);}
+        saved.putBoolean(key,true);d.setState(STATE,saved);return true;
+    }
     private static boolean balcony(ServerLevel l,BlockPos b){
         var data=LabyrinthData.get(l.getServer());var state=data.state(STATE);String key="Balcony0495_"+b.asLong();if(state.getBoolean(key))return true;
         var area=new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-13,4,-17)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-6,8,-13)));
@@ -34,11 +39,11 @@ public final class GhostsSetFinish {
         return l.getEntitiesOfClass(LivingEntity.class,area.inflate(.2),LivingEntity::isAlive).isEmpty();
     }
     public static boolean repair(ServerLevel l,BlockPos b){
-        if(!balcony(l,b))return false;
+        if(!balcony(l,b)||!stairRail(l,b))return false;
         if(LabyrinthData.get(l.getServer()).state(STATE).getBoolean(Long.toString(b.asLong())))return true;if(!safe(l,b))return false;
         var plan=PLANS.get(l);if(plan==null){plan=BuildBlocks.record(l,()->{
             for(int i=0;i<5;i++)for(int x=-18;x<=-16;x++){var at=b.offset(x,i,-16-i);if(l.getBlockState(at).is(Blocks.OAK_STAIRS))BuildBlocks.protectedSet(l,at,GhostsSetBlock.of(GhostsSetBlock.Kind.STAIR,Direction.NORTH),18,()->safe(l,b),Set.of());}
-            for(int i=0;i<5;i++){var at=b.offset(-19,i+1,-16-i);if(l.getBlockState(at).isAir()||l.getBlockState(at).is(Blocks.OAK_FENCE))BuildBlocks.protectedSet(l,at,GhostsSetBlock.of(GhostsSetBlock.Kind.RAIL,Direction.NORTH),18,()->safe(l,b),Set.of());}
+            for(int i=0;i<5;i++){var at=b.offset(-19,i+1,-16-i);if(l.getBlockState(at).isAir()||l.getBlockState(at).is(Blocks.OAK_FENCE))BuildBlocks.protectedSet(l,at,GhostsSetBlock.of(i==4?GhostsSetBlock.Kind.STAIR_RAIL_TOP:GhostsSetBlock.Kind.STAIR_RAIL,Direction.NORTH),18,()->safe(l,b),Set.of());}
             for(int z=-22;z<=-16;z++){var at=b.offset(-19,5,z);if(l.getBlockState(at).is(Blocks.OAK_FENCE))BuildBlocks.protectedSet(l,at,z<=-21?GhostsSetBlock.of(GhostsSetBlock.Kind.RAIL,Direction.NORTH):Blocks.AIR.defaultBlockState(),18,()->safe(l,b),Set.of());}
             for(int y=0;y<=3;y++)for(int z=-44;z<=-15;z++){var at=b.offset(-14,y,z);if(z==-18&&y<2)continue;if(l.getBlockEntity(at)==null&&l.getBlockState(at).isAir())BuildBlocks.protectedSet(l,at,GhostsSetBlock.of(GhostsSetBlock.Kind.WALLPAPER,Direction.NORTH),18,()->safe(l,b),Set.of());}
         });PLANS.put(l,plan);}

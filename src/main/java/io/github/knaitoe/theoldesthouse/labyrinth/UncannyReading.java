@@ -62,7 +62,7 @@ public final class UncannyReading {
                 case 1->"His blade is gone. Marcus never made it past the sump. There is still a man stripping the layers beside him.";
                 case 2->"The cut edges are knitting together. There is something brass farther in. Keep the steps clear.";
                 case 3->"He said he could walk. I told him to try the stairs. The wet edges were already closing behind us.";
-                default->own.getBoolean("WorkerRescued")?"He reached the upper landing on his own feet. Something below kept pressing against the stairwell.":own.getBoolean("Helped")?"The recovered key was in my hand upstairs. The cellar had not stopped growing.":"I shut the door from the upper landing. The frame was still taking the weight.";
+                default->own.getBoolean("WorkerRescued")?"He reached the upper landing on his own feet. Something below kept pressing against the stairwell.":own.getBoolean("Helped")?"The key came out into my hand. Behind it, the cut edges moved.":"I shut the door from the upper landing. The frame was still taking the weight.";
             };
             case MOTION_LIGHT->switch(index){
                 case 0->"Do not touch the brass button. The motion light stays on in the wind. When it goes out, watch the glass.";
@@ -102,6 +102,7 @@ public final class UncannyReading {
     }
     public static boolean readPassage(CompoundTag own){for(int i=0;i<5;i++)if(own.getBoolean("Read_"+KEY+i))return true;return false;}
     public static void resolve(ServerPlayer p,LabyrinthPlace place,CompoundTag own){
+        if(place==LabyrinthPlace.MOTION_LIGHT)return;
         if(!LiteraryVignettes.participant(p)||!LiteraryVignettes.inside(p,place)||!own.getBoolean("Ready")||own.getBoolean("Completed")||UncannyStories.failed(own))return;
         var story=WitnessAccount.Story.of(place.id());if(story==null)return;var d=LabyrinthData.get(p.server);
         WitnessAccount.resolve(p,story,own.getString("Outcome"));own.putBoolean("Completed",true);d.setCompleted(place.id(),true);UncannyStories.finishReward(p,place,own);LiteraryVignettes.save(d,p.getUUID(),place,own);

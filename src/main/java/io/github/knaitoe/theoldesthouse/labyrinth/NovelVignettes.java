@@ -327,13 +327,13 @@ public final class NovelVignettes {
         var phase=FinaleProgress.phase(p.server,p.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE||!FinaleArchitecture.contains(origin,p.blockPosition()))return;
         var at=FinaleRepairs.tom(origin);if(p.distanceToSqr(at.getCenter())>500)return;
         if(!p.serverLevel().hasChunkAt(at)||p.serverLevel().getBlockState(at.below()).getCollisionShape(p.serverLevel(),at.below()).isEmpty())return;
-        if(own.hasUUID("Tom")&&p.serverLevel().getEntity(own.getUUID("Tom")) instanceof NovelActor)return;
+        if(own.hasUUID("Tom")&&p.serverLevel().getEntity(own.getUUID("Tom")) instanceof NovelActor tom){if(own.getBoolean("Yield_Lighter")&&tom.getMainHandItem().is(NovelRegistry.LIGHTER.get()))tom.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);return;}
         if(own.hasUUID("Tom")){if(!own.contains("TomMissing")){own.putLong("TomMissing",p.serverLevel().getGameTime());return;}if(p.serverLevel().getGameTime()-own.getLong("TomMissing")<60)return;}
         if(p.serverLevel().getEntitiesOfClass(NovelActor.class,new AABB(at).inflate(6),a->a.role()==0&&a.owner().filter(p.getUUID()::equals).isPresent()).isEmpty()){
-            var actor=NovelRegistry.ACTOR.get().create(p.serverLevel());if(actor!=null){actor.appearance(p.getUUID(),0);actor.moveTo(Vec3.atBottomCenterOf(at));p.serverLevel().addFreshEntity(actor);own.putUUID("Tom",actor.getUUID());own.remove("TomMissing");}}
+            var actor=NovelRegistry.ACTOR.get().create(p.serverLevel());if(actor!=null){actor.appearance(p.getUUID(),0);if(own.getBoolean("Yield_Lighter"))actor.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);actor.moveTo(Vec3.atBottomCenterOf(at));p.serverLevel().addFreshEntity(actor);own.putUUID("Tom",actor.getUUID());own.remove("TomMissing");}}
     }
     public static void meetTom(ServerPlayer p,NovelActor actor){if(actor.role()!=0||!participant(p)||actor.owner().filter(p.getUUID()::equals).isEmpty()||p.distanceToSqr(actor)>36)return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());reward(p,own,"Radio",new ItemStack(NovelRegistry.RADIO.get()));
-        boolean handed=!own.getBoolean("Yield_Lighter");reward(p,own,"Lighter",new ItemStack(NovelRegistry.LIGHTER.get()));
+        boolean handed=!own.getBoolean("Yield_Lighter");var offered=actor.getMainHandItem();reward(p,own,"Lighter",offered.is(NovelRegistry.LIGHTER.get())?offered.copy():new ItemStack(NovelRegistry.LIGHTER.get()));if(actor.getMainHandItem().is(NovelRegistry.LIGHTER.get()))actor.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
         // The finite original may be in a chest, on the ground or with a peer. An empty carried
         // inventory does not establish its loss and must not mint another lighter.
         if(handed)actor.swing(InteractionHand.MAIN_HAND);

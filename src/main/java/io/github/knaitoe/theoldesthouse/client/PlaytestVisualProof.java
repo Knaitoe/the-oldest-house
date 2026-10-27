@@ -32,6 +32,7 @@ public final class PlaytestVisualProof extends Screen {
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         if(page==1){plains(g);return;}
+        if(page==2){dinnerbone(g);return;}
         var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb5b8ab);g.drawString(font,"New cousins: standing / cowering. Distant boy. Native pixel items and furniture.",10,8,0xff1b2527,false);g.flush();
         var out=mc.renderBuffers().bufferSource();
         for(int i=0;i<6;i++){
@@ -49,7 +50,7 @@ public final class PlaytestVisualProof extends Screen {
             p.pushPose();p.translate(width-146+i*47,height-22,150);p.scale(26,-26,26);p.mulPose(Axis.XP.rotationDegrees(20));p.mulPose(Axis.YP.rotationDegrees(25));mc.getBlockRenderer().renderSingleBlock(states[i],p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}out.endBatch();
     }
     private void plains(GuiGraphics g){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb5b8ab);g.drawString(font,"Plains / folded knees, bowed head and hands by the knees / original pixel texture",10,9,0xff1b2527,false);g.flush();
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xffb5b8ab);g.drawString(font,"Plains / seated on the ground, arms round raised knees / original pixel texture",10,9,0xff1b2527,false);g.flush();
         var out=mc.renderBuffers().bufferSource();float scale=Math.min(width/4F*.8F,height*.48F)*PlainFigureModel.SCALE;
         for(int view=0;view<4;view++){
             var model=new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));var p=g.pose();p.pushPose();
@@ -61,7 +62,7 @@ public final class PlaytestVisualProof extends Screen {
     private static void verifyPlains(Path dir)throws Exception{
         var mc=Minecraft.getInstance();var model=new PlainFigureModel(mc.getEntityModels().bakeLayer(PlainFigureModel.LAYER));var bounds=new Bounds();
         model.renderToBuffer(PlainFigureModel.atFeet(),bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
-        if(bounds.y0<-.02F||bounds.y0>.03F||bounds.y1<.65F||bounds.y1>.9F||bounds.x1-bounds.x0<.35F||bounds.z1-bounds.z0<.45F)throw new IllegalStateException("Plains crouch must be low, folded and grounded: "+bounds);
+        if(bounds.y0<-.02F||bounds.y0>.03F||bounds.y1<.5F||bounds.y1>.85F||bounds.x1-bounds.x0<.35F||bounds.z1-bounds.z0<.45F)throw new IllegalStateException("Plains seated curl must be low, folded and grounded: "+bounds);
         try(var image=new NativeImage(128,128,false)){
             for(int y=0;y<128;y++)for(int x=0;x<128;x++)image.setPixelRGBA(x,y,0xffb5b8ab);
             PlainCameraClient.silhouette(image,new Matrix4f().setOrtho(-.6F,.6F,-.6F,.6F,.1F,100),new Vec3(0,-.5,-5));
@@ -72,6 +73,19 @@ public final class PlaytestVisualProof extends Screen {
         }
         Files.writeString(dir.resolve("plains-crouch-passed.txt"),"Native production crouch: front, side, back and dim light; original child scale and unchanged pixel atlas. Actual baked vertex bounds: "+bounds+". The untracked-body photograph projects the same mesh. Existing personal camera, finite photo, Witness and connected-client checks remain required.\n");
     }
+    private void dinnerbone(GuiGraphics g){
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff242622);g.drawString(font,"Ceiling figure / held poses, slow inclination, delayed hand / original skin",10,9,0xffd1c9ae,false);g.flush();
+        var out=mc.renderBuffers().bufferSource();float size=Math.min(width/4F*.6F,height*.38F);
+        float[] clocks={0,500,1000,1390};
+        for(int i=0;i<4;i++){
+            var model=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));model.preview(LiteraryActor.SILHOUETTE,0,0);DinnerboneIdle.pose(model,clocks[i],0);
+            var bounds=new Bounds();model.renderToBuffer(new com.mojang.blaze3d.vertex.PoseStack(),bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+            if(Math.abs(bounds.y1-1.5F)>.002F)throw new IllegalStateException("Ceiling idle moved the planted feet: "+bounds);
+            var p=g.pose();p.pushPose();p.translate((i+.5F)*width/4,58,150);p.scale(size,size,size);p.mulPose(Axis.ZP.rotationDegrees(180));p.translate(0,-1.5,0);p.mulPose(Axis.YP.rotationDegrees(i==3?55:180));
+            model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(LiteraryRenderers.skin(LiteraryActor.SILHOUETTE,0))),i==3?LightTexture.pack(5,0):LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);out.endBatch();p.popPose();
+            g.drawCenteredString(font,new String[]{"Held","Head inclined","One hand","Returns to stillness"}[i],(int)((i+.5F)*width/4),height-35,0xffd1c9ae);
+        }
+    }
     private static final class Bounds implements VertexConsumer {
         float x0=Float.POSITIVE_INFINITY,y0=x0,z0=x0,x1=Float.NEGATIVE_INFINITY,y1=x1,z1=x1;
         public VertexConsumer addVertex(float x,float y,float z){x0=Math.min(x0,x);y0=Math.min(y0,y);z0=Math.min(z0,z);x1=Math.max(x1,x);y1=Math.max(y1,y);z1=Math.max(z1,z);return this;}
@@ -80,8 +94,8 @@ public final class PlaytestVisualProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof PlaytestVisualProof proof)||++proof.frames<16)return;
-        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve(proof.page==0?"native-playtest-0464.png":"native-plains-crouch.png"));}
-        if(proof.page++==0){proof.frames=0;return;}verifyPlains(dir);
+        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve(proof.page==0?"native-playtest-0464.png":proof.page==1?"native-plains-crouch.png":"native-dinnerbone-idle.png"));}
+        if(proof.page==0){proof.page++;proof.frames=0;return;}if(proof.page==1){verifyPlains(dir);proof.page++;proof.frames=0;return;}
         Files.writeString(dir.resolve("playtest-assets-passed.txt"),"Additional cousin skins, shared cowering pose, distant boy, camera, keys, ribbon, packets, chess table, varied paper and boarded window rendered by the native client.\n");mc.setScreen(new DeathPortraitVisualProof());
     }
 }

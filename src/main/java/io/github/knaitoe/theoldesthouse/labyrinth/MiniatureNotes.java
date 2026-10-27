@@ -123,6 +123,8 @@ public final class MiniatureNotes {
         "The floor slopes, very slightly, toward the next room."};
 
     private static final Map<LabyrinthPlace, String> FLAVOUR = Map.ofEntries(
+        Map.entry(LabyrinthPlace.SILO, "Yellow seeds fill the little tin cylinder. A bedroom door bridges two threads of rusted wire, far above the grain."),
+        Map.entry(LabyrinthPlace.BACKSEAT, "A bent sliver of bone lies behind the little car seat. The mirror is a chip of real silver."),
         Map.entry(LabyrinthPlace.FLOORBOARDS, "The boards are real wood shavings, and one has been lifted with a pin."),
         Map.entry(LabyrinthPlace.RED_ROOM, "The walls are the red of a fingernail, and the tiny curtains do not quite meet."),
         Map.entry(LabyrinthPlace.HIDE_AND_CLAP, "A strip of black thread is tied round the little figure's eyes."),

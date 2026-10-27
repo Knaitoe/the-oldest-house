@@ -142,12 +142,13 @@ def furniture():
     out['stool']=[p((2,10,2),(14,13,14),'vinyl'),p((3,9,3),(13,10,13),'steel'),p((7,1,7),(9,9,9),'steel'),p((3,0,3),(13,1,13),'black')]
     out['counter']=[p((0,0,2),(16,14,16),'diner_dado'),p((0,14,0),(16,16,16),'formica'),p((0,13,0),(16,14,2),'steel'),p((0,1,1),(16,3,2),'steel')]
     out['cabinet']=[p((0,0,2),(16,2,16),'steel'),p((0,2,15),(16,15,16),'enamel'),p((0,2,2),(1,15,15),'enamel'),p((15,2,2),(16,15,15),'enamel'),p((0,15,1),(16,16,16),'steel'),p((1,2,1),(15,15,2),'enamel'),p((11,8,0),(13,10,1),'steel')]
-    out['fridge']=[p((0,0,1),(16,32,16),'enamel'),p((1,1,0),(15,22,1),'ceramic'),p((12,6,0),(13,19,2),'steel'),p((1,23,0),(15,31,1),'ceramic'),p((12,25,0),(13,29,2),'steel')]
+    out['fridge']=[p((0,0,1),(1,32,16),'enamel'),p((15,0,1),(16,32,16),'enamel'),p((1,0,1),(15,1,16),'enamel'),p((1,31,1),(15,32,16),'enamel'),p((1,1,15),(15,31,16),'enamel'),p((1,22,1),(15,23,15),'enamel'),p((1,10,2),(15,11,15),'steel'),p((1,1,0),(15,22,1),'ceramic'),p((12,6,-1),(13,19,0),'steel'),p((1,23,0),(15,31,1),'ceramic'),p((12,25,-1),(13,29,0),'steel')]
     out['coffee_maker']=[p((2,0,4),(14,2,14),'steel'),p((3,2,11),(13,13,14),'enamel'),p((3,11,3),(13,14,14),'steel'),p((5,2,4),(11,8,10),'black'),p((11,4,5),(13,7,8),'steel'),p((5,8,4),(11,9,10),'black')]
     out['griddle']=[p((0,0,0),(16,14,16),'enamel'),p((0,14,0),(16,16,16),'steel'),p((2,15,2),(14,16,13),'black'),p((2,10,0),(5,12,1),'black'),p((10,10,0),(13,12,1),'black')]
     out['sink']=[p((0,0,3),(16,12,16),'enamel'),p((0,12,1),(16,14,16),'steel'),p((2,14,3),(4,15,13),'steel'),p((12,14,3),(14,15,13),'steel'),p((4,14,3),(12,15,5),'steel'),p((4,14,11),(12,15,13),'steel'),p((6,14,13),(8,16,15),'steel')]
     out['shelf']=[p((0,1,4),(16,2,16),'steel'),p((0,8,4),(16,9,16),'steel'),p((0,15,4),(16,16,16),'steel'),p((0,2,14),(1,15,16),'steel'),p((15,2,14),(16,15,16),'steel'),p((2,9,6),(7,14,14),'enamel'),p((9,2,7),(14,7,14),'dark_wood')]
     out['fluorescent']=[p((0,14,3),(16,16,13),'steel'),p((1,11,4),(15,14,12),'lamp'),p((0,11,3),(1,14,13),'steel'),p((15,11,3),(16,14,13),'steel')]
+    out['flush_light']=[p((0,1,0),(16,16,16),'workshop_wall'),p((0,0,3),(1,1,13),'steel'),p((15,0,3),(16,1,13),'steel'),p((1,0,3),(15,1,4),'steel'),p((1,0,12),(15,1,13),'steel'),p((1,.01,4),(15,.25,12),'lamp')]
     out['window_frame']=[p((0,0,13),(16,2,16),'steel'),p((0,14,13),(16,16,16),'steel'),p((0,2,13),(2,14,16),'steel'),p((14,2,13),(16,14,16),'steel'),p((7,2,14),(8,14,15),'steel'),p((2,2,15),(14,14,16),'glass')]
     for part in ('left','center','right'):
         out['sign_'+part]=[p((0,0,13),(16,16,16),'steel'),p((0,0,12),(16,16,13),'sign_'+part)]
@@ -158,12 +159,16 @@ def furniture():
     out['sofa_left']=out['sofa']+[p((0,7,2),(3,13,15),'parlor_cloth')]
     out['sofa_right']=out['sofa']+[p((13,7,2),(16,13,15),'parlor_cloth')]
     out['coffee_table']=[p((0,9,0),(16,11,16),'walnut'),leg(1,2,'walnut',9),leg(13,2,'walnut',9),leg(1,12,'walnut',9),leg(13,12,'walnut',9)]
-    out['diner_chair']=[leg(2,3,'steel',7),leg(12,3,'steel',7),leg(2,12,'steel',7),leg(12,12,'steel',7),p((1,7,2),(15,9,15),'vinyl'),p((2,9,13),(4,18,15),'steel'),p((12,9,13),(14,18,15),'steel'),p((1,12,12),(15,18,16),'vinyl')]
+    # The posts end under the backrest. Their former y=18 caps were coplanar
+    # with the vinyl top and flickered through it as the camera moved.
+    out['diner_chair']=[leg(2,3,'steel',7),leg(12,3,'steel',7),leg(2,12,'steel',7),leg(12,12,'steel',7),p((1,7,2),(15,9,15),'vinyl'),p((2,9,13),(4,12,15),'steel'),p((12,9,13),(14,12,15),'steel'),p((1,12,12),(15,18,16),'vinyl')]
     out['desk']=[p((0,14,1),(16,16,16),'walnut'),p((1,0,3),(7,14,15),'walnut'),leg(12,3,'walnut'),leg(12,12,'walnut'),p((2,3,1),(6,7,2),'walnut'),p((3,5,0),(5,6,1),'steel')]
-    out['sideboard']=[p((1,0,3),(3,3,5),'dark_wood'),p((13,0,3),(15,3,5),'dark_wood'),p((0,3,2),(16,15,16),'dark_wood'),p((0,15,1),(16,16,16),'walnut'),p((2,5,1),(14,13,2),'walnut'),p((11,8,0),(12,10,1),'steel')]
+    out['sideboard']=[p((1,0,3),(3,3,5),'dark_wood'),p((13,0,3),(15,3,5),'dark_wood'),p((0,3,2),(1,15,16),'dark_wood'),p((15,3,2),(16,15,16),'dark_wood'),p((1,3,15),(15,15,16),'dark_wood'),p((1,3,2),(15,5,15),'dark_wood'),p((1,13,2),(15,15,15),'dark_wood'),p((0,15,1),(16,16,16),'walnut'),p((2,5,1),(14,13,2),'walnut'),p((11,8,0),(12,10,1),'steel')]
     out['bookcase']=[p((0,0,4),(2,16,16),'dark_wood'),p((14,0,4),(16,16,16),'dark_wood'),p((2,0,5),(14,2,16),'dark_wood'),p((2,8,5),(14,9,16),'dark_wood'),p((2,15,5),(14,16,16),'dark_wood'),p((2,2,7),(14,8,15),'books'),p((2,9,7),(14,15,15),'books')]
     out['picture']=[p((2,2,14),(14,14,16),'dark_wood'),p((3,3,13),(13,13,14),'picture')]
-    out['wardrobe']=[p((1,0,3),(15,32,16),'walnut'),p((2,1,2),(14,31,3),'dark_wood'),p((10,14,1),(11,18,2),'steel')]
+    # A real shell, shelf and rail. Swinging the door exposes this cavity;
+    # the old full backing cube hid the moved leaf and looked like a lost handle.
+    out['wardrobe']=[p((1,0,3),(2,32,16),'walnut'),p((14,0,3),(15,32,16),'walnut'),p((2,0,3),(14,1,16),'walnut'),p((2,31,3),(14,32,16),'walnut'),p((2,1,15),(14,31,16),'walnut'),p((2,7,3),(14,8,15),'dark_wood'),p((3,27,9),(13,28,10),'steel'),p((4,1,7),(12,3,14),'linen'),p((2,1,2),(14,31,3),'dark_wood'),p((10,14,1),(11,18,2),'steel')]
     out['bedside']=[p((1,1,3),(3,5,5),'walnut'),p((13,1,3),(15,5,5),'walnut'),p((0,5,2),(16,15,16),'walnut'),p((0,15,1),(16,16,16),'walnut'),p((11,8,1),(13,9,2),'steel')]
     out['headboard']=[p((0,0,13),(16,14,16),'walnut'),p((0,14,12),(16,16,16),'walnut')]
     out['hamper']=[p((2,0,3),(14,12,15),'linen'),p((1,12,2),(15,14,16),'walnut')]
@@ -174,7 +179,16 @@ def furniture():
     out['switchbox']=[p((3,3,10),(13,15,16),'utility'),p((4,4,9),(12,14,10),'steel'),p((8,8,8),(10,12,9),'black')]
     out['workbench']=[p((0,13,0),(16,16,16),'dark_wood'),leg(1,2,'utility',13),leg(13,2,'utility',13),leg(1,12,'utility',13),leg(13,12,'utility',13),p((1,4,3),(15,5,15),'utility')]
     out['tool_rack']=[p((1,2,14),(15,15,16),'dark_wood'),p((3,4,12),(4,12,14),'steel'),p((7,5,12),(8,13,14),'steel'),p((11,3,12),(13,11,14),'steel')]
-    out['mailbox']=[p((0,0,4),(16,16,16),'steel')]+[p((x+1,y+1,3),(x+7,y+7,4),'utility') for x in (0,8) for y in (0,8)]+[p((x+2,y+4,2),(x+6,y+5,3),'black') for x in (0,8) for y in (0,8)]
+    # A real four-compartment shell. The opening must reveal a recess, not the
+    # solid front of the old backing cube. Keep doors and their handles paired.
+    out['mailbox']=[p((0,0,4),(1,16,16),'steel'),p((15,0,4),(16,16,16),'steel'),
+        p((1,0,4),(15,1,16),'steel'),p((1,15,4),(15,16,16),'steel'),
+        p((1,1,15),(15,15,16),'steel'),p((1,1,14),(15,15,15),'black'),
+        p((7,1,4),(9,15,15),'steel'),p((1,7,4),(15,9,15),'steel')]
+    for x in (0,8):
+        for y in (0,8):
+            out['mailbox'] += [p((x+1,y+1,3),(x+7,y+7,4),'utility'),
+                p((x+2,y+4,2),(x+6,y+5,3),'black')]
     out['lobby_bench']=[p((0,7,2),(16,9,15),'dark_wood'),p((0,9,13),(16,15,16),'dark_wood'),leg(2,3,'steel',7),leg(12,3,'steel',7),leg(2,12,'steel',7),leg(12,12,'steel',7)]
     out['drain']=[p((0,0,0),(16,1,16),'steel')]+[p((x,1,2),(x+1,2,14),'black') for x in (3,6,9,12)]
     out['bin']=[p((3,0,3),(13,13,13),'utility'),p((2,13,2),(14,15,14),'steel'),p((5,15,6),(11,16,10),'black')]
@@ -183,26 +197,34 @@ def furniture():
     out['cup']=[p((5,0,5),(11,1,11),'ceramic'),p((4,1,4),(12,6,12),'ceramic'),p((5,6,5),(11,7,11),'black'),p((12,2,6),(14,5,10),'ceramic')]
     return out
 
-INTERACTIVE={'cabinet','fridge','sideboard','wardrobe','mailbox','desk_lamp','fluorescent'}
+INTERACTIVE={'cabinet','fridge','sideboard','wardrobe','mailbox','desk_lamp','fluorescent','flush_light'}
 SEATS={'booth','stool','armchair','sofa','sofa_left','sofa_right','diner_chair','lobby_bench'}
-LIGHTS={'fluorescent':12,'exterior_lamp':9,'sconce':8,'desk_lamp':8,'sign_left':7,'sign_center':7,'sign_right':7}
+LIGHTS={'fluorescent':12,'flush_light':12,'exterior_lamp':9,'sconce':8,'desk_lamp':8,'sign_left':7,'sign_center':7,'sign_right':7}
 
 def pieces_for(name,opened):
     parts=furniture()[name]
     if not opened:return parts
     parts=json.loads(json.dumps(parts))
     if name=='cabinet':parts[-2]['from']=[1,2,2];parts[-2]['to']=[2,15,15];parts[-1]['from']=[0,8,11];parts[-1]['to']=[1,10,13]
-    elif name=='wardrobe':parts[-2]['from']=[1,1,3];parts[-2]['to']=[2,31,15];parts[-1]['from']=[0,14,10];parts[-1]['to']=[1,18,11]
-    elif name=='sideboard':parts[-2]['from']=[1,5,2];parts[-2]['to']=[2,13,14];parts[-1]['from']=[0,8,11];parts[-1]['to']=[1,10,12]
-    elif name=='fridge':parts[1]['from']=[0,1,1];parts[1]['to']=[1,22,15];parts[2]['from']=[0,6,12];parts[2]['to']=[2,19,13]
-    elif name=='mailbox':parts[1]['from']=[1,1,4];parts[1]['to']=[2,7,10]
-    if name=='fluorescent':
+    elif name=='wardrobe':parts[-2]['from']=[2,1,-9];parts[-2]['to']=[3,31,3];parts[-1]['from']=[1,14,-7];parts[-1]['to']=[2,18,-6]
+    elif name=='sideboard':parts[-2]['from']=[2,5,-10];parts[-2]['to']=[3,13,2];parts[-1]['from']=[1,8,-8];parts[-1]['to']=[2,10,-7]
+    elif name=='fridge':parts[-4]['from']=[1,1,-13];parts[-4]['to']=[2,22,1];parts[-3]['from']=[0,6,-11];parts[-3]['to']=[1,19,-10]
+    elif name=='mailbox':
+        # Ninety degrees about the lower-left door's actual hinge. The handle
+        # moves with the leaf instead of remaining suspended across the opening.
+        parts[8]['from']=[1,1,-3];parts[8]['to']=[2,7,3]
+        parts[9]['from']=[0,4,-2];parts[9]['to']=[1,5,2]
+    if name in ('fluorescent','flush_light'):
         for part in parts:
             if part['material']=='lamp':part['material']='black'
     return parts
 
 def models():
     result={}
+    # Every native fitting kind needs a baked-state entry, including BE-rendered lights.
+    prop=(ROOT/'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/UncannyPropBlock.java').read_text()
+    names=prop.split('enum Kind implements StringRepresentable {',1)[1].split(';',1)[0]
+    result['blockstates/uncanny_fitting.json']={'variants':{'kind='+name.strip().lower():{'model':'the_oldest_house:block/uncanny_flesh' if name.strip()=='FLESH' else 'the_oldest_house:block/uncanny_fitting'} for name in names.split(',')}}
     for name in FULL:
         result['models/block/uncanny_'+name+'.json']={'parent':'minecraft:block/cube_all','textures':{'all':PREFIX+name}}
         result['blockstates/uncanny_'+name+'.json']={'variants':{'':{'model':'the_oldest_house:block/uncanny_'+name}}}
@@ -221,6 +243,14 @@ def models():
                     uvs={'north':[16-x1,v0,16-x0,v1],'south':[x0,v0,x1,v1],
                          'east':[16-z1,v0,16-z0,v1],'west':[z0,v0,z1,v1],
                          'up':[x0,z0,x1,z1],'down':[x0,16-z1,x1,16-z0]}
+                    if name=='mailbox' or min(x0,z0)<0 or max(x1,z1)>16:
+                        # The swung leaf extends in front of its block. Geometry
+                        # coordinates there are not sprite coordinates: negative
+                        # UVs sample a neighbouring stitched-atlas texture.
+                        w,h,d=x1-x0,high-low,z1-z0
+                        uvs={'north':[0,16-h,w,16],'south':[0,16-h,w,16],
+                             'east':[0,16-h,d,16],'west':[0,16-h,d,16],
+                             'up':[0,0,w,d],'down':[0,0,w,d]}
                     faces={face:{'texture':'#'+part['faces'].get(face,part['material']),'uv':uvs[face]} for face in uvs}
                     if name.startswith('sign_'):
                         for face in ('north','south'):faces[face]['uv']=[0,0,16,16]
@@ -272,6 +302,8 @@ def main():
     if check:assert JAVA.read_text()==shape_source(),'Native furniture collision differs from its generated meshes'
     else:JAVA.write_text(shape_source())
     print(('Verified' if check else 'Painted')+f' {len(paintings())} native materials, {len(furniture())} fitted furnishings and the glazed diner entrance.')
+    from draw_optical_fittings import main as optical_main
+    optical_main()
     from draw_uncanny_cellar import main as cellar_main
     cellar_main()
 

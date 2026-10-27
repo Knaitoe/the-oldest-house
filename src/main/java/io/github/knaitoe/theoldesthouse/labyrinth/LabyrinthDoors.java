@@ -183,6 +183,8 @@ public final class LabyrinthDoors {
             sticks(player,door);
             return;
         }
+        if(place==LabyrinthPlace.BACKSEAT){if(!BackseatSites.enter(player,door))sticks(player,door);return;}
+        if(place==LabyrinthPlace.SILO){if(!SiloSites.enter(player,door))sticks(player,door);return;}
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);if(place==LabyrinthPlace.BORRASCA){entry=BorrascaSites.prepareEntry(player);if(entry==null){sticks(player,door);return;}}
         if(place!=null&&LiteraryCabinChoices.closed(data,player.getUUID(),place)){if(reroute(player,door))return;locked(player);return;}
@@ -261,6 +263,8 @@ public final class LabyrinthDoors {
 
     @Nullable
     private static LabyrinthPlace placeOf(MinecraftServer server, LabyrinthData.Door door) {
+        if(door.dimension.equals(HouseDimensions.OUTSIDE)&&SiloSites.protectedPosition(server,door.lower))return LabyrinthPlace.SILO;
+        if(door.dimension.equals(HouseDimensions.OUTSIDE)&&BackseatSites.protectedPosition(server,door.lower))return LabyrinthPlace.BACKSEAT;
         if(door.dimension.equals(HouseDimensions.OUTSIDE)&&BorrascaSites.placeAt(server,door.lower)!=null)return LabyrinthPlace.BORRASCA;var copy=door.dimension.equals(HouseDimensions.OUTSIDE)?LiteraryCopies.placeAt(server,door.lower):null;if(copy!=null)return copy;
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         return origin == null || !io.github.knaitoe.theoldesthouse.house.HouseDimensions.isHouseDimension(door.dimension) ? null : LabyrinthPlaces.placeAt(origin, door.lower);
@@ -280,6 +284,7 @@ public final class LabyrinthDoors {
             return;
         }
         LabyrinthData data = LabyrinthData.get(server);
+        DomesticDisturbances.prepare(player,toLevel,place,from);
         Rotation turn = rotationFrom(from.facing, entry.facing);
 
         // Someone else may be standing in this entry's doorway: it stays open
@@ -349,7 +354,7 @@ public final class LabyrinthDoors {
             HideAndClap.confineLockedPlayer(player);
             return true;
         }
-        LabyrinthPlace place = BorrascaSites.placeAt(player.server,player.blockPosition());if(place==null)place=LiteraryCopies.placeAt(player.server,player.blockPosition());
+        LabyrinthPlace place = SiloSites.inside(player)?LabyrinthPlace.SILO:BackseatSites.inside(player)?LabyrinthPlace.BACKSEAT:BorrascaSites.placeAt(player.server,player.blockPosition());if(place==null)place=LiteraryCopies.placeAt(player.server,player.blockPosition());
         if(place==null)place=LabyrinthPlaces.placeAt(origin, player.blockPosition());
         if (place == null) {
             STEPS.remove(player.getUUID());
@@ -360,7 +365,7 @@ public final class LabyrinthDoors {
             return true;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
-        LabyrinthData.Door entry = place==LabyrinthPlace.BORRASCA?BorrascaSites.entry(player):place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):data.door(place.entryDoorId());
+        LabyrinthData.Door entry = place==LabyrinthPlace.SILO?SiloSites.entry(player):place==LabyrinthPlace.BACKSEAT?BackseatSites.entry(player):place==LabyrinthPlace.BORRASCA?BorrascaSites.entry(player):place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):data.door(place.entryDoorId());
         if (entry == null) {
             return true;
         }
@@ -428,7 +433,8 @@ public final class LabyrinthDoors {
         // A cut happens away from the doorway. Its inverse crossing transform would carry the upstairs offset home.
         depart(player,place);sendBack(player,4,10,24);return true;
     }
-    private static void depart(ServerPlayer player, LabyrinthPlace place) {if(place==LabyrinthPlace.BORRASCA)BorrascaStory.depart(player);
+    private static void depart(ServerPlayer player, LabyrinthPlace place) {if(place==LabyrinthPlace.SILO)SiloSites.depart(player);if(place==LabyrinthPlace.BORRASCA)BorrascaStory.depart(player);
+        if(place==LabyrinthPlace.MOTION_LIGHT)FoyerEncounter.stop(player);
         if(place==LabyrinthPlace.LAKE_HOUSE||place==LabyrinthPlace.LAKE_HOUSE_EMPTY)LakeHouseStory.depart(player);
         if (place == LabyrinthPlace.GHOSTS_SET) GhostsSet.depart(player);
         if (place == LabyrinthPlace.HARRIGAN) HarriganVignette.onDepart(player);
@@ -481,6 +487,8 @@ public final class LabyrinthDoors {
         String correspondenceSource=io.github.knaitoe.theoldesthouse.house.HouseExperience.record(data,id).getString("CurrentPlace");
         Consumer<ServerPlayer> confirmedReturn=p->{
             if(!LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back))return;
+            UncannyDiner.returned(p,entry);
+            FoyerEncounter.returned(p,entry);
             caveDeparture.accept(p);if(entry.id.equals("borrasca/"+p.getUUID()+"/entry"))BorrascaStory.returned(p);
             INSIDE.remove(p.getUUID());
             io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(p);
@@ -624,8 +632,13 @@ public final class LabyrinthDoors {
      * Used when a vignette throws them out.
      */
     public static void sendBack(ServerPlayer player, int fadeIn, int hold, int fadeOut) {
+        sendBack(player,fadeIn,hold,fadeOut,p->{ });
+    }
+
+    /** Completion runs only after the native move succeeds and the original return is consumed. */
+    public static boolean sendBack(ServerPlayer player, int fadeIn, int hold, int fadeOut,Consumer<ServerPlayer> arrived) {
         if (!player.isAlive() || isBusy(player)) {
-            return;
+            return false;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
         LabyrinthData.Waypoint back = data.peekReturn(player.getUUID());
@@ -633,7 +646,7 @@ public final class LabyrinthDoors {
         if (back == null) {
             LabyrinthData.Door junction = data.door(LabyrinthPlace.JUNCTION.entryDoorId());
             if (junction == null) {
-                return;
+                return false;
             }
             target = insideRoom(junction);
         } else if (back.door()) {
@@ -647,7 +660,9 @@ public final class LabyrinthDoors {
         fadeTo(player, target, fadeIn, hold, fadeOut,p->{
             if(back!=null)LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back);
             INSIDE.remove(p.getUUID());
+            arrived.accept(p);
         });
+        return true;
     }
 
     /** Fades out, moves the player while the screen is dark, and fades back in. */
@@ -1004,7 +1019,7 @@ public final class LabyrinthDoors {
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         if (origin == null) return false;
         if (level.dimension().equals(HouseDimensions.OUTSIDE)) {
-            if(LiteraryCopies.protectedPosition(server,pos)||BorrascaSites.protectedPosition(server,pos))return true;
+            if(LiteraryCopies.protectedPosition(server,pos)||BorrascaSites.protectedPosition(server,pos)||BackseatSites.protectedPosition(server,pos)||SiloSites.protectedPosition(server,pos))return true;
             for (LabyrinthPlace place : LabyrinthPlace.values()) if (NovelRooms.outside(place)) {
                 BlockPos base=LabyrinthPlaces.base(origin, place);
                 if (base!=null && IndianLakeRooms.bounds(base, place).contains(Vec3.atCenterOf(pos))) return true;

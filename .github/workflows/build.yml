@@ -44,6 +44,13 @@ jobs:
           python3 tools/draw_harrigan_funeral_assets.py --check
           python3 tools/draw_night_ward_assets.py --check
           python3 tools/draw_seance_fittings.py --check
+          python3 tools/draw_vignette_interiors.py --check
+          python3 tools/draw_vignette_handling.py --check
+          python3 tools/draw_domestic_lives.py --check
+          python3 tools/draw_domestic_records.py --check
+          python3 tools/draw_diner_breakfasts.py --check
+          python3 tools/draw_vignette_details.py --check
+          python3 tools/draw_cabin_objects.py --check
           python3 tools/draw_trailer_furniture.py --check
           python3 tools/draw_site_machines.py --check
           python3 tools/draw_tract_house.py --check
@@ -93,7 +100,9 @@ jobs:
                   assert name in z.namelist(), name
               assert f'version="{expected_version}"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               ghosts = json.loads(z.read('assets/the_oldest_house/blockstates/ghosts_set.json'))['variants']
-              assert len(ghosts) == 152
+              expected_ghost_kinds = {'wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg','stair_rail','stair_rail_top'}
+              assert len(ghosts) == len(expected_ghost_kinds)*4
+              assert {frozenset(key.split(',')) for key in ghosts} == {frozenset((f'kind={kind}',f'facing={face}')) for kind in expected_ghost_kinds for face in ('north','east','south','west')}
               for variant in ghosts.values():
                   assert json.loads(z.read('assets/the_oldest_house/models/'+variant['model'].split(':')[1]+'.json'))['elements']
               for name in ('marjorie','merry','john','sarah','barry','father_wanderly','marjorie_dinner','john_hand'):
@@ -850,7 +859,7 @@ jobs:
           test -s build/font-smoke/native-ghosts-fixtures.png
           test -s build/font-smoke/native-ghosts-paper-and-cases.png
           test -s build/font-smoke/native-ghosts-final-dinner.png
-          for view in all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions; do test -s build/font-smoke/native-ghosts-$view.png; done
+          for view in all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions connected-stairs; do test -s build/font-smoke/native-ghosts-$view.png; done
           test -s build/font-smoke/scenes/ghosts_upstairs.png
           test -s build/font-smoke/scenes/ghosts_basement.png
           test -s build/font-smoke/literary-passed.txt
@@ -875,6 +884,7 @@ jobs:
           for view in front back night ladder-front ladder-side deer-outline; do test -s build/font-smoke/native-elk-fan0480-$view.png; done
           test -s build/font-smoke/goatman-passed.txt
           test -s build/font-smoke/playtest-assets-passed.txt
+          test -s build/font-smoke/native-dinnerbone-idle.png
           test -s build/font-smoke/native-playtest-0464.png
           test -s build/font-smoke/plains-crouch-passed.txt
           test -s build/font-smoke/native-plains-crouch.png
@@ -884,6 +894,8 @@ jobs:
           test -s build/font-smoke/native-death-portraits-dim.png
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+          test -s build/font-smoke/native-cousin-sleeping-0134.png
+          test -s build/font-smoke/cousin-sleeping-0134-passed.txt
           test -s build/font-smoke/cousin-gaits-0497-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-cousin-gaits-0497-$page.png; done
           test -s build/font-smoke/streetlights-0469-passed.txt
@@ -903,7 +915,7 @@ jobs:
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/uncanny-assets-passed.txt
-          for page in 0 1 2; do test -s build/font-smoke/native-uncanny-$page.png; done
+          for page in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-uncanny-$page.png; done
           test -s build/font-smoke/native-uncanny-materials.png
           test -s build/font-smoke/goatman-child-eyes-passed.txt
           test -s build/font-smoke/native-goatman-child-eyes.png
@@ -1032,7 +1044,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/uncanny-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('UncannyTests.java','UncannyBranchTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('UncannyTests.java','UncannyBranchTests.java','Playtest0127Tests.java','Playtest0130Tests.java','FoyerMotionTests.java','Playtest0131Tests.java'))
           assert completed and int(completed[-1])==declared,(completed,declared)
           PY
       - uses: actions/upload-artifact@v4
@@ -1286,7 +1298,7 @@ jobs:
           from pathlib import Path
           declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/StaircaseAccessTests.java').read_text()))
           completed=re.findall(r'All (\d+) required tests passed',Path('build/staircase-native.log').read_text())
-          assert declared==10 and completed and int(completed[-1])==declared, (completed,declared)
+          assert declared==11 and completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} native staircase entrance cases passed.')
           PY_CHECK
       - name: Upload staircase diagnostics
@@ -1315,7 +1327,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_multiplayer --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/multiplayer-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_multiplayer,the_oldest_house_multiplayer_story --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/multiplayer-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1431,6 +1443,110 @@ jobs:
             run-borrasca-live/*/logs/latest.log
             run-borrasca-live/*/crash-reports/
 
+  foyer-gameplay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Decode the original wind, buzzer and unseen courtyard cues
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python3 -m pip install numpy
+          python3 tools/generate_foyer_audio.py --check
+      - name: Native foyer wind, original custody, admission, wrong hallway and actual House returns
+        timeout-minutes: 10
+        run: |
+          mkdir -p build
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 9m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny,the_oldest_house_foyer -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/foyer136-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          files=Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest').glob('*.java')
+          names=[p for p in files if re.search(r'@GameTestHolder\s*\(\s*TheOldestHouse\.MOD_ID\s*\+\s*"(?:_uncanny|_foyer)"',p.read_text())]
+          declared=sum(len(re.findall(r'@GameTest\s*\(',p.read_text())) for p in names)
+          complete=re.findall(r'All (\d+) required tests passed',Path('build/foyer136-native.log').read_text())
+          assert complete and int(complete[-1])==declared,(declared,complete)
+          PY
+      - name: Four native foyer views from the actual outcome cases
+        timeout-minutes: 5
+        run: |
+          test "$(find build/foyer136-proof -maxdepth 1 -name '*.json' | wc -l)" -eq 4
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PfoyerSmoke --no-daemon
+          test -s build/foyer136-art/passed.txt
+          for view in standoff admitted service_exit unhinged_hall; do test -s build/foyer136-art/foyer_$view.png; done
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: foyer136-native-${{ github.sha }}
+          path: |
+            build/foyer136-native.log
+            build/foyer136-proof/
+            build/foyer136-art/
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
+
+  silo-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Install native material review dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri ffmpeg
+          python3 -m pip install Pillow numpy
+      - name: Silo materials, original audio and native physical story
+        timeout-minutes: 8
+        run: |
+          python3 tools/draw_silo.py --check
+          python3 tools/generate_silo_audio.py --check
+          mkdir -p build
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_silo -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/silo-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/SiloTests.java').read_text()))
+          complete=re.findall(r'All (\d+) required tests passed',Path('build/silo-native.log').read_text())
+          assert complete and int(complete[-1])==declared,(declared,complete)
+          PY
+      - name: Six native silo views from actual built blocks and opened hatch
+        timeout-minutes: 5
+        run: |
+          test -s build/silo-art/silo.json
+          test -s build/silo-art/roof-open.json
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PsiloSmoke --no-daemon
+          test -s build/silo-art/passed.txt
+          for view in column grain kitchen-table closed-hatch painted-tin timber-states; do test -s build/silo-art/native-$view.png; done
+          test -s build/silo-art/roof-pixels.txt
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: silo-native-${{ github.sha }}
+          path: |
+            build/silo-native.log
+            build/silo-art/
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
+
   trailer-client:
     runs-on: ubuntu-latest
     steps:
@@ -1445,23 +1561,23 @@ jobs:
       - name: Install native preview display
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri ffmpeg
       - name: Native fitted uncanny environments and matching waitress paintings
         timeout-minutes: 10
         run: |
-          python3 -m pip install Pillow
+          python3 -m pip install Pillow numpy
           mkdir -p build
           set -o pipefail
           python3 tools/draw_uncanny_environments.py --check
-          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny_environment --no-daemon 2>&1 | tee build/uncanny-environment-native.log
+          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny_environment -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/uncanny-environment-native.log
       - name: Native uncanny room and waitress visual review
         if: always()
         timeout-minutes: 5
         run: |
-          test "$(find build/uncanny-environment-proof -name '*.json' | wc -l)" = 10
+          test "$(find build/uncanny-environment-proof -name '*.json' | wc -l)" = 11
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannyEnvironmentSmoke --no-daemon
           test -s build/font-smoke/uncanny-environments-passed.txt
-          test "$(find build/font-smoke/uncanny-environments -name '*.png' | wc -l)" = 10
+          test "$(find build/font-smoke/uncanny-environments -name '*.png' | wc -l)" = 11
           test -s build/font-smoke/uncanny-assets-passed.txt
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - uses: actions/upload-artifact@v4
@@ -1483,7 +1599,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PwindowEntrySmoke --no-daemon
           test -s build/font-smoke/window-entry-passed.txt
-          for view in reach sill pull lower crawl-left crawl-right paw-open paw-curl paw-closed; do test -s build/font-smoke/native-window-entry-$view.png; done
+          for view in reach sill pull lower crawl-left crawl-right paw-open paw-curl paw-closed window-stand bed-heave-left bed-heave-right; do test -s build/font-smoke/native-window-entry-$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1491,6 +1607,51 @@ jobs:
           path: |
             build/font-smoke/native-window-entry-*.png
             build/font-smoke/window-entry-passed.txt
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
+      - name: Native Backseat materials on the production car mesh
+        timeout-minutes: 5
+        run: |
+          python3 tools/draw_backseat_materials.py --check
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbackseatArtSmoke --no-daemon
+          test -s build/backseat-art/passed.txt
+          for view in front-open rear-open side-closed front-closed door-half rear-quarter driver-forward driver-mirror body-floorboard body-raised body-half-rise driver-reveal mirror-flat mirror-raised driver-impact body-front body-profile body-dim dashboard-left dashboard-center dashboard-right; do test -s build/backseat-art/native-backseat-$view.png; done
+          test -s build/backseat-art/mirror-pixels.txt
+      - name: Native Backseat seat, door, moving impact, House return and original-custody checks
+        timeout-minutes: 6
+        run: |
+          python3 tools/generate_backseat_audio.py --check
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_backseat --no-daemon 2>&1 | tee build/backseat-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/BackseatCarTests.java').read_text()))
+          complete=re.findall(r'All (\d+) required tests passed',Path('build/backseat-native.log').read_text())
+          assert complete and int(complete[-1])==declared,(declared,complete)
+          PY
+      - name: Native Backseat private road and original notebook
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbackseatRoadSmoke --no-daemon
+          test -s build/backseat-road/passed.txt
+          for view in native-road native-approach native-notebook; do test -s build/backseat-road/$view.png; done
+      - name: Two actual Backseat clients, locked-seat reconnect and independent physical impacts
+        timeout-minutes: 13
+        run: |
+          LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expedition.py --backseat-only
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backseat-native-art-${{ github.sha }}
+          path: |
+            build/backseat-art/
+            build/backseat-road/
+            build/backseat-native.log
+            build/backseat-live-proof/
+            run-backseat-live/*/logs/latest.log
+            run-backseat-live/*/crash-reports/
             run/logs/latest.log
             run/crash-reports/
           if-no-files-found: warn
@@ -1522,7 +1683,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannySmoke --no-daemon
           test -s build/font-smoke/uncanny-assets-passed.txt
-          for page in 0 1 2; do test -s build/font-smoke/native-uncanny-$page.png; done
+          for page in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-uncanny-$page.png; done
           test -s build/font-smoke/native-uncanny-materials.png
       - uses: actions/upload-artifact@v4
         if: always()
@@ -1618,6 +1779,8 @@ jobs:
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text(), 'A native mod model has a missing texture'"
           test -s build/font-smoke/trailer-0465-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-trailer-0465-$page.png; done
+          test -s build/font-smoke/native-cousin-sleeping-0134.png
+          test -s build/font-smoke/cousin-sleeping-0134-passed.txt
           test -s build/font-smoke/cousin-gaits-0497-passed.txt
           for page in 0 1 2 3; do test -s build/font-smoke/native-cousin-gaits-0497-$page.png; done
           test -s build/font-smoke/streetlights-0469-passed.txt
@@ -1662,6 +1825,8 @@ jobs:
             build/font-smoke/native-trailer-0465-*.png
             build/font-smoke/trailer-0465-passed.txt
             build/font-smoke/native-cousin-gaits-0497-*.png
+            build/font-smoke/native-cousin-sleeping-0134.png
+            build/font-smoke/cousin-sleeping-0134-passed.txt
             build/font-smoke/cousin-gaits-0497-passed.txt
             build/font-smoke/native-playtest-0468-*.png
             build/font-smoke/playtest-0468-passed.txt
@@ -1716,7 +1881,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','GoatmanBedtimeTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused trailer, funeral and hospital native cases passed; the complete suite remains required.')
           PY
@@ -1790,3 +1955,128 @@ jobs:
         with:
           name: caver-diagnostics-${{ github.sha }}
           path: build/caver-native.log
+
+  interior-gameplay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Install native renderer dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0
+      - name: Check authored interior assets and shared collision
+        run: |
+          python3 -m pip install Pillow
+          python3 tools/draw_vignette_interiors.py --check
+          python3 tools/draw_vignette_handling.py --check
+          python3 tools/draw_domestic_lives.py --check
+          python3 tools/draw_domestic_records.py --check
+          python3 tools/draw_diner_breakfasts.py --check
+          python3 tools/draw_vignette_details.py --check
+          python3 tools/draw_cabin_objects.py --check
+      - name: Native fitting use, original routes and old-save custody
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p build
+          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_interior_review --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/interior-native.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          log=Path('build/interior-native.log').read_text()
+          declared=sum(len(re.findall(r'@GameTest\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('VignetteInteriorTests.java','DomesticLivesTests.java','PlaytestScenery130Tests.java','ArchiveReaderFilesTests.java'))
+          completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
+          assert completed and int(completed[-1])==declared, 'Every native interior case must finish.'
+          assert not re.search(r'[1-9]\d* required tests failed',log), 'A required interior case failed.'
+          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==26
+          print(f'All {declared} native interior cases passed; the complete suite remains required.')
+          PY
+      - name: Native diner, archive, painted sun and retreat follow-up
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_service --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/service-native.log
+          python3 - <<'PY_CHECK'
+          import re
+          from pathlib import Path
+          log=Path('build/service-native.log').read_text()
+          declared=len(re.findall(r'@GameTest\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/ServiceFollowupTests.java').read_text()))
+          completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
+          assert completed and int(completed[-1])==declared
+          assert not re.search(r'[1-9]\d* required tests failed',log)
+          PY_CHECK
+      - name: Native object-specific keys, slides, model kit and tape transport
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_handling --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/handling-native.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          log=Path('build/handling-native.log').read_text()
+          declared=len(re.findall(r'@GameTest\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/VignetteHandlingTests.java').read_text()))
+          completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
+          assert completed and int(completed[-1])==declared
+          assert not re.search(r'[1-9]\d* required tests failed',log)
+          assert len(list(Path('build/handling-proof').glob('*.json')))==24
+          PY
+      - name: Render fourteen actual rooms and four floor-specific views
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          ALSOFT_DRIVERS: 'null'
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 5m xvfb-run -a -s '-screen 0 1280x800x24' gradle runClient -PinteriorEnvironmentSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/interior-client.log
+          test -s build/font-smoke/interior-environments-passed.txt
+          test -s build/font-smoke/domestic-assets-passed.txt
+          test -s build/font-smoke/diner-assets-passed.txt
+          test -s build/font-smoke/native-diner-breakfasts.png
+          for page in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-domestic-$page.png; done
+          python3 - <<'PY'
+          from pathlib import Path
+          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==26
+          log=Path('build/interior-client.log').read_text()
+          assert 'Unable to load model' not in log and 'Missing textures in model' not in log and 'missing model for variant' not in log
+          PY
+      - name: Native close-ups and production sounds for every handled state
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          ALSOFT_DRIVERS: 'null'
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 5m xvfb-run -a -s '-screen 0 1280x800x24' gradle runClient -PhandlingSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/handling-client.log
+          test -s build/font-smoke/handling-passed.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          assert len(list(Path('build/font-smoke/handling').glob('*.png')))==24
+          log=Path('build/handling-client.log').read_text()
+          assert 'Unable to load model' not in log and 'Missing production handling sound' not in log
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: interior-review-${{ github.sha }}
+          path: |
+            build/service-native.log
+            build/interior-native.log
+            build/interior-client.log
+            build/handling-native.log
+            build/handling-client.log
+            build/handling-proof
+            build/font-smoke/handling
+            build/font-smoke/handling-passed.txt
+            build/interior-environment-proof
+            build/font-smoke/interior-environments
+            build/font-smoke/interior-environments-passed.txt
+            build/font-smoke/native-domestic-*.png
+            build/font-smoke/domestic-assets-passed.txt
+            build/font-smoke/native-diner-breakfasts.png
+            build/font-smoke/diner-assets-passed.txt

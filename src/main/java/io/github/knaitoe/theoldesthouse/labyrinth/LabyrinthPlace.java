@@ -298,11 +298,13 @@ public enum LabyrinthPlace {
     BORRASCA("borrasca",Kind.MULTI_VISIT,98,new BoundingBox(-44,-5,-220,44,26,0),literaryEntry()),
     /** Six original uncanny rooms (0.4.113); every earlier address remains unchanged. */
     PAINTED_INTERIOR("painted_interior",Kind.ONE_SHOT,99,new BoundingBox(-15,-3,-39,15,11,0),literaryEntry()),
-    SECOND_WAITRESS("second_waitress",Kind.ONE_SHOT,100,new BoundingBox(-28,-4,-57,28,12,0),literaryEntry()),
-    TUNNEL_PERIPHERY("tunnel_periphery",Kind.ONE_SHOT,101,new BoundingBox(-5,-2,-75,5,8,0),literaryEntry()),
+    SECOND_WAITRESS("second_waitress",Kind.ONE_SHOT,100,new BoundingBox(-28,-4,-57,28,12,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("till_exit",new BlockPos(-10,0,-6),Direction.WEST,LabyrinthData.RETURN))),
+    TUNNEL_PERIPHERY("tunnel_periphery",Kind.ONE_SHOT,101,new BoundingBox(-5,-2,-147,5,8,0),literaryEntry()),
     MISSING_SLEEP("missing_sleep",Kind.ONE_SHOT,102,new BoundingBox(-11,-2,-31,11,12,0),literaryEntry()),
     LAYERED_MAN("layered_man",Kind.ONE_SHOT,103,new BoundingBox(-9,-7,-32,9,6,0),literaryEntry()),
-    MOTION_LIGHT("motion_light",Kind.ONE_SHOT,104,new BoundingBox(-9,-2,-27,9,9,0),literaryEntry()),
+    MOTION_LIGHT("motion_light",Kind.ONE_SHOT,104,new BoundingBox(-9,-2,-27,10,9,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("service_exit",new BlockPos(8,0,-5),Direction.EAST,LabyrinthData.RETURN))),
+    BACKSEAT("backseat",Kind.ONE_SHOT,105,new BoundingBox(-14,-3,-58,14,18,4),literaryEntry()),
+    SILO("silo",Kind.ONE_SHOT,106,new BoundingBox(-12,-3,-12,12,69,16),List.of(new DoorSpec("entry",new BlockPos(0,0,13),Direction.SOUTH,LabyrinthData.RETURN))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

@@ -177,7 +177,7 @@ public final class StaceyTests {
         f.door(DrownedTown.CHURCH_DOOR,Blocks.SPRUCE_DOOR);h.assertTrue(!w.breakableDoor(f.base.offset(DrownedTown.CHURCH_DOOR)),"the essay-and-key church gate stays protected");
         f.door(new BlockPos(-1,0,-36),Blocks.SPRUCE_DOOR);var open=f.base.offset(-1,0,-36);f.l.setBlock(open,f.l.getBlockState(open).setValue(DoorBlock.OPEN,true),3);
         h.assertTrue(!w.workDoor(open)&&w.doorBreakTicks()==0,"an opened door cancels cracking without drops");
-        h.assertTrue(WitnessAccount.Story.values().length==52,"Stacey remains one fixed source in the expanded pool");f.done();
+        h.assertTrue(WitnessAccount.Story.values().length==54,"Stacey remains one fixed source in the expanded pool");f.done();
     });}
     @GameTest(template="empty",batch="stacey_speed",timeoutTicks=1800)
     public static void actualLungeSpendsDoubledMovementAcrossMoreThanOnePathNode(GameTestHelper h){run(h,LabyrinthPlace.WINTER_LAKE,1252000,f->{

@@ -86,7 +86,7 @@ public final class ElkLotNight {
     private static final double[][] SEARCHING={{-8.5,-16.5},{-2.5,-15.5},{-4.5,-31.5}},HERDING={{0.5,-6.5},{-8.5,-13.0},{4.5,-36.5}};
 
     private static final Map<String,String[]> IDLE=Map.of(
-        "Marla",new String[]{"What'll it be, hon? Beer's two-fifty. Whiskey's four.","You're not from around here. That's all right. Nobody's from around here after midnight.","Kitchen's closed. There's pickled eggs if you're brave.","Put it on the tab. Everybody does.","Wipe your feet next time. The field comes in on everybody's boots."},
+        "Marla",new String[]{"We're past close, hon. You look rough. Sit a minute.","You're not from around here. That's all right. Nobody's from around here after midnight.","Kitchen's closed. There's pickled eggs if you're brave.","Put it on the tab. Everybody does.","Wipe your feet next time. The field comes in on everybody's boots."},
         "Russ",new String[]{"Drove eleven hours today. Every one of them looked the same.","You hear that? Out past the lot. Every night this week.","My cousin hit one on this road. Cow elk. Said it stood up after.","Don't go out past the fence. Ground's soft out there.","%s, right? Thought so. You look like a %s."},
         "Denny",new String[]{"You shoot? No? Then quit hovering.","Eight ball, corner pocket. Watch.","Wade owes me forty. Wade always owes me forty.","Lights went out across the road last night. Just a second. Like something walked in front of them."},
         "Wade",new String[]{"Sit down if you're sitting.","There's a herd comes down to that field. You don't see them. You see where they were.","Marla's got a clipping on the board by the door. Read it sometime. Or don't.","Song's almost over. They're always almost over."},
@@ -114,7 +114,7 @@ public final class ElkLotNight {
     }
     private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0478",a.level().getGameTime());}
     /** A line said to the readers near enough to hear it. */
-    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,line);for(var p:near)if(p.distanceToSqr(a)<400)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
+    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,line);for(var p:near)if(LiteraryVignettes.inside(p,PLACE)&&p.distanceToSqr(a)<400)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
     private static @Nullable ServerPlayer nearest(Entity a,List<ServerPlayer> here,double reach){ServerPlayer best=null;double d=reach*reach;for(var p:here){double e=p.distanceToSqr(a);if(e<d){d=e;best=p;}}return best;}
     static List<ServerPlayer> here(MinecraftServer s){var out=new ArrayList<ServerPlayer>();for(var p:s.getPlayerList().getPlayers())if(LiteraryVignettes.inside(p,PLACE)&&LiteraryVignettes.personal(LabyrinthData.get(s),p.getUUID(),PLACE).getBoolean("Here"))out.add(p);return out;}
     /** In the bar itself, under its roof. */
@@ -260,7 +260,7 @@ public final class ElkLotNight {
             boolean hostile=stage>=3&&p!=null&&!ElkLotNight.inField(p.position(),b)&&!ElkLotNight.inBar(p.position(),b);
             if(hostile){double angle=i*Math.PI*2/3;goal=p.position().add(Math.cos(angle)*.85,0,Math.sin(angle)*.85);}
             // Before that they keep their distance and never touch anyone: near a reader a man steps back and round them.
-            if(hostile)walk(a,goal,.2);
+            if(hostile)walk(a,goal,.095);
             else if(p!=null&&p.distanceToSqr(a)<2.8*2.8){var away=new Vec3(a.getX()-p.getX(),0,a.getZ()-p.getZ());away=away.lengthSqr()<1e-4?new Vec3(1,0,0):away.normalize();
                 var side=new Vec3(-away.z,0,away.x);if(side.dot(goal.subtract(a.position()))<0)side=side.scale(-1);var step=side.scale(.8).add(away.scale(.5)).normalize().scale(.6);
                 walk(a,new Vec3(a.getX()+step.x,b.getY(),a.getZ()+step.z),.14);}
@@ -331,8 +331,12 @@ public final class ElkLotNight {
     }
     // ------------------------------------------------------------------------------------------------ talking and drinking
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
-        var who=person(a);if(who==null)return;var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);var near=List.of(p);
+        var who=person(a);if(who==null||!LiteraryVignettes.inside(p,PLACE))return;var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);var near=List.of(p);
         if(who==MARLA){
+            if(own.getBoolean("Ready")||own.getBoolean("Completed")){
+                String[] after={"Past close now, hon. Go on home.","Leave the glass. I'll see to it.","There's nothing left for you out in that field.","You look cold. Button your coat before you go.","You don't owe me for tonight.","Mind the ditch. Keep to the road."};
+                int last=own.contains("MarlaLast130")?own.getInt("MarlaLast130"):-1;int n=p.getRandom().nextInt(last<0?after.length:after.length-1);if(last>=0&&n>=last)n++;own.putInt("MarlaLast130",n);speak(a,who,after[n],near);return;
+            }
             var held=p.getMainHandItem();
             if(held.is(Items.GLASS_BOTTLE)){held.shrink(1);speak(a,who,"Thanks, hon.",near);return;}
             speak(a,who,w.contains("CrashAt")?MARLA_AFTER[own.getInt("Talk_Marla")%MARLA_AFTER.length]:IDLE.get("Marla")[own.getInt("Talk_Marla")%IDLE.get("Marla").length],near);own.putInt("Talk_Marla",own.getInt("Talk_Marla")+1);

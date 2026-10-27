@@ -38,7 +38,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class LabyrinthLighting {
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
-    public static final BlockPos TOM_NOTE = new BlockPos(-3, 0, -6);
+    public static final BlockPos TOM_NOTE = new BlockPos(-3, 0, -3);
     public static final BlockPos TOM_CACHE = new BlockPos(3, 0, -9);
 
     private static final Map<UUID, Integer> DEPTH = new HashMap<>();
@@ -75,6 +75,24 @@ public final class LabyrinthLighting {
                 cache.setItem(3, new ItemStack(LabyrinthRegistry.TRAIL_SPOOL.get()));
             }
         }
+    }
+
+    /** Move the actual aid book/page once; never restock it or touch an occupied room. */
+    public static boolean moveAidLectern(ServerLevel level,BlockPos origin){
+        var data=LabyrinthData.get(level.getServer());var done=data.state("junction_note_0127");String key=Long.toString(origin.asLong());
+        if(done.getBoolean(key))return true;
+        var base=LabyrinthPlaces.base(origin,LabyrinthPlace.JUNCTION);var from=base.offset(-3,0,-6);var to=base.offset(TOM_NOTE);
+        if(!level.hasChunkAt(from)||!level.hasChunkAt(to)||!level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(from)))return false;
+        if(level.players().stream().anyMatch(p->p.getCamera().distanceToSqr(from.getCenter())<16*16))return false;
+        var state=level.getBlockState(from);
+        if(state.is(Blocks.LECTERN)&&level.getBlockEntity(from) instanceof LecternBlockEntity original){
+            if(!level.isEmptyBlock(to)||level.getBlockState(to.below()).getCollisionShape(level,to.below()).isEmpty())return false;
+            var book=original.getBook();int page=original.getPage();
+            original.setBook(ItemStack.EMPTY);level.setBlock(from,Blocks.AIR.defaultBlockState(),FLAGS|Block.UPDATE_SUPPRESS_DROPS);
+            level.setBlock(to,state.setValue(LecternBlock.FACING,Direction.EAST),FLAGS);
+            if(level.getBlockEntity(to) instanceof LecternBlockEntity moved){moved.setBook(book);var saved=moved.saveWithoutMetadata(level.registryAccess());saved.putInt("Page",page);moved.loadWithComponents(saved,level.registryAccess());moved.setChanged();}
+        }
+        done.putBoolean(key,true);data.setState("junction_note_0127",done);return true;
     }
 
     /** One finite upgrade of existing aid barrels; never replaces player contents. */
@@ -221,6 +239,7 @@ public final class LabyrinthLighting {
             clearAll();
             return;
         }
+        if(origin.equals(LabyrinthData.get(server).builtOrigin()))moveAidLectern(level,origin);
 
         long now = server.getTickCount();
         LabyrinthData data = LabyrinthData.get(server);

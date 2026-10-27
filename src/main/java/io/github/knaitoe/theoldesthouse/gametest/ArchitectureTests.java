@@ -311,8 +311,9 @@ public final class ArchitectureTests {
             for(var d:Direction.values()){
                 var next=at.relative(d);if(!r.isInside(next.subtract(b))||seen.contains(next))continue;
                 var s=level.getBlockState(next);
-                // Doors open, hatches open and ladders are climbed.
-                if(!s.getCollisionShape(level,next).isEmpty()&&!(s.getBlock() instanceof DoorBlock)&&!(s.getBlock() instanceof TrapDoorBlock)&&!(s.getBlock() instanceof LadderBlock))continue;
+                // Doors and removable entrance boards open; hatches open and ladders are climbed.
+                boolean boards=s.is(UncannyRegistry.PROP.get())&&s.getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.SUN_BOARD;
+                if(!s.getCollisionShape(level,next).isEmpty()&&!boards&&!(s.getBlock() instanceof DoorBlock)&&!(s.getBlock() instanceof TrapDoorBlock)&&!(s.getBlock() instanceof LadderBlock))continue;
                 seen.add(next);todo.add(next);
             }
         }

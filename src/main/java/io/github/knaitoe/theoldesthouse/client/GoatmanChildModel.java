@@ -29,6 +29,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     }
     @Override public void setupAnim(GoatmanChild e,float walk,float amount,float age,float yaw,float pitch){
         HumanoidMotion.reset(this);
+        if(e.isSleeping()||e.hasPose(net.minecraft.world.entity.Pose.SLEEPING)){sleepPose(e.sleepPose(),age);return;}
         if(e.enteringWindow()){windowPose(e.windowEntry(age-e.tickCount));return;}
         if(e.crawling()){crawlPose(e.walk(age-e.tickCount)*.78F,Math.min(1,Math.abs(e.speed())/.48F));return;}
         boolean still=e.tell(GoatmanVignette.STILL)&&!e.stalkingAppearance();
@@ -66,8 +67,35 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
             // Laughing with no sound coming out: the shoulders and head jerk together.
             float h=Mth.abs(Mth.sin(age*.9F))*Mth.abs(Mth.sin(age*.37F));
             body.xRot+=.1F+.16F*h;head.xRot+=.22F*h;
+            body.zRot+=.025F*Mth.sin(age*.9F);leftArm.xRot-=.24F+.22F*h;rightArm.xRot-=.3F+.12F*h;
+            leftElbow.xRot=-.4F-.35F*h;rightElbow.xRot=-.55F-.25F*h;leftKnee.xRot+=.08F*h;rightKnee.xRot+=.12F*h;
         }
         if(attackTime>0&&!seated&&!cower)rightArm.xRot=-1.8F-Mth.sin(attackTime*Mth.PI)*.65F;
+    }
+    /** Native bed rotation lays the spine down. Roll around that spine before connecting the original joints. */
+    public void sleepPose(int variant,float age){
+        HumanoidMotion.reset(this);young=false;float roll=0;
+        switch(Math.floorMod(variant,4)){
+            case 0->{ // Back, hands resting over the stomach, one knee loose.
+                leftArm.xRot=-.35F;rightArm.xRot=-.3F;leftArm.zRot=.15F;rightArm.zRot=-.15F;
+                leftElbow.xRot=-.7F;rightElbow.xRot=-.65F;rightLeg.xRot=-.13F;rightKnee.xRot=.24F;
+            }
+            case 1->{ // Curled on the left side.
+                roll=1.3F;leftLeg.xRot=-.55F;rightLeg.xRot=-.45F;leftKnee.xRot=.95F;rightKnee.xRot=.8F;
+                leftArm.xRot=-1.1F;rightArm.xRot=-.85F;leftElbow.xRot=-1.25F;rightElbow.xRot=-1.05F;head.xRot=.13F;
+            }
+            case 2->{ // Right side, one hand tucked near the cheek.
+                roll=-1.3F;leftLeg.xRot=-.15F;rightLeg.xRot=-.38F;leftKnee.xRot=.3F;rightKnee.xRot=.65F;
+                rightArm.xRot=-2.1F;rightElbow.xRot=-.8F;leftArm.xRot=-.55F;leftElbow.xRot=-1.15F;head.xRot=-.08F;
+            }
+            default->{ // Stomach, face turned and one arm above the pillow.
+                roll=Mth.PI;leftArm.xRot=-2.4F;leftElbow.xRot=-.6F;rightArm.xRot=-.45F;rightElbow.xRot=-.9F;
+                head.yRot=.6F;rightLeg.xRot=-.08F;rightKnee.xRot=.4F;
+            }
+        }
+        body.yRot=roll;leftLeg.yRot=rightLeg.yRot=roll;
+        leftLeg.x=1.9F*Mth.cos(roll);leftLeg.z=-1.9F*Mth.sin(roll);rightLeg.x=-leftLeg.x;rightLeg.z=-leftLeg.z;
+        head.xRot+=.012F*Mth.sin(age*.025F);HumanoidMotion.connect(this);
     }
     public void cowerPose(){pose(0,0,0,false,true,false);}
     public static float ease(float from,float to,float progress){float t=Mth.clamp((progress-from)/(to-from),0,1);return t*t*(3-2*t);}
@@ -82,12 +110,13 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
         body.xRot=lean;body.zRot=.035F*Mth.sin(progress*Mth.PI)*fold;
         head.xRot=-lean-.55F*fold;head.yRot=.08F*Mth.sin(progress*Mth.PI*2)*fold;
         float reach=Mth.lerp(ease(0,.12F,progress),-.1F,-2.65F);
-        rightArm.xRot=-lean+Mth.lerp(fold,reach,-1.25F+.5F*pull);leftArm.xRot=rightArm.xRot-.13F*pull;
+        float rightPull=ease(.38F,.53F,progress)*(1-ease(.53F,.69F,progress)),leftPull=ease(.49F,.64F,progress)*(1-ease(.64F,.8F,progress));
+        rightArm.xRot=-lean+Mth.lerp(fold,reach,-1.25F+.65F*rightPull);leftArm.xRot=-lean+Mth.lerp(fold,reach,-1.35F+.65F*leftPull);
         rightArm.zRot=.12F*fold;leftArm.zRot=-.12F*fold;
-        rightElbow.xRot=(-.1F-.95F*pull)*fold;leftElbow.xRot=(-.1F-.7F*pull)*fold;
+        rightElbow.xRot=(-.1F-1.15F*rightPull)*fold;leftElbow.xRot=(-.1F-1.15F*leftPull)*fold;
         if(progress>.78F){
             var joints=joints();var sill=new PartPose[joints.length];for(int i=0;i<joints.length;i++)sill[i]=joints[i].storePose();
-            HumanoidMotion.reset(this);crawlMotion(0,0);float blend=ease(.78F,1,progress);
+            HumanoidMotion.reset(this);animatePose(0,0,0,0,false,false,false,false);float blend=ease(.78F,1,progress);
             for(int i=0;i<joints.length;i++){var p=joints[i];var from=sill[i];p.setPos(Mth.lerp(blend,from.x,p.x),Mth.lerp(blend,from.y,p.y),Mth.lerp(blend,from.z,p.z));p.xRot=Mth.lerp(blend,from.xRot,p.xRot);p.yRot=Mth.lerp(blend,from.yRot,p.yRot);p.zRot=Mth.lerp(blend,from.zRot,p.zRot);}
         }
         HumanoidMotion.connect(this);
@@ -96,18 +125,18 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     /** Opposite hands and knees take turns; planted hand/foot tips stay at the floor. Phase follows actual travel. */
     public void crawlPose(float phase,float moving){HumanoidMotion.reset(this);young=false;crawlMotion(phase,Mth.clamp(moving,0,1));HumanoidMotion.connect(this);}
     private void crawlMotion(float phase,float moving){
-        float lean=1.43F,hipY=21.5F-.2F*moving*Mth.sin(phase*2);
+        float lean=1.43F,hipY=18.5F-.2F*moving*Mth.sin(phase*2);
         leftLeg.y=rightLeg.y=hipY;leftLeg.z=rightLeg.z=0;
         body.xRot=lean;body.yRot=.025F*moving*Mth.sin(phase);head.xRot=-lean-.08F;head.yRot=.045F*moving*Mth.sin(phase);
         for(boolean left:new boolean[]{false,true}){
             float beat=phase+(left?Mth.PI:0),stride=moving*Mth.cos(beat),lift=moving*Math.max(0,Mth.sin(beat));
             var legPart=left?leftLeg:rightLeg;var kneePart=left?leftKnee:rightKnee;
-            float dy=23.99F-hipY-.65F*lift,dz=.25F+.35F*stride;
-            float knee=(float)Math.acos(Mth.clamp((dy*dy+dz*dz-72)/72,-1,1));
-            legPart.xRot=(float)Math.atan2(dz,dy)-(float)Math.atan2(6*Mth.sin(knee),6+6*Mth.cos(knee));kneePart.xRot=knee;
+            float dz=.25F+.35F*stride,shin=0;
+            // The underside of the actual four-pixel shin, rather than its centre line, plants on the floor.
+            for(int solve=0;solve<12;solve++){float dy=23.98F-2*Mth.abs(Mth.sin(shin))-hipY-.65F*lift;float knee=(float)Math.acos(Mth.clamp((dy*dy+dz*dz-72)/72,-1,1));legPart.xRot=(float)Math.atan2(dz,dy)-(float)Math.atan2(6*Mth.sin(knee),6+6*Mth.cos(knee));kneePart.xRot=knee;shin=legPart.xRot+knee;}
             var armPart=left?leftArm:rightArm;var elbowPart=left?leftElbow:rightElbow;
             float upper=-1.15F+.2F*stride,shoulderY=hipY-10*Mth.cos(lean);
-            float forearm=-(float)Math.acos(Mth.clamp((23.99F-1.2F*lift-shoulderY-4*Mth.cos(upper))/6,-1,1));
+            float forearm=0;for(int solve=0;solve<12;solve++)forearm=-(float)Math.acos(Mth.clamp((23.98F-2*Mth.abs(Mth.sin(forearm))-1.2F*lift-shoulderY-4*Mth.cos(upper))/6,-1,1));
             armPart.xRot=upper-lean;elbowPart.xRot=forearm-upper;
         }
     }

@@ -17,7 +17,7 @@ public final class IndianLakeRooms {
         return origin == null ? null : LabyrinthPlaces.base(origin, place);
     }
     public static AABB bounds(BlockPos base, LabyrinthPlace place) {
-        var r = place.room();
+        var r = DomesticLives.extend(place, place.room());
         return new AABB(base.getX()+r.minX(), base.getY()+r.minY(), base.getZ()+r.minZ(),
                 base.getX()+r.maxX()+1, base.getY()+r.maxY()+1, base.getZ()+18);
     }

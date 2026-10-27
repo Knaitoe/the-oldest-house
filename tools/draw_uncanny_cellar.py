@@ -6,10 +6,29 @@ from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 A = ROOT / 'src/main/resources/assets/the_oldest_house'
-NAMES = ('cellar_brick', 'cellar_floor', 'cellar_plaster', 'flesh_skin', 'flesh_fat', 'flesh_veins', 'flesh_raw')
+NAMES = ('cellar_brick', 'cellar_floor', 'cellar_plaster', 'flesh_skin', 'flesh_fat', 'flesh_veins', 'flesh_raw', 'flesh_eye_left', 'flesh_eye_right', 'flesh_mouth', 'flesh_nose')
 
 def tissue(kind):
     im = Image.new('RGBA', (16,16), '#ca8e86'); d = ImageDraw.Draw(im)
+    if kind in ('flesh_eye_left','flesh_eye_right','flesh_mouth','flesh_nose'):
+        d.rectangle((0,0,15,15),fill='#ba9184')
+        d.line((0,14,5,12,10,13,15,11),fill='#8f6c67')
+        if kind.startswith('flesh_eye_'):
+            low=6 if kind.endswith('left') else 8
+            d.polygon(((1,low),(4,low-2),(10,low-1),(14,low+2),(11,low+4),(4,low+3)),fill='#6e5154')
+            d.line((3,low+1,7,low,12,low+2),fill='#d6c8ad',width=2)
+            d.rectangle((7,low,9,low+2),fill='#413e37');d.point((8,low),fill='#9e9c83')
+            d.line((1,low-2,7,low-4,14,low-1),fill='#8e7067',width=2)
+        elif kind=='flesh_mouth':
+            d.rectangle((0,0,15,15),fill='#ba9184')
+            d.polygon(((6,2),(9,2),(12,5),(12,11),(9,14),(6,14),(3,11),(3,5)),fill='#89656a')
+            d.polygon(((6,3),(9,3),(11,6),(11,11),(9,13),(6,13),(4,10),(4,6)),fill='#342a2c')
+            d.line((5,4,6,3,9,3,10,4),fill='#c0a896')
+        else:
+            d.polygon(((6,0),(9,0),(12,11),(9,14),(3,12)),fill='#cda18e')
+            d.rectangle((3,11,5,12),fill='#775556');d.rectangle((9,11,11,12),fill='#775556')
+            d.line((5,2,4,9),fill='#ddbaa2')
+        return im
     if kind == 'flesh_fat':
         d.rectangle((0,0,15,15), fill='#a87972')
         for x,y in ((-3,-2),(7,-4),(1,6),(11,7)):
@@ -80,6 +99,12 @@ def definitions():
         out['models/block/uncanny_'+name+'.json']={'parent':'minecraft:block/cube_all','textures':{'all':'the_oldest_house:block/uncanny/'+name}}
         if not name.startswith('flesh_'):
             out['blockstates/uncanny_'+name+'.json']={'variants':{'':{'model':'the_oldest_house:block/uncanny_'+name}}}
+    # The face belongs to the man as a whole; only the south-facing surface
+    # carries anatomy. The other five faces retain the same continuous skin.
+    for name in NAMES[7:]:
+        textures={side:'the_oldest_house:block/uncanny/flesh_skin' for side in ('down','up','north','south','east','west','particle')}
+        textures['south']='the_oldest_house:block/uncanny/'+name
+        out['models/block/uncanny_'+name+'.json']={'parent':'minecraft:block/cube','textures':textures}
     out['blockstates/cellar_flesh.json']={'variants':{f'layer={i}':{'model':'the_oldest_house:block/uncanny_'+n} for i,n in enumerate(NAMES[3:])}}
     out['models/item/cellar_key.json']={'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/cellar_key'}}
     return out

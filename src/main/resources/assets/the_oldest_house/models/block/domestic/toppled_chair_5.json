@@ -1,0 +1,360 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "floral": "the_oldest_house:block/floral",
+    "walnut": "the_oldest_house:block/walnut",
+    "particle": "the_oldest_house:block/floral"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        3
+      ],
+      "to": [
+        14,
+        12,
+        7
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            2,
+            9,
+            14,
+            13
+          ],
+          "texture": "#floral"
+        },
+        "down": {
+          "uv": [
+            2,
+            9,
+            14,
+            13
+          ],
+          "texture": "#floral"
+        },
+        "west": {
+          "uv": [
+            2,
+            9,
+            14,
+            13
+          ],
+          "texture": "#floral",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            2,
+            9,
+            14,
+            13
+          ],
+          "texture": "#floral",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#floral"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#floral"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        9,
+        0
+      ],
+      "to": [
+        5,
+        11,
+        3
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "down": {
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "west": {
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ],
+          "texture": "#walnut",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ],
+          "texture": "#walnut",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            3,
+            3,
+            5,
+            5
+          ],
+          "texture": "#walnut"
+        },
+        "north": {
+          "uv": [
+            3,
+            11,
+            5,
+            13
+          ],
+          "texture": "#walnut"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        9,
+        0
+      ],
+      "to": [
+        13,
+        11,
+        3
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "down": {
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "west": {
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ],
+          "texture": "#walnut",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ],
+          "texture": "#walnut",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            11,
+            3,
+            13,
+            5
+          ],
+          "texture": "#walnut"
+        },
+        "north": {
+          "uv": [
+            11,
+            11,
+            13,
+            13
+          ],
+          "texture": "#walnut"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        1,
+        0
+      ],
+      "to": [
+        5,
+        3,
+        3
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "down": {
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "west": {
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ],
+          "texture": "#walnut",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ],
+          "texture": "#walnut",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            3,
+            11,
+            5,
+            13
+          ],
+          "texture": "#walnut"
+        },
+        "north": {
+          "uv": [
+            3,
+            3,
+            5,
+            5
+          ],
+          "texture": "#walnut"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        1,
+        0
+      ],
+      "to": [
+        13,
+        3,
+        3
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "down": {
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ],
+          "texture": "#walnut"
+        },
+        "west": {
+          "uv": [
+            11,
+            13,
+            13,
+            16
+          ],
+          "texture": "#walnut",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            3,
+            13,
+            5,
+            16
+          ],
+          "texture": "#walnut",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            11,
+            11,
+            13,
+            13
+          ],
+          "texture": "#walnut"
+        },
+        "north": {
+          "uv": [
+            11,
+            3,
+            13,
+            5
+          ],
+          "texture": "#walnut"
+        }
+      }
+    }
+  ]
+}

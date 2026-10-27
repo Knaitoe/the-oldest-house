@@ -1,0 +1,30 @@
+{
+  "source": "tools/draw_backseat_materials.py",
+  "style": "Native vanilla-adjacent 16x16 material tiles. No generated image, photographs or resampling. Model faces repeat at 16 texture pixels per block.",
+  "materials": {
+    "cream": "four flat enamel colors matching the existing uncanny enamel palette",
+    "vinyl": "five flat brown upholstery colors",
+    "rubber": "three flat dark colors",
+    "gauges": "six flat dashboard/dial colors",
+    "chrome": "four flat steel colors",
+    "mirror": "three flat reflective-glass colors",
+    "headliner": "three flat fabric colors"
+  },
+  "reused": [
+    "uncanny/dark_wood",
+    "uncanny/glass",
+    "uncanny/lamp",
+    "uncanny/vinyl"
+  ],
+  "native_model": "BackseatCarMesh",
+  "native_renderer": "BackseatArt",
+  "native_proof": "gradle runClient -PbackseatArtSmoke",
+  "native_views": 8,
+  "preview": "art/review_04132/backseat-native-materials.png",
+  "playable_scene": "Full encounter not implemented; excluded from Witness.",
+  "native_component_tests": 2,
+  "driver_preview": "art/review_04132/backseat-driver-view.png",
+  "physical_component": "Working owner-bound native seat, fitted collision and door; private radio and lock sounds; camera-driven reveal phase. Full road/figure/crash/return encounter remains pending.",
+  "audio_source": "tools/generate_backseat_audio.py",
+  "original_subtitled_cues": 8
+}

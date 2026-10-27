@@ -73,12 +73,12 @@ public final class ChildRoom {
      * morning; the voices do not agree with it, or with each other. Each line once, in order, for that reader alone.
      */
     private static final String[] PARENTS={
-            "Through the floor, Dad's voice: Are you still up? Go back to bed.",
-            "From downstairs, Mum: Did you hear something? Is that you?",
-            "Dad, nearer, as if inside the wall: Where's your door gone? Can you see your door?",
-            "Mum, from under the bed: Come down here, sweetheart. Under the bed. Come down to us.",
+            "Dad: Are you still up? Go back to bed.",
+            "Mum: Did you hear something? Is that you?",
+            "Dad: Where's your door gone? Can you see your door?",
+            "Mum: Sweetheart? We're still here.",
             "Dad, very quietly: Don't. Wait until morning. That isn't your mum.",
-            "Both of them, together, from below the floor: We're awake now. You can come down."};
+            "Both of them, together: We're awake now."};
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private static final String[] SEEN={
             "Where the window was there is only wallpaper. It is cold to touch.",
@@ -197,15 +197,15 @@ public final class ChildRoom {
         boolean shut=read&&mask==ALL&&!own.getBoolean("Ready");
         if(shut&&(own.getInt("Present")%20==0||!own.getBoolean("DoorShut0119"))){doorway(p,b,true);own.putBoolean("DoorShut0119",true);}
         else if(!shut&&own.getBoolean("DoorShut0119")){doorway(p,b,false);own.remove("DoorShut0119");}
-        // The parents' voices: one as each exit goes, a warning twenty seconds after the reader is shut in, and the last once
-        // they have gone under the floor. Each line once, in order, to that reader alone.
+        // Each lost exit queues a parent's line; being shut in and crawling queue the final two.
+        // Deliver each once, in order, 21–24 seconds apart, to that reader alone.
         if(read&&!own.getBoolean("Ready")){
             if(mask==ALL&&!own.contains("ShutAt0119"))own.putInt("ShutAt0119",own.getInt("Present"));
             int due=Integer.bitCount(mask);
             if(mask==ALL&&own.getInt("Present")-own.getInt("ShutAt0119")>=400)due=5;
             if(mask==ALL&&own.getBoolean("UnderFloor0474"))due=PARENTS.length;
             int heard=own.getInt("Parents0119");
-            for(int i=0;i<due;i++)if((heard&(1<<i))==0){own.putInt("Parents0119",heard|1<<i);
+            for(int i=0;i<due;i++)if((heard&(1<<i))==0&&(!own.contains("ParentsNext127")||l.getGameTime()>=own.getLong("ParentsNext127"))){own.putInt("Parents0119",heard|1<<i);own.putLong("ParentsNext127",l.getGameTime()+420+(i%2)*60);
                 p.displayClientMessage(Component.literal(PARENTS[i]).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),false);
                 var at=Vec3.atCenterOf(b.offset(i==3||i==5?GAP:new BlockPos(0,-2,-12)));p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.7F,.8F,p.getRandom().nextLong()));break;}
         }
@@ -235,12 +235,33 @@ public final class ChildRoom {
     }
     /** Looking under the bed finds the little trapdoor in the boards. */
     public static void lookUnder(ServerPlayer p,ServerLevel l,BlockPos b){
+        if(!moveBedAside(p,l,b))return;
         var gap=b.offset(GAP);var s=l.getBlockState(gap);
         if(s.getBlock() instanceof TrapDoorBlock){p.displayClientMessage(Component.literal("The little door under the bed is open. The air coming up is colder than the room."),true);return;}
         if(!s.is(Blocks.BIRCH_PLANKS)){p.displayClientMessage(Component.literal("The quilt is cold and smooth, as if nobody has slept under it."),true);return;}
         l.setBlock(gap,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,true),F);
         l.playSound(null,gap,net.minecraft.sounds.SoundEvents.WOODEN_TRAPDOOR_OPEN,SoundSource.BLOCKS,.7F,.8F);
         p.displayClientMessage(Component.literal("You get down and look under the bed. One of the boards has a finger hole. It lifts."),true);
+    }
+    /** Push both original halves together one block sideways, leaving the actual hatch clear. */
+    private static boolean moveBedAside(ServerPlayer p,ServerLevel l,BlockPos b){
+        var data=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(data,PLACE);
+        if(world.getBoolean("BedShifted127"))return true;
+        var head=b.offset(BED_HEAD);var foot=b.offset(BED_FOOT);var hs=l.getBlockState(head);var fs=l.getBlockState(foot);
+        if(!NurseryBlock.is(hs,Kind.BED_HEAD)||!NurseryBlock.is(fs,Kind.BED_FOOT))return true;
+        for(var at:List.of(head.west(),foot.west())){
+            if(!l.hasChunkAt(at)||!l.isEmptyBlock(at)||l.getBlockState(at.below()).getCollisionShape(l,at.below()).isEmpty())return false;
+            var state=at.equals(head.west())?hs:fs;
+            var shape=state.getCollisionShape(l,at).move(at.getX(),at.getY(),at.getZ());
+            if(!l.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.02),LivingEntity::isAlive).stream().noneMatch(body->shape.toAabbs().stream().anyMatch(box->box.intersects(body.getBoundingBox())))){
+                p.displayClientMessage(Component.literal("Something is in the way of the bed."),true);return false;
+            }
+        }
+        l.setBlock(head,Blocks.AIR.defaultBlockState(),F);l.setBlock(foot,Blocks.AIR.defaultBlockState(),F);
+        l.setBlock(head.west(),hs,F);l.setBlock(foot.west(),fs,F);
+        world.putBoolean("BedShifted127",true);LiteraryVignettes.shared(data,PLACE,world);
+        l.playSound(null,head,net.minecraft.sounds.SoundEvents.WOOD_PLACE,SoundSource.BLOCKS,.65F,.55F);
+        return true;
     }
     /** Whether the reader has the exit in view: any of its own cells, each a whole block whose face answers the look. */
     static boolean looksAt(ServerPlayer p,BlockPos b,int i){for(var c:EXITS.get(i))if(HouseWatchers.sees(p,Vec3.atCenterOf(b.offset(c))))return true;return false;}
@@ -295,7 +316,7 @@ public final class ChildRoom {
         if(world.hasUUID("CeilingToy")&&l.getEntity(world.getUUID("CeilingToy")) instanceof LiteraryActor old)old.discard();
         for(var actor:l.getEntitiesOfClass(LiteraryActor.class,area))actor.discard();
         LiteraryRooms.build(l,b,PLACE);
-        world=LiteraryVignettes.shared(d,PLACE);world.remove("CeilingToy");world.remove("Dinnerbone");world.remove("LostExits");world.putInt("Exits0474",0);world.putInt("SealClock",0);LiteraryVignettes.shared(d,PLACE,world);
+        world=LiteraryVignettes.shared(d,PLACE);world.remove("CeilingToy");world.remove("BedShifted127");world.remove("Dinnerbone");world.remove("LostExits");world.putInt("Exits0474",0);world.putInt("SealClock",0);LiteraryVignettes.shared(d,PLACE,world);
         for(var key:d.stateKeys(LiteraryVignettes.stateId(PLACE))){java.util.UUID id;try{id=java.util.UUID.fromString(key);}catch(IllegalArgumentException notReader){continue;}var own=LiteraryVignettes.personal(d,id,PLACE);
             if(own.getBoolean("Completed"))continue;
             for(var k:List.of("Ready","Outcome","ExaminedLostExits","CrawledUnderBed","ExitSeen0474","Crawled0474","AllSeen0474","StoodUp0474","UnderFloor0474","ExitsAtArrival0474"))own.remove(k);

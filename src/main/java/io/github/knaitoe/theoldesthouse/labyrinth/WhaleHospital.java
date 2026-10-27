@@ -28,7 +28,15 @@ public final class WhaleHospital {
     public static void fresh(ServerLevel l,BlockPos origin){var b=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);BuildBlocks.after(l,()->{refit(l,b,false);PlaytestScenes0488.repair(l,b,LabyrinthPlace.WHALE,false);});}
     static void freshBase(ServerLevel l,BlockPos b){BuildBlocks.after(l,()->{refit(l,b,false);PlaytestScenes0488.repair(l,b,LabyrinthPlace.WHALE,false);});}
     public static void forget(net.minecraft.server.MinecraftServer s,BlockPos origin){var d=LabyrinthData.get(s);var state=d.state(STATE);state.remove(key(LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE)));d.setState(STATE,state);}
-    public static boolean apply(ServerLevel l,BlockPos b){return refit(l,b,true);}
+    public static boolean apply(ServerLevel l,BlockPos b){return refit(l,b,true)&&orientAtticCabinets(l,b);}
+    private static boolean atticCabinet(int x,int y,int z){return z==-27&&(y==6&&(x==-12||x==-11)||y==7&&x==-12);}
+    private static boolean orientAtticCabinets(ServerLevel l,BlockPos b){
+        var d=LabyrinthData.get(l.getServer());var saved=d.state(STATE);String key="AtticCabinets131_"+b.asLong();if(saved.getBoolean(key))return true;
+        var cells=java.util.List.of(b.offset(-12,6,-27),b.offset(-11,6,-27),b.offset(-12,7,-27));
+        for(var at:cells){if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;if(l.players().stream().anyMatch(p->new AABB(at).inflate(24).intersects(p.getCamera().getBoundingBox())))return false;}
+        for(var at:cells){var state=l.getBlockState(at);if(state.is(NovelRegistry.WARD_CABINET.get())&&state.getValue(InstituteCabinetBlock.FACING)==Direction.SOUTH)l.setBlock(at,state.setValue(InstituteCabinetBlock.FACING,Direction.NORTH),F);}
+        saved.putBoolean(key,true);d.setState(STATE,saved);return true;
+    }
     private static boolean refit(ServerLevel l,BlockPos b,boolean guarded){
         var d=LabyrinthData.get(l.getServer());var all=d.state(STATE);String key=key(b);var saved=all.getCompound(key);if(guarded&&saved.getBoolean("Done"))return true;
         var area=new AABB(Vec3.atLowerCornerOf(b.offset(-15,-1,-34)),Vec3.atLowerCornerOf(b.offset(16,12,2)));
@@ -85,7 +93,7 @@ public final class WhaleHospital {
         }
         if(s.getBlock() instanceof SlabBlock&&(s.is(Blocks.SPRUCE_SLAB)||s.is(Blocks.DARK_OAK_SLAB)))return NovelRegistry.WARD_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE,s.getValue(SlabBlock.TYPE)).setValue(SlabBlock.WATERLOGGED,s.getValue(SlabBlock.WATERLOGGED));
         if(s.is(Blocks.SPRUCE_FENCE)||s.is(Blocks.OAK_FENCE)||s.is(Blocks.DARK_OAK_FENCE))return rail(s);
-        if(s.is(Blocks.BARREL))return NovelRegistry.WARD_CABINET.get().defaultBlockState().setValue(InstituteCabinetBlock.FACING,Direction.SOUTH);
+        if(s.is(Blocks.BARREL))return NovelRegistry.WARD_CABINET.get().defaultBlockState().setValue(InstituteCabinetBlock.FACING,atticCabinet(x,y,z)?Direction.NORTH:Direction.SOUTH);
         if(s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())){
             var facing=s.getValue(HouseholdFurnitureBlock.FACING);return switch(s.getValue(HouseholdFurnitureBlock.KIND)){
                 case CANE_CHAIR,GREEN_ARMCHAIR,FLORAL_ARMCHAIR->InstituteFixtureBlock.of(InstituteFixtureBlock.Kind.CHAIR,facing);
@@ -109,5 +117,5 @@ public final class WhaleHospital {
     private static BlockState paint(int x,int y,int z){var kind=y<3&&(Math.abs(x)>=12||z<=-31)&&Math.floorMod(x*7+z,9)<3?InstituteFixtureBlock.Kind.DAMP:Math.floorMod(x*11+z*7+y/2,7)<2?InstituteFixtureBlock.Kind.PEEL:InstituteFixtureBlock.Kind.PAINT;return InstituteFixtureBlock.of(kind);}
     private static BlockState stairs(BlockState s){return NovelRegistry.WARD_STAIRS.get().defaultBlockState().setValue(StairBlock.FACING,s.getValue(StairBlock.FACING)).setValue(StairBlock.HALF,s.getValue(StairBlock.HALF)).setValue(StairBlock.SHAPE,s.getValue(StairBlock.SHAPE)).setValue(StairBlock.WATERLOGGED,s.getValue(StairBlock.WATERLOGGED));}
     private static BlockState rail(BlockState s){var next=NovelRegistry.WARD_RAIL.get().defaultBlockState();for(var p:new BooleanProperty[]{FenceBlock.NORTH,FenceBlock.SOUTH,FenceBlock.EAST,FenceBlock.WEST,FenceBlock.WATERLOGGED})next=next.setValue(p,s.getValue(p));return next;}
-    @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=27||LabyrinthBuilder.isCarving())return;var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;var d=LabyrinthData.get(s);var l=s.getLevel(HouseDimensions.INTERIOR);if(l!=null&&d.builtVersion()>=39&&LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.WHALE))apply(l,LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE));}
+    @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=27||LabyrinthBuilder.isCarving())return;var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;var d=LabyrinthData.get(s);var l=s.getLevel(HouseDimensions.INTERIOR);if(l!=null&&d.builtVersion()>=39&&LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.WHALE)){var base=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);if(apply(l,base))WhaleFinishing.repair(l,base);}}
 }

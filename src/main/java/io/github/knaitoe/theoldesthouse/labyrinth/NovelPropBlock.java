@@ -13,16 +13,16 @@ import net.minecraft.world.phys.shapes.*;
 /** The incubator is empty. Props use real, small collision shapes. */
 public final class NovelPropBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<NovelPropBlock> CODEC=simpleCodec(NovelPropBlock::new);
-    public enum Kind implements StringRepresentable { PROJECTOR, INCUBATOR, MAIL_SLOT;
+    public enum Kind implements StringRepresentable { PROJECTOR, INCUBATOR, MAIL_SLOT, ARCHIVE_FILES;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}}
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public NovelPropBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.PROJECTOR));}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
-        case PROJECTOR->Block.box(2,0,2,14,12,14);
+        case PROJECTOR->net.minecraft.world.phys.shapes.Shapes.or(Block.box(2,0,3,14,3,13),Block.box(3,3,4,13,11,13),Block.box(5,4,1,11,10,4),Block.box(3,10,4,5,16,10),Block.box(10,10,4,12,16,10));
         case INCUBATOR->Shapes.or(Block.box(1,0,1,15,4,15),Block.box(1,4,1,15,14,15));
-        case MAIL_SLOT->Block.box(0,0,0,16,16,16);};}
+        case MAIL_SLOT,ARCHIVE_FILES->Block.box(0,0,0,16,16,16);};}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
 }

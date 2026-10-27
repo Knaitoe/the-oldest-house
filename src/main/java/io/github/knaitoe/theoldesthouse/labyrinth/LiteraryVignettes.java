@@ -58,7 +58,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.ELK_FAN&&!personal(d,p,LabyrinthPlace.ELK_LOT).getBoolean("Ready"))return false;
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)return d.isReady("literary_copy_"+p+"_"+place.id())&&!personal(d,p,place).getBoolean("Completed");
         return place.kind()==LabyrinthPlace.Kind.RECURRING||!personal(d,p,place).getBoolean("Completed");}
-    public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY)place=LabyrinthPlace.LAKE_HOUSE;if(!LiteraryRooms.isLiterary(place)||!participant(p))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
+    public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY)place=LabyrinthPlace.LAKE_HOUSE;if(!LiteraryRooms.isLiterary(place)||!participant(p))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);FriendlyNpcWarnings.enter(own);
         int visit=own.getInt("Visit");if(place==LabyrinthPlace.BORRASCA){BorrascaStory.arrive(p,own);save(d,p.getUUID(),place,own);return;}if(place==LabyrinthPlace.LAKE_HOUSE)own.putBoolean("LakeFreshVisit",visit==0||own.getBoolean("LakeDeparted"));if(visit==0||own.getInt("Beat")>=visit&&(place!=LabyrinthPlace.LAKE_HOUSE||own.getBoolean("LakeDeparted")))own.putInt("Visit",visit+1);own.putBoolean("Here",true);own.putInt("Present",0);own.putInt("ThisVisitTicks",0);own.putInt("ExamineTicks",0);own.putInt("FanTicks",0);own.putInt("StillTicks",0);own.putBoolean("Betrayed",false);own.remove("LastPosition");own.remove("CameraLease");own.putBoolean("Interrupted",false);
         save(d,p.getUUID(),place,own);if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.arrived(p,place);
         if (place == LabyrinthPlace.HOLY_RABBIT && !rabbitCommitted(own)) {
@@ -91,7 +91,14 @@ public final class LiteraryVignettes {
         Pages(int id,ServerPlayer p,LabyrinthPlace place,String key,ItemStack book,boolean owned,boolean surface,BlockPos at){super(id,container(book),new SimpleContainerData(1));this.reader=p;this.place=place;this.key=key;this.book=book.copy();this.owned=owned;this.surface=surface;this.at=at;}
         private static Container container(ItemStack s){var c=new SimpleContainer(1);c.setItem(0,s.copy());return c;}
         public ItemStack original(){return book.copy();}
+        private boolean breakfast(){var c=book.get(DataComponents.CUSTOM_DATA);return c!=null&&c.copyTag().getBoolean(UncannyBreakfast.VIEW);}
+        @Override public void clicked(int slot,int button,net.minecraft.world.inventory.ClickType type,Player who){if(!breakfast())super.clicked(slot,button,type,who);}
+        @Override public ItemStack quickMoveStack(Player who,int slot){return breakfast()?ItemStack.EMPTY:super.quickMoveStack(who,slot);}
         @Override public boolean clickMenuButton(Player who,int button){if(who!=reader||!participant(reader)||(surface&&(!inside(reader,place)||reader.distanceToSqr(at.getCenter())>36)))return false;var d=LabyrinthData.get(reader.server);var own=personal(d,reader.getUUID(),place);
+            var menuData=book.get(DataComponents.CUSTOM_DATA);if(menuData!=null&&menuData.copyTag().getBoolean(UncannyBreakfast.VIEW)){
+                if(button>=UncannyBreakfast.ORDER)return UncannyBreakfast.button(reader,book,button);
+                if(button==3)return false;
+            }
             var custom=book.get(DataComponents.CUSTOM_DATA);if(surface&&custom!=null&&custom.copyTag().getBoolean(UncannyReading.VIEW)&&(button==3||button>=400))return UncannyReading.button(reader,place,own,at,book,button);
             if(button==3){if(!surface||!owned||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),place,own);give(reader,book.copy());if(place==LabyrinthPlace.BORRASCA)BorrascaStory.took(reader,key,at);return true;}
             if(!super.clickMenuButton(who,button))return false;if(getPage()==book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1)reached(d,own);return true;}
@@ -103,7 +110,7 @@ public final class LiteraryVignettes {
                 // An account answers its source: said aloud, rather than silently not counting.
                 if(place!=LabyrinthPlace.BORRASCA&&!UncannyRooms.isUncanny(place)&&key.equals("Ending")&&own.getBoolean("Ready")&&!own.getBoolean("Read_Source")&&!own.getBoolean("Completed")){var source=LiteraryTexts.source(place).get(DataComponents.WRITTEN_BOOK_CONTENT);
                     reader.displayClientMessage(Component.literal("This account answers \""+(source==null?"the first paper":source.title().raw())+"\". Read that first, then read this again."),false);}
-                if(place!=LabyrinthPlace.BORRASCA&&key.equals("Ending")&&inside(reader,place)&&(UncannyRooms.isUncanny(place)||own.getBoolean("Read_Source"))&&own.getBoolean("Ready")&&!own.getBoolean("Completed")){var story=WitnessAccount.Story.of(place.id());if(story!=null){WitnessAccount.resolve(reader,story,own.getString("Outcome"));own.putBoolean("Completed",true);d.setCompleted(place.id(),true);finishReward(reader,place,own);}}
+                if(place!=LabyrinthPlace.BORRASCA&&place!=LabyrinthPlace.MOTION_LIGHT&&key.equals("Ending")&&inside(reader,place)&&(UncannyRooms.isUncanny(place)||own.getBoolean("Read_Source"))&&own.getBoolean("Ready")&&!own.getBoolean("Completed")){var story=WitnessAccount.Story.of(place.id());if(story!=null){WitnessAccount.resolve(reader,story,own.getString("Outcome"));own.putBoolean("Completed",true);d.setCompleted(place.id(),true);finishReward(reader,place,own);}}
                 save(d,reader.getUUID(),place,own);
             }}
     }
@@ -115,10 +122,11 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.ELK_CARCASSES)CarcassHunt.noise(p,e.getPos());var b=base(p,place);var rel=e.getPos().subtract(b);var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);boolean handled=false;
         // A saved elk lot keeps its old source and ending until it is re-carved (0.4.78).
         boolean oldLot=place==LabyrinthPlace.ELK_LOT&&!ElkLot.built(d,b);
-        if(UncannyRooms.isUncanny(place)&&rel.equals(LiteraryRooms.source(place))){UncannyReading.open(p,place,own,e.getPos());handled=true;}
+        if(place==LabyrinthPlace.SECOND_WAITRESS&&(rel.equals(LiteraryRooms.source(place))||rel.equals(LiteraryRooms.ending(place)))){handled=UncannyDiner.counter(p,b,rel);}
+        else if(UncannyRooms.isUncanny(place)&&rel.equals(LiteraryRooms.source(place))){UncannyReading.open(p,place,own,e.getPos());handled=true;}
         else if(place==LabyrinthPlace.BORRASCA&&own.getInt("Visit")>=2&&rel.equals(BorrascaRooms.SOURCE)){open(p,place,own,"ContentNote",BorrascaTexts.contentNote(),e.getPos());handled=true;}
         else if(rel.equals(LiteraryRooms.source(place))&&!oldLot||oldLot&&rel.equals(ElkLot.OLD_SOURCE)||SceneReview.readingAlias(p.serverLevel(),b,place,rel)){open(p,place,own,"Source",SceneHuntReview.sourceBook(p.serverLevel(),b,place),e.getPos());handled=true;}
-        else if((oldLot?rel.equals(ElkLot.OLD_ENDING):rel.equals(LiteraryRooms.ending(place)))&&own.getBoolean("Ready")){open(p,place,own,"Ending",LiteraryTexts.ending(p,place,own),e.getPos());handled=true;}
+        else if((oldLot?rel.equals(ElkLot.OLD_ENDING):place==LabyrinthPlace.TUNNEL_PERIPHERY?rel.equals(TunnelPassage.account(p.serverLevel(),b)):rel.equals(LiteraryRooms.ending(place)))&&own.getBoolean("Ready")){open(p,place,own,"Ending",LiteraryTexts.ending(p,place,own),e.getPos());handled=true;}
         else switch(place){
             case PAINTED_INTERIOR,SECOND_WAITRESS,TUNNEL_PERIPHERY,MISSING_SLEEP,LAYERED_MAN,MOTION_LIGHT->handled=UncannyStories.click(p,b,rel,place,own);
             case MASQUE->{if(MasqueSuite.clock(rel)&&own.getInt("Rooms")==127){own.putBoolean("ClockStopped0506",true);MasqueSuite.stoppedView(p,b);p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(LiteraryRegistry.PARTY.getId(),SoundSource.BLOCKS));ready(p,place,own,"stopped_the_seventh_room_clock");handled=true;}}
@@ -154,13 +162,15 @@ public final class LiteraryVignettes {
         // 0.4.77: nothing in the House hands out a shovel, so snow comes away by hand too; with anything else held, say so.
         else if(place==LabyrinthPlace.CRIMSON_HALL&&p.serverLevel().getBlockState(e.getPos()).is(Blocks.SNOW)&&!mayBreak(p,e.getPos()))p.displayClientMessage(Component.literal("Dig the snow away with a shovel, or with your bare hands."),true);
     }
-    public static boolean mayBreak(ServerPlayer p,BlockPos pos){var place=current(p);if(place==null)return false;var b=base(p,place);var s=p.serverLevel().getBlockState(pos);return (place==LabyrinthPlace.CRIMSON_HALL&&s.is(Blocks.SNOW)&&(p.getMainHandItem().getItem() instanceof ShovelItem||p.getMainHandItem().isEmpty()))
+    public static boolean mayBreak(ServerPlayer p,BlockPos pos){var place=current(p);if(place==null)return false;var b=base(p,place);var s=p.serverLevel().getBlockState(pos);return (place==LabyrinthPlace.LAYERED_MAN&&participant(p)&&UncannyFleshBlock.is(s)&&p.distanceToSqr(pos.getCenter())<=36&&(p.getMainHandItem().is(UncannyRegistry.CLEAVER.get())||p.getMainHandItem().getItem() instanceof AxeItem))
+        ||(place==LabyrinthPlace.CRIMSON_HALL&&s.is(Blocks.SNOW)&&(p.getMainHandItem().getItem() instanceof ShovelItem||p.getMainHandItem().isEmpty()))
         ||(place==LabyrinthPlace.ELK_CARCASSES&&participant(p)&&!YachtGlazingBlock.shattered(s)&&
                 (ElkCarcassMap.porthole(pos.subtract(b))&&s.is(LiteraryRegistry.YACHT_PORTHOLE.get())||s.is(LiteraryRegistry.YACHT_WINDOW.get())&&ElkCarcassMap.aboard(pos.subtract(b).getCenter())))
         ||(place==LabyrinthPlace.MAPPING_INTERIOR&&pos.equals(b.offset(LiteraryRooms.PILE))&&s.is(LiteraryRegistry.PROP.get())&&personal(LabyrinthData.get(p.server),p.getUUID(),place).getBoolean("BeyondRoof"))
         ||(place==LabyrinthPlace.ELK_FAN&&personal(LabyrinthData.get(p.server),p.getUUID(),place).getList("Platforms",Tag.TAG_LONG).stream().anyMatch(t->((LongTag)t).getAsLong()==pos.asLong()));}
     public static boolean mayPlace(ServerPlayer p,BlockPos pos){if(!inside(p,LabyrinthPlace.ELK_FAN))return false;var b=base(p,LabyrinthPlace.ELK_FAN);var rel=pos.subtract(b);return rel.getX()>=-2&&rel.getX()<=2&&rel.getZ()>=-18&&rel.getZ()<=-15&&rel.getY()>=0&&rel.getY()<=4;}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void broken(BlockEvent.BreakEvent e){if(e.isCanceled()||!(e.getPlayer() instanceof ServerPlayer p)||!mayBreak(p,e.getPos()))return;var place=current(p);var own=personal(LabyrinthData.get(p.server),p.getUUID(),place);
+        if(place==LabyrinthPlace.LAYERED_MAN)UncannyStories.recordCut(p,base(p,place),e.getPos().subtract(base(p,place)),own);
         if(place==LabyrinthPlace.CRIMSON_HALL)own.putBoolean("ClearedSnow",true);
         if(place==LabyrinthPlace.MAPPING_INTERIOR&&!own.getBoolean("PileChosen")){own.putBoolean("PileChosen",true);own.putBoolean("PileBroken",true);own.putInt("ChoiceVisit",own.getInt("Visit"));own.putInt("Beat",own.getInt("Visit"));}
         save(LabyrinthData.get(p.server),p.getUUID(),place,own);
@@ -201,8 +211,20 @@ public final class LiteraryVignettes {
         // Blows do not hurt him and do not end the visit; they only push him off (0.4.120). The way through is to get away, or to hide.
         if(place==LabyrinthPlace.ELK_CARCASSES&&actor.role()==LiteraryActor.KILLER){ElkHunt.shoved(p,actor);return;}var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
         if(place==LabyrinthPlace.HOLY_RABBIT&&actor.role()==LiteraryActor.FATHER){actor.appearance(actor.role(),actor.phase());actor.say("I'm awake. I'm here.");own.putInt("FatherAwake",own.getInt("FatherAwake")+1);own.putInt("Drowse",Math.max(0,own.getInt("Drowse")-100));}
-        else{own.putBoolean("Interrupted",true);p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,80));actor.say("You need to leave.");LabyrinthDoors.goToJunction(p);}
+        else if(!hostile(p,actor)){
+            long now=p.serverLevel().getGameTime();
+            if(own.contains("FriendlyStrikeAt127")&&now-own.getLong("FriendlyStrikeAt127")<10)return;
+            int strikes=own.getInt("FriendlyStrikes127");
+            own.putLong("FriendlyStrikeAt127",now);own.putInt("FriendlyStrikes127",++strikes);
+            if(strikes<4)p.displayClientMessage(Component.literal(FriendlyNpcWarnings.pick(p,own,strikes)).withStyle(net.minecraft.ChatFormatting.GRAY),true);
+            else{own.putBoolean("Interrupted",true);p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,80));LabyrinthDoors.goToJunction(p);}
+        }
         save(d,p.getUUID(),place,own);
+    }
+    /** An attacking creature is never protected by the House's courtesy warning. */
+    public static boolean hostile(ServerPlayer p,LiteraryActor a){
+        if(a.role()==LiteraryActor.UNCANNY_GIANT||a.role()==LiteraryActor.UNCANNY_PROPPED||a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS||a.role()==LiteraryActor.UNCANNY_MARIONETTE||a.role()==LiteraryActor.UNCANNY_VISITOR||a.role()==LiteraryActor.KILLER)return true;
+        return a.scene().equals(ElkLot.PLACE.id())&&a.role()==LiteraryActor.STRANGER&&a.phase()>=5&&a.phase()<=7&&ElkLotNight.stage(shared(LabyrinthData.get(p.server),ElkLot.PLACE))>=3;
     }
     public static @Nullable LiteraryActor actor(ServerPlayer p,LabyrinthPlace place,String key,int role,BlockPos relative,boolean privateActor){var d=LabyrinthData.get(p.server);var s=shared(d,place);String id=privateActor?key+"_"+p.getUUID():key;
         if(s.hasUUID(id)){var e=p.serverLevel().getEntity(s.getUUID(id));return e instanceof LiteraryActor a?a:null;}
@@ -224,6 +246,7 @@ public final class LiteraryVignettes {
         return true;
     }
     public static boolean retreatLocked(ServerPlayer p) {
+        if(inside(p,LabyrinthPlace.MOTION_LIGHT)&&FoyerEncounter.held(personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.MOTION_LIGHT)))return true;
         if(UncannyStories.locked(p))return true;
         if(ElkLotEnding.held(p))return true;
         if (LakeHouse.inside(p)&&personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.LAKE_HOUSE).getInt("Finish")>0)return true;
@@ -254,7 +277,7 @@ public final class LiteraryVignettes {
         for(var p:server.getPlayerList().getPlayers()){var place=current(p);if(place!=LabyrinthPlace.HOLY_RABBIT)HolyRabbit.release(p);if(place==null){crawl(p,false);scale(p,false);continue;}var d=LabyrinthData.get(server);var own=personal(d,p.getUUID(),place);if(!own.getBoolean("Here"))continue;var b=base(p,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);own.putInt("Present",Math.min(72000,own.getInt("Present")+5));own.putInt("ThisVisitTicks",Math.min(72000,own.getInt("ThisVisitTicks")+5));
             boolean child=place==LabyrinthPlace.CHILD_ROOM||place==LabyrinthPlace.HOLY_RABBIT||(place==LabyrinthPlace.BORRASCA&&own.getInt("Visit")<=2)||(place==LabyrinthPlace.WHEEL&&own.getBoolean("Memory"));scale(p,child);crawl(p,(place==LabyrinthPlace.GHOSTS_SET&&GhostsSet.cameraCrawl(p,b))||(place==LabyrinthPlace.MAPPING_INTERIOR&&p.getY()<b.getY()-2)||(place==LabyrinthPlace.CHILD_ROOM&&ChildRoom.crawling(p,b))||(place==LabyrinthPlace.ELK_CARCASSES&&ElkHunt.crawl(p,b,CRAWLS.containsKey(p.getUUID()))));
             if(!own.getBoolean("Interrupted"))switch(place){case PAINTED_INTERIOR,SECOND_WAITRESS,TUNNEL_PERIPHERY,MISSING_SLEEP,LAYERED_MAN,MOTION_LIGHT->UncannyStories.reader(p,b,place,own);case HILL_NURSERY->hill(p,b,own);case MINIATURES->miniatures(p,b,own);case MASQUE->masque(p,b,own);case USHER->usher(p,b,own);case WINCHESTER->{WinchesterHouse.reader(p,b,own);if(p.getY()>=b.getY()+7&&p.getZ()<b.getZ()-65&&own.getInt("Present")>=100)ready(p,place,own,"reached_the_upper_construction_ledger");}case CHILD_ROOM->child(p,b,own);case CRIMSON_HALL->crimson(p,b,own);case BLY_ROUTE->bly(p,b,own);case ELK_LOT->{if(ElkLot.built(d,b))ElkLotNight.reader(p,b,own);else lot(p,b,own);}case ELK_FAN->fan(p,b,own);case MAPPING_INTERIOR->mapping(p,b,own);case HOLY_RABBIT->rabbit(p,b,own);case CONFESSION->confession(p,b,own);case ELK_CARCASSES->ElkHunt.tick(p,b,own);case WINTER_LAKE->WinterLake.reader(p,b,own);case COSTUME_NIGHT,MOVIE_NIGHT,CAMP_BLOOD->hunt(p,b,place,own);case DEVILS_ROCK->diary(p,b,own);case WHEEL->WheelHouse.reader(p,b,own);case GHOSTS_SET->GhostsSet.reader(p,b,own);case END_WORLD_CABIN->CabinBargain.tick(p,b,own);case FAMILY_COPY,OLD_CABIN->LiteraryCopies.sceneTick(p,place,own);case THREE_FINGERS->ThreeFingers.reader(p,b,own);case LAKE_HOUSE->LakeHouse.reader(p,b,own);case BORRASCA->BorrascaStory.reader(p,b,own);default->{}}
-            HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.EndingBookPayload(b.offset(place==LabyrinthPlace.ELK_LOT&&!ElkLot.built(d,b)?ElkLot.OLD_ENDING:LiteraryRooms.ending(place)),own.getBoolean("Ready")&&!own.getBoolean("Taken_Ending")));
+            HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.EndingBookPayload(b.offset(place==LabyrinthPlace.ELK_LOT&&!ElkLot.built(d,b)?ElkLot.OLD_ENDING:place==LabyrinthPlace.TUNNEL_PERIPHERY?TunnelPassage.account(p.serverLevel(),b):LiteraryRooms.ending(place)),own.getBoolean("Ready")&&!own.getBoolean("Taken_Ending")));
             save(d,p.getUUID(),place,own);
         }
     }

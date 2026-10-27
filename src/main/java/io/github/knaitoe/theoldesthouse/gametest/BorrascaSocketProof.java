@@ -17,7 +17,7 @@ final class BorrascaSocketProof {
     private static final Map<UUID,Integer> DEPTH=new HashMap<>(),RISES=new HashMap<>();
     private static final Map<UUID,Double> HEIGHT=new HashMap<>();
     private static final Map<UUID,UUID> FRIENDS=new HashMap<>();
-    private static final Set<UUID> CROUCHED=new HashSet<>();
+    private static final Set<UUID> CROUCHED=new HashSet<>(),ARRIVING=new HashSet<>();
     private static BlockPos source;
     private BorrascaSocketProof(){}
     private static void require(boolean okay,String text){if(!okay)throw new IllegalStateException("LIVE BORRASCA: "+text);}
@@ -28,10 +28,30 @@ final class BorrascaSocketProof {
         source=origin.offset(80,0,80);var level=a.server.overworld();var data=LabyrinthData.get(a.server);CHUNKS.hold(level,new AABB(source).inflate(6));
         for(var at:BlockPos.betweenClosed(source.offset(-3,-1,-4),source.offset(3,-1,5)))level.setBlock(at,Blocks.STONE.defaultBlockState(),3);
         NovelRooms.door(level,source,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);data.putDoor(new LabyrinthData.Door("proof/borrasca/source",level.dimension(),source,Direction.SOUTH,LabyrinthData.toPlace(LabyrinthPlace.BORRASCA),true));
-        int i=0;for(var p:List.of(a,b)){p.stopUsingItem();p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setNoGravity(false);p.setHealth(p.getMaxHealth());p.getFoodData().setFoodLevel(20);DEPTH.put(p.getUUID(),data.returnDepth(p.getUUID()));p.teleportTo(level,source.getX()+.5+(i++==0?-.4:.4),source.getY(),source.getZ()+3.5,180,0);p.hasChangedDimension();p.connection.resetPosition();}
+        ARRIVING.clear();int i=0;for(var p:List.of(a,b)){ARRIVING.add(p.getUUID());p.stopUsingItem();p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setNoGravity(false);p.setHealth(p.getMaxHealth());p.getFoodData().setFoodLevel(20);DEPTH.put(p.getUUID(),data.returnDepth(p.getUUID()));p.teleportTo(level,source.getX()+.5+(i++==0?-.4:.4),source.getY(),source.getZ()+3.5,180,0);p.hasChangedDimension();p.connection.resetPosition();}
+    }
+    static boolean pending(ServerPlayer p){return ARRIVING.contains(p.getUUID());}
+    static void terrainReady(ServerPlayer p){
+        if(!pending(p)||p.serverLevel()!=p.server.overworld()||!p.onGround()||p.isNoGravity()||Math.abs(p.getY()-source.getY())>.1||p.distanceToSqr(source.getCenter())>25)return;
+        ARRIVING.remove(p.getUUID());
+    }
+    static void arrival(ServerPlayer a,ServerPlayer b){
+        if(a.server.getTickCount()%20!=0)return;for(var p:List.of(a,b))if(pending(p)){
+            // Explicit fixture recovery only, until the real client confirms received/compiled solid terrain.
+            p.teleportTo(p.server.overworld(),source.getX()+.5+(p==a?-.4:.4),source.getY(),source.getZ()+3.5,180,0);p.connection.resetPosition();
+        }
     }
     static boolean entered(ServerPlayer a,ServerPlayer b){for(var p:List.of(a,b)){var site=base(p);if(!BorrascaSites.inside(p)||site==null||p.getZ()>site.getZ()-2)return false;require(own(p).getInt("Visit")==1&&LabyrinthData.get(p.server).returnDepth(p.getUUID())==DEPTH.get(p.getUUID())+1,"actual source door enters visit one and pushes exactly one return");}return true;}
-    static void status(ServerPlayer a,ServerPlayer b,int phase){for(var p:List.of(a,b)){var own=own(p);var friend=own.hasUUID("CastKimber")?p.serverLevel().getEntity(own.getUUID("CastKimber")):null;var door=base(p)==null?null:p.serverLevel().getBlockState(base(p).offset(-17,12,-206));io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.info("LIVE BORRASCA SERVER {} phase={} body={} base={} ground={} pose={} velocity={} childStep={} metFriend={} friend={} friendVelocity={} recalled={} released={} serviceDoor={}",p.getGameProfile().getName(),phase,p.position(),base(p),p.onGround(),p.getPose(),p.getDeltaMovement(),own.getInt("ChildStep"),own.getBoolean("MetFriend"),friend==null?"absent":friend.position(),friend==null?"absent":friend.getDeltaMovement(),own.getBoolean("CastRecalled"),own.getBoolean("ReleaseOpened"),door);}}
+    static void status(ServerPlayer a,ServerPlayer b,int phase){for(var p:List.of(a,b)){
+        var own=own(p);var base=base(p);var level=p.server.getLevel(HouseDimensions.OUTSIDE);
+        var friend=level!=null&&own.hasUUID("CastKimber")?level.getEntity(own.getUUID("CastKimber")):null;
+        // Before entry the player still stands in the overworld. Diagnostics must neither
+        // read a private outside coordinate there nor synchronously generate an unloaded chunk.
+        var at=base==null?null:base.offset(-17,12,-206);
+        var chunk=at==null||level==null?null:level.getChunkSource().getChunkNow(at.getX()>>4,at.getZ()>>4);
+        Object door=chunk==null?"unloaded":chunk.getBlockState(at);
+        io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.info("LIVE BORRASCA SERVER {} phase={} body={} base={} ground={} pose={} velocity={} childStep={} metFriend={} friend={} friendVelocity={} recalled={} released={} serviceDoor={}",p.getGameProfile().getName(),phase,p.position(),base,p.onGround(),p.getPose(),p.getDeltaMovement(),own.getInt("ChildStep"),own.getBoolean("MetFriend"),friend==null?"absent":friend.position(),friend==null?"absent":friend.getDeltaMovement(),own.getBoolean("CastRecalled"),own.getBoolean("ReleaseOpened"),door);
+    }}
     static boolean read(ServerPlayer a,ServerPlayer b){for(var p:List.of(a,b)){var own=own(p);if(!own.getBoolean("Read_Source")||!own.hasUUID("CastKimber"))return false;FRIENDS.put(p.getUUID(),own.getUUID("CastKimber"));require(!WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.BORRASCA),"native source reading grants no ending");}return true;}
     static void observe(ServerPlayer a,ServerPlayer b,int phase){for(var p:List.of(a,b)){if(!BorrascaSites.inside(p))continue;var b0=base(p);if(phase==56){Double old=HEIGHT.put(p.getUUID(),p.getY());if(old!=null&&p.getY()>old+.025)RISES.merge(p.getUUID(),1,Integer::sum);}if(phase==58&&p.isCrouching()&&p.getX()>b0.getX()-22&&p.getX()<b0.getX()-16&&p.getZ()<b0.getZ()-207&&p.getZ()>b0.getZ()-211)CROUCHED.add(p.getUUID());}}
     static boolean climbed(ServerPlayer a,ServerPlayer b){for(var p:List.of(a,b)){var own=own(p);if(!own.getBoolean("TreeReached"))return false;require(RISES.getOrDefault(p.getUUID(),0)>=15&&p.getY()>=base(p).getY()+5.9,"the actual client body climbed the production ladder over successive packets");}return true;}

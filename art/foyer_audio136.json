@@ -1,0 +1,27 @@
+{
+  "wind": {
+    "sha256": "d5adaf5caf2d786817b5e84d43eaee00f970df251eb19dc2e4777de9a49af339",
+    "seconds": 7.75,
+    "authorship": "Original procedural synthesis; no sampled speech or music."
+  },
+  "buzzer": {
+    "sha256": "742586d7618dee54d6c4c601850d4933b9580dd1f5864d888a999c1252fa442e",
+    "seconds": 2.0,
+    "authorship": "Original procedural synthesis; no sampled speech or music."
+  },
+  "babble": {
+    "sha256": "182861d46e9ec1696e8b19ec1f6a3ae6879d3b170162206bb349bdb8eacc9708",
+    "seconds": 4.0,
+    "authorship": "Original procedural synthesis; no sampled speech or music."
+  },
+  "steps": {
+    "sha256": "851ba67e6b106a49a5e96012417e23f226babb955fff363450431595378c824c",
+    "seconds": 3.0,
+    "authorship": "Original procedural synthesis; no sampled speech or music."
+  },
+  "inside": {
+    "sha256": "d325fd8facf0a49b39c38069ecaaabe2807cfd3aa475b22360d1cb87abd07eeb",
+    "seconds": 3.0,
+    "authorship": "Original procedural synthesis; no sampled speech or music."
+  }
+}

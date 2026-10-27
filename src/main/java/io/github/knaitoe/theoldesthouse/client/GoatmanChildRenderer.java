@@ -10,10 +10,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Pose;
 
 public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,GoatmanChildModel> {
+    public static final float CRAWL_HEIGHT=.78F;
     private final StalkerRenderer stalker;
     public GoatmanChildRenderer(EntityRendererProvider.Context c){
         super(c,new GoatmanChildModel(c.bakeLayer(GoatmanChildModel.LAYER)),.25F);stalker=new StalkerRenderer(c);
-        addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<>(this,c.getItemInHandRenderer()));
+        addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<GoatmanChild,GoatmanChildModel>(this,c.getItemInHandRenderer()){
+            @Override public void render(com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light,GoatmanChild child,float walk,float amount,float partial,float age,float yaw,float pitch){
+                if(child.showsHeldItems())super.render(poses,buffers,light,child,walk,amount,partial,age,yaw,pitch);
+            }
+        });
         addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<GoatmanChild,GoatmanChildModel>(this){
             @Override public void render(com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light,GoatmanChild child,float walk,float amount,float partial,float age,float yaw,float pitch){
                 if(GoatmanChildEyes.visible(child)){GoatmanChildEyes.render(getParentModel(),poses,buffers);GoatmanWindowClient.disguiseEyesDrawn(child);}
@@ -28,14 +33,15 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
     @Override public void render(GoatmanChild e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){
         // Preserve night lighting, but let the brief window silhouette catch the trailer's
         // warm spill instead of disappearing into the unlit exterior. Both disguises use it.
-        if(e.stalkingAppearance())light=net.minecraft.client.renderer.LightTexture.pack(Math.max(7,net.minecraft.client.renderer.LightTexture.block(light)),net.minecraft.client.renderer.LightTexture.sky(light));
+        if(e.stalkingAppearance()&&!e.indoors())light=net.minecraft.client.renderer.LightTexture.pack(Math.max(7,net.minecraft.client.renderer.LightTexture.block(light)),net.minecraft.client.renderer.LightTexture.sky(light));
         if(e.monsterAppearance()){stalker.render(e,yaw,partial,poses,buffers,light);return;}
         float old=e.yBodyRot,previous=e.yBodyRotO;
-        if(!e.enteringWindow()&&!e.crawling()&&!e.stalkingAppearance()&&e.tell(GoatmanVignette.FACE)&&Minecraft.getInstance().player!=null){
+        if(e.showsHeldItems()&&!e.enteringWindow()&&!e.crawling()&&!e.stalkingAppearance()&&e.tell(GoatmanVignette.FACE)&&Minecraft.getInstance().player!=null){
             var at=Minecraft.getInstance().player.position().subtract(e.position());e.yBodyRot=e.yBodyRotO=(float)(Math.atan2(at.z,at.x)*180/Math.PI)-90;
         }
         // A seated child is set on the seat's surface; the bent pose puts its hips there, not its feet.
         poses.pushPose();if(e.seated()&&!e.isSleeping()&&!e.hasPose(Pose.SLEEPING))poses.translate(0,-GoatmanChild.HIPS,0);
+        if(e.crawling())poses.scale(1,CRAWL_HEIGHT,1);
         super.render(e,yaw,partial,poses,buffers,light);poses.popPose();e.yBodyRot=old;e.yBodyRotO=previous;
     }
     @Override public ResourceLocation getTextureLocation(GoatmanChild e){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+e.visibleSkin()+".png");}

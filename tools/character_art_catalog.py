@@ -12,11 +12,14 @@ CLUB=['dancer_male','dancer_female','dancer_vest','dancer_copper','dancer_mustar
 
 def entry(name,logical):
     row={'name':name,'logical':logical,'model':'player','number':0,'phase':0}
-    if name.startswith('borrasca_'):
+    if name=='backseat_stowaway':
+        row.update(model='backseat',phase=1)
+    elif name.startswith('borrasca_'):
         row.update(model='borrasca',number=['kyle','kimber','sheriff','prescott','worker'].index(name[9:]))
     elif name.startswith('uncanny_'):
-        role=37 if name.startswith('uncanny_peeler') else 38 if name=='uncanny_visitor' else 34 if name.startswith('uncanny_second_') else 33
-        row.update(model='uncanny',number=role,phase=3 if name.endswith('_split') else 0 if role==33 or name=='uncanny_peeler' else 2 if name.endswith('_exhausted') else 1)
+        role=32 if name.startswith('uncanny_family_') else 35 if name=='uncanny_bent_neck' else 37 if name.startswith('uncanny_peeler') else 38 if name=='uncanny_visitor' else 34 if name.startswith('uncanny_second_') else 33
+        phase=int(name[-1])+1 if role==32 else 3 if name.endswith('_split') else 0 if role==33 or name=='uncanny_peeler' else 2 if name.endswith('_exhausted') else 1
+        row.update(model='uncanny',number=role,phase=phase)
     elif name.startswith('harrigan'):
         row.update(model='harrigan',number=4+int(name[-1]) if 'mourner' in name else 2 if name.endswith('dead') else 1)
     elif name.startswith('ghosts_'):
@@ -53,7 +56,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.

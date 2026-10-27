@@ -22,7 +22,7 @@ public final class UncannyFurnitureBlock extends HorizontalDirectionalBlock {
         WINDOW_FRAME,SIGN_LEFT,SIGN_CENTER,SIGN_RIGHT,EXTERIOR_LAMP,SCONCE,ARMCHAIR,SOFA,DESK,
         SIDEBOARD,BOOKCASE,PICTURE,WARDROBE,BEDSIDE,HEADBOARD,HAMPER,RADIATOR,PIPE,PIPE_HORIZONTAL,
         VENT,SWITCHBOX,WORKBENCH,TOOL_RACK,MAILBOX,LOBBY_BENCH,DRAIN,BIN,DESK_LAMP,NAPKIN_CADDY,CUP,
-        SOFA_LEFT,SOFA_RIGHT,COFFEE_TABLE,DINER_CHAIR;
+        SOFA_LEFT,SOFA_RIGHT,COFFEE_TABLE,DINER_CHAIR,FLUSH_LIGHT;
         @Override public String getSerializedName(){return name().toLowerCase(Locale.ROOT);}
         public boolean seat(){return this==BOOTH||this==STOOL||this==ARMCHAIR||this==SOFA||this==SOFA_LEFT||this==SOFA_RIGHT||this==DINER_CHAIR||this==LOBBY_BENCH;}
         public double seatHeight(){return this==STOOL?13:9;}
@@ -37,7 +37,7 @@ public final class UncannyFurnitureBlock extends HorizontalDirectionalBlock {
     public static BlockState of(Kind kind,Direction facing){return UncannyRegistry.FURNITURE.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     public static boolean isSeat(BlockState s){return s.is(UncannyRegistry.FURNITURE.get())&&s.getValue(KIND).seat();}
     public static int light(BlockState s){return switch(s.getValue(KIND)){
-        case FLUORESCENT->s.getValue(OPEN)?0:12;case EXTERIOR_LAMP->9;case SCONCE->8;case DESK_LAMP->s.getValue(OPEN)?0:8;
+        case FLUORESCENT,FLUSH_LIGHT->s.getValue(OPEN)?0:12;case EXTERIOR_LAMP->9;case SCONCE->8;case DESK_LAMP->s.getValue(OPEN)?0:8;
         case SIGN_LEFT,SIGN_CENTER,SIGN_RIGHT->7;default->0;
     };}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
@@ -57,7 +57,12 @@ public final class UncannyFurnitureBlock extends HorizontalDirectionalBlock {
         var kind=s.getValue(KIND);
         if(!kind.opens()&&!kind.switches()||user.isSpectator()||!user.isAlive()||user.distanceToSqr(at.getCenter())>16)return InteractionResult.PASS;
         if(!l.isClientSide){
-            l.setBlock(at,s.cycle(OPEN),3);
+            var next=s.cycle(OPEN);
+            if(kind.opens()){
+                var added=Shapes.join(next.getCollisionShape(l,at),s.getCollisionShape(l,at),BooleanOp.ONLY_FIRST);
+                for(var box:added.toAabbs())if(!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,box.move(at),e->e.isAlive()&&!e.isSpectator()).isEmpty())return InteractionResult.CONSUME;
+            }
+            l.setBlock(at,next,3);
             l.playSound(null,at,kind.switches()?SoundEvents.LEVER_CLICK:s.getValue(OPEN)?SoundEvents.IRON_DOOR_CLOSE:SoundEvents.IRON_DOOR_OPEN,SoundSource.BLOCKS,.22F,kind.switches()?(s.getValue(OPEN)?.6F:.5F):1.1F);
         }
         return InteractionResult.sidedSuccess(l.isClientSide);

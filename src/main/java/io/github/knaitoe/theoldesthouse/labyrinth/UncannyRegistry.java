@@ -12,6 +12,12 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.*;
 /** Physical fittings and finite artifacts for the six uncanny rooms. */
 public final class UncannyRegistry {
+    private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> TUNNEL_TRAFFIC=sound("tunnel_traffic"),FLESH_GROW=sound("cellar_flesh_grow"),FLESH_TEAR=sound("cellar_flesh_tear"),FLESH_GURGLE=sound("cellar_flesh_gurgle");
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> FOYER_WIND=sound("foyer.wind"),FOYER_BUZZER=sound("foyer.buzzer"),FOYER_BABBLE=sound("foyer.babble"),FOYER_STEPS=sound("foyer.steps"),FOYER_INSIDE=sound("foyer.inside");
+    public static final java.util.List<DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent>> GROW_VARIANTS=variants("cellar_flesh_grow",6),TEAR_VARIANTS=variants("cellar_flesh_tear",6),GURGLE_VARIANTS=variants("cellar_flesh_gurgle",4);
+    private static java.util.List<DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent>> variants(String prefix,int count){return java.util.stream.IntStream.rangeClosed(1,count).mapToObj(i->sound(prefix+"_"+i)).toList();}
+    private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String name){return SOUNDS.register(name,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,name)));}
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MobEffect> EFFECTS=DeferredRegister.create(Registries.MOB_EFFECT,TheOldestHouse.MOD_ID);
@@ -22,23 +28,25 @@ public final class UncannyRegistry {
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<UncannyPropBlock.Fitting>> FITTING=BES.register("uncanny_fitting",()->BlockEntityType.Builder.of(UncannyPropBlock.Fitting::new,PROP.get()).build(null));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<UncannyFurnitureBlock>> FURNITURE_TYPE=CODECS.register("uncanny_furniture",()->UncannyFurnitureBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<UncannyFleshBlock>> FLESH_TYPE=CODECS.register("cellar_flesh",()->UncannyFleshBlock.CODEC);
-    public static final DeferredBlock<UncannyFleshBlock> FLESH=BLOCKS.registerBlock("cellar_flesh",UncannyFleshBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.MUD).strength(.35F).sound(SoundType.SLIME_BLOCK).noLootTable());
+    public static final DeferredBlock<UncannyFleshBlock> FLESH=BLOCKS.registerBlock("cellar_flesh",UncannyFleshBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.MUD).strength(.35F).sound(UncannyFleshBlock.SOUNDS).noLootTable());
     public static final DeferredHolder<MobEffect,EngulfedEffect> ENGULFED=EFFECTS.register("engulfed",EngulfedEffect::new);
     public static final DeferredBlock<UncannyFurnitureBlock> FURNITURE=BLOCKS.registerBlock("uncanny_furniture",UncannyFurnitureBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(UncannyFurnitureBlock::light));
     public static final DeferredBlock<DoorBlock> DINER_DOOR=BLOCKS.register("uncanny_diner_door",()->new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_DOOR).noOcclusion().noLootTable()));
     public static final DeferredBlock<CarpetBlock> PARLOR_RUG=BLOCKS.registerBlock("uncanny_parlor_rug",CarpetBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GREEN_CARPET).noLootTable());
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     static {
-        for(String name:new String[]{"diner_wall","diner_dado","diner_tile","roof","asphalt","pavement","parlor_paper","dark_wood","bedroom_paper","workshop_wall","workshop_floor","lobby_wall","courtyard_wall","cellar_brick","cellar_floor","cellar_plaster"})
+        for(String name:new String[]{"diner_wall","diner_dado","diner_tile","roof","asphalt","pavement","parlor_paper","dark_wood","bedroom_paper","workshop_wall","workshop_floor","lobby_wall","courtyard_wall","cellar_brick","cellar_floor","cellar_plaster","bathroom_wall","bathroom_floor"})
             MATERIALS.put(name,BLOCKS.registerSimpleBlock("uncanny_"+name,BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_TERRACOTTA).strength(1.2F).noLootTable()));
     }
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredItem<UncannyArtifactItem> BONE_RING=ITEMS.registerItem("bone_ring",p->new UncannyArtifactItem(p,false),new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<UncannyArtifactItem> SMOKY_MIRROR=ITEMS.registerItem("smoky_mirror",p->new UncannyArtifactItem(p,true),new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<Item> BAT=ITEMS.registerSimpleItem("hallway_bat",new Item.Properties().stacksTo(1));
-    public static final DeferredItem<Item> CLEAVER=ITEMS.registerSimpleItem("cellar_cleaver",new Item.Properties().stacksTo(1).durability(96));
+    public static final DeferredItem<Item> CLEAVER=ITEMS.registerSimpleItem("cellar_cleaver",new Item.Properties().stacksTo(1).durability(96).component(net.minecraft.core.component.DataComponents.UNBREAKABLE,new net.minecraft.world.item.component.Unbreakable(false)));
     public static final DeferredItem<Item> CELLAR_KEY=ITEMS.registerSimpleItem("cellar_key",new Item.Properties().stacksTo(1));
     public static final DeferredItem<UncannyMealItem> MEAL=ITEMS.registerItem("second_waitress_meal",UncannyMealItem::new,new Item.Properties().stacksTo(1).food(new FoodProperties.Builder().nutrition(1).saturationModifier(0).alwaysEdible().build()));
+    public static final DeferredItem<UncannyMenuItem> MENU=ITEMS.registerItem("second_waitress_menu",UncannyMenuItem::new,new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> BREAKFAST_ICON=ITEMS.registerSimpleItem("diner_breakfast",new Item.Properties().stacksTo(1));
     private UncannyRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);ITEMS.register(bus);EFFECTS.register(bus);}
+    public static void register(IEventBus bus){SOUNDS.register(bus);CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);ITEMS.register(bus);EFFECTS.register(bus);}
 }

@@ -44,6 +44,7 @@ class Look:
     costume: str = ''
     number: int = 0
     scarf: str = ''
+    face_style: str = ''
 
 
 # Each row is a character design, rather than an index into a repeated picture.
@@ -211,6 +212,13 @@ LOOKS['literary_father_mangled']=replace(LOOKS['literary_father'],mark='wound')
 for role,skin in [('father','#a6a28c'),('mother','#b5ada1'),('child','#b8baa2')]:
     LOOKS[f'literary_family_{role}_changed']=replace(LOOKS[f'literary_family_{role}'],skin=skin,mark=f'family_{role}_changed')
 
+# The peripheral family's production mesh uses the standard 64x64 human UV,
+# not the older literary family's wider costume atlas. Preserve those originals.
+for index,role in enumerate(('father','mother','child')):
+    LOOKS[f'uncanny_family_{index}']=replace(LOOKS[f'literary_family_{role}_changed'],logical=64,face_style='hollow_'+str(index))
+LOOKS['uncanny_family_3']=replace(LOOKS['uncanny_family_2'],hair='#332e2b',cut='long',cloth='#777365',pants='#565247',style='dress',sleeve=9,face_style='hollow_3')
+LOOKS['uncanny_bent_neck']=Look('#b19e90','#252625','long','#484c48','#3a3d3b','dress','#95877b',eyes='#666c61',age=1,mark='bent_injury',sleeve=10,logical=64,face_style='injured_neck')
+
 
 def net(u,v,w,h,d):
     return {'top':(u+d,v,u+d+w,v+d),'bottom':(u+d+w,v,u+d+2*w,v+d),
@@ -339,7 +347,30 @@ def family_face(look):
     return im
 
 
+def hollow_face(look):
+    # Eight native pixels. The propped family retains its original simple, gaping faces.
+    skin=rgb(look.skin);hair=rgb(look.hair)
+    im=Image.new('RGB',(8,8),skin);d=ImageDraw.Draw(im)
+    d.rectangle((0,0,7,1),fill=hair);d.line((0,2,0,6),fill=hair)
+    d.line((7,1,7,5),fill=shade(hair,-9));d.point((1,1),fill=shade(hair,10))
+    d.line((1,4,1,6),fill=shade(skin,-27));d.line((6,4,6,7),fill=shade(skin,-34))
+    dark='#272b29';crease=shade(skin,-52)
+    if look.face_style in ('frail','injured_neck'):
+        d.line((1,3,2,3),fill=crease);d.line((5,4,6,4),fill=crease)
+        d.line((4,4,4,6),fill=shade(skin,-24));d.point((3,7),fill=dark)
+        d.line((6,1,6,3),fill=hair)
+        if look.face_style=='injured_neck':
+            d.rectangle((1,2,2,5),fill='#705e65');d.point((2,4),fill='#574e55');d.line((5,3,6,3),fill='#3b3836');d.point((5,4),fill='#c7bbb0');d.rectangle((3,6,4,7),fill='#473a3b');d.point((4,5),fill='#927569')
+    else:
+        d.rectangle((1,2,6,7),fill=skin)
+        d.point((2,3),fill='#32352f');d.point((5,3),fill='#32352f')
+        d.rectangle((2,4,5,7),fill='#bdb499')
+        d.rectangle((2,5,5,6),fill='#302d27')
+    return im.resize((16,16),Image.Resampling.NEAREST)
+
+
 def face(look):
+    if look.face_style:return hollow_face(look)
     if look.mark.startswith('family_'):return family_face(look)
     im=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(im)
     skin=rgb(look.skin);dark=shade(look.skin,-36);cheek=shade(look.skin,-12)
@@ -410,13 +441,10 @@ def face(look):
         for x,y0,y1 in ((2,4,15),(13,4,15)):d.line((x,y0,x,y1),fill=hair)
         d.line((6,3,6,5),fill=hlo);d.line((11,3,11,5),fill=hlo)
     if look.mark=='diner_split':
-        # The same woman's features remain above a mouth pulled through both cheeks.
-        d.line((2,10,4,11,6,11,8,12,11,11,13,10),fill='#936650')
-        d.polygon([(2,11),(5,11),(7,12),(10,11),(13,11),(14,14),(11,15),(5,15),(1,13)],fill='#442d2b')
-        d.line((2,11,5,12,8,12,11,11,13,11),fill='#c8ae8c')
-        for x,y in ((3,12),(5,12),(8,13),(10,12),(12,12)):d.point((x,y),fill='#e0d0a8')
-        d.line((3,14,6,14,9,15,12,14),fill='#9d6e5d')
-        d.line((1,10,1,12),fill=shade(skin,-31));d.line((14,10,14,13),fill=shade(skin,-31))
+        # A slack, off-axis opening in the same face; no decorative rows of teeth.
+        d.rectangle((5,11,8,15),fill='#382d2b');d.rectangle((7,13,9,15),fill='#382d2b')
+        d.line((4,11,4,14),fill=shade(skin,-28));d.line((10,12,10,15),fill=shade(skin,-36))
+        d.line((5,10,7,10),fill='#967967');d.line((10,14,12,13),fill=shade(skin,-16))
     if look.mark in ('diner_second','diner_split'):
         for x in (3,10):
             d.rectangle((x,7,x+2,8),fill='#718b60')
@@ -884,6 +912,15 @@ def paint(look):
             d.rectangle((x,y,x+S-1,y+2*S-1),fill='#a7b9aa');d.point((x,y),fill='#d5dfc5')
         d.line((21*S,21*S,23*S,24*S,25*S,22*S,26*S,21*S),fill='#434e44',width=S)
         d.line((20*S,24*S,21*S,27*S),fill='#454f43',width=S)
+    if look.mark=='bent_injury':
+        d=ImageDraw.Draw(im)
+        # Unused right-pants overlay: the independent broken-neck mesh has its own native UV island.
+        d.rectangle((0,32*S,7*S-1,39*S-1),fill=look.skin)
+        d.rectangle((S,34*S,3*S-1,37*S-1),fill='#79616b');d.line((4*S,33*S,4*S,37*S),fill='#95877b',width=S)
+        d.rectangle((21*S,20*S,25*S-1,23*S-1),fill=look.skin);d.rectangle((23*S,21*S,25*S-1,23*S-1),fill='#79616b')
+        d.line((21*S,24*S,22*S,26*S,21*S,28*S),fill='#242928',width=S);d.line((25*S,28*S,26*S,30*S),fill='#746f64',width=S)
+        d.rectangle((44*S,22*S,46*S-1,25*S-1),fill='#78616a');d.line((45*S,25*S,46*S,27*S),fill='#b19e90',width=S)
+        for x in (1,25):d.rectangle((x*S,11*S,(x+2)*S-1,14*S-1),fill='#79656c');d.point(((x+1)*S,12*S),fill='#59515b')
     # Native 256-square / 512x256 archive dimensions; art itself remains the exact two-pixel grid.
     return im.resize((look.logical*4,256),Image.Resampling.NEAREST)
 
@@ -952,6 +989,14 @@ def rabbit_skin():
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');args=parser.parse_args()
     paintings={name:paint(look) for name,look in LOOKS.items()}
+    from draw_backseat_stowaway import paint as stowaway
+    paintings['backseat_stowaway']=stowaway()
+    # Her neck has its own opaque 2x4x2 net. The old player-overlay region was transparent.
+    injured=paintings['uncanny_bent_neck'];nd=ImageDraw.Draw(injured)
+    for side,box in net(0,32,2,4,2).items():
+        nd.rectangle((box[0]*4,box[1]*4,box[2]*4-1,box[3]*4-1),fill='#c29d86')
+        for row,color in [(1,'#7f5048'),(2,'#9d7060')]:
+            y=min(box[3]-1,box[1]+row)*4;nd.rectangle((box[0]*4,y,box[2]*4-1,y+3),fill=color)
     paintings['minotaur_materials']=material_sheet(256,256)
     paintings['finale_materials']=material_sheet(256,512)
     for name,wound,skinned in [('literary_elk',False,False),('literary_elk_wounded',True,False),('literary_elk_carcass',True,False),('literary_elk_carcass_skinned',True,True)]:paintings[name]=elk_skin(wound,skinned)

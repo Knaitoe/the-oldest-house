@@ -92,7 +92,11 @@ for kind,els in base.items():
  for stage in range(4):
   elements=list(els)
   if kind=='coffin':elements.append(cube([1,8,0],[15,9,16],rot=None if stage else {'origin':[1,8,0],'axis':'z','angle':-45}))
-  model={'textures':tex,'elements':elements,'ambientocclusion':True};name='literary_'+kind+'_'+str(stage);write('models/block/'+name+'.json',model)
+  model={'textures':tex,'elements':elements,'ambientocclusion':True}
+  if kind=='camera':
+   from draw_optical_fittings import camera_model
+   model=camera_model(elements,tex)
+  name='literary_'+kind+'_'+str(stage);write('models/block/'+name+'.json',model)
   for facing,rot in [('north',0),('east',90),('south',180),('west',270)]:variants[f'facing={facing},kind={kind},stage={stage}']={'model':'the_oldest_house:block/'+name,'y':rot}
 # Kinds authored elsewhere (the elk hide, carcasses, bodies and evidence: tools/generate_elk_yacht_assets.py) are kept.
 _prop=A/'blockstates/literary_prop.json'
@@ -193,3 +197,8 @@ for i,path in enumerate(paths):
  x=(i%8)*96;y=(i//8)*118;preview.paste(Image.open(path).convert('RGB').resize((88,88),Image.Resampling.NEAREST),(x+4,y+4));draw.text((x+3,y+94),path.stem[:16],fill=(217,205,181))
 p=ROOT/'art/literary_materials_0436.png';p.parent.mkdir(parents=True,exist_ok=True);preview.save(p)
 print(json.dumps({'prop_variants':len(variants),'keepsakes':len(items),'cast_atlases':len(skins),'recording_seconds':lengths}))
+
+# Preserve the reviewed hollow jar and cabin-only journal after the legacy export.
+from draw_cabin_objects import outputs as cabin_outputs
+for path,data in cabin_outputs().items():
+ path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)

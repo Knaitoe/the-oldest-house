@@ -27,7 +27,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 /** Opt-in dedicated-server proof with actual socket-connected clients. Inert in every ordinary game. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class LiveExpeditionProof {
-    public static boolean enabled(){return Boolean.getBoolean("the_oldest_house.liveProof")&&!UncannySocketProof.enabled();}
+    public static boolean enabled(){return Boolean.getBoolean("the_oldest_house.liveProof")&&!UncannySocketProof.enabled()&&!BackseatSocketProof.enabled();}
     public static Path folder(){return Path.of(System.getProperty("the_oldest_house.liveProofDir","build/live-proof"));}
     private static final BlockPos ORIGIN=new BlockPos(6000,80,6000);
     private static final Set<String> ACKS=new HashSet<>();
@@ -44,6 +44,7 @@ public final class LiveExpeditionProof {
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("LIVE EXPEDITION: "+message);}
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
+        e.getDispatcher().register(Commands.literal("borrascaready").executes(c->{var p=c.getSource().getPlayerOrException();if(phase==54&&!role(p).isEmpty())BorrascaSocketProof.terrainReady(p);return 1;}));
         e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,62)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
@@ -54,7 +55,7 @@ public final class LiveExpeditionProof {
         }return out;
     }
     private static void marker(ServerPlayer p,int step,BlockPos target) {
-        var tag=new CompoundTag();tag.putInt("Step",step);tag.putLong("Target",target.asLong());
+        var tag=new CompoundTag();tag.putInt("Step",step);tag.putLong("Target",target.asLong());tag.putInt("ServerTick",p.server.getTickCount());if(step==54)tag.putBoolean("BorrascaTerrainPending",BorrascaSocketProof.pending(p));
         if(step==23)tag.putBoolean("MineTurn",role(p).equals("A")||ACKS.contains("A"));
         if(step==6||step==8)tag.putString("Expected",BurnEmbers.excerpt(StaircaseStory.record(p),0,target).text());
         var stack=new ItemStack(Items.STICK);stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));p.getInventory().setItem(8,stack);p.inventoryMenu.broadcastChanges();
@@ -77,6 +78,7 @@ public final class LiveExpeditionProof {
         if(a!=null&&b!=null&&(phase==48||phase==49))CanoeSocketProof.observe(a,b,phase,s.getTickCount()-changed);
         if(a!=null&&phase==51)CanoeSocketProof.swimming(a);
         if(a!=null&&b!=null&&(phase==52||phase==53))GhostsSocketProof.observe(a,b);
+        if(a!=null&&b!=null&&phase==54){BorrascaSocketProof.arrival(a,b);if(s.getTickCount()%20==0){marker(a,54,BorrascaSocketProof.source());marker(b,54,BorrascaSocketProof.source());}}
         if(a!=null&&b!=null&&(phase==56||phase==58))BorrascaSocketProof.observe(a,b,phase);
         if(a!=null&&b!=null&&phase>=54&&phase<=59&&s.getTickCount()%40==0)BorrascaSocketProof.status(a,b,phase);
         // Read on the tick the native return lands, before the reader's restored stride or the test

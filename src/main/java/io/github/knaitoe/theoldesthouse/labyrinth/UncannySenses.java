@@ -74,6 +74,9 @@ public final class UncannySenses {
             view.putBoolean("Green",UncannyStories.green(own));view.putBoolean("Dark",p.serverLevel().getBlockState(b.offset(UncannyRooms.FLOOD)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(UncannyRooms.FLOOD)).getValue(UncannyPropBlock.STAGE)>0);
             view.putInt("Edge",own.getInt("Edge"));view.putInt("Growth",own.getInt("GrowthCue"));view.putBoolean("Ready",own.getBoolean("Ready"));view.putBoolean("Failed",own.getBoolean("UncannyFailed"));
             view.putInt("Engulfment",own.getInt("Engulfment"));
+            if(place==LabyrinthPlace.MOTION_LIGHT){var fitting=FoyerMotion.fitting(p.serverLevel(),b);double motion=fitting==null?0:Math.min(1,Math.abs(fitting.swing.sample(p.serverLevel().getGameTime()).velocity())/.035);view.putFloat("FoyerWind136",(float)Math.max(FoyerMotion.wind(p.serverLevel(),b),motion*.32));}
+            view.putLong("RumbleUntil130",own.getLong("CellarRumbleUntil130"));
+            if(place==LabyrinthPlace.TUNNEL_PERIPHERY&&own.hasUUID("CastGiant")&&p.serverLevel().getEntity(own.getUUID("CastGiant")) instanceof LiteraryActor a)view.putLong("TunnelQuakeUntil131",a.getPersistentData().getLong("TunnelQuakeUntil131"));
             view.putString("Sign",UncannyStories.sign(p,b,own));view.putInt("Doll",own.contains("CastDoll")&&own.hasUUID("CastDoll")&&p.serverLevel().getEntity(own.getUUID("CastDoll")) instanceof LiteraryActor a?a.getId():-1);
         }
         view.putBoolean("Mirror",mirror(p));view.putBoolean("Ring",ring(p));

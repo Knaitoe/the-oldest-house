@@ -12,9 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 borrasca_only = "--borrasca-only" in sys.argv[1:]
 uncanny_only = "--uncanny-only" in sys.argv[1:]
-proof_flags = ["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else [])
-proof_root = ROOT / ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live"))
-report = ROOT / ("build/uncanny-live-proof" if uncanny_only else ("build/borrasca-live-proof" if borrasca_only else "build/live-proof"))
+backseat_only = "--backseat-only" in sys.argv[1:]
+proof_flags = ["-PbackseatSocketSmoke"] if backseat_only else (["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else []))
+proof_root = ROOT / ("run-backseat-live" if backseat_only else ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live")))
+report = ROOT / ("build/backseat-live-proof" if backseat_only else ("build/uncanny-live-proof" if uncanny_only else ("build/borrasca-live-proof" if borrasca_only else "build/live-proof")))
+if backseat_only and ((proof_root / "server/world/level.dat").exists() or any((report / name).exists() for name in ("passed.txt", "failed.txt", "restart-b.txt"))):
+    raise SystemExit("Backseat proof requires a fresh isolated world and report. Preserve the previous run-backseat-live and build/backseat-live-proof folders elsewhere before rerunning.")
 report.mkdir(parents=True, exist_ok=True)
 server = proof_root / "server"
 server.mkdir(parents=True, exist_ok=True)
@@ -34,11 +37,38 @@ def launch(task, name):
     processes.append(p)
     return p
 
+def capture_login_threads():
+    """Observe the real handshake before a timeout; do not retry or bypass it."""
+    try:
+        listing = subprocess.run(["jcmd", "-l"], capture_output=True, text=True, timeout=5)
+        (report / "login-jvms.txt").write_text(listing.stdout + listing.stderr)
+        for line in listing.stdout.splitlines():
+            fields = line.split(maxsplit=1)
+            if len(fields) != 2 or not fields[0].isdigit():
+                continue
+            if not any(name in fields[1] for name in ("devlaunch", "BootstrapLauncher", "modlauncher")):
+                continue
+            pid = fields[0]
+            dump = subprocess.run(["jcmd", pid, "Thread.print", "-l"], capture_output=True, text=True, timeout=8)
+            (report / f"login-threads-{pid}.txt").write_text(dump.stdout + dump.stderr)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        (report / "login-diagnostics-error.txt").write_text(str(exc))
+
 def wait_for(check, seconds, context):
     deadline = time.monotonic() + seconds
+    connecting_at = None
+    captured_login = False
     while time.monotonic() < deadline:
         if check():
             return
+        if context == "first native client window and socket login" and not captured_login:
+            client_log = report / "client-a.log"
+            if client_log.exists() and "Connecting to 127.0.0.1, 25578" in client_log.read_text(errors="replace"):
+                if connecting_at is None:
+                    connecting_at = time.monotonic()
+                elif time.monotonic() - connecting_at >= 4:
+                    captured_login = True
+                    capture_login_threads()
         for p in processes:
             if p.poll() is not None and p.returncode != 0:
                 raise RuntimeError(f"Native process failed during {context}: {p.returncode}")
@@ -59,6 +89,25 @@ try:
     # The expedition itself still requires both live clients together.
     wait_for(lambda: "joined the game" in (server / "logs/latest.log").read_text(errors="replace"), 180, "first native client window and socket login")
     second = launch("runProofB", "client-b-first")
+    if backseat_only:
+        wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "two physical Backseat entries, private weather/audio, notebook, native locks and actual logout")
+        reconnected = launch("runProofB", "client-b-reconnected")
+        wait_for(lambda: (report / "passed.txt").exists(), 360, "same-profile original locked seat, native mirror reveals, independent tree impacts and confirmed House returns")
+        for p in processes:
+            p.wait(timeout=90)
+            assert p.returncode == 0, p.returncode
+        for role in ("A", "B"):
+            for view in ("rainy-approach", "standing-before-lock", "seated", "locked", "locked-reconnected", "reveal", "acceleration", "house-return", "mirror-before", "mirror-raised"):
+                assert (report / f"{role}-{view}.png").stat().st_size > 100, (role, view)
+            assert (report / f"{role}-mirror-pixels.txt").stat().st_size > 40, role
+            assert (report / f"{role}-speed-camera.txt").stat().st_size > 40, role
+        for name in ("A-notebook.png", "A-notebook-kept.png", "B-notebook-unread.png", "B-locked-before-reconnect.png", "B-peer-still-locked.png", "A-peer-still-home.png", "reconnect-originals.txt", "peer-independent.txt"):
+            assert (report / name).stat().st_size > 40, name
+        native_log = (server / "logs/latest.log").read_text(errors="replace")
+        assert "Seeding the house interior in the background." not in native_log
+        assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
+        print((report / "passed.txt").read_text(), flush=True)
+        raise SystemExit(0)
     if uncanny_only:
         wait_for(lambda: (report / "restart-b.txt").exists() and second.poll() is not None, 360, "both actual clients' native bedroom actions and four CCTV feeds")
         reconnected = launch("runProofB", "client-b-reconnected")
@@ -68,7 +117,7 @@ try:
             assert p.returncode == 0, p.returncode
         for role in ("A", "B"):
             assert (report / f"{role}-bedroom-native-route.txt").stat().st_size > 50, role
-            for view in ("short-passage", "boarded-periphery", "diner-translucent", "diner-solid", "giant-folded", "bedroom-source", "bedroom-first-cut", "bedroom-second-cut", "bedroom-direct", "bedroom-cctv", "bedroom-cctv-reconnected", "bedroom-door-closed", "bedroom-account", "cellar-growth", "foyer-lit", "foyer-dark", "ring-and-mirror"):
+            for view in ("short-passage", "boarded-periphery", "diner-translucent", "diner-solid", "giant-folded", "tunnel-native-escape", "bedroom-source", "bedroom-first-cut", "bedroom-second-cut", "bedroom-direct", "bedroom-cctv", "bedroom-cctv-reconnected", "bedroom-door-closed", "bedroom-account", "cellar-growth", "foyer-lit", "foyer-dark", "ring-and-mirror"):
                 assert (report / f"{role}-{view}.png").stat().st_size > 500, (role, view)
             for prefix in ("", "reconnected-"):
                 for channel in range(4):

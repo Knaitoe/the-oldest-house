@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.entity.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
-/** The distant child squats on folded legs, with the shoulders over the knees. */
+/** The distant figure sits on the ground, knees drawn up and face bowed into folded arms. */
 public final class PlainFigureModel extends HumanoidModel<LiteraryActor> {
     public static final float SCALE=.58F;
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"plain_figure"),"main");
@@ -34,11 +34,13 @@ public final class PlainFigureModel extends HumanoidModel<LiteraryActor> {
     public void crouch(){
         for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
         young=false;crouching=false;riding=false;attackTime=0;
-        leftLeg.setPos(3,17.58F,1);rightLeg.setPos(-3,17.58F,1);
-        leftLeg.xRot=rightLeg.xRot=-1.18F;leftKnee.xRot=rightKnee.xRot=2.36F;
-        body.xRot=1.04F;head.xRot=-.54F;
-        leftArm.xRot=rightArm.xRot=-1.14F;leftArm.zRot=.18F;rightArm.zRot=-.18F;
-        leftElbow.xRot=rightElbow.xRot=.6F;leftElbow.zRot=.14F;rightElbow.zRot=-.14F;
+        // Hips and heels share the ground. The raised thighs point forward;
+        // the shins return toward the floor, instead of forming a standing squat.
+        leftLeg.setPos(2.2F,22.45F,2);rightLeg.setPos(-2.2F,22.45F,2);
+        leftLeg.xRot=rightLeg.xRot=-2.3F;leftKnee.xRot=rightKnee.xRot=1.48F;
+        body.xRot=.62F;head.xRot=.55F;
+        leftArm.xRot=rightArm.xRot=-.4F;leftArm.zRot=.05F;rightArm.zRot=-.05F;
+        leftElbow.xRot=rightElbow.xRot=-.5F;leftElbow.zRot=1.2F;rightElbow.zRot=-1.2F;
         HumanoidMotion.connect(this);
     }
     @Override public void setupAnim(LiteraryActor actor,float walk,float amount,float age,float yaw,float pitch){crouch();}
