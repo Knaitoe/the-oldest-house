@@ -52,7 +52,7 @@ public final class LakeHouseTests {
         try{
             var b=f.base();
             h.assertTrue(b.getY()==LakeHouse.BASE_Y&&NovelRooms.outside(PLACE)&&LiteraryRooms.isLiterary(PLACE)&&PLACE.kind()==LabyrinthPlace.Kind.MULTI_VISIT,"the lake house is an outdoor multi-visit literary scene at its fixed height");
-            h.assertTrue(WitnessAccount.Story.of(PLACE.id())!=null&&WitnessAccount.Story.values().length==53&&WitnessAccount.REQUIRED==40,"the lake remains one personal source in the expanded pool of fifty-three; forty required");
+            h.assertTrue(WitnessAccount.Story.of(PLACE.id())!=null&&WitnessAccount.Story.values().length==54&&WitnessAccount.REQUIRED==41,"the lake remains one personal source in the expanded pool of fifty-four; forty-one required");
             h.assertTrue(!ScenePolish.applies(PLACE)&&!SceneReview.applies(PLACE)&&!SceneCraft.applies(PLACE),"the scenery passes leave the lake house as it is built");
             h.assertTrue(f.out.getBlockEntity(b.offset(LakeHouse.SOURCE)) instanceof LecternBlockEntity lectern&&lectern.hasBook(),"the rental log lies on its lectern in the boathouse");
             h.assertTrue(f.out.getBlockState(b.offset(LakeHouse.ACCOUNT)).is(LiteraryRegistry.PROP.get()),"the account waits on its shelf");
