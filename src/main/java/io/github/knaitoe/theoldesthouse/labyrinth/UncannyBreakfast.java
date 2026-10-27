@@ -20,8 +20,11 @@ public final class UncannyBreakfast {
     public static final String VIEW="UncannyMenuBlurb131";
     public static final int ORDER=600;
     private UncannyBreakfast(){}
-    private static void blurb(ItemStack s){s.set(DataComponents.WRITTEN_BOOK_CONTENT,UncannyReading.excerpt(PLACE,0,new CompoundTag()).get(DataComponents.WRITTEN_BOOK_CONTENT));CustomData.update(DataComponents.CUSTOM_DATA,s,t->t.putBoolean(VIEW,true));}
-    public static ItemStack menu(ServerPlayer p){var s=new ItemStack(UncannyRegistry.MENU.get());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID("UncannyMenuOwner",p.getUUID());t.putUUID("UncannyMenu",UUID.randomUUID());});blurb(s);return s;}
+    private static void content(ItemStack s,boolean narrative){
+        var book=narrative?UncannyTexts.source(PLACE):io.github.knaitoe.theoldesthouse.house.HouseWriting.book("Breakfast","",io.github.knaitoe.theoldesthouse.house.HouseWriting.WritingStyle.WILL,List.of("Pancakes\n\nWaffles\n\nEggs and cheese\n\nGrits"));
+        s.set(DataComponents.WRITTEN_BOOK_CONTENT,book.get(DataComponents.WRITTEN_BOOK_CONTENT));CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putBoolean(VIEW,true);t.putBoolean("MenuNarrative133",narrative);});
+    }
+    public static ItemStack menu(ServerPlayer p){var s=new ItemStack(UncannyRegistry.MENU.get());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID("UncannyMenuOwner",p.getUUID());t.putUUID("UncannyMenu",UUID.randomUUID());});content(s,false);return s;}
     private static boolean owns(ServerPlayer p,ItemStack menu){var c=menu.get(DataComponents.CUSTOM_DATA);return menu.is(UncannyRegistry.MENU.get())&&c!=null&&c.copyTag().hasUUID("UncannyMenuOwner")&&c.copyTag().getUUID("UncannyMenuOwner").equals(p.getUUID());}
     public static boolean canOrder(ServerPlayer p){
         if(!LiteraryVignettes.inside(p,PLACE))return false;var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);var b=LiteraryVignettes.base(p,PLACE);
@@ -31,9 +34,14 @@ public final class UncannyBreakfast {
     }
     public static boolean open(ServerPlayer p,ItemStack menu){
         if(!LiteraryVignettes.participant(p)||!owns(p,menu))return false;
-        // Upgrade the same old physical menu in place; never issue a second original.
-        blurb(menu);p.getInventory().setChanged();var view=menu.copy();CustomData.update(DataComponents.CUSTOM_DATA,view,t->t.putBoolean("CanOrder131",canOrder(p)));
-        p.openMenu(new SimpleMenuProvider((id,inv,who)->new LiteraryVignettes.Pages(id,p,PLACE,"Passage0124_0",view,true,false,p.blockPosition()),menu.getHoverName()));
+        var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);boolean narrative=own.getBoolean("DinerMenuFoodSeen133");
+        own.putBoolean("DinerMenuFoodSeen133",true);LiteraryVignettes.save(data,p.getUUID(),PLACE,own);return view(p,menu,narrative);
+    }
+    public static boolean openFood(ServerPlayer p,ItemStack menu){return LiteraryVignettes.participant(p)&&owns(p,menu)&&view(p,menu,false);}
+    private static boolean view(ServerPlayer p,ItemStack menu,boolean narrative){
+        if(narrative){var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);if(!own.contains("Original_Source")){own.put("Original_Source",LiteraryVignettes.mark(p,PLACE,"Source",UncannyTexts.source(PLACE)).save(p.registryAccess()));LiteraryVignettes.save(data,p.getUUID(),PLACE,own);}}
+        content(menu,narrative);p.getInventory().setChanged();var view=menu.copy();CustomData.update(DataComponents.CUSTOM_DATA,view,t->t.putBoolean("CanOrder131",canOrder(p)));
+        p.openMenu(new SimpleMenuProvider((id,inv,who)->new LiteraryVignettes.Pages(id,p,PLACE,narrative?"Source":"BreakfastMenu133",view,true,false,p.blockPosition()),menu.getHoverName()));
         if(p.containerMenu instanceof LiteraryVignettes.Pages pages)pages.opened();return true;
     }
     public static boolean button(ServerPlayer p,ItemStack menu,int button){

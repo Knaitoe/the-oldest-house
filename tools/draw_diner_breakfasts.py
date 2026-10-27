@@ -45,22 +45,31 @@ def paintings():
  return out
 
 def cuboid(a,b,texture):return {'from':list(a),'to':list(b),'faces':{f:{'texture':'#'+texture,'uv':[0,0,16,16]} for f in ('up','down','north','south','east','west')}}
-def plate(name):
+def plate(name,bites=0):
  elements=[cuboid((2,0,2),(14,1,14),'plate'),cuboid((2,1,2),(14,1.5,3),'plate'),cuboid((2,1,13),(14,1.5,14),'plate'),cuboid((2,1,3),(3,1.5,13),'plate'),cuboid((13,1,3),(14,1.5,13),'plate')]
  if name=='grits':elements +=[cuboid((4,1,4),(12,3,12),'plate'),cuboid((4.5,3,4.5),(11.5,3.5,11.5),'food')]
  elif name=='pancakes':
   for y in (1,2,3):elements.append(cuboid((4,y,4),(12,y+1,12),'food'))
  else:elements.append(cuboid((3.5,1,3.5),(12.5,2.5,12.5),'food'))
+ if bites:
+  cut=3.5+9*(7-bites)/7;clipped=[]
+  for e in elements:
+   if e['faces']['up']['texture']!='#food':clipped.append(e);continue
+   if e['from'][0]>=cut:continue
+   e['to'][0]=min(e['to'][0],cut);clipped.append(e)
+  elements=clipped
  return {'parent':'minecraft:block/block','textures':{'particle':'the_oldest_house:item/diner/spoiled_'+name,'plate':'the_oldest_house:item/diner/plate','food':'the_oldest_house:item/diner/spoiled_'+name},'elements':elements,'display':{'gui':{'rotation':[35,135,0],'translation':[0,0,0],'scale':[1.1,1.1,1.1]},'ground':{'rotation':[0,0,0],'translation':[0,0,0],'scale':[1,1,1]},'fixed':{'rotation':[0,0,0],'translation':[0,0,0],'scale':[1,1,1]},'firstperson_righthand':{'rotation':[0,0,0],'translation':[0,3,0],'scale':[.8,.8,.8]},'thirdperson_righthand':{'rotation':[0,0,0],'translation':[0,3,0],'scale':[.8,.8,.8]}}}
 
 def assets():
  out={}
  for name in ORDERS:
   out['models/item/diner/'+name+'.json']=plate(name)
+  for bite in range(1,7):out[f'models/item/diner/{name}_bite_{bite}.json']=plate(name,bite)
   out['models/item/diner/icon_'+name+'.json']={'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/diner/icon_'+name}}
  for item,prefix in [('second_waitress_meal',''),('diner_breakfast','icon_')]:
   fallback=plate('pancakes') if item=='second_waitress_meal' else {'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/diner/icon_pancakes'}}
   fallback['overrides']=[{'predicate':{'custom_model_data':i+1},'model':'the_oldest_house:item/diner/'+prefix+name} for i,name in enumerate(ORDERS)]
+  if item=='second_waitress_meal':fallback['overrides'] +=[{'predicate':{'custom_model_data':bite*10+i+1},'model':f'the_oldest_house:item/diner/{name}_bite_{bite}'} for bite in range(1,7) for i,name in enumerate(ORDERS)]
   out['models/item/'+item+'.json']=fallback
  out['models/item/second_waitress_menu.json']={'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/diner/menu'}}
  return out

@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.*;
 import net.minecraft.sounds.*;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Blocks;
@@ -18,6 +19,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 /** The original meal moves into a persistent table fitting, then into a hand or an actual bite. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class DinerPlate {
+    private static final String BITE="DinerPlateBite133";
     private DinerPlate(){}
     public static UncannyPropBlock.Fitting at(ServerLevel l,BlockPos at){
         return l.getBlockEntity(at) instanceof UncannyPropBlock.Fitting f&&f.getBlockState().getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.PLATE?f:null;
@@ -40,9 +42,42 @@ public final class DinerPlate {
     }
     public static boolean use(ServerPlayer p,BlockPos at){
         var f=at(p.serverLevel(),at);if(f==null||f.meal.isEmpty()||!LiteraryVignettes.participant(p)||p.containerMenu!=p.inventoryMenu||p.distanceToSqr(at.getCenter())>36||!owner(p,f.meal))return false;
-        var meal=f.meal;f.meal=ItemStack.EMPTY;
-        if(p.isShiftKeyDown())LiteraryVignettes.give(p,meal);else{UncannyStories.ate(p,meal);p.getFoodData().eat(1,0);p.serverLevel().playSound(null,at,SoundEvents.GENERIC_EAT,SoundSource.PLAYERS,.55F,.9F+p.getRandom().nextFloat()*.2F);}
-        p.serverLevel().setBlock(at,Blocks.AIR.defaultBlockState(),UncannyRooms.FLAGS);return true;
+        if(p.isUsingItem()||p.getPersistentData().contains(BITE))return false;var meal=f.meal;
+        if(p.isShiftKeyDown()){f.meal=ItemStack.EMPTY;p.serverLevel().setBlock(at,Blocks.AIR.defaultBlockState(),UncannyRooms.FLAGS);LiteraryVignettes.give(p,meal);return true;}
+        var context=new net.minecraft.nbt.CompoundTag();context.putLong("Plate",at.asLong());context.putInt("HandSlot",p.getInventory().selected);context.putInt("Stash",-1);
+        var custom=meal.get(DataComponents.CUSTOM_DATA);if(custom==null||!custom.copyTag().hasUUID("UncannyMeal"))return false;
+        context.putUUID("Meal",custom.copyTag().getUUID("UncannyMeal"));var held=p.getMainHandItem();
+        if(!held.isEmpty()){
+            int stash=p.getInventory().getFreeSlot();if(stash<0){p.displayClientMessage(net.minecraft.network.chat.Component.literal("Your hands are full."),true);return false;}
+            context.putInt("Stash",stash);context.put("StashStack",held.save(p.registryAccess()));p.getInventory().setItem(stash,held);
+        }
+        f.meal=ItemStack.EMPTY;f.syncMotion();p.getPersistentData().put(BITE,context);p.setItemInHand(InteractionHand.MAIN_HAND,meal);p.getInventory().setChanged();p.inventoryMenu.broadcastChanges();p.startUsingItem(InteractionHand.MAIN_HAND);
+        var values=p.getEntityData().getNonDefaultValues();if(values!=null)p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket(p.getId(),values));return true;
+    }
+    private static boolean sameMeal(ItemStack meal,net.minecraft.nbt.CompoundTag context){var c=meal.get(DataComponents.CUSTOM_DATA);return c!=null&&c.copyTag().hasUUID("UncannyMeal")&&context.hasUUID("Meal")&&c.copyTag().getUUID("UncannyMeal").equals(context.getUUID("Meal"));}
+    /** Return the actual remaining serving and restore only an unchanged displaced hand object. */
+    public static ItemStack finishBite(ServerPlayer p,ItemStack remainder){
+        var context=p.getPersistentData().getCompound(BITE);if(context.isEmpty())return remainder;p.getPersistentData().remove(BITE);
+        if(p.getInventory().selected!=context.getInt("HandSlot"))return remainder;
+        var at=BlockPos.of(context.getLong("Plate"));boolean returned=false;
+        if(LiteraryVignettes.inside(p,LabyrinthPlace.SECOND_WAITRESS)&&p.distanceToSqr(at.getCenter())<=36){
+            var plate=at(p.serverLevel(),at);
+            if(plate!=null&&plate.meal.isEmpty()&&(remainder.isEmpty()||sameMeal(remainder,context))){
+                if(remainder.isEmpty())p.serverLevel().setBlock(at,Blocks.AIR.defaultBlockState(),UncannyRooms.FLAGS);else{plate.meal=remainder;plate.syncMotion();}returned=true;
+            }
+        }
+        if(!returned&&!remainder.isEmpty())return remainder;int stash=context.getInt("Stash");
+        if(stash>=0&&stash<p.getInventory().getContainerSize()){
+            var held=p.getInventory().getItem(stash);var original=ItemStack.parseOptional(p.registryAccess(),context.getCompound("StashStack"));
+            if(ItemStack.matches(held,original)){p.getInventory().setItem(stash,ItemStack.EMPTY);return held;}
+        }return ItemStack.EMPTY;
+    }
+    @SubscribeEvent public static void recoverInterruptedBites(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){
+        for(var p:e.getServer().getPlayerList().getPlayers())if(p.getPersistentData().contains(BITE)&&!p.isUsingItem()){
+            var c=p.getPersistentData().getCompound(BITE);var hand=p.getMainHandItem();
+            if(sameMeal(hand,c)&&p.getInventory().selected==c.getInt("HandSlot")){p.setItemInHand(InteractionHand.MAIN_HAND,finishBite(p,hand));p.getInventory().setChanged();p.inventoryMenu.broadcastChanges();}
+            else p.getPersistentData().remove(BITE);
+        }
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void left(PlayerInteractEvent.LeftClickBlock e){
         if(e.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START||!(e.getEntity() instanceof ServerPlayer p)||!LiteraryVignettes.participant(p)||p.containerMenu!=p.inventoryMenu||p.distanceToSqr(e.getPos().getCenter())>36)return;

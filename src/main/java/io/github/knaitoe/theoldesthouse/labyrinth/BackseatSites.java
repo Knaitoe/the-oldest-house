@@ -26,6 +26,7 @@ public final class BackseatSites {
     private static LabyrinthData store;private static UUID building;private static ServerLevel leased;private static BuildBlocks.Plan plan;
     private static final List<ChunkPos> chunks=new ArrayList<>();
     private BackseatSites(){}
+    public static boolean canDeal(LabyrinthData data,UUID id){return !data.stateEntry(STATE,id.toString()).getBoolean("Resolved")&&!WitnessAccount.has(data,id,WitnessAccount.Story.BACKSEAT);}
     public static CompoundTag state(MinecraftServer s,UUID id){return LabyrinthData.get(s).stateEntry(STATE,id.toString());}
     public static @Nullable BlockPos base(MinecraftServer s,UUID id){var t=state(s,id);var o=HouseSavedData.get(s).houseOrigin();return o==null||!t.contains("Index")?null:new BlockPos(o.getX()+8192+t.getInt("Index")*256,80,o.getZ()-450560);}
     public static boolean inside(ServerPlayer p){var b=base(p.server,p.getUUID());return b!=null&&p.level().dimension().equals(HouseDimensions.OUTSIDE)&&state(p.server,p.getUUID()).getBoolean("Built")&&BackseatRooms.bounds(b).contains(p.position());}
@@ -43,20 +44,25 @@ public final class BackseatSites {
     }
     /** An actual original source door, followed by a confirmed native move, creates the one personal return. */
     public static boolean enter(ServerPlayer p,LabyrinthData.Door from){
-        if(!p.isAlive()||p.isSpectator()||LabyrinthDoors.isBusy(p)||p.level().dimension()!=from.dimension||p.distanceToSqr(from.lower.getCenter())>36||LabyrinthData.get(p.server).door(from.id)!=from||!SOURCE.equals(from.destination))return false;
+        var data=LabyrinthData.get(p.server);var dealt=data.deal(p.getUUID(),from);
+        boolean source=SOURCE.equals(from.destination)||LabyrinthData.DEALT.equals(from.destination)&&dealt!=null&&dealt.place().equals(LabyrinthPlace.BACKSEAT.id());
+        if(!p.isAlive()||p.isSpectator()||LabyrinthDoors.isBusy(p)||p.level().dimension()!=from.dimension||p.distanceToSqr(from.lower.getCenter())>36||data.door(from.id)!=from||!source||!canDeal(data,p.getUUID()))return false;
         var entry=prepareEntry(p);if(entry==null)return false;
         var back=new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true);
         var target=Vec3.atBottomCenterOf(entry.lower.north(3));
         return HouseTransitionEvents.beginDoorTransition(p,entry.dimension,null,arrived->{
-            var data=LabyrinthData.get(arrived.server);data.pushReturn(arrived.getUUID(),back);
-            var own=state(arrived.server,arrived.getUUID());own.putBoolean("Entered",true);data.setStateEntry(STATE,arrived.getUUID().toString(),own);
+            var current=LabyrinthData.get(arrived.server);current.pushReturn(arrived.getUUID(),back);
+            var own=state(arrived.server,arrived.getUUID());own.putBoolean("Entered",true);current.setStateEntry(STATE,arrived.getUUID().toString(),own);
+            current.visit(arrived.getUUID(),LabyrinthPlace.BACKSEAT);io.github.knaitoe.theoldesthouse.house.HouseExperience.arrived(arrived,LabyrinthPlace.BACKSEAT);
+            var origin=HouseSavedData.get(arrived.server).houseOrigin();LabyrinthDealer.arriveAt(current,arrived.getUUID(),LabyrinthPlace.BACKSEAT,origin==null?0:origin.asLong());
             var car=car(arrived);if(car!=null)car.arm(arrived);
         },target,180);
     }
     static void returned(ServerPlayer p,BlockPos original){
         var b=base(p.server,p.getUUID());if(b==null||!b.offset(BackseatRooms.CAR).equals(original))return;
         var t=state(p.server,p.getUUID());if(!t.getBoolean("Entered")||t.getBoolean("Resolved"))return;
-        t.putBoolean("Resolved",true);LabyrinthData.get(p.server).setStateEntry(STATE,p.getUUID().toString(),t);
+        var car=car(p);if(car==null||car.phase!=BackseatCarBlock.Car.DONE||!car.sequenceEnabled||car.travel<=0)return;
+        t.putBoolean("Resolved",true);LabyrinthData.get(p.server).setStateEntry(STATE,p.getUUID().toString(),t);WitnessAccount.resolve(p,WitnessAccount.Story.BACKSEAT,"returned_from_the_car_among_the_pines");
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){advance(e.getServer());}
     public static void advance(MinecraftServer s){

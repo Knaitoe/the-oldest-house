@@ -45,7 +45,7 @@ public final class SceneVisualProof extends Screen {
         interiors=environment&&Boolean.getBoolean("the_oldest_house.interiorEnvironmentSmoke");
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of(interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+10:environment?10:99+UncannyRooms.PLACES.size();
+        int expected=interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+10:environment?11:99+UncannyRooms.PLACES.size();
         if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier plus every uncanny room), found "+files.size());
         if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
         load();
@@ -68,6 +68,7 @@ public final class SceneVisualProof extends Screen {
         var buffers=mc.renderBuffers().bufferSource();
         for(var v:voxels){pose.pushPose();pose.translate(v.x,v.y,v.z);
             if(v.state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.HANDLING.get()))VignetteHandlingRenderer.draw(v.state,io.github.knaitoe.theoldesthouse.labyrinth.VignetteHandlingGeometry.View.initial(),0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+            else if(v.state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.DETAIL.get()))ServiceFittingRenderer.draw(v.state,0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             else if(v.state.is(UncannyRegistry.PROP.get()))UncannyPropRenderer.draw(v.state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             else if(v.state.is(io.github.knaitoe.theoldesthouse.labyrinth.NovelRegistry.WELL_COVER.get()))WellCoverRenderer.draw(0,false,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             else if(v.state.is(net.minecraft.world.level.block.Blocks.WATER))water(pose,buffers,v.state);else if(v.state.getBlock() instanceof net.minecraft.world.level.block.BedBlock bed){if(v.state.getValue(net.minecraft.world.level.block.BedBlock.PART)==net.minecraft.world.level.block.state.properties.BedPart.FOOT){var entity=(net.minecraft.world.level.block.entity.BedBlockEntity)bed.newBlockEntity(net.minecraft.core.BlockPos.ZERO,v.state);mc.getBlockEntityRenderDispatcher().getRenderer(entity).render(entity,0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);}}else if(dead(v.state)){var kind=v.state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.KIND);long seed=net.minecraft.util.Mth.getSeed(v.x,v.y,v.z);

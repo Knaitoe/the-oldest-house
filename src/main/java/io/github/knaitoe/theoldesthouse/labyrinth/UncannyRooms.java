@@ -34,7 +34,7 @@ public final class UncannyRooms {
         box(l,b,0,0,-1,0,1,0,Blocks.AIR);
         Block threshold=switch(p){case PAINTED_INTERIOR->Blocks.COARSE_DIRT;case SECOND_WAITRESS->Blocks.GRAVEL;case TUNNEL_PERIPHERY->Blocks.SMOOTH_STONE;case MISSING_SLEEP->Blocks.SPRUCE_PLANKS;default->Blocks.DARK_OAK_PLANKS;};
         for(int z=-1;z<=0;z++)if(BuildBlocks.state(l,b.offset(0,-1,z)).isAir())at(l,b,0,-1,z,threshold);
-        fit(l,b,account(p),LEDGER,Direction.SOUTH);
+        if(p!=LabyrinthPlace.SECOND_WAITRESS)fit(l,b,account(p),LEDGER,Direction.SOUTH);
     }
     private static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),FLAGS);}
     private static void state(ServerLevel l,BlockPos b,BlockPos rel,BlockState s){BuildBlocks.set(l,b.offset(rel),s,FLAGS);}
@@ -164,6 +164,7 @@ public final class UncannyRooms {
         door(l,b,new BlockPos(-10,0,-6),Direction.WEST,false);
         box(l,b,-12,-1,-8,-11,-1,-2,material("pavement"));
         box(l,b,-12,0,-8,-11,2,-2,Blocks.AIR);
+        DinerDetails.build(l,b);
     }
     private static void tunnel(ServerLevel l,BlockPos b){
         room(l,b,-3,3,-73,-1,0,3,material("workshop_wall"),Blocks.SMOOTH_STONE);

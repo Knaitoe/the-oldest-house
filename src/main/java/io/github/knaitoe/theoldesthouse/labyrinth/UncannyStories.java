@@ -83,7 +83,7 @@ public final class UncannyStories {
         arrive(p,place,own);observe(p,b,place,own);UncannyReading.resolve(p,place,own);
         if(place==LabyrinthPlace.MOTION_LIGHT)FoyerMotion.dark(p.serverLevel(),b);
         if(place==LabyrinthPlace.LAYERED_MAN&&!failed(own)&&p.containerMenu==p.inventoryMenu)UncannyCellar.physical(p,b,own);
-        if(place==LabyrinthPlace.SECOND_WAITRESS&&p.containerMenu==p.inventoryMenu)DinerPlate.migrate(p,b,own);
+        if(place==LabyrinthPlace.SECOND_WAITRESS&&!own.getBoolean("Completed")&&!failed(own)){own.putInt("DinerPresence133",Math.min(72000,own.getInt("DinerPresence133")+5));if(p.containerMenu==p.inventoryMenu)DinerPlate.migrate(p,b,own);}
         if(place==LabyrinthPlace.TUNNEL_PERIPHERY&&own.getBoolean("Completed")&&!own.getBoolean("TunnelExit130")&&p.getZ()<b.getZ()-70.5){own.putBoolean("TunnelExit130",true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),place,own);LabyrinthDoors.goToJunction(p);return;}
         if(own.getBoolean("Completed")||failed(own)||p.containerMenu!=p.inventoryMenu)return;
         int age=Math.min(72000,own.getInt("UncannyAge")+5);own.putInt("UncannyAge",age);
@@ -144,56 +144,49 @@ public final class UncannyStories {
         for(var d:Direction.Plane.HORIZONTAL)if(!p.serverLevel().getBlockState(at.relative(d)).getCollisionShape(p.serverLevel(),at.relative(d)).isEmpty()){if(d.getAxis()==Direction.Axis.Z)z=true;else x=true;}
         return z&&x;
     }
+    private static void transformWaitress(ServerPlayer p,LiteraryActor fake,CompoundTag own,String cause){
+        if(!own.getBoolean("DinerTransformed133")){
+            own.putBoolean("DinerTransformed133",true);own.putInt("DinerTransformAge133",own.getInt("UncannyAge"));own.putString("DinerTransformCause133",cause);fake.gesture(1);heard(p,SoundEvents.SPIDER_AMBIENT,fake.getEyePosition(),.5F,.55F);
+        }fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,3);fake.noPhysics=false;fake.setNoGravity(false);
+    }
     private static void diner(ServerPlayer p,BlockPos b,CompoundTag own){
         int age=own.getInt("UncannyAge");var fake=actor(p,own,"CastFake");if(fake==null)return;
-        if(own.getBoolean("MealEaten127")){
-            fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,3);SceneFootpaths.step(fake,p.position(),.18);
-            if(age-own.getInt("MealEatenAt127")>=35||fake.distanceToSqr(p)<1.1)caught(p,b,LabyrinthPlace.SECOND_WAITRESS,own,"ate_what_she_brought");return;
-        }
-        if(!UncannyDiner.host(p,b,own)){fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,0);return;}
-        int service=Math.max(0,age-own.getInt("DinerHostedAt127"));
+        boolean hosted=UncannyDiner.host(p,b,own),expired=own.getInt("DinerPresence133")>=3600;
+        if(!hosted&&!expired&&!own.getBoolean("DinerTransformed133")){fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,0);return;}
         var serving=Vec3.atBottomCenterOf(b.offset(3,0,-19));
         if(!own.getBoolean("SecondPlaced131")&&!own.getBoolean("MealReleased")&&fake.phase()<2){
             var box=fake.getBoundingBox().move(serving.subtract(fake.position()));
             if(p.serverLevel().getBlockCollisions(fake,box).iterator().hasNext()||!p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,box,e->e!=fake&&e.isAlive()&&!(e instanceof LiteraryActor other&&other.owner().isPresent()&&!other.owner().get().equals(p.getUUID()))).isEmpty())return;
-            if(fake.phase()>0){fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,0);own.putInt("SecondManifestAge131",age);}
+            fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,0);if(!own.contains("SecondManifestAge131"))own.putInt("SecondManifestAge131",hosted?own.getInt("DinerHostedAt127"):age);
             fake.moveTo(serving);fake.setDeltaMovement(Vec3.ZERO);own.putBoolean("SecondPlaced131",true);
         }
-        int manifestation=Math.max(0,age-own.getInt(own.contains("SecondManifestAge131")?"SecondManifestAge131":"DinerHostedAt127"));
-        int stage=service>=1000?3:manifestation<6?0:manifestation<30?1:2;own.putInt("UncannyStage",stage);fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,Math.min(stage,2));fake.noPhysics=stage<2;fake.setNoGravity(stage<2);
+        int manifestation=Math.max(0,age-own.getInt("SecondManifestAge131")),stage=manifestation<6?0:manifestation<30?1:2;
+        if(own.getBoolean("MealEaten127")||own.getBoolean("DinerTransformed133")||expired&&stage>=2){transformWaitress(p,fake,own,own.getBoolean("MealEaten127")?"meal":"time");stage=3;}
+        else{fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,stage);fake.noPhysics=stage<2;fake.setNoGravity(stage<2);}own.putInt("UncannyStage",stage);
         if(age>0&&ambient(p,own,"NextRattleSound",age,180,160))heard(p,SoundEvents.CHAIN_STEP,Vec3.atCenterOf(b.offset(UncannyRooms.DINER_TABLE)),.18F,1.65F);
         if(age>0&&age%60==0)p.serverLevel().sendParticles(p,ParticleTypes.ASH,true,b.getX()+8,b.getY()+1.1,b.getZ()-19,9,.35,.2,.4,.005);
-        if(stage==0&&age>0&&age%100==0){var wind=p.position().subtract(Vec3.atCenterOf(b.offset(8,1,-19))).normalize().scale(.045);p.push(wind.x,0,wind.z);p.hurtMarked=true;}
-        if(stage>=2&&!own.getBoolean("MealReleased")){
-            var target=Vec3.atBottomCenterOf(b.offset(3,0,-19));SceneFootpaths.step(fake,target,.2);
-            if(fake.position().distanceToSqr(target)<.4&&own.contains("OriginalMeal")){
-                var meal=ItemStack.parseOptional(p.registryAccess(),own.getCompound("OriginalMeal"));
-                fake.setItemSlot(EquipmentSlot.MAINHAND,meal);own.remove("OriginalMeal");own.putBoolean("MealReleased",true);
-            }
+        if(hosted&&stage>=2&&!own.getBoolean("MealReleased")){
+            var target=Vec3.atBottomCenterOf(b.offset(3,0,-19));DinerWalk.follow(fake,target,.13);
+            if(fake.position().distanceToSqr(target)<.4&&own.contains("OriginalMeal")){var meal=ItemStack.parseOptional(p.registryAccess(),own.getCompound("OriginalMeal"));fake.setItemSlot(EquipmentSlot.MAINHAND,meal);own.remove("OriginalMeal");own.putBoolean("MealReleased",true);}
         }
         if(own.getBoolean("MealReleased")&&!own.getBoolean("MealServed")&&!fake.getMainHandItem().isEmpty()){
-            fake.gesture(1);var plate=fake.getMainHandItem();var at=DinerPlate.serve(p,b,plate);
+            fake.gesture(1);var at=DinerPlate.serve(p,b,fake.getMainHandItem());
             if(at!=null){fake.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);own.putLong("PlatePos131",at.asLong());own.putBoolean("MealServed",true);ask(p,fake,own);}
         }
-        boolean sitting=own.getBoolean("MealServed")&&UncannyDiner.pressure(p,fake,b,own);
-        if(stage>=3&&own.getBoolean("MealServed")&&!sitting&&!own.getBoolean("Refused")&&!own.getBoolean("Ready")){
-            if(!own.contains("LeftBoothAt130"))own.putInt("LeftBoothAt130",age);
-            if(age-own.getInt("LeftBoothAt130")>=80){SceneFootpaths.step(fake,p.position(),.24);if(fake.distanceToSqr(p)<1.1)caught(p,b,LabyrinthPlace.SECOND_WAITRESS,own,"let_her_clear_the_table");}
+        if(stage>=2&&(own.getBoolean("MealServed")||stage==3))UncannyDiner.pressure(p,fake,b,own);
+        if(stage==3&&age-own.getInt("DinerTransformAge133")>=280&&!own.getBoolean("Ready")){
+            DinerWalk.follow(fake,p.position(),.15);
+            if(fake.getBoundingBox().inflate(.08).intersects(p.getBoundingBox())&&UncannySenses.clear(p,fake.getEyePosition()))caught(p,b,LabyrinthPlace.SECOND_WAITRESS,own,own.getBoolean("MealEaten127")?"ate_what_she_brought":"stayed_after_closing");
         }
-        if(fake.phase()>=2&&!own.getBoolean("CounterWarned")&&p.getX()<b.getX()-6&&p.getZ()<b.getZ()-5&&p.getZ()>b.getZ()-12){own.putBoolean("CounterWarned",true);cue(p,"Leave what she brings. Don't answer her.");}
-        boolean front=p.getZ()>b.getZ()-2&&Math.abs(p.getX()-b.getX())<2,staff=p.getX()<b.getX()-10.4&&p.getZ()>b.getZ()-9&&p.getZ()<b.getZ()-2;
-        if(own.getBoolean("SawSecond")&&!own.getBoolean("MealServed")&&front)ready(p,LabyrinthPlace.SECOND_WAITRESS,own,"left_before_the_plate");
-        if(own.getBoolean("MealServed")&&(front||staff)){own.putBoolean("Refused",true);ready(p,LabyrinthPlace.SECOND_WAITRESS,own,staff?"left_by_the_staff_door":"left_the_plate_and_walked_out");}
+        boolean front=p.getZ()>b.getZ()-2&&Math.abs(p.getX()-b.getX())<2;
+        if(own.getBoolean("SawSecond")&&front){own.putBoolean("Refused",!own.getBoolean("MealEaten127"));ready(p,LabyrinthPlace.SECOND_WAITRESS,own,own.getBoolean("MealEaten127")?"left_after_tasting_the_meal":own.getBoolean("MealServed")?"left_the_plate_and_walked_out":"left_before_the_plate");}
     }
-    /** "Don't answer her when she asks how your meal is." */
     private static void ask(ServerPlayer p,LiteraryActor fake,CompoundTag own){own.putBoolean("AskedMeal",true);fake.say("How's your meal?");p.displayClientMessage(Component.literal("“How’s your meal?”"),false);}
     public static void ate(ServerPlayer p,ItemStack s){
         var c=s.get(DataComponents.CUSTOM_DATA);if(c==null||!c.copyTag().hasUUID("UncannyMealOwner")||!c.copyTag().getUUID("UncannyMealOwner").equals(p.getUUID())||!LiteraryVignettes.inside(p,LabyrinthPlace.SECOND_WAITRESS))return;
-        var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS);
-        if(failed(own)||own.getBoolean("Completed")||own.getBoolean("MealEaten127"))return;
-        own.putBoolean("MealEaten127",true);own.putInt("MealEatenAt127",own.getInt("UncannyAge"));
-        var fake=actor(p,own,"CastFake");if(fake!=null)fake.appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,3);
-        LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS,own);
+        var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS);if(failed(own)||own.getBoolean("Completed"))return;
+        if(!own.getBoolean("MealEaten127"))own.putInt("MealEatenAt127",own.getInt("UncannyAge"));own.putBoolean("MealEaten127",true);own.putInt("MealPortions133",Math.min(UncannyMealItem.PORTIONS,Math.max(own.getInt("MealPortions133"),UncannyMealItem.bites(s)+1)));
+        var fake=actor(p,own,"CastFake");if(fake!=null)transformWaitress(p,fake,own,"meal");LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS,own);
     }
     private static void tunnel(ServerPlayer p,BlockPos b,CompoundTag own){
         int age=own.getInt("UncannyAge");var giant=actor(p,own,"CastGiant");if(age==0)return;
@@ -345,7 +338,7 @@ public final class UncannyStories {
     public static void talk(ServerPlayer p,LiteraryActor a,LabyrinthPlace place,CompoundTag own){
         if(!LiteraryVignettes.participant(p)||!LiteraryVignettes.inside(p,place))return;
         if(place==LabyrinthPlace.SECOND_WAITRESS&&a.role()==LiteraryActor.UNCANNY_WAITRESS)UncannyDiner.talk(p,a,LiteraryVignettes.base(p,place),own);
-        if(place==LabyrinthPlace.SECOND_WAITRESS&&a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS&&own.getBoolean("AskedMeal")&&!own.getBoolean("Ready")){var b=LiteraryVignettes.base(p,place);if(b!=null)caught(p,b,place,own,"answered_her");}
+        if(place==LabyrinthPlace.SECOND_WAITRESS&&a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS&&own.getBoolean("AskedMeal")&&!own.getBoolean("Ready")){String line=own.getBoolean("MealEaten127")?"There. That wasn’t so hard, was it?":"You haven’t even tasted it. Tell me what’s wrong.";a.say(line);p.displayClientMessage(Component.literal("“"+line+"”"),false);}
         if(place==LabyrinthPlace.LAYERED_MAN&&a.role()==LiteraryActor.UNCANNY_PEELER&&!UncannyCellar.askToLeave(p,LiteraryVignettes.base(p,place),own))CellarDialogue.worker(p,own);
     }
     public static boolean locked(ServerPlayer p){if(!LiteraryVignettes.inside(p,LabyrinthPlace.MISSING_SLEEP))return false;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.MISSING_SLEEP);return own.getInt("Sleeps")>0&&!own.getBoolean("BlockedDoor")&&!failed(own)&&!own.getBoolean("Completed");}

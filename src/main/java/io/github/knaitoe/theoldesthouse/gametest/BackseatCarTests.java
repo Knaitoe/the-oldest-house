@@ -191,7 +191,7 @@ public final class BackseatCarTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual House source door is loaded"))
         .thenExecute(()->{
             for(var at:BlockPos.betweenClosed(from.offset(-3,-1,-2),from.offset(3,-1,5)))f.in.setBlock(at,Blocks.STONE.defaultBlockState(),18);
-            NovelRooms.door(f.in,from,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);f.data().putDoor(new LabyrinthData.Door("native/backseat/source",f.in.dimension(),from,Direction.SOUTH,BackseatSites.SOURCE,false));
+            NovelRooms.door(f.in,from,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);f.data().putDoor(new LabyrinthData.Door("native/backseat/source",f.in.dimension(),from,Direction.SOUTH,LabyrinthData.DEALT,false));f.data().deal(p.getUUID(),f.data().door("native/backseat/source"),LabyrinthPlace.BACKSEAT.id(),false);h.assertTrue(LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(LabyrinthPlace.BACKSEAT),"public personal dealer includes Backseat");
             p.teleportTo(f.in,from.getX()+.1,from.getY(),from.getZ()+3,180,0);peer.teleportTo(f.in,from.getX()+.9,from.getY(),from.getZ()+3,180,0);p.setNoGravity(false);peer.setNoGravity(false);p.connection.resetPosition();peer.connection.resetPosition();
             h.assertTrue(BackseatSites.prepareEntry(p)==null&&BackseatSites.prepareEntry(peer)==null,"both actual readers queue independent first construction");
             h.assertTrue(!BackseatSites.base(p.server,p.getUUID()).equals(BackseatSites.base(p.server,peer.getUUID())),"the readers receive distinct physical roads");
@@ -207,6 +207,14 @@ public final class BackseatCarTests {
             // production pending-move tick as the existing native seam fixtures.
             io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));
         }).thenWaitUntil(()->h.assertTrue(BackseatSites.inside(p)&&!LabyrinthDoors.isBusy(p),"the original player actually arrives on their own road"))
+        .thenExecute(()->{
+            var entry=BackseatSites.entry(p);p.moveTo(entry.lower.getX()+.5,entry.lower.getY(),entry.lower.getZ()-1.5);LabyrinthDoors.tickPlayer(p,f.origin);
+            p.gameMode.useItemOn(p,f.out,ItemStack.EMPTY,InteractionHand.MAIN_HAND,new BlockHitResult(entry.lower.getCenter(),Direction.NORTH,entry.lower,false));h.assertTrue(f.out.getBlockState(entry.lower).getValue(net.minecraft.world.level.block.DoorBlock.OPEN),"the actual return door opens before commitment");p.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(0,0,3));LabyrinthDoors.tickPlayer(p,f.origin);
+            io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));
+        }).thenWaitUntil(()->h.assertTrue(p.serverLevel()==f.in&&!LabyrinthDoors.isBusy(p),"physical road retreat returns to the actual House source"))
+        .thenExecute(()->{
+            h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BACKSEAT)&&BackseatSites.canDeal(f.data(),p.getUUID())&&BackseatSites.car(p)==original[0]&&original[0].notebook==notebook[0],"retreat preserves the same originals and grants no crash credit");p.moveTo(from.getX()+.5,from.getY(),from.getZ()+2);p.connection.resetPosition();roadClick(h,p,from.getCenter());io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));
+        }).thenWaitUntil(()->h.assertTrue(BackseatSites.inside(p)&&!LabyrinthDoors.isBusy(p),"the same dealt source returns to the original private road"))
         .thenWaitUntil(()->{
             boolean ready=BackseatSites.prepareEntry(peer)!=null;if(!ready)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(ready,"the second reader's independent road is ready");
         }).thenExecute(()->{
@@ -221,7 +229,7 @@ public final class BackseatCarTests {
         .thenWaitUntil(()->h.assertTrue(original[0].phase==BackseatCarBlock.Car.DONE,"the actual native trees cause impact and the confirmed return"))
         .thenExecute(()->{
             h.assertTrue(p.serverLevel()==f.in&&p.position().distanceToSqr(Vec3.atBottomCenterOf(from.south()))<.01&&f.data().returnDepth(p.getUUID())==0,"only a completed native landing consumes the original House source return");
-            h.assertTrue(BackseatSites.state(p.server,p.getUUID()).getBoolean("Resolved")&&!BackseatSites.state(peer.server,peer.getUUID()).getBoolean("Resolved"),"the crash concludes only its actual reader's road");
+            h.assertTrue(BackseatSites.state(p.server,p.getUUID()).getBoolean("Resolved")&&!BackseatSites.state(peer.server,peer.getUUID()).getBoolean("Resolved"),"the crash concludes only its actual reader's road");h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BACKSEAT)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.BACKSEAT)&&!LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(LabyrinthPlace.BACKSEAT)&&LabyrinthDealer.vignettesAvailable(f.data(),peer.getUUID()).contains(LabyrinthPlace.BACKSEAT),"only the actual survivor resolves this source while the peer keeps their own public doorway");
             h.assertTrue(peer.position().distanceToSqr(peerAt[0])<.05&&f.data().returnDepth(peer.getUUID())==0&&original[0].notebook==notebook[0],"the peer, their return stack and the unread original paper remain untouched");
             h.assertTrue(BackseatSites.prepareEntry(p)==null,"a concluded finite road is never rebuilt for the same reader");
         }).thenSucceed();

@@ -122,7 +122,8 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.ELK_CARCASSES)CarcassHunt.noise(p,e.getPos());var b=base(p,place);var rel=e.getPos().subtract(b);var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);boolean handled=false;
         // A saved elk lot keeps its old source and ending until it is re-carved (0.4.78).
         boolean oldLot=place==LabyrinthPlace.ELK_LOT&&!ElkLot.built(d,b);
-        if(UncannyRooms.isUncanny(place)&&rel.equals(LiteraryRooms.source(place))){UncannyReading.open(p,place,own,e.getPos());handled=true;}
+        if(place==LabyrinthPlace.SECOND_WAITRESS&&(rel.equals(LiteraryRooms.source(place))||rel.equals(LiteraryRooms.ending(place)))){handled=UncannyDiner.counter(p,b,rel);}
+        else if(UncannyRooms.isUncanny(place)&&rel.equals(LiteraryRooms.source(place))){UncannyReading.open(p,place,own,e.getPos());handled=true;}
         else if(place==LabyrinthPlace.BORRASCA&&own.getInt("Visit")>=2&&rel.equals(BorrascaRooms.SOURCE)){open(p,place,own,"ContentNote",BorrascaTexts.contentNote(),e.getPos());handled=true;}
         else if(rel.equals(LiteraryRooms.source(place))&&!oldLot||oldLot&&rel.equals(ElkLot.OLD_SOURCE)||SceneReview.readingAlias(p.serverLevel(),b,place,rel)){open(p,place,own,"Source",SceneHuntReview.sourceBook(p.serverLevel(),b,place),e.getPos());handled=true;}
         else if((oldLot?rel.equals(ElkLot.OLD_ENDING):rel.equals(LiteraryRooms.ending(place)))&&own.getBoolean("Ready")){open(p,place,own,"Ending",LiteraryTexts.ending(p,place,own),e.getPos());handled=true;}
