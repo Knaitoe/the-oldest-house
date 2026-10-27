@@ -14,7 +14,7 @@ public final class BackseatArt {
     public static final String[] NEW_MATERIALS={"cream","vinyl","rubber","gauges","chrome","mirror","headliner"};
     private BackseatArt() {}
     public static ResourceLocation texture(String material){
-        String path=switch(material){case "wood"->"uncanny/dark_wood";case "glass"->"uncanny/glass";case "lamp"->"uncanny/lamp";case "tail"->"uncanny/vinyl";default->"backseat/"+material;};
+        String path=switch(material){case "paper"->"interiors/paper";case "wood"->"uncanny/dark_wood";case "glass"->"uncanny/glass";case "lamp"->"uncanny/lamp";case "tail"->"uncanny/vinyl";default->"backseat/"+material;};
         return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/block/"+path+".png");
     }
     public static void draw(PoseStack p,MultiBufferSource out,int light,int overlay,float door,float wiper){
@@ -43,6 +43,11 @@ public final class BackseatArt {
             for(int corner=0;corner<4;corner++)shard.addVertex(p.last(),corner==0||corner==3?-1.5F/16:1.5F/16,corner<2?-2/16F:2/16F,0).setColor(-1).setUv(u,v).setOverlay(overlay).setLight(light).setNormal(p.last(),0,0,1);
             p.popPose();
         }}
+    }
+    public static void notebook(PoseStack p,MultiBufferSource out,int light,int overlay){
+        box(p,out,new BackseatCarMesh.Box(3,16.1F,-4,12,16.3F,4,"wood"),light,overlay);
+        box(p,out,new BackseatCarMesh.Box(3,16.3F,-3.5F,7,16.65F,3.5F,"paper"),light,overlay);
+        box(p,out,new BackseatCarMesh.Box(8,16.3F,-3.5F,12,16.65F,3.5F,"paper"),light,overlay);
     }
     private static void box(PoseStack p,MultiBufferSource buffers,BackseatCarMesh.Box b,int light,int overlay){
         var out=buffers.getBuffer(RenderType.entityCutoutNoCull(texture(b.material())));

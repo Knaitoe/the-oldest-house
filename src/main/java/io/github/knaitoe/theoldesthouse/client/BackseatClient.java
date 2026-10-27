@@ -5,27 +5,53 @@ import io.github.knaitoe.theoldesthouse.labyrinth.BackseatSeat;
 import io.github.knaitoe.theoldesthouse.labyrinth.BackseatCarBlock;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.client.event.SelectMusicEvent;
+import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 
 /** Only the actual driver uses the first-person cabin view; restore their prior camera afterward. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BackseatClient {
     private static CameraType previous;
+    private static ClientLevel world;private static BackseatCarBlock.Car approach;private static int scan;
     private BackseatClient(){}
     private static void restore(){if(previous!=null){Minecraft.getInstance().options.setCameraType(previous);previous=null;}}
+    private static BackseatCarBlock.Car nearby(){
+        var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!mc.player.isAlive()||mc.player.isSpectator())return null;
+        if(mc.player.getVehicle() instanceof BackseatSeat seat&&seat.owner().filter(mc.player.getUUID()::equals).isPresent())return seat.car();
+        return world==mc.level&&approach!=null&&!approach.isRemoved()&&approach.road&&approach.owner!=null&&approach.owner.equals(mc.player.getUUID())&&mc.player.distanceToSqr(approach.getBlockPos().getCenter())<64*64?approach:null;
+    }
+    private static boolean road(){var car=nearby();return car!=null&&car.road&&car.phase<BackseatCarBlock.Car.DONE;}
+    public static long time(net.minecraft.world.level.Level level,long nativeTime){return level==Minecraft.getInstance().level&&road()?18000:nativeTime;}
     public static float rain(net.minecraft.world.level.Level level,float nativeRain){
-        var p=Minecraft.getInstance().player;
-        if(p==null||p.level()!=level||!p.isAlive()||!(p.getVehicle() instanceof BackseatSeat seat)||seat.owner().filter(p.getUUID()::equals).isEmpty())return nativeRain;
-        var car=seat.car();return car!=null&&car.phase>=BackseatCarBlock.Car.LOCKED?0:nativeRain;
+        if(level!=Minecraft.getInstance().level)return nativeRain;var car=nearby();if(car==null)return nativeRain;
+        return car.phase>=BackseatCarBlock.Car.LOCKED?0:car.road?1:nativeRain;
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post ignored){
         var mc=Minecraft.getInstance();
+        if(world!=mc.level){world=mc.level;approach=null;scan=0;}
+        if(mc.level!=null&&mc.player!=null&&scan--<=0){scan=5;approach=null;int cx=mc.player.blockPosition().getX()>>4,cz=mc.player.blockPosition().getZ()>>4;
+            for(int x=cx-2;x<=cx+2;x++)for(int z=cz-2;z<=cz+2;z++){
+                var chunk=mc.level.getChunkSource().getChunk(x,z,ChunkStatus.FULL,false);if(chunk==null)continue;
+                for(var block:chunk.getBlockEntities().values())if(block instanceof BackseatCarBlock.Car car&&car.road&&car.owner!=null&&car.owner.equals(mc.player.getUUID())&&mc.player.distanceToSqr(car.getBlockPos().getCenter())<64*64)approach=car;
+            }
+        }
+        if(road())mc.getMusicManager().stopPlaying();
         if(mc.player==null||!mc.player.isAlive()||!(mc.player.getVehicle() instanceof BackseatSeat seat)||seat.owner().filter(mc.player.getUUID()::equals).isEmpty()){restore();return;}
         if(previous==null)previous=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);
     }
-    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut ignored){restore();BackseatMirror.clear();}
+    @SubscribeEvent public static void music(SelectMusicEvent e){if(road())e.setMusic(null);}
+    @SubscribeEvent public static void music(PlaySoundEvent e){if(road()&&e.getSound()!=null&&e.getSound().getSource()==SoundSource.MUSIC)e.setSound(null);}
+    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(road()){e.setRed(.025F);e.setGreen(.035F);e.setBlue(.04F);}}
+    @SubscribeEvent public static void fog(ViewportEvent.RenderFog e){if(road()&&e.getMode()==FogRenderer.FogMode.FOG_TERRAIN){e.setNearPlaneDistance(7);e.setFarPlaneDistance(48);e.setCanceled(true);}}
+    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut ignored){restore();BackseatMirror.clear();approach=null;world=null;scan=0;}
 }

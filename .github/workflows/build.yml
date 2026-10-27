@@ -1523,12 +1523,19 @@ jobs:
           complete=re.findall(r'All (\d+) required tests passed',Path('build/backseat-native.log').read_text())
           assert complete and int(complete[-1])==declared,(declared,complete)
           PY
+      - name: Native Backseat private road and original notebook
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbackseatRoadSmoke --no-daemon
+          test -s build/backseat-road/passed.txt
+          for view in native-road native-approach native-notebook; do test -s build/backseat-road/$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backseat-native-art-${{ github.sha }}
           path: |
             build/backseat-art/
+            build/backseat-road/
             build/backseat-native.log
             run/logs/latest.log
             run/crash-reports/
