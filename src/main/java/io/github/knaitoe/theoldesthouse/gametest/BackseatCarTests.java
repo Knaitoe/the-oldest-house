@@ -147,4 +147,82 @@ public final class BackseatCarTests {
             h.assertTrue(NativeTestPlayers.sounds(f.peer).stream().noneMatch(packet->packet.getSound().value().getLocation().getPath().startsWith("backseat."))&&!f.peer.isPassenger(),"the independent reader receives no private scare or movement");
         }).thenSucceed();
     }
+    @AfterBatch(batch="backseat_notebook") public static void notebookDone(ServerLevel ignored){close();}
+    @GameTest(template="empty",batch="backseat_notebook",timeoutTicks=260)
+    public static void passengerNotebookIsOptionalAndTransfersItsExactFiniteOriginalOnce(GameTestHelper h){
+        var f=fixture(h);final ItemStack[] original={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.f.chunks.ready(),"the native passenger cushion is loaded"))
+        .thenExecute(()->{
+            f.place(h);f.peer.moveTo(f.at.getX()-4,f.at.getY(),f.at.getZ()+3);
+            f.car().notebook=BackseatNotebook.original(f.p.getUUID());f.car().notebookCreated=true;original[0]=f.car().notebook;f.car().sync();
+            f.click(h,f.seatPoint());f.click(h,f.at.getCenter().add(.55,.53,0));
+            h.assertTrue(f.p.containerMenu instanceof BackseatNotebook.Pages,"the physical passenger-side book opens its native private pages");
+            var menu=f.p.containerMenu;h.assertTrue(!menu.clickMenuButton(f.peer,3),"a peer cannot take the driver's original");
+            menu.clicked(0,0,net.minecraft.world.inventory.ClickType.PICKUP,f.p);h.assertTrue(f.p.containerMenu.getCarried().isEmpty(),"the displayed reading copy cannot be pulled into the cursor");
+            h.assertTrue(menu.clickMenuButton(f.p,3),"taking transfers the actual original");
+            h.assertTrue(f.car().notebook.isEmpty()&&java.util.stream.IntStream.range(0,f.p.getInventory().getContainerSize()).anyMatch(i->f.p.getInventory().getItem(i)==original[0]),"the original stack moves from the car into the actual inventory");
+            h.assertTrue(!menu.clickMenuButton(f.p,3),"a repeated take cannot copy the book");
+            var saved=f.car().saveWithoutMetadata(f.f.in.registryAccess());f.car().loadWithComponents(saved,f.f.in.registryAccess());
+            h.assertTrue(f.car().notebookCreated&&f.car().notebook.isEmpty(),"native reload remembers that this original has left");
+            h.assertTrue(BackseatCarBlock.place(f.f.in,f.at,f.p.getUUID())&&f.car().notebook.isEmpty(),"repeated preparation never restocks the removed notebook");
+            f.click(h,f.doorPoint());
+        }).thenWaitUntil(()->h.assertTrue(f.car().phase==BackseatCarBlock.Car.LOCKED,"taking or skipping pages introduces no reading gate before the real lock"))
+        .thenSucceed();
+    }
+    private static void roadClick(GameTestHelper h,ServerPlayer p,Vec3 point){
+        var hit=new BlockHitResult(point,Direction.WEST,BlockPos.containing(point),false);var event=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,hit.getBlockPos(),hit);NeoForge.EVENT_BUS.post(event);h.assertTrue(event.isCanceled()&&event.getCancellationResult().consumesAction(),"the actual road car handles its native block input");
+    }
+    private static void roadExport(ServerLevel level,BlockPos base){try{
+        var file=new com.google.gson.JsonObject();var palette=new com.google.gson.JsonArray();var blocks=new com.google.gson.JsonArray();var lookup=new java.util.LinkedHashMap<net.minecraft.world.level.block.state.BlockState,Integer>();
+        for(var at:BlockPos.betweenClosed(base.offset(-14,-1,-58),base.offset(14,17,4))){
+            var state=level.getBlockState(at);if(state.isAir()||state.is(BackseatRegistry.CAR.get()))continue;
+            Integer id=lookup.get(state);if(id==null){id=lookup.size();lookup.put(state,id);palette.add(net.minecraft.world.level.block.state.BlockState.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,state).getOrThrow());}
+            var row=new com.google.gson.JsonArray();row.add(at.getX()-base.getX());row.add(at.getY()-base.getY());row.add(at.getZ()-base.getZ());row.add(id);blocks.add(row);
+        }
+        file.add("palette",palette);file.add("blocks",blocks);var folder=java.nio.file.Path.of(System.getProperty("the_oldest_house.backseatRoadExportDir","../build/backseat-road"));java.nio.file.Files.createDirectories(folder);java.nio.file.Files.writeString(folder.resolve("road.json"),new com.google.gson.Gson().toJson(file));
+    }catch(Exception e){throw new IllegalStateException("Cannot export the actual private Backseat road",e);}}
+    @AfterBatch(batch="backseat_road") public static void roadDone(ServerLevel ignored){BackseatSites.clear();close();}
+    @GameTest(template="empty",batch="backseat_road",timeoutTicks=3000)
+    public static void freshPrivateRoadsKeepOriginalCarsBooksEditsAndReturnOnlyTheActualDriver(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;BackseatSites.clear();var p=NativeTestPlayers.survival(h,"road_driver");var peer=NativeTestPlayers.survival(h,"road_peer");f.players.add(p);f.players.add(peer);
+        var from=f.origin.offset(0,0,-6);f.chunks.hold(f.in,new AABB(from).inflate(5));
+        final BackseatCarBlock.Car[] original={null};final ItemStack[] notebook={null};final Vec3[] peerAt={null};final BlockPos[] base={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual House source door is loaded"))
+        .thenExecute(()->{
+            for(var at:BlockPos.betweenClosed(from.offset(-3,-1,-2),from.offset(3,-1,5)))f.in.setBlock(at,Blocks.STONE.defaultBlockState(),18);
+            NovelRooms.door(f.in,from,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);f.data().putDoor(new LabyrinthData.Door("native/backseat/source",f.in.dimension(),from,Direction.SOUTH,BackseatSites.SOURCE,false));
+            p.teleportTo(f.in,from.getX()+.1,from.getY(),from.getZ()+3,180,0);peer.teleportTo(f.in,from.getX()+.9,from.getY(),from.getZ()+3,180,0);p.setNoGravity(false);peer.setNoGravity(false);p.connection.resetPosition();peer.connection.resetPosition();
+            h.assertTrue(BackseatSites.prepareEntry(p)==null&&BackseatSites.prepareEntry(peer)==null,"both actual readers queue independent first construction");
+            h.assertTrue(!BackseatSites.base(p.server,p.getUUID()).equals(BackseatSites.base(p.server,peer.getUUID())),"the readers receive distinct physical roads");
+        }).thenWaitUntil(()->{
+            boolean ready=BackseatSites.prepareEntry(p)!=null;if(!ready)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(ready,"bounded native construction completes the first road");
+        }).thenExecute(()->{
+            base[0]=BackseatSites.base(p.server,p.getUUID());original[0]=BackseatSites.car(p);notebook[0]=original[0].notebook;peerAt[0]=peer.position();
+            h.assertTrue(original[0].road&&!notebook[0].isEmpty()&&BackseatSites.state(p.server,p.getUUID()).getBoolean("Built"),"one actual car and original notebook exist on the complete road");
+            roadExport(f.out,base[0]);
+            roadClick(h,p,from.getCenter());h.assertTrue(LabyrinthDoors.isBusy(p),"the actual House source block interaction starts native private entry");
+        }).thenIdle(1).thenExecute(()->{
+            // Embedded connections have no automatic real-client player tick; use the same
+            // production pending-move tick as the existing native seam fixtures.
+            io.github.knaitoe.theoldesthouse.house.HouseTransitionEvents.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));
+        }).thenWaitUntil(()->h.assertTrue(BackseatSites.inside(p)&&!LabyrinthDoors.isBusy(p),"the original player actually arrives on their own road"))
+        .thenWaitUntil(()->{
+            boolean ready=BackseatSites.prepareEntry(peer)!=null;if(!ready)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(ready,"the second reader's independent road is ready");
+        }).thenExecute(()->{
+            h.assertTrue(BackseatSites.car(peer)!=original[0]&&BackseatSites.car(peer).owner.equals(peer.getUUID()),"the peer has a different original car");
+            var edit=base[0].offset(6,0,-10);f.out.setBlock(edit,Blocks.GOLD_BLOCK.defaultBlockState(),18);f.reload();
+            h.assertTrue(BackseatSites.prepareEntry(p)!=null&&BackseatSites.car(p)==original[0]&&original[0].notebook==notebook[0]&&f.out.getBlockState(edit).is(Blocks.GOLD_BLOCK),"native saved-site reload preserves the original car, finite paper and player edit");
+            for(int z=-3;z>=-14;z--)h.assertTrue(f.out.noCollision(p,new AABB(base[0].getX()-2.6,base[0].getY()+.01,base[0].getZ()+z-.3,base[0].getX()-2,base[0].getY()+1.8,base[0].getZ()+z+.3)),"the actual supported west approach stays clear of the car and trees");
+            var at=original[0].getBlockPos();p.moveTo(at.getX()-2.3,at.getY(),at.getZ()+1);p.connection.resetPosition();
+            roadClick(h,p,at.getCenter().add(-.625,.5,-.2));f.extras.add(original[0].seat());roadClick(h,p,at.getCenter().add(-1.1875,.7,0));
+        }).thenWaitUntil(()->h.assertTrue(original[0].phase==BackseatCarBlock.Car.LOCKED,"the original car locks without any notebook-reading requirement"))
+        .thenExecute(()->p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,original[0].getBlockPos().getCenter().add(BackseatCarMesh.MIRROR).add(0,-.5,0)))
+        .thenWaitUntil(()->h.assertTrue(original[0].phase==BackseatCarBlock.Car.DONE,"the actual native trees cause impact and the confirmed return"))
+        .thenExecute(()->{
+            h.assertTrue(p.serverLevel()==f.in&&p.position().distanceToSqr(Vec3.atBottomCenterOf(from.south()))<.01&&f.data().returnDepth(p.getUUID())==0,"only a completed native landing consumes the original House source return");
+            h.assertTrue(BackseatSites.state(p.server,p.getUUID()).getBoolean("Resolved")&&!BackseatSites.state(peer.server,peer.getUUID()).getBoolean("Resolved"),"the crash concludes only its actual reader's road");
+            h.assertTrue(peer.position().distanceToSqr(peerAt[0])<.05&&f.data().returnDepth(peer.getUUID())==0&&original[0].notebook==notebook[0],"the peer, their return stack and the unread original paper remain untouched");
+            h.assertTrue(BackseatSites.prepareEntry(p)==null,"a concluded finite road is never rebuilt for the same reader");
+        }).thenSucceed();
+    }
 }

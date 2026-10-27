@@ -52,6 +52,9 @@ public final class BackseatCarBlock extends BaseEntityBlock {
         public int phase=PARKED,clock;
         public double travel;
         public boolean sequenceEnabled;
+        public net.minecraft.world.item.ItemStack notebook=net.minecraft.world.item.ItemStack.EMPTY;
+        public boolean notebookCreated;
+        public boolean road;
         public long syncedAt;
         private float lockYaw,lockPitch;
         private long lastRattle=-40;
@@ -75,6 +78,8 @@ public final class BackseatCarBlock extends BaseEntityBlock {
         }
         public boolean click(ServerPlayer p,Vec3 hit){
             if(!mine(p)||p.distanceToSqr(hit)>36)return false;
+            var bookHit=hit.subtract(worldPosition.getCenter());
+            if(BackseatNotebook.readable(this,p)&&bookHit.x>0&&bookHit.x<1.05&&bookHit.y>.4&&bookHit.y<.85&&Math.abs(bookHit.z)<.45){BackseatNotebook.open(this,p);return true;}
             // A stand-up and another click can arrive in the same native tick.
             // Reconcile the now-empty original anchor before deciding what the click means.
             if(phase==SEATED&&p.getVehicle()!=seat()){phase=PARKED;clock=0;sync();}
@@ -144,6 +149,7 @@ public final class BackseatCarBlock extends BaseEntityBlock {
             if(!LabyrinthDoors.sendBack(p,0,12,30,arrived->{
                 if(level instanceof ServerLevel l&&l.getBlockEntity(worldPosition) instanceof Car original&&original.mine(arrived)){
                     original.phase=DONE;original.clock=0;original.sync();
+                    BackseatSites.returned(arrived,original.getBlockPos());
                 }
             })){phase=IMPACT;sync();}
         }
@@ -162,8 +168,8 @@ public final class BackseatCarBlock extends BaseEntityBlock {
             else if(phase==IMPACT){clock++;if(clock>=4)returnHome(p);else setChanged();}
         }
         public void sync(){setChanged();if(level instanceof ServerLevel){syncedAt=level.getGameTime();level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),Block.UPDATE_CLIENTS);}}
-        @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);if(owner!=null)t.putUUID("Driver",owner);if(seatId!=null)t.putUUID("Seat",seatId);t.putInt("Phase",phase);t.putInt("Clock",clock);t.putBoolean("Sequence",sequenceEnabled);t.putDouble("Travel",travel);t.putFloat("LockYaw",lockYaw);t.putFloat("LockPitch",lockPitch);t.putLong("SyncedAt",level==null?syncedAt:level.getGameTime());}
-        @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);owner=t.hasUUID("Driver")?t.getUUID("Driver"):null;seatId=t.hasUUID("Seat")?t.getUUID("Seat"):null;phase=Mth.clamp(t.getInt("Phase"),PARKED,DONE);clock=Math.max(0,t.getInt("Clock"));sequenceEnabled=t.getBoolean("Sequence");travel=Math.max(0,t.getDouble("Travel"));lockYaw=t.getFloat("LockYaw");lockPitch=t.getFloat("LockPitch");syncedAt=t.getLong("SyncedAt");}
+        @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);if(owner!=null)t.putUUID("Driver",owner);if(seatId!=null)t.putUUID("Seat",seatId);t.putInt("Phase",phase);t.putInt("Clock",clock);t.putBoolean("Sequence",sequenceEnabled);t.putDouble("Travel",travel);t.putBoolean("Road",road);t.putBoolean("NotebookCreated",notebookCreated);if(!notebook.isEmpty())t.put("Notebook",notebook.save(r));t.putFloat("LockYaw",lockYaw);t.putFloat("LockPitch",lockPitch);t.putLong("SyncedAt",level==null?syncedAt:level.getGameTime());}
+        @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);owner=t.hasUUID("Driver")?t.getUUID("Driver"):null;seatId=t.hasUUID("Seat")?t.getUUID("Seat"):null;phase=Mth.clamp(t.getInt("Phase"),PARKED,DONE);clock=Math.max(0,t.getInt("Clock"));sequenceEnabled=t.getBoolean("Sequence");travel=Math.max(0,t.getDouble("Travel"));road=t.getBoolean("Road");notebookCreated=t.getBoolean("NotebookCreated");notebook=net.minecraft.world.item.ItemStack.parseOptional(r,t.getCompound("Notebook"));lockYaw=t.getFloat("LockYaw");lockPitch=t.getFloat("LockPitch");syncedAt=t.getLong("SyncedAt");}
         @Override public CompoundTag getUpdateTag(HolderLookup.Provider r){return saveWithoutMetadata(r);}
         @Override public ClientboundBlockEntityDataPacket getUpdatePacket(){return ClientboundBlockEntityDataPacket.create(this);}
     }
