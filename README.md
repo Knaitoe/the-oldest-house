@@ -1,5 +1,7 @@
 # This House Has Ghosts in It
 
+Current development candidate **0.4.135** adds the corn silo: persistent private rooms, physically failing wood, three finite original papers, a father's radio below the grain, a painted roof and a personal House return. Includes the preceding environment, Backseat and Goatman repairs. All three focused silo gameplay cases and six inspected native material views pass locally. Full client/reconnect and current-source release verification remain pending; PR #10 stays draft. Layout 48 / protocol 88; 54 Witness sources / 41 required / two kinds / three endings. [Implementation and limits](docs/SILO_0_4_135.md).
+
 Current development candidate `0.4.128` continues the playtest repairs with four selected **empty** domestic extensions, individual household-object handling and sparse inert disturbances. No household NPCs or new story sources are added. See [the empty-home record](docs/EMPTY_DOMESTIC_HOMES_0_4_128.md). Full exact-source release verification is pending.
 
 Current candidate **0.4.114** fixes the Goatman's porch route using actual tread collision, keeps its admission in a cousin disguise and joins the articulated window climb directly to the original floor crawl. The paw thumb closes across its palm. Includes the earlier six uncanny rooms and bath apparition. Protocol 88 / labyrinth layout 46; 717 native cases, unchanged 52 Witness sources / 39 required / two kinds / three endings. Exact-source validation is pending. [Changes and verification](docs/WINDOW_ENTRY_0_4_114.md). Earlier candidate paragraphs are historical.

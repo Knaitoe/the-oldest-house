@@ -45,6 +45,7 @@ public final class LabyrinthDealer {
                     || place == LabyrinthPlace.GOATMAN
                     || place == LabyrinthPlace.TED_CAVER
                     || place == LabyrinthPlace.BACKSEAT
+                    || place == LabyrinthPlace.SILO
                     || place == LabyrinthPlace.HOLLOWAY_CAMP
                     || (NovelVignettes.isNovel(place) && place.kind()!=LabyrinthPlace.Kind.RECURRING)
                     || LiteraryRooms.isLiterary(place)
@@ -67,6 +68,7 @@ public final class LabyrinthDealer {
         if (CaverVignette.canDeal(data,player)) places.add(LabyrinthPlace.TED_CAVER);
         if (HollowayVignette.canDeal(data,player)) places.add(LabyrinthPlace.HOLLOWAY_CAMP);
         if (BackseatSites.canDeal(data,player)) places.add(LabyrinthPlace.BACKSEAT);
+        if (SiloSites.canDeal(data,player)) places.add(LabyrinthPlace.SILO);
         for(var p:NovelVignettes.PLACES)if(NovelVignettes.canDeal(data,player,p)&&!places.contains(p))places.add(p);
         if(data.isCompleted(PreservedCave.ID)&&PreservedCave.phoneWaiting(data,player))places.add(LabyrinthPlace.PRESERVED_CAVE);
         for(LabyrinthPlace place:LabyrinthPlace.values()){

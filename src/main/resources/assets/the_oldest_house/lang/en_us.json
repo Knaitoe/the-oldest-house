@@ -404,5 +404,19 @@
   "subtitles.the_oldest_house.backseat.glass": "Windshield bursts inward",
   "subtitles.the_oldest_house.backseat.impact": "Steel folds around the cabin",
   "subtitles.the_oldest_house.backseat.wind": "Wind whistles harder around the cabin",
-  "subtitles.the_oldest_house.tunnel_traffic": "Traffic rumbles through the tunnel walls"
+  "subtitles.the_oldest_house.tunnel_traffic": "Traffic rumbles through the tunnel walls",
+  "subtitles.the_oldest_house.silo.groan": "Timber groans",
+  "subtitles.the_oldest_house.silo.splinter": "Wood tears and gives way",
+  "subtitles.the_oldest_house.silo.grain": "Corn shifts",
+  "subtitles.the_oldest_house.silo.radio_tucson": "She took a bus to Tucson.",
+  "subtitles.the_oldest_house.silo.radio_flatbed": "She met a boy with a flatbed.",
+  "subtitles.the_oldest_house.silo.radio_winter": "She's just waiting out the winter.",
+  "block.the_oldest_house.silo_tin": "Silo Tin",
+  "block.the_oldest_house.silo_steel": "Silo Steel",
+  "block.the_oldest_house.silo_sky": "Silo Sky",
+  "block.the_oldest_house.silo_corn": "Silo Corn",
+  "block.the_oldest_house.silo_timber": "Silo Timber",
+  "block.the_oldest_house.silo_ladder": "Silo Ladder",
+  "block.the_oldest_house.silo_hatch": "Silo Hatch",
+  "block.the_oldest_house.silo_paper": "Silo Paper"
 }

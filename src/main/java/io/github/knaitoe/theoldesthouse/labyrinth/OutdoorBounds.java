@@ -64,7 +64,7 @@ public final class OutdoorBounds {
         if (!player.gameMode.isSurvival() || !player.isAlive()) return false;
         Vec3 back = SAFE.get(player.getUUID());
         BlockPos home = null;
-        var privateAreas=new java.util.ArrayList<>(LiteraryCopies.outdoorAreas(player.server));privateAreas.addAll(BorrascaSites.areas(player.server));privateAreas.addAll(BackseatSites.areas(player.server));
+        var privateAreas=new java.util.ArrayList<>(LiteraryCopies.outdoorAreas(player.server));privateAreas.addAll(BorrascaSites.areas(player.server));privateAreas.addAll(BackseatSites.areas(player.server));privateAreas.addAll(SiloSites.areas(player.server));
         for (var area : privateAreas) {
             if (insideCopy(area, player.position())) {
                 if (player.onGround() || player.isInWater() || player.isPassenger()) SAFE.put(player.getUUID(), player.position());
