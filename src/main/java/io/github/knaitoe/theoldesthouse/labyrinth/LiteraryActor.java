@@ -39,6 +39,12 @@ public final class LiteraryActor extends PathfinderMob {
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE||key==GESTURE)refreshDimensions();}
     public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase));double size=role==UNCANNY_GIANT?2.5:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
+    @Override public void startSeenByPlayer(ServerPlayer p){
+        super.startSeenByPlayer(p);
+        // Native pairing caches its spawn position before the unseen appearance can move this
+        // original. Reconcile after the spawn bundle, including a fresh observer after reconnect.
+        if(role()==UNCANNY_GIANT&&owner().filter(p.getUUID()::equals).isPresent())p.connection.send(new net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket(this));
+    }
     @Override public boolean shouldRenderAtSqrDistance(double distance){return role()==SILHOUETTE&&phase()==4?distance<192D*192D:super.shouldRenderAtSqrDistance(distance);}
     public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);}
     @Override public void tick(){

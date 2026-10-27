@@ -13,6 +13,11 @@ public final class TunnelStride {
     private static final Map<LiteraryActor,Stride> STRIDES=new WeakHashMap<>();
     private static final class Stride {boolean far;double travelled;long impact=Long.MIN_VALUE;Vec3 at;}
     private TunnelStride(){}
+    /** Relocate an unseen original with the same native position on every existing tracker. */
+    public static void placeOriginal(LiteraryActor a,Vec3 at){
+        a.moveTo(at);a.setDeltaMovement(Vec3.ZERO);a.hasImpulse=true;
+        if(a.level() instanceof ServerLevel l)l.getChunkSource().broadcast(a,new net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket(a));
+    }
     public static void seek(LiteraryActor a,Vec3 at){GOALS.put(a,new Goal(at,a.level().getGameTime()+10));}
     public static void tick(LiteraryActor a){
         if(a.role()!=LiteraryActor.UNCANNY_GIANT)return;

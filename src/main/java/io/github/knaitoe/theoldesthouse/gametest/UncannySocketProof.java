@@ -55,6 +55,7 @@ public final class UncannySocketProof {
         if(step==15)tag.putInt("FoyerStillness",own(p,LabyrinthPlace.MOTION_LIGHT).getInt("FoyerStill131"));
         tag.putBoolean("PaperRead",step==5?UncannyReading.readPassage(own(p,LabyrinthPlace.MISSING_SLEEP)):step==13&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP));
         tag.putBoolean("TunnelReady",step==19&&own(p,LabyrinthPlace.TUNNEL_PERIPHERY).getBoolean("Ready"));tag.putBoolean("TunnelRead",step==19&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY));
+        if(step==4){var a=UncannyStories.actor(p,own(p,LabyrinthPlace.TUNNEL_PERIPHERY),"CastGiant");if(a!=null){tag.putUUID("TunnelOriginal",a.getUUID());tag.putDouble("TunnelX",a.getX());tag.putDouble("TunnelY",a.getY());tag.putDouble("TunnelZ",a.getZ());}}
         tag.putBoolean("DoorBlocked",step==12&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("BlockedDoor")&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Ready"));
         var arrival=ARRIVING.get(p.getUUID());tag.putBoolean("TerrainPending",arrival!=null);if(arrival!=null){tag.putString("ArrivalDimension",NovelRooms.dimension(arrival.place).location().toString());tag.putDouble("ArrivalX",arrival.at.x);tag.putDouble("ArrivalY",arrival.at.y);tag.putDouble("ArrivalZ",arrival.at.z);}
         var stick=new ItemStack(Items.STICK);stick.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));p.getInventory().setItem(8,stick);p.inventoryMenu.broadcastChanges();
@@ -73,7 +74,7 @@ public final class UncannySocketProof {
         p.teleportTo(p.server.getLevel(NovelRooms.dimension(place)),b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
     }
     private static void sourceFixture(ServerPlayer p,LabyrinthPlace place,int age){
-        var own=own(p,place);UncannyStories.arrive(p,place,own);own.putBoolean("Read_Source",true);own.putInt("UncannyAge",age);if(place==LabyrinthPlace.SECOND_WAITRESS){own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);own.putBoolean("DinerFlow130",true);own.putString("Breakfast130","pancakes");own.putBoolean("DinerRealReturned130",true);}if(place==LabyrinthPlace.TUNNEL_PERIPHERY){own.putBoolean("TunnelStarted127",true);var giant=UncannyStories.actor(p,own,"CastGiant");if(giant!=null)giant.moveTo(Vec3.atBottomCenterOf(LiteraryVignettes.base(p,place).offset(0,0,-4)));}save(p,place,own);
+        var own=own(p,place);UncannyStories.arrive(p,place,own);own.putBoolean("Read_Source",true);own.putInt("UncannyAge",age);if(place==LabyrinthPlace.SECOND_WAITRESS){own.putBoolean("DinerHosted127",true);own.putInt("DinerHostedAt127",0);own.putBoolean("DinerFlow130",true);own.putString("Breakfast130","pancakes");own.putBoolean("DinerRealReturned130",true);}save(p,place,own);
     }
     private static boolean both(ServerPlayer a,ServerPlayer b){return a!=null&&b!=null&&ACKS.contains(a.getUUID())&&ACKS.contains(b.getUUID());}
     /** A stalled native monitor must report what each genuine socket client actually sent. */
@@ -117,6 +118,10 @@ public final class UncannySocketProof {
                 if(place!=null){var own=own(p,place);own.putInt("UncannyAge",phase==1?120:phase==2?270:170);save(p,place,own);}
             }
             // This is explicitly the translucent object view; hold its short production fade for native capture.
+            if(phase==4){
+                if(!CHUNKS.ready())return;
+                for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);UncannyStories.arrive(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);var original=UncannyStories.actor(p,own,"CastGiant");if(original==null){save(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);return;}if(!own.getBoolean("TunnelSocketStaged135")){TunnelStride.placeOriginal(original,Vec3.atBottomCenterOf(LiteraryVignettes.base(p,LabyrinthPlace.TUNNEL_PERIPHERY).offset(0,0,-4)));own.putBoolean("TunnelSocketStaged135",true);}own.putBoolean("TunnelStarted127",true);own.putInt("UncannyAge",170);save(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);}
+            }
             if(phase==2)for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.SECOND_WAITRESS);own.putInt("SecondManifestAge131",own.getInt("UncannyAge")-10);save(p,LabyrinthPlace.SECOND_WAITRESS,own);}
             if(s.getTickCount()%20==0){marker(a,phase);marker(b,phase);}
             if(!CHUNKS.ready()||!both(a,b))return;
