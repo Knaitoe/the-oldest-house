@@ -140,7 +140,7 @@ public final class WhaleInstitute {
         // The nurses' counter, with the ward book open on it.
         for(int x=8;x<=11;x++)set(l,b,x,0,-27,Blocks.SPRUCE_PLANKS);
         BuildBlocks.set(l,b.offset(9,1,-27),SceneDetailBlock.state(SceneDetailBlock.Kind.INK_PAPERS,Direction.NORTH),F);
-        for(int y=0;y<=2;y++)set(l,b,-12,y,-27,Blocks.BOOKSHELF);
+        for(int y=0;y<=2;y++)set(l,b,-12,y,-26,Blocks.BOOKSHELF);
         clock(l,b,12,2,-29,Direction.WEST,7);
         lantern(l,b,-4,4,-28);lantern(l,b,6,4,-29);
         // The stair up to the attics, two wide along the north wall, solid beneath, with its well cut through the ceiling.
@@ -182,14 +182,14 @@ public final class WhaleInstitute {
     private static void window(ServerLevel l,BlockPos b,int a,int c,boolean side){window(l,b,a,c,side,2);}
     /** A frosted pane set back behind the wall, with a stone reveal round it; side windows are in the east or west wall. */
     private static void window(ServerLevel l,BlockPos b,int a,int c,boolean side,int y){
-        BlockState frame=Blocks.POLISHED_ANDESITE.defaultBlockState(),pane=Blocks.WHITE_STAINED_GLASS_PANE.defaultBlockState(),air=Blocks.AIR.defaultBlockState();
+        BlockState frame=Blocks.POLISHED_ANDESITE.defaultBlockState(),pane=WhaleFinishing.pane(Blocks.WHITE_STAINED_GLASS_PANE.defaultBlockState(),side),air=Blocks.AIR.defaultBlockState();
         if(side){int x=a,z=c,out=x+Integer.signum(x);
-            for(int dy=0;dy<=1;dy++){BuildBlocks.set(l,b.offset(x,y+dy,z),air,F);BuildBlocks.set(l,b.offset(out,y+dy,z),pane,F);
-                BuildBlocks.set(l,b.offset(out,y+dy,z-1),frame,F);BuildBlocks.set(l,b.offset(out,y+dy,z+1),frame,F);}
+            for(int dy=0;dy<=1;dy++){BuildBlocks.set(l,b.offset(x,y+dy,z),air,F);
+                BuildBlocks.set(l,b.offset(out,y+dy,z-1),frame,F);BuildBlocks.set(l,b.offset(out,y+dy,z+1),frame,F);BuildBlocks.set(l,b.offset(out,y+dy,z),pane,F);}
             BuildBlocks.set(l,b.offset(out,y-1,z),frame,F);BuildBlocks.set(l,b.offset(out,y+2,z),frame,F);
         }else{int x=a,z=c,out=z-1;
-            for(int dy=0;dy<=1;dy++){BuildBlocks.set(l,b.offset(x,y+dy,z),air,F);BuildBlocks.set(l,b.offset(x,y+dy,out),pane,F);
-                BuildBlocks.set(l,b.offset(x-1,y+dy,out),frame,F);BuildBlocks.set(l,b.offset(x+1,y+dy,out),frame,F);}
+            for(int dy=0;dy<=1;dy++){BuildBlocks.set(l,b.offset(x,y+dy,z),air,F);
+                BuildBlocks.set(l,b.offset(x-1,y+dy,out),frame,F);BuildBlocks.set(l,b.offset(x+1,y+dy,out),frame,F);BuildBlocks.set(l,b.offset(x,y+dy,out),pane,F);}
             BuildBlocks.set(l,b.offset(x,y-1,out),frame,F);BuildBlocks.set(l,b.offset(x,y+2,out),frame,F);
         }
     }

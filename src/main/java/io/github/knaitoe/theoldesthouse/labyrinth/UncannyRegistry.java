@@ -13,7 +13,7 @@ import net.neoforged.neoforge.registries.*;
 /** Physical fittings and finite artifacts for the six uncanny rooms. */
 public final class UncannyRegistry {
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
-    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> FLESH_GROW=sound("cellar_flesh_grow"),FLESH_TEAR=sound("cellar_flesh_tear"),FLESH_GURGLE=sound("cellar_flesh_gurgle");
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> TUNNEL_TRAFFIC=sound("tunnel_traffic"),FLESH_GROW=sound("cellar_flesh_grow"),FLESH_TEAR=sound("cellar_flesh_tear"),FLESH_GURGLE=sound("cellar_flesh_gurgle");
     public static final java.util.List<DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent>> GROW_VARIANTS=variants("cellar_flesh_grow",6),TEAR_VARIANTS=variants("cellar_flesh_tear",6),GURGLE_VARIANTS=variants("cellar_flesh_gurgle",4);
     private static java.util.List<DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent>> variants(String prefix,int count){return java.util.stream.IntStream.rangeClosed(1,count).mapToObj(i->sound(prefix+"_"+i)).toList();}
     private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String name){return SOUNDS.register(name,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,name)));}

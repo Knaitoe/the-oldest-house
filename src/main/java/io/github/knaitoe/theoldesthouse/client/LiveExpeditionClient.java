@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.event.*;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class LiveExpeditionClient {
     private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping,portholePoseSeen,pawShot;
-    private static BlockPos proofCamp;
+    private static BlockPos proofCamp;private static int borrascaTerrainSent=-1000;
     private static boolean confusionCaptured,terrorCaptured,voiceCaptured;
     private static volatile String badImpact;
     private static final java.util.Set<String> heardSides=java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -39,7 +39,14 @@ public final class LiveExpeditionClient {
         var component=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(component==null)return;
         var data=component.copyTag();int step=data.getInt("Step");if(step<1)return;String role=System.getProperty("the_oldest_house.liveProofRole","");
         if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;pawShot=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);}ticks++;
-        BlockPos target=BlockPos.of(data.getLong("Target"));var block=mc.level.getBlockState(target);
+        BlockPos target=BlockPos.of(data.getLong("Target"));
+        if(step==54&&data.getBoolean("BorrascaTerrainPending")){
+            mc.options.keyUp.setDown(false);mc.options.keyJump.setDown(false);mc.options.keySprint.setDown(false);
+            var floor=new BlockPos(target.getX(),target.getY()-1,target.getZ()+3);
+            if(mc.level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD)&&mc.player.onGround()&&!mc.player.isNoGravity()&&Math.abs(mc.player.getY()-target.getY())<.1&&mc.player.distanceToSqr(target.getCenter())<25&&mc.levelRenderer.isSectionCompiled(floor)&&!mc.level.getBlockState(floor).getCollisionShape(mc.level,floor).isEmpty()&&data.getInt("ServerTick")-borrascaTerrainSent>=40){borrascaTerrainSent=data.getInt("ServerTick");mc.player.connection.sendCommand("borrascaready");}return;
+        }
+        if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen){mc.options.keyUp.setDown(false);return;}
+        var block=mc.level.getBlockState(target);
         if(step==1&&ticks>30&&mc.level.players().size()>=2)ack(mc,1);
         if(step==2||step==31) {
             if(mc.player.distanceToSqr(target.getCenter())<25)click(mc,target,ticks);

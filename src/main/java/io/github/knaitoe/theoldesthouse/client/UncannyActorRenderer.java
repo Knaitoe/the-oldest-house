@@ -22,7 +22,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     public static LayerDefinition bentLayer(){return layer(false,true);}
     private static LayerDefinition layer(boolean slim,boolean bent){
         var mesh=PlayerModel.createMesh(CubeDeformation.NONE,slim);
-        mesh.getRoot().addOrReplaceChild("bent_neck",CubeListBuilder.create().texOffs(0,32).addBox(-.65F,-1.7F,-.65F,1.3F,3.4F,1.3F),PartPose.offsetAndRotation(-.75F,7.2F,-1,.0F,.0F,.36F));
+        mesh.getRoot().addOrReplaceChild("bent_neck",CubeListBuilder.create().texOffs(0,32).addBox(-1,-2,-1,2,4,2),PartPose.offsetAndRotation(1.1F,8.3F,-2.2F,0,0,-.75F));
         if(bent)for(boolean left:new boolean[]{false,true}){var leg=mesh.getRoot().addOrReplaceChild(left?"left_leg":"right_leg",SegmentedSkin.limb(left?16:0,left?48:16,0,-2,0,-2,4,6,4,left,false),PartPose.offset(left?1.9F:-1.9F,12,0));leg.addOrReplaceChild("bent_knee",SegmentedSkin.limb(left?16:0,left?48:16,6,-2,0,-2,4,6,4,left,false),PartPose.offset(0,6,0));}
         return LayerDefinition.create(mesh,64,64);
     }
@@ -93,14 +93,14 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 body.y=7+bob;body.yScale=.6F;body.xRot=.12F;body.zRot=gait*.04F;
                 body.xScale=.42F;body.zScale=.6F;head.xScale=.58F;head.yScale=.9F;head.zScale=.62F;
                 leftLeg.y=rightLeg.y=14;leftLeg.yScale=rightLeg.yScale=5F/6;
-                head.x=-1.5F+gait*.1F;head.y=8.8F+bob;head.z=-1.5F;head.zRot=1.55F+gait*.025F;head.xRot=.12F;
+                head.x=2.7F+gait*.1F;head.y=10.5F+bob;head.z=-2.4F;head.zRot=1.55F+gait*.025F;head.xRot=.12F;
                 leftArm.y=rightArm.y=8+bob;leftArm.xRot=-gait*.22F;rightArm.xRot=-.35F+gait*.1F;
                 leftArm.x=2.1F;rightArm.x=-2.1F;
                 leftArm.xScale=rightArm.xScale=.45F;leftArm.zScale=rightArm.zScale=.55F;leftLeg.xScale=rightLeg.xScale=.5F;leftLeg.zScale=rightLeg.zScale=.6F;
                 leftArm.zRot=-.025F;rightArm.zRot=.025F;
                 leftLeg.xRot=gait*(great?.68F:.4F);rightLeg.xRot=-gait*(great?.48F:.24F)-.06F;
                 if(leftLeg.hasChild("bent_knee")){leftLeg.getChild("bent_knee").xRot=.08F+Math.max(0,-gait)*.35F;rightLeg.getChild("bent_knee").xRot=.22F+Math.max(0,gait)*.45F;}
-                if(neck!=null){neck.visible=true;neck.y=7.2F+bob;neck.zRot=.36F+gait*.025F;}
+                if(neck!=null){neck.visible=true;neck.y=8.3F+bob;neck.zRot=-.75F+gait*.025F;}
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&!feed){
                 float twitch=Mth.sin(age*.7F)*.045F;leftArm.zRot=-(float)Math.PI/2;rightArm.zRot=(float)Math.PI/2;

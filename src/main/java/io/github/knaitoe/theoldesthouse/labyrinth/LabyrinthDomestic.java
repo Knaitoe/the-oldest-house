@@ -163,7 +163,7 @@ public final class LabyrinthDomestic {
         window(level, base.offset(back).above().relative(into), into.getOpposite(), 2);
     }
 
-    private static BlockState fragmentFloor(Room room, int x, int z) {
+    public static BlockState fragmentFloor(Room room, int x, int z) {
         if (room == Room.KITCHEN || room == Room.LAUNDRY)
             return ((x + z) & 1) == 0 ? Blocks.QUARTZ_BLOCK.defaultBlockState() : Blocks.LIGHT_GRAY_TERRACOTTA.defaultBlockState();
         return room == Room.BEDROOM ? Blocks.BIRCH_PLANKS.defaultBlockState() : Blocks.DARK_OAK_PLANKS.defaultBlockState();

@@ -17,7 +17,7 @@ final class BorrascaSocketProof {
     private static final Map<UUID,Integer> DEPTH=new HashMap<>(),RISES=new HashMap<>();
     private static final Map<UUID,Double> HEIGHT=new HashMap<>();
     private static final Map<UUID,UUID> FRIENDS=new HashMap<>();
-    private static final Set<UUID> CROUCHED=new HashSet<>();
+    private static final Set<UUID> CROUCHED=new HashSet<>(),ARRIVING=new HashSet<>();
     private static BlockPos source;
     private BorrascaSocketProof(){}
     private static void require(boolean okay,String text){if(!okay)throw new IllegalStateException("LIVE BORRASCA: "+text);}
@@ -28,7 +28,18 @@ final class BorrascaSocketProof {
         source=origin.offset(80,0,80);var level=a.server.overworld();var data=LabyrinthData.get(a.server);CHUNKS.hold(level,new AABB(source).inflate(6));
         for(var at:BlockPos.betweenClosed(source.offset(-3,-1,-4),source.offset(3,-1,5)))level.setBlock(at,Blocks.STONE.defaultBlockState(),3);
         NovelRooms.door(level,source,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);data.putDoor(new LabyrinthData.Door("proof/borrasca/source",level.dimension(),source,Direction.SOUTH,LabyrinthData.toPlace(LabyrinthPlace.BORRASCA),true));
-        int i=0;for(var p:List.of(a,b)){p.stopUsingItem();p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setNoGravity(false);p.setHealth(p.getMaxHealth());p.getFoodData().setFoodLevel(20);DEPTH.put(p.getUUID(),data.returnDepth(p.getUUID()));p.teleportTo(level,source.getX()+.5+(i++==0?-.4:.4),source.getY(),source.getZ()+3.5,180,0);p.hasChangedDimension();p.connection.resetPosition();}
+        ARRIVING.clear();int i=0;for(var p:List.of(a,b)){ARRIVING.add(p.getUUID());p.stopUsingItem();p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setNoGravity(false);p.setHealth(p.getMaxHealth());p.getFoodData().setFoodLevel(20);DEPTH.put(p.getUUID(),data.returnDepth(p.getUUID()));p.teleportTo(level,source.getX()+.5+(i++==0?-.4:.4),source.getY(),source.getZ()+3.5,180,0);p.hasChangedDimension();p.connection.resetPosition();}
+    }
+    static boolean pending(ServerPlayer p){return ARRIVING.contains(p.getUUID());}
+    static void terrainReady(ServerPlayer p){
+        if(!pending(p)||p.serverLevel()!=p.server.overworld()||!p.onGround()||p.isNoGravity()||Math.abs(p.getY()-source.getY())>.1||p.distanceToSqr(source.getCenter())>25)return;
+        ARRIVING.remove(p.getUUID());
+    }
+    static void arrival(ServerPlayer a,ServerPlayer b){
+        if(a.server.getTickCount()%20!=0)return;for(var p:List.of(a,b))if(pending(p)){
+            // Explicit fixture recovery only, until the real client confirms received/compiled solid terrain.
+            p.teleportTo(p.server.overworld(),source.getX()+.5+(p==a?-.4:.4),source.getY(),source.getZ()+3.5,180,0);p.connection.resetPosition();
+        }
     }
     static boolean entered(ServerPlayer a,ServerPlayer b){for(var p:List.of(a,b)){var site=base(p);if(!BorrascaSites.inside(p)||site==null||p.getZ()>site.getZ()-2)return false;require(own(p).getInt("Visit")==1&&LabyrinthData.get(p.server).returnDepth(p.getUUID())==DEPTH.get(p.getUUID())+1,"actual source door enters visit one and pushes exactly one return");}return true;}
     static void status(ServerPlayer a,ServerPlayer b,int phase){for(var p:List.of(a,b)){

@@ -24,7 +24,7 @@ public final class UncannyEnvironmentRepairs {
             this.level=level;this.origin=origin.immutable();this.place=place;base=LabyrinthPlaces.base(origin,place);area=IndianLakeRooms.bounds(base,place);
             before=BuildBlocks.record(level,()->UncannyRooms0121.build(level,base,place));
             previous=BuildBlocks.record(level,()->UncannyRooms0122.build(level,base,place));
-            after=BuildBlocks.record(level,()->UncannyRooms.build(level,base,place));
+            after=BuildBlocks.record(level,()->{if(place==LabyrinthPlace.TUNNEL_PERIPHERY)UncannyRooms0132.build(level,base,place);else UncannyRooms.build(level,base,place);});
             var cellarDoor=level.getBlockState(base.offset(UncannyRooms0122.CELLAR_DOOR));cellarDoorOpen=!(cellarDoor.getBlock() instanceof DoorBlock)||cellarDoor.getValue(DoorBlock.OPEN);
             // The old unsupported gravel can fall one row into the cleared slot above its solid backing.
             // Recognize that exact natural state; unrelated floor edits still remain untouched.

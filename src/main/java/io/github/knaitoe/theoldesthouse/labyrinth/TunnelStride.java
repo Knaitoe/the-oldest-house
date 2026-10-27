@@ -22,9 +22,9 @@ public final class TunnelStride {
         double distance=a.position().subtract(goal.at).horizontalDistance();
         if(distance>=14)stride.far=true;else if(distance<=8)stride.far=false;
         a.gesture(stride.far?1:0);
-        double step=stride.far?.19+.15*(.5+.5*Math.sin(a.tickCount*.13)):.075+.065*(.5+.5*Math.sin(a.tickCount*.17));
+        double step=stride.far?.40+.18*(.5+.5*Math.sin(a.tickCount*.13)):.26+.10*(.5+.5*Math.sin(a.tickCount*.17));
         var before=a.position();SceneFootpaths.walk(a,goal.at,step);double moved=a.position().subtract(before).horizontalDistance();
-        if(stride.far&&moved>.001){stride.travelled+=moved;if(stride.travelled>=2.8){stride.travelled-=2.8;stride.impact=now;stride.at=a.position();sound(a,stride.at,1.15F,.75F+a.getRandom().nextFloat()*.1F);a.getPersistentData().putLong("TunnelQuakeUntil131",now+12);a.getPersistentData().putInt("TunnelSteps131",a.getPersistentData().getInt("TunnelSteps131")+1);}}
+        if(stride.far&&moved>.001){stride.travelled+=moved;if(stride.travelled>=4.2){stride.travelled-=4.2;stride.impact=now;stride.at=a.position();sound(a,stride.at,1.15F,.75F+a.getRandom().nextFloat()*.1F);a.getPersistentData().putLong("TunnelQuakeUntil131",now+12);a.getPersistentData().putInt("TunnelSteps131",a.getPersistentData().getInt("TunnelSteps131")+1);}}
         else if(!stride.far)stride.travelled=0;
     }
     private static void sound(LiteraryActor a,Vec3 at,float volume,float pitch){

@@ -47,6 +47,7 @@ jobs:
           python3 tools/draw_vignette_interiors.py --check
           python3 tools/draw_vignette_handling.py --check
           python3 tools/draw_domestic_lives.py --check
+          python3 tools/draw_domestic_records.py --check
           python3 tools/draw_diner_breakfasts.py --check
           python3 tools/draw_vignette_details.py --check
           python3 tools/draw_cabin_objects.py --check
@@ -1462,7 +1463,7 @@ jobs:
           mkdir -p build
           set -o pipefail
           python3 tools/draw_uncanny_environments.py --check
-          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny_environment --no-daemon 2>&1 | tee build/uncanny-environment-native.log
+          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny_environment -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/uncanny-environment-native.log
       - name: Native uncanny room and waitress visual review
         if: always()
         timeout-minutes: 5
@@ -1865,6 +1866,7 @@ jobs:
           python3 tools/draw_vignette_interiors.py --check
           python3 tools/draw_vignette_handling.py --check
           python3 tools/draw_domestic_lives.py --check
+          python3 tools/draw_domestic_records.py --check
           python3 tools/draw_diner_breakfasts.py --check
           python3 tools/draw_vignette_details.py --check
           python3 tools/draw_cabin_objects.py --check
@@ -1882,7 +1884,7 @@ jobs:
           completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
           assert completed and int(completed[-1])==declared, 'Every native interior case must finish.'
           assert not re.search(r'[1-9]\d* required tests failed',log), 'A required interior case failed.'
-          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==24
+          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==26
           print(f'All {declared} native interior cases passed; the complete suite remains required.')
           PY
       - name: Native diner, archive, painted sun and retreat follow-up
@@ -1926,10 +1928,10 @@ jobs:
           test -s build/font-smoke/domestic-assets-passed.txt
           test -s build/font-smoke/diner-assets-passed.txt
           test -s build/font-smoke/native-diner-breakfasts.png
-          for page in 0 1 2 3 4 5 6; do test -s build/font-smoke/native-domestic-$page.png; done
+          for page in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-domestic-$page.png; done
           python3 - <<'PY'
           from pathlib import Path
-          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==24
+          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==26
           log=Path('build/interior-client.log').read_text()
           assert 'Unable to load model' not in log and 'Missing textures in model' not in log and 'missing model for variant' not in log
           PY

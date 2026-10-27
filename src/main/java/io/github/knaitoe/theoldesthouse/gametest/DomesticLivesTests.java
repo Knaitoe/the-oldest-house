@@ -165,6 +165,82 @@ public final class DomesticLivesTests {
         });
     }
     @AfterBatch(batch="domestic_lives_repair") public static void repairDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="domestic134_chance",timeoutTicks=40)
+    public static void overturnedFurnitureIsRareInShallowRoutesAndRisesWithDepthWithoutRerolling(GameTestHelper h){
+        int[] counts=new int[3];int[] depths={1,10,26};for(long route=0;route<40000;route++)for(int i=0;i<3;i++){boolean chosen=DomesticDisturbances.chosen(route,depths[i]);if(chosen)counts[i]++;h.assertTrue(chosen==DomesticDisturbances.chosen(route,depths[i]),"the same discovered route never rolls again");}
+        h.assertTrue(counts[0]>650&&counts[0]<1300&&counts[1]>2100&&counts[1]<3100&&counts[2]>4800&&counts[2]<6200,"rare variations rise with actual depth over forty thousand independent routes: "+Arrays.toString(counts));h.succeed();
+    }
+    @GameTest(template="empty",batch="domestic134_variation",timeoutTicks=400)
+    public static void anActualNormalChairCanRarelyFallAndKeepsItsMaterialsEditsAndSavedDiscovery(GameTestHelper h){
+        var f=fixture(h);var hall=LabyrinthPlace.QUIET_ROOM;var b=f.base(hall);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,hall));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native sitting room is resident")).thenExecute(()->{
+            build(f,hall);HouseFurnishings.decorate(f.in,b,hall);long rare=0;while(!DomesticDisturbances.chosen(rare,1))rare++;
+            var eye=player(f,"variation_camera");eye.setGameMode(GameType.SPECTATOR);eye.teleportTo(f.in,b.getX(),b.getY(),b.getZ()-8,0,0);h.assertTrue(!DomesticDisturbances.select(f.in,b,hall,rare,1),"a real camera prevents furniture movement");eye.teleportTo(f.in,b.getX()+100,b.getY(),b.getZ(),0,0);
+            h.assertTrue(DomesticDisturbances.select(f.in,b,hall,rare,1),"the vacant physical room selects its rare variation");var choices=DomesticDisturbances.candidates(f.in,b,hall);var changed=choices.stream().filter(c->f.in.getBlockState(b.offset(c.at())).equals(c.tipped())).findFirst().orElseThrow();
+            h.assertTrue(changed.tipped().getValue(DomesticFittingBlock.STAGE)>=2,"the tipped mesh is the original armchair/sofa/footstool family, not a different dining chair");f.reload();h.assertTrue(DomesticDisturbances.select(f.in,b,hall,rare,1)&&f.in.getBlockState(b.offset(changed.at())).equals(changed.tipped()),"the same route and actual fallen chair survive reload");
+            long normal=rare+1;while(DomesticDisturbances.chosen(normal,1))normal++;DomesticDisturbances.select(f.in,b,hall,normal,1);h.assertTrue(f.in.getBlockState(b.offset(changed.at())).equals(changed.normal()),"a normal discovery has the original upright furniture, without changing floor or room type");
+            DomesticDisturbances.select(f.in,b,hall,rare,1);var at=b.offset(changed.at());f.in.setBlock(at,Blocks.GOLD_BLOCK.defaultBlockState(),3);DomesticDisturbances.select(f.in,b,hall,normal,1);h.assertTrue(f.in.getBlockState(at).is(Blocks.GOLD_BLOCK),"player changes are not restored over");h.succeed();
+        });
+    }
+    @AfterBatch(batch="domestic134_variation") public static void variation134Done(ServerLevel l){close();}
+    @GameTest(template="empty",batch="domestic134_originals",timeoutTicks=400)
+    public static void householdDrawingsAwardsAndLettersAreReadableFiniteSharedOriginals(GameTestHelper h){
+        var f=fixture(h);var hall=LabyrinthPlace.BENT_HALL;var b=f.base(hall);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,hall));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the original bedroom fragment and expanded homes are resident")).thenExecute(()->{
+            build(f,hall);var p=player(f,"family_paper_reader");var peer=player(f,"family_paper_peer");p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            for(var home:DomesticLives.HOMES)if(home.hall()==hall)for(var piece:DomesticStories.pieces(home.id())){
+                var at=b.offset(piece.at());var be=(DomesticRecordBlockEntity)f.in.getBlockEntity(at);var original=be.book();h.assertTrue(!original.isEmpty(),"fresh household artifact contains its original: "+piece.id());
+                p.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+2,0,0);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.gameMode.useItemOn(p,f.in,p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.UP,at,false));
+                h.assertTrue(p.containerMenu instanceof DomesticRecordBlockEntity.PaperMenu,"ordinary native use opens the actual artifact: "+piece.id());var menu=p.containerMenu;menu.clicked(0,0,net.minecraft.world.inventory.ClickType.QUICK_MOVE,p);h.assertTrue(ItemStack.matches(original,be.book()),"an inventory packet cannot steal the display snapshot");
+                h.assertTrue(menu.clickMenuButton(p,3)&&!menu.clickMenuButton(p,3)&&be.book().isEmpty(),"the same shared original transfers once: "+piece.id());
+                h.assertTrue(!f.in.getBlockState(at).getValue(DomesticRecordBlock.PRESENT),"taking it leaves an empty paper mount or frame");var saved=be.saveWithFullMetadata(f.in.registryAccess());be.loadWithComponents(saved,f.in.registryAccess());be.seed(original);h.assertTrue(be.book().isEmpty(),"native BE reload and construction retries never replenish a collected original");
+                peer.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+2,0,0);be.open(peer);h.assertTrue(peer.containerMenu==peer.inventoryMenu,"another reader finds the same empty frame");
+            }
+            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"optional household histories confer no story credit");h.succeed();
+        });
+    }
+    @AfterBatch(batch="domestic134_originals") public static void originals134Done(ServerLevel l){close();}
+    @GameTest(template="empty",batch="domestic134_continuity",timeoutTicks=700)
+    public static void oldHomesGainTheirFragmentsPaletteAndStoriesWithoutRestockingOriginalContainers(GameTestHelper h){
+        var f=fixture(h);var home=DomesticLives.HOMES.getFirst();var b=f.base(home.hall());f.chunks.hold(f.in,IndianLakeRooms.bounds(b,home.hall()));Object[] original={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native old home is resident")).thenExecute(()->{
+            build(f,home.hall());var old=DomesticLives0133.HOMES.getFirst();for(var e:DomesticLives0133.plan(old))f.in.setBlock(b.offset(e.at()),e.next(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS);
+            var state=f.data().state(DomesticContinuity.STATE);state.remove(DomesticLives.key(b,home));f.data().setState(DomesticContinuity.STATE,state);original[0]=f.in.getBlockEntity(b.offset(-6,0,-17));((Container)original[0]).setItem(1,new ItemStack(Items.EMERALD,7));f.in.setBlock(b.offset(-12,-1,-23),Blocks.GOLD_BLOCK.defaultBlockState(),3);
+            var camera=player(f,"palette_camera");camera.setGameMode(GameType.SPECTATOR);camera.teleportTo(f.in,b.getX()-12,b.getY(),b.getZ()-22,0,0);h.assertTrue(!DomesticContinuity.step(f.in,b,home),"a real camera pauses the palette/story repair");camera.teleportTo(f.in,b.getX()+100,b.getY(),b.getZ(),0,0);
+        }).thenWaitUntil(()->{DomesticContinuity.step(f.in,b,home);h.assertTrue(f.data().state(DomesticContinuity.STATE).getBoolean(DomesticLives.key(b,home)),"the bounded old-state comparison finishes");}).thenExecute(()->{
+            h.assertTrue(f.in.getBlockEntity(b.offset(-6,0,-17))==original[0]&&((Container)original[0]).getItem(1).getCount()==7,"the original small-kitchen barrel and exact finite contents survive");h.assertTrue(f.in.getBlockState(b.offset(-12,-1,-23)).is(Blocks.GOLD_BLOCK),"a player's floor edit is retained");
+            h.assertTrue(f.in.getBlockState(b.offset(-11,-1,-24)).equals(LabyrinthDomestic.fragmentFloor(LabyrinthDomestic.Room.KITCHEN,-11,-24)),"the large kitchen continues the small kitchen's checker tiles");
+            for(var piece:DomesticStories.pieces(home.id()))h.assertTrue(f.in.getBlockEntity(b.offset(piece.at())) instanceof DomesticRecordBlockEntity be&&!be.book().isEmpty(),"old homes receive each original once: "+piece.id());
+            var at=b.offset(DomesticStories.pieces(home.id()).getFirst().at());f.in.setBlock(at,Blocks.AIR.defaultBlockState(),3);f.reload();DomesticContinuity.step(f.in,b,home);h.assertTrue(f.in.getBlockState(at).isAir(),"the saved checkpoint preserves later removal");h.succeed();
+        });
+    }
+    @AfterBatch(batch="domestic134_continuity") public static void continuity134Done(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="whale134_finish",timeoutTicks=700)
+    public static void instituteShelvesBackOntoTheirWallAndNativeWindowsHaveActualPanels(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.WHALE;var b=f.base(place);f.chunks.hold(f.in,SceneReview.area(b,place));Object[] cabinet={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native institute is resident")).thenExecute(()->{
+            NovelRooms.build(f.in.getServer(),f.in,b,place);f.built.add(place);
+            for(int y=0;y<3;y++){var at=b.offset(-12,y,-26);var shelf=f.in.getBlockState(at);h.assertTrue(shelf.is(NovelRegistry.WARD_FIXTURE.get())&&shelf.getValue(InstituteFixtureBlock.KIND)==InstituteFixtureBlock.Kind.SHELF&&shelf.getValue(InstituteFixtureBlock.FACING)==Direction.NORTH&&!f.in.getBlockState(at.south()).isAir(),"fresh shelves face the stair and sit against the partition");f.in.setBlock(at.north(),shelf,2|16);f.in.setBlock(at,Blocks.AIR.defaultBlockState(),2|16);}
+            var pane=b.offset(-14,2,-11);var s=f.in.getBlockState(pane);h.assertTrue(s.getShape(f.in,pane).bounds().getZsize()>.99,"the fresh pane spans its supported native window");
+            s=s.setValue(net.minecraft.world.level.block.IronBarsBlock.NORTH,false).setValue(net.minecraft.world.level.block.IronBarsBlock.SOUTH,false).setValue(net.minecraft.world.level.block.IronBarsBlock.EAST,false).setValue(net.minecraft.world.level.block.IronBarsBlock.WEST,false);f.in.setBlock(pane,s,2|16);
+            var edited=b.offset(14,2,-11);var kept=f.in.getBlockState(edited).setValue(net.minecraft.world.level.block.IronBarsBlock.NORTH,false);f.in.setBlock(edited,kept,2|16);
+            cabinet[0]=f.in.getBlockEntity(b.offset(12,0,-24));h.assertTrue(cabinet[0] instanceof Container,"the original native filing cabinet exists");((Container)cabinet[0]).setItem(3,new ItemStack(Items.EMERALD,5));
+            var camera=player(f,"institute_camera");camera.setGameMode(GameType.SPECTATOR);camera.teleportTo(f.in,b.getX()-10,b.getY(),b.getZ()-29,0,0);h.assertTrue(!WhaleFinishing.repair(f.in,b),"a camera at the stairs prevents shelf movement");camera.teleportTo(f.in,b.getX()+100,b.getY(),b.getZ(),0,0);
+        }).thenWaitUntil(()->h.assertTrue(WhaleFinishing.repair(f.in,b),"the small saved shelf/window units finish after vacancy")).thenExecute(()->{
+            for(int y=0;y<3;y++)h.assertTrue(f.in.getBlockState(b.offset(-12,y,-27)).isAir()&&f.in.getBlockState(b.offset(-12,y,-26)).getValue(InstituteFixtureBlock.FACING)==Direction.NORTH,"the original shelf cells moved back one block without turning");
+            var pane=b.offset(-14,2,-11);h.assertTrue(f.in.getBlockState(pane).getShape(f.in,pane).bounds().getZsize()>.99,"the old disconnected post becomes a real native window panel");h.assertTrue(!f.in.getBlockState(b.offset(14,2,-11)).getValue(net.minecraft.world.level.block.IronBarsBlock.NORTH),"an edited connected pane stays edited");
+            h.assertTrue(f.in.getBlockEntity(b.offset(12,0,-24))==cabinet[0]&&((Container)cabinet[0]).getItem(3).getCount()==5,"the exact native cabinet and finite contents remain");
+            try{region(f.in,b,"whale_stair_shelves",-13,-8,-31,-24,-1,3);region(f.in,b,"whale_window_panels",-15,-12,-12,-10,1,4);}catch(Exception e){throw new RuntimeException(e);}f.reload();f.in.setBlock(pane,Blocks.GOLD_BLOCK.defaultBlockState(),3);WhaleFinishing.repair(f.in,b);h.assertTrue(f.in.getBlockState(pane).is(Blocks.GOLD_BLOCK),"the saved finish does not run again");h.succeed();
+        });
+    }
+    @AfterBatch(batch="whale134_finish") public static void whale134Done(ServerLevel l){close();}
+    private static void region(ServerLevel l,BlockPos b,String name,int x0,int x1,int z0,int z1,int y0,int y1)throws Exception{
+        var file=new JsonObject();file.addProperty("name",name);file.addProperty("viewYaw",name.equals("whale_window_panels")?-90:180);var palette=new JsonArray();var blocks=new JsonArray();var lookup=new LinkedHashMap<BlockState,Integer>();
+        for(int y=y0;y<=y1;y++)for(int z=z0;z<=z1;z++)for(int x=x0;x<=x1;x++){
+            var state=l.getBlockState(b.offset(x,y,z));if(state.isAir())continue;int n=lookup.computeIfAbsent(state,key->{palette.add(BlockState.CODEC.encodeStart(JsonOps.INSTANCE,key).getOrThrow());return palette.size()-1;});var row=new JsonArray();row.add(x);row.add(y);row.add(z);row.add(n);blocks.add(row);
+        }file.add("palette",palette);file.add("blocks",blocks);var folder=Path.of("../build/interior-environment-proof");Files.createDirectories(folder);Files.writeString(folder.resolve(name+".json"),new GsonBuilder().setPrettyPrinting().create().toJson(file));
+    }
     private static void export(ServerLevel l,BlockPos b,DomesticLives.Home home)throws Exception{
         var file=new JsonObject();file.addProperty("name","domestic_"+home.id());var palette=new JsonArray();var blocks=new JsonArray();var lookup=new LinkedHashMap<BlockState,Integer>();
         for(int y=-1;y<=2;y++)for(int z=home.z0();z<home.z1();z++)for(int x=home.x0();x<=home.x1();x++){

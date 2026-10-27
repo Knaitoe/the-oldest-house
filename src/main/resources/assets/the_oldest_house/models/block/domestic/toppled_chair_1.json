@@ -1,0 +1,360 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "formica": "the_oldest_house:block/formica",
+    "metal_legs": "the_oldest_house:block/metal_legs",
+    "particle": "the_oldest_house:block/formica"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        7
+      ],
+      "to": [
+        14,
+        12,
+        9
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            2,
+            7,
+            14,
+            9
+          ],
+          "texture": "#formica"
+        },
+        "down": {
+          "uv": [
+            2,
+            7,
+            14,
+            9
+          ],
+          "texture": "#formica"
+        },
+        "west": {
+          "uv": [
+            2,
+            7,
+            14,
+            9
+          ],
+          "texture": "#formica",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            2,
+            7,
+            14,
+            9
+          ],
+          "texture": "#formica",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#formica"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#formica"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        9,
+        0
+      ],
+      "to": [
+        5,
+        11,
+        7
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            11,
+            9,
+            13,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "down": {
+          "uv": [
+            3,
+            9,
+            5,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "west": {
+          "uv": [
+            3,
+            9,
+            5,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            11,
+            9,
+            13,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            3,
+            3,
+            5,
+            5
+          ],
+          "texture": "#metal_legs"
+        },
+        "north": {
+          "uv": [
+            3,
+            11,
+            5,
+            13
+          ],
+          "texture": "#metal_legs"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        9,
+        0
+      ],
+      "to": [
+        13,
+        11,
+        7
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            3,
+            9,
+            5,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "down": {
+          "uv": [
+            11,
+            9,
+            13,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "west": {
+          "uv": [
+            3,
+            9,
+            5,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            11,
+            9,
+            13,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            11,
+            3,
+            13,
+            5
+          ],
+          "texture": "#metal_legs"
+        },
+        "north": {
+          "uv": [
+            11,
+            11,
+            13,
+            13
+          ],
+          "texture": "#metal_legs"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        1,
+        0
+      ],
+      "to": [
+        5,
+        3,
+        7
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            11,
+            9,
+            13,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "down": {
+          "uv": [
+            3,
+            9,
+            5,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "west": {
+          "uv": [
+            11,
+            9,
+            13,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            3,
+            9,
+            5,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            3,
+            11,
+            5,
+            13
+          ],
+          "texture": "#metal_legs"
+        },
+        "north": {
+          "uv": [
+            3,
+            3,
+            5,
+            5
+          ],
+          "texture": "#metal_legs"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        1,
+        0
+      ],
+      "to": [
+        13,
+        3,
+        7
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            3,
+            9,
+            5,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "down": {
+          "uv": [
+            11,
+            9,
+            13,
+            16
+          ],
+          "texture": "#metal_legs"
+        },
+        "west": {
+          "uv": [
+            11,
+            9,
+            13,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 270
+        },
+        "east": {
+          "uv": [
+            3,
+            9,
+            5,
+            16
+          ],
+          "texture": "#metal_legs",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            11,
+            11,
+            13,
+            13
+          ],
+          "texture": "#metal_legs"
+        },
+        "north": {
+          "uv": [
+            11,
+            3,
+            13,
+            5
+          ],
+          "texture": "#metal_legs"
+        }
+      }
+    }
+  ]
+}

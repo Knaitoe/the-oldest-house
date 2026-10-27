@@ -27,7 +27,7 @@ public final class DomesticHomeRepairs {
         for(int x=(int)Math.floor(area.minX)>>4;x<=((int)Math.ceil(area.maxX)-1)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=((int)Math.ceil(area.maxZ)-1)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
         if(l.players().stream().anyMatch(p->area.inflate(16).intersects(p.getCamera().getBoundingBox()))||!l.getEntitiesOfClass(LivingEntity.class,area,e->e.isAlive()).isEmpty())return false;
         var old=new HashMap<BlockPos,BlockState>();for(var e:legacyPlan(home))old.put(e.at(),e.next());
-        var plan=DomesticLives.plan(home);int cursor=state.getInt(key+":cursor"),visits=0;long deadline=System.nanoTime()+3_000_000;
+        var retained=DomesticLives0133.HOMES.stream().filter(h->h.id().equals(home.id())).findFirst().orElseThrow();var plan=DomesticLives0133.plan(retained);int cursor=state.getInt(key+":cursor"),visits=0;long deadline=System.nanoTime()+3_000_000;
         while(cursor<plan.size()&&visits++<256&&(visits==1||System.nanoTime()<deadline)){
             var e=plan.get(cursor++);var expected=old.get(e.at());if(e.next().equals(expected))continue;
             var at=b.offset(e.at());if(l.getBlockEntity(at)!=null)continue;var current=l.getBlockState(at);var next=e.next();

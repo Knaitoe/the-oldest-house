@@ -24,7 +24,7 @@ public final class UncannyRooms {
         case PAINTED_INTERIOR->new BlockPos(3,1,-11);case SECOND_WAITRESS->new BlockPos(-6,1,-8);case TUNNEL_PERIPHERY->new BlockPos(-3,1,-5);
         case MISSING_SLEEP->new BlockPos(-6,6,-22);case LAYERED_MAN->new BlockPos(3,1,-5);case MOTION_LIGHT->new BlockPos(3,1,-9);default->throw new IllegalArgumentException(p.id());};}
     public static BlockPos account(LabyrinthPlace p){return switch(p){
-        case PAINTED_INTERIOR->new BlockPos(10,1,-10);case SECOND_WAITRESS->new BlockPos(-6,1,-5);case TUNNEL_PERIPHERY->new BlockPos(3,1,-69);
+        case PAINTED_INTERIOR->new BlockPos(10,1,-10);case SECOND_WAITRESS->new BlockPos(-6,1,-5);case TUNNEL_PERIPHERY->TunnelPassage.ACCOUNT;
         case MISSING_SLEEP->new BlockPos(3,1,-4);case LAYERED_MAN->new BlockPos(-3,1,-5);case MOTION_LIGHT->new BlockPos(6,1,-3);default->throw new IllegalArgumentException(p.id());};}
     public static void build(ServerLevel l,BlockPos b,LabyrinthPlace p){
         var r=p.room();box(l,b,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ(),Blocks.AIR);
@@ -167,23 +167,24 @@ public final class UncannyRooms {
         DinerDetails.build(l,b);
     }
     private static void tunnel(ServerLevel l,BlockPos b){
-        room(l,b,-3,3,-73,-1,0,3,material("workshop_wall"),Blocks.SMOOTH_STONE);
-        for(int z=-3;z>=-70;z--){
+        room(l,b,-3,3,TunnelPassage.WALL,-1,0,3,material("workshop_wall"),Blocks.SMOOTH_STONE);
+        for(int z=-3;z>=TunnelPassage.WALL+3;z--){
             furnishing(l,b,-2,2,z,UncannyFurnitureBlock.Kind.PIPE_HORIZONTAL,Direction.EAST);
             if(z%8==0)furnishing(l,b,2,0,z,UncannyFurnitureBlock.Kind.DRAIN,Direction.WEST);
         }
-        for(int z:new int[]{-12,-28,-44,-60}){
+        for(int z=-12;z>=TunnelPassage.WALL+5;z-=16){
             fit(l,b,new BlockPos(-3,2,z),SIGNAL,Direction.EAST);fit(l,b,new BlockPos(3,1,z-2),SIGN,Direction.WEST);
             at(l,b,-1,-1,z,Blocks.YELLOW_CONCRETE);at(l,b,1,-1,z,Blocks.YELLOW_CONCRETE);
             furnishing(l,b,2,2,z-4,UncannyFurnitureBlock.Kind.VENT,Direction.WEST);
         }
         furnishing(l,b,-2,1,-7,UncannyFurnitureBlock.Kind.SWITCHBOX,Direction.EAST);
         at(l,b,-3,0,-5,material("workshop_wall"));note(l,b,LabyrinthPlace.TUNNEL_PERIPHERY,CLIPBOARD);
-        at(l,b,3,0,-69,material("workshop_wall"));box(l,b,-3,3,-73,3,6,-65,material("workshop_wall"));
-        box(l,b,-3,3,-73,3,3,-1,material("workshop_wall"));
-        for(int z:new int[]{-6,-20,-36,-52})furnishing(l,b,0,3,z,UncannyFurnitureBlock.Kind.FLUSH_LIGHT);
-        fit(l,b,new BlockPos(0,1,-72),STOPLIGHT,Direction.SOUTH);
-        furnishing(l,b,2,0,-71,UncannyFurnitureBlock.Kind.BIN,Direction.WEST);
+        at(l,b,3,0,TunnelPassage.ACCOUNT.getZ(),material("workshop_wall"));box(l,b,-3,3,TunnelPassage.WALL,3,6,TunnelPassage.WALL+8,material("workshop_wall"));
+        box(l,b,-3,3,TunnelPassage.WALL,3,3,-1,material("workshop_wall"));
+        for(int z:new int[]{-6,-20,-36,-52,-68,-84,-100,-116,-132})furnishing(l,b,0,3,z,UncannyFurnitureBlock.Kind.FLUSH_LIGHT);
+        fit(l,b,new BlockPos(0,1,TunnelPassage.WALL+1),STOPLIGHT,Direction.SOUTH);
+        furnishing(l,b,2,0,TunnelPassage.WALL+2,UncannyFurnitureBlock.Kind.BIN,Direction.WEST);
+        TunnelPassage.fresh(l,b);
     }
     private static void bedroom(ServerLevel l,BlockPos b){
         room(l,b,-9,9,-29,-1,0,10,material("bedroom_paper"),Blocks.SPRUCE_PLANKS);

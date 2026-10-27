@@ -65,7 +65,7 @@ public final class UncannyStories {
                 var s=new ItemStack(UncannyRegistry.MEAL.get());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID("UncannyMealOwner",p.getUUID());t.putUUID("UncannyMeal",UUID.randomUUID());});own.put("OriginalMeal",s.save(p.registryAccess()));
             }
         }
-        if(place==LabyrinthPlace.TUNNEL_PERIPHERY)create(p.serverLevel(),b,place,own,"CastGiant",LiteraryActor.UNCANNY_GIANT,new BlockPos(0,0,-71),p.getUUID());
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY)create(p.serverLevel(),b,place,own,"CastGiant",LiteraryActor.UNCANNY_GIANT,new BlockPos(0,0,TunnelPassage.extended(p.serverLevel(),b)?TunnelPassage.WALL+2:-71),p.getUUID());
         if(place==LabyrinthPlace.MISSING_SLEEP){var doll=create(p.serverLevel(),b,place,own,"CastDoll",LiteraryActor.UNCANNY_MARIONETTE,new BlockPos(1,5,-27),p.getUUID());if(doll!=null&&!own.getBoolean("DollBatGiven")){doll.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(UncannyRegistry.BAT.get()));own.putBoolean("DollBatGiven",true);}}
         if(place==LabyrinthPlace.MOTION_LIGHT)create(p.serverLevel(),b,place,own,"CastVisitor",LiteraryActor.UNCANNY_VISITOR,new BlockPos(0,0,-18),p.getUUID());
         if(place==LabyrinthPlace.LAYERED_MAN&&!own.getBoolean("HelpCalled127")&&!own.getBoolean("Completed")&&!failed(own)){
@@ -84,7 +84,7 @@ public final class UncannyStories {
         if(place==LabyrinthPlace.MOTION_LIGHT)FoyerMotion.dark(p.serverLevel(),b);
         if(place==LabyrinthPlace.LAYERED_MAN&&!failed(own)&&p.containerMenu==p.inventoryMenu)UncannyCellar.physical(p,b,own);
         if(place==LabyrinthPlace.SECOND_WAITRESS&&!own.getBoolean("Completed")&&!failed(own)){own.putInt("DinerPresence133",Math.min(72000,own.getInt("DinerPresence133")+5));if(p.containerMenu==p.inventoryMenu)DinerPlate.migrate(p,b,own);}
-        if(place==LabyrinthPlace.TUNNEL_PERIPHERY&&own.getBoolean("Completed")&&!own.getBoolean("TunnelExit130")&&p.getZ()<b.getZ()-70.5){own.putBoolean("TunnelExit130",true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),place,own);LabyrinthDoors.goToJunction(p);return;}
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY&&own.getBoolean("Completed")&&!own.getBoolean("TunnelExit130")&&p.getZ()<b.getZ()+TunnelPassage.exit(p.serverLevel(),b)){own.putBoolean("TunnelExit130",true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),place,own);LabyrinthDoors.goToJunction(p);return;}
         if(own.getBoolean("Completed")||failed(own)||p.containerMenu!=p.inventoryMenu)return;
         int age=Math.min(72000,own.getInt("UncannyAge")+5);own.putInt("UncannyAge",age);
         switch(place){
@@ -195,7 +195,7 @@ public final class UncannyStories {
         own.putDouble("LastX",p.getX());own.putDouble("LastZ",p.getZ());
         // Moving through real green signals is a route, even if the reader never
         // gives the dormant woman an unseen opportunity to appear behind them.
-        if(p.getZ()<b.getZ()-66&&(own.getInt("GreenSteps")>=5||p.getZ()<b.getZ()-70.5&&own.getInt("UncannyAge")>=160)){
+        if(p.getZ()<b.getZ()+TunnelPassage.pass(p.serverLevel(),b)&&(own.getInt("GreenSteps")>=5||p.getZ()<b.getZ()+TunnelPassage.exit(p.serverLevel(),b)&&own.getInt("UncannyAge")>=160)){
             own.putBoolean("TunnelPassed130",true);if(giant!=null){giant.appearance(LiteraryActor.UNCANNY_GIANT,0);giant.setDeltaMovement(Vec3.ZERO);}ready(p,LabyrinthPlace.TUNNEL_PERIPHERY,own,"passed_the_last_green_signal");return;
         }
         if(giant==null)return;
