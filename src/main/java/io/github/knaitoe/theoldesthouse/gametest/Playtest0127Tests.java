@@ -49,15 +49,15 @@ public final class Playtest0127Tests {
     @AfterBatch(batch="review127_mail") public static void mailDone(ServerLevel l){close();}
 
     @GameTest(template="empty",batch="review127_frames",timeoutTicks=500)
-    public static void touchingEitherFalseDoorHalfExaminesItAndItsAutomaticOpeningStillStopsANativeBody(GameTestHelper h){run(h,LabyrinthPlace.MOTION_LIGHT,(f,p)->{
-        var scene=LabyrinthPlace.MOTION_LIGHT;var peer=f.player("frame_peer127",scene);var l=f.level(scene);var b=f.base(scene);var rel=UncannyRooms.FALSE_DOORS.get(2);var at=b.offset(rel);
-        for(int y=0;y<2;y++)l.setBlock(at.above(y),UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,Direction.SOUTH).setValue(UncannyPropBlock.STAGE,y),3);
-        p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.at(p,scene,rel.getX()+.5,0,rel.getZ()+2.5);use(p,at);use(p,at.above());
+    public static void touchingEitherFalseDoorHalfExaminesItAndItsOpeningHasARealBodyWidthPassage(GameTestHelper h){run(h,LabyrinthPlace.MOTION_LIGHT,(f,p)->{
+        var scene=LabyrinthPlace.MOTION_LIGHT;var peer=f.player("frame_peer127",scene);var l=f.level(scene);var b=f.base(scene);var rel=UncannyRooms.FALSE_DOORS.getFirst();var at=b.offset(rel);
+        for(int y=0;y<2;y++)l.setBlock(at.above(y),UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,Direction.EAST).setValue(UncannyPropBlock.STAGE,y),3);
+        p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.at(p,scene,-2.8,0,rel.getZ()+.5);use(p,at);use(p,at.above());
         h.assertTrue(f.own(p,scene).getBoolean("FalseExamined")&&!f.own(peer,scene).getBoolean("FalseExamined"),"examination belongs to the actual reader");
         h.assertTrue(l.getBlockState(at).getValue(UncannyPropBlock.STAGE)==0&&l.getBlockState(at.above()).getValue(UncannyPropBlock.STAGE)==1,"neither half is opened by a hand");
         for(int y=0;y<2;y++)l.setBlock(at.above(y),l.getBlockState(at.above(y)).setValue(UncannyPropBlock.STAGE,y+2),3);
-        p.move(MoverType.SELF,new Vec3(0,0,-4));h.assertTrue(p.getZ()>at.getZ()+.6&&p.getY()>=b.getY(),"the visible black backing stops actual movement into the unbuilt space");
-        for(var facing:Direction.Plane.HORIZONTAL){var state=UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,facing).setValue(UncannyPropBlock.STAGE,2);h.assertTrue(!state.getCollisionShape(l,at).isEmpty(),"every automatic opening retains real backing: "+facing);}
+        p.move(MoverType.SELF,new Vec3(-2.4,0,0));h.assertTrue(p.getX()<b.getX()-4&&p.getY()>=b.getY()&&l.getBlockState(p.blockPosition().below()).is(Blocks.DARK_OAK_PLANKS),"the actual body passes the opened leaf into a supported, enclosed hallway");
+        for(var facing:Direction.Plane.HORIZONTAL){var state=UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,facing).setValue(UncannyPropBlock.STAGE,2);var shape=state.getCollisionShape(l,at);var middle=new AABB(.2,0,.2,.8,1,.8);h.assertTrue(!shape.isEmpty()&&shape.toAabbs().stream().noneMatch(middle::intersects),"the same visible leaf retains edge collision and clears an actual body in its centre: "+facing);}
     });}
     @AfterBatch(batch="review127_frames") public static void framesDone(ServerLevel l){close();}
 

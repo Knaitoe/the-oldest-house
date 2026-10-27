@@ -73,7 +73,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         boolean feed;public final ModelPart neck;
         public Model(ModelPart part,boolean slim){super(part,slim);neck=part.hasChild("bent_neck")?part.getChild("bent_neck"):null;}
         @Override protected Iterable<ModelPart> bodyParts(){return neck==null?super.bodyParts():com.google.common.collect.Iterables.concat(super.bodyParts(),java.util.List.of(neck));}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){boolean great=a.role()==LiteraryActor.UNCANNY_GIANT&&a.gesture()==1;if(a.role()==LiteraryActor.UNCANNY_GIANT){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/(great?6F:2.5F);amount=motion.amount();}pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch,great);if(!feed&&a.role()!=LiteraryActor.UNCANNY_WAITRESS)RecentActorMotion.blend(a,age,this);}
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){boolean great=a.role()==LiteraryActor.UNCANNY_GIANT&&a.gesture()==1;if(a.role()==LiteraryActor.UNCANNY_GIANT){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/(great?6F:2.5F);amount=motion.amount();}pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch,great);if(!feed&&a.role()!=LiteraryActor.UNCANNY_WAITRESS)RecentActorMotion.blend(a,age,this);if(a.role()==LiteraryActor.UNCANNY_VISITOR&&a.gesture()==1){rightArm.xRot=-1.4F+Mth.sin(age*1.9F)*.035F;rightArm.zRot=.08F;rightArm.z=1.6F;rightSleeve.copyFrom(rightArm);}}
         public void pose(int role,int phase,boolean feed,float age,float walk,float amount,float yaw,float pitch){
             pose(role,phase,feed,age,walk,amount,yaw,pitch,false);
         }
@@ -108,7 +108,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&feed){head.xRot=0;head.yRot=0;head.zRot=0;body.yRot=.04F*Mth.sin(age*.07F);}
             if(role==LiteraryActor.UNCANNY_PEELER){float breath=Mth.sin(age*(phase>=1?.17F:.09F));body.xRot=.27F+breath*(phase>=1?.045F:.015F);head.xRot=.24F+breath*.025F;if(phase<3){rightArm.xRot=phase>=1?-1.4F+Mth.sin(age*.21F)*.12F:-.8F-Mth.abs(Mth.sin(age*.27F));leftArm.xRot=-.65F;leftArm.zRot=phase>=1?Mth.sin(age*.71F)*.025F:0;}}
-            if(role==LiteraryActor.UNCANNY_VISITOR){leftLeg.xRot=phase>0?0:-step*.35F;rightLeg.xRot=phase>0?0:step*.35F;leftArm.xRot=phase>0?0:step*.08F;rightArm.xRot=phase>=3?-1.4F:phase>0?0:-step*.06F;rightArm.zRot=phase>=3?.08F:0;rightArm.z=phase>=3?1.6F:0;head.xRot=phase>=2?.12F:-.08F;body.xRot=phase>0?0:.015F*Mth.sin(age*.04F);}
+            if(role==LiteraryActor.UNCANNY_VISITOR){leftLeg.xRot=phase>0&&phase<4?0:-step*.35F;rightLeg.xRot=phase>0&&phase<4?0:step*.35F;leftArm.xRot=phase>0?0:step*.08F;rightArm.xRot=phase>=3?-1.4F:phase>0?0:-step*.06F;rightArm.zRot=phase>=3?.08F:0;rightArm.z=phase>=3?1.6F:0;head.xRot=phase>=2?.12F:-.08F;body.xRot=phase>0?0:.015F*Mth.sin(age*.04F);}
             hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
             hat.visible=feed||role==LiteraryActor.UNCANNY_WAITRESS||role==LiteraryActor.UNCANNY_FALSE_WAITRESS;
             jacket.visible=leftSleeve.visible=rightSleeve.visible=leftPants.visible=rightPants.visible=feed;

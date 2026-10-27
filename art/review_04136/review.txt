@@ -1,0 +1,1 @@
+Four actual native foyer exports: standoff, admitted glass door, hinged service exit and opened unhinged hallway. Production shared leaf/collision cuboids and saved pendulum angles. Full-bright geometry/material review; actual lighting, actors and client audio remain separate checks.

@@ -28,6 +28,7 @@ public final class UncannyClient {
         var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.player.isSpectator()){clear();return;}
         if(view.getString("Room").equals("missing_sleep")&&!payload.view().getString("Room").equals("missing_sleep"))UncannyCameras.clear();
         if(view.getString("Room").equals("tunnel_periphery")&&!payload.view().getString("Room").equals("tunnel_periphery"))TunnelAtmosphere.clear();
+        if(view.getString("Room").equals("motion_light")&&!payload.view().getString("Room").equals("motion_light"))FoyerAtmosphere.clear();
         view=payload.view().copy();world=mc.level;lease=20;
         if(view.getBoolean("OpenMonitor")&&room().equals("missing_sleep"))mc.setScreen(new UncannyCameras.MonitorScreen());
     }
@@ -35,6 +36,7 @@ public final class UncannyClient {
     public static String room(){return active()?view.getString("Room"):"";}
     public static BlockPos base(){return BlockPos.of(view.getLong("Base"));}
     public static boolean green(){return active()&&view.getBoolean("Green");}
+    public static float foyerWind(){return active()?view.getFloat("FoyerWind136"):0;}
     public static boolean mirror(){var p=Minecraft.getInstance().player;return active()&&view.getBoolean("Mirror")&&p!=null&&(p.getMainHandItem().is(UncannyRegistry.SMOKY_MIRROR.get())||p.getOffhandItem().is(UncannyRegistry.SMOKY_MIRROR.get()));}
     public static boolean ring(){var p=Minecraft.getInstance().player;return active()&&view.getBoolean("Ring")&&p!=null&&p.getOffhandItem().is(UncannyRegistry.BONE_RING.get());}
     public static float fov(){return fov;}
@@ -48,7 +50,7 @@ public final class UncannyClient {
         for(var t:view.getList("Sensed",Tag.TAG_COMPOUND))if(((CompoundTag)t).getInt("Id")==e.getId())return true;return false;
     }
     public static String intent(Entity e){for(var t:view.getList("Sensed",Tag.TAG_COMPOUND)){var row=(CompoundTag)t;if(row.getInt("Id")==e.getId())return row.getString("Intent");}return "";}
-    private static void clear(){TunnelAtmosphere.clear();view=new CompoundTag();lease=0;world=null;UncannyCameras.clear();}
+    private static void clear(){TunnelAtmosphere.clear();FoyerAtmosphere.clear();view=new CompoundTag();lease=0;world=null;UncannyCameras.clear();}
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event){clear();UncannyTextures.clear();}
     @SubscribeEvent public static void fov(ViewportEvent.ComputeFov event){if(!UncannyCameras.recording())fov=(float)event.getFOV();}
     @SubscribeEvent public static void rumble(ViewportEvent.ComputeCameraAngles event){

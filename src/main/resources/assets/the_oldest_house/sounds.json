@@ -2201,5 +2201,50 @@
         "stream": true
       }
     ]
+  },
+  "foyer.wind": {
+    "subtitle": "subtitles.the_oldest_house.foyer.wind",
+    "sounds": [
+      {
+        "name": "the_oldest_house:foyer/wind",
+        "stream": false
+      }
+    ]
+  },
+  "foyer.buzzer": {
+    "subtitle": "subtitles.the_oldest_house.foyer.buzzer",
+    "sounds": [
+      {
+        "name": "the_oldest_house:foyer/buzzer",
+        "stream": false
+      }
+    ]
+  },
+  "foyer.babble": {
+    "subtitle": "subtitles.the_oldest_house.foyer.babble",
+    "sounds": [
+      {
+        "name": "the_oldest_house:foyer/babble",
+        "stream": false
+      }
+    ]
+  },
+  "foyer.steps": {
+    "subtitle": "subtitles.the_oldest_house.foyer.steps",
+    "sounds": [
+      {
+        "name": "the_oldest_house:foyer/steps",
+        "stream": false
+      }
+    ]
+  },
+  "foyer.inside": {
+    "subtitle": "subtitles.the_oldest_house.foyer.inside",
+    "sounds": [
+      {
+        "name": "the_oldest_house:foyer/inside",
+        "stream": false
+      }
+    ]
   }
 }
