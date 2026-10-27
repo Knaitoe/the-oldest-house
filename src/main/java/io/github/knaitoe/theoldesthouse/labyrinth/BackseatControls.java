@@ -23,8 +23,6 @@ public final class BackseatControls {
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void strike(PlayerInteractEvent.LeftClickBlock e){
         if(e.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START||!(e.getEntity() instanceof ServerPlayer p))return;
-        var source=LabyrinthData.get(p.server).doorAt(p.level().dimension(),e.getPos());
-        if(source!=null&&BackseatSites.SOURCE.equals(source.destination)){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);BackseatSites.enter(p,source);return;}
         var car=BackseatCarBlock.root(p.level(),e.getPos());
         if(car!=null){e.setCanceled(true);if(car.mine(p)&&car.committed())car.rattle(p);}
     }
