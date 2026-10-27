@@ -318,5 +318,6 @@ public final class UncannyRooms {
         furnishing(l,b,6,0,-23,UncannyFurnitureBlock.Kind.BIN,Direction.WEST);
         furnishing(l,b,6,0,-21,UncannyFurnitureBlock.Kind.BIN,Direction.WEST);
         furnishing(l,b,6,2,-24,UncannyFurnitureBlock.Kind.VENT,Direction.WEST);
+        FoyerRefit.structure(l,b);
     }
 }

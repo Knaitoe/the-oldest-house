@@ -25,10 +25,11 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 /** Cutaways of server-generated scenes, rendered with the shipped native block models and textures. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class SceneVisualProof extends Screen {
-    private record Voxel(int x,int y,int z,BlockState state){}
+    private record Voxel(int x,int y,int z,BlockState state,float swing){}
     private final List<Path> files;
     private final boolean environment;
     private final boolean interiors;
+    private final boolean foyer;
     private static boolean environmentLaunched;
     private final List<Voxel> voxels=new ArrayList<>();
     private int index,frames;private String name;private double cx,cz,cy,span;private float viewYaw=-45;
@@ -36,16 +37,17 @@ public final class SceneVisualProof extends Screen {
     private static boolean dead(BlockState s){if(!s.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.PROP.get()))return false;var k=s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.KIND);return k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CARCASS||k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.GUEST_BODY||k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CREW_BODY;}
     @SubscribeEvent public static void launch(ClientTickEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();
-        if((Boolean.getBoolean("the_oldest_house.uncannyEnvironmentSmoke")||Boolean.getBoolean("the_oldest_house.interiorEnvironmentSmoke"))&&!environmentLaunched&&mc.screen!=null&&mc.getOverlay()==null){environmentLaunched=true;mc.options.guiScale().set(2);mc.resizeDisplay();mc.setScreen(new SceneVisualProof(true));}
+        if((Boolean.getBoolean("the_oldest_house.uncannyEnvironmentSmoke")||Boolean.getBoolean("the_oldest_house.interiorEnvironmentSmoke")||Boolean.getBoolean("the_oldest_house.foyerSmoke"))&&!environmentLaunched&&mc.screen!=null&&mc.getOverlay()==null){environmentLaunched=true;mc.options.guiScale().set(2);mc.resizeDisplay();mc.setScreen(new SceneVisualProof(true));}
     }
     public SceneVisualProof()throws Exception{this(false);}
     private SceneVisualProof(boolean environment)throws Exception{
         super(Component.literal("Native scene architecture"));
         this.environment=environment;
         interiors=environment&&Boolean.getBoolean("the_oldest_house.interiorEnvironmentSmoke");
+        foyer=environment&&Boolean.getBoolean("the_oldest_house.foyerSmoke");
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
-        try(var stream=Files.list(Path.of(interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+12:environment?11:99+UncannyRooms.PLACES.size();
+        try(var stream=Files.list(Path.of(foyer?"../build/foyer136-proof":interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
+        int expected=foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+12:environment?11:99+UncannyRooms.PLACES.size();
         if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier plus every uncanny room), found "+files.size());
         if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
         load();
@@ -55,9 +57,9 @@ public final class SceneVisualProof extends Screen {
         List<BlockState> palette=new ArrayList<>();for(var e:json.getAsJsonArray("palette"))palette.add(BlockState.CODEC.parse(JsonOps.INSTANCE,e).getOrThrow());
         voxels.clear();int x0=Integer.MAX_VALUE,x1=Integer.MIN_VALUE,z0=Integer.MAX_VALUE,z1=Integer.MIN_VALUE,y0=Integer.MAX_VALUE,y1=Integer.MIN_VALUE;
         for(var e:json.getAsJsonArray("blocks")){var a=e.getAsJsonArray();int x=a.get(0).getAsInt(),y=a.get(1).getAsInt(),z=a.get(2).getAsInt();
-            voxels.add(new Voxel(x,y,z,palette.get(a.get(3).getAsInt())));x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z);y0=Math.min(y0,y);y1=Math.max(y1,y);
+            voxels.add(new Voxel(x,y,z,palette.get(a.get(3).getAsInt()),a.size()>4?a.get(4).getAsFloat():0));x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z);y0=Math.min(y0,y);y1=Math.max(y1,y);
         }
-        cx=(x0+x1+1)/2.;cz=(z0+z1+1)/2.;cy=(y0+y1+1)/2.;span=Math.max((x1-x0+z1-z0+2)*.72,(y1-y0+1)*1.8);frames=0;
+        cx=(x0+x1+1)/2.;cz=(z0+z1+1)/2.;cy=(y0+y1+1)/2.;span=Math.max((x1-x0+z1-z0+2)*.72,(y1-y0+1)*1.8);if(foyer)span*=1.2;frames=0;
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float delta){}
     @Override public void render(GuiGraphics g,int x,int y,float delta){
@@ -69,7 +71,7 @@ public final class SceneVisualProof extends Screen {
         for(var v:voxels){pose.pushPose();pose.translate(v.x,v.y,v.z);
             if(v.state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.HANDLING.get()))VignetteHandlingRenderer.draw(v.state,io.github.knaitoe.theoldesthouse.labyrinth.VignetteHandlingGeometry.View.initial(),0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             else if(v.state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.DETAIL.get()))ServiceFittingRenderer.draw(v.state,0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
-            else if(v.state.is(UncannyRegistry.PROP.get()))UncannyPropRenderer.draw(v.state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+            else if(v.state.is(UncannyRegistry.PROP.get()))UncannyPropRenderer.draw(v.state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,v.swing);
             else if(v.state.is(io.github.knaitoe.theoldesthouse.labyrinth.NovelRegistry.WELL_COVER.get()))WellCoverRenderer.draw(0,false,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             else if(v.state.is(net.minecraft.world.level.block.Blocks.WATER))water(pose,buffers,v.state);else if(v.state.getBlock() instanceof net.minecraft.world.level.block.BedBlock bed){if(v.state.getValue(net.minecraft.world.level.block.BedBlock.PART)==net.minecraft.world.level.block.state.properties.BedPart.FOOT){var entity=(net.minecraft.world.level.block.entity.BedBlockEntity)bed.newBlockEntity(net.minecraft.core.BlockPos.ZERO,v.state);mc.getBlockEntityRenderDispatcher().getRenderer(entity).render(entity,0,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);}}else if(dead(v.state)){var kind=v.state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.KIND);long seed=net.minecraft.util.Mth.getSeed(v.x,v.y,v.z);
                 // The carcasses and the dead are drawn by their block entity renderer in play; draw them the same way here.
@@ -86,9 +88,10 @@ public final class SceneVisualProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof SceneVisualProof s)||(!s.environment&&!Boolean.getBoolean("the_oldest_house.fontSmoke"))||++s.frames<3)return;
-        Path folder=Path.of(s.interiors?"../build/font-smoke/interior-environments":s.environment?"../build/font-smoke/uncanny-environments":"../build/font-smoke/scenes");Files.createDirectories(folder);
-        try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));}
+        Path folder=Path.of(s.foyer?"../build/foyer136-art":s.interiors?"../build/font-smoke/interior-environments":s.environment?"../build/font-smoke/uncanny-environments":"../build/font-smoke/scenes");Files.createDirectories(folder);
+        try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));if(s.foyer){var colors=new HashSet<Integer>();for(int y=image.getHeight()/5;y<image.getHeight()*4/5;y+=3)for(int x=image.getWidth()/5;x<image.getWidth()*4/5;x+=3)colors.add(image.getPixelRGBA(x,y));if(colors.size()<15)throw new IllegalStateException("Blank native foyer view: "+s.name);}}
         if(++s.index<s.files.size())s.load();else{
+            if(s.foyer){Files.writeString(folder.resolve("passed.txt"),"Four actual native foyer exports: standoff, admitted glass door, hinged service exit and opened unhinged hallway. Production shared leaf/collision cuboids and saved pendulum angles. Full-bright geometry/material review; actual lighting, actors and client audio remain separate checks.\n");mc.stop();return;}
             if(s.interiors){Files.writeString(Path.of("../build/font-smoke/interior-environments-passed.txt"),"Fourteen actual native rooms, four floor-specific cutaways, four selected domestic extensions with finite household records, the quiet room, steel dumpster and two institute shelf/window close-ups. Full bright architecture views; not a lighting proof.\n");mc.setScreen(new DomesticAssetProof());return;}
             if(s.environment){Files.writeString(Path.of("../build/font-smoke/uncanny-environments-passed.txt"),"Eleven native room, kitchen, bathroom, exterior and floor-specific cutaways rendered with shipped textures and collision-authored models. Full-bright views; not a lighting proof.\n");mc.setScreen(new UncannyAssetProof());return;}
             Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All "+s.files.size()+" native generated architecture views rendered successfully, including the 99 earlier views and all six uncanny rooms.\n");

@@ -80,7 +80,9 @@ public final class UncannyStories {
     }
     public static void reader(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){
         if(!LiteraryVignettes.participant(p)||!LiteraryVignettes.inside(p,place))return;
-        arrive(p,place,own);observe(p,b,place,own);UncannyReading.resolve(p,place,own);
+        arrive(p,place,own);observe(p,b,place,own);
+        if(place==LabyrinthPlace.MOTION_LIGHT){FoyerEncounter.tick(p,b,own);return;}
+        UncannyReading.resolve(p,place,own);
         if(place==LabyrinthPlace.MOTION_LIGHT)FoyerMotion.dark(p.serverLevel(),b);
         if(place==LabyrinthPlace.LAYERED_MAN&&!failed(own)&&p.containerMenu==p.inventoryMenu)UncannyCellar.physical(p,b,own);
         if(place==LabyrinthPlace.SECOND_WAITRESS&&!own.getBoolean("Completed")&&!failed(own)){own.putInt("DinerPresence133",Math.min(72000,own.getInt("DinerPresence133")+5));if(p.containerMenu==p.inventoryMenu)DinerPlate.migrate(p,b,own);}
@@ -246,33 +248,7 @@ public final class UncannyStories {
         }
     }
     private static void cellar(ServerPlayer p,BlockPos b,CompoundTag own){UncannyCellar.tick(p,b,own);}
-    private static void foyer(ServerPlayer p,BlockPos b,CompoundTag own){
-        var place=LabyrinthPlace.MOTION_LIGHT;int age=own.getInt("UncannyAge");if(age==0)return;
-        var shared=world(p.serverLevel(),b,place);long now=p.serverLevel().getGameTime();if(shared.getLong("Tick")!=now){shared.putLong("Tick",now);shared.putInt("Age",shared.getInt("Age")+5);world(p.serverLevel(),b,place,shared);}
-        boolean dark=FoyerMotion.dark(p.serverLevel(),b);var lamp=b.offset(UncannyRooms.FLOOD);
-        if(own.getBoolean("LastDark")!=dark){own.putBoolean("LastDark",dark);if(dark){own.putInt("DarkSeen",own.getInt("DarkSeen")+1);own.putInt("FoyerStill131",own.getInt("FoyerStill131")+1);}heard(p,SoundEvents.IRON_TRAPDOOR_CLOSE,Vec3.atCenterOf(lamp),.25F,.8F);}
-        if(ambient(p,own,"NextBuzzerSound",age,180,140))heard(p,SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(),Vec3.atCenterOf(b.offset(UncannyRooms.INTERCOM)),.18F,.65F);
-        FoyerPresence.tick(p,b,own,dark);
-        if(dark){
-            boolean all=true;for(var rel:UncannyRooms.FALSE_DOORS){var at=b.offset(rel);if(LiteraryVignettes.watched(p.serverLevel(),at.getCenter())){all=false;continue;}var s=p.serverLevel().getBlockState(at);if(s.is(UncannyRegistry.PROP.get())&&s.getValue(UncannyPropBlock.KIND)==FALSE_DOOR)continue;if(s.is(Blocks.SMOOTH_SANDSTONE)||s.is(UncannyRegistry.material("lobby_wall"))||s.isAir()){p.serverLevel().setBlock(at,UncannyPropBlock.of(FALSE_DOOR,rel.getX()<0?Direction.EAST:Direction.SOUTH),F);p.serverLevel().setBlock(at.above(),UncannyPropBlock.of(FALSE_DOOR,rel.getX()<0?Direction.EAST:Direction.SOUTH).setValue(UncannyPropBlock.STAGE,1),F);}}
-            own.putBoolean("FalseDoors",all);
-        }
-        {
-            // "Don't back up without looking behind you first." In the dark, a frame the reader is not facing clicks open;
-            // it shuts again with the light. A hand can examine it, but cannot open it.
-            int auto=own.getInt("FalseAuto");
-            for(int i=0;i<UncannyRooms.FALSE_DOORS.size();i++){
-                var at=b.offset(UncannyRooms.FALSE_DOORS.get(i));var lower=p.serverLevel().getBlockState(at);
-                if(!lower.is(UncannyRegistry.PROP.get())||lower.getValue(UncannyPropBlock.KIND)!=FALSE_DOOR)continue;int bit=1<<i;
-                boolean behind=UncannySenses.angle(p,at.getCenter())>UncannySenses.halfFov(p);
-                if(dark&&behind&&(auto&bit)==0&&lower.getValue(UncannyPropBlock.STAGE)<2){falseDoor(p.serverLevel(),at,true);auto|=bit;heard(p,SoundEvents.WOODEN_TRAPDOOR_OPEN,at.getCenter(),.2F,.6F);}
-                else if(!dark&&(auto&bit)!=0){falseDoor(p.serverLevel(),at,false);auto&=~bit;}
-            }
-            own.putInt("FalseAuto",auto);
-        }
-        if(p.getX()>b.getX()+4.6&&p.getZ()<b.getZ()-3&&p.getZ()>b.getZ()-8&&own.getBoolean("HingeSeen")&&(own.getBoolean("VisitorSeen")||own.getBoolean("FalseExamined")))ready(p,place,own,"opened_the_hinged_service_door");
-    }
-    private static void falseDoor(ServerLevel l,BlockPos at,boolean open){for(int y=0;y<2;y++){var s=l.getBlockState(at.above(y));if(s.is(UncannyRegistry.PROP.get())&&s.getValue(UncannyPropBlock.KIND)==FALSE_DOOR)l.setBlock(at.above(y),s.setValue(UncannyPropBlock.STAGE,(open?2:0)+y),F);}}
+    private static void foyer(ServerPlayer p,BlockPos b,CompoundTag own){FoyerEncounter.tick(p,b,own);}
     public static String sign(ServerPlayer p,BlockPos b,CompoundTag own){
         var place=LiteraryVignettes.current(p);if(place==LabyrinthPlace.TUNNEL_PERIPHERY){
             // "They stopped flashing detour warnings ten minutes ago. Now they just flicker on and off, counting down how many steps I have left."
@@ -315,7 +291,8 @@ public final class UncannyStories {
         }
         if(place==LabyrinthPlace.MOTION_LIGHT){
             if(rel.equals(FoyerMotion.PULL))return FoyerMotion.pull(p,b,own);
-            if(rel.equals(UncannyRooms.INTERCOM)){if(!own.getBoolean("Read_Source")&&!own.getBoolean("BuzzerWarned")){own.putBoolean("BuzzerWarned",true);cue(p,"Black marker beside the panel: do not touch the brass button.");return true;}caught(p,b,place,own,"pressed_the_buzzer_release");return true;}
+            if(rel.equals(UncannyRooms.INTERCOM)){FoyerEncounter.admit(p,b,own,"pressed_the_buzzer_release");return true;}
+            if(rel.equals(FoyerEncounter.GLASS_DOOR)||rel.equals(FoyerEncounter.GLASS_DOOR.above())){FoyerEncounter.admit(p,b,own,"opened_the_courtyard_door");return true;}
             if(rel.equals(UncannyRooms.HINGED)||rel.equals(UncannyRooms.HINGED.above())){own.putBoolean("HingeSeen",true);setDoor(p.serverLevel(),b.offset(UncannyRooms.HINGED),true);return true;}
             if((UncannyRooms.FALSE_DOORS.contains(rel)||UncannyRooms.FALSE_DOORS.stream().anyMatch(r->r.above().equals(rel)))&&p.serverLevel().getBlockState(b.offset(rel)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(rel)).getValue(UncannyPropBlock.KIND)==FALSE_DOOR){own.putBoolean("FalseExamined",true);cue(p,"The frame has no hinge pins.");return true;}
         }

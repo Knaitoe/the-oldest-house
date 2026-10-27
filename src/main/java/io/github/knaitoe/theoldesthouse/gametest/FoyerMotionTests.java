@@ -32,21 +32,21 @@ public final class FoyerMotionTests {
         var f=new LiteraryTests.Fixture(h);fixture=f;var p=f.player("chain_reader",PLACE);var peer=f.player("chain_peer",PLACE);var l=f.level(PLACE);var b=f.base(PLACE);
         f.chunks.hold(l,IndianLakeRooms.bounds(b,PLACE));UUID[] original={null};double[] firstZ={0},angle={0};int[] firstStill={0};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual yard and motion fitting are resident"))
-        .thenWaitUntil(()->h.assertTrue(dark(f)&&f.own(p,PLACE).getInt("FoyerStill131")==1,"the initial physical motion decays into the first stillness"))
+        .thenWaitUntil(()->{var a=UncannyStories.actor(p,f.own(p,PLACE),"CastVisitor");h.assertTrue(dark(f)&&f.own(p,PLACE).getInt("FoyerStill131")==1&&a!=null&&a.phase()==1,"the first gust decays and the sounds precede the original visitor");})
         .thenExecute(()->{
             var a=UncannyStories.actor(p,f.own(p,PLACE),"CastVisitor");h.assertTrue(a!=null&&a.phase()==1,"first stillness reveals the original quiet visitor");original[0]=a.getUUID();firstZ[0]=a.getZ();firstStill[0]=f.own(p,PLACE).getInt("FoyerStill131");
             f.at(p,PLACE,-1.5,0,-11.5);f.at(peer,PLACE,1.5,0,-11.5);
-        }).thenIdle(260).thenExecute(()->{
-            h.assertTrue(dark(f)&&f.own(p,PLACE).getInt("FoyerStill131")==firstStill[0],"walking and another complete old timer interval cannot restart the floodlight");
+        }).thenIdle(40).thenExecute(()->{
+            h.assertTrue(dark(f)&&f.own(p,PLACE).getInt("FoyerStill131")==firstStill[0],"walking during the actual wind lull cannot renew the physical sensor");
             var a=UncannyStories.actor(p,f.own(p,PLACE),"CastVisitor");h.assertTrue(a.getZ()==firstZ[0],"the visitor remains physically still in darkness");
             pull(f,p);var motion=FoyerMotion.fitting(l,b);angle[0]=motion.swing.sample(l.getGameTime()).angle();
             h.assertTrue(!dark(f)&&motion.swing.pulls()==1&&f.own(p,PLACE).getInt("FoyerPulls131")==1&&f.own(peer,PLACE).getInt("FoyerPulls131")==0,"actual native chain use starts shared light and records only its reader's pull");
         }).thenIdle(15).thenExecute(()->h.assertTrue(Math.abs(FoyerMotion.fitting(l,b).swing.sample(l.getGameTime()).angle()-angle[0])>.01,"the real fitting moves after the reader stops moving"))
-        .thenWaitUntil(()->h.assertTrue(dark(f)&&f.own(p,PLACE).getInt("FoyerStill131")==2,"the moving object settles and the physical sensor stops renewing the lamp"))
+        .thenWaitUntil(()->{var a=UncannyStories.actor(p,f.own(p,PLACE),"CastVisitor");h.assertTrue(dark(f)&&f.own(p,PLACE).getInt("FoyerStill131")>=2&&a!=null&&a.phase()==2,"actual force and settling reveal the original closer to the glass");})
         .thenExecute(()->{
             var a=UncannyStories.actor(p,f.own(p,PLACE),"CastVisitor");h.assertTrue(a.getUUID().equals(original[0])&&a.phase()==2&&a.getZ()>firstZ[0]+1,"second stillness reveals the same visitor closer to the glass");
             pull(f,p);
-        }).thenWaitUntil(()->h.assertTrue(dark(f)&&f.own(p,PLACE).getInt("FoyerStill131")==3,"a second real pull and settling produce the third stillness"))
+        }).thenWaitUntil(()->{var a=UncannyStories.actor(p,f.own(p,PLACE),"CastVisitor");h.assertTrue(dark(f)&&f.own(p,PLACE).getInt("FoyerStill131")>=3&&a!=null&&a.phase()==3,"wind and the optional second pull produce the final stillness");})
         .thenExecute(()->{
             var a=UncannyStories.actor(p,f.own(p,PLACE),"CastVisitor");var other=UncannyStories.actor(peer,f.own(peer,PLACE),"CastVisitor");
             h.assertTrue(a.getUUID().equals(original[0])&&a.phase()==3&&a.getZ()>b.getZ()-15.2&&l.noCollision(a,a.getBoundingBox()),"the original holds one hand toward the glass from a real collision-free footing");

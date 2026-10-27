@@ -22,8 +22,8 @@ import net.neoforged.neoforge.client.event.*;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class UncannySocketClient {
     private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,motionPulls,terrainStep=-1,terrainSentAge=-1000;private static String extraShot,shot;private static boolean archiveRequested;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
-    private static boolean trafficHeard;private static net.minecraft.client.resources.sounds.SimpleSoundInstance vanillaTunnel;
-    @SubscribeEvent public static void traffic(net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent e){if(UncannySocketProof.enabled()&&e.getSound()!=null&&e.getSound().getLocation().toString().equals(TheOldestHouse.MOD_ID+":tunnel_traffic"))trafficHeard=true;}
+    private static boolean trafficHeard,foyerWindHeard,foyerBabbleHeard,foyerBuzzerHeard;private static net.minecraft.client.resources.sounds.SimpleSoundInstance vanillaTunnel;
+    @SubscribeEvent public static void traffic(net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent e){if(!UncannySocketProof.enabled()||e.getSound()==null)return;switch(e.getSound().getLocation().toString()){case TheOldestHouse.MOD_ID+":tunnel_traffic"->trafficHeard=true;case TheOldestHouse.MOD_ID+":foyer.wind"->foyerWindHeard=true;case TheOldestHouse.MOD_ID+":foyer.babble"->foyerBabbleHeard=true;case TheOldestHouse.MOD_ID+":foyer.buzzer"->foyerBuzzerHeard=true;default->{}}}
     private UncannySocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("UNCANNY CLIENT: "+message);}
@@ -146,7 +146,7 @@ public final class UncannySocketClient {
                 if(!dark&&motionPulls>0&&!captures.contains("15:foyer-swing")){look(mc,b.offset(FoyerMotion.PENDULUM).getCenter());shot=role()+"-foyer-swing";return;}
                 if(dark&&visitor.phase()>=3&&!captures.contains("15:foyer-palm")){shot=role()+"-foyer-palm";return;}
                 if(dark&&lightTicks>=50&&role().equals("A")&&motionPulls<2&&data.getInt("FoyerStillness")>motionPulls&&age-clicked>=25){click(mc,b.offset(FoyerMotion.PULL));motionPulls++;}
-                if(data.getInt("FoyerStillness")>=3&&captures.contains("15:foyer-dark")&&captures.contains("15:foyer-lit")&&captures.contains("15:foyer-palm"))ack(mc,"foyer-cycles");
+                if(data.getInt("FoyerStillness")>=3&&captures.contains("15:foyer-dark")&&captures.contains("15:foyer-lit")&&captures.contains("15:foyer-palm")){require(foyerWindHeard&&foyerBabbleHeard&&foyerBuzzerHeard&&FoyerAtmosphere.active(),"wind, unseen babble and the actual buzzer reach native client audio sources");ack(mc,"foyer-cycles");}
             }
         }
         if(phase==16){

@@ -418,5 +418,10 @@
   "block.the_oldest_house.silo_timber": "Silo Timber",
   "block.the_oldest_house.silo_ladder": "Silo Ladder",
   "block.the_oldest_house.silo_hatch": "Silo Hatch",
-  "block.the_oldest_house.silo_paper": "Silo Paper"
+  "block.the_oldest_house.silo_paper": "Silo Paper",
+  "subtitles.the_oldest_house.foyer.wind": "Wind worries the courtyard",
+  "subtitles.the_oldest_house.foyer.buzzer": "The entry buzzer rasps",
+  "subtitles.the_oldest_house.foyer.babble": "Indistinct babble through the intercom",
+  "subtitles.the_oldest_house.foyer.steps": "Gravel shifts in the dark",
+  "subtitles.the_oldest_house.foyer.inside": "Breathing inside the vestibule"
 }

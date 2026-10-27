@@ -434,6 +434,7 @@ public final class LabyrinthDoors {
         depart(player,place);sendBack(player,4,10,24);return true;
     }
     private static void depart(ServerPlayer player, LabyrinthPlace place) {if(place==LabyrinthPlace.SILO)SiloSites.depart(player);if(place==LabyrinthPlace.BORRASCA)BorrascaStory.depart(player);
+        if(place==LabyrinthPlace.MOTION_LIGHT)FoyerEncounter.stop(player);
         if(place==LabyrinthPlace.LAKE_HOUSE||place==LabyrinthPlace.LAKE_HOUSE_EMPTY)LakeHouseStory.depart(player);
         if (place == LabyrinthPlace.GHOSTS_SET) GhostsSet.depart(player);
         if (place == LabyrinthPlace.HARRIGAN) HarriganVignette.onDepart(player);
@@ -487,6 +488,7 @@ public final class LabyrinthDoors {
         Consumer<ServerPlayer> confirmedReturn=p->{
             if(!LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back))return;
             UncannyDiner.returned(p,entry);
+            FoyerEncounter.returned(p,entry);
             caveDeparture.accept(p);if(entry.id.equals("borrasca/"+p.getUUID()+"/entry"))BorrascaStory.returned(p);
             INSIDE.remove(p.getUUID());
             io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(p);

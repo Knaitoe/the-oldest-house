@@ -29,9 +29,7 @@ public final class UncannyPropBlock extends BaseEntityBlock {
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
         return switch(s.getValue(KIND)){
             case FLESH->Shapes.block();
-            // The opened leaf reveals a solid black recess, not a route into the
-            // unbuilt space outside the room. This also protects existing saves.
-            case FALSE_DOOR->s.getValue(FACING).getAxis()==Direction.Axis.Z?box(0,0,6,16,16,10):box(6,0,0,10,16,16);
+            case FALSE_DOOR->FoyerDoorGeometry.shape(s);
             case PAINTED_BOARD,SUN_BOARD->s.getValue(FACING).getAxis()==Direction.Axis.Z?box(0,0,6,16,16,10):box(6,0,0,10,16,16);
             case REGISTER,MONITOR->box(1,0,2,15,13,14);
             case PIE_CASE->box(0,0,0,16,15,16);

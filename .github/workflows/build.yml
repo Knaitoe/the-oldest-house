@@ -1443,6 +1443,58 @@ jobs:
             run-borrasca-live/*/logs/latest.log
             run-borrasca-live/*/crash-reports/
 
+  foyer-gameplay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Decode the original wind, buzzer and unseen courtyard cues
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python3 -m pip install numpy
+          python3 tools/generate_foyer_audio.py --check
+      - name: Native foyer wind, original custody, admission, wrong hallway and actual House returns
+        timeout-minutes: 10
+        run: |
+          mkdir -p build
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 9m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny,the_oldest_house_foyer -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/foyer136-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          files=Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest').glob('*.java')
+          names=[p for p in files if re.search(r'@GameTestHolder\s*\(\s*TheOldestHouse\.MOD_ID\s*\+\s*"(?:_uncanny|_foyer)"',p.read_text())]
+          declared=sum(len(re.findall(r'@GameTest\s*\(',p.read_text())) for p in names)
+          complete=re.findall(r'All (\d+) required tests passed',Path('build/foyer136-native.log').read_text())
+          assert complete and int(complete[-1])==declared,(declared,complete)
+          PY
+      - name: Four native foyer views from the actual outcome cases
+        timeout-minutes: 5
+        run: |
+          test "$(find build/foyer136-proof -maxdepth 1 -name '*.json' | wc -l)" -eq 4
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PfoyerSmoke --no-daemon
+          test -s build/foyer136-art/passed.txt
+          for view in standoff admitted service_exit unhinged_hall; do test -s build/foyer136-art/foyer_$view.png; done
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: foyer136-native-${{ github.sha }}
+          path: |
+            build/foyer136-native.log
+            build/foyer136-proof/
+            build/foyer136-art/
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
+
   silo-native:
     runs-on: ubuntu-latest
     steps:

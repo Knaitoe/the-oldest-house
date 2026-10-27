@@ -110,7 +110,7 @@ public final class LiteraryVignettes {
                 // An account answers its source: said aloud, rather than silently not counting.
                 if(place!=LabyrinthPlace.BORRASCA&&!UncannyRooms.isUncanny(place)&&key.equals("Ending")&&own.getBoolean("Ready")&&!own.getBoolean("Read_Source")&&!own.getBoolean("Completed")){var source=LiteraryTexts.source(place).get(DataComponents.WRITTEN_BOOK_CONTENT);
                     reader.displayClientMessage(Component.literal("This account answers \""+(source==null?"the first paper":source.title().raw())+"\". Read that first, then read this again."),false);}
-                if(place!=LabyrinthPlace.BORRASCA&&key.equals("Ending")&&inside(reader,place)&&(UncannyRooms.isUncanny(place)||own.getBoolean("Read_Source"))&&own.getBoolean("Ready")&&!own.getBoolean("Completed")){var story=WitnessAccount.Story.of(place.id());if(story!=null){WitnessAccount.resolve(reader,story,own.getString("Outcome"));own.putBoolean("Completed",true);d.setCompleted(place.id(),true);finishReward(reader,place,own);}}
+                if(place!=LabyrinthPlace.BORRASCA&&place!=LabyrinthPlace.MOTION_LIGHT&&key.equals("Ending")&&inside(reader,place)&&(UncannyRooms.isUncanny(place)||own.getBoolean("Read_Source"))&&own.getBoolean("Ready")&&!own.getBoolean("Completed")){var story=WitnessAccount.Story.of(place.id());if(story!=null){WitnessAccount.resolve(reader,story,own.getString("Outcome"));own.putBoolean("Completed",true);d.setCompleted(place.id(),true);finishReward(reader,place,own);}}
                 save(d,reader.getUUID(),place,own);
             }}
     }
@@ -246,6 +246,7 @@ public final class LiteraryVignettes {
         return true;
     }
     public static boolean retreatLocked(ServerPlayer p) {
+        if(inside(p,LabyrinthPlace.MOTION_LIGHT)&&FoyerEncounter.held(personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.MOTION_LIGHT)))return true;
         if(UncannyStories.locked(p))return true;
         if(ElkLotEnding.held(p))return true;
         if (LakeHouse.inside(p)&&personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.LAKE_HOUSE).getInt("Finish")>0)return true;

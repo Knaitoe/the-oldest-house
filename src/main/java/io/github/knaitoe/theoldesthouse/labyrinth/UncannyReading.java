@@ -102,6 +102,7 @@ public final class UncannyReading {
     }
     public static boolean readPassage(CompoundTag own){for(int i=0;i<5;i++)if(own.getBoolean("Read_"+KEY+i))return true;return false;}
     public static void resolve(ServerPlayer p,LabyrinthPlace place,CompoundTag own){
+        if(place==LabyrinthPlace.MOTION_LIGHT)return;
         if(!LiteraryVignettes.participant(p)||!LiteraryVignettes.inside(p,place)||!own.getBoolean("Ready")||own.getBoolean("Completed")||UncannyStories.failed(own))return;
         var story=WitnessAccount.Story.of(place.id());if(story==null)return;var d=LabyrinthData.get(p.server);
         WitnessAccount.resolve(p,story,own.getString("Outcome"));own.putBoolean("Completed",true);d.setCompleted(place.id(),true);UncannyStories.finishReward(p,place,own);LiteraryVignettes.save(d,p.getUUID(),place,own);

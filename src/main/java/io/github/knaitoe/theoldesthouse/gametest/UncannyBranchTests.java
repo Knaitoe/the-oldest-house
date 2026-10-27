@@ -86,7 +86,7 @@ public final class UncannyBranchTests {
             .thenExecute(()->{f.at(p,place,0,0,-10);f.look(p,f.base(place).offset(0,1,-20));})
             .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("FoyerStill131")==1&&f.level(place).getBlockState(f.base(place).offset(UncannyRooms.FALSE_DOORS.get(1))).is(UncannyRegistry.PROP.get()),"actual first stillness reveals a real unhinged frame"))
             .thenExecute(()->{f.click(p,place,UncannyRooms.FALSE_DOORS.get(1));f.at(p,place,3.5,0,-4.5);door(f,p,place,UncannyRooms.HINGED);p.move(MoverType.SELF,new Vec3(2,0,0));var own=step(f,p,place);
-                h.assertTrue(own.getBoolean("Completed")&&own.getBoolean("FalseExamined")&&own.getInt("DarkSeen")<2&&!own.getBoolean("Read_Source"),"the physical hinge investigation and departure require no second pull or archive reading");}).thenSucceed();
+                h.assertTrue(!own.getBoolean("Completed")&&!own.getBoolean("Ready")&&own.getBoolean("FalseExamined")&&own.getInt("DarkSeen")<2&&!own.getBoolean("Read_Source"),"inspecting a frame and crossing the inner service door confer nothing before an actual House return");}).thenSucceed();
     }
     @AfterBatch(batch="branch_foyer") public static void foyerDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="branch_abandon",timeoutTicks=300) public static void sealingTheCellarRequiresPersonallyEnteringAndSeeingTheWorker(GameTestHelper h){run(h,LabyrinthPlace.LAYERED_MAN,(f,p)->{
