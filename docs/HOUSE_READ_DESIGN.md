@@ -1,6 +1,6 @@
 # The House gets a read on you
 
-Status: design only, not built (October 27). The concept, the five rooms and their texts are the owner's; the texts are quoted exactly. This document adds how each room is built and watched, what the House keeps, how co-op works, how the House shows its version of the reader, and where the read pays off. It also sets the bar for whether the idea is worth building, and a first slice to test that.
+Status: design only, not built (October 27). The concept, the five rooms and their texts are the owner's; the texts are quoted exactly. The owner's answers to the six open questions are incorporated (listed at the end). This document adds how each room is built and watched, what the House keeps, how co-op works, how the House shows its version of the reader, and where the read pays off. It also sets the bar for whether the idea is worth building, and a first slice to test that.
 
 ## The idea
 
@@ -26,7 +26,14 @@ The cost is mostly writing. Every place that reads a category needs its present 
 - **The first instinct counts.** What sets a category is the first deliberate act in the room's window. Later poking around is kept as an observation only.
 - **Each reader is alone.** Every reader gets their own copy of each room (see "Co-op"), so the House only ever watches one person and nobody's habits are filed under someone else.
 - **Private.** Figures are owner-bound actors, sounds are private (`LiteraryVignettes.heard`), and nothing about a reader's categories is shown or said to anyone else.
-- **The notes come after.** Each room's text describes the test. Read beforehand, it tips the reader off; read afterwards, it is the House remarking on what it just watched. Each note stays where the owner placed it but can be read only once the room's first signal has been recorded (or its window has closed). Before that it shows its blank side: a postcard's picture, a calendar's month, a folded slip, the song strips, plain wood.
+- **The notes come after, without leaving the room.** Each room's text describes the test, so read beforehand it would tip the reader off. Each note stays in the object the owner placed it in, showing its blank side first:
+  - the postcard in the mirror frame shows a picture of a lake;
+  - the calendar behind the reception glass shows only its month;
+  - the slip in the umbrella stand is folded;
+  - the jukebox lid shows only its song strips;
+  - the porch rail is plain wood.
+
+  Once the room's first signal is recorded (or its window closes), the note gains its writing the next time the reader isn't looking at it. Looking back, the postcard has handwriting on it. As everywhere in the House, the change is never seen happening.
 - **Non-horror.** None of the five ends badly. The unsettling part comes later, when other rooms turn out to know.
 
 ## The first rooms
@@ -65,7 +72,7 @@ Observations are never revised and never shown to anyone except, in the reader's
 |---|---|---|
 | Unknown | No signal, or the reader skipped the room | ...behave exactly as they do today |
 | Tentative | One signal | ...make small changes: a prop, a line, a song |
-| Settled | Two signals that agree | ...make larger changes: the partner, the table setting, pronouns, the order of rooms |
+| Settled | Two signals that agree | ...make larger changes: the partner, the table setting, how strangers address the reader, the order of rooms, how authority figures behave |
 | Uncertain | Signals disagree | ...behave as if unknown until a later signal breaks the tie |
 
 A later signal that agrees raises a category to settled; one that disagrees makes it uncertain; the next decides. Categories can therefore change, and no misread is permanent.
@@ -137,7 +144,7 @@ A small, warm bathroom in an older house at eleven at night. Rain taps against t
 - **First signal (tentative):** the first item touched sets `HAIR` from its set.
 - **Second signal (settled):** a second item from the same set. Running the hot tap settles only Set D, whose washcloth hangs over the faucet; for the other sets the tap is an observation.
 - **The light switch** opens the bedroom door whatever has been touched. Turning it off having touched nothing records *turned the light off without touching anything*.
-- C and D are also gender-coded (the claw clip, the pomade). That is kept as a weak cross-check for `SELF` and never sets it.
+- **`HAIR` stops at the routine.** Nothing else is ever inferred from it: no heritage or race label, and no cross-check for any other trait. The objects speak for themselves wherever the routine comes back.
 
 ### Text (owner's; on the back of a postcard wedged into the corner of the mirror frame)
 
@@ -168,7 +175,7 @@ A quiet front vestibule or mudroom just inside the front door of a warm country 
 
   Turning takes a deliberate use, because readers click everything once.
 - **The coat stays.** Passing through the curtain hangs the borrowed layers on the parlour hook. Worn out into the House, other readers would see them, and the choice would stop being private.
-- **A coat is presentation, not identity.** `SELF` is what the House saw, and other rooms use it with care (see "Pronouns and address").
+- **A coat is presentation, not identity.** `SELF` is what the House saw. Only strangers who speak react to it, the way strangers judge by how someone presents; the House's own writing never does (see "Address").
 
 ### Text (owner's; tucked into the brass umbrella stand by the door)
 
@@ -196,6 +203,7 @@ The jukebox has one free credit. Using it, or simply crossing the floor, starts 
   - in the same light;
   - each moving the same amount (her finger on the bottle, his collar against the wind).
 - **Their age** follows the reader's `AGE` when known (tentative is enough): young adults for `DIGITAL`, around forty for `TRANSITIONAL`, older for `ANALOG`. Otherwise they are young adults.
+- **They are unnamed in the shelter.** Any text that mentions them calls them *the boy by the rail* and *the girl with the bottle*, or *the man* and *the woman* for `TRANSITIONAL` and `ANALOG` readers. If a later room needs names, they are Tommy and Katie, from the owner's notes on the road and youth. For older readers the same names can grow up (Tom and Kate is a proposal for the owner).
 - **The rowboat isn't rideable,** because boats are a magnet for Minecraft players, and boat lovers would read as `NO_ONE`. The dock and lantern are a quiet place to stand.
 - **The way on is behind the jukebox,** so leaving doesn't pass either rail or the dock.
 - **First signal (tentative),** measured while the music plays:
@@ -288,11 +296,18 @@ Every fact the leaves use is an observation, so the book never states a category
 
 ### The personal account
 
-The account opens with the House reciting the habits back, from observations only, in the House's voice. For example:
+The account opens with the House reciting the habits back, from observations only, in the House's voice. It reads as one breath of prose, the way a person remembers a night, not as five sentences of a printout. For example (the owner's wording):
 
-> You read the paper while you waited. You put the silk on before the light went out. You took the trench coat and didn't look in the glass. You stood by the girl until the song ended. You went in when the whistle blew.
+> You read the local page until the door clicked, and put the silk on before the bathroom light went out. In the hall, you took the trench coat off the peg without looking in the glass, stood by the girl under the eaves until the song finished, and went straight in when the whistle blew.
 
-A room the reader didn't finish is left out, and if the House couldn't read them at all the opening is today's. It closes with one line chosen by `HOME`.
+How it's composed:
+- **One clause per room,** chosen from that room's observations, in room order. Each clause carries its own lead-in ("In the hall,"), so it reads correctly wherever it falls.
+- **Joining:** the clauses are stitched into one or two sentences with commas and a final "and"; a new sentence begins at the coatroom when there are more than two clauses.
+- **Skipped rooms drop out cleanly.** The composer must read correctly for every combination of rooms; the tests check all 31.
+- **Wording follows the reader:** *the girl* or *the woman* by `AGE`, and the clause for a reader who turned the mirror says so.
+- If the House couldn't read the reader at all, the opening is today's.
+- It closes with one line chosen by `HOME`.
+- Like all the House's writing, it uses "you" and the reader's name, never he or she.
 
 ### Vignettes
 
@@ -302,18 +317,30 @@ Larger changes need a settled category; smaller ones may use a tentative one. Un
 |---|---|---|
 | `AGE` | The Wheel starts at the reader's stage of life, its rooms dressed for their era | Harrigan's phone is a handset for `ANALOG` and a screen otherwise; the shelter strangers' age; a landline rings in later halls for `ANALOG` |
 | `HAIR` | The child's room bedtime card describes the reader's own routine being done for a child (the wrap, oil in the part, the brush, a wet comb) | Their set's items on the sinks at the Stanley's 217, the Lake House vanity and their Family Copy; the wrap on their double asleep |
-| `SELF` | Pronouns and address (see below); reflections and doubles wear their coat | `UNSEEN`: faces obscured in mirror halls and doubles |
+| `SELF` | How strangers address the reader in speech (see "Address"); reflections and doubles wear their coat | `UNSEEN`: faces obscured in mirror halls and doubles |
 | `DRAWN_TO` | The Lake House partner: Tess for `WOMEN` and `BOTH`, a young man in her place for `MEN`, Tess as a friend rather than a date for `NO_ONE`. The Stanley's table for two is set for that partner, and for one for `NO_ONE` | The Masque's private dancers turn to the reader's preference; later, the owner's planned mattress, marriage and passenger-seat rooms |
-| `HOME` | Which vignettes come first: `RUNAWAY` makes road and outdoor rooms likelier (`LabyrinthDealer.dealWeight`) | `HAVEN`: domestic rooms open warm before they turn. `DANGER`: authority figures (the Barretts' John, Three Fingers' Walter, the child's room door at night) become what the reader listens for, and those houses give that reader more hiding places and second doors. Goatman's family night opens warm or tense |
+| `HOME` | `DANGER` (settled only): authority figures (the Barretts' John, Three Fingers' Walter, whoever is behind the child's room door at night) bring anticipation, not damage. See "Authority figures under `DANGER`". `RUNAWAY`: road and outdoor rooms are likelier to come first (`LabyrinthDealer.dealWeight`) | Mood only, even when tentative: domestic rooms open warm for `HAVEN` and tense for `DANGER`, and Goatman's family night opens warm or tense |
 
 The Lake House keeps Tess solo-only as built.
 
-### Pronouns and address
+### Authority figures under `DANGER`
 
-Today the House uses no pronouns for a reader (the miniature cards, accounts and prose use the name or "you").
-- With `SELF` settled as `MASC` or `FEM`, accounts, cards, Witness lines and the people who speak about the reader (the Last Stop men, the Stanley's staff, the Ghosts crew) use he or she. `ANDROGYNOUS` uses they.
-- `UNSEEN`, tentative, uncertain and unknown readers are never gendered: their name, or "you".
-- A later signal can change `SELF`, and address follows.
+A tentative `DANGER` could still be a hesitant player, so it changes only the mood. A settled `DANGER` changes how authority figures behave, and only toward anticipation:
+- They never move faster, hit harder or chase like arcade monsters.
+- They linger: footsteps stop right outside the bedroom door and stay there; a floorboard creaks in the hall before they come in; the handle is tried and let go.
+- Those houses always give that reader the second way out: a second door, a crawlspace under the bed, the gap under the lattice.
+
+For someone who grew up in a `DANGER` house, the terror isn't the chase; it's listening to the hallway through a closed door.
+
+### Address
+
+The House's own writing never genders a reader. Accounts, miniature cards, Witness lines and the House of Leaves use the reader's name or "you", whatever `SELF` says. That is more intimate, and a reader who just liked the look of a coat is never misgendered by the House.
+
+Strangers who speak are different. They judge by how someone presents, as strangers do:
+- With `SELF` settled, the Last Stop men, the Stanley's staff and the Ghosts crew address the reader by presentation in spoken lines: "Hey, man", "buddy" and "he" for `MASC`; "Miss", "ma'am" and "she" for `FEM`; "friend" and "they" for `ANDROGYNOUS`.
+- If a reader wore the wool overcoat because they like flannel and the Last Stop men call them "buddy", that reads as a realistic stranger's misperception.
+- `UNSEEN`, tentative, uncertain and unknown readers are never addressed by gender, even in speech.
+- A later signal can change `SELF`, and the strangers' address follows.
 
 ## Placement
 
@@ -352,6 +379,10 @@ Native cases:
 - **Co-op:** two readers crossing one door land in two copies and meet in the same hall, each with their own record.
 - **The record:** survives save and reload; never reaches another client; is absent from the playtest log.
 - **Payoffs:** the House of Leaves, the account and every vignette that reads it behave as today with no record, and differ for two readers with different records.
+- **The account opening** reads correctly for all 31 combinations of finished rooms.
+- **Address:** the House's writing never contains he or she for a reader; spoken strangers use presentation only when `SELF` is settled, and never for `UNSEEN`.
+- **Notes** never change while their reader is looking at them.
+- **`DANGER`:** a settled authority figure's speed and damage are unchanged from today.
 
 ## The first slice
 
@@ -362,15 +393,21 @@ The first slice tests the bar before the other rooms and the bulk of the writing
 3. **Three payoffs:**
    - the account opening;
    - the House of Leaves's *II. The hands* (the coat) and *IV. The door*, plus the `HOME` endings;
-   - one larger vignette change using these two traits: `HOME`'s room order, or `SELF`'s address by the Last Stop men.
+   - `SELF`, as the larger vignette change: the Last Stop men's spoken address, and reflections and doubles wearing the coat (the face obscured for `UNSEEN`).
+
+`SELF` is the owner's choice because two friends notice it at once. Weighted room order is invisible in one run, since dealing already feels random. But when one player's reflection wears a wool overcoat and the Last Stop men call them one thing, while the other's reflection wears a trench coat or has no face, the difference is undeniable.
 
 Play it with two people who come in together. If comparing books and accounts is interesting, build the rest. If it isn't, stop, and the slice's rooms stay as quiet first rooms.
 
-## Open questions for the owner
+## The owner's decisions (October 27)
 
-1. **Notes:** keep each note where it is (readable only after the first signal), or move them to the far side of each room's door?
-2. **Pronouns from a coat:** is a settled `SELF` enough for the House to use he or she, or should it stay with names, or wait for a second room?
-3. **Heritage:** `HAIR` describes a routine. Should anything ever be inferred beyond it?
-4. **`DANGER`:** how predatory may authority figures become, and only when settled?
-5. **The shelter strangers:** names, if they ever need them.
-6. **The first slice's larger change:** room order or address?
+1. **Notes** stay inside their objects, blank side first, and gain their writing unseen after the first signal ("Rules for all five rooms").
+2. **Address:** the House's writing uses names and "you" only; spoken strangers address by presentation, only when `SELF` is settled ("Address").
+3. **Heritage:** `HAIR` stops at the routine; nothing else is ever inferred from it (the bathroom).
+4. **`DANGER`:** tentative changes mood only; settled brings lingering and anticipation, never speed or damage, always with a second way out ("Authority figures under `DANGER`").
+5. **The shelter strangers** are unnamed there; if later rooms need names, Tommy and Katie (the shelter).
+6. **The first slice** uses `SELF`: the Last Stop men's address and the coat in mirrors and doubles ("The first slice").
+
+The account opening is one flowing breath of prose (the owner's wording), not five separate sentences.
+
+Two small proposals remain for the owner: Tom and Kate as the grown-up names for older readers, and the House of Leaves narrator following `AGE`.
