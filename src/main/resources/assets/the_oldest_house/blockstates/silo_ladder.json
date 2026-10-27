@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"the_oldest_house:block/silo_ladder","y":0},"facing=east":{"model":"the_oldest_house:block/silo_ladder","y":90},"facing=south":{"model":"the_oldest_house:block/silo_ladder","y":180},"facing=west":{"model":"the_oldest_house:block/silo_ladder","y":270}}}

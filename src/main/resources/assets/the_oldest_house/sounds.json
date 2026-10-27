@@ -2147,5 +2147,59 @@
         "attenuation_distance": 48
       }
     ]
+  },
+  "silo.groan": {
+    "subtitle": "subtitles.the_oldest_house.silo.groan",
+    "sounds": [
+      {
+        "name": "the_oldest_house:silo/groan",
+        "stream": false
+      }
+    ]
+  },
+  "silo.splinter": {
+    "subtitle": "subtitles.the_oldest_house.silo.splinter",
+    "sounds": [
+      {
+        "name": "the_oldest_house:silo/splinter",
+        "stream": false
+      }
+    ]
+  },
+  "silo.grain": {
+    "subtitle": "subtitles.the_oldest_house.silo.grain",
+    "sounds": [
+      {
+        "name": "the_oldest_house:silo/grain",
+        "stream": false
+      }
+    ]
+  },
+  "silo.radio_tucson": {
+    "subtitle": "subtitles.the_oldest_house.silo.radio_tucson",
+    "sounds": [
+      {
+        "name": "the_oldest_house:silo/radio_tucson",
+        "stream": true
+      }
+    ]
+  },
+  "silo.radio_flatbed": {
+    "subtitle": "subtitles.the_oldest_house.silo.radio_flatbed",
+    "sounds": [
+      {
+        "name": "the_oldest_house:silo/radio_flatbed",
+        "stream": true
+      }
+    ]
+  },
+  "silo.radio_winter": {
+    "subtitle": "subtitles.the_oldest_house.silo.radio_winter",
+    "sounds": [
+      {
+        "name": "the_oldest_house:silo/radio_winter",
+        "stream": true
+      }
+    ]
   }
 }

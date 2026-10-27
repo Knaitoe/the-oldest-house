@@ -304,6 +304,7 @@ public enum LabyrinthPlace {
     LAYERED_MAN("layered_man",Kind.ONE_SHOT,103,new BoundingBox(-9,-7,-32,9,6,0),literaryEntry()),
     MOTION_LIGHT("motion_light",Kind.ONE_SHOT,104,new BoundingBox(-9,-2,-27,9,9,0),literaryEntry()),
     BACKSEAT("backseat",Kind.ONE_SHOT,105,new BoundingBox(-14,-3,-58,14,18,4),literaryEntry()),
+    SILO("silo",Kind.ONE_SHOT,106,new BoundingBox(-12,-3,-12,12,69,16),List.of(new DoorSpec("entry",new BlockPos(0,0,13),Direction.SOUTH,LabyrinthData.RETURN))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

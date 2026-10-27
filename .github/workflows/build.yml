@@ -1443,6 +1443,58 @@ jobs:
             run-borrasca-live/*/logs/latest.log
             run-borrasca-live/*/crash-reports/
 
+  silo-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Install native material review dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri ffmpeg
+          python3 -m pip install Pillow numpy
+      - name: Silo materials, original audio and native physical story
+        timeout-minutes: 8
+        run: |
+          python3 tools/draw_silo.py --check
+          python3 tools/generate_silo_audio.py --check
+          mkdir -p build
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_silo -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/silo-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/SiloTests.java').read_text()))
+          complete=re.findall(r'All (\d+) required tests passed',Path('build/silo-native.log').read_text())
+          assert complete and int(complete[-1])==declared,(declared,complete)
+          PY
+      - name: Six native silo views from actual built blocks and opened hatch
+        timeout-minutes: 5
+        run: |
+          test -s build/silo-art/silo.json
+          test -s build/silo-art/roof-open.json
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PsiloSmoke --no-daemon
+          test -s build/silo-art/passed.txt
+          for view in column grain kitchen-table closed-hatch painted-tin timber-states; do test -s build/silo-art/native-$view.png; done
+          test -s build/silo-art/roof-pixels.txt
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: silo-native-${{ github.sha }}
+          path: |
+            build/silo-native.log
+            build/silo-art/
+            run/logs/latest.log
+            run/crash-reports/
+          if-no-files-found: warn
+
   trailer-client:
     runs-on: ubuntu-latest
     steps:

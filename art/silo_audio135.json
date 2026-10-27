@@ -1,0 +1,45 @@
+{
+  "words": [
+    "She took a bus to Tucson.",
+    "She met a boy with a flatbed.",
+    "She's just waiting out the winter."
+  ],
+  "sounds": {
+    "groan": {
+      "samples": 39690,
+      "rate": 22050,
+      "ticks": 36,
+      "sha256": "25c938ed32541f6a323e77c6f8db9f86b7b817877e84e458abe9b7477dd3b9d4"
+    },
+    "splinter": {
+      "samples": 24255,
+      "rate": 22050,
+      "ticks": 22,
+      "sha256": "e942ce27a136ef1604fc2f30610c10415fb4827962733c8180ae7ae259c5f763"
+    },
+    "grain": {
+      "samples": 14332,
+      "rate": 22050,
+      "ticks": 13,
+      "sha256": "6e0178ec6b9e619ef7fe25e5452ce370bf4f5b92f015dd3edd0971f1a537df44"
+    },
+    "radio_tucson": {
+      "samples": 67672,
+      "rate": 22050,
+      "ticks": 62,
+      "sha256": "19814d9c82e8ea6ba59f6cbbc830878da87d5c53d139eacbbf3c83968789b2d3"
+    },
+    "radio_flatbed": {
+      "samples": 74160,
+      "rate": 22050,
+      "ticks": 68,
+      "sha256": "ddebbf242cc05469d8f9618cf1bc6c9e1b1d0fd08a3ac1ae197af30d575f2be6"
+    },
+    "radio_winter": {
+      "samples": 77636,
+      "rate": 22050,
+      "ticks": 71,
+      "sha256": "dbe1ed58e02ee7cf4b1ffde0ab1b4a96f1b90c7da50510186c0d371840f8145e"
+    }
+  }
+}
