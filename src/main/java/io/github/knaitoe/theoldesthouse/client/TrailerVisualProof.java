@@ -39,7 +39,8 @@ public final class TrailerVisualProof extends Screen {
     }
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         var mc=Minecraft.getInstance();var out=mc.renderBuffers().bufferSource();g.fill(0,0,width,height,0xff22262b);
-        String[] titles={"All nine cousins","Walking and running: consecutive strides","Seated, cowering and laughing: connected joints","Porcelain fixtures, glazed sash, food and stressed door","Tracking behind the shoulders: bounded neck turns","Cooler, native wheels, painted cars and the note post","Institute enamel notices and centered brass room plates","Proofrock streetlights: fitted iron and warm glass","Seven individual terror gestures","Priority voice at the center","Cousins continue between demands","First confusion: looking between cousins","Growing fear: distinct upright reactions","Who just ran out?","Individual cousin walks: first stride","Individual cousin walks: opposite stride","Individual cousin runs: first stride","Individual cousin runs: opposite stride"};g.drawString(font,titles[page],8,8,0xffe8e0d3,false);g.flush();
+        String[] titles={"All nine cousins","Walking and running: consecutive strides","Seated, cowering and laughing: connected joints","Porcelain fixtures, glazed sash, food and stressed door","Tracking behind the shoulders: bounded neck turns","Cooler, native wheels, painted cars and the note post","Institute enamel notices and centered brass room plates","Proofrock streetlights: fitted iron and warm glass","Seven individual terror gestures","Priority voice at the center","Cousins continue between demands","First confusion: looking between cousins","Growing fear: distinct upright reactions","Who just ran out?","Individual cousin walks: first stride","Individual cousin walks: opposite stride","Individual cousin runs: first stride","Individual cousin runs: opposite stride","Four sleeping positions: back, curled left, right side, stomach"};g.drawString(font,titles[page],8,8,0xffe8e0d3,false);g.flush();
+        if(page==18){sleeping(g,out);return;}
         if(page>=14){gaits(g,out);return;}
         if(page>=8){fear(g,out);return;}
         if(page==7){streetlights(g,out);return;}
@@ -151,6 +152,16 @@ public final class TrailerVisualProof extends Screen {
             p.popPose();g.drawString(mc.font,labels[i],(int)((i+.5F)*width/3-45),height-20,0xffe8e0d3,false);
         }out.endBatch();
     }
+    private void sleeping(GuiGraphics g,MultiBufferSource.BufferSource out){
+        var mc=Minecraft.getInstance();float cw=width/2F,ch=(height-30)/2F;String[] labels={"back / hands over stomach","left / curled legs","right / hand by cheek","stomach / arm above pillow"};
+        for(int i=0;i<4;i++){
+            var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));m.sleepPose(i,42);joints(m);
+            var p=g.pose();p.pushPose();p.translate((i%2+.5F)*cw,34+(i/2+.5F)*ch,150);float scale=Math.min(cw*.43F,ch*.65F);
+            p.scale(scale,-scale,scale);p.mulPose(Axis.XP.rotationDegrees(28));p.mulPose(Axis.YP.rotationDegrees(125));p.mulPose(Axis.XP.rotationDegrees(90));p.translate(0,-.7,0);
+            m.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin(i))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
+            g.drawCenteredString(font,labels[i],(int)((i%2+.5F)*cw),(int)(24+(i/2+1)*ch-8),0xffe8e0d3);
+        }out.endBatch();
+    }
     private static void joints(GoatmanChildModel m){
         var rotation=new Quaternionf().rotationZYX(m.body.zRot,m.body.yRot,m.body.xRot);var hip=rotation.transform(new Vector3f(0,12,0)).add(m.body.x,m.body.y,m.body.z);
         var legs=new Vector3f((m.leftLeg.x+m.rightLeg.x)/2,(m.leftLeg.y+m.rightLeg.y)/2,(m.leftLeg.z+m.rightLeg.z)/2);
@@ -163,8 +174,9 @@ public final class TrailerVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();boolean focused=Boolean.getBoolean("the_oldest_house.trailerSmoke");
         if(!focused&&!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof TrailerVisualProof proof)||++proof.frames<16)return;
-        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve(proof.page>=14?"native-cousin-gaits-0497-"+(proof.page-14)+".png":proof.page>=8?"native-goatman-fear0472-"+(proof.page-8)+".png":proof.page==7?"native-streetlights-0469.png":(proof.page<4?"native-trailer-0465-":"native-playtest-0468-")+proof.page+".png"));}
-        proof.frames=0;if(++proof.page<18)return;
+        var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve(proof.page==18?"native-cousin-sleeping-0134.png":proof.page>=14?"native-cousin-gaits-0497-"+(proof.page-14)+".png":proof.page>=8?"native-goatman-fear0472-"+(proof.page-8)+".png":proof.page==7?"native-streetlights-0469.png":(proof.page<4?"native-trailer-0465-":"native-playtest-0468-")+proof.page+".png"));}
+        proof.frames=0;if(++proof.page<19)return;
+        Files.writeString(dir.resolve("cousin-sleeping-0134-passed.txt"),"Four production native sleep poses with connected hips, neck and shoulders. The sleeping branch precedes held-food, gaze, gait and fear animation.\n");
         Files.writeString(dir.resolve("cousin-gaits-0497-passed.txt"),"Nine stable native cousin gaits; 459 forward/reverse walking and running joint samples; bounded strides and connected hips/neck/shoulders; reused-renderer identity and stopped/seated/cowering/heaving reset checks; four GPU views at matching distance phases.\n");
         Files.writeString(dir.resolve("goatman-fear0472-passed.txt"),"Seven distinct connected gestures at confusion, fear and terror; centered priority Goatman subtitle with a competing cousin suppressed; continuing cousin subtitle between demands; the actual departure reaction during gathering.\n");
         Files.writeString(dir.resolve("streetlights-0469-passed.txt"),"Three assembled native streetlights: both street-arm directions and the fitted waterlogged lamps of the submerged street.\n");

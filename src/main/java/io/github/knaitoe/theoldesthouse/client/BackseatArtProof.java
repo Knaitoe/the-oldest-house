@@ -27,7 +27,7 @@ import org.joml.Matrix4f;
 /** Native material/model inspection. This is art coverage, not a playable-scene claim. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BackseatArtProof extends Screen {
-    private static final String[] VIEWS={"front-open","rear-open","side-closed","front-closed","door-half","rear-quarter","driver-forward","driver-mirror","body-floorboard","body-raised","body-half-rise","driver-reveal","mirror-flat","mirror-raised","driver-impact","body-front","body-profile","body-dim"};
+    private static final String[] VIEWS={"front-open","rear-open","side-closed","front-closed","door-half","rear-quarter","driver-forward","driver-mirror","body-floorboard","body-raised","body-half-rise","driver-reveal","mirror-flat","mirror-raised","driver-impact","body-front","body-profile","body-dim","dashboard-left","dashboard-center","dashboard-right"};
     private static boolean launched;
     private static NativeImage flatMirror;
     private int page,frames;
@@ -61,7 +61,7 @@ public final class BackseatArtProof extends Screen {
         g.drawString(font,"Backseat / "+VIEWS[page],10,10,0xffede1ca,false);
         g.drawString(font,"Native 16px materials beside spruce, iron and black wool",10,height-19,0xffede1ca,false);g.flush();
         BackseatMirror.capture(page==9||page==11||page==13||page==14?1:page==10?.5F:0,LightTexture.FULL_BRIGHT);
-        if(page==6||page==7||page==11||page==14){driver(g);return;}
+        if(page==6||page==7||page==11||page==14||page>=18){driver(g);return;}
         if(page==12||page==13){
             try(var mirror=BackseatMirror.copy()){
                 var tmp=new net.minecraft.client.renderer.texture.DynamicTexture(mirror);var id=mc.getTextureManager().register("backseat_mirror_review",tmp);
@@ -95,7 +95,7 @@ public final class BackseatArtProof extends Screen {
             // Retain its color while clearing that depth before the perspective pass.
             RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT,Minecraft.ON_OSX);
             RenderSystem.enableDepthTest();RenderSystem.depthMask(true);
-            var p=new PoseStack();p.mulPose(Axis.YP.rotationDegrees(page==7||page==11?32:0));
+            var p=new PoseStack();if(page>=18)p.mulPose(Axis.XP.rotationDegrees(18));p.mulPose(Axis.YP.rotationDegrees(page>=18?(page-19)*12:page==7||page==11?32:0));
             var seat=io.github.knaitoe.theoldesthouse.labyrinth.BackseatCarMesh.DRIVER;p.translate(-seat.x,-seat.y-1.62,-seat.z);
             var out=mc.renderBuffers().bufferSource();BackseatArt.draw(p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0,12,true,page==14?.25F:-1);BackseatMirror.body().draw(p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,page==11||page==14?1:0);BackseatMirror.draw(p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);out.endBatch();
         }finally{stack.popMatrix();RenderSystem.applyModelViewMatrix();RenderSystem.setProjectionMatrix(oldProjection,oldSort);RenderSystem.disableDepthTest();}
@@ -106,7 +106,7 @@ public final class BackseatArtProof extends Screen {
         var dir=Path.of("../build/backseat-art");Files.createDirectories(dir);
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
             image.writeToFile(dir.resolve("native-backseat-"+VIEWS[proof.page]+".png"));
-            if(proof.page==6||proof.page==7||proof.page==11||proof.page==14){int seen=0;for(int y=image.getHeight()/6;y<image.getHeight()*5/6;y++)for(int x=image.getWidth()/6;x<image.getWidth()*5/6;x++)if((image.getPixelRGBA(x,y)&0x00ffffff)!=0x00383830)seen++;
+            if(proof.page==6||proof.page==7||proof.page==11||proof.page==14||proof.page>=18){int seen=0;for(int y=image.getHeight()/6;y<image.getHeight()*5/6;y++)for(int x=image.getWidth()/6;x<image.getWidth()*5/6;x++)if((image.getPixelRGBA(x,y)&0x00ffffff)!=0x00383830)seen++;
                 if(seen<1200)throw new IllegalStateException("The native seated view rendered no actual cabin: "+VIEWS[proof.page]+" pixels="+seen);}
         }
         if(proof.page==12||proof.page==13)try(var mirror=BackseatMirror.copy()){
@@ -116,6 +116,6 @@ public final class BackseatArtProof extends Screen {
                 if(changed<80)throw new IllegalStateException("The real rearview contains no rising body: changed="+changed);Files.writeString(dir.resolve("mirror-pixels.txt"),"Native live body pose changed "+changed+" rearview pixels.\n");flatMirror.close();flatMirror=null;}
         }
         if(++proof.page<VIEWS.length){proof.frames=0;return;}
-        Files.writeString(dir.resolve("passed.txt"),"Eighteen native production car/body views, including the asymmetric shoulders, bent long neck, narrow low-eyed skull, front/profile/dim views, four seated perspectives, inward windshield fragments and pixel-checked live rearview. The actual raised cuboids clear the cabin ceiling and sides. Native pixel materials beside vanilla spruce, iron and black wool.\n");BackseatMirror.clear();mc.stop();
+        Files.writeString(dir.resolve("passed.txt"),"Twenty-one native production car/body views, including three oblique dashboard views with separate glovebox, switch and steering-column depth planes, including the asymmetric shoulders, bent long neck, narrow low-eyed skull, front/profile/dim views, four seated perspectives, inward windshield fragments and pixel-checked live rearview. The actual raised cuboids clear the cabin ceiling and sides. Native pixel materials beside vanilla spruce, iron and black wool.\n");BackseatMirror.clear();mc.stop();
     }
 }

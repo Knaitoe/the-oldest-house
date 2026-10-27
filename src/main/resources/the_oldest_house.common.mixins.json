@@ -6,6 +6,7 @@
   "mixins": [
     "FireBlockMixin",
     "StaircaseSpectateMixin",
+    "GoatmanWakeMixin",
     "PortholeCrawlMixin",
     "OneArmMixin",
     "HouseMobTrackingMixin",
