@@ -93,8 +93,16 @@ public final class UncannySocketClient {
             look(mc,b.offset(1,1,-5).getCenter());if(age>25&&UncannyClient.room().equals("second_waitress"))ack(mc,"diner-room");return;
         }
         if((phase==2||phase==3)&&age>30){var fake=actor(mc,LiteraryActor.UNCANNY_FALSE_WAITRESS);if(fake!=null){look(mc,fake.getEyePosition());if(phase==2&&fake.phase()==1||phase==3&&fake.phase()>=2)ack(mc,phase==2?"diner-translucent":"diner-solid");}}
-        if(phase==4&&UncannyClient.room().equals("tunnel_periphery")&&age==20){vanillaTunnel=net.minecraft.client.resources.sounds.SimpleSoundInstance.forMusic(net.minecraft.sounds.SoundEvents.MUSIC_GAME.value());mc.getSoundManager().play(vanillaTunnel);}
-        if(phase==4&&age>50&&UncannyClient.room().equals("tunnel_periphery")){require(trafficHeard&&TunnelAtmosphere.playing(),"the original traffic asset reaches an actual native audio source");require(vanillaTunnel!=null&&!mc.getSoundManager().isActive(vanillaTunnel),"vanilla music is refused while actual tunnel traffic plays");require(mc.player.onGround()&&Math.abs(mc.player.getY()-b.getY())<.1,"a grounded reader sees the tunnel woman from the actual floor");var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null){look(mc,giant.position().add(0,1.8,-2));require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");if(UncannyActorRenderer.proofDrawn(giant))ack(mc,"giant-folded");}}
+        if(phase==4&&UncannyClient.room().equals("tunnel_periphery")&&age>=20&&vanillaTunnel==null){vanillaTunnel=net.minecraft.client.resources.sounds.SimpleSoundInstance.forMusic(net.minecraft.sounds.SoundEvents.MUSIC_GAME.value());mc.getSoundManager().play(vanillaTunnel);}
+        if(phase==4&&age>50&&UncannyClient.room().equals("tunnel_periphery")){
+            require(trafficHeard&&TunnelAtmosphere.playing(),"the original traffic asset reaches an actual native audio source");require(vanillaTunnel!=null&&!mc.getSoundManager().isActive(vanillaTunnel),"vanilla music is refused while actual tunnel traffic plays");require(mc.player.onGround()&&Math.abs(mc.player.getY()-b.getY())<.1,"a grounded reader sees the tunnel woman from the actual floor");
+            var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null&&data.hasUUID("TunnelOriginal")){
+                require(giant.getUUID().equals(data.getUUID("TunnelOriginal")),"the socket client tracks the server's actual original woman");
+                var expected=new Vec3(data.getDouble("TunnelX"),data.getDouble("TunnelY"),data.getDouble("TunnelZ"));
+                if(giant.position().distanceToSqr(expected)>.01)return;
+                look(mc,giant.position().add(0,1.8,-2));require(giant.getScale()==2.5F&&giant.getBbHeight()<=2.8,"the five-block actor has its folded collision body");if(UncannyActorRenderer.proofDrawn(giant))ack(mc,"giant-folded");
+            }
+        }
         if(phase==19&&UncannyClient.room().equals("tunnel_periphery")){
             require(!mc.player.isNoGravity(),"the long tunnel uses native gravity");
             if(!data.getBoolean("TunnelReady")){mc.player.setYRot(180);mc.player.setXRot(0);mc.options.keyUp.setDown(true);mc.options.keySprint.setDown(true);mc.player.setSprinting(true);}

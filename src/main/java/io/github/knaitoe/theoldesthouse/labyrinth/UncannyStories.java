@@ -113,7 +113,7 @@ public final class UncannyStories {
     static void caught(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own,String outcome){
         if(failed(own)||own.getBoolean("Completed"))return;own.putBoolean("UncannyFailed",true);own.putString("Failure",outcome);own.putBoolean("Ready",false);
         HousePackets.send(p,new HouseFadePayload(10,8,16));var safe=Vec3.atBottomCenterOf(b.offset(0,0,-3));
-        p.teleportTo(p.serverLevel(),safe.x,safe.y,safe.z,0,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);
+        p.teleportTo(p.serverLevel(),safe.x,safe.y,safe.z,0,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();
         cue(p,switch(place){case SECOND_WAITRESS->"The place setting in front of you is empty.";case TUNNEL_PERIPHERY->"A hand on the back of your neck.";case MISSING_SLEEP->"The monitor is still showing the empty bed.";case MOTION_LIGHT->"The buzzer stops.";case LAYERED_MAN->"Warm tallow closes over your boots.";default->"You are facing the painted sun again.";});
     }
     private static void boarded(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -213,7 +213,7 @@ public final class UncannyStories {
                     if(p.serverLevel().noCollision(giant,giant.getBoundingBox().move(candidate.subtract(giant.position())))){spot=candidate;break;}
                 }
                 if(spot==null)return;
-                giant.moveTo(spot);giant.setDeltaMovement(Vec3.ZERO);own.putBoolean("TunnelStarted127",true);
+                TunnelStride.placeOriginal(giant,spot);own.putBoolean("TunnelStarted127",true);
             }
         }
         int stage=green(own)?1:2;
