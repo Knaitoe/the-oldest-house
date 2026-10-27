@@ -26,13 +26,15 @@ public final class BackseatSocketClient {
     private static UUID originalSeat;
     private static String shot;private static boolean shotAck,stopAfter,cameraSet,looked;
     private static NativeImage before;
+    private static float firstWind;private static double firstPull;
     private static final Set<String> CAPTURES=new HashSet<>();
     private static final Set<String> HEARD=java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final List<net.minecraft.client.resources.sounds.SoundInstance> RADIOS=new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final List<net.minecraft.client.resources.sounds.SoundInstance> WINDS=new java.util.concurrent.CopyOnWriteArrayList<>();
     private BackseatSocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean okay,String message){if(!okay)throw new IllegalStateException("BACKSEAT CLIENT: "+message);}
-    @SubscribeEvent public static void sound(PlaySoundSourceEvent e){if(!BackseatSocketProof.enabled()||e.getSound()==null)return;var sound=e.getSound();var id=sound.getLocation();if(!id.getNamespace().equals(TheOldestHouse.MOD_ID)||!id.getPath().startsWith("backseat."))return;HEARD.add(id.getPath());if(id.equals(BackseatRegistry.RADIO.getId()))RADIOS.add(sound);}
+    @SubscribeEvent public static void sound(PlaySoundSourceEvent e){if(!BackseatSocketProof.enabled()||e.getSound()==null)return;var sound=e.getSound();var id=sound.getLocation();if(!id.getNamespace().equals(TheOldestHouse.MOD_ID)||!id.getPath().startsWith("backseat."))return;HEARD.add(id.getPath());if(id.equals(BackseatRegistry.RADIO.getId()))RADIOS.add(sound);if(id.equals(BackseatRegistry.WIND.getId()))WINDS.add(sound);}
     private static void stop(Minecraft mc){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyUse.setDown(false);mc.options.keyJump.setDown(false);mc.options.keySprint.setDown(false);}
     private static void look(Minecraft mc,Vec3 at){var d=at.subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-d.x,d.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(d.y,d.horizontalDistance())));}
     private static void forward(Minecraft mc){mc.player.setYRot(180);mc.player.setXRot(0);}
@@ -48,7 +50,9 @@ public final class BackseatSocketClient {
     }
     private static boolean returned(Minecraft mc){return mc.level.dimension().equals(HouseDimensions.INTERIOR)&&!mc.player.isPassenger()&&mc.player.onGround()&&mc.screen==null&&mc.levelRenderer.isSectionCompiled(mc.player.blockPosition().below());}
     private static void endView(Minecraft mc,String name){
-        require(HEARD.containsAll(Set.of("backseat.rise","backseat.glass","backseat.impact")),"this driver actually decoded their original reveal and collision audio: "+HEARD);
+        require(HEARD.containsAll(Set.of("backseat.rise","backseat.glass","backseat.impact","backseat.wind")),"this driver actually decoded their original reveal, continuous wind and collision audio: "+HEARD);
+        require(WINDS.stream().noneMatch(mc.getSoundManager()::isActive),"the acceleration wind stops at the actual crash/House return");
+        require(CAPTURES.contains(role()+"-acceleration"),"the later camera peel and heavier wind were verified before impact");
         require(CAPTURES.contains(role()+"-reveal"),"the moving original figure and native mirror were captured before the impact");capture(name,true);
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post ignored){
@@ -100,8 +104,9 @@ public final class BackseatSocketClient {
                 else if(car!=null&&mc.player.getVehicle() instanceof BackseatSeat){
                     if(!looked){look(mc,at.getCenter().add(BackseatCarMesh.MIRROR).add(0,-.5,0));looked=true;}
                     if(car.phase==BackseatCarBlock.Car.REVEAL&&car.travel>3)capture("reveal",false);
+                    if(car.phase==BackseatCarBlock.Car.REVEAL&&car.clock>=60)capture("acceleration",false);
                 }
-            }else if(car!=null&&phase==6){forward(mc);if(age>60){locked(mc,car);require(!HEARD.contains("backseat.rise")&&!HEARD.contains("backseat.glass")&&!HEARD.contains("backseat.impact"),"the other driver's crash audio remains private");capture("peer-still-locked",true);}}
+            }else if(car!=null&&phase==6){forward(mc);if(age>60){locked(mc,car);require(!HEARD.contains("backseat.rise")&&!HEARD.contains("backseat.glass")&&!HEARD.contains("backseat.impact")&&!HEARD.contains("backseat.wind"),"the other driver's crash and wind audio remain private");capture("peer-still-locked",true);}}
             else if(returned(mc)&&phase==7&&age>30)capture("peer-still-home",true);
         }else if(phase==8&&age>20){stop(mc);if(before!=null){before.close();before=null;}mc.stop();}
     }
@@ -109,11 +114,16 @@ public final class BackseatSocketClient {
         if(!BackseatSocketProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(BackseatSocketProof.folder());
         if(shot.endsWith("-standing-before-lock")){require(!mc.player.isPassenger()&&mc.options.getCameraType()==CameraType.THIRD_PERSON_BACK,"standing on the actual road before commitment restores the prior third-person camera");seatStage=2;}
         if(shot.endsWith("-house-return"))require(mc.options.getCameraType()==CameraType.FIRST_PERSON,"the confirmed House return respects its existing first-person view rule");
-        if(shot.endsWith("-reveal")){
+        if(shot.endsWith("-reveal")||shot.endsWith("-acceleration")){
             var seat=(BackseatSeat)mc.player.getVehicle();var car=seat.car();require(car!=null,"the real moving seat retains its original car");
             var expected=Vec3.atBottomCenterOf(seat.root()).add(BackseatCarMesh.DRIVER).add(0,mc.player.getEyeHeight(),-car.visualTravel(mc.getTimer().getGameTimeDeltaPartialTick(false)));
-            require(mc.gameRenderer.getMainCamera().getPosition().distanceToSqr(expected)<.02,"the actual rendered driver's eye stays in the moving cabin: camera="+mc.gameRenderer.getMainCamera().getPosition()+" expected="+expected);
-            try(var after=BackseatMirror.copy()){
+            double pull=BackseatClient.cameraPullback(mc.getTimer().getGameTimeDeltaPartialTick(false));
+            require(mc.gameRenderer.getMainCamera().getPosition().distanceToSqr(expected.add(0,0,pull))<.002,"the actual rendered eye shares the native car motion plus only its bounded rearward peel: camera="+mc.gameRenderer.getMainCamera().getPosition()+" expected="+expected+" pull="+pull);
+            require(pull>.03&&pull<=.181,"the speed camera remains inside the real cabin");
+            float wind=WINDS.stream().filter(mc.getSoundManager()::isActive).map(net.minecraft.client.resources.sounds.SoundInstance::getVolume).max(Float::compare).orElse(0F);
+            if(shot.endsWith("-reveal")){firstPull=pull;firstWind=wind;}
+            else{require(pull>firstPull+.025&&wind>firstWind+.1,"the later actual frame pulls farther back and has heavier continuous wind");Files.writeString(BackseatSocketProof.folder().resolve(role()+"-speed-camera.txt"),"Native acceleration: "+car.clock+" ticks; camera peel "+firstPull+" -> "+pull+" metres; continuous wind "+firstWind+" -> "+wind+".\n");}
+            if(shot.endsWith("-reveal"))try(var after=BackseatMirror.copy()){
                 require(before!=null&&after!=null,"both live production mirror images exist");int changed=0;
                 for(int y=0;y<after.getHeight();y++)for(int x=0;x<after.getWidth();x++)if(after.getPixelRGBA(x,y)!=before.getPixelRGBA(x,y))changed++;
                 require(changed>12,"the actual rearview changes when the same body rises: "+changed);before.writeToFile(BackseatSocketProof.folder().resolve(role()+"-mirror-before.png"));after.writeToFile(BackseatSocketProof.folder().resolve(role()+"-mirror-raised.png"));

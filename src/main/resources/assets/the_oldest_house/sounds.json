@@ -2127,5 +2127,15 @@
         "preload": true
       }
     ]
+  },
+  "backseat.wind": {
+    "subtitle": "subtitles.the_oldest_house.backseat.wind",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/wind",
+        "attenuation_distance": 18,
+        "preload": true
+      }
+    ]
   }
 }

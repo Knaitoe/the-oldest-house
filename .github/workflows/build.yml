@@ -1509,7 +1509,7 @@ jobs:
           python3 tools/draw_backseat_materials.py --check
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbackseatArtSmoke --no-daemon
           test -s build/backseat-art/passed.txt
-          for view in front-open rear-open side-closed front-closed door-half rear-quarter driver-forward driver-mirror body-floorboard body-raised body-half-rise driver-reveal mirror-flat mirror-raised driver-impact; do test -s build/backseat-art/native-backseat-$view.png; done
+          for view in front-open rear-open side-closed front-closed door-half rear-quarter driver-forward driver-mirror body-floorboard body-raised body-half-rise driver-reveal mirror-flat mirror-raised driver-impact body-front body-profile body-dim; do test -s build/backseat-art/native-backseat-$view.png; done
           test -s build/backseat-art/mirror-pixels.txt
       - name: Native Backseat seat, door, moving impact, House return and original-custody checks
         timeout-minutes: 6

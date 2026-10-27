@@ -13,8 +13,9 @@ CAPTIONS = {
     'wiper': 'Rubber wipers drag over glass', 'latch': 'Car door clicks shut',
     'lock': 'Child locks slam down', 'rise': 'Cloth snaps behind you',
     'glass': 'Windshield bursts inward', 'impact': 'Steel folds around the cabin',
+    'wind': 'Wind whistles harder around the cabin',
 }
-LENGTHS = {'idle':4, 'radio':60/56*8, 'wiper':2.4, 'latch':.38, 'lock':.65, 'rise':.44, 'glass':.85, 'impact':1.55}
+LENGTHS = {'idle':4, 'radio':60/56*8, 'wiper':2.4, 'latch':.38, 'lock':.65, 'rise':.44, 'glass':1.1, 'impact':2.05, 'wind':2}
 
 
 def cue(kind):
@@ -73,42 +74,53 @@ def cue(kind):
         out = noise(170, 4400)*np.sin(np.pi*t/seconds)**.55*.15
         out += noise(35, 180)*np.exp(-((t-.16)/.08)**2)*.11
     elif kind == 'glass':
-        out = noise(1500, 8500)*np.exp(-t*8)*.22
+        out = noise(1100, 9000)*np.exp(-t*8)*.38
         for at in rng.uniform(.012,.6,32):
             start, b = burst(at,.12,rng.uniform(1500,6500),rng.uniform(.02,.10),rng.uniform(28,65))
             out[start:start+len(b)] += b
+    elif kind == 'wind':
+        # Periodic filtered air and a narrow seam whistle; the client controls the build.
+        out = noise(450,6500)*.12+noise(40,500)*.035
+        out += np.sin(2*np.pi*620*t+2*np.sin(np.pi*t))*.06
+        out += np.sin(2*np.pi*930*t+1.2*np.sin(np.pi*t))*.028
     else:
-        out = noise(25, 600)*np.minimum(t/.007,1)*np.exp(-t*3)*.3
-        out += noise(220, 5200)*np.exp(-t*6)*.13
-        for at in (.01,.08,.16,.27,.43):
-            start, b = burst(at,.8,rng.uniform(70,260),rng.uniform(.04,.15),rng.uniform(4,10))
+        attack=np.minimum(t/.002,1)
+        out = noise(22, 520)*attack*np.exp(-t*3.1)*.7
+        out += noise(250, 6200)*attack*np.exp(-t*4)*.5
+        out += np.sin(2*np.pi*(75*t-18*t*t))*np.exp(-t*7)*.75
+        for at in (.006,.045,.10,.16,.27,.43,.68):
+            start, b = burst(at,1.3,rng.uniform(70,950),rng.uniform(.13,.38),rng.uniform(3,9))
             out[start:start+len(b)] += b
+        out = np.tanh(out*1.8)
     out = np.tanh(out)
     peak = max(np.abs(out).max(), 1e-9)
-    out = out / peak * (.72 if kind not in ('glass','impact') else .86)
-    out *= np.minimum(t/.004,1)*np.minimum((seconds-t)/.025,1)
+    out = out / peak * (.67 if kind=='impact' else .90 if kind=='glass' else .55 if kind=='wind' else .72)
+    if kind!='wind':out *= np.minimum(t/.002 if kind=='impact' else t/.004,1)*np.minimum((seconds-t)/.025,1)
     return np.asarray(out*32767, dtype='<i2').tobytes()
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--check', action='store_true')
+    ap.add_argument('--only',nargs='+',choices=CAPTIONS)
     args = ap.parse_args()
     target = ROOT / 'sounds/backseat'
     target.mkdir(parents=True, exist_ok=True)
     sounds = json.loads((ROOT/'sounds.json').read_text())
     lang = json.loads((ROOT/'lang/en_us.json').read_text())
-    for kind, caption in CAPTIONS.items():
+    for kind in args.only or CAPTIONS:
+        caption=CAPTIONS[kind]
         file = target/(kind+'.ogg')
         event = 'backseat.'+kind
         subtitle = 'subtitles.the_oldest_house.'+event
-        definition = {'subtitle':subtitle,'sounds':[{'name':'the_oldest_house:backseat/'+kind,'attenuation_distance':18,**({'preload':True} if kind in ('rise','glass','impact','latch','lock') else {})}]}
+        definition = {'subtitle':subtitle,'sounds':[{'name':'the_oldest_house:backseat/'+kind,'attenuation_distance':18,**({'preload':True} if kind in ('rise','glass','impact','latch','lock','wind') else {})}]}
         if args.check:
             decoded = subprocess.run(['ffmpeg','-v','error','-i',str(file),'-f','s16le','-ar',str(RATE),'-ac','1','-'],check=True,capture_output=True)
             pcm = np.frombuffer(decoded.stdout,dtype='<i2')
             assert len(pcm)>RATE*.25 and 1000<np.abs(pcm.astype(np.int32)).max()<32767,kind
             assert abs(len(pcm)/RATE-LENGTHS[kind])<.04,kind
             assert sounds[event]==definition and lang[subtitle]==caption,kind
+            if kind=='impact':assert np.sqrt(np.mean((pcm[:int(RATE*.25)].astype(float)/32768)**2))>.32,'Impact has lost its initial body'
         else:
             subprocess.run(['ffmpeg','-v','error','-y','-f','s16le','-ar',str(RATE),'-ac','1','-i','-','-c:a','libvorbis','-q:a','5','-fflags','+bitexact','-flags:a','+bitexact','-map_metadata','-1',str(file)],input=cue(kind),check=True)
             sounds[event]=definition
@@ -116,7 +128,7 @@ def main():
     if not args.check:
         (ROOT/'sounds.json').write_text(json.dumps(sounds,indent=2,ensure_ascii=False)+'\n')
         (ROOT/'lang/en_us.json').write_text(json.dumps(lang,indent=2,ensure_ascii=False)+'\n')
-    print('Eight original subtitled car cues, including the quiet four-chord radio, decode without clipping.' if args.check else 'Authored eight Backseat car cues.')
+    print(f'{len(CAPTIONS)} original subtitled car cues, including the rising cabin wind and heavy crash, decode without clipping.' if args.check else 'Authored selected Backseat car cues.')
 
 
 if __name__ == '__main__':

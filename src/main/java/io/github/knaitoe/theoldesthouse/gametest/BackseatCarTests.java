@@ -115,7 +115,10 @@ public final class BackseatCarTests {
         var original=new ItemStack(Items.COMPASS);CustomData.update(DataComponents.CUSTOM_DATA,original,t->t.putString("Original","before the crash"));
         var home=new LabyrinthData.Waypoint(f.f.in.dimension(),Vec3.atBottomCenterOf(f.at.offset(9,0,0)),90,false);
         var peerReturn=new LabyrinthData.Waypoint(f.f.in.dimension(),Vec3.atBottomCenterOf(f.at.offset(10,0,0)),0,false);
-        final java.util.UUID[] originalSeat={null};final double[] moved={0};
+        final java.util.UUID[] originalSeat={null};final double[] moved={0};final long[] impactAt={0};
+        final var heard=new java.util.HashSet<net.minecraft.sounds.SoundEvent>();
+        final var volumes=new java.util.HashMap<net.minecraft.sounds.SoundEvent,Float>();
+        h.onEachTick(()->NativeTestPlayers.sounds(f.p).forEach(sound->{heard.add(sound.getSound().value());volumes.merge(sound.getSound().value(),sound.getVolume(),Math::max);}));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.f.chunks.ready(),"the native track, obstacle and House return are loaded"))
         .thenExecute(()->{
             f.place(h);f.peer.moveTo(f.at.getX()-4,f.at.getY(),f.at.getZ()+3);f.p.getInventory().setItem(4,original);
@@ -132,19 +135,25 @@ public final class BackseatCarTests {
         }).thenWaitUntil(()->h.assertTrue(f.car().travel>=BackseatCarBlock.Car.SPEED*2,"the physical seat and passenger actually move down the road"))
         .thenExecute(()->{
             moved[0]=f.car().travel;var seat=f.car().seat();h.assertTrue(seat!=null&&seat.getUUID().equals(originalSeat[0]),"the moving car retains its original seat");
+            h.assertTrue(f.car().clock>20&&BackseatCarBlock.Car.speed(f.car().clock)<BackseatCarBlock.Car.SPEED,"the original car builds physical speed over several seconds instead of jumping to eighty mph");
             h.assertTrue(Math.abs(seat.getZ()-(f.at.getZ()+.5-f.car().travel))<.0001&&Math.abs(f.p.getZ()-(seat.getZ()+BackseatCarMesh.DRIVER.z))<.0001,"native passenger position follows the eighty-mph anchor");
-            var saved=f.car().saveWithoutMetadata(f.f.in.registryAccess());f.car().loadWithComponents(saved,f.f.in.registryAccess());h.assertTrue(f.car().sequenceEnabled&&f.car().travel==moved[0]&&f.car().seatId.equals(originalSeat[0]),"native reload retains the moving original and exact travelled distance");
+            var saved=f.car().saveWithoutMetadata(f.f.in.registryAccess());int clock=f.car().clock;f.car().loadWithComponents(saved,f.f.in.registryAccess());h.assertTrue(f.car().sequenceEnabled&&f.car().travel==moved[0]&&f.car().clock==clock&&f.car().seatId.equals(originalSeat[0]),"native reload retains the original, travelled distance and acceleration progress");
             f.p.stopRiding();h.assertTrue(f.p.isPassenger(),"the moving car remains committed");
         }).thenWaitUntil(()->h.assertTrue(f.car().phase==BackseatCarBlock.Car.IMPACT,"the actual spruce collision causes the impact"))
         .thenExecute(()->{
             h.assertTrue(f.car().travel>moved[0]&&f.car().travel<22,"the car hits the physical tree before its driver passes it");
             h.assertTrue(LabyrinthData.get(f.p.server).peekReturn(f.p.getUUID()).equals(home),"the return is unspent during impact");
+            impactAt[0]=f.f.in.getGameTime();
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(f.car().phase==BackseatCarBlock.Car.IMPACT&&f.p.getVehicle()==f.car().seat(),"the impact holds the actual cabin long enough for the crash to sound before dimension return");
+            h.assertTrue(volumes.getOrDefault(BackseatRegistry.IMPACT.get(),0F)>=2,"the native crash packet requests the heavy impact level");
         }).thenWaitUntil(()->h.assertTrue(f.car().phase==BackseatCarBlock.Car.DONE,"only the confirmed native House arrival concludes this car sequence"))
         .thenIdle(2).thenExecute(()->{
+            h.assertTrue(f.f.in.getGameTime()-impactAt[0]>=BackseatCarBlock.Car.IMPACT_HOLD_TICKS,"the collision's original audible hold completes before its return is consumed");
             h.assertTrue(f.p.position().distanceToSqr(home.pos())<.01&&!f.p.isPassenger(),"the driver actually lands at their original House return");
             h.assertTrue(LabyrinthData.get(f.p.server).peekReturn(f.p.getUUID())==null&&LabyrinthData.get(f.p.server).peekReturn(f.peer.getUUID()).equals(peerReturn),"only the successful driver's return is consumed");
             h.assertTrue(f.p.getInventory().getItem(4)==original&&f.p.getHealth()==f.p.getMaxHealth(),"the real carried stack, components and health survive the cut");
-            var sounds=NativeTestPlayers.sounds(f.p);for(var cue:new net.minecraft.sounds.SoundEvent[]{BackseatRegistry.RISE.get(),BackseatRegistry.GLASS.get(),BackseatRegistry.IMPACT.get()})h.assertTrue(sounds.stream().anyMatch(packet->packet.getSound().value()==cue),"the native sequence emits its own private "+cue.getLocation());
+            for(var cue:new net.minecraft.sounds.SoundEvent[]{BackseatRegistry.RISE.get(),BackseatRegistry.GLASS.get(),BackseatRegistry.IMPACT.get()})h.assertTrue(heard.contains(cue),"the native sequence emits its own private "+cue.getLocation());
             h.assertTrue(NativeTestPlayers.sounds(f.peer).stream().noneMatch(packet->packet.getSound().value().getLocation().getPath().startsWith("backseat."))&&!f.peer.isPassenger(),"the independent reader receives no private scare or movement");
         }).thenSucceed();
     }

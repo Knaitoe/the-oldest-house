@@ -46,7 +46,7 @@ public final class BackseatMirror {
         stack.pushMatrix();stack.identity();RenderSystem.applyModelViewMatrix();
         try{
             target.clear(Minecraft.ON_OSX);target.bindWrite(true);RenderSystem.setProjectionMatrix(new Matrix4f().setPerspective((float)Math.toRadians(27),(float)W/H,.025F,12),VertexSorting.DISTANCE_TO_ORIGIN);RenderSystem.enableDepthTest();RenderSystem.depthMask(true);RenderSystem.setShaderColor(1,1,1,1);
-            stack.set(new Matrix4f().lookAt(new Vector3f(0,2,-1.13F),new Vector3f(-.625F,1.99F,.3F),new Vector3f(0,1,0)));RenderSystem.applyModelViewMatrix();var p=new PoseStack();
+            stack.set(new Matrix4f().lookAt(new Vector3f(0,2,-1.13F),new Vector3f(-.625F,1.87F,.3F),new Vector3f(0,1,0)));RenderSystem.applyModelViewMatrix();var p=new PoseStack();
             BackseatArt.draw(p,buffers,light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,0,12,false);
             body().draw(p,buffers,light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,rise);buffers.endBatch();
             try(var shot=Screenshot.takeScreenshot(target)){image.getPixels().copyFrom(shot);image.upload();}

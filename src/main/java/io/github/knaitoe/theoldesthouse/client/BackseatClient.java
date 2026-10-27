@@ -22,9 +22,20 @@ import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BackseatClient {
     private static CameraType previous;
+    private static BackseatWindSound wind;
     private static ClientLevel world;private static BackseatCarBlock.Car approach;private static int scan;
     private BackseatClient(){}
-    private static void restore(){if(previous!=null){Minecraft.getInstance().options.setCameraType(previous);previous=null;}}
+    private static void restore(){var mc=Minecraft.getInstance();if(previous!=null){mc.options.setCameraType(mc.level!=null&&mc.level.dimension().equals(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR)?CameraType.FIRST_PERSON:previous);previous=null;}if(wind!=null){wind.end();mc.getSoundManager().stop(wind);wind=null;}}
+    private static BackseatCarBlock.Car driving(){
+        var mc=Minecraft.getInstance();if(mc.player==null||!mc.player.isAlive()||mc.player.isSpectator()||!(mc.player.getVehicle() instanceof BackseatSeat seat)||seat.owner().filter(mc.player.getUUID()::equals).isEmpty())return null;
+        var car=seat.car();return car!=null&&car.sequenceEnabled&&car.phase>=BackseatCarBlock.Car.REVEAL&&car.phase<=BackseatCarBlock.Car.IMPACT?car:null;
+    }
+    /** Along the car's rear axis, even while the driver glances toward the mirror. */
+    public static double cameraPullback(float partial){
+        var mc=Minecraft.getInstance();var car=driving();if(car==null||!mc.options.getCameraType().isFirstPerson())return 0;
+        float q=car.phase==BackseatCarBlock.Car.IMPACT?1:car.acceleration(partial);q=q*q*(3-2*q);
+        return .18*q*mc.options.screenEffectScale().get();
+    }
     private static BackseatCarBlock.Car nearby(){
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!mc.player.isAlive()||mc.player.isSpectator())return null;
         if(mc.player.getVehicle() instanceof BackseatSeat seat&&seat.owner().filter(mc.player.getUUID()::equals).isPresent())return seat.car();
@@ -50,7 +61,11 @@ public final class BackseatClient {
         if(road())mc.getMusicManager().stopPlaying();
         if(mc.player==null||!mc.player.isAlive()||!(mc.player.getVehicle() instanceof BackseatSeat seat)||seat.owner().filter(mc.player.getUUID()::equals).isEmpty()){restore();return;}
         if(previous==null)previous=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);
+        var car=driving();
+        if(car!=null&&car.phase==BackseatCarBlock.Car.REVEAL){if(wind==null||wind.isStopped()){wind=new BackseatWindSound();wind.tick();mc.getSoundManager().play(wind);}}
+        else if(wind!=null){wind.end();mc.getSoundManager().stop(wind);wind=null;}
     }
+    @SubscribeEvent public static void fov(ViewportEvent.ComputeFov e){if(e.usedConfiguredFov()&&driving()!=null)e.setFOV(e.getFOV()+5*cameraPullback((float)e.getPartialTick())/.18);}
     @SubscribeEvent public static void music(SelectMusicEvent e){if(road())e.setMusic(null);}
     /** Native vehicle packets can trail the BE's per-tick motion. Use one authoritative
      * movement sample for this original seat, its driver and the rendered cabin. */
