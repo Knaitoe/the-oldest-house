@@ -1,4 +1,4 @@
-name: Six private personality scene touches
+name: Six personal scenes and early entrance regression
 on:
   push:
     branches: [feature/six-personal-scene-touches]
@@ -7,7 +7,7 @@ permissions:
 jobs:
   native:
     runs-on: ubuntu-latest
-    timeout-minutes: 24
+    timeout-minutes: 14
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -17,33 +17,74 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Compile the consumers and run native strength, original-card, private-dialogue and owner-display cases
+      - name: All nine original entrance and saved-visit cases plus four native personality cases
         run: |
           set -o pipefail
           mkdir -p build
-          timeout --signal=QUIT --kill-after=20s 8m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_tailoring -PgameTestHeap=3g --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/tailoring-native.log
+          timeout --signal=QUIT --kill-after=20s 10m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_house_read,the_oldest_house_tailoring -PgameTestHeap=3g --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/tailoring-native.log
           python3 - <<'CHECK'
           from pathlib import Path
           log=Path('build/tailoring-native.log').read_text()
-          assert 'All 4 required tests passed' in log
+          assert 'All 13 required tests passed' in log
           assert 'Game test server shutting down' in log
           CHECK
-      - name: Native graphics dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libasound2t64 libpulse0
-      - name: Two actual clients, one shared counter, original B reconnect and native card pages
-        timeout-minutes: 13
-        run: LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_tailoring_socket.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: six-tailoring-native
           path: |
-            build/tailoring-live-proof/
-            run-tailoring-live/*/logs/latest.log
-            run-tailoring-live/*/crash-reports/
             build/tailoring-native.log
             build/libs/*.jar
             run/logs/latest.log
+          if-no-files-found: warn
+  actual-clients:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Native graphics dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libasound2t64 libpulse0
+          python3 -m pip install Pillow
+      - name: Two actual clients, one shared counter, original B reconnect and native card pages
+        timeout-minutes: 13
+        run: LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_tailoring_socket.py
+      - name: Native frame contact sheets for review
+        run: |
+          python3 - <<'REVIEW'
+          from pathlib import Path
+          from PIL import Image,ImageDraw
+          import base64,io
+          root=Path('build/tailoring-live-proof')
+          counter=Image.new('RGB',(960,690),'#242424');draw=ImageDraw.Draw(counter)
+          for n,name in enumerate(['A-sink','B-sink','A-vanity','B-vanity']):
+              im=Image.open(root/(name+'.png')).convert('RGB').resize((480,320),Image.Resampling.NEAREST)
+              x=n%2*480;y=n//2*345
+              draw.text((x+8,y+5),name,fill='white');counter.paste(im,(x,y+25))
+          cards=Image.new('RGB',(1920,665),'#242424');draw=ImageDraw.Draw(cards)
+          for n,name in enumerate(['A-card','B-card']):
+              draw.text((n*960+8,5),name,fill='white');cards.paste(Image.open(root/(name+'.png')).convert('RGB'),(n*960,25))
+          for name,im in [('counters',counter),('cards',cards)]:
+              im.save(root/(name+'-review.png'));out=io.BytesIO();im.save(out,format='PNG')
+              data=base64.b64encode(out.getvalue()).decode()
+              print('TAILORING_QA_'+name.upper()+'_BEGIN')
+              for i in range(0,len(data),4096):print(data[i:i+4096])
+              print('TAILORING_QA_'+name.upper()+'_END')
+          REVIEW
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: six-tailoring-actual-clients
+          path: |
+            build/tailoring-live-proof/
+            run-tailoring-live/*/logs/latest.log
+            run-tailoring-live/*/crash-reports/
           if-no-files-found: warn

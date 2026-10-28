@@ -49,7 +49,7 @@ public final class EntrancePlaytestTests {
                 p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);ticking[0]=true;
             });
         for(var room:HouseReadSites.Room.values()){
-            seq=seq.thenExecute(()->{var door=f.data().door(HouseReadEntrance.id(room));at(p,f.in,door.lower.relative(door.facing));click(p,door.lower);})
+            seq=seq.thenExecute(()->{var door=f.data().door(HouseReadEntrance.id(room));at(p,f.in,door.lower.relative(door.facing));if(room==HouseReadSites.Room.WAITING)f.data().setBuilt(0,f.origin);click(p,door.lower);if(room==HouseReadSites.Room.WAITING){h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).contains("Index"),"the real entrance door works before the maze has finished its first build");f.data().setBuilt(LabyrinthBuilder.VERSION,f.origin);}})
                 .thenWaitUntil(()->{if(HouseReadSites.inside(p)!=room)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==room&&!LabyrinthDoors.isBusy(p),"the original physical door reaches its private story: "+room);})
                 .thenExecute(()->{var b=HouseReadSites.base(p.server,p.getUUID(),room);at(peer,p.serverLevel(),b.offset(2,0,room==HouseReadSites.Room.PORCH?8:-2));})
                 .thenIdle(24).thenExecute(()->{
