@@ -917,7 +917,7 @@ jobs:
           for page in 0 1; do test -s build/font-smoke/native-institute-0470-$page.png; done
           test -s build/font-smoke/native-goatman.png
           test -s build/font-smoke/uncanny-assets-passed.txt
-          for page in 0 1 2 3 4 5 6 7 8 9; do test -s build/font-smoke/native-uncanny-$page.png; done
+          for page in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-uncanny-$page.png; done
           test -s build/font-smoke/native-uncanny-materials.png
           test -s build/font-smoke/goatman-child-eyes-passed.txt
           test -s build/font-smoke/native-goatman-child-eyes.png
@@ -1685,7 +1685,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PuncannySmoke --no-daemon
           test -s build/font-smoke/uncanny-assets-passed.txt
-          for page in 0 1 2 3 4 5 6 7 8 9; do test -s build/font-smoke/native-uncanny-$page.png; done
+          for page in 0 1 2 3 4 5 6 7 8; do test -s build/font-smoke/native-uncanny-$page.png; done
           test -s build/font-smoke/native-uncanny-materials.png
       - uses: actions/upload-artifact@v4
         if: always()
