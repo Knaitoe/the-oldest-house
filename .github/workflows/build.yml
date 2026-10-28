@@ -1,13 +1,13 @@
-name: Entrance placement and full boundary regression
+name: Household prose and native paper contact
 on:
   push:
-    branches: [fix/entrance-playtest-0.4.142]
+    branches: [fix/domestic-paper-review-0.4.142]
 permissions:
   contents: read
 jobs:
   native:
     runs-on: ubuntu-latest
-    timeout-minutes: 22
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -17,47 +17,47 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Compile and run all original quiet-room cases plus real entrance and cross_hall paths
+      - name: Original paintings and all native support models
+        run: python3 tools/draw_domestic_records.py --check
+      - name: All original interior cases plus contact, oblique use, custody and prose revision
         run: |
           set -o pipefail
           mkdir -p build
-          timeout --signal=QUIT --kill-after=20s 11m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_house_read -PgameTestHeap=3g --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/entrance-native.log
+          timeout --signal=QUIT --kill-after=20s 8m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_interior_review -PgameTestHeap=3g --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/domestic142-native.log
           python3 - <<'CHECK'
           from pathlib import Path
-          log=Path('build/entrance-native.log').read_text()
-          assert 'All 9 required tests passed' in log
+          log=Path('build/domestic142-native.log').read_text()
+          assert 'All 18 required tests passed' in log
           assert 'Game test server shutting down' in log
           CHECK
-      - name: Prove the full-tick regression catches the original missing boundary
+      - name: Native graphics dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libasound2t64 libpulse0
+      - name: Original rooms and actual production-model paper-support pairs
         run: |
           set -o pipefail
-          python3 - <<'MUTATE'
-          from pathlib import Path
-          p=Path('src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/LabyrinthDoors.java')
-          s=p.read_text();Path('/tmp/entrance-fixed.java').write_text(s)
-          old='        if(HouseReadSites.contains(player)){\n            STEPS.remove(player.getUUID());\n            return true;\n        }\n'
-          assert s.count(old)==1
-          p.write_text(s.replace(old,''))
-          MUTATE
-          set +e
-          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_selected '-PgameTestMethods=EntrancePlaytestTests#fiveRealDoorsPrecedeTheMazeAndEveryPrivateRoomSurvivesTheFullHouseTick' -PgameTestDirectory=run-boundary-before -PgameTestHeap=3g --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/boundary-before.log
-          status=${PIPESTATUS[0]}
-          set -e
-          cp /tmp/entrance-fixed.java src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/LabyrinthDoors.java
-          test "$status" -ne 0
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=20s 5m gradle runClient -PinteriorEnvironmentSmoke --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/domestic142-client.log
+          test -s build/font-smoke/interior-environments-passed.txt
+          test -s build/font-smoke/domestic-assets-passed.txt
+          test -s build/font-smoke/native-domestic-9.png
           python3 - <<'CHECK'
           from pathlib import Path
-          log=Path('build/boundary-before.log').read_text()
-          assert 'idle owner and observer remain in recognized House space after the fade' in log,log[-12000:]
+          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==26
+          log=Path('build/domestic142-client.log').read_text()
+          assert 'Unable to load model' not in log and 'Missing textures in model' not in log and 'missing model for variant' not in log
           CHECK
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: entrance-boundary-native
+          name: domestic142-native-and-contact
           path: |
-            build/entrance-native.log
-            build/boundary-before.log
+            build/domestic142-native.log
+            build/domestic142-client.log
+            build/font-smoke/native-domestic-*.png
+            build/font-smoke/domestic-assets-passed.txt
+            build/font-smoke/interior-environments/
+            build/font-smoke/interior-environments-passed.txt
             build/libs/*.jar
             run/logs/latest.log
-            run-boundary-before/logs/latest.log
           if-no-files-found: warn

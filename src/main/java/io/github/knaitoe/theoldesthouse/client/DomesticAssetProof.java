@@ -24,7 +24,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 public final class DomesticAssetProof extends Screen {
     private int page,frames;private NativeImage unlitJar;
     public DomesticAssetProof(){super(Component.literal("Native domestic objects"));}
-    private record View(String label,BlockState state){}
+    private record View(String label,BlockState state,BlockState paper){View(String label,BlockState state){this(label,state,null);}}
     private List<View> views(){
         var out=new ArrayList<View>();
         if(page<2){
@@ -56,6 +56,11 @@ public final class DomesticAssetProof extends Screen {
         }
         if(page==7){var kinds=List.of(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.CANE_CHAIR,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.BLUE_SOFA,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.FOOTSTOOL);for(int n=0;n<6;n++){out.add(new View(kinds.get(n).getSerializedName(),io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.state(kinds.get(n),Direction.NORTH)));out.add(new View("same, fallen",DomesticFittingBlock.of(DomesticFittingBlock.Kind.TOPPLED_CHAIR,Direction.NORTH).setValue(DomesticFittingBlock.STAGE,n)));}}
         if(page==8)for(var kind:DomesticRecordBlock.Kind.values())for(boolean present:new boolean[]{true,false})out.add(new View(kind.getSerializedName()+(present?" original":" taken"),DomesticRecordBlock.of(kind,Direction.NORTH).setValue(DomesticRecordBlock.PRESENT,present)));
+        if(page==9)for(var support:List.of(UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.COFFEE_TABLE,Direction.NORTH),UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.DESK,Direction.NORTH),DomesticFittingBlock.of(DomesticFittingBlock.Kind.PACKED_CLOTHES,Direction.NORTH))){
+            int drop=(int)Math.round((1-support.getShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE,net.minecraft.core.BlockPos.ZERO).bounds().maxY)*16);
+            var paper=DomesticRecordBlock.of(DomesticRecordBlock.Kind.NOTE,Direction.NORTH);
+            out.add(new View("old full-cell anchor",support,paper));out.add(new View("same original, on surface",support,paper.setValue(DomesticRecordBlock.DROP,Math.max(0,Math.min(16,drop)))));
+        }
         return out;
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
@@ -69,6 +74,7 @@ public final class DomesticAssetProof extends Screen {
             var p=g.pose();p.pushPose();p.translate((i%columns+.5)*cellW,35+(i/columns+.7)*cellH,150);p.scale(size,-size,size);p.mulPose(Axis.XP.rotationDegrees(24));p.mulPose(Axis.YP.rotationDegrees(page>=5?155:25));p.translate(-.5,tall?-.8:-.3,-.5);
             if(v.state.is(LiteraryRegistry.PROP.get())&&v.state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.LEDGER)mc.getBlockRenderer().getModelRenderer().renderModel(p.last(),buffers.getBuffer(RenderType.cutout()),v.state,mc.getBlockRenderer().getBlockModel(v.state),1F,1F,1F,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             else mc.getBlockRenderer().renderSingleBlock(v.state,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+            if(v.paper!=null){p.pushPose();p.translate(0,1,0);mc.getBlockRenderer().renderSingleBlock(v.paper,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}
             if(page==6&&frames>=6&&v.state.is(LiteraryRegistry.PROP.get())&&v.state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.JAR)FireflyJar.render(p,buffers,v.state.getValue(LiteraryPropBlock.STAGE)*80,net.minecraft.core.BlockPos.ZERO,OverlayTexture.NO_OVERLAY);
             buffers.endBatch();p.popPose();
             g.drawCenteredString(font,v.label,(int)((i%columns+.5)*cellW),(int)(35+(i/columns+1)*cellH),page==6?0xffe4d9bf:0xff25302a);
@@ -92,7 +98,7 @@ public final class DomesticAssetProof extends Screen {
               s.unlitJar.close();s.unlitJar=null;
             }
         }
-        if(++s.page<9){s.frames=0;return;}
-        Files.writeString(dir.resolve("domestic-assets-passed.txt"),"Nine native baked-model views, including six upright/fallen same-material pairs and fourteen original/empty household record mounts: household handling, materials, optical fittings/mailboxes, hollow cupboards/red chairs, cabin/sink/jar glow and steel dumpster states. Full bright model review, not a lighting playthrough.\n");mc.setScreen(new DinerAssetProof());
+        if(++s.page<10){s.frames=0;return;}
+        Files.writeString(dir.resolve("domestic-assets-passed.txt"),"Ten native baked-model views, including six upright/fallen same-material pairs, fourteen original/empty household record mounts and three original/settled paper-support pairs. Full bright model review, not a lighting playthrough.\n");mc.setScreen(new DinerAssetProof());
     }
 }
