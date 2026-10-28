@@ -60,7 +60,7 @@ public final class PersonalityTailoringTests {
                 var p=player(h,f,"card_"+(i++));profile(p,HouseRead.Trait.HAIR,hair,"SETTLED");f.arrive(p,place);f.click(p,place,LiteraryRooms.source(place));
                 h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"the real desk opens the native reader");var book=((LiteraryVignettes.Pages)p.containerMenu).original();var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);variants.add(pages(book).get(1));
                 h.assertTrue(content.pages().size()==3&&content.author().equals("Dad")&&ChildRoom.readCard(f.own(p,place))&&!f.own(p,place).getBoolean("Read_Source"),"opening the original still starts closing; the inserted memory is not a new reading gate");
-                var saved=ItemStack.parseOptional(p.registryAccess(),book.save(p.registryAccess()));h.assertTrue(ItemStack.matches(book,saved),"every full original survives native item codecs");p.closeContainer();
+                var saved=ItemStack.parseOptional(p.registryAccess(),(CompoundTag)book.save(p.registryAccess()));h.assertTrue(ItemStack.matches(book,saved),"every full original survives native item codecs");p.closeContainer();
                 profile(p,HouseRead.Trait.HAIR,"BRUSHED_DRY","SETTLED");f.reload();f.click(p,place,LiteraryRooms.source(place));var menu=(LiteraryVignettes.Pages)p.containerMenu;
                 h.assertTrue(ItemStack.matches(book,menu.original()),"a later read and native SavedData reload never reauthor an original");h.assertTrue(menu.clickMenuButton(p,102)&&menu.clickMenuButton(p,3)&&!menu.clickMenuButton(p,3),"the unchanged native final-page and Take controls transfer one finite original");p.closeContainer();
             }

@@ -31,9 +31,10 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 def goatmanBedSocketSmoke = providers.gradleProperty('goatmanBedSocketSmoke').isPresent()
 def borrascaSocketSmoke = providers.gradleProperty('borrascaSocketSmoke').isPresent()
 def uncannySocketSmoke = providers.gradleProperty('uncannySocketSmoke').isPresent()
+def tailoringSocketSmoke = providers.gradleProperty('tailoringSocketSmoke').isPresent()
 def backseatSocketSmoke = providers.gradleProperty('backseatSocketSmoke').isPresent()
-def proofRoot = goatmanBedSocketSmoke ? 'run-goatman-bed137' : backseatSocketSmoke ? 'run-backseat-live' : uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
-def proofReport = goatmanBedSocketSmoke ? 'build/goatman-bed137-proof' : backseatSocketSmoke ? 'build/backseat-live-proof' : uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
+def proofRoot = tailoringSocketSmoke ? 'run-tailoring-live' : goatmanBedSocketSmoke ? 'run-goatman-bed137' : backseatSocketSmoke ? 'run-backseat-live' : uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
+def proofReport = tailoringSocketSmoke ? 'build/tailoring-live-proof' : goatmanBedSocketSmoke ? 'build/goatman-bed137-proof' : backseatSocketSmoke ? 'build/backseat-live-proof' : uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
 
 neoForge {
     version = project.neo_version
@@ -156,7 +157,8 @@ neoForge {
             // The 2-GiB host stalled in native chunk serialization during the first reconnect.
             // Keep the watchdog and every reconnect check; allow room for the complete fixtures.
             jvmArgument '-Xmx3g'
-            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke).toString()
+            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke&&!tailoringSocketSmoke).toString()
+            systemProperty 'the_oldest_house.tailoringSocketSmoke', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.borrascaSocketSmoke', borrascaSocketSmoke.toString()
@@ -167,7 +169,8 @@ neoForge {
             client()
             gameDirectory = project.file("${proofRoot}/a")
             jvmArgument '-Xmx1100m'
-            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke).toString()
+            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke&&!tailoringSocketSmoke).toString()
+            systemProperty 'the_oldest_house.tailoringSocketSmoke', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'A'
@@ -182,7 +185,8 @@ neoForge {
             client()
             gameDirectory = project.file("${proofRoot}/b")
             jvmArgument '-Xmx1100m'
-            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke).toString()
+            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke&&!tailoringSocketSmoke).toString()
+            systemProperty 'the_oldest_house.tailoringSocketSmoke', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'B'

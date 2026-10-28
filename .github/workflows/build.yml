@@ -7,7 +7,7 @@ permissions:
 jobs:
   native:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 24
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -28,11 +28,21 @@ jobs:
           assert 'All 4 required tests passed' in log
           assert 'Game test server shutting down' in log
           CHECK
+      - name: Native graphics dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libasound2t64 libpulse0
+      - name: Two actual clients, one shared counter, original B reconnect and native card pages
+        timeout-minutes: 13
+        run: LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_tailoring_socket.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: six-tailoring-native
           path: |
+            build/tailoring-live-proof/
+            run-tailoring-live/*/logs/latest.log
+            run-tailoring-live/*/crash-reports/
             build/tailoring-native.log
             build/libs/*.jar
             run/logs/latest.log
