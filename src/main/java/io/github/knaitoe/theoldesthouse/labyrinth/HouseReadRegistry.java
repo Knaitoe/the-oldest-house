@@ -21,6 +21,8 @@ public final class HouseReadRegistry {
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> BES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.entity.EntityType<?>> ENTITIES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<RoutineEchoDisplay>> ROUTINE_ECHO=ENTITIES.register("routine_echo",()->net.minecraft.world.entity.EntityType.Builder.<RoutineEchoDisplay>of(RoutineEchoDisplay::new,net.minecraft.world.entity.MobCategory.MISC).sized(.25f,.25f).clientTrackingRange(8).updateInterval(20).build("routine_echo"));
     private static BlockBehaviour.Properties wood(){return BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noLootTable();}
     public static final DeferredBlock<Block> WALLPAPER=BLOCKS.registerBlock("read_wallpaper",Block::new,wood());
     public static final DeferredBlock<Block> CLAPBOARD=BLOCKS.registerBlock("read_clapboard",Block::new,wood());
@@ -49,5 +51,5 @@ public final class HouseReadRegistry {
         @Override public EquipmentSlot getEquipmentSlot(){return slot;}
     }
     private HouseReadRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);ITEMS.register(bus);SOUNDS.register(bus);ENTITIES.register(bus);}
 }

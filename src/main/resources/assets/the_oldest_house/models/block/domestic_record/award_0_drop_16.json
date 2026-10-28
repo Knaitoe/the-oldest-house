@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "art": "the_oldest_house:block/domestic_record/award",
+    "wood": "the_oldest_house:block/walnut",
+    "paper": "the_oldest_house:block/domestic/cardboard",
+    "particle": "the_oldest_house:block/domestic_record/award"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        -16,
+        3
+      ],
+      "to": [
+        13,
+        -14,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "down": {
+          "texture": "#wood"
+        }
+      }
+    }
+  ]
+}

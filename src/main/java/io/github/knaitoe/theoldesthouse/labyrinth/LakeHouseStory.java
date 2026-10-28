@@ -105,7 +105,7 @@ public final class LakeHouseStory {
         if(own.getInt("Finish")>0){finishTick(p,b,own);return true;}
         if(LakeHouse.empty(p))return true;
         var r=p.position().subtract(Vec3.atLowerCornerOf(b));boolean inside=house(r);
-        lightView(p,b,own,inside);dresses(p,b,own);figure(p,b,own);
+        lightView(p,b,own,inside);dresses(p,b,own);figure(p,b,own);if(inside)VignetteRoutineEchoes.lake(p,b,own);
         if(own.getBoolean("Ready"))return false;
         int visit=own.getInt("Visit");
         cues(p,b,own,visit);

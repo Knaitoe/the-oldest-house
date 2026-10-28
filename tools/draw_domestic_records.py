@@ -1,6 +1,6 @@
 """Small native paper surfaces. Drawings and inscriptions are readable shared originals in game."""
 from pathlib import Path
-import argparse,json
+import argparse,json,copy
 from PIL import Image,ImageDraw
 ROOT=Path(__file__).resolve().parents[1];A=ROOT/'src/main/resources/assets/the_oldest_house'
 KINDS=['note','drawing','photo','award','recipe','family_drawing','couple']
@@ -45,7 +45,15 @@ def models():
                 ps=[box((2,2,14),(14,14,16),'wood')]
                 if present:ps +=[box((3,3,13.9),(13,13,14),'art',[0,0,16,16])]
             name=f'domestic_record/{kind}_{int(present)}';out[A/f'models/block/{name}.json']={'parent':'minecraft:block/block','textures':tex,'elements':ps}
-            for f,rot in [('north',0),('east',90),('south',180),('west',270)]:variants[f'kind={kind},facing={f},present={str(present).lower()}']={'model':'the_oldest_house:block/'+name,'y':rot}
+            for drop in range(17):
+                lowered=kind in ('note','recipe','award')
+                target=name
+                if lowered and drop:
+                    target=name+f'_drop_{drop}';shifted=copy.deepcopy(ps)
+                    for element in shifted:
+                        element['from'][1]-=drop;element['to'][1]-=drop
+                    out[A/f'models/block/{target}.json']={'parent':'minecraft:block/block','textures':tex,'elements':shifted}
+                for f,rot in [('north',0),('east',90),('south',180),('west',270)]:variants[f'kind={kind},facing={f},present={str(present).lower()},drop={drop}']={'model':'the_oldest_house:block/'+target,'y':rot}
     out[A/'blockstates/domestic_record.json']={'variants':variants};return out
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--check',action='store_true');args=ap.parse_args()
@@ -57,5 +65,5 @@ def main():
     for p,data in models().items():
         if args.check:assert json.loads(p.read_text())==data,str(p)
         else:p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(data,indent=2)+'\n')
-    print('Verified seven native household record surfaces and fourteen finite/empty mounts.')
+    print('Verified seven original paintings, finite/empty mounts and native support-height variants.')
 if __name__=='__main__':main()
