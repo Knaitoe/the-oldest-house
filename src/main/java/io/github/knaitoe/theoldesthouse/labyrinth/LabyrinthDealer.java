@@ -90,6 +90,8 @@ public final class LabyrinthDealer {
         if(!data.hillaryScent(player))places.removeIf(p->p==LabyrinthPlace.RED_ROOM
                 && data.recentVisit(player,p)>=0 && data.recentVisit(player,p)<6);
         places.removeIf(site->LiteraryCabinChoices.closed(data,player,site));
+        // 0.4.146: a thread whose next beat needs a member who is not here is not dealt to the others alone.
+        places.removeIf(site->VignetteThreads.waiting(data,player,site));
         // Only places that already stand can be dealt; deeper ones are still being built ahead of explorers.
         places.removeIf(site->site!=LabyrinthPlace.FAMILY_COPY&&site!=LabyrinthPlace.OLD_CABIN&&!LabyrinthBuilder.isPlaceReady(data,site));
         return places;

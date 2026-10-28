@@ -168,6 +168,8 @@ public final class LabyrinthDoors {
             return;
         }
 
+        // 0.4.146: friends crossing one door together go into the same vignette, or split where they cannot.
+        GroupCrossings.before(player, door);
         String finaleDestination = LabyrinthData.DEALT.equals(door.destination)
                 ? (data.deal(player.getUUID(), door) == null ? "" : data.deal(player.getUUID(), door).place())
                 : door.destination;
@@ -215,6 +217,7 @@ public final class LabyrinthDoors {
         if(place==LabyrinthPlace.PHONE_CANOE&&!PhoneCanoe.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}
         if(place==LabyrinthPlace.GOATMAN&&!GoatmanVignette.canEnter(player)){if(reroute(player,door))return;locked(player);return;}
         if(place==LabyrinthPlace.TED_CAVER&&!CaverVignette.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}
+        GroupCrossings.crossed(player, door, place);
         arrive(player, door, entry, place);
     }
 
@@ -357,6 +360,7 @@ public final class LabyrinthDoors {
                     p.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.SPECTATOR);
             if(p.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR){LabyrinthMaze.forget(p.getUUID());LabyrinthDoorLeaks.send(p);return;}
             RedRoom.prepareIfDealt(p, place);
+            VignetteThreads.arrived(p, place);
             ModelHome.onArrive(p, place);
             HarriganVignette.onArrive(p, place);
             DrownedTown.onArrive(p, place);
