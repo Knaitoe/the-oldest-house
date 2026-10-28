@@ -26,6 +26,7 @@ public final class CoopTests {
     @AfterBatch(batch="coop_mixed146") public static void mixedDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_thread146") public static void threadDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_town148") public static void townDone(ServerLevel l){close();}
+    @AfterBatch(batch="coop_child149") public static void childDone(ServerLevel l){close();}
     private static final LabyrinthPlace SCENE=LabyrinthPlace.HILL_NURSERY;
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
@@ -192,5 +193,67 @@ public final class CoopTests {
             // Later, the one who was elsewhere examines what the ending left, as before.
             h.assertTrue(WitnessAccount.aftermathTarget(data,town,b,hatch),"the open roof hatch is still the aftermath for anyone who missed it");
         }).thenSucceed();
+    }
+
+    /** 0.4.149: shut in the child's room together, each reader looks and crawls for themselves, and each account says who was there. */
+    @GameTest(template="empty",batch="coop_child149",timeoutTicks=700)
+    public static void readersShutInTheChildsRoomTogetherCrawlForThemselvesAndEachAccountSaysWhoWasThere(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.CHILD_ROOM;var story=WitnessAccount.Story.CHILD_ROOM;var b=f.base(place);var door=b.offset(0,1,1);
+        var first=f.player("child_first",place);var second=f.player("child_second",place);var spectator=f.player("child_watching",place);spectator.setGameMode(GameType.SPECTATOR);
+        var late=new ServerPlayer[1];
+        h.runAfterDelay(10,()->{
+            h.assertTrue(SharedVignettes.followable(place)&&SharedVignettes.drafted(place)==null,"friends go into the child's room together, and nobody is credited for another's crawl");
+            f.source(first,place);first.closeContainer();
+            for(var p:List.of(first,second,spectator)){f.at(p,place,p==second?-.5:.5,0,-4.5);f.look(p,door);}
+        });
+        // The room closes around the two of them, unseen, while they face the door they came in by.
+        h.runAfterDelay(25,()->{
+            var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(world.getBoolean("ClockStarted0121")&&first.getUUID().equals(world.getUUID("CardBy0149")),"the room began to close when the first reader opened the card");
+            for(int i=0;i<ChildRoom.EXITS.size();i++)h.assertTrue(ChildRoom.seal(f.in,b,i),"an exit goes while nobody looks at it: "+i);
+            world=LiteraryVignettes.shared(f.data(),place);world.putInt("Exits0474",ChildRoom.ALL);LiteraryVignettes.shared(f.data(),place,world);
+            // A third reader comes in after every exit has gone.
+            late[0]=f.player("child_late",place);f.at(late[0],place,1.5,0,-4.5);f.look(late[0],door);
+        });
+        h.runAfterDelay(35,()->{
+            h.assertTrue(f.own(first,place).getInt("ExitsAtArrival0474")==0&&f.own(second,place).getInt("ExitsAtArrival0474")==0&&f.own(late[0],place).getInt("ExitsAtArrival0474")==ChildRoom.ALL,"two were there from the start; the third came into a shut room");
+            for(var p:List.of(second,late[0])){f.source(p,place);p.closeContainer();}
+        });
+        // Each looks at every sealed exit for themselves, from where a child would stand.
+        double[][] stands={{-6.5,0,-18.5},{6.5,0,-18.5},{-6.5,0,-11.5},{7.5,0,-7.5}};
+        for(int i=0;i<ChildRoom.EXITS.size();i++){final int exit=i;h.runAfterDelay(45+i*30,()->{var s=stands[exit];var cells=ChildRoom.EXITS.get(exit);
+            for(var p:List.of(first,second,late[0])){f.at(p,place,s[0],s[1],s[2]);f.look(p,b.offset(cells.get(cells.size()-1)));}});}
+        // Each crawls in turn while the others wait upstairs.
+        int[] start={180,230,280};
+        for(int k=0;k<3;k++){final int who=k;
+            h.runAfterDelay(start[k]-5,()->{var all=List.of(first,second,late[0]);
+                for(var p:all)if(!f.own(p,place).getBoolean("Ready")){f.at(p,place,.5,0,-6.5);f.look(p,door);}
+                h.assertTrue(f.own(all.get(who),place).getInt("ExitSeen0474")==ChildRoom.ALL,"each reader has looked at every sealed exit themselves: "+all.get(who).getGameProfile().getName());
+                f.at(all.get(who),place,.5,-2,-22.5);});
+            h.runAfterDelay(start[k]+7,()->f.at(List.of(first,second,late[0]).get(who),place,6.5,-2,-18.5));
+            h.runAfterDelay(start[k]+19,()->f.at(List.of(first,second,late[0]).get(who),place,6.5,-4,-12.5));
+            h.runAfterDelay(start[k]+35,()->{var all=List.of(first,second,late[0]);var p=all.get(who);
+                h.assertTrue(f.own(p,place).getBoolean("Ready"),"their own crawl readies their own account: "+p.getGameProfile().getName());
+                f.read(p,place,LiteraryRooms.ending(place));
+                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),story)&&WitnessAccount.role(f.data(),p.getUUID(),story)==VignetteRole.ACTOR,"each resolves the room as the one who did it");
+                for(int j=who+1;j<3;j++)h.assertTrue(!WitnessAccount.has(f.data(),all.get(j).getUUID(),story),"a reader still upstairs is not credited for another's crawl");
+                f.at(p,place,6.5,-4,-8.5);});
+        }
+        h.runAfterDelay(330,()->{var data=f.data();
+            h.assertTrue(ChildRoom.account(f.own(first,place)).equals("It began when I opened the bedtime card. The windows went first. Then the doors. child_second and child_late were in the room with me, and none of us saw one go. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it. Above me, they were still in the room."),
+                    "the first opened the card, went under first and left the others above: "+ChildRoom.account(f.own(first,place)));
+            h.assertTrue(ChildRoom.account(f.own(second,place)).equals("It began when child_first opened the bedtime card. The windows went first. Then the doors. child_first and child_late were in the room with me, and none of us saw one go. child_first had gone beneath the bed before me. I crawled along the clean line their body had left in the dust, on a strip of floor that still led somewhere. I stood up only after I had left it. Above me, child_late was still in the room."),
+                    "the second followed the first down: "+ChildRoom.account(f.own(second,place)));
+            var lateWords=ChildRoom.account(f.own(late[0],place));
+            h.assertTrue(lateWords.startsWith("When I came in, every way out of the room was already wall.")&&lateWords.contains("child_first")&&lateWords.contains("child_second")&&lateWords.contains("They had gone beneath the bed before me. I crawled along the clean lines their bodies had left")&&!lateWords.contains("Above me"),"the late reader came into a shut room and followed both down: "+lateWords);
+            h.assertTrue(pages(data,first).contains("I was in the child's room with child_second and child_late when it closed. I crawled below the bed after the windows and doors had gone."),"the first reader's Witness line names who was shut in with them");
+            h.assertTrue(pages(data,second).contains("I was in the child's room with child_first and child_late when it closed. I followed child_first below the bed."),"the second's says whom they followed");
+            h.assertTrue(pages(data,late[0]).contains("I came into the child's room after its windows and doors had gone. I followed "),"the late reader's says they came in after");
+            h.assertTrue(!WitnessAccount.has(data,spectator.getUUID(),story)&&!f.own(spectator,place).getBoolean("Ready"),"a spectator is in nobody's account and earns nothing");
+            for(var p:List.of(first,second,late[0]))h.assertTrue(!ChildRoom.account(f.own(p,place)).contains("child_watching"),"nor is the spectator named");
+            // A reader who finished alone before 0.4.149 keeps the account and line they had.
+            h.assertTrue(ChildRoom.account(new CompoundTag()).equals("The windows went first. Then the doors. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it.")&&ChildRoom.witness(new CompoundTag(),story.text).equals(story.text),"older accounts keep their words");
+            h.succeed();
+        });
     }
 }

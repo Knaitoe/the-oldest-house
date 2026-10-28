@@ -9,6 +9,9 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -37,6 +40,10 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * crawlspace and down into the basement, finds the last account there. The basement ladder comes up through a hatch beside
  * the door the reader came in by, which never goes. Everything shared (the exits, the toys) is shared; everything earned is
  * personal.
+ *
+ * Several readers can be in the room together (0.4.149). Each still looks and crawls for themselves, and nobody is credited
+ * for another's crawl; the account is written for how each was there: who opened the card, who was shut in with them,
+ * whether the exits had begun to go before they came, and who went beneath the bed ahead of them or stayed behind.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class ChildRoom {
@@ -169,10 +176,13 @@ public final class ChildRoom {
         boolean read=readCard(own);
         if(read&&mask!=ALL&&world.getLong("SealTick")!=p.server.getTickCount()){
             if(!world.getBoolean("ClockStarted0121")){world.putBoolean("ClockStarted0121",true);TheOldestHouse.LOGGER.info("The child's room is closing: {} opened the bedtime card.",p.getGameProfile().getName());}
+            if(!world.hasUUID("CardBy0149")){world.putUUID("CardBy0149",p.getUUID());world.putString("CardName0149",p.getGameProfile().getName());}
             world.putLong("SealTick",p.server.getTickCount());int clock=world.getInt("SealClock")+5;
             if(clock>=SEAL_EVERY){int i=Integer.numberOfTrailingZeros(~mask);if(i<EXITS.size()&&seal(l,b,i)){mask|=1<<i;world.putInt("Exits0474",mask);clock=0;TheOldestHouse.LOGGER.info("The child's room sealed exit {} unseen.",i);}}
             world.putInt("SealClock",clock);LiteraryVignettes.shared(d,PLACE,world);
         }
+        // 0.4.149: whoever is in the room with this reader while it closes, for their account.
+        if(!own.getBoolean("Ready")&&(mask!=0||world.getBoolean("ClockStarted0121")))company(p,own);
         // Each reader must see for themselves what has become of every exit.
         int seen=own.getInt("ExitSeen0474");
         if(read)for(int i=0;i<EXITS.size();i++){
@@ -189,6 +199,7 @@ public final class ChildRoom {
         }
         if(inBasement(p,b)){
             if(own.getBoolean("Crawled0474")&&!own.getBoolean("StoodUp0474")){own.putBoolean("StoodUp0474",true);p.displayClientMessage(Component.literal("You can stand up here."),true);}
+            if(own.getBoolean("Crawled0474")&&!own.getBoolean("Ready"))draft(p,b,own,world);
             if(own.getBoolean("Crawled0474"))LiteraryVignettes.ready(p,PLACE,own,own.getInt("ExitsAtArrival0474")==0
                     ?"examined_the_lost_exits_and_crawled_below_the_bed":"examined_the_sealed_thresholds_and_found_the_remaining_crawl");
         }
@@ -213,6 +224,72 @@ public final class ChildRoom {
         // Once the room is shut, something above the bed speaks now and then. Only the reader hears it.
         if(mask==ALL&&own.getInt("Present")%600==300&&!inBasement(p,b)){var at=Vec3.atCenterOf(b.offset(0,5,-21));
             p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.55F,.9F+p.getRandom().nextFloat()*.15F,p.getRandom().nextLong()));}
+    }
+    // ------------------------------------------------------------------------------------------------ the account
+    /** The account as it read before several readers could share the room, kept for readers who finished before 0.4.149. */
+    static final String ALONE="The windows went first. Then the doors. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it.";
+    /** Notes every other living reader in the room, in the order they were first there with this one. */
+    static void company(ServerPlayer p,CompoundTag own){
+        var with=own.getList("With0149",Tag.TAG_COMPOUND);boolean changed=false;
+        for(var other:p.server.getPlayerList().getPlayers()){
+            if(other==p||!IndianLakeRooms.inside(other,PLACE))continue;boolean known=false;
+            for(int i=0;i<with.size();i++)if(with.getCompound(i).getUUID("Id").equals(other.getUUID())){known=true;break;}
+            if(known)continue;var c=new CompoundTag();c.putUUID("Id",other.getUUID());c.putString("Name",other.getGameProfile().getName());with.add(c);changed=true;
+        }
+        if(changed)own.put("With0149",with);
+    }
+    /** The reader stands up in the basement: who went beneath the bed ahead of them, who was still in the room, and who opened the card. */
+    static void draft(ServerPlayer p,BlockPos b,CompoundTag own,CompoundTag world){
+        var d=LabyrinthData.get(p.server);var ahead=new ListTag();var behind=new ListTag();
+        for(var t:own.getList("With0149",Tag.TAG_COMPOUND)){
+            var c=(CompoundTag)t;var id=c.getUUID("Id");var name=StringTag.valueOf(c.getString("Name"));
+            if(LiteraryVignettes.personal(d,id,PLACE).getBoolean("Ready")){ahead.add(name);continue;}
+            var other=p.server.getPlayerList().getPlayer(id);if(other!=null&&IndianLakeRooms.inside(other,PLACE)&&!inBasement(other,b))behind.add(name);
+        }
+        own.put("Ahead0149",ahead);own.put("Behind0149",behind);
+        if(own.getInt("ExitsAtArrival0474")==0&&world.hasUUID("CardBy0149")){
+            if(world.getUUID("CardBy0149").equals(p.getUUID()))own.putBoolean("CardMine0149",true);else own.putString("CardBy0149",world.getString("CardName0149"));
+        }
+        own.putBoolean("Drafted0149",true);
+    }
+    private static List<String> names(CompoundTag own,String key){
+        var out=new java.util.ArrayList<String>();for(var t:own.getList(key,Tag.TAG_COMPOUND))out.add(((CompoundTag)t).getString("Name"));
+        for(var t:own.getList(key,Tag.TAG_STRING))out.add(t.getAsString());return out;
+    }
+    private static String join(List<String> names){return names.size()==1?names.getFirst():String.join(", ",names.subList(0,names.size()-1))+" and "+names.getLast();}
+    private static String were(List<String> names){return names.size()==1?" was":" were";}
+    /** The last account in the basement, in the reader's own words for how they were there. */
+    public static String account(CompoundTag own){
+        if(!own.getBoolean("Drafted0149"))return ALONE;
+        var with=names(own,"With0149");var ahead=names(own,"Ahead0149");var behind=names(own,"Behind0149");int arrival=own.getInt("ExitsAtArrival0474");
+        var s=new StringBuilder();
+        if(arrival==0){
+            if(!with.isEmpty()&&own.getBoolean("CardMine0149"))s.append("It began when I opened the bedtime card. ");
+            else if(!with.isEmpty()&&own.contains("CardBy0149"))s.append("It began when ").append(own.getString("CardBy0149")).append(" opened the bedtime card. ");
+            s.append("The windows went first. Then the doors.");
+            if(!with.isEmpty())s.append(' ').append(join(with)).append(were(with)).append(" in the room with me, and none of us saw one go.");
+        }else{
+            s.append(switch(Integer.bitCount(arrival)){
+                case 1->"When I came in, one window had already gone. The rest went while I was there.";
+                case 2->"When I came in, the windows had already gone. The doors went while I was there.";
+                case 3->"When I came in, the windows and one door had already gone. The last door went while I was there.";
+                default->"When I came in, every way out of the room was already wall.";});
+            if(!with.isEmpty())s.append(' ').append(join(with)).append(were(with)).append(" in there with me.");
+        }
+        if(ahead.isEmpty())s.append(" I crawled beneath the bed and found a strip of floor that still led somewhere.");
+        else s.append(' ').append(ahead.equals(with)?"They":join(ahead)).append(" had gone beneath the bed before me. I crawled along the clean ").append(ahead.size()==1?"line their body":"lines their bodies").append(" had left in the dust, on a strip of floor that still led somewhere.");
+        s.append(" I stood up only after I had left it.");
+        if(!behind.isEmpty())s.append(" Above me, ").append(behind.equals(with)?"they":join(behind)).append(behind.equals(with)?" were":were(behind)).append(" still in the room.");
+        return s.toString();
+    }
+    /** The line in the Witness account; {@code alone} is the line every reader kept before 0.4.149. */
+    public static String witness(CompoundTag own,String alone){
+        if(!own.getBoolean("Drafted0149"))return alone;
+        var with=names(own,"With0149");var ahead=names(own,"Ahead0149");int arrival=own.getInt("ExitsAtArrival0474");
+        String first=arrival==0?(with.isEmpty()?"":"I was in the child's room with "+join(with)+" when it closed. ")
+                :"I came into the child's room after "+(arrival==ALL?"its windows and doors had gone":"its windows had begun to go")+". ";
+        String crawl=ahead.isEmpty()?"I crawled below the bed"+(arrival==0?" after the windows and doors had gone":"")+".":"I followed "+join(ahead)+" below the bed.";
+        return first+crawl+" I found a floor that still led somewhere.";
     }
     /** The reader has opened the bedtime card: read to the end, or opened at all. */
     public static boolean readCard(CompoundTag own){return own.getBoolean("Read_Source")||own.contains("Original_Source");}
@@ -316,10 +393,10 @@ public final class ChildRoom {
         if(world.hasUUID("CeilingToy")&&l.getEntity(world.getUUID("CeilingToy")) instanceof LiteraryActor old)old.discard();
         for(var actor:l.getEntitiesOfClass(LiteraryActor.class,area))actor.discard();
         LiteraryRooms.build(l,b,PLACE);
-        world=LiteraryVignettes.shared(d,PLACE);world.remove("CeilingToy");world.remove("BedShifted127");world.remove("Dinnerbone");world.remove("LostExits");world.putInt("Exits0474",0);world.putInt("SealClock",0);LiteraryVignettes.shared(d,PLACE,world);
+        world=LiteraryVignettes.shared(d,PLACE);world.remove("CeilingToy");world.remove("BedShifted127");world.remove("Dinnerbone");world.remove("LostExits");world.remove("CardBy0149");world.remove("CardName0149");world.putInt("Exits0474",0);world.putInt("SealClock",0);LiteraryVignettes.shared(d,PLACE,world);
         for(var key:d.stateKeys(LiteraryVignettes.stateId(PLACE))){java.util.UUID id;try{id=java.util.UUID.fromString(key);}catch(IllegalArgumentException notReader){continue;}var own=LiteraryVignettes.personal(d,id,PLACE);
             if(own.getBoolean("Completed"))continue;
-            for(var k:List.of("Ready","Outcome","ExaminedLostExits","CrawledUnderBed","ExitSeen0474","Crawled0474","AllSeen0474","StoodUp0474","UnderFloor0474","ExitsAtArrival0474"))own.remove(k);
+            for(var k:List.of("Ready","Outcome","ExaminedLostExits","CrawledUnderBed","ExitSeen0474","Crawled0474","AllSeen0474","StoodUp0474","UnderFloor0474","ExitsAtArrival0474","With0149","Ahead0149","Behind0149","CardBy0149","CardMine0149","Drafted0149"))own.remove(k);
             for(int i=0;i<5;i++){own.remove("ExitExamineTicks"+i);own.remove("ExitLook0474_"+i);}
             LiteraryVignettes.save(d,id,PLACE,own);}
         markBuilt(d,b);

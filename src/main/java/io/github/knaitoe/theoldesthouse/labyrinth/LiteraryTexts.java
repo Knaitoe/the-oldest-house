@@ -108,7 +108,7 @@ public final class LiteraryTexts {
         case MASQUE->"I put my hand on the clock. The next chime did not come. Seven rooms of people had been waiting for it; now there was only the sound of my hand leaving the wood.";
         case USHER->own.getBoolean("LidClosed")?"I returned to the closed coffin. Scratching had crossed the stone along with the crack. I could no longer call it the wood settling.":"I left the lid open. When I returned, the coffin was empty. I found her in the wing, standing where there had been no chair.";
         case WINCHESTER->"The switchbacks brought me one floor up, to the upper ledger. Beside every room it kept a name, and none of the names were the builders'. The last name had no room yet. That was why the work could not stop.";
-        case CHILD_ROOM->"The windows went first. Then the doors. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it.";
+        case CHILD_ROOM->ChildRoom.account(own);
         case CRIMSON_HALL->"I played the three voices all the way through. Under the snow, the floor was red. A house can keep a voice much longer than it keeps a person.";
         case BLY_ROUTE->own.getBoolean("Dragged")?"The first time I stood where she walks and came up in the lake room's water. Then I shut a cupboard from inside. The catches are inside because a child once hid from her in one. I think she was looking for that child when she found me.":"I shut a cupboard from inside while the drips passed on their way to the lake room. The catches are inside because a child once hid from her in one. She has never opened one. I think she is still looking for that child.";
         case THREE_FINGERS->ThreeFingers.account(own);
