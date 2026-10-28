@@ -13,7 +13,7 @@ What is not built:
 - turning actions into categories, which the owner deferred, so no reader has a category yet;
 - the account, the House of Leaves, mirrors and doubles reading the record.
 
-The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Four parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), every shared scene has a way on into the halls (0.4.144), and the shared foundation of co-op (0.4.146): friends follow each other into a vignette, mixed groups are dealt something none has started or split, threads, and accounts for each way of being there. The monkey's paw is the first scene made shared, with its drafted accounts (0.4.147, `docs/SHARED_PAW_0_4_147.md`); the child's room and the drowned town are next, then the Goatman's campers. Sections below describe the intended design, and each says where the build differs today.
+The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Four parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), every shared scene has a way on into the halls (0.4.144), and the shared foundation of co-op (0.4.146): friends follow each other into a vignette, mixed groups are dealt something none has started or split, threads, and accounts for each way of being there. The monkey's paw is the first scene made shared, with its drafted accounts (0.4.147, `docs/SHARED_PAW_0_4_147.md`), and the drowned town's ending the second (0.4.148, `docs/SHARED_DROWNED_TOWN_0_4_148.md`); the child's room is next, then the Goatman's campers. Sections below describe the intended design, and each says where the build differs today.
 
 ## The idea
 
@@ -74,7 +74,7 @@ The owner's October 28 direction makes the other vignettes shared:
 - **Forward exits** lead back into the ordinary halls. Built in 0.4.144: each shared scene has one way on, placed to suit it, dealt only ordinary halls and held by the entry's locks (`docs/ONWARD_DOORS_0_4_144.md`).
 - **The owner's notes on particular scenes:**
   - **Goatman** can eventually be shared. Extra players take the place of other campers, so the headcount stays the same as solo. The count, seating, supper and dialogue must treat each player as that cousin.
-  - **The drowned town and lake-witch scenes** should mostly support several players.
+  - **The drowned town and lake-witch scenes** should mostly support several players. The drowned town already ran as one story for the world; 0.4.148 drafts its ending for everyone in Proofrock when the roof opens: a witness's account for those there for the essays, a late joiner's for those who came after.
   - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen. Built in 0.4.147.
   - **The child's room** can be shared.
 - **Built in 0.4.146** (`docs/COOP_FOUNDATION_0_4_146.md`): a door into a shared vignette is held 30 seconds for the group, so friends through the same door arrive in the same scene. A mixed group at a door is dealt a vignette none of them has started, or splits. The backseat, the silo, Borrasca, the copies and the Red Room stay private; the Goatman and hide-and-clap are held back until they are made shared. Each reader still plays the scene as their own until it is drafted.
@@ -521,7 +521,7 @@ Follow-ups the same day settled several details, all in "Co-op":
 - multi-visit vignettes follow one story per thread, with late joiners, aftermath visits and accounts drafted for each way of being there.
 - the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room are named as scenes to share.
 
-Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146) and its first shared scene, the paw (0.4.147); the other scenes follow one at a time.
+Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146) and its first shared scenes, the paw (0.4.147) and the drowned town's ending (0.4.148); the other scenes follow one at a time.
 
 ## Built so far
 
@@ -534,5 +534,8 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.142 | The six read-side consumers ("Vignettes") | `docs/SIX_PERSONAL_SCENE_TOUCHES_0_4_142.md` |
 | 0.4.143 | The quiet rooms chain from the junction; the hallway doors are retired; a finished story's door is a passage | `docs/JUNCTION_CHAIN_0_4_143.md` |
 | 0.4.144 | Every shared scene has a way on into the ordinary halls, with five fitted native doors | `docs/ONWARD_DOORS_0_4_144.md` |
+| 0.4.146 | Going in together: groups follow into one scene, mixed groups are dealt a scene none has started, threads, roles kept beside each story | `docs/COOP_FOUNDATION_0_4_146.md` |
+| 0.4.147 | The monkey's paw shared: one thread's evening, one holder, the finger curling for everyone who can see the hand, four drafted accounts | `docs/SHARED_PAW_0_4_147.md` |
+| 0.4.148 | The drowned town's ending shared: everyone in Proofrock when the roof opens keeps a witness's or late joiner's account | `docs/SHARED_DROWNED_TOWN_0_4_148.md` |
 
 The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.

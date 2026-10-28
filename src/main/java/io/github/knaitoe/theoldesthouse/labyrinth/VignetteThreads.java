@@ -131,20 +131,32 @@ public final class VignetteThreads {
      */
     public static void ended(ServerPlayer actor,WitnessAccount.Story story,String outcome){
         var place=LabyrinthPlace.byId(story.id);if(!SharedVignettes.followable(place))return;
-        var d=LabyrinthData.get(actor.server);var thread=thread(d,place,actor.getUUID());if(thread.isEmpty()||thread.getBoolean("Ended"))return;
+        var d=LabyrinthData.get(actor.server);var thread=thread(d,place,actor.getUUID());var whole=SharedVignettes.drafted(place);
+        if(whole!=null&&whole.whole()){ended(actor,story,outcome,place,d,thread,whole);return;}
+        if(thread.isEmpty()||thread.getBoolean("Ended"))return;
         thread.putBoolean("Ended",true);thread.putString("Outcome",outcome);thread.putUUID("Actor",actor.getUUID());thread.putString("ActorName",actor.getGameProfile().getName());
         saveThread(d,place,actor.getUUID(),thread);
         var scene=SharedVignettes.drafted(place);if(scene==null)return;
         for(var watcher:presentMembers(actor.server,thread,place,actor.getUUID())){
-            var role=scene.role(thread,watcher.getUUID(),partway(thread,watcher.getUUID())?VignetteRole.PARTWAY:VignetteRole.WITNESS);
+            var role=scene.role(d,thread,watcher.getUUID(),partway(thread,watcher.getUUID())?VignetteRole.PARTWAY:VignetteRole.WITNESS);
             if(scene.line(role,outcome,actor.getGameProfile().getName())!=null)WitnessAccount.resolveAs(watcher,story,outcome,role,actor.getGameProfile().getName());
+        }
+    }
+    /** A story that belongs to the world: whoever is in the scene when it ends watched it, whatever thread they came in with. */
+    private static void ended(ServerPlayer actor,WitnessAccount.Story story,String outcome,LabyrinthPlace place,LabyrinthData d,CompoundTag thread,SharedVignettes.Scene scene){
+        String name=actor.getGameProfile().getName();
+        if(!thread.isEmpty()&&!thread.getBoolean("Ended")){thread.putBoolean("Ended",true);thread.putString("Outcome",outcome);thread.putUUID("Actor",actor.getUUID());thread.putString("ActorName",name);saveThread(d,place,actor.getUUID(),thread);}
+        for(var watcher:actor.server.getPlayerList().getPlayers()){
+            if(watcher==actor||!present(watcher,place))continue;
+            var role=scene.role(d,thread,watcher.getUUID(),VignetteRole.WITNESS);
+            if(scene.line(role,outcome,name)!=null)WitnessAccount.resolveAs(watcher,story,outcome,role,name);
         }
     }
     private static void aftermath(ServerPlayer p,LabyrinthPlace place,CompoundTag thread){
         var story=WitnessAccount.Story.of(place.id());var scene=SharedVignettes.drafted(place);var d=LabyrinthData.get(p.server);
         if(story==null||scene==null||WitnessAccount.has(d,p.getUUID(),story))return;
         String outcome=thread.getString("Outcome"),actor=thread.getString("ActorName");
-        var role=scene.role(thread,p.getUUID(),VignetteRole.AFTERMATH);if(scene.line(role,outcome,actor)==null)return;
+        var role=scene.role(d,thread,p.getUUID(),VignetteRole.AFTERMATH);if(role!=VignetteRole.AFTERMATH||scene.line(role,outcome,actor)==null)return;
         p.displayClientMessage(Component.literal("It ended here without you."),false);
         WitnessAccount.resolveAs(p,story,outcome,role,actor);
     }

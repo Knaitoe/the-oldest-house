@@ -21,10 +21,11 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_coop") @PrefixGameTestTemplate(false)
 public final class CoopTests {
     private static LiteraryTests.Fixture active;
-    private static void close(){GroupCrossings.forget();SharedVignettes.undraft(LabyrinthPlace.HILL_NURSERY);HouseTransitionEvents.clearAll();if(active!=null){active.close();active=null;}}
+    private static void close(){GroupCrossings.forget();SharedVignettes.undraft(LabyrinthPlace.HILL_NURSERY);DrownedTown.clearAll();HouseTransitionEvents.clearAll();if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="coop_follow146") public static void followDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_mixed146") public static void mixedDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_thread146") public static void threadDone(ServerLevel l){close();}
+    @AfterBatch(batch="coop_town148") public static void townDone(ServerLevel l){close();}
     private static final LabyrinthPlace SCENE=LabyrinthPlace.HILL_NURSERY;
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
@@ -163,5 +164,33 @@ public final class CoopTests {
                 h.assertTrue(WitnessAccount.role(data,absent.getUUID(),story)==VignetteRole.AFTERMATH&&pages(data,absent).contains("The chalk was still on the wall"),"the absent member reads the aftermath");
                 f.reload();h.assertTrue(WitnessAccount.role(f.data(),witness.getUUID(),story)==VignetteRole.WITNESS&&VignetteThreads.thread(f.data(),SCENE,absent.getUUID()).getBoolean("Ended"),"roles and the ended thread survive a reload");
             }).thenSucceed();
+    }
+
+    /** 0.4.148: the drowned town's story is the world's, so everyone in Proofrock when the roof opens watched it. */
+    @GameTest(template="empty",batch="coop_town148",timeoutTicks=600)
+    public static void everyoneInProofrockWhenTheRoofOpensWatchedItInTheirOwnWords(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var town=LabyrinthPlace.DROWNED_TOWN;var b=f.base(town);var hatch=b.offset(DrownedTown.ROOF_HATCH);
+        f.chunks.hold(f.out,new AABB(hatch).inflate(8));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the drowned church is resident")).thenExecute(()->{
+            var data=f.data();var story=WitnessAccount.Story.DROWNED_TOWN;
+            var actor=player(h,f,"town_actor");var early=player(h,f,"town_early");var late=player(h,f,"town_late");var away=player(h,f,"town_away");var spectator=player(h,f,"town_spectator");
+            // The first visit, for the essays: two readers are in Proofrock for it.
+            var state=new CompoundTag();state.putInt("Visit",1);data.setState(DrownedTown.ID,state);
+            for(var p:List.of(actor,early)){at(p,f.out,hatch.south(2));DrownedTown.noteFirstVisit(data,p);}
+            // The second: the essays dried and the church unlocked. A newcomer comes too; one reader is elsewhere.
+            state=data.state(DrownedTown.ID);state.putInt("Visit",2);state.putInt("DryMask",7);state.putBoolean("ChurchUnlocked",true);data.setState(DrownedTown.ID,state);
+            at(late,f.out,hatch.south(3));DrownedTown.noteFirstVisit(data,late);
+            at(spectator,f.out,hatch.east(2));spectator.setGameMode(GameType.SPECTATOR);DrownedTown.noteFirstVisit(data,spectator);
+            at(away,f.out,b.offset(0,0,240));
+            h.assertTrue(SharedVignettes.drafted(town)!=null&&SharedVignettes.drafted(town).whole(),"the drowned town is drafted, and its story is the world's");
+            h.assertTrue(DrownedTown.openRoof(actor,hatch),"the reader beneath the hatch lets the breath go and the roof opens");
+            h.assertTrue(WitnessAccount.has(data,actor.getUUID(),story)&&WitnessAccount.role(data,actor.getUUID(),story)==VignetteRole.ACTOR,"the one who opened it holds an actor's account");
+            h.assertTrue(WitnessAccount.role(data,early.getUUID(),story)==VignetteRole.WITNESS&&pages(data,early).contains("town_actor let a breath go beneath the roof hatch"),"a reader there for the essays watched it, in their own words, naming who opened it");
+            h.assertTrue(WitnessAccount.role(data,late.getUUID(),story)==VignetteRole.PARTWAY&&pages(data,late).contains("I came to Proofrock after the essays had dried"),"the newcomer's account is a late joiner's");
+            h.assertTrue(!WitnessAccount.has(data,away.getUUID(),story)&&!WitnessAccount.has(data,spectator.getUUID(),story),"nobody elsewhere, and no spectator, is credited");
+            h.assertTrue(pages(data,actor).contains(story.text),"the actor's account is unchanged");
+            // Later, the one who was elsewhere examines what the ending left, as before.
+            h.assertTrue(WitnessAccount.aftermathTarget(data,town,b,hatch),"the open roof hatch is still the aftermath for anyone who missed it");
+        }).thenSucceed();
     }
 }
