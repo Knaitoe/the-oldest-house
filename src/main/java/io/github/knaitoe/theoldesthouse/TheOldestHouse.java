@@ -84,6 +84,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.BackseatRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.SiloRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.HouseReadRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.OnwardRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.DomesticRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleLoot.register(modEventBus);
         ClapGhostRegistry.register(modEventBus);

@@ -87,6 +87,17 @@ public final class ArchitectureTests {
         var data=new LabyrinthData();server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
         try{
             LabyrinthBuilder.clearAll();LabyrinthBuilder.rebuild(server);LabyrinthBuilder.finishGameTest(server);
+            // 0.4.144: every scene's way on stands in its finished scene, with a clear way up to it.
+            var missing=new ArrayList<String>();
+            for(var scene:OnwardDoors.places()){
+                var door=data.door(OnwardDoors.id(scene));if(door==null||!LabyrinthData.DEALT.equals(door.destination)){var spec=OnwardDoors.doorSpec(scene);var lv=HouseTestLevel.get(server,NovelRooms.dimension(scene));var at=spec==null?null:LabyrinthPlaces.base(origin,scene).offset(spec.rel());
+                    missing.add(scene.id()+" unregistered"+(at==null?"":": "+lv.getBlockState(at)+"/"+lv.getBlockState(at.above())+" before "+lv.getBlockState(at.relative(spec.facing()))+"/"+lv.getBlockState(at.relative(spec.facing()).above())));continue;}
+                var level=HouseTestLevel.get(server,door.dimension);var front=door.lower.relative(door.facing);
+                if(!(level.getBlockState(door.lower).getBlock() instanceof DoorBlock&&level.getBlockState(door.lower.above()).getBlock() instanceof DoorBlock))missing.add(scene.id()+" not a door: "+level.getBlockState(door.lower)+"/"+level.getBlockState(door.lower.above()));
+                else if(!(level.getBlockState(front).getCollisionShape(level,front).isEmpty()&&level.getBlockState(front.above()).getCollisionShape(level,front.above()).isEmpty()&&level.getBlockState(front).getFluidState().isEmpty()))missing.add(scene.id()+" blocked by "+level.getBlockState(front)+"/"+level.getBlockState(front.above()));
+                else{var approach=front.relative(door.facing);var shape=level.getBlockState(approach).getCollisionShape(level,approach);if(!shape.isEmpty()&&shape.max(Direction.Axis.Y)>.125)missing.add(scene.id()+" approach blocked by "+level.getBlockState(approach));}
+            }
+            h.assertTrue(missing.isEmpty(),"every scene's way on stands as an actual door with a clear cell before it: "+missing);
             for(var scene:LabyrinthPlace.values())if(SceneHuntReview.applies(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);var hide=scene==LabyrinthPlace.ELK_CARCASSES?level.getBlockEntity(base.offset(-2,0,-37)):null;h.assertTrue(SceneHuntReview.apply(level,origin,scene),scene.id()+" completes its actual playtest dressing");if(scene==LabyrinthPlace.ELK_CARCASSES)h.assertTrue(hide!=null&&level.getBlockEntity(base.offset(-2,0,-37))==hide,"the actual original carcass block entity survives its visual and forest upgrade");}
             VignetteAudit.write(server,origin);
             int dressed=0,props=0;
@@ -305,7 +316,7 @@ public final class ArchitectureTests {
     /** Open space connected to a scene's doorways, through its doors. */
     private static Set<BlockPos> reachable(net.minecraft.server.level.ServerLevel level,BlockPos b,LabyrinthPlace scene){
         var r=scene.room();var seen=new HashSet<BlockPos>();var todo=new ArrayDeque<BlockPos>();
-        for(var door:scene.doors())for(int up=0;up<=1;up++){var start=b.offset(door.rel()).relative(door.facing().getOpposite()).above(up);if(r.isInside(start.subtract(b))&&seen.add(start))todo.add(start);}
+        for(var door:scene.doors())for(int up=0;up<=1;up++){var inward=LabyrinthData.RETURN.equals(door.destination())?door.facing().getOpposite():door.facing();var start=b.offset(door.rel()).relative(inward).above(up);if(r.isInside(start.subtract(b))&&seen.add(start))todo.add(start);}
         while(!todo.isEmpty()){
             var at=todo.poll();
             for(var d:Direction.values()){
@@ -392,7 +403,7 @@ public final class ArchitectureTests {
         h.assertTrue(l.getBlockState(b.offset(9,1,-10)).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&l.getBlockState(b.offset(0,-1,-3)).is(LiteraryRegistry.YACHT_CARPET.get()),"the reader arrives in a yacht cabin with portholes");
         h.assertTrue(l.getBlockState(b.offset(0,-1,-50)).is(Blocks.WATER)&&l.getBlockState(b.offset(14,-1,-10)).is(Blocks.WATER),"the yacht stands in the lake, not on land");
         for(int x=-9;x<=9;x++)for(int y=-1;y<=3;y++)h.assertTrue(!l.getBlockState(b.offset(x,y,0)).is(Blocks.WATER),"no lake water inside the hull at "+x+","+y);
-        var door=b.offset(ElkCarcassMap.SERVICE_DOOR);h.assertTrue(l.getBlockState(door).getBlock() instanceof DoorBlock,"the crew's gate is a real return door");
+        var door=b.offset(ElkCarcassMap.SERVICE_DOOR);h.assertTrue(l.getBlockState(door).getBlock() instanceof DoorBlock,"the crew's gate is a real door, the scene's way on");
         h.assertTrue(l.getBlockState(b.offset(LiteraryRooms.ending(LabyrinthPlace.ELK_CARCASSES))).is(LiteraryRegistry.PROP.get()),"the ending ledger waits at the gate");
         for(int x=ElkCarcassMap.HOLLOW_X0;x<=ElkCarcassMap.HOLLOW_X1;x++)for(int z=ElkCarcassMap.HOLLOW_Z0;z<=ElkCarcassMap.HOLLOW_Z1;z++){
             var cell=b.offset(x,ElkCarcassMap.CAVE_Y,z);var roof=cell.above();

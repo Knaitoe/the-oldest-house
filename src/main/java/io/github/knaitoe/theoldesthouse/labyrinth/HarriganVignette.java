@@ -296,6 +296,7 @@ public final class HarriganVignette {
         if (built != funeral) {
             if (funeral) buildFuneralHome(level, base);
             else buildStudy(level, base);
+            OnwardDoors.restore(level, base, LabyrinthPlace.HARRIGAN);
             CompoundTag state = data.state(ID);
             state.putBoolean("FuneralHome0505", funeral);
             data.setState(ID, state);

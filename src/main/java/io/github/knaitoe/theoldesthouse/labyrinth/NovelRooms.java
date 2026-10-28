@@ -25,7 +25,7 @@ public final class NovelRooms {
     public static void build(MinecraftServer server,ServerLevel l,BlockPos b,LabyrinthPlace p){
         var r=p.room();box(l,b,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ(),Blocks.AIR.defaultBlockState());
         switch(p){case ZAMPANO_COURTYARD->courtyard(l,b);case WHALE->WhaleInstitute.build(l,b);case BARN_WELL->well(l,b);case PLAIN->plain(l,b);case HOSPITAL->hospital(l,b);case KAREN_ROOM->karen(l,b);default->throw new IllegalArgumentException(p.id());}
-        for(var spec:p.doors()){var at=b.offset(spec.rel());door(l,at,spec.facing(),Blocks.DARK_OAK_DOOR,false);BuildBlocks.set(l,at.below(),Blocks.SMOOTH_STONE.defaultBlockState(),F);}
+        for(var spec:p.doors()){if(OnwardDoors.isOnward(spec))continue;var at=b.offset(spec.rel());door(l,at,spec.facing(),Blocks.DARK_OAK_DOOR,false);BuildBlocks.set(l,at.below(),Blocks.SMOOTH_STONE.defaultBlockState(),F);}
         for(int x=-3;x<=3;x++)for(int z=1;z<=4;z++)BuildBlocks.set(l,b.offset(x,-1,z),Blocks.SMOOTH_STONE.defaultBlockState(),F);
         if(p==LabyrinthPlace.HOSPITAL)BuildBlocks.after(l,()->NightWardMaterials.fresh(l,b));
     }

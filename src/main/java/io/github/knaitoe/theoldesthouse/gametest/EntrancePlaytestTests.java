@@ -22,6 +22,8 @@ public final class EntrancePlaytestTests {
     @AfterBatch(batch="cross_hall142") public static void crossDone(ServerLevel l){close();}
     @AfterBatch(batch="retire_entrance142") public static void retireDone(ServerLevel l){close();}
     @AfterBatch(batch="finished_passage143") public static void passageDone(ServerLevel l){close();}
+    @AfterBatch(batch="onward_doors144") public static void onwardDone(ServerLevel l){close();}
+    @AfterBatch(batch="onward_saved144") public static void onwardSavedDone(ServerLevel l){close();}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
     private static void click(ServerPlayer p,BlockPos at){p.gameMode.useItemOn(p,p.serverLevel(),p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));}
@@ -179,6 +181,98 @@ public final class EntrancePlaytestTests {
               h.assertTrue(HouseReadSites.inside(p)==null&&f.data().returnDepth(p.getUUID())==1,"the actual command crossing retains exactly its own ordinary return");
           }).thenSucceed();
     }
+    private static final java.util.List<LabyrinthPlace> HALLS=java.util.List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
+    private static boolean hall(LabyrinthPlace place){return place!=null&&(LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place));}
+    private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.level(place),new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
+
+    @GameTest(template="empty",batch="onward_doors144",timeoutTicks=4000)
+    public static void aScenesFittedWayOnLeadsIntoAnOrdinaryHallAsOneCrossingAndLeavesTheSceneBehind(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"onward_reader");var scene=LabyrinthPlace.HILL_NURSERY;
+        var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));for(var hall:HALLS)hold(f,hall);hold(f,scene);
+        boolean[] ticking={false};LabyrinthData.Door[] west={null},onward={null};
+        h.onEachTick(()->{if(ticking[0])tick(p);});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction, the ordinary halls and the nursery are resident"))
+            .thenExecute(()->{
+                LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
+                for(var hall:HALLS){var b=f.base(hall);if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else LabyrinthHalls.build(f.in,b,hall);LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);}
+                f.build(scene);
+                h.assertTrue(f.data().door(OnwardDoors.id(scene))==null,"the scene's authored doors are registered without its way on, which waits for its door to stand");
+                h.assertTrue(OnwardDoors.install(f.level(scene),f.base(scene),scene),"the fitted door goes in where it was placed");
+                onward[0]=f.data().door(OnwardDoors.id(scene));var l=f.level(scene);
+                h.assertTrue(onward[0]!=null&&LabyrinthData.DEALT.equals(onward[0].destination)&&l.getBlockState(onward[0].lower).is(Blocks.DARK_OAK_DOOR)&&l.getBlockState(onward[0].lower.above()).is(Blocks.DARK_OAK_DOOR),"a dark oak door stands in the nursery's far wall as a dealt way on");
+                west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");f.data().deal(p.getUUID(),west[0],scene.id(),false);
+                at(p,f.in,west[0].lower.relative(west[0].facing));ticking[0]=true;click(p,west[0].lower);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(p)&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==scene,"the reader comes into the scene by its entry"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),onward[0]);
+                h.assertTrue(deal!=null&&hall(LabyrinthPlace.byId(deal.place())),"arriving deals the way on an ordinary hall: "+deal);
+                h.assertTrue(f.data().returnDepth(p.getUUID())==1,"coming into the scene is one crossing");
+                // Whatever else dealt it a story, a way on leads into a hall when it is used.
+                f.data().deal(p.getUUID(),onward[0],LabyrinthPlace.SEANCE.id(),false);
+                at(p,f.in,onward[0].lower.relative(onward[0].facing));click(p,onward[0].lower);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(p)&&hall(LabyrinthPlaces.placeAt(f.origin,p.blockPosition())),"the way on leads into an ordinary hall"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),onward[0]);
+                h.assertTrue(deal!=null&&hall(LabyrinthPlace.byId(deal.place()))&&LabyrinthPlace.byId(deal.place())==LabyrinthPlaces.placeAt(f.origin,p.blockPosition()),"the story it had been dealt gave way to the hall the reader reached");
+                h.assertTrue(f.data().returnDepth(p.getUUID())==1,"the scene and its way on are one forward crossing");
+                var back=f.data().peekReturn(p.getUUID());
+                h.assertTrue(back!=null&&back.pos().distanceTo(Vec3.atBottomCenterOf(west[0].lower))<.01,"going back from that hall returns to the door that led into the scene");
+                h.assertTrue(VignetteGate.dormant(f.data(),p.getUUID(),west[0]),"going on leaves the scene's door quiet behind the reader, as going back out of it does");
+                h.assertTrue(p.isAlive()&&p.getHealth()==20,"the reader is untouched");
+                f.reload();var saved=f.data().door(OnwardDoors.id(scene));
+                h.assertTrue(saved!=null&&LabyrinthData.DEALT.equals(saved.destination)&&saved.lower.equals(onward[0].lower),"the way on survives a reload");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="onward_saved144",timeoutTicks=2400)
+    public static void everySharedSceneHasAWayOnSavedScenesGetItUnseenAndTheElkGateLeadsOn(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"onward_watcher");var scene=LabyrinthPlace.HILL_NURSERY;hold(f,scene);
+        var elk=LabyrinthPlace.ELK_CARCASSES;var gate=new LabyrinthData.Door[1];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the nursery is resident"))
+            .thenExecute(()->{
+                // Only the private rooms, the read rooms and scenes with ways on of their own go without.
+                var privateRooms=java.util.EnumSet.of(LabyrinthPlace.BACKSEAT,LabyrinthPlace.SILO,LabyrinthPlace.BORRASCA,LabyrinthPlace.FAMILY_COPY,LabyrinthPlace.OLD_CABIN,LabyrinthPlace.RED_ROOM,LabyrinthPlace.LAKE_HOUSE_EMPTY);
+                for(var place:LabyrinthPlace.values()){
+                    if(!place.isVignette()||place.slot()<0||privateRooms.contains(place)||HouseReadSites.kind(place)!=null)continue;
+                    long ways=place.doors().stream().filter(spec->LabyrinthData.DEALT.equals(spec.destination())).count();
+                    h.assertTrue(ways>=1,place.id()+" has a way on into the halls");
+                    if(OnwardDoors.places().contains(place))h.assertTrue(ways==1,place.id()+" has exactly one way on");
+                    var spec=OnwardDoors.doorSpec(place);if(spec!=null)h.assertTrue(place.room().isInside(spec.rel())&&place.room().isInside(spec.rel().relative(spec.facing())),place.id()+" stands its way on inside its own room");
+                }
+                for(var place:privateRooms)h.assertTrue(!OnwardDoors.places().contains(place),"a private room keeps to itself: "+place.id());
+                // A scene built before 0.4.144: the reader stands in it looking straight at where its way on goes.
+                f.build(scene);var at=OnwardDoors.lower(f.base(scene),scene);
+                h.assertTrue(f.data().door(OnwardDoors.id(scene))==null&&!(f.in.getBlockState(at).getBlock() instanceof DoorBlock),"the saved scene has no way on yet");
+                p.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+4.5,180,0);p.setYHeadRot(180);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();
+                // The crew's gate was saved as a second way back.
+                LabyrinthBuilder.registerDoors(f.data(),elk,f.base(elk));var service=elk.doors().stream().filter(spec->spec.name().equals("service")).findFirst().orElseThrow();
+                gate[0]=f.data().door(elk.doorId(service));
+                h.assertTrue(gate[0]!=null&&LabyrinthData.DEALT.equals(gate[0].destination)&&gate[0].facing==Direction.SOUTH&&OnwardDoors.placeOf(gate[0])==elk,"a new elk scene's gate at the valley head is its way on");
+                f.data().putDoor(new LabyrinthData.Door(gate[0].id,gate[0].dimension,gate[0].lower,Direction.NORTH,LabyrinthData.RETURN,false));
+            })
+            .thenIdle(80)
+            .thenExecute(()->{
+                h.assertTrue(f.data().door(OnwardDoors.id(scene))==null&&!(f.in.getBlockState(OnwardDoors.lower(f.base(scene),scene)).getBlock() instanceof DoorBlock),"no door appears in a wall someone is looking at");
+                var g=f.data().door(gate[0].id);h.assertTrue(g!=null&&LabyrinthData.DEALT.equals(g.destination)&&g.facing==Direction.SOUTH,"the saved gate leads on now, facing the valley it is used from");
+                var at=OnwardDoors.lower(f.base(scene),scene);p.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+4.5,0,0);p.setYHeadRot(0);p.connection.resetPosition();
+            })
+            .thenWaitUntil(()->{var door=f.data().door(OnwardDoors.id(scene));h.assertTrue(door!=null&&f.in.getBlockState(door.lower).getBlock() instanceof DoorBlock,"once nobody can see the wall, the saved scene gets its way on");})
+            .thenExecute(()->{
+                // The way on is dealt only halls, and holds shut while its scene holds the reader.
+                f.data().deal(p.getUUID(),gate[0],LabyrinthPlace.SEANCE.id(),false);LabyrinthDealer.dealOnward(f.data(),p.getUUID(),f.data().door(gate[0].id));
+                var deal=f.data().deal(p.getUUID(),f.data().door(gate[0].id));var to=deal==null?null:LabyrinthPlace.byId(deal.place());
+                h.assertTrue(hall(to),"a story dealt to a way on is replaced by a hall: "+to);
+                var well=LabyrinthPlace.BARN_WELL;LabyrinthBuilder.registerDoors(f.data(),well,f.base(well));
+                var wellOn=new LabyrinthData.Door(OnwardDoors.id(well),NovelRooms.dimension(well),f.base(well).offset(3,0,-38),Direction.SOUTH,LabyrinthData.DEALT,false);
+                h.assertTrue(OnwardDoors.isOnward(wellOn)&&!OnwardDoors.locked(p,wellOn),"an ordinary visit may always go on");
+                var own=NovelVignettes.personal(f.data(),p.getUUID());own.putBoolean("WellEntered",true);NovelVignettes.save(f.data(),p.getUUID(),own);
+                h.assertTrue(OnwardDoors.locked(p,wellOn),"while the well holds its reader, its way on is held shut as its entry is");
+                f.data().removeDoor(well.entryDoorId());
+            }).thenSucceed();
+    }
+
     private static void step(GameTestHelper h,ServerPlayer p,BlockPos at){
         var to=Vec3.atBottomCenterOf(at);p.move(net.minecraft.world.entity.MoverType.SELF,to.subtract(p.position()));
         h.assertTrue(p.position().distanceToSqr(to)<.001,"real native collision permits the cross_hall tread "+at);

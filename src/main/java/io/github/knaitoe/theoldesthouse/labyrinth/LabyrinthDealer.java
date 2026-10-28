@@ -243,6 +243,48 @@ public final class LabyrinthDealer {
         return doors;
     }
 
+    /** The doors dealt from the pool: all but a scene's way on, which always leads into a hall. */
+    private static List<LabyrinthData.Door> poolDoors(LabyrinthData data, LabyrinthPlace place) {
+        List<LabyrinthData.Door> doors = dealtDoors(data, place);
+        doors.removeIf(OnwardDoors::isOnward);
+        return doors;
+    }
+
+    /** A hall a scene's way on may lead into. */
+    private static boolean hallOnward(LabyrinthData data, @Nullable LabyrinthPlace held, LabyrinthPlace here) {
+        return held != null && held != here && (LabyrinthPacing.ordinary(held) || LabyrinthPacing.quiet(held))
+                && LabyrinthBuilder.isPlaceReady(data, held);
+    }
+
+    /** A scene's way on keeps the hall it was dealt by this route, or is dealt an ordinary one. */
+    private static void dealOnward(LabyrinthData data, UUID player, LabyrinthPlace place, long salt,
+                                   @Nullable Map<String, LabyrinthData.Deal> remembered) {
+        LabyrinthData.Door door = data.door(OnwardDoors.id(place));
+        if (door == null || !LabyrinthData.DEALT.equals(door.destination)) return;
+        LabyrinthData.Deal deal = remembered == null ? null : remembered.get(door.id);
+        LabyrinthPlace held = deal == null ? null : LabyrinthPlace.byId(deal.place());
+        if (hallOnward(data, held, place)) {
+            data.deal(player, door, held.id(), false);
+            long key = data.nodeKey(player, place);
+            Map<String, LabyrinthData.Deal> now = new LinkedHashMap<>();
+            Map<String, LabyrinthData.Deal> node = data.node(player, key);
+            if (node != null) now.putAll(node);
+            now.put(door.id, data.deal(player, door));
+            data.rememberNode(player, key, now);
+            return;
+        }
+        openWayOn(data, player, door, place, RandomSource.create(data.nodeKey(player, place) ^ salt ^ door.id.hashCode()));
+    }
+
+    /** Before a scene's way on is used: if what lies behind it is not a hall it can lead into, it leads into one now. */
+    public static void dealOnward(LabyrinthData data, UUID player, LabyrinthData.Door door) {
+        LabyrinthPlace here = OnwardDoors.placeOf(door);
+        if (here == null) return;
+        LabyrinthData.Deal deal = data.deal(player, door);
+        if (deal != null && hallOnward(data, LabyrinthPlace.byId(deal.place()), here)) return;
+        openWayOn(data, player, door, here, RandomSource.create(data.nodeKey(player, here) ^ door.id.hashCode()));
+    }
+
     /**
      * Arriving through a door: a place reached by the same route as before
      * keeps what lies behind its doors, so the labyrinth can be mapped and
@@ -257,10 +299,13 @@ public final class LabyrinthDealer {
 
     /** As above. A spectator ({@code participant} false) keeps a personal map but never writes the shared hall cache. */
     public static void arriveAt(LabyrinthData data, UUID player, LabyrinthPlace place, long salt, boolean participant) {
-        List<LabyrinthData.Door> doors = dealtDoors(data, place);
-        if (doors.isEmpty()) return;
+        List<LabyrinthData.Door> doors = poolDoors(data, place);
         long key = data.nodeKey(player, place);
         Map<String, LabyrinthData.Deal> remembered = data.node(player, key);
+        if (doors.isEmpty()) {
+            dealOnward(data, player, place, salt, remembered);
+            return;
+        }
         boolean fresh = remembered == null;
         boolean searching = data.hillaryScent(player) || rescueNeeded(data, player);
         RandomSource random = RandomSource.create(key ^ salt);
@@ -300,6 +345,7 @@ public final class LabyrinthDealer {
         }
         data.rememberNode(player, key, now);
         if(breathe)ExpeditionRhythm.consumed(data,player);
+        dealOnward(data, player, place, salt, remembered);
         // A remembered map never strands anyone: if nothing here leads on, an ordinary door does.
         if (!hasWayOn(data, player, place, null)) {
             for (LabyrinthData.Door door : doors) {
@@ -324,13 +370,21 @@ public final class LabyrinthDealer {
         return false;
     }
 
+    /** Whether a place leads on by its own authored doors, without a fitted way on. */
+    private static boolean onwardWithout(LabyrinthPlace place) {
+        for (LabyrinthPlace.DoorSpec spec : place.doors())
+            if (LabyrinthData.DEALT.equals(spec.destination()) && !OnwardDoors.isOnward(spec)) return true;
+        return false;
+    }
+
     /** Whether this door, for this player, leads somewhere they can go on from. The great staircase is the deepest way on. */
     public static boolean wayOn(LabyrinthData data, UUID player, LabyrinthData.Door door) {
         LabyrinthData.Deal deal = data.deal(player, door);
         if (deal == null || VignetteGate.dormant(data, player, door)) return false;
         if (FinaleArchitecture.ID.equals(deal.place())) return finaleOffered(data, player);
         LabyrinthPlace place = LabyrinthPlace.byId(deal.place());
-        return place != null && onward(place) && LabyrinthBuilder.isPlaceReady(data, place);
+        return place != null && onward(place) && LabyrinthBuilder.isPlaceReady(data, place)
+                && (OnwardDoors.doorSpec(place) == null || data.door(OnwardDoors.id(place)) != null || onwardWithout(place));
     }
 
     /** Whether any of a place's dealt doors (but {@code except}) leads on for this player. */
