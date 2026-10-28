@@ -117,7 +117,14 @@ public final class VignetteInteriorTests {
  /** Cold native states reproduce first-load meshing without touching a world off-thread. */
  private static void concurrentNativeShapeReads(){
   var states=new ArrayList<net.minecraft.world.level.block.state.BlockState>();
-  for(var block:List.of(new ServiceFittingBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().dynamicShape().noOcclusion()),new VignetteInteriorBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().dynamicShape().noOcclusion())))states.addAll(block.getStateDefinition().getPossibleStates());
+  // Use the real registered blocks: constructing another Block after bootstrap attempts
+  // to add an intrusive holder to Minecraft's frozen registry. Only cool the pure caches;
+  // no registry, block-state definition or world is mutated by the workers.
+  for(var block:List.of(LiteraryRegistry.DETAIL.get(),LiteraryRegistry.INTERIOR.get())){
+   try{var field=block.getClass().getDeclaredField("SHAPES");field.setAccessible(true);((Map<?,?>)field.get(null)).clear();}
+   catch(ReflectiveOperationException ex){throw new IllegalStateException("Cannot prepare cold native shape cache",ex);}
+   states.addAll(block.getStateDefinition().getPossibleStates());
+  }
   var workers=java.util.concurrent.Executors.newFixedThreadPool(4);var start=new java.util.concurrent.CyclicBarrier(4);var jobs=new ArrayList<java.util.concurrent.CompletableFuture<Void>>();
   try{
    for(int worker=0;worker<4;worker++){int offset=worker*17;jobs.add(java.util.concurrent.CompletableFuture.runAsync(()->{

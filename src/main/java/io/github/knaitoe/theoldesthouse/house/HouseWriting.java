@@ -120,8 +120,15 @@ public final class HouseWriting {
             filtered.add(Filterable.passThrough(HouseText.color(page)));
         }
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
+        // The native saved/wire title is limited to 32 UTF-16 units. Keep the full
+        // authored heading as the item's name without changing any original page.
+        String savedTitle = title;
+        if (title.length() > 32) {
+            savedTitle = title.substring(0, Character.isHighSurrogate(title.charAt(31)) ? 31 : 32);
+            book.set(DataComponents.CUSTOM_NAME, Component.literal(title));
+        }
         book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
-                Filterable.passThrough(title), author, 0, filtered, true));
+                Filterable.passThrough(savedTitle), author, 0, filtered, true));
         return book;
     }
 

@@ -190,6 +190,8 @@ public final class DomesticLivesTests {
             build(f,hall);var p=player(f,"family_paper_reader");var peer=player(f,"family_paper_peer");p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
             for(var home:DomesticLives.HOMES)if(home.hall()==hall)for(var piece:DomesticStories.pieces(home.id())){
                 var at=b.offset(piece.at());var be=(DomesticRecordBlockEntity)f.in.getBlockEntity(at);var original=be.book();h.assertTrue(!original.isEmpty(),"fresh household artifact contains its original: "+piece.id());
+                var stored=be.saveWithFullMetadata(f.in.registryAccess());be.loadWithComponents(stored,f.in.registryAccess());
+                h.assertTrue(ItemStack.matches(original,be.book())&&be.book().getHoverName().getString().equals(piece.title()),"every original, full heading and page survives the native item/chunk codec before collection: "+piece.id());
                 p.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+2,0,0);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.gameMode.useItemOn(p,f.in,p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.UP,at,false));
                 h.assertTrue(p.containerMenu instanceof DomesticRecordBlockEntity.PaperMenu,"ordinary native use opens the actual artifact: "+piece.id());var menu=p.containerMenu;menu.clicked(0,0,net.minecraft.world.inventory.ClickType.QUICK_MOVE,p);h.assertTrue(ItemStack.matches(original,be.book()),"an inventory packet cannot steal the display snapshot");
                 h.assertTrue(menu.clickMenuButton(p,3)&&!menu.clickMenuButton(p,3)&&be.book().isEmpty(),"the same shared original transfers once: "+piece.id());
