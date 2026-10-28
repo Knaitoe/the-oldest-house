@@ -690,7 +690,9 @@ jobs:
           PYTEST
 
       - name: Structure game tests
-        timeout-minutes: 62
+        # The 827-case corpus reached 793 passes without a failed assertion at the former one-hour wall limit.
+        # Preserve every native per-case tick deadline; allow the complete corpus and clean shutdown.
+        timeout-minutes: 77
         env:
           JAVA_TOOL_OPTIONS: -Xmx6g
         run: |
@@ -723,7 +725,7 @@ jobs:
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 60m gradle runGameTestServer --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-gametest.log
+          timeout --signal=QUIT --kill-after=20s 75m gradle runGameTestServer --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-gametest.log
           python3 - <<'PY'
           import re
           from pathlib import Path

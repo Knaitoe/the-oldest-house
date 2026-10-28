@@ -1,0 +1,11 @@
+{
+  "base": "7a8c2b35e19b65c980f6a766c72670b9d21d633c",
+  "candidate": "479eeae5d3e8869d07f08dce76caefa872c74abd",
+  "source_sha256": {
+    "src/main/java/io/github/knaitoe/theoldesthouse/client/BackseatSocketClient.java": "43e8654f61e68f252c92f7aac1abcb34b9a021d11eba7b80d7ebbc3743562ed4",
+    "src/main/java/io/github/knaitoe/theoldesthouse/gametest/BackseatCarTests.java": "1800bb95bb4a57354d2f7a27975fa9ca837e980a1433028d9c02287a0a9affba",
+    "src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/BackseatRooms.java": "63fdd439a82e69dc19317d82212a0cc9a7e56a83fe2e3378be46b89d0a98de35",
+    "tools/run_live_expedition.py": "1a024badba5dd78f4100af5caff84a2fde631e4de0b3807c0976c7cdfc294aaa",
+    "gradle.properties": "32a53edd2d6873027f7e12b0716f05afab320be7edf4aa4274fe9a13274bf65e"
+  }
+}

@@ -1,0 +1,1 @@
+Same native side-window heading; actual travel 4.623204588203018 -> 7.69046775308642 metres, native eye (14447.875, 81.86999988555908, -444580.55775974307) -> (14447.875, 81.86999988555908, -444583.79632864764); 50876 changed window pixels. Near reflectors and the farther tree line are actual stationary world blocks.

@@ -74,7 +74,8 @@ def wait_for(check, seconds, context):
         # Sample while it is blocked, rather than diagnosing the later offline timeout.
         native_log = server / "logs/latest.log"
         if (not captured_stall and context != "dedicated server startup" and native_log.exists()
-                and "phase 2" in native_log.read_text(errors="replace")
+                and ("phase 2" in native_log.read_text(errors="replace")
+                     or backseat_only and "BACKSEAT SOCKET phase 1" in native_log.read_text(errors="replace"))
                 and time.time() - native_log.stat().st_mtime >= 10):
             captured_stall = True
             capture_native_threads("stalled-host")
@@ -106,10 +107,11 @@ try:
             p.wait(timeout=90)
             assert p.returncode == 0, p.returncode
         for role in ("A", "B"):
-            for view in ("rainy-approach", "standing-before-lock", "seated", "locked", "locked-reconnected", "reveal", "acceleration", "house-return", "mirror-before", "mirror-raised"):
+            for view in ("rainy-approach", "standing-before-lock", "seated", "locked", "locked-reconnected", "reveal", "side-window-early", "side-window-late", "acceleration", "house-return", "mirror-before", "mirror-raised"):
                 assert (report / f"{role}-{view}.png").stat().st_size > 100, (role, view)
             assert (report / f"{role}-mirror-pixels.txt").stat().st_size > 40, role
             assert (report / f"{role}-speed-camera.txt").stat().st_size > 40, role
+            assert (report / f"{role}-window-motion.txt").stat().st_size > 80, role
         for name in ("A-notebook.png", "A-notebook-kept.png", "B-notebook-unread.png", "B-locked-before-reconnect.png", "B-peer-still-locked.png", "A-peer-still-home.png", "reconnect-originals.txt", "peer-independent.txt"):
             assert (report / name).stat().st_size > 40, name
         native_log = (server / "logs/latest.log").read_text(errors="replace")
