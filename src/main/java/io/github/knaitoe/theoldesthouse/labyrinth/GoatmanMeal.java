@@ -19,19 +19,23 @@ import net.minecraft.world.phys.*;
 public final class GoatmanMeal {
     public static final String TAG="TrailerProvision137";
     public static final int MEAL_TICKS=260;
+    /** 0.4.150: with several readers, the cousins give a reader this long to fetch the bottles before they go themselves. */
+    public static final int READER_WAIT=200;
+    /** The pairs of bottles (ketchup and mustard, the jars) a reader took from the cooler. */
+    public static final String READER_PAIRS="ReaderPairs0150";
     private static final String[] NAMES={"ketchup","mustard","mayonnaise","relish"};
     private GoatmanMeal(){}
     private static List<GoatmanChild> cast(ServerLevel l,BlockPos b){return l.getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.getTags().contains(GoatmanVignette.ACTOR)&&!c.girl());}
-    private static List<Integer> carriers(CompoundTag r){var result=new ArrayList<Integer>();for(int i=0;i<GoatmanVignette.count(r)&&result.size()<2;i++)if(i!=r.getInt("Wrong")&&i!=r.getInt("Runner"))result.add(i);return result;}
+    public static List<Integer> carriers(CompoundTag r){var result=new ArrayList<Integer>();for(int i=0;i<GoatmanVignette.count(r)&&result.size()<2;i++)if(i!=r.getInt("Wrong")&&i!=r.getInt("Runner"))result.add(i);return result;}
     private static Item bottle(int i){return switch(i){case 0->GoatmanRegistry.KETCHUP.get();case 1->GoatmanRegistry.MUSTARD.get();case 2->GoatmanRegistry.MAYO.get();default->GoatmanRegistry.RELISH.get();};}
     public static Vec3 spot(int i){return i==4?new Vec3(.5,2.08,-61.1):new Vec3(i%2==0?.15:.85,2.04,-62.5-(i/2)*2);}
     public static boolean supplied(CompoundTag r){return !r.getBoolean("MealStarted137")||(r.getInt("CondimentsPlaced137")&15)==15;}
     public static void firstPlate(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
         if(!GoatmanVignette.brisk(r)||r.getBoolean("MealStarted137")||r.contains("SupperAt04123")||(r.getInt("Plated0464")&~r.getInt("EmptyPlates0465"))==0)return;
-        r.putBoolean("MealStarted137",true);r.putInt("BunsLeft137",GoatmanVignette.expectedCount(r));
-        if(r.getInt("RunnerState")==GoatmanVignette.R_HOME){r.putInt("RunnerState",GoatmanVignette.R_LEAVING);r.putInt("RunnerLeftAt134",r.getInt("Clock"));GoatmanVignette.say(readers,"The older cousin: Generator's out of gas. I'll get the can from the truck. Save mine.");}
+        r.putBoolean("MealStarted137",true);r.putInt("MealStartedAt0150",r.getInt("Clock"));r.putInt("BunsLeft137",GoatmanVignette.expectedCount(r));
+        if(r.getInt("RunnerState")==GoatmanVignette.R_HOME&&!GoatmanVignette.sendForGas(l,b,r,readers)){r.putInt("RunnerState",GoatmanVignette.R_LEAVING);r.putInt("RunnerLeftAt134",r.getInt("Clock"));GoatmanVignette.say(readers,"The older cousin: Generator's out of gas. I'll get the can from the truck. Save mine.");}
         r.putBoolean("CalledIn04123",true);GoatmanWoods.door(l,b,true);
-        GoatmanVignette.say(readers,"A cousin: I'll get the ketchup and mustard. You get the jars.");
+        GoatmanVignette.say(readers,readers.size()>1?"A cousin: Somebody grab the ketchup and mustard from the cooler. And the jars.":"A cousin: I'll get the ketchup and mustard. You get the jars.");
     }
     public static boolean cousin(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,List<ServerPlayer> readers){
         if(r.getInt("Phase")!=GoatmanVignette.GATHERING||!r.getBoolean("MealStarted137"))return false;
@@ -39,8 +43,11 @@ public final class GoatmanMeal {
         String key="ProvisionCarrier137_"+carrier;int stage=r.getInt(key);if(stage>=3)return false;
         var t=c.getPersistentData();
         if(stage==0){
+            // 0.4.150: a reader fetched this pair; with several readers, the cousins give them a while to.
+            if((r.getInt(READER_PAIRS)&(1<<carrier))!=0)return false;
+            if(readers.size()>1&&r.getInt("Clock")-r.getInt("MealStartedAt0150")<READER_WAIT)return false;
             // Wait on the clear side of the porch before the first carrier leaves the cooler.
-            if(carrier==1&&r.getInt("ProvisionCarrier137_0")<2)return true;
+            if(carrier==1&&r.getInt("ProvisionCarrier137_0")<2&&(r.getInt(READER_PAIRS)&1)==0)return true;
             stash(c);GoatmanVignette.supplyRoute(c,b,true,carrier);r.putInt(key,stage=1);
         }
         if(stage==1){
@@ -66,7 +73,7 @@ public final class GoatmanMeal {
         if(!r.getBoolean("MealStarted137"))return;
         if(!r.contains("MealSeatedAt137")){
             var diners=cast(l,b).stream().filter(c->{int i=c.getPersistentData().getInt(GoatmanVignette.INDEX);return i!=r.getInt("Runner")&&i!=r.getInt("Wrong");}).toList();
-            if(!supplied(r)||diners.size()!=GoatmanVignette.count(r)-2||diners.stream().anyMatch(c->!c.seated()))return;
+            if(!supplied(r)||diners.size()!=GoatmanVignette.count(r)-2-GoatmanVignette.played(r)||diners.stream().anyMatch(c->!c.seated()))return;
             r.putInt("MealSeatedAt137",clock);GoatmanVignette.say(readers,"A cousin: Can you pass the buns down? They're at your end.");
         }
         int age=clock-r.getInt("MealSeatedAt137"),line=r.getInt("MealTalk137");
@@ -87,11 +94,30 @@ public final class GoatmanMeal {
     }
     private static ListTag floats(float... values){var l=new ListTag();for(float value:values)l.add(FloatTag.valueOf(value));return l;}
     public static void reset(ServerLevel l,BlockPos b){l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(TAG)).forEach(Entity::discard);}
+    /** A reader at the cooler takes a pair of bottles nobody has gone for yet, to set out on the table themselves (0.4.150). */
+    public static boolean takePair(ServerPlayer p,CompoundTag r){
+        if(!r.getBoolean("MealStarted137")||r.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
+        for(int pair=0;pair<2;pair++){
+            if((r.getInt(READER_PAIRS)&(1<<pair))!=0||r.getInt("ProvisionCarrier137_"+pair)>0||(r.getInt("CondimentsPlaced137")&(3<<pair*2))!=0)continue;
+            r.putInt(READER_PAIRS,r.getInt(READER_PAIRS)|1<<pair);
+            for(int j=pair*2;j<pair*2+2;j++){var item=new ItemStack(bottle(j));CustomData.update(DataComponents.CUSTOM_DATA,item,t->t.putUUID(GoatmanVignette.ROUND,r.getUUID("Id")));if(!p.getInventory().add(item))p.drop(item,false);}
+            p.displayClientMessage(Component.literal(pair==0?"The ketchup and mustard. They go out on the table.":"The jars. They go out on the table."),true);return true;
+        }
+        return false;
+    }
+    private static int bottleIndex(ItemStack item){for(int j=0;j<4;j++)if(item.is(bottle(j)))return j;return -1;}
     public static boolean use(ServerPlayer p,InteractionHand hand){
         if(hand!=InteractionHand.MAIN_HAND||!GoatmanVignette.inside(p)||!LiteraryVignettes.participant(p))return false;
         var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(d);if(!r.getBoolean("MealStarted137")||r.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
         var member=r.getCompound("Cohort").getCompound(p.getUUID().toString());if(!member.getBoolean("Active")||member.getBoolean("Failed"))return false;
         var b=GoatmanVignette.base(p.server);var eye=p.getEyePosition();var ray=eye.add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)));
+        // A bottle a reader fetched goes to its own place on the table, within reach.
+        var carried=p.getItemInHand(hand);int bottle=bottleIndex(carried);
+        if(bottle>=0&&GoatmanSupper.belongs(carried,r)&&find(p.serverLevel(),b,bottle).isEmpty()&&eye.distanceTo(spot(bottle).add(b.getX(),b.getY(),b.getZ()))<=p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)){
+            if(display(p.serverLevel(),b,r,bottle,carried.copyWithCount(1))==null)return true;
+            carried.shrink(1);r.putInt("CondimentsPlaced137",r.getInt("CondimentsPlaced137")|(1<<bottle));p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.WOOD_PLACE,SoundSource.BLOCKS,.3F,1.3F);
+            GoatmanVignette.saveRun(d,r);return true;
+        }
         int chosen=-1;double nearest=GoatmanSupper.aimedPlateDistance(p,b,r);
         for(int i=0;i<5;i++){
             var at=spot(i).add(b.getX(),b.getY(),b.getZ());var hit=new AABB(at.x-.22,at.y-.08,at.z-.22,at.x+.22,at.y+.5,at.z+.22).clip(eye,ray);if(hit.isEmpty()||find(p.serverLevel(),b,i).isEmpty())continue;

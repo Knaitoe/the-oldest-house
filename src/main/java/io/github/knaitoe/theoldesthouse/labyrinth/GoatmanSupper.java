@@ -218,7 +218,7 @@ public final class GoatmanSupper {
             if(issued<limit){
                 var packet=new ItemStack(GoatmanRegistry.FRANKS.get());CustomData.update(DataComponents.CUSTOM_DATA,packet,t->t.putUUID(GoatmanVignette.ROUND,run.getUUID("Id")));
                 run.putInt("PacketsIssued0464",issued+1);give(player,packet);
-            }else player.displayClientMessage(Component.literal("The cooler is empty. We counted enough for supper."),true);
+            }else if(!GoatmanMeal.takePair(player,run))player.displayClientMessage(Component.literal("The cooler is empty. We counted enough for supper."),true);
         }else if(stove){
             var cooking=run.getList("Cooking0465",Tag.TAG_COMPOUND);var cooked=run.getList("CookedPan0465",Tag.TAG_COMPOUND);
             if(held.is(GoatmanRegistry.FRANKS.get()))player.setItemInHand(event.getHand(),held.getItem().use(player.level(),player,event.getHand()).getObject());

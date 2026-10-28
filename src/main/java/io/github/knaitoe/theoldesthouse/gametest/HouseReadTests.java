@@ -57,6 +57,10 @@ public final class HouseReadTests {
           }).thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.COATROOM).getBoolean("Written"),"the slip acquires writing only after looking away"))
           .thenExecute(()->{
               stand(p,f.in,b[0],3.5,0,1.5);click(p,b[0].offset(HouseReadRooms.UMBRELLA_AT));h.assertTrue(p.containerMenu instanceof LecternMenu&&!p.containerMenu.clickMenuButton(p,3),"the note opens actual native pages and cannot be printed or taken");p.closeContainer();
+              // 0.4.150: two seconds at the glass in the borrowed coat, looking into it, is kept.
+              stand(p,f.in,b[0],-3.5,0,-6.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,b[0].offset(HouseReadRooms.MIRROR).above().getCenter());
+          }).thenIdle(45).thenExecute(()->{
+              var seen=visit(p,HouseReadSites.Room.COATROOM);h.assertTrue(seen.getBoolean("AtMirror")&&seen.getList("Actions",net.minecraft.nbt.Tag.TAG_STRING).stream().anyMatch(t->t.getAsString().equals("stood at the hall glass in the borrowed coat")),"standing at the glass in the borrowed coat is kept");
               var glass=b[0].offset(HouseReadRooms.MIRROR);stand(p,f.in,b[0],-3.5,0,-7.5);click(p,glass);h.assertTrue(f.in.getBlockState(glass).getValue(HouseReadPropBlock.TURNED),"native glass use turns the actual mirror to its wooden back");click(p,b[0].offset(-3,0,-9));h.assertTrue(f.in.getBlockState(glass).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.COVERED_MIRROR,"the nearby towel physically covers the same glass");click(p,glass);h.assertTrue(f.in.getBlockState(glass).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR,"the same mirror can be uncovered again");
               f.reload();h.assertTrue(visit(p,HouseReadSites.Room.COATROOM).getBoolean("CapturedChest")&&visit(p,HouseReadSites.Room.COATROOM).getBoolean("Written"),"native saved-data reload preserves gear custody and the unseen writing");
               HouseReadExport.save(f.in,b[0],HouseReadSites.Room.COATROOM,"coatroom");var entry=LabyrinthData.get(p.server).door("house_read/"+p.getUUID()+"/coatroom/entry");stand(p,f.in,b[0],.5,0,1);click(p,entry.lower);

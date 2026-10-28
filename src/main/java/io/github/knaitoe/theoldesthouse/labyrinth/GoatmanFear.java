@@ -25,8 +25,18 @@ public final class GoatmanFear {
         "Near the door: If he's out there, who came back in?",
         "In the aisle: Why has everything gone quiet?",
         "A cousin: You just came back. Then who was that at the glass?",
-        "At the table: Wasn't he sitting with us a second ago?"
+        "At the table: Wasn't he sitting with us a second ago?",
+        // 0.4.150: the same two lines about the gas reader, for readers the cousins call "they" or "she".
+        "At the table: Didn't they already get back?",
+        "Near the door: If they're out there, who came back in?",
+        "At the table: Didn't she already get back?",
+        "Near the door: If she's out there, who came back in?"
     };
+    /** A line about the cousin who went for gas, said of the gas reader as the cousins speak of them. */
+    public static int forRunner(int id,CompoundTag run){
+        if(!GoatmanVignette.byReader(run)||id!=13&&id!=24)return id;
+        return switch(GoatmanVignette.gasForm(run)){case "he"->id;case "she"->id==13?30:31;default->id==13?28:29;};
+    }
     private GoatmanFear(){}
     public static void clearDialogue(CompoundTag run){
         for(var key:new String[]{"FearLine0472","FearPending0472","FearPendingLease0472","FearQueue0472","FearLease0472"})run.remove(key);
@@ -141,7 +151,7 @@ public final class GoatmanFear {
             }
         }
         if(pending==0)return;
-        run.putInt("FearLine0472",pending);run.putInt("FearAt0472",clock);run.putInt("FearAtAge0472",age);run.putInt("FearLease0472",lease);
+        pending=forRunner(pending,run);run.putInt("FearLine0472",pending);run.putInt("FearAt0472",clock);run.putInt("FearAtAge0472",age);run.putInt("FearLease0472",lease);
         if(!brisk||!resumed)run.putInt("FearNext0472",age+(brisk?BRISK_GAP:160));run.remove("FearPending0472");run.remove("FearPendingLease0472");
     }
 }

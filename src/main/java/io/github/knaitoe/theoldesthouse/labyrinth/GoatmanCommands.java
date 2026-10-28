@@ -35,7 +35,7 @@ public final class GoatmanCommands {
         }
         if(run.getInt("Clock")>=GoatmanVignette.supperAt(run))return fail(source,"Supper has already started; this shortcut does not replace eaten food.");
         // Count the saved cohort, including a reader who joined since the last scene tick.
-        int expected=GoatmanVignette.count(run)-1+cohort.getAllKeys().size();
+        int expected=GoatmanVignette.expected(run,cohort.getAllKeys().size());
         if(expected<1||expected>24)return fail(source,"The supper has no valid set of diners yet.");
         var level=player.serverLevel();var base=GoatmanVignette.base(player.server);
         var settings=level.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(base,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.PLATE)&&!e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Plate"));
@@ -68,6 +68,6 @@ public final class GoatmanCommands {
 
     private static int status(CommandSourceStack source)throws CommandSyntaxException{
         var player=source.getPlayerOrException();var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(data);
-        source.sendSuccess(()->Component.literal("Trailer: phase "+run.getInt("Phase")+"; elapsed "+run.getInt("Clock")+"; expected children "+GoatmanVignette.expectedCount(run)+"; supper ready "+GoatmanSupper.ready(run)+"; plated "+Integer.bitCount(run.getInt("Plated0464")&~run.getInt("EmptyPlates0465"))+"; evening leg "+run.getCompound("EveningCircuit0497").getInt("StalkLeg0465")+"; circuit leg "+run.getInt("StalkLeg0465")+"; completed circuits "+run.getInt("Circuits0494")+"; window approach "+run.getInt("StalkWindowLeg0465")+"; continuing door knocks "+run.getInt("DoorPulseSerial04112")+"; your vigil "+run.getCompound("Cohort").getCompound(player.getUUID().toString()).getInt("Vigil")+"; personal resolution "+WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.GOATMAN)),false);return 1;
+        source.sendSuccess(()->Component.literal("Trailer: phase "+run.getInt("Phase")+"; elapsed "+run.getInt("Clock")+"; expected children "+GoatmanVignette.expectedCount(run)+"; readers in cousins' places "+GoatmanVignette.played(run)+"; supper ready "+GoatmanSupper.ready(run)+"; plated "+Integer.bitCount(run.getInt("Plated0464")&~run.getInt("EmptyPlates0465"))+"; evening leg "+run.getCompound("EveningCircuit0497").getInt("StalkLeg0465")+"; circuit leg "+run.getInt("StalkLeg0465")+"; completed circuits "+run.getInt("Circuits0494")+"; window approach "+run.getInt("StalkWindowLeg0465")+"; continuing door knocks "+run.getInt("DoorPulseSerial04112")+"; your vigil "+run.getCompound("Cohort").getCompound(player.getUUID().toString()).getInt("Vigil")+"; personal resolution "+WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.GOATMAN)),false);return 1;
     }
 }

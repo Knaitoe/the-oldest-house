@@ -13,7 +13,9 @@ What is not built:
 - turning actions into categories, which the owner deferred, so no reader has a category yet;
 - the account, the House of Leaves, mirrors and doubles reading the record.
 
-The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Four parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), every shared scene has a way on into the halls (0.4.144), and the shared foundation of co-op (0.4.146): friends follow each other into a vignette, mixed groups are dealt something none has started or split, threads, and accounts for each way of being there. The monkey's paw is the first scene made shared, with its drafted accounts (0.4.147, `docs/SHARED_PAW_0_4_147.md`), the drowned town's ending the second (0.4.148, `docs/SHARED_DROWNED_TOWN_0_4_148.md`), and the child's room has accounts for how each reader was there (0.4.149, `docs/SHARED_CHILD_ROOM_0_4_149.md`); the Goatman's campers are next. Sections below describe the intended design, and each says where the build differs today.
+A review of the built rooms against this document, with a suggested order for what comes next, is in `docs/PERSONALITY_VIGNETTES_REVIEW.md` (October 28).
+
+The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Four parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), every shared scene has a way on into the halls (0.4.144), and the shared foundation of co-op (0.4.146): friends follow each other into a vignette, mixed groups are dealt something none has started or split, threads, and accounts for each way of being there. The monkey's paw is the first scene made shared, with its drafted accounts (0.4.147, `docs/SHARED_PAW_0_4_147.md`), the drowned town's ending the second (0.4.148, `docs/SHARED_DROWNED_TOWN_0_4_148.md`), the child's room has accounts for how each reader was there (0.4.149, `docs/SHARED_CHILD_ROOM_0_4_149.md`), and the Goatman's extra readers take cousins' places (0.4.150, `docs/GOATMAN_CAMPERS_0_4_150.md`). Sections below describe the intended design, and each says where the build differs today.
 
 ## The idea
 
@@ -73,11 +75,11 @@ The owner's October 28 direction makes the other vignettes shared:
 - **Mixed groups.** When a group reaches a door and some of them have already finished what lies behind it, the House deals a vignette none of them has seen. If there is none, the group splits: those who finished pass through, and the others get the scene.
 - **Forward exits** lead back into the ordinary halls. Built in 0.4.144: each shared scene has one way on, placed to suit it, dealt only ordinary halls and held by the entry's locks (`docs/ONWARD_DOORS_0_4_144.md`).
 - **The owner's notes on particular scenes:**
-  - **Goatman** can eventually be shared. Extra players take the place of other campers, so the headcount stays the same as solo. The count, seating, supper and dialogue must treat each player as that cousin.
+  - **Goatman** can eventually be shared. Extra players take the place of other campers, so the headcount stays the same as solo. The count, seating, supper and dialogue must treat each player as that cousin. Built in 0.4.150: readers who arrive with the latecomer each take a cousin's place; that cousin is not staged, and the reader has their plate, chair and bunk. The second takes the place of the cousin who goes for gas: they fill the generator in the shed, must be let back in, and their return sends the thing out past them (owner's note). Any reader can fetch the condiments.
   - **The drowned town and lake-witch scenes** should mostly support several players. The drowned town already ran as one story for the world; 0.4.148 drafts its ending for everyone in Proofrock when the roof opens: a witness's account for those there for the essays, a late joiner's for those who came after.
   - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen. Built in 0.4.147.
   - **The child's room** can be shared. It already was one room for everyone in it, and everyone shut in must crawl out for themselves, so it has no witnesses; 0.4.149 writes each reader's account for who was with them, who began it, whether they came in late and whom they followed down or left behind.
-- **Built in 0.4.146** (`docs/COOP_FOUNDATION_0_4_146.md`): a door into a shared vignette is held 30 seconds for the group, so friends through the same door arrive in the same scene. A mixed group at a door is dealt a vignette none of them has started, or splits. The backseat, the silo, Borrasca, the copies and the Red Room stay private; the Goatman and hide-and-clap are held back until they are made shared. Each reader still plays the scene as their own until it is drafted.
+- **Built in 0.4.146** (`docs/COOP_FOUNDATION_0_4_146.md`): a door into a shared vignette is held 30 seconds for the group, so friends through the same door arrive in the same scene. A mixed group at a door is dealt a vignette none of them has started, or splits. The backseat, the silo, Borrasca, the copies and the Red Room stay private; the Goatman and hide-and-clap are held back until they are made shared (the Goatman is shared from 0.4.150). Each reader still plays the scene as their own until it is drafted.
 - **Still open:**
   - how a shared room is built and reset when friends arrive at different times;
   - who a scene responds to when two readers act at once.
@@ -342,6 +344,8 @@ Instead the House dresses the reader's own skin with what it learned, in the pla
 - **`UNSEEN`:** the coat and silhouette show, but the face is obscured, in every mirror, double and portrait.
 - **Never the live model.** Third person always shows the reader's own skin, even on their own client. The House's version belongs in glass and copies. When the House gets something wrong, the reader sees the gap between who they are and who the House thinks they are.
 
+Built so far (0.4.150): the coatroom glass is a true reflection of the reader's own skin and borrowed layers, reversed, half their height where their eye would see it, turning and walking with them, and seen only from in front. `UNSEEN`, the reading glasses and later mirrors wait on the classifier (see `docs/PERSONALITY_VIGNETTES_REVIEW.md`).
+
 ## Where the read pays off
 
 ### The House of Leaves
@@ -521,7 +525,7 @@ Follow-ups the same day settled several details, all in "Co-op":
 - multi-visit vignettes follow one story per thread, with late joiners, aftermath visits and accounts drafted for each way of being there.
 - the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room are named as scenes to share.
 
-Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146) and its first shared scenes, the paw (0.4.147), the drowned town's ending (0.4.148) and the child's room (0.4.149); the Goatman's campers follow.
+Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146) and its first shared scenes, the paw (0.4.147), the drowned town's ending (0.4.148), the child's room (0.4.149) and the Goatman's campers (0.4.150). Hide-and-clap, with its one blindfold, is the only scene still held back.
 
 ## Built so far
 
@@ -538,5 +542,6 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.147 | The monkey's paw shared: one thread's evening, one holder, the finger curling for everyone who can see the hand, four drafted accounts | `docs/SHARED_PAW_0_4_147.md` |
 | 0.4.148 | The drowned town's ending shared: everyone in Proofrock when the roof opens keeps a witness's or late joiner's account | `docs/SHARED_DROWNED_TOWN_0_4_148.md` |
 | 0.4.149 | The child's room together: each reader's account says who was with them, who began it, whether they came late and whom they followed or left | `docs/SHARED_CHILD_ROOM_0_4_149.md` |
+| 0.4.150 | The Goatman's campers: readers who come with the latecomer take cousins' places, so the camp keeps one reader's headcount | `docs/GOATMAN_CAMPERS_0_4_150.md` |
 
 The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.

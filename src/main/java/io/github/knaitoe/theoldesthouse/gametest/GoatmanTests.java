@@ -56,11 +56,11 @@ public final class GoatmanTests {
             p.getInventory().setItem(4,new ItemStack(Items.DIAMOND,3));p.containerMenu.setCarried(new ItemStack(Items.EMERALD,7));var held=p.getInventory().getItem(4).copy();var cursor=p.containerMenu.getCarried().copy();var before=f.run();
             h.assertTrue(plateCommand(p,"test goatman plate",0)==0&&f.run().equals(before)&&GoatmanWoods.serving(f.l,f.b,1)==null,"a non-operator cannot run the shortcut or mutate the supper");
             h.assertTrue(plateCommand(p,"test goatman plate",2)==1,"the real registered test command succeeds");var after=f.run();
-            h.assertTrue(after.getInt("Expected")==9&&Integer.bitCount(after.getInt("Plated0464")&~after.getInt("EmptyPlates0465"))==9&&after.getBoolean("MealReady0465")&&after.getBoolean("MealFrozen0465"),"the actual saved cohort, including the newly joined peer, gets all nine servings");
+            h.assertTrue(after.getInt("Expected")==8&&Integer.bitCount(after.getInt("Plated0464")&~after.getInt("EmptyPlates0465"))==8&&after.getBoolean("MealReady0465")&&after.getBoolean("MealFrozen0465"),"the actual saved cohort gets all eight servings: 0.4.150, the peer who joined with the first reader takes a cousin's place");
             h.assertTrue(after.getUUID("Id").equals(before.getUUID("Id"))&&after.getInt("Clock")==before.getInt("Clock")&&after.getInt("Phase")==before.getInt("Phase")&&after.getInt("Wrong")==before.getInt("Wrong")&&after.getInt("Runner")==before.getInt("Runner")&&after.getInt("RunnerState")==before.getInt("RunnerState")&&after.getInt("Tells")==before.getInt("Tells")&&after.getCompound("Cohort").equals(before.getCompound("Cohort")),"plating skips no event, vigil or original round identity");
             h.assertTrue(after.getInt("PacketsIssued0464")==1&&after.getList("Cooking0465",10).equals(cooking)&&ItemStack.matches(held,p.getInventory().getItem(4))&&ItemStack.matches(cursor,p.containerMenu.getCarried()),"finite packs, cooking originals, inventory and cursor remain exact");
             h.assertTrue(GoatmanWoods.serving(f.l,f.b,0).getUUID().equals(originalId)&&ItemStack.matches(original,GoatmanWoods.food(f.l,first))&&(after.getInt("BurntPlates0476")&1)!=0&&cast.equals(f.cousins().stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the original burnt serving and every original cousin retain their actual UUIDs and components");
-            var ids=new HashSet<UUID>();for(int seat=0;seat<9;seat++){var shown=GoatmanWoods.serving(f.l,f.b,seat);h.assertTrue(shown!=null&&ids.add(shown.getUUID()),"every place has its own real native food display");if(seat>0){var tag=GoatmanWoods.food(f.l,shown).get(DataComponents.CUSTOM_DATA).copyTag();h.assertTrue(tag.getUUID(GoatmanVignette.ROUND).equals(after.getUUID("Id"))&&tag.getBoolean("GoatmanTest04115"),"new test food belongs to this round");}}
+            var ids=new HashSet<UUID>();for(int seat=0;seat<8;seat++){var shown=GoatmanWoods.serving(f.l,f.b,seat);h.assertTrue(shown!=null&&ids.add(shown.getUUID()),"every place has its own real native food display");if(seat>0){var tag=GoatmanWoods.food(f.l,shown).get(DataComponents.CUSTOM_DATA).copyTag();h.assertTrue(tag.getUUID(GoatmanVignette.ROUND).equals(after.getUUID("Id"))&&tag.getBoolean("GoatmanTest04115"),"new test food belongs to this round");}}
             var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
             h.assertTrue(plateCommand(p,"vignette goatman plate",2)==1&&ids.equals(f.l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Seat")).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"the usual vignette alias remains idempotent after native saved-data reload");
             h.assertTrue(WitnessAccount.count(loaded,p.getUUID())==0&&WitnessAccount.count(loaded,peer.getUUID())==0,"a prepared meal grants neither reader a resolution");
@@ -298,6 +298,8 @@ public final class GoatmanTests {
         List<GoatmanChild> cousins(){return children().stream().filter(c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)>=0).toList();}
         Optional<GoatmanChild> cousin(int i){return cousins().stream().filter(c->c.getPersistentData().getInt(GoatmanVignette.INDEX)==i).findFirst();}
         Vec3 rel(Entity e){return e.position().subtract(b.getX(),b.getY(),b.getZ());}
+        /** 0.4.150: the readers came after the camp was reached, so none stands in for a cousin, none goes for gas, and every cousin is staged. */
+        static void extras(CompoundTag r){r.remove(GoatmanVignette.PLAYED);r.remove(GoatmanVignette.GAS);r.remove(GoatmanVignette.GAS_NAME);var cohort=r.getCompound("Cohort");for(var key:cohort.getAllKeys())cohort.getCompound(key).remove(GoatmanVignette.PLAYS);r.put("Cohort",cohort);}
         void cohort(CompoundTag r,List<ServerPlayer> participants,int vigil){
             var cohort=r.getCompound("Cohort");for(var p:participants){var own=cohort.getCompound(p.getUUID().toString());own.putBoolean("Active",true);own.putBoolean("Arrived",true);own.putBoolean("GirlGone",true);own.putBoolean("Greeted",true);own.putInt("Vigil",vigil);cohort.put(p.getUUID().toString(),own);indoors(p);}
             r.put("Cohort",cohort);
@@ -346,7 +348,7 @@ public final class GoatmanTests {
             f.cousins().stream().filter(c->c.fear()==GoatmanFear.PACE).findFirst().ifPresent(c->{if(r.getInt("Clock")%40==0)paced.add(c.position());});
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the complete actual scene is natively loaded")).thenExecute(()->{
-            GoatmanVignette.enter(p);GoatmanVignette.enter(q);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER+300);r.putBoolean("CalledIn04123",true);r.putInt("SupperAt04123",GoatmanVignette.BRISK_SUPPER);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
+            GoatmanVignette.enter(p);GoatmanVignette.enter(q);var r=f.run();Fixture.extras(r);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER+300);r.putBoolean("CalledIn04123",true);r.putInt("SupperAt04123",GoatmanVignette.BRISK_SUPPER);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
             GoatmanWoods.door(f.l,f.b,true);GoatmanVignette.hurry(f.l,f.b);ids.addAll(f.cousins().stream().map(Entity::getUUID).toList());GoatmanWoods.setWindow(f.l,f.b,true);GoatmanWoods.door(f.l,f.b,false);begun[0]=true;
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.VIGIL&&f.run().getInt("DemandStage0465")==3,"with the cousin safely in, the evening goes quiet and the night's third word is spoken")).thenExecute(()->{
             var roles=f.cousins().stream().map(GoatmanChild::fear).filter(role->role>0).collect(java.util.stream.Collectors.toSet());
@@ -462,6 +464,151 @@ public final class GoatmanTests {
         });
     }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
+    private static Fixture gasRun,gasLost,condiments;
+    @AfterBatch(batch="goat_gas0150") public static void cleanGas(ServerLevel l){if(gasRun!=null){gasRun.close();gasRun=null;}}
+    @AfterBatch(batch="goat_gas_lost0150") public static void cleanGasLost(ServerLevel l){if(gasLost!=null){gasLost.close();gasLost=null;}}
+    @AfterBatch(batch="goat_condiments0150") public static void cleanCondiments(ServerLevel l){if(condiments!=null){condiments.close();condiments=null;}}
+    /** Two readers enrol together, facing back down the trail, and supper's first plate goes down with both inside. */
+    private static CompoundTag supperTogether(Fixture f,ServerPlayer first,ServerPlayer second){return supperTogether(f,first,second,null);}
+    /** The same, with the coatroom's read of how the second presents settled, as the classifier will one day save it. */
+    private static CompoundTag supperTogether(Fixture f,ServerPlayer first,ServerPlayer second,@org.jetbrains.annotations.Nullable String self){
+        if(self!=null){var read=new CompoundTag();var trait=new CompoundTag();trait.putString("Value",self);trait.putString("Strength","SETTLED");read.put("SELF",trait);LabyrinthData.get(f.server).setStateEntry(HouseRead.STATE,second.getUUID().toString(),read);}
+        for(var p:List.of(first,second))p.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-.5,0,0);
+        f.h.assertTrue(GoatmanVignette.enter(first)&&GoatmanVignette.enter(second),"both readers enrol together");
+        var r=f.run();f.cohort(r,List.of(first,second),0);r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER);r.putInt("Plated0464",1);f.run(r);
+        f.indoors(first);f.indoors(second);r=f.run();GoatmanMeal.firstPlate(f.l,f.b,r,List.of(first,second));f.run(r);return f.run();
+    }
+    /** 0.4.150, the owner's note: the second reader fills the generator; their return sends the thing out past them, and only those inside can open the door. */
+    @GameTest(template="empty",batch="goat_gas0150",timeoutTicks=800)
+    public static void theSecondReaderFillsTheGeneratorAndTheirReturnSendsTheThingOutPastThem(GameTestHelper h){
+        gasRun=new Fixture(h,31900);var f=gasRun;f.finishedCamper();var first=f.player();var second=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        int[] runner={0};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp and its shed are natively loaded")).thenExecute(()->{
+            var r=supperTogether(f,first,second,"FEM");runner[0]=r.getInt("Runner");
+            // How the cousins speak of them follows the coatroom's settled read.
+            h.assertTrue("she".equals(r.getString(GoatmanVignette.GAS_FORM))&&GoatmanVignette.forRunner(r,"A cousin: Save his place. He'll be back.").equals("A cousin: Save her place. She'll be back.")&&GoatmanFear.line(GoatmanFear.forRunner(13,r)).equals("At the table: Didn't she already get back?"),"a reader the coatroom read as presenting feminine is 'she' to the cousins");
+            h.assertTrue(second.getUUID().equals(r.getUUID(GoatmanVignette.GAS))&&f.cousin(runner[0]).isEmpty(),"the second reader has the place of the cousin who goes for gas, and he is not at the camp");
+            h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_LEAVING,"the first plate sends the gas reader out, not a cousin");
+            // Out across the yard to the shed.
+            second.moveTo(f.b.getX()+12.5,f.b.getY(),f.b.getZ()-62.5,90,0);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(f.run().getInt("RunnerState")==GoatmanVignette.R_AWAY,"out of the trailer, they are away");
+            f.use(second,GoatmanVignette.GENERATOR);h.assertTrue(f.run().getInt("GasPulls0150")==1&&f.run().getInt("RunnerState")==GoatmanVignette.R_AWAY,"the first pull coughs and dies");
+        }).thenIdle(14).thenExecute(()->{f.use(second,GoatmanVignette.GENERATOR);h.assertTrue(f.run().getInt("RunnerState")==GoatmanVignette.R_AWAY,"so does the second");})
+        .thenIdle(14).thenExecute(()->{
+            // As if the one who takes their chair were still on its way to it, and they had only just gone out.
+            var r=f.run();int seated=r.getInt("ExtraState");r.putInt("ExtraState",GoatmanVignette.X_ACTIVITY);r.putInt("GasAwayAt0150",r.getInt("Clock"));f.run(r);
+            f.use(second,GoatmanVignette.GENERATOR);h.assertTrue(f.run().getInt("GasPulls0150")==3&&f.run().getInt("RunnerState")==GoatmanVignette.R_AWAY,"it will not catch before the one in their chair has sat down");
+            r=f.run();r.putInt("ExtraState",GoatmanVignette.X_SUPPER);f.run(r);h.assertTrue(seated==GoatmanVignette.X_SUPPER,"with the gas reader out of the way, the thing had gone in to their chair: "+seated);})
+        .thenIdle(14).thenExecute(()->{f.use(second,GoatmanVignette.GENERATOR);h.assertTrue(f.run().getInt("RunnerState")==GoatmanVignette.R_RETURNING,"then it catches, and they head back");
+            GoatmanWoods.door(f.l,f.b,false);second.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-53.5,180,0);})
+        .thenIdle(2).thenExecute(()->{
+            h.assertTrue(f.run().getInt("RunnerState")==GoatmanVignette.R_KNOCKING,"at the shut door they are knocking to come in");
+            f.use(second,GoatmanWoods.DOOR);
+            h.assertTrue(!GoatmanWoods.doorOpen(f.l,f.b)&&f.run().getBoolean(GoatmanFear.DOOR_KNOCKED),"from outside they knock; the door is not theirs to open");
+            first.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-57.5,0,0);f.use(first,GoatmanWoods.DOOR);
+            h.assertTrue(GoatmanWoods.doorOpen(f.l,f.b),"somebody inside opens it");
+        }).thenIdle(2).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getBoolean("Exchange0497")&&r.getInt("ExtraState")==GoatmanVignette.X_FIRE,"as they come back, the one in their chair runs out past them");
+            second.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-58.5,180,0);
+        }).thenIdle(2).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_INSIDE&&r.contains("ExchangeIn0497")&&f.cousin(runner[0]).isEmpty(),"they are back in, and no cousin was ever sent for gas");
+            h.assertTrue(!r.getCompound("Cohort").getCompound(second.getStringUUID()).getBoolean("Failed"),"let in before the quiet, the gas reader is still part of the night");
+        }).thenSucceed();
+    }
+    /** 0.4.150: a gas reader still outside when the woods go quiet is gone, as the cousin would have been. */
+    @GameTest(template="empty",batch="goat_gas_lost0150",timeoutTicks=400)
+    public static void aGasReaderStillOutsideWhenTheWoodsGoQuietIsGone(GameTestHelper h){
+        gasLost=new Fixture(h,32100);var f=gasLost;f.finishedCamper();var first=f.player();var second=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp is natively loaded")).thenExecute(()->{
+            supperTogether(f,first,second);second.moveTo(f.b.getX()+12.5,f.b.getY(),f.b.getZ()-62.5,90,0);
+        }).thenIdle(2).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_AWAY,"the gas reader is out at the shed");
+            String name=second.getGameProfile().getName();
+            h.assertTrue("they".equals(GoatmanVignette.gasForm(r))&&GoatmanVignette.forRunner(r,"A cousin: Save his place. He'll be back.").equals("A cousin: Save "+name+"'s place. They'll be back.")&&GoatmanFear.line(GoatmanFear.forRunner(24,r)).equals("Near the door: If they're out there, who came back in?"),"with no settled read the cousins use their name and 'they'");
+            r.putInt("QuietAt04123",r.getInt("Clock"));r.putInt("NightAt04123",r.getInt("Clock")+40);f.run(r);
+        }).thenIdle(3).thenExecute(()->{
+            var r=f.run();var lost=r.getCompound("Cohort").getCompound(second.getStringUUID());
+            h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_LOST&&lost.getBoolean("Failed")&&lost.getBoolean("LostOutside0150"),"the woods went quiet with them outside: they are gone");
+            h.assertTrue(GoatmanHaunt.haunted(LabyrinthData.get(f.server),second.getUUID())&&!GoatmanVignette.inside(second),"carried off home, with something that knows their face");
+            h.assertTrue(!r.getCompound("Cohort").getCompound(first.getStringUUID()).getBoolean("Failed")&&GoatmanVignette.inside(first),"the reader inside is still in the trailer");
+        }).thenSucceed();
+    }
+    /** 0.4.150: with several readers, a reader can fetch the bottles from the cooler and set them out before the cousins go. */
+    @GameTest(template="empty",batch="goat_condiments0150",timeoutTicks=400)
+    public static void readersFetchTheCondimentsFromTheCoolerAndSetThemOutThemselves(GameTestHelper h){
+        condiments=new Fixture(h,32300);var f=condiments;f.finishedCamper();var first=f.player();var second=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the cooler and table are natively loaded")).thenExecute(()->{
+            var r=supperTogether(f,first,second);r.putInt("PacketsIssued0464",(GoatmanVignette.expectedCount(r)+3)/4);f.run(r);
+            second.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.click(second,GoatmanWoods.COOLER);
+            r=f.run();h.assertTrue((r.getInt(GoatmanMeal.READER_PAIRS)&1)!=0&&second.getInventory().countItem(GoatmanRegistry.KETCHUP.get())==1&&second.getInventory().countItem(GoatmanRegistry.MUSTARD.get())==1,"from the cooler, once the packs are out, a reader takes the ketchup and mustard");
+        }).thenIdle(20).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getInt("ProvisionCarrier137_0")==0&&r.getInt("ProvisionCarrier137_1")==0,"the cousins leave the ketchup and mustard to the reader, and give them a while for the jars");
+            second.moveTo(f.b.getX()-1.5,f.b.getY()+1,f.b.getZ()-62.5,90,30);
+            for(var bottle:List.of(GoatmanRegistry.KETCHUP.get(),GoatmanRegistry.MUSTARD.get())){
+                int slot=-1;for(int i=0;i<9;i++)if(second.getInventory().getItem(i).is(bottle))slot=i;h.assertTrue(slot>=0,"the bottle is in hand's reach");second.getInventory().selected=slot;
+                h.assertTrue(GoatmanMeal.use(second,InteractionHand.MAIN_HAND),"the reader sets the bottle out on the table");
+            }
+            r=f.run();h.assertTrue((r.getInt("CondimentsPlaced137")&3)==3&&second.getInventory().countItem(GoatmanRegistry.KETCHUP.get())==0,"both bottles stand in their places");
+            r.putInt("MealStartedAt0150",r.getInt("Clock")-GoatmanMeal.READER_WAIT-1);f.run(r);
+        }).thenIdle(3).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getInt("ProvisionCarrier137_1")>0&&r.getInt("ProvisionCarrier137_0")==0,"after a while a cousin goes for the jars nobody fetched, without waiting on the bottles a reader set out");
+        }).thenSucceed();
+    }
+    private static Fixture campers;
+    @AfterBatch(batch="goat_campers0150") public static void cleanCampers(ServerLevel l){if(campers!=null){campers.close();campers=null;}}
+    /** 0.4.150: readers after the first take cousins' places, so the camp has the children it has for one reader alone. */
+    @GameTest(template="empty",batch="goat_campers0150",timeoutTicks=600)
+    public static void readersAfterTheFirstTakeCousinsPlacesSoTheCampHasTheChildrenItHasForOneReader(GameTestHelper h){
+        campers=new Fixture(h,31700);var f=campers;var first=f.player();var second=f.player();var third=f.player();
+        f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp's native entity sections are ready")).thenExecute(()->{
+            // Facing back down the trail, nobody watches the camp while its places are taken.
+            for(var p:List.of(first,second,third))p.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-.5,0,0);
+            h.assertTrue(SharedVignettes.followable(LabyrinthPlace.GOATMAN),"friends go into the Goatman together now");
+            h.assertTrue(GoatmanVignette.enter(first)&&GoatmanVignette.enter(second)&&GoatmanVignette.enter(third),"three readers enrol in one fresh round");
+            var r=f.run();var cohort=r.getCompound("Cohort");int wrong=r.getInt("Wrong"),runner=r.getInt("Runner");
+            h.assertTrue(!cohort.getCompound(first.getStringUUID()).contains(GoatmanVignette.PLAYS),"the first reader is the latecomer and takes nobody's place");
+            h.assertTrue(cohort.getCompound(second.getStringUUID()).contains(GoatmanVignette.PLAYS)&&cohort.getCompound(third.getStringUUID()).contains(GoatmanVignette.PLAYS),"the second and third each take a cousin's place");
+            int a=cohort.getCompound(second.getStringUUID()).getInt(GoatmanVignette.PLAYS),c=cohort.getCompound(third.getStringUUID()).getInt(GoatmanVignette.PLAYS);
+            String detail="; places "+a+" and "+c+", wrong "+wrong+", runner "+runner+", carriers "+GoatmanMeal.carriers(r)+", mask "+r.getInt(GoatmanVignette.PLAYED)+", played "+GoatmanVignette.played(r);
+            h.assertTrue(a==runner&&r.hasUUID(GoatmanVignette.GAS)&&r.getUUID(GoatmanVignette.GAS).equals(second.getUUID()),"the second takes the place of the cousin who goes for gas, and the job with it"+detail);
+            h.assertTrue(c!=a&&GoatmanVignette.played(r)==2,"the third takes another cousin's place"+detail);
+            h.assertTrue(c!=wrong&&!GoatmanMeal.carriers(r).contains(c)&&GoatmanFear.role(c,r)!=GoatmanFear.EARS,"never the thing, a carrier, or the cousin who covers their ears"+detail);
+            h.assertTrue(f.cousins().size()==6&&f.cousin(a).isEmpty()&&f.cousin(c).isEmpty()&&f.cousin(wrong).isPresent(),"those two cousins are not at the camp; the thing is"+detail);
+            GoatmanVignette.tick(f.server);r=f.run();
+            h.assertTrue(r.getInt("Expected")==8&&GoatmanVignette.count(r)==8,"three readers make the eight places one reader alone makes (seven cousins and the latecomer): "+r.getInt("Expected"));
+            // Their bunks are theirs; a cousin still staged keeps their own.
+            r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",10);r.putBoolean("BedtimeCalled131",true);f.run(r);GoatmanWoods.beds(f.l,f.b,GoatmanVignette.expected(r,3)+1);
+            int carrier=GoatmanMeal.carriers(r).getFirst(),mine=a<wrong?a:a-1,theirs=carrier<wrong?carrier:carrier-1;
+            var head=GoatmanWoods.bunkHead(theirs);first.moveTo(f.b.getX()+(theirs%2==0?-3.5:4.5),f.b.getY()+1,f.b.getZ()+head.getZ()+.5);f.use(first,head);
+            h.assertTrue(!first.isSleeping(),"a reader cannot lie down in the bunk of a cousin who is there");
+            head=GoatmanWoods.bunkHead(mine);second.moveTo(f.b.getX()+(mine%2==0?-3.5:4.5),f.b.getY()+1,f.b.getZ()+head.getZ()+.5);f.use(second,head);
+            h.assertTrue(second.isSleeping(),"the reader in a cousin's place sleeps in that cousin's bunk");
+            // Whose bed it comes to first: the latecomer, then the bunk farthest from the door; a reader awake is never chosen.
+            int hers=c<wrong?c:c-1,spare=GoatmanVignette.expected(f.run(),3);
+            h.assertTrue(GoatmanBedtime.next(f.run(),List.of(first,second,third))==second,"with only one reader asleep, it can only come to them");
+            for(var bed:List.of(new Object[]{third,hers},new Object[]{first,spare})){var p=(ServerPlayer)bed[0];int bunk=(int)bed[1];var at=GoatmanWoods.bunkHead(bunk);p.moveTo(f.b.getX()+(bunk%2==0?-3.5:4.5),f.b.getY()+1,f.b.getZ()+at.getZ()+.5);f.use(p,at);h.assertTrue(p.isSleeping(),"a reader lies down in bunk "+bunk);}
+            h.assertTrue(GoatmanBedtime.next(f.run(),List.of(third,second,first))==first,"the latecomer's bed comes first");
+            r=f.run();var cohortNow=r.getCompound("Cohort");var ended=cohortNow.getCompound(first.getStringUUID());ended.putBoolean("BedsideEnded131",true);cohortNow.put(first.getStringUUID(),ended);r.put("Cohort",cohortNow);f.run(r);
+            var hm=GoatmanWoods.bunkHead(mine);var hh=GoatmanWoods.bunkHead(hers);var farther=hm.getZ()<hh.getZ()||hm.getZ()==hh.getZ()&&hm.getX()<hh.getX()?second:third;
+            h.assertTrue(GoatmanBedtime.next(f.run(),List.of(first,second,third))==farther,"then the bunk farthest from the door");
+            for(var p:List.of(first,second,third))p.stopSleeping();
+            // A reader who comes once the camp is reached is one more child, as before.
+            r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",100);r.remove("BedtimeCalled131");f.run(r);var late=f.player();
+            h.assertTrue(GoatmanVignette.enter(late),"a later reader still joins before supper");GoatmanVignette.tick(f.server);r=f.run();
+            h.assertTrue(!r.getCompound("Cohort").getCompound(late.getStringUUID()).contains(GoatmanVignette.PLAYS)&&GoatmanVignette.played(r)==2&&r.getInt("Expected")==9,"they take nobody's place and make a ninth");
+            // The account says who sat the night out together, and whose place was kept.
+            var personal=new CompoundTag();personal.putBoolean("Drafted0150",true);var with=new ListTag();with.add(net.minecraft.nbt.StringTag.valueOf("goat_first"));with.add(net.minecraft.nbt.StringTag.valueOf("goat_third"));personal.put("With0150",with);personal.putBoolean("StoodIn0150",true);
+            var story=WitnessAccount.Story.GOATMAN;
+            h.assertTrue(GoatmanVignette.witness(personal,story.text).startsWith("I came up the trail late with goat_first and goat_third, and the cousins had kept my place at the table. There were more of us than there were places at the table.")&&GoatmanVignette.witness(personal,story.text).contains("We kept it closed"),"a reader in a cousin's place keeps an account of it, naming who came with them");
+            personal.putBoolean("Gas0150",true);
+            h.assertTrue(GoatmanVignette.witness(personal,story.text).startsWith("I came up the trail late with goat_first and goat_third. I was the one who went out across the yard to fill the generator while the others ate."),"the gas reader's says they went out to the generator");
+            personal.putBoolean("Gas0150",false);personal.putBoolean("StoodIn0150",false);
+            h.assertTrue(GoatmanVignette.witness(personal,story.text).startsWith("I came up the trail late with goat_first and goat_third. There were more of us"),"the latecomer's names who came with them");
+            h.assertTrue(GoatmanVignette.witness(new CompoundTag(),story.text).equals(story.text),"a reader alone, and every reader before 0.4.150, keeps the line they had");
+        }).thenSucceed();
+    }
     private static java.util.function.Consumer<net.neoforged.neoforge.event.entity.EntityJoinLevelEvent> spawnObserver;
     @AfterBatch(batch="goat_spawn0469") public static void cleanSpawn(ServerLevel l){if(spawnObserver!=null){NeoForge.EVENT_BUS.unregister(spawnObserver);spawnObserver=null;}if(spawn!=null){spawn.close();spawn=null;}}
     @GameTest(template="empty",batch="goat_spawn0469",timeoutTicks=1200)
@@ -485,16 +632,17 @@ public final class GoatmanTests {
         sharedSupper=new Fixture(h,30100);var f=sharedSupper;var p=f.player();var q=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both readers and the pan are natively loaded")).thenExecute(()->{
             GoatmanVignette.enter(p);h.assertTrue(GoatmanVignette.enter(q),"a second reader joins the same fresh round");var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",500);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.tick(f.server);
-            h.assertTrue(f.run().getInt("Expected")==9,"seven real cousins and two enrolled readers have nine actual places");
+            // 0.4.150: the second reader takes a cousin's place, so the camp has the eight places it has for one reader.
+            h.assertTrue(f.run().getInt("Expected")==8&&f.run().getCompound("Cohort").getCompound(q.getUUID().toString()).contains(GoatmanVignette.PLAYS),"six staged real cousins and two readers, one in a cousin's place, have eight actual places");
             p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);q.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);f.click(p,GoatmanWoods.COOLER);f.click(p,GoatmanWoods.STOVE);f.click(p,GoatmanWoods.STOVE);
             f.click(q,GoatmanWoods.COOLER);q.getInventory().selected=2;f.click(q,GoatmanWoods.COOLER);q.getInventory().selected=3;f.click(q,GoatmanWoods.COOLER);
-            h.assertTrue(f.run().getInt("PacketsIssued0464")==3&&q.getInventory().countItem(GoatmanRegistry.FRANKS.get())==2&&p.getMainHandItem().getCount()==3,"three packs supply twelve finite raw franks; a second reader cannot issue a fourth pack");
+            h.assertTrue(f.run().getInt("PacketsIssued0464")==2&&q.getInventory().countItem(GoatmanRegistry.FRANKS.get())==1&&p.getMainHandItem().getCount()==3,"two packs supply eight finite raw franks; a second reader cannot issue a third pack");
             int left=f.run().getList("Cooking0465",10).getCompound(0).getInt("Left"),clock=f.run().getInt("Clock");GoatmanVignette.tick(f.server);
             h.assertTrue(f.run().getList("Cooking0465",10).getCompound(0).getInt("Left")==left-1&&f.run().getInt("Clock")==clock+1,"two present readers advance the single occupied cooking and story clocks once");
             GoatmanVignette.onLogout(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));p.moveTo(100,80,100);
             var data=LabyrinthData.get(f.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);GoatmanVignette.tick(f.server);
-            h.assertTrue(f.run().getInt("Expected")==9&&f.run().getInt("PacketsIssued0464")==3&&f.run().getList("Cooking0465",10).getCompound(0).getInt("Left")==left-2,"a reload and absent diner preserve all places, issued wrappers and the one remaining reader's occupied timer");
-            f.indoors(p);h.assertTrue(GoatmanVignette.enter(p),"the same reader can return without a new round");p.getInventory().selected=3;f.click(p,GoatmanWoods.COOLER);h.assertTrue(f.run().getInt("PacketsIssued0464")==3,"rejoining cannot restock the shared supper");h.succeed();
+            h.assertTrue(f.run().getInt("Expected")==8&&f.run().getInt("PacketsIssued0464")==2&&f.run().getList("Cooking0465",10).getCompound(0).getInt("Left")==left-2,"a reload and absent diner preserve all places, issued wrappers and the one remaining reader's occupied timer");
+            f.indoors(p);h.assertTrue(GoatmanVignette.enter(p),"the same reader can return without a new round");p.getInventory().selected=3;f.click(p,GoatmanWoods.COOLER);h.assertTrue(f.run().getInt("PacketsIssued0464")==2,"rejoining cannot restock the shared supper");h.succeed();
         });
     }
     @AfterBatch(batch="goat_stalk0465") public static void cleanStalking(ServerLevel l){if(stalking!=null){stalking.close();stalking=null;}}

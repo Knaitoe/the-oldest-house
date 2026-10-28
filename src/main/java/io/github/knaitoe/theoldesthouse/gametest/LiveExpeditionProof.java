@@ -334,18 +334,23 @@ public final class LiveExpeditionProof {
             if(wrong.isEmpty())return;
             require(wrong.size()==1,"the fresh trailer has one registered native Goatman body");nightGoatmanId=wrong.getFirst().getUUID();
             require(run.getInt("Phase")==GoatmanVignette.PATH&&run.getCompound("Cohort").getAllKeys().size()==2,"both actual door crossings enroll in one fresh trailer round");
+            // 0.4.150: the second through takes a cousin's place; that cousin goes from the camp while nobody sees it go.
+            var cohort=run.getCompound("Cohort");boolean aStands=cohort.getCompound(a.getUUID().toString()).contains(GoatmanVignette.PLAYS),bStands=cohort.getCompound(b.getUUID().toString()).contains(GoatmanVignette.PLAYS);
+            require(aStands!=bStands&&GoatmanVignette.played(run)==1&&run.hasUUID(GoatmanVignette.GAS)&&run.getUUID(GoatmanVignette.GAS).equals((aStands?a:b).getUUID()),"exactly one of the two readers takes a cousin's place: the one who goes for gas, with the job");
+            int stood=cohort.getCompound((aStands?a:b).getUUID().toString()).getInt(GoatmanVignette.PLAYS);
+            if(!a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==stood).isEmpty())return;
             step(s,32,camp);
         }else if(phase==32&&a!=null&&b!=null&&ACKS.size()==2){
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var children=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN));
-            require(children.stream().filter(c->!c.girl()).count()==8,"all eight shared cousins really spawned for both socket clients");
+            require(children.stream().filter(c->!c.girl()).count()==7,"seven shared cousins really spawned for both socket clients, the second reader in the eighth's place");
             require(children.stream().filter(GoatmanChild::girl).count()==2,"each latecomer has its own private path girl");
-            write("trailer-arrival.txt","Two actual door crossings into a fresh trailer: eight shared native cousins tracked on both clients, each client's own path girl visible and the peer's girl hidden by the registered renderer.\n");
+            write("trailer-arrival.txt","Two actual door crossings into a fresh trailer: seven shared native cousins tracked on both clients with the second reader in the eighth's place, each client's own path girl visible and the peer's girl hidden by the registered renderer.\n");
             step(s,33,camp);
         }else if(phase==33&&a!=null&&b!=null){
             var run=GoatmanVignette.run(d);var cohort=run.getCompound("Cohort");
             if(cohort.getCompound(a.getUUID().toString()).getBoolean("Arrived")&&cohort.getCompound(b.getUUID().toString()).getBoolean("Arrived"))step(s,34,LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN));
         }else if(phase==34&&a!=null&&b!=null&&ACKS.size()==2){
-            write("trailer-camp.txt","Both real clients walked the authored woodland trail with native movement and reached the campsite, where all eight original shared children are visible with their registered skins.\n");
+            write("trailer-camp.txt","Both real clients walked the authored woodland trail with native movement and reached the campsite, where the seven original shared children still staged are visible with their registered skins.\n");
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
             // 0.4.123: the cousin is already in and the other one out by the fire. Both clients get a few seconds of the confused
             // quiet before the dark, rather than the ordinary forty ticks, so each can capture it.
@@ -363,7 +368,7 @@ public final class LiveExpeditionProof {
             require(GoatmanStalking.circuitDone(GoatmanVignette.run(d)),"the same native Goatman completed every physical circuit leg despite independent dialogue timing");
             var run=GoatmanVignette.run(d);var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var wrong=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==run.getInt("Wrong"));require(wrong.size()==1&&wrong.getFirst().getUUID().equals(nightGoatmanId),"the complete night keeps the original Goatman UUID and one physical body");
             require(run.getInt("Circuits0494")==GoatmanStalking.CIRCUITS&&run.getBoolean("DoorPressureDone0497")&&run.getInt("DoorPressureHits0497")==io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWindowCircuit.DOOR_BLOWS,"the original native Goatman completes both physical circuits and its actual front-step blows before departure");
-            write("trailer-night.txt","Both actual clients tracked the same seven cousins from upright confusion through distinct fear to terror, received louder native knocks from the west, east and rear, and rendered a later priority Goatman demand with the cousin subtitle suppressed. Both captured visible native head pixels of the same original body as Goatman and at least two distinct children through the front and middle glazing, with the original score active and a real vanilla music request blocked. The original Goatman body completed both full physical circuits and its front-step blows while its seven demands, each with its own run of knocks on the door, ran from the start of the night; irregular holds never skip a physical route leg or postpone the seven-demand clock.\n");
+            write("trailer-night.txt","Both actual clients tracked the same six real cousins (the second reader in the seventh's place) from upright confusion through distinct fear to terror, received louder native knocks from the west, east and rear, and rendered a later priority Goatman demand with the cousin subtitle suppressed. Both captured visible native head pixels of the same original body as Goatman and at least two distinct children through the front and middle glazing, with the original score active and a real vanilla music request blocked. The original Goatman body completed both full physical circuits and its front-step blows while its seven demands, each with its own run of knocks on the door, ran from the start of the night; irregular holds never skip a physical route leg or postpone the seven-demand clock.\n");
             MobSightProof.beginOutside(a,b);step(s,37,MobSightProof.OUTSIDE_VIEW);
         }else if(phase==37&&a!=null&&b!=null&&ACKS.size()==2){
             MobSightProof.checkOutside(a,b);MobSightProof.beginManor(a,b,ORIGIN);step(s,38,MobSightProof.manorView());

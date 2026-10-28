@@ -104,6 +104,43 @@ public final class GoatmanVignette {
     /** For the native tests: the cousins cover their routes at once, through every arrival, as though they had walked. */
     private static boolean hurried;
     public static int count(CompoundTag r){return r.contains("Cousins0464")?Math.max(5,Math.min(8,r.getInt("Cousins0464"))):5;}
+    /**
+     * 0.4.150, the owner's campers: a second reader and every one after takes the place of a cousin, so the camp has as many
+     * children as it would for one reader alone. The cousin whose place is taken is never staged; the reader eats from that
+     * cousin's plate, sits in that cousin's chair and sleeps in that cousin's bunk, and the count treats them as that cousin.
+     * Never the thing, the one who goes for gas, or the two who carry the jars. Saved in the round, so it lasts the evening.
+     */
+    public static final String PLAYS="Plays0150",PLAYED="Played0150";
+    /**
+     * The owner's note: the second reader takes the place of the cousin who goes for gas and fills the generator themselves
+     * (brisk rounds). Their return to the camper still sends the thing out past them.
+     */
+    public static final String GAS="GasReader0150",GAS_NAME="GasName0150";
+    /**
+     * How the cousins speak of the gas reader (owner): "he" or "she" only when the coatroom has settled how they present,
+     * otherwise their name and "they". Saved when they are sent out.
+     */
+    public static final String GAS_FORM="GasForm0150";
+    public static String gasForm(CompoundTag r){String form=r.getString(GAS_FORM);return form.equals("he")||form.equals("she")?form:"they";}
+    /** The gas job is a reader's: a brisk round with its gas reader. A round made old-style by a fixture has none. */
+    public static boolean byReader(CompoundTag r){return brisk(r)&&r.hasUUID(GAS);}
+    /** A place taken, and still one a reader may take: never the thing or a carrier, and the one who goes for gas only as the gas reader. */
+    public static boolean playedBy(CompoundTag r,int i){return fresh(r)&&i>=0&&i<count(r)&&(r.getInt(PLAYED)&(1<<i))!=0&&i!=r.getInt("Wrong")&&(i!=r.getInt("Runner")||byReader(r))&&!GoatmanMeal.carriers(r).contains(i);}
+    public static int played(CompoundTag r){if(r.getInt(PLAYED)==0)return 0;int n=0;for(int i=0;i<count(r);i++)if(playedBy(r,i))n++;return n;}
+    /** The children who should be at the trailer: the real cousins still staged, and every reader. */
+    public static int expected(CompoundTag r,int readers){return count(r)-1+readers-played(r);}
+    /** Whose place goes first: the cousins whose fear keeps them in their seats or pacing; the one who covers their ears, last. */
+    private static final List<Integer> STAND_IN_ORDER=List.of(GoatmanFear.TREMBLE,GoatmanFear.PACE,GoatmanFear.COMFORT,GoatmanFear.STARTLE,GoatmanFear.WATCH,GoatmanFear.BRACE,GoatmanFear.EARS);
+    /** A cousin whose place a reader may take, or -1 when every such place is taken. */
+    static int standIn(CompoundTag r){
+        int runner=r.getInt("Runner");if(brisk(r)&&!r.hasUUID(GAS)&&(r.getInt(PLAYED)&(1<<runner))==0)return runner;
+        var carriers=GoatmanMeal.carriers(r);int best=-1,rank=Integer.MAX_VALUE;
+        for(int i=0;i<count(r);i++){
+            if(i==r.getInt("Wrong")||i==r.getInt("Runner")||carriers.contains(i)||(r.getInt(PLAYED)&(1<<i))!=0)continue;
+            int at=STAND_IN_ORDER.indexOf(GoatmanFear.role(i,r));if(at<rank){rank=at;best=i;}
+        }
+        return best;
+    }
     private GoatmanVignette(){}
 
     // ------------------------------------------------------------------------------------------------ state
@@ -154,12 +191,17 @@ public final class GoatmanVignette {
         }
         if(!member&&(r.getInt("Phase")==VIGIL||r.getInt("Phase")==DAWN||r.getInt("Phase")==GATHERING&&(r.getInt("Clock")>=supperAt(r)||r.getBoolean("MealFrozen0465"))||cohort.getAllKeys().size()>=MAX_PLAYERS))return false;
         CompoundTag own=cohort.getCompound(p.getUUID().toString());
-        if(!member){own.putBoolean("Active",true);own.putDouble("Progress",0);own.putInt("Vigil",0);own.putBoolean("Arrived",false);}
+        if(!member){own.putBoolean("Active",true);own.putDouble("Progress",0);own.putInt("Vigil",0);own.putBoolean("Arrived",false);
+            // 0.4.150: the first in is the latecomer, whose bed the thing comes to first.
+            if(cohort.isEmpty())own.putBoolean("Latecomer0150",true);
+            // 0.4.150: arriving with the first reader, before anyone reaches the camp, a reader takes a cousin's place.
+            if(fresh(r)&&r.getInt("Phase")==PATH&&!cohort.isEmpty()){int role=standIn(r);if(role>=0){own.putInt(PLAYS,role);r.putInt(PLAYED,r.getInt(PLAYED)|1<<role);
+                if(role==r.getInt("Runner")){r.putUUID(GAS,p.getUUID());r.putString(GAS_NAME,p.getGameProfile().getName());}}}}
         own.putBoolean("Active",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
-        if(!member)p.displayClientMessage(Component.literal("You're late. Your cousins are already at the trailer."),false);
+        if(!member)p.displayClientMessage(Component.literal(own.contains(PLAYS)?"You're late too. The others are already at the trailer, and they've kept your place.":"You're late. Your cousins are already at the trailer."),false);
         scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);GoatmanBedtime.restore(p,r);
         if(!stage(l,b,r)){r.putBoolean("StagePending0469",true);saveRun(d,r);}
-        GoatmanWoods.supplies(l,b,count(r)-1+cohort.getAllKeys().size());if(fresh(r))GoatmanWoods.supperChairs(l,b,count(r)-1+cohort.getAllKeys().size());return true;
+        GoatmanWoods.supplies(l,b,expected(r,cohort.getAllKeys().size()));if(fresh(r))GoatmanWoods.supperChairs(l,b,expected(r,cohort.getAllKeys().size()));return true;
     }
     /** A fresh evening: no actors, day, the door open, the bathroom window propped, the porch light on, the pan and the plates empty. */
     private static void reset(ServerLevel l,BlockPos b){
@@ -431,6 +473,8 @@ public final class GoatmanVignette {
             boolean away=i==r.getInt("Runner")&&(r.getInt("RunnerState")==R_AWAY||r.getInt("RunnerState")==R_LOST)||i==r.getInt("Wrong")&&r.getInt("Phase")==DAWN;
             final int index=i;var matches=children.stream().filter(c->!c.isRemoved()&&!c.girl()&&c.getPersistentData().getInt(INDEX)==index).toList();
             if(away){matches.forEach(Entity::discard);continue;}
+            // A cousin whose place a reader has taken is not there; one already standing goes only while nobody sees it go.
+            if(playedBy(r,i)){for(var c:matches)if(unlooked(l,c.position()))c.discard();continue;}
             for(int n=1;n<matches.size();n++)matches.get(n).discard();
             if(!matches.isEmpty())continue;
             GoatmanChild c=GoatmanRegistry.CHILD.get().create(l);if(c==null)continue;
@@ -687,7 +731,7 @@ public final class GoatmanVignette {
 
     // ------------------------------------------------------------------------------------------------ the evening and the night
     /** Includes every enrolled real child, rather than treating multiplayer visitors as spectators. */
-    public static int expectedCount(CompoundTag r){return r.contains("Expected")?r.getInt("Expected"):count(r)-1+r.getCompound("Cohort").getAllKeys().size();}
+    public static int expectedCount(CompoundTag r){return r.contains("Expected")?r.getInt("Expected"):expected(r,r.getCompound("Cohort").getAllKeys().size());}
     public static int presentCount(ServerLevel l,BlockPos b){return cousinsOf(l,b).size()+(int)visitors(l,b).stream().filter(p->GoatmanWoods.clearing(rel(p,b))).count();}
     public static void onServerTick(ServerTickEvent.Post event){tick(event.getServer());}
     public static void tick(MinecraftServer server){
@@ -700,7 +744,7 @@ public final class GoatmanVignette {
         if(r.getInt("Phase")==0||r.getInt("Version")!=VERSION)return;CompoundTag cohort=r.getCompound("Cohort");int phase=r.getInt("Phase");
         List<ServerPlayer> enrolled=present.stream().filter(p->cohort.contains(p.getUUID().toString())&&!cohort.getCompound(p.getUUID().toString()).getBoolean("Failed")).toList();
         if(enrolled.isEmpty())return;
-        int expected=fresh(r)?count(r)-1+cohort.getAllKeys().size():count(r)-1+enrolled.size();
+        int expected=expected(r,fresh(r)?cohort.getAllKeys().size():enrolled.size());
         if(phase<VIGIL&&!r.getBoolean("MealFrozen0465")&&r.getInt("Expected")!=expected){r.putInt("Expected",expected);GoatmanWoods.supplies(l,b,expected);if(fresh(r))GoatmanWoods.supperChairs(l,b,expected);}
         boolean arrived=true;int clock=r.getInt("Clock");
         for(ServerPlayer p:enrolled){
@@ -721,7 +765,7 @@ public final class GoatmanVignette {
         if(phase==PATH&&arrived){phase=GATHERING;clock=0;r.putInt("Phase",phase);r.putInt("Pan",r.getBoolean("PlayerServes0464")?0:count(r)-1+enrolled.size());r.putInt("PanFor",count(r)-1+enrolled.size());GoatmanWoods.pan(l,b,r.getInt("Pan"));}
         if(phase==PATH)clock++;
         else if(phase==GATHERING){
-            GoatmanSupper.tick(l,b,r,enrolled);GoatmanMeal.tick(l,b,r,enrolled);cookingChatter(r,enrolled);
+            GoatmanSupper.tick(l,b,r,enrolled);GoatmanMeal.tick(l,b,r,enrolled);cookingChatter(r,enrolled);gas(l,b,r,enrolled);
             boolean waitingFirst=brisk(r)&&!r.getBoolean("MealStarted137")&&!r.contains("SupperAt04123")&&(r.getInt("Plated0464")&~r.getInt("EmptyPlates0465"))==0&&clock>=BRISK_SUPPER-1;
             if(!waitingFirst&&(brisk(r)||!fresh(r)||clock!=supperAt(r)-1||GoatmanSupper.ready(r))){clock++;evening(l,b,r,enrolled,clock);}
             if(clock>=gatherTicks(r)&&!GoatmanStalking.eveningActive(r)){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}
@@ -746,7 +790,7 @@ public final class GoatmanVignette {
         String[] lines=COOKING_LINES;int next=r.getInt("CookingChatLine0490");
         // 0.4.121: a line is said only if it is true now: nobody asks for theirs to stay on a griddle that is empty.
         for(int tries=0;tries<lines.length;tries++,next++){int k=Math.floorMod(next,lines.length);
-            if(cookingLineTrue(k,r)){say(readers,lines[k]);r.putInt("CookingChatLine0490",next+1);return;}}
+            if(cookingLineTrue(k,r)){say(readers,forRunner(r,lines[k]));r.putInt("CookingChatLine0490",next+1);return;}}
         r.putInt("CookingChatLine0490",next);
     }
     private static void evening(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
@@ -796,6 +840,8 @@ public final class GoatmanVignette {
         int rs=r.getInt("RunnerState");
         if(rs==R_LEAVING||rs==R_AWAY||rs==R_RETURNING||rs==R_KNOCKING){r.putInt("RunnerState",R_LOST);
             for(var c:cousinsOf(l,b))if(c.getPersistentData().getInt(INDEX)==r.getInt("Runner"))c.discard();
+            // A gas reader still outside when the woods go quiet is not there any more, as the cousin would not be.
+            var gas=gasReader(l.getServer(),r);if(gas!=null&&!GoatmanWoods.indoors(rel(gas,b)))lose(gas,r);
             if(rs==R_KNOCKING){r.putInt("Demand",-99);r.putInt("DemandAt",clock);}}
         // A brisk evening's thing waits where it is for the dark, a few seconds off; the night takes it from there.
         if(brisk(r))return;
@@ -827,8 +873,8 @@ public final class GoatmanVignette {
             int away=r.contains("MealSeatedAt137")?clock-r.getInt("MealSeatedAt137"):mealRunning?since:0;
             // Pulled to before he is heard on the trail, never once he is coming or across him.
             if(away>=TABLE_SHUT&&!r.getBoolean("Shut04123")&&(rs==R_AWAY||rs==R_LEAVING)&&shutDoor(l,b,r,enrolled))r.putBoolean("Shut04123",true);
-            if(rs!=R_HOME&&away==TABLE_PLACE)say(enrolled,"A cousin: Save his place. He'll be back.");
-            if(mealRunning&&away>=GoatmanMeal.MEAL_TICKS&&rs==R_AWAY&&!r.contains("QuietAt04123")){
+            if(rs!=R_HOME&&away==TABLE_PLACE)say(enrolled,forRunner(r,"A cousin: Save his place. He'll be back."));
+            if(!byReader(r)&&mealRunning&&away>=GoatmanMeal.MEAL_TICKS&&rs==R_AWAY&&!r.contains("QuietAt04123")){
                 Vec3 at=abs(GoatmanWoods.path(BRISK_CALL),b);GoatmanChild c=GoatmanRegistry.CHILD.get().create(l);
                 if(c!=null){int i=r.getInt("Runner");c.addTag(ACTOR);c.getPersistentData().putUUID(ROUND,r.getUUID("Id"));c.getPersistentData().putInt(INDEX,i);c.appearance(r.getInt("Skin"+i),0,null);
                     c.moveTo(at.x,at.y,at.z);l.addFreshEntity(c);List<Vec3> back=new ArrayList<>();for(double s:new double[]{48,53,58,63,66})back.add(GoatmanWoods.path(s));back.addAll(List.of(UP[0],UP[1],UP[2],UP[3]));
@@ -837,8 +883,8 @@ public final class GoatmanVignette {
             // Something went wrong upstream (he never got away to come back): the dark still comes.
             if(mealRunning&&away>=TABLE_LATEST&&!r.contains("QuietAt04123"))schedule(r,clock,0);
         }
-        // His line the moment he reaches the shut door, then two knocks, every five seconds (0.4.121).
-        if(rs==R_KNOCKING&&!GoatmanWoods.doorOpen(l,b)&&!r.getBoolean("Silence")){
+        // His line the moment he reaches the shut door, then two knocks, every five seconds (0.4.121). A gas reader knocks for themselves.
+        if(rs==R_KNOCKING&&!byReader(r)&&!GoatmanWoods.doorOpen(l,b)&&!r.getBoolean("Silence")){
             if(!r.contains("RunnerKnockFrom"))r.putInt("RunnerKnockFrom",clock);
             if(!r.contains("KnockAt04123"))r.putInt("KnockAt04123",clock);
             int knocked=clock-r.getInt("RunnerKnockFrom"),beat=Math.floorMod(knocked,RUNNER_KNOCK_EVERY);
@@ -856,7 +902,10 @@ public final class GoatmanVignette {
     private static void schedule(CompoundTag r,int clock,int quiet){r.putInt("QuietAt04123",clock+quiet);r.putInt("NightAt04123",clock+quiet+DARK_AFTER-QUIET_AFTER);}
     /** He is gone, or out past the porch on his way: the one who doesn't belong can come in to his chair without passing him. */
     private static boolean runnerOut(ServerLevel l,BlockPos b,CompoundTag r){
-        int rs=r.getInt("RunnerState");if(rs!=R_LEAVING)return rs!=R_HOME;
+        int rs=r.getInt("RunnerState");
+        // The gas reader is out of the way once they are outdoors and clear of the door, until they are back.
+        if(byReader(r)){if(rs==R_HOME||rs==R_INSIDE)return false;var p=gasReader(l.getServer(),r);return p==null||!GoatmanWoods.indoors(rel(p,b))&&p.position().distanceTo(Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)))>4;}
+        if(rs!=R_LEAVING)return rs!=R_HOME;
         return cousinsOf(l,b).stream().filter(c->c.getPersistentData().getInt(INDEX)==r.getInt("Runner")).allMatch(c->rel(c,b).z>-52);
     }
     /** A cousin pulls the door to once everyone at the table is in, never through somebody standing in it. */
@@ -927,6 +976,14 @@ public final class GoatmanVignette {
         // Copper motes where the smell is strongest: the door, and the window it tries.
         if(outside(r)&&clock%10==0){Vec3 at=Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR));l.sendParticles(GoatmanRegistry.COPPER.get(),at.x,at.y+.3,at.z-.4,3,.5,.6,.2,.002);}
     }
+    /** 0.4.150: the trailer's line in the Witness account; {@code alone} is the line for a reader who sat the night out alone. */
+    public static String witness(CompoundTag personal,String alone){
+        var with=new ArrayList<String>();for(var t:personal.getList("With0150",Tag.TAG_STRING))with.add(t.getAsString());
+        if(!personal.getBoolean("Drafted0150")||with.isEmpty())return alone;
+        String names=with.size()==1?with.getFirst():String.join(", ",with.subList(0,with.size()-1))+" and "+with.getLast();
+        return "I came up the trail late with "+names+(personal.getBoolean("Gas0150")?". I was the one who went out across the yard to fill the generator while the others ate.":personal.getBoolean("StoodIn0150")?", and the cousins had kept my place at the table.":".")
+                +" There were more of us than there were places at the table. Someone knocked at the door and used a voice we knew. We kept it closed until the knocking stopped. I still could not say who had been outside.";
+    }
     /** Morning: what the night was, for every child who sat all of it out. */
     private static void dawn(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,LabyrinthData d){
         r.putInt("Phase",DAWN);GoatmanWoods.atmosphere(l,b,false);GoatmanWoods.door(l,b,true);GoatmanWoods.porchLight(l,b,true);r.putBoolean("Silence",false);
@@ -940,6 +997,9 @@ public final class GoatmanVignette {
             if(right&&whole){
                 if(p.isSleeping())GoatmanBedtime.wake(p);
                 CompoundTag personal=personal(d,p.getUUID());personal.putBoolean("Finished",true);
+                // 0.4.150: who else sat the night out, and whether this reader had taken a cousin's place, for the account.
+                var with=new ListTag();for(var other:enrolled){var theirs=cohort.getCompound(other.getUUID().toString());if(other!=p&&theirs.getBoolean("Active")&&!theirs.getBoolean("Failed"))with.add(StringTag.valueOf(other.getGameProfile().getName()));}
+                personal.put("With0150",with);personal.putBoolean("StoodIn0150",own.contains(PLAYS));personal.putBoolean("Gas0150",byReader(r)&&r.getUUID(GAS).equals(p.getUUID()));personal.putBoolean("Drafted0150",true);
                 if(!personal.getBoolean("CounterGiven")){personal.putBoolean("CounterGiven",true);var counter=TallyCounterItem.forReader(p.getUUID());if(!p.getInventory().add(counter))p.drop(counter,false);}
                 savePersonal(d,p.getUUID(),personal);
                 WitnessAccount.resolve(p,WitnessAccount.Story.GOATMAN,"counted_right");own.putBoolean("Resolved",true);
@@ -1026,6 +1086,83 @@ public final class GoatmanVignette {
         return false;
     }
 
+    // ------------------------------------------------------------------------------------------------ the one who goes for gas
+    /** The generator in the shed across the yard, and how many pulls of its cord it takes to catch. */
+    public static final BlockPos GENERATOR=new BlockPos(13,0,-62);
+    static final int GAS_PULLS=3,GAS_PULL_GAP=12,GAS_WAIT=200,GAS_REMIND=240;
+    /** The reader who goes for gas, if they are here and still part of the evening. */
+    static @Nullable ServerPlayer gasReader(MinecraftServer s,CompoundTag r){
+        if(!byReader(r))return null;var p=s.getPlayerList().getPlayer(r.getUUID(GAS));if(p==null||!inside(p))return null;
+        var own=r.getCompound("Cohort").getCompound(p.getUUID().toString());return own.getBoolean("Active")&&!own.getBoolean("Failed")?p:null;
+    }
+    /** A line about the cousin who went for gas, said of the reader who went instead: by name, never he or she. */
+    public static String forRunner(CompoundTag r,String line){
+        if(!byReader(r))return line;String name=r.getString(GAS_NAME),form=gasForm(r);
+        if(form.equals("he"))return line;
+        if(form.equals("she"))return line.replace("Save his place. He'll be back.","Save her place. She'll be back.").replace("Save one for him when he gets back.","Save one for her when she gets back.");
+        return line.replace("Save his place. He'll be back.","Save "+name+"'s place. They'll be back.").replace("Save one for him when he gets back.","Save one for "+name+" for when they get back.");
+    }
+    /**
+     * The meal has begun: the gas reader is sent out to the generator. If they are not here, the cousin whose place they took
+     * goes after all, and the reader is one more child when they come back.
+     */
+    static boolean sendForGas(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
+        if(!byReader(r))return false;var p=gasReader(l.getServer(),r);
+        if(p==null||!readers.contains(p)){r.putInt(PLAYED,r.getInt(PLAYED)&~(1<<r.getInt("Runner")));r.remove(GAS);r.remove(GAS_NAME);r.putBoolean("StagePending0469",true);return false;}
+        r.putInt("RunnerState",R_LEAVING);r.putInt("RunnerLeftAt134",r.getInt("Clock"));r.putInt("GasRemind0150",r.getInt("Clock"));
+        r.putString(GAS_FORM,io.github.knaitoe.theoldesthouse.labyrinth.HouseRead.address(p,"they","he","she","they"));
+        say(readers,"A cousin: Generator's out of gas. "+r.getString(GAS_NAME)+", the can's in the shed across the yard. Fill it and pull the cord. We'll save yours.");
+        p.displayClientMessage(Component.literal("The generator is in the shed across the yard."),true);return true;
+    }
+    /** The gas reader's evening, from the doorway out to the shed and back to the camper. */
+    private static void gas(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
+        if(!byReader(r)||r.getBoolean("Silence"))return;int rs=r.getInt("RunnerState");if(rs==R_HOME||rs==R_INSIDE||rs==R_LOST)return;
+        var p=gasReader(l.getServer(),r);if(p==null||!readers.contains(p))return;
+        Vec3 at=rel(p,b);boolean in=GoatmanWoods.indoors(at);int clock=r.getInt("Clock");
+        if(rs==R_LEAVING&&!in){r.putInt("RunnerState",rs=R_AWAY);r.putInt("GasAwayAt0150",clock);}
+        if((rs==R_LEAVING||rs==R_AWAY)&&clock-r.getInt("GasRemind0150")>=GAS_REMIND){r.putInt("GasRemind0150",clock);p.displayClientMessage(Component.literal("The generator in the shed still needs filling."),true);}
+        if(rs!=R_RETURNING&&rs!=R_KNOCKING)return;
+        boolean open=GoatmanWoods.doorOpen(l,b),near=!in&&p.position().distanceTo(Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR)))<6;
+        if(near&&rs==R_RETURNING&&!open){r.putInt("RunnerState",rs=R_KNOCKING);r.putInt("KnockAt04123",clock);}
+        // As they come back in, the one in their chair runs out past them, as it did past the cousin.
+        if(open&&(near||in))gasExchange(l,b,r);
+        if(in){r.putInt("RunnerState",R_INSIDE);if(!r.contains("ExchangeIn0497"))r.putInt("ExchangeIn0497",clock);gasExchange(l,b,r);GoatmanFear.returned(r);}
+    }
+    private static void gasExchange(ServerLevel l,BlockPos b,CompoundTag r){
+        if(r.getBoolean("Exchange0497"))return;int xs=r.getInt("ExtraState");if(xs!=X_SUPPER&&xs!=X_ACTIVITY)return;
+        var extra=cousinsOf(l,b).stream().filter(c->c.getPersistentData().getInt(INDEX)==r.getInt("Wrong")).findFirst().orElse(null);if(extra==null)return;
+        r.putBoolean("Exchange0497",true);r.putInt("ExtraState",X_FIRE);setRoute(extra,exchangeLane(onward(extra,"byFire"),false),"byFire");
+    }
+    /** A pull of the generator's cord: it catches on the third, once the one in their chair has sat down or a while has passed. */
+    private static boolean generator(ServerPlayer p){
+        var d=LabyrinthData.get(p.server);var r=run(d);if(!byReader(r)||!r.getUUID(GAS).equals(p.getUUID())||r.getInt("Phase")!=GATHERING)return false;
+        int rs=r.getInt("RunnerState");BlockPos b=base(p.server);var at=b.offset(GENERATOR);
+        if(rs!=R_LEAVING&&rs!=R_AWAY){p.displayClientMessage(Component.literal(rs==R_HOME?"It's still running. For now.":"It's running."),true);return true;}
+        long now=p.serverLevel().getGameTime();if(now-r.getLong("GasPullAt0150")<GAS_PULL_GAP)return true;r.putLong("GasPullAt0150",now);
+        int pulls=r.getInt("GasPulls0150")+1;r.putInt("GasPulls0150",pulls);
+        p.serverLevel().playSound(null,at,SoundEvents.FISHING_BOBBER_RETRIEVE,SoundSource.BLOCKS,.9F,.6F);
+        boolean seated=r.getInt("ExtraState")!=X_ACTIVITY,waited=r.getInt("Clock")-r.getInt("GasAwayAt0150")>=GAS_WAIT;
+        if(pulls<GAS_PULLS||!seated&&!waited){p.serverLevel().playSound(null,at,SoundEvents.FIRE_EXTINGUISH,SoundSource.BLOCKS,.5F,.7F);
+            p.displayClientMessage(Component.literal(pulls==1?"You tip the can in and pull the cord. It coughs and dies.":"It coughs and dies."),true);saveRun(d,r);return true;}
+        p.serverLevel().playSound(null,at,SoundEvents.BLASTFURNACE_FIRE_CRACKLE,SoundSource.BLOCKS,1.2F,.5F);
+        p.displayClientMessage(Component.literal("The generator catches and settles into a rattle. Back to the camper."),true);
+        r.putInt("RunnerState",R_RETURNING);saveRun(d,r);return true;
+    }
+    /** The gas reader at the shut door, from outside: they knock, and somebody inside has to open it. */
+    private static boolean knockToComeIn(ServerPlayer p,BlockPos b,CompoundTag r){
+        if(!byReader(r)||!r.getUUID(GAS).equals(p.getUUID())||r.getInt("Phase")!=GATHERING||GoatmanWoods.indoors(rel(p,b))||GoatmanWoods.doorOpen(p.serverLevel(),b))return false;
+        int rs=r.getInt("RunnerState");if(rs==R_HOME||rs==R_INSIDE||rs==R_LOST)return false;
+        long now=p.serverLevel().getGameTime();if(now-p.getPersistentData().getLong("GasKnock0150")<10)return true;p.getPersistentData().putLong("GasKnock0150",now);
+        var d=LabyrinthData.get(p.server);if(rs==R_RETURNING){r.putInt("RunnerState",R_KNOCKING);r.putInt("KnockAt04123",r.getInt("Clock"));}
+        knock(p.serverLevel(),b,visitors(p.serverLevel(),b));r.putBoolean(GoatmanFear.DOOR_KNOCKED,true);GoatmanFear.heard(r);saveRun(d,r);
+        p.displayClientMessage(Component.literal("It's shut. Somebody inside has to open it."),true);return true;
+    }
+    /** Still outside when the woods go quiet: gone, with the face of the cousin whose place they had. */
+    private static void lose(ServerPlayer p,CompoundTag r){
+        var cohort=r.getCompound("Cohort");var own=cohort.getCompound(p.getUUID().toString());own.putBoolean("Failed",true);own.putBoolean("Active",false);own.putBoolean("LostOutside0150",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);
+        scale(p,false);HousePackets.send(p,new GoatmanScenePayload(0,0,0,0));GoatmanHaunt.taken(p,r.getInt("Skin"+r.getInt("Runner")),0);PlaytestLog.event(p,"goatman_lost_outside");
+    }
+
     // ------------------------------------------------------------------------------------------------ what a child can touch
     /** Called only by a reachable, native trailer-door interaction. */
     public static boolean openDoor(ServerPlayer p,BlockPos at){
@@ -1041,6 +1178,7 @@ public final class GoatmanVignette {
             scale(p,false);HousePackets.send(p,new GoatmanScenePayload(0,0,0,0));GoatmanHaunt.taken(p,r.getInt("Skin"+who),took?0:r.getInt("Tells"));
             PlaytestLog.event(p,"goatman_opened");return true;
         }
+        if(knockToComeIn(p,b,r))return true;
         var state=p.serverLevel().getBlockState(b.offset(GoatmanWoods.DOOR));boolean open=state.getBlock() instanceof DoorBlock&&!state.getValue(DoorBlock.OPEN);GoatmanWoods.door(p.serverLevel(),b,open);return true;
     }
     public static void onBlock(PlayerInteractEvent.RightClickBlock e){
@@ -1052,6 +1190,7 @@ public final class GoatmanVignette {
         // The bathroom window is an ordinary awning window; anyone may prop it or shut it.
         if(e.getPos().equals(b.offset(GoatmanWoods.WINDOW)))return;
         if(e.getPos().equals(b.offset(GoatmanWoods.STOVE))||e.getPos().equals(b.offset(GoatmanWoods.PAN))){takeBrat(p,b);e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
+        if(e.getPos().equals(b.offset(GENERATOR))&&generator(p)){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
         // Sleeping would skip the night; containers and props provide no alternative resolution.
         var state=e.getLevel().getBlockState(e.getPos());if(state.getBlock() instanceof BedBlock||state.is(Blocks.CAMPFIRE)||state.is(Blocks.SMOKER)||state.is(Blocks.BARREL)||state.getBlock() instanceof TrapDoorBlock||state.is(Blocks.BLAST_FURNACE)){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
     }
