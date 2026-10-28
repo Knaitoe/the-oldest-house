@@ -78,9 +78,39 @@ The owner's October 28 direction makes the other vignettes shared:
   - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen.
   - **The child's room** can be shared.
 - **Still open:**
-  - multi-visit vignettes when a different group arrives each time (for example, one reader takes the paw and a friend later returns alone);
   - how a shared room is built and reset when friends arrive at different times;
   - who a scene responds to when two readers act at once.
+
+### Multi-visit vignettes: one story per thread
+
+The owner approved this model (October 28).
+
+- **A thread.** The readers present on a vignette's first visit share one story, called a thread. Each reader is in at most one thread per vignette.
+- **Picking up the story.** Whoever from the thread comes back, alone or together, continues it where it left off. Nobody gets a fresh copy of a story they have already begun.
+- **Beats that need one person wait for them.** The monkey's paw's wishes need its holder. A visit without them plays only what doesn't need them: news arriving, the empty chair, the knocking.
+- **No idle visits.** If the next beat needs someone who isn't there, the House deals the arriving readers something else.
+- **A holder who never returns.** After a while the held object goes back where it came from (the paw to the fire) for whoever is there, so no thread is stuck.
+- **Different threads arriving together** follow the mixed-groups rule: deal something none of them has started, or split them.
+- **Late joiners.** A reader who has never seen the vignette and arrives with a thread partway through joins it as a witness from that point.
+- **Missed endings.** A thread member who was elsewhere when the story ended can visit the aftermath later. They get a viewer's account and the Witness credit.
+
+The paw, for example:
+
+1. Two readers hear the sergeant together, and the first pulls the paw from the fire and becomes its holder.
+2. If the second returns alone after the first has wished, they see that wish come home and their account says they watched it.
+3. If they return before any wish, the House deals them another vignette instead.
+
+### Accounts for every way of being there
+
+Each shared vignette's account must be properly drafted for every way a reader can have been part of it (owner). The variants are:
+
+- **Actor:** the reader did the key act (today's accounts).
+- **Witness:** the reader was there throughout and watched another reader act.
+- **Partway:** the reader joined the thread partway through.
+- **Aftermath:** the reader came back after the ending happened without them.
+- **Absent:** the reader saw the consequence of something done while they weren't there.
+
+Each variant is written prose in the account's own voice. It is not the actor's account with the subject swapped, and it reads correctly however many readers were present. Another reader is named by their player name, and every reader is still "you" in their own account, never he or she. Like the House's read, the witness forms are a place for subtle changes, such as what a watcher noticed that the actor could not. This multiplies the writing per vignette, and the accounts are the main cost of making a vignette shared.
 
 ## What the House keeps
 
@@ -487,6 +517,7 @@ Follow-ups the same day settled several details, all in "Co-op":
 - forward exits lead into the ordinary halls;
 - the five quiet rooms and Backseat are the only private ones;
 - witnesses get their own account and credit, possibly written as a viewer's;
+- multi-visit vignettes follow one story per thread, with late joiners, aftermath visits and accounts drafted for each way of being there.
 - the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room are named as scenes to share.
 
 None of these is implemented yet.
