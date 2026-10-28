@@ -16,25 +16,28 @@ import net.minecraft.world.phys.shapes.*;
 
 public final class HouseReadPropBlock extends BaseEntityBlock {
     public enum Part implements StringRepresentable {
-        WOOL,TRENCH,BARN,WOOL_BOOTS,TRENCH_BOOTS,BARN_BOOTS,TOWEL,MIRROR,MIRROR_TOP,UMBRELLA,RADIATOR,CURTAIN,RAIL,SWING,MAILBOX,PLATE,COVERED_MIRROR;
+        WOOL,TRENCH,BARN,WOOL_BOOTS,TRENCH_BOOTS,BARN_BOOTS,TOWEL,MIRROR,MIRROR_TOP,UMBRELLA,RADIATOR,CURTAIN,RAIL,SWING,MAILBOX,PLATE,COVERED_MIRROR,
+        CLOCK_BASE,CLOCK_FACE,BELL,CALENDAR,RECEPTION,CRT,COOLER,PAPER,MAGAZINES,GLASSES,PHONE,ARMCHAIR,
+        SINK,TAP,CABINET,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,JUKEBOX,STRING_LIGHT,ROWBOAT,BOTTLE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final MapCodec<HouseReadPropBlock> CODEC=simpleCodec(HouseReadPropBlock::new);
     public static final EnumProperty<Part> PART=EnumProperty.create("part",Part.class);
+    public static final IntegerProperty LIFTED=IntegerProperty.create("lifted",0,3);
     public static final BooleanProperty TURNED=BooleanProperty.create("turned"),WRITING=BooleanProperty.create("writing");
-    public HouseReadPropBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(PART,Part.WOOL).setValue(HorizontalDirectionalBlock.FACING,net.minecraft.core.Direction.SOUTH).setValue(TURNED,false).setValue(WRITING,false));}
+    public HouseReadPropBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(PART,Part.WOOL).setValue(HorizontalDirectionalBlock.FACING,net.minecraft.core.Direction.SOUTH).setValue(TURNED,false).setValue(WRITING,false).setValue(LIFTED,0));}
     @Override protected MapCodec<? extends BaseEntityBlock> codec(){return CODEC;}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(PART,HorizontalDirectionalBlock.FACING,TURNED,WRITING);}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(PART,HorizontalDirectionalBlock.FACING,TURNED,WRITING,LIFTED);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new Fitting(p,s);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return HouseReadGeometry.shape(s);}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(PART)){
-        case CURTAIN,PLATE,TOWEL->Shapes.empty();default->getShape(s,l,p,c);};}
+        case CURTAIN,PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE->Shapes.empty();default->getShape(s,l,p,c);};}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level l,BlockPos at,Player player,BlockHitResult hit){
         if(player.isSpectator()||!player.isAlive()||player.distanceToSqr(at.getCenter())>36)return InteractionResult.PASS;
         if(l.isClientSide)return InteractionResult.SUCCESS;
-        if(player instanceof ServerPlayer p)HouseReadSites.use(p,at,s.getValue(PART));return InteractionResult.CONSUME;
+        if(player instanceof ServerPlayer p){if(!HouseReadMoments.routineUse(p,at,s,hit))HouseReadSites.use(p,at,s.getValue(PART));}return InteractionResult.CONSUME;
     }
     public static final class Fitting extends BlockEntity {public Fitting(BlockPos at,BlockState s){super(HouseReadRegistry.FITTING_ENTITY.get(),at,s);}}
 }

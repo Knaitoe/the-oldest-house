@@ -1,0 +1,145 @@
+package io.github.knaitoe.theoldesthouse.labyrinth;
+
+import java.util.*;
+import net.minecraft.core.*;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
+import net.minecraft.server.level.*;
+import net.minecraft.sounds.*;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Display.ItemDisplay;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.*;
+import com.mojang.math.Transformation;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import static io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSites.Room.*;
+import static io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part.*;
+
+/** Literal local acts and physical sequences only. No personality categories or later-room effects. */
+public final class HouseReadMoments {
+    private static final String LIFT="house_read_routine139";
+    private static final Map<UUID,Long> LAST_MUSIC=new HashMap<>();
+    public static final String[] ROUTINES={"silk headwrap","curl cream","wide-tooth pick","scalp oil","parting comb","hair ties","paddle brush","dry shampoo","claw clip","pocket comb","pomade tin","cotton washcloth"};
+    private HouseReadMoments(){}
+    public static BlockPos exit(HouseReadSites.Room room){return switch(room){case WAITING->new BlockPos(0,0,-14);case BATHROOM->new BlockPos(3,0,-8);case SHELTER->new BlockPos(0,0,-21);default->throw new IllegalArgumentException(room.name());};}
+    public static boolean canProceed(ServerPlayer p,HouseReadSites.Room room){
+        var visit=HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());
+        return room!=WAITING&&room!=BATHROOM||room==WAITING&&visit.getInt("Age")>=600||room==BATHROOM&&visit.getBoolean("BedroomOpen");
+    }
+    private static CompoundTag visit(ServerPlayer p,HouseReadSites.Room room){return HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());}
+    private static void save(ServerPlayer p,HouseReadSites.Room room,CompoundTag visit){var own=HouseReadSites.state(p.server,p.getUUID());own.put(room.key(),visit);HouseReadSites.save(p.server,p.getUUID(),own);}
+    private static void arm(ServerPlayer p,HouseReadSites.Room room,String words){var t=visit(p,room);t.putBoolean("NoteArmed",true);save(p,room,t);HouseReadSites.act(p,room,words);}
+    private static void loanTag(ServerPlayer p,ItemStack item){CustomData.update(DataComponents.CUSTOM_DATA,item,t->t.putUUID("HouseReadLoan",p.getUUID()));}
+    private static void keep(ServerPlayer p,ItemStack item){if(!item.isEmpty()&&!p.getInventory().add(item)){var e=new net.minecraft.world.entity.item.ItemEntity(p.serverLevel(),p.getX(),p.getY(),p.getZ(),item);e.setTarget(p.getUUID());p.serverLevel().addFreshEntity(e);}}
+    private static void borrow(ServerPlayer p,Item item,boolean head){
+        var t=visit(p,WAITING);int slot=head?39:t.contains("HandSlot")?t.getInt("HandSlot"):p.getInventory().selected;String key=head?"Head":"Hand";ItemStack displaced=ItemStack.EMPTY;
+        if(!t.getBoolean("Borrowed"+key)){t.put("Before"+key,p.getInventory().getItem(slot).saveOptional(p.registryAccess()));t.putBoolean("Borrowed"+key,true);if(!head)t.putInt("HandSlot",slot);}
+        else if(!HouseReadSites.loan(p.getInventory().getItem(slot),p.getUUID()))displaced=p.getInventory().getItem(slot).copy();
+        if(!head)for(int i=0;i<p.getInventory().getContainerSize();i++)if(HouseReadSites.loan(p.getInventory().getItem(i),p.getUUID())&&p.getInventory().getItem(i).getItem() instanceof HouseReadBorrowedItem b&&!b.object.equals("glasses"))p.getInventory().setItem(i,ItemStack.EMPTY);
+        var stack=new ItemStack(item);loanTag(p,stack);p.getInventory().setItem(slot,stack);keep(p,displaced);if(!head)p.getInventory().selected=slot;save(p,WAITING,t);p.inventoryMenu.broadcastChanges();
+        var base=HouseReadSites.base(p.server,p.getUUID(),WAITING);
+        for(var at:List.of(HouseReadRemainingRooms.PHONE_AT,HouseReadRemainingRooms.GLASSES_AT)){var pos=base.offset(at);var state=p.serverLevel().getBlockState(pos);if(state.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,at.equals(HouseReadRemainingRooms.GLASSES_AT)?p.getItemBySlot(EquipmentSlot.HEAD).is(HouseReadRegistry.GLASSES.get()):item==HouseReadRegistry.PHONE.get()),Block.UPDATE_CLIENTS);}
+    }
+    public static void handUse(ServerPlayer p,String object){
+        if(HouseReadSites.inside(p)!=WAITING||!HouseReadSites.loan(p.getMainHandItem(),p.getUUID()))return;
+        if(object.equals("phone")){var state=new CompoundTag();state.putBoolean("WaitingRoom",true);state.putLong("DayTime",9700+visit(p,WAITING).getInt("Age"));state.putBoolean("Service",true);io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.HarriganPhonePayload(true,state));}
+        else if(object.equals("paper"))HouseReadTexts.openLiteral(p,WAITING,"The local page",HouseReadTexts.LOCAL_PAGE);
+        else if(object.equals("magazine"))HouseReadTexts.openLiteral(p,WAITING,"County and garden",HouseReadTexts.MAGAZINE);
+    }
+    public static void left(ServerPlayer p,HouseReadSites.Room room,CompoundTag t){
+        if(room==WAITING){for(String key:List.of("Hand","Head")){if(!t.getBoolean("Borrowed"+key))continue;int slot=key.equals("Head")?39:t.getInt("HandSlot");var displaced=p.getInventory().getItem(slot).copy();p.getInventory().setItem(slot,ItemStack.parseOptional(p.registryAccess(),t.getCompound("Before"+key)));keep(p,displaced);t.remove("Before"+key);t.putBoolean("Borrowed"+key,false);}p.inventoryMenu.broadcastChanges();
+            var b=HouseReadSites.base(p.server,p.getUUID(),room);var level=p.server.getLevel(room.dimension());
+            if(level!=null)for(var e:level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,HouseReadRooms.bounds(b,room),e->HouseReadSites.loan(e.getItem(),p.getUUID())))e.discard();
+            if(level!=null)for(var rel:List.of(HouseReadRemainingRooms.PHONE_AT,HouseReadRemainingRooms.GLASSES_AT)){var at=b.offset(rel);var s=level.getBlockState(at);if(s.is(HouseReadRegistry.FITTING.get()))level.setBlock(at,s.setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);}
+        }
+        if(room==BATHROOM){var b=HouseReadSites.base(p.server,p.getUUID(),room);settle(p,b,t);}
+        LAST_MUSIC.remove(p.getUUID());
+    }
+    public static boolean use(ServerPlayer p,BlockPos b,HouseReadSites.Room room,BlockPos at,HouseReadPropBlock.Part part){
+        if(room==WAITING){
+            switch(part){
+                case ARMCHAIR->{io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,at);}
+                case BELL->{HouseReadSites.sound(p,HouseReadRegistry.BELL.get(),at,.55f);HouseReadSites.act(p,room,"rang the reception bell");}
+                case PAPER,MAGAZINES,GLASSES,PHONE,COOLER->{
+                    if(part==GLASSES)borrow(p,HouseReadRegistry.GLASSES.get(),true);
+                    else borrow(p,switch(part){case PAPER->HouseReadRegistry.PAPER.get();case MAGAZINES->HouseReadRegistry.MAGAZINE.get();case PHONE->HouseReadRegistry.PHONE.get();default->HouseReadRegistry.CONE.get();},false);
+                    arm(p,room,switch(part){case PAPER->"opened the local newspaper";case MAGAZINES->"opened the gardening magazine";case GLASSES->"put on the reading glasses";case PHONE->"picked up the phone from the armrest";default->"filled a paper cone at the water cooler";});
+                    if(part==COOLER)HouseReadSites.sound(p,HouseReadRegistry.GLUG.get(),at,.55f);else if(part!=GLASSES)handUse(p,part==PAPER?"paper":part==MAGAZINES?"magazine":"phone");
+                }
+                case CRT->{var state=p.serverLevel().getBlockState(at);int channel=(state.getValue(HouseReadPropBlock.LIFTED)+1)%4;p.serverLevel().setBlock(at,state.setValue(HouseReadPropBlock.LIFTED,channel),Block.UPDATE_CLIENTS);HouseReadSites.sound(p,HouseReadRegistry.HISS.get(),at,.32f);arm(p,room,"turned the television knob to channel "+(channel+1));}
+                case RECEPTION,CALENDAR->{note(p,b,room,"The calendar shows this month.");}
+                case CLOCK_BASE,CLOCK_FACE->p.displayClientMessage(Component.literal("The clock keeps its own steady time."),true);
+                default->{return false;}
+            }return true;
+        }
+        if(room==BATHROOM){
+            if(part==TOWEL){HouseReadSites.act(p,room,"felt the dry towel beside the sink");p.displayClientMessage(Component.literal("A dry towel, folded beside the sink."),true);return true;}
+            if(part==LIGHT_SWITCH){var t=visit(p,room);boolean off=!t.getBoolean("LightOff");t.putBoolean("LightOff",off);t.putBoolean("BedroomOpen",true);t.putBoolean("NoteArmed",true);save(p,room,t);for(var lamp:HouseReadRemainingRooms.BATH_LIGHTS)p.serverLevel().setBlock(b.offset(lamp),off?Blocks.AIR.defaultBlockState():Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),Block.UPDATE_CLIENTS);p.serverLevel().setBlock(at,p.serverLevel().getBlockState(at).setValue(HouseReadPropBlock.TURNED,off),Block.UPDATE_CLIENTS);unlock(p,b,room);HouseReadSites.sound(p,SoundEvents.LEVER_CLICK,at,.3f);HouseReadSites.act(p,room,off?(t.getInt("Touches")==0?"turned the light off without touching the counter":"turned the bathroom light off"):"turned the bathroom light back on");return true;}
+            if(part==TAP){var t=visit(p,room);boolean running=!t.getBoolean("TapRunning");t.putBoolean("TapRunning",running);t.putInt("TapSoundAt",t.getInt("Age"));save(p,room,t);p.serverLevel().setBlock(at,p.serverLevel().getBlockState(at).setValue(HouseReadPropBlock.TURNED,running),Block.UPDATE_CLIENTS);arm(p,room,running?"ran the hot tap":"turned off the hot tap");if(running)HouseReadSites.sound(p,HouseReadRegistry.TAP.get(),at,.5f);else p.connection.send(new ClientboundStopSoundPacket(HouseReadRegistry.TAP.getId(),SoundSource.BLOCKS));return true;}
+            if(part==POSTCARD){note(p,b,room,"A picture of a lake, wedged into the mirror frame.");return true;}
+            if(part==MIRROR||part==MIRROR_TOP)return true;
+        }
+        if(room==SHELTER){
+            if(part==JUKEBOX){var t=visit(p,room);start(p,b,t);save(p,room,t);note(p,b,room,"One free credit. A slow instrumental; no names on the song strips.");return true;}
+            if(part==BOTTLE){HouseReadSites.act(p,room,"looked at the cold bottle on the rail");return true;}
+            if(part==ROWBOAT){HouseReadSites.act(p,room,"rested beside the covered rowboat");return true;}
+        }
+        return false;
+    }
+    private static void note(ServerPlayer p,BlockPos b,HouseReadSites.Room room,String blank){var at=b.offset(HouseReadRooms.note(room));if(p.serverLevel().getBlockState(at).getValue(HouseReadPropBlock.WRITING))HouseReadTexts.open(p,room);else p.displayClientMessage(Component.literal(blank),true);}
+    public static boolean routineUse(ServerPlayer p,BlockPos at,BlockState state,BlockHitResult hit){
+        int group=state.getValue(HouseReadPropBlock.PART).ordinal()-ROUTINE_A.ordinal();if(group<0||group>3)return false;
+        if(HouseReadSites.inside(p)!=BATHROOM)return true;
+        var b=HouseReadSites.base(p.server,p.getUUID(),BATHROOM);var t=visit(p,BATHROOM);settle(p,b,t);
+        int index=net.minecraft.util.Mth.clamp((int)((hit.getLocation().x-at.getX())*3),0,2),item=group*3+index;
+        var display=new ItemDisplay(EntityType.ITEM_DISPLAY,p.serverLevel());var data=display.saveWithoutId(new CompoundTag());data.put("item",new ItemStack(HouseReadRegistry.ROUTINES.get(item).get()).save(p.registryAccess()));data.putString("item_display","fixed");display.load(data);display.setPos(at.getX()+.5,at.getY()+.5,at.getZ()+.5);display.addTag(LIFT);display.getPersistentData().putUUID("Reader",p.getUUID());
+        pose(display,index,.01f,0);if(!p.serverLevel().addFreshEntity(display))return true;pose(display,index,.32f,.10f);t.putInt("LiftIndex",index);t.putBoolean("LiftLowered",false);
+        p.serverLevel().setBlock(at,state.setValue(HouseReadPropBlock.LIFTED,index+1),Block.UPDATE_CLIENTS);t.putLong("LiftAt",at.asLong());t.putInt("LiftUntil",t.getInt("Age")+24);t.putUUID("LiftDisplay",display.getUUID());t.putInt("Touches",t.getInt("Touches")+1);t.putBoolean("NoteArmed",true);save(p,BATHROOM,t);
+        int position=HouseReadRemainingRooms.ROUTINE_PLACES.indexOf(at.subtract(b));HouseReadSites.act(p,BATHROOM,"lifted the "+ROUTINES[item]+" from position "+(position+1));p.displayClientMessage(new ItemStack(HouseReadRegistry.ROUTINES.get(item).get()).getHoverName(),true);return true;
+    }
+    private static ListTag floats(float... values){var list=new ListTag();for(float value:values)list.add(FloatTag.valueOf(value));return list;}
+    private static void pose(ItemDisplay display,int index,float lift,float roll){var tag=display.saveWithoutId(new CompoundTag());var transform=new CompoundTag();transform.put("translation",floats((index-1)*5/16f,lift,0));transform.put("scale",floats(1,1,1));transform.put("left_rotation",floats(0,0,(float)Math.sin(roll/2),(float)Math.cos(roll/2)));transform.put("right_rotation",floats(0,0,0,1));tag.put("transformation",transform);tag.putInt("interpolation_duration",5);tag.putInt("start_interpolation",0);display.load(tag);}
+    private static void settle(ServerPlayer p,BlockPos b,CompoundTag t){
+        if(t.contains("LiftAt")){var at=BlockPos.of(t.getLong("LiftAt"));if(HouseReadRooms.bounds(b,BATHROOM).contains(at.getCenter())){var s=p.serverLevel().getBlockState(at);if(s.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(at,s.setValue(HouseReadPropBlock.LIFTED,0),Block.UPDATE_CLIENTS);}t.remove("LiftAt");}
+        for(var e:p.serverLevel().getEntitiesOfClass(ItemDisplay.class,HouseReadRooms.bounds(b,BATHROOM),d->d.getTags().contains(LIFT)&&d.getPersistentData().hasUUID("Reader")&&d.getPersistentData().getUUID("Reader").equals(p.getUUID())))e.discard();t.remove("LiftDisplay");
+    }
+    private static void unlock(ServerPlayer p,BlockPos b,HouseReadSites.Room room){for(var at:List.of(b.offset(exit(room)),b.offset(exit(room)).above())){var s=p.serverLevel().getBlockState(at);if(s.getBlock() instanceof DoorBlock)p.serverLevel().setBlock(at,s.setValue(DoorBlock.OPEN,true),Block.UPDATE_CLIENTS);}}
+    private static void start(ServerPlayer p,BlockPos b,CompoundTag t){if(t.getBoolean("SongStarted"))return;t.putBoolean("SongStarted",true);t.putInt("SongAge",0);HouseReadSites.sound(p,HouseReadRegistry.START.get(),b.offset(HouseReadRemainingRooms.JUKEBOX_AT),.5f);}
+    public static void tick(ServerPlayer p,BlockPos b,HouseReadSites.Room room,CompoundTag t,int age){
+        if(room==WAITING){
+            if(p.isPassenger()&&!t.getBoolean("Sat")){t.putBoolean("Sat",true);literal(t,"sat in a waiting chair");}
+            if(age%20==1)HouseReadSites.sound(p,HouseReadRegistry.CLOCK.get(),b.offset(-6,0,-10),.30f);
+            if(age%120==1)HouseReadSites.sound(p,HouseReadRegistry.RAIN.get(),b.offset(-8,2,-5),.4f);
+            if(age==600){unlock(p,b,room);t.putBoolean("NoteArmed",true);HouseReadSites.sound(p,SoundEvents.IRON_DOOR_OPEN,b.offset(exit(room)),.4f);}
+            if(age>=600&&p.getZ()<b.getZ()-14.6)HouseReadSites.leave(p,true);
+        }else if(room==BATHROOM){
+            if(age%120==1){HouseReadSites.sound(p,HouseReadRegistry.RAIN.get(),b.offset(-6,2,-5),.32f);HouseReadSites.sound(p,HouseReadRegistry.RADIATOR.get(),b.offset(-6,0,-1),.25f);}
+            if(t.getBoolean("TapRunning")){if(age-t.getInt("TapSoundAt")>=60){HouseReadSites.sound(p,HouseReadRegistry.TAP.get(),b.offset(HouseReadRemainingRooms.TAP_AT),.5f);t.putInt("TapSoundAt",age);}if(age%5==0)p.serverLevel().sendParticles(p,ParticleTypes.CLOUD,false,b.getX()+.5,b.getY()+1.2,b.getZ()-6.25,1,.12,.04,.1,.005);}
+            if(t.contains("LiftAt")&&!t.getBoolean("LiftLowered")&&age>=t.getInt("LiftUntil")-7&&t.hasUUID("LiftDisplay")&&p.serverLevel().getEntity(t.getUUID("LiftDisplay")) instanceof ItemDisplay display){pose(display,t.getInt("LiftIndex"),.01f,0);t.putBoolean("LiftLowered",true);}
+            if(t.contains("LiftAt")&&age>=t.getInt("LiftUntil"))settle(p,b,t);
+            if(age>=200)t.putBoolean("NoteArmed",true);
+            if(t.getBoolean("BedroomOpen")&&p.getZ()<b.getZ()-8.6&&p.getX()>b.getX()+2&&p.getX()<b.getX()+5)HouseReadSites.leave(p,true);
+        }else if(room==SHELTER){
+            HouseReadShelter.ensure(p,b,t);
+            if(age%120==1)HouseReadSites.sound(p,HouseReadRegistry.RAIN.get(),b.offset(0,1,-26),.65f);
+            if(age%7==0){int side=p.getRandom().nextBoolean()?1:-1;p.serverLevel().sendParticles(p,ParticleTypes.FALLING_WATER,false,b.getX()+side*11.5,b.getY()+4,b.getZ()-2-p.getRandom().nextDouble()*20,3,.1,.15,.3,0);}
+            if(p.getZ()<b.getZ()-4)start(p,b,t);
+            if(t.getBoolean("SongStarted")&&t.getInt("SongAge")<900){
+                int song=t.getInt("SongAge");long now=p.serverLevel().getGameTime();Long last=LAST_MUSIC.put(p.getUUID(),now);
+                if(song%100==0||last==null||now-last>2){for(var sound:HouseReadRegistry.MUSIC)p.connection.send(new ClientboundStopSoundPacket(sound.getId(),SoundSource.BLOCKS));HouseReadSites.sound(p,HouseReadRegistry.MUSIC.get(Math.min(8,song/100)).get(),b.offset(HouseReadRemainingRooms.JUKEBOX_AT),.85f);}
+                t.putInt("SongAge",song+1);if(song==899)t.putBoolean("NoteArmed",true);
+                if(Math.abs(p.getX()-b.getX())>10&&p.getZ()<b.getZ()-8&&p.getZ()>b.getZ()-12&&!t.getBoolean("Lantern")){t.putBoolean("Lantern",true);t.putBoolean("NoteArmed",true);literal(t,"stood by the lantern at the dock steps");}
+            }
+            if(p.getZ()<b.getZ()-21.6)HouseReadSites.leave(p,true);
+        }
+    }
+    static void literal(CompoundTag t,String words){var list=t.getList("Actions",Tag.TAG_STRING);if(list.size()<64)list.add(StringTag.valueOf(words));t.put("Actions",list);}
+    public static void clear(){LAST_MUSIC.clear();}
+}

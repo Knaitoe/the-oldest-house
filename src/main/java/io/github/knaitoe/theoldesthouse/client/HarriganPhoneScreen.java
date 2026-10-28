@@ -83,6 +83,7 @@ public final class HarriganPhoneScreen extends Screen {
         String typedSoFar = input == null ? "" : input.getValue();
         clearWidgets();
         input = null;
+        if(state.getBoolean("WaitingRoom"))return;
         int sx = px + 8, sw = pw - 16;
         switch (view) {
             case HOME -> {
@@ -263,7 +264,13 @@ public final class HarriganPhoneScreen extends Screen {
         g.pose().scale(2.4F, 2.4F, 1);
         g.drawString(font, time, -font.width(time) / 2, 0, 0xFFF2F2F2, false);
         g.pose().popPose();
-        centered(g, "Time back home", py + 60, 0xFF8C939C);
+        centered(g, state.getBoolean("WaitingRoom")?"One unread message":"Time back home", py + 60, 0xFF8C939C);
+        if(state.getBoolean("WaitingRoom")){
+            int line=py+ph-106;g.fill(px+7,line,px+pw-7,line+62,0xFF1C2430);
+            g.drawString(font,"Message",px+13,line+8,0xFFCFD8DD,false);
+            g.drawWordWrap(font,Component.literal("Running late, sit tight"),px+13,line+25,pw-26,0xFFF2F2F2);
+            return;
+        }
         // The one contact.
         int top = py + ph - 96;
         g.fill(px + 6, top, px + pw - 6, top + 38, 0xFF1C2430);

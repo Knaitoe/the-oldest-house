@@ -52,8 +52,8 @@ public final class SceneVisualProof extends Screen {
         meal=environment&&Boolean.getBoolean("the_oldest_house.goatmanMealSmoke");
         read=environment&&Boolean.getBoolean("the_oldest_house.houseReadSmoke");
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
-        try(var stream=Files.list(Path.of(read?"../build/house-read138-proof":meal?"../build/goatman137-proof":foyer?"../build/foyer136-proof":interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=read?2:meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+12:environment?11:99+UncannyRooms.PLACES.size();
+        try(var stream=Files.list(Path.of(read?"../build/house-read139-proof":meal?"../build/goatman137-proof":foyer?"../build/foyer136-proof":interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
+        int expected=read?5:meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+12:environment?11:99+UncannyRooms.PLACES.size();
         if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier plus every uncanny room), found "+files.size());
         if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
         load();
@@ -101,7 +101,7 @@ public final class SceneVisualProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof SceneVisualProof s)||(!s.environment&&!Boolean.getBoolean("the_oldest_house.fontSmoke"))||++s.frames<3)return;
-        Path folder=Path.of(s.read?"../build/house-read138-art":s.meal?"../build/goatman137-art":s.foyer?"../build/foyer136-art":s.interiors?"../build/font-smoke/interior-environments":s.environment?"../build/font-smoke/uncanny-environments":"../build/font-smoke/scenes");Files.createDirectories(folder);
+        Path folder=Path.of(s.read?"../build/house-read139-art":s.meal?"../build/goatman137-art":s.foyer?"../build/foyer136-art":s.interiors?"../build/font-smoke/interior-environments":s.environment?"../build/font-smoke/uncanny-environments":"../build/font-smoke/scenes");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));if(s.foyer||s.meal){var colors=new HashSet<Integer>();for(int y=image.getHeight()/5;y<image.getHeight()*4/5;y+=3)for(int x=image.getWidth()/5;x<image.getWidth()*4/5;x+=3)colors.add(image.getPixelRGBA(x,y));if(colors.size()<15)throw new IllegalStateException("Blank native foyer view: "+s.name);}}
         if(++s.index<s.files.size())s.load();else{
             if(s.read){mc.setScreen(new HouseReadClothesProof());return;}

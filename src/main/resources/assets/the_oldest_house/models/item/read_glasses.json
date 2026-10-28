@@ -1,0 +1,22 @@
+{
+  "parent": "the_oldest_house:block/read_glasses",
+  "display": {
+    "head": {
+      "rotation": [
+        90,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "source": "Original locally synthesized instrumental and Foley; no copied recording.",
+  "sounds": {
+    "bell": {
+      "samples": 35280,
+      "rate": 22050,
+      "ticks": 32,
+      "sha256": "48d55cf9c52e9480921a9d82c28df0dcece5cc67580b2c9ee6eb81dcf112aea9"
+    },
+    "hiss": {
+      "samples": 7717,
+      "rate": 22050,
+      "ticks": 7,
+      "sha256": "4d49cc115ba70a2924ee411135989b65ec7a3b3a8ee8c754843aa4fbb05c371f"
+    },
+    "glug": {
+      "samples": 35280,
+      "rate": 22050,
+      "ticks": 32,
+      "sha256": "b5e4093f389c21d6429296d8c2a28c8ee9609d18dc05fc1968980bfd600af7a4"
+    },
+    "tap": {
+      "samples": 66150,
+      "rate": 22050,
+      "ticks": 60,
+      "sha256": "5586b61ecca0168e3fef176ffff388a07ae2334a24cf2ef783bf328c4db138f0"
+    },
+    "clock": {
+      "samples": 3969,
+      "rate": 22050,
+      "ticks": 4,
+      "sha256": "23efc8c4608e3fab24fa42066eec6b35efba0495a2c2eb78c48440e4f89e46b5"
+    },
+    "start": {
+      "samples": 15435,
+      "rate": 22050,
+      "ticks": 14,
+      "sha256": "a6f9ead1a2b47ae74850ce7f4f59904975b302b026c1bfc5ed229a917a7df3bb"
+    },
+    "song": {
+      "samples": 992250,
+      "rate": 22050,
+      "ticks": 900,
+      "sha256": "c7d0870904b4baff08bf37c9007da671881a06faa92d0432a59ff94b7fbab195"
+    },
+    "song_0": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "a701dd17ca1d4c800f18f089b3fcaecbb845f4567efccab9993eaf5d8bbef325"
+    },
+    "song_1": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "1a3bbc74bfad74a9cfc59db4019d3c556e2cf8de18a61ad71b3a4a708ae9a97d"
+    },
+    "song_2": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "ac3adda60b182682c616682a74919211a7ffe7e15bb4d1aa13ac1aa2b6fb2442"
+    },
+    "song_3": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "3fb64100d013e0d963535778352de7737ac3a031ffbb741d8c318dee19843b38"
+    },
+    "song_4": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "a7d26db1e9371a346e257176ff363b57fcb7e73dbee91bd810f03bb792941433"
+    },
+    "song_5": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "fd0a2b6283de33737b6898e76a44ccf708ea69b0cf7296688041c2f60e5adde2"
+    },
+    "song_6": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "1f8231ad996402b28503c95a37d9318ce4db18f4ff93462c7e564a59f7128378"
+    },
+    "song_7": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "67d62b00a05981adc5dc09b42263e3256a866efe9cd4355ccb2bda60096a641c"
+    },
+    "song_8": {
+      "samples": 110250,
+      "rate": 22050,
+      "ticks": 100,
+      "sha256": "2dc70fdd95aa0fe9ceea1a01a05ee72beba379f4ab9bbb8022c9e4843396fa23"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+Candidate 0.4.139: current local native checks; full CI/client/reconnect gates remain pending.
+PASS 7: All five quiet rooms: original custody, actual native use, unseen notes, privacy and two readers
+  Native log SHA256: 7fa3eacabf36177d13d48bc7e8477f1df23cf6825aa17b8780e369d56ac563ae
+PASS 1: Append-only addresses, tier pools and hazard budgets
+  Native log SHA256: cf421c34148840fe0bd665c4660bf9c5f97e6cfa6ad0a3ab900ad73e30206f53
+PASS 1: Original Goatman nightfall, moving cousins and subtitle priority
+  Native log SHA256: dfb6c2c3f938a625c7640cd73f33be0fe07252dcf6ca459f188f59f3a7915da6
