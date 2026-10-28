@@ -338,6 +338,12 @@ public final class GoatmanStalking {
         int elapsed=clock-r.getInt("AssaultAt0465");
         // Afterwards, now and then, one more knock: he is still there.
         if(elapsed>=end){r.putBoolean("AssaultDone0465",true);
+            // LATE_TRACE_BEGIN
+            if(Boolean.getBoolean("the_oldest_house.traceLateKnock")&&(elapsed-end)%AFTER_KNOCK==(brisk?BRISK_AFTER_FIRST:AFTER_KNOCK/2)){
+                var original=l.getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.getTags().contains(GoatmanVignette.ACTOR)&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==r.getInt("Wrong")&&c.getPersistentData().hasUUID(GoatmanVignette.ROUND)&&c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(r.getUUID("Id"))).stream().findFirst().orElse(null);
+                io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.info("LATE KNOCK EVENT clock={} elapsed={} original={} feet={} doorDistanceSquared={} leg={} circuits={} approach={} pressureAt={} quiet={}",clock,elapsed,original==null?"missing":original.getUUID(),original==null?"missing":original.position().subtract(Vec3.atLowerCornerOf(b)),original==null?-1:original.distanceToSqr(Vec3.atCenterOf(b.offset(GoatmanWoods.DOOR))),r.getInt("StalkLeg0465"),r.getInt("Circuits0494"),r.getInt("StalkWindowLeg0465"),r.getInt("DoorPressureAt0497"),r.contains("BedQuietAt131"));
+            }
+            // LATE_TRACE_END
             if((elapsed-end)%AFTER_KNOCK==(brisk?BRISK_AFTER_FIRST:AFTER_KNOCK/2)){impact(l,b,r,null,GoatmanWoods.DOOR,1);r.putInt("DoorPulseSerial04112",r.getInt("DoorPulseSerial04112")+1);}return;}
         int stage=0;while(stage+1<demands.length&&elapsed>=demands[stage+1])stage++;
         int beat=elapsed-demands[stage];

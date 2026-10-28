@@ -87,6 +87,9 @@ public final class GoatmanExteriorTests {
                 boolean distant=body.distanceToSqr(Vec3.atCenterOf(f.b.offset(GoatmanWoods.DOOR)))>16;
                 if(distant&&r.getLong("LastImpactPos0465")==f.b.offset(GoatmanWoods.DOOR).asLong()&&r.getInt("ImpactSerial0472")>impact[0])overlap[0]=true;
                 impact[0]=r.getInt("ImpactSerial0472");
+                // LATE_TRACE_BEGIN
+                if(Boolean.getBoolean("the_oldest_house.traceLateKnock")&&r.getInt("DoorPulseSerial04112")>pulse[0])TheOldestHouse.LOGGER.info("LATE KNOCK OBSERVATION clock={} impactClock={} original={} feet={} doorDistanceSquared={} distant={} leg={} circuits={} approach={} pressureAt={} quiet={}",r.getInt("Clock"),r.getInt("ImpactClock0472"),body.getUUID(),f.rel(body),body.distanceToSqr(Vec3.atCenterOf(f.b.offset(GoatmanWoods.DOOR))),distant,r.getInt("StalkLeg0465"),r.getInt("Circuits0494"),r.getInt("StalkWindowLeg0465"),r.getInt("DoorPressureAt0497"),r.contains("BedQuietAt131"));
+                // LATE_TRACE_END
                 int next=r.getInt("DoorPulseSerial04112");if(next>pulse[0]&&distant)lateOverlap[0]=true;pulse[0]=next;
                 approached[0]|=GoatmanStalking.circuitDone(r)&&GoatmanStalking.windowApproachDone(r);
             }
@@ -107,6 +110,9 @@ public final class GoatmanExteriorTests {
             for(var at:List.of(new BlockPos(-8,2,-59),new BlockPos(-8,2,-67),new BlockPos(-8,2,-73),new BlockPos(8,2,-59),new BlockPos(8,2,-67)))
                 h.assertTrue(nightPanes.contains(f.b.offset(at).asLong()),"the saved original left the photographed first sill and struck the other panes in the night: "+nightPanes.size()+"/5");
             h.assertTrue(loaded[0],"the native body and run were saved on a real finished sill");
+            // LATE_TRACE_BEGIN
+            if(Boolean.getBoolean("the_oldest_house.traceLateKnock")){var trace=f.run();TheOldestHouse.LOGGER.info("LATE KNOCK SUMMARY clock={} assaultAt={} pressureAt={} quietAt={} windowAt={} pulses={} overlap={} late={}",trace.getInt("Clock"),trace.getInt("AssaultAt0465"),trace.getInt("DoorPressureAt0497"),trace.getInt("BedQuietAt131"),trace.getInt("NightWindowAt0472"),trace.getInt("DoorPulseSerial04112"),overlap[0],lateOverlap[0]);}
+            // LATE_TRACE_END
             var r=f.run();h.assertTrue(approached[0]&&r.getInt("Circuits0494")==GoatmanStalking.CIRCUITS,"every physical circuit and every bathroom approach leg finish");
             h.assertTrue(overlap[0]&&lateOverlap[0]&&pulse[0]>0,"actual front-door contacts continue while the original is elsewhere, including after all seven demands: overlap="+overlap[0]+" late="+lateOverlap[0]+" pulses="+pulse[0]);
             h.assertTrue(forms.contains(-2)&&children.size()>=2&&childKnock[0],"the complete native night retains the monster and different child disguises, including a real child-visage window strike during the door-knocking demands: "+forms);
