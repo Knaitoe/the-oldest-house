@@ -28,8 +28,9 @@ public final class HouseSitting {
     private HouseSitting() {}
     public static void register(IEventBus bus) { TYPES.register(bus); }
     private static boolean wardSeat(BlockState state){return state.is(NovelRegistry.NIGHT_WARD.get())&&(state.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.CHAIR||state.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.STOOL);}
+    private static boolean readChair(BlockState s){return s.is(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadRegistry.FITTING.get())&&s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.PART)==io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part.ARMCHAIR;}
     public static boolean isSeat(BlockState state) {
-        return io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)
+        return readChair(state) || io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)
                 || state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.INTERIOR.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.KIND).seat()
                 || wardSeat(state)
@@ -70,7 +71,8 @@ public final class HouseSitting {
         if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ROADHOUSE.get())){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.RoadhouseBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.INTERIOR.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.KIND).seat()){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
-        HouseExperience.sat(player,pos,state);
+        if(readChair(state)){float yaw=state.getValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
+        if(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSites.inside(player)==null)HouseExperience.sat(player,pos,state);
         return true;
     }
     public static void onRightClick(PlayerInteractEvent.RightClickBlock event) {

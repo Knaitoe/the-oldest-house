@@ -19,6 +19,7 @@ public final class LiteraryActor extends PathfinderMob {
     /** Mr. Harrigan (0.4.105): phase 0 alive in his chair, 1 dead in it, 2 laid in his casket; and his three mourners, phases 0 to 2. */
     public static final int HARRIGAN=30,HARRIGAN_MOURNER=31;
     public static final int UNCANNY_PROPPED=32,UNCANNY_WAITRESS=33,UNCANNY_FALSE_WAITRESS=34,UNCANNY_GIANT=35,UNCANNY_MARIONETTE=36,UNCANNY_PEELER=37,UNCANNY_VISITOR=38;
+    public static final int READ_MAN=39,READ_WOMAN=40;
     private static final EntityDataAccessor<Integer> ROLE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT),PHASE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> GESTURE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> OWNER=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.OPTIONAL_UUID);
@@ -50,7 +51,7 @@ public final class LiteraryActor extends PathfinderMob {
     @Override public void tick(){
         boolean privateKiller=!level().isClientSide&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent();
         var before=position();boolean active=!privateKiller||privateHunt.prepare(this);if(!level().isClientSide)BorrascaStory.actorTick(this);super.tick();
-        if(!level().isClientSide){GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);TunnelStride.tick(this);}
+        if(!level().isClientSide){GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);TunnelStride.tick(this);HouseReadShelter.tick(this);}
         if(role()==LAKE_TESS)setAirSupply(getMaxAirSupply());
         if(privateKiller){if(active)privateHunt.tick(this,before);}
         else if(!level().isClientSide&&role()==KILLER&&(scene.equals(LabyrinthPlace.CAMP_BLOOD.id())||scene.equals(LabyrinthPlace.ELK_CARCASSES.id())))carcassHunt.tick(this);
@@ -66,7 +67,7 @@ public final class LiteraryActor extends PathfinderMob {
     /** A PathfinderMob never advances its swing on its own; the cast's blows and chops are seen only if it does (0.4.120). */
     @Override public void aiStep(){updateSwingTime();super.aiStep();}
     @Override public boolean isPickable(){return !(role()==UNCANNY_FALSE_WAITRESS&&phase()<2)&&super.isPickable();}
-    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
+    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(HouseReadShelter.role(role()))return InteractionResult.sidedSuccess(level().isClientSide);if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
     @Override public boolean hurt(DamageSource source,float amount){if(source.getEntity() instanceof ServerPlayer p){if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
     @Override public boolean broadcastToPlayer(ServerPlayer p){
         // Match the renderer's privacy rule at native tracking too. A hidden peer's

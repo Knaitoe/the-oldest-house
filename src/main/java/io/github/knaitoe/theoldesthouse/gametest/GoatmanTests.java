@@ -346,7 +346,7 @@ public final class GoatmanTests {
             f.cousins().stream().filter(c->c.fear()==GoatmanFear.PACE).findFirst().ifPresent(c->{if(r.getInt("Clock")%40==0)paced.add(c.position());});
         });
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the complete actual scene is natively loaded")).thenExecute(()->{
-            GoatmanVignette.enter(p);GoatmanVignette.enter(q);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER+300);r.putBoolean("CalledIn04123",true);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
+            GoatmanVignette.enter(p);GoatmanVignette.enter(q);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER+300);r.putBoolean("CalledIn04123",true);r.putInt("SupperAt04123",GoatmanVignette.BRISK_SUPPER);r.putInt("ExtraState",GoatmanVignette.X_FIRE);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);f.cohort(r,List.of(p,q),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
             GoatmanWoods.door(f.l,f.b,true);GoatmanVignette.hurry(f.l,f.b);ids.addAll(f.cousins().stream().map(Entity::getUUID).toList());GoatmanWoods.setWindow(f.l,f.b,true);GoatmanWoods.door(f.l,f.b,false);begun[0]=true;
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.VIGIL&&f.run().getInt("DemandStage0465")==3,"with the cousin safely in, the evening goes quiet and the night's third word is spoken")).thenExecute(()->{
             var roles=f.cousins().stream().map(GoatmanChild::fear).filter(role->role>0).collect(java.util.stream.Collectors.toSet());

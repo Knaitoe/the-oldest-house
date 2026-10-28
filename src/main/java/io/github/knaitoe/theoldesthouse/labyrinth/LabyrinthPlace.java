@@ -307,6 +307,9 @@ public enum LabyrinthPlace {
     SILO("silo",Kind.ONE_SHOT,106,new BoundingBox(-12,-3,-12,12,69,16),List.of(new DoorSpec("entry",new BlockPos(0,0,13),Direction.SOUTH,LabyrinthData.RETURN))),
     READ_COATROOM("hall_coatrack",Kind.INTERLUDE,107,new BoundingBox(-8,-2,-16,8,6,4),List.of()),
     READ_PORCH("screen_door",Kind.INTERLUDE,108,new BoundingBox(-25,-4,-48,25,18,16),List.of()),
+    READ_WAITING("waiting_chair",Kind.INTERLUDE,109,new BoundingBox(-11,-3,-19,11,7,5),List.of()),
+    READ_BATHROOM("night_sink",Kind.INTERLUDE,110,new BoundingBox(-8,-3,-16,8,7,5),List.of()),
+    READ_SHELTER("jukebox_shelter",Kind.INTERLUDE,111,new BoundingBox(-24,-6,-30,24,10,8),List.of()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

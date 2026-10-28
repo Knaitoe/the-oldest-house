@@ -15,13 +15,14 @@ public final class HouseReadRooms {
     public static final BlockPos COAT_ENTRY=new BlockPos(0,0,2),PORCH_ENTRY=new BlockPos(0,0,13),MIRROR=new BlockPos(-4,0,-9),UMBRELLA_AT=new BlockPos(3,0,0),RAIL_AT=new BlockPos(-2,3,-2),SCREEN=new BlockPos(0,3,-8);
     public static final List<BlockPos> PEGS=List.of(new BlockPos(-4,0,-3),new BlockPos(0,0,-5),new BlockPos(4,0,-3));
     private HouseReadRooms(){}
-    public static AABB bounds(BlockPos b,HouseReadSites.Room room){return room==HouseReadSites.Room.COATROOM?new AABB(b.getX()-8,b.getY()-2,b.getZ()-16,b.getX()+9,b.getY()+6,b.getZ()+5):new AABB(b.getX()-25,b.getY()-4,b.getZ()-48,b.getX()+26,b.getY()+18,b.getZ()+16);}
+    public static AABB bounds(BlockPos b,HouseReadSites.Room room){return room!=HouseReadSites.Room.COATROOM&&room!=HouseReadSites.Room.PORCH?HouseReadRemainingRooms.bounds(b,room):room==HouseReadSites.Room.COATROOM?new AABB(b.getX()-8,b.getY()-2,b.getZ()-16,b.getX()+9,b.getY()+6,b.getZ()+5):new AABB(b.getX()-25,b.getY()-4,b.getZ()-48,b.getX()+26,b.getY()+18,b.getZ()+16);}
     private static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,BlockState state){BuildBlocks.box(l,b.offset(x,y,z),b.offset(X,Y,Z),state,F);}
     private static void put(ServerLevel l,BlockPos b,BlockPos at,BlockState s){BuildBlocks.set(l,b.offset(at),s,F);}
     public static void fitting(ServerLevel l,BlockPos b,BlockPos at,HouseReadPropBlock.Part part){put(l,b,at,HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,part));}
     public static void door(ServerLevel l,BlockPos b,BlockPos at,Block block,Direction facing){var s=block.defaultBlockState().setValue(DoorBlock.FACING,facing);put(l,b,at,s.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));put(l,b,at.above(),s.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));}
     public static int[] shuffle(UUID owner){var values=new ArrayList<>(List.of(0,1,2));Collections.shuffle(values,new Random(owner.getMostSignificantBits()^owner.getLeastSignificantBits()^138));return values.stream().mapToInt(Integer::intValue).toArray();}
-    public static void build(ServerLevel l,BlockPos b,HouseReadSites.Room room,UUID owner){if(room==HouseReadSites.Room.COATROOM)coatroom(l,b,owner);else porch(l,b);}
+    public static void build(ServerLevel l,BlockPos b,HouseReadSites.Room room,UUID owner){if(room==HouseReadSites.Room.COATROOM)coatroom(l,b,owner);else if(room==HouseReadSites.Room.PORCH)porch(l,b);else HouseReadRemainingRooms.build(l,b,room,owner);}
+    public static BlockPos note(HouseReadSites.Room room){return switch(room){case COATROOM->UMBRELLA_AT;case PORCH->RAIL_AT;case WAITING->HouseReadRemainingRooms.CALENDAR_AT;case BATHROOM->HouseReadRemainingRooms.POSTCARD_AT;case SHELTER->HouseReadRemainingRooms.JUKEBOX_AT;};}
     private static void coatroom(ServerLevel l,BlockPos b,UUID owner){
         box(l,b,-7,-2,-15,7,5,3,Blocks.AIR.defaultBlockState());
         box(l,b,-7,-2,-15,7,-1,3,Blocks.SPRUCE_PLANKS.defaultBlockState());

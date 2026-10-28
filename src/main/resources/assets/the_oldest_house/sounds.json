@@ -2318,5 +2318,149 @@
         "stream": true
       }
     ]
+  },
+  "house_read.bell": {
+    "subtitle": "subtitles.the_oldest_house.house_read.bell",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/bell",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.hiss": {
+    "subtitle": "subtitles.the_oldest_house.house_read.hiss",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/hiss",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.glug": {
+    "subtitle": "subtitles.the_oldest_house.house_read.glug",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/glug",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.tap": {
+    "subtitle": "subtitles.the_oldest_house.house_read.tap",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/tap",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.clock": {
+    "subtitle": "subtitles.the_oldest_house.house_read.clock",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/clock",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.start": {
+    "subtitle": "subtitles.the_oldest_house.house_read.start",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/start",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.song": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_0": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_0",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_1": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_1",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_2": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_2",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_3": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_3",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_4": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_4",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_5": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_5",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_6": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_6",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_7": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_7",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.song_8": {
+    "subtitle": "subtitles.the_oldest_house.house_read.song",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/song_8",
+        "stream": true
+      }
+    ]
   }
 }

@@ -1,0 +1,5 @@
+All five supplied passages match docs/HOUSE_READ_DESIGN.md verbatim.
+180 authored native resources and shared resting/lifted cuboids match; no overlapping coplanar exterior faces.
+Four shelter character sheets match the shared explicit pixel painter.
+All 24 original domestic/music files decode, match their manifests and do not clip.
+Fifteen native render pages passed and were visually inspected. These staged views do not complete ordinary lighting/audio/reconnect review.

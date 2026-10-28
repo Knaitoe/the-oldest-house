@@ -2123,7 +2123,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native private copies, full-inventory wardrobe, unseen notes and quiet porch
+      - name: Native private copies, borrowed originals, all five quiet moments and unseen notes
         shell: bash
         run: |
           set -o pipefail
@@ -2133,9 +2133,9 @@ jobs:
           from pathlib import Path
           import re
           count=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/HouseReadTests.java').read_text()))
-          assert count==3
+          assert count==7
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
-          assert len(list(Path('build/house-read138-proof').glob('*.json')))==2
+          assert len(list(Path('build/house-read139-proof').glob('*.json')))==5
           PY
       - name: Original native tiles and decoded domestic audio
         run: |
@@ -2144,13 +2144,15 @@ jobs:
           python3 -m pip install Pillow
           python3 tools/draw_house_read.py --check
           python3 tools/generate_house_read_audio.py --check
+          python3 tools/generate_house_read_moments_audio.py --check
+          python3 tools/paint_house_read_cast.py --check
       - name: Native room geometry, standard/slim coats and the two-block mirror
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m
           python3 - <<'PY'
           from pathlib import Path
-          folder=Path('build/house-read138-art')
-          assert len(list(folder.glob('*.png')))==7
+          folder=Path('build/house-read139-art')
+          assert len(list(folder.glob('*.png')))==15
           assert (folder/'passed.txt').is_file()
           PY
       - uses: actions/upload-artifact@v4
@@ -2159,6 +2161,6 @@ jobs:
           name: house-read-rooms-native-and-art
           path: |
             build/house-read-native.log
-            build/house-read138-proof
-            build/house-read138-art
+            build/house-read139-proof
+            build/house-read139-art
             run/logs
