@@ -6,6 +6,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Which vignettes friends go into together (owner, October 28), and which of them are drafted for every way of being
@@ -26,8 +27,16 @@ public final class SharedVignettes {
         /** The story belongs to the world rather than a thread (0.4.148): everyone in the scene when it ends watched it. */
         default boolean whole(){return false;}
     }
-    /** One reader's own: the backseat's one seat, the private sites and copies, the Red Room. The quiet rooms are not dealt at all. */
+    /**
+     * Private scenes that stand once rather than as a copy for each reader (owner, October 28): reading to Harrigan,
+     * the confession in the reader's own hand, the Holy Rabbit's one child, the Wheel house measuring the reader against
+     * Mother, the Whale's letters, the canoe's recording, the diner's one diner and the split-feed bedroom's own body.
+     * They are one reader's at a time.
+     */
+    private static final Set<LabyrinthPlace> ONE_AT_A_TIME=EnumSet.of(HARRIGAN,CONFESSION,HOLY_RABBIT,WHEEL,WHALE,PHONE_CANOE,SECOND_WAITRESS,MISSING_SLEEP);
+    /** One reader's own: the backseat's one seat, the private sites and copies, the Red Room, and the scenes above. The quiet rooms are not dealt at all. */
     private static final Set<LabyrinthPlace> PRIVATE=EnumSet.of(BACKSEAT,SILO,BORRASCA,FAMILY_COPY,OLD_CABIN,RED_ROOM);
+    static{PRIVATE.addAll(ONE_AT_A_TIME);}
     /** Not yet ready for a second reader: the clapping game has one blindfold. The Goatman's readers take cousins' places (0.4.150). */
     private static final Set<LabyrinthPlace> HELD=EnumSet.of(HIDE_AND_CLAP);
     private static final Map<LabyrinthPlace,Scene> DRAFTED=new EnumMap<>(LabyrinthPlace.class);
@@ -42,6 +51,12 @@ public final class SharedVignettes {
         return place!=null&&place.isVignette()&&place.slot()>=0&&!PRIVATE.contains(place)&&!HELD.contains(place);
     }
     public static boolean privateScene(LabyrinthPlace place){return PRIVATE.contains(place);}
+    /** Someone other than {@code reader}, living and not a spectator, is in a private scene that stands once: it is theirs until they leave. */
+    public static @Nullable ServerPlayer occupant(MinecraftServer server,@Nullable LabyrinthPlace place,UUID reader){
+        if(place==null||!ONE_AT_A_TIME.contains(place))return null;
+        for(var p:server.getPlayerList().getPlayers())if(!p.getUUID().equals(reader)&&IndianLakeRooms.inside(p,place))return p;
+        return null;
+    }
     public static @Nullable Scene drafted(@Nullable LabyrinthPlace place){return place==null?null:DRAFTED.get(place);}
     public static Set<LabyrinthPlace> drafted(){return Collections.unmodifiableSet(DRAFTED.keySet());}
     /** A scene whose accounts are written for every way of being there. */
