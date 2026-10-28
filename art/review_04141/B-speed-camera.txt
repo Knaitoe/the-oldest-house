@@ -1,0 +1,1 @@
+Native acceleration: 62 ticks; camera peel 0.09749228954315185 -> 0.172265625 metres; continuous wind 0.22834107 -> 0.58390623.
