@@ -20,55 +20,139 @@ public final class EntrancePlaytestTests {
     private static void close(){HouseReadSites.clear();HouseTransitionEvents.clearAll();if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="read_entrance142") public static void entranceDone(ServerLevel l){close();}
     @AfterBatch(batch="cross_hall142") public static void crossDone(ServerLevel l){close();}
+    @AfterBatch(batch="retire_entrance142") public static void retireDone(ServerLevel l){close();}
+    @AfterBatch(batch="finished_passage143") public static void passageDone(ServerLevel l){close();}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
     private static void click(ServerPlayer p,BlockPos at){p.gameMode.useItemOn(p,p.serverLevel(),p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));}
     private static void tick(ServerPlayer p){HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(p));}
 
-    @GameTest(template="empty",batch="read_entrance142",timeoutTicks=14000)
-    public static void fiveRealDoorsPrecedeTheMazeAndEveryPrivateRoomSurvivesTheFullHouseTick(GameTestHelper h){
+    private static void proceed(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer p,HouseReadSites.Room room){
+        var own=HouseReadSites.state(p.server,p.getUUID());var visit=own.getCompound(room.key());
+        if(room==HouseReadSites.Room.WAITING)visit.putInt("Age",600);if(room==HouseReadSites.Room.BATHROOM)visit.putBoolean("BedroomOpen",true);
+        own.put(room.key(),visit);f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
+        h.assertTrue(HouseReadMoments.canProceed(p,room),"the room's own way on is open: "+room);
+        var b=HouseReadSites.base(p.server,p.getUUID(),room);
+        if(room==HouseReadSites.Room.COATROOM){var curtain=b.offset(0,0,-10);at(p,p.serverLevel(),curtain.south(2));HouseReadSites.use(p,curtain,HouseReadPropBlock.Part.CURTAIN);return;}
+        var on=f.data().door("house_read/"+p.getUUID()+"/"+room.key()+"/"+(room==HouseReadSites.Room.PORCH?"road":"on"));
+        h.assertTrue(on!=null,"each quiet room registers its own way on: "+room);at(p,p.serverLevel(),on.lower.relative(on.facing));click(p,on.lower);
+    }
+
+    @GameTest(template="empty",batch="read_entrance142",timeoutTicks=16000)
+    public static void theJunctionLeadsThroughAllFiveQuietRoomsInOrderThenIntoItsOwnOrdinaryHall(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);active=f;
         var p=player(h,f,"entrance_reader");var peer=player(h,f,"entrance_observer");
-        var hall=f.origin.offset(HouseLayout.AXIS_X,1,HouseImpossibleHallway.END_Z_OFFSET-20);
-        f.chunks.hold(f.in,new AABB(hall).inflate(42,5,42));boolean[] ticking={false};
+        var hall=f.origin.offset(HouseLayout.AXIS_X,1,HouseImpossibleHallway.END_Z_OFFSET-20);var junction=f.base(LabyrinthPlace.JUNCTION);var corridor=f.base(LabyrinthPlace.GRAY_CORRIDOR);
+        f.chunks.hold(f.in,new AABB(hall).inflate(42,5,42));f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));f.chunks.hold(f.in,new AABB(corridor).inflate(16,4,32));
+        boolean[] ticking={false};LabyrinthData.Door[] west={null};
         h.onEachTick(()->{if(ticking[0]){tick(p);tick(peer);}});
-        var seq=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual original approach is resident"))
+        var rooms=HouseReadSites.Room.values();
+        var seq=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual approach, junction and first hall are resident"))
             .thenExecute(()->{
                 HouseSavedData.get(p.server).markImpossibleDoorRevealed();HouseImpossibleHallway.build(f.in,f.origin);
-                for(var room:HouseReadSites.Room.values()){
-                    var door=f.data().door(HouseReadEntrance.id(room));var lower=HouseReadEntrance.lower(f.origin,room);
-                    h.assertTrue(door!=null&&door.lower.equals(lower)&&f.in.getBlockState(lower).getBlock() instanceof DoorBlock,"each quiet story has a real door before the labyrinth: "+room);
-                    h.assertTrue(lower.getZ()<f.origin.getZ()+HouseImpossibleHallway.END_Z_OFFSET,"all five stand outside the far entrance");
-                }
-                at(p,f.in,hall);at(peer,f.in,hall);
-                var first=f.data().door(HouseReadEntrance.id(HouseReadSites.Room.WAITING));
-                h.assertTrue(!HouseReadSites.offer(p,first,LabyrinthPlace.JUNCTION)&&!HouseReadSites.state(p.server,p.getUUID()).contains("Index"),"the physical doors do not bypass the opening");
+                for(var room:rooms)h.assertTrue(f.data().door(HouseReadEntrance.id(room))==null,"a new hallway is a plain approach without quiet-room doors: "+room);
+                LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
+                LabyrinthBuilder.buildCorridor(f.in,corridor);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.GRAY_CORRIDOR,corridor);f.built.add(LabyrinthPlace.GRAY_CORRIDOR);
+                west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");h.assertTrue(west[0]!=null,"the junction's west door is registered");
+                f.data().deal(p.getUUID(),west[0],LabyrinthPlace.GRAY_CORRIDOR.id(),false);
+                at(p,f.in,west[0].lower.relative(west[0].facing));at(peer,f.in,junction.offset(0,0,-3));
+                h.assertTrue(!HouseReadSites.offer(p,west[0],LabyrinthPlace.GRAY_CORRIDOR)&&!HouseReadSites.state(p.server,p.getUUID()).contains("Index"),"the junction does not bypass the opening");
                 io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).markEntered();
                 p.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
-                h.assertTrue(!HouseReadSites.offer(p,first,LabyrinthPlace.JUNCTION),"an observer cannot start a personal visit");
-                p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);ticking[0]=true;
+                h.assertTrue(!HouseReadSites.offer(p,west[0],LabyrinthPlace.GRAY_CORRIDOR),"an observer cannot start a personal visit");
+                p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+                var ordinary=new LabyrinthData.Door("native/plain142",f.in.dimension(),hall,Direction.SOUTH,LabyrinthData.DEALT,false);
+                h.assertTrue(!HouseReadSites.offer(p,ordinary,LabyrinthPlace.CROSS_HALL),"only the junction's onward doors lead into the quiet rooms");
+                ticking[0]=true;click(p,west[0].lower);
+            })
+            .thenWaitUntil(()->{if(HouseReadSites.inside(p)!=HouseReadSites.Room.WAITING)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.WAITING&&!LabyrinthDoors.isBusy(p),"the junction's real onward door reaches the waiting room first");})
+            .thenExecute(()->{var b=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.WAITING);at(peer,p.serverLevel(),b.offset(2,0,-2));})
+            .thenIdle(24).thenExecute(()->{
+                h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.WAITING&&HouseReadSites.contains(peer)&&!HouseTransitionEvents.isPending(p)&&!HouseTransitionEvents.isPending(peer),"idle owner and observer remain in recognized House space after the fade");
+                h.assertTrue(p.isAlive()&&p.getHealth()==20&&peer.isAlive()&&peer.getHealth()==20,"the full boundary tick neither ejects nor kills either native player");
+                f.reload();at(peer,f.in,junction.offset(0,0,-3));
+                var entry=f.data().door("house_read/"+p.getUUID()+"/waiting/entry");at(p,p.serverLevel(),entry.lower.relative(entry.facing));click(p,entry.lower);
+            })
+            .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in,"turning back returns to the junction"))
+            .thenExecute(()->{
+                h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(west[0].lower.relative(west[0].facing,2)))<.01,"the reader stands before the junction door they used");
+                h.assertTrue(f.data().returnDepth(p.getUUID())==0&&WitnessAccount.count(f.data(),p.getUUID())==0,"the quiet rooms add no route depth and no story credit");
+                h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==HouseReadSites.Room.BATHROOM,"a room the reader turned back from is not offered twice");
+                click(p,west[0].lower);
             });
-        for(var room:HouseReadSites.Room.values()){
-            seq=seq.thenExecute(()->{var door=f.data().door(HouseReadEntrance.id(room));at(p,f.in,door.lower.relative(door.facing));if(room==HouseReadSites.Room.WAITING)f.data().setBuilt(0,f.origin);click(p,door.lower);if(room==HouseReadSites.Room.WAITING){h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).contains("Index"),"the real entrance door works before the maze has finished its first build");f.data().setBuilt(LabyrinthBuilder.VERSION,f.origin);}})
-                .thenWaitUntil(()->{if(HouseReadSites.inside(p)!=room)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==room&&!LabyrinthDoors.isBusy(p),"the original physical door reaches its private story: "+room);})
-                .thenExecute(()->{var b=HouseReadSites.base(p.server,p.getUUID(),room);at(peer,p.serverLevel(),b.offset(2,0,room==HouseReadSites.Room.PORCH?8:-2));})
-                .thenIdle(24).thenExecute(()->{
-                    h.assertTrue(HouseReadSites.inside(p)==room&&HouseReadSites.contains(peer)&&!HouseTransitionEvents.isPending(p)&&!HouseTransitionEvents.isPending(peer),"idle owner and observer remain in recognized House space after the fade: "+room);
-                    h.assertTrue(p.isAlive()&&p.getHealth()==20&&peer.isAlive()&&peer.getHealth()==20,"the full boundary tick neither ejects nor kills either native player");
-                    f.reload();at(peer,f.in,hall);
-                    var entry=f.data().door("house_read/"+p.getUUID()+"/"+room.key()+"/entry");at(p,p.serverLevel(),entry.lower.relative(entry.facing));click(p,entry.lower);
-                }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in,"ordinary retreat returns to the actual approach"))
+        for(var room:java.util.List.of(HouseReadSites.Room.BATHROOM,HouseReadSites.Room.COATROOM,HouseReadSites.Room.SHELTER,HouseReadSites.Room.PORCH)){
+            seq=seq.thenWaitUntil(()->{if(HouseReadSites.inside(p)!=room)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==room&&!LabyrinthDoors.isBusy(p),"the chain reaches the next quiet room in order: "+room);})
                 .thenExecute(()->{
-                    var door=f.data().door(HouseReadEntrance.id(room));h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(door.lower.relative(door.facing,2)))<.01,"each saved original source door returns to its own physical place");
-                    h.assertTrue(f.data().returnDepth(p.getUUID())==0&&!f.data().visited(p.getUUID()).contains(LabyrinthPlace.JUNCTION.id())&&WitnessAccount.count(f.data(),p.getUUID())==0,"these moments precede maze routes and give no story credit");
+                    var visit=HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());
+                    h.assertTrue(visit.getBoolean("Chain")&&west[0].id.equals(visit.getString("SourceDoor"))&&LabyrinthPlace.GRAY_CORRIDOR.id().equals(visit.getString("NextPlace")),"each chained room keeps the junction door and its dealt hall: "+room);
+                    h.assertTrue(p.isAlive()&&p.getHealth()==20&&!p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).is(HouseReadRegistry.WOOL.get()),"no borrowed layer follows the reader out of the coatroom: "+room);
+                    proceed(h,f,p,room);
                 });
         }
-        seq.thenExecute(()->{
-            var removed=HouseReadEntrance.lower(f.origin,HouseReadSites.Room.COATROOM);f.in.setBlock(removed,Blocks.AIR.defaultBlockState(),2);f.in.setBlock(removed.above(),Blocks.AIR.defaultBlockState(),2);HouseReadEntrance.install(p.server,false);
-            h.assertTrue(f.in.getBlockState(removed).isAir(),"a removed original entrance door is never refilled by the saved installer");
-            var ordinary=new LabyrinthData.Door("native/plain142",f.in.dimension(),hall,Direction.SOUTH,LabyrinthData.DEALT,false);
-            h.assertTrue(!HouseReadSites.offer(p,ordinary,LabyrinthPlace.CROSS_HALL),"ordinary and command cross_hall routes are no longer diverted into a quiet copy");
-        }).thenSucceed();
+        seq.thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.GRAY_CORRIDOR,"the porch's way on reaches the hall the junction door was dealt"))
+            .thenExecute(()->{
+                for(var room:rooms)h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key()).getBoolean("Entered"),"every quiet room was entered once: "+room);
+                h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==null&&!HouseReadSites.offer(p,west[0],LabyrinthPlace.GRAY_CORRIDOR),"after all five the junction's doors are ordinary");
+                h.assertTrue(f.data().returnDepth(p.getUUID())==1&&WitnessAccount.count(f.data(),p.getUUID())==0,"the chain is one genuine forward crossing and gives no story credit");
+                h.assertTrue(p.isAlive()&&p.getHealth()==20,"the reader arrives alive and unhurt");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="retire_entrance142",timeoutTicks=2400)
+    public static void savedHallwayQuietDoorsAreWalledUpUnseenOnlyOnceNoVisitReturnsThroughThem(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"retire_reader");
+        var hall=f.origin.offset(HouseLayout.AXIS_X,1,HouseImpossibleHallway.END_Z_OFFSET-20);f.chunks.hold(f.in,new AABB(hall).inflate(42,5,42));
+        var rooms=HouseReadSites.Room.values();BlockPos[] lower=new BlockPos[rooms.length];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual approach is resident"))
+            .thenExecute(()->{
+                HouseSavedData.get(p.server).markImpossibleDoorRevealed();HouseImpossibleHallway.build(f.in,f.origin);
+                // The 0.4.142 installer's own positions and facings, as saved worlds hold them.
+                for(var room:rooms){int i=room.ordinal();var facing=i%2==0?Direction.EAST:Direction.WEST;
+                    lower[i]=f.origin.offset(HouseLayout.AXIS_X+(i%2==0?-2:2),1,HouseImpossibleHallway.END_Z_OFFSET-36+i*7);
+                    LabyrinthBuilder.placeDoor(f.in,lower[i],facing);f.data().putDoor(new LabyrinthData.Door(HouseReadEntrance.id(room),HouseDimensions.INTERIOR,lower[i],facing,"house_read:entrance",false));}
+                var own=HouseReadSites.state(p.server,p.getUUID());var visit=own.getCompound(HouseReadSites.Room.COATROOM.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",HouseReadEntrance.id(HouseReadSites.Room.COATROOM));own.put(HouseReadSites.Room.COATROOM.key(),visit);own.putString("Active",HouseReadSites.Room.COATROOM.key());f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
+                at(p,f.in,hall);HouseReadEntrance.retire(p.server);
+                for(var room:rooms)h.assertTrue(f.data().door(HouseReadEntrance.id(room))!=null&&f.in.getBlockState(lower[room.ordinal()]).getBlock() instanceof DoorBlock,"a watched hallway keeps its doors until nobody sees them go: "+room);
+                at(p,f.out,f.origin.offset(0,80,0));HouseReadEntrance.retire(p.server);
+                for(var room:rooms){var i=room.ordinal();boolean kept=room==HouseReadSites.Room.COATROOM;
+                    h.assertTrue((f.data().door(HouseReadEntrance.id(room))!=null)==kept,"only the door an active visit returns through stays registered: "+room);
+                    if(!kept){var along=(i%2==0?Direction.EAST:Direction.WEST).getClockWise();
+                        h.assertTrue(f.in.getBlockState(lower[i]).equals(f.in.getBlockState(lower[i].relative(along)))||f.in.getBlockState(lower[i]).equals(f.in.getBlockState(lower[i].relative(along.getOpposite()))),"the lower cell matches its hallway course: "+room);
+                        h.assertTrue(!(f.in.getBlockState(lower[i].above()).getBlock() instanceof DoorBlock)&&!f.in.getBlockState(lower[i].above()).isAir(),"the upper half is wall again: "+room);}}
+                h.assertTrue(f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(hall).inflate(42,5,42)).isEmpty(),"retiring a door drops nothing");
+                own=HouseReadSites.state(p.server,p.getUUID());own.remove("Active");f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);HouseReadEntrance.retire(p.server);
+                h.assertTrue(f.data().door(HouseReadEntrance.id(HouseReadSites.Room.COATROOM))==null&&!(f.in.getBlockState(lower[HouseReadSites.Room.COATROOM.ordinal()]).getBlock() instanceof DoorBlock),"the last door goes once its visit is over");
+                f.in.setBlock(lower[0],Blocks.AIR.defaultBlockState(),2);HouseReadEntrance.retire(p.server);
+                h.assertTrue(f.in.getBlockState(lower[0]).isAir(),"a retired door is never revisited, so later edits stay");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="finished_passage143",timeoutTicks=4000)
+    public static void aFinishedStorysDealtDoorIsOnlyAWayBetweenHalls(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"passage_reader");
+        var halls=java.util.List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
+        var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));
+        for(var hall:halls){var slot=LabyrinthPlaces.slotBounds(f.origin,hall);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
+        boolean[] ticking={false};LabyrinthData.Door[] west={null};var story=WitnessAccount.Story.of(LabyrinthPlace.HILL_NURSERY.id());
+        h.onEachTick(()->{if(ticking[0])tick(p);});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction and every ordinary hall it can open onto are resident"))
+            .thenExecute(()->{
+                LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
+                for(var hall:halls){var b=f.base(hall);if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else LabyrinthHalls.build(f.in,b,hall);LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);}
+                west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");
+                h.assertTrue(!LabyrinthDealer.finishedFor(f.data(),p.getUUID(),LabyrinthPlace.HILL_NURSERY),"an unread story is not a passage");
+                WitnessAccount.resolve(f.data(),p.getUUID(),story,"native passage fixture");
+                h.assertTrue(LabyrinthDealer.finishedFor(f.data(),p.getUUID(),LabyrinthPlace.HILL_NURSERY),"a personally resolved story that can no longer be dealt is finished for its reader");
+                h.assertTrue(!LabyrinthDealer.finishedFor(f.data(),p.getUUID(),LabyrinthPlace.HOTEL)&&!LabyrinthDealer.finishedFor(f.data(),p.getUUID(),LabyrinthPlace.GRAY_CORRIDOR),"recurring places and halls never finish");
+                f.data().deal(p.getUUID(),west[0],LabyrinthPlace.HILL_NURSERY.id(),false);
+                at(p,f.in,west[0].lower.relative(west[0].facing));ticking[0]=true;click(p,west[0].lower);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(p)&&halls.contains(LabyrinthPlaces.placeAt(f.origin,p.blockPosition())),"the finished story's door leads straight into an ordinary hall"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),west[0]);
+                h.assertTrue(deal!=null&&halls.contains(LabyrinthPlace.byId(deal.place())),"the door is re-dealt for this reader to the hall they reached");
+                h.assertTrue(f.data().returnDepth(p.getUUID())==1&&WitnessAccount.has(f.data(),p.getUUID(),story)&&p.isAlive()&&p.getHealth()==20,"one ordinary forward crossing; the story's resolution and the reader are untouched");
+            }).thenSucceed();
     }
 
     @GameTest(template="empty",batch="cross_hall142",timeoutTicks=1400)

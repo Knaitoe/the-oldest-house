@@ -2125,7 +2125,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native entrance doors, boundary safety, saved originals and six personal scene touches
+      - name: Native junction chain, retired hallway doors, boundary safety, saved originals and six personal scene touches
         shell: bash
         run: |
           set -o pipefail
@@ -2135,7 +2135,7 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java'))
-          assert count==13
+          assert count==15
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==5
           PY

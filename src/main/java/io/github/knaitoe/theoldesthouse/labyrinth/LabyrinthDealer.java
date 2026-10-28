@@ -58,6 +58,17 @@ public final class LabyrinthDealer {
         return places;
     }
 
+    /**
+     * A story this reader has finished and can no longer be dealt: its door is only a passage for them. Recurring
+     * places never finish; a shared ending still owed to this reader keeps its story.
+     */
+    public static boolean finishedFor(LabyrinthData data,UUID player,LabyrinthPlace place){
+        if(!place.isFinishable()||place.slot()<0)return false;
+        var story=WitnessAccount.Story.of(place.id());
+        boolean done=story!=null?WitnessAccount.has(data,player,story):data.isCompleted(place.id());
+        return done&&!vignettesAvailable(data,player).contains(place);
+    }
+
     /** A shared ending can still be examined by an explorer who has not recorded its aftermath. */
     public static List<LabyrinthPlace> vignettesAvailable(LabyrinthData data,UUID player) {
         List<LabyrinthPlace> places=new ArrayList<>(vignettesAvailable(data));

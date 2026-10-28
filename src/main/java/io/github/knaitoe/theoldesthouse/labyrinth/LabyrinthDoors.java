@@ -128,6 +128,8 @@ public final class LabyrinthDoors {
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);
+        // A finished story's door is only a way between halls now (owner, October 28).
+        if(VignetteGate.dormant(data,player.getUUID(),door)){var asleep=LabyrinthPlace.byId(VignetteGate.dormantPlace(data,player.getUUID(),door));if(asleep!=null&&LabyrinthDealer.finishedFor(data,player.getUUID(),asleep)&&passage(player,door))return;}
         if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);quiet(player,VignetteGate.dormantPlace(data,player.getUUID(),door),door.lower);return;}
         if (HideAndClap.isLocked(player)) {
             player.displayClientMessage(Component.literal("The door won't open until the game is over."), true);
@@ -177,6 +179,8 @@ public final class LabyrinthDoors {
         } else {
             place = door.destination.startsWith("place:") ? LabyrinthPlace.byId(door.destination.substring(6)) : null;
         }
+        if(HouseReadSites.offer(player,door,place))return;
+        if(place!=null&&LabyrinthDealer.finishedFor(data,player.getUUID(),place)&&passage(player,door))return;
         // Deeper places are built as explorers approach them; one still under construction holds its door.
         if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
                 && !LabyrinthBuilder.isPlaceReady(server, place)) {
@@ -208,6 +212,24 @@ public final class LabyrinthDoors {
     }
 
     private static boolean rerouting;
+    private static boolean passing;
+
+    /** Re-deals a dealt door whose story this reader has finished to an ordinary way on, and takes them through it. */
+    private static boolean passage(ServerPlayer player, LabyrinthData.Door door) {
+        if (passing || door.command || !LabyrinthData.DEALT.equals(door.destination)) return false;
+        LabyrinthPlace here = placeOf(player.server, door);
+        if (here == null) return false;
+        LabyrinthData data = LabyrinthData.get(player.server);
+        VignetteGate.redealt(data, player.getUUID(), door);
+        LabyrinthDealer.openWayOn(data, player.getUUID(), door, here, player.getRandom());
+        passing = true;
+        try {
+            use(player, door);
+        } finally {
+            passing = false;
+        }
+        return true;
+    }
 
     /**
      * A dealt door that cannot take this player anywhere (a quiet source, a
@@ -961,7 +983,6 @@ public final class LabyrinthDoors {
             TheOldestHouse.LOGGER.info("The impossible hallway's far wall now has a door.");
         }
         LabyrinthBuilder.ensureReachable(server);
-        HouseReadEntrance.install(server,false);
     }
 
     // ------------------------------------------------------------------
