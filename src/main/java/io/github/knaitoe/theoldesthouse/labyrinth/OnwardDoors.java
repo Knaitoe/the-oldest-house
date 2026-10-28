@@ -56,8 +56,10 @@ public final class OnwardDoors {
 
     /** The door, its lintel and the two cells before it, kept clear of every dressing pass so the door always has its wall and its way up. */
     public static boolean reserved(LabyrinthPlace place,int x,int y,int z){
-        var s=SPECS.get(place);if(s==null)return false;var r=s.rel();
-        for(int i=0;i<=2;i++){var at=r.relative(s.facing(),i);if(x==at.getX()&&z==at.getZ()&&y>=r.getY()&&y<=r.getY()+(i==0?2:1))return true;}
+        // Called for every cell the dressing passes consider, so it allocates nothing.
+        var s=SPECS.get(place);if(s==null)return false;var r=s.rel();int dy=y-r.getY();if(dy<0||dy>2)return false;
+        int dx=x-r.getX(),dz=z-r.getZ();var f=s.facing();
+        for(int i=0;i<=2;i++)if(dx==f.getStepX()*i&&dz==f.getStepZ()*i)return i==0||dy<=1;
         return false;
     }
 
