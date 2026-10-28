@@ -80,6 +80,7 @@ public final class UncannySocketProof {
     /** A stalled native monitor must report what each genuine socket client actually sent. */
     private static String monitorState(ServerPlayer p){
         if(p==null)return "offline";
+        if(phase==4){var state=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);var original=UncannyStories.actor(p,state,"CastGiant");return "pos="+p.position()+" age="+state.getInt("UncannyAge")+" started="+state.getBoolean("TunnelStarted127")+" original="+(original==null?"missing":original.getUUID()+" at="+original.position()+" phase="+original.phase())+" terrainPending="+ARRIVING.containsKey(p.getUUID())+" ack="+ACKS.contains(p.getUUID());}
         var own=own(p,LabyrinthPlace.MISSING_SLEEP);
         var lens=p.getPersistentData().getCompound(UncannySenses.LENS);
         return "pos="+p.position()+" feeds=0x"+Integer.toHexString(own.getInt("FeedsSeen"))

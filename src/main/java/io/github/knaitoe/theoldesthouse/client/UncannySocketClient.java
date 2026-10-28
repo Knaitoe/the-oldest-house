@@ -96,7 +96,13 @@ public final class UncannySocketClient {
         if(phase==4&&UncannyClient.room().equals("tunnel_periphery")&&age>=20&&vanillaTunnel==null){vanillaTunnel=net.minecraft.client.resources.sounds.SimpleSoundInstance.forMusic(net.minecraft.sounds.SoundEvents.MUSIC_GAME.value());mc.getSoundManager().play(vanillaTunnel);}
         if(phase==4&&age>50&&UncannyClient.room().equals("tunnel_periphery")){
             require(trafficHeard&&TunnelAtmosphere.playing(),"the original traffic asset reaches an actual native audio source");require(vanillaTunnel!=null&&!mc.getSoundManager().isActive(vanillaTunnel),"vanilla music is refused while actual tunnel traffic plays");require(mc.player.onGround()&&Math.abs(mc.player.getY()-b.getY())<.1,"a grounded reader sees the tunnel woman from the actual floor");
-            var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);if(giant!=null&&data.hasUUID("TunnelOriginal")){
+            var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);
+            if(age%100==0){
+                var expected=new Vec3(data.getDouble("TunnelX"),data.getDouble("TunnelY"),data.getDouble("TunnelZ"));
+                TheOldestHouse.LOGGER.info("UNCANNY TUNNEL {} original={} native={} phase={} position={} expected={} height={} scale={} drawn={}",role(),data.hasUUID("TunnelOriginal")?data.getUUID("TunnelOriginal"):"missing",giant==null?"missing":giant.getUUID(),giant==null?-1:giant.phase(),giant==null?"missing":giant.position(),expected,giant==null?0:giant.getBbHeight(),giant==null?0:giant.getScale(),UncannyActorRenderer.proofDrawn(giant));
+                if(age==100)extraShot=role()+"-tunnel-waiting";
+            }
+            if(giant!=null&&data.hasUUID("TunnelOriginal")){
                 require(giant.getUUID().equals(data.getUUID("TunnelOriginal")),"the socket client tracks the server's actual original woman");
                 var expected=new Vec3(data.getDouble("TunnelX"),data.getDouble("TunnelY"),data.getDouble("TunnelZ"));
                 if(giant.position().distanceToSqr(expected)>.01)return;

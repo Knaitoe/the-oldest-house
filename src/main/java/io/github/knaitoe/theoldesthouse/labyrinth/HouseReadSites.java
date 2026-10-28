@@ -64,7 +64,7 @@ public final class HouseReadSites {
         var job=new Job(p.getUUID(),room);if(!job.equals(building))WAITING.add(job);return null;
     }
     /** Preparing ahead changes no route, visit, action or inventory. */
-    public static void prepareNext(ServerPlayer p){if(LabyrinthData.get(p.server).builtVersion()<49)return;var room=next(p.server,p.getUUID());if(room!=null)prepare(p,room);}
+    public static void prepareNext(ServerPlayer p){if(LabyrinthData.get(p.server).builtVersion()<49||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p))return;var room=next(p.server,p.getUUID());if(room!=null)prepare(p,room);}
     private static String doorId(UUID id,Room room,String name){return "house_read/"+id+"/"+room.key()+"/"+name;}
     /** Interleave only a genuinely new ordinary arrival. Existing maps and story doors stay exact. */
     public static boolean offer(ServerPlayer p,LabyrinthData.Door from,LabyrinthPlace target){
@@ -112,6 +112,8 @@ public final class HouseReadSites {
     private static void restore(ServerPlayer p,CompoundTag visit){
         for(int i=0;i<p.getInventory().getContainerSize();i++)if(loan(p.getInventory().getItem(i),p.getUUID()))p.getInventory().setItem(i,ItemStack.EMPTY);
         if(loan(p.containerMenu.getCarried(),p.getUUID()))p.containerMenu.setCarried(ItemStack.EMPTY);
+        // Other quiet rooms have no coat custody: do not read or generate their unbuilt coatroom.
+        if(!visit.getBoolean("CapturedChest")&&!visit.getBoolean("CapturedFeet")){p.inventoryMenu.broadcastChanges();return;}
         for(var slot:List.of(EquipmentSlot.CHEST,EquipmentSlot.FEET)){String key=slot==EquipmentSlot.CHEST?"Chest":"Feet";if(!visit.getBoolean("Captured"+key))continue;var original=ItemStack.parseOptional(p.registryAccess(),visit.getCompound("Original"+key));var current=p.getItemBySlot(slot);if(!current.isEmpty())give(p,current.copy());p.setItemSlot(slot,original);visit.remove("Original"+key);visit.putBoolean("Captured"+key,false);}
         var base=base(p.server,p.getUUID(),Room.COATROOM);var level=p.server.getLevel(HouseDimensions.INTERIOR);
         if(base!=null&&level!=null)for(var peg:HouseReadRooms.PEGS)for(var pos:List.of(base.offset(peg),base.offset(peg.east()))){var state=level.getBlockState(pos);if(state.is(HouseReadRegistry.FITTING.get())&&state.getValue(HouseReadPropBlock.PART).ordinal()<6)level.setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);}
