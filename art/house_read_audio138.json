@@ -1,0 +1,53 @@
+{
+  "words": "Wash your hands before you sit down, alright? It’s getting cold.",
+  "sounds": {
+    "rain": {
+      "samples": 132300,
+      "rate": 22050,
+      "ticks": 120,
+      "sha256": "684848dac477d4df529d8de4baeb55ef786872a64ec5a5f069dd3343e55d94d2"
+    },
+    "radiator": {
+      "samples": 57330,
+      "rate": 22050,
+      "ticks": 52,
+      "sha256": "9c5ae50a666583e1de7b2c6706e972fa90629b797167cd2e17a99b60d58131a8"
+    },
+    "whistle": {
+      "samples": 26460,
+      "rate": 22050,
+      "ticks": 24,
+      "sha256": "ab71f707fe970da3dff9e86303e39b6cfc1e689ee4e598d9bcdcd93c01933d96"
+    },
+    "dishes": {
+      "samples": 83790,
+      "rate": 22050,
+      "ticks": 76,
+      "sha256": "a8f4a289e87646a305fed0fa7db0679e94010f0a1b88278027836061f498601c"
+    },
+    "ice": {
+      "samples": 18742,
+      "rate": 22050,
+      "ticks": 17,
+      "sha256": "15e7316e3cd6fb7cbf84b911f103cb99adb1e548954848370d4479d8bbf69d63"
+    },
+    "step": {
+      "samples": 12127,
+      "rate": 22050,
+      "ticks": 11,
+      "sha256": "882a3f1296785a9769624a5f8bc3b19993d563a2888f9187fa54b20cdab503fd"
+    },
+    "supper": {
+      "samples": 97131,
+      "rate": 22050,
+      "ticks": 89,
+      "sha256": "ae530b7a58fef7b4e80c0ba5ed8c01bbff19d28ad77e64cf6e3faa362be93a77"
+    },
+    "news": {
+      "samples": 173313,
+      "rate": 22050,
+      "ticks": 158,
+      "sha256": "58620b9e56bcaba8e50dbe389c343636ebd04f18a7de2d008189a2a5d396e7a1"
+    }
+  }
+}

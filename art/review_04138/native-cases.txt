@@ -1,0 +1,7 @@
+legacy_a: all 2 native cases passed with clean shutdown.
+legacy_b: all 2 native cases passed with clean shutdown.
+camper: all 1 native cases passed with clean shutdown.
+layout: all 1 native cases passed with clean shutdown.
+rooms: all 3 native cases passed with clean shutdown.
+meal: all 3 native cases passed with clean shutdown.
+elk: all 1 native cases passed with clean shutdown.

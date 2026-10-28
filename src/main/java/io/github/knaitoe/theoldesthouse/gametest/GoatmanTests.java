@@ -208,7 +208,7 @@ public final class GoatmanTests {
                 if(p.getMainHandItem().isEmpty())for(int s=0;s<9;s++)if(p.getInventory().getItem(s).is(GoatmanRegistry.BRAT.get())){p.getInventory().selected=s;break;}
                 f.click(p,new BlockPos(i%2==0?-1:1,1,-61-2*(i/2)));
             }
-            h.assertTrue(GoatmanSupper.ready(f.run())&&Integer.bitCount(f.run().getInt("Plated0464"))==8&&Integer.bitCount(f.run().getInt("BurntPlates0476"))==1,"the player plates all eight cooked franks, and the burnt one still counts and stays burnt on its plate");
+            h.assertTrue(GoatmanSupper.ready(f.run())&&Integer.bitCount(f.run().getInt("Plated0464"))==8&&Integer.bitCount(f.run().getInt("BurntPlates0476"))==1,"the player plates all eight cooked franks, and the burnt one still counts and stays burnt on its plate: plated="+f.run().getInt("Plated0464")+" empty="+f.run().getInt("EmptyPlates0465")+" burnt="+f.run().getInt("BurntPlates0476")+" held="+p.getMainHandItem());
             var plates=f.l.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Seat"));
             h.assertTrue(plates.stream().filter(d->GoatmanSupper.burnt(ItemStack.parseOptional(f.l.registryAccess(),d.saveWithoutId(new CompoundTag()).getCompound("item")))).count()==1,"the plate shows the burnt frank that was put on it");
             var plated=new ItemStack(GoatmanRegistry.BRAT.get());net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,plated,t->t.putUUID(GoatmanVignette.ROUND,f.run().getUUID("Id")));

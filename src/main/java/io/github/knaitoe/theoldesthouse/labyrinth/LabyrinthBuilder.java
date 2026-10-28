@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 48;
+    public static final int VERSION = 49;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -252,6 +252,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 45 && place == LabyrinthPlace.BORRASCA)
                     || (data.builtVersion() < 47 && place == LabyrinthPlace.BACKSEAT)
                     || (data.builtVersion() < 48 && place == LabyrinthPlace.SILO)
+                    || (data.builtVersion() < 49 && HouseReadSites.kind(place)!=null)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -611,6 +612,7 @@ public final class LabyrinthBuilder {
         }
         if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){LakeHouse.buildEmpty(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.BACKSEAT){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){BackseatRooms.build(site,base);registerDoors(dataFor(server),place,base);}return;}
+        if(HouseReadSites.kind(place)!=null)return; // Only owner copies are ever constructed.
         if(place==LabyrinthPlace.SILO){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){SiloRooms.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.NIGHTCLUB){fillSolid(level,slot);Nightclub.build(level,base);registerDoors(dataFor(server),place,base);return;}
         if(LiteraryRooms.isLiterary(place)){var site=server.getLevel(NovelRooms.dimension(place));if(site!=null){if(!LiteraryRooms.outside(place))fillSolid(site,slot);LiteraryRooms.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}

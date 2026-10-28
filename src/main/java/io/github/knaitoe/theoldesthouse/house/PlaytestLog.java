@@ -50,6 +50,7 @@ public final class PlaytestLog {
     /** Every event carries its real dimension, occupancy and connection identity. */
     public static void event(ServerPlayer player, String name, Object... fields) {
         if (!enabled()) return;
+        if(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSites.inside(player)!=null)return;
         UUID uuid = player.getUUID();
         if (name.equals("session_start")) SESSIONS.put(uuid, new Track());
         Track track = SESSIONS.get(uuid);

@@ -2246,5 +2246,77 @@
         "stream": false
       }
     ]
+  },
+  "house_read.rain": {
+    "subtitle": "subtitles.the_oldest_house.house_read.rain",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/rain",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.radiator": {
+    "subtitle": "subtitles.the_oldest_house.house_read.radiator",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/radiator",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.whistle": {
+    "subtitle": "subtitles.the_oldest_house.house_read.whistle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/whistle",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.dishes": {
+    "subtitle": "subtitles.the_oldest_house.house_read.dishes",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/dishes",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.ice": {
+    "subtitle": "subtitles.the_oldest_house.house_read.ice",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/ice",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.step": {
+    "subtitle": "subtitles.the_oldest_house.house_read.step",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/step",
+        "stream": false
+      }
+    ]
+  },
+  "house_read.supper": {
+    "subtitle": "subtitles.the_oldest_house.house_read.supper",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/supper",
+        "stream": true
+      }
+    ]
+  },
+  "house_read.news": {
+    "subtitle": "subtitles.the_oldest_house.house_read.news",
+    "sounds": [
+      {
+        "name": "the_oldest_house:house_read/news",
+        "stream": true
+      }
+    ]
   }
 }

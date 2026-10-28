@@ -305,6 +305,8 @@ public enum LabyrinthPlace {
     MOTION_LIGHT("motion_light",Kind.ONE_SHOT,104,new BoundingBox(-9,-2,-27,10,9,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("service_exit",new BlockPos(8,0,-5),Direction.EAST,LabyrinthData.RETURN))),
     BACKSEAT("backseat",Kind.ONE_SHOT,105,new BoundingBox(-14,-3,-58,14,18,4),literaryEntry()),
     SILO("silo",Kind.ONE_SHOT,106,new BoundingBox(-12,-3,-12,12,69,16),List.of(new DoorSpec("entry",new BlockPos(0,0,13),Direction.SOUTH,LabyrinthData.RETURN))),
+    READ_COATROOM("hall_coatrack",Kind.INTERLUDE,107,new BoundingBox(-8,-2,-16,8,6,4),List.of()),
+    READ_PORCH("screen_door",Kind.INTERLUDE,108,new BoundingBox(-25,-4,-48,25,18,16),List.of()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
@@ -312,6 +314,8 @@ public enum LabyrinthPlace {
     public enum Kind {
         /** Connective: dealt freely, never counted as a vignette. */
         GRAY,
+        /** Private ordinary moments; never a story, source or random gray deal. */
+        INTERLUDE,
         /** A vignette that is finished once and never dealt again. */
         ONE_SHOT,
         /** A vignette that keeps being dealt. */

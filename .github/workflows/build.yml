@@ -2110,3 +2110,55 @@ jobs:
             build/font-smoke/domestic-assets-passed.txt
             build/font-smoke/native-diner-breakfasts.png
             build/font-smoke/diner-assets-passed.txt
+
+  house-read-rooms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Native private copies, full-inventory wardrobe, unseen notes and quiet porch
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p build
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_house_read -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/house-read-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          count=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/HouseReadTests.java').read_text()))
+          assert count==3
+          assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
+          assert len(list(Path('build/house-read138-proof').glob('*.json')))==2
+          PY
+      - name: Original native tiles and decoded domestic audio
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libasound2t64 libpulse0 ffmpeg
+          python3 -m pip install Pillow
+          python3 tools/draw_house_read.py --check
+          python3 tools/generate_house_read_audio.py --check
+      - name: Native room geometry, standard/slim coats and the two-block mirror
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m
+          python3 - <<'PY'
+          from pathlib import Path
+          folder=Path('build/house-read138-art')
+          assert len(list(folder.glob('*.png')))==7
+          assert (folder/'passed.txt').is_file()
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: house-read-rooms-native-and-art
+          path: |
+            build/house-read-native.log
+            build/house-read138-proof
+            build/house-read138-art
+            run/logs
