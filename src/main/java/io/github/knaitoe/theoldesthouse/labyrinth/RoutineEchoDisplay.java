@@ -18,9 +18,10 @@ public final class RoutineEchoDisplay extends Display.ItemDisplay {
     public void reader(UUID id){reader=id;}
     public boolean ownedBy(UUID id){return id.equals(reader);}
     public void support(BlockPos at,boolean hotel){support=at.immutable();this.hotel=hotel;}
-    public void present(ItemStack original,float size){
+    public void present(ItemStack original,float size){present(original,size,false);}
+    public void present(ItemStack original,float size,boolean sideways){
         var data=saveWithoutId(new CompoundTag());data.put("item",original.save(level().registryAccess()));data.putString("item_display","none");
-        var transform=new CompoundTag();transform.put("translation",floats(0,size/2,0));transform.put("scale",floats(size,size,size));transform.put("left_rotation",floats(0,0,0,1));transform.put("right_rotation",floats(0,0,0,1));data.put("transformation",transform);data.putFloat("width",1);data.putFloat("height",1);load(data);
+        var transform=new CompoundTag();transform.put("translation",floats(0,size/2,0));transform.put("scale",floats(size,size,size));transform.put("left_rotation",sideways?floats(0,.70710677f,0,.70710677f):floats(0,0,0,1));transform.put("right_rotation",floats(0,0,0,1));data.put("transformation",transform);data.putFloat("width",1);data.putFloat("height",1);load(data);
     }
     private static ListTag floats(float... values){var out=new ListTag();for(float value:values)out.add(FloatTag.valueOf(value));return out;}
     @Override public boolean broadcastToPlayer(ServerPlayer player){return reader!=null&&reader.equals(player.getUUID())&&!player.isSpectator()&&super.broadcastToPlayer(player);}

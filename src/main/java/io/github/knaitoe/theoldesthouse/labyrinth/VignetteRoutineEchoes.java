@@ -16,7 +16,7 @@ public final class VignetteRoutineEchoes {
         ensure(reader,base,own,HOTEL_SINK,new Vec3(-22.4,6+14/16D,-25.58),true);
     }
     public static void lake(ServerPlayer reader,BlockPos base,CompoundTag own){
-        ensure(reader,base,own,LAKE_VANITY,new Vec3(-7.7,-19+13/16D,-162.875),false);
+        ensure(reader,base,own,LAKE_VANITY,new Vec3(-7.125,-19+13/16D,-162.5),false);
     }
     private static void ensure(ServerPlayer reader,BlockPos base,CompoundTag own,BlockPos surface,Vec3 where,boolean hotel){
         var level=reader.serverLevel();var at=base.offset(surface);var chunk=level.getChunkSource().getChunkNow(at.getX()>>4,at.getZ()>>4);
@@ -30,7 +30,7 @@ public final class VignetteRoutineEchoes {
         if(!supported)return;
         // No shared blocks or inventories change. A removed original is not silently replaced.
         var echo=HouseReadRegistry.ROUTINE_ECHO.get().create(level);if(echo==null)return;
-        echo.reader(reader.getUUID());echo.support(at,hotel);echo.setPos(base.getX()+where.x,base.getY()+where.y,base.getZ()+where.z);echo.present(new ItemStack(HouseReadRegistry.ROUTINES.get(routine).get()),.36f);
+        echo.reader(reader.getUUID());echo.support(at,hotel);echo.setPos(base.getX()+where.x,base.getY()+where.y,base.getZ()+where.z);echo.present(new ItemStack(HouseReadRegistry.ROUTINES.get(routine).get()),.36f,!hotel);
         if(level.addFreshEntity(echo)){chosen.putUUID("Id",echo.getUUID());own.put(KEY,chosen);}
     }
 }

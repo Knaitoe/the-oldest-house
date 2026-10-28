@@ -34,7 +34,7 @@ public final class TailoringSocketClient {
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(!TailoringSocketProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var data=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(data==null)return;var tag=data.copyTag();int next=tag.getInt("TailoringStep");if(next==0)return;
-        if(next!=phase){phase=next;age=0;clicked=-100;ack=-1;shot=null;stopping=false;}age++;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyJump.setDown(false);mc.options.setCameraType(CameraType.FIRST_PERSON);
+        if(next!=phase){phase=next;age=0;clicked=-100;ack=-1;shot=null;stopping=false;}age++;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyJump.setDown(false);mc.options.setCameraType(CameraType.FIRST_PERSON);mc.getToasts().clear();
         if(phase==5){mc.stop();return;}if(ack==phase)return;if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen)return;var at=BlockPos.of(tag.getLong("Target"));
         if(phase<=3){
             var original=own(mc,at,tag);if(original==null||!mc.levelRenderer.isSectionCompiled(at)||age<50)return;look(mc,original.position().add(0,.025,0));
