@@ -18,6 +18,18 @@ final class NativeTestChunks implements AutoCloseable {
     private final List<Held> held = new ArrayList<>();
 
     void hold(ServerLevel level, AABB bounds) {
+        lease(level, bounds, true);
+    }
+
+    /**
+     * Tickets only, for a host with connected clients: the chunks load on the native workers while the server keeps
+     * ticking, and {@link #ready()} waits for them. A synchronous load there can hold a tick past a client's timeout.
+     */
+    void request(ServerLevel level, AABB bounds) {
+        lease(level, bounds, false);
+    }
+
+    private void lease(ServerLevel level, AABB bounds, boolean now) {
         for (int x = ((int)Math.floor(bounds.minX) - 1) >> 4;
                 x <= ((int)Math.ceil(bounds.maxX) + 1) >> 4; x++) {
             for (int z = ((int)Math.floor(bounds.minZ) - 1) >> 4;
@@ -27,7 +39,7 @@ final class NativeTestChunks implements AutoCloseable {
                 if (held.contains(lease)) continue;
                 level.getChunkSource().addRegionTicket(TICKET, chunk, 3, key);
                 // Immediate loading is explicit fixture setup, never production pacing.
-                level.getChunk(x, z);
+                if (now) level.getChunk(x, z);
                 held.add(lease);
             }
         }
@@ -36,7 +48,7 @@ final class NativeTestChunks implements AutoCloseable {
     /** Full block chunks can arrive before their native entity sections. */
     boolean ready() {
         for (var lease : held)
-            if (!lease.level.areEntitiesLoaded(lease.chunk.toLong())) {
+            if (!lease.level.hasChunk(lease.chunk.x, lease.chunk.z) || !lease.level.areEntitiesLoaded(lease.chunk.toLong())) {
                 // GameTest can consume 1,200 ticks in under a second. Give the native disk
                 // worker time to return entity sections before exhausting a fixture's clock.
                 // This is test-host pacing only; loaded-section checks remain mandatory.
