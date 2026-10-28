@@ -55,6 +55,7 @@ public final class UncannySocketProof {
         if(step==15)tag.putInt("FoyerStillness",own(p,LabyrinthPlace.MOTION_LIGHT).getInt("FoyerStill131"));
         tag.putBoolean("PaperRead",step==5?UncannyReading.readPassage(own(p,LabyrinthPlace.MISSING_SLEEP)):step==13&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP));
         tag.putBoolean("TunnelReady",step==19&&own(p,LabyrinthPlace.TUNNEL_PERIPHERY).getBoolean("Ready"));tag.putBoolean("TunnelRead",step==19&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY));
+        tag.putBoolean("TunnelFailed",step==19&&UncannyStories.failed(own(p,LabyrinthPlace.TUNNEL_PERIPHERY)));
         if(step==4){var a=UncannyStories.actor(p,own(p,LabyrinthPlace.TUNNEL_PERIPHERY),"CastGiant");if(a!=null){tag.putUUID("TunnelOriginal",a.getUUID());tag.putDouble("TunnelX",a.getX());tag.putDouble("TunnelY",a.getY());tag.putDouble("TunnelZ",a.getZ());}}
         tag.putBoolean("DoorBlocked",step==12&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("BlockedDoor")&&own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Ready"));
         var arrival=ARRIVING.get(p.getUUID());tag.putBoolean("TerrainPending",arrival!=null);if(arrival!=null){tag.putString("ArrivalDimension",NovelRooms.dimension(arrival.place).location().toString());tag.putDouble("ArrivalX",arrival.at.x);tag.putDouble("ArrivalY",arrival.at.y);tag.putDouble("ArrivalZ",arrival.at.z);}
@@ -81,6 +82,7 @@ public final class UncannySocketProof {
     private static String monitorState(ServerPlayer p){
         if(p==null)return "offline";
         if(phase==4){var state=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);var original=UncannyStories.actor(p,state,"CastGiant");return "pos="+p.position()+" age="+state.getInt("UncannyAge")+" started="+state.getBoolean("TunnelStarted127")+" original="+(original==null?"missing":original.getUUID()+" at="+original.position()+" phase="+original.phase())+" terrainPending="+ARRIVING.containsKey(p.getUUID())+" ack="+ACKS.contains(p.getUUID());}
+        if(phase==19){var state=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);return "pos="+p.position()+" age="+state.getInt("UncannyAge")+" failed="+UncannyStories.failed(state)+" failure="+state.getString("Failure")+" passed="+state.getBoolean("TunnelPassed130")+" greenSteps="+state.getInt("GreenSteps")+" ready="+state.getBoolean("Ready")+" read="+state.getBoolean("Read_Ending")+" witness="+WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY)+" menu="+p.containerMenu.getClass().getSimpleName()+" ack="+ACKS.contains(p.getUUID());}
         var own=own(p,LabyrinthPlace.MISSING_SLEEP);
         var lens=p.getPersistentData().getCompound(UncannySenses.LENS);
         return "pos="+p.position()+" feeds=0x"+Integer.toHexString(own.getInt("FeedsSeen"))
@@ -129,7 +131,9 @@ public final class UncannySocketProof {
             if(phase==1){for(var p:List.of(a,b)){at(p,LabyrinthPlace.SECOND_WAITRESS,.5,0,p==a?-17.5:-22.5);sourceFixture(p,LabyrinthPlace.SECOND_WAITRESS,270);}step(s,2);}
             else if(phase==2){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.SECOND_WAITRESS);FAKES.put(p.getUUID(),own.getUUID("CastFake"));own.putInt("UncannyAge",620);save(p,LabyrinthPlace.SECOND_WAITRESS,own);}step(s,3);}
             else if(phase==3){for(var p:List.of(a,b)){require(FAKES.get(p.getUUID()).equals(own(p,LabyrinthPlace.SECOND_WAITRESS).getUUID("CastFake")),"the translucent and solid waitress are the same original");at(p,LabyrinthPlace.TUNNEL_PERIPHERY,p==a?-.8:.8,0,p==a?-14.5:-20.5);sourceFixture(p,LabyrinthPlace.TUNNEL_PERIPHERY,170);}step(s,4);}
-            else if(phase==4){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);own.putInt("UncannyAge",170);save(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);p.getFoodData().setFoodLevel(20);}step(s,19);}
+            // Resume the paused rendering setup at the start of a real green cycle;
+            // its mid-green capture pose is not the run's starting signal.
+            else if(phase==4){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);own.putInt("UncannyAge",140);save(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);p.getFoodData().setFoodLevel(20);}step(s,19);}
             else if(phase==19){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);require(own.getBoolean("TunnelPassed130")&&own.getInt("GreenSteps")>=20&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY),"the actual native sprint reaches the far refuge and its personal account");at(p,LabyrinthPlace.MISSING_SLEEP,.5,0,.5);}write("tunnel-native-escape.txt","Both actual clients sprinted the production 140m passage through native collision, green freezes and faster original private pursuers, then read the far personal account. No route teleport, speed effect or artificial ready flag.\n");step(s,5);}
             else if(phase==5){
                 for(var p:List.of(a,b))require(UncannyReading.readPassage(own(p,LabyrinthPlace.MISSING_SLEEP))&&!own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"),"native short passage without completing the archive");
