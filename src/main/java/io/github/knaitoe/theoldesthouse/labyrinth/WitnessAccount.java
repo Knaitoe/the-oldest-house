@@ -156,18 +156,34 @@ public final class WitnessAccount {
         var order=record.getList("Order",net.minecraft.nbt.Tag.TAG_STRING);order.add(net.minecraft.nbt.StringTag.valueOf(story.id));record.put("Order",order);
         save(data,player,record);ExpeditionRhythm.request(data,player);return true;
     }
+    /** 0.4.146: a reader who was part of a shared vignette some other way than acting; their role and who acted are kept with the story. */
+    public static boolean resolve(LabyrinthData data,UUID player,Story story,String outcome,VignetteRole role,String actor){
+        if(!resolve(data,player,story,outcome))return false;
+        if(role==VignetteRole.ACTOR)return true;
+        CompoundTag record=record(data,player),roles=record.getCompound("Roles"),mine=new CompoundTag();
+        mine.putString("Role",role.id());mine.putString("Actor",actor);roles.put(story.id,mine);record.put("Roles",roles);save(data,player,record);return true;
+    }
+    /** How this reader was part of the story's ending; every account before 0.4.146 is an actor's. */
+    public static VignetteRole role(LabyrinthData data,UUID player,Story story){
+        var mine=record(data,player).getCompound("Roles").getCompound(story.id);return mine.contains("Role")?VignetteRole.of(mine.getString("Role")):VignetteRole.ACTOR;
+    }
     public static void resolve(ServerPlayer player,Story story,String outcome){
-        if(player.isSpectator()||FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID())))return;
+        if(resolved(player,story,outcome,VignetteRole.ACTOR,""))VignetteThreads.ended(player,story,outcome);
+    }
+    /** A shared vignette's ending as this reader saw it: they watched, joined partway, or came back to its aftermath. */
+    public static void resolveAs(ServerPlayer player,Story story,String outcome,VignetteRole role,String actor){resolved(player,story,outcome,role,actor);}
+    private static boolean resolved(ServerPlayer player,Story story,String outcome,VignetteRole role,String actor){
+        if(player.isSpectator()||FinaleProgress.terminal(FinaleProgress.phase(player.server,player.getUUID())))return false;
         LabyrinthData data=LabyrinthData.get(player.server);
-        if(resolve(data,player.getUUID(),story,outcome)){
-            CompoundTag stories=record(data,player.getUUID()).getCompound("Stories");Set<String> kinds=new HashSet<>();
-            for(Story s:Story.values())if(stories.contains(s.id))kinds.add(s.kind);
-            io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"story_resolve","story",story.id,"kind",story.kind,"outcome",outcome,"count",count(data,player.getUUID()),"kinds",kinds.size(),"ready",ready(data,player.getUUID()));
-            updateBook(player,true);
-            player.displayClientMessage(Component.literal(ready(data,player.getUUID())
-                    ?"A passage in your account is readable now. It describes a cell."
-                    :"You can set this part of the account down now."),false);
-        }
+        if(!resolve(data,player.getUUID(),story,outcome,role,actor))return false;
+        CompoundTag stories=record(data,player.getUUID()).getCompound("Stories");Set<String> kinds=new HashSet<>();
+        for(Story s:Story.values())if(stories.contains(s.id))kinds.add(s.kind);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"story_resolve","story",story.id,"kind",story.kind,"outcome",outcome,"role",role.id(),"count",count(data,player.getUUID()),"kinds",kinds.size(),"ready",ready(data,player.getUUID()));
+        updateBook(player,true);
+        player.displayClientMessage(Component.literal(ready(data,player.getUUID())
+                ?"A passage in your account is readable now. It describes a cell."
+                :"You can set this part of the account down now."),false);
+        return true;
     }
     /**
      * Resolved stories in the order this reader ended them (0.4.105). Records older than that order have no list, so their
@@ -232,6 +248,9 @@ public final class WitnessAccount {
             // Accounts written before 0.4.66 heard the institute end in its middle attic; their words stay theirs.
             boolean attic=story==Story.WHALE&&stories.getString(story.id).equals("read_the_final_page");
             if(attic)text=LEGACY_WHALE;
+            // 0.4.146: a reader who watched, joined partway or came back afterwards reads the account drafted for that.
+            var role=role(data,player,story);var scene=SharedVignettes.drafted(LabyrinthPlace.byId(story.id));
+            if(role!=VignetteRole.ACTOR&&scene!=null){var drafted=scene.line(role,stories.getString(story.id),record(data,player).getCompound("Roles").getCompound(story.id).getString("Actor"));if(drafted!=null)text=drafted;}
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,(attic?"The undated letter":story.title)+"\n\n"+text));
         }
         for(Story story:Story.values())if(!stories.contains(story.id)&&begun(data,player,story)){

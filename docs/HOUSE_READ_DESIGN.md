@@ -13,7 +13,7 @@ What is not built:
 - turning actions into categories, which the owner deferred, so no reader has a category yet;
 - the account, the House of Leaves, mirrors and doubles reading the record.
 
-The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Three parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), and every shared scene has a way on into the halls (0.4.144). Co-op is not built yet. Sections below describe the intended design, and each says where the build differs today.
+The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Four parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), every shared scene has a way on into the halls (0.4.144), and the shared foundation of co-op (0.4.146): friends follow each other into a vignette, mixed groups are dealt something none has started or split, threads, and accounts for each way of being there. Making each scene itself shared, with its drafted accounts, is next, the paw first. Sections below describe the intended design, and each says where the build differs today.
 
 ## The idea
 
@@ -77,13 +77,14 @@ The owner's October 28 direction makes the other vignettes shared:
   - **The drowned town and lake-witch scenes** should mostly support several players.
   - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen.
   - **The child's room** can be shared.
+- **Built in 0.4.146** (`docs/COOP_FOUNDATION_0_4_146.md`): a door into a shared vignette is held 30 seconds for the group, so friends through the same door arrive in the same scene. A mixed group at a door is dealt a vignette none of them has started, or splits. The backseat, the silo, Borrasca, the copies and the Red Room stay private; the Goatman and hide-and-clap are held back until they are made shared. Each reader still plays the scene as their own until it is drafted.
 - **Still open:**
   - how a shared room is built and reset when friends arrive at different times;
   - who a scene responds to when two readers act at once.
 
 ### Multi-visit vignettes: one story per thread
 
-The owner approved this model (October 28).
+The owner approved this model (October 28). Built in 0.4.146 as `VignetteThreads`: threads, visits, partway joiners, a beat waiting for its holder, and the holder's object going back after three in-game days away. Each scene supplies its own beats and release.
 
 - **A thread.** The readers present on a vignette's first visit share one story, called a thread. Each reader is in at most one thread per vignette.
 - **Picking up the story.** Whoever from the thread comes back, alone or together, continues it where it left off. Nobody gets a fresh copy of a story they have already begun.
@@ -102,7 +103,7 @@ The paw, for example:
 
 ### Accounts for every way of being there
 
-Each shared vignette's account must be properly drafted for every way a reader can have been part of it (owner). The variants are:
+Each shared vignette's account must be properly drafted for every way a reader can have been part of it (owner). Built in 0.4.146: the Witness record keeps each reader's role beside the story, and a scene registered with `SharedVignettes.draft` supplies its line for each role. Only a drafted scene gives a reader who did not act the credit. The variants are:
 
 - **Actor:** the reader did the key act (today's accounts).
 - **Witness:** the reader was there throughout and watched another reader act.
@@ -520,7 +521,7 @@ Follow-ups the same day settled several details, all in "Co-op":
 - multi-visit vignettes follow one story per thread, with late joiners, aftermath visits and accounts drafted for each way of being there.
 - the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room are named as scenes to share.
 
-Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, is next.
+Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146); the scenes follow one at a time, the paw first.
 
 ## Built so far
 

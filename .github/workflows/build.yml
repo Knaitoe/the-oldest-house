@@ -2125,17 +2125,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native junction chain, scene ways on, retired hallway doors, boundary safety, saved originals and six personal scene touches
+      - name: Native junction chain, scene ways on, retired hallway doors, boundary safety, saved originals, six personal scene touches and going in together
         shell: bash
         run: |
           set -o pipefail
           mkdir -p build
-          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_house_read,the_oldest_house_tailoring -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/house-read-native.log
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_house_read,the_oldest_house_tailoring,the_oldest_house_coop -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/house-read-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
-          count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java'))
-          assert count==17
+          count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java','CoopTests.java'))
+          assert count==20
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==5
           PY
