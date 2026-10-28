@@ -2125,7 +2125,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native junction chain, retired hallway doors, boundary safety, saved originals and six personal scene touches
+      - name: Native junction chain, scene ways on, retired hallway doors, boundary safety, saved originals and six personal scene touches
         shell: bash
         run: |
           set -o pipefail
@@ -2135,7 +2135,7 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java'))
-          assert count==15
+          assert count==17
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==5
           PY
@@ -2148,6 +2148,7 @@ jobs:
           python3 tools/generate_house_read_audio.py --check
           python3 tools/generate_house_read_moments_audio.py --check
           python3 tools/paint_house_read_cast.py --check
+          python3 tools/draw_onward_doors.py --check
       - name: Native room geometry, standard/slim coats and the two-block mirror
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m

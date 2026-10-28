@@ -334,6 +334,7 @@ public final class LabyrinthBuilder {
             }
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             if(site!=null){var dressing=SceneHuntReview.prepareFresh(site,pendingOrigin,place);if(dressing!=null){geometry=dressing;return;}}
+            if (site != null) OnwardDoors.install(site, LabyrinthPlaces.base(pendingOrigin, place), place);
             registerDoors(dataFor(server), place, LabyrinthPlaces.base(pendingOrigin, place));
             recordBuilt(server, place);
             geometry = null;
@@ -602,6 +603,7 @@ public final class LabyrinthBuilder {
         ScenePolish.forget(server, origin, place);
         buildScene(server, level, origin, place);
         ServerLevel site = server.getLevel(NovelRooms.dimension(place));
+        if (site != null) OnwardDoors.install(site, LabyrinthPlaces.base(origin, place), place);
         if (site != null) ScenePolish.polishOnce(site, origin, place);
     }
 
@@ -701,6 +703,8 @@ public final class LabyrinthBuilder {
 
     public static void registerDoors(LabyrinthData data, LabyrinthPlace place, BlockPos base) {
         for (LabyrinthPlace.DoorSpec spec : place.doors()) {
+            // A fitted way on is registered by OnwardDoors only once its door stands.
+            if (OnwardDoors.isOnward(spec)) continue;
             data.putDoor(new LabyrinthData.Door(
                     place.doorId(spec), NovelRooms.dimension(place), base.offset(spec.rel()), spec.facing(), spec.destination(), false));
         }
@@ -803,6 +807,7 @@ public final class LabyrinthBuilder {
 
     static void doors(ServerLevel level, BlockPos base, LabyrinthPlace place) {
         for (LabyrinthPlace.DoorSpec spec : place.doors()) {
+            if (OnwardDoors.isOnward(spec)) continue;
             placeDoor(level, base.offset(spec.rel()), spec.facing());
         }
     }

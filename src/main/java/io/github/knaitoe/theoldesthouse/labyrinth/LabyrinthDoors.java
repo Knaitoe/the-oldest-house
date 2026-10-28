@@ -131,6 +131,13 @@ public final class LabyrinthDoors {
         // A finished story's door is only a way between halls now (owner, October 28).
         if(VignetteGate.dormant(data,player.getUUID(),door)){var asleep=LabyrinthPlace.byId(VignetteGate.dormantPlace(data,player.getUUID(),door));if(asleep!=null&&LabyrinthDealer.finishedFor(data,player.getUUID(),asleep)&&passage(player,door))return;}
         if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);quiet(player,VignetteGate.dormantPlace(data,player.getUUID(),door),door.lower);return;}
+        if (OnwardDoors.isOnward(door) && OnwardDoors.locked(player, door)) {
+            setDoorOpen(player.serverLevel(), door.lower, false, player);
+            player.displayClientMessage(Component.literal("The door won't open yet."), true);
+            return;
+        }
+        // A scene's way on leads into a hall, whatever its door was dealt before.
+        if (OnwardDoors.isOnward(door)) LabyrinthDealer.dealOnward(data, player.getUUID(), door);
         if (HideAndClap.isLocked(player)) {
             player.displayClientMessage(Component.literal("The door won't open until the game is over."), true);
             io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "door_clap_game",door.lower);
@@ -314,6 +321,7 @@ public final class LabyrinthDoors {
         }
         LabyrinthData data = LabyrinthData.get(server);
         DomesticDisturbances.prepare(player,toLevel,place,from);
+        OnwardDoors.prepare(toLevel,place);
         Rotation turn = rotationFrom(from.facing, entry.facing);
 
         // Someone else may be standing in this entry's doorway: it stays open
@@ -325,10 +333,17 @@ public final class LabyrinthDoors {
         float yaw = fromRead?entry.facing.getOpposite().toYRot():player.getYRot() + angle(turn);
 
         var returnTo = new LabyrinthData.Waypoint(fromLevel.dimension(), Vec3.atBottomCenterOf(from.lower), from.facing.toYRot(), true);
+        // Going on through a scene's way on is leaving that scene, as going back through its entry is. The scene and its
+        // way on are one crossing: going back from the hall beyond returns to the door that led into the scene.
+        LabyrinthPlace leaving = OnwardDoors.placeOf(from);
+        LabyrinthData.Waypoint leftFrom = leaving == null ? null : data.peekReturn(player.getUUID());
+        LabyrinthData.Door leavingEntry = leaving == null ? null : data.door(leaving.entryDoorId());
+        if (leaving != null) depart(player, leaving);
         Consumer<ServerPlayer> arrived = p -> {
             var current = LabyrinthData.get(p.server);
             if(fromRead)HouseReadSites.left(p);
-            current.pushReturn(p.getUUID(), returnTo);
+            if(leftFrom!=null&&leavingEntry!=null)VignetteGate.departed(p,leftFrom,leavingEntry);
+            if(leaving==null)current.pushReturn(p.getUUID(), returnTo);
             INSIDE.remove(p.getUUID());
             SHUT_FOR.remove(p.getUUID());
             STEPS.remove(p.getUUID());

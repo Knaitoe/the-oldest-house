@@ -13,7 +13,7 @@ What is not built:
 - turning actions into categories, which the owner deferred, so no reader has a category yet;
 - the account, the House of Leaves, mirrors and doubles reading the record.
 
-The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. It is not implemented yet. Sections below describe the intended design, and each says where the build differs today.
+The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Three parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), and every shared scene has a way on into the halls (0.4.144). Co-op is not built yet. Sections below describe the intended design, and each says where the build differs today.
 
 ## The idea
 
@@ -58,7 +58,7 @@ These are the first five rooms a reader reaches after the opening (the three day
 - **Where they open (owner, October 28):** the impossible hallway stays a plain approach. The rooms lead out from the first room past its far door, the junction. Each room's forward exit opens into the ordinary halls, so the rooms are naturally spaced and the reader keeps moving forward. Stories still begin at depth 6 as now.
 - **Missed rooms:** content may be missed, as elsewhere. A reader who goes back never sees a room twice.
 
-Where the build differs today: 0.4.138 and 0.4.139 offered the rooms at a reader's first fresh ordinary arrivals. 0.4.142 moved them behind five doors along the impossible hallway itself, 36, 29, 22, 15 and 8 blocks before the far door. Both the entry and the way on return to that hallway doorway, so no room leads forward yet.
+Built in 0.4.143 as a chain: until a reader has entered all five, any of the junction's onward doors leads into their next room in order, each room's way on leads into the next, and the porch's way on arrives in the hall the junction door was dealt. The 0.4.142 hallway doors are walled up unseen in saved worlds (`docs/JUNCTION_CHAIN_0_4_143.md`).
 
 ## Co-op: these rooms stay private, other vignettes are shared
 
@@ -69,9 +69,9 @@ The owner's October 28 direction makes the other vignettes shared:
 - **Shared by default, with witnesses.** Whoever acts on the key beat leads it, and everyone else in the room witnesses it. Only Backseat (one driver's seat) and the five quiet rooms stay private.
 - **Witnesses get credit.** A witness gets their own account and the Witness credit. The account may change subtly, reading as someone who watched rather than the one who acted.
 - **Each reader's own record.** A peer's act never counts as the reader's own act, in the House's read or in a scene's choices.
-- **A finished room becomes a passage.** Once a reader has completed a vignette, its door no longer replays the scene for them. It is just a door connecting two halls.
+- **A finished room becomes a passage.** Once a reader has completed a vignette, its door no longer replays the scene for them. It is just a door connecting two halls. Built in 0.4.143.
 - **Mixed groups.** When a group reaches a door and some of them have already finished what lies behind it, the House deals a vignette none of them has seen. If there is none, the group splits: those who finished pass through, and the others get the scene.
-- **Forward exits** lead back into the ordinary halls.
+- **Forward exits** lead back into the ordinary halls. Built in 0.4.144: each shared scene has one way on, placed to suit it, dealt only ordinary halls and held by the entry's locks (`docs/ONWARD_DOORS_0_4_144.md`).
 - **The owner's notes on particular scenes:**
   - **Goatman** can eventually be shared. Extra players take the place of other campers, so the headcount stays the same as solo. The count, seating, supper and dialogue must treat each player as that cousin.
   - **The drowned town and lake-witch scenes** should mostly support several players.
@@ -520,7 +520,7 @@ Follow-ups the same day settled several details, all in "Co-op":
 - multi-visit vignettes follow one story per thread, with late joiners, aftermath visits and accounts drafted for each way of being there.
 - the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room are named as scenes to share.
 
-None of these is implemented yet.
+Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, is next.
 
 ## Built so far
 
@@ -531,5 +531,7 @@ None of these is implemented yet.
 | 0.4.140 | The list of existing moments to tailor first | `docs/PERSONALITY_TAILORING_TARGETS_0_4_140.md` |
 | 0.4.142 | Five doors along the impossible hallway instead of dealt arrivals; the House boundary tick recognizes built quiet rooms, so an idle reader is no longer ejected to the Overworld | `docs/ENTRANCE_PLAYTEST_0_4_142.md` |
 | 0.4.142 | The six read-side consumers ("Vignettes") | `docs/SIX_PERSONAL_SCENE_TOUCHES_0_4_142.md` |
+| 0.4.143 | The quiet rooms chain from the junction; the hallway doors are retired; a finished story's door is a passage | `docs/JUNCTION_CHAIN_0_4_143.md` |
+| 0.4.144 | Every shared scene has a way on into the ordinary halls, with five fitted native doors | `docs/ONWARD_DOORS_0_4_144.md` |
 
 The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.

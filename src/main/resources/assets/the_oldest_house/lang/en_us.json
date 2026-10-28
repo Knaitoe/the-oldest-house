@@ -468,5 +468,10 @@
   "subtitles.the_oldest_house.house_read.tap": "Hot water runs",
   "subtitles.the_oldest_house.house_read.clock": "A clock ticks",
   "subtitles.the_oldest_house.house_read.start": "The jukebox starts",
-  "subtitles.the_oldest_house.house_read.song": "A slow instrumental under the rafters"
+  "subtitles.the_oldest_house.house_read.song": "A slow instrumental under the rafters",
+  "block.the_oldest_house.onward_weathered_door": "Weathered Door",
+  "block.the_oldest_house.onward_panel_door": "Panelled Door",
+  "block.the_oldest_house.onward_cabin_door": "Cabin Door",
+  "block.the_oldest_house.onward_service_door": "Service Door",
+  "block.the_oldest_house.onward_cellar_door": "Cellar Door"
 }
