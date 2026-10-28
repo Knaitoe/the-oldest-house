@@ -37,11 +37,11 @@ def launch(task, name):
     processes.append(p)
     return p
 
-def capture_login_threads():
-    """Observe the real handshake before a timeout; do not retry or bypass it."""
+def capture_native_threads(label="login"):
+    """Observe native JVMs during a stall; never retry or bypass the failed action."""
     try:
         listing = subprocess.run(["jcmd", "-l"], capture_output=True, text=True, timeout=5)
-        (report / "login-jvms.txt").write_text(listing.stdout + listing.stderr)
+        (report / f"{label}-jvms.txt").write_text(listing.stdout + listing.stderr)
         for line in listing.stdout.splitlines():
             fields = line.split(maxsplit=1)
             if len(fields) != 2 or not fields[0].isdigit():
@@ -50,14 +50,15 @@ def capture_login_threads():
                 continue
             pid = fields[0]
             dump = subprocess.run(["jcmd", pid, "Thread.print", "-l"], capture_output=True, text=True, timeout=8)
-            (report / f"login-threads-{pid}.txt").write_text(dump.stdout + dump.stderr)
+            (report / f"{label}-threads-{pid}.txt").write_text(dump.stdout + dump.stderr)
     except (OSError, subprocess.TimeoutExpired) as exc:
-        (report / "login-diagnostics-error.txt").write_text(str(exc))
+        (report / f"{label}-diagnostics-error.txt").write_text(str(exc))
 
 def wait_for(check, seconds, context):
     deadline = time.monotonic() + seconds
     connecting_at = None
     captured_login = False
+    captured_stall = False
     while time.monotonic() < deadline:
         if check():
             return
@@ -68,7 +69,15 @@ def wait_for(check, seconds, context):
                     connecting_at = time.monotonic()
                 elif time.monotonic() - connecting_at >= 4:
                     captured_login = True
-                    capture_login_threads()
+                    capture_native_threads()
+        # A native read can block the host long enough to lose both clients.
+        # Sample while it is blocked, rather than diagnosing the later offline timeout.
+        native_log = server / "logs/latest.log"
+        if (not captured_stall and context != "dedicated server startup" and native_log.exists()
+                and "phase 2" in native_log.read_text(errors="replace")
+                and time.time() - native_log.stat().st_mtime >= 10):
+            captured_stall = True
+            capture_native_threads("stalled-host")
         for p in processes:
             if p.poll() is not None and p.returncode != 0:
                 raise RuntimeError(f"Native process failed during {context}: {p.returncode}")

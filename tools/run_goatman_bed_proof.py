@@ -9,12 +9,14 @@ REPORT.mkdir(parents=True,exist_ok=True)
 init=REPORT/'launch.init.gradle'
 init.write_text('''import groovy.json.JsonOutput
 allprojects { afterEvaluate {
+    def nativeRuns = ['runProofServer', 'runProofA', 'runProofB'].collectEntries { name -> [(name): tasks.named(name)] }
+    def launchFile = layout.buildDirectory.file('goatman-bed137-proof/launch.json').get().asFile
     tasks.register('exportGoatmanBedLaunch') {
         dependsOn 'classes', 'prepareProofServerRun', 'prepareProofARun', 'prepareProofBRun'
         doLast {
             def launches = [:]
-            ['runProofServer', 'runProofA', 'runProofB'].each { name ->
-                def run = tasks.named(name).get()
+            nativeRuns.each { name, provider ->
+                def run = provider.get()
                 run.classpath(run.classpathProvider)
                 def command = [run.javaLauncher.get().executablePath.asFile.absolutePath]
                 command.addAll(run.allJvmArgs)
@@ -22,14 +24,18 @@ allprojects { afterEvaluate {
                 command.addAll(run.args)
                 launches[name] = [command: command, directory: run.gameDirectory.get().asFile.absolutePath]
             }
-            file('build/goatman-bed137-proof/launch.json').text = JsonOutput.toJson(launches)
+            launchFile.text = JsonOutput.toJson(launches)
         }
     }
 } }
 ''')
-args=['gradle','exportGoatmanBedLaunch','-PgoatmanBedSocketSmoke','--no-daemon','--max-workers=2','-Dorg.gradle.jvmargs=-Xmx768m','-I',str(init)]
+args=['gradle','exportGoatmanBedLaunch','-PgoatmanBedSocketSmoke','--no-daemon','--no-configuration-cache','--max-workers=2','-Dorg.gradle.jvmargs=-Xmx768m','-I',str(init)]
 if os.environ.get('GOATMAN_PROOF_OFFLINE'):args.append('--offline')
-with (REPORT/'prepare.log').open('w') as out:subprocess.run(args,stdout=out,stderr=subprocess.STDOUT,check=True)
+try:
+    with (REPORT/'prepare.log').open('w') as out:subprocess.run(args,stdout=out,stderr=subprocess.STDOUT,check=True)
+except subprocess.CalledProcessError:
+    print((REPORT/'prepare.log').read_text(errors='replace')[-16000:],flush=True)
+    raise
 launches=json.loads((REPORT/'launch.json').read_text())
 for role in ['server','a','b']:(WORLD/role).mkdir(parents=True,exist_ok=True)
 (WORLD/'server/eula.txt').write_text('eula=true\n')
