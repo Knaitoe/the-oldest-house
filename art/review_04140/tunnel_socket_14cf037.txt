@@ -1,0 +1,13 @@
+Source: 14cf037649032724ff3908af149fd4ded049c1b5
+Run: https://github.com/Knaitoe/the-oldest-house/actions/runs/40669042850
+Artifact: 12807273682
+Disposition: tunnel phase 4 failed before CCTV. The original body did not consume its already-correct native interpolation target.
+
+client-a.log
+[10:08:59] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY TUNNEL A original=0b6b4b5c-7f58-4344-b1a3-157a1d800f87 native=0b6b4b5c-7f58-4344-b1a3-157a1d800f87 phase=1 position=(7165.5, 13.0, 4845.5) expected=(7165.5, 13.0, 4984.5) height=2.75 scale=2.5 drawn=false packetBase=(7165.5, 13.0, 4984.5) lerpTarget=(7165.5, 13.0, 4984.5)
+[10:09:04] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY TUNNEL A original=0b6b4b5c-7f58-4344-b1a3-157a1d800f87 native=0b6b4b5c-7f58-4344-b1a3-157a1d800f87 phase=1 position=(7165.5, 13.0, 4845.5) expected=(7165.5, 13.0, 4984.5) height=2.75 scale=2.5 drawn=false packetBase=(7165.5, 13.0, 4984.5) lerpTarget=(7165.5, 13.0, 4984.5)
+
+client-b-first.log
+[10:08:59] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY TUNNEL B original=5cd31f02-89da-4918-a95c-2cf678924707 native=5cd31f02-89da-4918-a95c-2cf678924707 phase=1 position=(7165.5, 13.0, 4845.5) expected=(7165.5, 13.0, 4984.5) height=2.75 scale=2.5 drawn=false packetBase=(7165.5, 13.0, 4984.5) lerpTarget=(7165.5, 13.0, 4984.5)
+[10:09:04] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY TUNNEL B original=5cd31f02-89da-4918-a95c-2cf678924707 native=5cd31f02-89da-4918-a95c-2cf678924707 phase=1 position=(7165.5, 13.0, 4845.5) expected=(7165.5, 13.0, 4984.5) height=2.75 scale=2.5 drawn=false packetBase=(7165.5, 13.0, 4984.5) lerpTarget=(7165.5, 13.0, 4984.5)
+
