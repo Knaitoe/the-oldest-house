@@ -74,7 +74,8 @@ def wait_for(check, seconds, context):
         # Sample while it is blocked, rather than diagnosing the later offline timeout.
         native_log = server / "logs/latest.log"
         if (not captured_stall and context != "dedicated server startup" and native_log.exists()
-                and "phase 2" in native_log.read_text(errors="replace")
+                and ("phase 2" in native_log.read_text(errors="replace")
+                     or backseat_only and "BACKSEAT SOCKET phase 1" in native_log.read_text(errors="replace"))
                 and time.time() - native_log.stat().st_mtime >= 10):
             captured_stall = True
             capture_native_threads("stalled-host")
