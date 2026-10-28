@@ -30,7 +30,7 @@ public final class TailoringSocketProof {
     private static final NativeTestChunks CHUNKS=new NativeTestChunks();
     private static final Set<UUID> ACKS=new HashSet<>();
     private static final Map<UUID,UUID> SINKS=new HashMap<>();
-    private static int phase,changed;private static boolean initialized,offline,reconnected;
+    private static int phase,changed;private static boolean built,ready,initialized,offline,reconnected;
     private TailoringSocketProof(){}
     private static void require(boolean okay,String text){if(!okay)throw new IllegalStateException("TAILORING SOCKET: "+text);}
     private static ServerPlayer player(MinecraftServer s,String role){return s.getPlayerList().getPlayers().stream().filter(p->p.getGameProfile().getName().equals("OTHProof"+role)).findFirst().orElse(null);}
@@ -51,16 +51,22 @@ public final class TailoringSocketProof {
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){if(!enabled())return;var s=event.getServer();try{
         var a=player(s,"A");var b=player(s,"B");
         if(phase==5){if(a==null&&b==null){CHUNKS.close();s.halt(false);}return;}
+        // The scenes are loaded and built before either client connects (the runner waits for "fixture ready"), so the
+        // synchronous fixture loads never hold a connected client past its thirty-second read timeout.
+        if(!built){
+            var in=s.getLevel(HouseDimensions.INTERIOR);var out=s.getLevel(HouseDimensions.OUTSIDE);require(in!=null&&out!=null,"native scene dimensions exist");
+            CHUNKS.hold(in,IndianLakeRooms.bounds(base(LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL));CHUNKS.hold(in,IndianLakeRooms.bounds(base(LabyrinthPlace.CHILD_ROOM),LabyrinthPlace.CHILD_ROOM));CHUNKS.hold(out,new AABB(base(LabyrinthPlace.LAKE_HOUSE).offset(VignetteRoutineEchoes.LAKE_VANITY)).inflate(15,6,15));
+            HotelRooms.build(in,base(LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL);ChildRoom.build(in,base(LabyrinthPlace.CHILD_ROOM));LakeHouseInterior.build(out,base(LabyrinthPlace.LAKE_HOUSE));
+            built=true;return;
+        }
+        if(!ready){if(!CHUNKS.ready())return;ready=true;TheOldestHouse.LOGGER.info("TAILORING SOCKET fixture ready");}
         if(phase==2&&b==null){offline=true;require(s.getTickCount()-changed<2400,"the same B profile reconnects within the original two-minute deadline");return;}
         if(a==null||b==null)return;
         if(!initialized){
             var house=HouseSavedData.get(s);house.markSpawned(ORIGIN);house.markInteriorInitialized();LabyrinthData.get(s).setBuilt(LabyrinthBuilder.VERSION,ORIGIN);
-            var in=s.getLevel(HouseDimensions.INTERIOR);var out=s.getLevel(HouseDimensions.OUTSIDE);require(in!=null&&out!=null,"native scene dimensions exist");
-            CHUNKS.hold(in,IndianLakeRooms.bounds(base(LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL));CHUNKS.hold(in,IndianLakeRooms.bounds(base(LabyrinthPlace.CHILD_ROOM),LabyrinthPlace.CHILD_ROOM));CHUNKS.hold(out,new AABB(base(LabyrinthPlace.LAKE_HOUSE).offset(VignetteRoutineEchoes.LAKE_VANITY)).inflate(15,6,15));
-            HotelRooms.build(in,base(LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL);ChildRoom.build(in,base(LabyrinthPlace.CHILD_ROOM));LakeHouseInterior.build(out,base(LabyrinthPlace.LAKE_HOUSE));
             read(a,"HAIR","WRAPPED");read(b,"HAIR","BRUSHED_DRY");initialized=true;
         }
-        if(phase==0){if(!CHUNKS.ready())return;sink(a,.75);sink(b,-.75);step(s,1);return;}
+        if(phase==0){sink(a,.75);sink(b,-.75);step(s,1);return;}
         require(s.getTickCount()-changed<2400,"both actual rendered clients complete phase "+phase+" within two minutes");
         if(phase==2&&offline&&!reconnected){sink(b,-.75);reconnected=true;marker(a);marker(b);write("reconnect-originals.txt","A="+SINKS.get(a.getUUID())+"\nB="+SINKS.get(b.getUUID())+"\nThe native same-profile B connection reuses its original selected item and entity UUID.\n");}
         if(!ACKS.containsAll(List.of(a.getUUID(),b.getUUID())))return;
