@@ -68,6 +68,7 @@ public final class VignetteArchitecture {
     }
     /** Story volumes that set dressing and shell detailing must leave exactly as authored. */
     static boolean storyReserved(LabyrinthPlace scene,int x,int y,int z){
+        if(OnwardDoors.reserved(scene,x,y,z))return true; // 0.4.144: the way on and its approach
         return switch(scene){
             case FLOORBOARDS->x==2&&z==-6&&y<=1||x==5&&z==-1&&y<=1;
             case MODEL_HOME->x<=-10&&x>=-21&&z>=-15&&z<=-11;
