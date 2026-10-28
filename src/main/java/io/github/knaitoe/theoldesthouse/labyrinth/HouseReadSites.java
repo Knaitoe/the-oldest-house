@@ -65,7 +65,7 @@ public final class HouseReadSites {
     }
     public static List<AABB> areas(MinecraftServer s,boolean outside){var out=new ArrayList<AABB>();for(String key:LabyrinthData.get(s).state(STATE).getAllKeys())try{var id=UUID.fromString(key);for(var room:Room.values())if((room==Room.PORCH)==outside){var b=base(s,id,room);if(b!=null)out.add(HouseReadRooms.bounds(b,room));}}catch(IllegalArgumentException ignored){}return out;}
     public static boolean protectedPosition(MinecraftServer s,BlockPos at,boolean outside){return areas(s,outside).stream().anyMatch(a->a.contains(Vec3.atCenterOf(at)));}
-    public static @Nullable Room next(MinecraftServer s,UUID id){var t=state(s,id);for(var room:Room.values())if((!added139(room.place())||LabyrinthData.get(s).builtVersion()>=50)&&!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
+    public static @Nullable Room next(MinecraftServer s,UUID id){var t=state(s,id);for(var room:Room.values())if(!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
     public static @Nullable LabyrinthData.Door prepare(ServerPlayer p,Room room){
         var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}var own=state(p.server,p.getUUID());
         if(!own.contains("Index")){var world=d.stateEntry(STATE,"World");int index=world.getInt("NextIndex");if(index>=4096)return null;own.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(STATE,"World",world);save(p.server,p.getUUID(),own);}
@@ -74,12 +74,12 @@ public final class HouseReadSites {
         var job=new Job(p.getUUID(),room);if(!job.equals(building))WAITING.add(job);return null;
     }
     /** Preparing ahead changes no route, visit, action or inventory. */
-    public static void prepareNext(ServerPlayer p){if(LabyrinthData.get(p.server).builtVersion()<49||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p))return;var room=next(p.server,p.getUUID());if(room!=null)prepare(p,room);}
+    public static void prepareNext(ServerPlayer p){if(LabyrinthData.get(p.server).door(HouseReadEntrance.id(Room.WAITING))==null||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p))return;var room=next(p.server,p.getUUID());if(room!=null)prepare(p,room);}
     private static String doorId(UUID id,Room room,String name){return "house_read/"+id+"/"+room.key()+"/"+name;}
     /** Only the five physical doors before the labyrinth offer these moments. */
     public static boolean offer(ServerPlayer p,LabyrinthData.Door from,LabyrinthPlace target){
         var d=LabyrinthData.get(p.server);var room=HouseReadEntrance.room(from);
-        if(room==null||d.builtVersion()<49||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p)||inside(p)!=null||target!=LabyrinthPlace.JUNCTION)return false;
+        if(room==null||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p)||inside(p)!=null||target!=LabyrinthPlace.JUNCTION)return false;
         var allocation=state(p.server,p.getUUID());if(!allocation.contains("Index")&&d.stateEntry(STATE,"World").getInt("NextIndex")>=4096)return false;
         var request=new Request(from.id,target,room);PENDING.put(p.getUUID(),request);enter(p,request);return true;
     }
