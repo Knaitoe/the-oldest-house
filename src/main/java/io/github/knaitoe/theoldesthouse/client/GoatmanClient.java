@@ -14,6 +14,8 @@ import net.neoforged.neoforge.client.event.*;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class GoatmanClient {
     private static int phase,lease,demand,remaining,flags,cousinLine,cousinRemaining;
+    /** 0.4.145 (owner): the chat shown in bed stays at first, then fades out once it has got up and stands laughing. */
+    private static float bedFade;
     private GoatmanClient(){}
     public static void accept(GoatmanScenePayload p){phase=p.phase();lease=60;demand=p.demand();remaining=p.remaining();flags=p.flags();cousinLine=p.cousinLine();cousinRemaining=p.cousinRemaining();}
     /** The vigil sets its own night and dawn fog colour, which the interior's black must not cover. */
@@ -25,7 +27,16 @@ public final class GoatmanClient {
     private static boolean quiet(){return (flags&GoatmanScenePayload.QUIET)!=0;}
     @SubscribeEvent public static void watchFromBed(RenderGuiLayerEvent.Pre e){if(active()&&(flags&GoatmanScenePayload.BED_WATCH)!=0&&Minecraft.getInstance().player.isSleeping()&&e.getName().equals(net.neoforged.neoforge.client.gui.VanillaGuiLayers.SLEEP_OVERLAY))e.setCanceled(true);}
     public static boolean watchingFromBed(){var mc=Minecraft.getInstance();return active()&&(flags&GoatmanScenePayload.BED_WATCH)!=0&&mc.player.isSleeping()&&mc.options.getCameraType().isFirstPerson();}
+    @SubscribeEvent public static void bedChat(RenderGuiLayerEvent.Pre e){
+        if(bedFade<=0||!e.getName().equals(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CHAT))return;
+        if(bedFade>=1){e.setCanceled(true);return;}
+        com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1,1,1,1-bedFade);
+    }
+    @SubscribeEvent public static void bedChatDone(RenderGuiLayerEvent.Post e){if(bedFade>0&&e.getName().equals(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CHAT))com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1,1,1,1);}
+    public static float bedFade(){return bedFade;}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
+        var sleeper=Minecraft.getInstance().player;
+        if(sleeper==null||!sleeper.isSleeping())bedFade=0;else if(active()&&(flags&GoatmanScenePayload.BED_FADE)!=0)bedFade=Math.min(1,bedFade+1/60F);
         if(lease>0)lease--;if(remaining>0)remaining--;if(cousinRemaining>0)cousinRemaining--;if(!active()){phase=0;demand=0;flags=0;cousinLine=0;cousinRemaining=0;return;}
         // Once the woods go quiet the air fills with copper motes, thickest at dusk.
         var mc=Minecraft.getInstance();if(mc.isPaused()||!quiet()&&phase!=GoatmanVignette.VIGIL)return;
