@@ -74,6 +74,8 @@ public final class HouseImpossibleHallway {
         }
 
         dressDomesticApproach(level, origin);
+        if(level.dimension().equals(HouseDimensions.INTERIOR)&&origin.equals(HouseSavedData.get(level.getServer()).houseOrigin()))
+            io.github.knaitoe.theoldesthouse.labyrinth.HouseReadEntrance.install(level.getServer(),true);
         purgeConstructionDebris(level, origin);
     }
 
