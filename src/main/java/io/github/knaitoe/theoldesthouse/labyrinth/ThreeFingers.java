@@ -671,7 +671,7 @@ public final class ThreeFingers {
             // The paw goes back where the soldier threw it, for whoever comes; the one its holder carries answers no more.
             var story=thread.getCompound("Story");story.putInt(ISSUE,story.getInt(ISSUE)+1);thread.put("Story",story);
         }
-        @Override public VignetteRole role(CompoundTag thread,UUID member,VignetteRole proposed){
+        @Override public VignetteRole role(LabyrinthData data,CompoundTag thread,UUID member,VignetteRole proposed){
             var story=thread.getCompound("Story");
             // One of the first evening who was away for the wish but saw it come home saw only the consequence.
             return proposed==VignetteRole.WITNESS&&!among(story,"SawWish",member)&&among(story,"SawNews",member)?VignetteRole.ABSENT:proposed;

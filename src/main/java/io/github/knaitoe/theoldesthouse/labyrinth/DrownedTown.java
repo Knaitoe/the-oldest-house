@@ -6,6 +6,8 @@ import java.util.*;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -32,7 +34,12 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
-/** Indian Lake, verb: breath. A shared two-visit sequence with personal witnessing at its ending. */
+/**
+ * Indian Lake, verb: breath. A shared two-visit sequence with personal witnessing at its ending. Since 0.4.148 the town's
+ * story is the world's, and everyone in Proofrock when the roof opens watched it: a reader there for the essays keeps a
+ * witness's account, one who came later a late joiner's, each with the Witness credit. A reader who comes after the ending
+ * still examines the open roof hatch for its aftermath.
+ */
 public final class DrownedTown {
     public static final String ID = "drowned_town";
     public static final int FINAL_VISIT = 2;
@@ -89,7 +96,7 @@ public final class DrownedTown {
         ServerLevel level = player.server.getLevel(HouseDimensions.OUTSIDE); BlockPos base = base(player.server);
         if (level == null || base == null) return;
         keepLoaded(level, base);
-        if (visitors(level, base).stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()))) {guidance(player);return;}
+        if (visitors(level, base).stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()))) {noteFirstVisit(LabyrinthData.get(player.server),player);guidance(player);return;}
         LabyrinthData data = LabyrinthData.get(player.server); CompoundTag state = data.state(ID);
         int next = nextVisit(state.getInt("Visit"), state.getBoolean("BeatDone"));
         if (next != state.getInt("Visit")) {
@@ -97,11 +104,30 @@ public final class DrownedTown {
             state.remove("WitchDefeatedVisit"); data.setState(ID, state);
             for (LakeWitchEntity witch : level.getEntitiesOfClass(LakeWitchEntity.class, bounds(base))) witch.discard();
         }
+        noteFirstVisit(data, player);
         stage(level, base, data);
         player.displayClientMessage(Component.literal(data.isCompleted(ID) ? "The roof is open. The hymn carries over the lake."
                 : next == 1 ? "The high school is up Main Street on the left, by the water. Dry its three damp essays at the beach furnace; then leave and return."
                 : "The church key is in the school. The steeple stands out of the lake; open the church door beneath it, then release a breath beneath the roof hatch."), false);
     }
+
+    /** Who was in Proofrock for the essays (0.4.148), so their account of the ending is a witness's from the start. */
+    static final String FIRST="FirstVisit0148";
+    public static void noteFirstVisit(LabyrinthData data,ServerPlayer p){
+        var state=data.state(ID);if(state.getInt("Visit")>1||p.isSpectator()||!p.isAlive())return;
+        var list=state.getList(FIRST,Tag.TAG_STRING);var id=p.getUUID().toString();for(int i=0;i<list.size();i++)if(list.getString(i).equals(id))return;
+        list.add(StringTag.valueOf(id));state.put(FIRST,list);data.setState(ID,state);
+    }
+    static boolean firstVisit(LabyrinthData data,UUID member){var list=data.state(ID).getList(FIRST,Tag.TAG_STRING);for(int i=0;i<list.size();i++)if(list.getString(i).equals(member.toString()))return true;return false;}
+    /** The town's ending, drafted for everyone who was there when the roof opened. */
+    static final SharedVignettes.Scene SHARED=new SharedVignettes.Scene(){
+        @Override public boolean whole(){return true;}
+        @Override public @Nullable String line(VignetteRole role,String outcome,String actor){return switch(role){
+            case WITNESS->"We dried the school's three essays at the beach furnace, left, and came back for the key. I was in the drowned church when "+actor+" let a breath go beneath the roof hatch. It swung up, and the preacher's hymn went out over the lake. Somewhere under the hill the people who had listened for years stood up. I only watched the bubbles go.";
+            case PARTWAY->"I came to Proofrock after the essays had dried, and followed "+actor+" down to the drowned church. I watched the breath go up beneath the roof hatch and the hymn go out over the water. Whatever the school had to say about that church, I never read it.";
+            default->null;};}
+        @Override public VignetteRole role(LabyrinthData data,CompoundTag thread,UUID member,VignetteRole proposed){return firstVisit(data,member)?VignetteRole.WITNESS:VignetteRole.PARTWAY;}
+    };
 
     public static void guidance(ServerPlayer p){
         var state=LabyrinthData.get(p.server).state(ID);int mask=state.getInt("DryMask");
@@ -295,7 +321,7 @@ public final class DrownedTown {
         ServerLevel level = server.getLevel(HouseDimensions.OUTSIDE); BlockPos base = base(server);
         LabyrinthData data = LabyrinthData.get(server);
         if (level == null || base == null || !data.state(ID).getBoolean("Built") || visitors(level, base).isEmpty()) return;
-        if (server.getTickCount() % 20 == 0) {keepLoaded(level, base);ensureBodies(level,base,data);}
+        if (server.getTickCount() % 20 == 0) {keepLoaded(level, base);ensureBodies(level,base,data);if(data.state(ID).getInt("Visit")<=1)for(var p:visitors(level,base))noteFirstVisit(data,p);}
         ensureWitch(level, base, data);
         if (level.getBlockEntity(base.offset(FURNACE)) instanceof FurnaceBlockEntity furnace) recordDrying(server, essayIndex(furnace.getItem(2)));
         if (level.getGameTime() >= nextHymn) {

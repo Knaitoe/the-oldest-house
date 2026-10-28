@@ -22,7 +22,9 @@ public final class SharedVignettes {
         /** The holder has been gone too long: whatever they hold goes back where it came from. Changes to the thread are kept. */
         default void release(MinecraftServer server,CompoundTag thread){}
         /** How a member was part of the ending, where the scene knows better than the thread, such as one who saw only the consequence. */
-        default VignetteRole role(CompoundTag thread,UUID member,VignetteRole proposed){return proposed;}
+        default VignetteRole role(LabyrinthData data,CompoundTag thread,UUID member,VignetteRole proposed){return proposed;}
+        /** The story belongs to the world rather than a thread (0.4.148): everyone in the scene when it ends watched it. */
+        default boolean whole(){return false;}
     }
     /** One reader's own: the backseat's one seat, the private sites and copies, the Red Room. The quiet rooms are not dealt at all. */
     private static final Set<LabyrinthPlace> PRIVATE=EnumSet.of(BACKSEAT,SILO,BORRASCA,FAMILY_COPY,OLD_CABIN,RED_ROOM);
@@ -31,8 +33,9 @@ public final class SharedVignettes {
     private static final Map<LabyrinthPlace,Scene> DRAFTED=new EnumMap<>(LabyrinthPlace.class);
     private SharedVignettes(){}
     static {
-        // 0.4.147: the monkey's paw, the first scene drafted for every way of being there.
+        // 0.4.147: the monkey's paw, the first scene drafted for every way of being there; 0.4.148: the drowned town.
         draft(THREE_FINGERS,ThreeFingers.SHARED);
+        draft(DROWNED_TOWN,DrownedTown.SHARED);
     }
 
     public static boolean followable(@Nullable LabyrinthPlace place){
