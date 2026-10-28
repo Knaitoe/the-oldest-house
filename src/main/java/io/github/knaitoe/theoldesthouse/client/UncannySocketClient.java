@@ -111,6 +111,7 @@ public final class UncannySocketClient {
         }
         if(phase==19&&UncannyClient.room().equals("tunnel_periphery")){
             require(!mc.player.isNoGravity(),"the long tunnel uses native gravity");
+            require(!data.getBoolean("TunnelFailed"),"the native tunnel attempt failed; a later run cannot acknowledge this survival proof");
             if(!data.getBoolean("TunnelReady")){mc.player.setYRot(180);mc.player.setXRot(0);mc.options.keyUp.setDown(true);mc.options.keySprint.setDown(true);mc.player.setSprinting(true);}
             else {stop(mc);paper(mc,b.offset(TunnelPassage.ACCOUNT),"tunnel-native-escape",data.getBoolean("TunnelRead"));}
         }

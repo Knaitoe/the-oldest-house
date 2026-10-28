@@ -1,0 +1,16 @@
+Source: 06092518c1551ca007952db76229004dd37e4879
+Run: https://github.com/Knaitoe/the-oldest-house/actions/runs/40670222364
+Artifact: 12807549718
+Both actual native original-woman position/render captures pass and were inspected. Overall preflight FAILED at phase 19: A was caught during red, then kept running. B alone read the far account. This is not a complete tunnel/CCTV pass.
+
+client-a.log
+[10:17:34] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY CLIENT A phase=19 room=tunnel_periphery eye=(7164.2, 14.620000004768372, 4946.056418117171) feeds=0 headPixels=0 health=20.0 ring=false mirror=false screen=none
+[10:17:39] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY CLIENT A phase=19 room=tunnel_periphery eye=(7165.5, 14.620000004768372, 4964.489823323978) feeds=0 headPixels=0 health=20.0 ring=false mirror=false screen=none
+[10:17:44] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY CLIENT A phase=19 room=tunnel_periphery eye=(7165.5, 14.620000004768372, 4936.428142661802) feeds=0 headPixels=0 health=20.0 ring=false mirror=false screen=none
+
+client-b-first.log
+[10:17:34] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY CLIENT B phase=19 room=tunnel_periphery eye=(7165.8, 14.620000004768372, 4940.056418117171) feeds=0 headPixels=0 health=20.0 ring=false mirror=false screen=none
+[10:17:38] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY CLIENT B phase=19 room=tunnel_periphery eye=(7165.8, 14.620000004768372, 4911.994737454995) feeds=0 headPixels=0 health=20.0 ring=false mirror=false screen=none
+[10:17:43] [Render thread/INFO] [io.gi.kn.th.TheOldestHouse/]: UNCANNY CLIENT B phase=19 room=tunnel_periphery eye=(7165.8, 14.620000004768372, 4883.933056792818) feeds=0 headPixels=0 health=20.0 ring=false mirror=false screen=none
+
+java.lang.IllegalStateException: phase timed out 19; A=[pos=(7165.108548469397, 13.0, 4844.925000011921) feeds=0x0 face=false monitorTicks=0 marionette=false lensChannel=-1 lensFresh=true health=20.0 ring=false mirror=false heldMirror=false ack=false] B=[pos=(7165.992426597917, 13.0, 4844.925000011921) feeds=0x0 face=false monitorTicks=0 marionette=false lensChannel=-1 lensFresh=true health=20.0 ring=false mirror=false heldMirror=false ack=true]
