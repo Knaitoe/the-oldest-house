@@ -12,15 +12,78 @@
   },
   {
    "predicate": {
+    "custom_model_data": 1,
+    "the_oldest_house:clench": 0.25
+   },
+   "model": "the_oldest_house:item/withered_paw_clench_2_2"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 1,
+    "the_oldest_house:clench": 0.5
+   },
+   "model": "the_oldest_house:item/withered_paw_clench_2_1"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 1,
+    "the_oldest_house:clench": 0.75
+   },
+   "model": "the_oldest_house:item/withered_paw"
+  },
+  {
+   "predicate": {
     "custom_model_data": 2
    },
    "model": "the_oldest_house:item/withered_paw_1"
   },
   {
    "predicate": {
+    "custom_model_data": 2,
+    "the_oldest_house:clench": 0.25
+   },
+   "model": "the_oldest_house:item/withered_paw_clench_1_2"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 2,
+    "the_oldest_house:clench": 0.5
+   },
+   "model": "the_oldest_house:item/withered_paw_clench_1_1"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 2,
+    "the_oldest_house:clench": 0.75
+   },
+   "model": "the_oldest_house:item/withered_paw_2"
+  },
+  {
+   "predicate": {
     "custom_model_data": 3
    },
    "model": "the_oldest_house:item/withered_paw_0"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 3,
+    "the_oldest_house:clench": 0.25
+   },
+   "model": "the_oldest_house:item/withered_paw_clench_0_2"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 3,
+    "the_oldest_house:clench": 0.5
+   },
+   "model": "the_oldest_house:item/withered_paw_clench_0_1"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 3,
+    "the_oldest_house:clench": 0.75
+   },
+   "model": "the_oldest_house:item/withered_paw_1"
   }
  ]
 }

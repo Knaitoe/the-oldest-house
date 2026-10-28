@@ -7,6 +7,7 @@ import java.util.UUID;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.animal.Rabbit;
@@ -55,14 +56,16 @@ public final class Playtest0488Tests {
     public static void cottageSpeechChangesWithItsSpeakerAndStageAndLeavesNoStaleHoverName(GameTestHelper h){
         speech=new LiteraryTests.Fixture(h);var f=speech;var place=LabyrinthPlace.THREE_FINGERS;
         var p=f.player("speech_reader",place);var peer=f.player("speech_peer",place);var l=f.level(place);
+        // 0.4.147: two households at once are two threads, each with its own cottage people.
+        VignetteThreads.forget(f.data(),place,peer.getUUID());VignetteThreads.solo(peer,place);
         h.startSequence().thenWaitUntil(()->{
-            var mine=f.own(p,place);var theirs=f.own(peer,place);
+            var mine=story(f,p);var theirs=story(f,peer);
             h.assertTrue(mine.hasUUID("CastFather")&&mine.hasUUID("CastSergeant")&&theirs.hasUUID("CastFather")
                 &&l.getEntity(mine.getUUID("CastFather")) instanceof LiteraryActor
                 &&l.getEntity(mine.getUUID("CastSergeant")) instanceof LiteraryActor
                 &&l.getEntity(theirs.getUUID("CastFather")) instanceof LiteraryActor,"the real private cottage cast has loaded");
         }).thenExecute(()->{
-            var mine=f.own(p,place);var theirs=f.own(peer,place);
+            var mine=story(f,p);var theirs=story(f,peer);
             var father=(LiteraryActor)l.getEntity(mine.getUUID("CastFather"));var sergeant=(LiteraryActor)l.getEntity(mine.getUUID("CastSergeant"));
             var peerFather=(LiteraryActor)l.getEntity(theirs.getUUID("CastFather"));var fatherId=father.getUUID();
             f.at(peer,place,-6,0,-9);LiteraryVignettes.talk(peer,peerFather);
@@ -71,8 +74,8 @@ public final class Playtest0488Tests {
             LiteraryVignettes.talk(p,sergeant);
             h.assertTrue(sergeant.hasCustomName()&&!father.hasCustomName()&&peerFather.hasCustomName(),
                 "the soldier's next line replaces this household's bubble without erasing a peer's speech");
-            mine=f.own(p,place);mine.putInt("Stage",ThreeFingers.WISHED);mine.putInt("WishVisit",mine.getInt("Visit"));
-            LiteraryVignettes.save(f.data(),p.getUUID(),place,mine);LiteraryVignettes.talk(p,father);
+            var thread=VignetteThreads.thread(f.data(),place,p.getUUID());mine=thread.getCompound("Story");mine.putInt("Stage",ThreeFingers.WISHED);mine.putInt("WishVisit",thread.getInt("Visit"));
+            thread.put("Story",mine);VignetteThreads.saveThread(f.data(),place,p.getUUID(),thread);LiteraryVignettes.talk(p,father);
             h.assertTrue(father.getCustomName()!=null&&father.getCustomName().getString().contains("It moved")&&!sergeant.hasCustomName(),
                 "the same father speaks the actual later-stage response");
             father.getPersistentData().putLong("SayUntil0488",l.getGameTime()-1);
@@ -81,6 +84,7 @@ public final class Playtest0488Tests {
                 "expired speech clears the native hover name, preserving actor identity and the peer's bubble");
         }).thenSucceed();
     }
+    private static CompoundTag story(LiteraryTests.Fixture f,ServerPlayer p){return VignetteThreads.thread(f.data(),LabyrinthPlace.THREE_FINGERS,p.getUUID()).getCompound("Story");}
     @AfterBatch(batch="notes488_paw_speech") public static void speechDone(ServerLevel ignored){if(speech!=null){speech.close();speech=null;}}
 
     @GameTest(template="empty",batch="notes488_rabbit_motion",timeoutTicks=250)

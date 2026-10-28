@@ -425,7 +425,12 @@ jobs:
                   assert z.read(f'assets/the_oldest_house/sounds/literary/paw_{cue}.ogg').startswith(b'OggS')
                   assert caver_sounds[f'literary.paw_{cue}']['subtitle'] == f'subtitles.the_oldest_house.literary.paw_{cue}'
               paw = json.loads(z.read('assets/the_oldest_house/models/item/withered_paw.json'))
-              assert sorted(o['predicate']['custom_model_data'] for o in paw['overrides']) == [1, 2, 3]
+              assert sorted({o['predicate']['custom_model_data'] for o in paw['overrides']}) == [1, 2, 3]
+              # 0.4.147: each finger curls down on the held paw in four steps, keyed by the stack's clench.
+              assert sum('the_oldest_house:clench' in o['predicate'] for o in paw['overrides']) == 9
+              for left in (2, 1, 0):
+                  for step in (1, 2):
+                      assert z.read(f'assets/the_oldest_house/textures/item/withered_paw_clench_{left}_{step}.png').startswith(b'\x89PNG')
               for suffix in ('', '_2', '_1', '_0'):
                   assert z.read(f'assets/the_oldest_house/textures/item/withered_paw{suffix}.png').startswith(b'\x89PNG')
               for name in ('walter','ruth','will','sergeant','messenger'):
@@ -2149,6 +2154,7 @@ jobs:
           python3 tools/generate_house_read_moments_audio.py --check
           python3 tools/paint_house_read_cast.py --check
           python3 tools/draw_onward_doors.py --check
+          python3 tools/draw_paw_clench.py --check
       - name: Native room geometry, standard/slim coats and the two-block mirror
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m

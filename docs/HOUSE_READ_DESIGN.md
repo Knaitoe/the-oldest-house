@@ -13,7 +13,7 @@ What is not built:
 - turning actions into categories, which the owner deferred, so no reader has a category yet;
 - the account, the House of Leaves, mirrors and doubles reading the record.
 
-The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Four parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), every shared scene has a way on into the halls (0.4.144), and the shared foundation of co-op (0.4.146): friends follow each other into a vignette, mixed groups are dealt something none has started or split, threads, and accounts for each way of being there. Making each scene itself shared, with its drafted accounts, is next, the paw first. Sections below describe the intended design, and each says where the build differs today.
+The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. Four parts are built: the quiet rooms open from the junction and a finished story is only a passage (0.4.143), every shared scene has a way on into the halls (0.4.144), and the shared foundation of co-op (0.4.146): friends follow each other into a vignette, mixed groups are dealt something none has started or split, threads, and accounts for each way of being there. The monkey's paw is the first scene made shared, with its drafted accounts (0.4.147, `docs/SHARED_PAW_0_4_147.md`); the child's room and the drowned town are next, then the Goatman's campers. Sections below describe the intended design, and each says where the build differs today.
 
 ## The idea
 
@@ -75,7 +75,7 @@ The owner's October 28 direction makes the other vignettes shared:
 - **The owner's notes on particular scenes:**
   - **Goatman** can eventually be shared. Extra players take the place of other campers, so the headcount stays the same as solo. The count, seating, supper and dialogue must treat each player as that cousin.
   - **The drowned town and lake-witch scenes** should mostly support several players.
-  - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen.
+  - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen. Built in 0.4.147.
   - **The child's room** can be shared.
 - **Built in 0.4.146** (`docs/COOP_FOUNDATION_0_4_146.md`): a door into a shared vignette is held 30 seconds for the group, so friends through the same door arrive in the same scene. A mixed group at a door is dealt a vignette none of them has started, or splits. The backseat, the silo, Borrasca, the copies and the Red Room stay private; the Goatman and hide-and-clap are held back until they are made shared. Each reader still plays the scene as their own until it is drafted.
 - **Still open:**
@@ -521,7 +521,7 @@ Follow-ups the same day settled several details, all in "Co-op":
 - multi-visit vignettes follow one story per thread, with late joiners, aftermath visits and accounts drafted for each way of being there.
 - the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room are named as scenes to share.
 
-Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146); the scenes follow one at a time, the paw first.
+Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146) and its first shared scene, the paw (0.4.147); the other scenes follow one at a time.
 
 ## Built so far
 
