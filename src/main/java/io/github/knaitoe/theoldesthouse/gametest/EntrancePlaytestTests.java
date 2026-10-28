@@ -60,7 +60,7 @@ public final class EntrancePlaytestTests {
                 }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in,"ordinary retreat returns to the actual approach"))
                 .thenExecute(()->{
                     var door=f.data().door(HouseReadEntrance.id(room));h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(door.lower.relative(door.facing,2)))<.01,"each saved original source door returns to its own physical place");
-                    h.assertTrue(f.data().returnDepth(p.getUUID())==0&&!f.data().visited(p.getUUID(),LabyrinthPlace.JUNCTION)&&WitnessAccount.count(f.data(),p.getUUID())==0,"these moments precede maze routes and give no story credit");
+                    h.assertTrue(f.data().returnDepth(p.getUUID())==0&&!f.data().visited(p.getUUID()).contains(LabyrinthPlace.JUNCTION.id())&&WitnessAccount.count(f.data(),p.getUUID())==0,"these moments precede maze routes and give no story credit");
                 });
         }
         seq.thenExecute(()->{
