@@ -64,6 +64,7 @@ try:
     subprocess.run(["gradle", "classes", "prepareProofServerRun", "prepareProofARun", "prepareProofBRun", "--no-daemon", "--max-workers=2"] + flags, check=True)
     host = launch("runProofServer", "server")
     wait_for(lambda: "Done (" in text(world / "server/logs/latest.log"), 180, "dedicated native host startup")
+    wait_for(lambda: "TAILORING SOCKET fixture ready" in text(world / "server/logs/latest.log"), 300, "the isolated scenes built before any client connects")
     first = launch("runProofA", "client-a")
     wait_for(lambda: "OTHProofA joined the game" in text(world / "server/logs/latest.log"), 180, "the first actual client login")
     second = launch("runProofB", "client-b-first")
