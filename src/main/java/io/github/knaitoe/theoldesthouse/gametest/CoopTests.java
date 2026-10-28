@@ -96,10 +96,13 @@ public final class CoopTests {
                 done.teleportTo(f.in,front.getX()+.5,front.getY(),front.getZ()+20.5,180,0);var fresh=player(h,f,"mixed_fresh");at(fresh,f.in,front.east(1));
                 data.deal(lead.getUUID(),far,SCENE.id(),false);GroupCrossings.forget();GroupCrossings.before(lead,far);
                 h.assertTrue(SCENE.id().equals(data.deal(lead.getUUID(),far).place()),"a friend who can share the nursery changes nothing");
-                // A scene not ready for a second reader is swapped for one the group can share.
+                // 0.4.150: the Goatman's readers take cousins' places, so a group at its door goes in together.
                 data.deal(lead.getUUID(),far,LabyrinthPlace.GOATMAN.id(),false);GroupCrossings.forget();GroupCrossings.before(lead,far);
+                h.assertTrue(LabyrinthPlace.GOATMAN.id().equals(data.deal(lead.getUUID(),far).place()),"a group at the Goatman's door keeps it");
+                // A scene not ready for a second reader is swapped for one the group can share.
+                data.deal(lead.getUUID(),far,LabyrinthPlace.HIDE_AND_CLAP.id(),false);GroupCrossings.forget();GroupCrossings.before(lead,far);
                 var swapped=LabyrinthPlace.byId(data.deal(lead.getUUID(),far).place());
-                h.assertTrue(swapped!=LabyrinthPlace.GOATMAN&&SharedVignettes.followable(swapped),"the Goatman's headcount is one reader's for now, so a group is dealt a shared scene instead: "+swapped);
+                h.assertTrue(swapped!=LabyrinthPlace.HIDE_AND_CLAP&&SharedVignettes.followable(swapped),"the clapping game has one blindfold, so a group is dealt a shared scene instead: "+swapped);
                 h.assertTrue(!SharedVignettes.followable(LabyrinthPlace.BACKSEAT)&&!SharedVignettes.followable(LabyrinthPlace.BORRASCA)&&SharedVignettes.followable(LabyrinthPlace.THREE_FINGERS),"the backseat and the private sites stay one reader's");
             }).thenSucceed();
     }

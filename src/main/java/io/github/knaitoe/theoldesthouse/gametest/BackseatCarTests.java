@@ -230,7 +230,9 @@ public final class BackseatCarTests {
         .thenExecute(()->{
             for(var at:BlockPos.betweenClosed(from.offset(-3,-1,-2),from.offset(3,-1,5)))f.in.setBlock(at,Blocks.STONE.defaultBlockState(),18);
             NovelRooms.door(f.in,from,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);f.data().putDoor(new LabyrinthData.Door("native/backseat/source",f.in.dimension(),from,Direction.SOUTH,LabyrinthData.DEALT,false));f.data().deal(p.getUUID(),f.data().door("native/backseat/source"),LabyrinthPlace.BACKSEAT.id(),false);h.assertTrue(LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(LabyrinthPlace.BACKSEAT),"public personal dealer includes Backseat");
-            p.teleportTo(f.in,from.getX()+.1,from.getY(),from.getZ()+3,180,0);peer.teleportTo(f.in,from.getX()+.9,from.getY(),from.getZ()+3,180,0);p.setNoGravity(false);peer.setNoGravity(false);p.connection.resetPosition();peer.connection.resetPosition();
+            // 0.4.146: a friend standing at the door would make this a group crossing, dealt a shared scene instead of the private road;
+            // the peer waits farther back on the same floor.
+            p.teleportTo(f.in,from.getX()+.1,from.getY(),from.getZ()+3,180,0);peer.teleportTo(f.in,from.getX()+.9,from.getY(),from.getZ()+4.9,180,0);p.setNoGravity(false);peer.setNoGravity(false);p.connection.resetPosition();peer.connection.resetPosition();
             h.assertTrue(BackseatSites.prepareEntry(p)==null&&BackseatSites.prepareEntry(peer)==null,"both actual readers queue independent first construction");
             h.assertTrue(!BackseatSites.base(p.server,p.getUUID()).equals(BackseatSites.base(p.server,peer.getUUID())),"the readers receive distinct physical roads");
         }).thenWaitUntil(()->{

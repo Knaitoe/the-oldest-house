@@ -22,7 +22,7 @@ public final class GoatmanBedtimeTests {
     private static void clean(){if(fixture!=null){fixture.close();fixture=null;}}
     private static void prepare(GoatmanTests.Fixture f,List<ServerPlayer> readers,boolean open){
         for(var p:readers)GoatmanVignette.enter(p);
-        var r=f.run();r.putInt("Wrong",0);r.putInt("Runner",7);r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",1200);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);
+        var r=f.run();GoatmanTests.Fixture.extras(r);r.putInt("Wrong",0);r.putInt("Runner",7);r.putInt("Phase",GoatmanVignette.VIGIL);r.putInt("Clock",1200);r.putInt("ExtraState",GoatmanVignette.X_DOOR);r.putInt("RunnerState",GoatmanVignette.R_INSIDE);
         r.putInt("StalkLeg0465",99);r.putInt("StalkWindowLeg0465",99);r.putInt("Circuits0494",GoatmanStalking.CIRCUITS);r.putInt("CircuitGoal0494",GoatmanStalking.CIRCUITS);r.putBoolean("AssaultDone0465",true);r.putBoolean("DoorPressureDone0497",true);r.putInt("DemandStage0465",7);r.putInt("Demand",107);r.putInt("DemandAt",1200);GoatmanFear.begin(r);r.putInt("FearLine0472",21);r.putInt("FearLease0472",100);r.putIntArray("FearQueue0472",new int[]{2,8});r.putInt("FearPending0472",22);
         f.cohort(r,readers,1200);f.run(r);GoatmanVignette.stage(f.l,f.b,r);GoatmanWoods.setWindow(f.l,f.b,!open);GoatmanWoods.door(f.l,f.b,false);
         var original=f.cousin(0).orElseThrow();original.disguise(3);original.moveTo(f.b.getX()+10.25,f.b.getY(),f.b.getZ()-74.5,90,0);

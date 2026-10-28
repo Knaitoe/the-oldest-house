@@ -194,7 +194,7 @@ public final class LiveExpeditionClient {
             mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);
             var bounds=io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(target,io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.GOATMAN);
             var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,bounds);
-            if(ticks>40&&mc.screen==null&&ack!=32&&children.stream().filter(c->!c.girl()).count()==8&&children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).count()==1){
+            if(ticks>40&&mc.screen==null&&ack!=32&&children.stream().filter(c->!c.girl()).count()==7&&children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).count()==1){
                 var camera=mc.gameRenderer.getMainCamera().getPosition();var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-128,128,-128,128,-128,128));frustum.prepare(camera.x,camera.y,camera.z);
                 for(var c:children){boolean mine=!c.girl()||c.viewer().filter(mc.player.getUUID()::equals).isPresent();var renderer=mc.getEntityRenderDispatcher().getRenderer(c);
                     // At the entrance cousins can be beyond native model draw distance;
@@ -214,7 +214,7 @@ public final class LiveExpeditionClient {
         if(step==34){
             mc.options.keyUp.setDown(false);
             var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(target,io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.GOATMAN));
-            if(ticks>40&&ack!=34&&children.stream().filter(c->!c.girl()).count()==8){
+            if(ticks>40&&ack!=34&&children.stream().filter(c->!c.girl()).count()==7){
                 var camera=mc.gameRenderer.getMainCamera().getPosition();var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-128,128,-128,128,-128,128));frustum.prepare(camera.x,camera.y,camera.z);
                 for(var c:children)if(!c.girl()&&!mc.getEntityRenderDispatcher().getRenderer(c).shouldRender(c,frustum,camera.x,camera.y,camera.z))throw new IllegalStateException("LIVE EXPEDITION a shared cousin is invisible at the actual campsite");
                 var at=net.minecraft.world.phys.Vec3.atCenterOf(target.offset(-5,1,-48)).subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-at.x,at.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(at.y,Math.hypot(at.x,at.z))));shot=role+"-trailer-camp";ack(mc,34);
@@ -231,11 +231,12 @@ public final class LiveExpeditionClient {
             }catch(Exception ex){throw new IllegalStateException(ex);}
             if(step==35){
                 mc.player.setYRot(180);mc.player.setXRot(0);var roles=children.stream().map(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::fear).filter(n->n>0).collect(java.util.stream.Collectors.toSet());
-                if(!confusionCaptured&&shot==null&&mc.screen==null&&roles.size()==7&&GoatmanClient.cousinSubtitle()&&children.stream().filter(c->c.fearStage()==1).count()==7&&children.stream().noneMatch(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering)){shot=role+"-trailer-confusion";confusionCaptured=true;}
-                if(confusionCaptured&&shot==null&&GoatmanClient.night()&&mc.screen==null&&roles.size()==7&&children.stream().filter(c->c.fearStage()==2).count()==7&&children.stream().noneMatch(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering)&&ack!=35){shot=role+"-trailer-fear";ack(mc,35);}
+                if(!confusionCaptured&&shot==null&&mc.screen==null&&roles.size()==6&&GoatmanClient.cousinSubtitle()&&children.stream().filter(c->c.fearStage()==1).count()==6&&children.stream().noneMatch(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering)){shot=role+"-trailer-confusion";confusionCaptured=true;}
+                if(confusionCaptured&&shot==null&&GoatmanClient.night()&&mc.screen==null&&roles.size()==6&&children.stream().filter(c->c.fearStage()==2).count()==6&&children.stream().noneMatch(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering)&&ack!=35){shot=role+"-trailer-fear";ack(mc,35);}
             }else{
                 mc.player.setYRot(0);mc.player.setXRot(0);
-                boolean terror=children.stream().filter(c->c.fearStage()==3).count()==7&&children.stream().filter(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering).count()==1;
+                // 0.4.150: the cousin who covers their ears cowers, unless a reader has that cousin's place.
+                boolean terror=children.stream().filter(c->c.fearStage()==3).count()==6&&children.stream().filter(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::cowering).count()==(children.stream().anyMatch(c->c.fear()==io.github.knaitoe.theoldesthouse.labyrinth.GoatmanFear.EARS)?1:0);
                 if(terror&&!terrorCaptured&&shot==null&&mc.screen==null){mc.player.setYRot(180);shot=role+"-trailer-terror";terrorCaptured=true;}
                 if(terror&&terrorCaptured&&shot==null&&mc.screen==null&&GoatmanClient.priorityDemand()>=104&&!GoatmanClient.cousinSubtitle()&&heardSides.size()==3&&!voiceCaptured){
                     shot=role+"-trailer-voice";try{Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-trailer-sounds.txt"),String.join("\n",heardKnocks)+"\n");}catch(Exception ex){throw new IllegalStateException(ex);}voiceCaptured=true;

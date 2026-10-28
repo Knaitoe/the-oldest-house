@@ -51,7 +51,8 @@ public final class GoatmanBedtime {
         if(!called(r)||r.getInt("Phase")!=GoatmanVignette.VIGIL||!own.getBoolean("Active")||own.getBoolean("Failed")||p.containerMenu!=p.inventoryMenu||p.distanceToSqr(clicked.getCenter())>36)return false;
         var state=p.serverLevel().getBlockState(clicked);if(!(state.getBlock() instanceof BedBlock))return false;
         var head=state.getValue(BedBlock.PART)==BedPart.HEAD?clicked:clicked.relative(state.getValue(BedBlock.FACING));
-        for(int i=0;i<GoatmanVignette.count(r);i++)if(head.equals(b.offset(GoatmanWoods.bunkHead(i))))return false;
+        // 0.4.150: the bunk of a cousin whose place a reader took is that reader's to sleep in.
+        for(int i=0;i<GoatmanVignette.count(r);i++)if(!GoatmanVignette.playedBy(r,i)&&head.equals(b.offset(GoatmanWoods.bunkHead(bunk(r,i)))))return false;
         if(state.getValue(BedBlock.OCCUPIED))return false;
         p.startSleeping(head);if(!p.isSleeping())return false;
         own.putLong("Bed131",head.asLong());own.putInt("SleepTicks131",0);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);GoatmanVignette.saveRun(d,r);return true;
@@ -75,15 +76,16 @@ public final class GoatmanBedtime {
         if(!enabled(r))return true;if(!called(r))return false;
         boolean inside=r.getInt("ExtraState")==GoatmanVignette.X_FLOOR||r.getInt("ExtraState")==GoatmanVignette.X_INSIDE;
         if(inside&&r.getInt("BedStage131")<8||!r.getBoolean("CousinsAsleep131")||r.getInt("BedTalk131")<4)return false;
-        var cohort=r.getCompound("Cohort");return readers.stream().allMatch(p->{var own=cohort.getCompound(p.getUUID().toString());return inside?own.getBoolean("BedsideEnded131"):own.getInt("SleepTicks131")>=100;});
+        // 0.4.150: a reader who stayed up is never its target; once it has finished with every bed, morning comes for them too.
+        var cohort=r.getCompound("Cohort");return readers.stream().allMatch(p->{var own=cohort.getCompound(p.getUUID().toString());return inside?own.getBoolean("BedsideEnded131")||!p.isSleeping()&&r.getInt("BedStage131")>=8:own.getInt("SleepTicks131")>=100;});
     }
     static void tick(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers,List<GoatmanChild> cast){
         if(!enabled(r)||r.getInt("Phase")!=GoatmanVignette.VIGIL)return;
         if(!called(r)){
             if(!r.contains("BedQuietAt131")||r.getInt("Clock")-r.getInt("BedQuietAt131")<QUIET_TICKS)return;
             r.putBoolean("BedtimeCalled131",true);r.putInt("BedCallAt131",r.getInt("Clock"));r.putInt("BedTalk131",1);
-            GoatmanWoods.beds(l,b,GoatmanVignette.count(r)+r.getCompound("Cohort").getAllKeys().size());
-            GoatmanVignette.say(readers,"A cousin: I'm not going out there. We've got to stay here.");
+            GoatmanWoods.beds(l,b,GoatmanVignette.expected(r,r.getCompound("Cohort").getAllKeys().size())+1);
+            GoatmanVignette.say(readers,readers.size()>1?"A cousin: Nobody's going out there. We stay in here, all of us. Everybody take a bunk.":"A cousin: I'm not going out there. We've got to stay here.");
         }
         int settling=r.getInt("Clock")-r.getInt("BedCallAt131"),talk=r.getInt("BedTalk131");
         if(talk==1&&settling>=TALK_GAP){GoatmanVignette.say(readers,"A cousin: Are you sure? What if it comes back?");r.putInt("BedTalk131",2);}
@@ -100,7 +102,7 @@ public final class GoatmanBedtime {
         int stage=r.getInt("BedStage131");
         if(stage!=5&&original.isInvisible())original.setInvisible(false);
         if(target==null){
-            target=readers.stream().filter(p->p.isSleeping()&&!r.getCompound("Cohort").getCompound(p.getUUID().toString()).getBoolean("BedsideEnded131")).findFirst().orElse(null);
+            target=next(r,readers);
             if(target==null)return;r.putUUID("BedTarget131",target.getUUID());if(stage>=7){crawl(original,b,BlockPos.of(r.getCompound("Cohort").getCompound(target.getUUID().toString()).getLong("Bed131")));stage=5;r.putInt("BedStage131",stage);r.putInt("BedBeat131",0);}
         }
         var own=r.getCompound("Cohort").getCompound(target.getUUID().toString());
@@ -144,6 +146,17 @@ public final class GoatmanBedtime {
         }
         r.putInt("BedStage131",stage);r.putInt("BedBeat131",t);
     }
+    /**
+     * 0.4.150: whose bed it comes to next. Only a reader asleep in their bunk: the latecomer first, then the others from the
+     * bunk farthest from the door inward, the west bunk of a pair first. A reader who stayed up is never chosen.
+     */
+    public static ServerPlayer next(CompoundTag r,List<ServerPlayer> readers){
+        var cohort=r.getCompound("Cohort");
+        return readers.stream().filter(p->{var own=cohort.getCompound(p.getUUID().toString());return p.isSleeping()&&own.contains("Bed131")&&!own.getBoolean("BedsideEnded131");})
+                .min(Comparator.<ServerPlayer>comparingInt(p->cohort.getCompound(p.getUUID().toString()).getBoolean("Latecomer0150")?0:1)
+                        .thenComparingInt(p->BlockPos.of(cohort.getCompound(p.getUUID().toString()).getLong("Bed131")).getZ())
+                        .thenComparingInt(p->BlockPos.of(cohort.getCompound(p.getUUID().toString()).getLong("Bed131")).getX())).orElse(null);
+    }
     private static void rise(GoatmanChild c,BlockPos b,int bunk){
         if(c.isSleeping())c.stopSleeping();c.setCrawling(false);c.setPose(Pose.STANDING);c.heave(false);
         var head=GoatmanWoods.bunkHead(bunk);GoatmanVignette.script(c,List.of(new Vec3(bunk%2==0?-3.6:4.4,1,head.getZ()+.5)),"bed_front131");
@@ -170,7 +183,7 @@ public final class GoatmanBedtime {
         if(c.position().distanceToSqr(target.add(b.getX(),b.getY(),b.getZ()))>1){GoatmanVignette.script(c,List.of(target),"morning_trail131");GoatmanVignette.advance(c,b,.12,l,true);}else c.pose(false);
         if(index==checker(r)){
             int line=progress<8?3:progress<24?2:progress<40?1:0;
-            if(line>r.getInt("MorningLine131")){String text=switch(line){case 1->"A cousin: I'm only waiting because you walk so slow.";case 2->"A cousin: You heard it too, right? At the window? ... Never mind.";default->"A cousin: There. See? Told you we'd get out.";};GoatmanVignette.say(readers,text);r.putInt("MorningLine131",line);}
+            if(line>r.getInt("MorningLine131")){String text=switch(line){case 1->readers.size()>1?"A cousin: I'm only waiting because you all walk so slow.":"A cousin: I'm only waiting because you walk so slow.";case 2->"A cousin: You heard it too, right? At the window? ... Never mind.";default->"A cousin: There. See? Told you we'd get out.";};GoatmanVignette.say(readers,text);r.putInt("MorningLine131",line);}
         }
     }
     private static int checker(CompoundTag r){for(int i=0;i<GoatmanVignette.count(r);i++)if(i!=r.getInt("Wrong")&&i!=r.getInt("Runner"))return i;return 0;}

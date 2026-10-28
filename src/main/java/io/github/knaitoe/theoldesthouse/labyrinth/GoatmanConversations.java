@@ -25,7 +25,7 @@ public final class GoatmanConversations {
             case GoatmanVignette.DAWN->new String[]{"I keep thinking I heard him come back. I know I didn't.","I'm staying where I can see the door.","Next time we bring the gas inside before dark.","You can have the last one. I'm not hungry anymore."};
             default->GoatmanSupper.ready(r)?new String[]{"Pass the mustard, will you?","Save his place. He'll be back.","Sit down while they're still warm.","That's enough stories for one supper."}:new String[]{"Turn them over before the bottoms burn.","The plates are out. One for everybody.","The forks are in the other drawer. They always stick.","I like mine dark at the edges. Not all the way through.","I'll watch the door. You watch the griddle.","We can wait. There's still light outside."};
         };
-        String key="CousinTalk0492_"+index+"_"+phase;int n=own.getInt(key);String line=lines[Math.floorMod(n+index,lines.length)];
+        String key="CousinTalk0492_"+index+"_"+phase;int n=own.getInt(key);String line=GoatmanVignette.forRunner(r,lines[Math.floorMod(n+index,lines.length)]);
         own.putInt(key,n+1);own.putLong("CousinTalkAt0492",now);own.putString("LastCousinReply0492",line);GoatmanVignette.savePersonal(d,p.getUUID(),own);
         p.displayClientMessage(Component.literal("A cousin: “"+line+"”"),false);return true;
     }

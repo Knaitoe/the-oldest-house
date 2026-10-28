@@ -244,7 +244,7 @@ public final class WitnessAccount {
                         case WALLPAPER->"The plaster showed through four seams. Someone had kept the pages the room was meant to conceal.";
                         case HOTEL->"The second place was empty. The desk still held the missing things. The heating plant had been attended.";
                         default->story.text;
-                    }:story==Story.HOTEL?HotelTexts.witness(stories.getString(story.id)):story==Story.BORRASCA?BorrascaTexts.witness(LiteraryVignettes.personal(data,player,LabyrinthPlace.BORRASCA)):story==Story.CHILD_ROOM?ChildRoom.witness(LiteraryVignettes.personal(data,player,LabyrinthPlace.CHILD_ROOM),story.text):story.text;
+                    }:story==Story.HOTEL?HotelTexts.witness(stories.getString(story.id)):story==Story.BORRASCA?BorrascaTexts.witness(LiteraryVignettes.personal(data,player,LabyrinthPlace.BORRASCA)):story==Story.CHILD_ROOM?ChildRoom.witness(LiteraryVignettes.personal(data,player,LabyrinthPlace.CHILD_ROOM),story.text):story==Story.GOATMAN?GoatmanVignette.witness(GoatmanVignette.personal(data,player),story.text):story.text;
             // Accounts written before 0.4.66 heard the institute end in its middle attic; their words stay theirs.
             boolean attic=story==Story.WHALE&&stories.getString(story.id).equals("read_the_final_page");
             if(attic)text=LEGACY_WHALE;

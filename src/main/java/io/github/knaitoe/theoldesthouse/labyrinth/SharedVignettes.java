@@ -28,8 +28,8 @@ public final class SharedVignettes {
     }
     /** One reader's own: the backseat's one seat, the private sites and copies, the Red Room. The quiet rooms are not dealt at all. */
     private static final Set<LabyrinthPlace> PRIVATE=EnumSet.of(BACKSEAT,SILO,BORRASCA,FAMILY_COPY,OLD_CABIN,RED_ROOM);
-    /** Not yet ready for a second reader: the Goatman's headcount needs players as cousins, the clapping game has one blindfold. */
-    private static final Set<LabyrinthPlace> HELD=EnumSet.of(GOATMAN,HIDE_AND_CLAP);
+    /** Not yet ready for a second reader: the clapping game has one blindfold. The Goatman's readers take cousins' places (0.4.150). */
+    private static final Set<LabyrinthPlace> HELD=EnumSet.of(HIDE_AND_CLAP);
     private static final Map<LabyrinthPlace,Scene> DRAFTED=new EnumMap<>(LabyrinthPlace.class);
     private SharedVignettes(){}
     static {
