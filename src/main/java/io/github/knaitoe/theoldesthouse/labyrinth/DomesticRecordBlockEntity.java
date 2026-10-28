@@ -19,6 +19,8 @@ public final class DomesticRecordBlockEntity extends BlockEntity {
     public DomesticRecordBlockEntity(BlockPos p,BlockState s){super(DomesticRegistry.RECORD_ENTITY.get(),p,s);}
     public ItemStack book(){return book.copy();}
     public void seed(ItemStack original){if(initialized)return;initialized=true;book=original;setChanged();}
+    /** The owner requested a prose edit. Only an exact untouched stock original can be revised. */
+    public boolean revise(ItemStack before,ItemStack after){if(!initialized||book.isEmpty()||!ItemStack.matches(book,before)||ItemStack.matches(book,after))return false;book=after.copy();setChanged();return true;}
     public void open(ServerPlayer p){if(book.isEmpty())return;p.openMenu(new SimpleMenuProvider((id,inv,reader)->new PaperMenu(id,p,this),book.getHoverName()));}
     private ItemStack take(){var original=book;book=ItemStack.EMPTY;setChanged();if(level!=null)level.setBlock(worldPosition,getBlockState().setValue(DomesticRecordBlock.PRESENT,false),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);return original;}
     @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);initialized=t.getBoolean("Initialized");book=ItemStack.parseOptional(r,t.getCompound("Book"));}

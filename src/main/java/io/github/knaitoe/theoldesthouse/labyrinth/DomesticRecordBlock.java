@@ -23,15 +23,17 @@ public final class DomesticRecordBlock extends BaseEntityBlock {
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final DirectionProperty FACING=HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty PRESENT=BooleanProperty.create("present");
-    public DomesticRecordBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.NOTE).setValue(FACING,Direction.NORTH).setValue(PRESENT,true));}
+    public static final IntegerProperty DROP=IntegerProperty.create("drop",0,16);
+    public DomesticRecordBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.NOTE).setValue(FACING,Direction.NORTH).setValue(PRESENT,true).setValue(DROP,0));}
     @Override protected MapCodec<? extends BaseEntityBlock> codec(){return CODEC;}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,FACING,PRESENT);}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,FACING,PRESENT,DROP);}
     public static BlockState of(Kind k,Direction f){return DomesticRegistry.RECORD.get().defaultBlockState().setValue(KIND,k).setValue(FACING,f);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
     @Override public BlockEntity newBlockEntity(BlockPos at,BlockState s){return new DomesticRecordBlockEntity(at,s);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
-        var k=s.getValue(KIND);if(k==Kind.NOTE||k==Kind.RECIPE)return Block.box(2,0,2,14,1,14);
-        if(k==Kind.AWARD)return Block.box(3,0,3,13,14,13);
+        var k=s.getValue(KIND);int down=s.getValue(DROP);
+        if(k==Kind.NOTE||k==Kind.RECIPE)return Block.box(2,-down,2,14,.5-down,14);
+        if(k==Kind.AWARD)return Block.box(3,-down,3,13,14-down,13);
         return switch(s.getValue(FACING)){case EAST->Block.box(0,2,2,2,14,14);case SOUTH->Block.box(2,2,0,14,14,2);case WEST->Block.box(14,2,2,16,14,14);default->Block.box(2,2,14,14,14,16);};
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return Shapes.empty();}
