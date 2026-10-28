@@ -457,8 +457,8 @@ public final class GoatmanTests {
             h.assertTrue(f.cousin(f.run().getInt("Wrong")).orElseThrow().getUUID().equals(body[0]),"independent cue timing never replaces or teleports the original Goatman body");
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("ExtraState")==GoatmanVignette.X_WINDOW,"the already open window admits the same body only after its complete physical approach")).thenExecute(()->{
             var r=f.run();h.assertTrue(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("NightWindowAt0472")>=GoatmanVignette.BRISK_VIGIL+200,"the delayed native window attempt keeps its original response time before dawn");
-        }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.DAWN,"the delayed night still reaches its ordinary morning outcome: clock="+f.run().getInt("Clock")+" actor="+f.cousin(f.run().getInt("Wrong")).map(c->f.rel(c)+" entry="+c.windowEntry(1)+" crawl="+c.crawling()+" route="+c.getPersistentData().getList("Route",Tag.TAG_COMPOUND)).orElse("absent"))).thenExecute(()->{
-            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(entered[0]&&entrySaved[0]&&crawled[0]&&crawlSaved[0]&&rested[0]&&entryBeats.size()==4&&r.getInt("Clock")>=r.getInt("NightWindowAt0472")+GoatmanVignette.dawnAfterWindow(r)&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"despite the shut front door, the same original cousin completes all entry beats, native sash/indoor reloads and its walk back among them before dawn; the haunting outcome awards no survival credit: entered="+entered[0]+" reload="+entrySaved[0]+" crawled="+crawled[0]+" crawlReload="+crawlSaved[0]+" rested="+rested[0]+" beats="+entryBeats);h.succeed();
+        }).thenWaitUntil(()->h.assertTrue(GoatmanVignette.personal(LabyrinthData.get(f.server),p.getUUID()).getBoolean("EncounterEnded131"),"0.4.145: the delayed night ends at its bedside, carrying the reader off: clock="+f.run().getInt("Clock")+" actor="+f.cousin(f.run().getInt("Wrong")).map(c->f.rel(c)+" entry="+c.windowEntry(1)+" crawl="+c.crawling()+" route="+c.getPersistentData().getList("Route",Tag.TAG_COMPOUND)).orElse("absent"))).thenExecute(()->{
+            var r=f.run();var d=LabyrinthData.get(f.server);h.assertTrue(entered[0]&&entrySaved[0]&&crawled[0]&&crawlSaved[0]&&rested[0]&&entryBeats.size()==4&&r.getCompound("Cohort").getCompound(p.getUUID().toString()).getBoolean("BedsideEnded131")&&!GoatmanVignette.inside(p)&&!r.getBoolean("Right")&&GoatmanHaunt.haunted(d,p.getUUID())&&!WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.GOATMAN),"despite the shut front door, the same original cousin completes all entry beats, native sash/indoor reloads and its walk back among them, then its bedside visit takes the reader out of the trailer; the haunting outcome awards no survival credit: entered="+entered[0]+" reload="+entrySaved[0]+" crawled="+crawled[0]+" crawlReload="+crawlSaved[0]+" rested="+rested[0]+" beats="+entryBeats);h.succeed();
         });
     }
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
@@ -685,6 +685,43 @@ public final class GoatmanTests {
             p.teleportTo(f.server.overworld(),100,80,100,0,0);p.hasChangedDimension();GoatmanVignette.tick(f.server);h.assertTrue(Math.abs(p.getAttributeValue(Attributes.SCALE)-1.2)<.001,"leaving restores the pre-existing scale");h.succeed();
         });
         });
+    }
+
+    private static Fixture follower,gaze;
+    @AfterBatch(batch="goat_follow145") public static void cleanFollower(ServerLevel l){if(follower!=null){follower.close();follower=null;}}
+    @AfterBatch(batch="goat_gaze145") public static void cleanGaze(ServerLevel l){if(gaze!=null){gaze.close();gaze=null;}}
+    private static GoatmanChild trailGirl(Fixture f){return f.children().stream().filter(GoatmanChild::girl).findFirst().orElseThrow();}
+    @GameTest(template="empty",batch="goat_follow145",timeoutTicks=600)
+    public static void theTrailChildKeepsBehindHeadDownAndIsSimplyFurtherOffWhenTheReaderTurnsBack(GameTestHelper h){
+        follower=new Fixture(h,28600);var f=follower;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        int[] tick={0};float[] heading={0};double[] held={0};boolean[] begun={false};
+        h.onEachTick(()->{
+            if(!begun[0])return;tick[0]++;int t=tick[0];
+            double progress=t<=10?0:t<=50?(t-10)*.3:t<=80?12:t<=90?12-(t-80)*.3:9;f.at(p,progress);
+            if(t<=12||t>110)return;var girl=trailGirl(f);double own=GoatmanWoods.project(f.rel(girl)).progress();
+            h.assertTrue(own<=Math.max(0,progress-GoatmanVignette.FOLLOW_GAP)+.6&&Math.abs(girl.getXRot()-GoatmanVignette.HEAD_TUCKED)<.01&&girl.speed()<=1.37F,"she keeps behind the reader with her head bowed, never faster than a walk: "+own+" / "+progress);
+            if(t==80){heading[0]=girl.getYRot();held[0]=own;h.assertTrue(Math.abs(own-(12-GoatmanVignette.FOLLOW_GAP))<.5,"standing still, she settles a few steps behind: "+own);}
+            if(t>81&&t<=92)h.assertTrue(girl.speed()==0&&Math.abs(Mth.wrapDegrees(girl.getYRot()-heading[0]))<2,"turned back towards, she takes no step and does not turn: speed="+girl.speed()+" yaw="+girl.getYRot());
+            if(t==100)h.assertTrue(own<held[0]-2.2,"she is simply further off: "+own+" from "+held[0]);
+        });
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the trail's native entity sections are ready")).thenExecute(()->{h.assertTrue(GoatmanVignette.enter(p),"the latecomer enrolls");begun[0]=true;})
+            .thenWaitUntil(()->h.assertTrue(tick[0]>110,"the walk, the wait and the turn back are done")).thenSucceed();
+    }
+    @GameTest(template="empty",batch="goat_gaze145",timeoutTicks=600)
+    public static void theShapeInTheHollowIsGoneTheMomentTheReaderLooksStraightAtIt(GameTestHelper h){
+        gaze=new Fixture(h,28900);var f=gaze;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        int[] tick={0};boolean[] begun={false},looking={false};
+        h.onEachTick(()->{if(!begun[0]||looking[0])return;tick[0]++;f.at(p,Math.min(GoatmanWoods.HOLLOWS[0],tick[0]*.4));p.setYRot(0);p.setYHeadRot(0);});
+        java.util.function.Supplier<List<GoatmanFigure>> shapes=()->f.l.getEntitiesOfClass(GoatmanFigure.class,p.getBoundingBox().inflate(40),s->s.viewer().filter(p.getUUID()::equals).isPresent()&&s.purpose.equals("hollow0"));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the trail's native entity sections are ready")).thenExecute(()->{h.assertTrue(GoatmanVignette.enter(p),"the latecomer enrolls");begun[0]=true;})
+            .thenWaitUntil(()->h.assertTrue(tick[0]*.4>=GoatmanWoods.HOLLOWS[0]&&shapes.get().size()==1,"facing back down the trail, the reader comes level with a shape standing in the first hollow"))
+            .thenIdle(10)
+            .thenExecute(()->{h.assertTrue(shapes.get().size()==1,"it stays while nobody looks at it");looking[0]=true;var shape=shapes.get().getFirst();
+                p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,shape.position().add(0,1.3,0));p.setYHeadRot(p.getYRot());})
+            .thenWaitUntil(()->h.assertTrue(shapes.get().isEmpty()&&GoatmanVignette.run(LabyrinthData.get(f.server)).getCompound("Cohort").getCompound(p.getUUID().toString()).getBoolean("Hollow0"),"looked at straight on, it is gone"))
+            .thenIdle(40)
+            .thenExecute(()->h.assertTrue(shapes.get().isEmpty(),"and it does not come back"))
+            .thenSucceed();
     }
 
     @GameTest(template="empty",batch="goat_night",timeoutTicks=600)

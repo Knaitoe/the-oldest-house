@@ -444,6 +444,8 @@ public final class GoatmanVignette {
         }
         return true;
     }
+    /** How far behind the reader she keeps on the trail, and how far her head is bowed. */
+    public static final double FOLLOW_GAP=2.8;public static final float HEAD_TUCKED=38;
     private static GoatmanChild girl(ServerPlayer p,BlockPos b,CompoundTag r){
         if(!spawnReady(p.serverLevel(),b))return null;
         var girls=actors(p.serverLevel(),b).stream().filter(c->c.viewer().filter(p.getUUID()::equals).isPresent()&&!c.getTags().contains("TrailerWalk")).toList();
@@ -467,9 +469,7 @@ public final class GoatmanVignette {
         }
         if(!own.getBoolean("GirlGone")&&!own.getBoolean("Arrived")){
             GoatmanChild girl=girl(p,b,r);if(girl!=null){
-                Vec3 behind=GoatmanWoods.path(Math.max(0,progress-2.8));
-                if(p.serverLevel().getGameTime()%6==0||girl.getPersistentData().getList("Route",Tag.TAG_COMPOUND).isEmpty())setRoute(girl,List.of(behind),"follow_reader137");
-                if(walk(girl,b,.17,p.serverLevel(),true))face(girl,p.position());
+                follow(girl,b,progress);
                 if(progress>=54&&(!p.hasLineOfSight(girl)||p.getLookAngle().dot(girl.position().subtract(p.position()).normalize())<.25)){own.putBoolean("GirlGone",true);girl.discard();}
             }
         }else for(var girl:actors(p.serverLevel(),b))if(girl.viewer().filter(p.getUUID()::equals).isPresent()&&!girl.getTags().contains("TrailerWalk"))girl.discard();
@@ -479,6 +479,29 @@ public final class GoatmanVignette {
             if(!own.getBoolean("Greeted")){own.putBoolean("Greeted",true);p.displayClientMessage(Component.literal("A cousin: There you are. Everyone's here."),false);}
         }
     }
+    /**
+     * 0.4.145 (owner): she keeps a few steps behind on the trail with her head down, easing into and out of her walk.
+     * Turn back towards her and she never turns to walk away: she is simply further off, slid back along the trail
+     * without a step, still facing the way the reader was going.
+     */
+    private static void follow(GoatmanChild girl,BlockPos b,double progress){
+        girl.getPersistentData().remove("Route");
+        double here=GoatmanWoods.project(rel(girl,b)).progress(),want=Math.max(0,progress-FOLLOW_GAP),gap=want-here;
+        boolean walking=gap>0;double next=walking?here+Math.min(gap,Math.min(.17,.03+gap*.09)):here+Math.max(gap,-.4);
+        Vec3 at=abs(GoatmanWoods.path(next),b),ahead=abs(GoatmanWoods.path(next+1.5),b),from=girl.position();float yaw=facing(at,ahead);
+        girl.setOnGround(true);girl.move(MoverType.SELF,at.subtract(from));girl.setDeltaMovement(Vec3.ZERO);
+        girl.setYRot(yaw);girl.setXRot(HEAD_TUCKED);girl.setYHeadRot(yaw);girl.yBodyRot=yaw;
+        girl.animate(walking?girl.position().distanceTo(from):0,false,false);
+    }
+    /** Any camera, a spectator's included, turned straight at the figure with nothing solid between. */
+    static boolean lookedAt(ServerLevel l,Entity figure){
+        for(var player:l.players()){
+            Entity camera=player.getCamera();if(camera.level()!=l)continue;var eye=camera.getEyePosition();
+            for(double y:new double[]{.9,1.6}){var point=figure.position().add(0,y,0);var to=point.subtract(eye);double d=to.length();
+                if(d>.1&&d<64&&camera.getViewVector(1).dot(to.scale(1/d))>.96&&GoatmanStalking.visible(l,camera,eye,point))return true;}
+        }
+        return false;
+    }
     /** Someone stands in each hollow with its back to the trail while the latecomer comes up on it, then it is gone. */
     private static void hollows(ServerPlayer p,BlockPos b,CompoundTag own,double progress){
         var l=p.serverLevel();
@@ -487,7 +510,8 @@ public final class GoatmanVignette {
             if(progress>at+2)own.putBoolean("Hollow"+h,true);
             var existing=l.getEntitiesOfClass(GoatmanFigure.class,p.getBoundingBox().inflate(40),f->f.viewer().filter(p.getUUID()::equals).isPresent()&&f.purpose.equals(purpose));
             if(!want){existing.forEach(Entity::discard);continue;}
-            if(!existing.isEmpty())continue;
+            // 0.4.145 (owner): it is gone the moment anyone looks straight at it.
+            if(!existing.isEmpty()){if(existing.stream().anyMatch(f->lookedAt(l,f))){existing.forEach(Entity::discard);own.putBoolean("Hollow"+h,true);}continue;}
             var f=GoatmanRegistry.FIGURE.get().create(l);if(f==null)continue;f.viewer(p.getUUID());f.purpose=purpose;f.until=l.getGameTime()+2400;
             Vec3 pos=abs(GoatmanWoods.HOLLOW_STAND[h],b);f.moveTo(pos.x,pos.y,pos.z,GoatmanWoods.HOLLOW_YAW[h],0);f.face(GoatmanWoods.HOLLOW_YAW[h]);GoatmanHaunt.appear(l,f);
         }
@@ -956,7 +980,13 @@ public final class GoatmanVignette {
         boolean childSpeaking=!GoatmanBedtime.quiet(r)&&!voice&&(phase==GATHERING||phase==VIGIL)&&remaining>0;
         return new GoatmanScenePayload(phase,voice?demand:0,voice?speechTicks(r,demand)-since:0,r.getBoolean("Silence")?1:0,childSpeaking?child:0,childSpeaking?remaining:0);
     }
-    static void scene(ServerPlayer p,CompoundTag r){var state=scenePayload(r);int flags=state.flags();if(GoatmanBedtime.called(r)&&p.isSleeping()&&!outside(r))flags|=GoatmanScenePayload.BED_WATCH;HousePackets.send(p,new GoatmanScenePayload(state.phase(),state.demand(),state.remaining(),flags,state.cousinLine(),state.cousinRemaining()));}
+    static void scene(ServerPlayer p,CompoundTag r){var state=scenePayload(r);int flags=state.flags();if(GoatmanBedtime.called(r)&&p.isSleeping()&&!outside(r))flags|=GoatmanScenePayload.BED_WATCH;if(GoatmanBedtime.risen(r)&&p.isSleeping())flags|=GoatmanScenePayload.BED_FADE;HousePackets.send(p,new GoatmanScenePayload(state.phase(),state.demand(),state.remaining(),flags,state.cousinLine(),state.cousinRemaining()));}
+    /** 0.4.145: the bedside visit ends that reader's night. They wake out of the trailer, at home, and it went with them. */
+    static void carriedOff(ServerPlayer p){
+        var d=LabyrinthData.get(p.server);var personal=personal(d,p.getUUID());personal.putBoolean("EncounterEnded131",true);savePersonal(d,p.getUUID(),personal);
+        GoatmanBedtime.wake(p);scale(p,false);HousePackets.send(p,new GoatmanScenePayload(0,0,0,0));GoatmanHaunt.home(p,"It was standing at the foot of the bed. Then you were somewhere else.");
+        PlaytestLog.event(p,"goatman_carried_off");
+    }
     static void say(List<ServerPlayer> players,String line){for(var p:players)p.displayClientMessage(Component.literal(line),false);}
     /** A real knock: knuckles, an ordinary rhythm. */
     private static void knock(ServerLevel l,BlockPos b,List<ServerPlayer> players){

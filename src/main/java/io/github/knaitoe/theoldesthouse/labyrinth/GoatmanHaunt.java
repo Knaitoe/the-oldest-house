@@ -67,10 +67,14 @@ public final class GoatmanHaunt {
     /** Opening the door at night: no death and nothing taken; the opener is simply gone from the trailer, and it with them. */
     public static void taken(ServerPlayer p,int skin,int tells){
         haunt(p,skin,tells);
-        BlockPos origin=HouseSavedData.get(p.server).houseOrigin();ServerLevel l=p.server.getLevel(HouseDimensions.INTERIOR);
         HousePackets.send(p,new HouseFadePayload(6,20,30));
+        home(p,"Something was standing right there. Then you were somewhere else.");
+    }
+    /** Out of the trailer and home to the manor, under a fade already begun. */
+    static void home(ServerPlayer p,String line){
+        BlockPos origin=HouseSavedData.get(p.server).houseOrigin();ServerLevel l=p.server.getLevel(HouseDimensions.INTERIOR);
         if(origin!=null&&l!=null){Vec3 at=HideAndClap.manorRespawn(origin);l.getChunkAt(BlockPos.containing(at));p.teleportTo(l,at.x,at.y,at.z,p.getYRot(),p.getXRot());p.fallDistance=0;}
-        p.displayClientMessage(Component.literal("Something was standing right there. Then you were somewhere else.").withStyle(net.minecraft.ChatFormatting.ITALIC),false);
+        p.displayClientMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.ITALIC),false);
     }
 
     // ------------------------------------------------------------------------------------------------ the morning walk
