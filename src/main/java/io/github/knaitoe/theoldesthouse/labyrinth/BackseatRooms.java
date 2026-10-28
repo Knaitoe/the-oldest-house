@@ -27,6 +27,42 @@ public final class BackseatRooms {
         for(int x=-4;x<=4;x++)tree(l,b,x,-53+Math.floorMod(x,2),13+Math.floorMod(x,3));
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.SPRUCE_PLANKS.defaultBlockState(),Blocks.STONE.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());
         NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
+        passingScenery(l,b);
+    }
+    /** Three depths outside the glass: near reflectors/brush, broken trunks and the slower far tree line.
+     * Append to the original construction order; the lane, collision stand and original car are untouched. */
+    private static void passingScenery(ServerLevel l,BlockPos b){
+        for(int z=-49;z<=-12;z++)for(int side:new int[]{-1,1}){
+            // A worn gravel shoulder gives the white road edge something darker and rougher to pass against.
+            var ground=Math.floorMod(z+side,5)==0?Blocks.COARSE_DIRT:Blocks.GRAVEL;
+            BuildBlocks.set(l,b.offset(side*5,-1,z),ground.defaultBlockState(),F);
+            if(Math.floorMod(z+side,6)==0)BuildBlocks.set(l,b.offset(side*6,0,z),Blocks.FERN.defaultBlockState(),F);
+        }
+        for(int side:new int[]{-1,1}){
+            var facing=side<0?Direction.EAST:Direction.WEST;
+            // The established native reflector already has small emissive faces; no full-bright woods or overlay.
+            for(int z=-46+(side>0?2:0);z<=-14;z+=6){
+                BuildBlocks.set(l,b.offset(side*6,0,z),RoadhouseBlock.of(RoadhouseBlock.Kind.POLE,facing),F);
+                BuildBlocks.set(l,b.offset(side*6,1,z),RoadhouseBlock.of(RoadhouseBlock.Kind.REFLECTOR,facing),F);
+            }
+            // Interrupted low rails and a fallen trunk cross the side view without forming an enclosing wall.
+            for(int z=-38;z<=-33;z++)BuildBlocks.set(l,b.offset(side*7,0,z),Blocks.DARK_OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH,z>-38).setValue(FenceBlock.SOUTH,z< -33),F);
+            for(int z=-26;z<=-23;z++)BuildBlocks.set(l,b.offset(side*10,0,z),Blocks.SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.Z),F);
+            for(int z=-44+(side>0?3:0);z<=-17;z+=9){
+                int x=side*(8+Math.floorMod(z,2)),height=4+Math.floorMod(z+side,4);
+                for(int y=0;y<height;y++)if(BuildBlocks.state(l,b.offset(x,y,z)).isAir())BuildBlocks.set(l,b.offset(x,y,z),Blocks.BIRCH_LOG.defaultBlockState(),F);
+                for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)if(Math.abs(dx)+Math.abs(dz)<=1){var at=b.offset(x+dx,1,z+dz+2);if(BuildBlocks.state(l,at).isAir())BuildBlocks.set(l,at,Blocks.AZALEA_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);}
+            }
+            // A second, offset line remains inside the original saved road's footprint and chunk lease.
+            for(int z=-47+(side>0?2:0);z<=-13;z+=6){
+                int x=side*13,height=8+Math.floorMod(z+side,5);
+                for(int y=0;y<height;y++)if(BuildBlocks.state(l,b.offset(x,y,z)).isAir())BuildBlocks.set(l,b.offset(x,y,z),Blocks.SPRUCE_LOG.defaultBlockState(),F);
+                for(int y=4;y<=height+1;y++)for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++){
+                    if(dx==0&&dz==0&&y<height)continue;var at=b.offset(x+dx,y,z+dz);
+                    if(BuildBlocks.state(l,at).isAir())BuildBlocks.set(l,at,Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);
+                }
+            }
+        }
     }
     private static void tree(ServerLevel l,BlockPos b,int x,int z,int h){
         box(l,b,x,0,z,x,h,z,Blocks.SPRUCE_LOG.defaultBlockState());

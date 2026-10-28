@@ -238,6 +238,13 @@ public final class BackseatCarTests {
         }).thenExecute(()->{
             base[0]=BackseatSites.base(p.server,p.getUUID());original[0]=BackseatSites.car(p);notebook[0]=original[0].notebook;peerAt[0]=peer.position();
             h.assertTrue(original[0].road&&!notebook[0].isEmpty()&&BackseatSites.state(p.server,p.getUUID()).getBoolean("Built"),"one actual car and original notebook exist on the complete road");
+            for(int side:new int[]{-1,1}){
+                var reflector=base[0].offset(side*6,1,side<0?-28:-26);
+                h.assertTrue(RoadhouseBlock.is(f.out.getBlockState(reflector),RoadhouseBlock.Kind.REFLECTOR),"a real near-window reflector stands above each shoulder");
+                h.assertTrue(f.out.getBlockState(base[0].offset(side*13,2,side<0?-29:-27)).is(Blocks.SPRUCE_LOG),"the farther original-world tree line supplies a different parallax depth");
+            }
+            // The scenery must not replace the native stopping obstacle or introduce an earlier one.
+            for(int z=-19;z>=-49;z--)h.assertTrue(f.out.noCollision(null,new AABB(base[0].getX()-.9,base[0].getY()+.125,base[0].getZ()+z,base[0].getX()+1.9,base[0].getY()+2.38,base[0].getZ()+z+.25)),"all passing detail stays outside the original car's real swept lane at "+z);
             roadExport(f.out,base[0]);
             roadClick(h,p,from.getCenter());h.assertTrue(LabyrinthDoors.isBusy(p),"the actual House source block interaction starts native private entry");
         }).thenIdle(1).thenExecute(()->{
