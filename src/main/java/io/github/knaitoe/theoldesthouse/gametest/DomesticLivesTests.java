@@ -291,7 +291,7 @@ public final class DomesticLivesTests {
     @AfterBatch(batch="domestic142_prose") public static void prose142Done(ServerLevel l){close();}
     @GameTest(template="empty",batch="domestic142_prose",timeoutTicks=400)
     public static void requestedProseRevisionRecognizesOnlyExactUncollectedStockAndNeverTouchesHeldOrEditedOriginals(GameTestHelper h){
-        var f=fixture(h);var at=f.origin.offset(40,1,-40);f.chunks.hold(f.in,new AABB(at).inflate(5));
+        var f=fixture(h);var at=f.origin.offset(44,1,-40);f.chunks.hold(f.in,new AABB(at).inflate(5));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native stock originals are resident")).thenExecute(()->{
             var p=player(f,"paper_prose_reader");var old=DomesticStoriesBefore142.pieces("family").getFirst().book();var revised=DomesticStories.pieces("family").getFirst().book();
             f.in.setBlock(at,DomesticRecordBlock.of(DomesticRecordBlock.Kind.NOTE,Direction.NORTH),2);var be=(DomesticRecordBlockEntity)f.in.getBlockEntity(at);be.seed(old.copy());p.getInventory().setItem(4,old.copy());
