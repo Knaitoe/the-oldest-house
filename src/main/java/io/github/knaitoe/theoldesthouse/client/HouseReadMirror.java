@@ -35,5 +35,8 @@ public final class HouseReadMirror implements BlockEntityRenderer<HouseReadPropB
     }
     @Override public boolean shouldRenderOffScreen(HouseReadPropBlock.Fitting be){return be.getBlockState().getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR;}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
-    public static final class Registration {@SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(HouseReadRegistry.FITTING_ENTITY.get(),HouseReadMirror::new);}}
+    public static final class Registration {@SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(HouseReadRegistry.FITTING_ENTITY.get(),HouseReadMirror::new);e.registerEntityRenderer(HouseReadRegistry.ROUTINE_ECHO.get(),RoutineRenderer::new);}}
+    private static final class RoutineRenderer extends net.minecraft.client.renderer.entity.DisplayRenderer.ItemDisplayRenderer {
+        RoutineRenderer(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context){super(context);}
+    }
 }
