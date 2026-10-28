@@ -100,6 +100,9 @@ public final class GoatmanExteriorTests {
             r.putInt("SupperAt04123",1001-GoatmanVignette.TABLE_BACK);r.putBoolean("CalledIn04123",true);r.putBoolean("Shut04123",true);r.putBoolean("MealReady0465",true);
             r.putInt("ExtraState",GoatmanVignette.X_SUPPER);r.putInt("RunnerState",GoatmanVignette.R_AWAY);f.cohort(r,List.of(p),0);f.run(r);
             GoatmanVignette.stage(f.l,f.b,r);GoatmanVignette.hurry(f.l,f.b);GoatmanWoods.door(f.l,f.b,true);GoatmanWoods.setWindow(f.l,f.b,true);
+            // The impossible late knock is tested against one reproducible native route;
+            // random lap pauses must not decide whether its only post-demand pulse lands at the step.
+            f.cousin(0).orElseThrow().getRandom().setSeed(53700L);
             original[0]=f.cousin(0).orElseThrow().getUUID();begun[0]=true;
         }).thenWaitUntil(()->h.assertTrue(f.run().getInt("Phase")==GoatmanVignette.VIGIL,"the ordinary evening reaches nightfall soon after the exchange: "+status(f))).thenExecute(()->{
             h.assertTrue(locked[0],"night fell on a shut door with the cousin inside");
