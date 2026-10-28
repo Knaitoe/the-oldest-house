@@ -639,72 +639,111 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     }
     @AfterBatch(batch="literary_last_stop_saved") public static void lastStopSavedDone(ServerLevel l){close();}
 
-    // ------------------------------------------------------------------------------------------------ Three Fingers (0.4.81)
-    private static ItemStack pawOf(ServerPlayer p,CompoundTag own){for(var s:p.getInventory().items)if(WitheredPawItem.mine(s,p,own))return s;return ItemStack.EMPTY;}
-    private static void wish(ServerPlayer p,int slot){var paw=pawOf(p,LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.THREE_FINGERS));ThreeFingers.use(p,paw);if(p.containerMenu instanceof LiteraryChoiceMenu menu)menu.clicked(slot,0,ClickType.PICKUP,p);}
-    /** A reader's part set where a test needs it, with their own working paw in hand. */
+    // ------------------------------------------------------------------------------------------------ Three Fingers (0.4.81, shared 0.4.147)
+    private static CompoundTag pawThread(Fixture f,ServerPlayer p){return VignetteThreads.thread(f.data(),LabyrinthPlace.THREE_FINGERS,p.getUUID());}
+    private static CompoundTag pawStory(Fixture f,ServerPlayer p){return pawThread(f,p).getCompound("Story");}
+    private static void savePaw(Fixture f,ServerPlayer p,CompoundTag thread){VignetteThreads.saveThread(f.data(),LabyrinthPlace.THREE_FINGERS,p.getUUID(),thread);}
+    private static ItemStack pawOf(ServerPlayer p,CompoundTag story){for(var s:p.getInventory().items)if(WitheredPawItem.mine(s,p,story))return s;return ItemStack.EMPTY;}
+    private static void wish(ServerPlayer p,int slot){var story=VignetteThreads.thread(LabyrinthData.get(p.server),LabyrinthPlace.THREE_FINGERS,p.getUUID()).getCompound("Story");ThreeFingers.use(p,pawOf(p,story));if(p.containerMenu instanceof LiteraryChoiceMenu menu)menu.clicked(slot,0,ClickType.PICKUP,p);}
+    /** A reader on their own: out of whatever thread they walked in with, into one of their own. */
+    private static void apart(Fixture f,ServerPlayer p){VignetteThreads.forget(f.data(),LabyrinthPlace.THREE_FINGERS,p.getUUID());VignetteThreads.solo(p,LabyrinthPlace.THREE_FINGERS);}
+    private static ListTag saw(ServerPlayer... readers){var list=new ListTag();for(var p:readers)list.add(StringTag.valueOf(p.getUUID().toString()));return list;}
+    /** A thread's story set where a test needs it, with the reader holding its working paw. */
     private static void pawState(Fixture f,ServerPlayer p,int stage,int fingers,java.util.function.Consumer<CompoundTag> more){
-        var place=LabyrinthPlace.THREE_FINGERS;var own=f.own(p,place);own.putInt("Stage",stage);own.putInt(ThreeFingers.FINGERS,fingers);own.putInt(ThreeFingers.ISSUE,own.getInt(ThreeFingers.ISSUE)+1);own.putBoolean("SergeantGone",true);
-        more.accept(own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);p.getInventory().add(WitheredPawItem.issue(p,own));
+        var thread=pawThread(f,p);var story=thread.getCompound("Story");
+        story.putInt("Stage",stage);story.putInt(ThreeFingers.FINGERS,fingers);story.putInt(ThreeFingers.ISSUE,story.getInt(ThreeFingers.ISSUE)+1);story.putBoolean("SergeantGone",true);story.putInt("Evening",thread.getInt("Visit"));
+        more.accept(story);thread.put("Story",story);if(stage>=ThreeFingers.TAKEN)VignetteThreads.hold(thread,p);savePaw(f,p,thread);p.getInventory().add(WitheredPawItem.issue(p,story));
     }
+    /** What a reader has been told so far. A test runs while the server holds back each tick's packets, so they are let out first. */
+    private static boolean heard(ServerPlayer p,String words){p.connection.resumeFlushing();return NativeTestPlayers.messages(p).stream().anyMatch(m->m.contains(words));}
+    private static String witnessPages(Fixture f,ServerPlayer p){var text=new StringBuilder();for(var page:WitnessAccount.book(f.data(),p.getUUID(),p.getGameProfile().getName(),false).get(DataComponents.WRITTEN_BOOK_CONTENT).pages())text.append(page.raw().getString()).append('\n');return text.toString();}
+
     @GameTest(template="empty",batch="literary_paw_fire",timeoutTicks=600)
-    public static void theSoldiersPawIsPulledFromTheFireAndEachReadersFirstWishIsTheirOwn(GameTestHelper h){
-        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("paw_reader",place);var peer=f.player("paw_peer",place);var b=f.base(place);var l=f.in;
+    public static void theSoldierTellsTheWholeThreadOneReaderHoldsThePawAndTheOthersSeeItsFingerCurl(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("paw_reader",place);var peer=f.player("paw_peer",place);var stranger=f.player("paw_stranger",place);var b=f.base(place);var l=f.in;
         h.assertTrue(CottageBlock.is(l.getBlockState(b.offset(ThreeFingers.POCKETBOOK)),CottageBlock.Kind.POCKETBOOK)&&CottageBlock.is(l.getBlockState(b.offset(ThreeFingers.BIBLE)),CottageBlock.Kind.BIBLE)
             &&l.getBlockState(b.offset(ThreeFingers.FIRE)).is(Blocks.CAMPFIRE)&&l.getBlockState(b.offset(ThreeFingers.FRONT_DOOR)).getBlock() instanceof DoorBlock&&CottageBlock.is(l.getBlockState(b.offset(ThreeFingers.LAMP)),CottageBlock.Kind.LAMP_HEAD),
             "the cottage stands: the pocketbook, the Bible, a real fire, the front door and the lamp on the road");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).hasUUID("CastSergeant")&&f.own(peer,place).hasUUID("CastSergeant"),"wait for each reader's own people")).thenExecute(()->{
-            var mine=(LiteraryActor)l.getEntity(f.own(p,place).getUUID("CastSergeant"));var theirs=(LiteraryActor)l.getEntity(f.own(peer,place).getUUID("CastSergeant"));
-            h.assertTrue(mine!=null&&theirs!=null&&mine!=theirs&&mine.owner().get().equals(p.getUUID())&&theirs.owner().get().equals(peer.getUUID())&&mine.phase()==ThreeFingers.SERGEANT,"each reader has their own soldier, seen by them alone");
-            f.at(p,place,-5.5,0,-6.5);for(int i=0;i<3;i++)LiteraryVignettes.talk(p,mine);
-            h.assertTrue(f.own(p,place).getInt("Tale")==3&&f.own(peer,place).getInt("Tale")==0,"the soldier's story goes at the pace of the reader asking");
-        }).thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.IN_FIRE,"wait for the paw to go on the fire")).thenExecute(()->{
-            h.assertTrue(f.own(peer,place).getInt("Stage")==ThreeFingers.TELLING,"the peer's soldier is still telling it");
-            p.setHealth(20);f.click(p,place,ThreeFingers.FIRE);var own=f.own(p,place);var paw=pawOf(p,own);
-            h.assertTrue(own.getInt("Stage")==ThreeFingers.TAKEN&&!paw.isEmpty()&&WitheredPawItem.fingers(paw)==3&&p.getHealth()<20&&p.getHealth()>=19,"pulled from the coals: a burn of half a heart and the reader's own three-fingered paw");
-            h.assertTrue(pawOf(peer,f.own(peer,place)).isEmpty()&&!WitheredPawItem.owned(paw,peer),"nobody else has it, and it is not theirs");
+        var id=VignetteThreads.threadId(f.data(),place,p.getUUID());
+        h.assertTrue(id!=null&&id.equals(VignetteThreads.threadId(f.data(),place,peer.getUUID())),"readers who come in together are one thread");
+        apart(f,stranger);h.assertTrue(!id.equals(VignetteThreads.threadId(f.data(),place,stranger.getUUID())),"a reader of another thread has their own evening");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(pawStory(f,p).hasUUID("CastSergeant")&&pawStory(f,stranger).hasUUID("CastSergeant"),"wait for each thread's people")).thenExecute(()->{
+            var sergeant=(LiteraryActor)l.getEntity(pawStory(f,p).getUUID("CastSergeant"));var theirs=(LiteraryActor)l.getEntity(pawStory(f,stranger).getUUID("CastSergeant"));
+            h.assertTrue(sergeant!=null&&theirs!=null&&sergeant!=theirs&&sergeant.owner().isEmpty()&&sergeant.phase()==ThreeFingers.SERGEANT,"one soldier for the thread, bound to no single reader");
+            h.assertTrue(sergeant.broadcastToPlayer(p)&&sergeant.broadcastToPlayer(peer)&&!sergeant.broadcastToPlayer(stranger)&&theirs.broadcastToPlayer(stranger)&&!theirs.broadcastToPlayer(p),"everyone in the thread sees its soldier, and nobody else does");
+            f.at(p,place,-5.5,0,-6.5);for(int i=0;i<3;i++)LiteraryVignettes.talk(p,sergeant);
+            h.assertTrue(pawStory(f,p).getInt("Tale")==3&&pawStory(f,stranger).getInt("Tale")==0,"the story goes at the pace of whoever asks, for their whole thread");
+            h.assertTrue(heard(peer,"Twenty-one years out there")&&!heard(stranger,"Twenty-one years out there"),"the friend hears the soldier tell it");
+        }).thenWaitUntil(()->h.assertTrue(pawStory(f,p).getInt("Stage")==ThreeFingers.IN_FIRE,"wait for the paw to go on the fire")).thenExecute(()->{
+            h.assertTrue(heard(peer,"He flings the withered paw onto the coals"),"the friend sees it thrown on the fire");
+            p.setHealth(20);f.click(p,place,ThreeFingers.FIRE);var story=pawStory(f,p);var paw=pawOf(p,story);
+            h.assertTrue(story.getInt("Stage")==ThreeFingers.TAKEN&&!paw.isEmpty()&&WitheredPawItem.fingers(paw)==3&&p.getHealth()<20&&p.getHealth()>=19,"pulled from the coals: a burn of half a heart and a three-fingered paw");
+            h.assertTrue(p.getUUID().equals(VignetteThreads.holder(pawThread(f,p))),"whoever pulls it out holds it");
+            f.click(peer,place,ThreeFingers.FIRE);
+            h.assertTrue(pawOf(peer,pawStory(f,peer)).isEmpty()&&!WitheredPawItem.owned(paw,peer)&&p.getUUID().equals(VignetteThreads.holder(pawThread(f,p))),"there is one paw, and the friend cannot take it from the fire too");
+            ThreeFingers.use(peer,paw.copy());h.assertTrue(!(peer.containerMenu instanceof LiteraryChoiceMenu),"it does not move for anyone else");
+            h.assertTrue(VignetteThreads.waiting(f.data(),peer.getUUID(),place)&&!VignetteThreads.waiting(f.data(),p.getUUID(),place),"the first wish waits for its holder: without them the friend is dealt something else");
             ThreeFingers.use(p,paw);
             h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu menu&&!menu.getSlot(2).getItem().isEmpty()&&menu.getSlot(3).getItem().isEmpty()&&!menu.getSlot(6).getItem().isEmpty()&&!menu.getSlot(0).getItem().isEmpty()&&!menu.getSlot(4).getItem().isEmpty()&&!menu.getSlot(8).getItem().isEmpty(),"with no companion lost, the paw offers money, the storm, the larder, Will safe and the fire, not a name");
             p.closeContainer();
-            // A real tamed wolf of the peer's dies: the House's own record of it is what the peer's paw may name.
+            // A real tamed wolf of the friend's dies: the companion a holder may name is one the House saw them lose.
             var world=p.server.overworld();var wolf=EntityType.WOLF.create(world);h.assertTrue(wolf!=null,"a native wolf exists");
             wolf.setTame(true,false);wolf.setOwnerUUID(peer.getUUID());wolf.setCustomName(net.minecraft.network.chat.Component.literal("Moss"));wolf.moveTo(57000,80,57000);world.addFreshEntity(wolf);
             h.assertTrue(wolf.hurt(world.damageSources().genericKill(),1000),"the wolf dies a native death");wolf.discard();
             h.assertTrue("Moss".equals(ThreeFingers.lostCompanion(f.data(),peer.getUUID()))&&ThreeFingers.lostCompanion(f.data(),p.getUUID())==null,"the lost companion is the one the House saw that reader lose");
-            wish(p,2);own=f.own(p,place);paw=pawOf(p,own);
-            h.assertTrue(own.getInt("Stage")==ThreeFingers.WISHED&&ThreeFingers.MONEY.equals(own.getString("Wish1"))&&own.getInt(ThreeFingers.FINGERS)==2&&WitheredPawItem.fingers(paw)==2&&paw.get(DataComponents.CUSTOM_MODEL_DATA).value()==1,"the first wish takes a finger, on the paw and in the record");
-            h.assertTrue(!own.hasUUID("CastSergeant")&&own.getBoolean("SergeantGone"),"the soldier goes once the wish is made");
-            h.assertTrue(f.own(peer,place).getInt("Stage")==ThreeFingers.TELLING&&f.own(peer,place).hasUUID("CastSon"),"the peer's son is in his chair; nothing of this reader's wish reaches the peer");
+            long now=l.getGameTime();wish(p,2);story=pawStory(f,p);paw=pawOf(p,story);
+            h.assertTrue(story.getInt("Stage")==ThreeFingers.WISHED&&ThreeFingers.MONEY.equals(story.getString("Wish1"))&&story.getInt(ThreeFingers.FINGERS)==2&&WitheredPawItem.fingers(paw)==2&&paw.get(DataComponents.CUSTOM_MODEL_DATA).value()==1,"the first wish takes a finger, on the paw and in the thread's story");
+            h.assertTrue(WitheredPawItem.clench(paw,now)==1&&WitheredPawItem.clench(paw,now+WitheredPawItem.CLENCH/2)>0&&WitheredPawItem.clench(paw,now+WitheredPawItem.CLENCH)==0,"the finger curls on the held paw for everyone who can see the hand, then stays down");
+            h.assertTrue(heard(p,"It twists in your hand")&&heard(peer,"In paw_reader's hand the paw twists"),"the holder feels it; the friend watches it");
+            h.assertTrue(!story.hasUUID("CastSergeant")&&story.getBoolean("SergeantGone"),"the soldier goes once the wish is made");
+            var sawWish=story.getList("SawWish",net.minecraft.nbt.Tag.TAG_STRING);h.assertTrue(sawWish.size()==2,"both of the thread saw the wish");
+            h.assertTrue(pawStory(f,stranger).getInt("Stage")==ThreeFingers.TELLING&&pawStory(f,stranger).hasUUID("CastSon")&&!heard(stranger,"paw twists"),"the other thread's son is in his chair; nothing of this wish reaches them");
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_paw_fire") public static void pawFireDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_paw_news",timeoutTicks=400)
-    public static void theFirstWishComesHomeWrongAndTheDoorOpensOntoNobody(GameTestHelper h){
-        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("news_reader",place);var peer=f.player("news_peer",place);
-        pawState(f,p,ThreeFingers.WISHED,2,own->{own.putString("Wish1",ThreeFingers.COMPANION);own.putString("Companion","Moss");own.putInt("WishVisit",own.getInt("Visit"));own.putInt("Beat",own.getInt("Visit"));});
-        int visit=f.own(p,place).getInt("Visit");
-        f.arrive(p,place);
-        h.assertTrue(f.own(p,place).getInt("Visit")==visit+1,"coming back after the wish is a new visit");
-        // The reader's clock is moved on so the man from the mill says his piece at once.
-        var start=f.own(p,place);start.putInt("T",2000);LiteraryVignettes.save(f.data(),p.getUUID(),place,start);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.MOURNING,"wait for the man from the mill to have been")).thenExecute(()->{
-            var own=f.own(p,place);
-            h.assertTrue(own.getBoolean("SonGone")&&!own.hasUUID("CastSon")&&!own.hasUUID("CastMessenger"),"the son's chair is empty and the man from the mill has gone");
+    @GameTest(template="empty",batch="literary_paw_news",timeoutTicks=600)
+    public static void theWishComesHomeToTheWholeThreadAndEveryWayOfBeingThereHasItsAccount(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("news_reader",place);var peer=f.player("news_peer",place);var absent=f.player("news_absent",place);var away=f.player("news_away",place);
+        var id=VignetteThreads.threadId(f.data(),place,p.getUUID());
+        h.assertTrue(id!=null&&id.equals(VignetteThreads.threadId(f.data(),place,away.getUUID())),"four readers came in together");
+        // Two of them saw the wish; one was away for it.
+        pawState(f,p,ThreeFingers.WISHED,2,story->{story.putString("Wish1",ThreeFingers.COMPANION);story.putString("Companion","Moss");story.putInt("WishVisit",1);story.putInt("Beat",1);story.put("SawWish",saw(p,peer,away));});
+        // A later evening: everyone leaves, and all but one come back.
+        var outside=f.base(place).offset(0,0,64);for(var r:List.of(p,peer,absent,away)){r.teleportTo(f.in,outside.getX()+.5,outside.getY(),outside.getZ()+.5,0,0);}
+        for(var r:List.of(p,peer,absent)){var b=f.base(place);r.teleportTo(f.in,b.getX()+.5,b.getY(),b.getZ()-3,180,0);VignetteThreads.arrived(r,place);f.arrive(r,place);}
+        h.assertTrue(pawThread(f,p).getInt("Visit")==2,"coming back after the wish is a new visit for the thread");
+        // The thread's clock is moved on so the man from the mill says his piece at once.
+        var start=pawThread(f,p);var s0=start.getCompound("Story");s0.putInt("T",2000);start.put("Story",s0);savePaw(f,p,start);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(pawStory(f,p).getInt("Stage")==ThreeFingers.MOURNING,"wait for the man from the mill to have been")).thenExecute(()->{
+            var story=pawStory(f,p);
+            h.assertTrue(story.getBoolean("SonGone")&&!story.hasUUID("CastSon")&&!story.hasUUID("CastMessenger"),"the son's chair is empty and the man from the mill has gone");
             ItemStack collar=ItemStack.EMPTY;for(var s:p.getInventory().items)if(s.is(Items.LEAD))collar=s;
-            h.assertTrue(!collar.isEmpty()&&collar.get(DataComponents.ITEM_NAME).getString().equals("Moss's collar"),"the companion comes back only as its collar, by its own name");
-            h.assertTrue(f.own(peer,place).getInt("Stage")==ThreeFingers.TELLING&&f.own(peer,place).hasUUID("CastSon"),"the peer's household is whole");
-            wish(p,4);own=f.own(p,place);
-            h.assertTrue(own.getInt("Stage")==ThreeFingers.KNOCKING&&own.getInt(ThreeFingers.FINGERS)==1,"the second wish, for the son back, takes another finger");
-            ThreeFingers.use(p,pawOf(p,own));h.assertTrue(!(p.containerMenu instanceof LiteraryChoiceMenu),"there is no last wish until the knocking has begun");
-            f.click(p,place,ThreeFingers.FRONT_DOOR);h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.KNOCKING,"before the knocking the door is only a door");
-            own=f.own(p,place);own.putInt("KnockT",ThreeFingers.KNOCK_AT);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
-            f.click(p,place,ThreeFingers.FRONT_DOOR);own=f.own(p,place);
-            h.assertTrue(own.getBoolean("Ready")&&"opened_the_door_onto_the_empty_road".equals(own.getString("Outcome"))&&own.getInt(ThreeFingers.FINGERS)==0&&WitheredPawItem.fingers(pawOf(p,own))==0,"opened while the knocking goes on: nobody there, and the last finger down without a wish");
-            h.assertTrue(f.own(peer,place).getInt("Stage")==ThreeFingers.TELLING&&!f.own(peer,place).contains("KnockT"),"the knocking was never the peer's");
+            h.assertTrue(!collar.isEmpty()&&collar.get(DataComponents.ITEM_NAME).getString().equals("Moss's collar")&&peer.getInventory().countItem(Items.LEAD)==0,"what was wished for comes to whoever wished it, by its own name");
+            h.assertTrue(heard(peer,"I come from Fenwick's")&&heard(absent,"I come from Fenwick's"),"the whole thread there hears the news");
+            // A reader new to the cottage comes in with them, partway.
+            var late=f.player("news_late",place);
+            h.assertTrue(id.equals(VignetteThreads.threadId(f.data(),place,late.getUUID()))&&VignetteThreads.partway(pawThread(f,p),late.getUUID()),"a newcomer joins the thread partway");
+            wish(p,4);story=pawStory(f,p);
+            h.assertTrue(story.getInt("Stage")==ThreeFingers.KNOCKING&&story.getInt(ThreeFingers.FINGERS)==1,"the second wish, for the son back, takes another finger");
+            ThreeFingers.use(p,pawOf(p,story));h.assertTrue(!(p.containerMenu instanceof LiteraryChoiceMenu),"there is no last wish until the knocking has begun");
+            f.click(p,place,ThreeFingers.FRONT_DOOR);h.assertTrue(pawStory(f,p).getInt("Stage")==ThreeFingers.KNOCKING,"before the knocking the door is only a door");
+            var thread=pawThread(f,p);story=thread.getCompound("Story");story.putInt("KnockT",ThreeFingers.KNOCK_AT);thread.put("Story",story);savePaw(f,p,thread);
+            f.click(peer,place,ThreeFingers.FRONT_DOOR);
+            h.assertTrue(pawStory(f,p).getInt("Stage")==ThreeFingers.KNOCKING&&heard(peer,"He isn't knocking for you"),"it is not the friend's door to open");
+            f.click(p,place,ThreeFingers.FRONT_DOOR);var own=f.own(p,place);story=pawStory(f,p);
+            h.assertTrue(own.getBoolean("Ready")&&"opened_the_door_onto_the_empty_road".equals(own.getString("Outcome"))&&story.getInt(ThreeFingers.FINGERS)==0&&WitheredPawItem.fingers(pawOf(p,story))==0&&story.getInt("Stage")==ThreeFingers.DONE,"the holder opens it onto nobody, and the last finger goes down without a wish");
+            var tf=WitnessAccount.Story.THREE_FINGERS;
+            h.assertTrue(WitnessAccount.role(f.data(),peer.getUUID(),tf)==VignetteRole.WITNESS&&witnessPages(f,peer).contains("news_reader took the paw out of the coals"),"the friend who saw it all keeps a witness's account, naming who held the paw");
+            h.assertTrue(WitnessAccount.role(f.data(),absent.getUUID(),tf)==VignetteRole.ABSENT&&witnessPages(f,absent).contains("I was away when news_reader wished"),"the one away for the wish saw only what it brought");
+            h.assertTrue(WitnessAccount.role(f.data(),late.getUUID(),tf)==VignetteRole.PARTWAY&&witnessPages(f,late).contains("I came in partway through"),"the newcomer's account is a late joiner's");
+            h.assertTrue(!WitnessAccount.has(f.data(),away.getUUID(),tf)&&!WitnessAccount.has(f.data(),p.getUUID(),tf),"nobody away is credited, and the holder still reads their own account");
             f.source(p,place);f.read(p,place,ThreeFingers.BIBLE);
-            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.THREE_FINGERS)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.THREE_FINGERS),"the family Bible resolves its own reader only");
+            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),tf)&&WitnessAccount.role(f.data(),p.getUUID(),tf)==VignetteRole.ACTOR,"the family Bible resolves the holder as the one who acted");
             var text=new StringBuilder();for(var page:LiteraryTexts.ending(p,place,f.own(p,place)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages())text.append(page.raw().getString());
-            h.assertTrue(text.toString().contains("THE ROAD")&&text.toString().contains("Moss's collar"),"the account remembers the road and the collar: "+text);
+            h.assertTrue(text.toString().contains("THE ROAD")&&text.toString().contains("Moss's collar"),"the holder's account remembers the road and the collar: "+text);
+            // The one who was away comes back to its aftermath.
+            var b=f.base(place);away.teleportTo(f.in,b.getX()+.5,b.getY(),b.getZ()-3,180,0);VignetteThreads.arrived(away,place);
+            h.assertTrue(WitnessAccount.role(f.data(),away.getUUID(),tf)==VignetteRole.AFTERMATH&&witnessPages(f,away).contains("I was not there at the end"),"the member who missed the ending reads its aftermath");
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_paw_news") public static void pawNewsDone(ServerLevel l){close();}
@@ -713,40 +752,48 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void theMillEnvelopeOpensARealLetterAndNeverPaysTheCompensationTwice(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("mill_letter_reader",place);var peer=f.player("mill_letter_peer",place);
         h.assertTrue(CottageBlock.is(f.in.getBlockState(f.base(place).offset(-6,1,-11)),CottageBlock.Kind.CHESSBOARD),"the physical chessmen stand on the table between the two seats");
-        pawState(f,p,ThreeFingers.WISHED,2,own->{own.putString("Wish1",ThreeFingers.MONEY);own.putInt("WishVisit",own.getInt("Visit"));own.putInt("Beat",own.getInt("Visit"));});f.arrive(p,place);
-        var start=f.own(p,place);start.putInt("T",2000);LiteraryVignettes.save(f.data(),p.getUUID(),place,start);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Stage")==ThreeFingers.MOURNING,"the messenger delivers the real compensation"))
+        pawState(f,p,ThreeFingers.WISHED,2,story->{story.putString("Wish1",ThreeFingers.MONEY);story.putInt("WishVisit",0);story.putInt("Beat",0);});
+        var start=pawThread(f,p);var s0=start.getCompound("Story");s0.putInt("T",2000);start.put("Story",s0);savePaw(f,p,start);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(pawStory(f,p).getInt("Stage")==ThreeFingers.MOURNING,"the messenger delivers the real compensation"))
         .thenExecute(()->{int slot=-1;for(int i=0;i<9;i++)if(p.getInventory().getItem(i).is(LiteraryRegistry.MILL_LETTER.get()))slot=i;
-            h.assertTrue(slot>=0&&p.getInventory().countItem(Items.EMERALD)==7&&p.getInventory().countItem(Items.GOLD_INGOT)==3,"one readable envelope arrives with the finite exact payment");
+            h.assertTrue(slot>=0&&p.getInventory().countItem(Items.EMERALD)==7&&p.getInventory().countItem(Items.GOLD_INGOT)==3&&peer.getInventory().countItem(Items.EMERALD)==0,"one readable envelope arrives with the finite exact payment, to the holder alone");
             p.getInventory().selected=slot;var original=p.getMainHandItem();original.getItem().use(f.in,p,InteractionHand.MAIN_HAND);
             h.assertTrue(p.containerMenu instanceof net.minecraft.world.inventory.LecternMenu,"normal item use opens a native private letter view");
             var menu=p.containerMenu;h.assertTrue(menu.clickMenuButton(p,2)&&!menu.clickMenuButton(p,3),"the actual second page can be read and the private display cannot mint another envelope");p.closeContainer();
-            MillLetterItem.upgrade(p);ThreeFingers.reader(p,f.base(place),f.own(p,place));
+            MillLetterItem.upgrade(p);ThreeFingers.reader(p,f.base(place),f.own(p,place));ThreeFingers.reader(peer,f.base(place),f.own(peer,place));
             h.assertTrue(p.getMainHandItem()==original&&p.getInventory().countItem(Items.EMERALD)==7&&p.getInventory().countItem(Items.GOLD_INGOT)==3&&peer.getInventory().countItem(LiteraryRegistry.MILL_LETTER.get())==0,"reading preserves the exact original and pays nobody again");
-            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the compensation letter is not an ending or peer progression");
+            h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the compensation letter is not an ending or anyone's progression");
         }).thenSucceed();
     }
     @GameTest(template="empty",batch="literary_paw_endings",timeoutTicks=300)
-    public static void theLastWishTheFireAndALostPawEachEndOrResumeTheirOwnReadersPart(GameTestHelper h){
+    public static void theLastWishTheFireALostPawAndAHolderGoneTooLongEachEndOrResumeTheirThread(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var last=f.player("last_wisher",place);var burner=f.player("paw_burner",place);var loser=f.player("paw_loser",place);var early=f.player("early_burner",place);
-        pawState(f,last,ThreeFingers.KNOCKING,1,own->{own.putString("Wish1",ThreeFingers.MONEY);own.putInt("KnockT",ThreeFingers.HAMMER);own.putBoolean("SonGone",true);});
-        pawState(f,burner,ThreeFingers.MOURNING,2,own->{own.putString("Wish1",ThreeFingers.STORM);own.putBoolean("SonGone",true);});
-        pawState(f,loser,ThreeFingers.TAKEN,3,own->{});
-        pawState(f,early,ThreeFingers.TAKEN,3,own->{});
+        for(var r:List.of(burner,loser,early))apart(f,r);
+        pawState(f,last,ThreeFingers.KNOCKING,1,story->{story.putString("Wish1",ThreeFingers.MONEY);story.putInt("KnockT",ThreeFingers.HAMMER);story.putBoolean("SonGone",true);});
+        pawState(f,burner,ThreeFingers.MOURNING,2,story->{story.putString("Wish1",ThreeFingers.STORM);story.putBoolean("SonGone",true);});
+        pawState(f,loser,ThreeFingers.TAKEN,3,story->{});
+        pawState(f,early,ThreeFingers.TAKEN,3,story->{});
         h.startSequence().thenIdle(10).thenExecute(()->{
-            wish(last,4);var own=f.own(last,place);
-            h.assertTrue(own.getBoolean("Ready")&&"made_the_last_wish_before_the_door".equals(own.getString("Outcome"))&&own.getInt(ThreeFingers.FINGERS)==0&&own.getInt("Stage")==ThreeFingers.DONE,"the last wish stops the knocking and ends the part");
+            wish(last,4);var own=f.own(last,place);var story=pawStory(f,last);
+            h.assertTrue(own.getBoolean("Ready")&&"made_the_last_wish_before_the_door".equals(own.getString("Outcome"))&&story.getInt(ThreeFingers.FINGERS)==0&&story.getInt("Stage")==ThreeFingers.DONE,"the last wish stops the knocking and ends the thread's story");
             h.assertTrue(ThreeFingers.account(own).startsWith("THE LAST FINGER")&&ThreeFingers.account(own).contains("exact sum"),"its account names the last wish and the mill's money");
             h.assertTrue(burner.getMainHandItem().is(LiteraryRegistry.PAW.get()),"the burner holds their paw");
             f.click(burner,place,ThreeFingers.FIRE);own=f.own(burner,place);
-            h.assertTrue(own.getBoolean("Ready")&&"gave_the_paw_back_to_the_fire".equals(own.getString("Outcome"))&&pawOf(burner,own).isEmpty(),"once the first wish has come home, the paw can go back on the fire");
+            h.assertTrue(own.getBoolean("Ready")&&"gave_the_paw_back_to_the_fire".equals(own.getString("Outcome"))&&pawOf(burner,pawStory(f,burner)).isEmpty(),"once the first wish has come home, the paw can go back on the fire");
             f.click(early,place,ThreeFingers.FIRE);own=f.own(early,place);
-            h.assertTrue(own.getInt("Stage")==ThreeFingers.TAKEN&&!pawOf(early,own).isEmpty()&&!own.getBoolean("Ready"),"before any wish the fire will not take it");
-            own=f.own(loser,place);var old=pawOf(loser,own).copy();loser.getInventory().clearContent();
-            f.click(loser,place,ThreeFingers.FIRE);own=f.own(loser,place);var fresh=pawOf(loser,own);
-            h.assertTrue(!fresh.isEmpty()&&WitheredPawItem.fingers(fresh)==3&&!WitheredPawItem.mine(old,loser,own)&&own.getInt("Stage")==ThreeFingers.TAKEN,"a lost paw is in the fire again with the same fingers, and the old one answers no more");
+            h.assertTrue(pawStory(f,early).getInt("Stage")==ThreeFingers.TAKEN&&!pawOf(early,pawStory(f,early)).isEmpty()&&!own.getBoolean("Ready"),"before any wish the fire will not take it");
+            var old=pawOf(loser,pawStory(f,loser)).copy();loser.getInventory().clearContent();
+            f.click(loser,place,ThreeFingers.FIRE);story=pawStory(f,loser);var fresh=pawOf(loser,story);
+            h.assertTrue(!fresh.isEmpty()&&WitheredPawItem.fingers(fresh)==3&&!WitheredPawItem.mine(old,loser,story)&&story.getInt("Stage")==ThreeFingers.TAKEN,"a lost paw is in the fire again with the same fingers, and the old one answers no more");
             ThreeFingers.use(loser,old);h.assertTrue(!(loser.containerMenu instanceof LiteraryChoiceMenu),"the old paw opens no wish");
             ThreeFingers.use(loser,fresh);h.assertTrue(loser.containerMenu instanceof LiteraryChoiceMenu,"the paw from the fire still offers the first wish");loser.closeContainer();
+            // A holder gone three days: the paw goes back in the fire for whoever comes, and the one they carry is only a dried paw.
+            var held=pawOf(early,pawStory(f,early)).copy();var b=f.base(place);early.teleportTo(f.in,b.getX()+.5,b.getY(),b.getZ()+64.5,0,0);
+            var thread=pawThread(f,early);thread.putLong("HolderSince",f.in.getServer().overworld().getGameTime()-VignetteThreads.RELEASE-1);savePaw(f,early,thread);
+            VignetteThreads.releaseOverdue(f.in.getServer());
+            h.assertTrue(VignetteThreads.holder(pawThread(f,early))==null&&!WitheredPawItem.mine(held,early,pawStory(f,early)),"the paw has gone back to the fire");
+            f.arrive(early,place);f.click(early,place,ThreeFingers.FIRE);story=pawStory(f,early);
+            h.assertTrue(early.getUUID().equals(VignetteThreads.holder(pawThread(f,early)))&&!pawOf(early,story).isEmpty()&&WitheredPawItem.fingers(pawOf(early,story))==3,"whoever of the thread comes takes it out of the fire again");
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_paw_endings") public static void pawEndingsDone(ServerLevel l){close();}

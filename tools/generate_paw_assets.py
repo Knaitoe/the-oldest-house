@@ -498,9 +498,11 @@ def paw():
         if suffix:
             (models_dir / f'withered_paw{suffix}.json').write_text(json.dumps(
                 {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'the_oldest_house:item/withered_paw{suffix}'}}, indent=1) + '\n')
-    overrides = [{'predicate': {'custom_model_data': gone}, 'model': f'the_oldest_house:item/withered_paw_{3 - gone}'} for gone in (1, 2, 3)]
-    (models_dir / 'withered_paw.json').write_text(json.dumps(
-        {'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/withered_paw'}, 'overrides': overrides}, indent=1) + '\n')
+    # Since 0.4.147 tools/draw_paw_clench.py owns the paw's overrides (the finger curling down); only a missing file is written.
+    if not (models_dir / 'withered_paw.json').exists():
+        overrides = [{'predicate': {'custom_model_data': gone}, 'model': f'the_oldest_house:item/withered_paw_{3 - gone}'} for gone in (1, 2, 3)]
+        (models_dir / 'withered_paw.json').write_text(json.dumps(
+            {'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/withered_paw'}, 'overrides': overrides}, indent=1) + '\n')
     return written
 
 

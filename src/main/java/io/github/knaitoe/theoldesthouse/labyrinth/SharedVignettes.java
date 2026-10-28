@@ -30,6 +30,10 @@ public final class SharedVignettes {
     private static final Set<LabyrinthPlace> HELD=EnumSet.of(GOATMAN,HIDE_AND_CLAP);
     private static final Map<LabyrinthPlace,Scene> DRAFTED=new EnumMap<>(LabyrinthPlace.class);
     private SharedVignettes(){}
+    static {
+        // 0.4.147: the monkey's paw, the first scene drafted for every way of being there.
+        draft(THREE_FINGERS,ThreeFingers.SHARED);
+    }
 
     public static boolean followable(@Nullable LabyrinthPlace place){
         return place!=null&&place.isVignette()&&place.slot()>=0&&!PRIVATE.contains(place)&&!HELD.contains(place);
