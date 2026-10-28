@@ -18,7 +18,9 @@ jobs:
         with:
           gradle-version: '9.2.1'
       - name: Original paintings and all native support models
-        run: python3 tools/draw_domestic_records.py --check
+        run: |
+          python3 -m pip install Pillow
+          python3 tools/draw_domestic_records.py --check
       - name: All original interior cases plus contact, oblique use, custody and prose revision
         run: |
           set -o pipefail
