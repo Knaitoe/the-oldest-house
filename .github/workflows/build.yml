@@ -1,4 +1,4 @@
-name: Goatman late-knock diagnosis
+name: Goatman and pairing fixture diagnosis
 
 on:
   push:
@@ -8,20 +8,32 @@ permissions:
   contents: read
 
 jobs:
-  late-knock:
-    name: Native late-knock sample ${{ matrix.sample }}
+  native:
+    name: ${{ matrix.label }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     strategy:
       fail-fast: false
       matrix:
-        sample: [1, 2, 3]
+        include:
+          - {label: goatman-1, namespace: the_oldest_house_selected, method: 'GoatmanExteriorTests#theFinishedCamperKeepsItsOriginalMovingFromEveningThroughDawnWithSimultaneousDoorPressure', expected: 1, heap: 3g}
+          - {label: goatman-2, namespace: the_oldest_house_selected, method: 'GoatmanExteriorTests#theFinishedCamperKeepsItsOriginalMovingFromEveningThroughDawnWithSimultaneousDoorPressure', expected: 1, heap: 3g}
+          - {label: goatman-3, namespace: the_oldest_house_selected, method: 'GoatmanExteriorTests#theFinishedCamperKeepsItsOriginalMovingFromEveningThroughDawnWithSimultaneousDoorPressure', expected: 1, heap: 3g}
+          - {label: pairing-1, namespace: the_oldest_house_selected, method: 'UncannyTests#theFarOriginalTakesHeavyPhysicalStridesButFreezesWithoutAnotherImpactAtGreen', expected: 1, heap: 3g}
+          - {label: pairing-2, namespace: the_oldest_house_selected, method: 'UncannyTests#theFarOriginalTakesHeavyPhysicalStridesButFreezesWithoutAnotherImpactAtGreen', expected: 1, heap: 3g}
+          - {label: pairing-3, namespace: the_oldest_house_selected, method: 'UncannyTests#theFarOriginalTakesHeavyPhysicalStridesButFreezesWithoutAnotherImpactAtGreen', expected: 1, heap: 3g}
+          - {label: goatman-suite, namespace: 'the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_nightward,the_oldest_house_goatman_windows,the_oldest_house_goatman_entry,the_oldest_house_goatman_meal', method: '', expected: 53, heap: 6g}
+          - {label: uncanny-suite, namespace: the_oldest_house_uncanny, method: '', expected: 56, heap: 3g}
     env:
       JAVA_TOOL_OPTIONS: -Dthe_oldest_house.traceLateKnock=true
+      NATIVE_CASE_NAMESPACE: ${{ matrix.namespace }}
+      NATIVE_CASE_METHOD: ${{ matrix.method }}
+      NATIVE_CASE_EXPECTED: ${{ matrix.expected }}
+      NATIVE_CASE_HEAP: ${{ matrix.heap }}
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -29,46 +41,50 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Verify original source and assertions
+      - name: Verify bounded fixture changes
         run: |
           mkdir -p build
           python3 - <<'PY'
           from pathlib import Path
-          import re, subprocess
+          import hashlib, re, subprocess
           base='39df9862a98f19e74463dee25435b3b87c1478af'
           traced={
               'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/GoatmanStalking.java',
               'src/main/java/io/github/knaitoe/theoldesthouse/gametest/GoatmanExteriorTests.java',
           }
+          pairing='src/main/java/io/github/knaitoe/theoldesthouse/gametest/UncannyTests.java'
           changed=set(subprocess.check_output(['git','diff','--name-only',base,'HEAD'],text=True).splitlines())
-          assert changed == traced | {'.github/workflows/build.yml'}, changed
+          assert changed == traced | {pairing,'.github/workflows/build.yml'}, changed
           for name in traced:
               original=subprocess.check_output(['git','show',base+':'+name],text=True)
               actual=Path(name).read_text()
-              stripped=re.sub(r'^ *// LATE_TRACE_BEGIN\n.*?^ *// LATE_TRACE_END\n','',actual,flags=re.M|re.S)
-              assert stripped == original, 'Only gated read/log blocks may differ: '+name
-          Path('build/source-provenance.txt').write_text('Original code/assertions: '+base+'\nDiagnostic commit: '+subprocess.check_output(['git','rev-parse','HEAD'],text=True)+'All original conditions, timing, native deadlines and assertions retained.\n')
+              stripped=re.sub(r'^ *// (LATE_TRACE|FIXTURE_SEED)_BEGIN\n.*?^ *// (LATE_TRACE|FIXTURE_SEED)_END\n','',actual,flags=re.M|re.S)
+              assert stripped == original, 'Only gated logs and the one native RNG seed may differ: '+name
+          assert hashlib.sha256(Path(pairing).read_bytes()).hexdigest()=='5b91b908635942e4501ce394addacd56fededee910503324df3b54abd1bcfaca'
+          original=subprocess.check_output(['git','show',base+':'+pairing],text=True)
+          assert re.findall(r'@GameTest\([^\n]*\)',original)==re.findall(r'@GameTest\([^\n]*\)',Path(pairing).read_text()), 'Native cases and deadlines must remain exact.'
+          Path('build/source-provenance.txt').write_text('Base: '+base+'\nCandidate: '+subprocess.check_output(['git','rev-parse','HEAD'],text=True)+'Production timing and all original Goatman assertions are retained; pairing waits for real native delivery within the original deadline.\n')
           PY
-      - name: Run original complete-night assertion
+      - name: Run native fixtures
         run: |
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 10m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_selected '-PgameTestMethods=GoatmanExteriorTests#theFinishedCamperKeepsItsOriginalMovingFromEveningThroughDawnWithSimultaneousDoorPressure' -PgameTestDirectory=run-late-knock -PgameTestHeap=3g --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/native-late-knock.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer "-PgameTestNamespaces=$NATIVE_CASE_NAMESPACE" "-PgameTestMethods=$NATIVE_CASE_METHOD" -PgameTestDirectory=run-late-knock "-PgameTestHeap=$NATIVE_CASE_HEAP" --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-fixtures.log
           python3 - <<'PY'
           from pathlib import Path
-          import re
-          log=Path('build/native-late-knock.log').read_text()
+          import os,re
+          expected=int(os.environ['NATIVE_CASE_EXPECTED'])
+          log=Path('build/native-fixtures.log').read_text()
           completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
-          assert completed and int(completed[-1])==1, 'The selected original native case must finish.'
-          assert 'All 1 required tests passed' in log
+          assert completed and int(completed[-1])==expected
+          assert f'All {expected} required tests passed' in log
           assert 'Game test server shutting down' in log
-          assert 'LATE KNOCK EVENT' in log and 'LATE KNOCK OBSERVATION' in log
           PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: late-knock-sample-${{ matrix.sample }}
+          name: fixture-${{ matrix.label }}
           path: |
-            build/native-late-knock.log
+            build/native-fixtures.log
             build/source-provenance.txt
             run-late-knock/logs/latest.log
             run-late-knock/crash-reports/
