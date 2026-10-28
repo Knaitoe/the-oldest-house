@@ -99,7 +99,7 @@ public final class UncannySocketClient {
             var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);
             if(age%100==0){
                 var expected=new Vec3(data.getDouble("TunnelX"),data.getDouble("TunnelY"),data.getDouble("TunnelZ"));
-                TheOldestHouse.LOGGER.info("UNCANNY TUNNEL {} original={} native={} phase={} position={} expected={} height={} scale={} drawn={}",role(),data.hasUUID("TunnelOriginal")?data.getUUID("TunnelOriginal"):"missing",giant==null?"missing":giant.getUUID(),giant==null?-1:giant.phase(),giant==null?"missing":giant.position(),expected,giant==null?0:giant.getBbHeight(),giant==null?0:giant.getScale(),UncannyActorRenderer.proofDrawn(giant));
+                TheOldestHouse.LOGGER.info("UNCANNY TUNNEL {} original={} native={} phase={} position={} expected={} height={} scale={} drawn={} packetBase={} lerpTarget={}",role(),data.hasUUID("TunnelOriginal")?data.getUUID("TunnelOriginal"):"missing",giant==null?"missing":giant.getUUID(),giant==null?-1:giant.phase(),giant==null?"missing":giant.position(),expected,giant==null?0:giant.getBbHeight(),giant==null?0:giant.getScale(),UncannyActorRenderer.proofDrawn(giant),giant==null?"missing":giant.getPositionCodec().getBase(),giant==null?"missing":new Vec3(giant.lerpTargetX(),giant.lerpTargetY(),giant.lerpTargetZ()));
                 if(age==100)extraShot=role()+"-tunnel-waiting";
             }
             if(giant!=null&&data.hasUUID("TunnelOriginal")){
