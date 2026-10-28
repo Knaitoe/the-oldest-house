@@ -34,6 +34,11 @@ public final class LiteraryActor extends PathfinderMob {
     @Override protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,EntityDimensions dimensions,float partial){if(role()==FATHER&&passenger instanceof net.minecraft.world.entity.animal.Rabbit)return new net.minecraft.world.phys.Vec3(0,.8,.4).yRot(-getYRot()*(float)Math.PI/180);return super.getPassengerAttachmentPoint(passenger,dimensions,partial);}
     public int role(){return entityData.get(ROLE);}public int phase(){return entityData.get(PHASE);}public Optional<UUID> owner(){return entityData.get(OWNER);}public String scene(){return scene;}
     @Override public void lerpTo(double x,double y,double z,float yaw,float pitch,int steps){
+        // A late pairing can first spawn the unseen woman at the tracker's old far-end
+        // position. Its absolute correction must enter the loaded client section now:
+        // an entity in an unloaded section never ticks to consume an interpolation target.
+        // Short, visible pursuit steps retain ordinary native interpolation.
+        if(level().isClientSide&&role()==UNCANNY_GIANT&&distanceToSqr(x,y,z)>64&&level().getChunkSource().getChunk(blockPosition().getX()>>4,blockPosition().getZ()>>4,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,false)==null)moveTo(x,y,z,yaw,pitch);
         if(level().isClientSide&&UncannyStories.role(role())&&role()!=UNCANNY_WAITRESS&&role()!=UNCANNY_GIANT&&distanceToSqr(x,y,z)<16)steps=Math.max(steps,5);
         super.lerpTo(x,y,z,yaw,pitch,steps);
     }
