@@ -114,15 +114,23 @@ public final class UncannyTests {
             // A native send can be queued under full-suite load. Accumulate its actual
             // delivery within the original test deadline before inspecting the pairing.
             var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));
-            while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::addLast);else packets.add(packet);}
+            while(!queue.isEmpty()){
+                var packet=queue.removeFirst();
+                if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle){
+                    // Expand in place: the spawn inside a bundle precedes the correction
+                    // sent after that bundle. Breadth-first expansion reverses that order.
+                    var children=new ArrayList<net.minecraft.network.protocol.Packet<?>>();bundle.subPackets().forEach(children::add);
+                    for(int i=children.size()-1;i>=0;i--)queue.addFirst(children.get(i));
+                }else if(packet instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket added&&added.getId()==actorId[0]||packet instanceof net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket placed&&placed.getId()==actorId[0])packets.add(packet);
+            }
             boolean spawn=false,corrected=false;
             for(var packet:packets){if(packet instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket added&&added.getId()==actorId[0]&&Math.abs(added.getZ()-stale[0].z)<1e-7)spawn=true;if(spawn&&packet instanceof net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket placed&&placed.getId()==actorId[0]&&Math.abs(placed.getX()-paired[0].x)<1e-7&&Math.abs(placed.getY()-paired[0].y)<1e-7&&Math.abs(placed.getZ()-paired[0].z)<1e-7)corrected=true;}
-            h.assertTrue(spawn&&corrected,"the actual stale native spawn and following authoritative correction must arrive within the original deadline; packets="+packets.stream().map(packet->packet.getClass().getSimpleName()).toList());
+            h.assertTrue(spawn&&corrected,"the actual stale native spawn and following authoritative correction must arrive within the original deadline; spawn="+spawn+" corrected="+corrected+" packets="+packets.stream().limit(8).map(packet->packet.getClass().getSimpleName()).toList());
         }).thenExecute(()->{
             var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");
             net.minecraft.network.protocol.game.ClientboundAddEntityPacket spawned=null;net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket placed=null;
             for(var packet:packets){if(spawned==null&&packet instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket added&&added.getId()==a.getId()&&Math.abs(added.getZ()-stale[0].z)<1e-7)spawned=added;if(spawned!=null&&placed==null&&packet instanceof net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket current&&current.getId()==a.getId()&&Math.abs(current.getX()-paired[0].x)<1e-7&&Math.abs(current.getY()-paired[0].y)<1e-7&&Math.abs(current.getZ()-paired[0].z)<1e-7)placed=current;}
-            h.assertTrue(spawned!=null&&Math.abs(spawned.getZ()-stale[0].z)<1e-7&&Math.abs(spawned.getZ()-paired[0].z)>20,"the real native pairing reproduces its cached pre-appearance spawn position; spawn="+(spawned==null?"missing":spawned.getZ())+" stale="+stale[0].z+" current="+paired[0].z+" packets="+packets.stream().map(packet->packet.getClass().getSimpleName()).toList());
+            h.assertTrue(spawned!=null&&Math.abs(spawned.getZ()-stale[0].z)<1e-7&&Math.abs(spawned.getZ()-paired[0].z)>20,"the real native pairing reproduces its cached pre-appearance spawn position; spawn="+(spawned==null?"missing":spawned.getZ())+" stale="+stale[0].z+" current="+paired[0].z+" packets="+packets.stream().limit(8).map(packet->packet.getClass().getSimpleName()).toList());
             h.assertTrue(placed!=null&&Math.abs(placed.getX()-paired[0].x)<1e-7&&Math.abs(placed.getY()-paired[0].y)<1e-7&&Math.abs(placed.getZ()-paired[0].z)<1e-7,"the same actual original is reconciled after its native pairing bundle");
             h.assertTrue(a.getUUID().equals(id[0]),"the delivered pairing belongs to the same native original");
             var own=f.own(p,place);own.putBoolean("TunnelStarted127",true);own.putInt("UncannyAge",245);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
