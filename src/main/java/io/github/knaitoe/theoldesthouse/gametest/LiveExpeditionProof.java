@@ -88,6 +88,8 @@ public final class LiveExpeditionProof {
         }
         if(phase==0) {
             if(a==null||b==null)return;
+            // The Borrasca source floor loads on the native workers first: no tick with both clients connected waits on worldgen.
+            if(Boolean.getBoolean("the_oldest_house.borrascaSocketSmoke")&&!BorrascaSocketProof.ready(s,ORIGIN))return;
             var l=s.getLevel(HouseDimensions.INTERIOR);require(l!=null,"native House dimension loaded");
             var house=new HouseSavedData();house.markSpawned(ORIGIN);house.markInteriorInitialized();s.overworld().getDataStorage().set("the_oldest_house",house);
             var d=new LabyrinthData();d.setBuilt(LabyrinthBuilder.VERSION,ORIGIN);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);
@@ -131,7 +133,9 @@ public final class LiveExpeditionProof {
         }else if(phase==4&&a!=null&&b!=null&&d.returnDepth(a.getUUID())==0&&d.returnDepth(b.getUUID())==0
                 &&LabyrinthPlaces.placeAt(ORIGIN,a.blockPosition())==LabyrinthPlace.ALCOVE_HALL&&LabyrinthPlaces.placeAt(ORIGIN,b.blockPosition())==LabyrinthPlace.ALCOVE_HALL) {
             require(LabyrinthPlaces.placeAt(ORIGIN,a.blockPosition())==LabyrinthPlace.ALCOVE_HALL&&LabyrinthPlaces.placeAt(ORIGIN,b.blockPosition())==LabyrinthPlace.ALCOVE_HALL,"both clients really walk back to the source hall without outside ejection");
-            var l=s.getLevel(HouseDimensions.INTERIOR);var arch=new CompoundTag();arch.putBoolean("Ready",true);arch.putInt("CarveVersion",FinaleArchitecture.CARVE_VERSION);d.setState("finale_architecture_049",arch);
+            // The staircase entrance is written only once its chunks have loaded without stalling the connected host.
+            var l=s.getLevel(HouseDimensions.INTERIOR);if(entrance==null)entrance=entrance();for(var box:entrance)huntChunks.request(l,box);if(!huntChunks.ready())return;
+            var arch=new CompoundTag();arch.putBoolean("Ready",true);arch.putInt("CarveVersion",FinaleArchitecture.CARVE_VERSION);d.setState("finale_architecture_049",arch);
             for(var block:FinaleArchitecture.entrancePlan(ORIGIN))l.setBlock(block.pos(),block.block(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
             var sheet=StaircaseLeaves.positions(ORIGIN).getFirst();var fire=StaircaseFire.braziers(ORIGIN).getFirst();
             for(var center:List.of(sheet,fire))for(int x=-4;x<=4;x++)for(int z=-4;z<=4;z++)for(int y=-1;y<=2;y++)
@@ -421,7 +425,16 @@ public final class LiveExpeditionProof {
     }
 
     private static void holdHunt(net.minecraft.server.level.ServerLevel l,BlockPos site){
-        huntChunks.hold(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-13,-5,-55)),Vec3.atLowerCornerOf(site.offset(14,6,4))));
+        huntChunks.request(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(site.offset(-13,-5,-55)),Vec3.atLowerCornerOf(site.offset(14,6,4))));
+    }
+    private static List<net.minecraft.world.phys.AABB> entrance;
+    /** The chunks the staircase entrance fixture writes into, one box per chunk column it touches. */
+    private static List<net.minecraft.world.phys.AABB> entrance(){
+        var cells=new java.util.ArrayList<BlockPos>();for(var block:FinaleArchitecture.entrancePlan(ORIGIN))cells.add(block.pos());
+        for(var center:List.of(StaircaseLeaves.positions(ORIGIN).getFirst(),StaircaseFire.braziers(ORIGIN).getFirst()))for(int x=-4;x<=4;x+=4)for(int z=-4;z<=4;z+=4)cells.add(center.offset(x,0,z));
+        var chunks=new java.util.LinkedHashSet<Long>();for(var at:cells)chunks.add(net.minecraft.world.level.ChunkPos.asLong(at));
+        var out=new java.util.ArrayList<net.minecraft.world.phys.AABB>();for(long c:chunks){int x=net.minecraft.world.level.ChunkPos.getX(c)<<4,z=net.minecraft.world.level.ChunkPos.getZ(c)<<4;out.add(new net.minecraft.world.phys.AABB(x+2,0,z+2,x+13,1,z+13));}
+        return out;
     }
     private static void portholeFrame(net.minecraft.server.level.ServerLevel l,BlockPos site,int side){
         int window=side*9;

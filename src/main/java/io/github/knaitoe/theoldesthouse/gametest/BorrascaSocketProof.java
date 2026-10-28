@@ -24,6 +24,8 @@ final class BorrascaSocketProof {
     static BlockPos source(){return source;}
     static BlockPos base(ServerPlayer p){return BorrascaSites.base(p.server,p.getUUID());}
     private static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.BORRASCA);}
+    /** Requests the source's chunks without loading them on the server thread; true once they and their entity sections are in. */
+    static boolean ready(net.minecraft.server.MinecraftServer s,BlockPos origin){CHUNKS.request(s.overworld(),new AABB(origin.offset(80,0,80)).inflate(6));return CHUNKS.ready();}
     static void begin(ServerPlayer a,ServerPlayer b,BlockPos origin){
         source=origin.offset(80,0,80);var level=a.server.overworld();var data=LabyrinthData.get(a.server);CHUNKS.hold(level,new AABB(source).inflate(6));
         for(var at:BlockPos.betweenClosed(source.offset(-3,-1,-4),source.offset(3,-1,5)))level.setBlock(at,Blocks.STONE.defaultBlockState(),3);
