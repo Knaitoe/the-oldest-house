@@ -67,11 +67,18 @@ The first design gave each reader their own copy, so the House would watch one p
 - **How it plays.** Friends who cross a door together arrive in the same room and can go through it together.
 - **Each reader's own record.** The House still files only what each reader did themselves. Two friends in one room can be read differently, and a peer's act never counts as theirs. A shared room does partly measure the group, since friends follow each other and grab things for each other. That was the reason for the per-reader copies, and the owner's direction now puts playing together first.
 - **A finished room becomes a passage.** Once a reader has completed a room, its door no longer replays the scene for them. It is just a door connecting two halls.
-- **To settle when implementing:**
+- **Mixed groups (owner).** When a group reaches a door and some of them have already finished what lies behind it, the House deals a vignette none of them has seen. If there is none, the group splits: those who finished pass through, and the others get the scene.
+- **Shared by default, with witnesses.** Most vignettes become shared. Whoever acts on the key beat leads it, and everyone else in the room witnesses it. Some vignettes must stay private; Backseat's single driver's seat is the clear case.
+- **The owner's notes on particular scenes:**
+  - **Goatman** can eventually be shared. Extra players take the place of other campers, so the headcount stays the same as solo. The count, seating, supper and dialogue must treat each player as that cousin.
+  - **The drowned town and lake-witch scenes** should mostly support several players.
+  - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen.
+  - **The child's room** can be shared.
+- **Still open:**
+  - whether a witness who stayed for the whole scene gets their own account and the Witness credit;
+  - which other vignettes must stay private;
   - how a shared room is built and reset when friends arrive at different times;
-  - who a scene responds to when two readers act at once;
-  - how a door behaves when one reader at it has finished the room and another has not;
-  - which existing private vignettes (Backseat, Borrasca, the Silo, the literary and home copies) become shared.
+  - who a scene responds to when two readers act at once.
 
 Where the build differs today: every reader gets their own copy of each room, 4,096 blocks from the next reader's copy, built in bounded slices like `BorrascaSites`.
 
@@ -473,6 +480,8 @@ After playtesting 0.4.142, the owner asked for four changes, for these rooms and
 2. **Every room has an exit that leads forward**, not just back.
 3. **Two or more players can go into a room together** ("Co-op").
 4. **A completed room is just a door connecting halls** for that reader.
+
+A follow-up the same day settled mixed groups: deal a vignette none of the group has seen, or else split them. It also named the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room as scenes to share (see "Co-op").
 
 None of these is implemented yet.
 
