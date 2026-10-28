@@ -31,9 +31,10 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 def goatmanBedSocketSmoke = providers.gradleProperty('goatmanBedSocketSmoke').isPresent()
 def borrascaSocketSmoke = providers.gradleProperty('borrascaSocketSmoke').isPresent()
 def uncannySocketSmoke = providers.gradleProperty('uncannySocketSmoke').isPresent()
+def tailoringSocketSmoke = providers.gradleProperty('tailoringSocketSmoke').isPresent()
 def backseatSocketSmoke = providers.gradleProperty('backseatSocketSmoke').isPresent()
-def proofRoot = goatmanBedSocketSmoke ? 'run-goatman-bed137' : backseatSocketSmoke ? 'run-backseat-live' : uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
-def proofReport = goatmanBedSocketSmoke ? 'build/goatman-bed137-proof' : backseatSocketSmoke ? 'build/backseat-live-proof' : uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
+def proofRoot = tailoringSocketSmoke ? 'run-tailoring-live' : goatmanBedSocketSmoke ? 'run-goatman-bed137' : backseatSocketSmoke ? 'run-backseat-live' : uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
+def proofReport = tailoringSocketSmoke ? 'build/tailoring-live-proof' : goatmanBedSocketSmoke ? 'build/goatman-bed137-proof' : backseatSocketSmoke ? 'build/backseat-live-proof' : uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
 
 neoForge {
     version = project.neo_version
@@ -156,7 +157,8 @@ neoForge {
             // The 2-GiB host stalled in native chunk serialization during the first reconnect.
             // Keep the watchdog and every reconnect check; allow room for the complete fixtures.
             jvmArgument '-Xmx3g'
-            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke).toString()
+            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke&&!tailoringSocketSmoke).toString()
+            systemProperty 'the_oldest_house.tailoringSocketSmoke', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.borrascaSocketSmoke', borrascaSocketSmoke.toString()
@@ -167,7 +169,8 @@ neoForge {
             client()
             gameDirectory = project.file("${proofRoot}/a")
             jvmArgument '-Xmx1100m'
-            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke).toString()
+            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke&&!tailoringSocketSmoke).toString()
+            systemProperty 'the_oldest_house.tailoringSocketSmoke', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'A'
@@ -182,7 +185,8 @@ neoForge {
             client()
             gameDirectory = project.file("${proofRoot}/b")
             jvmArgument '-Xmx1100m'
-            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke).toString()
+            systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke&&!tailoringSocketSmoke).toString()
+            systemProperty 'the_oldest_house.tailoringSocketSmoke', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'B'
@@ -200,7 +204,7 @@ neoForge {
             // Full native fixtures and chunk serialization exhausted five GiB.
             // Retain every persistence check with a six-GiB test-host heap.
             jvmArgument '-Xmx' + providers.gradleProperty('gameTestHeap').getOrElse('6g')
-            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_architecture,' + project.mod_id + '_writing,' + project.mod_id + '_hotel,' + project.mod_id + '_literary,' + project.mod_id + '_fan488,' + project.mod_id + '_ghosts,' + project.mod_id + '_doors,' + project.mod_id + '_seam,' + project.mod_id + '_staircase,' + project.mod_id + '_multiplayer,' + project.mod_id + '_multiplayer_story,' + project.mod_id + '_exploration,' + project.mod_id + '_caver,' + project.mod_id + '_goatman,' + project.mod_id + '_charge,' + project.mod_id + '_mirrorcheck,' + project.mod_id + '_playtest488,' + project.mod_id + '_playtest492,' + project.mod_id + '_nightclub,' + project.mod_id + '_wake,' + project.mod_id + '_nightward,' + project.mod_id + '_lake_house,' + project.mod_id + '_borrasca,' + project.mod_id + '_goatman_windows,' + project.mod_id + '_goatman_entry,' + project.mod_id + '_uncanny,' + project.mod_id + '_uncanny_environment,' + project.mod_id + '_interior_review,' + project.mod_id + '_handling,' + project.mod_id + '_backseat,' + project.mod_id + '_service,' + project.mod_id + '_silo,' + project.mod_id + '_foyer,' + project.mod_id + '_goatman_meal,' + project.mod_id + '_house_read')
+            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse(project.mod_id + ',' + project.mod_id + '_architecture,' + project.mod_id + '_writing,' + project.mod_id + '_hotel,' + project.mod_id + '_literary,' + project.mod_id + '_fan488,' + project.mod_id + '_ghosts,' + project.mod_id + '_doors,' + project.mod_id + '_seam,' + project.mod_id + '_staircase,' + project.mod_id + '_multiplayer,' + project.mod_id + '_multiplayer_story,' + project.mod_id + '_exploration,' + project.mod_id + '_caver,' + project.mod_id + '_goatman,' + project.mod_id + '_charge,' + project.mod_id + '_mirrorcheck,' + project.mod_id + '_playtest488,' + project.mod_id + '_playtest492,' + project.mod_id + '_nightclub,' + project.mod_id + '_wake,' + project.mod_id + '_nightward,' + project.mod_id + '_lake_house,' + project.mod_id + '_borrasca,' + project.mod_id + '_goatman_windows,' + project.mod_id + '_goatman_entry,' + project.mod_id + '_uncanny,' + project.mod_id + '_uncanny_environment,' + project.mod_id + '_interior_review,' + project.mod_id + '_handling,' + project.mod_id + '_backseat,' + project.mod_id + '_service,' + project.mod_id + '_silo,' + project.mod_id + '_foyer,' + project.mod_id + '_goatman_meal,' + project.mod_id + '_house_read,' + project.mod_id + '_tailoring')
         }
 
         data {

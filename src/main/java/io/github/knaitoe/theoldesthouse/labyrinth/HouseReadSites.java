@@ -53,9 +53,19 @@ public final class HouseReadSites {
     public static boolean added139(LabyrinthPlace place){return place==LabyrinthPlace.READ_WAITING||place==LabyrinthPlace.READ_BATHROOM||place==LabyrinthPlace.READ_SHELTER;}
     public static @Nullable BlockPos base(MinecraftServer s,UUID id,Room room){var own=state(s,id);var origin=HouseSavedData.get(s).houseOrigin();return origin==null||!own.contains("Index")?null:new BlockPos(origin.getX()+8192+own.getInt("Index")*4096,80,origin.getZ()-room.offsetZ);}
     public static @Nullable Room inside(ServerPlayer p){var own=state(p.server,p.getUUID());for(var room:Room.values()){var b=base(p.server,p.getUUID(),room);if(b!=null&&own.getCompound(room.key()).getBoolean("Built")&&p.level().dimension().equals(room.dimension())&&HouseReadRooms.bounds(b,room).contains(p.position()))return room;}return null;}
+    /** Native room bounds also shelter an observer; ownership still gates every interaction. */
+    public static boolean contains(ServerPlayer p){
+        for(String key:LabyrinthData.get(p.server).state(STATE).getAllKeys())try{
+            var id=UUID.fromString(key);var own=state(p.server,id);
+            for(var room:Room.values())if(p.level().dimension().equals(room.dimension())&&own.getCompound(room.key()).getBoolean("Built")){
+                var b=base(p.server,id,room);if(b!=null&&HouseReadRooms.bounds(b,room).contains(p.position()))return true;
+            }
+        }catch(IllegalArgumentException ignored){}
+        return false;
+    }
     public static List<AABB> areas(MinecraftServer s,boolean outside){var out=new ArrayList<AABB>();for(String key:LabyrinthData.get(s).state(STATE).getAllKeys())try{var id=UUID.fromString(key);for(var room:Room.values())if((room==Room.PORCH)==outside){var b=base(s,id,room);if(b!=null)out.add(HouseReadRooms.bounds(b,room));}}catch(IllegalArgumentException ignored){}return out;}
     public static boolean protectedPosition(MinecraftServer s,BlockPos at,boolean outside){return areas(s,outside).stream().anyMatch(a->a.contains(Vec3.atCenterOf(at)));}
-    public static @Nullable Room next(MinecraftServer s,UUID id){var t=state(s,id);for(var room:Room.values())if((!added139(room.place())||LabyrinthData.get(s).builtVersion()>=50)&&!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
+    public static @Nullable Room next(MinecraftServer s,UUID id){var t=state(s,id);for(var room:Room.values())if(!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
     public static @Nullable LabyrinthData.Door prepare(ServerPlayer p,Room room){
         var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}var own=state(p.server,p.getUUID());
         if(!own.contains("Index")){var world=d.stateEntry(STATE,"World");int index=world.getInt("NextIndex");if(index>=4096)return null;own.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(STATE,"World",world);save(p.server,p.getUUID(),own);}
@@ -64,15 +74,13 @@ public final class HouseReadSites {
         var job=new Job(p.getUUID(),room);if(!job.equals(building))WAITING.add(job);return null;
     }
     /** Preparing ahead changes no route, visit, action or inventory. */
-    public static void prepareNext(ServerPlayer p){if(LabyrinthData.get(p.server).builtVersion()<49||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p))return;var room=next(p.server,p.getUUID());if(room!=null)prepare(p,room);}
+    public static void prepareNext(ServerPlayer p){if(LabyrinthData.get(p.server).door(HouseReadEntrance.id(Room.WAITING))==null||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p))return;var room=next(p.server,p.getUUID());if(room!=null)prepare(p,room);}
     private static String doorId(UUID id,Room room,String name){return "house_read/"+id+"/"+room.key()+"/"+name;}
-    /** Interleave only a genuinely new ordinary arrival. Existing maps and story doors stay exact. */
+    /** Only the five physical doors before the labyrinth offer these moments. */
     public static boolean offer(ServerPlayer p,LabyrinthData.Door from,LabyrinthPlace target){
-        var d=LabyrinthData.get(p.server);var room=next(p.server,p.getUUID());
-        if(room==null||d.builtVersion()<49||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p)||inside(p)!=null||target==null||!LabyrinthPacing.ordinary(target))return false;
+        var d=LabyrinthData.get(p.server);var room=HouseReadEntrance.room(from);
+        if(room==null||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p)||inside(p)!=null||target!=LabyrinthPlace.JUNCTION)return false;
         var allocation=state(p.server,p.getUUID());if(!allocation.contains("Index")&&d.stateEntry(STATE,"World").getInt("NextIndex")>=4096)return false;
-        var back=new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true);
-        long arrival=d.arrivalKey(p.getUUID(),target,back);if(d.node(p.getUUID(),arrival)!=null||state(p.server,p.getUUID()).getList("OfferedNodes",Tag.TAG_LONG).contains(LongTag.valueOf(arrival)))return false;
         var request=new Request(from.id,target,room);PENDING.put(p.getUUID(),request);enter(p,request);return true;
     }
     private static void enter(ServerPlayer p,Request request){
@@ -80,17 +88,18 @@ public final class HouseReadSites {
         var doorway=prepare(p,request.room());if(doorway==null)return;PENDING.remove(p.getUUID());
         var room=request.room();var b=base(p.server,p.getUUID(),room);var landing=b.offset(room==Room.PORCH?new BlockPos(0,0,10):BlockPos.ZERO);
         HouseTransitionEvents.beginDoorTransition(p,room.dimension(),null,arrived->{
-            var own=state(arrived.server,arrived.getUUID());var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());var offered=own.getList("OfferedNodes",Tag.TAG_LONG);var back=new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true);offered.add(LongTag.valueOf(LabyrinthData.get(arrived.server).arrivalKey(arrived.getUUID(),request.next(),back)));own.put("OfferedNodes",offered);save(arrived.server,arrived.getUUID(),own);prepareNext(arrived);
+            var own=state(arrived.server,arrived.getUUID());var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putBoolean("Entrance",true);visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());save(arrived.server,arrived.getUUID(),own);prepareNext(arrived);
         },Vec3.atBottomCenterOf(landing),180);
     }
     /** Registered private doors are owner-bound and are handled before ordinary Return logic. */
     public static boolean door(ServerPlayer p,LabyrinthData.Door door){
+        if(HouseReadEntrance.room(door)!=null){offer(p,door,LabyrinthPlace.JUNCTION);return true;}
         if(!door.id.startsWith("house_read/"))return false;var room=inside(p);if(room==null||!door.id.startsWith("house_read/"+p.getUUID()+"/"+room.key()+"/")||p.level().dimension()!=door.dimension||p.distanceToSqr(door.lower.getCenter())>36)return true;
         boolean forward=!door.id.endsWith("/entry");if(!forward||HouseReadMoments.canProceed(p,room))leave(p,forward);return true;
     }
     static void leave(ServerPlayer p,boolean forward){
         var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p))return;var t=state(p.server,p.getUUID()).getCompound(room.key());var from=LabyrinthData.get(p.server).door(t.getString("SourceDoor"));if(from==null)return;
-        if(forward){var next=LabyrinthPlace.byId(t.getString("NextPlace"));if(next!=null)LabyrinthDoors.continueFromRead(p,from,next);}
+        if(forward&&!t.getBoolean("Entrance")){var next=LabyrinthPlace.byId(t.getString("NextPlace"));if(next!=null)LabyrinthDoors.continueFromRead(p,from,next);}
         else HouseTransitionEvents.beginDoorTransition(p,from.dimension,null,HouseReadSites::left,Vec3.atBottomCenterOf(from.lower.relative(from.facing,2)),from.facing.toYRot());
     }
     public static void left(ServerPlayer p){

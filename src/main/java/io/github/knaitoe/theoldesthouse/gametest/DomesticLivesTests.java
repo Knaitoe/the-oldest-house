@@ -250,4 +250,59 @@ public final class DomesticLivesTests {
             var row=new JsonArray();row.add(x);row.add(y);row.add(z);row.add(n);blocks.add(row);
         }file.add("palette",palette);file.add("blocks",blocks);var folder=Path.of("../build/interior-environment-proof");Files.createDirectories(folder);Files.writeString(folder.resolve("domestic_"+home.id()+".json"),new GsonBuilder().setPrettyPrinting().create().toJson(file));
     }
+    @AfterBatch(batch="domestic142_surfaces") public static void surfaces142Done(ServerLevel l){close();}
+    @GameTest(template="empty",batch="domestic142_surfaces",timeoutTicks=800)
+    public static void papersTouchTheirNativeSupportsAndObliqueNativePicksStillTakeTheSameOriginal(GameTestHelper h){
+        var f=fixture(h);var at=f.origin.offset(40,1,-40);
+        f.chunks.hold(f.in,new AABB(at).inflate(5));
+        for(var hall:List.of(LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL))f.chunks.hold(f.in,IndianLakeRooms.bounds(f.base(hall),hall));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native original homes and isolated contact fixture are resident")).thenExecute(()->{
+            for(var hall:List.of(LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL))build(f,hall);
+            int lowered=0;
+            for(var home:DomesticLives.HOMES)for(var piece:DomesticStories.pieces(home.id())){
+                var pos=f.base(home.hall()).offset(piece.at());var state=f.in.getBlockState(pos);if(!DomesticRecordSurfaces.standing(state))continue;
+                var be=f.in.getBlockEntity(pos);var original=((DomesticRecordBlockEntity)be).book();
+                f.in.setBlock(pos,state.setValue(DomesticRecordBlock.DROP,0),2);DomesticRecordSurfaces.settle(f.in,pos);state=f.in.getBlockState(pos);
+                h.assertTrue(f.in.getBlockEntity(pos)==be&&ItemStack.matches(original,((DomesticRecordBlockEntity)be).book()),"settling changes only the native state, preserving the exact original and BE: "+home.id()+"/"+piece.id());
+                if(state.getValue(DomesticRecordBlock.DROP)>0)lowered++;
+            }
+            h.assertTrue(lowered>=3,"the real furnished homes contain several lower surfaces, rather than a synthetic-only correction");
+            var p=player(f,"paper_surface_reader");var support=UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.COFFEE_TABLE,Direction.NORTH);
+            f.in.setBlock(at.below(),support,2);f.in.setBlock(at,DomesticRecordBlock.of(DomesticRecordBlock.Kind.NOTE,Direction.NORTH),2);
+            var be=(DomesticRecordBlockEntity)f.in.getBlockEntity(at);var original=DomesticStories.pieces("family").getFirst().book();be.seed(original.copy());
+            h.assertTrue(DomesticRecordSurfaces.settle(f.in,at),"a full-cell old paper actually moves onto the native low coffee table");
+            var state=f.in.getBlockState(at);double top=at.getY()-1+support.getShape(f.in,at.below()).bounds().maxY;
+            h.assertTrue(Math.abs(at.getY()+state.getShape(f.in,at).bounds().minY-top)<.0001,"the native paper's bottom touches the actual furniture top");
+            h.assertTrue(state.getCollisionShape(f.in,at).isEmpty(),"settling introduces no invisible body collision");
+            for(double x:new double[]{-1.3,1.3}){
+                p.teleportTo(f.in,at.getX()+.5+x,at.getY()-1,at.getZ()+1.9,0,0);
+                var aim=new Vec3(at.getX()+.5,top+.015625,at.getZ()+.5);
+                var hit=f.in.clip(new net.minecraft.world.level.ClipContext(p.getEyePosition(),aim,net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,p));
+                h.assertTrue(hit.getType()==HitResult.Type.BLOCK&&(hit.getBlockPos().equals(at)||hit.getBlockPos().equals(at.below())),"a real oblique outline ray reaches the visible original or its supporting tabletop");
+                p.gameMode.useItemOn(p,f.in,p.getMainHandItem(),InteractionHand.MAIN_HAND,hit);
+                h.assertTrue(p.containerMenu instanceof DomesticRecordBlockEntity.PaperMenu&&ItemStack.matches(original,be.book()),"the actual native ray/use path opens the same lowered paper");p.closeContainer();
+            }
+            p.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+1.5,0,0);be.open(p);h.assertTrue(p.containerMenu.clickMenuButton(p,3),"the supported original transfers once through the native Take control");
+            var saved=be.saveWithFullMetadata(f.in.registryAccess());be.loadWithComponents(saved,f.in.registryAccess());DomesticRecordSurfaces.settle(f.in,at);be.seed(original);
+            h.assertTrue(be.book().isEmpty()&&!f.in.getBlockState(at).getValue(DomesticRecordBlock.PRESENT)&&p.getInventory().countItem(original.getItem())==1,"saved-state correction never restocks or duplicates a collected paper");
+            h.succeed();
+        });
+    }
+    @AfterBatch(batch="domestic142_prose") public static void prose142Done(ServerLevel l){close();}
+    @GameTest(template="empty",batch="domestic142_prose",timeoutTicks=400)
+    public static void requestedProseRevisionRecognizesOnlyExactUncollectedStockAndNeverTouchesHeldOrEditedOriginals(GameTestHelper h){
+        var f=fixture(h);var at=f.origin.offset(44,1,-40);f.chunks.hold(f.in,new AABB(at).inflate(5));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native stock originals are resident")).thenExecute(()->{
+            var p=player(f,"paper_prose_reader");var old=DomesticStoriesBefore142.pieces("family").getFirst().book();var revised=DomesticStories.pieces("family").getFirst().book();
+            f.in.setBlock(at,DomesticRecordBlock.of(DomesticRecordBlock.Kind.NOTE,Direction.NORTH),2);var be=(DomesticRecordBlockEntity)f.in.getBlockEntity(at);be.seed(old.copy());p.getInventory().setItem(4,old.copy());
+            h.assertTrue(DomesticStories.revise(f.in,at,"family","rota")&&f.in.getBlockEntity(at)==be&&ItemStack.matches(be.book(),revised),"the requested prose edit changes only the exact stock book in its same native BE");
+            h.assertTrue(!DomesticStories.revise(f.in,at,"family","rota")&&ItemStack.matches(old,p.getInventory().getItem(4)),"the revision is idempotent and a collected/held original retains every component");
+            var stored=be.saveWithFullMetadata(f.in.registryAccess());be.loadWithComponents(stored,f.in.registryAccess());h.assertTrue(ItemStack.matches(revised,be.book()),"the revised ordinary prose and full heading survive native chunk/item codecs");
+            var other=at.east(2);f.in.setBlock(other,DomesticRecordBlock.of(DomesticRecordBlock.Kind.NOTE,Direction.NORTH),2);var edited=(DomesticRecordBlockEntity)f.in.getBlockEntity(other);var custom=old.copy();custom.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Keep this version"));edited.seed(custom);
+            h.assertTrue(!DomesticStories.revise(f.in,other,"family","rota")&&ItemStack.matches(custom,edited.book()),"an edited source keeps its exact native original");
+            p.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+1.5,0,0);be.open(p);h.assertTrue(p.containerMenu.clickMenuButton(p,3),"the newly worded shared source is still finite and collectible");
+            h.assertTrue(!DomesticStories.revise(f.in,at,"family","rota")&&be.book().isEmpty()&&!f.in.getBlockState(at).getValue(DomesticRecordBlock.PRESENT),"no prose update refills a taken original or its empty mount");h.succeed();
+        });
+    }
+
 }

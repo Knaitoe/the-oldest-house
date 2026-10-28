@@ -177,7 +177,6 @@ public final class LabyrinthDoors {
         } else {
             place = door.destination.startsWith("place:") ? LabyrinthPlace.byId(door.destination.substring(6)) : null;
         }
-        if(HouseReadSites.offer(player,door,place))return;
         // Deeper places are built as explorers approach them; one still under construction holds its door.
         if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
                 && !LabyrinthBuilder.isPlaceReady(server, place)) {
@@ -362,6 +361,10 @@ public final class LabyrinthDoors {
     public static boolean tickPlayer(ServerPlayer player, BlockPos origin) {
         if (HideAndClap.isLocked(player)) {
             HideAndClap.confineLockedPlayer(player);
+            return true;
+        }
+        if(HouseReadSites.contains(player)){
+            STEPS.remove(player.getUUID());
             return true;
         }
         LabyrinthPlace place = SiloSites.inside(player)?LabyrinthPlace.SILO:BackseatSites.inside(player)?LabyrinthPlace.BACKSEAT:BorrascaSites.placeAt(player.server,player.blockPosition());if(place==null)place=LiteraryCopies.placeAt(player.server,player.blockPosition());
@@ -958,6 +961,7 @@ public final class LabyrinthDoors {
             TheOldestHouse.LOGGER.info("The impossible hallway's far wall now has a door.");
         }
         LabyrinthBuilder.ensureReachable(server);
+        HouseReadEntrance.install(server,false);
     }
 
     // ------------------------------------------------------------------
