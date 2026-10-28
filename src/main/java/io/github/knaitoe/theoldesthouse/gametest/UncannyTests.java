@@ -103,18 +103,37 @@ public final class UncannyTests {
     }
     @AfterBatch(batch="uncanny_giant_walk") public static void giantWalkDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_great_stride131",timeoutTicks=400) public static void theFarOriginalTakesHeavyPhysicalStridesButFreezesWithoutAnotherImpactAtGreen(GameTestHelper h){
-        var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("great_stride",place);var b=f.base(place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(b,place));UUID[] id={null};Vec3[] stopped={null};int[] impacts={0};
+        var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("great_stride",place);var b=f.base(place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(b,place));UUID[] id={null};Vec3[] stopped={null},stale={null},paired={null};int[] impacts={0},actorId={0};
+        var packets=new ArrayList<net.minecraft.network.protocol.Packet<?>>();
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual tunnel and its recessed lamps are loaded")).thenExecute(()->{
-            f.source(p,place);f.at(p,place,.5,0,-50);var own=f.own(p,place);UncannyStories.arrive(p,place,own);own.putBoolean("TunnelStarted127",true);own.putInt("UncannyAge",245);var a=UncannyStories.actor(p,own,"CastGiant");
-            var tracker=new ServerEntity(f.level(place),a,3,true,p.connection::send);var stale=a.position();
+            f.source(p,place);f.at(p,place,.5,0,-50);var own=f.own(p,place);UncannyStories.arrive(p,place,own);var a=UncannyStories.actor(p,own,"CastGiant");
+            var tracker=new ServerEntity(f.level(place),a,3,true,p.connection::send);stale[0]=a.position();
             TunnelStride.placeOriginal(a,new Vec3(b.getX()+.5,b.getY(),b.getZ()-10));a.appearance(LiteraryActor.UNCANNY_GIANT,2);NativeTestPlayers.packets(p);tracker.addPairing(p);
-            var packets=NativeTestPlayers.packets(p);var flat=new ArrayList<net.minecraft.network.protocol.Packet<?>>();
-            for(var packet:packets){if(packet instanceof net.minecraft.network.protocol.game.ClientboundBundlePacket bundle)bundle.subPackets().forEach(flat::add);else flat.add(packet);}
+            paired[0]=a.position();actorId[0]=a.getId();id[0]=a.getUUID();
+        }).thenWaitUntil(()->{
+            // A native send can be queued under full-suite load. Accumulate its actual
+            // delivery within the original test deadline before inspecting the pairing.
+            var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));
+            while(!queue.isEmpty()){
+                var packet=queue.removeFirst();
+                if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle){
+                    // Expand in place: the spawn inside a bundle precedes the correction
+                    // sent after that bundle. Breadth-first expansion reverses that order.
+                    var children=new ArrayList<net.minecraft.network.protocol.Packet<?>>();bundle.subPackets().forEach(children::add);
+                    for(int i=children.size()-1;i>=0;i--)queue.addFirst(children.get(i));
+                }else if(packet instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket added&&added.getId()==actorId[0]||packet instanceof net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket placed&&placed.getId()==actorId[0])packets.add(packet);
+            }
+            boolean spawn=false,corrected=false;
+            for(var packet:packets){if(packet instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket added&&added.getId()==actorId[0]&&Math.abs(added.getZ()-stale[0].z)<1e-7)spawn=true;if(spawn&&packet instanceof net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket placed&&placed.getId()==actorId[0]&&Math.abs(placed.getX()-paired[0].x)<1e-7&&Math.abs(placed.getY()-paired[0].y)<1e-7&&Math.abs(placed.getZ()-paired[0].z)<1e-7)corrected=true;}
+            h.assertTrue(spawn&&corrected,"the actual stale native spawn and following authoritative correction must arrive within the original deadline; spawn="+spawn+" corrected="+corrected+" packets="+packets.stream().limit(8).map(packet->packet.getClass().getSimpleName()).toList());
+        }).thenExecute(()->{
+            var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");
             net.minecraft.network.protocol.game.ClientboundAddEntityPacket spawned=null;net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket placed=null;
-            for(var packet:flat){if(packet instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket added&&added.getId()==a.getId())spawned=added;if(packet instanceof net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket current&&current.getId()==a.getId())placed=current;}
-            h.assertTrue(spawned!=null&&Math.abs(spawned.getZ()-stale.z)<1e-7&&Math.abs(spawned.getZ()-a.getZ())>20,"the real native pairing reproduces its cached pre-appearance spawn position; spawn="+(spawned==null?"missing":spawned.getZ())+" stale="+stale.z+" current="+a.getZ()+" packets="+flat.stream().map(packet->packet.getClass().getSimpleName()).toList());
-            h.assertTrue(placed!=null&&Math.abs(placed.getX()-a.getX())<1e-7&&Math.abs(placed.getY()-a.getY())<1e-7&&Math.abs(placed.getZ()-a.getZ())<1e-7,"the same actual original is reconciled after its native pairing bundle");
-            LiteraryVignettes.save(f.data(),p.getUUID(),place,own);id[0]=a.getUUID();
+            for(var packet:packets){if(spawned==null&&packet instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket added&&added.getId()==a.getId()&&Math.abs(added.getZ()-stale[0].z)<1e-7)spawned=added;if(spawned!=null&&placed==null&&packet instanceof net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket current&&current.getId()==a.getId()&&Math.abs(current.getX()-paired[0].x)<1e-7&&Math.abs(current.getY()-paired[0].y)<1e-7&&Math.abs(current.getZ()-paired[0].z)<1e-7)placed=current;}
+            h.assertTrue(spawned!=null&&Math.abs(spawned.getZ()-stale[0].z)<1e-7&&Math.abs(spawned.getZ()-paired[0].z)>20,"the real native pairing reproduces its cached pre-appearance spawn position; spawn="+(spawned==null?"missing":spawned.getZ())+" stale="+stale[0].z+" current="+paired[0].z+" packets="+packets.stream().limit(8).map(packet->packet.getClass().getSimpleName()).toList());
+            h.assertTrue(placed!=null&&Math.abs(placed.getX()-paired[0].x)<1e-7&&Math.abs(placed.getY()-paired[0].y)<1e-7&&Math.abs(placed.getZ()-paired[0].z)<1e-7,"the same actual original is reconciled after its native pairing bundle");
+            h.assertTrue(a.getUUID().equals(id[0]),"the delivered pairing belongs to the same native original");
+            var own=f.own(p,place);own.putBoolean("TunnelStarted127",true);own.putInt("UncannyAge",245);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
         }).thenWaitUntil(()->{var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getPersistentData().getInt("TunnelSteps131")>0,"the distant original covers a whole great stride before its impact");}).thenExecute(()->{
             var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getUUID().equals(id[0])&&a.gesture()==1&&a.getZ()<b.getZ()-12.7&&f.level(place).noCollision(a,a.getBoundingBox().deflate(1e-7)),"the same colliding original catches up with the long-stride pose");
             h.assertTrue(UncannySenses.view(p).getLong("TunnelQuakeUntil131")>f.level(place).getGameTime(),"a real heavy step supplies the owning reader's short quake");age(f,p,place,160);step(f,p,place);stopped[0]=a.position();impacts[0]=a.getPersistentData().getInt("TunnelSteps131");
