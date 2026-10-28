@@ -35,10 +35,10 @@ The cost is mostly writing. Every place that reads a category needs its present 
 ## Rules for all five rooms
 
 - **No prompts, no wrong answers, no fail states.** Every choice opens the way on, and so does doing nothing. A reader can always go back the way they came.
-- **A way forward.** Every room has an exit that leads on into the labyrinth, not only the door back (owner, October 28).
+- **A way forward.** Every room has an exit that leads on into the ordinary halls, not only the door back (owner, October 28).
 - **Not stories.** No source, no account of their own, no Witness credit. The pool stays at 54 sources and 41 resolutions across two kinds.
 - **The first instinct counts.** What sets a category is the first deliberate act in the room's window. Later poking around is kept as an observation only.
-- **Each reader's own record.** Friends may share a room (see "Co-op"), but each reader's actions are filed only under that reader, and a peer's act never counts as theirs.
+- **Each reader is alone.** Every reader gets their own copy of each room (see "Co-op"), so the House only ever watches one person and nobody's habits are filed under someone else.
 - **Private.** Figures are owner-bound actors, sounds are private (`LiteraryVignettes.heard`), and nothing about a reader's categories is shown or said to anyone else.
 - **The notes come after, without leaving the room.** Each room's text describes the test, so read beforehand it would tip the reader off. Each note stays in the object the owner placed it in, showing its blank side first:
   - the postcard in the mirror frame shows a picture of a lake;
@@ -55,32 +55,32 @@ The cost is mostly writing. Every place that reads a category needs its present 
 These are the first five rooms a reader reaches after the opening (the three days, two sleeps and the letter are unchanged).
 
 - **Order:** the waiting room, the bathroom, the coatroom, the shelter, the porch. Later rooms can use earlier answers: the shelter's strangers can be the reader's age because the waiting room came first.
-- **Where they open (owner, October 28):** the impossible hallway stays a plain approach. The rooms lead out from the first room past its far door, the junction. Each room's forward exit opens on into the labyrinth, so the rooms are naturally spaced and the reader keeps moving forward. Stories still begin at depth 6 as now.
+- **Where they open (owner, October 28):** the impossible hallway stays a plain approach. The rooms lead out from the first room past its far door, the junction. Each room's forward exit opens into the ordinary halls, so the rooms are naturally spaced and the reader keeps moving forward. Stories still begin at depth 6 as now.
 - **Missed rooms:** content may be missed, as elsewhere. A reader who goes back never sees a room twice.
 
 Where the build differs today: 0.4.138 and 0.4.139 offered the rooms at a reader's first fresh ordinary arrivals. 0.4.142 moved them behind five doors along the impossible hallway itself, 36, 29, 22, 15 and 8 blocks before the far door. Both the entry and the way on return to that hallway doorway, so no room leads forward yet.
 
-## Co-op: friends may share a room
+## Co-op: these rooms stay private, other vignettes are shared
 
-The first design gave each reader their own copy, so the House would watch one person at a time. The owner's October 28 direction replaces it: two or more players can go into a room together. This applies to the other vignettes as well as these five.
+The five quiet rooms stay private (owner, October 28). They define the character, so every reader gets their own copy and the House watches one person at a time. Friends who cross a door together each arrive in their own copy and meet again in the hall beyond. Today's copies, 4,096 blocks from the next reader's and built in bounded slices like `BorrascaSites`, already work this way.
 
-- **How it plays.** Friends who cross a door together arrive in the same room and can go through it together.
-- **Each reader's own record.** The House still files only what each reader did themselves. Two friends in one room can be read differently, and a peer's act never counts as theirs. A shared room does partly measure the group, since friends follow each other and grab things for each other. That was the reason for the per-reader copies, and the owner's direction now puts playing together first.
-- **A finished room becomes a passage.** Once a reader has completed a room, its door no longer replays the scene for them. It is just a door connecting two halls.
-- **Mixed groups (owner).** When a group reaches a door and some of them have already finished what lies behind it, the House deals a vignette none of them has seen. If there is none, the group splits: those who finished pass through, and the others get the scene.
-- **Shared by default, with witnesses.** Most vignettes become shared. Whoever acts on the key beat leads it, and everyone else in the room witnesses it. Some vignettes must stay private; Backseat's single driver's seat is the clear case.
+The owner's October 28 direction makes the other vignettes shared:
+
+- **Shared by default, with witnesses.** Whoever acts on the key beat leads it, and everyone else in the room witnesses it. Only Backseat (one driver's seat) and the five quiet rooms stay private.
+- **Witnesses get credit.** A witness gets their own account and the Witness credit. The account may change subtly, reading as someone who watched rather than the one who acted.
+- **Each reader's own record.** A peer's act never counts as the reader's own act, in the House's read or in a scene's choices.
+- **A finished room becomes a passage.** Once a reader has completed a vignette, its door no longer replays the scene for them. It is just a door connecting two halls.
+- **Mixed groups.** When a group reaches a door and some of them have already finished what lies behind it, the House deals a vignette none of them has seen. If there is none, the group splits: those who finished pass through, and the others get the scene.
+- **Forward exits** lead back into the ordinary halls.
 - **The owner's notes on particular scenes:**
   - **Goatman** can eventually be shared. Extra players take the place of other campers, so the headcount stays the same as solo. The count, seating, supper and dialogue must treat each player as that cousin.
   - **The drowned town and lake-witch scenes** should mostly support several players.
   - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen.
   - **The child's room** can be shared.
 - **Still open:**
-  - whether a witness who stayed for the whole scene gets their own account and the Witness credit;
-  - which other vignettes must stay private;
+  - multi-visit vignettes when a different group arrives each time (for example, one reader takes the paw and a friend later returns alone);
   - how a shared room is built and reset when friends arrive at different times;
   - who a scene responds to when two readers act at once.
-
-Where the build differs today: every reader gets their own copy of each room, 4,096 blocks from the next reader's copy, built in bounded slices like `BorrascaSites`.
 
 ## What the House keeps
 
@@ -399,7 +399,7 @@ Strangers who speak are different. They judge by how someone presents, as strang
   - waiting room 109, bathroom 110 and shelter 111, in layout 50.
 
   Each is built whole by its own builder and excluded from the generic polish, composition and review passes.
-- **Copies.** Today every reader has a private copy of each room, indexed in `house_read_rooms_04138`. The October 28 co-op direction will change this (see "Co-op").
+- **Copies.** Every reader has a private copy of each room, indexed in `house_read_rooms_04138`. The rooms stay private under the October 28 direction (see "Co-op").
 - **Dimensions.** The waiting room, bathroom, coatroom and shelter are in the interior dimension; the porch is outside. The shelter's lake and rain are a set seen from under the roof, not a full lake.
 - **Doors.** Today five doors stand along the impossible hallway (`HouseReadEntrance`, 0.4.142). The owner's direction moves them to the junction past the far door (see "The first rooms").
 - New builds only.
@@ -432,8 +432,8 @@ Native cases:
 - **Bathroom:** shuffled positions; the position is recorded.
 - **Coatroom:** the cold lifts when dressed; turning the mirror before and after dressing; the coat stays on the hook; worn items come back.
 - **Shelter:** scripted looks and walks give each share; the figures stop three blocks short.
-- **Co-op:** two readers crossing one door land in the same room, and each gets only their own actions in their own record.
-- **Forward exits:** every room's way on leads further into the labyrinth.
+- **Co-op:** two readers crossing one door land in their own copies and meet in the same hall, each with their own record. In a shared vignette, a witness gets their own account and credit.
+- **Forward exits:** every room's way on leads into the ordinary halls.
 - **Finished rooms:** after a reader completes a room, its door takes them between halls without replaying the scene.
 - **The record:** survives save and reload; never reaches another client; is absent from the playtest log.
 - **Payoffs:** the House of Leaves, the account and every vignette that reads it behave as today with no record, and differ for two readers with different records.
@@ -478,10 +478,16 @@ After playtesting 0.4.142, the owner asked for four changes, for these rooms and
 
 1. **The quiet rooms open from the first room after the hallway**, the junction, and not from the hallway itself ("The first rooms").
 2. **Every room has an exit that leads forward**, not just back.
-3. **Two or more players can go into a room together** ("Co-op").
+3. **Two or more players can go into a vignette together** ("Co-op"). Only Backseat and the five quiet rooms stay private.
 4. **A completed room is just a door connecting halls** for that reader.
 
-A follow-up the same day settled mixed groups: deal a vignette none of the group has seen, or else split them. It also named the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room as scenes to share (see "Co-op").
+Follow-ups the same day settled several details, all in "Co-op":
+
+- mixed groups get a vignette none of them has seen, or else split;
+- forward exits lead into the ordinary halls;
+- the five quiet rooms and Backseat are the only private ones;
+- witnesses get their own account and credit, possibly written as a viewer's;
+- the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room are named as scenes to share.
 
 None of these is implemented yet.
 
