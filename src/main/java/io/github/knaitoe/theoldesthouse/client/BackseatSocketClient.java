@@ -26,6 +26,10 @@ public final class BackseatSocketClient {
     private static UUID originalSeat;
     private static String shot;private static boolean shotAck,stopAfter,cameraSet,looked;
     private static NativeImage before;
+    private static NativeImage windowBefore;
+    private static Vec3 windowEye;
+    private static double windowTravel;
+    private static float revealYaw,revealPitch;
     private static float firstWind;private static double firstPull;
     private static final Set<String> CAPTURES=new HashSet<>();
     private static final Set<String> HEARD=java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -54,6 +58,7 @@ public final class BackseatSocketClient {
         require(WINDS.stream().noneMatch(mc.getSoundManager()::isActive),"the acceleration wind stops at the actual crash/House return");
         require(CAPTURES.contains(role()+"-acceleration"),"the later camera peel and heavier wind were verified before impact");
         require(CAPTURES.contains(role()+"-reveal"),"the moving original figure and native mirror were captured before the impact");capture(name,true);
+        require(CAPTURES.contains(role()+"-side-window-early")&&CAPTURES.contains(role()+"-side-window-late"),"the actual driver saw native roadside detail passing through the side glass during the same acceleration");
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post ignored){
         if(!BackseatSocketProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
@@ -102,16 +107,41 @@ public final class BackseatSocketClient {
             if(driver){
                 if(returned(mc)&&age>30)endView(mc,"house-return");
                 else if(car!=null&&mc.player.getVehicle() instanceof BackseatSeat){
-                    if(!looked){look(mc,at.getCenter().add(BackseatCarMesh.MIRROR).add(0,-.5,0));looked=true;}
-                    if(car.phase==BackseatCarBlock.Car.REVEAL&&car.travel>3)capture("reveal",false);
-                    if(car.phase==BackseatCarBlock.Car.REVEAL&&car.clock>=60)capture("acceleration",false);
+                    if(!looked){look(mc,at.getCenter().add(BackseatCarMesh.MIRROR).add(0,-.5,0));revealYaw=mc.player.getYRot();revealPitch=mc.player.getXRot();looked=true;}
+                    if(car.phase==BackseatCarBlock.Car.REVEAL){
+                        if(!CAPTURES.contains(role()+"-reveal")&&car.travel>3)capture("reveal",false);
+                        else if(CAPTURES.contains(role()+"-reveal")&&!CAPTURES.contains(role()+"-side-window-late")&&car.clock<60){
+                            // One real glance out each driver's own side glass. Hold the same
+                            // heading for both frames so visible movement comes from native travel.
+                            mc.player.setYRot(role().equals("A")?90:-90);mc.player.setXRot(0);
+                            if(!CAPTURES.contains(role()+"-side-window-early"))capture("side-window-early",false);
+                            else if(car.travel-windowTravel>3)capture("side-window-late",false);
+                        }else{mc.player.setYRot(revealYaw);mc.player.setXRot(revealPitch);}
+                        if(car.clock>=60)capture("acceleration",false);
+                    }
                 }
             }else if(car!=null&&phase==6){forward(mc);if(age>60){locked(mc,car);require(!HEARD.contains("backseat.rise")&&!HEARD.contains("backseat.glass")&&!HEARD.contains("backseat.impact")&&!HEARD.contains("backseat.wind"),"the other driver's crash and wind audio remain private");capture("peer-still-locked",true);}}
             else if(returned(mc)&&phase==7&&age>30)capture("peer-still-home",true);
-        }else if(phase==8&&age>20){stop(mc);if(before!=null){before.close();before=null;}mc.stop();}
+        }else if(phase==8&&age>20){stop(mc);if(before!=null){before.close();before=null;}if(windowBefore!=null){windowBefore.close();windowBefore=null;}mc.stop();}
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         if(!BackseatSocketProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(BackseatSocketProof.folder());
+        if(shot.contains("-side-window-")){
+            if(Math.abs(net.minecraft.util.Mth.wrapDegrees(mc.gameRenderer.getMainCamera().getYRot()-(role().equals("A")?90:-90)))>1)return;
+            require(mc.player.getVehicle() instanceof BackseatSeat,"the window frames use the original moving driver's seat");
+            var car=((BackseatSeat)mc.player.getVehicle()).car();require(car!=null&&car.phase==BackseatCarBlock.Car.REVEAL,"the actual window view is recorded before native impact");
+            if(shot.endsWith("-early")){
+                windowBefore=Screenshot.takeScreenshot(mc.getMainRenderTarget());windowEye=mc.gameRenderer.getMainCamera().getPosition();windowTravel=car.travel;
+            }else{
+                require(windowBefore!=null&&windowEye.distanceToSqr(mc.gameRenderer.getMainCamera().getPosition())>6.25&&car.travel-windowTravel>2.5,"the two fixed-heading frames span real movement through the world");
+                try(var after=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+                    int changed=0;for(int y=after.getHeight()/4;y<after.getHeight()*2/3;y++)for(int x=after.getWidth()/4;x<after.getWidth()*3/4;x++)if(after.getPixelRGBA(x,y)!=windowBefore.getPixelRGBA(x,y))changed++;
+                    require(changed>256,"native scenery visibly passes across the side-window view: "+changed);
+                    Files.writeString(BackseatSocketProof.folder().resolve(role()+"-window-motion.txt"),"Same native side-window heading; actual travel "+windowTravel+" -> "+car.travel+" metres, native eye "+windowEye+" -> "+mc.gameRenderer.getMainCamera().getPosition()+"; "+changed+" changed window pixels. Near reflectors and the farther tree line are actual stationary world blocks.\n");
+                }
+                windowBefore.close();windowBefore=null;
+            }
+        }
         if(shot.endsWith("-standing-before-lock")){require(!mc.player.isPassenger()&&mc.options.getCameraType()==CameraType.THIRD_PERSON_BACK,"standing on the actual road before commitment restores the prior third-person camera");seatStage=2;}
         if(shot.endsWith("-house-return"))require(mc.options.getCameraType()==CameraType.FIRST_PERSON,"the confirmed House return respects its existing first-person view rule");
         if(shot.endsWith("-reveal")||shot.endsWith("-acceleration")){
