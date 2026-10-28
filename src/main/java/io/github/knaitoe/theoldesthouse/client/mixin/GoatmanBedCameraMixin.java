@@ -19,6 +19,6 @@ public abstract class GoatmanBedCameraMixin {
     private void goatman$centerTable(BlockGetter level,Entity entity,boolean detached,boolean reverse,float partial,CallbackInfo ci){
         var mc=Minecraft.getInstance();
         if(detached||entity!=mc.player||(Object)this!=mc.gameRenderer.getMainCamera()||!GoatmanClient.watchingFromBed())return;
-        var direction=mc.player.getBedOrientation();if(direction!=null)setRotation(direction.toYRot(),0);
+        var direction=mc.player.getBedOrientation();if(direction!=null)setRotation(direction.getOpposite().toYRot(),0);
     }
 }

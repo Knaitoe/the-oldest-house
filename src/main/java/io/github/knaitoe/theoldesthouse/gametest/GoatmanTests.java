@@ -646,7 +646,7 @@ public final class GoatmanTests {
     @AfterBatch(batch="goat_upgrade") public static void cleanUpgrade(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
 
     @GameTest(template="empty",batch="goat_path",timeoutTicks=1200)
-    public static void nativeBackwardGirlAndTheShapesInTheHollowsMeetTheLatecomerThenLeave(GameTestHelper h){
+    public static void nativeFollowingChildAndTheShapesInTheHollowsMeetTheLatecomerThenLeave(GameTestHelper h){
         path=new Fixture(h,28000);var f=path;var p=f.player();
         f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the scene's native entity sections are ready")).thenExecute(()->{
@@ -663,7 +663,7 @@ public final class GoatmanTests {
         h.runAfterDelay(45,()->{
             var girl=f.children().stream().filter(GoatmanChild::girl).findFirst().orElseThrow();var own=GoatmanVignette.run(LabyrinthData.get(f.server)).getCompound("Cohort").getCompound(p.getUUID().toString());
             double girlProgress=GoatmanWoods.project(f.rel(girl)).progress();
-            h.assertTrue(Math.abs(girlProgress-own.getDouble("Progress")-7)<.02&&girl.speed()<0,"sprinting retains a seven-block gap and a reversed walk phase");
+            h.assertTrue(girlProgress<own.getDouble("Progress")&&girl.speed()>=0&&girl.speed()<=1.37F,"the original child follows behind through native collision with an ordinary forward gait");
             h.assertTrue(GoatmanWoods.project(f.rel(pet)).progress()<own.getDouble("Progress"),"a DEEPER command cannot send the actual companion ahead");
         });
         h.runAfterDelay(60,()->{
@@ -673,7 +673,7 @@ public final class GoatmanTests {
             var hollow=f.b.offset(-3,0,-18);h.assertTrue(f.l.getBlockState(hollow).isAir()&&f.l.getBlockState(hollow.above()).isAir()&&!f.l.getBlockState(hollow.below()).isAir(),"the hollow is a real space in the woods beside the trail");
             stopped[0]=f.children().stream().filter(GoatmanChild::girl).findFirst().orElseThrow().walk(0);
         });
-        h.runAfterDelay(66,()->{var girl=f.children().stream().filter(GoatmanChild::girl).findFirst().orElseThrow();h.assertTrue(girl.speed()==0&&Math.abs(girl.walk(0)-stopped[0])<.001,"stopping also stops her reverse animation");
+        h.runAfterDelay(66,()->{var girl=f.children().stream().filter(GoatmanChild::girl).findFirst().orElseThrow();h.assertTrue(GoatmanWoods.project(f.rel(girl)).progress()<=f.run().getCompound("Cohort").getCompound(p.getUUID().toString()).getDouble("Progress")&&girl.speed()<=1.37F,"the child catches up at walking speed while the player waits, without moving ahead or snapping to position");
             var loaded=LabyrinthData.FACTORY.deserializer().apply(LabyrinthData.get(f.server).save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
         });
         h.runAfterDelay(160,()->{
