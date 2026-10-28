@@ -200,7 +200,7 @@ public final class GhostsSet {
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own) {
         if(!own.getBoolean("Filming0485"))return;
         if(a.role()==LiteraryActor.GHOST_PRODUCER){
-            p.displayClientMessage(Component.literal("Barry: "+GhostsConversations.line(own,4)),false);
+            p.displayClientMessage(Component.literal("Barry: "+VignetteTailoring.crew(p,GhostsConversations.line(own,4))),false);
             var icons=new HashMap<Integer,ItemStack>();
             icons.put(0,LiteraryChoiceMenu.icon(Items.REDSTONE,own.getBoolean("DayDone")?"Review the edited episode":"Ready for today's filming"));
             icons.put(4,LiteraryChoiceMenu.icon(Items.PAPER,"Review the unedited camera log"));

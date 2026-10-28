@@ -347,7 +347,11 @@ public final class ElkLotNight {
         String line;
         if(out){int i=MEN.indexOf(who);var pool=own.getBoolean("ElkWounded")&&n%3==2?WOUNDED:OUTSIDE[Math.max(0,stage(w))][i];line=pool[n%pool.length];}
         else{var pool=IDLE.get(who.key());line=pool[n%pool.length];}
-        speak(a,who,said(who,line,p),near);
+        // Keep the shared original bark canonical. The reader's form of address
+        // belongs only in this reply and must never enter the actor's nametag.
+        String ordinary=said(who,line,p);say(a,ordinary);
+        String reply=!out&&n%IDLE.get(who.key()).length==0?VignetteTailoring.lastStop(p,ordinary):ordinary;
+        p.displayClientMessage(Component.literal(who.name()+": “"+reply+"”"),false);
     }
     private enum Drink {BEER("Draft beer",250,0xC98A1E),WHISKEY("Whiskey",400,0x8A4A16),COLA("Cola",100,0x3B1E12);
         final String label;final int cents,colour;Drink(String label,int cents,int colour){this.label=label;this.cents=cents;this.colour=colour;}}

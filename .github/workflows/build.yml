@@ -1,13 +1,13 @@
-name: Household prose and native paper contact
+name: Six private personality scene touches
 on:
   push:
-    branches: [fix/domestic-paper-review-0.4.142]
+    branches: [feature/six-personal-scene-touches]
 permissions:
   contents: read
 jobs:
   native:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -17,49 +17,23 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Original paintings and all native support models
-        run: |
-          python3 -m pip install Pillow
-          python3 tools/draw_domestic_records.py --check
-      - name: All original interior cases plus contact, oblique use, custody and prose revision
+      - name: Compile the consumers and run native strength, original-card, private-dialogue and owner-display cases
         run: |
           set -o pipefail
           mkdir -p build
-          timeout --signal=QUIT --kill-after=20s 8m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_interior_review -PgameTestHeap=3g --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/domestic142-native.log
+          timeout --signal=QUIT --kill-after=20s 8m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_tailoring -PgameTestHeap=3g --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/tailoring-native.log
           python3 - <<'CHECK'
           from pathlib import Path
-          log=Path('build/domestic142-native.log').read_text()
-          assert 'All 18 required tests passed' in log
+          log=Path('build/tailoring-native.log').read_text()
+          assert 'All 4 required tests passed' in log
           assert 'Game test server shutting down' in log
-          CHECK
-      - name: Native graphics dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libasound2t64 libpulse0
-      - name: Original rooms and actual production-model paper-support pairs
-        run: |
-          set -o pipefail
-          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=20s 5m gradle runClient -PinteriorEnvironmentSmoke --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/domestic142-client.log
-          test -s build/font-smoke/interior-environments-passed.txt
-          test -s build/font-smoke/domestic-assets-passed.txt
-          test -s build/font-smoke/native-domestic-9.png
-          python3 - <<'CHECK'
-          from pathlib import Path
-          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==26
-          log=Path('build/domestic142-client.log').read_text()
-          assert 'Unable to load model' not in log and 'Missing textures in model' not in log and 'missing model for variant' not in log
           CHECK
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: domestic142-native-and-contact
+          name: six-tailoring-native
           path: |
-            build/domestic142-native.log
-            build/domestic142-client.log
-            build/font-smoke/native-domestic-*.png
-            build/font-smoke/domestic-assets-passed.txt
-            build/font-smoke/interior-environments/
-            build/font-smoke/interior-environments-passed.txt
+            build/tailoring-native.log
             build/libs/*.jar
             run/logs/latest.log
           if-no-files-found: warn
