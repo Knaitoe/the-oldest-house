@@ -54,6 +54,13 @@ public final class OnwardDoors {
     public static String id(LabyrinthPlace place){return place.id()+"/"+ADOPTED.getOrDefault(place,NAME);}
     public static @Nullable BlockPos lower(BlockPos base,LabyrinthPlace place){var s=SPECS.get(place);return s==null||base==null?null:base.offset(s.rel());}
 
+    /** The door, its lintel and the two cells before it, kept clear of every dressing pass so the door always has its wall and its way up. */
+    public static boolean reserved(LabyrinthPlace place,int x,int y,int z){
+        var s=SPECS.get(place);if(s==null)return false;var r=s.rel();
+        for(int i=0;i<=2;i++){var at=r.relative(s.facing(),i);if(x==at.getX()&&z==at.getZ()&&y>=r.getY()&&y<=r.getY()+(i==0?2:1))return true;}
+        return false;
+    }
+
     /** Whatever holds a scene's entry shut during a committed beat holds its way on shut too. */
     public static boolean locked(ServerPlayer p,LabyrinthData.Door door){
         var place=placeOf(door);if(place==null)return false;var entry=LabyrinthData.get(p.server).door(place.entryDoorId());
