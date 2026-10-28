@@ -27,6 +27,7 @@ public final class CoopTests {
     @AfterBatch(batch="coop_thread146") public static void threadDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_town148") public static void townDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_child149") public static void childDone(ServerLevel l){close();}
+    @AfterBatch(batch="coop_private151") public static void privateDone(ServerLevel l){close();}
     private static final LabyrinthPlace SCENE=LabyrinthPlace.HILL_NURSERY;
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
@@ -258,5 +259,38 @@ public final class CoopTests {
             h.assertTrue(ChildRoom.account(new CompoundTag()).equals("The windows went first. Then the doors. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it.")&&ChildRoom.witness(new CompoundTag(),story.text).equals(story.text),"older accounts keep their words");
             h.succeed();
         });
+    }
+
+    @GameTest(template="empty",batch="coop_private151",timeoutTicks=4000)
+    public static void aPrivateSceneIsOneReadersAtATimeAndWaitsForTheNext(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var inside=player(h,f,"private_inside");var next=player(h,f,"private_next");var watcher=player(h,f,"private_watcher");
+        var halls=List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
+        var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));
+        for(var hall:halls)hold(f,hall);hold(f,LabyrinthPlace.HARRIGAN);
+        var scenes=List.of(LabyrinthPlace.HARRIGAN,LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP);
+        boolean[] ticking={false};LabyrinthData.Door[] west={null};
+        h.onEachTick(()->{if(ticking[0])HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(next));});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction, its halls and Harrigan's study are resident"))
+            .thenExecute(()->{
+                for(var v:scenes)h.assertTrue(SharedVignettes.privateScene(v)&&!SharedVignettes.followable(v),"friends do not follow each other into "+v.id());
+                h.assertTrue(SharedVignettes.followable(LabyrinthPlace.LAKE_HOUSE)&&SharedVignettes.followable(LabyrinthPlace.GHOSTS_SET),"the lake house and the film set stay shared");
+                LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
+                for(var hall:halls){var b=f.base(hall);if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else LabyrinthHalls.build(f.in,b,hall);LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);}
+                var study=f.base(LabyrinthPlace.HARRIGAN);
+                at(inside,f.in,study.offset(0,0,-10));at(watcher,f.in,study.offset(2,0,-10));watcher.setGameMode(GameType.SPECTATOR);
+                h.assertTrue(SharedVignettes.occupant(f.in.getServer(),LabyrinthPlace.HARRIGAN,next.getUUID())==inside,"a reader in Harrigan's study has it");
+                h.assertTrue(SharedVignettes.occupant(f.in.getServer(),LabyrinthPlace.HARRIGAN,inside.getUUID())==null,"a spectator watching does not take it from them");
+                h.assertTrue(SharedVignettes.occupant(f.in.getServer(),LabyrinthPlace.HILL_NURSERY,next.getUUID())==null,"a shared scene is nobody's alone");
+                west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");f.data().deal(next.getUUID(),west[0],LabyrinthPlace.HARRIGAN.id(),false);
+                at(next,f.in,west[0].lower.relative(west[0].facing));ticking[0]=true;click(next,west[0].lower);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(next)&&halls.contains(where(f,next)),"the next reader's door into the study opens onto an ordinary hall while someone else is in it"))
+            .thenExecute(()->{
+                var deal=f.data().deal(next.getUUID(),west[0]);
+                h.assertTrue(deal!=null&&halls.contains(LabyrinthPlace.byId(deal.place())),"the door is re-dealt for them to the hall they reached");
+                h.assertTrue(!f.data().visited(next.getUUID()).contains(LabyrinthPlace.HARRIGAN.id())&&WitnessAccount.Story.of(LabyrinthPlace.HARRIGAN.id())!=null&&!WitnessAccount.begun(f.data(),next.getUUID(),WitnessAccount.Story.of(LabyrinthPlace.HARRIGAN.id())),"the study waits for them: they have not been in it");
+                h.assertTrue(where(f,inside)==LabyrinthPlace.HARRIGAN&&inside.isAlive()&&inside.getHealth()==20,"the reader inside is left alone");
+                away(f,inside);h.assertTrue(SharedVignettes.occupant(f.in.getServer(),LabyrinthPlace.HARRIGAN,next.getUUID())==null,"once they leave, the study is free");
+            }).thenSucceed();
     }
 }

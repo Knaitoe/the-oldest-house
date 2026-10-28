@@ -12,7 +12,7 @@ The owner's October 28 direction: two or more players can go into a vignette tog
 
 ## Which scenes are shared
 
-- **Private.** The backseat (one driver's seat), the silo, Borrasca, the family and old-cabin copies and the Red Room stay one reader's own. The five quiet rooms are never dealt, so they are untouched.
+- **Private.** The backseat (one driver's seat), the silo, Borrasca, the family and old-cabin copies and the Red Room stay one reader's own. The five quiet rooms are never dealt, so they are untouched. Since 0.4.151, Harrigan, the confession, the Holy Rabbit, the Wheel house, the Whale institute, the phone in the canoe, the diner and the split-feed bedroom are private too, and one reader's at a time (`docs/PRIVATE_SCENES_0_4_151.md`).
 - **Not yet.** The Goatman's headcount needs players to take the place of cousins, and the hide-and-clap game has one blindfold. Until those scenes are made shared, a group is never led into them: a group at their door is dealt a scene everyone can share, or splits.
 - **Everything else** is shared: friends follow each other in.
 

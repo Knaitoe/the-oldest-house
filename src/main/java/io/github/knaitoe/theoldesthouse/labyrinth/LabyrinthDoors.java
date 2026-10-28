@@ -190,6 +190,8 @@ public final class LabyrinthDoors {
         }
         if(HouseReadSites.offer(player,door,place))return;
         if(place!=null&&LabyrinthDealer.finishedFor(data,player.getUUID(),place)&&passage(player,door))return;
+        // 0.4.151: a private scene that stands once is one reader's at a time; it waits for this one.
+        if(!door.command&&SharedVignettes.occupant(server,place,player.getUUID())!=null){taken(player,place);if(!elsewhere(player,door))locked(player);return;}
         // Deeper places are built as explorers approach them; one still under construction holds its door.
         if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
                 && !LabyrinthBuilder.isPlaceReady(server, place)) {
@@ -261,6 +263,26 @@ public final class LabyrinthDoors {
             rerouting = false;
         }
         return true;
+    }
+
+    /** A private scene someone else is in: this reader's door opens onto an ordinary way on instead, and the scene stays theirs to find. */
+    private static boolean elsewhere(ServerPlayer player, LabyrinthData.Door door) {
+        if (rerouting || !LabyrinthData.DEALT.equals(door.destination)) return false;
+        LabyrinthPlace here = placeOf(player.server, door);
+        if (here == null) return false;
+        LabyrinthDealer.openWayOn(LabyrinthData.get(player.server), player.getUUID(), door, here, player.getRandom());
+        rerouting = true;
+        try {
+            use(player, door);
+        } finally {
+            rerouting = false;
+        }
+        return true;
+    }
+    private static void taken(ServerPlayer player, LabyrinthPlace place) {
+        var story = WitnessAccount.Story.of(place.id());
+        player.displayClientMessage(Component.literal("Someone is already in " + (story == null ? "the room behind this door" : story.title) + ". It will wait for you."), true);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "door_taken:" + place.id(), player.blockPosition());
     }
 
     private static void locked(ServerPlayer player) {
