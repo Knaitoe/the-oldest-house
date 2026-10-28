@@ -1876,15 +1876,45 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_nightward,the_oldest_house_goatman_windows,the_oldest_house_goatman_entry --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_nightward,the_oldest_house_goatman_windows,the_oldest_house_goatman_entry,the_oldest_house_goatman_meal --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','GoatmanBedtimeTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','GoatmanBedtimeTests.java','GoatmanMealTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused trailer, funeral and hospital native cases passed; the complete suite remains required.')
           PY
+      - name: Native meal materials and correctly oriented bed cutaways
+        timeout-minutes: 6
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1 libglx-mesa0 libxi6 libxrender1 libxtst6 libasound2t64
+          python3 -m pip install pillow
+          python3 tools/draw_goatman_meal.py --check
+          test -s build/goatman137-proof/meal_table.json
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PgoatmanMealSmoke --no-daemon
+          test -s build/goatman137-art/passed.txt
+          for view in beds_west beds_east meal_table; do test -s build/goatman137-art/$view.png; done
+      - name: Two actual clients use west and east beds and capture their native cameras
+        timeout-minutes: 9
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=TERM --kill-after=20s 8m python3 tools/run_goatman_bed_proof.py
+          test -s build/goatman-bed137-proof/passed.txt
+          test -s build/goatman-bed137-proof/A-bed-camera.png
+          test -s build/goatman-bed137-proof/B-bed-camera.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: goatman137-meal-and-beds-${{ github.sha }}
+          path: |
+            build/goatman137-proof/
+            build/goatman137-art/
+            build/goatman-bed137-proof/
+            run-goatman-bed137/server/logs/
+            run-goatman-bed137/a/logs/
+            run-goatman-bed137/b/logs/
+          if-no-files-found: warn
       - name: Publish failed Goatman game tests
         if: failure()
         run: |

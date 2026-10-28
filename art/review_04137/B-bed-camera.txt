@@ -1,0 +1,1 @@
+Actual native head=BlockPos{x=7507, y=-34, z=7143} foot=BlockPos{x=7506, y=-34, z=7143} camera=(7507.5, -32.93749997019768, 7143.5) look=(-1.000E+0  0.000E+0  0.000E+0) centerX=7501.5 sleeping=true after native button, Escape and close attempts. No post-sleep player aim or camera override exists in this proof; the production Camera.setup TAIL supplies the view.

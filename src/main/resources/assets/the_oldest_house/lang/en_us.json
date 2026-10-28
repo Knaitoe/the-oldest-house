@@ -423,5 +423,11 @@
   "subtitles.the_oldest_house.foyer.buzzer": "The entry buzzer rasps",
   "subtitles.the_oldest_house.foyer.babble": "Indistinct babble through the intercom",
   "subtitles.the_oldest_house.foyer.steps": "Gravel shifts in the dark",
-  "subtitles.the_oldest_house.foyer.inside": "Breathing inside the vestibule"
+  "subtitles.the_oldest_house.foyer.inside": "Breathing inside the vestibule",
+  "item.the_oldest_house.goatman_ketchup": "Ketchup",
+  "item.the_oldest_house.goatman_mustard": "Mustard",
+  "item.the_oldest_house.goatman_mayo": "Mayonnaise",
+  "item.the_oldest_house.goatman_relish": "Relish",
+  "item.the_oldest_house.goatman_bun": "Hot Dog Bun",
+  "item.the_oldest_house.goatman_buns": "Basket of Buns"
 }

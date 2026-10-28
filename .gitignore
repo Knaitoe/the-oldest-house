@@ -49,3 +49,6 @@ art/npcs/clothing-materials-generated.png
 
 # Local javac argument files
 javac.*.args
+
+run-goat137*/
+run-goatman-bed137*/

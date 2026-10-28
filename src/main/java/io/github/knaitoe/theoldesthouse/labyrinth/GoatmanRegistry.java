@@ -39,6 +39,12 @@ public final class GoatmanRegistry {
     public static final DeferredItem<Item> RAW_FRANK=ITEMS.registerSimpleItem("raw_frank",new Item.Properties());
     /** 0.4.53: one each, from the pan on the stove. */
     public static final DeferredItem<Item> BRAT=ITEMS.registerSimpleItem("goatman_brat",new Item.Properties().food(new FoodProperties.Builder().nutrition(6).saturationModifier(.6F).build()));
+    public static final DeferredItem<Item> BUNS=ITEMS.registerSimpleItem("goatman_buns",new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> BUN=ITEMS.registerSimpleItem("goatman_bun",new Item.Properties());
+    public static final DeferredItem<Item> KETCHUP=ITEMS.registerSimpleItem("goatman_ketchup",new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> MUSTARD=ITEMS.registerSimpleItem("goatman_mustard",new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> MAYO=ITEMS.registerSimpleItem("goatman_mayo",new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> RELISH=ITEMS.registerSimpleItem("goatman_relish",new Item.Properties().stacksTo(1));
     /** 0.4.53: what the reader who counted right takes home. */
     public static final DeferredItem<TallyCounterItem> COUNTER=ITEMS.registerItem("tally_counter",TallyCounterItem::new,new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON));
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);

@@ -19,7 +19,6 @@ public final class GoatmanBedtimeTests {
     private static GoatmanTests.Fixture fixture;
     @AfterBatch(batch="goat_bedside131") public static void cleanHaunt(ServerLevel ignored){clean();}
     @AfterBatch(batch="goat_bed_morning131") public static void cleanMorning(ServerLevel ignored){clean();}
-    @AfterBatch(batch="goat_meal_breath134") public static void cleanMeal(ServerLevel ignored){clean();}
     private static void clean(){if(fixture!=null){fixture.close();fixture=null;}}
     private static void prepare(GoatmanTests.Fixture f,List<ServerPlayer> readers,boolean open){
         for(var p:readers)GoatmanVignette.enter(p);
@@ -55,7 +54,7 @@ public final class GoatmanBedtimeTests {
                 reader.stopSleepInBed(true,true);
                 h.assertTrue(reader.isSleeping()&&GoatmanBedtime.locked(reader),"native Leave Bed packets and automatic waking cannot interrupt a committed reader, including after their bedside beat");
                 var direction=reader.getBedOrientation();var head=reader.getSleepingPos().orElseThrow();
-                h.assertTrue(direction!=null&&direction.getStepX()*(f.b.getX()+.5-head.getX()-.5)>0,"both west and east bed directions face the actual center table");
+                h.assertTrue(direction!=null&&direction.getOpposite().getStepX()*(f.b.getX()+.5-head.getX()-.5)>0,"the native pillows stay by the walls and both views look over their feet toward the actual center table");
                 h.assertTrue(!GoatmanVignette.personal(LabyrinthData.get(f.server),reader.getUUID()).getBoolean("EncounterEnded131"),"the vignette has not concluded merely because one bedside beat is finished");
             }
             for(var sleeper:f.cousins())if(sleeper.isSleeping())h.assertTrue(!sleeper.showsHeldItems()&&sleeper.getMainHandItem().is(net.minecraft.world.item.Items.LEATHER),"sleep hides the original held item without deleting its inventory stack");
@@ -97,25 +96,4 @@ public final class GoatmanBedtimeTests {
             .thenSucceed();
     }
 
-    @GameTest(template="empty",batch="goat_meal_breath134",timeoutTicks=900)
-    public static void theRunnerWaitsThroughAnActualSeatedMealAndThePauseSurvivesReload(GameTestHelper h){
-        fixture=new GoatmanTests.Fixture(h,57700);var f=fixture;f.finishedCamper();var p=f.nativePlayer("meal_breath");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
-        boolean[] begun={false},loaded={false};UUID[] runner={null};
-        h.onEachTick(()->{
-            if(!begun[0])return;var r=f.run();if(!r.contains("MealSeatedAt134"))return;int age=r.getInt("Clock")-r.getInt("MealSeatedAt134");
-            h.assertTrue(f.cousin(r.getInt("Runner")).orElseThrow().getUUID().equals(runner[0]),"the original seated runner survives the ordinary meal and reload");
-            if(age<GoatmanVignette.MEAL_BREATH)h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_HOME,"finishing the last plate cannot send the runner straight out");
-            if(age>=100&&!loaded[0]){reload(f);loaded[0]=true;}
-        });
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the complete supper and cast are genuinely resident")).thenExecute(()->{
-            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER-1);r.putInt("Wrong",0);r.putInt("Runner",7);r.putBoolean("CalledIn04123",true);r.putBoolean("MealReady0465",true);r.putBoolean("MealFrozen0465",true);r.putInt("Plated0464",255);r.putInt("EmptyPlates0465",0);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
-            for(int i=0;i<8;i++)GoatmanWoods.served(f.l,f.b,i,new net.minecraft.world.item.ItemStack(GoatmanRegistry.BRAT.get()));
-            GoatmanVignette.hurry(f.l,f.b);runner[0]=f.cousin(7).orElseThrow().getUUID();begun[0]=true;
-        }).thenWaitUntil(()->h.assertTrue(f.run().contains("MealSeatedAt134"),"the actual original cousins are seated before the pause starts"))
-            .thenExecute(()->h.assertTrue(f.cousins().stream().filter(c->c.getPersistentData().getInt(GoatmanVignette.INDEX)!=0).allMatch(GoatmanChild::seated),"the delay starts from native seated bodies"))
-            .thenWaitUntil(()->h.assertTrue(f.run().contains("RunnerLeftAt134"),"the cousin eventually gets up to fetch gas"))
-            .thenExecute(()->{
-                var r=f.run();h.assertTrue(loaded[0]&&r.getInt("RunnerLeftAt134")-r.getInt("MealSeatedAt134")>=220,"eleven seconds of actual seated supper, including reload, precede departure");
-            }).thenSucceed();
-    }
 }

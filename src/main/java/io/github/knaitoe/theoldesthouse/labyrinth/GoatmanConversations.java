@@ -20,7 +20,7 @@ public final class GoatmanConversations {
         var d=LabyrinthData.get(p.server);var own=GoatmanVignette.personal(d,p.getUUID());long now=p.serverLevel().getGameTime();
         if(own.contains("CousinTalkAt0492")&&now-own.getLong("CousinTalkAt0492")<12)return true;
         int phase=r.getInt("Phase");String[] lines=switch(phase){
-            case GoatmanVignette.PATH->new String[]{"Keep up. The trailer's just past the bend.","I brought the food. Somebody else can do the cooking.","You hear it too? Probably the generator."};
+            case GoatmanVignette.PATH->new String[]{"I'm right behind you. The trailer's just past the bend.","I brought the food. Somebody else can do the cooking.","You hear it too? Probably the generator."};
             case GoatmanVignette.VIGIL->new String[]{"Keep your voice down. I thought I heard something outside.","Don't open it. He knows which window to knock on.","Count again. Start with me.","If you move, let somebody know. I don't want to lose anyone else."};
             case GoatmanVignette.DAWN->new String[]{"I keep thinking I heard him come back. I know I didn't.","I'm staying where I can see the door.","Next time we bring the gas inside before dark.","You can have the last one. I'm not hungry anymore."};
             default->GoatmanSupper.ready(r)?new String[]{"Pass the mustard, will you?","Save his place. He'll be back.","Sit down while they're still warm.","That's enough stories for one supper."}:new String[]{"Turn them over before the bottoms burn.","The plates are out. One for everybody.","The forks are in the other drawer. They always stick.","I like mine dark at the edges. Not all the way through.","I'll watch the door. You watch the griddle.","We can wait. There's still light outside."};

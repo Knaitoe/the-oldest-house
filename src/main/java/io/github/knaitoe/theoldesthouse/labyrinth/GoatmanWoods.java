@@ -191,7 +191,7 @@ public final class GoatmanWoods {
      * bunk never hides a pane. The twelve lower beds fill first; uppers go on a bunk frame above the same rows.
      */
     public static BlockPos bunk(int i){int side=i%2==0?-6:5;int n=i/2,row=n%6;return new BlockPos(side,n<6?1:3,-57-row*3);}
-    public static BlockPos bunkHead(int i){return i%2==0?bunk(i).east():bunk(i);}
+    public static BlockPos bunkHead(int i){return i%2==0?bunk(i):bunk(i).east();}
     /** A place at the table: before each chair for the first ten, then down the middle. */
     public static Vec3 plate(int i){return i<10?new Vec3(i%2==0?-.55:1.55,2.02,-60.5-2*(i/2)):new Vec3(i%2==0?-12.8:-12.2,1.02,-60.5-2*((i-10)/2));}
     /** Four fresh servings lie entirely over the actual griddle, never over the adjacent sink. */
@@ -209,8 +209,8 @@ public final class GoatmanWoods {
             BlockPos bed=b.offset(bunk(i));
             boolean upper=bunk(i).getY()>1;
             if(i<count){var left=l.getBlockState(bed);var right=l.getBlockState(bed.east());if(left.getBlock() instanceof BedBlock&&left.getValue(BedBlock.OCCUPIED)||right.getBlock() instanceof BedBlock&&right.getValue(BedBlock.OCCUPIED))continue;
-                boolean west=i%2==0;var s=Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,west?Direction.EAST:Direction.WEST);
-                l.setBlock(bed,s.setValue(BedBlock.PART,west?BedPart.FOOT:BedPart.HEAD),F);l.setBlock(bed.east(),s.setValue(BedBlock.PART,west?BedPart.HEAD:BedPart.FOOT),F);
+                boolean west=i%2==0;var s=Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,west?Direction.WEST:Direction.EAST);
+                l.setBlock(bed,s.setValue(BedBlock.PART,west?BedPart.HEAD:BedPart.FOOT),F);l.setBlock(bed.east(),s.setValue(BedBlock.PART,west?BedPart.FOOT:BedPart.HEAD),F);
                 if(upper)for(var part:TrailerBunkBlock.Part.values()){var at=part==TrailerBunkBlock.Part.FOOT?bed.below():bed.below().east();if(l.getBlockState(at).isAir())l.setBlock(at,TrailerBunkBlock.of(part),F);}
             }else {if(l.getBlockState(bed).getBlock() instanceof BedBlock)l.setBlock(bed,Blocks.AIR.defaultBlockState(),F);if(l.getBlockState(bed.east()).getBlock() instanceof BedBlock)l.setBlock(bed.east(),Blocks.AIR.defaultBlockState(),F);
                 if(upper)for(var at:new BlockPos[]{bed.below(),bed.below().east()})if(l.getBlockState(at).is(GoatmanRegistry.BUNK.get()))l.setBlock(at,Blocks.AIR.defaultBlockState(),F);}

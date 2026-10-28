@@ -9,6 +9,18 @@
         "custom_model_data": 1
       },
       "model": "the_oldest_house:item/goatman_brat_burnt"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/goatman_brat_bun"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "the_oldest_house:item/goatman_brat_bun_burnt"
     }
   ]
 }
