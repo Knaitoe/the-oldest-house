@@ -48,7 +48,9 @@ public final class GoatmanBedSocketProof {
                 // Hold this isolated fixture before the haunting. Bed input, orientation, lock and render are production.
                 var d=LabyrinthData.get(s);var r=GoatmanVignette.run(d);r.putInt("BedCallAt131",r.getInt("Clock"));save(d,r);
                 if(a!=null&&other!=null&&SEEN.containsAll(List.of(a.getUUID(),other.getUUID()))){write("passed.txt","Two actual socket clients used the native west/east beds and verified the production main-camera direction over the inward feet toward the actual center table. Both actual pillows are at the outer walls, and both readers remain natively sleeping/locked. Native screenshots and camera records are required. This fixture holds before the haunting; the complete bedside sequence is covered separately.\n");phase=2;started=s.getTickCount();}
-            }else if(phase==2&&s.getTickCount()-started>60){CHUNKS.close();s.halt(false);phase=3;}
+            // Let both real clients finish their own disconnect/stop before the host closes.
+            // Racing that handshake produced a native packet-decoder error during teardown.
+            }else if(phase==2&&a==null&&other==null&&s.getTickCount()-started>60){CHUNKS.close();s.halt(false);phase=3;}
         }catch(Throwable ex){write("failed.txt",ex.toString());throw new IllegalStateException(ex);}
     }
 }

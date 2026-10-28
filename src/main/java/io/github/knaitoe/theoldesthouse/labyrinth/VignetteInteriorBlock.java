@@ -40,7 +40,7 @@ public final class VignetteInteriorBlock extends HorizontalDirectionalBlock {
  }
  public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
  public static final BooleanProperty ACTIVE=BooleanProperty.create("active");
- private static final Map<BlockState,VoxelShape> SHAPES=new HashMap<>();
+ private static final Map<BlockState,VoxelShape> SHAPES=new java.util.concurrent.ConcurrentHashMap<>();
  public VignetteInteriorBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.SICKROOM_PLASTER).setValue(ACTIVE,false));}
  @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
  @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,ACTIVE);}

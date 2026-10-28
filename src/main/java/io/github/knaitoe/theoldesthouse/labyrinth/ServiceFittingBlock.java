@@ -21,7 +21,8 @@ public final class ServiceFittingBlock extends BaseEntityBlock {
  public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
  public static final DirectionProperty FACING=HorizontalDirectionalBlock.FACING;
  public static final BooleanProperty ACTIVE=BlockStateProperties.POWERED;
- private static final java.util.Map<BlockState,VoxelShape> SHAPES=new java.util.HashMap<>();
+ // Chunk meshing workers query collision as well as the native game thread.
+ private static final java.util.Map<BlockState,VoxelShape> SHAPES=new java.util.concurrent.ConcurrentHashMap<>();
  public ServiceFittingBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.DRAWER).setValue(FACING,Direction.NORTH).setValue(ACTIVE,false));}
  @Override protected MapCodec<? extends BaseEntityBlock> codec(){return CODEC;}
  @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,FACING,ACTIVE);}

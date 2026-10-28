@@ -113,7 +113,7 @@ public final class LiveExpeditionProof {
         }
         if((phase==35||phase==36)&&s.getTickCount()%100==0&&a!=null){
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
-            write("trailer-native-night-status.txt","phase="+phase+" scene="+run.getInt("Phase")+" clock="+run.getInt("Clock")+" extra="+run.getInt("ExtraState")+" leg="+run.getInt("StalkLeg0465")+" window="+run.getInt("StalkWindowLeg0465")+" demand="+run.getInt("Demand")+" fear="+GoatmanFear.stage(run)+" cues="+run.getInt("PressureCues0472")+"\n"+a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN)).stream().map(c->c.getUUID()+" index="+c.getPersistentData().getInt(GoatmanVignette.INDEX)+" at="+c.position().subtract(camp.getX(),camp.getY(),camp.getZ())).collect(java.util.stream.Collectors.joining("\n"))+"\n");
+            write("trailer-native-night-status.txt","phase="+phase+" scene="+run.getInt("Phase")+" clock="+run.getInt("Clock")+" supper="+(run.contains("SupperAt04123")?run.getInt("SupperAt04123"):"missing")+" extra="+run.getInt("ExtraState")+" leg="+run.getInt("StalkLeg0465")+" window="+run.getInt("StalkWindowLeg0465")+" demand="+run.getInt("Demand")+" fear="+GoatmanFear.stage(run)+" cues="+run.getInt("PressureCues0472")+"\n"+a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN)).stream().map(c->c.getUUID()+" index="+c.getPersistentData().getInt(GoatmanVignette.INDEX)+" at="+c.position().subtract(camp.getX(),camp.getY(),camp.getZ())).collect(java.util.stream.Collectors.joining("\n"))+"\n");
         }
         if((phase==2||phase==4)&&s.getTickCount()%100==0)TheOldestHouse.LOGGER.info("LIVE EXPEDITION positions phase {}: A={}, B={}",phase,location(a),location(b));
         if(phase==1&&ACKS.size()==2) {
@@ -345,7 +345,8 @@ public final class LiveExpeditionProof {
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
             // 0.4.123: the cousin is already in and the other one out by the fire. Both clients get a few seconds of the confused
             // quiet before the dark, rather than the ordinary forty ticks, so each can capture it.
-            run.putInt("Phase",GoatmanVignette.GATHERING);run.putInt("Clock",2000);run.putBoolean("CalledIn04123",true);run.putInt("QuietAt04123",2100);run.putInt("NightAt04123",2240);
+            // This advanced visual fixture has already served supper, just like the native fear case.
+            run.putInt("Phase",GoatmanVignette.GATHERING);run.putInt("Clock",2000);run.putBoolean("CalledIn04123",true);run.putInt("SupperAt04123",GoatmanVignette.BRISK_SUPPER);run.putInt("QuietAt04123",2100);run.putInt("NightAt04123",2240);
             run.putInt("ExtraState",GoatmanVignette.X_FIRE);run.putInt("RunnerState",GoatmanVignette.R_INSIDE);
             var cohort=run.getCompound("Cohort");for(var p:List.of(a,b)){var own=cohort.getCompound(p.getUUID().toString());own.putInt("Vigil",0);cohort.put(p.getUUID().toString(),own);at(p,camp.offset(0,1,-59),180,p==a?-.6:.6);}
             run.put("Cohort",cohort);var all=d.state(GoatmanVignette.ID);all.put("Run",run);d.setState(GoatmanVignette.ID,all);GoatmanWoods.door(a.serverLevel(),camp,true);GoatmanWoods.setWindow(a.serverLevel(),camp,true);step(s,35,camp);

@@ -107,11 +107,27 @@ public final class VignetteInteriorTests {
  }
  @GameTest(template="empty",batch="interior_geometry",timeoutTicks=50)
  public static void everyRenderedStateHasMatchingBoundedNativeCollision(GameTestHelper h){
+  concurrentNativeShapeReads();
   var l=h.getLevel();var at=h.absolutePos(new BlockPos(0,1,0));
   for(var kind:VignetteInteriorBlock.Kind.values())for(var f:Direction.Plane.HORIZONTAL)for(boolean active:new boolean[]{false,true}){
    var state=VignetteInteriorBlock.of(kind,f).setValue(VignetteInteriorBlock.ACTIVE,active);var shape=state.getCollisionShape(l,at);
    h.assertTrue(!shape.isEmpty()&&shape.min(Direction.Axis.X)>=0&&shape.max(Direction.Axis.X)<=1&&shape.min(Direction.Axis.Y)>=0&&shape.max(Direction.Axis.Y)<=1&&shape.min(Direction.Axis.Z)>=0&&shape.max(Direction.Axis.Z)<=1,"every model state is bounded and solid: "+kind+" "+f+" "+active);
   }h.succeed();
+ }
+ /** Cold native states reproduce first-load meshing without touching a world off-thread. */
+ private static void concurrentNativeShapeReads(){
+  var states=new ArrayList<net.minecraft.world.level.block.state.BlockState>();
+  for(var block:List.of(new ServiceFittingBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().dynamicShape().noOcclusion()),new VignetteInteriorBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().dynamicShape().noOcclusion())))states.addAll(block.getStateDefinition().getPossibleStates());
+  var workers=java.util.concurrent.Executors.newFixedThreadPool(4);var start=new java.util.concurrent.CyclicBarrier(4);var jobs=new ArrayList<java.util.concurrent.CompletableFuture<Void>>();
+  try{
+   for(int worker=0;worker<4;worker++){int offset=worker*17;jobs.add(java.util.concurrent.CompletableFuture.runAsync(()->{
+    try{start.await();}catch(InterruptedException ex){Thread.currentThread().interrupt();throw new IllegalStateException(ex);}catch(java.util.concurrent.BrokenBarrierException ex){throw new IllegalStateException(ex);}
+    for(int pass=0;pass<2;pass++)for(int i=0;i<states.size();i++){var state=states.get((i+offset)%states.size());var empty=net.minecraft.world.level.EmptyBlockGetter.INSTANCE;var outline=state.getShape(empty,BlockPos.ZERO);var collision=state.getCollisionShape(empty,BlockPos.ZERO);boolean roach=state.getBlock() instanceof ServiceFittingBlock&&state.getValue(ServiceFittingBlock.KIND)==ServiceFittingBlock.Kind.ROACH;
+     if(outline.isEmpty()||collision.isEmpty()!=roach)throw new IllegalStateException("Concurrent native shape changed: "+state);
+    }
+   },workers));}
+   java.util.concurrent.CompletableFuture.allOf(jobs.toArray(java.util.concurrent.CompletableFuture[]::new)).get(15,java.util.concurrent.TimeUnit.SECONDS);
+  }catch(Exception ex){throw new IllegalStateException("Cold native collision/outline lookups failed on meshing workers",ex);}finally{workers.shutdownNow();}
  }
  /** A documented crop of the same actual server export; never invented geometry or a lighting simulation. */
  static void slice(java.nio.file.Path folder,String source,String name,int x0,int x1,int z0,int z1,int y0,int y1)throws Exception{

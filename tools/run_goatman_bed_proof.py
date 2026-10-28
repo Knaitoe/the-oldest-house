@@ -58,11 +58,25 @@ def wait(check,seconds,context):
     raise RuntimeError('Timed out: '+context)
 def server_log():
     p=WORLD/'server/logs/latest.log';return p.read_text(errors='replace') if p.exists() else ''
+def shutdown():
+    began=time.monotonic();sampled=False
+    while any(p.poll() is None for p in processes):
+        if not sampled and time.monotonic()-began>=15:
+            sampled=True
+            for i,p in enumerate(processes):
+                if p.poll() is not None:continue
+                try:
+                    dump=subprocess.run(['jcmd',str(p.pid),'Thread.print','-l'],capture_output=True,text=True,timeout=5)
+                    (REPORT/('shutdown-threads-'+str(i)+'.txt')).write_text(dump.stdout+dump.stderr)
+                except (OSError,subprocess.TimeoutExpired) as exc:(REPORT/('shutdown-diagnostics-'+str(i)+'.txt')).write_text(str(exc))
+        if time.monotonic()-began>=90:raise RuntimeError('Native bed processes did not shut down cleanly within 90 seconds; see shutdown thread diagnostics')
+        time.sleep(.5)
+    for p in processes:assert p.returncode==0,p.returncode
 try:
     host=launch('runProofServer','server');wait(lambda:'Done (' in server_log(),180,'Native bed host started')
     launch('runProofA','client-a');wait(lambda:'OTHProofA joined the game' in server_log(),180,'First actual client joined')
     launch('runProofB','client-b');wait(lambda:(REPORT/'passed.txt').exists(),240,'Both native sleeping cameras passed')
-    for p in processes:p.wait(timeout=90);assert p.returncode==0,p.returncode
+    shutdown()
     for role in ['A','B']:
         assert (REPORT/(role+'-bed-camera.png')).stat().st_size>500
         assert (REPORT/(role+'-bed-camera.txt')).stat().st_size>100
