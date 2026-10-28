@@ -31,6 +31,7 @@ public final class SceneVisualProof extends Screen {
     private final boolean interiors;
     private final boolean foyer;
     private final boolean meal;
+    private final boolean read;
     private record Prop(double x,double y,double z,net.minecraft.world.item.ItemStack item,org.joml.Vector3f scale,org.joml.Quaternionf rotation){}
     private final List<Prop> props=new ArrayList<>();
     private static boolean environmentLaunched;
@@ -40,7 +41,7 @@ public final class SceneVisualProof extends Screen {
     private static boolean dead(BlockState s){if(!s.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.PROP.get()))return false;var k=s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.KIND);return k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CARCASS||k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.GUEST_BODY||k==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryPropBlock.Kind.CREW_BODY;}
     @SubscribeEvent public static void launch(ClientTickEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();
-        if((Boolean.getBoolean("the_oldest_house.uncannyEnvironmentSmoke")||Boolean.getBoolean("the_oldest_house.interiorEnvironmentSmoke")||Boolean.getBoolean("the_oldest_house.foyerSmoke")||Boolean.getBoolean("the_oldest_house.goatmanMealSmoke"))&&!environmentLaunched&&mc.screen!=null&&mc.getOverlay()==null){environmentLaunched=true;mc.options.guiScale().set(2);mc.resizeDisplay();mc.setScreen(new SceneVisualProof(true));}
+        if((Boolean.getBoolean("the_oldest_house.uncannyEnvironmentSmoke")||Boolean.getBoolean("the_oldest_house.interiorEnvironmentSmoke")||Boolean.getBoolean("the_oldest_house.foyerSmoke")||Boolean.getBoolean("the_oldest_house.goatmanMealSmoke")||Boolean.getBoolean("the_oldest_house.houseReadSmoke"))&&!environmentLaunched&&mc.screen!=null&&mc.getOverlay()==null){environmentLaunched=true;mc.options.guiScale().set(2);mc.resizeDisplay();mc.setScreen(new SceneVisualProof(true));}
     }
     public SceneVisualProof()throws Exception{this(false);}
     private SceneVisualProof(boolean environment)throws Exception{
@@ -49,9 +50,10 @@ public final class SceneVisualProof extends Screen {
         interiors=environment&&Boolean.getBoolean("the_oldest_house.interiorEnvironmentSmoke");
         foyer=environment&&Boolean.getBoolean("the_oldest_house.foyerSmoke");
         meal=environment&&Boolean.getBoolean("the_oldest_house.goatmanMealSmoke");
+        read=environment&&Boolean.getBoolean("the_oldest_house.houseReadSmoke");
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
-        try(var stream=Files.list(Path.of(meal?"../build/goatman137-proof":foyer?"../build/foyer136-proof":interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+12:environment?11:99+UncannyRooms.PLACES.size();
+        try(var stream=Files.list(Path.of(read?"../build/house-read138-proof":meal?"../build/goatman137-proof":foyer?"../build/foyer136-proof":interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
+        int expected=read?2:meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+12:environment?11:99+UncannyRooms.PLACES.size();
         if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier plus every uncanny room), found "+files.size());
         if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
         load();
@@ -99,9 +101,10 @@ public final class SceneVisualProof extends Screen {
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof SceneVisualProof s)||(!s.environment&&!Boolean.getBoolean("the_oldest_house.fontSmoke"))||++s.frames<3)return;
-        Path folder=Path.of(s.meal?"../build/goatman137-art":s.foyer?"../build/foyer136-art":s.interiors?"../build/font-smoke/interior-environments":s.environment?"../build/font-smoke/uncanny-environments":"../build/font-smoke/scenes");Files.createDirectories(folder);
+        Path folder=Path.of(s.read?"../build/house-read138-art":s.meal?"../build/goatman137-art":s.foyer?"../build/foyer136-art":s.interiors?"../build/font-smoke/interior-environments":s.environment?"../build/font-smoke/uncanny-environments":"../build/font-smoke/scenes");Files.createDirectories(folder);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(s.name+".png"));if(s.foyer||s.meal){var colors=new HashSet<Integer>();for(int y=image.getHeight()/5;y<image.getHeight()*4/5;y+=3)for(int x=image.getWidth()/5;x<image.getWidth()*4/5;x+=3)colors.add(image.getPixelRGBA(x,y));if(colors.size()<15)throw new IllegalStateException("Blank native foyer view: "+s.name);}}
         if(++s.index<s.files.size())s.load();else{
+            if(s.read){mc.setScreen(new HouseReadClothesProof());return;}
             if(s.meal){Files.writeString(folder.resolve("passed.txt"),"Three actual native exports: both inward-foot bed rows and the real supper table, including the original carried bottles and finite buns. Production block and item models; full-bright geometry/material review.\n");mc.stop();return;}
             if(s.foyer){Files.writeString(folder.resolve("passed.txt"),"Four actual native foyer exports: standoff, admitted glass door, hinged service exit and opened unhinged hallway. Production shared leaf/collision cuboids and saved pendulum angles. Full-bright geometry/material review; actual lighting, actors and client audio remain separate checks.\n");mc.stop();return;}
             if(s.interiors){Files.writeString(Path.of("../build/font-smoke/interior-environments-passed.txt"),"Fourteen actual native rooms, four floor-specific cutaways, four selected domestic extensions with finite household records, the quiet room, steel dumpster and two institute shelf/window close-ups. Full bright architecture views; not a lighting proof.\n");mc.setScreen(new DomesticAssetProof());return;}

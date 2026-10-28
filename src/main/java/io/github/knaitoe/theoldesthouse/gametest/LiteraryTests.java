@@ -1073,8 +1073,9 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void elkKillerHacksAndHaulsCarcassesWhenNoOneIsInSight(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("work_reader",place);var b=f.base(place);
         final int[] chops={0};final boolean[] watching={false};
-        h.startSequence().thenIdle(10).thenExecute(()->{elkAshore(f,p);var far=ElkCarcassMap.standAt(-50,-100);f.at(p,place,far.getX()+.5,far.getY(),far.getZ()+.5);p.setYRot(90);
-            var killer=elkKiller(f,p);var feet=b.offset(ElkCarcassMap.WORK.get(0).feet());killer.moveTo(Vec3.atBottomCenterOf(feet));
+        h.startSequence().thenIdle(10).thenExecute(()->{elkAshore(f,p);var far=ElkCarcassMap.standAt(-50,-100);f.at(p,place,far.getX()+.5,far.getY(),far.getZ()+.5);p.setYRot(90);})
+        .thenWaitUntil(()->h.assertTrue(elkKiller(f,p)!=null,"the same original killer is actually seeded before the work fixture moves it"))
+        .thenExecute(()->{var killer=elkKiller(f,p);var feet=b.offset(ElkCarcassMap.WORK.get(0).feet());killer.moveTo(Vec3.atBottomCenterOf(feet));
             var own=f.own(p,place);own.putInt("ElkWork",1);own.putInt("ElkWorkTicks",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);watching[0]=true;})
         .thenIdle(80).thenExecute(()->{var killer=elkKiller(f,p);
             h.assertTrue(killer.phase()==ElkHunt.HACK&&chops[0]>=2,"with no one in sight he stands over the carcass and hacks at it: chops="+chops[0]+", phase="+killer.phase());

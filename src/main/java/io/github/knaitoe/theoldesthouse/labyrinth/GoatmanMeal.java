@@ -27,7 +27,7 @@ public final class GoatmanMeal {
     public static Vec3 spot(int i){return i==4?new Vec3(.5,2.08,-61.1):new Vec3(i%2==0?.15:.85,2.04,-62.5-(i/2)*2);}
     public static boolean supplied(CompoundTag r){return !r.getBoolean("MealStarted137")||(r.getInt("CondimentsPlaced137")&15)==15;}
     public static void firstPlate(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
-        if(!GoatmanVignette.brisk(r)||r.getBoolean("MealStarted137")||(r.getInt("Plated0464")&~r.getInt("EmptyPlates0465"))==0)return;
+        if(!GoatmanVignette.brisk(r)||r.getBoolean("MealStarted137")||r.contains("SupperAt04123")||(r.getInt("Plated0464")&~r.getInt("EmptyPlates0465"))==0)return;
         r.putBoolean("MealStarted137",true);r.putInt("BunsLeft137",GoatmanVignette.expectedCount(r));
         if(r.getInt("RunnerState")==GoatmanVignette.R_HOME){r.putInt("RunnerState",GoatmanVignette.R_LEAVING);r.putInt("RunnerLeftAt134",r.getInt("Clock"));GoatmanVignette.say(readers,"The older cousin: Generator's out of gas. I'll get the can from the truck. Save mine.");}
         r.putBoolean("CalledIn04123",true);GoatmanWoods.door(l,b,true);
@@ -92,9 +92,14 @@ public final class GoatmanMeal {
         var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(d);if(!r.getBoolean("MealStarted137")||r.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
         var member=r.getCompound("Cohort").getCompound(p.getUUID().toString());if(!member.getBoolean("Active")||member.getBoolean("Failed"))return false;
         var b=GoatmanVignette.base(p.server);var eye=p.getEyePosition();var ray=eye.add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)));
+        int chosen=-1;double nearest=GoatmanSupper.aimedPlateDistance(p,b,r);
         for(int i=0;i<5;i++){
-            var at=spot(i).add(b.getX(),b.getY(),b.getZ());if(new AABB(at.x-.22,at.y-.08,at.z-.22,at.x+.22,at.y+.5,at.z+.22).clip(eye,ray).isEmpty()||find(p.serverLevel(),b,i).isEmpty())continue;
-            var hit=p.serverLevel().clip(new ClipContext(eye,at.add(0,.15,0),ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,p));if(hit.getType()!=HitResult.Type.MISS)continue;
+            var at=spot(i).add(b.getX(),b.getY(),b.getZ());var hit=new AABB(at.x-.22,at.y-.08,at.z-.22,at.x+.22,at.y+.5,at.z+.22).clip(eye,ray);if(hit.isEmpty()||find(p.serverLevel(),b,i).isEmpty())continue;
+            double distance=eye.distanceToSqr(hit.get());if(distance>=nearest-1e-6)continue;
+            var block=p.serverLevel().clip(new ClipContext(eye,hit.get(),ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,p));if(block.getType()!=HitResult.Type.MISS&&eye.distanceToSqr(block.getLocation())<distance-1e-6)continue;
+            nearest=distance;chosen=i;
+        }
+        if(chosen>=0){int i=chosen;
             long now=p.serverLevel().getGameTime();if(now-p.getPersistentData().getLong("ProvisionUse137")<3)return true;p.getPersistentData().putLong("ProvisionUse137",now);
             if(i==4){int left=r.getInt("BunsLeft137");if(left>0){var buns=new ItemStack(GoatmanRegistry.BUN.get(),left);CustomData.update(DataComponents.CUSTOM_DATA,buns,t->t.putUUID(GoatmanVignette.ROUND,r.getUUID("Id")));r.putInt("BunsLeft137",0);if(!p.getInventory().add(buns))p.drop(buns,false);find(p.serverLevel(),b,4).ifPresent(Entity::discard);}}
             else {var food=p.getItemInHand(hand);if(food.is(GoatmanRegistry.BRAT.get())){final int sauce=i;CustomData.update(DataComponents.CUSTOM_DATA,food,t->t.putString("GoatmanSauce137",NAMES[sauce]));p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.HONEY_BLOCK_SLIDE,SoundSource.BLOCKS,.25F,1.3F);}else p.displayClientMessage(Component.literal("The "+NAMES[i]+" bottle is still cold from the cooler."),true);}

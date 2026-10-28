@@ -429,5 +429,19 @@
   "item.the_oldest_house.goatman_mayo": "Mayonnaise",
   "item.the_oldest_house.goatman_relish": "Relish",
   "item.the_oldest_house.goatman_bun": "Hot Dog Bun",
-  "item.the_oldest_house.goatman_buns": "Basket of Buns"
+  "item.the_oldest_house.goatman_buns": "Basket of Buns",
+  "item.the_oldest_house.read_wool": "Heavy wool overcoat",
+  "item.the_oldest_house.read_trench": "Belted trench coat",
+  "item.the_oldest_house.read_barn": "Canvas barn jacket and scarf",
+  "item.the_oldest_house.read_wool_boots": "Heavy leather boots",
+  "item.the_oldest_house.read_trench_boots": "Ankle boots",
+  "item.the_oldest_house.read_barn_boots": "Work boots",
+  "subtitles.the_oldest_house.house_read.rain": "Rain against the door",
+  "subtitles.the_oldest_house.house_read.radiator": "Radiator clanks",
+  "subtitles.the_oldest_house.house_read.whistle": "A supper whistle",
+  "subtitles.the_oldest_house.house_read.supper": "Wash your hands before you sit down, alright? It’s getting cold.",
+  "subtitles.the_oldest_house.house_read.news": "The six o’clock news murmurs",
+  "subtitles.the_oldest_house.house_read.dishes": "Plates and forks clink",
+  "subtitles.the_oldest_house.house_read.ice": "An ice tray rattles",
+  "subtitles.the_oldest_house.house_read.step": "Footsteps cross linoleum"
 }

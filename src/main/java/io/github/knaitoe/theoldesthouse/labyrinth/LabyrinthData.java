@@ -267,6 +267,14 @@ public final class LabyrinthData extends SavedData {
         return mix(hash, place.id());
     }
 
+    /** The exact key a confirmed forward crossing would create, without mutating its return stack. */
+    public long arrivalKey(UUID player, LabyrinthPlace place, Waypoint source) {
+        long hash = 0xcbf29ce484222325L;
+        var stack = returns.get(player);
+        if(stack != null) { var it=stack.descendingIterator(); while(it.hasNext()) {var point=it.next();hash=mix(hash,point.dimension().location().toString());hash=mix(hash,Long.toString(BlockPos.containing(point.pos()).asLong()));} }
+        hash=mix(hash,source.dimension().location().toString());hash=mix(hash,Long.toString(BlockPos.containing(source.pos()).asLong()));return mix(hash,place.id());
+    }
+
     private static long mix(long hash, String text) {
         for (int i = 0; i < text.length(); i++) {
             hash ^= text.charAt(i);

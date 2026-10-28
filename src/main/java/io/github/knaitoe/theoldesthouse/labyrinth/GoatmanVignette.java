@@ -698,7 +698,8 @@ public final class GoatmanVignette {
         if(phase==PATH)clock++;
         else if(phase==GATHERING){
             GoatmanSupper.tick(l,b,r,enrolled);GoatmanMeal.tick(l,b,r,enrolled);cookingChatter(r,enrolled);
-            if(brisk(r)||!fresh(r)||clock!=supperAt(r)-1||GoatmanSupper.ready(r)){clock++;evening(l,b,r,enrolled,clock);}
+            boolean waitingFirst=brisk(r)&&!r.getBoolean("MealStarted137")&&!r.contains("SupperAt04123")&&(r.getInt("Plated0464")&~r.getInt("EmptyPlates0465"))==0&&clock>=BRISK_SUPPER-1;
+            if(!waitingFirst&&(brisk(r)||!fresh(r)||clock!=supperAt(r)-1||GoatmanSupper.ready(r))){clock++;evening(l,b,r,enrolled,clock);}
             if(clock>=gatherTicks(r)&&!GoatmanStalking.eveningActive(r)){nightfall(l,b,r,enrolled);phase=VIGIL;clock=0;}
         }
         else if(phase==VIGIL){clock++;night(l,b,r,enrolled,clock);if(dawnReady(r,clock)&&GoatmanBedtime.canDawn(r,enrolled)){r.putInt("Clock",clock);dawn(l,b,r,enrolled,d);phase=DAWN;}}
@@ -797,18 +798,20 @@ public final class GoatmanVignette {
         if(r.contains("SupperAt04123")){
             GoatmanMeal.seated(l,b,r,enrolled,clock);
             int since=clock-r.getInt("SupperAt04123");
-            int away=r.contains("MealSeatedAt137")?clock-r.getInt("MealSeatedAt137"):0;
+            // An already-started old supper keeps its saved clock and originals; do not restage supplies.
+            boolean mealRunning=r.contains("MealSeatedAt137")||!r.getBoolean("MealStarted137");
+            int away=r.contains("MealSeatedAt137")?clock-r.getInt("MealSeatedAt137"):mealRunning?since:0;
             // Pulled to before he is heard on the trail, never once he is coming or across him.
             if(away>=TABLE_SHUT&&!r.getBoolean("Shut04123")&&(rs==R_AWAY||rs==R_LEAVING)&&shutDoor(l,b,r,enrolled))r.putBoolean("Shut04123",true);
             if(rs!=R_HOME&&away==TABLE_PLACE)say(enrolled,"A cousin: Save his place. He'll be back.");
-            if(r.contains("MealSeatedAt137")&&away>=GoatmanMeal.MEAL_TICKS&&rs==R_AWAY&&!r.contains("QuietAt04123")){
+            if(mealRunning&&away>=GoatmanMeal.MEAL_TICKS&&rs==R_AWAY&&!r.contains("QuietAt04123")){
                 Vec3 at=abs(GoatmanWoods.path(BRISK_CALL),b);GoatmanChild c=GoatmanRegistry.CHILD.get().create(l);
                 if(c!=null){int i=r.getInt("Runner");c.addTag(ACTOR);c.getPersistentData().putUUID(ROUND,r.getUUID("Id"));c.getPersistentData().putInt(INDEX,i);c.appearance(r.getInt("Skin"+i),0,null);
                     c.moveTo(at.x,at.y,at.z);l.addFreshEntity(c);List<Vec3> back=new ArrayList<>();for(double s:new double[]{48,53,58,63,66})back.add(GoatmanWoods.path(s));back.addAll(List.of(UP[0],UP[1],UP[2],UP[3]));
                     setRoute(c,back,"step");r.putInt("RunnerState",rs=R_RETURNING);say(enrolled,"From the trail: “Wait up! Don't lock it!”");}
             }
             // Something went wrong upstream (he never got away to come back): the dark still comes.
-            if(r.contains("MealSeatedAt137")&&away>=TABLE_LATEST&&!r.contains("QuietAt04123"))schedule(r,clock,0);
+            if(mealRunning&&away>=TABLE_LATEST&&!r.contains("QuietAt04123"))schedule(r,clock,0);
         }
         // His line the moment he reaches the shut door, then two knocks, every five seconds (0.4.121).
         if(rs==R_KNOCKING&&!GoatmanWoods.doorOpen(l,b)&&!r.getBoolean("Silence")){

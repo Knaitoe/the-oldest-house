@@ -94,6 +94,11 @@ public final class GoatmanSupper {
         }
         return seat;
     }
+    /** Distance to the actual visible plate under this ray; a bottle behind it cannot steal the click. */
+    static double aimedPlateDistance(ServerPlayer p,BlockPos base,CompoundTag run){
+        if(!serving(p,run))return Double.POSITIVE_INFINITY;int seat=aimedSeat(p,base,run);if(seat<0)return Double.POSITIVE_INFINITY;
+        var eye=p.getEyePosition();var end=eye.add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)));var at=GoatmanWoods.plate(seat).add(base.getX(),base.getY(),base.getZ());return new AABB(at.x-.32,at.y-.1,at.z-.32,at.x+.32,at.y+.1,at.z+.32).clip(eye,end).map(eye::distanceToSqr).orElse(Double.POSITIVE_INFINITY);
+    }
     private static boolean serveAimed(ServerPlayer p,InteractionHand hand){
         if(!GoatmanVignette.inside(p))return false;var data=LabyrinthData.get(p.server);var run=GoatmanVignette.run(data);var held=p.getItemInHand(hand);
         if(!serving(p,run)||!held.isEmpty()&&!held.is(GoatmanRegistry.BRAT.get())&&!held.is(GoatmanRegistry.BUN.get()))return false;
@@ -138,7 +143,7 @@ public final class GoatmanSupper {
      */
     static int eat(ServerLevel l,BlockPos b,CompoundTag r,GoatmanChild c,int index,int clock){
         if(c.getPersistentData().contains("EatingUntil0465")&&clock>=c.getPersistentData().getInt("EatingUntil0465")&&c.getMainHandItem().is(GoatmanRegistry.BRAT.get())){c.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,ItemStack.EMPTY);c.getPersistentData().remove("EatingUntil0465");}
-        if(GoatmanVignette.brisk(r)&&!r.contains("MealSeatedAt137"))return 0;
+        if(GoatmanVignette.brisk(r)&&!r.contains("MealSeatedAt137")&&(r.getBoolean("MealStarted137")||!r.contains("SupperAt04123")))return 0;
         if(!GoatmanVignette.fresh(r)||!ready(r)||!c.seated()||(r.getInt("EatenCousins0465")&(1<<index))!=0)return 0;
         int real=index==r.getInt("Wrong")?r.getInt("Runner"):index,seat=real<r.getInt("Wrong")?real:real-1,bit=1<<seat;
         if((r.getInt("Plated0464")&~r.getInt("EmptyPlates0465")&bit)==0){
@@ -203,7 +208,7 @@ public final class GoatmanSupper {
     public static boolean onGriddle(CompoundTag r){return !r.getList("Cooking0465",Tag.TAG_COMPOUND).isEmpty()||!r.getList("CookedPan0465",Tag.TAG_COMPOUND).isEmpty();}
     public static boolean smelled(CompoundTag r,long now){return r.contains("BurntAt0476")&&now-r.getLong("BurntAt0476")<100;}
     static boolean interact(ServerPlayer player,PlayerInteractEvent.RightClickBlock event){
-        if(GoatmanMeal.use(player,event.getHand())){event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);return true;}
+        if(GoatmanWoods.tableSupport(player.serverLevel().getBlockState(event.getPos()))&&GoatmanMeal.use(player,event.getHand())){event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);return true;}
         var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(data);
         if(!serving(player,run))return false;
         var base=GoatmanVignette.base(player.server);var rel=event.getPos().subtract(base);var held=player.getItemInHand(event.getHand());

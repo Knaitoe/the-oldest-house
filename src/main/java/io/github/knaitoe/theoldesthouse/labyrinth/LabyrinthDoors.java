@@ -123,6 +123,7 @@ public final class LabyrinthDoors {
         if (!player.isAlive() || isBusy(player)) {
             return;
         }
+        if(HouseReadSites.door(player,door))return;
         if(HazardVariety.blocksDoor(player,door))return;
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
         MinecraftServer server = player.server;
@@ -176,6 +177,7 @@ public final class LabyrinthDoors {
         } else {
             place = door.destination.startsWith("place:") ? LabyrinthPlace.byId(door.destination.substring(6)) : null;
         }
+        if(HouseReadSites.offer(player,door,place))return;
         // Deeper places are built as explorers approach them; one still under construction holds its door.
         if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
                 && !LabyrinthBuilder.isPlaceReady(server, place)) {
@@ -274,10 +276,16 @@ public final class LabyrinthDoors {
      * Through {@code from} into {@code place}: its entry door gets a copy of
      * where the player stands, and the player is shifted to match.
      */
-    private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {
+    static void continueFromRead(ServerPlayer player,LabyrinthData.Door from,LabyrinthPlace place) {
+        if(HouseReadSites.inside(player)==null)return;
+        var entry=LabyrinthData.get(player.server).door(place.entryDoorId());
+        if(entry!=null)arrive(player,from,entry,place,true);
+    }
+    private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {arrive(player,from,suppliedEntry,place,false);}
+    private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place,boolean fromRead) {
         final LabyrinthData.Door entry=HotelVignette.destinationEntry(player,from,LakeHouse.destinationEntry(player,suppliedEntry,place),place);
         MinecraftServer server = player.server;
-        ServerLevel fromLevel = player.serverLevel();
+        ServerLevel fromLevel = fromRead?server.getLevel(from.dimension):player.serverLevel();
         ServerLevel toLevel = server.getLevel(entry.dimension);
         if (toLevel == null) {
             locked(player);
@@ -292,12 +300,13 @@ public final class LabyrinthDoors {
         if (!othersAtDoor(toLevel, entry.lower, player)) setDoorOpen(toLevel, entry.lower, false, null);
         // A door inside a standing room (the hotel's own 217) keeps the room as built: nothing is copied over its corridor.
         if (!HotelVignette.withinRoom(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player);
-        Vec3 target = shifted(player.position(), from.lower, entry.lower, turn);
-        float yaw = player.getYRot() + angle(turn);
+        Vec3 target = fromRead?Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),3)):shifted(player.position(), from.lower, entry.lower, turn);
+        float yaw = fromRead?entry.facing.getOpposite().toYRot():player.getYRot() + angle(turn);
 
         var returnTo = new LabyrinthData.Waypoint(fromLevel.dimension(), Vec3.atBottomCenterOf(from.lower), from.facing.toYRot(), true);
         Consumer<ServerPlayer> arrived = p -> {
             var current = LabyrinthData.get(p.server);
+            if(fromRead)HouseReadSites.left(p);
             current.pushReturn(p.getUUID(), returnTo);
             INSIDE.remove(p.getUUID());
             SHUT_FOR.remove(p.getUUID());
@@ -332,10 +341,11 @@ public final class LabyrinthDoors {
             LabyrinthHazards.onArrive(p, place);
             HazardVariety.onArrive(p,place);
             LabyrinthLighting.onArrive(p, place);
+            HouseReadSites.prepareNext(p);
             LabyrinthMaze.forget(p.getUUID());
             LabyrinthDoorLeaks.send(p);
         };
-        if (toLevel == fromLevel) {
+        if (toLevel == player.serverLevel()) {
             shift(player, target, yaw);
             arrived.accept(player);
         } else {
@@ -1013,13 +1023,14 @@ public final class LabyrinthDoors {
 
     private static boolean isProtected(ServerLevel level, BlockPos pos) {
         MinecraftServer server = level.getServer();
+        if(HouseDimensions.isHouseDimension(level.dimension())&&HouseReadSites.protectedPosition(server,pos,level.dimension().equals(HouseDimensions.OUTSIDE)))return true;
         if (LabyrinthData.get(server).doorAt(level.dimension(), pos) != null) {
             return true;
         }
         BlockPos origin = HouseSavedData.get(server).houseOrigin();
         if (origin == null) return false;
         if (level.dimension().equals(HouseDimensions.OUTSIDE)) {
-            if(LiteraryCopies.protectedPosition(server,pos)||BorrascaSites.protectedPosition(server,pos)||BackseatSites.protectedPosition(server,pos)||SiloSites.protectedPosition(server,pos))return true;
+            if(LiteraryCopies.protectedPosition(server,pos)||BorrascaSites.protectedPosition(server,pos)||BackseatSites.protectedPosition(server,pos)||SiloSites.protectedPosition(server,pos)||HouseReadSites.protectedPosition(server,pos,true))return true;
             for (LabyrinthPlace place : LabyrinthPlace.values()) if (NovelRooms.outside(place)) {
                 BlockPos base=LabyrinthPlaces.base(origin, place);
                 if (base!=null && IndianLakeRooms.bounds(base, place).contains(Vec3.atCenterOf(pos))) return true;
