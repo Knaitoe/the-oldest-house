@@ -1,6 +1,19 @@
 # The House gets a read on you
 
-Status: design only, not built (October 27). The concept, the five rooms and their texts are the owner's; the texts are quoted exactly. The owner's answers to the six open questions are incorporated (listed at the end). This document adds how each room is built and watched, what the House keeps, how co-op works, how the House shows its version of the reader, and where the read pays off. It also sets the bar for whether the idea is worth building, and a first slice to test that.
+Status (October 28): partly built. The concept, the five rooms and their texts are the owner's; the texts are quoted exactly. The owner's answers to the six open questions (October 27) and the owner's placement and co-op direction (October 28) are listed at the end. This document adds how each room is built and watched, what the House keeps, how co-op works, how the House shows its version of the reader, and where the read pays off. It also sets the bar for whether the idea is worth building, and a first slice to test that.
+
+What is built, in 0.4.138 to 0.4.142 (see "Built so far" at the end):
+
+- all five rooms, as a private copy per reader;
+- each room records the reader's literal actions;
+- six scenes that read a saved category and stay neutral without one.
+
+What is not built:
+
+- turning actions into categories, which the owner deferred, so no reader has a category yet;
+- the account, the House of Leaves, mirrors and doubles reading the record.
+
+The October 28 direction changes where the rooms open, how co-op works and what a finished room becomes. It is not implemented yet. Sections below describe the intended design, and each says where the build differs today.
 
 ## The idea
 
@@ -22,9 +35,10 @@ The cost is mostly writing. Every place that reads a category needs its present 
 ## Rules for all five rooms
 
 - **No prompts, no wrong answers, no fail states.** Every choice opens the way on, and so does doing nothing. A reader can always go back the way they came.
-- **Not stories.** No source, no account of their own, no Witness credit. The pool stays at 52 sources and 39 resolutions across two kinds.
+- **A way forward.** Every room has an exit that leads on into the labyrinth, not only the door back (owner, October 28).
+- **Not stories.** No source, no account of their own, no Witness credit. The pool stays at 54 sources and 41 resolutions across two kinds.
 - **The first instinct counts.** What sets a category is the first deliberate act in the room's window. Later poking around is kept as an observation only.
-- **Each reader is alone.** Every reader gets their own copy of each room (see "Co-op"), so the House only ever watches one person and nobody's habits are filed under someone else.
+- **Each reader's own record.** Friends may share a room (see "Co-op"), but each reader's actions are filed only under that reader, and a peer's act never counts as theirs.
 - **Private.** Figures are owner-bound actors, sounds are private (`LiteraryVignettes.heard`), and nothing about a reader's categories is shown or said to anyone else.
 - **The notes come after, without leaving the room.** Each room's text describes the test, so read beforehand it would tip the reader off. Each note stays in the object the owner placed it in, showing its blank side first:
   - the postcard in the mirror frame shows a picture of a lake;
@@ -41,17 +55,25 @@ The cost is mostly writing. Every place that reads a category needs its present 
 These are the first five rooms a reader reaches after the opening (the three days, two sleeps and the letter are unchanged).
 
 - **Order:** the waiting room, the bathroom, the coatroom, the shelter, the porch. Later rooms can use earlier answers: the shelter's strangers can be the reader's age because the waiting room came first.
-- **Dealing:** each of a reader's first five fresh arrivals takes them to their next room. Each room's exit opens into an ordinary hall, so the rooms are naturally spaced. Stories still begin at depth 6 as now.
-- **Missed rooms:** if a reader somehow reaches story depth with rooms left, the rest are offered at later fresh arrivals, never in place of a story. A reader who goes back never sees a room twice. Content may be missed, as elsewhere.
+- **Where they open (owner, October 28):** the impossible hallway stays a plain approach. The rooms lead out from the first room past its far door, the junction. Each room's forward exit opens on into the labyrinth, so the rooms are naturally spaced and the reader keeps moving forward. Stories still begin at depth 6 as now.
+- **Missed rooms:** content may be missed, as elsewhere. A reader who goes back never sees a room twice.
 
-## Co-op: each reader gets their own copy
+Where the build differs today: 0.4.138 and 0.4.139 offered the rooms at a reader's first fresh ordinary arrivals. 0.4.142 moved them behind five doors along the impossible hallway itself, 36, 29, 22, 15 and 8 blocks before the far door. Both the entry and the way on return to that hallway doorway, so no room leads forward yet.
 
-A shared room measures the group: friends follow each other, joke, and grab things for each other. More coats on the rack wouldn't fix that. So each reader gets their own copy of each room.
+## Co-op: friends may share a room
 
-- **Proven pattern.** Borrasca already builds one private site per reader, with its own entry door, in bounded slices (`BorrascaSites`). These five rooms are far smaller, so a copy per reader is cheap. Each room keeps one slot; its copies are indexed by reader.
-- **How it plays.** Friends who cross a door together each arrive in their own copy. Every copy's exit leads into the same next hall, where they meet again. Being separated is on theme: it is the first sign that the House wants a word with each of them.
-- **No waiting rules.** Whoever finishes first waits in the shared hall; no clock holds anyone.
-- **Building ahead.** A copy is built when the reader's previous room is reached, so it is ready by the time they need it. If it isn't ready, the door waits, as Borrasca's does.
+The first design gave each reader their own copy, so the House would watch one person at a time. The owner's October 28 direction replaces it: two or more players can go into a room together. This applies to the other vignettes as well as these five.
+
+- **How it plays.** Friends who cross a door together arrive in the same room and can go through it together.
+- **Each reader's own record.** The House still files only what each reader did themselves. Two friends in one room can be read differently, and a peer's act never counts as theirs. A shared room does partly measure the group, since friends follow each other and grab things for each other. That was the reason for the per-reader copies, and the owner's direction now puts playing together first.
+- **A finished room becomes a passage.** Once a reader has completed a room, its door no longer replays the scene for them. It is just a door connecting two halls.
+- **To settle when implementing:**
+  - how a shared room is built and reset when friends arrive at different times;
+  - who a scene responds to when two readers act at once;
+  - how a door behaves when one reader at it has finished the room and another has not;
+  - which existing private vignettes (Backseat, Borrasca, the Silo, the literary and home copies) become shared.
+
+Where the build differs today: every reader gets their own copy of each room, 4,096 blocks from the next reader's copy, built in bounded slices like `BorrascaSites`.
 
 ## What the House keeps
 
@@ -86,6 +108,13 @@ A later signal that agrees raises a category to settled; one that disagrees make
 | `HOME` | `HAVEN`, `DANGER`, `RUNAWAY` | The porch |
 
 **API.** Code reads it through one call, `HouseRead.category(player, Trait)`, which returns the value and strength or nothing. Every caller must handle nothing, and that branch is today's behaviour.
+
+Where the build differs today:
+
+- **Actions.** Each room keeps its reader's literal actions in its own saved visit (`house_read_rooms_04138`), only to run the room and reveal its note.
+- **Categories.** The category record exists only on the read side, under `house_read/<reader UUID>`, with `HAIR` and `SELF` only, each holding a `Value` and a `Strength`.
+- **Classifier.** Nothing writes categories yet, by the owner's choice, so every reader reads as unknown.
+- **API.** `category` returns only tentative or settled values. Unknown, uncertain, malformed and missing records all read as nothing. `HouseRead.hair` and `HouseRead.address` wrap it for the six consumers.
 
 **Data handling:**
 - The record lives only in the world save and is never sent to another reader's client.
@@ -323,6 +352,20 @@ Larger changes need a settled category; smaller ones may use a tentative one. Un
 
 The Lake House keeps Tess solo-only as built.
 
+Built so far (0.4.142), all neutral until a category exists:
+
+- **`HAIR`:**
+  - the first saved bedtime card in the child's room gains one remembered routine line (settled only);
+  - one owner-only routine object each on room 217's sink and the Lake House upstairs vanity (tentative or settled).
+- **`SELF`, settled only, in private spoken lines:**
+  - the Last Stop men's address;
+  - the Stanley porter, bartender and pianist greeting the caretaker;
+  - Barry's crew talking to the camera operator.
+
+  Shared speech bubbles keep their ordinary lines, and `UNSEEN` reads as neutral.
+
+The rest of this table, and the targets in `docs/PERSONALITY_TAILORING_TARGETS_0_4_140.md`, are still planned.
+
 ### Authority figures under `DANGER`
 
 A tentative `DANGER` could still be a hesitant player, so it changes only the mood. A settled `DANGER` changes how authority figures behave, and only toward anticipation:
@@ -344,8 +387,14 @@ Strangers who speak are different. They judge by how someone presents, as strang
 
 ## Placement
 
-- **Slots.** Five new slots, 105 to 109, are appended (layout 47). Each is built whole by its own builder, with copies per reader indexed in its own state like `BorrascaSites`, and excluded from the generic polish, composition and review passes.
+- **Slots.** The rooms take slots 107 to 111:
+  - coatroom 107 and porch 108, in layout 49;
+  - waiting room 109, bathroom 110 and shelter 111, in layout 50.
+
+  Each is built whole by its own builder and excluded from the generic polish, composition and review passes.
+- **Copies.** Today every reader has a private copy of each room, indexed in `house_read_rooms_04138`. The October 28 co-op direction will change this (see "Co-op").
 - **Dimensions.** The waiting room, bathroom, coatroom and shelter are in the interior dimension; the porch is outside. The shelter's lake and rain are a set seen from under the roof, not a full lake.
+- **Doors.** Today five doors stand along the impossible hallway (`HouseReadEntrance`, 0.4.142). The owner's direction moves them to the junction past the far door (see "The first rooms").
 - New builds only.
 
 ## Assets
@@ -376,7 +425,9 @@ Native cases:
 - **Bathroom:** shuffled positions; the position is recorded.
 - **Coatroom:** the cold lifts when dressed; turning the mirror before and after dressing; the coat stays on the hook; worn items come back.
 - **Shelter:** scripted looks and walks give each share; the figures stop three blocks short.
-- **Co-op:** two readers crossing one door land in two copies and meet in the same hall, each with their own record.
+- **Co-op:** two readers crossing one door land in the same room, and each gets only their own actions in their own record.
+- **Forward exits:** every room's way on leads further into the labyrinth.
+- **Finished rooms:** after a reader completes a room, its door takes them between halls without replaying the scene.
 - **The record:** survives save and reload; never reaches another client; is absent from the playtest log.
 - **Payoffs:** the House of Leaves, the account and every vignette that reads it behave as today with no record, and differ for two readers with different records.
 - **The account opening** reads correctly for all 31 combinations of finished rooms.
@@ -399,6 +450,8 @@ The first slice tests the bar before the other rooms and the bulk of the writing
 
 Play it with two people who come in together. If comparing books and accounts is interesting, build the rest. If it isn't, stop, and the slice's rooms stay as quiet first rooms.
 
+As built, the order went the other way. All five rooms came first, and the payoffs began with six read-side consumers, including the Last Stop men's address. The classifier that would give them something to read is not built yet, so the test with two players can't be run yet.
+
 ## The owner's decisions (October 27)
 
 1. **Notes** stay inside their objects, blank side first, and gain their writing unseen after the first signal ("Rules for all five rooms").
@@ -411,3 +464,26 @@ Play it with two people who come in together. If comparing books and accounts is
 The account opening is one flowing breath of prose (the owner's wording), not five separate sentences.
 
 Two small proposals remain for the owner: Tom and Kate as the grown-up names for older readers, and the House of Leaves narrator following `AGE`.
+
+## The owner's direction (October 28)
+
+After playtesting 0.4.142, the owner asked for four changes, for these rooms and for the other vignettes too:
+
+1. **The quiet rooms open from the first room after the hallway**, the junction, and not from the hallway itself ("The first rooms").
+2. **Every room has an exit that leads forward**, not just back.
+3. **Two or more players can go into a room together** ("Co-op").
+4. **A completed room is just a door connecting halls** for that reader.
+
+None of these is implemented yet.
+
+## Built so far
+
+| Version | What it added | Notes |
+|---|---|---|
+| 0.4.138 | Coatroom and porch, private per-reader copies, offered at a reader's first fresh ordinary arrivals | `docs/HOUSE_READ_ROOMS_0_4_138.md` |
+| 0.4.139 | Waiting room, bathroom and shelter, completing the five in the owner's order | `docs/HOUSE_READ_ROOMS_0_4_139.md` |
+| 0.4.140 | The list of existing moments to tailor first | `docs/PERSONALITY_TAILORING_TARGETS_0_4_140.md` |
+| 0.4.142 | Five doors along the impossible hallway instead of dealt arrivals; the House boundary tick recognizes built quiet rooms, so an idle reader is no longer ejected to the Overworld | `docs/ENTRANCE_PLAYTEST_0_4_142.md` |
+| 0.4.142 | The six read-side consumers ("Vignettes") | `docs/SIX_PERSONAL_SCENE_TOUCHES_0_4_142.md` |
+
+The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.
