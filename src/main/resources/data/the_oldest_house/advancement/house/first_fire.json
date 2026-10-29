@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:house/bound",
+  "display": {
+    "icon": {
+      "id": "minecraft:flint_and_steel"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.house.first_fire.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.house.first_fire.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

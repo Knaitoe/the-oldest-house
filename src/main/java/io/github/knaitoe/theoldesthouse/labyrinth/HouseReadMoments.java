@@ -28,8 +28,12 @@ public final class HouseReadMoments {
     private static final Map<UUID,Long> LAST_MUSIC=new HashMap<>();
     public static final String[] ROUTINES={"silk headwrap","curl cream","wide-tooth pick","scalp oil","parting comb","hair ties","paddle brush","dry shampoo","claw clip","pocket comb","pomade tin","cotton washcloth"};
     private HouseReadMoments(){}
-    /** 0.4.160, the owner's playtest notes: fifteen seconds in the waiting room, then the receptionist calls the reader through. */
-    public static final int WAIT=300;
+    /**
+     * Forty seconds in the waiting room, then the receptionist calls the reader through. 0.4.160 cut it to fifteen; the owner
+     * (0.4.165): "the wait time for the waiting office personality vignette can successfully be bumped back up to 40 seconds.
+     * 15 seconds whizzes by with the amount of detail you've added."
+     */
+    public static final int WAIT=800;
     public static BlockPos exit(HouseReadSites.Room room){return switch(room){case WAITING->new BlockPos(0,0,-12);case BATHROOM->new BlockPos(4,0,-10);case SHELTER->new BlockPos(3,0,2);default->throw new IllegalArgumentException(room.name());};}
     public static boolean canProceed(ServerPlayer p,HouseReadSites.Room room){
         var visit=HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());

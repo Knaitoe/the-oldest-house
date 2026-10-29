@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:account/five_stories",
+  "display": {
+    "icon": {
+      "id": "minecraft:bookshelf"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.twenty_stories.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.twenty_stories.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

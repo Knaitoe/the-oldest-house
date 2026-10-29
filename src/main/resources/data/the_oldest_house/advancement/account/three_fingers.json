@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:account/kind_release",
+  "display": {
+    "icon": {
+      "id": "the_oldest_house:withered_paw"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.three_fingers.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.three_fingers.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

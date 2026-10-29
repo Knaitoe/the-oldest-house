@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:account/kind_understanding",
+  "display": {
+    "icon": {
+      "id": "the_oldest_house:borrasca_name_patch"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.borrasca.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.borrasca.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:account/kind_release",
+  "display": {
+    "icon": {
+      "id": "the_oldest_house:cat_collar"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.mother_of_strays.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.mother_of_strays.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

@@ -1,6 +1,6 @@
 # Advancements — design proposal (October 29)
 
-The owner asked for an advancements table for the mod, in Minecraft's advancements menu. This is the proposal; nothing is built yet.
+The owner asked for an advancements table for the mod, in Minecraft's advancements menu. This was the proposal. It is built in 0.4.165 with the owner's answers below; what was built is in [ADVANCEMENTS_0_4_165.md](ADVANCEMENTS_0_4_165.md).
 
 ## Principles
 
@@ -71,7 +71,7 @@ Background: the account's paper.
 | `enough` | Enough to be heard | I have heard enough of the House to speak for it. | `twenty_stories` | goal | no | the Witness quota: 75% of the eligible pool, rounded up, across two kinds (41 of 54 today), derived like the account's | lectern |
 | `every_story` | Every room | There is nothing left in the House I haven't heard to the end. | `enough` | challenge | yes | every eligible story (54 today) | enchanted book |
 
-**The five kinds.** Each is earned with the reader's first story of that kind. They stay visible, because seeing an unearned kind teaches the two-kinds rule. Each has its stories as hidden children.
+**The five kinds.** Each is earned with the reader's first story of that kind. The owner chose to hide them until earned. Each has its stories as hidden children.
 
 | Id | Title | Description | Stories |
 |---|---|---|---|
@@ -175,10 +175,9 @@ The tables count 25 journey advancements and 66 for the account: 7 for progress,
 - Login sync awards a saved history once.
 - No quiet-room act, and no read, awards anything.
 
-## Open questions for the owner
+## The owner's answers
 
-1. **Two tabs, or one?** One tab would hold about ninety entries.
-2. **Locked out:** keep it as a hidden advancement, or leave defeat out of the menu?
-3. **Story descriptions** in the account's first-person "I" (the menu as an index of the account), or in the House's "you" like the first tab?
-4. **The five kinds visible** (teaching the two-kinds rule), or hidden until earned?
-5. **Anything missing.** For example the Red Room, the Goatman's haunting following a reader home, or a first death in the House.
+1. **Two tabs.**
+2. **Locked out:** "all of the endings should be hidden." All three endings are hidden advancements.
+3. **Story descriptions:** "your call." They are in the account's first-person "I", the first sentence of each story's account.
+4. **The five kinds:** hidden until earned.

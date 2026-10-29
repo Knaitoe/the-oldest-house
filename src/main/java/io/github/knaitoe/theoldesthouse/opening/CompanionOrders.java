@@ -247,6 +247,7 @@ public final class CompanionOrders {
         pet.getPersistentData().remove("CompanionLastRoom");pet.getPersistentData().remove("CompanionFearUntil");
         pet.getPersistentData().remove("CompanionPatUntil");
         install(pet);
+        io.github.knaitoe.theoldesthouse.labyrinth.HouseAdvancements.earn(player,"together");
         return pet;
     }
     public static void clearAll(){INSTALLED.clear();}

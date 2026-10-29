@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:house/six_doors",
+  "display": {
+    "icon": {
+      "id": "minecraft:sculk_shrieker"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.house.growl.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.house.growl.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

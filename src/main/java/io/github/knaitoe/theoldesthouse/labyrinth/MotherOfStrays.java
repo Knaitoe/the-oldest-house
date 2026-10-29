@@ -470,7 +470,7 @@ public final class MotherOfStrays {
                 }
                 if(player.isShiftKeyDown()&&held.isEmpty()&&collection.canTradeForLife(player.getUUID())) {
                     LivingEntity life=MotherOfferings.find(player,mother,collection);
-                    if(life!=null&&payWithLife(player,mother,life,collection,null)) {
+                    if(life!=null&&payWithLife(player,mother,life,collection,null)) {HouseAdvancements.earn(player,"ransom");
                         clearClaimInInventory(player);say(player,"Then this one stays. Your old bargain is closed.");
                     }else say(player,"Bring a living thing within my reach. A person must be closed in here with me.");
                     return true;
@@ -486,7 +486,7 @@ public final class MotherOfStrays {
                 releaseLittleDog(player, collection);
             } else if (collection.returnItem(player.getUUID(), held, player.registryAccess())) say(player, "Then I will keep it safe again.");
             else if (collection.trade(player.getUUID(), held, player.registryAccess(), now)) {
-                clearClaimInInventory(player);
+                clearClaimInInventory(player);HouseAdvancements.earn(player,"ransom");
                 say(player, "You know what it is to keep something. Take it home.");
             } else if (collection.offer(player.getUUID(), held, player.registryAccess(), now)) {
                 say(player, collection.salved() ? "A thing returned. A thing given. A life brought home. I remember now."
@@ -578,6 +578,7 @@ public final class MotherOfStrays {
         boolean paid=added&&(life==null ? collection.recoverPet(player.getUUID(),entry.id,held,player.registryAccess(),now)
                 : mother!=null&&payWithLife(player,mother,life,collection,entry.id));
         if(paid) {
+            HouseAdvancements.earn(player,"ransom");
             if(display!=null)display.discard();updateCustody(player.server,player.getUUID());
             player.inventoryMenu.broadcastChanges();say(player,"There. You came back for it.");
         }else if(living.isAlive())living.discard();
