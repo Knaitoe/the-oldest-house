@@ -493,7 +493,7 @@
   "block.the_oldest_house.reading_stand": "Reading stand",
   "block.the_oldest_house.farm_material": "Farm boards",
   "block.the_oldest_house.farm_prop": "Farm things",
-  "advancements.the_oldest_house.house.letter.title": "This House Has Ghosts in It",
+  "advancements.the_oldest_house.house.letter.title": "The letter",
   "advancements.the_oldest_house.house.letter.description": "Someone wrote to you about a house.",
   "advancements.the_oldest_house.house.manor.title": "The manor",
   "advancements.the_oldest_house.house.manor.description": "You went in.",
@@ -675,5 +675,7 @@
   "advancements.the_oldest_house.account.backseat.description": "I closed the car door against the rain.",
   "advancements.the_oldest_house.account.silo.title": "Yellow dust",
   "advancements.the_oldest_house.account.silo.description": "I climbed above the corn while a voice below invented places she could have gone.",
-  "item.the_oldest_house.read_crayon": "Crayon"
+  "item.the_oldest_house.read_crayon": "Crayon",
+  "advancements.the_oldest_house.house.house.title": "This House Has Ghosts in It",
+  "advancements.the_oldest_house.house.house.description": "Somewhere in this world there is a house."
 }

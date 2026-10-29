@@ -27,9 +27,12 @@ Frames follow Minecraft's three kinds:
 
 Background: the manor's wallpaper. Icons are proposals.
 
+0.4.171: the owner found the menu empty in a new world ("advancements are broken in-game"). Minecraft shows a tab only once something in it has been earned, and the letter, then the tab's root, comes days into a world. The root is now the house itself, earned quietly the moment a reader is in the world, so the tab is always there, with the letter as the next thing to earn.
+
 | Id | Title | Description | Parent | Frame | Hidden | Earned when | Icon |
 |---|---|---|---|---|---|---|---|
-| `letter` | This House Has Ghosts in It | Someone wrote to you about a house. | (root) | task | no | the opening's letter arrives | paper |
+| `house` | This House Has Ghosts in It | Somewhere in this world there is a house. | (root) | task | no | at once, on joining the world, without a toast (0.4.171) | spruce door |
+| `letter` | The letter | Someone wrote to you about a house. | `house` | task | no | the opening's letter arrives | paper |
 | `manor` | The manor | You went in. | `letter` | task | no | the reader first enters the House | oak door |
 | `room_between` | The room between rooms | A door in the study opened onto somewhere it shouldn't. | `manor` | task | no | the reader enters the room between rooms | the study's door |
 | `hallway` | The impossible hallway | It was longer inside than the house is. | `room_between` | task | no | the reader walks into the impossible hallway | a painting |

@@ -25,7 +25,8 @@ public final class GhostsSetTests {
     private static void save(LiteraryTests.Fixture f,ServerPlayer p,CompoundTag t){LiteraryVignettes.save(f.data(),p.getUUID(),P,t);}
     private static void film(ServerPlayer p,ItemStack s){p.setItemInHand(InteractionHand.MAIN_HAND,s);p.startUsingItem(InteractionHand.MAIN_HAND);}
     private static ItemStack cam(ServerPlayer p){return p.getInventory().items.stream().filter(s->s.is(LiteraryRegistry.CAMCORDER.get())).findFirst().orElseThrow().copy();}
-    private static LiteraryActor actor(LiteraryTests.Fixture f,ServerPlayer p,int role){return f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),a->a.role()==role&&a.owner().filter(p.getUUID()::equals).isPresent()).stream().findFirst().orElseThrow();}
+    // A missing original is an assertion, so a waiting step retries and a failed one fails its test, never the whole server (run 1336).
+    private static LiteraryActor actor(LiteraryTests.Fixture f,ServerPlayer p,int role){return f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),a->a.role()==role&&a.owner().filter(p.getUUID()::equals).isPresent()).stream().findFirst().orElseThrow(()->new net.minecraft.gametest.framework.GameTestAssertException("the original "+role+" is not staged yet"));}
     private static String status(LiteraryTests.Fixture f,ServerPlayer p){var own=f.own(p,P);var cast=f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),a->a.owner().filter(p.getUUID()::equals).isPresent());return "day="+own.getInt("FilmDay")+" clock="+own.getInt("ShotClock")+" rolling="+own.getBoolean("Rolling")+" approach="+own.getInt("JumpApproach0495")+" pickup="+own.getInt("PickupStep0")+","+own.getInt("PickupStep1")+" reader="+p.position().subtract(f.base(P).getX(),f.base(P).getY(),f.base(P).getZ())+" cast="+cast.stream().map(a->a.role()+"/"+a.phase()+" at "+a.position().subtract(f.base(P).getX(),f.base(P).getY(),f.base(P).getZ())+" arc="+a.getPersistentData().getInt("GhostJumpArc0495")).toList();}
     private static String words(ItemStack s){return s.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).reduce("",String::concat);}
     @GameTest(template="empty",batch="ghosts_room0490",timeoutTicks=500)
@@ -297,7 +298,8 @@ public final class GhostsSetTests {
     @GameTest(template="empty",batch="ghosts_final_death0488",timeoutTicks=2000)
     public static void PoisoningUnfoldsOnTheOriginalFamilyAndMerryWalksOutAfterTheirDeaths(GameTestHelper h){
         var f=fixture(h);var p=f.player("ghost_final_death",P);var peer=f.player("ghost_final_peer",P);f.source(p,P);var ids=new HashMap<Integer,UUID>();
-        h.startSequence().thenIdle(30).thenExecute(()->{
+        // Wait for the set and its cast rather than a fixed thirty ticks: on a loaded runner the originals were not staged yet.
+        h.startSequence().thenIdle(30).thenWaitUntil(()->{
             var own=f.own(p,P);own.putInt("FilmDay",7);own.putInt("ShotClock",295);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,-4,0,-24);GhostsSet.reader(p,f.base(P),own);save(f,p,own);
             for(int role:GhostsSet.ROLES)ids.put(role,actor(f,p,role).getUUID());h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.EATING,"Marjorie eats and teases before the poison takes effect");
         }).thenWaitUntil(()->{var own=f.own(p,P);h.assertTrue(own.getInt("CrewExit0490_4")>=4&&own.getInt("CrewExit0490_5")>=4,"the original crew walk their full native exit route before poisoning");}).thenExecute(()->{

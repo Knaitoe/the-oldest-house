@@ -5,8 +5,13 @@
 
 The story rows are read from WitnessAccount.Story in the Java source, so an advancement's title is always that story's
 account title and its description the account's first sentence, in the reader's own "I". Every criterion is
-minecraft:impossible except chalk and the spool (Minecraft's own inventory_changed): HouseAdvancements awards them from
-the facts the save already records. Nothing announces to chat, nothing gives a reward, and every ending, every kind and
+minecraft:impossible except chalk and the spool (Minecraft's own inventory_changed) and the house tab's root: HouseAdvancements
+awards them from the facts the save already records.
+
+0.4.171 (owner: "advancements are broken in-game", an empty menu): Minecraft shows a tab only once something in it has been
+earned, so the house tab stayed absent until the morning letter, days into a new world, and the menu was empty. The tab's
+root is now the house itself, earned quietly on Minecraft's own tick the moment a reader is in the world (no toast), with
+the letter its first child, so the tab is there from the start with the letter as the next thing to earn. Nothing announces to chat, nothing gives a reward, and every ending, every kind and
 every story is hidden until it is earned (the owner's choices, October 29).
 
 Usage: python3 tools/generate_advancements.py [--check]
@@ -24,7 +29,8 @@ STORIES_SOURCE = ROOT / 'src/main/java/io/github/knaitoe/theoldesthouse/labyrint
 
 # id, title, description, parent, frame, hidden, icon
 HOUSE = [
-    ('letter', 'This House Has Ghosts in It', 'Someone wrote to you about a house.', None, 'task', False, 'minecraft:paper'),
+    ('house', 'This House Has Ghosts in It', 'Somewhere in this world there is a house.', None, 'task', False, 'minecraft:spruce_door'),
+    ('letter', 'The letter', 'Someone wrote to you about a house.', 'house', 'task', False, 'minecraft:paper'),
     ('manor', 'The manor', 'You went in.', 'letter', 'task', False, 'minecraft:oak_door'),
     ('room_between', 'The room between rooms', "A door in the study opened onto somewhere it shouldn't.", 'manor', 'task', False, 'minecraft:dark_oak_door'),
     ('hallway', 'The impossible hallway', 'It was longer inside than the house is.', 'room_between', 'task', False, 'minecraft:painting'),
@@ -52,6 +58,8 @@ HOUSE = [
 ]
 # Chalk and the spool are Minecraft's own: the item in the reader's inventory.
 INVENTORY = {'chalk': NS + ':chalk', 'spool': NS + ':trail_spool'}
+# The house tab's root is earned by being in the world at all, without a toast, so the tab is never missing from the menu.
+ALWAYS = {'house'}
 
 PROGRESS = [
     ('account', 'An Account', 'I am writing down what I saw, before I begin remembering something else.', None, 'task', False, 'minecraft:written_book'),
@@ -109,13 +117,13 @@ def key(tab, aid, part):
     return 'advancements.%s.%s.%s.%s' % (NS, tab, aid, part)
 
 
-def advancement(tab, aid, parent, frame, hidden, icon, criterion=None):
+def advancement(tab, aid, parent, frame, hidden, icon, criterion=None, toast=True):
     display = {
         'icon': {'id': icon},
         'title': {'translate': key(tab, aid, 'title')},
         'description': {'translate': key(tab, aid, 'description')},
         'frame': frame,
-        'show_toast': True,
+        'show_toast': toast,
         'announce_to_chat': False,
         'hidden': hidden,
     }
@@ -133,8 +141,8 @@ def advancement(tab, aid, parent, frame, hidden, icon, criterion=None):
 def outputs():
     files, lang = {}, {}
 
-    def add(tab, aid, title, description, parent, frame, hidden, icon, criterion=None):
-        files['%s/%s.json' % (tab, aid)] = advancement(tab, aid, parent, frame, hidden, icon, criterion)
+    def add(tab, aid, title, description, parent, frame, hidden, icon, criterion=None, toast=True):
+        files['%s/%s.json' % (tab, aid)] = advancement(tab, aid, parent, frame, hidden, icon, criterion, toast)
         lang[key(tab, aid, 'title')] = title
         lang[key(tab, aid, 'description')] = description
 
@@ -142,7 +150,9 @@ def outputs():
         criterion = None
         if aid in INVENTORY:
             criterion = {'trigger': 'minecraft:inventory_changed', 'conditions': {'items': [{'items': INVENTORY[aid]}]}}
-        add('house', aid, title, description, parent, frame, hidden, icon, criterion)
+        if aid in ALWAYS:
+            criterion = {'trigger': 'minecraft:tick'}
+        add('house', aid, title, description, parent, frame, hidden, icon, criterion, aid not in ALWAYS)
     for aid, title, description, parent, frame, hidden, icon in PROGRESS:
         add('account', aid, title, description, parent, frame, hidden, icon)
     for kind, (title, description, icon) in KINDS.items():
@@ -163,6 +173,12 @@ def problems(files):
     for sid, *_ in stories():
         if 'account/%s.json' % sid not in files:
             out.append('story %s has no advancement' % sid)
+    for tab in ('house', 'account'):
+        roots = [path for path, data in files.items() if path.startswith(tab + '/') and 'parent' not in data]
+        if len(roots) != 1:
+            out.append('the %s tab has %d roots' % (tab, len(roots)))
+    if files['house/house.json']['criteria']['house']['trigger'] != 'minecraft:tick':
+        out.append('the house tab is not visible from the start')
     for aid in ('ending_witness', 'ending_wound', 'ending_locked'):
         if not files['house/%s.json' % aid]['display']['hidden']:
             out.append(aid + ' is not hidden')
