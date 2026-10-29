@@ -574,7 +574,13 @@ public final class LabyrinthDealer {
             }
             data.setHillaryScent(player, false);
         }
-        if (!vignettes.isEmpty() && (scent || random.nextInt(100) < vignetteChance(data, player))) {
+        // 0.4.160: until a reader has entered every quiet room, the next of them takes the place of the stories the House
+        // would deal, and comes round far more often. A deliberate scent or a lost pet still finds its story.
+        boolean owing = !scent && !rescueNeeded(data, player) && HouseReadSites.owing(data, player);
+        LabyrinthData.Door quietDoor = null;
+        if (owing) {
+            if (random.nextInt(100) < HouseReadSites.chance(data, player)) quietDoor = doors.get(random.nextInt(doors.size()));
+        } else if (!vignettes.isEmpty() && (scent || random.nextInt(100) < vignetteChance(data, player))) {
             lucky = doors.get(random.nextInt(doors.size()));
         }
 
@@ -588,6 +594,7 @@ public final class LabyrinthDealer {
                 .filter(p -> !LabyrinthPacing.loop(p) || LabyrinthPacing.loopDue(data, player)).toList();
         List<LabyrinthData.Door> choices = new ArrayList<>(doors);
         choices.remove(lucky);
+        choices.remove(quietDoor);
         LabyrinthData.Door oddDoor = null;
         if (lucky == null && !odd.isEmpty() && !choices.isEmpty() && random.nextInt(100) < LabyrinthPacing.anomalyChance(data, player)) {
             oddDoor = choices.remove(random.nextInt(choices.size()));
@@ -609,6 +616,10 @@ public final class LabyrinthDealer {
                 boolean camp = data.returnDepth(player) >= 3 && random.nextBoolean()
                         && data.recentVisit(player, LabyrinthPlace.EXPLORER_CAMP) < 0;
                 data.deal(player, door, (camp ? LabyrinthPlace.EXPLORER_CAMP : LabyrinthPlace.QUIET_ROOM).id(), false);
+            } else if (door == quietDoor) {
+                // The quiet room opens onto an ordinary hall, so the door is dealt one.
+                List<LabyrinthPlace> plain = gray.stream().filter(LabyrinthPacing::ordinary).toList();
+                data.deal(player, door, (plain.isEmpty() ? LabyrinthPlace.GRAY_CORRIDOR : pickGray(plain, data, player, random)).id(), false);
             } else if(door==trialDoor){
                 data.deal(player,door,HazardVariety.routeVariant(weightedGray(trials,data,player,random),(here==null?0:data.nodeKey(player,here))^door.id.hashCode(),data).id(),lyingLeak(data,player,random));
             } else {
@@ -616,10 +627,11 @@ public final class LabyrinthDealer {
             }
         }
         if (finaleOffered(data, player) && random.nextInt(100) < 18) {
-            LabyrinthData.Door vignetteDoor = lucky;
-            List<LabyrinthData.Door> finaleDoors = doors.stream().filter(d -> d != vignetteDoor).toList();
+            LabyrinthData.Door vignetteDoor = lucky, quiet = quietDoor;
+            List<LabyrinthData.Door> finaleDoors = doors.stream().filter(d -> d != vignetteDoor && d != quiet).toList();
             if (!finaleDoors.isEmpty()) data.deal(player, finaleDoors.get(random.nextInt(finaleDoors.size())), FinaleArchitecture.ID, false);
         }
-        recordDryDeal(data, player, lucky != null);
+        if (owing) HouseReadSites.owe(data, player, quietDoor == null ? null : quietDoor.id);
+        recordDryDeal(data, player, lucky != null || quietDoor != null);
     }
 }

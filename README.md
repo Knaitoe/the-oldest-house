@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.159** gives the House its read of each reader. The five quiet rooms were reviewed against their designs and repaired, and what a reader does first in them now becomes a read of their age, hair routine, presentation, who they are drawn to and what home was. Their account opens with the House reciting their night back to them, their House of Leaves is written with it, and mirrors and their own doubles show the House's version of them. [The read of the reader](docs/HOUSE_READ_0_4_159.md).
+Development candidate **0.4.160** feeds the quiet rooms one at a time: the first waits behind a junction door, and after each one the reader walks out into a hall, and the next quiet room is the next story the House deals them, coming round far more often until all are done. [The quiet rooms, one at a time](docs/QUIET_ROOMS_ONE_AT_A_TIME_0_4_160.md).
+
+0.4.159 gave the House its read of each reader. The five quiet rooms were reviewed against their designs and repaired, and what a reader does first in them becomes a read of their age, hair routine, presentation, who they are drawn to and what home was. Their account opens with the House reciting their night back to them, their House of Leaves is written with it, and mirrors and their own doubles show the House's version of them. [The read of the reader](docs/HOUSE_READ_0_4_159.md).
 
 **What the House keeps about you.** These observations and categories are kept only in the world's save (`house_read`), are never sent to any other player's client, and are not written to the playtest log. A server operator can read the save. Two server options in the config's `read` section turn the read off: `readReaders` for every trait, or `readDrawnTo` for who a reader is drawn to alone.
 

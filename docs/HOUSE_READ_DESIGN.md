@@ -60,6 +60,8 @@ These are the first five rooms a reader reaches after the opening (the three day
 
 Built in 0.4.143 as a chain: until a reader has entered all five, any of the junction's onward doors leads into their next room in order, each room's way on leads into the next, and the porch's way on arrives in the hall the junction door was dealt. The 0.4.142 hallway doors are walled up unseen in saved worlds (`docs/JUNCTION_CHAIN_0_4_143.md`).
 
+Changed in 0.4.160 (the owner, October 29): the rooms come one at a time. The first is behind a junction door; every room's way on is the hall its door was dealt; after that the next room takes the place of the next story the House deals, at 60% an arrival and certain after two arrivals without one, until all are entered (`docs/QUIET_ROOMS_ONE_AT_A_TIME_0_4_160.md`).
+
 ## Co-op: these rooms stay private, other vignettes are shared
 
 The five quiet rooms stay private (owner, October 28). They define the character, so every reader gets their own copy and the House watches one person at a time. Friends who cross a door together each arrive in their own copy and meet again in the hall beyond. Today's copies, 4,096 blocks from the next reader's and built in bounded slices like `BorrascaSites`, already work this way.
@@ -666,3 +668,4 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.157 | The shallows together: one throw, a second reader at her feet in Lonnie's place with Lonnie counting, the rest on the bank with the boys, a Witness line for each part | `docs/SHALLOWS_TOGETHER_0_4_157.md` |
 | 0.4.158 | Hide-and-clap private, with copies: one reader to a room, a room's own round, and every reader can win it once | `docs/HIDE_AND_CLAP_COPIES_0_4_158.md` |
 | 0.4.159 | The read of the reader: the five rooms reviewed and repaired (the waiting room's equal distances, window and ashtray, the coatroom bench, the shelter rebuilt with strangers on the rails and the dock ahead, the porch's window, way out and both sides of the lattice); signals and categories for all five traits; the account opening; the House of Leaves; the reader's look in glass and copies; the strangers' age; the road-taker's deal; a server option | `docs/HOUSE_READ_0_4_159.md` |
+| 0.4.160 | The quiet rooms one at a time: the first from a junction door, then each as the next story dealt, more often, until all are entered | `docs/QUIET_ROOMS_ONE_AT_A_TIME_0_4_160.md` |
