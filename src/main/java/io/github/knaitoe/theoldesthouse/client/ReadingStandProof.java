@@ -88,6 +88,6 @@ public final class ReadingStandProof extends Screen {
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;return;}
         Files.writeString(folder.resolve("passed.txt"),"Six reading stands on their scenes' own tables, from the reader's side and from behind, and the dock's piling with the life ring hung flush on it. Shipped native models at Minecraft's pixel scale.\n");
-        mc.stop();
+        mc.setScreen(new HouseReadLineProof());
     }
 }

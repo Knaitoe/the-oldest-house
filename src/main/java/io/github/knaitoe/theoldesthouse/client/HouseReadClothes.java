@@ -34,7 +34,11 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
         r.addOrReplaceChild("left_arm",CubeListBuilder.create().texOffs(28,0).mirror().addBox(-1.35f,-2.25f,-2.5f,width+.7f,12.5f,5),PartPose.ZERO);
         r.addOrReplaceChild("right_leg",CubeListBuilder.create().texOffs(0,18).addBox(-2.35f,7.8f,-2.4f,4.7f,4.5f,5),PartPose.ZERO);
         r.addOrReplaceChild("left_leg",CubeListBuilder.create().texOffs(0,18).addBox(-2.35f,7.82f,-2.38f,4.7f,4.5f,5),PartPose.ZERO);
-        r.addOrReplaceChild("hem",CubeListBuilder.create().texOffs(0,18).addBox(-4.5f,12.85f,-2.45f,9,5.6f,4.9f),PartPose.ZERO);
+        // 0.4.166 (owner: "try to better anticipate player movement for the legs of the clothes ... so the clothes move with the
+        // legs"): the coat's skirt is two halves, each hung from its own leg's hip, so it swings with the stride instead of
+        // standing still while the legs walk through it. Same place and size as the single hem it replaces, in each leg's frame.
+        r.addOrReplaceChild("right_hem",CubeListBuilder.create().texOffs(0,18).addBox(-2.6f,.85f,-2.45f,4.5f,5.6f,4.9f),PartPose.ZERO);
+        r.addOrReplaceChild("left_hem",CubeListBuilder.create().texOffs(0,18).mirror().addBox(-1.9f,.85f,-2.45f,4.5f,5.6f,4.9f),PartPose.ZERO);
         r.addOrReplaceChild("scarf",CubeListBuilder.create().texOffs(28,18).addBox(-4.45f,-2.2f,-4.55f,8.9f,3.7f,9.1f),PartPose.ZERO);
         r.addOrReplaceChild("belt",CubeListBuilder.create().texOffs(28,18).addBox(-4.5f,8.8f,-2.5f,9,.9f,5),PartPose.ZERO);
         // 0.4.159: reading glasses, and the veil over an obscured face, each with its own small texture.
@@ -47,7 +51,7 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
     public static void veil(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,PoseStack pose,MultiBufferSource out,int light){pose.pushPose();body.head.translateAndRotate(pose);cloth.getChild("veil").render(pose,out.getBuffer(RenderType.entityTranslucent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/veil.png"))),light,OverlayTexture.NO_OVERLAY);pose.popPose();}
     public static void coat(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){
         var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.body,cloth.getChild("body"),pose,out,light,tex);part(body.rightArm,cloth.getChild("right_arm"),pose,out,light,tex);part(body.leftArm,cloth.getChild("left_arm"),pose,out,light,tex);
-        if(type.equals("barn"))part(body.body,cloth.getChild("scarf"),pose,out,light,tex);else part(body.body,cloth.getChild("hem"),pose,out,light,tex);
+        if(type.equals("barn"))part(body.body,cloth.getChild("scarf"),pose,out,light,tex);else{part(body.rightLeg,cloth.getChild("right_hem"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_hem"),pose,out,light,tex);}
         if(type.equals("trench"))part(body.body,cloth.getChild("belt"),pose,out,light,tex);
     }
     public static void boots(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.rightLeg,cloth.getChild("right_leg"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_leg"),pose,out,light,tex);}

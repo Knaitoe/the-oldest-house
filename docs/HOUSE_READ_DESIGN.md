@@ -34,7 +34,7 @@ The cost is mostly writing. Every place that reads a category needs its present 
 
 ## Rules for all five rooms
 
-- **No prompts, no wrong answers, no fail states.** Every choice opens the way on, and so does doing nothing. A reader can always go back the way they came.
+- **No prompts, no wrong answers, no fail states.** Every answer opens the way on. Since 0.4.166 (owner: "The personality vignettes also shouldn't have exits; the house needs those bits of information"; "The doors can also just be locked ... Until the vignettes are completed.") both doors stay locked until the room has its answer, and doing nothing is met with a nudge (the receptionist, the jukebox playing again, a second whistle), not an open door. Each room opens and closes on black with a line of the House's story about the reader (`docs/QUIET_ROOMS_STORY_0_4_166.md`).
 - **A way forward.** Every room has an exit that leads on into the ordinary halls, not only the door back (owner, October 28).
 - **Not stories.** No source, no account of their own, no Witness credit. The pool stays at 54 sources and 41 resolutions across two kinds.
 - **The first instinct counts.** What sets a category is the first deliberate act in the room's window. Later poking around is kept as an observation only.

@@ -35,10 +35,8 @@ public final class HouseReadMoments {
      */
     public static final int WAIT=800;
     public static BlockPos exit(HouseReadSites.Room room){return switch(room){case WAITING->new BlockPos(0,0,-12);case BATHROOM->new BlockPos(4,0,-10);case SHELTER->new BlockPos(3,0,2);default->throw new IllegalArgumentException(room.name());};}
-    public static boolean canProceed(ServerPlayer p,HouseReadSites.Room room){
-        var visit=HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());
-        return room!=WAITING&&room!=BATHROOM||room==WAITING&&visit.getInt("Age")>=WAIT||room==BATHROOM&&visit.getBoolean("BedroomOpen");
-    }
+    /** 0.4.166: a room's way on opens once the House has what the room is for ({@link HouseReadStory#ready}). */
+    public static boolean canProceed(ServerPlayer p,HouseReadSites.Room room){return HouseReadStory.ready(p,room);}
     private static CompoundTag visit(ServerPlayer p,HouseReadSites.Room room){return HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());}
     private static void save(ServerPlayer p,HouseReadSites.Room room,CompoundTag visit){var own=HouseReadSites.state(p.server,p.getUUID());own.put(room.key(),visit);HouseReadSites.save(p.server,p.getUUID(),own);}
     private static void arm(ServerPlayer p,HouseReadSites.Room room,String words){var t=visit(p,room);t.putBoolean("NoteArmed",true);save(p,room,t);HouseReadSites.act(p,room,words);}
@@ -115,7 +113,9 @@ public final class HouseReadMoments {
             if(part==SINK){part=TAP;}
             if(part==TOWEL_BAR){HouseReadSites.act(p,room,"felt the dry towel on the bar");p.displayClientMessage(Component.literal("A dry towel on the bar."),true);return true;}
             if(part==TOWEL){HouseReadSites.act(p,room,"felt the dry towel beside the sink");p.displayClientMessage(Component.literal("A dry towel, folded beside the sink."),true);return true;}
-            if(part==LIGHT_SWITCH){var t=visit(p,room);boolean off=!t.getBoolean("LightOff");t.putBoolean("LightOff",off);t.putBoolean("BedroomOpen",true);t.putBoolean("NoteArmed",true);if(off)t.putInt("LeaveAt",t.getInt("Age")+80);else if(!t.getBoolean("Done"))t.remove("LeaveAt");save(p,room,t);lights(p,b,off);p.serverLevel().setBlock(at,p.serverLevel().getBlockState(at).setValue(HouseReadPropBlock.TURNED,off),Block.UPDATE_CLIENTS);unlock(p,b,room);HouseReadSites.sound(p,SoundEvents.LEVER_CLICK,at,.3f);HouseReadSites.act(p,room,off?(t.getInt("Touches")==0?"turned the light off without touching the counter":"turned the bathroom light off"):"turned the bathroom light back on");if(off&&!HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(BATHROOM.key()).getBoolean("LightOff")){int touched=t.getInt("Touches");HouseRead.see(p,BATHROOM,s->{s.putBoolean("LightOff",true);if(touched==0)s.putBoolean("Untouched",true);});}return true;}
+            if(part==LIGHT_SWITCH){var t=visit(p,room);boolean off=!t.getBoolean("LightOff"),done=t.getBoolean("Done");t.putBoolean("LightOff",off);t.putBoolean("NoteArmed",true);
+                // 0.4.166: the House needs the routine; the switch alone no longer opens the bedroom.
+                if(done){t.putBoolean("BedroomOpen",true);if(off)t.putInt("LeaveAt",t.getInt("Age")+80);}save(p,room,t);lights(p,b,off);p.serverLevel().setBlock(at,p.serverLevel().getBlockState(at).setValue(HouseReadPropBlock.TURNED,off),Block.UPDATE_CLIENTS);if(done)unlock(p,b,room);HouseReadSites.sound(p,SoundEvents.LEVER_CLICK,at,.3f);HouseReadSites.act(p,room,off?(t.getInt("Touches")==0?"turned the light off without touching the counter":"turned the bathroom light off"):"turned the bathroom light back on");if(off&&!HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(BATHROOM.key()).getBoolean("LightOff")){int touched=t.getInt("Touches");HouseRead.see(p,BATHROOM,s->{s.putBoolean("LightOff",true);if(touched==0)s.putBoolean("Untouched",true);});}return true;}
             if(part==TAP){var t=visit(p,room);boolean running=!t.getBoolean("TapRunning");t.putBoolean("TapRunning",running);t.putInt("TapSoundAt",t.getInt("Age"));save(p,room,t);var sink=b.offset(HouseReadRemainingRooms.SINK_AT);p.serverLevel().setBlock(sink,p.serverLevel().getBlockState(sink).setValue(HouseReadPropBlock.TURNED,running),Block.UPDATE_CLIENTS);arm(p,room,running?"ran the hot tap":"turned off the hot tap");if(running)tap(p);if(running)HouseReadSites.sound(p,HouseReadRegistry.TAP.get(),at,.5f);else p.connection.send(new ClientboundStopSoundPacket(HouseReadRegistry.TAP.getId(),SoundSource.BLOCKS));return true;}
             if(part==POSTCARD){note(p,b,room,"A picture of a lake, wedged into the mirror frame.");return true;}
             if(part==MIRROR||part==MIRROR_TOP)return true;
@@ -157,7 +157,7 @@ public final class HouseReadMoments {
         var t=visit(p,BATHROOM);if(!t.contains("Held")||t.getBoolean("Done"))return false;int item=t.getInt("Held");
         if(!p.getMainHandItem().is(HouseReadRegistry.ROUTINES.get(item).get()))return false;
         p.swing(net.minecraft.world.InteractionHand.MAIN_HAND,true);HouseReadSites.sound(p,item==11?HouseReadRegistry.TAP.get():SoundEvents.ARMOR_EQUIP_LEATHER.value(),at,.6f);
-        var seen=seen(p,BATHROOM);if(!seen.contains("Used")){HouseRead.see(p,BATHROOM,x->x.putInt("Used",item));if(!seen.getBoolean("LightOff"))HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[item/3],true);}
+        var seen=seen(p,BATHROOM);if(!seen.contains("Used")){HouseRead.see(p,BATHROOM,x->x.putInt("Used",item));HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[item/3],true);}
         t.putBoolean("Done",true);t.putInt("LightsOutAt",t.getInt("Age")+30);t.putBoolean("NoteArmed",true);save(p,BATHROOM,t);HouseReadSites.act(p,BATHROOM,"used the "+ROUTINES[item]+" at the mirror");return true;
     }
     /** The bathroom's two lights, by their switch. */
@@ -177,8 +177,13 @@ public final class HouseReadMoments {
             if(age%120==1)HouseReadSites.sound(p,HouseReadRegistry.RAIN.get(),b.offset(-8,2,-5),.4f);
             if(age%5==0)p.serverLevel().sendParticles(p,ParticleTypes.FALLING_WATER,false,b.getX()+8+p.getRandom().nextDouble()*3,b.getY()+3.8,b.getZ()-10+p.getRandom().nextDouble()*12,2,.2,.1,.2,0);
             // The receptionist calls the reader through, and the House takes them on.
-            if(age==WAIT){unlock(p,b,room);t.putBoolean("NoteArmed",true);doorClicked(p,b);HouseReadSites.sound(p,SoundEvents.WOODEN_DOOR_OPEN,b.offset(exit(room)),.5f);p.displayClientMessage(Component.literal("\u201cSorry for keeping you waiting.\u201d").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),false);}
-            if(age>=WAIT&&(p.getZ()<b.getZ()-12.6||age>=WAIT+40))HouseReadSites.leave(p,true);
+            // 0.4.166: the call waits until the House has seen how the reader passes the time; a first pick-up after the forty
+            // seconds is given three seconds of its own before the door clicks.
+            var kept=seen(p,WAITING);boolean called=t.getBoolean("Called");
+            if(!called&&age>=WAIT&&kept.contains("First")&&age>=t.getInt("FirstAge")+(t.getInt("FirstAge")>=WAIT?60:0)){
+                unlock(p,b,room);t.putBoolean("NoteArmed",true);t.putBoolean("Called",true);t.putInt("CalledAt",age);doorClicked(p,b);HouseReadSites.sound(p,SoundEvents.WOODEN_DOOR_OPEN,b.offset(exit(room)),.5f);receptionist(p,"Sorry for keeping you waiting.");}
+            else if(!called&&!kept.contains("First")&&(age==WAIT||age==WAIT+600))receptionist(p,age==WAIT?"It won't be much longer. Make yourself comfortable.":"Help yourself to a magazine while you wait.");
+            if(called&&(p.getZ()<b.getZ()-12.6||age>=t.getInt("CalledAt")+40))HouseReadSites.leave(p,true);
         }else if(room==BATHROOM){
             if(age%120==1){HouseReadSites.sound(p,HouseReadRegistry.RAIN.get(),b.offset(-6,2,-5),.32f);HouseReadSites.sound(p,HouseReadRegistry.RADIATOR.get(),b.offset(-6,0,-1),.25f);}
             if(t.getBoolean("TapRunning")){if(age-t.getInt("TapSoundAt")>=60){HouseReadSites.sound(p,HouseReadRegistry.TAP.get(),b.offset(HouseReadRemainingRooms.TAP_AT),.5f);t.putInt("TapSoundAt",age);}if(age%5==0)p.serverLevel().sendParticles(p,ParticleTypes.CLOUD,false,b.getX()+.5,b.getY()+1.1,b.getZ()-8.4,1,.12,.04,.1,.005);}
@@ -197,6 +202,8 @@ public final class HouseReadMoments {
                 t.putInt("SongAge",song+1);if(song==899)t.putBoolean("NoteArmed",true);
                 if(HouseReadRemainingRooms.onDock(b,p.position())&&!t.getBoolean("Lantern")){t.putBoolean("Lantern",true);t.putBoolean("NoteArmed",true);literal(t,"stood by the lantern at the dock steps");}
                 shelterRead(p,b,t);
+                // 0.4.166: if the song ends before the House has its answer, the jukebox plays it again.
+                if(song==899&&!HouseReadStory.answered(seen(p,SHELTER))){t.putBoolean("SongStarted",false);t.putInt("Replays",t.getInt("Replays")+1);}
             }
             if(p.getZ()>b.getZ()+2.6&&Math.abs(p.getX()-b.getX()-3.5)<1.2)HouseReadSites.leave(p,true);
         }
@@ -205,9 +212,10 @@ public final class HouseReadMoments {
     public static final String[] HAIR={"WRAPPED","BRAIDED_AND_OILED","BRUSHED_DRY","WASHED_AND_BARBERED"};
     private static CompoundTag seen(ServerPlayer p,HouseReadSites.Room room){return HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(room.key());}
     /** The waiting room's first time-killer, inside the wait. */
-    private static void age(ServerPlayer p,String kind,String value){if(visit(p,WAITING).getInt("Age")>=WAIT||seen(p,WAITING).contains("First"))return;HouseRead.first(p,WAITING,"First",kind);HouseRead.signal(p,HouseRead.Trait.AGE,value,false);}
+    private static void age(ServerPlayer p,String kind,String value){var t=visit(p,WAITING);if(t.getBoolean("Called")||seen(p,WAITING).contains("First"))return;t.putInt("FirstAge",t.getInt("Age"));save(p,WAITING,t);HouseRead.first(p,WAITING,"First",kind);HouseRead.signal(p,HouseRead.Trait.AGE,value,false);}
+    private static void receptionist(ServerPlayer p,String words){p.displayClientMessage(Component.literal("\u201c"+words+"\u201d").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),false);}
     /** Flipping through more channels settles a reader who began at the cart. */
-    private static void channels(ServerPlayer p){var s=seen(p,WAITING);int n=s.getInt("Channels")+1;HouseRead.see(p,WAITING,t->t.putInt("Channels",n));if(visit(p,WAITING).getInt("Age")<WAIT&&!s.contains("Second")&&n>=(s.getString("First").equals("tv")?3:2)&&s.contains("First")){HouseRead.see(p,WAITING,t->{t.putString("Second","TRANSITIONAL");t.putString("Kept","channels");});HouseRead.signal(p,HouseRead.Trait.AGE,"TRANSITIONAL",true);}}
+    private static void channels(ServerPlayer p){var s=seen(p,WAITING);int n=s.getInt("Channels")+1;HouseRead.see(p,WAITING,t->t.putInt("Channels",n));if(!visit(p,WAITING).getBoolean("Called")&&!s.contains("Second")&&n>=(s.getString("First").equals("tv")?3:2)&&s.contains("First")){HouseRead.see(p,WAITING,t->{t.putString("Second","TRANSITIONAL");t.putString("Kept","channels");});HouseRead.signal(p,HouseRead.Trait.AGE,"TRANSITIONAL",true);}}
     /** What the reader is doing as the door clicks: the rest of the wait. Sitting or pacing alone is only observed. */
     private static void doorClicked(ServerPlayer p,BlockPos b){
         var s=seen(p,WAITING);HouseRead.see(p,WAITING,t->{t.putBoolean("Waited",true);if(p.isPassenger())t.putBoolean("Sat",true);});if(!s.contains("First")||s.contains("Second"))return;
@@ -219,7 +227,7 @@ public final class HouseReadMoments {
     }
     /** The bathroom: the first routine item sets the routine, a second from the same set settles it, before the light goes out. */
     private static void routine(ServerPlayer p,int item,int position){
-        var s=seen(p,BATHROOM);if(s.getBoolean("LightOff"))return;
+        var s=seen(p,BATHROOM);
         if(!s.contains("Item")){HouseRead.see(p,BATHROOM,t->{t.putInt("Item",item);t.putInt("Position",position);});HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[item/3],false);return;}
         // Changing one's mind to another set's item makes the read uncertain; using the one in hand decides it.
         if(!s.contains("Swapped")&&s.getInt("Item")/3!=item/3){HouseRead.see(p,BATHROOM,t->t.putInt("Swapped",item));HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[item/3],true);}
@@ -227,7 +235,7 @@ public final class HouseReadMoments {
     /** The hot tap settles only the set whose washcloth hangs over the faucet; for the others it is an observation. */
     private static void tap(ServerPlayer p){
         var s=seen(p,BATHROOM);HouseRead.flag(p,BATHROOM,"Tap");
-        if(!s.getBoolean("LightOff")&&s.contains("Item")&&s.getInt("Item")/3==3&&!s.contains("Used")&&!s.getBoolean("Second")){HouseRead.flag(p,BATHROOM,"Second");HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[3],true);}
+        if(s.contains("Item")&&s.getInt("Item")/3==3&&!s.contains("Used")&&!s.getBoolean("Second")){HouseRead.flag(p,BATHROOM,"Second");HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[3],true);}
     }
     /** A stranger's face near the middle of the reader's view, within eight degrees, with nothing in between. */
     static boolean framed(ServerPlayer p,net.minecraft.world.entity.Entity a){

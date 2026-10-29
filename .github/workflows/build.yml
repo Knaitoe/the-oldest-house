@@ -2169,6 +2169,9 @@ jobs:
           stands=Path('build/reading-stands')
           assert sorted(p.name for p in stands.glob('*.png'))==['dock_ring.png','stands_back.png','stands_front.png']
           assert (stands/'passed.txt').is_file()
+          lines=Path('build/house-read-lines')
+          assert sorted(p.name for p in lines.glob('*.png'))==['closing.png','warning.png','welcome.png']
+          assert (lines/'passed.txt').is_file()
           PY
       - uses: actions/upload-artifact@v4
         if: always()
@@ -2179,6 +2182,7 @@ jobs:
             build/house-read139-proof
             build/house-read139-art
             build/reading-stands
+            build/house-read-lines
             run/logs
 
   personal-scene-clients:

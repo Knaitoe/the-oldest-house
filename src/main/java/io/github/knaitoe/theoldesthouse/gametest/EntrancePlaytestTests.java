@@ -31,8 +31,12 @@ public final class EntrancePlaytestTests {
 
     private static void proceed(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer p,HouseReadSites.Room room){
         var own=HouseReadSites.state(p.server,p.getUUID());var visit=own.getCompound(room.key());
-        if(room==HouseReadSites.Room.WAITING)visit.putInt("Age",HouseReadMoments.WAIT);if(room==HouseReadSites.Room.BATHROOM)visit.putBoolean("BedroomOpen",true);
+        // 0.4.166: each room's doors open once the House has what the room is for.
+        h.assertTrue(!HouseReadMoments.canProceed(p,room),"the room's doors are locked before it has its answer: "+room);
+        if(room==HouseReadSites.Room.WAITING){visit.putInt("Age",HouseReadMoments.WAIT);visit.putBoolean("Called",true);visit.putInt("CalledAt",HouseReadMoments.WAIT);}if(room==HouseReadSites.Room.BATHROOM){visit.putBoolean("Done",true);visit.putBoolean("BedroomOpen",true);}
+        if(room==HouseReadSites.Room.SHELTER)visit.putInt("SongAge",900);
         own.put(room.key(),visit);f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
+        switch(room){case COATROOM->HouseRead.first(p,room,"Took","wool");case SHELTER->HouseRead.first(p,room,"Stood","middle");case PORCH->HouseRead.first(p,room,"First","in");default->{}}
         h.assertTrue(HouseReadMoments.canProceed(p,room),"the room's own way on is open: "+room);
         var b=HouseReadSites.base(p.server,p.getUUID(),room);
         if(room==HouseReadSites.Room.COATROOM){var curtain=b.offset(HouseReadRooms.CURTAIN_AT);at(p,p.serverLevel(),curtain.south(2));HouseReadSites.use(p,curtain,HouseReadPropBlock.Part.CURTAIN);return;}
@@ -69,7 +73,10 @@ public final class EntrancePlaytestTests {
                 ticking[0]=true;click(p,west[0].lower);
             })
             .thenWaitUntil(()->{if(HouseReadSites.inside(p)!=HouseReadSites.Room.WAITING)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.WAITING&&!LabyrinthDoors.isBusy(p),"the junction's real onward door reaches the first quiet room");})
-            .thenExecute(()->{var b=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.WAITING);at(peer,p.serverLevel(),b.offset(2,0,-2));})
+            .thenExecute(()->{var b=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.WAITING);at(peer,p.serverLevel(),b.offset(2,0,-2));
+                // 0.4.166: the first quiet room opens on black with the House's welcome, then the room's own line.
+                var shown=HouseReadStory.last(p.getUUID());
+                h.assertTrue(shown!=null&&shown.text().equals(HouseReadStory.WELCOME+HouseReadStory.PAGE+HouseReadStory.opening(HouseReadSites.Room.WAITING)),"the first quiet room opens with the welcome and its own line: "+shown);})
             .thenIdle(24).thenExecute(()->{
                 h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.WAITING&&HouseReadSites.contains(peer)&&!HouseTransitionEvents.isPending(p)&&!HouseTransitionEvents.isPending(peer),"idle owner and observer remain in recognized House space after the fade");
                 h.assertTrue(p.isAlive()&&p.getHealth()==20&&peer.isAlive()&&peer.getHealth()==20,"the full boundary tick neither ejects nor kills either native player");

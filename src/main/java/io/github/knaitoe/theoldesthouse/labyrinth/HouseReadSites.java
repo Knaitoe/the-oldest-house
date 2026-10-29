@@ -72,7 +72,7 @@ public final class HouseReadSites {
     public static boolean protectedPosition(MinecraftServer s,BlockPos at,boolean outside){return areas(s,outside).stream().anyMatch(a->a.contains(Vec3.atCenterOf(at)));}
     public static @Nullable Room next(MinecraftServer s,UUID id){var t=state(s,id);for(var room:Room.values())if(!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
     public static @Nullable LabyrinthData.Door prepare(ServerPlayer p,Room room){
-        var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}var own=state(p.server,p.getUUID());
+        var d=LabyrinthData.get(p.server);if(store!=d){rebind();store=d;}var own=state(p.server,p.getUUID());
         if(!own.contains("Index")){var world=d.stateEntry(STATE,"World");int index=world.getInt("NextIndex");if(index>=4096)return null;own.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(STATE,"World",world);save(p.server,p.getUUID(),own);}
         var stale=own.getCompound(room.key());if(stale.getBoolean("Built")&&!stale.getBoolean("Entered")&&stale.getInt("Layout")<LAYOUT){stale.remove("Built");own.put(room.key(),stale);save(p.server,p.getUUID(),own);}
         var b=base(p.server,p.getUUID(),room);var l=p.server.getLevel(room.dimension());
@@ -123,9 +123,11 @@ public final class HouseReadSites {
             var own=state(arrived.server,arrived.getUUID());if(!own.getString("Active").isEmpty()){left(arrived);own=state(arrived.server,arrived.getUUID());}
             // Entering one settles every door that was owed: the next is dealt afresh, after a hall.
             own.remove("Owed");
+            boolean first=true;for(var other:Room.values())if(other!=room&&own.getCompound(other.key()).getBoolean("Entered"))first=false;
             var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());save(arrived.server,arrived.getUUID(),own);
             // 0.4.163: the last quiet room entered, the House's depth counts again from here.
             if(next(arrived.server,arrived.getUUID())==null)LabyrinthData.get(arrived.server).holdReturns(arrived.getUUID());
+            HouseReadStory.open(arrived,room,first);
             prepareNext(arrived);
         },Vec3.atBottomCenterOf(landing),180);
     }
@@ -133,9 +135,17 @@ public final class HouseReadSites {
     public static boolean door(ServerPlayer p,LabyrinthData.Door door){
         if(HouseReadEntrance.room(door)!=null){p.displayClientMessage(Component.literal("The door is locked."),true);return true;}
         if(!door.id.startsWith("house_read/"))return false;var room=inside(p);if(room==null||!door.id.startsWith("house_read/"+p.getUUID()+"/"+room.key()+"/")||p.level().dimension()!=door.dimension||p.distanceToSqr(door.lower.getCenter())>36)return true;
-        boolean forward=!door.id.endsWith("/entry");if(!forward||HouseReadMoments.canProceed(p,room)){if(room==Room.PORCH&&forward){String out=door.id.endsWith("/kitchen")?"kitchen":door.id.endsWith("/side")?"gate":"road";HouseRead.first(p,Room.PORCH,"Out",out);act(p,room,switch(out){case "kitchen"->"left through the front hall";case "gate"->"left by the side gate";default->"left by the road through the trees";});}leave(p,forward);}return true;
+        // 0.4.166 (owner: "The doors can also just be locked ... Until the vignettes are completed."): both ways stay shut until
+        // the House has what the room is for.
+        if(!HouseReadStory.ready(p,room)){HouseReadStory.locked(p,door.lower);return true;}
+        boolean forward=!door.id.endsWith("/entry");{if(room==Room.PORCH&&forward){String out=door.id.endsWith("/kitchen")?"kitchen":door.id.endsWith("/side")?"gate":"road";HouseRead.first(p,Room.PORCH,"Out",out);act(p,room,switch(out){case "kitchen"->"left through the front hall";case "gate"->"left by the side gate";default->"left by the road through the trees";});}leave(p,forward);}return true;
     }
+    /** Leaves a complete room: the House's closing line on black first, then {@link #depart}. */
     static void leave(ServerPlayer p,boolean forward){
+        var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p)||!HouseReadStory.ready(p,room))return;
+        HouseReadStory.close(p,room,forward,next(p.server,p.getUUID())==null);
+    }
+    static void depart(ServerPlayer p,boolean forward){
         var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p))return;var t=state(p.server,p.getUUID()).getCompound(room.key());var d=LabyrinthData.get(p.server);
         // A retired 0.4.142 hallway door still has a way back: the far door's hallway side.
         var from=d.door(t.getString("SourceDoor"));if(from==null)from=d.door("hallway_end");if(from==null)return;var next=LabyrinthPlace.byId(t.getString("NextPlace"));
@@ -198,7 +208,7 @@ public final class HouseReadSites {
         // 0.4.160: the coatroom's towel hangs on a bar beside the glass; taking it covers the glass, as the loose towel did.
         if(room==Room.COATROOM&&part==HouseReadPropBlock.Part.TOWEL_BAR)part=p.serverLevel().getBlockState(at).getValue(HouseReadPropBlock.TURNED)?HouseReadPropBlock.Part.COVERED_MIRROR:HouseReadPropBlock.Part.TOWEL;
         if(room==Room.COATROOM&&part.ordinal()<=HouseReadPropBlock.Part.BARN_BOOTS.ordinal()){wear(p,part.ordinal());return;}
-        if(part==HouseReadPropBlock.Part.CURTAIN){act(p,room,"passed through the curtain");leave(p,true);return;}
+        if(part==HouseReadPropBlock.Part.CURTAIN){if(!HouseReadStory.ready(p,room)){p.displayClientMessage(Component.literal("The curtain is heavy and won't part."),true);return;}act(p,room,"passed through the curtain");leave(p,true);return;}
         if(room==Room.COATROOM&&(part==HouseReadPropBlock.Part.MIRROR||part==HouseReadPropBlock.Part.MIRROR_TOP||part==HouseReadPropBlock.Part.TOWEL||part==HouseReadPropBlock.Part.COVERED_MIRROR)){
             var lower=b.offset(HouseReadRooms.MIRROR);
             if(part==HouseReadPropBlock.Part.TOWEL||part==HouseReadPropBlock.Part.COVERED_MIRROR){boolean cover=part==HouseReadPropBlock.Part.TOWEL;glass(p,cover,true,state(p.server,p.getUUID()).getCompound(Room.COATROOM.key()).getBoolean("Dressed"));for(var pos:List.of(lower,lower.above())){var kind=cover?HouseReadPropBlock.Part.COVERED_MIRROR:pos.equals(lower)?HouseReadPropBlock.Part.MIRROR:HouseReadPropBlock.Part.MIRROR_TOP;p.serverLevel().setBlock(pos,p.serverLevel().getBlockState(pos).setValue(HouseReadPropBlock.PART,kind).setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);}
@@ -215,9 +225,11 @@ public final class HouseReadSites {
     }
     static void sound(ServerPlayer p,SoundEvent event,BlockPos at,float volume){LiteraryVignettes.heard(p,event,at,volume,1);}
     private static void reader(ServerPlayer p){
-        var room=inside(p);var own=state(p.server,p.getUUID());if(room==null){if(!own.getString("Active").isEmpty())left(p);return;}if(!LiteraryVignettes.participant(p)||LabyrinthDoors.isBusy(p))return;
+        var room=inside(p);HouseReadStory.tick(p,room);var own=state(p.server,p.getUUID());if(room==null){if(!own.getString("Active").isEmpty())left(p);return;}if(!LiteraryVignettes.participant(p)||LabyrinthDoors.isBusy(p)||HouseReadStory.holding(p))return;
         var b=base(p.server,p.getUUID(),room);var visit=own.getCompound(room.key());if(!visit.getBoolean("Entered"))return;int age=visit.getInt("Age")+1;visit.putInt("Age",age);
         if(room==Room.COATROOM){if(!visit.getBoolean("Dressed"))p.setTicksFrozen(100);if(age>=200)visit.putBoolean("NoteArmed",true);
+            // 0.4.166: the curtain hangs shut until the House has what the room is for; then it parts.
+            if(!visit.getBoolean("CurtainParted")&&HouseReadStory.ready(p,room)){visit.putBoolean("CurtainParted",true);for(int y=0;y<=1;y++){var at=b.offset(HouseReadRooms.CURTAIN_AT).above(y);var c=p.serverLevel().getBlockState(at);if(c.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(at,c.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);}sound(p,SoundEvents.WOOL_PLACE,b.offset(HouseReadRooms.CURTAIN_AT),.5f);}
             // 0.4.150: standing at the uncovered, unturned glass in the borrowed layers for two seconds, looking into it.
             var glass=b.offset(HouseReadRooms.MIRROR);var glassState=p.serverLevel().getBlockState(glass);
             boolean showing=glassState.is(HouseReadRegistry.FITTING.get())&&glassState.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR&&!glassState.getValue(HouseReadPropBlock.TURNED);
@@ -231,7 +243,7 @@ public final class HouseReadSites {
     private static boolean onRoad(ServerPlayer p,BlockPos b){return p.getX()>b.getX()+10&&p.getX()<b.getX()+17&&p.getZ()<b.getZ()-18;}
     /** The porch (0.4.159): the 200 ticks after the whistle are its window; what the reader does first in them sets HOME. */
     private static void porch(ServerPlayer p,BlockPos b,CompoundTag visit,int age){
-        if(!visit.contains("Whistle")&&(age>=200||p.distanceToSqr(b.offset(-10,0,2).getCenter())<16)){visit.putInt("Whistle",age);sound(p,HouseReadRegistry.WHISTLE.get(),b.offset(0,4,-8),1.6f);}
+        if(!visit.contains("Whistle")&&age>=visit.getInt("WhistleAgain")&&(age>=200||p.distanceToSqr(b.offset(-10,0,2).getCenter())<16)){visit.putInt("Whistle",age);sound(p,HouseReadRegistry.WHISTLE.get(),b.offset(0,4,-8),1.6f);}
         int cue=visit.getInt("Whistle");boolean window=cue>0&&age<=cue+200;var seen=HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.PORCH.key());boolean first=seen.contains("First");
         if(cue>0){
             if(underPorch(p,b)){remember(visit,"UnderLattice","stood under the porch behind the lattice");if(window&&!first){home(p,"lattice","DANGER");first=true;}}
@@ -241,6 +253,8 @@ public final class HouseReadSites {
             // Stopping on the lawn to look in at the lit window, then not going in, is the other way of hiding.
             if(window&&p.getY()<b.getY()+1.5&&p.getZ()>b.getZ()-2&&p.pick(32,1,false) instanceof BlockHitResult sight&&sight.getType()==HitResult.Type.BLOCK&&sight.getBlockPos().getZ()==b.getZ()-8&&Set.of(-3,-2,3,4).contains(sight.getBlockPos().getX()-b.getX())&&p.serverLevel().getBlockState(sight.getBlockPos()).is(HouseReadRegistry.WINDOW.get())){int look=visit.getInt("LookIn")+1;visit.putInt("LookIn",look);if(look>=30){remember(visit,"LookedIn","looked through the lit window from the lawn");HouseRead.flag(p,Room.PORCH,"LookedIn");}}
             if(age==cue+200&&!first&&visit.getBoolean("LookedIn")&&!visit.getBoolean("WentIn")){home(p,"window","DANGER");first=true;}
+            // 0.4.166: the House needs the answer. A whistle nobody answered is blown again, five seconds later.
+            if(age==cue+200&&!first){visit.remove("Whistle");visit.putInt("WhistleAgain",age+100);}
             if(p.isPassenger()&&p.getZ()<b.getZ()-15&&p.getZ()>b.getZ()-20){remember(visit,"AtTable","sat at the warm table");if(seen.getString("First").equals("in")&&!seen.getBoolean("Table")){HouseRead.flag(p,Room.PORCH,"Table");HouseRead.signal(p,HouseRead.Trait.HOME,"HAVEN",true);}}
         }
         if(cue>0&&age==cue+26)sound(p,HouseReadRegistry.SUPPER.get(),b.offset(1,4,-11),1.8f);if(cue>0&&age==cue+190)sound(p,HouseReadRegistry.STEP.get(),b.offset(1,3,-13),1f);
@@ -256,7 +270,7 @@ public final class HouseReadSites {
     @SubscribeEvent public static void harmless(LivingIncomingDamageEvent e){if(e.getEntity() instanceof ServerPlayer p&&inside(p)!=null)e.setCanceled(true);}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){advance(e.getServer());if(e.getServer().getTickCount()%100==0)HouseReadEntrance.retire(e.getServer());for(var id:List.copyOf(PENDING.keySet())){var p=e.getServer().getPlayerList().getPlayer(id);if(p==null)PENDING.remove(id);else enter(p,PENDING.get(id));}for(var p:List.copyOf(e.getServer().getPlayerList().getPlayers()))reader(p);}
     public static void advance(MinecraftServer s){
-        var d=LabyrinthData.get(s);if(store!=d){clear();store=d;}while(building==null&&!WAITING.isEmpty()){var job=WAITING.iterator().next();WAITING.remove(job);if(s.getPlayerList().getPlayer(job.owner())!=null)building=job;}if(building==null)return;
+        var d=LabyrinthData.get(s);if(store!=d){rebind();store=d;}while(building==null&&!WAITING.isEmpty()){var job=WAITING.iterator().next();WAITING.remove(job);if(s.getPlayerList().getPlayer(job.owner())!=null)building=job;}if(building==null)return;
         var p=s.getPlayerList().getPlayer(building.owner());var b=base(s,building.owner(),building.room());var l=s.getLevel(building.room().dimension());if(p==null||b==null||l==null){release();return;}var own=state(s,building.owner());var visit=own.getCompound(building.room().key());
         if(CHUNKS.isEmpty()){leased=l;var area=HouseReadRooms.bounds(b,building.room()).inflate(2);for(int x=((int)area.minX)>>4;x<=((int)area.maxX)>>4;x++)for(int z=((int)area.minZ)>>4;z<=((int)area.maxZ)>>4;z++){var c=new ChunkPos(x,z);l.getChunkSource().addRegionTicket(TICKET,c,2,c);CHUNKS.add(c);}}
         if(CHUNKS.stream().anyMatch(c->l.getChunkSource().getChunkNow(c.x,c.z)==null||!l.areEntitiesLoaded(c.toLong())))return;
@@ -266,6 +280,8 @@ public final class HouseReadSites {
     }
     public static void registerDoors(MinecraftServer s,UUID owner,Room room,BlockPos b){var d=LabyrinthData.get(s);var dim=room.dimension();d.putDoor(new LabyrinthData.Door(doorId(owner,room,"entry"),dim,b.offset(HouseReadRooms.entry(room)),Direction.SOUTH,"house_read:back",false));if(room!=Room.COATROOM&&room!=Room.PORCH)d.putDoor(new LabyrinthData.Door(doorId(owner,room,"on"),dim,b.offset(HouseReadMoments.exit(room)),Direction.SOUTH,"house_read:on",false));if(room==Room.PORCH){d.putDoor(new LabyrinthData.Door(doorId(owner,room,"kitchen"),dim,b.offset(0,3,-24),Direction.SOUTH,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"side"),dim,b.offset(-15,0,-8),Direction.EAST,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"road"),dim,b.offset(14,0,-42),Direction.SOUTH,"house_read:on",false));}}
     private static void release(){if(leased!=null)for(var c:CHUNKS)leased.getChunkSource().removeRegionTicket(TICKET,c,2,c);CHUNKS.clear();leased=null;building=null;plan=null;}
-    public static void clear(){HouseReadMoments.clear();release();WAITING.clear();PENDING.clear();store=null;}
+    public static void clear(){rebind();HouseReadStory.clear();}
+    /** A new saved-data store forgets the build queue; a card already on a reader's screen still runs its course. */
+    private static void rebind(){HouseReadMoments.clear();release();WAITING.clear();PENDING.clear();store=null;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clear();}
 }
