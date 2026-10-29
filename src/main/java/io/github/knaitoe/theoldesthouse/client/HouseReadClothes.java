@@ -29,14 +29,14 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
     HouseReadClothes(PlayerRenderer parent,EntityModelSet set,boolean slim){super(parent);cloth=set.bakeLayer(slim?SLIM:STANDARD);}
     public static LayerDefinition layer(boolean slim){
         var mesh=new MeshDefinition();var r=mesh.getRoot();float width=slim?3:4;
-        r.addOrReplaceChild("body",CubeListBuilder.create().texOffs(16,0).addBox(-4.35f,-.2f,-2.35f,8.7f,13,4.7f),PartPose.ZERO);
-        r.addOrReplaceChild("right_arm",CubeListBuilder.create().texOffs(40,0).addBox(-width+.65f,-2.25f,-2.5f,width+.7f,12.5f,5),PartPose.ZERO);
-        r.addOrReplaceChild("left_arm",CubeListBuilder.create().texOffs(40,0).mirror().addBox(-1.35f,-2.25f,-2.5f,width+.7f,12.5f,5),PartPose.ZERO);
+        r.addOrReplaceChild("body",CubeListBuilder.create().texOffs(0,0).addBox(-4.35f,-.2f,-2.35f,8.7f,13,4.7f),PartPose.ZERO);
+        r.addOrReplaceChild("right_arm",CubeListBuilder.create().texOffs(28,0).addBox(-width+.65f,-2.25f,-2.5f,width+.7f,12.5f,5),PartPose.ZERO);
+        r.addOrReplaceChild("left_arm",CubeListBuilder.create().texOffs(28,0).mirror().addBox(-1.35f,-2.25f,-2.5f,width+.7f,12.5f,5),PartPose.ZERO);
         r.addOrReplaceChild("right_leg",CubeListBuilder.create().texOffs(0,18).addBox(-2.35f,7.8f,-2.4f,4.7f,4.5f,5),PartPose.ZERO);
         r.addOrReplaceChild("left_leg",CubeListBuilder.create().texOffs(0,18).addBox(-2.35f,7.82f,-2.38f,4.7f,4.5f,5),PartPose.ZERO);
-        r.addOrReplaceChild("hem",CubeListBuilder.create().texOffs(16,12).addBox(-4.5f,12.85f,-2.45f,9,5.6f,4.9f),PartPose.ZERO);
-        r.addOrReplaceChild("scarf",CubeListBuilder.create().texOffs(0,0).addBox(-4.45f,-2.2f,-4.55f,8.9f,3.7f,9.1f),PartPose.ZERO);
-        r.addOrReplaceChild("belt",CubeListBuilder.create().texOffs(0,25).addBox(-4.5f,8.8f,-2.5f,9,.9f,5),PartPose.ZERO);
+        r.addOrReplaceChild("hem",CubeListBuilder.create().texOffs(0,18).addBox(-4.5f,12.85f,-2.45f,9,5.6f,4.9f),PartPose.ZERO);
+        r.addOrReplaceChild("scarf",CubeListBuilder.create().texOffs(28,18).addBox(-4.45f,-2.2f,-4.55f,8.9f,3.7f,9.1f),PartPose.ZERO);
+        r.addOrReplaceChild("belt",CubeListBuilder.create().texOffs(28,18).addBox(-4.5f,8.8f,-2.5f,9,.9f,5),PartPose.ZERO);
         // 0.4.159: reading glasses, and the veil over an obscured face, each with its own small texture.
         r.addOrReplaceChild("glasses",CubeListBuilder.create().texOffs(0,0).addBox(-4,-5,-4.65f,8,2,1),PartPose.ZERO);
         r.addOrReplaceChild("veil",CubeListBuilder.create().texOffs(0,0).addBox(-4,-8,-4.75f,8,8,1,new CubeDeformation(.15f)),PartPose.ZERO);
@@ -48,13 +48,13 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
     public static void coat(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){
         var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.body,cloth.getChild("body"),pose,out,light,tex);part(body.rightArm,cloth.getChild("right_arm"),pose,out,light,tex);part(body.leftArm,cloth.getChild("left_arm"),pose,out,light,tex);
         if(type.equals("barn"))part(body.body,cloth.getChild("scarf"),pose,out,light,tex);else part(body.body,cloth.getChild("hem"),pose,out,light,tex);
-        if(type.equals("trench"))part(body.body,cloth.getChild("belt"),pose,out,light,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/boot.png"));
+        if(type.equals("trench"))part(body.body,cloth.getChild("belt"),pose,out,light,tex);
     }
-    public static void boots(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,PoseStack pose,MultiBufferSource out,int light){var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/boot.png");part(body.rightLeg,cloth.getChild("right_leg"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_leg"),pose,out,light,tex);}
+    public static void boots(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.rightLeg,cloth.getChild("right_leg"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_leg"),pose,out,light,tex);}
     public static void draw(PlayerModel<AbstractClientPlayer> body,ModelPart cloth,AbstractClientPlayer player,PoseStack pose,MultiBufferSource out,int light){
         ItemStack chest=player.getItemBySlot(EquipmentSlot.CHEST),feet=player.getItemBySlot(EquipmentSlot.FEET);
         if(chest.getItem() instanceof HouseReadRegistry.Garment garment)coat(body,cloth,garment.cloth,pose,out,light);
-        if(feet.getItem() instanceof HouseReadRegistry.Garment)boots(body,cloth,pose,out,light);
+        if(feet.getItem() instanceof HouseReadRegistry.Garment boots)boots(body,cloth,boots.cloth,pose,out,light);
     }
     @Override public void render(PoseStack pose,MultiBufferSource out,int light,AbstractClientPlayer p,float walk,float amount,float partial,float age,float yaw,float pitch){if(!p.isInvisible())draw(getParentModel(),cloth,p,pose,out,light);}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)

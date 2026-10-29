@@ -28,7 +28,7 @@ public final class HouseSitting {
     private HouseSitting() {}
     public static void register(IEventBus bus) { TYPES.register(bus); }
     private static boolean wardSeat(BlockState state){return state.is(NovelRegistry.NIGHT_WARD.get())&&(state.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.CHAIR||state.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.STOOL);}
-    private static boolean readChair(BlockState s){return s.is(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadRegistry.FITTING.get())&&s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.PART)==io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part.ARMCHAIR;}
+    private static boolean readChair(BlockState s){return s.is(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadRegistry.FITTING.get())&&switch(s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.PART)){case ARMCHAIR,CHAIR,BENCH->true;default->false;};}
     public static boolean isSeat(BlockState state) {
         return readChair(state) || io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)

@@ -62,6 +62,8 @@ Built in 0.4.143 as a chain: until a reader has entered all five, any of the jun
 
 Changed in 0.4.160 (the owner, October 29): the rooms come one at a time. The first is behind a junction door; every room's way on is the hall its door was dealt; after that the next room takes the place of the next story the House deals, at 60% an arrival and certain after two arrivals without one, until all are entered (`docs/QUIET_ROOMS_ONE_AT_A_TIME_0_4_160.md`).
 
+Rebuilt in 0.4.161 after the owner's playtest notes: native materials and furniture in every room, an audit that every fitting is on its wall or surface and every block joined, the waiting room's fifteen-second call, one routine item at a time in the bathroom, a smaller coatroom with distinct coats, and a true plane mirror (`docs/QUIET_ROOMS_PLAYTEST_0_4_161.md`).
+
 ## Co-op: these rooms stay private, other vignettes are shared
 
 The five quiet rooms stay private (owner, October 28). They define the character, so every reader gets their own copy and the House watches one person at a time. Friends who cross a door together each arrive in their own copy and meet again in the hall beyond. Today's copies, 4,096 blocks from the next reader's and built in bounded slices like `BorrascaSites`, already work this way.
@@ -669,3 +671,4 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.158 | Hide-and-clap private, with copies: one reader to a room, a room's own round, and every reader can win it once | `docs/HIDE_AND_CLAP_COPIES_0_4_158.md` |
 | 0.4.159 | The read of the reader: the five rooms reviewed and repaired (the waiting room's equal distances, window and ashtray, the coatroom bench, the shelter rebuilt with strangers on the rails and the dock ahead, the porch's window, way out and both sides of the lattice); signals and categories for all five traits; the account opening; the House of Leaves; the reader's look in glass and copies; the strangers' age; the road-taker's deal; a server option | `docs/HOUSE_READ_0_4_159.md` |
 | 0.4.160 | The quiet rooms one at a time: the first from a junction door, then each as the next story dealt, more often, until all are entered | `docs/QUIET_ROOMS_ONE_AT_A_TIME_0_4_160.md` |
+| 0.4.161 | The owner's playtest notes: all five rooms rebuilt in native materials and furniture, joined blocks, fittings on their walls, an audit test; a 15-second wait; one routine item at a time; a smaller coatroom with distinct coats; a true plane mirror | `docs/QUIET_ROOMS_PLAYTEST_0_4_161.md` |

@@ -12,66 +12,111 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part
 /** Whole new private builds. No existing room, original actor or cache is redecorated. */
 public final class HouseReadRooms {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    public static final BlockPos COAT_ENTRY=new BlockPos(0,0,2),PORCH_ENTRY=new BlockPos(0,0,13),MIRROR=new BlockPos(-4,0,-9),UMBRELLA_AT=new BlockPos(3,0,0),RAIL_AT=new BlockPos(-2,3,-2),SCREEN=new BlockPos(0,3,-8);
-    public static final List<BlockPos> PEGS=List.of(new BlockPos(-4,0,-3),new BlockPos(0,0,-5),new BlockPos(4,0,-3));
+    /**
+     * 0.4.160, the owner's playtest notes: a close front hall. The three coats hang on the west wall's hooks between an
+     * empty hanger and a scarf, their boots below them; the bench, radiator and window are on the east; the hall glass and
+     * its towel on the back wall beside the curtained way on; the umbrella stand by the screen door.
+     */
+    public static final BlockPos COAT_ENTRY=new BlockPos(0,0,2),PORCH_ENTRY=new BlockPos(0,0,13),MIRROR=new BlockPos(2,0,-8),TOWEL_AT=new BlockPos(3,1,-8),UMBRELLA_AT=new BlockPos(3,0,1),RAIL_AT=new BlockPos(-2,3,-2),SCREEN=new BlockPos(0,3,-8),CURTAIN_AT=new BlockPos(0,0,-9);
+    public static final List<BlockPos> PEGS=List.of(new BlockPos(-3,0,-1),new BlockPos(-3,0,-2),new BlockPos(-3,0,-3));
+    /** The porch's lights: the sconce by the screen door, the kitchen pendant and the lamp; supper's end puts them out. */
+    public static final List<BlockPos> PORCH_LIGHTS=List.of(new BlockPos(1,4,-7),new BlockPos(0,6,-18),new BlockPos(3,4,-12));
     private HouseReadRooms(){}
     public static AABB bounds(BlockPos b,HouseReadSites.Room room){return room!=HouseReadSites.Room.COATROOM&&room!=HouseReadSites.Room.PORCH?HouseReadRemainingRooms.bounds(b,room):room==HouseReadSites.Room.COATROOM?new AABB(b.getX()-8,b.getY()-2,b.getZ()-16,b.getX()+9,b.getY()+6,b.getZ()+5):new AABB(b.getX()-25,b.getY()-4,b.getZ()-48,b.getX()+26,b.getY()+18,b.getZ()+16);}
     private static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,BlockState state){BuildBlocks.box(l,b.offset(x,y,z),b.offset(X,Y,Z),state,F);}
     private static void put(ServerLevel l,BlockPos b,BlockPos at,BlockState s){BuildBlocks.set(l,b.offset(at),s,F);}
-    public static void fitting(ServerLevel l,BlockPos b,BlockPos at,HouseReadPropBlock.Part part){put(l,b,at,HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,part));}
+    public static BlockState part(HouseReadPropBlock.Part part){return HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,part);}
+    public static void fitting(ServerLevel l,BlockPos b,BlockPos at,HouseReadPropBlock.Part part){put(l,b,at,part(part));}
+    private static void fitting(ServerLevel l,BlockPos b,BlockPos at,HouseReadPropBlock.Part part,Direction facing){put(l,b,at,part(part).setValue(HorizontalDirectionalBlock.FACING,facing));}
+    private static void fitting(ServerLevel l,BlockPos b,int x,int y,int z,HouseReadPropBlock.Part part,Direction facing){fitting(l,b,new BlockPos(x,y,z),part,facing);}
+    private static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,Block block){box(l,b,x,y,z,X,Y,Z,block.defaultBlockState());}
     public static void door(ServerLevel l,BlockPos b,BlockPos at,Block block,Direction facing){var s=block.defaultBlockState().setValue(DoorBlock.FACING,facing);put(l,b,at,s.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));put(l,b,at.above(),s.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));}
     /** Each room's way back. The shelter's sits beside its jukebox on the land side (0.4.159). */
     public static BlockPos entry(HouseReadSites.Room room){return room==HouseReadSites.Room.PORCH?PORCH_ENTRY:room==HouseReadSites.Room.SHELTER?HouseReadRemainingRooms.SHELTER_ENTRY:COAT_ENTRY;}
     public static int[] shuffle(UUID owner){var values=new ArrayList<>(List.of(0,1,2));Collections.shuffle(values,new Random(owner.getMostSignificantBits()^owner.getLeastSignificantBits()^138));return values.stream().mapToInt(Integer::intValue).toArray();}
-    public static void build(ServerLevel l,BlockPos b,HouseReadSites.Room room,UUID owner){if(room==HouseReadSites.Room.COATROOM)coatroom(l,b,owner);else if(room==HouseReadSites.Room.PORCH)porch(l,b);else HouseReadRemainingRooms.build(l,b,room,owner);}
+    public static void build(ServerLevel l,BlockPos b,HouseReadSites.Room room,UUID owner){
+        // 0.4.161: an unentered room from an older layout is rebuilt in place, so nothing of the old one may stand outside the new.
+        var area=bounds(b,room);BuildBlocks.box(l,BlockPos.containing(area.minX,area.minY,area.minZ),BlockPos.containing(area.maxX-1,area.maxY-1,area.maxZ-1),Blocks.AIR.defaultBlockState(),F);
+        if(room==HouseReadSites.Room.COATROOM)coatroom(l,b,owner);else if(room==HouseReadSites.Room.PORCH)porch(l,b);else HouseReadRemainingRooms.build(l,b,room,owner);reshape(l,b,room);}
+    /**
+     * 0.4.160, the owner's playtest notes ("blocks not connecting"): the build places blocks without neighbour updates, so
+     * fences, panes, stairs and gates are given their joined shapes once everything stands, one layer at a time.
+     */
+    private static void reshape(ServerLevel l,BlockPos b,HouseReadSites.Room room){
+        var area=bounds(b,room);
+        for(int y=(int)Math.floor(area.minY);y<area.maxY;y++){final int layer=y;BuildBlocks.after(l,()->{
+            for(int x=(int)Math.floor(area.minX);x<area.maxX;x++)for(int z=(int)Math.floor(area.minZ);z<area.maxZ;z++){
+                var at=new BlockPos(x,layer,z);var state=l.getBlockState(at);if(state.isAir()||!state.getFluidState().isEmpty())continue;
+                var shaped=Block.updateFromNeighbourShapes(state,l,at);if(!shaped.equals(state)&&!shaped.isAir())l.setBlock(at,shaped,F);
+            }
+        });}
+    }
     public static BlockPos note(HouseReadSites.Room room){return switch(room){case COATROOM->UMBRELLA_AT;case PORCH->RAIL_AT;case WAITING->HouseReadRemainingRooms.CALENDAR_AT;case BATHROOM->HouseReadRemainingRooms.POSTCARD_AT;case SHELTER->HouseReadRemainingRooms.JUKEBOX_AT;};}
     private static void coatroom(ServerLevel l,BlockPos b,UUID owner){
-        box(l,b,-7,-2,-15,7,5,3,Blocks.AIR.defaultBlockState());
-        box(l,b,-7,-2,-15,7,-1,3,Blocks.SPRUCE_PLANKS.defaultBlockState());
-        box(l,b,-7,4,-15,7,4,3,Blocks.SPRUCE_PLANKS.defaultBlockState());
-        box(l,b,-7,0,-15,-7,3,3,HouseReadRegistry.WALLPAPER.get().defaultBlockState());box(l,b,7,0,-15,7,3,3,HouseReadRegistry.WALLPAPER.get().defaultBlockState());
-        box(l,b,-7,0,-15,7,3,-15,HouseReadRegistry.WALLPAPER.get().defaultBlockState());box(l,b,-7,0,2,7,3,3,HouseReadRegistry.WALLPAPER.get().defaultBlockState());
-        box(l,b,-1,-1,-1,1,-1,1,Blocks.BROWN_WOOL.defaultBlockState());
-        door(l,b,COAT_ENTRY,Blocks.OAK_DOOR,Direction.SOUTH);put(l,b,COAT_ENTRY.south(),Blocks.AIR.defaultBlockState());put(l,b,COAT_ENTRY.south().above(),Blocks.AIR.defaultBlockState());
+        HouseReadRemainingRooms.shell(l,b,4,-9,HouseReadRegistry.WALLPAPER.get().defaultBlockState(),HouseReadRegistry.FLOORBOARDS.get().defaultBlockState(),HouseReadRegistry.CEILING.get().defaultBlockState(),HouseReadRegistry.SCREEN.get());
+        box(l,b,-4,0,-9,-4,0,2,HouseReadRegistry.WAINSCOT.get());box(l,b,4,0,-9,4,0,2,HouseReadRegistry.WAINSCOT.get());box(l,b,-4,0,-9,4,0,-9,HouseReadRegistry.WAINSCOT.get());box(l,b,-4,0,2,4,0,2,HouseReadRegistry.WAINSCOT.get());
+        door(l,b,COAT_ENTRY,HouseReadRegistry.SCREEN.get(),Direction.SOUTH);
+        // The rain comes through the screen: a wet porch step outside the door.
+        box(l,b,-1,-1,3,1,-1,5,HouseReadRegistry.PORCH_BOARDS.get());box(l,b,-1,0,5,1,3,5,HouseReadRegistry.OVERCAST.get());box(l,b,-2,0,3,-2,3,5,HouseReadRegistry.OVERCAST.get());box(l,b,2,0,3,2,3,5,HouseReadRegistry.OVERCAST.get());box(l,b,-1,4,3,1,4,5,HouseReadRegistry.OVERCAST.get());box(l,b,-1,0,3,1,3,4,Blocks.AIR);put(l,b,COAT_ENTRY.south(),Blocks.AIR.defaultBlockState());
+        // Five hangers on the west wall: an empty one, the three coats (shuffled per reader) and a scarf with a hat.
         int[] order=shuffle(owner);var coats=new HouseReadPropBlock.Part[]{WOOL,TRENCH,BARN};var boots=new HouseReadPropBlock.Part[]{WOOL_BOOTS,TRENCH_BOOTS,BARN_BOOTS};
-        for(int i=0;i<3;i++){var at=PEGS.get(i);fitting(l,b,at,coats[order[i]]);fitting(l,b,at.east(),boots[order[i]]);}
-        box(l,b,-7,0,-10,-2,3,-10,HouseReadRegistry.WALLPAPER.get().defaultBlockState());box(l,b,2,0,-10,7,3,-10,HouseReadRegistry.WALLPAPER.get().defaultBlockState());
-        box(l,b,-7,1,-6,-7,2,-5,Blocks.WHITE_STAINED_GLASS_PANE.defaultBlockState());box(l,b,-8,0,-7,-8,3,-4,Blocks.GRAY_TERRACOTTA.defaultBlockState());
-        fitting(l,b,MIRROR,HouseReadPropBlock.Part.MIRROR);fitting(l,b,MIRROR.above(),MIRROR_TOP);
-        fitting(l,b,UMBRELLA_AT,UMBRELLA);fitting(l,b,new BlockPos(-6,0,-1),RADIATOR);fitting(l,b,new BlockPos(-3,0,-9),TOWEL);
-        for(int x=-1;x<=1;x++)for(int y=0;y<=2;y++)fitting(l,b,new BlockPos(x,y,-10),CURTAIN);
-        // The wooden bench by the coats (0.4.159), its back to the wall.
-        for(int z=-7;z<=-5;z++)put(l,b,new BlockPos(6,0,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
-        box(l,b,-5,-1,-14,5,-1,-12,Blocks.RED_WOOL.defaultBlockState());put(l,b,new BlockPos(0,3,-13),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));put(l,b,new BlockPos(0,3,-2),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
+        fitting(l,b,-3,0,0,EMPTY_HANGER,Direction.EAST);
+        for(int i=0;i<3;i++){var at=PEGS.get(i);fitting(l,b,at,coats[order[i]],Direction.EAST);fitting(l,b,at.east(),boots[order[i]],Direction.EAST);}
+        fitting(l,b,-3,0,-4,SCARF_HOOK,Direction.EAST);
+        // The east side: the bench under the window, the radiator by the door.
+        for(int z=-3;z<=-2;z++)fitting(l,b,3,0,z,BENCH,Direction.WEST);box(l,b,4,1,-3,4,2,-2,HouseReadRegistry.WINDOW.get());box(l,b,5,0,-4,6,3,-1,HouseReadRegistry.OVERCAST.get());box(l,b,5,1,-3,5,2,-2,Blocks.AIR);
+        fitting(l,b,3,0,0,RADIATOR,Direction.WEST);fitting(l,b,UMBRELLA_AT,UMBRELLA);
+        // The back wall: the hall glass and its towel, and the curtained way on into a short dark passage.
+        fitting(l,b,MIRROR,HouseReadPropBlock.Part.MIRROR);fitting(l,b,MIRROR.above(),MIRROR_TOP);fitting(l,b,TOWEL_AT,TOWEL_BAR);
+        box(l,b,-1,-1,-12,1,2,-10,HouseReadRegistry.WALLPAPER.get());box(l,b,0,0,-11,0,1,-10,Blocks.AIR);
+        for(int y=0;y<=1;y++)fitting(l,b,CURTAIN_AT.above(y),CURTAIN);
+        for(int z=1;z>=-8;z--)fitting(l,b,new BlockPos(0,0,z),RUNNER);
+        fitting(l,b,new BlockPos(0,3,-3),PENDANT);
     }
     private static void porch(ServerLevel l,BlockPos b){
-        box(l,b,-24,-3,-47,24,16,15,Blocks.AIR.defaultBlockState());
+        box(l,b,-24,-3,-47,24,17,15,Blocks.AIR.defaultBlockState());
         box(l,b,-24,-3,-47,24,-2,15,Blocks.DIRT.defaultBlockState());box(l,b,-24,-1,-47,24,-1,15,Blocks.GRASS_BLOCK.defaultBlockState());
         for(int x=-23;x<=23;x++)for(int z=-46;z<=14;z++)if(Math.abs(x)>20||z<-44){int h=(Math.abs(x)+Math.abs(z))%3;box(l,b,x,0,z,x,h,z,Blocks.DIRT.defaultBlockState());put(l,b,new BlockPos(x,h+1,z),Blocks.GRASS_BLOCK.defaultBlockState());}
-        // A real raised porch leaves two clear blocks below its floor and a side opening in the lattice.
-        box(l,b,-6,2,-24,6,2,-2,Blocks.OAK_PLANKS.defaultBlockState());
-        box(l,b,-6,3,-24,-6,10,-8,HouseReadRegistry.CLAPBOARD.get().defaultBlockState());box(l,b,6,3,-24,6,10,-8,HouseReadRegistry.CLAPBOARD.get().defaultBlockState());
-        box(l,b,-6,3,-24,6,10,-24,HouseReadRegistry.CLAPBOARD.get().defaultBlockState());box(l,b,-6,3,-8,6,10,-8,HouseReadRegistry.CLAPBOARD.get().defaultBlockState());
-        box(l,b,-6,7,-24,6,7,-8,Blocks.OAK_PLANKS.defaultBlockState());box(l,b,-7,11,-25,7,11,-7,Blocks.DARK_OAK_SLAB.defaultBlockState());
-        box(l,b,-5,2,-23,5,2,-9,HouseReadRegistry.LINOLEUM.get().defaultBlockState());
-        for(int x:new int[]{-3,3})for(int z:new int[]{-24,-8})box(l,b,x,4,z,x+1,5,z,Blocks.GLASS_PANE.defaultBlockState());
-        for(int x:new int[]{-6,6})for(int z=-7;z<=-2;z++){put(l,b,new BlockPos(x,3,z),Blocks.OAK_FENCE.defaultBlockState());if(z!=-5)put(l,b,new BlockPos(x,0,z),Blocks.OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.OPEN,true).setValue(TrapDoorBlock.FACING,x<0?Direction.EAST:Direction.WEST));}
-        for(int y=0;y<3;y++)put(l,b,new BlockPos(0,y,-y),Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));
-        for(int x:new int[]{-6,6}){box(l,b,x,4,-3,x,6,-3,Blocks.OAK_FENCE.defaultBlockState());}box(l,b,-6,7,-8,6,7,-2,Blocks.OAK_SLAB.defaultBlockState());
-        door(l,b,SCREEN,HouseReadRegistry.SCREEN.get(),Direction.SOUTH);put(l,b,new BlockPos(0,6,-7),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
-        door(l,b,new BlockPos(0,3,-24),Blocks.OAK_DOOR,Direction.SOUTH);
-        box(l,b,-1,3,-18,1,3,-17,Blocks.SPRUCE_PLANKS.defaultBlockState());fitting(l,b,new BlockPos(0,4,-17),PLATE);
-        for(int x:new int[]{-2,2})put(l,b,new BlockPos(x,3,-17),Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,x<0?Direction.EAST:Direction.WEST));
-        put(l,b,new BlockPos(0,6,-18),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));put(l,b,new BlockPos(3,6,-12),Blocks.CHAIN.defaultBlockState());put(l,b,new BlockPos(3,5,-12),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
+        // 0.4.160: the house in its own materials. A raised porch on posts, two clear blocks under its floor and a lattice
+        // skirt open at both sides; the house behind it, papered inside, under a gabled shingle roof.
+        box(l,b,-6,2,-24,6,2,-2,HouseReadRegistry.PORCH_BOARDS.get());
+        box(l,b,-6,3,-24,-6,10,-8,HouseReadRegistry.CLAPBOARD.get());box(l,b,6,3,-24,6,10,-8,HouseReadRegistry.CLAPBOARD.get());
+        box(l,b,-6,3,-24,6,10,-24,HouseReadRegistry.CLAPBOARD.get());box(l,b,-6,3,-8,6,10,-8,HouseReadRegistry.CLAPBOARD.get());
+        box(l,b,-5,3,-23,-5,6,-9,HouseReadRegistry.WALLPAPER.get());box(l,b,5,3,-23,5,6,-9,HouseReadRegistry.WALLPAPER.get());
+        box(l,b,-5,7,-23,5,7,-9,HouseReadRegistry.CEILING.get());box(l,b,-4,2,-23,4,2,-9,HouseReadRegistry.LINOLEUM.get());
+        // A brick foundation under the house; only the porch is open underneath.
+        box(l,b,-6,0,-24,6,1,-8,HouseReadRegistry.LOT_WALL.get());
+        // Gable roof: shingle stairs up both sides to the ridge, clapboard filling the gable ends, an overhang all round.
+        for(int k=0;k<7;k++){int y=11+k;
+            box(l,b,-(7-k),y,-25,-(7-k),y,-7,HouseReadRegistry.SHINGLE_STAIRS.get().defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
+            box(l,b,7-k,y,-25,7-k,y,-7,HouseReadRegistry.SHINGLE_STAIRS.get().defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));
+            if(6-k>=-(6-k)){box(l,b,-(6-k),y,-24,6-k,y,-24,HouseReadRegistry.CLAPBOARD.get());box(l,b,-(6-k),y,-8,6-k,y,-8,HouseReadRegistry.CLAPBOARD.get());}}
+        box(l,b,0,17,-25,0,17,-7,HouseReadRegistry.SHINGLES.get());box(l,b,0,18,-25,0,18,-7,HouseReadRegistry.SHINGLE_SLAB.get());
+        // Windows front and back, the screen door with its sconce, the front door at the back of the hall.
+        for(int x:new int[]{-3,3})for(int z:new int[]{-24,-8})box(l,b,x,4,z,x+1,5,z,HouseReadRegistry.WINDOW.get().defaultBlockState());
+        door(l,b,SCREEN,HouseReadRegistry.SCREEN.get(),Direction.SOUTH);fitting(l,b,PORCH_LIGHTS.get(0),PORCH_LIGHT);
+        door(l,b,new BlockPos(0,3,-24),HouseReadRegistry.PANEL_DOOR.get(),Direction.SOUTH);
+        // The porch: posts from the ground to the roof at its corners and middle, railings round it with a gap for the steps,
+        // a shingle roof, and lattice between the posts below, open at z -5 on both sides.
+        for(int x:new int[]{-6,6})for(int z:new int[]{-7,-2}){box(l,b,x,0,z,x,1,z,HouseReadRegistry.POST.get());box(l,b,x,3,z,x,6,z,HouseReadRegistry.POST.get());}
+        for(int x:new int[]{-6,6})for(int z=-6;z<=-3;z++){put(l,b,new BlockPos(x,3,z),HouseReadRegistry.RAIL.get().defaultBlockState());if(z!=-5)box(l,b,x,0,z,x,1,z,HouseReadRegistry.LATTICE.get());}
+        for(int x=-5;x<=5;x++)if(Math.abs(x)>1){put(l,b,new BlockPos(x,3,-2),HouseReadRegistry.RAIL.get().defaultBlockState());box(l,b,x,0,-2,x,1,-2,HouseReadRegistry.LATTICE.get());}
+        // The steps rest on solid boards, so nothing hangs over air.
+        for(int x=-1;x<=1;x++){put(l,b,new BlockPos(x,0,-1),HouseReadRegistry.PORCH_BOARDS.get().defaultBlockState());box(l,b,x,0,-2,x,1,-2,HouseReadRegistry.PORCH_BOARDS.get());}
+        box(l,b,-7,7,-7,7,7,-1,HouseReadRegistry.SHINGLE_SLAB.get());box(l,b,-7,6,-1,7,6,-1,HouseReadRegistry.TRIM.get());
+        for(int x=-1;x<=1;x++)for(int y=0;y<3;y++)put(l,b,new BlockPos(x,y,-y),HouseReadRegistry.PORCH_STEP.get().defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));
+        // The kitchen through the window: the warm table and its chairs, the plate kept warm, the pendant and a lamp.
+        fitting(l,b,-1,3,-17,TABLE_END,Direction.EAST);fitting(l,b,0,3,-17,TABLE_MID,Direction.SOUTH);fitting(l,b,1,3,-17,TABLE_END,Direction.WEST);fitting(l,b,new BlockPos(0,4,-17),PLATE);
+        fitting(l,b,0,3,-16,CHAIR,Direction.SOUTH);fitting(l,b,0,3,-18,CHAIR,Direction.NORTH);fitting(l,b,PORCH_LIGHTS.get(1),PENDANT);fitting(l,b,3,3,-12,SIDE_TABLE,Direction.SOUTH);fitting(l,b,PORCH_LIGHTS.get(2),LAMP);
         fitting(l,b,RAIL_AT,RAIL);
         // Gravel continues past the mailbox into the trees. None of the three ways on needs a key.
         box(l,b,11,-1,-24,15,-1,11,Blocks.GRAVEL.defaultBlockState());box(l,b,11,-1,-44,15,-1,-25,Blocks.COARSE_DIRT.defaultBlockState());box(l,b,-16,-1,-10,-7,-1,-6,Blocks.GRAVEL.defaultBlockState());
-        fitting(l,b,new BlockPos(12,0,-23),MAILBOX);door(l,b,new BlockPos(14,0,-42),Blocks.OAK_DOOR,Direction.SOUTH);
-        box(l,b,-15,0,-11,-15,0,-5,Blocks.OAK_FENCE.defaultBlockState());put(l,b,new BlockPos(-15,0,-8),Blocks.OAK_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.EAST));door(l,b,PORCH_ENTRY,Blocks.OAK_DOOR,Direction.SOUTH);
-        box(l,b,-2,0,13,2,3,14,Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));door(l,b,PORCH_ENTRY,Blocks.OAK_DOOR,Direction.SOUTH);box(l,b,0,0,14,0,1,14,Blocks.AIR.defaultBlockState());
-        // An old swing set, supported chains, and a seat that can be gently nudged.
-        for(int x:new int[]{-12,-7})box(l,b,x,0,2,x,4,2,Blocks.OAK_FENCE.defaultBlockState());box(l,b,-12,4,2,-7,4,2,Blocks.OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
-        for(int x:new int[]{-10,-9})box(l,b,x,1,2,x,3,2,Blocks.CHAIN.defaultBlockState());fitting(l,b,new BlockPos(-10,0,2),SWING);fitting(l,b,new BlockPos(-9,0,2),SWING);
+        fitting(l,b,new BlockPos(12,0,-23),MAILBOX);door(l,b,new BlockPos(14,0,-42),HouseReadRegistry.BOATHOUSE_DOOR.get(),Direction.SOUTH);
+        box(l,b,-15,0,-11,-15,0,-5,HouseReadRegistry.PICKET.get());put(l,b,new BlockPos(-15,0,-8),HouseReadRegistry.GATE.get().defaultBlockState().setValue(FenceGateBlock.FACING,Direction.EAST));
+        box(l,b,-2,0,13,2,3,14,Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));door(l,b,PORCH_ENTRY,HouseReadRegistry.BOATHOUSE_DOOR.get(),Direction.SOUTH);box(l,b,0,0,14,0,1,14,Blocks.AIR.defaultBlockState());
+        // An old swing set on painted posts, rope, and a seat that can be gently nudged.
+        for(int x:new int[]{-12,-7})box(l,b,x,0,2,x,3,2,HouseReadRegistry.POST.get());box(l,b,-12,4,2,-7,4,2,HouseReadRegistry.POST.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
+        for(int x:new int[]{-10,-9})box(l,b,x,1,2,x,3,2,HouseReadRegistry.ROPE.get());fitting(l,b,new BlockPos(-10,0,2),SWING);fitting(l,b,new BlockPos(-9,0,2),SWING);
         for(int[] tree:new int[][]{{-19,-35},{-17,-22},{19,-33},{18,-13},{-19,8},{19,8},{7,-43}}){box(l,b,tree[0],0,tree[1],tree[0],6,tree[1],Blocks.OAK_LOG.defaultBlockState());box(l,b,tree[0]-2,4,tree[1]-2,tree[0]+2,8,tree[1]+2,Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));}
     }
 }

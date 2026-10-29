@@ -18,7 +18,9 @@ public final class HouseReadPropBlock extends BaseEntityBlock {
     public enum Part implements StringRepresentable {
         WOOL,TRENCH,BARN,WOOL_BOOTS,TRENCH_BOOTS,BARN_BOOTS,TOWEL,MIRROR,MIRROR_TOP,UMBRELLA,RADIATOR,CURTAIN,RAIL,SWING,MAILBOX,PLATE,COVERED_MIRROR,
         CLOCK_BASE,CLOCK_FACE,BELL,CALENDAR,RECEPTION,CRT,COOLER,PAPER,MAGAZINES,GLASSES,PHONE,ARMCHAIR,
-        SINK,TAP,CABINET,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,JUKEBOX,STRING_LIGHT,ROWBOAT,BOTTLE,ASHTRAY;
+        SINK,TAP,CABINET,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,JUKEBOX,STRING_LIGHT,ROWBOAT,BOTTLE,ASHTRAY,
+        // 0.4.160, the owner's playtest notes: the quiet rooms' own furniture, fixtures and lights.
+        TABLE_END,TABLE_MID,SIGN,WALL_CLOCK,OUTLET,CEILING_PANEL,VANITY,TUB_HEAD,TUB_FOOT,TOILET,TOWEL_BAR,VANITY_LIGHT,BATH_MAT,EMPTY_HANGER,SCARF_HOOK,BENCH,PENDANT,RUNNER,PORCH_LIGHT,CHAIR,LAMP,DECK_LANTERN,SIDE_TABLE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final MapCodec<HouseReadPropBlock> CODEC=simpleCodec(HouseReadPropBlock::new);
@@ -32,12 +34,14 @@ public final class HouseReadPropBlock extends BaseEntityBlock {
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new Fitting(p,s);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return HouseReadGeometry.shape(s);}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(PART)){
-        case CURTAIN,PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE->Shapes.empty();default->getShape(s,l,p,c);};}
+        case CURTAIN,PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE,SIGN,WALL_CLOCK,OUTLET,BATH_MAT,RUNNER,VANITY_LIGHT,TOWEL_BAR,EMPTY_HANGER,SCARF_HOOK,PENDANT,PORCH_LIGHT,DECK_LANTERN,LAMP->Shapes.empty();default->getShape(s,l,p,c);};}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level l,BlockPos at,Player player,BlockHitResult hit){
         if(player.isSpectator()||!player.isAlive()||player.distanceToSqr(at.getCenter())>36)return InteractionResult.PASS;
         if(l.isClientSide)return InteractionResult.SUCCESS;
         if(player instanceof ServerPlayer p){if(!HouseReadMoments.routineUse(p,at,s,hit))HouseReadSites.use(p,at,s.getValue(PART));}return InteractionResult.CONSUME;
     }
+    /** How brightly a fitting lights its room; a switched-off lamp is TURNED. */
+    public static int light(BlockState s){if(s.getValue(TURNED)&&s.getValue(PART)!=Part.STRING_LIGHT)return 0;return switch(s.getValue(PART)){case STRING_LIGHT->10;case CEILING_PANEL->15;case VANITY_LIGHT,PENDANT->13;case PORCH_LIGHT,DECK_LANTERN->12;case LAMP->11;default->0;};}
     public static final class Fitting extends BlockEntity {public Fitting(BlockPos at,BlockState s){super(HouseReadRegistry.FITTING_ENTITY.get(),at,s);}}
 }

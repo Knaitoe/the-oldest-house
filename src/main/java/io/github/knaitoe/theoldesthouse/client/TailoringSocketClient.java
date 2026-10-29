@@ -35,7 +35,7 @@ public final class TailoringSocketClient {
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(!TailoringSocketProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var data=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(data==null)return;var tag=data.copyTag();int next=tag.getInt("TailoringStep");if(next==0)return;
         if(next!=phase){phase=next;age=0;clicked=-100;ack=-1;shot=null;stopping=false;}age++;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyJump.setDown(false);mc.options.setCameraType(CameraType.FIRST_PERSON);mc.getToasts().clear();
-        if(phase==5){mc.stop();return;}if(ack==phase)return;if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen)return;var at=BlockPos.of(tag.getLong("Target"));
+        if(phase==6){mc.stop();return;}if(ack==phase)return;if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen)return;var at=BlockPos.of(tag.getLong("Target"));
         if(phase<=3){
             var original=own(mc,at,tag);if(original==null||!mc.levelRenderer.isSectionCompiled(at)||age<50)return;look(mc,original.position().add(0,.025,0));
             if(phase==1){sawFirst=true;shot=role()+"-sink";}
@@ -43,6 +43,10 @@ public final class TailoringSocketClient {
                 if(role().equals("B")&&!tag.getBoolean("Reconnected")){if(sawFirst){stopping=true;shot="B-before-reconnect";}return;}
                 if(!tag.getBoolean("Reconnected"))return;shot=role()+"-sink-reconnected";
             }else shot=role()+"-vanity";
+        }else if(phase==5){
+            // 0.4.161: the coatroom glass. Face it square, and capture once it has drawn the reflected room for a while.
+            if(!mc.levelRenderer.isSectionCompiled(at)||age<40)return;look(mc,Vec3.atCenterOf(at).add(0,.5,0));
+            if(age>=200){require(HouseReadReflection.showing(at),"the glass in front of this reader is drawing the reflected room");shot=role()+"-mirror";}
         }else if(phase==4){
             if(mc.screen instanceof LecternScreen){
                 var book=mc.player.containerMenu.getSlot(0).getItem();var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);require(content!=null&&content.author().equals("Dad")&&content.pages().size()==3,"the actual native menu has the complete original and one added care memory");

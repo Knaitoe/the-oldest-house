@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.160** feeds the quiet rooms one at a time: the first waits behind a junction door, and after each one the reader walks out into a hall, and the next quiet room is the next story the House deals them, coming round far more often until all are done. [The quiet rooms, one at a time](docs/QUIET_ROOMS_ONE_AT_A_TIME_0_4_160.md).
+Development candidate **0.4.161** answers the owner's playtest of the five quiet rooms: every room is rebuilt in its own native materials and furniture, with every block joined and every fitting on its wall or surface, checked by a test that walks each room. The waiting room calls the reader through after fifteen seconds, the bathroom ends with the one routine item used at the mirror, the coatroom is smaller with three different coats, and its glass is a true mirror of the room and the reader. [The quiet rooms after the playtest](docs/QUIET_ROOMS_PLAYTEST_0_4_161.md).
+
+0.4.160 feeds the quiet rooms one at a time: the first waits behind a junction door, and after each one the reader walks out into a hall, and the next quiet room is the next story the House deals them, coming round far more often until all are done. [The quiet rooms, one at a time](docs/QUIET_ROOMS_ONE_AT_A_TIME_0_4_160.md).
 
 0.4.159 gave the House its read of each reader. The five quiet rooms were reviewed against their designs and repaired, and what a reader does first in them becomes a read of their age, hair routine, presentation, who they are drawn to and what home was. Their account opens with the House reciting their night back to them, their House of Leaves is written with it, and mirrors and their own doubles show the House's version of them. [The read of the reader](docs/HOUSE_READ_0_4_159.md).
 

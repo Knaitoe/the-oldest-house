@@ -31,11 +31,11 @@ public final class EntrancePlaytestTests {
 
     private static void proceed(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer p,HouseReadSites.Room room){
         var own=HouseReadSites.state(p.server,p.getUUID());var visit=own.getCompound(room.key());
-        if(room==HouseReadSites.Room.WAITING)visit.putInt("Age",600);if(room==HouseReadSites.Room.BATHROOM)visit.putBoolean("BedroomOpen",true);
+        if(room==HouseReadSites.Room.WAITING)visit.putInt("Age",HouseReadMoments.WAIT);if(room==HouseReadSites.Room.BATHROOM)visit.putBoolean("BedroomOpen",true);
         own.put(room.key(),visit);f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
         h.assertTrue(HouseReadMoments.canProceed(p,room),"the room's own way on is open: "+room);
         var b=HouseReadSites.base(p.server,p.getUUID(),room);
-        if(room==HouseReadSites.Room.COATROOM){var curtain=b.offset(0,0,-10);at(p,p.serverLevel(),curtain.south(2));HouseReadSites.use(p,curtain,HouseReadPropBlock.Part.CURTAIN);return;}
+        if(room==HouseReadSites.Room.COATROOM){var curtain=b.offset(HouseReadRooms.CURTAIN_AT);at(p,p.serverLevel(),curtain.south(2));HouseReadSites.use(p,curtain,HouseReadPropBlock.Part.CURTAIN);return;}
         var on=f.data().door("house_read/"+p.getUUID()+"/"+room.key()+"/"+(room==HouseReadSites.Room.PORCH?"road":"on"));
         h.assertTrue(on!=null,"each quiet room registers its own way on: "+room);at(p,p.serverLevel(),on.lower.relative(on.facing));click(p,on.lower);
     }

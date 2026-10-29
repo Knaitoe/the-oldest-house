@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "the_oldest_house:block/read_dock_post_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "the_oldest_house:block/read_dock_post"
+    },
+    "axis=z": {
+      "model": "the_oldest_house:block/read_dock_post_horizontal",
+      "x": 90
+    }
+  }
+}

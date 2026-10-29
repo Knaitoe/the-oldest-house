@@ -1,3 +1,6 @@
 {
-  "parent": "the_oldest_house:block/read_phone"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/read_phone"
+  }
 }

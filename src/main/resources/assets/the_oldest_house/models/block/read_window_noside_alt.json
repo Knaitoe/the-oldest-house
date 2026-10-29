@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/template_glass_pane_noside_alt",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "pane": "the_oldest_house:block/house_read/window",
+    "edge": "the_oldest_house:block/house_read/window_edge"
+  }
+}

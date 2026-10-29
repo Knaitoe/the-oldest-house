@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/read_shingle_slab"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/read_shingles"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/read_shingle_slab_top"
+    }
+  }
+}

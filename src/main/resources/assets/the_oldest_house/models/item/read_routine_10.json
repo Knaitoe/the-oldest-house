@@ -1,3 +1,6 @@
 {
-  "parent": "the_oldest_house:block/read_routine_item_10"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/read_routine_10"
+  }
 }

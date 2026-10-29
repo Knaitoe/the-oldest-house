@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/fence_post",
+  "textures": {
+    "texture": "the_oldest_house:block/house_read/dock_rail"
+  }
+}

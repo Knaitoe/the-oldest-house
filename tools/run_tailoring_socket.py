@@ -75,7 +75,7 @@ try:
         process.wait(timeout=90)
         assert process.returncode == 0, process.returncode
     for role in ("A", "B"):
-        for view in ("sink", "sink-reconnected", "vanity", "card"):
+        for view in ("sink", "sink-reconnected", "vanity", "card", "mirror"):
             assert (report / f"{role}-{view}.png").stat().st_size > 1000, (role, view)
         assert len((report / f"{role}-sink-original.txt").read_text()) == 36
     assert (report / "B-before-reconnect.png").stat().st_size > 1000

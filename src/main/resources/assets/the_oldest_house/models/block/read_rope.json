@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/chain",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "the_oldest_house:block/house_read/rope",
+    "all": "the_oldest_house:block/house_read/rope"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/read_porch_board_slab"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/read_porch_boards"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/read_porch_board_slab_top"
+    }
+  }
+}
