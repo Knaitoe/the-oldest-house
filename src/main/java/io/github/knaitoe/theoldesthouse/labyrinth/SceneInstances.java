@@ -32,8 +32,11 @@ public final class SceneInstances {
     public static final String STATE="scene_copies_0153";
     /** Copies stand this far west of their original, and each further copy of a scene this much further on. Both are wider than the whole slot grid, so no copy overlaps another scene. */
     public static final int WEST=1<<20,STEP=1<<16;
-    /** The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy. */
-    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN);
+    /**
+     * The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone
+     * canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy; 0.4.156: the lake house, two readers to a copy.
+     */
+    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE);
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     /** Columns of an interior copy's slot filled solid per tick, before its rooms are carved into it, as the original's are. */
@@ -127,7 +130,10 @@ public final class SceneInstances {
         long west=(long)origin.getX()-WEST-pos.getX();if(west<-STEP/2)return null;
         long k=Math.floorDiv(west+STEP/2,(long)STEP)+1;if(k<1||k>64)return null;
         var shifted=shiftedOrigin(origin,(int)k);
-        for(var p:COPYABLE){var slot=LabyrinthPlaces.slotBounds(shifted,p);if(slot!=null&&slot.isInside(pos))return p;}
+        // The lake house stands at its own height rather than its slot's layer, as its original does.
+        var lake=LabyrinthPlaces.base(shifted,LabyrinthPlace.LAKE_HOUSE);
+        if(lake!=null&&IndianLakeRooms.bounds(lake,LabyrinthPlace.LAKE_HOUSE).contains(Vec3.atCenterOf(pos)))return LabyrinthPlace.LAKE_HOUSE;
+        for(var p:COPYABLE){if(p==LabyrinthPlace.LAKE_HOUSE)continue;var slot=LabyrinthPlaces.slotBounds(shifted,p);if(slot!=null&&slot.isInside(pos))return p;}
         return null;
     }
     /** Which copy of a scene a position is in: 0 for the original, -1 for neither. */
@@ -143,9 +149,10 @@ public final class SceneInstances {
         return Math.max(0,kept(LabyrinthData.get(p.server),p.getUUID(),place));
     }
     public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){return base(p.server,place,of(p,place));}
-    /** Whether a living player other than {@code reader} is in copy {@code k}. Spectators hold nothing. */
+    /** Whether a living player other than {@code reader} (or the one they go down to the lake with) is in copy {@code k}. Spectators hold nothing. */
     private static boolean occupied(MinecraftServer s,LabyrinthPlace p,int k,UUID reader){
-        for(var q:s.getPlayerList().getPlayers())if(!q.getUUID().equals(reader)&&q.isAlive()&&!q.isSpectator()&&at(s,p,q.level().dimension(),q.position())==k)return true;
+        var pair=p==LabyrinthPlace.LAKE_HOUSE?pairOf(LabyrinthData.get(s),reader):null;
+        for(var q:s.getPlayerList().getPlayers())if(!q.getUUID().equals(reader)&&!q.getUUID().equals(pair)&&q.isAlive()&&!q.isSpectator()&&at(s,p,q.level().dimension(),q.position())==k)return true;
         return false;
     }
 
@@ -163,10 +170,16 @@ public final class SceneInstances {
     /** The entry belonging to the same copy as one of its doors. */
     public static @Nullable LabyrinthData.Door entryOf(LabyrinthData d,LabyrinthPlace place,LabyrinthData.Door door){return entry(d,place,copyOf(door.id));}
 
-    /** What a reader's door into a scene with copies opens onto: a door, a copy still being made ready, or nothing free. */
-    public record Entry(@Nullable LabyrinthData.Door door,int copy,boolean waiting){}
+    /**
+     * What a reader's door into a scene with copies opens onto: a door, a copy still being made ready, or nothing free. At
+     * the lake house a partner may instead be waiting for their diver ({@code waitsFor}).
+     */
+    public record Entry(@Nullable LabyrinthData.Door door,int copy,boolean waiting,@Nullable UUID waitsFor){
+        public Entry(@Nullable LabyrinthData.Door door,int copy,boolean waiting){this(door,copy,waiting,null);}
+    }
     public static Entry enter(ServerPlayer p,LabyrinthPlace place){
         var s=p.server;var d=LabyrinthData.get(s);var me=p.getUUID();settle(d,place);
+        if(place==LabyrinthPlace.LAKE_HOUSE){var lake=lake(p,d,me);if(lake!=null)return lake;}
         int mine=kept(d,me,place);
         if(mine>=0&&built(d,place,mine)){
             // A copy they keep and nobody else is in. Only an original shared by readers from before copies can be busy.
@@ -195,6 +208,71 @@ public final class SceneInstances {
     private static boolean allocate(LabyrinthData d,LabyrinthPlace p){
         int n=copies(d,p);if(n>=cap()||making(d,p))return false;
         var all=scene(d,p);all.putInt("Copies",n+1);all.put("C"+(n+1),new CompoundTag());scene(d,p,all);return true;
+    }
+
+    // ------------------------------------------------------------------------------------------------ the lake house's pairs
+    /*
+     * 0.4.156 (owner, October 28; docs/LAKE_HOUSE_PAIRS_0_4_156.md): a second reader inhabits Tess's role. Each copy of the
+     * lake house is two readers': the diver whose story it is, and a partner in Tess's place. A third reader gets a copy of
+     * their own with Tess, a fourth joins them, a fifth is on their own again. Pairs are saved as partner -> diver.
+     */
+    private static Map<UUID,UUID> partners=Map.of();private static LabyrinthData partnersData;private static int partnersVersion=-1;
+    private static Map<UUID,UUID> partners(LabyrinthData d){
+        if(d!=partnersData||partnersVersion!=version){
+            partnersData=d;partnersVersion=version;var out=new HashMap<UUID,UUID>();var t=scene(d,LabyrinthPlace.LAKE_HOUSE).getCompound("Partners");
+            for(var key:t.getAllKeys())try{if(t.hasUUID(key))out.put(UUID.fromString(key),t.getUUID(key));}catch(IllegalArgumentException ignored){}
+            partners=Map.copyOf(out);
+        }
+        return partners;
+    }
+    /** The diver a reader goes down to the lake with, if they are a partner. */
+    public static @Nullable UUID diverOf(LabyrinthData d,UUID partner){return partners(d).get(partner);}
+    /** The partner who goes down with a diver, if any. */
+    public static @Nullable UUID partnerOf(LabyrinthData d,UUID diver){for(var e:partners(d).entrySet())if(e.getValue().equals(diver))return e.getKey();return null;}
+    /** The other half of a reader's pair, either way round. */
+    public static @Nullable UUID pairOf(LabyrinthData d,UUID reader){var diver=diverOf(d,reader);return diver!=null?diver:partnerOf(d,reader);}
+    private static void pair(LabyrinthData d,UUID partner,UUID diver){var all=scene(d,LabyrinthPlace.LAKE_HOUSE);var t=all.getCompound("Partners");t.putUUID(partner.toString(),diver);all.put("Partners",t);scene(d,LabyrinthPlace.LAKE_HOUSE,all);}
+    /** A partner who chose to go down without their diver is let go: they keep nothing of the diver's copy and start their own story. */
+    private static void unpair(LabyrinthData d,UUID partner){
+        var all=scene(d,LabyrinthPlace.LAKE_HOUSE);var t=all.getCompound("Partners");t.remove(partner.toString());all.put("Partners",t);
+        var b=all.getCompound("Kept");b.remove(partner.toString());all.put("Kept",b);scene(d,LabyrinthPlace.LAKE_HOUSE,all);
+        LiteraryVignettes.save(d,partner,LabyrinthPlace.LAKE_HOUSE,new CompoundTag());
+    }
+    /**
+     * The lake house's own choice before the usual one. A reader whose story ends in the empty lake is sent on there. A partner
+     * goes down only with their diver, into the diver's copy; once the diver's story is over, the partner comes back like
+     * anyone else to read their account. A new reader joins a diver alone in their copy as their partner, before taking a copy
+     * of their own. Null when the usual choice applies.
+     */
+    private static @Nullable Entry lake(ServerPlayer p,LabyrinthData d,UUID me){
+        var place=LabyrinthPlace.LAKE_HOUSE;var s=p.server;
+        if(LakeHouse.SAID_HELLO.equals(LiteraryVignettes.personal(d,me,place).getString("Outcome")))return new Entry(entry(d,place,0),0,false);
+        var diver=diverOf(d,me);
+        if(diver!=null&&LakeHousePairs.diving(d,diver)){
+            int k=kept(d,diver,place);var there=s.getPlayerList().getPlayer(diver);
+            if(k>=0&&built(d,place,k)&&there!=null&&there.isAlive()&&!there.isSpectator()&&at(s,place,there.level().dimension(),there.position())==k){keep(d,me,place,k);return new Entry(entry(d,place,k),k,false);}
+            // A second try at the door while the diver is away lets the partner go down alone, as a reader of their own.
+            if(!LakeHousePairs.release(p))return new Entry(null,-1,false,diver);
+            unpair(d,me);LakeHousePairs.released(p,diver);return null;
+        }
+        if(diver!=null||kept(d,me,place)>=0)return null;
+        for(int k=0;k<=copies(d,place);k++){
+            if(!built(d,place,k))continue;var alone=lone(s,d,place,k,me);if(alone==null)continue;
+            pair(d,me,alone.getUUID());keep(d,me,place,k);LakeHousePairs.paired(p,alone);ahead(s,d,place,k);
+            return new Entry(entry(d,place,k),k,false);
+        }
+        return null;
+    }
+    /** The only living reader in copy {@code k}, if it is their copy, their story is under way and nobody goes down with them yet. */
+    private static @Nullable ServerPlayer lone(MinecraftServer s,LabyrinthData d,LabyrinthPlace place,int k,UUID me){
+        ServerPlayer found=null;
+        for(var q:s.getPlayerList().getPlayers()){
+            if(q.getUUID().equals(me)||!q.isAlive()||q.isSpectator()||at(s,place,q.level().dimension(),q.position())!=k)continue;
+            if(found!=null)return null;found=q;
+        }
+        if(found==null)return null;var id=found.getUUID();
+        if(diverOf(d,id)!=null||partnerOf(d,id)!=null||kept(d,id,place)!=k||!unfinished(d,id,place)||LiteraryVignettes.personal(d,id,place).getBoolean("Ready"))return null;
+        return found;
     }
 
     // ------------------------------------------------------------------------------------------------ building
@@ -264,6 +342,6 @@ public final class SceneInstances {
     private static void release(){if(job!=null)for(var c:job.chunks)job.level.getChunkSource().removeRegionTicket(TICKET,c,1,c);job=null;}
     /** Fixtures only: whether a copy is under construction. */
     public static boolean building(){return job!=null;}
-    public static void clear(){release();store=null;cached=null;areas=List.of();}
+    public static void clear(){release();store=null;cached=null;areas=List.of();partnersData=null;partners=Map.of();}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clear();}
 }

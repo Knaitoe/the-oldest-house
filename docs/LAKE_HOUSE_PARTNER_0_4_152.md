@@ -15,7 +15,7 @@ The owner's October 28 note: Tess could have a male variant, chosen by the reade
   - dark brown hair, brown eyes;
   - a navy short-sleeved swim shirt and trunks to mid-thigh with a pale hem, barefoot;
   - painted with the shared character painter (`tools/paint_character_skins.py`) on the same pixel grid as Tess, and added to the native character art review.
-  - He is his own actor role (`LiteraryActor.LAKE_THEO`), so he has no long-hair meshes, and he does everything Tess does: rows behind the reader, swims beside them, points up underwater, minds the compressor on the second visit, says goodbye after the ending, and leaves when a second reader arrives.
+  - He is his own actor role (`LiteraryActor.LAKE_THEO`), so he has no long-hair meshes, and he does everything Tess does: rows behind the reader, swims beside them, points up underwater, minds the compressor on the second visit, says goodbye after the ending, and leaves when a second reader arrives. Since 0.4.156 that second reader can go down in his place, seen as him (`docs/LAKE_HOUSE_PAIRS_0_4_156.md`).
   - Like Tess, he is the reader's alone, and spectators never see him.
 
 ## The writing

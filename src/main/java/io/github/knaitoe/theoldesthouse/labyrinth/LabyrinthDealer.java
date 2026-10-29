@@ -92,6 +92,8 @@ public final class LabyrinthDealer {
         places.removeIf(site->LiteraryCabinChoices.closed(data,player,site));
         // 0.4.146: a thread whose next beat needs a member who is not here is not dealt to the others alone.
         places.removeIf(site->VignetteThreads.waiting(data,player,site));
+        // 0.4.156: a reader who goes down to the lake in Tess's place is not dealt it while their diver is about elsewhere.
+        places.removeIf(site->site==LabyrinthPlace.LAKE_HOUSE&&LakeHousePairs.waiting(data,player));
         // Only places that already stand can be dealt; deeper ones are still being built ahead of explorers.
         places.removeIf(site->site!=LabyrinthPlace.FAMILY_COPY&&site!=LabyrinthPlace.OLD_CABIN&&!LabyrinthBuilder.isPlaceReady(data,site));
         return places;

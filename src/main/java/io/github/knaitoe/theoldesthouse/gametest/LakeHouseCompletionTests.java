@@ -50,6 +50,73 @@ public final class LakeHouseCompletionTests {
         at(f,p,5.5,-40,-165.5);readTick(f,p,LakeHouseStory.SAUNA_TICKS+10);
         f.h.assertTrue(own(f,p).getBoolean("Lit")&&own(f,p).getBoolean("HelloStage")&&!own(f,p).getBoolean("Ready"),"the fourth visit's actual sauna wait lights the house without granting an ending");
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.156: in pairs
+    private static LakeHouseTests.Fixture pairs;
+    @AfterBatch(batch="lake_house_pairs156") public static void pairsDone(net.minecraft.server.level.ServerLevel l){SceneInstances.clear();if(pairs!=null){pairs.close();pairs=null;}}
+    private static ServerPlayer reader(LakeHouseTests.Fixture f,String name){var p=NativeTestPlayers.survival(f.h,name);f.players.add(p);away(f,p);return p;}
+    private static void away(LakeHouseTests.Fixture f,ServerPlayer p){p.stopRiding();p.teleportTo(f.in,0,90,0,0,0);p.setDeltaMovement(Vec3.ZERO);p.hasChangedDimension();}
+    private static void in(LakeHouseTests.Fixture f,ServerPlayer p,BlockPos b,double x,double y,double z){p.stopRiding();p.teleportTo(f.out,b.getX()+x,b.getY()+y,b.getZ()+z,0,0);p.setDeltaMovement(Vec3.ZERO);p.hasChangedDimension();p.setNoGravity(true);}
+    private static AABB grounds(BlockPos b){return new AABB(Vec3.atLowerCornerOf(b.offset(-12,-44,-183)),Vec3.atLowerCornerOf(b.offset(12,12,8)));}
+    @GameTest(template="empty",batch="lake_house_pairs156",timeoutTicks=9000)
+    public static void aSecondReaderGoesDownInTessPlaceAndAThirdHasALakeOfTheirOwn(GameTestHelper h){
+        var f=new LakeHouseTests.Fixture(h);pairs=f;var s=f.in.getServer();
+        var diver=reader(f,"pair_diver");var partner=reader(f,"pair_partner");var third=reader(f,"pair_third");var fourth=reader(f,"pair_fourth");var fifth=reader(f,"pair_fifth");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.lease.ready(),"the lake is resident"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(PLACE),"the lake house has copies now");
+                var first=SceneInstances.enter(diver,PLACE);h.assertTrue(first.door()!=null&&first.copy()==0,"the first reader takes the lake");
+                in(f,diver,f.base(),.5,0,-3.5);LiteraryVignettes.onArrive(diver,PLACE);
+                var second=SceneInstances.enter(partner,PLACE);
+                h.assertTrue(second.door()!=null&&second.copy()==0&&diver.getUUID().equals(SceneInstances.diverOf(f.data(),partner.getUUID())),"the second reader joins them, in Tess's place");
+                in(f,partner,f.base(),1.5,0,-4.5);LiteraryVignettes.onArrive(partner,PLACE);
+                h.assertTrue(f.out.getEntitiesOfClass(LakeHouseCanoe.class,LakeHouse.box(f.base()),c->partner.getUUID().equals(c.owner())).isEmpty(),"the partner rides in their diver's canoe rather than one of their own");
+                var full=SceneInstances.enter(third,PLACE);h.assertTrue(full.door()==null&&full.waiting(),"a third reader waits while a lake of their own is made ready");
+                // Facing away from the dock: a Tess who had already come for the diver alone leaves unseen.
+                diver.setYRot(0);diver.setYHeadRot(0);readTick(f,diver,10);readTick(f,partner,5);var mine=own(f,diver);
+                h.assertTrue(LakeHouseTess.actor(diver,mine)==null&&mine.getBoolean("SoloGone"),"with a reader in her place, Tess stays away");
+                h.assertTrue(mine.getBoolean(LakeHousePartner.MET)&&own(f,partner).getBoolean(LakeHousePartner.MET),"the diver has met their partner on the dock, and the partner has had Tess's first line");
+                h.assertTrue(LakeHouseGear.has(partner,LakeHouseRegistry.FLASHLIGHT.get()),"the partner takes their own flashlight by the door");
+                var dress=LakeHouseRegistry.DRESS.get().create(f.out);dress.reader(diver.getUUID());dress.shape(LakeHouseFittingBlock.of(LakeHouseFittingBlock.Kind.DRESS,Direction.SOUTH),0,0);
+                h.assertTrue(dress.broadcastToPlayer(partner)&&!dress.broadcastToPlayer(third),"the diver's dresses are seen by their partner and nobody else");
+                var lit=own(f,diver);lit.putBoolean("Lit",true);LiteraryVignettes.save(f.data(),diver.getUUID(),PLACE,lit);
+                h.assertTrue(LakeHouseStory.lit(partner)&&!LakeHouseStory.lit(third),"the house is lit for the partner when it is lit for their diver");
+                lit.putBoolean("Lit",false);LiteraryVignettes.save(f.data(),diver.getUUID(),PLACE,lit);
+                // The diver's ending lands: the partner has an account of their own and comes up with them.
+                LakeHouseStory.complete(diver,own(f,diver),LakeHouse.LEFT_THE_LIGHTS_ON);var side=own(f,partner);
+                h.assertTrue(side.getBoolean("Ready")&&side.getBoolean(LakeHousePairs.SIDE)&&LakeHouse.LEFT_THE_LIGHTS_ON.equals(side.getString("Outcome"))&&side.getInt("Finish")>0,"the diver's ending readies the partner's own, and they come up together");
+                var account=LakeHouse.account(side);
+                h.assertTrue(account.contains("pair_diver")&&account.contains("THE LIGHTS")&&!account.equals(LakeHouse.account(own(f,diver))),"the partner's account is their own, from Tess's side: "+account);
+                readTick(f,partner,110);readTick(f,diver,110);
+                h.assertTrue(own(f,partner).getInt("Finish")==0&&f.base().equals(LakeHouse.readerBase(partner)),"the partner comes to on the raft beside their diver");
+                f.read(partner,LakeHouse.SOURCE);f.read(partner,LakeHouse.ACCOUNT);
+                h.assertTrue(WitnessAccount.has(f.data(),partner.getUUID(),WitnessAccount.Story.LAKE_HOUSE),"reading it gives the partner the lake's Witness credit");
+                h.assertTrue(LakeHousePartner.witness(own(f,partner),"").contains("waited on the raft"),"their Witness line is from Tess's side");
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),PLACE,1),"a second lake stands ready"))
+            // A reader arriving keeps the lake loaded; these fixture readers do not load chunks themselves.
+            .thenExecute(()->f.lease.hold(f.out,grounds(SceneInstances.base(s,PLACE,1))))
+            .thenWaitUntil(()->h.assertTrue(f.lease.ready(),"the second lake is resident"))
+            .thenExecute(()->{
+                var lake=SceneInstances.base(s,PLACE,1);
+                var own3=SceneInstances.enter(third,PLACE);h.assertTrue(own3.door()!=null&&own3.copy()==1,"the third reader's door opens onto a lake of their own");
+                in(f,third,lake,.5,0,-3.5);LiteraryVignettes.onArrive(third,PLACE);
+                h.assertTrue(lake.equals(LakeHouse.readerBase(third))&&LakeHouse.inside(third)&&f.base().equals(LakeHouse.readerBase(partner)),"each reader's lake is where they are");
+                h.assertTrue(f.out.getBlockState(lake.offset(LakeHouse.COMPRESSOR)).is(LakeHouseRegistry.COMPRESSOR.get()),"the second lake is built like the first, its raft and compressor included");
+                var join=SceneInstances.enter(fourth,PLACE);
+                h.assertTrue(join.door()!=null&&join.copy()==1&&third.getUUID().equals(SceneInstances.diverOf(f.data(),fourth.getUUID())),"the fourth reader joins the third, in Tess's place");
+                var alone=SceneInstances.enter(fifth,PLACE);h.assertTrue(alone.door()==null&&alone.waiting(),"a fifth reader is on their own again, in a lake still being made ready");
+                // The third reader leaves: their partner is not dealt the lake, and its door waits for them.
+                away(f,third);LakeHousePairs.refresh(s);
+                h.assertTrue(LakeHousePairs.waiting(f.data(),fourth.getUUID())&&!LabyrinthDealer.vignettesAvailable(f.data(),fourth.getUUID()).contains(PLACE),"a partner is not dealt the lake while their diver is elsewhere");
+                var wait=SceneInstances.enter(fourth,PLACE);h.assertTrue(wait.door()==null&&third.getUUID().equals(wait.waitsFor()),"their door waits for their diver");
+            })
+            .thenIdle(15)
+            .thenExecute(()->{
+                var go=SceneInstances.enter(fourth,PLACE);
+                h.assertTrue(SceneInstances.diverOf(f.data(),fourth.getUUID())==null&&SceneInstances.kept(f.data(),fourth.getUUID(),PLACE)!=1,"a second try lets them go down without their diver, as a reader of their own");
+                h.assertTrue(go.door()==null||go.copy()!=1,"and never into their diver's lake");
+            }).thenSucceed();
+    }
     private static void empty(LakeHouseTests.Fixture f){var b=LakeHouse.emptyBase(f.in.getServer());LakeHouse.buildEmpty(f.out,b);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.LAKE_HOUSE_EMPTY,b);}
     @GameTest(template="empty",batch="lake_house_hello",timeoutTicks=800)
     public static void touchingThePrivateFigureEndsInTheEmptyLakeWithOneBoundFlashlight(GameTestHelper h){

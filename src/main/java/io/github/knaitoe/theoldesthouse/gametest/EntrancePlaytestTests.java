@@ -117,7 +117,10 @@ public final class EntrancePlaytestTests {
                 for(var room:rooms)h.assertTrue(f.data().door(HouseReadEntrance.id(room))!=null&&f.in.getBlockState(lower[room.ordinal()]).getBlock() instanceof DoorBlock,"a watched hallway keeps its doors until nobody sees them go: "+room);
                 at(p,f.out,f.origin.offset(0,80,0));HouseReadEntrance.retire(p.server);
                 for(var room:rooms){var i=room.ordinal();boolean kept=room==HouseReadSites.Room.COATROOM;
-                    h.assertTrue((f.data().door(HouseReadEntrance.id(room))!=null)==kept,"only the door an active visit returns through stays registered: "+room);
+                    // What keeps a door: a camera within 24 blocks, its sections not loaded, or a visit returning through it.
+                    var near=f.in.players().stream().filter(q->new AABB(lower[i]).inflate(24).intersects(q.getCamera().getBoundingBox())).map(q->q.getGameProfile().getName()+"@"+q.blockPosition().toShortString()+(q.isRemoved()?" removed":"")).toList();
+                    String why=" (cameras near: "+near+", loaded "+f.in.isLoaded(lower[i])+"/"+f.in.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(lower[i]))+", readers "+f.data().state(HouseReadSites.STATE).getAllKeys().size()+")";
+                    h.assertTrue((f.data().door(HouseReadEntrance.id(room))!=null)==kept,"only the door an active visit returns through stays registered: "+room+why);
                     if(!kept){var along=(i%2==0?Direction.EAST:Direction.WEST).getClockWise();
                         h.assertTrue(f.in.getBlockState(lower[i]).equals(f.in.getBlockState(lower[i].relative(along)))||f.in.getBlockState(lower[i]).equals(f.in.getBlockState(lower[i].relative(along.getOpposite()))),"the lower cell matches its hallway course: "+room);
                         h.assertTrue(!(f.in.getBlockState(lower[i].above()).getBlock() instanceof DoorBlock)&&!f.in.getBlockState(lower[i].above()).isAir(),"the upper half is wall again: "+room);}}

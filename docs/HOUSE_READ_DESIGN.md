@@ -392,7 +392,7 @@ Larger changes need a settled category; smaller ones may use a tentative one. Un
 | `DRAWN_TO` | The Lake House partner: Tess for `WOMEN` and `BOTH`, a young man in her place for `MEN`, Tess as a friend rather than a date for `NO_ONE`. The Stanley's table for two is set for that partner, and for one for `NO_ONE` | The Masque's private dancers turn to the reader's preference; later, the owner's planned mattress, marriage and passenger-seat rooms |
 | `HOME` | `DANGER` (settled only): authority figures (the Barretts' John, Three Fingers' Walter, whoever is behind the child's room door at night) bring anticipation, not damage. See "Authority figures under `DANGER`". `RUNAWAY`: road and outdoor rooms are likelier to come first (`LabyrinthDealer.dealWeight`) | Mood only, even when tentative: domestic rooms open warm for `HAVEN` and tense for `DANGER`, and Goatman's family night opens warm or tense |
 
-The Lake House partner is built (0.4.152, `docs/LAKE_HOUSE_PARTNER_0_4_152.md`): chosen once, on the reader's first visit, from a settled read, with Theo as the young man's working name. The owner has also asked for a second reader to play the partner, in instanced pairs; that is still to come.
+The Lake House partner is built (0.4.152, `docs/LAKE_HOUSE_PARTNER_0_4_152.md`): chosen once, on the reader's first visit, from a settled read, with Theo as the young man's working name. A second reader can play the partner, in pairs, each pair with its own lake (0.4.156, `docs/LAKE_HOUSE_PAIRS_0_4_156.md`).
 
 Built so far (0.4.142), all neutral until a category exists:
 
@@ -549,5 +549,6 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.153 | Copies of private scenes: a reader who finds the confession, the Holy Rabbit, the Wheel house, the diner or the split-feed bedroom taken gets a copy of their own, kept until they finish it | `docs/SCENE_COPIES_0_4_153.md` |
 | 0.4.154 | Copies of the Whale institute and the phone canoe, each lake with its own canoe | `docs/SCENE_COPIES_0_4_153.md` |
 | 0.4.155 | Copies of Harrigan's room, each keeping its own story; every private scene now has copies | `docs/SCENE_COPIES_0_4_153.md` |
+| 0.4.156 | The lake house in pairs: a second reader goes down in Tess's place and is seen as her, a third has a lake of their own with Tess, a fourth joins them | `docs/LAKE_HOUSE_PAIRS_0_4_156.md` |
 
 The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.

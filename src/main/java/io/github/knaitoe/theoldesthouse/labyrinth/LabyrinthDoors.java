@@ -207,6 +207,8 @@ public final class LabyrinthDoors {
             var chosen=SceneInstances.enter(player,place);
             if(chosen.door()==null){
                 if(chosen.waiting()){readying(player,place);return;}
+                // 0.4.156: a partner's door stays shut until their diver is at the lake.
+                if(chosen.waitsFor()!=null){LakeHousePairs.waits(player,chosen.waitsFor());return;}
                 taken(player,place);if(!elsewhere(player,door))locked(player);return;
             }
             entry=chosen.door();
@@ -347,7 +349,7 @@ public final class LabyrinthDoors {
     static void continueFromRead(ServerPlayer player,LabyrinthData.Door from,LabyrinthPlace place) {
         if(HouseReadSites.inside(player)==null)return;
         var entry=LabyrinthData.get(player.server).door(place.entryDoorId());
-        if(SceneInstances.copyable(place)){var chosen=SceneInstances.enter(player,place);if(chosen.door()==null){if(chosen.waiting())readying(player,place);else taken(player,place);return;}entry=chosen.door();}
+        if(SceneInstances.copyable(place)){var chosen=SceneInstances.enter(player,place);if(chosen.door()==null){if(chosen.waiting())readying(player,place);else if(chosen.waitsFor()!=null)LakeHousePairs.waits(player,chosen.waitsFor());else taken(player,place);return;}entry=chosen.door();}
         if(entry!=null)arrive(player,from,entry,place,true);
     }
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {arrive(player,from,suppliedEntry,place,false);}

@@ -52,10 +52,36 @@ public final class LakeHousePartner {
     }
     /** The Witness line names the partner the same way; a reader who never met them keeps the line as it was. */
     public static String witness(CompoundTag own,String text){
+        if(own.getBoolean(LakeHousePairs.SIDE))return partnerWitness(own);
         if(!own.contains(KEY)||!own.getBoolean(MET))return text;
         var partner=of(own);
         return (partner.date?partner.name+" and I went out on the lake on our first date and found a house on the bottom of it."
                 :partner.name+" and I went out on the lake one weekend, the way friends do, and found a house on the bottom of it.")
             +" Every time we went down it let us a little further in. We kept to one rule and didn't ask how. In the end I went back to meet whoever lived there.";
+    }
+
+    // ------------------------------------------------------------------------------------------------ from Tess's side
+    /*
+     * 0.4.156 (docs/LAKE_HOUSE_PAIRS_0_4_156.md): a second reader goes down in Tess's place. Their account and Witness line
+     * are told from her side: the diver by name, the date or the weekend as the diver's partner was, and the ending as Tess
+     * says goodbye to a reader alone.
+     */
+    private static String diver(CompoundTag own){var name=own.getString(LakeHousePairs.DIVER_NAME);return name.isEmpty()?"The one I went down with":name;}
+    private static boolean date(CompoundTag own){return !"friend".equals(own.getString(LakeHousePairs.AS));}
+    public static String partnerAccount(CompoundTag own){
+        String diver=diver(own);
+        String opening=(date(own)?diver+" and I took the green canoe out on our first date.":diver+" and I took the green canoe out one weekend, the way friends do.")
+            +" There was a house on the bottom of the third lake, and every time we went down it let us a little further in. We kept to one rule and didn't ask how.";
+        String ending=switch(own.getString("Outcome")){
+            case LakeHouse.LEFT_THE_LIGHTS_ON->"THE LIGHTS\n\nEvery light in the house came on at once, under the raft. "+diver+" came out through the half door and didn't look back. It's still lit. I'm not going back down. I don't think "+diver+" should either.";
+            case LakeHouse.STAYED->"THE RAFT\n\n"+diver+" didn't come up. I sat on the raft until it got light, and then "+diver+" was lying beside me, wet through. They tell me it was days. I can't do that again.";
+            default->"THE EMPTY LAKE\n\n"+diver+" went back down to say hello to whoever lived there, and then there was nothing under us but water. I came out twice more on my own and sat in the canoe and looked down. There's nothing there. I have to stop coming.";
+        };
+        return opening+"\n\n"+ending+(own.getBoolean("RuleBroken")?"\n\nWe tested the rule. Nothing came loose, but someone walked upstairs afterward. We had asked how.":"");
+    }
+    public static String partnerWitness(CompoundTag own){
+        String diver=diver(own);
+        return (date(own)?diver+" and I went out on the lake on our first date and found a house on the bottom of it.":diver+" and I went out on the lake one weekend, the way friends do, and found a house on the bottom of it.")
+            +" Every time we went down it let us a little further in. We kept to one rule and didn't ask how. In the end "+diver+" went back to meet whoever lived there, and I waited on the raft.";
     }
 }

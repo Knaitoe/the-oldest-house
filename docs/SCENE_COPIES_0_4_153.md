@@ -16,7 +16,7 @@ This release gives copies to the five private scenes that run through the litera
 - the diner (the second waitress);
 - the split-feed bedroom (missing sleep).
 
-Harrigan, the Whale institute and the phone in the canoe run on systems of their own. The Whale institute and the phone canoe followed in 0.4.154 (below); Harrigan followed in 0.4.155 (below). The lake house's pairs will use the same copies.
+Harrigan, the Whale institute and the phone in the canoe run on systems of their own. The Whale institute and the phone canoe followed in 0.4.154 (below); Harrigan followed in 0.4.155 (below). The lake house uses the same copies for its pairs, two readers to a lake (0.4.156, `docs/LAKE_HOUSE_PAIRS_0_4_156.md`).
 
 ## 0.4.154: the Whale institute and the phone canoe
 
