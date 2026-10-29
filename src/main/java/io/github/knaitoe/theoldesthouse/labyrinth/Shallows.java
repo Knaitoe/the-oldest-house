@@ -34,6 +34,12 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * reader's own strafe keys, on a count of three. The lake does not take her. She breaks on its surface, lies still, gets up
  * wrong and runs across the water into the woods on all fours. The girl and the boy at her feet are this reader's alone; the
  * three boys on the bank are shared, and speak to each reader privately.
+ *
+ * <p>0.4.157 (owner, October 28; docs/SHALLOWS_TOGETHER_0_4_157.md): with friends there it is one throw. A reader who comes
+ * to the bank while another's recollection is under way joins it: the first to join takes her feet in Lonnie's place, and
+ * Lonnie counts from the water's edge; anyone after that stands on the bank with Bud, Hank and Clay. The two holding her
+ * swing her together, a stroke only when both swing the same way. Everyone there sees her, hears the boys and keeps a
+ * Witness line of their own for how they were part of it.
  */
 public final class Shallows {
     public static final String ID="shallows", BOY="HouseShallowsBoy", WORDS="HouseLakeWords", CARRIER="HouseShallowsCarrier";
@@ -62,6 +68,11 @@ public final class Shallows {
     public static final int BUD=0, HANK=1, CLAY=2, LONNIE=3, STACEY=4;
     private static final String[] WHO={"Bud","Hank","Clay","Lonnie","Stacey"};
     private static final int[] LOOK={0,2,3};
+    /** A reader's part in another's recollection: who they are with, and whether they hold her feet or stand on the bank. */
+    public static final String WITH="With0157",ROLE="Role0157",FEET="Feet0157",THROW="Throw0157";
+    public static final String AT_FEET="feet",ON_BANK="bank",AT_WRISTS="wrists";
+    /** Two readers' swings within this many ticks of each other are one stroke. */
+    public static final int TOGETHER=8;
     private record Line(int who,String text,int mood){}
     private record Due(long at,Line line){}
     private static final Line[] OPENING={new Line(LONNIE,"Took you long enough. Grab her arms.",CALM),new Line(BUD,"Careful. She'll put a curse on you.",JEER),
@@ -73,6 +84,8 @@ public final class Shallows {
     private static final class Scene {
         int slot,stroke,queued,forward,strokeAge=STROKE_TICKS,strokeLength=STROKE_TICKS,idle,line,wrong;
         float from,to,angle;long next;boolean released;Vec3 velocity=Vec3.ZERO;
+        /** 0.4.157: the reader at her feet, once they have taken hold, and each pair of hands' last swing. */
+        @Nullable UUID feet;int wristsWant,feetWant;long wristsAt,feetAt;@Nullable UUID thrownWith;
         final PriorityQueue<Due> due=new PriorityQueue<>(Comparator.comparingLong(Due::at));
         void later(long at,Line line){due.add(new Due(at,line));}
     }
@@ -105,6 +118,8 @@ public final class Shallows {
     public static Vec3 spot(BlockPos base,int slot){return new Vec3(base.getX()+SLOTS[slot]+.5,base.getY(),base.getZ()+LINE_Z);}
     public static Vec3 stance(BlockPos base,int slot){return spot(base,slot).add(-1.5,0,0);}
     public static Vec3 carrierStance(BlockPos base,int slot){return spot(base,slot).add(1.5,0,0);}
+    /** Where Lonnie counts from while a reader holds her feet: the last of the bank, beside them and clear of her swing. */
+    public static Vec3 edge(BlockPos base,int slot){return spot(base,slot).add(2.5,0,-1.2);}
     /** Where her body is while she swings: positive angles toward the water, which lies north of the bank. */
     public static Vec3 swung(BlockPos base,int slot,float angle){
         return spot(base,slot).add(0,HANG+SWING_RADIUS*(1-Math.cos(angle)),-SWING_RADIUS*Math.sin(angle));
@@ -139,6 +154,34 @@ public final class Shallows {
         Entity actor=level.getEntity(record.getUUID("Actor"));
         return actor instanceof LakeWitchEntity witch&&player.getUUID().equals(witch.memoryOwner())?witch:null;
     }
+    /** The recollection a reader is part of: their own, or the one they joined (0.4.157). */
+    public static @Nullable LakeWitchEntity memory(ServerPlayer player){
+        var host=with(LabyrinthData.get(player.server),player.getUUID());if(host==null)return actor(player);
+        CompoundTag record=personal(LabyrinthData.get(player.server),host);if(!record.hasUUID("Actor"))return null;
+        ServerLevel level=player.server.getLevel(HouseDimensions.OUTSIDE);if(level==null)return null;
+        return level.getEntity(record.getUUID("Actor")) instanceof LakeWitchEntity witch&&host.equals(witch.memoryOwner())?witch:null;
+    }
+    /** The reader whose recollection this player joined, while they are part of it. */
+    public static @Nullable UUID with(LabyrinthData data,UUID player){var r=personal(data,player);return r.getBoolean("Active")&&r.hasUUID(WITH)?r.getUUID(WITH):null;}
+    /** Whether a viewer is part of an owner's recollection, and so sees her and the boy who held her feet. */
+    public static boolean sharesMemory(ServerPlayer viewer,UUID owner){return owner.equals(with(LabyrinthData.get(viewer.server),viewer.getUUID()));}
+    /** The reader whose recollection this player is in, if they are online: the player themselves, or the one they joined. */
+    private static ServerPlayer host(ServerPlayer player){
+        var id=with(LabyrinthData.get(player.server),player.getUUID());if(id==null)return player;var host=owner(player.serverLevel(),id);return host==null?player:host;
+    }
+    /** Everyone in a recollection now: its reader and those with them on the bank. */
+    static List<ServerPlayer> group(ServerPlayer owner){
+        var out=new ArrayList<ServerPlayer>();out.add(owner);var data=LabyrinthData.get(owner.server);
+        Set<ServerPlayer> players=new LinkedHashSet<>(owner.server.getPlayerList().getPlayers());players.addAll(owner.serverLevel().players());
+        for(var p:players)if(p!=owner&&owner.getUUID().equals(with(data,p.getUUID()))&&IndianLakeRooms.inside(p,LabyrinthPlace.SHALLOWS))out.add(p);
+        return out;
+    }
+    /** The reader who joined to hold her feet, while they are here. */
+    static @Nullable ServerPlayer feetHere(ServerPlayer owner){
+        var record=personal(LabyrinthData.get(owner.server),owner.getUUID());if(!record.hasUUID(FEET))return null;
+        var p=owner(owner.serverLevel(),record.getUUID(FEET));
+        return p!=null&&p.isAlive()&&!p.isSpectator()&&owner.getUUID().equals(with(LabyrinthData.get(owner.server),p.getUUID()))&&IndianLakeRooms.inside(p,LabyrinthPlace.SHALLOWS)?p:null;
+    }
     /** The boy who holds her feet, for this reader only. */
     public static @Nullable LakeCongregantEntity carrier(ServerPlayer player){
         CompoundTag record=personal(LabyrinthData.get(player.server),player.getUUID());
@@ -163,10 +206,19 @@ public final class Shallows {
     // ------------------------------------------------------------------------------------------------ arrival
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         if(place!=LabyrinthPlace.SHALLOWS)return;LabyrinthData data=LabyrinthData.get(player.server);
-        if(!IndianLakeProgress.canDealShallows(data,player.getUUID()))return;
         BlockPos base=IndianLakeRooms.base(player.server,place);if(base==null)return;
-        IndianLakeRooms.keepLoaded(player.serverLevel(),base,place);boys(player.serverLevel(),base);
         CompoundTag record=personal(data,player.getUUID());
+        // 0.4.157: a reader who comes while another's recollection is under way joins it, unless their own is. One who
+        // already joined stays with it while it lasts, even while its girl is not loaded.
+        if(record.getBoolean("Active")&&record.hasUUID(WITH)){
+            var was=owner(player.serverLevel(),record.getUUID(WITH));
+            if(was!=null&&personal(data,was.getUUID()).getBoolean("Active")&&IndianLakeRooms.inside(was,place))return;
+            record.putBoolean("Active",false);record.remove(WITH);record.remove(ROLE);save(data,player.getUUID(),record);
+        }
+        if(!player.isSpectator()&&!(record.getBoolean("Active")&&record.hasUUID("Actor"))){var host=hostHere(player);if(host!=null){join(player,host);return;}}
+        if(!IndianLakeProgress.canDealShallows(data,player.getUUID()))return;
+        IndianLakeRooms.keepLoaded(player.serverLevel(),base,place);boys(player.serverLevel(),base);
+        record.remove(WITH);record.remove(ROLE);
         // Reconnects reuse their saved actors, loaded or not; a new visit cannot duplicate a recollection.
         boolean resumed=record.getBoolean("Active")&&record.hasUUID("Actor");
         if(resumed&&record.hasUUID("Carrier"))return;
@@ -189,9 +241,39 @@ public final class Shallows {
         IndianLakeArchitecture.light(player.serverLevel(),base.offset(2,3,-8),8);IndianLakeArchitecture.light(player.serverLevel(),base.offset(0,2,-13),6);
     }
 
+    /** A reader on the bank whose own recollection is under way and not yet thrown, for a newcomer to join. */
+    private static @Nullable ServerPlayer hostHere(ServerPlayer newcomer){
+        var data=LabyrinthData.get(newcomer.server);
+        for(var q:newcomer.serverLevel().players()){
+            if(q==newcomer||!q.isAlive()||q.isSpectator()||!IndianLakeRooms.inside(q,LabyrinthPlace.SHALLOWS))continue;
+            var r=personal(data,q.getUUID());if(!r.getBoolean("Active")||r.hasUUID(WITH)||r.getBoolean("Cold")||IndianLakeProgress.hasThrown(data,q.getUUID()))continue;
+            var girl=actor(q);if(girl!=null&&girl.memoryPhase()<=CARRIED)return q;
+        }
+        return null;
+    }
+    /** The first to join takes her feet, in Lonnie's place; anyone after that stands on the bank with the boys. */
+    private static void join(ServerPlayer player,ServerPlayer host){
+        var data=LabyrinthData.get(player.server);var hostRecord=personal(data,host.getUUID());boolean feet=feetHere(host)==null;
+        var mine=personal(data,player.getUUID());mine.putBoolean("Active",true);mine.putBoolean("Cold",false);mine.putUUID(WITH,host.getUUID());
+        mine.putString(ROLE,feet?AT_FEET:ON_BANK);mine.putInt("Slot",hostRecord.getInt("Slot"));mine.remove("Actor");mine.remove("Carrier");save(data,player.getUUID(),mine);
+        String name=player.getGameProfile().getName();var girl=actor(host);
+        if(feet){
+            hostRecord.putUUID(FEET,player.getUUID());save(data,host.getUUID(),hostRecord);
+            say(host,LONNIE,name+", you get her feet. I'll count.",CALM,girl);
+            player.displayClientMessage(Component.literal("Once "+host.getGameProfile().getName()+" has her arms, take her feet.").withStyle(ChatFormatting.GRAY),true);
+        }else{
+            say(host,BUD,name+"! Come watch. She's going in.",JEER,girl);
+            player.displayClientMessage(Component.literal("You stand on the bank with the boys.").withStyle(ChatFormatting.GRAY),true);
+        }
+    }
+
     // ------------------------------------------------------------------------------------------------ the carry
     public static boolean lift(ServerPlayer player,LakeWitchEntity girl){
         LabyrinthData data=LabyrinthData.get(player.server);CompoundTag record=personal(data,player.getUUID());
+        // 0.4.157: the reader who joined to hold her feet takes them once the other has her arms.
+        if(girl.memoryOwner()!=null&&!player.getUUID().equals(girl.memoryOwner())){
+            return girl.memoryOwner().equals(with(data,player.getUUID()))&&AT_FEET.equals(record.getString(ROLE))&&liftFeet(player,girl);
+        }
         if(!IndianLakeProgress.canDealShallows(data,player.getUUID())||!IndianLakeRooms.inside(player,LabyrinthPlace.SHALLOWS)
                 ||!player.getUUID().equals(girl.memoryOwner())||player.distanceToSqr(girl)>12||girl.memoryPhase()!=LYING
                 ||record.getBoolean("Cold")||!record.getBoolean("Active"))return false;
@@ -208,20 +290,58 @@ public final class Shallows {
         // Server-side players without a real connection take the place directly.
         if(player.position().distanceToSqr(at)>1e-4||Math.abs(player.getYRot()-READER_YAW)>.5F)player.moveTo(at.x,at.y,at.z,READER_YAW,12);
         girl.memoryPhase(CARRIED);s.stroke=0;s.queued=0;s.forward=0;s.angle=s.from=s.to=0;s.idle=0;s.released=false;s.strokeAge=s.strokeLength=STROKE_TICKS;
-        boy.carry(SWINGING);boy.swing(0);
+        s.feet=null;s.wristsWant=s.feetWant=0;
         long now=player.serverLevel().getGameTime();s.due.clear();
+        var partner=feetHere(player);
+        if(partner!=null){say(player,LONNIE,partner.getGameProfile().getName()+", her feet. Then we swing her on three.",CALM,girl);hint(player);return true;}
+        boy.carry(SWINGING);boy.swing(0);
         say(player,LONNIE,"Got her? We swing her on three.",CALM,girl);
         s.later(now+25,new Line(CLAY,"Out past the reeds!",CHEER));s.later(now+50,new Line(STACEY,"No. No, no...",CALM));
         hint(player);return true;
     }
+    /** The reader at her feet faces the other way, so the lake is on their right. */
     private static void hint(ServerPlayer player){
-        player.displayClientMessage(Component.empty().append(Component.keybind("key.left")).append(" swing toward the water  ·  ")
-                .append(Component.keybind("key.right")).append(" swing back  ·  ").append(Component.keybind("key.sneak")).append(" let go").withStyle(ChatFormatting.GRAY),true);
+        boolean feet=with(LabyrinthData.get(player.server),player.getUUID())!=null;
+        player.displayClientMessage(Component.empty().append(Component.keybind(feet?"key.right":"key.left")).append(" swing toward the water  ·  ")
+                .append(Component.keybind(feet?"key.left":"key.right")).append(" swing back  ·  ").append(Component.keybind("key.sneak")).append(" let go").withStyle(ChatFormatting.GRAY),true);
     }
-    /** The reader's strafe keys: the lake is on their left, so left swings her out and right brings her back. */
+    /** The reader joining to hold her feet takes them, at the east end of her, facing the reader who holds her arms. */
+    private static boolean liftFeet(ServerPlayer player,LakeWitchEntity girl){
+        BlockPos base=girl.memoryBase();var host=owner(player.serverLevel(),girl.memoryOwner());
+        if(base==null||host==null||!IndianLakeRooms.inside(player,LabyrinthPlace.SHALLOWS)||player.distanceToSqr(girl)>12)return false;
+        Scene s=scene(girl);
+        if(girl.memoryPhase()!=CARRIED){if(girl.memoryPhase()==LYING)say(host,LONNIE,"Wait till "+host.getGameProfile().getName()+" has her arms.",CALM,girl);return false;}
+        if(s.feet!=null)return false;
+        if(!player.getMainHandItem().isEmpty()||!player.getOffhandItem().isEmpty()){say(host,LONNIE,"Both hands, "+player.getGameProfile().getName()+".",CALM,girl);return false;}
+        ItemStack burden=new ItemStack(DrownedTownRegistry.SHALLOWS_BURDEN.get());
+        CustomData.update(DataComponents.CUSTOM_DATA,burden,t->{t.putUUID(OWNER,player.getUUID());t.putUUID(ACTOR,girl.getUUID());});
+        player.setItemInHand(InteractionHand.MAIN_HAND,burden);player.inventoryMenu.broadcastChanges();
+        var at=carrierStance(base,s.slot);player.teleportTo(player.serverLevel(),at.x,at.y,at.z,CARRIER_YAW,12);
+        if(player.position().distanceToSqr(at)>1e-4||Math.abs(player.getYRot()-CARRIER_YAW)>.5F)player.moveTo(at.x,at.y,at.z,CARRIER_YAW,12);
+        s.feet=player.getUUID();s.wristsWant=s.feetWant=0;s.idle=0;
+        say(host,LONNIE,"Got her? We swing her on three. Together.",CALM,girl);
+        long now=player.serverLevel().getGameTime();s.later(now+25,new Line(CLAY,"Out past the reeds!",CHEER));s.later(now+50,new Line(STACEY,"No. No, no...",CALM));
+        hint(player);hint(host);return true;
+    }
+    /**
+     * The reader's strafe keys: the lake is on their left, so left swings her out and right brings her back. The reader at
+     * her feet faces them, so for them it is the other way round, and a stroke needs both (0.4.157).
+     */
     public static boolean swing(ServerPlayer player,int side){
-        LakeWitchEntity girl=actor(player);if(girl==null||girl.memoryPhase()!=CARRIED||!hasBurden(player)||side==0)return false;
-        return stroke(player,girl,side<0?1:-1);
+        LakeWitchEntity girl=memory(player);if(girl==null||girl.memoryPhase()!=CARRIED||!hasBurden(player)||side==0)return false;
+        var host=host(player);boolean feet=host!=player;int direction=feet?(side>0?1:-1):(side<0?1:-1);
+        Scene s=scene(girl);
+        if(!feet&&s.feet==null&&feetHere(host)!=null){
+            if(--s.wrong<0){say(host,LONNIE,"Wait for "+feetHere(host).getGameProfile().getName()+" to get her feet.",CALM,girl);s.wrong=4;}
+            return false;
+        }
+        if(s.feet==null)return stroke(host,girl,direction);
+        long now=girl.level().getGameTime();
+        if(feet){s.feetWant=direction;s.feetAt=now;}else{s.wristsWant=direction;s.wristsAt=now;}
+        if(s.wristsWant==0||s.feetWant==0)return false;
+        boolean same=s.wristsWant==s.feetWant;int together=s.wristsWant;s.wristsWant=s.feetWant=0;
+        if(!same){say(host,LONNIE,"Together. Out on my count, back after.",CALM,girl);return false;}
+        return stroke(host,girl,together);
     }
     private static boolean stroke(ServerPlayer player,LakeWitchEntity girl,int direction){
         Scene s=scene(girl);if(s.released)return false;
@@ -251,6 +371,16 @@ public final class Shallows {
         var stand=stance(base,s.slot);
         if(owner.isShiftKeyDown()){drop(owner,girl,null);return;}
         if(owner.position().subtract(stand).horizontalDistanceSqr()>.8*.8){drop(owner,girl,"She slips out of your hands.");return;}
+        // 0.4.157: the reader at her feet holds on the same terms; if they leave, Lonnie takes her feet again.
+        var partner=feetHere(owner);
+        if(s.feet!=null){
+            var feet=partner!=null&&partner.getUUID().equals(s.feet)?partner:null;
+            if(feet==null||!hasBurden(feet)||feet.isShiftKeyDown()||feet.position().subtract(carrierStance(base,s.slot)).horizontalDistanceSqr()>.8*.8){
+                drop(owner,girl,(feet==null?"Her feet drop":feet.getGameProfile().getName()+" lets go of her feet")+".");return;
+            }
+            long now=girl.level().getGameTime();if(now-s.wristsAt>TOGETHER)s.wristsWant=0;if(now-s.feetAt>TOGETHER)s.feetWant=0;
+        }
+        lonnie(owner,girl,s,base,boy,partner!=null);
         if(s.queued!=0&&(s.stroke==0||s.strokeAge>=s.strokeLength*READY)){int q=s.queued;s.queued=0;stroke(owner,girl,q);}
         if(s.stroke!=0&&s.strokeAge<s.strokeLength){
             s.strokeAge++;float k=(1-Mth.cos(Mth.PI*s.strokeAge/s.strokeLength))/2;s.angle=s.from+(s.to-s.from)*k;
@@ -261,17 +391,25 @@ public final class Shallows {
             s.angle*=.88F;if(Math.abs(s.angle)<.01F)s.angle=0;
         }
         var body=swung(base,s.slot,s.angle);girl.moveTo(body.x,body.y,body.z,READER_YAW,0);girl.setYHeadRot(READER_YAW);girl.setYBodyRot(READER_YAW);girl.setDeltaMovement(Vec3.ZERO);
-        girl.swing(s.angle);if(boy!=null){boy.carry(SWINGING);boy.swing(s.angle);}
-        if(girl.memoryTicks%40==0)hint(owner);
+        girl.swing(s.angle);if(boy!=null&&partner==null){boy.carry(SWINGING);boy.swing(s.angle);}
+        if(girl.memoryTicks%40==0){hint(owner);if(s.feet!=null&&partner!=null)hint(partner);}
+    }
+    /** Lonnie holds her feet unless a reader does; then he stands at the water's edge to count, facing her. */
+    private static void lonnie(ServerPlayer owner,LakeWitchEntity girl,Scene s,BlockPos base,@Nullable LakeCongregantEntity boy,boolean partner){
+        if(boy==null)return;var at=partner?edge(base,s.slot):carrierStance(base,s.slot);
+        if(boy.position().distanceToSqr(at)>.01){boy.moveTo(at.x,at.y,at.z,CARRIER_YAW,0);boy.setDeltaMovement(Vec3.ZERO);}
+        if(partner){if(boy.carry()!=0)boy.carry(0);boy.swing(0);float yaw=(float)(Mth.atan2(-(girl.getX()-boy.getX()),girl.getZ()-boy.getZ())*Mth.RAD_TO_DEG);boy.setYRot(yaw);boy.setYHeadRot(yaw);boy.setYBodyRot(yaw);}
+        else if(girl.memoryPhase()==LYING&&boy.carry()!=HOLD)boy.carry(HOLD);
     }
     /** Both let go: she leaves the swing with its own motion and the heave behind it. */
     private static void release(ServerPlayer owner,LakeWitchEntity girl,Scene s,BlockPos base,@Nullable LakeCongregantEntity boy){
-        s.released=true;removeBurdens(owner);
+        s.released=true;removeBurdens(owner);s.thrownWith=s.feet;
+        var feet=s.feet==null?null:owner(owner.serverLevel(),s.feet);if(feet!=null)removeBurdens(feet);
         float rate=(s.to-s.from)*Mth.PI/(2*s.strokeLength)*Mth.sin(Mth.PI*s.strokeAge/s.strokeLength);
         double tangent=SWING_RADIUS*rate;
         s.velocity=new Vec3(0,Math.sin(s.angle)*tangent+.24,-Math.cos(s.angle)*tangent-.34);
         girl.memoryPhase(FLYING);girl.swing(0);
-        if(boy!=null){boy.carry(RELEASED);boy.swing(s.angle);}
+        if(boy!=null&&s.feet==null){boy.carry(RELEASED);boy.swing(s.angle);}
         hear(owner,DrownedTownRegistry.SHALLOWS_SWING.get(),girl.position(),1.1F,.7F);
         for(int who:new int[]{BUD,HANK,CLAY})react(owner,who,CHEER,30,girl);
         say(owner,BUD,"There she goes!",CHEER,girl);
@@ -301,17 +439,36 @@ public final class Shallows {
     private static void impact(ServerPlayer owner,LakeWitchEntity girl){
         var level=(ServerLevel)girl.level();girl.memoryPhase(BROKEN);
         hear(owner,DrownedTownRegistry.SHALLOWS_BREAK.get(),girl.position(),1.4F,1);
-        level.sendParticles(owner,ParticleTypes.SPLASH,true,girl.getX(),girl.getY()+.1,girl.getZ(),36,.7,.02,.7,.1);
-        level.sendParticles(owner,ParticleTypes.FALLING_WATER,true,girl.getX(),girl.getY()+.3,girl.getZ(),12,.5,.25,.5,0);
-        IndianLakeProgress.completedShallows(LabyrinthData.get(level.getServer()),owner.getUUID(),owner.getGameProfile().getName());
+        var everyone=group(owner);
+        for(var p:everyone){
+            level.sendParticles(p,ParticleTypes.SPLASH,true,girl.getX(),girl.getY()+.1,girl.getZ(),36,.7,.02,.7,.1);
+            level.sendParticles(p,ParticleTypes.FALLING_WATER,true,girl.getX(),girl.getY()+.3,girl.getZ(),12,.5,.25,.5,0);
+        }
+        // 0.4.157: who held her and who watched, kept with each of them for their own Witness line.
+        var data=LabyrinthData.get(level.getServer());var feet=scene(girl).thrownWith==null?null:owner(level,scene(girl).thrownWith);
+        String thrower=owner.getGameProfile().getName(),feetName=feet==null?"":feet.getGameProfile().getName();
+        for(var p:everyone){
+            var r=personal(data,p.getUUID());var t=new CompoundTag();
+            t.putString(ROLE,p==owner?AT_WRISTS:p==feet?AT_FEET:ON_BANK);t.putString("Thrower",thrower);t.putString("Feet",feetName);
+            r.put(THROW,t);save(data,p.getUUID(),r);
+        }
+        if(feet!=null&&!everyone.contains(feet)){var r=personal(data,feet.getUUID());var t=new CompoundTag();t.putString(ROLE,AT_FEET);t.putString("Thrower",thrower);t.putString("Feet",feetName);r.put(THROW,t);save(data,feet.getUUID(),r);everyone.add(feet);}
+        IndianLakeProgress.completedShallows(data,owner.getUUID(),thrower);
         WitnessAccount.resolve(owner,WitnessAccount.Story.SHALLOWS,"threw_her");
         updateEssays(owner);
+        for(var p:everyone){
+            if(p==owner)continue;boolean held=p==feet;
+            IndianLakeProgress.joinedShallows(data,p.getUUID(),p.getGameProfile().getName());
+            WitnessAccount.resolveAs(p,WitnessAccount.Story.SHALLOWS,held?"held_her_feet":"watched_from_the_bank",held?VignetteRole.ACTOR:VignetteRole.WITNESS,thrower);
+            updateEssays(p);
+        }
         for(int who:new int[]{BUD,HANK,CLAY,LONNIE})react(owner,who,FROZEN,150,girl);
     }
     /** Put her back down on the bank, the boy still holding her feet; the count starts again. */
     private static void drop(ServerPlayer owner,LakeWitchEntity girl,@Nullable String why){
         removeBurdens(owner);BlockPos base=girl.memoryBase();if(base==null)return;Scene s=scene(girl);
-        lay(girl,base,s.slot);var boy=carrier(owner);if(boy!=null){boy.carry(HOLD);boy.swing(0);}
+        var feet=s.feet==null?null:owner(owner.serverLevel(),s.feet);if(feet!=null)removeBurdens(feet);s.feet=null;s.wristsWant=s.feetWant=0;
+        lay(girl,base,s.slot);var boy=carrier(owner);if(boy!=null&&feetHere(owner)==null){boy.carry(HOLD);boy.swing(0);}
         s.stroke=0;s.queued=0;s.forward=0;s.angle=0;s.released=false;s.line=OPENING.length;s.next=owner.serverLevel().getGameTime()+300;
         hear(owner,SoundEvents.PLAYER_SMALL_FALL,girl.position(),.8F,.8F);
         if(why!=null)owner.displayClientMessage(Component.literal(why).withStyle(ChatFormatting.GRAY),true);
@@ -326,11 +483,11 @@ public final class Shallows {
     public static boolean validBurden(ServerPlayer player,ItemStack stack){
         if(!stack.is(DrownedTownRegistry.SHALLOWS_BURDEN.get()))return false;
         CustomData custom=stack.get(DataComponents.CUSTOM_DATA);if(custom==null)return false;CompoundTag t=custom.copyTag();
-        LakeWitchEntity girl=actor(player);
+        LakeWitchEntity girl=memory(player);
         return t.hasUUID(OWNER)&&player.getUUID().equals(t.getUUID(OWNER))&&t.hasUUID(ACTOR)&&girl!=null
                 &&girl.getUUID().equals(t.getUUID(ACTOR))&&girl.memoryPhase()==CARRIED
                 &&IndianLakeRooms.inside(player,LabyrinthPlace.SHALLOWS)
-                &&!personal(LabyrinthData.get(player.server),player.getUUID()).getBoolean("Cold");
+                &&!personal(LabyrinthData.get(player.server),girl.memoryOwner()).getBoolean("Cold");
     }
     private static boolean hasBurden(ServerPlayer player){
         for(int i=0;i<player.getInventory().getContainerSize();i++)if(validBurden(player,player.getInventory().getItem(i)))return true;
@@ -368,7 +525,7 @@ public final class Shallows {
             case CARRIED->carry(owner,girl,s,base,boy);
             case FLYING->fly(owner,girl,s,base);
             case LYING->{
-                lay(girl,base,s.slot);if(boy!=null){boy.carry(HOLD);boy.swing(0);}
+                lay(girl,base,s.slot);lonnie(owner,girl,s,base,boy,feetHere(owner)!=null);if(boy!=null)boy.swing(0);
                 if(s.next==0)s.next=now+10;
                 if(now>=s.next){
                     var line=s.line<OPENING.length?OPENING[s.line]:NUDGES[(s.line-OPENING.length)%NUDGES.length];
@@ -438,19 +595,21 @@ public final class Shallows {
     private static @Nullable Entity speaker(ServerPlayer player,int who,@Nullable LakeWitchEntity girl){
         return who==STACEY?girl:who==LONNIE?carrier(player):onlooker(player.serverLevel(),who);
     }
-    /** A line said to this reader alone, over the one who says it. */
+    /** A line said to this reader alone, over the one who says it; 0.4.157: to everyone in their recollection. */
     static void say(ServerPlayer player,int who,String line,int mood,@Nullable LakeWitchEntity girl){
-        Entity speaker=speaker(player,who,girl);
-        player.displayClientMessage(Component.literal(WHO[who]+": “"+line+"”"),false);
-        HousePackets.send(player,new ShallowsCuePayload(speaker==null?-1:speaker.getId(),line,mood,Math.max(50,line.length()*3+30)));
+        var host=host(player);Entity speaker=speaker(host,who,girl);
+        for(var p:group(host)){
+            p.displayClientMessage(Component.literal(WHO[who]+": “"+line+"”"),false);
+            HousePackets.send(p,new ShallowsCuePayload(speaker==null?-1:speaker.getId(),line,mood,Math.max(50,line.length()*3+30)));
+        }
     }
-    /** A reaction without words, seen by this reader alone. */
+    /** A reaction without words, seen by this reader alone, and those with them. */
     static void react(ServerPlayer player,int who,int mood,int ticks,@Nullable LakeWitchEntity girl){
-        Entity speaker=speaker(player,who,girl);if(speaker!=null)HousePackets.send(player,new ShallowsCuePayload(speaker.getId(),"",mood,ticks));
+        var host=host(player);Entity speaker=speaker(host,who,girl);if(speaker!=null)for(var p:group(host))HousePackets.send(p,new ShallowsCuePayload(speaker.getId(),"",mood,ticks));
     }
-    /** A sound only this reader hears. */
+    /** A sound only this reader hears, and those with them. */
     static void hear(ServerPlayer player,SoundEvent sound,Vec3 at,float volume,float pitch){
-        player.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.NEUTRAL,at.x,at.y,at.z,volume,pitch,player.getRandom().nextLong()));
+        for(var p:group(host(player)))p.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.NEUTRAL,at.x,at.y,at.z,volume,pitch,p.getRandom().nextLong()));
     }
     private static void updateEssays(ServerPlayer player){
         for(int i=0;i<player.getInventory().getContainerSize();i++){
@@ -461,8 +620,15 @@ public final class Shallows {
 
     // ------------------------------------------------------------------------------------------------ leaving, refusing
     public static void onDepart(ServerPlayer player){
+        LabyrinthData data=LabyrinthData.get(player.server);CompoundTag record=personal(data,player.getUUID());
+        // 0.4.157: a reader who joined leaves the recollection they joined, and its girl stays theirs who began it.
+        if(record.hasUUID(WITH)){
+            var host=owner(player.serverLevel(),record.getUUID(WITH));removeBurdens(player);
+            if(host!=null){var hostRecord=personal(data,host.getUUID());if(hostRecord.hasUUID(FEET)&&hostRecord.getUUID(FEET).equals(player.getUUID())){hostRecord.remove(FEET);save(data,host.getUUID(),hostRecord);}}
+            record.putBoolean("Active",false);record.remove(WITH);record.remove(ROLE);save(data,player.getUUID(),record);return;
+        }
         LakeWitchEntity girl=actor(player);if(girl!=null)discard(girl);LakeCongregantEntity boy=carrier(player);if(boy!=null)boy.discard();removeBurdens(player);
-        LabyrinthData data=LabyrinthData.get(player.server);CompoundTag record=personal(data,player.getUUID());record.putBoolean("Active",false);record.remove("Actor");record.remove("Carrier");save(data,player.getUUID(),record);
+        record.putBoolean("Active",false);record.remove("Actor");record.remove("Carrier");record.remove(FEET);save(data,player.getUUID(),record);
     }
     public static void onToss(ItemTossEvent event){
         if(!(event.getPlayer() instanceof ServerPlayer player)||!event.getEntity().getItem().is(DrownedTownRegistry.SHALLOWS_BURDEN.get()))return;
@@ -474,7 +640,10 @@ public final class Shallows {
         if(!(event.getEntity() instanceof ServerPlayer player)||!IndianLakeRooms.inside(player,LabyrinthPlace.SHALLOWS))return;
         var target=event.getTarget();
         if(!(target instanceof LakeWitchEntity w&&w.memory())&&!target.getTags().contains(BOY)&&!target.getTags().contains(CARRIER))return;
-        event.setCanceled(true);LabyrinthData data=LabyrinthData.get(player.server);CompoundTag record=personal(data,player.getUUID());
+        event.setCanceled(true);LabyrinthData data=LabyrinthData.get(player.server);
+        // 0.4.157: a blow from someone who joined darkens the recollection they joined.
+        var host=host(player);if(host!=player){player=host;}
+        CompoundTag record=personal(data,player.getUUID());
         // A finished throw is not undone by a blow afterward.
         if(IndianLakeProgress.hasThrown(data,player.getUUID()))return;
         record.putBoolean("Cold",true);save(data,player.getUUID(),record);
@@ -496,7 +665,10 @@ public final class Shallows {
             if(!visitors.isEmpty()){IndianLakeRooms.keepLoaded(level,base,LabyrinthPlace.SHALLOWS);boys(level,base);}
             Set<ServerPlayer> players=new HashSet<>(event.getServer().getPlayerList().getPlayers());players.addAll(level.players());
             for(ServerPlayer player:players){
-                if(!IndianLakeRooms.inside(player,LabyrinthPlace.SHALLOWS)&&personal(LabyrinthData.get(player.server),player.getUUID()).getBoolean("Active"))onDepart(player);
+                var record=personal(LabyrinthData.get(player.server),player.getUUID());
+                if(!IndianLakeRooms.inside(player,LabyrinthPlace.SHALLOWS)&&record.getBoolean("Active"))onDepart(player);
+                // A reader who joined has nothing left to be part of once the one who began it has gone.
+                else if(record.getBoolean("Active")&&record.hasUUID(WITH)&&!personal(LabyrinthData.get(player.server),record.getUUID(WITH)).getBoolean("Active"))onDepart(player);
                 for(int i=0;i<player.getInventory().getContainerSize();i++)if(player.getInventory().getItem(i).is(DrownedTownRegistry.SHALLOWS_BURDEN.get())&&!validBurden(player,player.getInventory().getItem(i)))player.getInventory().setItem(i,ItemStack.EMPTY);
             }
         }
@@ -511,6 +683,20 @@ public final class Shallows {
         for(Entity entity:expired)entity.discard();
     }
     public static boolean reset(ServerPlayer player){onDepart(player);LabyrinthData data=LabyrinthData.get(player.server);CompoundTag state=data.state("indian_lake"),boys=state.getCompound("Boys");boys.remove(player.getUUID().toString());state.put("Boys",boys);data.setState("indian_lake",state);save(data,player.getUUID(),new CompoundTag());return true;}
+
+    // ------------------------------------------------------------------------------------------------ the Witness line
+    /**
+     * 0.4.157: each reader's Witness line says how they were part of the throw: her wrists, her feet, or the bank. A reader
+     * who threw her with Lonnie keeps the line as it was.
+     */
+    public static String witness(CompoundTag record,String text){
+        var t=record.getCompound(THROW);if(t.isEmpty())return text;String thrower=t.getString("Thrower"),feet=t.getString("Feet");
+        return switch(t.getString(ROLE)){
+            case AT_FEET->"I held her feet while "+thrower+" held her wrists, and we swung her out over the water on three. The lake would not take her. The school pages remembered my name among the boys on the bank.";
+            case ON_BANK->"I stood on the bank with the boys while "+thrower+" and "+(feet.isEmpty()?"Lonnie":feet)+" swung her out over the water on three. Nobody stopped them, and I didn't either. The lake would not take her. The school pages remembered my name among the boys on the bank.";
+            default->feet.isEmpty()?text:"I held her wrists while "+feet+" held her feet, and we swung her out over the water on three. The lake would not take her. The school pages remembered my name among the boys on the bank.";
+        };
+    }
 
     // ------------------------------------------------------------------------------------------------ for tests
     /** The carry's current swing angle and forward count, as the server holds them. */

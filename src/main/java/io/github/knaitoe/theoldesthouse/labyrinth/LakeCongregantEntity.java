@@ -52,7 +52,7 @@ public final class LakeCongregantEntity extends PathfinderMob {
     public @Nullable UUID carrierOwner(){return carrierOwner;}
     public void carrierOwner(UUID owner){carrierOwner=owner;}
     @Override public boolean broadcastToPlayer(ServerPlayer player){
-        return (carrierOwner==null||carrierOwner.equals(player.getUUID()))&&super.broadcastToPlayer(player);
+        return (carrierOwner==null||carrierOwner.equals(player.getUUID())||Shallows.sharesMemory(player,carrierOwner))&&super.broadcastToPlayer(player);
     }
     @Override public void tick() {
         if(level().isClientSide()){swingO=swingNow;swingNow=swing();}

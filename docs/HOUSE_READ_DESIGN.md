@@ -550,5 +550,6 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.154 | Copies of the Whale institute and the phone canoe, each lake with its own canoe | `docs/SCENE_COPIES_0_4_153.md` |
 | 0.4.155 | Copies of Harrigan's room, each keeping its own story; every private scene now has copies | `docs/SCENE_COPIES_0_4_153.md` |
 | 0.4.156 | The lake house in pairs: a second reader goes down in Tess's place and is seen as her, a third has a lake of their own with Tess, a fourth joins them | `docs/LAKE_HOUSE_PAIRS_0_4_156.md` |
+| 0.4.157 | The shallows together: one throw, a second reader at her feet in Lonnie's place with Lonnie counting, the rest on the bank with the boys, a Witness line for each part | `docs/SHALLOWS_TOGETHER_0_4_157.md` |
 
 The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.
