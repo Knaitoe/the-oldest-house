@@ -109,7 +109,9 @@ public final class HouseReadReflection {
         boolean narrow=player.getSkin().model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM;var offset=renderer.getRenderOffset(player,partial);
         float bodyYaw=net.minecraft.util.Mth.rotLerp(partial,player.yBodyRotO,player.yBodyRot),scale=player.getScale();
         pose.pushPose();pose.translate(at.x+offset.x,at.y+offset.y,at.z+offset.z);pose.scale(scale,scale,scale);pose.mulPose(Axis.YP.rotationDegrees(180-bodyYaw));pose.scale(-1,-1,1);pose.scale(.9375f,.9375f,.9375f);pose.translate(0,-1.501f,0);
-        HouseReadLookClient.dress(renderer.getModel(),narrow?slimCloth:standardCloth,"",pose,buffers,light);pose.popPose();
+        HouseReadLookClient.dress(renderer.getModel(),narrow?slimCloth:standardCloth,"",pose,buffers,light);
+        // 0.4.167: the hair the tool in hand would give, or the style the House kept.
+        int style=HouseReadHair.shown(player);if(style>=0)HouseReadHair.draw(renderer.getModel(),style,HouseReadHair.colour(player),pose,buffers,light);pose.popPose();
     }
     private static void draw(VertexBuffer mesh,RenderType type,Matrix4f view,Matrix4f projection){
         if(mesh==null)return;type.setupRenderState();RenderSystem.disableCull();var program=RenderSystem.getShader();

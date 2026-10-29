@@ -43,6 +43,7 @@ public final class HouseReadLookClient {
         public Layer(RenderLayerParent<T,M> parent,EntityModelSet models,Function<T,Optional<UUID>> owner){super(parent);standard=models.bakeLayer(HouseReadClothes.STANDARD);slim=models.bakeLayer(HouseReadClothes.SLIM);this.owner=owner;}
         @Override public void render(PoseStack pose,MultiBufferSource out,int light,T e,float walk,float amount,float partial,float age,float yaw,float pitch){
             if(e.isInvisible()||!mine(owner.apply(e)))return;var p=Minecraft.getInstance().player;boolean narrow=p!=null&&p.getSkin().model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM;dress(getParentModel(),narrow?slim:standard,null,pose,out,light);
+            if(p!=null&&look.hair()>=0)HouseReadHair.draw(getParentModel(),look.hair(),HouseReadHair.colour(p),pose,out,light);
         }
     }
 }

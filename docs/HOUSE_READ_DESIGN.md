@@ -562,7 +562,7 @@ Strangers who speak are different. They judge by how someone presents, as strang
 ## Assets
 
 - **Items and props:**
-  - bathroom: the twelve routine items;
+  - bathroom: the routine items (sixteen since 0.4.167), and the styles they give in the glass;
   - waiting room: paper, magazines, glasses, phone (reusing the Harrigan screen);
   - coatroom: the garments (worn models fitted to standard and slim arms);
   - shelter: a lantern.
@@ -681,3 +681,5 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.161 | The owner's playtest notes: all five rooms rebuilt in native materials and furniture, joined blocks, fittings on their walls, an audit test; a 15-second wait; one routine item at a time; a smaller coatroom with distinct coats; a true plane mirror | `docs/QUIET_ROOMS_PLAYTEST_0_4_161.md` |
 | 0.4.162 | Every shared scene written for being there with others: four witness scenes, and a closing line naming the party in the 31 scenes each reader comes through alone | `docs/COOP_ACCOUNTS_0_4_162.md` |
 | 0.4.163 | The House's body for skins that aren't human; no figure in the inventory inside the House; every door after a quiet room leads to the next, no depth among the quiet rooms and the count starting again after them; the porch swing and carved rail | `docs/HOUSE_BODY_AND_NAVIGATION_0_4_163.md` |
+| 0.4.166 | The quiet rooms as the House's story: each opens and closes on black with its line, the welcome first and the warning last; both doors locked until the room has its answer | `docs/QUIET_ROOMS_STORY_0_4_166.md` |
+| 0.4.167 | The bathroom's sixteen tools, two to a block; each tool's style shown in the glass while it is held, tinted to the reader's hair, and kept for the House's version of them; the woven bath rug | `docs/BATHROOM_HAIR_0_4_167.md` |

@@ -20,10 +20,15 @@ public final class HouseReadPropBlock extends BaseEntityBlock {
         CLOCK_BASE,CLOCK_FACE,BELL,CALENDAR,RECEPTION,CRT,COOLER,PAPER,MAGAZINES,GLASSES,PHONE,ARMCHAIR,
         SINK,TAP,CABINET,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,JUKEBOX,STRING_LIGHT,ROWBOAT,BOTTLE,ASHTRAY,
         // 0.4.160, the owner's playtest notes: the quiet rooms' own furniture, fixtures and lights.
-        TABLE_END,TABLE_MID,SIGN,WALL_CLOCK,OUTLET,CEILING_PANEL,VANITY,TUB_HEAD,TUB_FOOT,TOILET,TOWEL_BAR,VANITY_LIGHT,BATH_MAT,EMPTY_HANGER,SCARF_HOOK,BENCH,PENDANT,RUNNER,PORCH_LIGHT,CHAIR,LAMP,DECK_LANTERN,SIDE_TABLE;
+        TABLE_END,TABLE_MID,SIGN,WALL_CLOCK,OUTLET,CEILING_PANEL,VANITY,TUB_HEAD,TUB_FOOT,TOILET,TOWEL_BAR,VANITY_LIGHT,BATH_MAT,EMPTY_HANGER,SCARF_HOOK,BENCH,PENDANT,RUNNER,PORCH_LIGHT,CHAIR,LAMP,DECK_LANTERN,SIDE_TABLE,
+        // 0.4.167: sixteen routine tools, two to a block, need eight blocks.
+        ROUTINE_E,ROUTINE_F,ROUTINE_G,ROUTINE_H;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final MapCodec<HouseReadPropBlock> CODEC=simpleCodec(HouseReadPropBlock::new);
+    /** The routine blocks (0.4.167), each holding two tools: block {@code i} holds {@link HouseReadMoments#PAIRS}{@code [i]}. */
+    public static final java.util.List<Part> ROUTINE_BLOCKS=java.util.List.of(Part.ROUTINE_A,Part.ROUTINE_B,Part.ROUTINE_C,Part.ROUTINE_D,Part.ROUTINE_E,Part.ROUTINE_F,Part.ROUTINE_G,Part.ROUTINE_H);
+    public static int routine(Part part){return ROUTINE_BLOCKS.indexOf(part);}
     public static final EnumProperty<Part> PART=EnumProperty.create("part",Part.class);
     public static final IntegerProperty LIFTED=IntegerProperty.create("lifted",0,3);
     public static final BooleanProperty TURNED=BooleanProperty.create("turned"),WRITING=BooleanProperty.create("writing");
@@ -36,7 +41,7 @@ public final class HouseReadPropBlock extends BaseEntityBlock {
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(PART)){
         // 0.4.166: the coatroom's curtain stops a body until it parts (turned), when the room is complete.
         case CURTAIN->s.getValue(TURNED)?Shapes.empty():Shapes.block();
-        case PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE,SIGN,WALL_CLOCK,OUTLET,BATH_MAT,RUNNER,VANITY_LIGHT,TOWEL_BAR,EMPTY_HANGER,SCARF_HOOK,PENDANT,PORCH_LIGHT,DECK_LANTERN,LAMP->Shapes.empty();default->getShape(s,l,p,c);};}
+        case PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,ROUTINE_E,ROUTINE_F,ROUTINE_G,ROUTINE_H,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE,SIGN,WALL_CLOCK,OUTLET,BATH_MAT,RUNNER,VANITY_LIGHT,TOWEL_BAR,EMPTY_HANGER,SCARF_HOOK,PENDANT,PORCH_LIGHT,DECK_LANTERN,LAMP->Shapes.empty();default->getShape(s,l,p,c);};}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level l,BlockPos at,Player player,BlockHitResult hit){
         if(player.isSpectator()||!player.isAlive()||player.distanceToSqr(at.getCenter())>36)return InteractionResult.PASS;

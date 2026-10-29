@@ -55,7 +55,7 @@ public final class HouseReadRegistry {
     public static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> MUSIC=java.util.stream.IntStream.range(0,9).mapToObj(i->sound("song_"+i)).toList();
     public static java.util.List<DeferredHolder<SoundEvent,SoundEvent>> sounds(){var all=new java.util.ArrayList<>(java.util.List.of(RAIN,RADIATOR,WHISTLE,SUPPER,NEWS,DISHES,ICE,STEP,BELL,HISS,GLUG,TAP,CLOCK,START,SONG));all.addAll(MUSIC);return all;}
     public static final DeferredItem<HouseReadBorrowedItem> PAPER=borrowed("paper"),MAGAZINE=borrowed("magazine"),GLASSES=borrowed("glasses"),PHONE=borrowed("phone"),CONE=borrowed("cone");
-    public static final java.util.List<DeferredItem<Item>> ROUTINES=java.util.stream.IntStream.range(0,12).mapToObj(i->ITEMS.registerSimpleItem("read_routine_"+i,new Item.Properties().stacksTo(1))).toList();
+    public static final java.util.List<DeferredItem<Item>> ROUTINES=java.util.stream.IntStream.range(0,16).mapToObj(i->ITEMS.registerSimpleItem("read_routine_"+i,new Item.Properties().stacksTo(1))).toList();
     public static final DeferredItem<Item> BOTTLE=ITEMS.registerSimpleItem("read_bottle",new Item.Properties().stacksTo(1));
     private static DeferredItem<HouseReadBorrowedItem> borrowed(String id){return ITEMS.register("read_"+id,()->new HouseReadBorrowedItem(new Item.Properties().stacksTo(1),id));}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register("house_read."+id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"house_read."+id)));}

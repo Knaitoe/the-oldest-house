@@ -19,7 +19,7 @@ public final class HouseReadRemainingRooms {
      */
     public static final BlockPos GLASSES_AT=new BlockPos(-5,1,-2),PAPER_AT=new BlockPos(-5,1,-3),MAGAZINES_AT=new BlockPos(-5,1,-4),CRT_AT=new BlockPos(-1,0,-6),COOLER_AT=new BlockPos(1,0,-6),
         PHONE_AT=new BlockPos(6,1,-4),PHONE_CHAIR=new BlockPos(6,0,-3),OUTLET_AT=new BlockPos(6,0,-5),CALENDAR_AT=new BlockPos(-3,1,-14),CLOCK_AT=new BlockPos(3,2,-11),SIGN_AT=new BlockPos(3,1,-11),BELL_AT=new BlockPos(-3,1,-11),
-        POSTCARD_AT=new BlockPos(1,1,-9),JUKEBOX_AT=new BlockPos(0,0,1),TAP_AT=new BlockPos(0,0,-9),SWITCH_AT=new BlockPos(1,1,1),SINK_AT=new BlockPos(0,0,-9),BATH_MIRROR=new BlockPos(0,1,-9);
+        POSTCARD_AT=new BlockPos(1,2,-9),JUKEBOX_AT=new BlockPos(0,0,1),TAP_AT=new BlockPos(0,0,-9),SWITCH_AT=new BlockPos(1,1,1),SINK_AT=new BlockPos(0,0,-9),BATH_MIRROR=new BlockPos(0,1,-9);
     /** The shelter (0.4.159): the strangers lean on the west and east rails, and the dock runs out ahead, past both of them. */
     public static final double FIGURE_X=9.3,FIGURE_Z=-8.5;
     public static final BlockPos SHELTER_ENTRY=new BlockPos(-3,0,2),DOCK_LANTERN=new BlockPos(3,0,-22);
@@ -27,8 +27,11 @@ public final class HouseReadRemainingRooms {
     /** The middle of the floorboards, between the two rails: the same distance from both strangers. */
     public static boolean middle(BlockPos b,net.minecraft.world.phys.Vec3 at){return Math.abs(at.x-b.getX()-.5)<2.5&&at.z<b.getZ()-1.5&&at.z>b.getZ()-15&&at.y>b.getY()-.5;}
     public static boolean onDock(BlockPos b,net.minecraft.world.phys.Vec3 at){return at.z<b.getZ()+DOCK_Z&&Math.abs(at.x-b.getX()-.5)<3;}
-    /** The four routines on the vanity counter, two either side of the sink, shuffled per reader. */
-    public static final List<BlockPos> ROUTINE_PLACES=List.of(new BlockPos(-3,1,-9),new BlockPos(-2,1,-9),new BlockPos(2,1,-9),new BlockPos(3,1,-9));
+    /**
+     * The routine blocks on the vanity counter (0.4.167): eight, four either side of the sink, two tools to a block, a set's
+     * two blocks side by side. The postcard moved up beside the mirror's top to make room.
+     */
+    public static final List<BlockPos> ROUTINE_PLACES=List.of(new BlockPos(-4,1,-9),new BlockPos(-3,1,-9),new BlockPos(-2,1,-9),new BlockPos(-1,1,-9),new BlockPos(1,1,-9),new BlockPos(2,1,-9),new BlockPos(3,1,-9),new BlockPos(4,1,-9));
     /** The bar light over the mirror and the light in the middle of the ceiling; the switch turns both off. */
     public static final List<BlockPos> BATH_LIGHTS=List.of(new BlockPos(0,3,-9),new BlockPos(0,3,-4));
     private HouseReadRemainingRooms(){}
@@ -46,7 +49,11 @@ public final class HouseReadRemainingRooms {
         box(l,b,-half,0,end,-half,3,3,wall);box(l,b,half,0,end,half,3,3,wall);box(l,b,-half,0,end,half,3,end,wall);box(l,b,-half,0,2,half,3,3,wall);
         HouseReadRooms.door(l,b,HouseReadRooms.COAT_ENTRY,door,Direction.SOUTH);box(l,b,0,0,3,0,1,3,Blocks.AIR.defaultBlockState());
     }
-    public static int[] routineOrder(UUID id){var order=new ArrayList<>(List.of(0,1,2,3));Collections.shuffle(order,new Random(id.getMostSignificantBits()^Long.rotateLeft(id.getLeastSignificantBits(),17)^139));return order.stream().mapToInt(Integer::intValue).toArray();}
+    /** The routine block at each counter place, per reader: the four sets in a shuffled order, each set's pair either way round. */
+    public static int[] routineOrder(UUID id){
+        var random=new Random(id.getMostSignificantBits()^Long.rotateLeft(id.getLeastSignificantBits(),17)^139);var sets=new ArrayList<>(List.of(0,1,2,3));Collections.shuffle(sets,random);
+        int[] order=new int[8];for(int k=0;k<4;k++){boolean swap=random.nextBoolean();order[2*k]=sets.get(k)*2+(swap?1:0);order[2*k+1]=sets.get(k)*2+(swap?0:1);}return order;
+    }
     public static void build(ServerLevel l,BlockPos b,HouseReadSites.Room room,UUID owner){switch(room){case WAITING->waiting(l,b);case BATHROOM->bathroom(l,b,owner);case SHELTER->shelter(l,b);default->throw new IllegalArgumentException(room.name());}}
     private static void waiting(ServerLevel l,BlockPos b){
         box(l,b,-11,-2,-18,11,6,3,Blocks.AIR.defaultBlockState());
@@ -81,12 +88,12 @@ public final class HouseReadRemainingRooms {
         shell(l,b,5,-10,HouseReadRegistry.TILE.get().defaultBlockState(),HouseReadRegistry.LINOLEUM.get().defaultBlockState(),HouseReadRegistry.CEILING.get().defaultBlockState(),HouseReadRegistry.PANEL_DOOR.get());
         // Tile to shoulder height, wallpaper above it.
         box(l,b,-5,2,-10,-5,3,2,HouseReadRegistry.WALLPAPER.get());box(l,b,5,2,-10,5,3,2,HouseReadRegistry.WALLPAPER.get());box(l,b,-5,2,-10,5,3,-10,HouseReadRegistry.WALLPAPER.get());box(l,b,-5,2,2,5,3,2,HouseReadRegistry.WALLPAPER.get());
-        // The vanity across the back wall: the sink and its mirror in the middle, the four routines two either side, the
+        // The vanity across the back wall: the sink and its mirror in the middle, the routines four blocks either side, the
         // postcard tucked at the mirror's edge, and the bar light above.
-        for(int x=-3;x<=3;x++)if(x!=0)fit(l,b,x,0,-9,VANITY);
+        for(int x=-4;x<=4;x++)if(x!=0)fit(l,b,x,0,-9,VANITY);
         fit(l,b,SINK_AT,SINK);fit(l,b,BATH_MIRROR,MIRROR);fit(l,b,BATH_MIRROR.above(),MIRROR_TOP);fit(l,b,POSTCARD_AT,POSTCARD);fit(l,b,BATH_LIGHTS.get(0),VANITY_LIGHT);
-        int[] order=routineOrder(owner);var kinds=new HouseReadPropBlock.Part[]{ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D};
-        for(int i=0;i<4;i++)fit(l,b,ROUTINE_PLACES.get(i),kinds[order[i]]);
+        int[] order=routineOrder(owner);
+        for(int i=0;i<ROUTINE_PLACES.size();i++)fit(l,b,ROUTINE_PLACES.get(i),HouseReadPropBlock.ROUTINE_BLOCKS.get(order[i]));
         // The tub along the west wall under a frosted window, the toilet and towel bar on the east, a mat, a radiator by the door.
         fit(l,b,-4,0,-7,TUB_FOOT,Direction.WEST);fit(l,b,-4,0,-6,TUB_HEAD,Direction.WEST);box(l,b,-5,2,-7,-5,2,-6,HouseReadRegistry.WINDOW.get());
         fit(l,b,4,0,-6,TOILET,Direction.WEST);fit(l,b,4,1,-3,TOWEL_BAR,Direction.WEST);fit(l,b,-3,0,-6,BATH_MAT,Direction.EAST);fit(l,b,0,0,-8,BATH_MAT);fit(l,b,-4,0,0,RADIATOR,Direction.EAST);
