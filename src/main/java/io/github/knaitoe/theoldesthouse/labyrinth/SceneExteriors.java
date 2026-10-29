@@ -23,13 +23,16 @@ public final class SceneExteriors {
     private static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD);
     private final ServerLevel l;private final BlockPos b;private final LabyrinthPlace site;
     private SceneExteriors(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;site=place;}
-    public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace site){
+    /** Builders and fixtures call this with the scene in hand: it reads the scene as it is. */
+    public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace site){decorate(l,origin,site,false);}
+    private static void decorate(ServerLevel l,BlockPos origin,LabyrinthPlace site,boolean loadedOnly){
         if(!SITES.contains(site))return;var d=LabyrinthData.get(l.getServer());String key=origin.asLong()+":"+site.id();var done=d.state(STATE);
         if(done.getBoolean(key))return;var b=LabyrinthPlaces.base(origin,site);if(b==null)return;
         var r=site.room();var box=new AABB(Vec3.atLowerCornerOf(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2)),Vec3.atLowerCornerOf(b.offset(r.maxX()+3,r.maxY()+6,18)));
         // 0.4.164: the once-a-second check never loads the scene itself. Reading an unloaded site's floor made the server load
         // (or generate) its chunk on the spot, which stalled a starved CI server for 36 seconds (run 1329, Borrasca phase 54).
-        if(!loaded(l,box)||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
+        // 0.4.165: only that check waits; a builder or fixture holding the scene decorates it at once (run 1330).
+        if(loadedOnly&&!loaded(l,box)||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
         if(l.players().stream().anyMatch(p->box.intersects(p.getBoundingBox())))return;
         var work=new SceneExteriors(l,b,site);switch(site){case DROWNED_TOWN->work.town();case GOATMAN->work.trailer();case HOLLOWAY_CAMP->work.hut();case ZAMPANO_COURTYARD->work.archive();default->{}}
         done.putBoolean(key,true);d.setState(STATE,done);
@@ -43,7 +46,7 @@ public final class SceneExteriors {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         if(e.getServer().getTickCount()%20!=0||LabyrinthBuilder.isCarving())return;var origin=HouseSavedData.get(e.getServer()).houseOrigin();if(origin==null)return;
         var layout=LabyrinthData.get(e.getServer());if(layout.builtVersion()!=LabyrinthBuilder.VERSION||!origin.equals(layout.builtOrigin()))return;
-        for(var site:SITES){var level=e.getServer().getLevel(NovelRooms.dimension(site));if(level!=null)decorateOnce(level,origin,site);}
+        for(var site:SITES){var level=e.getServer().getLevel(NovelRooms.dimension(site));if(level!=null)decorate(level,origin,site,true);}
     }
     private BlockPos p(int x,int y,int z){return b.offset(x,y,z);}
     private boolean reserved(BlockPos at){

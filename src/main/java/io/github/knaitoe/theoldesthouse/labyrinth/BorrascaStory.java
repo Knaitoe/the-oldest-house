@@ -175,7 +175,9 @@ public final class BorrascaStory {
         if(near(p,sheriff.blockPosition(),6))denial(p,sheriff,own);
         if(own.getInt("TrailClock")%200==0){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),.8F);dust(p);}
         if(own.getBoolean("Escorting")){
-            var end=Vec3.atBottomCenterOf(b.offset(2,4,-119));if(p.getZ()>=end.z-.5&&sheriff.position().distanceToSqr(end)<4){own.putBoolean("Escorting",false);own.putInt("CaughtCooldown",80);BorrascaCast.stop(sheriff);return;}
+            // 0.4.165: the Sheriff stops on the walk's end himself, so the reader is let go a block short of it, at the near side of
+            // the tape; pressed against his body they could never reach his own spot (run 1330).
+            var end=Vec3.atBottomCenterOf(b.offset(2,4,-119));if(p.getZ()>=end.z-1&&sheriff.position().distanceToSqr(end)<4){own.putBoolean("Escorting",false);own.putInt("CaughtCooldown",80);BorrascaCast.stop(sheriff);return;}
             if(sheriff.distanceToSqr(p)>9)BorrascaCast.walk(sheriff,p.position(),.6);else{BorrascaCast.walk(sheriff,end,.65);Vec3 delta=end.subtract(p.position()).multiply(1,0,1);if(delta.lengthSqr()>.16){p.push(delta.normalize().x*.045,0,delta.normalize().z*.045);p.hurtMarked=true;}}return;
         }
         int cooldown=Math.max(0,own.getInt("CaughtCooldown")-5);own.putInt("CaughtCooldown",cooldown);BorrascaCast.walk(sheriff,Vec3.atBottomCenterOf(b.offset(BorrascaRooms.SHERIFF)),.65);

@@ -34,7 +34,9 @@ public final class HouseReadPropBlock extends BaseEntityBlock {
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new Fitting(p,s);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return HouseReadGeometry.shape(s);}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(PART)){
-        case CURTAIN,PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE,SIGN,WALL_CLOCK,OUTLET,BATH_MAT,RUNNER,VANITY_LIGHT,TOWEL_BAR,EMPTY_HANGER,SCARF_HOOK,PENDANT,PORCH_LIGHT,DECK_LANTERN,LAMP->Shapes.empty();default->getShape(s,l,p,c);};}
+        // 0.4.166: the coatroom's curtain stops a body until it parts (turned), when the room is complete.
+        case CURTAIN->s.getValue(TURNED)?Shapes.empty():Shapes.block();
+        case PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE,SIGN,WALL_CLOCK,OUTLET,BATH_MAT,RUNNER,VANITY_LIGHT,TOWEL_BAR,EMPTY_HANGER,SCARF_HOOK,PENDANT,PORCH_LIGHT,DECK_LANTERN,LAMP->Shapes.empty();default->getShape(s,l,p,c);};}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level l,BlockPos at,Player player,BlockHitResult hit){
         if(player.isSpectator()||!player.isAlive()||player.distanceToSqr(at.getCenter())>36)return InteractionResult.PASS;

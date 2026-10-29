@@ -13,7 +13,7 @@ public final class NativeCaseSelection {
         String wanted=System.getProperty("the_oldest_house.selectedGameTests","");if(wanted.isBlank())return List.of();
         var factory=GameTestRegistry.class.getDeclaredMethod("turnMethodIntoTestFunction",Method.class);factory.setAccessible(true);var result=new ArrayList<TestFunction>();var unique=new HashSet<String>();
         for(String name:wanted.split(",")){
-            if(!name.matches("[A-Za-z]+Tests#[A-Za-z][A-Za-z0-9]*")||!unique.add(name))throw new IllegalArgumentException("Invalid or duplicate native case: "+name);
+            if(!name.matches("[A-Za-z][A-Za-z0-9]*Tests#[A-Za-z][A-Za-z0-9]*")||!unique.add(name))throw new IllegalArgumentException("Invalid or duplicate native case: "+name);
             var parts=name.split("#");var type=Class.forName(NativeCaseSelection.class.getPackageName()+"."+parts[0]);var method=type.getDeclaredMethod(parts[1],GameTestHelper.class);if(method.getAnnotation(GameTest.class)==null)throw new IllegalArgumentException("Not a native case: "+name);
             var original=(TestFunction)factory.invoke(null,method);var source=net.minecraft.resources.ResourceLocation.parse(original.structureName());String alias=source.getNamespace().replace(TheOldestHouse.MOD_ID+"_","");String selected=TheOldestHouse.MOD_ID+"_selected:"+alias;
             var file=net.neoforged.fml.ModList.get().getModFileById(TheOldestHouse.MOD_ID).getFile();
