@@ -34,7 +34,7 @@ public final class HouseReadSites {
      * 0.4.159 rebuilt the waiting room, coatroom and shelter; a copy prepared ahead but never entered is built again.
      * 0.4.163: the porch's swing hangs from its ropes and the note is carved into the railing.
      */
-    public static final int LAYOUT=163;
+    public static final int LAYOUT=167;
     public enum Room {
         WAITING(LabyrinthPlace.READ_WAITING,483328), BATHROOM(LabyrinthPlace.READ_BATHROOM,491520),
         COATROOM(LabyrinthPlace.READ_COATROOM,466944), SHELTER(LabyrinthPlace.READ_SHELTER,499712), PORCH(LabyrinthPlace.READ_PORCH,475136);

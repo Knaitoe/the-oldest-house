@@ -1,7 +1,10 @@
 """Native sixteen-pixel domestic materials and fitted cuboids for the remaining quiet rooms."""
 from PIL import Image, ImageDraw
 import io,json,math
-EXTRA_PARTS=['clock_base','clock_face','bell','calendar','reception','crt','cooler','paper','magazines','glasses','phone','armchair','sink','tap','cabinet','routine_a','routine_b','routine_c','routine_d','light_switch','postcard','jukebox','string_light','rowboat','bottle','ashtray']
+EXTRA_PARTS=['clock_base','clock_face','bell','calendar','reception','crt','cooler','paper','magazines','glasses','phone','armchair','sink','tap','cabinet','routine_a','routine_b','routine_c','routine_d','routine_e','routine_f','routine_g','routine_h','light_switch','postcard','jukebox','string_light','rowboat','bottle','ashtray']
+# The two tools in each routine block, by item (0.4.167). Sets: 0, 1, 2, 12 wrapped; 3, 4, 5, 13 braided and oiled;
+# 6, 7, 8, 14 brushed dry; 9, 10, 11, 15 washed and barbered.
+ROUTINE_PAIRS=[(0,12),(1,2),(3,13),(4,5),(6,14),(7,8),(9,15),(10,11)]
 def tiles(out):
  palettes={'panels':('#947457','#66533f','#b39a72'),'tile':('#9fae9a','#718575','#c9cfb5'),'pavilion':('#746b54','#514f42','#998c6c'),'porcelain':('#dbd8c2','#aaa98f','#f1ead5'),'paper':('#d5ccb2','#a99e82','#ede3c8'),'denim':('#526f80','#354e60','#8198a3'),'rubber':('#414645','#262c2b','#666c65'),'amber':('#ac8046','#725837','#cfaa62'),'sage':('#859683','#546e62','#b0bda2'),'rose':('#a77f7b','#795c61','#d0b1a0'),'label':('#cec8ac','#99957f','#e7dfc4')}
  for name,(mid,dark,light) in palettes.items():
@@ -98,11 +101,18 @@ def models(out,model,cube):
   if i==5:return [C([x-1.9,0,5.5],[x+1.9,.5,11.5],'porcelain'),C([x-1.5,.55,7],[x-.3,1.2,10],'rubber'),C([x+.3,.55,7],[x+1.5,1.2,10],'rose')]
   if i==6:return [C([x-.6,0,4],[x+.6,.8,7],'oak'),C([x-1.7,0,7],[x+1.7,1.2,11],'oak'),C([x-1.5,1.25,7.2],[x+1.5,1.8,10.8],'rubber')]
   if i==8:return [C([x-1.8,0,6],[x-.7,2.5,11],'amber'),C([x+.7,0,6],[x+1.8,2.5,11],'amber'),C([x-.65,1.5,7],[x+.65,2.4,10],'brass')]
+  # 0.4.167 (owner: "More hair styles would still be appropriate"): a satin bonnet, an edge brush, hot rollers, a wave brush.
+  if i==12:return [C([x-2.5,0,5],[x+2.5,1.2,11],'rose'),C([x-2,1.25,5.5],[x+2,2.2,10.5],'rose'),C([x-2.6,0,11],[x+2.6,.6,11.6],'cream')]
+  if i==13:return [C([x-.4,0,3.5],[x+.4,.5,9],'rubber'),C([x-1.1,0,9],[x+1.1,.8,11.5],'rubber'),C([x-1,.85,9.2],[x+1,1.3,11.3],'cream')]
+  if i==14:return [C([x-2.5,0,4.5],[x+2.5,.8,11.5],'rose')]+[C([x-2,.85,5+k*2.2],[x+2,2.1,6.6+k*2.2],'cream' if k%2==0 else 'amber') for k in range(3)]
+  if i==15:return [C([x-1.9,0,5.5],[x+1.9,1.4,11],'oak'),C([x-1.7,1.45,5.7],[x+1.7,1.9,10.8],'rubber')]
   return [C([x-1.8,0,5],[x+1.8,.65,6],'rubber')]+[C([x-1.8+k*.8,0,6],[x-1.4+k*.8,.65,10 if i!=4 else 12],'rubber') for k in range(5)]
- for group,name in enumerate(['routine_a','routine_b','routine_c','routine_d']):
-  pieces=[routine(group*3+i,3+i*5) for i in range(3)]
+ # 0.4.167 (owner: "some overlap the others"): sixteen tools, two to a block, each in its own half of the counter, a set's
+ # two blocks side by side wherever the reader's counter puts them.
+ for name,pair in zip(['routine_a','routine_b','routine_c','routine_d','routine_e','routine_f','routine_g','routine_h'],ROUTINE_PAIRS):
+  pieces=[routine(item,4+8*i) for i,item in enumerate(pair)]
   for selected in range(4):M(name+('' if selected==0 else '_lifted_'+str(selected)),[part for i,parts in enumerate(pieces) if i+1!=selected for part in parts])
-  for i in range(3):M('routine_item_'+str(group*3+i),routine(group*3+i,8))
+ for item in range(16):M('routine_item_'+str(item),routine(item,8))
  M('light_switch',[C([5,4,0],[11,12,.4],'cream'),C([7,7,.4],[9,11,1.2],'rubber')]);M('light_switch_turned',[C([5,4,0],[11,12,.4],'cream'),C([7,5,.4],[9,9,1.2],'rubber')])
  # Tucked at the edge of the mirror frame beside it.
  for written in [False,True]:M('postcard'+('_written' if written else ''),[C([0,4,0],[10,12,.3],'postcard_written' if written else 'postcard')])

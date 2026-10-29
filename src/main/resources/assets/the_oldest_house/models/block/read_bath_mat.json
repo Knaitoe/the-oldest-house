@@ -52,6 +52,8 @@
     "enamel": "the_oldest_house:block/house_read/enamel",
     "chrome": "the_oldest_house:block/house_read/chrome",
     "towel_blue": "the_oldest_house:block/house_read/towel_blue",
+    "bath_rug": "the_oldest_house:block/house_read/bath_rug",
+    "bath_rug_fringe": "the_oldest_house:block/house_read/bath_rug_fringe",
     "bulb": "the_oldest_house:block/house_read/bulb",
     "wool_front": "the_oldest_house:block/house_read/wool_front",
     "trench_front": "the_oldest_house:block/house_read/trench_front",
@@ -72,71 +74,276 @@
   "elements": [
     {
       "from": [
-        2,
+        -6,
+        0,
+        2
+      ],
+      "to": [
+        8,
+        0.5,
+        14
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            15,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "north": {
+          "uv": [
+            1,
+            1,
+            15,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            15,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "west": {
+          "uv": [
+            1,
+            1,
+            15,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            15,
+            13
+          ],
+          "texture": "#bath_rug"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        0,
+        2
+      ],
+      "to": [
+        22,
+        0.5,
+        14
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            15,
+            1,
+            1,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "down": {
+          "uv": [
+            15,
+            1,
+            1,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "north": {
+          "uv": [
+            15,
+            1,
+            1,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "south": {
+          "uv": [
+            15,
+            1,
+            1,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "west": {
+          "uv": [
+            15,
+            1,
+            1,
+            13
+          ],
+          "texture": "#bath_rug"
+        },
+        "east": {
+          "uv": [
+            15,
+            1,
+            1,
+            13
+          ],
+          "texture": "#bath_rug"
+        }
+      }
+    },
+    {
+      "from": [
+        -7.5,
         0,
         3
       ],
       "to": [
-        14,
-        0.5,
+        -6,
+        0.25,
         13
       ],
       "faces": {
         "up": {
-          "texture": "#towel_blue",
           "uv": [
             0,
-            0,
-            16,
-            16
-          ]
+            2,
+            2,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
         },
         "down": {
-          "texture": "#towel_blue",
           "uv": [
             0,
-            0,
-            16,
-            16
-          ]
+            2,
+            2,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
         },
         "north": {
-          "texture": "#towel_blue",
           "uv": [
             0,
-            0,
-            16,
-            16
-          ]
+            2,
+            2,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
         },
         "south": {
-          "texture": "#towel_blue",
           "uv": [
             0,
-            0,
-            16,
-            16
-          ]
-        },
-        "east": {
-          "texture": "#towel_blue",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
+            2,
+            2,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
         },
         "west": {
-          "texture": "#towel_blue",
           "uv": [
             0,
+            2,
+            2,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
+        },
+        "east": {
+          "uv": [
             0,
-            16,
-            16
-          ]
+            2,
+            2,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
+        }
+      }
+    },
+    {
+      "from": [
+        22,
+        0,
+        3
+      ],
+      "to": [
+        23.5,
+        0.25,
+        13
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            2,
+            2,
+            0,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
+        },
+        "down": {
+          "uv": [
+            2,
+            2,
+            0,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            0,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            0,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            0,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            0,
+            14
+          ],
+          "texture": "#bath_rug_fringe"
         }
       }
     }
-  ]
+  ],
+  "render_type": "minecraft:cutout"
 }

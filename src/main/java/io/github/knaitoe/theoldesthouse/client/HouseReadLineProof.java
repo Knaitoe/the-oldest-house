@@ -40,6 +40,6 @@ public final class HouseReadLineProof extends Screen {
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;s.card=null;return;}
         Files.writeString(folder.resolve("passed.txt"),"The House's lines between the quiet rooms on black: the welcome before the first room, the bathroom's closing line, and the warning after the last room.\n");
-        mc.stop();
+        mc.setScreen(new HouseReadHairProof());
     }
 }

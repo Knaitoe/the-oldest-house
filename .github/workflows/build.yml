@@ -64,6 +64,7 @@ jobs:
           python3 tools/draw_reading_stands.py --check
           python3 tools/draw_barn_well.py --check
           python3 tools/generate_advancements.py --check
+          python3 tools/draw_hair_styles.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
@@ -2143,7 +2144,7 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','HouseReadReaderTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java','CoopTests.java'))
-          assert count==36
+          assert count==37
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==5
           PY
@@ -2172,6 +2173,9 @@ jobs:
           lines=Path('build/house-read-lines')
           assert sorted(p.name for p in lines.glob('*.png'))==['closing.png','warning.png','welcome.png']
           assert (lines/'passed.txt').is_file()
+          hair=Path('build/house-read-hair')
+          assert sorted(p.name for p in hair.glob('*.png'))==['hair_backs.png','hair_styles.png','routine_counter.png']
+          assert (hair/'passed.txt').is_file()
           PY
       - uses: actions/upload-artifact@v4
         if: always()
@@ -2183,6 +2187,7 @@ jobs:
             build/house-read139-art
             build/reading-stands
             build/house-read-lines
+            build/house-read-hair
             run/logs
 
   personal-scene-clients:

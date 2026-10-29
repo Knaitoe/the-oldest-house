@@ -13,7 +13,7 @@ PARTS=['table_end','table_mid','sign','wall_clock','outlet','ceiling_panel','van
 LIGHTS=['ceiling_panel','vanity_light','pendant','porch_light','lamp','deck_lantern']
 # Parts drawn differently when TURNED: a light switched off.
 TURNED=['vanity_light','pendant','porch_light','lamp','deck_lantern','towel_bar']
-SPRITES=['paper','magazine','phone','cone','cone_empty']+[f'routine_{i}' for i in range(12)]
+SPRITES=['paper','magazine','phone','cone','cone_empty']+[f'routine_{i}' for i in range(16)]
 
 def _rng(name):return random.Random(1600+sum(map(ord,name))*13)
 def _fill(mid,name,specks,count):
@@ -46,6 +46,21 @@ def tiles(out):
  out['enamel']=_fill('#eeece6','enamel',['#e1ded6','#f7f5ef'],30)
  im=Image.new('RGBA',(16,16),'#b9bec2');d=ImageDraw.Draw(im);d.line((0,3,15,3),fill='#e7eaec');d.line((0,11,15,11),fill='#8d9296');out['chrome']=im
  im=_fill('#5d7f99','towel_blue',['#53748d','#6a8ca5','#4b6a81'],60);d=ImageDraw.Draw(im);d.line((0,13,15,13),fill='#e5e2d7');d.line((0,14,15,14),fill='#e5e2d7');out['towel_blue']=im
+ # 0.4.167: the bath rug's weave. Chenille rows of two blues under a cream border with a band of rust, a few loose loops.
+ im=Image.new('RGBA',(16,16),'#557790');d=ImageDraw.Draw(im);rng=_rng('bath_rug')
+ for y in range(16):
+  for x in range(16):
+   if (x+y*3)%4==0:d.point((x,y),fill='#4b6a81')
+   elif (x*5+y)%7==0:d.point((x,y),fill='#6a8ca5')
+ for y in range(2,14,3):d.line((2,y,13,y),fill='#4d6d85')
+ # Each half of the rug is this sheet, the right half mirrored, so the border runs round the outer end, top and bottom
+ # only, and the two halves meet in the middle as one rug.
+ for k,colour in [(1,'#e5e2d7'),(2,'#a85f43'),(3,'#d9d3c2')]:d.line((k,k,15,k),fill=colour);d.line((k,13-k,15,13-k),fill=colour);d.line((k,k,k,13-k),fill=colour)
+ for x,y in [(5,6),(9,5),(11,8),(6,9)]:d.point((x,y),fill='#8aa8bc')
+ out['bath_rug']=im
+ im=Image.new('RGBA',(16,16),(0,0,0,0));d=ImageDraw.Draw(im)
+ for y in range(2,14):d.point((0,y),fill='#e5e2d7' if y%2 else '#cfc8b4');d.point((1,y),fill='#d9d3c2' if y%2 else (0,0,0,0))
+ out['bath_rug_fringe']=im
  im=Image.new('RGBA',(16,16),'#f6efd2');d=ImageDraw.Draw(im)
  for x in [2,7,12]:d.ellipse((x-1,5,x+2,9),fill='#fffbe8',outline='#e8d9a2')
  out['bulb']=im
@@ -109,7 +124,11 @@ def models(model,cube,faced):
  bar=[C([2,11,0],[3,12,2],'chrome'),C([13,11,0],[14,12,2],'chrome'),C([2,12,1],[14,13,2],'chrome')]
  M('towel_bar',bar+[C([3,3,1.6],[13,12,2.6],'towel_blue')]);M('towel_bar_turned',bar)
  M('vanity_light',[faced([2,2,0],[14,5,2],'chrome',south='bulb',down='bulb')]);M('vanity_light_turned',[faced([2,2,0],[14,5,2],'chrome',south='enamel',down='enamel')])
- M('bath_mat',[C([2,0,3],[14,.5,13],'towel_blue')])
+ # 0.4.167 (owner: "rug texture can be expanded too"): a woven bath rug, nearly two blocks long, with a border and fringe.
+ M('bath_mat',[{'from':[-6,0,2],'to':[8,.5,14],'faces':{f:{'uv':[1,1,15,13],'texture':'#bath_rug'} for f in ['up','down','north','south','west','east']}},
+               {'from':[8,0,2],'to':[22,.5,14],'faces':{f:{'uv':[15,1,1,13],'texture':'#bath_rug'} for f in ['up','down','north','south','west','east']}},
+               {'from':[-7.5,0,3],'to':[-6,.25,13],'faces':{f:{'uv':[0,2,2,14],'texture':'#bath_rug_fringe'} for f in ['up','down','north','south','west','east']}},
+               {'from':[22,0,3],'to':[23.5,.25,13],'faces':{f:{'uv':[2,2,0,14],'texture':'#bath_rug_fringe'} for f in ['up','down','north','south','west','east']}}],'cutout')
  hook=[C([7,26,0],[9,27,3],'brass'),C([7,27,2],[9,29,3],'brass')]
  M('empty_hanger',hook+[C([3,24,1.5],[13,25,3.5],'oak'),C([7.5,25,2.1],[8.5,26.9,2.9],'metal')])
  M('scarf_hook',hook+[C([5,6,2],[8,26.5,3.5],'scarf'),C([8,10,2.2],[11,26.5,3.6],'scarf'),C([4,26.8,1],[12,29.6,7],'wool'),C([3,26.2,0.5],[13,26.8,7.5],'wool')])
@@ -152,8 +171,13 @@ def sprites():
   elif i==8:d.rectangle((3,5,7,11),fill='#ac8046',outline='#725837');d.rectangle((8,5,12,11),fill='#ac8046',outline='#725837');d.rectangle((6,7,9,9),fill='#a18b51')
   elif i==9:d.rectangle((2,6,13,9),fill='#2b2b2b');[d.point((x,10),fill='#2b2b2b') for x in range(3,13,2)]
   elif i==10:d.ellipse((2,4,13,12),fill='#9b9d91',outline='#727970');d.ellipse((4,5,11,10),fill='#c2c0ae');d.line((5,8,10,8),fill='#3a3a38')
-  else:d.rectangle((3,4,12,13),fill='#efe5c7',outline='#afa990');[d.line((3,y,12,y),fill='#d8d1b5') for y in (6,9,12)]
- for i in range(12):im=new();draw(i,ImageDraw.Draw(im));out[f'routine_{i}']=im
+  elif i==11:d.rectangle((3,4,12,13),fill='#efe5c7',outline='#afa990');[d.line((3,y,12,y),fill='#d8d1b5') for y in (6,9,12)]
+  # 0.4.167: a satin bonnet, an edge brush, a tray of hot rollers, a wave brush.
+  elif i==12:d.ellipse((2,4,13,13),fill='#c79690',outline='#946865');d.arc((3,5,12,12),200,340,fill='#e2bcb5');d.line((2,11,13,11),fill='#efe5c7')
+  elif i==13:d.line((3,13,9,7),fill='#2f2f31',width=1);d.rectangle((9,3,13,7),fill='#2f2f31');[d.point((x,y),fill='#d8d1b5') for x in (10,12) for y in (4,6)]
+  elif i==14:d.rectangle((2,9,13,13),fill='#b98a86',outline='#8e6764');[d.ellipse((2+k*4,4,5+k*4,9),fill=('#efe6cf' if k%2==0 else '#ac8046'),outline='#7c6b55') for k in range(3)]
+  else:d.ellipse((3,3,12,13),fill='#8e6e43',outline='#5f4b33');d.ellipse((4,4,11,12),fill='#2f2f31');[d.point((x,y),fill='#6b6b6b') for x in (6,8,10) for y in (6,8,10)]
+ for i in range(16):im=new();draw(i,ImageDraw.Draw(im));out[f'routine_{i}']=im
  return out
 
 

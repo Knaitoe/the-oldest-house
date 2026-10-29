@@ -14,7 +14,8 @@ public final class HouseReadProse {
     public record Clause(int room,String phrase,String lead,String locator){
         String head(){return lead!=null&&phrase.contains(locator)?lead+", you "+phrase.replaceFirst(java.util.regex.Pattern.quote(locator),""):"You "+phrase;}
     }
-    public static final String[] ITEMS={"put the silk on","worked in the curl cream","reached for the wide-tooth pick","worked the oil into your part","drew a part with the rat-tail comb","took a hair tie from the dish","ran the bristles through","reached for the dry shampoo","pinned your hair up with the claw clip","ran the pocket comb through","opened the tin of pomade","reached for the washcloth on the faucet"};
+    public static final String[] ITEMS={"put the silk on","worked in the curl cream","reached for the wide-tooth pick","worked the oil into your part","drew a part with the rat-tail comb","took a hair tie from the dish","ran the bristles through","reached for the dry shampoo","pinned your hair up with the claw clip","ran the pocket comb through","opened the tin of pomade","reached for the washcloth on the faucet",
+        "tied on the satin bonnet","laid your edges with the little brush","set your hair in the hot rollers","brushed your waves down"};
     private static String coat(String set){return switch(set){case "wool"->"the wool overcoat";case "trench"->"the trench coat";case "barn"->"the barn jacket";default->"";};}
     private static String boots(String set){return switch(set){case "wool"->"the heavy leather boots";case "trench"->"the ankle boots";case "barn"->"the work boots";default->"";};}
     private static String who(String figure,boolean older){return figure.equals("man")?older?"the man":"the boy":older?"the woman":"the girl";}

@@ -26,7 +26,13 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part
 public final class HouseReadMoments {
     private static final String LIFT="house_read_routine139";
     private static final Map<UUID,Long> LAST_MUSIC=new HashMap<>();
-    public static final String[] ROUTINES={"silk headwrap","curl cream","wide-tooth pick","scalp oil","parting comb","hair ties","paddle brush","dry shampoo","claw clip","pocket comb","pomade tin","cotton washcloth"};
+    public static final String[] ROUTINES={"silk headwrap","curl cream","wide-tooth pick","scalp oil","parting comb","hair ties","paddle brush","dry shampoo","claw clip","pocket comb","pomade tin","cotton washcloth",
+        // 0.4.167 (owner: "More hair styles would still be appropriate").
+        "satin bonnet","edge brush","hot rollers","wave brush"};
+    /** Each routine block's two tools (0.4.167), by item; the same pairs tools/house_read_moments_art.py draws. */
+    public static final int[][] PAIRS={{0,12},{1,2},{3,13},{4,5},{6,14},{7,8},{9,15},{10,11}};
+    /** A tool's routine: wrapped, braided and oiled, brushed dry, washed and barbered (the {@link #HAIR} index). */
+    public static int set(int item){return item>=12?item-12:item/3;}
     private HouseReadMoments(){}
     /**
      * Forty seconds in the waiting room, then the receptionist calls the reader through. 0.4.160 cut it to fifteen; the owner
@@ -134,10 +140,11 @@ public final class HouseReadMoments {
      * door opens and the reader goes on.
      */
     public static boolean routineUse(ServerPlayer p,BlockPos at,BlockState state,BlockHitResult hit){
-        int group=state.getValue(HouseReadPropBlock.PART).ordinal()-ROUTINE_A.ordinal();if(group<0||group>3)return false;
+        int group=HouseReadPropBlock.routine(state.getValue(HouseReadPropBlock.PART));if(group<0)return false;
         if(HouseReadSites.inside(p)!=BATHROOM)return true;
         var b=HouseReadSites.base(p.server,p.getUUID(),BATHROOM);var t=visit(p,BATHROOM);
-        int index=net.minecraft.util.Mth.clamp((int)((hit.getLocation().x-at.getX())*3),0,2),item=group*3+index,position=HouseReadRemainingRooms.ROUTINE_PLACES.indexOf(at.subtract(b));
+        // Two tools to a block, one in each half (0.4.167).
+        int index=hit.getLocation().x-at.getX()<.5?0:1,item=PAIRS[group][index],position=HouseReadRemainingRooms.ROUTINE_PLACES.indexOf(at.subtract(b));
         if(t.getBoolean("Done")){p.displayClientMessage(Component.literal("You have what you need."),true);return true;}
         int held=t.contains("Held")?t.getInt("Held"):-1;
         if(held>=0){putBack(p,b);if(held==item){HouseReadSites.act(p,BATHROOM,"put the "+ROUTINES[item]+" back");return true;}}
@@ -157,7 +164,7 @@ public final class HouseReadMoments {
         var t=visit(p,BATHROOM);if(!t.contains("Held")||t.getBoolean("Done"))return false;int item=t.getInt("Held");
         if(!p.getMainHandItem().is(HouseReadRegistry.ROUTINES.get(item).get()))return false;
         p.swing(net.minecraft.world.InteractionHand.MAIN_HAND,true);HouseReadSites.sound(p,item==11?HouseReadRegistry.TAP.get():SoundEvents.ARMOR_EQUIP_LEATHER.value(),at,.6f);
-        var seen=seen(p,BATHROOM);if(!seen.contains("Used")){HouseRead.see(p,BATHROOM,x->x.putInt("Used",item));HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[item/3],true);}
+        var seen=seen(p,BATHROOM);if(!seen.contains("Used")){HouseRead.see(p,BATHROOM,x->x.putInt("Used",item));HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[set(item)],true);}
         t.putBoolean("Done",true);t.putInt("LightsOutAt",t.getInt("Age")+30);t.putBoolean("NoteArmed",true);save(p,BATHROOM,t);HouseReadSites.act(p,BATHROOM,"used the "+ROUTINES[item]+" at the mirror");return true;
     }
     /** The bathroom's two lights, by their switch. */
@@ -228,14 +235,14 @@ public final class HouseReadMoments {
     /** The bathroom: the first routine item sets the routine, a second from the same set settles it, before the light goes out. */
     private static void routine(ServerPlayer p,int item,int position){
         var s=seen(p,BATHROOM);
-        if(!s.contains("Item")){HouseRead.see(p,BATHROOM,t->{t.putInt("Item",item);t.putInt("Position",position);});HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[item/3],false);return;}
+        if(!s.contains("Item")){HouseRead.see(p,BATHROOM,t->{t.putInt("Item",item);t.putInt("Position",position);});HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[set(item)],false);return;}
         // Changing one's mind to another set's item makes the read uncertain; using the one in hand decides it.
-        if(!s.contains("Swapped")&&s.getInt("Item")/3!=item/3){HouseRead.see(p,BATHROOM,t->t.putInt("Swapped",item));HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[item/3],true);}
+        if(!s.contains("Swapped")&&set(s.getInt("Item"))!=set(item)){HouseRead.see(p,BATHROOM,t->t.putInt("Swapped",item));HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[set(item)],true);}
     }
     /** The hot tap settles only the set whose washcloth hangs over the faucet; for the others it is an observation. */
     private static void tap(ServerPlayer p){
         var s=seen(p,BATHROOM);HouseRead.flag(p,BATHROOM,"Tap");
-        if(s.contains("Item")&&s.getInt("Item")/3==3&&!s.contains("Used")&&!s.getBoolean("Second")){HouseRead.flag(p,BATHROOM,"Second");HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[3],true);}
+        if(s.contains("Item")&&set(s.getInt("Item"))==3&&!s.contains("Used")&&!s.getBoolean("Second")){HouseRead.flag(p,BATHROOM,"Second");HouseRead.signal(p,HouseRead.Trait.HAIR,HAIR[3],true);}
     }
     /** A stranger's face near the middle of the reader's view, within eight degrees, with nothing in between. */
     static boolean framed(ServerPlayer p,net.minecraft.world.entity.Entity a){
