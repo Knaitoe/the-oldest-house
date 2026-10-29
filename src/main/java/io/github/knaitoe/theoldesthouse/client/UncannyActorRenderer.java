@@ -23,6 +23,8 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     private static LayerDefinition layer(boolean slim,boolean bent){
         var mesh=PlayerModel.createMesh(CubeDeformation.NONE,slim);
         mesh.getRoot().addOrReplaceChild("bent_neck",CubeListBuilder.create().texOffs(0,32).addBox(-1,-2,-1,2,4,2),PartPose.offsetAndRotation(1.1F,8.3F,-2.2F,0,0,-.75F));
+        // 0.4.171: the bent neck's upper half, above the kink (same pale net as the lower half).
+        if(bent)mesh.getRoot().addOrReplaceChild("bent_neck_upper",CubeListBuilder.create().texOffs(0,32).addBox(-1,-2,-1,2,4,2),PartPose.ZERO);
         if(bent)for(boolean left:new boolean[]{false,true}){var leg=mesh.getRoot().addOrReplaceChild(left?"left_leg":"right_leg",SegmentedSkin.limb(left?16:0,left?48:16,0,-2,0,-2,4,6,4,left,false),PartPose.offset(left?1.9F:-1.9F,12,0));leg.addOrReplaceChild("bent_knee",SegmentedSkin.limb(left?16:0,left?48:16,6,-2,0,-2,4,6,4,left,false),PartPose.offset(0,6,0));}
         return LayerDefinition.create(mesh,64,64);
     }
@@ -70,16 +72,19 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     @Override protected boolean shouldShowName(LiteraryActor a){return false;}
     @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){if(!visible(a))return false;return a.role()==LiteraryActor.UNCANNY_GIANT?a.shouldRender(x,y,z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
     public static final class Model extends PlayerModel<LiteraryActor> {
-        boolean feed;public final ModelPart neck;
-        public Model(ModelPart part,boolean slim){super(part,slim);neck=part.hasChild("bent_neck")?part.getChild("bent_neck"):null;}
-        @Override protected Iterable<ModelPart> bodyParts(){return neck==null?super.bodyParts():com.google.common.collect.Iterables.concat(super.bodyParts(),java.util.List.of(neck));}
+        /** The giant's natural-proportion pose drawn smaller about her feet, to stoop under the tunnel's ceiling. */
+        static final float SHRINK=.56F;
+        boolean feed;public final ModelPart neck,neckUpper;
+        public Model(ModelPart part,boolean slim){super(part,slim);neck=part.hasChild("bent_neck")?part.getChild("bent_neck"):null;neckUpper=part.hasChild("bent_neck_upper")?part.getChild("bent_neck_upper"):null;}
+        private java.util.List<ModelPart> necks(){var out=new java.util.ArrayList<ModelPart>(2);if(neck!=null)out.add(neck);if(neckUpper!=null)out.add(neckUpper);return out;}
+        @Override protected Iterable<ModelPart> bodyParts(){return neck==null?super.bodyParts():com.google.common.collect.Iterables.concat(super.bodyParts(),necks());}
         @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){boolean great=a.role()==LiteraryActor.UNCANNY_GIANT&&a.gesture()==1;if(a.role()==LiteraryActor.UNCANNY_GIANT){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/(great?6F:2.5F);amount=motion.amount();}pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch,great);if(!feed&&a.role()!=LiteraryActor.UNCANNY_WAITRESS)RecentActorMotion.blend(a,age,this);if(a.role()==LiteraryActor.UNCANNY_VISITOR&&a.gesture()==1){rightArm.xRot=-1.4F+Mth.sin(age*1.9F)*.035F;rightArm.zRot=.08F;rightArm.z=1.6F;rightSleeve.copyFrom(rightArm);}}
         public void pose(int role,int phase,boolean feed,float age,float walk,float amount,float yaw,float pitch){
             pose(role,phase,feed,age,walk,amount,yaw,pitch,false);
         }
         public void pose(int role,int phase,boolean feed,float age,float walk,float amount,float yaw,float pitch,boolean great){
             for(var p:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg}){p.getAllParts().forEach(ModelPart::resetPose);p.xScale=p.yScale=p.zScale=1;}
-            if(neck!=null)neck.visible=false;
+            for(var n:necks()){n.resetPose();n.xScale=n.yScale=n.zScale=1;n.visible=false;}
             young=false;attackTime=0;crouching=false;riding=false;
             head.yRot=yaw*Mth.DEG_TO_RAD;head.xRot=pitch*Mth.DEG_TO_RAD;
             float step=Mth.cos(walk*.6662F)*Math.min(.65F,amount*1.4F);leftLeg.xRot=-step;rightLeg.xRot=step;leftArm.xRot=step*.5F;rightArm.xRot=-step*.5F;
@@ -87,20 +92,38 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             if(role==LiteraryActor.UNCANNY_WAITRESS){head.xRot+=.025F;body.xRot=0;leftArm.xRot=step*.7F;rightArm.xRot=-step*.7F;}
             if(role==LiteraryActor.UNCANNY_FALSE_WAITRESS){leftArm.xRot=rightArm.xRot=phase>=3?-1.1F:-.15F;head.zRot=.025F*Mth.sin(age*.04F);}
             if(role==LiteraryActor.UNCANNY_GIANT){
-                // Upright ribcage and dragging legs; the break is in her neck.
-                // The folded head stays within the actual 2.7-block tunnel body.
-                float gait=phase==2?Mth.sin(walk)*Math.min(1,amount*2):0,bob=Mth.abs(gait)*(great?.2F:.12F);
-                body.y=7+bob;body.yScale=.6F;body.xRot=.12F;body.zRot=gait*.04F;
-                body.xScale=.42F;body.zScale=.6F;head.xScale=.58F;head.yScale=.9F;head.zScale=.62F;
-                leftLeg.y=rightLeg.y=14;leftLeg.yScale=rightLeg.yScale=5F/6;
-                head.x=2.7F+gait*.1F;head.y=10.5F+bob;head.z=-2.4F;head.zRot=1.55F+gait*.025F;head.xRot=.12F;
-                leftArm.y=rightArm.y=8+bob;leftArm.xRot=-gait*.22F;rightArm.xRot=-.35F+gait*.1F;
-                leftArm.x=2.1F;rightArm.x=-2.1F;
-                leftArm.xScale=rightArm.xScale=.45F;leftArm.zScale=rightArm.zScale=.55F;leftLeg.xScale=rightLeg.xScale=.5F;leftLeg.zScale=rightLeg.zScale=.6F;
-                leftArm.zRot=-.025F;rightArm.zRot=.025F;
-                leftLeg.xRot=gait*(great?.68F:.4F);rightLeg.xRot=-gait*(great?.48F:.24F)-.06F;
-                if(leftLeg.hasChild("bent_knee")){leftLeg.getChild("bent_knee").xRot=.08F+Math.max(0,-gait)*.35F;rightLeg.getChild("bent_knee").xRot=.22F+Math.max(0,gait)*.45F;}
-                if(neck!=null){neck.visible=true;neck.y=8.3F+bob;neck.zRot=-.75F+gait*.025F;}
+                // 0.4.171 (owner: "the bend should be more subtle ... like the classic bent-neck woman ... like bending
+                // through a doorway"): she is only a little too tall for the tunnel, so she ducks the way a tall person ducks
+                // under a doorframe. A slight lean from the hips, knees soft, long arms hanging, and the bend in her neck:
+                // her head bowed and tipped to one side on top of her shoulders. Posed at natural proportions, then drawn at
+                // SHRINK about her feet so her crown stays just under the three-block ceiling.
+                float gait=phase==2?Mth.sin(walk)*Math.min(1,amount*2):0,bob=Mth.abs(gait)*(great?.3F:.18F);
+                float lean=.32F+Mth.abs(gait)*.02F,length=12*.95F,hipY=12+bob,hipZ=.8F;
+                body.xScale=.62F;body.yScale=.95F;body.zScale=1F;body.xRot=lean;body.zRot=gait*.03F;
+                body.y=hipY-length*Mth.cos(lean);body.z=hipZ-length*Mth.sin(lean);
+                leftLeg.x=1.3F;rightLeg.x=-1.3F;leftLeg.y=rightLeg.y=hipY;leftLeg.z=rightLeg.z=hipZ;
+                leftLeg.xScale=rightLeg.xScale=.65F;leftLeg.zScale=rightLeg.zScale=.9F;
+                leftLeg.xRot=-.12F+gait*(great?.6F:.35F);rightLeg.xRot=-.12F-gait*(great?.6F:.35F);
+                if(leftLeg.hasChild("bent_knee")){leftLeg.getChild("bent_knee").xRot=.2F+Math.max(0,-gait)*.4F;rightLeg.getChild("bent_knee").xRot=.2F+Math.max(0,gait)*.4F;}
+                float shoulder=2*.95F;leftArm.x=3.08F;rightArm.x=-3.08F;leftArm.y=rightArm.y=body.y+shoulder*Mth.cos(lean);leftArm.z=rightArm.z=body.z+shoulder*Mth.sin(lean);
+                leftArm.xScale=rightArm.xScale=.6F;leftArm.yScale=rightArm.yScale=1.12F;leftArm.zScale=rightArm.zScale=.8F;
+                leftArm.xRot=-.12F-gait*.25F;rightArm.xRot=-.12F+gait*.25F;leftArm.zRot=-.04F;rightArm.zRot=.04F;
+                // A long pale neck rising out of the collar, then bent: straight up from her shoulders, a kink, and the upper half
+                // bowed forward and tipped hard to one side, the small head (owner: "shorten the height of her head so you've
+                // got more room to display her neck") hanging further along it.
+                float baseY=body.y+.8F*Mth.cos(lean),baseZ=body.z+.8F*Mth.sin(lean);
+                float lowBow=.2F,lowTip=.1F,lowLength=3.4F,highBow=.55F,highTip=.8F+gait*.02F,highLength=3.2F;
+                float lowX=Mth.cos(lowBow)*Mth.sin(lowTip),lowY=-Mth.cos(lowBow)*Mth.cos(lowTip),lowZ=-Mth.sin(lowBow);
+                float highX=Mth.cos(highBow)*Mth.sin(highTip),highY=-Mth.cos(highBow)*Mth.cos(highTip),highZ=-Mth.sin(highBow);
+                float kinkX=lowX*lowLength,kinkY=baseY+lowY*lowLength,kinkZ=baseZ+lowZ*lowLength;
+                if(neck!=null){neck.visible=true;neck.x=lowX*lowLength/2;neck.y=baseY+lowY*lowLength/2;neck.z=baseZ+lowZ*lowLength/2;neck.xRot=lowBow;neck.yRot=0;neck.zRot=lowTip;neck.yScale=(lowLength+.3F)/4;}
+                if(neckUpper!=null){neckUpper.visible=true;neckUpper.x=kinkX+highX*highLength/2;neckUpper.y=kinkY+highY*highLength/2;neckUpper.z=kinkZ+highZ*highLength/2;neckUpper.xRot=highBow;neckUpper.yRot=0;neckUpper.zRot=highTip;neckUpper.yScale=(highLength+.4F)/4;}
+                head.xScale=.74F;head.yScale=.68F;head.zScale=.74F;
+                head.x=kinkX+highX*highLength;head.y=kinkY+highY*highLength;head.z=kinkZ+highZ*highLength;head.xRot=.65F+gait*.02F;head.zRot=.92F+gait*.02F;head.yRot*=.4F;
+                var shrunk=new java.util.ArrayList<ModelPart>(java.util.List.of(head,body,leftArm,rightArm,leftLeg,rightLeg));shrunk.addAll(necks());
+                for(var part:shrunk){
+                    part.x*=SHRINK;part.y=24-(24-part.y)*SHRINK;part.z*=SHRINK;part.xScale*=SHRINK;part.yScale*=SHRINK;part.zScale*=SHRINK;
+                }
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&!feed){
                 float twitch=Mth.sin(age*.7F)*.045F;leftArm.zRot=-(float)Math.PI/2;rightArm.zRot=(float)Math.PI/2;

@@ -35,6 +35,9 @@ public final class UncannyCellar {
     private static boolean inMass(BlockPos r){return Math.abs(r.getX())<=6&&r.getY()>=-5&&r.getY()<=-2&&r.getZ()>=-28&&r.getZ()<=-10;}
     private static boolean protectedCell(BlockPos r){return r.equals(UncannyRooms.KEY_CAVITY)||Math.abs(r.getX())<=1&&r.getZ()>=-12||r.getX()==-6&&r.getZ()==-10;}
     public static void cut(ServerLevel l,BlockPos b,BlockPos r,CompoundTag shared){
+        // 0.4.171 (owner: tearing sounds): over the flesh's own break tear, every cut, the reader's or the worker's, layers a
+        // second take at another pitch, so the rip is longer and fuller.
+        l.playSound(null,b.offset(r),CellarSounds.tear(),net.minecraft.sounds.SoundSource.BLOCKS,.85F,.84F+l.random.nextFloat()*.3F);
         var queue=shared.getList("Regrow",Tag.TAG_COMPOUND);
         for(var t:queue)if(((CompoundTag)t).getLong("At")==r.asLong())return;
         if(queue.size()<320){var entry=new CompoundTag();entry.putLong("At",r.asLong());entry.putLong("Due",l.getGameTime()+360);queue.add(entry);shared.put("Regrow",queue);}

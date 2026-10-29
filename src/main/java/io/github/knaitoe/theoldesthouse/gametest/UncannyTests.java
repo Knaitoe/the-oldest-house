@@ -196,6 +196,24 @@ public final class UncannyTests {
         var own=f.own(p,place);own.putInt("UncannyAge",800);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);f.reload();UncannyStories.arrive(p,place,own);h.assertTrue(f.level(place).getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(f.base(place),place),a->a.role()==LiteraryActor.UNCANNY_PEELER).size()==1&&worker.getUUID().equals(id),"saved staging never fabricates another exhausted worker");h.assertTrue(UncannyRooms.CELLAR_DOOR.getZ()>-10,"the true upper threshold and emergency ladder remain beyond the growth envelope");
     });}
     @AfterBatch(batch="uncanny_growth") public static void growthDone(ServerLevel l){close();}
+    /** 0.4.171 (owner: tearing sounds, more dialogue): a cut tears audibly, and the worker tells the ledger's story a piece at a time. */
+    @GameTest(template="empty",batch="uncanny_tear",timeoutTicks=400) public static void cuttingTissueTearsAndTheWorkerTellsTheLedgersStory(GameTestHelper h){
+        var place=LabyrinthPlace.LAYERED_MAN;var f=new LiteraryTests.Fixture(h);fixture=f;var p=f.player("uncanny_reader",place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(f.base(place),place));BlockPos[] cell={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the cellar is loaded")).thenExecute(()->{
+            var own=f.own(p,place);UncannyStories.arrive(p,place,own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);f.source(p,place);var b=f.base(place);
+            for(int x=-3;x<=3&&cell[0]==null;x++)for(int y=-5;y<=-2&&cell[0]==null;y++)for(int z=-24;z<=-17&&cell[0]==null;z++)if(UncannyCellar.authored(x,y,z)&&UncannyFleshBlock.is(f.level(place).getBlockState(b.offset(x,y,z)))&&!(x==0&&y==-3&&z==-21))cell[0]=new BlockPos(x,y,z);
+            h.assertTrue(cell[0]!=null,"the man's body is there to cut");
+            p.teleportTo(f.level(place),b.getX()+cell[0].getX()+.5,b.getY()+cell[0].getY()+1,b.getZ()+cell[0].getZ()+2.5,180,0);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.CLEAVER.get()));NativeTestPlayers.packets(p);
+            own=f.own(p,place);h.assertTrue(UncannyStories.peel(p,b,cell[0],own)&&!UncannyFleshBlock.is(f.level(place).getBlockState(b.offset(cell[0]))),"the cleaver cuts the tissue away");LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        }).thenIdle(2).thenExecute(()->{
+            var tears=UncannyRegistry.TEAR_VARIANTS.stream().map(v->v.get()).toList();
+            h.assertTrue(NativeTestPlayers.packets(p).stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&tears.contains(sound.getSound().value())),"the cut is heard tearing");
+            var own=f.own(p,place);own.putBoolean("CleaverTaken",true);
+            for(int i=0;i<12;i++){NativeTestPlayers.packets(p);own.putInt("WorkerStory130",i*3);CellarDialogue.worker(p,own);}
+            h.assertTrue(own.getInt("WorkerStory130")>0,"the worker's story moves on each time");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="uncanny_tear") public static void tearDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_light",timeoutTicks=500) public static void reverseMotionHasRealLightAndTheTrueDoorHasNativeHinges(GameTestHelper h){run(h,LabyrinthPlace.MOTION_LIGHT,(f,p)->{
         var place=LabyrinthPlace.MOTION_LIGHT;f.source(p,place);var state=f.level(place).getBlockState(f.base(place).offset(UncannyRooms.FLOOD));h.assertTrue(state.is(UncannyRegistry.PROP.get())&&UncannyPropBlock.light(state.setValue(UncannyPropBlock.STAGE,0))==15&&UncannyPropBlock.light(state.setValue(UncannyPropBlock.STAGE,1))==0,"the floodlight changes native emitted light, not just an overlay");
         h.assertTrue(f.level(place).getBlockState(f.base(place).offset(UncannyRooms.HINGED)).getBlock() instanceof DoorBlock,"the correct exit is an actual hinged door");click(f,p,place,UncannyRooms.HINGED);h.assertTrue(f.own(p,place).getBoolean("HingeSeen")&&!f.own(p,place).getBoolean("Ready"),"touching a hinge before witnessing the standoff is insufficient");

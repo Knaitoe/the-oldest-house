@@ -68,7 +68,7 @@ public final class UncannyAssetProof extends Screen {
                 p.pushPose();p.translate((i+.5)*width/3,height*.82F,150);p.scale(64,-64,64);p.translate(-.5,0,-.5);UncannyPropRenderer.draw(UncannyPropBlock.of(UncannyPropBlock.Kind.COURTYARD_PENDULUM,Direction.SOUTH),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,new float[]{-.38F,0,.38F}[i]);buffers.endBatch();p.popPose();
             }
         }else if(page==8){
-            g.drawCenteredString(font,"Broken neck / normal stride above / great catch-up stride below",width/2,27,0xffe4d9bf);
+            g.drawCenteredString(font,"Stooping under the ceiling / normal stride above / great catch-up stride below",width/2,27,0xffe4d9bf);
             for(int i=0;i<6;i++){
                 var model=new UncannyActorRenderer.Model(mc.getEntityModels().bakeLayer(UncannyActorRenderer.BENT),false);model.pose(LiteraryActor.UNCANNY_GIANT,2,false,24,(i%3)*2.1F,.65F,0,0,i>=3);
                 checkTunnelHeight(model);

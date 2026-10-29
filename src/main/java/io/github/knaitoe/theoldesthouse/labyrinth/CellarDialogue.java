@@ -8,12 +8,17 @@ import net.minecraft.sounds.SoundEvents;
 
 /** Sparse, present-tense exchanges from the worker and the same growing body. */
 public final class CellarDialogue {
-    private static final String[] WORKER={"It started with a swelling. I thought it would stop.","I thought there'd be less of him by morning.","He still knows when I leave.","Keep the steps clear. I need to be able to see them."};
-    private static final String[] MAN={"Cut deeper. Please.","I didn't want this.","Is it morning?","Don't leave me like this.","It keeps coming back. Get all of it.","I can still feel your hands."};
+    // 0.4.171 (owner: more dialogue): the worker's story comes out a piece at a time, as the ledger tells it; the man says more.
+    private static final String[] WORKER={"It started with a swelling. I thought it would stop.","I thought there'd be less of him by morning.","He still knows when I leave.","Keep the steps clear. I need to be able to see them.",
+        "From the collarbones down. While it's still wet, before it sets.","Stop for five minutes and he puts three more coats on.","Marcus had the first shift. He's in there now. By the hip.","Don't look for Marcus's face. You'll find it.",
+        "My blade broke in a collarbone. I've been using my nails.","If he gets the bottom step, there's no room left to breathe down here."};
+    private static final String[] MAN={"Cut deeper. Please.","I didn't want this.","Is it morning?","Don't leave me like this.","It keeps coming back. Get all of it.","I can still feel your hands.",
+        "There's someone else in here with me. He won't stop crying.","It's so warm. Why is it so warm.","Every time you cut, it comes back thicker. I'm sorry.","I had a name. It's under all this somewhere.",
+        "Not with your nails. Not like him. Use the blade.","My mouth isn't mine any more."};
     private CellarDialogue(){}
     public static void worker(ServerPlayer p,CompoundTag own){
         int line=own.getInt("WorkerStory130");own.putInt("WorkerStory130",line+1);var b=LiteraryVignettes.base(p,LabyrinthPlace.LAYERED_MAN);var shared=b==null?new CompoundTag():UncannyStories.world(p.serverLevel(),b,LabyrinthPlace.LAYERED_MAN);
-        String text=shared.getBoolean("Eradicated131")?"There's nothing left. It's finally quiet.":!own.getBoolean("CleaverTaken")?"The cleaver's on the bench, by the stairs. My hands won't last.":shared.getBoolean("MouthCut131")?"He can't speak now. Keep cutting. Don't leave any of it.":own.getInt("Peeled")>0?"I'm cutting what I can. You need to get deeper.":WORKER[Math.floorMod(line,WORKER.length)];
+        String text=shared.getBoolean("Eradicated131")?"There's nothing left. It's finally quiet.":!own.getBoolean("CleaverTaken")?"The cleaver's on the bench, by the stairs. My hands won't last.":own.getBoolean("KeyReleased")&&!UncannyCellar.carriesKey(p)?"The key. It's out. Take it before he closes over it.":shared.getBoolean("MouthCut131")?"He can't speak now. Keep cutting. Don't leave any of it.":shared.getInt("Growth")>=6?"He's on the steps. We're running out of room.":own.getInt("Peeled")>0&&line%3==2?"I'm cutting what I can. You need to get deeper.":WORKER[Math.floorMod(line,WORKER.length)];
         p.displayClientMessage(Component.literal("“"+text+"”"),false);
     }
     private static void gurgle(ServerPlayer p,BlockPos b,CompoundTag own){UncannyStories.heard(p,CellarSounds.gurgle(),b.offset(0,-3,-21).getCenter(),.65F+p.getRandom().nextFloat()*.15F,.76F+p.getRandom().nextFloat()*.24F);own.putLong("CellarRumbleUntil130",p.serverLevel().getGameTime()+70);}
