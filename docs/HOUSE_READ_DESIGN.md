@@ -68,7 +68,7 @@ The five quiet rooms stay private (owner, October 28). They define the character
 
 The owner's October 28 direction makes the other vignettes shared:
 
-- **Shared by default, with witnesses.** Whoever acts on the key beat leads it, and everyone else in the room witnesses it. Only Backseat (one driver's seat) and the five quiet rooms stay private.
+- **Shared by default, with witnesses.** Whoever acts on the key beat leads it, and everyone else in the room witnesses it. Only Backseat (one driver's seat) and the five quiet rooms stay private. The owner later made more scenes private (0.4.151, and hide-and-clap in 0.4.158), each with a copy for every reader who finds it taken (0.4.153–0.4.155, 0.4.158).
 - **Witnesses get credit.** A witness gets their own account and the Witness credit. The account may change subtly, reading as someone who watched rather than the one who acted.
 - **Each reader's own record.** A peer's act never counts as the reader's own act, in the House's read or in a scene's choices.
 - **A finished room becomes a passage.** Once a reader has completed a vignette, its door no longer replays the scene for them. It is just a door connecting two halls. Built in 0.4.143.
@@ -79,7 +79,7 @@ The owner's October 28 direction makes the other vignettes shared:
   - **The drowned town and lake-witch scenes** should mostly support several players. The drowned town already ran as one story for the world; 0.4.148 drafts its ending for everyone in Proofrock when the roof opens: a witness's account for those there for the essays, a late joiner's for those who came after.
   - **The monkey's paw:** everyone hears the story, and only one reader holds the paw. The finger clench shows as an animation on the paw in that reader's hand, so the others see it happen. Built in 0.4.147.
   - **The child's room** can be shared. It already was one room for everyone in it, and everyone shut in must crawl out for themselves, so it has no witnesses; 0.4.149 writes each reader's account for who was with them, who began it, whether they came in late and whom they followed down or left behind.
-- **Built in 0.4.146** (`docs/COOP_FOUNDATION_0_4_146.md`): a door into a shared vignette is held 30 seconds for the group, so friends through the same door arrive in the same scene. A mixed group at a door is dealt a vignette none of them has started, or splits. The backseat, the silo, Borrasca, the copies and the Red Room stay private; the Goatman and hide-and-clap are held back until they are made shared (the Goatman is shared from 0.4.150). Each reader still plays the scene as their own until it is drafted.
+- **Built in 0.4.146** (`docs/COOP_FOUNDATION_0_4_146.md`): a door into a shared vignette is held 30 seconds for the group, so friends through the same door arrive in the same scene. A mixed group at a door is dealt a vignette none of them has started, or splits. The backseat, the silo, Borrasca, the copies and the Red Room stay private; the Goatman and hide-and-clap are held back until they are made shared (the Goatman is shared from 0.4.150; hide-and-clap became a private scene with copies in 0.4.158, `docs/HIDE_AND_CLAP_COPIES_0_4_158.md`). Each reader still plays the scene as their own until it is drafted.
 - **Still open:**
   - how a shared room is built and reset when friends arrive at different times;
   - who a scene responds to when two readers act at once.
@@ -526,7 +526,7 @@ Follow-ups the same day settled several details, all in "Co-op":
 - multi-visit vignettes follow one story per thread, with late joiners, aftermath visits and accounts drafted for each way of being there.
 - the Goatman, the drowned town and lake-witch scenes, the monkey's paw and the child's room are named as scenes to share.
 
-Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146) and its first shared scenes, the paw (0.4.147), the drowned town's ending (0.4.148), the child's room (0.4.149) and the Goatman's campers (0.4.150). Hide-and-clap, with its one blindfold, is the only scene still held back.
+Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its shared foundation (0.4.146) and its first shared scenes, the paw (0.4.147), the drowned town's ending (0.4.148), the child's room (0.4.149) and the Goatman's campers (0.4.150). Hide-and-clap, with its one blindfold, was the only scene held back; on October 29 the owner made it private instead, with copies like every private scene (0.4.158).
 
 ## Built so far
 
@@ -551,5 +551,6 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.155 | Copies of Harrigan's room, each keeping its own story; every private scene now has copies | `docs/SCENE_COPIES_0_4_153.md` |
 | 0.4.156 | The lake house in pairs: a second reader goes down in Tess's place and is seen as her, a third has a lake of their own with Tess, a fourth joins them | `docs/LAKE_HOUSE_PAIRS_0_4_156.md` |
 | 0.4.157 | The shallows together: one throw, a second reader at her feet in Lonnie's place with Lonnie counting, the rest on the bank with the boys, a Witness line for each part | `docs/SHALLOWS_TOGETHER_0_4_157.md` |
+| 0.4.158 | Hide-and-clap private, with copies: one reader to a room, a room's own round, and every reader can win it once | `docs/HIDE_AND_CLAP_COPIES_0_4_158.md` |
 
 The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.

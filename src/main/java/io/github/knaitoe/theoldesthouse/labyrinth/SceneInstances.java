@@ -36,7 +36,7 @@ public final class SceneInstances {
      * The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone
      * canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy; 0.4.156: the lake house, two readers to a copy.
      */
-    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE);
+    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP);
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     /** Columns of an interior copy's slot filled solid per tick, before its rooms are carved into it, as the original's are. */
@@ -82,6 +82,7 @@ public final class SceneInstances {
     private static boolean unfinished(LabyrinthData d,UUID reader,LabyrinthPlace p){
         if(p==LabyrinthPlace.PHONE_CANOE)return PhoneCanoe.canDeal(d,reader);
         if(p==LabyrinthPlace.HARRIGAN)return !WitnessAccount.has(d,reader,WitnessAccount.Story.HARRIGAN);
+        if(p==LabyrinthPlace.HIDE_AND_CLAP)return HideAndClap.canDeal(d,reader);
         if(NovelVignettes.isNovel(p))return NovelVignettes.canDeal(d,reader,p);
         return LiteraryVignettes.canDeal(d,reader,p);
     }
@@ -89,6 +90,8 @@ public final class SceneInstances {
     private static Set<String> readers(LabyrinthData d,LabyrinthPlace p){
         if(p==LabyrinthPlace.PHONE_CANOE)return d.state(PhoneCanoe.ID).getAllKeys();
         if(p==LabyrinthPlace.HARRIGAN)return d.state(HarriganVignette.ID).getCompound("Players").getAllKeys();
+        // The clapping game kept one round for the world: only a reader in the middle of it has a part to keep.
+        if(p==LabyrinthPlace.HIDE_AND_CLAP){var round=d.state(HideAndClap.ID).getCompound("Session");return round.hasUUID("Player")?Set.of(round.getUUID("Player").toString()):Set.of();}
         if(NovelVignettes.isNovel(p))return d.state(NovelVignettes.STATE).getAllKeys();
         return LiteraryVignettes.readers(d,p);
     }
@@ -96,6 +99,8 @@ public final class SceneInstances {
     private static boolean keptByAnother(LabyrinthData d,LabyrinthPlace p,int k,UUID reader){
         // Harrigan's original room keeps the story the world has already told; once it is over, new readers are given copies.
         if(p==LabyrinthPlace.HARRIGAN&&k==0&&d.isCompleted(HarriganVignette.ID))return true;
+        // So does the clapping game's original room once its game is won: its open wardrobe is the world's.
+        if(p==LabyrinthPlace.HIDE_AND_CLAP&&k==0&&d.isCompleted(HideAndClap.ID))return true;
         var b=scene(d,p).getCompound("Kept");
         for(var key:b.getAllKeys()){if(b.getInt(key)!=k||key.equals(reader.toString()))continue;try{if(unfinished(d,UUID.fromString(key),p))return true;}catch(IllegalArgumentException ignored){}}
         return false;
@@ -191,6 +196,8 @@ public final class SceneInstances {
             keep(d,me,place,k);
             // Harrigan's room keeps its own story: a copy passed to a new reader starts it again.
             if(place==LabyrinthPlace.HARRIGAN&&k>0)HarriganVignette.freshStory(d,k);
+            // So does the clapping game's: a copy passed to a new reader is put back as new.
+            if(place==LabyrinthPlace.HIDE_AND_CLAP&&k>0)HideAndClap.freshRound(d,k);
             ahead(s,d,place,k);return new Entry(entry(d,place,k),k,false);
         }
         // Nothing stands free: a copy is made ready, unless every copy the server allows exists already.
@@ -318,6 +325,7 @@ public final class SceneInstances {
         if(NovelVignettes.isNovel(p)){NovelRooms.build(s,l,b,p);return;}
         if(p==LabyrinthPlace.PHONE_CANOE){PhoneCanoe.build(s,l,b);LakeLandscape.dress(l,b,p);NovelRooms.safeApproach(l,b);}
         if(p==LabyrinthPlace.HARRIGAN){HarriganVignette.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}
+        if(p==LabyrinthPlace.HIDE_AND_CLAP){HideAndClap.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}
     }
     private static @Nullable Job next(MinecraftServer s,LabyrinthData d){
         var o=HouseSavedData.get(s).houseOrigin();if(o==null)return null;

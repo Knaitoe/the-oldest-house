@@ -1,6 +1,6 @@
 # Private scenes — 0.4.151
 
-Since 0.4.153, 0.4.154 and 0.4.155, every one of these scenes gives a reader who finds it taken a copy of their own instead (`docs/SCENE_COPIES_0_4_153.md`). The rule below now applies only once a scene's copies reach the server's cap, or when copies are turned off.
+Since 0.4.153, 0.4.154 and 0.4.155, every one of these scenes gives a reader who finds it taken a copy of their own instead (`docs/SCENE_COPIES_0_4_153.md`). Hide-and-clap joined them in 0.4.158, with copies from the start (`docs/HIDE_AND_CLAP_COPIES_0_4_158.md`). The rule below now applies only once a scene's copies reach the server's cap, or when copies are turned off.
 
 The owner's October 28 direction: Harrigan, the confession, the Holy Rabbit and the Wheel house work best as private vignettes. They also agreed to four more: the Whale institute, the phone in the canoe, the diner (the second waitress) and the split-feed bedroom (missing sleep). The lake house stays shared: a second reader plays Tess, in pairs, each pair with its own lake (0.4.156, `docs/LAKE_HOUSE_PAIRS_0_4_156.md`).
 

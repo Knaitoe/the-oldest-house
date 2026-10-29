@@ -31,6 +31,7 @@ public final class CoopTests {
     @AfterBatch(batch="coop_copies155") public static void harriganCopiesDone(ServerLevel l){SceneInstances.clear();close();}
     @AfterBatch(batch="coop_copies153") public static void copiesDone(ServerLevel l){SceneInstances.clear();close();}
     @AfterBatch(batch="coop_copies154") public static void novelCopiesDone(ServerLevel l){SceneInstances.clear();close();}
+    @AfterBatch(batch="coop_clap158") public static void clapCopiesDone(ServerLevel l){SceneInstances.fixtureCap(null);HideAndClap.clearAll();SceneInstances.clear();close();}
     private static final LabyrinthPlace SCENE=LabyrinthPlace.HILL_NURSERY;
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
@@ -436,6 +437,67 @@ public final class CoopTests {
                 var fresh=f.data().state(HarriganVignette.ID+"@1");
                 h.assertTrue(fresh.getInt("Visit")==0&&!fresh.getBoolean("TicketVisible")&&!fresh.getBoolean("PropTaken0490_harrigan_phone")&&fresh.hasUUID("Harrigan0505"),"its story starts again, with the same Mr. Harrigan");
                 h.assertTrue(f.data().isCompleted(HarriganVignette.ID)&&f.data().state(HarriganVignette.ID).getInt("Visit")==2,"the original's story is untouched by the copy's");
+                SceneInstances.fixtureCap(null);
+            }).thenSucceed();
+    }
+
+    /** 0.4.158: the clapping game is private, with a copy for a reader who finds it taken, and every reader can win it once. */
+    @GameTest(template="empty",batch="coop_clap158",timeoutTicks=6000)
+    public static void theClappingGameIsPrivateAndEachReaderPlaysItInARoomOfTheirOwn(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var server=f.in.getServer();var place=LabyrinthPlace.HIDE_AND_CLAP;String copied=HideAndClap.ID+"@1";
+        var first=player(h,f,"clap_first");var second=player(h,f,"clap_second");var third=player(h,f,"clap_third");hold(f,place);
+        java.util.function.Function<BlockPos,net.minecraft.world.entity.decoration.ItemFrame> frame=at->f.in.getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class,new AABB(at).inflate(.6)).stream().filter(e->e.getPos().equals(at)).findFirst().orElse(null);
+        java.util.function.Predicate<BlockPos> clothOnWall=room->{var hung=frame.apply(room.offset(HideAndClap.BLINDFOLD_FRAME));return hung!=null&&hung.getItem().is(LabyrinthRegistry.BLINDFOLD.get());};
+        java.util.function.Consumer<ServerPlayer> rest=p->{p.setNoGravity(true);p.setDeltaMovement(Vec3.ZERO);};
+        // The second reader follows the claps in their own room, as the original's success case does.
+        h.onEachTick(()->{var round=f.data().state(copied).getCompound("Session");if(!round.getString("Stage").equals("CLAPPING"))return;
+            var spots=round.getLongArray("Spots");int index=round.getInt("Index");if(index>=spots.length)return;
+            var at=Vec3.atBottomCenterOf(BlockPos.of(spots[index]));var middle=Vec3.atBottomCenterOf(SceneInstances.base(server,place,1).offset(0,0,-7));
+            float yaw=(float)Math.toDegrees(Math.atan2(-(at.x-middle.x),at.z-middle.z));second.teleportTo(f.in,at.x,at.y,at.z,yaw,0);});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the child's bedroom is resident"))
+            .thenExecute(()->{
+                HideAndClap.clearAll();HideAndClap.build(server,f.in,f.base(place));LabyrinthBuilder.registerDoors(f.data(),place,f.base(place));f.built.add(place);
+                h.assertTrue(SceneInstances.copyable(place)&&SharedVignettes.privateScene(place)&&!SharedVignettes.followable(place),"the clapping game is a private scene with copies: a group is never led into it");
+                at(first,f.in,f.base(place).offset(0,0,-4));rest.accept(first);
+                h.assertTrue(SceneInstances.enter(first,place).copy()==0&&HideAndClap.enter(first),"the first reader takes the original room and reserves its game");
+                var waiting=SceneInstances.enter(second,place);h.assertTrue(waiting.door()==null&&waiting.waiting(),"a second reader waits while a room of their own is made ready");
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),place,1),"a copy of the room stands ready"))
+            .thenExecute(()->f.chunks.hold(f.in,IndianLakeRooms.bounds(SceneInstances.base(server,place,1),place)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&clothOnWall.test(SceneInstances.base(server,place,1)),"the copy is resident, with its own blindfold on the wall"))
+            .thenExecute(()->{
+                var chosen=SceneInstances.enter(second,place);var room=SceneInstances.base(server,place,1);
+                h.assertTrue(chosen.door()!=null&&chosen.copy()==1,"the second reader's door opens onto the copy");
+                at(second,f.in,room.offset(0,0,-4));rest.accept(second);
+                h.assertTrue(HideAndClap.canEnter(second)&&HideAndClap.enter(second),"the copy's game is the second reader's, though the original's is reserved");
+                h.assertTrue(f.data().state(HideAndClap.ID).getCompound("Session").getUUID("Player").equals(first.getUUID())
+                        &&f.data().state(copied).getCompound("Session").getUUID("Player").equals(second.getUUID()),"each room keeps its own round");
+                second.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,new net.minecraft.world.item.ItemStack(LabyrinthRegistry.BLINDFOLD.get()));
+            })
+            .thenWaitUntil(()->h.assertTrue(HideAndClap.isLocked(second)&&!HideAndClap.isLocked(first),"the blindfold binds the second reader's round alone"))
+            .thenWaitUntil(()->h.assertTrue(f.data().state(copied).contains("Wardrobe"),"the copy's own claps lead to its own wardrobe"))
+            .thenExecute(()->{
+                var room=SceneInstances.base(server,place,1);var wardrobe=room.offset(BlockPos.of(f.data().state(copied).getLong("Wardrobe")));
+                var click=new BlockHitResult(wardrobe.getCenter(),Direction.SOUTH,wardrobe,false);
+                HideAndClap.onRightClickBlock(new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(second,InteractionHand.MAIN_HAND,wardrobe,click));
+                h.assertTrue(f.data().state(copied).getBoolean("Completed")&&!f.data().isCompleted(HideAndClap.ID),"winning in the copy finishes that room's game, not the world's");
+                h.assertTrue(WitnessAccount.has(f.data(),second.getUUID(),WitnessAccount.Story.CLAP)&&!WitnessAccount.has(f.data(),first.getUUID(),WitnessAccount.Story.CLAP)&&!HideAndClap.isLocked(second),"the winner keeps the story and is let go");
+                h.assertTrue(f.data().state(HideAndClap.ID).getCompound("Session").getUUID("Player").equals(first.getUUID()),"the first reader's round in the original is untouched");
+                h.assertTrue(LabyrinthDealer.finishedFor(f.data(),second.getUUID(),place)&&LabyrinthDealer.vignettesAvailable(f.data(),first.getUUID()).contains(place)
+                        &&LabyrinthDealer.vignettesAvailable(f.data(),third.getUUID()).contains(place),"the winner's door is a passage now; the others are still dealt the game");
+                // The winner looks on as a spectator, who holds no room; no further copy may be built.
+                second.setGameMode(GameType.SPECTATOR);SceneInstances.fixtureCap(1);
+                var reuse=SceneInstances.enter(third,place);
+                h.assertTrue(reuse.copy()==1&&reuse.door()!=null,"a copy whose reader has won is the next reader's: "+reuse);
+                var fresh=f.data().state(copied);
+                h.assertTrue(!fresh.getBoolean("Completed")&&!fresh.getBoolean("Opened")&&!fresh.contains("Session")&&fresh.contains("Clear"),"its round starts again, and its wardrobe is due to come out");
+            })
+            .thenWaitUntil(()->{var room=SceneInstances.base(server,place,1);
+                h.assertTrue(!f.data().state(copied).contains("Clear")&&clothOnWall.test(room),"the room is put back as new: the wardrobe is gone and the blindfold is back on the wall");})
+            .thenExecute(()->{
+                var room=SceneInstances.base(server,place,1);at(third,f.in,room.offset(0,0,-4));rest.accept(third);
+                h.assertTrue(HideAndClap.enter(third)&&f.data().state(copied).getCompound("Session").getUUID("Player").equals(third.getUUID()),"the next reader plays the copy's game from the start");
+                h.assertTrue(!f.data().isCompleted(HideAndClap.ID)&&f.data().state(HideAndClap.ID).getCompound("Session").getUUID("Player").equals(first.getUUID()),"and the original's round is still the first reader's");
                 SceneInstances.fixtureCap(null);
             }).thenSucceed();
     }

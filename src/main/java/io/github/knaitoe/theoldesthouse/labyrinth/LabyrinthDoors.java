@@ -486,8 +486,8 @@ public final class LabyrinthDoors {
         }
         if (into < THRESHOLD) SHUT_FOR.remove(id);
         if (into >= THRESHOLD) {
-            if (place == LabyrinthPlace.HIDE_AND_CLAP && !data.isCompleted(HideAndClap.ID)
-                    && HideAndClap.isInRoom(LabyrinthPlaces.base(origin, place), player.position())) {
+            // 0.4.158: the room they stand in, the original or their copy, with its own game.
+            if (place == LabyrinthPlace.HIDE_AND_CLAP && HideAndClap.arriving(player)) {
                 if (HideAndClap.enter(player)) { INSIDE.add(id); VignetteGate.stepped(player,place); return true; }
                 goBack(player, entry, data);
                 return true;
