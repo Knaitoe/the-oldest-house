@@ -109,7 +109,8 @@ public final class UncannySocketProof {
                 if(offline){
                     var saved=NIGHTS.get(b.getUUID());require(saved!=null,"same reconnect profile");var own=own(b,LabyrinthPlace.MISSING_SLEEP);
                     require(own.getInt("Sleeps")==saved.getInt("Sleeps")&&own.getInt("NightClock")==saved.getInt("NightClock")&&DOLLS.get(b.getUUID()).equals(own.getUUID("CastDoll")),"same saved night and original doll after native reconnect");
-                    for(var p:List.of(a,b))at(p,LabyrinthPlace.MISSING_SLEEP,-5.5,5,-19.5);step(s,11);
+                    // Side by side for the cameras: on one block the other reader's body z-fights with this reader's own face in the feed.
+                    for(var p:List.of(a,b))at(p,LabyrinthPlace.MISSING_SLEEP,p==a?-5.5:-6.5,5,-19.5);step(s,11);
                 }return;
             }
             if(phase==17){if(s.getTickCount()-changed>100){CHUNKS.close();s.halt(false);}return;}
@@ -148,7 +149,7 @@ public final class UncannySocketProof {
                     own.putInt("SecondSleepAge",own.getInt("UncannyAge")+3600);save(p,LabyrinthPlace.MISSING_SLEEP,own);at(p,LabyrinthPlace.MISSING_SLEEP,p==a?1.2:2.8,5,-20.5);
                 }step(s,8);
             }
-            else if(phase==8){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("MarionetteSeen"),"the reader personally saw the direct form");at(p,LabyrinthPlace.MISSING_SLEEP,-5.5,5,-19.5);}step(s,9);}
+            else if(phase==8){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("MarionetteSeen"),"the reader personally saw the direct form");at(p,LabyrinthPlace.MISSING_SLEEP,p==a?-5.5:-6.5,5,-19.5);}step(s,9);}
             else if(phase==9){
                 for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.MISSING_SLEEP);require(own.getInt("FeedsSeen")==15&&own.getBoolean("OwnFaceSeen")&&own.getInt("MonitorTicks")>=40,"all four captured feeds and actual own face");NIGHTS.put(p.getUUID(),own.copy());}
                 s.saveEverything(true,true,true);write("restart-b.txt","Native same-profile reconnect now. Original doll and night are retained.\n");step(s,10);
