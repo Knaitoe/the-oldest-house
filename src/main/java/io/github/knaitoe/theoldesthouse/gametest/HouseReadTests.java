@@ -69,7 +69,7 @@ public final class HouseReadTests {
           }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"the actual original door permits immediate retreat"))
           .thenExecute(()->{
               h.assertTrue(ItemStack.matches(gear[0],p.getItemBySlot(EquipmentSlot.CHEST))&&ItemStack.matches(gear[1],p.getItemBySlot(EquipmentSlot.FEET)),"the exact original gear, names and damage return to their original slots");for(int i=0;i<36;i++)h.assertTrue(p.getInventory().getItem(i).is(Items.COBBLESTONE)&&p.getInventory().getItem(i).getCount()==64,"a full original pack is unchanged");
-              h.assertTrue(f.data().returnDepth(p.getUUID())==0&&p.getHealth()==20,"a quiet retreat consumes no story return, health or reward");
+              h.assertTrue(f.data().returnCount(p.getUUID())==0&&p.getHealth()==20,"a quiet retreat consumes no story return, health or reward");
           }).thenSucceed();
     }
 
@@ -87,7 +87,7 @@ public final class HouseReadTests {
           .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(a)==null&&!LabyrinthDoors.isBusy(a)&&a.distanceToSqr(target.getCenter())<25,"the first reader goes through the office door into the original ordinary hall"))
           .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(b)==null&&!LabyrinthDoors.isBusy(b)&&b.position().distanceToSqr(a.position())<.01,"the second reader, doing nothing, is taken on by the House into that same shared hall"))
           .thenExecute(()->{
-              h.assertTrue(f.data().returnDepth(a.getUUID())==1&&f.data().returnDepth(b.getUUID())==1,"each route contains exactly the genuine original forward crossing");var back=new LabyrinthData.Waypoint(from[0].dimension,Vec3.atBottomCenterOf(from[0].lower),from[0].facing.toYRot(),true);var originalKey=f.data().nodeKey(a.getUUID(),LabyrinthPlace.GRAY_CORRIDOR);h.assertTrue(f.data().node(a.getUUID(),originalKey)!=null,"the original destination has the ordinary native remembered map");
+              h.assertTrue(f.data().returnCount(a.getUUID())==1&&f.data().returnCount(b.getUUID())==1,"each route contains exactly the genuine original forward crossing");var back=new LabyrinthData.Waypoint(from[0].dimension,Vec3.atBottomCenterOf(from[0].lower),from[0].facing.toYRot(),true);var originalKey=f.data().nodeKey(a.getUUID(),LabyrinthPlace.GRAY_CORRIDOR);h.assertTrue(f.data().node(a.getUUID(),originalKey)!=null,"the original destination has the ordinary native remembered map");
               h.assertTrue(HouseReadSites.next(a.server,a.getUUID())==HouseReadSites.Room.BATHROOM&&WitnessAccount.Story.of(LabyrinthPlace.READ_COATROOM.id())==null&&WitnessAccount.Story.of(LabyrinthPlace.READ_PORCH.id())==null,"the next quiet moment is the bathroom, and the quiet rooms are not Witness sources");
               h.assertTrue(HouseReadSites.state(b.server,b.getUUID()).getCompound("waiting").getInt("Age")<HouseReadMoments.WAIT+60,"the House does not keep a reader waiting long past the call");
           }).thenSucceed();
@@ -113,7 +113,7 @@ public final class HouseReadTests {
               f.reload();h.assertTrue(visit(p,HouseReadSites.Room.PORCH).getInt("Age")>=435&&visit(p,HouseReadSites.Room.PORCH).getBoolean("Written"),"the quiet timer and same original rail state survive saved-data reload");
               var entry=f.data().door("house_read/"+p.getUUID()+"/porch/entry");stand(p,f.out,b[0],.5,0,11.5);click(p,entry.lower);
           }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"doing nothing still permits immediate ordinary retreat through the actual entry"))
-          .thenExecute(()->h.assertTrue(p.getHealth()==20&&f.data().returnDepth(p.getUUID())==0,"there is no punishment or story credit for this quiet moment")).thenSucceed();
+          .thenExecute(()->h.assertTrue(p.getHealth()==20&&f.data().returnCount(p.getUUID())==0,"there is no punishment or story credit for this quiet moment")).thenSucceed();
     }
     @GameTest(template="empty",batch="read_waiting",timeoutTicks=5000)
     public static void waitingObjectsArePrivateTheBellNeverShortensTheWaitAndAllBorrowedOriginalsReturn(GameTestHelper h){
@@ -140,7 +140,7 @@ public final class HouseReadTests {
               h.assertTrue(f.in.getBlockState(b[0].offset(HouseReadRemainingRooms.OUTLET_AT)).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.OUTLET&&f.in.getBlockState(b[0].offset(7,1,-2)).is(HouseReadRegistry.WINDOW.get()),"the phone charges at its outlet and the phone chair has its clear window onto the lot");
               h.assertTrue(f.in.getBlockState(b[0].offset(HouseReadMoments.exit(HouseReadSites.Room.WAITING))).getValue(DoorBlock.OPEN),"the actual exit opens regardless of what was handled");HouseReadExport.save(f.in,b[0],HouseReadSites.Room.WAITING,"waiting_room");stand(p,f.in,b[0],.5,0,1);click(p,b[0].offset(HouseReadRooms.COAT_ENTRY));
           }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"native original entry still permits retreat"))
-          .thenExecute(()->{h.assertTrue(f.in.getChunkSource().getChunkNow(coldCoat[0].getX()>>4,coldCoat[0].getZ()>>4)==null,"returning borrowed waiting-room objects must not load the unrelated coatroom");h.assertTrue(ItemStack.matches(head[0],p.getItemBySlot(EquipmentSlot.HEAD)),"the original named/damaged helmet returns exactly");for(int i=0;i<36;i++)h.assertTrue(p.getInventory().getItem(i).is(Items.COBBLESTONE)&&p.getInventory().getItem(i).getCount()==64,"the full original pack returns intact");h.assertTrue(f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,p.getBoundingBox().inflate(5),e->ItemStack.matches(extra[0],e.getItem())).size()==1,"an item put into the borrowed hand is preserved exactly once even when the original pack is full");h.assertTrue(f.data().returnDepth(p.getUUID())==0,"quiet waiting gives no story return or reward");}).thenSucceed();
+          .thenExecute(()->{h.assertTrue(f.in.getChunkSource().getChunkNow(coldCoat[0].getX()>>4,coldCoat[0].getZ()>>4)==null,"returning borrowed waiting-room objects must not load the unrelated coatroom");h.assertTrue(ItemStack.matches(head[0],p.getItemBySlot(EquipmentSlot.HEAD)),"the original named/damaged helmet returns exactly");for(int i=0;i<36;i++)h.assertTrue(p.getInventory().getItem(i).is(Items.COBBLESTONE)&&p.getInventory().getItem(i).getCount()==64,"the full original pack returns intact");h.assertTrue(f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,p.getBoundingBox().inflate(5),e->ItemStack.matches(extra[0],e.getItem())).size()==1,"an item put into the borrowed hand is preserved exactly once even when the original pack is full");h.assertTrue(f.data().returnCount(p.getUUID())==0,"quiet waiting gives no story return or reward");}).thenSucceed();
     }
 
     @GameTest(template="empty",batch="read_routine",timeoutTicks=5000)
@@ -189,7 +189,7 @@ public final class HouseReadTests {
           .thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.BATHROOM).getBoolean("Written"),"the original postcard gains its writing only unseen"))
           .thenExecute(()->{stand(p,f.in,b[0],.5,0,-6.5);click(p,b[0].offset(HouseReadRemainingRooms.POSTCARD_AT));h.assertTrue(p.containerMenu instanceof LecternMenu&&!p.containerMenu.clickMenuButton(p,3),"the original postcard has actual read-only pages");p.closeContainer();for(var room:HouseReadSites.Room.values()){var words=String.join(" ",HouseReadTexts.book(room).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList());h.assertTrue(words.equals(HouseReadTexts.text(room).replace("\n\n"," ")),"all five owner's passages remain verbatim after native pagination");h.assertTrue(WitnessAccount.Story.of(room.place().id())==null,"a quiet first room is never an extra Witness source");}stand(p,f.in,b[0],.5,0,1);click(p,b[0].offset(HouseReadRooms.COAT_ENTRY));})
           .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"untouched bathroom still permits native retreat"))
-          .thenExecute(()->h.assertTrue(p.getHealth()==20&&f.data().returnDepth(p.getUUID())==0,"no wrong answer, health charge or story credit")).thenSucceed();
+          .thenExecute(()->h.assertTrue(p.getHealth()==20&&f.data().returnCount(p.getUUID())==0,"no wrong answer, health charge or story credit")).thenSucceed();
     }
 
     @GameTest(template="empty",batch="read_shelter",timeoutTicks=6000)
@@ -211,6 +211,6 @@ public final class HouseReadTests {
               h.assertTrue(visit(p,HouseReadSites.Room.SHELTER).getBoolean("Lantern")&&HouseRead.seen(f.data(),p.getUUID()).getCompound("shelter").getString("Stood").equals("lantern"),"the dock ahead, past both rails, with its lantern is a quiet real destination, and staying there through the song is kept");h.assertTrue(packets(p).stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&HouseReadRegistry.MUSIC.stream().anyMatch(cue->cue.get()==sound.getSound().value())),"the real reader receives the native instrumental");h.assertTrue(packets(peer).stream().noneMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&HouseReadRegistry.MUSIC.stream().anyMatch(cue->cue.get()==sound.getSound().value())),"the other reader hears no private song");
               HouseReadExport.save(f.in,b[0],HouseReadSites.Room.SHELTER,"lakeside_shelter");stand(p,f.in,b[0],-2.5,0,.5);click(p,b[0].offset(HouseReadRooms.entry(HouseReadSites.Room.SHELTER)));
           }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"the original door always permits a quiet departure"))
-          .thenExecute(()->{h.assertTrue(p.getHealth()==20&&f.data().returnDepth(p.getUUID())==0,"neither solitude nor company punishes or rewards the reader");h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).getCompound(HouseReadSites.Room.SHELTER.key()).getUUID("Man").equals(cast[0]),"leaving never restages or replaces the original cast");}).thenSucceed();
+          .thenExecute(()->{h.assertTrue(p.getHealth()==20&&f.data().returnCount(p.getUUID())==0,"neither solitude nor company punishes or rewards the reader");h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).getCompound(HouseReadSites.Room.SHELTER.key()).getUUID("Man").equals(cast[0]),"leaving never restages or replaces the original cast");}).thenSucceed();
     }
 }

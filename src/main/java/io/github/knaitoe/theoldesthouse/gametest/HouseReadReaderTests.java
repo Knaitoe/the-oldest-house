@@ -16,6 +16,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.level.block.*;
 import net.neoforged.neoforge.gametest.*;
+import io.github.knaitoe.theoldesthouse.network.HouseBodiesPayload;
 import static io.github.knaitoe.theoldesthouse.labyrinth.HouseRead.Trait.*;
 
 /** 0.4.159: the House's read of the reader, from the quiet rooms' signals to the account, the book, the glass and the deal. */
@@ -26,6 +27,7 @@ public final class HouseReadReaderTests {
     @AfterBatch(batch="read_eaves") public static void eavesDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_yard") public static void yardDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_glass") public static void glassDone(ServerLevel ignored){close();}
+    @AfterBatch(batch="read_body163") public static void bodyDone(ServerLevel ignored){close();}
     private static void close(){HouseReadSites.clear();if(active!=null){active.close();active=null;}}
     private static LiteraryTests.Fixture fixture(GameTestHelper h){active=new LiteraryTests.Fixture(h);return active;}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).markEntered();p.setNoGravity(true);return p;}
@@ -42,6 +44,45 @@ public final class HouseReadReaderTests {
     private static long looks(ServerPlayer p){var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));long n=0;while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);else if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.HouseReadLookPayload)n++;}return n;}
     private static final Pattern GENDERED=Pattern.compile("\\b(he|she|him|his|her|hers|himself|herself)\\b",Pattern.CASE_INSENSITIVE);
     private static final String OWNER="You read the local page until the door clicked, and put the silk on before the bathroom light went out. In the hall, you took the trench coat off the peg without looking in the glass, stood by the girl under the eaves until the song finished, and went straight in when the whistle blew.";
+
+    private static List<HouseBodiesPayload> bodies(ServerPlayer p){
+        var out=new ArrayList<HouseBodiesPayload>();var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));
+        while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);else if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof HouseBodiesPayload b)out.add(b);}
+        return out;
+    }
+
+    /** 0.4.163, the owner: "have you implemented the check for 'human' skins yet? my player skin is still displaying." */
+    @GameTest(template="empty",batch="read_body163",timeoutTicks=200)
+    public static void aReaderWhoseFaceIsNotHumanWearsTheBodyTheHouseReadInsideTheHouseOnly(GameTestHelper h){
+        // The face check each client makes of its own skin: the front of the head, with the hat layer over it.
+        int tone=0xffc8946e,green=0xff5ea948,grey=0xff3c3c3c;
+        java.util.function.IntBinaryOperator person=(x,y)->x>=40?0:(y<10?0xff4a3326:tone),creeper=(x,y)->x>=40?0:green,wither=(x,y)->x>=40?0:grey;
+        java.util.function.IntBinaryOperator masked=(x,y)->x>=40&&x<48&&y>=8&&y<16?green:(y<10?0xff4a3326:tone),bare=(x,y)->0;
+        h.assertTrue(HouseBodies.humanFace(person)&&!HouseBodies.humanFace(creeper)&&!HouseBodies.humanFace(wither),"a face in human skin colours reads human; a creeper's or a wither's does not");
+        h.assertTrue(!HouseBodies.humanFace(masked)&&!HouseBodies.humanFace(bare),"the hat layer over the face counts, and an empty face reads nothing human");
+        for(int c:new int[]{0xf5d6c6,0xe0ac69,0xc68642,0x8d5524,0x5c3a21,0x3b2219})h.assertTrue(HouseBodies.skinColour(c>>16&255,c>>8&255,c&255),"every human skin tone reads as skin: "+Integer.toHexString(c));
+        for(int c:new int[]{0x5ea948,0x3c3c3c,0xbebebe,0x4682dc,0x46825e,0x191919})h.assertTrue(!HouseBodies.skinColour(c>>16&255,c>>8&255,c&255),"greens, greys, blues and black do not: "+Integer.toHexString(c));
+        var f=fixture(h);var p=player(h,f,"body_creeper");var q=player(h,f,"body_person");var d=f.data();
+        // The body follows the read; what isn't read takes the neutral choices.
+        h.assertTrue(HouseBodies.body(d,p.getUUID()).equals(new HouseBodies.Body(0,0,0,-1,-1)),"an unread reader is a young adult in plain clothes with short hair, in their account's default colours");
+        HouseRead.restart(p,AGE,"ANALOG");HouseRead.restart(p,HAIR,"BRAIDED_AND_OILED");HouseRead.restart(p,SELF,"FEM");
+        h.assertTrue(HouseBodies.body(d,p.getUUID()).equals(new HouseBodies.Body(2,0,2,-1,-1)),"age and hair follow the read; the clothes wait for a settled presentation: "+HouseBodies.body(d,p.getUUID()));
+        HouseRead.signal(p,SELF,"FEM",true);
+        h.assertTrue(HouseBodies.body(d,p.getUUID()).equals(new HouseBodies.Body(2,2,2,-1,-1))&&HouseBodies.body(d,p.getUUID()).sheet().equals("older_fem_braids"),"settled, the clothes follow too: "+HouseBodies.body(d,p.getUUID()).sheet());
+        // Only an inhuman skin, and only inside the House.
+        stand(p,f.out,f.origin,0,0,0);stand(q,f.out,f.origin,2,0,0);HouseBodies.report(p,false);HouseBodies.report(q,true);
+        h.assertTrue(HouseBodies.worn(p)!=null&&HouseBodies.worn(q)==null,"inside the House the inhuman-skinned reader wears the body and the human-skinned reader keeps their own");
+        bodies(p);bodies(q);HouseBodies.sync(p.server);
+        for(var reader:List.of(p,q)){var sent=bodies(reader);h.assertTrue(sent.size()==1&&sent.getFirst().bodies().size()==1&&sent.getFirst().bodies().getFirst().reader().equals(p.getUUID())&&sent.getFirst().bodies().getFirst().body().sheet().equals("older_fem_braids"),"every reader there is told the body, and only the inhuman-skinned reader's: "+sent);}
+        HouseBodies.sync(p.server);h.assertTrue(bodies(p).isEmpty(),"nothing is sent again until something changes");
+        stand(p,h.getLevel(),h.absolutePos(BlockPos.ZERO).above(),0,0,0);
+        h.assertTrue(HouseBodies.worn(p)==null,"outside the House their own skin returns");HouseBodies.sync(p.server);var after=bodies(q);
+        h.assertTrue(after.size()==1&&after.getFirst().bodies().isEmpty(),"and everyone is told: "+after);
+        stand(p,f.out,f.origin,0,0,0);
+        try{HouseConfig.HOUSE_BODIES.set(false);h.assertTrue(HouseBodies.worn(p)==null,"the server option turns the House's body off");}finally{HouseConfig.HOUSE_BODIES.set(true);}
+        HouseBodies.report(p,true);h.assertTrue(HouseBodies.worn(p)==null,"a reader whose skin is human again wears their own");
+        h.succeed();
+    }
 
     /** Every observation each room's clause can be written from: all its branches. */
     private static List<List<CompoundTag>> variants(){

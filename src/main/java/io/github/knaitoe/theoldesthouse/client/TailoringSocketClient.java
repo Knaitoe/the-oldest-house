@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.event.*;
 /** Real native entity visibility, same-profile reconnect, menu input and production framebuffer capture. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class TailoringSocketClient {
-    private static int phase,age,clicked=-100,ack=-1;private static String shot;private static boolean stopping,sawFirst;
+    private static int phase,age,clicked=-100,ack=-1,opened;private static String shot;private static boolean stopping,sawFirst,mirrored,inventoried;
     private TailoringSocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean okay,String text){if(!okay)throw new IllegalStateException("TAILORING CLIENT: "+text);}
@@ -34,7 +34,7 @@ public final class TailoringSocketClient {
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(!TailoringSocketProof.enabled())return;var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var data=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(data==null)return;var tag=data.copyTag();int next=tag.getInt("TailoringStep");if(next==0)return;
-        if(next!=phase){phase=next;age=0;clicked=-100;ack=-1;shot=null;stopping=false;}age++;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyJump.setDown(false);mc.options.setCameraType(CameraType.FIRST_PERSON);mc.getToasts().clear();
+        if(next!=phase){phase=next;age=0;clicked=-100;ack=-1;shot=null;stopping=false;mirrored=false;inventoried=false;}age++;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyJump.setDown(false);mc.options.setCameraType(CameraType.FIRST_PERSON);mc.getToasts().clear();
         if(phase==6){mc.stop();return;}if(ack==phase)return;if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen)return;var at=BlockPos.of(tag.getLong("Target"));
         if(phase<=3){
             var original=own(mc,at,tag);if(original==null||!mc.levelRenderer.isSectionCompiled(at)||age<50)return;look(mc,original.position().add(0,.025,0));
@@ -46,7 +46,16 @@ public final class TailoringSocketClient {
         }else if(phase==5){
             // 0.4.161: the coatroom glass. Face it square, and capture once it has drawn the reflected room for a while.
             if(!mc.levelRenderer.isSectionCompiled(at)||age<40)return;look(mc,Vec3.atCenterOf(at).add(0,.5,0));
-            if(age>=200){require(HouseReadReflection.showing(at),"the glass in front of this reader is drawing the reflected room");shot=role()+"-mirror";}
+            if(!mirrored){if(age>=200){require(HouseReadReflection.showing(at),"the glass in front of this reader is drawing the reflected room");
+                // 0.4.163: B's reader has a skin that is not human; inside the House both clients draw them in the House's body.
+                var b=role().equals("B")?mc.player:mc.level.players().stream().filter(other->other!=mc.player).findFirst().orElse(null);
+                require(b!=null&&HouseBodyClient.wearing(b.getUUID())&&b.getSkin().texture().getPath().startsWith("house_body/"),"B's reader is drawn in the House's body on "+role()+"'s client");
+                require(role().equals("B")||!HouseBodyClient.wearing(mc.player.getUUID()),"A's human skin is never replaced");
+                shot=role()+"-mirror";}}
+            // 0.4.163: then the inventory, whose figure stays empty inside the House.
+            else if(!inventoried){if(mc.screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen&&age-opened>=20)shot=role()+"-inventory";}
+            // A then turns to B, who is drawn in the House's body.
+            else{var b=mc.level.players().stream().filter(other->other!=mc.player).findFirst().orElse(null);require(b!=null,"B is in the coatroom with A");look(mc,b.getEyePosition().add(0,-.5,0));if(age-opened>=25)shot="A-body";}
         }else if(phase==4){
             if(mc.screen instanceof LecternScreen){
                 var book=mc.player.containerMenu.getSlot(0).getItem();var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);require(content!=null&&content.author().equals("Dad")&&content.pages().size()==3,"the actual native menu has the complete original and one added care memory");
@@ -57,7 +66,16 @@ public final class TailoringSocketClient {
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{if(!TailoringSocketProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();if(mc.player==null||ack==phase)return;var name=shot;shot=null;Files.createDirectories(TailoringSocketProof.folder());
-        try(var im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(TailoringSocketProof.folder().resolve(name+".png"));}
+        try(var im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(TailoringSocketProof.folder().resolve(name+".png"));
+            if(name.endsWith("-inventory")){
+                // The figure's box (26..75, 8..78 in the screen's own pixels) shows only its dark backing, no reader.
+                var screen=(net.minecraft.client.gui.screens.inventory.InventoryScreen)mc.screen;double s=mc.getWindow().getGuiScale();int lit=0,all=0;
+                for(int y=(int)((screen.getGuiTop()+10)*s);y<(int)((screen.getGuiTop()+76)*s);y++)for(int x=(int)((screen.getGuiLeft()+28)*s);x<(int)((screen.getGuiLeft()+73)*s);x++){int c=im.getPixelRGBA(x,y);all++;if((c&0xff)+((c>>8)&0xff)+((c>>16)&0xff)>60)lit++;}
+                require(all>0&&lit<all/50,"inside the House the inventory shows no figure of the reader ("+lit+" of "+all+" pixels lit)");
+            }
+        }
+        if(name.endsWith("-mirror")){mirrored=true;opened=age;mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));return;}
+        if(name.endsWith("-inventory")){mc.setScreen(null);if(role().equals("A")){inventoried=true;opened=age;return;}}
         if(phase<=3){var data=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA).copyTag();String id=data.getUUID("Own").toString();var file=TailoringSocketProof.folder().resolve(role()+"-sink-original.txt");if(phase==1)Files.writeString(file,id);if(phase==2&&!stopping)require(Files.readString(file).equals(id),"the rendered original UUID is unchanged across the real reconnect");Files.writeString(TailoringSocketProof.folder().resolve(name+".txt"),"Native entity "+id+"; sole owner-only display at "+BlockPos.of(data.getLong("Target"))+"; rendered frame "+name+".\n");}
         if(stopping){Files.writeString(TailoringSocketProof.folder().resolve("restart-b.txt"),"B captured its actual original and disconnected.\n");mc.stop();return;}
         ack=phase;mc.player.connection.sendCommand("tailoringproof "+phase);TheOldestHouse.LOGGER.info("TAILORING CLIENT {} captured phase {}",role(),phase);
