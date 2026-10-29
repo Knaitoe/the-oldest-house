@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("93")
+        event.registrar("94")
                 .playToClient(HouseReadLinePayload.TYPE,HouseReadLinePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseReadLineScreen.show(payload)))
                 .playToClient(HouseReadLookPayload.TYPE,HouseReadLookPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseReadLookClient.accept(payload)))
                 .playToClient(HouseBodiesPayload.TYPE,HouseBodiesPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseBodyClient.accept(payload)))

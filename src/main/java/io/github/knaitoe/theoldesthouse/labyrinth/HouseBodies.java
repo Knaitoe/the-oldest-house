@@ -67,7 +67,8 @@ public final class HouseBodies {
         int age=switch(HouseRead.value(d,reader,HouseRead.Trait.AGE,false)){case "ANALOG"->2;case "TRANSITIONAL"->1;default->0;};
         int presentation=switch(HouseRead.value(d,reader,HouseRead.Trait.SELF,true)){case "MASC"->1;case "FEM"->2;default->0;};
         int cut=switch(HouseRead.value(d,reader,HouseRead.Trait.HAIR,false)){case "WRAPPED"->1;case "BRAIDED_AND_OILED"->2;case "BRUSHED_DRY"->3;case "WASHED_AND_BARBERED"->4;default->0;};
-        return new Body(age,presentation,cut,-1,-1);
+        // 0.4.168: the tone and hair colour the reader drew at the kitchen table, when there is one.
+        return new Body(age,presentation,cut,HouseReadKitchen.tone(d,reader),HouseReadKitchen.hair(d,reader));
     }
     /** The body a reader is wearing now, if any: only an inhuman skin, only inside the House, and only while the option is on. */
     public static @Nullable Body worn(ServerPlayer reader){

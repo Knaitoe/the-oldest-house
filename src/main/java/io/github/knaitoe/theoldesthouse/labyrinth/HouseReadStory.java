@@ -29,6 +29,7 @@ public final class HouseReadStory {
         case COATROOM->"Once you came in out of the rain, soaked to the skin, into a hall where nobody was looking, and dressed yourself.";
         case SHELTER->"There was a summer storm, and a roof over the water, and two people you hadn't found the nerve to talk to.";
         case PORCH->"And at the end of every day, somebody called you in for supper.";
+        case KITCHEN->"You were small once. It was four o'clock, the kitchen was warm, and somebody had left the crayons out on the table.";
     };}
     public static String closing(HouseReadSites.Room room){return switch(room){
         case WAITING->"They called your name. They always do, in the end.";
@@ -36,6 +37,7 @@ public final class HouseReadStory {
         case COATROOM->"That's how you'll look here. The glass will remember.";
         case SHELTER->"The song ended. Somebody always goes home before the rain stops.";
         case PORCH->"Welcome home. I've set a place for you at the table.";
+        case KITCHEN->"There you are. Now I'll know you when I see you.";
     };}
     /** The sound each room is cut off with: its own door, switch or needle, heard in the dark. */
     static String cut(HouseReadSites.Room room){return switch(room){
@@ -44,6 +46,7 @@ public final class HouseReadStory {
         case COATROOM->"minecraft:block.wooden_door.close";
         case SHELTER->"minecraft:block.note_block.bass";
         case PORCH->"minecraft:block.wooden_trapdoor.close";
+        case KITCHEN->"minecraft:block.iron_trapdoor.close";
     };}
 
     /** How long a card holds, in ticks: a beat to arrive, then time to read every page. Shared with the client. */
@@ -60,6 +63,7 @@ public final class HouseReadStory {
             case COATROOM->seen.contains("Took")||seen.contains("Mirror");
             case SHELTER->visit.getInt("SongAge")>=900&&answered(seen);
             case PORCH->seen.contains("First");
+            case KITCHEN->visit.getBoolean("Hung");
         };
     }
     /** The shelter has its answer once the reader has gone to someone, stayed between them, or walked out past both. */

@@ -40,7 +40,7 @@ public final class HouseReadMoments {
      * 15 seconds whizzes by with the amount of detail you've added."
      */
     public static final int WAIT=800;
-    public static BlockPos exit(HouseReadSites.Room room){return switch(room){case WAITING->new BlockPos(0,0,-12);case BATHROOM->new BlockPos(4,0,-10);case SHELTER->new BlockPos(3,0,2);default->throw new IllegalArgumentException(room.name());};}
+    public static BlockPos exit(HouseReadSites.Room room){return switch(room){case WAITING->new BlockPos(0,0,-12);case BATHROOM->new BlockPos(4,0,-10);case SHELTER->new BlockPos(3,0,2);case KITCHEN->HouseReadKitchen.EXIT;default->throw new IllegalArgumentException(room.name());};}
     /** 0.4.166: a room's way on opens once the House has what the room is for ({@link HouseReadStory#ready}). */
     public static boolean canProceed(ServerPlayer p,HouseReadSites.Room room){return HouseReadStory.ready(p,room);}
     private static CompoundTag visit(ServerPlayer p,HouseReadSites.Room room){return HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());}
@@ -50,15 +50,17 @@ public final class HouseReadMoments {
     private static void keep(ServerPlayer p,ItemStack item){if(!item.isEmpty()&&!p.getInventory().add(item)){var e=new net.minecraft.world.entity.item.ItemEntity(p.serverLevel(),p.getX(),p.getY(),p.getZ(),item);e.setTarget(p.getUUID());p.serverLevel().addFreshEntity(e);}}
     private static void borrow(ServerPlayer p,Item item,boolean head){borrow(p,WAITING,item,head);}
     /** Lends a room's object into the reader's hand or onto their head; the original is kept to put back when they leave. */
-    private static void borrow(ServerPlayer p,HouseReadSites.Room room,Item item,boolean head){
+    private static void borrow(ServerPlayer p,HouseReadSites.Room room,Item item,boolean head){borrow(p,room,new ItemStack(item),head);}
+    /** 0.4.168: the kitchen lends a crayon of a particular colour, so a room may lend a prepared stack. */
+    static void borrow(ServerPlayer p,HouseReadSites.Room room,ItemStack lent,boolean head){
         var t=visit(p,room);int slot=head?39:t.contains("HandSlot")?t.getInt("HandSlot"):p.getInventory().selected;String key=head?"Head":"Hand";ItemStack displaced=ItemStack.EMPTY;
         if(!t.getBoolean("Borrowed"+key)){t.put("Before"+key,p.getInventory().getItem(slot).saveOptional(p.registryAccess()));t.putBoolean("Borrowed"+key,true);if(!head)t.putInt("HandSlot",slot);}
         else if(!HouseReadSites.loan(p.getInventory().getItem(slot),p.getUUID()))displaced=p.getInventory().getItem(slot).copy();
         if(!head)for(int i=0;i<p.getInventory().getContainerSize();i++)if(HouseReadSites.loan(p.getInventory().getItem(i),p.getUUID())&&p.getInventory().getItem(i).getItem() instanceof HouseReadBorrowedItem b&&!b.object.equals("glasses"))p.getInventory().setItem(i,ItemStack.EMPTY);
-        var stack=new ItemStack(item);loanTag(p,stack);p.getInventory().setItem(slot,stack);keep(p,displaced);if(!head)p.getInventory().selected=slot;save(p,room,t);p.inventoryMenu.broadcastChanges();
+        var stack=lent.copy();loanTag(p,stack);p.getInventory().setItem(slot,stack);keep(p,displaced);if(!head)p.getInventory().selected=slot;save(p,room,t);p.inventoryMenu.broadcastChanges();
         if(room!=WAITING)return;
         var base=HouseReadSites.base(p.server,p.getUUID(),WAITING);
-        for(var at:List.of(HouseReadRemainingRooms.PHONE_AT,HouseReadRemainingRooms.GLASSES_AT)){var pos=base.offset(at);var state=p.serverLevel().getBlockState(pos);if(state.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,at.equals(HouseReadRemainingRooms.GLASSES_AT)?p.getItemBySlot(EquipmentSlot.HEAD).is(HouseReadRegistry.GLASSES.get()):item==HouseReadRegistry.PHONE.get()),Block.UPDATE_CLIENTS);}
+        for(var at:List.of(HouseReadRemainingRooms.PHONE_AT,HouseReadRemainingRooms.GLASSES_AT)){var pos=base.offset(at);var state=p.serverLevel().getBlockState(pos);if(state.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,at.equals(HouseReadRemainingRooms.GLASSES_AT)?p.getItemBySlot(EquipmentSlot.HEAD).is(HouseReadRegistry.GLASSES.get()):lent.is(HouseReadRegistry.PHONE.get())),Block.UPDATE_CLIENTS);}
     }
     public static void handUse(ServerPlayer p,String object){
         if(HouseReadSites.inside(p)!=WAITING||!HouseReadSites.loan(p.getMainHandItem(),p.getUUID()))return;
@@ -67,7 +69,7 @@ public final class HouseReadMoments {
         else if(object.equals("magazine"))HouseReadTexts.openLiteral(p,WAITING,"County and garden",HouseReadTexts.MAGAZINE);
     }
     /** Puts a lent object back where it came from: the reader's own item returns to the slot it was in. */
-    private static void giveBack(ServerPlayer p,HouseReadSites.Room room,boolean head){
+    static void giveBack(ServerPlayer p,HouseReadSites.Room room,boolean head){
         var t=visit(p,room);String key=head?"Head":"Hand";if(!t.getBoolean("Borrowed"+key))return;int slot=head?39:t.getInt("HandSlot");
         var current=p.getInventory().getItem(slot);var displaced=HouseReadSites.loan(current,p.getUUID())?ItemStack.EMPTY:current.copy();
         p.getInventory().setItem(slot,ItemStack.parseOptional(p.registryAccess(),t.getCompound("Before"+key)));keep(p,displaced);t.remove("Before"+key);t.putBoolean("Borrowed"+key,false);save(p,room,t);p.inventoryMenu.broadcastChanges();
@@ -76,7 +78,8 @@ public final class HouseReadMoments {
     }
     private static boolean holding(ServerPlayer p,Item item){return p.getMainHandItem().is(item)&&HouseReadSites.loan(p.getMainHandItem(),p.getUUID());}
     public static void left(ServerPlayer p,HouseReadSites.Room room,CompoundTag t){
-        if(room==WAITING||room==BATHROOM){for(String key:List.of("Hand","Head")){if(!t.getBoolean("Borrowed"+key))continue;int slot=key.equals("Head")?39:t.getInt("HandSlot");var displaced=p.getInventory().getItem(slot).copy();p.getInventory().setItem(slot,ItemStack.parseOptional(p.registryAccess(),t.getCompound("Before"+key)));keep(p,displaced);t.remove("Before"+key);t.putBoolean("Borrowed"+key,false);}p.inventoryMenu.broadcastChanges();
+        if(room==HouseReadSites.Room.KITCHEN)HouseReadKitchen.left(p,t);
+        if(room==WAITING||room==BATHROOM||room==HouseReadSites.Room.KITCHEN){for(String key:List.of("Hand","Head")){if(!t.getBoolean("Borrowed"+key))continue;int slot=key.equals("Head")?39:t.getInt("HandSlot");var displaced=p.getInventory().getItem(slot).copy();p.getInventory().setItem(slot,ItemStack.parseOptional(p.registryAccess(),t.getCompound("Before"+key)));keep(p,displaced);t.remove("Before"+key);t.putBoolean("Borrowed"+key,false);}p.inventoryMenu.broadcastChanges();
             var b=HouseReadSites.base(p.server,p.getUUID(),room);var level=p.server.getLevel(room.dimension());
             if(level!=null)for(var e:level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,HouseReadRooms.bounds(b,room),e->HouseReadSites.loan(e.getItem(),p.getUUID())))e.discard();
             if(level!=null&&room==WAITING)for(var rel:List.of(HouseReadRemainingRooms.PHONE_AT,HouseReadRemainingRooms.GLASSES_AT)){var at=b.offset(rel);var s=level.getBlockState(at);if(s.is(HouseReadRegistry.FITTING.get()))level.setBlock(at,s.setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);}

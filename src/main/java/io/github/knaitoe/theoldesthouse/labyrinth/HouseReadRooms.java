@@ -22,7 +22,7 @@ public final class HouseReadRooms {
     /** The porch's lights: the sconce by the screen door, the kitchen pendant and the lamp; supper's end puts them out. */
     public static final List<BlockPos> PORCH_LIGHTS=List.of(new BlockPos(1,4,-7),new BlockPos(0,6,-18),new BlockPos(3,4,-12));
     private HouseReadRooms(){}
-    public static AABB bounds(BlockPos b,HouseReadSites.Room room){return room!=HouseReadSites.Room.COATROOM&&room!=HouseReadSites.Room.PORCH?HouseReadRemainingRooms.bounds(b,room):room==HouseReadSites.Room.COATROOM?new AABB(b.getX()-8,b.getY()-2,b.getZ()-16,b.getX()+9,b.getY()+6,b.getZ()+5):new AABB(b.getX()-25,b.getY()-4,b.getZ()-48,b.getX()+26,b.getY()+18,b.getZ()+16);}
+    public static AABB bounds(BlockPos b,HouseReadSites.Room room){return room==HouseReadSites.Room.KITCHEN?HouseReadKitchen.bounds(b):room!=HouseReadSites.Room.COATROOM&&room!=HouseReadSites.Room.PORCH?HouseReadRemainingRooms.bounds(b,room):room==HouseReadSites.Room.COATROOM?new AABB(b.getX()-8,b.getY()-2,b.getZ()-16,b.getX()+9,b.getY()+6,b.getZ()+5):new AABB(b.getX()-25,b.getY()-4,b.getZ()-48,b.getX()+26,b.getY()+18,b.getZ()+16);}
     private static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,BlockState state){BuildBlocks.box(l,b.offset(x,y,z),b.offset(X,Y,Z),state,F);}
     private static void put(ServerLevel l,BlockPos b,BlockPos at,BlockState s){BuildBlocks.set(l,b.offset(at),s,F);}
     public static BlockState part(HouseReadPropBlock.Part part){return HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,part);}
@@ -37,7 +37,7 @@ public final class HouseReadRooms {
     public static void build(ServerLevel l,BlockPos b,HouseReadSites.Room room,UUID owner){
         // 0.4.161: an unentered room from an older layout is rebuilt in place, so nothing of the old one may stand outside the new.
         var area=bounds(b,room);BuildBlocks.box(l,BlockPos.containing(area.minX,area.minY,area.minZ),BlockPos.containing(area.maxX-1,area.maxY-1,area.maxZ-1),Blocks.AIR.defaultBlockState(),F);
-        if(room==HouseReadSites.Room.COATROOM)coatroom(l,b,owner);else if(room==HouseReadSites.Room.PORCH)porch(l,b);else HouseReadRemainingRooms.build(l,b,room,owner);reshape(l,b,room);}
+        if(room==HouseReadSites.Room.COATROOM)coatroom(l,b,owner);else if(room==HouseReadSites.Room.PORCH)porch(l,b);else if(room==HouseReadSites.Room.KITCHEN)HouseReadKitchen.build(l,b,owner);else HouseReadRemainingRooms.build(l,b,room,owner);reshape(l,b,room);}
     /**
      * 0.4.160, the owner's playtest notes ("blocks not connecting"): the build places blocks without neighbour updates, so
      * fences, panes, stairs and gates are given their joined shapes once everything stands, one layer at a time.
@@ -51,7 +51,7 @@ public final class HouseReadRooms {
             }
         });}
     }
-    public static BlockPos note(HouseReadSites.Room room){return switch(room){case COATROOM->UMBRELLA_AT;case PORCH->RAIL_AT;case WAITING->HouseReadRemainingRooms.CALENDAR_AT;case BATHROOM->HouseReadRemainingRooms.POSTCARD_AT;case SHELTER->HouseReadRemainingRooms.JUKEBOX_AT;};}
+    public static BlockPos note(HouseReadSites.Room room){return switch(room){case COATROOM->UMBRELLA_AT;case PORCH->RAIL_AT;case WAITING->HouseReadRemainingRooms.CALENDAR_AT;case BATHROOM->HouseReadRemainingRooms.POSTCARD_AT;case SHELTER->HouseReadRemainingRooms.JUKEBOX_AT;case KITCHEN->HouseReadKitchen.TIN_LEFT_AT;};}
     private static void coatroom(ServerLevel l,BlockPos b,UUID owner){
         HouseReadRemainingRooms.shell(l,b,4,-9,HouseReadRegistry.WALLPAPER.get().defaultBlockState(),HouseReadRegistry.FLOORBOARDS.get().defaultBlockState(),HouseReadRegistry.CEILING.get().defaultBlockState(),HouseReadRegistry.SCREEN.get());
         box(l,b,-4,0,-9,-4,0,2,HouseReadRegistry.WAINSCOT.get());box(l,b,4,0,-9,4,0,2,HouseReadRegistry.WAINSCOT.get());box(l,b,-4,0,-9,4,0,-9,HouseReadRegistry.WAINSCOT.get());box(l,b,-4,0,2,4,0,2,HouseReadRegistry.WAINSCOT.get());

@@ -29,6 +29,7 @@ public final class HouseReadTests {
     @AfterBatch(batch="read_routine") public static void routineDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_light") public static void lightDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_shelter") public static void shelterDone(ServerLevel ignored){close();}
+    @AfterBatch(batch="read_kitchen") public static void kitchenDone(ServerLevel ignored){close();}
     private static void close(){HouseReadSites.clear();if(active!=null){active.close();active=null;}}
     private static LiteraryTests.Fixture fixture(GameTestHelper h){active=new LiteraryTests.Fixture(h);return active;}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).markEntered();p.setNoGravity(true);return p;}
@@ -41,6 +42,70 @@ public final class HouseReadTests {
     private static boolean ready(ServerPlayer p,HouseReadSites.Room room){boolean ready=HouseReadSites.prepare(p,room)!=null;if(!ready)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);return ready;}
     private static CompoundTag visit(ServerPlayer p,HouseReadSites.Room room){return HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());}
     private static boolean said(java.util.List<net.minecraft.network.protocol.Packet<?>> packets,String words){return packets.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat&&chat.content().getString().contains(words));}
+
+    /** The tin's crayons, as the reader's own copy of the kitchen holds them: the left half's ten, then the right half's. */
+    private static int[] tin(ServerLevel l,BlockPos b,BlockPos half){return l.getBlockEntity(b.offset(half)) instanceof HouseReadPropBlock.Fitting t?t.read().getIntArray("Colours"):new int[0];}
+    /** Takes the crayon of one colour from wherever it lies in the tin, by its place. */
+    private static void pick(ServerPlayer p,ServerLevel l,BlockPos b,int colour){
+        for(var half:List.of(HouseReadKitchen.TIN_LEFT_AT,HouseReadKitchen.TIN_RIGHT_AT)){int[] in=tin(l,b,half);for(int slot=0;slot<in.length;slot++)if(in[slot]==colour){
+            var at=b.offset(half);double[] box=HouseReadKitchen.slot(slot);var hit=new Vec3(at.getX()+(box[0]+box[1])/32,at.getY()+1.6/16,at.getZ()+(box[2]+box[3])/32);
+            p.gameMode.useItemOn(p,l,p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(hit,Direction.UP,at,false));return;}}
+    }
+    /** Colours the pixel at a column and row of the drawing with the crayon in hand. */
+    private static void draw(ServerPlayer p,ServerLevel l,BlockPos b,int col,int row){var at=b.offset(HouseReadKitchen.SHEET_AT);p.gameMode.useItemOn(p,l,p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(new Vec3(at.getX()+(col+.5)/16,at.getY()+.25/16,at.getZ()+(row+.5)/16),Direction.UP,at,false));}
+
+    /**
+     * 0.4.168 (owner: "The skin-color selection should be the first vignette the player encounters"): the kitchen table. The
+     * tin holds every skin crayon once, in a place shuffled for each reader; the face sets the read, the hands settle it, and
+     * nothing else does; the doors open once the picture is up on the fridge.
+     */
+    @GameTest(template="empty",batch="read_kitchen",timeoutTicks=6000)
+    public static void theKitchenTableReadsOnlyTheFaceTheReaderDrawsAndOpensOnceThePictureIsUp(GameTestHelper h){
+        var f=fixture(h);var p=player(h,f,"kitchen_reader");var at=f.origin.offset(0,0,-5);var target=f.origin.offset(0,0,-45);f.chunks.hold(f.in,new AABB(at).inflate(8));f.chunks.hold(f.in,new AABB(target).inflate(7));BlockPos[] b={null};LabyrinthData.Door[] from={null};ItemStack[] own={null};h.onEachTick(()->transition(p));
+        var K=HouseReadSites.Room.KITCHEN;
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"source loaded")).thenExecute(()->{from[0]=source(f);for(var pos:BlockPos.betweenClosed(target.offset(-4,-1,-5),target.offset(4,-1,5)))f.in.setBlock(pos,Blocks.OAK_PLANKS.defaultBlockState(),18);LabyrinthBuilder.buildCorridor(f.in,target);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.GRAY_CORRIDOR,target);stand(p,f.in,at,.5,0,2);HouseReadSites.prepare(p,K);})
+          .thenWaitUntil(()->h.assertTrue(ready(p,K),"the actual kitchen finishes"))
+          .thenExecute(()->{
+              b[0]=HouseReadSites.base(p.server,p.getUUID(),K);HouseReadAudit.check(h,f.in,b[0],K);seed(p,K,from[0]);stand(p,f.in,b[0],.5,0,-3.5);
+              h.assertTrue(HouseReadSites.next(p.server,new UUID(168,0))==K,"the kitchen table is the first quiet room a reader meets");
+              var parts=Map.of(HouseReadKitchen.SHEET_AT,HouseReadPropBlock.Part.SHEET,HouseReadKitchen.TIN_LEFT_AT,HouseReadPropBlock.Part.TIN_LEFT,HouseReadKitchen.TIN_RIGHT_AT,HouseReadPropBlock.Part.TIN_RIGHT,HouseReadKitchen.FRIDGE_AT,HouseReadPropBlock.Part.FRIDGE,HouseReadKitchen.FRIDGE_AT.above(),HouseReadPropBlock.Part.FRIDGE_TOP,HouseReadKitchen.RADIO_AT,HouseReadPropBlock.Part.RADIO);
+              for(var e:parts.entrySet()){var s=f.in.getBlockState(b[0].offset(e.getKey()));h.assertTrue(s.is(HouseReadRegistry.FITTING.get())&&s.getValue(HouseReadPropBlock.PART)==e.getValue(),"the kitchen has its "+e.getValue());}
+              // Every skin crayon once along the backs of the two halves, the eight others along the fronts, in this reader's own order.
+              int[] left=tin(f.in,b[0],HouseReadKitchen.TIN_LEFT_AT),right=tin(f.in,b[0],HouseReadKitchen.TIN_RIGHT_AT);var backs=new TreeSet<Integer>();var fronts=new TreeSet<Integer>();
+              for(int[] half:List.of(left,right)){h.assertTrue(half.length==10,"each half holds ten crayons");for(int k=0;k<10;k++)(k<6?backs:fronts).add(half[k]);}
+              h.assertTrue(backs.size()==12&&backs.first()==0&&backs.last()==11&&fronts.size()==8&&fronts.first()==12&&fronts.last()==19,"twelve skin crayons and eight others, each once: "+backs+" "+fronts);
+              h.assertTrue(!Arrays.equals(HouseReadKitchen.order(p.getUUID()),HouseReadKitchen.order(new UUID(168,1)))&&left[0]==HouseReadKitchen.order(p.getUUID())[0],"no crayon has the same place for every reader");
+              h.assertTrue(HouseReadKitchen.SKIN.size()==14&&HouseReadKitchen.person(13)&&HouseReadKitchen.person(14)&&!HouseReadKitchen.person(18)&&!HouseReadKitchen.person(19)&&!HouseReadKitchen.person(12)&&HouseReadKitchen.hairColour(12)&&!HouseReadKitchen.hairColour(19),"a face can be any skin crayon or a brown; blue, green or black is play");
+              // Both doors stay shut until the picture is up.
+              var entry=f.data().door("house_read/"+p.getUUID()+"/kitchen/entry");h.assertTrue(entry!=null&&!HouseReadStory.ready(p,K),"the kitchen's way back is registered and its doors are locked");HouseReadSites.door(p,entry);h.assertTrue(HouseReadSites.inside(p)==K&&!HouseReadStory.closing(p),"the locked door keeps the reader in the kitchen");
+              own[0]=new ItemStack(Items.COMPASS);own[0].set(DataComponents.CUSTOM_NAME,Component.literal("Original pocket compass"));p.setItemInHand(InteractionHand.MAIN_HAND,own[0].copy());
+              // A crayon comes into the hand and leaves its place; the same one again puts it back.
+              pick(p,f.in,b[0],4);h.assertTrue(HouseReadKitchen.held(p)==4&&HouseReadSites.loan(p.getMainHandItem(),p.getUUID())&&p.getMainHandItem().get(DataComponents.DYED_COLOR).rgb()==HouseReadKitchen.rgb(4),"the crayon comes into the hand in its own colour");
+              boolean taken=false;for(var half:List.of(HouseReadKitchen.TIN_LEFT_AT,HouseReadKitchen.TIN_RIGHT_AT))if(f.in.getBlockEntity(b[0].offset(half)) instanceof HouseReadPropBlock.Fitting t&&t.read().getInt("Taken")>=0)taken=true;h.assertTrue(taken,"and leaves its place in the tin");
+              pick(p,f.in,b[0],4);h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem())&&HouseReadKitchen.held(p)<0,"picking the same crayon again puts it back, and the reader's own item returns");
+              // The face sets the read; a different face disagrees; hands in that crayon settle it.
+              pick(p,f.in,b[0],4);draw(p,f.in,b[0],7,4);
+              h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).equals(new HouseRead.Category(HouseReadKitchen.hex(4),HouseRead.Strength.TENTATIVE)),"the first face sets the tone, tentatively: "+HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE));
+              pick(p,f.in,b[0],9);draw(p,f.in,b[0],8,5);h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).strength()==HouseRead.Strength.UNCERTAIN,"a face coloured again in another crayon disagrees");
+              draw(p,f.in,b[0],1,10);h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).equals(new HouseRead.Category(HouseReadKitchen.hex(9),HouseRead.Strength.SETTLED)),"hands in the face's crayon settle it");
+              pick(p,f.in,b[0],19);draw(p,f.in,b[0],7,1);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==-1,"green hair is play: the House's body keeps the account's own hair colour");
+              pick(p,f.in,b[0],12);draw(p,f.in,b[0],6,2);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==HouseReadKitchen.rgb(12),"hair drawn in a hair colour is kept");
+              var body=HouseBodies.body(f.data(),p.getUUID());h.assertTrue(body.tone()==HouseReadKitchen.rgb(9)&&body.hair()==HouseReadKitchen.rgb(12),"the House's body wears the face and the hair as the reader drew them");
+              var sheet=(HouseReadPropBlock.Fitting)f.in.getBlockEntity(b[0].offset(HouseReadKitchen.SHEET_AT));h.assertTrue(sheet.read().getInt("Face")==9&&sheet.read().getInt("Hands")==9&&sheet.read().getInt("Hair")==12&&sheet.read().getInt("Clothes")<0,"the drawing keeps each part's colour for the client to draw: "+sheet.read());
+              // Up on the fridge: the picture leaves the table, the crayon goes back, the doors open.
+              stand(p,f.in,b[0],3.5,0,-8.5);click(p,b[0].offset(HouseReadKitchen.FRIDGE_AT));
+              var top=(HouseReadPropBlock.Fitting)f.in.getBlockEntity(b[0].offset(HouseReadKitchen.FRIDGE_AT.above()));
+              h.assertTrue(visit(p,K).getBoolean("Hung")&&f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.FRIDGE_AT.above())).getValue(HouseReadPropBlock.TURNED)&&top.read().getInt("Face")==9,"the picture goes up on the fridge door and leaves the table");
+              h.assertTrue(HouseReadStory.ready(p,K)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.EXIT)).getValue(DoorBlock.OPEN),"with the picture up, the hall door past the fridge opens");
+              h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem()),"the crayon goes back into the tin");
+              var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("kitchen");h.assertTrue(HouseReadProse.kitchen(seen).equals("drew yourself at the kitchen table, face and hands alike, and put the picture up on the fridge")&&StaircaseAccount.read(f.data(),p.getUUID()).drewHands(),"the account and the book recite the act, never a colour: "+HouseReadProse.kitchen(seen));
+              HouseReadExport.save(f.in,b[0],K,"kitchen_picture_up");
+          })
+          .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"once the picture is up the House takes the reader on"))
+          .thenExecute(()->{var shown=HouseReadStory.last(p.getUUID());h.assertTrue(shown!=null&&shown.text().equals(HouseReadStory.closing(K))&&shown.sound().equals("minecraft:block.iron_trapdoor.close"),"the kitchen is cut off with the fridge door and the House's closing line: "+shown);
+              h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem())&&p.getInventory().items.stream().noneMatch(i->HouseReadSites.loan(i,p.getUUID())),"no crayon leaves the kitchen");})
+          .thenSucceed();
+    }
 
     /** 0.4.166: the House's story about the reader, a line as each quiet room begins and ends. */
     @GameTest(template="empty")
@@ -115,7 +180,7 @@ public final class HouseReadTests {
           .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(b)==null&&!LabyrinthDoors.isBusy(b)&&b.position().distanceToSqr(a.position())<.01,"once they pick up the paper the receptionist calls the second reader, and the House takes them into that same shared hall"))
           .thenExecute(()->{
               h.assertTrue(f.data().returnCount(a.getUUID())==1&&f.data().returnCount(b.getUUID())==1,"each route contains exactly the genuine original forward crossing");var back=new LabyrinthData.Waypoint(from[0].dimension,Vec3.atBottomCenterOf(from[0].lower),from[0].facing.toYRot(),true);var originalKey=f.data().nodeKey(a.getUUID(),LabyrinthPlace.GRAY_CORRIDOR);h.assertTrue(f.data().node(a.getUUID(),originalKey)!=null,"the original destination has the ordinary native remembered map");
-              h.assertTrue(HouseReadSites.next(a.server,a.getUUID())==HouseReadSites.Room.BATHROOM&&WitnessAccount.Story.of(LabyrinthPlace.READ_COATROOM.id())==null&&WitnessAccount.Story.of(LabyrinthPlace.READ_PORCH.id())==null,"the next quiet moment is the bathroom, and the quiet rooms are not Witness sources");
+              h.assertTrue(HouseReadSites.next(a.server,a.getUUID())==HouseReadSites.Room.KITCHEN&&WitnessAccount.Story.of(LabyrinthPlace.READ_COATROOM.id())==null&&WitnessAccount.Story.of(LabyrinthPlace.READ_PORCH.id())==null&&WitnessAccount.Story.of(LabyrinthPlace.READ_KITCHEN.id())==null,"the next quiet moment is the kitchen table, still unentered and first in the order, and the quiet rooms are not Witness sources");
               var kept=HouseReadSites.state(b.server,b.getUUID()).getCompound("waiting");h.assertTrue(kept.getInt("Age")<kept.getInt("CalledAt")+60&&kept.getInt("CalledAt")>=kept.getInt("FirstAge")+60,"the call waits three seconds after a late first pick-up, and the House does not keep the reader long past it");
           }).thenSucceed();
     }

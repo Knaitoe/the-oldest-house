@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/read_crayon",
+    "layer1": "the_oldest_house:item/read_crayon_wrapper"
+  }
+}

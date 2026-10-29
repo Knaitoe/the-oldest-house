@@ -71,6 +71,6 @@ public final class HouseReadHairProof extends Screen {
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;return;}
         Files.writeString(folder.resolve("passed.txt"),"Sixteen hair styles from the bathroom's tools, front and back, tinted to four crowns, and the eight two-tool routine blocks with the woven bath rug. Shipped native models.\n");
-        mc.stop();
+        mc.setScreen(new HouseReadKitchenProof());
     }
 }

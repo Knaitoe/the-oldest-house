@@ -17,7 +17,9 @@ public final class HouseRead {
         HAIR(Set.of("WRAPPED","BRAIDED_AND_OILED","BRUSHED_DRY","WASHED_AND_BARBERED")),
         SELF(Set.of("MASC","FEM","ANDROGYNOUS","UNSEEN")),
         DRAWN_TO(Set.of("MEN","WOMEN","BOTH","NO_ONE")),
-        HOME(Set.of("HAVEN","DANGER","RUNAWAY"));
+        HOME(Set.of("HAVEN","DANGER","RUNAWAY")),
+        /** 0.4.168: the colour the reader gave their own face at the kitchen table. Only ever the crayon's colour; never named. */
+        TONE(HouseReadKitchen.SKIN);
         private final Set<String> values;
         Trait(Set<String> values){this.values=values;}
         public boolean valid(String value){return values.contains(value);}
