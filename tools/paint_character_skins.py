@@ -1061,12 +1061,9 @@ def main():
     paintings={name:paint(look) for name,look in LOOKS.items()}
     from draw_backseat_stowaway import paint as stowaway
     paintings['backseat_stowaway']=stowaway()
-    # Her neck has its own opaque 2x4x2 net. The old player-overlay region was transparent.
-    injured=paintings['uncanny_bent_neck'];nd=ImageDraw.Draw(injured)
-    for side,box in net(0,32,2,4,2).items():
-        nd.rectangle((box[0]*4,box[1]*4,box[2]*4-1,box[3]*4-1),fill='#c29d86')
-        for row,color in [(1,'#7f5048'),(2,'#9d7060')]:
-            y=min(box[3]-1,box[1]+row)*4;nd.rectangle((box[0]*4,y,box[2]*4-1,y+3),fill=color)
+    # 0.4.171: the tunnel's stooping giant has her own painter (wet hair, butcher paper, no wound); her neck keeps its opaque net.
+    from draw_tunnel_woman import paint as tunnel_woman
+    paintings['uncanny_bent_neck']=tunnel_woman()
     paintings['minotaur_materials']=material_sheet(256,256)
     paintings['finale_materials']=material_sheet(256,512)
     for name,wound,skinned in [('literary_elk',False,False),('literary_elk_wounded',True,False),('literary_elk_carcass',True,False),('literary_elk_carcass_skinned',True,True)]:paintings[name]=elk_skin(wound,skinned)

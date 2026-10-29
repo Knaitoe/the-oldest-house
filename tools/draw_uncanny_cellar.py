@@ -20,14 +20,32 @@ def tissue(kind):
             d.rectangle((7,low,9,low+2),fill='#413e37');d.point((8,low),fill='#9e9c83')
             d.line((1,low-2,7,low-4,14,low-1),fill='#8e7067',width=2)
         elif kind=='flesh_mouth':
+            # 0.4.171 (owner: "grosser mouth/nose"): still slack and open, but swollen and lopsided. A fold of skin sags over
+            # thick cracked lips; crooked teeth, some rotten and some missing, a second smaller row behind; the tongue lies in
+            # the dark at the bottom; spit hangs from the lower lip.
             d.rectangle((0,0,15,15),fill='#ba9184')
-            d.polygon(((6,2),(9,2),(12,5),(12,11),(9,14),(6,14),(3,11),(3,5)),fill='#89656a')
-            d.polygon(((6,3),(9,3),(11,6),(11,11),(9,13),(6,13),(4,10),(4,6)),fill='#342a2c')
-            d.line((5,4,6,3,9,3,10,4),fill='#c0a896')
+            d.polygon(((0,0),(15,0),(15,2),(11,3),(7,2),(3,3),(0,2)),fill='#c99d8e');d.line((0,2,3,3,7,2,11,3,15,2),fill='#8f6c67')
+            d.polygon(((2,6),(5,4),(10,4),(14,6),(14,11),(11,14),(5,15),(2,12)),fill='#7a4a4f')
+            d.polygon(((3,7),(5,5),(10,5),(13,7),(13,11),(11,13),(5,14),(3,12)),fill='#2a1a1d')
+            d.polygon(((4,8),(6,6),(9,6),(12,8),(12,11),(10,12),(6,13),(4,11)),fill='#1c1013')
+            d.line((3,7,5,5,10,5,13,7),fill='#e2b6a6');d.point((7,4),fill='#a35f63');d.point((11,5),fill='#a35f63')
+            for x,top,color in ((4,6,'#d9c99a'),(5,5,'#cbb67f'),(7,5,'#8b7a4e'),(8,5,'#d9c99a'),(10,5,'#cbb67f'),(12,7,'#b9a46c')):d.line((x,top,x,top+1),fill=color)
+            for x in (6,9,11):d.point((x,8),fill='#9c8a5c')
+            d.polygon(((6,12),(8,11),(10,12),(9,13),(7,13)),fill='#9c4a55');d.point((8,12),fill='#c76e78')
+            d.line((4,12,5,14,11,13,12,11),fill='#e2b6a6')
+            d.line((9,14,9,15),fill='#d8d0c0');d.point((10,15),fill='#efe9dc')
         else:
-            d.polygon(((6,0),(9,0),(12,11),(9,14),(3,12)),fill='#cda18e')
-            d.rectangle((3,11,5,12),fill='#775556');d.rectangle((9,11,11,12),fill='#775556')
-            d.line((5,2,4,9),fill='#ddbaa2')
+            # Bulbous and shiny: stretched skin with broken veins over the bridge, a crusted scab, raw at the tip, flared
+            # wet nostrils, and a drip from one of them.
+            d.polygon(((6,0),(9,0),(10,4),(13,8),(14,11),(12,14),(4,14),(2,11),(3,8),(6,4)),fill='#cda18e')
+            d.polygon(((5,8),(8,6),(12,8),(13,11),(11,13),(5,13),(3,11)),fill='#c88072')
+            d.ellipse((6,9,10,12),fill='#d28a7c');d.point((8,9),fill='#f0c8b4');d.point((7,10),fill='#f3d6c3')
+            d.line((7,1,6,4),fill='#94576f');d.line((6,4,5,6),fill='#94576f');d.point((9,3),fill='#94576f');d.line((10,6,12,8),fill='#a3606f')
+            d.rectangle((7,5,8,6),fill='#7a4f3a');d.point((8,5),fill='#9a6a4c')
+            for x,y in ((4,9),(11,7),(12,10),(5,6)):d.point((x,y),fill='#a5766a')
+            d.polygon(((3,12),(5,11),(7,12),(6,14),(3,14)),fill='#2e1f22');d.polygon(((9,12),(11,11),(13,12),(13,14),(10,14)),fill='#2e1f22')
+            d.point((5,12),fill='#e8e0c8');d.point((11,12),fill='#e8e0c8')
+            d.line((4,14,4,15),fill='#c8c48a');d.point((5,15),fill='#dcd8a4')
         return im
     if kind == 'flesh_fat':
         d.rectangle((0,0,15,15), fill='#a87972')
