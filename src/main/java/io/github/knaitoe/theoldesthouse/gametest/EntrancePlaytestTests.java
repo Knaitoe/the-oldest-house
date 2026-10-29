@@ -34,7 +34,7 @@ public final class EntrancePlaytestTests {
         // 0.4.166: each room's doors open once the House has what the room is for.
         h.assertTrue(!HouseReadMoments.canProceed(p,room),"the room's doors are locked before it has its answer: "+room);
         if(room==HouseReadSites.Room.WAITING){visit.putInt("Age",HouseReadMoments.WAIT);visit.putBoolean("Called",true);visit.putInt("CalledAt",HouseReadMoments.WAIT);}if(room==HouseReadSites.Room.BATHROOM){visit.putBoolean("Done",true);visit.putBoolean("BedroomOpen",true);}
-        if(room==HouseReadSites.Room.SHELTER)visit.putInt("SongAge",900);
+        if(room==HouseReadSites.Room.SHELTER)visit.putInt("SongAge",900);if(room==HouseReadSites.Room.KITCHEN)visit.putBoolean("Hung",true);
         own.put(room.key(),visit);f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
         switch(room){case COATROOM->HouseRead.first(p,room,"Took","wool");case SHELTER->HouseRead.first(p,room,"Stood","middle");case PORCH->HouseRead.first(p,room,"First","in");default->{}}
         h.assertTrue(HouseReadMoments.canProceed(p,room),"the room's own way on is open: "+room);
@@ -72,19 +72,19 @@ public final class EntrancePlaytestTests {
                 h.assertTrue(!HouseReadSites.offer(p,ordinary,LabyrinthPlace.CROSS_HALL),"the first quiet room waits behind a junction's onward door");
                 ticking[0]=true;click(p,west[0].lower);
             })
-            .thenWaitUntil(()->{if(HouseReadSites.inside(p)!=HouseReadSites.Room.WAITING)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.WAITING&&!LabyrinthDoors.isBusy(p),"the junction's real onward door reaches the first quiet room");})
-            .thenExecute(()->{var b=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.WAITING);at(peer,p.serverLevel(),b.offset(2,0,-2));
+            .thenWaitUntil(()->{if(HouseReadSites.inside(p)!=HouseReadSites.Room.KITCHEN)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.KITCHEN&&!LabyrinthDoors.isBusy(p),"the junction's real onward door reaches the first quiet room");})
+            .thenExecute(()->{var b=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.KITCHEN);at(peer,p.serverLevel(),b.offset(2,0,-2));
                 // 0.4.166: the first quiet room opens on black with the House's welcome, then the room's own line.
                 var shown=HouseReadStory.last(p.getUUID());
-                h.assertTrue(shown!=null&&shown.text().equals(HouseReadStory.WELCOME+HouseReadStory.PAGE+HouseReadStory.opening(HouseReadSites.Room.WAITING)),"the first quiet room opens with the welcome and its own line: "+shown);})
+                h.assertTrue(shown!=null&&shown.text().equals(HouseReadStory.WELCOME+HouseReadStory.PAGE+HouseReadStory.opening(HouseReadSites.Room.KITCHEN)),"the first quiet room opens with the welcome and its own line: "+shown);})
             .thenIdle(24).thenExecute(()->{
-                h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.WAITING&&HouseReadSites.contains(peer)&&!HouseTransitionEvents.isPending(p)&&!HouseTransitionEvents.isPending(peer),"idle owner and observer remain in recognized House space after the fade");
+                h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.KITCHEN&&HouseReadSites.contains(peer)&&!HouseTransitionEvents.isPending(p)&&!HouseTransitionEvents.isPending(peer),"idle owner and observer remain in recognized House space after the fade");
                 h.assertTrue(p.isAlive()&&p.getHealth()==20&&peer.isAlive()&&peer.getHealth()==20,"the full boundary tick neither ejects nor kills either native player");
-                f.reload();at(peer,f.in,junction.offset(0,0,-3));proceed(h,f,p,HouseReadSites.Room.WAITING);
+                f.reload();at(peer,f.in,junction.offset(0,0,-3));proceed(h,f,p,HouseReadSites.Room.KITCHEN);
             })
             .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.GRAY_CORRIDOR,"the first quiet room's way on is the hall its junction door was dealt, not another quiet room"))
             .thenExecute(()->{
-                h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==HouseReadSites.Room.BATHROOM&&HouseReadSites.owing(f.data(),p.getUUID()),"the next quiet room is owed once the first has been entered");
+                h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==HouseReadSites.Room.WAITING&&HouseReadSites.owing(f.data(),p.getUUID()),"the next quiet room is owed once the first has been entered");
                 h.assertTrue(f.data().peekReturn(p.getUUID())!=null&&f.data().peekReturn(p.getUUID()).held()&&f.data().returnDepth(p.getUUID())==0&&WitnessAccount.count(f.data(),p.getUUID())==0,"one genuine forward crossing, held while quiet rooms are to come, and no story credit");
                 // 0.4.163: every door of the hall after a quiet room is the way into the next, so none is missed.
                 var own=HouseReadSites.state(p.server,p.getUUID());own.remove("Owed");f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
@@ -99,16 +99,16 @@ public final class EntrancePlaytestTests {
                 f.data().deal(p.getUUID(),owed[0],LabyrinthPlace.JUNCTION.id(),false);
                 at(p,f.in,owed[0].lower.relative(owed[0].facing));click(p,owed[0].lower);
             })
-            .thenWaitUntil(()->{if(HouseReadSites.inside(p)!=HouseReadSites.Room.BATHROOM)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.BATHROOM&&!LabyrinthDoors.isBusy(p),"the owed door in an ordinary hall reaches the next quiet room");})
+            .thenWaitUntil(()->{if(HouseReadSites.inside(p)!=HouseReadSites.Room.WAITING)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.WAITING&&!LabyrinthDoors.isBusy(p),"the owed door in an ordinary hall reaches the next quiet room");})
             .thenExecute(()->{
-                var visit=HouseReadSites.state(p.server,p.getUUID()).getCompound(HouseReadSites.Room.BATHROOM.key());
+                var visit=HouseReadSites.state(p.server,p.getUUID()).getCompound(HouseReadSites.Room.WAITING.key());
                 h.assertTrue(owed[0].id.equals(visit.getString("SourceDoor"))&&LabyrinthPlace.JUNCTION.id().equals(visit.getString("NextPlace"))&&!visit.contains("Chain"),"the room keeps the door it came from and the hall that door was dealt");
                 h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).getList("Owed",net.minecraft.nbt.Tag.TAG_STRING).isEmpty(),"entering it settles every owed door");
-                proceed(h,f,p,HouseReadSites.Room.BATHROOM);
+                proceed(h,f,p,HouseReadSites.Room.WAITING);
             })
             .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.JUNCTION,"the second quiet room also ends in its own dealt hall"))
             .thenExecute(()->{
-                h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==HouseReadSites.Room.COATROOM,"the rooms still come in their order");
+                h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==HouseReadSites.Room.BATHROOM,"the rooms still come in their order");
                 // Entering the last room settles every owed door, as entering each one does.
                 var own=HouseReadSites.state(p.server,p.getUUID());for(var room:rooms){var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);own.put(room.key(),visit);}own.remove("Owed");f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
                 h.assertTrue(!HouseReadSites.owing(f.data(),p.getUUID())&&HouseReadSites.next(p.server,p.getUUID())==null,"after every quiet room nothing more is owed");

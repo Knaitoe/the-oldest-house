@@ -20,7 +20,7 @@ public final class HouseReadClient {
         int index=(int)Math.round((mc.player.getX()-origin.getX()-8192-.5)/4096);if(index<0||index>=4096)return null;
         for(var room:HouseReadSites.Room.values()){if(!mc.level.dimension().equals(room.dimension()))continue;var b=new BlockPos(origin.getX()+8192+index*4096,80,origin.getZ()-room.offsetZ);if(HouseReadRooms.bounds(b,room).contains(mc.player.position()))return room;}return null;
     }
-    public static long time(Level level,long ordinary){var mc=Minecraft.getInstance();if(level!=mc.level)return ordinary;var room=room();return room==HouseReadSites.Room.PORCH?12500:room==HouseReadSites.Room.WAITING?9700:room==HouseReadSites.Room.BATHROOM?17000:room==HouseReadSites.Room.SHELTER?16000:ordinary;}
+    public static long time(Level level,long ordinary){var mc=Minecraft.getInstance();if(level!=mc.level)return ordinary;var room=room();return room==HouseReadSites.Room.PORCH?12500:room==HouseReadSites.Room.WAITING?9700:room==HouseReadSites.Room.BATHROOM?17000:room==HouseReadSites.Room.SHELTER?16000:room==HouseReadSites.Room.KITCHEN?10100:ordinary;}
     @net.neoforged.bus.api.SubscribeEvent public static void music(net.neoforged.neoforge.client.event.sound.PlaySoundEvent e){if(e.getSound()!=null&&e.getSound().getSource()==net.minecraft.sounds.SoundSource.MUSIC&&room()!=null)e.setSound(null);}
     @net.neoforged.bus.api.SubscribeEvent public static void quiet(net.neoforged.neoforge.client.event.ClientTickEvent.Post e){var mc=Minecraft.getInstance();if(mc.player!=null&&mc.player.tickCount%20==0&&room()!=null){mc.getMusicManager().stopPlaying();mc.getSoundManager().stop(null,net.minecraft.sounds.SoundSource.MUSIC);}}
 }

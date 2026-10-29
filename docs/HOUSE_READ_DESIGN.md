@@ -341,7 +341,12 @@ Built in 0.4.159: the window is the 200 ticks after the whistle; under the porch
 
 ## 6. The self-portrait (kitchen-table) — TONE
 
-Status: **proposal for the owner's review (October 29)**. Nothing here is built yet.
+Status: **built in 0.4.168** as the first quiet room (owner: "The skin-color selection should be the first vignette the player encounters"); see `docs/KITCHEN_TABLE_0_4_168.md`. It differs from this proposal in four ways:
+
+- it is the first room, not the sixth after the bathroom;
+- the doors open once the picture is up on the fridge, as every quiet room now waits for its answer (0.4.166);
+- the drawing does not yet come back on the Family Copy's fridge or in the book's margin; *II. The hands* takes its line instead;
+- the lid's text is the placeholder draft below, still the owner's to replace.
 
 The owner asked for a separate, carefully considered vignette for skin and ethnicity, and chose the self-portrait. It exists so the House's body (see "The House's version of the reader") can have the reader's own skin tone without the House guessing it.
 
@@ -563,6 +568,7 @@ Strangers who speak are different. They judge by how someone presents, as strang
 
 - **Items and props:**
   - bathroom: the routine items (sixteen since 0.4.167), and the styles they give in the glass;
+  - kitchen: the crayon tin, the drawing, the fridge and the radio, and a crayon to hold (0.4.168);
   - waiting room: paper, magazines, glasses, phone (reusing the Harrigan screen);
   - coatroom: the garments (worn models fitted to standard and slim arms);
   - shelter: a lantern.
@@ -683,3 +689,4 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.163 | The House's body for skins that aren't human; no figure in the inventory inside the House; every door after a quiet room leads to the next, no depth among the quiet rooms and the count starting again after them; the porch swing and carved rail | `docs/HOUSE_BODY_AND_NAVIGATION_0_4_163.md` |
 | 0.4.166 | The quiet rooms as the House's story: each opens and closes on black with its line, the welcome first and the warning last; both doors locked until the room has its answer | `docs/QUIET_ROOMS_STORY_0_4_166.md` |
 | 0.4.167 | The bathroom's sixteen tools, two to a block; each tool's style shown in the glass while it is held, tinted to the reader's hair, and kept for the House's version of them; the woven bath rug | `docs/BATHROOM_HAIR_0_4_167.md` |
+| 0.4.168 | The kitchen table, the first quiet room: the reader draws themselves; the face's crayon is `TONE` and the hair's the House's body's hair colour; the doors open once the picture is up on the fridge | `docs/KITCHEN_TABLE_0_4_168.md` |

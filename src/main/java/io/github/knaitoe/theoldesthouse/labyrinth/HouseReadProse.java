@@ -71,12 +71,23 @@ public final class HouseReadProse {
             default->switch(t.getString("Out")){case "kitchen"->"went in by the back door and out through the front hall";case "gate"->"left the yard by the side gate";case "road"->"took the dirt road out through the trees";default->"";};
         };
     }
+    /**
+     * 0.4.168: the kitchen table. Only acts, never colours: whether the face and the hands were drawn in the same crayon, and
+     * that the picture went up on the fridge.
+     */
+    public static String kitchen(CompoundTag t){
+        if(!t.getBoolean("Hung"))return "";
+        return t.getBoolean("Alike")?"drew yourself at the kitchen table, face and hands alike, and put the picture up on the fridge":"drew yourself at the kitchen table and put the picture up on the fridge";
+    }
+    /** The rooms in the order they are met (0.4.168: the kitchen first); the clause's room is its place in that order. */
     public static List<Clause> clauses(CompoundTag seen,boolean older){
-        var out=new ArrayList<Clause>();var rooms=HouseReadSites.Room.values();
-        String[] phrases={waiting(seen.getCompound("waiting")),bathroom(seen.getCompound("bathroom")),coatroom(seen.getCompound("coatroom")),shelter(seen.getCompound("shelter"),older),porch(seen.getCompound("porch"))};
-        for(int i=0;i<phrases.length;i++)if(!phrases[i].isEmpty())out.add(new Clause(i,phrases[i],i==2?"In the hall":i==3?"Under the eaves":null,i==2?" in the hall":i==3?" under the eaves":null));
+        var out=new ArrayList<Clause>();
+        String[] phrases={kitchen(seen.getCompound("kitchen")),waiting(seen.getCompound("waiting")),bathroom(seen.getCompound("bathroom")),coatroom(seen.getCompound("coatroom")),shelter(seen.getCompound("shelter"),older),porch(seen.getCompound("porch"))};
+        for(int i=0;i<phrases.length;i++)if(!phrases[i].isEmpty())out.add(new Clause(i,phrases[i],i==COATROOM?"In the hall":i==COATROOM+1?"Under the eaves":null,i==COATROOM?" in the hall":i==COATROOM+1?" under the eaves":null));
         return out;
     }
+    /** The coatroom's place in the order: the second breath begins there. */
+    public static final int COATROOM=3;
     /** The closing line, chosen by what home was. */
     public static String close(String home){return switch(home){case "HAVEN"->"Somewhere in the House, a plate is being kept warm for you.";case "DANGER"->"The House has learned how you listen to a hallway.";case "RUNAWAY"->"The House has noticed how quickly you find the road.";default->"";};}
     /**
@@ -85,7 +96,7 @@ public final class HouseReadProse {
      */
     public static String opening(List<Clause> clauses,String close){
         if(clauses.isEmpty())return "";int split=clauses.size();
-        if(clauses.size()>2&&clauses.getFirst().room()<2)for(int i=1;i<clauses.size();i++)if(clauses.get(i).room()>=2){split=i;break;}
+        if(clauses.size()>2&&clauses.getFirst().room()<COATROOM)for(int i=1;i<clauses.size();i++)if(clauses.get(i).room()>=COATROOM){split=i;break;}
         var text=new StringBuilder(sentence(clauses.subList(0,split)));if(split<clauses.size())text.append(' ').append(sentence(clauses.subList(split,clauses.size())));
         if(!close.isEmpty())text.append("\n\n").append(close);return text.toString();
     }

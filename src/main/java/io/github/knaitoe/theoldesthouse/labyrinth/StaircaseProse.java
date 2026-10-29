@@ -28,8 +28,10 @@ public final class StaircaseProse {
      * What the five quiet rooms saw the reader do (0.4.159), as observations only: the first routine item ({@code -1} for none),
      * the coat, the hall glass, who they stood by in the shelter, the porch door, the way out, and HOME for the last leaf.
      */
-    public record Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home) {
+    public record Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home, boolean drewHands) {
         public static final Read NONE = new Read(-1, "", "", "", false, false, "", "", "");
+        /** Before the kitchen table (0.4.168): nothing drawn. */
+        public Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home) { this(routine, coat, mirror, shelter, song, older, door, out, home, false); }
     }
 
     // ---------------------------------------------------------------- facts
@@ -276,7 +278,8 @@ public final class StaircaseProse {
             case SURVEY->"The fold has opened. On its other side the writer drew a hand, then rubbed it out. Your own hand fills the space. "+switch(home){case "HAVEN"->"Above you, a light is left on at the top of the stairs.";case "DANGER"->"Above you, the staircase has a way back, and a second beside it.";case "RUNAWAY"->"Below you, the stairs go on like a road.";default->"Above you, the staircase still has a way back.";};
             case LEDGER->"I left room for a final entry. The paper split along the fold before I could make it. Through the slit I can see your hand. "+switch(home){case "HAVEN"->"Carried forward: a plate, kept warm.";case "DANGER"->"Entered: which door to use.";case "RUNAWAY"->"Balance: the road.";default->"You are still carrying the book.";};};
     }
-    private static final String[] ROUTINE = {"the silk wrap","the curl cream","the wide-tooth pick","the scalp oil","the rat-tail comb","the hair ties","the paddle brush","the dry shampoo","the claw clip","the pocket comb","the tin of pomade","the washcloth on the tap"};
+    private static final String[] ROUTINE = {"the silk wrap","the curl cream","the wide-tooth pick","the scalp oil","the rat-tail comb","the hair ties","the paddle brush","the dry shampoo","the claw clip","the pocket comb","the tin of pomade","the washcloth on the tap",
+        "the satin bonnet","the edge brush","the hot rollers","the wave brush"};
     private static String coatName(String coat) { return switch (coat) { case "wool" -> "the wool overcoat"; case "trench" -> "the trench coat"; case "barn" -> "the barn jacket"; default -> ""; }; }
     private static String figure(String who, boolean older) { return who.equals("man") ? older ? "the man" : "the boy" : older ? "the woman" : "the girl"; }
     /** II. The hands: the routine before bed and the coat in the cold hall. */
@@ -285,6 +288,8 @@ public final class StaircaseProse {
         if (!item.isEmpty() && !coat.isEmpty()) return "Before bed your hands went to " + item + " first; in the cold hall, to " + coat + ".";
         if (!item.isEmpty()) return "Before bed your hands went to " + item + " first. The writer drew it in the margin.";
         if (!coat.isEmpty()) return turned ? "In the cold hall your hands found " + coat + ", and turned the glass to the wall." : "In the cold hall your hands went through the hangers to " + coat + ".";
+        // 0.4.168: the kitchen table, when nothing else fills the leaf.
+        if (r.drewHands) return "You drew yourself once at a kitchen table, and pressed hard on the hands.";
         return "";
     }
     /** III. What happened: who the reader stood by under the eaves, or that they went out to the lantern alone. */

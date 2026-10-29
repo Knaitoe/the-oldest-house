@@ -2144,9 +2144,9 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','HouseReadReaderTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java','CoopTests.java'))
-          assert count==37
+          assert count==38
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
-          assert len(list(Path('build/house-read139-proof').glob('*.json')))==5
+          assert len(list(Path('build/house-read139-proof').glob('*.json')))==6
           PY
       - name: Original native tiles and decoded domestic audio
         run: |
@@ -2165,7 +2165,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           folder=Path('build/house-read139-art')
-          assert len(list(folder.glob('*.png')))==22
+          assert len(list(folder.glob('*.png')))==23
           assert (folder/'passed.txt').is_file()
           stands=Path('build/reading-stands')
           assert sorted(p.name for p in stands.glob('*.png'))==['dock_ring.png','stands_back.png','stands_front.png']
@@ -2176,6 +2176,9 @@ jobs:
           hair=Path('build/house-read-hair')
           assert sorted(p.name for p in hair.glob('*.png'))==['hair_backs.png','hair_styles.png','routine_counter.png']
           assert (hair/'passed.txt').is_file()
+          kitchen=Path('build/house-read-kitchen')
+          assert sorted(p.name for p in kitchen.glob('*.png'))==['kitchen_objects.png','kitchen_tones.png']
+          assert (kitchen/'passed.txt').is_file()
           PY
       - uses: actions/upload-artifact@v4
         if: always()
@@ -2188,6 +2191,7 @@ jobs:
             build/reading-stands
             build/house-read-lines
             build/house-read-hair
+            build/house-read-kitchen
             run/logs
 
   personal-scene-clients:

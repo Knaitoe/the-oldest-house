@@ -98,7 +98,7 @@ public final class HouseReadReaderTests {
     private static void reads(GameTestHelper h,CompoundTag seen,boolean older,String home){
         var clauses=HouseReadProse.clauses(seen,older);String text=HouseReadProse.opening(clauses,HouseReadProse.close(home));String body=text.split("\n\n")[0];
         h.assertTrue(!clauses.isEmpty()&&!text.isEmpty(),"a night with rooms in it has an opening: "+seen);
-        var sentences=body.split("(?<=\\.) ");int expected=clauses.size()>2&&clauses.getFirst().room()<2?2:1;
+        var sentences=body.split("(?<=\\.) ");int expected=clauses.size()>2&&clauses.getFirst().room()<HouseReadProse.COATROOM?2:1;
         h.assertTrue(sentences.length==expected,"one breath, or two from the hall on: "+body);
         for(String sentence:sentences)h.assertTrue(Character.isUpperCase(sentence.charAt(0))&&sentence.endsWith(".")&&!sentence.substring(0,sentence.length()-1).contains("."),"each sentence begins and ends cleanly: "+sentence);
         h.assertTrue(!body.contains("  ")&&!body.contains(" ,")&&!body.contains(",,")&&!body.contains("..")&&!body.contains("and and"),"no seams in the stitching: "+body);

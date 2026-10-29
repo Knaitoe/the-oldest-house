@@ -37,13 +37,20 @@ public final class HouseReadSites {
     public static final int LAYOUT=167;
     public enum Room {
         WAITING(LabyrinthPlace.READ_WAITING,483328), BATHROOM(LabyrinthPlace.READ_BATHROOM,491520),
-        COATROOM(LabyrinthPlace.READ_COATROOM,466944), SHELTER(LabyrinthPlace.READ_SHELTER,499712), PORCH(LabyrinthPlace.READ_PORCH,475136);
+        COATROOM(LabyrinthPlace.READ_COATROOM,466944), SHELTER(LabyrinthPlace.READ_SHELTER,499712), PORCH(LabyrinthPlace.READ_PORCH,475136),
+        /** 0.4.168: appended, so saved names and offsets keep their places; {@link #CHAIN} puts it first. */
+        KITCHEN(LabyrinthPlace.READ_KITCHEN,507904);
         private final LabyrinthPlace place;public final int offsetZ;
         Room(LabyrinthPlace place,int offsetZ){this.place=place;this.offsetZ=offsetZ;}
         public String key(){return name().toLowerCase(Locale.ROOT);}
         public LabyrinthPlace place(){return place;}
         public net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension(){return this==PORCH?HouseDimensions.OUTSIDE:HouseDimensions.INTERIOR;}
     }
+    /**
+     * The order the rooms are met in. 0.4.168 (owner: "The skin-color selection should be the first vignette the player
+     * encounters"): the kitchen table comes first. A reader who entered the other five before it existed meets it next.
+     */
+    public static final List<Room> CHAIN=List.of(Room.KITCHEN,Room.WAITING,Room.BATHROOM,Room.COATROOM,Room.SHELTER,Room.PORCH);
     private record Job(UUID owner,Room room){}
     private record Request(String door,LabyrinthPlace next,Room room){}
     private static final TicketType<ChunkPos> TICKET=TicketType.create("house_read_site",Comparator.comparingLong(ChunkPos::toLong));
@@ -70,7 +77,7 @@ public final class HouseReadSites {
     }
     public static List<AABB> areas(MinecraftServer s,boolean outside){var out=new ArrayList<AABB>();for(String key:LabyrinthData.get(s).state(STATE).getAllKeys())try{var id=UUID.fromString(key);for(var room:Room.values())if((room==Room.PORCH)==outside){var b=base(s,id,room);if(b!=null)out.add(HouseReadRooms.bounds(b,room));}}catch(IllegalArgumentException ignored){}return out;}
     public static boolean protectedPosition(MinecraftServer s,BlockPos at,boolean outside){return areas(s,outside).stream().anyMatch(a->a.contains(Vec3.atCenterOf(at)));}
-    public static @Nullable Room next(MinecraftServer s,UUID id){var t=state(s,id);for(var room:Room.values())if(!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
+    public static @Nullable Room next(MinecraftServer s,UUID id){var t=state(s,id);for(var room:CHAIN)if(!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
     public static @Nullable LabyrinthData.Door prepare(ServerPlayer p,Room room){
         var d=LabyrinthData.get(p.server);if(store!=d){rebind();store=d;}var own=state(p.server,p.getUUID());
         if(!own.contains("Index")){var world=d.stateEntry(STATE,"World");int index=world.getInt("NextIndex");if(index>=4096)return null;own.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(STATE,"World",world);save(p.server,p.getUUID(),own);}
@@ -98,7 +105,7 @@ public final class HouseReadSites {
         var request=new Request(from.id,target,room);PENDING.put(p.getUUID(),request);enter(p,request);return true;
     }
     /** The next quiet room a reader has not entered, from saved data alone (the dealer has no player). */
-    public static @Nullable Room next(LabyrinthData d,UUID id){var t=d.stateEntry(STATE,id.toString());for(var room:Room.values())if(!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
+    public static @Nullable Room next(LabyrinthData d,UUID id){var t=d.stateEntry(STATE,id.toString());for(var room:CHAIN)if(!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
     /**
      * Whether a reader has begun the quiet rooms at a junction and still has one to come; until they have entered them all,
      * the next takes the place of every story the House deals. A reader who never began (an observer, or someone who never
@@ -123,10 +130,11 @@ public final class HouseReadSites {
             var own=state(arrived.server,arrived.getUUID());if(!own.getString("Active").isEmpty()){left(arrived);own=state(arrived.server,arrived.getUUID());}
             // Entering one settles every door that was owed: the next is dealt afresh, after a hall.
             own.remove("Owed");
-            boolean first=true;for(var other:Room.values())if(other!=room&&own.getCompound(other.key()).getBoolean("Entered"))first=false;
-            var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());save(arrived.server,arrived.getUUID(),own);
+            boolean first=true,late=room==Room.KITCHEN;for(var other:Room.values())if(other!=room){if(own.getCompound(other.key()).getBoolean("Entered"))first=false;else late=false;}
+            var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);if(late)visit.putBoolean("Late",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());save(arrived.server,arrived.getUUID(),own);
             // 0.4.163: the last quiet room entered, the House's depth counts again from here.
-            if(next(arrived.server,arrived.getUUID())==null)LabyrinthData.get(arrived.server).holdReturns(arrived.getUUID());
+            // 0.4.168: a reader who met the kitchen after the other five keeps the depth they had.
+            if(next(arrived.server,arrived.getUUID())==null&&!late)LabyrinthData.get(arrived.server).holdReturns(arrived.getUUID());
             HouseReadStory.open(arrived,room,first);
             prepareNext(arrived);
         },Vec3.atBottomCenterOf(landing),180);
@@ -143,7 +151,7 @@ public final class HouseReadSites {
     /** Leaves a complete room: the House's closing line on black first, then {@link #depart}. */
     static void leave(ServerPlayer p,boolean forward){
         var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p)||!HouseReadStory.ready(p,room))return;
-        HouseReadStory.close(p,room,forward,next(p.server,p.getUUID())==null);
+        HouseReadStory.close(p,room,forward,next(p.server,p.getUUID())==null&&!state(p.server,p.getUUID()).getCompound(room.key()).getBoolean("Late"));
     }
     static void depart(ServerPlayer p,boolean forward){
         var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p))return;var t=state(p.server,p.getUUID()).getCompound(room.key());var d=LabyrinthData.get(p.server);
@@ -235,6 +243,7 @@ public final class HouseReadSites {
             boolean showing=glassState.is(HouseReadRegistry.FITTING.get())&&glassState.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR&&!glassState.getValue(HouseReadPropBlock.TURNED);
             if(visit.getBoolean("Dressed")&&showing&&p.getZ()>glass.getZ()+.5&&p.getZ()<glass.getZ()+4.5&&Math.abs(p.getX()-glass.getX()-.5)<2&&watched(p,glass.above())){int look=visit.getInt("MirrorLook")+1;visit.putInt("MirrorLook",look);if(look>=40){remember(visit,"AtMirror","stood at the hall glass in the borrowed coat");if(look==40)looked(p);}}else visit.putInt("MirrorLook",0);if(age%6==0){p.serverLevel().sendParticles(p,ParticleTypes.FALLING_WATER,false,b.getX()-.5+p.getRandom().nextDouble()*2,b.getY()+3.6,b.getZ()+3.6,2,.3,.1,.2,0);p.serverLevel().sendParticles(p,ParticleTypes.FALLING_WATER,false,b.getX()+5.5,b.getY()+2.9,b.getZ()-3+p.getRandom().nextDouble()*2,1,.1,.1,.3,0);}if(age%120==1){sound(p,HouseReadRegistry.RAIN.get(),b.offset(0,1,3),.5f);sound(p,HouseReadRegistry.RADIATOR.get(),b.offset(3,0,0),.35f);}if(p.getZ()<b.getZ()-9.4){own.put(room.key(),visit);save(p.server,p.getUUID(),own);leave(p,true);return;}}
         else if(room==Room.PORCH)porch(p,b,visit,age);
+        else if(room==Room.KITCHEN)HouseReadKitchen.tick(p,b,visit,age);
         else HouseReadMoments.tick(p,b,room,visit,age);
         var note=b.offset(HouseReadRooms.note(room));if(visit.getBoolean("NoteArmed")&&!visit.getBoolean("Written")&&!watched(p,note)&&p.containerMenu==p.inventoryMenu){var s=p.serverLevel().getBlockState(note);if(s.is(HouseReadRegistry.FITTING.get())){p.serverLevel().setBlock(note,s.setValue(HouseReadPropBlock.WRITING,true),Block.UPDATE_CLIENTS);visit.putBoolean("Written",true);}}
         own.put(room.key(),visit);save(p.server,p.getUUID(),own);
@@ -278,7 +287,7 @@ public final class HouseReadSites {
         if(!plan.tick()){visit.put("BuildCursor",plan.checkpoint());own.put(building.room().key(),visit);save(s,building.owner(),own);return;}
         registerDoors(s,building.owner(),building.room(),b);visit.putBoolean("Built",true);visit.putInt("Layout",LAYOUT);visit.remove("BuildCursor");own.put(building.room().key(),visit);save(s,building.owner(),own);release();
     }
-    public static void registerDoors(MinecraftServer s,UUID owner,Room room,BlockPos b){var d=LabyrinthData.get(s);var dim=room.dimension();d.putDoor(new LabyrinthData.Door(doorId(owner,room,"entry"),dim,b.offset(HouseReadRooms.entry(room)),Direction.SOUTH,"house_read:back",false));if(room!=Room.COATROOM&&room!=Room.PORCH)d.putDoor(new LabyrinthData.Door(doorId(owner,room,"on"),dim,b.offset(HouseReadMoments.exit(room)),Direction.SOUTH,"house_read:on",false));if(room==Room.PORCH){d.putDoor(new LabyrinthData.Door(doorId(owner,room,"kitchen"),dim,b.offset(0,3,-24),Direction.SOUTH,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"side"),dim,b.offset(-15,0,-8),Direction.EAST,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"road"),dim,b.offset(14,0,-42),Direction.SOUTH,"house_read:on",false));}}
+    public static void registerDoors(MinecraftServer s,UUID owner,Room room,BlockPos b){var d=LabyrinthData.get(s);var dim=room.dimension();d.putDoor(new LabyrinthData.Door(doorId(owner,room,"entry"),dim,b.offset(HouseReadRooms.entry(room)),Direction.SOUTH,"house_read:back",false));if(room!=Room.COATROOM&&room!=Room.PORCH)d.putDoor(new LabyrinthData.Door(doorId(owner,room,"on"),dim,b.offset(room==Room.KITCHEN?HouseReadKitchen.EXIT:HouseReadMoments.exit(room)),Direction.SOUTH,"house_read:on",false));if(room==Room.PORCH){d.putDoor(new LabyrinthData.Door(doorId(owner,room,"kitchen"),dim,b.offset(0,3,-24),Direction.SOUTH,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"side"),dim,b.offset(-15,0,-8),Direction.EAST,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"road"),dim,b.offset(14,0,-42),Direction.SOUTH,"house_read:on",false));}}
     private static void release(){if(leased!=null)for(var c:CHUNKS)leased.getChunkSource().removeRegionTicket(TICKET,c,2,c);CHUNKS.clear();leased=null;building=null;plan=null;}
     public static void clear(){rebind();HouseReadStory.clear();}
     /** A new saved-data store forgets the build queue; a card already on a reader's screen still runs its course. */

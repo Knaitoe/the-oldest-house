@@ -29,7 +29,10 @@ public final class HouseReadMirror implements BlockEntityRenderer<HouseReadPropB
     private final net.minecraft.client.model.geom.ModelPart regularCoat,slimCoat;
     HouseReadMirror(BlockEntityRendererProvider.Context ctx){standard=new PlayerModel<>(ctx.bakeLayer(ModelLayers.PLAYER),false);slim=new PlayerModel<>(ctx.bakeLayer(ModelLayers.PLAYER_SLIM),true);regularCoat=ctx.bakeLayer(HouseReadClothes.STANDARD);slimCoat=ctx.bakeLayer(HouseReadClothes.SLIM);}
     @Override public void render(HouseReadPropBlock.Fitting be,float partial,PoseStack pose,MultiBufferSource out,int light,int overlay){
-        var state=be.getBlockState();if(state.getValue(HouseReadPropBlock.PART)!=HouseReadPropBlock.Part.MIRROR||state.getValue(HouseReadPropBlock.TURNED))return;
+        var state=be.getBlockState();
+        // 0.4.168: the kitchen's tin, drawing and fridge carry their own colours.
+        if(HouseReadKitchenClient.draws(state.getValue(HouseReadPropBlock.PART))){HouseReadKitchenClient.render(be,pose,out,light);return;}
+        if(state.getValue(HouseReadPropBlock.PART)!=HouseReadPropBlock.Part.MIRROR||state.getValue(HouseReadPropBlock.TURNED))return;
         // 0.4.161: a true plane mirror. The glass asks to be reflected and, once it is the nearest glass in front of the camera,
         // shows the room and the people in it as the glass would, the reader as the House's version of them.
         var glass=new HouseReadReflection.Glass(be.getBlockPos(),state.getValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING));HouseReadReflection.want(glass.at(),glass.facing());

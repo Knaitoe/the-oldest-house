@@ -662,5 +662,6 @@
   "advancements.the_oldest_house.account.backseat.title": "Twenty seconds",
   "advancements.the_oldest_house.account.backseat.description": "I closed the car door against the rain.",
   "advancements.the_oldest_house.account.silo.title": "Yellow dust",
-  "advancements.the_oldest_house.account.silo.description": "I climbed above the corn while a voice below invented places she could have gone."
+  "advancements.the_oldest_house.account.silo.description": "I climbed above the corn while a voice below invented places she could have gone.",
+  "item.the_oldest_house.read_crayon": "Crayon"
 }

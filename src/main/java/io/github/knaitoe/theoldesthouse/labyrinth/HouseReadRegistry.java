@@ -36,7 +36,9 @@ public final class HouseReadRegistry {
     private static DeferredBlock<Block> cube(String id){return BLOCKS.registerBlock(id,Block::new,wood());}
     public static final DeferredBlock<Block> CARPET=cube("read_carpet"),CEILING_TILE=cube("read_ceiling_tile"),CEILING=cube("read_ceiling"),COUNTER=cube("read_counter"),
         ASPHALT=cube("read_asphalt"),ASPHALT_LINE=cube("read_asphalt_line"),LOT_WALL=cube("read_lot_wall"),OVERCAST=cube("read_overcast"),PORCH_BOARDS=cube("read_porch_boards"),
-        SHINGLES=cube("read_shingles"),TRIM=cube("read_trim"),FLOORBOARDS=cube("read_floorboards"),WAINSCOT=cube("read_wainscot"),NIGHT=cube("read_night");
+        SHINGLES=cube("read_shingles"),TRIM=cube("read_trim"),FLOORBOARDS=cube("read_floorboards"),WAINSCOT=cube("read_wainscot"),NIGHT=cube("read_night"),
+        // 0.4.168: the kitchen window's four o'clock sky.
+        AFTERNOON=cube("read_afternoon");
     public static final DeferredBlock<RotatedPillarBlock> POST=BLOCKS.registerBlock("read_post",RotatedPillarBlock::new,wood()),DOCK_POST=BLOCKS.registerBlock("read_dock_post",RotatedPillarBlock::new,wood());
     public static final DeferredBlock<SlabBlock> PORCH_SLAB=BLOCKS.registerBlock("read_porch_board_slab",SlabBlock::new,wood()),SHINGLE_SLAB=BLOCKS.registerBlock("read_shingle_slab",SlabBlock::new,wood()),SHAKE_SLAB=BLOCKS.registerBlock("read_shake_slab",SlabBlock::new,wood());
     public static final DeferredBlock<StairBlock> PORCH_STEP=BLOCKS.register("read_porch_step",()->new StairBlock(PORCH_BOARDS.get().defaultBlockState(),wood())),SHINGLE_STAIRS=BLOCKS.register("read_shingle_stairs",()->new StairBlock(SHINGLES.get().defaultBlockState(),wood())),
@@ -54,7 +56,9 @@ public final class HouseReadRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> BELL=sound("bell"),HISS=sound("hiss"),GLUG=sound("glug"),TAP=sound("tap"),CLOCK=sound("clock"),START=sound("start"),SONG=sound("song");
     public static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> MUSIC=java.util.stream.IntStream.range(0,9).mapToObj(i->sound("song_"+i)).toList();
     public static java.util.List<DeferredHolder<SoundEvent,SoundEvent>> sounds(){var all=new java.util.ArrayList<>(java.util.List.of(RAIN,RADIATOR,WHISTLE,SUPPER,NEWS,DISHES,ICE,STEP,BELL,HISS,GLUG,TAP,CLOCK,START,SONG));all.addAll(MUSIC);return all;}
-    public static final DeferredItem<HouseReadBorrowedItem> PAPER=borrowed("paper"),MAGAZINE=borrowed("magazine"),GLASSES=borrowed("glasses"),PHONE=borrowed("phone"),CONE=borrowed("cone");
+    public static final DeferredItem<HouseReadBorrowedItem> PAPER=borrowed("paper"),MAGAZINE=borrowed("magazine"),GLASSES=borrowed("glasses"),PHONE=borrowed("phone"),CONE=borrowed("cone"),
+        // 0.4.168: a crayon from the kitchen tin, its colour carried as a dye.
+        CRAYON=borrowed("crayon");
     public static final java.util.List<DeferredItem<Item>> ROUTINES=java.util.stream.IntStream.range(0,16).mapToObj(i->ITEMS.registerSimpleItem("read_routine_"+i,new Item.Properties().stacksTo(1))).toList();
     public static final DeferredItem<Item> BOTTLE=ITEMS.registerSimpleItem("read_bottle",new Item.Properties().stacksTo(1));
     private static DeferredItem<HouseReadBorrowedItem> borrowed(String id){return ITEMS.register("read_"+id,()->new HouseReadBorrowedItem(new Item.Properties().stacksTo(1),id));}

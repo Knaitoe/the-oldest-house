@@ -310,6 +310,8 @@ public enum LabyrinthPlace {
     READ_WAITING("waiting_chair",Kind.INTERLUDE,109,new BoundingBox(-11,-3,-19,11,7,5),List.of()),
     READ_BATHROOM("night_sink",Kind.INTERLUDE,110,new BoundingBox(-8,-3,-16,8,7,5),List.of()),
     READ_SHELTER("jukebox_shelter",Kind.INTERLUDE,111,new BoundingBox(-24,-6,-30,24,10,8),List.of()),
+    /** 0.4.168: the kitchen table, the first quiet room. */
+    READ_KITCHEN("kitchen_table",Kind.INTERLUDE,112,new BoundingBox(-7,-3,-17,8,6,5),List.of()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
