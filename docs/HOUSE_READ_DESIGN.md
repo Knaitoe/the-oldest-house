@@ -9,7 +9,7 @@ What is built (see "Built so far" at the end):
 - the account opening, the House of Leaves, and the reader's look in glass and copies, written with the read (0.4.159);
 - the six scenes that read a category (0.4.142), the lake house partner (0.4.152), the shelter strangers' age and the road-taker's deal (0.4.159).
 
-What is not built: settled `DANGER` authority figures, the moods a tentative `HOME` gives, the larger `AGE` changes, and the two open proposals (see `docs/HOUSE_READ_0_4_159.md`).
+What is not built: settled `DANGER` authority figures, the moods a tentative `HOME` gives, the larger `AGE` changes, and the two open proposals (see `docs/HOUSE_READ_0_4_159.md`). Proposed for the owner's review (October 29): a sixth room, the self-portrait at the kitchen table, which reads skin tone only, and the House's body for readers whose skins aren't human (section 6 and "The House's body").
 
 A review of the built rooms against this document, with a suggested order for what comes next, is in `docs/PERSONALITY_VIGNETTES_REVIEW.md` (October 28).
 
@@ -144,6 +144,7 @@ A later signal that agrees raises a category to settled; one that disagrees make
 | `SELF` | `MASC`, `FEM`, `ANDROGYNOUS`, `UNSEEN` | The coatroom |
 | `DRAWN_TO` | `MEN`, `WOMEN`, `BOTH`, `NO_ONE` | The shelter |
 | `HOME` | `HAVEN`, `DANGER`, `RUNAWAY` | The porch |
+| `TONE` (proposal) | one of twelve skin-tone crayons, matched by the reader | The kitchen table |
 
 **API.** Code reads it through one call, `HouseRead.category(player, Trait)`, which returns the value and strength or nothing. Every caller must handle nothing, and that branch is today's behaviour.
 
@@ -332,6 +333,74 @@ Built in 0.4.159: the window is the 200 ticks after the whistle; under the porch
 >
 > Some kids hear that sound when the streetlights kick on and their feet are already moving toward the screen door before the echo dies, because they know the plates are warm and the lock is going to turn behind them. Other kids hear the exact same note and their stomachs drop right into their shoes, and they spend the whole walk up the driveway listening to how hard the heels are hitting the kitchen linoleum so they know which door to use.
 
+## 6. The self-portrait (kitchen-table) — TONE
+
+Status: **proposal for the owner's review (October 29)**. Nothing here is built yet.
+
+The owner asked for a separate, carefully considered vignette for skin and ethnicity, and chose the self-portrait. It exists so the House's body (see "The House's version of the reader") can have the reader's own skin tone without the House guessing it.
+
+### What it reads, and what it never does
+
+- **Skin tone only, matched by the reader.** The reader picks the crayon that is theirs; the House does not infer it.
+- **Never ethnicity.**
+  - In a Minecraft skin, ethnicity shows only as tone and hair, and hair already comes from the bathroom's routine.
+  - Reading ethnicity from behaviour would mean treating cultural signals (food, music, names, faith) as race.
+- **Nothing else feeds it, and it feeds nothing else.**
+  - The tone is never inferred from `HAIR` or any other trait (the owner's October 27 rule).
+  - `TONE` changes only the House's body.
+  - No line of the House's writing ever names a reader's colour.
+
+### The scene
+
+A family kitchen at about four in the afternoon, after school:
+- low gold light through the window over the sink;
+- a radio turned down low, the fridge humming, a wall clock;
+- the fridge covered in magnets and old drawings: a house, a dog, a sun with a face, a rainbow. There are no people on it, so nothing on the fridge suggests what colour a person is.
+
+On the kitchen table are a sheet of paper and an open tin of crayons.
+- **The sheet** carries a faint pencil outline of a child's figure, as if the reader had already started drawing themselves. It has four parts to colour: the face, the hands, the hair and the clothes.
+- **The tin** holds two rows:
+  - a row of **twelve skin-tone crayons**, unlabelled, from very light to very deep, with pink, neutral, golden and olive undertones. Proposed colours: `#f4d6c6`, `#eecba8`, `#e3b68a`, `#d4b28c`, `#cc9a6e`, `#bf9070`, `#ad7a4f`, `#a3825e`, `#8a5a3a`, `#7b5140`, `#5a3726` and `#3e261c`;
+  - a row of **eight other colours** for everything else, hair included: black, a dark brown, a light brown, yellow, orange-red, grey, blue and green.
+- **Equal places.**
+  - Which tone sits where in the row is shuffled for each reader, so the nearest or leftmost crayon is never a default, as with the bathroom's routines.
+  - No crayon is called "flesh" or "skin", and none is the normal one.
+
+### Building it
+
+- **Taking a crayon.** Using the tin takes the crayon at that place into the reader's hand. It is lent, like the waiting room's paper, and goes back into the tin when the reader puts it down or leaves.
+- **Colouring.** Using the sheet with a crayon fills the part used with crayon strokes in that colour. A part can be coloured again.
+- **First signal (tentative):** the first colour on the face that could be a person's sets `TONE` to that colour. That means any of the twelve, or one of the browns. A green or blue face is play and reads nothing.
+- **Second signal (settled):** colouring the hands with the same crayon as the face. Colouring the face again in a different tone disagrees, so the read is uncertain until the next signal decides.
+- **The fridge.** Using the fridge once the picture has some colour on it puts the sheet up under a magnet, where it stays in the reader's copy of the kitchen. That closes the room's window: colouring after it is only observed.
+- **Doing nothing**, or a green face, reads nothing, and the way on opens whatever the reader does.
+- **The ways out.** The way on is the hall door past the fridge; the way back is the door the reader came in by.
+- **Private.** The kitchen, the crayons and the drawing are the reader's own copy, like the other five rooms.
+- **The drawing comes back** (proposal): the same picture, in the reader's colours, on the fridge of their Family Copy, and drawn small in the margin of *II. The hands* in their House of Leaves.
+
+### The account and the book
+
+The clause names acts, never colours:
+- "drew yourself at the kitchen table, face and hands alike, and put the picture up on the fridge";
+- "drew yourself at the kitchen table and left the picture on it".
+
+*II. The hands* may take it when nothing else fills it: "You drew yourself once at a kitchen table, and pressed hard on the hands."
+
+### Text (the owner's to write; on the inside of the tin's lid, which shows the maker's sun first)
+
+Placeholder draft, for the owner to replace or rewrite:
+
+> Every tin of crayons used to come with one stick called flesh, as if there were only the one kind.
+>
+> Kids figure out which stick is theirs before anybody tells them. Some go straight for it and press so hard the paper shines; some try three on the back of the sheet first, holding each one up against the back of a hand like matching paint at the hardware store. Nobody has to say a word. The hands already know what color they've always been.
+
+### Placement
+
+- **Order:** it is the sixth quiet room, right after the bathroom. The order becomes the waiting room, the bathroom, the kitchen table, the coatroom, the shelter and the porch, which keeps the body's questions together.
+- **Slot and dimension:** slot 112, in the interior dimension, as a private copy per reader.
+- **Earlier readers:** readers who have already been through the five meet it at their next junction door.
+- **The account opening** recites it in room order, and its second sentence still begins at the hall.
+
 ## The House's version of the reader
 
 The House never draws an "accurate" reader. The reader already made their likeness: their skin. Redrawing it would mean deciding eyes, skin tone and face, and would override the one self-portrait the reader chose.
@@ -349,7 +418,35 @@ Instead the House dresses the reader's own skin with what it learned, in the pla
 
   The Hide-and-Clap blindfold already fits standard and slim heads as a worn layer, so the technique is proven.
 - **`UNSEEN`:** the coat and silhouette show, but the face is obscured, in every mirror, double and portrait.
-- **Never the live model.** Third person always shows the reader's own skin, even on their own client. The House's version belongs in glass and copies. When the House gets something wrong, the reader sees the gap between who they are and who the House thinks they are.
+- **Never the live model,** with one exception, the House's body below. Third person always shows the reader's own skin, even on their own client. The House's version belongs in glass and copies. When the House gets something wrong, the reader sees the gap between who they are and who the House thinks they are.
+
+### The House's body (the owner's decisions, October 29; proposal, not built)
+
+The owner: readers whose skins are not human (a creeper, a robot, a mascot) won't feel the personalization, because coats, glasses and portraits assume a person. So the House gives those readers a human body while they are inside it.
+
+- **Chosen from the read:**
+  - age from `AGE`;
+  - presentation (clothes) from a settled `SELF`;
+  - hairstyle from `HAIR`'s routine (the curl-care routine needs one new cut on the shared painter, coils);
+  - skin tone from `TONE`, the self-portrait. If the room was skipped or read nothing, the tone is that of the default skin Minecraft assigns the reader's account;
+  - hair colour from the hair the reader drew, if it was drawn in a hair colour, and otherwise from the account's default skin.
+  - Unread traits take neutral choices: a young adult, plain clothes, short hair.
+- **Only for skins that look inhuman.**
+  - The reader's own client checks the face of their own skin: enough of the face must be in human skin colours, counting the hat layer over it.
+  - The client tells the server only yes or no.
+  - The check will misjudge some skins both ways (a masked human, a human-coloured mob), which the owner accepted.
+- **Everywhere inside.**
+  - It applies in the House's dimensions: the reader's own first- and third-person view, other players' view, the tab list, mirrors and doubles.
+  - Their own skin returns in the manor and the Overworld.
+  - The worn layers (coat, glasses, the veiled face) stay in glass and copies only, over whichever body.
+- **Others see the read-chosen body.** Friends can compare bodies, which shows other players what the House read of an inhuman-skinned reader's age, presentation, hair and tone.
+  - This is a deliberate exception to "Private"; the README must say so.
+  - Readers with human skins never have their read leave the server.
+- **Built as composed skins.**
+  - There are 45 painted bodies: three ages, three presentations, and five hairstyles including unread.
+  - Each is recoloured exactly to the tone and hair colour at runtime. The painter's shading is additive, so the recolouring matches what it would have painted.
+  - All use wide arms.
+- **A server option**, `read.houseBodies`, turns the House's body off.
 
 Built so far:
 - 0.4.150: the coatroom glass is a true reflection of the reader's own skin and borrowed layers, reversed, half their height where their eye would see it, turning and walking with them, and seen only from in front.
@@ -505,6 +602,11 @@ The first slice tests the bar before the other rooms and the bulk of the writing
 Play it with two people who come in together. If comparing books and accounts is interesting, build the rest. If it isn't, stop, and the slice's rooms stay as quiet first rooms.
 
 As built, the order went the other way. All five rooms came first, and the payoffs began with six read-side consumers, including the Last Stop men's address. The classifier, the account opening, the House of Leaves and the look in glass and copies followed in 0.4.159, so the test with two players can now be run.
+
+## The owner's decisions (October 29)
+
+1. **Inhuman skins:** readers whose skins don't look human get a human body while inside the House, chosen from the read, everywhere inside, and seen by other players ("The House's body").
+2. **Skin and ethnicity** get their own carefully considered vignette: the self-portrait at the kitchen table (section 6). It reads skin tone only, matched by the reader. Until it is built, or for a reader who skips it, the tone is the default skin Minecraft assigns their account.
 
 ## The owner's decisions (October 27)
 
