@@ -38,7 +38,7 @@ public final class LiveExpeditionClient {
         if(!LiveExpeditionProof.enabled())return;if(badImpact!=null)throw new IllegalStateException(badImpact);var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.gameMode==null)return;
         var component=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(component==null)return;
         var data=component.copyTag();int step=data.getInt("Step");if(step<1)return;String role=System.getProperty("the_oldest_house.liveProofRole","");
-        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;pawShot=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);}ticks++;
+        if(previous!=step){previous=step;ticks=0;clicked=-100;ack=-1;portholePoseSeen=false;pawShot=false;mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);mc.options.keyAttack.setDown(false);mc.options.keyUse.setDown(false);}
         BlockPos target=BlockPos.of(data.getLong("Target"));
         if(step==54&&data.getBoolean("BorrascaTerrainPending")){
             mc.options.keyUp.setDown(false);mc.options.keyJump.setDown(false);mc.options.keySprint.setDown(false);
@@ -46,6 +46,9 @@ public final class LiveExpeditionClient {
             if(mc.level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD)&&mc.player.onGround()&&!mc.player.isNoGravity()&&Math.abs(mc.player.getY()-target.getY())<.1&&mc.player.distanceToSqr(target.getCenter())<25&&mc.levelRenderer.isSectionCompiled(floor)&&!mc.level.getBlockState(floor).getCollisionShape(mc.level,floor).isEmpty()&&data.getInt("ServerTick")-borrascaTerrainSent>=40){borrascaTerrainSent=data.getInt("ServerTick");mc.player.connection.sendCommand("borrascaready");}return;
         }
         if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen){mc.options.keyUp.setDown(false);return;}
+        // A level still loading (a reconnect, or a door into another level) is not time spent in the phase: a client whose
+        // marker came while it loaded would otherwise pass an exact tick (step 13's ack at 30) before it could act.
+        ticks++;
         var block=mc.level.getBlockState(target);
         if(step==1&&ticks>30&&mc.level.players().size()>=2)ack(mc,1);
         if(step==2||step==31) {
