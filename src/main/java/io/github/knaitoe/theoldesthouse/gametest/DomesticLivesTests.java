@@ -110,6 +110,64 @@ public final class DomesticLivesTests {
         });
     }
     @AfterBatch(batch="domestic_lives_handling") public static void handlingDone(ServerLevel l){close();}
+    private static void passes(LiteraryTests.Fixture f,LabyrinthPlace hall,int returns){var d=f.data();String key=f.origin.asLong()+":"+hall.id();var t=d.stateEntry(HallAtmosphere.STATE,key);t.putInt("Returns",returns);d.setStateEntry(HallAtmosphere.STATE,key,t);}
+    /**
+     * 0.4.170 (owner: "Ensure they don't appear until several passes through the hallways, so they feel more impactful when
+     * first encountered"): a new home is built behind its fragment and the fragment ends at its wall, until the halls have
+     * been passed through ten times and this hall has been seen twice; then it bleeds in, all at once, while nobody watches.
+     */
+    @GameTest(template="empty",batch="domestic170_bleed",timeoutTicks=700)
+    public static void aNewHomeStaysBehindItsFragmentUntilTheHallsHaveBeenWalkedAndBleedsInUnwatched(GameTestHelper h){
+        var f=fixture(h);var home=DomesticLives.HOMES.getFirst();var b=f.base(home.hall());f.chunks.hold(f.in,IndianLakeRooms.bounds(b,home.hall()));ServerPlayer[] camera={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall is resident")).thenExecute(()->{
+            var chosen=f.data().state(DomesticLives.STATE);for(var each:DomesticLives.HOMES)if(each.hall()==home.hall())chosen.putBoolean(DomesticLives.key(b,each)+":chosen",true);f.data().setState(DomesticLives.STATE,chosen);
+            f.built.add(home.hall());LabyrinthHalls.build(f.in,b,home.hall());LabyrinthBuilder.registerDoors(f.data(),home.hall(),b);
+            var opening=b.offset(home.opening());
+            h.assertTrue(DomesticLives.sealed(f.data(),b,home)&&!clear(f.in,opening)&&!clear(f.in,opening.north()),"a new home's opening stays the fragment's wall");
+            h.assertTrue(f.in.getBlockState(b.offset(-8,0,-25)).is(DomesticRegistry.FITTING.get())&&f.in.getBlockState(b.offset(-11,1,-22)).is(DomesticRegistry.RECORD.get()),"the home itself already stands behind it, its papers in place");
+            passes(f,LabyrinthPlace.BENT_HALL,9);passes(f,home.hall(),1);h.assertTrue(DomesticLives.passes(f.data(),f.origin)==10&&!DomesticLives.due(f.data(),f.origin,home),"ten passes are not enough while this hall has been seen only once");
+            passes(f,LabyrinthPlace.BENT_HALL,7);passes(f,home.hall(),2);h.assertTrue(!DomesticLives.due(f.data(),f.origin,home),"nor is seeing this hall twice in fewer than ten passes");
+            passes(f,LabyrinthPlace.BENT_HALL,8);h.assertTrue(DomesticLives.due(f.data(),f.origin,home),"ten passes, two of them here, make it due");
+            camera[0]=player(f,"domestic_watcher");camera[0].setGameMode(GameType.SPECTATOR);camera[0].teleportTo(f.in,b.getX()-3.5,b.getY()+1,b.getZ()-18.5,0,0);
+            h.assertTrue(!DomesticLives.bleed(f.in,b,home)&&DomesticLives.sealed(f.data(),b,home),"a camera in the hall keeps it sealed");
+            camera[0].teleportTo(f.in,b.getX()+80,b.getY()+1,b.getZ(),0,0);
+        }).thenWaitUntil(()->h.assertTrue(DomesticLives.bleed(f.in,b,home),"with nobody near, it bleeds in")).thenExecute(()->{
+            var opening=b.offset(home.opening());h.assertTrue(!DomesticLives.sealed(f.data(),b,home)&&clear(f.in,opening)&&clear(f.in,opening.north()),"the opening is cut and walkable");
+            for(int x=-6;x<=-3;x++)h.assertTrue(clear(f.in,b.offset(x,0,-21)),"the passage through the fragment is walkable");
+            f.reload();h.assertTrue(!DomesticLives.sealed(f.data(),b,home)&&DomesticLives.bleed(f.in,b,home),"the open home stays open after a reload and is never sealed again");
+            h.assertTrue(f.in.getEntitiesOfClass(LivingEntity.class,home.area(b),e->!(e instanceof ServerPlayer)).isEmpty(),"no household appears with it");h.succeed();
+        });
+    }
+    @AfterBatch(batch="domestic170_bleed") public static void bleed170Done(ServerLevel l){close();}
+    /** 0.4.170 (owner: "Maybe add food to the fridges"): each household's fridge holds its own food, shelf by shelf, once. */
+    @GameTest(template="empty",batch="domestic170_fridges",timeoutTicks=400)
+    public static void eachHouseholdsFridgeHoldsItsOwnFoodOnceAndTheFreezerOpensOnItsOwn(GameTestHelper h){
+        var f=fixture(h);var b=f.base(LabyrinthPlace.STRAIGHT_HALL);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,LabyrinthPlace.STRAIGHT_HALL));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the kitchen is resident")).thenExecute(()->{
+            build(f,LabyrinthPlace.STRAIGHT_HALL);var p=player(f,"fridge_hand");p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);var at=b.offset(-8,0,-25);
+            h.assertTrue(f.in.getBlockState(at).getValue(DomesticFittingBlock.KIND)==DomesticFittingBlock.Kind.FRIDGE_FAMILY&&f.in.getBlockState(at.above()).getValue(DomesticFittingBlock.KIND)==DomesticFittingBlock.Kind.FRIDGE_TOP,"the family's fridge-freezer stands in its kitchen");
+            use(p,f.in,at,new Vec3(.5,.5,.95));h.assertTrue((stage(f.in,at)&1)==1&&(stage(f.in,at.above())&1)==1&&f.in.getBlockState(at).getLightEmission(f.in,at)==5,"the door opens, up into the freezer's cell, and the light comes on");
+            use(p,f.in,at,new Vec3(.5,12.5/16,.5));var sandwiches=p.getInventory().items.stream().filter(i->i.is(Items.BREAD)).findFirst().orElse(ItemStack.EMPTY);
+            h.assertTrue(sandwiches.getCount()==2&&sandwiches.getHoverName().getString().equals("Sandwiches")&&sandwiches.get(net.minecraft.core.component.DataComponents.LORE).lines().getFirst().getString().contains("LEAH - NO EGG"),"the top shelf's sandwiches, labelled in the household's hand: "+sandwiches);
+            use(p,f.in,at,new Vec3(.5,12.5/16,.5));h.assertTrue((stage(f.in,at)&1)==0&&p.getInventory().countItem(Items.BREAD)==2,"an empty shelf only shuts the door again");
+            use(p,f.in,at,new Vec3(.5,.5,.95));use(p,f.in,at,new Vec3(.5,8/16.,.5));use(p,f.in,at,new Vec3(.5,3/16.,.5));
+            h.assertTrue(p.getInventory().countItem(Items.HONEY_BOTTLE)==2&&p.getInventory().countItem(Items.COOKED_CHICKEN)==1&&stage(f.in,at)==15,"the juice and Sunday's chicken come from their own shelves");
+            use(p,f.in,at,new Vec3(1/16.,.5,.5));h.assertTrue((stage(f.in,at)&1)==0&&(stage(f.in,at.above())&1)==0,"the door shuts, and with it the freezer's half of it");
+            use(p,f.in,at.above(),new Vec3(.5,.75,.95));h.assertTrue((stage(f.in,at.above())&2)!=0&&(stage(f.in,at)&1)==0,"the freezer opens on its own");
+            f.reload();use(p,f.in,at,new Vec3(.5,.5,.95));for(double y:new double[]{12.5/16,8/16.,3/16.}){use(p,f.in,at,new Vec3(.5,y,.5));if((stage(f.in,at)&1)==0)use(p,f.in,at,new Vec3(.5,.5,.95));}
+            h.assertTrue(p.getInventory().countItem(Items.BREAD)==2&&p.getInventory().countItem(Items.HONEY_BOTTLE)==2&&p.getInventory().countItem(Items.COOKED_CHICKEN)==1,"after a reload nothing has been put back");
+            for(var kind:List.of(DomesticFittingBlock.Kind.FRIDGE_STUDENTS,DomesticFittingBlock.Kind.FRIDGE_DRINKER,DomesticFittingBlock.Kind.FRIDGE_GRANDMOTHER))for(var facing:Direction.Plane.HORIZONTAL){
+                p.getInventory().clearContent();f.in.setBlock(at,DomesticFittingBlock.of(kind,facing),3);f.in.setBlock(at.above(),DomesticFittingBlock.of(DomesticFittingBlock.Kind.FRIDGE_TOP,facing),3);
+                for(int shelf=1;shelf<=3;shelf++){
+                    if((stage(f.in,at)&1)==0)use(p,f.in,at,new Vec3(.5,.5,.95));var food=DomesticFridge.food(kind,shelf);use(p,f.in,at,new Vec3(.5,new double[]{0,12.5,8,3}[shelf]/16,.5));
+                    if(food==null)h.assertTrue((stage(f.in,at)&1)==0&&(stage(f.in,at)&(1<<shelf))==0,"the drinker's bottles stay where they are, and touching them shuts the door: "+facing);
+                    else h.assertTrue(p.getInventory().items.stream().anyMatch(i->i.is(food.item())&&i.getCount()==food.count()&&i.getHoverName().getString().equals(food.name())),kind+" gives its "+food.name()+" from shelf "+shelf+" facing "+facing);
+                }
+            }
+            h.succeed();
+        });
+    }
+    @AfterBatch(batch="domestic170_fridges") public static void fridges170Done(ServerLevel l){close();}
     @GameTest(template="empty",batch="domestic_lives_old",timeoutTicks=800)
     public static void slicedOldHallAppendWaitsForBodiesAndCamerasAndPreservesFiniteOriginalsEditsAndRemoval(GameTestHelper h){
         var f=fixture(h);var home=DomesticLives.HOMES.getFirst();var b=f.base(home.hall());f.chunks.hold(f.in,IndianLakeRooms.bounds(b,home.hall()));ServerPlayer[] observer={null};Object[] original={null};

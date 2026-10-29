@@ -61,6 +61,8 @@ public final class DomesticLives {
     private static void handled(Map<BlockPos,BlockState> e,int x,int y,int z,DomesticFittingBlock.Kind k){put(e,x,y,z,DomesticFittingBlock.of(k,Direction.NORTH));}
     private static void handled(Map<BlockPos,BlockState> e,int x,int y,int z,DomesticFittingBlock.Kind k,Direction f){put(e,x,y,z,DomesticFittingBlock.of(k,f));}
     private static void common(Map<BlockPos,BlockState> e,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction f){put(e,x,y,z,HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,k).setValue(HouseholdFurnitureBlock.FACING,f));}
+    /** 0.4.170: the household's own fridge-freezer, its back to the wall {@code f}: the fridge below with its food, the freezer above. */
+    private static void fridge(Map<BlockPos,BlockState> e,int x,int z,DomesticFittingBlock.Kind k,Direction f){handled(e,x,0,z,k,f);handled(e,x,1,z,DomesticFittingBlock.Kind.FRIDGE_TOP,f);}
     private static void closet(Map<BlockPos,BlockState> e,int x,int z,Direction f){handled(e,x,0,z,DomesticFittingBlock.Kind.CLOSET_LOWER,f);handled(e,x,1,z,DomesticFittingBlock.Kind.CLOSET_UPPER,f);}
     private static void interior(Map<BlockPos,BlockState> e,int x,int y,int z,VignetteInteriorBlock.Kind k,Direction f){put(e,x,y,z,VignetteInteriorBlock.of(k,f));}
     private static void wallX(Map<BlockPos,BlockState> e,Home h,int x,int z0,int z1,int... gaps){
@@ -95,7 +97,7 @@ public final class DomesticLives {
                 fit(e,-19,0,-19,UncannyFurnitureBlock.Kind.BEDSIDE);handled(e,-19,1,-19,DomesticFittingBlock.Kind.PHOTO_FAMILY);fit(e,-16,0,-19,UncannyFurnitureBlock.Kind.BEDSIDE);fit(e,-16,1,-19,UncannyFurnitureBlock.Kind.DESK_LAMP);fit(e,-15,0,-16,UncannyFurnitureBlock.Kind.WARDROBE,Direction.WEST);
                 interior(e,-15,1,-21,VignetteInteriorBlock.Kind.HILL_HEIGHT_MARKS,Direction.WEST);
                 for(int x=-13;x<=-9;x++)interior(e,x,0,-25,VignetteInteriorBlock.Kind.HOLIDAY_LARDER,Direction.NORTH);
-                interior(e,-12,0,-25,VignetteInteriorBlock.Kind.HOLIDAY_SINK,Direction.NORTH);fit(e,-8,0,-25,UncannyFurnitureBlock.Kind.FRIDGE,Direction.SOUTH);handled(e,-13,1,-25,DomesticFittingBlock.Kind.BREAKFAST);
+                interior(e,-12,0,-25,VignetteInteriorBlock.Kind.HOLIDAY_SINK,Direction.NORTH);fridge(e,-8,-25,DomesticFittingBlock.Kind.FRIDGE_FAMILY,Direction.NORTH);handled(e,-13,1,-25,DomesticFittingBlock.Kind.BREAKFAST);
                 for(int x=-11;x<=-10;x++)common(e,x,0,-22,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.NORTH);
                 for(int x:new int[]{-11,-10}){common(e,x,0,-21,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);common(e,x,0,-23,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.SOUTH);}
                 common(e,-9,0,-22,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
@@ -110,7 +112,7 @@ public final class DomesticLives {
                 fit(e,15,0,-8,UncannyFurnitureBlock.Kind.DESK);fit(e,15,1,-8,UncannyFurnitureBlock.Kind.DESK_LAMP);handled(e,19,0,-8,DomesticFittingBlock.Kind.PACKED_CLOTHES);
                 closet(e,19,-12,Direction.WEST);handled(e,12,0,-17,DomesticFittingBlock.Kind.RECORD_PLAYER);fit(e,13,0,-17,UncannyFurnitureBlock.Kind.BOOKCASE);
                 for(int x=8;x<=10;x++)interior(e,x,0,-17,VignetteInteriorBlock.Kind.TRAILER_CUPBOARD,Direction.NORTH);
-                interior(e,8,0,-17,VignetteInteriorBlock.Kind.TRAILER_SINK,Direction.NORTH);fit(e,11,0,-17,UncannyFurnitureBlock.Kind.FRIDGE,Direction.SOUTH);
+                interior(e,8,0,-17,VignetteInteriorBlock.Kind.TRAILER_SINK,Direction.NORTH);fridge(e,11,-17,DomesticFittingBlock.Kind.FRIDGE_STUDENTS,Direction.NORTH);
                 common(e,10,0,-14,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.NORTH);common(e,9,0,-14,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);common(e,10,0,-13,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.NORTH);
                 fit(e,9,0,-8,UncannyFurnitureBlock.Kind.SOFA_LEFT);fit(e,10,0,-8,UncannyFurnitureBlock.Kind.SOFA_RIGHT);fit(e,10,0,-10,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
                 handled(e,8,0,-9,DomesticFittingBlock.Kind.EMPTY_BOTTLES);window(e,19,-9,Direction.WEST);lamp(e,11,-13);lamp(e,17,-14);lamp(e,17,-9);
@@ -120,7 +122,7 @@ public final class DomesticLives {
                 bed(e,-6,-34,Blocks.WHITE_BED);fit(e,-3,0,-35,UncannyFurnitureBlock.Kind.WARDROBE,Direction.SOUTH);
                 fit(e,-7,0,-34,UncannyFurnitureBlock.Kind.BEDSIDE);handled(e,-7,1,-34,DomesticFittingBlock.Kind.FOLDED_SHIRT);
                 for(int z=-31;z<=-29;z++)interior(e,0,0,z,VignetteInteriorBlock.Kind.TRAILER_CUPBOARD,Direction.WEST);
-                interior(e,0,0,-30,VignetteInteriorBlock.Kind.TRAILER_SINK,Direction.WEST);handled(e,0,1,-29,DomesticFittingBlock.Kind.DIRTY_DISHES);fit(e,0,0,-28,UncannyFurnitureBlock.Kind.FRIDGE,Direction.WEST);
+                interior(e,0,0,-30,VignetteInteriorBlock.Kind.TRAILER_SINK,Direction.WEST);handled(e,0,1,-29,DomesticFittingBlock.Kind.DIRTY_DISHES);fridge(e,0,-28,DomesticFittingBlock.Kind.FRIDGE_DRINKER,Direction.EAST);
                 common(e,-1,0,-26,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.SOUTH);fit(e,-2,0,-28,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
                 handled(e,0,0,-26,DomesticFittingBlock.Kind.EMPTY_BOTTLES);handled(e,-7,0,-28,DomesticFittingBlock.Kind.BOTTLE_RETURNS);
                 fit(e,-5,0,-25,UncannyFurnitureBlock.Kind.BEDSIDE);window(e,0,-27,Direction.WEST);lamp(e,-4,-29);lamp(e,-3,-34);
@@ -133,7 +135,7 @@ public final class DomesticLives {
                 fit(e,-16,0,2,UncannyFurnitureBlock.Kind.COUNTER);fit(e,-15,0,2,UncannyFurnitureBlock.Kind.SIDEBOARD);fit(e,-15,1,2,UncannyFurnitureBlock.Kind.CUP);interior(e,-15,0,1,VignetteInteriorBlock.Kind.SEWING_BASKET,Direction.SOUTH);window(e,-18,1,Direction.EAST);
                 fit(e,-15,0,-3,UncannyFurnitureBlock.Kind.BEDSIDE);put(e,-15,1,-3,DomesticFittingBlock.of(DomesticFittingBlock.Kind.PHOTO_COUPLE,Direction.SOUTH).setValue(DomesticFittingBlock.STAGE,1));
                 for(int x=-13;x<=-11;x++)interior(e,x,0,-7,VignetteInteriorBlock.Kind.HOLIDAY_LARDER,Direction.NORTH);
-                interior(e,-13,0,-7,VignetteInteriorBlock.Kind.HOLIDAY_SINK,Direction.NORTH);fit(e,-9,0,-5,UncannyFurnitureBlock.Kind.FRIDGE,Direction.WEST);
+                interior(e,-13,0,-7,VignetteInteriorBlock.Kind.HOLIDAY_SINK,Direction.NORTH);fridge(e,-9,-5,DomesticFittingBlock.Kind.FRIDGE_GRANDMOTHER,Direction.EAST);
                 common(e,-11,0,-2,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.NORTH);common(e,-12,0,-2,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);common(e,-11,0,-1,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.NORTH);
                 lamp(e,-11,-5);lamp(e,-16,-4);lamp(e,-16,0);
             }
@@ -161,10 +163,55 @@ public final class DomesticLives {
         return e.entrySet().stream().map(v->new Edit(v.getKey(),v.getValue())).toList();
     });}
     private static boolean fabric(BlockState s){return s.isAir()||s.is(Blocks.WHITE_TERRACOTTA)||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.STONE)||s.is(Blocks.SMOOTH_STONE);}
+    /**
+     * 0.4.170, the owner: "Ensure they don't appear until several passes through the hallways, so they feel more impactful
+     * when first encountered." A new home is built behind its fragment's wall, but every cell a reader in the hall could see
+     * (the shared wall, the passage through the fragment and the opening) waits. The fragment ends where it always did until
+     * the halls have been passed through {@link #PASSES} times and this hall has been seen {@link #HALL_SEEN} times without
+     * it; then the home bleeds in while nobody is near ({@link #bleed}).
+     */
+    public static final int PASSES=10,HALL_SEEN=2;
     public static void fresh(ServerLevel l,BlockPos base,LabyrinthPlace place){
         var d=LabyrinthData.get(l.getServer());var tag=d.state(STATE);
-        for(var h:HOMES)if(h.hall==place&&selected(l,base,h)){for(var edit:plan(h))l.setBlock(base.offset(edit.at),edit.next,LabyrinthBuilder.flags());tag.putBoolean(key(base,h),true);tag.putBoolean(key(base,h)+":chosen",true);DomesticHomeRepairs.complete(l,base,h);DomesticContinuity.complete(l,base,h);BuildBlocks.after(l,()->DomesticStories.seed(l,base,h));}
+        for(var h:HOMES)if(h.hall==place&&selected(l,base,h)){
+            // A home that has already bled in (or was made before 0.4.170) is rebuilt whole.
+            String key=key(base,h);var join=tag.getBoolean(key)&&!tag.contains(key+":join")?Set.<BlockPos>of():join(l,base,h);
+            for(var edit:plan(h))if(!join.contains(edit.at))l.setBlock(base.offset(edit.at),edit.next,LabyrinthBuilder.flags());
+            if(join.isEmpty())tag.remove(key+":join");else tag.putLongArray(key+":join",join.stream().mapToLong(BlockPos::asLong).toArray());
+            tag.putBoolean(key,true);tag.putBoolean(key+":chosen",true);DomesticHomeRepairs.complete(l,base,h);DomesticContinuity.complete(l,base,h);BuildBlocks.after(l,()->DomesticStories.seed(l,base,h));}
         d.setState(STATE,tag);
+    }
+    /** The plan cells a reader in the hall could see: everything outside the home's own box, and its walls where the hall's air meets them. */
+    static Set<BlockPos> join(ServerLevel l,BlockPos base,Home h){
+        var out=new HashSet<BlockPos>();var box=h.local();
+        for(var edit:plan(h)){var r=edit.at;
+            if(!box.isInside(r)){out.add(r);continue;}
+            if(r.getX()!=h.x0&&r.getX()!=h.x1&&r.getZ()!=h.z0&&r.getZ()!=h.z1)continue;
+            for(var side:Direction.Plane.HORIZONTAL){var n=r.relative(side);if(!box.isInside(n)&&BuildBlocks.state(l,base.offset(n)).isAir()){out.add(r);break;}}
+        }
+        // The opening itself always waits, whatever stands beside it in the hall.
+        boolean sideways=!h.id.equals("grandmother");
+        for(int n=0;n<2;n++)for(int y=-1;y<4;y++)out.add(h.opening.relative(sideways?Direction.NORTH:Direction.WEST,n).above(y));
+        return out;
+    }
+    /** Whether this home is still sealed behind its fragment. */
+    public static boolean sealed(LabyrinthData d,BlockPos base,Home h){return d.state(STATE).contains(key(base,h)+":join");}
+    static int returns(LabyrinthData d,BlockPos origin,LabyrinthPlace p){return d.stateEntry(HallAtmosphere.STATE,origin.asLong()+":"+p.id()).getInt("Returns");}
+    /** How many times the halls have been entered, each occupied stay counted once however many readers share it. */
+    public static int passes(LabyrinthData d,BlockPos origin){int n=0;for(var p:LabyrinthPlace.values())if(HallAtmosphere.room(p))n+=returns(d,origin,p);return n;}
+    public static boolean due(LabyrinthData d,BlockPos origin,Home h){return passes(d,origin)>=PASSES&&returns(d,origin,h.hall)>=HALL_SEEN;}
+    /**
+     * Opens a sealed home: the shared wall, the passage and the opening, all at once, only while the area is loaded, no camera
+     * is within sixteen blocks of it and nothing living stands in it. Cells holding a block entity are left alone.
+     */
+    public static boolean bleed(ServerLevel l,BlockPos base,Home h){
+        var d=LabyrinthData.get(l.getServer());var tag=d.state(STATE);String key=key(base,h);if(!tag.contains(key+":join"))return true;var area=workArea(base,h);
+        for(int x=(int)Math.floor(area.minX)>>4;x<=((int)Math.ceil(area.maxX)-1)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=((int)Math.ceil(area.maxZ)-1)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
+        if(l.players().stream().anyMatch(p->area.inflate(16).intersects(p.getCamera().getBoundingBox())))return false;
+        if(!l.getEntitiesOfClass(LivingEntity.class,area,e->e.isAlive()).isEmpty())return false;
+        var join=new HashSet<BlockPos>();for(long at:tag.getLongArray(key+":join"))join.add(BlockPos.of(at));
+        for(var edit:plan(h)){if(!join.contains(edit.at))continue;var at=base.offset(edit.at);if(l.getBlockEntity(at)==null)l.setBlock(at,edit.next,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
+        tag.remove(key+":join");tag.putBoolean(key+":bled",true);d.setState(STATE,tag);return true;
     }
     public static boolean step(ServerLevel l,BlockPos base,Home h){
         var d=LabyrinthData.get(l.getServer());var tag=d.state(STATE);String key=key(base,h);if(tag.getBoolean(key))return true;
@@ -184,7 +231,10 @@ public final class DomesticLives {
         var origin=HouseSavedData.get(s).houseOrigin();if(origin==null||!origin.equals(LabyrinthData.get(s).builtOrigin()))return;
         var l=s.getLevel(HouseDimensions.INTERIOR);if(l==null)return;
         for(var h:HOMES){if(LabyrinthData.get(s).door(h.hall.entryDoorId())==null)continue;var b=LabyrinthPlaces.base(origin,h.hall);if(!selected(l,b,h))continue;
-            var state=LabyrinthData.get(s).state(STATE);String key=key(b,h);if(state.getBoolean(key)){if(DomesticHomeRepairs.step(l,b,h))return;continue;}int before=state.getInt(key+":cursor");
+            var state=LabyrinthData.get(s).state(STATE);String key=key(b,h);
+            // A sealed home waits for its passes, then bleeds in at once; one change in a server tick.
+            if(state.contains(key+":join")){if(due(LabyrinthData.get(s),origin,h)&&bleed(l,b,h))return;continue;}
+            if(state.getBoolean(key)){if(DomesticHomeRepairs.step(l,b,h))return;continue;}int before=state.getInt(key+":cursor");
             step(l,b,h);
             // An unloaded earlier home must not starve a different, resident hall.
             // Only one actual slice may run in this server tick.

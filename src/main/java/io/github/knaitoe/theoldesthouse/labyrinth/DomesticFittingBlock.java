@@ -21,9 +21,11 @@ import net.minecraft.world.phys.shapes.*;
 public final class DomesticFittingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<DomesticFittingBlock> CODEC=simpleCodec(DomesticFittingBlock::new);
     public enum Kind implements StringRepresentable {
-        BREAKFAST,RECORD_PLAYER,BOTTLES,RADIO,TOPPLED_CHAIR,TOPPLED_TABLE,SCRAPES,PACKED_CLOTHES,BOOK_BOX,CLOSET_LOWER,CLOSET_UPPER,DESK_REMNANTS,EMPTY_BOTTLES,DIRTY_DISHES,PHOTO_FAMILY,PHOTO_COUPLE,BOTTLE_RETURNS,FOLDED_SHIRT;
+        BREAKFAST,RECORD_PLAYER,BOTTLES,RADIO,TOPPLED_CHAIR,TOPPLED_TABLE,SCRAPES,PACKED_CLOTHES,BOOK_BOX,CLOSET_LOWER,CLOSET_UPPER,DESK_REMNANTS,EMPTY_BOTTLES,DIRTY_DISHES,PHOTO_FAMILY,PHOTO_COUPLE,BOTTLE_RETURNS,FOLDED_SHIRT,
+        // 0.4.170: each household's fridge (door open, then one bit for each shelf whose food has been taken) and the freezer above it.
+        FRIDGE_FAMILY,FRIDGE_STUDENTS,FRIDGE_DRINKER,FRIDGE_GRANDMOTHER,FRIDGE_TOP;
         public String getSerializedName(){return name().toLowerCase(Locale.ROOT);}
-        public boolean usable(){return switch(this){case BREAKFAST,RECORD_PLAYER,BOTTLES,RADIO,PACKED_CLOTHES,BOOK_BOX,CLOSET_LOWER,CLOSET_UPPER,DESK_REMNANTS,EMPTY_BOTTLES,PHOTO_FAMILY,PHOTO_COUPLE,BOTTLE_RETURNS->true;default->false;};}
+        public boolean usable(){return switch(this){case BREAKFAST,RECORD_PLAYER,BOTTLES,RADIO,PACKED_CLOTHES,BOOK_BOX,CLOSET_LOWER,CLOSET_UPPER,DESK_REMNANTS,EMPTY_BOTTLES,PHOTO_FAMILY,PHOTO_COUPLE,BOTTLE_RETURNS,FRIDGE_FAMILY,FRIDGE_STUDENTS,FRIDGE_DRINKER,FRIDGE_GRANDMOTHER,FRIDGE_TOP->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,15);
@@ -34,7 +36,7 @@ public final class DomesticFittingBlock extends HorizontalDirectionalBlock {
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,FACING,STAGE);}
     public static BlockState of(Kind k,Direction f){return DomesticRegistry.FITTING.get().defaultBlockState().setValue(KIND,k).setValue(FACING,f);}
-    public static int light(BlockState s){return s.getValue(KIND)==Kind.RADIO&&(s.getValue(STAGE)&4)!=0?2:0;}
+    public static int light(BlockState s){return s.getValue(KIND)==Kind.RADIO&&(s.getValue(STAGE)&4)!=0?2:DomesticFridge.fridge(s.getValue(KIND))&&(s.getValue(STAGE)&1)!=0?5:0;}
     private static Vec3 local(BlockState s,BlockPos at,Vec3 hit){return VignetteHandlingBlock.local(at,s.getValue(FACING),hit);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
         return SHAPES.computeIfAbsent(s,DomesticFittingBlock::buildShape);
@@ -72,6 +74,22 @@ public final class DomesticFittingBlock extends HorizontalDirectionalBlock {
             case DESK_REMNANTS->{next=(old&1)^1;sound=SoundEvents.WOODEN_BUTTON_CLICK_OFF;pitch=.8F;}
             case EMPTY_BOTTLES->{next=(old+1)%3;sound=SoundEvents.GLASS_HIT;pitch=.65F;}
             case PHOTO_FAMILY,PHOTO_COUPLE->{next=(old&1)^1;sound=SoundEvents.WOODEN_BUTTON_CLICK_OFF;pitch=.65F;}
+            // 0.4.170: a shut fridge opens; in an open one, the food on the shelf touched is taken, once; the door or an
+            // empty shelf shuts it again.
+            case FRIDGE_FAMILY,FRIDGE_STUDENTS,FRIDGE_DRINKER,FRIDGE_GRANDMOTHER->{
+                if((old&1)==0){next=old|1;sound=SoundEvents.CHEST_OPEN;pitch=1.5F;}
+                else{
+                    int shelf=DomesticFridge.shelf(point.y);var food=point.x<2/16.?null:DomesticFridge.food(kind,shelf);
+                    if(food!=null&&(old&(1<<shelf))==0){next=old|(1<<shelf);var stack=food.stack();if(!p.getInventory().add(stack))p.drop(stack,false);sound=SoundEvents.ITEM_PICKUP;pitch=.8F;}
+                    else{next=old&~1;sound=SoundEvents.CHEST_CLOSE;pitch=1.5F;}
+                }
+            }
+            // The freezer's own door; the fridge door's top half opens and shuts the fridge below.
+            case FRIDGE_TOP->{
+                if(point.y>=7/16.){next=old^2;sound=(next&2)!=0?SoundEvents.CHEST_OPEN:SoundEvents.CHEST_CLOSE;pitch=1.7F;}
+                else{var below=at.below();var fridge=level.getBlockState(below);if(!fridge.is(this)||!DomesticFridge.fridge(fridge.getValue(KIND)))return InteractionResult.CONSUME;
+                    int door=(fridge.getValue(STAGE)&1)^1;level.setBlock(below,fridge.setValue(STAGE,(fridge.getValue(STAGE)&~1)|door),3);next=(old&~1)|door;sound=door!=0?SoundEvents.CHEST_OPEN:SoundEvents.CHEST_CLOSE;pitch=1.5F;}
+            }
 
             default->{}
         }
@@ -89,6 +107,8 @@ public final class DomesticFittingBlock extends HorizontalDirectionalBlock {
                 for(var box:otherState.getCollisionShape(level,other).toAabbs())if(!level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,box.move(other),e->e.isAlive()&&!e.isSpectator()).isEmpty())return InteractionResult.CONSUME;
             }
         }
+        // The fridge's door runs up into the freezer's cell, so the freezer shows it open or shut with the fridge.
+        if(DomesticFridge.fridge(kind)&&(next&1)!=(old&1)){var mate=level.getBlockState(at.above());if(mate.is(this)&&mate.getValue(KIND)==Kind.FRIDGE_TOP){other=at.above();otherState=mate.setValue(STAGE,(mate.getValue(STAGE)&~1)|(next&1));}}
         level.setBlock(at,changed,3);if(otherState!=null)level.setBlock(other,otherState,3);level.playSound(null,at,sound,SoundSource.BLOCKS,.16F,pitch);
         if(kind==Kind.RADIO&&(next&4)!=0||kind==Kind.RECORD_PLAYER&&(next&3)==3)level.scheduleTick(at,this,20);
         return InteractionResult.CONSUME;

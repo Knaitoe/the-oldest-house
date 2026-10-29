@@ -10,7 +10,10 @@ from PIL import Image,ImageDraw
 ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
 JAVA=ROOT/'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/DomesticFittingShapes.java'
-KINDS=['breakfast','record_player','bottles','radio','toppled_chair','toppled_table','scrapes','packed_clothes','book_box','closet_lower','closet_upper','desk_remnants','empty_bottles','dirty_dishes','photo_family','photo_couple','bottle_returns','folded_shirt']
+KINDS=['breakfast','record_player','bottles','radio','toppled_chair','toppled_table','scrapes','packed_clothes','book_box','closet_lower','closet_upper','desk_remnants','empty_bottles','dirty_dishes','photo_family','photo_couple','bottle_returns','folded_shirt',
+       # 0.4.170: each household's fridge, with what it kept cold, and the freezer above.
+       'fridge_family','fridge_students','fridge_drinker','fridge_grandmother','fridge_top']
+FRIDGES=['fridge_family','fridge_students','fridge_drinker','fridge_grandmother']
 MATERIALS=['family_paper','student_paper','smoked_paper','rose_paper','parquet','linoleum','parquet_worn']
 
 def paintings():
@@ -80,6 +83,24 @@ def paintings():
             x=2+i*3 if count==5 else 4+i*6;y=5 if count==5 and i>1 else 3
             d.rectangle((x,y,x+1,y+1),fill='#c1a58a');d.rectangle((x-1,y+2,x+2,12),fill=['#5c6d71','#8b7568','#8c684e','#74858b','#8c8e6d'][i])
         d.rectangle((0,0,15,15),outline='#d1c2a1')
+    # 0.4.170: the fridges. Off-white enamel worn at the handle, glass shelves, and each household's food.
+    d=sheet('enamel','#dcd8c8');d.line((0,0,15,0),fill='#ece8da');d.line((0,15,15,15),fill='#bdb8a6');d.point((3,9),fill='#cfcab8');d.point((12,4),fill='#cfcab8')
+    d=sheet('enamel_door','#e2ddcd');d.rectangle((0,0,15,15),outline='#c4bfad');d.line((1,1,14,1),fill='#f0ecdf');d.point((2,13),fill='#cbc5b1')
+    d=sheet('fridge_inside','#c9cfc6');d.line((0,0,15,0),fill='#dde2d8');d.line((0,15,15,15),fill='#aeb5ab')
+    d=sheet('glass_shelf','#b8cfcb');d.line((0,0,15,0),fill='#d8e6e1');d.line((0,15,15,15),fill='#93aaa5')
+    d=sheet('sandwich','#e6dcc0');d.rectangle((0,6,15,9),fill='#b9c48f');d.line((0,7,15,7),fill='#d78f74');d.rectangle((0,0,15,15),outline='#f2efe6')
+    d=sheet('tape_label','#d9c99a');d.line((2,7,4,7),fill='#3d3a35');d.line((6,7,9,7),fill='#3d3a35');d.line((11,7,13,7),fill='#3d3a35')
+    d=sheet('carton','#d9d2b5');d.rectangle((0,4,15,11),fill='#7fa35a');d.ellipse((5,5,10,10),fill='#c0453a');d.line((0,0,15,0),fill='#efe9d6')
+    d=sheet('foil','#bfc3c2');d.line((2,3,13,3),fill='#e2e5e4');d.line((4,8,11,7),fill='#9fa4a3');d.line((3,12,12,12),fill='#d7dad9')
+    d=sheet('melon','#e6716a');d.rectangle((0,12,15,15),fill='#6c9a4a');d.line((0,11,15,11),fill='#d8e2a4')
+    for x in (3,8,12):d.point((x,6),fill='#3a2a22')
+    d=sheet('chip_paper','#e2d6b4');d.line((0,4,15,4),fill='#a99e83');d.line((0,9,15,9),fill='#a99e83');d.rectangle((5,6,10,8),fill='#c99a4a')
+    d=sheet('biscuits','#c5544a');d.rectangle((0,5,15,10),fill='#e8d6a8');d.line((3,7,12,7),fill='#a2733f');d.rectangle((13,0,15,15),fill='#3f4f7a')
+    d=sheet('pudding','#5b3a2a');d.rectangle((0,0,15,3),fill='#e8e1cf');d.rectangle((5,4,11,8),fill='#f1d34a');d.line((6,6,10,6),fill='#3d3a35')
+    d=sheet('bread_heel','#b88449');d.rectangle((2,2,13,13),fill='#e1c590');d.rectangle((0,0,15,15),outline='#8d5f2e')
+    d=sheet('cake','#e3cc94');d.rectangle((0,0,15,4),fill='#a8682f');d.line((0,9,15,9),fill='#c69a5c');d.point((4,12),fill='#7f8b3a');d.point((11,11),fill='#7f8b3a')
+    d=sheet('apple','#b23a30');d.line((3,3,6,3),fill='#d8695c');d.point((8,0),fill='#5c4022');d.point((9,1),fill='#6c8a3a')
+    d=sheet('ice','#d9eef0');d.rectangle((1,1,6,6),fill='#eef9fa');d.rectangle((9,1,14,6),fill='#eef9fa');d.rectangle((1,9,6,14),fill='#eef9fa');d.rectangle((9,9,14,14),fill='#eef9fa')
     return out
 
 def box(a,b,mat):return {'from':list(a),'to':list(b),'faces':{f:{'texture':'#'+mat} for f in ['north','south','east','west','up','down']}}
@@ -162,6 +183,40 @@ def parts(kind,stage):
         else:add((3,0,3),(13,1,12),'wood');add((6,1,5),(10,1.1,10),'cardboard')
     elif kind=='folded_shirt':
         add((3,0,3),(13,2,13),'folded_blue');add((4,2,4),(12,3,12),'folded_blue');add((6,3,4),(10,3.6,6),'folded_cream')
+    elif kind in FRIDGES:
+        # The fridge's cell: enamel shell with its back to the wall, two glass shelves, and the door at the front (+z).
+        # Open, the door stands against the cell's left side and each shelf shows its food until that food is taken.
+        add((1,0,1),(15,16,2),'enamel');add((1,0,2),(2,16,14.5),'enamel');add((14,0,2),(15,16,14.5),'enamel');add((2,0,2),(14,1,14.5),'enamel')
+        add((2,1,2.05),(14,16,2.1),'fridge_inside');add((2,5.5,2.1),(14,6,14),'glass_shelf');add((2,11,2.1),(14,11.5,14),'glass_shelf')
+        if stage&1:
+            add((0,0,1.5),(1,16,15),'enamel_door');add((1,3,3),(1.6,9,13),'fridge_inside')
+            top,mid,low=not stage&2,not stage&4,not stage&8
+            if kind=='fridge_family':
+                if top:add((3,11.5,4),(8,13.5,10),'sandwich');add((3,13.5,6),(8,13.6,7.5),'tape_label');add((8.5,11.5,5),(12,13,9),'sandwich')
+                if mid:add((8,6,4),(10,10,6),'carton');add((10.5,6,4),(12.5,10,6),'carton')
+                if low:add((3,1,4),(11,1.6,12),'ceramic');add((4,1.6,5),(10,3.5,11),'foil')
+            elif kind=='fridge_students':
+                if top:add((4,11.5,4),(10,14,9),'melon');add((4,14,5),(10,14.1,6.5),'tape_label')
+                if mid:add((4,6,4),(11,8.5,10),'chip_paper')
+                if low:add((5,1,5),(12,3,8),'biscuits')
+            elif kind=='fridge_drinker':
+                if top:add((6,11.5,5),(9,14,8),'pudding')
+                for x in (3,6,9):add((x,6,4),(x+2,9.5,6),'empty_glass');add((x+.5,9.5,4.5),(x+1.5,10.8,5.5),'empty_glass');add((x-.05,7,3.95),(x+2.05,8.5,4),'beer_label')
+                if low:add((4,1,5),(8,3.5,9),'bread_heel')
+            else:
+                if top:add((4,12,5),(10,14,8),'cake');add((3.5,14,4.5),(10.5,14.5,8.5),'ceramic')
+                if mid:add((5,6,5),(10,8.5,10),'ceramic');add((4.5,8.5,4.5),(10.5,9,10.5),'ceramic')
+                if low:add((4,1,5),(6.5,3.5,7.5),'apple');add((7.5,1,6),(10,3.5,8.5),'apple')
+        else:
+            add((1,0,14.5),(15,16,15.5),'enamel_door');add((12,4,15.5),(13,13,16),'dark_metal')
+    elif kind=='fridge_top':
+        # The cell above: the top of the fridge compartment, the divider, and the freezer with its own door.
+        add((1,0,1),(15,16,2),'enamel');add((1,0,2),(2,16,14.5),'enamel');add((14,0,2),(15,16,14.5),'enamel');add((2,15,2),(14,16,14.5),'enamel')
+        add((2,0,2.05),(14,15,2.1),'fridge_inside');add((2,6,2.1),(14,7,14.5),'enamel')
+        if stage&1:add((0,0,1.5),(1,6,15),'enamel_door')
+        else:add((1,0,14.5),(15,6,15.5),'enamel_door')
+        if stage&2:add((15,7,1.5),(16,15,15),'enamel_door');add((3,7,4),(10,8,12),'ice')
+        else:add((1,7,14.5),(15,15,15.5),'enamel_door');add((12,9,15.5),(13,13,16),'dark_metal')
     return p
 
 CHAIRS=['cane_chair','kitchen_stool','green_armchair','floral_armchair','blue_sofa','footstool']
@@ -188,6 +243,8 @@ def effective(kind,stage):
     if kind in KINDS[:4]:return stage&7
     if kind in ('packed_clothes','book_box','closet_lower','closet_upper','desk_remnants','photo_family','photo_couple','bottle_returns'):return stage&1
     if kind=='empty_bottles':return stage%3
+    if kind in FRIDGES:return stage if stage&1 else 0
+    if kind=='fridge_top':return stage&3
     return 0
 def generated():
     textures={n:'the_oldest_house:block/domestic/'+n for n in paintings()};out={};variants={};shapes={}
@@ -206,7 +263,7 @@ def generated():
         out[A/f'blockstates/domestic_{name}.json']={'variants':{'':{'model':'the_oldest_house:block/domestic_'+name}}}
     java='package io.github.knaitoe.theoldesthouse.labyrinth;\n/** Generated with the baked native cuboids by tools/draw_domestic_lives.py. */\npublic final class DomesticFittingShapes {\n private DomesticFittingShapes(){}\n public static double[][] boxes(DomesticFittingBlock.Kind k,int stage){return switch(k){\n'
     for kind in KINDS:
-        mask='(stage%6)' if kind=='toppled_chair' else 'stage' if kind=='bottles' else '(stage&7)' if kind in KINDS[:4] else '(stage&1)' if kind in ('packed_clothes','book_box','closet_lower','closet_upper','desk_remnants','photo_family','photo_couple','bottle_returns') else '(stage%3)' if kind=='empty_bottles' else '0'
+        mask='((stage&1)==0?0:stage)' if kind in FRIDGES else '(stage&3)' if kind=='fridge_top' else '(stage%6)' if kind=='toppled_chair' else 'stage' if kind=='bottles' else '(stage&7)' if kind in KINDS[:4] else '(stage&1)' if kind in ('packed_clothes','book_box','closet_lower','closet_upper','desk_remnants','photo_family','photo_couple','bottle_returns') else '(stage%3)' if kind=='empty_bottles' else '0'
         java+='  case '+kind.upper()+' -> switch('+mask+'){\n'
         for (k,s),boxes in shapes.items():
             if k==kind:java+='   case '+str(s)+' -> new double[][]{'+','.join('{'+','.join(str(x) for x in b)+'}' for b in boxes)+'};\n'
