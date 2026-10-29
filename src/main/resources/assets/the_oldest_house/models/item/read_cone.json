@@ -1,3 +1,14 @@
 {
-  "parent": "the_oldest_house:block/read_cone"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/read_cone"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/read_cone_empty"
+    }
+  ]
 }

@@ -42,19 +42,44 @@
     "forecast": "the_oldest_house:block/house_read/forecast",
     "notice": "the_oldest_house:block/house_read/notice",
     "snow": "the_oldest_house:block/house_read/snow",
+    "tabletop": "the_oldest_house:block/house_read/tabletop",
+    "placard": "the_oldest_house:block/house_read/placard",
+    "wallclock": "the_oldest_house:block/house_read/wallclock",
+    "outlet": "the_oldest_house:block/house_read/outlet",
+    "panel_light": "the_oldest_house:block/house_read/panel_light",
+    "vanity_front": "the_oldest_house:block/house_read/vanity_front",
+    "countertop": "the_oldest_house:block/house_read/countertop",
+    "enamel": "the_oldest_house:block/house_read/enamel",
+    "chrome": "the_oldest_house:block/house_read/chrome",
+    "towel_blue": "the_oldest_house:block/house_read/towel_blue",
+    "bulb": "the_oldest_house:block/house_read/bulb",
+    "wool_front": "the_oldest_house:block/house_read/wool_front",
+    "trench_front": "the_oldest_house:block/house_read/trench_front",
+    "barn_front": "the_oldest_house:block/house_read/barn_front",
+    "boot_black": "the_oldest_house:block/house_read/boot_black",
+    "boot_tan": "the_oldest_house:block/house_read/boot_tan",
+    "sole": "the_oldest_house:block/house_read/sole",
+    "scarf": "the_oldest_house:block/house_read/scarf",
+    "cushion": "the_oldest_house:block/house_read/cushion",
+    "lampshade": "the_oldest_house:block/house_read/lampshade",
+    "runner": "the_oldest_house:block/house_read/runner",
+    "frosted": "the_oldest_house:block/house_read/frosted",
+    "lamp_glass": "the_oldest_house:block/house_read/lamp_glass",
+    "newsprint": "the_oldest_house:block/house_read/newsprint",
+    "magazine_cover": "the_oldest_house:block/house_read/magazine_cover",
     "particle": "the_oldest_house:block/house_read/postcard_written"
   },
   "elements": [
     {
       "from": [
-        1,
-        3,
-        13.7
+        0,
+        4,
+        0
       ],
       "to": [
-        15,
+        10,
         12,
-        14
+        0.3
       ],
       "faces": {
         "up": {

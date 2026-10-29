@@ -31,13 +31,19 @@ public final class HouseReadProse {
         String rest=switch(kept){case "paper"->"read the local page until the door clicked";case "magazine"->"leafed through the magazine until the door clicked";case "glasses"->"kept the glasses on until the door clicked";case "phone"->"kept the phone in your hand until the door clicked";case "cart"->"stayed by the cart until the door clicked";case "chair"->"sat in a waiting chair until the door clicked";case "channels"->"flipped through the channels";default->"";};
         return rest.isEmpty()?opened+(t.getBoolean("Waited")?" while you waited":""):opened+" and "+rest;
     }
+    /**
+     * 0.4.160: the reader picks one routine item up at a time and uses it at the mirror, which puts the light out; what was
+     * used is what they did, and anything picked up first and put back is only where their hand went.
+     */
     public static String bathroom(CompoundTag t){
-        String where=t.getBoolean("LightOff")?" before the bathroom light went out":" at the bathroom sink";
-        if(!t.contains("Item"))return t.getBoolean("Untouched")?"turned the bathroom light off without touching the counter":t.getBoolean("Tap")?"ran the hot tap at the bathroom sink":"";
-        int item=Math.floorMod(t.getInt("Item"),ITEMS.length);String did=ITEMS[item];
-        if(t.contains("SecondItem"))did+=" and "+ITEMS[Math.floorMod(t.getInt("SecondItem"),ITEMS.length)].replace("reached for","took up");
-        else if(t.getBoolean("Tap"))did="ran the hot tap and "+did;
-        return did+where;
+        if(t.contains("Used")){
+            int used=Math.floorMod(t.getInt("Used"),ITEMS.length);String did=ITEMS[used];
+            if(t.contains("Item")&&Math.floorMod(t.getInt("Item"),ITEMS.length)!=used)did="reached for the "+HouseReadMoments.ROUTINES[Math.floorMod(t.getInt("Item"),ITEMS.length)]+", then "+did;
+            else if(t.getBoolean("Tap")&&used!=11)did="ran the hot tap and "+did;
+            return did+(t.getBoolean("LightOff")?" before the bathroom light went out":" at the bathroom mirror");
+        }
+        if(t.contains("Item"))return "picked up the "+HouseReadMoments.ROUTINES[Math.floorMod(t.getInt("Item"),ITEMS.length)]+(t.getBoolean("LightOff")?" and turned out the bathroom light":" at the bathroom sink");
+        return t.getBoolean("Untouched")?"turned the bathroom light off without touching the counter":t.getBoolean("Tap")?"ran the hot tap at the bathroom sink":"";
     }
     public static String coatroom(CompoundTag t){
         String c=coat(t.getString("Coat")),b=boots(t.getString("Boots")),mirror=t.getString("Mirror");

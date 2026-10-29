@@ -66,13 +66,13 @@ def tiles(out):
 
 def models(out,model,cube):
  def C(a,b,t):return cube(a,b,t)
- def M(n,e):model(n,e)
+ def M(n,e,layer=None):model(n,e,layer)
  M('clock_base',[C([2,0,3],[14,2,13],'oak'),C([3,2,4],[13,16,12],'oak'),C([5,4,12.05],[11,14,12.2],'glass'),C([7,5,12.25],[9,11,12.5],'brass')])
  M('clock_face',[C([3,0,4],[13,13,12],'oak'),C([1,13,2],[15,15,14],'oak'),C([4,2,12.05],[12,11,12.3],'clockface')])
  M('bell',[C([3,0,3],[13,1,13],'rubber'),C([4,1,4],[12,3,12],'brass'),C([6,3,6],[10,4,10],'brass'),C([7,4,7],[9,5,9],'metal')])
  for written in [False,True]:
-  M('calendar'+('_written' if written else ''),[C([2,0,14],[14,15,14.5],'calendar_written' if written else 'calendar')])
- M('reception',[C([0,0,1],[1,16,3],'oak'),C([15,0,1],[16,16,3],'oak'),C([1,15,1],[15,16,3],'oak'),C([1,0,1],[15,1,3],'oak'),C([1,1,1.2],[15,15,1.5],'glass')])
+  M('calendar'+('_written' if written else ''),[C([2,1,0],[14,16,.5],'calendar_written' if written else 'calendar')])
+ M('reception',[C([0,0,1],[1,16,3],'oak'),C([15,0,1],[16,16,3],'oak'),C([1,15,1],[15,16,3],'oak'),C([1,0,1],[15,1,3],'oak'),C([1,1,1.2],[15,15,1.5],'frosted')],'translucent')
  cart=[C([x,0,z],[x+2,7,z+2],'metal') for x in [1,13] for z in [2,12]]+[C([0,7,1],[16,8,15],'metal'),C([2,8,3],[14,10,14],'rubber'),C([4,8.5,14.05],[12,9.2,14.2],'metal'),C([1,10.1,2],[15,23,14],'rubber'),C([2,11,14.05],[12,21,14.2],'radar'),C([13,13,14.1],[14.1,15,15.2],'brass')]
  for i in range(4):
   e=[dict(x) for x in cart]
@@ -81,11 +81,12 @@ def models(out,model,cube):
   if i==3:e[-2]=C([2,11,14.05],[12,21,14.2],'snow')
   M('crt'+('' if i==0 else '_channel_'+str(i)),e)
  M('cooler',[C([3,0,3],[13,15,13],'porcelain'),C([4,15,4],[12,16,12],'metal'),C([5,16.1,5],[11,24,11],'glass'),C([6,9,13.1],[8,10,15],'brass'),C([9,9,13.1],[11,10,15],'sage'),C([4,5,13.1],[12,6,15.5],'metal')])
- M('paper',[C([2,0,3],[14,.4,12],'paper')]);M('magazines',[C([2,0,2],[13,.8,13],'sage'),C([3,.85,3],[14,1.3,14],'paper')])
+ M('paper',[C([2,0,3],[14,.4,12],'newsprint')]);M('magazines',[C([2,0,2],[13,.8,13],'sage'),C([3,.85,3],[14,1.3,14],'magazine_cover')])
  glasses=[C([2,0,7],[6,.5,10],'rubber'),C([10,0,7],[14,.5,10],'rubber'),C([6,.1,8],[10,.4,8.7],'brass'),C([2,.55,9.2],[2.5,2,14],'rubber'),C([13.5,.55,9.2],[14,2,14],'rubber')]
  M('glasses',glasses);M('glasses_turned',[])
  phone=[C([4,0,4],[12,.8,15],'rubber'),C([4.5,.85,4.5],[11.5,.95,14.5],'glass'),C([7,.98,13.5],[9,1.1,13.9],'cream')]
- M('phone',phone);M('phone_turned',[C([11,0,11],[15,.3,12],'rubber')])
+ # Taken, the phone leaves its charging cable coiled on the armrest, still plugged in.
+ M('phone',phone);M('phone_turned',[C([9,0,11],[15,.3,11.6],'rubber'),C([9,0,11.6],[9.6,.3,14],'rubber'),C([9.6,0,13.4],[13,.3,14],'rubber'),C([13,0,13],[14.5,.8,14.6],'cream')])
  M('armchair',[C([1,0,2],[3,5,4],'oak'),C([13,0,2],[15,5,4],'oak'),C([1,0,12],[3,5,14],'oak'),C([13,0,12],[15,5,14],'oak'),C([1,5,2],[15,8,14],'denim'),C([1,8,2],[15,17,5],'denim'),C([0,8,5.1],[2,11,15],'oak'),C([14,8,5.1],[16,11,15],'oak')])
  M('sink',[C([1,0,1],[15,13,15],'sage'),C([0,13,0],[16,14,16],'porcelain'),C([0,14,0],[16,16,2],'porcelain'),C([0,14,14],[16,16,16],'porcelain'),C([0,14,2],[2,16,14],'porcelain'),C([14,14,2],[16,16,14],'porcelain')])
  tap=[C([7,0,2],[9,7,4],'metal'),C([7,7,2],[9,8,10],'metal'),C([3,0,2],[6,1,5],'metal'),C([10,0,2],[13,1,5],'metal')];M('tap',tap);M('tap_turned',tap+[C([7.6,1,8.5],[8.4,6.95,9.5],'glass')])
@@ -102,18 +103,17 @@ def models(out,model,cube):
   pieces=[routine(group*3+i,3+i*5) for i in range(3)]
   for selected in range(4):M(name+('' if selected==0 else '_lifted_'+str(selected)),[part for i,parts in enumerate(pieces) if i+1!=selected for part in parts])
   for i in range(3):M('routine_item_'+str(group*3+i),routine(group*3+i,8))
- M('light_switch',[C([5,4,14],[11,12,14.4],'cream'),C([7,6,14.5],[9,10,15.3],'rubber')]);M('light_switch_turned',[C([5,4,14],[11,12,14.4],'cream'),C([7,5,14.5],[9,9,15.3],'rubber')])
- for written in [False,True]:M('postcard'+('_written' if written else ''),[C([1,3,13.7],[15,12,14],'postcard_written' if written else 'postcard')])
+ M('light_switch',[C([5,4,0],[11,12,.4],'cream'),C([7,7,.4],[9,11,1.2],'rubber')]);M('light_switch_turned',[C([5,4,0],[11,12,.4],'cream'),C([7,5,.4],[9,9,1.2],'rubber')])
+ # Tucked at the edge of the mirror frame beside it.
+ for written in [False,True]:M('postcard'+('_written' if written else ''),[C([0,4,0],[10,12,.3],'postcard_written' if written else 'postcard')])
  jukebox=[C([1,0,1],[15,2,15],'rubber'),C([2,2,2],[14,20,14],'oak'),C([1,4,14.05],[3,22,15.2],'brass'),C([13,4,14.05],[15,22,15.2],'brass'),C([3,20.1,14.05],[13,22,15.2],'brass'),C([3.1,12,14.05],[12.9,19.9,14.3],'songstrips'),C([4,4,14.1],[12,11,14.4],'rubber')]
  M('jukebox',jukebox);jukebox[-2]=C([3.1,12,14.05],[12.9,19.9,14.3],'songstrips_written');M('jukebox_written',jukebox)
  M('string_light',[C([0,14,7],[16,14.4,8],'rubber'),C([7,11,7],[9,13.9,9],'cream')])
  M('rowboat',[C([-12,3,3],[28,5,13],'oak'),C([-14,5,1],[-12,9,15],'oak'),C([28,5,1],[30,9,15],'oak'),C([-12,5,0],[28,9,2],'oak'),C([-12,5,14],[28,9,16],'oak'),C([-11.9,5.05,2.1],[27.9,8.5,13.9],'sage')])
  M('ashtray',[C([4,0,4],[12,.5,12],'glass'),C([4,.5,4],[12,1.4,5],'glass'),C([4,.5,11],[12,1.4,12],'glass'),C([4,.5,5],[5,1.4,11],'glass'),C([11,.5,5],[12,1.4,11],'glass'),C([6,.5,7],[9.5,.95,7.6],'cream')])
  M('bottle',[C([6,0,6],[10,7,10],'glass'),C([7,7.05,7],[9,10,9],'amber'),C([6.5,2,10.05],[9.5,5,10.2],'label')])
- # Native item parents share the exact authored object cuboids.
- for name in ['paper','magazine','glasses','phone','cone','bottle']+[f'routine_{i}' for i in range(12)]:
-  parent='routine_item_'+name.split('_')[-1] if name.startswith('routine_') else 'magazines' if name=='magazine' else name
-  if name=='cone':M('cone',[C([5,0,5],[11,5,11],'cream'),C([4,5.05,4],[12,5.8,12],'porcelain')])
-  data={'parent':'the_oldest_house:block/read_'+parent}
-  if name=='glasses':data['display']={'head':{'rotation':[90,0,0],'translation':[0,0,1],'scale':[1,1,1]}}
+ # Worn glasses and the bottle keep their authored cuboids; everything held in the hand is a flat sprite (0.4.160).
+ for name in ['glasses','bottle']:
+  data={'parent':'the_oldest_house:block/read_'+name}
+  if name=='glasses':data['display']={'head':{'rotation':[90,0,0],'translation':[0,0,1],'scale':[1,1,1]},'gui':{'rotation':[-75,0,0],'translation':[0,-2,0],'scale':[1.25,1.25,1.25]}}
   out['models/item/read_'+name+'.json']=(json.dumps(data,indent=2)+'\n').encode()

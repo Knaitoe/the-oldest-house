@@ -35,7 +35,7 @@ public final class HouseReadClothesProof extends Screen {
             if(view==3){body.rightArm.xRot=.4f;body.leftArm.xRot=-.4f;body.rightLeg.xRot=-.3f;body.leftLeg.xRot=.3f;body.head.yRot=.35f;body.hat.copyFrom(body.head);}
             var p=g.pose();p.pushPose();p.translate((i%4+.5f)*cw,36+(i/4)*ch+ch*.30f,180);p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(new float[]{180,90,0,180}[view]));
             var skin=DefaultPlayerSkin.get(new UUID(138,narrow?1:0)).texture();body.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
-            if(page<3){var cloth=mc.getEntityModels().bakeLayer(narrow?HouseReadClothes.SLIM:HouseReadClothes.STANDARD);HouseReadClothes.coat(body,cloth,type,p,out,LightTexture.FULL_BRIGHT);HouseReadClothes.boots(body,cloth,p,out,LightTexture.FULL_BRIGHT);}
+            if(page<3){var cloth=mc.getEntityModels().bakeLayer(narrow?HouseReadClothes.SLIM:HouseReadClothes.STANDARD);HouseReadClothes.coat(body,cloth,type,p,out,LightTexture.FULL_BRIGHT);HouseReadClothes.boots(body,cloth,type+"_boots",p,out,LightTexture.FULL_BRIGHT);}
             out.endBatch();p.popPose();g.drawCenteredString(font,(narrow?"slim":"standard")+" / "+new String[]{"front","side","back","step + turn"}[view],(int)((i%4+.5f)*cw),(int)(32+(i/4+1)*ch-6),0xffe5dcc8);
         }
     }
@@ -53,7 +53,7 @@ public final class HouseReadClothesProof extends Screen {
         }
     }
     private void mirrors(GuiGraphics g){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff343630);g.drawString(font,"Native two-block glass / standard and slim own-skin image / turned wooden back",10,9,0xffe5dcc8,false);g.flush();var out=mc.renderBuffers().bufferSource();float cw=width/4f,scale=Math.min(cw*.75f,(height-65)/2.1f);
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff343630);g.drawString(font,"Native two-block glass / the reader a step back, as the plane mirror shows them / turned wooden back",10,9,0xffe5dcc8,false);g.flush();var out=mc.renderBuffers().bufferSource();float cw=width/4f,scale=Math.min(cw*.75f,(height-65)/2.1f);
         for(int i=0;i<4;i++){boolean narrow=i%2==1,turned=i>=2;var p=g.pose();p.pushPose();p.translate((i+.5f)*cw-scale*.5f,height-30,180);p.scale(scale,-scale,scale);
             var bottom=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadRegistry.FITTING.get().defaultBlockState().setValue(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.PART,io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part.MIRROR).setValue(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.TURNED,turned);mc.getBlockRenderer().renderSingleBlock(bottom,p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.pushPose();p.translate(0,1,0);mc.getBlockRenderer().renderSingleBlock(bottom.setValue(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.PART,io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part.MIRROR_TOP),p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();
             if(!turned){var body=new PlayerModel<AbstractClientPlayer>(mc.getEntityModels().bakeLayer(narrow?ModelLayers.PLAYER_SLIM:ModelLayers.PLAYER),narrow);body.young=false;body.setAllVisible(true);HouseReadMirror.drawImage(body,mc.getEntityModels().bakeLayer(narrow?HouseReadClothes.SLIM:HouseReadClothes.STANDARD),DefaultPlayerSkin.get(new UUID(138,narrow?1:0)).texture(),narrow?"barn":"wool",true,p,out,LightTexture.FULL_BRIGHT);}

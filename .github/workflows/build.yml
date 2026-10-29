@@ -2161,7 +2161,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           folder=Path('build/house-read139-art')
-          assert len(list(folder.glob('*.png')))==16
+          assert len(list(folder.glob('*.png')))==20
           assert (folder/'passed.txt').is_file()
           PY
       - uses: actions/upload-artifact@v4
@@ -2191,7 +2191,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libasound2t64 libpulse0
           python3 -m pip install Pillow
-      - name: Two actual clients, one shared counter, original B reconnect and native card pages
+      - name: Two actual clients, one shared counter, original B reconnect, native card pages and the coatroom mirror
         timeout-minutes: 13
         run: LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_tailoring_socket.py
       - name: Native frame contact sheets for review
@@ -2209,7 +2209,10 @@ jobs:
           cards=Image.new('RGB',(1920,665),'#242424');draw=ImageDraw.Draw(cards)
           for n,name in enumerate(['A-card','B-card']):
               draw.text((n*960+8,5),name,fill='white');cards.paste(Image.open(root/(name+'.png')).convert('RGB'),(n*960,25))
-          for name,im in [('counters',counter),('cards',cards)]:
+          mirrors=Image.new('RGB',(1920,665),'#242424');draw=ImageDraw.Draw(mirrors)
+          for n,name in enumerate(['A-mirror','B-mirror']):
+              draw.text((n*960+8,5),name,fill='white');mirrors.paste(Image.open(root/(name+'.png')).convert('RGB'),(n*960,25))
+          for name,im in [('counters',counter),('cards',cards),('mirrors',mirrors)]:
               im.save(root/(name+'-review.png'));out=io.BytesIO();im.save(out,format='PNG')
               data=base64.b64encode(out.getvalue()).decode()
               print('TAILORING_QA_'+name.upper()+'_BEGIN')

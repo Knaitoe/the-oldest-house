@@ -46,7 +46,8 @@ public final class HouseReadReaderTests {
     /** Every observation each room's clause can be written from: all its branches. */
     private static List<List<CompoundTag>> variants(){
         var waiting=new ArrayList<CompoundTag>(List.of(tag("First","paper","Kept","paper","Waited",true),tag("First","magazine","Kept","magazine","Waited",true),tag("First","glasses","Kept","glasses","Waited",true),tag("First","phone","Kept","phone","Waited",true),tag("First","tv","Kept","channels"),tag("First","tv","Kept","cart","Waited",true),tag("First","cooler","Kept","cart","Waited",true),tag("First","paper","Kept","chair","Waited",true),tag("First","glasses","Kept","paper","Waited",true),tag("First","phone","Waited",true),tag("First","cooler"),tag("Sat",true,"Waited",true),tag("Waited",true)));
-        var bathroom=new ArrayList<CompoundTag>();for(int i=0;i<12;i++)bathroom.add(tag("Item",i,"LightOff",i%3!=2));bathroom.addAll(List.of(tag("Item",3,"SecondItem",4,"LightOff",true),tag("Item",6,"SecondItem",7),tag("Item",11,"Tap",true,"LightOff",true),tag("Untouched",true,"LightOff",true),tag("Tap",true)));
+        var bathroom=new ArrayList<CompoundTag>();for(int i=0;i<12;i++){bathroom.add(tag("Item",i,"Used",i,"LightOff",true));bathroom.add(tag("Item",i,"LightOff",i%3!=2));}
+        bathroom.addAll(List.of(tag("Item",3,"Used",7,"LightOff",true),tag("Item",0,"Used",4,"Tap",true,"LightOff",true),tag("Item",11,"Used",11,"Tap",true,"LightOff",true),tag("Used",2),tag("Untouched",true,"LightOff",true),tag("Tap",true)));
         var coatroom=new ArrayList<CompoundTag>();for(String coat:new String[]{"wool","trench","barn"})for(String mirror:new String[]{"","looked","turned_after","covered_after"})coatroom.add(tag("Coat",coat,"Mirror",mirror));
         coatroom.addAll(List.of(tag("Coat","trench","Boots","trench"),tag("Coat","wool","Boots","trench","Mixed",true),tag("Boots","barn"),tag("Coat","barn","Mirror","turned_before","MirrorFirst",true),tag("Mirror","covered_before","MirrorFirst",true)));
         var shelter=new ArrayList<CompoundTag>();for(String stood:new String[]{"man","woman","middle","lantern"})for(boolean song:new boolean[]{false,true})shelter.add(tag("Stood",stood,"Song",song));for(String looked:new String[]{"man","woman","both"})shelter.add(tag("Looked",looked));
@@ -89,7 +90,7 @@ public final class HouseReadReaderTests {
         h.assertTrue(HouseRead.drawnTo(q).equals("WOMEN"),"turned back on, the kept read returns");
         f.reload();var d=f.data();h.assertTrue(HouseRead.raw(d,p.getUUID(),AGE).strength()==HouseRead.Strength.SETTLED,"the read survives a saved-data reload");
         // The account opening: the owner's own example night, then every combination of rooms and every branch of every room.
-        var owner=tag();owner.put("waiting",tag("First","paper","Kept","paper","Waited",true));owner.put("bathroom",tag("Item",0,"LightOff",true));owner.put("coatroom",tag("Coat","trench"));owner.put("shelter",tag("Stood","woman","Song",true));owner.put("porch",tag("First","in"));
+        var owner=tag();owner.put("waiting",tag("First","paper","Kept","paper","Waited",true));owner.put("bathroom",tag("Item",0,"Used",0,"LightOff",true));owner.put("coatroom",tag("Coat","trench"));owner.put("shelter",tag("Stood","woman","Song",true));owner.put("porch",tag("First","in"));
         h.assertTrue(HouseReadProse.opening(owner,false,"").equals(OWNER),"the owner's night reads exactly as the owner wrote it: "+HouseReadProse.opening(owner,false,""));
         h.assertTrue(HouseReadProse.opening(owner,true,"HAVEN").contains("stood by the woman under the eaves")&&HouseReadProse.opening(owner,true,"HAVEN").endsWith(HouseReadProse.close("HAVEN")),"an older reader's stranger is the woman, and HOME closes the opening");
         var all=variants();String[] keys={"waiting","bathroom","coatroom","shelter","porch"};String[] homes={"","HAVEN","DANGER","RUNAWAY"};
@@ -178,9 +179,9 @@ public final class HouseReadReaderTests {
           .thenWaitUntil(()->h.assertTrue(ready(unseen,HouseReadSites.Room.COATROOM),"the first coatroom is built")).thenWaitUntil(()->h.assertTrue(ready(mixed,HouseReadSites.Room.COATROOM),"the second coatroom is built"))
           .thenExecute(()->{
               for(var p:List.of(unseen,mixed)){var b=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.COATROOM);base.put(p.getUUID(),b);seed(p,HouseReadSites.Room.COATROOM,from[0]);}
-              var b=base.get(unseen.getUUID());h.assertTrue(f.in.getBlockState(b.offset(6,0,-6)).is(Blocks.SPRUCE_STAIRS),"the hall has its wooden bench");stand(unseen,f.in,b,-3.5,0,-7.5);click(unseen,b.offset(HouseReadRooms.MIRROR));
+              var b=base.get(unseen.getUUID());h.assertTrue(f.in.getBlockState(b.offset(3,0,-2)).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.BENCH,"the hall has its wooden bench");stand(unseen,f.in,b,2.5,0,-6.5);click(unseen,b.offset(HouseReadRooms.MIRROR));
               h.assertTrue(raw(unseen,SELF).equals(new HouseRead.Category("UNSEEN",HouseRead.Strength.SETTLED)),"turning the glass to the wall before dressing settles it");
-              var peg=b.offset(HouseReadRooms.PEGS.get(0));stand(unseen,f.in,b,-3.5,0,-1.5);click(unseen,peg);var took=((HouseReadRegistry.Garment)unseen.getItemBySlot(EquipmentSlot.CHEST).getItem()).cloth;
+              var peg=b.offset(HouseReadRooms.PEGS.get(0));stand(unseen,f.in,b,-1.5,0,-1.5);click(unseen,peg);var took=((HouseReadRegistry.Garment)unseen.getItemBySlot(EquipmentSlot.CHEST).getItem()).cloth;
               h.assertTrue(raw(unseen,SELF).value().equals("UNSEEN")&&HouseRead.seen(f.data(),unseen.getUUID()).getCompound("coatroom").getString("Coat").equals(took),"the coat taken afterwards is only observed");
               h.assertTrue(HouseReadLook.of(unseen).unseen()&&HouseReadLook.of(unseen).coat().equals(took),"in glass and copies the coat shows and the face does not");
               h.assertTrue(HouseReadProse.coatroom(HouseRead.seen(f.data(),unseen.getUUID()).getCompound("coatroom")).startsWith("turned the hall glass to the wall before you took"),"the account says so in that order");
@@ -190,7 +191,7 @@ public final class HouseReadReaderTests {
               for(var rel:HouseReadRooms.PEGS){var part=f.in.getBlockState(m.offset(rel).east()).getValue(HouseReadPropBlock.PART);if((part==HouseReadPropBlock.Part.WOOL_BOOTS||part==HouseReadPropBlock.Part.TRENCH_BOOTS)&&!part.getSerializedName().startsWith(coatSet))boots=m.offset(rel).east();}
               stand(mixed,f.in,m,.5,0,-2);click(mixed,coat);h.assertTrue(raw(mixed,SELF).equals(new HouseRead.Category(coatSet.equals("wool")?"MASC":"FEM",HouseRead.Strength.TENTATIVE)),"the first coat sets the presentation tentatively");
               click(mixed,boots);h.assertTrue(raw(mixed,SELF).equals(new HouseRead.Category("ANDROGYNOUS",HouseRead.Strength.TENTATIVE)),"one garment from each side reads as neither: "+raw(mixed,SELF));
-              stand(mixed,f.in,m,-3.5,0,-7.5);click(mixed,m.offset(HouseReadRooms.MIRROR));h.assertTrue(raw(mixed,SELF).equals(new HouseRead.Category("UNSEEN",HouseRead.Strength.TENTATIVE))&&HouseRead.seen(f.data(),mixed.getUUID()).getCompound("coatroom").getString("Mirror").equals("turned_after"),"turning the glass after dressing makes UNSEEN the House's first guess");
+              stand(mixed,f.in,m,2.5,0,-6.5);click(mixed,m.offset(HouseReadRooms.MIRROR));h.assertTrue(raw(mixed,SELF).equals(new HouseRead.Category("UNSEEN",HouseRead.Strength.TENTATIVE))&&HouseRead.seen(f.data(),mixed.getUUID()).getCompound("coatroom").getString("Mirror").equals("turned_after"),"turning the glass after dressing makes UNSEEN the House's first guess");
           }).thenSucceed();
     }
 }

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "the_oldest_house:read_rail",
+    "the_oldest_house:read_picket",
+    "the_oldest_house:read_dock_rail"
+  ]
+}

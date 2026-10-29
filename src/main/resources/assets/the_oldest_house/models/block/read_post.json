@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "the_oldest_house:block/house_read/post_end",
+    "side": "the_oldest_house:block/house_read/post_side"
+  }
+}

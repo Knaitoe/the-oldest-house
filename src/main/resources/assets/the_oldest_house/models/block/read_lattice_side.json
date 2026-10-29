@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/template_glass_pane_side",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "pane": "the_oldest_house:block/house_read/lattice",
+    "edge": "the_oldest_house:block/house_read/lattice_edge"
+  }
+}
