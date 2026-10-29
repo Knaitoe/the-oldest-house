@@ -1117,20 +1117,22 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.succeed();
         }
     }
-    @GameTest(template="empty",batch="literary_elk_work",timeoutTicks=400)
+    @GameTest(template="empty",batch="literary_elk_work",timeoutTicks=1200)
     public static void elkKillerHacksAndHaulsCarcassesWhenNoOneIsInSight(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("work_reader",place);var b=f.base(place);
         final int[] chops={0};final boolean[] watching={false};
-        h.startSequence().thenIdle(10).thenExecute(()->{elkAshore(f,p);var far=ElkCarcassMap.standAt(-50,-100);f.at(p,place,far.getX()+.5,far.getY(),far.getZ()+.5);p.setYRot(90);})
+        // The killer is moved to two carcasses away from the reader; their chunks are held so he is not unloaded there.
+        for(int i:new int[]{0,3})f.chunks.hold(f.out,new AABB(b.offset(ElkCarcassMap.WORK.get(i).feet())).inflate(8));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the work sites' sections are loaded")).thenIdle(10).thenExecute(()->{elkAshore(f,p);var far=ElkCarcassMap.standAt(-50,-100);f.at(p,place,far.getX()+.5,far.getY(),far.getZ()+.5);p.setYRot(90);})
         .thenWaitUntil(()->h.assertTrue(elkKiller(f,p)!=null,"the same original killer is actually seeded before the work fixture moves it"))
         .thenExecute(()->{var killer=elkKiller(f,p);var feet=b.offset(ElkCarcassMap.WORK.get(0).feet());killer.moveTo(Vec3.atBottomCenterOf(feet));
             var own=f.own(p,place);own.putInt("ElkWork",1);own.putInt("ElkWorkTicks",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);watching[0]=true;})
-        .thenIdle(80).thenExecute(()->{var killer=elkKiller(f,p);
-            h.assertTrue(killer.phase()==ElkHunt.HACK&&chops[0]>=2,"with no one in sight he stands over the carcass and hacks at it: chops="+chops[0]+", phase="+killer.phase());
+        .thenWaitUntil(()->{var killer=elkKiller(f,p);h.assertTrue(killer!=null&&killer.phase()==ElkHunt.HACK&&chops[0]>=2,"with no one in sight he stands over the carcass and hacks at it: chops="+chops[0]+", phase="+(killer==null?"unloaded":killer.phase()));})
+        .thenExecute(()->{var killer=elkKiller(f,p);
             var feet=b.offset(ElkCarcassMap.WORK.get(3).feet());killer.moveTo(Vec3.atBottomCenterOf(feet));
             var own=f.own(p,place);own.putInt("ElkWork",4);own.putInt("ElkWorkTicks",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);})
-        .thenIdle(40).thenExecute(()->{var killer=elkKiller(f,p);
-            h.assertTrue(killer.phase()==ElkHunt.HAUL&&f.own(p,place).getInt("ElkWork")==4,"unseen, he takes another by the leg and hauls it off toward the cave");
+        .thenWaitUntil(()->{var killer=elkKiller(f,p);h.assertTrue(killer!=null&&killer.phase()==ElkHunt.HAUL&&f.own(p,place).getInt("ElkWork")==4,"unseen, he takes another by the leg and hauls it off toward the cave: "+(killer==null?"unloaded":killer.phase()+" work="+f.own(p,place).getInt("ElkWork")));})
+        .thenExecute(()->{
             h.assertTrue(f.out.getBlockState(b.offset(40,ElkCarcassMap.SITE_TOP+2,-142)).is(LiteraryRegistry.PROP.get()),"the shared carcasses stay where they lie");h.succeed();});
         h.onEachTick(()->{if(!watching[0])return;var a=elkKiller(f,p);if(a!=null&&a.swinging&&a.swingTime==1)chops[0]++;});
     }
