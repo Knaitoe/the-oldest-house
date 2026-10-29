@@ -31,7 +31,7 @@ public final class UncannyDiner {
     }
     /** Credit follows the confirmed House landing, not merely opening the actual till-side door. */
     public static void returned(ServerPlayer p,LabyrinthData.Door door){
-        if(!door.id.equals(PLACE.id()+"/till_exit")||!LiteraryVignettes.participant(p))return;
+        if(!SceneInstances.plain(door.id).equals(PLACE.id()+"/till_exit")||!LiteraryVignettes.participant(p))return;
         var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);
         if(!own.getBoolean("UncannyArrived")||own.getBoolean("Completed")||UncannyStories.failed(own))return;
         own.putBoolean("Ready",true);own.putBoolean("Completed",true);own.putBoolean("DinerTillReturned133",true);own.putString("Outcome","left_by_the_staff_door");

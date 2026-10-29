@@ -190,8 +190,8 @@ public final class LabyrinthDoors {
         }
         if(HouseReadSites.offer(player,door,place))return;
         if(place!=null&&LabyrinthDealer.finishedFor(data,player.getUUID(),place)&&passage(player,door))return;
-        // 0.4.151: a private scene that stands once is one reader's at a time; it waits for this one.
-        if(!door.command&&SharedVignettes.occupant(server,place,player.getUUID())!=null){taken(player,place);if(!elsewhere(player,door))locked(player);return;}
+        // 0.4.151: a private scene that stands once is one reader's at a time; it waits for this one. Scenes with copies choose below.
+        if(!door.command&&!SceneInstances.copyable(place)&&SharedVignettes.occupant(server,place,player.getUUID())!=null){taken(player,place);if(!elsewhere(player,door))locked(player);return;}
         // Deeper places are built as explorers approach them; one still under construction holds its door.
         if (place != null && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN
                 && !LabyrinthBuilder.isPlaceReady(server, place)) {
@@ -202,6 +202,15 @@ public final class LabyrinthDoors {
         if(place==LabyrinthPlace.BACKSEAT){if(!BackseatSites.enter(player,door))sticks(player,door);return;}
         if(place==LabyrinthPlace.SILO){if(!SiloSites.enter(player,door))sticks(player,door);return;}
         LabyrinthData.Door entry = place == null || place.slot() < 0 ? null : data.door(place.entryDoorId());
+        // 0.4.153: a private scene with copies opens onto the copy this reader keeps, or one nobody keeps. An operator's test door keeps the original.
+        if(SceneInstances.copyable(place)&&!door.command){
+            var chosen=SceneInstances.enter(player,place);
+            if(chosen.door()==null){
+                if(chosen.waiting()){readying(player,place);return;}
+                taken(player,place);if(!elsewhere(player,door))locked(player);return;
+            }
+            entry=chosen.door();
+        }
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);if(place==LabyrinthPlace.BORRASCA){entry=BorrascaSites.prepareEntry(player);if(entry==null){sticks(player,door);return;}}
         if(place!=null&&LiteraryCabinChoices.closed(data,player.getUUID(),place)){if(reroute(player,door))return;locked(player);return;}
         if (entry == null || (place == LabyrinthPlace.RED_ROOM && !RedRoom.prepare(player))) {
@@ -279,6 +288,12 @@ public final class LabyrinthDoors {
         }
         return true;
     }
+    /** Someone else is in the scene and its next copy is still being built: the door stays shut a moment longer. */
+    private static void readying(ServerPlayer player, LabyrinthPlace place) {
+        var story = WitnessAccount.Story.of(place.id());
+        player.displayClientMessage(Component.literal("Someone is already in " + (story == null ? "the room behind this door" : story.title) + ". Another is being made ready for you. Try the door again in a moment."), true);
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player, "door_readying:" + place.id(), player.blockPosition());
+    }
     private static void taken(ServerPlayer player, LabyrinthPlace place) {
         var story = WitnessAccount.Story.of(place.id());
         player.displayClientMessage(Component.literal("Someone is already in " + (story == null ? "the room behind this door" : story.title) + ". It will wait for you."), true);
@@ -332,6 +347,7 @@ public final class LabyrinthDoors {
     static void continueFromRead(ServerPlayer player,LabyrinthData.Door from,LabyrinthPlace place) {
         if(HouseReadSites.inside(player)==null)return;
         var entry=LabyrinthData.get(player.server).door(place.entryDoorId());
+        if(SceneInstances.copyable(place)){var chosen=SceneInstances.enter(player,place);if(chosen.door()==null){if(chosen.waiting())readying(player,place);else taken(player,place);return;}entry=chosen.door();}
         if(entry!=null)arrive(player,from,entry,place,true);
     }
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {arrive(player,from,suppliedEntry,place,false);}
@@ -362,7 +378,7 @@ public final class LabyrinthDoors {
         // way on are one crossing: going back from the hall beyond returns to the door that led into the scene.
         LabyrinthPlace leaving = OnwardDoors.placeOf(from);
         LabyrinthData.Waypoint leftFrom = leaving == null ? null : data.peekReturn(player.getUUID());
-        LabyrinthData.Door leavingEntry = leaving == null ? null : data.door(leaving.entryDoorId());
+        LabyrinthData.Door leavingEntry = leaving == null ? null : SceneInstances.entryOf(data, leaving, from);
         if (leaving != null) depart(player, leaving);
         Consumer<ServerPlayer> arrived = p -> {
             var current = LabyrinthData.get(p.server);
@@ -441,7 +457,7 @@ public final class LabyrinthDoors {
             return true;
         }
         LabyrinthData data = LabyrinthData.get(player.server);
-        LabyrinthData.Door entry = place==LabyrinthPlace.SILO?SiloSites.entry(player):place==LabyrinthPlace.BACKSEAT?BackseatSites.entry(player):place==LabyrinthPlace.BORRASCA?BorrascaSites.entry(player):place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):data.door(place.entryDoorId());
+        LabyrinthData.Door entry = place==LabyrinthPlace.SILO?SiloSites.entry(player):place==LabyrinthPlace.BACKSEAT?BackseatSites.entry(player):place==LabyrinthPlace.BORRASCA?BorrascaSites.entry(player):place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):SceneInstances.entryAt(player,place);
         if (entry == null) {
             return true;
         }
@@ -526,9 +542,10 @@ public final class LabyrinthDoors {
     /** A real crossing of an open service doorway, not its infinite plane beside or above the room. */
     private static @Nullable LabyrinthData.Door crossedReturn(ServerPlayer player, LabyrinthPlace place, LabyrinthData data, @Nullable DoorStep previous) {
         if (previous == null || previous.place != place || !previous.dimension.equals(player.level().dimension())) return null;
+        int copy = SceneInstances.copyable(place) ? Math.max(0, SceneInstances.at(player.server, place, player.level().dimension(), player.position())) : 0;
         for (var spec : place.doors()) {
-            String name = place.id() + "/" + spec.name();
-            if (name.equals(place.entryDoorId()) || !LabyrinthData.RETURN.equals(spec.destination())) continue;
+            String name = SceneInstances.doorId(place, copy, spec.name());
+            if (spec.name().equals("entry") || !LabyrinthData.RETURN.equals(spec.destination())) continue;
             var gate = data.door(name);
             if (gate == null || !gate.dimension.equals(player.level().dimension())) continue;
             var state = player.serverLevel().getBlockState(gate.lower);
@@ -1098,8 +1115,9 @@ public final class LabyrinthDoors {
         if (level.dimension().equals(HouseDimensions.OUTSIDE)) {
             if(LiteraryCopies.protectedPosition(server,pos)||BorrascaSites.protectedPosition(server,pos)||BackseatSites.protectedPosition(server,pos)||SiloSites.protectedPosition(server,pos)||HouseReadSites.protectedPosition(server,pos,true))return true;
             for (LabyrinthPlace place : LabyrinthPlace.values()) if (NovelRooms.outside(place)) {
-                BlockPos base=LabyrinthPlaces.base(origin, place);
-                if (base!=null && IndianLakeRooms.bounds(base, place).contains(Vec3.atCenterOf(pos))) return true;
+                // 0.4.153: and every copy of it.
+                for (BlockPos base : SceneInstances.copyable(place) ? SceneInstances.bases(server, place) : java.util.Collections.singletonList(LabyrinthPlaces.base(origin, place)))
+                    if (base!=null && IndianLakeRooms.bounds(base, place).contains(Vec3.atCenterOf(pos))) return true;
             }
             return false;
         }

@@ -38,5 +38,5 @@ public final class DinerDetails {
   }
   saved.putInt(key+":cursor",cursor);if(cursor>=cells.size()){saved.putBoolean(key,true);LabyrinthBuilder.registerDoors(data,LabyrinthPlace.SECOND_WAITRESS,b);work=null;}data.setState(STATE,saved);return cursor>=cells.size();
  }
- @net.neoforged.bus.api.SubscribeEvent public static void tick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||LabyrinthBuilder.isCarving()||s.getTickCount()%5!=2)return;var origin=HouseSavedData.get(s).houseOrigin();var l=s.getLevel(HouseDimensions.OUTSIDE);if(origin!=null&&l!=null&&LabyrinthBuilder.isPlaceReady(s,LabyrinthPlace.SECOND_WAITRESS))repair(l,LabyrinthPlaces.base(origin,LabyrinthPlace.SECOND_WAITRESS));}
+ @net.neoforged.bus.api.SubscribeEvent public static void tick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||LabyrinthBuilder.isCarving()||s.getTickCount()%5!=2)return;var origin=HouseSavedData.get(s).houseOrigin();var l=s.getLevel(HouseDimensions.OUTSIDE);if(origin!=null&&l!=null&&LabyrinthBuilder.isPlaceReady(s,LabyrinthPlace.SECOND_WAITRESS))for(var b:SceneInstances.bases(s,LabyrinthPlace.SECOND_WAITRESS))repair(l,b);}
 }

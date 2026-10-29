@@ -28,6 +28,7 @@ public final class DinerWalk {
         if(m!=null&&m.goal!=null&&l.getGameTime()<=m.until){SceneFootpaths.walk(a,m.goal,m.speed);return;}
         if(m!=null&&m.look!=null){SceneFootpaths.face(a,m.look,10);return;}
         if(a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS)return;
-        var origin=HouseSavedData.get(l.getServer()).houseOrigin();if(origin!=null)register(a,LabyrinthPlaces.base(origin,LabyrinthPlace.SECOND_WAITRESS),false);
+        // 0.4.153: she keeps to the copy of the diner she stands in.
+        int copy=SceneInstances.at(l.getServer(),LabyrinthPlace.SECOND_WAITRESS,l.dimension(),a.position());var b=SceneInstances.base(l.getServer(),LabyrinthPlace.SECOND_WAITRESS,Math.max(0,copy));if(b!=null)register(a,b,false);
     }
 }

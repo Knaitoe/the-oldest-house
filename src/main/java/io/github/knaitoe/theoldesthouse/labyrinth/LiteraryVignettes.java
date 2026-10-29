@@ -45,12 +45,14 @@ public final class LiteraryVignettes {
     private LiteraryVignettes(){}
     private static String state(LabyrinthPlace place){return "literary_0436_"+place.id();}
     public static String stateId(LabyrinthPlace place){return state(place);}
+    /** Every reader with a saved part in a scene. */
+    static Set<String> readers(LabyrinthData d,LabyrinthPlace place){var keys=new HashSet<>(d.state(state(place)).getAllKeys());keys.remove("World");return keys;}
     public static CompoundTag personal(LabyrinthData d,UUID p,LabyrinthPlace place){return d.stateEntry(state(place),p.toString());}
     public static void save(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag own){d.setStateEntry(state(place),p.toString(),own);}
     public static CompoundTag shared(LabyrinthData d,LabyrinthPlace place){return d.stateEntry(state(place),"World");}
     public static void shared(LabyrinthData d,LabyrinthPlace place,CompoundTag s){d.setStateEntry(state(place),"World",s);}
     public static boolean participant(ServerPlayer p){return p.isAlive()&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,p.getUUID()));}
-    public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.BORRASCA)return BorrascaSites.base(p.server,p.getUUID());if(place==LabyrinthPlace.LAKE_HOUSE)return LakeHouse.readerBase(p);if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)return LiteraryCopies.base(p.server,p.getUUID(),place);var o=HouseSavedData.get(p.server).houseOrigin();return o==null?null:LabyrinthPlaces.base(o,place);}
+    public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){if(SceneInstances.copyable(place))return SceneInstances.base(p,place);if(place==LabyrinthPlace.BORRASCA)return BorrascaSites.base(p.server,p.getUUID());if(place==LabyrinthPlace.LAKE_HOUSE)return LakeHouse.readerBase(p);if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)return LiteraryCopies.base(p.server,p.getUUID(),place);var o=HouseSavedData.get(p.server).houseOrigin();return o==null?null:LabyrinthPlaces.base(o,place);}
     public static boolean inside(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.BORRASCA)return participant(p)&&BorrascaSites.inside(p);var b=base(p,place);return participant(p)&&b!=null&&p.level().dimension().equals(NovelRooms.dimension(place))&&(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.contains(p.server,p.getUUID(),place,p.position()):IndianLakeRooms.bounds(b,place).contains(p.position()));}
     public static @Nullable LabyrinthPlace current(ServerPlayer p){if(participant(p)&&BorrascaSites.inside(p))return LabyrinthPlace.BORRASCA;if(!participant(p)&&BorrascaSites.placeAt(p.server,p.blockPosition())!=null)return null;if(participant(p)&&LakeHouse.inside(p))return LabyrinthPlace.LAKE_HOUSE;if(!participant(p)||!HouseDimensions.isHouseDimension(p.level().dimension()))return null;var copy=LiteraryCopies.placeAt(p.server,p.blockPosition());if(copy!=null&&inside(p,copy))return copy;var o=HouseSavedData.get(p.server).houseOrigin();if(o==null)return null;var place=LabyrinthPlaces.placeAt(o,p.blockPosition());return LiteraryRooms.isLiterary(place)&&inside(p,place)?place:null;}
     public static boolean canDeal(LabyrinthData d,UUID p,LabyrinthPlace place){if(!LiteraryRooms.isLiterary(place))return false;if(UncannyRooms.isUncanny(place)&&personal(d,p,place).getBoolean("UncannyFailed"))return false;if(LiteraryCabinChoices.closed(d,p,place))return false;
@@ -227,6 +229,8 @@ public final class LiteraryVignettes {
         return a.scene().equals(ElkLot.PLACE.id())&&a.role()==LiteraryActor.STRANGER&&a.phase()>=5&&a.phase()<=7&&ElkLotNight.stage(shared(LabyrinthData.get(p.server),ElkLot.PLACE))>=3;
     }
     public static @Nullable LiteraryActor actor(ServerPlayer p,LabyrinthPlace place,String key,int role,BlockPos relative,boolean privateActor){var d=LabyrinthData.get(p.server);var s=shared(d,place);String id=privateActor?key+"_"+p.getUUID():key;
+        // 0.4.153: a scene's shared cast is its own in each copy, such as the confession's listener.
+        if(!privateActor&&SceneInstances.copyable(place)){int copy=SceneInstances.of(p,place);if(copy>0)id+="@"+copy;}
         if(s.hasUUID(id)){var e=p.serverLevel().getEntity(s.getUUID(id));return e instanceof LiteraryActor a?a:null;}
         var a=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(a==null)return null;a.bind(place,privateActor?p.getUUID():null);a.appearance(role,0);a.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(relative)));a.setYRot(0);if(place==LabyrinthPlace.BLY_ROUTE&&role==LiteraryActor.LADY)LiteraryMotion.initialLady(a,base(p,place));if(!p.serverLevel().addFreshEntity(a))return null;s.putUUID(id,a.getUUID());shared(d,place,s);return a;
     }

@@ -26,6 +26,8 @@ public final class HouseConfig {
     public static final ModConfigSpec.IntValue STORY_EARLY_CHANCE, STORY_BASE_CHANCE, STORY_CHANCE_STEP;
     public static final ModConfigSpec.IntValue STORY_SPACING, STORY_DRY_GUARANTEE;
     public static final ModConfigSpec.IntValue HAZARD_EARLY_CHANCE, HAZARD_MIDDLE_CHANCE, HAZARD_DEEP_CHANCE, HAZARD_SPACING;
+    /** 0.4.153: how many copies of each private scene the House may build for readers who find it taken. */
+    public static final ModConfigSpec.IntValue SCENE_COPIES;
     /** The encounter preset this file has been reviewed against, so an old preset is upgraded once only. */
     public static final ModConfigSpec.IntValue PRESET_VERSION;
     /** Playtesting: a local, opt-in event log of the journey (PlaytestLog). Off by default. */
@@ -85,6 +87,8 @@ public final class HouseConfig {
         HAZARD_MIDDLE_CHANCE = builder.comment("Physical-hazard chance at depths 10-15.").defineInRange("hazardMiddleChance", 42, 0, 100);
         HAZARD_DEEP_CHANCE = builder.comment("Physical-hazard chance at depth 16 or more.").defineInRange("hazardDeepChance", 54, 0, 100);
         HAZARD_SPACING = builder.comment("Visits separating physical hazards.").defineInRange("hazardSpacing", 2, 0, 8);
+        SCENE_COPIES = builder.comment("Copies of each private scene the House may build for readers who find it taken by someone else.",
+                        "Each copy stays with its reader until they finish its story. 0 keeps one reader at a time.").defineInRange("sceneCopies", 8, 0, 64);
         PRESET_VERSION = builder.comment("Bookkeeping: the encounter preset version this file was last checked against. Leave it as it is.")
                 .defineInRange("presetVersion", 0, 0, 10_000);
         builder.pop();

@@ -48,10 +48,14 @@ public final class OnwardDoors {
     public static boolean isOnward(LabyrinthPlace.DoorSpec spec){return NAME.equals(spec.name());}
     public static boolean isOnward(LabyrinthData.Door door){return placeOf(door)!=null;}
     public static @Nullable LabyrinthPlace placeOf(LabyrinthData.Door door){
-        int slash=door.id.lastIndexOf('/');if(slash<0)return null;var place=LabyrinthPlace.byId(door.id.substring(0,slash));
-        return place!=null&&places().contains(place)&&id(place).equals(door.id)?place:null;
+        // A copy's way on carries its copy's number (SceneInstances.doorId).
+        var id=SceneInstances.plain(door.id);
+        int slash=id.lastIndexOf('/');if(slash<0)return null;var place=LabyrinthPlace.byId(id.substring(0,slash));
+        return place!=null&&places().contains(place)&&id(place).equals(id)?place:null;
     }
-    public static String id(LabyrinthPlace place){return place.id()+"/"+ADOPTED.getOrDefault(place,NAME);}
+    public static String id(LabyrinthPlace place){return place.id()+"/"+name(place);}
+    /** The way on's own name: the fitted door's, or the scene's own door it adopts. */
+    public static String name(LabyrinthPlace place){return ADOPTED.getOrDefault(place,NAME);}
     public static @Nullable BlockPos lower(BlockPos base,LabyrinthPlace place){var s=SPECS.get(place);return s==null||base==null?null:base.offset(s.rel());}
 
     /** The door, its lintel and the two cells before it, kept clear of every dressing pass so the door always has its wall and its way up. */
@@ -65,7 +69,7 @@ public final class OnwardDoors {
 
     /** Whatever holds a scene's entry shut during a committed beat holds its way on shut too. */
     public static boolean locked(ServerPlayer p,LabyrinthData.Door door){
-        var place=placeOf(door);if(place==null)return false;var entry=LabyrinthData.get(p.server).door(place.entryDoorId());
+        var place=placeOf(door);if(place==null)return false;var entry=SceneInstances.entryOf(LabyrinthData.get(p.server),place,door);
         return LiteraryVignettes.retreatLocked(p)||entry!=null&&(NovelVignettes.exitLocked(p,entry)||VignetteGate.exitLocked(p,entry));
     }
 
@@ -76,13 +80,15 @@ public final class OnwardDoors {
     private static boolean open(ServerLevel l,BlockPos at){var s=l.getBlockState(at);return s.canBeReplaced()&&!s.hasBlockEntity()&&s.getFluidState().isEmpty();}
 
     /** Sets the fitted door and registers it, unless its cells or the way to it have changed. */
-    public static boolean install(ServerLevel level,@Nullable BlockPos base,LabyrinthPlace place){
+    public static boolean install(ServerLevel level,@Nullable BlockPos base,LabyrinthPlace place){return install(level,base,place,id(place));}
+    /** The same at a copy of the scene, under the copy's own door id. */
+    public static boolean install(ServerLevel level,@Nullable BlockPos base,LabyrinthPlace place,String id){
         var spec=SPECS.get(place);if(spec==null||base==null||!level.dimension().equals(NovelRooms.dimension(place)))return false;
         var at=base.offset(spec.rel());var front=at.relative(spec.facing());
         if(!authored(level,at)||!authored(level,at.above())||!passable(level,front)||!passable(level,front.above()))return false;
         NovelRooms.door(level,at,spec.facing(),spec.door().get(),false);
         if(spec.frame()!=null)frame(level,at,spec.facing(),spec.frame().get());
-        LabyrinthData.get(level.getServer()).putDoor(new LabyrinthData.Door(id(place),level.dimension(),at,spec.facing(),LabyrinthData.DEALT,false));
+        LabyrinthData.get(level.getServer()).putDoor(new LabyrinthData.Door(id,level.dimension(),at,spec.facing(),LabyrinthData.DEALT,false));
         return true;
     }
     /** Two posts and a lintel round a door that stands where the ground runs out, wherever they find open ground. */
