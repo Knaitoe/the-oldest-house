@@ -10,7 +10,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
 import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
 
-/** A private partner for a genuinely solo visit. Departure is physical when her reader keeps watching. */
+/** A private partner for a genuinely solo visit: Tess, or the young man in her place (LakeHousePartner). Departure is physical when the reader keeps watching. */
 public final class LakeHouseTess {
     private LakeHouseTess(){}
     public static @Nullable LiteraryActor actor(ServerPlayer p,CompoundTag own){return own.hasUUID("Tess")&&p.serverLevel().getEntity(own.getUUID("Tess")) instanceof LiteraryActor a&&!a.isRemoved()?a:null;}
@@ -20,9 +20,9 @@ public final class LakeHouseTess {
         if(own.hasUUID("Tess"))return null; // Its saved native body may be in an unloaded entity section.
         var staging=own.getInt("Visit")==2?b.offset(LakeHouse.COMPRESSOR):b.offset(3,0,-16);if(!p.serverLevel().hasChunkAt(staging)||!p.serverLevel().areEntitiesLoaded(new net.minecraft.world.level.ChunkPos(staging).toLong()))return null;
         // Recover a loaded original before creating a body; a reconnect never adds a second Tess.
-        for(var original:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(b,LakeHouse.PLACE),q->q.role()==LiteraryActor.LAKE_TESS&&q.owner().filter(p.getUUID()::equals).isPresent())){own.putUUID("Tess",original.getUUID());return original;}
+        for(var original:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(b,LakeHouse.PLACE),q->LiteraryActor.lakePartner(q.role())&&q.owner().filter(p.getUUID()::equals).isPresent())){own.putUUID("Tess",original.getUUID());return original;}
         a=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(a==null)return null;
-        a.appearance(LiteraryActor.LAKE_TESS,0);a.bind(LakeHouse.PLACE,p.getUUID());a.setNoGravity(true);a.setCustomNameVisible(false);
+        a.appearance(LakeHousePartner.of(own).role,0);a.bind(LakeHouse.PLACE,p.getUUID());a.setNoGravity(true);a.setCustomNameVisible(false);
         var spot=own.getInt("Visit")==2?b.offset(LakeHouse.COMPRESSOR.offset(1,0,0)):b.offset(3,0,-16);a.moveTo(spot.getX()+.5,spot.getY(),spot.getZ()+.5,180,0);
         if(!p.serverLevel().addFreshEntity(a))return null;own.putUUID("Tess",a.getUUID());return a;
     }
@@ -36,10 +36,11 @@ public final class LakeHouseTess {
         return b!=null&&!own.getBoolean("SoloGone")&&a!=null&&a.phase()==4&&a.distanceToSqr(b.offset(LakeHouse.COMPRESSOR).getCenter())<16;
     }
     public static void line(ServerPlayer p,@Nullable LiteraryActor a,String text){
+        var partner=LakeHousePartner.of(LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE));
         if(p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)){
-            p.displayClientMessage(Component.literal("Tess mouths something, then points upward.").withStyle(ChatFormatting.ITALIC),true);if(a!=null)a.appearance(a.role(),3);return;
+            p.displayClientMessage(Component.literal(LakeHousePartner.mouths(partner)).withStyle(ChatFormatting.ITALIC),true);if(a!=null)a.appearance(a.role(),3);return;
         }
-        p.displayClientMessage(Component.literal("Tess: “"+text+"”"),false);
+        p.displayClientMessage(Component.literal(partner.name+": “"+text+"”"),false);
         if(a!=null){a.say(text);a.getPersistentData().putLong("LakeSayUntil",p.level().getGameTime()+100);}
     }
     private static void move(LiteraryActor a,Vec3 to,double step){
@@ -69,8 +70,8 @@ public final class LakeHouseTess {
             }return;
         }
         if(!own.getBoolean("TessGreeting")&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&p.distanceToSqr(a)<100){
-            own.putBoolean("TessGreeting",true);
-            line(p,a,own.getInt("Visit")>=4?"Something was in my room last night. The floor was wet, and the water was warm, like that room by the pool. We have to go back and say hello.":own.getInt("Visit")==1?"We can go through that tunnel. But if there's something down there, let's not ask how.":own.getInt("Visit")==2?"I'll keep the compressor going. Pull twice if you need me.":"The tanks are filled. Let's see what's upstairs. And there were bubbles coming out round the wardrobe in the study.");
+            own.putBoolean("TessGreeting",true);own.putBoolean(LakeHousePartner.MET,true);
+            line(p,a,own.getInt("Visit")>=4?"Something was in my room last night. The floor was wet, and the water was warm, like that room by the pool. We have to go back and say hello.":own.getInt("Visit")==1?LakeHousePartner.firstGreeting(LakeHousePartner.of(own)):own.getInt("Visit")==2?"I'll keep the compressor going. Pull twice if you need me.":"The tanks are filled. Let's see what's upstairs. And there were bubbles coming out round the wardrobe in the study.");
         }
         if(p.getVehicle() instanceof LakeHouseCanoe canoe){
             if(a.getVehicle()!=canoe){a.stopRiding();a.startRiding(canoe);}a.appearance(a.role(),1);return;
@@ -90,7 +91,7 @@ public final class LakeHouseTess {
         move(a,to.add(b.getX(),b.getY(),b.getZ()),.55);
     }
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
-        if(a.role()!=LiteraryActor.LAKE_TESS)return;
+        if(!LiteraryActor.lakePartner(a.role()))return;
         int n=own.getInt("TessTalk");own.putInt("TessTalk",n+1);
         String[] lines=own.getBoolean("RuleBroken")?new String[]{"Couldn't it just be ours?","You heard it too. Someone walking, upstairs.","We should have left it where it was."}:own.getBoolean("Lit")?new String[]{"All of them. Every room.","There's somebody upstairs. I won't go in without you.","We came to say hello."}:own.getInt("Visit")==2?new String[]{"There's a staircase at the back. Red carpet, all the way up.","I saw bedrooms up there. Dresses too.","The hose catches on that rail. Swim back and lift it over."}
                 :own.getInt("Visit")==3?new String[]{"The bubbles come out round the wardrobe in the study. Something's behind it.","I saw bedrooms up there. Dresses too.","Come up when you need to. It will still be there."}

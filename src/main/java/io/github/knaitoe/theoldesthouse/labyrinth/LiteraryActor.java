@@ -20,6 +20,10 @@ public final class LiteraryActor extends PathfinderMob {
     public static final int HARRIGAN=30,HARRIGAN_MOURNER=31;
     public static final int UNCANNY_PROPPED=32,UNCANNY_WAITRESS=33,UNCANNY_FALSE_WAITRESS=34,UNCANNY_GIANT=35,UNCANNY_MARIONETTE=36,UNCANNY_PEELER=37,UNCANNY_VISITOR=38;
     public static final int READ_MAN=39,READ_WOMAN=40;
+    /** 0.4.152: the young man in Tess's place at the lake house, for a reader the House reads as drawn to men. */
+    public static final int LAKE_THEO=41;
+    /** The lake house partner, whichever of the two they are. */
+    public static boolean lakePartner(int role){return role==LAKE_TESS||role==LAKE_THEO;}
     private static final EntityDataAccessor<Integer> ROLE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT),PHASE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> GESTURE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> OWNER=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.OPTIONAL_UUID);
@@ -30,7 +34,7 @@ public final class LiteraryActor extends PathfinderMob {
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,40).add(Attributes.MOVEMENT_SPEED,.24).add(Attributes.SCALE,1);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(OWNER,Optional.empty());}
     public int gesture(){return entityData.get(GESTURE);}public void gesture(int value){entityData.set(GESTURE,Math.max(0,Math.min(5,value)));}
-    @Override public net.minecraft.world.phys.Vec3 getVehicleAttachmentPoint(Entity vehicle){if(role()==LAKE_TESS&&vehicle instanceof LakeHouseCanoe)return net.minecraft.world.entity.player.Player.DEFAULT_VEHICLE_ATTACHMENT;if(vehicle instanceof LakeCanoeEntity&&MovieNightCast.teen(this))return net.minecraft.world.entity.player.Player.DEFAULT_VEHICLE_ATTACHMENT;return super.getVehicleAttachmentPoint(vehicle);}
+    @Override public net.minecraft.world.phys.Vec3 getVehicleAttachmentPoint(Entity vehicle){if(lakePartner(role())&&vehicle instanceof LakeHouseCanoe)return net.minecraft.world.entity.player.Player.DEFAULT_VEHICLE_ATTACHMENT;if(vehicle instanceof LakeCanoeEntity&&MovieNightCast.teen(this))return net.minecraft.world.entity.player.Player.DEFAULT_VEHICLE_ATTACHMENT;return super.getVehicleAttachmentPoint(vehicle);}
     @Override protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,EntityDimensions dimensions,float partial){if(role()==FATHER&&passenger instanceof net.minecraft.world.entity.animal.Rabbit)return new net.minecraft.world.phys.Vec3(0,.8,.4).yRot(-getYRot()*(float)Math.PI/180);return super.getPassengerAttachmentPoint(passenger,dimensions,partial);}
     public int role(){return entityData.get(ROLE);}public int phase(){return entityData.get(PHASE);}public Optional<UUID> owner(){return entityData.get(OWNER);}public String scene(){return scene;}
     @Override public void lerpTo(double x,double y,double z,float yaw,float pitch,int steps){
@@ -57,11 +61,11 @@ public final class LiteraryActor extends PathfinderMob {
         boolean privateKiller=!level().isClientSide&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent();
         var before=position();boolean active=!privateKiller||privateHunt.prepare(this);if(!level().isClientSide)BorrascaStory.actorTick(this);super.tick();
         if(!level().isClientSide){GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);TunnelStride.tick(this);HouseReadShelter.tick(this);}
-        if(role()==LAKE_TESS)setAirSupply(getMaxAirSupply());
+        if(lakePartner(role()))setAirSupply(getMaxAirSupply());
         if(privateKiller){if(active)privateHunt.tick(this,before);}
         else if(!level().isClientSide&&role()==KILLER&&(scene.equals(LabyrinthPlace.CAMP_BLOOD.id())||scene.equals(LabyrinthPlace.ELK_CARCASSES.id())))carcassHunt.tick(this);
     }
-    @Override public EntityDimensions getDefaultDimensions(Pose pose){if(role()==UNCANNY_GIANT)return EntityDimensions.scalable(.32F,1.1F).withEyeHeight(.9F);if(role()==HARRIGAN)return phase()==HarriganVignette.CASKET_PHASE?EntityDimensions.scalable(.6F,.5F).withEyeHeight(.3F):EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(gesture()==CostumeNight.CRAWL)return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(role()==LAKE_TESS&&(phase()==2||phase()==6))return EntityDimensions.scalable(.6F,.6F).withEyeHeight(.35F);if(role()==LAKE_TESS&&phase()==1)return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(role()==FATHER&&phase()==3)return EntityDimensions.scalable(.6F,1.15F).withEyeHeight(.9F);if(role()==GHOST_PLAYHOUSE)return EntityDimensions.scalable(1F,phase()>=2?.2F:1F).withEyeHeight(.4F);if(role()==GHOST_DRAWER)return EntityDimensions.scalable(.9F,.9F).withEyeHeight(.5F);if(role()>=GHOST_MARJORIE&&role()<=GHOST_PRIEST){if(phase()==GhostsSet.CRAWL)return EntityDimensions.scalable(.55F,.65F).withEyeHeight(.38F);if(GhostsSet.seatedPose(role(),phase()))return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(phase()==GhostsSet.BED)return EntityDimensions.scalable(.6F,.7F).withEyeHeight(.4F);}return role()==KILLER&&pose==Pose.CROUCHING?EntityDimensions.scalable(.6F,1.3F).withEyeHeight(1.05F):super.getDefaultDimensions(pose);}
+    @Override public EntityDimensions getDefaultDimensions(Pose pose){if(role()==UNCANNY_GIANT)return EntityDimensions.scalable(.32F,1.1F).withEyeHeight(.9F);if(role()==HARRIGAN)return phase()==HarriganVignette.CASKET_PHASE?EntityDimensions.scalable(.6F,.5F).withEyeHeight(.3F):EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(gesture()==CostumeNight.CRAWL)return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(lakePartner(role())&&(phase()==2||phase()==6))return EntityDimensions.scalable(.6F,.6F).withEyeHeight(.35F);if(lakePartner(role())&&phase()==1)return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(role()==FATHER&&phase()==3)return EntityDimensions.scalable(.6F,1.15F).withEyeHeight(.9F);if(role()==GHOST_PLAYHOUSE)return EntityDimensions.scalable(1F,phase()>=2?.2F:1F).withEyeHeight(.4F);if(role()==GHOST_DRAWER)return EntityDimensions.scalable(.9F,.9F).withEyeHeight(.5F);if(role()>=GHOST_MARJORIE&&role()<=GHOST_PRIEST){if(phase()==GhostsSet.CRAWL)return EntityDimensions.scalable(.55F,.65F).withEyeHeight(.38F);if(GhostsSet.seatedPose(role(),phase()))return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(phase()==GhostsSet.BED)return EntityDimensions.scalable(.6F,.7F).withEyeHeight(.4F);}return role()==KILLER&&pose==Pose.CROUCHING?EntityDimensions.scalable(.6F,1.3F).withEyeHeight(1.05F):super.getDefaultDimensions(pose);}
     @Override public void travel(net.minecraft.world.phys.Vec3 input){if(!level().isClientSide&&scene.equals(LabyrinthPlace.BORRASCA.id()))input=BorrascaCast.input(this);super.travel(input);}
     @Override public void move(MoverType type,net.minecraft.world.phys.Vec3 movement){
         if(type==MoverType.SELF&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent()&&KillerNavigation.moving(this)){
@@ -82,7 +86,7 @@ public final class LiteraryActor extends PathfinderMob {
         // 0.4.147: a thread's cast is seen by that thread's members alone.
         if(getPersistentData().contains(VignetteThreads.ACTOR_TAG)&&!VignetteThreads.sees(p,scene,getPersistentData().getString(VignetteThreads.ACTOR_TAG)))return false;
         if(scene.equals(ElkLot.PLACE.id())&&role()==STRANGER&&phase()>=5&&phase()<=8){var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),ElkLot.PLACE);if(own.getBoolean("Ready")||own.getBoolean("Completed"))return false;}
-        if((role()==LAKE_TESS||role()==LAKE_WAX)&&owner().isPresent()&&p.isSpectator())return false;
+        if((lakePartner(role())||role()==LAKE_WAX)&&owner().isPresent()&&p.isSpectator())return false;
         return super.broadcastToPlayer(p);
     }
     @Override public boolean removeWhenFarAway(double d){return false;}

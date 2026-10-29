@@ -497,6 +497,14 @@
     "role": "LAKE_TESS"
   },
   {
+    "name": "literary_lake_theo",
+    "logical": 128,
+    "model": "literary",
+    "number": 0,
+    "phase": 0,
+    "role": "LAKE_THEO"
+  },
+  {
     "name": "literary_lake_wax",
     "logical": 128,
     "model": "literary",

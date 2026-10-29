@@ -141,6 +141,8 @@ LOOKS = {
     'literary_bar_wade': Look('#c7a18a','#75604c','receding','#854a45','#4f443e','flannel','#b58b76',age=1,beard='full'),
     'literary_bar_hollis': Look('#c3a58b','#b0a793','receding','#655544','#4c4436','coat','#baa98a',age=2,beard='full'),
     'literary_lake_tess': Look('#e0bda4','#28242a','long','#33445d','#33445d','swim','#d4d8d1',eyes='#415878',mark='freckles',sleeve=0),
+    # 0.4.152: the young man in Tess's place for a reader the House reads as drawn to men. A navy swim shirt and trunks, barefoot.
+    'literary_lake_theo': Look('#d6ae8f','#3b2b22','messy','#2f4058','#2f4058','tee','#d4d8d1',eyes='#5a4636',mark='trunks',sleeve=4),
     'literary_lake_wax': Look('#caba91','#746448','long','#575443','#514b38','dress','#d3c79f',mark='wax'),
     'seance_medium': Look('#c9a68a','#6a5040','bun','#533b50','#392f3c','dress','#d1bea0',age=1),
     'seance_mother': Look('#d2ae8e','#61442d','bun','#824954','#56393f','dress','#d0b999'),
@@ -791,6 +793,9 @@ def paint(look):
                 if side=='back':d.rectangle((1,2,w-2,5),outline=shade(look.pants,-15))
                 if look.style=='swim':
                     d.rectangle((0,2,w-1,h-1),fill=rgb(look.skin));d.line((0,1,w-1,1),fill=rgb(look.accent))
+                elif look.mark=='trunks':
+                    # Swim trunks to the middle of the thigh, a pale hem, and bare legs below.
+                    hem=round(h*.42);d.rectangle((0,hem+1,w-1,h-1),fill=rgb(look.skin));d.line((0,hem,w-1,hem),fill=rgb(look.accent))
                 elif look.mark=='borrasca_kyle':
                     d.line((0,11,w-1,11),fill=shade(look.pants,-22));d.rectangle((0,12,w-1,h-6),fill=rgb(look.skin))
                     d.rectangle((0,h-6,w-1,h-4),fill='#d8d6c3');d.rectangle((0,h-3,w-1,h-1),fill='#666d6b');d.line((0,h-1,w-1,h-1),fill='#333a3b')
@@ -809,7 +814,7 @@ def paint(look):
                     if look.mark=='cottage_walter':d.rectangle((0,h-7,w-1,h-6),fill='#673c3a')
                     if look.mark=='cottage_bowler':d.line((2,1,2,h-7),fill=shade(look.pants,13))
                     d.rectangle((0,h-5,w-1,h-1),fill='#34302c');d.line((1,h-4,w-2,h-4),fill='#635442');d.line((0,h-1,w-1,h-1),fill='#222522')
-            if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' or look.mark=='possessed' else '#292c28','skin')
+            if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' or look.mark in ('possessed','trunks') else '#292c28','skin')
             put(box,art)
     if look.mark=='winter':
         def over(box,art):im.paste(art,(round(box[0]*S),round(box[1]*S)),art)

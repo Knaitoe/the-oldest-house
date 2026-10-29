@@ -152,7 +152,7 @@ A later signal that agrees raises a category to settled; one that disagrees make
 Where the build differs today:
 
 - **Actions.** Each room keeps its reader's literal actions in its own saved visit (`house_read_rooms_04138`), only to run the room and reveal its note.
-- **Categories.** The category record exists only on the read side, under `house_read/<reader UUID>`, with `HAIR` and `SELF` only, each holding a `Value` and a `Strength`.
+- **Categories.** The category record exists only on the read side, under `house_read/<reader UUID>`, with `HAIR`, `SELF` and (since 0.4.152) `DRAWN_TO`, each holding a `Value` and a `Strength`.
 - **Classifier.** Nothing writes categories yet, by the owner's choice, so every reader reads as unknown.
 - **API.** `category` returns only tentative or settled values. Unknown, uncertain, malformed and missing records all read as nothing. `HouseRead.hair` and `HouseRead.address` wrap it for the six consumers.
 
@@ -392,7 +392,7 @@ Larger changes need a settled category; smaller ones may use a tentative one. Un
 | `DRAWN_TO` | The Lake House partner: Tess for `WOMEN` and `BOTH`, a young man in her place for `MEN`, Tess as a friend rather than a date for `NO_ONE`. The Stanley's table for two is set for that partner, and for one for `NO_ONE` | The Masque's private dancers turn to the reader's preference; later, the owner's planned mattress, marriage and passenger-seat rooms |
 | `HOME` | `DANGER` (settled only): authority figures (the Barretts' John, Three Fingers' Walter, whoever is behind the child's room door at night) bring anticipation, not damage. See "Authority figures under `DANGER`". `RUNAWAY`: road and outdoor rooms are likelier to come first (`LabyrinthDealer.dealWeight`) | Mood only, even when tentative: domestic rooms open warm for `HAVEN` and tense for `DANGER`, and Goatman's family night opens warm or tense |
 
-The Lake House keeps Tess solo-only as built.
+The Lake House partner is built (0.4.152, `docs/LAKE_HOUSE_PARTNER_0_4_152.md`): chosen once, on the reader's first visit, from a settled read, with Theo as the young man's working name. The owner has also asked for a second reader to play the partner, in instanced pairs; that is still to come.
 
 Built so far (0.4.142), all neutral until a category exists:
 
@@ -405,6 +405,7 @@ Built so far (0.4.142), all neutral until a category exists:
   - Barry's crew talking to the camera operator.
 
   Shared speech bubbles keep their ordinary lines, and `UNSEEN` reads as neutral.
+- **`DRAWN_TO`, settled only (0.4.152):** the lake house partner, as in the table above, with the first greeting, the account's opening and the Witness line following them.
 
 The rest of this table, and the targets in `docs/PERSONALITY_TAILORING_TARGETS_0_4_140.md`, are still planned.
 
@@ -543,5 +544,7 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.148 | The drowned town's ending shared: everyone in Proofrock when the roof opens keeps a witness's or late joiner's account | `docs/SHARED_DROWNED_TOWN_0_4_148.md` |
 | 0.4.149 | The child's room together: each reader's account says who was with them, who began it, whether they came late and whom they followed or left | `docs/SHARED_CHILD_ROOM_0_4_149.md` |
 | 0.4.150 | The Goatman's campers: readers who come with the latecomer take cousins' places, so the camp keeps one reader's headcount | `docs/GOATMAN_CAMPERS_0_4_150.md` |
+| 0.4.151 | Private scenes, one reader at a time: Harrigan, the confession, the Holy Rabbit, the Wheel house, the Whale institute, the phone in the canoe, the diner and the split-feed bedroom | `docs/PRIVATE_SCENES_0_4_151.md` |
+| 0.4.152 | The lake house partner: `DRAWN_TO` chooses Tess, Theo in her place, or Tess as a friend, and the writing follows | `docs/LAKE_HOUSE_PARTNER_0_4_152.md` |
 
 The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.

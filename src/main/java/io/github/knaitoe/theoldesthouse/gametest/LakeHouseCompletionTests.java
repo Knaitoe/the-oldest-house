@@ -102,6 +102,46 @@ public final class LakeHouseCompletionTests {
             returnVisit(f,p);readTick(f,p,5);h.assertTrue(LakeHouseTess.actor(p,own(f,p))!=null,"a later real departure and solo arrival can bring her back");h.succeed();
         }finally{lease.close();f.close();}};action[0].run();
     }
+    private static void drawnTo(ServerPlayer p,String value,String strength){var d=LabyrinthData.get(p.server);var read=d.stateEntry(HouseRead.STATE,p.getUUID().toString());var t=new CompoundTag();t.putString("Value",value);t.putString("Strength",strength);read.put(HouseRead.Trait.DRAWN_TO.name(),t);d.setStateEntry(HouseRead.STATE,p.getUUID().toString(),read);}
+    /** The reader arrives afresh on their first visit, after the House has read them. */
+    private static void firstArrival(LakeHouseTests.Fixture f,ServerPlayer p){var o=own(f,p);o.remove(LakeHousePartner.KEY);LiteraryVignettes.save(f.data(),p.getUUID(),PLACE,o);LiteraryVignettes.onArrive(p,PLACE);}
+    private static String book(LakeHouseTests.Fixture f,ServerPlayer p){var text=new StringBuilder();for(var page:WitnessAccount.book(f.data(),p.getUUID(),p.getGameProfile().getName(),false).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages())text.append(page.raw().getString()).append('\n');return text.toString();}
+    @GameTest(template="empty",batch="lake_house_partner152",timeoutTicks=800)
+    public static void thePartnerFollowsASettledReadOfWhoTheReaderIsDrawnToAndIsKeptForTheStory(GameTestHelper h){
+        var f=new LakeHouseTests.Fixture(h);var lease=new NativeTestChunks();lease.hold(f.out,new AABB(Vec3.atLowerCornerOf(f.base().offset(-8,-1,-22)),Vec3.atLowerCornerOf(f.base().offset(8,12,2))));
+        Runnable[] action=new Runnable[1];action[0]=()->{if(!lease.ready()){h.runAfterDelay(1,()->action[0].run());return;}try{
+            // Drawn to men, settled: a young man in Tess's place, on a first date.
+            var men=f.player("lake_drawn_men");drawnTo(men,"MEN","SETTLED");firstArrival(f,men);
+            at(f,men,.5,0,-15.5);readTick(f,men,5);var theo=LakeHouseTess.actor(men,own(f,men));
+            h.assertTrue(theo!=null&&theo.role()==LiteraryActor.LAKE_THEO&&"theo".equals(own(f,men).getString(LakeHousePartner.KEY)),"a reader settled as drawn to men meets the young man in Tess's place");
+            h.assertTrue(own(f,men).getBoolean(LakeHousePartner.MET)&&LakeHousePartner.firstGreeting(LakeHousePartner.Partner.THEO).contains("first date"),"they meet on the dock, and it is a first date");
+            var observer=f.player("lake_drawn_observer");observer.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SPECTATOR);h.assertTrue(!theo.broadcastToPlayer(observer),"he is the reader's alone");
+            var o=own(f,men);o.putString("Outcome",LakeHouse.SAID_HELLO);h.assertTrue(LakeHouse.account(o).startsWith("Theo and I took the green canoe out on our first date.\n\n"),"the account opens with him: "+LakeHouse.account(o));
+            WitnessAccount.resolve(men,WitnessAccount.Story.LAKE_HOUSE,LakeHouse.SAID_HELLO);h.assertTrue(book(f,men).contains("Theo and I went out on the lake on our first date"),"the Witness line names him");
+            // The partner is kept: a read that changes later changes nothing in this story.
+            drawnTo(men,"WOMEN","SETTLED");var kept=own(f,men);h.assertTrue(LakeHousePartner.choose(men,kept)==LakeHousePartner.Partner.THEO,"a later read keeps the partner they met");
+            men.teleportTo(f.in,0,90,0,0,0);observer.teleportTo(f.in,0,92,0,0,0);
+            // Drawn to no one, settled: Tess, as a friend rather than a date.
+            var none=f.player("lake_drawn_none");drawnTo(none,"NO_ONE","SETTLED");firstArrival(f,none);
+            at(f,none,.5,0,-15.5);readTick(f,none,5);var friend=LakeHouseTess.actor(none,own(f,none));
+            h.assertTrue(friend!=null&&friend.role()==LiteraryActor.LAKE_TESS&&"friend".equals(own(f,none).getString(LakeHousePartner.KEY)),"a reader settled as drawn to no one meets Tess");
+            h.assertTrue(!LakeHousePartner.firstGreeting(LakeHousePartner.Partner.FRIEND).contains("date"),"and it is not a date");
+            o=own(f,none);o.putString("Outcome",LakeHouse.STAYED);h.assertTrue(LakeHouse.account(o).startsWith("Tess and I took the green canoe out one weekend, the way friends do.\n\n"),"her account says they went as friends");
+            none.teleportTo(f.in,0,94,0,0,0);
+            // A tentative read is not enough for a larger change; no read at all is Tess on a date.
+            var tentative=f.player("lake_drawn_tentative");drawnTo(tentative,"MEN","TENTATIVE");firstArrival(f,tentative);
+            h.assertTrue("tess".equals(own(f,tentative).getString(LakeHousePartner.KEY)),"a tentative read keeps Tess");
+            tentative.teleportTo(f.in,0,96,0,0,0);
+            var unread=f.player("lake_drawn_unread");h.assertTrue("tess".equals(own(f,unread).getString(LakeHousePartner.KEY)),"an unread reader meets Tess");
+            at(f,unread,.5,0,-15.5);readTick(f,unread,5);o=own(f,unread);o.putString("Outcome",LakeHouse.LEFT_THE_LIGHTS_ON);h.assertTrue(LakeHouse.account(o).startsWith("Tess and I took the green canoe out on our first date."),"on a first date");
+            unread.teleportTo(f.in,0,98,0,0,0);
+            // A reader who met Tess before the partner was chosen keeps her, whatever the read says now.
+            var older=f.player("lake_drawn_older");var before=own(f,older);before.remove(LakeHousePartner.KEY);before.putBoolean("TessGreeting",true);before.putInt("Visit",2);LiteraryVignettes.save(f.data(),older.getUUID(),PLACE,before);drawnTo(older,"MEN","SETTLED");
+            h.assertTrue(LakeHousePartner.choose(older,own(f,older))==LakeHousePartner.Partner.TESS,"a reader partway through keeps Tess");
+            var old=own(f,older);old.remove(LakeHousePartner.KEY);old.putString("Outcome",LakeHouse.SAID_HELLO);h.assertTrue(LakeHouse.account(old).startsWith("THE EMPTY LAKE"),"and a record from before 0.4.152 keeps its account word for word");
+            h.succeed();
+        }finally{lease.close();f.close();}};action[0].run();
+    }
     @GameTest(template="empty",batch="lake_house_swim0490",timeoutTicks=1000)
     public static void theOriginalTessSwimsThroughTheDoorAndUpTheNativeStair(GameTestHelper h){
         var f=new LakeHouseTests.Fixture(h);var p=f.player("lake_swim");p.setItemSlot(EquipmentSlot.CHEST,LakeHouseGear.lend(p,LakeHouseRegistry.TANKS.get()));
