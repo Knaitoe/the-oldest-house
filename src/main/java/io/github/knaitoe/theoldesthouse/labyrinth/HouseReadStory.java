@@ -21,7 +21,9 @@ public final class HouseReadStory {
     /** Pages within one card. */
     public static final String PAGE="\f";
     public static final String WELCOME="Come in. Shut the door behind you; it sticks. Every house keeps a story about the people who live in it, and you've only just arrived, so I'll have to learn yours.";
-    public static final String WARNING_LEAD="You should know, before you go any further:",WARNING="this house has ghosts in it.";
+    // 0.4.172 (owner: "I would have played it off of the domestic setting you just had the player in. ended with something like -
+    // every house is a haunted house. But a warning, before you proceed: this house has ghosts in it.")
+    public static final String HAUNTED="Every house is a haunted house.",WARNING_LEAD="But a warning, before you proceed:",WARNING="this house has ghosts in it.";
 
     public static String opening(HouseReadSites.Room room){return switch(room){
         case WAITING->"You grew up the way everyone does, mostly by waiting. A clock, a row of chairs, and a door that would open when it was ready.";
@@ -32,10 +34,10 @@ public final class HouseReadStory {
         case KITCHEN->"You were small once. It was four o'clock, the kitchen was warm, and somebody had left the crayons out on the table.";
     };}
     public static String closing(HouseReadSites.Room room){return switch(room){
-        case WAITING->"They called your name. They always do, in the end.";
-        case BATHROOM->"The light went out. You slept the way people sleep in a house that is listening.";
-        case COATROOM->"That's how you'll look here. The glass will remember.";
-        case SHELTER->"The song ended. Somebody always goes home before the rain stops.";
+        case WAITING->"They called your name, and you went through.";
+        case BATHROOM->"The light went out. You found the bed in the dark and slept.";
+        case COATROOM->"That's how you'll look here.";
+        case SHELTER->"The song ended. The rain kept on, and you went home in it.";
         case PORCH->"Welcome home. I've set a place for you at the table.";
         case KITCHEN->"There you are. Now I'll know you when I see you.";
     };}
@@ -87,7 +89,7 @@ public final class HouseReadStory {
      */
     static void close(ServerPlayer p,HouseReadSites.Room room,boolean forward,boolean last){
         var card=CARDS.get(p.getUUID());if(card!=null&&card.closing()!=null)return;
-        String text=closing(room)+(last?PAGE+WARNING_LEAD+PAGE+WARNING:"");int ticks=ticks(text);long now=p.serverLevel().getGameTime();
+        String text=closing(room)+(last?PAGE+HAUNTED+PAGE+WARNING_LEAD+PAGE+WARNING:"");int ticks=ticks(text);long now=p.serverLevel().getGameTime();
         show(p,text,cut(room),last);CARDS.put(p.getUUID(),new Card(now+ticks,room,forward,now+Math.max(10,ticks-20)));
     }
     /** While a card holds the reader, the room does not go on around them. */

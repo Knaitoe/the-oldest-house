@@ -112,6 +112,18 @@
     "wardrobe_sole": "the_oldest_house:block/house_read/wardrobe_sole",
     "plimsolls_written": "the_oldest_house:block/house_read/plimsolls_written",
     "riding_boots_scuffed": "the_oldest_house:block/house_read/riding_boots_scuffed",
+    "tee_jeans": "the_oldest_house:block/house_read/tee_jeans",
+    "jeans": "the_oldest_house:block/house_read/jeans",
+    "crop_shorts": "the_oldest_house:block/house_read/crop_shorts",
+    "cutoffs": "the_oldest_house:block/house_read/cutoffs",
+    "tank_shorts": "the_oldest_house:block/house_read/tank_shorts",
+    "jersey": "the_oldest_house:block/house_read/jersey",
+    "tee_jeans_front": "the_oldest_house:block/house_read/tee_jeans_front",
+    "jeans_front": "the_oldest_house:block/house_read/jeans_front",
+    "crop_front": "the_oldest_house:block/house_read/crop_front",
+    "cutoffs_front": "the_oldest_house:block/house_read/cutoffs_front",
+    "tank_front": "the_oldest_house:block/house_read/tank_front",
+    "jersey_front": "the_oldest_house:block/house_read/jersey_front",
     "particle": "the_oldest_house:block/house_read/riding_boots"
   },
   "elements": [

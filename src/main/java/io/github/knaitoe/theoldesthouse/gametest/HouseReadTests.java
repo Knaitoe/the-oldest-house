@@ -102,7 +102,8 @@ public final class HouseReadTests {
               var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("kitchen");h.assertTrue(HouseReadProse.kitchen(seen).equals("drew yourself at the kitchen table, face and hands alike, and put the picture up on the fridge")&&StaircaseAccount.read(f.data(),p.getUUID()).drewHands(),"the account and the book recite the act, never a colour: "+HouseReadProse.kitchen(seen));
               HouseReadExport.save(f.in,b[0],K,"kitchen_picture_up");
           })
-          .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"once the picture is up the House takes the reader on"))
+          .thenIdle(120).thenExecute(()->{h.assertTrue(HouseReadSites.inside(p)==K&&!HouseReadStory.closing(p),"with the picture up the kitchen waits for the reader to walk through the open door; no timer ends it first");stand(p,f.in,b[0],5.5,0,-13);})
+          .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"walking through the open hall door, the House takes the reader on"))
           .thenExecute(()->{var shown=HouseReadStory.last(p.getUUID());h.assertTrue(shown!=null&&shown.text().equals(HouseReadStory.closing(K))&&shown.sound().equals("minecraft:block.iron_trapdoor.close"),"the kitchen is cut off with the fridge door and the House's closing line: "+shown);
               h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem())&&p.getInventory().items.stream().noneMatch(i->HouseReadSites.loan(i,p.getUUID())),"no crayon leaves the kitchen");})
           .thenSucceed();
@@ -111,7 +112,7 @@ public final class HouseReadTests {
     /** 0.4.166: the House's story about the reader, a line as each quiet room begins and ends. */
     @GameTest(template="empty")
     public static void theHouseStoryWelcomesTheReaderAndEndsOnItsWarningWithoutNamingThem(GameTestHelper h){
-        var words=new ArrayList<String>(List.of(HouseReadStory.WELCOME,HouseReadStory.WARNING_LEAD,HouseReadStory.WARNING));
+        var words=new ArrayList<String>(List.of(HouseReadStory.WELCOME,HouseReadStory.HAUNTED,HouseReadStory.WARNING_LEAD,HouseReadStory.WARNING));
         for(var room:HouseReadSites.Room.values()){words.add(HouseReadStory.opening(room));words.add(HouseReadStory.closing(room));h.assertTrue(!HouseReadStory.opening(room).isBlank()&&!HouseReadStory.closing(room).isBlank(),"every quiet room has its opening and closing line: "+room);}
         h.assertTrue(HouseReadStory.WELCOME.startsWith("Come in")&&HouseReadStory.WARNING.equals("this house has ghosts in it."),"the story welcomes the reader in and ends on the warning that this house has ghosts in it");
         var forbidden=java.util.regex.Pattern.compile("\\b(he|she|him|her|his|hers|man|woman|boy|girl|son|daughter|brother|sister|black|white|brown|young|old|older|younger)\\b",java.util.regex.Pattern.CASE_INSENSITIVE);
@@ -160,7 +161,7 @@ public final class HouseReadTests {
 
     /** The garment hanging or standing at one place in a reader's coatroom, if any. */
     private static HouseReadWardrobe.Garment at(ServerLevel l,BlockPos at){var state=l.getBlockState(at);return state.is(HouseReadRegistry.FITTING.get())?HouseReadWardrobe.of(state.getValue(HouseReadPropBlock.PART)):null;}
-    private static BlockPos find(ServerLevel l,BlockPos b,String id){for(var rel:HouseReadWardrobe.coatHooks())if(at(l,b.offset(rel)) instanceof HouseReadWardrobe.Garment g&&g.id().equals(id))return b.offset(rel);for(var rel:HouseReadWardrobe.BOOT_PLACES)if(at(l,b.offset(rel)) instanceof HouseReadWardrobe.Garment g&&g.id().equals(id))return b.offset(rel);return null;}
+    private static BlockPos find(ServerLevel l,BlockPos b,String id){for(var rel:HouseReadWardrobe.coatHooks())if(at(l,b.offset(rel)) instanceof HouseReadWardrobe.Garment g&&g.id().equals(id))return b.offset(rel);for(var rel:HouseReadWardrobe.BOOT_PLACES)if(at(l,b.offset(rel)) instanceof HouseReadWardrobe.Garment g&&g.id().equals(id))return b.offset(rel);for(var rel:HouseReadWardrobe.RAIL)if(at(l,b.offset(rel)) instanceof HouseReadWardrobe.Garment g&&g.id().equals(id))return b.offset(rel);return null;}
 
     /**
      * 0.4.169 (owner: "a drastically wider variety of clothes, each guessing something about the player's personality. maybe add
@@ -169,15 +170,15 @@ public final class HouseReadTests {
      * still sets the read by its set, and the account names the garment itself; an older read keeps its words.
      */
     @GameTest(template="empty",batch="read_closet",timeoutTicks=5000)
-    public static void theWardrobeHangsEveryGarmentOnceWithItsPastAndTheHousesGuess(GameTestHelper h){
+    public static void theWardrobeHangsEveryGarmentOnceWithItsPastAndWhatItLooksLike(GameTestHelper h){
         var f=fixture(h);var p=player(h,f,"wardrobe_reader");var other=player(h,f,"wardrobe_other");var sourceAt=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(sourceAt).inflate(8));BlockPos[] b={null,null};LabyrinthData.Door[] from={null};h.onEachTick(()->{transition(p);transition(other);});
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native source is resident")).thenExecute(()->{from[0]=source(f);for(var r:List.of(p,other)){stand(r,f.in,sourceAt,.5,0,2.5);HouseReadSites.prepare(r,HouseReadSites.Room.COATROOM);}})
           .thenWaitUntil(()->h.assertTrue(ready(p,HouseReadSites.Room.COATROOM),"the first coatroom finishes")).thenWaitUntil(()->h.assertTrue(ready(other,HouseReadSites.Room.COATROOM),"the second coatroom finishes"))
           .thenExecute(()->{
               b[0]=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.COATROOM);b[1]=HouseReadSites.base(p.server,other.getUUID(),HouseReadSites.Room.COATROOM);HouseReadAudit.check(h,f.in,b[0],HouseReadSites.Room.COATROOM);
               h.assertTrue(HouseReadWardrobe.coats().size()==12&&HouseReadWardrobe.footwear().size()==6&&HouseReadWardrobe.coatHooks().size()==12,"twelve coats, six pairs of boots, a hook for every coat");
-              for(var g:HouseReadWardrobe.ALL){h.assertTrue(find(f.in,b[0],g.id())!=null&&find(f.in,b[1],g.id())!=null,"every garment is in each reader's wardrobe: "+g.id());h.assertTrue(!g.history().isBlank()&&!g.guess().isBlank()&&g.set()>=0&&g.set()<3,"every garment has a past, a guess and a set: "+g.id());
-                  for(String text:List.of(g.history(),g.guess()))for(String word:List.of("boy","girl","young"," old ","white","black","brown")){String lower=" "+text.toLowerCase(Locale.ROOT)+" ";h.assertTrue(!lower.contains(word),"no garment's words read the reader's gender, colour or age: "+g.id()+" / "+word);}}
+              for(var g:HouseReadWardrobe.ALL){h.assertTrue(find(f.in,b[0],g.id())!=null&&find(f.in,b[1],g.id())!=null,"every garment is in each reader's wardrobe: "+g.id());h.assertTrue(!g.history().isBlank()&&!g.look().isBlank()&&g.set()>=0&&g.set()<3,"every garment has a past, a look and a set: "+g.id());
+                  for(String text:List.of(g.history(),g.look()))for(String word:List.of("boy","girl","young"," old ","white","black","brown")){String lower=" "+text.toLowerCase(Locale.ROOT)+" ";h.assertTrue(!lower.contains(word),"no garment's words read the reader's gender, colour or age: "+g.id()+" / "+word);}}
               h.assertTrue(f.in.getBlockState(b[0].offset(HouseReadWardrobe.EMPTY_HOOK)).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.EMPTY_HANGER,"the hanger by the door stays empty");
               boolean differ=false;for(var rel:HouseReadWardrobe.coatHooks())differ|=at(f.in,b[0].offset(rel))!=at(f.in,b[1].offset(rel));h.assertTrue(differ,"two readers' wardrobes hang in different orders");
               seed(p,HouseReadSites.Room.COATROOM,from[0]);stand(p,f.in,b[0],.5,0,-2);
@@ -186,7 +187,9 @@ public final class HouseReadTests {
               var lines=new ArrayList<Component>();worn.getItem().appendHoverText(worn,Item.TooltipContext.EMPTY,lines,TooltipFlag.NORMAL);h.assertTrue(lines.stream().anyMatch(c->c.getString().equals("Belonged to a circus performer. The lining is darned in a dozen threads.")),"its past is in its tooltip: "+lines);
               var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom");h.assertTrue(seen.getString("CoatId").equals("ringmaster")&&seen.getString("Coat").equals("wool")&&HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.SELF).equals(new HouseRead.Category("MASC",HouseRead.Strength.TENTATIVE)),"the first coat reads by its set and is kept by itself");
               var swing=find(f.in,b[0],"swing_coat");click(p,swing);h.assertTrue(!f.in.getBlockState(tail).getValue(HouseReadPropBlock.TURNED)&&f.in.getBlockState(swing).getValue(HouseReadPropBlock.TURNED)&&((HouseReadRegistry.Garment)p.getItemBySlot(EquipmentSlot.CHEST).getItem()).cloth.equals("swing_coat"),"a second coat goes on and the first goes back on its hook");
-              h.assertTrue(visit(p,HouseReadSites.Room.COATROOM).getList("Guessed",net.minecraft.nbt.Tag.TAG_STRING).size()==2&&HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom").getString("CoatId").equals("ringmaster"),"each garment is guessed once; the first coat is still the one the House keeps");
+              // 0.4.172: an everyday outfit comes off the rail in place of a coat, and the coat goes back on its hook.
+              var tee=find(f.in,b[0],"tee_jeans");click(p,tee);h.assertTrue(f.in.getBlockState(tee).getValue(HouseReadPropBlock.TURNED)&&!f.in.getBlockState(swing).getValue(HouseReadPropBlock.TURNED)&&((HouseReadRegistry.Garment)p.getItemBySlot(EquipmentSlot.CHEST).getItem()).cloth.equals("tee_jeans"),"the t-shirt and jeans come off the rail in place of the coat, which goes back on its hook");
+              h.assertTrue(visit(p,HouseReadSites.Room.COATROOM).getList("Guessed",net.minecraft.nbt.Tag.TAG_STRING).size()==3&&HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom").getString("CoatId").equals("ringmaster"),"each garment is guessed once; the first coat is still the one the House keeps");
               click(p,find(f.in,b[0],"galoshes"));h.assertTrue(HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom").getString("BootsId").equals("galoshes"),"the boots are kept by themselves");
               seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom");String said=HouseReadProse.coatroom(seen);
               h.assertTrue(said.startsWith("took the ringmaster's tailcoat off the peg in the hall and the galoshes from the mat"),"the account names the garments themselves: "+said);
@@ -197,7 +200,11 @@ public final class HouseReadTests {
           }).thenIdle(2).thenExecute(()->{
               // The lines reach the reader's connection once it has flushed, a tick later.
               var lines=packets(p).stream().filter(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket).map(x->((net.minecraft.network.protocol.game.ClientboundSystemChatPacket)x).content().getString()).toList();
-              h.assertTrue(lines.stream().filter(l->l.equals("You like to be looked at, as long as it's on purpose.")).count()==1&&lines.contains("You dress for the party in case there is one.")&&lines.contains("You grow into things."),"the House says what it guesses the first time each garment goes on, once: "+lines);
+              String tail=HouseReadWardrobe.byId("ringmaster").look();h.assertTrue(lines.stream().filter(l->l.equals(tail)).count()==1&&lines.contains(HouseReadWardrobe.byId("swing_coat").look())&&lines.contains(HouseReadWardrobe.byId("galoshes").look())&&lines.contains(HouseReadWardrobe.byId("tee_jeans").look()),"the House says what each garment looks like the first time it goes on, once: "+lines);
+              for(var g:HouseReadWardrobe.ALL)h.assertTrue(!g.look().startsWith("You ")&&!g.look().contains(" you "),"0.4.172: the line describes the garment, not the reader: "+g.look());
+              var outfit=new net.minecraft.nbt.CompoundTag();outfit.putString("Coat","barn");outfit.putString("CoatId","tee_jeans");var told=HouseReadProse.coatroom(outfit);
+              h.assertTrue(told.equals("took the t-shirt and jeans off the rail in the hall without looking in the glass"),"an outfit taken first comes off the rail in the account: "+told);
+              h.assertTrue(HouseReadWardrobe.outfits().size()==3&&HouseReadWardrobe.coats().size()==12&&HouseReadWardrobe.ALL.size()==21,"twelve coats, six pairs of boots and three outfits");
           }).thenSucceed();
     }
 
@@ -221,11 +228,14 @@ public final class HouseReadTests {
           .thenExecute(()->{h.assertTrue(!HouseReadMoments.canProceed(b,HouseReadSites.Room.WAITING)&&!f.in.getBlockState(bb[0].offset(HouseReadMoments.exit(HouseReadSites.Room.WAITING))).getValue(DoorBlock.OPEN)&&said(packets(b),"It won't be much longer"),"a reader who has done nothing is not called: the door stays shut and the receptionist asks them to wait");
               stand(b,f.in,bb[0],.5,0,1);click(b,bb[0].offset(HouseReadRooms.COAT_ENTRY));h.assertTrue(HouseReadSites.inside(b)==HouseReadSites.Room.WAITING&&!LabyrinthDoors.isBusy(b),"and the door back is locked too");
               stand(b,f.in,bb[0],-3.5,0,-3);click(b,bb[0].offset(HouseReadRemainingRooms.PAPER_AT));b.closeContainer();})
-          .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(b)==null&&!LabyrinthDoors.isBusy(b)&&b.position().distanceToSqr(a.position())<.01,"once they pick up the paper the receptionist calls the second reader, and the House takes them into that same shared hall"))
+          // 0.4.172: the call opens the office door, and the room ends only as the reader walks through it.
+          .thenWaitUntil(()->h.assertTrue(HouseReadMoments.canProceed(b,HouseReadSites.Room.WAITING)&&f.in.getBlockState(bb[0].offset(HouseReadMoments.exit(HouseReadSites.Room.WAITING))).getValue(DoorBlock.OPEN),"once they pick up the paper the receptionist calls the second reader and the office door opens"))
+          .thenIdle(80).thenExecute(()->{h.assertTrue(HouseReadSites.inside(b)==HouseReadSites.Room.WAITING&&!HouseReadStory.closing(b),"the room waits for the reader to walk through the open door; no timer ends it first: inside "+HouseReadSites.inside(b)+", closing "+HouseReadStory.closing(b)+", at "+b.position().subtract(Vec3.atLowerCornerOf(bb[0])));stand(b,f.in,bb[0],.5,0,-13);})
+          .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(b)==null&&!LabyrinthDoors.isBusy(b)&&b.position().distanceToSqr(a.position())<.01,"walking through it, the second reader is taken into that same shared hall"))
           .thenExecute(()->{
               h.assertTrue(f.data().returnCount(a.getUUID())==1&&f.data().returnCount(b.getUUID())==1,"each route contains exactly the genuine original forward crossing");var back=new LabyrinthData.Waypoint(from[0].dimension,Vec3.atBottomCenterOf(from[0].lower),from[0].facing.toYRot(),true);var originalKey=f.data().nodeKey(a.getUUID(),LabyrinthPlace.GRAY_CORRIDOR);h.assertTrue(f.data().node(a.getUUID(),originalKey)!=null,"the original destination has the ordinary native remembered map");
               h.assertTrue(HouseReadSites.next(a.server,a.getUUID())==HouseReadSites.Room.KITCHEN&&WitnessAccount.Story.of(LabyrinthPlace.READ_COATROOM.id())==null&&WitnessAccount.Story.of(LabyrinthPlace.READ_PORCH.id())==null&&WitnessAccount.Story.of(LabyrinthPlace.READ_KITCHEN.id())==null,"the next quiet moment is the kitchen table, still unentered and first in the order, and the quiet rooms are not Witness sources");
-              var kept=HouseReadSites.state(b.server,b.getUUID()).getCompound("waiting");h.assertTrue(kept.getInt("Age")<kept.getInt("CalledAt")+60&&kept.getInt("CalledAt")>=kept.getInt("FirstAge")+60,"the call waits three seconds after a late first pick-up, and the House does not keep the reader long past it");
+              var kept=HouseReadSites.state(b.server,b.getUUID()).getCompound("waiting");h.assertTrue(kept.getInt("CalledAt")>=kept.getInt("FirstAge")+60,"the call waits three seconds after a late first pick-up");
           }).thenSucceed();
     }
 
@@ -318,7 +328,8 @@ public final class HouseReadTests {
           .thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.BATHROOM).getBoolean("LightOff")&&HouseReadMoments.canProceed(p,HouseReadSites.Room.BATHROOM),"the light goes out by itself and the bedroom door opens"))
           .thenExecute(()->{for(var rel:HouseReadRemainingRooms.BATH_LIGHTS)h.assertTrue(f.in.getBlockState(b[0].offset(rel)).getValue(HouseReadPropBlock.TURNED),"both actual lights are off: "+rel);
               h.assertTrue(HouseReadProse.bathroom(HouseRead.seen(f.data(),p.getUUID()).getCompound("bathroom")).startsWith("reached for the "+HouseReadMoments.ROUTINES[first[0]]+", then "),"the account says where the hand went first and what was done: "+HouseReadProse.bathroom(HouseRead.seen(f.data(),p.getUUID()).getCompound("bathroom")));})
-          .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"in the dark the House takes the reader on"))
+          .thenIdle(100).thenExecute(()->{h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.BATHROOM&&!HouseReadStory.closing(p),"in the dark the bathroom waits for the reader to walk through to the bedroom; no timer ends it first");stand(p,f.in,b[0],4.5,0,-11.5);})
+          .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"walking through to the bedroom in the dark, the House takes the reader on"))
           .thenExecute(()->{var shown=HouseReadStory.last(p.getUUID());h.assertTrue(shown!=null&&shown.text().equals(HouseReadStory.closing(HouseReadSites.Room.BATHROOM))&&shown.sound().equals("minecraft:block.lever.click"),"the bathroom is cut off with its own switch and the House's closing line: "+shown);
               h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem())&&p.getInventory().items.stream().noneMatch(i->HouseReadSites.loan(i,p.getUUID())),"the reader's own item is back in their hand and no routine item leaves the bathroom");
               for(var rel:HouseReadRemainingRooms.ROUTINE_PLACES)h.assertTrue(f.in.getBlockState(b[0].offset(rel)).getValue(HouseReadPropBlock.LIFTED)==0,"every routine is back in its place: "+rel);})
@@ -365,7 +376,7 @@ public final class HouseReadTests {
               // As the last quiet room it ends on the House's warning (the other four marked entered).
               var own=HouseReadSites.state(p.server,p.getUUID());for(var room:HouseReadSites.Room.values()){var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);own.put(room.key(),visit);}f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
               HouseReadExport.save(f.in,b[0],HouseReadSites.Room.SHELTER,"lakeside_shelter");stand(p,f.in,b[0],-2.5,0,.5);click(p,b[0].offset(HouseReadRooms.entry(HouseReadSites.Room.SHELTER)));
-              var shown=HouseReadStory.last(p.getUUID());h.assertTrue(shown!=null&&shown.title()&&shown.text().equals(HouseReadStory.closing(HouseReadSites.Room.SHELTER)+HouseReadStory.PAGE+HouseReadStory.WARNING_LEAD+HouseReadStory.PAGE+HouseReadStory.WARNING),"the last quiet room ends on the warning that this house has ghosts in it: "+shown);
+              var shown=HouseReadStory.last(p.getUUID());h.assertTrue(shown!=null&&shown.title()&&shown.text().equals(HouseReadStory.closing(HouseReadSites.Room.SHELTER)+HouseReadStory.PAGE+HouseReadStory.HAUNTED+HouseReadStory.PAGE+HouseReadStory.WARNING_LEAD+HouseReadStory.PAGE+HouseReadStory.WARNING),"the last quiet room ends on the warning that this house has ghosts in it: "+shown);
           }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"and then the House takes the reader on"))
           .thenExecute(()->{h.assertTrue(p.getHealth()==20&&f.data().returnCount(p.getUUID())==0,"neither solitude nor company punishes or rewards the reader");h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).getCompound(HouseReadSites.Room.SHELTER.key()).getUUID("Man").equals(cast[0]),"leaving never restages or replaces the original cast");}).thenSucceed();
     }

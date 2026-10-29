@@ -437,8 +437,8 @@ public final class StaircaseProse {
                 pages.add("IV. The door\n\nThe writing reaches the fold. "+memory(f)+"\n\nThe next word is underneath your thumb.");}
             for(long seed=0;seed<24;seed++){var account=compose(name,List.of(),seed);if(account.voice==voice){pages.add(account.front);pages.addAll(account.leaves);break;}}
             // 0.4.159: every read leaf and HOME ending, at its widest.
-            // 0.4.169: every coat in the wardrobe, each with the longest routine name and on its own.
-            var coats=new ArrayList<String>(List.of(""));HouseReadWardrobe.coats().forEach(g->coats.add(g.id()));
+            // 0.4.169: every coat in the wardrobe (0.4.172: and every outfit), each with the longest routine name and on its own.
+            var coats=new ArrayList<String>(List.of(""));HouseReadWardrobe.chest().forEach(g->coats.add(g.id()));
             var reads=new ArrayList<Read>();for(int item=0;item<ROUTINE.length;item++)for(String coat:new String[]{"","wool","trench","barn","collared_coat"})for(String mirror:new String[]{"","turned_after"})reads.add(new Read(item,coat,mirror,"",false,false,"","",""));
             for(String coat:coats)for(String mirror:new String[]{"","turned_after","turned_before"})reads.add(new Read(-1,coat,mirror,"",false,true,"","",""));
             for(String shelter:new String[]{"man","woman","middle","lantern","looked_man","looked_woman","looked_both"})for(boolean song:new boolean[]{false,true})for(boolean older:new boolean[]{false,true})reads.add(new Read(-1,"","",shelter,song,older,"","",""));

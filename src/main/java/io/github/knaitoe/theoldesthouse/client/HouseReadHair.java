@@ -42,7 +42,9 @@ public final class HouseReadHair {
     static final List<Style> STYLES=List.of(
         new Style("silk headwrap",null,List.of(),"silk",List.of(b(-4.6f,-9.8f,-4.6f,9.2f,5f,9.2f),b(-1.6f,-11.4f,-3.6f,3.2f,1.8f,3.2f),b(-1.2f,-6f,4.4f,2.4f,4f,1f))),
         new Style("defined curls","curl",List.of(b(-4.7f,-9.2f,-4.7f,9.4f,4f,9.4f),b(-4.7f,-5.2f,-1.5f,1f,3.5f,6.2f),b(3.7f,-5.2f,-1.5f,1f,3.5f,6.2f),b(-4.7f,-5.2f,3.7f,9.4f,4.5f,1f)),null,List.of()),
-        new Style("picked-out afro","coil",List.of(b(-6f,-12.5f,-5.6f,12f,6.5f,11.6f),b(-6f,-6f,-2.5f,1.8f,5f,8.5f),b(4.2f,-6f,-2.5f,1.8f,5f,8.5f),b(-6f,-6f,4.2f,12f,5.5f,1.8f)),null,List.of()),
+        // 0.4.172 (owner: "Fro less intense, or add a shorter fro"): closer to the head and rounded off at the crown, three
+        // pixels high rather than four and a half, a pixel and a bit out at the sides rather than two.
+        new Style("picked-out afro","coil",List.of(b(-5.3f,-11f,-5.1f,10.6f,5f,10.4f),b(-4.3f,-11.8f,-4.1f,8.6f,.8f,8.4f),b(-5.3f,-6f,-2.2f,1.3f,4f,7.5f),b(4f,-6f,-2.2f,1.3f,4f,7.5f),b(-5.3f,-6f,4f,10.6f,4.5f,1.3f)),null,List.of()),
         new Style("oiled braids","braid",List.of(b(-4.5f,-8.7f,-4.5f,9f,3.4f,9f),b(-4f,-5.3f,4.2f,8f,10f,.8f)),null,List.of()),
         new Style("cornrows","rows",List.of(b(-4.3f,-8.5f,-4.3f,8.6f,3f,8.6f),b(-4.3f,-5.5f,3.6f,8.6f,2.2f,.7f)),null,List.of()),
         new Style("two puffs","coil",List.of(b(-4.4f,-8.6f,-4.4f,8.8f,2.6f,8.8f),b(-6.4f,-11.2f,-2f,4.2f,4.2f,4.2f),b(2.2f,-11.2f,-2f,4.2f,4.2f,4.2f)),"tie",List.of(b(-5.2f,-8.3f,-1.2f,1.8f,1f,2.4f),b(3.4f,-8.3f,-1.2f,1.8f,1f,2.4f))),

@@ -45,18 +45,39 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
         // 0.4.159: reading glasses, and the veil over an obscured face, each with its own small texture.
         r.addOrReplaceChild("glasses",CubeListBuilder.create().texOffs(0,0).addBox(-4,-5,-4.65f,8,2,1),PartPose.ZERO);
         r.addOrReplaceChild("veil",CubeListBuilder.create().texOffs(0,0).addBox(-4,-8,-4.75f,8,8,1,new CubeDeformation(.15f)),PartPose.ZERO);
+        // 0.4.172: the everyday outfits, each on its own sheet (tools/house_read_wardrobe_art.py): a top on the body, cut short for
+        // the crop top, with short sleeves; jeans or shorts, each leg its own; and the cut-offs' waistband below the crop top.
+        var shirt=new CubeDeformation(.3f);var sleeve=new CubeDeformation(.32f);var jeans=new CubeDeformation(.22f);var shorts=new CubeDeformation(.24f);int arm=slim?3:4;
+        r.addOrReplaceChild("top",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,-2,8,12,4,shirt),PartPose.ZERO);
+        r.addOrReplaceChild("crop",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,-2,8,8,4,shirt),PartPose.ZERO);
+        r.addOrReplaceChild("right_sleeve",CubeListBuilder.create().texOffs(24,0).addBox(1-arm,-2,-2,arm,5,4,sleeve),PartPose.ZERO);
+        r.addOrReplaceChild("left_sleeve",CubeListBuilder.create().texOffs(24,0).mirror().addBox(-1,-2,-2,arm,5,4,sleeve),PartPose.ZERO);
+        r.addOrReplaceChild("right_jeans",CubeListBuilder.create().texOffs(40,0).addBox(-2,0,-2,4,12,4,jeans),PartPose.ZERO);
+        r.addOrReplaceChild("left_jeans",CubeListBuilder.create().texOffs(40,16).addBox(-2,0,-2,4,12,4,jeans),PartPose.ZERO);
+        r.addOrReplaceChild("right_shorts",CubeListBuilder.create().texOffs(40,0).addBox(-2,0,-2,4,5,4,shorts),PartPose.ZERO);
+        r.addOrReplaceChild("left_shorts",CubeListBuilder.create().texOffs(40,16).addBox(-2,0,-2,4,5,4,shorts),PartPose.ZERO);
+        r.addOrReplaceChild("waist",CubeListBuilder.create().texOffs(0,16).addBox(-4,9,-2,8,3,4,new CubeDeformation(.26f)),PartPose.ZERO);
         return LayerDefinition.create(mesh,64,32);
     }
     private static void part(ModelPart parent,ModelPart garment,PoseStack pose,MultiBufferSource out,int light,ResourceLocation texture){pose.pushPose();parent.translateAndRotate(pose);garment.render(pose,out.getBuffer(RenderType.entityCutoutNoCull(texture)),light,OverlayTexture.NO_OVERLAY);pose.popPose();}
     public static void glasses(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,PoseStack pose,MultiBufferSource out,int light){part(body.head,cloth.getChild("glasses"),pose,out,light,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/specs.png"));}
     public static void veil(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,PoseStack pose,MultiBufferSource out,int light){pose.pushPose();body.head.translateAndRotate(pose);cloth.getChild("veil").render(pose,out.getBuffer(RenderType.entityTranslucent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/veil.png"))),light,OverlayTexture.NO_OVERLAY);pose.popPose();}
     public static void coat(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){
-        var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.body,cloth.getChild("body"),pose,out,light,tex);part(body.rightArm,cloth.getChild("right_arm"),pose,out,light,tex);part(body.leftArm,cloth.getChild("left_arm"),pose,out,light,tex);
+        var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");
+        var worn=HouseReadWardrobe.byId(type);if(worn!=null&&worn.outfit()){outfit(body,cloth,worn.cut(),tex,pose,out,light);return;}
+        part(body.body,cloth.getChild("body"),pose,out,light,tex);part(body.rightArm,cloth.getChild("right_arm"),pose,out,light,tex);part(body.leftArm,cloth.getChild("left_arm"),pose,out,light,tex);
         // 0.4.169: the mesh follows the coat's cut. A short jacket has a collar and no skirt; a long coat a skirt; a belted coat both
         // its skirt and its belt.
         var garment=HouseReadWardrobe.byId(type);var cut=garment==null?HouseReadWardrobe.Cut.LONG:garment.cut();
         if(cut==HouseReadWardrobe.Cut.SHORT)part(body.body,cloth.getChild("scarf"),pose,out,light,tex);else{part(body.rightLeg,cloth.getChild("right_hem"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_hem"),pose,out,light,tex);}
         if(cut==HouseReadWardrobe.Cut.BELTED)part(body.body,cloth.getChild("belt"),pose,out,light,tex);
+    }
+    /** 0.4.172: an outfit, the top and its bottoms together, each part on its own limb so it moves with the reader. */
+    private static void outfit(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,HouseReadWardrobe.Cut cut,ResourceLocation tex,PoseStack pose,MultiBufferSource out,int light){
+        part(body.body,cloth.getChild(cut==HouseReadWardrobe.Cut.CROP?"crop":"top"),pose,out,light,tex);
+        if(cut!=HouseReadWardrobe.Cut.TANK){part(body.rightArm,cloth.getChild("right_sleeve"),pose,out,light,tex);part(body.leftArm,cloth.getChild("left_sleeve"),pose,out,light,tex);}
+        String legs=cut==HouseReadWardrobe.Cut.TEE?"_jeans":"_shorts";part(body.rightLeg,cloth.getChild("right"+legs),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left"+legs),pose,out,light,tex);
+        if(cut==HouseReadWardrobe.Cut.CROP)part(body.body,cloth.getChild("waist"),pose,out,light,tex);
     }
     public static void boots(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.rightLeg,cloth.getChild("right_leg"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_leg"),pose,out,light,tex);}
     public static void draw(PlayerModel<AbstractClientPlayer> body,ModelPart cloth,AbstractClientPlayer player,PoseStack pose,MultiBufferSource out,int light){
