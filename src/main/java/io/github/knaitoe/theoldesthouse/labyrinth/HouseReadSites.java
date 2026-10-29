@@ -42,7 +42,7 @@ public final class HouseReadSites {
         public net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension(){return this==PORCH?HouseDimensions.OUTSIDE:HouseDimensions.INTERIOR;}
     }
     private record Job(UUID owner,Room room){}
-    private record Request(String door,LabyrinthPlace next,Room room,boolean chained){}
+    private record Request(String door,LabyrinthPlace next,Room room){}
     private static final TicketType<ChunkPos> TICKET=TicketType.create("house_read_site",Comparator.comparingLong(ChunkPos::toLong));
     private static final Set<Job> WAITING=new LinkedHashSet<>();
     private static final Map<UUID,Request> PENDING=new LinkedHashMap<>();
@@ -79,23 +79,49 @@ public final class HouseReadSites {
     /** Preparing ahead changes no route, visit, action or inventory. */
     public static void prepareNext(ServerPlayer p){if(!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p))return;var room=next(p.server,p.getUUID());if(room!=null)prepare(p,room);}
     private static String doorId(UUID id,Room room,String name){return "house_read/"+id+"/"+room.key()+"/"+name;}
-    /** Until a reader has entered all five, the junction's onward doors lead through their quiet rooms in order. */
+    /**
+     * 0.4.160, the owner's direction: the quiet rooms come one at a time. A reader's first junction door leads into the first;
+     * it ends in the hall that door was dealt, and after that the next story the House deals them is the next quiet room
+     * ({@link #owe}), until they have all been entered.
+     */
     public static boolean offer(ServerPlayer p,LabyrinthData.Door from,@Nullable LabyrinthPlace target){
-        if(from.command||!LabyrinthData.DEALT.equals(from.destination)||!from.id.startsWith(LabyrinthPlace.JUNCTION.id()+"/"))return false;
-        var d=LabyrinthData.get(p.server);var room=next(p.server,p.getUUID());
+        if(from.command||!LabyrinthData.DEALT.equals(from.destination))return false;
+        var d=LabyrinthData.get(p.server);var room=next(p.server,p.getUUID());var own=state(p.server,p.getUUID());
+        boolean first=from.id.startsWith(LabyrinthPlace.JUNCTION.id()+"/")&&Arrays.stream(Room.values()).noneMatch(r->own.getCompound(r.key()).getBoolean("Entered"));
+        boolean owed=own.getList("Owed",Tag.TAG_STRING).stream().anyMatch(t->t.getAsString().equals(from.id));
+        if(!first&&!owed)return false;
         if(room==null||target==null||!LabyrinthPacing.ordinary(target)||!io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).enteredHouse()||!LiteraryVignettes.participant(p)||inside(p)!=null)return false;
-        var allocation=state(p.server,p.getUUID());if(!allocation.contains("Index")&&d.stateEntry(STATE,"World").getInt("NextIndex")>=4096)return false;
-        var request=new Request(from.id,target,room,false);PENDING.put(p.getUUID(),request);enter(p,request);return true;
+        if(!own.contains("Index")&&d.stateEntry(STATE,"World").getInt("NextIndex")>=4096)return false;
+        var request=new Request(from.id,target,room);PENDING.put(p.getUUID(),request);enter(p,request);return true;
+    }
+    /** The next quiet room a reader has not entered, from saved data alone (the dealer has no player). */
+    public static @Nullable Room next(LabyrinthData d,UUID id){var t=d.stateEntry(STATE,id.toString());for(var room:Room.values())if(!t.getCompound(room.key()).getBoolean("Entered"))return room;return null;}
+    /**
+     * Whether a reader has begun the quiet rooms at a junction and still has one to come; until they have entered them all,
+     * the next takes the place of every story the House deals. A reader who never began (an observer, or someone who never
+     * came in by the front door) is dealt as before.
+     */
+    public static boolean owing(LabyrinthData d,UUID id){var t=d.stateEntry(STATE,id.toString());return next(d,id)!=null&&Arrays.stream(Room.values()).anyMatch(r->t.getCompound(r.key()).getBoolean("Entered"));}
+    /** The chance a fresh arrival offers the next quiet room: high, and certain after two arrivals without one. */
+    public static int chance(LabyrinthData d,UUID id){int dry=d.stateEntry(STATE,id.toString()).getInt("OwedDry");return dry>=2?100:60+20*dry;}
+    /** Marks one dealt door as the way into the next quiet room; it still leads on to its hall afterwards. */
+    public static void owe(LabyrinthData d,UUID id,@Nullable String door){
+        var own=d.stateEntry(STATE,id.toString());
+        if(door==null){own.putInt("OwedDry",own.getInt("OwedDry")+1);d.setStateEntry(STATE,id.toString(),own);return;}
+        var list=own.getList("Owed",Tag.TAG_STRING);list.removeIf(t->t.getAsString().equals(door));list.add(StringTag.valueOf(door));while(list.size()>8)list.remove(0);
+        own.put("Owed",list);own.putInt("OwedDry",0);d.setStateEntry(STATE,id.toString(),own);
     }
     private static void enter(ServerPlayer p,Request request){
-        // A chained room is reached from inside the previous one; a first room from beside its junction door.
-        var d=LabyrinthData.get(p.server);var from=d.door(request.door());boolean away=from==null||(request.chained()?inside(p)==null:p.level().dimension()!=from.dimension||p.distanceToSqr(from.lower.getCenter())>36);
+        // A room is reached from beside the door that was dealt into it.
+        var d=LabyrinthData.get(p.server);var from=d.door(request.door());boolean away=from==null||p.level().dimension()!=from.dimension||p.distanceToSqr(from.lower.getCenter())>36;
         if(away||LabyrinthDoors.isBusy(p)){PENDING.remove(p.getUUID());return;}
         var doorway=prepare(p,request.room());if(doorway==null)return;PENDING.remove(p.getUUID());
         var room=request.room();var b=base(p.server,p.getUUID(),room);var landing=b.offset(room==Room.PORCH?new BlockPos(0,0,10):BlockPos.ZERO);
         HouseTransitionEvents.beginDoorTransition(p,room.dimension(),null,arrived->{
             var own=state(arrived.server,arrived.getUUID());if(!own.getString("Active").isEmpty()){left(arrived);own=state(arrived.server,arrived.getUUID());}
-            var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putBoolean("Chain",true);visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());save(arrived.server,arrived.getUUID(),own);prepareNext(arrived);
+            // Entering one settles every door that was owed: the next is dealt afresh, after a hall.
+            own.remove("Owed");own.putInt("OwedDry",0);
+            var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());save(arrived.server,arrived.getUUID(),own);prepareNext(arrived);
         },Vec3.atBottomCenterOf(landing),180);
     }
     /** Registered private doors are owner-bound and are handled before ordinary Return logic. */
@@ -108,7 +134,7 @@ public final class HouseReadSites {
         var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p))return;var t=state(p.server,p.getUUID()).getCompound(room.key());var d=LabyrinthData.get(p.server);
         // A retired 0.4.142 hallway door still has a way back: the far door's hallway side.
         var from=d.door(t.getString("SourceDoor"));if(from==null)from=d.door("hallway_end");if(from==null)return;var next=LabyrinthPlace.byId(t.getString("NextPlace"));
-        if(forward&&t.getBoolean("Chain")&&next!=null){var after=next(p.server,p.getUUID());if(after!=null){var request=new Request(from.id,next,after,true);PENDING.put(p.getUUID(),request);enter(p,request);return;}}
+        // 0.4.160: no room leads straight into the next; the way on is always the hall its door was dealt.
         if(forward&&!t.getBoolean("Entrance")){if(next!=null)LabyrinthDoors.continueFromRead(p,from,next);}
         else HouseTransitionEvents.beginDoorTransition(p,from.dimension,null,HouseReadSites::left,Vec3.atBottomCenterOf(from.lower.relative(from.facing,2)),from.facing.toYRot());
     }
