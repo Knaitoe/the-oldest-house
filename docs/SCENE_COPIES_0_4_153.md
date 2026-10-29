@@ -16,7 +16,7 @@ This release gives copies to the five private scenes that run through the litera
 - the diner (the second waitress);
 - the split-feed bedroom (missing sleep).
 
-Harrigan, the Whale institute and the phone in the canoe run on systems of their own. The Whale institute and the phone canoe followed in 0.4.154 (below); Harrigan comes next and keeps the 0.4.151 rule, one reader at a time, until then. The lake house's pairs will use the same copies.
+Harrigan, the Whale institute and the phone in the canoe run on systems of their own. The Whale institute and the phone canoe followed in 0.4.154 (below); Harrigan followed in 0.4.155 (below). The lake house's pairs will use the same copies.
 
 ## 0.4.154: the Whale institute and the phone canoe
 
@@ -26,6 +26,26 @@ Both have copies now, on the same terms.
 - A reader keeps their copy while the story can still be dealt to them, by each scene's own rule. Readers who had visited a scene before it had copies keep the original.
 
 One native case joins the co-op cases (eight; the quiet-room job runs 25). With each original taken, a copy of each is made ready. The next writer's door opens onto their copy of the institute, where the controller places them. The next filmer's door opens onto their copy of the lake. Each lake has its own canoe, and a copy's canoe is the same canoe the next time it is looked for.
+
+## 0.4.155: Harrigan
+
+Mr. Harrigan's story was the world's: the visits, the reading, the ticket, which building stood in his slot (study or funeral home), his body, the props and the mourners were all kept once, and once one reader finished, the rest were dealt its aftermath. Now each copy of his room keeps that record for itself (`harrigan@<copy>`), and the original's stays the world's record, as before.
+- **What each copy keeps.** The story told in it: visits, beat, reading, ticket, completion. Also his body, the props and the mourners, so the copy has its own Mr. Harrigan in his own chair.
+- **What stays with the reader.** Their own record (their phone, its thread of messages and calls, the kept or buried phone) stays under the world's record, since the phone goes with them.
+- **A copy passed to a new reader** starts its story again from the first visit: the record is cleared except his body, the building that stands, the mourners and any props still in their frames. A prop the last reader took is laid out again, and mourners who came for a funeral leave when the room is his study again.
+- **The original keeps the story the world has already told.** Once it is finished, nobody is given the original again; new readers are given copies. Worlds where someone finished Harrigan before keep that ending, and their other readers now get a story of their own instead of its aftermath.
+- Every way into his scene (arrival, a click, a talk, an attack, a closed container, the room's clock) works out which copy it is about from where the reader stands, or which room is meant. The room's clock runs once for the original and once for each copy that stands. Copies are built by his own builder with the House's furnishings, filled solid first like other interior rooms.
+
+With Harrigan done, every private scene that can be taken has copies. The 0.4.151 rule (one reader at a time, the door opening onto a hall) now applies only once a scene's copies reach the server's cap, or when `sceneCopies` is 0.
+
+One native case joins the co-op cases (nine; the quiet-room job runs 26):
+- the first reader takes his study, and a second waits for a copy;
+- the copy has its own first visit and its own Mr. Harrigan, sitting in the copy and not the original's body;
+- each room counts its own visits;
+- once the first reader's story ends, the original stays the world's and a new reader is given a copy;
+- when the second reader finishes, the next reader to take their copy starts its story again, with the same Mr. Harrigan, and the original's story is untouched.
+
+The 0.4.151 case now checks the one-reader rule with copies turned off (a fixture cap of 0).
 
 ## How a reader finds their copy
 

@@ -78,6 +78,35 @@ public final class HarriganVignette {
     /** Mr. Harrigan is one scene actor (0.4.105), never an armour stand: alive, dead in his chair, or in his casket. */
     public static final int ALIVE_PHASE = 0, DEAD_PHASE = 1, CASKET_PHASE = 2;
     private static final String ACTOR = "Harrigan0505";
+    /**
+     * 0.4.155: the copy of his room a call is about (docs/SCENE_COPIES_0_4_153.md). Each copy keeps its own record: the
+     * story told in it, his body, the props and the mourners. Each reader's own record, the phone and its thread, stays
+     * with the reader under {@link #ID}. Every way in (arrival, a click, a talk, the room's clock) sets it from where the
+     * reader stands or which room is meant.
+     */
+    private static int copy;
+    static String room(){return copy>0?ID+"@"+copy:ID;}
+    static CompoundTag roomState(LabyrinthData data){return data.state(room());}
+    static void saveRoom(LabyrinthData data,CompoundTag state){data.setState(room(),state);}
+    /** The story told in this room is over: the original's is the world's record, as before; a copy keeps its own. */
+    static boolean completed(LabyrinthData data){return copy>0?data.state(room()).getBoolean("Completed"):data.isCompleted(ID);}
+    private static void complete(LabyrinthData data){if(copy>0){var s=data.state(room());s.putBoolean("Completed",true);data.setState(room(),s);}else data.setCompleted(ID,true);}
+    private static int of(ServerPlayer player){return SceneInstances.of(player,LabyrinthPlace.HARRIGAN);}
+    private static int at(MinecraftServer server,BlockPos base){return SceneInstances.copyAt(server,LabyrinthPlace.HARRIGAN,base);}
+    /**
+     * A new reader takes a copy whose last story is over: the story starts again from the first visit. His body, the
+     * mourners and any props still in their frames stay; a prop the last reader took is laid out again.
+     */
+    static void freshStory(LabyrinthData data,int k){
+        int was=copy;copy=k;
+        try{
+            var old=roomState(data);var kept=new CompoundTag();
+            for(var key:old.getAllKeys())
+                if(key.equals(ACTOR)||key.equals("FuneralHome0505")||key.equals("PhoneOwnerRepair0490")||key.startsWith("Mourner0505_")
+                        ||key.startsWith("OriginalProp0490_")&&!old.getBoolean("PropTaken0490_"+key.substring("OriginalProp0490_".length())))kept.put(key,old.get(key));
+            saveRoom(data,kept);
+        }finally{copy=was;}
+    }
     public static final double KILL_RADIUS = 64.0D;
     private static final int NIGHT_START = 13000;
     private static final int NIGHT_END = 23000;
@@ -140,10 +169,11 @@ public final class HarriganVignette {
     // Room and visits
 
     public static void build(MinecraftServer server, ServerLevel level, BlockPos base) {
+        copy = at(server, base);
         buildStudy(level, base);
-        CompoundTag fresh = LabyrinthData.get(server).state(ID);
+        CompoundTag fresh = LabyrinthData.get(server).state(room());
         fresh.putBoolean("FuneralHome0505", false);
-        LabyrinthData.get(server).setState(ID, fresh);
+        LabyrinthData.get(server).setState(room(), fresh);
         stage(level, base, LabyrinthData.get(server), visitFor(LabyrinthData.get(server)));
     }
 
@@ -192,24 +222,25 @@ public final class HarriganVignette {
         if (place != LabyrinthPlace.HARRIGAN) {
             return;
         }
+        copy = of(player);
         BlockPos occupiedBase = base(player.server);
         ServerLevel occupiedLevel = player.server.getLevel(HouseDimensions.INTERIOR);
         if (occupiedBase != null && occupiedLevel != null && occupiedLevel.getEntitiesOfClass(ServerPlayer.class, placeBounds(occupiedBase))
                 .stream().anyMatch(other -> !other.getUUID().equals(player.getUUID()))) return;
         LabyrinthData data = LabyrinthData.get(player.server);
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room());
         int visit = state.getInt("Visit");
         if (visit < 1) {
             visit = 1;
             state.putInt("Visit", visit);
             state.putBoolean("BeatDone", false);
-            data.setState(ID, state);
+            data.setState(room(), state);
         } else if (state.getBoolean("BeatDone") && visit < FINAL_VISIT) {
             visit++;
             state.putInt("Visit", visit);
             state.putBoolean("BeatDone", false);
             state.putBoolean("TicketVisible", false);
-            data.setState(ID, state);
+            data.setState(room(), state);
         }
         BlockPos base = base(player.server);
         ServerLevel interior = player.server.getLevel(HouseDimensions.INTERIOR);
@@ -225,6 +256,7 @@ public final class HarriganVignette {
     }
 
     public static void onDepart(ServerPlayer player) {
+        copy = of(player);
         if (!player.serverLevel().dimension().equals(HouseDimensions.INTERIOR)) {
             return;
         }
@@ -238,7 +270,7 @@ public final class HarriganVignette {
         if (visitFor(data) == FINAL_VISIT && hasItem(player, LabyrinthRegistry.HARRIGANS_PHONE.get())) {
             // Leaving his funeral with his phone keeps it: that closes the story but does not connect the player's phone.
             // Carried out of the study on the second visit, it is only on its way to the funeral.
-            data.setCompleted(ID, true);
+            complete(data);
             WitnessAccount.resolve(player,WitnessAccount.Story.HARRIGAN,"kept_phone");
             CompoundTag p = playerState(data, player.getUUID());
             p.putBoolean("KeptHarriganPhone", true);
@@ -252,7 +284,7 @@ public final class HarriganVignette {
     }
 
     private static int visitFor(LabyrinthData data) {
-        return data.isCompleted(ID) ? FINAL_VISIT : Math.max(1, data.state(ID).getInt("Visit"));
+        return completed(data) ? FINAL_VISIT : Math.max(1, data.state(room()).getInt("Visit"));
     }
 
     private static void stage(ServerLevel level, BlockPos base, LabyrinthData data, int visit) {
@@ -265,13 +297,14 @@ public final class HarriganVignette {
             return;
         }
         funeralHome(level, base, data, false);
-        int phase = visit == 1 && !data.isCompleted(ID) ? ALIVE_PHASE : DEAD_PHASE;
+        HarriganWake.dismiss(level);
+        int phase = visit == 1 && !completed(data) ? ALIVE_PHASE : DEAD_PHASE;
         var harrigan = harrigan(level, base, phase);
         if (harrigan != null) pose(harrigan, base, phase);
-        if (visit == 1 && !data.isCompleted(ID)) {
+        if (visit == 1 && !completed(data)) {
             placeProp(level, base.offset(SIDE_TABLE).above(), Direction.UP, LabyrinthRegistry.PHONE.get().getDefaultInstance(), "player_phone");
             placeProp(level, base.offset(SIDE_TABLE).east().above(), Direction.UP, LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance(), "harrigan_phone");
-            if (data.state(ID).getBoolean("TicketVisible")) {
+            if (data.state(room()).getBoolean("TicketVisible")) {
                 placeProp(level, base.offset(SIDE_TABLE).south().above(), Direction.UP,
                         LabyrinthRegistry.SCRATCH_TICKET.get().getDefaultInstance(), "ticket");
             }
@@ -292,14 +325,14 @@ public final class HarriganVignette {
      * study's own plain walls are refaced; its windows, fireplace and ceiling stay.
      */
     private static void funeralHome(ServerLevel level, BlockPos base, LabyrinthData data, boolean funeral) {
-        boolean built = data.state(ID).getBoolean("FuneralHome0505");
+        boolean built = data.state(room()).getBoolean("FuneralHome0505");
         if (built != funeral) {
             if (funeral) buildFuneralHome(level, base);
             else buildStudy(level, base);
             OnwardDoors.restore(level, base, LabyrinthPlace.HARRIGAN);
-            CompoundTag state = data.state(ID);
+            CompoundTag state = data.state(room());
             state.putBoolean("FuneralHome0505", funeral);
-            data.setState(ID, state);
+            data.setState(room(), state);
         }
         if (!funeral) {
             // The study's back wall stays shut on the first two visits.
@@ -400,7 +433,7 @@ public final class HarriganVignette {
     /** Replace only the unchanged authored old sign, in a loaded, unseen and empty entrance. */
     private static void funeralPlaque(ServerLevel level, BlockPos base, LabyrinthData data) {
         BlockPos at = base.offset(HOME_SIGN);
-        if (!data.state(ID).getBoolean("FuneralHome0505") || !level.hasChunkAt(at)
+        if (!data.state(room()).getBoolean("FuneralHome0505") || !level.hasChunkAt(at)
                 || !level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX() >> 4, at.getZ() >> 4))
                 || !(level.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign)) return;
         String[] words = {"PEABODY & SONS", "Funeral Home", "Visitation for", "Mr. Harrigan"};
@@ -423,7 +456,7 @@ public final class HarriganVignette {
 
     /** The phase he belongs in for a visit. */
     private static int phaseFor(LabyrinthData data, int visit) {
-        return visit >= FINAL_VISIT ? CASKET_PHASE : visit == 1 && !data.isCompleted(ID) ? ALIVE_PHASE : DEAD_PHASE;
+        return visit >= FINAL_VISIT ? CASKET_PHASE : visit == 1 && !completed(data) ? ALIVE_PHASE : DEAD_PHASE;
     }
 
     /**
@@ -432,9 +465,10 @@ public final class HarriganVignette {
      */
     @Nullable
     public static LiteraryActor harrigan(ServerLevel level, BlockPos base, int createAs) {
+        if (base != null) copy = at(level.getServer(), base);
         if (base == null) return null;
         var data = LabyrinthData.get(level.getServer());
-        var state = data.state(ID);
+        var state = data.state(room());
         if (state.hasUUID(ACTOR)) {
             if (level.getEntity(state.getUUID(ACTOR)) instanceof LiteraryActor found) {
                 // Arrival can run before this original's entity section has loaded. Its saved
@@ -460,9 +494,9 @@ public final class HarriganVignette {
         actor.setSilent(true);
         pose(actor, base, createAs);
         if (!level.addFreshEntity(actor)) return null;
-        state = data.state(ID);
+        state = data.state(room());
         state.putUUID(ACTOR, actor.getUUID());
-        data.setState(ID, state);
+        data.setState(room(), state);
         return actor;
     }
 
@@ -500,6 +534,7 @@ public final class HarriganVignette {
 
     /** Right-clicking him or a mourner. Alive he answers; dead he does not; the mourners each say their piece. */
     public static void talk(ServerPlayer player, LiteraryActor actor) {
+        copy = of(player);
         if (!player.isAlive() || player.isSpectator() || !inVignette(player) || player.distanceToSqr(actor) > 36) return;
         if (actor.role() == LiteraryActor.HARRIGAN_MOURNER) { HarriganWake.talk(player, actor); return; }
         LabyrinthData data = LabyrinthData.get(player.server);
@@ -512,7 +547,7 @@ public final class HarriganVignette {
         long now = player.serverLevel().getGameTime();
         if (player.getPersistentData().getLong("HarriganTalk0505") > now) return;
         player.getPersistentData().putLong("HarriganTalk0505", now + 40);
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room());
         String line;
         if (readingFinished(state)) line = "Mr. Harrigan: That's enough for today. The ticket is yours. So is the phone.";
         else if (!state.getBoolean("ReadingStarted")) line = SMALL_TALK[0];
@@ -520,7 +555,7 @@ public final class HarriganVignette {
             int said = state.getInt("SmallTalk0505");
             line = SMALL_TALK[1 + Math.floorMod(said, SMALL_TALK.length - 1)];
             state.putInt("SmallTalk0505", said + 1);
-            data.setState(ID, state);
+            data.setState(room(), state);
         }
         player.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY), false);
     }
@@ -538,25 +573,26 @@ public final class HarriganVignette {
     }
 
     private static ItemFrame originalProp(ServerLevel level,String role){
-        var data=LabyrinthData.get(level.getServer());var state=data.state(ID);String key="OriginalProp0490_"+role;
+        var data=LabyrinthData.get(level.getServer());var state=data.state(room());String key="OriginalProp0490_"+role;
         if(state.hasUUID(key))return level.getEntity(state.getUUID(key)) instanceof ItemFrame frame?frame:null;
         var originals=level.getEntitiesOfClass(ItemFrame.class,placeBounds(base(level.getServer())),e->e.getTags().contains(PROP_TAG+"_"+role)||role.equals("harrigan_phone")&&e.getTags().contains(PROP_TAG+"_harrigan_phone_display"));
-        if(originals.isEmpty())return null;var frame=originals.getFirst();frame.addTag(PROP_TAG+"_"+role);state.putUUID(key,frame.getUUID());data.setState(ID,state);return frame;
+        if(originals.isEmpty())return null;var frame=originals.getFirst();frame.addTag(PROP_TAG+"_"+role);state.putUUID(key,frame.getUUID());data.setState(room(),state);return frame;
     }
     private static void placeProp(ServerLevel level,BlockPos pos,Direction direction,ItemStack item,String role){
-        var data=LabyrinthData.get(level.getServer());var state=data.state(ID);String key="OriginalProp0490_"+role;
-        if(state.getBoolean("PropTaken0490_"+role)||originalProp(level,role)!=null||data.state(ID).hasUUID(key))return;
+        var data=LabyrinthData.get(level.getServer());var state=data.state(room());String key="OriginalProp0490_"+role;
+        if(state.getBoolean("PropTaken0490_"+role)||originalProp(level,role)!=null||data.state(room()).hasUUID(key))return;
         if(!level.hasChunkAt(pos)||!level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(pos.getX()>>4,pos.getZ()>>4)))return;
         var frame=new ItemFrame(level,pos,direction);frame.addTag(PROP_TAG);frame.addTag(PROP_TAG+"_"+role);frame.setItem(item,false);frame.setInvulnerable(true);
-        if(level.addFreshEntity(frame)){state=data.state(ID);state.putUUID(key,frame.getUUID());data.setState(ID,state);}
+        if(level.addFreshEntity(frame)){state=data.state(room());state.putUUID(key,frame.getUUID());data.setState(room(),state);}
     }
-    private static void propTaken(LabyrinthData data,String role){var state=data.state(ID);state.putBoolean("PropTaken0490_"+role,true);data.setState(ID,state);}
-    private static void ensureProps(ServerLevel level,BlockPos b,int visit){var state=LabyrinthData.get(level.getServer()).state(ID);if(visit==1&&!state.getBoolean("BeatDone")){placeProp(level,b.offset(SIDE_TABLE).above(),Direction.UP,LabyrinthRegistry.PHONE.get().getDefaultInstance(),"player_phone");if(state.getBoolean("TicketVisible"))placeProp(level,b.offset(SIDE_TABLE).south().above(),Direction.UP,LabyrinthRegistry.SCRATCH_TICKET.get().getDefaultInstance(),"ticket");}if(visit<=2)placeProp(level,b.offset(SIDE_TABLE).east().above(),Direction.UP,LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance(),"harrigan_phone");}
+    private static void propTaken(LabyrinthData data,String role){var state=data.state(room());state.putBoolean("PropTaken0490_"+role,true);data.setState(room(),state);}
+    private static void ensureProps(ServerLevel level,BlockPos b,int visit){var state=LabyrinthData.get(level.getServer()).state(room());if(visit==1&&!state.getBoolean("BeatDone")){placeProp(level,b.offset(SIDE_TABLE).above(),Direction.UP,LabyrinthRegistry.PHONE.get().getDefaultInstance(),"player_phone");if(state.getBoolean("TicketVisible"))placeProp(level,b.offset(SIDE_TABLE).south().above(),Direction.UP,LabyrinthRegistry.SCRATCH_TICKET.get().getDefaultInstance(),"ticket");}if(visit<=2)placeProp(level,b.offset(SIDE_TABLE).east().above(),Direction.UP,LabyrinthRegistry.HARRIGANS_PHONE.get().getDefaultInstance(),"harrigan_phone");}
 
     // ---------------------------------------------------------------------
     // Reading and first visit
 
     public static void onContainerClose(PlayerContainerEvent.Close event) {
+        if (event.getEntity() instanceof ServerPlayer reader) copy = of(reader);
         if (!(event.getEntity() instanceof ServerPlayer player) || !(event.getContainer() instanceof LecternMenu lectern)) {
             return;
         }
@@ -566,14 +602,14 @@ public final class HarriganVignette {
         }
         if (!READERS.remove(player.getUUID())) return;
         LabyrinthData data = LabyrinthData.get(player.server);
-        if (readingFinished(data.state(ID))) return;
+        if (readingFinished(data.state(room()))) return;
         observeReadingPage(player, data, lectern.getPage());
-        if (data.state(ID).getInt("ReadingPage") < READING_PAGES.size() - 1) return;
-        CompoundTag state = data.state(ID);
+        if (data.state(room()).getInt("ReadingPage") < READING_PAGES.size() - 1) return;
+        CompoundTag state = data.state(room());
         state.putBoolean("ReadingFinished", true);
         if (!state.getBoolean("TicketVisible")) {
             state.putBoolean("TicketVisible", true);
-            data.setState(ID, state);
+            data.setState(room(), state);
             BlockPos base = base(player.server);
             if (base != null) {
                 placeProp(player.serverLevel(), base.offset(SIDE_TABLE).south().above(), Direction.UP,
@@ -586,6 +622,7 @@ public final class HarriganVignette {
     }
 
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        if (event.getEntity() instanceof ServerPlayer reader) copy = of(reader);
         if (handleEntityInteract(event.getEntity(), event.getTarget())) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
@@ -593,6 +630,7 @@ public final class HarriganVignette {
     }
 
     public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
+        if (event.getEntity() instanceof ServerPlayer reader) copy = of(reader);
         if (handleEntityInteract(event.getEntity(), event.getTarget())) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
@@ -614,7 +652,7 @@ public final class HarriganVignette {
 
     private static void scratchTicket(ServerPlayer player, ItemFrame frame) {
         LabyrinthData data = LabyrinthData.get(player.server);
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room());
         if (!player.isAlive()||player.isSpectator()||!inVignette(player) || visitFor(data) != 1 || !state.getBoolean("TicketVisible")) {
             return;
         }
@@ -631,9 +669,9 @@ public final class HarriganVignette {
             }
         }
         // Transfer the exact original displayed spare, retaining its components.
-        state=data.state(ID);state.putBoolean("BeatDone", true);
+        state=data.state(room());state.putBoolean("BeatDone", true);
         state.putBoolean("TicketVisible", false);
-        data.setState(ID, state);
+        data.setState(room(), state);
         player.serverLevel().playSound(null, frame.blockPosition(), SoundEvents.BRUSH_GENERIC, SoundSource.PLAYERS, 0.8F, 1.25F);
         player.displayClientMessage(Component.literal("The silver coating curls away. Twelve emeralds.")
                 .withStyle(ChatFormatting.GREEN), false);
@@ -648,7 +686,7 @@ public final class HarriganVignette {
         }
         ItemStack phone=frame.getItem().copy();if(!phone.is(LabyrinthRegistry.HARRIGANS_PHONE.get()))return;frame.setItem(ItemStack.EMPTY,false);propTaken(data,"harrigan_phone");frame.discard();
         // Taking his phone is the second visit's beat: the next time the room opens, it is for his funeral.
-        CompoundTag beat=data.state(ID);beat.putBoolean("BeatDone",true);data.setState(ID,beat);
+        CompoundTag beat=data.state(room());beat.putBoolean("BeatDone",true);data.setState(room(),beat);
         if (!player.getInventory().add(phone)) {
             player.drop(phone, false);
         }
@@ -662,6 +700,7 @@ public final class HarriganVignette {
     }
 
     public static void onAttackEntity(AttackEntityEvent event) {
+        if (event.getEntity() instanceof ServerPlayer reader) copy = of(reader);
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
@@ -683,6 +722,7 @@ public final class HarriganVignette {
     }
 
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getEntity() instanceof ServerPlayer reader) copy = of(reader);
         if (!event.getLevel().isClientSide() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
                 && event.getEntity() instanceof ServerPlayer reader && reader.isAlive() && !reader.isSpectator() && inVignette(reader)
                 && event.getPos().equals(base(reader.server).offset(HOME_SIGN))
@@ -715,7 +755,7 @@ public final class HarriganVignette {
         p.putBoolean("Contact", true);
         p.putBoolean("KeptHarriganPhone", false);
         savePlayerState(data, player.getUUID(), p);
-        data.setCompleted(ID, true);
+        complete(data);
         WitnessAccount.resolve(player,WitnessAccount.Story.HARRIGAN,"buried_phone");
         player.displayClientMessage(Component.literal("You tuck the phone beside his hand.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
@@ -1017,7 +1057,14 @@ public final class HarriganVignette {
         if (server.getTickCount() % 10 != 0) {
             return;
         }
-        tickVignette(server);
+        // 0.4.155: the original room and each copy keep their own clock.
+        var rooms = LabyrinthData.get(server);
+        for (int k = 0; k <= SceneInstances.copies(rooms, LabyrinthPlace.HARRIGAN); k++) {
+            if (!SceneInstances.built(rooms, LabyrinthPlace.HARRIGAN, k)) continue;
+            copy = k;
+            tickVignette(server);
+        }
+        copy = 0;
         tickPhones(server);
         tickGhosts(server);
         tickDrownedPhones(server);
@@ -1039,7 +1086,7 @@ public final class HarriganVignette {
 
         ensureProps(interior,base,visit);
         var harrigan = harrigan(interior, base, phaseFor(data, visit));
-        if (visit == 1 && !data.isCompleted(ID)) {
+        if (visit == 1 && !completed(data)) {
             // Alive, he turns his head toward whoever is nearest, as far as an old neck turns.
             ServerPlayer nearest = null;
             for (ServerPlayer player : visitors) {
@@ -1063,7 +1110,7 @@ public final class HarriganVignette {
 
     private static void tickReading(ServerPlayer player, LabyrinthData data) {
         if(!player.isAlive()||player.isSpectator()){READERS.remove(player.getUUID());return;}
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room());
         if (readingFinished(state)) return;
         long now = player.serverLevel().getGameTime();
         if (player.containerMenu instanceof LecternMenu lectern && READERS.contains(player.getUUID())) {
@@ -1080,7 +1127,7 @@ public final class HarriganVignette {
     }
 
     private static void observeReadingPage(ServerPlayer player, LabyrinthData data, int page) {
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room());
         if (readingFinished(state)) return;
         page = Math.max(0, Math.min(READING_PAGES.size() - 1, page));
         int highest = state.contains("ReadingPage") ? state.getInt("ReadingPage") : -1;
@@ -1090,7 +1137,7 @@ public final class HarriganVignette {
             state.putInt("ReadingPage", page);
             if (page > 0) state.putInt("PagesTurned", state.getInt("PagesTurned") + 1);
         }
-        data.setState(ID, state);
+        data.setState(room(), state);
         if (page > highest && page > 0) player.displayClientMessage(Component.literal(PAGE_LINES[page - 1])
                 .withStyle(ChatFormatting.GRAY), false);
     }
@@ -1475,8 +1522,7 @@ public final class HarriganVignette {
 
     @Nullable
     private static BlockPos base(MinecraftServer server) {
-        BlockPos origin = HouseSavedData.get(server).houseOrigin();
-        return origin == null ? null : LabyrinthPlaces.base(origin, LabyrinthPlace.HARRIGAN);
+        return SceneInstances.base(server, LabyrinthPlace.HARRIGAN, copy);
     }
 
     private static AABB placeBounds(@Nullable BlockPos base) {
@@ -1662,11 +1708,12 @@ public final class HarriganVignette {
     }
 
     public static List<String> describe(MinecraftServer server, @Nullable ServerPlayer viewer) {
+        copy = viewer == null ? 0 : of(viewer);
         LabyrinthData data = LabyrinthData.get(server);
         List<String> out = new ArrayList<>();
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room());
         out.add("Harrigan: visit " + Math.max(1, state.getInt("Visit")) + "/" + FINAL_VISIT
-                + (data.isCompleted(ID) ? ", vignette complete." : "."));
+                + (completed(data) ? ", vignette complete." : "."));
         if (viewer != null) {
             CompoundTag p = playerState(data, viewer.getUUID());
             out.add("Your phone: " + (p.getBoolean("Severed") ? "severed"

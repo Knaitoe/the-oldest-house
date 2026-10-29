@@ -1,6 +1,6 @@
 # Private scenes — 0.4.151
 
-Since 0.4.153 a reader who finds the confession, the Holy Rabbit, the Wheel house, the diner or the split-feed bedroom taken gets a copy of their own instead of being turned away (`docs/SCENE_COPIES_0_4_153.md`). The rule below still holds for the other three, and for every scene once the server's copies run out.
+Since 0.4.153 to 0.4.155 every one of these scenes gives a reader who finds it taken a copy of their own instead (`docs/SCENE_COPIES_0_4_153.md`). The rule below now applies only once a scene's copies reach the server's cap, or when copies are turned off.
 
 The owner's October 28 direction: Harrigan, the confession, the Holy Rabbit and the Wheel house work best as private vignettes. They also agreed to four more: the Whale institute, the phone in the canoe, the diner (the second waitress) and the split-feed bedroom (missing sleep). The lake house stays shared: a second reader will play Tess (see the lake house plan).
 

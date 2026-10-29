@@ -19,8 +19,8 @@ public final class HarriganWake {
     private HarriganWake(){}
     /** On arrival nobody else is in the room yet, so the guests are set out before anyone can see them appear. */
     public static void ensureCast(ServerLevel level,BlockPos base,boolean arrival){
-        var data=LabyrinthData.get(level.getServer());var state=data.state(HarriganVignette.ID);
-        if(state.getInt("Visit")<HarriganVignette.FINAL_VISIT&&!data.isCompleted(HarriganVignette.ID))return;
+        var data=LabyrinthData.get(level.getServer());var state=HarriganVignette.roomState(data);
+        if(state.getInt("Visit")<HarriganVignette.FINAL_VISIT&&!HarriganVignette.completed(data))return;
         for(int role=0;role<SPOTS.length;role++){
             String key="Mourner0505_"+role;if(state.hasUUID(key))continue;
             var pos=base.offset(SPOTS[role]);
@@ -30,7 +30,13 @@ public final class HarriganWake {
             guest.moveTo(pos.getX()+.5,pos.getY(),pos.getZ()+.5,FACING[role],10);guest.setYHeadRot(FACING[role]);guest.yBodyRot=FACING[role];
             if(level.addFreshEntity(guest))state.putUUID(key,guest.getUUID());
         }
-        data.setState(HarriganVignette.ID,state);
+        HarriganVignette.saveRoom(data,state);
+    }
+    /** Before the funeral the mourners have not come: a room that goes back to his study (a copy's new story) has nobody waiting in it. */
+    static void dismiss(ServerLevel level){
+        var data=LabyrinthData.get(level.getServer());var state=HarriganVignette.roomState(data);boolean changed=false;
+        for(int role=0;role<SPOTS.length;role++){String key="Mourner0505_"+role;if(!state.hasUUID(key))continue;var guest=level.getEntity(state.getUUID(key));if(guest==null)continue;guest.discard();state.remove(key);changed=true;}
+        if(changed)HarriganVignette.saveRoom(data,state);
     }
     public static AABB bounds(BlockPos base){return new AABB(base.getX()-8,base.getY()-2,base.getZ()-25,base.getX()+9,base.getY()+7,base.getZ()+3);}
     static void talk(ServerPlayer player,LiteraryActor guest){

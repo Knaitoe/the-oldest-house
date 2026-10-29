@@ -32,8 +32,8 @@ public final class SceneInstances {
     public static final String STATE="scene_copies_0153";
     /** Copies stand this far west of their original, and each further copy of a scene this much further on. Both are wider than the whole slot grid, so no copy overlaps another scene. */
     public static final int WEST=1<<20,STEP=1<<16;
-    /** The private scenes that have copies so far. Each keeps its state with each reader and takes its place from the reader. 0.4.154: the Whale institute and the phone canoe. */
-    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE);
+    /** The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy. */
+    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN);
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     /** Columns of an interior copy's slot filled solid per tick, before its rooms are carved into it, as the original's are. */
@@ -42,7 +42,10 @@ public final class SceneInstances {
 
     public static boolean copyable(@Nullable LabyrinthPlace p){return p!=null&&COPYABLE.contains(p);}
     public static Set<LabyrinthPlace> copyable(){return Collections.unmodifiableSet(COPYABLE);}
-    public static int cap(){return HouseConfig.setting(HouseConfig.SCENE_COPIES);}
+    private static @Nullable Integer fixtureCap;
+    public static int cap(){return fixtureCap!=null?fixtureCap:HouseConfig.setting(HouseConfig.SCENE_COPIES);}
+    /** Fixtures only: the cap a server setting would give, or null for the setting. */
+    public static void fixtureCap(@Nullable Integer cap){fixtureCap=cap;}
 
     // ------------------------------------------------------------------------------------------------ where copies stand
     /** The House origin moved so that a scene's own place falls on its copy: everything keyed by origin and place then reaches the copy. */
@@ -75,17 +78,21 @@ public final class SceneInstances {
     /** A reader keeps their copy while its story can still be dealt to them. */
     private static boolean unfinished(LabyrinthData d,UUID reader,LabyrinthPlace p){
         if(p==LabyrinthPlace.PHONE_CANOE)return PhoneCanoe.canDeal(d,reader);
+        if(p==LabyrinthPlace.HARRIGAN)return !WitnessAccount.has(d,reader,WitnessAccount.Story.HARRIGAN);
         if(NovelVignettes.isNovel(p))return NovelVignettes.canDeal(d,reader,p);
         return LiteraryVignettes.canDeal(d,reader,p);
     }
     /** Every reader with a saved part in a scene, from the scene's own store. */
     private static Set<String> readers(LabyrinthData d,LabyrinthPlace p){
         if(p==LabyrinthPlace.PHONE_CANOE)return d.state(PhoneCanoe.ID).getAllKeys();
+        if(p==LabyrinthPlace.HARRIGAN)return d.state(HarriganVignette.ID).getCompound("Players").getAllKeys();
         if(NovelVignettes.isNovel(p))return d.state(NovelVignettes.STATE).getAllKeys();
         return LiteraryVignettes.readers(d,p);
     }
     /** Someone other than {@code reader} keeps copy {@code k} for a story they have not finished. */
     private static boolean keptByAnother(LabyrinthData d,LabyrinthPlace p,int k,UUID reader){
+        // Harrigan's original room keeps the story the world has already told; once it is over, new readers are given copies.
+        if(p==LabyrinthPlace.HARRIGAN&&k==0&&d.isCompleted(HarriganVignette.ID))return true;
         var b=scene(d,p).getCompound("Kept");
         for(var key:b.getAllKeys()){if(b.getInt(key)!=k||key.equals(reader.toString()))continue;try{if(unfinished(d,UUID.fromString(key),p))return true;}catch(IllegalArgumentException ignored){}}
         return false;
@@ -168,7 +175,10 @@ public final class SceneInstances {
         }
         for(int k=0;k<=copies(d,place);k++){
             if(!built(d,place,k)||occupied(s,place,k,me)||keptByAnother(d,place,k,me))continue;
-            keep(d,me,place,k);ahead(s,d,place,k);return new Entry(entry(d,place,k),k,false);
+            keep(d,me,place,k);
+            // Harrigan's room keeps its own story: a copy passed to a new reader starts it again.
+            if(place==LabyrinthPlace.HARRIGAN&&k>0)HarriganVignette.freshStory(d,k);
+            ahead(s,d,place,k);return new Entry(entry(d,place,k),k,false);
         }
         // Nothing stands free: a copy is made ready, unless every copy the server allows exists already.
         boolean making=making(d,place)||allocate(d,place);
@@ -229,6 +239,7 @@ public final class SceneInstances {
         if(LiteraryRooms.isLiterary(p)){LiteraryRooms.build(l,b,p);return;}
         if(NovelVignettes.isNovel(p)){NovelRooms.build(s,l,b,p);return;}
         if(p==LabyrinthPlace.PHONE_CANOE){PhoneCanoe.build(s,l,b);LakeLandscape.dress(l,b,p);NovelRooms.safeApproach(l,b);}
+        if(p==LabyrinthPlace.HARRIGAN){HarriganVignette.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}
     }
     private static @Nullable Job next(MinecraftServer s,LabyrinthData d){
         var o=HouseSavedData.get(s).houseOrigin();if(o==null)return null;
