@@ -1,0 +1,35 @@
+{
+  "parent": "the_oldest_house:house/junction",
+  "display": {
+    "icon": {
+      "id": "the_oldest_house:chalk"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.house.chalk.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.house.chalk.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "the_oldest_house:chalk"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

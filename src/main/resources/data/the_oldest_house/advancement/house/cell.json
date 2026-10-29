@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:house/five_fires",
+  "display": {
+    "icon": {
+      "id": "minecraft:iron_bars"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.house.cell.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.house.cell.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

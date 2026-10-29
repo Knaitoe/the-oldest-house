@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:written_book"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.account.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.account.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false,
+    "background": "the_oldest_house:textures/block/detail_paper.png"
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

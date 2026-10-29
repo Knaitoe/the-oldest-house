@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:account/kind_connection",
+  "display": {
+    "icon": {
+      "id": "the_oldest_house:harrigans_phone"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.harrigan.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.harrigan.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:account/kind_release",
+  "display": {
+    "icon": {
+      "id": "the_oldest_house:cabin_snow_globe"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.end_world_cabin.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.end_world_cabin.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

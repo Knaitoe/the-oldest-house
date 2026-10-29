@@ -563,6 +563,7 @@ public final class HouseBetweenRoom {
                 k -> new Crossing(relX >= (HALL_ROOM_PLANE + STUDY_ROOM_PLANE) / 2.0D ? Side.HALL : Side.STUDY, relX));
         Side out = crossing.step(relX, relY, relZ);
         if (out != null) {
+            io.github.knaitoe.theoldesthouse.labyrinth.HouseAdvancements.earn(player, "room_between");
             returnToManor(player, data, origin, out, crossing);
         }
         return true;

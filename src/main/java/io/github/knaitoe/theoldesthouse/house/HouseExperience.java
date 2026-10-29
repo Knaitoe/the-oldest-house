@@ -113,6 +113,7 @@ public final class HouseExperience {
             own.putBoolean("ManorSeen",true);
         }
         own.putBoolean("AtManor",inManor);
+        if(p.level().dimension().equals(HouseDimensions.INTERIOR)&&HouseImpossibleHallway.isInsideWalkableVolume(origin,p.getX(),p.getY(),p.getZ()))io.github.knaitoe.theoldesthouse.labyrinth.HouseAdvancements.earn(p,"hallway");
         int hush=0;BlockPos threshold=origin.offset(HouseLayout.AXIS_X,1,HouseLayout.THRESHOLD_Z);
         if(HouseSavedData.get(p.server).isImpossibleDoorRevealed()&&p.level().dimension().equals(HouseDimensions.INTERIOR)){
             Vec3 to=threshold.getCenter().subtract(p.getEyePosition());double distance=to.length();

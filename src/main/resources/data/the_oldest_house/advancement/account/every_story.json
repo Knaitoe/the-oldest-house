@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:account/enough",
+  "display": {
+    "icon": {
+      "id": "minecraft:enchanted_book"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.every_story.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.every_story.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

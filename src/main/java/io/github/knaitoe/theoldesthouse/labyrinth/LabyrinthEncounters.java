@@ -98,7 +98,7 @@ public final class LabyrinthEncounters {
                 ||!pet.getPersistentData().getBoolean(STRAY)||pet.getTags().contains(MotherOfStrays.PET)
                 ||HouseExteriorEntityMirror.isProjection(pet)||Hillary.tagOf(pet)!=null||!STRAY_MEAT.contains(food.getItem())) return false;
         if(!player.getAbilities().instabuild)food.shrink(1);
-        pet.tame(player);pet.setPersistenceRequired();pet.setTarget(null);
+        pet.tame(player);pet.setPersistenceRequired();pet.setTarget(null);HouseAdvancements.earn(player,"stray");
         if(pet instanceof Wolf wolf){wolf.setPersistentAngerTarget(null);wolf.setRemainingPersistentAngerTime(0);wolf.setIsInterested(false);}
         pet.setHealth(pet.getMaxHealth());
         CompanionOrders.issue(pet,player,CompanionOrders.Order.FOLLOW);

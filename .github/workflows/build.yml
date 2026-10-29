@@ -63,6 +63,7 @@ jobs:
           python3 tools/generate_bath_decay_assets.py --check
           python3 tools/draw_reading_stands.py --check
           python3 tools/draw_barn_well.py --check
+          python3 tools/generate_advancements.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v

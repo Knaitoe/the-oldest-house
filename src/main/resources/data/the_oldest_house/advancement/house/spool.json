@@ -1,0 +1,35 @@
+{
+  "parent": "the_oldest_house:house/chalk",
+  "display": {
+    "icon": {
+      "id": "the_oldest_house:trail_spool"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.house.spool.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.house.spool.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "the_oldest_house:trail_spool"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

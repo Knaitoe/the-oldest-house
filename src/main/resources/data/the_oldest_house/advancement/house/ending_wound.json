@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:house/cell",
+  "display": {
+    "icon": {
+      "id": "the_oldest_house:holloway_shield"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.house.ending_wound.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.house.ending_wound.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

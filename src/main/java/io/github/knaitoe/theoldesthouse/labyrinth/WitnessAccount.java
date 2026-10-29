@@ -190,6 +190,7 @@ public final class WitnessAccount {
         player.displayClientMessage(Component.literal(ready(data,player.getUUID())
                 ?"A passage in your account is readable now. It describes a cell."
                 :"You can set this part of the account down now."),false);
+        HouseAdvancements.sync(player);
         return true;
     }
     /**
