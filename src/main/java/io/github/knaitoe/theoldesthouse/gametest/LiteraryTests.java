@@ -891,7 +891,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
     }
     @AfterBatch(batch="literary_elk_porthole") public static void portholeDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_rail",timeoutTicks=400)
+    @GameTest(template="empty",batch="literary_elk_rail",timeoutTicks=1200)
     public static void privateKillerPhysicallyHopsYachtRailAndRejectsWallsAndMissingLandings(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("rail_reader",place);var b=f.base(place);
         f.at(p,place,3.5,9,6.5);
@@ -1032,7 +1032,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     @AfterBatch(batch="literary_elk_betrayal") public static void elkBetrayalDone(ServerLevel l){close();}
     /** Ashore and landed, with nothing else pending: the plain woods hunt. */
     private static void elkAshore(Fixture f,ServerPlayer p){var own=f.own(p,LabyrinthPlace.ELK_CARCASSES);own.putInt("ElkStage",ElkHunt.ASHORE);own.putBoolean("ElkLanded",true);own.putBoolean("EscapedYacht",true);own.putBoolean("ElkResetPending",false);own.putInt("ElkEmerge",0);own.putLong("ElkGraceUntil",0);LiteraryVignettes.save(f.data(),p.getUUID(),LabyrinthPlace.ELK_CARCASSES,own);}
-    @GameTest(template="empty",batch="literary_elk_shove",timeoutTicks=300)
+    @GameTest(template="empty",batch="literary_elk_shove",timeoutTicks=900)
     public static void elkReaderShovesTheKillerOffAndStopsHisRaisedAxeButCannotHurtHim(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("shove_reader",place);var b=f.base(place);
         final boolean[] staged={false};

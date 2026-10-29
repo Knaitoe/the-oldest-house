@@ -68,16 +68,17 @@ public final class VignetteAnimationTests {
     }
     @AfterBatch(batch="literary_bly_hold") public static void blyHoldDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="literary_mapping_motion",timeoutTicks=260)
+    @GameTest(template="empty",batch="literary_mapping_motion",timeoutTicks=900)
     public static void privateMappingSilhouetteUsesContinuousNativeCollisionBetweenScriptStops(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;var p=f.player("mapping_motion",place);f.at(p,place,3,0,-26);
         final LiteraryActor[] actor={null};final UUID[] id={null};final Vec3[] previous={null};final int[] ticks={0},steps={0};
-        h.onEachTick(()->{int tick=++ticks[0];if(actor[0]==null){var world=LiteraryVignettes.shared(f.data(),place);String key="Father_"+p.getUUID();if(world.hasUUID(key)&&f.level(place).getEntity(world.getUUID(key)) instanceof LiteraryActor a){actor[0]=a;id[0]=a.getUUID();previous[0]=a.position();}return;}
-            Vec3 at=actor[0].position(),step=at.subtract(previous[0]);previous[0]=at;
+        // The clock starts when the silhouette is there: in a full run its section can take a while to load.
+        h.onEachTick(()->{if(actor[0]==null){var world=LiteraryVignettes.shared(f.data(),place);String key="Father_"+p.getUUID();if(world.hasUUID(key)&&f.level(place).getEntity(world.getUUID(key)) instanceof LiteraryActor a){actor[0]=a;id[0]=a.getUUID();previous[0]=a.position();ticks[0]=0;}return;}
+            int tick=++ticks[0];Vec3 at=actor[0].position(),step=at.subtract(previous[0]);previous[0]=at;
             if(tick>100&&tick<190){h.assertTrue(step.horizontalDistance()<=.025,"mapping movement is bounded on each native tick: "+step);if(step.horizontalDistance()>.015)steps[0]++;}
             h.assertTrue(actor[0].getUUID().equals(id[0])&&actor[0].owner().orElseThrow().equals(p.getUUID()),"the walking silhouette stays the same privately tracked original");
+            if(tick==230){h.assertTrue(steps[0]>=65,"the original moves between decisions instead of resting four ticks then jumping: "+steps[0]);h.assertTrue(!f.own(p,place).getBoolean("Ready"),"watching continuous movement does not bypass the crawl, choice and return");h.succeed();}
         });
-        h.runAfterDelay(230,()->{h.assertTrue(steps[0]>=65,"the original moves between decisions instead of resting four ticks then jumping: "+steps[0]);h.assertTrue(!f.own(p,place).getBoolean("Ready"),"watching continuous movement does not bypass the crawl, choice and return");h.succeed();});
     }
     @AfterBatch(batch="literary_mapping_motion") public static void mappingDone(ServerLevel l){close();}
 
