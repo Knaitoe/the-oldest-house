@@ -36,6 +36,8 @@ public final class LakeHouseTess {
         return b!=null&&!own.getBoolean("SoloGone")&&a!=null&&a.phase()==4&&a.distanceToSqr(b.offset(LakeHouse.COMPRESSOR).getCenter())<16;
     }
     public static void line(ServerPlayer p,@Nullable LiteraryActor a,String text){
+        // 0.4.156: with a reader in Tess's place, her line is theirs to say.
+        var mate=LakeHousePairs.partnerHere(p);if(mate!=null){LakeHousePairs.prompt(mate,text);return;}
         var partner=LakeHousePartner.of(LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE));
         if(p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)){
             p.displayClientMessage(Component.literal(LakeHousePartner.mouths(partner)).withStyle(ChatFormatting.ITALIC),true);if(a!=null)a.appearance(a.role(),3);return;
@@ -46,12 +48,23 @@ public final class LakeHouseTess {
     private static void move(LiteraryActor a,Vec3 to,double step){
         LakeHouseSwimNavigation.move(a,to,step);
     }
+    /** Tess slipped away because a reader came down in her place this visit (0.4.156). */
+    private static final String STOOD_IN="PartnerStoodIn0156";
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         var a=actor(p,own);int count=readers(p,b);boolean ended=own.getBoolean("Ready");
+        // A partner who leaves partway through a visit leaves the diver alone: Tess comes back for the rest of it, out of sight.
+        if(own.getBoolean(STOOD_IN)&&count==1&&a==null&&own.getInt("TessLeaving")==0&&!own.getBoolean("GoodbyeDone")){
+            var staging=own.getInt("Visit")==2?b.offset(LakeHouse.COMPRESSOR):b.offset(3,0,-16);
+            if(!HouseWatchers.sees(p,staging.getCenter())){own.putBoolean("SoloGone",false);own.putBoolean(STOOD_IN,false);}
+        }
         boolean goodbye=ended&&own.getInt("Visit")>own.getInt("EndVisit")&&!own.getBoolean("GoodbyeDone");
         if(count>1&&a!=null&&!own.getBoolean("SoloGone")){
-            own.putBoolean("SoloGone",true);own.putInt("TessLeaving",5);line(p,a,"I'll watch the compressor.");a.stopRiding();
+            // A reader in Tess's place (0.4.156) means Tess slips away without a word.
+            boolean paired=LakeHousePairs.partnerHere(p)!=null;
+            own.putBoolean("SoloGone",true);own.putBoolean(STOOD_IN,paired);own.putInt("TessLeaving",5);if(!paired)line(p,a,"I'll watch the compressor.");a.stopRiding();
         }
+        // A partner already there when the visit starts means Tess never comes at all.
+        if(a==null&&!own.getBoolean("SoloGone")&&LakeHousePairs.partnerHere(p)!=null){own.putBoolean("SoloGone",true);own.putBoolean(STOOD_IN,true);}
         if(own.getInt("TessLeaving")>0&&a!=null){
             int t=own.getInt("TessLeaving")+5;own.putInt("TessLeaving",t);
             if(!visible(p,a)){LakeHouseSwimNavigation.forget(a);a.discard();own.remove("Tess");own.putInt("TessLeaving",0);return;}

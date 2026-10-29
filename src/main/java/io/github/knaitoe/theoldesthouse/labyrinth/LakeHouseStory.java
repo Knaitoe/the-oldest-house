@@ -39,10 +39,11 @@ public final class LakeHouseStory {
     private LakeHouseStory(){}
     private static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE);}
     private static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE,own);}
-    public static boolean lit(ServerPlayer p){return own(p).getBoolean("Lit");}
+    /** Whether the house is lit for this reader: a partner sees their diver's house (0.4.156). */
+    public static boolean lit(ServerPlayer p){return LakeHousePairs.story(p).getBoolean("Lit");}
     public static void arrive(ServerPlayer p,CompoundTag own){
         if(!own.getBoolean("LakeFreshVisit"))return;own.putBoolean("LakeDeparted",false);
-        own.putBoolean("SoloGone",false);own.putBoolean("TessGreeting",false);own.putInt("TessLeaving",0);own.putInt("SaunaWait",0);own.putInt("SeatWait",0);own.putBoolean("InsideLit0505",false);
+        own.putBoolean("SoloGone",false);own.putBoolean("PartnerStoodIn0156",false);own.putBoolean("TessGreeting",false);own.putInt("TessLeaving",0);own.putInt("SaunaWait",0);own.putInt("SeatWait",0);own.putBoolean("InsideLit0505",false);
         if(own.getInt("Visit")>=3)own.putBoolean("FlashlightOut",false);
     }
     public static void depart(ServerPlayer p){var own=own(p);own.putBoolean("LakeDeparted",true);own.putBoolean("Here",false);save(p,own);releaseLift(p.getUUID());releaseVision(p);}
@@ -51,7 +52,7 @@ public final class LakeHouseStory {
     /** Inside the house's walls, basement and sauna included; relative to the base. */
     public static boolean withinWalls(Vec3 r){return house(r);}
     private static void view(ServerPlayer p,BlockPos at,BlockState state){p.connection.send(new ClientboundBlockUpdatePacket(at,state));}
-    private static void lightView(ServerPlayer p,BlockPos b,CompoundTag own,boolean inside){
+    static void lightView(ServerPlayer p,BlockPos b,CompoundTag own,boolean inside){
         boolean bright=own.getBoolean("Lit")&&inside;
         if(bright){
             if(!p.hasEffect(MobEffects.NIGHT_VISION)){p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION,220,0,false,false,false));VISION.add(p.getUUID());}
@@ -203,17 +204,21 @@ public final class LakeHouseStory {
         HousePackets.send(p,new HouseFadePayload(18,50,32));releaseVision(p);p.stopRiding();
         var artifact=ending.equals(LakeHouse.SAID_HELLO)?LakeHouseRegistry.FOUND_FLASHLIGHT.get():ending.equals(LakeHouse.LEFT_THE_LIGHTS_ON)?LakeHouseRegistry.HOUSE_LIGHT.get():LakeHouseRegistry.GOLD_HELMET.get();
         LiteraryVignettes.reward(p,LakeHouse.PLACE,own,"Artifact",new ItemStack(artifact));save(p,own);
+        // 0.4.156: the reader who went down in Tess's place has their own account from her side.
+        LakeHousePairs.ready(p,own,ending);
     }
-    private static void finishTick(ServerPlayer p,BlockPos b,CompoundTag own){
+    static void finishTick(ServerPlayer p,BlockPos b,CompoundTag own){
         int left=own.getInt("Finish");
         if(left==65){
             var target=b;boolean empty=LakeHouse.SAID_HELLO.equals(own.getString("Outcome"));
             if(empty){target=LakeHouse.emptyBase(p.server);if(target==null)return;IndianLakeRooms.keepLoaded(p.serverLevel(),target,LabyrinthPlace.LAKE_HOUSE_EMPTY);
                 if(!LabyrinthBuilder.isPlaceReady(LabyrinthData.get(p.server),LabyrinthPlace.LAKE_HOUSE_EMPTY)||!p.serverLevel().hasChunkAt(target))return;}
-            var at=empty?Vec3.atBottomCenterOf(target.offset(LakeHouse.DOCK_END.above())):Vec3.atBottomCenterOf(target.offset(LakeHouse.RAFT.offset(1,1,0)));
+            // 0.4.156: a reader in Tess's place comes up beside their diver.
+            boolean side=own.getBoolean(LakeHousePairs.SIDE);
+            var at=empty?Vec3.atBottomCenterOf(target.offset(LakeHouse.DOCK_END.above().east(side?1:0))):Vec3.atBottomCenterOf(target.offset(LakeHouse.RAFT.offset(side?-1:1,1,0)));
             p.teleportTo(p.serverLevel(),at.x,at.y,at.z,180,10);p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();LakeHouseDive.setAir(p,p.getMaxAirSupply());
             dismiss(p,own);own.putBoolean("FinishMoved",true);
-            p.displayClientMessage(Component.literal(empty?"You come up into an empty lake. There is no roof beneath the water.":LakeHouse.STAYED.equals(own.getString("Outcome"))?"You wake on the raft. It feels like dawn. Your place is still set below.":"From the raft you can still see it, lit all the way down."),false);
+            p.displayClientMessage(Component.literal(own.getBoolean(LakeHousePairs.SIDE)?LakeHousePairs.surfaced(own):empty?"You come up into an empty lake. There is no roof beneath the water.":LakeHouse.STAYED.equals(own.getString("Outcome"))?"You wake on the raft. It feels like dawn. Your place is still set below.":"From the raft you can still see it, lit all the way down."),false);
         }
         own.putInt("Finish",Math.max(0,left-5));
     }
@@ -224,12 +229,14 @@ public final class LakeHouseStory {
     public static void mining(PlayerInteractEvent.LeftClickBlock e){
         if(!(e.getEntity() instanceof ServerPlayer p)||p.isSpectator()||!p.isAlive()||e.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START||!LakeHouse.inside(p)||LakeHouse.empty(p))return;
         var b=LakeHouse.readerBase(p);if(b==null||!house(Vec3.atCenterOf(e.getPos()).subtract(Vec3.atLowerCornerOf(b)))||p.distanceToSqr(e.getPos().getCenter())>36)return;
-        e.setCanceled(true);var own=own(p);long now=p.level().getGameTime();if(own.contains("LastAsk")&&now-own.getLong("LastAsk")<20)return;
+        // 0.4.156: a pair keeps one rule; a partner's test of it is the diver's too.
+        e.setCanceled(true);var holder=LakeHousePairs.storyHolder(p);boolean self=holder.equals(p.getUUID());var data=LabyrinthData.get(p.server);var own=self?own(p):LiteraryVignettes.personal(data,holder,LakeHouse.PLACE);
+        long now=p.level().getGameTime();if(own.contains("LastAsk")&&now-own.getLong("LastAsk")<20)return;
         own.putLong("LastAsk",now);own.putInt("RuleAttempts",own.getInt("RuleAttempts")+1);
-        if(own.getInt("RuleAttempts")==1){p.displayClientMessage(Component.literal("Don't ask how."),false);LakeHouseTess.line(p,LakeHouseTess.actor(p,own),"Don't ask how.");}
-        else{own.putBoolean("RuleBroken",true);p.displayClientMessage(Component.literal("Someone starts walking upstairs."),false);LakeHouseTess.line(p,LakeHouseTess.actor(p,own),"Couldn't it just be ours?");}
+        if(own.getInt("RuleAttempts")==1){p.displayClientMessage(Component.literal("Don't ask how."),false);if(self)LakeHouseTess.line(p,LakeHouseTess.actor(p,own),"Don't ask how.");}
+        else{own.putBoolean("RuleBroken",true);p.displayClientMessage(Component.literal("Someone starts walking upstairs."),false);if(self)LakeHouseTess.line(p,LakeHouseTess.actor(p,own),"Couldn't it just be ours?");}
         releaseLift(p.getUUID());var state=p.serverLevel().getBlockState(e.getPos());var d=display(p,e.getPos(),state);
-        if(d!=null){view(p,e.getPos(),Blocks.WATER.defaultBlockState());LIFTS.put(p.getUUID(),new Lift(p,e.getPos().immutable(),state,d,now+40));}save(p,own);
+        if(d!=null){view(p,e.getPos(),Blocks.WATER.defaultBlockState());LIFTS.put(p.getUUID(),new Lift(p,e.getPos().immutable(),state,d,now+40));}LiteraryVignettes.save(data,holder,LakeHouse.PLACE,own);
     }
     private static void releaseLift(UUID id){var lift=LIFTS.remove(id);if(lift==null)return;lift.display().discard();if(lift.reader().connection!=null&&lift.reader().serverLevel().hasChunkAt(lift.at()))view(lift.reader(),lift.at(),lift.reader().serverLevel().getBlockState(lift.at()));}
     private static void releaseTouch(UUID id){var a=TOUCHES.remove(id);if(a==null)return;if(a.cue()!=null)a.cue().discard();if(a.reader().serverLevel()==a.level()&&a.level().hasChunkAt(a.at()))view(a.reader(),a.at(),a.level().getBlockState(a.at()));}
@@ -258,10 +265,13 @@ public final class LakeHouseStory {
                 if(t%20==0)ThreeFingers.hear(p,SoundEvents.WET_GRASS_STEP,BlockPos.containing(at),.45F,.8F);own.putInt("HomeSteps",Math.max(0,t-5));save(p,own);
             }
         }
-        var l=e.getServer().getLevel(HouseDimensions.OUTSIDE);var b=LakeHouse.base(e.getServer());if(l==null||b==null||!l.hasChunkAt(b.offset(LakeHouse.HOUSE)))return;
-        // Vanilla normally makes dropped items bob upward. Here the exact native originals sink and lie still.
-        for(var fish:l.getEntitiesOfClass(net.minecraft.world.entity.animal.AbstractFish.class,LakeHouse.box(b),q->house(q.position().subtract(Vec3.atLowerCornerOf(b)))))fish.moveTo(b.getX()+.5,fish.getY(),b.getZ()-158.5);
-        for(var item:l.getEntitiesOfClass(ItemEntity.class,LakeHouse.box(b),q->house(q.position().subtract(Vec3.atLowerCornerOf(b))))){var v=item.getDeltaMovement();item.setDeltaMovement(item.onGround()?Vec3.ZERO:new Vec3(v.x*.8,-.065,v.z*.8));}
+        var l=e.getServer().getLevel(HouseDimensions.OUTSIDE);if(l==null)return;
+        for(var b:SceneInstances.bases(e.getServer(),LakeHouse.PLACE)){
+            if(!l.hasChunkAt(b.offset(LakeHouse.HOUSE)))continue;
+            // Vanilla normally makes dropped items bob upward. Here the exact native originals sink and lie still.
+            for(var fish:l.getEntitiesOfClass(net.minecraft.world.entity.animal.AbstractFish.class,LakeHouse.box(b),q->house(q.position().subtract(Vec3.atLowerCornerOf(b)))))fish.moveTo(b.getX()+.5,fish.getY(),b.getZ()-158.5);
+            for(var item:l.getEntitiesOfClass(ItemEntity.class,LakeHouse.box(b),q->house(q.position().subtract(Vec3.atLowerCornerOf(b))))){var v=item.getDeltaMovement();item.setDeltaMovement(item.onGround()?Vec3.ZERO:new Vec3(v.x*.8,-.065,v.z*.8));}
+        }
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){releaseLift(e.getEntity().getUUID());releaseTouch(e.getEntity().getUUID());if(e.getEntity() instanceof ServerPlayer p)releaseVision(p);VIEWS.remove(e.getEntity().getUUID());}
     @SubscribeEvent public static void stop(net.neoforged.neoforge.event.server.ServerStoppingEvent e){for(var id:new ArrayList<>(LIFTS.keySet()))releaseLift(id);for(var id:new ArrayList<>(TOUCHES.keySet()))releaseTouch(id);for(var p:e.getServer().getPlayerList().getPlayers())releaseVision(p);VISION.clear();VIEWS.clear();}

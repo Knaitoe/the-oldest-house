@@ -317,7 +317,8 @@ public final class LakeHouse {
     public static @Nullable BlockPos base(MinecraftServer s){var origin=HouseSavedData.get(s).houseOrigin();return origin==null?null:LabyrinthPlaces.base(origin,PLACE);}
     public static @Nullable BlockPos emptyBase(MinecraftServer s){var o=HouseSavedData.get(s).houseOrigin();return o==null?null:LabyrinthPlaces.base(o,LabyrinthPlace.LAKE_HOUSE_EMPTY);}
     public static boolean empty(ServerPlayer p){var b=emptyBase(p.server);return b!=null&&p.level().dimension()==NovelRooms.dimension(PLACE)&&IndianLakeRooms.bounds(b,PLACE).contains(p.position());}
-    public static @Nullable BlockPos readerBase(ServerPlayer p){return empty(p)?emptyBase(p.server):base(p.server);}
+    /** The reader's lake: the empty lake once their story has ended there, else the copy they stand in or keep (0.4.156: the lake house has copies, two readers to each). */
+    public static @Nullable BlockPos readerBase(ServerPlayer p){return empty(p)?emptyBase(p.server):SceneInstances.base(p,PLACE);}
     public static LabyrinthData.Door destinationEntry(ServerPlayer p,LabyrinthData.Door supplied,LabyrinthPlace place){
         if(place!=PLACE)return supplied;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);
         if(!SAID_HELLO.equals(own.getString("Outcome")))return supplied;
@@ -336,12 +337,16 @@ public final class LakeHouse {
     // ------------------------------------------------------------------------------------------------ the reader's part
     /** Each visit starts on the reader's own clock. */
     public static void arrive(ServerPlayer p,CompoundTag own){
-        if(own.getBoolean("LakeFreshVisit"))own.putInt("T",0);LakeHousePartner.choose(p,own);LakeHouseStory.arrive(p,own);
+        if(own.getBoolean("LakeFreshVisit"))own.putInt("T",0);
+        // A reader in Tess's place (0.4.156) has no partner of their own and rides in their diver's canoe.
+        if(LakeHousePairs.isPartner(p)){LakeHouseStory.arrive(p,own);return;}
+        LakeHousePartner.choose(p,own);LakeHouseStory.arrive(p,own);
         LakeHouseCanoe.ensure(p);
     }
     /** Every five ticks while the reader is in the scene. */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         own.putInt("T",own.getInt("T")+5);
+        if(LakeHousePairs.partner(p,b,own))return;
         if(LakeHouseStory.reader(p,b,own))return;
         // A reader who arrived before their level did, or whose canoe was put away, finds one waiting again.
         if(own.getInt("T")%100==5)LakeHouseCanoe.ensure(p);
@@ -373,6 +378,7 @@ public final class LakeHouse {
     // ------------------------------------------------------------------------------------------------ the account
     public static final String SAID_HELLO="said_hello",LEFT_THE_LIGHTS_ON="left_the_lights_on",STAYED="stayed_a_little_longer";
     public static String account(CompoundTag own){
+        if(own.getBoolean(LakeHousePairs.SIDE))return LakeHousePartner.partnerAccount(own);
         String ending=switch(own.getString("Outcome")){
             case LEFT_THE_LIGHTS_ON->"THE LIGHTS\n\nEvery light in the house came on at once. I didn't go up. I swam out through the half door and didn't look back until I was on the raft. From up there you can see it, lit, all the way down. It was still lit when I left.";
             case STAYED->"THE PLACE AT THE TABLE\n\nOne of the chairs at the table had air in it, so I sat down. The lights went down one at a time and I stayed where I was. I woke on the raft. They tell me it was days. My place is still set down there.";
@@ -382,12 +388,16 @@ public final class LakeHouse {
 
     // ------------------------------------------------------------------------------------------------ the shared clock
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
-        var s=e.getServer();if(s.getTickCount()%10!=1)return;var b=base(s);if(b==null)return;var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
-        if(!l.hasChunkAt(b.offset(COMPRESSOR))||!LabyrinthBuilder.isPlaceReady(LabyrinthData.get(s),PLACE))return;
-        LakeHouseDive.compressor(l,b,s.getTickCount());
-        if(s.getTickCount()%40!=11)return;
-        if(l.hasChunkAt(b.offset(CANOE)))LakeHouseCanoe.tidy(l,b);
-        LakeHouseGear.tidy(l,box(b));
+        var s=e.getServer();if(s.getTickCount()%10!=1)return;var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null||!LabyrinthBuilder.isPlaceReady(LabyrinthData.get(s),PLACE))return;
+        if(s.getTickCount()%40==11)LakeHousePairs.refresh(s);
+        // The original and every copy that stands has its own compressor, canoes and lent gear.
+        for(var b:SceneInstances.bases(s,PLACE)){
+            if(!l.hasChunkAt(b.offset(COMPRESSOR)))continue;
+            LakeHouseDive.compressor(l,b,s.getTickCount());
+            if(s.getTickCount()%40!=11)continue;
+            if(l.hasChunkAt(b.offset(CANOE)))LakeHouseCanoe.tidy(l,b);
+            LakeHouseGear.tidy(l,box(b));
+        }
     }
     /** The scene's box, absolute. */
     public static AABB box(BlockPos b){return new AABB(b.getX()+MIN_X,b.getY()+MIN_Y,b.getZ()+MIN_Z,b.getX()+MAX_X+1,b.getY()+MAX_Y+1,b.getZ()+1);}

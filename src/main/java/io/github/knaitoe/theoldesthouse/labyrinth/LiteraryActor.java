@@ -82,7 +82,8 @@ public final class LiteraryActor extends PathfinderMob {
         // Match the renderer's privacy rule at native tracking too. A hidden peer's
         // overlapping cast must not remain on this client and intercept its entity pick.
         boolean sharedCopy=scene.equals(LabyrinthPlace.FAMILY_COPY.id())||scene.equals(LabyrinthPlace.OLD_CABIN.id());
-        if(owner().isPresent()&&!sharedCopy&&!owner().get().equals(p.getUUID()))return false;
+        // 0.4.156: the lake house's figure is also seen by the reader who goes down in Tess's place with its reader.
+        if(owner().isPresent()&&!sharedCopy&&!owner().get().equals(p.getUUID())&&!(role()==LAKE_WAX&&LakeHousePairs.sharesWith(p,owner().get())))return false;
         // 0.4.147: a thread's cast is seen by that thread's members alone.
         if(getPersistentData().contains(VignetteThreads.ACTOR_TAG)&&!VignetteThreads.sees(p,scene,getPersistentData().getString(VignetteThreads.ACTOR_TAG)))return false;
         if(scene.equals(ElkLot.PLACE.id())&&role()==STRANGER&&phase()>=5&&phase()<=8){var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),ElkLot.PLACE);if(own.getBoolean("Ready")||own.getBoolean("Completed"))return false;}
