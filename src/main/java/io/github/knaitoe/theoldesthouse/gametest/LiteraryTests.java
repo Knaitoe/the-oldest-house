@@ -179,14 +179,18 @@ public final class LiteraryTests {
             h.assertTrue(LiteraryTexts.accountTitle(place).equals("The account: the fan room"),"the fan's account has a shortened prose title");h.succeed();});
     }
     @AfterBatch(batch="literary_fan") public static void fanDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_food",timeoutTicks=100)
+    @GameTest(template="empty",batch="literary_food",timeoutTicks=200)
     public static void frozenFoodStaysCarriedAndTheSameNightMealCannotBeCountedTwice(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.HOLY_RABBIT;var p=f.player("hollow_reader",place);f.at(p,place,1,0,-22);
         var bread=new ItemStack(Items.BREAD,4);p.setItemInHand(InteractionHand.MAIN_HAND,bread);
         var arrival=new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start(p,bread,32);NeoForge.EVENT_BUS.post(arrival);
         h.assertTrue(!arrival.isCanceled()&&!LiteraryVignettes.retreatLocked(p),"an ordinary arrival allows food and retreat before any explicit commitment");
-        h.runAfterDelay(10,()->{
-            var father=f.out.getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(6),a->a.role()==LiteraryActor.FATHER&&a.owner().orElse(UUID.randomUUID()).equals(p.getUUID())).stream().findFirst().orElseThrow();
+        // The reader's own tick places Father, and he can be found once his entity section loads: on a slow host that is
+        // later than ten ticks, so the case waits for him rather than a fixed delay.
+        final boolean[] met={false};
+        h.onEachTick(()->{if(met[0])return;
+            var found=f.out.getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(6),a->a.role()==LiteraryActor.FATHER&&a.owner().orElse(UUID.randomUUID()).equals(p.getUUID())).stream().findFirst();
+            if(found.isEmpty())return;met[0]=true;var father=found.get();
             LiteraryVignettes.talk(p,father);h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu,"Father offers a real explicit native choice");
             p.containerMenu.clicked(0,0,net.minecraft.world.inventory.ClickType.PICKUP,p);
             var eating=new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start(p,bread,32);NeoForge.EVENT_BUS.post(eating);
