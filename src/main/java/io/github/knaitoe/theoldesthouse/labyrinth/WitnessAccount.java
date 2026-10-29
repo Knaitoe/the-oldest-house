@@ -205,6 +205,8 @@ public final class WitnessAccount {
     }
     public static ItemStack book(LabyrinthData data,UUID player,String name,boolean epilogue){
         List<Component> pages=new ArrayList<>();
+        // 0.4.159: the House opens the account by reciting the reader's habits back to them, in its own plain type.
+        for(String page:HouseReadProse.pages(HouseReadProse.opening(data,player)))pages.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,page));
         pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,
                 "AN ACCOUNT\n\nI am writing down what I saw, before I begin remembering something else.\n\nThere are still gaps."));
         int resolved=count(data,player);

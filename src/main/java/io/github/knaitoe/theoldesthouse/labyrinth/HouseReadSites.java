@@ -30,6 +30,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HouseReadSites {
     public static final String STATE="house_read_rooms_04138";
+    /** 0.4.159 rebuilt the waiting room, coatroom and shelter; a copy prepared ahead but never entered is built again. */
+    public static final int LAYOUT=159;
     public enum Room {
         WAITING(LabyrinthPlace.READ_WAITING,483328), BATHROOM(LabyrinthPlace.READ_BATHROOM,491520),
         COATROOM(LabyrinthPlace.READ_COATROOM,466944), SHELTER(LabyrinthPlace.READ_SHELTER,499712), PORCH(LabyrinthPlace.READ_PORCH,475136);
@@ -69,6 +71,7 @@ public final class HouseReadSites {
     public static @Nullable LabyrinthData.Door prepare(ServerPlayer p,Room room){
         var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}var own=state(p.server,p.getUUID());
         if(!own.contains("Index")){var world=d.stateEntry(STATE,"World");int index=world.getInt("NextIndex");if(index>=4096)return null;own.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(STATE,"World",world);save(p.server,p.getUUID(),own);}
+        var stale=own.getCompound(room.key());if(stale.getBoolean("Built")&&!stale.getBoolean("Entered")&&stale.getInt("Layout")<LAYOUT&&(room==Room.WAITING||room==Room.COATROOM||room==Room.SHELTER)){stale.remove("Built");own.put(room.key(),stale);save(p.server,p.getUUID(),own);}
         var b=base(p.server,p.getUUID(),room);var l=p.server.getLevel(room.dimension());
         if(l!=null&&own.getCompound(room.key()).getBoolean("Built")&&l.getChunkSource().getChunkNow(b.getX()>>4,b.getZ()>>4)!=null&&l.areEntitiesLoaded(ChunkPos.asLong(b)))return d.door(doorId(p.getUUID(),room,"entry"));
         var job=new Job(p.getUUID(),room);if(!job.equals(building))WAITING.add(job);return null;
@@ -99,7 +102,7 @@ public final class HouseReadSites {
     public static boolean door(ServerPlayer p,LabyrinthData.Door door){
         if(HouseReadEntrance.room(door)!=null){p.displayClientMessage(Component.literal("The door is locked."),true);return true;}
         if(!door.id.startsWith("house_read/"))return false;var room=inside(p);if(room==null||!door.id.startsWith("house_read/"+p.getUUID()+"/"+room.key()+"/")||p.level().dimension()!=door.dimension||p.distanceToSqr(door.lower.getCenter())>36)return true;
-        boolean forward=!door.id.endsWith("/entry");if(!forward||HouseReadMoments.canProceed(p,room))leave(p,forward);return true;
+        boolean forward=!door.id.endsWith("/entry");if(!forward||HouseReadMoments.canProceed(p,room)){if(room==Room.PORCH&&forward){String out=door.id.endsWith("/kitchen")?"kitchen":door.id.endsWith("/side")?"gate":"road";HouseRead.first(p,Room.PORCH,"Out",out);act(p,room,switch(out){case "kitchen"->"left through the front hall";case "gate"->"left by the side gate";default->"left by the road through the trees";});}leave(p,forward);}return true;
     }
     static void leave(ServerPlayer p,boolean forward){
         var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p))return;var t=state(p.server,p.getUUID()).getCompound(room.key());var d=LabyrinthData.get(p.server);
@@ -123,7 +126,28 @@ public final class HouseReadSites {
         // A swapped loan is still the room's layer, never an additional take-home item.
         for(int i=0;i<p.getInventory().getContainerSize();i++)if(loan(p.getInventory().getItem(i),p.getUUID())&&p.getInventory().getItem(i).getItem() instanceof HouseReadRegistry.Garment g&&g.getEquipmentSlot()==slot)p.getInventory().setItem(i,ItemStack.EMPTY);
         var base=base(p.server,p.getUUID(),Room.COATROOM);for(var peg:HouseReadRooms.PEGS)for(var pos:List.of(base.offset(peg),base.offset(peg.east()))){var state=p.serverLevel().getBlockState(pos);if(!state.is(HouseReadRegistry.FITTING.get()))continue;int part=state.getValue(HouseReadPropBlock.PART).ordinal();if(part<6&&(part<3)==(kind<3))p.serverLevel().setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,part==kind),Block.UPDATE_CLIENTS);}
-        var layer=new ItemStack(garment);CustomData.update(DataComponents.CUSTOM_DATA,layer,t->t.putUUID("HouseReadLoan",p.getUUID()));p.setItemSlot(slot,layer);p.setTicksFrozen(0);visit.putBoolean("Dressed",true);own.put(Room.COATROOM.key(),visit);save(p.server,p.getUUID(),own);p.inventoryMenu.broadcastChanges();act(p,Room.COATROOM,"wore "+garment.cloth.replace('_',' '));
+        var layer=new ItemStack(garment);CustomData.update(DataComponents.CUSTOM_DATA,layer,t->t.putUUID("HouseReadLoan",p.getUUID()));p.setItemSlot(slot,layer);p.setTicksFrozen(0);visit.putBoolean("Dressed",true);own.put(Room.COATROOM.key(),visit);save(p.server,p.getUUID(),own);p.inventoryMenu.broadcastChanges();act(p,Room.COATROOM,"wore "+garment.cloth.replace('_',' '));dressed(p,garment);
+    }
+    /** The coats: the first garment taken sets the reader's presentation; wearing two from different sets at once reads neither. */
+    private static final String[] SETS={"wool","trench","barn"},SELVES={"MASC","FEM","ANDROGYNOUS"};
+    private static int set(ItemStack item){return item.getItem() instanceof HouseReadRegistry.Garment g?List.of(SETS).indexOf(g.cloth.split("_")[0]):-1;}
+    private static void dressed(ServerPlayer p,HouseReadRegistry.Garment garment){
+        var seen=HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.COATROOM.key());int kind=List.of(SETS).indexOf(garment.cloth.split("_")[0]);if(kind<0)return;
+        boolean chest=garment.getEquipmentSlot()==EquipmentSlot.CHEST;HouseRead.first(p,Room.COATROOM,chest?"Coat":"Boots",SETS[kind]);
+        if(seen.contains("MirrorFirst"))return;
+        if(!seen.contains("Took")){HouseRead.first(p,Room.COATROOM,"Took",SETS[kind]);HouseRead.signal(p,HouseRead.Trait.SELF,SELVES[kind],false);return;}
+        int other=set(p.getItemBySlot(chest?EquipmentSlot.FEET:EquipmentSlot.CHEST));
+        if(!seen.getBoolean("Mixed")&&!seen.getBoolean("Looked")&&!seen.contains("Mirror")&&other>=0&&other!=kind&&kind!=2&&other!=2){HouseRead.flag(p,Room.COATROOM,"Mixed");HouseRead.restart(p,HouseRead.Trait.SELF,"ANDROGYNOUS");}
+    }
+    /** The hall glass: turned or covered before dressing settles UNSEEN; after dressing it makes UNSEEN the House's first guess. */
+    private static void glass(ServerPlayer p,boolean away,boolean cover,boolean dressedNow){
+        if(!away)return;var seen=HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.COATROOM.key());if(seen.contains("Mirror"))return;
+        if(!dressedNow){HouseRead.see(p,Room.COATROOM,t->{t.putString("Mirror",cover?"covered_before":"turned_before");t.putBoolean("MirrorFirst",true);});HouseRead.signal(p,HouseRead.Trait.SELF,"UNSEEN",false);HouseRead.signal(p,HouseRead.Trait.SELF,"UNSEEN",true);return;}
+        HouseRead.see(p,Room.COATROOM,t->t.putString("Mirror",cover?"covered_after":"turned_after"));HouseRead.restart(p,HouseRead.Trait.SELF,"UNSEEN");
+    }
+    private static void looked(ServerPlayer p){
+        var d=LabyrinthData.get(p.server);var seen=HouseRead.seen(d,p.getUUID()).getCompound(Room.COATROOM.key());if(seen.contains("Mirror")||seen.getBoolean("Looked"))return;
+        HouseRead.see(p,Room.COATROOM,t->{t.putBoolean("Looked",true);t.putString("Mirror","looked");});var now=HouseRead.raw(d,p.getUUID(),HouseRead.Trait.SELF);if(!now.value().isEmpty()&&!now.value().equals("UNSEEN"))HouseRead.signal(p,HouseRead.Trait.SELF,now.value(),true);
     }
     private static void restore(ServerPlayer p,CompoundTag visit){
         for(int i=0;i<p.getInventory().getContainerSize();i++)if(loan(p.getInventory().getItem(i),p.getUUID()))p.getInventory().setItem(i,ItemStack.EMPTY);
@@ -143,8 +167,8 @@ public final class HouseReadSites {
         if(part==HouseReadPropBlock.Part.CURTAIN){act(p,room,"passed through the curtain");leave(p,true);return;}
         if(room==Room.COATROOM&&(part==HouseReadPropBlock.Part.MIRROR||part==HouseReadPropBlock.Part.MIRROR_TOP||part==HouseReadPropBlock.Part.TOWEL||part==HouseReadPropBlock.Part.COVERED_MIRROR)){
             var lower=b.offset(HouseReadRooms.MIRROR);
-            if(part==HouseReadPropBlock.Part.TOWEL||part==HouseReadPropBlock.Part.COVERED_MIRROR){boolean cover=part==HouseReadPropBlock.Part.TOWEL;for(var pos:List.of(lower,lower.above())){var kind=cover?HouseReadPropBlock.Part.COVERED_MIRROR:pos.equals(lower)?HouseReadPropBlock.Part.MIRROR:HouseReadPropBlock.Part.MIRROR_TOP;p.serverLevel().setBlock(pos,p.serverLevel().getBlockState(pos).setValue(HouseReadPropBlock.PART,kind).setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);}act(p,room,cover?"draped the towel over the mirror":"lifted the towel from the mirror");return;}
-            boolean turned=!p.serverLevel().getBlockState(lower).getValue(HouseReadPropBlock.TURNED);for(var pos:List.of(lower,lower.above()))p.serverLevel().setBlock(pos,p.serverLevel().getBlockState(pos).setValue(HouseReadPropBlock.TURNED,turned),Block.UPDATE_CLIENTS);act(p,room,turned?"turned the mirror to the wall":"turned the mirror back");return;
+            if(part==HouseReadPropBlock.Part.TOWEL||part==HouseReadPropBlock.Part.COVERED_MIRROR){boolean cover=part==HouseReadPropBlock.Part.TOWEL;glass(p,cover,true,state(p.server,p.getUUID()).getCompound(Room.COATROOM.key()).getBoolean("Dressed"));for(var pos:List.of(lower,lower.above())){var kind=cover?HouseReadPropBlock.Part.COVERED_MIRROR:pos.equals(lower)?HouseReadPropBlock.Part.MIRROR:HouseReadPropBlock.Part.MIRROR_TOP;p.serverLevel().setBlock(pos,p.serverLevel().getBlockState(pos).setValue(HouseReadPropBlock.PART,kind).setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);}act(p,room,cover?"draped the towel over the mirror":"lifted the towel from the mirror");return;}
+            boolean turned=!p.serverLevel().getBlockState(lower).getValue(HouseReadPropBlock.TURNED);glass(p,turned,false,state(p.server,p.getUUID()).getCompound(Room.COATROOM.key()).getBoolean("Dressed"));for(var pos:List.of(lower,lower.above()))p.serverLevel().setBlock(pos,p.serverLevel().getBlockState(pos).setValue(HouseReadPropBlock.TURNED,turned),Block.UPDATE_CLIENTS);act(p,room,turned?"turned the mirror to the wall":"turned the mirror back");return;
         }
         if(part==HouseReadPropBlock.Part.UMBRELLA||part==HouseReadPropBlock.Part.RAIL){if(p.serverLevel().getBlockState(at).getValue(HouseReadPropBlock.WRITING))HouseReadTexts.open(p,room);else p.displayClientMessage(Component.literal(part==HouseReadPropBlock.Part.UMBRELLA?"A folded slip, its blank side showing.":"Smooth wood, worn by hands."),true);return;}
         act(p,room,switch(part){case RADIATOR->"warmed hands at the radiator";case SWING->"nudged the swing";case MAILBOX->"looked in the empty mailbox";case PLATE->"found the plate kept warm";default->"looked around";});
@@ -162,21 +186,37 @@ public final class HouseReadSites {
             // 0.4.150: standing at the uncovered, unturned glass in the borrowed layers for two seconds, looking into it.
             var glass=b.offset(HouseReadRooms.MIRROR);var glassState=p.serverLevel().getBlockState(glass);
             boolean showing=glassState.is(HouseReadRegistry.FITTING.get())&&glassState.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR&&!glassState.getValue(HouseReadPropBlock.TURNED);
-            if(visit.getBoolean("Dressed")&&showing&&p.getZ()>glass.getZ()+.5&&p.getZ()<glass.getZ()+4.5&&Math.abs(p.getX()-glass.getX()-.5)<2&&watched(p,glass.above())){int look=visit.getInt("MirrorLook")+1;visit.putInt("MirrorLook",look);if(look>=40)remember(visit,"AtMirror","stood at the hall glass in the borrowed coat");}else visit.putInt("MirrorLook",0);if(age%8==0)p.serverLevel().sendParticles(p,ParticleTypes.FALLING_WATER,false,b.getX()-6.95,b.getY()+2.7,b.getZ()-5+p.getRandom().nextDouble(),2,0,.1,.3,0);if(age%120==1){sound(p,HouseReadRegistry.RAIN.get(),b.offset(0,1,2),.5f);sound(p,HouseReadRegistry.RADIATOR.get(),b.offset(-6,0,-1),.35f);}if(p.getZ()<b.getZ()-10.4){own.put(room.key(),visit);save(p.server,p.getUUID(),own);leave(p,true);return;}}
-        else if(room==Room.PORCH) {
-            if(!visit.contains("Whistle")&&(age>=200||p.distanceToSqr(b.offset(-10,0,2).getCenter())<16)){visit.putInt("Whistle",age);sound(p,HouseReadRegistry.WHISTLE.get(),b.offset(0,4,-8),1.6f);}
-            int cue=visit.getInt("Whistle");
-            if(cue>0){if(p.getX()>b.getX()+10&&p.getX()<b.getX()+17&&p.getZ()<b.getZ()-24)remember(visit,"PastMailbox","walked past the mailbox into the trees");if(p.getX()>b.getX()-7&&p.getX()<b.getX()-4&&p.getZ()>b.getZ()-8&&p.getZ()<b.getZ()-2&&p.getY()<b.getY()+1)remember(visit,"UnderLattice","stood under the porch behind the lattice");if(p.isPassenger()&&p.getZ()<b.getZ()-15&&p.getZ()>b.getZ()-20)remember(visit,"AtTable","sat at the warm table");}
-if(cue>0&&age==cue+26)sound(p,HouseReadRegistry.SUPPER.get(),b.offset(1,4,-11),1.8f);if(cue>0&&age==cue+190)sound(p,HouseReadRegistry.STEP.get(),b.offset(1,3,-13),1f);
-            if(age%240==1)sound(p,HouseReadRegistry.NEWS.get(),b.offset(4,4,-15),.5f);if(age%160==1)sound(p,HouseReadRegistry.DISHES.get(),b.offset(-3,4,-12),.7f);if(age==90)sound(p,HouseReadRegistry.ICE.get(),b.offset(-3,4,-11),.7f);
-            if(cue>0&&age>=cue+200){visit.putBoolean("NoteArmed",true);if(!visit.getBoolean("LightsOut")&&p.getY()<b.getY()+1&&p.getX()<b.getX()-4&&p.getZ()>b.getZ()-9&&p.getZ()<b.getZ()-1){visit.putBoolean("LightsOut",true);for(var light:List.of(new BlockPos(0,6,-7),new BlockPos(0,6,-18),new BlockPos(3,5,-12)))p.serverLevel().setBlock(b.offset(light),Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS);for(var pos:List.of(b.offset(HouseReadRooms.SCREEN),b.offset(HouseReadRooms.SCREEN).above())){var door=p.serverLevel().getBlockState(pos);if(door.getBlock() instanceof DoorBlock)p.serverLevel().setBlock(pos,door.setValue(DoorBlock.OPEN,false),Block.UPDATE_CLIENTS);}sound(p,SoundEvents.WOODEN_DOOR_CLOSE,b.offset(HouseReadRooms.SCREEN),.5f);}}
-            if(!visit.getBoolean("WentIn")&&p.getZ()<b.getZ()-8&&Math.abs(p.getX()-b.getX())<5&&p.getY()>=b.getY()+2.8){visit.putBoolean("WentIn",true);visit.putBoolean("NoteArmed",true);var actions=visit.getList("Actions",Tag.TAG_STRING);actions.add(StringTag.valueOf("went through the screen door"));visit.put("Actions",actions);}
-            if(age%13==0)p.serverLevel().sendParticles(p,ParticleTypes.GLOW,false,b.getX()-8+p.getRandom().nextDouble()*16,b.getY()+.7+p.getRandom().nextDouble()*1.3,b.getZ()+p.getRandom().nextDouble()*8,1,0,0,0,0);
-        }
+            if(visit.getBoolean("Dressed")&&showing&&p.getZ()>glass.getZ()+.5&&p.getZ()<glass.getZ()+4.5&&Math.abs(p.getX()-glass.getX()-.5)<2&&watched(p,glass.above())){int look=visit.getInt("MirrorLook")+1;visit.putInt("MirrorLook",look);if(look>=40){remember(visit,"AtMirror","stood at the hall glass in the borrowed coat");if(look==40)looked(p);}}else visit.putInt("MirrorLook",0);if(age%8==0)p.serverLevel().sendParticles(p,ParticleTypes.FALLING_WATER,false,b.getX()-6.95,b.getY()+2.7,b.getZ()-5+p.getRandom().nextDouble(),2,0,.1,.3,0);if(age%120==1){sound(p,HouseReadRegistry.RAIN.get(),b.offset(0,1,2),.5f);sound(p,HouseReadRegistry.RADIATOR.get(),b.offset(-6,0,-1),.35f);}if(p.getZ()<b.getZ()-10.4){own.put(room.key(),visit);save(p.server,p.getUUID(),own);leave(p,true);return;}}
+        else if(room==Room.PORCH)porch(p,b,visit,age);
         else HouseReadMoments.tick(p,b,room,visit,age);
         var note=b.offset(HouseReadRooms.note(room));if(visit.getBoolean("NoteArmed")&&!visit.getBoolean("Written")&&!watched(p,note)&&p.containerMenu==p.inventoryMenu){var s=p.serverLevel().getBlockState(note);if(s.is(HouseReadRegistry.FITTING.get())){p.serverLevel().setBlock(note,s.setValue(HouseReadPropBlock.WRITING,true),Block.UPDATE_CLIENTS);visit.putBoolean("Written",true);}}
         own.put(room.key(),visit);save(p.server,p.getUUID(),own);
     }
+    private static boolean underPorch(ServerPlayer p,BlockPos b){return p.getY()<b.getY()+1&&Math.abs(p.getX()-b.getX()-.5)<6.6&&p.getZ()>b.getZ()-8.5&&p.getZ()<b.getZ()-1.5;}
+    private static boolean onRoad(ServerPlayer p,BlockPos b){return p.getX()>b.getX()+10&&p.getX()<b.getX()+17&&p.getZ()<b.getZ()-18;}
+    /** The porch (0.4.159): the 200 ticks after the whistle are its window; what the reader does first in them sets HOME. */
+    private static void porch(ServerPlayer p,BlockPos b,CompoundTag visit,int age){
+        if(!visit.contains("Whistle")&&(age>=200||p.distanceToSqr(b.offset(-10,0,2).getCenter())<16)){visit.putInt("Whistle",age);sound(p,HouseReadRegistry.WHISTLE.get(),b.offset(0,4,-8),1.6f);}
+        int cue=visit.getInt("Whistle");boolean window=cue>0&&age<=cue+200;var seen=HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.PORCH.key());boolean first=seen.contains("First");
+        if(cue>0){
+            if(underPorch(p,b)){remember(visit,"UnderLattice","stood under the porch behind the lattice");if(window&&!first){home(p,"lattice","DANGER");first=true;}}
+            if(onRoad(p,b)){remember(visit,"ToRoad","walked down the gravel toward the road");if(window&&!first){home(p,"road","RUNAWAY");first=true;}}
+            if(onRoad(p,b)&&seen.getString("First").equals("road")){var house=Vec3.atCenterOf(b.offset(0,5,-16)).subtract(p.getEyePosition()).normalize();int back=p.getLookAngle().dot(house)>.5?visit.getInt("LookBack")+1:0;visit.putInt("LookBack",back);if(back>=20)visit.putBoolean("TurnedBack",true);}
+            if(p.getX()>b.getX()+10&&p.getX()<b.getX()+17&&p.getZ()<b.getZ()-27){remember(visit,"PastMailbox","walked past the mailbox into the trees");if(seen.getString("First").equals("road")&&!visit.getBoolean("TurnedBack")&&!seen.getBoolean("Trees")){HouseRead.flag(p,Room.PORCH,"Trees");HouseRead.signal(p,HouseRead.Trait.HOME,"RUNAWAY",true);}}
+            // Stopping on the lawn to look in at the lit window, then not going in, is the other way of hiding.
+            if(window&&p.getY()<b.getY()+1.5&&p.getZ()>b.getZ()-2&&p.pick(32,1,false) instanceof BlockHitResult sight&&sight.getType()==HitResult.Type.BLOCK&&sight.getBlockPos().getZ()==b.getZ()-8&&Set.of(-3,-2,3,4).contains(sight.getBlockPos().getX()-b.getX())&&p.serverLevel().getBlockState(sight.getBlockPos()).is(Blocks.GLASS_PANE)){int look=visit.getInt("LookIn")+1;visit.putInt("LookIn",look);if(look>=30){remember(visit,"LookedIn","looked through the lit window from the lawn");HouseRead.flag(p,Room.PORCH,"LookedIn");}}
+            if(age==cue+200&&!first&&visit.getBoolean("LookedIn")&&!visit.getBoolean("WentIn")){home(p,"window","DANGER");first=true;}
+            if(p.isPassenger()&&p.getZ()<b.getZ()-15&&p.getZ()>b.getZ()-20){remember(visit,"AtTable","sat at the warm table");if(seen.getString("First").equals("in")&&!seen.getBoolean("Table")){HouseRead.flag(p,Room.PORCH,"Table");HouseRead.signal(p,HouseRead.Trait.HOME,"HAVEN",true);}}
+        }
+        if(cue>0&&age==cue+26)sound(p,HouseReadRegistry.SUPPER.get(),b.offset(1,4,-11),1.8f);if(cue>0&&age==cue+190)sound(p,HouseReadRegistry.STEP.get(),b.offset(1,3,-13),1f);
+        if(age%240==1)sound(p,HouseReadRegistry.NEWS.get(),b.offset(4,4,-15),.5f);if(age%160==1)sound(p,HouseReadRegistry.DISHES.get(),b.offset(-3,4,-12),.7f);if(age==90)sound(p,HouseReadRegistry.ICE.get(),b.offset(-3,4,-11),.7f);
+        if(cue>0&&age>=cue+200){visit.putBoolean("NoteArmed",true);if(!visit.getBoolean("LightsOut")&&underPorch(p,b)){visit.putBoolean("LightsOut",true);for(var light:List.of(new BlockPos(0,6,-7),new BlockPos(0,6,-18),new BlockPos(3,5,-12)))p.serverLevel().setBlock(b.offset(light),Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS);for(var pos:List.of(b.offset(HouseReadRooms.SCREEN),b.offset(HouseReadRooms.SCREEN).above())){var door=p.serverLevel().getBlockState(pos);if(door.getBlock() instanceof DoorBlock)p.serverLevel().setBlock(pos,door.setValue(DoorBlock.OPEN,false),Block.UPDATE_CLIENTS);}sound(p,SoundEvents.WOODEN_DOOR_CLOSE,b.offset(HouseReadRooms.SCREEN),.5f);
+            // Still hidden when the kitchen light goes off settles it.
+            if(seen.getString("First").equals("lattice")||seen.getString("First").equals("window")){HouseRead.flag(p,Room.PORCH,"Hidden");HouseRead.signal(p,HouseRead.Trait.HOME,"DANGER",true);}}}
+        if(!visit.getBoolean("WentIn")&&p.getZ()<b.getZ()-8&&Math.abs(p.getX()-b.getX())<5&&p.getY()>=b.getY()+2.8){visit.putBoolean("WentIn",true);visit.putBoolean("NoteArmed",true);var actions=visit.getList("Actions",Tag.TAG_STRING);actions.add(StringTag.valueOf("went through the screen door"));visit.put("Actions",actions);if(window&&!first){home(p,"in","HAVEN");first=true;}}
+        if(age%13==0)p.serverLevel().sendParticles(p,ParticleTypes.GLOW,false,b.getX()-8+p.getRandom().nextDouble()*16,b.getY()+.7+p.getRandom().nextDouble()*1.3,b.getZ()+p.getRandom().nextDouble()*8,1,0,0,0,0);
+    }
+    private static void home(ServerPlayer p,String first,String value){HouseRead.first(p,Room.PORCH,"First",first);HouseRead.signal(p,HouseRead.Trait.HOME,value,false);}
     @SubscribeEvent public static void screen(PlayerInteractEvent.RightClickBlock e){if(e.getLevel().isClientSide||e.getHand()!=net.minecraft.world.InteractionHand.MAIN_HAND||!(e.getEntity() instanceof ServerPlayer p)||!LiteraryVignettes.participant(p)||inside(p)!=Room.PORCH)return;var b=base(p.server,p.getUUID(),Room.PORCH);if(e.getPos().equals(b.offset(HouseReadRooms.SCREEN))||e.getPos().equals(b.offset(HouseReadRooms.SCREEN).above()))act(p,Room.PORCH,"used the screen door");}
     @SubscribeEvent public static void harmless(LivingIncomingDamageEvent e){if(e.getEntity() instanceof ServerPlayer p&&inside(p)!=null)e.setCanceled(true);}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){advance(e.getServer());if(e.getServer().getTickCount()%100==0)HouseReadEntrance.retire(e.getServer());for(var id:List.copyOf(PENDING.keySet())){var p=e.getServer().getPlayerList().getPlayer(id);if(p==null)PENDING.remove(id);else enter(p,PENDING.get(id));}for(var p:List.copyOf(e.getServer().getPlayerList().getPlayers()))reader(p);}
@@ -187,9 +227,9 @@ if(cue>0&&age==cue+26)sound(p,HouseReadRegistry.SUPPER.get(),b.offset(1,4,-11),1
         if(CHUNKS.stream().anyMatch(c->l.getChunkSource().getChunkNow(c.x,c.z)==null||!l.areEntitiesLoaded(c.toLong())))return;
         if(visit.getBoolean("Built")){release();return;}if(plan==null){plan=BuildBlocks.record(l,()->HouseReadRooms.build(l,b,building.room(),building.owner()));plan.resume(visit.getCompound("BuildCursor"));}
         if(!plan.tick()){visit.put("BuildCursor",plan.checkpoint());own.put(building.room().key(),visit);save(s,building.owner(),own);return;}
-        registerDoors(s,building.owner(),building.room(),b);visit.putBoolean("Built",true);visit.remove("BuildCursor");own.put(building.room().key(),visit);save(s,building.owner(),own);release();
+        registerDoors(s,building.owner(),building.room(),b);visit.putBoolean("Built",true);visit.putInt("Layout",LAYOUT);visit.remove("BuildCursor");own.put(building.room().key(),visit);save(s,building.owner(),own);release();
     }
-    public static void registerDoors(MinecraftServer s,UUID owner,Room room,BlockPos b){var d=LabyrinthData.get(s);var dim=room.dimension();d.putDoor(new LabyrinthData.Door(doorId(owner,room,"entry"),dim,b.offset(room==Room.PORCH?HouseReadRooms.PORCH_ENTRY:HouseReadRooms.COAT_ENTRY),Direction.SOUTH,"house_read:back",false));if(room!=Room.COATROOM&&room!=Room.PORCH)d.putDoor(new LabyrinthData.Door(doorId(owner,room,"on"),dim,b.offset(HouseReadMoments.exit(room)),Direction.SOUTH,"house_read:on",false));if(room==Room.PORCH){d.putDoor(new LabyrinthData.Door(doorId(owner,room,"kitchen"),dim,b.offset(0,3,-24),Direction.SOUTH,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"side"),dim,b.offset(-15,0,-8),Direction.EAST,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"road"),dim,b.offset(14,0,-42),Direction.SOUTH,"house_read:on",false));}}
+    public static void registerDoors(MinecraftServer s,UUID owner,Room room,BlockPos b){var d=LabyrinthData.get(s);var dim=room.dimension();d.putDoor(new LabyrinthData.Door(doorId(owner,room,"entry"),dim,b.offset(HouseReadRooms.entry(room)),Direction.SOUTH,"house_read:back",false));if(room!=Room.COATROOM&&room!=Room.PORCH)d.putDoor(new LabyrinthData.Door(doorId(owner,room,"on"),dim,b.offset(HouseReadMoments.exit(room)),Direction.SOUTH,"house_read:on",false));if(room==Room.PORCH){d.putDoor(new LabyrinthData.Door(doorId(owner,room,"kitchen"),dim,b.offset(0,3,-24),Direction.SOUTH,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"side"),dim,b.offset(-15,0,-8),Direction.EAST,"house_read:on",false));d.putDoor(new LabyrinthData.Door(doorId(owner,room,"road"),dim,b.offset(14,0,-42),Direction.SOUTH,"house_read:on",false));}}
     private static void release(){if(leased!=null)for(var c:CHUNKS)leased.getChunkSource().removeRegionTicket(TICKET,c,2,c);CHUNKS.clear();leased=null;building=null;plan=null;}
     public static void clear(){HouseReadMoments.clear();release();WAITING.clear();PENDING.clear();store=null;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clear();}

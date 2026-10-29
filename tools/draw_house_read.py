@@ -104,6 +104,17 @@ def outputs():
   for y in range(0,32,4):
    for x in range(0,64,4):d.line((x,y,x+2,y+1),fill=colors[n][1])
   buf=io.BytesIO();im.save(buf,format='PNG');out['textures/entity/house_read/'+n+'.png']=buf.getvalue()
+ # 0.4.159: the House's version of a reader wears these over their own skin, only in glass and copies.
+ im=Image.new('RGBA',(64,32),(0,0,0,0));d=ImageDraw.Draw(im);frame='#2b2622'
+ for x in [1,2,3,6,7,8]:d.point((x,1),fill=frame)
+ d.line((4,1,5,1),fill='#6d5a3a')
+ for x in [1,3,6,8]:d.point((x,2),fill=frame)
+ for x in [0,9]:d.line((x,1,x,2),fill=frame)
+ buf=io.BytesIO();im.save(buf,format='PNG');out['textures/entity/house_read/specs.png']=buf.getvalue()
+ im=Image.new('RGBA',(64,32),(0,0,0,0));d=ImageDraw.Draw(im);rng=random.Random(159)
+ for y in range(0,10):
+  for x in range(0,18):v=34+rng.randrange(18);d.point((x,y),fill=(v,v-2,v-4,236))
+ buf=io.BytesIO();im.save(buf,format='PNG');out['textures/entity/house_read/veil.png']=buf.getvalue()
  return out
 def audit_models(out):
  for path,raw in out.items():

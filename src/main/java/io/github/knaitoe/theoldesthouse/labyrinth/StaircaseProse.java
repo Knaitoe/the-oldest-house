@@ -24,6 +24,13 @@ public final class StaircaseProse {
     public record Fact(Kind kind, long count, String value) {}
 
     public record Kind(String id, String group, double base, double typical, String ledger, String... lines) {}
+    /**
+     * What the five quiet rooms saw the reader do (0.4.159), as observations only: the first routine item ({@code -1} for none),
+     * the coat, the hall glass, who they stood by in the shelter, the porch door, the way out, and HOME for the last leaf.
+     */
+    public record Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home) {
+        public static final Read NONE = new Read(-1, "", "", "", false, false, "", "", "");
+    }
 
     // ---------------------------------------------------------------- facts
 
@@ -229,7 +236,8 @@ public final class StaircaseProse {
     }
 
     /** Five linked chapters. Counts choose memories; the prose does not reproduce a statistics screen. */
-    public static Story compose(String name, List<Fact> facts, long seed) {
+    public static Story compose(String name, List<Fact> facts, long seed) { return compose(name, facts, seed, Read.NONE); }
+    public static Story compose(String name, List<Fact> facts, long seed, Read read) {
         var rng=new Random(mix(seed));Voice voice=Voice.values()[rng.nextInt(Voice.values().length)];
         var remaining=new ArrayList<>(facts);
         remaining.sort(Comparator.comparingDouble((Fact f)->f.kind.base*(1+Math.min(1,f.count/f.kind.typical))).reversed());
@@ -247,16 +255,60 @@ public final class StaircaseProse {
             Fact chosen=remaining.stream().filter(f->List.of(groups[chapter]).contains(f.kind.group)).findFirst().orElse(null);
             if(chosen==null&&i<3)chosen=remaining.stream().filter(f->!f.kind.group.equals("house")).findFirst().orElse(null);
             String memory=chosen==null?quiet[i]:memory(chosen);if(chosen!=null)remaining.remove(chosen);
+            // The read's own leaves: the hands, what happened under the eaves, and the door.
+            String own=i==1?hands(read):i==2?eaves(read):i==3?door(read):"";if(!own.isEmpty())memory=own;
             String line=switch(voice){case WITNESS->opening[i];case LETTER->i==0?"Dear "+name+",":opening[i];case SURVEY->i==0?"The name on the cover is "+name+".":opening[i];case LEDGER->i==0?"I entered your name: "+name+".":opening[i];};
             leaves.add(titles[i]+"\n\n"+line+" "+memory+"\n\n"+close[i]);
         }
-        String ending=switch(voice){
-            case WITNESS->"The lower corner is gone. You turn the paper and find the thumbprint coming through. You have carried it down with you. The last word was under it: return.";
-            case LETTER->"I nearly wrote come home. I do not know where that is for you. The corner has burned through; your thumb shows behind the paper. Come back to whoever is holding it.";
-            case SURVEY->"The fold has opened. On its other side the writer drew a hand, then rubbed it out. Your own hand fills the space. Above you, the staircase still has a way back.";
-            case LEDGER->"I left room for a final entry. The paper split along the fold before I could make it. Through the slit I can see your hand. You are still carrying the book.";};
+        String ending=ending(voice,read.home);
         leaves.add(titles[4]+"\n\n"+ending);
         return new Story(voice,front(voice,name),List.copyOf(leaves));
+    }
+    /** The last leaf. With HOME known the letter writer knows where home is; the other three each change one sentence. */
+    static String ending(Voice voice, String home) {
+        return switch(voice){
+            case WITNESS->"The lower corner is gone. You turn the paper and find the thumbprint coming through. You have carried it down with you. "+switch(home){case "HAVEN"->"The last word was under it: supper.";case "DANGER"->"The last word was under it, written small enough not to be heard: return.";case "RUNAWAY"->"The last word was under it: road.";default->"The last word was under it: return.";};
+            case LETTER->switch(home){
+                case "HAVEN"->"I nearly wrote come home, and this time I know where that is: the porch light, the plate kept warm. The corner has burned through; your thumb shows behind the paper. Go up the steps.";
+                case "DANGER"->"I nearly wrote come home. I know what that word does to you, so here is which door to use: the side gate. The corner has burned through; your thumb shows behind the paper.";
+                case "RUNAWAY"->"I nearly wrote come home. You were already down the gravel, so I will not ask. The road goes on past the mailbox. The corner has burned through; your thumb shows behind the paper.";
+                default->"I nearly wrote come home. I do not know where that is for you. The corner has burned through; your thumb shows behind the paper. Come back to whoever is holding it.";};
+            case SURVEY->"The fold has opened. On its other side the writer drew a hand, then rubbed it out. Your own hand fills the space. "+switch(home){case "HAVEN"->"Above you, a light is left on at the top of the stairs.";case "DANGER"->"Above you, the staircase has a way back, and a second beside it.";case "RUNAWAY"->"Below you, the stairs go on like a road.";default->"Above you, the staircase still has a way back.";};
+            case LEDGER->"I left room for a final entry. The paper split along the fold before I could make it. Through the slit I can see your hand. "+switch(home){case "HAVEN"->"Carried forward: a plate, kept warm.";case "DANGER"->"Entered: which door to use.";case "RUNAWAY"->"Balance: the road.";default->"You are still carrying the book.";};};
+    }
+    private static final String[] ROUTINE = {"the silk wrap","the curl cream","the wide-tooth pick","the scalp oil","the rat-tail comb","the hair ties","the paddle brush","the dry shampoo","the claw clip","the pocket comb","the tin of pomade","the washcloth on the tap"};
+    private static String coatName(String coat) { return switch (coat) { case "wool" -> "the wool overcoat"; case "trench" -> "the trench coat"; case "barn" -> "the barn jacket"; default -> ""; }; }
+    private static String figure(String who, boolean older) { return who.equals("man") ? older ? "the man" : "the boy" : older ? "the woman" : "the girl"; }
+    /** II. The hands: the routine before bed and the coat in the cold hall. */
+    static String hands(Read r) {
+        String item = r.routine >= 0 && r.routine < ROUTINE.length ? ROUTINE[r.routine] : "", coat = coatName(r.coat); boolean turned = r.mirror.startsWith("turned") || r.mirror.startsWith("covered");
+        if (!item.isEmpty() && !coat.isEmpty()) return "Before bed your hands went to " + item + " first; in the cold hall, to " + coat + ".";
+        if (!item.isEmpty()) return "Before bed your hands went to " + item + " first. The writer drew it in the margin.";
+        if (!coat.isEmpty()) return turned ? "In the cold hall your hands found " + coat + ", and turned the glass to the wall." : "In the cold hall your hands went through the hangers to " + coat + ".";
+        return "";
+    }
+    /** III. What happened: who the reader stood by under the eaves, or that they went out to the lantern alone. */
+    static String eaves(Read r) {
+        return switch (r.shelter) {
+            case "man", "woman" -> r.song ? "Under the eaves you stood beside " + figure(r.shelter, r.older) + " until the song ran out." : "Under the eaves you stood a while beside " + figure(r.shelter, r.older) + ".";
+            case "middle" -> "Under the eaves you stood in the middle of the floorboards, between the two of them" + (r.song ? ", until the song ran out." : ".");
+            case "lantern" -> "Under the eaves you walked past them both and out to the lantern on the dock, alone" + (r.song ? ", until the song ran out." : ".");
+            case "looked_man", "looked_woman" -> "Under the eaves your eyes kept going back to " + figure(r.shelter.substring(7), r.older) + ".";
+            case "looked_both" -> "Under the eaves you looked from one stranger to the other.";
+            default -> "";
+        };
+    }
+    /** IV. The door: what the reader did when the supper whistle blew, and the way they left. */
+    static String door(Read r) {
+        String did = switch (r.door) {
+            case "in" -> "When the whistle blew you went up the steps and through the screen door.";
+            case "lattice" -> "When the whistle blew you went under the porch, behind the lattice.";
+            case "window" -> "When the whistle blew you looked in at the lit window and stayed on the lawn.";
+            case "road" -> "When the whistle blew you walked down the gravel to the road.";
+            default -> "";
+        };
+        String left = switch (r.out) { case "kitchen" -> "You left through the front hall."; case "gate" -> "You left by the side gate."; case "road" -> "You left by the dirt road through the trees."; default -> ""; };
+        return did.isEmpty() ? left.isEmpty() ? "" : left.replace("You left", "You left that yard") : left.isEmpty() ? did : did + " " + left;
     }
     private static String memory(Fact f){
         String value=f.value;
@@ -379,6 +431,13 @@ public final class StaircaseProse {
             for(Kind kind:KINDS){var f=new Fact(kind,max,kind.id.equals("retreat")?longPlace:wide);
                 pages.add("IV. The door\n\nThe writing reaches the fold. "+memory(f)+"\n\nThe next word is underneath your thumb.");}
             for(long seed=0;seed<24;seed++){var account=compose(name,List.of(),seed);if(account.voice==voice){pages.add(account.front);pages.addAll(account.leaves);break;}}
+            // 0.4.159: every read leaf and HOME ending, at its widest.
+            var reads=new ArrayList<Read>();for(int item=0;item<ROUTINE.length;item++)for(String coat:new String[]{"","wool","trench","barn"})for(String mirror:new String[]{"","turned_after"})reads.add(new Read(item,coat,mirror,"",false,false,"","",""));
+            for(String coat:new String[]{"wool","trench","barn"})reads.add(new Read(-1,coat,"turned_before","",false,true,"","",""));
+            for(String shelter:new String[]{"man","woman","middle","lantern","looked_man","looked_woman","looked_both"})for(boolean song:new boolean[]{false,true})for(boolean older:new boolean[]{false,true})reads.add(new Read(-1,"","",shelter,song,older,"","",""));
+            for(String door:new String[]{"","in","lattice","window","road"})for(String out:new String[]{"","kitchen","gate","road"})reads.add(new Read(-1,"","","",false,false,door,out,""));
+            for(var read:reads)for(int leaf=1;leaf<4;leaf++){String own=leaf==1?hands(read):leaf==2?eaves(read):door(read);if(!own.isEmpty())pages.add(new String[]{"II. The hands","III. What happened","IV. The door"}[leaf-1]+"\n\nThere is a thumbprint beside the next line. "+own+"\n\nYou turn the sheet without covering the print.");}
+            for(String home:new String[]{"HAVEN","DANGER","RUNAWAY"})pages.add("V. Below\n\n"+ending(voice,home));
         }
         return books;
     }
