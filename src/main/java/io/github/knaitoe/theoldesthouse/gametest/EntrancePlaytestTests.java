@@ -105,13 +105,17 @@ public final class EntrancePlaytestTests {
         var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"retire_reader");
         var hall=f.origin.offset(HouseLayout.AXIS_X,1,HouseImpossibleHallway.END_Z_OFFSET-20);f.chunks.hold(f.in,new AABB(hall).inflate(42,5,42));
         var rooms=HouseReadSites.Room.values();BlockPos[] lower=new BlockPos[rooms.length];
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual approach is resident"))
+        // The wait lets the House's five-second door pass run over the fixture first, as it can on a slow host.
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual approach is resident")).thenIdle(110)
             .thenExecute(()->{
                 HouseSavedData.get(p.server).markImpossibleDoorRevealed();HouseImpossibleHallway.build(f.in,f.origin);
                 // The 0.4.142 installer's own positions and facings, as saved worlds hold them.
                 for(var room:rooms){int i=room.ordinal();var facing=i%2==0?Direction.EAST:Direction.WEST;
                     lower[i]=f.origin.offset(HouseLayout.AXIS_X+(i%2==0?-2:2),1,HouseImpossibleHallway.END_Z_OFFSET-36+i*7);
                     LabyrinthBuilder.placeDoor(f.in,lower[i],facing);f.data().putDoor(new LabyrinthData.Door(HouseReadEntrance.id(room),HouseDimensions.INTERIOR,lower[i],facing,"house_read:entrance",false));}
+                // The House's own pass runs every five seconds; while this fixture waited for its chunks it found no doors and
+                // recorded every one as retired. A saved world that holds these doors has no such record.
+                HouseReadEntrance.forgetRetired(f.data());
                 var own=HouseReadSites.state(p.server,p.getUUID());var visit=own.getCompound(HouseReadSites.Room.COATROOM.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",HouseReadEntrance.id(HouseReadSites.Room.COATROOM));own.put(HouseReadSites.Room.COATROOM.key(),visit);own.putString("Active",HouseReadSites.Room.COATROOM.key());f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
                 at(p,f.in,hall);HouseReadEntrance.retire(p.server);
                 for(var room:rooms)h.assertTrue(f.data().door(HouseReadEntrance.id(room))!=null&&f.in.getBlockState(lower[room.ordinal()]).getBlock() instanceof DoorBlock,"a watched hallway keeps its doors until nobody sees them go: "+room);
