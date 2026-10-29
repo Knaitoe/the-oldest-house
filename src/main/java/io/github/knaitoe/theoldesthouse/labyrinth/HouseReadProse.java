@@ -47,7 +47,9 @@ public final class HouseReadProse {
     public static String coatroom(CompoundTag t){
         // 0.4.169: the garment itself, by name; an older read kept only its set, whose first garment it names.
         String c=HouseReadWardrobe.the(HouseReadWardrobe.coatOf(t)),b=HouseReadWardrobe.the(HouseReadWardrobe.bootsOf(t)),mirror=t.getString("Mirror");
-        String core=!c.isEmpty()?"took "+c+" off the peg in the hall"+(b.isEmpty()?"":" and "+b+" from the mat"):!b.isEmpty()?"pulled on "+b+" in the hall":"";
+        // 0.4.172: an outfit comes off the rail rather than a peg.
+        var worn=HouseReadWardrobe.byId(HouseReadWardrobe.coatOf(t));String from=worn==null?"the peg":worn.place();
+        String core=!c.isEmpty()?"took "+c+" off "+from+" in the hall"+(b.isEmpty()?"":" and "+b+" from the mat"):!b.isEmpty()?"pulled on "+b+" in the hall":"";
         if(mirror.endsWith("_before")){String glass=mirror.startsWith("covered")?"hung the towel over the hall glass":"turned the hall glass to the wall";return core.isEmpty()?glass+" and went on still dripping":glass+" before you "+core.replace(" in the hall","");}
         if(core.isEmpty())return "";
         return core+switch(mirror){case "looked"->" and stood a while at the glass";case "turned_after"->" and turned the glass to the wall";case "covered_after"->" and hung the towel over the glass";default->c.isEmpty()?"":" without looking in the glass";};

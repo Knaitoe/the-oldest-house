@@ -5631,6 +5631,198 @@
     "part=plimsolls,facing=east,turned=true,writing=true": {
       "model": "the_oldest_house:block/read_plimsolls_turned",
       "y": 270
+    },
+    "part=tee_jeans,facing=south,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_tee_jeans",
+      "y": 0
+    },
+    "part=tee_jeans,facing=south,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_tee_jeans",
+      "y": 0
+    },
+    "part=tee_jeans,facing=south,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_tee_jeans_turned",
+      "y": 0
+    },
+    "part=tee_jeans,facing=south,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_tee_jeans_turned",
+      "y": 0
+    },
+    "part=tee_jeans,facing=west,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_tee_jeans",
+      "y": 90
+    },
+    "part=tee_jeans,facing=west,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_tee_jeans",
+      "y": 90
+    },
+    "part=tee_jeans,facing=west,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_tee_jeans_turned",
+      "y": 90
+    },
+    "part=tee_jeans,facing=west,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_tee_jeans_turned",
+      "y": 90
+    },
+    "part=tee_jeans,facing=north,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_tee_jeans",
+      "y": 180
+    },
+    "part=tee_jeans,facing=north,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_tee_jeans",
+      "y": 180
+    },
+    "part=tee_jeans,facing=north,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_tee_jeans_turned",
+      "y": 180
+    },
+    "part=tee_jeans,facing=north,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_tee_jeans_turned",
+      "y": 180
+    },
+    "part=tee_jeans,facing=east,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_tee_jeans",
+      "y": 270
+    },
+    "part=tee_jeans,facing=east,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_tee_jeans",
+      "y": 270
+    },
+    "part=tee_jeans,facing=east,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_tee_jeans_turned",
+      "y": 270
+    },
+    "part=tee_jeans,facing=east,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_tee_jeans_turned",
+      "y": 270
+    },
+    "part=crop_shorts,facing=south,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_crop_shorts",
+      "y": 0
+    },
+    "part=crop_shorts,facing=south,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_crop_shorts",
+      "y": 0
+    },
+    "part=crop_shorts,facing=south,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_crop_shorts_turned",
+      "y": 0
+    },
+    "part=crop_shorts,facing=south,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_crop_shorts_turned",
+      "y": 0
+    },
+    "part=crop_shorts,facing=west,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_crop_shorts",
+      "y": 90
+    },
+    "part=crop_shorts,facing=west,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_crop_shorts",
+      "y": 90
+    },
+    "part=crop_shorts,facing=west,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_crop_shorts_turned",
+      "y": 90
+    },
+    "part=crop_shorts,facing=west,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_crop_shorts_turned",
+      "y": 90
+    },
+    "part=crop_shorts,facing=north,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_crop_shorts",
+      "y": 180
+    },
+    "part=crop_shorts,facing=north,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_crop_shorts",
+      "y": 180
+    },
+    "part=crop_shorts,facing=north,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_crop_shorts_turned",
+      "y": 180
+    },
+    "part=crop_shorts,facing=north,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_crop_shorts_turned",
+      "y": 180
+    },
+    "part=crop_shorts,facing=east,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_crop_shorts",
+      "y": 270
+    },
+    "part=crop_shorts,facing=east,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_crop_shorts",
+      "y": 270
+    },
+    "part=crop_shorts,facing=east,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_crop_shorts_turned",
+      "y": 270
+    },
+    "part=crop_shorts,facing=east,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_crop_shorts_turned",
+      "y": 270
+    },
+    "part=tank_shorts,facing=south,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_tank_shorts",
+      "y": 0
+    },
+    "part=tank_shorts,facing=south,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_tank_shorts",
+      "y": 0
+    },
+    "part=tank_shorts,facing=south,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_tank_shorts_turned",
+      "y": 0
+    },
+    "part=tank_shorts,facing=south,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_tank_shorts_turned",
+      "y": 0
+    },
+    "part=tank_shorts,facing=west,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_tank_shorts",
+      "y": 90
+    },
+    "part=tank_shorts,facing=west,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_tank_shorts",
+      "y": 90
+    },
+    "part=tank_shorts,facing=west,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_tank_shorts_turned",
+      "y": 90
+    },
+    "part=tank_shorts,facing=west,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_tank_shorts_turned",
+      "y": 90
+    },
+    "part=tank_shorts,facing=north,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_tank_shorts",
+      "y": 180
+    },
+    "part=tank_shorts,facing=north,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_tank_shorts",
+      "y": 180
+    },
+    "part=tank_shorts,facing=north,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_tank_shorts_turned",
+      "y": 180
+    },
+    "part=tank_shorts,facing=north,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_tank_shorts_turned",
+      "y": 180
+    },
+    "part=tank_shorts,facing=east,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_tank_shorts",
+      "y": 270
+    },
+    "part=tank_shorts,facing=east,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_tank_shorts",
+      "y": 270
+    },
+    "part=tank_shorts,facing=east,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_tank_shorts_turned",
+      "y": 270
+    },
+    "part=tank_shorts,facing=east,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_tank_shorts_turned",
+      "y": 270
     }
   }
 }

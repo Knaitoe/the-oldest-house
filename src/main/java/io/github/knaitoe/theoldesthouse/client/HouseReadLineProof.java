@@ -24,7 +24,7 @@ public final class HouseReadLineProof extends Screen {
     private static final HouseReadLinePayload[] CARDS={
         new HouseReadLinePayload(HouseReadStory.WELCOME+HouseReadStory.PAGE+HouseReadStory.opening(HouseReadSites.Room.WAITING),"",false),
         new HouseReadLinePayload(HouseReadStory.closing(HouseReadSites.Room.BATHROOM),"",false),
-        new HouseReadLinePayload(HouseReadStory.closing(HouseReadSites.Room.PORCH)+HouseReadStory.PAGE+HouseReadStory.WARNING_LEAD+HouseReadStory.PAGE+HouseReadStory.WARNING,"",true)};
+        new HouseReadLinePayload(HouseReadStory.closing(HouseReadSites.Room.PORCH)+HouseReadStory.PAGE+HouseReadStory.HAUNTED+HouseReadStory.PAGE+HouseReadStory.WARNING_LEAD+HouseReadStory.PAGE+HouseReadStory.WARNING,"",true)};
     /** Which page of each card is shown: the welcome, the closing line, the warning itself. */
     private static final int[] PAGES={0,0,2};
     private int page,frames;private HouseReadLineScreen card;

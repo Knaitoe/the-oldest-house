@@ -26,7 +26,8 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /**
  * 0.4.169: the wardrobe through the production models and the fitted coat layer: all twelve coats on their hooks and six pairs
  * of boots on the mat, then each coat worn with a pair of boots on a standard body from the front, and on a slim body from the
- * back mid-stride, so every cut's collar, skirt and belt shows. Runs after the kitchen in the same client.
+ * back mid-stride, so every cut's collar, skirt and belt shows. Runs after the kitchen in the same client. 0.4.172: the three
+ * outfits on the rail too, hanging and worn (the top on the body and arms, the bottoms on each leg).
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class HouseReadWardrobeProof extends Screen {
@@ -40,7 +41,7 @@ public final class HouseReadWardrobeProof extends Screen {
     }
     /** Every garment as it hangs or stands, with its name. */
     private void hanging(GuiGraphics g){
-        var mc=Minecraft.getInstance();var all=HouseReadWardrobe.ALL;int columns=6;float cw=width/(float)columns,ch=(height-30)/3f;
+        var mc=Minecraft.getInstance();var all=HouseReadWardrobe.ALL;int columns=6;float cw=width/(float)columns,ch=(height-30)/(float)Math.ceil(all.size()/(float)columns);
         for(int i=0;i<all.size();i++){
             var garment=all.get(i);float cx=(i%columns+.5f)*cw,cy=26+(i/columns+.5f)*ch;var state=HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,HouseReadWardrobe.part(garment)).setValue(HorizontalDirectionalBlock.FACING,Direction.SOUTH);
             var p=g.pose();g.flush();var out=mc.renderBuffers().bufferSource();float scale=Math.min(cw,ch)*(garment.boots()?.62f:.42f);
@@ -49,9 +50,9 @@ public final class HouseReadWardrobeProof extends Screen {
             g.drawCenteredString(font,garment.name(),(int)cx,(int)(26+(i/columns+1)*ch-10),0xffe5dcc8);
         }
     }
-    /** Each coat on a body, with the boots of the same place in the list. */
+    /** Each coat and outfit on a body, with the boots of the same place in the list. */
     private void worn(GuiGraphics g,boolean back){
-        var mc=Minecraft.getInstance();var coats=HouseReadWardrobe.coats();var boots=HouseReadWardrobe.footwear();int columns=6;float cw=width/(float)columns,ch=(height-30)/2f,scale=Math.min(cw*.42f,ch*.36f);
+        var mc=Minecraft.getInstance();var coats=HouseReadWardrobe.chest();var boots=HouseReadWardrobe.footwear();int columns=6;float cw=width/(float)columns,ch=(height-30)/(float)Math.ceil(coats.size()/(float)columns),scale=Math.min(cw*.42f,ch*.36f);
         g.flush();var out=mc.renderBuffers().bufferSource();
         for(int i=0;i<coats.size();i++){
             boolean slim=back;var body=new PlayerModel<AbstractClientPlayer>(mc.getEntityModels().bakeLayer(slim?ModelLayers.PLAYER_SLIM:ModelLayers.PLAYER),slim);body.setAllVisible(true);body.young=false;
@@ -68,7 +69,7 @@ public final class HouseReadWardrobeProof extends Screen {
         var folder=Path.of("../build/house-read-wardrobe");Files.createDirectories(folder);
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;return;}
-        Files.writeString(folder.resolve("passed.txt"),"All eighteen wardrobe garments through the production block models, and the twelve coats with boots through the fitted coat layer on standard and slim bodies, from the front and from the back mid-stride.\n");
+        Files.writeString(folder.resolve("passed.txt"),"All twenty-one wardrobe garments through the production block models, and the twelve coats and three outfits with boots through the fitted coat layer on standard and slim bodies, from the front and from the back mid-stride.\n");
         mc.stop();
     }
 }

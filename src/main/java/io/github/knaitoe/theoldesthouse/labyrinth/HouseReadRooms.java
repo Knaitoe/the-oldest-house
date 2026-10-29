@@ -66,6 +66,9 @@ public final class HouseReadRooms {
         for(int i=0;i<hooks.size();i++)fitting(l,b,hooks.get(i),HouseReadWardrobe.part(coats.get(coatOrder[i])),HouseReadWardrobe.facing(hooks.get(i)));
         var boots=HouseReadWardrobe.footwear();int[] bootOrder=HouseReadWardrobe.order(owner,true);
         for(int i=0;i<HouseReadWardrobe.BOOT_PLACES.size();i++)fitting(l,b,HouseReadWardrobe.BOOT_PLACES.get(i),HouseReadWardrobe.part(boots.get(bootOrder[i])),Direction.EAST);
+        // 0.4.172: the three outfits on their hangers along the rail on the back wall, west of the curtain.
+        var outfits=HouseReadWardrobe.outfits();int[] outfitOrder=HouseReadWardrobe.outfitOrder(owner);
+        for(int i=0;i<HouseReadWardrobe.RAIL.size();i++)fitting(l,b,HouseReadWardrobe.RAIL.get(i),HouseReadWardrobe.part(outfits.get(outfitOrder[i])),Direction.SOUTH);
         // The east side: the bench under the window, the radiator by the door.
         for(int z=-3;z<=-2;z++)fitting(l,b,3,0,z,BENCH,Direction.WEST);box(l,b,4,1,-3,4,2,-2,HouseReadRegistry.WINDOW.get());box(l,b,5,0,-4,6,3,-1,HouseReadRegistry.OVERCAST.get());box(l,b,5,1,-3,5,2,-2,Blocks.AIR);
         fitting(l,b,3,0,0,RADIATOR,Direction.WEST);fitting(l,b,UMBRELLA_AT,UMBRELLA);

@@ -6,13 +6,19 @@ coat with a soft fleece collar, a yellow school rain mac, a denim jacket covered
 toggles, and a long cardigan knitted in two yarns; tall chestnut riding boots, red galoshes with newspaper in the toes, and
 white plimsolls written on in ballpoint. Each coat hangs from the same brass hook as the first three, cut to its own shape
 (long, belted or short), and its worn sheet follows the fitted coat mesh (HouseReadClothes.layer).
+
+0.4.172 (owner: "Add basic t-shirt and jeans, crop top and shorts, tank top and shorts. Clothing swappable like the hair tools"):
+three everyday outfits, each on a wooden hanger on a brass rail along the back wall, the top over its bottoms: a washed charcoal
+tee with a faded print over jeans worn through at one knee, a mustard crop top over frayed cut-offs, and a white ribbed tank top
+over grey drawstring shorts. Worn, the top follows the body and arms and the bottoms each leg (64x32 sheets, HouseReadClothes).
 """
 from PIL import Image, ImageDraw
 import house_read_rooms160_art as rooms160
 
 COATS = ['ringmaster', 'pea_coat', 'chore_coat', 'swing_coat', 'collared_coat', 'rain_mac', 'patched_jacket', 'duffel', 'long_cardigan']
 BOOTS = ['riding_boots', 'galoshes', 'plimsolls']
-PARTS = COATS + BOOTS
+OUTFITS = ['tee_jeans', 'crop_shorts', 'tank_shorts']
+PARTS = COATS + BOOTS + OUTFITS
 # How each coat is cut, as HouseReadWardrobe.Cut: the worn mesh and the hanging model both follow it.
 CUT = {'ringmaster': 'long', 'pea_coat': 'short', 'chore_coat': 'short', 'swing_coat': 'long', 'collared_coat': 'belted',
        'rain_mac': 'belted', 'patched_jacket': 'short', 'duffel': 'long', 'long_cardigan': 'long'}
@@ -33,6 +39,21 @@ CLOTH = {
 }
 GOLD, BRASS, HORN, INK, FLEECE = '#caa24c', '#a88a49', '#d8c9a3', '#33489a', '#dcd3c1'
 LOWER = ('#7c8694', '#626b78', '#97a0ad')  # the cardigan's second yarn
+# The outfits' cloth (mid, dark, light): each top, then its bottoms.
+TEE, JEANS = ('#4a4d52', '#3a3c40', '#5d6066'), ('#4d6a8f', '#3c5575', '#6683a8')
+CROP, CUTOFFS = ('#c79a3c', '#a67e2c', '#ddb65f'), ('#7d97b5', '#6580a0', '#9cb2cb')
+TANK, JERSEY = ('#e2ded3', '#c8c3b6', '#f1eee6'), ('#8a8d90', '#74777a', '#a3a6a8')
+PRINT, RUST, THREAD, BUTTON = '#b9b2a0', '#9c6a4f', '#e3e6e3', '#b0904a'
+
+
+def _jersey(d, box, mid, dark, light, rng, rib=False):
+    """Knit cotton: speckled, or ribbed in fine vertical lines."""
+    for name, (x0, y0, x1, y1) in box.items():
+        d.rectangle((x0, y0, x1, y1), fill=mid)
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                if rib and x % 2 == 0: d.point((x, y), fill=dark)
+                elif not rib and rng.random() < .14: d.point((x, y), fill=light if rng.random() < .5 else dark)
 
 
 def _speck(im, name, mid, dark, light, count=50):
@@ -43,7 +64,7 @@ def _speck(im, name, mid, dark, light, count=50):
 
 def tiles(out):
     """The cloth of each garment, and the front of each coat as it hangs (lapels, buttons, pockets, braid)."""
-    for n in PARTS:
+    for n in COATS + BOOTS:
         mid, dark, light, weave = CLOTH[n]
         im = Image.new('RGBA', (16, 16), mid); d = _speck(im, n, mid, dark, light, 40 if weave != 'knit' else 0)
         if weave == 'knit':
@@ -112,6 +133,42 @@ def tiles(out):
     out['plimsolls_written'] = im
     # The riding boots' scuffed heel.
     im = out['riding_boots'].copy(); d = ImageDraw.Draw(im); d.line((1, 13, 5, 12), fill='#a5774f'); d.point((3, 14), fill='#a5774f'); out['riding_boots_scuffed'] = im
+    outfit_tiles(out)
+
+
+def outfit_tiles(out):
+    """0.4.172: the outfits' cloth as they hang. Each top is named after its outfit, so it is that fitting's particle."""
+    for name, cloth, count in (('tee_jeans', TEE, 30), ('jeans', JEANS, 0), ('crop_shorts', CROP, 30), ('cutoffs', CUTOFFS, 0), ('tank_shorts', TANK, 0), ('jersey', JERSEY, 45)):
+        mid, dark, light = cloth
+        im = Image.new('RGBA', (16, 16), mid); d = _speck(im, 'outfit_' + name, mid, dark, light, count)
+        if name in ('jeans', 'cutoffs'):
+            for i in range(-16, 16, 3): d.line((i, 15, i + 15, 0), fill=dark)
+        elif name == 'tank_shorts':
+            for x in range(0, 16, 2): d.line((x, 0, x, 15), fill=dark)
+        out[name] = im
+    # The tee's front: a crew neck and a faded print from a concert nobody remembers.
+    im = out['tee_jeans'].copy(); d = ImageDraw.Draw(im)
+    d.line((5, 0, 10, 0), fill=TEE[1]); d.line((6, 1, 9, 1), fill=TEE[1])
+    d.ellipse((5, 5, 10, 10), outline=PRINT); d.line((6, 8, 9, 8), fill=RUST); d.point((7, 6), fill=RUST); d.point((8, 7), fill=PRINT)
+    out['tee_jeans_front'] = im
+    # The jeans: a fly seam, pocket stitching, and one knee worn through to the threads.
+    im = out['jeans'].copy(); d = ImageDraw.Draw(im)
+    d.line((8, 0, 8, 4), fill=JEANS[1]); d.line((1, 1, 4, 3), fill='#c79b56'); d.line((14, 1, 11, 3), fill='#c79b56')
+    d.line((7, 4, 7, 15), fill=JEANS[1]); d.line((8, 4, 8, 15), fill=JEANS[2])
+    for x in range(2, 6): d.point((x, 9), fill=THREAD); d.point((x, 10), fill=THREAD if x % 2 else JEANS[2])
+    out['jeans_front'] = im
+    im = out['crop_shorts'].copy(); d = ImageDraw.Draw(im); d.line((5, 0, 10, 0), fill=CROP[1]); d.line((0, 15, 15, 15), fill=CROP[1]); out['crop_front'] = im
+    # The cut-offs: a button at the waist, and the hem frayed into loose threads.
+    im = out['cutoffs'].copy(); d = ImageDraw.Draw(im)
+    d.point((8, 1), fill=BUTTON); d.line((8, 2, 8, 6), fill=CUTOFFS[1]); d.line((7, 6, 7, 13), fill=CUTOFFS[1])
+    for x in range(16): d.point((x, 14), fill=THREAD if x % 2 else CUTOFFS[2]); d.point((x, 15), fill=THREAD if x % 3 == 0 else CUTOFFS[0])
+    out['cutoffs_front'] = im
+    im = out['tank_shorts'].copy(); d = ImageDraw.Draw(im); d.arc((4, -4, 11, 4), 0, 180, fill=TANK[1]); out['tank_front'] = im
+    # The drawstring shorts: a waistband with its cord tied in a bow.
+    im = out['jersey'].copy(); d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, 15, 2), fill=JERSEY[1]); d.point((7, 2), fill='#e9e6dc'); d.point((9, 2), fill='#e9e6dc'); d.line((7, 3, 6, 6), fill='#e9e6dc'); d.line((9, 3, 10, 6), fill='#e9e6dc')
+    d.line((7, 6, 7, 15), fill=JERSEY[1])
+    out['jersey_front'] = im
 
 
 def models(model, cube, faced):
@@ -149,6 +206,24 @@ def models(model, cube, faced):
     model('plimsolls', pair(lambda x: [cube([x + 2, 0, 3], [x + 7, 1.2, 13], 'wardrobe_rubber'), faced([x + 2.2, 1.2, 3.2], [x + 6.8, 4, 12.8], 'plimsolls', east='plimsolls_written', west='plimsolls_written'),
                                        cube([x + 2.1, .6, 2.6], [x + 6.9, 2.4, 3.4], 'wardrobe_rubber')]))
     for n in BOOTS: model(n + '_turned', [cube([2, 0, 3], [14, .5, 13], 'rubber')])
+    # 0.4.172: the outfits. A brass rail runs the width of each block on a bracket, so three side by side make one rail; each
+    # outfit hangs on its own wooden hanger, the top over its bottoms, and once it is taken the empty hanger stays.
+    rail = [cube([0, 27, 2.2], [16, 28, 3.2], 'brass'), cube([7.5, 27.2, 0], [8.5, 28.4, 2.2], 'brass'),
+            cube([7.6, 25.6, 2.4], [8.4, 27, 3], 'brass'), cube([3, 24.8, 2.1], [13, 25.6, 4.1], 'oak')]
+    tee = [faced([4, 15.5, 2.3], [12, 24.8, 4.9], 'tee_jeans', south='tee_jeans_front'),
+           cube([2.4, 21, 2.5], [4, 24.6, 4.7], 'tee_jeans'), cube([12, 21, 2.5], [13.6, 24.6, 4.7], 'tee_jeans')]
+    jeans = [faced([4.3, 13.8, 2.6], [11.7, 15.5, 4.6], 'jeans', south='jeans_front'),
+             faced([4.3, 1, 2.7], [7.9, 13.8, 4.5], 'jeans', south='jeans_front'), faced([8.1, 1, 2.7], [11.7, 13.8, 4.5], 'jeans', south='jeans')]
+    crop = [faced([4, 19.2, 2.3], [12, 24.8, 4.9], 'crop_shorts', south='crop_front'),
+            cube([2.6, 21.6, 2.5], [4, 24.6, 4.7], 'crop_shorts'), cube([12, 21.6, 2.5], [13.4, 24.6, 4.7], 'crop_shorts')]
+    cutoffs = [faced([4.3, 14.6, 2.6], [11.7, 16.4, 4.6], 'cutoffs', south='cutoffs_front'),
+               faced([4.3, 9.4, 2.7], [7.9, 14.6, 4.5], 'cutoffs', south='cutoffs_front'), faced([8.1, 9.4, 2.7], [11.7, 14.6, 4.5], 'cutoffs', south='cutoffs_front')]
+    tank = [faced([4.6, 16, 2.4], [11.4, 23.2, 4.6], 'tank_shorts', south='tank_front'),
+            cube([5.2, 23.2, 2.6], [6.6, 24.8, 4.2], 'tank_shorts'), cube([9.4, 23.2, 2.6], [10.8, 24.8, 4.2], 'tank_shorts')]
+    jersey = [faced([4.3, 14.2, 2.6], [11.7, 16, 4.6], 'jersey', south='jersey_front'),
+              faced([4.2, 8.6, 2.7], [7.9, 14.2, 4.5], 'jersey', south='jersey'), faced([8.1, 8.6, 2.7], [11.8, 14.2, 4.5], 'jersey', south='jersey')]
+    for n, garment in (('tee_jeans', tee + jeans), ('crop_shorts', crop + cutoffs), ('tank_shorts', tank + jersey)):
+        model(n, rail + garment); model(n + '_turned', rail)
 
 
 def worn():
@@ -248,5 +323,86 @@ def worn():
                 x0, y0, x1, y1 = LEG[name]
                 for x in range(x0, x1 + 1, 2): d.point((x, y0 + 1), fill=INK)
             for y in range(fy0, fy1 - 2): d.point(((fx0 + fx1) // 2, y), fill='#bdb6a2')
+        sheets[n] = im
+    sheets.update(outfits_worn())
+    return sheets
+
+
+# 0.4.172: the outfits' worn sheets (64x32), on the cuboids HouseReadClothes adds for them: the top's body (0,0) 8x12x4 (the
+# crop top uses its upper eight rows), its short sleeve (24,0) 4 or 3 x5x4, the right leg (40,0) and the left leg (40,16)
+# 4x12x4 (shorts use their upper five rows), and the cut-offs' waistband (0,16) 8x3x4 below the crop top.
+OUTFIT_BODY, OUTFIT_SLEEVE, OUTFIT_SLIM = rooms160._faces(0, 0, 8, 12, 4), rooms160._faces(24, 0, 4, 5, 4), rooms160._faces(24, 0, 3, 5, 4)
+OUTFIT_RIGHT, OUTFIT_LEFT, OUTFIT_WAIST = rooms160._faces(40, 0, 4, 12, 4), rooms160._faces(40, 16, 4, 12, 4), rooms160._faces(0, 16, 8, 3, 4)
+
+
+def _rows(box, rows):
+    """The same faces cut to the first {rows} rows of each side (a crop top's body, a pair of shorts)."""
+    out = {}
+    for name, (x0, y0, x1, y1) in box.items():
+        out[name] = (x0, y0, x1, y1) if name in ('top', 'bottom') else (x0, y0, x1, y0 + rows - 1)
+    return out
+
+
+def outfits_worn():
+    sheets = {}
+    for n in OUTFITS:
+        im = Image.new('RGBA', (64, 32), (0, 0, 0, 0)); d = ImageDraw.Draw(im); rng = rooms160._rng('wardrobe_' + n)
+        top, bottoms = {'tee_jeans': (TEE, JEANS), 'crop_shorts': (CROP, CUTOFFS), 'tank_shorts': (TANK, JERSEY)}[n]
+        rows = 8 if n == 'crop_shorts' else 12
+        body = _rows(OUTFIT_BODY, rows)
+        _jersey(d, body, *top, rng, rib=n == 'tank_shorts')
+        if n != 'tank_shorts':
+            for sleeve in (OUTFIT_SLEEVE, OUTFIT_SLIM): _jersey(d, sleeve, *top, rng)
+            for sleeve in (OUTFIT_SLEEVE, OUTFIT_SLIM):
+                for name in ('front', 'back', 'left', 'right'): x0, y0, x1, y1 = sleeve[name]; d.line((x0, y1, x1, y1), fill=top[1])
+                x0, y0, x1, y1 = sleeve['bottom']; d.rectangle((x0, y0, x1, y1), fill=top[1])
+        fx0, fy0, fx1, fy1 = body['front']; bx0, by0, bx1, by1 = body['back']; cx = (fx0 + fx1) // 2
+        # A hem round the bottom of the top.
+        for name in ('front', 'back', 'left', 'right'): x0, y0, x1, y1 = body[name]; d.line((x0, y1, x1, y1), fill=top[1])
+        x0, y0, x1, y1 = body['bottom']; d.rectangle((x0, y0, x1, y1), fill=top[1])
+        if n == 'tee_jeans':
+            # A crew neck, and the faded print.
+            d.line((cx - 1, fy0, cx + 2, fy0), fill=top[1])
+            d.ellipse((cx - 2, fy0 + 3, cx + 3, fy0 + 7), outline=PRINT); d.line((cx - 1, fy0 + 6, cx + 2, fy0 + 6), fill=RUST); d.point((cx, fy0 + 4), fill=RUST)
+        elif n == 'crop_shorts':
+            d.line((cx - 1, fy0, cx + 2, fy0), fill=top[1]); d.point((cx, fy0 + 1), fill=top[1]); d.point((cx + 1, fy0 + 1), fill=top[1])
+        else:
+            # The tank's scoop neck and wide armholes: the body shows through where it is cut away; only the straps cross the shoulders.
+            for x, y in ((cx - 1, fy0), (cx, fy0), (cx + 1, fy0), (cx + 2, fy0), (cx, fy0 + 1), (cx + 1, fy0 + 1), (fx0, fy0), (fx1, fy0), (fx0, fy0 + 1), (fx1, fy0 + 1)):
+                d.point((x, y), fill=(0, 0, 0, 0))
+            for x in range(bx0 + 2, bx1 - 1): d.point((x, by0), fill=(0, 0, 0, 0))
+            for side in ('left', 'right'):
+                x0, y0, x1, y1 = body[side]; d.rectangle((x0, y0, x1, y0 + 2), fill=(0, 0, 0, 0))
+            x0, y0, x1, y1 = body['top']
+            for x in range(x0, x1 + 1):
+                if x not in (x0 + 1, x0 + 2, x1 - 2, x1 - 1): d.line((x, y0, x, y1), fill=(0, 0, 0, 0))
+        # The bottoms, each leg its own: jeans to the ankle, shorts to above the knee.
+        long = n == 'tee_jeans'; legs = [OUTFIT_RIGHT, OUTFIT_LEFT] if long else [_rows(OUTFIT_RIGHT, 5), _rows(OUTFIT_LEFT, 5)]
+        for i, leg in enumerate(legs):
+            if n == 'tank_shorts': _jersey(d, leg, *bottoms, rng)
+            else: rooms160._cloth(d, leg, *bottoms, rng, 'twill')
+            lx0, ly0, lx1, ly1 = leg['front']; ox0, oy0, ox1, oy1 = leg['right' if i == 0 else 'left']
+            d.line((ox0 + 1, oy0, ox0 + 1, oy1), fill=bottoms[1])  # the outside seam
+            if long:
+                x0, y0, x1, y1 = leg['bottom']; d.rectangle((x0, y0, x1, y1), fill=bottoms[1])
+                for name in ('front', 'back', 'left', 'right'): x0, y0, x1, y1 = leg[name]; d.line((x0, y1, x1, y1), fill=bottoms[1])
+                if i == 0:
+                    # Worn through at one knee: pale threads across a hole.
+                    for x in range(lx0, lx1 + 1): d.point((x, ly0 + 6), fill=THREAD); d.point((x, ly0 + 7), fill=THREAD if x % 2 else bottoms[2])
+            elif n == 'crop_shorts':
+                for name in ('front', 'back', 'left', 'right'):
+                    x0, y0, x1, y1 = leg[name]
+                    for x in range(x0, x1 + 1): d.point((x, y1), fill=THREAD if x % 2 else bottoms[2])
+            else:
+                for name in ('front', 'back', 'left', 'right'): x0, y0, x1, y1 = leg[name]; d.line((x0, y1, x1, y1), fill=bottoms[1])
+            if not long and i == 0 and n == 'tank_shorts':
+                d.line((lx1, ly0, lx1, ly0 + 2), fill='#e9e6dc')  # the drawstring's end
+        if n == 'crop_shorts':
+            # The cut-offs' waistband below the crop top: belt loops and a brass button.
+            rooms160._cloth(d, OUTFIT_WAIST, *bottoms, rng, 'twill')
+            wx0, wy0, wx1, wy1 = OUTFIT_WAIST['front']; d.point(((wx0 + wx1) // 2, wy0 + 1), fill=BUTTON)
+            for name in ('front', 'back'):
+                x0, y0, x1, y1 = OUTFIT_WAIST[name]
+                for x in (x0 + 1, x1 - 1): d.line((x, y0, x, y1), fill=bottoms[1])
         sheets[n] = im
     return sheets

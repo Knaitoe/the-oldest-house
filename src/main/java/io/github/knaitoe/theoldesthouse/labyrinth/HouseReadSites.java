@@ -35,7 +35,7 @@ public final class HouseReadSites {
      * 0.4.159 rebuilt the waiting room, coatroom and shelter; a copy prepared ahead but never entered is built again.
      * 0.4.163: the porch's swing hangs from its ropes and the note is carved into the railing.
      */
-    public static final int LAYOUT=167;
+    public static final int LAYOUT=172;
     public enum Room {
         WAITING(LabyrinthPlace.READ_WAITING,483328), BATHROOM(LabyrinthPlace.READ_BATHROOM,491520),
         COATROOM(LabyrinthPlace.READ_COATROOM,466944), SHELTER(LabyrinthPlace.READ_SHELTER,499712), PORCH(LabyrinthPlace.READ_PORCH,475136),
@@ -169,8 +169,8 @@ public final class HouseReadSites {
     static void act(ServerPlayer p,Room room,String action){var own=state(p.server,p.getUUID());var visit=own.getCompound(room.key());var actions=visit.getList("Actions",Tag.TAG_STRING);if(actions.size()<64)actions.add(StringTag.valueOf(action));visit.put("Actions",actions);if(room==Room.COATROOM&&(action.startsWith("wore ")||action.startsWith("turned ")||action.startsWith("draped ")))visit.putBoolean("NoteArmed",true);own.put(room.key(),visit);save(p.server,p.getUUID(),own);}
     public static boolean loan(ItemStack item,UUID owner){var data=item.get(DataComponents.CUSTOM_DATA);return data!=null&&data.copyTag().hasUUID("HouseReadLoan")&&data.copyTag().getUUID("HouseReadLoan").equals(owner);}
     private static void give(ServerPlayer p,ItemStack item){if(item.isEmpty())return;if(!p.getInventory().add(item)){var entity=new net.minecraft.world.entity.item.ItemEntity(p.serverLevel(),p.getX(),p.getY(),p.getZ(),item);entity.setTarget(p.getUUID());p.serverLevel().addFreshEntity(entity);}}
-    /** 0.4.169: every hook and boot place in the coatroom, where the wardrobe's garments hang and stand. */
-    private static List<BlockPos> wardrobe(BlockPos base){var out=new ArrayList<BlockPos>();for(var at:HouseReadWardrobe.coatHooks())out.add(base.offset(at));for(var at:HouseReadWardrobe.BOOT_PLACES)out.add(base.offset(at));return out;}
+    /** 0.4.169: every hook and boot place in the coatroom, where the wardrobe's garments hang and stand (0.4.172: and the rail). */
+    private static List<BlockPos> wardrobe(BlockPos base){var out=new ArrayList<BlockPos>();for(var at:HouseReadWardrobe.coatHooks())out.add(base.offset(at));for(var at:HouseReadWardrobe.BOOT_PLACES)out.add(base.offset(at));for(var at:HouseReadWardrobe.RAIL)out.add(base.offset(at));return out;}
     private static void wear(ServerPlayer p,HouseReadWardrobe.Garment worn){
         var own=state(p.server,p.getUUID());var visit=own.getCompound(Room.COATROOM.key());var garment=HouseReadRegistry.GARMENTS.get(worn.id()).get();var slot=garment.getEquipmentSlot();String key=slot==EquipmentSlot.CHEST?"Chest":"Feet";
         if(!visit.getBoolean("Captured"+key)){visit.putBoolean("Captured"+key,true);visit.put("Original"+key,p.getItemBySlot(slot).saveOptional(p.registryAccess()));}
@@ -180,8 +180,8 @@ public final class HouseReadSites {
         // The garment worn leaves its hook or place; the one it replaces goes back.
         for(var pos:wardrobe(base(p.server,p.getUUID(),Room.COATROOM))){var state=p.serverLevel().getBlockState(pos);if(!state.is(HouseReadRegistry.FITTING.get()))continue;var there=HouseReadWardrobe.of(state.getValue(HouseReadPropBlock.PART));if(there!=null&&there.boots()==worn.boots())p.serverLevel().setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,there==worn),Block.UPDATE_CLIENTS);}
         var layer=new ItemStack(garment);CustomData.update(DataComponents.CUSTOM_DATA,layer,t->t.putUUID("HouseReadLoan",p.getUUID()));p.setItemSlot(slot,layer);p.setTicksFrozen(0);visit.putBoolean("Dressed",true);
-        // The first time each garment goes on, the House says what it guesses about a reader who would choose it.
-        var guessed=visit.getList("Guessed",Tag.TAG_STRING);if(!guessed.contains(StringTag.valueOf(worn.id()))){guessed.add(StringTag.valueOf(worn.id()));visit.put("Guessed",guessed);p.sendSystemMessage(Component.literal(worn.guess()).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));}
+        // The first time each garment goes on, the House says what it looks like (0.4.172; it used to guess at the reader).
+        var guessed=visit.getList("Guessed",Tag.TAG_STRING);if(!guessed.contains(StringTag.valueOf(worn.id()))){guessed.add(StringTag.valueOf(worn.id()));visit.put("Guessed",guessed);p.sendSystemMessage(Component.literal(worn.look()).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));}
         own.put(Room.COATROOM.key(),visit);save(p.server,p.getUUID(),own);p.inventoryMenu.broadcastChanges();act(p,Room.COATROOM,"wore the "+worn.name());dressed(p,worn);
     }
     /** The coats: the first garment taken sets the reader's presentation; wearing two from different sets at once reads neither. */

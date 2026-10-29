@@ -235,7 +235,7 @@ public final class HouseReadKitchen {
         boolean hung=t.getBoolean("Hung");
         if(!hung&&!t.contains("ColouredAt")&&age==600)voice(p,"Go on, finish your picture. You can put it up on the fridge when you're done.");
         if(!hung&&t.contains("ColouredAt")&&age==Math.max(600,t.getInt("ColouredAt")+600))voice(p,"Put it up on the fridge when you're done, so everybody can see.");
-        if(hung&&(p.getZ()<b.getZ()-12.4&&p.getX()>b.getX()+4&&p.getX()<b.getX()+6||age>=t.getInt("HungAt")+100))HouseReadSites.leave(p,true);
+        if(hung&&p.getZ()<b.getZ()-12.4&&p.getX()>b.getX()+4&&p.getX()<b.getX()+6)HouseReadSites.leave(p,true);
     }
     /** Leaving: the crayon in hand goes back into the tin. */
     static void left(ServerPlayer p,CompoundTag t){

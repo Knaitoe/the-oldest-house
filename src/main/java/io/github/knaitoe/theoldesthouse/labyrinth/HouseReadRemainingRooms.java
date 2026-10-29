@@ -31,7 +31,9 @@ public final class HouseReadRemainingRooms {
      * The routine blocks on the vanity counter (0.4.167): eight, four either side of the sink, two tools to a block, a set's
      * two blocks side by side. The postcard moved up beside the mirror's top to make room.
      */
-    public static final List<BlockPos> ROUTINE_PLACES=List.of(new BlockPos(-4,1,-9),new BlockPos(-3,1,-9),new BlockPos(-2,1,-9),new BlockPos(-1,1,-9),new BlockPos(1,1,-9),new BlockPos(2,1,-9),new BlockPos(3,1,-9),new BlockPos(4,1,-9));
+    // 0.4.172 (owner: "Door's behind the counter now"): the vanity stops short of the bedroom door at x 4; its eighth place is
+    // the cabinet turning the corner by the tub.
+    public static final List<BlockPos> ROUTINE_PLACES=List.of(new BlockPos(-4,1,-8),new BlockPos(-4,1,-9),new BlockPos(-3,1,-9),new BlockPos(-2,1,-9),new BlockPos(-1,1,-9),new BlockPos(1,1,-9),new BlockPos(2,1,-9),new BlockPos(3,1,-9));
     /** The bar light over the mirror and the light in the middle of the ceiling; the switch turns both off. */
     public static final List<BlockPos> BATH_LIGHTS=List.of(new BlockPos(0,3,-9),new BlockPos(0,3,-4));
     private HouseReadRemainingRooms(){}
@@ -90,7 +92,7 @@ public final class HouseReadRemainingRooms {
         box(l,b,-5,2,-10,-5,3,2,HouseReadRegistry.WALLPAPER.get());box(l,b,5,2,-10,5,3,2,HouseReadRegistry.WALLPAPER.get());box(l,b,-5,2,-10,5,3,-10,HouseReadRegistry.WALLPAPER.get());box(l,b,-5,2,2,5,3,2,HouseReadRegistry.WALLPAPER.get());
         // The vanity across the back wall: the sink and its mirror in the middle, the routines four blocks either side, the
         // postcard tucked at the mirror's edge, and the bar light above.
-        for(int x=-4;x<=4;x++)if(x!=0)fit(l,b,x,0,-9,VANITY);
+        for(int x=-4;x<=3;x++)if(x!=0)fit(l,b,x,0,-9,VANITY);fit(l,b,-4,0,-8,VANITY,Direction.EAST);
         fit(l,b,SINK_AT,SINK);fit(l,b,BATH_MIRROR,MIRROR);fit(l,b,BATH_MIRROR.above(),MIRROR_TOP);fit(l,b,POSTCARD_AT,POSTCARD);fit(l,b,BATH_LIGHTS.get(0),VANITY_LIGHT);
         int[] order=routineOrder(owner);
         for(int i=0;i<ROUTINE_PLACES.size();i++)fit(l,b,ROUTINE_PLACES.get(i),HouseReadPropBlock.ROUTINE_BLOCKS.get(order[i]));
