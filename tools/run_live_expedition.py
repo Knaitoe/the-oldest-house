@@ -58,7 +58,8 @@ def wait_for(check, seconds, context):
     deadline = time.monotonic() + seconds
     connecting_at = None
     captured_login = False
-    captured_stall = False
+    stalls = 0
+    stalled_at = None
     while time.monotonic() < deadline:
         if check():
             return
@@ -72,13 +73,20 @@ def wait_for(check, seconds, context):
                     capture_native_threads()
         # A native read can block the host long enough to lose both clients.
         # Sample while it is blocked, rather than diagnosing the later offline timeout.
+        # The uncanny and Borrasca checks start at their own first phase; each quiet
+        # stretch of the log is sampled once, up to three.
         native_log = server / "logs/latest.log"
-        if (not captured_stall and context != "dedicated server startup" and native_log.exists()
-                and ("phase 2" in native_log.read_text(errors="replace")
-                     or backseat_only and "BACKSEAT SOCKET phase 1" in native_log.read_text(errors="replace"))
-                and time.time() - native_log.stat().st_mtime >= 10):
-            captured_stall = True
-            capture_native_threads("stalled-host")
+        if stalls < 3 and context != "dedicated server startup" and native_log.exists():
+            quiet_since = native_log.stat().st_mtime
+            text = native_log.read_text(errors="replace")
+            started = ("phase 2" in text
+                       or backseat_only and "BACKSEAT SOCKET phase 1" in text
+                       or uncanny_only and "UNCANNY SOCKET phase 1" in text
+                       or borrasca_only and "LIVE EXPEDITION phase 54" in text)
+            if started and quiet_since != stalled_at and time.time() - quiet_since >= 10:
+                stalls += 1
+                stalled_at = quiet_since
+                capture_native_threads("stalled-host" if stalls == 1 else f"stalled-host-{stalls}")
         for p in processes:
             if p.poll() is not None and p.returncode != 0:
                 raise RuntimeError(f"Native process failed during {context}: {p.returncode}")
