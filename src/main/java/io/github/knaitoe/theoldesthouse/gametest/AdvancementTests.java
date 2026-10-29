@@ -23,9 +23,13 @@ public final class AdvancementTests {
 
     @GameTest(template="empty") public static void twoTabsEveryStoryUnderItsKindNothingAnnouncedNothingPaidEveryEndingHidden(GameTestHelper h){
         var house=tab(h,"house");var account=tab(h,"account");
-        h.assertTrue(house.size()==25,"the journey tab has its 25 advancements: "+house.size());
+        h.assertTrue(house.size()==26,"the journey tab has its 26 advancements: "+house.size());
         h.assertTrue(account.size()==7+5+WitnessAccount.Story.values().length,"the account tab has its progress, the five kinds and one advancement for every story: "+account.size());
-        for(var holder:house)h.assertTrue(holder.value().parent().isPresent()==!holder.id().getPath().equals("house/letter"),"the journey tab has one root, the letter: "+holder.id());
+        for(var holder:house)h.assertTrue(holder.value().parent().isPresent()==!holder.id().getPath().equals("house/house"),"the journey tab has one root, the house: "+holder.id());
+        // 0.4.171 (owner: "advancements are broken in-game", an empty menu): the root is earned by being in the world, so the tab is never missing.
+        var root=get(h,"house","house");
+        h.assertTrue(root.value().criteria().values().stream().allMatch(c->c.trigger()==net.minecraft.advancements.CriteriaTriggers.TICK)&&!root.value().display().orElseThrow().shouldShowToast(),"the house tab's root is earned quietly just by being in the world");
+        h.assertTrue(get(h,"house","letter").value().parent().orElseThrow().getPath().equals("house/house"),"the letter is the root's first child");
         for(var holder:account)h.assertTrue(holder.value().parent().isPresent()==!holder.id().getPath().equals("account/account"),"the account tab has one root: "+holder.id());
         var all=new ArrayList<>(house);all.addAll(account);
         for(var holder:all){var display=holder.value().display().orElseThrow();
@@ -45,6 +49,8 @@ public final class AdvancementTests {
         try{
             ServerPlayer reader=h.makeMockServerPlayerInLevel(),peer=h.makeMockServerPlayerInLevel();reader.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);peer.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
             HouseAdvancements.sync(reader);HouseAdvancements.sync(peer);
+            net.minecraft.advancements.CriteriaTriggers.TICK.trigger(reader);
+            h.assertTrue(HouseAdvancements.has(reader,"house","house")&&!HouseAdvancements.has(reader,"house","letter"),"a new reader has the house tab at once, with the letter still to come");
             h.assertTrue(!HouseAdvancements.has(reader,"account","account")&&!HouseAdvancements.has(reader,"account","first_story"),"nothing of the account before a story ends");
             WitnessAccount.resolve(data,reader.getUUID(),WitnessAccount.Story.FLOORBOARDS,"took_up_the_board");HouseAdvancements.sync(reader);HouseAdvancements.sync(peer);
             h.assertTrue(HouseAdvancements.has(reader,"account","floorboards")&&HouseAdvancements.has(reader,"account","kind_understanding")&&HouseAdvancements.has(reader,"account","first_story")&&HouseAdvancements.has(reader,"account","account"),"the story, its kind, the first ending and the account itself");
