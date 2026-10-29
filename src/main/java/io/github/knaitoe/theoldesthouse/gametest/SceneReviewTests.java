@@ -125,7 +125,7 @@ public final class SceneReviewTests {
     @GameTest(template="empty",batch="review_farm_stock",timeoutTicks=1600)
     public static void nativeFarmPensContainStockAndSharedFinitePetsAndFoodSurviveReload(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,557000,f->{
         NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);
-            h.assertTrue(!Farmstead.ready(f.data(),f.origin),"the first native visit precedes any vacant saved-farm upgrade");
+            h.assertTrue(Farmstead.whole(f.data(),f.origin)&&Farmstead.ready(f.data(),f.origin),"the farm is built whole before its first visitor; nothing lays it out again");
             var owner=f.player("farm_food_owner");var peer=f.player("farm_pet_peer");f.at(owner,4.5,0,-14.5);f.at(peer,4.5,0,-12.5);
             NovelVignettes.onArrive(owner,f.place);NovelVignettes.onArrive(peer,f.place);
             var animals=f.level.getEntitiesOfClass(Mob.class,Farmstead.area(f.base),m->m.getPersistentData().getBoolean("HouseBarnAnimal"));
@@ -133,8 +133,8 @@ public final class SceneReviewTests {
             for(var a:animals){a.setNoAi(true);var rail=new BlockPos(f.base.getX()+(a instanceof net.minecraft.world.entity.animal.Chicken?15:8),f.base.getY(),a.blockPosition().getZ());
                 double edge=rail.getX()+f.level.getBlockState(rail).getCollisionShape(f.level,rail).bounds().minX;a.move(MoverType.SELF,new Vec3(9,0,0));
                 h.assertTrue(a.getBoundingBox().maxX<=edge+.002,"native collision holds livestock inside the closed barn pens: type="+a.getType()+", body="+a.getBoundingBox()+", fence="+f.level.getBlockState(rail)+", edge="+edge);}
-            f.at(owner,6.5,0,-24.5);owner.move(MoverType.SELF,new Vec3(5,0,0));h.assertTrue(owner.getX()<f.base.getX()+8.6,"a real survival body cannot pass the closed pen gate");
-            var left=f.level.getBlockState(f.base.offset(-16,0,-28));h.assertTrue(left.is(Blocks.SPRUCE_FENCE)&&left.getValue(FenceBlock.NORTH)&&left.getValue(FenceBlock.SOUTH),"the previously omitted left field has continuous native rails");
+            f.at(owner,6.5,0,-28.5);owner.move(MoverType.SELF,new Vec3(5,0,0));h.assertTrue(owner.getX()<f.base.getX()+8.6,"a real survival body cannot pass the closed pen gate");
+            var left=f.level.getBlockState(f.base.offset(-15,0,-28));h.assertTrue(left.is(Blocks.SPRUCE_FENCE)&&left.getValue(FenceBlock.NORTH)&&left.getValue(FenceBlock.SOUTH),"the field's west side has continuous native rails");
             var cache=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(Farmstead.FOOD));h.assertTrue(cache.getItem(0).is(Items.BREAD)&&cache.getItem(0).getCount()==6&&cache.getItem(2).getCount()==2,"the finite native feed barrel contains actual edible food and pet meat");
             var pets=f.level.getEntitiesOfClass(TamableAnimal.class,Farmstead.area(f.base),a->a.getPersistentData().getBoolean("HouseFarmPet"));h.assertTrue(pets.size()==2,"one native dog and one native cat are shared");
             for(int i=0;i<2;i++){var pet=pets.get(i);var reader=i==0?owner:peer;pet.setNoAi(true);pet.setNoGravity(true);reader.teleportTo(f.level,pet.getX(),pet.getY(),pet.getZ()+1,0,0);reader.connection.resetPosition();reader.hasChangedDimension();reader.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.COOKED_BEEF));
@@ -150,65 +150,67 @@ public final class SceneReviewTests {
             h.assertTrue(f.level.getEntitiesOfClass(TamableAnimal.class,Farmstead.area(f.base),a->a.getPersistentData().getBoolean("HouseFarmPet")).isEmpty()&&WitnessAccount.count(f.data(),owner.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"dead or removed pets stay gone, and food/taming confer no ending credit");f.done();
     });}
 
+    /** The farm's blocks that a pass could change, skipping what grows, flows or decays by itself. */
+    private static List<net.minecraft.world.level.block.state.BlockState> farm(Fixture f){
+        var out=new ArrayList<net.minecraft.world.level.block.state.BlockState>();
+        for(int x=-23;x<=23;x++)for(int y=-2;y<=12;y++)for(int z=-45;z<=4;z++){var s=f.level.getBlockState(f.base.offset(x,y,z));
+            if(s.getBlock() instanceof CropBlock||s.getBlock() instanceof FarmBlock||s.getBlock() instanceof LeavesBlock||s.is(NovelRegistry.WELL_COVER.get())||!s.getFluidState().isEmpty()||s.is(Blocks.GRASS_BLOCK)||s.is(Blocks.DIRT)||s.is(Blocks.SHORT_GRASS)||s.is(Blocks.FERN))continue;out.add(s);}
+        return out;
+    }
+    /** 0.4.164: the owner's "fix the mess": the farm is one build, and every pass that used to lay itself over the last leaves it alone. */
     @GameTest(template="empty",batch="review_farm_migration",timeoutTicks=1600)
-    public static void savedFarmWaitsForCamerasAndRealStayBodiesThenMovesOnlyOriginalStockAndInitials(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,557500,f->{
-        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);Farmstead.forget(f.level.getServer(),f.origin);
-        f.put(NovelRooms.CARVING,Blocks.MOSSY_COBBLESTONE.defaultBlockState());f.put(NovelRooms.OLD_CARVING,NovelRegistry.CARVINGS.get().defaultBlockState());
-        f.put(NovelRooms.WELL,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.OPEN,true).setValue(TrapDoorBlock.HALF,net.minecraft.world.level.block.state.properties.Half.TOP));
-        var original=(LecternBlockEntity)f.level.getBlockEntity(f.base.offset(-4,0,-17));var book=original.getBook().copy();var ribbon=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(NovelRooms.RIBBON));ribbon.clearContent();
-        var edited=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(Farmstead.FOOD));var gem=new ItemStack(Items.DIAMOND);gem.set(DataComponents.CUSTOM_NAME,Component.literal("Kept farm property"));edited.setItem(6,gem.copy());
-        var owner=f.player("farm_upgrade_owner");var observer=f.player("farm_upgrade_camera");observer.setGameMode(GameType.SPECTATOR);f.at(observer,-10.5,1,-12.5);
-        var own=NovelVignettes.personal(f.data(),owner.getUUID());own.putBoolean("Initials",true);own.putInt("WellTicks",381);NovelVignettes.save(f.data(),owner.getUUID(),own);
-        var animal=EntityType.COW.create(f.level);animal.setNoAi(true);animal.setPersistenceRequired();animal.setHealth(8);animal.getPersistentData().putBoolean("HouseBarnAnimal",true);animal.moveTo(Vec3.atBottomCenterOf(f.base.offset(-4,0,-18)));f.level.addFreshEntity(animal);var id=animal.getUUID();var pos=animal.position();
-        f.put(-8,0,-12,Blocks.AIR);var pet=EntityType.CAT.create(f.level);pet.setNoAi(true);pet.setNoGravity(true);pet.setTame(true,false);pet.setOwnerUUID(owner.getUUID());pet.setOrderedToSit(true);pet.setHealth(5);pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(-8,0,-12)));f.level.addFreshEntity(pet);var petId=pet.getUUID();
-        Farmstead.fresh(f.level,f.origin);h.assertTrue(animal.position().equals(pos)&&!Farmstead.ready(f.data(),f.origin),"an actual spectator camera prevents layout work and animal relocation");f.away(observer);Farmstead.fresh(f.level,f.origin);
-        h.startSequence().thenIdle(100).thenExecute(()->{
-            h.assertTrue(!Farmstead.ready(f.data(),f.origin)&&f.level.getBlockState(f.base.offset(-8,0,-12)).isAir()&&pet.isAlive()&&pet.getUUID().equals(petId)&&pet.getHealth()==5,"bounded execution waits rather than building a wall through the actual sitting cat");
-            pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(3,0,-12)));
-        });
-        h.startSequence().thenIdle(160).thenWaitUntil(()->h.assertTrue(Farmstead.ready(f.data(),f.origin),"the same layout resumes after the resident clears its footprint")).thenExecute(()->{
-            h.assertTrue(animal.getUUID().equals(id)&&animal.getHealth()==8&&animal.isAlive()&&animal.getX()>f.base.getX()+5&&animal.getX()<f.base.getX()+8,"the original wounded native stock is rehomed into the pen");
-            h.assertTrue(f.level.getBlockEntity(f.base.offset(-4,0,-17))==original&&ItemStack.isSameItemSameComponents(original.getBook(),book)&&f.level.getBlockEntity(f.base.offset(NovelRooms.RIBBON))==ribbon&&ribbon.isEmpty()&&ItemStack.isSameItemSameComponents(edited.getItem(6),gem),"original native books, barrels, depleted rewards and edited property survive");
-            h.assertTrue(f.level.getBlockState(f.base.offset(NovelRooms.OLD_CARVING)).is(Blocks.MOSSY_COBBLESTONE)&&f.level.getBlockState(f.base.offset(NovelRooms.CARVING)).is(NovelRegistry.CARVINGS.get())&&f.level.getBlockState(f.base.offset(NovelRooms.WELL)).is(NovelRegistry.WELL_COVER.get()),"only the authored initials move above the head to the facing stone wall, and the native lid upgrades");
-            h.assertTrue(pet.getUUID().equals(petId)&&pet.getHealth()==5&&pet.isOrderedToSit()&&pet.getOwnerUUID().equals(owner.getUUID())&&NovelVignettes.personal(f.data(),owner.getUUID()).getInt("WellTicks")==381&&NovelVignettes.personal(f.data(),owner.getUUID()).getBoolean("Initials"),"ownership, Stay, health and personal well history remain exact");
-            f.put(-16,0,-28,Blocks.AIR);var save=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(save,f.level.registryAccess()));Farmstead.fresh(f.level,f.origin);
-            h.assertTrue(f.level.getBlockState(f.base.offset(-16,0,-28)).isAir(),"the saved checkpoint does not reconstruct a later removed rail");f.done();
+    public static void theFarmBuiltWholeIsNeverLaidOverByTheOlderFarmPasses(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,557500,f->{
+        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);
+        var original=(LecternBlockEntity)f.level.getBlockEntity(f.base.offset(-4,0,-17));var book=original.getBook().copy();var ribbon=f.level.getBlockEntity(f.base.offset(NovelRooms.RIBBON));
+        var before=farm(f);
+        h.assertTrue(!ScenePolish.applies(f.place)&&!SceneCraft.applies(f.place)&&!VignetteArchitecture.applies(f.place)&&!SceneShells.shapes(f.place),"no polish, composition, architecture or shell pass applies to the farm");
+        // Every pass that once dressed it, run again; and the farm's own checkpoint forgotten, as an explicit rebuild would.
+        Farmstead.forget(f.level.getServer(),f.origin);Farmstead.fresh(f.level,f.origin);BarnFarm.upgrade(f.level,f.origin);
+        ScenePolish.forget(f.level.getServer(),f.origin,f.place);ScenePolish.polishOnce(f.level,f.origin,f.place);
+        SceneCraft.craftOnce(f.level,f.origin,f.place);VignetteArchitecture.decorateOnce(f.level,f.origin,f.place);SceneSupportRepairs.repairOnce(f.level,f.origin,f.place);
+        h.startSequence().thenIdle(40).thenExecute(()->{
+            var after=farm(f);int changed=0;for(int i=0;i<Math.min(before.size(),after.size());i++)if(!before.get(i).equals(after.get(i)))changed++;
+            h.assertTrue(after.equals(before),"the farm stands exactly as it was built: "+changed+" blocks changed, "+before.size()+" -> "+after.size());
+            h.assertTrue(f.level.getBlockEntity(f.base.offset(-4,0,-17))==original&&ItemStack.isSameItemSameComponents(original.getBook(),book)&&f.level.getBlockEntity(f.base.offset(NovelRooms.RIBBON))==ribbon,"the original paper and the ribbon barrel are the same native blocks");
+            f.done();
         });
     });}
 
-    // The native GameTest clock can advance thousands of ticks while cold entity-section IO is still pending.
-    // Retain the real readiness/collision checks and allow that asynchronous fixture setup to finish.
-    @GameTest(template="empty",batch="review_farm_edges",timeoutTicks=12000)
-    public static void anAlreadyUpgradedFarmRepairsTheBrokenYardAndVoidWithoutRestockingOrMovingResidents(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,558500,f->{
+    /** 0.4.164: the barn's pens inside its walls, the yard's rails, the well's head and the shed's things, each standing on what holds it. */
+    @GameTest(template="empty",batch="review_farm_edges",timeoutTicks=1600)
+    public static void theBarnPensShedAndWellStandAsOneBuild(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,558500,f->{
         NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);
-        var state=f.data().stateEntry(Farmstead.STATE,Long.toString(f.origin.asLong()));
-        state.putBoolean("Layout",true);state.remove("Edges0463");state.putBoolean("FoodIssued",true);state.putBoolean("DogIssued",true);state.putBoolean("CatIssued",true);
-        f.data().setStateEntry(Farmstead.STATE,Long.toString(f.origin.asLong()),state);
-        for(int x:new int[]{11,15})for(int z=-14;z<=-5;z++)f.put(x,0,z,Math.floorMod(z+14,3)==0?Blocks.OAK_FENCE:Blocks.AIR);
-        for(int x=2;x<=3;x++)for(int z=-24;z<=-23;z++){f.put(x,-1,z,Blocks.AIR);f.put(x,-2,z,Blocks.AIR);}
-        f.put(0,-13,-23,Blocks.AIR);f.put(12,-1,-24,Blocks.AIR);f.put(4,-1,-23,Blocks.IRON_BLOCK);
-        var original=(LecternBlockEntity)f.level.getBlockEntity(f.base.offset(-4,0,-17));var book=original.getBook().copy();
-        var food=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(Farmstead.FOOD));food.clearContent();
-        var ribbon=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(NovelRooms.RIBBON));ribbon.clearContent();
-        var lid=f.level.getBlockEntity(f.base.offset(NovelRooms.WELL));
-        var owner=f.player("farm_edges_owner");var observer=f.player("farm_edges_camera");observer.setGameMode(GameType.SPECTATOR);f.at(observer,2.5,0,-23.5);f.away(owner);
-        var own=NovelVignettes.personal(f.data(),owner.getUUID());own.putBoolean("Initials",true);own.putInt("WellTicks",381);NovelVignettes.save(f.data(),owner.getUUID(),own);
-        var pet=EntityType.CAT.create(f.level);pet.setNoAi(true);pet.setNoGravity(true);pet.setTame(true,false);pet.setOwnerUUID(owner.getUUID());pet.setOrderedToSit(true);pet.setHealth(5);pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(12,-1,-24)));f.level.addFreshEntity(pet);var id=pet.getUUID();
-        Farmstead.fresh(f.level,f.origin);h.assertTrue(f.level.getBlockState(f.base.offset(2,-1,-23)).isAir()&&!Farmstead.edgesReady(f.data(),f.origin),"the observer's real camera prevents the separate saved-farm patch");f.away(observer);Farmstead.fresh(f.level,f.origin);
-        h.startSequence().thenIdle(100).thenExecute(()->{
-            h.assertTrue(!Farmstead.edgesReady(f.data(),f.origin)&&f.level.getBlockState(f.base.offset(12,-1,-24)).isAir()&&pet.isAlive()&&pet.getHealth()==5,"native floor collision cannot grow through an actual Stay cat in the hole");
-            pet.moveTo(Vec3.atBottomCenterOf(f.base.offset(3,0,-12)));
-        });
-        h.startSequence().thenIdle(160).thenWaitUntil(()->h.assertTrue(Farmstead.edgesReady(f.data(),f.origin),"the separate repair completes after the resident moves")).thenExecute(()->{
-            for(int x:new int[]{11,15})for(int z=-13;z<=-6;z++){var rail=f.level.getBlockState(f.base.offset(x,0,z));
-                if(x==11&&z==-10){h.assertTrue(rail.is(Blocks.SPRUCE_FENCE_GATE)&&!rail.getValue(FenceGateBlock.OPEN),"the yard has one real closed gate");continue;}
-                h.assertTrue(rail.is(Blocks.SPRUCE_FENCE)&&rail.getValue(FenceBlock.NORTH)&&rail.getValue(FenceBlock.SOUTH),"every formerly three-spaced yard post has continuous native rails");}
-            for(int x=2;x<=3;x++)for(int z=-24;z<=-23;z++)h.assertTrue(f.level.getBlockState(f.base.offset(x,-1,z)).is(Blocks.GRASS_BLOCK)&&f.level.getBlockState(f.base.offset(x,-2,z)).is(Blocks.DIRT),"the apron is actual supported ground above the outside void");
-            h.assertTrue(f.level.getBlockState(f.base.offset(0,-13,-23)).is(Blocks.MOSSY_COBBLESTONE)&&f.level.getBlockState(f.base.offset(0,-2,-23)).is(Blocks.LADDER)&&f.level.getBlockState(f.base.offset(4,-1,-23)).is(Blocks.IRON_BLOCK),"the shaft has a stone bottom, keeps its ladder and preserves edited ground");
-            h.assertTrue(f.level.getBlockEntity(f.base.offset(NovelRooms.WELL))==lid&&original==f.level.getBlockEntity(f.base.offset(-4,0,-17))&&ItemStack.isSameItemSameComponents(book,original.getBook())&&food.isEmpty()&&ribbon.isEmpty(),"the lid, exact original and depleted finite caches are never reconstructed");
-            h.assertTrue(pet.getUUID().equals(id)&&pet.getHealth()==5&&pet.isNoAi()&&pet.isNoGravity()&&pet.isOrderedToSit()&&pet.getOwnerUUID().equals(owner.getUUID())&&NovelVignettes.personal(f.data(),owner.getUUID()).getInt("WellTicks")==381,"the same native pet and reader's ongoing vigil survive the small patch");
-            f.put(2,-1,-23,Blocks.AIR);f.put(15,0,-12,Blocks.AIR);var save=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(save,f.level.registryAccess()));Farmstead.fresh(f.level,f.origin);
-            h.assertTrue(f.level.getBlockState(f.base.offset(2,-1,-23)).isAir()&&f.level.getBlockState(f.base.offset(15,0,-12)).isAir(),"the saved patch never restores later player removals");f.done();
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            // The barn: stone footing and board walls to the eaves on both long sides, nothing of the pens in the wall line.
+            for(int z=-34;z<=-17;z++)for(int x:new int[]{5,15}){var foot=f.level.getBlockState(f.base.offset(x,0,z));
+                h.assertTrue(foot.is(Blocks.COBBLESTONE)||foot.is(Blocks.MOSSY_COBBLESTONE),"the barn's wall stands on stone at x="+x+" z="+z+": "+foot);
+                for(int y=1;y<=4;y++)h.assertTrue(f.level.getBlockState(f.base.offset(x,y,z)).is(NovelRegistry.FARM_MATERIAL.get()),"the barn's wall is boarded to the eaves at x="+x+" y="+y+" z="+z);}
+            for(int x=8;x<=11;x++)for(int y=0;y<=3;y++)h.assertTrue(f.level.getBlockState(f.base.offset(x,y,-17)).isAir(),"the big doorway is open");
+            h.assertTrue(FarmMaterialBlock.is(f.level.getBlockState(f.base.offset(6,0,-17)),FarmMaterialBlock.Kind.DOOR)&&FarmMaterialBlock.is(f.level.getBlockState(f.base.offset(13,3,-17)),FarmMaterialBlock.Kind.DOOR),"its two doors stand slid back along the wall");
+            h.assertTrue(f.level.getBlockState(f.base.offset(10,8,-25)).is(Blocks.DARK_OAK_LOG)&&f.level.getBlockState(f.base.offset(5,5,-25)).is(Blocks.DARK_OAK_STAIRS),"a gambrel from eave to ridge");
+            for(int x:new int[]{6,7,13,14}){var front=f.level.getBlockState(f.base.offset(x,0,-21));h.assertTrue(front.is(Blocks.SPRUCE_FENCE)&&(front.getValue(FenceBlock.EAST)||front.getValue(FenceBlock.WEST)),"the pen's front rail joins across at x="+x);}
+            for(int x:new int[]{8,12})for(int y=0;y<=2;y++)h.assertTrue(f.level.getBlockState(f.base.offset(x,y,-25)).is(Blocks.STRIPPED_SPRUCE_LOG),"the loft's posts stand at the pen rails");
+            // The yard: continuous rails and one closed gate.
+            for(int x:new int[]{11,15})for(int z=-10;z<=-4;z++){var rail=f.level.getBlockState(f.base.offset(x,0,z));
+                if(x==11&&z==-7){h.assertTrue(rail.is(Blocks.SPRUCE_FENCE_GATE)&&!rail.getValue(FenceGateBlock.OPEN),"the yard has one real closed gate");continue;}
+                h.assertTrue(rail.is(Blocks.SPRUCE_FENCE)&&rail.getValue(FenceBlock.NORTH)&&rail.getValue(FenceBlock.SOUTH),"the yard's rails join at x="+x+" z="+z);}
+            // The well: the shaft, its ladder and stone bottom, the cover, the initials; the windlass high enough to climb out under.
+            h.assertTrue(f.level.getBlockState(f.base.offset(0,-13,-23)).is(Blocks.MOSSY_COBBLESTONE)&&f.level.getBlockState(f.base.offset(0,-2,-23)).is(Blocks.LADDER)&&f.level.getBlockState(f.base.offset(NovelRooms.WELL)).is(NovelRegistry.WELL_COVER.get())&&f.level.getBlockState(f.base.offset(NovelRooms.CARVING)).is(NovelRegistry.CARVINGS.get()),"the shaft, ladder, cover and initials are where the story keeps them");
+            for(int y=2;y<=3;y++)h.assertTrue(f.level.getBlockState(f.base.offset(0,y,-23)).getCollisionShape(f.level,f.base.offset(0,y,-23)).isEmpty(),"clear above the ladder's top at y="+y);
+            h.assertTrue(f.level.getBlockState(f.base.offset(0,4,-23)).is(Blocks.SPRUCE_LOG),"the windlass spans the posts three blocks above the mouth");
+            for(int x:new int[]{-2,2})for(int y=0;y<=5;y++)h.assertTrue(f.level.getBlockState(f.base.offset(x,y,-23)).is(Blocks.STRIPPED_SPRUCE_LOG),"the posts carry the well's roof");
+            h.assertTrue(f.level.getBlockState(f.base.offset(0,6,-23)).is(Blocks.SPRUCE_SLAB)&&f.level.getBlockState(f.base.offset(1,3,-23)).is(Blocks.CHAIN)&&f.level.getBlockState(f.base.offset(1,2,-23)).is(Blocks.CHAIN)&&f.level.getBlockState(f.base.offset(1,1,-23)).is(Blocks.CAULDRON),"the ridge on the posts, the rope from the windlass to the bucket on the curb");
+            // Every farm thing stands on a solid top or hangs flush on a solid face; every lantern hangs from something or stands on something.
+            int things=0;
+            for(int x=-17;x<=17;x++)for(int y=-1;y<=8;y++)for(int z=-39;z<=0;z++){var at=f.base.offset(x,y,z);var s=f.level.getBlockState(at);
+                if(s.is(NovelRegistry.FARM_PROP.get())){things++;var k=s.getValue(FarmPropBlock.KIND);var back=at.relative(s.getValue(FarmPropBlock.FACING).getOpposite());
+                    if(FarmPropBlock.onWall(k))h.assertTrue(f.level.getBlockState(back).isFaceSturdy(f.level,back,s.getValue(FarmPropBlock.FACING)),k+" at "+at.subtract(f.base)+" hangs flush on a solid face");
+                    else h.assertTrue(f.level.getBlockState(at.below()).isFaceSturdy(f.level,at.below(),Direction.UP),k+" at "+at.subtract(f.base)+" stands on a solid top");}
+                if(s.getBlock() instanceof LanternBlock){var hold=s.getValue(LanternBlock.HANGING)?at.above():at.below();h.assertTrue(!f.level.getBlockState(hold).getCollisionShape(f.level,hold).isEmpty()||f.level.getBlockState(hold).is(Blocks.CHAIN),"the lantern at "+at.subtract(f.base)+" is held");}
+            }
+            h.assertTrue(things>=17,"the barn, the shed and the yard keep their things: "+things);
+            h.assertTrue(FarmPropBlock.is(f.level.getBlockState(f.base.offset(-13,0,-14)),FarmPropBlock.Kind.WORKBENCH)&&FarmPropBlock.is(f.level.getBlockState(f.base.offset(-13,1,-14)),FarmPropBlock.Kind.TOOL_RACK)&&f.level.getBlockState(f.base.offset(-14,0,-11)).isAir()&&f.level.getBlockState(f.base.offset(-9,0,-11)).isAir(),"the shed keeps its workbench and tools on the back wall and a clear way from the door to the back door");
+            f.done();
         });
     });}
 

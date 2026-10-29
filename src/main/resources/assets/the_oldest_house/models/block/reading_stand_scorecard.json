@@ -1,0 +1,381 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "stand": "the_oldest_house:block/reading_stand/stand_dark",
+    "board": "the_oldest_house:block/reading_stand/masonite",
+    "front": "the_oldest_house:block/reading_stand/clipboard_front",
+    "clip": "the_oldest_house:block/reading_stand/clip",
+    "pencil": "the_oldest_house:block/reading_stand/pencil",
+    "particle": "the_oldest_house:block/reading_stand/stand_dark"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        5
+      ],
+      "to": [
+        13,
+        1.5,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stand",
+          "uv": [
+            3,
+            14.5,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#stand",
+          "uv": [
+            3,
+            14.5,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#stand",
+          "uv": [
+            8,
+            14.5,
+            11,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#stand",
+          "uv": [
+            5,
+            14.5,
+            8,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#stand",
+          "uv": [
+            3,
+            5,
+            13,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#stand",
+          "uv": [
+            3,
+            8,
+            13,
+            11
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        1.5,
+        6
+      ],
+      "to": [
+        13,
+        15,
+        6.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front",
+          "uv": [
+            3,
+            1,
+            13,
+            14.5
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            3,
+            1,
+            13,
+            14.5
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            9.2,
+            1,
+            10,
+            14.5
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            6,
+            1,
+            6.8,
+            14.5
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            3,
+            6,
+            13,
+            6.8
+          ]
+        },
+        "down": {
+          "texture": "#board",
+          "uv": [
+            3,
+            9.2,
+            13,
+            10
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          1.5,
+          6.3
+        ]
+      }
+    },
+    {
+      "from": [
+        6,
+        13,
+        5.5
+      ],
+      "to": [
+        10,
+        14.5,
+        6.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#clip",
+          "uv": [
+            6,
+            1.5,
+            10,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#clip",
+          "uv": [
+            6,
+            1.5,
+            10,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#clip",
+          "uv": [
+            9.9,
+            1.5,
+            10.5,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#clip",
+          "uv": [
+            5.5,
+            1.5,
+            6.1,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#clip",
+          "uv": [
+            6,
+            5.5,
+            10,
+            6.1
+          ]
+        },
+        "down": {
+          "texture": "#clip",
+          "uv": [
+            6,
+            9.9,
+            10,
+            10.5
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          1.5,
+          6.3
+        ]
+      }
+    },
+    {
+      "from": [
+        7.5,
+        0,
+        10
+      ],
+      "to": [
+        8.5,
+        6,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stand",
+          "uv": [
+            7.5,
+            10,
+            8.5,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#stand",
+          "uv": [
+            7.5,
+            10,
+            8.5,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#stand",
+          "uv": [
+            5,
+            10,
+            6,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#stand",
+          "uv": [
+            10,
+            10,
+            11,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#stand",
+          "uv": [
+            7.5,
+            10,
+            8.5,
+            11
+          ]
+        },
+        "down": {
+          "texture": "#stand",
+          "uv": [
+            7.5,
+            5,
+            8.5,
+            6
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          0,
+          10.5
+        ]
+      }
+    },
+    {
+      "from": [
+        3,
+        0,
+        2
+      ],
+      "to": [
+        11,
+        1,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pencil",
+          "uv": [
+            5,
+            15,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#pencil",
+          "uv": [
+            3,
+            15,
+            11,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#pencil",
+          "uv": [
+            13,
+            15,
+            14,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#pencil",
+          "uv": [
+            2,
+            15,
+            3,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#pencil",
+          "uv": [
+            3,
+            2,
+            11,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#pencil",
+          "uv": [
+            3,
+            13,
+            11,
+            14
+          ]
+        }
+      }
+    }
+  ]
+}

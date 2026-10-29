@@ -22,7 +22,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Farmstead {
     public static final String STATE="farmstead_0462";
-    private static final String EDGES="Edges0463";
+    private static final String EDGES="Edges0463",WHOLE="Whole0164";
     public static final BlockPos FOOD=new BlockPos(7,0,-18);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static BuildBlocks.Plan work;private static BlockPos workingOrigin;
@@ -140,9 +140,15 @@ public final class Farmstead {
     /** A new farm's core is already composed before its first visitor. Later dressing need not delay finite stock. */
     public static void built(ServerLevel l,BlockPos b){BuildBlocks.after(l,()->{var o=HouseSavedData.get(l.getServer()).houseOrigin();
         if(o==null||!b.equals(LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL)))return;var d=LabyrinthData.get(l.getServer());var t=d.stateEntry(STATE,key(o));t.putBoolean("FreshGeometry",true);d.setStateEntry(STATE,key(o),t);});}
+    /** 0.4.164: a farm BarnWell built whole is never laid out again: its geometry is final and its stock is due at once. */
+    public static void composed(ServerLevel l,BlockPos b){BuildBlocks.after(l,()->{var o=HouseSavedData.get(l.getServer()).houseOrigin();
+        if(o==null||!b.equals(LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL)))return;var d=LabyrinthData.get(l.getServer());var t=d.stateEntry(STATE,key(o));
+        t.putBoolean("FreshGeometry",true);t.putBoolean("Layout",true);t.putBoolean(EDGES,true);t.putBoolean(WHOLE,true);d.setStateEntry(STATE,key(o),t);});}
+    /** Whether this world's farm was built whole (0.4.164), so the older farm passes leave it alone. */
+    public static boolean whole(LabyrinthData d,BlockPos o){return d.stateEntry(STATE,key(o)).getBoolean(WHOLE);}
     private static boolean loaded(ServerLevel l,BlockPos b){var a=area(b);for(int x=(int)Math.floor(a.minX)>>4;x<=((int)Math.ceil(a.maxX)-1)>>4;x++)for(int z=(int)Math.floor(a.minZ)>>4;z<=((int)Math.ceil(a.maxZ)-1)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;return true;}
     private static boolean unseen(ServerLevel l,BlockPos b){return l.players().stream().noneMatch(p->area(b).inflate(24).intersects(p.getCamera().getBoundingBox()));}
-    public static void fresh(ServerLevel l,BlockPos o){var d=LabyrinthData.get(l.getServer());if(ready(d,o)&&edgesReady(d,o))return;var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);if(!loaded(l,b)||!unseen(l,b))return;
+    public static void fresh(ServerLevel l,BlockPos o){var d=LabyrinthData.get(l.getServer());if(ready(d,o)&&edgesReady(d,o)||whole(d,o))return;var b=LabyrinthPlaces.base(o,LabyrinthPlace.BARN_WELL);if(!loaded(l,b)||!unseen(l,b))return;
         boolean full=!ready(d,o);
         if(!BuildBlocks.isRecording(l)){if(work==null){if(full)penExisting(l,b);workingOrigin=o;work=BuildBlocks.record(l,()->{if(full)layout(l,b);else edges(l,b);});}return;}
         if(full){penExisting(l,b);layout(l,b);}else edges(l,b);

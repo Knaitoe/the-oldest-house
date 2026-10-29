@@ -25,11 +25,19 @@ public final class SceneExteriors {
     private SceneExteriors(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;site=place;}
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace site){
         if(!SITES.contains(site))return;var d=LabyrinthData.get(l.getServer());String key=origin.asLong()+":"+site.id();var done=d.state(STATE);
-        if(done.getBoolean(key))return;var b=LabyrinthPlaces.base(origin,site);if(b==null||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
+        if(done.getBoolean(key))return;var b=LabyrinthPlaces.base(origin,site);if(b==null)return;
         var r=site.room();var box=new AABB(Vec3.atLowerCornerOf(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2)),Vec3.atLowerCornerOf(b.offset(r.maxX()+3,r.maxY()+6,18)));
+        // 0.4.164: the once-a-second check never loads the scene itself. Reading an unloaded site's floor made the server load
+        // (or generate) its chunk on the spot, which stalled a starved CI server for 36 seconds (run 1329, Borrasca phase 54).
+        if(!loaded(l,box)||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
         if(l.players().stream().anyMatch(p->box.intersects(p.getBoundingBox())))return;
         var work=new SceneExteriors(l,b,site);switch(site){case DROWNED_TOWN->work.town();case GOATMAN->work.trailer();case HOLLOWAY_CAMP->work.hut();case ZAMPANO_COURTYARD->work.archive();default->{}}
         done.putBoolean(key,true);d.setState(STATE,done);
+    }
+    private static boolean loaded(ServerLevel l,AABB a){
+        for(int x=(int)Math.floor(a.minX)>>4;x<=((int)Math.ceil(a.maxX)-1)>>4;x++)for(int z=(int)Math.floor(a.minZ)>>4;z<=((int)Math.ceil(a.maxZ)-1)>>4;z++)
+            if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
+        return true;
     }
     static void forget(ServerLevel l,BlockPos origin,LabyrinthPlace site){var d=LabyrinthData.get(l.getServer());var s=d.state(STATE);s.remove(origin.asLong()+":"+site.id());d.setState(STATE,s);}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){

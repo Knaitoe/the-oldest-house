@@ -236,6 +236,13 @@ public final class MovieNight {
     public static Vec3 slot(BlockPos b,int i){return Vec3.atLowerCornerOf(b).add(SLOTS.get(i));}
     /** Four canoes at the dock, one to a reader; each is the same native canoe until it is really destroyed. */
     public static void canoes(ServerPlayer p,BlockPos b){for(int i=0;i<SLOTS.size();i++)canoe(p,b,i);}
+    /** 0.4.164 (owner: "it's the life preserver that's floating"): the ring hung in the air a hand's width off a thin fence post. */
+    private static final BlockState PILING=Blocks.STRIPPED_OAK_LOG.defaultBlockState();
+    /** A lake built before then has its post made the piling the ring hangs flush on, the next time a reader comes. */
+    public static void piling(ServerLevel l,BlockPos b){
+        if(!BuildBlocks.state(l,b.offset(2,1,-11)).is(MovieNightRegistry.PROP.get()))return;
+        for(int y=0;y<=1;y++){var at=b.offset(1,y,-11);if(l.isLoaded(at)&&l.getBlockState(at).is(Blocks.OAK_FENCE))l.setBlock(at,PILING,Block.UPDATE_ALL);}
+    }
     public static @Nullable LakeCanoeEntity canoe(ServerLevel level,CompoundTag world,int i){
         if(!world.hasUUID("Canoe"+i))return null;var id=world.getUUID("Canoe"+i);
         if(level.getEntity(id) instanceof LakeCanoeEntity c)return c;var queued=QUEUED.get(id);
@@ -386,8 +393,8 @@ public final class MovieNight {
     private static void dock(Site s){
         s.fill(-1,-1,-3,1,-1,-18,board(MovieMaterialBlock.Kind.DOCK));
         for(int z=-14;z>=-18;z-=4)for(int x:new int[]{-1,1})for(int y=-2;y>=-11&&s.at(x,y,z).is(Blocks.WATER);y--)s.set(x,y,z,Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WATERLOGGED,true));
-        // A post with the life ring partway out, and the projectionist's film cans by the projector.
-        s.set(1,0,-11,Blocks.OAK_FENCE);s.set(1,1,-11,Blocks.OAK_FENCE);s.set(2,1,-11,prop(MoviePropBlock.Kind.LIFE_RING,Direction.EAST));
+        // A piling with the life ring hung on its lake side, and the projectionist's film cans by the projector.
+        s.set(1,0,-11,PILING);s.set(1,1,-11,PILING);s.set(2,1,-11,prop(MoviePropBlock.Kind.LIFE_RING,Direction.EAST));
         s.set(-1,0,-17,prop(MoviePropBlock.Kind.FILM_CANS,Direction.EAST));
         // The projector at the end, its lens to the north and the screen.
         s.set(PROJECTOR.getX(),PROJECTOR.getY(),PROJECTOR.getZ(),MoviePropBlock.of(MoviePropBlock.Kind.PROJECTOR,Direction.NORTH));

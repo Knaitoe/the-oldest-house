@@ -26,6 +26,12 @@ public final class NovelRegistry {
     public static final DeferredBlock<Block> GOUGES=material("cell_gouges",Blocks.DEEPSLATE_TILES),SEALED_WINDOW=material("sealed_window",Blocks.DARK_OAK_PLANKS),
         INSTITUTE=material("institute_paint",Blocks.WHITE_TERRACOTTA),PLASTER=material("collapse_plaster",Blocks.WHITE_TERRACOTTA),
         CARVINGS=material("well_carvings",Blocks.MOSSY_COBBLESTONE),PAPER=material("archive_paper",Blocks.WHITE_TERRACOTTA);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<FarmMaterialBlock>> FARM_MATERIAL_TYPE=CODECS.register("farm_material",()->FarmMaterialBlock.CODEC);
+    /** 0.4.164: the barn well's barn siding, doors, trim and windows and the shed's boards. Scenery, not to be broken. */
+    public static final DeferredBlock<FarmMaterialBlock> FARM_MATERIAL=BLOCKS.registerBlock("farm_material",FarmMaterialBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).strength(-1,3600000).noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<FarmPropBlock>> FARM_PROP_TYPE=CODECS.register("farm_prop",()->FarmPropBlock.CODEC);
+    /** 0.4.164: the farm's troughs, cans, sacks, benches, tools and barrow. Scenery, not to be broken. */
+    public static final DeferredBlock<FarmPropBlock> FARM_PROP=BLOCKS.registerBlock("farm_prop",FarmPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).strength(-1,3600000).noOcclusion().noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NovelPropBlock>> PROP_TYPE=CODECS.register("novel_prop",()->NovelPropBlock.CODEC);
     public static final DeferredBlock<NovelPropBlock> PROP=BLOCKS.registerBlock("novel_prop",NovelPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NightWardBlock>> NIGHT_WARD_TYPE=CODECS.register("night_ward",()->NightWardBlock.CODEC);

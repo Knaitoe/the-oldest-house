@@ -59,20 +59,8 @@ public final class NovelRooms {
         CourtyardFountain.build(l,b);
         PlaytestScenes0488.fresh(l,b,LabyrinthPlace.ZAMPANO_COURTYARD);
     }
-    private static void well(ServerLevel l,BlockPos b){
-        outdoor(l,b,17,39,Blocks.GRASS_BLOCK);room(l,b,5,15,-34,-17,0,7,Blocks.SPRUCE_PLANKS,Blocks.COARSE_DIRT);
-        box(l,b,8,0,-17,10,3,-17,Blocks.AIR.defaultBlockState());
-        for(int y=-12;y<=1;y++)for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++){
-            if(dx==0&&dz==0)at(l,b,dx,y,-23+dz,Blocks.AIR);else at(l,b,dx,y,-23+dz,Blocks.MOSSY_COBBLESTONE);}
-        for(int y=-12;y<=1;y++)BuildBlocks.set(l,b.offset(0,y,-23),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);
-        at(l,b,0,-13,-23,Blocks.MOSSY_COBBLESTONE);BuildBlocks.set(l,b.offset(CARVING),NovelRegistry.CARVINGS.get().defaultBlockState(),F);
-        cover(l,b,false);lectern(l,b.offset(-4,0,-17),NovelTexts.well());
-        at(l,b,2,0,-25,Blocks.BARREL);
-        for(int z=-4;z>=-33;z-=6)for(int x:new int[]{-13,16}){box(l,b,x,0,z,x,5,z,Blocks.SPRUCE_LOG.defaultBlockState());box(l,b,x-1,4,z-1,x+1,7,z+1,Blocks.SPRUCE_LEAVES.defaultBlockState());}
-        BarnFarm.dress(l,b);
-        Farmstead.layout(l,b);
-        Farmstead.built(l,b);
-    }
+    /** 0.4.164: the farm is built whole by BarnWell, and none of the later scene passes dress it. */
+    private static void well(ServerLevel l,BlockPos b){BarnWell.build(l,b);Farmstead.composed(l,b);}
     /** A copied return vestibule must never open onto unsupported outside air. */
     public static void safeApproach(ServerLevel l,BlockPos b){
         for(int x=-7;x<=7;x++)for(int z=1;z<=9;z++){

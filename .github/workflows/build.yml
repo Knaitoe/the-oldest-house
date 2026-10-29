@@ -61,6 +61,8 @@ jobs:
           python3 tools/generate_borrasca_trail_assets.py --check
           python3 tools/draw_borrasca_cast.py --check
           python3 tools/generate_bath_decay_assets.py --check
+          python3 tools/draw_reading_stands.py --check
+          python3 tools/draw_barn_well.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
@@ -1606,7 +1608,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PwindowEntrySmoke --no-daemon
           test -s build/font-smoke/window-entry-passed.txt
-          for view in reach sill pull lower crawl-left crawl-right paw-open paw-curl paw-closed window-stand bed-heave-left bed-heave-right; do test -s build/font-smoke/native-window-entry-$view.png; done
+          for view in reach sill pull lower crawl-left crawl-right paw-open paw-curl paw-closed window-stand bed-heave-left bed-heave-right scurry-left scurry-right; do test -s build/font-smoke/native-window-entry-$view.png; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -2163,6 +2165,9 @@ jobs:
           folder=Path('build/house-read139-art')
           assert len(list(folder.glob('*.png')))==22
           assert (folder/'passed.txt').is_file()
+          stands=Path('build/reading-stands')
+          assert sorted(p.name for p in stands.glob('*.png'))==['dock_ring.png','stands_back.png','stands_front.png']
+          assert (stands/'passed.txt').is_file()
           PY
       - uses: actions/upload-artifact@v4
         if: always()
@@ -2172,6 +2177,7 @@ jobs:
             build/house-read-native.log
             build/house-read139-proof
             build/house-read139-art
+            build/reading-stands
             run/logs
 
   personal-scene-clients:

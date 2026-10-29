@@ -147,8 +147,8 @@ public final class ArchitectureTests {
             literaryRoutes(h,interior,LabyrinthPlaces.base(origin,LabyrinthPlace.WINCHESTER));
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
-            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, outside the generic dressing.
-            h.assertTrue(dressed==21&&props>=80,"all twenty-one generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
+            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, and the barn well's farm (0.4.164) by BarnWell, outside the generic dressing.
+            h.assertTrue(dressed==20&&props>=80,"all twenty generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
             shellsAndEdges(h,server,origin,data);
             composition(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);

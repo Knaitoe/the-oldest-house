@@ -34,7 +34,7 @@ public final class LiteraryRooms {
         // The child's room (0.4.74) sets its own bedtime card and exercise book, and the Last Stop (0.4.78) its till receipt and
         // noticeboard, and Three Fingers (0.4.81) the soldier's pocketbook and the family Bible, and the Wheel (0.4.121) the daughter's notebook; the Masque's invitation and Bly's note
         // (0.4.105) are their builders' own; every other room gets a lectern and a ledger.
-        var note=source(p);if(p!=LabyrinthPlace.CHILD_ROOM&&p!=LabyrinthPlace.WHEEL&&p!=LabyrinthPlace.ELK_LOT&&p!=LabyrinthPlace.THREE_FINGERS&&p!=LabyrinthPlace.MASQUE&&p!=LabyrinthPlace.BLY_ROUTE){if(note.getY()>0&&BuildBlocks.state(l,b.offset(note.below())).isAir())furniture(l,b,note.getX(),note.getY()-1,note.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);paper(l,b,note,LiteraryTexts.source(p));}
+        var note=source(p);if(p!=LabyrinthPlace.CHILD_ROOM&&p!=LabyrinthPlace.WHEEL&&p!=LabyrinthPlace.ELK_LOT&&p!=LabyrinthPlace.THREE_FINGERS&&p!=LabyrinthPlace.MASQUE&&p!=LabyrinthPlace.BLY_ROUTE){if(note.getY()>0&&BuildBlocks.state(l,b.offset(note.below())).isAir())furniture(l,b,note.getX(),note.getY()-1,note.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);paper(l,b,note,LiteraryTexts.source(p),holder(p));}
         if(p!=LabyrinthPlace.OLD_CABIN&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.CHILD_ROOM&&p!=LabyrinthPlace.ELK_LOT&&p!=LabyrinthPlace.THREE_FINGERS){var end=ending(p);if(end.getY()>0&&BuildBlocks.state(l,b.offset(end.below())).isAir())furniture(l,b,end.getX(),end.getY()-1,end.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,end,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);}
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,wall(p).defaultBlockState(),floor(p).defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,p);
         if(p==LabyrinthPlace.ELK_CARCASSES)ElkCarcassMap.deckhouse(l,b);
@@ -45,7 +45,20 @@ public final class LiteraryRooms {
     public static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,Block block){NovelRooms.box(l,b,x0,y0,z0,x1,y1,z1,block instanceof LeavesBlock?block.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true):block.defaultBlockState());}
     public static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),F);}
     public static void prop(ServerLevel l,BlockPos b,BlockPos rel,LiteraryPropBlock.Kind kind,Direction facing){BuildBlocks.set(l,b.offset(rel),LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,kind).setValue(LiteraryPropBlock.FACING,facing),F);}
-    public static void paper(ServerLevel l,BlockPos b,BlockPos rel,ItemStack book){BuildBlocks.set(l,b.offset(rel),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true),F);BuildBlocks.after(l,()->{if(l.getBlockEntity(b.offset(rel)) instanceof LecternBlockEntity d){d.setBook(book);d.setChanged();}});}
+    public static void paper(ServerLevel l,BlockPos b,BlockPos rel,ItemStack book){paper(l,b,rel,book,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true));}
+    /** The paper on whatever native lectern holds it: a vanilla lectern, or a scene's own reading stand. */
+    public static void paper(ServerLevel l,BlockPos b,BlockPos rel,ItemStack book,net.minecraft.world.level.block.state.BlockState holder){BuildBlocks.set(l,b.offset(rel),holder,F);BuildBlocks.after(l,()->{if(l.getBlockEntity(b.offset(rel)) instanceof LecternBlockEntity d){d.setBook(book);d.setChanged();}});}
+    /** 0.4.164 (owner: "podiums like this need new textures suited to their vignettes"): the scenes whose paper stood as a vanilla lectern on a table, and the stand each reads from now. */
+    public static net.minecraft.world.level.block.state.BlockState holder(LabyrinthPlace p){
+        return switch(p){
+            case MOVIE_NIGHT->ReadingStandBlock.of(ReadingStandBlock.Kind.PROGRAM,Direction.SOUTH);
+            case COSTUME_NIGHT->ReadingStandBlock.of(ReadingStandBlock.Kind.SCORECARD,Direction.SOUTH);
+            case WINTER_LAKE->ReadingStandBlock.of(ReadingStandBlock.Kind.FOLDED_NOTE,Direction.SOUTH);
+            case WINCHESTER->ReadingStandBlock.of(ReadingStandBlock.Kind.LEDGER_REST,Direction.NORTH);
+            case GHOSTS_SET->ReadingStandBlock.of(ReadingStandBlock.Kind.SCRIPT_STAND,Direction.NORTH);
+            case BORRASCA->ReadingStandBlock.of(ReadingStandBlock.Kind.TRAIL_RACK,Direction.SOUTH);
+            default->Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true);};
+    }
     private static Block wall(LabyrinthPlace p){return switch(p){case USHER->Blocks.DEEPSLATE_BRICKS;case MAPPING_INTERIOR->LiteraryRegistry.SIDING.get();case CRIMSON_HALL->Blocks.POLISHED_BLACKSTONE_BRICKS;case MINIATURES,DEVILS_ROCK,GHOSTS_SET,WHEEL->Blocks.CALCITE;case LAKE_HOUSE->Blocks.SPRUCE_PLANKS;case WINCHESTER->LiteraryRegistry.WINCHESTER_WALLPAPER.get();default->LiteraryRegistry.DARK_PANEL.get();};}
     private static Block floor(LabyrinthPlace p){return switch(p){case USHER->Blocks.POLISHED_DEEPSLATE;case CRIMSON_HALL->LiteraryRegistry.RED_FLOOR.get();case MAPPING_INTERIOR->Blocks.BIRCH_PLANKS;case LAKE_HOUSE->Blocks.SPRUCE_PLANKS;case WINCHESTER->LiteraryRegistry.WINCHESTER_PARQUET.get();default->Blocks.DARK_OAK_PLANKS;};}
     private static void room(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int y,int h,Block walls,Block flooring){

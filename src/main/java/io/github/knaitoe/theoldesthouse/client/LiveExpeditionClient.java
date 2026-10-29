@@ -197,6 +197,12 @@ public final class LiveExpeditionClient {
             mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);
             var bounds=io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(target,io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.GOATMAN);
             var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,bounds);
+            // 0.4.163: the trail's child is only there once the reader has started walking, so walk the trail a few steps first.
+            if(ack!=32&&mc.screen==null&&children.stream().noneMatch(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent())){
+                var at=mc.player.position().subtract(target.getX(),target.getY(),target.getZ());var progress=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.project(at).progress();
+                var next=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.path(progress+1).add(target.getX(),target.getY(),target.getZ());var toward=next.subtract(mc.player.position());
+                mc.player.setYRot((float)Math.toDegrees(Math.atan2(-toward.x,toward.z)));mc.player.setXRot(0);mc.options.keyUp.setDown(progress<io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette.FOLLOW_START+1.5);return;
+            }
             if(ticks>40&&mc.screen==null&&ack!=32&&children.stream().filter(c->!c.girl()).count()==7&&children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).count()==1){
                 var camera=mc.gameRenderer.getMainCamera().getPosition();var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-128,128,-128,128,-128,128));frustum.prepare(camera.x,camera.y,camera.z);
                 for(var c:children){boolean mine=!c.girl()||c.viewer().filter(mc.player.getUUID()::equals).isPresent();var renderer=mc.getEntityRenderDispatcher().getRenderer(c);

@@ -591,7 +591,11 @@ public final class LakeWitchEntity extends PathfinderMob {
             if(doorOnStep(BlockPos.containing(point)))return;
             var step=delta.normalize().scale(Math.min(remaining,delta.length()));var node=BlockPos.containing(getX()+step.x,literaryBase.getY(),getZ()+step.z);
             if(!literaryWalkable(node)){route.clear();return;}
-            var before=position();move(MoverType.SELF,step);setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));yBodyRot=getYRot();
+            // 0.4.163 (owner: "problems traversing from water to land"): afloat she is never on the ground, so vanilla never steps
+            // her up the bank's lip. She rises to the surface ahead before moving onto it, and settles down onto water after.
+            var before=position();double ahead=supportHeight(level(),literaryBase,getX()+step.x,getZ()+step.z,getBbWidth())-getY();
+            if(ahead>0)super.move(MoverType.SELF,new Vec3(0,Math.min(ahead,.6),0));
+            move(MoverType.SELF,step);setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));yBodyRot=getYRot();
             super.move(MoverType.SELF,new Vec3(0,net.minecraft.util.Mth.clamp(supportHeight(level(),literaryBase,getX(),getZ(),getBbWidth())-getY(),-.25,.25),0));
             double travelled=position().subtract(before).multiply(1,0,1).length();passingSwipe(before);walkAnimation.update((float)travelled*4,.4F);remaining-=travelled;if(travelled<.001)return;
         }

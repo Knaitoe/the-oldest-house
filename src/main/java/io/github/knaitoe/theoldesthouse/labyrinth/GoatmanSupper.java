@@ -120,7 +120,9 @@ public final class GoatmanSupper {
         boolean occupied=original.is(GoatmanRegistry.BRAT.get());
         if(occupied){mask|=bit;empty&=~bit;GoatmanWoods.served(level,base,seat,original);}else empty|=bit;
         run.putInt("Plated0464",mask);run.putInt("EmptyPlates0465",empty);
-        if(held.is(GoatmanRegistry.BUN.get())&&GoatmanMeal.plateBun(player,held,base,run,seat))return;
+        // 0.4.163 (owner): a bun on a plated frank makes a hot dog on the plate. Putting the last one down empties the hand
+        // between the client's two packets, and the second must not pick the hot dog up.
+        if(held.is(GoatmanRegistry.BUN.get())&&GoatmanMeal.plateBun(player,held,base,run,seat)){input.putLong("PlateInput0493",now);input.putInt("PlateSeat0493",seat);input.putInt("PlateSlot0493",player.getInventory().selected);return;}
         if(held.is(GoatmanRegistry.BRAT.get())&&belongs(held,run)){
             if(!occupied){boolean charred=burnt(held);if(GoatmanWoods.served(level,base,seat,held.copyWithCount(1))==null)return;held.shrink(1);run.putInt("Plated0464",mask|bit);run.putInt("EmptyPlates0465",empty&~bit);
                 run.putInt("BurntPlates0476",charred?run.getInt("BurntPlates0476")|bit:run.getInt("BurntPlates0476")&~bit);

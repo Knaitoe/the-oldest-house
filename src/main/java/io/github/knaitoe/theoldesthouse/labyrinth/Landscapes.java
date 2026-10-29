@@ -165,7 +165,10 @@ public final class Landscapes {
     public static int barnEdge(int x, int z) { return Math.max(Math.abs(x) - 15, Math.max(-z - 37, z + 1)); }
 
     /** Replaces the old leaf curtain and the evenly spaced spruces with a mixed wood on the same bank. */
-    static void barnForest(ServerLevel l, BlockPos b) {
+    static void barnForest(ServerLevel l, BlockPos b) { barnForest(l, b, true); }
+
+    /** @param farmTrees whether the old farm's evenly spaced spruces inside it become trees; the farm built whole (0.4.164) plants none there. */
+    static void barnForest(ServerLevel l, BlockPos b, boolean farmTrees) {
         for (int x = -23; x <= 23; x++) for (int z = -45; z <= 4; z++) {
             if (barnEdge(x, z) < 1 || (Math.abs(x) < 4 && z >= -1)) continue;
             for (int y = 0; y <= 12; y++) {
@@ -175,7 +178,7 @@ public final class Landscapes {
             }
         }
         // The well's cube-crowned spruces inside the farm become real trees where they stood.
-        for (int z = -4; z >= -33; z -= 6) for (int column : new int[]{-13, 16}) {
+        if (farmTrees) for (int z = -4; z >= -33; z -= 6) for (int column : new int[]{-13, 16}) {
             for (int x = column - 1; x <= column + 1; x++) for (int dz = -1; dz <= 1; dz++) for (int y = 0; y <= 8; y++) {
                 var st = get(l, b, x, y, z + dz);
                 if (st.getBlock() instanceof LeavesBlock || st.is(Blocks.SPRUCE_LOG)) set(l, b, x, y, z + dz, AIR);

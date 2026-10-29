@@ -94,23 +94,22 @@ public final class SceneSupportTests {
 
     @GameTest(template="empty",batch="barn_connections",timeoutTicks=1200)
     public static void barnRailsConnectWithNativeCollisionAndRetainTheAnimalsAndOpenGate(GameTestHelper h){run(h,LabyrinthPlace.BARN_WELL,548500,f->{
+        // 0.4.164: the farm is built whole; its pens stand inside the long walls and no support repair touches it.
+        NovelRooms.build(f.level.getServer(),f.level,f.base,f.place);
         var p=f.player(h,"support_barn_owner");var peer=f.player(h,"support_barn_peer");
-        for(int x=9;x<=13;x++)for(int z=-35;z<=-26;z++)f.put(f.base.offset(x,-1,z),Blocks.COARSE_DIRT.defaultBlockState());
-        for(int z=-33;z<=-27;z++)for(int y=0;y<=1;y++)if(y==0||z!=-29)f.put(f.base.offset(11,y,z),Blocks.SPRUCE_FENCE.defaultBlockState());
-        var gate=f.base.offset(11,0,-29);var gateState=Blocks.SPRUCE_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.EAST).setValue(FenceGateBlock.OPEN,true).setValue(FenceGateBlock.POWERED,true);f.put(gate,gateState);
-        var wet=f.base.offset(11,0,-27);f.put(wet,Blocks.SPRUCE_FENCE.defaultBlockState().setValue(FenceBlock.WATERLOGGED,true));
-        f.put(f.base.offset(11,0,-34),Blocks.SPRUCE_PLANKS.defaultBlockState());
-        var sheep=EntityType.SHEEP.create(f.level);h.assertTrue(sheep!=null,"the original native sheep exists");sheep.setNoGravity(true);sheep.setNoAi(true);sheep.setPersistenceRequired();sheep.moveTo(f.base.getX()+11.5,f.base.getY(),f.base.getZ()-30.0,0,0);f.level.addFreshEntity(sheep);f.entities.add(sheep);var id=sheep.getUUID();var at=sheep.position();
-        var rail=f.base.offset(11,0,-31);h.assertTrue(!f.level.getBlockState(rail).getValue(FenceBlock.SOUTH),"the fixture begins with the photographed disconnected posts");
-        h.assertTrue(!SceneSupportRepairs.barn(f.level,f.base)&&!f.level.getBlockState(rail).getValue(FenceBlock.SOUTH)&&sheep.position().equals(at)&&sheep.isAlive(),"new native rails wait rather than closing through a sheep's body");
-        sheep.moveTo(f.base.getX()+8.5,f.base.getY(),f.base.getZ()-24.5,0,0);
-        h.assertTrue(SceneSupportRepairs.repairOnce(f.level,f.origin,f.place),"the saved repair completes once the animal clears the new rail");
-        for(int z=-32;z<=-28;z++)if(z!=-29){var state=f.level.getBlockState(f.base.offset(11,0,z));h.assertTrue(state.getValue(FenceBlock.NORTH)&&state.getValue(FenceBlock.SOUTH),"native lower rails meet both neighboring fence posts or the gate at "+z);}
-        h.assertTrue(f.level.getBlockState(gate).getValue(FenceGateBlock.OPEN)&&f.level.getBlockState(gate).getValue(FenceGateBlock.POWERED)&&f.level.getBlockState(gate).getValue(FenceGateBlock.FACING)==Direction.EAST&&f.level.getBlockState(wet).getValue(FenceBlock.WATERLOGGED),"gate state, orientation and fence waterlogging remain native and unchanged");
+        h.assertTrue(!SceneSupportRepairs.repairOnce(f.level,f.origin,f.place),"the support repair has nothing to do on the farm built whole");
+        for(int z=-34;z<=-17;z++)for(int x:new int[]{5,15}){var foot=f.level.getBlockState(f.base.offset(x,0,z));
+            h.assertTrue(!(foot.getBlock() instanceof FenceBlock)&&foot.isCollisionShapeFullBlock(f.level,f.base.offset(x,0,z)),"no rail stands in the barn's wall line; the wall comes down to its stone footing at x="+x+" z="+z);}
+        for(int z=-33;z<=-22;z++)for(int x:new int[]{8,12}){if(z==-25||z==-29)continue;var state=f.level.getBlockState(f.base.offset(x,0,z));
+            h.assertTrue(state.is(Blocks.SPRUCE_FENCE)&&state.getValue(FenceBlock.NORTH)&&state.getValue(FenceBlock.SOUTH),"the pen rail joins its neighbours at x="+x+" z="+z+": "+state);}
+        var gate=f.base.offset(12,0,-29);h.assertTrue(f.level.getBlockState(gate).is(Blocks.SPRUCE_FENCE_GATE)&&!f.level.getBlockState(gate).getValue(FenceGateBlock.OPEN),"each pen has one real closed gate on the aisle");
+        var sheep=EntityType.SHEEP.create(f.level);h.assertTrue(sheep!=null,"the original native sheep exists");sheep.setNoGravity(true);sheep.setNoAi(true);sheep.setPersistenceRequired();sheep.moveTo(f.base.getX()+13.5,f.base.getY(),f.base.getZ()-31.0,0,0);f.level.addFreshEntity(sheep);f.entities.add(sheep);var id=sheep.getUUID();
+        sheep.move(MoverType.SELF,new Vec3(-4,0,0));h.assertTrue(sheep.getX()>f.base.getX()+12.6,"the rail holds the sheep in its pen");
         p.teleportTo(f.level,f.base.getX()+10.5,f.base.getY(),f.base.getZ()-31.0,0,0);p.connection.resetPosition();p.move(MoverType.SELF,new Vec3(2,0,0));
-        h.assertTrue(p.getX()<f.base.getX()+11.3,"the connected rail actually stops a native Survival body between posts");
+        h.assertTrue(p.getX()<f.base.getX()+12.3,"the connected rail actually stops a native Survival body between posts");
+        f.level.setBlock(gate,f.level.getBlockState(gate).setValue(FenceGateBlock.OPEN,true),F);
         p.teleportTo(f.level,f.base.getX()+10.5,f.base.getY(),f.base.getZ()-28.5,0,0);p.connection.resetPosition();p.move(MoverType.SELF,new Vec3(2,0,0));
-        h.assertTrue(p.getX()>f.base.getX()+12.4,"the retained open gate admits the same native body");
-        h.assertTrue(sheep.isAlive()&&sheep.getUUID().equals(id)&&sheep.isNoAi()&&FinaleProgress.phase(p.server,peer.getUUID())==FinaleProgress.Phase.UNSEEN&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the animal is never replaced and the peer inherits no story or finale progress");
+        h.assertTrue(p.getX()>f.base.getX()+12.4,"the opened gate admits the same native body");
+        h.assertTrue(sheep.isAlive()&&sheep.getUUID().equals(id)&&FinaleProgress.phase(p.server,peer.getUUID())==FinaleProgress.Phase.UNSEEN&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the animal is never replaced and the peer inherits no story or finale progress");
     });}
 }
