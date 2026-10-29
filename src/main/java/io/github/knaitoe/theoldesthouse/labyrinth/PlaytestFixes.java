@@ -70,5 +70,7 @@ public final class PlaytestFixes {
         done.putBoolean(key,true);data.setState(STATE,done);return true;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=13||LabyrinthBuilder.isCarving())return;var o=HouseSavedData.get(s).houseOrigin();if(o==null)return;
-        var data=LabyrinthData.get(s);for(var p:SITES){var l=s.getLevel(NovelRooms.dimension(p));var b=LabyrinthPlaces.base(o,p);if(l!=null&&b!=null&&LabyrinthBuilder.isPlaceReady(data,p)&&loaded(l,b.offset(0,-1,-3))&&!l.getBlockState(b.offset(0,-1,-3)).isAir())apply(l,b,p);}}
+        var data=LabyrinthData.get(s);for(var p:SITES){var l=s.getLevel(NovelRooms.dimension(p));
+            // 0.4.154: a copy of the Whale institute gets the same fitted signs and plates as its original.
+            for(var b:SceneInstances.copyable(p)?SceneInstances.bases(s,p):java.util.Collections.singletonList(LabyrinthPlaces.base(o,p)))if(l!=null&&b!=null&&LabyrinthBuilder.isPlaceReady(data,p)&&loaded(l,b.offset(0,-1,-3))&&!l.getBlockState(b.offset(0,-1,-3)).isAir())apply(l,b,p);}}
 }

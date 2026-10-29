@@ -16,7 +16,16 @@ This release gives copies to the five private scenes that run through the litera
 - the diner (the second waitress);
 - the split-feed bedroom (missing sleep).
 
-Harrigan, the Whale institute and the phone in the canoe run on systems of their own, and come next. Until then they keep the 0.4.151 rule, one reader at a time. The lake house's pairs will use the same copies.
+Harrigan, the Whale institute and the phone in the canoe run on systems of their own. The Whale institute and the phone canoe followed in 0.4.154 (below); Harrigan comes next and keeps the 0.4.151 rule, one reader at a time, until then. The lake house's pairs will use the same copies.
+
+## 0.4.154: the Whale institute and the phone canoe
+
+Both have copies now, on the same terms.
+- **The Whale institute** runs under the novel scenes' controller, which now gives each writer the location of the copy they stand in or keep (`NovelVignettes.base`). Her letters, the pigeonholes, her room and the calendar follow it. A copy is built by the novel scenes' builder and dressed by the architecture pass as well as the finishing passes. It is fitted with the same signs and numbered plates (the playtest fixes and the mail plaque repair walk every copy).
+- **The phone in the canoe** gives each filmer the copy of the lake they stand in or keep (`PhoneCanoe.base`, `PhoneCanoe.inside`). Each copy of the lake has its own canoe, a saved original made with the copy and found again by its own record. The lake's clock keeps each copy's canoe while someone is there. A copy is built by the lake's own builder, with its shore dressing and safe approach.
+- A reader keeps their copy while the story can still be dealt to them, by each scene's own rule. Readers who had visited a scene before it had copies keep the original.
+
+One native case joins the co-op cases (eight; the quiet-room job runs 25). With each original taken, a copy of each is made ready. The next writer's door opens onto their copy of the institute, where the controller places them. The next filmer's door opens onto their copy of the lake. Each lake has its own canoe, and a copy's canoe is the same canoe the next time it is looked for.
 
 ## How a reader finds their copy
 

@@ -51,7 +51,9 @@ public final class NovelVignettes {
     public static CompoundTag personal(LabyrinthData data,UUID id){return data.state(STATE).getCompound(id.toString()).copy();}
     public static void save(LabyrinthData data,UUID id,CompoundTag record){var all=data.state(STATE);all.put(id.toString(),record);data.setState(STATE,all);}
     private static boolean participant(ServerPlayer p){return p.isAlive()&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,p.getUUID()));}
-    public static boolean inside(ServerPlayer p,LabyrinthPlace place){var origin=HouseSavedData.get(p.server).houseOrigin();var b=origin==null?null:LabyrinthPlaces.base(origin,place);
+    /** The scene where this reader is: the copy they stand in or keep, for a scene with copies (0.4.154). */
+    public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){if(SceneInstances.copyable(place))return SceneInstances.base(p,place);var origin=HouseSavedData.get(p.server).houseOrigin();return origin==null?null:LabyrinthPlaces.base(origin,place);}
+    public static boolean inside(ServerPlayer p,LabyrinthPlace place){var b=base(p,place);
         return b!=null&&participant(p)&&p.level().dimension().equals(NovelRooms.dimension(place))&&IndianLakeRooms.bounds(b,place).contains(p.position());}
     public static @Nullable LabyrinthPlace current(ServerPlayer p){for(var place:PLACES)if(inside(p,place))return place;return null;}
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){
@@ -68,7 +70,7 @@ public final class NovelVignettes {
         save(data,p.getUUID(),own);
     }
     public static void recordVisit(ServerPlayer p,LabyrinthPlace place){
-        if(!participant(p)||place.room()==null||place==LabyrinthPlace.KAREN_ROOM)return;var origin=HouseSavedData.get(p.server).houseOrigin();var b=origin==null?null:LabyrinthPlaces.base(origin,place);if(b==null)return;
+        if(!participant(p)||place.room()==null||place==LabyrinthPlace.KAREN_ROOM)return;var b=base(p,place);if(b==null)return;
         PENDING_PHOTOS.put(p.getUUID(),new PendingPhoto(place,p.tickCount+40));
     }
     public static void ensureCats(ServerPlayer p){var data=LabyrinthData.get(p.server);var all=data.state(STATE);if(all.getBoolean("CatsMade"))return;
@@ -100,7 +102,7 @@ public final class NovelVignettes {
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void block(PlayerInteractEvent.RightClickBlock e){
         if(!(e.getEntity() instanceof ServerPlayer p)||e.getHand()!=InteractionHand.MAIN_HAND)return;var place=current(p);if(place==null)return;
-        var b=IndianLakeRooms.base(p.server,place);var rel=e.getPos().subtract(b);if(p.distanceToSqr(e.getPos().getCenter())>36)return;
+        var b=base(p,place);var rel=e.getPos().subtract(b);if(p.distanceToSqr(e.getPos().getCenter())>36)return;
         var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());boolean handled=true;
         if(place==LabyrinthPlace.ZAMPANO_COURTYARD&&rel.distManhattan(NovelRooms.ARCHIVE_DOOR)<=1){
             var all=data.state(STATE);if(all.getBoolean("ArchiveOpen")||p.getMainHandItem().is(NovelRegistry.ARCHIVE_KEY.get())){
@@ -130,13 +132,13 @@ public final class NovelVignettes {
         trackPhotoStore(p,e.getPos(),own);
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
-        if(e.getServer().getTickCount()%20==0){var origin=HouseSavedData.get(e.getServer()).houseOrigin();var level=e.getServer().getLevel(HouseDimensions.INTERIOR);if(origin!=null&&level!=null&&LabyrinthData.get(e.getServer()).builtVersion()>=21){var b=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);if(b!=null&&level.hasChunkAt(b))MailPlaqueBlock.repair(level,b);}}
+        if(e.getServer().getTickCount()%20==0){var origin=HouseSavedData.get(e.getServer()).houseOrigin();var level=e.getServer().getLevel(HouseDimensions.INTERIOR);if(origin!=null&&level!=null&&LabyrinthData.get(e.getServer()).builtVersion()>=21){for(var b:SceneInstances.bases(e.getServer(),LabyrinthPlace.WHALE))if(level.hasChunkAt(b))MailPlaqueBlock.repair(level,b);}}
         var server=e.getServer();BlockPos origin=HouseSavedData.get(server).houseOrigin();if(origin==null){clearAll();return;}
         Set<UUID> small=new HashSet<>();
         for(ServerPlayer p:server.getPlayerList().getPlayers()){
             if(!participant(p)){restoreScale(p);continue;}long now=p.serverLevel().getGameTime();if(Objects.equals(LAST_TICK.put(p.getUUID(),now),now))continue;
             var data=LabyrinthData.get(server);var own=personal(data,p.getUUID());var place=current(p);
-            if(place!=null){var b=LabyrinthPlaces.base(origin,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);double y=p.getY()-b.getY();
+            if(place!=null){var b=base(p,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);double y=p.getY()-b.getY();
                 if(place==LabyrinthPlace.BARN_WELL){scale(p,true);small.add(p.getUUID());
                     boolean shaft=Math.abs(p.getX()-b.getX()-.5)<.6 && Math.abs(p.getZ()-b.getZ()+22.5)<.6;
                     if(shaft&&y< -10.5)own.putBoolean("WellEntered",true);

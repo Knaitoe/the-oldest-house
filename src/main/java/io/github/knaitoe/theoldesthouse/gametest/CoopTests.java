@@ -29,6 +29,7 @@ public final class CoopTests {
     @AfterBatch(batch="coop_child149") public static void childDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_private151") public static void privateDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_copies153") public static void copiesDone(ServerLevel l){SceneInstances.clear();close();}
+    @AfterBatch(batch="coop_copies154") public static void novelCopiesDone(ServerLevel l){SceneInstances.clear();close();}
     private static final LabyrinthPlace SCENE=LabyrinthPlace.HILL_NURSERY;
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
@@ -354,6 +355,39 @@ public final class CoopTests {
             .thenExecute(()->{
                 h.assertTrue(SceneInstances.kept(f.data(),third[0].getUUID(),scene)==0&&SceneInstances.kept(f.data(),watcher.getUUID(),scene)<0,"the new reader keeps it; the spectator keeps nothing");
                 for(var p:readers)h.assertTrue(p.isAlive()&&p.getHealth()==20,"nobody is hurt");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="coop_copies154",timeoutTicks=6000)
+    public static void theWhaleInstituteAndThePhoneCanoeHaveCopiesOfTheirOwn(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var server=f.in.getServer();
+        var writer=player(h,f,"copy_writer");var nextWriter=player(h,f,"copy_next_writer");var filmer=player(h,f,"copy_filmer");var nextFilmer=player(h,f,"copy_next_filmer");
+        var whale=LabyrinthPlace.WHALE;var lake=LabyrinthPlace.PHONE_CANOE;hold(f,whale);hold(f,lake);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the institute and the lake are resident"))
+            .thenExecute(()->{
+                NovelRooms.build(server,f.level(whale),f.base(whale),whale);LabyrinthBuilder.registerDoors(f.data(),whale,f.base(whale));f.built.add(whale);
+                PhoneCanoe.build(server,f.level(lake),f.base(lake));LabyrinthBuilder.registerDoors(f.data(),lake,f.base(lake));f.built.add(lake);
+                h.assertTrue(SceneInstances.copyable(whale)&&SceneInstances.copyable(lake),"both scenes have copies now");
+                at(writer,f.level(whale),f.base(whale).offset(0,0,-6));at(filmer,f.level(lake),f.base(lake).offset(0,0,-5));
+                var w=SceneInstances.enter(nextWriter,whale);var c=SceneInstances.enter(nextFilmer,lake);
+                h.assertTrue(w.door()==null&&w.waiting()&&c.door()==null&&c.waiting(),"with each original taken, a copy of each is made ready");
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),whale,1)&&SceneInstances.built(f.data(),lake,1),"a copy of each stands ready"))
+            .thenExecute(()->{
+                var w=SceneInstances.enter(nextWriter,whale);var institute=SceneInstances.base(server,whale,1);
+                h.assertTrue(w.door()!=null&&w.copy()==1&&w.door().id.equals(SceneInstances.doorId(whale,1,"entry")),"the next writer's door opens onto their copy of the institute");
+                at(nextWriter,f.level(whale),institute.offset(0,0,-6));
+                h.assertTrue(NovelVignettes.current(nextWriter)==whale&&institute.equals(NovelVignettes.base(nextWriter,whale))&&f.base(whale).equals(NovelVignettes.base(writer,whale)),"each writer's institute is where they are");
+                NovelVignettes.onArrive(nextWriter,whale);
+                h.assertTrue(f.level(whale).getBlockState(institute.offset(0,0,1)).getBlock()==f.level(whale).getBlockState(f.base(whale).offset(0,0,1)).getBlock(),"the copy is built like the original");
+                var c=SceneInstances.enter(nextFilmer,lake);var shore=SceneInstances.base(server,lake,1);
+                h.assertTrue(c.door()!=null&&c.copy()==1,"the next filmer's door opens onto their copy of the lake");
+                at(nextFilmer,f.level(lake),shore.offset(0,0,-5));
+                h.assertTrue(PhoneCanoe.inside(nextFilmer)&&shore.equals(PhoneCanoe.base(nextFilmer))&&PhoneCanoe.inside(filmer)&&f.base(lake).equals(PhoneCanoe.base(filmer)),"each filmer's lake is where they are");
+                h.assertTrue(SceneInstances.copyAt(server,lake,shore)==1&&SceneInstances.copyAt(server,lake,f.base(lake))==0,"a copy is known by where it stands");
+                var theirs=PhoneCanoe.stage(f.level(lake),shore);var original=PhoneCanoe.stage(f.level(lake),f.base(lake));
+                h.assertTrue(theirs!=null&&original!=null&&!theirs.getUUID().equals(original.getUUID())&&IndianLakeRooms.bounds(shore,lake).contains(theirs.position()),"each lake has its own canoe");
+                h.assertTrue(PhoneCanoe.stage(f.level(lake),shore)==theirs,"and a copy's canoe is the same canoe the next time it is looked for");
             }).thenSucceed();
     }
 }
