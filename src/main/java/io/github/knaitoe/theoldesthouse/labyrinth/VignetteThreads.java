@@ -4,6 +4,8 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import java.util.*;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,6 +26,8 @@ public final class VignetteThreads {
     public static final String ACTOR_TAG="VignetteThread0147";
     /** How long a holder may stay away before what they hold goes back where it came from: three days. */
     public static final long RELEASE=72000;
+    /** 0.4.162: the members of a thread who have come through a scene everyone comes through for themselves, in order. */
+    static final String THROUGH="Through0162";
     private VignetteThreads(){}
 
     private static CompoundTag all(LabyrinthData d,LabyrinthPlace place){return d.stateEntry(STATE,place.id());}
@@ -159,6 +163,27 @@ public final class VignetteThreads {
         var role=scene.role(d,thread,p.getUUID(),VignetteRole.AFTERMATH);if(role!=VignetteRole.AFTERMATH||scene.line(role,outcome,actor)==null)return;
         p.displayClientMessage(Component.literal("It ended here without you."),false);
         WitnessAccount.resolveAs(p,story,outcome,role,actor);
+    }
+
+    /**
+     * 0.4.162: a reader has come through a scene everyone must come through for themselves. Of their own party, those
+     * who already had are ahead of them, and those still in the scene are behind; both go into their account.
+     */
+    static void company(ServerPlayer reader,WitnessAccount.Story story){
+        var place=LabyrinthPlace.byId(story.id);if(SharedVignettes.together(place)==null)return;
+        var d=LabyrinthData.get(reader.server);var thread=thread(d,place,reader.getUUID());if(thread.isEmpty())return;
+        // Those ahead in the order they came through; anyone else of the party already through, and those still in it, by name.
+        var through=thread.getList(THROUGH,Tag.TAG_STRING);List<UUID> order=new ArrayList<>();for(int i=0;i<through.size();i++)order.add(UUID.fromString(through.getString(i)));
+        List<String> ahead=new ArrayList<>(),late=new ArrayList<>(),behind=new ArrayList<>();
+        for(var id:order)if(!id.equals(reader.getUUID())&&members(thread).contains(id)&&WitnessAccount.has(d,id,story))ahead.add(name(thread,id));
+        for(var id:members(thread)){
+            if(id.equals(reader.getUUID())||order.contains(id))continue;
+            if(WitnessAccount.has(d,id,story)){late.add(name(thread,id));continue;}
+            var p=reader.server.getPlayerList().getPlayer(id);if(p!=null&&present(p,place))behind.add(name(thread,id));
+        }
+        late.sort(String.CASE_INSENSITIVE_ORDER);ahead.addAll(late);behind.sort(String.CASE_INSENSITIVE_ORDER);
+        through.add(StringTag.valueOf(reader.getUUID().toString()));thread.put(THROUGH,through);saveThread(d,place,reader.getUUID(),thread);
+        if(!ahead.isEmpty()||!behind.isEmpty())WitnessAccount.company(d,reader.getUUID(),story,ahead,behind);
     }
 
     /** A holder long gone: the object goes back where it came from, so no thread is stuck. */

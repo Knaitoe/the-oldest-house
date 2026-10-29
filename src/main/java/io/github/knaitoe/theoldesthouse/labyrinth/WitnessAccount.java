@@ -106,6 +106,13 @@ public final class WitnessAccount {
     private static void save(LabyrinthData data,UUID player,CompoundTag record){
         data.setStateEntry(STATE,player.toString(),record);
     }
+    /** 0.4.162: who of the reader's party had come through before them, and who was still in the scene, kept beside the story. */
+    static void company(LabyrinthData data,UUID player,Story story,List<String> ahead,List<String> behind){
+        CompoundTag record=record(data,player),company=record.getCompound("Company"),mine=new CompoundTag();
+        mine.put("Ahead",names(ahead));mine.put("Behind",names(behind));company.put(story.id,mine);record.put("Company",company);save(data,player,record);
+    }
+    private static net.minecraft.nbt.ListTag names(List<String> names){var list=new net.minecraft.nbt.ListTag();for(var name:names)list.add(net.minecraft.nbt.StringTag.valueOf(name));return list;}
+    private static List<String> names(CompoundTag tag,String key){var list=tag.getList(key,net.minecraft.nbt.Tag.TAG_STRING);var out=new ArrayList<String>();for(int i=0;i<list.size();i++)out.add(list.getString(i));return out;}
     public static boolean has(LabyrinthData data,UUID player,Story story){return record(data,player).getCompound("Stories").contains(story.id);}
     public static int count(LabyrinthData data,UUID player){
         CompoundTag stories=record(data,player).getCompound("Stories");int count=0;
@@ -168,7 +175,7 @@ public final class WitnessAccount {
         var mine=record(data,player).getCompound("Roles").getCompound(story.id);return mine.contains("Role")?VignetteRole.of(mine.getString("Role")):VignetteRole.ACTOR;
     }
     public static void resolve(ServerPlayer player,Story story,String outcome){
-        if(resolved(player,story,outcome,VignetteRole.ACTOR,""))VignetteThreads.ended(player,story,outcome);
+        if(resolved(player,story,outcome,VignetteRole.ACTOR,"")){VignetteThreads.company(player,story);VignetteThreads.ended(player,story,outcome);}
     }
     /** A shared vignette's ending as this reader saw it: they watched, joined partway, or came back to its aftermath. */
     public static void resolveAs(ServerPlayer player,Story story,String outcome,VignetteRole role,String actor){resolved(player,story,outcome,role,actor);}
@@ -253,6 +260,10 @@ public final class WitnessAccount {
             // 0.4.146: a reader who watched, joined partway or came back afterwards reads the account drafted for that.
             var role=role(data,player,story);var scene=SharedVignettes.drafted(LabyrinthPlace.byId(story.id));
             if(role!=VignetteRole.ACTOR&&scene!=null){var drafted=scene.line(role,stories.getString(story.id),record(data,player).getCompound("Roles").getCompound(story.id).getString("Actor"));if(drafted!=null)text=drafted;}
+            // 0.4.162: a reader who came through a scene with others closes on who went ahead of them and who was still in it.
+            var together=SharedVignettes.together(LabyrinthPlace.byId(story.id));var company=record(data,player).getCompound("Company").getCompound(story.id);
+            if(together!=null&&role==VignetteRole.ACTOR&&!company.isEmpty()&&!stories.getString(story.id).equals("aftermath"))
+                text=text+" "+together.coda(stories.getString(story.id),names(company,"Ahead"),names(company,"Behind"));
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,(attic?"The undated letter":story.title)+"\n\n"+text));
         }
         for(Story story:Story.values())if(!stories.contains(story.id)&&begun(data,player,story)){

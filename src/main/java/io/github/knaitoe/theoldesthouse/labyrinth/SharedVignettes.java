@@ -28,6 +28,15 @@ public final class SharedVignettes {
         default boolean whole(){return false;}
     }
     /**
+     * 0.4.162: a scene everyone in it must come through for themselves, as the child's room is. Nobody is credited for
+     * another's act; each reader's account closes on who of their own party had already come through, and who was still
+     * in it, when they did.
+     */
+    public interface Together {
+        /** The closing line. {@code ahead} and {@code behind} are player names; either may be empty, never both. */
+        String coda(String outcome,List<String> ahead,List<String> behind);
+    }
+    /**
      * Private scenes that stand once rather than as a copy for each reader (owner, October 28): reading to Harrigan,
      * the confession in the reader's own hand, the Holy Rabbit's one child, the Wheel house measuring the reader against
      * Mother, the Whale's letters, the canoe's recording, the diner's one diner and the split-feed bedroom's own body.
@@ -38,11 +47,16 @@ public final class SharedVignettes {
     private static final Set<LabyrinthPlace> PRIVATE=EnumSet.of(BACKSEAT,SILO,BORRASCA,FAMILY_COPY,OLD_CABIN,RED_ROOM);
     static{PRIVATE.addAll(ONE_AT_A_TIME);}
     private static final Map<LabyrinthPlace,Scene> DRAFTED=new EnumMap<>(LabyrinthPlace.class);
+    private static final Map<LabyrinthPlace,Together> TOGETHER=new EnumMap<>(LabyrinthPlace.class);
+    /** Shared scenes whose own code writes each reader's account for how they were there (0.4.149 to 0.4.157). */
+    private static final Set<LabyrinthPlace> OWN=EnumSet.of(CHILD_ROOM,GOATMAN,LAKE_HOUSE,SHALLOWS);
     private SharedVignettes(){}
     static {
         // 0.4.147: the monkey's paw, the first scene drafted for every way of being there; 0.4.148: the drowned town.
         draft(THREE_FINGERS,ThreeFingers.SHARED);
         draft(DROWNED_TOWN,DrownedTown.SHARED);
+        // 0.4.162: every other shared scene, drafted for being there with others.
+        CoopAccounts.register();
     }
 
     public static boolean followable(@Nullable LabyrinthPlace place){
@@ -59,6 +73,12 @@ public final class SharedVignettes {
     public static Set<LabyrinthPlace> drafted(){return Collections.unmodifiableSet(DRAFTED.keySet());}
     /** A scene whose accounts are written for every way of being there. */
     public static void draft(LabyrinthPlace place,Scene scene){if(followable(place))DRAFTED.put(place,scene);}
+    public static @Nullable Together together(@Nullable LabyrinthPlace place){return place==null?null:TOGETHER.get(place);}
+    public static Set<LabyrinthPlace> together(){return Collections.unmodifiableSet(TOGETHER.keySet());}
+    /** A scene everyone must come through for themselves, whose accounts say who was there with them. */
+    public static void together(LabyrinthPlace place,Together scene){if(followable(place))TOGETHER.put(place,scene);}
+    /** A shared scene whose own code already writes every reader's account for how they were there. */
+    public static boolean ownAccounts(LabyrinthPlace place){return OWN.contains(place);}
     /** Fixtures only: forget a drafted scene they registered. */
     public static void undraft(LabyrinthPlace place){DRAFTED.remove(place);}
 }

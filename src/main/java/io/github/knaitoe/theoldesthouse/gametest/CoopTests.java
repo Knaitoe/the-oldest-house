@@ -32,6 +32,8 @@ public final class CoopTests {
     @AfterBatch(batch="coop_copies153") public static void copiesDone(ServerLevel l){SceneInstances.clear();close();}
     @AfterBatch(batch="coop_copies154") public static void novelCopiesDone(ServerLevel l){SceneInstances.clear();close();}
     @AfterBatch(batch="coop_clap158") public static void clapCopiesDone(ServerLevel l){SceneInstances.fixtureCap(null);HideAndClap.clearAll();SceneInstances.clear();close();}
+    @AfterBatch(batch="coop_together162") public static void togetherDone(ServerLevel l){close();}
+    @AfterBatch(batch="coop_vault162") public static void vaultDone(ServerLevel l){close();}
     private static final LabyrinthPlace SCENE=LabyrinthPlace.HILL_NURSERY;
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
@@ -500,5 +502,74 @@ public final class CoopTests {
                 h.assertTrue(!f.data().isCompleted(HideAndClap.ID)&&f.data().state(HideAndClap.ID).getCompound("Session").getUUID("Player").equals(first.getUUID()),"and the original's round is still the first reader's");
                 SceneInstances.fixtureCap(null);
             }).thenSucceed();
+    }
+
+    /** 0.4.162: in a scene everyone comes through for themselves, nobody is credited for another's act, and each account says who went ahead and who was still in it. */
+    @GameTest(template="empty",batch="coop_together162",timeoutTicks=900)
+    public static void inASceneEveryoneComesThroughForThemselvesEachAccountSaysWhoWentAheadAndWhoWasStillInIt(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.MINIATURES;var story=WitnessAccount.Story.MINIATURES;hold(f,place);hold(f,LabyrinthPlace.STRAIGHT_HALL);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the little rooms are resident")).thenExecute(()->{
+            var data=f.data();
+            var first=f.player("minis_first",place);var second=f.player("minis_second",place);var third=f.player("minis_third",place);var spectator=f.player("minis_watching",place);spectator.setGameMode(GameType.SPECTATOR);
+            for(var p:List.of(first,second,third,spectator))VignetteThreads.arrived(p,place);
+            h.assertTrue(SharedVignettes.together(place)!=null&&SharedVignettes.drafted(place)==null,"each reader comes through the little rooms for themselves");
+            WitnessAccount.resolve(first,story,"examined_the_latest_rooms");
+            h.assertTrue(!WitnessAccount.has(data,second.getUUID(),story)&&!WitnessAccount.has(data,third.getUUID(),story)&&!WitnessAccount.has(data,spectator.getUUID(),story),"nobody is credited for another reader's own act");
+            h.assertTrue(pages(data,first).contains(story.text+" minis_second and minis_third were still bent over the tables when I left."),"the first through says who was still in it: "+pages(data,first));
+            WitnessAccount.resolve(second,story,"examined_the_latest_rooms");
+            h.assertTrue(pages(data,second).contains(story.text+" minis_first had seen the little rooms before me. minis_third was still bent over the tables when I left."),"the second says who went ahead and who was still in it: "+pages(data,second));
+            WitnessAccount.resolve(third,story,"examined_the_latest_rooms");
+            h.assertTrue(pages(data,third).contains(story.text+" minis_first and minis_second had seen the little rooms before me."),"the last says who went ahead: "+pages(data,third));
+            h.assertTrue(List.of(first,second,third).stream().noneMatch(p->pages(data,p).contains("minis_watching")),"a spectator is in nobody's account");
+            // A reader alone keeps the account the scene always gave.
+            for(var p:List.of(first,second,third,spectator))away(f,p);
+            var alone=f.player("minis_alone",place);VignetteThreads.arrived(alone,place);WitnessAccount.resolve(alone,story,"examined_the_latest_rooms");
+            h.assertTrue(pages(data,alone).contains(story.text+"\n")||pages(data,alone).endsWith(story.text),"a reader alone keeps the account the scene always gave");
+            h.assertTrue(!pages(data,alone).contains("before me")&&!pages(data,alone).contains("still bent over"),"and is told of nobody");
+            f.reload();h.assertTrue(pages(f.data(),second).contains("minis_first had seen the little rooms before me."),"the party is kept through a reload");
+        }).thenSucceed();
+    }
+
+    /** 0.4.162: when one reader chooses the vault's lid, the others there watched it, a newcomer joined partway, and one away comes back to its end. */
+    @GameTest(template="empty",batch="coop_vault162",timeoutTicks=900)
+    public static void whenOneReaderChoosesTheVaultsLidTheOthersThereWatchedItInTheirOwnWords(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.USHER;var story=WitnessAccount.Story.USHER;hold(f,place);hold(f,LabyrinthPlace.STRAIGHT_HALL);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the vault is resident")).thenExecute(()->{
+            var data=f.data();
+            var actor=f.player("vault_actor",place);var witness=f.player("vault_witness",place);var absent=f.player("vault_absent",place);
+            for(var p:List.of(actor,witness,absent))VignetteThreads.arrived(p,place);
+            for(var p:List.of(actor,witness,absent))away(f,p);
+            // A later visit: two come back, and a reader new to the vault comes in with them.
+            f.arrive(actor,place);VignetteThreads.arrived(actor,place);var late=f.player("vault_late",place);VignetteThreads.arrived(late,place);f.arrive(witness,place);VignetteThreads.arrived(witness,place);
+            h.assertTrue(SharedVignettes.drafted(place)!=null&&SharedVignettes.together(place)==null,"the vault's lid is one choice, watched by everyone there");
+            WitnessAccount.resolve(actor,story,"returned_to_the_closed_lid");
+            h.assertTrue(WitnessAccount.role(data,actor.getUUID(),story)==VignetteRole.ACTOR&&pages(data,actor).contains(story.text),"the one who chose holds an actor's account, unchanged");
+            h.assertTrue(WitnessAccount.role(data,witness.getUUID(),story)==VignetteRole.WITNESS&&pages(data,witness).contains("I was in the vault when vault_actor chose the lid. I never put my own hand on it."),"a reader there throughout watched it, in their own words");
+            h.assertTrue(WitnessAccount.role(data,late.getUUID(),story)==VignetteRole.PARTWAY&&pages(data,late).contains("I came to the vault after the lid had been chosen; vault_actor had chosen it."),"the newcomer's account is a late joiner's");
+            h.assertTrue(!WitnessAccount.has(data,absent.getUUID(),story)&&!pages(data,witness).contains(story.text),"nobody away is credited, and the witness does not read the actor's account");
+            f.arrive(absent,place);VignetteThreads.arrived(absent,place);
+            h.assertTrue(WitnessAccount.role(data,absent.getUUID(),story)==VignetteRole.AFTERMATH&&pages(data,absent).contains("I had been to the vault before the lid was chosen. When I came back the sound had followed the stone, as vault_actor had seen it do."),"the reader away comes back to its end");
+        }).thenSucceed();
+    }
+
+    /** 0.4.162: every shared story is written for being there with others, and every line names its party correctly. */
+    @GameTest(template="empty",batch="coop_cover162",timeoutTicks=100)
+    public static void everySharedStoryHasAnAccountForBeingThereWithOthers(GameTestHelper h){
+        for(var story:WitnessAccount.Story.values()){var place=LabyrinthPlace.byId(story.id);if(!SharedVignettes.followable(place))continue;
+            boolean drafted=SharedVignettes.drafted(place)!=null&&place!=LabyrinthPlace.HILL_NURSERY,together=SharedVignettes.together(place)!=null;
+            h.assertTrue(drafted||together||SharedVignettes.ownAccounts(place),story.id+" has an account for being there with others");
+            h.assertTrue(!(drafted&&together),story.id+" is watched or come through, never both");
+        }
+        for(var place:SharedVignettes.together()){var scene=SharedVignettes.together(place);
+            String one=scene.coda("outcome",List.of("Ana"),List.of()),late=scene.coda("outcome",List.of(),List.of("Ana")),many=scene.coda("outcome",List.of("Ana","Ben"),List.of("Cy","Dee","Eve"));
+            for(var line:List.of(one,late,many))h.assertTrue(!line.contains("%")&&!line.contains("{")&&!line.isBlank()&&line.endsWith("."),place.id()+" writes a whole sentence: "+line);
+            h.assertTrue(one.contains("Ana")&&late.contains("Ana")&&List.of("Ana","Ben","Cy","Dee","Eve").stream().allMatch(many::contains)&&many.contains(" and ")&&!many.contains("Eve was ")&&!many.contains("Eve has ")&&!many.contains("Ben was ")&&!many.contains("Ben has "),place.id()+" names its party and agrees with how many: "+many);
+        }
+        for(var place:List.of(LabyrinthPlace.FLOORBOARDS,LabyrinthPlace.SEANCE,LabyrinthPlace.USHER,LabyrinthPlace.MOTHER_DEN)){var scene=SharedVignettes.drafted(place);
+            if(!SharedVignettes.followable(place))continue;
+            h.assertTrue(scene!=null,place.id()+" is drafted for its watchers");
+            for(var role:List.of(VignetteRole.WITNESS,VignetteRole.PARTWAY,VignetteRole.AFTERMATH)){var line=scene.line(role,"outcome","Ana");h.assertTrue(line!=null&&line.contains("Ana")&&!line.contains("%"),place.id()+" has a "+role.id()+"'s account naming who acted");}
+        }
+        h.succeed();
     }
 }
