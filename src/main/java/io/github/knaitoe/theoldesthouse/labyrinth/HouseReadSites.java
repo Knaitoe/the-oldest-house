@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.*;
 import java.util.*;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -168,23 +169,29 @@ public final class HouseReadSites {
     static void act(ServerPlayer p,Room room,String action){var own=state(p.server,p.getUUID());var visit=own.getCompound(room.key());var actions=visit.getList("Actions",Tag.TAG_STRING);if(actions.size()<64)actions.add(StringTag.valueOf(action));visit.put("Actions",actions);if(room==Room.COATROOM&&(action.startsWith("wore ")||action.startsWith("turned ")||action.startsWith("draped ")))visit.putBoolean("NoteArmed",true);own.put(room.key(),visit);save(p.server,p.getUUID(),own);}
     public static boolean loan(ItemStack item,UUID owner){var data=item.get(DataComponents.CUSTOM_DATA);return data!=null&&data.copyTag().hasUUID("HouseReadLoan")&&data.copyTag().getUUID("HouseReadLoan").equals(owner);}
     private static void give(ServerPlayer p,ItemStack item){if(item.isEmpty())return;if(!p.getInventory().add(item)){var entity=new net.minecraft.world.entity.item.ItemEntity(p.serverLevel(),p.getX(),p.getY(),p.getZ(),item);entity.setTarget(p.getUUID());p.serverLevel().addFreshEntity(entity);}}
-    private static void wear(ServerPlayer p,int kind){
-        var own=state(p.server,p.getUUID());var visit=own.getCompound(Room.COATROOM.key());var items=new Item[]{HouseReadRegistry.WOOL.get(),HouseReadRegistry.TRENCH.get(),HouseReadRegistry.BARN.get(),HouseReadRegistry.WOOL_BOOTS.get(),HouseReadRegistry.TRENCH_BOOTS.get(),HouseReadRegistry.BARN_BOOTS.get()};var garment=(HouseReadRegistry.Garment)items[kind];var slot=garment.getEquipmentSlot();String key=slot==EquipmentSlot.CHEST?"Chest":"Feet";
+    /** 0.4.169: every hook and boot place in the coatroom, where the wardrobe's garments hang and stand. */
+    private static List<BlockPos> wardrobe(BlockPos base){var out=new ArrayList<BlockPos>();for(var at:HouseReadWardrobe.coatHooks())out.add(base.offset(at));for(var at:HouseReadWardrobe.BOOT_PLACES)out.add(base.offset(at));return out;}
+    private static void wear(ServerPlayer p,HouseReadWardrobe.Garment worn){
+        var own=state(p.server,p.getUUID());var visit=own.getCompound(Room.COATROOM.key());var garment=HouseReadRegistry.GARMENTS.get(worn.id()).get();var slot=garment.getEquipmentSlot();String key=slot==EquipmentSlot.CHEST?"Chest":"Feet";
         if(!visit.getBoolean("Captured"+key)){visit.putBoolean("Captured"+key,true);visit.put("Original"+key,p.getItemBySlot(slot).saveOptional(p.registryAccess()));}
         else if(!loan(p.getItemBySlot(slot),p.getUUID()))give(p,p.getItemBySlot(slot).copy());
         // A swapped loan is still the room's layer, never an additional take-home item.
         for(int i=0;i<p.getInventory().getContainerSize();i++)if(loan(p.getInventory().getItem(i),p.getUUID())&&p.getInventory().getItem(i).getItem() instanceof HouseReadRegistry.Garment g&&g.getEquipmentSlot()==slot)p.getInventory().setItem(i,ItemStack.EMPTY);
-        var base=base(p.server,p.getUUID(),Room.COATROOM);for(var peg:HouseReadRooms.PEGS)for(var pos:List.of(base.offset(peg),base.offset(peg.east()))){var state=p.serverLevel().getBlockState(pos);if(!state.is(HouseReadRegistry.FITTING.get()))continue;int part=state.getValue(HouseReadPropBlock.PART).ordinal();if(part<6&&(part<3)==(kind<3))p.serverLevel().setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,part==kind),Block.UPDATE_CLIENTS);}
-        var layer=new ItemStack(garment);CustomData.update(DataComponents.CUSTOM_DATA,layer,t->t.putUUID("HouseReadLoan",p.getUUID()));p.setItemSlot(slot,layer);p.setTicksFrozen(0);visit.putBoolean("Dressed",true);own.put(Room.COATROOM.key(),visit);save(p.server,p.getUUID(),own);p.inventoryMenu.broadcastChanges();act(p,Room.COATROOM,"wore "+garment.cloth.replace('_',' '));dressed(p,garment);
+        // The garment worn leaves its hook or place; the one it replaces goes back.
+        for(var pos:wardrobe(base(p.server,p.getUUID(),Room.COATROOM))){var state=p.serverLevel().getBlockState(pos);if(!state.is(HouseReadRegistry.FITTING.get()))continue;var there=HouseReadWardrobe.of(state.getValue(HouseReadPropBlock.PART));if(there!=null&&there.boots()==worn.boots())p.serverLevel().setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,there==worn),Block.UPDATE_CLIENTS);}
+        var layer=new ItemStack(garment);CustomData.update(DataComponents.CUSTOM_DATA,layer,t->t.putUUID("HouseReadLoan",p.getUUID()));p.setItemSlot(slot,layer);p.setTicksFrozen(0);visit.putBoolean("Dressed",true);
+        // The first time each garment goes on, the House says what it guesses about a reader who would choose it.
+        var guessed=visit.getList("Guessed",Tag.TAG_STRING);if(!guessed.contains(StringTag.valueOf(worn.id()))){guessed.add(StringTag.valueOf(worn.id()));visit.put("Guessed",guessed);p.sendSystemMessage(Component.literal(worn.guess()).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));}
+        own.put(Room.COATROOM.key(),visit);save(p.server,p.getUUID(),own);p.inventoryMenu.broadcastChanges();act(p,Room.COATROOM,"wore the "+worn.name());dressed(p,worn);
     }
     /** The coats: the first garment taken sets the reader's presentation; wearing two from different sets at once reads neither. */
-    private static final String[] SETS={"wool","trench","barn"},SELVES={"MASC","FEM","ANDROGYNOUS"};
-    private static int set(ItemStack item){return item.getItem() instanceof HouseReadRegistry.Garment g?List.of(SETS).indexOf(g.cloth.split("_")[0]):-1;}
-    private static void dressed(ServerPlayer p,HouseReadRegistry.Garment garment){
-        var seen=HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.COATROOM.key());int kind=List.of(SETS).indexOf(garment.cloth.split("_")[0]);if(kind<0)return;
-        boolean chest=garment.getEquipmentSlot()==EquipmentSlot.CHEST;HouseRead.first(p,Room.COATROOM,chest?"Coat":"Boots",SETS[kind]);
+    private static final String[] SELVES={"MASC","FEM","ANDROGYNOUS"};
+    private static int set(ItemStack item){return item.getItem() instanceof HouseReadRegistry.Garment g?HouseReadWardrobe.set(g.cloth):-1;}
+    private static void dressed(ServerPlayer p,HouseReadWardrobe.Garment garment){
+        var seen=HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.COATROOM.key());int kind=garment.set();
+        boolean chest=!garment.boots();HouseRead.first(p,Room.COATROOM,chest?"Coat":"Boots",HouseReadWardrobe.SETS[kind]);HouseRead.first(p,Room.COATROOM,chest?"CoatId":"BootsId",garment.id());
         if(seen.contains("MirrorFirst"))return;
-        if(!seen.contains("Took")){HouseRead.first(p,Room.COATROOM,"Took",SETS[kind]);HouseRead.signal(p,HouseRead.Trait.SELF,SELVES[kind],false);return;}
+        if(!seen.contains("Took")){HouseRead.first(p,Room.COATROOM,"Took",HouseReadWardrobe.SETS[kind]);HouseRead.signal(p,HouseRead.Trait.SELF,SELVES[kind],false);return;}
         int other=set(p.getItemBySlot(chest?EquipmentSlot.FEET:EquipmentSlot.CHEST));
         if(!seen.getBoolean("Mixed")&&!seen.getBoolean("Looked")&&!seen.contains("Mirror")&&other>=0&&other!=kind&&kind!=2&&other!=2){HouseRead.flag(p,Room.COATROOM,"Mixed");HouseRead.restart(p,HouseRead.Trait.SELF,"ANDROGYNOUS");}
     }
@@ -205,7 +212,7 @@ public final class HouseReadSites {
         if(!visit.getBoolean("CapturedChest")&&!visit.getBoolean("CapturedFeet")){p.inventoryMenu.broadcastChanges();return;}
         for(var slot:List.of(EquipmentSlot.CHEST,EquipmentSlot.FEET)){String key=slot==EquipmentSlot.CHEST?"Chest":"Feet";if(!visit.getBoolean("Captured"+key))continue;var original=ItemStack.parseOptional(p.registryAccess(),visit.getCompound("Original"+key));var current=p.getItemBySlot(slot);if(!current.isEmpty())give(p,current.copy());p.setItemSlot(slot,original);visit.remove("Original"+key);visit.putBoolean("Captured"+key,false);}
         var base=base(p.server,p.getUUID(),Room.COATROOM);var level=p.server.getLevel(HouseDimensions.INTERIOR);
-        if(base!=null&&level!=null)for(var peg:HouseReadRooms.PEGS)for(var pos:List.of(base.offset(peg),base.offset(peg.east()))){var state=level.getBlockState(pos);if(state.is(HouseReadRegistry.FITTING.get())&&state.getValue(HouseReadPropBlock.PART).ordinal()<6)level.setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);}
+        if(base!=null&&level!=null)for(var pos:wardrobe(base)){var state=level.getBlockState(pos);if(state.is(HouseReadRegistry.FITTING.get())&&HouseReadWardrobe.of(state.getValue(HouseReadPropBlock.PART))!=null)level.setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);}
         if(base!=null&&level!=null)for(var dropped:level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,HouseReadRooms.bounds(base,Room.COATROOM),item->loan(item.getItem(),p.getUUID())))dropped.discard();
         p.inventoryMenu.broadcastChanges();
     }
@@ -215,7 +222,7 @@ public final class HouseReadSites {
         if(HouseReadMoments.use(p,b,room,at,part))return;
         // 0.4.160: the coatroom's towel hangs on a bar beside the glass; taking it covers the glass, as the loose towel did.
         if(room==Room.COATROOM&&part==HouseReadPropBlock.Part.TOWEL_BAR)part=p.serverLevel().getBlockState(at).getValue(HouseReadPropBlock.TURNED)?HouseReadPropBlock.Part.COVERED_MIRROR:HouseReadPropBlock.Part.TOWEL;
-        if(room==Room.COATROOM&&part.ordinal()<=HouseReadPropBlock.Part.BARN_BOOTS.ordinal()){wear(p,part.ordinal());return;}
+        if(room==Room.COATROOM&&HouseReadWardrobe.of(part)!=null){wear(p,HouseReadWardrobe.of(part));return;}
         if(part==HouseReadPropBlock.Part.CURTAIN){if(!HouseReadStory.ready(p,room)){p.displayClientMessage(Component.literal("The curtain is heavy and won't part."),true);return;}act(p,room,"passed through the curtain");leave(p,true);return;}
         if(room==Room.COATROOM&&(part==HouseReadPropBlock.Part.MIRROR||part==HouseReadPropBlock.Part.MIRROR_TOP||part==HouseReadPropBlock.Part.TOWEL||part==HouseReadPropBlock.Part.COVERED_MIRROR)){
             var lower=b.offset(HouseReadRooms.MIRROR);

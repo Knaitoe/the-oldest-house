@@ -280,10 +280,10 @@ public final class StaircaseProse {
     }
     private static final String[] ROUTINE = {"the silk wrap","the curl cream","the wide-tooth pick","the scalp oil","the rat-tail comb","the hair ties","the paddle brush","the dry shampoo","the claw clip","the pocket comb","the tin of pomade","the washcloth on the tap",
         "the satin bonnet","the edge brush","the hot rollers","the wave brush"};
-    private static String coatName(String coat) { return switch (coat) { case "wool" -> "the wool overcoat"; case "trench" -> "the trench coat"; case "barn" -> "the barn jacket"; default -> ""; }; }
+    private static String coatName(String coat) { return HouseReadWardrobe.the(coat); }
     private static String figure(String who, boolean older) { return who.equals("man") ? older ? "the man" : "the boy" : older ? "the woman" : "the girl"; }
     /** II. The hands: the routine before bed and the coat in the cold hall. */
-    static String hands(Read r) {
+    public static String hands(Read r) {
         String item = r.routine >= 0 && r.routine < ROUTINE.length ? ROUTINE[r.routine] : "", coat = coatName(r.coat); boolean turned = r.mirror.startsWith("turned") || r.mirror.startsWith("covered");
         if (!item.isEmpty() && !coat.isEmpty()) return "Before bed your hands went to " + item + " first; in the cold hall, to " + coat + ".";
         if (!item.isEmpty()) return "Before bed your hands went to " + item + " first. The writer drew it in the margin.";
@@ -437,8 +437,10 @@ public final class StaircaseProse {
                 pages.add("IV. The door\n\nThe writing reaches the fold. "+memory(f)+"\n\nThe next word is underneath your thumb.");}
             for(long seed=0;seed<24;seed++){var account=compose(name,List.of(),seed);if(account.voice==voice){pages.add(account.front);pages.addAll(account.leaves);break;}}
             // 0.4.159: every read leaf and HOME ending, at its widest.
-            var reads=new ArrayList<Read>();for(int item=0;item<ROUTINE.length;item++)for(String coat:new String[]{"","wool","trench","barn"})for(String mirror:new String[]{"","turned_after"})reads.add(new Read(item,coat,mirror,"",false,false,"","",""));
-            for(String coat:new String[]{"wool","trench","barn"})reads.add(new Read(-1,coat,"turned_before","",false,true,"","",""));
+            // 0.4.169: every coat in the wardrobe, each with the longest routine name and on its own.
+            var coats=new ArrayList<String>(List.of(""));HouseReadWardrobe.coats().forEach(g->coats.add(g.id()));
+            var reads=new ArrayList<Read>();for(int item=0;item<ROUTINE.length;item++)for(String coat:new String[]{"","wool","trench","barn","collared_coat"})for(String mirror:new String[]{"","turned_after"})reads.add(new Read(item,coat,mirror,"",false,false,"","",""));
+            for(String coat:coats)for(String mirror:new String[]{"","turned_after","turned_before"})reads.add(new Read(-1,coat,mirror,"",false,true,"","",""));
             for(String shelter:new String[]{"man","woman","middle","lantern","looked_man","looked_woman","looked_both"})for(boolean song:new boolean[]{false,true})for(boolean older:new boolean[]{false,true})reads.add(new Read(-1,"","",shelter,song,older,"","",""));
             for(String door:new String[]{"","in","lattice","window","road"})for(String out:new String[]{"","kitchen","gate","road"})reads.add(new Read(-1,"","","",false,false,door,out,""));
             for(var read:reads)for(int leaf=1;leaf<4;leaf++){String own=leaf==1?hands(read):leaf==2?eaves(read):door(read);if(!own.isEmpty())pages.add(new String[]{"II. The hands","III. What happened","IV. The door"}[leaf-1]+"\n\nThere is a thumbprint beside the next line. "+own+"\n\nYou turn the sheet without covering the print.");}

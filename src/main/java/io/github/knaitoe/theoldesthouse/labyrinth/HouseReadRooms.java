@@ -13,12 +13,14 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part
 public final class HouseReadRooms {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     /**
-     * 0.4.160, the owner's playtest notes: a close front hall. The three coats hang on the west wall's hooks between an
-     * empty hanger and a scarf, their boots below them; the bench, radiator and window are on the east; the hall glass and
-     * its towel on the back wall beside the curtained way on; the umbrella stand by the screen door.
+     * 0.4.160, the owner's playtest notes: a close front hall. The coats hang on the west wall's hooks after an empty hanger,
+     * the boots on the mat below them (0.4.169: twelve coats and six pairs, more hooks at the east wall's far end); the bench,
+     * radiator and window are on the east; the hall glass and its towel on the back wall beside the curtained way on; the
+     * umbrella stand by the screen door.
      */
     public static final BlockPos COAT_ENTRY=new BlockPos(0,0,2),PORCH_ENTRY=new BlockPos(0,0,13),MIRROR=new BlockPos(2,0,-8),TOWEL_AT=new BlockPos(3,1,-8),UMBRELLA_AT=new BlockPos(3,0,1),RAIL_AT=new BlockPos(-2,3,-2),SCREEN=new BlockPos(0,3,-8),CURTAIN_AT=new BlockPos(0,0,-9);
-    public static final List<BlockPos> PEGS=List.of(new BlockPos(-3,0,-1),new BlockPos(-3,0,-2),new BlockPos(-3,0,-3));
+    /** Every coat hook, in the order the wardrobe fills them (0.4.169). */
+    public static final List<BlockPos> PEGS=HouseReadWardrobe.coatHooks();
     /** The porch's lights: the sconce by the screen door, the kitchen pendant and the lamp; supper's end puts them out. */
     public static final List<BlockPos> PORCH_LIGHTS=List.of(new BlockPos(1,4,-7),new BlockPos(0,6,-18),new BlockPos(3,4,-12));
     private HouseReadRooms(){}
@@ -33,7 +35,6 @@ public final class HouseReadRooms {
     public static void door(ServerLevel l,BlockPos b,BlockPos at,Block block,Direction facing){var s=block.defaultBlockState().setValue(DoorBlock.FACING,facing);put(l,b,at,s.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));put(l,b,at.above(),s.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));}
     /** Each room's way back. The shelter's sits beside its jukebox on the land side (0.4.159). */
     public static BlockPos entry(HouseReadSites.Room room){return room==HouseReadSites.Room.PORCH?PORCH_ENTRY:room==HouseReadSites.Room.SHELTER?HouseReadRemainingRooms.SHELTER_ENTRY:COAT_ENTRY;}
-    public static int[] shuffle(UUID owner){var values=new ArrayList<>(List.of(0,1,2));Collections.shuffle(values,new Random(owner.getMostSignificantBits()^owner.getLeastSignificantBits()^138));return values.stream().mapToInt(Integer::intValue).toArray();}
     public static void build(ServerLevel l,BlockPos b,HouseReadSites.Room room,UUID owner){
         // 0.4.161: an unentered room from an older layout is rebuilt in place, so nothing of the old one may stand outside the new.
         var area=bounds(b,room);BuildBlocks.box(l,BlockPos.containing(area.minX,area.minY,area.minZ),BlockPos.containing(area.maxX-1,area.maxY-1,area.maxZ-1),Blocks.AIR.defaultBlockState(),F);
@@ -58,11 +59,13 @@ public final class HouseReadRooms {
         door(l,b,COAT_ENTRY,HouseReadRegistry.SCREEN.get(),Direction.SOUTH);
         // The rain comes through the screen: a wet porch step outside the door.
         box(l,b,-1,-1,3,1,-1,5,HouseReadRegistry.PORCH_BOARDS.get());box(l,b,-1,0,5,1,3,5,HouseReadRegistry.OVERCAST.get());box(l,b,-2,0,3,-2,3,5,HouseReadRegistry.OVERCAST.get());box(l,b,2,0,3,2,3,5,HouseReadRegistry.OVERCAST.get());box(l,b,-1,4,3,1,4,5,HouseReadRegistry.OVERCAST.get());box(l,b,-1,0,3,1,3,4,Blocks.AIR);put(l,b,COAT_ENTRY.south(),Blocks.AIR.defaultBlockState());
-        // Five hangers on the west wall: an empty one, the three coats (shuffled per reader) and a scarf with a hat.
-        int[] order=shuffle(owner);var coats=new HouseReadPropBlock.Part[]{WOOL,TRENCH,BARN};var boots=new HouseReadPropBlock.Part[]{WOOL_BOOTS,TRENCH_BOOTS,BARN_BOOTS};
-        fitting(l,b,-3,0,0,EMPTY_HANGER,Direction.EAST);
-        for(int i=0;i<3;i++){var at=PEGS.get(i);fitting(l,b,at,coats[order[i]],Direction.EAST);fitting(l,b,at.east(),boots[order[i]],Direction.EAST);}
-        fitting(l,b,-3,0,-4,SCARF_HOOK,Direction.EAST);
+        // 0.4.169: the wardrobe. An empty hanger by the door, then twelve coats on the hooks down the west wall and the far end
+        // of the east, and six pairs of boots on the mat under the west hooks, each in an order of the reader's own.
+        fitting(l,b,HouseReadWardrobe.EMPTY_HOOK,EMPTY_HANGER,Direction.EAST);
+        var hooks=HouseReadWardrobe.coatHooks();var coats=HouseReadWardrobe.coats();int[] coatOrder=HouseReadWardrobe.order(owner,false);
+        for(int i=0;i<hooks.size();i++)fitting(l,b,hooks.get(i),HouseReadWardrobe.part(coats.get(coatOrder[i])),HouseReadWardrobe.facing(hooks.get(i)));
+        var boots=HouseReadWardrobe.footwear();int[] bootOrder=HouseReadWardrobe.order(owner,true);
+        for(int i=0;i<HouseReadWardrobe.BOOT_PLACES.size();i++)fitting(l,b,HouseReadWardrobe.BOOT_PLACES.get(i),HouseReadWardrobe.part(boots.get(bootOrder[i])),Direction.EAST);
         // The east side: the bench under the window, the radiator by the door.
         for(int z=-3;z<=-2;z++)fitting(l,b,3,0,z,BENCH,Direction.WEST);box(l,b,4,1,-3,4,2,-2,HouseReadRegistry.WINDOW.get());box(l,b,5,0,-4,6,3,-1,HouseReadRegistry.OVERCAST.get());box(l,b,5,1,-3,5,2,-2,Blocks.AIR);
         fitting(l,b,3,0,0,RADIATOR,Direction.WEST);fitting(l,b,UMBRELLA_AT,UMBRELLA);

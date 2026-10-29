@@ -24,7 +24,9 @@ public final class HouseReadPropBlock extends BaseEntityBlock {
         // 0.4.167: sixteen routine tools, two to a block, need eight blocks.
         ROUTINE_E,ROUTINE_F,ROUTINE_G,ROUTINE_H,
         // 0.4.168: the kitchen table. The two halves of the crayon tin, the drawing, the fridge and the radio.
-        TIN_LEFT,TIN_RIGHT,SHEET,FRIDGE,FRIDGE_TOP,RADIO;
+        TIN_LEFT,TIN_RIGHT,SHEET,FRIDGE,FRIDGE_TOP,RADIO,
+        // 0.4.169: the wardrobe. Nine more coats on the hall's hooks and three more pairs of boots on its mat (HouseReadWardrobe).
+        RINGMASTER,PEA_COAT,CHORE_COAT,SWING_COAT,COLLARED_COAT,RAIN_MAC,PATCHED_JACKET,DUFFEL,LONG_CARDIGAN,RIDING_BOOTS,GALOSHES,PLIMSOLLS;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final MapCodec<HouseReadPropBlock> CODEC=simpleCodec(HouseReadPropBlock::new);

@@ -30,6 +30,7 @@ public final class HouseReadTests {
     @AfterBatch(batch="read_light") public static void lightDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_shelter") public static void shelterDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_kitchen") public static void kitchenDone(ServerLevel ignored){close();}
+    @AfterBatch(batch="read_closet") public static void closetDone(ServerLevel ignored){close();}
     private static void close(){HouseReadSites.clear();if(active!=null){active.close();active=null;}}
     private static LiteraryTests.Fixture fixture(GameTestHelper h){active=new LiteraryTests.Fixture(h);return active;}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).markEntered();p.setNoGravity(true);return p;}
@@ -133,7 +134,7 @@ public final class HouseReadTests {
               h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.COATROOM&&!LabyrinthDoors.isBusy(p)&&!HouseReadStory.ready(p,HouseReadSites.Room.COATROOM)&&!f.in.getBlockState(curtain).getCollisionShape(f.in,curtain).isEmpty(),"the door back is locked and the curtain stops a body until the room has its answer");
               p.lookAt(EntityAnchorArgument.Anchor.EYES,b[0].offset(HouseReadRooms.UMBRELLA_AT).getCenter());
               var peg=b[0].offset(HouseReadRooms.PEGS.get(0));var part=f.in.getBlockState(peg).getValue(HouseReadPropBlock.PART);HouseReadSites.use(peer,peg,part);h.assertTrue(peer.getItemBySlot(EquipmentSlot.CHEST).isEmpty(),"an observer cannot borrow another reader's clothes");
-              click(p,peg);var boots=peg.east();click(p,boots);h.assertTrue(HouseReadSites.loan(p.getItemBySlot(EquipmentSlot.CHEST),p.getUUID())&&HouseReadSites.loan(p.getItemBySlot(EquipmentSlot.FEET),p.getUUID()),"actual block use equips both original room loans even with a full pack");
+              click(p,peg);var set=HouseReadWardrobe.of(part).set();BlockPos boots=null;for(var rel:HouseReadWardrobe.BOOT_PLACES)if(HouseReadWardrobe.of(f.in.getBlockState(b[0].offset(rel)).getValue(HouseReadPropBlock.PART)).set()==set)boots=b[0].offset(rel);click(p,boots);h.assertTrue(HouseReadSites.loan(p.getItemBySlot(EquipmentSlot.CHEST),p.getUUID())&&HouseReadSites.loan(p.getItemBySlot(EquipmentSlot.FEET),p.getUUID()),"actual block use equips both original room loans even with a full pack");
           }).thenIdle(6).thenExecute(()->{
               h.assertTrue(p.getTicksFrozen()==0&&!visit(p,HouseReadSites.Room.COATROOM).getBoolean("Written"),"clothing lifts the harmless frost and a watched slip stays blank");p.setYRot(180);p.setXRot(0);
               var curtain=b[0].offset(HouseReadRooms.CURTAIN_AT);h.assertTrue(HouseReadStory.ready(p,HouseReadSites.Room.COATROOM)&&f.in.getBlockState(curtain).getCollisionShape(f.in,curtain).isEmpty(),"once dressed, the room has its answer and the curtain parts");
@@ -143,7 +144,7 @@ public final class HouseReadTests {
               // 0.4.150: two seconds at the glass in the borrowed coat, looking into it, is kept.
               stand(p,f.in,b[0],2.5,0,-5.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,b[0].offset(HouseReadRooms.MIRROR).above().getCenter());
           }).thenIdle(45).thenExecute(()->{
-              var read=HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.SELF);var cloth=((HouseReadRegistry.Garment)p.getItemBySlot(EquipmentSlot.CHEST).getItem()).cloth;h.assertTrue(read.strength()==HouseRead.Strength.SETTLED&&read.value().equals(switch(cloth){case "wool"->"MASC";case "trench"->"FEM";default->"ANDROGYNOUS";}),"the first coat sets the presentation and two seconds at the glass in it settle it: "+read);
+              var read=HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.SELF);var cloth=((HouseReadRegistry.Garment)p.getItemBySlot(EquipmentSlot.CHEST).getItem()).cloth;h.assertTrue(read.strength()==HouseRead.Strength.SETTLED&&read.value().equals(new String[]{"MASC","FEM","ANDROGYNOUS"}[HouseReadWardrobe.set(cloth)]),"the first coat sets the presentation and two seconds at the glass in it settle it: "+read);
               h.assertTrue(HouseReadLook.of(p).coat().equals(cloth)&&!HouseReadLook.of(p).unseen()&&HouseReadLook.of(peer).coat().isEmpty(),"the House's version of the reader wears the coat they took, and nobody else's");
               var seen=visit(p,HouseReadSites.Room.COATROOM);h.assertTrue(seen.getBoolean("AtMirror")&&seen.getList("Actions",net.minecraft.nbt.Tag.TAG_STRING).stream().anyMatch(t->t.getAsString().equals("stood at the hall glass in the borrowed coat")),"standing at the glass in the borrowed coat is kept");
               var glass=b[0].offset(HouseReadRooms.MIRROR);stand(p,f.in,b[0],2.5,0,-6.5);click(p,glass);h.assertTrue(f.in.getBlockState(glass).getValue(HouseReadPropBlock.TURNED),"native glass use turns the actual mirror to its wooden back");click(p,b[0].offset(HouseReadRooms.TOWEL_AT));h.assertTrue(f.in.getBlockState(glass).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.COVERED_MIRROR&&f.in.getBlockState(b[0].offset(HouseReadRooms.TOWEL_AT)).getValue(HouseReadPropBlock.TURNED),"the towel from the bar beside it physically covers the same glass");click(p,glass);h.assertTrue(f.in.getBlockState(glass).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR,"the same mirror can be uncovered again");
@@ -154,6 +155,49 @@ public final class HouseReadTests {
           .thenExecute(()->{
               h.assertTrue(ItemStack.matches(gear[0],p.getItemBySlot(EquipmentSlot.CHEST))&&ItemStack.matches(gear[1],p.getItemBySlot(EquipmentSlot.FEET)),"the exact original gear, names and damage return to their original slots");for(int i=0;i<36;i++)h.assertTrue(p.getInventory().getItem(i).is(Items.COBBLESTONE)&&p.getInventory().getItem(i).getCount()==64,"a full original pack is unchanged");
               h.assertTrue(f.data().returnCount(p.getUUID())==0&&p.getHealth()==20,"a quiet retreat consumes no story return, health or reward");
+          }).thenSucceed();
+    }
+
+    /** The garment hanging or standing at one place in a reader's coatroom, if any. */
+    private static HouseReadWardrobe.Garment at(ServerLevel l,BlockPos at){var state=l.getBlockState(at);return state.is(HouseReadRegistry.FITTING.get())?HouseReadWardrobe.of(state.getValue(HouseReadPropBlock.PART)):null;}
+    private static BlockPos find(ServerLevel l,BlockPos b,String id){for(var rel:HouseReadWardrobe.coatHooks())if(at(l,b.offset(rel)) instanceof HouseReadWardrobe.Garment g&&g.id().equals(id))return b.offset(rel);for(var rel:HouseReadWardrobe.BOOT_PLACES)if(at(l,b.offset(rel)) instanceof HouseReadWardrobe.Garment g&&g.id().equals(id))return b.offset(rel);return null;}
+
+    /**
+     * 0.4.169 (owner: "a drastically wider variety of clothes, each guessing something about the player's personality. maybe add
+     * a brief history to each piece of cloth"): twelve coats and six pairs of boots, each once, in an order of the reader's own;
+     * each carries its past in its tooltip and, put on for the first time, has the House say what it guesses. The first coat
+     * still sets the read by its set, and the account names the garment itself; an older read keeps its words.
+     */
+    @GameTest(template="empty",batch="read_closet",timeoutTicks=5000)
+    public static void theWardrobeHangsEveryGarmentOnceWithItsPastAndTheHousesGuess(GameTestHelper h){
+        var f=fixture(h);var p=player(h,f,"wardrobe_reader");var other=player(h,f,"wardrobe_other");var sourceAt=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(sourceAt).inflate(8));BlockPos[] b={null,null};LabyrinthData.Door[] from={null};h.onEachTick(()->{transition(p);transition(other);});
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native source is resident")).thenExecute(()->{from[0]=source(f);for(var r:List.of(p,other)){stand(r,f.in,sourceAt,.5,0,2.5);HouseReadSites.prepare(r,HouseReadSites.Room.COATROOM);}})
+          .thenWaitUntil(()->h.assertTrue(ready(p,HouseReadSites.Room.COATROOM),"the first coatroom finishes")).thenWaitUntil(()->h.assertTrue(ready(other,HouseReadSites.Room.COATROOM),"the second coatroom finishes"))
+          .thenExecute(()->{
+              b[0]=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.COATROOM);b[1]=HouseReadSites.base(p.server,other.getUUID(),HouseReadSites.Room.COATROOM);HouseReadAudit.check(h,f.in,b[0],HouseReadSites.Room.COATROOM);
+              h.assertTrue(HouseReadWardrobe.coats().size()==12&&HouseReadWardrobe.footwear().size()==6&&HouseReadWardrobe.coatHooks().size()==12,"twelve coats, six pairs of boots, a hook for every coat");
+              for(var g:HouseReadWardrobe.ALL){h.assertTrue(find(f.in,b[0],g.id())!=null&&find(f.in,b[1],g.id())!=null,"every garment is in each reader's wardrobe: "+g.id());h.assertTrue(!g.history().isBlank()&&!g.guess().isBlank()&&g.set()>=0&&g.set()<3,"every garment has a past, a guess and a set: "+g.id());
+                  for(String text:List.of(g.history(),g.guess()))for(String word:List.of("boy","girl","young"," old ","white","black","brown")){String lower=" "+text.toLowerCase(Locale.ROOT)+" ";h.assertTrue(!lower.contains(word),"no garment's words read the reader's gender, colour or age: "+g.id()+" / "+word);}}
+              h.assertTrue(f.in.getBlockState(b[0].offset(HouseReadWardrobe.EMPTY_HOOK)).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.EMPTY_HANGER,"the hanger by the door stays empty");
+              boolean differ=false;for(var rel:HouseReadWardrobe.coatHooks())differ|=at(f.in,b[0].offset(rel))!=at(f.in,b[1].offset(rel));h.assertTrue(differ,"two readers' wardrobes hang in different orders");
+              seed(p,HouseReadSites.Room.COATROOM,from[0]);stand(p,f.in,b[0],.5,0,-2);
+              var tail=find(f.in,b[0],"ringmaster");click(p,tail);var worn=p.getItemBySlot(EquipmentSlot.CHEST);
+              h.assertTrue(worn.getItem() instanceof HouseReadRegistry.Garment g&&g.cloth.equals("ringmaster")&&HouseReadSites.loan(worn,p.getUUID())&&f.in.getBlockState(tail).getValue(HouseReadPropBlock.TURNED),"the tailcoat comes off its hook onto the reader, lent");
+              var lines=new ArrayList<Component>();worn.getItem().appendHoverText(worn,Item.TooltipContext.EMPTY,lines,TooltipFlag.NORMAL);h.assertTrue(lines.stream().anyMatch(c->c.getString().equals("Belonged to a circus performer. The lining is darned in a dozen threads.")),"its past is in its tooltip: "+lines);
+              var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom");h.assertTrue(seen.getString("CoatId").equals("ringmaster")&&seen.getString("Coat").equals("wool")&&HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.SELF).equals(new HouseRead.Category("MASC",HouseRead.Strength.TENTATIVE)),"the first coat reads by its set and is kept by itself");
+              var swing=find(f.in,b[0],"swing_coat");click(p,swing);h.assertTrue(!f.in.getBlockState(tail).getValue(HouseReadPropBlock.TURNED)&&f.in.getBlockState(swing).getValue(HouseReadPropBlock.TURNED)&&((HouseReadRegistry.Garment)p.getItemBySlot(EquipmentSlot.CHEST).getItem()).cloth.equals("swing_coat"),"a second coat goes on and the first goes back on its hook");
+              h.assertTrue(visit(p,HouseReadSites.Room.COATROOM).getList("Guessed",net.minecraft.nbt.Tag.TAG_STRING).size()==2&&HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom").getString("CoatId").equals("ringmaster"),"each garment is guessed once; the first coat is still the one the House keeps");
+              click(p,find(f.in,b[0],"galoshes"));h.assertTrue(HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom").getString("BootsId").equals("galoshes"),"the boots are kept by themselves");
+              seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("coatroom");String said=HouseReadProse.coatroom(seen);
+              h.assertTrue(said.startsWith("took the ringmaster's tailcoat off the peg in the hall and the galoshes from the mat"),"the account names the garments themselves: "+said);
+              h.assertTrue(StaircaseProse.hands(StaircaseAccount.read(f.data(),p.getUUID())).contains("the ringmaster's tailcoat"),"and so does the book");
+              var old=new CompoundTag();old.putString("Coat","trench");old.putString("Boots","wool");h.assertTrue(HouseReadProse.coatroom(old).startsWith("took the trench coat off the peg in the hall and the heavy leather boots from the mat"),"an older read keeps its words: "+HouseReadProse.coatroom(old));
+              HouseReadSites.left(p);boolean back=true;for(var g:HouseReadWardrobe.ALL)back&=!f.in.getBlockState(find(f.in,b[0],g.id())).getValue(HouseReadPropBlock.TURNED);
+              h.assertTrue(back&&p.getItemBySlot(EquipmentSlot.CHEST).isEmpty()&&p.getItemBySlot(EquipmentSlot.FEET).isEmpty(),"leaving puts every garment back and takes none away");
+          }).thenIdle(2).thenExecute(()->{
+              // The lines reach the reader's connection once it has flushed, a tick later.
+              var lines=packets(p).stream().filter(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket).map(x->((net.minecraft.network.protocol.game.ClientboundSystemChatPacket)x).content().getString()).toList();
+              h.assertTrue(lines.stream().filter(l->l.equals("You like to be looked at, as long as it's on purpose.")).count()==1&&lines.contains("You dress for the party in case there is one.")&&lines.contains("You grow into things."),"the House says what it guesses the first time each garment goes on, once: "+lines);
           }).thenSucceed();
     }
 

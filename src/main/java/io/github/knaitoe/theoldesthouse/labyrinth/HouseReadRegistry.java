@@ -51,7 +51,10 @@ public final class HouseReadRegistry {
     public static final DeferredBlock<ChainBlock> ROPE=BLOCKS.register("read_rope",()->new ChainBlock(wood().noOcclusion().sound(net.minecraft.world.level.block.SoundType.WOOL)){});
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HouseReadPropBlock>> FITTING_TYPE=CODECS.register("read_fitting",()->HouseReadPropBlock.CODEC);
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<HouseReadPropBlock.Fitting>> FITTING_ENTITY=BES.register("read_fitting",()->BlockEntityType.Builder.of(HouseReadPropBlock.Fitting::new,FITTING.get()).build(null));
+    /** Every garment by its wardrobe id (0.4.169); the first six keep their own fields. */
+    public static final java.util.Map<String,DeferredItem<Garment>> GARMENTS=new java.util.LinkedHashMap<>();
     public static final DeferredItem<Garment> WOOL=garment("wool",EquipmentSlot.CHEST),TRENCH=garment("trench",EquipmentSlot.CHEST),BARN=garment("barn",EquipmentSlot.CHEST),WOOL_BOOTS=garment("wool_boots",EquipmentSlot.FEET),TRENCH_BOOTS=garment("trench_boots",EquipmentSlot.FEET),BARN_BOOTS=garment("barn_boots",EquipmentSlot.FEET);
+    static{for(var g:HouseReadWardrobe.ALL)if(!GARMENTS.containsKey(g.id()))garment(g.id(),g.slot());}
     public static final DeferredHolder<SoundEvent,SoundEvent> RAIN=sound("rain"),RADIATOR=sound("radiator"),WHISTLE=sound("whistle"),SUPPER=sound("supper"),NEWS=sound("news"),DISHES=sound("dishes"),ICE=sound("ice"),STEP=sound("step");
     public static final DeferredHolder<SoundEvent,SoundEvent> BELL=sound("bell"),HISS=sound("hiss"),GLUG=sound("glug"),TAP=sound("tap"),CLOCK=sound("clock"),START=sound("start"),SONG=sound("song");
     public static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> MUSIC=java.util.stream.IntStream.range(0,9).mapToObj(i->sound("song_"+i)).toList();
@@ -63,11 +66,15 @@ public final class HouseReadRegistry {
     public static final DeferredItem<Item> BOTTLE=ITEMS.registerSimpleItem("read_bottle",new Item.Properties().stacksTo(1));
     private static DeferredItem<HouseReadBorrowedItem> borrowed(String id){return ITEMS.register("read_"+id,()->new HouseReadBorrowedItem(new Item.Properties().stacksTo(1),id));}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register("house_read."+id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"house_read."+id)));}
-    private static DeferredItem<Garment> garment(String id,EquipmentSlot slot){return ITEMS.register("read_"+id,()->new Garment(new Item.Properties().stacksTo(1),slot,id));}
+    private static DeferredItem<Garment> garment(String id,EquipmentSlot slot){var item=ITEMS.register("read_"+id,()->new Garment(new Item.Properties().stacksTo(1),slot,id));GARMENTS.put(id,item);return item;}
     public static final class Garment extends Item implements Equipable {
         private final EquipmentSlot slot;public final String cloth;
         Garment(Properties p,EquipmentSlot slot,String cloth){super(p);this.slot=slot;this.cloth=cloth;}
         @Override public EquipmentSlot getEquipmentSlot(){return slot;}
+        /** 0.4.169: each garment's own past, under its name. */
+        @Override public void appendHoverText(net.minecraft.world.item.ItemStack stack,TooltipContext context,java.util.List<net.minecraft.network.chat.Component> lines,net.minecraft.world.item.TooltipFlag flag){
+            var g=HouseReadWardrobe.byId(cloth);if(g!=null)lines.add(net.minecraft.network.chat.Component.literal(g.history()).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC));
+        }
     }
     private HouseReadRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);ITEMS.register(bus);SOUNDS.register(bus);ENTITIES.register(bus);}

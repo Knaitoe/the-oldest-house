@@ -2144,7 +2144,7 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','HouseReadReaderTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java','CoopTests.java'))
-          assert count==38
+          assert count==39
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==6
           PY
@@ -2179,6 +2179,9 @@ jobs:
           kitchen=Path('build/house-read-kitchen')
           assert sorted(p.name for p in kitchen.glob('*.png'))==['kitchen_objects.png','kitchen_tones.png']
           assert (kitchen/'passed.txt').is_file()
+          wardrobe=Path('build/house-read-wardrobe')
+          assert sorted(p.name for p in wardrobe.glob('*.png'))==['wardrobe_hanging.png','wardrobe_worn_back.png','wardrobe_worn_front.png']
+          assert (wardrobe/'passed.txt').is_file()
           PY
       - uses: actions/upload-artifact@v4
         if: always()
@@ -2192,6 +2195,7 @@ jobs:
             build/house-read-lines
             build/house-read-hair
             build/house-read-kitchen
+            build/house-read-wardrobe
             run/logs
 
   personal-scene-clients:

@@ -223,14 +223,15 @@ public final class HouseReadReaderTests {
               var b=base.get(unseen.getUUID());h.assertTrue(f.in.getBlockState(b.offset(3,0,-2)).getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.BENCH,"the hall has its wooden bench");stand(unseen,f.in,b,2.5,0,-6.5);click(unseen,b.offset(HouseReadRooms.MIRROR));
               h.assertTrue(raw(unseen,SELF).equals(new HouseRead.Category("UNSEEN",HouseRead.Strength.SETTLED)),"turning the glass to the wall before dressing settles it");
               var peg=b.offset(HouseReadRooms.PEGS.get(0));stand(unseen,f.in,b,-1.5,0,-1.5);click(unseen,peg);var took=((HouseReadRegistry.Garment)unseen.getItemBySlot(EquipmentSlot.CHEST).getItem()).cloth;
-              h.assertTrue(raw(unseen,SELF).value().equals("UNSEEN")&&HouseRead.seen(f.data(),unseen.getUUID()).getCompound("coatroom").getString("Coat").equals(took),"the coat taken afterwards is only observed");
+              h.assertTrue(raw(unseen,SELF).value().equals("UNSEEN")&&HouseRead.seen(f.data(),unseen.getUUID()).getCompound("coatroom").getString("CoatId").equals(took)&&HouseRead.seen(f.data(),unseen.getUUID()).getCompound("coatroom").getString("Coat").equals(HouseReadWardrobe.SETS[HouseReadWardrobe.set(took)]),"the coat taken afterwards is only observed, by itself and by its set");
               h.assertTrue(HouseReadLook.of(unseen).unseen()&&HouseReadLook.of(unseen).coat().equals(took),"in glass and copies the coat shows and the face does not");
               h.assertTrue(HouseReadProse.coatroom(HouseRead.seen(f.data(),unseen.getUUID()).getCompound("coatroom")).startsWith("turned the hall glass to the wall before you took"),"the account says so in that order");
-              // The second reader takes a wool or trench coat and boots from the other of those two sets.
-              var m=base.get(mixed.getUUID());BlockPos coat=null,boots=null;String coatSet="";
-              for(var rel:HouseReadRooms.PEGS){var part=f.in.getBlockState(m.offset(rel)).getValue(HouseReadPropBlock.PART);if(part==HouseReadPropBlock.Part.WOOL||part==HouseReadPropBlock.Part.TRENCH){if(coat==null){coat=m.offset(rel);coatSet=part.getSerializedName();}}}
-              for(var rel:HouseReadRooms.PEGS){var part=f.in.getBlockState(m.offset(rel).east()).getValue(HouseReadPropBlock.PART);if((part==HouseReadPropBlock.Part.WOOL_BOOTS||part==HouseReadPropBlock.Part.TRENCH_BOOTS)&&!part.getSerializedName().startsWith(coatSet))boots=m.offset(rel).east();}
-              stand(mixed,f.in,m,.5,0,-2);click(mixed,coat);h.assertTrue(raw(mixed,SELF).equals(new HouseRead.Category(coatSet.equals("wool")?"MASC":"FEM",HouseRead.Strength.TENTATIVE)),"the first coat sets the presentation tentatively");
+              // The second reader takes a coat from the wool or trench set and boots from the other of those two sets.
+              var m=base.get(mixed.getUUID());BlockPos coat=null,boots=null;int coatSet=-1;
+              for(var rel:HouseReadRooms.PEGS){var g=HouseReadWardrobe.of(f.in.getBlockState(m.offset(rel)).getValue(HouseReadPropBlock.PART));if(coat==null&&g!=null&&g.set()<2){coat=m.offset(rel);coatSet=g.set();}}
+              for(var rel:HouseReadWardrobe.BOOT_PLACES){var g=HouseReadWardrobe.of(f.in.getBlockState(m.offset(rel)).getValue(HouseReadPropBlock.PART));if(g!=null&&g.set()<2&&g.set()!=coatSet)boots=m.offset(rel);}
+              h.assertTrue(coat!=null&&boots!=null,"the wardrobe has a coat from one of those sets and boots from the other");
+              stand(mixed,f.in,m,-.5,0,-2);click(mixed,coat);h.assertTrue(raw(mixed,SELF).equals(new HouseRead.Category(coatSet==0?"MASC":"FEM",HouseRead.Strength.TENTATIVE)),"the first coat sets the presentation tentatively");
               click(mixed,boots);h.assertTrue(raw(mixed,SELF).equals(new HouseRead.Category("ANDROGYNOUS",HouseRead.Strength.TENTATIVE)),"one garment from each side reads as neither: "+raw(mixed,SELF));
               stand(mixed,f.in,m,2.5,0,-6.5);click(mixed,m.offset(HouseReadRooms.MIRROR));h.assertTrue(raw(mixed,SELF).equals(new HouseRead.Category("UNSEEN",HouseRead.Strength.TENTATIVE))&&HouseRead.seen(f.data(),mixed.getUUID()).getCompound("coatroom").getString("Mirror").equals("turned_after"),"turning the glass after dressing makes UNSEEN the House's first guess");
           }).thenSucceed();

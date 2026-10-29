@@ -6,6 +6,7 @@ from house_read_moments_art import EXTRA_PARTS, tiles as more_tiles, models as m
 import house_read_materials_art as materials
 import house_read_rooms160_art as rooms160
 import house_read_kitchen_art as kitchen
+import house_read_wardrobe_art as wardrobe
 ROOT=Path(__file__).resolve().parents[1];A=ROOT/'src/main/resources/assets/the_oldest_house'
 SIDES=['up','down','north','south','east','west']
 def cube(a,b,t):return {'from':a,'to':b,'faces':{f:{'texture':'#'+t,'uv':[0,0,16,16]} for f in SIDES}}
@@ -52,7 +53,7 @@ def outputs():
   for x in range(2,14,2):d.line((x,2,x,13),fill=(100,109,91,95))
   for y in range(2,14,2):d.line((2,y,13,y),fill=(100,109,91,95))
   tiles['screen_'+half]=im
- more_tiles(tiles);rooms160.tiles(tiles);kitchen.tiles(tiles)
+ more_tiles(tiles);rooms160.tiles(tiles);kitchen.tiles(tiles);wardrobe.tiles(tiles)
  for name,im in tiles.items():
   buf=io.BytesIO();im.save(buf,format='PNG');out['textures/block/house_read/'+name+'.png']=buf.getvalue()
  textures={n:'the_oldest_house:block/house_read/'+n for n in tiles}
@@ -103,8 +104,8 @@ def outputs():
    model(n,[cube([0,6,3],[16,8,13],'oak')]+rope,extra={'rope':ROPE})
   elif n=='mailbox':model(n,[cube([7,0,7],[9,13,9],'oak'),cube([1,13,3],[15,18,13],'metal'),cube([1,13,2.6],[15,17.8,2.9],'metal'),cube([14.8,15,6],[15.1,21,7],'curtain')])
   else:model(n,[cube([3,0,3],[13,.6,13],'cream'),cube([4,.65,4],[12,.9,12],'food')])
- more_models(out,model,cube);rooms160.models(model,cube,faced);kitchen.models(model,cube,faced)
- parts+=EXTRA_PARTS+rooms160.PARTS+kitchen.PARTS
+ more_models(out,model,cube);rooms160.models(model,cube,faced);kitchen.models(model,cube,faced);wardrobe.models(model,cube,faced)
+ parts+=EXTRA_PARTS+rooms160.PARTS+kitchen.PARTS+wardrobe.PARTS
  out['textures/block/house_read/radar.png.mcmeta']=(json.dumps({'animation':{'frametime':8}},indent=2)+'\n').encode()
  out['textures/block/house_read/snow.png.mcmeta']=(json.dumps({'animation':{'frametime':2}},indent=2)+'\n').encode()
  variants={}
@@ -112,7 +113,7 @@ def outputs():
   for face,rot in [('south',0),('west',90),('north',180),('east',270)]:
    for turned in [False,True]:
     for writing in [False,True]:
-     suffix='_turned' if turned and n in parts[:6]+['mirror','mirror_top'] else '_written' if writing and n in ['rail','umbrella'] else ''
+     suffix='_turned' if turned and n in parts[:6]+wardrobe.PARTS+['mirror','mirror_top'] else '_written' if writing and n in ['rail','umbrella'] else ''
      if n in ['glasses','phone','light_switch','tap','sink']+rooms160.TURNED and turned:suffix='_turned'
      if n in ['calendar','postcard','jukebox'] and writing:suffix='_written'
      if n in kitchen.PARTS:suffix='_turned' if turned and n in kitchen.TURNED else '_written' if writing and n in kitchen.WRITTEN else ''
@@ -131,9 +132,9 @@ def outputs():
     out['models/block/read_screen_'+n+'.json']=(json.dumps({'parent':'minecraft:block/door_'+n,'render_type':'minecraft:cutout','textures':{'bottom':textures['screen_bottom'],'top':textures['screen_top']}},indent=2)+'\n').encode()
     for face,rot in [('east',0),('south',90),('west',180),('north',270)]:variants[f'facing={face},half={half},hinge={hinge},open={str(opened).lower()}']={'model':'the_oldest_house:block/read_screen_'+n,'y':(rot+(90 if hinge=='left' else -90) if opened else rot)%360}
  out['blockstates/read_screen_door.json']=(json.dumps({'variants':variants},indent=2)+'\n').encode()
- for name in parts[:6]:out['models/item/read_'+name+'.json']=(json.dumps({'parent':'the_oldest_house:block/read_'+name,'display':{'gui':{'rotation':[20,-35,0],'translation':[0,-3,0],'scale':[.65,.65,.65]}}},indent=2)+'\n').encode()
+ for name in parts[:6]+wardrobe.PARTS:out['models/item/read_'+name+'.json']=(json.dumps({'parent':'the_oldest_house:block/read_'+name,'display':{'gui':{'rotation':[20,-35,0],'translation':[0,-3,0],'scale':[.65,.65,.65]}}},indent=2)+'\n').encode()
  # 0.4.161: the worn coats and boots, each drawn to its own fitted mesh layout.
- for n,im in rooms160.worn().items():
+ for n,im in {**rooms160.worn(),**wardrobe.worn()}.items():
   buf=io.BytesIO();im.save(buf,format='PNG');out['textures/entity/house_read/'+n+'.png']=buf.getvalue()
  # 0.4.160: flat sprites for everything held in the hand; an empty cone is its own picture.
  for name,im in rooms160.sprites().items():
@@ -173,7 +174,7 @@ def audit_models(out):
       others=[a for a in range(3) if a!=axis]
       if all(min(left['to'][a],right['to'][a])-max(left['from'][a],right['from'][a])>1e-8 for a in others):raise AssertionError(f'Overlapping coplanar exterior faces: {path}, axis {axis}, {side}')
 def geometry(out):
- parts=['wool','trench','barn','wool_boots','trench_boots','barn_boots','towel','mirror','mirror_top','umbrella','radiator','curtain','rail','swing','mailbox','plate','covered_mirror']+EXTRA_PARTS+rooms160.PARTS+kitchen.PARTS
+ parts=['wool','trench','barn','wool_boots','trench_boots','barn_boots','towel','mirror','mirror_top','umbrella','radiator','curtain','rail','swing','mailbox','plate','covered_mirror']+EXTRA_PARTS+rooms160.PARTS+kitchen.PARTS+wardrobe.PARTS
  def array(elements):return 'new double[][]{'+','.join('{'+','.join(str(v) for v in e['from']+e['to'])+'}' for e in elements)+'}'
  lines=['package io.github.knaitoe.theoldesthouse.labyrinth;','', '// Generated by tools/draw_house_read.py from the exact shipped model cuboids.', 'import java.util.EnumMap;', 'import net.minecraft.world.level.block.Block;', 'import net.minecraft.world.level.block.HorizontalDirectionalBlock;', 'import net.minecraft.world.level.block.state.BlockState;', 'import net.minecraft.world.phys.shapes.*;', 'import static io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.*;', '', 'public final class HouseReadGeometry {', '    private static final EnumMap<Part,VoxelShape[]> SHAPES=new EnumMap<>(Part.class);', '    static {']
  for name in parts:
