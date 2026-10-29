@@ -178,16 +178,23 @@ public final class GoatmanVignette {
         var disguises=new ArrayList<>(List.of(0,1,2,3,4,5,6,7,8));Collections.shuffle(disguises,new Random(p.getRandom().nextLong()));r.putIntArray("StalkDeck0465",disguises);
         return r;
     }
-    public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.GOATMAN)enter(p);}
+    public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.GOATMAN)enter(p,true);}
     /** Direct arrivals and reconnects use the same saved enrollment. No credit is awarded here. */
-    public static boolean enter(ServerPlayer p){
+    public static boolean enter(ServerPlayer p){return enter(p,false);}
+    /**
+     * 0.4.163 (owner: "Cousins should BEGIN outside ... the table should also be cleared on re-entry"): a reader who comes in
+     * through a door with nobody else there begins a fresh evening, however they left the last one; only a reconnect resumes.
+     */
+    public static boolean enter(ServerPlayer p,boolean arriving){
         if(!inside(p)||!canDeal(LabyrinthData.get(p.server),p.getUUID()))return false;
         LabyrinthData d=LabyrinthData.get(p.server);BlockPos b=base(p.server);ServerLevel l=p.serverLevel();CompoundTag r=run(d),cohort=r.getCompound("Cohort");
         boolean member=cohort.contains(p.getUUID().toString());
         final CompoundTag initialCohort=cohort;
         boolean other=visitors(l,b).stream().anyMatch(peer->peer!=p&&initialCohort.contains(peer.getUUID().toString())&&!initialCohort.getCompound(peer.getUUID().toString()).getBoolean("Failed"));
-        if(r.getInt("Phase")==0||r.getInt("Version")!=VERSION&&!other||r.getInt("Phase")==DAWN&&!other||!other&&(!member||cohort.getCompound(p.getUUID().toString()).getBoolean("Failed")||!cohort.getCompound(p.getUUID().toString()).getBoolean("Active"))){
+        if(r.getInt("Phase")==0||r.getInt("Version")!=VERSION&&!other||r.getInt("Phase")==DAWN&&!other||!other&&(arriving||!member||cohort.getCompound(p.getUUID().toString()).getBoolean("Failed")||!cohort.getCompound(p.getUUID().toString()).getBoolean("Active"))){
             r=newRun(p);cohort=new CompoundTag();member=false;reset(l,b);
+            // Whatever of the last evening was not loaded to be cleared now goes once its sections are.
+            r.putBoolean(CLEAR,true);
         }
         if(!member&&(r.getInt("Phase")==VIGIL||r.getInt("Phase")==DAWN||r.getInt("Phase")==GATHERING&&(r.getInt("Clock")>=supperAt(r)||r.getBoolean("MealFrozen0465"))||cohort.getAllKeys().size()>=MAX_PLAYERS))return false;
         CompoundTag own=cohort.getCompound(p.getUUID().toString());
@@ -200,7 +207,7 @@ public final class GoatmanVignette {
         own.putBoolean("Active",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
         if(!member)p.displayClientMessage(Component.literal(own.contains(PLAYS)?"You're late too. The others are already at the trailer, and they've kept your place.":"You're late. Your cousins are already at the trailer."),false);
         scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);GoatmanBedtime.restore(p,r);
-        if(!stage(l,b,r)){r.putBoolean("StagePending0469",true);saveRun(d,r);}
+        if(!stage(l,b,r))r.putBoolean("StagePending0469",true);saveRun(d,r);
         GoatmanWoods.supplies(l,b,expected(r,cohort.getAllKeys().size()));if(fresh(r))GoatmanWoods.supperChairs(l,b,expected(r,cohort.getAllKeys().size()));return true;
     }
     /** A fresh evening: no actors, day, the door open, the bathroom window propped, the porch light on, the pan and the plates empty. */
@@ -245,7 +252,8 @@ public final class GoatmanVignette {
     static final Vec3[] WINDOW_PATH={new Vec3(-7.5,0,-52.5),new Vec3(-10.5,0,-54.5),new Vec3(-10.5,0,-58.5),new Vec3(-10,1.5,-58.5)};
     private static final Vec3[] WINDOW_ENTRY={new Vec3(10.25,0,-74.5),new Vec3(10.25,1.1,-74.5),new Vec3(10.25,2.55,-74.5),new Vec3(8.5,3.05,-74.5),new Vec3(7.5,3.05,-74.5),new Vec3(6.5,1,-75.5)};
     private static final float[] ENTRY_BEATS={.12F,.25F,.42F,.62F,.78F,1F};
-    static final String[] ACTIVITY={"fireW","fireE","fireN","kitchen","shed","fireS","firelight","cupboard"};
+    /** 0.4.163 (owner: "Cousins should BEGIN outside"): every cousin's place before supper is out by the fire or the yard. */
+    static final String[] ACTIVITY={"fireW","fireE","fireN","fireNW","shed","fireS","firelight","fireSE"};
     private static final Map<String,Spot> SPOTS=new HashMap<>();
     private static void spot(String key,Vec3 at,float yaw,boolean inside,int pose,Vec3... access){SPOTS.put(key,new Spot(at,yaw,inside,pose,access,null));}
     static{
@@ -254,6 +262,9 @@ public final class GoatmanVignette {
         spot("fireN",new Vec3(-5.5,.5,-50.25),0,false,SIT,new Vec3(-5.5,0,-49.5));
         spot("fireS",new Vec3(-5.5,.5,-44.75),180,false,SIT,new Vec3(-3.5,0,-46));
         spot("byFire",new Vec3(-6,0,-49.6),0,false,STAND,new Vec3(-4.5,0,-49.6));
+        // Standing between the log seats, facing the fire.
+        spot("fireNW",new Vec3(-7.7,0,-49.7),-45,false,STAND,new Vec3(-4.5,0,-50.2),new Vec3(-7.7,0,-50.2));
+        spot("fireSE",new Vec3(-3.3,0,-45.3),135,false,STAND,new Vec3(-3.3,0,-48.5));
         spot("firelight",new Vec3(7.5,0,-48.5),90,false,STAND,new Vec3(3.5,0,-48.5));
         spot("shed",new Vec3(10.5,0,-62.5),270,false,STAND,new Vec3(3.5,0,-48.5),new Vec3(10.5,0,-48.5));
         // Up on the sill of the west window nearest the fire, facing in through the glass.
@@ -281,6 +292,9 @@ public final class GoatmanVignette {
         for(int k=0;k<24;k++){var head=GoatmanWoods.bunkHead(k);boolean west=k%2==0;double z=head.getZ()+.5;
             SPOTS.put("bunk"+k,new Spot(new Vec3(head.getX()+.5,head.getY()+.6875,z),west?270:90,true,LIE,new Vec3[]{new Vec3(west?-3:4,1,-57.5),new Vec3(west?-3:4,1,z),new Vec3(west?-3.6:4.4,1,z)},head));}
     }
+    /** Ticks between cousins setting off through the door at once. */
+    static final int QUEUE=8;
+    private static boolean crossing(String from,String to){Spot a=SPOTS.get(from),z=SPOTS.get(to);return a!=null&&z!=null&&a.inside()!=z.inside();}
     /** Points to walk from one spot to another, through the yard or the door as needed. */
     private static List<Vec3> route(String from,String to){
         Spot a=SPOTS.get(from),z=SPOTS.get(to);List<Vec3> out=new ArrayList<>();if(z==null)return out;
@@ -464,10 +478,14 @@ public final class GoatmanVignette {
         for(int x=(int)Math.floor(area.minX)>>4;x<=(int)Math.floor(area.maxX)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=(int)Math.floor(area.maxZ)>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
         return true;
     }
+    /** A fresh evening's clearing of the last one: actors, table, pan and plates, done once their sections are loaded. */
+    static final String CLEAR="Clear0163";
     public static boolean stage(ServerLevel l,BlockPos b,CompoundTag r){
         // Block chunks can arrive before their saved entity sections. Wait for the latter
         // before deciding that a cousin is missing or registering a fresh body.
-        if(!r.hasUUID("Id")||!spawnReady(l,b))return false;List<GoatmanChild> children=actors(l,b);
+        if(!r.hasUUID("Id")||!spawnReady(l,b))return false;
+        if(r.getBoolean(CLEAR)){r.remove(CLEAR);reset(l,b);}
+        List<GoatmanChild> children=actors(l,b);
         for(var c:children)if(!c.getTags().contains("TrailerWalk")&&(!c.getPersistentData().hasUUID(ROUND)||!c.getPersistentData().getUUID(ROUND).equals(r.getUUID("Id"))))c.discard();
         for(int i=0;i<count(r);i++){
             boolean away=i==r.getInt("Runner")&&(r.getInt("RunnerState")==R_AWAY||r.getInt("RunnerState")==R_LOST)||i==r.getInt("Wrong")&&r.getInt("Phase")==DAWN;
@@ -490,13 +508,28 @@ public final class GoatmanVignette {
     }
     /** How far behind the reader she keeps on the trail, and how far her head is bowed. */
     public static final double FOLLOW_GAP=2.8;public static final float HEAD_TUCKED=38;
-    private static GoatmanChild girl(ServerPlayer p,BlockPos b,CompoundTag r){
+    /**
+     * 0.4.163 (owner: "This should not spawn in until the player has already started to walk"): how far along the trail the
+     * reader has walked before she is there, a little further back than she keeps, where the reader is not looking.
+     */
+    public static final double FOLLOW_START=FOLLOW_GAP+2;
+    private static GoatmanChild girl(ServerPlayer p,BlockPos b,CompoundTag r,double progress){
         if(!spawnReady(p.serverLevel(),b))return null;
         var girls=actors(p.serverLevel(),b).stream().filter(c->c.viewer().filter(p.getUUID()::equals).isPresent()&&!c.getTags().contains("TrailerWalk")).toList();
         for(int i=1;i<girls.size();i++)girls.get(i).discard();if(!girls.isEmpty())return girls.getFirst();
+        if(progress<FOLLOW_START)return null;
+        Vec3 at=abs(GoatmanWoods.path(Math.max(0,progress-FOLLOW_GAP-1)),b),to=at.add(0,1,0).subtract(p.getEyePosition());
+        if(to.lengthSqr()>.01&&p.getLookAngle().dot(to.normalize())>.3)return null;
         GoatmanChild c=GoatmanRegistry.CHILD.get().create(p.serverLevel());if(c==null)return null;
         c.appearance(5,0,p.getUUID());c.addTag(ACTOR);c.getPersistentData().putUUID(ROUND,r.getUUID("Id"));c.getPersistentData().putInt(INDEX,-1);
-        c.moveTo(abs(GoatmanWoods.path(0),b));p.serverLevel().addFreshEntity(c);return c;
+        c.moveTo(at);p.serverLevel().addFreshEntity(c);return c;
+    }
+    /** Her footsteps, a child's, on whatever the trail is made of, for the reader she follows alone: something to turn round for. */
+    private static void footsteps(ServerPlayer p,GoatmanChild girl,double moved){
+        var t=girl.getPersistentData();double stride=t.getDouble("Stride0163")+moved;
+        if(stride>=.8){stride-=.8;var under=girl.getBlockPosBelowThatAffectsMyMovement();var ground=p.serverLevel().getBlockState(under);
+            LiteraryVignettes.heard(p,ground.isAir()?net.minecraft.sounds.SoundEvents.GRASS_STEP:ground.getSoundType().getStepSound(),girl.blockPosition(),.35F,1.3F);}
+        t.putDouble("Stride0163",stride);
     }
 
     // ------------------------------------------------------------------------------------------------ the trail
@@ -512,8 +545,8 @@ public final class GoatmanVignette {
             }else {progress=projected.progress();own.putDouble("Progress",progress);}
         }
         if(!own.getBoolean("GirlGone")&&!own.getBoolean("Arrived")){
-            GoatmanChild girl=girl(p,b,r);if(girl!=null){
-                follow(girl,b,progress);
+            GoatmanChild girl=girl(p,b,r,progress);if(girl!=null){
+                footsteps(p,girl,follow(girl,b,progress));
                 if(progress>=54&&(!p.hasLineOfSight(girl)||p.getLookAngle().dot(girl.position().subtract(p.position()).normalize())<.25)){own.putBoolean("GirlGone",true);girl.discard();}
             }
         }else for(var girl:actors(p.serverLevel(),b))if(girl.viewer().filter(p.getUUID()::equals).isPresent()&&!girl.getTags().contains("TrailerWalk"))girl.discard();
@@ -528,14 +561,14 @@ public final class GoatmanVignette {
      * Turn back towards her and she never turns to walk away: she is simply further off, slid back along the trail
      * without a step, still facing the way the reader was going.
      */
-    private static void follow(GoatmanChild girl,BlockPos b,double progress){
+    private static double follow(GoatmanChild girl,BlockPos b,double progress){
         girl.getPersistentData().remove("Route");
         double here=GoatmanWoods.project(rel(girl,b)).progress(),want=Math.max(0,progress-FOLLOW_GAP),gap=want-here;
         boolean walking=gap>0;double next=walking?here+Math.min(gap,Math.min(.17,.03+gap*.09)):here+Math.max(gap,-.4);
         Vec3 at=abs(GoatmanWoods.path(next),b),ahead=abs(GoatmanWoods.path(next+1.5),b),from=girl.position();float yaw=facing(at,ahead);
         girl.setOnGround(true);girl.move(MoverType.SELF,at.subtract(from));girl.setDeltaMovement(Vec3.ZERO);
         girl.setYRot(yaw);girl.setXRot(HEAD_TUCKED);girl.setYHeadRot(yaw);girl.yBodyRot=yaw;
-        girl.animate(walking?girl.position().distanceTo(from):0,false,false);
+        double moved=walking?girl.position().distanceTo(from):0;girl.animate(moved,false,false);return moved;
     }
     /** Any camera, a spectator's included, turned straight at the figure with nothing solid between. */
     static boolean lookedAt(ServerLevel l,Entity figure){
@@ -586,12 +619,16 @@ public final class GoatmanVignette {
         int rs=r.getInt("RunnerState");var incoming=remaining(real);incoming.addAll(inFrom("step",r.getInt("Runner"),r));incoming=exchangeLane(incoming,true);
         if(open&&r.getInt("ExtraState")==X_SUPPER&&(rs==R_RETURNING||rs==R_KNOCKING||rs==R_INSIDE)){
             var outgoing=exchangeLane(onward(extra,"byFire"),false);int out=doorTicks(extra,b,outgoing,false,impostorRun(r)),in=doorTicks(real,b,incoming,true,RUN);
-            if(rs!=R_RETURNING||in<=out){r.putBoolean("Exchange0497",true);r.putInt("ExtraState",X_FIRE);setRoute(extra,outgoing,"byFire");}
+            // 0.4.163 (owner: "the sequence needs to be better timed"): it reaches the door a moment before the cousin does, so it
+            // runs out past them on the porch rather than meeting them in the doorway.
+            if(rs!=R_RETURNING||in<=out+EXCHANGE_LEAD){r.putBoolean("Exchange0497",true);r.putInt("ExtraState",X_FIRE);setRoute(extra,outgoing,"byFire");extra.scurry(true);}
         }
         // If the real child was kept at a shut door, let the outgoing body cover its aisle first.
         // Both then run across the same threshold together, in either actor iteration order.
         if(r.getBoolean("Exchange0497"))r.putBoolean("ExchangeAdmit0497",open&&doorTicks(extra,b,remaining(extra),false,impostorRun(r))<=doorTicks(real,b,incoming,true,RUN));
     }
+    /** Ticks the thing reaches the door ahead of the cousin coming back. */
+    public static final int EXCHANGE_LEAD=12;
     private static boolean admit(CompoundTag r){return !r.getBoolean("Exchange0497")||r.getBoolean("ExchangeAdmit0497");}
     private static void exchanged(BlockPos b,CompoundTag r,List<GoatmanChild> cast){
         if(!r.getBoolean("Exchange0497"))return;
@@ -625,6 +662,8 @@ public final class GoatmanVignette {
         boolean open=GoatmanWoods.doorOpen(l,b);var cast=cousinsOf(l,b);exchange(l,b,r,open,cast);
         for(var c:cast){
             int i=c.getPersistentData().getInt(INDEX);if(i>=count(r))continue;
+            // The low run lasts only for the dash out to the fire.
+            if(c.scurrying()&&(i!=wrong||r.getInt("ExtraState")!=X_FIRE||c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).isEmpty()))c.scurry(false);
             if(fresh(r)&&phase==GATHERING&&r.getBoolean("Exchange0497")&&!open
                     &&(!r.contains("ExchangeOut0497")||!r.contains("ExchangeIn0497"))&&(i==wrong||i==runner)){c.pose(false);continue;}
             // 0.4.123: still indoors when night falls (he was never let in, or the door shut on it), it leaves unseen first.
@@ -681,6 +720,10 @@ public final class GoatmanVignette {
             }
             if(!want.equals(goal(c))){
                 if(at(c).isEmpty()){settle(c,b,want);continue;}
+                // 0.4.163 (owner: "Npcs squished together"): through the door together, the cousins go one after another.
+                if(crossing(at(c),want)&&!hurried){var t=c.getPersistentData();
+                    if(!t.getString("Leaving0163").equals(want)){t.putString("Leaving0163",want);t.putLong("LeaveAt0163",l.getGameTime()+QUEUE*Math.floorMod(i,count(r)));}
+                    if(l.getGameTime()<t.getLong("LeaveAt0163")){idle(c,r,present,clock,i);continue;}}
                 setRoute(c,onward(c,want),want);
             }
             ListTag route=c.getPersistentData().getList("Route",Tag.TAG_COMPOUND);
@@ -1131,7 +1174,7 @@ public final class GoatmanVignette {
     private static void gasExchange(ServerLevel l,BlockPos b,CompoundTag r){
         if(r.getBoolean("Exchange0497"))return;int xs=r.getInt("ExtraState");if(xs!=X_SUPPER&&xs!=X_ACTIVITY)return;
         var extra=cousinsOf(l,b).stream().filter(c->c.getPersistentData().getInt(INDEX)==r.getInt("Wrong")).findFirst().orElse(null);if(extra==null)return;
-        r.putBoolean("Exchange0497",true);r.putInt("ExtraState",X_FIRE);setRoute(extra,exchangeLane(onward(extra,"byFire"),false),"byFire");
+        r.putBoolean("Exchange0497",true);r.putInt("ExtraState",X_FIRE);setRoute(extra,exchangeLane(onward(extra,"byFire"),false),"byFire");extra.scurry(true);
     }
     /** A pull of the generator's cord: it catches on the third, once the one in their chair has sat down or a while has passed. */
     private static boolean generator(ServerPlayer p){

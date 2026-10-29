@@ -25,18 +25,29 @@ public final class GoatmanClient {
     public static int priorityDemand(){return active()&&remaining>0?demand:0;}
     public static boolean cousinSubtitle(){return active()&&demand==0&&cousinRemaining>0&&cousinLine>0;}
     private static boolean quiet(){return (flags&GoatmanScenePayload.QUIET)!=0;}
-    @SubscribeEvent public static void watchFromBed(RenderGuiLayerEvent.Pre e){if(active()&&(flags&GoatmanScenePayload.BED_WATCH)!=0&&Minecraft.getInstance().player.isSleeping()&&e.getName().equals(net.neoforged.neoforge.client.gui.VanillaGuiLayers.SLEEP_OVERLAY))e.setCanceled(true);}
+    /**
+     * 0.4.163 (owner: "the screen should fade as it normally does. Then it should re-open to a clear screen – no chat log – when
+     * the goatman first stands to laugh"): lying down darkens as sleep always does; once it has got up, the dark lifts.
+     */
+    private static float bedOpen;
+    @SubscribeEvent public static void watchFromBed(RenderGuiLayerEvent.Pre e){
+        if(!clearBedScreen()||!e.getName().equals(net.neoforged.neoforge.client.gui.VanillaGuiLayers.SLEEP_OVERLAY))return;
+        e.setCanceled(true);float dark=1-bedOpen;var g=e.getGuiGraphics();if(dark>0)g.fill(0,0,g.guiWidth(),g.guiHeight(),(int)(dark*255)<<24|0x101020);
+    }
+    /** In bed in the trailer once it has got up to laugh: the sleep's dark lifts and neither the chat nor its box is drawn. */
+    public static boolean clearBedScreen(){return active()&&(flags&GoatmanScenePayload.BED_WATCH)!=0&&(flags&GoatmanScenePayload.BED_FADE)!=0&&Minecraft.getInstance().player.isSleeping();}
     public static boolean watchingFromBed(){var mc=Minecraft.getInstance();return active()&&(flags&GoatmanScenePayload.BED_WATCH)!=0&&mc.player.isSleeping()&&mc.options.getCameraType().isFirstPerson();}
     @SubscribeEvent public static void bedChat(RenderGuiLayerEvent.Pre e){
         if(bedFade<=0||!e.getName().equals(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CHAT))return;
-        if(bedFade>=1){e.setCanceled(true);return;}
-        com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1,1,1,1-bedFade);
+        // The screen opens clear: no chat log at all once it stands laughing.
+        e.setCanceled(true);
     }
     @SubscribeEvent public static void bedChatDone(RenderGuiLayerEvent.Post e){if(bedFade>0&&e.getName().equals(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CHAT))com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1,1,1,1);}
     public static float bedFade(){return bedFade;}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var sleeper=Minecraft.getInstance().player;
         if(sleeper==null||!sleeper.isSleeping())bedFade=0;else if(active()&&(flags&GoatmanScenePayload.BED_FADE)!=0)bedFade=Math.min(1,bedFade+1/60F);
+        bedOpen=clearBedScreen()?Math.min(1,bedOpen+1/30F):0;
         if(lease>0)lease--;if(remaining>0)remaining--;if(cousinRemaining>0)cousinRemaining--;if(!active()){phase=0;demand=0;flags=0;cousinLine=0;cousinRemaining=0;return;}
         // Once the woods go quiet the air fills with copper motes, thickest at dusk.
         var mc=Minecraft.getInstance();if(mc.isPaused()||!quiet()&&phase!=GoatmanVignette.VIGIL)return;

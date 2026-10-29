@@ -68,7 +68,7 @@ public final class LiteraryVignettes {
             save(d, p.getUUID(), place, own);
         }
         if (place == LabyrinthPlace.CHILD_ROOM) { ChildRoom.arrive(p, own); save(d, p.getUUID(), place, own); }
-        if (place == LabyrinthPlace.MOVIE_NIGHT) { MovieNight.arrive(p, own); save(d, p.getUUID(), place, own); MovieNight.canoes(p, base(p, place)); }
+        if (place == LabyrinthPlace.MOVIE_NIGHT) { MovieNight.arrive(p, own); save(d, p.getUUID(), place, own); MovieNight.canoes(p, base(p, place)); MovieNight.piling(p.serverLevel(), base(p, place)); }
         if (place == LabyrinthPlace.COSTUME_NIGHT) { CostumeNight.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.WINTER_LAKE) { WinterLake.arrive(p, own); save(d, p.getUUID(), place, own); }
         if (place == LabyrinthPlace.ELK_CARCASSES) { ElkHunt.arrive(p, own); save(d, p.getUUID(), place, own); }

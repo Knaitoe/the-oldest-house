@@ -263,20 +263,16 @@ public final class StaircaseAccessTests {
     }
 
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
-    public static void alreadyComposedRoofsAndBarnReceiveOnlyTheirMissedRepairsOnce(GameTestHelper h){run(h,516000,f->{
-        // The Last Stop (0.4.78) builds its own bar whole and is no longer composed.
-        for(var place:List.of(LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.BARN_WELL))holdScene(f,place);
+    public static void alreadyComposedRoofsReceiveOnlyTheirMissedRepairsOnce(GameTestHelper h){run(h,516000,f->{
+        // The Last Stop (0.4.78) builds its own bar whole and is no longer composed, nor is the barn well's farm (0.4.164).
+        for(var place:List.of(LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN))holdScene(f,place);
     },f->{
-        var places=List.of(LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.BARN_WELL);
+        var places=List.of(LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN);
         for(var place:places)composed(f,place);
         oldRoof(f,LabyrinthPlaces.base(f.origin,LabyrinthPlace.MAPPING_INTERIOR),-13,13,-36,-8,5);
         var camp=LabyrinthPlaces.base(f.origin,LabyrinthPlace.CAMP_BLOOD);
         for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})oldRoof(f,camp,x-8,x+8,z-7,z+7,5);
         var cabin=LabyrinthPlaces.base(f.origin,LabyrinthPlace.END_WORLD_CABIN);oldRoof(f,cabin,-12,12,-35,-13,6);
-        var barn=LabyrinthPlaces.base(f.origin,LabyrinthPlace.BARN_WELL);track(f,f.outside,barn.offset(4,3,-35),barn.offset(16,10,-15));
-        for(int x=4;x<=16;x++)for(int z=-35;z<=-16;z++)f.put(f.outside,barn.offset(x,4+Math.min(x-4,16-x)/2,z),Blocks.SPRUCE_STAIRS.defaultBlockState());
-        for(int x=5;x<=15;x++)for(int z=-34;z<=-17;z++)f.put(f.outside,barn.offset(x,7,z),Blocks.BIRCH_PLANKS.defaultBlockState());
-        var hanger=barn.offset(6,6,-20);f.put(f.outside,hanger,Blocks.CHAIN.defaultBlockState());
         var custom=cabin.offset(-13,6,-25);f.put(f.outside,custom,Blocks.GOLD_BLOCK.defaultBlockState());
         var cache=cabin.offset(-8,0,-25);f.put(f.outside,cache,Blocks.BARREL.defaultBlockState());var inventory=(BarrelBlockEntity)f.outside.getBlockEntity(cache);
         var notes=new ItemStack(Items.PAPER,3);notes.set(DataComponents.CUSTOM_NAME,Component.literal("Kept personal leaves"));inventory.setItem(7,notes.copy());
@@ -296,21 +292,11 @@ public final class StaircaseAccessTests {
             h.assertTrue(f.outside.getBlockState(cabin.offset(-13,6,-30)).is(Blocks.DARK_OAK_SLAB)&&f.outside.getBlockState(custom).is(Blocks.GOLD_BLOCK),"the old cabin slope changes while customized roof cells remain");
             h.assertTrue(f.outside.getBlockState(LabyrinthPlaces.base(f.origin,LabyrinthPlace.MAPPING_INTERIOR).offset(-14,5,-20)).is(Blocks.SPRUCE_SLAB),"the lodge receives its missed half-pitch roof");
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})h.assertTrue(f.outside.getBlockState(camp.offset(x-9,5,z)).getBlock() instanceof SlabBlock,"each of the six cabins receives its missed roof");
-            h.assertTrue(f.outside.getBlockState(barn.offset(10,8,-25)).is(Blocks.DARK_OAK_LOG)&&!f.outside.getBlockState(barn.offset(8,7,-25)).is(Blocks.BIRCH_PLANKS)
-                    &&f.outside.getBlockState(hanger.above()).is(Blocks.DARK_OAK_PLANKS)&&f.outside.getBlockState(hanger).is(Blocks.CHAIN),"the barn loses its lid, gains the gambrel and retains hanging supports");
             h.assertTrue(f.outside.getBlockEntity(cache)==inventory&&ItemStack.isSameItemSameComponents(notes,inventory.getItem(7))&&inventory.getItem(0).isEmpty()&&f.outside.getBlockState(absent).isAir(),"the targeted repair retains exact finite property and never repeats the scene's furnishings");
             var removed=cabin.offset(-13,6,-30);f.outside.setBlock(removed,Blocks.AIR.defaultBlockState(),F);f.reload();SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.END_WORLD_CABIN);
             h.assertTrue(f.outside.getBlockState(removed).isAir(),"the saved structural repair never replenishes a roof the player removed later");
             var repaired=f.data().state(SceneCraft.REPAIR_STATE);repaired.remove(cabinKey);f.data().setState(SceneCraft.REPAIR_STATE,repaired);SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.END_WORLD_CABIN);
             h.assertTrue(f.outside.getBlockState(removed).isAir(),"a latest 0.4.46 roof without the new checkpoint is recognized and left alone");
-            // The intermediate build already had its gambrel, but still kept the birch lid.
-            String barnKey=f.origin.asLong()+":"+LabyrinthPlace.BARN_WELL.id();repaired=f.data().state(SceneCraft.REPAIR_STATE);repaired.remove(barnKey);f.data().setState(SceneCraft.REPAIR_STATE,repaired);
-            for(int x=5;x<=15;x++)for(int z=-34;z<=-17;z++)f.outside.setBlock(barn.offset(x,7,z),Blocks.BIRCH_PLANKS.defaultBlockState(),F);
-            var lid=barn.offset(9,7,-25);SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.BARN_WELL);
-            h.assertTrue(f.outside.getBlockState(lid).isAir()&&f.outside.getBlockState(barn.offset(8,7,-25)).is(Blocks.DARK_OAK_SLAB)
-                    &&f.outside.getBlockState(barn.offset(10,8,-25)).is(Blocks.DARK_OAK_LOG),"the intermediate gambrel loses its old lid and fills only the roof cells that lid had blocked");
-            SceneCraft.forget(f.level.getServer(),f.origin,LabyrinthPlace.BARN_WELL);
-            h.assertTrue(!SceneCraft.done(f.level.getServer(),f.origin,LabyrinthPlace.BARN_WELL)&&!f.data().state(SceneCraft.REPAIR_STATE).getBoolean(barnKey),"an explicit rebuild clears both checkpoints");
         }finally{pet.discard();}
     });}
 

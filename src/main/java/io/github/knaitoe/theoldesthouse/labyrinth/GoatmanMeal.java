@@ -32,7 +32,7 @@ public final class GoatmanMeal {
     public static boolean supplied(CompoundTag r){return !r.getBoolean("MealStarted137")||(r.getInt("CondimentsPlaced137")&15)==15;}
     public static void firstPlate(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
         if(!GoatmanVignette.brisk(r)||r.getBoolean("MealStarted137")||r.contains("SupperAt04123")||(r.getInt("Plated0464")&~r.getInt("EmptyPlates0465"))==0)return;
-        r.putBoolean("MealStarted137",true);r.putInt("MealStartedAt0150",r.getInt("Clock"));r.putInt("BunsLeft137",GoatmanVignette.expectedCount(r));
+        r.putBoolean("MealStarted137",true);r.putInt("MealStartedAt0150",r.getInt("Clock"));if(!r.contains("BunsLeft137"))r.putInt("BunsLeft137",GoatmanVignette.expectedCount(r));
         if(r.getInt("RunnerState")==GoatmanVignette.R_HOME&&!GoatmanVignette.sendForGas(l,b,r,readers)){r.putInt("RunnerState",GoatmanVignette.R_LEAVING);r.putInt("RunnerLeftAt134",r.getInt("Clock"));GoatmanVignette.say(readers,"The older cousin: Generator's out of gas. I'll get the can from the truck. Save mine.");}
         r.putBoolean("CalledIn04123",true);GoatmanWoods.door(l,b,true);
         GoatmanVignette.say(readers,readers.size()>1?"A cousin: Somebody grab the ketchup and mustard from the cooler. And the jars.":"A cousin: I'll get the ketchup and mustard. You get the jars.");
@@ -81,7 +81,9 @@ public final class GoatmanMeal {
         if(line<lines.length&&age>=45+line*50){GoatmanVignette.say(readers,lines[line]);r.putInt("MealTalk137",line+1);}
     }
     public static void tick(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> readers){
-        if(!r.getBoolean("MealStarted137")||r.getInt("Phase")!=GoatmanVignette.GATHERING)return;
+        if(!GoatmanVignette.brisk(r)||r.getInt("Phase")!=GoatmanVignette.GATHERING)return;
+        // 0.4.163 (owner: "The buns should begin on the table"): the evening's buns are out from the start, not after the first plate.
+        if(!r.contains("BunsLeft137"))r.putInt("BunsLeft137",GoatmanVignette.expectedCount(r));
         if(r.getInt("BunsLeft137")>0)display(l,b,r,4,new ItemStack(GoatmanRegistry.BUNS.get()));
         else find(l,b,4).ifPresent(Entity::discard);
     }
@@ -108,7 +110,7 @@ public final class GoatmanMeal {
     private static int bottleIndex(ItemStack item){for(int j=0;j<4;j++)if(item.is(bottle(j)))return j;return -1;}
     public static boolean use(ServerPlayer p,InteractionHand hand){
         if(hand!=InteractionHand.MAIN_HAND||!GoatmanVignette.inside(p)||!LiteraryVignettes.participant(p))return false;
-        var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(d);if(!r.getBoolean("MealStarted137")||r.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
+        var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(d);if(!GoatmanVignette.brisk(r)||r.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
         var member=r.getCompound("Cohort").getCompound(p.getUUID().toString());if(!member.getBoolean("Active")||member.getBoolean("Failed"))return false;
         var b=GoatmanVignette.base(p.server);var eye=p.getEyePosition();var ray=eye.add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)));
         // A bottle a reader fetched goes to its own place on the table, within reach.

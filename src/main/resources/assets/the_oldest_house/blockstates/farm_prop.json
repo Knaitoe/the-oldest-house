@@ -1,0 +1,139 @@
+{
+  "variants": {
+    "facing=north,kind=trough": {
+      "model": "the_oldest_house:block/farm_prop_trough"
+    },
+    "facing=east,kind=trough": {
+      "model": "the_oldest_house:block/farm_prop_trough",
+      "y": 90
+    },
+    "facing=south,kind=trough": {
+      "model": "the_oldest_house:block/farm_prop_trough",
+      "y": 180
+    },
+    "facing=west,kind=trough": {
+      "model": "the_oldest_house:block/farm_prop_trough",
+      "y": 270
+    },
+    "facing=north,kind=milk_cans": {
+      "model": "the_oldest_house:block/farm_prop_milk_cans"
+    },
+    "facing=east,kind=milk_cans": {
+      "model": "the_oldest_house:block/farm_prop_milk_cans",
+      "y": 90
+    },
+    "facing=south,kind=milk_cans": {
+      "model": "the_oldest_house:block/farm_prop_milk_cans",
+      "y": 180
+    },
+    "facing=west,kind=milk_cans": {
+      "model": "the_oldest_house:block/farm_prop_milk_cans",
+      "y": 270
+    },
+    "facing=north,kind=seed_sacks": {
+      "model": "the_oldest_house:block/farm_prop_seed_sacks"
+    },
+    "facing=east,kind=seed_sacks": {
+      "model": "the_oldest_house:block/farm_prop_seed_sacks",
+      "y": 90
+    },
+    "facing=south,kind=seed_sacks": {
+      "model": "the_oldest_house:block/farm_prop_seed_sacks",
+      "y": 180
+    },
+    "facing=west,kind=seed_sacks": {
+      "model": "the_oldest_house:block/farm_prop_seed_sacks",
+      "y": 270
+    },
+    "facing=north,kind=workbench": {
+      "model": "the_oldest_house:block/farm_prop_workbench"
+    },
+    "facing=east,kind=workbench": {
+      "model": "the_oldest_house:block/farm_prop_workbench",
+      "y": 90
+    },
+    "facing=south,kind=workbench": {
+      "model": "the_oldest_house:block/farm_prop_workbench",
+      "y": 180
+    },
+    "facing=west,kind=workbench": {
+      "model": "the_oldest_house:block/farm_prop_workbench",
+      "y": 270
+    },
+    "facing=north,kind=tool_rack": {
+      "model": "the_oldest_house:block/farm_prop_tool_rack"
+    },
+    "facing=east,kind=tool_rack": {
+      "model": "the_oldest_house:block/farm_prop_tool_rack",
+      "y": 90
+    },
+    "facing=south,kind=tool_rack": {
+      "model": "the_oldest_house:block/farm_prop_tool_rack",
+      "y": 180
+    },
+    "facing=west,kind=tool_rack": {
+      "model": "the_oldest_house:block/farm_prop_tool_rack",
+      "y": 270
+    },
+    "facing=north,kind=potting_bench": {
+      "model": "the_oldest_house:block/farm_prop_potting_bench"
+    },
+    "facing=east,kind=potting_bench": {
+      "model": "the_oldest_house:block/farm_prop_potting_bench",
+      "y": 90
+    },
+    "facing=south,kind=potting_bench": {
+      "model": "the_oldest_house:block/farm_prop_potting_bench",
+      "y": 180
+    },
+    "facing=west,kind=potting_bench": {
+      "model": "the_oldest_house:block/farm_prop_potting_bench",
+      "y": 270
+    },
+    "facing=north,kind=wheelbarrow": {
+      "model": "the_oldest_house:block/farm_prop_wheelbarrow"
+    },
+    "facing=east,kind=wheelbarrow": {
+      "model": "the_oldest_house:block/farm_prop_wheelbarrow",
+      "y": 90
+    },
+    "facing=south,kind=wheelbarrow": {
+      "model": "the_oldest_house:block/farm_prop_wheelbarrow",
+      "y": 180
+    },
+    "facing=west,kind=wheelbarrow": {
+      "model": "the_oldest_house:block/farm_prop_wheelbarrow",
+      "y": 270
+    },
+    "facing=north,kind=pitchfork": {
+      "model": "the_oldest_house:block/farm_prop_pitchfork"
+    },
+    "facing=east,kind=pitchfork": {
+      "model": "the_oldest_house:block/farm_prop_pitchfork",
+      "y": 90
+    },
+    "facing=south,kind=pitchfork": {
+      "model": "the_oldest_house:block/farm_prop_pitchfork",
+      "y": 180
+    },
+    "facing=west,kind=pitchfork": {
+      "model": "the_oldest_house:block/farm_prop_pitchfork",
+      "y": 270
+    },
+    "facing=north,kind=harness": {
+      "model": "the_oldest_house:block/farm_prop_harness"
+    },
+    "facing=east,kind=harness": {
+      "model": "the_oldest_house:block/farm_prop_harness",
+      "y": 90
+    },
+    "facing=south,kind=harness": {
+      "model": "the_oldest_house:block/farm_prop_harness",
+      "y": 180
+    },
+    "facing=west,kind=harness": {
+      "model": "the_oldest_house:block/farm_prop_harness",
+      "y": 270
+    }
+  }
+}

@@ -20,7 +20,7 @@ public final class SceneSupportRepairs {
     public static final String STATE="scene_supports_0453";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private SceneSupportRepairs(){}
-    private static boolean applies(LabyrinthPlace p){return p==LabyrinthPlace.TED_CAVER||p==LabyrinthPlace.BARN_WELL||p==LabyrinthPlace.GRAVITY_DRIFT;}
+    private static boolean applies(LabyrinthPlace p){return p==LabyrinthPlace.TED_CAVER||p==LabyrinthPlace.GRAVITY_DRIFT;}
     public static AABB area(BlockPos b,LabyrinthPlace p){
         if(p==LabyrinthPlace.GRAVITY_DRIFT)return new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(0,3,-23)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(3,6,-5)));
         return p==LabyrinthPlace.TED_CAVER?new AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(-9,-4,-47)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(0,5,-35)))
@@ -100,7 +100,7 @@ public final class SceneSupportRepairs {
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
         var s=event.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=19||LabyrinthBuilder.isCarving())return;
         var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;var data=LabyrinthData.get(s);
-        for(var p:List.of(LabyrinthPlace.TED_CAVER,LabyrinthPlace.BARN_WELL,LabyrinthPlace.GRAVITY_DRIFT))if(data.door(p.entryDoorId())!=null&&LabyrinthBuilder.isPlaceReady(data,p)){
+        for(var p:List.of(LabyrinthPlace.TED_CAVER,LabyrinthPlace.GRAVITY_DRIFT))if(data.door(p.entryDoorId())!=null&&LabyrinthBuilder.isPlaceReady(data,p)){
             var l=s.getLevel(NovelRooms.dimension(p));if(l!=null)repairOnce(l,origin,p);
         }
     }

@@ -78,6 +78,9 @@ public final class LiteraryRegistry {
     public static final DeferredBlock<WinchesterFittingBlock> WINCHESTER_FITTING=BLOCKS.registerBlock("winchester_fitting",WinchesterFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noOcclusion().noLootTable());
     public static final DeferredBlock<net.minecraft.world.level.block.TransparentBlock> WINCHESTER_LEADED_GLASS=BLOCKS.registerBlock("winchester_leaded_glass",net.minecraft.world.level.block.TransparentBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noLootTable());
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ReadingStandBlock>> READING_STAND_TYPE=CODECS.register("reading_stand",()->ReadingStandBlock.CODEC);
+    /** 0.4.164: the reading surfaces drawn for their scenes, each a native lectern underneath. Scenery: no item, no drops. */
+    public static final DeferredBlock<ReadingStandBlock> READING_STAND=BLOCKS.registerBlock("reading_stand",ReadingStandBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.LECTERN).strength(-1,3600000).noOcclusion().noLootTable());
     public static final DeferredBlock<LiteraryPropBlock> PROP=BLOCKS.registerBlock("literary_prop",LiteraryPropBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion().noLootTable().lightLevel(s->s.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.FAN&&s.getValue(LiteraryPropBlock.STAGE)!=1?11:0));
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<LiteraryModelBlockEntity>> MODEL=BES.register("literary_model",()->BlockEntityType.Builder.of(LiteraryModelBlockEntity::new,PROP.get(),FROZEN.get()).build(null));
     public static final DeferredBlock<Block> VAULT_CRACK=material("usher_crack",Blocks.DEEPSLATE_BRICKS),RED_FLOOR=material("crimson_floor",Blocks.RED_TERRACOTTA),TAPE=material("elk_tape",Blocks.GRAY_WOOL),PEELED_TAPE=material("elk_tape_peeled",Blocks.GRAY_WOOL),DRAG_SNOW=material("father_drag_snow",Blocks.SNOW_BLOCK),CARVED_TRUNK=material("rabbit_carved_trunk",Blocks.OAK_PLANKS),SIDING=material("manufactured_siding",Blocks.OAK_PLANKS),DARK_PANEL=material("literary_dark_panel",Blocks.DARK_OAK_PLANKS),CHILD_WALLPAPER=material("child_wallpaper",Blocks.BIRCH_PLANKS);
@@ -119,7 +122,9 @@ public final class LiteraryRegistry {
     // The Winchester house (0.4.121): the carpenters behind the walls and the clock that strikes thirteen.
     public static final DeferredHolder<SoundEvent,SoundEvent> WINCHESTER_HAMMER=sound("winchester_hammer"),WINCHESTER_SAW=sound("winchester_saw"),WINCHESTER_CHIME=sound("winchester_chime");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register("literary."+name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"literary."+name)));}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);BES.register(bus);SOUNDS.register(bus);PARTICLES.register(bus);bus.addListener(LiteraryRegistry::attributes);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);BES.register(bus);SOUNDS.register(bus);PARTICLES.register(bus);bus.addListener(LiteraryRegistry::attributes);bus.addListener(LiteraryRegistry::lecterns);}
+    /** The stands keep the lectern's own block entity, so their book, menu and every check of it stay native. */
+    private static void lecterns(net.neoforged.neoforge.event.BlockEntityTypeAddBlocksEvent e){e.modify(BlockEntityType.LECTERN,READING_STAND.get());}
     private static void attributes(EntityAttributeCreationEvent e){e.put(ACTOR.get(),LiteraryActor.attributes().build());e.put(ELK.get(),LiteraryElk.attributes().build());}
     private LiteraryRegistry(){}
 }

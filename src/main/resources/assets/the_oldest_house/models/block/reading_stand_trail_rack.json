@@ -1,0 +1,354 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "green": "the_oldest_house:block/reading_stand/county_green",
+    "front": "the_oldest_house:block/reading_stand/county_front",
+    "roof": "the_oldest_house:block/reading_stand/county_roof",
+    "leaflet": "the_oldest_house:block/reading_stand/leaflet_front",
+    "back": "the_oldest_house:block/reading_stand/leaflet_back",
+    "particle": "the_oldest_house:block/reading_stand/county_green"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        6
+      ],
+      "to": [
+        13,
+        9,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#green",
+          "uv": [
+            3,
+            7,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#green",
+          "uv": [
+            3,
+            7,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#green",
+          "uv": [
+            5,
+            7,
+            10,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#green",
+          "uv": [
+            6,
+            7,
+            11,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#green",
+          "uv": [
+            3,
+            6,
+            13,
+            11
+          ]
+        },
+        "down": {
+          "texture": "#green",
+          "uv": [
+            3,
+            5,
+            13,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0,
+        4.5
+      ],
+      "to": [
+        13,
+        5,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#green",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#green",
+          "uv": [
+            10,
+            11,
+            11.5,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#green",
+          "uv": [
+            4.5,
+            11,
+            6,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#green",
+          "uv": [
+            3,
+            4.5,
+            13,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#green",
+          "uv": [
+            3,
+            10,
+            13,
+            11.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        3,
+        5
+      ],
+      "to": [
+        12,
+        10,
+        5.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#leaflet",
+          "uv": [
+            4,
+            6,
+            12,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#back",
+          "uv": [
+            4,
+            6,
+            12,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#back",
+          "uv": [
+            10.6,
+            6,
+            11,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#back",
+          "uv": [
+            5,
+            6,
+            5.4,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#back",
+          "uv": [
+            4,
+            5,
+            12,
+            5.4
+          ]
+        },
+        "down": {
+          "texture": "#back",
+          "uv": [
+            4,
+            10.6,
+            12,
+            11
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        4,
+        5.5
+      ],
+      "to": [
+        11.5,
+        11,
+        5.9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#leaflet",
+          "uv": [
+            4.5,
+            5,
+            11.5,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#back",
+          "uv": [
+            4.5,
+            5,
+            11.5,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#back",
+          "uv": [
+            10.1,
+            5,
+            10.5,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#back",
+          "uv": [
+            5.5,
+            5,
+            5.9,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#back",
+          "uv": [
+            4.5,
+            5.5,
+            11.5,
+            5.9
+          ]
+        },
+        "down": {
+          "texture": "#back",
+          "uv": [
+            4.5,
+            10.1,
+            11.5,
+            10.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        9,
+        5.5
+      ],
+      "to": [
+        13.5,
+        10,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#roof",
+          "uv": [
+            2.5,
+            6,
+            13.5,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#roof",
+          "uv": [
+            2.5,
+            6,
+            13.5,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#roof",
+          "uv": [
+            4.5,
+            6,
+            10.5,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#roof",
+          "uv": [
+            5.5,
+            6,
+            11.5,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#roof",
+          "uv": [
+            2.5,
+            5.5,
+            13.5,
+            11.5
+          ]
+        },
+        "down": {
+          "texture": "#roof",
+          "uv": [
+            2.5,
+            4.5,
+            13.5,
+            10.5
+          ]
+        }
+      }
+    }
+  ]
+}

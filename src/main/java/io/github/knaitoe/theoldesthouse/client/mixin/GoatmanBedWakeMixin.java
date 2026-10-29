@@ -15,8 +15,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GoatmanBedWakeMixin {
     @Shadow private Button leaveBedButton;
 
-    @Inject(method="render",at=@At("HEAD"))
+    @Inject(method="render",at=@At("HEAD"),cancellable=true)
     private void ghosthouse$bedButton(GuiGraphics graphics,int mouseX,int mouseY,float partialTick,CallbackInfo ci){
+        // 0.4.163: once it stands laughing, the bed's chat box is not drawn either; the screen is clear.
+        if(GoatmanClient.clearBedScreen()){if(leaveBedButton!=null){leaveBedButton.visible=false;leaveBedButton.active=false;}ci.cancel();return;}
         if(leaveBedButton!=null){boolean available=!GoatmanClient.watchingFromBed();leaveBedButton.visible=available;leaveBedButton.active=available;}
     }
 

@@ -1,0 +1,217 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "note": "the_oldest_house:block/reading_stand/note_top",
+    "edge": "the_oldest_house:block/reading_stand/paper_edge",
+    "stone": "the_oldest_house:block/reading_stand/stone",
+    "snow": "the_oldest_house:block/reading_stand/stone_top",
+    "particle": "the_oldest_house:block/reading_stand/note_top"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        0.25,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#edge",
+          "uv": [
+            3,
+            15.75,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#edge",
+          "uv": [
+            3,
+            15.75,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#edge",
+          "uv": [
+            3,
+            15.75,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#edge",
+          "uv": [
+            3,
+            15.75,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#note",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#edge",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9,
+        0.25,
+        4
+      ],
+      "to": [
+        13,
+        2,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stone",
+          "uv": [
+            3,
+            14,
+            7,
+            15.75
+          ]
+        },
+        "south": {
+          "texture": "#stone",
+          "uv": [
+            9,
+            14,
+            13,
+            15.75
+          ]
+        },
+        "east": {
+          "texture": "#stone",
+          "uv": [
+            9,
+            14,
+            12,
+            15.75
+          ]
+        },
+        "west": {
+          "texture": "#stone",
+          "uv": [
+            4,
+            14,
+            7,
+            15.75
+          ]
+        },
+        "up": {
+          "texture": "#stone",
+          "uv": [
+            9,
+            4,
+            13,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#stone",
+          "uv": [
+            9,
+            9,
+            13,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9.5,
+        2,
+        4.5
+      ],
+      "to": [
+        12.5,
+        2.75,
+        6.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stone",
+          "uv": [
+            3.5,
+            13.25,
+            6.5,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#stone",
+          "uv": [
+            9.5,
+            13.25,
+            12.5,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#stone",
+          "uv": [
+            9.5,
+            13.25,
+            11.5,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#stone",
+          "uv": [
+            4.5,
+            13.25,
+            6.5,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#snow",
+          "uv": [
+            9.5,
+            4.5,
+            12.5,
+            6.5
+          ]
+        },
+        "down": {
+          "texture": "#stone",
+          "uv": [
+            9.5,
+            9.5,
+            12.5,
+            11.5
+          ]
+        }
+      }
+    }
+  ]
+}

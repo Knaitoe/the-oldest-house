@@ -473,5 +473,8 @@
   "block.the_oldest_house.onward_panel_door": "Panelled Door",
   "block.the_oldest_house.onward_cabin_door": "Cabin Door",
   "block.the_oldest_house.onward_service_door": "Service Door",
-  "block.the_oldest_house.onward_cellar_door": "Cellar Door"
+  "block.the_oldest_house.onward_cellar_door": "Cellar Door",
+  "block.the_oldest_house.reading_stand": "Reading stand",
+  "block.the_oldest_house.farm_material": "Farm boards",
+  "block.the_oldest_house.farm_prop": "Farm things"
 }

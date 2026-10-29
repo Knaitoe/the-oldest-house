@@ -19,8 +19,8 @@ public final class VignetteArchitecture {
     private final LabyrinthPlace scene;
     private boolean rugsOnly;
     private VignetteArchitecture(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;scene=place;}
-    /** The hotel and its grounds (0.4.105) are built whole by HotelRooms. */
-    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.SILO&&p!=LabyrinthPlace.BACKSEAT&&p!=LabyrinthPlace.NIGHTCLUB&&p!=LabyrinthPlace.HOTEL&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
+    /** The hotel and its grounds (0.4.105) are built whole by HotelRooms, and the barn well's farm (0.4.164) by BarnWell. */
+    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.SILO&&p!=LabyrinthPlace.BACKSEAT&&p!=LabyrinthPlace.NIGHTCLUB&&p!=LabyrinthPlace.HOTEL&&p!=LabyrinthPlace.BARN_WELL&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!applies(p))return;
         var d=LabyrinthData.get(l.getServer());CompoundTag done=d.state(STATE);
@@ -35,7 +35,6 @@ public final class VignetteArchitecture {
         SceneReview.fresh(l,origin,p);
         if(fresh&&p==LabyrinthPlace.HOSPITAL)NightWardMaterials.fresh(l,base);
         if(fresh&&p==LabyrinthPlace.TED_CAVER)SceneSupportRepairs.cave(l,base);
-        if(fresh&&p==LabyrinthPlace.BARN_WELL)SceneSupportRepairs.barn(l,base);
     }
     /** Explicit structural rebuilds can dress their newly authored room again. */
     static void forget(ServerLevel l,BlockPos origin,LabyrinthPlace p){
@@ -48,7 +47,7 @@ public final class VignetteArchitecture {
         // 0.4.121: the model home is a tract house, furnished whole by ModelHome.
         case MODEL_HOME->{ }
         case HARRIGAN->harrigan();case MOTHER_DEN->mother();case EXPLORER_CAMP->camp();
-        case ZAMPANO_COURTYARD->archive();case BARN_WELL->barn();
+        case ZAMPANO_COURTYARD->archive();
         // 0.4.66: the institute authors its own rooms, furniture and windows.
         case WHALE->{ }
         case PLAIN->plain();case HOSPITAL->hospital();case KAREN_ROOM->karen();
@@ -210,16 +209,6 @@ public final class VignetteArchitecture {
         detail(11,2,-37,CLOCK,Direction.WEST);detail(-11,2,-21,COAT,Direction.EAST);
         pendant(-7,5,-25,8);pendant(4,5,-28,8);
         // 0.4.77: stone planters stand here instead of indoor tables; CourtyardFountain puts them in.
-    }
-    private void barn(){
-        for(int z:new int[]{-20,-25,-31})for(int x=6;x<=14;x++)add(x,4,z,Blocks.SPRUCE_PLANKS);
-        cabinet(6,0,-19,TOOLS);table(7,0,-19,ROPE_COIL);detail(8,0,-20,FEED_SACK);
-        detail(14,0,-22,FEED_SACK);detail(14,0,-24,CRATE);detail(6,0,-28,FEED_SACK);
-        detail(14,2,-26,COAT,Direction.WEST);pendant(12,3,-25,4);
-        for(int z=-14;z<=-5;z+=3){add(11,0,z,Blocks.OAK_FENCE);add(15,0,z,Blocks.OAK_FENCE);}
-        for(int x=11;x<=15;x++)add(x,0,-5,Blocks.OAK_FENCE);
-        for(int x:new int[]{-12,-9}){trim(x,-1,-10,Blocks.COARSE_DIRT);detail(x,0,-10,CRATE);}
-        detail(-5,0,-18,SHOES);table(-10,0,-30,TOOLS);detail(-9,0,-30,ROPE_COIL);
     }
     private void plain(){
         // Continuous distant ground hides the old empty seam beneath the isolated figure.

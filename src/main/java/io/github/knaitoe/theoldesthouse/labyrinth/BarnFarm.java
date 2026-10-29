@@ -52,7 +52,7 @@ public final class BarnFarm {
     }
     public static void upgrade(ServerLevel l,BlockPos origin){
         var data=LabyrinthData.get(l.getServer());var state=data.state("barn_farm_0426");
-        if(state.getLong("Origin")==origin.asLong()&&state.getBoolean("Done"))return;
+        if(state.getLong("Origin")==origin.asLong()&&state.getBoolean("Done")||Farmstead.whole(data,origin))return;
         dress(l,LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL));state.putLong("Origin",origin.asLong());state.putBoolean("Done",true);data.setState("barn_farm_0426",state);
     }
     /** Stock once after native entity chunks load, including across restarts/deaths. */

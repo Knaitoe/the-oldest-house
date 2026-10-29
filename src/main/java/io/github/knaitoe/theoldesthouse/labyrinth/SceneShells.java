@@ -50,7 +50,7 @@ public final class SceneShells {
     /** Whether the 0.4.28 pass reshapes this scene's shell, surfaces or outdoor edge. */
     public static boolean shapes(LabyrinthPlace place) {
         return spec(place) != null || WEATHERED.contains(place) || place == LabyrinthPlace.PLAIN
-                || place == LabyrinthPlace.ZAMPANO_COURTYARD || place == LabyrinthPlace.BARN_WELL;
+                || place == LabyrinthPlace.ZAMPANO_COURTYARD;
     }
 
     /** The open interior a scene's shell encloses, relative to its base, or null for scenes without one. */

@@ -33,7 +33,11 @@ public final class GoatmanMealTests {
     public static void actualBunsTransferIntoTheOriginalFoodAndToAnOriginalCousinWithoutRefillingOrSpendingTwice(GameTestHelper h){
         active=new GoatmanTests.Fixture(h,58300);var f=active;f.finishedCamper();var p=f.nativePlayer("buns_reader");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the real supper table and cast sections are resident")).thenExecute(()->{
-            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",200);r.putInt("Wrong",0);r.putInt("Runner",7);r.putBoolean("MealStarted137",true);r.putInt("BunsLeft137",8);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
+            GoatmanVignette.enter(p);var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",200);r.putInt("Wrong",0);r.putInt("Runner",7);f.cohort(r,List.of(p),0);f.run(r);GoatmanVignette.stage(f.l,f.b,r);
+            // 0.4.163 (owner): the buns are on the table from the start of the evening, before anyone plates a frank.
+            GoatmanMeal.tick(f.l,f.b,r,List.of(p));
+            h.assertTrue(!r.getBoolean("MealStarted137")&&r.getInt("BunsLeft137")==GoatmanVignette.expectedCount(r)&&!f.l.getEntitiesOfClass(net.minecraft.world.entity.Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanMeal.TAG)&&e.getPersistentData().getInt("Supply137")==4).isEmpty(),"the evening's buns are out on the table before the first plate");
+            r.putBoolean("MealStarted137",true);r.putInt("BunsLeft137",8);f.run(r);
             var original=new ItemStack(GoatmanRegistry.BRAT.get());CustomData.update(DataComponents.CUSTOM_DATA,original,t->{t.putUUID(GoatmanVignette.ROUND,r.getUUID("Id"));t.putString("ExactOriginal137","kept");});var display=GoatmanWoods.served(f.l,f.b,0,original);var id=display.getUUID();GoatmanMeal.tick(f.l,f.b,r,List.of(p));f.run(r);
             p.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-59);var basket=GoatmanMeal.spot(4).add(f.b.getX(),f.b.getY()+.15,f.b.getZ());p.lookAt(EntityAnchorArgument.Anchor.EYES,basket);
             var support=f.b.offset(0,1,-61);p.gameMode.useItemOn(p,f.l,p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(basket,Direction.UP,support,false));
@@ -44,6 +48,12 @@ public final class GoatmanMealTests {
             var cousin=f.cousin(3).orElseThrow();p.moveTo(cousin.getX()+1.5,cousin.getY(),cousin.getZ());var give=new PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,cousin);NeoForge.EVENT_BUS.post(give);
             h.assertTrue(give.isCanceled()&&p.getMainHandItem().getCount()==6&&(f.run().getInt("BunsCousins137")&(1<<3))!=0,"the reader can hand a bun to an actual original cousin");
             NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,cousin));h.assertTrue(p.getMainHandItem().getCount()==6,"duplicate native entity interaction cannot spend twice");
+            // 0.4.163 (owner): the last bun on a plated frank leaves the hot dog on the plate, though the client's second packet comes with an empty hand.
+            var second=new ItemStack(GoatmanRegistry.BRAT.get());CustomData.update(DataComponents.CUSTOM_DATA,second,t->t.putUUID(GoatmanVignette.ROUND,f.run().getUUID("Id")));var plated=GoatmanWoods.served(f.l,f.b,1,second);
+            var rest=p.getMainHandItem().copy();p.setItemInHand(InteractionHand.MAIN_HAND,rest.copyWithCount(1));p.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-59);
+            f.click(p,BlockPos.containing(GoatmanWoods.plate(1)).below());f.click(p,BlockPos.containing(GoatmanWoods.plate(1)).below());
+            h.assertTrue(p.getMainHandItem().isEmpty()&&!plated.isRemoved()&&GoatmanWoods.food(f.l,plated).get(DataComponents.CUSTOM_DATA).copyTag().getBoolean("GoatmanBun137")&&p.getInventory().items.stream().noneMatch(s->s.is(GoatmanRegistry.BRAT.get())),"the hot dog stays on its plate and nothing comes back to the reader's hand");
+            p.setItemInHand(InteractionHand.MAIN_HAND,rest.copyWithCount(rest.getCount()-1));
             var restored=LabyrinthData.FACTORY.deserializer().apply(LabyrinthData.get(f.server).save(new CompoundTag(),f.l.registryAccess()),f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",restored);GoatmanMeal.tick(f.l,f.b,f.run(),List.of(p));
             h.assertTrue(f.run().getInt("BunsLeft137")==0&&f.l.getEntitiesOfClass(net.minecraft.world.entity.Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanMeal.TAG)&&e.getPersistentData().getInt("Supply137")==4).isEmpty(),"reload never refills the used basket");
         }).thenSucceed();

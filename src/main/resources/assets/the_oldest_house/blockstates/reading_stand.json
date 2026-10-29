@@ -1,0 +1,94 @@
+{
+  "variants": {
+    "facing=north,kind=program": {
+      "model": "the_oldest_house:block/reading_stand_program"
+    },
+    "facing=east,kind=program": {
+      "model": "the_oldest_house:block/reading_stand_program",
+      "y": 90
+    },
+    "facing=south,kind=program": {
+      "model": "the_oldest_house:block/reading_stand_program",
+      "y": 180
+    },
+    "facing=west,kind=program": {
+      "model": "the_oldest_house:block/reading_stand_program",
+      "y": 270
+    },
+    "facing=north,kind=scorecard": {
+      "model": "the_oldest_house:block/reading_stand_scorecard"
+    },
+    "facing=east,kind=scorecard": {
+      "model": "the_oldest_house:block/reading_stand_scorecard",
+      "y": 90
+    },
+    "facing=south,kind=scorecard": {
+      "model": "the_oldest_house:block/reading_stand_scorecard",
+      "y": 180
+    },
+    "facing=west,kind=scorecard": {
+      "model": "the_oldest_house:block/reading_stand_scorecard",
+      "y": 270
+    },
+    "facing=north,kind=folded_note": {
+      "model": "the_oldest_house:block/reading_stand_folded_note"
+    },
+    "facing=east,kind=folded_note": {
+      "model": "the_oldest_house:block/reading_stand_folded_note",
+      "y": 90
+    },
+    "facing=south,kind=folded_note": {
+      "model": "the_oldest_house:block/reading_stand_folded_note",
+      "y": 180
+    },
+    "facing=west,kind=folded_note": {
+      "model": "the_oldest_house:block/reading_stand_folded_note",
+      "y": 270
+    },
+    "facing=north,kind=ledger_rest": {
+      "model": "the_oldest_house:block/reading_stand_ledger_rest"
+    },
+    "facing=east,kind=ledger_rest": {
+      "model": "the_oldest_house:block/reading_stand_ledger_rest",
+      "y": 90
+    },
+    "facing=south,kind=ledger_rest": {
+      "model": "the_oldest_house:block/reading_stand_ledger_rest",
+      "y": 180
+    },
+    "facing=west,kind=ledger_rest": {
+      "model": "the_oldest_house:block/reading_stand_ledger_rest",
+      "y": 270
+    },
+    "facing=north,kind=script_stand": {
+      "model": "the_oldest_house:block/reading_stand_script_stand"
+    },
+    "facing=east,kind=script_stand": {
+      "model": "the_oldest_house:block/reading_stand_script_stand",
+      "y": 90
+    },
+    "facing=south,kind=script_stand": {
+      "model": "the_oldest_house:block/reading_stand_script_stand",
+      "y": 180
+    },
+    "facing=west,kind=script_stand": {
+      "model": "the_oldest_house:block/reading_stand_script_stand",
+      "y": 270
+    },
+    "facing=north,kind=trail_rack": {
+      "model": "the_oldest_house:block/reading_stand_trail_rack"
+    },
+    "facing=east,kind=trail_rack": {
+      "model": "the_oldest_house:block/reading_stand_trail_rack",
+      "y": 90
+    },
+    "facing=south,kind=trail_rack": {
+      "model": "the_oldest_house:block/reading_stand_trail_rack",
+      "y": 180
+    },
+    "facing=west,kind=trail_rack": {
+      "model": "the_oldest_house:block/reading_stand_trail_rack",
+      "y": 270
+    }
+  }
+}

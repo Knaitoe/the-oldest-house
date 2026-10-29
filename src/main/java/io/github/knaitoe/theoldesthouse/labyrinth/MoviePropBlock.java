@@ -38,7 +38,7 @@ public final class MoviePropBlock extends Block {
         var d=s.getValue(FACING);
         return switch(s.getValue(KIND)){case SPEAKER->box(3,3,3,13,13,13);case PROJECTOR->box(3,0,0,13,9,13);case MORTAR->box(2,0,2,14,10,14);
             case LAWN_CHAIR->box(2,0,2,14,9,14);case LAWN_CHAIR_TIPPED->box(1,0,1,15,6,15);case BLANKET->box(0,0,0,16,1,16);case COOLER->turned(d,3,0,4,13,10,12);
-            case POPCORN->box(5,0,5,11,7,11);case POPCORN_SPILLED->box(3,0,3,13,4,13);case POSTER,POSTER_TOP->turned(d,1,0,6,15,16,10);case LIFE_RING->turned(d,2,2,14,14,14,16);
+            case POPCORN->box(5,0,5,11,7,11);case POPCORN_SPILLED->box(3,0,3,13,4,13);case POSTER,POSTER_TOP->turned(d,1,0,6,15,16,10);case LIFE_RING->turned(d,2,2,15,14,14,16);
             case FILM_CANS->box(3,0,3,13,6,13);case BUOY->box(4,0,4,12,13,12);};
     }
     /** The blanket, the popcorn, the ring and the low tipped chair are underfoot or on a wall; nothing to bump into. */

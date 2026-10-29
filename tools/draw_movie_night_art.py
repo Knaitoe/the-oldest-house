@@ -990,7 +990,7 @@ def prop_models():
             els.append(element((.5, 14, 6.5), (15.5, 15, 9.5), {'all': '#wood'}))
         return {'textures': {'art': T + 'movie_poster_' + half, 'wood': spruce, 'post': log, 'particle': spruce}, 'elements': els}
     ring = {'render_type': 'minecraft:cutout', 'textures': {'ring': T + 'movie_life_ring', 'particle': T + 'movie_life_ring'},
-            'elements': [element((2, 2, 14), (14, 14, 15), {'north': '#ring', 'south': '#ring'}, [2, 2, 14, 14])]}
+            'elements': [element((2, 2, 15), (14, 14, 16), {'north': '#ring', 'south': '#ring'}, [2, 2, 14, 14])]}
     cans = {'textures': {'side': T + 'movie_can_side', 'top': T + 'movie_can_top', 'particle': T + 'movie_can_side'},
             'elements': [element((4, 0, 4), (12, 2, 12), {'up': '#top', 'down': '#top', 'north': '#side', 'south': '#side', 'east': '#side', 'west': '#side'}, None),
                          element((3.5, 2, 4.5), (11.5, 4, 12.5), {'up': '#top', 'down': '#top', 'north': '#side', 'south': '#side', 'east': '#side', 'west': '#side'}),

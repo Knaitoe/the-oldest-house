@@ -74,7 +74,7 @@ public final class SceneCraft {
     public static final String STATE = "scene_craft_0446";
     public static final String REPAIR_STATE = "scene_craft_repairs_0447";
     private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.MAPPING_INTERIOR,
-            LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN);
+            LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.GOATMAN);
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     // The Masque and Bly (0.4.105) are built whole by MasqueSuite and BlyManor, and the Wheel, the Winchester house and the Barretts' house (0.4.121) by WheelHouse, WinchesterHouse and BarrettHome.
@@ -83,10 +83,11 @@ public final class SceneCraft {
             LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK);
     // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore, the Last Stop (0.4.78) its own road,
     // lot, field and woods, Movie Night (0.4.102) its own banks, woods and piers, Costume Night (0.4.103) its beach, lake and
-    // park, and Winter Lake (0.4.104) its frozen lake and snowy banks: nothing generic is planted over them.
+    // park, and Winter Lake (0.4.104) its frozen lake and snowy banks: nothing generic is planted over them. The barn well's
+    // farm (0.4.164) is built whole by BarnWell, its barn, shed, well and wood with it.
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
-            LabyrinthPlace.BARN_WELL, LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
+            LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
     /** How far outside its room box a scene's banks and woods reach. */
     private static final int REACH = 6;
 
@@ -1147,7 +1148,6 @@ public final class SceneCraft {
             case CAMP_BLOOD -> { fellGrid(); woods(5, new int[]{30, 0, 40, 30, 0}, false); undergrowth(); cabins(); campGround(); }
             case END_WORLD_CABIN -> { fellGrid(); woods(5, new int[]{55, 10, 10, 25, 0}, false); undergrowth(); endCabin(); }
             case SHALLOWS, PHONE_CANOE, DROWNED_TOWN -> banks();
-            case BARN_WELL -> barn();
             case GOATMAN -> thicket();
             case EXPLORER_CAMP -> camp();
             default -> { }
@@ -1632,7 +1632,6 @@ public final class SceneCraft {
             for (Roof roof : repairRoofs())
                 if (body.intersects(new AABB(Vec3.atLowerCornerOf(p(roof.x0 - 1, roof.eaves - 1, roof.z0 - 1)),
                         Vec3.atLowerCornerOf(p(roof.x1 + 2, roof.eaves + (roof.x1 - roof.x0) / 4 + 3, roof.z1 + 2))))) return true;
-            if (scene == LabyrinthPlace.BARN_WELL && body.intersects(new AABB(Vec3.atLowerCornerOf(p(4, 3, -35)), Vec3.atLowerCornerOf(p(17, 10, -15))))) return true;
             if (scene == LabyrinthPlace.GOATMAN) {
                 if (body.maxY > b.getY() + 4) return true;
                 for (int x = (int) Math.floor(body.minX) - b.getX(); x <= (int) Math.floor(body.maxX) - b.getX(); x++)
@@ -1653,14 +1652,6 @@ public final class SceneCraft {
                     legacy |= at(x, y, z).is(Blocks.DARK_OAK_STAIRS) || at(x, y, z).is(Blocks.SPRUCE_STAIRS);
             }
             if (legacy) roof(roof.x0, roof.x1, roof.z0, roof.z1, roof.eaves, roof.slab, roof.boards, roof.ridge);
-        }
-        if (scene == LabyrinthPlace.BARN_WELL) {
-            boolean legacy = false;
-            for (int x = 4; x <= 16; x++) for (int z = -35; z <= -16; z++)
-                legacy |= at(x, 4 + Math.min(x - 4, 16 - x) / 2, z).is(Blocks.SPRUCE_STAIRS);
-            int lid = 0;
-            for (int x = 5; x <= 15; x++) for (int z = -34; z <= -17; z++) if (at(x, 7, z).is(Blocks.BIRCH_PLANKS)) lid++;
-            if (legacy || lid >= 16) barnRoof();
         }
         if (scene == LabyrinthPlace.GOATMAN && legacyThicket()) thicket();
     }
@@ -1745,48 +1736,6 @@ public final class SceneCraft {
      * The barn's low saw-toothed stair roof becomes a gambrel: steep lower slopes, shallow upper
      * ones and a ridge beam, with boarded gables, a hayloft door and a hoist beam over the doors.
      */
-    private void barn() {
-        barnRoof();
-        for (int x = 9; x <= 10; x++) for (int y = 5; y <= 6; y++)
-            put(x, y, -16, Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.SOUTH).setValue(TrapDoorBlock.OPEN, true));
-        if (put(10, 7, -16, log(Blocks.DARK_OAK_LOG, Direction.Axis.Z)) && put(10, 7, -15, log(Blocks.DARK_OAK_LOG, Direction.Axis.Z))) put(10, 6, -15, Blocks.CHAIN);
-    }
-
-    private void barnRoof() {
-        for (int x = 4; x <= 16; x++) {
-            int y = 4 + Math.min(x - 4, 16 - x) / 2;
-            for (int z = -35; z <= -16; z++)
-                if (at(x, y, z).is(Blocks.SPRUCE_STAIRS))
-                    set(p(x, y, z), (x == 5 || x == 15) && y == 4 && z >= -34 && z <= -17 ? Blocks.SPRUCE_PLANKS.defaultBlockState() : AIR);
-        }
-        removeBarnLid();
-        for (int x = 4; x <= 16; x++) {
-            int d = Math.min(x - 4, 16 - x);
-            boolean centre = x == 10;
-            int y = centre ? 8 : d <= 2 ? 4 + d : 7 + (d - 3) / 2;
-            BlockState cover = centre ? log(Blocks.DARK_OAK_LOG, Direction.Axis.Z) : d <= 2 ? stairs(Blocks.DARK_OAK_STAIRS, x < 10 ? Direction.EAST : Direction.WEST)
-                    : slab(Blocks.DARK_OAK_SLAB, (d - 3) % 2 == 0 ? SlabType.BOTTOM : SlabType.TOP);
-            boolean topSlab = !centre && d > 2 && (d - 3) % 2 == 1;
-            for (int z = -35; z <= -16; z++) {
-                if ((z == -34 || z == -17) && x >= 5 && x <= 15) {
-                    for (int yy = 4; yy < y; yy++) cover(x, yy, z, Blocks.SPRUCE_PLANKS.defaultBlockState());
-                    cover(x, y, z, topSlab ? Blocks.SPRUCE_PLANKS.defaultBlockState() : cover);
-                } else cover(x, y, z, cover);
-            }
-        }
-    }
-
-    private void removeBarnLid() {
-        // A ceiling block something hangs from remains a real support.
-        for (int x = 5; x <= 15; x++) for (int z = -34; z <= -17; z++) {
-            if (!at(x, 7, z).is(Blocks.BIRCH_PLANKS)) continue;
-            BlockState below = at(x, 6, z);
-            boolean hung = below.is(Blocks.CHAIN) || below.getBlock() instanceof LanternBlock || below.getBlock() instanceof SceneDetailBlock
-                    || l.getBlockEntity(p(x, 6, z)) != null;
-            set(p(x, 7, z), hung ? Blocks.DARK_OAK_PLANKS.defaultBlockState() : AIR);
-        }
-    }
-
     /**
      * Goatman's thicket stays a wall the trail cannot be left through, but no longer reads as
      * a hedge with a lattice of identical trees on it: the lattice comes down, the thicket is

@@ -32,6 +32,7 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
         if(e.isSleeping()||e.hasPose(net.minecraft.world.entity.Pose.SLEEPING)){sleepPose(e.sleepPose(),age);return;}
         if(e.enteringWindow()){windowPose(e.windowEntry(age-e.tickCount));return;}
         if(e.crawling()){crawlPose(e.walk(age-e.tickCount)*.78F,Math.min(1,Math.abs(e.speed())/.48F));return;}
+        if(e.scurrying()){scurryPose(e.walk(age-e.tickCount)*.5F,Math.min(1,Math.abs(e.speed())/.8F));return;}
         boolean still=e.tell(GoatmanVignette.STILL)&&!e.stalkingAppearance();
         float speed=Math.abs(e.speed())/8,phase=e.walk(age-e.tickCount)*.78F;
         super.setupAnim(e,0,0,still?0:age,yaw,pitch);
@@ -76,9 +77,9 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
     public void sleepPose(int variant,float age){
         HumanoidMotion.reset(this);young=false;float roll=0;
         switch(Math.floorMod(variant,4)){
-            case 0->{ // Back, hands resting over the stomach, one knee loose.
-                leftArm.xRot=-.35F;rightArm.xRot=-.3F;leftArm.zRot=.15F;rightArm.zRot=-.15F;
-                leftElbow.xRot=-.7F;rightElbow.xRot=-.65F;rightLeg.xRot=-.13F;rightKnee.xRot=.24F;
+            case 0->{ // Back, arms resting along the sides (0.4.163, owner: the hands were raised), one knee loose.
+                leftArm.xRot=-.06F;rightArm.xRot=-.1F;leftArm.zRot=-.05F;rightArm.zRot=.05F;
+                leftElbow.xRot=-.12F;rightElbow.xRot=-.2F;rightLeg.xRot=-.13F;rightKnee.xRot=.24F;
             }
             case 1->{ // Curled on the left side.
                 roll=1.3F;leftLeg.xRot=-.55F;rightLeg.xRot=-.45F;leftKnee.xRot=.95F;rightKnee.xRot=.8F;
@@ -88,9 +89,9 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
                 roll=-1.3F;leftLeg.xRot=-.15F;rightLeg.xRot=-.38F;leftKnee.xRot=.3F;rightKnee.xRot=.65F;
                 rightArm.xRot=-2.1F;rightElbow.xRot=-.8F;leftArm.xRot=-.55F;leftElbow.xRot=-1.15F;head.xRot=-.08F;
             }
-            default->{ // Stomach, face turned and one arm above the pillow.
+            default->{ // Stomach, the face turned down onto one cheek with the body (0.4.163, owner: it was tilted up), one arm above the pillow.
                 roll=Mth.PI;leftArm.xRot=-2.4F;leftElbow.xRot=-.6F;rightArm.xRot=-.45F;rightElbow.xRot=-.9F;
-                head.yRot=.6F;rightLeg.xRot=-.08F;rightKnee.xRot=.4F;
+                head.yRot=roll-1.45F;rightLeg.xRot=-.08F;rightKnee.xRot=.4F;
             }
         }
         body.yRot=roll;leftLeg.yRot=rightLeg.yRot=roll;
@@ -138,6 +139,28 @@ public final class GoatmanChildModel extends HumanoidModel<GoatmanChild> {
             float upper=-1.15F+.2F*stride,shoulderY=hipY-10*Mth.cos(lean);
             float forearm=0;for(int solve=0;solve<12;solve++)forearm=-(float)Math.acos(Mth.clamp((23.98F-2*Mth.abs(Mth.sin(forearm))-1.2F*lift-shoulderY-4*Mth.cos(upper))/6,-1,1));
             armPart.xRot=upper-lean;elbowPart.xRot=forearm-upper;
+        }
+    }
+    /**
+     * 0.4.163 (owner: "head down, crouched low, hands almost touching the ground ... Like an animal squabbling away"): bent
+     * double over folded knees, the hands swinging just above the ground and the head low, the strides short and quick.
+     */
+    public void scurryPose(float phase,float moving){HumanoidMotion.reset(this);young=false;scurryMotion(phase,Mth.clamp(moving,0,1));HumanoidMotion.connect(this);}
+    private void scurryMotion(float phase,float moving){
+        float lean=1.15F+.05F*moving*Mth.sin(phase*2),hipY=16.6F-.4F*moving*Mth.abs(Mth.sin(phase)),shoulderY=hipY-10*Mth.cos(lean);
+        leftLeg.y=rightLeg.y=hipY;leftLeg.z=rightLeg.z=1.2F;
+        body.xRot=lean;body.zRot=.05F*moving*Mth.sin(phase);head.xRot=-lean+.45F;head.yRot=.08F*moving*Mth.sin(phase+.7F);
+        for(boolean left:new boolean[]{false,true}){
+            float beat=phase+(left?Mth.PI:0),stride=moving*Mth.cos(beat),lift=moving*Math.max(0,Mth.sin(beat));
+            var legPart=left?leftLeg:rightLeg;var kneePart=left?leftKnee:rightKnee;
+            float dz=-.6F+2.2F*stride,dy=23.6F-hipY-1.6F*lift,reach=Math.min(11.9F,(float)Math.sqrt(dy*dy+dz*dz));
+            float knee=(float)Math.acos(Mth.clamp((reach*reach-72)/72,-1,1));
+            legPart.xRot=(float)Math.atan2(dz,dy)-(float)Math.atan2(6*Mth.sin(knee),6+6*Mth.cos(knee));kneePart.xRot=knee;
+            // The arms swing opposite the legs from the bent body, each hand coming down to just above the ground.
+            var armPart=left?leftArm:rightArm;var elbowPart=left?leftElbow:rightElbow;
+            float upper=-.1F-.5F*stride,hand=22.6F-1.4F*moving*Math.max(0,-Mth.sin(beat));
+            float forearm=-(float)Math.acos(Mth.clamp((hand-shoulderY-6*Mth.cos(upper))/6,-1,1));
+            armPart.xRot=upper-lean;armPart.zRot=left?-.12F:.12F;elbowPart.xRot=Math.min(0,forearm-upper);
         }
     }
     private void animateFear(int role,int stage,float age){

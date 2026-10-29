@@ -21,7 +21,7 @@ import org.joml.Vector3f;
 /** Native shipped cousin joints at four window beats and both crawl strides, followed by the paw's thumb, which stays still while a finger curls. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class WindowEntryVisualProof extends Screen {
-    private static final String[] VIEWS={"reach","sill","pull","lower","crawl-left","crawl-right","paw-open","paw-curl","paw-closed","window-stand","bed-heave-left","bed-heave-right"};
+    private static final String[] VIEWS={"reach","sill","pull","lower","crawl-left","crawl-right","paw-open","paw-curl","paw-closed","window-stand","bed-heave-left","bed-heave-right","scurry-left","scurry-right"};
     private static boolean launched;
     private int page,frames;
     private final PawClutchClient.Model paw=new PawClutchClient.Model();
@@ -50,6 +50,14 @@ public final class WindowEntryVisualProof extends Screen {
                 if(!Float.isFinite(a.x+a.y+a.z+f.x+f.y+f.z)||a.y>1.5001F||f.y>1.5001F||a.y<1.24F||f.y<1.24F)throw new IllegalStateException("Crawl hand/foot centres must clear their planted mesh thickness and alternate above the floor: "+a+" "+f);
             }
         }
+        // 0.4.163: the low run out past the returning cousin keeps its feet on the ground and its hands just above it.
+        for(int i=0;i<=64;i++){
+            model.scurryPose(i*Mth.TWO_PI/64,1);
+            for(boolean left:new boolean[]{false,true}){
+                var a=tip(left?model.leftArm:model.rightArm,left?model.leftElbow:model.rightElbow);var f=tip(left?model.leftLeg:model.rightLeg,left?model.leftKnee:model.rightKnee);
+                if(!Float.isFinite(a.x+a.y+a.z+f.x+f.y+f.z)||f.y>1.5001F||f.y<1.3F||a.y>1.47F||a.y<1.12F)throw new IllegalStateException("The scurry's feet must be on the ground and its hands just above it: "+a+" "+f);
+            }
+        }
         model.pose(0,0,0,0,false,false,false);if(model.leftKnee.xRot!=0||model.rightElbow.xRot!=0)throw new IllegalStateException("Window joints leaked into an ordinary cousin");
         paw.curl(2,0);var open=thumbTip(paw);paw.curl(2,1);var closed=thumbTip(paw);
         // 0.4.121: the thumb is not one of the three wishes; it lies outside the palm and stays there while a finger curls.
@@ -69,7 +77,7 @@ public final class WindowEntryVisualProof extends Screen {
             float progress=new float[]{.12F,.48F,.65F,.9F}[Math.min(3,page)];
             for(int i=0;i<4;i++){
                 var p=g.pose();p.pushPose();p.translate(width*(.14F+i*.24F),height*.7F,150);p.scale(68,68,68);p.mulPose(Axis.YP.rotationDegrees(i%2==0?155:95));if(page==4||page==5)p.scale(1,GoatmanChildRenderer.CRAWL_HEIGHT,1);p.translate(0,-1.5,0);
-                var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));if(page<4)model.windowPose(progress);else if(page<6)model.crawlPose(page==4?0:Mth.PI,1);else if(page==9)model.windowPose(1);else model.pose(i<2?4:0,0,0,page==10?17:24,false,false,true);
+                var model=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));if(page<4)model.windowPose(progress);else if(page<6)model.crawlPose(page==4?0:Mth.PI,1);else if(page==9)model.windowPose(1);else if(page>=12)model.scurryPose(page==12?0:Mth.PI,1);else model.pose(i<2?4:0,0,0,page==10?17:24,false,false,true);
                 model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/trailer_child_"+(i<2?4:0)+".png"))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
                 p.popPose();
             }
@@ -83,7 +91,7 @@ public final class WindowEntryVisualProof extends Screen {
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof WindowEntryVisualProof proof)||++proof.frames<20)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-window-entry-"+VIEWS[proof.page]+".png"));}
         if(++proof.page<VIEWS.length){proof.frames=0;return;}
-        Files.writeString(dir.resolve("window-entry-passed.txt"),"Twelve native GPU pages: two original cousin skins reach, fit the sill, pull with alternating elbows, lower and stand before the indoor walk; later low crawling strides and two dry-heave poses; actual paw at open, half curl and closed in two angles. 101 window and 65 crawl samples, continuous window/standing transition, native hand/foot floor geometry, reused-cousin reset and a thumb that stays at rest through every curl passed.\n");
+        Files.writeString(dir.resolve("window-entry-passed.txt"),"Fourteen native GPU pages: two original cousin skins reach, fit the sill, pull with alternating elbows, lower and stand before the indoor walk; later low crawling strides and two dry-heave poses; two strides of the low run out past the returning cousin; actual paw at open, half curl and closed in two angles. 101 window and 65 crawl samples, continuous window/standing transition, native hand/foot floor geometry, reused-cousin reset and a thumb that stays at rest through every curl passed.\n");
         if(Boolean.getBoolean("the_oldest_house.windowEntrySmoke"))mc.stop();else mc.setScreen(new InstituteVisualProof());
     }
 }

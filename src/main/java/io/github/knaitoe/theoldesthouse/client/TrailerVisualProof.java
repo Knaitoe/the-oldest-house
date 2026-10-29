@@ -153,7 +153,7 @@ public final class TrailerVisualProof extends Screen {
         }out.endBatch();
     }
     private void sleeping(GuiGraphics g,MultiBufferSource.BufferSource out){
-        var mc=Minecraft.getInstance();float cw=width/2F,ch=(height-30)/2F;String[] labels={"back / hands over stomach","left / curled legs","right / hand by cheek","stomach / arm above pillow"};
+        var mc=Minecraft.getInstance();float cw=width/2F,ch=(height-30)/2F;String[] labels={"back / arms along the sides","left / curled legs","right / hand by cheek","stomach / cheek on the pillow"};
         for(int i=0;i<4;i++){
             var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));m.sleepPose(i,42);joints(m);
             var p=g.pose();p.pushPose();p.translate((i%2+.5F)*cw,34+(i/2+.5F)*ch,150);float scale=Math.min(cw*.43F,ch*.65F);

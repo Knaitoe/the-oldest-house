@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "kind=siding": {
+      "model": "the_oldest_house:block/farm_siding"
+    },
+    "kind=door": {
+      "model": "the_oldest_house:block/farm_door"
+    },
+    "kind=trim": {
+      "model": "the_oldest_house:block/farm_trim"
+    },
+    "kind=window": {
+      "model": "the_oldest_house:block/farm_window"
+    },
+    "kind=shed_boards": {
+      "model": "the_oldest_house:block/farm_shed_boards"
+    }
+  }
+}

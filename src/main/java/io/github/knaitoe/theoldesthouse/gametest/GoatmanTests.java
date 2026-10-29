@@ -107,7 +107,7 @@ public final class GoatmanTests {
                 }
             }
             if(outAt[0]<0&&f.rel(extra).z>=GoatmanWoods.DOOR.getZ()+3/32D)outAt[0]=r.getInt("Clock");
-            if(inAt[0]>=0&&outAt[0]>=0){h.assertTrue(Math.abs(inAt[0]-outAt[0])<=1,"the actual opposing doorway crossings share the same native tick (within one tick's sampling): in="+inAt[0]+" out="+outAt[0]);if(crossed[0]<0)crossed[0]=f.l.getGameTime();}
+            if(inAt[0]>=0&&outAt[0]>=0){int lead=inAt[0]-outAt[0];h.assertTrue(lead>=-1&&lead<=GoatmanVignette.EXCHANGE_LEAD+4&&(late||lead>=GoatmanVignette.EXCHANGE_LEAD/2),late?"kept at the shut door, the two cross together once it opens: in="+inAt[0]+" out="+outAt[0]:"0.4.163: the thing is through the door a moment before the cousin and passes them on the porch: in="+inAt[0]+" out="+outAt[0]);if(crossed[0]<0)crossed[0]=f.l.getGameTime();}
             if(dark[0]<0&&r.getInt("Phase")==GoatmanVignette.VIGIL)dark[0]=f.l.getGameTime();
             if(r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("Demand")>=101){words.add(r.getInt("Demand"));if(firstWord[0]<0)firstWord[0]=f.l.getGameTime();}
             // The original body's own pane strikes open a window sighting.
@@ -290,6 +290,8 @@ public final class GoatmanTests {
         ServerPlayer player(){var p=h.makeMockServerPlayerInLevel();p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-.5,180,0);p.hasChangedDimension();players.add(p);return p;}
         ServerPlayer nativePlayer(String name){var p=NativeTestPlayers.survival(h,name);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-.5,180,0);p.hasChangedDimension();players.add(p);nativePlayers.add(p);return p;}
         void at(ServerPlayer p,double progress){p.moveTo(GoatmanWoods.path(progress).add(b.getX(),b.getY(),b.getZ()));}
+        /** On the trail facing the way it goes, as a reader walking it does. */
+        void walk(ServerPlayer p,double progress){var to=GoatmanWoods.path(progress+1).subtract(GoatmanWoods.path(progress));p.moveTo(GoatmanWoods.path(progress).add(b.getX(),b.getY(),b.getZ()));p.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));p.setXRot(0);p.setYHeadRot(p.getYRot());}
         /** Inside, by the table, looking up the trailer away from the door. */
         void indoors(ServerPlayer p){p.moveTo(b.getX()+.5,b.getY()+1,b.getZ()-58.5,180,0);}
         CompoundTag run(){return GoatmanVignette.run(LabyrinthData.get(server));}
@@ -466,6 +468,34 @@ public final class GoatmanTests {
     private static Fixture stalking,disguises,fixtures,sharedSupper,spawn;
     private static Fixture gasRun,gasLost,condiments;
     @AfterBatch(batch="goat_gas0150") public static void cleanGas(ServerLevel l){if(gasRun!=null){gasRun.close();gasRun=null;}}
+    private static Fixture freshEvening;
+    @AfterBatch(batch="goat_fresh163") public static void cleanFresh(ServerLevel l){if(freshEvening!=null){freshEvening.close();freshEvening=null;}}
+    /**
+     * 0.4.163 (owner: "Cousins should BEGIN outside ... the table should also be cleared on re-entry"): a reader who comes in
+     * through a door with nobody else there begins a fresh evening, however they left the last one; every cousin starts out by
+     * the fire or in the yard and the table is cleared. The next reader through joins that evening rather than starting another.
+     */
+    @GameTest(template="empty",batch="goat_fresh163",timeoutTicks=400)
+    public static void aDoorArrivalWithNobodyInsideBeginsAFreshEveningOutsideAndTheNextReaderJoinsIt(GameTestHelper h){
+        freshEvening=new Fixture(h,32200);var f=freshEvening;f.finishedCamper();var first=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp is natively loaded")).thenExecute(()->{
+            first.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-.5,180,0);
+            h.assertTrue(GoatmanVignette.enter(first,true),"the first reader through the door begins the evening");
+            var r=f.run();var before=r.getUUID("Id");r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",900);r.putBoolean("CalledIn04123",true);f.run(r);
+            GoatmanMeal.tick(f.l,f.b,r,List.of(first));f.run(r);
+            h.assertTrue(!f.l.getEntitiesOfClass(net.minecraft.world.entity.Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanMeal.TAG)).isEmpty(),"the table has the evening's buns on it");
+            // Left by a way that never told the camp, the saved record still has them in it; coming back in through the door is a new evening.
+            h.assertTrue(GoatmanVignette.enter(first,true),"they come back in");r=f.run();var round=r.getUUID("Id");
+            h.assertTrue(!round.equals(before)&&r.getInt("Phase")==GoatmanVignette.PATH,"a door arrival with nobody else there begins a fresh evening: phase="+r.getInt("Phase")+" same="+round.equals(before)+" cohort="+r.getCompound("Cohort").getAllKeys());
+            h.assertTrue(f.l.getEntitiesOfClass(net.minecraft.world.entity.Display.ItemDisplay.class,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanMeal.TAG)).isEmpty(),"and the table is cleared");
+            var cousins=f.cousins();h.assertTrue(cousins.size()==GoatmanVignette.count(r)&&cousins.stream().allMatch(c->c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(round)),"the evening's own cousins are staged: "+cousins.size());
+            for(var c:cousins)h.assertTrue(!GoatmanWoods.indoors(f.rel(c)),"every cousin begins outside, by the fire or in the yard: "+f.rel(c));
+            // The second reader comes through the same door only now, so the camp never saw them while the first was alone.
+            var second=f.player();
+            h.assertTrue(GoatmanVignette.enter(second,true),"the second reader comes through the door");r=f.run();
+            h.assertTrue(r.getUUID("Id").equals(round)&&r.getCompound("Cohort").contains(first.getStringUUID())&&r.getCompound("Cohort").contains(second.getStringUUID()),"and joins the first reader's evening rather than starting another");
+        }).thenSucceed();
+    }
     @AfterBatch(batch="goat_gas_lost0150") public static void cleanGasLost(ServerLevel l){if(gasLost!=null){gasLost.close();gasLost=null;}}
     @AfterBatch(batch="goat_condiments0150") public static void cleanCondiments(ServerLevel l){if(condiments!=null){condiments.close();condiments=null;}}
     /** Two readers enrol together, facing back down the trail, and supper's first plate goes down with both inside. */
@@ -510,6 +540,8 @@ public final class GoatmanTests {
             h.assertTrue(GoatmanWoods.doorOpen(f.l,f.b),"somebody inside opens it");
         }).thenIdle(2).thenExecute(()->{
             var r=f.run();h.assertTrue(r.getBoolean("Exchange0497")&&r.getInt("ExtraState")==GoatmanVignette.X_FIRE,"as they come back, the one in their chair runs out past them");
+            // 0.4.163 (owner): low and quick like an animal; the flag is the entity's own, so every reader's client draws the same run.
+            h.assertTrue(f.cousin(r.getInt("Wrong")).map(GoatmanChild::scurrying).orElse(false),"it runs out crouched low past the reader coming back");
             second.moveTo(f.b.getX()+.5,f.b.getY()+1,f.b.getZ()-58.5,180,0);
         }).thenIdle(2).thenExecute(()->{
             var r=f.run();h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_INSIDE&&r.contains("ExchangeIn0497")&&f.cousin(runner[0]).isEmpty(),"they are back in, and no cousin was ever sent for gas");
@@ -805,9 +837,10 @@ public final class GoatmanTests {
         var pet=EntityType.WOLF.create(f.l);pet.tame(p);pet.setPersistenceRequired();pet.moveTo(GoatmanWoods.path(4).add(f.b.getX(),f.b.getY(),f.b.getZ()));f.l.addFreshEntity(pet);CompanionOrders.issue(pet,p,CompanionOrders.Order.DEEPER);
         int[] tick={0};float[] stopped={0};
         h.onEachTick(()->{
-            tick[0]++;double progress=tick[0]<=10?0:tick[0]<=30?(tick[0]-10)*.12:tick[0]<=50?2.4+(tick[0]-30)*.4:tick[0]<=70?10.4:Math.min(73,10.4+(tick[0]-70)*.6);f.at(p,progress);
+            tick[0]++;double progress=tick[0]<=10?0:tick[0]<=30?(tick[0]-10)*.12:tick[0]<=50?2.4+(tick[0]-30)*.4:tick[0]<=70?10.4:Math.min(73,10.4+(tick[0]-70)*.6);f.walk(p,progress);
         });
-        h.runAfterDelay(8,()->h.assertTrue(f.cousins().size()==8&&f.children().stream().filter(GoatmanChild::girl).count()==1,"eight shared apparent cousins and the private path girl are staged"));
+        // 0.4.163: she is not there before the reader has started to walk.
+        h.runAfterDelay(8,()->h.assertTrue(f.cousins().size()==8&&f.children().stream().noneMatch(GoatmanChild::girl),"eight shared apparent cousins are staged, and no child waits on the trail before the reader walks"));
         h.runAfterDelay(45,()->{
             var girl=f.children().stream().filter(GoatmanChild::girl).findFirst().orElseThrow();var own=GoatmanVignette.run(LabyrinthData.get(f.server)).getCompound("Cohort").getCompound(p.getUUID().toString());
             double girlProgress=GoatmanWoods.project(f.rel(girl)).progress();
@@ -845,8 +878,12 @@ public final class GoatmanTests {
         int[] tick={0};float[] heading={0};double[] held={0};boolean[] begun={false};
         h.onEachTick(()->{
             if(!begun[0])return;tick[0]++;int t=tick[0];
-            double progress=t<=10?0:t<=50?(t-10)*.3:t<=80?12:t<=90?12-(t-80)*.3:9;f.at(p,progress);
-            if(t<=12||t>110)return;var girl=trailGirl(f);double own=GoatmanWoods.project(f.rel(girl)).progress();
+            double progress=t<=10?0:t<=50?(t-10)*.3:t<=80?12:t<=90?12-(t-80)*.3:9;f.walk(p,progress);
+            if(t<=12||t>110)return;
+            // 0.4.163: she appears only once the reader has walked a little way, behind them.
+            if(progress<GoatmanVignette.FOLLOW_START){h.assertTrue(f.children().stream().noneMatch(GoatmanChild::girl),"no child on the trail before the reader has walked a few steps: "+progress);return;}
+            if(f.children().stream().noneMatch(GoatmanChild::girl)&&progress<GoatmanVignette.FOLLOW_START+.7)return;
+            var girl=trailGirl(f);double own=GoatmanWoods.project(f.rel(girl)).progress();
             h.assertTrue(own<=Math.max(0,progress-GoatmanVignette.FOLLOW_GAP)+.6&&Math.abs(girl.getXRot()-GoatmanVignette.HEAD_TUCKED)<.01&&girl.speed()<=1.37F,"she keeps behind the reader with her head bowed, never faster than a walk: "+own+" / "+progress);
             if(t==80){heading[0]=girl.getYRot();held[0]=own;h.assertTrue(Math.abs(own-(12-GoatmanVignette.FOLLOW_GAP))<.5,"standing still, she settles a few steps behind: "+own);}
             if(t>81&&t<=92)h.assertTrue(girl.speed()==0&&Math.abs(Mth.wrapDegrees(girl.getYRot()-heading[0]))<2,"turned back towards, she takes no step and does not turn: speed="+girl.speed()+" yaw="+girl.getYRot());

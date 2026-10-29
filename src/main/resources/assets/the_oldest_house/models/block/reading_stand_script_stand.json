@@ -1,0 +1,369 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "metal": "the_oldest_house:block/reading_stand/metal_black",
+    "desk": "the_oldest_house:block/reading_stand/metal_desk",
+    "particle": "the_oldest_house:block/reading_stand/metal_black"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        1,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            4,
+            15,
+            12,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            4,
+            15,
+            12,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            4,
+            15,
+            12,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            4,
+            15,
+            12,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        1,
+        7.5
+      ],
+      "to": [
+        8.5,
+        12,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            7.5,
+            4,
+            8.5,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            7.5,
+            4,
+            8.5,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            7.5,
+            4,
+            8.5,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            7.5,
+            4,
+            8.5,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            7.5,
+            7.5,
+            8.5,
+            8.5
+          ]
+        },
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            7.5,
+            7.5,
+            8.5,
+            8.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        12,
+        7
+      ],
+      "to": [
+        9,
+        14.5,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            7,
+            1.5,
+            9,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            7,
+            1.5,
+            9,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            7,
+            1.5,
+            9,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            7,
+            1.5,
+            9,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        15,
+        3.5
+      ],
+      "to": [
+        14.5,
+        16,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            1.5,
+            0,
+            14.5,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            1.5,
+            0,
+            14.5,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            0.5,
+            0,
+            12.5,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            3.5,
+            0,
+            15.5,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#desk",
+          "uv": [
+            1.5,
+            3.5,
+            14.5,
+            15.5
+          ]
+        },
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            1.5,
+            0.5,
+            14.5,
+            12.5
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        1.5,
+        16,
+        3.5
+      ],
+      "to": [
+        14.5,
+        17,
+        4.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            1.5,
+            -1,
+            14.5,
+            0
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            1.5,
+            -1,
+            14.5,
+            0
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            11.75,
+            -1,
+            12.5,
+            0
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            3.5,
+            -1,
+            4.25,
+            0
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            1.5,
+            3.5,
+            14.5,
+            4.25
+          ]
+        },
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            1.5,
+            11.75,
+            14.5,
+            12.5
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    }
+  ]
+}
