@@ -27,7 +27,8 @@ public final class CoopTests {
     @AfterBatch(batch="coop_thread146") public static void threadDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_town148") public static void townDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_child149") public static void childDone(ServerLevel l){close();}
-    @AfterBatch(batch="coop_private151") public static void privateDone(ServerLevel l){close();}
+    @AfterBatch(batch="coop_private151") public static void privateDone(ServerLevel l){SceneInstances.fixtureCap(null);close();}
+    @AfterBatch(batch="coop_copies155") public static void harriganCopiesDone(ServerLevel l){SceneInstances.clear();close();}
     @AfterBatch(batch="coop_copies153") public static void copiesDone(ServerLevel l){SceneInstances.clear();close();}
     @AfterBatch(batch="coop_copies154") public static void novelCopiesDone(ServerLevel l){SceneInstances.clear();close();}
     private static final LabyrinthPlace SCENE=LabyrinthPlace.HILL_NURSERY;
@@ -265,6 +266,8 @@ public final class CoopTests {
 
     @GameTest(template="empty",batch="coop_private151",timeoutTicks=4000)
     public static void aPrivateSceneIsOneReadersAtATimeAndWaitsForTheNext(GameTestHelper h){
+        // 0.4.153: private scenes have copies; with none allowed (sceneCopies 0) they are one reader's at a time, as in 0.4.151.
+        SceneInstances.fixtureCap(0);
         var f=new LiteraryTests.Fixture(h);active=f;var inside=player(h,f,"private_inside");var next=player(h,f,"private_next");var watcher=player(h,f,"private_watcher");
         var halls=List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
         var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));
@@ -388,6 +391,52 @@ public final class CoopTests {
                 var theirs=PhoneCanoe.stage(f.level(lake),shore);var original=PhoneCanoe.stage(f.level(lake),f.base(lake));
                 h.assertTrue(theirs!=null&&original!=null&&!theirs.getUUID().equals(original.getUUID())&&IndianLakeRooms.bounds(shore,lake).contains(theirs.position()),"each lake has its own canoe");
                 h.assertTrue(PhoneCanoe.stage(f.level(lake),shore)==theirs,"and a copy's canoe is the same canoe the next time it is looked for");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="coop_copies155",timeoutTicks=6000)
+    public static void harrigansRoomKeepsItsOwnStoryInEachCopy(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var server=f.in.getServer();var place=LabyrinthPlace.HARRIGAN;
+        var first=player(h,f,"harrigan_first");var second=player(h,f,"harrigan_second");var third=player(h,f,"harrigan_third");hold(f,place);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"his study is resident"))
+            .thenExecute(()->{
+                HarriganVignette.build(server,f.in,f.base(place));LabyrinthBuilder.registerDoors(f.data(),place,f.base(place));f.built.add(place);
+                at(first,f.in,f.base(place).offset(0,0,-4));h.assertTrue(SceneInstances.enter(first,place).copy()==0,"the first reader takes his study");
+                HarriganVignette.onArrive(first,place);h.assertTrue(f.data().state(HarriganVignette.ID).getInt("Visit")==1,"their first visit is the world's, as before");
+                var waiting=SceneInstances.enter(second,place);h.assertTrue(waiting.door()==null&&waiting.waiting(),"a second reader waits for a copy");
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),place,1),"a copy of his study stands ready"))
+            // A reader arriving keeps the copy loaded; these fixture readers do not load chunks themselves.
+            .thenExecute(()->f.chunks.hold(f.in,IndianLakeRooms.bounds(SceneInstances.base(server,place,1),place)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the copy is resident"))
+            .thenExecute(()->{
+                var chosen=SceneInstances.enter(second,place);var room=SceneInstances.base(server,place,1);
+                h.assertTrue(chosen.door()!=null&&chosen.copy()==1,"the second reader's door opens onto the copy");
+                at(second,f.in,room.offset(0,0,-4));HarriganVignette.onArrive(second,place);
+                var copy=f.data().state(HarriganVignette.ID+"@1");
+                h.assertTrue(copy.getInt("Visit")==1&&copy.hasUUID("Harrigan0505"),"the copy has its own first visit and its own Mr. Harrigan");
+                h.assertTrue(!copy.getUUID("Harrigan0505").equals(f.data().state(HarriganVignette.ID).getUUID("Harrigan0505")),"he is not the original's body");
+                var him=HarriganVignette.harrigan(f.in,room,-1);h.assertTrue(him!=null&&room.distSqr(him.blockPosition())<400,"and he sits in the copy");
+                // The first reader's story goes on in the original; the copy's is untouched.
+                var world=f.data().state(HarriganVignette.ID);world.putBoolean("BeatDone",true);f.data().setState(HarriganVignette.ID,world);
+                HarriganVignette.onArrive(first,place);
+                h.assertTrue(f.data().state(HarriganVignette.ID).getInt("Visit")==2&&f.data().state(HarriganVignette.ID+"@1").getInt("Visit")==1,"each room counts its own visits");
+                // The first reader's story ends: the original keeps it, and a new reader is never given that room.
+                f.data().setCompleted(HarriganVignette.ID,true);WitnessAccount.resolve(f.data(),first.getUUID(),WitnessAccount.Story.HARRIGAN,"buried_phone");
+                var third0=SceneInstances.enter(third,place);h.assertTrue(third0.copy()!=0,"a finished original stays the world's story: a new reader is given a copy instead");
+                // The second reader finishes; the next reader to take their copy starts its story again.
+                var mine=f.data().state(HarriganVignette.ID+"@1");mine.putInt("Visit",3);mine.putBoolean("TicketVisible",true);mine.putBoolean("PropTaken0490_harrigan_phone",true);f.data().setState(HarriganVignette.ID+"@1",mine);
+                // Their part is over; they look on as a spectator, who holds no room.
+                WitnessAccount.resolve(f.data(),second.getUUID(),WitnessAccount.Story.HARRIGAN,"kept_phone");second.setGameMode(GameType.SPECTATOR);
+                SceneInstances.fixtureCap(1);
+            })
+            .thenExecute(()->{
+                var reuse=SceneInstances.enter(third,place);
+                h.assertTrue(reuse.copy()==1&&reuse.door()!=null,"the copy whose reader has finished is the new reader's: "+reuse);
+                var fresh=f.data().state(HarriganVignette.ID+"@1");
+                h.assertTrue(fresh.getInt("Visit")==0&&!fresh.getBoolean("TicketVisible")&&!fresh.getBoolean("PropTaken0490_harrigan_phone")&&fresh.hasUUID("Harrigan0505"),"its story starts again, with the same Mr. Harrigan");
+                h.assertTrue(f.data().isCompleted(HarriganVignette.ID)&&f.data().state(HarriganVignette.ID).getInt("Visit")==2,"the original's story is untouched by the copy's");
+                SceneInstances.fixtureCap(null);
             }).thenSucceed();
     }
 }

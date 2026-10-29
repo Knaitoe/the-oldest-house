@@ -548,5 +548,6 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.152 | The lake house partner: `DRAWN_TO` chooses Tess, Theo in her place, or Tess as a friend, and the writing follows | `docs/LAKE_HOUSE_PARTNER_0_4_152.md` |
 | 0.4.153 | Copies of private scenes: a reader who finds the confession, the Holy Rabbit, the Wheel house, the diner or the split-feed bedroom taken gets a copy of their own, kept until they finish it | `docs/SCENE_COPIES_0_4_153.md` |
 | 0.4.154 | Copies of the Whale institute and the phone canoe, each lake with its own canoe | `docs/SCENE_COPIES_0_4_153.md` |
+| 0.4.155 | Copies of Harrigan's room, each keeping its own story; every private scene now has copies | `docs/SCENE_COPIES_0_4_153.md` |
 
 The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.
