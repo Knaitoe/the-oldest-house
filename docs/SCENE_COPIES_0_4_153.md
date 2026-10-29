@@ -16,7 +16,7 @@ This release gives copies to the five private scenes that run through the litera
 - the diner (the second waitress);
 - the split-feed bedroom (missing sleep).
 
-Harrigan, the Whale institute and the phone in the canoe run on systems of their own. The Whale institute and the phone canoe followed in 0.4.154 (below); Harrigan followed in 0.4.155 (below). The lake house uses the same copies for its pairs, two readers to a lake (0.4.156, `docs/LAKE_HOUSE_PAIRS_0_4_156.md`).
+Harrigan, the Whale institute and the phone in the canoe run on systems of their own. The Whale institute and the phone canoe followed in 0.4.154 (below); Harrigan followed in 0.4.155 (below); hide-and-clap, made private, followed in 0.4.158 (below). The lake house uses the same copies for its pairs, two readers to a lake (0.4.156, `docs/LAKE_HOUSE_PAIRS_0_4_156.md`).
 
 ## 0.4.154: the Whale institute and the phone canoe
 
@@ -46,6 +46,12 @@ One native case joins the co-op cases (nine; the quiet-room job runs 26):
 - when the second reader finishes, the next reader to take their copy starts its story again, with the same Mr. Harrigan, and the original's story is untouched.
 
 The 0.4.151 case now checks the one-reader rule with copies turned off (a fixture cap of 0).
+
+## 0.4.158: hide-and-clap
+
+The owner made the clapping game private (October 29) and asked that every private scene have copies. It was the one scene without them, and its game was the world's: one round, won once for everyone. Now each copy of the room plays its own round (`hide_and_clap@<copy>`), and every reader can win it once. A won original stays the world's, as Harrigan's does, and a copy passed to a new reader is put back as new: the wardrobe out, the blindfold back on the wall. Details in `docs/HIDE_AND_CLAP_COPIES_0_4_158.md`.
+
+One native case joins the co-op cases (ten; the quiet-room job runs 27).
 
 ## How a reader finds their copy
 

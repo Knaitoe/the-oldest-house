@@ -9,7 +9,11 @@ import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.network.ClapGamePayload;
 import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -86,6 +90,10 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  *
  * The room lies north of its entry door (see {@link LabyrinthPlace}):
  * inside, x -5..5, z -12..-1, three high.
+ *
+ * 0.4.158: the game is private, one reader to a room, and a reader who finds
+ * it taken gets a copy of the room (docs/HIDE_AND_CLAP_COPIES_0_4_158.md).
+ * Each room plays its own round and every reader can win it once.
  */
 public final class HideAndClap {
     public static final String ID = "hide_and_clap";
@@ -128,14 +136,18 @@ public final class HideAndClap {
         Vec3 anchor = Vec3.ZERO;
         float endingYaw;
         boolean needsSync = true;
+        /** The room this round is played in: 0 is the original. */
+        final int copy;
+        long underBed;
 
-        Game(UUID player, long now) {
-            this(new ClapGameClock(player), now);
+        Game(UUID player, long now, int copy) {
+            this(new ClapGameClock(player), now, copy);
         }
-        Game(ClapGameClock clock, long now) {
+        Game(ClapGameClock clock, long now, int copy) {
             this.clock = clock;
             this.player = clock.owner();
             this.next = now + 10;
+            this.copy = copy;
         }
         CompoundTag save(ServerLevel level) {
             CompoundTag tag = clock.save();
@@ -152,8 +164,8 @@ public final class HideAndClap {
             tag.putFloat("Yaw", endingYaw);
             return tag;
         }
-        static Game load(CompoundTag tag, ServerLevel level) {
-            Game restored = new Game(ClapGameClock.load(tag), level.getGameTime());
+        static Game load(CompoundTag tag, ServerLevel level, int copy) {
+            Game restored = new Game(ClapGameClock.load(tag), level.getGameTime(), copy);
             try { restored.stage = Stage.valueOf(tag.getString("Stage")); }
             catch (IllegalArgumentException ignored) { restored.stage = restored.clock.started() ? Stage.COUNTING : Stage.WAITING; }
             restored.count = Math.max(0, Math.min(COUNT.length - 1, tag.getInt("Count")));
@@ -187,13 +199,17 @@ public final class HideAndClap {
         }
     }
 
+    /**
+     * 0.4.158: each room's round, keyed by its copy. Copy 0 is the original, whose record stays the world's
+     * ({@link #ID} and its completion); a copy keeps its own under {@code ID@copy}.
+     */
+    private static final Map<Integer, Game> GAMES = new HashMap<>();
+    private static final Map<Integer, Feet> FEET = new HashMap<>();
+    /** Rooms rebuilt or put back as new: their frames are hung once their entities are loaded. */
+    private static final Set<Integer> PENDING = new HashSet<>();
+    /** The save whose rounds have been restored into {@link #GAMES}. */
     @Nullable
-    private static Game game;
-    @Nullable
-    private static Feet feet;
-    private static long nextUnderBed;
-    /** Set when the room is rebuilt: its frames are hung once its entities are loaded. */
-    private static boolean entitiesPending;
+    private static LabyrinthData restored;
 
     private HideAndClap() {
     }
@@ -205,9 +221,10 @@ public final class HideAndClap {
     // ------------------------------------------------------------------
     // The room
 
-    /** Called by the builder after the slot is filled solid. */
+    /** Called by the builder after the slot is filled solid, for the original or a copy. */
     public static void build(MinecraftServer server, ServerLevel level, BlockPos base) {
         LabyrinthData data = LabyrinthData.get(server);
+        int copy = SceneInstances.copyAt(server, LabyrinthPlace.HIDE_AND_CLAP, base);
         int flags = LabyrinthBuilder.flags();
         BlockState wall = Blocks.LIGHT_BLUE_TERRACOTTA.defaultBlockState();
         BlockState floor = Blocks.BIRCH_PLANKS.defaultBlockState();
@@ -216,37 +233,41 @@ public final class HideAndClap {
 
         // A small bed against the north wall, its post beside the pillow.
         LabyrinthBuilder.bed(level, base.offset(BED_FOOT), Direction.NORTH, Blocks.LIGHT_BLUE_BED);
-        level.setBlock(base.offset(BED_POST), Blocks.SPRUCE_FENCE.defaultBlockState(), flags);
+        BuildBlocks.set(level, base.offset(BED_POST), Blocks.SPRUCE_FENCE.defaultBlockState(), flags);
         // A rug in the corner by the door, a toy piano, a little table and chair, one lamp.
         for (int x = 2; x <= 4; x++) {
             for (int z = -3; z <= -2; z++) {
-                level.setBlock(base.offset(x, 0, z), Blocks.YELLOW_CARPET.defaultBlockState(), flags);
+                BuildBlocks.set(level, base.offset(x, 0, z), Blocks.YELLOW_CARPET.defaultBlockState(), flags);
             }
         }
-        level.setBlock(base.offset(4, 0, -12), Blocks.NOTE_BLOCK.defaultBlockState(), flags);
-        level.setBlock(base.offset(4, 0, -8), Blocks.SPRUCE_FENCE.defaultBlockState(), flags);
-        level.setBlock(base.offset(4, 1, -8), Blocks.SPRUCE_PRESSURE_PLATE.defaultBlockState(), flags);
-        level.setBlock(base.offset(3, 0, -8), LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS, Direction.WEST), flags);
+        BuildBlocks.set(level, base.offset(4, 0, -12), Blocks.NOTE_BLOCK.defaultBlockState(), flags);
+        BuildBlocks.set(level, base.offset(4, 0, -8), Blocks.SPRUCE_FENCE.defaultBlockState(), flags);
+        BuildBlocks.set(level, base.offset(4, 1, -8), Blocks.SPRUCE_PRESSURE_PLATE.defaultBlockState(), flags);
+        BuildBlocks.set(level, base.offset(3, 0, -8), LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS, Direction.WEST), flags);
         LabyrinthBuilder.hangLantern(level, base.offset(0, 3, -6), false);
 
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room(copy));
         if (state.contains("Wardrobe")) {
             setWardrobe(level, base.offset(BlockPos.of(state.getLong("Wardrobe"))),
                     Direction.from3DDataValue(state.getInt("Facing")), state.getBoolean("Opened"));
         }
         LabyrinthBuilder.entrance(level, base, wall, floor, ceiling);
         LabyrinthBuilder.doors(level, base, LabyrinthPlace.HIDE_AND_CLAP);
-        game = null;
-        entitiesPending = true;
-        placeEntitiesIfLoaded(level, base, data);
+        GAMES.remove(copy);
+        removeFeet(copy);
+        // A copy's build is recorded and laid in slices: its frames go up after the wall they hang on.
+        BuildBlocks.after(level, () -> {
+            PENDING.add(copy);
+            placeEntitiesIfLoaded(level, base, data, copy);
+        });
     }
 
-    /** The frames on the wall: the note always, the blindfold until the game has been won. */
-    private static void placeEntitiesIfLoaded(ServerLevel level, BlockPos base, LabyrinthData data) {
-        if (!entitiesPending || !level.areEntitiesLoaded(ChunkPos.asLong(base))) {
+    /** The frames on the wall: the note always, the blindfold until the game has been won in this room. */
+    private static void placeEntitiesIfLoaded(ServerLevel level, BlockPos base, LabyrinthData data, int copy) {
+        if (!PENDING.contains(copy) || !level.areEntitiesLoaded(ChunkPos.asLong(base))) {
             return;
         }
-        entitiesPending = false;
+        PENDING.remove(copy);
         AABB room = interior(base).inflate(1.0D);
         level.getEntitiesOfClass(ItemFrame.class, room).forEach(frame -> frame.discard());
         level.getEntitiesOfClass(ArmorStand.class, room, stand -> stand.getTags().contains(FEET_TAG)).forEach(stand -> stand.discard());
@@ -255,7 +276,7 @@ public final class HideAndClap {
         ItemFrame noteFrame = new ItemFrame(level, base.offset(NOTE_FRAME), Direction.SOUTH);
         noteFrame.setItem(note(), false);
         level.addFreshEntity(noteFrame);
-        if (!data.isCompleted(ID)) {
+        if (!completed(data, copy)) {
             ItemFrame blindfoldFrame = new ItemFrame(level, base.offset(BLINDFOLD_FRAME), Direction.SOUTH);
             blindfoldFrame.setItem(new ItemStack(LabyrinthRegistry.BLINDFOLD.get()), false);
             level.addFreshEntity(blindfoldFrame);
@@ -264,8 +285,84 @@ public final class HideAndClap {
 
     @Nullable
     static BlockPos base(MinecraftServer server) {
-        BlockPos origin = HouseSavedData.get(server).houseOrigin();
-        return origin == null ? null : LabyrinthPlaces.base(origin, LabyrinthPlace.HIDE_AND_CLAP);
+        return base(server, 0);
+    }
+
+    /** Where a room stands: 0 is the original. */
+    @Nullable
+    static BlockPos base(MinecraftServer server, int copy) {
+        return SceneInstances.base(server, LabyrinthPlace.HIDE_AND_CLAP, copy);
+    }
+
+    /** The record of one room's round: the original's is the world's, as before. */
+    static String room(int copy) {
+        return copy > 0 ? ID + "@" + copy : ID;
+    }
+
+    /** The game has been won in this room: the original's is the world's completion; a copy keeps its own. */
+    static boolean completed(LabyrinthData data, int copy) {
+        return copy > 0 ? data.state(room(copy)).getBoolean("Completed") : data.isCompleted(ID);
+    }
+
+    private static void complete(LabyrinthData data, int copy) {
+        if (copy <= 0) {
+            data.setCompleted(ID, true);
+            return;
+        }
+        CompoundTag state = data.state(room(copy));
+        state.putBoolean("Completed", true);
+        data.setState(room(copy), state);
+    }
+
+    /** The room this reader stands in, else the one they keep. */
+    private static int copyOf(ServerPlayer player) {
+        return SceneInstances.of(player, LabyrinthPlace.HIDE_AND_CLAP);
+    }
+
+    /** The room a position is in, or -1. */
+    private static int copyAt(Level level, Vec3 pos) {
+        return level.getServer() == null ? -1 : SceneInstances.at(level.getServer(), LabyrinthPlace.HIDE_AND_CLAP, level.dimension(), pos);
+    }
+
+    /** Every reader plays the game once, in a room of their own. */
+    public static boolean canDeal(LabyrinthData data, UUID player) {
+        return !WitnessAccount.has(data, player, WitnessAccount.Story.CLAP);
+    }
+
+    /** A reader standing in a room whose game is still to be won, for the door's arrival. */
+    public static boolean arriving(ServerPlayer player) {
+        int copy = copyAt(player.level(), player.position());
+        BlockPos base = copy < 0 ? null : base(player.server, copy);
+        return base != null && !completed(LabyrinthData.get(player.server), copy) && isInRoom(base, player.position());
+    }
+
+    /**
+     * A new reader takes a copy whose last round is over: the room is put back as new, without its wardrobe and with the
+     * blindfold back on the wall. The blocks and frames follow once the room is loaded.
+     */
+    static void freshRound(LabyrinthData data, int copy) {
+        if (copy <= 0) return;
+        CompoundTag old = data.state(room(copy));
+        CompoundTag fresh = new CompoundTag();
+        if (old.contains("Wardrobe")) fresh.putLong("Clear", old.getLong("Wardrobe"));
+        else if (old.contains("Clear")) fresh.putLong("Clear", old.getLong("Clear"));
+        data.setState(room(copy), fresh);
+        GAMES.remove(copy);
+        removeFeet(copy);
+        PENDING.add(copy);
+    }
+
+    /** The last round's wardrobe comes out of a room put back as new. */
+    private static void clearOldWardrobe(ServerLevel level, BlockPos base, LabyrinthData data, int copy) {
+        CompoundTag state = data.state(room(copy));
+        if (!state.contains("Clear")) return;
+        BlockPos wardrobe = base.offset(BlockPos.of(state.getLong("Clear")));
+        if (!level.isLoaded(wardrobe) || !level.isLoaded(wardrobe.above())) return;
+        for (BlockPos at : List.of(wardrobe, wardrobe.above())) {
+            if (level.getBlockState(at).is(HouseBlocks.HIDE_AND_CLAP_WARDROBE.get())) level.setBlock(at, Blocks.AIR.defaultBlockState(), LabyrinthBuilder.flags());
+        }
+        state.remove("Clear");
+        data.setState(room(copy), state);
     }
 
     private static AABB interior(BlockPos base) {
@@ -333,8 +430,8 @@ public final class HideAndClap {
         BlockState wardrobe = HouseBlocks.HIDE_AND_CLAP_WARDROBE.get().defaultBlockState()
                 .setValue(WardrobeBlock.FACING, facing)
                 .setValue(WardrobeBlock.OPEN, open);
-        level.setBlock(lower, wardrobe.setValue(WardrobeBlock.HALF, DoubleBlockHalf.LOWER), LabyrinthBuilder.flags());
-        level.setBlock(lower.above(), wardrobe.setValue(WardrobeBlock.HALF, DoubleBlockHalf.UPPER), LabyrinthBuilder.flags());
+        BuildBlocks.set(level, lower, wardrobe.setValue(WardrobeBlock.HALF, DoubleBlockHalf.LOWER), LabyrinthBuilder.flags());
+        BuildBlocks.set(level, lower.above(), wardrobe.setValue(WardrobeBlock.HALF, DoubleBlockHalf.UPPER), LabyrinthBuilder.flags());
     }
 
     // ------------------------------------------------------------------
@@ -343,26 +440,36 @@ public final class HideAndClap {
     public static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
-        BlockPos base = base(server);
-        if (level == null || base == null) {
+        if (level == null) {
             return;
         }
-        tickFeet(level);
         LabyrinthData data = LabyrinthData.get(server);
-        placeEntitiesIfLoaded(level, base, data);
         restore(data, level);
-        if (data.isCompleted(ID)) {
-            if (game != null && server.getPlayerList().getPlayer(game.player) != null) {
-                Game finished = game;
-                game = null;
-                release(finished, server);
-                persist(data, level);
+        // The original and every copy that stands, each with its own round.
+        int rooms = SceneInstances.copies(data, LabyrinthPlace.HIDE_AND_CLAP);
+        for (int copy = 0; copy <= rooms; copy++) {
+            if (copy > 0 && !SceneInstances.built(data, LabyrinthPlace.HIDE_AND_CLAP, copy)) continue;
+            BlockPos base = base(server, copy);
+            if (base != null) tickRoom(server, level, base, data, copy);
+        }
+    }
+
+    private static void tickRoom(MinecraftServer server, ServerLevel level, BlockPos base, LabyrinthData data, int copy) {
+        tickFeet(level, copy);
+        clearOldWardrobe(level, base, data, copy);
+        placeEntitiesIfLoaded(level, base, data, copy);
+        if (completed(data, copy)) {
+            Game won = GAMES.get(copy);
+            if (won != null && server.getPlayerList().getPlayer(won.player) != null) {
+                GAMES.remove(copy);
+                release(won, server);
+                persist(data, level, copy);
             }
-            removeFeet();
+            removeFeet(copy);
             return;
         }
         long now = level.getGameTime();
-        if (game == null) {
+        if (GAMES.get(copy) == null) {
             for (ServerPlayer player : level.players()) {
                 if (!isInRoom(base, player.position()) || player.isSpectator() || !player.isAlive() || failed(data, player.getUUID())) {
                     continue;
@@ -370,13 +477,13 @@ public final class HideAndClap {
                 enter(player);
                 break;
             }
-            if (game == null) return;
+            if (GAMES.get(copy) == null) return;
         }
 
-        Game current = game;
+        Game current = GAMES.get(copy);
         ServerPlayer player = server.getPlayerList().getPlayer(current.player);
         if (player == null || !player.isAlive()) {
-            if (!current.clock.started()) { game = null; persist(data, level); }
+            if (!current.clock.started()) { GAMES.remove(copy); persist(data, level, copy); }
             return;
         }
         if (!current.clock.started() && (player.serverLevel() != level || !isInRoom(base, player.position()))) {
@@ -394,20 +501,20 @@ public final class HideAndClap {
         if (current.clock.expired(now) && current.stage != Stage.ENDING) beginEnding(player, current, level, base, data, now);
         switch (current.stage) {
             case WAITING -> {
-                if (now >= nextUnderBed && player.getRandom().nextInt(700) == 0) {
+                if (now >= current.underBed && player.getRandom().nextInt(700) == 0) {
                     play(player, CLAP_MUFFLED, Vec3.atBottomCenterOf(base.offset(BED_FOOT)).add(0, .15, 0), .8F, 1);
-                    nextUnderBed = now + 600;
+                    current.underBed = now + 600;
                 }
             }
             case COUNTING -> {
                 if (now >= current.next) {
                     count(player, current, level, base, now);
-                    persist(data, level);
+                    persist(data, level, copy);
                 }
             }
             case CLAPPING -> {
                 clap(player, current, level, base, data, now);
-                if (now % 20 == 0) persist(data, level);
+                if (now % 20 == 0) persist(data, level, copy);
             }
             case WARDROBE -> {
                 if (current.wardrobe != null && now >= current.next) {
@@ -438,80 +545,101 @@ public final class HideAndClap {
         }
     }
 
+    /** Saved rounds come back into the rooms they were played in, once for each save. */
     private static void restore(LabyrinthData data, ServerLevel level) {
-        if (game != null) return;
-        CompoundTag session = data.state(ID).getCompound("Session");
-        if (game == null && session.hasUUID("Player")) game = Game.load(session, level);
+        if (restored == data) return;
+        restored = data;
+        GAMES.clear();
+        int rooms = SceneInstances.copies(data, LabyrinthPlace.HIDE_AND_CLAP);
+        for (int copy = 0; copy <= rooms; copy++) {
+            CompoundTag session = data.state(room(copy)).getCompound("Session");
+            if (session.hasUUID("Player")) GAMES.put(copy, Game.load(session, level, copy));
+        }
     }
 
-    private static void persist(LabyrinthData data, ServerLevel level) {
-        CompoundTag state = data.state(ID);
-        if (game == null) state.remove("Session");
-        else state.put("Session", game.save(level));
-        data.setState(ID, state);
+    private static void persist(LabyrinthData data, ServerLevel level, int copy) {
+        CompoundTag state = data.state(room(copy));
+        Game current = GAMES.get(copy);
+        if (current == null) state.remove("Session");
+        else state.put("Session", current.save(level));
+        data.setState(room(copy), state);
     }
 
-    /** The first entrant reserves the game; visitors cannot take that player's turn. */
+    /** The round this reader is playing or has reserved, in whichever room. */
+    @Nullable
+    private static Game gameOf(UUID player) {
+        for (Game current : GAMES.values()) if (current.player.equals(player)) return current;
+        return null;
+    }
+
+    /** The first entrant reserves their room's game; nobody else can take that player's turn. */
     public static boolean canEnter(ServerPlayer player) {
         LabyrinthData data = LabyrinthData.get(player.server);
         ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
         if (level != null) restore(data, level);
-        return data.isCompleted(ID) || game == null || game.player.equals(player.getUUID());
+        int copy = copyOf(player);
+        Game current = GAMES.get(copy);
+        return completed(data, copy) || current == null || current.player.equals(player.getUUID());
     }
 
     public static boolean enter(ServerPlayer player) {
         ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
-        BlockPos base = base(player.server);
+        int copy = copyOf(player);
+        BlockPos base = base(player.server, copy);
         if (level == null || base == null || player.isSpectator() || !player.isAlive()) return false;
         LabyrinthData data = LabyrinthData.get(player.server);
-        if (data.isCompleted(ID)) return true;
+        if (completed(data, copy)) return true;
         restore(data, level);
         if (!canEnter(player)) return false;
-        if (game == null) {
-            game = new Game(player.getUUID(), level.getGameTime());
-            game.anchor = player.position();
-            CompoundTag state = data.state(ID);
-            if (state.contains("Wardrobe")) game.wardrobe = base.offset(BlockPos.of(state.getLong("Wardrobe")));
+        if (GAMES.get(copy) == null) {
+            Game created = new Game(player.getUUID(), level.getGameTime(), copy);
+            created.anchor = player.position();
+            CompoundTag state = data.state(room(copy));
+            if (state.contains("Wardrobe")) created.wardrobe = base.offset(BlockPos.of(state.getLong("Wardrobe")));
             for (ItemFrame frame : level.getEntitiesOfClass(ItemFrame.class, interior(base).inflate(1))) {
                 if (frame.getPos().equals(base.offset(NOTE_FRAME)) && !frame.getItem().isEmpty()) frame.setItem(note(), false);
             }
-            persist(data, level);
+            GAMES.put(copy, created);
+            persist(data, level, copy);
             player.displayClientMessage(Component.literal("Someone is waiting for you to put the blindfold on. You can still turn back.")
                     .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
             // 0.4.105: the note says she will finish the game; this says what that costs, before the blindfold goes on.
             player.displayClientMessage(Component.literal("If the minute runs out you die, and drop everything you carry, even with keepInventory on.")
                     .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
         }
-        closeEntry(level, data);
+        closeEntry(level, data, copy);
         return true;
     }
 
     public static boolean isLocked(ServerPlayer player) {
         LabyrinthData data = LabyrinthData.get(player.server);
-        if (data.isCompleted(ID)) return false;
         ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
         if (level != null) restore(data, level);
-        return !data.isCompleted(ID) && game != null && game.clock.started() && game.player.equals(player.getUUID()) && player.isAlive();
+        Game current = gameOf(player.getUUID());
+        return current != null && !completed(data, current.copy) && current.clock.started() && player.isAlive();
     }
 
     /** Leaving before choosing the blindfold releases only the reservation, never the original props. */
     public static void departBeforeStarting(ServerPlayer player) {
-        if (game == null || !game.player.equals(player.getUUID()) || game.clock.started()) return;
+        Game current = gameOf(player.getUUID());
+        if (current == null || current.clock.started()) return;
         ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
         if (level == null) return;
-        game = null;
-        persist(LabyrinthData.get(player.server), level);
+        GAMES.remove(current.copy);
+        persist(LabyrinthData.get(player.server), level, current.copy);
         HousePackets.send(player, new ClapGamePayload(false, 0, 0));
     }
 
     public static void confineLockedPlayer(ServerPlayer player) {
         ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
-        BlockPos base = base(player.server);
-        if (level != null && base != null && isLocked(player)) confine(player, game, level, base);
+        if (level == null || !isLocked(player)) return;
+        Game current = gameOf(player.getUUID());
+        BlockPos base = base(player.server, current.copy);
+        if (base != null) confine(player, current, level, base);
     }
 
-    private static void closeEntry(ServerLevel level, LabyrinthData data) {
-        LabyrinthData.Door entry = data.door(LabyrinthPlace.HIDE_AND_CLAP.entryDoorId());
+    private static void closeEntry(ServerLevel level, LabyrinthData data, int copy) {
+        LabyrinthData.Door entry = SceneInstances.entry(data, LabyrinthPlace.HIDE_AND_CLAP, copy);
         if (entry != null) {
             BlockState state = level.getBlockState(entry.lower);
             if (state.getBlock() instanceof DoorBlock door && state.getValue(DoorBlock.OPEN)) {
@@ -521,7 +649,7 @@ public final class HideAndClap {
     }
 
     private static void confine(ServerPlayer player, Game current, ServerLevel level, BlockPos base) {
-        closeEntry(level, LabyrinthData.get(player.server));
+        closeEntry(level, LabyrinthData.get(player.server), current.copy);
         boolean inside = player.serverLevel() == level && isInRoom(base, player.position());
         if (inside && current.stage != Stage.ENDING) {
             current.anchor = player.position();
@@ -546,7 +674,7 @@ public final class HideAndClap {
             current.next = now + 10;
             enforceBlindfold(player, current);
             sync(player, current, 0);
-            persist(data, level);
+            persist(data, level, current.copy);
             player.displayClientMessage(Component.literal("The cloth tightens. Find my wardrobe before a minute passes.")
                     .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
         }
@@ -593,13 +721,13 @@ public final class HideAndClap {
     private static void release(Game current, MinecraftServer server) {
         // Item tossing and equipment callbacks ask isLocked(), which may restore a
         // saved turn. Detach both authorities before any inventory/drop callback.
-        if (game == current) game = null;
+        if (GAMES.get(current.copy) == current) GAMES.remove(current.copy);
         LabyrinthData data = LabyrinthData.get(server);
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room(current.copy));
         CompoundTag session = state.getCompound("Session");
         if (session.hasUUID("Player") && session.getUUID("Player").equals(current.player)) {
             state.remove("Session");
-            data.setState(ID, state);
+            data.setState(room(current.copy), state);
         }
         ServerPlayer player = server.getPlayerList().getPlayer(current.player);
         if (player != null) {
@@ -634,7 +762,7 @@ public final class HideAndClap {
         HousePackets.send(player,new io.github.knaitoe.theoldesthouse.network.ClapCuePayload(source,wardrobe));
     }
     private static void beginEnding(ServerPlayer player, Game current, ServerLevel level, BlockPos base, LabyrinthData data, long now) {
-        removeFeet();
+        removeFeet(current.copy);
         current.stage = Stage.ENDING;
         current.endingAt = now;
         current.anchor = player.position();
@@ -648,13 +776,13 @@ public final class HideAndClap {
         }
         Vec3 from = current.anchor.add(forward.scale(1.5));
         Vec3 to = current.anchor.add(forward.scale(.85));
-        spawnFeet(level, player, from, to, current.endingYaw + 180, ClapGameClock.ENDING_TICKS);
+        spawnFeet(level, player, from, to, current.endingYaw + 180, ClapGameClock.ENDING_TICKS, current.copy);
         enforceBlindfold(player, current);
         player.closeContainer();
         player.stopRiding();
         player.teleportTo(level, current.anchor.x, current.anchor.y, current.anchor.z, current.endingYaw, 32);
         sync(player, current, 1);
-        persist(data, level);
+        persist(data, level, current.copy);
     }
 
     /** Clear carried items, armor, offhand and the menu cursor, including keepInventory worlds. */
@@ -669,12 +797,12 @@ public final class HideAndClap {
         return data.state(ID).getCompound("FailedPlayers").getBoolean(player.toString());
     }
 
-    private static void resetRound(MinecraftServer server) {
+    private static void resetRound(MinecraftServer server, int copy) {
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
-        BlockPos base = base(server);
+        BlockPos base = base(server, copy);
         if (level == null || base == null) return;
         LabyrinthData data = LabyrinthData.get(server);
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room(copy));
         if (state.contains("Wardrobe")) {
             BlockPos wardrobe = base.offset(BlockPos.of(state.getLong("Wardrobe")));
             level.setBlock(wardrobe, Blocks.AIR.defaultBlockState(), LabyrinthBuilder.flags());
@@ -682,11 +810,11 @@ public final class HideAndClap {
         }
         state.remove("Session"); state.remove("Wardrobe"); state.remove("Facing");
         state.remove("Drawing"); state.remove("Opened");
-        data.setState(ID, state);
-        game = null;
-        removeFeet();
-        entitiesPending = true;
-        placeEntitiesIfLoaded(level, base, data);
+        data.setState(room(copy), state);
+        GAMES.remove(copy);
+        removeFeet(copy);
+        PENDING.add(copy);
+        placeEntitiesIfLoaded(level, base, data, copy);
     }
 
     private static void count(ServerPlayer player, Game current, ServerLevel level, BlockPos base, long now) {
@@ -744,7 +872,7 @@ public final class HideAndClap {
             if (current.index >= current.spots.size()) {
                 hideInWardrobe(player, current, level, base, data, now);
             } else if (current.index == 2) {
-                startFeet(level, base, player, current.spots.get(2));
+                startFeet(level, base, player, current.spots.get(2), current.copy);
             }
             return;
         }
@@ -781,25 +909,25 @@ public final class HideAndClap {
         byte[] page = CrayonDrawing.draw(eye, yaw, player.position(), Vec3.atBottomCenterOf(base.offset(BED_FOOT)), player.getRandom().nextLong());
         MapId drawing = CrayonDrawing.store(level, page);
 
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room(current.copy));
         state.putLong("Wardrobe", spot.subtract(base).asLong());
         state.putInt("Facing", facing.get3DDataValue());
         state.putInt("Drawing", drawing.id());
-        data.setState(ID, state);
+        data.setState(room(current.copy), state);
 
         current.wardrobe = spot;
         current.stage = Stage.WARDROBE;
         current.insideClaps = 0;
         current.next = now + 20;
-        persist(data, level);
+        persist(data, level, current.copy);
         TheOldestHouse.LOGGER.info("The hide-and-clap wardrobe stands behind {}.", player.getGameProfile().getName());
     }
 
     // ------------------------------------------------------------------
     // The feet
 
-    private static void startFeet(ServerLevel level, BlockPos base, ServerPlayer player, BlockPos towards) {
-        removeFeet();
+    private static void startFeet(ServerLevel level, BlockPos base, ServerPlayer player, BlockPos towards, int copy) {
+        removeFeet(copy);
         double r = Math.toRadians(player.getYRot());
         Vec3 forward = new Vec3(-Math.sin(r), 0.0D, Math.cos(r));
         Vec3 from = player.position().add(forward.scale(1.8D));
@@ -814,10 +942,10 @@ public final class HideAndClap {
         Vec3 to = from.add(away.normalize().scale(2.6D));
         float yaw = (float) Math.toDegrees(Math.atan2(-away.x, away.z));
         spawnFeet(level, player, new Vec3(from.x, base.getY(), from.z),
-                new Vec3(to.x, base.getY(), to.z), yaw, FEET_TICKS);
+                new Vec3(to.x, base.getY(), to.z), yaw, FEET_TICKS, copy);
     }
 
-    private static void spawnFeet(ServerLevel level, ServerPlayer player, Vec3 from, Vec3 to, float yaw, int duration) {
+    private static void spawnFeet(ServerLevel level, ServerPlayer player, Vec3 from, Vec3 to, float yaw, int duration, int copy) {
         ClapGhostEntity stand = ClapGhostRegistry.GIRL.get().create(level);
         if (stand == null) {
             return;
@@ -826,11 +954,11 @@ public final class HideAndClap {
         stand.addTag(FEET_TAG);
         stand.moveTo(from.x, from.y, from.z, yaw, 0.0F);
         level.addFreshEntity(stand);
-        feet = new Feet(stand, player.getUUID(), from, to, duration);
+        FEET.put(copy, new Feet(stand, player.getUUID(), from, to, duration));
     }
 
-    private static void tickFeet(ServerLevel level) {
-        Feet current = feet;
+    private static void tickFeet(ServerLevel level, int copy) {
+        Feet current = FEET.get(copy);
         if (current == null) {
             return;
         }
@@ -844,14 +972,14 @@ public final class HideAndClap {
             play(viewer, SMALL_STEPS, at, 0.45F, 1.0F);
         }
         if (current.tick >= current.duration) {
-            removeFeet();
+            removeFeet(copy);
         }
     }
 
-    private static void removeFeet() {
-        if (feet != null) {
-            feet.stand.discard();
-            feet = null;
+    private static void removeFeet(int copy) {
+        Feet current = FEET.remove(copy);
+        if (current != null) {
+            current.stand.discard();
         }
     }
 
@@ -863,9 +991,10 @@ public final class HideAndClap {
         if (level.isClientSide() || !level.dimension().equals(HouseDimensions.INTERIOR) || level.getServer() == null) {
             return;
         }
-        BlockPos base = base(level.getServer());
+        int copy = copyAt(level, Vec3.atCenterOf(event.getPos()));
+        BlockPos base = copy < 0 ? null : base(level.getServer(), copy);
         LabyrinthData data = LabyrinthData.get(level.getServer());
-        CompoundTag state = data.state(ID);
+        CompoundTag state = data.state(room(Math.max(0, copy)));
         if (base == null || !state.contains("Wardrobe")) {
             return;
         }
@@ -881,9 +1010,9 @@ public final class HideAndClap {
             return;
         }
         restore(data, serverLevel);
-        if (game == null || game.stage != Stage.WARDROBE || !game.player.equals(player.getUUID())
-                || !game.clock.complete(player.getUUID(), serverLevel.getGameTime())) return;
-        Game finished = game;
+        Game finished = GAMES.get(copy);
+        if (finished == null || finished.stage != Stage.WARDROBE || !finished.player.equals(player.getUUID())
+                || !finished.clock.complete(player.getUUID(), serverLevel.getGameTime())) return;
         Direction facing = Direction.from3DDataValue(state.getInt("Facing"));
         setWardrobe(serverLevel, wardrobe, facing, true);
         serverLevel.playSound(null, wardrobe, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 0.8F, 0.8F);
@@ -893,43 +1022,42 @@ public final class HideAndClap {
         drawing.setNoPickUpDelay();
         serverLevel.addFreshEntity(drawing);
         state.putBoolean("Opened", true);
-        data.setState(ID, state);
-        data.setCompleted(ID, true);
+        data.setState(room(copy), state);
+        complete(data, copy);
         WitnessAccount.resolve(player,WitnessAccount.Story.CLAP,"completed_game");
-        game = null;
+        GAMES.remove(copy);
         release(finished, level.getServer());
-        persist(data, serverLevel);
-        removeFeet();
+        persist(data, serverLevel, copy);
+        removeFeet(copy);
         TheOldestHouse.LOGGER.info("{} opened the wardrobe.", player.getGameProfile().getName());
     }
 
     /** Empty frames in the room stay on the wall. */
     public static void onAttackEntity(AttackEntityEvent event) {
-        if (event.getTarget() instanceof ItemFrame frame && frame.getItem().isEmpty()
-                && frame.level() instanceof ServerLevel level && level.dimension().equals(HouseDimensions.INTERIOR)) {
-            BlockPos base = base(level.getServer());
-            if (base != null && isInRoom(base, frame.position())) {
-                event.setCanceled(true);
-            }
+        if (!(event.getTarget() instanceof ItemFrame frame) || !(frame.level() instanceof ServerLevel level)
+                || !level.dimension().equals(HouseDimensions.INTERIOR)) {
+            return;
         }
-        if (event.getTarget() instanceof ItemFrame frame && game != null && !game.player.equals(event.getEntity().getUUID())
-                && frame.level() instanceof ServerLevel level) {
-            BlockPos base = base(level.getServer());
-            if (base != null && isInRoom(base, frame.position())) event.setCanceled(true);
-        }
+        int copy = copyAt(level, frame.position());
+        BlockPos base = copy < 0 ? null : base(level.getServer(), copy);
+        if (base == null || !isInRoom(base, frame.position())) return;
+        Game current = GAMES.get(copy);
+        if (frame.getItem().isEmpty() || current != null && !current.player.equals(event.getEntity().getUUID())) event.setCanceled(true);
     }
 
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
         if (event.getSlot() == EquipmentSlot.HEAD && event.getEntity() instanceof ServerPlayer player && (isLocked(player) || reservedHere(player))) {
             ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
-            startIfWorn(player, game, level, LabyrinthData.get(player.server), level.getGameTime());
-            if (game.clock.bound() && !revealed(game,level.getGameTime())) enforceBlindfold(player, game);
+            Game current = gameOf(player.getUUID());
+            startIfWorn(player, current, level, LabyrinthData.get(player.server), level.getGameTime());
+            if (current.clock.bound() && !revealed(current,level.getGameTime())) enforceBlindfold(player, current);
         }
     }
 
     private static boolean reservedHere(ServerPlayer player) {
-        BlockPos base=base(player.server);
-        return !LabyrinthData.get(player.server).isCompleted(ID)&&game!=null&&game.player.equals(player.getUUID())&&player.isAlive()&&base!=null
+        Game current = gameOf(player.getUUID());
+        BlockPos base = current == null ? null : base(player.server, current.copy);
+        return base!=null&&!completed(LabyrinthData.get(player.server),current.copy)&&player.isAlive()
                 &&player.level().dimension().equals(HouseDimensions.INTERIOR)&&isInRoom(base,player.position());
     }
 
@@ -937,8 +1065,9 @@ public final class HideAndClap {
         if (event.getEntity() instanceof ServerPlayer player && isLocked(player)) {
             confineLockedPlayer(player);
             ServerLevel level = player.server.getLevel(HouseDimensions.INTERIOR);
-            startIfWorn(player, game, level, LabyrinthData.get(player.server), level.getGameTime());
-            if (game.clock.bound() && !revealed(game,level.getGameTime())) enforceBlindfold(player, game);
+            Game current = gameOf(player.getUUID());
+            startIfWorn(player, current, level, LabyrinthData.get(player.server), level.getGameTime());
+            if (current.clock.bound() && !revealed(current,level.getGameTime())) enforceBlindfold(player, current);
         }
     }
 
@@ -953,25 +1082,28 @@ public final class HideAndClap {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (isLocked(player)) {
-                game.needsSync = true;
+                Game current = gameOf(player.getUUID());
+                current.needsSync = true;
                 confineLockedPlayer(player);
-                if (game.clock.bound() && !revealed(game,player.serverLevel().getGameTime())) enforceBlindfold(player, game);
-                sync(player, game, 0);
+                if (current.clock.bound() && !revealed(current,player.serverLevel().getGameTime())) enforceBlindfold(player, current);
+                sync(player, current, 0);
             } else HousePackets.send(player, new ClapGamePayload(false, 0, 0));
         }
     }
 
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && game != null && game.player.equals(player.getUUID())) {
-            persist(LabyrinthData.get(player.server), player.server.getLevel(HouseDimensions.INTERIOR));
-            game.needsSync = true;
-            removeFeet();
+        Game current = event.getEntity() instanceof ServerPlayer player ? gameOf(player.getUUID()) : null;
+        if (current != null && event.getEntity() instanceof ServerPlayer player) {
+            persist(LabyrinthData.get(player.server), player.server.getLevel(HouseDimensions.INTERIOR), current.copy);
+            current.needsSync = true;
+            removeFeet(current.copy);
         }
     }
 
     public static void onDeath(LivingDeathEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && game != null && game.player.equals(player.getUUID())) {
-            if (!game.clock.started()) { departBeforeStarting(player); return; }
+        Game dying = event.getEntity() instanceof ServerPlayer player ? gameOf(player.getUUID()) : null;
+        if (dying != null && event.getEntity() instanceof ServerPlayer player) {
+            if (!dying.clock.started()) { departBeforeStarting(player); return; }
             LabyrinthData data = LabyrinthData.get(player.server);
             CompoundTag state = data.state(ID);
             CompoundTag failures = state.getCompound("FailedPlayers");
@@ -980,7 +1112,6 @@ public final class HideAndClap {
             data.setState(ID, state);
             // Restore the actual cloth before vanilla creates death drops. The
             // temporary binding marker and curse must not strand it afterward.
-            Game dying = game;
             removeBoundCopies(player, dying.player);
             if (!dying.originalCloth.isEmpty()) player.setItemSlot(EquipmentSlot.HEAD, dying.originalCloth.copy());
             ItemStack cursor = player.containerMenu.getCarried();
@@ -990,7 +1121,7 @@ public final class HideAndClap {
                 if (drop != null) MotherOfStrays.recordDropOwner(drop, player.getUUID());
             }
             data.clearReturns(player.getUUID());
-            resetRound(player.server);
+            resetRound(player.server, dying.copy);
             // In an ordinary world vanilla drops these once. In a keepInventory
             // world the game's loss still creates ordinary recoverable items.
             if (player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) dropInventoryForFailure(player);
@@ -1043,16 +1174,16 @@ public final class HideAndClap {
 
     public static void onServerStopping(ServerStoppingEvent event) {
         ServerLevel level = event.getServer().getLevel(HouseDimensions.INTERIOR);
-        if (level != null && game != null) persist(LabyrinthData.get(event.getServer()), level);
-        removeFeet();
+        if (level != null) for (int copy : List.copyOf(GAMES.keySet())) persist(LabyrinthData.get(event.getServer()), level, copy);
+        for (int copy : List.copyOf(FEET.keySet())) removeFeet(copy);
         clearAll();
     }
 
     public static void clearAll() {
-        game = null;
-        feet = null;
-        nextUnderBed = 0L;
-        entitiesPending = false;
+        GAMES.clear();
+        FEET.clear();
+        PENDING.clear();
+        restored = null;
     }
 
     // ------------------------------------------------------------------
@@ -1087,7 +1218,7 @@ public final class HideAndClap {
     // ------------------------------------------------------------------
     // Testing
 
-    /** Puts the room back as new: no wardrobe, the blindfold on the wall, dealable again. */
+    /** Puts the original room back as new: no wardrobe, the blindfold on the wall, dealable again. */
     public static boolean reset(MinecraftServer server) {
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
         BlockPos base = base(server);
@@ -1095,10 +1226,12 @@ public final class HideAndClap {
             return false;
         }
         LabyrinthData data = LabyrinthData.get(server);
-        if (game != null) { Game finished = game; game = null; release(finished, server); }
+        restore(data, level);
+        Game finished = GAMES.remove(0);
+        if (finished != null) release(finished, server);
         data.setCompleted(ID, false);
         data.setState(ID, new CompoundTag());
-        removeFeet();
+        removeFeet(0);
         build(server, level, base);
         return true;
     }

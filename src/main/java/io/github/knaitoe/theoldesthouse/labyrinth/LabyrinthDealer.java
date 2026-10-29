@@ -47,6 +47,7 @@ public final class LabyrinthDealer {
                     || place == LabyrinthPlace.BACKSEAT
                     || place == LabyrinthPlace.SILO
                     || place == LabyrinthPlace.HOLLOWAY_CAMP
+                    || place == LabyrinthPlace.HIDE_AND_CLAP
                     || (NovelVignettes.isNovel(place) && place.kind()!=LabyrinthPlace.Kind.RECURRING)
                     || LiteraryRooms.isLiterary(place)
                     || (place.isFinishable() && data.isCompleted(place.id()))
@@ -80,6 +81,8 @@ public final class LabyrinthDealer {
         if (HollowayVignette.canDeal(data,player)) places.add(LabyrinthPlace.HOLLOWAY_CAMP);
         if (BackseatSites.canDeal(data,player)) places.add(LabyrinthPlace.BACKSEAT);
         if (SiloSites.canDeal(data,player)) places.add(LabyrinthPlace.SILO);
+        // 0.4.158: every reader plays the clapping game once, in a room of their own.
+        if (HideAndClap.canDeal(data,player)) places.add(LabyrinthPlace.HIDE_AND_CLAP);
         for(var p:NovelVignettes.PLACES)if(NovelVignettes.canDeal(data,player,p)&&!places.contains(p))places.add(p);
         if(data.isCompleted(PreservedCave.ID)&&PreservedCave.phoneWaiting(data,player))places.add(LabyrinthPlace.PRESERVED_CAVE);
         for(LabyrinthPlace place:LabyrinthPlace.values()){

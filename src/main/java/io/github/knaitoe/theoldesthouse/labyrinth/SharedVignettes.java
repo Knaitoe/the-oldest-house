@@ -31,14 +31,12 @@ public final class SharedVignettes {
      * Private scenes that stand once rather than as a copy for each reader (owner, October 28): reading to Harrigan,
      * the confession in the reader's own hand, the Holy Rabbit's one child, the Wheel house measuring the reader against
      * Mother, the Whale's letters, the canoe's recording, the diner's one diner and the split-feed bedroom's own body.
-     * They are one reader's at a time.
+     * They are one reader's at a time. 0.4.158: so is the clapping game, played blindfolded and alone (owner, October 29).
      */
-    private static final Set<LabyrinthPlace> ONE_AT_A_TIME=EnumSet.of(HARRIGAN,CONFESSION,HOLY_RABBIT,WHEEL,WHALE,PHONE_CANOE,SECOND_WAITRESS,MISSING_SLEEP);
+    private static final Set<LabyrinthPlace> ONE_AT_A_TIME=EnumSet.of(HARRIGAN,CONFESSION,HOLY_RABBIT,WHEEL,WHALE,PHONE_CANOE,SECOND_WAITRESS,MISSING_SLEEP,HIDE_AND_CLAP);
     /** One reader's own: the backseat's one seat, the private sites and copies, the Red Room, and the scenes above. The quiet rooms are not dealt at all. */
     private static final Set<LabyrinthPlace> PRIVATE=EnumSet.of(BACKSEAT,SILO,BORRASCA,FAMILY_COPY,OLD_CABIN,RED_ROOM);
     static{PRIVATE.addAll(ONE_AT_A_TIME);}
-    /** Not yet ready for a second reader: the clapping game has one blindfold. The Goatman's readers take cousins' places (0.4.150). */
-    private static final Set<LabyrinthPlace> HELD=EnumSet.of(HIDE_AND_CLAP);
     private static final Map<LabyrinthPlace,Scene> DRAFTED=new EnumMap<>(LabyrinthPlace.class);
     private SharedVignettes(){}
     static {
@@ -48,7 +46,7 @@ public final class SharedVignettes {
     }
 
     public static boolean followable(@Nullable LabyrinthPlace place){
-        return place!=null&&place.isVignette()&&place.slot()>=0&&!PRIVATE.contains(place)&&!HELD.contains(place);
+        return place!=null&&place.isVignette()&&place.slot()>=0&&!PRIVATE.contains(place);
     }
     public static boolean privateScene(LabyrinthPlace place){return PRIVATE.contains(place);}
     /** Someone other than {@code reader}, living and not a spectator, is in a private scene that stands once: it is theirs until they leave. */

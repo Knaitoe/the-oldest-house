@@ -301,6 +301,8 @@ public final class WitnessAccount {
     public static void onArrive(ServerPlayer player,LabyrinthPlace place){
         LabyrinthData data=LabyrinthData.get(player.server);Story story=Story.of(place.id());
         if(story==null||LiteraryRooms.isLiterary(place)||place==LabyrinthPlace.HOTEL||NovelVignettes.isNovel(place)||ClassicsVignettes.isClassic(place)||!data.isCompleted(place.id())||has(data,player.getUUID(),story))return;
+        // A reader in a copy has a story of their own there: the world's finished one is the original's alone.
+        if(SceneInstances.copyable(place)&&SceneInstances.of(player,place)>0)return;
         String prop=switch(story){case FLOORBOARDS->"the exposed space beneath the loose board";
             case CLAP->"the open wardrobe";case HARRIGAN->"the casket";case MODEL_HOME->"the child's window";
             case DROWNED_TOWN->"the church's open roof hatch";case PRESERVED_CAVE->"the canoe behind the empty pews";case SHALLOWS->"the bank";case PHONE_CANOE->"the canoe";case GOATMAN->"the trailer door";case TED_CAVER->"the cave landing";case ZAMPANO->"the survey";case WHALE->"the pigeonholes";case BARN_WELL->"the well";case PLAIN->"the distant shape";case HOSPITAL->"the dawn chart";case HOLLOWAY->"the service latch";case MOTHER->"the keeper's record";case SEANCE->"the family album";case WALLPAPER->"the collected pages";case HOTEL->"the closing account";default->"the closing account";};
