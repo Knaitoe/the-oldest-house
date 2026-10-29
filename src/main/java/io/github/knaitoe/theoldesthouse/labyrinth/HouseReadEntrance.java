@@ -18,6 +18,8 @@ public final class HouseReadEntrance {
     private static final int QUIET=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private HouseReadEntrance(){}
     public static String id(HouseReadSites.Room room){return "house_read_entrance/"+room.key();}
+    /** Fixtures only: a saved world from 0.4.142 holds its doors and no record of any retired. */
+    public static void forgetRetired(LabyrinthData data){data.setStateEntry(STATE,"Retired",new net.minecraft.nbt.CompoundTag());}
     public static HouseReadSites.Room room(LabyrinthData.Door door){
         for(var room:HouseReadSites.Room.values())if(id(room).equals(door.id))return room;
         return null;
