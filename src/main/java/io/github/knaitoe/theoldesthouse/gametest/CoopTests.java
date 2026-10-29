@@ -28,6 +28,7 @@ public final class CoopTests {
     @AfterBatch(batch="coop_town148") public static void townDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_child149") public static void childDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_private151") public static void privateDone(ServerLevel l){close();}
+    @AfterBatch(batch="coop_copies153") public static void copiesDone(ServerLevel l){SceneInstances.clear();close();}
     private static final LabyrinthPlace SCENE=LabyrinthPlace.HILL_NURSERY;
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
@@ -291,6 +292,68 @@ public final class CoopTests {
                 h.assertTrue(!f.data().visited(next.getUUID()).contains(LabyrinthPlace.HARRIGAN.id())&&WitnessAccount.Story.of(LabyrinthPlace.HARRIGAN.id())!=null&&!WitnessAccount.begun(f.data(),next.getUUID(),WitnessAccount.Story.of(LabyrinthPlace.HARRIGAN.id())),"the study waits for them: they have not been in it");
                 h.assertTrue(where(f,inside)==LabyrinthPlace.HARRIGAN&&inside.isAlive()&&inside.getHealth()==20,"the reader inside is left alone");
                 away(f,inside);h.assertTrue(SharedVignettes.occupant(f.in.getServer(),LabyrinthPlace.HARRIGAN,next.getUUID())==null,"once they leave, the study is free");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="coop_copies153",timeoutTicks=6000)
+    public static void aPrivateSceneTakenByAnotherOpensACopyThatItsReaderKeeps(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var first=player(h,f,"copy_first");var second=player(h,f,"copy_second");var watcher=player(h,f,"copy_watcher");
+        var scene=LabyrinthPlace.CONFESSION;var server=f.in.getServer();
+        var halls=List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
+        var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));
+        for(var hall:halls)hold(f,hall);hold(f,scene);
+        var readers=new ArrayList<>(List.of(first,second));boolean[] ticking={false};LabyrinthData.Door[] west={null};ServerPlayer[] third={null};
+        h.onEachTick(()->{if(ticking[0])for(var p:readers)HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(p));});
+        java.util.function.Consumer<ServerPlayer> knock=p->{var front=west[0].lower.relative(west[0].facing);f.data().deal(p.getUUID(),west[0],scene.id(),false);VignetteGate.redealt(f.data(),p.getUUID(),west[0]);at(p,f.in,front);click(p,west[0].lower);};
+        java.util.function.ToIntFunction<ServerPlayer> copy=p->SceneInstances.at(server,scene,p.level().dimension(),p.position());
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction, its halls and the confession room are resident"))
+            .thenExecute(()->{
+                LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
+                for(var hall:halls){var b=f.base(hall);if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else LabyrinthHalls.build(f.in,b,hall);LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);}
+                f.build(scene);at(watcher,f.in,f.base(scene).offset(2,0,-10));watcher.setGameMode(GameType.SPECTATOR);
+                h.assertTrue(SceneInstances.copyable(scene)&&SceneInstances.cap()==8,"the confession has copies, eight at most by default");
+                west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");ticking[0]=true;knock.accept(first);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(first)&&copy.applyAsInt(first)==0,"the first reader comes into the original, though a spectator stands in it"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.kept(f.data(),first.getUUID(),scene)==0,"they keep the original");
+                h.assertTrue(SceneInstances.copies(f.data(),scene)==1,"with another reader in the House, the next copy is made ready ahead");
+                knock.accept(second);
+            })
+            .thenExecute(()->h.assertTrue(where(f,second)==LabyrinthPlace.JUNCTION&&SceneInstances.kept(f.data(),second.getUUID(),scene)<0,"while the copy is still being built, the second reader's door stays shut"))
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),scene,1)&&!SceneInstances.building(),"the copy stands ready"))
+            .thenExecute(()->knock.accept(second))
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(second)&&copy.applyAsInt(second)==1,"the second reader comes into a copy of their own"))
+            .thenExecute(()->{
+                var original=f.base(scene);var mine=SceneInstances.base(server,scene,1);
+                h.assertTrue(mine.getX()<=original.getX()-SceneInstances.WEST&&mine.getY()==original.getY()&&mine.getZ()==original.getZ(),"the copy stands a million blocks west of the original");
+                h.assertTrue(where(f,second)==scene&&LiteraryVignettes.current(second)==scene,"the House knows the copy for the scene it is");
+                h.assertTrue(mine.equals(LiteraryVignettes.base(second,scene))&&original.equals(LiteraryVignettes.base(first,scene)),"each reader's scene is where they are");
+                h.assertTrue(SceneInstances.kept(f.data(),second.getUUID(),scene)==1,"they keep their copy");
+                var onward=f.data().door(SceneInstances.doorId(scene,1,OnwardDoors.name(scene)));
+                h.assertTrue(f.data().door(SceneInstances.doorId(scene,1,"entry"))!=null&&onward!=null&&OnwardDoors.placeOf(onward)==scene&&!onward.lower.equals(f.data().door(OnwardDoors.id(scene)).lower),"the copy has its own entry and its own way on");
+                h.assertTrue(f.in.getBlockState(original.offset(0,0,1)).getBlock()==f.in.getBlockState(mine.offset(0,0,1)).getBlock()&&f.in.getBlockState(onward.lower).getBlock() instanceof net.minecraft.world.level.block.DoorBlock,"it is built like the original, doors and all");
+            })
+            .thenIdle(20)
+            .thenExecute(()->{
+                h.assertTrue(second.serverLevel()==f.in&&copy.applyAsInt(second)==1,"a reader in a copy is inside the House, not thrown out through a wall");
+                // From inside, the entry only opens; walking back out through it is what takes a reader back.
+                var entry=f.data().door(SceneInstances.doorId(scene,1,"entry"));at(second,f.in,entry.lower.relative(entry.facing.getOpposite(),2));click(second,entry.lower);
+            })
+            .thenIdle(2)
+            .thenExecute(()->{var entry=f.data().door(SceneInstances.doorId(scene,1,"entry"));h.assertTrue(f.in.getBlockState(entry.lower).getValue(net.minecraft.world.level.block.DoorBlock.OPEN),"the copy's entry opens from inside");at(second,f.in,entry.lower.relative(entry.facing,2));})
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(second)&&where(f,second)==LabyrinthPlace.JUNCTION,"the copy's own entry takes them back to the hall they came from"))
+            .thenExecute(()->{away(f,first);knock.accept(second);})
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(second)&&copy.applyAsInt(second)==1,"they come back to the copy they keep, though the original stands empty"))
+            .thenExecute(()->{
+                // Once the first reader has finished the story, the original is anyone's.
+                away(f,second);WitnessAccount.resolve(f.data(),first.getUUID(),WitnessAccount.Story.of(scene.id()),"confessed");
+                third[0]=player(h,f,"copy_third");readers.add(third[0]);knock.accept(third[0]);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(third[0])&&copy.applyAsInt(third[0])==0,"a new reader takes the original its finished reader no longer keeps"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.kept(f.data(),third[0].getUUID(),scene)==0&&SceneInstances.kept(f.data(),watcher.getUUID(),scene)<0,"the new reader keeps it; the spectator keeps nothing");
+                for(var p:readers)h.assertTrue(p.isAlive()&&p.getHealth()==20,"nobody is hurt");
             }).thenSucceed();
     }
 }

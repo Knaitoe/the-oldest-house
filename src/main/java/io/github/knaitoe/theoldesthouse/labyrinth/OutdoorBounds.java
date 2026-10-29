@@ -83,7 +83,8 @@ public final class OutdoorBounds {
         }
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
             if (!NovelRooms.outside(place)) continue;
-            BlockPos base = LabyrinthPlaces.base(origin, place);
+            // 0.4.153: a private scene's copies keep the same edges as their original.
+            for (BlockPos base : SceneInstances.copyable(place) ? SceneInstances.bases(player.server, place) : java.util.Collections.singletonList(LabyrinthPlaces.base(origin, place))) {
             if (base == null) continue;
             Area area = area(place);
             if (area.contains(player.getX() - base.getX(), player.getY() - base.getY(), player.getZ() - base.getZ())) {
@@ -93,6 +94,7 @@ public final class OutdoorBounds {
             // Only the scene the player was last seen standing inside claims them, and only from its neighbourhood.
             if (back != null && area.contains(back.x - base.getX(), back.y - base.getY(), back.z - base.getZ())
                     && near(area, player.getX() - base.getX(), player.getZ() - base.getZ())) home = base;
+            }
         }
         if (home == null) return false;
         if (player.isPassenger()) player.stopRiding();

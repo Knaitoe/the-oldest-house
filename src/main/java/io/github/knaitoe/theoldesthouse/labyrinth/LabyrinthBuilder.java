@@ -499,7 +499,7 @@ public final class LabyrinthBuilder {
     }
 
     /** Interior places whose build begins by filling their whole slot (mazes capture their old paths first). */
-    private static boolean prefills(LabyrinthPlace place) {
+    static boolean prefills(LabyrinthPlace place) {
         return !NovelRooms.outside(place) && !NovelVignettes.isNovel(place) && !LabyrinthMaze.isMaze(place);
     }
 

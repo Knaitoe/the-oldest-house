@@ -433,7 +433,8 @@ public enum LabyrinthPlace {
 
     /** Every authored return, including a service exit, belongs to this visit. */
     public boolean isReturnDoor(String doorId) {
-        return doors.stream().anyMatch(d -> (id + "/" + d.name()).equals(doorId)
+        String plain = SceneInstances.plain(doorId);
+        return doors.stream().anyMatch(d -> (id + "/" + d.name()).equals(plain)
                 && LabyrinthData.RETURN.equals(d.destination()));
     }
 

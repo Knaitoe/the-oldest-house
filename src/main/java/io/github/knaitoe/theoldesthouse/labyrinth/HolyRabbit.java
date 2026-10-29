@@ -74,7 +74,7 @@ public final class HolyRabbit {
         if(reader==null||!LiteraryVignettes.inside(reader,PLACE)||!LiteraryVignettes.retreatLocked(reader))return;
         var own=LiteraryVignettes.personal(LabyrinthData.get(level.getServer()),id,PLACE);
         int t=own.getInt("HarvestTicks0491");if(t<35||t>75||!own.contains("TossScriptTick0496"))return;
-        var b=IndianLakeRooms.base(level.getServer(),PLACE);if(b==null)return;
+        var b=LiteraryVignettes.base(reader,PLACE);if(b==null)return;
         double sub=Math.max(0L,Math.min(5L,level.getGameTime()-own.getLong("TossScriptTick0496")));
         double f=Math.min(1,(t+sub-35)/40D);
         var from=new Vec3(own.getDouble("TossX0491"),own.getDouble("TossY0491"),own.getDouble("TossZ0491"));

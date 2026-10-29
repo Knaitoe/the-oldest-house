@@ -195,6 +195,7 @@ public final class LabyrinthPlaces {
                 return place;
             }
         }
-        return null;
+        // 0.4.153: a private scene's copies stand outside the grid.
+        return SceneInstances.placeAt(origin, pos);
     }
 }
