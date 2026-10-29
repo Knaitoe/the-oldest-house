@@ -42,23 +42,25 @@ public final class HouseReadMirror implements BlockEntityRenderer<HouseReadPropB
         String coat=player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getItem() instanceof HouseReadRegistry.Garment g?g.cloth:null;
         // On the glass the reflection's feet sit halfway between the eye and the floor, opposite the reader, and its top halfway to their head.
         float lateral=(float)net.minecraft.util.Mth.clamp(side,-.2,.2),feetY=(float)((eye.y+feet.y)/2-at.getY());
-        reflect(body,narrow?slimCoat:regularCoat,player.getSkin().texture(),coat,player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).getItem() instanceof HouseReadRegistry.Garment,lateral,feetY,bodyYaw,player.getScale(),pose,out,light);
+        reflect(body,narrow?slimCoat:regularCoat,player.getSkin().texture(),coat,player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).getItem() instanceof HouseReadRegistry.Garment,lateral,feetY,bodyYaw,player.getScale(),true,pose,out,light);
     }
     /** As a reader standing square to the glass, a step back from it, would see themselves: for still images of the mirror. */
     public static void drawImage(PlayerModel<net.minecraft.client.player.AbstractClientPlayer> body,net.minecraft.client.model.geom.ModelPart cloth,net.minecraft.resources.ResourceLocation skin,String coat,boolean boots,PoseStack pose,MultiBufferSource out,int light){
-        reflect(body,cloth,skin,coat,boots,0,.81f,180,1,pose,out,light);
+        reflect(body,cloth,skin,coat,boots,0,.81f,180,1,false,pose,out,light);
     }
     /**
      * Draws the reader as if standing in front of the glass with the given body yaw, then reflects them through the glass's
      * plane and presses the image into it. {@code lateral} is their offset along the glass, {@code feetY} where their feet fall
      * on it.
      */
-    public static void reflect(PlayerModel<net.minecraft.client.player.AbstractClientPlayer> body,net.minecraft.client.model.geom.ModelPart cloth,net.minecraft.resources.ResourceLocation skin,String coat,boolean boots,float lateral,float feetY,float bodyYaw,float scale,PoseStack pose,MultiBufferSource out,int light){
+    public static void reflect(PlayerModel<net.minecraft.client.player.AbstractClientPlayer> body,net.minecraft.client.model.geom.ModelPart cloth,net.minecraft.resources.ResourceLocation skin,String coat,boolean boots,float lateral,float feetY,float bodyYaw,float scale,boolean house,PoseStack pose,MultiBufferSource out,int light){
         pose.pushPose();pose.translate(.5+lateral,feetY,GLASS);pose.scale(1,1,-FLAT);
         // As the native living renderer turns and sizes a player, at half their height.
         pose.mulPose(Axis.YP.rotationDegrees(180-bodyYaw));float k=HALF*scale;pose.scale(-k,-k,k);pose.translate(0,-1.501f,0);
         body.renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(skin)),light,OverlayTexture.NO_OVERLAY);
-        if(coat!=null)HouseReadClothes.coat(body,cloth,coat,pose,out,light);if(boots)HouseReadClothes.boots(body,cloth,pose,out,light);pose.popPose();
+        if(coat!=null)HouseReadClothes.coat(body,cloth,coat,pose,out,light);if(boots)HouseReadClothes.boots(body,cloth,pose,out,light);
+        // 0.4.159: the House's version of the reader: the glasses an older read gives them, or no face where the glass did not agree.
+        if(house)HouseReadLookClient.dress(body,cloth,"",pose,out,light);pose.popPose();
     }
     @Override public boolean shouldRenderOffScreen(HouseReadPropBlock.Fitting be){return be.getBlockState().getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR;}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)

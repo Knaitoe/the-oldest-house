@@ -2687,6 +2687,70 @@
     "part=bottle,facing=east,turned=true,writing=true": {
       "model": "the_oldest_house:block/read_bottle",
       "y": 270
+    },
+    "part=ashtray,facing=south,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 0
+    },
+    "part=ashtray,facing=south,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 0
+    },
+    "part=ashtray,facing=south,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 0
+    },
+    "part=ashtray,facing=south,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 0
+    },
+    "part=ashtray,facing=west,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 90
+    },
+    "part=ashtray,facing=west,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 90
+    },
+    "part=ashtray,facing=west,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 90
+    },
+    "part=ashtray,facing=west,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 90
+    },
+    "part=ashtray,facing=north,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 180
+    },
+    "part=ashtray,facing=north,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 180
+    },
+    "part=ashtray,facing=north,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 180
+    },
+    "part=ashtray,facing=north,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 180
+    },
+    "part=ashtray,facing=east,turned=false,writing=false": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 270
+    },
+    "part=ashtray,facing=east,turned=false,writing=true": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 270
+    },
+    "part=ashtray,facing=east,turned=true,writing=false": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 270
+    },
+    "part=ashtray,facing=east,turned=true,writing=true": {
+      "model": "the_oldest_house:block/read_ashtray",
+      "y": 270
     }
   }
 }

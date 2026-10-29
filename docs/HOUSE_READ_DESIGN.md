@@ -1,17 +1,15 @@
 # The House gets a read on you
 
-Status (October 28): partly built. The concept, the five rooms and their texts are the owner's; the texts are quoted exactly. The owner's answers to the six open questions (October 27) and the owner's placement and co-op direction (October 28) are listed at the end. This document adds how each room is built and watched, what the House keeps, how co-op works, how the House shows its version of the reader, and where the read pays off. It also sets the bar for whether the idea is worth building, and a first slice to test that.
+Status (October 29): built, with the larger vignette changes still to come. The concept, the five rooms and their texts are the owner's; the texts are quoted exactly. The owner's answers to the six open questions (October 27) and the owner's placement and co-op direction (October 28) are listed at the end. This document adds how each room is built and watched, what the House keeps, how co-op works, how the House shows its version of the reader, and where the read pays off. It also sets the bar for whether the idea is worth building, and a first slice to test that.
 
-What is built, in 0.4.138 to 0.4.142 (see "Built so far" at the end):
+What is built (see "Built so far" at the end):
 
-- all five rooms, as a private copy per reader;
-- each room records the reader's literal actions;
-- six scenes that read a saved category and stay neutral without one.
+- all five rooms, as a private copy per reader (0.4.138 to 0.4.142), reviewed against the owner's designs and repaired (0.4.159);
+- each room's signals, turned into one category per trait with a strength, and the room observations the House recites (0.4.159);
+- the account opening, the House of Leaves, and the reader's look in glass and copies, written with the read (0.4.159);
+- the six scenes that read a category (0.4.142), the lake house partner (0.4.152), the shelter strangers' age and the road-taker's deal (0.4.159).
 
-What is not built:
-
-- turning actions into categories, which the owner deferred, so no reader has a category yet;
-- the account, the House of Leaves, mirrors and doubles reading the record.
+What is not built: settled `DANGER` authority figures, the moods a tentative `HOME` gives, the larger `AGE` changes, and the two open proposals (see `docs/HOUSE_READ_0_4_159.md`).
 
 A review of the built rooms against this document, with a suggested order for what comes next, is in `docs/PERSONALITY_VIGNETTES_REVIEW.md` (October 28).
 
@@ -149,17 +147,18 @@ A later signal that agrees raises a category to settled; one that disagrees make
 
 **API.** Code reads it through one call, `HouseRead.category(player, Trait)`, which returns the value and strength or nothing. Every caller must handle nothing, and that branch is today's behaviour.
 
-Where the build differs today:
+As built (0.4.159):
 
-- **Actions.** Each room keeps its reader's literal actions in its own saved visit (`house_read_rooms_04138`), only to run the room and reveal its note.
-- **Categories.** The category record exists only on the read side, under `house_read/<reader UUID>`, with `HAIR`, `SELF` and (since 0.4.152) `DRAWN_TO`, each holding a `Value` and a `Strength`.
-- **Classifier.** Nothing writes categories yet, by the owner's choice, so every reader reads as unknown.
-- **API.** `category` returns only tentative or settled values. Unknown, uncertain, malformed and missing records all read as nothing. `HouseRead.hair` and `HouseRead.address` wrap it for the six consumers.
+- **Actions.** Each room keeps its reader's literal actions in its own saved visit (`house_read_rooms_04138`), to run the room and reveal its note.
+- **Signals and categories.** `house_read/<reader UUID>` holds all five traits, each with its signals, a `Value` and a `Strength`; the rule for agreement, disagreement and the deciding signal is in `docs/HOUSE_READ_0_4_159.md`.
+- **Observations.** The same record keeps each room's structured observations (`Seen`) for the account and the book.
+- **API.** `category` returns only tentative or settled values. Unknown, uncertain, malformed and missing records all read as nothing, as does a trait the server has turned off. `HouseRead.hair`, `drawnTo` and `address` wrap it.
 
 **Data handling:**
 - The record lives only in the world save and is never sent to another reader's client.
 - It is excluded from the opt-in playtest log (`PlaytestLog`).
-- A server operator can read a save file, and the README says plainly that the House keeps these observations and categories there.
+- A server operator can read a save file, and the README says plainly that the House keeps these observations and categories there (0.4.159).
+- The server config's `read` section can turn inference off (`readReaders`), or who a reader is drawn to alone (`readDrawnTo`).
 
 ## 1. The waiting room (waiting-chair) — AGE
 
@@ -188,6 +187,8 @@ In Minecraft almost everyone paces, because sitting takes a click, and everyone 
 
   Sitting and pacing on their own are observations only.
 - **Doing nothing** for the whole wait records nothing.
+
+Built in 0.4.159: the three ways to pass the time stand about seven blocks from the door, the parking-lot window is clear and beside the phone chair, and the low table has its ashtray.
 
 ### Text (owner's; on the bottom of the wall calendar behind the reception glass)
 
@@ -246,6 +247,8 @@ A quiet front vestibule or mudroom just inside the front door of a warm country 
 - **The coat stays.** Passing through the curtain hangs the borrowed layers on the parlour hook. Worn out into the House, other readers would see them, and the choice would stop being private.
 - **A coat is presentation, not identity.** `SELF` is what the House saw. Only strangers who speak react to it, the way strangers judge by how someone presents; the House's own writing never does (see "Address").
 
+Built in 0.4.159: the three coats hang on three pegs at equal distance, shuffled per reader, so the left and right sides become sets. A coat and boots from the wool and trench sets worn together read `ANDROGYNOUS`, as does the barn jacket. The wooden bench stands by the coats.
+
 ### Text (owner's; tucked into the brass umbrella stand by the door)
 
 > Nobody minds if you borrow a dry coat off the hall tree when the rain comes through the screen. Cloth is just cloth when your teeth are chattering.
@@ -287,6 +290,8 @@ The jukebox has one free credit. Using it, or simply crossing the floor, starts 
   - staying on the dock with the lantern until the song ends settles `NO_ONE`.
 - The figures never speak, follow, or touch.
 
+Built in 0.4.159: the strangers lean on the west and east rails, the jukebox stands against the back wall on the land side with the ways back and on beside it, and one dock runs out ahead past both of them. Both lean (rather than one sitting) so they stand at the same height.
+
 ### Text (owner's; pasted inside the glass lid of the jukebox beside the song strips)
 
 > A summer storm is a great excuse to stand under a roof with somebody you haven't worked up the nerve to talk to yet.
@@ -319,6 +324,8 @@ The room is outdoors, in the outside dimension.
   - *hid:* the kitchen light goes off, the porch light clicks off, the screen door slaps once, and the side gate is open;
   - *ran:* the gravel becomes a dirt road through the trees to a door.
 
+Built in 0.4.159: the window is the 200 ticks after the whistle; under the porch counts on either side of the steps; looking in at the lit window counts when the reader's sight lands on it. The side porch is not built: under the porch is the way to hide.
+
 ### Text (owner's; carved into the wooden rail of the back steps)
 
 > A whistle carries three blocks when the humidity is down.
@@ -344,7 +351,9 @@ Instead the House dresses the reader's own skin with what it learned, in the pla
 - **`UNSEEN`:** the coat and silhouette show, but the face is obscured, in every mirror, double and portrait.
 - **Never the live model.** Third person always shows the reader's own skin, even on their own client. The House's version belongs in glass and copies. When the House gets something wrong, the reader sees the gap between who they are and who the House thinks they are.
 
-Built so far (0.4.150): the coatroom glass is a true reflection of the reader's own skin and borrowed layers, reversed, half their height where their eye would see it, turning and walking with them, and seen only from in front. `UNSEEN`, the reading glasses and later mirrors wait on the classifier (see `docs/PERSONALITY_VIGNETTES_REVIEW.md`).
+Built so far:
+- 0.4.150: the coatroom glass is a true reflection of the reader's own skin and borrowed layers, reversed, half their height where their eye would see it, turning and walking with them, and seen only from in front.
+- 0.4.159: a private message carries only a reader's own look to their own client: the coat they took once `SELF` is settled, reading glasses for `ANALOG`, and the obscured face for `UNSEEN`. The coatroom glass, the hazard halls' mirrors, the double in the novel sites and the reader's echo on the great staircase wear it. The silk wrap waits for a double asleep.
 
 ## Where the read pays off
 
@@ -406,6 +415,8 @@ Built so far (0.4.142), all neutral until a category exists:
 
   Shared speech bubbles keep their ordinary lines, and `UNSEEN` reads as neutral.
 - **`DRAWN_TO`, settled only (0.4.152):** the lake house partner, as in the table above, with the first greeting, the account's opening and the Witness line following them.
+
+Built in 0.4.159: the shelter strangers' age follows `AGE`, and a settled `RUNAWAY` is dealt roads and outdoor rooms twice as often. Since 0.4.159 the classifier gives all of these a read to follow.
 
 The rest of this table, and the targets in `docs/PERSONALITY_TAILORING_TARGETS_0_4_140.md`, are still planned.
 
@@ -493,7 +504,7 @@ The first slice tests the bar before the other rooms and the bulk of the writing
 
 Play it with two people who come in together. If comparing books and accounts is interesting, build the rest. If it isn't, stop, and the slice's rooms stay as quiet first rooms.
 
-As built, the order went the other way. All five rooms came first, and the payoffs began with six read-side consumers, including the Last Stop men's address. The classifier that would give them something to read is not built yet, so the test with two players can't be run yet.
+As built, the order went the other way. All five rooms came first, and the payoffs began with six read-side consumers, including the Last Stop men's address. The classifier, the account opening, the House of Leaves and the look in glass and copies followed in 0.4.159, so the test with two players can now be run.
 
 ## The owner's decisions (October 27)
 
@@ -552,5 +563,4 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.156 | The lake house in pairs: a second reader goes down in Tess's place and is seen as her, a third has a lake of their own with Tess, a fourth joins them | `docs/LAKE_HOUSE_PAIRS_0_4_156.md` |
 | 0.4.157 | The shallows together: one throw, a second reader at her feet in Lonnie's place with Lonnie counting, the rest on the bank with the boys, a Witness line for each part | `docs/SHALLOWS_TOGETHER_0_4_157.md` |
 | 0.4.158 | Hide-and-clap private, with copies: one reader to a room, a room's own round, and every reader can win it once | `docs/HIDE_AND_CLAP_COPIES_0_4_158.md` |
-
-The rooms record actions only. Categories, the account opening, the House of Leaves and the House's version of the reader are not built.
+| 0.4.159 | The read of the reader: the five rooms reviewed and repaired (the waiting room's equal distances, window and ashtray, the coatroom bench, the shelter rebuilt with strangers on the rails and the dock ahead, the porch's window, way out and both sides of the lattice); signals and categories for all five traits; the account opening; the House of Leaves; the reader's look in glass and copies; the strangers' age; the road-taker's deal; a server option | `docs/HOUSE_READ_0_4_159.md` |

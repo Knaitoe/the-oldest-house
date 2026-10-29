@@ -38,7 +38,9 @@ public final class HazardClient {
     @SubscribeEvent public static void render(RenderLevelStageEvent e){if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_ENTITIES||!active()||state.mode()!=1)return;var mc=Minecraft.getInstance();var t=state.view();var at=new net.minecraft.world.phys.Vec3(t.getDouble("X"),t.getDouble("Y"),t.getDouble("Z"));var eye=e.getCamera().getPosition();if(eye.distanceToSqr(at)>3600)return;
         var skin=reader.getSkin();var model=model(mc,skin.model()==PlayerSkin.Model.SLIM);pose(model,t.getFloat("Pitch"),t.getBoolean("Crouch"),t.getFloat("Stride"),reader.tickCount);
         var pose=e.getPoseStack();var buffers=mc.renderBuffers().bufferSource();pose.pushPose();pose.translate(at.x-eye.x,at.y-eye.y,at.z-eye.z);pose.mulPose(Axis.YP.rotationDegrees(180-t.getFloat("Yaw")));pose.scale(-1,-1,1);pose.translate(0,-1.501,0);
-        model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin.texture())),LevelRenderer.getLightColor(level,BlockPos.containing(at)),OverlayTexture.NO_OVERLAY,0xffd2d9dc);pose.popPose();buffers.endBatch();}
+        int light=LevelRenderer.getLightColor(level,BlockPos.containing(at));model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin.texture())),light,OverlayTexture.NO_OVERLAY,0xffd2d9dc);
+        // 0.4.159: a later mirror shows the House's version of the reader: their coat, their glasses, or no face.
+        HouseReadLookClient.dress(model,mc.getEntityModels().bakeLayer(skin.model()==PlayerSkin.Model.SLIM?HouseReadClothes.SLIM:HouseReadClothes.STANDARD),null,pose,buffers,light);pose.popPose();buffers.endBatch();}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {
         @SubscribeEvent public static void setup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e){e.enqueueWork(()->ItemBlockRenderTypes.setRenderLayer(HazardRegistry.PIECE.get(),RenderType.translucent()));}

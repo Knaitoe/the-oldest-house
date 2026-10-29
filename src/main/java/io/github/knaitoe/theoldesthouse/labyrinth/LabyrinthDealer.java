@@ -126,6 +126,11 @@ public final class LabyrinthDealer {
      * per reader and never write the shared counter, so the shared check alone never gave them the begun weight.
      */
     public static int dealWeight(LabyrinthData data, UUID player, LabyrinthPlace place) {
+        int weight = begunWeight(data, player, place);
+        // 0.4.159: a reader the porch settled as one who takes the road is dealt roads and open air twice as often.
+        return NovelRooms.outside(place) && HouseRead.value(data, player, HouseRead.Trait.HOME, true).equals("RUNAWAY") ? weight * 2 : weight;
+    }
+    private static int begunWeight(LabyrinthData data, UUID player, LabyrinthPlace place) {
         if (place.isMultiVisit() && LiteraryRooms.isLiterary(place)) {
             var own = LiteraryVignettes.personal(data, player, place);
             return own.getInt("Visit") > 0 && !own.getBoolean("Completed") ? UNFINISHED_WEIGHT : 1;

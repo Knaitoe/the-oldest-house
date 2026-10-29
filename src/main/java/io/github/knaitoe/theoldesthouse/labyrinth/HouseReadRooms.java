@@ -20,6 +20,8 @@ public final class HouseReadRooms {
     private static void put(ServerLevel l,BlockPos b,BlockPos at,BlockState s){BuildBlocks.set(l,b.offset(at),s,F);}
     public static void fitting(ServerLevel l,BlockPos b,BlockPos at,HouseReadPropBlock.Part part){put(l,b,at,HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,part));}
     public static void door(ServerLevel l,BlockPos b,BlockPos at,Block block,Direction facing){var s=block.defaultBlockState().setValue(DoorBlock.FACING,facing);put(l,b,at,s.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));put(l,b,at.above(),s.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));}
+    /** Each room's way back. The shelter's sits beside its jukebox on the land side (0.4.159). */
+    public static BlockPos entry(HouseReadSites.Room room){return room==HouseReadSites.Room.PORCH?PORCH_ENTRY:room==HouseReadSites.Room.SHELTER?HouseReadRemainingRooms.SHELTER_ENTRY:COAT_ENTRY;}
     public static int[] shuffle(UUID owner){var values=new ArrayList<>(List.of(0,1,2));Collections.shuffle(values,new Random(owner.getMostSignificantBits()^owner.getLeastSignificantBits()^138));return values.stream().mapToInt(Integer::intValue).toArray();}
     public static void build(ServerLevel l,BlockPos b,HouseReadSites.Room room,UUID owner){if(room==HouseReadSites.Room.COATROOM)coatroom(l,b,owner);else if(room==HouseReadSites.Room.PORCH)porch(l,b);else HouseReadRemainingRooms.build(l,b,room,owner);}
     public static BlockPos note(HouseReadSites.Room room){return switch(room){case COATROOM->UMBRELLA_AT;case PORCH->RAIL_AT;case WAITING->HouseReadRemainingRooms.CALENDAR_AT;case BATHROOM->HouseReadRemainingRooms.POSTCARD_AT;case SHELTER->HouseReadRemainingRooms.JUKEBOX_AT;};}
@@ -38,6 +40,8 @@ public final class HouseReadRooms {
         fitting(l,b,MIRROR,HouseReadPropBlock.Part.MIRROR);fitting(l,b,MIRROR.above(),MIRROR_TOP);
         fitting(l,b,UMBRELLA_AT,UMBRELLA);fitting(l,b,new BlockPos(-6,0,-1),RADIATOR);fitting(l,b,new BlockPos(-3,0,-9),TOWEL);
         for(int x=-1;x<=1;x++)for(int y=0;y<=2;y++)fitting(l,b,new BlockPos(x,y,-10),CURTAIN);
+        // The wooden bench by the coats (0.4.159), its back to the wall.
+        for(int z=-7;z<=-5;z++)put(l,b,new BlockPos(6,0,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
         box(l,b,-5,-1,-14,5,-1,-12,Blocks.RED_WOOL.defaultBlockState());put(l,b,new BlockPos(0,3,-13),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));put(l,b,new BlockPos(0,3,-2),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
     }
     private static void porch(ServerLevel l,BlockPos b){

@@ -1,7 +1,7 @@
 """Native sixteen-pixel domestic materials and fitted cuboids for the remaining quiet rooms."""
 from PIL import Image, ImageDraw
 import io,json,math
-EXTRA_PARTS=['clock_base','clock_face','bell','calendar','reception','crt','cooler','paper','magazines','glasses','phone','armchair','sink','tap','cabinet','routine_a','routine_b','routine_c','routine_d','light_switch','postcard','jukebox','string_light','rowboat','bottle']
+EXTRA_PARTS=['clock_base','clock_face','bell','calendar','reception','crt','cooler','paper','magazines','glasses','phone','armchair','sink','tap','cabinet','routine_a','routine_b','routine_c','routine_d','light_switch','postcard','jukebox','string_light','rowboat','bottle','ashtray']
 def tiles(out):
  palettes={'panels':('#947457','#66533f','#b39a72'),'tile':('#9fae9a','#718575','#c9cfb5'),'pavilion':('#746b54','#514f42','#998c6c'),'porcelain':('#dbd8c2','#aaa98f','#f1ead5'),'paper':('#d5ccb2','#a99e82','#ede3c8'),'denim':('#526f80','#354e60','#8198a3'),'rubber':('#414645','#262c2b','#666c65'),'amber':('#ac8046','#725837','#cfaa62'),'sage':('#859683','#546e62','#b0bda2'),'rose':('#a77f7b','#795c61','#d0b1a0'),'label':('#cec8ac','#99957f','#e7dfc4')}
  for name,(mid,dark,light) in palettes.items():
@@ -108,6 +108,7 @@ def models(out,model,cube):
  M('jukebox',jukebox);jukebox[-2]=C([3.1,12,14.05],[12.9,19.9,14.3],'songstrips_written');M('jukebox_written',jukebox)
  M('string_light',[C([0,14,7],[16,14.4,8],'rubber'),C([7,11,7],[9,13.9,9],'cream')])
  M('rowboat',[C([-12,3,3],[28,5,13],'oak'),C([-14,5,1],[-12,9,15],'oak'),C([28,5,1],[30,9,15],'oak'),C([-12,5,0],[28,9,2],'oak'),C([-12,5,14],[28,9,16],'oak'),C([-11.9,5.05,2.1],[27.9,8.5,13.9],'sage')])
+ M('ashtray',[C([4,0,4],[12,.5,12],'glass'),C([4,.5,4],[12,1.4,5],'glass'),C([4,.5,11],[12,1.4,12],'glass'),C([4,.5,5],[5,1.4,11],'glass'),C([11,.5,5],[12,1.4,11],'glass'),C([6,.5,7],[9.5,.95,7.6],'cream')])
  M('bottle',[C([6,0,6],[10,7,10],'glass'),C([7,7.05,7],[9,10,9],'amber'),C([6.5,2,10.05],[9.5,5,10.2],'label')])
  # Native item parents share the exact authored object cuboids.
  for name in ['paper','magazine','glasses','phone','cone','bottle']+[f'routine_{i}' for i in range(12)]:

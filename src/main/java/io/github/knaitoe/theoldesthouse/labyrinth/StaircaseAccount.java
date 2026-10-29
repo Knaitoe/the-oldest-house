@@ -15,7 +15,14 @@ public final class StaircaseAccount {
     private StaircaseAccount() {}
 
     public static StaircaseProse.Story write(ServerPlayer p, CompoundTag work, long seed) {
-        return StaircaseProse.compose(p.getGameProfile().getName(), facts(p, work), seed);
+        return StaircaseProse.compose(p.getGameProfile().getName(), facts(p, work), seed, read(LabyrinthData.get(p.server), p.getUUID()));
+    }
+    /** What the quiet rooms saw this reader do (0.4.159), for the leaves; observations only, and HOME for the last leaf. */
+    public static StaircaseProse.Read read(LabyrinthData d, UUID id) {
+        var seen = HouseRead.seen(d, id); var bath = seen.getCompound("bathroom"); var coat = seen.getCompound("coatroom"); var eaves = seen.getCompound("shelter"); var porch = seen.getCompound("porch");
+        String stood = eaves.getString("Stood"), looked = eaves.getString("Looked");
+        return new StaircaseProse.Read(bath.contains("Item") ? bath.getInt("Item") : -1, coat.getString("Coat"), coat.getString("Mirror"), !stood.isEmpty() ? stood : looked.isEmpty() ? "" : "looked_" + looked,
+            eaves.getBoolean("Song"), HouseRead.older(d, id), porch.getString("First"), porch.getString("Out"), HouseRead.value(d, id, HouseRead.Trait.HOME, false));
     }
     public static HouseWriting.WritingStyle hand(String name) {
         try { return HouseWriting.WritingStyle.valueOf(name); } catch (IllegalArgumentException e) { return HouseWriting.WritingStyle.WILL; }

@@ -32,6 +32,8 @@ public final class HouseConfig {
     public static final ModConfigSpec.IntValue PRESET_VERSION;
     /** Playtesting: a local, opt-in event log of the journey (PlaytestLog). Off by default. */
     public static final ModConfigSpec.BooleanValue PLAYTEST_LOG, PLAYTEST_LOG_HASH_IDS;
+    /** 0.4.159: whether the quiet rooms' habits become categories at all, and whether who a reader is drawn to is read. */
+    public static final ModConfigSpec.BooleanValue READ_READERS, READ_DRAWN_TO;
     private static final int CURRENT_PRESET = 62;
 
     static {
@@ -92,6 +94,14 @@ public final class HouseConfig {
         PRESET_VERSION = builder.comment("Bookkeeping: the encounter preset version this file was last checked against. Leave it as it is.")
                 .defineInRange("presetVersion", 0, 0, 10_000);
         builder.pop();
+        builder.push("read");
+        READ_READERS = builder.comment("Let the House read each reader's habits in the five quiet rooms into categories (age, hair routine,",
+                        "presentation, who they are drawn to, and what home was), which later rooms, their account and their House of",
+                        "Leaves are written with. Kept only in this world's save, never sent to other players. Off keeps every reader unread.")
+                .define("readReaders", true);
+        READ_DRAWN_TO = builder.comment("Read who a reader is drawn to in the shelter (the lake house partner follows it). Off leaves that one trait unread.")
+                .define("readDrawnTo", true);
+        builder.pop();
         builder.push("playtest");
         PLAYTEST_LOG = builder.comment("Write a local playtest log of the journey (arrivals, stories, retreats, deaths, refused doors)",
                         "to <world>/the_oldest_house/playtest-log.jsonl. Nothing is sent anywhere. Off by default.")
@@ -121,6 +131,10 @@ public final class HouseConfig {
     }
 
     private HouseConfig() {
+    }
+
+    public static boolean readEnabled(boolean drawnTo){
+        if(!SPEC.isLoaded())return true;return READ_READERS.get()&&(!drawnTo||READ_DRAWN_TO.get());
     }
 
     /** Native fixtures can query pacing before a server configuration is attached. */

@@ -163,6 +163,17 @@ public final class WritingTests {
                     .filter(page->{String text=page.getString();return text.contains("THE ACCOUNT SO FAR")||text.contains("OTHER ENDINGS")||text.contains("left this part unfinished");}).toList();
             books.add(io.github.knaitoe.theoldesthouse.house.HouseWriting.book("An account","reader",pages));
         }
+        // 0.4.159: the House's opening of the account, at its longest and as the owner wrote it, in its own plain type.
+        String[][] nights={{"glasses","paper","4","3","wool","trench","covered_after","lantern","window","RUNAWAY"},{"paper","paper","0","","trench","","","woman","in","HAVEN"},{"phone","phone","11","","barn","barn","turned_after","middle","lattice","DANGER"}};
+        for(String[] n:nights){
+            var seen=new CompoundTag();var waiting=new CompoundTag();waiting.putString("First",n[0]);waiting.putString("Kept",n[1]);waiting.putBoolean("Waited",true);seen.put("waiting",waiting);
+            var bath=new CompoundTag();bath.putInt("Item",Integer.parseInt(n[2]));if(!n[3].isEmpty())bath.putInt("SecondItem",Integer.parseInt(n[3]));bath.putBoolean("Tap",true);bath.putBoolean("LightOff",true);seen.put("bathroom",bath);
+            var coat=new CompoundTag();coat.putString("Coat",n[4]);if(!n[5].isEmpty())coat.putString("Boots",n[5]);if(!n[6].isEmpty())coat.putString("Mirror",n[6]);seen.put("coatroom",coat);
+            var eaves=new CompoundTag();eaves.putString("Stood",n[7]);eaves.putBoolean("Song",true);seen.put("shelter",eaves);
+            var porch=new CompoundTag();porch.putString("First",n[8]);porch.putBoolean("Hidden",true);porch.putBoolean("Table",true);porch.putBoolean("Trees",true);seen.put("porch",porch);
+            var pages=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadProse.pages(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadProse.opening(seen,true,n[9])).stream().map(page->io.github.knaitoe.theoldesthouse.house.HouseWriting.page(io.github.knaitoe.theoldesthouse.house.HouseWriting.WritingStyle.PLAIN,page)).toList();
+            books.add(io.github.knaitoe.theoldesthouse.house.HouseWriting.book("The House's opening","reader",pages));
+        }
         return books;
     }
     private static List<ItemStack> staircaseSpecimens(net.minecraft.server.level.ServerPlayer p) {
