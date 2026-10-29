@@ -20,7 +20,7 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Part
 final class HouseReadAudit {
     private HouseReadAudit(){}
     private static final Set<Block> NATURAL=Set.of(Blocks.AIR,Blocks.LIGHT,Blocks.WATER,Blocks.GRASS_BLOCK,Blocks.DIRT,Blocks.COARSE_DIRT,Blocks.GRAVEL,Blocks.OAK_LOG,Blocks.OAK_LEAVES,Blocks.SPRUCE_LEAVES,Blocks.DEEPSLATE,Blocks.WHITE_BED);
-    private static final Set<HouseReadPropBlock.Part> WALL=EnumSet.of(WOOL,TRENCH,BARN,MIRROR,MIRROR_TOP,COVERED_MIRROR,RADIATOR,CALENDAR,LIGHT_SWITCH,POSTCARD,WALL_CLOCK,OUTLET,TOWEL_BAR,VANITY_LIGHT,EMPTY_HANGER,SCARF_HOOK,PORCH_LIGHT,TOILET);
+    private static final Set<HouseReadPropBlock.Part> WALL=EnumSet.of(WOOL,TRENCH,BARN,RINGMASTER,PEA_COAT,CHORE_COAT,SWING_COAT,COLLARED_COAT,RAIN_MAC,PATCHED_JACKET,DUFFEL,LONG_CARDIGAN,MIRROR,MIRROR_TOP,COVERED_MIRROR,RADIATOR,CALENDAR,LIGHT_SWITCH,POSTCARD,WALL_CLOCK,OUTLET,TOWEL_BAR,VANITY_LIGHT,EMPTY_HANGER,SCARF_HOOK,PORCH_LIGHT,TOILET);
     private static final Set<HouseReadPropBlock.Part> HANGING=EnumSet.of(PENDANT,DECK_LANTERN);
     /** Set into a ceiling, strung between posts, hung in a doorway, floating or carried by its neighbours. */
     private static final Set<HouseReadPropBlock.Part> FREE=EnumSet.of(CEILING_PANEL,CURTAIN,RECEPTION,STRING_LIGHT,SWING,ROWBOAT,TABLE_MID);

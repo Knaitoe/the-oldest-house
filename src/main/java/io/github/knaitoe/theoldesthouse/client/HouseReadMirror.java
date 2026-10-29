@@ -52,7 +52,7 @@ public final class HouseReadMirror implements BlockEntityRenderer<HouseReadPropB
         // As the native living renderer turns and sizes a player, at half their height.
         pose.mulPose(Axis.YP.rotationDegrees(180-bodyYaw));float k=HALF*scale;pose.scale(-k,-k,k);pose.translate(0,-1.501f,0);
         body.renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(skin)),light,OverlayTexture.NO_OVERLAY);
-        if(coat!=null)HouseReadClothes.coat(body,cloth,coat,pose,out,light);if(boots)HouseReadClothes.boots(body,cloth,coat==null?"wool_boots":coat+"_boots",pose,out,light);
+        if(coat!=null)HouseReadClothes.coat(body,cloth,coat,pose,out,light);if(boots)HouseReadClothes.boots(body,cloth,io.github.knaitoe.theoldesthouse.labyrinth.HouseReadWardrobe.bootsFor(coat),pose,out,light);
         // 0.4.159: the House's version of the reader: the glasses an older read gives them, or no face where the glass did not agree.
         if(house)HouseReadLookClient.dress(body,cloth,"",pose,out,light);pose.popPose();
     }

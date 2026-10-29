@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.HouseReadRegistry;
+import io.github.knaitoe.theoldesthouse.labyrinth.HouseReadWardrobe;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.*;
 import net.minecraft.client.model.geom.builders.*;
@@ -51,8 +52,11 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
     public static void veil(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,PoseStack pose,MultiBufferSource out,int light){pose.pushPose();body.head.translateAndRotate(pose);cloth.getChild("veil").render(pose,out.getBuffer(RenderType.entityTranslucent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/veil.png"))),light,OverlayTexture.NO_OVERLAY);pose.popPose();}
     public static void coat(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){
         var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.body,cloth.getChild("body"),pose,out,light,tex);part(body.rightArm,cloth.getChild("right_arm"),pose,out,light,tex);part(body.leftArm,cloth.getChild("left_arm"),pose,out,light,tex);
-        if(type.equals("barn"))part(body.body,cloth.getChild("scarf"),pose,out,light,tex);else{part(body.rightLeg,cloth.getChild("right_hem"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_hem"),pose,out,light,tex);}
-        if(type.equals("trench"))part(body.body,cloth.getChild("belt"),pose,out,light,tex);
+        // 0.4.169: the mesh follows the coat's cut. A short jacket has a collar and no skirt; a long coat a skirt; a belted coat both
+        // its skirt and its belt.
+        var garment=HouseReadWardrobe.byId(type);var cut=garment==null?HouseReadWardrobe.Cut.LONG:garment.cut();
+        if(cut==HouseReadWardrobe.Cut.SHORT)part(body.body,cloth.getChild("scarf"),pose,out,light,tex);else{part(body.rightLeg,cloth.getChild("right_hem"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_hem"),pose,out,light,tex);}
+        if(cut==HouseReadWardrobe.Cut.BELTED)part(body.body,cloth.getChild("belt"),pose,out,light,tex);
     }
     public static void boots(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.rightLeg,cloth.getChild("right_leg"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_leg"),pose,out,light,tex);}
     public static void draw(PlayerModel<AbstractClientPlayer> body,ModelPart cloth,AbstractClientPlayer player,PoseStack pose,MultiBufferSource out,int light){

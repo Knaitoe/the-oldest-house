@@ -28,7 +28,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 /**
  * 0.4.168: the kitchen table's objects through the production renderer: the tin's two halves with one reader's crayons (one
  * taken), the drawing blank and coloured, the picture up on the fridge, the radio on and off; then the drawing in each of the
- * twelve skin crayons with the crayons themselves as they are held. Runs after the bathroom's hair in the same client.
+ * twelve skin crayons with the crayons themselves as they are held. Runs after the bathroom's hair in the same client, before the wardrobe.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class HouseReadKitchenProof extends Screen {
@@ -82,6 +82,6 @@ public final class HouseReadKitchenProof extends Screen {
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;return;}
         Files.writeString(folder.resolve("passed.txt"),"The kitchen table's tin, drawing, fridge and radio through the production model and fitting renderer, one reader's crayons with one taken, the picture on the fridge door, and the drawing in each of the twelve skin crayons with the held crayons.\n");
-        mc.stop();
+        mc.setScreen(new HouseReadWardrobeProof());
     }
 }

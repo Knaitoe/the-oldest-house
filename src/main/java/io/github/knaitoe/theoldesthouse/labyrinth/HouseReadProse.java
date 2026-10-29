@@ -16,8 +16,6 @@ public final class HouseReadProse {
     }
     public static final String[] ITEMS={"put the silk on","worked in the curl cream","reached for the wide-tooth pick","worked the oil into your part","drew a part with the rat-tail comb","took a hair tie from the dish","ran the bristles through","reached for the dry shampoo","pinned your hair up with the claw clip","ran the pocket comb through","opened the tin of pomade","reached for the washcloth on the faucet",
         "tied on the satin bonnet","laid your edges with the little brush","set your hair in the hot rollers","brushed your waves down"};
-    private static String coat(String set){return switch(set){case "wool"->"the wool overcoat";case "trench"->"the trench coat";case "barn"->"the barn jacket";default->"";};}
-    private static String boots(String set){return switch(set){case "wool"->"the heavy leather boots";case "trench"->"the ankle boots";case "barn"->"the work boots";default->"";};}
     private static String who(String figure,boolean older){return figure.equals("man")?older?"the man":"the boy":older?"the woman":"the girl";}
 
     public static String waiting(CompoundTag t){
@@ -47,8 +45,9 @@ public final class HouseReadProse {
         return t.getBoolean("Untouched")?"turned the bathroom light off without touching the counter":t.getBoolean("Tap")?"ran the hot tap at the bathroom sink":"";
     }
     public static String coatroom(CompoundTag t){
-        String c=coat(t.getString("Coat")),b=boots(t.getString("Boots")),mirror=t.getString("Mirror");
-        String core=!c.isEmpty()?"took "+c+" off the peg in the hall"+(b.isEmpty()?"":t.getString("Boots").equals(t.getString("Coat"))?" and pulled on "+b:" and "+b+" from the mat"):!b.isEmpty()?"pulled on "+b+" in the hall":"";
+        // 0.4.169: the garment itself, by name; an older read kept only its set, whose first garment it names.
+        String c=HouseReadWardrobe.the(HouseReadWardrobe.coatOf(t)),b=HouseReadWardrobe.the(HouseReadWardrobe.bootsOf(t)),mirror=t.getString("Mirror");
+        String core=!c.isEmpty()?"took "+c+" off the peg in the hall"+(b.isEmpty()?"":" and "+b+" from the mat"):!b.isEmpty()?"pulled on "+b+" in the hall":"";
         if(mirror.endsWith("_before")){String glass=mirror.startsWith("covered")?"hung the towel over the hall glass":"turned the hall glass to the wall";return core.isEmpty()?glass+" and went on still dripping":glass+" before you "+core.replace(" in the hall","");}
         if(core.isEmpty())return "";
         return core+switch(mirror){case "looked"->" and stood a while at the glass";case "turned_after"->" and turned the glass to the wall";case "covered_after"->" and hung the towel over the glass";default->c.isEmpty()?"":" without looking in the glass";};

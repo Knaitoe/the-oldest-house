@@ -256,6 +256,8 @@ A quiet front vestibule or mudroom just inside the front door of a warm country 
 
 Built in 0.4.159: the three coats hang on three pegs at equal distance, shuffled per reader, so the left and right sides become sets. A coat and boots from the wool and trench sets worn together read `ANDROGYNOUS`, as does the barn jacket. The wooden bench stands by the coats.
 
+In 0.4.169 the hall became a wardrobe: twelve coats and six pairs of boots, each belonging to one of the three sets, each with its own past and a guess the House says aloud the first time it goes on. The first coat still reads by its set; the account names the garment itself. See `docs/WARDROBE_0_4_169.md`.
+
 ### Text (owner's; tucked into the brass umbrella stand by the door)
 
 > Nobody minds if you borrow a dry coat off the hall tree when the rain comes through the screen. Cloth is just cloth when your teeth are chattering.
@@ -570,7 +572,7 @@ Strangers who speak are different. They judge by how someone presents, as strang
   - bathroom: the routine items (sixteen since 0.4.167), and the styles they give in the glass;
   - kitchen: the crayon tin, the drawing, the fridge and the radio, and a crayon to hold (0.4.168);
   - waiting room: paper, magazines, glasses, phone (reusing the Harrigan screen);
-  - coatroom: the garments (worn models fitted to standard and slim arms);
+  - coatroom: the garments (worn models fitted to standard and slim arms; eighteen since 0.4.169, each cut long, belted or short);
   - shelter: a lantern.
 
   All drawn in code like the rest of the mod.
@@ -690,3 +692,4 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.166 | The quiet rooms as the House's story: each opens and closes on black with its line, the welcome first and the warning last; both doors locked until the room has its answer | `docs/QUIET_ROOMS_STORY_0_4_166.md` |
 | 0.4.167 | The bathroom's sixteen tools, two to a block; each tool's style shown in the glass while it is held, tinted to the reader's hair, and kept for the House's version of them; the woven bath rug | `docs/BATHROOM_HAIR_0_4_167.md` |
 | 0.4.168 | The kitchen table, the first quiet room: the reader draws themselves; the face's crayon is `TONE` and the hair's the House's body's hair colour; the doors open once the picture is up on the fridge | `docs/KITCHEN_TABLE_0_4_168.md` |
+| 0.4.169 | The coatroom's wardrobe: twelve coats and six pairs of boots in three sets, each with a past in its tooltip and a guess said when first worn; the account and the book name the garment | `docs/WARDROBE_0_4_169.md` |
