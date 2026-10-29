@@ -81,6 +81,7 @@ public final class LabyrinthCommands {
                     context.getSource().sendSuccess(()->Component.literal("Cave: work "+data.state("ted_caver").getInt("Work")+"/"+io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette.STROKES+"; breath "+io.github.knaitoe.theoldesthouse.labyrinth.CaverVignette.breathing(player.server)+"; your line "+own.getBoolean("LineTied")+"; your squeeze "+own.getBoolean("Squeezed")+"; mark "+own.getBoolean("MarkRead")+"; rope pulling "+own.getBoolean("Pursuit")+"; escaped "+own.getBoolean("Escaped")+"; personal resolution "+io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.has(data,player.getUUID(),io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.Story.TED_CAVER)),false);return 1;
                 })))
                 .then(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanCommands.build())
+                .then(io.github.knaitoe.theoldesthouse.labyrinth.GhostsCommands.build())
                 .then(Commands.literal(TellTaleFloorboards.ID)
                         .then(Commands.literal("reset").executes(context -> {
                             if (!LabyrinthBuilder.ensureBuilt(context.getSource().getServer())) {
