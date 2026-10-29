@@ -33,7 +33,7 @@ public final class HouseConfig {
     /** Playtesting: a local, opt-in event log of the journey (PlaytestLog). Off by default. */
     public static final ModConfigSpec.BooleanValue PLAYTEST_LOG, PLAYTEST_LOG_HASH_IDS;
     /** 0.4.159: whether the quiet rooms' habits become categories at all, and whether who a reader is drawn to is read. */
-    public static final ModConfigSpec.BooleanValue READ_READERS, READ_DRAWN_TO;
+    public static final ModConfigSpec.BooleanValue READ_READERS, READ_DRAWN_TO, HOUSE_BODIES;
     private static final int CURRENT_PRESET = 62;
 
     static {
@@ -101,6 +101,10 @@ public final class HouseConfig {
                 .define("readReaders", true);
         READ_DRAWN_TO = builder.comment("Read who a reader is drawn to in the shelter (the lake house partner follows it). Off leaves that one trait unread.")
                 .define("readDrawnTo", true);
+        HOUSE_BODIES = builder.comment("Give a reader whose own skin doesn't look human a human body while inside the House, chosen from the read",
+                        "(age, clothes and hair) and seen by every player there. Their client says only whether their face looks human.",
+                        "Off keeps every reader's own skin everywhere.")
+                .define("houseBodies", true);
         builder.pop();
         builder.push("playtest");
         PLAYTEST_LOG = builder.comment("Write a local playtest log of the journey (arrivals, stories, retreats, deaths, refused doors)",
@@ -132,6 +136,8 @@ public final class HouseConfig {
 
     private HouseConfig() {
     }
+
+    public static boolean houseBodies(){return !SPEC.isLoaded()||HOUSE_BODIES.get();}
 
     public static boolean readEnabled(boolean drawnTo){
         if(!SPEC.isLoaded())return true;return READ_READERS.get()&&(!drawnTo||READ_DRAWN_TO.get());

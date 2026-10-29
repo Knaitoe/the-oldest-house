@@ -222,6 +222,16 @@ LOOKS['uncanny_family_3']=replace(LOOKS['uncanny_family_2'],hair='#332e2b',cut='
 LOOKS['uncanny_bent_neck']=Look('#b19e90','#252625','long','#484c48','#3a3d3b','dress','#95877b',eyes='#666c61',age=1,mark='bent_injury',sleeve=10,logical=64,face_style='injured_neck')
 
 
+def coil_panel(size,color):
+    """Tight coils: small offset clusters, each with its lit and shaded side."""
+    w,h=size;im=Image.new('RGBA',size,rgb(color)+(255,));d=ImageDraw.Draw(im);lo=shade(color,-17);hi=shade(color,13)
+    for y in range(0,h,3):
+        for x in range((y//3)%2*2,w,4):
+            d.point((x,y),fill=hi)
+            if x+1<w and y+1<h:d.point((x+1,y+1),fill=lo)
+    return im
+
+
 def net(u,v,w,h,d):
     return {'top':(u+d,v,u+d+w,v+d),'bottom':(u+d+w,v,u+d+2*w,v+d),
             'right':(u,v+d,u+d,v+d+h),'front':(u+d,v+d,u+d+w,v+d+h),
@@ -433,6 +443,10 @@ def face(look):
         d.line((1,2,1,7),fill=hhi);d.line((14,3,14,10),fill=hhi)
         if look.cut=='braids':
             for y in (5,8,11):d.rectangle((0,y,1,y+1),fill=hhi);d.rectangle((14,y,15,y+1),fill=hhi)
+    elif look.cut=='coils':
+        # Tight coils standing up from a rounded hairline; the hat layer carries their height.
+        d.polygon([(0,0),(15,0),(15,5),(14,4),(13,3),(11,2),(4,2),(2,3),(1,4),(0,5)],fill=hair)
+        for x,y in ((1,1),(4,0),(7,1),(10,0),(13,1),(2,3),(14,3)):d.point((x,y),fill=hhi);d.point((min(15,x+1),min(5,y+1)),fill=hlo)
     elif look.cut=='messy':
         d.polygon([(0,0),(15,0),(15,4),(13,3),(12,4),(10,2),(8,4),(6,2),(4,5),(2,3),(0,5)],fill=hair)
         d.line((2,1,5,1),fill=hhi);d.line((9,1,12,1),fill=hhi)
@@ -693,6 +707,24 @@ def paint(look):
             d.rectangle((front+3,7,front+5,11),fill=shade(look.skin,-16));d.line((front+4,8,front+4,10),fill=shade(look.skin,-34))
             if look.glasses:d.line((front,7,front+5,7),fill='#666250')
         put(head[side],art)
+    if look.cut=='coils':
+        for side in ('top','back','left','right'):
+            art=coil_panel((16,16),look.hair);d=ImageDraw.Draw(art)
+            if side in ('left','right'):
+                front=0 if side=='left' else 10
+                d.rectangle((front,7,front+5,15),fill=rgb(look.skin))
+                d.rectangle((front+3,9,front+5,12),fill=shade(look.skin,-16));d.line((front+4,10,front+4,11),fill=shade(look.skin,-34))
+            put(head[side],art)
+        for side,box in net(32,0,8,8,8).items():
+            if side=='bottom':continue
+            art=coil_panel((16,16),look.hair)
+            if side!='top':
+                # Fuller at the crown and back, thinning to an uneven edge; the face and ears stay clear.
+                d=ImageDraw.Draw(art);depth={'front':3,'back':12,'left':6,'right':6}[side]
+                for x in range(16):
+                    edge=depth+(x*5)%3-1 if side!='front' else (depth if 2<=x<=13 else depth+1)
+                    d.line((x,max(0,edge),x,15),fill=(0,0,0,0))
+            put(box,art)
     if 'pillow' in look.costume.split():
         for side,box in head.items():
             art=panel((16,16),'#ecebe4','cloth',side);d=ImageDraw.Draw(art)
@@ -991,6 +1023,39 @@ def rabbit_skin():
     return im.resize((512,256),Image.Resampling.NEAREST)
 
 
+# 0.4.163, the House's body (owner, October 29): a reader whose own skin doesn't look human wears one of these inside the
+# House, chosen from the read: three ages, three presentations and five hairstyles. Each is painted with grey skin and hair;
+# its lower half marks the pixels painted from the skin (red) and the hair (green). The painter adds its shading to those
+# colours, so the client recolours them exactly to the reader's tone and hair colour. All use wide arms.
+BODY_REF='#808080'
+BODY_AGES=('young','middle','older')
+BODY_PRESENTATIONS=('plain','masc','fem')
+BODY_CUTS=('short','coils','braids','long','close')
+BODY_CLOTHES={
+    'plain':(('tee','#56656b','#3a4450','#c9bc9f',4),('crew','#6b6a5c','#3f4446','#b7a27b',9),('knit','#6e6457','#4a4740','#bfb49a',10)),
+    'masc':(('flannel','#7a4a3c','#38424c','#c9bc9f',9),('shirt','#4a5865','#303941','#c9bc9f',9),('cardigan','#5d5446','#3c3a34','#a89a78',10)),
+    'fem':(('dress','#6d4f6a','#6d4f6a','#d8cdb8',4),('dress','#3f5e66','#3f5e66','#e0d4b8',9),('cardigan','#7a6a74','#4d4650','#c7b9a0',10)),
+}
+
+
+def body_look(age,presentation,cut,skin=BODY_REF,hair=BODY_REF):
+    style,cloth,pants,accent,sleeve=BODY_CLOTHES[presentation][BODY_AGES.index(age)]
+    return Look(skin,hair,cut,cloth,pants,style,accent,eyes='#4b3d33',age=BODY_AGES.index(age),sleeve=sleeve,logical=64)
+
+
+def house_body(age,presentation,cut):
+    base=paint(body_look(age,presentation,cut))
+    by_skin=paint(body_look(age,presentation,cut,skin='#888888')).load();by_hair=paint(body_look(age,presentation,cut,hair='#888888')).load()
+    out=Image.new('RGBA',(base.width,base.height*2));out.paste(base,(0,0));b=base.load();m=out.load()
+    for y in range(base.height):
+        for x in range(base.width):
+            if b[x,y][3]==0:continue
+            skin=by_skin[x,y][:3]!=b[x,y][:3];hair=by_hair[x,y][:3]!=b[x,y][:3]
+            assert not(skin and hair),(age,presentation,cut,x,y)
+            if skin or hair:m[x,y+base.height]=(255 if skin else 0,255 if hair else 0,0,255)
+    return out
+
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');args=parser.parse_args()
     paintings={name:paint(look) for name,look in LOOKS.items()}
@@ -1008,6 +1073,10 @@ def main():
     paintings['literary_snow_rabbit']=rabbit_skin()
     # Historical alternate DJ sheet remains valid for resource packs, but production uses the proper head net.
     paintings['nightclub_dj_head0490']=paint(LOOKS['nightclub_dj'])
+    for age in BODY_AGES:
+        for presentation in BODY_PRESENTATIONS:
+            for cut in BODY_CUTS:paintings[f'house_body/{age}_{presentation}_{cut}']=house_body(age,presentation,cut)
+    (OUT/'house_body').mkdir(exist_ok=True)
     for name,im in paintings.items():
         path=OUT/(name+'.png')
         if args.check:

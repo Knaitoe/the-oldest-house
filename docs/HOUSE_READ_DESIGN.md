@@ -9,7 +9,7 @@ What is built (see "Built so far" at the end):
 - the account opening, the House of Leaves, and the reader's look in glass and copies, written with the read (0.4.159);
 - the six scenes that read a category (0.4.142), the lake house partner (0.4.152), the shelter strangers' age and the road-taker's deal (0.4.159).
 
-What is not built: settled `DANGER` authority figures, the moods a tentative `HOME` gives, the larger `AGE` changes, and the two open proposals (see `docs/HOUSE_READ_0_4_159.md`). Proposed for the owner's review (October 29): a sixth room, the self-portrait at the kitchen table, which reads skin tone only, and the House's body for readers whose skins aren't human (section 6 and "The House's body").
+What is not built: settled `DANGER` authority figures, the moods a tentative `HOME` gives, the larger `AGE` changes, and the two open proposals (see `docs/HOUSE_READ_0_4_159.md`). Proposed for the owner's review (October 29): a sixth room, the self-portrait at the kitchen table, which reads skin tone only (section 6). The House's body for readers whose skins aren't human was decided the same day and is built in 0.4.163 ("The House's body").
 
 A review of the built rooms against this document, with a suggested order for what comes next, is in `docs/PERSONALITY_VIGNETTES_REVIEW.md` (October 28).
 
@@ -426,7 +426,7 @@ Instead the House dresses the reader's own skin with what it learned, in the pla
 - **`UNSEEN`:** the coat and silhouette show, but the face is obscured, in every mirror, double and portrait.
 - **Never the live model,** with one exception, the House's body below. Third person always shows the reader's own skin, even on their own client. The House's version belongs in glass and copies. When the House gets something wrong, the reader sees the gap between who they are and who the House thinks they are.
 
-### The House's body (the owner's decisions, October 29; proposal, not built)
+### The House's body (the owner's decisions, October 29; built in 0.4.163)
 
 The owner: readers whose skins are not human (a creeper, a robot, a mascot) won't feel the personalization, because coats, glasses and portraits assume a person. So the House gives those readers a human body while they are inside it.
 
@@ -457,6 +457,11 @@ The owner: readers whose skins are not human (a creeper, a robot, a mascot) won'
 Built so far:
 - 0.4.150: the coatroom glass is a true reflection of the reader's own skin and borrowed layers, reversed, half their height where their eye would see it, turning and walking with them, and seen only from in front.
 - 0.4.159: a private message carries only a reader's own look to their own client: the coat they took once `SELF` is settled, reading glasses for `ANALOG`, and the obscured face for `UNSEEN`. The coatroom glass, the hazard halls' mirrors, the double in the novel sites and the reader's echo on the great staircase wear it. The silk wrap waits for a double asleep.
+- 0.4.163: the House's body, as above (`docs/HOUSE_BODY_AND_NAVIGATION_0_4_163.md`). It differs from the design in three ways:
+  - The skin check counts a face as human when a quarter of it is in human skin colours.
+  - The tone and hair colour come from the account's default skin until the self-portrait is built.
+  - The manor's own rooms keep the reader's own skin, as the Overworld does.
+  - Separately, the owner asked that the inventory's figure be left empty inside the House, so a reader sees themselves only as others draw them, or in glass.
 
 ## Where the read pays off
 
@@ -675,3 +680,4 @@ Changes 1, 2 and 4 are built (0.4.143 and 0.4.144). Co-op, change 3, has its sha
 | 0.4.160 | The quiet rooms one at a time: the first from a junction door, then each as the next story dealt, more often, until all are entered | `docs/QUIET_ROOMS_ONE_AT_A_TIME_0_4_160.md` |
 | 0.4.161 | The owner's playtest notes: all five rooms rebuilt in native materials and furniture, joined blocks, fittings on their walls, an audit test; a 15-second wait; one routine item at a time; a smaller coatroom with distinct coats; a true plane mirror | `docs/QUIET_ROOMS_PLAYTEST_0_4_161.md` |
 | 0.4.162 | Every shared scene written for being there with others: four witness scenes, and a closing line naming the party in the 31 scenes each reader comes through alone | `docs/COOP_ACCOUNTS_0_4_162.md` |
+| 0.4.163 | The House's body for skins that aren't human; no figure in the inventory inside the House; every door after a quiet room leads to the next, no depth among the quiet rooms and the count starting again after them; the porch swing and carved rail | `docs/HOUSE_BODY_AND_NAVIGATION_0_4_163.md` |

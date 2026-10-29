@@ -37,9 +37,11 @@ def outputs():
   elif name=='food':
    d.rectangle((2,3,13,12),fill=light);d.rectangle((5,6,11,8),fill='#a16b42');d.rectangle((3,9,6,11),fill='#71814d')
   tiles[name]=im
- # Carved rail and the folded slip are blank first. Only their unseen state gains marks.
- for name,base in [('rail_written','oak'),('slip','cream'),('slip_written','cream')]:
-  im=tiles[base].copy();d=ImageDraw.Draw(im)
+ # Carved rail and the folded slip are blank first. Only their unseen state gains marks. 0.4.163: the porch rail is
+ # painted white like the rest of the railing, so the carving is cut into the painted wood.
+ painted=materials.textures()['rail']
+ for name,base in [('rail_written','rail'),('slip','cream'),('slip_written','cream')]:
+  im=(painted if base=='rail' else tiles[base]).copy();d=ImageDraw.Draw(im)
   if 'written' in name:
    for y,length in [(4,10),(7,8),(10,11)]:d.line((2,y,length,y),fill='#564b3b')
   tiles[name]=im
@@ -53,8 +55,9 @@ def outputs():
  for name,im in tiles.items():
   buf=io.BytesIO();im.save(buf,format='PNG');out['textures/block/house_read/'+name+'.png']=buf.getvalue()
  textures={n:'the_oldest_house:block/house_read/'+n for n in tiles}
- def model(name,elements,layer=None):
-  data={'ambientocclusion':True,'textures':dict(textures,particle=textures.get(name,textures['oak'])),'elements':elements}
+ RAIL,ROPE='the_oldest_house:block/house_read/rail','the_oldest_house:block/house_read/rope'
+ def model(name,elements,layer=None,extra=None):
+  data={'ambientocclusion':True,'textures':dict(textures,**(extra or {}),particle=textures.get(name,textures['oak'])),'elements':elements}
   if layer:data['render_type']='minecraft:'+layer
   out['models/block/read_'+name+'.json']=(json.dumps(data,indent=2)+'\n').encode()
  for n in ['wallpaper','clapboard','linoleum','panels','tile','pavilion']:out['models/block/read_'+n+'.json']=(json.dumps({'parent':'minecraft:block/cube_all','textures':{'all':textures[n]}},indent=2)+'\n').encode();out['blockstates/read_'+n+'.json']=(json.dumps({'variants':{'':{'model':'the_oldest_house:block/read_'+n}}},indent=2)+'\n').encode()
@@ -86,8 +89,17 @@ def outputs():
   elif n=='towel':model(n,[cube([2,0,2],[14,3,14],'cream'),cube([3,3.05,3],[13,4,13],'cream')])
   elif n=='curtain':model(n,[cube([0,0,1],[16,16,3],'curtain')])
   elif n=='rail':
-   model(n,[cube([0,12,4],[16,14,12],'oak'),cube([1,0,6],[3,12,10],'oak'),cube([13,0,6],[15,12,10],'oak')]);model(n+'_written',[cube([0,12,4],[16,14,12],'rail_written'),cube([1,0,6],[3,12,10],'oak'),cube([13,0,6],[15,12,10],'oak')])
-  elif n=='swing':model(n,[cube([1,4,2],[15,6,14],'oak')])
+   # 0.4.163 (owner: "other texture issue"): the last section of the white porch railing, by the steps: an end post and a
+   # top rail reaching on into the next rail's post, as a fence joins, with the words carved along it. Below it stays open,
+   # the gap a reader on the lawn looks through at the lit window.
+   def section(top):return [cube([11,0,6],[15,16,10],'rail'),cube([-6,12,7],[12,15,9],top)]
+   model(n,section('rail'),extra={'rail':RAIL});model(n+'_written',section('rail_written'),extra={'rail':RAIL})
+  elif n=='swing':
+   # 0.4.163 (owner: "swing textures are still disconnected"): two of these make one plank seat at sitting height, each
+   # hung by its rope, which runs up into the rope above as the chain template does.
+   rope=[{'from':[6.5,8,8],'to':[9.5,16,8],'rotation':{'origin':[8,8,8],'axis':'y','angle':45},'shade':False,'faces':{'north':{'uv':[0,0,3,8],'texture':'#rope'},'south':{'uv':[0,0,3,8],'texture':'#rope'}}},
+         {'from':[8,8,6.5],'to':[8,16,9.5],'rotation':{'origin':[8,8,8],'axis':'y','angle':45},'shade':False,'faces':{'west':{'uv':[3,0,6,8],'texture':'#rope'},'east':{'uv':[3,0,6,8],'texture':'#rope'}}}]
+   model(n,[cube([0,6,3],[16,8,13],'oak')]+rope,extra={'rope':ROPE})
   elif n=='mailbox':model(n,[cube([7,0,7],[9,13,9],'oak'),cube([1,13,3],[15,18,13],'metal'),cube([1,13,2.6],[15,17.8,2.9],'metal'),cube([14.8,15,6],[15.1,21,7],'curtain')])
   else:model(n,[cube([3,0,3],[13,.6,13],'cream'),cube([4,.65,4],[12,.9,12],'food')])
  more_models(out,model,cube);rooms160.models(model,cube,faced)

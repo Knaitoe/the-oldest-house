@@ -2140,7 +2140,7 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','HouseReadReaderTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java','CoopTests.java'))
-          assert count==34
+          assert count==36
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==5
           PY
@@ -2161,7 +2161,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           folder=Path('build/house-read139-art')
-          assert len(list(folder.glob('*.png')))==20
+          assert len(list(folder.glob('*.png')))==22
           assert (folder/'passed.txt').is_file()
           PY
       - uses: actions/upload-artifact@v4
@@ -2209,9 +2209,9 @@ jobs:
           cards=Image.new('RGB',(1920,665),'#242424');draw=ImageDraw.Draw(cards)
           for n,name in enumerate(['A-card','B-card']):
               draw.text((n*960+8,5),name,fill='white');cards.paste(Image.open(root/(name+'.png')).convert('RGB'),(n*960,25))
-          mirrors=Image.new('RGB',(1920,665),'#242424');draw=ImageDraw.Draw(mirrors)
-          for n,name in enumerate(['A-mirror','B-mirror']):
-              draw.text((n*960+8,5),name,fill='white');mirrors.paste(Image.open(root/(name+'.png')).convert('RGB'),(n*960,25))
+          mirrors=Image.new('RGB',(1920,1330),'#242424');draw=ImageDraw.Draw(mirrors)
+          for n,name in enumerate(['A-mirror','B-mirror','A-body','B-inventory']):
+              draw.text((n%2*960+8,n//2*665+5),name,fill='white');mirrors.paste(Image.open(root/(name+'.png')).convert('RGB'),(n%2*960,n//2*665+25))
           for name,im in [('counters',counter),('cards',cards),('mirrors',mirrors)]:
               im.save(root/(name+'-review.png'));out=io.BytesIO();im.save(out,format='PNG')
               data=base64.b64encode(out.getvalue()).decode()

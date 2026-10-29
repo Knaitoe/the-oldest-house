@@ -30,8 +30,11 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HouseReadSites {
     public static final String STATE="house_read_rooms_04138";
-    /** 0.4.159 rebuilt the waiting room, coatroom and shelter; a copy prepared ahead but never entered is built again. */
-    public static final int LAYOUT=161;
+    /**
+     * 0.4.159 rebuilt the waiting room, coatroom and shelter; a copy prepared ahead but never entered is built again.
+     * 0.4.163: the porch's swing hangs from its ropes and the note is carved into the railing.
+     */
+    public static final int LAYOUT=163;
     public enum Room {
         WAITING(LabyrinthPlace.READ_WAITING,483328), BATHROOM(LabyrinthPlace.READ_BATHROOM,491520),
         COATROOM(LabyrinthPlace.READ_COATROOM,466944), SHELTER(LabyrinthPlace.READ_SHELTER,499712), PORCH(LabyrinthPlace.READ_PORCH,475136);
@@ -101,15 +104,14 @@ public final class HouseReadSites {
      * the next takes the place of every story the House deals. A reader who never began (an observer, or someone who never
      * came in by the front door) is dealt as before.
      */
-    public static boolean owing(LabyrinthData d,UUID id){var t=d.stateEntry(STATE,id.toString());return next(d,id)!=null&&Arrays.stream(Room.values()).anyMatch(r->t.getCompound(r.key()).getBoolean("Entered"));}
-    /** The chance a fresh arrival offers the next quiet room: high, and certain after two arrivals without one. */
-    public static int chance(LabyrinthData d,UUID id){int dry=d.stateEntry(STATE,id.toString()).getInt("OwedDry");return dry>=2?100:60+20*dry;}
-    /** Marks one dealt door as the way into the next quiet room; it still leads on to its hall afterwards. */
-    public static void owe(LabyrinthData d,UUID id,@Nullable String door){
+    public static boolean owing(LabyrinthData d,UUID id){return owing(d.stateEntry(STATE,id.toString()));}
+    /** {@link #owing} from a reader's own quiet-room record, as saved. */
+    static boolean owing(CompoundTag t){boolean begun=false,left=false;for(var r:Room.values()){if(t.getCompound(r.key()).getBoolean("Entered"))begun=true;else left=true;}return begun&&left;}
+    /** Marks a dealt door as the way into the next quiet room; it still leads on to its hall afterwards. */
+    public static void owe(LabyrinthData d,UUID id,String door){
         var own=d.stateEntry(STATE,id.toString());
-        if(door==null){own.putInt("OwedDry",own.getInt("OwedDry")+1);d.setStateEntry(STATE,id.toString(),own);return;}
         var list=own.getList("Owed",Tag.TAG_STRING);list.removeIf(t->t.getAsString().equals(door));list.add(StringTag.valueOf(door));while(list.size()>8)list.remove(0);
-        own.put("Owed",list);own.putInt("OwedDry",0);d.setStateEntry(STATE,id.toString(),own);
+        own.put("Owed",list);own.remove("OwedDry");d.setStateEntry(STATE,id.toString(),own);
     }
     private static void enter(ServerPlayer p,Request request){
         // A room is reached from beside the door that was dealt into it.
@@ -120,8 +122,11 @@ public final class HouseReadSites {
         HouseTransitionEvents.beginDoorTransition(p,room.dimension(),null,arrived->{
             var own=state(arrived.server,arrived.getUUID());if(!own.getString("Active").isEmpty()){left(arrived);own=state(arrived.server,arrived.getUUID());}
             // Entering one settles every door that was owed: the next is dealt afresh, after a hall.
-            own.remove("Owed");own.putInt("OwedDry",0);
-            var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());save(arrived.server,arrived.getUUID(),own);prepareNext(arrived);
+            own.remove("Owed");
+            var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);visit.putString("SourceDoor",from.id);visit.putString("NextPlace",request.next().id());visit.putInt("BeforeFrozen",arrived.getTicksFrozen());visit.putBoolean("Here",true);own.put(room.key(),visit);own.putString("Active",room.key());save(arrived.server,arrived.getUUID(),own);
+            // 0.4.163: the last quiet room entered, the House's depth counts again from here.
+            if(next(arrived.server,arrived.getUUID())==null)LabyrinthData.get(arrived.server).holdReturns(arrived.getUUID());
+            prepareNext(arrived);
         },Vec3.atBottomCenterOf(landing),180);
     }
     /** Registered private doors are owner-bound and are handled before ordinary Return logic. */

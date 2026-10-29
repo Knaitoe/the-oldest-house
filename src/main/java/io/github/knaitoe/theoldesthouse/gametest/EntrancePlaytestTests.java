@@ -78,15 +78,15 @@ public final class EntrancePlaytestTests {
             .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.GRAY_CORRIDOR,"the first quiet room's way on is the hall its junction door was dealt, not another quiet room"))
             .thenExecute(()->{
                 h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==HouseReadSites.Room.BATHROOM&&HouseReadSites.owing(f.data(),p.getUUID()),"the next quiet room is owed once the first has been entered");
-                h.assertTrue(f.data().returnDepth(p.getUUID())==1&&WitnessAccount.count(f.data(),p.getUUID())==0,"one genuine forward crossing and no story credit");
-                // Arriving dealt this hall's doors once already; two arrivals without a quiet room make the next certain.
-                var own=HouseReadSites.state(p.server,p.getUUID());own.remove("Owed");own.putInt("OwedDry",2);f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
-                h.assertTrue(HouseReadSites.chance(f.data(),p.getUUID())==100,"the House stops waiting after two halls without one");
+                h.assertTrue(f.data().peekReturn(p.getUUID())!=null&&f.data().peekReturn(p.getUUID()).held()&&f.data().returnDepth(p.getUUID())==0&&WitnessAccount.count(f.data(),p.getUUID())==0,"one genuine forward crossing, held while quiet rooms are to come, and no story credit");
+                // 0.4.163: every door of the hall after a quiet room is the way into the next, so none is missed.
+                var own=HouseReadSites.state(p.server,p.getUUID());own.remove("Owed");f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
                 var doors=f.data().doors().stream().filter(d->d.id.startsWith(LabyrinthPlace.GRAY_CORRIDOR.id()+"/")&&LabyrinthData.DEALT.equals(d.destination)).toList();h.assertTrue(!doors.isEmpty(),"the hall has onward doors");
                 LabyrinthDealer.deal(f.data(),p.getUUID(),doors,LabyrinthPlace.GRAY_CORRIDOR,net.minecraft.util.RandomSource.create(160));
-                var list=HouseReadSites.state(p.server,p.getUUID()).getList("Owed",net.minecraft.nbt.Tag.TAG_STRING);h.assertTrue(list.size()==1,"exactly one of the hall's doors is the way into the next quiet room: "+list);
-                owed[0]=f.data().door(list.getString(0));var dealt=f.data().deal(p.getUUID(),owed[0]);
-                h.assertTrue(dealt!=null&&LabyrinthPacing.ordinary(LabyrinthPlace.byId(dealt.place())),"that door is dealt an ordinary hall, for afterwards");
+                var list=HouseReadSites.state(p.server,p.getUUID()).getList("Owed",net.minecraft.nbt.Tag.TAG_STRING);
+                for(var door:doors){h.assertTrue(list.stream().anyMatch(tag->tag.getAsString().equals(door.id)),"every one of the hall's doors is the way into the next quiet room: "+door.id+" in "+list);
+                    var dealt=f.data().deal(p.getUUID(),door);h.assertTrue(dealt!=null&&LabyrinthPacing.ordinary(LabyrinthPlace.byId(dealt.place())),"each is dealt an ordinary hall, for afterwards: "+door.id);}
+                owed[0]=f.data().door(list.getString(0));
                 for(var door:doors){var deal=f.data().deal(p.getUUID(),door);h.assertTrue(deal==null||!LabyrinthPlace.byId(deal.place()).isVignette(),"no other story is dealt while a quiet room is owed: "+door.id);}
                 // The fixture has only these halls built: the quiet room will lead on into the junction.
                 f.data().deal(p.getUUID(),owed[0],LabyrinthPlace.JUNCTION.id(),false);
@@ -102,13 +102,45 @@ public final class EntrancePlaytestTests {
             .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.JUNCTION,"the second quiet room also ends in its own dealt hall"))
             .thenExecute(()->{
                 h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==HouseReadSites.Room.COATROOM,"the rooms still come in their order");
-                var own=HouseReadSites.state(p.server,p.getUUID());for(var room:rooms){var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);own.put(room.key(),visit);}f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
+                // Entering the last room settles every owed door, as entering each one does.
+                var own=HouseReadSites.state(p.server,p.getUUID());for(var room:rooms){var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);own.put(room.key(),visit);}own.remove("Owed");f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
                 h.assertTrue(!HouseReadSites.owing(f.data(),p.getUUID())&&HouseReadSites.next(p.server,p.getUUID())==null,"after every quiet room nothing more is owed");
                 var doors=f.data().doors().stream().filter(d->d.id.startsWith(LabyrinthPlace.JUNCTION.id()+"/")&&LabyrinthData.DEALT.equals(d.destination)).toList();
                 LabyrinthDealer.deal(f.data(),p.getUUID(),doors,LabyrinthPlace.JUNCTION,net.minecraft.util.RandomSource.create(161));
                 h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).getList("Owed",net.minecraft.nbt.Tag.TAG_STRING).isEmpty()&&!HouseReadSites.offer(p,west[0],LabyrinthPlace.GRAY_CORRIDOR),"and the junction's doors are ordinary again");
                 h.assertTrue(p.isAlive()&&p.getHealth()==20,"the reader arrives alive and unhurt");
             }).thenSucceed();
+    }
+
+    /** 0.4.163 (owner: "house navigation needs to be desperately balanced"): the quiet rooms come before the deep interior. */
+    @GameTest(template="empty",batch="read_depth163",timeoutTicks=200)
+    public static void untilTheQuietRoomsAreDoneTheHouseStaysDomesticThenDeepensACrossingAtATime(GameTestHelper h){
+        var server=h.getLevel().getServer();var d=LabyrinthData.get(server);var id=java.util.UUID.randomUUID();
+        var spot=new LabyrinthData.Waypoint(h.getLevel().dimension(),Vec3.ZERO,0,true);
+        try{
+            for(int i=0;i<9;i++)d.pushReturn(id,spot);
+            h.assertTrue(d.returnDepth(id)==9,"a reader who never began the quiet rooms deepens as before: "+d.returnDepth(id));
+            var own=new net.minecraft.nbt.CompoundTag();var waiting=new net.minecraft.nbt.CompoundTag();waiting.putBoolean("Entered",true);own.put(HouseReadSites.Room.WAITING.key(),waiting);d.setStateEntry(HouseReadSites.STATE,id.toString(),own);
+            h.assertTrue(d.returnDepth(id)==LabyrinthPacing.STORY_DEPTH-1,"a reader already deep when the quiet rooms began is held in the domestic halls until they are done: "+d.returnDepth(id));
+            d.clearReturns(id);
+            for(int i=0;i<12;i++)d.pushReturn(id,spot);
+            h.assertTrue(d.returnDepth(id)==0&&d.peekReturn(id).held(),"crossings among the quiet rooms do not deepen the House: "+d.returnDepth(id));
+            h.assertTrue(d.returnDepth(id)<LabyrinthPacing.STONE_DEPTH&&LabyrinthDealer.mazeTier(d,id)==0&&LabyrinthPacing.trialChance(d,id)==0&&LabyrinthPacing.anomalyChance(d,id)==0&&!LabyrinthDealer.finaleOffered(d,id),"so no stone halls, trials, impossible rooms or staircase yet");
+            var doors=new java.util.ArrayList<LabyrinthData.Door>();for(int i=0;i<3;i++)doors.add(new LabyrinthData.Door("native/depth163/"+id+"/"+i,h.getLevel().dimension(),new BlockPos(0,-60,i*4),Direction.NORTH,LabyrinthData.DEALT,false));
+            LabyrinthDealer.deal(d,id,doors,LabyrinthPlace.GRAY_CORRIDOR,net.minecraft.util.RandomSource.create(163));
+            var owed=d.stateEntry(HouseReadSites.STATE,id.toString()).getList("Owed",net.minecraft.nbt.Tag.TAG_STRING);
+            for(var door:doors){h.assertTrue(owed.stream().anyMatch(tag->tag.getAsString().equals(door.id)),"every door leads on to the next quiet room: "+door.id);var deal=d.deal(id,door);h.assertTrue(deal!=null&&LabyrinthPacing.ordinary(LabyrinthPlace.byId(deal.place()))&&!StoneHalls.isStone(LabyrinthPlace.byId(deal.place())),"and afterwards to a domestic hall: "+door.id);}
+            own=d.stateEntry(HouseReadSites.STATE,id.toString());for(var room:HouseReadSites.Room.values()){var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);own.put(room.key(),visit);}d.setStateEntry(HouseReadSites.STATE,id.toString(),own);
+            d.holdReturns(id);
+            h.assertTrue(d.returnDepth(id)==0&&d.peekReturn(id)!=null,"with all five done the count starts again, and the way back is kept: "+d.returnDepth(id));
+            for(int i=1;i<LabyrinthPacing.STORY_DEPTH;i++){d.pushReturn(id,spot);h.assertTrue(LabyrinthPacing.domestic(d.returnDepth(id)),"the halls after the quiet rooms are domestic again for a while: "+d.returnDepth(id));}
+            d.pushReturn(id,spot);h.assertTrue(d.returnDepth(id)==LabyrinthPacing.STORY_DEPTH,"stories can begin six crossings after: "+d.returnDepth(id));
+            d.pushReturn(id,spot);h.assertTrue(d.returnDepth(id)==LabyrinthPacing.STONE_DEPTH,"and the stone a crossing later: "+d.returnDepth(id));
+            for(int i=0;i<LabyrinthPacing.STONE_DEPTH;i++)d.popReturn(id);h.assertTrue(d.returnDepth(id)==0&&d.peekReturn(id)!=null,"going back undoes those crossings and keeps the older way back");
+            var copy=LabyrinthData.load(d.save(new net.minecraft.nbt.CompoundTag(),server.registryAccess()),server.registryAccess());
+            h.assertTrue(copy.returnDepth(id)==0&&copy.peekReturn(id)!=null&&copy.peekReturn(id).held(),"and the held way back is saved");
+        }finally{d.clearReturns(id);d.setStateEntry(HouseReadSites.STATE,id.toString(),new net.minecraft.nbt.CompoundTag());}
+        h.succeed();
     }
 
     @GameTest(template="empty",batch="retire_entrance142",timeoutTicks=2400)

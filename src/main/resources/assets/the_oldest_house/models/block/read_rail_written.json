@@ -67,159 +67,24 @@
     "lamp_glass": "the_oldest_house:block/house_read/lamp_glass",
     "newsprint": "the_oldest_house:block/house_read/newsprint",
     "magazine_cover": "the_oldest_house:block/house_read/magazine_cover",
+    "rail": "the_oldest_house:block/house_read/rail",
     "particle": "the_oldest_house:block/house_read/rail_written"
   },
   "elements": [
     {
       "from": [
-        0,
-        12,
-        4
-      ],
-      "to": [
-        16,
-        14,
-        12
-      ],
-      "faces": {
-        "up": {
-          "texture": "#rail_written",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "down": {
-          "texture": "#rail_written",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "north": {
-          "texture": "#rail_written",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "south": {
-          "texture": "#rail_written",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "east": {
-          "texture": "#rail_written",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "west": {
-          "texture": "#rail_written",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        }
-      }
-    },
-    {
-      "from": [
-        1,
-        0,
-        6
-      ],
-      "to": [
-        3,
-        12,
-        10
-      ],
-      "faces": {
-        "up": {
-          "texture": "#oak",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "down": {
-          "texture": "#oak",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "north": {
-          "texture": "#oak",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "south": {
-          "texture": "#oak",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "east": {
-          "texture": "#oak",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "west": {
-          "texture": "#oak",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        }
-      }
-    },
-    {
-      "from": [
-        13,
+        11,
         0,
         6
       ],
       "to": [
         15,
-        12,
+        16,
         10
       ],
       "faces": {
         "up": {
-          "texture": "#oak",
+          "texture": "#rail",
           "uv": [
             0,
             0,
@@ -228,7 +93,7 @@
           ]
         },
         "down": {
-          "texture": "#oak",
+          "texture": "#rail",
           "uv": [
             0,
             0,
@@ -237,7 +102,7 @@
           ]
         },
         "north": {
-          "texture": "#oak",
+          "texture": "#rail",
           "uv": [
             0,
             0,
@@ -246,7 +111,7 @@
           ]
         },
         "south": {
-          "texture": "#oak",
+          "texture": "#rail",
           "uv": [
             0,
             0,
@@ -255,7 +120,7 @@
           ]
         },
         "east": {
-          "texture": "#oak",
+          "texture": "#rail",
           "uv": [
             0,
             0,
@@ -264,7 +129,75 @@
           ]
         },
         "west": {
-          "texture": "#oak",
+          "texture": "#rail",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -6,
+        12,
+        7
+      ],
+      "to": [
+        12,
+        15,
+        9
+      ],
+      "faces": {
+        "up": {
+          "texture": "#rail_written",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#rail_written",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#rail_written",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#rail_written",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#rail_written",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#rail_written",
           "uv": [
             0,
             0,

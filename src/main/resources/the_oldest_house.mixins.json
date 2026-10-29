@@ -21,7 +21,9 @@
     "GhostsLecternMixin",
     "DeathPortraitRenderMixin",
     "UncannyGlowMixin",
-    "UncannyTargetMixin"
+    "UncannyTargetMixin",
+    "InventorySelfMixin",
+    "PlayerInfoSkinMixin"
   ],
   "injectors": {
     "defaultRequire": 1

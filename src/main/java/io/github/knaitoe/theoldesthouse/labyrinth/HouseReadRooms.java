@@ -108,7 +108,7 @@ public final class HouseReadRooms {
         // The kitchen through the window: the warm table and its chairs, the plate kept warm, the pendant and a lamp.
         fitting(l,b,-1,3,-17,TABLE_END,Direction.EAST);fitting(l,b,0,3,-17,TABLE_MID,Direction.SOUTH);fitting(l,b,1,3,-17,TABLE_END,Direction.WEST);fitting(l,b,new BlockPos(0,4,-17),PLATE);
         fitting(l,b,0,3,-16,CHAIR,Direction.SOUTH);fitting(l,b,0,3,-18,CHAIR,Direction.NORTH);fitting(l,b,PORCH_LIGHTS.get(1),PENDANT);fitting(l,b,3,3,-12,SIDE_TABLE,Direction.SOUTH);fitting(l,b,PORCH_LIGHTS.get(2),LAMP);
-        fitting(l,b,RAIL_AT,RAIL);
+        fitting(l,b,RAIL_AT,RAIL,Direction.SOUTH);
         // Gravel continues past the mailbox into the trees. None of the three ways on needs a key.
         box(l,b,11,-1,-24,15,-1,11,Blocks.GRAVEL.defaultBlockState());box(l,b,11,-1,-44,15,-1,-25,Blocks.COARSE_DIRT.defaultBlockState());box(l,b,-16,-1,-10,-7,-1,-6,Blocks.GRAVEL.defaultBlockState());
         fitting(l,b,new BlockPos(12,0,-23),MAILBOX);door(l,b,new BlockPos(14,0,-42),HouseReadRegistry.BOATHOUSE_DOOR.get(),Direction.SOUTH);

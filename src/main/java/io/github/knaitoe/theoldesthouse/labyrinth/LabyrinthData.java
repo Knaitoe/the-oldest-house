@@ -97,12 +97,22 @@ public final class LabyrinthData extends SavedData {
      * Somewhere to go back to. A {@code door} waypoint is the door the player
      * came through ({@code pos} its lower half, {@code yaw} the way it
      * faces); crossing back out shifts them to in front of it. Any other is
-     * a plain spot and facing.
+     * a plain spot and facing. A {@code held} waypoint was taken before the
+     * reader finished the quiet rooms and does not count towards depth; it is
+     * the same way back either way.
      */
-    public record Waypoint(ResourceKey<Level> dimension, Vec3 pos, float yaw, boolean door) {
+    public record Waypoint(ResourceKey<Level> dimension, Vec3 pos, float yaw, boolean door, boolean held) {
         public Waypoint(ResourceKey<Level> dimension, Vec3 pos, float yaw) {
             this(dimension, pos, yaw, false);
         }
+        public Waypoint(ResourceKey<Level> dimension, Vec3 pos, float yaw, boolean door) {
+            this(dimension, pos, yaw, door, false);
+        }
+        Waypoint asHeld() { return held ? this : new Waypoint(dimension, pos, yaw, door, true); }
+        @Override public boolean equals(Object o) {
+            return o instanceof Waypoint w && dimension.equals(w.dimension) && pos.equals(w.pos) && Float.compare(yaw, w.yaw) == 0 && door == w.door;
+        }
+        @Override public int hashCode() { return java.util.Objects.hash(dimension, pos, yaw, door); }
     }
 
     /** One player's current answer for a dealt physical door. */
@@ -368,7 +378,7 @@ public final class LabyrinthData extends SavedData {
 
     public void pushReturn(UUID player, Waypoint waypoint) {
         Deque<Waypoint> stack = returns.computeIfAbsent(player, id -> new ArrayDeque<>());
-        stack.push(waypoint);
+        stack.push(quietOwing(player) ? waypoint.asHeld() : waypoint);
         while (stack.size() > MAX_RETURNS) {
             stack.removeLast();
         }
@@ -410,9 +420,37 @@ public final class LabyrinthData extends SavedData {
         returns.replaceAll((id,stack)->{Deque<Waypoint> moved=new ArrayDeque<>();for(Waypoint point:stack)moved.addLast(mapper.apply(point));return moved;});setDirty();
     }
 
+    /**
+     * How deep the House treats a reader as being: the crossings on their way back. 0.4.163 (owner: "house navigation
+     * needs to be desperately balanced"; "reset the stone pass requirement, so players aren't immediately stumbling onto it
+     * after finishing the first five vignettes"): the quiet rooms come before the deep interior. While a reader still has
+     * one to come they stay in the domestic halls, and when the last is entered every crossing so far is held
+     * ({@link #holdReturns}), so the count towards stories and stone starts again from there.
+     */
     public int returnDepth(UUID player) {
         Deque<Waypoint> stack = returns.get(player);
+        if (stack == null) return 0;
+        int depth = 0;
+        for (Waypoint point : stack) if (!point.held()) depth++;
+        return quietOwing(player) ? Math.min(depth, LabyrinthPacing.STORY_DEPTH - 1) : depth;
+    }
+    /** Every crossing on the reader's way back, held or not. */
+    public int returnCount(UUID player) {
+        Deque<Waypoint> stack = returns.get(player);
         return stack == null ? 0 : stack.size();
+    }
+    /** The reader has finished the quiet rooms: the way back is kept, but none of it counts towards depth any more. */
+    public void holdReturns(UUID player) {
+        Deque<Waypoint> stack = returns.get(player);
+        if (stack == null) return;
+        Deque<Waypoint> held = new ArrayDeque<>();
+        for (Waypoint point : stack) held.addLast(point.asHeld());
+        returns.put(player, held);
+        setDirty();
+    }
+    private boolean quietOwing(UUID player) {
+        CompoundTag rooms = states.get(HouseReadSites.STATE);
+        return rooms != null && HouseReadSites.owing(rooms.getCompound(player.toString()));
     }
 
     // ------------------------------------------------------------------
@@ -586,7 +624,7 @@ public final class LabyrinthData extends SavedData {
             for (int j = 0; j < points.size(); j++) {
                 CompoundTag p = points.getCompound(j);
                 stack.addLast(new Waypoint(dimension(p.getString("Dim")),
-                        new Vec3(p.getDouble("X"), p.getDouble("Y"), p.getDouble("Z")), p.getFloat("Yaw"), p.getBoolean("Door")));
+                        new Vec3(p.getDouble("X"), p.getDouble("Y"), p.getDouble("Z")), p.getFloat("Yaw"), p.getBoolean("Door"), p.getBoolean("Held")));
             }
             data.returns.put(r.getUUID("Player"), stack);
         }
@@ -680,6 +718,7 @@ public final class LabyrinthData extends SavedData {
                 p.putDouble("Z", point.pos().z);
                 p.putFloat("Yaw", point.yaw());
                 p.putBoolean("Door", point.door());
+                if (point.held()) p.putBoolean("Held", true);
                 points.add(p);
             }
             r.put("Stack", points);
