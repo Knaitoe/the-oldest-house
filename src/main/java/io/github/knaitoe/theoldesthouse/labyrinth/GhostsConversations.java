@@ -100,7 +100,7 @@ public final class GhostsConversations {
             new Shot("John","John is held in frame during today's private-conversation and bedroom pickups.","John's silence becomes a reaction to the sisters' conversation, even though the lens cannot establish what he heard."),
             new Shot("Sarah","Sarah's response during today's pickups is recorded.","Sarah's reaction is used to bridge the basement conversation and the later bedroom pickup."),
             new Shot("PrivateConfession","The camera records the conversation after Marjorie asks for the lens to be put down.","Barry uses the private conversation as an explanation while omitting the appeal to stop recording."),
-            new Shot("Playhouse","The camera records the cardboard house collapsing in the bedroom pickup.","The cut holds on Merry's damaged cardboard house after the sisters finish speaking, placing it beside the earlier confession.")),
+            new Shot("Playhouse","The camera records Marjorie crawling into Merry's cardboard house, the walls bulging round her, and the house splitting open as she stands up through it.","The cut holds on Merry's torn cardboard house after the sisters finish speaking, placing it beside the earlier confession.")),
         List.of(
             new Shot("Marjorie","Marjorie's answers and objections during the evaluation are held in frame.","The evaluation episode keeps Marjorie's knowledge of the rules and shortens the explanation of how she learned them."),
             new Shot("Merry","Merry is recorded watching the evaluation.","The evaluation is assembled from Merry's frightened viewpoint, making her uncertainty carry the scene."),

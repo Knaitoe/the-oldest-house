@@ -56,6 +56,7 @@ public final class GhostsSet {
             new Line(170,0,"I know what they want to see. I can give them that. It doesn't mean everything in my head has stopped."),
             new Line(320,0,"The show pays. Dad hasn't found work. Everyone acts as if I'm the only person who needs help."),
             new Line(470,1,"Then why are you still scaring me?"),new Line(620,4,"We need one more bedroom pickup tonight. Merry has her little camera."),
+            new Line(660,1,"That's my house. You won't fit, Marjorie."),new Line(745,0,"There's room. There's always room in here."),
             new Line(780,1,"Stop! That's my house!"),new Line(1030,0,"Did you get it? All of it?")),
         List.of(new Line(5,5,"We need to establish what we are dealing with."),new Line(170,0,"With cameras in the room? You know your own rules forbid that."),
             new Line(330,2,"How could she know these things?"),new Line(480,3,"She can read, John. She can use the internet. She's a person."),
@@ -89,6 +90,34 @@ public final class GhostsSet {
         if(newDay){for(String key:List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490"))own.remove(key);}
         LiteraryVignettes.reward(p,PLACE,own,"Camcorder",new ItemStack(LiteraryRegistry.CAMCORDER.get()));
         p.displayClientMessage(Component.literal("Filming day "+day(own)+": "+TITLES[day(own)-1]+". Speak with Barry when you're ready."),false);
+    }
+    /** Every key one filming day leaves behind, cleared when another day begins. */
+    private static final List<String> DAY_KEYS=List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","GhostVoiceId","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490",
+        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490");
+    /**
+     * 0.4.172 (owner: "add a command to trigger specific film days for testing"): puts one reader at the start of a filming
+     * day, as a fresh arrival on that day would be, with the cast restaged and that day's log and frames cleared; with
+     * {@code pickup}, day four starts at the upstairs pickup with both sisters already up the stairs. Earlier days are not
+     * filmed by it, so a run that skips days never completes the account. Returns why it refused, or null.
+     */
+    public static String jumpToDay(ServerPlayer p,int day,boolean pickup){
+        if(day<1||day>DAYS)return "There are "+DAYS+" filming days.";
+        if(pickup&&day!=4)return "Only day four has the upstairs pickup.";
+        if(!LiteraryVignettes.inside(p,PLACE))return "Go through the door into the Ghosts set first.";
+        var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);
+        if(own.getBoolean("Completed"))return "This reader has finished the filming. The shortcut does not reopen a finished account.";
+        if(!own.getBoolean("Filming0485"))return "The filming has not begun for this reader.";
+        for(String key:DAY_KEYS)own.remove(key);
+        own.putInt("FilmDay",day);own.putInt("ShotClock",pickup?575:0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);own.putBoolean("FilmDoorExit",false);
+        own.remove("FilmLog"+day);own.remove("FramesDay"+day);own.putInt("FilmedDays",own.getInt("FilmedDays")&~(1<<(day-1)));
+        if(pickup){own.putBoolean("BedroomPickup",true);own.putInt("PickupStep0",PICKUP_ROUTE.length);own.putInt("PickupStep1",PICKUP_ROUTE.length);}
+        LiteraryVignettes.save(data,p.getUUID(),PLACE,own);
+        p.displayClientMessage(Component.literal("Filming day "+day+": "+TITLES[day-1]+(pickup?", from the upstairs pickup":"")+". Speak with Barry when you're ready."),false);
+        return null;
+    }
+    public static String status(ServerPlayer p){
+        var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);int d=day(own);var filmed=new ArrayList<Integer>();for(int i=1;i<=DAYS;i++)if((own.getInt("FilmedDays")&(1<<(i-1)))!=0)filmed.add(i);
+        return "Ghosts set: "+(own.getBoolean("Completed")?"completed":own.getBoolean("Filming0485")?"day "+d+" ("+TITLES[d-1]+"), clock "+own.getInt("ShotClock")+"/"+LENGTH[d-1]+(own.getBoolean("Rolling")?", rolling":"")+(own.getBoolean("DayDone")?", done":"")+(own.getBoolean("BedroomPickup")?", upstairs pickup":""):"not filming")+"; filmed days "+filmed;
     }
     /** Called only by the physical doorway departure hook, never by logout, a death or a scene timer. */
     public static void depart(ServerPlayer p) {
@@ -228,6 +257,37 @@ public final class GhostsSet {
         var at=b.offset(relative);if(!p.serverLevel().hasChunkAt(at)||!p.serverLevel().areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return null;
         var a=LiteraryVignettes.actor(p,PLACE,key,role,relative,true);if(a!=null){a.setNoGravity(true);a.setCustomNameVisible(false);}return a;
     }
+    /** The box's doorway faces the bedroom door, where the camera comes in (GhostsPropRenderer turns the house to face it). */
+    private static final double[][] BOX_ROUTE={{9.5,5,-29.9},{9.5,5,-31.55}};
+    /**
+     * 0.4.172 (owner: "improve Marjorie's crawl into and destruction of the cardboard box"): she stands and looks the box
+     * over, gets down, crawls to its doorway and in, her feet still out of it, and thrashes until its walls bulge; then it
+     * splits, she rises up through it with her arms raised while the walls fall open and the roof comes off, and sinks back
+     * down on all fours among the flattened card, turned to the camera. Merry reaches for her house, then shrinks back.
+     */
+    private static void box(ServerPlayer p,BlockPos b,LiteraryActor[] cast,LiteraryActor playhouse,CompoundTag own,int previous,int t){
+        var marjorie=cast[0];var merry=cast[1];var house=playhouse.position();
+        face(merry,marjorie.getEyePosition());pose(merry,t>=780&&t<830?HELP:t>=830?FLINCH:STAND);
+        if(t<640){pose(marjorie,STAND);GhostsMotion.stop(marjorie);face(marjorie,house.add(0,.5,0));}
+        else if(t<800){
+            pose(marjorie,CRAWL);int step=own.getInt("BoxStep04172");
+            if(step<BOX_ROUTE.length){var at=BOX_ROUTE[step];toward(marjorie,b,at[0],at[1],at[2],step==0?.2:.17);if(marjorie.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(at[0],at[1],at[2]))<.01)own.putInt("BoxStep04172",step+1);}
+            else{
+                // Inside, she thrashes: her feet slide in and out of the doorway and the card scrapes.
+                toward(marjorie,b,9.5,5,(t/10)%2==0?-31.66:-31.42,.12);
+                if(t%20==0)cue(p,LiteraryRegistry.GHOST_SCRAPE,house);
+            }
+        }else{pose(marjorie,t<850?WALL:CRAWL);GhostsMotion.stop(marjorie);face(marjorie,p.getEyePosition());}
+        boolean inside=own.getInt("BoxStep04172")>=BOX_ROUTE.length;
+        pose(playhouse,t>=800?2:inside&&t>=700?1:0);
+        if(previous<800&&t>=800){
+            cue(p,LiteraryRegistry.GHOST_CARD,house);var level=p.serverLevel();
+            level.sendParticles(p,new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.64F,.52F,.35F),1.4F),false,house.x,house.y+.6,house.z,40,.45,.35,.45,.02);
+            level.sendParticles(p,new net.minecraft.core.particles.ItemParticleOption(net.minecraft.core.particles.ParticleTypes.ITEM,new ItemStack(Items.PAPER)),false,house.x,house.y+.7,house.z,14,.3,.3,.3,.12);
+        }
+        if(previous<815&&t>=815)cue(p,LiteraryRegistry.GHOST_CARD,house.add(.3,.3,0));
+        capture(p,own,"Playhouse",house.add(0,t>=800?.1:.5,0));
+    }
     private static final double[][] MERRY_EXIT={{2.4,.625,-27.6},{3.6,.625,-27.6},{5.5,0,-25.5},{.5,0,-24.5},{.5,0,-15.5},{.5,0,-12.5},{.5,0,-6.5}};
     /** The surviving original walks round the table and through the ordinary native front door. */
     private static void finalDinner(ServerPlayer p,BlockPos b,LiteraryActor[] cast,CompoundTag own,int t){
@@ -265,7 +325,9 @@ public final class GhostsSet {
         var playhouse=prop(p,b,"FilmPlayhouse",LiteraryActor.GHOST_PLAYHOUSE,new BlockPos(9,5,-32));
         var drawer=prop(p,b,"FilmDrawer",LiteraryActor.GHOST_DRAWER,new BlockPos(-12,5,-33));
         if(playhouse==null||drawer==null)return;
-        int d=day(own);if(!own.getBoolean("CastPlaced")){stage(b,cast,d);pose(playhouse,0);pose(drawer,0);own.putBoolean("CastPlaced",true);}
+        int d=day(own);if(!own.getBoolean("CastPlaced")){stage(b,cast,d);pose(playhouse,0);pose(drawer,0);own.putBoolean("CastPlaced",true);
+            // A day four begun at the upstairs pickup (jumpToDay) starts with both sisters where the stair walk leaves them.
+            if(d==4&&own.getBoolean("BedroomPickup")&&pickupReady(own)){var end=PICKUP_ROUTE[PICKUP_ROUTE.length-1];for(int i=0;i<2;i++)place(cast[i],b,end[0]+i*.05,end[1],end[2],180,STAND);}}
         if(d==4&&own.getBoolean("BedroomPickup")&&(own.getInt("PickupStep0")<PICKUP_ROUTE.length||own.getInt("PickupStep1")<PICKUP_ROUTE.length)){pickup(b,cast,own);return;}
         if(own.getBoolean("DayDone")) { if(d==7)finalDinner(p,b,cast,own,Math.max(own.getInt("ShotClock"),820));display(p,own,b); return; }
         var here=d==4&&own.getBoolean("BedroomPickup")?Vec3.atBottomCenterOf(b.offset(GhostsSetRooms.MERRY_ROOM)):focus(b,d);
@@ -305,7 +367,6 @@ public final class GhostsSet {
             else{if(!own.contains("WallImpact0490")){GhostsMotion.stop(cast[0]);own.putInt("WallImpact0490",t);own.putLong("GhostShakeUntil",p.level().getGameTime()+12);cue(p,net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(net.minecraft.sounds.SoundEvents.PLAYER_BIG_FALL),cast[0].position());}pose(cast[0],t-own.getInt("WallImpact0490")<35?IMPACT:STAND);if(t-own.getInt("WallImpact0490")>=35)toward(cast[0],b,-7,5,-28,.24);if(t<750)capture(p,own,"Threat",cast[0].getEyePosition());}
         }
         if(d==4){
-            if(previous<780&&t>=780)cue(p,LiteraryRegistry.GHOST_CARD,playhouse.position());
             if(t<220){if(!own.contains("PrivacyPitch0490"))own.putFloat("PrivacyPitch0490",p.getXRot());own.putFloat("GhostPrivacyPitch",net.minecraft.util.Mth.lerp(Math.min(1,t/100F),own.getFloat("PrivacyPitch0490"),55));}else own.remove("GhostPrivacyPitch");
             if(t<570){capture(p,own,"PrivateConfession",cast[0].getEyePosition());if(!recording(p))own.putBoolean("RespectedPrivacy",true);}
             if(t>=570&&!own.getBoolean("BedroomPickup")){
@@ -313,7 +374,7 @@ public final class GhostsSet {
                 own.putBoolean("BedroomPickup",true);own.putBoolean("Rolling",false);
                 p.displayClientMessage(Component.literal("Barry: Upstairs for the last pickup. Speak with me when you're ready."),false);
             }
-            if(t>=575){pose(cast[0],CRAWL);toward(cast[0],b,9.3,5,-31.5,.2);pose(playhouse,t>=900?2:t>=780?1:0);capture(p,own,"Playhouse",playhouse.position().add(0,t>=900?.1:.5,0));}
+            if(t>=575)box(p,b,cast,playhouse,own,previous,t);
         }
         if(d==5){capture(p,own,"Evaluation",cast[0].getEyePosition());capture(p,own,"MotherObjection",cast[3].getEyePosition());}
         if(d==6){

@@ -310,4 +310,43 @@ public final class GhostsSetTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="ghosts_final_death0488") public static void finalDeathDone(ServerLevel l){close();}
+    /**
+     * 0.4.172 (owner: "add a command to trigger specific film days for testing"; "improve Marjorie's crawl into and destruction
+     * of the cardboard box"): the shortcut starts day four at the upstairs pickup without filming the days before it, and in
+     * native time Marjorie crawls in through the house's doorway, the house bulges round her, splits as she rises with her
+     * arms up, and she sinks back down on all fours among the card; the tearing is heard.
+     */
+    @GameTest(template="empty",batch="ghosts_box04172",timeoutTicks=2400)
+    public static void aFilmDayShortcutStartsThePickupAndMarjorieCrawlsIntoTheBoxAndTearsItOpen(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_box",P);f.source(p,P);var b=f.base(P);
+        f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(b.offset(-21,-5,-47)),Vec3.atLowerCornerOf(b.offset(22,13,1))));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),b)&&f.own(p,P).getBoolean("Filming0485"),"the set is built and this reader is filming"))
+        .thenExecute(()->{
+            h.assertTrue(GhostsSet.jumpToDay(p,2,true)!=null&&GhostsSet.jumpToDay(p,8,false)!=null,"only day four has a pickup, and there are seven days");
+            var own=f.own(p,P);own.putInt("FilmedDays",1);save(f,p,own);
+            h.assertTrue(GhostsSet.jumpToDay(p,4,true)==null,"the shortcut starts day four at the upstairs pickup");
+            own=f.own(p,P);
+            h.assertTrue(own.getInt("FilmDay")==4&&own.getInt("ShotClock")==575&&own.getBoolean("BedroomPickup")&&GhostsSet.pickupReady(own)&&!own.getBoolean("Rolling")&&!own.getBoolean("CastPlaced"),"day four waits at the pickup for Barry: "+status(f,p));
+            h.assertTrue(own.getInt("FilmedDays")==1,"skipping days films none of them, so the account cannot be finished from a shortcut");
+            f.at(p,P,8,5,-28);
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("CastPlaced"),"the cast is restaged"))
+        .thenExecute(()->{
+            var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);h.assertTrue(m.getY()>b.getY()+4.9&&Math.abs(m.getZ()-b.getZ()+29.5)<.6,"Marjorie starts upstairs where the stair walk leaves her: "+m.position());
+            h.assertTrue(actor(f,p,LiteraryActor.GHOST_PLAYHOUSE).phase()==0,"the house is standing");
+            var own=f.own(p,P);h.assertTrue(GhostsSet.start(p,own),"Barry starts the pickup");save(f,p,own);NativeTestPlayers.packets(p);
+        }).thenWaitUntil(()->{
+            var own=f.own(p,P);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);var house=actor(f,p,LiteraryActor.GHOST_PLAYHOUSE);
+            h.assertTrue(own.getInt("BoxStep04172")>=2&&house.phase()==1&&own.getInt("ShotClock")<800,"she is inside and the house bulges before it tears: "+status(f,p));
+            h.assertTrue(m.phase()==GhostsSet.CRAWL&&Math.abs(m.getX()-house.getX())<.3&&Math.abs(m.getZ()-house.getZ())<.35,"on all fours, inside its walls: "+m.position()+" / "+house.position());
+        }).thenWaitUntil(()->{
+            var own=f.own(p,P);h.assertTrue(own.getInt("ShotClock")>=805&&own.getInt("ShotClock")<850,"the tear: "+status(f,p));
+            h.assertTrue(actor(f,p,LiteraryActor.GHOST_PLAYHOUSE).phase()==2&&actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.WALL,"the house splits and she rises up through it with her arms raised");
+            h.assertTrue(NativeTestPlayers.packets(p).stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&sound.getSound().value()==LiteraryRegistry.GHOST_CARD.get()),"the card is heard tearing");
+        }).thenWaitUntil(()->{
+            var own=f.own(p,P);h.assertTrue(own.getInt("ShotClock")>=860,"after the tear");
+            h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.CRAWL&&actor(f,p,LiteraryActor.GHOST_MERRY).phase()==GhostsSet.FLINCH,"she sinks back down among the card and Merry shrinks back");
+            h.assertTrue(actor(f,p,LiteraryActor.GHOST_PLAYHOUSE).getBbHeight()<.3,"the torn house lies flat");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="ghosts_box04172") public static void boxDone(ServerLevel l){close();}
 }
