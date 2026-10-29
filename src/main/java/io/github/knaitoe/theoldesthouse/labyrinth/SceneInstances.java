@@ -32,8 +32,8 @@ public final class SceneInstances {
     public static final String STATE="scene_copies_0153";
     /** Copies stand this far west of their original, and each further copy of a scene this much further on. Both are wider than the whole slot grid, so no copy overlaps another scene. */
     public static final int WEST=1<<20,STEP=1<<16;
-    /** The private scenes that have copies so far. Each keeps its state with each reader and takes its place from the reader. */
-    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP);
+    /** The private scenes that have copies so far. Each keeps its state with each reader and takes its place from the reader. 0.4.154: the Whale institute and the phone canoe. */
+    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE);
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     /** Columns of an interior copy's slot filled solid per tick, before its rooms are carved into it, as the original's are. */
@@ -50,6 +50,11 @@ public final class SceneInstances {
     /** Copy 0 is the original. */
     public static @Nullable BlockPos base(MinecraftServer s,LabyrinthPlace p,int copy){
         var o=HouseSavedData.get(s).houseOrigin();return o==null?null:LabyrinthPlaces.base(shiftedOrigin(o,copy),p);
+    }
+    /** Which copy of a scene stands at a base: 0 for the original or anything else. */
+    public static int copyAt(MinecraftServer s,LabyrinthPlace p,BlockPos base){
+        var original=base(s,p,0);if(original==null||base.equals(original)||base.getY()!=original.getY()||base.getZ()!=original.getZ())return 0;
+        long west=(long)original.getX()-base.getX()-WEST;return west<0||west%STEP!=0?0:(int)(west/STEP)+1;
     }
     /** The original and every copy that stands, for the passes that walk each scene's ground. */
     public static List<BlockPos> bases(MinecraftServer s,LabyrinthPlace p){
@@ -68,7 +73,17 @@ public final class SceneInstances {
     public static int kept(LabyrinthData d,UUID reader,LabyrinthPlace p){var b=scene(d,p).getCompound("Kept");return b.contains(reader.toString())?b.getInt(reader.toString()):-1;}
     private static void keep(LabyrinthData d,UUID reader,LabyrinthPlace p,int k){var all=scene(d,p);var b=all.getCompound("Kept");b.putInt(reader.toString(),k);all.put("Kept",b);scene(d,p,all);}
     /** A reader keeps their copy while its story can still be dealt to them. */
-    private static boolean unfinished(LabyrinthData d,UUID reader,LabyrinthPlace p){return LiteraryVignettes.canDeal(d,reader,p);}
+    private static boolean unfinished(LabyrinthData d,UUID reader,LabyrinthPlace p){
+        if(p==LabyrinthPlace.PHONE_CANOE)return PhoneCanoe.canDeal(d,reader);
+        if(NovelVignettes.isNovel(p))return NovelVignettes.canDeal(d,reader,p);
+        return LiteraryVignettes.canDeal(d,reader,p);
+    }
+    /** Every reader with a saved part in a scene, from the scene's own store. */
+    private static Set<String> readers(LabyrinthData d,LabyrinthPlace p){
+        if(p==LabyrinthPlace.PHONE_CANOE)return d.state(PhoneCanoe.ID).getAllKeys();
+        if(NovelVignettes.isNovel(p))return d.state(NovelVignettes.STATE).getAllKeys();
+        return LiteraryVignettes.readers(d,p);
+    }
     /** Someone other than {@code reader} keeps copy {@code k} for a story they have not finished. */
     private static boolean keptByAnother(LabyrinthData d,LabyrinthPlace p,int k,UUID reader){
         var b=scene(d,p).getCompound("Kept");
@@ -78,7 +93,7 @@ public final class SceneInstances {
     /** Readers already partway through a scene before it had copies keep the original, which still holds what they did there. */
     private static void settle(LabyrinthData d,LabyrinthPlace p){
         var all=scene(d,p);if(all.getBoolean("Settled"))return;var b=all.getCompound("Kept");
-        for(var key:LiteraryVignettes.readers(d,p)){if(b.contains(key))continue;try{var id=UUID.fromString(key);if(LiteraryVignettes.personal(d,id,p).getInt("Visit")>0)b.putInt(key,0);}catch(IllegalArgumentException ignored){}}
+        for(var key:readers(d,p)){if(b.contains(key))continue;try{var id=UUID.fromString(key);if(d.visited(id).contains(p.id()))b.putInt(key,0);}catch(IllegalArgumentException ignored){}}
         all.put("Kept",b);all.putBoolean("Settled",true);scene(d,p,all);
     }
 
@@ -195,10 +210,11 @@ public final class SceneInstances {
         var t=copy(d,j.place,j.copy);
         if(!t.getBoolean("Filled")){if(fill(j,t)){t.putBoolean("Filled",true);t.remove("FillColumn");}copy(d,j.place,j.copy,t);return;}
         if(!t.getBoolean("Carved")){
-            if(j.plan==null){j.plan=BuildBlocks.record(l,()->LiteraryRooms.build(l,j.base,j.place));j.plan.resume(t.getCompound("BuildCursor"));}
+            if(j.plan==null){j.plan=BuildBlocks.record(l,()->author(s,l,j.base,j.place));j.plan.resume(t.getCompound("BuildCursor"));}
             if(!j.plan.tick()){t.put("BuildCursor",j.plan.checkpoint());copy(d,j.place,j.copy,t);return;}
             t.putBoolean("Carved",true);t.remove("BuildCursor");copy(d,j.place,j.copy,t);
             // The original's finishing passes, at the copy: their checkpoints are keyed by the shifted origin.
+            if(!LiteraryRooms.isLiterary(j.place))VignetteArchitecture.decorateOnce(l,j.origin,j.place);
             ScenePolish.polishOnce(l,j.origin,j.place);j.dressing=SceneHuntReview.prepareFresh(l,j.origin,j.place);return;
         }
         if(j.dressing!=null&&!j.dressing.tick())return;
@@ -207,6 +223,12 @@ public final class SceneInstances {
         t.putBoolean("Built",true);copy(d,j.place,j.copy,t);
         TheOldestHouse.LOGGER.info("A copy of {} stands ready: copy {} at {}",j.place.id(),j.copy,j.base.toShortString());
         release();
+    }
+    /** The scene's own builder, as the House builds its original. */
+    private static void author(MinecraftServer s,ServerLevel l,BlockPos b,LabyrinthPlace p){
+        if(LiteraryRooms.isLiterary(p)){LiteraryRooms.build(l,b,p);return;}
+        if(NovelVignettes.isNovel(p)){NovelRooms.build(s,l,b,p);return;}
+        if(p==LabyrinthPlace.PHONE_CANOE){PhoneCanoe.build(s,l,b);LakeLandscape.dress(l,b,p);NovelRooms.safeApproach(l,b);}
     }
     private static @Nullable Job next(MinecraftServer s,LabyrinthData d){
         var o=HouseSavedData.get(s).houseOrigin();if(o==null)return null;

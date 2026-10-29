@@ -288,7 +288,7 @@ public final class WhaleInstitute {
             default->new Component[]{thursday,tuesday,monday,Component.literal("today")};
         };
     }
-    static void arrive(ServerPlayer p,CompoundTag own){var b=IndianLakeRooms.base(p.server,LabyrinthPlace.WHALE);if(b!=null)calendar(p,b,own.getCompound(KEY).getInt("Sent"));}
+    static void arrive(ServerPlayer p,CompoundTag own){var b=NovelVignettes.base(p,LabyrinthPlace.WHALE);if(b!=null)calendar(p,b,own.getCompound(KEY).getInt("Sent"));}
     /** A private sign is forgotten when its chunk is sent again, so it is said again now and then. */
     static void tick(ServerPlayer p,BlockPos b,CompoundTag own){if(p.tickCount%100==0)calendar(p,b,own.getCompound(KEY).getInt("Sent"));}
 
@@ -299,7 +299,7 @@ public final class WhaleInstitute {
     @SubscribeEvent(priority=EventPriority.HIGH) public static void read(PlayerInteractEvent.RightClickItem e){
         if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!NovelVignettes.inside(p,LabyrinthPlace.WHALE))return;
         var stack=p.getItemInHand(e.getHand());if(!stack.has(DataComponents.WRITTEN_BOOK_CONTENT))return;
-        var b=IndianLakeRooms.base(p.server,LabyrinthPlace.WHALE);if(b==null||!herRoom(p,b))return;
+        var b=NovelVignettes.base(p,LabyrinthPlace.WHALE);if(b==null||!herRoom(p,b))return;
         var data=LabyrinthData.get(p.server);var own=NovelVignettes.personal(data,p.getUUID());var w=own.getCompound(KEY);if(!w.getBoolean("Returned"))return;
         var posted=w.getList("Posted",Tag.TAG_COMPOUND);boolean theirs=false;
         for(int i=0;i<posted.size()&&!theirs;i++)theirs=ItemStack.isSameItemSameComponents(stack,ItemStack.parseOptional(p.registryAccess(),posted.getCompound(i)));
