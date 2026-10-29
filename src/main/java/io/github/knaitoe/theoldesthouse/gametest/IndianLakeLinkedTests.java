@@ -127,24 +127,97 @@ public final class IndianLakeLinkedTests {
         });
     }
     @GameTest(template="empty",batch="shallows_originals0493",timeoutTicks=350)
-    public static void shallowRecollectionsRemainPrivateAndReuseTheirLateOriginals(GameTestHelper h){
+    public static void aReaderWhoJoinsSharesTheRecollectionAndItReusesItsLateOriginals(GameTestHelper h){
         originalShallows=new Fixture(h,new BlockPos(48700,80,48700),LabyrinthPlace.SHALLOWS);var f=originalShallows;var data=LabyrinthData.get(f.server);var bounds=IndianLakeRooms.bounds(f.base,f.place);
-        var owner=f.realPlayer("memory_owner",f.base.offset(-1,0,-11));var peer=f.realPlayer("memory_peer",f.base.offset(-8,0,-11));
+        var owner=f.realPlayer("memory_owner",f.base.offset(-1,0,-11));var peer=f.realPlayer("memory_peer",f.base.offset(-8,0,-11));var stranger=f.player("memory_stranger",f.base.offset(8,0,-6));
         IndianLakeProgress.hunted(data,owner.getUUID());IndianLakeProgress.hunted(data,peer.getUUID());Shallows.onArrive(owner,f.place);Shallows.onArrive(peer,f.place);
-        var original=Shallows.actor(owner);var other=Shallows.actor(peer);h.assertTrue(original!=null&&other!=null&&original.broadcastToPlayer(owner)&&!original.broadcastToPlayer(peer)&&other.broadcastToPlayer(peer)&&!other.broadcastToPlayer(owner),"native tracking sends each physical recollection only to its own reader");
+        // 0.4.157: a reader who comes while another's recollection is under way joins it (docs/SHALLOWS_TOGETHER_0_4_157.md).
+        var original=Shallows.actor(owner);
+        h.assertTrue(original!=null&&Shallows.actor(peer)==null&&Shallows.memory(peer)==original&&original.broadcastToPlayer(owner)&&original.broadcastToPlayer(peer)&&!original.broadcastToPlayer(stranger),"the reader who joins shares the one recollection, and nobody else is sent her");
         var shared=DrownedTownRegistry.LAKE_WITCH.get().create(f.level);h.assertTrue(shared.broadcastToPlayer(owner)&&shared.broadcastToPlayer(peer),"the real shared lake witch retains ordinary native tracking");shared.discard();
-        var ownBoy=Shallows.carrier(owner);var peerBoy=Shallows.carrier(peer);
-        h.assertTrue(ownBoy!=null&&peerBoy!=null&&ownBoy.broadcastToPlayer(owner)&&!ownBoy.broadcastToPlayer(peer)&&peerBoy.broadcastToPlayer(peer)&&!peerBoy.broadcastToPlayer(owner)
-                &&Shallows.personal(data,owner.getUUID()).getInt("Slot")!=Shallows.personal(data,peer.getUUID()).getInt("Slot")&&original.distanceToSqr(other)>16,"each reader has a private boy at her feet and a carry place of their own on the bank");
+        var ownBoy=Shallows.carrier(owner);
+        h.assertTrue(ownBoy!=null&&Shallows.carrier(peer)==null&&ownBoy.broadcastToPlayer(owner)&&ownBoy.broadcastToPlayer(peer)&&!ownBoy.broadcastToPlayer(stranger)
+                &&Shallows.AT_FEET.equals(Shallows.personal(data,peer.getUUID()).getString(Shallows.ROLE))&&Shallows.personal(data,owner.getUUID()).getInt("Slot")==Shallows.personal(data,peer.getUUID()).getInt("Slot"),"the one who joins is to hold her feet; Lonnie is sent to both and they share one carry place");
         original.setCustomName(Component.literal("The original recollection"));var id=original.getUUID();var saved=original.saveWithoutId(new CompoundTag());original.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
         var boy=f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(Shallows.BOY+"0")).getFirst();boy.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
         f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.load(data.save(new CompoundTag(),f.level.registryAccess()),f.level.registryAccess()));
         h.onEachTick(()->{Shallows.onArrive(owner,f.place);Shallows.onArrive(peer,f.place);});
         h.runAfterDelay(140,()->{
             var loaded=LabyrinthData.get(f.server);
-            h.assertTrue(Shallows.actor(owner)==null&&Shallows.personal(loaded,owner.getUUID()).getUUID("Actor").equals(id)&&Shallows.actor(peer)==other&&f.level.getEntitiesOfClass(LakeWitchEntity.class,bounds,LakeWitchEntity::memory).size()==1&&f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(Shallows.BOY)).size()==2,"repeated actual arrivals retain the absent native girl and boy and leave the peer's original untouched");
+            h.assertTrue(Shallows.actor(owner)==null&&Shallows.personal(loaded,owner.getUUID()).getUUID("Actor").equals(id)&&f.level.getEntitiesOfClass(LakeWitchEntity.class,bounds,LakeWitchEntity::memory).isEmpty()&&f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(Shallows.BOY)).size()==2
+                    &&owner.getUUID().equals(Shallows.with(loaded,peer.getUUID()))&&!Shallows.personal(loaded,peer.getUUID()).hasUUID("Actor"),"repeated actual arrivals retain the absent native girl and boy, and the one who joined stays with it without a recollection of their own");
             var returned=DrownedTownRegistry.LAKE_WITCH.get().create(f.level);returned.load(saved);h.assertTrue(f.level.addFreshEntity(returned),"the saved native memory UUID returns without replacement conflict");Shallows.onArrive(owner,f.place);
-            h.assertTrue(Shallows.actor(owner)==returned&&returned.getUUID().equals(id)&&returned.getName().getString().equals("The original recollection")&&Shallows.lift(owner,returned)&&!Shallows.lift(peer,returned)&&!IndianLakeProgress.hasThrown(loaded,owner.getUUID()),"the original remains privately liftable after restart without awarding a throw");h.succeed();
+            h.assertTrue(Shallows.actor(owner)==returned&&returned.getUUID().equals(id)&&returned.getName().getString().equals("The original recollection")&&Shallows.memory(peer)==returned&&Shallows.lift(owner,returned)&&!IndianLakeProgress.hasThrown(loaded,owner.getUUID()),"the original remains liftable after restart, still shared, without awarding a throw");h.succeed();
+        });
+    }
+    private static Fixture together;
+    @AfterBatch(batch="shallows_together157") public static void cleanTogether(ServerLevel level){if(together!=null){together.close();together=null;}}
+    /** 0.4.157: one throw for everyone on the bank. The thrower's partner holds her feet, the rest watch, and each keeps their own line. */
+    @GameTest(template="empty",batch="shallows_together157",timeoutTicks=900)
+    public static void friendsOnTheBankThrowHerTogetherAndEachKeepsTheirOwnLine(GameTestHelper h){
+        together=new Fixture(h,new BlockPos(50300,80,50300),LabyrinthPlace.SHALLOWS);var f=together;var data=LabyrinthData.get(f.server);
+        ServerPlayer thrower=f.player("pair_thrower",f.base.offset(-1,0,-11)),feet=f.player("pair_feet",f.base.offset(2,0,-11)),bank=f.player("pair_bank",f.base.offset(-6,0,-5)),stranger=f.player("pair_stranger",f.base.offset(8,0,-6));
+        IndianLakeProgress.hunted(data,thrower.getUUID());Shallows.onArrive(thrower,LabyrinthPlace.SHALLOWS);Shallows.onArrive(feet,LabyrinthPlace.SHALLOWS);Shallows.onArrive(bank,LabyrinthPlace.SHALLOWS);
+        LakeWitchEntity girl=Shallows.actor(thrower);LakeCongregantEntity lonnie=Shallows.carrier(thrower);
+        h.assertTrue(girl!=null&&lonnie!=null&&Shallows.actor(feet)==null&&Shallows.actor(bank)==null,"one recollection: the first reader's, with nobody else given one of their own, hunted or not");
+        h.assertTrue(Shallows.AT_FEET.equals(Shallows.personal(data,feet.getUUID()).getString(Shallows.ROLE))&&Shallows.ON_BANK.equals(Shallows.personal(data,bank.getUUID()).getString(Shallows.ROLE))
+                &&thrower.getUUID().equals(Shallows.with(data,feet.getUUID()))&&thrower.getUUID().equals(Shallows.with(data,bank.getUUID())),"the first to join holds her feet and the next stands on the bank");
+        h.assertTrue(girl.broadcastToPlayer(feet)&&girl.broadcastToPlayer(bank)&&lonnie.broadcastToPlayer(bank)&&!girl.broadcastToPlayer(stranger)&&!lonnie.broadcastToPlayer(stranger),"everyone with her sees her and Lonnie; nobody else does");
+        h.assertTrue(!Shallows.lift(feet,girl)&&girl.memoryPhase()==Shallows.LYING,"her feet wait until someone has her arms");
+        bank.getInventory().setItem(5,new ItemStack(DrownedTownRegistry.DRIED_ESSAY_ONE.get()));
+        int[] step={0},presses={0},wait={0};
+        h.onEachTick(()->{
+            f.load();if(girl.tickCount<3)return;var slot=Shallows.personal(data,thrower.getUUID()).getInt("Slot");
+            switch(step[0]){
+                case 0->{
+                    h.assertTrue(lonnie.position().distanceToSqr(Shallows.edge(f.base,slot))<.05&&lonnie.carry()==0,"with a reader at her feet, Lonnie stands at the water's edge to count");
+                    girl.interact(thrower,InteractionHand.MAIN_HAND);
+                    h.assertTrue(girl.memoryPhase()==Shallows.CARRIED&&thrower.getMainHandItem().is(DrownedTownRegistry.SHALLOWS_BURDEN.get())&&!Shallows.swing(thrower,-1)&&Shallows.count(girl)==0,"the thrower takes her wrists, but she does not swing until someone has her feet");
+                    h.assertTrue(!Shallows.lift(bank,girl)&&!Shallows.swing(bank,-1),"a reader on the bank cannot take hold of her");
+                    h.assertTrue(Shallows.lift(feet,girl)&&feet.getMainHandItem().is(DrownedTownRegistry.SHALLOWS_BURDEN.get())&&feet.position().distanceToSqr(Shallows.carrierStance(f.base,slot))<.01&&Math.abs(feet.getYRot()-Shallows.CARRIER_YAW)<1,"the partner takes her feet at the east end of her, facing the thrower");
+                    step[0]=1;
+                }
+                case 1->{
+                    // Letting go of her feet puts her down; both take hold again.
+                    feet.setShiftKeyDown(true);wait[0]++;
+                    if(girl.memoryPhase()==Shallows.CARRIED){h.assertTrue(wait[0]<5,"sneaking at her feet lets go");return;}
+                    feet.setShiftKeyDown(false);
+                    h.assertTrue(thrower.getMainHandItem().isEmpty()&&feet.getMainHandItem().isEmpty()&&lonnie.position().distanceToSqr(Shallows.edge(f.base,slot))<.05,"when her feet are let go she is put down, both grips are gone and Lonnie stays at the edge");
+                    girl.interact(thrower,InteractionHand.MAIN_HAND);h.assertTrue(Shallows.lift(feet,girl),"both take hold of her again");step[0]=2;
+                }
+                case 2->{
+                    if(!Shallows.readyForStroke(girl))return;
+                    h.assertTrue(!Shallows.swing(thrower,-1)&&Shallows.count(girl)==0,"one pair of hands alone is not a stroke");
+                    h.assertTrue(Shallows.swing(feet,1)&&Shallows.count(girl)==1,"with both swinging toward the water, the lake on the thrower's left and the partner's right, she goes out on one");
+                    presses[0]=1;step[0]=3;
+                }
+                case 3->{
+                    if(!Shallows.readyForStroke(girl))return;
+                    h.assertTrue(!Shallows.swing(thrower,1)&&!Shallows.swing(feet,1)&&Shallows.count(girl)==1,"swinging different ways is not a stroke");
+                    step[0]=4;
+                }
+                case 4->{
+                    if(girl.memoryPhase()==Shallows.CARRIED){
+                        if(!Shallows.readyForStroke(girl))return;boolean back=presses[0]%2==1;
+                        Shallows.swing(thrower,back?1:-1);if(Shallows.swing(feet,back?-1:1))presses[0]++;
+                        h.assertTrue(presses[0]<=5&&!IndianLakeProgress.hasThrown(data,thrower.getUUID()),"three strokes out together release her, never more");return;
+                    }
+                    h.assertTrue(girl.memoryPhase()==Shallows.FLYING&&presses[0]==5&&thrower.getMainHandItem().isEmpty()&&feet.getMainHandItem().isEmpty(),"on three both let go and both grips are gone: phase="+girl.memoryPhase()+" presses="+presses[0]);
+                    step[0]=5;
+                }
+                case 5->{
+                    if(!IndianLakeProgress.hasThrown(data,thrower.getUUID()))return;
+                    h.assertTrue(WitnessAccount.has(data,thrower.getUUID(),WitnessAccount.Story.SHALLOWS)&&WitnessAccount.has(data,feet.getUUID(),WitnessAccount.Story.SHALLOWS)&&WitnessAccount.has(data,bank.getUUID(),WitnessAccount.Story.SHALLOWS)&&!WitnessAccount.has(data,stranger.getUUID(),WitnessAccount.Story.SHALLOWS),"everyone with her keeps the shallows; nobody else does");
+                    h.assertTrue(WitnessAccount.role(data,feet.getUUID(),WitnessAccount.Story.SHALLOWS)==VignetteRole.ACTOR&&WitnessAccount.role(data,bank.getUUID(),WitnessAccount.Story.SHALLOWS)==VignetteRole.WITNESS,"the partner threw her too; the bank watched");
+                    h.assertTrue(IndianLakeProgress.hasThrown(data,feet.getUUID())&&IndianLakeProgress.hasThrown(data,bank.getUUID())&&!LabyrinthDealer.vignettesAvailable(data,feet.getUUID()).contains(LabyrinthPlace.SHALLOWS),"the school pages keep every one of them, and the shallows are not dealt to them again");
+                    var mine=Shallows.witness(Shallows.personal(data,thrower.getUUID()),"");var theirs=Shallows.witness(Shallows.personal(data,feet.getUUID()),"");var watched=Shallows.witness(Shallows.personal(data,bank.getUUID()),"");
+                    h.assertTrue(mine.contains("while pair_feet held her feet")&&theirs.startsWith("I held her feet while pair_thrower")&&watched.startsWith("I stood on the bank")&&watched.contains("pair_thrower and pair_feet"),"each line says how they were part of it: "+mine+" | "+theirs+" | "+watched);
+                    var essay=bank.getInventory().getItem(5).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().getLast().raw().getString();
+                    h.assertTrue(essay.contains("pair_thrower")&&essay.contains("pair_bank"),"a carried dried essay names everyone on the bank: "+essay);
+                    h.succeed();
+                }
+                default->{}
+            }
         });
     }
     private static NativeTestChunks originalCaveChunks;

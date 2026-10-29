@@ -32,7 +32,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class ShallowsClient {
     private record Cue(String line,int mood,long start,long until){}
     private static final Map<Integer,Cue> CUES=new HashMap<>();
-    private static boolean left,right;private static long released=-1000;private static int phase=-1;
+    private static boolean left,right,held;private static long released=-1000;private static int phase=-1;
     @Nullable private static LakeWitchEntity cached;
     private ShallowsClient(){}
 
@@ -50,7 +50,7 @@ public final class ShallowsClient {
     /** The reaction a boy is showing this reader now, and how long he has shown it, in ticks. */
     public static int mood(Entity e){var cue=cue(e);return cue==null?Shallows.CALM:cue.mood();}
     public static float moodAge(Entity e,float partial){var cue=cue(e);var mc=Minecraft.getInstance();return cue==null||mc.level==null?0:mc.level.getGameTime()-cue.start()+partial;}
-    /** This reader's own recollection, if one is near; nobody else is ever sent it. */
+    /** The recollection near this reader: their own, or one they joined (0.4.157); nobody else is ever sent it. */
     public static @Nullable LakeWitchEntity girl(){return cached==null||cached.isRemoved()||cached.memoryPhase()==Shallows.GONE?null:cached;}
     private static @Nullable LakeWitchEntity find(){
         var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null)return null;
@@ -58,8 +58,10 @@ public final class ShallowsClient {
             if(g.memoryPhase()!=Shallows.GONE)return g;
         return null;
     }
+    /** 0.4.157: only the readers holding her (her wrists or, with a friend, her feet) swing her; the rest only watch. */
     public static boolean carrying(){
-        var mc=Minecraft.getInstance();var g=girl();return g!=null&&mc.player!=null&&g.memoryPhase()==Shallows.CARRIED&&mc.player.distanceToSqr(g)<16;
+        var mc=Minecraft.getInstance();var g=girl();return g!=null&&mc.player!=null&&g.memoryPhase()==Shallows.CARRIED&&mc.player.distanceToSqr(g)<16
+                &&mc.player.getMainHandItem().is(DrownedTownRegistry.SHALLOWS_BURDEN.get());
     }
     /** Where the boys on the bank look: at her, wherever she is. */
     public static @Nullable Vec3 focus(float partial){var g=girl();return g==null?null:g.getPosition(partial).add(0,.3,0);}
@@ -68,8 +70,9 @@ public final class ShallowsClient {
         var mc=Minecraft.getInstance();if(mc.level==null){CUES.clear();cached=null;return;}
         long now=mc.level.getGameTime();CUES.values().removeIf(cue->cue.until()<now-1);
         cached=find();var g=girl();int current=g==null?-1:g.memoryPhase();
-        if(phase==Shallows.CARRIED&&current==Shallows.FLYING)released=now;
-        phase=current;
+        // Only hands that held her follow through; a reader watching from the bank (0.4.157) keeps still.
+        if(phase==Shallows.CARRIED&&current==Shallows.FLYING&&held)released=now;
+        phase=current;held=carrying();
     }
     /** While she hangs between them the strafe keys swing her, one stroke per press; walking and jumping stop. */
     @SubscribeEvent public static void input(MovementInputUpdateEvent e){
@@ -88,6 +91,8 @@ public final class ShallowsClient {
         e.setContent(Component.literal(cue.line()));e.setCanRender(TriState.TRUE);
     }
     private static float swing(float partial){var g=girl();return g==null?0:g.swingAt(partial);}
+    /** Which way the lake lies for the local reader: -1, on their left, at her wrists; 1, on their right, at her feet (0.4.157). */
+    private static float waterSide(){var mc=Minecraft.getInstance();var g=girl();return g!=null&&mc.player!=null&&mc.player.getX()>g.getX()?1:-1;}
     private static float followThrough(float partial){
         var mc=Minecraft.getInstance();if(mc.level==null)return 0;float t=mc.level.getGameTime()-released+partial;
         return t<0||t>14?0:Mth.sin(Mth.clamp(t/14,0,1)*Mth.PI);
@@ -110,7 +115,7 @@ public final class ShallowsClient {
         var mc=Minecraft.getInstance();if(entity!=mc.player)return;
         float partial=age-entity.tickCount;float reach=followThrough(partial);
         if(!carrying()&&reach==0)return;
-        carryArms(model,carrying()?swing(partial):0,-1,reach,false);
+        carryArms(model,carrying()?swing(partial):0,waterSide(),reach,false);
         var missing=BodyLoss.missing(mc.player);
         if(missing==HumanoidArm.LEFT)model.leftArm.xRot=0;else if(missing==HumanoidArm.RIGHT)model.rightArm.xRot=0;
         model.leftSleeve.copyFrom(model.leftArm);model.rightSleeve.copyFrom(model.rightArm);
@@ -122,7 +127,7 @@ public final class ShallowsClient {
         if(!carrying&&reach==0)return;
         e.setCanceled(true);if(e.getHand()!=InteractionHand.MAIN_HAND)return;
         if(!(mc.getEntityRenderDispatcher().getRenderer(mc.player) instanceof PlayerRenderer player))return;
-        float swing=carrying?swing(partial):0,lift=1-Mth.cos(swing);var missing=BodyLoss.missing(mc.player);
+        float swing=(carrying?swing(partial):0)*-waterSide(),lift=1-Mth.cos(swing);var missing=BodyLoss.missing(mc.player);
         for(int side:new int[]{-1,1}){
             if(missing==(side<0?HumanoidArm.LEFT:HumanoidArm.RIGHT))continue;
             var pose=e.getPoseStack();pose.pushPose();
@@ -136,5 +141,5 @@ public final class ShallowsClient {
             pose.popPose();
         }
     }
-    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){CUES.clear();phase=-1;released=-1000;cached=null;}
+    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){CUES.clear();phase=-1;released=-1000;cached=null;held=false;}
 }

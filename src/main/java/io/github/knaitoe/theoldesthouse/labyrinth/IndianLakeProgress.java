@@ -37,6 +37,18 @@ public final class IndianLakeProgress {
         data.setState("indian_lake", state);
     }
 
+    /**
+     * 0.4.157: a reader who held her feet or stood on the bank while another threw her was one of the boys too, hunted or
+     * not; the school pages keep their name, and the shallows are not dealt to them again.
+     */
+    public static void joinedShallows(LabyrinthData data, UUID player, String name) {
+        if (hasThrown(data, player)) return;
+        CompoundTag state = data.state("indian_lake"), boys = state.getCompound("Boys");
+        boys.putString(player.toString(), name);
+        state.put("Boys", boys);
+        data.setState("indian_lake", state);
+    }
+
     public static boolean hymnEscaped(LabyrinthData data) {
         return data.state(DrownedTown.ID).getBoolean("RoofOpened");
     }
