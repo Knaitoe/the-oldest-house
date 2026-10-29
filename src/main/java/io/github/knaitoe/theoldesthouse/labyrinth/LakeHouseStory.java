@@ -116,7 +116,7 @@ public final class LakeHouseStory {
         if(visit>=3&&r.y>-20&&r.x>2&&inside)own.putBoolean("SawBedrooms",true);
         if(visit>=3&&r.y<-37&&p.distanceToSqr(b.offset(LakeHouseInterior.POOL).getCenter())<64){
             var flow=p.getDeltaMovement();p.setDeltaMovement(flow.add(0,-.018,0));p.hurtMarked=true;
-            if(!own.getBoolean("SawPool")){own.putBoolean("SawPool",true);own.putBoolean("HomePending",true);p.displayClientMessage(Component.literal("A black dress is coming down through the water. Tess points up.").withStyle(ChatFormatting.ITALIC),true);}
+            if(!own.getBoolean("SawPool")){own.putBoolean("SawPool",true);own.putBoolean("HomePending",true);p.displayClientMessage(Component.literal("A black dress is coming down through the water."+(LakeHouseTess.actor(p,own)!=null?" "+LakeHousePartner.pointsUp(LakeHousePartner.of(own)):"")).withStyle(ChatFormatting.ITALIC),true);}
         }
         if(visit==3&&own.getBoolean("SawDresses")&&own.getBoolean("SawBedrooms")&&own.getBoolean("SawPool")&&r.y>-.3&&!p.isEyeInFluid(FluidTags.WATER)){
             own.putInt("Beat",3);if(!own.getBoolean("ThirdBeatSaid")){own.putBoolean("ThirdBeatSaid",true);p.displayClientMessage(Component.literal("You climb onto the raft. Water keeps dripping from the tanks."),false);}
@@ -194,7 +194,7 @@ public final class LakeHouseStory {
         p.displayClientMessage(Component.literal(line),true);ThreeFingers.hear(p,kind==LakeHouseFittingBlock.Kind.POOL_TABLE?SoundEvents.WOOD_HIT:SoundEvents.WOODEN_BUTTON_CLICK_ON,at,.4F,.8F);return true;
     }
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
-        if(a.role()==LiteraryActor.LAKE_TESS)LakeHouseTess.talk(p,a,own);
+        if(LiteraryActor.lakePartner(a.role()))LakeHouseTess.talk(p,a,own);
         else if(a.role()==LiteraryActor.LAKE_WAX&&own.getBoolean("HelloStage")&&own.getBoolean("Lit")&&!own.getBoolean("Ready"))complete(p,own,LakeHouse.SAID_HELLO);
     }
     public static void complete(ServerPlayer p,CompoundTag own,String ending){

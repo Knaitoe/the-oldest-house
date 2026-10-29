@@ -336,7 +336,7 @@ public final class LakeHouse {
     // ------------------------------------------------------------------------------------------------ the reader's part
     /** Each visit starts on the reader's own clock. */
     public static void arrive(ServerPlayer p,CompoundTag own){
-        if(own.getBoolean("LakeFreshVisit"))own.putInt("T",0);LakeHouseStory.arrive(p,own);
+        if(own.getBoolean("LakeFreshVisit"))own.putInt("T",0);LakeHousePartner.choose(p,own);LakeHouseStory.arrive(p,own);
         LakeHouseCanoe.ensure(p);
     }
     /** Every five ticks while the reader is in the scene. */
@@ -377,7 +377,7 @@ public final class LakeHouse {
             case LEFT_THE_LIGHTS_ON->"THE LIGHTS\n\nEvery light in the house came on at once. I didn't go up. I swam out through the half door and didn't look back until I was on the raft. From up there you can see it, lit, all the way down. It was still lit when I left.";
             case STAYED->"THE PLACE AT THE TABLE\n\nOne of the chairs at the table had air in it, so I sat down. The lights went down one at a time and I stayed where I was. I woke on the raft. They tell me it was days. My place is still set down there.";
             default->"THE EMPTY LAKE\n\nI went up the stairs with the lights on and put my hand on its shoulder. I said my name. Then it was dark, and when I came up there was nothing under me but water. I've been back. The roof isn't there. I still have the flashlight.";
-        };return ending+(own.getBoolean("RuleBroken")?"\n\nI tested the rule twice. Nothing came loose, but someone walked upstairs afterward. I had asked how.":"");
+        };return LakeHousePartner.accountOpening(own)+ending+(own.getBoolean("RuleBroken")?"\n\nI tested the rule twice. Nothing came loose, but someone walked upstairs afterward. I had asked how.":"");
     }
 
     // ------------------------------------------------------------------------------------------------ the shared clock
