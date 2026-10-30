@@ -182,6 +182,20 @@ def beam():
     return im
 
 
+def leaded():
+    """The lamp rooms' interior window: small leaded panes of old, faintly green glass, the lead dark and soft."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = im.load(); rnd = random.Random(391)
+    for x in range(16):
+        for y in range(16):
+            lead = x % 5 == 0 or y % 5 == 0
+            if lead:
+                px[x, y] = shade('#3a3a38', rnd.randint(-6, 6))
+            else:
+                g = 196 + rnd.randint(-10, 10)
+                px[x, y] = (g - 30, g, g - 18, 92)
+    return im
+
+
 # ---------------------------------------------------------------------------------------------------- models
 def element(lo, hi, textures, rotation=None, uv=None):
     faces = {}
@@ -227,12 +241,18 @@ def models():
     for stop in (False, True):
         name = 'track_stop' if stop else 'track'
         m[name] = model([element([0, 0, 0], [16, 16, 16], {'all': 'side', 'up': 'top'})], {'side': 'floor', 'top': name}, 'floor')
+    win = model([element([0, 0, 6], [16, 2, 10], {'all': 'f'}), element([0, 14, 6], [16, 16, 10], {'all': 'f'}),
+                 element([0, 2, 6], [2, 14, 10], {'all': 'f'}), element([14, 2, 6], [16, 14, 10], {'all': 'f'}),
+                 element([2, 2, 7.5], [14, 14, 8.5], {'north': 'g', 'south': 'g'}, uv={'north': [2, 2, 14, 14], 'south': [2, 2, 14, 14]})],
+                {'f': 'frame', 'g': 'leaded'}, 'frame')
+    win['render_type'] = 'minecraft:translucent'
+    m['window'] = win
     m['sconce'] = model([element([7, 4, 14], [9, 8, 16], {'all': 'b'}), element([5, 7, 11], [11, 12, 15], {'all': 'g', 'up': 'b'})], {'b': 'brass', 'g': 'shade'}, 'brass')
     return m
 
 
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
-KINDS = ['lamp', 'shutter', 'mirror', 'plate', 'track', 'sconce']
+KINDS = ['lamp', 'shutter', 'mirror', 'plate', 'track', 'sconce', 'window']
 
 
 def drawn(kind, turned, opened):
@@ -250,7 +270,7 @@ def drawn(kind, turned, opened):
 def textures():
     out = {'wall.png': wallpaper(), 'floor.png': boards(), 'ceiling.png': plaster(), 'track.png': track(False), 'track_stop.png': track(True),
            'enamel.png': enamel(), 'lens.png': lens(), 'brass.png': brass(), 'shutter.png': shutter(), 'frame.png': frame(), 'glass.png': glass(),
-           'sun_cold.png': sun(False), 'sun_lit.png': sun(True), 'shade.png': shade_glass(), 'beam.png': beam()}
+           'sun_cold.png': sun(False), 'sun_lit.png': sun(True), 'shade.png': shade_glass(), 'beam.png': beam(), 'leaded.png': leaded()}
     return {'block/borrowed_light/' + k: v for k, v in out.items()}
 
 

@@ -125,7 +125,7 @@ public final class LabyrinthDoors {
         }
         if(HouseReadSites.door(player,door))return;
         if(HazardVariety.blocksDoor(player,door))return;
-        if(BorrowedLight.holds(player,door))return;
+        if(PuzzleRooms.holds(player,door))return;
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
         MinecraftServer server = player.server;
         LabyrinthData data = LabyrinthData.get(server);

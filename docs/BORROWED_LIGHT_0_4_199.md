@@ -33,16 +33,17 @@ Laid on the sun, the plate lights (11), the room's state records `Solved`, the i
 
 ## Pacing: story, then wandering, then the puzzle
 
-`BorrowedLight.weight` sets the reader's weight for the room among the gray halls (`LabyrinthDealer.grayWeight(data, player, place, depth)`); by depth alone it is 0.
+Since the rest of the puzzle rooms were added, Borrowed Light shares one rhythm with them (`PuzzleRooms.weight`, see [PUZZLE_ROOMS_0_4_199.md](PUZZLE_ROOMS_0_4_199.md)); by depth alone its weight is 0.
 
 - Never in the first three crossings, never at stone depth.
-- Unsolved: 40 once the reader has resolved more stories than when they last saw it and is three crossings deeper than where they saw it; otherwise 0. A first visit therefore follows a resolved story and a few halls.
-- Solved, after the reader has seen it: 1, only six or more crossings past where they last saw it, an occasional pleasant room on the way.
-- `BorrowedLight.arrived` records the reader's visits, stories and depth on arrival.
+- Unsolved: offered once the reader has resolved a story since their last puzzle (any puzzle) and is three crossings past it. The offer of 40 is shared among the puzzles the reader could have.
+- Solved: 1, only six or more crossings past the reader's last puzzle, an occasional pleasant room on the way.
+- `PuzzleRooms.arrived` records the reader's visits, stories and depth on arriving in any puzzle room.
+- Solving it opens its deep room, the lamp rooms, from the strange depths.
 
 ## Build and assets
 
-- Layout 54 (`LabyrinthBuilder.VERSION`): it stands with the halls (required depth 0), so it is ready before anyone can be offered it; saved worlds build the slot once (`builtVersion < 54`).
+- Layout 54 (`LabyrinthBuilder.VERSION`): it stands with the halls (required depth 0), so it is ready before anyone can be offered it; saved worlds build the slot once (`builtVersion < 54`). Layout 55 adds the other puzzle rooms and does not rebuild this one.
 - Protocol 103: new blocks `borrowed_light` (kind × facing × turned × open) and `borrowed_light_wall/floor/ceiling`, block entity `borrowed_light_beam`.
 - Textures, models and block states are drawn by `tools/draw_borrowed_light.py` (`--check` verifies them): fifteen 16-pixel textures and seventeen models. No existing PNG changes.
 - Prose name: "a dressing room with a lamp and a mirror".
@@ -50,6 +51,6 @@ Laid on the sun, the plate lights (11), the room's state records `Solved`, the i
 ## Tests and proofs
 
 - `ExplorationPassTests.borrowedLightIsSolvedByLayingTheLampsBeamOnTheSun`: the room as first seen, the native shutter use, the beam stopping at the mirror's edge and lighting the air, the turn, the kick to the stop under the sun, the lit sun and open door, the far door's refusal before and passage after, the end of the track, and the solved room kept through a reload and a rebuild, with nothing hurt, used or counted.
-- `ExplorationPassTests.borrowedLightComesAfterAStoryAndSomeWandering`: the pacing above.
+- `ExplorationPassTests.puzzleRoomsComeAfterAStoryAndSomeWandering`: the shared pacing above (it replaced this room's own pacing case).
 - `HazardVarietyTests` and `LabyrinthTests` count the new slot and the opening gray pool (weight 0 at depth 0).
 - The client art proof (`-PdareSmoke`) adds a fifth view, `native-dare-borrowed-light.png`: every working part in each state, the three materials, and the beam turned by the mirror onto the lit sun. CI requires it.

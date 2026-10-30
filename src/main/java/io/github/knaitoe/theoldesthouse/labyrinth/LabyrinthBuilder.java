@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 54;
+    public static final int VERSION = 55;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -150,8 +150,10 @@ public final class LabyrinthBuilder {
             case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
             case DEEP_MAZE -> LabyrinthPacing.DEEP_DEPTH;
             case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING -> LabyrinthPacing.STONE_DEPTH;
-            // 0.4.199: the first puzzle room stands with the halls, ready before anyone can be offered it (BorrowedLight.weight paces it).
-            case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT -> 0;
+            // 0.4.199: the early puzzle rooms stand with the halls, ready before anyone can be offered them (PuzzleRooms.weight paces them);
+            // the deep ones are built ahead of the strange depths they are offered from.
+            case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING -> 0;
+            case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR -> LabyrinthPacing.STRANGE_DEPTH;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
             default -> LabyrinthPacing.STORY_DEPTH;
@@ -259,6 +261,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 52 && HallVariations.plain(place))
                     || (data.builtVersion() < 53 && (place == LabyrinthPlace.VAULTED_HALL || place == LabyrinthPlace.CRUMBLED_HALL))
                     || (data.builtVersion() < 54 && place == LabyrinthPlace.BORROWED_LIGHT)
+                    || (data.builtVersion() < 55 && PuzzleRooms.is(place) && place != LabyrinthPlace.BORROWED_LIGHT)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -649,6 +652,11 @@ public final class LabyrinthBuilder {
             case STRAIGHT_HALL, BENT_HALL, CROSS_HALL, QUIET_ROOM, ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL -> LabyrinthHalls.build(level, base, place);
             case FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE -> LabyrinthMaze.build(level, base, place, LabyrinthMaze.layout(server, place));
             case BORROWED_LIGHT -> BorrowedLight.build(level, base);
+            case SERVICE_LIFT -> ServiceLift.build(level, base);
+            case TURNING_LANDING -> TurningLandings.buildEarly(level, base);
+            case LAMP_ROOMS -> LampRooms.build(level, base);
+            case TWIN_LIFT -> TwinLift.build(level, base);
+            case TURNING_STAIR -> TurningLandings.buildDeep(level, base);
             case FLOORBOARDS -> TellTaleFloorboards.build(level, base, !data.isCompleted(place.id()));
             case RED_ROOM -> RedRoom.build(server, level, base);
             case HIDE_AND_CLAP -> HideAndClap.build(server, level, base);

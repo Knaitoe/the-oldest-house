@@ -197,11 +197,14 @@ public final class LabyrinthDealer {
         // 0.4.199: the vaulted hall and the crumbled hall.
         gray.add(LabyrinthPlace.VAULTED_HALL);
         gray.add(LabyrinthPlace.CRUMBLED_HALL);
-        // 0.4.199: the first puzzle room, offered by its own pacing (BorrowedLight.weight).
+        // 0.4.199: the puzzle rooms, offered by their own pacing (PuzzleRooms.weight); the deep ones only from the strange depths.
         gray.add(LabyrinthPlace.BORROWED_LIGHT);
+        gray.add(LabyrinthPlace.SERVICE_LIFT);
+        gray.add(LabyrinthPlace.TURNING_LANDING);
         gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
+        if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR));
         if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
         if (depth >= LabyrinthPacing.ABYSS_DEPTH) gray.add(LabyrinthPlace.ABYSS_MAZE);
         // After seven forward crossings, newly discovered ordinary halls are stone.
@@ -507,7 +510,7 @@ public final class LabyrinthDealer {
 
     /** A reader's weight for a gray place: the puzzle rooms go by the reader's own pacing, everything else by depth. */
     public static int grayWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int depth) {
-        return place == LabyrinthPlace.BORROWED_LIGHT ? BorrowedLight.weight(data, player, depth) : grayWeight(place, depth);
+        return PuzzleRooms.is(place) ? PuzzleRooms.weight(data, player, place, depth) : grayWeight(place, depth);
     }
 
     public static int grayWeight(LabyrinthPlace place, int depth) {
@@ -529,7 +532,7 @@ public final class LabyrinthDealer {
             // 0.4.199 (owner: "one with a massive ceiling and one with a crumbled floor players have to 'parkour' across"): the
             // vaulted hall a little rarer than the others, so it stays a surprise; the crumbled hall never in the first three
             // crossings, so nobody's first steps in the House are a jump.
-            case BORROWED_LIGHT -> 0;
+            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR -> 0;
             case VAULTED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case CRUMBLED_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 26;

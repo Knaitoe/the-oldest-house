@@ -347,6 +347,66 @@
     "facing=west,kind=sconce,open=true,turned=true": {
       "model": "the_oldest_house:block/borrowed_light/sconce",
       "y": 270
+    },
+    "facing=north,kind=window,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/window"
+    },
+    "facing=north,kind=window,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/window"
+    },
+    "facing=north,kind=window,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/window"
+    },
+    "facing=north,kind=window,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/window"
+    },
+    "facing=east,kind=window,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 90
+    },
+    "facing=east,kind=window,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 90
+    },
+    "facing=east,kind=window,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 90
+    },
+    "facing=east,kind=window,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 90
+    },
+    "facing=south,kind=window,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 180
+    },
+    "facing=south,kind=window,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 180
+    },
+    "facing=south,kind=window,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 180
+    },
+    "facing=south,kind=window,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 180
+    },
+    "facing=west,kind=window,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 270
+    },
+    "facing=west,kind=window,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 270
+    },
+    "facing=west,kind=window,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 270
+    },
+    "facing=west,kind=window,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/window",
+      "y": 270
     }
   }
 }

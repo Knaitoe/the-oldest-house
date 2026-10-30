@@ -218,8 +218,8 @@ public final class LabyrinthTests {
 
         List<LabyrinthPlace> start = LabyrinthDealer.grayAvailable(data, player);
         // 0.4.197: and the four plain halls; 0.4.199: and the vaulted and crumbled halls (the crumbled one at no weight until the third crossing),
-        // and Borrowed Light, at no weight until the reader's own pacing offers it.
-        helper.assertTrue(start.size() == 16 && start.containsAll(List.of(LabyrinthPlace.JOGGED_HALL, LabyrinthPlace.FORKED_HALL, LabyrinthPlace.PILLAR_HALL, LabyrinthPlace.ZIGZAG_HALL, LabyrinthPlace.VAULTED_HALL, LabyrinthPlace.CRUMBLED_HALL, LabyrinthPlace.BORROWED_LIGHT))
+        // and the early puzzle rooms (Borrowed Light, the Service Lift, the Turning Landing), at no weight until the reader's own pacing offers them.
+        helper.assertTrue(start.size() == 18 && start.containsAll(List.of(LabyrinthPlace.JOGGED_HALL, LabyrinthPlace.FORKED_HALL, LabyrinthPlace.PILLAR_HALL, LabyrinthPlace.ZIGZAG_HALL, LabyrinthPlace.VAULTED_HALL, LabyrinthPlace.CRUMBLED_HALL, LabyrinthPlace.BORROWED_LIGHT, LabyrinthPlace.SERVICE_LIFT, LabyrinthPlace.TURNING_LANDING))
                         && LabyrinthDealer.grayWeight(data, player, LabyrinthPlace.BORROWED_LIGHT, 0) == 0
                         && start.contains(LabyrinthPlace.JUNCTION)
                         && start.contains(LabyrinthPlace.STRAIGHT_HALL)

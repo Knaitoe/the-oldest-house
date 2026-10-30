@@ -1,0 +1,724 @@
+{
+  "variants": {
+    "facing=north,kind=weight,stage=0": {
+      "model": "the_oldest_house:block/puzzle/weight_1"
+    },
+    "facing=north,kind=weight,stage=1": {
+      "model": "the_oldest_house:block/puzzle/weight_1"
+    },
+    "facing=north,kind=weight,stage=2": {
+      "model": "the_oldest_house:block/puzzle/weight_2"
+    },
+    "facing=north,kind=weight,stage=3": {
+      "model": "the_oldest_house:block/puzzle/weight_3"
+    },
+    "facing=east,kind=weight,stage=0": {
+      "model": "the_oldest_house:block/puzzle/weight_1",
+      "y": 90
+    },
+    "facing=east,kind=weight,stage=1": {
+      "model": "the_oldest_house:block/puzzle/weight_1",
+      "y": 90
+    },
+    "facing=east,kind=weight,stage=2": {
+      "model": "the_oldest_house:block/puzzle/weight_2",
+      "y": 90
+    },
+    "facing=east,kind=weight,stage=3": {
+      "model": "the_oldest_house:block/puzzle/weight_3",
+      "y": 90
+    },
+    "facing=south,kind=weight,stage=0": {
+      "model": "the_oldest_house:block/puzzle/weight_1",
+      "y": 180
+    },
+    "facing=south,kind=weight,stage=1": {
+      "model": "the_oldest_house:block/puzzle/weight_1",
+      "y": 180
+    },
+    "facing=south,kind=weight,stage=2": {
+      "model": "the_oldest_house:block/puzzle/weight_2",
+      "y": 180
+    },
+    "facing=south,kind=weight,stage=3": {
+      "model": "the_oldest_house:block/puzzle/weight_3",
+      "y": 180
+    },
+    "facing=west,kind=weight,stage=0": {
+      "model": "the_oldest_house:block/puzzle/weight_1",
+      "y": 270
+    },
+    "facing=west,kind=weight,stage=1": {
+      "model": "the_oldest_house:block/puzzle/weight_1",
+      "y": 270
+    },
+    "facing=west,kind=weight,stage=2": {
+      "model": "the_oldest_house:block/puzzle/weight_2",
+      "y": 270
+    },
+    "facing=west,kind=weight,stage=3": {
+      "model": "the_oldest_house:block/puzzle/weight_3",
+      "y": 270
+    },
+    "facing=north,kind=pan,stage=0": {
+      "model": "the_oldest_house:block/puzzle/pan_0"
+    },
+    "facing=north,kind=pan,stage=1": {
+      "model": "the_oldest_house:block/puzzle/pan_1"
+    },
+    "facing=north,kind=pan,stage=2": {
+      "model": "the_oldest_house:block/puzzle/pan_2"
+    },
+    "facing=north,kind=pan,stage=3": {
+      "model": "the_oldest_house:block/puzzle/pan_3"
+    },
+    "facing=east,kind=pan,stage=0": {
+      "model": "the_oldest_house:block/puzzle/pan_0",
+      "y": 90
+    },
+    "facing=east,kind=pan,stage=1": {
+      "model": "the_oldest_house:block/puzzle/pan_1",
+      "y": 90
+    },
+    "facing=east,kind=pan,stage=2": {
+      "model": "the_oldest_house:block/puzzle/pan_2",
+      "y": 90
+    },
+    "facing=east,kind=pan,stage=3": {
+      "model": "the_oldest_house:block/puzzle/pan_3",
+      "y": 90
+    },
+    "facing=south,kind=pan,stage=0": {
+      "model": "the_oldest_house:block/puzzle/pan_0",
+      "y": 180
+    },
+    "facing=south,kind=pan,stage=1": {
+      "model": "the_oldest_house:block/puzzle/pan_1",
+      "y": 180
+    },
+    "facing=south,kind=pan,stage=2": {
+      "model": "the_oldest_house:block/puzzle/pan_2",
+      "y": 180
+    },
+    "facing=south,kind=pan,stage=3": {
+      "model": "the_oldest_house:block/puzzle/pan_3",
+      "y": 180
+    },
+    "facing=west,kind=pan,stage=0": {
+      "model": "the_oldest_house:block/puzzle/pan_0",
+      "y": 270
+    },
+    "facing=west,kind=pan,stage=1": {
+      "model": "the_oldest_house:block/puzzle/pan_1",
+      "y": 270
+    },
+    "facing=west,kind=pan,stage=2": {
+      "model": "the_oldest_house:block/puzzle/pan_2",
+      "y": 270
+    },
+    "facing=west,kind=pan,stage=3": {
+      "model": "the_oldest_house:block/puzzle/pan_3",
+      "y": 270
+    },
+    "facing=north,kind=cage,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cage_lower"
+    },
+    "facing=north,kind=cage,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cage_upper"
+    },
+    "facing=north,kind=cage,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cage_upper"
+    },
+    "facing=north,kind=cage,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cage_upper"
+    },
+    "facing=east,kind=cage,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cage_lower",
+      "y": 90
+    },
+    "facing=east,kind=cage,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 90
+    },
+    "facing=east,kind=cage,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 90
+    },
+    "facing=east,kind=cage,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 90
+    },
+    "facing=south,kind=cage,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cage_lower",
+      "y": 180
+    },
+    "facing=south,kind=cage,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 180
+    },
+    "facing=south,kind=cage,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 180
+    },
+    "facing=south,kind=cage,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 180
+    },
+    "facing=west,kind=cage,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cage_lower",
+      "y": 270
+    },
+    "facing=west,kind=cage,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 270
+    },
+    "facing=west,kind=cage,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 270
+    },
+    "facing=west,kind=cage,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cage_upper",
+      "y": 270
+    },
+    "facing=north,kind=pulley,stage=0": {
+      "model": "the_oldest_house:block/puzzle/pulley"
+    },
+    "facing=north,kind=pulley,stage=1": {
+      "model": "the_oldest_house:block/puzzle/pulley"
+    },
+    "facing=north,kind=pulley,stage=2": {
+      "model": "the_oldest_house:block/puzzle/pulley"
+    },
+    "facing=north,kind=pulley,stage=3": {
+      "model": "the_oldest_house:block/puzzle/pulley"
+    },
+    "facing=east,kind=pulley,stage=0": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 90
+    },
+    "facing=east,kind=pulley,stage=1": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 90
+    },
+    "facing=east,kind=pulley,stage=2": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 90
+    },
+    "facing=east,kind=pulley,stage=3": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 90
+    },
+    "facing=south,kind=pulley,stage=0": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 180
+    },
+    "facing=south,kind=pulley,stage=1": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 180
+    },
+    "facing=south,kind=pulley,stage=2": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 180
+    },
+    "facing=south,kind=pulley,stage=3": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 180
+    },
+    "facing=west,kind=pulley,stage=0": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 270
+    },
+    "facing=west,kind=pulley,stage=1": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 270
+    },
+    "facing=west,kind=pulley,stage=2": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 270
+    },
+    "facing=west,kind=pulley,stage=3": {
+      "model": "the_oldest_house:block/puzzle/pulley",
+      "y": 270
+    },
+    "facing=north,kind=handle,stage=0": {
+      "model": "the_oldest_house:block/puzzle/handle_0"
+    },
+    "facing=north,kind=handle,stage=1": {
+      "model": "the_oldest_house:block/puzzle/handle_1"
+    },
+    "facing=north,kind=handle,stage=2": {
+      "model": "the_oldest_house:block/puzzle/handle_2"
+    },
+    "facing=north,kind=handle,stage=3": {
+      "model": "the_oldest_house:block/puzzle/handle_3"
+    },
+    "facing=east,kind=handle,stage=0": {
+      "model": "the_oldest_house:block/puzzle/handle_0",
+      "y": 90
+    },
+    "facing=east,kind=handle,stage=1": {
+      "model": "the_oldest_house:block/puzzle/handle_1",
+      "y": 90
+    },
+    "facing=east,kind=handle,stage=2": {
+      "model": "the_oldest_house:block/puzzle/handle_2",
+      "y": 90
+    },
+    "facing=east,kind=handle,stage=3": {
+      "model": "the_oldest_house:block/puzzle/handle_3",
+      "y": 90
+    },
+    "facing=south,kind=handle,stage=0": {
+      "model": "the_oldest_house:block/puzzle/handle_0",
+      "y": 180
+    },
+    "facing=south,kind=handle,stage=1": {
+      "model": "the_oldest_house:block/puzzle/handle_1",
+      "y": 180
+    },
+    "facing=south,kind=handle,stage=2": {
+      "model": "the_oldest_house:block/puzzle/handle_2",
+      "y": 180
+    },
+    "facing=south,kind=handle,stage=3": {
+      "model": "the_oldest_house:block/puzzle/handle_3",
+      "y": 180
+    },
+    "facing=west,kind=handle,stage=0": {
+      "model": "the_oldest_house:block/puzzle/handle_0",
+      "y": 270
+    },
+    "facing=west,kind=handle,stage=1": {
+      "model": "the_oldest_house:block/puzzle/handle_1",
+      "y": 270
+    },
+    "facing=west,kind=handle,stage=2": {
+      "model": "the_oldest_house:block/puzzle/handle_2",
+      "y": 270
+    },
+    "facing=west,kind=handle,stage=3": {
+      "model": "the_oldest_house:block/puzzle/handle_3",
+      "y": 270
+    },
+    "facing=north,kind=cord_up,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cord_up"
+    },
+    "facing=north,kind=cord_up,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cord_up"
+    },
+    "facing=north,kind=cord_up,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cord_up"
+    },
+    "facing=north,kind=cord_up,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cord_up"
+    },
+    "facing=east,kind=cord_up,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 90
+    },
+    "facing=east,kind=cord_up,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 90
+    },
+    "facing=east,kind=cord_up,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 90
+    },
+    "facing=east,kind=cord_up,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 90
+    },
+    "facing=south,kind=cord_up,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 180
+    },
+    "facing=south,kind=cord_up,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 180
+    },
+    "facing=south,kind=cord_up,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 180
+    },
+    "facing=south,kind=cord_up,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 180
+    },
+    "facing=west,kind=cord_up,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 270
+    },
+    "facing=west,kind=cord_up,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 270
+    },
+    "facing=west,kind=cord_up,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 270
+    },
+    "facing=west,kind=cord_up,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cord_up",
+      "y": 270
+    },
+    "facing=north,kind=cord_down,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cord_down"
+    },
+    "facing=north,kind=cord_down,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cord_down"
+    },
+    "facing=north,kind=cord_down,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cord_down"
+    },
+    "facing=north,kind=cord_down,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cord_down"
+    },
+    "facing=east,kind=cord_down,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 90
+    },
+    "facing=east,kind=cord_down,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 90
+    },
+    "facing=east,kind=cord_down,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 90
+    },
+    "facing=east,kind=cord_down,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 90
+    },
+    "facing=south,kind=cord_down,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 180
+    },
+    "facing=south,kind=cord_down,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 180
+    },
+    "facing=south,kind=cord_down,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 180
+    },
+    "facing=south,kind=cord_down,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 180
+    },
+    "facing=west,kind=cord_down,stage=0": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 270
+    },
+    "facing=west,kind=cord_down,stage=1": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 270
+    },
+    "facing=west,kind=cord_down,stage=2": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 270
+    },
+    "facing=west,kind=cord_down,stage=3": {
+      "model": "the_oldest_house:block/puzzle/cord_down",
+      "y": 270
+    },
+    "facing=north,kind=call,stage=0": {
+      "model": "the_oldest_house:block/puzzle/call"
+    },
+    "facing=north,kind=call,stage=1": {
+      "model": "the_oldest_house:block/puzzle/call"
+    },
+    "facing=north,kind=call,stage=2": {
+      "model": "the_oldest_house:block/puzzle/call"
+    },
+    "facing=north,kind=call,stage=3": {
+      "model": "the_oldest_house:block/puzzle/call"
+    },
+    "facing=east,kind=call,stage=0": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 90
+    },
+    "facing=east,kind=call,stage=1": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 90
+    },
+    "facing=east,kind=call,stage=2": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 90
+    },
+    "facing=east,kind=call,stage=3": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 90
+    },
+    "facing=south,kind=call,stage=0": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 180
+    },
+    "facing=south,kind=call,stage=1": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 180
+    },
+    "facing=south,kind=call,stage=2": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 180
+    },
+    "facing=south,kind=call,stage=3": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 180
+    },
+    "facing=west,kind=call,stage=0": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 270
+    },
+    "facing=west,kind=call,stage=1": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 270
+    },
+    "facing=west,kind=call,stage=2": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 270
+    },
+    "facing=west,kind=call,stage=3": {
+      "model": "the_oldest_house:block/puzzle/call",
+      "y": 270
+    },
+    "facing=north,kind=platform,stage=0": {
+      "model": "the_oldest_house:block/puzzle/platform"
+    },
+    "facing=north,kind=platform,stage=1": {
+      "model": "the_oldest_house:block/puzzle/platform"
+    },
+    "facing=north,kind=platform,stage=2": {
+      "model": "the_oldest_house:block/puzzle/platform"
+    },
+    "facing=north,kind=platform,stage=3": {
+      "model": "the_oldest_house:block/puzzle/platform"
+    },
+    "facing=east,kind=platform,stage=0": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 90
+    },
+    "facing=east,kind=platform,stage=1": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 90
+    },
+    "facing=east,kind=platform,stage=2": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 90
+    },
+    "facing=east,kind=platform,stage=3": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 90
+    },
+    "facing=south,kind=platform,stage=0": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 180
+    },
+    "facing=south,kind=platform,stage=1": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 180
+    },
+    "facing=south,kind=platform,stage=2": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 180
+    },
+    "facing=south,kind=platform,stage=3": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 180
+    },
+    "facing=west,kind=platform,stage=0": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 270
+    },
+    "facing=west,kind=platform,stage=1": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 270
+    },
+    "facing=west,kind=platform,stage=2": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 270
+    },
+    "facing=west,kind=platform,stage=3": {
+      "model": "the_oldest_house:block/puzzle/platform",
+      "y": 270
+    },
+    "facing=north,kind=scraped,stage=0": {
+      "model": "the_oldest_house:block/puzzle/scraped"
+    },
+    "facing=north,kind=scraped,stage=1": {
+      "model": "the_oldest_house:block/puzzle/scraped"
+    },
+    "facing=north,kind=scraped,stage=2": {
+      "model": "the_oldest_house:block/puzzle/scraped"
+    },
+    "facing=north,kind=scraped,stage=3": {
+      "model": "the_oldest_house:block/puzzle/scraped"
+    },
+    "facing=east,kind=scraped,stage=0": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 90
+    },
+    "facing=east,kind=scraped,stage=1": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 90
+    },
+    "facing=east,kind=scraped,stage=2": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 90
+    },
+    "facing=east,kind=scraped,stage=3": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 90
+    },
+    "facing=south,kind=scraped,stage=0": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 180
+    },
+    "facing=south,kind=scraped,stage=1": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 180
+    },
+    "facing=south,kind=scraped,stage=2": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 180
+    },
+    "facing=south,kind=scraped,stage=3": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 180
+    },
+    "facing=west,kind=scraped,stage=0": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 270
+    },
+    "facing=west,kind=scraped,stage=1": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 270
+    },
+    "facing=west,kind=scraped,stage=2": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 270
+    },
+    "facing=west,kind=scraped,stage=3": {
+      "model": "the_oldest_house:block/puzzle/scraped",
+      "y": 270
+    },
+    "facing=north,kind=worn,stage=0": {
+      "model": "the_oldest_house:block/puzzle/worn"
+    },
+    "facing=north,kind=worn,stage=1": {
+      "model": "the_oldest_house:block/puzzle/worn"
+    },
+    "facing=north,kind=worn,stage=2": {
+      "model": "the_oldest_house:block/puzzle/worn"
+    },
+    "facing=north,kind=worn,stage=3": {
+      "model": "the_oldest_house:block/puzzle/worn"
+    },
+    "facing=east,kind=worn,stage=0": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 90
+    },
+    "facing=east,kind=worn,stage=1": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 90
+    },
+    "facing=east,kind=worn,stage=2": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 90
+    },
+    "facing=east,kind=worn,stage=3": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 90
+    },
+    "facing=south,kind=worn,stage=0": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 180
+    },
+    "facing=south,kind=worn,stage=1": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 180
+    },
+    "facing=south,kind=worn,stage=2": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 180
+    },
+    "facing=south,kind=worn,stage=3": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 180
+    },
+    "facing=west,kind=worn,stage=0": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 270
+    },
+    "facing=west,kind=worn,stage=1": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 270
+    },
+    "facing=west,kind=worn,stage=2": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 270
+    },
+    "facing=west,kind=worn,stage=3": {
+      "model": "the_oldest_house:block/puzzle/worn",
+      "y": 270
+    },
+    "facing=north,kind=counterweight,stage=0": {
+      "model": "the_oldest_house:block/puzzle/counterweight"
+    },
+    "facing=north,kind=counterweight,stage=1": {
+      "model": "the_oldest_house:block/puzzle/counterweight"
+    },
+    "facing=north,kind=counterweight,stage=2": {
+      "model": "the_oldest_house:block/puzzle/counterweight"
+    },
+    "facing=north,kind=counterweight,stage=3": {
+      "model": "the_oldest_house:block/puzzle/counterweight"
+    },
+    "facing=east,kind=counterweight,stage=0": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 90
+    },
+    "facing=east,kind=counterweight,stage=1": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 90
+    },
+    "facing=east,kind=counterweight,stage=2": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 90
+    },
+    "facing=east,kind=counterweight,stage=3": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 90
+    },
+    "facing=south,kind=counterweight,stage=0": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 180
+    },
+    "facing=south,kind=counterweight,stage=1": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 180
+    },
+    "facing=south,kind=counterweight,stage=2": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 180
+    },
+    "facing=south,kind=counterweight,stage=3": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 180
+    },
+    "facing=west,kind=counterweight,stage=0": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 270
+    },
+    "facing=west,kind=counterweight,stage=1": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 270
+    },
+    "facing=west,kind=counterweight,stage=2": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 270
+    },
+    "facing=west,kind=counterweight,stage=3": {
+      "model": "the_oldest_house:block/puzzle/counterweight",
+      "y": 270
+    }
+  }
+}
