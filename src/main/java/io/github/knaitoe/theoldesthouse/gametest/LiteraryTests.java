@@ -979,22 +979,27 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("elk_reader",place);var b=f.base(place);
         h.assertTrue(f.out.getBlockState(b.offset(0,-1,-3)).is(LiteraryRegistry.YACHT_CARPET.get()),"the reader comes through the door into the yacht's cabin");
         f.source(p,place);
-        f.at(p,place,.5,0,-2.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(0)));
+        // The hunt runs once the reader's own killer is loaded; on a loaded runner that can take a while, so every look waits for the one before it.
+        h.startSequence().thenWaitUntil(()->h.assertTrue(elkKiller(f,p)!=null&&f.own(p,place).getInt("ElkClock")>0,"the reader's own killer is loaded and the hunt is running: "+f.own(p,place).getInt("ElkClock")))
+        .thenExecute(()->{f.at(p,place,.5,0,-2.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(0)));})
+        .thenWaitUntil(()->h.assertTrue((f.own(p,place).getInt("ElkSeenVisit")&1)!=0,"the first of the dead is seen from the cabin"))
         // Up on the aft deck, where the party was: two more of them, in plain sight.
-        h.runAfterDelay(10,()->{f.at(p,place,3.5,ElkCarcassMap.MAIN,-6.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(6)));});
-        h.runAfterDelay(20,()->{f.at(p,place,-4.5,ElkCarcassMap.MAIN,-4.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(5)));});
-        h.runAfterDelay(30,()->{var own=f.own(p,place);h.assertTrue(Integer.bitCount(own.getInt("ElkSeenVisit"))>=3&&own.getInt("ElkStage")==ElkHunt.ABOARD,"three of the dead are actually seen, and he still waits below: "+own);
-            var killer=elkKiller(f,p);h.assertTrue(killer!=null&&killer.owner().isPresent()&&killer.owner().get().equals(p.getUUID())&&!killer.isNoAi(),"the reader has their own killer, waiting below");});
-        h.runAfterDelay(225,()->{h.assertTrue(f.own(p,place).getInt("ElkStage")==ElkHunt.HUNTED,"he comes for them once they have found the dead");
-            // Over the side, into the lake, away from the hull.
-            f.at(p,place,24.5,-1.6,-20.5);});
-        h.runAfterDelay(240,()->{h.assertTrue(f.own(p,place).getInt("ElkStage")==ElkHunt.IN_WATER,"the water is the way off the yacht");
-            var killer=elkKiller(f,p);h.assertTrue(killer!=null&&ElkCarcassMap.aboard(killer.position().subtract(b.getX(),b.getY(),b.getZ())),"he does not swim after them");
-            var shore=ElkCarcassMap.standAt(-50,-100);f.at(p,place,shore.getX()+.5,shore.getY(),shore.getZ()+.5);p.setOnGround(true);});
-        h.runAfterDelay(255,()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getBoolean("EscapedYacht"),"ashore in the woods, the second stage begins");
-            // Under the carcasses, in the hollow, facing the gap.
-            f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-191.5);f.look(p,b.offset(-22,ElkCarcassMap.CAVE_Y,-186));});
-        h.runAfterDelay(275,()->h.assertTrue(p.getForcedPose()==Pose.SWIMMING&&ElkHunt.hidden(p,b),"the reader is down in the hollow under the hides"));
+        .thenExecute(()->{f.at(p,place,3.5,ElkCarcassMap.MAIN,-6.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(6)));})
+        .thenWaitUntil(()->h.assertTrue((f.own(p,place).getInt("ElkSeenVisit")&1<<6)!=0,"the second is seen on the aft deck"))
+        .thenExecute(()->{f.at(p,place,-4.5,ElkCarcassMap.MAIN,-4.5);f.look(p,b.offset(ElkCarcassMap.GUESTS.get(5)));})
+        .thenWaitUntil(()->h.assertTrue((f.own(p,place).getInt("ElkSeenVisit")&1<<5)!=0,"the third is seen on the aft deck"))
+        .thenExecute(()->{var own=f.own(p,place);h.assertTrue(Integer.bitCount(own.getInt("ElkSeenVisit"))>=3&&own.getInt("ElkStage")==ElkHunt.ABOARD,"three of the dead are actually seen, and he still waits below: "+own);
+            var killer=elkKiller(f,p);h.assertTrue(killer!=null&&killer.owner().isPresent()&&killer.owner().get().equals(p.getUUID())&&!killer.isNoAi(),"the reader has their own killer, waiting below");})
+        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("ElkStage")==ElkHunt.HUNTED,"he comes for them once they have found the dead"))
+        // Over the side, into the lake, away from the hull.
+        .thenExecute(()->f.at(p,place,24.5,-1.6,-20.5))
+        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("ElkStage")==ElkHunt.IN_WATER,"the water is the way off the yacht"))
+        .thenExecute(()->{var killer=elkKiller(f,p);h.assertTrue(killer!=null&&ElkCarcassMap.aboard(killer.position().subtract(b.getX(),b.getY(),b.getZ())),"he does not swim after them");
+            var shore=ElkCarcassMap.standAt(-50,-100);f.at(p,place,shore.getX()+.5,shore.getY(),shore.getZ()+.5);p.setOnGround(true);})
+        .thenWaitUntil(()->{var own=f.own(p,place);h.assertTrue(own.getInt("ElkStage")==ElkHunt.ASHORE&&own.getBoolean("EscapedYacht"),"ashore in the woods, the second stage begins");})
+        // Under the carcasses, in the hollow, facing the gap.
+        .thenExecute(()->{f.at(p,place,-22.5,ElkCarcassMap.CAVE_Y,-191.5);f.look(p,b.offset(-22,ElkCarcassMap.CAVE_Y,-186));})
+        .thenWaitUntil(()->h.assertTrue(p.getForcedPose()==Pose.SWIMMING&&ElkHunt.hidden(p,b),"the reader is down in the hollow under the hides"));
         final boolean[] done={false};
         h.onEachTick(()->{
             if(done[0])return;var own=f.own(p,place);
