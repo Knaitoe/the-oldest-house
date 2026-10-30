@@ -89,7 +89,8 @@ public final class BackseatSocketClient {
         }else if(phase==3&&car!=null){
             if(role().equals("B")){look(mc,at.getCenter().add(.55,.53,0));if(age>25)capture("notebook-unread",true);}
             else if(mc.screen instanceof LecternScreen){
-                var book=mc.player.containerMenu.getSlot(0).getItem();var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);var data=book.get(DataComponents.CUSTOM_DATA);
+                // The screen opens on its own packet; the menu's contents follow, so a fast client waits a tick for the book.
+                var book=mc.player.containerMenu.getSlot(0).getItem();if(book.isEmpty())return;var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);var data=book.get(DataComponents.CUSTOM_DATA);
                 require(content!=null&&data!=null&&data.copyTag().getUUID("BackseatOwner").equals(mc.player.getUUID()),"the native notebook menu contains this driver's actual original");
                 if(!CAPTURES.contains("A-notebook")){capture("notebook",false);return;}
                 mc.gameMode.handleInventoryButtonClick(mc.player.containerMenu.containerId,3);
@@ -146,7 +147,10 @@ public final class BackseatSocketClient {
         }
         if(shot.endsWith("-standing-before-lock")){require(!mc.player.isPassenger()&&mc.options.getCameraType()==CameraType.THIRD_PERSON_BACK,"standing on the actual road before commitment restores the prior third-person camera");seatStage=2;}
         if(shot.endsWith("-house-return"))require(mc.options.getCameraType()==CameraType.FIRST_PERSON,"the confirmed House return respects its existing first-person view rule");
-        if(shot.endsWith("-reveal")||shot.endsWith("-acceleration")){
+        // Run 1351: a slow reconnected client may take its late side-window frame after the car is already at speed, leaving no
+        // frame before impact for a separate acceleration view. That late frame then carries the same speed checks.
+        boolean speed=shot.endsWith("-acceleration")||shot.endsWith("-side-window-late")&&!CAPTURES.contains(role()+"-acceleration")&&mc.player.getVehicle() instanceof BackseatSeat moving&&moving.car()!=null&&moving.car().clock>=60;
+        if(shot.endsWith("-reveal")||speed){
             var seat=(BackseatSeat)mc.player.getVehicle();var car=seat.car();require(car!=null,"the real moving seat retains its original car");
             var expected=Vec3.atBottomCenterOf(seat.root()).add(BackseatCarMesh.DRIVER).add(0,mc.player.getEyeHeight(),-car.visualTravel(mc.getTimer().getGameTimeDeltaPartialTick(false)));
             double pull=BackseatClient.cameraPullback(mc.getTimer().getGameTimeDeltaPartialTick(false));
@@ -154,7 +158,8 @@ public final class BackseatSocketClient {
             require(pull>.03&&pull<=.181,"the speed camera remains inside the real cabin");
             float wind=WINDS.stream().filter(mc.getSoundManager()::isActive).map(net.minecraft.client.resources.sounds.SoundInstance::getVolume).max(Float::compare).orElse(0F);
             if(shot.endsWith("-reveal")){firstPull=pull;firstWind=wind;}
-            else{require(pull>firstPull+.025&&wind>firstWind+.1,"the later actual frame pulls farther back and has heavier continuous wind");Files.writeString(BackseatSocketProof.folder().resolve(role()+"-speed-camera.txt"),"Native acceleration: "+car.clock+" ticks; camera peel "+firstPull+" -> "+pull+" metres; continuous wind "+firstWind+" -> "+wind+".\n");}
+            else{require(pull>firstPull+.025&&wind>firstWind+.1,"the later actual frame pulls farther back and has heavier continuous wind");Files.writeString(BackseatSocketProof.folder().resolve(role()+"-speed-camera.txt"),"Native acceleration: "+car.clock+" ticks; camera peel "+firstPull+" -> "+pull+" metres; continuous wind "+firstWind+" -> "+wind+(shot.endsWith("-acceleration")?"":" (in the late side-window frame)")+".\n");
+                if(!shot.endsWith("-acceleration"))CAPTURES.add(role()+"-acceleration");}
             if(shot.endsWith("-reveal"))try(var after=BackseatMirror.copy()){
                 require(before!=null&&after!=null,"both live production mirror images exist");int changed=0;
                 for(int y=0;y<after.getHeight();y++)for(int x=0;x<after.getWidth();x++)if(after.getPixelRGBA(x,y)!=before.getPixelRGBA(x,y))changed++;
