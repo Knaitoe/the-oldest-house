@@ -90,7 +90,11 @@ Each shows **now** (S success, F failure, R reward, X repercussion) and the prop
   - S: retraced the squeeze.
   - F: the choke blackout (soft).
 - **Win gives:** the cave's breath: a few more seconds of air underwater, for good.
-- **Win takes:** their string line and every torch they set. Ted's crew left theirs.
+- **Win takes:** the cave keeps a hand on their line. The owner: "Taking every torch for Ted is far too much … have their spool winds occasionally unwind: a text blurb and a reduction or complete deduction of the spool's durability."
+  - **The trail spool:** afterwards, now and then while they lay a trail with it in the halls, the winds unwind. A grey line comes: "The line pays out through your fingers, back the way you came."
+  - **The cost:** the spool loses durability, usually a share of what is left, rarely all of it.
+  - **The limit:** three unwindings, then the cave lets go.
+  - **Never taken:** their torches, chalk and other navigation stay untouched.
 
 **The counted lights (Holloway).**
 - **Now:**
@@ -200,9 +204,10 @@ Each shows **now** (S success, F failure, R reward, X repercussion) and the prop
 
 **The cellar shift (basement).**
 - **Now:**
-  - S: closed the cellar; R: the cleaver.
+  - S: closed the cellar.
   - F: taken by the fold.
-- **Proposed:** nothing; complete.
+  - The cleaver is the room's own tool, used inside it; there is no reward.
+- **Win gives:** the worker's broken blade.
 
 **The coffin lid (Usher).** See the recommendation above.
 
@@ -312,6 +317,82 @@ Twelve have nothing yet. Each proposal echoes its own room:
 | **The third count (third-floor bathroom)** | **Artifact:** the stub of the dare's candle. |
 | **Yellow dust (silo)** | **Artifact:** a vial of the dust. |
 | **The disappearing exits (child's room)** | **In the House:** one of the toys from the ceiling sits on the manor stairs, a step higher each day. |
+
+## The artifacts and what each is for
+
+The owner asked for the intention of each artifact. Every artifact, existing or proposed, shares these rules:
+- **Bound to its reader.** It works, or means anything, only for the reader it was left for.
+- **Finite.** At most one per outcome, and never restocked.
+- **Offerable to the Mother** as a vignette artifact. Even a keepsake has weight: it is something to give up.
+- **No Witness credit.** Holding or using one never counts toward the Witness.
+
+Each serves one of three intentions:
+1. **A tool: the room's lesson, made usable.** What the reader learned in order to get through the room keeps working for them afterwards.
+2. **A keepsake: the room's story, to carry and reread.** Pages, records, photographs.
+3. **A price: what winning took, or what failing left.** The arm given at the cabin, the ribbon handed back, the cracked globe.
+
+### Artifacts in the game now
+
+| Room | Artifact | What it does | Intention |
+|---|---|---|---|
+| **The trailer (Goatman)** | the tally counter | Tool. In the House it counts what is really there, shows what hides or pretends, and clicks when something comes up behind its keeper. Outside, it keeps count while they sleep and wakes them when something comes close. | The night was won by counting, not by seeing. The reward is the counting itself, turned against every impostor and ambush to come. |
+| **The counted lights (Holloway)** | the shield | Tool: a real shield with 336 uses. | The hunt's survivor keeps what got them through, for the threats deeper in, such as the Minotaur's charge. |
+| **The painted sun (boarded house)** | the Bone Ring | Tool. In the off hand, it outlines nearby people through walls and shows their intentions. Other players read as Unknown. | The painted family pretended to be people. The ring tells who is really in a room and what they mean to do. |
+| **The empty mattress (split-feed bedroom)** | the Smoky Mirror | Tool and price: two hearts buy twelve seconds of true sight. | The room was about a feed that couldn't be trusted. The mirror is the true one, and, as in the room, looking costs something. |
+| **The coffin lid (Usher)** | a piece of the house | Tool. Held to the ear, it makes the nearest hidden living thing within 32 blocks knock back, once a minute. | Roderick heard everything the house hid. The reader keeps that hearing, for what hides in the House and in their world. |
+| **The visitors at dusk (cabin)** | the whole globe or the cracked globe; the grasshopper jar | Tool and price. The whole globe won't let its keeper die, once a day. The cracked globe catches its keeper once, while its water lasts. | The cabin's trade made into protection. Giving everything (an arm, hearts) buys more of it than refusing does. |
+| **The last finger (monkey's paw)** | the paw; the purse | Tool and price. The paw wishes, a finger at a time, and every wish comes true wrong. The purse is the first wish's compensation. | A gain always comes with its cost in the same hand. |
+| **Return to sender (Whale)** | the originals; the self-addressed envelope | Tool. In the halls the envelope returns its sender to the manor, once a day. Outside, it holds one sealed stack that waits for them if they die away from the House. | Letters that came home bring their writer home: a way back, and one thing kept safe. |
+| **The house in the third lake (lake house)** | the flashlight, the house light or the gold helmet (one per choice) | Tool, working only outside the House. The flashlight's beam never falters, even under water. The light, hung in their world, marks where they come home. The helmet is worn. | Tess's gifts, one for each way the reader answered her. Each is about coming back up out of dark water. |
+| **Mr. Harrigan's phone** | his phone | Tool. Kept, it frees him; buried, it starts the rot (Choices, above). | The line to the dead, and what the reader chose to do with it. |
+| **The tape and the cut (Ghosts set)** | the camcorder; the film | Tool and keepsake. The camcorder records only what its holder really sees. The film plays the reader's own cut in a jukebox. | The reader was the camera operator. They keep the camera and their own cut of the story. |
+| **The recording (Phone in the Canoe)** | the phone | Tool: it records clips. It is recovered from the cave. | The clip is the memory, and the phone is how to make more. |
+| **The readers (Zampanò)** | his leaves | Keepsake: each leaf can be lifted, read and turned over. | The archive is theirs to reread. |
+| **The recorded voices (Crimson Hall)** | three wax cylinders | Keepsake: they play in a jukebox. | The voices go home with them, to be heard again. |
+| **The distant frame (plain)** | the photograph | Keepsake: the frame, with the vulture. | Proof of the frame they held still for. |
+| **The crawl beyond the roof (mapping)** | the photograph | Keepsake. | What the crawl gave back of the brother. |
+| **The broken light (elk fan)** | the tooth; the bulb | Keepsake. The bulb is the repair's. | The repair finished, and the elk's mark carried out. |
+| **The food in the hollow (Holy Rabbit)** | Father's knife; the rabbit's foot | Keepsake. | What Father left at the end of the trail, and what the rabbit gave. |
+| **The listener's signature (confession)** | the blank journal | Keepsake and tool: a journal to write in. | The listener signed for the reader. The reader gets pages for their own words. |
+| **The eight loose pages (Devil's Rock)** | the diary | Keepsake: its eight pages, to reread. | The whole account in one binding. |
+| **The numbered doors (Wheel)** | the key | Keepsake: the key to Mother's room. | The last door opened, kept. |
+| **Borrasca** | the compass; the patch | Keepsake: the same originals used on the trail and at the sorting table. | Carried evidence of the names restored. |
+| **The dare (Winter Lake)** | the ribbon | Price: it goes back to the hand to win. | The dare is won by letting it go. |
+| **The closing account (Stanley)** | the master key | Price: walking out with it leaves the hotel what it holds of the guest's. | Leaving on the reader's own terms, at a cost. |
+| **The Mother** | the returned companion | Their own animal, back. | The thing they nearly lost. |
+
+### Artifacts proposed here
+
+Most proposed keepsakes are mementos on purpose. Their weight is that the Mother will take them, and keeping them plain leaves the rooms with tools special. A few get a small use where the story offers one.
+
+| Room | Artifact | When | What it does and why |
+|---|---|---|---|
+| **The small passage (Ted the Caver)** | the cave's breath (not an item) | win | A few more seconds of air underwater, for good. The cave taught them to hold their breath. |
+| **The small passage (Ted the Caver)** | the spool's unwinding (not an item) | win takes | Three times, while they lay a trail, the spool's winds unwind and it loses some or all of its durability. The cave keeps a hand on their line, then lets go. |
+| **The wet boards (Bly)** | Flora's doll | win | Keepsake of the child they waited with. |
+| **The looping field (Last Stop)** | the cap from the broken post | win | Proof they walked out of the loop. Worn as a cap. |
+| **The passing boots (elk carcasses)** | a hunter's tag | win | Cut from the hide that hid them. |
+| **The thirteenth witch (Costume Night)** | their number card | win | They were an entrant, not the thirteenth. |
+| **The flashes over water (Movie Night)** | a ticket stub for *Teeth of Summer* | win | Admit one: they rowed out and back. |
+| **The dare (Winter Lake)** | Bud's note, signed by all four | win | The boys' word that the dare was done. |
+| **The service road (Camp Blood)** | a counsellor's whistle | win | Blown, it brings the reader's own companions to them, as counsellors call campers in. |
+| **Proofrock** | a page of a student essay | win | The town's story in a student's hand, to read. |
+| **The unhinged door (buzzer)** | the scrawled note | win | The warning that got them out, to reread. |
+| **The cellar shift (basement)** | the worker's broken blade | win | The shift finished. |
+| **The second apron (diner)** | the receipt | win | The meal, paid for. |
+| **The coffin lid (Usher)** | a leaf of the vault register with their name | fail | The house wrote them down among its dead. A keepsake of the failure that the Mother will take. |
+| **The floorboards (Tell-Tale)** | the old man's watch, wrapped in cotton | win | The sound that gave the narrator away, quiet in their pocket. It tells the time as a clock does. |
+| **Hide-and-clap** | the folded blindfold | win | The game's cloth, folded away. |
+| **The last clock (Masque)** | the invitation | win | Readable: the party they left alive. |
+| **The empty chair (séance)** | the sitting record | drove them out | The record of the night the reader ended the sittings. |
+| **The closing account (Stanley)** | the room's key tag | settled or signed | To match the master key: a guest who paid or signed keeps the tag. |
+| **The house they remembered (family copy)** | the family's photograph | left when asked | The house they remembered, as it was. |
+| **The cover (barn well)** | a stone with the initials from the well wall | experience | The wait, kept. |
+| **The call button (hospital)** | a patient's bracelet | experience | The night on the ward. |
+| **The third count (third-floor bathroom)** | the stub of the dare's candle | experience | The dare done. |
+| **Yellow dust (silo)** | a vial of the dust | experience | The roof, opened. |
+
+The eight House-only changes for experiences are not artifacts. Their intention is that the House remembers the room: each echoes it, seen only by that reader, in the manor or the halls.
 
 ## What changes from the earlier drafts
 
