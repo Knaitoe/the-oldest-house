@@ -1,0 +1,140 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "r": "the_oldest_house:block/puzzle/rope_dark",
+    "t": "the_oldest_house:block/puzzle/brass_pan",
+    "i": "the_oldest_house:block/puzzle/cast_iron",
+    "particle": "the_oldest_house:block/puzzle/rope_dark"
+  },
+  "elements": [
+    {
+      "from": [
+        7.5,
+        4,
+        7.5
+      ],
+      "to": [
+        8.5,
+        14.5,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r"
+        },
+        "south": {
+          "texture": "#r"
+        },
+        "east": {
+          "texture": "#r"
+        },
+        "west": {
+          "texture": "#r"
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#r"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        1,
+        6.5
+      ],
+      "to": [
+        9.5,
+        4,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        14.5,
+        0.5
+      ],
+      "to": [
+        8.5,
+        15.5,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        13,
+        0
+      ],
+      "to": [
+        9.5,
+        16,
+        0.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    }
+  ]
+}

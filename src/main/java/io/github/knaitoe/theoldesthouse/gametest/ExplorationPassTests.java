@@ -372,32 +372,291 @@ public final class ExplorationPassTests {
                 h.assertTrue(t.lit()&&at.apply(BorrowedLight.SHUTTER).getValue(BorrowedLightBlock.OPEN)&&l.getBlockState(lower).getValue(DoorBlock.OPEN)&&at.apply(sun).getValue(BorrowedLightBlock.OPEN),"rebuilt, it stands as it was left: shutter open, beam on the sun, door open");
                 h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getInventory().isEmpty(),"nothing hurt the reader and nothing was used up");
                 h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"nothing is counted toward the Witness");
+                exportRoom(l,b,place);
             }).thenSucceed();
     }
-    /** 0.4.199: the puzzle room's rhythm: never early, never in the stone, and offered after a story and some wandering. */
+    /** 0.4.199: the puzzle rooms' one rhythm: never early, early rooms never in the stone, deep rooms after their early room, after a story and some wandering. */
     @GameTest(template="empty")
-    public static void borrowedLightComesAfterAStoryAndSomeWandering(GameTestHelper h){
+    public static void puzzleRoomsComeAfterAStoryAndSomeWandering(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);
         try{
-            var p=NativeTestPlayers.survival(h,"borrowed_light_pacing");f.players.add(p);var id=p.getUUID();var data=f.data();var place=LabyrinthPlace.BORROWED_LIGHT;
-            java.util.function.IntUnaryOperator weight=depth->LabyrinthDealer.grayWeight(data,id,place,depth);
+            var p=NativeTestPlayers.survival(h,"puzzle_pacing");f.players.add(p);var id=p.getUUID();var data=f.data();
+            java.util.function.BiFunction<LabyrinthPlace,Integer,Integer> weight=(place,depth)->LabyrinthDealer.grayWeight(data,id,place,depth);
             Runnable story=()->{var all=data.state(WitnessAccount.STATE);var own=all.getCompound(id.toString());var stories=own.getCompound("Stories");
                 for(var s:WitnessAccount.Story.values())if(!stories.contains(s.id)){stories.putString(s.id,"test");break;}
                 own.put("Stories",stories);all.put(id.toString(),own);data.setState(WitnessAccount.STATE,all);};
-            h.assertTrue(LabyrinthDealer.grayWeight(place,5)==0,"it is never dealt by depth alone");
-            h.assertTrue(weight.applyAsInt(5)==0,"not before the reader has resolved a story");
+            var early=List.of(LabyrinthPlace.BORROWED_LIGHT,LabyrinthPlace.SERVICE_LIFT,LabyrinthPlace.TURNING_LANDING);
+            var deep=List.of(LabyrinthPlace.LAMP_ROOMS,LabyrinthPlace.TWIN_LIFT,LabyrinthPlace.TURNING_STAIR);
+            for(var q:PuzzleRooms.Puzzle.values())h.assertTrue(LabyrinthDealer.grayWeight(q.place,5)==0&&q.place.kind()==LabyrinthPlace.Kind.GRAY&&WitnessAccount.Story.of(q.place.id())==null,"a puzzle room is never dealt by depth alone, and is no story: "+q);
+            h.assertTrue(early.stream().allMatch(q->weight.apply(q,5)==0),"not before the reader has resolved a story");
             story.run();
-            h.assertTrue(weight.applyAsInt(2)==0&&weight.applyAsInt(LabyrinthPacing.STONE_DEPTH)==0,"never in the first crossings, never in the stone");
-            h.assertTrue(weight.applyAsInt(3)>0,"after a story, a few halls in, it is likely");
+            h.assertTrue(early.stream().allMatch(q->weight.apply(q,2)==0&&weight.apply(q,LabyrinthPacing.STONE_DEPTH)==0),"never in the first crossings, early rooms never in the stone");
+            int offered=early.stream().mapToInt(q->weight.apply(q,3)).sum();
+            h.assertTrue(early.stream().allMatch(q->weight.apply(q,3)>0)&&offered<=PuzzleRooms.OFFER,"after a story, a few halls in, an early room is likely, the offer shared among them, never more than one room's worth: "+offered);
+            h.assertTrue(deep.stream().allMatch(q->weight.apply(q,LabyrinthPacing.STRANGE_DEPTH)==0),"no deep room before its family's early room is solved");
             BorrowedLight.arrived(p);
-            h.assertTrue(weight.applyAsInt(6)==0,"once seen, not again until another story");
+            h.assertTrue(early.stream().allMatch(q->weight.apply(q,6)==0),"once a puzzle is seen, none again until another story");
             story.run();
-            h.assertTrue(weight.applyAsInt(2)==0&&weight.applyAsInt(3)>0,"after another story and three more halls past where it was seen, it comes back unsolved");
-            var state=data.state(BorrowedLight.STATE);state.putBoolean("Solved",true);data.setState(BorrowedLight.STATE,state);
+            h.assertTrue(weight.apply(LabyrinthPlace.SERVICE_LIFT,2)==0&&weight.apply(LabyrinthPlace.SERVICE_LIFT,3)>0,"after another story and three more halls past the last puzzle, they come back");
+            PuzzleRooms.markSolved(data,LabyrinthPlace.BORROWED_LIGHT);
+            h.assertTrue(weight.apply(LabyrinthPlace.LAMP_ROOMS,LabyrinthPacing.STRANGE_DEPTH)>0&&weight.apply(LabyrinthPlace.LAMP_ROOMS,LabyrinthPacing.STRANGE_DEPTH-1)==0,"Borrowed Light solved, its deep room comes from the strange depths");
+            h.assertTrue(weight.apply(LabyrinthPlace.TWIN_LIFT,LabyrinthPacing.STRANGE_DEPTH)==0,"each deep room waits on its own family");
             BorrowedLight.arrived(p);
-            h.assertTrue(weight.applyAsInt(5)==0&&weight.applyAsInt(6)==1,"solved, it is only an occasional pleasant room on the way, six halls apart");
+            h.assertTrue(weight.apply(LabyrinthPlace.BORROWED_LIGHT,5)==0&&weight.apply(LabyrinthPlace.BORROWED_LIGHT,6)==PuzzleRooms.REVISIT,"solved, it is only an occasional pleasant room on the way, six halls apart");
             h.succeed();
         }finally{f.close();}
+    }
+    // ------------------------------------------------------------------ 0.4.199: the other five puzzle rooms
+    private static void holdSlot(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
+    /** A reader's own hand on a block, through the block's native use. */
+    private static boolean press(ServerLevel l,net.minecraft.server.level.ServerPlayer p,BlockPos at){return l.getBlockState(at).useWithoutItem(l,p,new BlockHitResult(at.getCenter(),Direction.UP,at,false)).consumesAction();}
+    /** The solved room, for the native architecture views. */
+    private static void exportRoom(ServerLevel l,BlockPos b,LabyrinthPlace place){try{ArchitectureTests.export(l,b,place);}catch(Exception e){throw new RuntimeException(e);}}
+    private static boolean clear(ServerLevel l,BlockPos at){return l.getBlockState(at).getCollisionShape(l,at).isEmpty();}
+    /** Whether a body can stand here: a floor under it (not a rail's top), and room for it. */
+    private static boolean stands(ServerLevel l,BlockPos at){
+        var below=l.getBlockState(at.below()).getCollisionShape(l,at.below());
+        return !below.isEmpty()&&below.max(Direction.Axis.Y)>=.5&&below.max(Direction.Axis.Y)<=1&&clear(l,at)&&clear(l,at.above());
+    }
+    /** Whether a body can walk from one spot to another inside a room, stepping or jumping one block, dropping no more than one, never climbing. */
+    private static boolean walks(ServerLevel l,BlockPos b,LabyrinthPlace place,BlockPos from,BlockPos to){
+        var box=place.room();var seen=new HashSet<BlockPos>(List.of(from));var queue=new ArrayDeque<BlockPos>(List.of(from));
+        while(!queue.isEmpty()){
+            var c=queue.poll();if(c.equals(to))return true;
+            for(var d:Direction.Plane.HORIZONTAL)for(int dy=-1;dy<=1;dy++){
+                var n=c.relative(d).above(dy);
+                if(!box.isInside(n)||seen.contains(n)||!stands(l,b.offset(n)))continue;
+                if(dy>0&&!clear(l,b.offset(c).above(2))||dy<0&&!clear(l,b.offset(n).above(2)))continue;
+                seen.add(n);queue.add(n);
+            }
+        }
+        return false;
+    }
+    private static LiteraryTests.Fixture serviceLift;
+    @AfterBatch(batch="service_lift") public static void serviceLiftDone(ServerLevel l){if(serviceLift!=null){serviceLift.close();serviceLift=null;}}
+    /** 0.4.199, the Service Lift: weights in the pan lift the cage by their bars, two steps clear the passage, a catch holds it. */
+    @GameTest(template="empty",batch="service_lift",timeoutTicks=1200)
+    public static void theServiceLiftsWeightsRaiseTheCageOffThePassage(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);serviceLift=f;var place=LabyrinthPlace.SERVICE_LIFT;var b=f.base(place);var l=f.in;holdSlot(f,place);
+        var p=NativeTestPlayers.survival(h,"service_lift_reader");f.players.add(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room is resident"))
+            .thenExecute(()->{
+                h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
+                ServiceLift.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                p.teleportTo(l,b.getX()+3.5,b.getY(),b.getZ()-8.5,90,0);
+                java.util.function.Function<BlockPos,net.minecraft.world.level.block.state.BlockState> at=rel->l.getBlockState(b.offset(rel));
+                java.util.function.Supplier<BlockPos> panAt=()->new BlockPos(ServiceLift.RECESS_X,ServiceLift.PAN_TOP-ServiceLift.lift(l),ServiceLift.WALL_Z);
+                var shaft=new BlockPos(ServiceLift.SHAFT_X,0,ServiceLift.WALL_Z);var door=PuzzleRooms.farDoor(place);
+                h.assertTrue(PuzzleFittingBlock.is(at.apply(shaft),PuzzleFittingBlock.Kind.CAGE)&&PuzzleFittingBlock.is(at.apply(shaft.above()),PuzzleFittingBlock.Kind.CAGE),"the cage rests in the only opening");
+                h.assertTrue(!walks(l,b,place,new BlockPos(0,0,-1),door.south()),"nothing but the cage stands between the reader and the far door");
+                var each=ServiceLift.bars(l.getSeed());int one=-1,two=-1;for(int i=0;i<3;i++){if(each[i]==1&&one<0)one=i;if(each[i]==2)two=i;}
+                h.assertTrue(one>=0&&two>=0&&Arrays.stream(each).sum()==4,"two light weights and a heavy one: "+Arrays.toString(each));
+                for(int i=0;i<3;i++)h.assertTrue(PuzzleFittingBlock.is(at.apply(ServiceLift.SPOTS[i]),PuzzleFittingBlock.Kind.WEIGHT)&&at.apply(ServiceLift.SPOTS[i]).getValue(PuzzleFittingBlock.STAGE)==each[i],"each weight stands on the counter, stamped with its bars: "+i);
+                h.assertTrue(PuzzleFittingBlock.is(at.apply(panAt.get()),PuzzleFittingBlock.Kind.PAN)&&at.apply(panAt.get()).getValue(PuzzleFittingBlock.STAGE)==0&&PuzzleFittingBlock.is(at.apply(new BlockPos(1,ServiceLift.PULLEY_Y,ServiceLift.WALL_Z)),PuzzleFittingBlock.Kind.PULLEY),"the pan hangs empty under the pulley");
+                var far=f.data().door(place.id()+"/far");h.assertTrue(far!=null&&!PuzzleRooms.holds(p,far)&&at.apply(door).getBlock() instanceof DoorBlock&&!at.apply(door).is(Blocks.IRON_DOOR),"the far door is an ordinary door: only the cage is in the way");
+                // A light weight: the pan sinks one, the cage lifts one, and that is not enough.
+                h.assertTrue(press(l,p,b.offset(ServiceLift.SPOTS[one])),"a hand on a weight");
+                h.assertTrue(at.apply(ServiceLift.SPOTS[one]).isAir()&&ServiceLift.pan(l).equals(List.of(one))&&ServiceLift.cage(l)==1,"set in the pan, it lifts the cage a step");
+                h.assertTrue(at.apply(shaft).isAir()&&PuzzleFittingBlock.is(at.apply(shaft.above()),PuzzleFittingBlock.Kind.CAGE)&&at.apply(panAt.get()).getValue(PuzzleFittingBlock.STAGE)==1&&panAt.get().getY()==ServiceLift.PAN_TOP-1,"the cage climbs a block and the pan, one weight in it, sinks a block");
+                h.assertTrue(!PuzzleRooms.solved(f.data(),place)&&!walks(l,b,place,new BlockPos(0,0,-1),door.south()),"one step does not clear the opening");
+                // Someone under the cage: it will not settle on them.
+                var under=NativeTestPlayers.survival(h,"service_lift_under");f.players.add(under);under.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+ServiceLift.WALL_Z+.5,0,0);
+                h.assertTrue(press(l,p,b.offset(panAt.get()))&&ServiceLift.cage(l)==1&&ServiceLift.pan(l).size()==1,"the cage never comes down onto someone under it");
+                under.teleportTo(l,b.getX()-2.5,b.getY(),b.getZ()-6.5,0,0);
+                h.assertTrue(press(l,p,b.offset(panAt.get()))&&ServiceLift.cage(l)==0&&ServiceLift.pan(l).isEmpty()&&PuzzleFittingBlock.is(at.apply(ServiceLift.SPOTS[one]),PuzzleFittingBlock.Kind.WEIGHT),"a hand on the pan lifts the weight back out to its own place, and the cage settles");
+                // The heavy one: two steps, the way clear, and a catch holds the cage.
+                h.assertTrue(press(l,p,b.offset(ServiceLift.SPOTS[two]))&&ServiceLift.cage(l)==2&&PuzzleRooms.solved(f.data(),place),"the heavy weight lifts it two, and the catch holds it");
+                h.assertTrue(clear(l,b.offset(shaft))&&clear(l,b.offset(shaft.above()))&&walks(l,b,place,new BlockPos(0,0,-1),door.south()),"a body walks under the cage, down the cold passage, to the far door");
+                h.assertTrue(press(l,p,b.offset(panAt.get()))&&ServiceLift.pan(l).isEmpty()&&ServiceLift.cage(l)==2&&clear(l,b.offset(shaft)),"emptied again, the pan rises but the catch keeps the cage up");
+                for(int i=0;i<3;i++)press(l,p,b.offset(ServiceLift.SPOTS[i]));
+                h.assertTrue(ServiceLift.pan(l).size()==3&&ServiceLift.cage(l)==ServiceLift.TOP&&at.apply(panAt.get()).getValue(PuzzleFittingBlock.STAGE)==3,"all three in, the pan shows them and the cage is at the top of its shaft");
+                for(int i=0;i<3;i++)h.assertTrue(at.apply(ServiceLift.SPOTS[i]).isAir(),"the counter is bare: "+i);
+                // Solved stays solved: through a reload and a rebuild, everything as it was left.
+                f.reload();ServiceLift.build(l,b);
+                h.assertTrue(PuzzleRooms.solved(f.data(),place)&&ServiceLift.pan(l).size()==3&&ServiceLift.cage(l)==ServiceLift.TOP&&at.apply(ServiceLift.SPOTS[0]).isAir()&&clear(l,b.offset(shaft)),"rebuilt, the weights are still in the pan and the cage still up");
+                h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getInventory().isEmpty()&&WitnessAccount.count(f.data(),p.getUUID())==0,"nothing hurt, nothing carried, nothing counted");
+                exportRoom(l,b,place);
+            }).thenSucceed();
+    }
+    private static LiteraryTests.Fixture turningLanding;
+    @AfterBatch(batch="turning_landing") public static void turningLandingDone(ServerLevel l){if(turningLanding!=null){turningLanding.close();turningLanding=null;}}
+    /** 0.4.199, the Turning Landing: a quarter turn of the handle brings the landing into line, carrying whoever is on it. */
+    @GameTest(template="empty",batch="turning_landing",timeoutTicks=1200)
+    public static void theTurningLandingComesRoundToTheFarDoor(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);turningLanding=f;var place=LabyrinthPlace.TURNING_LANDING;var b=f.base(place);var l=f.in;holdSlot(f,place);
+        var p=NativeTestPlayers.survival(h,"turning_landing_reader");f.players.add(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room is resident"))
+            .thenExecute(()->{
+                h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
+                TurningLandings.buildEarly(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                var land=TurningLandings.EARLY;int start=TurningLandings.rot(l,place,land);var handle=b.offset(TurningLandings.EARLY_HANDLE);var front=PuzzleRooms.farDoor(place).south();var entry=new BlockPos(0,0,-1);
+                h.assertTrue((start==0||start==2)&&!TurningLandings.through(l,place)&&!walks(l,b,place,entry,front),"it starts open to the stair or to the bridge, never both, and the far door cannot be walked to");
+                h.assertTrue(PuzzleFittingBlock.is(l.getBlockState(handle),PuzzleFittingBlock.Kind.HANDLE)&&l.getBlockState(b.offset(0,3,-7)).getValue(PuzzleFittingBlock.KIND)==PuzzleFittingBlock.Kind.SCRAPED,"the handle stands by the stair top, and the boards there are scraped where the landing swings past");
+                h.assertTrue(walks(l,b,place,entry,new BlockPos(1,4,-7)),"the stair top and the handle can be walked to");
+                // Every side but its gaps is railed; its gaps' boards are worn.
+                java.util.function.IntConsumer rails=gaps->{for(int i=0;i<4;i++){var side=Direction.from2DDataValue((i+2)%4);int bit=switch(side){case NORTH->TurningLandings.N;case EAST->TurningLandings.E;case SOUTH->TurningLandings.S;default->TurningLandings.W;};
+                    for(int k=-1;k<=1;k++){var edge=new BlockPos(land.cx()+2*side.getStepX()+(side.getStepX()==0?k:0),land.y(),land.cz()+2*side.getStepZ()+(side.getStepZ()==0?k:0));boolean gap=(gaps&bit)!=0;
+                        h.assertTrue(l.getBlockState(b.offset(edge.above())).is(Blocks.DARK_OAK_FENCE)!=gap,"railed only where there is no gap: "+side+" "+k);
+                        if(k==0)h.assertTrue(PuzzleFittingBlock.is(l.getBlockState(b.offset(edge)),PuzzleFittingBlock.Kind.WORN)==gap,"worn boards where feet cross: "+side);}}
+                    for(int dx:new int[]{-2,2})for(int dz:new int[]{-2,2})h.assertTrue(l.getBlockState(b.offset(land.cx()+dx,land.y()+1,land.cz()+dz)).is(Blocks.DARK_OAK_FENCE),"the corners are always railed");};
+                rails.accept(TurningLandings.gaps(l,place,land));
+                // A reader on its open east edge, a second by the post: the handle turns the landing and both come round with it.
+                var rider=NativeTestPlayers.survival(h,"turning_landing_rider");f.players.add(rider);
+                double cx=b.getX()+land.cx()+.5,cz=b.getZ()+land.cz()+.5,top=b.getY()+land.y()+1;
+                rider.teleportTo(l,cx+1.9,top,cz,0,0);p.teleportTo(l,cx+1,top,cz,0,0);
+                h.assertTrue(press(l,p,handle),"a hand on the handle");
+                h.assertTrue(TurningLandings.rot(l,place,land)==start+1&&TurningLandings.through(l,place)&&PuzzleRooms.solved(f.data(),place),"a quarter turn brings it into line with both the stair and the bridge");
+                h.assertTrue(Math.abs(p.getX()-cx)<.01&&Math.abs(p.getZ()-(cz+1))<.01&&Math.abs(p.getYRot()-90)<.01,"the reader by the post is carried round a quarter, facing round with it: "+p.position());
+                h.assertTrue(Math.abs(rider.getX()-cx)<.01&&Math.abs(rider.getZ()-(cz+1.4))<.01,"the one on the edge is set a step in from the rail it was carried into: "+rider.position());
+                rails.accept(TurningLandings.gaps(l,place,land));
+                h.assertTrue(l.getBlockState(handle).getValue(PuzzleFittingBlock.STAGE)==start+1,"the handle's grip points round with it");
+                h.assertTrue(walks(l,b,place,entry,front),"up the stair, across the landing and the bridge, to the far door");
+                // Every arrangement can be turned back: two of the four line up.
+                p.teleportTo(l,b.getX()+1.5,b.getY()+4,b.getZ()-6.5,0,0);rider.teleportTo(l,b.getX()-.5,b.getY()+4,b.getZ()-6.5,0,0);
+                for(int turn=2;turn<=5;turn++){press(l,p,handle);int r=Math.floorMod(start+turn,4);
+                    h.assertTrue(TurningLandings.rot(l,place,land)==r&&TurningLandings.through(l,place)==(r%2==1)&&walks(l,b,place,entry,front)==(r%2==1),"turned again, it lines up every other quarter: "+r);
+                    rails.accept(TurningLandings.gaps(l,place,land));}
+                // Solved stays solved: through a reload and a rebuild, as it was left.
+                f.reload();TurningLandings.buildEarly(l,b);
+                h.assertTrue(PuzzleRooms.solved(f.data(),place)&&TurningLandings.rot(l,place,land)==Math.floorMod(start+1,4)&&walks(l,b,place,entry,front),"rebuilt, the landing stands as it was turned");
+                h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getInventory().isEmpty()&&WitnessAccount.count(f.data(),p.getUUID())==0,"nothing hurt, nothing carried, nothing counted");
+                exportRoom(l,b,place);
+            }).thenSucceed();
+    }
+    private static LiteraryTests.Fixture lampRooms;
+    @AfterBatch(batch="lamp_rooms") public static void lampRoomsDone(ServerLevel l){if(lampRooms!=null){lampRooms.close();lampRooms=null;}}
+    /** 0.4.199, Borrowed Light's deep room: the beam goes from room to room through windows, and each mirror is reached the long way round. */
+    @GameTest(template="empty",batch="lamp_rooms",timeoutTicks=1200)
+    public static void theLampRoomsCarryTheBeamThroughWindowsToARoomReachedTheLongWay(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);lampRooms=f;var place=LabyrinthPlace.LAMP_ROOMS;var b=f.base(place);var l=f.in;holdSlot(f,place);
+        var p=NativeTestPlayers.survival(h,"lamp_rooms_reader");f.players.add(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the rooms are resident"))
+            .thenExecute(()->{
+                h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
+                LampRooms.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);p.teleportTo(l,b.getX()-6.5,b.getY(),b.getZ()-4.5,0,0);
+                java.util.function.Function<BlockPos,net.minecraft.world.level.block.state.BlockState> at=rel->l.getBlockState(b.offset(rel));
+                var lower=b.offset(PuzzleRooms.farDoor(place));var far=f.data().door(place.id()+"/far");var hall=new BlockPos(0,0,-1);
+                h.assertTrue(!at.apply(LampRooms.SHUTTER).getValue(BorrowedLightBlock.OPEN)&&LampRooms.beam(l,b).path().isEmpty(),"the lamp is lit behind its shutter");
+                for(int i=0;i<3;i++)h.assertTrue(BorrowedLightBlock.is(at.apply(LampRooms.MIRRORS[i]),BorrowedLightBlock.Kind.MIRROR)&&LampRooms.eighth(at.apply(LampRooms.MIRRORS[i]))!=LampRooms.AIM[i],"each mirror stands turned away from where it is needed: "+i);
+                h.assertTrue(l.getBlockState(lower).is(Blocks.IRON_DOOR)&&!l.getBlockState(lower).getValue(DoorBlock.OPEN)&&far!=null&&PuzzleRooms.holds(p,far)&&!PuzzleRooms.holds(p,f.data().door(place.entryDoorId())),"the far door has no handle, and the way back never holds");
+                // The windows show the way the light must go; they are glass to a body.
+                for(var w:new BlockPos[]{LampRooms.NORTH_WINDOW,LampRooms.EAST_WINDOW})for(int y=1;y<=2;y++){var c=w.atY(y);h.assertTrue(BorrowedLightBlock.is(at.apply(c),BorrowedLightBlock.Kind.WINDOW)&&!clear(l,b.offset(c)),"a leaded window, solid to a body: "+c);}
+                // The rooms: every mirror can be walked to, the second only the long way, through the east room and the far room.
+                h.assertTrue(walks(l,b,place,hall,LampRooms.MIRRORS[0].west())&&walks(l,b,place,hall,LampRooms.MIRRORS[2].south())&&walks(l,b,place,hall,LampRooms.MIRRORS[1].south()),"each mirror can be walked to");
+                l.setBlock(b.offset(0,0,-26),Blocks.STONE.defaultBlockState(),2);h.assertTrue(!walks(l,b,place,hall,LampRooms.MIRRORS[1].south()),"the second mirror's room has no way in but the far room's door");l.setBlock(b.offset(0,0,-26),Blocks.AIR.defaultBlockState(),2);
+                l.setBlock(b.offset(6,0,-13),Blocks.STONE.defaultBlockState(),2);h.assertTrue(!walks(l,b,place,hall,LampRooms.MIRRORS[2].south()),"and the far room none but the east room's");l.setBlock(b.offset(6,0,-13),Blocks.AIR.defaultBlockState(),2);
+                // Bolted down: the base answers, and does not move.
+                var first=b.offset(LampRooms.MIRRORS[0]);var was=l.getBlockState(first);
+                h.assertTrue(BorrowedLight.use(p,first,was,.2)&&l.getBlockState(first)==was,"these mirrors are bolted to the floor");
+                h.assertTrue(press(l,p,b.offset(LampRooms.SHUTTER))&&at.apply(LampRooms.SHUTTER).getValue(BorrowedLightBlock.OPEN),"the catch lifts and the shutter latches open");
+                h.assertTrue(LampRooms.beam(l,b).path().contains(b.offset(LampRooms.MIRRORS[0].above())),"the beam crosses to the first mirror");
+                java.util.function.IntConsumer aim=i->{var m=b.offset(LampRooms.MIRRORS[i]);for(int k=0;k<8&&LampRooms.eighth(l.getBlockState(m))!=LampRooms.AIM[i];k++)h.assertTrue(BorrowedLight.use(p,m,l.getBlockState(m),.9),"the glass turns an eighth: "+i);
+                    h.assertTrue(LampRooms.eighth(l.getBlockState(m))==LampRooms.AIM[i],"turned to its aim: "+i);};
+                aim.accept(0);var t=LampRooms.beam(l,b);
+                h.assertTrue(t.path().contains(b.offset(LampRooms.MIRRORS[1].above()))&&l.getBlockState(b.offset(-4,1,-16)).is(Blocks.LIGHT)&&!t.lit(),"turned, the first mirror sends the beam through the north window, across the next room, to the second mirror: "+t.path());
+                aim.accept(1);t=LampRooms.beam(l,b);
+                h.assertTrue(t.path().contains(b.offset(LampRooms.MIRRORS[2].above()))&&l.getBlockState(b.offset(3,1,-20)).is(Blocks.LIGHT)&&!t.lit()&&!PuzzleRooms.solved(f.data(),place),"the second sends it through the east window to the third, and the sun is still cold: "+t.path());
+                aim.accept(2);t=LampRooms.beam(l,b);
+                h.assertTrue(t.lit()&&t.path().get(t.path().size()-1).equals(b.offset(LampRooms.SUN))&&at.apply(LampRooms.SUN).getValue(BorrowedLightBlock.OPEN),"the third lays it on the sun: "+t.path());
+                h.assertTrue(PuzzleRooms.solved(f.data(),place)&&l.getBlockState(lower).getValue(DoorBlock.OPEN)&&!PuzzleRooms.holds(p,far),"the door gives");
+                f.reload();LampRooms.build(l,b);t=LampRooms.trace(l,b);
+                h.assertTrue(t.lit()&&at.apply(LampRooms.SHUTTER).getValue(BorrowedLightBlock.OPEN)&&l.getBlockState(lower).getValue(DoorBlock.OPEN),"rebuilt, the beam lies on the sun as it was left");
+                h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getInventory().isEmpty()&&WitnessAccount.count(f.data(),p.getUUID())==0,"nothing hurt, nothing carried, nothing counted");
+                exportRoom(l,b,place);
+            }).thenSucceed();
+    }
+    private static LiteraryTests.Fixture twinLift;
+    @AfterBatch(batch="twin_lift") public static void twinLiftDone(ServerLevel l){if(twinLift!=null){twinLift.close();twinLift=null;}}
+    /** 0.4.199, the Service Lift's deep room: two lifts on one counterweight, ridden in turn to the gallery seen from the door. */
+    @GameTest(template="empty",batch="twin_lift",timeoutTicks=1200)
+    public static void theTwinLiftsAreRiddenInTurnToTheGallery(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);twinLift=f;var place=LabyrinthPlace.TWIN_LIFT;var b=f.base(place);var l=f.in;holdSlot(f,place);
+        var p=NativeTestPlayers.survival(h,"twin_lift_reader");f.players.add(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall is resident"))
+            .thenExecute(()->{
+                h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
+                TwinLift.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-1.5,180,0);
+                int ax=TwinLift.AX,bx=TwinLift.BX,sz=TwinLift.SZ;var hall=new BlockPos(0,0,-1);var front=PuzzleRooms.farDoor(place).south();
+                Runnable settle=()->{for(int i=0;i<40&&TwinLift.moving(l);i++)TwinLift.step(l,b);};
+                int a=TwinLift.level(l);
+                h.assertTrue((a==1||a==2)&&TwinLift.heightA(l)==TwinLift.height(a)&&TwinLift.heightB(l)==TwinLift.height(2-a)&&!TwinLift.moving(l),"the lifts hang two floors apart in all, the west one off the ground");
+                h.assertTrue(PuzzleFittingBlock.is(l.getBlockState(b.offset(ax+1,TwinLift.heightA(l),sz+1)),PuzzleFittingBlock.Kind.PLATFORM)&&l.getBlockState(b.offset(ax+1,-1,sz+1)).is(Blocks.WATER),"the west lift's boards stand at its floor, water at the bottom of its shaft");
+                h.assertTrue(!walks(l,b,place,hall,front)&&l.getBlockState(b.offset(PuzzleRooms.farDoor(place))).getBlock() instanceof DoorBlock,"the far door is in sight from the start, high on the gallery, and out of reach");
+                // Call the west lift down to the ground floor, a floor at a time.
+                var callDown=b.offset(TwinLift.CALLS[0]);
+                while(TwinLift.level(l)>0){h.assertTrue(press(l,p,callDown),"the ground floor's cord");settle.run();}
+                h.assertTrue(TwinLift.level(l)==0&&TwinLift.heightA(l)==-1&&TwinLift.heightB(l)==TwinLift.height(2),"called down, the west lift is at the ground and the east lift at the top");
+                var onA=new BlockPos(ax+1,0,sz+1);h.assertTrue(walks(l,b,place,hall,onA),"the reader walks onto the west lift");
+                p.teleportTo(l,b.getX()+onA.getX()+.5,b.getY(),b.getZ()+onA.getZ()+.5,0,0);
+                // Ride it up: the east lift comes down to meet the walkway.
+                h.assertTrue(press(l,p,b.offset(ax,0,sz)),"the pale cord");h.assertTrue(TwinLift.moving(l)&&press(l,p,b.offset(ax,0,sz+1))&&TwinLift.level(l)==1,"while they move, the lifts will not be sent again");settle.run();
+                h.assertTrue(Math.abs(p.getY()-(b.getY()+5))<.01&&TwinLift.level(l)==1&&TwinLift.heightB(l)==TwinLift.height(1),"the west lift carries the reader to the walkway, and the east lift has come down to it: "+p.position());
+                var onB=new BlockPos(bx+1,5,sz+1);h.assertTrue(walks(l,b,place,new BlockPos(ax+1,5,sz+1),onB),"across the walkway onto the east lift");
+                h.assertTrue(!walks(l,b,place,onB,front),"but not yet up to the gallery");
+                p.teleportTo(l,b.getX()+onB.getX()+.5,b.getY()+5,b.getZ()+onB.getZ()+.5,0,0);
+                h.assertTrue(press(l,p,b.offset(bx+2,5,sz+2)),"the east lift's pale cord");settle.run();
+                h.assertTrue(Math.abs(p.getY()-(b.getY()+10))<.01&&TwinLift.level(l)==0,"the east lift carries the reader up, and the west lift goes back to the ground: "+p.position());
+                h.assertTrue(walks(l,b,place,new BlockPos(bx+1,10,sz+1),front),"off the east lift onto the gallery, to the far door");
+                h.assertTrue(!PuzzleRooms.solved(f.data(),place),"not solved until someone stands on the gallery");
+                p.teleportTo(l,b.getX()+.5,b.getY()+10,b.getZ()-13.5,0,0);TwinLift.gallery(l,b);
+                h.assertTrue(PuzzleRooms.solved(f.data(),place),"standing on the gallery solves it");
+                for(int y=0;y<=4;y++)h.assertTrue(l.getBlockState(b.offset(0,y,sz+3)).is(Blocks.LADDER),"a ladder down from the walkway: "+y);
+                for(int y=5;y<=9;y++)h.assertTrue(l.getBlockState(b.offset(0,y,-12)).is(Blocks.LADDER),"a ladder down from the gallery: "+y);
+                h.assertTrue(clear(l,b.offset(0,5,sz+3))&&clear(l,b.offset(0,10,-12))&&!l.getBlockState(b.offset(1,5,sz+3)).getValue(FenceBlock.WEST),"the rails open where the ladders come up, and the rails beside them are rejoined");
+                // Nobody stranded: someone at the bottom of the east shaft is safe under a lift stopping above, and climbs out.
+                var down=NativeTestPlayers.survival(h,"twin_lift_bottom");f.players.add(down);down.teleportTo(l,b.getX()+bx+1.5,b.getY()-1,b.getZ()+sz+1.5,0,0);
+                var niche=b.offset(TwinLift.NICHE);
+                h.assertTrue(PuzzleFittingBlock.is(l.getBlockState(niche),PuzzleFittingBlock.Kind.CALL)&&press(l,down,niche),"the east shaft's own cord, in its niche at the bottom");settle.run();
+                h.assertTrue(TwinLift.level(l)==1&&TwinLift.heightB(l)==TwinLift.height(1),"the east lift comes down as far as the walkway, above the one below it");
+                h.assertTrue(press(l,down,niche)&&TwinLift.level(l)==1&&!TwinLift.moving(l),"and will not come further down onto them");
+                for(int y=0;y<=TwinLift.LADDER_TOP;y++)h.assertTrue(l.getBlockState(b.offset(TwinLift.SLOT.atY(y))).is(Blocks.LADDER),"a ladder in the slot in the shaft's back wall: "+y);
+                h.assertTrue(clear(l,b.offset(TwinLift.SLOT.atY(TwinLift.LADDER_TOP+1)))&&stands(l,b.offset(TwinLift.SLOT.getX(),TwinLift.LADDER_TOP,sz)),"from its top they step onto the lift at the walkway");
+                // Solved stays solved: through a reload and a rebuild.
+                f.reload();TwinLift.build(l,b);
+                h.assertTrue(PuzzleRooms.solved(f.data(),place)&&TwinLift.level(l)==1&&l.getBlockState(b.offset(0,2,sz+3)).is(Blocks.LADDER)&&l.getBlockState(b.offset(0,7,-12)).is(Blocks.LADDER),"rebuilt, the lifts stand as they were left and the ladders stay down");
+                h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getInventory().isEmpty()&&WitnessAccount.count(f.data(),p.getUUID())==0,"nothing hurt, nothing carried, nothing counted");
+                exportRoom(l,b,place);
+            }).thenSucceed();
+    }
+    private static LiteraryTests.Fixture turningStair;
+    @AfterBatch(batch="turning_stair") public static void turningStairDone(ServerLevel l){if(turningStair!=null){turningStair.close();turningStair=null;}}
+    /** 0.4.199, the Turning Landing's deep room: two geared landings; the way through needs the second handle, in a nook only one arrangement opens. */
+    @GameTest(template="empty",batch="turning_stair",timeoutTicks=1200)
+    public static void theTurningStairNeedsBothHandles(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);turningStair=f;var place=LabyrinthPlace.TURNING_STAIR;var b=f.base(place);var l=f.in;holdSlot(f,place);
+        var p=NativeTestPlayers.survival(h,"turning_stair_reader");f.players.add(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the stairwell is resident"))
+            .thenExecute(()->{
+                h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
+                TurningLandings.buildDeep(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);p.teleportTo(l,b.getX()-3.5,b.getY()+4,b.getZ()-5.5,0,0);
+                var lowerL=TurningLandings.LOWER;var upperL=TurningLandings.UPPER;var entry=new BlockPos(-4,0,-1);var front=PuzzleRooms.farDoor(place).south();
+                var geared=b.offset(TurningLandings.GEARED_HANDLE);var upper=b.offset(TurningLandings.UPPER_HANDLE);var nook=new BlockPos(-8,4,-9);
+                java.util.function.IntSupplier lo=()->TurningLandings.rot(l,place,lowerL),up=()->TurningLandings.rot(l,place,upperL);
+                int lo0=lo.getAsInt(),up0=up.getAsInt();
+                h.assertTrue(Math.floorMod(lo0+up0,4)!=1&&!TurningLandings.through(l,place)&&!walks(l,b,place,entry,front),"it starts out of line, and so that the handle by the stair will never line it up alone");
+                h.assertTrue(walks(l,b,place,entry,TurningLandings.GEARED_HANDLE.west()),"the stair top and its handle can be walked to");
+                // The geared handle: the lower landing one way, the upper the other. Round and round, never both in line.
+                for(int i=1;i<=4;i++){h.assertTrue(press(l,p,geared),"the handle by the stair");
+                    h.assertTrue(lo.getAsInt()==Math.floorMod(lo0+i,4)&&up.getAsInt()==Math.floorMod(up0-i,4)&&!TurningLandings.through(l,place)&&!walks(l,b,place,entry,front),"the lower landing turns and the upper turns the other way, and they never line up: "+i);}
+                // The way: turn the lower landing open to the west, set the upper one from the nook there, then turn both into line.
+                while(lo.getAsInt()!=2)press(l,p,geared);
+                h.assertTrue(TurningLandings.gaps(l,place,lowerL)==(TurningLandings.S|TurningLandings.W)&&walks(l,b,place,entry,nook),"turned open south and west, the lower landing leads to the nook with the second handle");
+                while(up.getAsInt()!=3)press(l,p,upper);
+                h.assertTrue(lo.getAsInt()==2&&!PuzzleRooms.solved(f.data(),place),"the nook's handle turns the upper landing alone");
+                for(int i=0;i<3;i++)press(l,p,geared);
+                h.assertTrue(TurningLandings.through(l,place)&&TurningLandings.gaps(l,place,lowerL)==(TurningLandings.E|TurningLandings.S)&&TurningLandings.gaps(l,place,upperL)==(TurningLandings.N|TurningLandings.E),"three turns of the stair's handle bring both into line");
+                h.assertTrue(PuzzleRooms.solved(f.data(),place)&&walks(l,b,place,entry,front),"up through both landings to the far door");
+                // Every arrangement, set with both handles: the far door can be walked to in exactly one.
+                int lines=0;
+                for(int i=0;i<4;i++){for(int j=0;j<4;j++){boolean through=TurningLandings.through(l,place);
+                        h.assertTrue(walks(l,b,place,entry,front)==through,"the far door is reached only when both landings are in line: "+lo.getAsInt()+","+up.getAsInt());if(through)lines++;press(l,p,upper);}
+                    press(l,p,geared);}
+                h.assertTrue(lines==1,"one arrangement of the sixteen goes through");
+                f.reload();TurningLandings.buildDeep(l,b);
+                h.assertTrue(PuzzleRooms.solved(f.data(),place)&&TurningLandings.through(l,place)&&walks(l,b,place,entry,front),"rebuilt, both landings stand as they were turned");
+                h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getInventory().isEmpty()&&WitnessAccount.count(f.data(),p.getUUID())==0,"nothing hurt, nothing carried, nothing counted");
+                exportRoom(l,b,place);
+            }).thenSucceed();
     }
     @GameTest(template="empty")
     public static void theVaultedHallAndTheCrumbledHallAreHallwaysToCrossNotRooms(GameTestHelper h)throws Exception {

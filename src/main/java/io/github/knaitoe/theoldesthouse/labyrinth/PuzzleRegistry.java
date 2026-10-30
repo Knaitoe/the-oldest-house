@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.*;
 
-/** 0.4.199: the puzzle rooms' working parts. Borrowed Light first; drawn by tools/draw_borrowed_light.py. */
+/** 0.4.199: the puzzle rooms' working parts: Borrowed Light's (tools/draw_borrowed_light.py), and the lifts' and landings' (tools/draw_puzzle_fittings.py). */
 public final class PuzzleRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
@@ -24,6 +24,9 @@ public final class PuzzleRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrowedLightBlock>> BORROWED_LIGHT_TYPE=CODECS.register("borrowed_light",()->BorrowedLightBlock.CODEC);
     public static final DeferredBlock<BorrowedLightBlock> BORROWED_LIGHT=BLOCKS.registerBlock("borrowed_light",BorrowedLightBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().lightLevel(BorrowedLightBlock::light));
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<BorrowedLightBlock.Beam>> BEAM=BES.register("borrowed_light_beam",()->BlockEntityType.Builder.of(BorrowedLightBlock.Beam::new,BORROWED_LIGHT.get()).build(null));
+    /** 0.4.199: the lifts' and landings' working parts (PuzzleFittingBlock), drawn by tools/draw_puzzle_fittings.py. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PuzzleFittingBlock>> FITTING_TYPE=CODECS.register("puzzle_fitting",()->PuzzleFittingBlock.CODEC);
+    public static final DeferredBlock<PuzzleFittingBlock> FITTING=BLOCKS.registerBlock("puzzle_fitting",PuzzleFittingBlock::new,fixed(Blocks.DARK_OAK_PLANKS).noOcclusion());
     private PuzzleRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);}
 }

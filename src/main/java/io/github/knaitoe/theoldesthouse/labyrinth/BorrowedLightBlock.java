@@ -27,14 +27,14 @@ import net.minecraft.world.phys.shapes.*;
 /**
  * 0.4.199, the first puzzle room: Borrowed Light. One block for each of its working parts, each drawn facing north and turned
  * by {@link #FACING}: the lamp, its shutter with the brass catch, the dressing mirror on its scraped track, the plate over the
- * far door, the track's boards and the room's two dim sconces. {@link #TURNED}: the mirror's glass a further eighth of a turn
+ * far door, the track's boards, the room's dim sconces, and the lamp rooms' interior windows, which only the light passes. {@link #TURNED}: the mirror's glass a further eighth of a turn
  * clockwise. {@link #OPEN}: the shutter latched open, the plate lit, a track board with the deep scrape of a stop.
  * Drawn by tools/draw_borrowed_light.py.
  */
 public final class BorrowedLightBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final MapCodec<BorrowedLightBlock> CODEC=simpleCodec(BorrowedLightBlock::new);
     public enum Kind implements StringRepresentable {
-        LAMP,SHUTTER,MIRROR,PLATE,TRACK,SCONCE;
+        LAMP,SHUTTER,MIRROR,PLATE,TRACK,SCONCE,WINDOW;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -61,7 +61,7 @@ public final class BorrowedLightBlock extends HorizontalDirectionalBlock impleme
             case SHUTTER->s.getValue(OPEN)?Shapes.or(box(f,0,0,6,2,16,10),box(f,14,0,6,16,16,10)):box(f,0,0,6,16,16,10);
             case MIRROR->Block.box(2,0,2,14,24,14);
             case PLATE->box(f,3,3,14,13,13,16);
-            case TRACK->Shapes.block();
+            case TRACK,WINDOW->Shapes.block();
             case SCONCE->box(f,5,4,12,11,12,16);
         };
     }

@@ -353,6 +353,29 @@ public enum LabyrinthPlace {
     BORROWED_LIGHT("borrowed_light", Kind.GRAY, 120, new BoundingBox(-7,-1,-22,7,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(0,0,-22),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.199, the rest of the puzzle rooms (PuzzleRooms), each after Borrowed Light so no earlier address moves. The Service
+     * Lift: a pantry whose dumbwaiter cage, raised by kitchen weights set in its counterweight pan, uncovers the way on.
+     */
+    SERVICE_LIFT("service_lift", Kind.GRAY, 121, new BoundingBox(-6,-1,-21,6,8,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-21),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The Turning Landing: a square landing in a stairwell, turned a quarter at a time by a heavy handle, between the stairs and a door above. */
+    TURNING_LANDING("turning_landing", Kind.GRAY, 122, new BoundingBox(-5,-4,-18,5,12,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,4,-18),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The lamp rooms, Borrowed Light's deep room: one beam through three rooms, seen through interior windows, reached the long way round. */
+    LAMP_ROOMS("lamp_rooms", Kind.GRAY, 123, new BoundingBox(-12,-1,-29,12,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(8,0,-29),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The twin lifts, the Service Lift's deep room: two goods lifts on one counterweight, three floors, the door seen from the start. */
+    TWIN_LIFT("twin_lift", Kind.GRAY, 124, new BoundingBox(-10,-3,-15,10,14,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,10,-15),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The turning stair, the Turning Landing's deep room: two landings in a tall stairwell, geared together. */
+    TURNING_STAIR("turning_stair", Kind.GRAY, 125, new BoundingBox(-10,-4,-22,10,15,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(3,10,-22),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

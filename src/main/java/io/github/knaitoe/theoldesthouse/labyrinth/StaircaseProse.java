@@ -218,7 +218,7 @@ public final class StaircaseProse {
             {"explorer_camp","the explorers' camp"},{"mother_of_strays","the Mother's den"},{"folded_maze","the folded maze"},
             {"deep_maze","the deep maze"},{"abyss_maze","the lowest maze"},{"straight_hall","a straight hall"},{"bent_hall","a bent hall"},
             {"alcove_hall","a hall with alcoves"},{"offset_hall","a hall that steps aside"},{"service_landing","a service landing"},
-            {"jogged_hall","a hall with a jog in it"},{"forked_hall","a hall that forks"},{"pillar_hall","a hall of pillars"},{"zigzag_hall","a hall that zigzags"},{"vaulted_hall","a hall with a ceiling far too high"},{"crumbled_hall","a hall whose floor had fallen in"},{"borrowed_light","a dressing room with a lamp and a mirror"},
+            {"jogged_hall","a hall with a jog in it"},{"forked_hall","a hall that forks"},{"pillar_hall","a hall of pillars"},{"zigzag_hall","a hall that zigzags"},{"vaulted_hall","a hall with a ceiling far too high"},{"crumbled_hall","a hall whose floor had fallen in"},{"borrowed_light","a dressing room with a lamp and a mirror"},{"service_lift","a pantry with a dumbwaiter"},{"turning_landing","a stairwell with a landing that turned"},{"lamp_rooms","four dim rooms and one beam of light"},{"twin_lift","a lift hall with two lifts on one weight"},{"turning_stair","a tall stairwell of turning landings"},
             {"cross_hall","a crossing hall"},{"quiet_room","the quiet room"},{"drowned_town","the drowned town"},
             {"preserved_cave","the cave under the lake"},{"shallows","the shallows"},{"phone_canoe","the canoe"},
             {"goatman","the door in the woods"},{"ted_caver","the narrow cave"},{"zampano_courtyard","the blind man's courtyard"},

@@ -108,7 +108,40 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - No countdown, no damage, nothing used up. Every action answers at once. The room keeps how it was left, and once solved it stays solved, the beam still on the sun.
   - Solved, it comes back only now and then, as a pleasant room on the way.
   - Not a story: nothing counted toward the Witness.
-  - Canon: [BORROWED_LIGHT_0_4_199.md](BORROWED_LIGHT_0_4_199.md). New cases: `ExplorationPassTests.borrowedLightIsSolvedByLayingTheLampsBeamOnTheSun` and `borrowedLightComesAfterAStoryAndSomeWandering`; a fifth client art view.
+  - Canon: [BORROWED_LIGHT_0_4_199.md](BORROWED_LIGHT_0_4_199.md). New cases: `ExplorationPassTests.borrowedLightIsSolvedByLayingTheLampsBeamOnTheSun` and (since the rest were added) the shared `puzzleRoomsComeAfterAStoryAndSomeWandering`; a fifth client art view.
+
+## The rest of the puzzle rooms
+- **"Go ahead and add the rest. I trust ya and I'll test when I'm able to."** Five more rooms, so each of the three families has its early room and its deep room. Canon: [PUZZLE_ROOMS_0_4_199.md](PUZZLE_ROOMS_0_4_199.md).
+- **One rhythm for all six:**
+  - A puzzle comes only after a resolved story since the reader's last puzzle and a few halls past it. The offer is shared, so together the puzzles are never more than one room's worth.
+  - Early rooms come before the stone. A deep room comes only from the strange depths, and only once its own family's early room is solved.
+  - Solved rooms come back now and then.
+  - Nothing counts down, hurts or is used up, a mistake never drops anyone onto stone, a solved room stays solved for everyone, and nothing counts toward the Witness.
+- **The Service Lift** (early, lifts). A pantry with a dumbwaiter cage resting in the only opening in the far wall.
+  - Set the counter's cast-iron weights in the counterweight pan. The pan sinks a step for each bar stamped on the weight, and the cage climbs as far.
+  - Two steps clear the cold passage behind it, and a catch holds the cage.
+  - A hand on the pan lifts a weight back out to its place. The cage never comes down on anyone under it.
+- **The Turning Landing** (early, landings). A square landing on a post between the stair from the door and the bridge to the far door.
+  - A heavy handle turns it a quarter, carrying whoever stands on it.
+  - Scraped arcs on the ledges show where its corners swing.
+- **The lamp rooms** (deep, light). Four dim rooms.
+  - A leaded window shows the next mirror. That mirror is reached only the long way round, through two other rooms.
+  - Turn each bolted mirror until the beam goes through both windows onto the sun.
+- **The twin lifts** (deep, lifts). Two goods lifts on one counterweight in a tall brick hall, the far door in sight high up on a gallery from the start.
+  - Ride the west lift up to the walkway and the east lift comes down to meet you; ride that up to the gallery.
+  - Pull cords to go up or down, and call cords at each landing.
+  - Water at the bottom of each shaft, a ladder out of the one with no floor door, and lifts that will not come down onto anyone.
+  - Ladders unroll once someone reaches the gallery.
+- **The turning stair** (deep, landings). Two landings geared together: the stair's handle turns them opposite ways.
+  - A second handle, in a nook only one arrangement opens, turns the upper landing alone.
+  - Of sixteen arrangements one goes through, and it is never where the first handle alone can reach it.
+- **Shared parts.** One new fittings block (weights, pan, cage, pulley, handles, cords, lift boards, scraped and worn boards), drawn by `tools/draw_puzzle_fittings.py`; a leaded window added to Borrowed Light's art.
+- **Fixes made while testing:**
+  - every rail stands on a board lip;
+  - handles stand on posts;
+  - cords hang from iron arms;
+  - the east lift shaft got its ladder out.
+- **Tests and views.** A native case per room, a shared pacing case, and six new native architecture views.
 
 ## The Goatman's bedside ending and its horns
 - **"The Goatman ending sequence doesn't show the Goatman-kid crawl. When the Goatman jumps up to the player it should be as the Goatman, not in his kid disguise."** The crawl to the bed used to be hidden: the body turned invisible for the whole way. Now it is seen. The child it is wearing goes down on its hands and knees and crawls the aisle to the foot of the bed, low, below the sleeper's eye line (`GoatmanBedtime`, stage 5).
