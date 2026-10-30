@@ -1,3 +1,5 @@
+October 30 candidate 0.4.184 gives Usher a success and a failure on the Goatman's model: either success earns an artifact (a chip of the house's stone that lets the nearest hidden thing answer when held to the ear); staying inside as the house falls fails, resolves nothing, and the scratching follows the reader home until a later night is survived. Owner's rule: every vignette has a success or failure state and something to represent it. Canon: docs/USHER_BINARY_0_4_184.md.
+
 October 30 candidate 0.4.183 shares Usher's last night among the readers in the house (one Roderick, one reading, one Madeline, the fall for all, each fleeing alone, each account from that reader's side), lets Roderick and the account know the reader's own house by the House's read (HOME), and gives the open lid her coming to the studio doors. Canon: docs/USHER_TOGETHER_0_4_183.md.
 
 October 30 candidate 0.4.182 completes the Usher pass: Roderick in his chair, the storm night after the lid is chosen, and on a closed lid the reading answered from the vault, Madeline at the studio doors, the fall, and the flight over the causeway, all each reader's own. Canon: docs/USHER_FALL_0_4_182.md.

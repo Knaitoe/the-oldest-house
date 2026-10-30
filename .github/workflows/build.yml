@@ -181,6 +181,7 @@ jobs:
               usher = json.loads(z.read('assets/the_oldest_house/blockstates/usher.json'))['variants']
               assert len(usher) == 288 and all(f'assets/the_oldest_house/models/block/{v["model"].split("/")[-1]}.json' in z.namelist() for v in usher.values())
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/UsherHouse.class' in z.namelist() and z.read('assets/the_oldest_house/textures/block/reading_stand/register_pages.png').startswith(b'\x89PNG')
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/UsherStoneItem.class' in z.namelist() and 'io/github/knaitoe/theoldesthouse/labyrinth/UsherHaunt.class' in z.namelist() and z.read('assets/the_oldest_house/textures/item/usher_stone.png').startswith(b'\x89PNG')
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/UsherStory.class' in z.namelist() and z.read('assets/the_oldest_house/textures/entity/literary_usher_roderick.png').startswith(b'\x89PNG') and 'assets/the_oldest_house/models/block/usher_fissure_moon.json' in z.namelist()
               assert 'assets/the_oldest_house/textures/entity/costume_scarecrow.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneSupportRepairs.class' in z.namelist()
@@ -1253,6 +1254,7 @@ jobs:
               usher = json.loads(z.read('assets/the_oldest_house/blockstates/usher.json'))['variants']
               assert len(usher) == 288 and all(f'assets/the_oldest_house/models/block/{v["model"].split("/")[-1]}.json' in z.namelist() for v in usher.values())
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/UsherHouse.class' in z.namelist() and z.read('assets/the_oldest_house/textures/block/reading_stand/register_pages.png').startswith(b'\x89PNG')
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/UsherStoneItem.class' in z.namelist() and 'io/github/knaitoe/theoldesthouse/labyrinth/UsherHaunt.class' in z.namelist() and z.read('assets/the_oldest_house/textures/item/usher_stone.png').startswith(b'\x89PNG')
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/UsherStory.class' in z.namelist() and z.read('assets/the_oldest_house/textures/entity/literary_usher_roderick.png').startswith(b'\x89PNG') and 'assets/the_oldest_house/models/block/usher_fissure_moon.json' in z.namelist()
               assert 'assets/the_oldest_house/textures/entity/costume_scarecrow.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneSupportRepairs.class' in z.namelist()

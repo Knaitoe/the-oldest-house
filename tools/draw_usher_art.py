@@ -473,10 +473,43 @@ def blockstate():
     return {'variants': variants}
 
 
+def stone_chip():
+    """(0.4.184) Usher's artifact: a chip of the house's stone, a rough wedge with fungus on one face and the crack running
+    through it, the item sprite at Minecraft's sixteen-pixel scale."""
+    img = canvas()
+    rng = random.Random(1849)
+    outline = [(3, 6), (6, 3), (10, 3), (13, 6), (13, 10), (11, 13), (6, 13), (3, 10)]
+    from PIL import ImageDraw
+    mask = Image.new('L', (16, 16), 0)
+    ImageDraw.Draw(mask).polygon(outline, fill=255)
+    for y in range(16):
+        for x in range(16):
+            if mask.getpixel((x, y)):
+                shade = .82 + .22 * ((x + y) % 5) / 5 + rng.uniform(-.05, .05)
+                if x + y < 12:
+                    shade += .12
+                px(img, x, y, mul(STONE, shade))
+    for x, y in ((5, 6), (6, 6), (6, 5), (7, 5), (9, 4), (10, 5), (4, 8)):
+        px(img, x, y, mix((176, 178, 160), STONE, .2))
+    for x, y in ((9, 3), (9, 4), (8, 5), (8, 6), (9, 7), (9, 8), (8, 9), (8, 10), (9, 11), (9, 12), (8, 13)):
+        if mask.getpixel((x, y)):
+            px(img, x, y, (12, 12, 14))
+    for i in range(len(outline)):
+        x0, y0 = outline[i]
+        x1, y1 = outline[(i + 1) % len(outline)]
+        for k in range(9):
+            x, y = round(x0 + (x1 - x0) * k / 8), round(y0 + (y1 - y0) * k / 8)
+            if mask.getpixel((min(15, x), min(15, y))):
+                px(img, x, y, mul(STONE, .55))
+    return img
+
+
 def outputs():
     images = {TEX / f'{name}.png': draw() for name, draw in TEXTURES.items()}
+    images[ASSETS / 'textures/item/usher_stone.png'] = stone_chip()
     texts = {MODELS / f'{name}.json': json.dumps(m, indent=1) + '\n' for name, m in MODEL_DEFS.items()}
     texts[ASSETS / 'blockstates/usher.json'] = json.dumps(blockstate(), indent=1) + '\n'
+    texts[ASSETS / 'models/item/usher_stone.json'] = json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/usher_stone'}}, indent=1) + '\n'
     return images, texts
 
 
