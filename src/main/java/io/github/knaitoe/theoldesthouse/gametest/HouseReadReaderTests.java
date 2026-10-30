@@ -81,6 +81,14 @@ public final class HouseReadReaderTests {
         stand(p,f.out,f.origin,0,0,0);
         try{HouseConfig.HOUSE_BODIES.set(false);h.assertTrue(HouseBodies.worn(p)==null,"the server option turns the House's body off");}finally{HouseConfig.HOUSE_BODIES.set(true);}
         HouseBodies.report(p,true);h.assertTrue(HouseBodies.worn(p)==null,"a reader whose skin is human again wears their own");
+        // 0.4.195 (owner: "skin tone isn't being properly applied"): a human-skinned reader who drew a tone wears it on their own skin.
+        String crayon=HouseReadKitchen.SKIN.stream().sorted().findFirst().orElseThrow();int drawn=Integer.parseInt(crayon.substring(1),16);
+        HouseRead.restart(q,HouseRead.Trait.TONE,crayon);var toned=HouseBodies.toned(q);
+        h.assertTrue(HouseBodies.worn(q)==null&&toned!=null&&toned.own()&&toned.tone()==drawn,"the drawn tone is for their own skin, not a body: "+toned);
+        bodies(q);HouseBodies.sync(q.server);var told=bodies(q);
+        h.assertTrue(told.size()==1&&told.getFirst().bodies().stream().anyMatch(e->e.reader().equals(q.getUUID())&&e.body().own()&&e.body().tone()==drawn),"every reader is told only that tone, never the skin: "+told);
+        stand(q,h.getLevel(),h.absolutePos(BlockPos.ZERO).above(),2,0,0);
+        h.assertTrue(HouseBodies.toned(q)==null,"outside the House their own colouring returns");
         h.succeed();
     }
 

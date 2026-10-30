@@ -37,7 +37,11 @@ public final class HouseBodies {
         public Body{age=Math.floorMod(age,AGES.size());presentation=Math.floorMod(presentation,PRESENTATIONS.size());cut=Math.floorMod(cut,CUTS.size());}
         /** The painted sheet, {@code textures/entity/house_body/<sheet>.png}. */
         public String sheet(){return AGES.get(age)+"_"+PRESENTATIONS.get(presentation)+"_"+CUTS.get(cut);}
+        /** 0.4.195: not a body at all, only the tone drawn at the kitchen table, for the reader's own skin. */
+        public boolean own(){return hair==OWN;}
     }
+    /** The hair value that marks a reader's own skin worn in their drawn tone rather than a painted body. */
+    public static final int OWN=Integer.MIN_VALUE;
 
     // ---- The check each reader's own client makes of their own face.
     /** How much of a face must be in human skin colours. The nine default skins read 44% or more; mobs and machines read none. */
@@ -79,8 +83,20 @@ public final class HouseBodies {
         var dimension=reader.level().dimension();
         return HouseDimensions.isHouseDimension(dimension)&&!dimension.equals(HouseDimensions.BETWEEN)&&!io.github.knaitoe.theoldesthouse.house.HouseExperience.inManor(reader,reader.blockPosition());
     }
+    /**
+     * 0.4.195 (owner: "skin tone isn't being properly applied"): a human-skinned reader who drew their tone at the kitchen
+     * table wears it on their own skin, wherever a body would be worn. Only the tone is sent; their skin stays on their client,
+     * and every client recolours that reader's own skin to it, shading and all.
+     */
+    public static @Nullable Body toned(ServerPlayer reader){
+        if(!HouseConfig.houseBodies()||inhuman(reader.getUUID())||!inside(reader))return null;
+        int tone=HouseReadKitchen.tone(LabyrinthData.get(reader.server),reader.getUUID());
+        return tone<0?null:new Body(0,0,0,tone,OWN);
+    }
     public static Map<UUID,Body> worn(MinecraftServer server){
-        var out=new LinkedHashMap<UUID,Body>();for(var p:server.getPlayerList().getPlayers()){var b=worn(p);if(b!=null)out.put(p.getUUID(),b);}return out;
+        var out=new LinkedHashMap<UUID,Body>();
+        for(var p:server.getPlayerList().getPlayers()){var b=worn(p);if(b==null)b=toned(p);if(b!=null)out.put(p.getUUID(),b);}
+        return out;
     }
     private static HouseBodiesPayload payload(Map<UUID,Body> bodies){var list=new ArrayList<HouseBodiesPayload.Entry>();bodies.forEach((id,b)->list.add(new HouseBodiesPayload.Entry(id,b)));return new HouseBodiesPayload(list);}
     /** Every client is told whenever the bodies change: a reader going in or out, a read settling, a skin changing. */

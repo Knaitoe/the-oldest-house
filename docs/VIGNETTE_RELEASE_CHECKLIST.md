@@ -1,3 +1,5 @@
+October 30 candidate 0.4.195: require the house_read namespace (23 cases), including the toned human-skinned reader in aReaderWhoseFaceIsNotHumanWearsTheBodyTheHouseReadInsideTheHouseOnly.
+
 October 30 candidate 0.4.194: require KeepsakeTests.theAccountsLeavesAndKeepsakesSayWhatHappenedAfterwards and the writing namespace. A new mechanic is written into the reader's account, the leaves and its keepsakes in the same change, from records only.
 
 October 30 candidate 0.4.192: require both KeepsakeTests cases. A keepsake's effect works only for the reader its mark names and never gives Witness credit.
