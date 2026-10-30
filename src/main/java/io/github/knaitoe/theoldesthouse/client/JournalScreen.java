@@ -27,6 +27,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * lines turned, mirrored, wound into spirals, cascaded, narrowed to columns or boxed are the House's to set on a page, and
  * are drawn where they lie (0.4.185, owner: "the player shouldn't have fancy formatting options; those should only exist
  * by the game"). The pages go back to the server as they are left; nothing is ever signed. There are no instructions here.
+ * 0.4.199 (journal/TornPages): a written page held by its corner, a right-click held down, lifts and tears out; what is left is
+ * the stub, and a right-click on the stub takes the page back, wherever it has got to.
  */
 public final class JournalScreen extends Screen {
     private final String name;
@@ -34,6 +36,10 @@ public final class JournalScreen extends Screen {
     private final boolean proof;
     private final Map<Integer,JournalPage> pages=new HashMap<>();
     private final Set<Integer> dirty=new HashSet<>();
+    private final Set<Integer> torn=new HashSet<>();
+    /** The page held by its corner to be torn out, and since when. */
+    private int holding=-1;private long held;
+    static final long HOLD_MS=900;
     private int spread;
     private final JournalTextField[] editors=new JournalTextField[2];
     private final int[] editing={-1,-1};
@@ -46,6 +52,7 @@ public final class JournalScreen extends Screen {
         super(Component.literal("Journal"));
         name=journal.getString("Name");wear=journal.getInt("Wear");this.proof=proof;this.spread=Mth.clamp(spread,0,Journals.PAGES/2);
         var all=journal.getCompound("Pages");for(String key:all.getAllKeys()){try{int i=Integer.parseInt(key);if(i>=1&&i<=Journals.PAGES)pages.put(i,JournalPage.load(all.getCompound(key)));}catch(NumberFormatException ignored){}}
+        for(int i:journal.getIntArray("Torn"))if(i>=1&&i<=Journals.PAGES)torn.add(i);
     }
     public static void open(CompoundTag journal){Minecraft.getInstance().setScreen(new JournalScreen(journal,journal.getInt("Spread"),false));}
     static JournalScreen proof(CompoundTag journal,int spread){return new JournalScreen(journal,spread,true);}
@@ -54,7 +61,7 @@ public final class JournalScreen extends Screen {
     JournalPage page(int index){return pages.getOrDefault(index,JournalPage.BLANK);}
     int pageX(int side){return (width-(2*JournalPageRenderer.W+6))/2+side*(JournalPageRenderer.W+6);}
     int pageY(){return Math.max(6,(height-JournalPageRenderer.H)/2-12);}
-    boolean editable(int side){int i=index(side);return i>=1&&i<=Journals.PAGES;}
+    boolean editable(int side){int i=index(side);return i>=1&&i<=Journals.PAGES&&!torn.contains(i);}
 
     @Override protected void init(){
         tell(spread);
@@ -97,6 +104,7 @@ public final class JournalScreen extends Screen {
         for(int side=0;side<2;side++){
             int x=pageX(side),i=index(side);
             if(i>Journals.PAGES){g.fill(x,top,x+JournalPageRenderer.W,top+JournalPageRenderer.H,0xFF2A231C);continue;}
+            if(torn.contains(i)){JournalPageRenderer.stub(g,x,top,side==0,i);continue;}
             var page=page(i);
             JournalPageRenderer.paper(g,x,top,side==0,i==0,wear,i);
             if(i==0){JournalPageRenderer.cover(g,font,x,top,name);continue;}
@@ -108,7 +116,24 @@ public final class JournalScreen extends Screen {
             for(var run:page.placed())JournalPageRenderer.placed(g,font,x,top,run,false);
             g.disableScissor();
             JournalPageRenderer.header(g,font,x,top,page);JournalPageRenderer.number(g,font,x,top,i);
+            if(holding==side)lift(g,side,x,top);
         }
+    }
+    /** The corner held to tear the page: it lifts further the longer it is held, and then the page comes away. */
+    private void lift(GuiGraphics g,int side,int x,int y){
+        float progress=Math.min(1F,(Util.getMillis()-held)/(float)HOLD_MS);
+        int size=6+(int)(progress*46),outer=side==0?x:x+JournalPageRenderer.W-1,dir=side==0?1:-1,foot=y+JournalPageRenderer.H;
+        for(int i=0;i<size;i++){int cx=outer+dir*i,h=size-i;g.fill(cx,foot-h,cx+1,foot,0xFF231D17);g.fill(cx,foot-h-2,cx+1,foot-h,0x50000000);}
+        for(int i=0;i<size;i++){int cx=outer+dir*(size-1-i),h=i;g.fill(cx,foot-size,cx+1,foot-size+h,0xFFD8CBAE);}
+        if(progress>=1)tear(side);
+    }
+    /** The page comes away in the reader's hand; the server tears it out and the stub is all that is left here. */
+    private void tear(int side){
+        int i=index(side);holding=-1;send();
+        torn.add(i);pages.remove(i);editors[side]=null;editing[side]=-1;if(focused==side)focused=-1;
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN,.55F,1F));
+        if(!proof&&Minecraft.getInstance().getConnection()!=null)PacketDistributor.sendToServer(new io.github.knaitoe.theoldesthouse.network.JournalTearPayload(i,false));
+        rebuildWidgets();
     }
     /** The writing as it is being written: graphite on the paper, with the selection and a blinking caret. */
     private void editor(GuiGraphics g,int side,int x,int y){
@@ -129,12 +154,20 @@ public final class JournalScreen extends Screen {
     int sideAt(double mx,double my){for(int side=0;side<2;side++){int x=pageX(side),y=pageY();if(mx>=x&&mx<x+JournalPageRenderer.W&&my>=y&&my<y+JournalPageRenderer.H)return side;}return -1;}
     @Override public boolean mouseClicked(double mx,double my,int button){
         if(super.mouseClicked(mx,my,button))return true;
-        int side=sideAt(mx,my);if(side<0||!editable(side)){focused=-1;return false;}
+        int side=sideAt(mx,my);
+        if(button==1&&side>=0){int i=index(side);
+            // A right-click on the stub takes the page back; held on a written page, it lifts the corner to tear it out.
+            if(torn.contains(i)){if(!proof&&Minecraft.getInstance().getConnection()!=null)PacketDistributor.sendToServer(new io.github.knaitoe.theoldesthouse.network.JournalTearPayload(i,true));return true;}
+            if(editable(side)&&!currentText(side).isBlank()){holding=side;held=Util.getMillis();return true;}
+            return false;
+        }
+        if(side<0||!editable(side)){focused=-1;return false;}
         double px=mx-pageX(side),py=my-pageY();
         focused=side;var field=editors[side];
         if(field!=null){field.setSelecting(false);field.seekCursorToPoint(px-JournalPageRenderer.TEXT_X,py-JournalPageRenderer.TEXT_Y);}
         rebuildWidgets();return true;
     }
+    @Override public boolean mouseReleased(double mx,double my,int button){if(button==1)holding=-1;return super.mouseReleased(mx,my,button);}
     @Override public boolean mouseDragged(double mx,double my,int button,double dx,double dy){
         if(focused>=0&&editors[focused]!=null&&button==0){editors[focused].setSelecting(true);editors[focused].seekCursorToPoint(mx-pageX(focused)-JournalPageRenderer.TEXT_X,my-pageY()-JournalPageRenderer.TEXT_Y);editors[focused].setSelecting(false);return true;}
         return super.mouseDragged(mx,my,button,dx,dy);

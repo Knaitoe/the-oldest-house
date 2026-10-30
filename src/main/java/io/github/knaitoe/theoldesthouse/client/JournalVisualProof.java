@@ -21,11 +21,13 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * two pencil rubbings and their lines, written beside; then the other hand's ink in its own lettering. Then Zampanò's courtyard
  * pages on the same renderer: each of the nine folders (one with a leaf already taken), and three leaves lifted out: one
  * turned over to read its mirrored box, one turned upside down, one turned on its side.
+ * 0.4.199 adds two journal views after the first five: a spread whose left page has been torn out, leaving its stub, and the torn page
+ * itself held up to read (journal/TornPages).
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class JournalVisualProof {
     private static int state=-1,frames;
-    static final int JOURNAL=5,FOLDERS=io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.FOLDERS,LIFTED=3,STATES=JOURNAL+FOLDERS+LIFTED;
+    static final int JOURNAL=7,FOLDERS=io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.FOLDERS,LIFTED=3,STATES=JOURNAL+FOLDERS+LIFTED;
     /** Leaf 3 is taken from the second folder; the third folder's struck Minotaur is red and the eighth folder's house is blue. */
     static final int TAKEN=1<<3,RED_FOLDER=2,BLUE_FOLDER=7;
     private JournalVisualProof(){}
@@ -34,12 +36,14 @@ public final class JournalVisualProof {
         var mc=Minecraft.getInstance();
         if(state>=JOURNAL){int c=state-JOURNAL;
             mc.setScreen(c<FOLDERS?ZampanoScreen.proof(c,-1,TAKEN,0,false):switch(c-FOLDERS){case 0->ZampanoScreen.proof(2,5,0,0,true);case 1->ZampanoScreen.proof(3,7,0,2,false);default->ZampanoScreen.proof(7,15,0,1,false);});return;}
-        mc.setScreen(switch(state){case 0->JournalScreen.proof(sample(0),0);case 1->JournalScreen.proof(sample(2),1);case 2->JournalScreen.proof(sample(4),1);case 3->JournalScreen.proof(sample(1),2);default->JournalScreen.proof(sample(1),3);});
+        mc.setScreen(switch(state){case 0->JournalScreen.proof(sample(0),0);case 1->JournalScreen.proof(sample(2),1);case 2->JournalScreen.proof(sample(4),1);case 3->JournalScreen.proof(sample(1),2);case 4->JournalScreen.proof(sample(1),3);case 5->JournalScreen.proof(torn(),1);default->TornPageScreen.proof("OTHProof",io.github.knaitoe.theoldesthouse.journal.JournalPage.load(sample(0).getCompound("Pages").getCompound("1")));});
     }
     static CompoundTag run(String text,String shape,float x,float y,float angle,float size,boolean mirrored){var t=new CompoundTag();t.putString("Text",text);t.putString("Shape",shape);t.putFloat("X",x);t.putFloat("Y",y);t.putFloat("Angle",angle);t.putFloat("Size",size);if(mirrored)t.putBoolean("Mirrored",true);return t;}
     static CompoundTag page(String text,String begun,int day,CompoundTag... runs){var t=new CompoundTag();t.putString("Text",text);var list=new ListTag();for(var r:runs)list.add(r);t.put("Placed",list);t.putString("Begun",begun);t.putInt("Day",day);t.putBoolean("House",true);return t;}
     static ListTag rubbings(String id,float angle){var r=new CompoundTag();r.putString("Id",id);r.putFloat("X",io.github.knaitoe.theoldesthouse.journal.Journals.RUBBING_X);r.putFloat("Y",io.github.knaitoe.theoldesthouse.journal.Journals.RUBBING_Y);r.putFloat("Angle",angle);var list=new ListTag();list.add(r);return list;}
     static CompoundTag note(String mark,String text,String word,int use,float x,float y){var t=new CompoundTag();t.putString("Mark",mark);if(!text.isEmpty())t.putString("Text",text);if(!word.isEmpty()){t.putString("Word",word);t.putInt("Use",use);}t.putFloat("X",x);t.putFloat("Y",y);return t;}
+    /** The sample journal with its second page torn out. */
+    static CompoundTag torn(){var journal=sample(0);journal.getCompound("Pages").remove("2");journal.putIntArray("Torn",new int[]{2});return journal;}
     static CompoundTag sample(int wear){
         var journal=new CompoundTag();journal.putString("Name","OTHProof");journal.putInt("Wear",wear);var pages=new CompoundTag();
         pages.put("1",page("I came in by the front door at noon. The hall was longer than the outside of the house. I measured it twice and wrote both numbers down.\n\nLeft at the lamp.","the long hall",3,run("it is longer than it was","line",.14F,.78F,-7,1,false)));
@@ -54,7 +58,7 @@ public final class JournalVisualProof {
         journal.put("Pages",pages);return journal;
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        var mc=Minecraft.getInstance();if(state<0||!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof JournalScreen||mc.screen instanceof ZampanoScreen)||++frames<4)return;
+        var mc=Minecraft.getInstance();if(state<0||!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof JournalScreen||mc.screen instanceof ZampanoScreen||mc.screen instanceof TornPageScreen)||++frames<4)return;
         var folder=Path.of("../build/font-smoke");
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
             int blue=0,red=0,ink=0,other=0;
@@ -62,6 +66,7 @@ public final class JournalVisualProof {
                 if(near(r,g,b,HouseText.INK_BLUE))blue++;if(near(r,g,b,HouseText.INK_RED))red++;if(near(r,g,b,JournalPageRenderer.INK&0xFFFFFF)||near(r,g,b,JournalPageRenderer.BACK_INK&0xFFFFFF))ink++;if(near(r,g,b,JournalPageRenderer.OTHER_INK&0xFFFFFF))other++;}
             if(state==3){int missing=0;for(int y=0;y<image.getHeight();y++)for(int x=0;x<image.getWidth();x++){int c=image.getPixelRGBA(x,y);if((c&255)>200&&(c>>8&255)<60&&(c>>16&255)>200)missing++;}
                 if(missing>10)throw new IllegalStateException("The rubbings must draw their own charcoal, not the missing texture: "+missing);}
+            if(state==6&&ink<40)throw new IllegalStateException("The torn page must carry its writing: ink="+ink);
             if(state==4&&other<60)throw new IllegalStateException("The other hand must leave its ink: a stroke, an answer and a written page: "+other);
             if(state==1&&(blue<8||red<8))throw new IllegalStateException("The journal page must show the blue House word and the red Minotaur: blue="+blue+" red="+red);
             if(state>=JOURNAL&&ink<40)throw new IllegalStateException("Zampano's page "+(state-JOURNAL)+" must carry his writing: ink="+ink);
@@ -73,7 +78,7 @@ public final class JournalVisualProof {
         if(state<STATES){show();return;}
         state=-1;
         Files.writeString(folder.resolve("journal-passed.txt"),"The journal screen: the name inside the cover and a written page; every placed shape (a turned line, a spiral, a cascade, a column, a box, a mirrored line) on dog-eared and torn, tide-marked paper; the blue House word and the red Minotaur on the page; two pencil rubbings with their lines; the other hand's ink (a struck name, an answer under a line, a blank page written on). Zampano's nine courtyard folders in his hand, one leaf taken, the struck Minotaur red and the house blue; a leaf turned over, one upside down and one on its side.\n");
-        TheOldestHouse.LOGGER.info("JOURNAL CHECK PASSED: five journal and twelve courtyard native views");mc.setScreen(new NpcVisualProof());
+        TheOldestHouse.LOGGER.info("JOURNAL CHECK PASSED: seven journal and twelve courtyard native views");mc.setScreen(new NpcVisualProof());
     }
     static boolean near(int r,int g,int b,int rgb){return Math.abs(r-(rgb>>16&255))<10&&Math.abs(g-(rgb>>8&255))<10&&Math.abs(b-(rgb&255))<10;}
 }

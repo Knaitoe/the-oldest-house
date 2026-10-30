@@ -143,6 +143,15 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - the east lift shaft got its ladder out.
 - **Tests and views.** A native case per room, a shared pacing case, and six new native architecture views.
 
+## Torn pages (journal step 5)
+- **"Can you build those functionalities too?"** Readers can now tear pages out of their journals. Canon: [JOURNAL_TORN_PAGES_0_4_199.md](JOURNAL_TORN_PAGES_0_4_199.md).
+  - **Tearing.** Hold a right-click on a written page and its corner lifts; after a second it tears away. The journal keeps a ragged stub. The page becomes "Torn from <name>'s journal", which anyone can read.
+  - **Pinning.** It pins to a wall or lies flat on a table, showing its first few lines at a glance and opening in full to a right-click. Dropped in the House, it stays where it fell.
+  - **Limits.** In the manor there is no limit, so a reader can build a wall of their own. Elsewhere in the House each reader may leave six pages at a time, and a seventh sends the oldest home.
+  - **Taking it back.** Only the writer can take a page down. They can take any of their pages back at any time, from the stub in the journal, and it goes back with every word.
+  - **Moderation.** The words pass the server's filter as they are torn. `/ghosthouse journal clearpages <player>` sends every page of a reader home.
+  - **Nothing is lost.** A page lost in the world goes back into its stub.
+
 ## The Goatman's bedside ending and its horns
 - **"The Goatman ending sequence doesn't show the Goatman-kid crawl. When the Goatman jumps up to the player it should be as the Goatman, not in his kid disguise."** The crawl to the bed used to be hidden: the body turned invisible for the whole way. Now it is seen. The child it is wearing goes down on its hands and knees and crawls the aisle to the foot of the bed, low, below the sleeper's eye line (`GoatmanBedtime`, stage 5).
   - At the foot of the bed it comes up as itself, the Goatman, and jumps up in front of the sleeper before the black (stage 6).

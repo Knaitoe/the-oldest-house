@@ -56,18 +56,26 @@ public final class Journals extends SavedData {
         final Map<Integer,JournalPage> pages=new HashMap<>();
         /** Which object each rubbing was taken from, and the page it went on. */
         final Map<String,Integer> rubbed=new HashMap<>();
+        /** Pages torn out (TornPages), by the stub they came from; the serial says which torn copy is the page now. */
+        final Map<Integer,TornPages.Torn> torn=new HashMap<>();
+        int tornSerial;
         // Not saved: the screen's allowance.
         int tokens=TOKENS; long refilled;
     }
     private final Map<UUID,Book> books=new HashMap<>();
+    /** The order torn pages were left out in the world, across every reader (TornPages). */
+    long tornOrder;
 
     public static Journals get(MinecraftServer server){return server.overworld().getDataStorage().computeIfAbsent(FACTORY,DATA_NAME);}
     Book book(UUID id){return books.computeIfAbsent(id,k->new Book());}
+    Map<UUID,Book> books(){return books;}
 
     public int issue(UUID id){var b=books.get(id);return b==null?0:b.issue;}
     public int wear(UUID id){var b=books.get(id);return b==null?0:b.wear;}
     public boolean lost(UUID id){var b=books.get(id);return b!=null&&b.lost;}
     public JournalPage page(UUID id,int index){var b=books.get(id);return b==null?JournalPage.BLANK:b.pages.getOrDefault(index,JournalPage.BLANK);}
+    /** Whether this page has been torn out, leaving its stub. */
+    public boolean torn(UUID id,int index){var b=books.get(id);return b!=null&&b.torn.containsKey(index);}
     /** A page set as the House keeps it, header and all: the tests' own pages, and later the House's own writing. */
     public void put(UUID id,int index,JournalPage page){if(index<1||index>PAGES)return;book(id).pages.put(index,page);setDirty();}
     /** The House day the other hand last wrote in this reader's journal, and setting it back (the tests' way to a new day). */
@@ -119,10 +127,10 @@ public final class Journals extends SavedData {
     public CompoundTag contents(UUID id){
         var b=book(id);var t=new CompoundTag();t.putString("Name",b.name);t.putInt("Wear",b.wear);
         var pages=new CompoundTag();for(var e:b.pages.entrySet())if(!e.getValue().empty()||!e.getValue().begun().isEmpty())pages.put(Integer.toString(e.getKey()),e.getValue().save());
-        t.put("Pages",pages);return t;
+        t.put("Pages",pages);t.putIntArray("Torn",b.torn.keySet().stream().mapToInt(Integer::intValue).sorted().toArray());return t;
     }
 
-    public enum Edit { ACCEPTED, NOT_CARRIED, NO_SUCH_PAGE, TOO_MUCH, TOO_FAST }
+    public enum Edit { ACCEPTED, NOT_CARRIED, NO_SUCH_PAGE, TOO_MUCH, TOO_FAST, TORN }
     /**
      * A page the reader wrote, from their screen. It is kept only if they carry their own journal, it fits what the screen
      * allows and their allowance holds; the words pass the server's text filter before they are kept. Only the writing is
@@ -132,6 +140,7 @@ public final class Journals extends SavedData {
         var data=get(p.server);
         if(!data.carries(p))return Edit.NOT_CARRIED;
         if(index<1||index>PAGES)return Edit.NO_SUCH_PAGE;
+        if(data.torn(p.getUUID(),index))return Edit.TORN;
         var page=JournalPage.fromReader(sent);if(page==null)return Edit.TOO_MUCH;
         var b=data.book(p.getUUID());long now=p.server.getTickCount();
         long refill=(now-b.refilled)/REFILL_TICKS;
@@ -144,7 +153,7 @@ public final class Journals extends SavedData {
     }
     private void keep(ServerPlayer p,int index,List<FilteredText> filtered){
         if(filtered.size()!=1)return;
-        var b=book(p.getUUID());var before=b.pages.getOrDefault(index,JournalPage.BLANK);
+        var b=book(p.getUUID());if(b.torn.containsKey(index))return;var before=b.pages.getOrDefault(index,JournalPage.BLANK);
         // The reader writes; any shaped lines already on the page were set there by the House and stay as they are.
         var kept=before.withWriting(filtered.getFirst().filteredOrEmpty(),before.placed());
         // A page remembers where it was begun: the first time anything is written on it.
@@ -181,7 +190,7 @@ public final class Journals extends SavedData {
     /** The last written page if a rubbing fits below its writing, otherwise the next page that has room. */
     static int room(Book b){
         int last=1;for(var e:b.pages.entrySet())if(!e.getValue().empty())last=Math.max(last,e.getKey());
-        for(int i=last;i<=PAGES;i++){var page=b.pages.getOrDefault(i,JournalPage.BLANK);
+        for(int i=last;i<=PAGES;i++){if(b.torn.containsKey(i))continue;var page=b.pages.getOrDefault(i,JournalPage.BLANK);
             if(page.rubbings().isEmpty()&&page.notes().isEmpty()&&page.text().length()<=ROOM_CHARS&&page.text().chars().filter(c->c=='\n').count()<=ROOM_LINES)return i;}
         return -1;
     }
@@ -240,14 +249,17 @@ public final class Journals extends SavedData {
     public void markLost(ItemStack s){var owner=owner(s);if(owner==null)return;var b=books.get(owner);if(b==null||issueOf(s)!=b.issue)return;b.lost=true;setDirty();}
 
     @SubscribeEvent(priority=EventPriority.HIGH) public static void expired(ItemExpireEvent e){
+        if(e.getExtraLife()<=0&&e.getEntity().level() instanceof net.minecraft.server.level.ServerLevel level&&TornPages.lostInWorld(level,e.getEntity().getItem()))return;
         if(e.getExtraLife()>0||!(e.getEntity().level() instanceof net.minecraft.server.level.ServerLevel level)||owner(e.getEntity().getItem())==null)return;
         // Never the Mother's: it goes back to its owner, not onto her shelf.
         get(level.getServer()).markLost(e.getEntity().getItem());e.getEntity().setItem(ItemStack.EMPTY);
     }
     @SubscribeEvent public static void destroyed(EntityLeaveLevelEvent e){
-        if(e.getLevel().isClientSide()||!(e.getEntity() instanceof ItemEntity item)||owner(item.getItem())==null)return;
+        if(e.getLevel().isClientSide()||!(e.getEntity() instanceof ItemEntity item))return;
         var reason=item.getRemovalReason();
         boolean gone=reason==Entity.RemovalReason.KILLED||reason==Entity.RemovalReason.DISCARDED&&item.getY()<e.getLevel().getMinBuildHeight()-32;
+        if(gone&&e.getLevel() instanceof net.minecraft.server.level.ServerLevel level&&TornPages.lostInWorld(level,item.getItem()))return;
+        if(owner(item.getItem())==null)return;
         if(gone&&e.getLevel() instanceof net.minecraft.server.level.ServerLevel level)get(level.getServer()).markLost(item.getItem());
     }
     /** Each time a reader comes in through the House's front door: their first journal if they have none, or a lost one back. */
@@ -264,8 +276,11 @@ public final class Journals extends SavedData {
             var t=all.getCompound(key);var b=new Book();b.issue=t.getInt("Issue");b.wear=t.getInt("Wear");b.lost=t.getBoolean("Lost");b.name=t.getString("Name");b.inked=t.getInt("Inked");
             var pages=t.getCompound("Pages");for(String k:pages.getAllKeys()){try{int i=Integer.parseInt(k);if(i>=1&&i<=PAGES)b.pages.put(i,JournalPage.load(pages.getCompound(k)));}catch(NumberFormatException ignored){}}
             var rubbed=t.getCompound("Rubbed");for(String k:rubbed.getAllKeys())if(Rubbings.byId(k)!=null)b.rubbed.put(k,rubbed.getInt(k));
+            b.tornSerial=t.getInt("TornSerial");var torn=t.getCompound("Torn");
+            for(String k:torn.getAllKeys()){try{int i=Integer.parseInt(k);if(i>=1&&i<=PAGES)b.torn.put(i,TornPages.Torn.load(torn.getCompound(k)));}catch(NumberFormatException ignored){}}
             data.books.put(id,b);
         }
+        data.tornOrder=tag.getLong("TornOrder");
         return data;
     }
     @Override public CompoundTag save(CompoundTag tag,HolderLookup.Provider registries){
@@ -273,7 +288,9 @@ public final class Journals extends SavedData {
         for(var e:books.entrySet()){var b=e.getValue();var t=new CompoundTag();t.putInt("Issue",b.issue);t.putInt("Wear",b.wear);if(b.lost)t.putBoolean("Lost",true);t.putString("Name",b.name);if(b.inked>0)t.putInt("Inked",b.inked);
             var pages=new CompoundTag();for(var p:b.pages.entrySet())pages.put(Integer.toString(p.getKey()),p.getValue().save());t.put("Pages",pages);
             if(!b.rubbed.isEmpty()){var rubbed=new CompoundTag();b.rubbed.forEach(rubbed::putInt);t.put("Rubbed",rubbed);}
+            if(b.tornSerial>0)t.putInt("TornSerial",b.tornSerial);
+            if(!b.torn.isEmpty()){var torn=new CompoundTag();b.torn.forEach((i,page)->torn.put(Integer.toString(i),page.save()));t.put("Torn",torn);}
             all.put(e.getKey().toString(),t);}
-        tag.put("Books",all);return tag;
+        tag.put("Books",all);if(tornOrder>0)tag.putLong("TornOrder",tornOrder);return tag;
     }
 }

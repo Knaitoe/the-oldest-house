@@ -12,6 +12,10 @@ over paper does.
 0.4.180 adds the other hand's lettering (journal/CoAuthor.java): a heavier, steeply leaning ink hand on the books' nine-pixel
 line, built from the same glyph source as tools/generate_writing_fonts.py but distinct from all eight of its hands:
 textures/font/margin.png and font/margin.json. The other eight atlases are never rewritten here.
+
+0.4.199 adds torn pages (journal/TornPages.java): the torn page's 16x16 item icon, textures/item/torn_page.png, a sheet with a
+ragged edge and a few graphite lines; and the paper a pinned page is drawn on, textures/entity/pinned_page.png, 32x40, plain
+and a little foxed, torn along its left edge, a brass pin at the top. Its lines are written on it as text, not painted.
 """
 import json
 import sys
@@ -333,8 +337,50 @@ def margin_definition():
         {'type': 'reference', 'id': 'minecraft:default'}]}, indent=2, ensure_ascii=True) + '\n'
 
 
+def torn_page():
+    """The torn page's icon: a cream sheet leaning a little, ragged down its left edge, a few graphite lines on it."""
+    img = Image.new('RGBA', (16, 16), CLEAR)
+    px = img.load()
+    for y in range(2, 15):
+        shift = (y - 2) // 6
+        bite = (y * 7 + (y // 3) * 13) % 3
+        for x in range(4 + bite + shift, 13 + shift):
+            px[x, y] = PAGE if (x + 2 * y) % 5 else PAGE_SHADE
+        px[12 + shift, y] = PAGE_SHADE
+    for y in (5, 7, 9, 11):
+        shift = (y - 2) // 6
+        for x in range(6 + shift, 11 + shift - (y == 11) * 2):
+            px[x, y] = (88, 86, 92, 255)
+    return img
+
+
+def pinned_page():
+    """The paper a pinned page is drawn on, 32x40: plain, a little foxed, torn along its left edge, a brass pin at the top."""
+    img = Image.new('RGBA', (32, 40), CLEAR)
+    px = img.load()
+    for y in range(40):
+        bite = 1 + (y * 7 + (y // 3) * 13) % 3 + (2 if (y // 5) % 7 == 0 else 0)
+        for x in range(bite, 32):
+            grain = ((x * 13 + y * 7) % 11) - 5
+            r, g, b, a = PAGE
+            px[x, y] = (r + grain // 2, g + grain // 2, b + grain // 3, 255)
+    for x, y in ((27, 36), (28, 37), (26, 37), (29, 35), (4, 34), (5, 35), (25, 3), (26, 4)):
+        px[x, y] = TIDE
+    for x in range(32):
+        r, g, b, a = px[x, 39]
+        if a:
+            px[x, 39] = (r - 30, g - 30, b - 30, 255)
+    for x, y in ((16, 2), (15, 3), (16, 3), (17, 3), (16, 4)):
+        px[x, y] = (196, 158, 70, 255)
+    px[16, 3] = (240, 210, 120, 255)
+    px[17, 5] = (120, 104, 80, 255)
+    return img
+
+
 def outputs():
     out = {OUT / f'journal_{wear}.png': journal(wear) for wear in range(5)}
+    out[OUT / 'torn_page.png'] = torn_page()
+    out[ASSETS / 'textures/entity/pinned_page.png'] = pinned_page()
     for name, draw in RUBBING_ART.items():
         out[RUBBINGS / f'{name}.png'] = draw()
     out[ASSETS / 'textures/font/margin.png'] = margin_atlas()

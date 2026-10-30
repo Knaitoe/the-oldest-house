@@ -99,6 +99,7 @@ public final class HouseCommands {
                         .then(Commands.literal("reset")
                                 .executes(HouseCommands::reset))
                         .then(WritingCommands.build())
+                        .then(JournalCommands.build())
                         .then(OpeningCommands.build())
         );
         dispatcher.register(Commands.literal("ghosthouse")
