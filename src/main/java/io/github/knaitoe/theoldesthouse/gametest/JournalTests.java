@@ -344,4 +344,53 @@ public final class JournalTests {
             for(int i=1;i<=9;i++)h.assertTrue(data.page(id,i).text().equals("note "+i+" by the lamp"),"nothing is lost: page "+i);
         }).thenSucceed();
     }
+
+    // ------------------------------------------------------------------ 0.4.199: writing as grounding (Grounding)
+    private static LiteraryTests.Fixture grounding;
+    @net.minecraft.gametest.framework.AfterBatch(batch="journal_grounding") public static void groundingDone(net.minecraft.server.level.ServerLevel l){if(grounding!=null){grounding.close();grounding=null;}}
+    /**
+     * 0.4.199: the worst rooms leave a static that fades by itself; one full line written in an ordinary hall settles it, and a line
+     * written in a story room, too short a line, or a line with a hunter about does not. The screen-effects setting at zero shows none of it.
+     */
+    @GameTest(template="empty",batch="journal_grounding",timeoutTicks=900)
+    public static void aFullLineWrittenInAQuietHallSettlesTheStaticTheWorstRoomsLeave(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);grounding=f;var l=f.in;var server=l.getServer();
+        var hall=f.base(LabyrinthPlace.STRAIGHT_HALL).offset(0,1,-6);var story=f.base(LabyrinthPlace.HILL_NURSERY).offset(0,1,-6);
+        f.chunks.hold(l,new net.minecraft.world.phys.AABB(hall).inflate(12));f.chunks.hold(l,new net.minecraft.world.phys.AABB(story).inflate(12));
+        var p=NativeTestPlayers.survival(h,"journal_grounded");f.players.add(p);var id=p.getUUID();var data=Journals.get(server);
+        var zombie=new net.minecraft.world.entity.Entity[1];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall and the story room are resident")).thenExecute(()->{
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.strength(1F,0F)==0F&&io.github.knaitoe.theoldesthouse.journal.Grounding.strength(.5F,1F)==.5F&&io.github.knaitoe.theoldesthouse.journal.Grounding.strength(1F,.5F)==.5F,"the screen-effects setting scales it, and at zero there is nothing to see or hear");
+            p.getInventory().setItem(30,data.issue(p));
+            io.github.knaitoe.theoldesthouse.journal.Grounding.ended(p,WitnessAccount.Story.LAKE_HOUSE);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.level(server,id)==0F,"a gentler story leaves nothing behind");
+            io.github.knaitoe.theoldesthouse.journal.Grounding.ended(p,WitnessAccount.Story.TED_CAVER);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.level(server,id)==1F,"one of the worst rooms leaves the static on the reader, full");
+            // In a story room, a full line settles nothing.
+            p.teleportTo(l,story.getX()+.5,story.getY(),story.getZ()+.5,0,0);
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.journal.Grounding.quiet(p),"a story room is not a quiet hall");
+            h.assertTrue(Journals.edit(p,1,page("I wrote it all down in the nursery and it did not help."))==Journals.Edit.ACCEPTED,"the reader writes there");
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.level(server,id)>.9F,"writing in a story room does not settle it");
+            // In an ordinary hall: too short a line does nothing; nor does a full one with a hunter about.
+            p.teleportTo(l,hall.getX()+.5,hall.getY(),hall.getZ()+.5,0,0);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.quiet(p),"an ordinary hall with nothing about is quiet");
+            h.assertTrue(Journals.edit(p,2,page("Still ringing."))==Journals.Edit.ACCEPTED,"a short line");
+            var z=net.minecraft.world.entity.EntityType.ZOMBIE.create(l);z.addTag(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthSpawnRules.ALLOWED_TAG);z.moveTo(hall.getX()+4.5,hall.getY(),hall.getZ()+.5);z.setNoAi(true);h.assertTrue(l.addFreshEntity(z),"a hunter the House let in");zombie[0]=z;
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.journal.Grounding.quiet(p),"a hunter about and the hall is not quiet");
+            h.assertTrue(Journals.edit(p,2,page("Still ringing.\nI counted the doors on this side, nine of them."))==Journals.Edit.ACCEPTED,"a full line with a hunter about");
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.level(server,id)>.9F,"neither settles it");
+            zombie[0].discard();
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.journal.Grounding.newLine("I counted the doors on this side, nine of them.","I counted the doors on this side, nine of them."),"a line already there is not a new one");
+            h.assertTrue(Journals.edit(p,2,page("Still ringing.\nI counted the doors on this side, nine of them.\nThe lamp at the end is the same lamp."))==Journals.Edit.ACCEPTED,"a new full line in a quiet hall");
+        }).thenWaitUntil(()->h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.level(server,id)==0F,"it settles")).thenExecute(()->{
+            // By itself it fades too, a second for each second of play.
+            io.github.knaitoe.theoldesthouse.journal.Grounding.begin(p);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.level(server,id)==1F,"on again");
+            var all=LabyrinthData.get(server).state(io.github.knaitoe.theoldesthouse.journal.Grounding.STATE);var own=all.getCompound(id.toString());own.putInt("Static",60);all.put(id.toString(),own);LabyrinthData.get(server).setState(io.github.knaitoe.theoldesthouse.journal.Grounding.STATE,all);
+        }).thenWaitUntil(()->h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Grounding.level(server,id)==0F,"left alone, it fades by itself")).thenExecute(()->{
+            h.assertTrue(WitnessAccount.count(LabyrinthData.get(server),id)==0&&data.page(id,2).text().contains("same lamp"),"nothing is counted, and the words are kept as written");
+        }).thenSucceed();
+    }
 }

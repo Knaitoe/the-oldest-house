@@ -18,6 +18,9 @@ public final class JournalRegistry {
     /** A torn page pinned to a wall or lying on a table. */
     public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<PinnedPage>> PINNED_PAGE=TYPES.register("pinned_page",
             ()->net.minecraft.world.entity.EntityType.Builder.<PinnedPage>of(PinnedPage::new,net.minecraft.world.entity.MobCategory.MISC).sized(.6F,.75F).clientTrackingRange(8).updateInterval(Integer.MAX_VALUE).build("pinned_page"));
+    private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(net.minecraft.core.registries.Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    /** 0.4.199: the ringing in the ears after the worst rooms (Grounding), from tools/generate_journal_audio.py. */
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> STATIC=SOUNDS.register("journal.static",()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"journal.static")));
     private JournalRegistry(){}
-    public static void register(IEventBus bus){ITEMS.register(bus);TYPES.register(bus);}
+    public static void register(IEventBus bus){ITEMS.register(bus);TYPES.register(bus);SOUNDS.register(bus);}
 }

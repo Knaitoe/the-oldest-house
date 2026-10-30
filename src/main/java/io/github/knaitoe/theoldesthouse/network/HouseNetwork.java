@@ -13,7 +13,8 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("105")
+        event.registrar("106")
+                .playToClient(GroundingPayload.TYPE,GroundingPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.GroundingClient.accept(payload)))
                 .playToServer(JournalTearPayload.TYPE,JournalTearPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p){if(payload.back())io.github.knaitoe.theoldesthouse.journal.TornPages.reclaim(p,payload.page());else io.github.knaitoe.theoldesthouse.journal.TornPages.tear(p,payload.page());}}))
                 .playToClient(TornPagePayload.TYPE,TornPagePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.TornPageScreen.open(payload.writer(),payload.page())))
                 .playToServer(JournalViewPayload.TYPE,JournalViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.journal.CoAuthor.viewing(p,payload.spread());}))

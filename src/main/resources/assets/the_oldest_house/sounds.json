@@ -469,6 +469,15 @@
       }
     ]
   },
+  "journal.static": {
+    "subtitle": "subtitles.the_oldest_house.journal.static",
+    "sounds": [
+      {
+        "name": "the_oldest_house:journal/static_ring",
+        "stream": false
+      }
+    ]
+  },
   "hall.pipes": {
     "subtitle": "subtitles.the_oldest_house.hall.pipes",
     "sounds": [

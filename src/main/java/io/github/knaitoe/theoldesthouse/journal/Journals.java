@@ -160,6 +160,8 @@ public final class Journals extends SavedData {
         if(before.begun().isEmpty()&&before.day()==0&&!kept.empty())kept=kept.begunAt(where(p),day(p),HouseDimensions.isHouseDimension(p.level().dimension()));
         if(kept.empty()&&before.begun().isEmpty())b.pages.remove(index);else b.pages.put(index,kept);
         setDirty();
+        // 0.4.199: a full new line written in a quiet hall settles the static the worst rooms leave (Grounding).
+        Grounding.wrote(p,before.text(),kept.text());
     }
     public enum Rub { RUBBED, TURNED, NOT_RUBBABLE, NOT_YOURS, FULL }
     /** A page has room for a rubbing below its writing while it has none yet, nothing of the other hand's, and no more than this. */
