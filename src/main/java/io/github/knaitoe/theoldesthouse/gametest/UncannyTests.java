@@ -24,6 +24,10 @@ import net.neoforged.neoforge.gametest.*;
 public final class UncannyTests {
     private static LiteraryTests.Fixture fixture;
     private static void close(){if(fixture!=null){fixture.close();fixture=null;}}
+    /**
+     * Run 1352: the diner's room and body sections took longer than its 300-tick budget to load on a busy runner, and the case
+     * timed out before it began. The thirteen cases that start here wait up to 900 ticks; nothing after the load is relaxed.
+     */
     private static void run(GameTestHelper h,LabyrinthPlace place,BiConsumer<LiteraryTests.Fixture,ServerPlayer> test){
         var f=new LiteraryTests.Fixture(h);fixture=f;var p=f.player("uncanny_reader",place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(f.base(place),place));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual room and body sections are loaded")).thenExecute(()->{var own=f.own(p,place);UncannyStories.arrive(p,place,own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);test.accept(f,p);}).thenSucceed();
@@ -39,19 +43,19 @@ public final class UncannyTests {
     @GameTest(template="empty") public static void foundTextsKeepEveryWordAcrossReadableNativePages(GameTestHelper h){
         for(var place:UncannyRooms.PLACES){var content=UncannyTexts.source(place).get(DataComponents.WRITTEN_BOOK_CONTENT);String kept=content.pages().stream().map(p->p.raw().getString()).collect(java.util.stream.Collectors.joining(" ")).replaceAll("\\s+"," ").strip();String supplied=UncannyTexts.log(place).replaceAll("\\s+"," ").strip();h.assertTrue(kept.equals(supplied),"the complete supplied log is preserved: "+place);for(var page:content.pages())h.assertTrue(page.raw().getString().length()<=145,"native pages fit without clipped paragraphs");}h.succeed();
     }
-    @GameTest(template="empty",batch="uncanny_board",timeoutTicks=300) public static void pryingThePaintedBoardIsPersonalAndExposesRealEarth(GameTestHelper h){run(h,LabyrinthPlace.PAINTED_INTERIOR,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_board",timeoutTicks=900) public static void pryingThePaintedBoardIsPersonalAndExposesRealEarth(GameTestHelper h){run(h,LabyrinthPlace.PAINTED_INTERIOR,(f,p)->{
         var place=LabyrinthPlace.PAINTED_INTERIOR;f.source(p,place);var peer=f.player("board_peer",place);var own=f.own(p,place);var ids=new HashSet<UUID>();for(int i=0;i<4;i++){var a=UncannyStories.actor(p,own,"CastP"+i);h.assertTrue(a!=null&&a.broadcastToPlayer(p)&&!a.broadcastToPlayer(peer),"each actual Propped body is private");ids.add(a.getUUID());}
         h.assertTrue(ids.size()==4,"four actual originals, not regenerated screen silhouettes");click(f,p,place,UncannyRooms.PARLOR_BOARD);
         h.assertTrue(f.own(p,place).getBoolean("BoardOpened")&&!f.own(peer,place).getBoolean("BoardOpened"),"a peer does not inherit another reader's pry");h.assertTrue(f.level(place).getBlockState(f.base(place).offset(0,1,-30)).is(Blocks.DIRT),"the opening leads to earth, not painted daylight");f.reload();h.assertTrue(f.own(p,place).getUUID("CastP0").equals(own.getUUID("CastP0")),"reload retains the same body");
     });}
     @AfterBatch(batch="uncanny_board") public static void boardDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_camera_bounds",timeoutTicks=300) public static void cameraSamplesFollowTheActualFovAndRejectRemoteOrObserverClaims(GameTestHelper h){run(h,LabyrinthPlace.PAINTED_INTERIOR,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_camera_bounds",timeoutTicks=900) public static void cameraSamplesFollowTheActualFovAndRejectRemoteOrObserverClaims(GameTestHelper h){run(h,LabyrinthPlace.PAINTED_INTERIOR,(f,p)->{
         var eye=p.getEyePosition();UncannySenses.camera(p,new UncannyCameraPayload(eye.x,eye.y,eye.z,0,0,-1,70,1.5F,-1));h.assertTrue(UncannySenses.fresh(p)&&Math.abs(UncannySenses.halfFov(p)-Math.atan(Math.tan(Math.toRadians(35))*1.5))<.001,"the true viewport sets the peripheral band");
         var saved=p.getPersistentData().getCompound(UncannySenses.LENS).copy();UncannySenses.camera(p,new UncannyCameraPayload(eye.x+100,eye.y,eye.z,0,0,-1,70,1.5F,-1));UncannySenses.camera(p,new UncannyCameraPayload(Double.NaN,eye.y,eye.z,0,0,-1,70,1.5F,-1));h.assertTrue(saved.equals(p.getPersistentData().getCompound(UncannySenses.LENS)),"remote and nonfinite cameras cannot move a periphery");
         p.setGameMode(GameType.SPECTATOR);UncannySenses.camera(p,new UncannyCameraPayload(eye.x,eye.y,eye.z,1,0,0,90,2,-1));h.assertTrue(saved.equals(p.getPersistentData().getCompound(UncannySenses.LENS)),"observer input cannot drive the story");
     });}
     @AfterBatch(batch="uncanny_camera_bounds") public static void lensDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_manifest",timeoutTicks=300) public static void oneWaitressBecomesSolidWithoutReplacingHerNativeBody(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_manifest",timeoutTicks=900) public static void oneWaitressBecomesSolidWithoutReplacingHerNativeBody(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
         var place=LabyrinthPlace.SECOND_WAITRESS;f.source(p,place);age(f,p,place,300);var own=step(f,p,place);var fake=UncannyStories.actor(p,own,"CastFake");var id=fake.getUUID();h.assertTrue(fake.noPhysics&&fake.isNoGravity()&&!fake.canBeCollidedWith(),"the faint original passes through furniture");
         for(int i=0;i<16;i++)step(f,p,place);age(f,p,place,600);own=step(f,p,place);h.assertTrue(!fake.noPhysics&&fake.canBeCollidedWith()&&!fake.isNoGravity(),"the same original gains native collision");fake.load(fake.saveWithoutId(new CompoundTag()));f.reload();h.assertTrue(UncannyStories.actor(p,f.own(p,place),"CastFake").getUUID().equals(id),"body and component identity survive reload");
     });}
@@ -67,11 +71,11 @@ public final class UncannyTests {
         h.assertTrue(!own.getBoolean("UncannyFailed")&&!own.getBoolean("Completed"),"local movement grants no House return credit before a confirmed landing");
     });}
     @AfterBatch(batch="uncanny_plate") public static void plateDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_food",timeoutTicks=300) public static void eatingHerOriginalMealFailsOnlyItsOwner(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_food",timeoutTicks=900) public static void eatingHerOriginalMealFailsOnlyItsOwner(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
         var place=LabyrinthPlace.SECOND_WAITRESS;var peer=f.player("diner_peer",place);f.source(p,place);var meal=ItemStack.parseOptional(p.registryAccess(),f.own(p,place).getCompound("OriginalMeal"));UncannyStories.ate(peer,meal);h.assertTrue(!f.own(peer,place).getBoolean("UncannyFailed"),"a borrowed meal cannot assign its history to a peer");UncannyStories.ate(p,meal);for(int i=0;i<8;i++)step(f,p,place);h.assertTrue(f.own(p,place).getBoolean("DinerTransformed133")&&UncannyStories.actor(p,f.own(p,place),"CastFake").phase()==3&&!f.own(p,place).getBoolean("UncannyFailed")&&!f.own(peer,place).getBoolean("DinerTransformed133"),"a completed bite transforms only its original owner’s waitress, with time for a physical escape");h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.SECOND_WAITRESS),"failure supplies no survival or understanding shortcut");
     });}
     @AfterBatch(batch="uncanny_food") public static void foodDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_answer",timeoutTicks=300) public static void answeringHerWhenSheAsksClearsOnlyThatReadersTable(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_answer",timeoutTicks=900) public static void answeringHerWhenSheAsksClearsOnlyThatReadersTable(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
         var place=LabyrinthPlace.SECOND_WAITRESS;var peer=f.player("answer_peer",place);f.source(p,place);f.source(peer,place);var fake=UncannyStories.actor(p,f.own(p,place),"CastFake");f.at(p,place,fake.getX()-f.base(place).getX(),0,fake.getZ()-f.base(place).getZ()+1.5);
         LiteraryVignettes.talk(p,fake);h.assertTrue(!f.own(p,place).getBoolean("UncannyFailed"),"touching her before she asks anything answers nothing");
         var own=f.own(p,place);own.putBoolean("AskedMeal",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);LiteraryVignettes.talk(p,fake);
@@ -142,7 +146,7 @@ public final class UncannyTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="uncanny_great_stride131") public static void greatStrideDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_giant_reload",timeoutTicks=300) public static void savedSignalsAndTheStoopedBodyKeepTheirScaleAndKind(GameTestHelper h){run(h,LabyrinthPlace.TUNNEL_PERIPHERY,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_giant_reload",timeoutTicks=900) public static void savedSignalsAndTheStoopedBodyKeepTheirScaleAndKind(GameTestHelper h){run(h,LabyrinthPlace.TUNNEL_PERIPHERY,(f,p)->{
         var place=LabyrinthPlace.TUNNEL_PERIPHERY;f.source(p,place);age(f,p,place,160);var own=step(f,p,place);var a=UncannyStories.actor(p,own,"CastGiant");var id=a.getUUID();a.load(a.saveWithoutId(new CompoundTag()));f.reload();h.assertTrue(a.getUUID().equals(id)&&a.getBbHeight()<=2.8&&a.getScale()==2.5F,"the five-block standing mesh fits the tunnel in its folded native bounds");h.assertTrue(UncannyStories.green(f.own(p,place))&&WitnessAccount.Story.TUNNEL_PERIPHERY.kind.equals("survival"),"save/load preserves signal phase and a fixed Witness kind");
     });}
     @AfterBatch(batch="uncanny_giant_reload") public static void giantLoadDone(ServerLevel l){close();}
@@ -166,14 +170,14 @@ public final class UncannyTests {
         });
     }
     @AfterBatch(batch="tunnel134_old") public static void tunnel134Done(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_sleep",timeoutTicks=300) public static void sleepingCutsOnlyThisNightAndNeverPutsTheReaderInTheEmptyBed(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_sleep",timeoutTicks=900) public static void sleepingCutsOnlyThisNightAndNeverPutsTheReaderInTheEmptyBed(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         var place=LabyrinthPlace.MISSING_SLEEP;var peer=f.player("sleep_peer",place);f.source(p,place);long time=f.level(place).getDayTime();click(f,p,place,UncannyRooms.BED_AT);
         h.assertTrue(f.own(p,place).getInt("Sleeps")==1&&f.own(p,place).getInt("NightClock")==7200&&!p.isSleeping(),"a genuine bed interaction moves to a missing interval");h.assertTrue(f.level(place).getDayTime()==time&&f.own(peer,place).getInt("Sleeps")==0,"the world's day and the peer's night do not jump");h.assertTrue(p.position().distanceToSqr(Vec3.atCenterOf(f.base(place).offset(UncannyRooms.BED_AT)))>4,"the reader wakes somewhere the bed camera cannot explain");f.reload();h.assertTrue(UncannyStories.locked(p),"an explicit bed attempt retains its committed night across reload");
         var own=f.own(p,place);own.putInt("UncannyAge",own.getInt("FirstSleepAge")+1805);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
         h.assertTrue(own.getInt("Sleeps")==0&&!own.getBoolean("UncannyFailed")&&!UncannyStories.locked(p),"a first night left unfinished lapses and unlocks the room; it does not fail it");
     });}
     @AfterBatch(batch="uncanny_sleep") public static void sleepDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_closed_door",timeoutTicks=300) public static void aClosedParentsDoorAloneCannotStandInForBothKindsOfEvidence(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_closed_door",timeoutTicks=900) public static void aClosedParentsDoorAloneCannotStandInForBothKindsOfEvidence(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         var place=LabyrinthPlace.MISSING_SLEEP;f.source(p,place);click(f,p,place,UncannyRooms.BED_AT);click(f,p,place,UncannyRooms.BED_AT);click(f,p,place,UncannyRooms.PARENTS_DOOR);
         h.assertTrue(!f.own(p,place).getBoolean("Ready")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"closing a door without seeing direct and recorded forms grants nothing");h.assertTrue(f.own(p,place).getInt("Sleeps")==2,"the interrupted night keeps both actual bed attempts");
     });}
@@ -194,7 +198,7 @@ public final class UncannyTests {
         h.onEachTick(()->{if(p.getMainHandItem().is(UncannyRegistry.CLEAVER.get())&&next[0]<cells.size()&&f.in.getServer().getTickCount()%8==0){if(!UncannyFleshBlock.is(f.level(place).getBlockState(f.base(place).offset(cells.get(next[0]))))){next[0]++;return;}var own=f.own(p,place);int before=own.getInt("Peeled");UncannyStories.peel(p,f.base(place),cells.get(next[0]),own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);if(own.getInt("Peeled")==before+1)next[0]++;}});
     }
     @AfterBatch(batch="uncanny_peel") public static void peelDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_growth",timeoutTicks=300) public static void sharedGrowthAndTheOriginalWorkersBrokenToolSurviveReload(GameTestHelper h){run(h,LabyrinthPlace.LAYERED_MAN,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_growth",timeoutTicks=900) public static void sharedGrowthAndTheOriginalWorkersBrokenToolSurviveReload(GameTestHelper h){run(h,LabyrinthPlace.LAYERED_MAN,(f,p)->{
         var place=LabyrinthPlace.LAYERED_MAN;f.source(p,place);var worker=f.level(place).getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(f.base(place),place),a->a.role()==LiteraryActor.UNCANNY_PEELER).getFirst();var id=worker.getUUID();var tool=worker.getMainHandItem();h.assertTrue(!tool.isEmpty()&&tool.getDamageValue()>=tool.getMaxDamage()-9,"the actual worker starts with a worn original tool");
         var own=f.own(p,place);own.putInt("UncannyAge",800);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);f.reload();UncannyStories.arrive(p,place,own);h.assertTrue(f.level(place).getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(f.base(place),place),a->a.role()==LiteraryActor.UNCANNY_PEELER).size()==1&&worker.getUUID().equals(id),"saved staging never fabricates another exhausted worker");h.assertTrue(UncannyRooms.CELLAR_DOOR.getZ()>-10,"the true upper threshold and emergency ladder remain beyond the growth envelope");
     });}
@@ -229,7 +233,7 @@ public final class UncannyTests {
         h.assertTrue(l.getBlockState(door).getValue(UncannyPropBlock.STAGE)==0&&f.own(p,place).getInt("FalseAuto")==0,"the frame shuts again when the floodlight comes back on");
     });}
     @AfterBatch(batch="uncanny_light") public static void lightDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_buzzer",timeoutTicks=300) public static void invitingTheVisitorDoesNotInviteOrResolveThePeer(GameTestHelper h){run(h,LabyrinthPlace.MOTION_LIGHT,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_buzzer",timeoutTicks=900) public static void invitingTheVisitorDoesNotInviteOrResolveThePeer(GameTestHelper h){run(h,LabyrinthPlace.MOTION_LIGHT,(f,p)->{
         var place=LabyrinthPlace.MOTION_LIGHT;var peer=f.player("buzzer_peer",place);click(f,peer,place,UncannyRooms.INTERCOM);h.assertTrue(f.own(peer,place).getBoolean("FoyerAdmitted136")&&!f.own(peer,place).getBoolean("Read_Source")&&!f.own(p,place).getBoolean("FoyerAdmitted136"),"the first actual unread release admits only its own reader's visitor");
         f.source(p,place);var before=f.own(p,place).getUUID("CastVisitor");click(f,p,place,UncannyRooms.INTERCOM);
         h.assertTrue(f.own(p,place).getBoolean("UncannyFailed")&&f.own(peer,place).getBoolean("FoyerAdmitted136"),"each brass release keeps its own independent admission");h.assertTrue(before.equals(f.own(p,place).getUUID("CastVisitor"))&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.MOTION_LIGHT),"the same visitor remains and no survival is awarded");
@@ -244,17 +248,17 @@ public final class UncannyTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="uncanny_mirror") public static void mirrorDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_mirror_no_blood",timeoutTicks=300) public static void absorptionAndInvulnerabilityCannotBuyBloodSight(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_mirror_no_blood",timeoutTicks=900) public static void absorptionAndInvulnerabilityCannotBuyBloodSight(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.setHealth(20);p.setAbsorptionAmount(4);p.invulnerableTime=0;h.assertTrue(!UncannySenses.wakeMirror(p)&&!UncannySenses.mirror(p)&&p.getHealth()==20,"absorbed damage is not a blood payment");p.setAbsorptionAmount(0);p.setGameMode(GameType.CREATIVE);h.assertTrue(!UncannySenses.wakeMirror(p)&&!UncannySenses.mirror(p),"invulnerability grants no free activation");
     });}
     @AfterBatch(batch="uncanny_mirror_no_blood") public static void noBloodDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_ring",timeoutTicks=300) public static void theRingShowsOnlyTrackedNativeHumanoidsAndNeverGrantsWitness(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_ring",timeoutTicks=900) public static void theRingShowsOnlyTrackedNativeHumanoidsAndNeverGrantsWitness(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
         var peer=f.player("ring_peer",LabyrinthPlace.SECOND_WAITRESS);p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(UncannyRegistry.BONE_RING.get()));var own=f.own(p,LabyrinthPlace.SECOND_WAITRESS);var fake=UncannyStories.actor(p,own,"CastFake");var theirs=UncannyStories.actor(peer,f.own(peer,LabyrinthPlace.SECOND_WAITRESS),"CastFake");f.at(p,LabyrinthPlace.SECOND_WAITRESS,-5,0,-20);
         var view=UncannySenses.view(p);var ids=new HashSet<Integer>();for(var row:view.getList("Sensed",Tag.TAG_COMPOUND))ids.add(((CompoundTag)row).getInt("Id"));
         h.assertTrue(ids.contains(fake.getId())&&!ids.contains(theirs.getId())&&view.getBoolean("Ring"),"a ring senses the actual nearby body without revealing a private peer's mimic");h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"holding a magical item supplies no ending credit");
     });}
     @AfterBatch(batch="uncanny_ring") public static void ringDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_pause",timeoutTicks=300) public static void aReadingMenuPausesThePersonalHazardWithoutRestockingAnything(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
+    @GameTest(template="empty",batch="uncanny_pause",timeoutTicks=900) public static void aReadingMenuPausesThePersonalHazardWithoutRestockingAnything(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
         var place=LabyrinthPlace.SECOND_WAITRESS;f.source(p,place);age(f,p,place,450);h.assertTrue(UncannyBreakfast.open(p,p.getMainHandItem())&&p.containerMenu instanceof LiteraryVignettes.Pages,"the original menu opens the actual reading UI");int age=f.own(p,place).getInt("UncannyAge");var original=f.own(p,place).getCompound("OriginalMeal").copy();for(int i=0;i<20;i++)step(f,p,place);h.assertTrue(f.own(p,place).getInt("UncannyAge")==age&&f.own(p,place).getCompound("OriginalMeal").equals(original),"menus pause danger without replacing finite custody");p.closeContainer();
     });}
     @AfterBatch(batch="uncanny_pause") public static void pauseDone(ServerLevel l){close();}

@@ -21,7 +21,13 @@ import net.neoforged.neoforge.client.event.*;
 /** Native socket-client source/menu/bed/feed/door/health actions and genuine GPU readback. Opt-in only. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class UncannySocketClient {
-    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,motionPulls,terrainStep=-1,terrainSentAge=-1000;private static String extraShot,shot;private static boolean archiveRequested;private static boolean stopAfter,closed,paid,paperOpened;private static final Set<String> captures=new HashSet<>();
+    private static int phase,age,clicked=-100,selected,feedMask,paperSent=-1,bedroomLeg,lightPhase=-1,lightTicks,motionPulls,terrainStep=-1,terrainSentAge=-1000;private static String extraShot,shot;private static boolean archiveRequested;private static boolean stopAfter,closed,paid,paperOpened;
+    /**
+     * The phase whose acknowledgement was sent, and when. Run 1352: after B's reconnect the server turned away A's one
+     * acknowledgement of the CCTV phase (it counts none while a reader is still arriving), and A never sent another. It is sent
+     * again every 100 ticks until the phase moves on; the server keeps acknowledgements as a set, so a repeat changes nothing.
+     */
+    private static int ackedPhase=-1,ackedAge;private static final Set<String> captures=new HashSet<>();
     private static boolean trafficHeard,foyerWindHeard,foyerBabbleHeard,foyerBuzzerHeard;private static net.minecraft.client.resources.sounds.SimpleSoundInstance vanillaTunnel;
     @SubscribeEvent public static void traffic(net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent e){if(!UncannySocketProof.enabled()||e.getSound()==null)return;switch(e.getSound().getLocation().toString()){case TheOldestHouse.MOD_ID+":tunnel_traffic"->trafficHeard=true;case TheOldestHouse.MOD_ID+":foyer.wind"->foyerWindHeard=true;case TheOldestHouse.MOD_ID+":foyer.babble"->foyerBabbleHeard=true;case TheOldestHouse.MOD_ID+":foyer.buzzer"->foyerBuzzerHeard=true;default->{}}}
     private UncannySocketClient(){}
@@ -83,6 +89,7 @@ public final class UncannySocketClient {
         }
         if(next!=phase){phase=next;age=0;clicked=-100;feedMask=0;selected=0;bedroomLeg=0;closed=false;paid=false;paperOpened=false;paperSent=-1;lightPhase=-1;lightTicks=0;motionPulls=0;stop(mc);if(mc.screen!=null)mc.setScreen(null);if(phase==9||phase==11)UncannyCameras.clear();}age++;
         stop(mc);var b=UncannyClient.base();
+        if(ackedPhase==phase&&age-ackedAge>=100){ackedAge=age;mc.player.connection.sendCommand("uncannyproof "+phase);TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} acknowledges phase {} again",role(),phase);}
         if(phase==5&&age%100==0){var at=mc.player.blockPosition();TheOldestHouse.LOGGER.info("UNCANNY BEDROOM WALK {} base={} leg={} feet={} below={} body={} head={} height={} step={}",role(),b,bedroomLeg,mc.player.position(),mc.level.getBlockState(at.below()),mc.level.getBlockState(at),mc.level.getBlockState(at.above()),mc.player.getBbHeight(),mc.player.maxUpStep());}
         if(age%100==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} phase={} room={} eye={} feeds={} headPixels={} health={} ring={} mirror={} screen={}",role(),phase,UncannyClient.room(),mc.player.getEyePosition(),feedMask,UncannyCameras.verifiedHeadPixels(),mc.player.getHealth(),UncannyClient.ring(),UncannyClient.mirror(),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
         for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&UncannyStories.role(a.role())&&a.owner().isPresent())require(a.owner().get().equals(mc.player.getUUID()),"another reader's private original was tracked");
@@ -168,7 +175,7 @@ public final class UncannySocketClient {
         if(extraShot!=null){try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(UncannySocketProof.folder().resolve(extraShot+".png"));}extraShot=null;}if(shot==null)return;
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(UncannySocketProof.folder().resolve(shot+".png"));}
         String view=shot.substring(role().length()+1);captures.add(phase+":"+view);
-        if((!view.startsWith("foyer-")||view.equals("foyer-cycles"))&&!view.equals("diner-room"))mc.player.connection.sendCommand("uncannyproof "+phase);
+        if((!view.startsWith("foyer-")||view.equals("foyer-cycles"))&&!view.equals("diner-room")){mc.player.connection.sendCommand("uncannyproof "+phase);ackedPhase=phase;ackedAge=age;}
         shot=null;if(stopAfter){stopAfter=false;mc.stop();}
     }
 }
