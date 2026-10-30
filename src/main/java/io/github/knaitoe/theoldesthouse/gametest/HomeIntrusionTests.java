@@ -22,6 +22,10 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.EntityType;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.gametest.*;
 
@@ -270,6 +274,108 @@ public final class HomeIntrusionTests {
             h.assertTrue(HomeBelongings.record(p).isEmpty() && HomeBelongings.record(peer).isEmpty()
                     && f.barrel().getItem(0).getCount() == 6, "a contended native cache session assigns neither ownership nor a return to either reader");
             h.assertTrue(java.util.stream.IntStream.range(0, f.barrel().getContainerSize()).anyMatch(i -> ItemStack.matches(f.barrel().getItem(i), expected)), "the actual deposited original stays in its native cache");
+        });
+    }
+
+    /** 0.4.190: the eight experience rooms remembered in the manor, as block views and packet figures for their reader alone. */
+    @GameTest(template = "empty", batch = "home_intrusions", timeoutTicks = 1000)
+    public static void theManorRemembersEachExperienceOnlyForItsReaderAndChangesNothingReal(GameTestHelper h) {
+        run(h, 1546000, f -> {
+            var o = f.origin; var placed = new ArrayList<BlockPos>();
+            java.util.function.BiConsumer<BlockPos, BlockState> set = (at, state) -> { f.level.setBlock(at, state, 3); placed.add(at); };
+            try {
+                // The great room's west wall with its two windows, the study's west wall and floor, three treads, the hall floor.
+                for (int z = 1; z <= 14; z++) for (int y = 1; y <= 5; y++)
+                    set.accept(o.offset(0, y, z), (z == 4 || z == 11) && (y == 3 || y == 4) ? Blocks.GLASS_PANE.defaultBlockState() : Blocks.OAK_PLANKS.defaultBlockState());
+                for (int z = 16; z <= 25; z++) { set.accept(o.offset(2, 0, z), Blocks.OAK_PLANKS.defaultBlockState()); for (int y = 1; y <= 2; y++) set.accept(o.offset(1, y, z), Blocks.OAK_PLANKS.defaultBlockState()); }
+                for (int i = 0; i < 3; i++) set.accept(o.offset(20, 1 + i, 16 - i), Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, net.minecraft.core.Direction.NORTH));
+                for (int x = 13; x <= 16; x++) for (int z = 5; z <= 25; z++) set.accept(o.offset(x, 0, z), Blocks.OAK_PLANKS.defaultBlockState());
+                var p = f.player(h, "remembering_reader"); var peer = f.player(h, "remembering_peer");
+                f.at(peer, o.offset(9, 1, 9), 0, 0);
+                for (var story : List.of(WitnessAccount.Story.WALLPAPER, WitnessAccount.Story.MODEL_HOME, WitnessAccount.Story.WINCHESTER, WitnessAccount.Story.CHILD_ROOM,
+                        WitnessAccount.Story.PRESERVED_CAVE, WitnessAccount.Story.MINIATURES, WitnessAccount.Story.HILL_NURSERY, WitnessAccount.Story.BACKSEAT))
+                    WitnessAccount.resolve(f.data(), p.getUUID(), story, "remembered");
+                NativeTestPlayers.packets(p); NativeTestPlayers.packets(peer);
+                for (int i = 0; i < 22; i++) { HouseRemembers.tickPlayer(p); HouseRemembers.tickPlayer(peer); }
+                var shown = HouseRemembers.shown(p); var paper = ClassicsRegistry.WALLPAPER.get();
+                h.assertTrue(shown.get(o.offset(0, 1, 1)) != null && shown.get(o.offset(0, 1, 1)).is(paper) && shown.get(o.offset(0, 5, 2)).is(paper)
+                        && !shown.containsKey(o.offset(0, 1, 3)), "the first day papers two strips of the great room's west wall: " + HouseRemembers.status(p));
+                h.assertTrue(shown.get(o.offset(2, 1, -3)) != null && shown.get(o.offset(2, 1, -3)).is(Blocks.OAK_LOG)
+                        && shown.values().stream().anyMatch(s -> s.is(Blocks.OAK_LEAVES)), "an oak stands outside the front window");
+                var door = HouseRemembers.door(p);
+                h.assertTrue(o.offset(2, 1, 20).equals(door) && shown.get(door).is(Blocks.SPRUCE_DOOR) && !shown.get(door).getValue(DoorBlock.OPEN)
+                        && shown.get(door.above()).getValue(DoorBlock.HALF) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER,
+                        "a shut door stands against the study's west wall between its windows");
+                h.assertTrue(o.offset(20, 1, 16).equals(HouseRemembers.toy(p)), "the teddy sits on the lowest tread");
+                var sent = NativeTestPlayers.packets(p);
+                h.assertTrue(sent.stream().anyMatch(q -> q instanceof net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket u && u.getPos().equals(o.offset(0, 1, 1)) && u.getBlockState().is(paper))
+                        && sent.stream().anyMatch(q -> q instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket a && a.getType() == EntityType.BLOCK_DISPLAY),
+                        "the views are block updates and packet figures addressed to the reader");
+                var peerSent = NativeTestPlayers.packets(peer);
+                h.assertTrue(HouseRemembers.shown(peer).isEmpty() && peerSent.stream().noneMatch(q -> q instanceof net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
+                        || q instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket), "a peer in the same room is shown nothing");
+                h.assertTrue(f.level.getBlockState(o.offset(0, 1, 1)).is(Blocks.OAK_PLANKS) && f.level.getBlockState(o.offset(2, 1, -3)).isAir()
+                        && f.level.getBlockState(door).isAir(), "nothing real in the manor changes");
+                // A House day later: four strips (the glass is never papered) and the teddy a step higher.
+                var own = HouseRemembers.record(p);
+                own.putLong("Since_wallpaper_nursery", own.getLong("Since_wallpaper_nursery") - 1); own.putLong("Since_child_room", own.getLong("Since_child_room") - 1);
+                f.data().setStateEntry(HouseRemembers.STATE, p.getUUID().toString(), own);
+                for (int i = 0; i < 20; i++) HouseRemembers.tickPlayer(p);
+                shown = HouseRemembers.shown(p);
+                h.assertTrue(shown.get(o.offset(0, 1, 4)).is(paper) && !shown.containsKey(o.offset(0, 3, 4)) && shown.get(o.offset(0, 5, 4)).is(paper)
+                        && !shown.containsKey(o.offset(0, 1, 5)), "the second day reaches four strips around the window");
+                h.assertTrue(o.offset(20, 2, 15).equals(HouseRemembers.toy(p)), "the teddy has climbed one tread");
+                // The door opens onto plaster and shuts again.
+                NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p, InteractionHand.MAIN_HAND, door,
+                        new BlockHitResult(door.getCenter(), net.minecraft.core.Direction.EAST, door, false)));
+                HouseRemembers.tickPlayer(p);
+                h.assertTrue(HouseRemembers.shown(p).get(door).getValue(DoorBlock.OPEN) && f.level.getBlockState(door.west()).is(Blocks.OAK_PLANKS), "opened, it shows the wall behind it");
+                for (int i = 0; i < 61; i++) HouseRemembers.tickPlayer(p);
+                h.assertTrue(!HouseRemembers.shown(p).get(door).getValue(DoorBlock.OPEN), "it shuts itself again");
+                // Walking into the hall from the great room: a pew faces the way the reader came, and is gone when they leave.
+                f.at(p, o.offset(13, 1, 10), 270, 0); HouseRemembers.tickPlayer(p);
+                f.at(p, o.offset(14, 1, 10), 270, 0); HouseRemembers.tickPlayer(p);
+                h.assertTrue(HouseRemembers.pewShown(p), "the first hall entry after the cave holds a pew");
+                f.at(p, o.offset(12, 1, 10), 90, 0); HouseRemembers.tickPlayer(p);
+                h.assertTrue(!HouseRemembers.pewShown(p), "leaving the hall takes the pew");
+                // Standing still on one day, then standing elsewhere on the next: the figure stands where they stood.
+                f.at(p, o.offset(10, 1, 10), 45, 0); p.setOnGround(true); HouseRemembers.tickPlayer(p); HouseRemembers.tickPlayer(p);
+                own = HouseRemembers.record(p); own.putLong("StoodDay", own.getLong("StoodDay") - 1); f.data().setStateEntry(HouseRemembers.STATE, p.getUUID().toString(), own);
+                f.at(p, o.offset(10, 1, 6), 45, 0); p.setOnGround(true); NativeTestPlayers.packets(p); HouseRemembers.tickPlayer(p); HouseRemembers.tickPlayer(p);
+                h.assertTrue(o.offset(10, 1, 10).equals(HouseRemembers.figure(p)) && NativeTestPlayers.packets(p).stream().anyMatch(q ->
+                        q instanceof net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket e && e.getSlots().stream().anyMatch(s -> s.getSecond().is(Items.PLAYER_HEAD))),
+                        "a small figure wearing the reader's head stands where they last stood the day before");
+                // Pounding on the nearest wall, answered knock for knock.
+                f.at(p, o.offset(10, 1, 12), 0, 0); HouseRemembers.tickPlayer(p);
+                var wall = HouseRemembers.nearestWall(p);
+                h.assertTrue(o.offset(10, 2, 15).equals(wall) && HouseRemembers.pound(p, 3), "the pounding comes on the nearest wall: " + wall);
+                NativeTestPlayers.sounds(p); NativeTestPlayers.sounds(peer);
+                for (int i = 0; i < 40; i++) HouseRemembers.tickPlayer(p);
+                var blows = NativeTestPlayers.sounds(p).stream().filter(s -> s.getSound().value() == net.minecraft.sounds.SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR).toList();
+                h.assertTrue(blows.size() == 3 && blows.getFirst().getZ() == o.getZ() + 15.5 && HouseRemembers.hillState(p) == 2 && NativeTestPlayers.sounds(peer).isEmpty(),
+                        "three private blows, then the wall listens");
+                for (int i = 0; i < 3; i++) NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(p, wall, net.minecraft.core.Direction.NORTH, PlayerInteractEvent.LeftClickBlock.Action.START));
+                for (int i = 0; i < 80; i++) HouseRemembers.tickPlayer(p);
+                var answers = NativeTestPlayers.sounds(p).stream().filter(s -> s.getSound().value() == net.minecraft.sounds.SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR).toList();
+                h.assertTrue(answers.size() == 3 && HouseRemembers.record(p).getInt("HillAnswered") == 1 && HouseRemembers.hillState(p) == 0,
+                        "three knocks back are answered three times, and the wall is quiet for the day");
+                // At a night window: the stowaway sits behind the reader's shoulder in the glass, and is gone when they turn.
+                f.at(p, o.offset(2, 1, 2), 180, -10); HouseRemembers.tickPlayer(p); NativeTestPlayers.packets(p);
+                var seen = HouseRemembers.stowaway(p, HouseRemembers.view(p), o, HouseLayout.WINDOWS.getFirst());
+                var payloads = NativeTestPlayers.packets(p).stream().filter(q -> q instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c
+                        && c.payload() instanceof io.github.knaitoe.theoldesthouse.network.LiteraryViewPayload v && v.models().getCompound("Remembers").contains("Stowaway")).toList();
+                h.assertTrue(payloads.size() == 1 && Math.abs(seen.z - (o.getZ() - 2.4)) < .01 && Math.abs(seen.x - (o.getX() + 2.9)) < .01 && HouseRemembers.seated(p),
+                        "the stowaway is shown beyond the glass, reflected from behind the reader: " + seen);
+                f.at(p, o.offset(2, 1, 2), 0, 0); HouseRemembers.tickPlayer(p);
+                h.assertTrue(!HouseRemembers.seated(p) && NativeTestPlayers.packets(p).stream().anyMatch(q -> q instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c
+                        && c.payload() instanceof io.github.knaitoe.theoldesthouse.network.LiteraryViewPayload v && v.models().contains("Remembers") && !v.models().getCompound("Remembers").contains("Stowaway")),
+                        "turning from the glass takes it back");
+                // Leaving the manor withdraws every view; the account is untouched.
+                f.at(p, o.north(12), 0, 0); HouseRemembers.tickPlayer(p);
+                h.assertTrue(HouseRemembers.view(p) == null && WitnessAccount.count(f.data(), p.getUUID()) == 8, "out of the manor nothing is shown");
+            } finally {
+                for (var at : placed) f.level.removeBlock(at, false);
+            }
         });
     }
 }
