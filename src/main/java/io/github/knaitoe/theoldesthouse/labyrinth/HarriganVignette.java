@@ -802,7 +802,7 @@ public final class HarriganVignette {
     static final String GREETING = "This is Harrigan. I don't pick up this phone. If you have a name for me, leave it after the tone.";
 
     /** Nothing leaves the House: not a call, not a text. The clock still works. */
-    private static boolean noService(ServerPlayer player) {
+    static boolean noService(ServerPlayer player) {
         return HouseDimensions.isHouseDimension(player.level().dimension());
     }
 
@@ -811,7 +811,7 @@ public final class HarriganVignette {
     }
 
     /** One line of the thread with him, kept with the reader's phone record. */
-    private static void log(ServerPlayer player, int who, String text) {
+    static void log(ServerPlayer player, int who, String text) {
         LabyrinthData data = LabyrinthData.get(player.server);
         CompoundTag p = playerState(data, player.getUUID());
         var thread = p.getList("Thread0505", net.minecraft.nbt.Tag.TAG_COMPOUND);
@@ -897,7 +897,7 @@ public final class HarriganVignette {
         } else if (!p.getBoolean("Contact") || usedToday(p, player.server)) result = "unanswered";
         else {
             result = "voicemail";
-            call.putString("Greeting", GREETING);
+            call.putString("Greeting", HarriganPhones.greeting(p));
         }
         call.putString("Result", result);
         log(player, NOTE, switch (result) {
@@ -1254,6 +1254,7 @@ public final class HarriganVignette {
         p.remove("HostileBed");
         p.remove("HostileDay");
         savePlayerState(data, caller.getUUID(), p);
+        HarriganPhones.flies(caller);
     }
 
     private static void spawnGhost(ServerLevel level, ServerPlayer target, UUID owner, int mode, @Nullable UUID playerTarget) {
@@ -1492,14 +1493,14 @@ public final class HarriganVignette {
     // ---------------------------------------------------------------------
     // State and utility
 
-    private static CompoundTag playerState(LabyrinthData data, UUID player) {
+    public static CompoundTag playerState(LabyrinthData data, UUID player) {
         CompoundTag state = data.state(ID);
         CompoundTag players = state.getCompound("Players");
         String key = player.toString();
         return players.contains(key) ? players.getCompound(key).copy() : new CompoundTag();
     }
 
-    private static void savePlayerState(LabyrinthData data, UUID player, CompoundTag value) {
+    public static void savePlayerState(LabyrinthData data, UUID player, CompoundTag value) {
         CompoundTag state = data.state(ID);
         CompoundTag players = state.getCompound("Players");
         players.put(player.toString(), value.copy());
@@ -1507,7 +1508,7 @@ public final class HarriganVignette {
         data.setState(ID, state);
     }
 
-    private static boolean isNight(MinecraftServer server) {
+    static boolean isNight(MinecraftServer server) {
         long time = HouseCalendar.timeOfDay(server);
         return time >= NIGHT_START && time < NIGHT_END;
     }
@@ -1544,7 +1545,7 @@ public final class HarriganVignette {
                 && rel.getZ() >= -22 && rel.getZ() <= -19;
     }
 
-    private static boolean hasItem(ServerPlayer player, net.minecraft.world.item.Item item) {
+    static boolean hasItem(ServerPlayer player, net.minecraft.world.item.Item item) {
         return player.getInventory().contains(new ItemStack(item));
     }
 
