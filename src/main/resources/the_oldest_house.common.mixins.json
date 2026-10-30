@@ -11,7 +11,10 @@
     "OneArmMixin",
     "HouseMobTrackingMixin",
     "StillRabbitMixin",
-    "PortraitPaintingMixin"
+    "PortraitPaintingMixin",
+    "ArtifactGripMixin",
+    "ArtifactPaddleMixin",
+    "ArtifactSnowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

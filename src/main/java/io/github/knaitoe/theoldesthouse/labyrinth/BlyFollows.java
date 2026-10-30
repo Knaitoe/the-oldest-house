@@ -58,6 +58,8 @@ public final class BlyFollows {
     /** The hold and the carry: held a moment in the dark, then walked to the water's edge. True if it began. */
     public static boolean carry(ServerPlayer p){
         var l=p.serverLevel();if(carrying(p)||HouseDimensions.isHouseDimension(l.dimension())||p.isInWater())return false;
+        // 0.4.199: Flora's doll, carried, and the Lady passes them by (Artifacts).
+        if(Artifacts.carries(p,Artifacts.Kind.DOLL))return false;
         var to=edge(l,p);if(to==null||to.distanceToSqr(p.position())<1)return false;
         CARRIES.put(p.getUUID(),new Carry(p.position(),to,l.getGameTime()));
         // Counted, so the reader's account can say how often she came for them.

@@ -130,7 +130,7 @@ public final class Keepsakes {
             case "plain/Photo" -> "Held still, nothing far off can keep its eyes on you. The bird waited the same way.";
             case "borrasca/Compass" -> "It found the missing. Away from the House it points to where you last fell; inside, to where lost things are kept.";
             case "borrasca/Patch" -> "Her name, sewn in. Once a day, if you fall away from the House, what is in your hand stays with you.";
-            default -> null;
+            default -> Artifacts.line(place, key);
         };
     }
     public static void inscribe(ItemStack s, LabyrinthPlace place, String key) {

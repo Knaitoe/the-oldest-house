@@ -424,7 +424,7 @@ Tools that already work (the tally counter, the shield, the Bone Ring, the Smoky
 | The leaf of the vault register (Usher, fail) | Carried, the dead in their world (zombies, skeletons and the like) do not notice them until within four blocks. | World | The house already wrote them down among its dead. |
 | The cap from the broken post (Last Stop) | Worn, passive animals follow them as if led. | World | The herd let them walk out of the loop. |
 
-**Artifacts still to give (build 7), each with its effect:**
+**Artifacts given in build 7** (0.4.199, docs/ARTIFACTS_0_4_199.md), each with its effect. All twenty are built as listed; "Their world" in that doc means outside the House:
 
 | Room | Artifact | Effect | Where |
 |---|---|---|---|
@@ -473,6 +473,6 @@ Tools that already work (the tally counter, the shield, the Bone Ring, the Smoky
 4. **Bly's haunt.**
 5. **The eight House-only changes,** which share one private-view mechanism.
 6. **The contests' trades,** a few rooms at a time.
-7. **The keepsakes and artifacts,** in one batch with their sprites.
+7. **The keepsakes and artifacts,** in one batch with their sprites. Built in 0.4.192, 0.4.198 and 0.4.199 (docs/ARTIFACTS_0_4_199.md); only the Wheel key waits, for the owner's word on the Mother.
 
 Each batch is tested and validated in CI before the next.

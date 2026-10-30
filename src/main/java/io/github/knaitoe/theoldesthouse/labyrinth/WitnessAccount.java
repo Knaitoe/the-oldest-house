@@ -190,6 +190,8 @@ public final class WitnessAccount {
         updateBook(player,true);
         io.github.knaitoe.theoldesthouse.journal.CoAuthor.ended(player,story);
         io.github.knaitoe.theoldesthouse.journal.Grounding.ended(player,story);
+        // 0.4.199: the twenty rooms that gave nothing to carry out now give an artifact that does something (Artifacts).
+        Artifacts.ended(player,story,outcome);
         player.displayClientMessage(Component.literal(ready(data,player.getUUID())
                 ?"A passage in your account is readable now. It describes a cell."
                 :"You can set this part of the account down now."),false);
