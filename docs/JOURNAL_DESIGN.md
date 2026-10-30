@@ -2,7 +2,7 @@
 
 The owner wants players to keep journals and writings of their own: "to not just draft their own house of leaves, but to create their own wall of mad writings like zampano's." They proposed five ideas and dropped the first. On the other four, the owner's answer was: "I think the journal might be worth developing as a custom sub system. I especially like the idea of a damaged book returning on death. The custom sub system fixes worrying about signing the book too."
 
-This document is the plan for that subsystem. Step 1, the journal and its page renderer, is built in 0.4.177 ([JOURNAL_0_4_177.md](JOURNAL_0_4_177.md)). Step 2, Zampanò's courtyard on the same renderer, is built in 0.4.178 ([ZAMPANO_DRAWERS_0_4_178.md](ZAMPANO_DRAWERS_0_4_178.md)). Step 3, pencil rubbings, is built in 0.4.179 ([JOURNAL_RUBBINGS_0_4_179.md](JOURNAL_RUBBINGS_0_4_179.md)). Step 4, the co-author, is built in 0.4.180 ([JOURNAL_COAUTHOR_0_4_180.md](JOURNAL_COAUTHOR_0_4_180.md)). Step 5, torn pages and pinning, is built in 0.4.199 ([JOURNAL_TORN_PAGES_0_4_199.md](JOURNAL_TORN_PAGES_0_4_199.md)), and so are step 6, grounding ([JOURNAL_GROUNDING_0_4_199.md](JOURNAL_GROUNDING_0_4_199.md)), and step 7, the post-mortem journal ([JOURNAL_POST_MORTEM_0_4_199.md](JOURNAL_POST_MORTEM_0_4_199.md)).
+This document is the plan for that subsystem. Step 1, the journal and its page renderer, is built in 0.4.177 ([JOURNAL_0_4_177.md](JOURNAL_0_4_177.md)). Step 2, Zampanò's courtyard on the same renderer, is built in 0.4.178 ([ZAMPANO_DRAWERS_0_4_178.md](ZAMPANO_DRAWERS_0_4_178.md)). Step 3, pencil rubbings, is built in 0.4.179 ([JOURNAL_RUBBINGS_0_4_179.md](JOURNAL_RUBBINGS_0_4_179.md)). Step 4, the co-author, is built in 0.4.180 ([JOURNAL_COAUTHOR_0_4_180.md](JOURNAL_COAUTHOR_0_4_180.md)). Step 5, torn pages and pinning, is built in 0.4.199 ([JOURNAL_TORN_PAGES_0_4_199.md](JOURNAL_TORN_PAGES_0_4_199.md)), and so are step 6, grounding ([JOURNAL_GROUNDING_0_4_199.md](JOURNAL_GROUNDING_0_4_199.md)), step 7, the post-mortem journal ([JOURNAL_POST_MORTEM_0_4_199.md](JOURNAL_POST_MORTEM_0_4_199.md)), and step 8, the House quoting the reader ([JOURNAL_QUOTES_0_4_199.md](JOURNAL_QUOTES_0_4_199.md)). Every step is built.
 
 ## Agreed
 
@@ -202,6 +202,11 @@ The House quotes a reader's own words rarely, exactly, and only to that reader. 
 **Who sees it:**
 - Only the reader. A quote is never put on a pinned page or in any account another reader can read.
 - A reader who has opted out of the House's read is never quoted. The read itself still never looks at the journal.
+
+Built in 0.4.199 ([JOURNAL_QUOTES_0_4_199.md](JOURNAL_QUOTES_0_4_199.md)), with three choices made in building it:
+- **The quote in the House of Leaves is a page of its own** after its leaf, so no leaf is rewritten. When no chapter names a place the reader wrote in, the House's own chapter (IV) quotes the first place they wrote in.
+- **The ending's last page goes into the reader's journal.** Every ending book can be handed to anyone; the journal is the one book nobody else opens.
+- **Opting out** is the server option that turns the House's read off (`read.readReaders`); there is no separate per-reader switch.
 
 ## Not in scope
 

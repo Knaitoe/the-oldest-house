@@ -27,7 +27,7 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
  * sleep, comes round from a blackout or leaves one of the worst rooms behind, something writes in their journal while they
  * are not looking: on the blank page after their last, through a name they wrote, or under a line that says which way they
  * went. One time in six, never twice in a House day, only on pages begun in the House and never on a page the reader has
- * open. It only adds: the reader's words stay, its crossing-out goes when they delete the word under it, and nothing else of
+ * open. Once, ever, the blank page holds one of the reader's own lines, copied out word for word (Quotes). It only adds: the reader's words stay, its crossing-out goes when they delete the word under it, and nothing else of
  * its ink can be rubbed out. Nothing tells the reader it happened.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
@@ -84,7 +84,10 @@ public final class CoAuthor {
     @SubscribeEvent public static void woke(PlayerWakeUpEvent e){if(e.getEntity() instanceof ServerPlayer p&&!e.wakeImmediately()&&!e.updateLevel())consider(p,Trigger.SLEEP);}
 
     /** One note, now, wherever the other hand finds something to answer. */
-    public static Wrote write(ServerPlayer p,Trigger why){
+    public static Wrote write(ServerPlayer p,Trigger why){return write(p,why,false);}
+    /** The one time the other hand copies out a line of the reader's own (Quotes), now if it can: for the tests, never by chance. */
+    public static Wrote copyOut(ServerPlayer p){return write(p,Trigger.SLEEP,true);}
+    private static Wrote write(ServerPlayer p,Trigger why,boolean onlyCopy){
         var data=Journals.get(p.server);UUID id=p.getUUID();
         if(data.issue(id)==0)return Wrote.NO_JOURNAL;
         var b=data.book(id);int today=Journals.day(p);
@@ -104,11 +107,16 @@ public final class CoAuthor {
         }
         int next=lastHouse+1;
         if(lastHouse>0&&next<=Journals.PAGES&&!open.contains(next)){var page=b.pages.getOrDefault(next,JournalPage.BLANK);if(page.empty()&&page.begun().isEmpty())blank=new Choice(next,new Note(Mark.WRITTEN,BLANK,"",0,.16F,.36F));}
-        var forms=new ArrayList<List<Choice>>();if(!struck.isEmpty())forms.add(struck);if(!answers.isEmpty())forms.add(answers);if(blank!=null)forms.add(List.of(blank));
+        // 0.4.199: once, ever, the blank page may hold one of the reader's own lines instead, word for word, and nothing more.
+        Choice copy=null;
+        if(!b.copied&&blank!=null){var lines=Quotes.eligible(p.server,id);if(!lines.isEmpty())copy=new Choice(next,new Note(Mark.QUOTED,lines.get(random.nextInt(lines.size())).text(),"",0,.16F,.36F));}
+        var forms=new ArrayList<List<Choice>>();
+        if(onlyCopy){if(copy!=null)forms.add(List.of(copy));}
+        else{if(!struck.isEmpty())forms.add(struck);if(!answers.isEmpty())forms.add(answers);if(blank!=null)forms.add(List.of(blank));if(copy!=null)forms.add(List.of(copy));}
         if(forms.isEmpty())return Wrote.NOWHERE;
         var form=forms.get(random.nextInt(forms.size()));var choice=form.get(random.nextInt(form.size()));
         b.pages.put(choice.page(),b.pages.getOrDefault(choice.page(),JournalPage.BLANK).withNote(choice.note()));
-        b.inked=today;data.setDirty();
+        b.inked=today;if(choice.note().mark()==Mark.QUOTED)b.copied=true;data.setDirty();
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"journal_other_hand","trigger",why.name().toLowerCase(java.util.Locale.ROOT),"mark",choice.note().mark().id(),"page",choice.page());
         return Wrote.WROTE;
     }

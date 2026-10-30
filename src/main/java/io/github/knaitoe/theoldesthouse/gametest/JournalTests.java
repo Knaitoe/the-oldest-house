@@ -461,4 +461,107 @@ public final class JournalTests {
             dropped.get(0).discard();found.get(0).discard();
         }).thenSucceed();
     }
+
+    // ------------------------------------------------------------------ 0.4.199: the House quoting the reader (Quotes)
+    static List<String> quotable(net.minecraft.server.MinecraftServer s,java.util.UUID id){return io.github.knaitoe.theoldesthouse.journal.Quotes.eligible(s,id).stream().map(io.github.knaitoe.theoldesthouse.journal.Quotes.Line::text).toList();}
+    static List<String> leaves(ItemStack book){return book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList();}
+    static int quotedPage(Journals data,java.util.UUID id){for(int i=1;i<=Journals.PAGES;i++)if(data.page(id,i).notes().stream().anyMatch(n->n.mark()==JournalPage.Mark.QUOTED))return i;return 0;}
+    private static LiteraryTests.Fixture quoting;
+    @net.minecraft.gametest.framework.AfterBatch(batch="journal_quotes") public static void quotesDone(net.minecraft.server.level.ServerLevel l){if(quoting!=null){quoting.close();quoting=null;}io.github.knaitoe.theoldesthouse.house.HouseConfig.READ_READERS.set(true);}
+    /**
+     * 0.4.199: the House quotes a reader's own lines rarely, exactly and only to them: once a chapter of their House of Leaves,
+     * once ever through the other hand, and in its last page at an ending. Only lines a few words long, from pages begun in the
+     * House, that the filter left as they were; never a line naming another player, a torn line or a deleted one; never on a
+     * torn page or a House of Leaves in anyone else's hands; never at all once the House's read is turned off.
+     */
+    @GameTest(template="empty",batch="journal_quotes",timeoutTicks=600)
+    public static void theHouseQuotesOnlyTheReadersOwnLinesAndOnlyToThem(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);quoting=f;var l=f.in;var server=l.getServer();
+        var hall=f.base(LabyrinthPlace.STRAIGHT_HALL).offset(0,1,-6);var story=f.base(LabyrinthPlace.HILL_NURSERY).offset(0,1,-6);
+        f.chunks.hold(l,new net.minecraft.world.phys.AABB(hall).inflate(12));f.chunks.hold(l,new net.minecraft.world.phys.AABB(story).inflate(12));
+        var p=NativeTestPlayers.survival(h,"journal_quoted");var q=NativeTestPlayers.survival(h,"quote_friend");f.players.add(p);f.players.add(q);var id=p.getUUID();
+        String first="it is longer than it was",lamp="the lamp at the end is the same lamp",naming="quote_friend said to wait here",chalk="the nursery smelled of chalk dust",door="the far door would not stay shut";
+        Runnable toHall=()->{p.teleportTo(l,hall.getX()+.5,hall.getY(),hall.getZ()+.5,0,0);p.hasChangedDimension();};
+        var book=new ItemStack[1];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall and the story room are resident")).thenExecute(()->{
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Quotes.fresh("","it is ### here now\nthe door was open again","it is bad here now\nthe door was open again").equals(List.of("the door was open again")),"a line the filter changed is never kept for quoting; the rest are");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Quotes.lines("short one\n"+first).equals(List.of(first)),"a line a few words long, never two words");
+            var data=Journals.get(server);p.getInventory().setItem(30,data.issue(p));q.getInventory().setItem(30,data.issue(q));
+            toHall.run();
+            h.assertTrue(Journals.edit(p,1,page(first+"\nshort one\n"+naming+"\n"+lamp))==Journals.Edit.ACCEPTED,"the reader writes in a hall");
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(quotable(server,id).equals(List.of(first,lamp)),"only the reader's own lines a few words long, never one naming another reader: "+quotable(server,id));
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Quotes.eligible(server,id).getFirst().place().equals("straight_hall"),"each line keeps where it was written");
+            p.teleportTo(l,story.getX()+.5,story.getY(),story.getZ()+.5,0,0);
+            h.assertTrue(Journals.edit(p,2,page(chalk))==Journals.Edit.ACCEPTED,"and in a story room");
+            toHall.run();
+            h.assertTrue(Journals.edit(p,3,page(door))==Journals.Edit.ACCEPTED,"and on a page it will tear out");
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(quotable(server,id).equals(List.of(first,lamp,chalk,door)),"oldest first: "+quotable(server,id));
+            h.assertTrue(TornPages.tear(p,3)==TornPages.Tear.TEARING,"the third page is torn out");
+            h.assertTrue(Journals.edit(p,1,page(first+"\nshort one\n"+naming))==Journals.Edit.ACCEPTED,"and the lamp line deleted");
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(quotable(server,id).equals(List.of(first,chalk)),"never a torn line or a deleted one: "+quotable(server,id));
+            h.assertTrue(TornPages.reclaim(p,3)&&!quotable(server,id).contains(door),"a torn line is never quoted, even back in its stub");
+            var registries=h.getLevel().registryAccess();server.overworld().getDataStorage().set(Journals.DATA_NAME,Journals.load(Journals.get(server).save(new CompoundTag(),registries),registries));
+            h.assertTrue(quotable(server,id).equals(List.of(first,chalk))&&io.github.knaitoe.theoldesthouse.journal.Quotes.eligible(server,id).get(1).place().equals("hill_nursery"),"what may be quoted, and where it was written, outlast a reload");
+
+            // The House of Leaves: with no chapter naming a place the reader wrote in, the House's own chapter quotes the first.
+            var original=java.util.UUID.randomUUID();var own=new CompoundTag();own.putUUID("Original",original);own.putLong("Seed",1);own.putString("Hand","WILL");own.putString("Front","HOUSE OF LEAVES\n\njournal_quoted");
+            var written=new ListTag();for(String leaf:List.of("I. Outside\n\nOne.","II. The hands\n\nTwo.","III. What happened\n\nThree.","IV. The door\n\nFour.","V. Below\n\nFive."))written.add(net.minecraft.nbt.StringTag.valueOf(leaf));
+            own.put("Pages",written);own.putInt("Found",5);own.putInt("Burned",0);own.putInt("Edition",io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.EDITION);
+            LabyrinthData.get(server).setStateEntry(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.STATE,id.toString(),own);
+            var hol=io.github.knaitoe.theoldesthouse.house.HouseWriting.book("House of Leaves","journal_quoted",io.github.knaitoe.theoldesthouse.house.HouseWriting.WritingStyle.WILL,List.of("HOUSE OF LEAVES"));
+            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,hol,t->{t.putUUID("StairReader",id);t.putUUID("StairStory",original);});
+            p.getInventory().setItem(31,hol);book[0]=hol;io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.sync(p);
+            String inHall=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.quote("straight_hall",first);var pages=leaves(hol);
+            h.assertTrue(inHall.equals("In a straight hall you wrote:\n\n\""+first+"\""),"in the House's words, the line exactly: "+inHall);
+            h.assertTrue(pages.size()==7&&pages.get(4).startsWith("IV.")&&pages.get(5).equals(inHall)&&pages.get(6).startsWith("V."),"the House's chapter is followed by the line from where the reader first wrote: "+pages);
+            // A chapter that tells of the nursery quotes the line written there instead; at most one to a chapter.
+            own=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.record(p);var named=own.getList("Pages",net.minecraft.nbt.Tag.TAG_STRING);
+            named.set(1,net.minecraft.nbt.StringTag.valueOf("II. The hands\n\nYou came back from "+io.github.knaitoe.theoldesthouse.labyrinth.StaircaseProse.place("hill_nursery")+" with chalk on you."));own.put("Pages",named);
+            LabyrinthData.get(server).setStateEntry(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.STATE,id.toString(),own);
+            io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.sync(p);pages=leaves(hol);
+            h.assertTrue(pages.size()==7&&pages.get(3).equals(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.quote("hill_nursery",chalk))&&pages.get(5).startsWith("IV."),"a chapter that tells of a place where the reader wrote quotes a line written there: "+pages);
+            // Never anyone else's to read: in another reader's hands or lying on the ground it holds none of them.
+            var lent=hol.copy();q.getInventory().setItem(31,lent);io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.sync(q);
+            h.assertTrue(leaves(lent).size()==6&&leaves(lent).stream().noneMatch(page->page.contains(" you wrote:")),"in another reader's hands it quotes nothing: "+leaves(lent));
+            var lying=new ItemEntity(l,hall.getX()+.5,hall.getY()+.5,hall.getZ()+.5,hol.copy());h.assertTrue(l.addFreshEntity(lying),"a copy dropped in the hall");
+            h.assertTrue(leaves(lying.getItem()).size()==6,"lying on the ground it quotes nothing either");lying.discard();q.getInventory().setItem(31,ItemStack.EMPTY);
+
+            // The other hand, once ever: one of the reader's lines word for word on the blank page after their last, and nothing else.
+            var data=Journals.get(server);
+            h.assertTrue(CoAuthor.copyOut(p)==CoAuthor.Wrote.WROTE,"the other hand copies a line out");
+            int copied=quotedPage(data,id);var copy=copied==0?JournalPage.BLANK:data.page(id,copied);
+            h.assertTrue(copied==4&&copy.text().isEmpty()&&copy.notes().size()==1&&List.of(first,chalk).contains(copy.notes().get(0).text()),"word for word, one of the reader's own lines, on the next blank page: "+copied+" "+notes(copy));
+            data.inked(id,0);h.assertTrue(CoAuthor.copyOut(p)==CoAuthor.Wrote.NOWHERE&&CoAuthor.write(p,CoAuthor.Trigger.SLEEP)!=CoAuthor.Wrote.NO_JOURNAL,"only once ever");
+            h.assertTrue(quotedPage(data,id)==copied,"and nowhere else");
+            data.inked(id,0);
+            h.assertTrue(Journals.edit(p,4,page("and then the hall went on"))==Journals.Edit.ACCEPTED,"the reader writes on that page too");
+        }).thenIdle(3).thenExecute(()->{
+            var data=Journals.get(server);
+            h.assertTrue(data.page(id,4).notes().stream().anyMatch(n->n.mark()==JournalPage.Mark.QUOTED),"the copied line stays under their writing");
+            h.assertTrue(TornPages.tear(p,4)==TornPages.Tear.TEARING,"the page is torn out");
+        }).thenIdle(3).thenExecute(()->{
+            var data=Journals.get(server);var torn=tornIn(p,4);var ref=TornPages.ref(torn);var shown=TornPages.page(server,ref);
+            h.assertTrue(shown!=null&&shown.text().contains("hall went on")&&shown.notes().stream().noneMatch(n->n.mark()==JournalPage.Mark.QUOTED),"a torn page never carries the House's copy of the reader's line: "+(shown==null?"none":notes(shown)));
+            p.getInventory().add(torn);h.assertTrue(TornPages.reclaim(p,4)&&data.page(id,4).notes().stream().anyMatch(n->n.mark()==JournalPage.Mark.QUOTED),"back in the stub it is there, as it was");
+
+            // An ending: the House's last page is the first line the reader ever wrote in the House, once.
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Quotes.ending(server,id),"an ending writes the House's last page");
+            int end=io.github.knaitoe.theoldesthouse.journal.Quotes.endingPage(server,id);var last=data.page(id,end);
+            h.assertTrue(end==5&&last.text().isEmpty()&&last.notes().size()==1&&last.notes().get(0).mark()==JournalPage.Mark.QUOTED&&last.notes().get(0).text().equals(first),"the first line the reader wrote in the House, on the page after their writing: "+end+" "+notes(last));
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.journal.Quotes.ending(server,id)&&io.github.knaitoe.theoldesthouse.journal.Quotes.endingPage(server,id)==end,"only once");
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.journal.Quotes.ending(server,q.getUUID()),"a reader who wrote nothing in the House is not quoted");
+
+            // Turned off: the House's read off, nobody is quoted anywhere.
+            io.github.knaitoe.theoldesthouse.house.HouseConfig.READ_READERS.set(false);
+            try{
+                h.assertTrue(io.github.knaitoe.theoldesthouse.journal.Quotes.eligible(server,id).isEmpty()&&io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.quotes(p,io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.record(p)).isEmpty(),"with the House's read turned off nobody is quoted");
+                io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.sync(p);h.assertTrue(leaves(book[0]).size()==6,"and the House of Leaves quotes nothing: "+leaves(book[0]));
+            }finally{io.github.knaitoe.theoldesthouse.house.HouseConfig.READ_READERS.set(true);}
+            io.github.knaitoe.theoldesthouse.labyrinth.StaircaseStory.sync(p);
+            h.assertTrue(leaves(book[0]).size()==7&&WitnessAccount.count(LabyrinthData.get(server),id)==0,"turned back on, it quotes again; and nothing is ever counted");
+        }).thenSucceed();
+    }
 }

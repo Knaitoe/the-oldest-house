@@ -211,7 +211,7 @@ public final class JournalPageRenderer {
                 }
                 pose.pushPose();pose.translate(nx,ny,0);pose.mulPose(Axis.ZP.rotationDegrees(-4));pose.scale(.7F,.7F,1);
                 g.drawString(font,seq(n.text(),OTHER),0,0,OTHER_INK,false);pose.popPose();}
-            case WRITTEN->{pose.pushPose();pose.translate(x+n.x()*W,y+n.y()*H,0);pose.mulPose(Axis.ZP.rotationDegrees(-3));
+            case WRITTEN,QUOTED->{pose.pushPose();pose.translate(x+n.x()*W,y+n.y()*H,0);pose.mulPose(Axis.ZP.rotationDegrees(-3));
                 int row=0;for(var line:font.split(FormattedText.of(n.text(),OTHER),OTHER_W))g.drawString(font,line,0,row++*LINE,OTHER_INK,false);
                 pose.popPose();}
         }}finally{HouseText.leaveLiterature();}

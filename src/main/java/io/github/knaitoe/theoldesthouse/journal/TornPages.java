@@ -82,7 +82,7 @@ public final class TornPages {
         return t!=null&&t.serial==ref.serial()?t:null;
     }
     public static boolean valid(MinecraftServer server,@Nullable Ref ref){return torn(Journals.get(server),ref)!=null;}
-    public static @Nullable JournalPage page(MinecraftServer server,@Nullable Ref ref){var t=torn(Journals.get(server),ref);return t==null?null:t.page;}
+    public static @Nullable JournalPage page(MinecraftServer server,@Nullable Ref ref){var t=torn(Journals.get(server),ref);return t==null?null:t.page.unquoted();}
 
     // ------------------------------------------------------------------ tearing
     public enum Tear { TEARING, NOT_CARRIED, NO_SUCH_PAGE, BLANK, ALREADY }
@@ -105,7 +105,7 @@ public final class TornPages {
         String text=filtered.getFirst().filteredOrEmpty();
         if(text.isBlank()){p.displayClientMessage(Component.literal("Nothing on the page would come away."),true);return;}
         var torn=new Torn();torn.serial=++b.tornSerial;torn.page=page.withWriting(text,page.placed());
-        b.pages.remove(index);b.torn.put(index,torn);data.setDirty();
+        b.pages.remove(index);b.torn.put(index,torn);Quotes.torn(b,index);data.setDirty();
         Journals.give(p,stack(p.getUUID(),b.name.isEmpty()?p.getGameProfile().getName():b.name,index,torn.serial));
         p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.BOOK_PAGE_TURN,SoundSource.PLAYERS,1F,.55F);
         reopen(p,index);
