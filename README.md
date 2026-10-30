@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.195** puts the skin tone you draw at the kitchen table on your own skin while you are in the House, keeping your skin's own shading; until now it only coloured the House's stand-in body. See [docs/SKIN_TONE_0_4_195.md](docs/SKIN_TONE_0_4_195.md).
+Development candidate **0.4.196** lets you draw yourself at the kitchen table the way a child would: a pencil gives your picture a face (smiling, sad, scared, cross or plain) and trousers or a dress. In the House you wear what you drew: the tone, slim or wide arms, and the face. The account and the House of Leaves remember it. See [docs/DRAWN_SELF_0_4_196.md](docs/DRAWN_SELF_0_4_196.md).
+
+0.4.195 puts the skin tone you draw at the kitchen table on your own skin while you are in the House, keeping your skin's own shading; until now it only coloured the House's stand-in body. See [docs/SKIN_TONE_0_4_195.md](docs/SKIN_TONE_0_4_195.md).
 
 0.4.194 writes the last week's changes into the reader's own story. The Witness account and the rooms' accounts say what happened afterwards: who followed you home and whether they still do, how far Mr. Harrigan's rot has gone, what the cave took back and what the manor kept for you. The House of Leaves can tell of it, and each keepsake says what it does. In the shelter's slow dance, your own hands now hold your partner. See [docs/LITERATURE_AND_DANCE_0_4_194.md](docs/LITERATURE_AND_DANCE_0_4_194.md).
 

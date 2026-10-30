@@ -22,7 +22,8 @@ public final class StaircaseAccount {
         var seen = HouseRead.seen(d, id); var bath = seen.getCompound("bathroom"); var coat = seen.getCompound("coatroom"); var eaves = seen.getCompound("shelter"); var porch = seen.getCompound("porch");
         String stood = eaves.getString("Stood"), looked = eaves.getString("Looked");
         return new StaircaseProse.Read(bath.contains("Item") ? bath.getInt("Item") : -1, HouseReadWardrobe.coatOf(coat), coat.getString("Mirror"), !stood.isEmpty() ? (eaves.getBoolean("Danced") ? "danced_" + stood : stood) : looked.isEmpty() ? "" : "looked_" + looked,
-            eaves.getBoolean("Song"), HouseRead.older(d, id), porch.getString("First"), porch.getString("Out"), HouseRead.value(d, id, HouseRead.Trait.HOME, false), seen.getCompound("kitchen").getBoolean("DrewHands"));
+            eaves.getBoolean("Song"), HouseRead.older(d, id), porch.getString("First"), porch.getString("Out"), HouseRead.value(d, id, HouseRead.Trait.HOME, false), seen.getCompound("kitchen").getBoolean("DrewHands"),
+            seen.getCompound("kitchen").getBoolean("Hung") ? HouseReadProse.drawn(seen.getCompound("kitchen")) : "");
     }
     public static HouseWriting.WritingStyle hand(String name) {
         try { return HouseWriting.WritingStyle.valueOf(name); } catch (IllegalArgumentException e) { return HouseWriting.WritingStyle.WILL; }

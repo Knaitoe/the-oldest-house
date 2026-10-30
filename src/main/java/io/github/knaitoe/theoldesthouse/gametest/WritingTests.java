@@ -217,6 +217,8 @@ public final class WritingTests {
             if(n[5].contains("_"))coat.putString("BootsId",n[5]);else if(!n[5].isEmpty())coat.putString("Boots",n[5]);if(!n[6].isEmpty())coat.putString("Mirror",n[6]);seen.put("coatroom",coat);
             var eaves=new CompoundTag();eaves.putString("Stood",n[7]);eaves.putBoolean("Song",true);seen.put("shelter",eaves);
             var porch=new CompoundTag();porch.putString("First",n[8]);porch.putBoolean("Hidden",true);porch.putBoolean("Table",true);porch.putBoolean("Trees",true);seen.put("porch",porch);
+            // 0.4.196: the kitchen table with its widest drawn face and body, on the widest night.
+            if(n==nights[0]){var kitchen=new CompoundTag();kitchen.putBoolean("Hung",true);kitchen.putBoolean("Alike",true);kitchen.putInt("Mood",5);kitchen.putInt("Body",1);seen.put("kitchen",kitchen);}
             var pages=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadProse.pages(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadProse.opening(seen,true,n[9])).stream().map(page->io.github.knaitoe.theoldesthouse.house.HouseWriting.page(io.github.knaitoe.theoldesthouse.house.HouseWriting.WritingStyle.PLAIN,page)).toList();
             books.add(io.github.knaitoe.theoldesthouse.house.HouseWriting.book("The House's opening","reader",pages));
         }

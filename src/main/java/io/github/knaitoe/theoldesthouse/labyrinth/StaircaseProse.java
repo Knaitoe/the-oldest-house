@@ -28,10 +28,12 @@ public final class StaircaseProse {
      * What the five quiet rooms saw the reader do (0.4.159), as observations only: the first routine item ({@code -1} for none),
      * the coat, the hall glass, who they stood by in the shelter, the porch door, the way out, and HOME for the last leaf.
      */
-    public record Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home, boolean drewHands) {
+    public record Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home, boolean drewHands, String drawn) {
         public static final Read NONE = new Read(-1, "", "", "", false, false, "", "", "");
         /** Before the kitchen table (0.4.168): nothing drawn. */
-        public Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home) { this(routine, coat, mirror, shelter, song, older, door, out, home, false); }
+        public Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home) { this(routine, coat, mirror, shelter, song, older, door, out, home, false, ""); }
+        /** Before the pencil (0.4.196): no face or body drawn. */
+        public Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home, boolean drewHands) { this(routine, coat, mirror, shelter, song, older, door, out, home, drewHands, ""); }
     }
 
     // ---------------------------------------------------------------- facts
@@ -302,8 +304,9 @@ public final class StaircaseProse {
         if (!item.isEmpty() && !coat.isEmpty()) return "Before bed your hands went to " + item + " first; in the cold hall, to " + coat + ".";
         if (!item.isEmpty()) return "Before bed your hands went to " + item + " first. The writer drew it in the margin.";
         if (!coat.isEmpty()) return turned ? "In the cold hall your hands found " + coat + ", and turned the glass to the wall." : "In the cold hall your hands went through the hangers to " + coat + ".";
-        // 0.4.168: the kitchen table, when nothing else fills the leaf.
-        if (r.drewHands) return "You drew yourself once at a kitchen table, and pressed hard on the hands.";
+        // 0.4.168: the kitchen table, when nothing else fills the leaf; 0.4.196: with the face and the body the pencil drew.
+        if (r.drewHands) return "You drew yourself once at a kitchen table" + (r.drawn.isEmpty() ? "" : ", " + r.drawn) + ", and pressed hard on the hands.";
+        if (!r.drawn.isEmpty()) return "You drew yourself once at a kitchen table, " + r.drawn + ".";
         return "";
     }
     /** III. What happened: who the reader stood by under the eaves, or that they went out to the lantern alone. */
@@ -463,6 +466,9 @@ public final class StaircaseProse {
             for(String coat:coats)for(String mirror:new String[]{"","turned_after","turned_before"})reads.add(new Read(-1,coat,mirror,"",false,true,"","",""));
             for(String shelter:new String[]{"man","woman","middle","lantern","looked_man","looked_woman","looked_both","danced_man","danced_woman","danced_middle"})for(boolean song:new boolean[]{false,true})for(boolean older:new boolean[]{false,true})reads.add(new Read(-1,"","",shelter,song,older,"","",""));
             for(String door:new String[]{"","in","lattice","window","road"})for(String out:new String[]{"","kitchen","gate","road"})reads.add(new Read(-1,"","","",false,false,door,out,""));
+            // 0.4.196: every face and body the kitchen pencil draws, with and without the pressed hands.
+            for(int mood=0;mood<=HouseReadKitchen.FACES.size();mood++)for(int body=0;body<=HouseReadKitchen.BODIES.size();body++)for(boolean hands:new boolean[]{false,true}){
+                var t=new net.minecraft.nbt.CompoundTag();t.putInt("Mood",mood);t.putInt("Body",body);reads.add(new Read(-1,"","","",false,false,"","","",hands,HouseReadProse.drawn(t)));}
             for(var read:reads)for(int leaf=1;leaf<4;leaf++){String own=leaf==1?hands(read):leaf==2?eaves(read):door(read);if(!own.isEmpty())pages.add(new String[]{"II. The hands","III. What happened","IV. The door"}[leaf-1]+"\n\nThere is a thumbprint beside the next line. "+own+"\n\nYou turn the sheet without covering the print.");}
             for(String home:new String[]{"HAVEN","DANGER","RUNAWAY"})pages.add("V. Below\n\n"+ending(voice,home));
         }

@@ -76,11 +76,17 @@ public final class HouseReadProse {
     }
     /**
      * 0.4.168: the kitchen table. Only acts, never colours: whether the face and the hands were drawn in the same crayon, and
-     * that the picture went up on the fridge.
+     * that the picture went up on the fridge. 0.4.196: and the face and the body the pencil drew, as they went up.
      */
     public static String kitchen(CompoundTag t){
         if(!t.getBoolean("Hung"))return "";
-        return t.getBoolean("Alike")?"drew yourself at the kitchen table, face and hands alike, and put the picture up on the fridge":"drew yourself at the kitchen table and put the picture up on the fridge";
+        String drawn=drawn(t);
+        return "drew yourself"+(drawn.isEmpty()?"":" "+drawn+",")+" at the kitchen table"+(t.getBoolean("Alike")?", face and hands alike,":"")+" and put the picture up on the fridge";
+    }
+    /** 0.4.196: the face and the body the pencil drew, in the room's words ("smiling, in a dress"), or nothing for neither. */
+    public static String drawn(CompoundTag t){
+        String face=HouseReadKitchen.face(t.getInt("Mood")),body=t.getInt("Body")>0&&t.getInt("Body")<=HouseReadKitchen.BODIES.size()?"in "+HouseReadKitchen.BODIES.get(t.getInt("Body")-1):"";
+        return face.isEmpty()?body:body.isEmpty()?face:face+", "+body;
     }
     /** The rooms in the order they are met (0.4.168: the kitchen first); the clause's room is its place in that order. */
     public static List<Clause> clauses(CompoundTag seen,boolean older){

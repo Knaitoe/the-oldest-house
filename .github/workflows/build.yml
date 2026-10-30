@@ -2221,7 +2221,7 @@ jobs:
           assert sorted(p.name for p in hair.glob('*.png'))==['hair_backs.png','hair_styles.png','routine_counter.png']
           assert (hair/'passed.txt').is_file()
           kitchen=Path('build/house-read-kitchen')
-          assert sorted(p.name for p in kitchen.glob('*.png'))==['kitchen_objects.png','kitchen_tones.png']
+          assert sorted(p.name for p in kitchen.glob('*.png'))==['kitchen_drawn.png','kitchen_objects.png','kitchen_tones.png']
           assert (kitchen/'passed.txt').is_file()
           wardrobe=Path('build/house-read-wardrobe')
           assert sorted(p.name for p in wardrobe.glob('*.png'))==['wardrobe_hanging.png','wardrobe_worn_back.png','wardrobe_worn_front.png']
