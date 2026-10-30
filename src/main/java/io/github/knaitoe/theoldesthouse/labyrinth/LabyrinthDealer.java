@@ -194,6 +194,9 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.FORKED_HALL);
         gray.add(LabyrinthPlace.PILLAR_HALL);
         gray.add(LabyrinthPlace.ZIGZAG_HALL);
+        // 0.4.199: the vaulted hall and the crumbled hall.
+        gray.add(LabyrinthPlace.VAULTED_HALL);
+        gray.add(LabyrinthPlace.CRUMBLED_HALL);
         gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
@@ -516,6 +519,11 @@ public final class LabyrinthDealer {
             // of the 0.4.48 halls, so a bled-in room is about one approach hall in six.
             case JOGGED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 14;
             case FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
+            // 0.4.199 (owner: "one with a massive ceiling and one with a crumbled floor players have to 'parkour' across"): the
+            // vaulted hall a little rarer than the others, so it stays a surprise; the crumbled hall never in the first three
+            // crossings, so nobody's first steps in the House are a jump.
+            case VAULTED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
+            case CRUMBLED_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 26;
             case STONE_CROSSING -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 14;
             case STONE_DESCENT -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 16;

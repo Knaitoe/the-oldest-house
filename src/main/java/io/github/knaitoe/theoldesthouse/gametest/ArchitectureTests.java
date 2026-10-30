@@ -471,7 +471,7 @@ public final class ArchitectureTests {
         if(name.equals("hotel_upstairs")){minY=5;maxY=8;}
         if(name.equals("hotel_basement")){minX=-12;maxX=13;minZ=-67;maxZ=-55;minY=-5;maxY=-2;}
         if(name.equals("hotel_grounds")){minX=-28;maxX=28;minZ=-69;maxZ=2;minY=-1;maxY=14;}
-        if(HallVariations.added(scene))maxY=HallVariations.domestic(scene)?4:scene==LabyrinthPlace.STONE_BEND?5:6;
+        if(HallVariations.added(scene))maxY=HallVariations.roof(scene);if(scene==LabyrinthPlace.CRUMBLED_HALL)minY=HallVariations.PIT_FLOOR;
         if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;if(LiteraryRooms.isLiterary(scene)){minY=Math.max(scene.room().minY(),-6);maxY=NovelRooms.outside(scene)?Math.min(7,scene.room().maxY()):Math.min(4,scene.room().maxY());if(scene==LabyrinthPlace.WINCHESTER)maxY=10;}
         if(scene==LabyrinthPlace.GHOSTS_SET){minY=-1;maxY=3;}
         if(scene==LabyrinthPlace.MISSING_SLEEP){minY=4;maxY=9;}

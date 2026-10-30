@@ -217,8 +217,8 @@ public final class LabyrinthTests {
         UUID player = UUID.randomUUID();
 
         List<LabyrinthPlace> start = LabyrinthDealer.grayAvailable(data, player);
-        // 0.4.197: and the four plain halls.
-        helper.assertTrue(start.size() == 13 && start.containsAll(List.of(LabyrinthPlace.JOGGED_HALL, LabyrinthPlace.FORKED_HALL, LabyrinthPlace.PILLAR_HALL, LabyrinthPlace.ZIGZAG_HALL))
+        // 0.4.197: and the four plain halls; 0.4.199: and the vaulted and crumbled halls (the crumbled one at no weight until the third crossing).
+        helper.assertTrue(start.size() == 15 && start.containsAll(List.of(LabyrinthPlace.JOGGED_HALL, LabyrinthPlace.FORKED_HALL, LabyrinthPlace.PILLAR_HALL, LabyrinthPlace.ZIGZAG_HALL, LabyrinthPlace.VAULTED_HALL, LabyrinthPlace.CRUMBLED_HALL))
                         && start.contains(LabyrinthPlace.JUNCTION)
                         && start.contains(LabyrinthPlace.STRAIGHT_HALL)
                         && start.contains(LabyrinthPlace.BENT_HALL) && start.contains(LabyrinthPlace.CROSS_HALL)

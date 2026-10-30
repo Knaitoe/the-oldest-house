@@ -269,6 +269,58 @@ public final class ExplorationPassTests {
         for(int z:new int[]{-9,-15,-21,-27,-33,-39})h.assertTrue(l.getBlockState(b.offset(0,1,z)).is(Blocks.STRIPPED_SPRUCE_LOG),"the pillar hall's columns stand down its middle");
         h.succeed();
     }
+    /**
+     * 0.4.199 (owner: "one with a massive ceiling and one with a crumbled floor players have to 'parkour' across"). The vaulted
+     * hall passes every ordinary hall check under a fifteen-block ceiling it shows only once through a low neck. The crumbled
+     * hall's crossing is a chain of jumps none longer than two blocks or higher than one; its pit is three deep (a fall never
+     * hurts), climbs back only to the near door, and offers no step out toward the far one.
+     */
+    @GameTest(template="empty")
+    public static void theVaultedHallAndTheCrumbledHallAreHallwaysToCrossNotRooms(GameTestHelper h)throws Exception {
+        for(var hall:List.of(LabyrinthPlace.VAULTED_HALL,LabyrinthPlace.CRUMBLED_HALL)){
+            h.assertTrue(HallVariations.plain(hall)&&LabyrinthDomestic.fragments(hall).isEmpty()&&LabyrinthBuilder.requiredDepth(hall)==0,hall.id()+" is a plain hall, with no room bled into it");
+            h.assertTrue(LabyrinthDealer.grayWeight(hall,LabyrinthPacing.STONE_DEPTH)==0&&LabyrinthDealer.onward(hall)&&LabyrinthPacing.ordinary(hall),hall.id()+" is an ordinary way on that gives way to stone");
+            h.assertTrue(!StaircaseProse.place(hall.id()).equals(StaircaseProse.place("unnamed_room_for_test")),hall.id()+" has a name in prose");
+        }
+        h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.VAULTED_HALL,0)>0,"the vaulted hall comes from the first crossing");
+        h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.CRUMBLED_HALL,2)==0&&LabyrinthDealer.grayWeight(LabyrinthPlace.CRUMBLED_HALL,3)>0,"nobody's first steps in the House are a jump");
+        halls(h,List.of(LabyrinthPlace.VAULTED_HALL),3900);
+        var l=h.getLevel();var v=h.absolutePos(BlockPos.ZERO).offset(3900,8,280);
+        for(int y=1;y<=HallVariations.VAULT;y++)h.assertTrue(l.getBlockState(v.offset(0,y,-20)).isAir(),"the nave is open to fifteen blocks: "+y);
+        h.assertTrue(!l.getBlockState(v.offset(0,HallVariations.VAULT+1,-20)).isAir()&&!l.getBlockState(v.offset(0,5,-1)).isAir()&&l.getBlockState(v.offset(0,4,-1)).isAir(),"its ceiling is up in the dark, and the neck it is seen through keeps an ordinary one");
+        for(int x=-1;x<=1;x++)for(int z:new int[]{0,-1,-2,-3,-41})for(int y=5;y<=HallVariations.VAULT;y++)h.assertTrue(!l.getBlockState(v.offset(x,y,z)).isAir(),"each neck is a low passage, roofed solid above it: "+x+","+y+","+z);
+        for(int z:new int[]{-9,-17,-25,-33})h.assertTrue(l.getBlockState(v.offset(0,5,z)).is(Blocks.LANTERN)&&l.getBlockState(v.offset(0,6,z)).is(Blocks.CHAIN)&&l.getBlockState(v.offset(0,HallVariations.VAULT,z)).is(Blocks.CHAIN),"each lamp hangs on ten blocks of chain, low, under the vault");
+        // The crumbled hall.
+        var c=h.absolutePos(BlockPos.ZERO).offset(3960,8,280);var hall=LabyrinthPlace.CRUMBLED_HALL;
+        LabyrinthHalls.build(l,c,hall);HouseFurnishings.decorate(l,c,hall);ScenePolish.apply(l,c,hall);
+        for(var door:hall.doors())h.assertTrue(l.getBlockState(c.offset(door.rel())).getBlock() instanceof DoorBlock,"the crumbled hall keeps its native "+door.name()+" door");
+        var pieces=HallVariations.CROSSING;
+        for(var piece:pieces)for(int x=piece.x0();x<=piece.x1();x++)for(int z=piece.z0();z<=piece.z1();z++){
+            var at=c.offset(x,piece.y(),z);var body=new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.81,at.getZ()+.8);
+            h.assertTrue(l.getBlockState(at.below()).isCollisionShapeFullBlock(l,at.below())&&l.noCollision(null,body),"each piece left standing bears a body: "+x+","+piece.y()+","+z);
+        }
+        for(int i=0;i+1<pieces.size();i++){
+            var a=pieces.get(i);var b=pieces.get(i+1);
+            int gx=Math.max(0,Math.max(b.x0()-a.x1()-1,a.x0()-b.x1()-1)),gz=Math.max(0,Math.max(b.z0()-a.z1()-1,a.z0()-b.z1()-1));
+            h.assertTrue(Math.sqrt(gx*gx+gz*gz)<=2&&b.y()-a.y()<=1,"each jump is at most two blocks across and one up: "+i+" gap "+gx+","+gz);
+        }
+        int ladders=0;
+        for(int x=-2;x<=2;x++)for(int z=HallVariations.PIT_NEAR;z>=HallVariations.PIT_FAR;z--){
+            if(!HallVariations.pit(x,z))continue;
+            h.assertTrue(l.getBlockState(c.offset(x,HallVariations.PIT_FLOOR,z)).isCollisionShapeFullBlock(l,c.offset(x,HallVariations.PIT_FLOOR,z)),"the pit has a floor three below the boards, so a fall never hurts: "+x+","+z);
+            for(int y=HallVariations.PIT_FLOOR+1;y<=-1;y++){var s=l.getBlockState(c.offset(x,y,z));
+                if(s.is(Blocks.LADDER)){ladders++;h.assertTrue(z==HallVariations.PIT_NEAR&&s.canSurvive(l,c.offset(x,y,z)),"the only ladder climbs the near wall, back to the door they came in by");}
+                else h.assertTrue(s.isAir()||s.is(Blocks.WALL_TORCH)||(y==HallVariations.PIT_FLOOR+1&&s.is(Blocks.SPRUCE_SLAB)),"nothing in the pit stands higher than a fallen board: "+x+","+y+","+z);}
+        }
+        h.assertTrue(ladders==3,"one ladder, three rungs high: "+ladders);
+        for(int x=-2;x<=2;x++)for(int y=HallVariations.PIT_FLOOR+1;y<=-2;y++)h.assertTrue(l.getBlockState(c.offset(x,y,HallVariations.PIT_FAR-1)).isCollisionShapeFullBlock(l,c.offset(x,y,HallVariations.PIT_FAR-1)),"the far side of the pit is a sheer wall");
+        var near=walk(l,c.offset(0,0,-1));var far=walk(l,c.offset(0,0,-31));
+        h.assertTrue(!near.contains(c.offset(0,0,-38))&&far.contains(c.offset(0,0,-38)),"the far door is reached across the boards, not by walking");
+        for(var at:BlockPos.betweenClosed(c.offset(hall.room().minX(),hall.room().minY(),hall.room().minZ()),c.offset(hall.room().maxX(),hall.room().maxY(),0)))
+            if(l.getBlockState(at).is(Blocks.LANTERN)||l.getBlockState(at).is(Blocks.CHAIN))h.assertTrue(l.getBlockState(at).canSurvive(l,at)&&at.getY()-c.getY()>=3,"every lamp has real support and hangs clear of the jumps: "+at.subtract(c));
+        ArchitectureTests.export(l,c,hall);
+        h.succeed();
+    }
     private static void halls(GameTestHelper h,List<LabyrinthPlace> list,int x0)throws Exception {
         var l=h.getLevel();int i=0;
         for(var hall:list) {

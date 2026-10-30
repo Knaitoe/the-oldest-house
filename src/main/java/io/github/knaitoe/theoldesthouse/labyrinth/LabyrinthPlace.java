@@ -334,6 +334,18 @@ public enum LabyrinthPlace {
     ZIGZAG_HALL("zigzag_hall", Kind.GRAY, 117, new BoundingBox(-2,-1,-44,10,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(0,0,-44),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.199 (owner: "You can add further variant hallways too - say, one with a massive ceiling and one with a crumbled floor
+     * players have to 'parkour' across"). A plaster hall whose ceiling is fifteen blocks up, lamps hung on long chains below a
+     * dark coffered ceiling; and a hall whose floor has fallen into a shallow cellar, crossed on what is left of the boards.
+     */
+    VAULTED_HALL("vaulted_hall", Kind.GRAY, 118, new BoundingBox(-4,-1,-42,4,17,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(-4,0,-21),Direction.EAST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT))),
+    CRUMBLED_HALL("crumbled_hall", Kind.GRAY, 119, new BoundingBox(-3,-5,-39,3,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-39),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

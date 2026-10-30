@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.198** gives four more keepsakes something to do. Zampanò's leaves show the door back in a plain hall. The vulture photograph, held still, keeps far monsters from fixing on you. Her compass points to where you last fell. Her name patch keeps what was in your hand when you die away from the House, once a day. See [docs/KEEPSAKES_0_4_198.md](docs/KEEPSAKES_0_4_198.md).
+Development candidate **0.4.199** adds two more hallways: one whose ceiling is far too high, its lamps hung low on long chains, and one whose floor has fallen into a shallow cellar, crossed by jumping from what is left of the boards. See [docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md](docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md).
+
+0.4.198 gives four more keepsakes something to do. Zampanò's leaves show the door back in a plain hall. The vulture photograph, held still, keeps far monsters from fixing on you. Her compass points to where you last fell. Her name patch keeps what was in your hand when you die away from the House, once a day. See [docs/KEEPSAKES_0_4_198.md](docs/KEEPSAKES_0_4_198.md).
 
 0.4.197 adds four hallways that are just hallways: one with a jog in it, one that forks, one down a row of pillars and one that zigzags. Fewer of the halls on the way in have rooms bled into them. See [docs/PLAIN_HALLS_0_4_197.md](docs/PLAIN_HALLS_0_4_197.md).
 
