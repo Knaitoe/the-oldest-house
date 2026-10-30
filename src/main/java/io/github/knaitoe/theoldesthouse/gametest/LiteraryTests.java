@@ -770,6 +770,24 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     }
     @AfterBatch(batch="literary_last_stop_struck187") public static void lastStopStruckDone(ServerLevel l){close();}
     /**
+     * 0.4.189: Bly's Lady follows the one she held. Near water at night in the reader's world, the dark closes in, they are held
+     * a moment and walked a few steps they did not take, and set down at the water's edge, never in it.
+     */
+    @GameTest(template="empty",batch="literary_bly_follows189",timeoutTicks=200)
+    public static void theLadyFollowsTheOneSheHeldAndSetsThemDownAtTheWatersEdge(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"lady_followed");var d=LabyrinthData.get(h.getLevel().getServer());
+        for(int x=0;x<=9;x++)for(int z=0;z<=4;z++){h.setBlock(new BlockPos(x,1,z),Blocks.STONE);h.setBlock(new BlockPos(x,2,z),Blocks.AIR);h.setBlock(new BlockPos(x,3,z),Blocks.AIR);}
+        h.setBlock(new BlockPos(8,1,2),Blocks.WATER);
+        var start=h.absoluteVec(new Vec3(2.5,2,2.5));p.teleportTo(h.getLevel(),start.x,start.y,start.z,0,0);
+        var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.BLY_ROUTE);own.putBoolean(BlyFollows.FOLLOWS,true);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.BLY_ROUTE,own);
+        h.assertTrue(BlyFollows.follows(p)&&BlyFollows.carry(p)&&p.hasEffect(net.minecraft.world.effect.MobEffects.DARKNESS),"near water, the dark closes in and something takes their arm");
+        h.runAfterDelay(BlyFollows.HOLD+BlyFollows.CARRY+5,()->{
+            try{var edge=h.absoluteVec(new Vec3(7.5,2,2.5));
+                h.assertTrue(!BlyFollows.carrying(p)&&p.position().distanceTo(edge)<.6&&!p.isInWater(),"set down at the water's edge, never in it: "+p.position().subtract(edge));
+            }finally{var o=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.BLY_ROUTE);o.remove(BlyFollows.FOLLOWS);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.BLY_ROUTE,o);NativeTestPlayers.remove(p);}
+            h.succeed();});
+    }
+    /**
      * 0.4.187: while she follows, she answers what the reader does to animals in their own world. The meat and hide spoil as they
      * fall; a young one costs them the night; in the morning one of their penned animals is gone and the gate stands open. The
      * men read the reader's own record back to them.

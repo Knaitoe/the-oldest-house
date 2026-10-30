@@ -63,7 +63,8 @@ public final class VignetteAnimationTests {
             h.assertTrue(carried[0]>=20,"she holds the reader long enough to be seen: "+carried[0]);
             h.assertTrue(own.getInt("RefugeTicks")==0&&!own.getBoolean("WaitedInCloset"),"the cupboard the reader waited in no longer counts");
             h.assertTrue(p.getY()<b.getY()-1&&p.getZ()<b.getZ()-40&&p.getZ()>b.getZ()-51&&p.isAlive()&&p.getHealth()>=2,"the reader comes up in the lake room's water, alive: "+p.position().subtract(Vec3.atLowerCornerOf(b)));
-            h.assertTrue(!own.getBoolean("Ready"),"being taken is not the wait");h.succeed();
+            h.assertTrue(!own.getBoolean("Ready"),"being taken is not the wait");
+            h.assertTrue(BlyFollows.follows(p),"0.4.189: the one she held, she follows home");h.succeed();
         });
     }
     @AfterBatch(batch="literary_bly_hold") public static void blyHoldDone(ServerLevel l){close();}
