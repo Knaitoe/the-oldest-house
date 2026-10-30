@@ -270,9 +270,9 @@ public final class CoopTests {
     @GameTest(template="empty",batch="coop_private151",timeoutTicks=4000)
     public static void aPrivateSceneIsOneReadersAtATimeAndWaitsForTheNext(GameTestHelper h){
         // 0.4.153: private scenes have copies; with none allowed (sceneCopies 0) they are one reader's at a time, as in 0.4.151.
-        SceneInstances.fixtureCap(0);
+        SceneInstances.fixtureCap(0);GroupCrossings.forget();
         var f=new LiteraryTests.Fixture(h);active=f;var inside=player(h,f,"private_inside");var next=player(h,f,"private_next");var watcher=player(h,f,"private_watcher");
-        var halls=List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
+        var halls=EntrancePlaytestTests.HALLS;
         var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));
         for(var hall:halls)hold(f,hall);hold(f,LabyrinthPlace.HARRIGAN);
         var scenes=List.of(LabyrinthPlace.HARRIGAN,LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP);
@@ -292,7 +292,7 @@ public final class CoopTests {
                 west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");f.data().deal(next.getUUID(),west[0],LabyrinthPlace.HARRIGAN.id(),false);
                 at(next,f.in,west[0].lower.relative(west[0].facing));ticking[0]=true;click(next,west[0].lower);
             })
-            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(next)&&halls.contains(where(f,next)),"the next reader's door into the study opens onto an ordinary hall while someone else is in it"))
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(next)&&halls.contains(where(f,next)),"the next reader's door into the study opens onto an ordinary hall while someone else is in it (busy "+LabyrinthDoors.isBusy(next)+", at "+where(f,next)+", dealt "+java.util.Optional.ofNullable(f.data().deal(next.getUUID(),west[0])).map(LabyrinthData.Deal::place).orElse("nothing")+")"))
             .thenExecute(()->{
                 var deal=f.data().deal(next.getUUID(),west[0]);
                 h.assertTrue(deal!=null&&halls.contains(LabyrinthPlace.byId(deal.place())),"the door is re-dealt for them to the hall they reached");
@@ -306,7 +306,7 @@ public final class CoopTests {
     public static void aPrivateSceneTakenByAnotherOpensACopyThatItsReaderKeeps(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);active=f;var first=player(h,f,"copy_first");var second=player(h,f,"copy_second");var watcher=player(h,f,"copy_watcher");
         var scene=LabyrinthPlace.CONFESSION;var server=f.in.getServer();
-        var halls=List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
+        var halls=EntrancePlaytestTests.HALLS;
         var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));
         for(var hall:halls)hold(f,hall);hold(f,scene);
         var readers=new ArrayList<>(List.of(first,second));boolean[] ticking={false};LabyrinthData.Door[] west={null};ServerPlayer[] third={null};
