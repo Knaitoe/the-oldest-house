@@ -1,3 +1,5 @@
+October 30 candidate 0.4.189: require LiteraryTests.theLadyFollowsTheOneSheHeldAndSetsThemDownAtTheWatersEdge and the extended Bly hold case.
+
 October 30 candidate 0.4.188: require HarriganDialogueTests.keepingHisPhoneFreesHimAndBuryingItLetsTheRotStart and the whole wake namespace.
 
 October 30 candidate 0.4.187: require LiteraryTests.strikingTheElkFailsTheNightAndSheFollowsUntilALaterNightLetsHerPass and whileSheFollowsSheAnswersWhatTheReaderDoesToAnimals, and every other Last Stop case (the field case now has the peer strike). What follows a reader never wounds them and never acts in the House.
