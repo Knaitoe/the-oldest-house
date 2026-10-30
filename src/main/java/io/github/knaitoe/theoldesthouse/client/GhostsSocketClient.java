@@ -30,7 +30,9 @@ public final class GhostsSocketClient {
         if(cast.isEmpty())return false;require(cast.size()==1&&cast.getFirst().owner().filter(mc.player.getUUID()::equals).isPresent(),"the client receives only its own native Marjorie");var m=cast.getFirst();if(original==null)original=m.getUUID();require(original.equals(m.getUUID()),"the approach and held jump keep the original client UUID");
         mc.options.keyUse.setDown(true);if(!mc.player.isUsingItem()&&age>10)mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);
         if(!GhostsTakeClient.frozen()){
-            Vec3 goal=mc.player.getZ()<at.getZ()-12.6?new Vec3(at.getX()-5.5,at.getY()+5,at.getZ()-12.4):new Vec3(at.getX()+(reader.equals("A")?3.5:-1.5),at.getY()+5,at.getZ()-11.5);
+            // Through Marjorie's door on the middle of its clear half: the open panel takes the east 3/16 of the doorway.
+            double z=mc.player.getZ()-at.getZ(),lane=at.getX()-6+(1-3/16D)/2;
+            Vec3 goal=z<-16.25?new Vec3(lane,at.getY()+5,at.getZ()-16.2):z<-12.6?new Vec3(lane,at.getY()+5,at.getZ()-12.4):new Vec3(at.getX()+(reader.equals("A")?-1.5:3.5),at.getY()+5,at.getZ()-11.5);
             Vec3 delta=goal.subtract(mc.player.position());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));mc.player.setXRot(0);mc.options.keyUp.setDown(delta.horizontalDistanceSqr()>.09);
             if(m.phase()==GhostsSet.STAND&&!shot&&m.getZ()>at.getZ()-18){pending="ghosts-native-approach";shot=true;}
             return false;

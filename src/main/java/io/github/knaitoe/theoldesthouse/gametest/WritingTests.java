@@ -104,6 +104,50 @@ public final class WritingTests {
     }
 
     @GameTest(template = "empty")
+    public static void theMinotaurIsRedOnlyInLiterature(GameTestHelper helper) {
+        String text = "The Minotaur's house. minotaurs Minotaur2 MINOTAUR";
+        FormattedCharSequence sequence = Component.literal(text).getVisualOrderText();
+        int first = text.indexOf("Minotaur'"), house = text.indexOf("house"), last = text.indexOf("MINOTAUR");
+        // Outside a book or page: chat, tooltips, signs and the HUD keep only the blue House word.
+        List<Letter> plain = letters(HouseText.color(sequence, 0));
+        for (int i = 0; i < plain.size(); i++) {
+            boolean blue = i >= house && i < house + 5;
+            helper.assertTrue(blue ? plain.get(i).style().getColor().getValue() == HouseText.INK_BLUE : plain.get(i).style().getColor() == null,
+                    "outside literature only the House word is colored, at " + i);
+        }
+        helper.assertTrue(HouseText.color(Component.literal("the Minotaur")).getString().equals("the Minotaur")
+                && letters(HouseText.color(Component.literal("the Minotaur")).getVisualOrderText()).stream().allMatch(c -> c.style().getColor() == null),
+                "a baked page outside literature leaves the Minotaur alone");
+        List<Letter> before = letters(sequence), inBook;
+        HouseText.enterLiterature();
+        try {
+            inBook = letters(HouseText.color(sequence, 0));
+        } finally {
+            HouseText.leaveLiterature();
+        }
+        helper.assertTrue(!HouseText.inLiterature(), "leaving the page ends literature");
+        helper.assertTrue(before.size() == inBook.size(), "characters were added or removed");
+        for (int i = 0; i < inBook.size(); i++) {
+            boolean red = (i >= first && i < first + 8) || (i >= last && i < last + 8), blue = i >= house && i < house + 5;
+            var color = inBook.get(i).style().getColor();
+            helper.assertTrue(before.get(i).cp() == inBook.get(i).cp() && before.get(i).index() == inBook.get(i).index(), "sink indices changed");
+            helper.assertTrue(red ? color != null && color.getValue() == HouseText.INK_RED : blue ? color != null && color.getValue() == HouseText.INK_BLUE : color == null,
+                    "in a book the Minotaur is red, the House blue and nothing else, at " + i);
+        }
+        HouseText.enterLiterature();
+        try {
+            helper.assertTrue(letters(HouseText.color(Component.literal("the Minotaur").getVisualOrderText(), 0xFFFFFF)).subList(4, 12).stream()
+                    .allMatch(c -> c.style().getColor().getValue() == HouseText.SCREEN_RED), "against a dark page the red is the lighter red");
+        } finally {
+            HouseText.leaveLiterature();
+        }
+        List<Letter> embers = letters(HouseText.literature(Component.literal("the Minotaur")).getVisualOrderText());
+        helper.assertTrue(embers.subList(4, 12).stream().allMatch(c -> c.style().getColor().getValue() == HouseText.INK_RED),
+                "literature drawn outside a book (the House of Leaves' embers) carries the red itself");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
     public static void exportNativeSerialsForClientWrapping(GameTestHelper helper) throws Exception {
         var player = helper.makeMockServerPlayerInLevel();
         try {
