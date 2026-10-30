@@ -2076,7 +2076,8 @@ jobs:
           completed=re.findall(r'(\d+) GAME TESTS COMPLETE',log)
           assert completed and int(completed[-1])==declared, 'Every native interior case must finish.'
           assert not re.search(r'[1-9]\d* required tests failed',log), 'A required interior case failed.'
-          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==26
+          # 0.4.181: the house of Usher is built whole and left the interior refit, with its room and vault slice.
+          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==24
           print(f'All {declared} native interior cases passed; the complete suite remains required.')
           PY
       - name: Native diner, archive, painted sun and retreat follow-up
@@ -2123,7 +2124,7 @@ jobs:
           for page in 0 1 2 3 4 5 6 7 8 9 10; do test -s build/font-smoke/native-domestic-$page.png; done
           python3 - <<'PY'
           from pathlib import Path
-          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==26
+          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==24
           log=Path('build/interior-client.log').read_text()
           assert 'Unable to load model' not in log and 'Missing textures in model' not in log and 'missing model for variant' not in log
           PY
