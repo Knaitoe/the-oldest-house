@@ -986,11 +986,15 @@ public final class GoatmanTests {
         taken=new Fixture(h,28600);var f=taken;var a=f.player();var peer=f.player();GoatmanVignette.enter(a);GoatmanVignette.enter(peer);f.night(List.of(a,peer),200,true);
         f.l.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(false,f.server);
         var axe=new ItemStack(Items.IRON_AXE);axe.setDamageValue(37);a.getInventory().setItem(4,axe.copy());a.getInventory().setItem(5,new ItemStack(Items.BREAD,3));
-        h.runAfterDelay(4,()->{
+        // Run 1349: a fixed four ticks could reach the door before the opener was inside the night's vigil on a slow full suite,
+        // and the door simply opened. The opener now waits until they are inside, in the vigil and still keeping it.
+        h.startSequence().thenWaitUntil(()->{var r=GoatmanVignette.run(LabyrinthData.get(f.server));boolean active=r.getCompound("Cohort").getCompound(a.getUUID().toString()).getBoolean("Active");
+            h.assertTrue(GoatmanVignette.inside(a)&&r.getInt("Phase")==GoatmanVignette.VIGIL&&active,"the opener is inside, in the night's vigil and keeping it: inside "+GoatmanVignette.inside(a)+", phase "+r.getInt("Phase")+", active "+active);}).thenExecute(()->{
             f.click(a,GoatmanWoods.DOOR);var data=LabyrinthData.get(f.server);
             h.assertTrue(a.isAlive()&&!a.isDeadOrDying()&&a.getInventory().getItem(4).is(Items.IRON_AXE)&&a.getInventory().getItem(4).getDamageValue()==37&&a.getInventory().countItem(Items.BREAD)==3,"the opener is neither killed nor stripped of anything");
             h.assertTrue(!GoatmanVignette.inside(a)&&a.position().distanceToSqr(HideAndClap.manorRespawn(f.origin))<1&&!GoatmanVignette.childScale(a),"the opener is simply gone from the trailer, at normal size");
-            h.assertTrue(GoatmanHaunt.haunted(data,a.getUUID())&&!WitnessAccount.has(data,a.getUUID(),WitnessAccount.Story.GOATMAN)&&!GoatmanWoods.doorOpen(f.l,f.b),"it went with them; the door is shut again behind");
+            h.assertTrue(GoatmanHaunt.haunted(data,a.getUUID()),"it went with them");
+            h.assertTrue(!WitnessAccount.has(data,a.getUUID(),WitnessAccount.Story.GOATMAN)&&!GoatmanWoods.doorOpen(f.l,f.b),"no credit, and the door is shut again behind: open "+GoatmanWoods.doorOpen(f.l,f.b));
             h.assertTrue(peer.isAlive()&&GoatmanVignette.inside(peer)&&!GoatmanHaunt.haunted(data,peer.getUUID()),"the peer's night goes on untouched");
             // At home: the next day it has eaten with them, and it is seen standing off to one side.
             var floor=a.blockPosition().offset(-20,-1,-20);for(var at:BlockPos.betweenClosed(floor,floor.offset(40,0,40)))f.l.setBlock(at,Blocks.STONE.defaultBlockState(),2);
