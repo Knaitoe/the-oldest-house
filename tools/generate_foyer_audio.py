@@ -27,27 +27,31 @@ def speech():
         rate=w.getframerate();x=np.frombuffer(w.readframes(w.getnframes()),dtype='<i2').astype(np.float64)/32768
     return np.interp(np.arange(int(len(x)*RATE/rate))*rate/RATE,np.arange(len(x)),x)
 
-def band(x,lo,hi):
+def band(x,lo,hi,ring=.25):
     spectrum=np.fft.rfft(x);f=np.fft.rfftfreq(len(x),1/RATE)
     gain=np.clip((f-lo*.7)/(lo*.3),0,1)*np.clip((hi*1.3-f)/(hi*.3),0,1)
-    gain*=1+.6*np.exp(-((f-1800)/350)**2)  # the cheap speaker's ring
+    gain*=1+ring*np.exp(-((f-1800)/350)**2)  # the cheap speaker's ring
     return np.fft.irfft(spectrum*gain,len(x))
 
 def intercom(x,seed):
-    """Through the building's intercom: a narrow, ringing speaker, driven too hard, humming, and the line breaking up."""
+    """Through the building's intercom: a telephone-narrow speaker, a little overdriven, with a faint hum and the odd crackle.
+
+    The owner asked twice that the voice sound human, so the line stays clear: every word carries, and only now and then does it
+    thin for a moment. (The first pass drove the speaker hard and dropped whole words; it read as a machine.)
+    """
     rng=np.random.default_rng(seed);t=np.arange(len(x))/RATE
-    y=band(x,330,3200);y=np.tanh(y/max(1e-4,np.max(np.abs(y)))*2.6)
-    # The line drops out for a few hundredths of a second, often enough that whole words go.
+    y=band(x,300,3400);y=np.tanh(y/max(1e-4,np.max(np.abs(y)))*1.3)/np.tanh(1.3)
+    # Now and then the line thins for a few hundredths of a second; it never cuts out.
     gate=np.ones_like(y);at=0
     while at<len(y):
-        at+=int(RATE*rng.uniform(.25,.7))
-        if rng.random()<.45:
-            n=int(RATE*rng.uniform(.03,.11));fade=min(n//3,120);seg=np.zeros(n);seg[:fade]=np.linspace(1,0,fade);seg[-fade:]=np.linspace(0,1,fade)
-            gate[at:at+n]*=seg[:len(gate[at:at+n])]*.85+.15
+        at+=int(RATE*rng.uniform(.6,1.6))
+        if rng.random()<.15:
+            n=int(RATE*rng.uniform(.03,.07));fade=min(n//3,120);seg=np.ones(n)*.55;seg[:fade]=np.linspace(1,.55,fade);seg[-fade:]=np.linspace(.55,1,fade)
+            gate[at:at+n]*=seg[:len(gate[at:at+n])]
     y*=gate
-    hum=.05*np.sin(2*np.pi*60*t)+.03*np.sin(2*np.pi*180*t)
-    crackle=np.zeros_like(y);hits=rng.integers(0,len(y),int(len(y)/RATE*9));crackle[hits]=rng.uniform(-.6,.6,len(hits));crackle=band(crackle,800,5000)
-    hiss=band(rng.normal(0,.035,len(y)),1000,6000)
+    hum=.012*np.sin(2*np.pi*60*t)+.006*np.sin(2*np.pi*180*t)
+    crackle=np.zeros_like(y);hits=rng.integers(0,len(y),int(len(y)/RATE*2));crackle[hits]=rng.uniform(-.3,.3,len(hits));crackle=band(crackle,800,5000,0)
+    hiss=band(rng.normal(0,.01,len(y)),1000,6000,0)
     return y+hum+crackle+hiss
 
 def cues():
