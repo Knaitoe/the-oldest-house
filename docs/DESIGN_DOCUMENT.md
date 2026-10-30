@@ -1,3 +1,5 @@
+October 30 candidate 0.4.195: the tone drawn at the kitchen table recolours every reader's own skin inside the House, shading kept, not only the House body worn by inhuman skins. Canon: docs/SKIN_TONE_0_4_195.md.
+
 October 30 candidate 0.4.194: the writing follows the rooms. Afterwards lines in the Witness account and the rooms' accounts (Harrigan, Ted, Tell-Tale, the Last Stop, Bly, the hides, the diner and the eight manor echoes), three new House of Leaves facts (followed, remembered, unwound) and a line on each keepsake saying what it does; and the reader's own arms hold the partner in the shelter's slow dance. Canon: docs/LITERATURE_AND_DANCE_0_4_194.md.
 
 October 30 candidate 0.4.193, the owner's second notes: the waiting room's sign faces the room; the halls with bled-in rooms are dealt about a third as often before the stone depth. Canon: docs/OWNER_NOTES_0_4_193.md.

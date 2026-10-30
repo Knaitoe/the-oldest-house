@@ -33,7 +33,7 @@ import org.lwjgl.opengl.GL11;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class HouseBodyClient {
     private HouseBodyClient(){}
-    private record Worn(HouseBodies.Body body,PlayerSkin skin){}
+    private record Worn(HouseBodies.Body body,PlayerSkin skin,@Nullable ResourceLocation source){}
     private static final Map<UUID,HouseBodies.Body> BODIES=new HashMap<>();
     private static final Map<UUID,Worn> WORN=new HashMap<>();
     private static final Map<UUID,int[]> DEFAULTS=new HashMap<>();
@@ -46,12 +46,53 @@ public final class HouseBodyClient {
         WORN.entrySet().removeIf(e->{if(e.getValue().body().equals(next.get(e.getKey())))return false;release(e.getKey());return true;});
         BODIES.clear();BODIES.putAll(next);
     }
-    public static boolean wearing(UUID reader){return BODIES.containsKey(reader);}
-    /** The skin to draw for a reader: their House body while they wear one, otherwise null for their own. */
+    /** Whether a reader wears a painted House body (their own skin in a drawn tone is not a body). */
+    public static boolean wearing(UUID reader){var body=BODIES.get(reader);return body!=null&&!body.own();}
+    /** The skin to draw for a reader: their House body, or their own skin in the tone they drew, otherwise null for their own. */
     public static @Nullable PlayerSkin skin(UUID reader){
         var body=BODIES.get(reader);if(body==null||!RenderSystem.isOnRenderThread())return null;
-        var worn=WORN.get(reader);if(worn!=null&&worn.body().equals(body))return worn.skin();
-        var skin=compose(reader,body);if(skin!=null)WORN.put(reader,new Worn(body,skin));return skin;
+        var worn=WORN.get(reader);
+        if(body.own()){
+            var real=real(reader);if(real==null)return null;
+            if(worn!=null&&worn.body().equals(body)&&real.texture().equals(worn.source()))return worn.skin();
+            var skin=toned(reader,real,body.tone());if(skin!=null)WORN.put(reader,new Worn(body,skin,real.texture()));return skin;
+        }
+        if(worn!=null&&worn.body().equals(body))return worn.skin();
+        var skin=compose(reader,body);if(skin!=null)WORN.put(reader,new Worn(body,skin,null));return skin;
+    }
+    /** The reader's own skin, read past the House's stand-in. */
+    private static @Nullable PlayerSkin real(UUID reader){
+        var connection=Minecraft.getInstance().getConnection();var info=connection==null?null:connection.getPlayerInfo(reader);if(info==null)return null;
+        reading=true;try{return info.getSkin();}finally{reading=false;}
+    }
+    /** The reader's own skin with its skin recoloured to the drawn tone, or null while the skin is still loading. */
+    private static @Nullable PlayerSkin toned(UUID reader,PlayerSkin real,int tone){
+        var mc=Minecraft.getInstance();var tex=mc.getTextureManager().getTexture(real.texture());RenderSystem.bindTexture(tex.getId());
+        int w=GlStateManager._getTexLevelParameter(GL11.GL_TEXTURE_2D,0,GL11.GL_TEXTURE_WIDTH),h=GlStateManager._getTexLevelParameter(GL11.GL_TEXTURE_2D,0,GL11.GL_TEXTURE_HEIGHT);
+        if(w<64||h<64||w!=h)return null;
+        try(var image=new NativeImage(w,h,false)){
+            image.downloadTexture(0,false);
+            mc.getTextureManager().register(location(reader),new DynamicTexture(tonedImage(image,tone)));
+            return new PlayerSkin(location(reader),null,real.capeTexture(),real.elytraTexture(),real.model(),true);
+        }catch(RuntimeException e){TheOldestHouse.LOGGER.warn("A reader's own skin could not be toned",e);return null;}
+    }
+    /**
+     * A skin with its skin recoloured: the skin's own tone is the commonest skin colour on the lower face; every pixel near it
+     * in colour becomes the drawn tone plus that pixel's own difference from it, so the painter's shading stays.
+     */
+    public static NativeImage tonedImage(NativeImage skin,int tone){
+        int w=skin.getWidth(),h=skin.getHeight(),scale=Math.max(1,w/64);var out=new NativeImage(w,h,true);out.copyFrom(skin);
+        var counts=new HashMap<Integer,Integer>();
+        for(int y=12*scale;y<16*scale;y++)for(int x=9*scale;x<15*scale;x++){int c=argb(skin.getPixelRGBA(x,y));if(c>>>24>=128&&HouseBodies.skinColour(c>>16&255,c>>8&255,c&255))counts.merge(c&0xffffff,1,Integer::sum);}
+        if(counts.isEmpty())return out;
+        int base=commonest(counts,0),br=base>>16&255,bg=base>>8&255,bb=base&255,tr=tone>>16&255,tg=tone>>8&255,tb=tone&255;
+        for(int y=0;y<h;y++)for(int x=0;x<w;x++){
+            int abgr=skin.getPixelRGBA(x,y),c=argb(abgr);if(c>>>24<128)continue;
+            int r=c>>16&255,g=c>>8&255,b=c&255;
+            if(!HouseBodies.skinColour(r,g,b)||Math.abs(r-br)+Math.abs(g-bg)+Math.abs(b-bb)>110)continue;
+            out.setPixelRGBA(x,y,(abgr&0xff000000)|clamp(tb+b-bb)<<16|clamp(tg+g-bg)<<8|clamp(tr+r-br));
+        }
+        return out;
     }
     private static ResourceLocation location(UUID reader){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"house_body/"+reader);}
     private static void release(UUID reader){Minecraft.getInstance().getTextureManager().release(location(reader));}
