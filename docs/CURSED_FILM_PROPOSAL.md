@@ -4,6 +4,8 @@ The owner asked to consider a vignette based on *The Ring*, "focused more on the
 
 *Owner's notes, October 30: the proposal sounds right; include the monster's costume in the shop, and an Easter egg for the ghost girl. Both are added below.*
 
+*Owner's answers, October 30: the count is seven House days; a solo reader may pass the dub to a villager; the costume is the vignette's artifact reward; and every vignette should have a success or a failure state, with something to represent each, as the Goatman does. The other proposed answers stand. The design below is updated to match; the decisions are listed at the end.*
+
 ## What each source brings
 
 - **From *The Ring*:**
@@ -42,7 +44,7 @@ It is built whole, with custom textures, as the Last Stop and the Stanley were.
 - **Private.** Each reader's viewing is their own. A reader who looks away has not watched it.
 - **The call.** When the tape ends, the shop's phone rings. It uses the phone screen the mod already has.
   - There is no voice, only a count: *seven*.
-  - The count runs down on the reader's own House arrivals, not on real days, so it cannot run out while they are away.
+  - The count runs down over seven House days (the Overworld's days, as the journal counts them), starting from the reader's first viewing.
 
 **The film learns them.** This is Tremblay's idea, made playable.
 - **The House has been filming.** The mod already records real camera exposures and footage, and the House already keeps the places a reader has been.
@@ -69,18 +71,28 @@ It is built whole, with custom textures, as the Last Stop and the Stanley were.
 - **The returns slot.** Once, a second tape lies in it, unlabelled except for a ring-shaped water stain.
 - **No reference by name.** She is never named and never drawn closer than that. None of it counts toward anything.
 
-**Three ways it can end**, each a personal resolution:
-1. **Dub it.** Copy the tape on the dual deck and leave the copy:
-   - in co-op, by handing it to another reader, who must then watch it;
-   - alone, by leaving it in a hall.
+**Success and failure.** The film has a binary, as the Goatman's night does. Getting the count to stop is success; letting it run out is failure. Each has something to show for it.
 
-   The count stops. The account says what that cost and who has it now. *(passed_it_on)*
-2. **Finish the film.** Shoot the unshot last scene on the edit bay's set with the House's camera, using the existing filming verbs. The monster is played in the costume from the shop: in co-op, one reader wears it and another films; alone, the reader wears it in front of the camera on its tripod. Splice it onto the reel and run the whole film once. It ends, the count stops, and the reader is in the credits. *(finished_the_film)*
-3. **Let the count run out.**
-   - **What happens.** On the seventh arrival, the reader is taken into the film. They wake in the shot of the hallway, with the grain and the tracking lines over their own sight. They walk out of it into the House, alive.
-   - **Why alive.** The House's existing rules on death and custody stay as they are.
+**Success: stop the count.** There are two ways, each a personal resolution of a survival story. Either way the reader keeps the monster's costume as the vignette's artifact.
+1. **Dub it.** Copy the tape on the dual deck and pass the copy on. The count stops for the reader, and the account says what that cost and who has it now. *(passed_it_on)*
+   - **In co-op:** hand the copy to another reader. It is passed on only when that reader puts it in a deck and watches it themselves; nobody can be given the count without watching. Their count starts then.
+   - **Alone:** carry the copy out into the Overworld and give it to a villager. The villager stands and watches nothing for a while. Seven days later it is gone from its bed, and the tape lies there instead. The account says that the reader gave it to someone who could not say no.
+2. **Finish the film.** Shoot the unshot last scene on the edit bay's set with the House's camera, using the existing filming verbs. *(finished_the_film)*
+   - The monster is played in the costume from the shop: in co-op, one reader wears it and another films; alone, the reader wears it in front of the camera on its tripod.
+   - Splice the scene onto the reel and run the whole film once. It ends, the count stops, and the reader is in the credits.
 
-   The account is the one the film keeps. *(stayed_in_the_film)*
+**The artifact: the monster's costume.**
+- **Taking it.** On either success the costume is the reader's own: the rental tag's "NOT FOR HIRE" is crossed out, and the reader's name is written under it in their own hand.
+- **What it is.** It is owner-bound like the House's other artifacts (the tally counter, the Bone Ring), wearable anywhere, and can be offered to the Mother as a vignette artifact.
+- **What it does.** A suggested effect: while the reader stands still in it, nothing in the House that hunts by sight takes them for prey. It is a small thing, in the spirit of the tally counter. The exact effect is the owner's call.
+
+**Failure: the count runs out.**
+- **What happens.** On the seventh House day, wherever the reader is in the House, they are taken into the film. They wake in the shot of the hallway, with the grain and the tracking lines over their own sight, and walk out of it into the House, alive. The House's existing rules on death and custody are unchanged. No Witness credit is given.
+- **What follows them.** As the Goatman comes home with a reader who let it in, the film follows this one. It is private and never harms them:
+  - now and then a screen elsewhere in the House shows the reader's own footage for a moment;
+  - the grain and tracking lines flicker over their sight once in a while;
+  - a phone rings, and no one speaks.
+- **How it ends.** Only by coming back to the shop and stopping the count properly, by dubbing it or finishing the film. That success clears it and gives the costume.
 
 **What it is not.**
 - No ghost from the television (the Easter egg above is as close as she comes).
@@ -89,18 +101,21 @@ It is built whole, with custom textures, as the Last Stop and the Stanley were.
 
 ## Fit with the House
 
-- **Witness.** It is one new eligible source, an understanding story. The pool grows to 56 sources, and the quota stays 42 (75% rounded up). Still two kinds and three endings.
+- **Witness.** It is one new eligible source, a survival story like the Goatman's: either success resolves it once, and failure resolves nothing. The pool grows to 56 sources, and the quota stays 42 (75% rounded up). Still two kinds and three endings.
 - **Multiplayer.**
   - Viewings, the count and the reader-shots are private.
-  - The dub is the one deliberately shared thing: a copy really passes from one reader to another, as the owner's co-op rules for shared scenes already allow.
+  - The dub is the one deliberately shared thing: a copy really passes from one reader to another, only when the other reader plays it themselves, as the owner's co-op rules for shared scenes already allow.
 - **The journal.** A rubbing of the rental card, and a co-author trigger at the seventh call, are natural later links. They are not required.
 - **Writing rules.** The House's writing rules apply to every line: it never genders the reader and never names a colour or an age.
 
-## Questions for the owner
+## Owner's decisions (October 30)
 
-1. **Setting.** The rental shop and edit suite above? Or a motel room with a TV and a VCR, closer to *The Ring*?
-2. **The count.** Seven arrivals, as proposed, or seven House days?
-3. **Letting it run out.** Is being taken into the film and walking out alive right? Or should it cost more, such as belongings to the Mother as a death does?
-4. **The dub alone.** May a solo reader pass it on by leaving the copy in a hall? Or must it go to another real reader?
-5. **The reader in the footage.** May the House show the reader in their own past halls, built from real visits?
-6. **The costume afterwards.** Is it a keepsake the reader can wear anywhere, or does it stay in the shop's rooms?
+1. **Setting:** the rental shop and edit suite.
+2. **The count:** seven House days.
+3. **Letting it run out:** the reader is taken into the film and walks out alive. This is the failure state, and the film follows them until they stop the count properly.
+4. **The dub alone:** a solo reader may pass it to a villager.
+5. **The reader in the footage:** yes, the House shows the reader in their own past halls.
+6. **The costume:** the vignette's artifact reward, the reader's own on either success.
+7. **Every vignette has a success or failure state** and something to represent each, as the Goatman does.
+
+Still open, for the build: the costume's exact effect (the suggestion above) and the shop's place among the halls.
