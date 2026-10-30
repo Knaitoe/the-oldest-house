@@ -47,7 +47,7 @@ public final class LiteraryRenderers {
         if(io.github.knaitoe.theoldesthouse.labyrinth.MoviePropBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.MoviePropBlock.Kind.LAWN_CHAIR))return new Seat(5,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.MoviePropBlock.FACING));
         return null;
     }
-    public static final class CastModel extends HumanoidModel<LiteraryActor>{private final ModelPart coat,gown,mask,bandage,hood,lakeHair;
+    public static final class CastModel extends HumanoidModel<LiteraryActor>{private final ModelPart coat,gown,mask,bandage,hood,lakeHair;private int shelterGesture;
         private final LakeHouseHair lakeHairMotion;
         /** The elk killer's own tailoring (0.4.50) and the crew's hard hats; hidden on everyone else. */
         private final ModelPart killerHood,killerMask,killerCoat,killerBelt,sleeveRight,sleeveLeft,tailRight,tailLeft,bootRight,bootLeft,toeRight,toeLeft,axe,hardHat;
@@ -73,16 +73,31 @@ public final class LiteraryRenderers {
                 part.addOrReplaceChild("killer_boot",CubeListBuilder.create().texOffs(16,32).mirror(left).addBox(-2,7,-2,4,5,4,new CubeDeformation(.38F)),PartPose.ZERO);
                 part.addOrReplaceChild("killer_toe",CubeListBuilder.create().texOffs(32,32).mirror(left).addBox(-2,10,-3,4,2,1,new CubeDeformation(.38F)),PartPose.ZERO);}
             return LayerDefinition.create(m,128,64);}
-        private void dress(int role,int phase){boolean bar=role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length;int cottage=role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length?phase-9:-1;int movie=role==LiteraryActor.STRANGER&&phase>=14&&phase<14+MOVIE.length?phase-14:-1;int costume=role==LiteraryActor.STRANGER&&phase>=21&&phase<21+COSTUME.length?phase-21:-1;int winter=role==LiteraryActor.STRANGER&&phase>=34&&phase<34+WINTER.length?phase-34:-1;coat.visible=role==LiteraryActor.FATHER||role==LiteraryActor.FAMILY_FATHER||role==LiteraryActor.OLD_MAN||role==LiteraryActor.VISITOR||role==LiteraryActor.STRANGER&&cottage<0&&movie<0&&costume<0&&winter<0&&(!bar||phase==4)||cottage==0||cottage==3||cottage==4;gown.visible=role==LiteraryActor.LADY||role==LiteraryActor.COFFIN_WOMAN||role==LiteraryActor.FAMILY_MOTHER||cottage==1||movie==3||costume==1||costume==6||costume==10||costume==12||role==LiteraryActor.LAKE_WAX;mask.visible=role==LiteraryActor.DANCER||role==LiteraryActor.RED_FIGURE;hood.visible=false;bandage.visible=role==LiteraryActor.FATHER&&phase>=2;
+        private void dress(int role,int phase){boolean bar=role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length;int cottage=role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length?phase-9:-1;int movie=role==LiteraryActor.STRANGER&&phase>=14&&phase<14+MOVIE.length?phase-14:-1;int costume=role==LiteraryActor.STRANGER&&phase>=21&&phase<21+COSTUME.length?phase-21:-1;int winter=role==LiteraryActor.STRANGER&&phase>=34&&phase<34+WINTER.length?phase-34:-1;coat.visible=role==LiteraryActor.FATHER||role==LiteraryActor.FAMILY_FATHER||role==LiteraryActor.OLD_MAN||role==LiteraryActor.VISITOR||role==LiteraryActor.STRANGER&&cottage<0&&movie<0&&costume<0&&winter<0&&(!bar||phase==4)||cottage==0||cottage==3||cottage==4;gown.visible=role==LiteraryActor.LADY||role==LiteraryActor.READ_WOMAN||role==LiteraryActor.COFFIN_WOMAN||role==LiteraryActor.FAMILY_MOTHER||cottage==1||movie==3||costume==1||costume==6||costume==10||costume==12||role==LiteraryActor.LAKE_WAX;mask.visible=role==LiteraryActor.DANCER||role==LiteraryActor.RED_FIGURE;hood.visible=false;bandage.visible=role==LiteraryActor.FATHER&&phase>=2;
             boolean killer=role==LiteraryActor.KILLER;for(var part:new ModelPart[]{killerHood,killerMask,killerCoat,killerBelt,sleeveRight,sleeveLeft,tailRight,tailLeft,bootRight,bootLeft,toeRight,toeLeft,axe})part.visible=killer;hardHat.visible=false;lakeHair.visible=role==LiteraryActor.LAKE_TESS;hat.visible=!killer&&role!=LiteraryActor.LAKE_TESS;}
         public void pose(int role,int phase,float age){dress(role,phase);
             if(HouseReadShelter.role(role)){
-                // 0.4.159: leaning back on the rail with both elbows on the wood, the two mirror images, moving the same small amount.
-                boolean man=role==LiteraryActor.READ_MAN;float drift=(float)Math.sin(age*.027F)*.04F;
-                body.xRot=-.12F;body.y+=(float)Math.sin(age*.035F)*.06F;head.xRot=.08F;head.yRot=man?.32F:-.32F;
-                leftArm.xRot=.5F;rightArm.xRot=.5F;leftArm.zRot=-.2F;rightArm.zRot=.2F;
-                if(man){rightArm.xRot=.42F+drift;}else{leftArm.xRot=.42F+drift;}
-                if((phase&1)==1){head.zRot=man?.035F:-.035F;head.yRot=0;}
+                boolean man=role==LiteraryActor.READ_MAN;float sway=(float)Math.sin(age*.06F);
+                switch(shelterGesture){
+                    // 0.4.172 (owner: "Fix the posture"): the rail lean only on the rail. Off it they stand and walk as anyone does,
+                    // hold out a hand, dance, and step back after.
+                    case HouseReadShelter.STAND->{body.yRot+=sway*.04F;}
+                    case HouseReadShelter.HAND->{rightArm.xRot=-1.1F;rightArm.yRot=-.18F;rightArm.zRot=0;leftArm.xRot=.05F;leftArm.yRot=0;leftArm.zRot=-.06F;head.xRot=.06F;body.yRot=sway*.03F;}
+                    case HouseReadShelter.DANCE->{
+                        // A slow dance: both hands up to the partner's shoulders, swaying from foot to foot.
+                        body.yRot=sway*.12F;body.zRot=sway*.03F;
+                        rightArm.xRot=leftArm.xRot=-1.3F;rightArm.yRot=-.32F+body.yRot;leftArm.yRot=.32F+body.yRot;rightArm.zRot=leftArm.zRot=0;
+                        rightLeg.xRot=sway*.12F;leftLeg.xRot=-sway*.12F;rightLeg.yRot=leftLeg.yRot=0;head.zRot=man?.07F:-.07F;}
+                    case HouseReadShelter.AFTER->{rightArm.xRot=leftArm.xRot=-.42F;rightArm.yRot=leftArm.yRot=0;rightArm.zRot=-.28F;leftArm.zRot=.28F;head.xRot=.05F;}
+                    default->{
+                        // 0.4.159: leaning back on the rail with both elbows on the wood, the two mirror images, moving the same small amount.
+                        float drift=(float)Math.sin(age*.027F)*.04F;
+                        body.xRot=-.12F;body.y+=(float)Math.sin(age*.035F)*.06F;head.xRot=.08F;head.yRot=man?.32F:-.32F;
+                        leftArm.xRot=.5F;rightArm.xRot=.5F;leftArm.zRot=-.2F;rightArm.zRot=.2F;
+                        if(man){rightArm.xRot=.42F+drift;}else{leftArm.xRot=.42F+drift;}
+                        if((phase&1)==1){head.zRot=man?.035F:-.035F;head.yRot=0;}
+                    }
+                }
             }
             if(role==LiteraryActor.DANCER&&phase==1){leftArm.xRot=rightArm.xRot=-.8F;leftArm.zRot=-.55F;rightArm.zRot=.55F;body.yRot=(float)Math.sin(age*.045)*.18F;leftLeg.xRot=(float)Math.sin(age*.08)*.22F;rightLeg.xRot=-leftLeg.xRot;}
             if(role==LiteraryActor.OLD_MAN){body.xRot=.19F;head.xRot=.14F;leftArm.xRot=rightArm.xRot=-.1F;}
@@ -176,7 +191,7 @@ public final class LiteraryRenderers {
         static boolean crouches(int phase){return switch(phase){case 2,3,4,5,8->true;default->false;};}
         /** Down from the hips: the head, torso and arms together, the feet where they are. */
         private void lower(float by){head.y+=by;body.y+=by;leftArm.y+=by;rightArm.y+=by;}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftLeg.getAllParts().forEach(ModelPart::resetPose);rightLeg.getAllParts().forEach(ModelPart::resetPose);leftArm.getAllParts().forEach(ModelPart::resetPose);rightArm.getAllParts().forEach(ModelPart::resetPose);this.walk=walk;this.amount=amount;crouching=a.getPose()==net.minecraft.world.entity.Pose.CROUCHING||(a.role()==LiteraryActor.KILLER&&crouches(a.phase()));super.setupAnim(a,walk,amount,age,yaw,pitch);pose(a.role(),a.phase(),age);
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){head.getAllParts().forEach(ModelPart::resetPose);body.getAllParts().forEach(ModelPart::resetPose);leftLeg.getAllParts().forEach(ModelPart::resetPose);rightLeg.getAllParts().forEach(ModelPart::resetPose);leftArm.getAllParts().forEach(ModelPart::resetPose);rightArm.getAllParts().forEach(ModelPart::resetPose);this.walk=walk;this.amount=amount;crouching=a.getPose()==net.minecraft.world.entity.Pose.CROUCHING||(a.role()==LiteraryActor.KILLER&&crouches(a.phase()));super.setupAnim(a,walk,amount,age,yaw,pitch);shelterGesture=HouseReadShelter.role(a.role())?a.gesture():HouseReadShelter.LEAN;pose(a.role(),a.phase(),age);
             if(a.role()==LiteraryActor.FATHER){switch(a.gesture()){
                 case 1->{rightArm.xRot=-1.45F;rightArm.yRot=-.45F;rightArm.zRot=.18F;head.yRot-=.25F;}
                 case 2->{leftArm.xRot=rightArm.xRot=-1.2F;leftArm.yRot=.3F;rightArm.yRot=-.3F;body.xRot+=.12F;head.xRot+=.2F;}
@@ -207,6 +222,8 @@ public final class LiteraryRenderers {
         public void previewCrawl(int role,int phase,float age){preview(role,phase,age);crawl(age*.4F,.6F);}
         public void previewLakeHair(boolean drifting,float age){lakeHairMotion.preview(drifting,age);}
         /** Script poses on the same baked joints, with native actor scale applied by the caller. */
+        /** 0.4.172: a shelter stranger's gesture (HouseReadShelter), for native proofs. */
+        public void previewShelter(int role,int phase,int gesture,float age){shelterGesture=gesture;preview(role,phase,age);shelterGesture=HouseReadShelter.LEAN;}
         public void preview(int role,int phase,float age){
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);
             young=false;attackTime=0;crouching=false;riding=false;walk=age*.4F;amount=.6F;

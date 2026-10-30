@@ -132,6 +132,8 @@ public final class HouseReadMoments {
         if(room==SHELTER){
             if(part==JUKEBOX){var t=visit(p,room);start(p,b,t);save(p,room,t);note(p,b,room,"One free credit. A slow instrumental; no names on the song strips.");return true;}
             if(part==BOTTLE){HouseReadSites.act(p,room,"looked at the cold bottle on the rail");return true;}
+            // 0.4.172: the dock lantern, while the song plays, is staying out by it with neither stranger; it ends the song.
+            if(part==DECK_LANTERN&&at.equals(b.offset(HouseReadRemainingRooms.DOCK_LANTERN))){var t=visit(p,room);HouseReadShelter.lantern(p,b,t);save(p,room,t);return true;}
             if(part==ROWBOAT){HouseReadSites.act(p,room,"rested beside the covered rowboat");return true;}
         }
         return false;
@@ -214,9 +216,15 @@ public final class HouseReadMoments {
                 t.putInt("SongAge",song+1);if(song==899)t.putBoolean("NoteArmed",true);
                 if(HouseReadRemainingRooms.onDock(b,p.position())&&!t.getBoolean("Lantern")){t.putBoolean("Lantern",true);t.putBoolean("NoteArmed",true);literal(t,"stood by the lantern at the dock steps");}
                 shelterRead(p,b,t);
-                // 0.4.166: if the song ends before the House has its answer, the jukebox plays it again.
+                // 0.4.166: if the song ends before the House has its answer, the jukebox plays it again. 0.4.172: with its
+                // answer the song's end settles the room as a dance or the lantern does.
                 if(song==899&&!HouseReadStory.answered(seen(p,SHELTER))){t.putBoolean("SongStarted",false);t.putInt("Replays",t.getInt("Replays")+1);}
+                else if(song==899)HouseReadShelter.settle(p,b,t);
+                // Both strangers holding out a hand and the reader staying between them: a dance with both.
+                if(t.getString("Dance").isEmpty()&&!t.getBoolean("Settled")&&HouseReadShelter.bothOffer(p,b,t)){int both=t.getInt("BothTicks")+1;t.putInt("BothTicks",both);if(both>=HouseReadShelter.BOTH_TICKS)HouseReadShelter.begin(p,t,"both");}else t.putInt("BothTicks",0);
             }
+            // A dance lasts its own time, then the song is let go and the way on opens.
+            if(!t.getString("Dance").isEmpty()&&!t.getBoolean("Settled")&&age>=t.getInt("DanceAt")+HouseReadShelter.DANCE_TICKS)HouseReadShelter.settle(p,b,t);
             if(p.getZ()>b.getZ()+2.6&&Math.abs(p.getX()-b.getX()-3.5)<1.2)HouseReadSites.leave(p,true);
         }
     }

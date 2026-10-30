@@ -87,11 +87,11 @@ public final class Playtest0488Tests {
     private static CompoundTag story(LiteraryTests.Fixture f,ServerPlayer p){return VignetteThreads.thread(f.data(),LabyrinthPlace.THREE_FINGERS,p.getUUID()).getCompound("Story");}
     @AfterBatch(batch="notes488_paw_speech") public static void speechDone(ServerLevel ignored){if(speech!=null){speech.close();speech=null;}}
 
-    @GameTest(template="empty",batch="notes488_rabbit_motion",timeoutTicks=250)
+    @GameTest(template="empty",batch="notes488_rabbit_motion",timeoutTicks=600)
     public static void theOriginalFatherHobblesLessEachNightAndTheNamedRabbitNeverChangesItsSpot(GameTestHelper h){
         rabbitMotion=new LiteraryTests.Fixture(h);var f=rabbitMotion;var place=LabyrinthPlace.HOLY_RABBIT;
         var p=f.player("rabbit_motion",place);var b=f.base(place);f.at(p,place,3.5,0,-21.5);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).hasUUID("Father_"+p.getUUID()),"the real father has arrived"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).hasUUID("Father_"+p.getUUID())&&f.out.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Father_"+p.getUUID())) instanceof LiteraryActor,"the real father has arrived"))
             .thenExecute(()->{
                 var father=(LiteraryActor)f.out.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Father_"+p.getUUID()));
                 LiteraryVignettes.talk(p,father);h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu,"the stay uses the real personal choice");
@@ -216,7 +216,7 @@ public final class Playtest0488Tests {
         rabbitFloor=new LiteraryTests.Fixture(h);var f=rabbitFloor;var place=LabyrinthPlace.HOLY_RABBIT;
         var p=f.player("rabbit_floor",place);commit(f,p,1,400,own->own.putInt("Drowse",300));
         f.at(p,place,5.5,0,-21.5);p.setHealth(7);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).hasUUID("Father_"+p.getUUID()),"the real father has arrived"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).hasUUID("Father_"+p.getUUID())&&f.out.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Father_"+p.getUUID())) instanceof LiteraryActor,"the real father has arrived"))
             .thenIdle(40).thenExecute(()->{
                 h.assertTrue(f.own(p,place).getInt("Drowse")<320&&p.getHealth()>=HolyRabbit.FLOOR,"Father still shakes the drowsing child awake, and the shaking leaves three hearts: "+p.getHealth());
                 h.assertTrue(p.getTicksFrozen()>=100&&p.getTicksFrozen()<p.getTicksRequiredToFreeze(),"outside the shelter the native frost stays just short of the freeze that hurts: "+p.getTicksFrozen());

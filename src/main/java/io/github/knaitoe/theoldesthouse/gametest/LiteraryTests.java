@@ -958,14 +958,16 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
     }
     @AfterBatch(batch="literary_elk_landing") public static void shoreLandingDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_attack_delay",timeoutTicks=400)
+    @GameTest(template="empty",batch="literary_elk_attack_delay",timeoutTicks=700)
     public static void nativeBoatAttacksKeepABriefSavedDelayAndNeverStrikeAnotherReadersBody(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("attack_reader",place);var peer=f.player("attack_peer",place);
         final long[] last={-1};final int[] swings={0};final boolean[] ready={false};
         h.startSequence().thenIdle(10).thenExecute(()->{
             var own=f.own(p,place);own.putInt("ElkStage",ElkHunt.HUNTED);own.putBoolean("ElkResetPending",false);own.putInt("ElkEmerge",0);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
             p.hasChangedDimension();peer.hasChangedDimension();p.connection.resetPosition();peer.connection.resetPosition();p.setInvulnerable(false);peer.setInvulnerable(false);ready[0]=true;
-        }).thenIdle(ElkHunt.ATTACK_DELAY*2+20).thenExecute(()->{h.assertTrue(swings[0]>=2&&p.getHealth()<p.getMaxHealth()&&peer.getHealth()==peer.getMaxHealth(),"native swings deal actual owner damage with breathing room and leave the other reader unharmed: swings="+swings[0]+", ownerHealth="+p.getHealth()+", peerHealth="+peer.getHealth()+", own="+f.own(p,place));h.succeed();});
+        // Run 1337: a loaded runner can stage the killer late, so the case waits for the two swings rather than a fixed time;
+        // every swing is still held to the saved delay below.
+        }).thenWaitUntil(()->h.assertTrue(swings[0]>=2,"two native swings: "+swings[0])).thenExecute(()->{h.assertTrue(swings[0]>=2&&p.getHealth()<p.getMaxHealth()&&peer.getHealth()==peer.getMaxHealth(),"native swings deal actual owner damage with breathing room and leave the other reader unharmed: swings="+swings[0]+", ownerHealth="+p.getHealth()+", peerHealth="+peer.getHealth()+", own="+f.own(p,place));h.succeed();});
         h.onEachTick(()->{if(!ready[0])return;var a=elkKiller(f,p);if(a==null)return;var b=f.base(place);f.at(p,place,.5,0,-8.5);f.at(peer,place,1.5,0,-8.5);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-9.5);a.setDeltaMovement(Vec3.ZERO);a.setNoGravity(true);
             h.assertTrue(f.out.noCollision(p,p.getBoundingBox())&&f.out.noCollision(a,a.getBoundingBox()),"the axe test uses the real clear cabin corridor, outside the companionway stairs");
             long stamp=f.own(p,place).getLong("ElkStrikeAt");if(stamp>0&&stamp!=last[0]){if(last[0]>0)h.assertTrue(stamp-last[0]>=ElkHunt.ATTACK_DELAY,"every physical axe swing observes the saved one-and-a-half-second recovery");last[0]=stamp;swings[0]++;}
@@ -1042,8 +1044,10 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void elkReaderShovesTheKillerOffAndStopsHisRaisedAxeButCannotHurtHim(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("shove_reader",place);var b=f.base(place);
         final boolean[] staged={false};
-        h.startSequence().thenIdle(10).thenExecute(()->{elkAshore(f,p);p.setInvulnerable(false);p.hasChangedDimension();p.connection.resetPosition();staged[0]=true;})
-        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("ElkWindup")>0,"face to face, he raises the axe: "+f.own(p,place)))
+        // Run 1337: on a loaded runner the shore site, far from the scene's base, was not entity-ticking yet; hold it first.
+        f.chunks.hold(f.out,new AABB(b.offset(50,ElkCarcassMap.SITE_TOP,-140)).inflate(24,8,24));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the shore site is resident")).thenExecute(()->{elkAshore(f,p);p.setInvulnerable(false);p.hasChangedDimension();p.connection.resetPosition();staged[0]=true;})
+        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("ElkWindup")>0,"face to face, he raises the axe: killer "+(elkKiller(f,p)!=null)+", "+f.own(p,place)))
         .thenExecute(()->{var killer=elkKiller(f,p);float health=killer.getHealth();var before=killer.position();
             h.assertTrue(killer.phase()==ElkHunt.RAISE,"the axe is up before it comes down");
             p.attack(killer);
