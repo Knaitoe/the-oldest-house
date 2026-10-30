@@ -93,7 +93,7 @@ public final class ElkLotEnding {
         if(ticks==35||resume&&ticks>35)HousePackets.send(p,new HouseFadePayload(20,40,30));
         if(ticks<CAPTURE_TICKS)return;
         var porch=b.offset(ElkLot.PORCH);if(!p.serverLevel().hasChunkAt(porch)||!p.serverLevel().noCollision(p,p.getBoundingBox().move(Vec3.atBottomCenterOf(porch).subtract(p.position()))))return;
-        p.teleportTo(p.serverLevel(),porch.getX()+.5,porch.getY(),porch.getZ()+.5,180,0);release(p);own.putInt("CaptureTicks0492",0);LiteraryVignettes.ready(p,ElkLot.PLACE,own,side);hide(p);
+        p.teleportTo(p.serverLevel(),porch.getX()+.5,porch.getY(),porch.getZ()+.5,180,0);release(p);own.putInt("CaptureTicks0492",0);LiteraryVignettes.ready(p,ElkLot.PLACE,own,side);hide(p);io.github.knaitoe.theoldesthouse.journal.CoAuthor.consider(p,io.github.knaitoe.theoldesthouse.journal.CoAuthor.Trigger.BLACKOUT);
         p.displayClientMessage(Component.literal("On the noticeboard, the clipping has been turned over. It gives your name."),false);
     }
     private static boolean herdTouches(ServerPlayer p){var w=LiteraryVignettes.shared(LabyrinthData.get(p.server),ElkLot.PLACE);

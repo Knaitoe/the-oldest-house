@@ -1,9 +1,14 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.journal.CoAuthor;
 import io.github.knaitoe.theoldesthouse.journal.JournalPage;
 import io.github.knaitoe.theoldesthouse.journal.Journals;
 import io.github.knaitoe.theoldesthouse.journal.Rubbings;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount;
+import java.util.List;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -16,7 +21,7 @@ import net.neoforged.neoforge.event.entity.item.ItemExpireEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
-/** The reader's journal (JOURNAL_DESIGN.md): one owner's book, bounded edits kept in saved data, a lost copy that comes back worn, and pencil rubbings. */
+/** The reader's journal (JOURNAL_DESIGN.md): one owner's book, bounded edits kept in saved data, a lost copy that comes back worn, pencil rubbings and the other hand. */
 @GameTestHolder(TheOldestHouse.MOD_ID) @PrefixGameTestTemplate(false)
 public final class JournalTests {
     private JournalTests(){}
@@ -148,6 +153,71 @@ public final class JournalTests {
             var registries=h.getLevel().registryAccess();var back=Journals.load(data.save(new CompoundTag(),registries),registries);
             h.assertTrue(back.page(p.getUUID(),at).rubbings().equals(data.page(p.getUUID(),at).rubbings())&&back.rubbedPage(p.getUUID(),"room_number")==at,"rubbings and where they went survive a save and reload");
             NativeTestPlayers.remove(p);
+        }).thenSucceed();
+    }
+
+    /** A page as the House keeps it: begun in the House (or not), on day one. */
+    static JournalPage kept(String text,boolean house){return new JournalPage(text,List.of(),house?"the lake house":"",1,house,List.of(),List.of());}
+    static String notes(JournalPage page){return page.notes().toString();}
+
+    @GameTest(template="empty",batch="journal_other_hand",timeoutTicks=100)
+    public static void theOtherHandWritesAfterAMorningAndAWorstRoomsEndOnlyOnHousePagesAndOnceADay(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"journal_other_hand");var s=h.getLevel().getServer();var id=p.getUUID();var data=Journals.get(s);
+        try{
+            data.issue(p);CoAuthor.certain(id,true);LabyrinthData.get(s).visit(id,LabyrinthPlace.LAKE_HOUSE);
+            data.put(id,1,kept("I followed Tess out of the house and down to the water.",false));
+            data.put(id,2,kept("The hall was longer than it was.",true));
+            net.neoforged.neoforge.event.EventHooks.onPlayerWakeup(p,true,true);
+            h.assertTrue(data.inked(id)==0&&data.page(id,3).notes().isEmpty(),"leaving the bed early is not a morning, and nothing is written");
+            net.neoforged.neoforge.event.EventHooks.onPlayerWakeup(p,false,false);
+            var blank=data.page(id,3);
+            h.assertTrue(blank.notes().size()==1&&blank.notes().get(0).mark()==JournalPage.Mark.WRITTEN&&blank.notes().get(0).text().equals(CoAuthor.BLANK)&&blank.text().isEmpty(),"after a night's sleep the other hand writes on the blank page after the last one begun in the House: "+notes(blank));
+            h.assertTrue(data.page(id,1).notes().isEmpty()&&data.page(id,2).notes().isEmpty(),"a page begun outside the House is never touched, even with a name on it");
+            h.assertTrue(CoAuthor.consider(p,CoAuthor.Trigger.SLEEP)==CoAuthor.Wrote.ALREADY_TODAY&&CoAuthor.write(p,CoAuthor.Trigger.BLACKOUT)==CoAuthor.Wrote.ALREADY_TODAY,"never twice in one House day, whatever the moment");
+            data.inked(id,0);
+            data.put(id,2,kept("The hall was longer than it was. I followed Tess down to the water.",true));
+            WitnessAccount.resolve(p,WitnessAccount.Story.FLOORBOARDS,"test");
+            h.assertTrue(data.page(id,2).notes().isEmpty()&&data.inked(id)==0,"a room that is not among the worst ends without it");
+            WitnessAccount.resolve(p,WitnessAccount.Story.GOATMAN,"test");
+            var struck=data.page(id,2);
+            h.assertTrue(struck.notes().size()==1&&struck.notes().get(0).mark()==JournalPage.Mark.STRUCK&&struck.notes().get(0).word().equals("Tess")&&struck.notes().get(0).use()==0,"after the trailer's night it strikes through a name the reader wrote, one of the people they met: "+notes(struck));
+            h.assertTrue(struck.text().equals("The hall was longer than it was. I followed Tess down to the water.")&&struck.notes().get(0).anchor(struck.text())>=0,"the word stays under the stroke");
+            h.assertTrue(data.inked(id)==(int)(s.overworld().getDayTime()/24000L)+1,"and the day is spent");
+            var registries=h.getLevel().registryAccess();var back=Journals.load(data.save(new CompoundTag(),registries),registries);
+            h.assertTrue(back.page(id,2).equals(struck)&&back.page(id,3).equals(blank)&&back.inked(id)==data.inked(id),"the other hand's ink and its day survive a save and reload");
+            CoAuthor.certain(id,false);data.inked(id,0);int wrote=0;
+            for(int i=0;i<600;i++){data.inked(id,0);if(CoAuthor.consider(p,CoAuthor.Trigger.SLEEP)==CoAuthor.Wrote.WROTE)wrote++;data.put(id,2,kept("The hall was longer than it was. I followed Tess down to the water.",true));data.put(id,3,JournalPage.BLANK);}
+            h.assertTrue(wrote>60&&wrote<150,"left to chance it writes about one time in six: "+wrote+" of 600");
+        }finally{CoAuthor.certain(id,false);NativeTestPlayers.remove(p);}
+        h.succeed();
+    }
+
+    @GameTest(template="empty",batch="journal_other_hand_open",timeoutTicks=200)
+    public static void theOtherHandNeverWritesOnAnOpenPageOnlyAddsAndItsStrokeGoesWithTheWord(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"journal_other_open");var s=h.getLevel().getServer();var id=p.getUUID();var data=Journals.get(s);
+        var mine=data.issue(p);p.getInventory().add(mine.copy());CoAuthor.certain(id,true);LabyrinthData.get(s).visit(id,LabyrinthPlace.LAKE_HOUSE);
+        String left="We went left at the stair.",tess="Tess went first. I followed Tess to the lake.";
+        data.put(id,4,kept(left,true));data.put(id,6,kept(tess,true));data.put(id,7,kept("Home again.",false));
+        CoAuthor.viewing(p,2);
+        h.assertTrue(CoAuthor.write(p,CoAuthor.Trigger.BLACKOUT)==CoAuthor.Wrote.WROTE,"it finds somewhere to write");
+        var six=data.page(id,6);
+        h.assertTrue(data.page(id,4).notes().isEmpty(),"never on a page the reader has open");
+        h.assertTrue(six.notes().size()==1&&six.notes().get(0).mark()==JournalPage.Mark.STRUCK&&six.notes().get(0).use()==1,"a name that opens a sentence may be any word, so it strikes the one inside a sentence: "+notes(six));
+        data.inked(id,0);CoAuthor.viewing(p,-1);
+        h.assertTrue(CoAuthor.write(p,CoAuthor.Trigger.BLACKOUT)==CoAuthor.Wrote.WROTE,"the journal shut, the page is free");
+        var four=data.page(id,4);
+        h.assertTrue(four.notes().size()==1&&four.notes().get(0).mark()==JournalPage.Mark.DIRECTION&&four.notes().get(0).text().equals("No. Right.")&&four.notes().get(0).word().equals("left"),"under a line that went left it answers right: "+notes(four));
+        data.inked(id,0);
+        h.assertTrue(CoAuthor.write(p,CoAuthor.Trigger.BLACKOUT)==CoAuthor.Wrote.NOWHERE&&data.inked(id)==0,"with nothing left to answer it writes nothing, and the day is not spent");
+        h.assertTrue(data.page(id,4).text().equals(left)&&data.page(id,6).text().equals(tess)&&data.page(id,7).notes().isEmpty(),"none of the reader's words were taken");
+        var sent=page("A reader's own page.");var ink=new ListTag();var forged=new CompoundTag();forged.putString("Mark","written");forged.putString("Text","forged");forged.putFloat("X",.2F);forged.putFloat("Y",.2F);ink.add(forged);sent.put("Notes",ink);
+        h.assertTrue(Journals.edit(p,6,page("Tess went first. I followed her to the lake."))==Journals.Edit.ACCEPTED&&Journals.edit(p,4,page("We went on at the stair."))==Journals.Edit.ACCEPTED&&Journals.edit(p,8,sent)==Journals.Edit.ACCEPTED,"the reader rewrites both lines");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(data.page(id,6).text().endsWith("her to the lake.")&&data.page(id,4).text().contains("on at")&&!data.page(id,8).empty(),"the edits pass the text filter"))
+        .thenExecute(()->{
+            h.assertTrue(data.page(id,6).notes().isEmpty(),"the stroke goes with the word it was through");
+            h.assertTrue(data.page(id,4).notes().size()==1&&data.page(id,4).notes().get(0).anchor(data.page(id,4).text())<0,"the answer is ink and stays when its line is gone");
+            h.assertTrue(data.page(id,8).notes().isEmpty(),"a reader's screen cannot write in the other hand");
+            CoAuthor.certain(id,false);CoAuthor.viewing(p,-1);NativeTestPlayers.remove(p);
         }).thenSucceed();
     }
 }

@@ -344,7 +344,11 @@ public final class CaverTests {
     public static void badAirDrainsOnTheInBreathTheBellsHoldItAndChokingBeforeABlackoutWakesTheReaderWhereTheyLastHadAir(GameTestHelper h){
         air=new Fixture(h,34600);var f=air;f.open();var s=f.l.getServer();ServerPlayer[] who=new ServerPlayer[3];float[] seen={0};Vec3[] spot={null};
         h.runAfterDelay(4,()->{for(int i=0;i<3;i++)who[i]=f.player();f.at(who[0],.5,-3,-28.5);f.at(who[1],4.5,-3,-29.5);f.at(who[2],3.5,-3,-28.5);
-            who[2].gameMode.changeGameModeForPlayer(GameType.CREATIVE);f.edit(who[0],o->{o.putBoolean("Squeezed",true);o.putBoolean("LineTied",true);});});
+            who[2].gameMode.changeGameModeForPlayer(GameType.CREATIVE);f.edit(who[0],o->{o.putBoolean("Squeezed",true);o.putBoolean("LineTied",true);});
+            // The reader keeps a journal with a page begun in the House; the other hand writes for them after a blackout.
+            var journals=io.github.knaitoe.theoldesthouse.journal.Journals.get(s);journals.issue(who[0]);
+            journals.put(who[0].getUUID(),1,new io.github.knaitoe.theoldesthouse.journal.JournalPage("Into the squeeze on the in-breath.",java.util.List.of(),"Ted's cave",1,true,java.util.List.of(),java.util.List.of()));
+            io.github.knaitoe.theoldesthouse.journal.CoAuthor.certain(who[0].getUUID(),true);});
         // The reader steps from the first bell into the crawl just as the cave starts to breathe in; a peer waits in the next bell.
         h.runAfterDelay(8,()->{f.at(who[0],2.5,-3,-28.5);CaverVignette.setBreath(s,CaverVignette.INHALE_START);});
         h.runAfterDelay(28,()->{var p=who[0];Float a=CaverVignette.air(p.getUUID());
@@ -371,7 +375,10 @@ public final class CaverTests {
             h.assertTrue(own.getInt("Blackout")>0&&!own.contains("Choke")&&p.hasEffect(MobEffects.BLINDNESS)&&p.position().distanceTo(bell)<.05,"when it runs its course the reader blacks out and comes to in the bell they last breathed in: "+p.position().subtract(Vec3.atLowerCornerOf(f.b)));
             Float left=CaverVignette.air(p.getUUID());
             h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&left!=null&&Math.abs(left-p.getMaxAirSupply()/2F)<.01&&own.getBoolean("Squeezed")&&own.getBoolean("LineTied"),"nothing is lost but the time: no harm, half a breath, every step kept");
-            h.assertTrue(f.own(who[1]).getInt("Blackout")==0,"the peer's air is their own");});
+            h.assertTrue(f.own(who[1]).getInt("Blackout")==0,"the peer's air is their own");
+            var written=io.github.knaitoe.theoldesthouse.journal.Journals.get(s).page(p.getUUID(),2).notes();
+            h.assertTrue(written.size()==1&&written.get(0).text().equals(io.github.knaitoe.theoldesthouse.journal.CoAuthor.BLANK),"coming round, the reader's journal has something in it they did not write: "+written);
+            io.github.knaitoe.theoldesthouse.journal.CoAuthor.certain(p.getUUID(),false);});
         h.runAfterDelay(200,()->{h.assertTrue(f.own(who[0]).getInt("Blackout")==0&&WitnessAccount.count(f.data(),who[0].getUUID())==0,"the blackout ends and confers nothing");h.succeed();});
     }
     @GameTest(template="empty",batch="caver_crawls",timeoutTicks=300)

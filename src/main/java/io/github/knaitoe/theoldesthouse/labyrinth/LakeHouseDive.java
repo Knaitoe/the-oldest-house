@@ -123,6 +123,7 @@ public final class LakeHouseDive {
     }
     /** Coming to on the raft, or on the dock for a reader who never got through the culvert, with nothing lost but time. */
     private static void wake(ServerPlayer p,BlockPos b){
+        io.github.knaitoe.theoldesthouse.journal.CoAuthor.consider(p,io.github.knaitoe.theoldesthouse.journal.CoAuthor.Trigger.BLACKOUT);
         boolean third=p.getZ()<b.getZ()+LakeHouse.CHANNEL_NORTH;
         var at=Vec3.atBottomCenterOf(b.offset(third?LakeHouse.RAFT.offset(1,1,0):LakeHouse.DOCK_END.offset(0,1,2)));
         p.stopRiding();p.teleportTo(p.serverLevel(),at.x,at.y,at.z,p.getYRot(),20);p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();

@@ -263,6 +263,7 @@ public final class ElkDrag {
      */
     public static void wake(ServerPlayer p, BlockPos b, CompoundTag own, LiteraryActor killer) {
         DRAGGED.remove(p.getUUID());
+        io.github.knaitoe.theoldesthouse.journal.CoAuthor.consider(p, io.github.knaitoe.theoldesthouse.journal.CoAuthor.Trigger.BLACKOUT);
         long now = p.serverLevel().getGameTime();
         own.putInt("ElkStage", ElkHunt.ASHORE);
         own.putBoolean("ElkLanded", true);
