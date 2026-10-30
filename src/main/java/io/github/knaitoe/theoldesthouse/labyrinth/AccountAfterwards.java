@@ -26,11 +26,18 @@ public final class AccountAfterwards {
             case BLY_ROUTE -> bly(LiteraryVignettes.personal(d, id, LabyrinthPlace.BLY_ROUTE));
             case ELK_CARCASSES -> hides(d.stateEntry(ContestTrades.STATE, id.toString()));
             case SECOND_WAITRESS -> plate(LiteraryVignettes.personal(d, id, LabyrinthPlace.SECOND_WAITRESS));
+            case BORRASCA -> patch(d.stateEntry(Keepsakes.STATE, id.toString()));
             default -> "";
         };
         String manor = manor(d.stateEntry(HouseRemembers.STATE, id.toString()), story);
         String all = (line + " " + manor).trim();
         return all.isEmpty() ? "" : " " + all;
+    }
+
+    /** 0.4.198: how many times her name patch kept what was in the reader's hand when they fell away from the House. */
+    public static String patch(CompoundTag keepsakes) {
+        int n = keepsakes.getInt("SewnCount");
+        return n <= 0 ? "" : n == 1 ? "Afterwards, once, when I fell away from the House, her name kept what was in my hand." : "Afterwards, " + n + " times when I fell away from the House, her name kept what was in my hand.";
     }
 
     /** Kept, he is freed; buried, the rot goes as far as the names he has carried. */

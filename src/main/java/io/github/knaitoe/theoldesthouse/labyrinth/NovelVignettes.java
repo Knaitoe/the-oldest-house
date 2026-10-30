@@ -230,7 +230,7 @@ public final class NovelVignettes {
         var look=b.offset(NovelRooms.FIGURE).getCenter().subtract(p.getEyePosition());
         if(!(p.getUseItem().getItem() instanceof PlainCameraItem||p.getUseItem().is(Items.SPYGLASS))||look.lengthSqr()<=400||p.getViewVector(1).dot(look.normalize())<=.997)return false;
         var photo=io.github.knaitoe.theoldesthouse.opening.NavidsonLetter.createSnapshot(p.serverLevel(),frame.pixels());VignetteYields.mark(photo,LabyrinthPlace.PLAIN.id());
-        UUID id=UUID.randomUUID();CustomData.update(DataComponents.CUSTOM_DATA,photo,t->{t.putUUID(PHOTO_OWNER,p.getUUID());t.putUUID(PHOTO_ID,id);});photo.set(DataComponents.CUSTOM_NAME,Component.literal("The distant frame"));
+        UUID id=UUID.randomUUID();CustomData.update(DataComponents.CUSTOM_DATA,photo,t->{t.putUUID(PHOTO_OWNER,p.getUUID());t.putUUID(PHOTO_ID,id);});photo.set(DataComponents.CUSTOM_NAME,Component.literal("The distant frame"));Keepsakes.inscribe(photo,LabyrinthPlace.PLAIN,"Photo");
         own.put("Photo",photo.save(p.registryAccess()));own.remove("PlainExposure0464");own.putLong("PhotoDay",p.server.overworld().getDayTime()/24000);give(p,photo);p.playNotifySound(NovelRegistry.SHUTTER.get(),SoundSource.PLAYERS,.8F,1);
         WitnessAccount.resolve(p,WitnessAccount.Story.PLAIN,"held_the_distant_frame");data.setCompleted(LabyrinthPlace.PLAIN.id(),true);cue(p,own,"The frame is in your hand. The distance has not changed.");save(data,p.getUUID(),own);return true;
     }

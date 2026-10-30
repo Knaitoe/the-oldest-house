@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.197** adds four hallways that are just hallways: one with a jog in it, one that forks, one down a row of pillars and one that zigzags. Fewer of the halls on the way in have rooms bled into them. See [docs/PLAIN_HALLS_0_4_197.md](docs/PLAIN_HALLS_0_4_197.md).
+Development candidate **0.4.198** gives four more keepsakes something to do. Zampanò's leaves show the door back in a plain hall. The vulture photograph, held still, keeps far monsters from fixing on you. Her compass points to where you last fell. Her name patch keeps what was in your hand when you die away from the House, once a day. See [docs/KEEPSAKES_0_4_198.md](docs/KEEPSAKES_0_4_198.md).
+
+0.4.197 adds four hallways that are just hallways: one with a jog in it, one that forks, one down a row of pillars and one that zigzags. Fewer of the halls on the way in have rooms bled into them. See [docs/PLAIN_HALLS_0_4_197.md](docs/PLAIN_HALLS_0_4_197.md).
 
 0.4.196 lets you draw yourself at the kitchen table the way a child would: a pencil gives your picture a face (smiling, sad, scared, cross or plain) and trousers or a dress. In the House you wear what you drew: the tone, slim or wide arms, and the face. The account and the House of Leaves remember it. See [docs/DRAWN_SELF_0_4_196.md](docs/DRAWN_SELF_0_4_196.md).
 

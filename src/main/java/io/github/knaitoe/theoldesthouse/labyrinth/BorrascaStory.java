@@ -49,7 +49,8 @@ public final class BorrascaStory {
     public static void held(ServerPlayer p,ItemStack s,String key){
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
         if(!BorrascaBelongings.valid(p,own,key,s))return;
-        if(!BorrascaSites.inside(p)){p.displayClientMessage(Component.literal(key.equals("Compass")?"The red tape is worn thin around the brass case.":"Her name, stitched in the cloth."),true);return;}
+        // 0.4.198: away from the trail the compass points (Keepsakes.compass); the patch only shows her name.
+        if(!BorrascaSites.inside(p)){if(key.equals("Compass")&&own.getBoolean("Taken_Ending"))Keepsakes.compass(p);else p.displayClientMessage(Component.literal(key.equals("Compass")?"The red tape is worn thin around the brass case.":"Her name, stitched in the cloth."),true);return;}
         var b=BorrascaSites.base(p.server,p.getUUID());if(b==null)return;
         if(key.equals("Compass")&&own.getInt("Visit")==3){var sheriff=actor(p,own,"CastSheriff");if(sheriff!=null&&p.distanceToSqr(sheriff)<36){denial(p,sheriff,own);save(p,own);compassChoice(p);return;}}
         if(key.equals("Patch")&&own.getInt("Visit")==4&&near(p,b.offset(BorrascaRooms.CARVING),4)){restoreName(p,b,own);save(p,own);}

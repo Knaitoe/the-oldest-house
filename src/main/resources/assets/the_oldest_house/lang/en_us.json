@@ -284,6 +284,7 @@
   "item.the_oldest_house.zampano_leaf": "Loose leaf",
   "item.the_oldest_house.zampano_leaf.titled": "Loose leaf: %s",
   "item.the_oldest_house.zampano_leaf.tooltip": "Taken from a drawer in the courtyard archive.",
+  "item.the_oldest_house.zampano_leaf.way": "The survey measured the way through. Held up in a plain hall, ash drifts at the door back.",
   "block.the_oldest_house.ghosts_set": "Barrett home",
   "subtitles.the_oldest_house.ghost_low": "A voice croaks low",
   "subtitles.the_oldest_house.ghost_thin": "The voice turns thin",

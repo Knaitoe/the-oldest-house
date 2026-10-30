@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -67,6 +68,17 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * four blocks, unless struck first.</li>
  * <li><b>The cap from the broken post</b> (Last Stop), worn in their world: passive animals follow them as if led.</li>
  * </ul>
+ * 0.4.198, four more:
+ * <ul>
+ * <li><b>Zampanò's leaves</b>, held in a plain hall: ash drifts at the handle of the door back toward the manor. The survey
+ * measured the way through.</li>
+ * <li><b>The photograph with the vulture</b> (plain), held while standing still: monsters more than six blocks off lose track of
+ * them. The frame was made by holding still while the bird waited.</li>
+ * <li><b>Her compass</b> (Borrasca), used: away from the House it points to where they last fell; in the House, to the Mother's
+ * den, where lost things are kept. It found the missing.</li>
+ * <li><b>Her name patch</b> (Borrasca), carried: once a House day, dying away from the House keeps what is in their main hand
+ * with them, given back when they wake. The names restored to what was left.</li>
+ * </ul>
  */
 @EventBusSubscriber(modid = TheOldestHouse.MOD_ID)
 public final class Keepsakes {
@@ -77,6 +89,12 @@ public final class Keepsakes {
     public static final int BULB_LIGHT = 12, BULB_TICKS = 2400, BULB_COOLDOWN = 6000;
     private static final Map<BlockPos, Light> LIGHTS = new HashMap<>();
     private static final List<Ward> WARDS = new ArrayList<>();
+    /** 0.4.198: the photograph's reach, how long a keeper must stand still, and where the patch keeps its stitch. */
+    public static final double STILL_REACH = 6;
+    public static final int STILL_TICKS = 20;
+    public static final String STATE = "keepsakes_0198";
+    private static final Map<UUID, Still> STILL = new HashMap<>();
+    record Still(net.minecraft.world.phys.Vec3 at, long since) {}
     record Light(ResourceKey<Level> level, long until) {}
     record Ward(ResourceKey<Level> level, BlockPos pos, UUID owner) {}
 
@@ -109,12 +127,18 @@ public final class Keepsakes {
             case "devils_rock/Diary7" -> "Read it at night, away from the House. The last page knows the way home.";
             case "usher/RegisterLeaf" -> "Your name among those carried down. The dead read it too.";
             case "elk_lot/Cap" -> "Worn, the herd takes you for one of its own.";
+            case "plain/Photo" -> "Held still, nothing far off can keep its eyes on you. The bird waited the same way.";
+            case "borrasca/Compass" -> "It found the missing. Away from the House it points to where you last fell; inside, to where lost things are kept.";
+            case "borrasca/Patch" -> "Her name, sewn in. Once a day, if you fall away from the House, what is in your hand stays with you.";
             default -> null;
         };
     }
     public static void inscribe(ItemStack s, LabyrinthPlace place, String key) {
         String line = line(place, key);
-        if (line == null) return;
+        if (line != null) lore(s, line);
+    }
+    /** Adds one grey line under a stack's own. */
+    public static void lore(ItemStack s, String line) {
         var lines = new ArrayList<Component>(s.getOrDefault(net.minecraft.core.component.DataComponents.LORE, net.minecraft.world.item.component.ItemLore.EMPTY).lines());
         lines.add(Component.literal(line).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
         s.set(net.minecraft.core.component.DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(lines));
@@ -133,6 +157,8 @@ public final class Keepsakes {
         if (p.tickCount % 40 == 0 && carries(p, LabyrinthPlace.HOLY_RABBIT, "RabbitFoot"))
             p.addEffect(new MobEffectInstance(MobEffects.LUCK, 80, 0, true, false, true));
         if (p.tickCount % 20 == 0) herd(p);
+        still(p);
+        if (p.tickCount % 20 == 0) { leaves(p);photograph(p); }
     }
     /** The elk's weight while the tooth is in the off hand. */
     public static boolean tooth(ServerPlayer p) {
@@ -280,17 +306,132 @@ public final class Keepsakes {
     // ------------------------------------------------------------------
 
     @SubscribeEvent public static void target(LivingChangeTargetEvent e) {
-        if (!(e.getNewAboutToBeSetTarget() instanceof ServerPlayer p) || !e.getEntity().getType().is(EntityTypeTags.UNDEAD)) return;
-        if (unnoticed(p, e.getEntity())) e.setCanceled(true);
+        if (!(e.getNewAboutToBeSetTarget() instanceof ServerPlayer p)) return;
+        if (e.getEntity().getType().is(EntityTypeTags.UNDEAD) && unnoticed(p, e.getEntity())) e.setCanceled(true);
+        else if (e.getEntity() instanceof Enemy && lostTrack(p, e.getEntity())) e.setCanceled(true);
     }
     /** The dead pass over a reader the house wrote among them, until close, or until struck by them. */
     public static boolean unnoticed(ServerPlayer p, LivingEntity dead) {
         return ownWorld(p) && dead.getLastHurtByMob() != p && dead.distanceToSqr(p) > UNDEAD_NOTICE * UNDEAD_NOTICE && carries(p, LabyrinthPlace.USHER, "RegisterLeaf");
     }
 
+    // ------------------------------------------------------------------
+    // Zampanò's leaves (0.4.198)
+    // ------------------------------------------------------------------
+
+    static boolean leaf(ItemStack s) { return io.github.knaitoe.theoldesthouse.journal.ZampanoLeafItem.leafOf(s) >= 0; }
+    /** Held in a plain hall: the door back toward the manor, where the ash drifts, or null. */
+    public static BlockPos leafWay(ServerPlayer p) {
+        if (!leaf(p.getMainHandItem()) && !leaf(p.getOffhandItem())) return null;
+        if (!p.level().dimension().equals(HouseDimensions.INTERIOR)) return null;
+        var origin = LabyrinthData.get(p.server).builtOrigin();
+        if (origin == null) return null;
+        var place = LabyrinthPlaces.placeAt(origin, p.blockPosition());
+        if (place == null || !LabyrinthPacing.ordinary(place)) return null;
+        var base = LabyrinthPlaces.base(origin, place);
+        if (base == null) return null;
+        for (var door : place.doors()) if (LabyrinthData.RETURN.equals(door.destination())) return base.offset(door.rel());
+        return null;
+    }
+    static void leaves(ServerPlayer p) {
+        var door = leafWay(p);
+        if (door != null) p.serverLevel().sendParticles(p, net.minecraft.core.particles.ParticleTypes.WHITE_ASH, true, door.getX() + .5, door.getY() + 1.1, door.getZ() + .5, 10, .2, .35, .2, .01);
+    }
+
+    // ------------------------------------------------------------------
+    // The photograph with the vulture (0.4.198)
+    // ------------------------------------------------------------------
+
+    static boolean photo(ItemStack s, ServerPlayer p) {
+        var data = s.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (data == null) return false;
+        var t = data.copyTag();
+        return t.hasUUID(NovelVignettes.PHOTO_OWNER) && t.getUUID(NovelVignettes.PHOTO_OWNER).equals(p.getUUID());
+    }
+    /** Where the reader has stood since when; a step resets it. */
+    static void still(ServerPlayer p) {
+        var was = STILL.get(p.getUUID());
+        if (was == null || was.at().distanceToSqr(p.position()) > .01) STILL.put(p.getUUID(), new Still(p.position(), p.serverLevel().getGameTime()));
+    }
+    /** Holding the photograph and standing still a second or more. */
+    public static boolean holdingStill(ServerPlayer p) {
+        if (!photo(p.getMainHandItem(), p) && !photo(p.getOffhandItem(), p)) return false;
+        var was = STILL.get(p.getUUID());
+        return was != null && was.at().distanceToSqr(p.position()) <= .01 && p.serverLevel().getGameTime() - was.since() >= STILL_TICKS;
+    }
+    /** A monster more than six blocks off cannot keep its eyes on a keeper holding still. */
+    public static boolean lostTrack(ServerPlayer p, LivingEntity monster) {
+        return monster.distanceToSqr(p) > STILL_REACH * STILL_REACH && holdingStill(p);
+    }
+    /** Those already hunting them look away. Returns how many. */
+    public static int photograph(ServerPlayer p) {
+        if (!holdingStill(p)) return 0;
+        int lost = 0;
+        for (var m : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(48), m -> m instanceof Enemy && m.getTarget() == p && lostTrack(p, m))) {
+            m.setTarget(null);lost++;
+        }
+        return lost;
+    }
+
+    // ------------------------------------------------------------------
+    // Her compass and her name patch (Borrasca, 0.4.198)
+    // ------------------------------------------------------------------
+
+    /** Used away from the trail: which way, and how far. */
+    public static String compass(ServerPlayer p) {
+        String line;
+        if (ownWorld(p)) {
+            var last = p.getLastDeathLocation();
+            line = last.isEmpty() || !last.get().dimension().equals(p.level().dimension()) ? "The needle turns slowly under the red tape and will not settle."
+                    : way(p, last.get().pos(), "where you last fell");
+        } else {
+            var origin = LabyrinthData.get(p.server).builtOrigin();
+            var den = origin == null ? null : LabyrinthPlaces.base(origin, LabyrinthPlace.MOTHER_DEN);
+            line = den == null || !p.level().dimension().equals(NovelRooms.dimension(LabyrinthPlace.MOTHER_DEN)) ? "The needle turns slowly under the red tape and will not settle."
+                    : way(p, den, "where lost things are kept");
+        }
+        p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
+        return line;
+    }
+    static String way(ServerPlayer p, BlockPos to, String what) {
+        var d = to.getCenter().subtract(p.position());
+        int blocks = (int) Math.round(Math.hypot(d.x, d.z));
+        if (blocks < 4) return "The needle swings round and round. It is here.";
+        return "The needle settles " + net.minecraft.core.Direction.getNearest(d.x, 0, d.z).getName() + ", toward " + what + ". About " + blocks + " blocks.";
+    }
+    public static CompoundTag record(ServerPlayer p) { return LabyrinthData.get(p.server).stateEntry(STATE, p.getUUID().toString()); }
+    static void save(ServerPlayer p, CompoundTag own) { LabyrinthData.get(p.server).setStateEntry(STATE, p.getUUID().toString(), own); }
+    @SubscribeEvent(priority = EventPriority.LOWEST) public static void death(net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) {
+        if (e.isCanceled() || !(e.getEntity() instanceof ServerPlayer p) || p.level().getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY)) return;
+        sew(p);
+    }
+    /** Dying away from the House with the patch, once a House day: what is in their main hand stays with them. */
+    public static ItemStack sew(ServerPlayer p) {
+        if (!ownWorld(p) || !carries(p, LabyrinthPlace.BORRASCA, "Patch")) return ItemStack.EMPTY;
+        var hand = p.getMainHandItem();
+        var own = record(p);long today = io.github.knaitoe.theoldesthouse.house.HouseCalendar.today(p.server);
+        if (hand.isEmpty() || own.contains("Sewn") || own.contains("SewnDay") && own.getLong("SewnDay") == today) return ItemStack.EMPTY;
+        var kept = hand.copy();p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        own.put("Sewn", kept.save(p.registryAccess()));own.putLong("SewnDay", today);own.putInt("SewnCount", own.getInt("SewnCount") + 1);save(p, own);
+        return kept;
+    }
+    @SubscribeEvent public static void respawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p) unsew(p);
+    }
+    /** Waking, what the patch kept is in their hand again. */
+    public static boolean unsew(ServerPlayer p) {
+        var own = record(p);
+        if (!own.contains("Sewn")) return false;
+        var kept = ItemStack.parseOptional(p.registryAccess(), own.getCompound("Sewn"));own.remove("Sewn");save(p, own);
+        if (kept.isEmpty()) return false;
+        if (!p.getInventory().add(kept)) p.drop(kept, false);
+        p.displayClientMessage(Component.literal("Her name, stitched in the cloth. What you were holding is still with you.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
+        return true;
+    }
+
     @SubscribeEvent public static void serverTick(ServerTickEvent.Post e) {
         if (e.getServer().getTickCount() % 20 == 0) lightsOut(e.getServer(), false);
         if (e.getServer().getTickCount() % 200 == 0) WARDS.removeIf(w -> { var l = e.getServer().getLevel(w.level());return l == null || l.isLoaded(w.pos()) && !playing(l, w); });
     }
-    @SubscribeEvent public static void stopping(net.neoforged.neoforge.event.server.ServerStoppingEvent e) { lightsOut(e.getServer(), true);WARDS.clear(); }
+    @SubscribeEvent public static void stopping(net.neoforged.neoforge.event.server.ServerStoppingEvent e) { lightsOut(e.getServer(), true);WARDS.clear();STILL.clear(); }
 }

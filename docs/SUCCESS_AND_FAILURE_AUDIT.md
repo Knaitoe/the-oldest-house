@@ -405,7 +405,7 @@ The owner: "most of the items you provided the player with don't really have an 
 
 Tools that already work (the tally counter, the shield, the Bone Ring, the Smoky Mirror, the stone of the house, the globes, the paw, the envelope, Tess's gifts, Harrigan's phone, the camcorder, the canoe phone, the blank journal) keep what they do. "House" means inside the House; "world" means the reader's own world.
 
-**Keepsakes in the game now, given an effect** (the first nine built in 0.4.192, docs/KEEPSAKES_0_4_192.md):
+**Keepsakes in the game now, given an effect** (the first nine built in 0.4.192, docs/KEEPSAKES_0_4_192.md; the leaves, the vulture photograph, the compass and the patch in 0.4.198, docs/KEEPSAKES_0_4_198.md; the Wheel key waits, since it would change the Mother's ransom):
 
 | Artifact | Effect | Where | From the story |
 |---|---|---|---|
