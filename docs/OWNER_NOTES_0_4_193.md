@@ -16,14 +16,11 @@ The owner, on a screenshot of a laundry corner opening off a hall: "Try to reduc
 - **Unchanged.** Saved routes keep the halls already dealt to them. The bled-in homes still wait for their ten passes, and they come later now.
 - **Next.** The new plain hallways come in their own change, since they append layout slots.
 
-## In progress
+## Built since
 
-- **The child's drawing.** The owner: "a good opportunity to let the player select a feminine or masculine body, and maybe what kind of face they want – happy, scared, sad, etc. customization through a child's eyes." The kitchen drawing will offer a body and a face.
-- **Skin tone.** The owner: "I'm realizing that skin tone isn't being properly applied." The tone drawn at the kitchen table recolours only a House body, which is worn only by readers with an inhuman skin. A reader with an ordinary skin keeps their own colouring everywhere. The drawn tone will recolour every reader's own skin.
-
-## Asked
-
-- **The hands.** The owner: "Let's try to position the player's hands." The screenshot shows two forearms in sleeves reaching into a first-person view beside a close face. It is not yet clear which hands are meant (the reader's own first-person arm, a seated pose, or a figure beside them), so it is asked.
+- **Skin tone (0.4.195).** The owner: "I'm realizing that skin tone isn't being properly applied." The tone drawn at the kitchen table now recolours every reader's own skin inside the House, keeping its shading. See docs/SKIN_TONE_0_4_195.md.
+- **The child's drawing (0.4.196).** The owner: "a good opportunity to let the player select a feminine or masculine body, and maybe what kind of face they want – happy, scared, sad, etc. customization through a child's eyes." A pencil draws the face and trousers or a dress, and the reader wears them in the House. See docs/DRAWN_SELF_0_4_196.md.
+- **The hands (0.4.194).** These turned out to be the shelter's dance: the reader's arms now hold the partner. See docs/LITERATURE_AND_DANCE_0_4_194.md.
 
 ## What stays
 

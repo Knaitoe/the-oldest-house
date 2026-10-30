@@ -62,28 +62,62 @@ public final class HouseReadKitchen {
 
     // ---- The drawing: four parts to colour, mapped pixel by pixel on the sheet (row 0 is the top of the page, away from the chair).
     public enum Region {FACE,HANDS,HAIR,CLOTHES}
-    /** The figure's parts: f the face, h the hands, r the hair, c the clothes. tools/house_read_kitchen_art.py draws the same map. */
-    public static final String[] FIGURE={
+    /**
+     * The figure's parts above the waist: f the face, h the hands, r the hair, c the clothes. 0.4.196: a child's big head, and
+     * nothing below the shirt and no face until the pencil draws them. The client draws the pencil lines and the crayon from this
+     * same map ({@link #figure(int)}), so what is clicked and what is coloured are the same pixels.
+     */
+    public static final String[] TOP={
         "................",
-        "......rrrr......",
         ".....rrrrrr.....",
-        ".....rffffr.....",
+        "....rrrrrrrr....",
+        "....rffffffr....",
+        "....ffffffff....",
+        "....ffffffff....",
+        "....ffffffff....",
         ".....ffffff.....",
-        ".....ffffff.....",
-        "......ffff......",
-        ".......ff.......",
         "....cccccccc....",
         "..cccccccccccc..",
         ".hhccccccccccchh",
-        ".hh..cccccc..hh.",
-        ".....cccccc.....",
-        ".....cc..cc.....",
-        ".....cc..cc.....",
-        "................"};
+        ".hh..cccccc..hh."};
+    /**
+     * 0.4.196 (owner: "let the player select a feminine or masculine body, and maybe what kind of face they want \u2013 happy,
+     * scared, sad, etc. customization through a child's eyes"): what the pencil draws below the shirt, 1 trousers or 2 a dress
+     * (0, nothing yet). A dress's legs are only lines ({@link #LEGS}).
+     */
+    public static final List<String> BODIES=List.of("trousers","a dress");
+    private static final String[][] BOTTOMS={{},
+        {".....cccccc.....",".....cc..cc.....",".....cc..cc....."},
+        {"....cccccccc....","...cccccccccc...","................"}};
+    /** The dress's legs, as pencil lines below its hem. */
+    public static final int[][] LEGS={{6,14},{9,14},{6,15},{9,15}};
+    /** The whole figure for a body: the top, then what the pencil drew below the shirt. */
+    public static String[] figure(int body){
+        var rows=new String[16];var bottom=BOTTOMS[Mth.clamp(body,0,BOTTOMS.length-1)];
+        for(int i=0;i<16;i++)rows[i]=i<TOP.length?TOP[i]:i-TOP.length<bottom.length?bottom[i-TOP.length]:"................";
+        return rows;
+    }
+    /** The faces the pencil draws, in the order it draws them, 1 to 5 (0, no face yet). */
+    public static final List<String> FACES=List.of("smiling","sad","scared","cross","plain");
+    /** Each face's pencil marks on the page, as column and row, within the head's six by three middle. */
+    public static final int[][][] FACE_MARKS={
+        {{6,4},{9,4},{5,5},{10,5},{6,6},{7,6},{8,6},{9,6}},
+        {{6,4},{9,4},{7,5},{8,5},{6,6},{9,6}},
+        {{6,4},{9,4},{7,5},{8,5},{7,6},{8,6}},
+        {{5,4},{6,4},{9,4},{10,4},{6,5},{9,5},{6,6},{7,6},{8,6},{9,6}},
+        {{6,4},{9,4},{7,6},{8,6}}};
+    /** The sad face's tear, in the blue crayon's colour. */
+    public static final int[] TEAR={5,5};
+    /** The pencil's value among the crayons: it draws lines, not colour. */
+    public static final int PENCIL=20;
+    static final int PENCIL_SLOT=-2;
+    /** Where the pencil lies on the sheet, in pixels: down the right margin, its point toward the chair. */
+    public static final double[] PENCIL_LIES={13.5,14.6,.8,8.4};
+    static boolean pencilAt(BlockPos at,Vec3 hit){double x=(hit.x-at.getX())*16,z=(hit.z-at.getZ())*16;return x>=12.5&&z<9;}
     /** The part under a click on the sheet: the nearest marked pixel within two, so a near miss still colours what it meant. */
-    static Region regionAt(BlockPos at,Vec3 hit){
-        int col=Mth.clamp((int)((hit.x-at.getX())*16),0,15),row=Mth.clamp((int)((hit.z-at.getZ())*16),0,15);Region best=null;int bestDistance=99;
-        for(int dz=-2;dz<=2;dz++)for(int dx=-2;dx<=2;dx++){int r=row+dz,c=col+dx;if(r<0||r>15||c<0||c>15)continue;Region found=region(FIGURE[r].charAt(c));int distance=dx*dx+dz*dz;if(found!=null&&distance<bestDistance){best=found;bestDistance=distance;}}
+    static Region regionAt(BlockPos at,Vec3 hit,int body){
+        int col=Mth.clamp((int)((hit.x-at.getX())*16),0,15),row=Mth.clamp((int)((hit.z-at.getZ())*16),0,15);Region best=null;int bestDistance=99;var figure=figure(body);
+        for(int dz=-2;dz<=2;dz++)for(int dx=-2;dx<=2;dx++){int r=row+dz,c=col+dx;if(r<0||r>15||c<0||c>15)continue;Region found=region(figure[r].charAt(c));int distance=dx*dx+dz*dz;if(found!=null&&distance<bestDistance){best=found;bestDistance=distance;}}
         return best;
     }
     public static Region region(char c){return switch(c){case 'f'->Region.FACE;case 'h'->Region.HANDS;case 'r'->Region.HAIR;case 'c'->Region.CLOTHES;default->null;};}
@@ -133,7 +167,7 @@ public final class HouseReadKitchen {
         BuildBlocks.after(l,()->{for(var half:List.of(TIN_LEFT_AT,TIN_RIGHT_AT))if(l.getBlockEntity(b.offset(half)) instanceof HouseReadPropBlock.Fitting fitting){var t=new CompoundTag();t.putIntArray("Colours",colours(owner,half.equals(TIN_RIGHT_AT)));t.putInt("Taken",-1);fitting.setRead(t);}
             if(l.getBlockEntity(b.offset(SHEET_AT)) instanceof HouseReadPropBlock.Fitting sheet)sheet.setRead(blank());});
     }
-    static CompoundTag blank(){var t=new CompoundTag();for(var r:Region.values())t.putInt(key(r),-1);return t;}
+    static CompoundTag blank(){var t=new CompoundTag();for(var r:Region.values())t.putInt(key(r),-1);t.putInt("Body",0);t.putInt("Mood",0);return t;}
 
     // ---- Using it.
     private static CompoundTag visit(ServerPlayer p){return HouseReadSites.state(p.server,p.getUUID()).getCompound(KITCHEN.key());}
@@ -156,7 +190,7 @@ public final class HouseReadKitchen {
     /** The kitchen clock's own time, kept on its fitting for the client: a little after four. */
     public static final String CLOCK_AFTER_FOUR="after_four";
     static boolean kitchenPart(HouseReadPropBlock.Part part){return part==TIN_LEFT||part==TIN_RIGHT||part==SHEET||part==FRIDGE||part==FRIDGE_TOP||part==RADIO;}
-    /** The crayon this reader is holding, or -1. */
+    /** The crayon this reader is holding ({@link #PENCIL} for the pencil), or -1. */
     public static int held(ServerPlayer p){var hand=p.getMainHandItem();if(!hand.is(HouseReadRegistry.CRAYON.get())||!HouseReadSites.loan(hand,p.getUUID()))return -1;var data=hand.get(DataComponents.CUSTOM_DATA);return data==null?-1:data.copyTag().getInt("Crayon");}
     /** The kitchen's fittings, and its sink, plate and clock. False for anything that is not the kitchen's to answer. */
     public static boolean use(ServerPlayer p,BlockPos at,BlockState state,BlockHitResult hit){
@@ -193,20 +227,55 @@ public final class HouseReadKitchen {
     /** The crayon in hand back into its place in the tin. */
     static void putBack(ServerPlayer p,BlockPos b){
         var t=visit(p);if(!t.contains("HeldAt"))return;var at=BlockPos.of(t.getLong("HeldAt"));
-        if(bounds(b).contains(at.getCenter())){var fitting=fitting(p,at);if(fitting!=null){var read=fitting.read();read.putInt("Taken",-1);fitting.setRead(read);}}
+        if(bounds(b).contains(at.getCenter())){var fitting=fitting(p,at);if(fitting!=null){var read=fitting.read();if(t.getInt("HeldSlot")==PENCIL_SLOT)read.putBoolean("PencilTaken",false);else read.putInt("Taken",-1);fitting.setRead(read);}}
         t.remove("HeldAt");t.remove("HeldSlot");save(p,t);HouseReadMoments.giveBack(p,KITCHEN,false);
     }
     private static void sheet(ServerPlayer p,BlockPos b,BlockPos at,BlockHitResult hit){
         var state=p.serverLevel().getBlockState(at);if(state.getValue(HouseReadPropBlock.TURNED))return;var fitting=fitting(p,at);if(fitting==null)return;
-        int colour=held(p);
-        if(colour<0){p.displayClientMessage(Component.literal(coloured(fitting.read())?"Your picture. It isn't up on the fridge yet.":"A drawing of you, in pencil, waiting to be coloured in."),true);HouseReadSites.act(p,KITCHEN,"looked at the drawing");return;}
-        var region=regionAt(at,hit.getLocation());if(region==null){p.displayClientMessage(Component.literal("You draw a line in the margin."),true);return;}
-        var read=fitting.read();int before=read.getInt(key(region));read.putInt(key(region),colour);fitting.setRead(read);
+        int colour=held(p);var read=fitting.read();
+        // 0.4.196: the pencil down the margin. Taking it puts back what is in hand; the pencil again puts it back.
+        if(pencilAt(at,hit.getLocation())&&(colour==PENCIL||!read.getBoolean("PencilTaken"))){
+            var t=visit(p);putBack(p,b);if(colour==PENCIL){HouseReadSites.act(p,KITCHEN,"put the pencil back");return;}
+            var pencil=new ItemStack(HouseReadRegistry.CRAYON.get());pencil.set(DataComponents.CUSTOM_NAME,Component.literal("Pencil").withStyle(s->s.withItalic(false)));pencil.set(DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(1));
+            CustomData.update(DataComponents.CUSTOM_DATA,pencil,c->c.putInt("Crayon",PENCIL));HouseReadMoments.borrow(p,KITCHEN,pencil,false);
+            t=visit(p);t.putLong("HeldAt",at.asLong());t.putInt("HeldSlot",PENCIL_SLOT);save(p,t);read=fitting.read();read.putBoolean("PencilTaken",true);fitting.setRead(read);
+            HouseReadSites.sound(p,SoundEvents.ITEM_PICKUP,at,.25f);HouseReadSites.act(p,KITCHEN,"took the pencil");return;
+        }
+        if(colour<0){p.displayClientMessage(Component.literal(read.getInt("Mood")<=0?"A drawing of you, in pencil. It doesn't have a face yet.":coloured(read)?"Your picture. It isn't up on the fridge yet.":"A drawing of you, in pencil, waiting to be coloured in."),true);HouseReadSites.act(p,KITCHEN,"looked at the drawing");return;}
+        int body=read.getInt("Body");var region=regionAt(at,hit.getLocation(),body);
+        if(colour==PENCIL){pencil(p,at,hit,fitting,region);return;}
+        if(region==null){p.displayClientMessage(Component.literal("You draw a line in the margin."),true);return;}
+        int before=read.getInt(key(region));read.putInt(key(region),colour);fitting.setRead(read);
         HouseReadSites.sound(p,SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT,at,.45f);
         var t=visit(p);t.putBoolean("NoteArmed",true);if(!t.contains("ColouredAt"))t.putInt("ColouredAt",t.getInt("Age"));save(p,t);
         HouseReadSites.act(p,KITCHEN,switch(region){case FACE->"coloured the face";case HANDS->"coloured the hands";case HAIR->"coloured the hair";case CLOTHES->"coloured the clothes";});
         signal(p,region,colour,before,read);
     }
+    /**
+     * 0.4.196: the pencil draws, a child's way. On the face it draws a face, and each time again rubs it out and draws the next:
+     * smiling, sad, scared, cross, plain. On the body or below the shirt it draws trousers, or rubs them out for a dress. What is
+     * drawn is the reader's own choice and the House keeps it as drawn ({@link #form}, {@link #mood}).
+     */
+    private static void pencil(ServerPlayer p,BlockPos at,BlockHitResult hit,HouseReadPropBlock.Fitting fitting,@org.jetbrains.annotations.Nullable Region region){
+        var read=fitting.read();int row=Mth.clamp((int)((hit.getLocation().z-at.getZ())*16),0,15),col=Mth.clamp((int)((hit.getLocation().x-at.getX())*16),0,15);
+        boolean below=row>=12&&col>=2&&col<=13;
+        if(region==Region.FACE){
+            int mood=read.getInt("Mood")%FACES.size()+1;boolean again=read.getInt("Mood")>0;read.putInt("Mood",mood);fitting.setRead(read);
+            HouseRead.see(p,KITCHEN,s->{s.putInt("Mood",mood);if(!s.contains("FirstMood"))s.putInt("FirstMood",mood);});
+            p.displayClientMessage(Component.literal((again?"You rub it out and draw yourself ":"You draw yourself ")+face(mood)+"."),true);
+            HouseReadSites.act(p,KITCHEN,(again?"rubbed out the face and drew it ":"drew the face ")+FACES.get(mood-1));
+        }else if(region==Region.CLOTHES||below){
+            int body=read.getInt("Body")%BODIES.size()+1;boolean again=read.getInt("Body")>0;read.putInt("Body",body);fitting.setRead(read);
+            HouseRead.see(p,KITCHEN,s->{s.putInt("Body",body);if(!s.contains("FirstBody"))s.putInt("FirstBody",body);});
+            p.displayClientMessage(Component.literal((again?"You rub it out and draw yourself in ":"You draw yourself in ")+BODIES.get(body-1)+"."),true);
+            HouseReadSites.act(p,KITCHEN,(again?"rubbed out the legs and drew ":"drew ")+BODIES.get(body-1));
+        }else if(region!=null){p.displayClientMessage(Component.literal("You go over the lines again."),true);return;}
+        else{p.displayClientMessage(Component.literal("You draw a line in the margin."),true);return;}
+        HouseReadSites.sound(p,SoundEvents.BOOK_PAGE_TURN,at,.35f);
+        var t=visit(p);t.putBoolean("NoteArmed",true);save(p,t);
+    }
+    /** How a face reads in the room's words. */
+    public static String face(int mood){return switch(mood){case 1->"smiling";case 2->"sad, with a tear";case 3->"scared";case 4->"cross";case 5->"with a straight mouth";default->"";};}
     /**
      * The read. The first face in a colour a person could be sets {@code TONE} tentatively; hands in the same crayon settle it;
      * a face coloured again in another tone, or hands in another, disagree, and the next decides. A face in blue or green is
@@ -239,7 +308,9 @@ public final class HouseReadKitchen {
         var sheetState=p.serverLevel().getBlockState(sheetAt);if(sheetState.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(sheetAt,sheetState.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);
         t=visit(p);t.putBoolean("Hung",true);t.putInt("HungAt",t.getInt("Age"));t.putBoolean("NoteArmed",true);save(p,t);
         boolean alike=read.getInt("Face")>=0&&read.getInt("Face")==read.getInt("Hands");
-        HouseRead.see(p,KITCHEN,s->{s.putBoolean("Hung",true);if(alike)s.putBoolean("Alike",true);for(var r:Region.values())if(read.getInt(key(r))>=0)s.putBoolean("Drew"+key(r),true);});
+        HouseRead.see(p,KITCHEN,s->{s.putBoolean("Hung",true);if(alike)s.putBoolean("Alike",true);for(var r:Region.values())if(read.getInt(key(r))>=0)s.putBoolean("Drew"+key(r),true);
+            // 0.4.196: the body and the face as they went up on the fridge.
+            if(read.getInt("Body")>0)s.putInt("Body",read.getInt("Body"));if(read.getInt("Mood")>0)s.putInt("Mood",read.getInt("Mood"));});
         HouseReadSites.sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,top,.5f);HouseReadSites.act(p,KITCHEN,"put the picture up on the fridge");
         unlock(p,b);
     }
@@ -254,17 +325,23 @@ public final class HouseReadKitchen {
         boolean hung=t.getBoolean("Hung");
         if(!hung&&!t.contains("ColouredAt")&&age==600)voice(p,"Go on, finish your picture. You can put it up on the fridge when you're done.");
         if(!hung&&t.contains("ColouredAt")&&age==Math.max(600,t.getInt("ColouredAt")+600))voice(p,"Put it up on the fridge when you're done, so everybody can see.");
+        // 0.4.196: a picture coloured in with no face drawn yet.
+        if(!hung&&t.contains("ColouredAt")&&age==Math.max(300,t.getInt("ColouredAt")+300)&&p.serverLevel().getBlockEntity(b.offset(SHEET_AT)) instanceof HouseReadPropBlock.Fitting sheet&&sheet.read().getInt("Mood")<=0)voice(p,"Don't forget to give yourself a face. The pencil's right there.");
         if(hung&&p.getZ()<b.getZ()-12.4&&p.getX()>b.getX()+4&&p.getX()<b.getX()+6)HouseReadSites.leave(p,true);
     }
     /** Leaving: the crayon in hand goes back into the tin. */
     static void left(ServerPlayer p,CompoundTag t){
         var b=HouseReadSites.base(p.server,p.getUUID(),KITCHEN);var level=p.server.getLevel(KITCHEN.dimension());
-        if(b!=null&&level!=null&&t.contains("HeldAt")){var at=BlockPos.of(t.getLong("HeldAt"));if(bounds(b).contains(at.getCenter())&&level.getBlockEntity(at) instanceof HouseReadPropBlock.Fitting f){var read=f.read();read.putInt("Taken",-1);f.setRead(read);}}
+        if(b!=null&&level!=null&&t.contains("HeldAt")){var at=BlockPos.of(t.getLong("HeldAt"));if(bounds(b).contains(at.getCenter())&&level.getBlockEntity(at) instanceof HouseReadPropBlock.Fitting f){var read=f.read();if(t.getInt("HeldSlot")==PENCIL_SLOT)read.putBoolean("PencilTaken",false);else read.putInt("Taken",-1);f.setRead(read);}}
         t.remove("HeldAt");t.remove("HeldSlot");
     }
     // ---- What it gives the House's body.
     /** The tone the House's body wears: the face's colour, as read, or -1 for the account's default skin's. */
     public static int tone(LabyrinthData d,UUID reader){String hex=HouseRead.value(d,reader,HouseRead.Trait.TONE,false);return hex.length()==7?Integer.parseInt(hex.substring(1),16):-1;}
+    /** 0.4.196: the body the reader drew, 1 trousers or 2 a dress, or 0 for none drawn. */
+    public static int form(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return 0;return Mth.clamp(HouseRead.seen(d,reader).getCompound(KITCHEN.key()).getInt("Body"),0,BODIES.size());}
+    /** 0.4.196: the face the reader drew, 1 to 5 in {@link #FACES}, or 0 for none drawn. */
+    public static int mood(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return 0;return Mth.clamp(HouseRead.seen(d,reader).getCompound(KITCHEN.key()).getInt("Mood"),0,FACES.size());}
     /** The hair colour the House's body wears: the drawing's hair, if it was drawn in a colour hair can be, or -1. */
     public static int hair(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return -1;var s=HouseRead.seen(d,reader).getCompound(KITCHEN.key());return s.contains("Hair")&&hairColour(s.getInt("Hair"))?rgb(s.getInt("Hair")):-1;}
 }

@@ -3,8 +3,10 @@
 The owner: "The skin-color selection should be the first vignette the player encounters." A crayon tin in two halves (six
 skin crayons along the back of each and four others along the front; the crayons themselves are drawn by the client in each
 reader's own order), the drawing with only its pencil lines, the fridge with old drawings and magnets on its lower door and
-room on the upper one, a tabletop radio, the window's four o'clock sky and a crayon to hold. The figure's parts are read from
-HouseReadKitchen.FIGURE, so the colouring masks and the server's map of the page are the same pixels.
+room on the upper one, a tabletop radio, the window's four o'clock sky and a crayon to hold.
+
+0.4.196: the page is blank paper. The client draws the figure's pencil lines, the body and face the reader's pencil chose, and
+the crayon, all from HouseReadKitchen's own map, so the page needs no lines or masks of its own. The pencil to hold is drawn here.
 """
 from pathlib import Path
 from PIL import Image, ImageDraw
@@ -17,15 +19,6 @@ PARTS = ['tin_left', 'tin_right', 'sheet', 'fridge', 'fridge_top', 'radio']
 TURNED = ['sheet', 'radio']
 # Parts drawn differently when WRITING: the words inside the lid.
 WRITTEN = ['tin_left']
-
-
-def figure():
-    """The page's parts, row by row, exactly as the server maps a click on the sheet."""
-    source = (ROOT / 'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/HouseReadKitchen.java').read_text()
-    block = source[source.index('FIGURE={'):]
-    rows = re.findall(r'"([.fhrc]{16})"', block[:block.index('};')])
-    assert len(rows) == 16, rows
-    return rows
 
 
 def _rng(name):
@@ -41,33 +34,9 @@ def _fill(mid, name, specks, count):
     return im
 
 
-def _outline(rows):
-    """Pencil lines: the edge pixels of each part, and the eyes and mouth."""
-    edge = set()
-    for y in range(16):
-        for x in range(16):
-            if rows[y][x] == '.':
-                continue
-            for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-                nx, ny = x + dx, y + dy
-                if not (0 <= nx < 16 and 0 <= ny < 16) or rows[ny][nx] != rows[y][x]:
-                    edge.add((x, y))
-    return edge
-
-
-FACE_MARKS = [(6, 4), (9, 4), (7, 5), (8, 5)]
-
-
 def tiles(out):
-    rows = figure()
-    # The drawing: off-white paper, the figure in light pencil.
-    im = _fill('#f1ead6', 'sheet', ['#e9e1cb', '#f6f0df'], 24)
-    d = ImageDraw.Draw(im)
-    for x, y in _outline(rows):
-        d.point((x, y), fill='#8e8a82')
-    for x, y in FACE_MARKS:
-        d.point((x, y), fill='#5e5a54')
-    out['sheet'] = im
+    # The drawing: off-white paper. Its pencil lines are drawn by the client (0.4.196).
+    out['sheet'] = _fill('#f1ead6', 'sheet', ['#e9e1cb', '#f6f0df'], 24)
     out['sheet_edge'] = _fill('#e7dfc8', 'sheet_edge', ['#ddd5bd'], 6)
     # The tin: painted red metal with a cream band, the lid's inside printed with the maker's sun.
     im = _fill('#b03a2e', 'tin', ['#9c3328', '#c24a3c'], 30)
@@ -189,7 +158,7 @@ def models(model, cube, faced):
 
 
 def entity_textures():
-    """What the client draws over the fittings: a crayon to tint, and a mask for each part of the drawing."""
+    """What the client draws over the fittings: a crayon to tint (also the white the drawing's pencil and crayon are cut from)."""
     out = {}
     im = Image.new('RGBA', (16, 16), (255, 255, 255, 255))
     d = ImageDraw.Draw(im)
@@ -197,20 +166,6 @@ def entity_textures():
         d.point((0, y), fill=(226, 226, 226, 255))
         d.point((15, y), fill=(214, 214, 214, 255))
     out['crayon'] = im
-    rows = figure()
-    edge = _outline(rows)
-    for part, letter in [('face', 'f'), ('hands', 'h'), ('hair', 'r'), ('clothes', 'c')]:
-        im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
-        for y in range(16):
-            for x in range(16):
-                if rows[y][x] != letter or letter == 'f' and (x, y) in FACE_MARKS:
-                    continue
-                # Crayon strokes run on the slant, with a few gaps where the paper shows; over the pencil line, lighter.
-                if (x * 7 + y * 3) % 11 == 0 and (x, y) not in edge:
-                    continue
-                v = 255 if (x + y) % 3 else 228
-                im.putpixel((x, y), (v, v, v, 150 if (x, y) in edge else 235))
-        out['sheet_' + part] = im
     return out
 
 
@@ -235,7 +190,28 @@ def sprites():
     for i in (4, 6):
         x, y = 3 + i, 12 - i
         w.point((x, y), fill=(52, 46, 40, 255))
-    return {'crayon': body, 'crayon_wrapper': wrapper}
+    # 0.4.196: the pencil, yellow and six-sided, a pink eraser in its metal band, the wood sharpened to a dark point.
+    pencil = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    q = ImageDraw.Draw(pencil)
+    for i in range(12):
+        x, y = 2 + i, 13 - i
+        if i < 2:
+            light, dark = (236, 150, 160, 255), (204, 116, 128, 255)
+        elif i < 3:
+            light, dark = (196, 196, 188, 255), (150, 150, 144, 255)
+        elif i < 10:
+            light, dark = (240, 196, 64, 255), (196, 150, 40, 255)
+        elif i < 11:
+            light, dark = (226, 190, 140, 255), (186, 150, 104, 255)
+        else:
+            light, dark = (64, 60, 58, 255), (40, 38, 36, 255)
+        q.point((x, y), fill=light)
+        q.point((x + 1, y), fill=light)
+        q.point((x, y + 1), fill=dark)
+    q.point((14, 1), fill=(40, 38, 36, 255))
+    for i in range(3, 10, 3):
+        q.point((2 + i + 1, 13 - i), fill=(224, 176, 52, 255))
+    return {'crayon': body, 'crayon_wrapper': wrapper, 'pencil': pencil}
 
 
 def write(out, textures):
@@ -248,7 +224,10 @@ def write(out, textures):
         buf = io.BytesIO()
         im.save(buf, format='PNG')
         out['textures/item/read_' + name + '.png'] = buf.getvalue()
-    out['models/item/read_crayon.json'] = (json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{NS}:item/read_crayon', 'layer1': f'{NS}:item/read_crayon_wrapper'}}, indent=2) + '\n').encode()
+    # 0.4.196: the kitchen's pencil is a crayon stack with custom model data 1, drawn as a pencil.
+    out['models/item/read_crayon.json'] = (json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{NS}:item/read_crayon', 'layer1': f'{NS}:item/read_crayon_wrapper'},
+        'overrides': [{'predicate': {'custom_model_data': 1}, 'model': f'{NS}:item/read_pencil'}]}, indent=2) + '\n').encode()
+    out['models/item/read_pencil.json'] = (json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{NS}:item/read_pencil'}}, indent=2) + '\n').encode()
     # The window's four o'clock sky: gold low down, paler above, a few soft clouds.
     im = Image.new('RGBA', (16, 16))
     rng = _rng('afternoon')

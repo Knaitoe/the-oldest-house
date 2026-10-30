@@ -3,5 +3,13 @@
   "textures": {
     "layer0": "the_oldest_house:item/read_crayon",
     "layer1": "the_oldest_house:item/read_crayon_wrapper"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/read_pencil"
+    }
+  ]
 }

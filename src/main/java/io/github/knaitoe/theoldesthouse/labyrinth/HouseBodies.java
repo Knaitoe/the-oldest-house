@@ -31,13 +31,20 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class HouseBodies {
     private HouseBodies(){}
     public static final List<String> AGES=List.of("young","middle","older"),PRESENTATIONS=List.of("plain","masc","fem"),CUTS=List.of("short","coils","braids","long","close");
-    /** A body: indices into the three lists, and a tone and hair colour as RGB, or -1 for the account's default skin's. */
-    public record Body(int age,int presentation,int cut,int tone,int hair){
-        public static final StreamCodec<ByteBuf,Body> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.VAR_INT,Body::age,ByteBufCodecs.VAR_INT,Body::presentation,ByteBufCodecs.VAR_INT,Body::cut,ByteBufCodecs.INT,Body::tone,ByteBufCodecs.INT,Body::hair,Body::new);
-        public Body{age=Math.floorMod(age,AGES.size());presentation=Math.floorMod(presentation,PRESENTATIONS.size());cut=Math.floorMod(cut,CUTS.size());}
+    /**
+     * A body: indices into the three lists, and a tone and hair colour as RGB, or -1 for the account's default skin's. 0.4.196:
+     * and the face drawn at the kitchen table, 1 to 5 in {@link HouseReadKitchen#FACES}, or 0 for the body's own.
+     */
+    public record Body(int age,int presentation,int cut,int tone,int hair,int face){
+        public static final StreamCodec<ByteBuf,Body> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.VAR_INT,Body::age,ByteBufCodecs.VAR_INT,Body::presentation,ByteBufCodecs.VAR_INT,Body::cut,ByteBufCodecs.INT,Body::tone,ByteBufCodecs.INT,Body::hair,ByteBufCodecs.VAR_INT,Body::face,Body::new);
+        public Body{age=Math.floorMod(age,AGES.size());presentation=Math.floorMod(presentation,PRESENTATIONS.size());cut=Math.floorMod(cut,CUTS.size());face=Math.floorMod(face,HouseReadKitchen.FACES.size()+1);}
+        public Body(int age,int presentation,int cut,int tone,int hair){this(age,presentation,cut,tone,hair,0);}
         /** The painted sheet, {@code textures/entity/house_body/<sheet>.png}. */
         public String sheet(){return AGES.get(age)+"_"+PRESENTATIONS.get(presentation)+"_"+CUTS.get(cut);}
-        /** 0.4.195: not a body at all, only the tone drawn at the kitchen table, for the reader's own skin. */
+        /**
+         * 0.4.195: not a body at all, only what was drawn at the kitchen table, for the reader's own skin: the tone, and (0.4.196)
+         * in {@code presentation} the body drawn (1 trousers, wide arms; 2 a dress, slim arms; 0 their own) and the face.
+         */
         public boolean own(){return hair==OWN;}
     }
     /** The hair value that marks a reader's own skin worn in their drawn tone rather than a painted body. */
@@ -69,10 +76,12 @@ public final class HouseBodies {
     /** The body the read chooses. Unread traits take the neutral choices: a young adult, plain clothes, short hair. */
     public static Body body(LabyrinthData d,UUID reader){
         int age=switch(HouseRead.value(d,reader,HouseRead.Trait.AGE,false)){case "ANALOG"->2;case "TRANSITIONAL"->1;default->0;};
-        int presentation=switch(HouseRead.value(d,reader,HouseRead.Trait.SELF,true)){case "MASC"->1;case "FEM"->2;default->0;};
+        // 0.4.196: the body drawn at the kitchen table is the reader's own choice, and comes before the House's read of them.
+        int form=HouseReadKitchen.form(d,reader);
+        int presentation=form>0?form:switch(HouseRead.value(d,reader,HouseRead.Trait.SELF,true)){case "MASC"->1;case "FEM"->2;default->0;};
         int cut=switch(HouseRead.value(d,reader,HouseRead.Trait.HAIR,false)){case "WRAPPED"->1;case "BRAIDED_AND_OILED"->2;case "BRUSHED_DRY"->3;case "WASHED_AND_BARBERED"->4;default->0;};
         // 0.4.168: the tone and hair colour the reader drew at the kitchen table, when there is one.
-        return new Body(age,presentation,cut,HouseReadKitchen.tone(d,reader),HouseReadKitchen.hair(d,reader));
+        return new Body(age,presentation,cut,HouseReadKitchen.tone(d,reader),HouseReadKitchen.hair(d,reader),HouseReadKitchen.mood(d,reader));
     }
     /** The body a reader is wearing now, if any: only an inhuman skin, only inside the House, and only while the option is on. */
     public static @Nullable Body worn(ServerPlayer reader){
@@ -86,12 +95,13 @@ public final class HouseBodies {
     /**
      * 0.4.195 (owner: "skin tone isn't being properly applied"): a human-skinned reader who drew their tone at the kitchen
      * table wears it on their own skin, wherever a body would be worn. Only the tone is sent; their skin stays on their client,
-     * and every client recolours that reader's own skin to it, shading and all.
+     * and every client recolours that reader's own skin to it, shading and all. 0.4.196: and the body and face they drew there.
      */
     public static @Nullable Body toned(ServerPlayer reader){
         if(!HouseConfig.houseBodies()||inhuman(reader.getUUID())||!inside(reader))return null;
-        int tone=HouseReadKitchen.tone(LabyrinthData.get(reader.server),reader.getUUID());
-        return tone<0?null:new Body(0,0,0,tone,OWN);
+        var d=LabyrinthData.get(reader.server);var id=reader.getUUID();
+        int tone=HouseReadKitchen.tone(d,id),form=HouseReadKitchen.form(d,id),mood=HouseReadKitchen.mood(d,id);
+        return tone<0&&form==0&&mood==0?null:new Body(0,form,0,tone,OWN,mood);
     }
     public static Map<UUID,Body> worn(MinecraftServer server){
         var out=new LinkedHashMap<UUID,Body>();

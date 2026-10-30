@@ -55,7 +55,7 @@ public final class HouseBodyClient {
         if(body.own()){
             var real=real(reader);if(real==null)return null;
             if(worn!=null&&worn.body().equals(body)&&real.texture().equals(worn.source()))return worn.skin();
-            var skin=toned(reader,real,body.tone());if(skin!=null)WORN.put(reader,new Worn(body,skin,real.texture()));return skin;
+            var skin=toned(reader,real,body);if(skin!=null)WORN.put(reader,new Worn(body,skin,real.texture()));return skin;
         }
         if(worn!=null&&worn.body().equals(body))return worn.skin();
         var skin=compose(reader,body);if(skin!=null)WORN.put(reader,new Worn(body,skin,null));return skin;
@@ -65,27 +65,36 @@ public final class HouseBodyClient {
         var connection=Minecraft.getInstance().getConnection();var info=connection==null?null:connection.getPlayerInfo(reader);if(info==null)return null;
         reading=true;try{return info.getSkin();}finally{reading=false;}
     }
-    /** The reader's own skin with its skin recoloured to the drawn tone, or null while the skin is still loading. */
-    private static @Nullable PlayerSkin toned(UUID reader,PlayerSkin real,int tone){
+    /**
+     * The reader's own skin as they drew themselves at the kitchen table, or null while the skin is still loading: its skin
+     * recoloured to the drawn tone, (0.4.196) slim arms for a dress or wide arms for trousers, and the face they drew.
+     */
+    private static @Nullable PlayerSkin toned(UUID reader,PlayerSkin real,HouseBodies.Body body){
         var mc=Minecraft.getInstance();var tex=mc.getTextureManager().getTexture(real.texture());RenderSystem.bindTexture(tex.getId());
         int w=GlStateManager._getTexLevelParameter(GL11.GL_TEXTURE_2D,0,GL11.GL_TEXTURE_WIDTH),h=GlStateManager._getTexLevelParameter(GL11.GL_TEXTURE_2D,0,GL11.GL_TEXTURE_HEIGHT);
         if(w<64||h<64||w!=h)return null;
+        var model=switch(body.presentation()){case 1->PlayerSkin.Model.WIDE;case 2->PlayerSkin.Model.SLIM;default->real.model();};
         try(var image=new NativeImage(w,h,false)){
             image.downloadTexture(0,false);
-            mc.getTextureManager().register(location(reader),new DynamicTexture(tonedImage(image,tone)));
-            return new PlayerSkin(location(reader),null,real.capeTexture(),real.elytraTexture(),real.model(),true);
+            mc.getTextureManager().register(location(reader),new DynamicTexture(drawn(image,body.tone(),real.model(),model,body.face())));
+            return new PlayerSkin(location(reader),null,real.capeTexture(),real.elytraTexture(),model,true);
         }catch(RuntimeException e){TheOldestHouse.LOGGER.warn("A reader's own skin could not be toned",e);return null;}
+    }
+    /** A skin as drawn: toned (a tone of -1 keeps its own), its arms refitted from one model's width to the other's, and a face. */
+    public static NativeImage drawn(NativeImage skin,int tone,PlayerSkin.Model from,PlayerSkin.Model to,int face){
+        NativeImage out;if(tone>=0)out=tonedImage(skin,tone);else{out=new NativeImage(skin.getWidth(),skin.getHeight(),true);out.copyFrom(skin);}
+        if(from!=to){var refitted=arms(out,from==PlayerSkin.Model.SLIM?3:4,to==PlayerSkin.Model.SLIM?3:4);out.close();out=refitted;}
+        if(face>0)face(out,skin,tone,face);
+        return out;
     }
     /**
      * A skin with its skin recoloured: the skin's own tone is the commonest skin colour on the lower face; every pixel near it
      * in colour becomes the drawn tone plus that pixel's own difference from it, so the painter's shading stays.
      */
     public static NativeImage tonedImage(NativeImage skin,int tone){
-        int w=skin.getWidth(),h=skin.getHeight(),scale=Math.max(1,w/64);var out=new NativeImage(w,h,true);out.copyFrom(skin);
-        var counts=new HashMap<Integer,Integer>();
-        for(int y=12*scale;y<16*scale;y++)for(int x=9*scale;x<15*scale;x++){int c=argb(skin.getPixelRGBA(x,y));if(c>>>24>=128&&HouseBodies.skinColour(c>>16&255,c>>8&255,c&255))counts.merge(c&0xffffff,1,Integer::sum);}
-        if(counts.isEmpty())return out;
-        int base=commonest(counts,0),br=base>>16&255,bg=base>>8&255,bb=base&255,tr=tone>>16&255,tg=tone>>8&255,tb=tone&255;
+        int w=skin.getWidth(),h=skin.getHeight();var out=new NativeImage(w,h,true);out.copyFrom(skin);
+        int base=base(skin);if(base<0)return out;
+        int br=base>>16&255,bg=base>>8&255,bb=base&255,tr=tone>>16&255,tg=tone>>8&255,tb=tone&255;
         for(int y=0;y<h;y++)for(int x=0;x<w;x++){
             int abgr=skin.getPixelRGBA(x,y),c=argb(abgr);if(c>>>24<128)continue;
             int r=c>>16&255,g=c>>8&255,b=c&255;
@@ -94,13 +103,73 @@ public final class HouseBodyClient {
         }
         return out;
     }
+    /** A skin's own tone: the commonest skin colour on the lower face, below the eyes where no hair falls, or -1 for none. */
+    static int base(NativeImage skin){
+        int scale=Math.max(1,skin.getWidth()/64);var counts=new HashMap<Integer,Integer>();
+        for(int y=12*scale;y<16*scale;y++)for(int x=9*scale;x<15*scale;x++){int c=argb(skin.getPixelRGBA(x,y));if(c>>>24>=128&&HouseBodies.skinColour(c>>16&255,c>>8&255,c&255))counts.merge(c&0xffffff,1,Integer::sum);}
+        return counts.isEmpty()?-1:commonest(counts,0);
+    }
+    /**
+     * 0.4.196: the arms refitted from one width to the other (4 wide, 3 slim). Each arm and sleeve keeps its six faces; the
+     * faces that run across the arm keep their outer columns, losing or doubling one in the middle.
+     */
+    public static NativeImage arms(NativeImage src,int from,int to){
+        int scale=Math.max(1,src.getWidth()/64);var out=new NativeImage(src.getWidth(),src.getHeight(),true);out.copyFrom(src);
+        for(int[] o:new int[][]{{40,16},{40,32},{32,48},{48,48}}){
+            int u=o[0],v=o[1];
+            for(int y=0;y<16*scale;y++)for(int x=0;x<16*scale;x++)out.setPixelRGBA(u*scale+x,v*scale+y,0);
+            across(src,out,scale,u+4,v,from,u+4,v,to,4);            // top
+            across(src,out,scale,u+4+from,v,from,u+4+to,v,to,4);    // bottom
+            across(src,out,scale,u,v+4,4,u,v+4,4,12);               // outer side
+            across(src,out,scale,u+4,v+4,from,u+4,v+4,to,12);       // front
+            across(src,out,scale,u+4+from,v+4,4,u+4+to,v+4,4,12);   // inner side
+            across(src,out,scale,u+8+from,v+4,from,u+8+to,v+4,to,12); // back
+        }
+        return out;
+    }
+    private static void across(NativeImage src,NativeImage out,int scale,int sx,int sy,int sw,int dx,int dy,int dw,int h){
+        for(int y=0;y<h*scale;y++)for(int x=0;x<dw*scale;x++){
+            int col=x/scale,from=dw==sw||dw==1?col:Math.round(col*(sw-1)/(float)(dw-1));
+            out.setPixelRGBA(dx*scale+x,dy*scale+y,src.getPixelRGBA((sx+from)*scale+x%scale,sy*scale+y));
+        }
+    }
+    /** Each drawn face's marks on a skin's own face, as column and row of its eight by eight front; the sad face's tear apart. */
+    private static final int[][][] FACES={{{2,6},{5,6},{3,7},{4,7}},{{3,6},{4,6},{2,7},{5,7}},{{3,6},{4,6},{3,7},{4,7}},{{1,3},{2,3},{5,3},{6,3},{2,6},{3,6},{4,6},{5,6}},{{3,6},{4,6}}};
+    private static final int[] TEAR={2,5};
+    /**
+     * 0.4.196: the face the reader drew, on their own face: the lower face cleared to their skin and the drawn mouth put on it
+     * in the colour of their own, with brows for a cross face and a tear for a sad one. A face that is mostly not skin below the
+     * eyes (a beard, a mask) or has anything worn over its mouth keeps its own.
+     */
+    public static void face(NativeImage out,NativeImage original,int tone,int mood){
+        if(mood<1||mood>FACES.length)return;int scale=Math.max(1,original.getWidth()/64),base=base(original);if(base<0)return;
+        int br=base>>16&255,bg=base>>8&255,bb=base&255,skin=tone>=0?tone:base,kept=0,ink=-1,inkSum=999;
+        for(int j=5;j<8;j++)for(int i=1;i<7;i++){
+            if(argb(original.getPixelRGBA((40+i)*scale,(8+j)*scale))>>>24>=128)return;
+            int c=argb(original.getPixelRGBA((8+i)*scale,(8+j)*scale)),r=c>>16&255,g=c>>8&255,b=c&255;
+            if(c>>>24>=128&&HouseBodies.skinColour(r,g,b)&&Math.abs(r-br)+Math.abs(g-bg)+Math.abs(b-bb)<=110)kept++;
+            else if(c>>>24>=128&&r+g+b<inkSum){inkSum=r+g+b;ink=c&0xffffff;}
+        }
+        if(kept<9)return;
+        if(ink<0)ink=(int)((skin>>16&255)*.45f)<<16|(int)((skin>>8&255)*.45f)<<8|(int)((skin&255)*.45f);
+        for(int j=5;j<8;j++)for(int i=1;i<7;i++){int c=argb(original.getPixelRGBA((8+i)*scale,(8+j)*scale));if(Math.abs((c>>16&255)-br)+Math.abs((c>>8&255)-bg)+Math.abs((c&255)-bb)>40)paint(out,scale,i,j,skin);}
+        for(int[] m:FACES[mood-1])paint(out,scale,m[0],m[1],ink);
+        if(mood==2)paint(out,scale,TEAR[0],TEAR[1],0x7fb2e5);
+    }
+    private static void paint(NativeImage out,int scale,int i,int j,int rgb){
+        int abgr=0xff000000|(rgb&255)<<16|(rgb>>8&255)<<8|(rgb>>16&255);
+        for(int y=0;y<scale;y++)for(int x=0;x<scale;x++)out.setPixelRGBA((8+i)*scale+x,(8+j)*scale+y,abgr);
+    }
     private static ResourceLocation location(UUID reader){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"house_body/"+reader);}
     private static void release(UUID reader){Minecraft.getInstance().getTextureManager().release(location(reader));}
     private static @Nullable PlayerSkin compose(UUID reader,HouseBodies.Body body){
         var mc=Minecraft.getInstance();
         try(var sheet=sheet(body)){
             int tone=body.tone(),hair=body.hair();if(tone<0||hair<0){var own=defaults(reader);if(tone<0)tone=own[0];if(hair<0)hair=own[1];}
-            mc.getTextureManager().register(location(reader),new DynamicTexture(recolour(sheet,tone,hair)));
+            var image=recolour(sheet,tone,hair);
+            // 0.4.196: the face drawn at the kitchen table.
+            if(body.face()>0){try(var painted=new NativeImage(image.getWidth(),image.getHeight(),true)){painted.copyFrom(image);face(image,painted,tone,body.face());}}
+            mc.getTextureManager().register(location(reader),new DynamicTexture(image));
             return new PlayerSkin(location(reader),null,null,null,PlayerSkin.Model.WIDE,true);
         }catch(IOException|RuntimeException e){TheOldestHouse.LOGGER.warn("The House's body {} could not be drawn",body.sheet(),e);return null;}
     }
