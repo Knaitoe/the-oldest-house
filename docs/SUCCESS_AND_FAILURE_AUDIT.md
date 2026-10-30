@@ -365,7 +365,7 @@ Each serves one of three intentions:
 
 ### Artifacts proposed here
 
-Most proposed keepsakes are mementos on purpose. Their weight is that the Mother will take them, and keeping them plain leaves the rooms with tools special. A few get a small use where the story offers one.
+Superseded on October 30: the owner noted that most items "don't really have an effect on the gameplay, either inside or outside of the house". Every artifact now gets one (below, **Every artifact does something**). The table here keeps the earlier list of what each is and when it is given.
 
 | Room | Artifact | When | What it does and why |
 |---|---|---|---|
@@ -395,6 +395,59 @@ Most proposed keepsakes are mementos on purpose. Their weight is that the Mother
 | **Yellow dust (silo)** | a vial of the dust | experience | The roof, opened. |
 
 The eight House-only changes for experiences are not artifacts. Their intention is that the House remembers the room: each echoes it, seen only by that reader, in the manor or the halls.
+
+### Every artifact does something (October 30)
+
+The owner: "most of the items you provided the player with don't really have an effect on the gameplay, either inside or outside of the house." So every artifact, old or new, now has one effect taken from its room's story. The rules above still hold: each is bound to its reader, finite, offerable to the Mother and gives no Witness credit. Each effect is:
+- small and specific;
+- worked by carrying the item, holding it in the off hand or using it;
+- never more than one effect per item.
+
+Tools that already work (the tally counter, the shield, the Bone Ring, the Smoky Mirror, the stone of the house, the globes, the paw, the envelope, Tess's gifts, Harrigan's phone, the camcorder, the canoe phone, the blank journal) keep what they do. "House" means inside the House; "world" means the reader's own world.
+
+**Keepsakes in the game now, given an effect:**
+
+| Artifact | Effect | Where | From the story |
+|---|---|---|---|
+| Zampanò's leaves | Held in an ordinary hall, a leaf shows which door leads back toward the manor: ash drifts at that handle. | House | The survey measured the way through. |
+| The three wax cylinders | Played in a jukebox, no monster spawns within 48 blocks while it plays. | World | The voices warned the living away from the house; here they keep it. |
+| The photograph with the vulture (plain) | Held while standing still, monsters more than six blocks away lose track of the keeper. | Both | The frame was made by holding still while the vulture waited. |
+| The brother's photograph (mapping) | The keeper's own companions within 16 blocks take half damage. | Both | In the house, the father kept watch over his boys. |
+| The elk's tooth (elk fan) | In the off hand, the keeper is hard to knock back, the Minotaur's throw included. | Both | The elk's weight. |
+| The bulb (elk fan) | Used, it hangs a small light where they stand for two minutes, then goes out; once every five minutes. Never in a room dark by design. | Both | The repaired light. |
+| Father's knife (Holy Rabbit) | An animal killed with it drops one more cooked portion. | World | Father wasted nothing from the hunt. |
+| The rabbit's foot (Holy Rabbit) | Carried, the keeper has luck: better fishing and loot. | World | What the rabbit gave. |
+| The diary (Devil's Rock) | Read at night, its last page tells them which way and how far it is to their bed. | World | The pages were the way back. |
+| The key to Mother's room (Wheel) | Shown to the Mother, one reclaimed companion or belonging costs nothing, once. | House | The last door opened. |
+| The compass (Borrasca) | Points to where the keeper last died in their world; in the House, to the Mother's den, where lost things are kept. | Both | It found the missing. |
+| The patch (Borrasca) | Carried, once a House day, dying away from the House keeps the stack in their main hand with them: a name sewn in. | World | The names restored to what was left. |
+| The leaf of the vault register (Usher, fail) | Carried, the dead in their world (zombies, skeletons and the like) do not notice them until within four blocks. | World | The house already wrote them down among its dead. |
+| The cap from the broken post (Last Stop) | Worn, passive animals follow them as if led. | World | The herd let them walk out of the loop. |
+
+**Artifacts still to give (build 7), each with its effect:**
+
+| Room | Artifact | Effect | Where |
+|---|---|---|---|
+| The wet boards (Bly) | Flora's doll | Carried, the Lady cannot take them (`BlyFollows`), and phantoms never come for them. | Both |
+| The passing boots (elk carcasses) | a hunter's tag | Crouching, monsters notice them at half the usual distance. | Both |
+| The thirteenth witch (Costume Night) | their number card | Carried, witches do not attack them. | World |
+| The flashes over water (Movie Night) | a ticket stub | Carried, a boat they paddle goes a quarter faster. | Both |
+| The dare (Winter Lake) | Bud's note | Carried, ice holds them: no slipping, and powder snow bears their weight. | World |
+| The service road (Camp Blood) | a counsellor's whistle | Blown, the keeper's own companions within 64 blocks come to them; once a minute. | Both |
+| Proofrock | a page of a student essay | Carried, the drowned do not attack them, and they swim faster. | World |
+| The unhinged door (buzzer) | the scrawled note | Carried, zombies cannot break doors within 16 blocks of them. | World |
+| The cellar shift (basement) | the worker's broken blade | A weapon: as an iron sword, and what it cuts is slowed a moment. | Both |
+| The second apron (diner) | the receipt | Carried, food they eat fills one more point of hunger. | World |
+| The floorboards (Tell-Tale) | the old man's watch | Carried, their footsteps make no vibrations: sculk does not hear them walk. | Both |
+| Hide-and-clap | the folded blindfold | In the off hand, blindness and darkness do not touch them. The House's deliberate darkness stays dark. | World |
+| The last clock (Masque) | the invitation | Carried, poison and hunger do not touch them. | World |
+| The empty chair (séance) | the sitting record | Read aloud (used), it drives monsters within six blocks back; once every five minutes. | Both |
+| The closing account (Stanley) | the room's key tag | Waking in their world with it, they are fed in full. | World |
+| The house they remembered (family copy) | the family's photograph | Carried within 32 blocks of their bed, they heal faster. | World |
+| The cover (barn well) | a stone with the initials | Carried, they crawl through one-high gaps faster. | Both |
+| The call button (hospital) | a patient's bracelet | Carried, they heal on two-thirds of a full stomach. | World |
+| The third count (third-floor bathroom) | the stub of the dare's candle | Lit (used), invisible things nearby show; it burns twenty minutes in all. | Both |
+| Yellow dust (silo) | a vial of the dust | Used, it bursts and slows and weakens monsters within five blocks for ten seconds; three uses. | Both |
 
 ## What changes from the earlier drafts
 
