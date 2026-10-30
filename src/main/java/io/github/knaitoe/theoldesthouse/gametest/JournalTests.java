@@ -133,6 +133,18 @@ public final class JournalTests {
             h.getLevel().setBlock(at,net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);
             var plain=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(peer,net.minecraft.world.InteractionHand.MAIN_HAND,at,new net.minecraft.world.phys.BlockHitResult(at.getCenter(),net.minecraft.core.Direction.UP,at,false));
             NeoForge.EVENT_BUS.post(plain);h.assertTrue(!plain.isCanceled(),"a click on anything else is left to open the journal");
+            // 0.4.199: charcoal in hand sketches into the reader's own journal, wherever it is on them.
+            var initials=sample(Rubbings.byId("well_initials"));h.getLevel().setBlock(at,initials,3);
+            peer.getInventory().setItem(20,peer.getMainHandItem().copy());peer.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CHARCOAL));
+            var sketch=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(peer,net.minecraft.world.InteractionHand.MAIN_HAND,at,new net.minecraft.world.phys.BlockHitResult(at.getCenter(),net.minecraft.core.Direction.UP,at,false));
+            NeoForge.EVENT_BUS.post(sketch);
+            h.assertTrue(sketch.isCanceled()&&data.rubbedPage(peer.getUUID(),"well_initials")>=1&&peer.getMainHandItem().is(net.minecraft.world.item.Items.CHARCOAL)&&peer.getMainHandItem().getCount()==1,"charcoal in hand sketches the initials into the reader's own journal, and is not used up");
+            var empty=NativeTestPlayers.survival(h,"journal_charcoal_only");
+            try{empty.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CHARCOAL));
+                var none=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(empty,net.minecraft.world.InteractionHand.MAIN_HAND,at,new net.minecraft.world.phys.BlockHitResult(at.getCenter(),net.minecraft.core.Direction.UP,at,false));
+                NeoForge.EVENT_BUS.post(none);h.assertTrue(!none.isCanceled(),"charcoal with no journal of one's own sketches nothing");
+            }finally{NativeTestPlayers.remove(empty);}
+            h.getLevel().setBlock(at,net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);
             var fresh=data.issue(p);h.assertTrue(Journals.rub(p,mine,gouges)==Journals.Rub.NOT_YOURS&&Journals.rub(p,fresh,gouges)==Journals.Rub.TURNED,"an old copy takes nothing; the new one has every rubbing");
         }finally{NativeTestPlayers.remove(p);NativeTestPlayers.remove(peer);}
         h.succeed();

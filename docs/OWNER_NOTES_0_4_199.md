@@ -77,6 +77,13 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - **Literature:** the completed account gains a page in Will's hand when the climb was shortened: "I counted the turns going down, and again coming up. There were fewer coming up. I counted twice."
   - New case: `StaircaseAccessTests.theClimbBackUpIsShorterThanTheWayDown`. It covers going down, a turn climbed and the next, a party carried together, a spectator keeping the climb walked, the top turns walked, and the account's page. The staircase job's count is now 12.
 
+## Charcoal sketches
+- **"You should let players interact with objects with charcoal to make the charcoal sketches in their books, too."** A right-click with charcoal on any object that gives a rubbing now takes it, the same as a click with the journal in hand (`Journals.rubbing`, `Journals.carried`).
+  - It goes into the reader's own journal, wherever it is on them; on the server, their current journal is chosen before an old copy.
+  - The charcoal is not used up.
+  - Without a journal of one's own, charcoal sketches nothing.
+  - The journal rubbing case now sketches the well's initials with charcoal, and checks that charcoal alone does nothing.
+
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.
 - The Ghosts namespace (24 cases), the novel sites (16) and the shelter case pass locally.
