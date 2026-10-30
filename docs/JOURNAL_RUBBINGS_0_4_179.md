@@ -94,4 +94,20 @@ Nothing in 0.4.178 touches the tunnel. The tunnel itself is unchanged.
 
 **Checked locally.** The local preflight passed with both clients sprinting the tunnel. The first local run also showed the corridor's loading leaving the server behind into the sprint, which is why the pace wait was added.
 
+## Run 1345
+
+Run 1345 tested 2782452 with the fix above, and live-multiplayer failed earlier, in phase 4.
+
+**The failure.** Leasing the whole view-6 corridor at once, more than 200 chunks of natural terrain promoted together, held the host's main thread long enough for both clients to time out ("Running 50056ms or 1001 ticks behind"). The phase then timed out with both readers offline.
+
+**What changes.**
+- **View distance 3.** The uncanny-only preflight now runs at view distance 3, as the other live proofs do (`tools/run_live_expedition.py`).
+- **A smaller corridor.** Only the part of the readers' reach that the room's own lease does not already keep ticking is leased: two chunks either side of the tunnel and past its end, about 60 chunks rather than 200 or more.
+- **The waits stay.** The sprint still waits for the corridor to be ticking and for 40 ticks at real-time pace.
+
+**Checked locally.** The local preflight passed:
+- the phase-4 backlog was 16.6 s, against about 40 s for the full corridor;
+- the sprint took 24 s;
+- both clients finished.
+
 No layout or Witness change: layout 51; protocol 100; Witness 55 / 42 / two kinds / three endings.
