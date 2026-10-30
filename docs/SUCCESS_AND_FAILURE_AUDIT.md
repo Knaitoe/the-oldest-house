@@ -4,8 +4,11 @@ The owner asked: "Can you ensure that each vignette has a success and failure st
 - "Look to the end of world cabin. Winning sometimes takes, too. Failing sometimes gives."
 - "Not every fail state should haunt the reader, unless appropriately suited for it, like the Goatman."
 - "The Goatman isn't just ooh spooky figure, either. He's mechanically intrusive. He steals food and knocks at doors."
+- "The goatman just echoed his vignette."
+- On the Last Stop: "The elk entity in that story punished its protagonist for harming animals. That might be better?"
+- "Harrigan's phone also already has an intended victory loop. It doesn't need more, does it?"
 
-The first draft gave every room the same pair: a haunting for failure and a keepsake for success. This draft replaces that. Every outcome is a trade, as at the cabin. A haunting appears only in the few rooms whose story is about something that follows the reader home, and there it intrudes on play, as the Goatman does.
+The first draft gave every room the same pair: a haunting for failure and a keepsake for success. This draft replaces that. Every outcome is a trade, as at the cabin. A haunting appears only in the few rooms whose story is about something that follows the reader home, and there it echoes that room's own play, as the Goatman's echoes his night.
 
 This document lists, for all 55 stories in the Witness pool:
 - what each has now, read from the code;
@@ -26,17 +29,12 @@ Several rooms already work like this. The proposals extend it rather than invent
 - **The Shallows:** throwing her costs the reader's strength.
 - **The monkey's paw:** every wish gives and takes at once.
 
-**2. Haunting is rare, and when it happens it intrudes.** The Goatman is the measure. Coming home with a reader who let it in, it does three things:
-- it eats one piece of food from their pack each day ("Someone has been at your food");
-- some nights it tries a door they are standing near;
-- it is glimpsed at the edge of their sight and is gone when they turn.
+**2. A haunt is the room again, at home.** The Goatman's haunt isn't a scare for its own sake; it echoes his night. At the trailer he took a place at supper and knocked at the door to be let in. Home with a reader who let him in, he eats from their pack and tries the door they are standing by. A haunt here follows the same idea, not the same behaviour:
+- **Only where the story follows.** The room's story is about something that comes after the reader, not merely something frightening.
+- **Its own room's play, smaller.** It does again what that room did to the reader, with that room's mechanics. It does not borrow the Goatman's food and doors.
+- **Never wound the reader.** It may cost them things, as the Last Stop's does. It is private, and it ends only with a later success in that room (or as noted).
 
-It never harms them. Only that reader notices it, and only a later night got right ends it. A haunt in this draft must meet the same bar:
-- **The story is about something that follows.** It is not merely frightening.
-- **It changes something in play.** It takes, opens, moves or occupies something; a sound alone is not enough.
-- **It never harms.** It is private, and it ends only with a later success in that room.
-
-Five rooms meet that bar beyond the Goatman (below). Usher does not, and the scratching it has now is only a sound.
+Four rooms meet that bar besides the Goatman (below). Usher does not (see its section).
 
 **3. Failure comes from the story.** It is the story's own threat, or a wrong turn the story sets up, never a timer bolted on.
 - It resolves nothing that visit and gives no Witness credit.
@@ -57,26 +55,25 @@ Five rooms meet that bar beyond the Goatman (below). Usher does not, and the scr
 | **Win** | An artifact or keepsake. A lasting small gift (the caver's breath). | A price paid to win (the arm, the ribbon, the bill). Something left behind (the string line). A mark carried out (the hides' smell). The room itself, closed to that reader (the cabin's closed room). |
 | **Fail** | A lesser or broken version of the reward (the cracked globe, a blurred photograph). Something the story hands the loser (the rabbit alive). An account of the failure. | Something held, kept in the room until a later win. A setback the next attempt starts from (the giant starts closer). A death, where the room already kills. A haunt, only where suited. |
 
-## The haunts: six rooms
+## The haunts: five rooms
 
-Each intrudes the way the Goatman does and never harms. Each ends only with a later success in that room.
+Each takes what its own room did and does it again, smaller, wherever the reader is. None harms.
 
-| Room | Why it follows | What it does |
+| Room | What the room does | What follows the reader |
 |---|---|---|
-| **The trailer (Goatman)** | Exists; the reference. | Eats from their pack, tries doors, is glimpsed. |
-| **The wet boards (Bly)** | The Lady of the lake follows the one she held: the story's own ending is her coming back for Dani. | At night near water, the reader is walked a few steps toward it that they did not take, and stopped at the edge. Wet footprints lead to their bed. Never into the water. |
-| **The looping field (Last Stop)** | The elk follows the hunters home for years in *The Only Good Indians*. | Once a day a gate or door of an animal pen near them is found open, a hoof print beside it. Animals may wander; none is hurt. |
-| **Twenty seconds (backseat)** | The thing in the back seat rides home. | The seat behind them is taken: no passenger fits in a boat or cart they ride, and once a ride the boat lurches as if weight shifted. |
-| **The returned knocks (Hill nursery)** | HELP … COME HOME on the wall: the house wants them back. | Now and then, sleeping in their own bed, they wake in the manor instead. |
-| **Mr. Harrigan's phone** (kept) | The dead man answers. Here winning takes: the reader who keeps the phone keeps him. | Once a day his phone turns up in their hand, playing his voicemail greeting until they put it away. |
+| **The trailer (Goatman)** | He shares the cousins' supper and knocks at the door to be let in. | Exists: he eats from their pack, tries the door they stand by, and is glimpsed. |
+| **The wet boards (Bly)** | The Lady holds the reader, carries them a pace ahead of her in the dark, and puts them in the lake. | At night near water the dark closes in; they are held a moment and carried a few steps toward the water, and set down at its edge, never in it. |
+| **The looping field (Last Stop)** | The elk stands and looks at whoever is there; struck, she is wounded and the men say "You don't hurt them." In *The Only Good Indians* she comes back, years later, for the men who killed her and her calf. | She follows a reader who struck her, and answers what they do to animals (detailed under the room below). It ends on a later night when they let her pass without raising a hand, with no animal killed since she began following. |
+| **Twenty seconds (backseat)** | In the rain, the car door shuts and locks; something rises in the mirror behind their shoulder. | In the rain, a door they close behind them locks for twenty seconds, and something rises behind their shoulder, gone when they turn. |
+| **The returned knocks (Hill nursery)** | The pounding waits on the wall; a knock back on that wall answers it. The cold never wounds. HELP … COME HOME is chalked large. | At night the pounding comes from the wall nearest them, with the cold (slowed and frosted, never hurt). Knocking back the same count on that wall quiets it until the next night. The chalk is on a wall where they sleep, seen only by them. |
 
 ## Usher: a recommendation
 
 **What 0.4.184 has.** Failing the flight (still inside as the house falls) starts a private scratching under the reader's feet, every three to seven minutes, louder each day. It ends when they get out in time on a later night.
 
-**Why it should go.** It fails both tests above:
-- Poe's house sinks into the tarn and nothing follows the narrator out.
-- The scratching only sounds; it changes nothing.
+**Why it should go.**
+- **Nothing follows in Poe.** The house sinks into the tarn and nothing follows the narrator out.
+- **It is a sound, not the night's play.** The scratching echoes a sound from the room but none of what the reader did there: the lid, the reading, the doors, the flight.
 
 **Recommended trade:**
 - **Fled (closed lid):**
@@ -131,11 +128,21 @@ Each room shows **now** (S success, F failure, R reward, X repercussion) and the
 - **Win gives:** Flora's doll from the cupboard.
 - **Fail:** the Lady follows (haunt, above).
 
-**The looping field (Last Stop).**
-- **Now:** S: escaped the field and read the clipping; captures have their own accounts. There is no failure.
+**The looping field (Last Stop).** After *The Only Good Indians*: the elk woman punishes the men for what they did to animals.
+- **Now:**
+  - S: escaped the field and read the clipping. A capture by the men or by the herd is its own ending.
+  - Striking the elk wounds her and changes the men's words ("You hurt it, … You don't hurt them."). It costs nothing else.
+  - There is no failure.
+- **For every reader, the men's accusations draw on the reader's real record.** Native statistics count the animals they have killed in their world.
+  - A long record is named back to them: "Forty cows, …. Thirty pigs."
+  - A reader who has killed none leaves the accusation faltering: "Never even shot a deer? Then why'd it look at you?"
 - **Win gives:** the cap from the broken post.
 - **Win takes:** the tab comes due: an emerald a drink from their pack, as far as it goes.
-- **Fail (new):** walking into the herd's closing eyes. They wake on the porch with no clipping, and the elk follows (haunt, above).
+- **Fail (new):** striking her. The night resolves nothing and there is no clipping. She follows them home and answers what they do to animals:
+  - **Waste:** the meat and hide of any animal they kill spoil as they drop. The men in the novel left meat on the hill.
+  - **In kind:** for each animal they kill, one of their penned animals is gone in the morning, the gate open and hoof prints beside it. This is never a named or tamed companion. It is the harsh option; it can be left out.
+  - **The calf:** killing a young animal brings her that night. Their next sleep wakes them in the looping field, and they must walk out again.
+  - **How it ends:** on a later night at the Last Stop they stand where she can see them and let her pass without raising a hand, having killed no animal since she began following (counted from the same statistics). That is how the novel's cycle ends: Denorah faces her and does not shoot.
 
 **The passing boots (elk carcasses).**
 - **Now:**
@@ -224,7 +231,7 @@ Each room shows **now** (S success, F failure, R reward, X repercussion) and the
   - F: answering her.
 - **Win gives:** the receipt.
 - **Win takes:** a moment of nausea from what was on the plate.
-- **Fail takes:** she clears their plate: one piece of food from their pack.
+- **Fail takes:** they leave in her black frost: frozen and slow for a few seconds, never hurt.
 
 **The cellar shift (basement).**
 - **Now:**
@@ -266,15 +273,8 @@ These rooms have no monster. A failure here is a wrong turn the story itself off
 **Mr. Harrigan's phone.**
 - **Now:**
   - S: buried his phone, or kept it.
-  - R: the kept phone works.
-  - There is no failure.
-- **Kept:**
-  - Gives the working phone.
-  - Takes the reader's peace: he rings (haunt, above).
-- **Buried:**
-  - Gives the funeral card.
-  - Takes the phone and its calls for good.
-- **Fail (new):** leaving the funeral with the phone neither in the casket nor on them. It rings in the empty chapel on their next visit, and the choice comes again.
+  - R: the kept phone works, one name a day.
+- **Proposed:** nothing. Burying or keeping the phone, and what the kept phone can do, already make its loop.
 
 **The model home.**
 - **Now:** S: saw the tree. There is no failure.
@@ -424,7 +424,7 @@ These rooms have no monster. A failure here is a wrong turn the story itself off
 
 - **Haunts:**
   - **First draft:** about 35, mostly sounds.
-  - **Now:** five new ones, all intrusive.
+  - **Now:** four new ones, each echoing its own room.
   - **Usher's** would be removed.
   - **No shared haunting system.** Each haunt is written for its room, as the Goatman's is.
 - **Keepsakes:**
@@ -439,7 +439,7 @@ These rooms have no monster. A failure here is a wrong turn the story itself off
 ## Suggested order, once agreed
 
 1. **Usher's trade,** replacing its haunt (small, and it sets the pattern).
-2. **The five haunts,** with their rooms' failures: Bly, Last Stop, backseat, Hill nursery, Harrigan.
+2. **The four haunts,** with their rooms' failures: Bly, the Last Stop, the backseat, the Hill nursery.
 3. **The survival rooms' trades:** the caver, child's room, bathroom, silo, tunnel, diner, carcasses.
 4. **The rooms of choice,** a few at a time.
 5. **Keepsakes for the rooms with nothing,** in one batch with their sprites.
