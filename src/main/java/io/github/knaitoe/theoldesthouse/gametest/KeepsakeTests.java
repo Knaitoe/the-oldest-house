@@ -72,7 +72,6 @@ public final class KeepsakeTests {
         for (int x = 0; x < 9; x++) for (int z = 0; z < 9; z++) h.setBlock(new BlockPos(x, 0, z), Blocks.GRASS_BLOCK);
         var at = h.absoluteVec(new Vec3(2.5, 1, 2.5));p.teleportTo(h.getLevel(), at.x, at.y, at.z, 0, 0);
         var cow = h.spawn(EntityType.COW, new BlockPos(7, 1, 7));
-        var zombie = h.spawn(EntityType.ZOMBIE, new BlockPos(7, 1, 2));
         // Run 1351: the empty template keeps only its own corner loaded, and the cow can stand in the next chunk, where nothing
         // ticks it or finds it. Hold the corner's chunks and wait until the cow is ticking and has settled onto the grass.
         var chunks = new NativeTestChunks();chunks.hold(h.getLevel(), new net.minecraft.world.phys.AABB(h.absolutePos(BlockPos.ZERO)).inflate(16));
@@ -94,7 +93,9 @@ public final class KeepsakeTests {
                         "while the cylinder plays, no monster spawns within its reach");
                 jukebox.popOutTheItem();
                 h.assertTrue(!Keepsakes.warded(h.getLevel(), h.absoluteVec(new Vec3(20, 1, 20))), "taken out, the house is not kept");
-                // The register leaf: the dead pass over them until close, or until struck.
+                // The register leaf: the dead pass over them until close, or until struck. The zombie is spawned now, after the
+                // wait for the cow; spawned before it, it could walk up to the reader while the cow settled.
+                var zombie = h.spawn(EntityType.ZOMBIE, new BlockPos(7, 1, 2));
                 h.assertTrue(!Keepsakes.unnoticed(p, zombie), "without the leaf the dead notice them");
                 p.getInventory().setItem(9, keepsake(p, LabyrinthPlace.USHER, "RegisterLeaf", new ItemStack(Items.WRITTEN_BOOK)));
                 h.assertTrue(Keepsakes.unnoticed(p, zombie), "carrying the leaf, a zombie five blocks off does not notice them");

@@ -1,3 +1,5 @@
+October 30 candidate 0.4.199: require ExplorationPassTests.theVaultedHallAndTheCrumbledHallAreHallwaysToCrossNotRooms; 105 earlier architecture views.
+
 October 30 candidate 0.4.198: require KeepsakeTests.theLeavesPhotographCompassAndPatchEachDoWhatTheirStoryDid.
 
 October 30 candidate 0.4.197: require ExplorationPassTests.fourPlainHallsAreJustHallwaysWithRealRoutes, the slot pins at 114-117, the thirteen-hall opening pool, and 103+7 architecture views.
