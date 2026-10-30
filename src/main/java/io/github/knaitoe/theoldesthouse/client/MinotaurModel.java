@@ -26,8 +26,9 @@ public final class MinotaurModel extends HierarchicalModel<MinotaurEntity> {
                 .texOffs(0,49).addBox(-6,-8,-4,12,10,9).texOffs(66,0).addBox(-8,-24,3,16,17,7),PartPose.offset(0,-18,0));
         PartDefinition head=body.addOrReplaceChild("head",CubeListBuilder.create().texOffs(0,28).addBox(-6,-10,-8,12,11,10)
                 .texOffs(44,28).addBox(-7,-11,-5,14,5,10).texOffs(92,28).addBox(-5,-3,-13,10,5,6),PartPose.offset(0,-21,-4));
-        head.addOrReplaceChild("eyes",CubeListBuilder.create().texOffs(44,43).addBox(-5.4F,-5,-8.2F,3,1.5F,.5F).mirror().addBox(2.4F,-5,-8.2F,3,1.5F,.5F),PartPose.ZERO);
-        head.addOrReplaceChild("nostrils",CubeListBuilder.create().texOffs(52,43).addBox(-3.7F,-1,-13.1F,2,1.5F,.3F).mirror().addBox(1.7F,-1,-13.1F,2,1.5F,.3F),PartPose.ZERO);
+        // 0.4.199: large, dark eyes, lashed, with white at the corners: human the way a cow's eyes can look human.
+        head.addOrReplaceChild("eyes",CubeListBuilder.create().texOffs(44,43).addBox(-5.9F,-6,-8.5F,4,3,1).mirror().addBox(1.9F,-6,-8.5F,4,3,1),PartPose.ZERO);
+        head.addOrReplaceChild("nostrils",CubeListBuilder.create().texOffs(54,43).addBox(-3.7F,-1,-13.1F,2,1.5F,.3F).mirror().addBox(1.7F,-1,-13.1F,2,1.5F,.3F),PartPose.ZERO);
         head.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(92,39).addBox(-4,-.5F,-7,8,3,7).texOffs(0,85).addBox(-3.8F,-.6F,-6.9F,7.6F,.3F,6),PartPose.offset(0,2,-6));
         for(int side:new int[]{-1,1}){
             // The left side mirrors the right side's regions.
