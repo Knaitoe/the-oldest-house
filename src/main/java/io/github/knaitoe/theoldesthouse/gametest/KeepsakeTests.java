@@ -73,7 +73,10 @@ public final class KeepsakeTests {
         var at = h.absoluteVec(new Vec3(2.5, 1, 2.5));p.teleportTo(h.getLevel(), at.x, at.y, at.z, 0, 0);
         var cow = h.spawn(EntityType.COW, new BlockPos(7, 1, 7));
         var zombie = h.spawn(EntityType.ZOMBIE, new BlockPos(7, 1, 2));
-        h.runAfterDelay(20, () -> {
+        // Run 1351: the empty template keeps only its own corner loaded, and the cow can stand in the next chunk, where nothing
+        // ticks it or finds it. Hold the corner's chunks and wait until the cow is ticking and has settled onto the grass.
+        var chunks = new NativeTestChunks();chunks.hold(h.getLevel(), new net.minecraft.world.phys.AABB(h.absolutePos(BlockPos.ZERO)).inflate(16));
+        h.startSequence().thenWaitUntil(() -> h.assertTrue(h.getTick() >= 20 && chunks.ticking() && h.getLevel().isPositionEntityTicking(cow.blockPosition()) && cow.onGround(), "the cow is ticking and settled: tick " + h.getTick() + ", ticking " + h.getLevel().isPositionEntityTicking(cow.blockPosition()) + ", ground " + cow.onGround() + ", alive " + cow.isAlive() + " at " + h.relativePos(cow.blockPosition()))).thenExecute(() -> {
             try {
                 // The bulb: a light where they stand, then not again for a while.
                 var bulb = keepsake(p, LabyrinthPlace.ELK_FAN, "Lightbulb", new ItemStack(LiteraryRegistry.LIGHTBULB.get()));
@@ -101,11 +104,12 @@ public final class KeepsakeTests {
                 h.assertTrue(Keepsakes.herd(p) == 0, "bareheaded, nothing follows");
                 p.setItemSlot(EquipmentSlot.HEAD, keepsake(p, LabyrinthPlace.ELK_LOT, "Cap", ElkFollows.cap()));
                 int led = Keepsakes.herd(p);
-                h.assertTrue(led == 1, "wearing the cap, the cow is led after them: led " + led + ", cow at " + cow.position().distanceTo(p.position()) + ", ground " + cow.onGround());
+                // Animals in a neighbouring test's corner may be in reach too; this corner's cow must be one of them, walking.
+                h.assertTrue(led >= 1 && cow.getNavigation().isInProgress(), "wearing the cap, the cow is led after them: led " + led + ", cow at " + cow.position().distanceTo(p.position()) + ", ground " + cow.onGround());
                 // The diary is silent by day.
                 h.assertTrue(h.getLevel().getDayTime() % 24000 >= 13000 || Keepsakes.diary(p) == null, "the last page says nothing in daylight");
                 h.succeed();
-            } finally { NativeTestPlayers.remove(p); }
+            } finally { NativeTestPlayers.remove(p);chunks.close(); }
         });
     }
 

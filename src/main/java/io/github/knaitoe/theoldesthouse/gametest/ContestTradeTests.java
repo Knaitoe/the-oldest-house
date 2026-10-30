@@ -57,8 +57,10 @@ public final class ContestTradeTests {
         var at = h.absoluteVec(new net.minecraft.world.phys.Vec3(2.5, 1, 2.5));p.teleportTo(h.getLevel(), at.x, at.y, at.z, 0, 0);
         var cow = h.spawn(EntityType.COW, new BlockPos(5, 1, 5));
         var wolf = h.spawn(EntityType.WOLF, new BlockPos(5, 1, 2));wolf.tame(p);
-        // The animals settle onto the grass before anything can turn them.
-        h.runAfterDelay(20, () -> {
+        // Run 1351: the empty template keeps only its own corner loaded, and the cow can stand in the next chunk, where nothing
+        // ticks it or finds it. Hold the corner's chunks and wait until the cow is ticking and has settled onto the grass.
+        var chunks = new NativeTestChunks();chunks.hold(h.getLevel(), new net.minecraft.world.phys.AABB(h.absolutePos(BlockPos.ZERO)).inflate(16));
+        h.startSequence().thenWaitUntil(() -> h.assertTrue(h.getTick() >= 20 && chunks.ticking() && h.getLevel().isPositionEntityTicking(cow.blockPosition()) && cow.onGround(), "the cow is ticking and settled: tick " + h.getTick() + ", ticking " + h.getLevel().isPositionEntityTicking(cow.blockPosition()) + ", ground " + cow.onGround() + ", alive " + cow.isAlive() + " at " + h.relativePos(cow.blockPosition()))).thenExecute(() -> {
             try {
                 h.assertTrue(ContestTrades.smell(p) == 0, "nothing shies from a reader who has no smell on them");
                 ContestTrades.hides(p);
@@ -79,7 +81,7 @@ public final class ContestTradeTests {
                 h.assertTrue(p.getTicksFrozen() == p.getTicksRequiredToFreeze() - 1 && !p.isFullyFrozen() && p.hasEffect(MobEffects.MOVEMENT_SLOWDOWN) && p.getHealth() == health,
                         "her black frost freezes and slows them, one tick short of a wound");
                 h.succeed();
-            } finally { NativeTestPlayers.remove(p); }
+            } finally { NativeTestPlayers.remove(p);chunks.close(); }
         });
     }
 }
