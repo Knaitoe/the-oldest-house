@@ -56,10 +56,12 @@ public final class HouseCorrespondence {
                 entry.putString("Legacy",key);entry.putInt("Chapter",old.getInt("Chapter"));
                 if(old.getBoolean("Finished")||old.getInt("Chapter")<0){var used=own.getCompound("LegacyUsed");used.putBoolean(key,true);own.put("LegacyUsed",used);}
             }else{
-                var note=choose(reader,own,thread);entry.putString("Note",note.id());
+                // 0.4.199: a reader who has eaten in the House hears about it from the other room first.
+                var note=remark(own);if(note==null)note=choose(reader,own,thread);entry.putString("Note",note.id());
                 var books=own.getCompound("Books");
                 if(!books.contains(note.id())){
                     Map<String,String> facts=facts(reader,own,note,true);
+                    if(HouseRemarks.find(note.id())!=null)facts.put("food",own.getString("AteFood"));
                     ItemStack book=note.chain().startsWith("legacy_")?MarginaliaTexts.book(reader,note.surface(),note.installment()):CorrespondenceTexts.book(note,facts);
                     var custom=new CompoundTag();custom.putUUID("CorrespondenceReader",reader.getUUID());custom.putString("CorrespondenceId",note.id());
                     book.set(DataComponents.CUSTOM_DATA,CustomData.of(custom));books.put(note.id(),book.save(reader.registryAccess()));own.put("Books",books);
@@ -73,6 +75,23 @@ public final class HouseCorrespondence {
         boolean taken=legacy.isEmpty()?own.getCompound("Taken").getBoolean(id)
                 :HouseMarginalia.record(data,reader.getUUID()).getCompound("Bindings").getCompound(legacy).getBoolean("Taken");
         return new Encounter(key,id,legacy,entry.getInt("Chapter"),ItemStack.parseOptional(reader.registryAccess(),stored),taken);
+    }
+    /** The next note from the other room, once per meal, a crossing or more after it and three after the last. */
+    private static CorrespondenceTexts.Note remark(CompoundTag own){
+        int written=own.getInt("Remarks");long step=own.getLong("Step");
+        if(written>=HouseRemarks.NOTES.size()||own.getInt("Ate")<=own.getInt("RemarkedAte")||step<=own.getLong("AteStep")
+                ||own.contains("RemarkStep")&&step-own.getLong("RemarkStep")<3)return null;
+        own.putInt("Remarks",written+1);own.putInt("RemarkedAte",own.getInt("Ate"));own.putLong("RemarkStep",step);
+        return HouseRemarks.NOTES.get(written);
+    }
+    /** A real meal finished in the House: the reader's own native use of a food, never a spectator's. */
+    @SubscribeEvent public static void ate(net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish event){
+        if(!(event.getEntity() instanceof ServerPlayer reader)||!reader.isAlive()||reader.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR
+                ||!reader.level().dimension().equals(HouseDimensions.INTERIOR)||!event.getItem().has(DataComponents.FOOD))return;
+        var data=LabyrinthData.get(reader.server);var own=record(data,reader.getUUID());
+        own.putInt("Ate",own.getInt("Ate")+1);own.putLong("AteStep",own.getLong("Step"));
+        own.putString("AteFood",CorrespondenceTexts.literal(event.getItem().getItem().getDescription().getString().toLowerCase(Locale.ROOT)));
+        save(data,reader.getUUID(),own);
     }
     private static CorrespondenceTexts.Note choose(ServerPlayer reader,CompoundTag own,HouseMarginalia.Thread surface){
         // A return gives this poem its setting. Existing bindings and originals still win in bind().
@@ -231,7 +250,7 @@ public final class HouseCorrespondence {
         private final int count;
         private OriginalMenu(int menu,ServerPlayer reader,String id,ItemStack book){
             super(menu,container(book),new SimpleContainerData(1));this.reader=reader;
-            var note=CATALOGUE.stream().filter(n->n.id().equals(id)).findFirst().orElseThrow();thread=note.surface();
+            var note=CATALOGUE.stream().filter(n->n.id().equals(id)).findFirst().orElseGet(()->Objects.requireNonNull(HouseRemarks.find(id)));thread=note.surface();
             original=new Encounter("",id,"",0,book.copy(),true);
             count=book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size();
             if(count==1)finish(reader,original,thread);
