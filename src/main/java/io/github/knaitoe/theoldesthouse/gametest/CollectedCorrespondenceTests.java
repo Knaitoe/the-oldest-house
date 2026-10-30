@@ -22,7 +22,8 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class CollectedCorrespondenceTests {
-    private static MarginaliaTests.Fixture originals,facts;
+    private static MarginaliaTests.Fixture originals,facts,remarks;
+    @AfterBatch(batch="correspondence_remarks") public static void cleanRemarks(ServerLevel level){if(remarks!=null){remarks.close();remarks=null;}}
     @AfterBatch(batch="correspondence_collected_originals") public static void cleanOriginals(ServerLevel level){if(originals!=null){originals.close();originals=null;}}
     @AfterBatch(batch="correspondence_confirmed_facts") public static void cleanFacts(ServerLevel level){if(facts!=null){facts.close();facts=null;}}
     private static String text(ItemStack book){return book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).reduce("",(a,b)->a+" "+b).replace('\n',' ');}
@@ -51,6 +52,32 @@ public final class CollectedCorrespondenceTests {
             HouseCorrespondence.crossed(a);h.assertTrue(!HouseCorrespondence.available(a,"J02"),"one crossing is insufficient separation");HouseCorrespondence.crossed(a);h.assertTrue(HouseCorrespondence.available(a,"J02"),"two actual route callbacks separate installments");
             a.closeContainer();f.reload();h.assertTrue(ItemStack.isSameItemSameComponents(original,heldBook(a))&&HouseCorrespondence.record(f.data(),a.getUUID()).getCompound("Taken").getBoolean(id),"reload retains the exact owned original and its finite custody");
             h.assertTrue(!f.open(a,HouseMarginalia.Thread.POEMS).book().isEmpty()&&WitnessAccount.count(f.data(),a.getUUID())==0,"expanded correspondence remains scenery without false Witness credit");h.succeed();
+        });
+    }
+    private static String noteId(ItemStack book){return book.getOrDefault(DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getString("CorrespondenceId");}
+    private static void eat(ServerPlayer p,ItemStack food){NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish(p,food,0,ItemStack.EMPTY));}
+    /** 0.4.199, the owner: notes to readers who ate in the House, "stop chewing so loudly". */
+    @GameTest(template="empty",batch="correspondence_remarks",timeoutTicks=120)
+    public static void aReaderWhoAteInTheHouseHearsAboutItFromTheOtherRoom(GameTestHelper h){
+        remarks=new MarginaliaTests.Fixture(h,33300,false);var f=remarks;var a=f.player();var b=f.player();f.depth(a,20);f.depth(b,20);
+        h.runAfterDelay(8,()->{
+            eat(a,new ItemStack(Items.BREAD));var own=HouseCorrespondence.record(f.data(),a.getUUID());
+            h.assertTrue(own.getInt("Ate")==1&&own.getString("AteFood").equals("bread")&&HouseCorrespondence.record(f.data(),b.getUUID()).getInt("Ate")==0,"a meal finished in the House is the eater's own fact");
+            h.assertTrue(!noteId(f.open(a,HouseMarginalia.Thread.ROOM).book()).startsWith(HouseRemarks.PREFIX),"nothing is said in the room where they ate");a.closeContainer();
+            HouseCorrespondence.crossed(a);var menu=f.open(a,HouseMarginalia.Thread.ROOM);var book=menu.book();
+            h.assertTrue(noteId(book).equals("ATE1")&&text(book).contains("chewing so loudly")&&text(book).contains("from the other room"),"the next paper a room later is the note from the other room");
+            h.assertTrue(menu.clickMenuButton(a,3),"the note can be kept like any other");a.closeContainer();
+            var kept=heldBook(a);for(int slot=0;slot<a.getInventory().getContainerSize();slot++)if(a.getInventory().getItem(slot)==kept){a.getInventory().removeItemNoUpdate(slot);break;}
+            a.setItemInHand(InteractionHand.MAIN_HAND,kept);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickItem(a,InteractionHand.MAIN_HAND));
+            h.assertTrue(a.containerMenu instanceof HouseCorrespondence.OriginalMenu&&HouseCorrespondence.record(f.data(),a.getUUID()).getCompound("Read").getBoolean("ATE1"),"the kept note opens and reads in the reader's hand");a.closeContainer();
+            h.assertTrue(!noteId(f.open(b,HouseMarginalia.Thread.ROOM).book()).startsWith(HouseRemarks.PREFIX),"a reader who has not eaten hears nothing");b.closeContainer();
+            for(int i=0;i<4;i++)HouseCorrespondence.crossed(a);
+            h.assertTrue(!noteId(f.open(a,HouseMarginalia.Thread.CALLS).book()).startsWith(HouseRemarks.PREFIX),"without another meal the other room says nothing more");a.closeContainer();
+            eat(a,new ItemStack(Items.BAKED_POTATO));HouseCorrespondence.crossed(a);var second=f.open(a,HouseMarginalia.Thread.POEMS).book();
+            h.assertTrue(noteId(second).equals("ATE2")&&text(second).contains("Was that baked potato?"),"the next meal brings the next note, naming what was eaten");a.closeContainer();
+            b.teleportTo(h.getLevel(),b.getX(),b.getY(),b.getZ(),0,0);eat(b,new ItemStack(Items.BREAD));
+            h.assertTrue(HouseCorrespondence.record(f.data(),b.getUUID()).getInt("Ate")==0,"a meal outside the House is nobody's business");
+            f.reload();h.assertTrue(HouseCorrespondence.record(f.data(),a.getUUID()).getInt("Remarks")==2&&WitnessAccount.count(f.data(),a.getUUID())==0,"the notes are saved, counted once and confer nothing");h.succeed();
         });
     }
     @GameTest(template="empty",batch="correspondence_confirmed_facts",timeoutTicks=140)

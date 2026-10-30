@@ -49,6 +49,19 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - As before, only the reader who drew a mark can rub it out; anyone else is told "You can only rub out your own chalk mark."
   - The companions case right-clicks a mark through the native interaction: a peer's click leaves it; the owner's click, then the owner's chalk, rub it out.
 
+## Notes from the other room
+- **"Notes addressing players who ate in the House – 'stop chewing so loudly. I could hear you all the way from the other room' something like that."** A meal finished inside the House is the eater's own fact: what they ate, and when (`HouseCorrespondence.ate`).
+  - At least a room later, the next loose paper that reader opens is a note slipped under the door, "From the other room", in a household hand (`HouseRemarks`).
+  - There are five notes, each written once and in order, and each needs a new meal. They come no closer than three crossings apart.
+    - "Could you stop chewing so loudly? I could hear you all the way from the other room."
+    - "Was that {what they ate}? You ate it with your mouth open. The walls in here are thinner than they look."
+    - The crumbs swept up in the hall.
+    - The glass against the wall.
+    - "We haven't eaten in a long time."
+  - The notes are kept and read like any other correspondence and confer nothing. A meal outside the House is nobody's business, and a peer who has not eaten hears nothing.
+  - The 108 approved correspondence pieces are unchanged; these notes stand beside them.
+  - New case: `CollectedCorrespondenceTests.aReaderWhoAteInTheHouseHearsAboutItFromTheOtherRoom`.
+
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.
 - The Ghosts namespace (24 cases), the novel sites (16) and the shelter case pass locally.
