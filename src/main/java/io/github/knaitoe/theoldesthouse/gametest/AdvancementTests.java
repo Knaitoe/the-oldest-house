@@ -4,9 +4,14 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.*;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementNode;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.advancements.AdvancementVisibilityEvaluator;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.gametest.*;
 
@@ -89,6 +94,27 @@ public final class AdvancementTests {
             HouseAdvancements.sync(reader);
             h.assertTrue(Objects.equals(obtained,reader.getAdvancements().getOrStartProgress(goatman).getFirstProgressDate()),"syncing again awards nothing twice");
         }finally{server.overworld().getDataStorage().set("the_oldest_house_labyrinth",previous);}
+        h.succeed();
+    }
+
+    /**
+     * The owner saw only the House's tab on a new world. Minecraft shows a tab once something in it is earned: the House's
+     * root is earned on joining, Minecraft's own on the first crafting table, so a new world shows the House's alone and the
+     * Minecraft tab joins it, nothing hidden, the moment its first advancement is earned.
+     */
+    @GameTest(template="empty") public static void theHousesTabNeverHidesMinecraftsWhichJoinsItWithTheFirstCraftingTable(GameTestHelper h){
+        var server=h.getLevel().getServer();var tree=server.getAdvancements().tree();
+        ServerPlayer reader=h.makeMockServerPlayerInLevel();reader.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        var house=get(h,"house","house");var story=server.getAdvancements().get(ResourceLocation.withDefaultNamespace("story/root"));
+        h.assertTrue(house!=null&&story!=null&&tree.get(house)!=null&&tree.get(story)!=null,"both roots are loaded into the one tree");
+        java.util.function.Predicate<AdvancementNode> done=n->reader.getAdvancements().getOrStartProgress(n.holder()).isDone();
+        reader.getAdvancements().award(house,"house");
+        h.assertTrue(AdvancementVisibilityEvaluator.isVisible(tree.get(house),done),"the House's tab shows from the start");
+        h.assertTrue(!AdvancementVisibilityEvaluator.isVisible(tree.get(story),done),"Minecraft's tab waits for its first advancement, as in any world");
+        var table=new ItemStack(Items.CRAFTING_TABLE);reader.getInventory().add(table.copy());
+        CriteriaTriggers.INVENTORY_CHANGED.trigger(reader,reader.getInventory(),table);
+        h.assertTrue(reader.getAdvancements().getOrStartProgress(story).isDone(),"the first crafting table earns Minecraft's root");
+        h.assertTrue(AdvancementVisibilityEvaluator.isVisible(tree.get(story),done)&&AdvancementVisibilityEvaluator.isVisible(tree.get(house),done),"both tabs show together");
         h.succeed();
     }
 }
