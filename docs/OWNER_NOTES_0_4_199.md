@@ -86,6 +86,21 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - Without a journal of one's own, charcoal sketches nothing.
   - The journal rubbing case now sketches the well's initials with charcoal, and checks that charcoal alone does nothing.
 
+## Someone in the household slices
+- **"When the domestic house slices are still inaccessible in hallways, there should be a small chance of players seeing occupants living inside."** About one visit in eight to a hall with a household slice that leads nowhere yet has someone in it (`DomesticGlimpses`).
+  - A slice "leads nowhere yet" until its home has bled in. Slices with no home behind them count too.
+  - They are put in while the reader is across the hall and not looking, back to the hall:
+    - at the counter in a kitchen;
+    - at the tub in a laundry;
+    - laying the table in a dining room;
+    - standing by the bed in a bedroom.
+  - Where the slice belongs to one of the four homes, they are dressed as that household might be: the family, the students, the father on his own, the grandmother.
+  - A soft sound of what they are doing comes from the slice. Only that reader sees or hears them.
+  - They never turn round. They stay while watched. Once looked at and then looked away from, they are gone, and nobody comes back on that visit.
+  - A reader who walks right up finds the lamp blinking for them, and the slice empty when it comes back.
+  - Nothing is said, given or counted. Anyone left behind by a restart or a departed reader leaves too.
+  - New case: `ExplorationPassTests.someoneIsSometimesSeenInAHouseholdSliceThatLeadsNowhereYet`.
+
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.
 - The Ghosts namespace (24 cases), the novel sites (16) and the shelter case pass locally.
