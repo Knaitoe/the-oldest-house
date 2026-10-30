@@ -40,14 +40,16 @@ public final class ReadingStandProof extends Screen {
             case WINTER_LAKE->Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState();
             case GHOSTS_SET->BarrettHomeBlock.of(BarrettHomeBlock.Kind.FOLDING_TABLE,Direction.NORTH);
             case WINCHESTER->HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);
+            // Usher's desk stands on the hall's own black floor.
+            case USHER->UsherBlock.of(UsherBlock.Kind.FLOOR);
             default->HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);};
         return List.of(new Placed(0,0,0,under),new Placed(0,1,0,stand));
     }
-    static final LabyrinthPlace[] PLACES={LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.WINTER_LAKE,LabyrinthPlace.WINCHESTER,LabyrinthPlace.GHOSTS_SET,LabyrinthPlace.BORRASCA};
+    static final LabyrinthPlace[] PLACES={LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.WINTER_LAKE,LabyrinthPlace.WINCHESTER,LabyrinthPlace.GHOSTS_SET,LabyrinthPlace.BORRASCA,LabyrinthPlace.USHER};
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         g.fill(0,0,width,height,0xff343630);g.drawString(font,"Reading stands / "+NAMES[page].replace('_',' ')+" / shipped native models",10,9,0xffe5dcc8,false);
         if(page==2){dock(g);return;}
-        float cw=width/3f,ch=(height-30)/2f;
+        float cw=width/3f,ch=(height-30)/(float)((PLACES.length+2)/3);
         for(int i=0;i<PLACES.length;i++){
             var place=PLACES[i];var stand=LiteraryRooms.holder(place);
             // From where the reader stands (the stand's front), or from behind it.

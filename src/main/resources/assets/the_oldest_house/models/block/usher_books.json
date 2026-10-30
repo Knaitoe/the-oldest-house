@@ -1,0 +1,39 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "b": "the_oldest_house:block/usher/books",
+  "particle": "the_oldest_house:block/usher/books"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    1
+   ],
+   "to": [
+    15,
+    1,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    }
+   }
+  }
+ ]
+}

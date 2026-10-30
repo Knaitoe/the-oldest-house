@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/usher/fret",
+  "down": "the_oldest_house:block/usher/fret",
+  "up": "the_oldest_house:block/usher/fret",
+  "north": "the_oldest_house:block/usher/fret",
+  "south": "the_oldest_house:block/usher/fret",
+  "east": "the_oldest_house:block/usher/fret",
+  "west": "the_oldest_house:block/usher/fret"
+ }
+}

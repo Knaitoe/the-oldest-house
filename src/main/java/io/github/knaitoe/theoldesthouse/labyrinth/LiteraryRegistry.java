@@ -63,6 +63,9 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ManorBlock>> MANOR_TYPE=CODECS.register("manor",()->ManorBlock.CODEC);
     /** Bly (0.4.105): the manor's boards, damask and wet line, its rooms and conservatory; and the old man's signal lamp. */
     public static final DeferredBlock<ManorBlock> MANOR=BLOCKS.registerBlock("manor",ManorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noLootTable().lightLevel(ManorBlock::light));
+    /** 0.4.181: the house of Usher, built whole by UsherHouse; its pixels are drawn by tools/draw_usher_art.py. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<UsherBlock>> USHER_TYPE=CODECS.register("usher",()->UsherBlock.CODEC);
+    public static final DeferredBlock<UsherBlock> USHER=BLOCKS.registerBlock("usher",UsherBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_BRICKS).strength(-1F,3600000F).noLootTable().lightLevel(UsherBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CampDecorBlock>> CAMP_DECOR_TYPE=CODECS.register("camp_decor",()->CampDecorBlock.CODEC);
     public static final DeferredBlock<CampDecorBlock> CAMP_DECOR=BLOCKS.registerBlock("camp_decor",CampDecorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noOcclusion().noLootTable().lightLevel(CampDecorBlock::light));
     // 0.4.121: the camp's last session: its radio and horn, the mess hall, the schedule and the papers' surfaces.

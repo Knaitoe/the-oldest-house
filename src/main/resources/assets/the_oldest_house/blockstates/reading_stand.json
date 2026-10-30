@@ -89,6 +89,21 @@
     "facing=west,kind=trail_rack": {
       "model": "the_oldest_house:block/reading_stand_trail_rack",
       "y": 270
+    },
+    "facing=north,kind=vault_register": {
+      "model": "the_oldest_house:block/reading_stand_vault_register"
+    },
+    "facing=east,kind=vault_register": {
+      "model": "the_oldest_house:block/reading_stand_vault_register",
+      "y": 90
+    },
+    "facing=south,kind=vault_register": {
+      "model": "the_oldest_house:block/reading_stand_vault_register",
+      "y": 180
+    },
+    "facing=west,kind=vault_register": {
+      "model": "the_oldest_house:block/reading_stand_vault_register",
+      "y": 270
     }
   }
 }

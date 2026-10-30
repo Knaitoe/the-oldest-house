@@ -1,0 +1,42 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "d": "the_oldest_house:block/usher/drapery",
+  "particle": "the_oldest_house:block/usher/drapery"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    14
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#d"
+    },
+    "south": {
+     "texture": "#d"
+    },
+    "east": {
+     "texture": "#d"
+    },
+    "west": {
+     "texture": "#d"
+    },
+    "up": {
+     "texture": "#d"
+    },
+    "down": {
+     "texture": "#d"
+    }
+   }
+  }
+ ]
+}

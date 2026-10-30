@@ -1,0 +1,42 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "g": "the_oldest_house:block/usher/guitar",
+  "particle": "the_oldest_house:block/usher/guitar"
+ },
+ "elements": [
+  {
+   "from": [
+    5,
+    0,
+    7
+   ],
+   "to": [
+    11,
+    14,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g"
+    },
+    "south": {
+     "texture": "#g"
+    },
+    "east": {
+     "texture": "#g"
+    },
+    "west": {
+     "texture": "#g"
+    },
+    "up": {
+     "texture": "#g"
+    },
+    "down": {
+     "texture": "#g"
+    }
+   }
+  }
+ ]
+}

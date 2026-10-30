@@ -150,6 +150,29 @@ public final class LiteraryTests {
         h.assertTrue(LiteraryTexts.ending("reader",LabyrinthPlace.OLD_CABIN,own).has(DataComponents.WRITTEN_BOOK_CONTENT),"the account he readies can be written");
         h.succeed();
     }
+    /** 0.4.181: the house of Usher is built whole: the causeway over the tarn, the fissure down its front, the hall, the stair to the vault, the studio. */
+    @GameTest(template="empty",batch="literary_usher181",timeoutTicks=600)
+    public static void theHouseOfUsherStandsOverItsTarnWithItsFissureVaultAndStudio(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.USHER;f.build(place);var b=f.base(place);var l=f.in;
+        h.assertTrue(!ScenePolish.applies(place)&&!SceneReview.applies(place)&&!SceneCraft.applies(place)&&!VignetteInteriors.applies(place),"the scenery passes and the old refit leave the house as it is built");
+        h.succeedWhen(()->{
+            var cells=UsherHouse.fissure();
+            h.assertTrue(cells.size()>UsherHouse.FISSURE_X.length,"the fissure steps aside as it runs down: "+cells.size());
+            for(var cell:cells){var s=l.getBlockState(b.offset(cell.x(),cell.y(),UsherHouse.FRONT));
+                h.assertTrue(UsherBlock.is(s,UsherBlock.Kind.FISSURE)||UsherBlock.is(s,UsherBlock.Kind.FISSURE_B),"the fissure runs down the front at "+cell.x()+","+cell.y()+": "+s);}
+            h.assertTrue(cells.getLast().y()<0&&l.getBlockState(b.offset(cells.getLast().x(),cells.getLast().y(),UsherHouse.FRONT+1)).is(Blocks.WATER),"and is lost in the tarn");
+            h.assertTrue(UsherBlock.is(l.getBlockState(b.offset(0,-1,-8)),UsherBlock.Kind.CAUSEWAY)&&l.getBlockState(b.offset(-8,-1,-8)).is(Blocks.WATER)&&l.getBlockState(b.offset(8,-1,-6)).is(Blocks.WATER),"a causeway crosses the tarn");
+            for(var at:List.of(new BlockPos(0,0,-2),new BlockPos(0,0,-8),UsherHouse.ARCH,new BlockPos(0,0,-18),new BlockPos(11,0,-17),new BlockPos(-11,0,-17),new BlockPos(7,-3,-21),new BlockPos(0,-3,-27),new BlockPos(0,0,-28),new BlockPos(14,0,-30),new BlockPos(0,0,-38))){
+                var c=b.offset(at);h.assertTrue(l.noCollision(null,new AABB(c.getX()+.2,c.getY()+.01,c.getZ()+.2,c.getX()+.8,c.getY()+1.8,c.getZ()+.8)),"a body passes at "+at);}
+            h.assertTrue(l.getBlockState(b.offset(UsherHouse.VAULT_DOOR)).getBlock() instanceof DoorBlock&&l.getBlockState(b.offset(UsherHouse.VAULT_DOOR)).is(Blocks.WAXED_WEATHERED_COPPER_DOOR),"the vault's door is iron sheathed in copper");
+            for(var rel:List.of(LiteraryRooms.COFFIN,LiteraryRooms.COFFIN.north()))h.assertTrue(l.getBlockState(b.offset(rel)).is(LiteraryRegistry.PROP.get()),"her coffin lies in the vault");
+            h.assertTrue(UsherBlock.is(l.getBlockState(b.offset(UsherHouse.CHAIR)),UsherBlock.Kind.CHAIR)&&UsherBlock.is(l.getBlockState(b.offset(UsherHouse.EASEL)),UsherBlock.Kind.EASEL)&&UsherBlock.is(l.getBlockState(b.offset(UsherHouse.GUITAR)),UsherBlock.Kind.GUITAR),"Roderick's chair, easel and guitar are in the studio");
+            int hearths=0,windows=0;for(var at:BlockPos.betweenClosed(b.offset(-18,-4,-42),b.offset(18,13,0))){var s=l.getBlockState(at);if(s.is(Blocks.CAMPFIRE))hearths++;if(UsherBlock.is(s,UsherBlock.Kind.WINDOW))windows++;}
+            h.assertTrue(hearths==1&&l.getBlockState(b.offset(UsherHouse.HEARTH)).is(Blocks.CAMPFIRE),"one hearth, in the studio: "+hearths);
+            h.assertTrue(windows>=30,"long pointed windows, front and studio: "+windows);
+        });
+    }
+    @AfterBatch(batch="literary_usher181") public static void usherDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_coffin",timeoutTicks=230)
     public static void nativeCoffinChoiceRequiresAReturnAndKeepsTheSameWoman(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("coffin_reader",place);f.source(p,place);h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Woman"),"the living native body is present before the decision");p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"closing the physical lid grants no ending by itself");f.arrive(p,place);f.at(p,place,2,-3,-29);});h.runAfterDelay(150,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.getInt("Cracks")==1&&f.own(p,place).getBoolean("Ready"),"the next native visit brings a local crack and an earned consequence");h.assertTrue(f.in.getEntity(world.getUUID("Woman")) instanceof LiteraryActor,"the same woman's native UUID survives the return");f.read(p,place,LiteraryRooms.ending(place));h.succeed();});}
     @AfterBatch(batch="literary_coffin") public static void coffinDone(ServerLevel l){close();}
