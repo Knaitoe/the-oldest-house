@@ -149,11 +149,33 @@ public final class JournalPageRenderer {
     public static void page(GuiGraphics g,Font font,int x,int y,int index,boolean left,int wear,JournalPage page,String name,int selected){
         paper(g,x,y,left,index==0,wear,index);
         if(index==0){cover(g,font,x,y,name);return;}
+        rubbings(g,font,x,y,page);
         writing(g,font,x,y,page.text());
         g.enableScissor(x,y,x+W,y+H);
         List<JournalPage.Placed> runs=page.placed();for(int i=0;i<runs.size();i++)placed(g,font,x,y,runs.get(i),i==selected);
         g.disableScissor();
         header(g,font,x,y,page);number(g,font,x,y,index);
+    }
+
+    static final int RUBBING=52, CAPTION_W=104;
+    /**
+     * The page's charcoal rubbings, each a little askew, with the line about it written small beside it in the reader's
+     * graphite, leaving room above for their own writing.
+     */
+    public static void rubbings(GuiGraphics g,Font font,int x,int y,JournalPage page){
+        for(var r:page.rubbings()){
+            var kind=io.github.knaitoe.theoldesthouse.journal.Rubbings.byId(r.id());if(kind==null)continue;
+            float px=x+r.x()*W,py=y+r.y()*H;var pose=g.pose();
+            pose.pushPose();pose.translate(px+RUBBING/2F,py+RUBBING/2F,0);pose.mulPose(Axis.ZP.rotationDegrees(r.angle()));
+            RenderSystem.enableBlend();RenderSystem.defaultBlendFunc();
+            g.blit(kind.texture(),-RUBBING/2,-RUBBING/2,RUBBING,RUBBING,0,0,64,64,64,64);
+            RenderSystem.disableBlend();pose.popPose();
+            HouseText.enterLiterature();
+            try{pose.pushPose();pose.translate(px+RUBBING+6,py+4,0);pose.scale(.65F,.65F,1);int row=0;
+                for(var line:font.split(FormattedText.of(kind.observation()),CAPTION_W))g.drawString(font,line,0,row++*LINE,INK,false);
+                pose.popPose();}
+            finally{HouseText.leaveLiterature();}
+        }
     }
 
     /** Zampanò's hand: his font, as in his books. */

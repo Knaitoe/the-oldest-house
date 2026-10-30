@@ -49,7 +49,7 @@ public final class JournalScreen extends Screen {
         name=journal.getString("Name");wear=journal.getInt("Wear");this.proof=proof;this.spread=Mth.clamp(spread,0,Journals.PAGES/2);
         var all=journal.getCompound("Pages");for(String key:all.getAllKeys()){try{int i=Integer.parseInt(key);if(i>=1&&i<=Journals.PAGES)pages.put(i,JournalPage.load(all.getCompound(key)));}catch(NumberFormatException ignored){}}
     }
-    public static void open(CompoundTag journal){Minecraft.getInstance().setScreen(new JournalScreen(journal,0,false));}
+    public static void open(CompoundTag journal){Minecraft.getInstance().setScreen(new JournalScreen(journal,journal.getInt("Spread"),false));}
     static JournalScreen proof(CompoundTag journal,int spread,int selectSide,int selectRun){var s=new JournalScreen(journal,spread,true);s.selSide=selectSide;s.selRun=selectRun;return s;}
 
     int index(int side){return spread*2+side;}
@@ -140,6 +140,7 @@ public final class JournalScreen extends Screen {
             var page=page(i);
             JournalPageRenderer.paper(g,x,top,side==0,i==0,wear,i);
             if(i==0){JournalPageRenderer.cover(g,font,x,top,name);continue;}
+            JournalPageRenderer.rubbings(g,font,x,top,page);
             if(editors[side]!=null)editor(g,side,x,top);else JournalPageRenderer.writing(g,font,x,top,page.text());
             // Placed lines stay on their own page, however far they are turned or dragged.
             g.enableScissor(x,top,x+JournalPageRenderer.W,top+JournalPageRenderer.H);

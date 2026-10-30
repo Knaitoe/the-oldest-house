@@ -11,11 +11,18 @@ import net.minecraft.util.Mth;
 /**
  * One page of a reader's journal: their flowing writing, the lines they have lifted out and set somewhere on the page in a
  * shape of their choosing, and, faintly at the foot, where and when it was begun. Shared by the server, which keeps it, and
- * the screen, which draws it. The same pieces draw Zampanò's pages.
+ * the screen, which draws it. The same pieces draw Zampanò's pages. Rubbings (Rubbings) are laid on a page by the server
+ * when the reader takes one; the reader's own edits never carry or remove them.
  */
-public record JournalPage(String text, List<Placed> placed, String begun, int day, boolean house) {
+public record JournalPage(String text, List<Placed> placed, String begun, int day, boolean house, List<Rubbing> rubbings) {
     public static final int MAX_TEXT=420, MAX_NEWLINES=14, MAX_PLACED=8, MAX_RUN=96;
-    public static final JournalPage BLANK=new JournalPage("",List.of(),"",0,false);
+    public static final JournalPage BLANK=new JournalPage("",List.of(),"",0,false,List.of());
+
+    /** A charcoal rubbing laid on the page: which object it was taken from, where it sits as a fraction of the page, and its tilt. */
+    public record Rubbing(String id, float x, float y, float angle) {
+        CompoundTag save(){var t=new CompoundTag();t.putString("Id",id);t.putFloat("X",x);t.putFloat("Y",y);t.putFloat("Angle",angle);return t;}
+        static Rubbing read(CompoundTag t){var id=t.getString("Id");return Rubbings.byId(id)==null?null:new Rubbing(id,Mth.clamp(t.getFloat("X"),0,1),Mth.clamp(t.getFloat("Y"),0,1),Mth.wrapDegrees(t.getFloat("Angle")));}
+    }
 
     /** How a lifted line is laid on the page. Mirroring and the angle apply to any of them. */
     public enum Shape {
@@ -40,21 +47,25 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
         }
     }
 
-    public boolean empty(){return text.isBlank()&&placed.isEmpty();}
-    public JournalPage withWriting(String text,List<Placed> placed){return new JournalPage(text,List.copyOf(placed),begun,day,house);}
-    public JournalPage begunAt(String where,int day,boolean house){return new JournalPage(text,placed,where,day,house);}
+    public boolean empty(){return text.isBlank()&&placed.isEmpty()&&rubbings.isEmpty();}
+    public JournalPage withWriting(String text,List<Placed> placed){return new JournalPage(text,List.copyOf(placed),begun,day,house,rubbings);}
+    public JournalPage begunAt(String where,int day,boolean house){return new JournalPage(text,placed,where,day,house,rubbings);}
+    public JournalPage withRubbing(Rubbing r){var all=new ArrayList<>(rubbings);all.add(r);return new JournalPage(text,placed,begun,day,house,List.copyOf(all));}
 
     public CompoundTag save(){
         var t=new CompoundTag();t.putString("Text",text);
         var runs=new ListTag();for(var p:placed)runs.add(p.save());t.put("Placed",runs);
         if(!begun.isEmpty())t.putString("Begun",begun);if(day>0)t.putInt("Day",day);if(house)t.putBoolean("House",true);
+        if(!rubbings.isEmpty()){var list=new ListTag();for(var r:rubbings)list.add(r.save());t.put("Rubbings",list);}
         return t;
     }
     /** A saved page, trusted as the server wrote it. */
     public static JournalPage load(CompoundTag t){
         var runs=new ArrayList<Placed>();var list=t.getList("Placed",Tag.TAG_COMPOUND);
         for(int i=0;i<list.size()&&runs.size()<MAX_PLACED;i++){var p=Placed.read(list.getCompound(i));if(p!=null)runs.add(p);}
-        return new JournalPage(t.getString("Text"),List.copyOf(runs),t.getString("Begun"),t.getInt("Day"),t.getBoolean("House"));
+        var rubbed=new ArrayList<Rubbing>();var marks=t.getList("Rubbings",Tag.TAG_COMPOUND);
+        for(int i=0;i<marks.size();i++){var r=Rubbing.read(marks.getCompound(i));if(r!=null)rubbed.add(r);}
+        return new JournalPage(t.getString("Text"),List.copyOf(runs),t.getString("Begun"),t.getInt("Day"),t.getBoolean("House"),List.copyOf(rubbed));
     }
     /**
      * The writing a reader's screen sent, or null when it is more than the screen allows. The server never takes a page's
@@ -67,6 +78,6 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
         var list=t.getList("Placed",Tag.TAG_COMPOUND);if(list.size()>MAX_PLACED)return null;
         var runs=new ArrayList<Placed>();
         for(int i=0;i<list.size();i++){var p=Placed.read(list.getCompound(i));if(p==null||p.text().chars().anyMatch(c->c<' '||c==127||c=='§'))return null;runs.add(p);}
-        return new JournalPage(text,List.copyOf(runs),"",0,false);
+        return new JournalPage(text,List.copyOf(runs),"",0,false,List.of());
     }
 }

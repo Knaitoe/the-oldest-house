@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.gametest;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.journal.JournalPage;
 import io.github.knaitoe.theoldesthouse.journal.Journals;
+import io.github.knaitoe.theoldesthouse.journal.Rubbings;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -15,7 +16,7 @@ import net.neoforged.neoforge.event.entity.item.ItemExpireEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
-/** The reader's journal, step one of JOURNAL_DESIGN.md: one owner's book, bounded edits kept in saved data, and a lost copy that comes back worn. */
+/** The reader's journal (JOURNAL_DESIGN.md): one owner's book, bounded edits kept in saved data, a lost copy that comes back worn, and pencil rubbings. */
 @GameTestHolder(TheOldestHouse.MOD_ID) @PrefixGameTestTemplate(false)
 public final class JournalTests {
     private JournalTests(){}
@@ -94,5 +95,59 @@ public final class JournalTests {
             h.assertTrue(data.returnLost(p)&&Journals.wearOf(held(p))==3,"and comes back swollen");
         }finally{NativeTestPlayers.remove(p);}
         h.succeed();
+    }
+
+    /** A state of a block in the rooms that gives this rubbing. */
+    static net.minecraft.world.level.block.state.BlockState sample(Rubbings.Kind kind){
+        for(var block:net.minecraft.core.registries.BuiltInRegistries.BLOCK)for(var state:block.getStateDefinition().getPossibleStates())if(kind.matches().test(state))return state;
+        return null;
+    }
+    @GameTest(template="empty",batch="journal_rubbings",timeoutTicks=100)
+    public static void eachAuthoredObjectGivesOneRubbingAndASecondTryTurnsToIt(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"journal_rubber");var peer=NativeTestPlayers.survival(h,"journal_onlooker");
+        try{
+            var data=Journals.get(h.getLevel().getServer());var mine=data.issue(p);p.getInventory().add(mine.copy());var theirs=data.issue(peer);
+            h.assertTrue(Rubbings.ALL.size()>=12,"about twelve objects to begin with");
+            var pages=new java.util.HashSet<Integer>();
+            for(var kind:Rubbings.ALL){
+                var state=sample(kind);h.assertTrue(state!=null&&Rubbings.of(state)==kind,"an authored "+kind.id()+" gives its own rubbing");
+                h.assertTrue(Journals.rub(p,mine,state)==Journals.Rub.RUBBED,"the "+kind.id()+" rubbing is taken");
+                int at=data.rubbedPage(p.getUUID(),kind.id());var page=data.page(p.getUUID(),at);
+                h.assertTrue(at>=1&&pages.add(at)&&page.rubbings().size()==1&&page.rubbings().get(0).id().equals(kind.id()),"on a page of its own with room to write: "+kind.id()+" on "+at);
+                h.assertTrue(Journals.rub(p,mine,state)==Journals.Rub.TURNED&&data.page(p.getUUID(),at).rubbings().size()==1,"a second try only turns to that page");
+                String line=" "+kind.observation().toLowerCase().replaceAll("[^a-z' ]"," ")+" ";
+                for(var word:java.util.List.of("he","she","him","her","his","hers","man","woman","boy","girl","old","young","years","red","blue","green","yellow","white","black","grey","gray","brown","orange","purple","pink","golden","silver"))
+                    h.assertTrue(!line.contains(" "+word+" "),"the line about the "+kind.id()+" keeps the House's writing rules: "+word);
+            }
+            h.assertTrue(Journals.rub(p,mine,net.minecraft.world.level.block.Blocks.STONE.defaultBlockState())==Journals.Rub.NOT_RUBBABLE,"anything else only opens the journal");
+            var gouges=sample(Rubbings.byId("gouges"));
+            h.assertTrue(Journals.rub(peer,mine,gouges)==Journals.Rub.NOT_YOURS&&data.rubbedPage(peer.getUUID(),"gouges")<0,"another reader's journal takes nothing");
+            // The room's own handlers answer first; the rubbing is taken after, through the real click.
+            var at=h.absolutePos(new net.minecraft.core.BlockPos(1,1,1));h.getLevel().setBlock(at,gouges,3);peer.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,theirs);
+            var click=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(peer,net.minecraft.world.InteractionHand.MAIN_HAND,at,new net.minecraft.world.phys.BlockHitResult(at.getCenter(),net.minecraft.core.Direction.UP,at,false));
+            NeoForge.EVENT_BUS.post(click);
+            h.assertTrue(click.isCanceled()&&click.getCancellationResult()==net.minecraft.world.InteractionResult.SUCCESS&&data.rubbedPage(peer.getUUID(),"gouges")==1,"a click with the journal on the gouges takes the rubbing");
+            h.getLevel().setBlock(at,net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);
+            var plain=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(peer,net.minecraft.world.InteractionHand.MAIN_HAND,at,new net.minecraft.world.phys.BlockHitResult(at.getCenter(),net.minecraft.core.Direction.UP,at,false));
+            NeoForge.EVENT_BUS.post(plain);h.assertTrue(!plain.isCanceled(),"a click on anything else is left to open the journal");
+            var fresh=data.issue(p);h.assertTrue(Journals.rub(p,mine,gouges)==Journals.Rub.NOT_YOURS&&Journals.rub(p,fresh,gouges)==Journals.Rub.TURNED,"an old copy takes nothing; the new one has every rubbing");
+        }finally{NativeTestPlayers.remove(p);NativeTestPlayers.remove(peer);}
+        h.succeed();
+    }
+    @GameTest(template="empty",batch="journal_rubbings_kept",timeoutTicks=200)
+    public static void rubbingsOutlastTheReadersOwnEditsAndAReload(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"journal_keeper");var data=Journals.get(h.getLevel().getServer());var mine=data.issue(p);p.getInventory().add(mine.copy());
+        h.assertTrue(Journals.rub(p,mine,sample(Rubbings.byId("room_number")))==Journals.Rub.RUBBED,"a rubbing of the room number");
+        int at=data.rubbedPage(p.getUUID(),"room_number");
+        var forged=page("A rubbing that was never taken.");var list=new ListTag();var fake=new CompoundTag();fake.putString("Id","gouges");list.add(fake);forged.put("Rubbings",list);
+        h.assertTrue(Journals.edit(p,at,page("Two one seven. The bell rang twice."))==Journals.Edit.ACCEPTED&&Journals.edit(p,at+1,forged)==Journals.Edit.ACCEPTED,"the reader writes beside it, and sends a page claiming a rubbing");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(data.page(p.getUUID(),at).text().startsWith("Two one seven")&&data.page(p.getUUID(),at+1).text().startsWith("A rubbing"),"both pages are kept once filtered"))
+        .thenExecute(()->{
+            h.assertTrue(data.page(p.getUUID(),at).rubbings().size()==1,"writing beside a rubbing never removes it");
+            h.assertTrue(data.page(p.getUUID(),at+1).rubbings().isEmpty()&&data.rubbedPage(p.getUUID(),"gouges")<0,"a reader's screen cannot lay a rubbing");
+            var registries=h.getLevel().registryAccess();var back=Journals.load(data.save(new CompoundTag(),registries),registries);
+            h.assertTrue(back.page(p.getUUID(),at).rubbings().equals(data.page(p.getUUID(),at).rubbings())&&back.rubbedPage(p.getUUID(),"room_number")==at,"rubbings and where they went survive a save and reload");
+            NativeTestPlayers.remove(p);
+        }).thenSucceed();
     }
 }

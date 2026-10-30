@@ -52,6 +52,8 @@ public final class Journals extends SavedData {
     static final class Book {
         int issue, wear; boolean lost; String name="";
         final Map<Integer,JournalPage> pages=new HashMap<>();
+        /** Which object each rubbing was taken from, and the page it went on. */
+        final Map<String,Integer> rubbed=new HashMap<>();
         // Not saved: the screen's allowance.
         int tokens=TOKENS; long refilled;
     }
@@ -95,10 +97,12 @@ public final class Journals extends SavedData {
         return check(p,p.containerMenu.getCarried())==Opening.OPEN;
     }
 
-    public static void open(ServerPlayer p,ItemStack s){
+    public static void open(ServerPlayer p,ItemStack s){open(p,s,0);}
+    /** Opens the reader's own journal at the spread holding the given page. */
+    static void open(ServerPlayer p,ItemStack s,int page){
         var data=get(p.server);
         switch(data.check(p,s)){
-            case OPEN->{io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new JournalOpenPayload(data.contents(p.getUUID())));p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.BOOK_PAGE_TURN,SoundSource.PLAYERS,.6F,1);}
+            case OPEN->{var contents=data.contents(p.getUUID());if(page>0)contents.putInt("Spread",page/2);io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new JournalOpenPayload(contents));p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.BOOK_PAGE_TURN,SoundSource.PLAYERS,.6F,1);}
             case NOT_YOURS->p.displayClientMessage(Component.literal("It isn't yours. A name is written inside the cover: "+nameOf(s)+"."),true);
             case OLD_ISSUE->p.displayClientMessage(Component.literal("The pages are blank. This isn't your journal any more."),true);
             case NOT_A_JOURNAL->{}
@@ -142,6 +146,48 @@ public final class Journals extends SavedData {
         if(kept.empty()&&before.begun().isEmpty())b.pages.remove(index);else b.pages.put(index,kept);
         setDirty();
     }
+    public enum Rub { RUBBED, TURNED, NOT_RUBBABLE, NOT_YOURS, FULL }
+    /** A page has room for a rubbing below its writing while it has none yet and holds no more than this. */
+    static final int ROOM_CHARS=180, ROOM_LINES=8;
+    public static final float RUBBING_X=.08F, RUBBING_Y=.55F;
+    /**
+     * A pencil rubbing of an authored object, taken with the reader's own journal: charcoal and one line about it, laid below
+     * the writing on the last written page if it has room, or the next one that does. Once per object for each reader; a
+     * second try only turns to that page. It is no reward, story step or advancement and changes nothing in the room.
+     */
+    public static Rub rub(ServerPlayer p,ItemStack journal,net.minecraft.world.level.block.state.BlockState state){
+        var kind=Rubbings.of(state);if(kind==null)return Rub.NOT_RUBBABLE;
+        var data=get(p.server);
+        if(data.check(p,journal)!=Opening.OPEN){open(p,journal);return Rub.NOT_YOURS;}
+        var b=data.book(p.getUUID());var done=b.rubbed.get(kind.id());
+        if(done!=null){open(p,journal,done);return Rub.TURNED;}
+        int index=room(b);
+        if(index<0){p.displayClientMessage(Component.literal("There is no room left in the journal for it."),true);return Rub.FULL;}
+        var before=b.pages.getOrDefault(index,JournalPage.BLANK);
+        var kept=before.withRubbing(new JournalPage.Rubbing(kind.id(),RUBBING_X,RUBBING_Y,tilt(kind.id())));
+        if(before.begun().isEmpty()&&before.day()==0)kept=kept.begunAt(where(p),day(p),HouseDimensions.isHouseDimension(p.level().dimension()));
+        b.pages.put(index,kept);b.rubbed.put(kind.id(),index);data.setDirty();
+        p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT,SoundSource.PLAYERS,.5F,.7F);
+        open(p,journal,index);return Rub.RUBBED;
+    }
+    /** The paper is never laid quite square. */
+    static float tilt(String id){return (Math.floorMod(id.hashCode(),9)-4)*1.2F;}
+    /** The last written page if a rubbing fits below its writing, otherwise the next page that has room. */
+    static int room(Book b){
+        int last=1;for(var e:b.pages.entrySet())if(!e.getValue().empty())last=Math.max(last,e.getKey());
+        for(int i=last;i<=PAGES;i++){var page=b.pages.getOrDefault(i,JournalPage.BLANK);
+            if(page.rubbings().isEmpty()&&page.text().length()<=ROOM_CHARS&&page.text().chars().filter(c->c=='\n').count()<=ROOM_LINES)return i;}
+        return -1;
+    }
+    public int rubbedPage(UUID id,String kind){var b=books.get(id);var page=b==null?null:b.rubbed.get(kind);return page==null?-1:page;}
+    /** A hand holding a journal on a rubbable object takes the rubbing, after the room has answered the click as it always does. */
+    @SubscribeEvent(priority=EventPriority.LOWEST,receiveCanceled=true) public static void rubbing(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock e){
+        if(owner(e.getItemStack())==null||e.getEntity().isSpectator())return;
+        var state=e.getLevel().getBlockState(e.getPos());if(Rubbings.of(state)==null)return;
+        if(e.getEntity() instanceof ServerPlayer p)rub(p,e.getItemStack(),state);
+        e.setCanceled(true);e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+    }
+
     static String where(ServerPlayer p){
         if(!HouseDimensions.isHouseDimension(p.level().dimension()))return "";
         var origin=HouseSavedData.get(p.server).houseOrigin();
@@ -198,6 +244,7 @@ public final class Journals extends SavedData {
             UUID id;try{id=UUID.fromString(key);}catch(IllegalArgumentException ignored){continue;}
             var t=all.getCompound(key);var b=new Book();b.issue=t.getInt("Issue");b.wear=t.getInt("Wear");b.lost=t.getBoolean("Lost");b.name=t.getString("Name");
             var pages=t.getCompound("Pages");for(String k:pages.getAllKeys()){try{int i=Integer.parseInt(k);if(i>=1&&i<=PAGES)b.pages.put(i,JournalPage.load(pages.getCompound(k)));}catch(NumberFormatException ignored){}}
+            var rubbed=t.getCompound("Rubbed");for(String k:rubbed.getAllKeys())if(Rubbings.byId(k)!=null)b.rubbed.put(k,rubbed.getInt(k));
             data.books.put(id,b);
         }
         return data;
@@ -205,7 +252,9 @@ public final class Journals extends SavedData {
     @Override public CompoundTag save(CompoundTag tag,HolderLookup.Provider registries){
         var all=new CompoundTag();
         for(var e:books.entrySet()){var b=e.getValue();var t=new CompoundTag();t.putInt("Issue",b.issue);t.putInt("Wear",b.wear);if(b.lost)t.putBoolean("Lost",true);t.putString("Name",b.name);
-            var pages=new CompoundTag();for(var p:b.pages.entrySet())pages.put(Integer.toString(p.getKey()),p.getValue().save());t.put("Pages",pages);all.put(e.getKey().toString(),t);}
+            var pages=new CompoundTag();for(var p:b.pages.entrySet())pages.put(Integer.toString(p.getKey()),p.getValue().save());t.put("Pages",pages);
+            if(!b.rubbed.isEmpty()){var rubbed=new CompoundTag();b.rubbed.forEach(rubbed::putInt);t.put("Rubbed",rubbed);}
+            all.put(e.getKey().toString(),t);}
         tag.put("Books",all);return tag;
     }
 }
