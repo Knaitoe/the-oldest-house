@@ -26,6 +26,14 @@ public final class ChalkMarkBlock extends Block {
             case WEST -> Block.box(15.8,0,0,16,16,16);
         };
     }
+    /** 0.4.199: a right-click rubs the reader's own mark out. A held block still places as before. */
+    @Override protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state,net.minecraft.world.level.Level level,net.minecraft.core.BlockPos pos,
+            net.minecraft.world.entity.player.Player player,net.minecraft.world.phys.BlockHitResult hit) {
+        if(player.getMainHandItem().getItem() instanceof net.minecraft.world.item.BlockItem)return net.minecraft.world.InteractionResult.PASS;
+        if(!(player instanceof net.minecraft.server.level.ServerPlayer server))return net.minecraft.world.InteractionResult.SUCCESS;
+        if(!NavigationAids.allowed(server))return net.minecraft.world.InteractionResult.PASS;
+        NavigationAids.rub(server,pos);return net.minecraft.world.InteractionResult.CONSUME;
+    }
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> builder){builder.add(FACE,ARROW);}
 }

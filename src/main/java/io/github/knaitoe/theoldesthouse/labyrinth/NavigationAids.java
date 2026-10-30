@@ -85,6 +85,14 @@ public final class NavigationAids {
         }
         return false;
     }
+    /** A right-click on a mark: the reader's own rubs out in a little chalk dust; another hand's stays. */
+    public static boolean rub(ServerPlayer player,BlockPos pos) {
+        if(!erase(player,pos)){ExpeditionRhythm.refuse(player,pos,"chalk_owner","You can only rub out your own chalk mark.");return false;}
+        var centre=pos.getCenter();
+        player.serverLevel().sendParticles(new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.92F,.91F,.86F),.8F),centre.x,centre.y-.3,centre.z,10,.3,.15,.3,.01);
+        player.serverLevel().playSound(null,pos,net.minecraft.sounds.SoundEvents.BRUSH_GENERIC,net.minecraft.sounds.SoundSource.PLAYERS,.6F,1.3F);
+        return true;
+    }
     public static void toggle(ServerPlayer player) {
         if(!allowed(player))return;
         boolean active=!player.getPersistentData().getBoolean(ACTIVE);

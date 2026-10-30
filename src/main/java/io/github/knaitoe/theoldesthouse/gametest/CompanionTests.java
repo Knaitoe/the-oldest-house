@@ -243,7 +243,19 @@ public final class CompanionTests {
         helper.assertTrue(!NavigationAids.mayAlter(level,pos,owner),"any player watching protects the mark");
         observer.setYRot(0);
         helper.assertTrue(NavigationAids.mayAlter(level,pos,owner),"a distant unseen mark can be disturbed");
-        helper.assertTrue(NavigationAids.erase(owner,pos),"the owner can rub their chalk out");
+        // 0.4.199: a plain right-click rubs a mark out, through the native interaction, for its owner alone.
+        var hit=new net.minecraft.world.phys.BlockHitResult(pos.getCenter().add(0,-.49,0),net.minecraft.core.Direction.UP,pos,false);
+        observer.moveTo(pos.getX()+.5,pos.getY(),pos.getZ()+2.5);
+        observer.gameMode.useItemOn(observer,level,net.minecraft.world.item.ItemStack.EMPTY,net.minecraft.world.InteractionHand.MAIN_HAND,hit);
+        helper.assertTrue(level.getBlockState(pos).is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.CHALK_MARK.get()),"another player's right-click leaves the mark");
+        owner.moveTo(pos.getX()+.5,pos.getY(),pos.getZ()+2.5);
+        owner.gameMode.useItemOn(owner,level,net.minecraft.world.item.ItemStack.EMPTY,net.minecraft.world.InteractionHand.MAIN_HAND,hit);
+        helper.assertTrue(level.getBlockState(pos).isAir()&&!NavigationAids.erase(owner,pos),"the owner's right-click rubs the chalk out and forgets it");
+        helper.assertTrue(NavigationAids.placeChalk(level,pos,net.minecraft.core.Direction.UP,net.minecraft.core.Direction.NORTH),"the floor takes a new mark");
+        NavigationAids.remember(level,pos,owner.getUUID(),true);
+        owner.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(LabyrinthRegistry.CHALK.get()));
+        owner.gameMode.useItemOn(owner,level,owner.getMainHandItem(),net.minecraft.world.InteractionHand.MAIN_HAND,hit);
+        helper.assertTrue(level.getBlockState(pos).isAir(),"the chalk itself rubs its owner's mark out without sneaking");
         remove(owner);remove(observer);helper.succeed();
     }
 }
