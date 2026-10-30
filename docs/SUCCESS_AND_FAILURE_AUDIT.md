@@ -17,7 +17,7 @@ The earlier drafts forced a failure onto every room. This draft sorts the 55 sto
 | **Choices** (6) | Several endings, none of them a loss. | Mostly complete already: the choices are the trade. |
 | **Experiences** (24) | The reader goes through it; it is neither won nor lost. | Leave it as it is. Completing it gives one singular artifact, or a subtle change or haunting that plays only in the House. |
 
-The owner: "Start running with it. I'll edit as needed." Built so far: Usher's trade (0.4.186, docs/USHER_TRADE_0_4_186.md). The rest are being built in the suggested order.
+The owner: "Start running with it. I'll edit as needed." Built so far: Usher's trade (0.4.186, docs/USHER_TRADE_0_4_186.md); the Last Stop's elk (0.4.187, docs/LAST_STOP_ELK_0_4_187.md). The rest are being built in the suggested order.
 
 ## Contests: outcomes as trades
 
@@ -122,8 +122,8 @@ Each shows **now** (S success, F failure, R reward, X repercussion) and the prop
 - **Fail (new):** striking her. The night resolves nothing and there is no clipping. She follows them home and answers what they do to animals:
   - **Waste:** the meat and hide of any animal they kill spoil as they drop. The men in the novel left meat on the hill.
   - **In kind:** for each animal they kill, one of their penned animals is gone in the morning, the gate open and hoof prints beside it. It is never a named or tamed companion. This is the harsh option and can be left out.
-  - **The calf:** killing a young animal brings her that night. Their next sleep wakes them in the looping field, to walk out again.
-  - **How it ends:** on a later night at the Last Stop they stand where she can see them and let her pass without raising a hand, with no animal killed since she began following (from the same statistics). That is how the novel's cycle ends: Denorah faces her and does not shoot.
+  - **The calf:** killing a young animal costs them the night: they cannot sleep until dawn, and out on open ground the field brings them back to where the night found them (built so in 0.4.187, rather than waking them in the field).
+  - **How it ends:** on a later night at the Last Stop they reach an ending without raising a hand to her, with no animal killed since their last night there (from the same statistics). That is how the novel's cycle ends: Denorah faces her and does not shoot.
 
 **The passing boots (elk carcasses).**
 - **Now:**

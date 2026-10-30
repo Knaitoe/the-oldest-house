@@ -738,6 +738,66 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_last_stop_night") public static void lastStopNightDone(ServerLevel l){close();}
+    /**
+     * 0.4.187, after The Only Good Indians: striking her fails the night. The reader wakes on the porch to nothing and she
+     * follows them home; a later night that ends without a hand raised to her, with nothing killed since, lets them go and
+     * resolves as any night does; reading the clipping gives the cap and the tab comes due.
+     */
+    @GameTest(template="empty",batch="literary_last_stop_struck187",timeoutTicks=1400)
+    public static void strikingTheElkFailsTheNightAndSheFollowsUntilALaterNightLetsHerPass(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("struck_reader",place);var b=f.base(place);var l=f.out;
+        var own=f.own(p,place);own.putBoolean("ElkSeen",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);var room=place.room();
+        f.chunks.hold(l,new AABB(b.getX()+room.minX(),b.getY()-4,b.getZ()+room.minZ(),b.getX()+room.maxX()+1,b.getY()+12,b.getZ()+2));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&ElkLot.loaded(l,b)&&LiteraryVignettes.shared(f.data(),place).hasUUID("Elk"),"wait for native chunks, entity sections and the elk")).thenExecute(()->{
+                var elk=(LiteraryElk)l.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Elk"));elk.hurt(l.damageSources().playerAttack(p),2);
+                h.assertTrue(ElkFollows.struckTonight(f.own(p,place)),"the strike is remembered as tonight's");
+                var mine=f.own(p,place);mine.putInt("FieldLoops",2);mine.putInt("FieldTicks",400);LiteraryVignettes.save(f.data(),p.getUUID(),place,mine);f.at(p,place,4.5,0,-97.2);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean(ElkFollows.FOLLOWS),"the herd takes the striker as it takes anyone, and she follows them home"))
+            .thenExecute(()->{var after=f.own(p,place);
+                h.assertTrue(!after.getBoolean("Ready")&&after.getString("Outcome").isEmpty()&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_LOT)&&ElkFollows.overTonight(after),"nothing is resolved: no clipping tonight");
+                h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkLot.PORCH)))<.1,"the reader still wakes on the porch");
+                p.getInventory().add(new ItemStack(Items.EMERALD,5));f.arrive(p,place);
+                var next=f.own(p,place);next.putBoolean("ElkSeen",true);next.putInt("FieldLoops",2);next.putInt("FieldTicks",400);next.putInt("Drinks",2);LiteraryVignettes.save(f.data(),p.getUUID(),place,next);
+                h.assertTrue(!ElkFollows.overTonight(next)&&!ElkFollows.struckTonight(next),"a later night is a new night");f.at(p,place,4.5,0,-97.2);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready"),"a later night without a hand raised to her ends as any night does"))
+            .thenExecute(()->{var after=f.own(p,place);
+                h.assertTrue(ElkLotEnding.HERD.equals(after.getString("Outcome"))&&!after.getBoolean(ElkFollows.FOLLOWS),"nothing killed since: she passes and no longer follows");
+                f.source(p,place);f.read(p,place,ElkLot.BOARD);
+                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ELK_LOT),"the clipping resolves the night");
+                h.assertTrue(p.getInventory().items.stream().anyMatch(s->s.is(Items.LEATHER_HELMET)&&s.getHoverName().getString().equals("The cap from the broken post")),"winning gives the cap from the broken post");
+                h.assertTrue(p.getInventory().countItem(Items.EMERALD)==3,"and the tab comes due, an emerald a drink: "+p.getInventory().countItem(Items.EMERALD));})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_last_stop_struck187") public static void lastStopStruckDone(ServerLevel l){close();}
+    /**
+     * 0.4.187: while she follows, she answers what the reader does to animals in their own world. The meat and hide spoil as they
+     * fall; a young one costs them the night; in the morning one of their penned animals is gone and the gate stands open. The
+     * men read the reader's own record back to them.
+     */
+    @GameTest(template="empty",batch="literary_elk_follows187",timeoutTicks=300)
+    public static void whileSheFollowsSheAnswersWhatTheReaderDoesToAnimals(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"elk_followed");var d=LabyrinthData.get(h.getLevel().getServer());
+        try{
+            h.assertTrue(ElkFollows.accusation(p).startsWith("Never even shot a deer"),"a reader who has killed nothing leaves the accusation faltering");
+            var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT);own.putBoolean(ElkFollows.FOLLOWS,true);own.putInt(ElkFollows.BASE,0);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_LOT,own);
+            var cow=h.spawn(EntityType.COW,new BlockPos(2,2,2));cow.hurt(h.getLevel().damageSources().playerAttack(p),100);
+            var drops=h.getLevel().getEntitiesOfClass(ItemEntity.class,new AABB(h.absolutePos(new BlockPos(2,2,2))).inflate(3));
+            h.assertTrue(!cow.isAlive()&&drops.stream().noneMatch(i->i.getItem().is(Items.BEEF)||i.getItem().is(Items.LEATHER))&&drops.stream().anyMatch(i->i.getItem().is(Items.ROTTEN_FLESH)),"the meat and the hide spoil as they fall: "+drops.stream().map(i->i.getItem().toString()).toList());
+            h.assertTrue(ElkFollows.kills(p)==1&&ElkFollows.accusation(p).startsWith("One cow, %s"),"the men read the reader's own count back to them: "+ElkFollows.accusation(p));
+            h.assertTrue(!ElkFollows.restless(p),"a grown animal does not cost the night");
+            var calf=h.spawn(EntityType.COW,new BlockPos(4,2,2));calf.setBaby(true);calf.hurt(h.getLevel().damageSources().playerAttack(p),100);
+            h.assertTrue(ElkFollows.restless(p),"a young one costs them the night");
+            // A pen near where they sleep: one cow inside a ring of fence with a gate.
+            for(int x=6;x<=10;x++)for(int z=6;z<=10;z++)if(x==6||x==10||z==6||z==10)h.setBlock(new BlockPos(x,2,z),x==8&&z==6?Blocks.OAK_FENCE_GATE:Blocks.OAK_FENCE);
+            var penned=h.spawn(EntityType.COW,new BlockPos(8,2,8));var named=h.spawn(EntityType.SHEEP,new BlockPos(8,2,9));named.setCustomName(net.minecraft.network.chat.Component.literal("Clover"));
+            p.setRespawnPosition(h.getLevel().dimension(),h.absolutePos(new BlockPos(8,2,8)),0,true,false);
+            h.assertTrue(ElkFollows.morning(p),"in the morning she takes one of theirs in kind");
+            h.assertTrue(!penned.isAlive()&&named.isAlive()&&h.getBlockState(new BlockPos(8,2,6)).getValue(net.minecraft.world.level.block.FenceGateBlock.OPEN),"the penned cow is gone and the gate stands open; the named sheep is never taken");
+            h.assertTrue(ElkFollows.morning(p)==false||LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND)>=0,"never more than there were");
+        }finally{var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT);own.remove(ElkFollows.FOLLOWS);LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.ELK_LOT,own);NativeTestPlayers.remove(p);}
+        h.succeed();
+    }
+
     @GameTest(template="empty",batch="literary_last_stop_field",timeoutTicks=750)
     public static void theFieldRepeatsUnseenAndCarriesOnlyItsOwnReaderBackToTheirClipping(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("field_reader",place);var peer=f.player("field_peer",place);var b=f.base(place);var l=f.out;
@@ -749,7 +809,8 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(Math.abs(p.getZ()-(b.getZ()-97.2+ElkLot.PERIOD))<.01&&f.own(p,place).getInt("FieldLoops")==1,"at the field's far end the reader is one repeat back, in an identical place");
             h.assertTrue(f.own(peer,place).getInt("FieldLoops")==0&&f.own(peer,place).getInt("FieldTicks")==0,"a reader who never saw the elk is turned round, and it counts for nothing");
             var world=LiteraryVignettes.shared(f.data(),place);var elk=(LiteraryElk)l.getEntity(world.getUUID("Elk"));
-            elk.hurt(l.damageSources().playerAttack(p),2);h.assertTrue(f.own(p,place).getBoolean("ElkWounded")&&!f.own(peer,place).getBoolean("ElkWounded"),"the wound is the striker's own, for the fan room");
+            // 0.4.187: striking her fails the striker's night, so here the peer strikes and the reader goes on.
+            elk.hurt(l.damageSources().playerAttack(peer),2);h.assertTrue(f.own(peer,place).getBoolean("ElkWounded")&&!f.own(p,place).getBoolean("ElkWounded"),"the wound is the striker's own, for the fan room");
             var mine=f.own(p,place);mine.putInt("FieldLoops",2);mine.putInt("FieldTicks",400);mine.putInt("Tab",650);mine.putInt("Drinks",2);LiteraryVignettes.save(f.data(),p.getUUID(),place,mine);
             f.at(p,place,4.5,0,-97.2);
             h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready"),"the original herd must physically reach this reader before the ending")).thenExecute(()->{
