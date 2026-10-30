@@ -423,7 +423,10 @@ public final class GoatmanTests {
                 if(r.getInt("Clock")%120==0)TheOldestHouse.LOGGER.info("GOATMAN ENTRY ROUTE: clock={} feet={} entry={} crawl={} left={}",r.getInt("Clock"),f.rel(c),c.windowEntry(1),c.crawling(),c.getPersistentData().getList("Route",Tag.TAG_COMPOUND).size());
                 h.assertTrue(c.getUUID().equals(body[0])&&!c.noPhysics,"the admission keeps its original colliding body");
                 if(admissionSkin[0]<0)admissionSkin[0]=c.visibleSkin();
-                h.assertTrue(!c.monsterAppearance()&&c.visibleSkin()==admissionSkin[0],"the same cousin disguise stays on throughout the window and indoor crawl");
+                // 0.4.199: the child's shape holds through the window, the aisle and the crawl to the bed; at the foot of the bed it comes up as itself.
+                int bed=r.getInt("BedStage131");
+                if(bed==6)h.assertTrue(c.monsterAppearance(),"at the foot of the bed it comes up as the Goatman, not the child");
+                else if(bed<6)h.assertTrue(!c.monsterAppearance()&&c.visibleSkin()==admissionSkin[0],"the same cousin disguise stays on throughout the window and indoor crawl");
                 if(GoatmanWoods.indoors(f.rel(c))&&c.getBoundingBox().maxX<f.b.getX()+8)entered[0]=true;
                 if(c.enteringWindow()){
                     float progress=c.windowEntry(1);entryBeats.add(Math.min(3,(int)(progress*4)));
