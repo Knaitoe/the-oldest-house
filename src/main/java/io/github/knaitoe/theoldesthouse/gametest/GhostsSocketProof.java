@@ -29,7 +29,7 @@ final class GhostsSocketProof {
             p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setNoGravity(false);p.setInvulnerable(false);p.setHealth(p.getMaxHealth());p.getFoodData().setFoodLevel(20);p.setAirSupply(p.getMaxAirSupply());
             var back=Vec3.atBottomCenterOf(LabyrinthPlaces.base(origin,LabyrinthPlace.OFFSET_HALL).offset(0,0,-6));
             DEPTH.put(p.getUUID(),data.returnDepth(p.getUUID()));data.pushReturn(p.getUUID(),new LabyrinthData.Waypoint(level.dimension(),back,0,true));RETURNS.put(p.getUUID(),back.add(0,0,1));
-            p.teleportTo(level,site.getX()-7.5,site.getY()+5,site.getZ()-28.5-(p==b?1.2:0),0,0);p.hasChangedDimension();p.connection.resetPosition();
+            p.teleportTo(level,site.getX()-4.5,site.getY()+5,site.getZ()-19.5-(p==b?1.2:0),0,0);p.hasChangedDimension();p.connection.resetPosition();
             LiteraryVignettes.onArrive(p,LabyrinthPlace.GHOSTS_SET);var own=LiteraryVignettes.personal(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET);
             // Fixture selects the already-read day; production movement, camera lease and forced return remain untouched.
             own.putBoolean("Read_Source",true);own.putInt("FilmDay",6);own.putInt("ShotClock",590);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",true);LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET,own);
@@ -45,7 +45,7 @@ final class GhostsSocketProof {
             ORIGINALS.putIfAbsent(p.getUUID(),m.getUUID());require(ORIGINALS.get(p.getUUID()).equals(m.getUUID()),"approach, jump and return never replace the original UUID");
             var previous=PREVIOUS.put(p.getUUID(),m.position());Integer oldPose=POSE.put(p.getUUID(),m.phase());if(previous!=null&&oldPose!=null&&oldPose==GhostsSet.STAND&&m.phase()==GhostsSet.STAND){double distance=m.position().distanceTo(previous);require(distance<.151,"native approach has no scripted five-tick displacement: "+distance);if(distance>.005)MOVED.merge(p.getUUID(),1,Integer::sum);}
             var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.GHOSTS_SET);
-            if(own.getBoolean("JumpFrozen0488")){HELD.putIfAbsent(p.getUUID(),m.position());require(m.position().distanceToSqr(HELD.get(p.getUUID()))<.000001&&m.getY()>site.getY()+6&&m.getZ()>site.getZ()-15,"the physical leap clears the native banister and holds the same apex");}
+            if(own.getBoolean("JumpFrozen0488")){HELD.putIfAbsent(p.getUUID(),m.position());require(m.position().distanceToSqr(HELD.get(p.getUUID()))<.000001&&m.getY()>site.getY()+6&&m.getZ()>site.getZ()-9,"the physical leap clears the native banister and holds the same apex");}
         }
     }
     static boolean finished(ServerPlayer a,ServerPlayer b){

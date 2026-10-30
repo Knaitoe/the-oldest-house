@@ -9,26 +9,26 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-/** An original body leaves the bed, walks to the front balcony and clears the native guard before its frozen apex. */
+/** An original body leaves the bed, walks to the landing over the foyer and clears its native banister before its frozen apex. */
 public final class GhostsJump {
-    private static final double[][] APPROACH={{-9.5,5.75,-32.5},{-8.4,5.75,-32.5},{-8.4,5,-30.5},{-8.5,5,-24.5},{-8.5,5,-21.5},{-9.5,5,-16.25}};
+    private static final double[][] APPROACH={{-6.5,5.75,-23.5},{-5.4,5.75,-23.5},{-5.4,5,-21.5},{-5.5,5,-15.5},{-5.5,5,-12.5},{1.5,5,-12.5},{1.5,5,-10.25}};
     private static final String ARC="GhostJumpArc0495",APEX="GhostJumpApex0495";
     private GhostsJump(){}
     static boolean room(ServerPlayer player,BlockPos base,CompoundTag own){
         if(own.getInt("FilmDay")!=6||own.getInt("ShotClock")<600)return false;
         var at=player.position().subtract(base.getX(),base.getY(),base.getZ());
-        return at.y>=4.5&&at.y<10&&at.x>-19&&at.x<0&&at.z>-44&&at.z<-14;
+        return at.y>=4.5&&at.y<10&&at.x>-11&&at.x<4&&at.z>-26&&at.z<-8;
     }
     static boolean prepare(ServerPlayer player,BlockPos base,LiteraryActor actor,CompoundTag own){
         int step=own.getInt("JumpApproach0495");
         if(step>=APPROACH.length){
-            Vec3 apex=new Vec3(base.getX()-9.5,base.getY()+7,base.getZ()-14.45);
+            Vec3 apex=new Vec3(base.getX()+1.5,base.getY()+7,base.getZ()-8.45);
             var hit=player.serverLevel().clip(new ClipContext(player.getEyePosition(),apex,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,player));
             return hit.getType()==HitResult.Type.MISS;
         }
         actor.appearance(actor.role(),GhostsSet.STAND);
         // Open only the original room door; edited construction is never replaced.
-        if(step>=3){var door=base.offset(-9,5,-23);var state=player.serverLevel().getBlockState(door);if(state.getBlock() instanceof DoorBlock nativeDoor&&!state.getValue(DoorBlock.OPEN))nativeDoor.setOpen(actor,player.serverLevel(),state,door,true);}
+        if(step>=3){var door=base.offset(-6,5,-14);var state=player.serverLevel().getBlockState(door);if(state.getBlock() instanceof DoorBlock nativeDoor&&!state.getValue(DoorBlock.OPEN))nativeDoor.setOpen(actor,player.serverLevel(),state,door,true);}
         var target=Vec3.atLowerCornerOf(base).add(APPROACH[step][0],APPROACH[step][1],APPROACH[step][2]);
         GhostsMotion.toward(actor,target,.5);
         if(actor.position().distanceToSqr(target)<.012)own.putInt("JumpApproach0495",step+1);

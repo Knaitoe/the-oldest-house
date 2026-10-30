@@ -235,7 +235,7 @@ public final class ArchitectureTests {
             }
             h.assertTrue(squares==0,scene.id()+" keeps no lattice of lone carpet squares: "+squares);
             if(UncannyRooms.isUncanny(scene))uncannyFloor(h,level,b,scene);
-            else if(scene==LabyrinthPlace.GHOSTS_SET){int floors=0;for(var at:BlockPos.betweenClosed(b.offset(-19,-1,-45),b.offset(19,-1,-1))){var surface=level.getBlockState(at);if(surface.is(LiteraryRegistry.GHOST_SET.get())&&surface.getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.FLOOR)floors++;}h.assertTrue(floors>=100&&level.getBlockState(b.offset(0,0,-28)).is(LiteraryRegistry.GHOST_SET.get()),"the furnished filming home retains its laid native floor and continuous dining table");}
+            else if(scene==LabyrinthPlace.GHOSTS_SET){int floors=0;for(var at:BlockPos.betweenClosed(b.offset(-19,-1,-45),b.offset(19,-1,-1))){var surface=level.getBlockState(at);if(surface.is(LiteraryRegistry.GHOST_SET.get())&&surface.getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.FLOOR)floors++;}h.assertTrue(floors>=100&&level.getBlockState(b.offset(GhostsSetRooms.TABLE)).is(LiteraryRegistry.GHOST_SET.get()),"the furnished filming home retains its laid native floor and continuous dining table");}
             // 0.4.173: a school corridor and a tiled bathroom lay no rug; their floor is the hall's tile and the bathmat before the glass.
             else if(scene==LabyrinthPlace.DARE_IN_THE_DARK)h.assertTrue(level.getBlockState(b.offset(0,-1,-13)).is(DareRegistry.material("hall_tile"))&&DareFittingBlock.is(level.getBlockState(b.offset(DareRooms.MAT)),DareFittingBlock.Kind.BATHMAT),"the third floor keeps its laid tile and the worn mat before the glass");
             else if(scene!=LabyrinthPlace.WINCHESTER&&scene!=LabyrinthPlace.MASQUE)h.assertTrue(rugs>=9,scene.id()+" has a laid rug: "+rugs);
@@ -476,7 +476,7 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.GHOSTS_SET){minY=-1;maxY=3;}
         if(scene==LabyrinthPlace.MISSING_SLEEP){minY=4;maxY=9;}
         if(name.equals("ghosts_upstairs")){minY=4;maxY=9;}
-        if(name.equals("ghosts_basement")){minX=3;maxX=11;minZ=-35;maxZ=-20;minY=-5;maxY=-2;}
+        if(name.equals("ghosts_basement")){minX=3;maxX=11;minZ=-26;maxZ=-13;minY=-5;maxY=-2;}
         boolean exterior=name.endsWith("_exterior");if(exterior){minY=-1;maxY=Math.min(14,r.maxY());}
         // The yacht in section along its keel, decks and hull; the cave sliced through its chamber.
         if(name.equals("elk_yacht")){minX=-12;maxX=0;minZ=-46;maxZ=19;minY=-9;maxY=13;}

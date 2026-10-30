@@ -11,10 +11,10 @@ import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import static io.github.knaitoe.theoldesthouse.labyrinth.GhostsSetBlock.Kind.*;
 
-/** The Barretts' home where the days are filmed: downstairs, landing, two bedrooms and a basement; BarrettHome makes the rest of the house (0.4.121). */
+/** The Barretts' home where the days are filmed: downstairs, landing, two bedrooms and a basement; BarrettHome makes the rest of the house (0.4.121, condensed in 0.4.174). */
 public final class GhostsSetRooms {
-    public static final BlockPos TABLE=new BlockPos(0,0,-28),MARJORIE_ROOM=new BlockPos(-10,5,-33),
-            MERRY_ROOM=new BlockPos(9,5,-32),BASEMENT=new BlockPos(7,-4,-25),MONITOR_AT=new BlockPos(16,0,-33);
+    public static final BlockPos TABLE=new BlockPos(0,0,-19),MARJORIE_ROOM=new BlockPos(-7,5,-24),
+            MERRY_ROOM=new BlockPos(7,5,-23),BASEMENT=new BlockPos(7,-4,-18),MONITOR_AT=new BlockPos(8,0,-11);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private static java.util.Set<BlockPos> protectedCells=java.util.Set.of();
     private static java.util.function.BooleanSupplier repairGuard;
@@ -27,81 +27,87 @@ public final class GhostsSetRooms {
     private static void literary(ServerLevel l,BlockPos b,BlockPos rel,LiteraryPropBlock.Kind k,Direction f){set(l,b,rel.getX(),rel.getY(),rel.getZ(),LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,k).setValue(LiteraryPropBlock.FACING,f));}
     private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction f){var state=Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,f).setValue(DoorBlock.OPEN,true);set(l,b,x,y,z,state);set(l,b,x,y+1,z,state.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));}
     public static void build(ServerLevel l,BlockPos b) {
-        // 0.4.121: painted walls; the old wallpaper was the production's.
-        var wall=BarrettHomeBlock.of(BarrettHomeBlock.Kind.PAINT); var floor=GhostsSetBlock.of(FLOOR,Direction.NORTH);
-        fill(l,b,-20,-1,-46,20,-1,0,floor);fill(l,b,-20,11,-46,20,11,0,GhostsSetBlock.of(CEILING,Direction.NORTH));
-        for(int y=0;y<=10;y++) {
-            fill(l,b,-20,y,-46,20,y,-46,wall);fill(l,b,-20,y,0,20,y,0,wall);
-            fill(l,b,-20,y,-46,-20,y,0,wall);fill(l,b,20,y,-46,20,y,0,wall);
+        // 0.4.174 (owner: "condense house - make it into a appropriately smaller, more lived in structure"): one family
+        // house twenty-one blocks across and twenty-five deep, two storeys over a basement. Painted walls; the old
+        // wallpaper was the production's.
+        var wall=BarrettHomeBlock.of(BarrettHomeBlock.Kind.PAINT); var floor=GhostsSetBlock.of(FLOOR,Direction.NORTH); var air=Blocks.AIR.defaultBlockState();
+        var storey=BarrettHomeBlock.of(BarrettHomeBlock.Kind.STOREY);
+        fill(l,b,-11,-1,-26,11,-1,0,floor);fill(l,b,-11,10,-26,11,11,0,GhostsSetBlock.of(CEILING,Direction.NORTH));
+        for(int y=0;y<=9;y++) {
+            fill(l,b,-11,y,-26,11,y,-26,wall);fill(l,b,-11,y,0,11,y,0,wall);
+            fill(l,b,-11,y,-26,-11,y,0,wall);fill(l,b,11,y,-26,11,y,0,wall);
         }
-        // The family lives behind an ordinary front door; equipment occupies the arrival passage and east service wing.
-        fill(l,b,-14,0,-14,13,4,-14,wall);door(l,b,0,0,-14,Direction.SOUTH);
-        fill(l,b,-14,0,-44,-14,3,-15,wall);door(l,b,-14,0,-18,Direction.WEST);
-        fill(l,b,13,0,-44,13,10,-15,wall);
-        door(l,b,13,0,-35,Direction.EAST);
-        fill(l,b,-14,4,-44,12,4,-15,floor);
-        fill(l,b,-14,5,-23,12,9,-23,wall);
-        door(l,b,-9,5,-23,Direction.SOUTH);
-        door(l,b,8,5,-23,Direction.SOUTH);
-        fill(l,b,0,5,-44,0,9,-24,wall);
-        fill(l,b,-14,5,-44,-14,9,-24,wall);
-        fill(l,b,-14,10,-44,12,10,-15,GhostsSetBlock.of(CEILING,Direction.NORTH));
-        prop(l,b,-14,7,-33,PLASTER,Direction.EAST);
-        // Five broad, backed treads meet the upstairs landing; the central arrival and all source/ending approaches stay clear.
-        for(int i=0;i<5;i++)for(int x=-18;x<=-16;x++) {
-            fill(l,b,x,-1,-16-i,x,i-1,-16-i,floor);
-            set(l,b,x,i,-16-i,GhostsSetBlock.of(STAIR,Direction.NORTH));
+        // One floor between the storeys, open over the hall: the stair climbs through a two-storey foyer to the landing.
+        fill(l,b,-10,4,-25,10,4,-1,storey);fill(l,b,-3,4,-8,3,4,-1,air);
+        // Downstairs the front room, the hall and the den are along the front; behind them the open kitchen and dining room,
+        // and the utility strip with the basement stair. The family's ordinary door joins the hall to the dining room.
+        fill(l,b,-4,0,-11,-4,3,-1,wall);fill(l,b,-4,0,-10,-4,2,-9,air);
+        fill(l,b,4,0,-11,4,3,-1,wall);fill(l,b,4,0,-3,4,2,-2,air);
+        fill(l,b,-10,0,-12,10,3,-12,wall);door(l,b,0,0,-12,Direction.SOUTH);fill(l,b,-7,0,-12,-6,2,-12,air);door(l,b,6,0,-12,Direction.SOUTH);
+        fill(l,b,5,0,-25,5,3,-13,wall);fill(l,b,5,0,-14,5,2,-13,air);
+        // Upstairs: John and Sarah's room and the bathroom along the front, the landing and its corridor, then the girls'
+        // rooms and their bathroom between them at the back.
+        fill(l,b,-4,5,-10,-4,9,-1,wall);fill(l,b,4,5,-10,4,9,-1,wall);
+        fill(l,b,-10,5,-11,-4,9,-11,wall);fill(l,b,4,5,-11,10,9,-11,wall);door(l,b,-7,5,-11,Direction.NORTH);door(l,b,7,5,-11,Direction.NORTH);
+        fill(l,b,-10,5,-14,10,9,-14,wall);door(l,b,-6,5,-14,Direction.SOUTH);door(l,b,0,5,-14,Direction.SOUTH);door(l,b,6,5,-14,Direction.SOUTH);
+        fill(l,b,-2,5,-25,-2,9,-15,wall);fill(l,b,3,5,-25,3,9,-15,wall);
+        // The plaster Marjorie's climb on day three cracks, in her room's west wall.
+        prop(l,b,-11,7,-24,PLASTER,Direction.EAST);
+        // Five broad, backed treads against the front room's wall rise to the landing; the entrance and its approach stay clear.
+        for(int i=0;i<5;i++)for(int x=-3;x<=-1;x++) {
+            fill(l,b,x,-1,-4-i,x,i-1,-4-i,floor);
+            set(l,b,x,i,-4-i,GhostsSetBlock.of(STAIR,Direction.NORTH));
         }
-        fill(l,b,-18,4,-22,-15,4,-21,floor);for(int i=0;i<5;i++)prop(l,b,-19,i+1,-16-i,i==4?STAIR_RAIL_TOP:STAIR_RAIL,Direction.NORTH);
-        fill(l,b,-19,5,-22,-19,5,-21,GhostsSetBlock.of(RAIL,Direction.NORTH));
-        // The landing's guard along the stairwell, with the stair's head kept clear.
-        for(int z=-19;z<=-15;z++)prop(l,b,-14,5,z,RAIL,Direction.NORTH);
-        for(int x:new int[]{-12,10})for(int z:new int[]{-41,-26}) {
-            prop(l,b,x,3,z,LAMP,Direction.NORTH);prop(l,b,x,9,z,LAMP,Direction.NORTH);
-        }
+        for(int i=0;i<5;i++)prop(l,b,0,i+1,-4-i,i==4?STAIR_RAIL_TOP:STAIR_RAIL,Direction.NORTH);
+        // The landing's banister over the foyer, where the day-six leap is filmed; the stair's head is kept clear.
+        for(int x=1;x<=3;x++)prop(l,b,x,5,-9,RAIL,Direction.EAST);
+        for(int[] at:new int[][]{{-8,3,-23},{2,3,-24},{-8,9,-23},{-8,9,-17},{8,9,-23},{8,9,-17}})prop(l,b,at[0],at[1],at[2],LAMP,Direction.NORTH);
         // One two-by-three table, four corner legs, and chairs close enough to eat.
-        for(int x=0;x<=1;x++)for(int z=-29;z<=-27;z++)set(l,b,x,0,z,tableState(x,z));
-        for(int x=0;x<=1;x++)for(int z:new int[]{-29,-27})prop(l,b,x,1,z,x==1&&z==-29?PLAIN_PLATE:PLATE,Direction.NORTH);
-        for(int x:new int[]{-1,2})for(int z:new int[]{-29,-27})prop(l,b,x,0,z,CHAIR,x<0?Direction.EAST:Direction.WEST);
-        for(int x=-12;x<=-7;x++)prop(l,b,x,0,-42,x==-10?SINK:x==-8?COOKER:COUNTER,Direction.SOUTH);
-        prop(l,b,-12,1,-42,JUG,Direction.SOUTH);prop(l,b,-7,1,-42,BOOKS,Direction.SOUTH);
-        furniture(l,b,-10,0,-18,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
-        furniture(l,b,-7,0,-18,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.WEST);
-        for(int x=-10;x<=-7;x++)for(int z=-21;z<=-19;z++)prop(l,b,x,0,z,RUG,Direction.NORTH);
+        for(int x=0;x<=1;x++)for(int z=-20;z<=-18;z++)set(l,b,x,0,z,tableState(x,z));
+        for(int x=0;x<=1;x++)for(int z:new int[]{-20,-18})prop(l,b,x,1,z,x==1&&z==-20?PLAIN_PLATE:PLATE,Direction.NORTH);
+        for(int x:new int[]{-1,2})for(int z:new int[]{-20,-18})prop(l,b,x,0,z,CHAIR,x<0?Direction.EAST:Direction.WEST);
+        // The kitchen along the back wall, either side of the back door.
+        for(int x=-9;x<=-4;x++)prop(l,b,x,0,-25,x==-7?SINK:x==-5?COOKER:COUNTER,Direction.SOUTH);
+        prop(l,b,-9,1,-25,JUG,Direction.SOUTH);prop(l,b,-4,1,-25,BOOKS,Direction.SOUTH);
+        // The family corner where the day-one interviews are shot: two armchairs facing each other on a rug.
+        furniture(l,b,-9,0,-17,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
+        furniture(l,b,-6,0,-17,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.WEST);
+        for(int x=-8;x<=-7;x++)for(int z=-18;z<=-14;z++)prop(l,b,x,0,z,RUG,Direction.NORTH);
         // Distinct, lived-in bedrooms rather than a bed on the stage: books, the borrowed hat, a jug trap and the sisters' pictures.
-        prop(l,b,-10,5,-33,BED_HEAD,Direction.NORTH);prop(l,b,-10,5,-32,BED_FOOT,Direction.NORTH);
-        prop(l,b,10,5,-41,BED_HEAD,Direction.NORTH);prop(l,b,10,5,-40,BED_FOOT,Direction.NORTH);
-        for(int x:new int[]{-12,10}){prop(l,b,x-1,5,-41,COUNTER,Direction.SOUTH);prop(l,b,x-1,6,-41,BOOKS,Direction.SOUTH);}
-        prop(l,b,-11,5,-41,COUNTER,Direction.SOUTH);prop(l,b,-11,6,-41,HAT,Direction.SOUTH);prop(l,b,8,7,-44,DRAWING,Direction.SOUTH);
-        prop(l,b,8,8,-23,JUG,Direction.SOUTH);prop(l,b,11,5,-26,BOOKS,Direction.NORTH);
-        // Basement beneath the kitchen, reached by an enclosed stair beside the living room.
-        fill(l,b,3,-5,-35,11,-5,-20,GhostsSetBlock.of(TILE,Direction.NORTH));
-        for(int y=-4;y<=-1;y++) {
-            fill(l,b,3,y,-35,11,y,-35,GhostsSetBlock.of(PANEL,Direction.NORTH));
-            fill(l,b,3,y,-20,11,y,-20,GhostsSetBlock.of(PANEL,Direction.NORTH));
-            fill(l,b,3,y,-35,3,y,-20,GhostsSetBlock.of(PANEL,Direction.NORTH));
-            fill(l,b,11,y,-35,11,y,-20,GhostsSetBlock.of(PANEL,Direction.NORTH));
+        prop(l,b,-7,5,-24,BED_HEAD,Direction.NORTH);prop(l,b,-7,5,-23,BED_FOOT,Direction.NORTH);
+        prop(l,b,9,5,-25,BED_HEAD,Direction.NORTH);prop(l,b,9,5,-24,BED_FOOT,Direction.NORTH);
+        prop(l,b,-10,5,-25,COUNTER,Direction.SOUTH);prop(l,b,-10,6,-25,BOOKS,Direction.SOUTH);prop(l,b,-8,5,-25,COUNTER,Direction.SOUTH);prop(l,b,-8,6,-25,HAT,Direction.SOUTH);
+        prop(l,b,6,5,-25,COUNTER,Direction.SOUTH);prop(l,b,6,6,-25,BOOKS,Direction.SOUTH);prop(l,b,7,7,-25,DRAWING,Direction.SOUTH);
+        prop(l,b,6,8,-14,JUG,Direction.SOUTH);prop(l,b,9,5,-17,BOOKS,Direction.NORTH);
+        // Basement beneath the dining room and the utility strip, reached by an enclosed stair at the strip's front.
+        fill(l,b,3,-5,-26,11,-5,-13,GhostsSetBlock.of(TILE,Direction.NORTH));
+        for(int y=-4;y<=-2;y++) {
+            fill(l,b,3,y,-26,11,y,-26,GhostsSetBlock.of(PANEL,Direction.NORTH));
+            fill(l,b,3,y,-13,11,y,-13,GhostsSetBlock.of(PANEL,Direction.NORTH));
+            fill(l,b,3,y,-26,3,y,-13,GhostsSetBlock.of(PANEL,Direction.NORTH));
+            fill(l,b,11,y,-26,11,y,-13,GhostsSetBlock.of(PANEL,Direction.NORTH));
         }
-        fill(l,b,4,-4,-34,10,-2,-21,Blocks.AIR.defaultBlockState());
+        fill(l,b,4,-4,-25,10,-2,-14,air);
         for(int i=0;i<4;i++)for(int x=7;x<=9;x++) {
-            set(l,b,x,-1,-21-i,Blocks.AIR.defaultBlockState());
-            set(l,b,x,-1-i,-21-i,Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));
+            set(l,b,x,-1,-14-i,air);
+            set(l,b,x,-1-i,-14-i,Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));
         }
-        prop(l,b,4,-2,-33,LAMP,Direction.SOUTH);prop(l,b,10,-4,-32,CASE,Direction.WEST);
-        prop(l,b,5,-4,-33,BOOKS,Direction.SOUTH);
+        // A banister round the stairwell in the utility strip; it opens only at the stair's head.
+        for(int z=-17;z<=-15;z++){prop(l,b,6,0,z,RAIL,Direction.NORTH);prop(l,b,10,0,z,RAIL,Direction.NORTH);}
+        for(int x=7;x<=9;x++)prop(l,b,x,0,-18,RAIL,Direction.EAST);
+        prop(l,b,4,-2,-24,LAMP,Direction.SOUTH);prop(l,b,10,-4,-24,CASE,Direction.WEST);
+        prop(l,b,5,-4,-25,BOOKS,Direction.SOUTH);
         // Production equipment is kept against supported surfaces, leaving the rooms useful to a moving camera operator.
-        prop(l,b,16,0,-33,COUNTER,Direction.WEST);literary(l,b,new BlockPos(16,1,-33),LiteraryPropBlock.Kind.TELEVISION,Direction.EAST);prop(l,b,18,0,-33,CASE,Direction.WEST);
-        prop(l,b,17,0,-12,CASE,Direction.SOUTH);prop(l,b,-18,0,-30,CAMERA,Direction.EAST);
+        prop(l,b,8,0,-11,COUNTER,Direction.NORTH);literary(l,b,new BlockPos(8,1,-11),LiteraryPropBlock.Kind.TELEVISION,Direction.SOUTH);prop(l,b,9,0,-11,CASE,Direction.SOUTH);
+        prop(l,b,6,0,-1,CASE,Direction.NORTH);prop(l,b,5,0,-9,CAMERA,Direction.EAST);
         literary(l,b,LiteraryRooms.BOOTH,LiteraryPropBlock.Kind.RECEIVER,Direction.WEST);
-        for(int x:new int[]{-18,18})for(int z:new int[]{-10,-40})literary(l,b,new BlockPos(x,0,z),LiteraryPropBlock.Kind.LIGHT_STAND,Direction.SOUTH);
-        fill(l,b,14,4,-41,19,4,-32,GhostsSetBlock.of(CEILING,Direction.NORTH));
-        prop(l,b,16,3,-38,LAMP,Direction.NORTH);
+        for(var at:new BlockPos[]{new BlockPos(-10,0,-13),new BlockPos(4,0,-25)})literary(l,b,at,LiteraryPropBlock.Kind.LIGHT_STAND,Direction.SOUTH);
         BarrettHome.build(l,b);
         BuildBlocks.after(l,()->{var data=LabyrinthData.get(l.getServer());GhostsSet.markBuilt(data,b);GhostsSetDressing.markBuilt(data,b);GhostsSetFinish.markBuilt(l,b);});
     }
     public static net.minecraft.world.level.block.state.BlockState tableState(int x,int z){
-        if(x==0&&z==-29)return GhostsSetBlock.of(BOLTS,Direction.NORTH);
-        if(z==-28)return GhostsSetBlock.of(GhostsSetBlock.Kind.TABLE,Direction.NORTH);
-        return GhostsSetBlock.of(TABLE_LEG,z==-29?Direction.EAST:x==0?Direction.WEST:Direction.SOUTH);
+        if(x==0&&z==-20)return GhostsSetBlock.of(BOLTS,Direction.NORTH);
+        if(z==-19)return GhostsSetBlock.of(GhostsSetBlock.Kind.TABLE,Direction.NORTH);
+        return GhostsSetBlock.of(TABLE_LEG,z==-20?Direction.EAST:x==0?Direction.WEST:Direction.SOUTH);
     }
 }

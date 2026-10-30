@@ -82,7 +82,8 @@ public final class Vignette0492Tests {
     }
     @AfterBatch(batch="review492_interactivity") public static void interactivityDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="review492_bar_capture",timeoutTicks=600)
+    // Run 1339: on a loaded runner the 600-tick clock ran out before the men's walk and capture finished; its siblings have 900 and 2400.
+    @GameTest(template="empty",batch="review492_bar_capture",timeoutTicks=2400)
     public static void theOriginalMenPhysicallyTakeOnlyTheirChosenReaderAndTheClippingRequiresTheSource(GameTestHelper h){
         var f=fixture(h);var place=ElkLot.PLACE;var p=f.player("men_captive",place);var peer=f.player("men_onlooker",place);var b=f.base(place);lease(f,place);f.at(p,place,-17.5,0,-22.5);f.at(peer,place,-28,0,-16);
         var ids=new HashMap<String,UUID>();
@@ -90,7 +91,7 @@ public final class Vignette0492Tests {
             var night=LiteraryVignettes.shared(f.data(),place);night.putInt("CrashAt",0);night.putInt("Night",ElkLotNight.MEN_OUT+ElkLotNight.SEARCH+ElkLotNight.STAGE*3);LiteraryVignettes.shared(f.data(),place,night);
             for(var who:ElkLotNight.MEN)ids.put(who.key(),night.getUUID(who.key()));var own=f.own(p,place);own.putBoolean("ElkSeen",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
         }).thenIdle(10).thenExecute(()->h.assertTrue(!f.own(p,place).getBoolean("Ready")&&f.own(p,place).getInt("CaptureTicks0492")==0,"choosing the bar does not substitute for reaching native bodies"))
-        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready"),"the original men walk into contact and finish their capture")).thenExecute(()->{
+        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready"),"the original men walk into contact and finish their capture: capture "+f.own(p,place).getInt("CaptureTicks0492")+", men at "+ids.values().stream().map(id->f.out.getEntity(id)).filter(Objects::nonNull).map(a->a.position().subtract(b.getX(),b.getY(),b.getZ()).toString()).toList()+", reader at "+p.position().subtract(b.getX(),b.getY(),b.getZ()))).thenExecute(()->{
             var own=f.own(p,place);h.assertTrue(ElkLotEnding.MEN.equals(own.getString("Outcome"))&&own.getBoolean("CaptureWitness0492")&&!ElkLotEnding.held(p),"the physical capture produces its own released aftermath");
             var night=LiteraryVignettes.shared(f.data(),place);for(var entry:ids.entrySet())h.assertTrue(night.getUUID(entry.getKey()).equals(entry.getValue())&&f.out.getEntity(entry.getValue()) instanceof LiteraryActor,"the men retain their original native UUIDs");
             h.assertTrue(!f.own(peer,place).getBoolean("Ready")&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.ELK_LOT),"the onlooker inherits neither capture nor account");
