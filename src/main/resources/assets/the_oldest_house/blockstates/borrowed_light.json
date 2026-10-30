@@ -1,0 +1,352 @@
+{
+  "variants": {
+    "facing=north,kind=lamp,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/lamp"
+    },
+    "facing=north,kind=lamp,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/lamp"
+    },
+    "facing=north,kind=lamp,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/lamp"
+    },
+    "facing=north,kind=lamp,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/lamp"
+    },
+    "facing=east,kind=lamp,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 90
+    },
+    "facing=east,kind=lamp,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 90
+    },
+    "facing=east,kind=lamp,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 90
+    },
+    "facing=east,kind=lamp,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 90
+    },
+    "facing=south,kind=lamp,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 180
+    },
+    "facing=south,kind=lamp,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 180
+    },
+    "facing=south,kind=lamp,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 180
+    },
+    "facing=south,kind=lamp,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 180
+    },
+    "facing=west,kind=lamp,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 270
+    },
+    "facing=west,kind=lamp,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 270
+    },
+    "facing=west,kind=lamp,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 270
+    },
+    "facing=west,kind=lamp,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/lamp",
+      "y": 270
+    },
+    "facing=north,kind=shutter,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_shut"
+    },
+    "facing=north,kind=shutter,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_open"
+    },
+    "facing=north,kind=shutter,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_shut"
+    },
+    "facing=north,kind=shutter,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_open"
+    },
+    "facing=east,kind=shutter,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_shut",
+      "y": 90
+    },
+    "facing=east,kind=shutter,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_open",
+      "y": 90
+    },
+    "facing=east,kind=shutter,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_shut",
+      "y": 90
+    },
+    "facing=east,kind=shutter,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_open",
+      "y": 90
+    },
+    "facing=south,kind=shutter,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_shut",
+      "y": 180
+    },
+    "facing=south,kind=shutter,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_open",
+      "y": 180
+    },
+    "facing=south,kind=shutter,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_shut",
+      "y": 180
+    },
+    "facing=south,kind=shutter,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_open",
+      "y": 180
+    },
+    "facing=west,kind=shutter,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_shut",
+      "y": 270
+    },
+    "facing=west,kind=shutter,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_open",
+      "y": 270
+    },
+    "facing=west,kind=shutter,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_shut",
+      "y": 270
+    },
+    "facing=west,kind=shutter,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/shutter_open",
+      "y": 270
+    },
+    "facing=north,kind=mirror,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/mirror"
+    },
+    "facing=north,kind=mirror,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/mirror"
+    },
+    "facing=north,kind=mirror,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/mirror_turned"
+    },
+    "facing=north,kind=mirror,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/mirror_turned"
+    },
+    "facing=east,kind=mirror,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/mirror",
+      "y": 90
+    },
+    "facing=east,kind=mirror,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/mirror",
+      "y": 90
+    },
+    "facing=east,kind=mirror,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/mirror_turned",
+      "y": 90
+    },
+    "facing=east,kind=mirror,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/mirror_turned",
+      "y": 90
+    },
+    "facing=south,kind=mirror,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/mirror",
+      "y": 180
+    },
+    "facing=south,kind=mirror,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/mirror",
+      "y": 180
+    },
+    "facing=south,kind=mirror,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/mirror_turned",
+      "y": 180
+    },
+    "facing=south,kind=mirror,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/mirror_turned",
+      "y": 180
+    },
+    "facing=west,kind=mirror,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/mirror",
+      "y": 270
+    },
+    "facing=west,kind=mirror,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/mirror",
+      "y": 270
+    },
+    "facing=west,kind=mirror,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/mirror_turned",
+      "y": 270
+    },
+    "facing=west,kind=mirror,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/mirror_turned",
+      "y": 270
+    },
+    "facing=north,kind=plate,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/plate_cold"
+    },
+    "facing=north,kind=plate,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/plate_lit"
+    },
+    "facing=north,kind=plate,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/plate_cold"
+    },
+    "facing=north,kind=plate,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/plate_lit"
+    },
+    "facing=east,kind=plate,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/plate_cold",
+      "y": 90
+    },
+    "facing=east,kind=plate,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/plate_lit",
+      "y": 90
+    },
+    "facing=east,kind=plate,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/plate_cold",
+      "y": 90
+    },
+    "facing=east,kind=plate,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/plate_lit",
+      "y": 90
+    },
+    "facing=south,kind=plate,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/plate_cold",
+      "y": 180
+    },
+    "facing=south,kind=plate,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/plate_lit",
+      "y": 180
+    },
+    "facing=south,kind=plate,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/plate_cold",
+      "y": 180
+    },
+    "facing=south,kind=plate,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/plate_lit",
+      "y": 180
+    },
+    "facing=west,kind=plate,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/plate_cold",
+      "y": 270
+    },
+    "facing=west,kind=plate,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/plate_lit",
+      "y": 270
+    },
+    "facing=west,kind=plate,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/plate_cold",
+      "y": 270
+    },
+    "facing=west,kind=plate,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/plate_lit",
+      "y": 270
+    },
+    "facing=north,kind=track,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/track"
+    },
+    "facing=north,kind=track,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/track_stop"
+    },
+    "facing=north,kind=track,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/track"
+    },
+    "facing=north,kind=track,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/track_stop"
+    },
+    "facing=east,kind=track,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/track"
+    },
+    "facing=east,kind=track,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/track_stop"
+    },
+    "facing=east,kind=track,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/track"
+    },
+    "facing=east,kind=track,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/track_stop"
+    },
+    "facing=south,kind=track,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/track"
+    },
+    "facing=south,kind=track,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/track_stop"
+    },
+    "facing=south,kind=track,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/track"
+    },
+    "facing=south,kind=track,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/track_stop"
+    },
+    "facing=west,kind=track,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/track"
+    },
+    "facing=west,kind=track,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/track_stop"
+    },
+    "facing=west,kind=track,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/track"
+    },
+    "facing=west,kind=track,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/track_stop"
+    },
+    "facing=north,kind=sconce,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/sconce"
+    },
+    "facing=north,kind=sconce,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/sconce"
+    },
+    "facing=north,kind=sconce,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/sconce"
+    },
+    "facing=north,kind=sconce,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/sconce"
+    },
+    "facing=east,kind=sconce,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 90
+    },
+    "facing=east,kind=sconce,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 90
+    },
+    "facing=east,kind=sconce,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 90
+    },
+    "facing=east,kind=sconce,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 90
+    },
+    "facing=south,kind=sconce,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 180
+    },
+    "facing=south,kind=sconce,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 180
+    },
+    "facing=south,kind=sconce,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 180
+    },
+    "facing=south,kind=sconce,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 180
+    },
+    "facing=west,kind=sconce,open=false,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 270
+    },
+    "facing=west,kind=sconce,open=true,turned=false": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 270
+    },
+    "facing=west,kind=sconce,open=false,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 270
+    },
+    "facing=west,kind=sconce,open=true,turned=true": {
+      "model": "the_oldest_house:block/borrowed_light/sconce",
+      "y": 270
+    }
+  }
+}

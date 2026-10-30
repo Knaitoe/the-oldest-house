@@ -197,6 +197,8 @@ public final class LabyrinthDealer {
         // 0.4.199: the vaulted hall and the crumbled hall.
         gray.add(LabyrinthPlace.VAULTED_HALL);
         gray.add(LabyrinthPlace.CRUMBLED_HALL);
+        // 0.4.199: the first puzzle room, offered by its own pacing (BorrowedLight.weight).
+        gray.add(LabyrinthPlace.BORROWED_LIGHT);
         gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
@@ -503,6 +505,11 @@ public final class LabyrinthDealer {
         recordDryDeal(data, player, vignette);
     }
 
+    /** A reader's weight for a gray place: the puzzle rooms go by the reader's own pacing, everything else by depth. */
+    public static int grayWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int depth) {
+        return place == LabyrinthPlace.BORROWED_LIGHT ? BorrowedLight.weight(data, player, depth) : grayWeight(place, depth);
+    }
+
     public static int grayWeight(LabyrinthPlace place, int depth) {
         if(HazardVariety.sibling(place))return grayWeight(HazardVariety.original(place),depth);
         return switch (place) {
@@ -522,6 +529,7 @@ public final class LabyrinthDealer {
             // 0.4.199 (owner: "one with a massive ceiling and one with a crumbled floor players have to 'parkour' across"): the
             // vaulted hall a little rarer than the others, so it stays a surprise; the crumbled hall never in the first three
             // crossings, so nobody's first steps in the House are a jump.
+            case BORROWED_LIGHT -> 0;
             case VAULTED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case CRUMBLED_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 26;
@@ -558,14 +566,14 @@ public final class LabyrinthDealer {
         int depth = data.returnDepth(player);
         int totalWeight = 0;
         for (LabyrinthPlace place : gray) {
-            totalWeight += rememberedWeight(data, player, place, grayWeight(place, depth));
+            totalWeight += rememberedWeight(data, player, place, grayWeight(data, player, place, depth));
         }
         if (gray.isEmpty() || totalWeight <= 0) {
             return LabyrinthPlace.JUNCTION;
         }
         int roll = random.nextInt(totalWeight);
         for (LabyrinthPlace place : gray) {
-            roll -= rememberedWeight(data, player, place, grayWeight(place, depth));
+            roll -= rememberedWeight(data, player, place, grayWeight(data, player, place, depth));
             if (roll < 0) {
                 return place;
             }

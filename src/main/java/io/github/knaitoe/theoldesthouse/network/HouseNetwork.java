@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("102")
+        event.registrar("103")
                 .playToServer(JournalViewPayload.TYPE,JournalViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.journal.CoAuthor.viewing(p,payload.spread());}))
                 .playToClient(JournalOpenPayload.TYPE,JournalOpenPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.JournalScreen.open(payload.journal())))
                 .playToServer(JournalEditPayload.TYPE,JournalEditPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.journal.Journals.edit(p,payload.page(),payload.content());}))

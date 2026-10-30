@@ -1585,7 +1585,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PdareSmoke --no-daemon
           test -s build/dare-art/passed.txt
-          for view in kids fittings faces third-count; do test -s build/dare-art/native-dare-$view.png; done
+          for view in kids fittings faces third-count borrowed-light; do test -s build/dare-art/native-dare-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - uses: actions/upload-artifact@v4
         if: always()

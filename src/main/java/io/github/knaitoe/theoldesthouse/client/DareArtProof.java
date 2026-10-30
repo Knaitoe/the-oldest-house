@@ -33,7 +33,7 @@ import net.neoforged.neoforge.client.event.*;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class DareArtProof extends Screen {
-    private static final String[] NAMES={"kids","fittings","faces","third-count"};
+    private static final String[] NAMES={"kids","fittings","faces","third-count","borrowed-light"};
     private static final Path FOLDER=Path.of("../build/dare-art");
     private static boolean launched;
     private int page,frames;
@@ -85,6 +85,28 @@ public final class DareArtProof extends Screen {
                     g.drawCenteredString(font,labels[i],(int)((i%3+.5F)*width/3F),(int)((i/3+.7F)*(height-40)/2F)+44,0xffe9e2cf);
                 }
             }
+            case 4->{
+                // 0.4.199, the first puzzle room: every working part in each of its states, then the room's one solution in miniature.
+                var kinds=new ArrayList<BlockState>();
+                for(var k:BorrowedLightBlock.Kind.values())for(int open=0;open<2;open++)for(int turned=0;turned<(k==BorrowedLightBlock.Kind.MIRROR?2:1);turned++)
+                    if(open==0||k!=BorrowedLightBlock.Kind.MIRROR&&k!=BorrowedLightBlock.Kind.LAMP&&k!=BorrowedLightBlock.Kind.SCONCE)
+                        kinds.add(BorrowedLightBlock.of(k,Direction.NORTH).setValue(BorrowedLightBlock.OPEN,open==1).setValue(BorrowedLightBlock.TURNED,turned==1));
+                for(String name:new String[]{"wall","floor","ceiling"})kinds.add(PuzzleRegistry.material(name).defaultBlockState());
+                float cell=Math.min((width-20)/(float)kinds.size(),46);
+                for(int i=0;i<kinds.size();i++){p.pushPose();p.translate(10+(i+.5F)*cell,40,150);float s=cell*.4F;p.scale(s,-s,s);p.mulPose(Axis.XP.rotationDegrees(20));p.mulPose(Axis.YP.rotationDegrees(200));p.translate(-.5,-.5,-.5);
+                    mc.getBlockRenderer().renderSingleBlock(kinds.get(i),p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}
+                out.endBatch();
+                // The lamp on the east, its shutter open; the mirror turned on its track; the beam turning onto the lit sun by the far door.
+                p.pushPose();p.translate(width*.5F,height*.68F,150);float s=Math.min(width,height)/14F;p.scale(s,-s,s);p.mulPose(Axis.XP.rotationDegrees(28));p.mulPose(Axis.YP.rotationDegrees(35));
+                Object[][] room={{BorrowedLightBlock.of(BorrowedLightBlock.Kind.LAMP,Direction.WEST),3,1,0},{BorrowedLightBlock.of(BorrowedLightBlock.Kind.SHUTTER,Direction.WEST).setValue(BorrowedLightBlock.OPEN,true),2,1,0},
+                    {BorrowedLightBlock.of(BorrowedLightBlock.Kind.MIRROR,Direction.NORTH).setValue(BorrowedLightBlock.TURNED,true),-1,0,0},{BorrowedLightBlock.of(BorrowedLightBlock.Kind.PLATE,Direction.SOUTH).setValue(BorrowedLightBlock.OPEN,true),-1,1,-4}};
+                for(int x=-3;x<=2;x++){p.pushPose();p.translate(x,-1,0);mc.getBlockRenderer().renderSingleBlock(BorrowedLightBlock.of(BorrowedLightBlock.Kind.TRACK,Direction.EAST).setValue(BorrowedLightBlock.OPEN,x==-1),p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}
+                for(int x=-3;x<=3;x++)for(int y=0;y<=2;y++){p.pushPose();p.translate(x,y,-5);mc.getBlockRenderer().renderSingleBlock(PuzzleRegistry.material("wall").defaultBlockState(),p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}
+                for(var part:room){p.pushPose();p.translate((int)part[1],(int)part[2],(int)part[3]);mc.getBlockRenderer().renderSingleBlock((BlockState)part[0],p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}
+                out.endBatch();
+                BorrowedLightRenderer.draw(p,out,List.of(new Vec3(3.5,1.5,.5),new Vec3(-.5,1.5,.5),new Vec3(-.5,1.5,-3.5)),0);out.endBatch();p.popPose();
+                g.drawString(font,"Borrowed Light: every part and state, then the beam laid on the sun",10,height-18,0xffe9e2cf,false);
+            }
             default->{
                 // As the glass shows it: the reflection facing the reader, the woman over its left shoulder (the image's right).
                 var body=new PlayerModel<AbstractClientPlayer>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);body.young=false;
@@ -111,7 +133,7 @@ public final class DareArtProof extends Screen {
             if(colors.size()<12)throw new IllegalStateException("Blank or untextured dare view "+NAMES[proof.page]+": "+colors.size());
         }
         if(++proof.page<NAMES.length){proof.frames=0;return;}
-        Files.writeString(FOLDER.resolve("passed.txt"),"Four native views of the third floor: the sheeted kids waiting, giggling and silent; every fitting state, the glass whole and shattered, both doors and the seven materials; the reader's face at each count as the glass changes it; and the third count as the glass shows it.\n");
+        Files.writeString(FOLDER.resolve("passed.txt"),"Four native views of the third floor: the sheeted kids waiting, giggling and silent; every fitting state, the glass whole and shattered, both doors and the seven materials; the reader's face at each count as the glass changes it; and the third count as the glass shows it. And one of the first puzzle room, Borrowed Light: every working part in each state, its three materials, and the beam turned by the mirror onto the lit sun.\n");
         mc.stop();
     }
 }

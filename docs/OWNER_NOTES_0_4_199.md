@@ -101,6 +101,15 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - Nothing is said, given or counted. Anyone left behind by a restart or a departed reader leaves too.
   - New case: `ExplorationPassTests.someoneIsSometimesSeenInAHouseholdSliceThatLeadsNowhereYet`.
 
+## The first puzzle room: Borrowed Light
+- **"Borrowed Light would be my first choice to prototype."** A dim dressing room, gray slot 120, offered only after a resolved story and a few halls (`BorrowedLight`).
+  - Everything is in view before anything is touched: a stage lamp lit behind a shut shutter, a dressing mirror on a scraped track with three deeper scrapes, and a cold brass sun beside a far door with no handle.
+  - Lift the catch and the beam comes out. A hand on the glass turns the mirror an eighth; a kick at its base slides it to the next stop. Lay the beam on the sun and the door gives.
+  - No countdown, no damage, nothing used up. Every action answers at once. The room keeps how it was left, and once solved it stays solved, the beam still on the sun.
+  - Solved, it comes back only now and then, as a pleasant room on the way.
+  - Not a story: nothing counted toward the Witness.
+  - Canon: [BORROWED_LIGHT_0_4_199.md](BORROWED_LIGHT_0_4_199.md). New cases: `ExplorationPassTests.borrowedLightIsSolvedByLayingTheLampsBeamOnTheSun` and `borrowedLightComesAfterAStoryAndSomeWandering`; a fifth client art view.
+
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.
 - The Ghosts namespace (24 cases), the novel sites (16) and the shelter case pass locally.
