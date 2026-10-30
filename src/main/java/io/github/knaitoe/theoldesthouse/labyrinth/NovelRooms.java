@@ -54,7 +54,7 @@ public final class NovelRooms {
         lectern(l,b.offset(ARCHIVE_DESK),NovelTexts.archive());
         if(l.getBlockEntity(b.offset(5,0,-34)) instanceof ChestBlockEntity chest&&chest.isEmpty()){
             chest.setItem(0,HouseWriting.book("Readers' appointments","Zampano",HouseWriting.WritingStyle.ZAMPANO,List.of("Seven names. Seven visits.\n\nThe margins remember the voices more clearly than the survey remembers the walls.")));chest.setChanged();}
-        ArchiveReaderFiles.build(l,b);
+        ArchiveReaderFiles.build(l,b);ZampanoDrawers.build(l,b);
         at(l,b,-7,5,-25,Blocks.LANTERN);
         CourtyardFountain.build(l,b);
         PlaytestScenes0488.fresh(l,b,LabyrinthPlace.ZAMPANO_COURTYARD);

@@ -4,11 +4,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.house.HouseText;
 import io.github.knaitoe.theoldesthouse.journal.JournalPage;
+import io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.RandomSource;
@@ -22,7 +24,14 @@ public final class JournalPageRenderer {
     public static final int W=150, H=196, TEXT_X=16, TEXT_Y=16, TEXT_W=118, LINES=15, LINE=9;
     public static final int PAPER=0xFFEFE6D0, ENDPAPER=0xFFE4D6B8, INK=0xFF34343A, RULE=0x26506A8A, MARGIN=0x30B04030, FAINT=0xFF8E8474, SELECT=0x553C64A8;
     static final int COLUMN_W=44, BOX_W=78;
+    private static int uncull;
     private JournalPageRenderer(){}
+
+    /** Glyphs drawn from behind face away from the screen, and text is culled; a mirrored run or a page turned over draws with culling off. */
+    public static void uncull(GuiGraphics g){if(uncull++==0){g.flush();RenderSystem.disableCull();}}
+    public static void recull(GuiGraphics g){if(uncull>0&&--uncull==0){g.flush();RenderSystem.enableCull();}}
+    static FormattedCharSequence seq(String text,Style hand){return FormattedCharSequence.forward(text,hand);}
+    static int width(Font font,String text,Style hand){return font.width(FormattedText.of(text,hand));}
 
     /** The paper, its rules and, by wear: water rings, a dog-eared corner, swollen ripples, then a tide line and a torn corner. */
     public static void paper(GuiGraphics g,int x,int y,boolean left,boolean cover,int wear,int seed){
@@ -58,9 +67,10 @@ public final class JournalPageRenderer {
     }
 
     /** The page's flowing writing, wrapped as the editor wraps it. */
-    public static void writing(GuiGraphics g,Font font,int x,int y,String text){
+    public static void writing(GuiGraphics g,Font font,int x,int y,String text){writing(g,font,x,y,text,Style.EMPTY,INK);}
+    public static void writing(GuiGraphics g,Font font,int x,int y,String text,Style hand,int ink){
         HouseText.enterLiterature();
-        try{int row=0;for(var line:font.split(FormattedText.of(text),TEXT_W)){if(row>=LINES)break;g.drawString(font,line,x+TEXT_X,y+TEXT_Y+row*LINE,INK,false);row++;}}
+        try{int row=0;for(var line:font.split(FormattedText.of(text,hand),TEXT_W)){if(row>=LINES)break;g.drawString(font,line,x+TEXT_X,y+TEXT_Y+row*LINE,ink,false);row++;}}
         finally{HouseText.leaveLiterature();}
     }
 
@@ -74,32 +84,34 @@ public final class JournalPageRenderer {
         g.drawString(font,text,0,0,FAINT,false);pose.popPose();
     }
 
-    public static void placed(GuiGraphics g,Font font,int x,int y,JournalPage.Placed run,boolean selected){
+    public static void placed(GuiGraphics g,Font font,int x,int y,JournalPage.Placed run,boolean selected){placed(g,font,x,y,run,selected,Style.EMPTY,INK);}
+    /** A run in a given hand (Zampanò's font, struck through) and ink. */
+    public static void placed(GuiGraphics g,Font font,int x,int y,JournalPage.Placed run,boolean selected,Style hand,int ink){
         float px=x+run.x()*W, py=y+run.y()*H;
         var pose=g.pose();pose.pushPose();pose.translate(px,py,0);
         pose.mulPose(Axis.ZP.rotationDegrees(run.angle()));
         pose.scale(run.mirrored()?-run.size():run.size(),run.size(),1);
         // Mirrored glyphs face away from the screen; text is culled by default, so a mirrored run draws with culling off.
-        if(run.mirrored()){g.flush();RenderSystem.disableCull();}
+        if(run.mirrored())uncull(g);
         HouseText.enterLiterature();
         try{
-            if(selected){var b=local(font,run);g.fill((int)Math.floor(b[0])-2,(int)Math.floor(b[1])-2,(int)Math.ceil(b[2])+2,(int)Math.ceil(b[3])+2,SELECT);}
+            if(selected){var b=local(font,run,hand);g.fill((int)Math.floor(b[0])-2,(int)Math.floor(b[1])-2,(int)Math.ceil(b[2])+2,(int)Math.ceil(b[3])+2,SELECT);}
             switch(run.shape()){
-                case LINE->g.drawString(font,run.text(),0,-4,INK,false);
-                case COLUMN->{int row=0;for(var line:font.split(FormattedText.of(run.text()),COLUMN_W))g.drawString(font,line,0,-4+row++*LINE,INK,false);}
-                case BOX->{var lines=font.split(FormattedText.of(run.text()),BOX_W);int h=lines.size()*LINE;int w=0;for(var l:lines)w=Math.max(w,font.width(l));
-                    frame(g,-4,-8,w+4,h-2,INK);int row=0;for(var line:lines)g.drawString(font,line,0,-4+row++*LINE,INK,false);}
-                case CASCADE->{float cx=0;int row=0;for(var word:run.text().trim().split("\\s+")){g.drawString(font,word,(int)cx,-4+row*LINE,INK,false);cx+=(font.width(word)+font.width(" "))*.55F;row++;}}
-                case SPIRAL->spiral(g,font,run.text());
+                case LINE->g.drawString(font,seq(run.text(),hand),0,-4,ink,false);
+                case COLUMN->{int row=0;for(var line:font.split(FormattedText.of(run.text(),hand),COLUMN_W))g.drawString(font,line,0,-4+row++*LINE,ink,false);}
+                case BOX->{var lines=font.split(FormattedText.of(run.text(),hand),BOX_W);int h=lines.size()*LINE;int w=0;for(var l:lines)w=Math.max(w,font.width(l));
+                    frame(g,-4,-8,w+4,h-2,ink);int row=0;for(var line:lines)g.drawString(font,line,0,-4+row++*LINE,ink,false);}
+                case CASCADE->{float cx=0;int row=0;for(var word:run.text().trim().split("\\s+")){g.drawString(font,seq(word,hand),(int)cx,-4+row*LINE,ink,false);cx+=(width(font,word,hand)+width(font," ",hand))*.55F;row++;}}
+                case SPIRAL->spiral(g,font,run.text(),hand,ink);
             }
-        }finally{HouseText.leaveLiterature();if(run.mirrored()){g.flush();RenderSystem.enableCull();}}
+        }finally{HouseText.leaveLiterature();if(run.mirrored())recull(g);}
         pose.popPose();
     }
     static void frame(GuiGraphics g,int x0,int y0,int x1,int y1,int color){g.fill(x0,y0,x1,y0+1,color);g.fill(x0,y1-1,x1,y1,color);g.fill(x0,y0,x0+1,y1,color);g.fill(x1-1,y0,x1,y1,color);}
 
     /** Letters wound outward from the centre, each turned along the curve; the blue and red words keep their colour letter by letter. */
-    static void spiral(GuiGraphics g,Font font,String text){
-        var seq=HouseText.literature(Component.literal(text)).getVisualOrderText();
+    static void spiral(GuiGraphics g,Font font,String text,Style hand,int ink){
+        var seq=HouseText.literature(Component.literal(text).withStyle(hand)).getVisualOrderText();
         var letters=new ArrayList<Object[]>();
         seq.accept((index,style,cp)->{letters.add(new Object[]{style,cp});return true;});
         double theta=0;var pose=g.pose();
@@ -107,24 +119,24 @@ public final class JournalPageRenderer {
             double r=5+2.4*theta;var piece=FormattedCharSequence.codepoint((int)l[1],(net.minecraft.network.chat.Style)l[0]);
             float lx=(float)(Math.cos(theta)*r),ly=(float)(Math.sin(theta)*r);
             pose.pushPose();pose.translate(lx,ly,0);pose.mulPose(Axis.ZP.rotationDegrees((float)Math.toDegrees(theta)+90));
-            g.drawString(font,piece,-font.width(piece)/2,-4,INK,false);pose.popPose();
+            g.drawString(font,piece,-font.width(piece)/2,-4,ink,false);pose.popPose();
             theta+=(font.width(piece)+.8)/r;
         }
     }
 
     /** A run's bounds before it is turned, scaled and mirrored, around its anchor. */
-    static float[] local(Font font,JournalPage.Placed run){
+    static float[] local(Font font,JournalPage.Placed run,Style hand){
         return switch(run.shape()){
-            case LINE->new float[]{0,-4,font.width(run.text()),5};
-            case COLUMN->{int n=font.split(FormattedText.of(run.text()),COLUMN_W).size();yield new float[]{0,-4,COLUMN_W,-4+n*LINE};}
-            case BOX->{var lines=font.split(FormattedText.of(run.text()),BOX_W);int w=0;for(var l:lines)w=Math.max(w,font.width(l));yield new float[]{-4,-8,w+4,lines.size()*LINE-2};}
-            case CASCADE->{float cx=0,wmax=0;String[] words=run.text().trim().split("\\s+");for(var word:words){wmax=Math.max(wmax,cx+font.width(word));cx+=(font.width(word)+font.width(" "))*.55F;}yield new float[]{0,-4,wmax,-4+words.length*LINE};}
-            case SPIRAL->{double theta=0,r=5;for(int i=0;i<run.text().length();i++){r=5+2.4*theta;theta+=(font.width(run.text().substring(i,i+1))+.8)/r;}float R=(float)r+5;yield new float[]{-R,-R,R,R};}
+            case LINE->new float[]{0,-4,width(font,run.text(),hand),5};
+            case COLUMN->{int n=font.split(FormattedText.of(run.text(),hand),COLUMN_W).size();yield new float[]{0,-4,COLUMN_W,-4+n*LINE};}
+            case BOX->{var lines=font.split(FormattedText.of(run.text(),hand),BOX_W);int w=0;for(var l:lines)w=Math.max(w,font.width(l));yield new float[]{-4,-8,w+4,lines.size()*LINE-2};}
+            case CASCADE->{float cx=0,wmax=0;String[] words=run.text().trim().split("\\s+");for(var word:words){wmax=Math.max(wmax,cx+width(font,word,hand));cx+=(width(font,word,hand)+width(font," ",hand))*.55F;}yield new float[]{0,-4,wmax,-4+words.length*LINE};}
+            case SPIRAL->{double theta=0,r=5;for(int i=0;i<run.text().length();i++){r=5+2.4*theta;theta+=(width(font,run.text().substring(i,i+1),hand)+.8)/r;}float R=(float)r+5;yield new float[]{-R,-R,R,R};}
         };
     }
     /** The run's bounds on the page, after turning, scaling and mirroring, as page pixels: x0, y0, x1, y1. */
     public static float[] bounds(Font font,JournalPage.Placed run){
-        var b=local(font,run);double a=Math.toRadians(run.angle()),c=Math.cos(a),s=Math.sin(a);float sx=run.mirrored()?-run.size():run.size(),sy=run.size();
+        var b=local(font,run,Style.EMPTY);double a=Math.toRadians(run.angle()),c=Math.cos(a),s=Math.sin(a);float sx=run.mirrored()?-run.size():run.size(),sy=run.size();
         float x0=Float.MAX_VALUE,y0=Float.MAX_VALUE,x1=-Float.MAX_VALUE,y1=-Float.MAX_VALUE;
         for(float[] p:new float[][]{{b[0],b[1]},{b[2],b[1]},{b[0],b[3]},{b[2],b[3]}}){
             float qx=p[0]*sx,qy=p[1]*sy;float rx=(float)(qx*c-qy*s)+run.x()*W,ry=(float)(qx*s+qy*c)+run.y()*H;
@@ -142,5 +154,25 @@ public final class JournalPageRenderer {
         List<JournalPage.Placed> runs=page.placed();for(int i=0;i<runs.size();i++)placed(g,font,x,y,runs.get(i),i==selected);
         g.disableScissor();
         header(g,font,x,y,page);number(g,font,x,y,index);
+    }
+
+    /** Zampanò's hand: his font, as in his books. */
+    public static final Style ZAMPANO=Style.EMPTY.withFont(io.github.knaitoe.theoldesthouse.house.HouseWriting.ZAMPANO_FONT);
+    static final int BACK_INK=0xFF6A6870, BACK_SHADE=0x1C2A1E10;
+    /**
+     * One of Zampanò's leaves: paper aged by its own wear, his title faint at the head, his writing and every run in his hand,
+     * struck runs crossed through, and his page number. Seen from the back (the caller mirrors it), the paper is shaded and the
+     * ink is fainter, as writing is through paper. The caller clips it to the page.
+     */
+    public static void leaf(GuiGraphics g,Font font,int x,int y,int index,boolean left,boolean back){
+        var leaf=ZampanoLeaves.leaf(index);int ink=back?BACK_INK:INK;
+        paper(g,x,y,left,false,leaf.wear(),101+index);
+        if(back)g.fill(x,y,x+W,y+H,BACK_SHADE);
+        HouseText.enterLiterature();
+        try{if(!leaf.title().isEmpty()){var pose=g.pose();pose.pushPose();pose.translate(x+TEXT_X,y+6,0);pose.scale(.75F,.75F,1);g.drawString(font,seq(leaf.title(),ZAMPANO),0,0,FAINT,false);pose.popPose();}}
+        finally{HouseText.leaveLiterature();}
+        writing(g,font,x,y,leaf.text(),ZAMPANO,ink);
+        for(var run:leaf.runs())placed(g,font,x,y,run.placed(),false,run.struck()?ZAMPANO.withStrikethrough(true):ZAMPANO,ink);
+        number(g,font,x,y,index+1);
     }
 }

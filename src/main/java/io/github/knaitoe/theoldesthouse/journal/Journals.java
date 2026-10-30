@@ -32,7 +32,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.item.ItemExpireEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Every reader's journal: the words live here, in the world's saved data, and the item in their hands only points to them.
@@ -99,7 +98,7 @@ public final class Journals extends SavedData {
     public static void open(ServerPlayer p,ItemStack s){
         var data=get(p.server);
         switch(data.check(p,s)){
-            case OPEN->{PacketDistributor.sendToPlayer(p,new JournalOpenPayload(data.contents(p.getUUID())));p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.BOOK_PAGE_TURN,SoundSource.PLAYERS,.6F,1);}
+            case OPEN->{io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new JournalOpenPayload(data.contents(p.getUUID())));p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.BOOK_PAGE_TURN,SoundSource.PLAYERS,.6F,1);}
             case NOT_YOURS->p.displayClientMessage(Component.literal("It isn't yours. A name is written inside the cover: "+nameOf(s)+"."),true);
             case OLD_ISSUE->p.displayClientMessage(Component.literal("The pages are blank. This isn't your journal any more."),true);
             case NOT_A_JOURNAL->{}

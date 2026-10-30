@@ -190,6 +190,75 @@ public final class NovelTests {
             h.assertTrue(CourtyardFountain.done(f.data(),f.b),"once");
         }).thenSucceed();
     }
+    private static Fixture cabinets,leaves;
+    @AfterBatch(batch="novel_zampano_drawers0178") public static void cabinetsDone(ServerLevel l){if(cabinets!=null){cabinets.close();cabinets=null;}}
+    @AfterBatch(batch="novel_zampano_leaves0178") public static void leavesDone(ServerLevel l){if(leaves!=null){leaves.close();leaves=null;}}
+    /** A hand on a cabinet's drawer front, a third of the way down per drawer: 0 the top, 2 the foot. */
+    static net.minecraft.world.InteractionResult drawer(Fixture f,ServerPlayer p,int cabinet,int drawer,Direction face){
+        var at=f.b.offset(ZampanoDrawers.cell(cabinet));f.at(p,ZampanoDrawers.cell(cabinet).getX()+.5,0,ZampanoDrawers.cell(cabinet).getZ()+2.5);
+        var hit=new BlockHitResult(new Vec3(at.getX()+.5,at.getY()+(2.5-drawer)/3D,at.getZ()+.97),face,at,false);
+        return f.l.getBlockState(at).useWithoutItem(f.l,p,hit);
+    }
+    static int shown(Fixture f,int cabinet){return f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(cabinet))).getValue(ZampanoCabinetBlock.DRAWER);}
+    @GameTest(template="empty",batch="novel_zampano_drawers0178",timeoutTicks=300) public static void zampanosDrawersOpenOntoTheirFoldersAndShutWhenLetGo(GameTestHelper h){
+        cabinets=new Fixture(h,38100,LabyrinthPlace.ZAMPANO_COURTYARD);var f=cabinets;var server=f.l.getServer();
+        for(int i=0;i<io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.CABINETS;i++){var st=f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(i)));
+            h.assertTrue(st.is(NovelRegistry.ZAMPANO_CABINET.get())&&st.getValue(ZampanoCabinetBlock.CABINET)==i&&st.getValue(ZampanoCabinetBlock.FACING)==Direction.SOUTH&&st.getValue(ZampanoCabinetBlock.DRAWER)==0,"a new courtyard stands three shut cabinets under the paper wall: "+st);}
+        h.assertTrue(ZampanoDrawers.placed(server,f.b),"and records them, so a saved pass never adds them twice");
+        var p=f.player();var peer=f.player();
+        h.assertTrue(drawer(f,p,1,0,Direction.EAST)==net.minecraft.world.InteractionResult.PASS&&shown(f,1)==0&&!ZampanoDrawers.reading(p),"only the drawer fronts open");
+        h.assertTrue(drawer(f,p,1,0,Direction.SOUTH).consumesAction()&&shown(f,1)==1&&ZampanoDrawers.folderOpen(p)==3,"the top drawer of the middle cabinet opens onto its folder");
+        h.assertTrue(drawer(f,peer,1,2,Direction.SOUTH).consumesAction()&&shown(f,1)==3&&ZampanoDrawers.folderOpen(peer)==5,"another reader's hand on the foot drawer shows that one open");
+        ZampanoDrawers.close(peer);h.assertTrue(shown(f,1)==1&&!ZampanoDrawers.reading(peer),"when they let go, the drawer still held open shows again");
+        f.at(p,.5,0,-21.5);ZampanoDrawers.sweep(server);h.assertTrue(shown(f,1)==0&&!ZampanoDrawers.reading(p),"a reader who walks off lets go, and the drawer goes back in");
+        drawer(f,p,0,1,Direction.SOUTH);h.assertTrue(shown(f,0)==2,"another cabinet, another drawer");ZampanoDrawers.close(p);h.assertTrue(shown(f,0)==0,"closing the folder shuts it");
+        // A courtyard saved before 0.4.178: no cabinets, and the floor before the paper wall bare.
+        var marks=f.data().state(ZampanoDrawers.STATE);marks.remove(Long.toString(f.b.asLong()));f.data().setState(ZampanoDrawers.STATE,marks);
+        for(int i=0;i<3;i++)f.l.setBlock(f.b.offset(ZampanoDrawers.cell(i)),Blocks.AIR.defaultBlockState(),2);
+        h.assertTrue(!ZampanoDrawers.place(f.l,f.b)&&f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(0))).isAir(),"nothing changes while readers stand in the archive");
+        for(var r:List.of(p,peer))r.moveTo(f.b.getX()+300,f.b.getY(),f.b.getZ()+300);
+        h.startSequence().thenWaitUntil(()->{if(ZampanoDrawers.place(f.l,f.b))return;h.fail("unwatched, a saved archive goes ahead; players at "+f.l.players().stream().map(pl->pl.getCamera().blockPosition().subtract(f.b)).toList());})
+        .thenExecute(()->{
+            for(int i=0;i<3;i++)h.assertTrue(f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(i))).is(NovelRegistry.ZAMPANO_CABINET.get()),"the saved archive gets its cabinets");
+            // A reader who built where they would stand keeps what they built, and the archive is not asked again.
+            var again=f.data().state(ZampanoDrawers.STATE);again.remove(Long.toString(f.b.asLong()));f.data().setState(ZampanoDrawers.STATE,again);
+            for(int i=0;i<3;i++)f.l.setBlock(f.b.offset(ZampanoDrawers.cell(i)),Blocks.AIR.defaultBlockState(),2);f.l.setBlock(f.b.offset(ZampanoDrawers.cell(1)).south(),Blocks.OAK_PLANKS.defaultBlockState(),2);
+            h.assertTrue(ZampanoDrawers.place(f.l,f.b)&&ZampanoDrawers.placed(server,f.b)&&f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(0))).isAir()&&f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(1)).south()).is(Blocks.OAK_PLANKS),"an edited floor is left as it is, once");
+        }).thenSucceed();
+    }
+    @GameTest(template="empty",batch="novel_zampano_leaves0178",timeoutTicks=200) public static void eachReaderPullsTheirOwnLeavesAndTheArchiveKeepsItsOriginals(GameTestHelper h){
+        leaves=new Fixture(h,38500,LabyrinthPlace.ZAMPANO_COURTYARD);var f=leaves;var server=f.l.getServer();
+        // Every finite original in the archive, as it stands before anyone opens a drawer.
+        java.util.function.Supplier<List<ItemStack>> originals=()->{var all=new ArrayList<ItemStack>();
+            for(int z=-22;z>=-34;z-=2)for(int y=0;y<3;y++)if(f.l.getBlockEntity(f.b.offset(11,y,z)) instanceof net.minecraft.world.Container c)for(int i=0;i<c.getContainerSize();i++)all.add(c.getItem(i).copy());
+            if(f.l.getBlockEntity(f.b.offset(5,0,-34)) instanceof ChestBlockEntity chest)for(int i=0;i<chest.getContainerSize();i++)all.add(chest.getItem(i).copy());
+            if(f.l.getBlockEntity(f.b.offset(NovelRooms.ARCHIVE_DESK)) instanceof LecternBlockEntity desk)all.add(desk.getBook().copy());return all;};
+        var before=originals.get();h.assertTrue(before.stream().filter(s->!s.isEmpty()).count()>=22,"the readers' files, the chest's book and the survey are there: "+before.stream().filter(s->!s.isEmpty()).count());
+        var p=f.player();var peer=f.player();
+        h.assertTrue(ZampanoDrawers.pull(p,0)==ZampanoDrawers.Pull.NOT_OPEN,"nothing is pulled from a shut drawer");
+        drawer(f,p,0,0,Direction.SOUTH);
+        h.assertTrue(ZampanoDrawers.pull(p,2)==ZampanoDrawers.Pull.NOT_IN_THIS_FOLDER&&ZampanoDrawers.pull(p,-1)==ZampanoDrawers.Pull.NOT_IN_THIS_FOLDER,"only the folder in the open drawer");
+        h.assertTrue(ZampanoDrawers.pull(p,0)==ZampanoDrawers.Pull.PULLED&&ZampanoDrawers.pull(p,0)==ZampanoDrawers.Pull.ALREADY,"a reader pulls a leaf once");
+        var mine=p.getInventory().items.stream().filter(s->io.github.knaitoe.theoldesthouse.journal.ZampanoLeafItem.leafOf(s)==0).findFirst().orElse(ItemStack.EMPTY);
+        h.assertTrue(!mine.isEmpty()&&mine.getHoverName().getString().contains("Measurements")&&(ZampanoDrawers.pulled(p)&1)==1,"and holds their own copy: "+mine.getHoverName().getString());
+        h.assertTrue(ZampanoDrawers.pulled(peer)==0&&ZampanoDrawers.pull(peer,0)==ZampanoDrawers.Pull.NOT_OPEN,"another reader has pulled nothing");
+        drawer(f,peer,0,0,Direction.SOUTH);h.assertTrue(ZampanoDrawers.pull(peer,0)==ZampanoDrawers.Pull.PULLED&&ZampanoDrawers.pull(peer,1)==ZampanoDrawers.Pull.PULLED&&ZampanoDrawers.pulled(peer)==3&&ZampanoDrawers.pulled(p)==1,"the folder still holds the leaf for them, and their pulls are their own");
+        ZampanoDrawers.close(p);h.assertTrue(ZampanoDrawers.pull(p,1)==ZampanoDrawers.Pull.NOT_OPEN,"a closed folder gives nothing");
+        f.reload();h.assertTrue(ZampanoDrawers.pulled(p)==1&&ZampanoDrawers.pulled(peer)==3,"pulled leaves survive a save and reload");
+        var after=originals.get();boolean same=after.size()==before.size();for(int i=0;same&&i<after.size();i++)same=ItemStack.matches(after.get(i),before.get(i));
+        h.assertTrue(same,"nothing is taken from the archive's finite originals");
+        h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"Zampano's leaves are no story");
+        // Every leaf fits the page as a journal page would, and the folders hold every shape.
+        var shapes=EnumSet.noneOf(io.github.knaitoe.theoldesthouse.journal.JournalPage.Shape.class);boolean mirrored=false,struck=false,house=false,minotaur=false;
+        h.assertTrue(io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.count()==io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.LEAVES,"nine folders of two leaves");
+        for(int i=0;i<io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.LEAVES;i++){var leaf=io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.leaf(i);
+            h.assertTrue(leaf.text().length()<=io.github.knaitoe.theoldesthouse.journal.JournalPage.MAX_TEXT&&leaf.runs().size()<=io.github.knaitoe.theoldesthouse.journal.JournalPage.MAX_PLACED&&leaf.wear()>=0&&leaf.wear()<=4,"leaf "+i+" fits a page");
+            for(var run:leaf.runs()){var pl=run.placed();h.assertTrue(pl.text().length()<=io.github.knaitoe.theoldesthouse.journal.JournalPage.MAX_RUN&&pl.text().indexOf('\n')<0&&pl.x()>=0&&pl.x()<=1&&pl.y()>=0&&pl.y()<=1,"leaf "+i+" run fits: "+pl.text());
+                shapes.add(pl.shape());mirrored|=pl.mirrored();struck|=run.struck();house|=pl.text().toLowerCase().contains("house");minotaur|=pl.text().contains("Minotaur");}
+            house|=leaf.text().toLowerCase().contains("house");}
+        h.assertTrue(shapes.size()==io.github.knaitoe.theoldesthouse.journal.JournalPage.Shape.values().length&&mirrored&&struck&&house&&minotaur,"the leaves spiral, cascade, run in columns and boxes, mirror and strike, and name the House and the Minotaur: "+shapes);
+        h.succeed();
+    }
     private static ItemStack letter(ServerPlayer p,String text){
         var book=new ItemStack(Items.WRITTEN_BOOK);book.set(DataComponents.WRITTEN_BOOK_CONTENT,new net.minecraft.world.item.component.WrittenBookContent(net.minecraft.server.network.Filterable.passThrough("A letter"),p.getGameProfile().getName(),0,
             List.of(net.minecraft.server.network.Filterable.passThrough(net.minecraft.network.chat.Component.literal(text))),true));return book;}
