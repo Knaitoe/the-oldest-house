@@ -30,10 +30,12 @@ public final class UncannySocketProof {
     private static final BlockPos ORIGIN=new BlockPos(6000,80,6000);
     private static final NativeTestChunks CHUNKS=new NativeTestChunks();
     /**
-     * The tunnel is run on foot, and every chunk within a reader's view distance is promoted to ticking (and its generated
-     * cave water settled) as they reach it. Run 1344 stalled the host 10.5 seconds doing that mid-sprint, and the catch-up
-     * ticks moved her while the readers' own movement waited on the network. The whole corridor is leased and ticking before
-     * the sprint begins, and released once both readers are through.
+     * The tunnel is run on foot, and every chunk within a reader's view distance (and one beyond) is promoted to ticking,
+     * its generated cave water settled, as they reach it. Run 1344 stalled the host 10.5 seconds doing that mid-sprint, and
+     * the catch-up ticks moved her while the readers' own movement waited on the network. The room's own lease keeps two
+     * chunks either side ticking; the rest of that reach is leased (at view distance 3, two chunks more) and ticking before
+     * the sprint, and released once both readers are through. Run 1345 leased the whole view-6 corridor at once and the
+     * promotions held the host past the clients' timeout, so the preflight now runs at view distance 3.
      */
     private static final NativeTestChunks CORRIDOR=new NativeTestChunks();
     /**
@@ -76,7 +78,7 @@ public final class UncannySocketProof {
     private static void step(MinecraftServer s,int next){phase=next;changed=s.getTickCount();ACKS.clear();for(var p:s.getPlayerList().getPlayers())marker(p,next);TheOldestHouse.LOGGER.info("UNCANNY SOCKET phase {}",next);}
     private static void build(MinecraftServer s,LabyrinthPlace place){
         var l=s.getLevel(NovelRooms.dimension(place));CHUNKS.hold(l,IndianLakeRooms.bounds(base(place),place));
-        if(place==LabyrinthPlace.TUNNEL_PERIPHERY){var room=IndianLakeRooms.bounds(base(place),place);int reach=16*(s.getPlayerList().getViewDistance()+1);CORRIDOR.request(l,room.inflate(reach,0,0).expandTowards(0,0,-reach));}
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY){var room=IndianLakeRooms.bounds(base(place),place);int reach=16*Math.max(0,s.getPlayerList().getViewDistance()+1-2);if(reach>0)CORRIDOR.request(l,room.inflate(reach,0,0).expandTowards(0,0,-reach));}
         if(BUILT.add(place)){LiteraryRooms.build(l,base(place),place);LabyrinthBuilder.registerDoors(LabyrinthData.get(s),place,base(place));}
     }
     private static void at(ServerPlayer p,LabyrinthPlace place,double x,double y,double z){
