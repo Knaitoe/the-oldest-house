@@ -1073,7 +1073,7 @@ def m_poster_b():
 @spec('dresser', {'w': 'walnut', 'd': 'drawers', 'p': 'photos', 'k': 'black'}, 'walnut')
 def m_dresser():
     return [box((0, 1, 4), (16, 13, 16), 'w', over={'north': 'd'}), box((1, 0, 5), (15, 1, 15), 'k'),
-            box((3, 13, 11), (7, 17, 12), 'k', over={'north': 'p'}, uv=(11, 1, 15, 10)), box((9, 13, 8), (13, 14.5, 12), 'w')]
+            box((3, 13, 11), (7, 17, 12), 'k', over={'north': 'p'}, uv=(5, 5, 11, 13)), box((9, 13, 8), (13, 14.5, 12), 'w')]
 
 
 @spec('double_bed', {'w': 'walnut', 'd': 'duvet', 'p': 'pillow', 'h': 'headboard'}, 'duvet')

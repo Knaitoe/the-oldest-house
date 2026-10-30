@@ -23,7 +23,9 @@ def models():
         end=16-7*math.sqrt(2) if top else 16-16*math.sqrt(2)
         rail=box([5,7,end],[11,9,16]);rail['rotation']={'origin':[8,8,16],'axis':'x','angle':45,'rescale':False}
         parts=[box([6,-8,13],[10,11,15]),box([6,-8,12],[18,-6,16]),rail]
-        if top:parts.append(box([5,14,-16],[11,16,9]))
+        # 0.4.199 (owner: "ensure banisters are connected"): the top runs on only to the landing banister's line, turns along
+        # it to meet the first landing post, and a newel stands on the landing at the corner.
+        if top:parts+=[box([5,14,-11],[11,16,9]),box([11,14,-11],[16,16,-5]),box([6,0,-10],[10,14,-6])]
         out['stair_rail_top' if top else 'stair_rail']={'textures':{'white':'minecraft:block/quartz_block_side'},'elements':parts}
     return out
 

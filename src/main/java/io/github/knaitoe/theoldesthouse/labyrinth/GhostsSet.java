@@ -89,7 +89,17 @@ public final class GhostsSet {
         own.putBoolean("FilmDoorExit",false);own.remove("FrameNonce");
         if(newDay){for(String key:List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490"))own.remove(key);}
         LiteraryVignettes.reward(p,PLACE,own,"Camcorder",new ItemStack(LiteraryRegistry.CAMCORDER.get()));
-        p.displayClientMessage(Component.literal("Filming day "+day(own)+": "+TITLES[day(own)-1]+". Speak with Barry when you're ready."),false);
+        p.displayClientMessage(Component.literal("Filming day "+day(own)+": "+TITLES[day(own)-1]+"."),false);
+        // 0.4.199 (owner: "the director should address the player as soon as they enter so they know to seek him out"): Barry
+        // calls the camera operator over from the video village the moment they come in.
+        p.displayClientMessage(Component.literal("Barry: "+VignetteTailoring.crew(p,callOver(own))),false);
+        p.displayClientMessage(Component.literal("Barry is in the den, by the monitors.").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
+    }
+    /** What Barry calls out as the reader comes in: the first morning, a later one, or a day already in the can. */
+    static String callOver(CompoundTag own){
+        if(own.getBoolean("DayDone"))return "That's today in the can. Come and find me in the den if you want to see it.";
+        return day(own)==1?"You're the camera? Good. Over here, in the den, by the monitors. Come and see me before we roll."
+                :"Morning. Come and find me in the den before we roll.";
     }
     /** Every key one filming day leaves behind, cleared when another day begins. */
     private static final List<String> DAY_KEYS=List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","GhostVoiceId","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490",

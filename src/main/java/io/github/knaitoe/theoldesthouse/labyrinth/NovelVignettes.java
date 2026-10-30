@@ -156,7 +156,7 @@ public final class NovelVignettes {
                     if(ticks==1200||ticks==2600){p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.35F,.8F);cue(p,own,"Tom, over the radio: Is anybody there? I need—");}
                     if(ticks>=WARD_NIGHT){own.putBoolean("WardFinished",true);own.putBoolean("Alarm",false);cue(p,own,"Dawn. The alarms stop. The chart has a final page.");}
                 }
-                if(p.tickCount%20==0){boolean same=place.id().equals(own.getString("CuePlace"));int remaining=same?(int)Math.max(0,own.getLong("CueUntil")-p.serverLevel().getGameTime()):0;boolean covered=place==LabyrinthPlace.BARN_WELL&&coveredWait(p,own);
+                if(p.tickCount%20==0||own.getBoolean("CueFresh")){own.remove("CueFresh");boolean same=place.id().equals(own.getString("CuePlace"));int remaining=same?(int)Math.max(0,own.getLong("CueUntil")-p.serverLevel().getGameTime()):0;boolean covered=place==LabyrinthPlace.BARN_WELL&&coveredWait(p,own);
                     boolean descending=place==LabyrinthPlace.BARN_WELL&&WellSequence.shaft(p,b);
                     HousePackets.send(p,new NovelScenePayload(covered?14:descending?WellSequence.DESCENDING_MODE:PLACES.indexOf(place)+1,covered?own.getInt("WellTicks"):own.getInt("WardTicks"),remaining>0?own.getString("Cue"):"",remaining,0));}
             }else if(own.getInt("WardTicks")>0&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("NextAlarm",0);own.putBoolean("Alarm",false);}
@@ -300,7 +300,11 @@ public final class NovelVignettes {
     }
     static void give(ServerPlayer p,ItemStack stack){if(!p.getInventory().add(stack))p.drop(stack,false);}
     private static void reward(ServerPlayer p,CompoundTag own,String key,ItemStack stack){if(own.getBoolean("Yield_"+key))return;own.putBoolean("Yield_"+key,true);give(p,stack);}
-    static void cue(ServerPlayer p,CompoundTag own,String text){own.putString("Cue",text);own.putLong("CueUntil",p.serverLevel().getGameTime()+140);var place=current(p);own.putString("CuePlace",place==null?"":place.id());p.displayClientMessage(Component.literal(text),true);}
+    /**
+     * A line for the reader. Inside a novel site the site's own caption shows it, sent the same tick (CueFresh); 0.4.199 (owner,
+     * with a screenshot of "The button clicks. No footsteps follow." twice): the action bar no longer repeats it there.
+     */
+    static void cue(ServerPlayer p,CompoundTag own,String text){own.putString("Cue",text);own.putLong("CueUntil",p.serverLevel().getGameTime()+140);var place=current(p);own.putString("CuePlace",place==null?"":place.id());if(place==null)p.displayClientMessage(Component.literal(text),true);else own.putBoolean("CueFresh",true);}
     private static void scale(ServerPlayer p,boolean on){var attr=p.getAttribute(Attributes.SCALE);if(attr==null)return;if(on){if(!attr.hasModifier(SMALL))attr.addTransientModifier(new AttributeModifier(SMALL,-.3,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));SCALED.put(p.getUUID(),p);}else{attr.removeModifier(SMALL);SCALED.remove(p.getUUID());}}
     private static void restoreScale(ServerPlayer p){scale(p,false);}
     public static boolean childScale(ServerPlayer p){return p.getAttribute(Attributes.SCALE).hasModifier(SMALL);}
