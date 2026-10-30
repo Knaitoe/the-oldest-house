@@ -10,6 +10,8 @@ a native lectern underneath), drawn here at Minecraft's own sixteen-pixel scale:
   script_stand  Ghosts         a black script stand whose desk lies where a lectern's top does, so the call sheet the
                                client draws (GhostsCallSheetRenderer) lies on it.
   trail_rack    Borrasca       the county's green leaflet box at the trailhead, a trail leaflet standing in its pocket.
+  vault_register  Usher        (0.4.181) the vault register open on a black oak slope desk strapped in iron, its
+                               columns of names and dates, a red wax seal at the foot of the last page.
 
 Each face's texture is painted only where Minecraft's own automatic UV reads it, so every pixel is a native pixel.
 The models face north (the reader stands to the north), as a lectern's do; the blockstate turns them.
@@ -26,7 +28,7 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'src/main/resources/assets/the_oldest_house'
 NS = 'the_oldest_house'
-KINDS = ('program', 'scorecard', 'folded_note', 'ledger_rest', 'script_stand', 'trail_rack')
+KINDS = ('program', 'scorecard', 'folded_note', 'ledger_rest', 'script_stand', 'trail_rack', 'vault_register')
 
 
 def rng(name):
@@ -202,6 +204,34 @@ def textures():
     d.point((10, 12), fill='#a72a24'); d.point((11, 11), fill='#a72a24')
     t['leaflet_front'] = im
     t['leaflet_back'] = speckle('leaflet_back', '#e4dbbe', ['#d4c9a8'], 25)
+    # ---------------------------------------------------------------- Usher: the vault register on its desk
+    t['black_oak'] = grain('black_oak', '#2a211c', '#1f1814', '#382c25', along_y=True)
+    im = t['black_oak'].copy()
+    d = ImageDraw.Draw(im)
+    # Iron straps where the post meets the plinth and the desk: rows 0..1 and 14..15, rivets on them.
+    for y in (0, 1, 14, 15):
+        d.line((0, y, 15, y), fill='#3d3f42' if y in (0, 15) else '#4d5054')
+    for x in (2, 7, 13):
+        d.point((x, 1), fill='#6d7175'); d.point((x, 14), fill='#6d7175')
+    t['black_oak_iron'] = im
+    t['iron'] = speckle('iron', '#45484c', ['#3a3d40', '#55595d', '#2f3134'], 70)
+    t['vellum_edge'] = speckle('vellum_edge', '#d8ccab', ['#c7b994', '#e3d8bb', '#b8a983'], 40)
+    t['register_cover'] = speckle('register_cover', '#2b302a', ['#232822', '#353b33', '#1d211c'], 70)
+    im = Image.new('RGBA', (16, 16), '#ddd0ae')
+    d = ImageDraw.Draw(im)
+    # Read at x 2..13, z 3..13 from above: two pages either side of the gutter, a column of names and one of dates on
+    # each, the ink browned with damp at the foot, a red wax seal under the last entry.
+    d.line((8, 3, 8, 13), fill='#9c8d6a')
+    d.line((7, 3, 7, 13), fill='#cbbd98')
+    for page in ((2, 6), (9, 13)):
+        d.line((page[0] + 3, 3, page[0] + 3, 13), fill='#c4b38c')
+        text_lines(d, page[0], page[0] + 2, range(4, 13, 2), '#3a2c22', 'names%d' % page[0], gap=.25)
+        text_lines(d, page[0] + 4, page[1], range(4, 13, 2), '#5a3e2a', 'dates%d' % page[0], gap=.4)
+    for x, y in ((3, 12), (4, 13), (11, 13), (12, 12), (2, 13)):
+        d.point((x, y), fill='#b9a57a')
+    d.rectangle((11, 11, 12, 12), fill='#8e1d1a')
+    d.point((12, 11), fill='#b23a2e')
+    t['register_pages'] = im
     return t
 
 
@@ -287,6 +317,15 @@ def models():
         el((4, 3, 5), (12, 10, 5.4), {'all': 'back', 'north': 'leaflet'}),
         el((4.5, 4, 5.5), (11.5, 11, 5.9), {'all': 'back', 'north': 'leaflet'}),
         el((2.5, 9, 5.5), (13.5, 10, 11.5), {'all': 'roof'}),
+    ])
+    slope = tilt(-22.5, (8, 12, 8))
+    m['vault_register'] = ({'oak': 'black_oak', 'strapped': 'black_oak_iron', 'iron': 'iron', 'cover': 'register_cover', 'pages': 'register_pages', 'edge': 'vellum_edge'}, [
+        el((3, 0, 4), (13, 2, 12), {'all': 'iron', 'up': 'oak'}),
+        el((5, 2, 6), (11, 11, 10), {'all': 'strapped', 'up': 'oak', 'down': 'oak'}),
+        el((1, 11, 2), (15, 13, 15), {'all': 'oak'}, slope),
+        el((1.5, 13, 2.5), (14.5, 13.5, 14.5), {'all': 'cover'}, slope),
+        el((2, 13.5, 3), (14, 14.5, 14), {'all': 'edge', 'up': 'pages'}, slope),
+        el((1, 13, 2), (15, 14.25, 2.75), {'all': 'iron'}, slope),
     ])
     return m
 

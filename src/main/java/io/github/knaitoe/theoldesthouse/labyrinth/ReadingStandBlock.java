@@ -34,7 +34,9 @@ public final class ReadingStandBlock extends LecternBlock {
         /** Ghosts: a black script stand; the call sheet lies on its desk where the lectern's top was. */
         SCRIPT_STAND,
         /** Borrasca: the county's green leaflet box at the trailhead. */
-        TRAIL_RACK;
+        TRAIL_RACK,
+        /** Usher (0.4.181): the vault register open on a black oak slope desk bound in iron. */
+        VAULT_REGISTER;
         @Override public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -53,6 +55,7 @@ public final class ReadingStandBlock extends LecternBlock {
         case LEDGER_REST->new double[][]{{1,0,2,15,4,15},{1,4,2,15,9,15}};
         case SCRIPT_STAND->new double[][]{{4,0,4,12,13,12},{1,13,3,15,16,15}};
         case TRAIL_RACK->new double[][]{{3,0,4,13,10,11},{4,10,4,12,12,6}};
+        case VAULT_REGISTER->new double[][]{{3,0,4,13,2,12},{5,2,6,11,11,10},{1,11,2,15,15,15}};
     };}
     private static VoxelShape turned(Direction d,double[] a){
         double x0=a[0],y0=a[1],z0=a[2],x1=a[3],y1=a[4],z1=a[5];

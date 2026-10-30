@@ -1,0 +1,12 @@
+{
+ "parent": "minecraft:block/cube",
+ "textures": {
+  "particle": "the_oldest_house:block/usher/night",
+  "down": "the_oldest_house:block/usher/night",
+  "up": "the_oldest_house:block/usher/night",
+  "north": "the_oldest_house:block/usher/night",
+  "south": "the_oldest_house:block/usher/night",
+  "east": "the_oldest_house:block/usher/night",
+  "west": "the_oldest_house:block/usher/night"
+ }
+}

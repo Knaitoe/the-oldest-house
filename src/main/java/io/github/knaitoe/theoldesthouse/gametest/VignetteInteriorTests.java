@@ -64,7 +64,6 @@ public final class VignetteInteriorTests {
      for(int z=-3;z>=-6;z--)body(h,l,b,0,0,z,p.id()+" arrival");
     }
     if(p==LabyrinthPlace.CONFESSION){body(h,l,b,1,0,-12,"interview entrance");body(h,l,b,-3,0,-24,"archive-to-interview side opening");}
-    if(p==LabyrinthPlace.USHER)for(int side:new int[]{-1,1}){body(h,l,b,side*6,0,-13,"study-to-vault opening");body(h,l,b,side*10,0,-8,"study's front arch");}
     if(p==LabyrinthPlace.DEVILS_ROCK){body(h,l,b,-4,0,-8,"kitchen entrance");h.assertTrue(l.getBlockState(b.offset(-9,0,-12)).isAir(),"the first loose page retains its original landing inside the kitchen");}
     if(p==LabyrinthPlace.MINIATURES)for(int x:new int[]{-8,0,8})body(h,l,b,x,0,-16,"model examination front");
     if(p==LabyrinthPlace.MAPPING_INTERIOR){body(h,l,b,0,0,-16,"original hatch approach");var c=b.offset(0,-5,-40);h.assertTrue(l.noCollision(null,new AABB(c.getX()+.2,c.getY()+.01,c.getZ()+.2,c.getX()+.8,c.getY()+.6,c.getZ()+.8)),"the low crawl stays traversable while crawling");}
@@ -77,7 +76,6 @@ public final class VignetteInteriorTests {
     for(var p:VignetteInteriors.PLACES)java.nio.file.Files.copy(java.nio.file.Path.of("../build/architecture-proof",p.id()+".json"),folder.resolve(p.id()+".json"),java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     slice(folder,"mapping_interior","mapping_living_rooms",-13,13,-36,-8,-1,3);
     slice(folder,"end_world_cabin","holiday_living_rooms",-12,12,-35,-13,-1,3);
-    slice(folder,"usher","usher_vault",-8,8,-35,-18,-4,-2);
     slice(folder,"hill_nursery","hill_cellar",-13,13,-42,-30,-5,-2);
     var quiet=LabyrinthPlace.QUIET_ROOM;f.built.add(quiet);var qb=f.base(quiet);LabyrinthHalls.build(f.in,qb,quiet);ScenePolish.polishOnce(f.in,f.origin,quiet);ArchitectureTests.export(f.in,qb,quiet);
     java.nio.file.Files.move(java.nio.file.Path.of("../build/architecture-proof",quiet.id()+".json"),folder.resolve(quiet.id()+".json"),java.nio.file.StandardCopyOption.REPLACE_EXISTING);

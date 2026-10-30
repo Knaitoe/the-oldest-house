@@ -11,11 +11,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import static io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.Kind.*;
 
-/** Explicit authored refits of older rooms, including bounded, resident-only saved-world migration. */
+/** Explicit authored refits of older rooms, including bounded, resident-only saved-world migration. The house of Usher left this list in 0.4.181, when UsherHouse began building it whole with its own fittings. */
 public final class VignetteInteriors {
  public static final String STATE="vignette_interiors_0125b";
  public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.FLOORBOARDS,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY,
-  LabyrinthPlace.HILL_NURSERY,LabyrinthPlace.MINIATURES,LabyrinthPlace.USHER,LabyrinthPlace.CRIMSON_HALL,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CONFESSION,
+  LabyrinthPlace.HILL_NURSERY,LabyrinthPlace.MINIATURES,LabyrinthPlace.CRIMSON_HALL,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CONFESSION,
   LabyrinthPlace.DEVILS_ROCK,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOLLOWAY_CAMP);
  private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
  public record Edit(BlockPos relative,BlockState expected,BlockState next){}
@@ -72,16 +72,6 @@ public final class VignetteInteriors {
    fit(e,-8,1,-7,DRAFTING_BOARD);fit(e,-7,1,-7,MODEL_TOOLS);fit(e,-6,1,-8,MODEL_DRAWERS);fit(e,-8,1,-8,TASK_LAMP);
    for(int x:new int[]{5,6})fit(e,x,0,-8,CRAFT_BENCH);fit(e,5,1,-8,DRAFTING_BOARD);fit(e,6,1,-8,MODEL_TOOLS);
    fit(e,-13,4,-11,MODEL_PLAN,Direction.EAST);fit(e,-13,4,-10,MODEL_PLAN,Direction.EAST);fit(e,13,3,-23,MODEL_PLAN,Direction.WEST);
-  }
-  case USHER->{
-   shell(e,-17,17,-41,0,1,7,Blocks.DEEPSLATE_BRICKS,USHER_LINEN);fill(e,-16,-1,-40,16,-1,-1,Blocks.POLISHED_DEEPSLATE,USHER_BOARDS);
-   shell(e,-8,8,-35,-20,-3,-1,Blocks.DEEPSLATE_BRICKS,VAULT_STONE);
-   fit(e,11,0,-14,USHER_SPINET);fit(e,14,0,-14,USHER_PRESS,Direction.WEST);fit(e,-12,0,-13,DICTATION_DESK);fit(e,-12,1,-13,INK_SET);
-   fit(e,16,2,-14,USHER_PORTRAIT,Direction.WEST);
-   // Enclosed study bays flank the actual central vault stair. Both side passages remain open.
-   for(int x:new int[]{-6,6})for(int z=-17;z<=-8;z++)if(z!=-13&&z!=-12)partition(e,x,z,USHER_BOARDS,USHER_LINEN);
-   for(int side:new int[]{-1,1})for(int x=6;x<=16;x++)if(x!=10&&x!=11&&x!=14)partition(e,side*x,-8,USHER_BOARDS,USHER_LINEN);
-
   }
   case CRIMSON_HALL->{
    shell(e,-18,18,-43,0,1,5,Blocks.POLISHED_BLACKSTONE_BRICKS,CRIMSON_SILK);
