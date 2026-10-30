@@ -106,6 +106,8 @@ public final class LiteraryRegistry {
     public static final DeferredItem<Item> GIVEN_ARM=item("cabin_given_arm");
     /** Three Fingers (0.4.81): the withered paw, bound to the reader who pulls it from the fire. Its art is the owner's to replace. */
     public static final DeferredItem<WitheredPawItem> PAW=ITEMS.register("withered_paw",()->new WitheredPawItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+    /** 0.4.184: Usher's artifact, a chip of the house's stone. */
+    public static final DeferredItem<UsherStoneItem> USHER_STONE=ITEMS.register("usher_stone",()->new UsherStoneItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<MillLetterItem> MILL_LETTER=ITEMS.register("mill_letter",()->new MillLetterItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> CYLINDER_ONE=item("wax_cylinder_one"),CYLINDER_TWO=item("wax_cylinder_two"),CYLINDER_THREE=item("wax_cylinder_three");
     public static final DeferredHolder<EntityType<?>,EntityType<LiteraryActor>> ACTOR=TYPES.register("literary_actor",()->EntityType.Builder.<LiteraryActor>of(LiteraryActor::new,MobCategory.MISC).sized(.6F,1.8F).clientTrackingRange(16).updateInterval(2).build("literary_actor"));

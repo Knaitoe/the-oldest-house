@@ -259,6 +259,35 @@ public final class LiteraryTests {
             .thenSucceed();
     }
     @AfterBatch(batch="literary_usher_open183") public static void usherOpenDone(ServerLevel l){close();}
+    /** 0.4.184: the binary. Still inside when the house falls: no credit, set back on the bank, and the scratching follows the reader home; a later night got out in time clears it and the house's stone becomes theirs. */
+    @GameTest(template="empty",batch="literary_usher_buried184",timeoutTicks=2400)
+    public static void stayingInsideAsTheHouseFallsFailsAndTheScratchingFollowsUntilALaterNightIsSurvived(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("usher_buried",place);f.source(p,place);var books=new BlockPos(1,0,-26);UsherStory.FLIGHT=40;
+        h.startSequence()
+            .thenWaitUntil(()->h.assertTrue(usherActor(f,"Roderick")!=null,"he is in his chair"))
+            .thenExecute(()->{p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);f.arrive(p,place);f.at(p,place,-2,0,-27);})
+            .thenWaitUntil(()->h.assertTrue(UsherStory.storm(p,f.own(p,place)),"the storm night"))
+            .thenExecute(()->{f.click(p,place,books);f.at(p,place,-2,0,-27);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Fell0507"),"the house falls"))
+            .thenExecute(()->f.at(p,place,-2,0,-27))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Buried0507"),"still inside, the house closes over the reader"))
+            .thenExecute(()->{var own=f.own(p,place);h.assertTrue(!own.getBoolean("Ready")&&!own.getBoolean("Fell0507")&&p.getZ()-f.base(place).getZ()>-3,"no credit; the tarn gives the reader back on the bank: z "+(p.getZ()-f.base(place).getZ()));
+                h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.USHER)&&!usherActor(f,"Roderick").broadcastToPlayer(p)&&UsherHaunt.haunted(p),"nothing is resolved, he is gone for the rest of this visit, and the reader is haunted");
+                f.click(p,place,books);h.assertTrue(UsherStory.stage(f.data())==0,"not tonight: the books will not begin again on this visit");
+                var world=p.server.overworld();p.teleportTo(world,world.getSharedSpawnPos().getX()+.5,200,world.getSharedSpawnPos().getZ()+.5,0,0);UsherHaunt.due(p,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Scratched0507")>0,"away from the house, the scratching comes under the reader's feet"))
+            .thenExecute(()->{f.arrive(p,place);f.at(p,place,-2,0,-27);})
+            .thenWaitUntil(()->h.assertTrue(usherActor(f,"Roderick")!=null&&usherActor(f,"Roderick").broadcastToPlayer(p)&&UsherStory.storm(p,f.own(p,place)),"a later visit: he is back in his chair, and it is the storm night again"))
+            .thenExecute(()->{f.click(p,place,books);h.assertTrue(UsherStory.stage(f.data())==1,"the reading begins again");f.at(p,place,-2,0,-27);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Fell0507"),"the house falls again"))
+            .thenExecute(()->f.at(p,place,0,0,-2))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready")&&!UsherHaunt.haunted(p),"over the causeway in time: the night is survived, and the scratching stops"))
+            .thenExecute(()->{h.assertTrue(usherPages(p,f,place).contains("The first time the house fell, I was still inside it."),"the account remembers the first time");
+                f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(p.getInventory().countItem(LiteraryRegistry.USHER_STONE.get())==1,"the house's stone is the reader's own");
+                h.assertTrue(UsherStoneItem.nearestHidden(p)!=null,"held to the ear on the bank, something hidden in the house answers");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_usher_buried184") public static void usherBuriedDone(ServerLevel l){UsherStory.FLIGHT=400;close();}
     @AfterBatch(batch="literary_usher_fall182") public static void usherFallDone(ServerLevel l){close();}
     @AfterBatch(batch="literary_coffin") public static void coffinDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_cylinders",timeoutTicks=750)

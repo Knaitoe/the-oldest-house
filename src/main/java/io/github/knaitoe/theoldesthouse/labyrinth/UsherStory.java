@@ -39,6 +39,8 @@ public final class UsherStory {
     public static final int AT_DOOR = 4;
     /** How long the house may stand empty before an unfinished night is forgotten. */
     public static final int FORGET = 200;
+    /** 0.4.184: how long after the fall a reader has to get back over the causeway before the house closes over them. Tests shorten it. */
+    public static int FLIGHT = 400;
     private static final LabyrinthPlace PLACE = LabyrinthPlace.USHER;
     private static final String NAME = "Roderick", MADELINE = "Madeline", NIGHT_TAG = "UsherNight0507";
 
@@ -93,21 +95,23 @@ public final class UsherStory {
     /** Tonight's readers in the house: those who took part in the night and have not yet seen it end. */
     private static List<ServerPlayer> readers(ServerPlayer p, CompoundTag mine, int id) {
         var out = new ArrayList<ServerPlayer>();
-        for (var q : present(p)) { var own = own(p, mine, q); if (own.getInt("NightId0507") == id && !own.getBoolean("Fell0507")) out.add(q); }
+        for (var q : present(p)) { var own = own(p, mine, q); if (own.getInt("NightId0507") == id && !gone(own)) out.add(q); }
         return out;
     }
     /** Whoever in the house still sees him. */
     private static List<ServerPlayer> listeners(ServerPlayer p, CompoundTag mine) {
         var out = new ArrayList<ServerPlayer>();
-        for (var q : present(p)) if (!own(p, mine, q).getBoolean("Fell0507")) out.add(q);
+        for (var q : present(p)) if (!gone(own(p, mine, q))) out.add(q);
         return out;
     }
 
+    /** He is gone for this reader: they have seen the house fall, or (0.4.184) it closed over them on this visit. */
+    static boolean gone(CompoundTag own) { return own.getBoolean("Fell0507") || own.contains("BuriedVisit0507") && own.getInt("BuriedVisit0507") == own.getInt("Visit"); }
     /** Roderick is not there for a reader who has seen the house fall; Madeline at the doors is only that night's. */
     public static boolean sees(ServerPlayer viewer, LiteraryActor a) {
         if (!a.scene().equals(PLACE.id())) return true;
         var own = LiteraryVignettes.personal(LabyrinthData.get(viewer.server), viewer.getUUID(), PLACE);
-        if (a.role() == LiteraryActor.STRANGER && a.phase() == RODERICK) return !own.getBoolean("Fell0507");
+        if (a.role() == LiteraryActor.STRANGER && a.phase() == RODERICK) return !gone(own);
         if (a.getPersistentData().contains(NIGHT_TAG)) return own.getInt("NightId0507") == a.getPersistentData().getInt(NIGHT_TAG) && !own.getBoolean("Fell0507");
         return true;
     }
@@ -134,7 +138,7 @@ public final class UsherStory {
         if (ownStorm(own, world)) n.putLong("Up", now);
         night(p, n);
         // A reader still in the house joins a night already begun.
-        if (n.getInt("Stage") > 0 && !own.getBoolean("Fell0507")) own.putInt("NightId0507", n.getInt("Id"));
+        if (n.getInt("Stage") > 0 && !gone(own)) own.putInt("NightId0507", n.getInt("Id"));
 
         var roderick = LiteraryVignettes.actor(p, PLACE, NAME, LiteraryActor.STRANGER, UsherHouse.CHAIR, false);
         if (roderick != null) seat(p, own, roderick);
@@ -151,8 +155,37 @@ public final class UsherStory {
         if (own.getBoolean("Fell0507")) {
             // The opened fissure stays open in this reader's view, and getting back to the bank is the flight.
             if (own.getInt("Present") % 100 == 0) { fissure(p, b); glow(p, b, true); }
-            if (p.blockPosition().getZ() - b.getZ() >= -3 && p.getY() >= b.getY() - 1.5) LiteraryVignettes.ready(p, PLACE, own, "fled_as_the_house_fell");
+            if (!own.getBoolean("Ready")) {
+                if (p.blockPosition().getZ() - b.getZ() >= -3 && p.getY() >= b.getY() - 1.5) { own.remove("Buried0507"); LiteraryVignettes.ready(p, PLACE, own, "fled_as_the_house_fell"); }
+                else if (now - own.getLong("FellAt0507") > FLIGHT) buried(p, b, own);
+            }
         }
+    }
+
+    /**
+     * 0.4.184, the failure: still inside when the house comes down. The tarn gives the reader back on the bank, nothing is
+     * resolved, and the scratching follows them ({@link UsherHaunt}) until a later night ends with them over the causeway in
+     * time. Roderick is gone for the rest of this visit; the house stands again for the next.
+     */
+    private static void buried(ServerPlayer p, BlockPos b, CompoundTag own) {
+        var l = p.serverLevel();
+        own.putBoolean("Fell0507", false);
+        own.putBoolean("Buried0507", true);
+        own.putBoolean("BuriedOnce0507", true);
+        own.putInt("BuriedVisit0507", own.getInt("Visit"));
+        own.putInt("Beat", own.getInt("Visit"));
+        own.putInt("BuriedDay0507", (int) (p.server.overworld().getDayTime() / 24000L) + 1);
+        own.putInt("Buried0507Count", own.getInt("Buried0507Count") + 1);
+        for (var cell : opened()) p.connection.send(new ClientboundBlockUpdatePacket(l, b.offset(cell)));
+        for (int i = 0; i < 2; i++) for (int y = 0; y < 2; y++) p.connection.send(new ClientboundBlockUpdatePacket(l, b.offset(UsherHouse.STUDIO_DOOR.getX() + i, y, UsherHouse.STUDIO_DOOR.getZ())));
+        LiteraryVignettes.heard(p, SoundEvents.DEEPSLATE_BREAK, p.blockPosition().above(3), 1F, .3F);
+        LiteraryVignettes.heard(p, SoundEvents.GENERIC_SPLASH, b.offset(0, -1, -4), 1F, .6F);
+        p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 80, 0, false, false));
+        p.stopRiding();
+        p.teleportTo(l, b.getX() + .5, b.getY(), b.getZ() - 1.5, 180, 0);
+        p.setDeltaMovement(Vec3.ZERO);
+        p.connection.resetPosition();
+        p.displayClientMessage(Component.literal("The house came down over you. The tarn gave you back.").withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), false);
     }
 
     /** He sits facing the doors, and turns his head toward the nearest reader who still sees him. */
@@ -214,6 +247,10 @@ public final class UsherStory {
             return true;
         }
         var n = night(p);
+        if (own.contains("BuriedVisit0507") && own.getInt("BuriedVisit0507") == own.getInt("Visit")) {
+            p.displayClientMessage(Component.literal("Not tonight. The house is still settling over you.").withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), true);
+            return true;
+        }
         if (n.getInt("Stage") > 0 || own.getBoolean("Fell0507")) return true;
         int id = world.getInt("Nights0507") + 1;
         world.putInt("Nights0507", id);
@@ -298,6 +335,9 @@ public final class UsherStory {
         var names = them.stream().map(q -> q.getGameProfile().getName()).toList();
         each(p, own, them, (q, theirs) -> {
             theirs.putBoolean("Fell0507", true);
+            theirs.putLong("FellAt0507", q.serverLevel().getGameTime());
+            // The night is a beat of the story: the next arrival is a new visit.
+            theirs.putInt("Beat", theirs.getInt("Visit"));
             theirs.putBoolean("ReadAloud0507", q.getUUID().equals(readerId));
             theirs.putString("Reader0507", reader);
             var others = new ArrayList<>(names);
@@ -428,7 +468,7 @@ public final class UsherStory {
 
     /** A word from him when spoken to; the others in the room hear it too. */
     static void talk(ServerPlayer p, LiteraryActor a, CompoundTag own) {
-        if (a.role() != LiteraryActor.STRANGER || a.phase() != RODERICK || own.getBoolean("Fell0507")) return;
+        if (a.role() != LiteraryActor.STRANGER || a.phase() != RODERICK || gone(own)) return;
         var world = LiteraryVignettes.shared(LabyrinthData.get(p.server), PLACE);
         int k = own.getInt("Talk0507");
         own.putInt("Talk0507", k + 1);
@@ -448,6 +488,8 @@ public final class UsherStory {
     /** The account of the night the house fell, as this reader was in it. */
     public static String account(CompoundTag own) {
         var out = new StringBuilder();
+        // 0.4.184: a reader the house once closed over says so first.
+        if (own.getBoolean("BuriedOnce0507")) out.append("The first time the house fell, I was still inside it. The tarn gave me back, and the scratching came home with me. ");
         out.append(own.getBoolean("LidChosen") && own.getBoolean("LidClosed") ? "I closed the lid and came back on the night of the storm. " : "The lid had been closed. I came back on the night of the storm. ");
         String reader = own.getString("Reader0507");
         out.append(own.getBoolean("ReadAloud0507") || reader.isEmpty() ? "He asked me to read to him, and I read the old romance aloud. " : reader + " read the old romance aloud to him, because he asked. ");
