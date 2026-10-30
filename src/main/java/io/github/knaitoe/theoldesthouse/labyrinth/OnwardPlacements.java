@@ -48,6 +48,7 @@ final class OnwardPlacements {
         r.put(LAYERED_MAN,-4,0,-30,SOUTH,()->Blocks.OAK_DOOR);
         r.put(MOTION_LIGHT,0,0,-25,SOUTH,OnwardRegistry.SERVICE);
         r.put(SECOND_WAITRESS,0,0,-32,SOUTH,OnwardRegistry.SERVICE);
+        r.put(DARE_IN_THE_DARK,0,0,DareRooms.EXIT_Z,SOUTH,DareRegistry.STAIR_DOOR); // the stairwell at the end of the third-floor hall
         // The novel sites.
         r.put(WHALE,6,0,-32,SOUTH,NovelRegistry.WARD_DOOR);
         r.put(HOSPITAL,4,0,-23,SOUTH,NovelRegistry.NIGHT_WARD_DOOR);

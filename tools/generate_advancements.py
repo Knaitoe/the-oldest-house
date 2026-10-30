@@ -97,6 +97,7 @@ STORY_ICONS = {
     'borrasca': NS + ':borrasca_name_patch', 'painted_interior': 'minecraft:painting', 'second_waitress': NS + ':second_waitress_menu',
     'tunnel_periphery': 'minecraft:lime_stained_glass', 'missing_sleep': 'minecraft:white_bed', 'layered_man': NS + ':cellar_cleaver',
     'motion_light': 'minecraft:redstone_lamp', 'backseat': 'minecraft:iron_door', 'silo': 'minecraft:yellow_dye',
+    'dare_in_the_dark': NS + ':candle_stub',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

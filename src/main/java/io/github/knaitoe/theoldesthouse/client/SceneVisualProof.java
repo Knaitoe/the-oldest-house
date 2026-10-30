@@ -7,6 +7,7 @@ import com.mojang.serialization.JsonOps;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.UncannyRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.UncannyRooms;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import java.nio.file.*;
 import java.util.*;
 import net.minecraft.client.*;
@@ -53,9 +54,10 @@ public final class SceneVisualProof extends Screen {
         read=environment&&Boolean.getBoolean("the_oldest_house.houseReadSmoke");
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of(read?"../build/house-read139-proof":meal?"../build/goatman137-proof":foyer?"../build/foyer136-proof":interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=read?6:meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+12:environment?11:99+UncannyRooms.PLACES.size();
-        if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier plus every uncanny room), found "+files.size());
+        int expected=read?6:meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+12:environment?11:99+UncannyRooms.PLACES.size()+1;
+        if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier, every uncanny room and the third-floor bathroom), found "+files.size());
         if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
+        if(!environment&&files.stream().noneMatch(p->p.getFileName().toString().equals(LabyrinthPlace.DARE_IN_THE_DARK.id()+".json")))throw new IllegalStateException("Missing native architecture export for the third-floor bathroom");
         load();
     }
     private void load()throws Exception{

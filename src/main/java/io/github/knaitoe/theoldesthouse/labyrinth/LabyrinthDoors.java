@@ -133,7 +133,7 @@ public final class LabyrinthDoors {
         if(VignetteGate.dormant(data,player.getUUID(),door)){if(reroute(player,door))return;setDoorOpen(player.serverLevel(),door.lower,false,player);quiet(player,VignetteGate.dormantPlace(data,player.getUUID(),door),door.lower);return;}
         if (OnwardDoors.isOnward(door) && OnwardDoors.locked(player, door)) {
             setDoorOpen(player.serverLevel(), door.lower, false, player);
-            player.displayClientMessage(Component.literal("The door won't open yet."), true);
+            if(!DareInTheDark.refused(player,door))player.displayClientMessage(Component.literal("The door won't open yet."), true);
             return;
         }
         // A scene's way on leads into a hall, whatever its door was dealt before.

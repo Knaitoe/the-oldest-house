@@ -960,6 +960,7 @@ jobs:
           for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style; do test -s build/font-smoke/native-borrasca-$view.png; done
           for view in borrasca borrasca_treehouse borrasca_refinery borrasca_gully borrasca_taking; do test -s build/font-smoke/scenes/$view.png; done
           for view in painted_interior second_waitress tunnel_periphery missing_sleep layered_man motion_light; do test -s build/font-smoke/scenes/$view.png; done
+          test -s build/font-smoke/scenes/dare_in_the_dark.png
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
           for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done
@@ -1079,7 +1080,7 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/literary-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests','Vignette0492Tests','VignetteAnimationTests','BorrascaTests'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests','Vignette0492Tests','VignetteAnimationTests','BorrascaTests','DareTests'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native literary cases passed; the complete suite remains required.')
           PY
@@ -1547,6 +1548,13 @@ jobs:
           for view in column grain kitchen-table closed-hatch painted-tin timber-states; do test -s build/silo-art/native-$view.png; done
           test -s build/silo-art/roof-pixels.txt
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - name: Four native views of the third floor's kids, fittings, faces and the third count
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PdareSmoke --no-daemon
+          test -s build/dare-art/passed.txt
+          for view in kids fittings faces third-count; do test -s build/dare-art/native-dare-$view.png; done
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1554,6 +1562,7 @@ jobs:
           path: |
             build/silo-native.log
             build/silo-art/
+            build/dare-art/
             run/logs/latest.log
             run/crash-reports/
           if-no-files-found: warn
@@ -2160,6 +2169,7 @@ jobs:
           python3 tools/draw_onward_doors.py --check
           python3 tools/draw_paw_clench.py --check
           python3 tools/draw_ghosts_playhouse.py --check
+          python3 tools/draw_dare_in_the_dark.py --check
       - name: Native room geometry, standard/slim coats and the two-block mirror
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m

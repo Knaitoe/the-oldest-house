@@ -1,0 +1,244 @@
+{
+  "variants": {
+    "facing=north,part=0,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_0"
+    },
+    "facing=east,part=0,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_0",
+      "y": 90
+    },
+    "facing=south,part=0,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_0",
+      "y": 180
+    },
+    "facing=west,part=0,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_0",
+      "y": 270
+    },
+    "facing=north,part=0,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_0"
+    },
+    "facing=east,part=0,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_0",
+      "y": 90
+    },
+    "facing=south,part=0,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_0",
+      "y": 180
+    },
+    "facing=west,part=0,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_0",
+      "y": 270
+    },
+    "facing=north,part=1,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_1"
+    },
+    "facing=east,part=1,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_1",
+      "y": 90
+    },
+    "facing=south,part=1,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_1",
+      "y": 180
+    },
+    "facing=west,part=1,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_1",
+      "y": 270
+    },
+    "facing=north,part=1,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_1"
+    },
+    "facing=east,part=1,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_1",
+      "y": 90
+    },
+    "facing=south,part=1,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_1",
+      "y": 180
+    },
+    "facing=west,part=1,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_1",
+      "y": 270
+    },
+    "facing=north,part=2,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_2"
+    },
+    "facing=east,part=2,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_2",
+      "y": 90
+    },
+    "facing=south,part=2,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_2",
+      "y": 180
+    },
+    "facing=west,part=2,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_2",
+      "y": 270
+    },
+    "facing=north,part=2,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_2"
+    },
+    "facing=east,part=2,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_2",
+      "y": 90
+    },
+    "facing=south,part=2,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_2",
+      "y": 180
+    },
+    "facing=west,part=2,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_2",
+      "y": 270
+    },
+    "facing=north,part=3,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_3"
+    },
+    "facing=east,part=3,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_3",
+      "y": 90
+    },
+    "facing=south,part=3,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_3",
+      "y": 180
+    },
+    "facing=west,part=3,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_3",
+      "y": 270
+    },
+    "facing=north,part=3,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_3"
+    },
+    "facing=east,part=3,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_3",
+      "y": 90
+    },
+    "facing=south,part=3,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_3",
+      "y": 180
+    },
+    "facing=west,part=3,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_3",
+      "y": 270
+    },
+    "facing=north,part=4,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_4"
+    },
+    "facing=east,part=4,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_4",
+      "y": 90
+    },
+    "facing=south,part=4,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_4",
+      "y": 180
+    },
+    "facing=west,part=4,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_4",
+      "y": 270
+    },
+    "facing=north,part=4,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_4"
+    },
+    "facing=east,part=4,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_4",
+      "y": 90
+    },
+    "facing=south,part=4,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_4",
+      "y": 180
+    },
+    "facing=west,part=4,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_4",
+      "y": 270
+    },
+    "facing=north,part=5,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_5"
+    },
+    "facing=east,part=5,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_5",
+      "y": 90
+    },
+    "facing=south,part=5,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_5",
+      "y": 180
+    },
+    "facing=west,part=5,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_5",
+      "y": 270
+    },
+    "facing=north,part=5,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_5"
+    },
+    "facing=east,part=5,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_5",
+      "y": 90
+    },
+    "facing=south,part=5,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_5",
+      "y": 180
+    },
+    "facing=west,part=5,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_5",
+      "y": 270
+    },
+    "facing=north,part=6,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_6"
+    },
+    "facing=east,part=6,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_6",
+      "y": 90
+    },
+    "facing=south,part=6,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_6",
+      "y": 180
+    },
+    "facing=west,part=6,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_6",
+      "y": 270
+    },
+    "facing=north,part=6,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_6"
+    },
+    "facing=east,part=6,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_6",
+      "y": 90
+    },
+    "facing=south,part=6,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_6",
+      "y": 180
+    },
+    "facing=west,part=6,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_6",
+      "y": 270
+    },
+    "facing=north,part=7,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_7"
+    },
+    "facing=east,part=7,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_7",
+      "y": 90
+    },
+    "facing=south,part=7,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_7",
+      "y": 180
+    },
+    "facing=west,part=7,shattered=false": {
+      "model": "the_oldest_house:block/dare/mirror_7",
+      "y": 270
+    },
+    "facing=north,part=7,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_7"
+    },
+    "facing=east,part=7,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_7",
+      "y": 90
+    },
+    "facing=south,part=7,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_7",
+      "y": 180
+    },
+    "facing=west,part=7,shattered=true": {
+      "model": "the_oldest_house:block/dare/mirror_cracked_7",
+      "y": 270
+    }
+  }
+}

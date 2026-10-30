@@ -81,6 +81,7 @@ neoForge {
                 programArguments.addAll '--width', '1200', '--height', '800'
             }
             if(providers.gradleProperty('houseReadSmoke').isPresent()){systemProperty 'the_oldest_house.houseReadSmoke','true'}
+            if(providers.gradleProperty('dareSmoke').isPresent()){systemProperty 'the_oldest_house.dareSmoke','true'}
             if (providers.gradleProperty('goatmanMealSmoke').isPresent()) {
                 systemProperty 'the_oldest_house.goatmanMealSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
