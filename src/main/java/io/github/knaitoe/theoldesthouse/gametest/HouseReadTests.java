@@ -409,6 +409,10 @@ public final class HouseReadTests {
               h.assertTrue(sent.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat&&chat.content().getString().contains("The door under the lamp is open.")),"and the reader is told which door");
           }).thenIdle(10).thenExecute(()->{
               h.assertTrue(((LiteraryActor)f.in.getEntity(cast[1])).gesture()==HouseReadShelter.AFTER,"she lets go and steps back");
+              // 0.4.199 (owner: "Make sure npc stops following player after the dance."): once she has stepped back, she stays.
+              var girl=(LiteraryActor)f.in.getEntity(cast[1]);start[0]=girl.getX();start[1]=girl.getZ();stand(p,f.in,b[0],5.5,0,-5.5);
+          }).thenIdle(30).thenExecute(()->{
+              var girl=(LiteraryActor)f.in.getEntity(cast[1]);h.assertTrue(Math.abs(girl.getX()-start[0])<.05&&Math.abs(girl.getZ()-start[1])<.05,"after the dance she stays where she stepped back to, and does not follow the reader: moved "+Math.hypot(girl.getX()-start[0],girl.getZ()-start[1]));
               h.assertTrue(HouseReadProse.shelter(HouseRead.seen(f.data(),p.getUUID()).getCompound("shelter"),false).equals("danced with the girl under the eaves"),"the account says who the reader danced with: "+HouseReadProse.shelter(HouseRead.seen(f.data(),p.getUUID()).getCompound("shelter"),false));
               // As the last quiet room it ends on the House's warning (the other four marked entered).
               var own=HouseReadSites.state(p.server,p.getUUID());for(var room:HouseReadSites.Room.values()){var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);own.put(room.key(),visit);}f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);

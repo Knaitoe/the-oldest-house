@@ -49,7 +49,7 @@ public final class HouseReadShelter {
         if(!role(a.role())||a.owner().isEmpty())return;var p=a.level().getServer().getPlayerList().getPlayer(a.owner().get());if(p==null||HouseReadSites.inside(p)!=HouseReadSites.Room.SHELTER){a.setDeltaMovement(Vec3.ZERO);return;}
         var own=HouseReadSites.state(p.server,p.getUUID());var t=own.getCompound(HouseReadSites.Room.SHELTER.key());
         boolean man=a.role()==LiteraryActor.READ_MAN;String key=man?"ManNear":"WomanNear",dance=t.getString("Dance");int age=t.getInt("CastAge");
-        if(dance.equals(man?"man":"woman")||dance.equals("both"))partner(a,p,man,dance.equals("both"),t.getBoolean("Settled"));
+        if(dance.equals(man?"man":"woman")||dance.equals("both"))partner(a,p,man,dance.equals("both"),t.getBoolean("Settled"),t);
         else if(t.getBoolean("Settled")||!dance.isEmpty()){if(a.gesture()==HAND)a.gesture(STAND);if(p.distanceToSqr(a)<100)face(a,p,true);}
         else if(t.getBoolean("SongStarted")&&t.getInt("SongAge")<900){
             approach(p,a,t,man,age);
@@ -73,13 +73,22 @@ public final class HouseReadShelter {
             if(a.gesture()!=LEAN){a.gesture(LEAN);float yaw=man?-90:90;a.setYRot(yaw);a.yBodyRot=yaw;a.setYHeadRot(yaw);}
         }else{if(a.gesture()==HAND)a.gesture(STAND);if(distance<10)face(a,p,false);}
     }
-    /** Dancing: an arm's length in front of the reader on the line between them (side by side with both), swaying in place. */
-    private static void partner(LiteraryActor a,ServerPlayer p,boolean man,boolean both,boolean after){
-        var away=a.position().subtract(p.position()).multiply(1,0,1);if(away.lengthSqr()<1e-4)away=new Vec3(man?-1:1,0,0);away=away.normalize();
-        var side=new Vec3(-away.z,0,away.x);double reach=after?1.6:.85;
-        var target=p.position().add(away.scale(reach)).add(both?side.scale(man?.6:-.6):Vec3.ZERO);
+    /**
+     * Dancing: an arm's length in front of the reader on the line between them (side by side with both), swaying in place.
+     * After: one step back from where the reader stood when the song was let go, and there they stay. 0.4.199 (owner: "Make sure
+     * npc stops following player after the dance."): the step back was aimed at the reader every tick, so they trailed after.
+     */
+    private static void partner(LiteraryActor a,ServerPlayer p,boolean man,boolean both,boolean after,CompoundTag t){
+        String back=man?"ManBack":"WomanBack";Vec3 target;
+        if(after&&t.contains(back+"X"))target=new Vec3(t.getDouble(back+"X"),a.getY(),t.getDouble(back+"Z"));
+        else{
+            var away=a.position().subtract(p.position()).multiply(1,0,1);if(away.lengthSqr()<1e-4)away=new Vec3(man?-1:1,0,0);away=away.normalize();
+            var side=new Vec3(-away.z,0,away.x);double reach=after?1.6:.85;
+            target=p.position().add(away.scale(reach)).add(both?side.scale(man?.6:-.6):Vec3.ZERO);
+            if(after){t.putDouble(back+"X",target.x);t.putDouble(back+"Z",target.z);}
+        }
         var to=target.subtract(a.position()).multiply(1,0,1);if(to.length()>.02){var before=a.position();a.move(MoverType.SELF,to.length()>.12?to.normalize().scale(.12):to);a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4f);}
-        face(a,p,true);a.gesture(after?AFTER:DANCE);
+        if(!after||p.distanceToSqr(a)<100)face(a,p,true);a.gesture(after?AFTER:DANCE);
     }
     private static void face(LiteraryActor a,ServerPlayer p,boolean body){
         float yaw=(float)Math.toDegrees(Math.atan2(-(p.getX()-a.getX()),p.getZ()-a.getZ()));a.setYHeadRot(yaw);if(body){a.setYRot(yaw);a.yBodyRot=yaw;}
