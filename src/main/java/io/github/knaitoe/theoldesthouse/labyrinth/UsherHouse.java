@@ -40,6 +40,18 @@ public final class UsherHouse {
     /** Where the fissure runs down the front, one column a row from the roof (y 12) to the foot of the wall (y -3). */
     public static final int[] FISSURE_X = {9, 9, 10, 10, 9, 9, 10, 10, 9, 9, 10, 10, 9, 9, 10, 10};
     public static final int FISSURE_TOP = 12;
+    /** The front's windows (two rows) and the studio's high windows, each the bottom cell of three. */
+    public static final List<BlockPos> FRONT_WINDOWS = List.of(new BlockPos(-13, 2, FRONT), new BlockPos(-7, 2, FRONT), new BlockPos(7, 2, FRONT), new BlockPos(13, 2, FRONT),
+            new BlockPos(-13, 7, FRONT), new BlockPos(-4, 7, FRONT), new BlockPos(4, 7, FRONT), new BlockPos(13, 7, FRONT));
+    public static final List<BlockPos> STUDIO_WINDOWS = List.of(new BlockPos(-11, 6, -25), new BlockPos(-11, 6, -29), new BlockPos(-11, 6, -33),
+            new BlockPos(11, 6, -25), new BlockPos(11, 6, -29), new BlockPos(11, 6, -33));
+    /** Every window cell in the house, front and studio. */
+    public static List<BlockPos> windowCells() {
+        var out = new ArrayList<BlockPos>();
+        for (var w : FRONT_WINDOWS) for (int y = 0; y < 3; y++) out.add(w.above(y));
+        for (var w : STUDIO_WINDOWS) for (int y = 0; y < 3; y++) out.add(w.above(y));
+        return out;
+    }
 
     private UsherHouse() {}
 
@@ -96,8 +108,7 @@ public final class UsherHouse {
         for (int side : new int[]{-1, 1}) set(l, b, side, 3, FRONT, Blocks.STONE_BRICK_STAIRS.defaultBlockState()
                 .setValue(StairBlock.FACING, side < 0 ? Direction.EAST : Direction.WEST).setValue(StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP));
         // Vacant eye-like windows: two storeys of them.
-        for (int x : new int[]{-13, -7, 7, 13}) window(l, b, x, 2, FRONT, Direction.SOUTH);
-        for (int x : new int[]{-13, -4, 4, 13}) window(l, b, x, 7, FRONT, Direction.SOUTH);
+        for (var w : FRONT_WINDOWS) window(l, b, w.getX(), w.getY(), w.getZ(), Direction.SOUTH);
         for (var cell : fissure()) set(l, b, cell.x(), cell.y(), FRONT, cell.state());
     }
     private static void window(ServerLevel l, BlockPos b, int x, int y, int z, Direction facing) {
@@ -197,12 +208,7 @@ public final class UsherHouse {
         fill(l, b, -10, -1, -23, 10, -1, -34, u(Kind.FLOOR));
         fill(l, b, -10, 9, -23, 10, 9, -34, u(Kind.FRET));
         // The windows stand high over the galleries' roofs, out of reach from the black floor, open on the night.
-        for (int x : new int[]{-11, 11}) for (int z : new int[]{-25, -29, -33}) {
-            var facing = x < 0 ? Direction.WEST : Direction.EAST;
-            set(l, b, x, 6, z, UsherBlock.of(Kind.WINDOW, facing, 0));
-            set(l, b, x, 7, z, UsherBlock.of(Kind.WINDOW, facing, 0));
-            set(l, b, x, 8, z, UsherBlock.of(Kind.WINDOW, facing, 1));
-        }
+        for (var w : STUDIO_WINDOWS) window(l, b, w.getX(), w.getY(), w.getZ(), w.getX() < 0 ? Direction.WEST : Direction.EAST);
         for (int x = -9; x <= 9; x += 3) {
             set(l, b, x, 3, -34, u(Kind.DRAPERY, Direction.SOUTH));
             set(l, b, x, 2, -34, u(Kind.DRAPERY, Direction.SOUTH));

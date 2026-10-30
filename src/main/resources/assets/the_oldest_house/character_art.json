@@ -1158,5 +1158,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 37
+  },
+  {
+    "name": "literary_usher_roderick",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 38
   }
 ]

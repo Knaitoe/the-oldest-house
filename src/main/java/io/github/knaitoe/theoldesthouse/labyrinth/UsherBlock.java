@@ -26,7 +26,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * armorial trophies and his chair. {@link Kind} picks the piece, {@code facing} turns it and {@code stage} is its variant.
  * <p>The fissure runs through two kinds so each cell can show where the crack enters and leaves it: {@link Kind#FISSURE}
  * stages are top to bottom, top to east, top to west and west to bottom (looking at the front); {@link Kind#FISSURE_B}
- * stages are east to bottom, west to east, and, last, the crack opened wide.
+ * stages are east to bottom, west to east, the crack opened wide, and (0.4.182) opened on the last night with the moon
+ * through it. A {@link Kind#WINDOW}'s stages are its lower and upper panes, then (0.4.182) the same two with the storm
+ * night's glow behind them, which {@link UsherStory} shows to one reader at a time.
  */
 public final class UsherBlock extends Block {
     public static final MapCodec<UsherBlock> CODEC=simpleCodec(UsherBlock::new);
@@ -40,8 +42,10 @@ public final class UsherBlock extends Block {
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final DirectionProperty FACING=HorizontalDirectionalBlock.FACING;
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
-    /** FISSURE_B's last stage: the crack opened into a black gap. */
+    /** FISSURE_B's third stage: the crack opened into a black gap. */
     public static final int OPEN=2;
+    /** FISSURE_B's last stage (0.4.182): the crack opened on the last night with the moon through it, drawn full bright, only ever sent to one reader's view. */
+    public static final int MOON=3;
     private static final Map<Kind,VoxelShape[]> SHAPES=new EnumMap<>(Kind.class);
     public UsherBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.STONE).setValue(FACING,Direction.NORTH).setValue(STAGE,0));}
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}

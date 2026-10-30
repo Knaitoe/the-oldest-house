@@ -133,7 +133,7 @@ public final class LiteraryVignettes {
         else switch(place){
             case PAINTED_INTERIOR,SECOND_WAITRESS,TUNNEL_PERIPHERY,MISSING_SLEEP,LAYERED_MAN,MOTION_LIGHT->handled=UncannyStories.click(p,b,rel,place,own);
             case MASQUE->{if(MasqueSuite.clock(rel)&&own.getInt("Rooms")==127){own.putBoolean("ClockStopped0506",true);MasqueSuite.stoppedView(p,b);p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(LiteraryRegistry.PARTY.getId(),SoundSource.BLOCKS));ready(p,place,own,"stopped_the_seventh_room_clock");handled=true;}}
-            case USHER->{if(rel.distManhattan(LiteraryRooms.COFFIN)<=1){chooseLid(p,own);handled=true;}}
+            case USHER->{if(rel.distManhattan(LiteraryRooms.COFFIN)<=1){chooseLid(p,own);handled=true;}else if(UsherBlock.is(p.serverLevel().getBlockState(e.getPos()),UsherBlock.Kind.BOOKS))handled=UsherStory.books(p,rel,own);}
             case ELK_LOT->{if(!oldLot)handled=ElkLotNight.click(p,b,rel,own);}
             case THREE_FINGERS->handled=ThreeFingers.click(p,b,rel,own);
             case DARE_IN_THE_DARK->handled=DareInTheDark.click(p,b,rel,own);
@@ -207,6 +207,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.COSTUME_NIGHT)CostumeNight.talk(p,actor,own);
         else if(place==LabyrinthPlace.WINTER_LAKE)WinterLake.talk(p,actor,own);
         else if(place==LabyrinthPlace.THREE_FINGERS)ThreeFingers.talk(p,actor,own);
+        else if(place==LabyrinthPlace.USHER)UsherStory.talk(p,actor,own);
         else if(place==LabyrinthPlace.DARE_IN_THE_DARK)DareInTheDark.talk(p,actor,own);
         else if(place==LabyrinthPlace.GHOSTS_SET)GhostsSet.talk(p,actor,own);
         else if(place==LabyrinthPlace.LAKE_HOUSE)LakeHouse.talk(p,actor,own);else if(place==LabyrinthPlace.BORRASCA)BorrascaStory.talk(p,actor,own);
@@ -328,11 +329,12 @@ public final class LiteraryVignettes {
                 p.displayClientMessage(Component.literal("You moved while the clock spoke. You are a room further back."),true);}}
         own.putLong("LastPosition",p.blockPosition().asLong());own.putDouble("LastX",p.getX());own.putDouble("LastZ",p.getZ());
     }
-    private static void usher(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.USHER;var d=LabyrinthData.get(p.server);var woman=actor(p,place,"Woman",LiteraryActor.COFFIN_WOMAN,LiteraryRooms.COFFIN,false);if(woman==null)return;var world=shared(d,place);
+    private static void usher(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.USHER;var d=LabyrinthData.get(p.server);UsherStory.tick(p,b,own,shared(d,place));var woman=actor(p,place,"Woman",LiteraryActor.COFFIN_WOMAN,LiteraryRooms.COFFIN,false);if(woman==null)return;var world=shared(d,place);
         woman.setNoGravity(true);if(world.getBoolean("LidClosed"))woman.appearance(LiteraryActor.COFFIN_WOMAN,2);if(!world.contains("LidClosed")){woman.appearance(LiteraryActor.COFFIN_WOMAN,1);return;}
         if(world.getBoolean("LidClosed")){if(own.getInt("Present")%80==0)sound(p,LiteraryRegistry.SCRATCH.get(),b.offset(LiteraryRooms.COFFIN),.4F+.1F*Math.min(3,own.getInt("Visit")),1);int cracks=Math.min(3,own.getInt("Visit")-1);if(cracks>world.getInt("Cracks")){for(int i=0;i<cracks;i++)for(int y=0;y<2;y++)LiteraryRooms.at(p.serverLevel(),b,UsherHouse.VAULT_WEST,-3+y,-27-i*2,LiteraryRegistry.VAULT_CRACK.get());world.putInt("Cracks",cracks);shared(d,place,world);}}
         else if(own.getInt("Visit")>own.getInt("ChoiceVisit")&&own.getBoolean("LidChosen")&&!watched(p.serverLevel(),woman.position().add(0,1,0))&&!watched(p.serverLevel(),b.offset(12,0,-34).getCenter())){woman.moveTo(Vec3.atBottomCenterOf(b.offset(12,0,-34)));woman.appearance(LiteraryActor.COFFIN_WOMAN,0);world.putBoolean("WomanLeft",true);shared(d,place,world);}
-        if(own.getBoolean("LidChosen")&&own.getInt("Visit")>own.getInt("ChoiceVisit")){boolean seen=world.getBoolean("LidClosed")?p.distanceToSqr(b.offset(LiteraryRooms.COFFIN).getCenter())<36:world.getBoolean("WomanLeft")&&HouseWatchers.sees(p,woman.getEyePosition());if(seen&&own.getInt("Present")>120)ready(p,place,own,world.getBoolean("LidClosed")?"returned_to_the_closed_lid":"found_her_outside_the_open_coffin");}
+        // 0.4.182: a closed lid ends in the storm night's reading and the fall (UsherStory); an open one when she is seen standing in the wing.
+        if(own.getBoolean("LidChosen")&&own.getInt("Visit")>own.getInt("ChoiceVisit")&&!world.getBoolean("LidClosed")){boolean seen=world.getBoolean("WomanLeft")&&HouseWatchers.sees(p,woman.getEyePosition());if(seen&&own.getInt("Present")>120)ready(p,place,own,"found_her_outside_the_open_coffin");}
     }
     /** 0.4.74: the rebuilt child's room keeps its own sequence; see {@link ChildRoom}. */
     private static void child(ServerPlayer p, BlockPos b, CompoundTag own) { ChildRoom.tick(p, b, own); }

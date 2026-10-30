@@ -121,6 +121,24 @@ def fissure_open():
     return img
 
 
+def fissure_moon():
+    """(0.4.182) The fissure opened wide on the last night, the low moon's light coming through it. The face is drawn
+    full bright (the model's block_light), so its stone is painted down to sit with the dim wall round it."""
+    img = stone(1900)
+    for y in range(16):
+        for x in range(16):
+            r, g, b, a = img.getpixel((x, y))
+            img.putpixel((x, y), (int(r * .42), int(g * .42), int(b * .42), a))
+    for y in range(16):
+        w = 4 + (y % 4 == 1)
+        for x in range(8 - w, 8 + w):
+            core = 1 - abs(x - 7.5) / w
+            px(img, x, y, mix((96, 18, 14), (196, 58, 34), core * core))
+        px(img, 8 - w - 1, y, (24, 8, 8))
+        px(img, 8 + w, y, (24, 8, 8))
+    return img
+
+
 def floor():
     img = noisy((26, 24, 26), 1811, .12)
     for y in range(16):
@@ -210,13 +228,20 @@ def night():
     return img
 
 
-def window(upper):
+def window(upper, glow=False):
+    """A tall leaded window, or (0.4.182, glow) the same window on the storm night, the vapour outside faintly luminous."""
     img = canvas()
     lead = (30, 30, 32)
     glass = (24, 30, 40)
     for y in range(16):
         for x in range(2, 14):
             px(img, x, y, mix(glass, (40, 50, 64), (x + y) % 5 / 10))
+    if glow:
+        rng = random.Random(1839 + upper)
+        for y in range(16):
+            for x in range(2, 14):
+                drift = (x * 3 + y * 2 + rng.randrange(3)) % 7 / 7
+                px(img, x, y, mix((78, 92, 84), (138, 156, 136), drift * .7))
     for y in range(16):
         for x in (2, 13):
             px(img, x, y, lead)
@@ -356,9 +381,10 @@ def chair_wood():
 TEXTURES = {
     'stone': stone, 'fissure_tb': lambda: fissure('t', 'b', 1891), 'fissure_tr': lambda: fissure('t', 'r', 1892),
     'fissure_tl': lambda: fissure('t', 'l', 1893), 'fissure_lb': lambda: fissure('l', 'b', 1894),
-    'fissure_rb': lambda: fissure('r', 'b', 1895), 'fissure_lr': lambda: fissure('l', 'r', 1896), 'fissure_open': fissure_open,
+    'fissure_rb': lambda: fissure('r', 'b', 1895), 'fissure_lr': lambda: fissure('l', 'r', 1896), 'fissure_open': fissure_open, 'fissure_moon': fissure_moon,
     'floor': floor, 'tapestry': tapestry, 'fret': fret, 'vault': vault, 'causeway': causeway, 'mud': mud, 'night': night,
-    'window_lower': lambda: window(False), 'window_upper': lambda: window(True), 'drapery': drapery,
+    'window_lower': lambda: window(False), 'window_upper': lambda: window(True),
+    'window_lower_glow': lambda: window(False, True), 'window_upper_glow': lambda: window(True, True), 'drapery': drapery,
     'easel': easel_wood, 'painting': painting, 'guitar': guitar, 'books': books, 'iron': iron, 'wax': wax, 'flame': flame,
     'shield': shield, 'upholstery': upholstery, 'chair': chair_wood,
 }
@@ -396,8 +422,13 @@ MODEL_DEFS = {
     'usher_fissure_tl': cube('stone', 'fissure_tl'), 'usher_fissure_lb': cube('stone', 'fissure_lb'),
     'usher_fissure_rb': cube('stone', 'fissure_rb'), 'usher_fissure_lr': cube('stone', 'fissure_lr'),
     'usher_fissure_open': cube('stone', 'fissure_open'),
+    'usher_fissure_moon': {'parent': 'minecraft:block/block', 'textures': {'particle': t('stone'), 's': t('stone'), 'm': t('fissure_moon')},
+                           'elements': [{'from': [0, 0, 0], 'to': [16, 16, 16], 'neoforge_data': {'block_light': 15},
+                                         'faces': {d: {'texture': '#m' if d == 'north' else '#s', 'cullface': d} for d in ('north', 'south', 'east', 'west', 'up', 'down')}}]},
     'usher_window_lower': model({'g': t('window_lower'), 'particle': t('window_lower')}, [element([0, 0, 7], [16, 16, 9], '#g', only=('north', 'south'))]),
     'usher_window_upper': model({'g': t('window_upper'), 'particle': t('window_upper')}, [element([0, 0, 7], [16, 16, 9], '#g', only=('north', 'south'))]),
+    'usher_window_lower_glow': model({'g': t('window_lower_glow'), 'particle': t('window_lower_glow')}, [element([0, 0, 7], [16, 16, 9], '#g', only=('north', 'south'))]),
+    'usher_window_upper_glow': model({'g': t('window_upper_glow'), 'particle': t('window_upper_glow')}, [element([0, 0, 7], [16, 16, 9], '#g', only=('north', 'south'))]),
     'usher_drapery': model({'d': t('drapery'), 'particle': t('drapery')}, [element([0, 0, 14], [16, 16, 16], '#d')]),
     'usher_easel': model({'w': t('easel'), 'p': t('painting'), 'particle': t('easel')}, [
         element([3, 0, 8], [4, 16, 9], '#w'), element([12, 0, 8], [13, 16, 9], '#w'), element([7, 0, 10], [9, 14, 11], '#w'),
@@ -419,8 +450,10 @@ KIND_MODELS = {
     'stone': ['usher_stone'] * 4, 'floor': ['usher_floor'] * 4, 'tapestry': ['usher_tapestry'] * 4, 'fret': ['usher_fret'] * 4,
     'vault': ['usher_vault'] * 4, 'causeway': ['usher_causeway'] * 4, 'mud': ['usher_mud'] * 4, 'night': ['usher_night'] * 4,
     'fissure': ['usher_fissure_tb', 'usher_fissure_tr', 'usher_fissure_tl', 'usher_fissure_lb'],
-    'fissure_b': ['usher_fissure_rb', 'usher_fissure_lr', 'usher_fissure_open', 'usher_fissure_open'],
-    'window': ['usher_window_lower', 'usher_window_upper', 'usher_window_upper', 'usher_window_upper'],
+    # The last stage is the fissure on the last night, the moon through it, shown to one reader at a time.
+    'fissure_b': ['usher_fissure_rb', 'usher_fissure_lr', 'usher_fissure_open', 'usher_fissure_moon'],
+    # Stages 2 and 3 are the storm night's glow, lower and upper, shown to one reader at a time.
+    'window': ['usher_window_lower', 'usher_window_upper', 'usher_window_lower_glow', 'usher_window_upper_glow'],
     'drapery': ['usher_drapery'] * 4, 'easel': ['usher_easel'] * 4, 'guitar': ['usher_guitar'] * 4, 'books': ['usher_books'] * 4,
     'candelabra': ['usher_candelabra'] * 4, 'armorial': ['usher_armorial'] * 4, 'chair': ['usher_chair'] * 4,
 }
