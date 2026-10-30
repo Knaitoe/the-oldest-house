@@ -76,7 +76,7 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - Nobody else sees it happen. Readers climbing together, within a few blocks of each other, are carried together. Anyone else near either landing, spectators included, keeps the climb walked.
   - A landing whose floor has worn through is passed over until the next one.
   - This matters most after the peaceful release, when the reader climbs the whole staircase home.
-  - **Literature:** the completed account gains a page in Will's hand when the climb was shortened: "I counted the turns going down, and again coming up. There were fewer coming up. I counted twice."
+  - **Literature:** the completed account gains a page in Will's hand when the climb was shortened: "There were fewer coming up." (Owner: trimmed to that line; "I counted twice" was redundant.)
   - New case: `StaircaseAccessTests.theClimbBackUpIsShorterThanTheWayDown`. It covers going down, a turn climbed and the next, a party carried together, a spectator keeping the climb walked, the top turns walked, and the account's page. The staircase job's count is now 12.
 
 ## Charcoal sketches
@@ -121,6 +121,19 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - The horns have their own texture (`goatman_horns.png`, drawn by `tools/draw_goatman_horns.py`). The Goatman's skin is unchanged byte for byte; the old horns stay in its mesh, hidden.
   - They show wherever the Goatman is drawn: the bedside rise, the window circuit, the glimpses of the haunting, and both art proofs.
   - The bedside case now checks that the crawl is visible in the child's shape and the rise is the Goatman.
+
+## The Minotaur's skin
+- **"Can we also improve the Minotaur's texture?"** Every box of the Minotaur used to sample one of four flat swatches (hide, fur, horn, dark) from `minotaur_materials.png`, so it had no painted face, muscle, fur or hooves.
+  - It now has its own skin, `minotaur.png`, drawn by `tools/draw_minotaur.py` at the model's own pixel scale, one region for each box (`MinotaurModel`):
+    - a bull's face with a curled poll, a heavy brow, red eyes sunk in dark sockets and a pale muzzle with a dark nose pad;
+    - a bare, scarred chest under hair over the shoulders, a shaggy hump and back;
+    - a rope belt and a frayed loincloth;
+    - ridged ivory horns yellowing and darkening to the points;
+    - furred upper arms, bare forearms with a raised vein, dark hands with pale claws;
+    - shaggy thighs, dark shins and split black hooves.
+  - The left limbs and horn mirror the right. The geometry, poses and animations are unchanged.
+  - The old swatch sheet is kept exactly as it was, no longer drawn. The renderer and both art proofs use the new skin (`FinaleClientEvents.SKIN`).
+- **The staircase line:** the completed account's page now reads only "There were fewer coming up."
 
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.

@@ -8,7 +8,11 @@ import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-/** Original articulated geometry: heavy shoulders, a bull jaw, curling horns, hands, and split hooves. */
+/**
+ * Original articulated geometry: heavy shoulders, a bull jaw, curling horns, hands, and split hooves.
+ * 0.4.199 (owner: "Can we also improve the Minotaur's texture?"): every box has its own region of its own skin
+ * (textures/entity/minotaur.png, drawn by tools/draw_minotaur.py with the same layout), in place of four shared swatches.
+ */
 public final class MinotaurModel extends HierarchicalModel<MinotaurEntity> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"minotaur"),"main");
     private final ModelPart root,body,head,jaw,leftArm,rightArm,leftLeg,rightLeg;
@@ -18,25 +22,27 @@ public final class MinotaurModel extends HierarchicalModel<MinotaurEntity> {
     @Override public ModelPart root(){return root;}
     public static LayerDefinition createBodyLayer(){
         MeshDefinition mesh=new MeshDefinition();PartDefinition root=mesh.getRoot().addOrReplaceChild("root",CubeListBuilder.create(),PartPose.offset(0,24,0));
-        PartDefinition body=root.addOrReplaceChild("body",CubeListBuilder.create().texOffs(0,128).addBox(-10,-23,-6,20,15,13)
-                .texOffs(0,0).addBox(-6,-8,-4,12,10,9).texOffs(0,128).addBox(-8,-24,3,16,17,7),PartPose.offset(0,-18,0));
-        PartDefinition head=body.addOrReplaceChild("head",CubeListBuilder.create().texOffs(0,0).addBox(-6,-10,-8,12,11,10)
-                .texOffs(0,128).addBox(-7,-11,-5,14,5,10).texOffs(0,0).addBox(-5,-3,-13,10,5,6),PartPose.offset(0,-21,-4));
-        head.addOrReplaceChild("eyes",CubeListBuilder.create().texOffs(128,128).addBox(-5.4F,-5,-8.2F,3,1.5F,.5F).addBox(2.4F,-5,-8.2F,3,1.5F,.5F),PartPose.ZERO);
-        head.addOrReplaceChild("nostrils",CubeListBuilder.create().texOffs(128,128).addBox(-3.7F,-1,-13.1F,2,1.5F,.3F).addBox(1.7F,-1,-13.1F,2,1.5F,.3F),PartPose.ZERO);
-        head.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(0,0).addBox(-4,-.5F,-7,8,3,7).texOffs(128,128).addBox(-3.8F,-.6F,-6.9F,7.6F,.3F,6),PartPose.offset(0,2,-6));
+        PartDefinition body=root.addOrReplaceChild("body",CubeListBuilder.create().texOffs(0,0).addBox(-10,-23,-6,20,15,13)
+                .texOffs(0,49).addBox(-6,-8,-4,12,10,9).texOffs(66,0).addBox(-8,-24,3,16,17,7),PartPose.offset(0,-18,0));
+        PartDefinition head=body.addOrReplaceChild("head",CubeListBuilder.create().texOffs(0,28).addBox(-6,-10,-8,12,11,10)
+                .texOffs(44,28).addBox(-7,-11,-5,14,5,10).texOffs(92,28).addBox(-5,-3,-13,10,5,6),PartPose.offset(0,-21,-4));
+        head.addOrReplaceChild("eyes",CubeListBuilder.create().texOffs(44,43).addBox(-5.4F,-5,-8.2F,3,1.5F,.5F).mirror().addBox(2.4F,-5,-8.2F,3,1.5F,.5F),PartPose.ZERO);
+        head.addOrReplaceChild("nostrils",CubeListBuilder.create().texOffs(52,43).addBox(-3.7F,-1,-13.1F,2,1.5F,.3F).mirror().addBox(1.7F,-1,-13.1F,2,1.5F,.3F),PartPose.ZERO);
+        head.addOrReplaceChild("jaw",CubeListBuilder.create().texOffs(92,39).addBox(-4,-.5F,-7,8,3,7).texOffs(0,85).addBox(-3.8F,-.6F,-6.9F,7.6F,.3F,6),PartPose.offset(0,2,-6));
         for(int side:new int[]{-1,1}){
-            PartDefinition horn=head.addOrReplaceChild(side<0?"right_horn":"left_horn",CubeListBuilder.create().texOffs(128,0).addBox(-2,-8,-2,4,9,4),PartPose.offsetAndRotation(side*6,-8,0,0,0,side*.8F));
-            PartDefinition turn=horn.addOrReplaceChild("turn",CubeListBuilder.create().texOffs(128,0).addBox(-1.5F,-7,-1.5F,3,7,3),PartPose.offsetAndRotation(0,-7,0,.45F,0,-side*1.1F));
-            turn.addOrReplaceChild("tip",CubeListBuilder.create().texOffs(128,0).addBox(-.75F,-6,-.75F,1.5F,6,1.5F),PartPose.offsetAndRotation(0,-6,0,.5F,0,-side*.35F));
-            PartDefinition arm=body.addOrReplaceChild(side<0?"right_arm":"left_arm",CubeListBuilder.create().texOffs(0,128).addBox(-4,-3,-4,8,12,8),PartPose.offsetAndRotation(side*12,-20,0,0,0,-side*.12F));
-            PartDefinition forearm=arm.addOrReplaceChild("forearm",CubeListBuilder.create().texOffs(0,0).addBox(-3.5F,0,-3.5F,7,11,7),PartPose.offset(0,8,0));
-            forearm.addOrReplaceChild("hand",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,-4,8,5,7).texOffs(128,0).addBox(-3.6F,3,-4.7F,2,3,1).addBox(-.7F,3,-4.7F,2,3,1).addBox(2.1F,3,-4.7F,2,3,1),PartPose.offset(0,9,0));
-            PartDefinition leg=root.addOrReplaceChild(side<0?"right_leg":"left_leg",CubeListBuilder.create().texOffs(0,128).addBox(-3.5F,0,-3,7,9,7),PartPose.offset(side*5,-18,1));
-            PartDefinition shin=leg.addOrReplaceChild("shin",CubeListBuilder.create().texOffs(0,0).addBox(-2.8F,0,-2,5.6F,7,5),PartPose.offset(0,8,1));
-            shin.addOrReplaceChild("hoof",CubeListBuilder.create().texOffs(128,128).addBox(-3.5F,0,-5,3.2F,3,7).addBox(.3F,0,-5,3.2F,3,7),PartPose.offset(0,7,0));
+            // The left side mirrors the right side's regions.
+            boolean mirror=side>0;
+            PartDefinition horn=head.addOrReplaceChild(side<0?"right_horn":"left_horn",CubeListBuilder.create().mirror(mirror).texOffs(112,0).addBox(-2,-8,-2,4,9,4),PartPose.offsetAndRotation(side*6,-8,0,0,0,side*.8F));
+            PartDefinition turn=horn.addOrReplaceChild("turn",CubeListBuilder.create().mirror(mirror).texOffs(112,13).addBox(-1.5F,-7,-1.5F,3,7,3),PartPose.offsetAndRotation(0,-7,0,.45F,0,-side*1.1F));
+            turn.addOrReplaceChild("tip",CubeListBuilder.create().mirror(mirror).texOffs(102,49).addBox(-.75F,-6,-.75F,1.5F,6,1.5F),PartPose.offsetAndRotation(0,-6,0,.5F,0,-side*.35F));
+            PartDefinition arm=body.addOrReplaceChild(side<0?"right_arm":"left_arm",CubeListBuilder.create().mirror(mirror).texOffs(42,49).addBox(-4,-3,-4,8,12,8),PartPose.offsetAndRotation(side*12,-20,0,0,0,-side*.12F));
+            PartDefinition forearm=arm.addOrReplaceChild("forearm",CubeListBuilder.create().mirror(mirror).texOffs(74,49).addBox(-3.5F,0,-3.5F,7,11,7),PartPose.offset(0,8,0));
+            forearm.addOrReplaceChild("hand",CubeListBuilder.create().mirror(mirror).texOffs(0,69).addBox(-4,0,-4,8,5,7).texOffs(108,49).addBox(-3.6F,3,-4.7F,2,3,1).addBox(-.7F,3,-4.7F,2,3,1).addBox(2.1F,3,-4.7F,2,3,1),PartPose.offset(0,9,0));
+            PartDefinition leg=root.addOrReplaceChild(side<0?"right_leg":"left_leg",CubeListBuilder.create().mirror(mirror).texOffs(30,69).addBox(-3.5F,0,-3,7,9,7),PartPose.offset(side*5,-18,1));
+            PartDefinition shin=leg.addOrReplaceChild("shin",CubeListBuilder.create().mirror(mirror).texOffs(58,69).addBox(-2.8F,0,-2,5.6F,7,5),PartPose.offset(0,8,1));
+            shin.addOrReplaceChild("hoof",CubeListBuilder.create().mirror(mirror).texOffs(80,69).addBox(-3.5F,0,-5,3.2F,3,7).addBox(.3F,0,-5,3.2F,3,7),PartPose.offset(0,7,0));
         }
-        return LayerDefinition.create(mesh,256,256);
+        return LayerDefinition.create(mesh,128,128);
     }
     @Override public void setupAnim(MinotaurEntity entity,float walk,float amount,float age,float yaw,float pitch){
         pose(entity.motion(),walk,amount,age,yaw,pitch);
