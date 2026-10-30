@@ -74,4 +74,24 @@ All of them are already standing in the rooms (`journal/Rubbings.java`).
   - rubbings and the `Rubbed` record survive a save and reload.
 - **The native client proof** adds `native-journal-3.png`: a spread with the room number and gouges rubbings and their lines. It fails if any missing-texture magenta shows. The courtyard views are unchanged.
 
+## Run 1344
+
+Run 1344 tested ce0fecf (0.4.178). Sixteen of seventeen jobs passed. They include the build job, with all 890 structure tests, the two drawer cases and the twelve native courtyard views.
+
+**The failure.** live-multiplayer failed in its uncanny preflight. Both readers were caught seven seconds into the tunnel sprint, at the first red light, where the passing run 1343 took 24 seconds. The server log and the stall dumps show why:
+- The host stalled for 10.5 seconds ("Running 10521ms or 210 ticks behind").
+- The server thread was post-processing chunks as they were promoted to ticking, settling generated cave water.
+- Every chunk within a reader's view distance (6 here) is promoted as they reach it. The tunnel lies in natural terrain, and the world seed changes every run, so how much water there is varies. That is why the stall comes and goes.
+- After the stall the server ran its missed ticks back to back. She moved in those ticks while the readers' own movement waited on the network.
+
+Nothing in 0.4.178 touches the tunnel. The tunnel itself is unchanged.
+
+**The fix is in the proof.**
+- **The corridor.** `UncannySocketProof` now leases the tunnel's whole view-distance corridor: the room widened by the view distance plus one chunk on each side and past its far end. It is requested asynchronously.
+- **Ticking before the sprint.** Phase 4 waits until every chunk of the corridor is loaded and ticking (`NativeTestChunks.ticking()`, from `isPositionTicking`).
+- **Real-time pace.** The sprint begins only after 40 consecutive ticks at real-time pace, so it never starts inside a catch-up.
+- **Release.** The corridor is released once both readers are through.
+
+**Checked locally.** The local preflight passed with both clients sprinting the tunnel. The first local run also showed the corridor's loading leaving the server behind into the sprint, which is why the pace wait was added.
+
 No layout or Witness change: layout 51; protocol 100; Witness 55 / 42 / two kinds / three endings.

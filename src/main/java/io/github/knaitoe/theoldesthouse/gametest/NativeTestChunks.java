@@ -58,6 +58,13 @@ final class NativeTestChunks implements AutoCloseable {
         return true;
     }
 
+    /** Whether every leased chunk has been promoted to ticking: generated, post-processed and its scheduled fluids settled in. */
+    boolean ticking() {
+        for (var lease : held)
+            if (!lease.level.getChunkSource().isPositionTicking(lease.chunk.toLong())) return false;
+        return true;
+    }
+
     @Override public void close() {
         for (var lease : held)
             lease.level.getChunkSource().removeRegionTicket(TICKET, lease.chunk, 3, key);

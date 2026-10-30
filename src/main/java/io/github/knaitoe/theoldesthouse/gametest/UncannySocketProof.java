@@ -29,6 +29,18 @@ public final class UncannySocketProof {
     public static Path folder(){return Path.of(System.getProperty("the_oldest_house.liveProofDir","build/uncanny-live-proof"));}
     private static final BlockPos ORIGIN=new BlockPos(6000,80,6000);
     private static final NativeTestChunks CHUNKS=new NativeTestChunks();
+    /**
+     * The tunnel is run on foot, and every chunk within a reader's view distance is promoted to ticking (and its generated
+     * cave water settled) as they reach it. Run 1344 stalled the host 10.5 seconds doing that mid-sprint, and the catch-up
+     * ticks moved her while the readers' own movement waited on the network. The whole corridor is leased and ticking before
+     * the sprint begins, and released once both readers are through.
+     */
+    private static final NativeTestChunks CORRIDOR=new NativeTestChunks();
+    /**
+     * Consecutive ticks the host has run at real-time pace. After a stall the server runs its missed ticks back to back,
+     * and the timed tunnel must not begin inside that catch-up: her clock would run while the readers' movement cannot.
+     */
+    private static int paced;private static long lastTickNanos;
     private static final Set<LabyrinthPlace> BUILT=new HashSet<>();
     private static final Set<UUID> ACKS=new HashSet<>();
     private static final Map<UUID,UUID> DOLLS=new HashMap<>(),FAKES=new HashMap<>();
@@ -64,6 +76,7 @@ public final class UncannySocketProof {
     private static void step(MinecraftServer s,int next){phase=next;changed=s.getTickCount();ACKS.clear();for(var p:s.getPlayerList().getPlayers())marker(p,next);TheOldestHouse.LOGGER.info("UNCANNY SOCKET phase {}",next);}
     private static void build(MinecraftServer s,LabyrinthPlace place){
         var l=s.getLevel(NovelRooms.dimension(place));CHUNKS.hold(l,IndianLakeRooms.bounds(base(place),place));
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY){var room=IndianLakeRooms.bounds(base(place),place);int reach=16*(s.getPlayerList().getViewDistance()+1);CORRIDOR.request(l,room.inflate(reach,0,0).expandTowards(0,0,-reach));}
         if(BUILT.add(place)){LiteraryRooms.build(l,base(place),place);LabyrinthBuilder.registerDoors(LabyrinthData.get(s),place,base(place));}
     }
     private static void at(ServerPlayer p,LabyrinthPlace place,double x,double y,double z){
@@ -93,6 +106,7 @@ public final class UncannySocketProof {
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         if(!enabled())return;var s=e.getServer();var a=player(s,"A");var b=player(s,"B");
+        long now=System.nanoTime();paced=now-lastTickNanos>=40_000_000L?paced+1:0;lastTickNanos=now;
         try{
             if(phase==0){
                 if(a==null||b==null)return;
@@ -113,7 +127,7 @@ public final class UncannySocketProof {
                     for(var p:List.of(a,b))at(p,LabyrinthPlace.MISSING_SLEEP,p==a?-5.5:-6.5,5,-19.5);step(s,11);
                 }return;
             }
-            if(phase==17){if(s.getTickCount()-changed>100){CHUNKS.close();s.halt(false);}return;}
+            if(phase==17){if(s.getTickCount()-changed>100){CHUNKS.close();CORRIDOR.close();s.halt(false);}return;}
             if(a==null||b==null)return;
             if(!ARRIVING.isEmpty())for(var p:List.of(a,b)){
                 var arrival=ARRIVING.get(p.getUUID());if(arrival!=null&&s.getTickCount()%20==0){p.teleportTo(p.serverLevel(),arrival.at.x,arrival.at.y,arrival.at.z,180,0);p.connection.resetPosition();}
@@ -123,7 +137,7 @@ public final class UncannySocketProof {
             }
             // This is explicitly the translucent object view; hold its short production fade for native capture.
             if(phase==4){
-                if(!CHUNKS.ready())return;
+                if(!CHUNKS.ready()||!CORRIDOR.ready()||!CORRIDOR.ticking())return;
                 for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);UncannyStories.arrive(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);var original=UncannyStories.actor(p,own,"CastGiant");if(original==null){save(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);return;}if(!own.getBoolean("TunnelSocketStaged135")){TunnelStride.placeOriginal(original,Vec3.atBottomCenterOf(LiteraryVignettes.base(p,LabyrinthPlace.TUNNEL_PERIPHERY).offset(0,0,-4)));own.putBoolean("TunnelSocketStaged135",true);}own.putBoolean("TunnelStarted127",true);own.putInt("UncannyAge",170);save(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);}
             }
             if(phase==2)for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.SECOND_WAITRESS);own.putInt("SecondManifestAge131",own.getInt("UncannyAge")-10);save(p,LabyrinthPlace.SECOND_WAITRESS,own);}
@@ -134,8 +148,8 @@ public final class UncannySocketProof {
             else if(phase==3){for(var p:List.of(a,b)){require(FAKES.get(p.getUUID()).equals(own(p,LabyrinthPlace.SECOND_WAITRESS).getUUID("CastFake")),"the translucent and solid waitress are the same original");at(p,LabyrinthPlace.TUNNEL_PERIPHERY,p==a?-.8:.8,0,p==a?-14.5:-20.5);sourceFixture(p,LabyrinthPlace.TUNNEL_PERIPHERY,170);}step(s,4);}
             // Resume the paused rendering setup at the start of a real green cycle;
             // its mid-green capture pose is not the run's starting signal.
-            else if(phase==4){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);own.putInt("UncannyAge",140);save(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);p.getFoodData().setFoodLevel(20);}step(s,19);}
-            else if(phase==19){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);require(own.getBoolean("TunnelPassed130")&&own.getInt("GreenSteps")>=20&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY),"the actual native sprint reaches the far refuge and its personal account");at(p,LabyrinthPlace.MISSING_SLEEP,.5,0,.5);}write("tunnel-native-escape.txt","Both actual clients sprinted the production 140m passage through native collision, green freezes and faster original private pursuers, then read the far personal account. No route teleport, speed effect or artificial ready flag.\n");step(s,5);}
+            else if(phase==4){if(paced<40)return;for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);own.putInt("UncannyAge",140);save(p,LabyrinthPlace.TUNNEL_PERIPHERY,own);p.getFoodData().setFoodLevel(20);}step(s,19);}
+            else if(phase==19){for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.TUNNEL_PERIPHERY);require(own.getBoolean("TunnelPassed130")&&own.getInt("GreenSteps")>=20&&WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY),"the actual native sprint reaches the far refuge and its personal account");at(p,LabyrinthPlace.MISSING_SLEEP,.5,0,.5);}write("tunnel-native-escape.txt","Both actual clients sprinted the production 140m passage through native collision, green freezes and faster original private pursuers, then read the far personal account. No route teleport, speed effect or artificial ready flag.\n");CORRIDOR.close();step(s,5);}
             else if(phase==5){
                 for(var p:List.of(a,b))require(UncannyReading.readPassage(own(p,LabyrinthPlace.MISSING_SLEEP))&&!own(p,LabyrinthPlace.MISSING_SLEEP).getBoolean("Read_Source"),"native short passage without completing the archive");
                 // Both real bodies must have settled after closing their menus before either is moved.
