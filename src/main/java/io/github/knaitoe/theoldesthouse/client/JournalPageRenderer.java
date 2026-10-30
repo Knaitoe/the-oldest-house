@@ -151,10 +151,53 @@ public final class JournalPageRenderer {
         if(index==0){cover(g,font,x,y,name);return;}
         rubbings(g,font,x,y,page);
         writing(g,font,x,y,page.text());
+        notes(g,font,x,y,page,page.text());
         g.enableScissor(x,y,x+W,y+H);
         List<JournalPage.Placed> runs=page.placed();for(int i=0;i<runs.size();i++)placed(g,font,x,y,runs.get(i),i==selected);
         g.disableScissor();
         header(g,font,x,y,page);number(g,font,x,y,index);
+    }
+
+    /** The other hand: its own lettering, in ink rather than the reader's graphite (journal/CoAuthor). */
+    public static final Style OTHER=Style.EMPTY.withFont(io.github.knaitoe.theoldesthouse.house.HouseWriting.MARGIN_FONT);
+    public static final int OTHER_INK=0xFF2B1A12, OTHER_WASH=0x902B1A12;
+    static final int OTHER_W=100;
+    /**
+     * The other hand's notes over the writing as it now stands: a heavy stroke through each word it struck, an answer squeezed
+     * in under its line (or, once the reader has taken that line away, where the line was), and a written note where it lies.
+     * A struck word the reader has deleted takes its stroke with it.
+     */
+    public static void notes(GuiGraphics g,Font font,int x,int y,JournalPage page,String text){
+        if(page.notes().isEmpty())return;
+        var lines=lines(font,text);var pose=g.pose();
+        HouseText.enterLiterature();
+        try{for(var n:page.notes())switch(n.mark()){
+            case STRUCK->{int[] at=locate(font,text,lines,n.anchor(text),n.word().length());if(at==null)continue;
+                int sx=x+TEXT_X+at[0],sy=y+TEXT_Y+at[1];g.fill(sx-1,sy+3,sx+at[2]+1,sy+5,OTHER_INK);g.fill(sx,sy+2,sx+at[2]+2,sy+3,OTHER_WASH);}
+            case DIRECTION->{int at=n.anchor(text);int[] word=locate(font,text,lines,at,n.word().length());float nx,ny;
+                if(word==null){nx=x+n.x()*W;ny=y+n.y()*H;}
+                else{
+                    // It answers the reader's sentence: after the last word of the paragraph holding the word, or on the row beneath it.
+                    int row=word[1]/LINE;
+                    while(row+1<lines.size()&&row+1<LINES){int e=lines.get(row)[1];if(e>=text.length()||text.charAt(e)=='\n')break;row++;}
+                    int[] line=lines.get(row);float end=TEXT_X+font.width(text.substring(line[0],line[1]).stripTrailing())+4,wide=font.width(FormattedText.of(n.text(),OTHER))*.7F;
+                    boolean after=end+wide<=W-6;
+                    nx=x+(after?end:TEXT_X+4);ny=y+TEXT_Y+row*LINE+(after?1:LINE+1);
+                }
+                pose.pushPose();pose.translate(nx,ny,0);pose.mulPose(Axis.ZP.rotationDegrees(-4));pose.scale(.7F,.7F,1);
+                g.drawString(font,seq(n.text(),OTHER),0,0,OTHER_INK,false);pose.popPose();}
+            case WRITTEN->{pose.pushPose();pose.translate(x+n.x()*W,y+n.y()*H,0);pose.mulPose(Axis.ZP.rotationDegrees(-3));
+                int row=0;for(var line:font.split(FormattedText.of(n.text(),OTHER),OTHER_W))g.drawString(font,line,0,row++*LINE,OTHER_INK,false);
+                pose.popPose();}
+        }}finally{HouseText.leaveLiterature();}
+    }
+    /** The writing's wrapped lines as the editor wraps them: where each begins and ends in the text. */
+    static List<int[]> lines(Font font,String text){var out=new ArrayList<int[]>();font.getSplitter().splitLines(text,TEXT_W,Style.EMPTY,false,(style,start,end)->out.add(new int[]{start,end}));return out;}
+    /** A span of the wrapped writing as page pixels from the text's corner: its left, its row's top and its width; null when off the page. */
+    static int[] locate(Font font,String text,List<int[]> lines,int at,int length){
+        if(at<0)return null;
+        for(int r=0;r<lines.size()&&r<LINES;r++){int[] l=lines.get(r);if(at>=l[0]&&at<l[1]){int end=Math.min(at+length,l[1]);return new int[]{font.width(text.substring(l[0],at)),r*LINE,font.width(text.substring(at,end))};}}
+        return null;
     }
 
     static final int RUBBING=52, CAPTION_W=104;

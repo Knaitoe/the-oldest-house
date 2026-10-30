@@ -8,10 +8,18 @@ Run with python3.13 from the repository root (--check compares instead of writin
 0.4.179 adds the pencil rubbings (journal/Rubbings.java), 64x64 charcoal on transparent paper, one per rubbable object:
 textures/gui/rubbing/<id>.png. Charcoal lies on raised surfaces and skips what is cut in, the way a pencil laid flat
 over paper does.
+
+0.4.180 adds the other hand's lettering (journal/CoAuthor.java): a heavier, steeply leaning ink hand on the books' nine-pixel
+line, built from the same glyph source as tools/generate_writing_fonts.py but distinct from all eight of its hands:
+textures/font/margin.png and font/margin.json. The other eight atlases are never rewritten here.
 """
+import json
 import sys
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageDraw
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from generate_writing_fonts import ALIASES as HAND_ALIASES, GLYPHS as HAND_GLYPHS, rows as hand_rows  # noqa: E402
 
 OUT = Path('src/main/resources/assets/the_oldest_house/textures/item')
 COVER = (92, 60, 38, 255); COVER_LIGHT = (122, 82, 52, 255); COVER_DARK = (62, 40, 26, 255)
@@ -290,10 +298,46 @@ RUBBING_ART = {'gouges': gouges, 'well_initials': well_initials, 'sealed_window'
                'pasted_paper': pasted_paper, 'funeral_plate': funeral_plate, 'cave_marks': cave_marks, 'maker_mark': maker_mark}
 
 
+ASSETS = Path('src/main/resources/assets/the_oldest_house')
+# The other hand's own looped a, so its writing is never mistaken for the reader's or any author's.
+MARGIN_FORMS = {'a': '0000/0000/0111/1001/1001/1011/0101'}
+
+
+def margin_chars():
+    return hand_rows(''.join(chr(cp) for cp in range(33, 127)) + ''.join(HAND_ALIASES))
+
+
+def margin_atlas():
+    """Each stroke a pixel and a half wide, as a nib lays ink; the top rows lean a whole pixel, the middle half of one."""
+    mapping = margin_chars()
+    cell_w, cell_h = 16, 18
+    atlas = Image.new('RGBA', (16 * cell_w, len(mapping) * cell_h))
+    draw = ImageDraw.Draw(atlas)
+    for i, char in enumerate(''.join(mapping)):
+        if char not in HAND_GLYPHS:
+            continue
+        pattern = MARGIN_FORMS.get(char, HAND_GLYPHS[char])
+        x0, y0 = i % 16 * cell_w, i // 16 * cell_h
+        for y, row in enumerate(pattern.split('/')):
+            slant = 2 if y < 2 else 1 if y < 4 else 0
+            for x, bit in enumerate(row):
+                if bit == '1':
+                    draw.rectangle((x0 + x * 2 + slant, y0 + y * 2, x0 + x * 2 + slant + 2, y0 + y * 2 + 1), fill=(255, 255, 255, 255))
+    return atlas
+
+
+def margin_definition():
+    return json.dumps({'providers': [
+        {'type': 'space', 'advances': {' ': 4.0}},
+        {'type': 'bitmap', 'file': 'the_oldest_house:font/margin.png', 'ascent': 7, 'height': 9, 'chars': margin_chars()},
+        {'type': 'reference', 'id': 'minecraft:default'}]}, indent=2, ensure_ascii=True) + '\n'
+
+
 def outputs():
     out = {OUT / f'journal_{wear}.png': journal(wear) for wear in range(5)}
     for name, draw in RUBBING_ART.items():
         out[RUBBINGS / f'{name}.png'] = draw()
+    out[ASSETS / 'textures/font/margin.png'] = margin_atlas()
     return out
 
 
@@ -307,6 +351,12 @@ def main():
             continue
         path.parent.mkdir(parents=True, exist_ok=True)
         img.save(path)
+    definition = ASSETS / 'font/margin.json'
+    if check:
+        if not definition.is_file() or definition.read_text() != margin_definition():
+            stale.append(str(definition))
+    else:
+        definition.write_text(margin_definition())
     if stale:
         raise SystemExit('journal art differs from tools/draw_journal_art.py: ' + ', '.join(stale))
 

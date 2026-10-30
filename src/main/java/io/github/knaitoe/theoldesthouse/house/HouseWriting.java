@@ -39,6 +39,8 @@ public final class HouseWriting {
 
     public static final ResourceLocation PELAFINA_FONT=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"pelafina");
     public static final ResourceLocation JOHNNY_FONT=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"johnny");
+    /** The other hand in a reader's journal (journal/CoAuthor), drawn by tools/draw_journal_art.py; never a book's narrator. */
+    public static final ResourceLocation MARGIN_FONT=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"margin");
 
     public enum WritingStyle {
         PLAIN(null),

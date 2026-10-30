@@ -387,6 +387,7 @@ public final class CaverVignette {
     }
     /** Coming to where the air still moves, with nothing lost but the time. */
     private static void wake(ServerPlayer p,CompoundTag own,BlockPos b){
+        io.github.knaitoe.theoldesthouse.journal.CoAuthor.consider(p,io.github.knaitoe.theoldesthouse.journal.CoAuthor.Trigger.BLACKOUT);
         var safe=own.contains("LastSafe")?BlockPos.of(own.getLong("LastSafe")):new BlockPos(0,-3,-22);var at=Vec3.atBottomCenterOf(b.offset(safe));
         p.teleportTo(p.serverLevel(),at.x,at.y,at.z,p.getYRot(),p.getXRot());p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();
         AIR.put(p.getUUID(),p.getMaxAirSupply()/2F);

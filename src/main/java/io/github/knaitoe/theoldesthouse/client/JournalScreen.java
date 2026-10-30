@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.client;
 import io.github.knaitoe.theoldesthouse.journal.JournalPage;
 import io.github.knaitoe.theoldesthouse.journal.Journals;
 import io.github.knaitoe.theoldesthouse.network.JournalEditPayload;
+import io.github.knaitoe.theoldesthouse.network.JournalViewPayload;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,8 @@ public final class JournalScreen extends Screen {
     private int selSide=-1,selRun=-1;
     private boolean dragging;private float dragX,dragY;
     private long lastScratch;
+    /** The spread the server was last told is open, so it is told only when that changes. */
+    private int told=JournalViewPayload.SHUT;
 
     JournalScreen(CompoundTag journal,int spread,boolean proof){
         super(Component.literal("Journal"));
@@ -59,6 +62,7 @@ public final class JournalScreen extends Screen {
     boolean editable(int side){int i=index(side);return i>=1&&i<=Journals.PAGES;}
 
     @Override protected void init(){
+        tell(spread);
         for(int side=0;side<2;side++){
             // Kept while its page is open, so rebuilding the buttons never loses what is being written.
             if(editors[side]!=null&&editing[side]==index(side))continue;
@@ -115,7 +119,7 @@ public final class JournalScreen extends Screen {
 
     private void turn(int by){
         int next=Mth.clamp(spread+by,0,Journals.PAGES/2);if(next==spread)return;
-        send();spread=next;focused=-1;selSide=-1;selRun=-1;
+        send();spread=next;focused=-1;selSide=-1;selRun=-1;tell(spread);
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN,1));
         rebuildWidgets();
     }
@@ -127,7 +131,8 @@ public final class JournalScreen extends Screen {
             PacketDistributor.sendToServer(new JournalEditPayload(i,t));}
         dirty.clear();
     }
-    @Override public void removed(){send();super.removed();}
+    @Override public void removed(){send();tell(JournalViewPayload.SHUT);super.removed();}
+    private void tell(int at){if(at==told)return;told=at;if(!proof&&Minecraft.getInstance().getConnection()!=null)PacketDistributor.sendToServer(new JournalViewPayload(at));}
     @Override public boolean isPauseScreen(){return false;}
 
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){g.fill(0,0,width,height,0xE01E1A16);}
@@ -142,6 +147,7 @@ public final class JournalScreen extends Screen {
             if(i==0){JournalPageRenderer.cover(g,font,x,top,name);continue;}
             JournalPageRenderer.rubbings(g,font,x,top,page);
             if(editors[side]!=null)editor(g,side,x,top);else JournalPageRenderer.writing(g,font,x,top,page.text());
+            JournalPageRenderer.notes(g,font,x,top,page,currentText(side));
             // Placed lines stay on their own page, however far they are turned or dragged.
             g.enableScissor(x,top,x+JournalPageRenderer.W,top+JournalPageRenderer.H);
             var runs=page.placed();for(int r=0;r<runs.size();r++)JournalPageRenderer.placed(g,font,x,top,runs.get(r),side==selSide&&r==selRun);

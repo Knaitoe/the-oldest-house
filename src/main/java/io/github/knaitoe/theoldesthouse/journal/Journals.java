@@ -51,6 +51,8 @@ public final class Journals extends SavedData {
     /** A reader's journal: which copy is theirs now, how worn it is, whether it is out in the world lost, and its pages. */
     static final class Book {
         int issue, wear; boolean lost; String name="";
+        /** The House day the other hand last wrote here (CoAuthor). */
+        int inked;
         final Map<Integer,JournalPage> pages=new HashMap<>();
         /** Which object each rubbing was taken from, and the page it went on. */
         final Map<String,Integer> rubbed=new HashMap<>();
@@ -60,12 +62,17 @@ public final class Journals extends SavedData {
     private final Map<UUID,Book> books=new HashMap<>();
 
     public static Journals get(MinecraftServer server){return server.overworld().getDataStorage().computeIfAbsent(FACTORY,DATA_NAME);}
-    private Book book(UUID id){return books.computeIfAbsent(id,k->new Book());}
+    Book book(UUID id){return books.computeIfAbsent(id,k->new Book());}
 
     public int issue(UUID id){var b=books.get(id);return b==null?0:b.issue;}
     public int wear(UUID id){var b=books.get(id);return b==null?0:b.wear;}
     public boolean lost(UUID id){var b=books.get(id);return b!=null&&b.lost;}
     public JournalPage page(UUID id,int index){var b=books.get(id);return b==null?JournalPage.BLANK:b.pages.getOrDefault(index,JournalPage.BLANK);}
+    /** A page set as the House keeps it, header and all: the tests' own pages, and later the House's own writing. */
+    public void put(UUID id,int index,JournalPage page){if(index<1||index>PAGES)return;book(id).pages.put(index,page);setDirty();}
+    /** The House day the other hand last wrote in this reader's journal, and setting it back (the tests' way to a new day). */
+    public int inked(UUID id){var b=books.get(id);return b==null?0:b.inked;}
+    public void inked(UUID id,int day){book(id).inked=day;setDirty();}
 
     /** A new copy for its owner, one wear worse when it replaces a lost one; any earlier copy goes blank. */
     public ItemStack issue(ServerPlayer p){
@@ -147,7 +154,7 @@ public final class Journals extends SavedData {
         setDirty();
     }
     public enum Rub { RUBBED, TURNED, NOT_RUBBABLE, NOT_YOURS, FULL }
-    /** A page has room for a rubbing below its writing while it has none yet and holds no more than this. */
+    /** A page has room for a rubbing below its writing while it has none yet, nothing of the other hand's, and no more than this. */
     static final int ROOM_CHARS=180, ROOM_LINES=8;
     public static final float RUBBING_X=.08F, RUBBING_Y=.55F;
     /**
@@ -176,7 +183,7 @@ public final class Journals extends SavedData {
     static int room(Book b){
         int last=1;for(var e:b.pages.entrySet())if(!e.getValue().empty())last=Math.max(last,e.getKey());
         for(int i=last;i<=PAGES;i++){var page=b.pages.getOrDefault(i,JournalPage.BLANK);
-            if(page.rubbings().isEmpty()&&page.text().length()<=ROOM_CHARS&&page.text().chars().filter(c->c=='\n').count()<=ROOM_LINES)return i;}
+            if(page.rubbings().isEmpty()&&page.notes().isEmpty()&&page.text().length()<=ROOM_CHARS&&page.text().chars().filter(c->c=='\n').count()<=ROOM_LINES)return i;}
         return -1;
     }
     public int rubbedPage(UUID id,String kind){var b=books.get(id);var page=b==null?null:b.rubbed.get(kind);return page==null?-1:page;}
@@ -242,7 +249,7 @@ public final class Journals extends SavedData {
         var data=new Journals();var all=tag.getCompound("Books");
         for(String key:all.getAllKeys()){
             UUID id;try{id=UUID.fromString(key);}catch(IllegalArgumentException ignored){continue;}
-            var t=all.getCompound(key);var b=new Book();b.issue=t.getInt("Issue");b.wear=t.getInt("Wear");b.lost=t.getBoolean("Lost");b.name=t.getString("Name");
+            var t=all.getCompound(key);var b=new Book();b.issue=t.getInt("Issue");b.wear=t.getInt("Wear");b.lost=t.getBoolean("Lost");b.name=t.getString("Name");b.inked=t.getInt("Inked");
             var pages=t.getCompound("Pages");for(String k:pages.getAllKeys()){try{int i=Integer.parseInt(k);if(i>=1&&i<=PAGES)b.pages.put(i,JournalPage.load(pages.getCompound(k)));}catch(NumberFormatException ignored){}}
             var rubbed=t.getCompound("Rubbed");for(String k:rubbed.getAllKeys())if(Rubbings.byId(k)!=null)b.rubbed.put(k,rubbed.getInt(k));
             data.books.put(id,b);
@@ -251,7 +258,7 @@ public final class Journals extends SavedData {
     }
     @Override public CompoundTag save(CompoundTag tag,HolderLookup.Provider registries){
         var all=new CompoundTag();
-        for(var e:books.entrySet()){var b=e.getValue();var t=new CompoundTag();t.putInt("Issue",b.issue);t.putInt("Wear",b.wear);if(b.lost)t.putBoolean("Lost",true);t.putString("Name",b.name);
+        for(var e:books.entrySet()){var b=e.getValue();var t=new CompoundTag();t.putInt("Issue",b.issue);t.putInt("Wear",b.wear);if(b.lost)t.putBoolean("Lost",true);t.putString("Name",b.name);if(b.inked>0)t.putInt("Inked",b.inked);
             var pages=new CompoundTag();for(var p:b.pages.entrySet())pages.put(Integer.toString(p.getKey()),p.getValue().save());t.put("Pages",pages);
             if(!b.rubbed.isEmpty()){var rubbed=new CompoundTag();b.rubbed.forEach(rubbed::putInt);t.put("Rubbed",rubbed);}
             all.put(e.getKey().toString(),t);}

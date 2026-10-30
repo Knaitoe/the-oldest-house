@@ -1,3 +1,5 @@
+October 30 co-author candidate 0.4.180: require the two new JournalTests other-hand cases, the extended caver blackout case, the build job's fifth native journal view (the other hand's ink) and nine font grids (the new margin hand). Retain the full current-source matrix and every earlier requirement. Protocol 101 / layout 51; Witness 55 / 42 / two kinds / three endings.
+
 October 30 rubbings candidate 0.4.179: require the two new JournalTests rubbing cases and the build job's fourth native journal view (two rubbings, no missing-texture magenta). Retain the full current-source matrix and every earlier requirement, including 0.4.178's courtyard views. Protocol 100 / layout 51; Witness 55 / 42 / two kinds / three endings.
 
 October 30 courtyard candidate 0.4.178: require the two new NovelTests drawer cases, the build job's twelve native courtyard views (Zampano's ink on each, the struck Minotaur red, the house blue), the cabinet package checks and draw_zampano_cabinet_art.py --check. Retain the full current-source matrix and every earlier requirement. Protocol 100 / layout 51; Witness 55 / 42 / two kinds / three endings.
