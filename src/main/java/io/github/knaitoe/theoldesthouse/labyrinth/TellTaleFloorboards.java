@@ -79,6 +79,8 @@ public final class TellTaleFloorboards {
     private static final double BREAK_HEAT = 35.0D;
 
     private static double heat;
+    /** Who was in the room last tick, so a reader walking in is noticed once. */
+    private static final java.util.Set<java.util.UUID> INSIDE = new java.util.HashSet<>();
     private static long nextBeat;
 
     private TellTaleFloorboards() {
@@ -216,7 +218,7 @@ public final class TellTaleFloorboards {
         ServerLevel level = server.getLevel(HouseDimensions.INTERIOR);
         BlockPos base = base(server);
         if (level == null || base == null || level.players().isEmpty()) {
-            heat = 0.0D;
+            heat = 0.0D;INSIDE.clear();
             return;
         }
         if (server.getTickCount() % 20 == 0) keepHatchet(server, level, base);
@@ -230,6 +232,15 @@ public final class TellTaleFloorboards {
                 inside.add(player);
             }
         }
+        // 0.4.191: a reader the heart once sent out brings it back louder.
+        var present = new java.util.HashSet<java.util.UUID>();
+        for (ServerPlayer player : inside) {
+            present.add(player.getUUID());
+            // It only ever raises the heart, and never to the peak by itself.
+            double start = Math.min(MAX_HEAT - 1, ContestTrades.startingHeat(player));
+            if (!INSIDE.contains(player.getUUID()) && start > heat) heat = start;
+        }
+        INSIDE.clear();INSIDE.addAll(present);
         if (inside.isEmpty()) {
             heat = Math.max(0.0D, heat - 0.5D);
             return;
@@ -241,6 +252,7 @@ public final class TellTaleFloorboards {
             heat = 0.0D;
             for (ServerPlayer player : inside) {
                 play(player, LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get(), heart, 1.7F, 1.18F);
+                ContestTrades.unsettle(player);
                 LabyrinthDoors.sendBack(player, 2, 24, 30);
             }
             TheOldestHouse.LOGGER.info("The heartbeat under the floorboards reached its peak.");

@@ -640,15 +640,29 @@ public final class Shallows {
         if(!(event.getEntity() instanceof ServerPlayer player)||!IndianLakeRooms.inside(player,LabyrinthPlace.SHALLOWS))return;
         var target=event.getTarget();
         if(!(target instanceof LakeWitchEntity w&&w.memory())&&!target.getTags().contains(BOY)&&!target.getTags().contains(CARRIER))return;
-        event.setCanceled(true);LabyrinthData data=LabyrinthData.get(player.server);
+        event.setCanceled(true);LabyrinthData data=LabyrinthData.get(player.server);ServerPlayer striker=player;
         // 0.4.157: a blow from someone who joined darkens the recollection they joined.
         var host=host(player);if(host!=player){player=host;}
         CompoundTag record=personal(data,player.getUUID());
         // A finished throw is not undone by a blow afterward.
         if(IndianLakeProgress.hasThrown(data,player.getUUID()))return;
-        record.putBoolean("Cold",true);save(data,player.getUUID(),record);
+        boolean first=!record.getBoolean("Cold");record.putBoolean("Cold",true);if(first)record.putBoolean(BOYS_LEFT,true);save(data,player.getUUID(),record);
+        // 0.4.191: the failure takes the boys' company. They go home: gone from the view of whoever struck and whoever's visit it was.
+        if(first)boysLeave(striker,player);
         LakeWitchEntity girl=actor(player);if(girl!=null)discard(girl);LakeCongregantEntity boy=carrier(player);if(boy!=null)boy.discard();removeBurdens(player);
         BlockPos base=IndianLakeRooms.base(player.server,LabyrinthPlace.SHALLOWS);IndianLakeArchitecture.light(player.serverLevel(),base.offset(2,3,-8),0);IndianLakeArchitecture.light(player.serverLevel(),base.offset(0,2,-13),0);
+    }
+    /** Set when a blow before the throw sent the boys home; the reader's account remembers it. */
+    public static final String BOYS_LEFT="BoysLeft0191";
+    /** The boys stop, pick up their things and go home: the bank boys leave these readers' view until they come back. */
+    static void boysLeave(ServerPlayer... readers){
+        var seen=new java.util.HashSet<ServerPlayer>(java.util.Arrays.asList(readers));
+        for(var reader:seen){
+            var ids=new java.util.ArrayList<Integer>();
+            for(int i=0;i<3;i++){var boy=onlooker(reader.serverLevel(),i);if(boy!=null)ids.add(boy.getId());}
+            if(!ids.isEmpty())reader.connection.send(new net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket(ids.stream().mapToInt(Integer::intValue).toArray()));
+            reader.displayClientMessage(Component.literal("The boys stop laughing. They pick up their things and go home without you.").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),false);
+        }
     }
     /** Old saved words on the bank (before 0.4.101 the scene spoke through floating text) still expire. */
     public static void words(ServerPlayer player,BlockPos at,String text){
@@ -690,6 +704,11 @@ public final class Shallows {
      * who threw her with Lonnie keeps the line as it was.
      */
     public static String witness(CompoundTag record,String text){
+        String line=thrown(record,text);
+        // 0.4.191: a visit darkened by a blow sent the boys home, and the account keeps it.
+        return record.getBoolean(BOYS_LEFT)?line+" Once, before that, I struck her, and the boys went home without me.":line;
+    }
+    private static String thrown(CompoundTag record,String text){
         var t=record.getCompound(THROW);if(t.isEmpty())return text;String thrower=t.getString("Thrower"),feet=t.getString("Feet");
         return switch(t.getString(ROLE)){
             case AT_FEET->"I held her feet while "+thrower+" held her wrists, and we swung her out over the water on three. The lake would not take her. The school pages remembered my name among the boys on the bank.";

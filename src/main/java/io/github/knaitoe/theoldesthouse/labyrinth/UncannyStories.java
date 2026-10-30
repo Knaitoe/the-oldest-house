@@ -116,6 +116,8 @@ public final class UncannyStories {
         if(failed(own)||own.getBoolean("Completed"))return;own.putBoolean("UncannyFailed",true);own.putString("Failure",outcome);own.putBoolean("Ready",false);
         HousePackets.send(p,new HouseFadePayload(10,8,16));var safe=Vec3.atBottomCenterOf(b.offset(0,0,-3));
         p.teleportTo(p.serverLevel(),safe.x,safe.y,safe.z,0,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();
+        // 0.4.191: answering her, the reader leaves in her black frost.
+        if(place==LabyrinthPlace.SECOND_WAITRESS)ContestTrades.blackFrost(p);
         cue(p,switch(place){case SECOND_WAITRESS->"The place setting in front of you is empty.";case TUNNEL_PERIPHERY->"A hand on the back of your neck.";case MISSING_SLEEP->"The monitor is still showing the empty bed.";case MOTION_LIGHT->"The buzzer stops.";case LAYERED_MAN->"Warm tallow closes over your boots.";default->"You are facing the painted sun again.";});
     }
     private static void boarded(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -322,6 +324,8 @@ public final class UncannyStories {
     public static void finishReward(ServerPlayer p,LabyrinthPlace place,CompoundTag own){
         if(place==LabyrinthPlace.PAINTED_INTERIOR)LiteraryVignettes.reward(p,place,own,"BoneRing",new ItemStack(UncannyRegistry.BONE_RING.get()));
         if(place==LabyrinthPlace.MISSING_SLEEP)LiteraryVignettes.reward(p,place,own,"SmokyMirror",new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));
+        // 0.4.191: leaving after tasting her meal costs a moment of nausea.
+        if(place==LabyrinthPlace.SECOND_WAITRESS&&own.getBoolean("MealEaten127"))ContestTrades.nausea(p);
     }
     public static void setDoor(ServerLevel l,BlockPos at,boolean open){for(int y=0;y<2;y++){var s=l.getBlockState(at.above(y));if(s.getBlock() instanceof DoorBlock)l.setBlock(at.above(y),s.setValue(DoorBlock.OPEN,open),F);}}
     private static void nativeStep(LiteraryActor a,Vec3 target,double step){var delta=target.subtract(a.position());if(delta.lengthSqr()>.001)a.move(MoverType.SELF,delta.length()<=step?delta:delta.normalize().scale(step));a.setDeltaMovement(Vec3.ZERO);}
