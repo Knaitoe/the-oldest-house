@@ -272,7 +272,8 @@ public final class ElkLotNight {
         if(t>MEN_OUT+40&&(t-MEN_OUT)%110==0){
             int n=w.getInt("Lines");w.putInt("Lines",n+1);int i=n%MEN.size();var who=MEN.get(i);var a=cast(l,w,who);var p=a==null?null:nearest(a,here,32);
             if(a!=null&&p!=null){var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),p.getUUID(),PLACE);
-                String[] pool=own.getBoolean("ElkWounded")&&n%4==3?WOUNDED:OUTSIDE[Math.max(0,stage)][i];speak(a,who,said(who,pool[(n/MEN.size())%pool.length],p),here);}
+                // 0.4.187: every fourth line reads the reader's own record of animals killed back to them.
+                String[] pool=own.getBoolean("ElkWounded")&&n%4==3?WOUNDED:n%4==1?new String[]{ElkFollows.accusation(p)}:OUTSIDE[Math.max(0,stage)][i];speak(a,who,said(who,pool[(n/MEN.size())%pool.length],p),here);}
         }
     }
     static void openSideDoor(ServerLevel l,BlockPos b,LivingEntity a){

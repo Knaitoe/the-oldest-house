@@ -50,7 +50,7 @@ public final class ElkLotEnding {
     private static boolean touches(ServerPlayer p,LivingEntity body){return body.isAlive()&&body.getBoundingBox().inflate(.7,.2,.7).intersects(p.getBoundingBox())&&p.serverLevel().clip(new net.minecraft.world.level.ClipContext(p.getEyePosition(),body.getEyePosition(),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS;}
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own,CompoundTag night){
         if(!LiteraryVignettes.inside(p,ElkLot.PLACE)){release(p);return;}
-        if(own.getBoolean("Ready")||own.getBoolean("Completed")){release(p);hide(p);return;}
+        if(own.getBoolean("Ready")||own.getBoolean("Completed")||ElkFollows.overTonight(own)){release(p);hide(p);return;}
         boolean handContact=ElkLotNight.stage(night)>=3&&men(p).stream().anyMatch(a->touches(p,a));
         if(!own.getBoolean("ElkSeen")&&!handContact&&own.getInt("CaptureTicks0492")==0)return;
         int field=own.getInt("FieldTicks");boolean pressure=ElkLotNight.stage(night)>=3||field>=120;
@@ -93,7 +93,10 @@ public final class ElkLotEnding {
         if(ticks==35||resume&&ticks>35)HousePackets.send(p,new HouseFadePayload(20,40,30));
         if(ticks<CAPTURE_TICKS)return;
         var porch=b.offset(ElkLot.PORCH);if(!p.serverLevel().hasChunkAt(porch)||!p.serverLevel().noCollision(p,p.getBoundingBox().move(Vec3.atBottomCenterOf(porch).subtract(p.position()))))return;
-        p.teleportTo(p.serverLevel(),porch.getX()+.5,porch.getY(),porch.getZ()+.5,180,0);release(p);own.putInt("CaptureTicks0492",0);LiteraryVignettes.ready(p,ElkLot.PLACE,own,side);hide(p);io.github.knaitoe.theoldesthouse.journal.CoAuthor.consider(p,io.github.knaitoe.theoldesthouse.journal.CoAuthor.Trigger.BLACKOUT);
+        p.teleportTo(p.serverLevel(),porch.getX()+.5,porch.getY(),porch.getZ()+.5,180,0);release(p);own.putInt("CaptureTicks0492",0);hide(p);io.github.knaitoe.theoldesthouse.journal.CoAuthor.consider(p,io.github.knaitoe.theoldesthouse.journal.CoAuthor.Trigger.BLACKOUT);
+        // 0.4.187: a reader who struck her tonight wakes on the porch to nothing; she follows them home (ElkFollows).
+        if(ElkFollows.struckTonight(own)){ElkFollows.wokeStruck(p,own);return;}
+        ElkFollows.passed(p,own);LiteraryVignettes.ready(p,ElkLot.PLACE,own,side);
         p.displayClientMessage(Component.literal("On the noticeboard, the clipping has been turned over. It gives your name."),false);
     }
     private static boolean herdTouches(ServerPlayer p){var w=LiteraryVignettes.shared(LabyrinthData.get(p.server),ElkLot.PLACE);
