@@ -27,6 +27,14 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
 - **"The double text should also be fixed."** A cue inside a novel site went to the action bar and also to the site's own caption, so it showed twice. Inside a site it now goes only to the caption, sent the same tick (`NovelVignettes.cue`, `CueFresh`).
 - **"The monitor in the hospital needs to have a base."** The "monitor" is the red call button on the wall, standing directly over a light seam in the dado, which reads as a screen on a pole. It is part of the clinical redesign of the ward that follows: a proper call unit, and a monitor on a wheeled stand with a base.
 
+## Third Floor Girls' (the Bloody Mary dare)
+- **"The changes to the players face ... shouldn't start until the second count at least and should be much more gradual. like, difficult to discern until the face returns to normal."**
+  - On the first count the reflection does not change.
+  - In the second count (about 26 seconds of staring), one eye drifts a pixel aside, cross-fading over fourteen seconds, and the mouth begins to pale, no further than halfway.
+  - Through the third count the other eye drifts. The mouth pales away and then comes back wrong over ten seconds: lower and wider, its far corner dragged down.
+  - Each change fades in eight steps, so no single frame jumps; the difference is plain only when the face snaps back to the reader's own (`DareReflection.key`, `toward`).
+  - The dare's face proof shows the six moments: before, first count, an eye drifting, the mouth paling, both eyes, and the wrong mouth.
+
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.
 - The Ghosts namespace (24 cases), the novel sites (16) and the shelter case pass locally.

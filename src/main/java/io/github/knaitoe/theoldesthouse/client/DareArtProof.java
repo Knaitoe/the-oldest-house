@@ -74,7 +74,7 @@ public final class DareArtProof extends Screen {
             }
             case 2->{
                 var faces=steve();DareReflection.face(faces[0],faces[1]);var body=new PlayerModel<AbstractClientPlayer>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);
-                int[][] stages={{0,0},{1,40},{1,180},{2,20},{2,100},{3,40}};String[] labels={"before","first: an eye moves","first: the mouth fades","second: no mouth","second: it comes back wrong","third"};
+                int[][] stages={{0,0},{1,200},{2,300},{2,600},{3,100},{3,300}};String[] labels={"before","first: nothing yet","second: an eye drifting","second: the mouth paling","third: both eyes, mouth gone","third: it comes back wrong"};
                 for(int i=0;i<stages.length;i++){
                     for(var part:new net.minecraft.client.model.geom.ModelPart[]{body.head,body.hat})part.resetPose();
                     p.pushPose();p.translate((i%3+.5F)*width/3F,(i/3+.7F)*(height-40)/2F+20,150);p.scale(150,150,-150);p.translate(0,.25,0);
