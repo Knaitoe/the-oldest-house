@@ -77,4 +77,14 @@ It writes in one of the owner's three forms, chosen at random among the forms th
 - **`CaverTests.badAirDrains…` (extended).** The reader's blackout in the crawl leaves the blank-page note in a journal with a House page.
 - **The native client proof** adds `native-journal-4.png`: a struck name, an answer under a line and a written blank page in the other hand. It fails if the other hand's ink is missing.
 
+## Run 1346
+
+Run 1346 tested cf4d59a (0.4.179 with run 1345's two fixes). Two live jobs failed on timing; neither touches the journal.
+
+- **live-multiplayer.** The uncanny preflight passed at view distance 3: both readers sprinted the tunnel and every check held. The step then failed its log check. The server had logged "OTHProofA moved too quickly! -1.0,0.0,11.0" in the bedroom.
+  - **Why.** Using the bed moves the reader to the wake spot, 11 blocks away, but did not reset the connection's movement check. The basement's own move in the same file does reset it. On a loaded host the client's first move from the wake spot was measured from the bed.
+  - **The fix is in the room.** The bed's wake move now clears the reader's motion and resets the check (`UncannyStories`), as the basement does.
+- **trailer-client.** The Backseat live proof's second client crashed at its end check: it had taken its first side-window frame, but its slow frames missed the second before the car's clock reached 60.
+  - **The fix is in the proof.** Once the first frame is taken early in the acceleration, the second may follow later in the same reveal (`BackseatSocketClient`). The acceleration frame now waits for it. Every check on the frames is kept.
+
 No layout or Witness change: layout 51; Witness 55 / 42 / two kinds / three endings. The journal still counts toward nothing.

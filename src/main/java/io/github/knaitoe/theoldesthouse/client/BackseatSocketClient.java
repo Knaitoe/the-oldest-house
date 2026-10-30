@@ -110,14 +110,16 @@ public final class BackseatSocketClient {
                     if(!looked){look(mc,at.getCenter().add(BackseatCarMesh.MIRROR).add(0,-.5,0));revealYaw=mc.player.getYRot();revealPitch=mc.player.getXRot();looked=true;}
                     if(car.phase==BackseatCarBlock.Car.REVEAL){
                         if(!CAPTURES.contains(role()+"-reveal")&&car.travel>3)capture("reveal",false);
-                        else if(CAPTURES.contains(role()+"-reveal")&&!CAPTURES.contains(role()+"-side-window-late")&&car.clock<60){
+                        else if(CAPTURES.contains(role()+"-reveal")&&!CAPTURES.contains(role()+"-side-window-late")&&(car.clock<60||CAPTURES.contains(role()+"-side-window-early"))){
                             // One real glance out each driver's own side glass. Hold the same
                             // heading for both frames so visible movement comes from native travel.
+                            // The first frame comes early in the acceleration; a slow client may take the
+                            // second later in the same reveal (run 1346), and the acceleration frame waits for it.
                             mc.player.setYRot(role().equals("A")?90:-90);mc.player.setXRot(0);
                             if(!CAPTURES.contains(role()+"-side-window-early"))capture("side-window-early",false);
                             else if(car.travel-windowTravel>3)capture("side-window-late",false);
                         }else{mc.player.setYRot(revealYaw);mc.player.setXRot(revealPitch);}
-                        if(car.clock>=60)capture("acceleration",false);
+                        if(car.clock>=60&&CAPTURES.contains(role()+"-side-window-late"))capture("acceleration",false);
                     }
                 }
             }else if(car!=null&&phase==6){forward(mc);if(age>60){locked(mc,car);require(!HEARD.contains("backseat.rise")&&!HEARD.contains("backseat.glass")&&!HEARD.contains("backseat.impact")&&!HEARD.contains("backseat.wind"),"the other driver's crash and wind audio remain private");capture("peer-still-locked",true);}}

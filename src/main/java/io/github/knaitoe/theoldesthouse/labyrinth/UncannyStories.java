@@ -274,7 +274,7 @@ public final class UncannyStories {
             if(rel.equals(UncannyRooms.MONITOR_AT)){UncannySenses.send(p,true);return true;}
             if(p.serverLevel().getBlockState(b.offset(rel)).getBlock() instanceof BedBlock){
                 int sleeps=Math.min(3,own.getInt("Sleeps")+1);own.putInt("Sleeps",sleeps);own.putInt("NightClock",own.getInt("NightClock")+7200);if(sleeps==1)own.putInt("FirstSleepAge",own.getInt("UncannyAge"));if(sleeps==2)own.putInt("SecondSleepAge",own.getInt("UncannyAge"));
-                HousePackets.send(p,new HouseFadePayload(8,8,16));var target=b.offset(sleeps%2==1?-7:1,5,sleeps%2==1?-13:-20);p.teleportTo(p.serverLevel(),target.getX()+.5,target.getY(),target.getZ()+.5,180,0);p.hasChangedDimension();cue(p,sleeps==1?"06:00. Dried mud between your toes.":"06:00. On the monitor, the mattress is empty.");return true;
+                HousePackets.send(p,new HouseFadePayload(8,8,16));var target=b.offset(sleeps%2==1?-7:1,5,sleeps%2==1?-13:-20);p.teleportTo(p.serverLevel(),target.getX()+.5,target.getY(),target.getZ()+.5,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();cue(p,sleeps==1?"06:00. Dried mud between your toes.":"06:00. On the monitor, the mattress is empty.");return true;
             }
             if((rel.equals(UncannyRooms.PARENTS_DOOR)||rel.equals(UncannyRooms.PARENTS_DOOR.above()))&&own.getInt("Sleeps")>=2){
                 var door=p.serverLevel().getBlockState(b.offset(UncannyRooms.PARENTS_DOOR));boolean close=door.getValue(DoorBlock.OPEN);
