@@ -186,12 +186,25 @@ public final class Journals extends SavedData {
         return -1;
     }
     public int rubbedPage(UUID id,String kind){var b=books.get(id);var page=b==null?null:b.rubbed.get(kind);return page==null?-1:page;}
-    /** A hand holding a journal on a rubbable object takes the rubbing, after the room has answered the click as it always does. */
+    /**
+     * A hand holding a journal on a rubbable object takes the rubbing, after the room has answered the click as it always does.
+     * 0.4.199 (owner: "let players interact with objects with charcoal to make the charcoal sketches in their books"): a hand holding
+     * charcoal does the same into the reader's own journal, wherever it is on them.
+     */
     @SubscribeEvent(priority=EventPriority.LOWEST,receiveCanceled=true) public static void rubbing(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock e){
-        if(owner(e.getItemStack())==null||e.getEntity().isSpectator())return;
+        if(e.getEntity().isSpectator())return;
+        var held=e.getItemStack();var journal=owner(held)!=null?held:held.is(net.minecraft.world.item.Items.CHARCOAL)?carried(e.getEntity()):ItemStack.EMPTY;
+        if(journal.isEmpty())return;
         var state=e.getLevel().getBlockState(e.getPos());if(Rubbings.of(state)==null)return;
-        if(e.getEntity() instanceof ServerPlayer p)rub(p,e.getItemStack(),state);
+        if(e.getEntity() instanceof ServerPlayer p)rub(p,journal,state);
         e.setCanceled(true);e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+    }
+    /** The reader's own journal, anywhere on them (on the server, the current one before an old copy), or nothing. */
+    public static ItemStack carried(net.minecraft.world.entity.player.Player p){
+        var inventory=p.getInventory();ItemStack any=ItemStack.EMPTY;
+        for(int i=0;i<inventory.getContainerSize();i++){var s=inventory.getItem(i);if(!p.getUUID().equals(owner(s)))continue;
+            if(!(p instanceof ServerPlayer sp)||get(sp.server).check(sp,s)==Opening.OPEN)return s;if(any.isEmpty())any=s;}
+        return any;
     }
 
     static String where(ServerPlayer p){
