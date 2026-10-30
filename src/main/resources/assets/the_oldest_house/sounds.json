@@ -2462,5 +2462,123 @@
         "stream": true
       }
     ]
+  },
+  "dare.giggle": {
+    "subtitle": "subtitles.the_oldest_house.dare.giggle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:costume/giggle",
+        "volume": 0.7,
+        "pitch": 1.15,
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "dare.whisper": {
+    "subtitle": "subtitles.the_oldest_house.dare.whisper",
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/nursery_whisper",
+        "volume": 0.6,
+        "pitch": 1.1
+      }
+    ]
+  },
+  "dare.shuffle": {
+    "subtitle": "subtitles.the_oldest_house.dare.shuffle",
+    "sounds": [
+      {
+        "name": "minecraft:step/cloth1",
+        "volume": 0.8,
+        "pitch": 0.85
+      },
+      {
+        "name": "minecraft:step/cloth2",
+        "volume": 0.8,
+        "pitch": 0.85
+      },
+      {
+        "name": "minecraft:step/cloth3",
+        "volume": 0.8,
+        "pitch": 0.85
+      },
+      {
+        "name": "minecraft:step/cloth4",
+        "volume": 0.8,
+        "pitch": 0.85
+      }
+    ]
+  },
+  "dare.latch": {
+    "subtitle": "subtitles.the_oldest_house.dare.latch",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/latch",
+        "pitch": 0.9
+      }
+    ]
+  },
+  "dare.rattle": {
+    "subtitle": "subtitles.the_oldest_house.dare.rattle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:backseat/latch",
+        "pitch": 1.35
+      },
+      {
+        "name": "the_oldest_house:backseat/latch",
+        "pitch": 1.2
+      }
+    ]
+  },
+  "dare.breath": {
+    "subtitle": "subtitles.the_oldest_house.dare.breath",
+    "sounds": [
+      {
+        "name": "the_oldest_house:well/breath",
+        "volume": 1.0,
+        "pitch": 0.9
+      }
+    ]
+  },
+  "dare.slam": {
+    "subtitle": "subtitles.the_oldest_house.dare.slam",
+    "sounds": [
+      {
+        "name": "minecraft:random/door_open",
+        "volume": 1.0,
+        "pitch": 0.7
+      }
+    ]
+  },
+  "dare.shatter": {
+    "subtitle": "subtitles.the_oldest_house.dare.shatter",
+    "sounds": [
+      {
+        "name": "minecraft:random/glass1",
+        "volume": 1.0,
+        "pitch": 0.85
+      },
+      {
+        "name": "minecraft:random/glass2",
+        "volume": 1.0,
+        "pitch": 0.85
+      },
+      {
+        "name": "minecraft:random/glass3",
+        "volume": 1.0,
+        "pitch": 0.85
+      }
+    ]
+  },
+  "dare.flame": {
+    "subtitle": "subtitles.the_oldest_house.dare.flame",
+    "sounds": [
+      {
+        "name": "minecraft:fire/ignite",
+        "volume": 0.5,
+        "pitch": 0.7
+      }
+    ]
   }
 }

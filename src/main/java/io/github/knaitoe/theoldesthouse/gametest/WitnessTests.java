@@ -76,7 +76,7 @@ public final class WitnessTests {
         helper.succeed();
     }
     @GameTest(template="empty") public static void witnessQuotaTracksSeventyFivePercentOfTheEligiblePool(GameTestHelper helper){
-        helper.assertTrue(WitnessAccount.Story.values().length==54&&WitnessAccount.REQUIRED==41,"the fifty-four playable sources currently require forty-one resolutions");
+        helper.assertTrue(WitnessAccount.Story.values().length==55&&WitnessAccount.REQUIRED==42,"the fifty-five playable sources currently require forty-two resolutions");
         for(int[] quota:new int[][]{{5,4},{6,5},{7,6},{8,6},{9,7},{10,8},{11,9},{12,9},{13,10},{16,12},{17,13},{18,14},{19,15},{20,15},{43,33}})
             helper.assertTrue(WitnessAccount.requiredForPoolSize(quota[0])==quota[1],"the Witness quota rounds 75 percent upward for a pool of "+quota[0]);
         helper.succeed();

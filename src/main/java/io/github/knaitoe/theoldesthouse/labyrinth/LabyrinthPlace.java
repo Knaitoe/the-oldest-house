@@ -312,6 +312,8 @@ public enum LabyrinthPlace {
     READ_SHELTER("jukebox_shelter",Kind.INTERLUDE,111,new BoundingBox(-24,-6,-30,24,10,8),List.of()),
     /** 0.4.168: the kitchen table, the first quiet room. */
     READ_KITCHEN("kitchen_table",Kind.INTERLUDE,112,new BoundingBox(-7,-3,-17,8,6,5),List.of()),
+    /** 0.4.173: the owner's Bloody Mary vignette, "Third Floor Girls'": a school hallway and the girls' bathroom off it. */
+    DARE_IN_THE_DARK("dare_in_the_dark",Kind.ONE_SHOT,113,new BoundingBox(-4,-2,-29,14,5,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

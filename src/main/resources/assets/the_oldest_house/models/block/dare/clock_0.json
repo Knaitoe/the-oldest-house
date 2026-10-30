@@ -1,0 +1,48 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "tex": "the_oldest_house:block/dare/clock",
+    "particle": "the_oldest_house:block/dare/clock"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        1,
+        15
+      ],
+      "to": [
+        15,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tex",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#tex"
+        },
+        "east": {
+          "texture": "#tex"
+        },
+        "west": {
+          "texture": "#tex"
+        },
+        "up": {
+          "texture": "#tex"
+        },
+        "down": {
+          "texture": "#tex"
+        }
+      }
+    }
+  ]
+}

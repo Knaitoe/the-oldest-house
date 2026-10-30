@@ -22,6 +22,9 @@ public final class LiteraryActor extends PathfinderMob {
     public static final int READ_MAN=39,READ_WOMAN=40;
     /** 0.4.152: the young man in Tess's place at the lake house, for a reader the House reads as drawn to men. */
     public static final int LAKE_THEO=41;
+    /** 0.4.173: the two kids under bedsheets outside the third-floor girls' bathroom; phase 0 waiting, 1 giggling, 2 silent. */
+    public static final int DARE_KID_A=42,DARE_KID_B=43;
+    public static boolean dareKid(int role){return role==DARE_KID_A||role==DARE_KID_B;}
     /** The lake house partner, whichever of the two they are. */
     public static boolean lakePartner(int role){return role==LAKE_TESS||role==LAKE_THEO;}
     private static final EntityDataAccessor<Integer> ROLE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT),PHASE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
@@ -47,7 +50,7 @@ public final class LiteraryActor extends PathfinderMob {
         super.lerpTo(x,y,z,yaw,pitch,steps);
     }
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE||key==GESTURE)refreshDimensions();}
-    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase));double size=role==UNCANNY_GIANT?2.5:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
+    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT?2.5:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
     @Override public void startSeenByPlayer(ServerPlayer p){
         super.startSeenByPlayer(p);

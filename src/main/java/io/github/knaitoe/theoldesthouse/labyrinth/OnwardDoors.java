@@ -70,7 +70,7 @@ public final class OnwardDoors {
     /** Whatever holds a scene's entry shut during a committed beat holds its way on shut too. */
     public static boolean locked(ServerPlayer p,LabyrinthData.Door door){
         var place=placeOf(door);if(place==null)return false;var entry=SceneInstances.entryOf(LabyrinthData.get(p.server),place,door);
-        return LiteraryVignettes.retreatLocked(p)||entry!=null&&(NovelVignettes.exitLocked(p,entry)||VignetteGate.exitLocked(p,entry));
+        return LiteraryVignettes.retreatLocked(p)||DareInTheDark.forwardHeld(p,place)||entry!=null&&(NovelVignettes.exitLocked(p,entry)||VignetteGate.exitLocked(p,entry));
     }
 
     private static boolean passable(ServerLevel l,BlockPos at){var s=l.getBlockState(at);return s.getCollisionShape(l,at).isEmpty()&&s.getFluidState().isEmpty();}
