@@ -63,7 +63,7 @@ public final class HouseReadStory {
             case WAITING->visit.getBoolean("Called");
             case BATHROOM->visit.getBoolean("Done");
             case COATROOM->seen.contains("Took")||seen.contains("Mirror");
-            case SHELTER->visit.getInt("SongAge")>=900&&answered(seen);
+            case SHELTER->visit.getBoolean("Settled")||visit.getInt("SongAge")>=900&&answered(seen);
             case PORCH->seen.contains("First");
             case KITCHEN->visit.getBoolean("Hung");
         };

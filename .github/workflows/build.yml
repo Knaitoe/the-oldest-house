@@ -2144,7 +2144,7 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','HouseReadReaderTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java','CoopTests.java'))
-          assert count==39
+          assert count==40
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==6
           PY
@@ -2159,6 +2159,7 @@ jobs:
           python3 tools/paint_house_read_cast.py --check
           python3 tools/draw_onward_doors.py --check
           python3 tools/draw_paw_clench.py --check
+          python3 tools/draw_ghosts_playhouse.py --check
       - name: Native room geometry, standard/slim coats and the two-block mirror
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m

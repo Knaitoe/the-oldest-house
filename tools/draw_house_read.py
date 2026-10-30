@@ -102,6 +102,9 @@ def outputs():
    rope=[{'from':[6.5,8,8],'to':[9.5,16,8],'rotation':{'origin':[8,8,8],'axis':'y','angle':45},'shade':False,'faces':{'north':{'uv':[0,0,3,8],'texture':'#rope'},'south':{'uv':[0,0,3,8],'texture':'#rope'}}},
          {'from':[8,8,6.5],'to':[8,16,9.5],'rotation':{'origin':[8,8,8],'axis':'y','angle':45},'shade':False,'faces':{'west':{'uv':[3,0,6,8],'texture':'#rope'},'east':{'uv':[3,0,6,8],'texture':'#rope'}}}]
    model(n,[cube([0,6,3],[16,8,13],'oak')]+rope,extra={'rope':ROPE})
+   # 0.4.172 (owner: "The rope swing should be interactive"): while a reader swings, the seat and its ropes are drawn moving
+   # with them (HouseReadSwing), and the still ones are hidden.
+   model(n+'_turned',[],extra={'rope':ROPE})
   elif n=='mailbox':model(n,[cube([7,0,7],[9,13,9],'oak'),cube([1,13,3],[15,18,13],'metal'),cube([1,13,2.6],[15,17.8,2.9],'metal'),cube([14.8,15,6],[15.1,21,7],'curtain')])
   else:model(n,[cube([3,0,3],[13,.6,13],'cream'),cube([4,.65,4],[12,.9,12],'food')])
  more_models(out,model,cube);rooms160.models(model,cube,faced);kitchen.models(model,cube,faced);wardrobe.models(model,cube,faced)
@@ -113,7 +116,7 @@ def outputs():
   for face,rot in [('south',0),('west',90),('north',180),('east',270)]:
    for turned in [False,True]:
     for writing in [False,True]:
-     suffix='_turned' if turned and n in parts[:6]+wardrobe.PARTS+['mirror','mirror_top'] else '_written' if writing and n in ['rail','umbrella'] else ''
+     suffix='_turned' if turned and n in parts[:6]+wardrobe.PARTS+['mirror','mirror_top','swing'] else '_written' if writing and n in ['rail','umbrella'] else ''
      if n in ['glasses','phone','light_switch','tap','sink']+rooms160.TURNED and turned:suffix='_turned'
      if n in ['calendar','postcard','jukebox'] and writing:suffix='_written'
      if n in kitchen.PARTS:suffix='_turned' if turned and n in kitchen.TURNED else '_written' if writing and n in kitchen.WRITTEN else ''

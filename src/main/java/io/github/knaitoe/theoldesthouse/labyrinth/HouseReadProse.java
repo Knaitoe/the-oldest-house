@@ -56,6 +56,8 @@ public final class HouseReadProse {
     }
     public static String shelter(CompoundTag t,boolean older){
         String stood=t.getString("Stood"),looked=t.getString("Looked");boolean song=t.getBoolean("Song");
+        // 0.4.172: a dance is the answer itself.
+        if(t.getBoolean("Danced"))return switch(stood){case "man","woman"->"danced with "+who(stood,older)+" under the eaves";case "middle"->"danced with the two strangers under the eaves";default->"";};
         return switch(stood){
             case "man","woman"->song?"stood by "+who(stood,older)+" under the eaves until the song finished":"stood a while beside "+who(stood,older)+" under the eaves";
             case "middle"->song?"stood in the middle of the floorboards under the eaves until the song finished":"stood in the middle of the floorboards under the eaves";

@@ -22,7 +22,8 @@ public final class HouseReadRemainingRooms {
         POSTCARD_AT=new BlockPos(1,2,-9),JUKEBOX_AT=new BlockPos(0,0,1),TAP_AT=new BlockPos(0,0,-9),SWITCH_AT=new BlockPos(1,1,1),SINK_AT=new BlockPos(0,0,-9),BATH_MIRROR=new BlockPos(0,1,-9);
     /** The shelter (0.4.159): the strangers lean on the west and east rails, and the dock runs out ahead, past both of them. */
     public static final double FIGURE_X=9.3,FIGURE_Z=-8.5;
-    public static final BlockPos SHELTER_ENTRY=new BlockPos(-3,0,2),DOCK_LANTERN=new BlockPos(3,0,-22);
+    /** 0.4.172: the lamp over the way on, dark until the room is settled (HouseReadShelter.settle). */
+    public static final BlockPos SHELTER_ENTRY=new BlockPos(-3,0,2),DOCK_LANTERN=new BlockPos(3,0,-22),EXIT_LAMP=new BlockPos(3,2,1);
     public static final int DOCK_Z=-21;
     /** The middle of the floorboards, between the two rails: the same distance from both strangers. */
     public static boolean middle(BlockPos b,net.minecraft.world.phys.Vec3 at){return Math.abs(at.x-b.getX()-.5)<2.5&&at.z<b.getZ()-1.5&&at.z>b.getZ()-15&&at.y>b.getY()-.5;}
@@ -124,6 +125,7 @@ public final class HouseReadRemainingRooms {
         box(l,b,-10,0,2,10,3,2,HouseReadRegistry.PAVILION.get().defaultBlockState());box(l,b,-10,4,2,10,4,2,HouseReadRegistry.PAVILION.get());
         put(l,b,0,0,1,HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,JUKEBOX).setValue(HorizontalDirectionalBlock.FACING,Direction.NORTH));
         HouseReadRooms.door(l,b,SHELTER_ENTRY,HouseReadRegistry.BOATHOUSE_DOOR.get(),Direction.SOUTH);HouseReadRooms.door(l,b,HouseReadMoments.exit(HouseReadSites.Room.SHELTER),HouseReadRegistry.BOATHOUSE_DOOR.get(),Direction.SOUTH);
+        BuildBlocks.set(l,b.offset(EXIT_LAMP),HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,PORCH_LIGHT).setValue(HorizontalDirectionalBlock.FACING,Direction.NORTH).setValue(HouseReadPropBlock.TURNED,true),F);
         // Steps down from the lake rail to a short dock, a dry lantern by them, and a covered rowboat tied alongside.
         for(int x=-1;x<=1;x++){put(l,b,x,-1,-21,HouseReadRegistry.DOCK_STEP.get().defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));box(l,b,x,-2,-27,x,-2,-22,HouseReadRegistry.PAVILION.get().defaultBlockState());}
         for(int z:new int[]{-22,-27})for(int x:new int[]{-2,2})if(z!=-22||x!=2)box(l,b,x,-2,z,x,0,z,HouseReadRegistry.DOCK_RAIL.get().defaultBlockState());

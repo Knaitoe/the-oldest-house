@@ -300,6 +300,9 @@ public final class StaircaseProse {
             case "lantern" -> "Under the eaves you walked past them both and out to the lantern on the dock, alone" + (r.song ? ", until the song ran out." : ".");
             case "looked_man", "looked_woman" -> "Under the eaves your eyes kept going back to " + figure(r.shelter.substring(7), r.older) + ".";
             case "looked_both" -> "Under the eaves you looked from one stranger to the other.";
+            // 0.4.172: a dance ends the song.
+            case "danced_man", "danced_woman" -> "Under the eaves you took " + figure(r.shelter.substring(7), r.older) + "'s hand and danced, and the jukebox clicked off.";
+            case "danced_middle" -> "Under the eaves you danced with the two of them, and the jukebox clicked off.";
             default -> "";
         };
     }
@@ -441,7 +444,7 @@ public final class StaircaseProse {
             var coats=new ArrayList<String>(List.of(""));HouseReadWardrobe.chest().forEach(g->coats.add(g.id()));
             var reads=new ArrayList<Read>();for(int item=0;item<ROUTINE.length;item++)for(String coat:new String[]{"","wool","trench","barn","collared_coat"})for(String mirror:new String[]{"","turned_after"})reads.add(new Read(item,coat,mirror,"",false,false,"","",""));
             for(String coat:coats)for(String mirror:new String[]{"","turned_after","turned_before"})reads.add(new Read(-1,coat,mirror,"",false,true,"","",""));
-            for(String shelter:new String[]{"man","woman","middle","lantern","looked_man","looked_woman","looked_both"})for(boolean song:new boolean[]{false,true})for(boolean older:new boolean[]{false,true})reads.add(new Read(-1,"","",shelter,song,older,"","",""));
+            for(String shelter:new String[]{"man","woman","middle","lantern","looked_man","looked_woman","looked_both","danced_man","danced_woman","danced_middle"})for(boolean song:new boolean[]{false,true})for(boolean older:new boolean[]{false,true})reads.add(new Read(-1,"","",shelter,song,older,"","",""));
             for(String door:new String[]{"","in","lattice","window","road"})for(String out:new String[]{"","kitchen","gate","road"})reads.add(new Read(-1,"","","",false,false,door,out,""));
             for(var read:reads)for(int leaf=1;leaf<4;leaf++){String own=leaf==1?hands(read):leaf==2?eaves(read):door(read);if(!own.isEmpty())pages.add(new String[]{"II. The hands","III. What happened","IV. The door"}[leaf-1]+"\n\nThere is a thumbprint beside the next line. "+own+"\n\nYou turn the sheet without covering the print.");}
             for(String home:new String[]{"HAVEN","DANGER","RUNAWAY"})pages.add("V. Below\n\n"+ending(voice,home));

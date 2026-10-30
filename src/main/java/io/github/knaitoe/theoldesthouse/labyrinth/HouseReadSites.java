@@ -218,7 +218,7 @@ public final class HouseReadSites {
     }
     public static void use(ServerPlayer p,BlockPos at,HouseReadPropBlock.Part part){
         var room=inside(p);if(room==null)return;var b=base(p.server,p.getUUID(),room);if(!HouseReadRooms.bounds(b,room).contains(at.getCenter()))return;
-        if(part==HouseReadPropBlock.Part.CHAIR||part==HouseReadPropBlock.Part.BENCH){HouseSitting.sit(p,at);return;}
+        if(part==HouseReadPropBlock.Part.CHAIR||part==HouseReadPropBlock.Part.BENCH||part==HouseReadPropBlock.Part.SWING){HouseSitting.sit(p,at);return;}
         if(HouseReadMoments.use(p,b,room,at,part))return;
         // 0.4.160: the coatroom's towel hangs on a bar beside the glass; taking it covers the glass, as the loose towel did.
         if(room==Room.COATROOM&&part==HouseReadPropBlock.Part.TOWEL_BAR)part=p.serverLevel().getBlockState(at).getValue(HouseReadPropBlock.TURNED)?HouseReadPropBlock.Part.COVERED_MIRROR:HouseReadPropBlock.Part.TOWEL;
@@ -279,7 +279,7 @@ public final class HouseReadSites {
             // Still hidden when the kitchen light goes off settles it.
             if(seen.getString("First").equals("lattice")||seen.getString("First").equals("window")){HouseRead.flag(p,Room.PORCH,"Hidden");HouseRead.signal(p,HouseRead.Trait.HOME,"DANGER",true);}}}
         if(!visit.getBoolean("WentIn")&&p.getZ()<b.getZ()-8&&Math.abs(p.getX()-b.getX())<5&&p.getY()>=b.getY()+2.8){visit.putBoolean("WentIn",true);visit.putBoolean("NoteArmed",true);var actions=visit.getList("Actions",Tag.TAG_STRING);actions.add(StringTag.valueOf("went through the screen door"));visit.put("Actions",actions);if(window&&!first){home(p,"in","HAVEN");first=true;}}
-        if(age%13==0)p.serverLevel().sendParticles(p,ParticleTypes.GLOW,false,b.getX()-8+p.getRandom().nextDouble()*16,b.getY()+.7+p.getRandom().nextDouble()*1.3,b.getZ()+p.getRandom().nextDouble()*8,1,0,0,0,0);
+        // 0.4.172 (owner: "Can you remove the sparkle effects too?"): no glow drifting over the yard.
     }
     private static void home(ServerPlayer p,String first,String value){HouseRead.first(p,Room.PORCH,"First",first);HouseRead.signal(p,HouseRead.Trait.HOME,value,false);}
     @SubscribeEvent public static void screen(PlayerInteractEvent.RightClickBlock e){if(e.getLevel().isClientSide||e.getHand()!=net.minecraft.world.InteractionHand.MAIN_HAND||!(e.getEntity() instanceof ServerPlayer p)||!LiteraryVignettes.participant(p)||inside(p)!=Room.PORCH)return;var b=base(p.server,p.getUUID(),Room.PORCH);if(e.getPos().equals(b.offset(HouseReadRooms.SCREEN))||e.getPos().equals(b.offset(HouseReadRooms.SCREEN).above()))act(p,Room.PORCH,"used the screen door");}

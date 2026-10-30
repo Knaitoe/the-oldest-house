@@ -185,7 +185,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.FAMILY_COPY&&s.is(LiteraryRegistry.STEW.get())&&own.getInt("Visit")==4&&t.hasUUID("MealToken")&&own.hasUUID("MealToken")&&t.getUUID("MealToken").equals(own.getUUID("MealToken"))){own.putBoolean("DinnerEaten",true);own.putInt("Beat",4);}
         save(LabyrinthData.get(p.server),p.getUUID(),place,own);
     }
-    public static void talk(ServerPlayer p,LiteraryActor actor){var place=current(p);if(place==null||!actor.scene().equals(place.id())||p.distanceToSqr(actor)>36||actor.owner().isPresent()&&!actor.owner().get().equals(p.getUUID()))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
+    public static void talk(ServerPlayer p,LiteraryActor actor){var place=current(p);if(actor==null||place==null||!actor.scene().equals(place.id())||p.distanceToSqr(actor)>36||actor.owner().isPresent()&&!actor.owner().get().equals(p.getUUID()))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
         if(UncannyRooms.isUncanny(place))UncannyStories.talk(p,actor,place,own);
         else if(place==LabyrinthPlace.END_WORLD_CABIN)CabinBargain.open(p);
         else if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.talk(p,place,actor,own);
