@@ -134,9 +134,11 @@ public final class CharacterArtVisualProof extends Screen {
     static void draw(GuiGraphics g,EntityModel<?> model,ResourceLocation skin,float cx,float cy,float width,float height,float yaw,float pitch){
         var p=g.pose();var out=Minecraft.getInstance().renderBuffers().bufferSource();var sample=new PoseStack();sample.mulPose(Axis.YP.rotationDegrees(yaw));sample.mulPose(Axis.XP.rotationDegrees(pitch));
         var bounds=new Bounds();model.renderToBuffer(sample,bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+        if(model instanceof GoatmanFigureModel<?> goat)GoatmanHorns.render(goat,sample,bounds,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
         float scale=Math.min(width/Math.max(.01F,bounds.x1-bounds.x0),height/Math.max(.01F,bounds.y1-bounds.y0));
         p.pushPose();p.translate(cx,cy,180);p.scale(scale,scale,scale);p.translate(-(bounds.x0+bounds.x1)/2,-(bounds.y0+bounds.y1)/2,0);p.mulPose(Axis.YP.rotationDegrees(yaw));p.mulPose(Axis.XP.rotationDegrees(pitch));
         model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+        if(model instanceof GoatmanFigureModel<?> goat)GoatmanHorns.render(goat,p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
         if(skin.getPath().endsWith("literary_snow_rabbit.png"))HolyRabbitRenderer.markings(Minecraft.getInstance().getEntityModels().bakeLayer(HolyRabbitRenderer.MARKS),false,0,0,p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
         out.endBatch();p.popPose();
     }

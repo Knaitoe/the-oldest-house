@@ -69,6 +69,8 @@ public final class GoatmanChild extends PathfinderMob {
     public boolean monsterAppearance(){return entityData.get(DISGUISE)==-2;}
     public boolean stalkingAppearance(){return entityData.get(DISGUISE)!=-1;}
     public void disguise(int skin){entityData.set(DISGUISE,Math.max(-2,Math.min(8,skin)));}
+    /** The raw disguise: a cousin's face (0 to 8), its own (-1), or the Goatman itself (-2). */
+    public int disguise(){return entityData.get(DISGUISE);}
     public int tells(){return entityData.get(TELLS);}
     public boolean tell(int flag){return (tells()&flag)!=0;}
     public boolean girl(){return viewer().isPresent();}

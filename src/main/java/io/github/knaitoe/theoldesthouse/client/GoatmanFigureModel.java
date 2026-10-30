@@ -14,7 +14,8 @@ import io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild;
 
 /**
  * A man with the head of a goat (0.4.53): a gaunt body, arms too long, furred legs ending in hooves, and a goat's skull
- * with muzzle, beard, drooping ears and swept-back horns. Box UVs match tools/generate_goatman_night_assets.py exactly.
+ * with muzzle, beard and drooping ears. Box UVs match tools/generate_goatman_night_assets.py exactly. 0.4.199: its horns are a
+ * ram's, curled, drawn by {@link GoatmanHorns} on top of this model; the old swept-back horns stay in the mesh, hidden.
  */
 public final class GoatmanFigureModel<T extends LivingEntity> extends HierarchicalModel<T> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"goatman"),"main");
@@ -23,8 +24,10 @@ public final class GoatmanFigureModel<T extends LivingEntity> extends Hierarchic
         root=baked.getChild("root");head=root.getChild("head");body=root.getChild("body");
         rightArm=root.getChild("right_arm");leftArm=root.getChild("left_arm");rightLeg=root.getChild("right_leg");leftLeg=root.getChild("left_leg");
         rightElbow=rightArm.getChild("elbow");leftElbow=leftArm.getChild("elbow");rightKnee=rightLeg.getChild("knee");leftKnee=leftLeg.getChild("knee");
+        head.getChild("right_horn").visible=false;head.getChild("left_horn").visible=false;
     }
     @Override public ModelPart root(){return root;}
+    public ModelPart head(){return head;}
     public static LayerDefinition createBodyLayer(){
         MeshDefinition mesh=new MeshDefinition();
         PartDefinition root=mesh.getRoot().addOrReplaceChild("root",CubeListBuilder.create(),PartPose.offset(0,24,0));

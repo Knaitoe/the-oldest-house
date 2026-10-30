@@ -34,7 +34,7 @@ public final class GoatmanBedtimeTests {
     public static void theOriginalWindowEntrantLaughsLiesDownTwiceCrawlsBelowTwoRealBedViewsAndHauntsOnlyAtEachBedside(GameTestHelper h){
         fixture=new GoatmanTests.Fixture(h,57100);var f=fixture;f.finishedCamper();var p=f.nativePlayer("bedside_first");var peer=f.nativePlayer("bedside_peer");f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         var respawn=new BlockPos(14,75,29);p.setRespawnPosition(Level.OVERWORLD,respawn,37,true,false);peer.setRespawnPosition(Level.OVERWORLD,respawn.east(),81,true,false);
-        UUID[] id={null};boolean[] begun={false},slept={false},loaded={false},leftBath={false};var stages=new HashSet<Integer>();int[] ticks={0};
+        UUID[] id={null};boolean[] begun={false},slept={false},loaded={false},leftBath={false},crawled={false};var stages=new HashSet<Integer>();int[] ticks={0};
         h.onEachTick(()->{
             if(!begun[0])return;var r=f.run();if(r.getInt("Phase")==GoatmanVignette.DAWN)return;var c=f.cousin(0).orElseThrow();
             h.assertTrue(c.getUUID().equals(id[0])&&!c.noPhysics,"every window, bed and crawl beat keeps the original colliding body");
@@ -44,8 +44,8 @@ public final class GoatmanBedtimeTests {
             if(r.getBoolean("BedtimeCalled131")&&!slept[0]){h.assertTrue(r.getInt("Clock")-r.getInt("BedQuietAt131")>=GoatmanBedtime.QUIET_TICKS,"twelve quiet seconds precede the first bed invitation");bed(f,p,8);bed(f,peer,9);h.assertTrue(p.isSleeping()&&peer.isSleeping(),"both readers use actual available native beds");slept[0]=true;}
             int stage=r.getInt("BedStage131");stages.add(stage);
             if(stage==2&&c.isSleeping()&&!loaded[0]){c.load(c.saveWithoutId(new CompoundTag()));reload(f);loaded[0]=true;}
-            if(stage==5&&c.crawling()){var sleeping=p.isSleeping()?p:peer;h.assertTrue(c.hasPose(Pose.SWIMMING)&&c.getBoundingBox().maxY<sleeping.getEyeY()&&c.isInvisible(),"0.4.145: the ground crawl stays below the real in-bed eye height and out of sight altogether");}
-            if(stage==6)h.assertTrue(!c.isInvisible()&&!c.crawling()&&c.hasPose(Pose.STANDING),"it jumps up visible at the foot of the bed");
+            if(stage==5&&c.crawling()){var sleeping=p.isSleeping()?p:peer;h.assertTrue(c.hasPose(Pose.SWIMMING)&&c.getBoundingBox().maxY<sleeping.getEyeY()&&!c.isInvisible()&&!c.monsterAppearance(),"0.4.199: the crawl is seen, low below the real in-bed eye height, in the child it is wearing");crawled[0]=true;}
+            if(stage==6)h.assertTrue(!c.isInvisible()&&!c.crawling()&&c.hasPose(Pose.STANDING)&&c.monsterAppearance(),"0.4.199: it jumps up at the foot of the bed as the Goatman, not the child");
             if(stage>=1)h.assertTrue(GoatmanBedtime.risen(r),"the in-bed chat fades once it has first got up");
             var own=r.getCompound("Cohort").getCompound(p.getUUID().toString());var other=r.getCompound("Cohort").getCompound(peer.getUUID().toString());
             if(GoatmanBedtime.quiet(r)){
@@ -69,7 +69,7 @@ public final class GoatmanBedtimeTests {
                 h.assertTrue(!p.isSleeping()&&!peer.isSleeping()&&!GoatmanBedtime.locked(p)&&!GoatmanBedtime.locked(peer),"each bedside ending releases its reader");
                 h.assertTrue(!GoatmanVignette.inside(p)&&!GoatmanVignette.inside(peer)&&List.of(p,peer).stream().allMatch(reader->f.run().getCompound("Cohort").getCompound(reader.getUUID().toString()).getBoolean("Failed")),"0.4.145: each reader goes black and out of the trailer, their night over");
                 h.assertTrue(f.run().getInt("BedLaughs131")>=GoatmanBedtime.LAUGHS,"it stands laughing "+GoatmanBedtime.LAUGHS+" times before it crawls to a bed");
-                h.assertTrue(leftBath[0]&&loaded[0]&&stages.containsAll(List.of(1,2,3,4,5,6,7)),"the same saved actor leaves the bathroom, laughs, lies down, repeats, crawls and rises beside each actual bed");
+                h.assertTrue(leftBath[0]&&loaded[0]&&crawled[0]&&stages.containsAll(List.of(1,2,3,4,5,6,7)),"the same saved actor leaves the bathroom, laughs, lies down, repeats, crawls where it is seen and rises beside each actual bed");
                 for(var reader:List.of(p,peer))h.assertTrue(GoatmanHaunt.haunted(LabyrinthData.get(f.server),reader.getUUID())&&GoatmanVignette.personal(LabyrinthData.get(f.server),reader.getUUID()).getBoolean("EncounterEnded131")&&!WitnessAccount.has(LabyrinthData.get(f.server),reader.getUUID(),WitnessAccount.Story.GOATMAN),"the bedside haunt concludes personally while preserving the successful-vigil Witness rule");
                 h.assertTrue(respawn.equals(p.getRespawnPosition())&&respawn.east().equals(peer.getRespawnPosition())&&p.getRespawnDimension()==Level.OVERWORLD&&p.getRespawnAngle()==37&&peer.getRespawnAngle()==81,"neither bed changes either reader's saved respawn location, dimension or angle");
                 h.assertTrue(f.children().stream().noneMatch(c->c.getTags().contains("TrailerWalk")),"the bedside ending does not mint another child for an obsolete dawn haunting");

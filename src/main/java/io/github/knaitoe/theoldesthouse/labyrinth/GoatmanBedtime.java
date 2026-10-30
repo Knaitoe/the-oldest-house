@@ -15,8 +15,12 @@ import io.github.knaitoe.theoldesthouse.house.PlaytestLog;
 public final class GoatmanBedtime {
     public static final int QUIET_TICKS=240,TALK_GAP=160,SETTLED=600;
     /**
-     * 0.4.145 (owner): it stands laughing longer, and more times, before it comes for a bed; it crawls there out of sight,
+     * 0.4.145 (owner): it stands laughing longer, and more times, before it comes for a bed; it crawls there,
      * jumps up at the foot of the bed, and the reader goes black and out of the trailer.
+     * 0.4.199 (owner: "The Goatman ending sequence doesn't show the Goatman-kid crawl. When the Goatman jumps up to the player
+     * it should be as the Goatman, not in his kid disguise"): the crawl is seen, the child it is wearing down on its hands and
+     * knees along the aisle to the foot of the bed; there it comes up as itself, the Goatman, horns and all. Going to the next
+     * bed it is down on the floor again in the child's shape.
      */
     public static final int LAUGH_TICKS=140,LAUGHS=4,JUMP_TICKS=16,BLACK_AT=6;
     private static final double[] HOP={0,.35,.55,.35,0};
@@ -103,7 +107,7 @@ public final class GoatmanBedtime {
         if(stage!=5&&original.isInvisible())original.setInvisible(false);
         if(target==null){
             target=next(r,readers);
-            if(target==null)return;r.putUUID("BedTarget131",target.getUUID());if(stage>=7){crawl(original,b,BlockPos.of(r.getCompound("Cohort").getCompound(target.getUUID().toString()).getLong("Bed131")));stage=5;r.putInt("BedStage131",stage);r.putInt("BedBeat131",0);}
+            if(target==null)return;r.putUUID("BedTarget131",target.getUUID());if(stage>=7){crawl(original,b,BlockPos.of(r.getCompound("Cohort").getCompound(target.getUUID().toString()).getLong("Bed131")),r);stage=5;r.putInt("BedStage131",stage);r.putInt("BedBeat131",0);}
         }
         var own=r.getCompound("Cohort").getCompound(target.getUUID().toString());
         if(!target.isSleeping()&&!own.getBoolean("BedsideEnded131")){original.heave(false);original.pose(false);return;}
@@ -117,21 +121,23 @@ public final class GoatmanBedtime {
             }
             case 2,4->{
                 if(!GoatmanVignette.bunk(original,b,bunk(r,r.getInt("Wrong")),l))return;
-                if(++t>=50){if(r.getInt("BedLaughs131")<LAUGHS){rise(original,b,bunk(r,r.getInt("Wrong")));stage=3;}else{crawl(original,b,BlockPos.of(own.getLong("Bed131")));stage=5;}t=0;}
+                if(++t>=50){if(r.getInt("BedLaughs131")<LAUGHS){rise(original,b,bunk(r,r.getInt("Wrong")));stage=3;}else{crawl(original,b,BlockPos.of(own.getLong("Bed131")),r);stage=5;}t=0;}
             }
             case 5->{
-                // Out of sight the whole way: nobody in a bed, or anywhere, sees it crawl.
-                original.indoors(true);original.setCrawling(true);original.setPose(Pose.SWIMMING);original.heave(false);original.setInvisible(true);
+                // The child it is wearing, down on its hands and knees, crawling the aisle to the foot of the bed.
+                original.indoors(true);original.setCrawling(true);original.setPose(Pose.SWIMMING);original.heave(false);original.setInvisible(false);
+                if(original.monsterAppearance())original.disguise(r.contains("BedDisguise199")?r.getInt("BedDisguise199"):-1);
                 if(!GoatmanVignette.advance(original,b,.09,l,true))return;original.pose(false);r.putDouble("BedJumpY131",original.getY());
-                original.setInvisible(false);original.setCrawling(false);original.setPose(Pose.STANDING);stage=6;t=0;
+                // It comes up as itself.
+                original.disguise(-2);original.setCrawling(false);original.setPose(Pose.STANDING);stage=6;t=0;
             }
             case 6->{
-                // Up at the foot of the bed, in front of the sleeper's eyes.
-                original.setInvisible(false);original.setCrawling(false);original.setPose(Pose.STANDING);original.pose(false);face(original,target.getEyePosition());
+                // Up at the foot of the bed, in front of the sleeper's eyes: the Goatman, not the child.
+                original.setInvisible(false);original.setCrawling(false);original.setPose(Pose.STANDING);original.pose(false);original.disguise(-2);face(original,target.getEyePosition());
                 t++;double floor=r.contains("BedJumpY131")?r.getDouble("BedJumpY131"):original.getY();original.moveTo(original.getX(),floor+(t<HOP.length?HOP[t]:0),original.getZ(),original.getYRot(),0);
                 if(t==1){l.playSound(null,original.blockPosition(),SoundEvents.WOOD_STEP,SoundSource.HOSTILE,1F,.6F);l.playSound(null,original.blockPosition(),GoatmanRegistry.LAUGH.get(),SoundSource.HOSTILE,1F,.85F);}
                 if(t>=JUMP_TICKS){
-                    GoatmanHaunt.haunt(target,original.visibleSkin(),r.getInt("Tells"));own.putBoolean("BedsideEnded131",true);own.putBoolean("TookItHome",true);
+                    GoatmanHaunt.haunt(target,r.contains("BedFace199")?r.getInt("BedFace199"):original.visibleSkin(),r.getInt("Tells"));own.putBoolean("BedsideEnded131",true);own.putBoolean("TookItHome",true);
                     cohort=r.getCompound("Cohort");cohort.put(target.getUUID().toString(),own);r.put("Cohort",cohort);
                     io.github.knaitoe.theoldesthouse.network.HousePackets.send(target,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(3,BLACK_AT+24,30));
                     PlaytestLog.event(target,"goatman_bedside");stage=7;t=0;
@@ -161,8 +167,11 @@ public final class GoatmanBedtime {
         if(c.isSleeping())c.stopSleeping();c.setCrawling(false);c.setPose(Pose.STANDING);c.heave(false);
         var head=GoatmanWoods.bunkHead(bunk);GoatmanVignette.script(c,List.of(new Vec3(bunk%2==0?-3.6:4.4,1,head.getZ()+.5)),"bed_front131");
     }
-    private static void crawl(GoatmanChild c,BlockPos b,BlockPos target){
-        if(c.isSleeping())c.stopSleeping();c.setPose(Pose.SWIMMING);c.setCrawling(true);c.heave(false);c.setInvisible(true);
+    private static void crawl(GoatmanChild c,BlockPos b,BlockPos target,CompoundTag r){
+        // Which child it is wearing, kept for the next bed and the haunting; going to the next bed it is that child again.
+        if(!c.monsterAppearance()){r.putInt("BedDisguise199",c.disguise());r.putInt("BedFace199",c.visibleSkin());}
+        else c.disguise(r.contains("BedDisguise199")?r.getInt("BedDisguise199"):-1);
+        if(c.isSleeping())c.stopSleeping();c.setPose(Pose.SWIMMING);c.setCrawling(true);c.heave(false);c.setInvisible(false);
         var at=c.position().subtract(b.getX(),b.getY(),b.getZ());boolean west=target.getX()<b.getX();double x=west?-3:4,z=target.getZ()-b.getZ()+.5;
         var path=new ArrayList<Vec3>();double current=at.x<.5?-3:4;path.add(new Vec3(current,1,at.z));
         if(current!=x){double around=Math.abs(at.z+71.5)+Math.abs(z+71.5)<Math.abs(at.z+59.5)+Math.abs(z+59.5)?-71.5:-59.5;path.add(new Vec3(current,1,around));path.add(new Vec3(x,1,around));}

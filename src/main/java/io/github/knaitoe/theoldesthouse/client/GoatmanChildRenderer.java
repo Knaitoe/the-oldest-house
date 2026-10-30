@@ -51,6 +51,7 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
         StalkerRenderer(EntityRendererProvider.Context c){
             super(c,new GoatmanFigureModel<>(c.bakeLayer(GoatmanFigureModel.LAYER)),.35F);
             addLayer(new net.minecraft.client.renderer.entity.layers.EyesLayer<>(this){@Override public net.minecraft.client.renderer.RenderType renderType(){return net.minecraft.client.renderer.RenderType.eyes(GoatmanFigureRenderer.EYES);}});
+            addLayer(new GoatmanHorns.Layer<>(this));
         }
         @Override protected void scale(GoatmanChild e,com.mojang.blaze3d.vertex.PoseStack p,float partial){float s=1/.7F;p.scale(s,s,s);}
         @Override public ResourceLocation getTextureLocation(GoatmanChild e){return GoatmanFigureRenderer.SKIN;}
