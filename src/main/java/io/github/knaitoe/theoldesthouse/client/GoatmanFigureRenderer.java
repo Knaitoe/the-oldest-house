@@ -16,6 +16,7 @@ public final class GoatmanFigureRenderer extends MobRenderer<GoatmanFigure,Goatm
     public GoatmanFigureRenderer(EntityRendererProvider.Context c){
         super(c,new GoatmanFigureModel<>(c.bakeLayer(GoatmanFigureModel.LAYER)),.35F);
         addLayer(new EyesLayer<>(this){@Override public RenderType renderType(){return RenderType.eyes(EYES);}});
+        addLayer(new GoatmanHorns.Layer<>(this));
     }
     @Override public boolean shouldRender(GoatmanFigure e,Frustum f,double x,double y,double z){
         var player=Minecraft.getInstance().player;

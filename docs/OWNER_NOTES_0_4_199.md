@@ -110,6 +110,18 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - Not a story: nothing counted toward the Witness.
   - Canon: [BORROWED_LIGHT_0_4_199.md](BORROWED_LIGHT_0_4_199.md). New cases: `ExplorationPassTests.borrowedLightIsSolvedByLayingTheLampsBeamOnTheSun` and `borrowedLightComesAfterAStoryAndSomeWandering`; a fifth client art view.
 
+## The Goatman's bedside ending and its horns
+- **"The Goatman ending sequence doesn't show the Goatman-kid crawl. When the Goatman jumps up to the player it should be as the Goatman, not in his kid disguise."** The crawl to the bed used to be hidden: the body turned invisible for the whole way. Now it is seen. The child it is wearing goes down on its hands and knees and crawls the aisle to the foot of the bed, low, below the sleeper's eye line (`GoatmanBedtime`, stage 5).
+  - At the foot of the bed it comes up as itself, the Goatman, and jumps up in front of the sleeper before the black (stage 6).
+  - Going on to the next bed it is down on the floor again as the same child. The haunting that follows remembers that child's face, as before.
+  - Dawn still takes the body away, and each new night stages a fresh one, so the Goatman's form never carries into the next evening.
+- **"Can we also give the Goatman curled ram horns?"** The swept-back goat horns are replaced by a ram's curl on each side (`GoatmanHorns`).
+  - Each horn rises off the top corner of the skull, sweeps back over the head, down behind the ear and forward under it, the tip turned up by the cheek.
+  - It is seven ridged segments, thickest at the root, set just outside the side of the head so it never cuts into the skull, and it moves with the head.
+  - The horns have their own texture (`goatman_horns.png`, drawn by `tools/draw_goatman_horns.py`). The Goatman's skin is unchanged byte for byte; the old horns stay in its mesh, hidden.
+  - They show wherever the Goatman is drawn: the bedside rise, the window circuit, the glimpses of the haunting, and both art proofs.
+  - The bedside case now checks that the crawl is visible in the child's shape and the rise is the Goatman.
+
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.
 - The Ghosts namespace (24 cases), the novel sites (16) and the shelter case pass locally.

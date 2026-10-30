@@ -99,7 +99,7 @@ public final class GoatmanClient {
         @SubscribeEvent public static void setup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e){e.enqueueWork(()->{
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(GoatmanRegistry.WINDOW.get(),net.minecraft.client.renderer.RenderType.cutout());
         });}
-        @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(GoatmanFigureModel.LAYER,GoatmanFigureModel::createBodyLayer);e.registerLayerDefinition(GoatmanChildModel.LAYER,GoatmanChildModel::layer);}
+        @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(GoatmanFigureModel.LAYER,GoatmanFigureModel::createBodyLayer);e.registerLayerDefinition(GoatmanHorns.LAYER,GoatmanHorns::layer);e.registerLayerDefinition(GoatmanChildModel.LAYER,GoatmanChildModel::layer);}
         @SubscribeEvent public static void overlays(RegisterGuiLayersEvent e){
             e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"trailer_door"),(g,delta)->{
                 if(!active())return;

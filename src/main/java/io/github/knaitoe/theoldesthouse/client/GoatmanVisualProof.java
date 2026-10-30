@@ -35,7 +35,9 @@ public final class GoatmanVisualProof extends Screen {
                 ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/particle/goatman_copper_0.png"),ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"particles/goatman_copper.json")})
             if(mc.getResourceManager().getResource(res).isEmpty())throw new IllegalStateException("Missing Goatman asset "+res);
         var baked=mc.getEntityModels().bakeLayer(GoatmanFigureModel.LAYER);var head=baked.getChild("root").getChild("head");
-        for(var part:new String[]{"muzzle","beard","right_horn","left_horn","right_ear","left_ear"})head.getChild(part);
+        for(var part:new String[]{"muzzle","beard","right_ear","left_ear"})head.getChild(part);
+        var horns=mc.getEntityModels().bakeLayer(GoatmanHorns.LAYER);for(var part:new String[]{"right_horn","left_horn"})horns.getChild(part).getChild("segment1").getChild("segment2").getChild("segment3").getChild("segment4").getChild("segment5").getChild("segment6");
+        if(mc.getResourceManager().getResource(GoatmanHorns.TEXTURE).isEmpty())throw new IllegalStateException("Missing Goatman horns");
         g.fill(0,0,width,height,0xFF14161A);
         g.drawString(font,"The Goatman: front, three-quarter, side, from behind (as on the trail), walking, laughing without a sound",10,8,0xFFEEE0C4,false);
         g.drawString(font,"The tally counter and a brat",10,height-58,0xFFEEE0C4,false);
@@ -47,6 +49,7 @@ public final class GoatmanVisualProof extends Screen {
             var p=g.pose();p.pushPose();p.translate(48+i*(width-80)/6F,height-90,150);p.scale(48,48,48);p.mulPose(Axis.YP.rotationDegrees(v[0]));p.translate(0,-1.5,0);
             model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(GoatmanFigureRenderer.SKIN)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
             model.renderToBuffer(p,buffers.getBuffer(RenderType.eyes(GoatmanFigureRenderer.EYES)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xFFFFFFFF);
+            GoatmanHorns.render(model,p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             buffers.endBatch();p.popPose();
         }
         int item=0;for(var stack:new ItemStack[]{new ItemStack(GoatmanRegistry.COUNTER.get()),new ItemStack(GoatmanRegistry.BRAT.get())}){
@@ -56,7 +59,7 @@ public final class GoatmanVisualProof extends Screen {
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof GoatmanVisualProof proof)||++proof.frames<24)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-goatman.png"));}
-        Files.writeString(dir.resolve("goatman-passed.txt"),"24 native frames: the Goatman's mesh (horns, muzzle, beard, ears) and skin in six views with its glowing eyes, and the counter and brat items.\n");
+        Files.writeString(dir.resolve("goatman-passed.txt"),"24 native frames: the Goatman's mesh (curled ram horns, muzzle, beard, ears) and skin in six views with its glowing eyes, and the counter and brat items.\n");
         TheOldestHouse.LOGGER.info("GOATMAN CHECK PASSED: the thing itself, its eyes, the counter and the brat rendered");
         mc.setScreen(new GoatmanChildEyesProof());
     }
