@@ -36,6 +36,6 @@ public final class BurnEmbersVisualProof extends Screen {
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof BurnEmbersVisualProof s)||++s.frames<4)return;
         var folder=Path.of("../build/font-smoke");try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve("native-embers.png"));}
         Files.writeString(folder.resolve("embers-passed.txt"),"Four original narrator hands wrap and render as native smoke excerpts.\n");
-        TheOldestHouse.LOGGER.info("EMBER FONT CHECK PASSED: four native narrator hands");mc.setScreen(new NpcVisualProof());
+        TheOldestHouse.LOGGER.info("EMBER FONT CHECK PASSED: four native narrator hands");JournalVisualProof.begin();
     }
 }

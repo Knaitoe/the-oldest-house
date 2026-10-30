@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/journal_0"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "the_oldest_house:wear": 0.25
+      },
+      "model": "the_oldest_house:item/journal_1"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:wear": 0.5
+      },
+      "model": "the_oldest_house:item/journal_2"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:wear": 0.75
+      },
+      "model": "the_oldest_house:item/journal_3"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:wear": 1.0
+      },
+      "model": "the_oldest_house:item/journal_4"
+    }
+  ]
+}
