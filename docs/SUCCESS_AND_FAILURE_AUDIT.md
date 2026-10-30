@@ -17,7 +17,7 @@ The earlier drafts forced a failure onto every room. This draft sorts the 55 sto
 | **Choices** (6) | Several endings, none of them a loss. | Mostly complete already: the choices are the trade. |
 | **Experiences** (24) | The reader goes through it; it is neither won nor lost. | Leave it as it is. Completing it gives one singular artifact, or a subtle change or haunting that plays only in the House. |
 
-The owner: "Start running with it. I'll edit as needed." Built so far: Usher's trade (0.4.186, docs/USHER_TRADE_0_4_186.md); the Last Stop's elk (0.4.187, docs/LAST_STOP_ELK_0_4_187.md); Harrigan's two phones (0.4.188, docs/HARRIGAN_PHONES_0_4_188.md); Bly's Lady following (0.4.189, docs/BLY_FOLLOWS_0_4_189.md). The rest are being built in the suggested order.
+The owner: "Start running with it. I'll edit as needed." Built so far: Usher's trade (0.4.186, docs/USHER_TRADE_0_4_186.md); the Last Stop's elk (0.4.187, docs/LAST_STOP_ELK_0_4_187.md); Harrigan's two phones (0.4.188, docs/HARRIGAN_PHONES_0_4_188.md); Bly's Lady following (0.4.189, docs/BLY_FOLLOWS_0_4_189.md). The eight House-only changes (0.4.190, docs/HOUSE_REMEMBERS_0_4_190.md). The rest are being built in the suggested order.
 
 ## Contests: outcomes as trades
 
@@ -317,6 +317,8 @@ Twelve have nothing yet. Each proposal echoes its own room:
 | **The third count (third-floor bathroom)** | **Artifact:** the stub of the dare's candle. |
 | **Yellow dust (silo)** | **Artifact:** a vial of the dust. |
 | **The disappearing exits (child's room)** | **In the House:** one of the toys from the ceiling sits on the manor stairs, a step higher each day. |
+
+**Built in 0.4.190** (docs/HOUSE_REMEMBERS_0_4_190.md): all eight "In the House" rows, each shown to its reader alone through block views and packet figures. The pew stands in the manor's hall; the miniatures figure is a small carved stand wearing the reader's head; the stowaway shows in a night window's glass, since the manor has no mirror of its own.
 
 ## The artifacts and what each is for
 

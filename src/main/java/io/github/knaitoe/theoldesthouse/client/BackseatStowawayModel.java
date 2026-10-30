@@ -52,6 +52,14 @@ public final class BackseatStowawayModel extends EntityModel<LivingEntity> {
     }
     @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int color){root.render(p,out,light,overlay,color);}
     public static void carPose(PoseStack p,float rise){float q=Mth.clamp(rise,0,1);q=q*q*(3-2*q);p.translate(-.625,.565,1.1-.85*q);p.scale(.7F,-Mth.lerp(q,.055F,.8F),.7F);p.translate(0,-1.5,0);}
+    /**
+     * Sat up, outside the car (0.4.190): the manor's night glass shows it behind a reader's shoulder. Its feet are at the pose's
+     * origin, facing the pose's +z; it sits as high as it sat on the back seat.
+     */
+    public void sitting(PoseStack p,MultiBufferSource out,int light,int overlay){
+        pose(1);p.pushPose();p.translate(0,.565,0);p.scale(.7F,-.8F,.7F);p.translate(0,-1.5,0);
+        renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(SKIN)),light,overlay,-1);p.popPose();
+    }
     /** The actual cabin and live mirror share this floorboard-to-shoulder pose. */
     public void draw(PoseStack p,MultiBufferSource out,int light,int overlay,float rise){
         float q=Mth.clamp(rise,0,1);q=q*q*(3-2*q);pose(q);p.pushPose();carPose(p,rise);
