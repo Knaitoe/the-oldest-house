@@ -187,8 +187,9 @@ public final class DareReflection implements HouseReadReflection.Hook {
      */
     static void draw(PoseStack pose,MultiBufferSource out,Vec3 feet,float eyeHeight,float bodyYaw,Vec3 look,float alpha,float age,int light){
         double rad=Math.toRadians(bodyYaw);var forward=new Vec3(-Math.sin(rad),0,Math.cos(rad));var right=new Vec3(-Math.cos(rad),0,-Math.sin(rad));
-        // Right behind the reader and over their right shoulder (the reflection's left), leaning in.
-        var at=feet.add(forward.scale(-.42)).add(right.scale(.42));
+        // Behind the reader and over their right shoulder (the reflection's left), leaning in; far enough back (0.4.199) that
+        // nothing of her passes through the reflection and out of its front.
+        var at=feet.add(forward.scale(-.9)).add(right.scale(.5));
         var model=womanModel();for(var part:new net.minecraft.client.model.geom.ModelPart[]{model.head,model.hat,model.body,model.jacket,model.leftArm,model.rightArm,model.leftSleeve,model.rightSleeve,model.leftLeg,model.rightLeg,model.leftPants,model.rightPants})part.resetPose();
         model.young=false;model.crouching=false;model.riding=false;model.attackTime=0;
         var head=at.add(forward.scale(1.5*Math.sin(LEAN))).add(0,1.5*Math.cos(LEAN),0);var d=look.subtract(head);
@@ -197,9 +198,10 @@ public final class DareReflection implements HouseReadReflection.Hook {
         // Owner: her head tilted back, so her attention is on the reader. The lean is taken back out of it, and a little more.
         var aim=new org.joml.Quaternionf().rotationYXZ(yaw*Mth.DEG_TO_RAD,pitch*Mth.DEG_TO_RAD-LEAN-.16F,.22F).getEulerAnglesZYX(new org.joml.Vector3f());
         model.head.xRot=aim.x;model.head.yRot=aim.y;model.head.zRot=aim.z;
-        // Her arms come forward round the reader to the collarbones, the near one across, fingers pressed in.
-        model.rightArm.xRot=-1.3F;model.rightArm.yRot=-1.05F;model.rightArm.zRot=.1F;
-        model.leftArm.xRot=-1.35F;model.leftArm.yRot=-.55F;model.leftArm.zRot=-.04F;
+        // Owner: her arm must not poke through the reader. Her inner hand comes up from behind and rests on top of the
+        // reader's right shoulder, staying behind the reflection's chest; her other arm hangs at her side.
+        model.leftArm.xRot=-2.31F;model.leftArm.yRot=.34F;model.leftArm.zRot=0;
+        model.rightArm.xRot=-.1F;model.rightArm.zRot=.05F;
         model.rightLeg.xRot=.05F;model.leftLeg.xRot=-.05F;
         model.hat.copyFrom(model.head);model.jacket.copyFrom(model.body);model.rightSleeve.copyFrom(model.rightArm);model.leftSleeve.copyFrom(model.leftArm);model.rightPants.copyFrom(model.rightLeg);model.leftPants.copyFrom(model.leftLeg);
         pose.pushPose();pose.translate(at.x,at.y,at.z);pose.mulPose(Axis.YP.rotationDegrees(180-bodyYaw));pose.mulPose(Axis.XP.rotation(-LEAN));
