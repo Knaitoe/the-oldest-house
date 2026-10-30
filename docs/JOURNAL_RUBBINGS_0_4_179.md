@@ -110,4 +110,9 @@ Run 1345 tested 2782452 with the fix above, and live-multiplayer failed earlier,
 - the sprint took 24 s;
 - both clients finished.
 
+**The build job.** It ran all 892 structure cases, and one failed: `Vignette0492Tests.barStoolsRespectTheOriginalOccupantAndNativeDartsAndPoolRemainUsable` timed out waiting for the Last Stop's cast.
+- The lot builds in bounded slices, and its cast is spawned once the build is complete. Under the full suite's load that took longer than the case's 300 ticks.
+- The other Last Stop cases on the same fixture wait 900 to 2400 ticks. This one now waits 900, and its message says which of the chunks, the build and the cast is still pending.
+- Nothing in 0.4.179 touches the Last Stop.
+
 No layout or Witness change: layout 51; protocol 100; Witness 55 / 42 / two kinds / three endings.

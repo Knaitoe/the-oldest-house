@@ -129,10 +129,11 @@ public final class Vignette0492Tests {
     }
     @AfterBatch(batch="review492_herd_custody") public static void herdDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="review492_bar_handling",timeoutTicks=300)
+    // The lot builds in bounded slices and its cast is spawned once it is built, so under the full suite's load this waits as long as the other Last Stop cases (run 1345).
+    @GameTest(template="empty",batch="review492_bar_handling",timeoutTicks=900)
     public static void barStoolsRespectTheOriginalOccupantAndNativeDartsAndPoolRemainUsable(GameTestHelper h){
         var f=fixture(h);var place=ElkLot.PLACE;var p=f.player("bar_handling",place);var b=f.base(place);lease(f,place);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Russ"),"the actual cast is loaded")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Russ"),"the actual cast is loaded: chunks "+f.chunks.ready()+", lot built "+ElkLot.built(f.data(),f.base(place))+", cast "+LiteraryVignettes.shared(f.data(),place).hasUUID("Russ"))).thenExecute(()->{
             var russ=(LiteraryActor)f.out.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Russ"));var occupied=russ.blockPosition();f.at(p,place,-23.5,0,-22);
             h.assertTrue(!HouseSitting.sit(p,occupied)&&!p.isPassenger(),"an original bar attendant keeps his occupied stool");
             var free=b.offset(-20,0,-24);use(p,free,InteractionHand.MAIN_HAND);h.assertTrue(p.getVehicle() instanceof SeatEntity,"a free native bar stool seats the player");p.stopRiding();
