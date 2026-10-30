@@ -105,6 +105,20 @@ The words then pass the server's text filter before they are kept. The server st
 - Rubbings, the co-author, torn pages, grounding and the post-mortem journal are the next steps, after Zampanò's courtyard (step 2).
 - On a death the journal still drops like anything else (step 6 changes that). If it is left to despawn, it comes back worn.
 
+## Run 1342
+
+Run 1342 tested 7ce632a (0.4.176). Sixteen of seventeen jobs passed:
+- the live two-client proof, with the Ghosts leap and the click-to-roll camera;
+- all 24 Ghosts cases;
+- the elk and tunnel fixes;
+- the build job's client proof, with the red Minotaur's mixin.
+
+The structure suite ran all 885 of its tests and every one passed. The step still failed, on its count check: 888 tests are declared and 885 ran.
+
+**The cause.** Three tests (`OnwardProbe` and `BarnProbe`) were never meant to be committed. `BarnProbe`'s own header says so: "LOCAL ONLY, never committed". They went in by mistake in 0.4.167. They sit in a namespace the suite never runs, so the declared count has held three tests that cannot pass since then; earlier failures in the same step hid it.
+
+**The fix.** They come out of the repository, with their template folder, and stay as local tools only. The count is now 888 declared, the 885 plus the three journal tests.
+
 ## Versions
 
 - **Mod version:** 0.4.177.
