@@ -1,3 +1,5 @@
+October 30 candidate 0.4.183 shares Usher's last night among the readers in the house (one Roderick, one reading, one Madeline, the fall for all, each fleeing alone, each account from that reader's side), lets Roderick and the account know the reader's own house by the House's read (HOME), and gives the open lid her coming to the studio doors. Canon: docs/USHER_TOGETHER_0_4_183.md.
+
 October 30 candidate 0.4.182 completes the Usher pass: Roderick in his chair, the storm night after the lid is chosen, and on a closed lid the reading answered from the vault, Madeline at the studio doors, the fall, and the flight over the causeway, all each reader's own. Canon: docs/USHER_FALL_0_4_182.md.
 
 October 30 candidate 0.4.181 rebuilds the house of Usher whole, in its own pixels: the tarn and causeway, the fissured front, the tapestried hall, the vault behind its copper door, Roderick's lofty studio with its windows out of reach, and lower galleries. The story is unchanged; Roderick, the storm and the fall are the next stage. No layout, protocol or Witness change. Canon: docs/USHER_0_4_181.md.

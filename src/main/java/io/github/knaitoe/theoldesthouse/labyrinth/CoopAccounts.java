@@ -134,6 +134,12 @@ final class CoopAccounts {
     static final SharedVignettes.Scene VAULT=new SharedVignettes.Scene(){
         @Override public @Nullable String line(VignetteRole role,String outcome,String actor){
             boolean closed=!outcome.equals("found_her_outside_the_open_coffin");
+            // 0.4.183: the night the house fell, for those who were in it some other way than finishing first.
+            if(outcome.equals("fled_as_the_house_fell"))return switch(role){
+                case WITNESS->"I was in the house on the night of the storm. I heard the old romance read to him, and each answer from below. When she came to the doors we ran, and from the bank "+actor+" and I watched the crack open from the roof into the water.";
+                case PARTWAY->"I came into the house after the storm had begun; "+actor+" was already in it. I heard the last of the reading, and what answered it. Then the doors gave, and I ran with the rest.";
+                case AFTERMATH->"I had been to the house before the storm. When I came back, "+actor+" had seen the night it fell. The crack ran from the roof into the water, and light came through it.";
+                default->null;};
             return switch(role){
                 case WITNESS->closed?"I was in the vault when "+actor+" chose the lid. I never put my own hand on it. On every visit after, the scratching beneath it was louder, and the cracks ran further along the wall."
                     :"I was in the vault when "+actor+" left the coffin open. I chose nothing. On the next visit she was standing outside it, and nobody had moved her.";
