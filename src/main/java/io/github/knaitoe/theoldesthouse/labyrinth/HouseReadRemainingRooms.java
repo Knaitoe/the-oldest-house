@@ -69,7 +69,8 @@ public final class HouseReadRemainingRooms {
             if(Math.abs(x)<=6)put(l,b,x,0,-11,HouseReadRegistry.COUNTER.get().defaultBlockState());
         }
         HouseReadRooms.door(l,b,HouseReadMoments.exit(HouseReadSites.Room.WAITING),HouseReadRegistry.OFFICE_DOOR.get(),Direction.SOUTH);
-        fit(l,b,BELL_AT,BELL);fit(l,b,SIGN_AT,SIGN);fit(l,b,CLOCK_AT,WALL_CLOCK);
+        // 0.4.193 (owner: "This should be rotated"): the sign's strut is behind its face, so it faces north to show the room its lettering.
+        fit(l,b,BELL_AT,BELL);fit(l,b,SIGN_AT,SIGN,Direction.NORTH);fit(l,b,CLOCK_AT,WALL_CLOCK);
         // Behind the glass: the receptionist's desk and lamp, and the calendar on the back wall.
         fit(l,b,2,0,-14,TABLE_END,Direction.EAST);fit(l,b,3,0,-14,TABLE_END,Direction.WEST);fit(l,b,3,1,-14,LAMP);fit(l,b,2,0,-13,CHAIR);fit(l,b,CALENDAR_AT,CALENDAR);
         // The low table: glasses, paper and magazine, one to a place, with two armchairs facing it from the wall.

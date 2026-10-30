@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.192** starts giving every artifact an effect. The elk's tooth steadies its keeper, the bulb hangs a light, Father's knife wastes nothing, the rabbit's foot brings luck, the brother's photograph shields companions, the wax cylinders keep monsters from spawning while they play, the diary's last page points home at night, the register leaf lets the dead pass over its keeper, and the cap leads animals. See [docs/KEEPSAKES_0_4_192.md](docs/KEEPSAKES_0_4_192.md).
+Development candidate **0.4.193** takes the owner's second set of notes from October 30. The waiting room's sign now faces the room, and the halls with rooms bled into them are dealt about a third as often, so most halls on the approach are just hallways. See [docs/OWNER_NOTES_0_4_193.md](docs/OWNER_NOTES_0_4_193.md).
+
+0.4.192 starts giving every artifact an effect. The elk's tooth steadies its keeper, the bulb hangs a light, Father's knife wastes nothing, the rabbit's foot brings luck, the brother's photograph shields companions, the wax cylinders keep monsters from spawning while they play, the diary's last page points home at night, the register leaf lets the dead pass over its keeper, and the cap leads animals. See [docs/KEEPSAKES_0_4_192.md](docs/KEEPSAKES_0_4_192.md).
 
 0.4.191 gives the contests their trades. Ted's cave gives a quarter more breath under water and now and then pulls back the reader's trail line; the hides' smell turns animals away until washed off; the diner leaves nausea for a win and black frost for a loss; the Tell-Tale heart starts louder for a reader it sent out; and a blow in the Shallows sends the boys home. See [docs/CONTEST_TRADES_0_4_191.md](docs/CONTEST_TRADES_0_4_191.md).
 
