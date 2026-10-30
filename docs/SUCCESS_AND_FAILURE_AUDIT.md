@@ -239,9 +239,19 @@ Each shows **now** (S success, F failure, R reward, X repercussion) and the prop
 
 The choices are the trade. Each one gives and takes something different.
 
-**Mr. Harrigan's phone.**
-- **Now:** buried his phone, or kept it (the kept phone works, one name a day).
-- **Proposed:** nothing; its loop is complete.
+**Mr. Harrigan's phone.** The owner: "You can give Harrigan his phone or not … That should reflect in how the phone is handled. Maybe you can receive friendly affirming texts if you didn't bury him with it, sort of freeing him. If you gave him the phone, you let him carry the obligation and that's when the rot starts."
+- **Now:**
+  - **Buried** (he has his phone): his line stays open. One name a day by text or voicemail: a hostile species dies near the caller's Overworld bed at the next dawn, and a harmless or named creature brings him instead.
+  - **Kept:** his line goes nowhere. A call or text to his number rings in the reader's own pocket.
+- **Kept: he is freed.**
+  - Now and then a kind text from his number comes into the reader's thread, though his phone is in their pocket.
+  - The texts are short and in his voice, the man who sent the boy books and scratch tickets: "Read something today." "You did right by me."
+  - He never takes a name.
+- **Buried: he carries the obligation, and the rot starts.** The line takes names as now, and each name he carries rots a little more:
+  - **First names:** his voicemail greeting slows and roughens.
+  - **Then:** his replies in the thread arrive with letters missing, and the casket's smell is on the phone (flies by the reader at dawn after a name).
+  - **At the last:** he no longer waits to be asked. Some nights the phone rings on its own, his breathing on the line, until they give a name or let it ring out.
+  - The account follows where the rot has reached.
 
 **The empty chair (séance).**
 - **Now:** drove the family out, heard the medium, or left when asked.
@@ -311,6 +321,7 @@ Twelve have nothing yet. Each proposal echoes its own room:
   - **Kept:** the Goatman's.
   - **New:** Bly's and the Last Stop's.
   - **Removed:** Usher's would go.
+- **Harrigan:** the choice decides the phone: kept frees him (kind texts), buried lets the rot start.
 - **House-only changes:** eight, all in experience rooms.
 - **New artifacts and keepsakes:** about twenty, at most one per outcome:
   - four for experiences;
@@ -322,9 +333,10 @@ Twelve have nothing yet. Each proposal echoes its own room:
 
 1. **Usher's trade,** replacing its haunt. It is small and sets the pattern.
 2. **The Last Stop rework:** the failure, the men's statistics and the elk's punishment.
-3. **Bly's haunt.**
-4. **The eight House-only changes,** which share one private-view mechanism.
-5. **The contests' trades,** a few rooms at a time.
-6. **The keepsakes and artifacts,** in one batch with their sprites.
+3. **Harrigan's two phones:** the kept phone's kind texts, the buried phone's rot.
+4. **Bly's haunt.**
+5. **The eight House-only changes,** which share one private-view mechanism.
+6. **The contests' trades,** a few rooms at a time.
+7. **The keepsakes and artifacts,** in one batch with their sprites.
 
 Each batch is tested and validated in CI before the next.
