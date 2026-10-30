@@ -2,7 +2,7 @@
 
 The owner wants players to keep journals and writings of their own: "to not just draft their own house of leaves, but to create their own wall of mad writings like zampano's." They proposed five ideas and dropped the first. On the other four, the owner's answer was: "I think the journal might be worth developing as a custom sub system. I especially like the idea of a damaged book returning on death. The custom sub system fixes worrying about signing the book too."
 
-This document is the plan for that subsystem. Step 1, the journal and its page renderer, is built in 0.4.177 ([JOURNAL_0_4_177.md](JOURNAL_0_4_177.md)). Step 2, Zampanò's courtyard on the same renderer, is built in 0.4.178 ([ZAMPANO_DRAWERS_0_4_178.md](ZAMPANO_DRAWERS_0_4_178.md)).
+This document is the plan for that subsystem. Step 1, the journal and its page renderer, is built in 0.4.177 ([JOURNAL_0_4_177.md](JOURNAL_0_4_177.md)). Step 2, Zampanò's courtyard on the same renderer, is built in 0.4.178 ([ZAMPANO_DRAWERS_0_4_178.md](ZAMPANO_DRAWERS_0_4_178.md)). Step 3, pencil rubbings, is built in 0.4.179 ([JOURNAL_RUBBINGS_0_4_179.md](JOURNAL_RUBBINGS_0_4_179.md)).
 
 ## Agreed
 
