@@ -74,6 +74,30 @@ public final class StaircaseAccount {
         var read = letters.getCompound("Read");
         count(out, "letters", read.getAllKeys().stream().filter(read::getBoolean).count());
         count(out, "deepest", home.getInt("Deepest"));
+        // 0.4.194: what followed the reader home, what the manor kept for them, and what Ted's cave took back.
+        var followers = followers(p, d);
+        if (!followers.isEmpty()) StaircaseProse.fact("followed", followers.size(), followers.getFirst()).ifPresent(out::add);
+        var kept = remembered(d, p.getUUID());
+        if (!kept.isEmpty()) StaircaseProse.fact("remembered", kept.size(), kept.getFirst()).ifPresent(out::add);
+        count(out, "unwound", d.stateEntry(ContestTrades.STATE, p.getStringUUID()).getInt("Unwound"));
+        return out;
+    }
+    /** Who follows this reader home now, in prose, from the rooms' own records. */
+    static List<String> followers(ServerPlayer p, LabyrinthData d) {
+        var out = new ArrayList<String>();
+        if (LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.ELK_LOT).getBoolean(ElkFollows.FOLLOWS)) out.add("the woman from the field");
+        if (LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE).getBoolean(BlyFollows.FOLLOWS)) out.add("the Lady from the lake");
+        var harrigan = HarriganVignette.playerState(d, p.getUUID());
+        if (harrigan.getBoolean("Contact") && harrigan.getInt("TotalCalls") >= HarriganPhones.RINGS_AFTER) out.add("Mr. Harrigan's calls");
+        return out;
+    }
+    /** What the manor keeps of a room for this reader, in prose, in the order the rooms are listed. */
+    static List<String> remembered(LabyrinthData d, java.util.UUID id) {
+        var kept = d.stateEntry(io.github.knaitoe.theoldesthouse.house.HouseRemembers.STATE, id.toString());var out = new ArrayList<String>();
+        String[][] rooms = {{"wallpaper_nursery", "the pattern on the west wall"}, {"model_home", "a tree outside the front window"}, {"winchester", "a door onto plaster"},
+                {"child_room", "a bear on the stairs"}, {"preserved_cave", "a pew in the hall"}, {"miniatures", "a small figure of yourself"},
+                {"hill_nursery", "knocking in the walls"}, {"backseat", "something behind your shoulder in the glass"}};
+        for (var room : rooms) if (kept.contains("Since_" + room[0])) out.add(room[1]);
         return out;
     }
     private static void metres(List<StaircaseProse.Fact> out, String id, int centimetres, int minimum) {

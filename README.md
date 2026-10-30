@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.193** takes the owner's second set of notes from October 30. The waiting room's sign now faces the room, and the halls with rooms bled into them are dealt about a third as often, so most halls on the approach are just hallways. See [docs/OWNER_NOTES_0_4_193.md](docs/OWNER_NOTES_0_4_193.md).
+Development candidate **0.4.194** writes the last week's changes into the reader's own story. The Witness account and the rooms' accounts say what happened afterwards: who followed you home and whether they still do, how far Mr. Harrigan's rot has gone, what the cave took back and what the manor kept for you. The House of Leaves can tell of it, and each keepsake says what it does. In the shelter's slow dance, your own hands now hold your partner. See [docs/LITERATURE_AND_DANCE_0_4_194.md](docs/LITERATURE_AND_DANCE_0_4_194.md).
+
+0.4.193 takes the owner's second set of notes from October 30. The waiting room's sign now faces the room, and the halls with rooms bled into them are dealt about a third as often, so most halls on the approach are just hallways. See [docs/OWNER_NOTES_0_4_193.md](docs/OWNER_NOTES_0_4_193.md).
 
 0.4.192 starts giving every artifact an effect. The elk's tooth steadies its keeper, the bulb hangs a light, Father's knife wastes nothing, the rabbit's foot brings luck, the brother's photograph shields companions, the wax cylinders keep monsters from spawning while they play, the diary's last page points home at night, the register leaf lets the dead pass over its keeper, and the cap leads animals. See [docs/KEEPSAKES_0_4_192.md](docs/KEEPSAKES_0_4_192.md).
 

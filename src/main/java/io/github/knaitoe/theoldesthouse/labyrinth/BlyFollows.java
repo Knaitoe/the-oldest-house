@@ -28,7 +28,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class BlyFollows {
     private BlyFollows(){}
     static final LabyrinthPlace PLACE=LabyrinthPlace.BLY_ROUTE;
-    public static final String FOLLOWS="LadyFollows0189",NIGHT="LadyNight0189";
+    public static final String FOLLOWS="LadyFollows0189",NIGHT="LadyNight0189",CARRIED="LadyCarried0189";
     /** How near water must be, how long the hold lasts before the carry, and how long the carry takes. */
     public static final int NEAR=6,HOLD=20,CARRY=20;
     private record Carry(Vec3 from,Vec3 to,long start){}
@@ -60,6 +60,8 @@ public final class BlyFollows {
         var l=p.serverLevel();if(carrying(p)||HouseDimensions.isHouseDimension(l.dimension())||p.isInWater())return false;
         var to=edge(l,p);if(to==null||to.distanceToSqr(p.position())<1)return false;
         CARRIES.put(p.getUUID(),new Carry(p.position(),to,l.getGameTime()));
+        // Counted, so the reader's account can say how often she came for them.
+        var record=own(p);var t=record.get();t.putInt(CARRIED,t.getInt(CARRIED)+1);record.put(t);
         p.addEffect(new MobEffectInstance(MobEffects.DARKNESS,HOLD+CARRY+40,0,false,false));
         p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,HOLD,9,false,false));
         LiteraryVignettes.heard(p,SoundEvents.PLAYER_SPLASH,BlockPos.containing(to),.5F,.6F);

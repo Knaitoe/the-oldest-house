@@ -110,7 +110,7 @@ public final class LiteraryTexts {
         case WINCHESTER->"The switchbacks brought me one floor up, to the upper ledger. Beside every room it kept a name, and none of the names were the builders'. The last name had no room yet. That was why the work could not stop.";
         case CHILD_ROOM->ChildRoom.account(own);
         case CRIMSON_HALL->"I played the three voices all the way through. Under the snow, the floor was red. A house can keep a voice much longer than it keeps a person.";
-        case BLY_ROUTE->own.getBoolean("Dragged")?"The first time I stood where she walks and came up in the lake room's water. Then I shut a cupboard from inside. The catches are inside because a child once hid from her in one. I think she was looking for that child when she found me.":"I shut a cupboard from inside while the drips passed on their way to the lake room. The catches are inside because a child once hid from her in one. She has never opened one. I think she is still looking for that child.";
+        case BLY_ROUTE->own.getBoolean("Dragged")?"The first time I stood where she walks and came up in the lake room's water. "+(AccountAfterwards.bly(own).isEmpty()?"":AccountAfterwards.bly(own)+" ")+"Then I shut a cupboard from inside. The catches are inside because a child once hid from her in one. I think she was looking for that child when she found me.":"I shut a cupboard from inside while the drips passed on their way to the lake room. The catches are inside because a child once hid from her in one. She has never opened one. I think she is still looking for that child.";
         case THREE_FINGERS->ThreeFingers.account(own);
         case LAKE_HOUSE->LakeHouse.account(own);
         case BORRASCA->BorrascaTexts.account();
@@ -119,7 +119,7 @@ public final class LiteraryTexts {
         case MAPPING_INTERIOR->own.getBoolean("PileBroken")?"I broke the pile under the trailer. The boy woke when I came back. The crawlspace still ran beyond the walls, but the things at its end could no longer hold him there.":"I took what lay under the trailer. The photograph came with me. When I returned, the boy was harder to wake. Keeping a father's things was not the same as keeping a brother.";
         case HOLY_RABBIT->rabbitAccount(own);
         case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\n"+confessionLast(own)+"The signature was mine. The chair opposite me had not changed.";
-        case ELK_CARCASSES->"I held still beneath the hides. His boots passed the opening twice and did not slow: nobody looks twice at a pile of things already dead. When the boots stopped coming back, I followed the service path.";
+        case ELK_CARCASSES->"I held still beneath the hides. His boots passed the opening twice and did not slow: nobody looks twice at a pile of things already dead. When the boots stopped coming back, I followed the service path. The smell of the hides came with me.";
         case COSTUME_NIGHT->CostumeNight.account(own);
         case MOVIE_NIGHT->MovieNight.account(own);
         case WINTER_LAKE->WinterLake.account(own);

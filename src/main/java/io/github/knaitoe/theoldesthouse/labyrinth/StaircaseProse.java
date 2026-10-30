@@ -152,7 +152,20 @@ public final class StaircaseProse {
         new Kind("deepest","house",1.5,12,"Doors deep: {n}",
             "You went {n|door|doors} deep before these stairs. Each one closed behind you.",
             "{n|door|doors} down. The House remembers every threshold you crossed.",
-            "You opened your way {n|door|doors} into the House. These stairs are the deepest door."));
+            "You opened your way {n|door|doors} into the House. These stairs are the deepest door."),
+        // 0.4.194: what the rooms did afterwards (the owner: "Ensure you're updating literature too").
+        new Kind("followed","house",2.8,1,"Followed home: {x}",
+            "{X} followed you home. Out there, in your own world, it still knows where you are.",
+            "Something came home with you from the House: {x}.",
+            "You brought {x} home without meaning to. It has not gone back."),
+        new Kind("remembered","house",2.2,2,"Kept in the manor: {n|room|rooms}",
+            "The manor kept {n|room|rooms} for you. Nobody else could see what it kept.",
+            "In the manor you saw {x}. Nobody else did.",
+            "{n|room|rooms} came back to the manor with you, small enough to keep."),
+        new Kind("unwound","house",2.0,1,"Line taken back: {times}",
+            "{Times} the line paid out through your fingers, back toward the cave.",
+            "The cave pulled your line back {times}. Each time you let it go.",
+            "You laid a line through the halls, and {times} something at the far end took it back."));
 
     private static final String[] QUIET = {
         "This leaf is nearly blank. Whatever you did before the House, you did quietly.",
@@ -351,6 +364,9 @@ public final class StaircaseProse {
             case "manor"->"You have slept in the manor. The bed in the margin has a door beside it, standing open.";
             case "letters"->"You have read the House's letters. A sentence on this page has been copied in a different hand.";
             case "deepest"->"You have gone farther into the House. The writer has run out of room and turned the paper.";
+            case "followed"->"Something followed you home: "+value+". The writer has left the door in the margin unlatched.";
+            case "remembered"->"The manor kept "+value+" for you. In the margin, a room has been drawn very small.";
+            case "unwound"->"The cave took your line back. A thread runs off the edge of the page.";
             default->"The page has room for a memory that has not been written.";};
     }
 

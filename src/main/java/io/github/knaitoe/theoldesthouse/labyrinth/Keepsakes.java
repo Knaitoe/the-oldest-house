@@ -94,6 +94,31 @@ public final class Keepsakes {
         for (int i = 0; i < inv.getContainerSize(); i++) if (mine(inv.getItem(i), p, place, key)) return true;
         return false;
     }
+    /**
+     * 0.4.194 (owner: "Ensure you're updating literature too"): each keepsake says, in a line of its own, what it does, in
+     * the room's words rather than the game's. Added under any lines it already has.
+     */
+    public static String line(LabyrinthPlace place, String key) {
+        return switch (place.id() + "/" + key) {
+            case "elk_fan/Tooth" -> "Heavier than it looks. In your other hand it keeps your feet under you.";
+            case "elk_fan/Lightbulb" -> "It still lights for a little while, if you ask it.";
+            case "holy_rabbit/Knife" -> "Father wasted nothing he killed.";
+            case "holy_rabbit/RabbitFoot" -> "Carried, things fall your way a little more often.";
+            case "mapping_interior/Photograph" -> "He kept watch over his boys. Kept close, it watches over yours.";
+            case "crimson_hall/Cylinder0", "crimson_hall/Cylinder1", "crimson_hall/Cylinder2" -> "Played, the voices keep the house. Nothing else comes near it.";
+            case "devils_rock/Diary7" -> "Read it at night, away from the House. The last page knows the way home.";
+            case "usher/RegisterLeaf" -> "Your name among those carried down. The dead read it too.";
+            case "elk_lot/Cap" -> "Worn, the herd takes you for one of its own.";
+            default -> null;
+        };
+    }
+    public static void inscribe(ItemStack s, LabyrinthPlace place, String key) {
+        String line = line(place, key);
+        if (line == null) return;
+        var lines = new ArrayList<Component>(s.getOrDefault(net.minecraft.core.component.DataComponents.LORE, net.minecraft.world.item.component.ItemLore.EMPTY).lines());
+        lines.add(Component.literal(line).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+        s.set(net.minecraft.core.component.DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(lines));
+    }
     /** Their own world: anywhere outside the House's dimensions. */
     public static boolean ownWorld(ServerPlayer p) { return !HouseDimensions.isHouseDimension(p.level().dimension()); }
 
