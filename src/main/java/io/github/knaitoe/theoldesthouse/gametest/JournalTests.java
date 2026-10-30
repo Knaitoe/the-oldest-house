@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.journal.CoAuthor;
 import io.github.knaitoe.theoldesthouse.journal.JournalPage;
 import io.github.knaitoe.theoldesthouse.journal.Journals;
 import io.github.knaitoe.theoldesthouse.journal.Rubbings;
+import io.github.knaitoe.theoldesthouse.journal.TornPages;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount;
@@ -228,6 +229,119 @@ public final class JournalTests {
             h.assertTrue(data.page(id,4).notes().size()==1&&data.page(id,4).notes().get(0).anchor(data.page(id,4).text())<0,"the answer is ink and stays when its line is gone");
             h.assertTrue(data.page(id,8).notes().isEmpty(),"a reader's screen cannot write in the other hand");
             CoAuthor.certain(id,false);CoAuthor.viewing(p,-1);NativeTestPlayers.remove(p);
+        }).thenSucceed();
+    }
+
+    // ------------------------------------------------------------------ 0.4.199: torn pages (TornPages)
+    static int tornCount(ServerPlayer p){int n=0;for(var s:p.getInventory().items)if(TornPages.ref(s)!=null)n++;return n;}
+    /** Takes a reader's torn copy of a page out of their pack, to put in their hand. */
+    static ItemStack tornIn(ServerPlayer p,int page){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++){var ref=TornPages.ref(inv.getItem(i));if(ref!=null&&ref.page()==page)return inv.removeItemNoUpdate(i);}return ItemStack.EMPTY;}
+    /** The reader's own hand puts the page against a block face, as a right-click would. */
+    static net.minecraft.world.InteractionResult pin(ServerPlayer p,ItemStack page,net.minecraft.core.BlockPos support,net.minecraft.core.Direction face){
+        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,page);
+        var hit=new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(support).add(face.getStepX()*.5,face.getStepY()*.5,face.getStepZ()*.5),face,support,false);
+        return page.useOn(new net.minecraft.world.item.context.UseOnContext(p,net.minecraft.world.InteractionHand.MAIN_HAND,hit));
+    }
+    static java.util.List<io.github.knaitoe.theoldesthouse.journal.PinnedPage> pinnedBy(net.minecraft.server.level.ServerLevel l,ServerPlayer p,net.minecraft.core.BlockPos near){
+        return l.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.journal.PinnedPage.class,new net.minecraft.world.phys.AABB(near).inflate(24),e->e.ref().owner().equals(p.getUUID()));
+    }
+
+    /** 0.4.199: a written page tears out, the stub stays, anyone holding the page can read it, and its writer can always take it back. */
+    @GameTest(template="empty",batch="journal_tear",timeoutTicks=300)
+    public static void aWrittenPageTearsOutLeavingItsStubAndItsWriterCanTakeItBack(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"journal_tearer");var peer=NativeTestPlayers.survival(h,"journal_page_reader");
+        var data=Journals.get(h.getLevel().getServer());var id=p.getUUID();
+        h.startSequence().thenExecute(()->{
+            p.getInventory().add(data.issue(p));
+            data.put(id,3,JournalPage.load(page("The lamp hall again.\nLonger than it was.")));
+            h.assertTrue(TornPages.tear(peer,3)==TornPages.Tear.NOT_CARRIED,"only a reader carrying their own journal tears from it");
+            h.assertTrue(TornPages.tear(p,4)==TornPages.Tear.BLANK,"a blank page does not tear out");
+            h.assertTrue(TornPages.tear(p,3)==TornPages.Tear.TEARING,"a written page tears out");
+        }).thenWaitUntil(()->h.assertTrue(tornCount(p)==1,"the torn page is in the reader's hands once its words have passed the filter")).thenExecute(()->{
+            var stack=tornIn(p,3);var ref=TornPages.ref(stack);
+            h.assertTrue(ref!=null&&ref.owner().equals(id)&&TornPages.nameOf(stack).equals("journal_tearer")&&stack.getHoverName().getString().equals("Torn from journal_tearer's journal"),"it is torn from the reader's journal, and says so: "+stack.getHoverName().getString());
+            h.assertTrue(data.torn(id,3)&&data.page(id,3).text().isEmpty()&&data.contents(id).getIntArray("Torn").length==1,"the journal keeps the stub, and the words have gone with the page");
+            h.assertTrue(TornPages.page(h.getLevel().getServer(),ref).text().equals("The lamp hall again.\nLonger than it was."),"the page carries its words, unaltered");
+            h.assertTrue(Journals.edit(p,3,page("over the stub"))==Journals.Edit.TORN&&TornPages.tear(p,3)==TornPages.Tear.ALREADY,"nothing is written on a stub, and it does not tear twice");
+            // Handed to someone else, anyone can read it.
+            peer.getInventory().add(stack);
+            h.assertTrue(TornPages.read(peer,ref,TornPages.nameOf(stack)),"whoever holds it can read it");
+            // Its writer takes it back from the stub: the page goes home, and the copy in someone else's pocket goes blank.
+            h.assertTrue(TornPages.reclaim(p,3)&&!data.torn(id,3)&&data.page(id,3).text().equals("The lamp hall again.\nLonger than it was."),"its writer takes it back into its stub, every word");
+            h.assertTrue(!TornPages.valid(h.getLevel().getServer(),ref)&&!TornPages.read(peer,ref,"journal_tearer"),"the page someone else held is blank now");
+            var held=peer.getInventory().items.stream().filter(s->TornPages.ref(s)!=null).findFirst().orElseThrow();
+            held.getItem().inventoryTick(held,h.getLevel(),peer,(int)(h.getLevel().getGameTime()%20),false);
+            h.assertTrue(held.isEmpty(),"a blank torn page does not stay in a pocket");
+            // A copy is blank: only the copy the page was torn as is the page.
+            h.assertTrue(TornPages.tear(p,3)==TornPages.Tear.TEARING,"torn out again");
+        }).thenWaitUntil(()->h.assertTrue(tornCount(p)==1,"the page is torn out a second time")).thenExecute(()->{
+            var again=p.getInventory().items.stream().filter(s->TornPages.ref(s)!=null).findFirst().orElseThrow();
+            h.assertTrue(TornPages.ref(again).serial()==2&&TornPages.valid(h.getLevel().getServer(),TornPages.ref(again)),"a page torn again is a new copy");
+            h.assertTrue(WitnessAccount.count(LabyrinthData.get(h.getLevel().getServer()),id)==0,"nothing about a torn page counts toward anything");
+            TornPages.clear(h.getLevel().getServer(),id);NativeTestPlayers.remove(p);NativeTestPlayers.remove(peer);
+        }).thenSucceed();
+    }
+
+    private static LiteraryTests.Fixture pins;
+    @net.minecraft.gametest.framework.AfterBatch(batch="journal_pins") public static void pinsDone(net.minecraft.server.level.ServerLevel l){if(pins!=null){pins.close();pins=null;}}
+    /**
+     * 0.4.199: torn pages pin to walls and lie on tables; out in the House a reader may leave six, and a seventh sends the oldest
+     * home; in the manor there is no limit. Only the writer takes one down. A page whose wall goes falls and stays where it fell,
+     * and one command sends every page of a reader home.
+     */
+    @GameTest(template="empty",batch="journal_pins",timeoutTicks=900)
+    public static void tornPagesPinAndOnlySixAreLeftOutInTheHouseBeyondTheManor(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);pins=f;var l=f.in;var server=l.getServer();
+        var hall=f.origin.offset(640,0,640);var manor=f.origin.offset(io.github.knaitoe.theoldesthouse.house.HouseLayout.AXIS_X,1,io.github.knaitoe.theoldesthouse.house.HouseLayout.FRONT_DOOR_Z+3);
+        f.chunks.hold(l,new net.minecraft.world.phys.AABB(hall).inflate(20));f.chunks.hold(l,new net.minecraft.world.phys.AABB(manor).inflate(12));
+        var p=NativeTestPlayers.survival(h,"journal_pinner");var peer=NativeTestPlayers.survival(h,"journal_pin_peer");f.players.add(p);f.players.add(peer);
+        var data=Journals.get(server);var id=p.getUUID();var first=new java.util.UUID[1];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall and the manor are resident")).thenExecute(()->{
+            p.teleportTo(l,hall.getX()+.5,hall.getY()+1,hall.getZ()+3.5,180,0);peer.teleportTo(l,hall.getX()+1.5,hall.getY()+1,hall.getZ()+3.5,180,0);
+            for(int x=-1;x<=9;x++)for(int z=-1;z<=4;z++)l.setBlockAndUpdate(hall.offset(x,0,z),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            for(int x=0;x<=8;x++)l.setBlockAndUpdate(hall.offset(x,1,0),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            l.setBlockAndUpdate(manor.offset(0,0,-2),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());l.setBlockAndUpdate(manor.offset(0,-1,-2),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            h.assertTrue(TornPages.counts(l,hall.offset(0,1,1))&&!TornPages.counts(l,manor),"pages count out in the House, and not in the manor");
+            // The journal goes in the pack, so the hand the pages are pinned from never holds it.
+            p.getInventory().setItem(30,data.issue(p));
+            for(int i=1;i<=9;i++){data.put(id,i,JournalPage.load(page("note "+i+" by the lamp")));h.assertTrue(TornPages.tear(p,i)==TornPages.Tear.TEARING,"page "+i+" tears");}
+        }).thenWaitUntil(()->h.assertTrue(tornCount(p)==9,"nine pages torn out: "+tornCount(p))).thenExecute(()->{
+            for(int i=1;i<=6;i++){
+                var support=hall.offset(i-1,1,0);
+                h.assertTrue(pin(p,tornIn(p,i),support,net.minecraft.core.Direction.SOUTH).consumesAction()&&p.getMainHandItem().isEmpty(),"page "+i+" pins to the wall");
+            }
+            var pinned=pinnedBy(l,p,hall);
+            h.assertTrue(pinned.size()==6&&TornPages.out(server,id)==6,"six pages pinned out in the House: "+pinned.size());
+            var one=pinned.stream().filter(e->e.ref().page()==1).findFirst().orElseThrow();first[0]=one.getUUID();
+            h.assertTrue(one.glance().equals("note 1 by the lamp")&&one.face()==net.minecraft.core.Direction.SOUTH&&one.getBoundingBox().minZ>=hall.getZ()+1-1e-6&&one.getBoundingBox().maxZ<=hall.getZ()+1.07,"it lies against the wall's face, its first words showing: "+one.getBoundingBox());
+            pin(p,tornIn(p,7),hall.offset(0,1,0),net.minecraft.core.Direction.SOUTH);
+            h.assertTrue(TornPages.ref(p.getMainHandItem())!=null&&pinnedBy(l,p,hall).size()==6,"never two pages pinned over each other");
+            // The seventh, beside them: the oldest goes home.
+            h.assertTrue(pin(p,p.getMainHandItem(),hall.offset(6,1,0),net.minecraft.core.Direction.SOUTH).consumesAction()&&p.getMainHandItem().isEmpty(),"a seventh page pins");
+            h.assertTrue(TornPages.out(server,id)==6&&!data.torn(id,1)&&data.page(id,1).text().equals("note 1 by the lamp")&&l.getEntity(first[0])==null,"past six, the oldest page goes back into its stub, and off the wall");
+            // Flat on a table top.
+            var table=hall.offset(8,0,3);l.setBlockAndUpdate(table.above(),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            h.assertTrue(pin(p,tornIn(p,8),table,net.minecraft.core.Direction.UP).consumesAction(),"a page lies flat on a table top");
+            var flat=pinnedBy(l,p,hall).stream().filter(e->e.ref().page()==8).findFirst().orElseThrow();
+            h.assertTrue(flat.face()==net.minecraft.core.Direction.UP&&Math.abs(flat.getY()-(table.getY()+1))<1e-6&&!data.torn(id,2),"it lies on the table, and the next oldest has gone home");
+            // In the manor there is no limit.
+            p.teleportTo(l,manor.getX()+.5,manor.getY(),manor.getZ()+.5,180,0);
+            h.assertTrue(pin(p,tornIn(p,9),manor.offset(0,0,-2),net.minecraft.core.Direction.SOUTH).consumesAction()&&TornPages.out(server,id)==6&&data.torn(id,3),"a page pinned in the manor counts toward nothing and sends nothing home");
+            // Nobody else can take a page down; its writer, crouching, takes it back.
+            var four=pinnedBy(l,p,hall).stream().filter(e->e.ref().page()==4).findFirst().orElseThrow();
+            four.skipAttackInteraction(peer);four.interact(peer,net.minecraft.world.InteractionHand.MAIN_HAND);
+            h.assertTrue(four.isAlive()&&data.torn(id,4),"another reader reads it, and cannot tear it down");
+            p.teleportTo(l,hall.getX()+3.5,hall.getY()+1,hall.getZ()+2.5,180,0);p.setShiftKeyDown(true);four.interact(p,net.minecraft.world.InteractionHand.MAIN_HAND);p.setShiftKeyDown(false);
+            h.assertTrue(!four.isAlive()&&!data.torn(id,4)&&data.page(id,4).text().equals("note 4 by the lamp"),"its writer takes it back into the journal");
+            // The wall behind page five goes.
+            l.setBlockAndUpdate(hall.offset(4,1,0),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        }).thenWaitUntil(()->h.assertTrue(pinnedBy(l,p,hall).stream().noneMatch(e->e.ref().page()==5),"with its wall gone, the page falls")).thenExecute(()->{
+            var fallen=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(hall).inflate(12),e->{var r=TornPages.ref(e.getItem());return r!=null&&r.page()==5;});
+            h.assertTrue(fallen.size()==1&&fallen.get(0).getAge()==-32768&&data.torn(id,5),"it lies where it fell, and stays there");
+            h.assertTrue(TornPages.out(server,id)<=TornPages.LIMIT,"a fallen page still counts among the six");
+            int sent=TornPages.clear(server,id);
+            h.assertTrue(sent==6&&data.contents(id).getIntArray("Torn").length==0&&pinnedBy(l,p,hall).isEmpty()&&!fallen.get(0).isAlive()&&pinnedBy(l,p,manor).isEmpty(),"one command sends every page of a reader home: "+sent);
+            for(int i=1;i<=9;i++)h.assertTrue(data.page(id,i).text().equals("note "+i+" by the lamp"),"nothing is lost: page "+i);
         }).thenSucceed();
     }
 }

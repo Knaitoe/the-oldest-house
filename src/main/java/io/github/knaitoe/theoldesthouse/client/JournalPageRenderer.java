@@ -158,6 +158,31 @@ public final class JournalPageRenderer {
         header(g,font,x,y,page);number(g,font,x,y,index);
     }
 
+    /** 0.4.199: a page torn out of a journal (journal/TornPages), as anyone holding it sees it: no wear, no number, one ragged edge. */
+    public static void torn(GuiGraphics g,Font font,int x,int y,JournalPage page){
+        paper(g,x,y,false,false,0,7);
+        rubbings(g,font,x,y,page);
+        writing(g,font,x,y,page.text());
+        notes(g,font,x,y,page,page.text());
+        g.enableScissor(x,y,x+W,y+H);for(var run:page.placed())placed(g,font,x,y,run,false);g.disableScissor();
+        header(g,font,x,y,page);
+        ragged(g,x,y,H,true,0xFF1E1A16);
+    }
+    /** What a torn page leaves in the book: a strip of paper along the gutter, ragged where it came away, and the dark beyond. */
+    public static void stub(GuiGraphics g,int x,int y,boolean left,int seed){
+        g.fill(x,y,x+W,y+H,0xFF231D17);
+        int strip=11,sx=left?x+W-strip:x;
+        g.fill(sx,y,sx+strip,y+H,PAPER);
+        for(int i=0;i<6;i++){int a=(6-i)*7;int gx=left?x+W-1-i:x+i;g.fill(gx,y,gx+1,y+H,a<<24);}
+        // The tear runs along the strip's outer edge.
+        for(int row=0;row<H;row++){int bite=bite(row,seed);int ex=left?sx:sx+strip;g.fill(left?ex:ex-bite,y+row,left?ex+bite:ex,y+row+1,0xFF231D17);}
+    }
+    /** One edge of a page torn away: little bites of the dark behind it, never quite the same twice. */
+    static void ragged(GuiGraphics g,int x,int y,int h,boolean leftEdge,int dark){
+        for(int row=0;row<h;row++){int bite=bite(row,3);int ex=leftEdge?x:x+W;g.fill(leftEdge?ex:ex-bite,y+row,leftEdge?ex+bite:ex,y+row+1,dark);}
+    }
+    static int bite(int row,int seed){return 1+Math.floorMod(row*7+(row/3)*13+seed*5,4)+(Math.floorMod(row/5+seed,7)==0?2:0);}
+
     /** The other hand: its own lettering, in ink rather than the reader's graphite (journal/CoAuthor). */
     public static final Style OTHER=Style.EMPTY.withFont(io.github.knaitoe.theoldesthouse.house.HouseWriting.MARGIN_FONT);
     public static final int OTHER_INK=0xFF2B1A12, OTHER_WASH=0x902B1A12;
