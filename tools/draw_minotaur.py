@@ -4,8 +4,9 @@
 The owner: "Can we also improve the Minotaur's texture?" Until now every box of the Minotaur sampled one of four flat
 material swatches (minotaur_materials.png: hide, fur, horn, dark), so it had no face, no muscle and no hooves to speak
 of. This draws a proper skin at the model's own pixel scale, one region per box (MinotaurModel.UV holds the same table):
-a bull's face with a heavy brow, sunk eye sockets and a pale muzzle; a bare, scarred chest under a shaggy hump; a
+a bull's face with a heavy brow, dark eyes and a pale muzzle; a bare, scarred chest under a shaggy hump; a
 rope-belted loincloth; ridged ivory horns darkening to the tips; dark hands with pale claws; split black hooves.
+Its eyes are a bull's, dark brown: the owner, "It's not necessarily a monster."
 The old swatch sheet is left exactly as it is.
 
 Run from the repository root:
@@ -25,7 +26,7 @@ SIZE = 128
 LAYOUT = {
     'chest': (0, 0, 20, 15, 13), 'hump': (66, 0, 16, 17, 7), 'horn': (112, 0, 4, 9, 4), 'turn': (112, 13, 3, 7, 3),
     'skull': (0, 28, 12, 11, 10), 'brow': (44, 28, 14, 5, 10), 'muzzle': (92, 28, 10, 5, 6),
-    'eyes': (44, 43, 3, 1.5, .5), 'nostrils': (52, 43, 2, 1.5, .3), 'jaw': (92, 39, 8, 3, 7),
+    'eyes': (44, 43, 4, 3, 1), 'nostrils': (54, 43, 2, 1.5, .3), 'jaw': (92, 39, 8, 3, 7),
     'waist': (0, 49, 12, 10, 9), 'upper_arm': (42, 49, 8, 12, 8), 'forearm': (74, 49, 7, 11, 7),
     'tip': (102, 49, 1.5, 6, 1.5), 'finger': (108, 49, 2, 3, 1),
     'hand': (0, 69, 8, 5, 7), 'thigh': (30, 69, 7, 9, 7), 'shin': (58, 69, 5.6, 7, 5), 'hoof': (80, 69, 3.2, 3, 7),
@@ -38,11 +39,13 @@ FUR_MID = (74, 51, 37)
 BARE = (126, 94, 72)
 MUZZLE = (142, 116, 96)
 NOSE = (52, 40, 36)
+NOSE_PAD = (90, 72, 68)
 HORN_ROOT, HORN_TIP = (224, 210, 176), (60, 50, 40)
 HOOF = (34, 28, 26)
 CLAW = (206, 196, 176)
 MOUTH = (98, 34, 34)
-EYE_RIM, EYE_RED = (24, 10, 8), (190, 48, 32)
+EYE_RIM, EYE_BROWN, EYE_LIGHT = (26, 18, 14), (74, 46, 30), (238, 232, 222)
+EYE_WHITE, LASH = (224, 214, 200), (22, 15, 12)
 SCAR = (172, 118, 100)
 LEATHER, CLOTH = (56, 42, 32), (82, 70, 58)
 
@@ -141,7 +144,7 @@ def draw():
         return shade(HIDE if y > 5 else CLOTH, rng.randint(-6, 6))
     paint(im, 'waist', waist)
 
-    # The skull: a curled tuft on the forehead, a heavy brow, the sockets sunk and dark around the eyes.
+    # The skull: a curled tuft on the forehead, a heavy brow, the hide shadowed round the eyes.
     def skull(face, x, y, fw, fh):
         if face == 'front':
             if y <= 3:
@@ -149,7 +152,7 @@ def draw():
             if y == 4:
                 return shade(FUR_DARK, -6)
             if y in (5, 6):
-                return shade(EYE_RIM, 14) if x in (0, 1, 2, 3, 8, 9, 10, 11) else shade(HIDE, -4)
+                return shade(HIDE, -24) if x in (0, 1, 2, 3, 8, 9, 10, 11) else shade(HIDE, -4)
             return shade(mix(HIDE, MUZZLE, .4), rng.randint(-4, 4))
         if face in ('right', 'left'):
             # A darker patch where the ear would hang.
@@ -166,11 +169,14 @@ def draw():
     # The muzzle: pale, the nose pad dark and wet-looking, the mouth a black line.
     def muzzle(face, x, y, fw, fh):
         if face == 'front':
-            if y <= 1:
-                return shade(NOSE, 10 if (x, y) in ((2, 0), (7, 0)) else rng.randint(-3, 3))
+            # A broad, moist nose pad across the front holds the nostrils, so they read as a nose, not a second pair of eyes.
+            if y == 0:
+                return shade(MUZZLE, rng.randint(-5, 5))
             if y == fh - 1:
                 return shade(EYE_RIM, 6)
-            return shade(MUZZLE, rng.randint(-5, 5))
+            if x in (0, fw - 1):
+                return shade(mix(MUZZLE, NOSE_PAD, .5), rng.randint(-4, 4))
+            return shade(NOSE_PAD, (16 if (x, y) in ((3, 1), (6, 1), (5, 3)) else 0) + rng.randint(-4, 4))
         if face == 'top':
             return shade(mix(HIDE, MUZZLE, y / max(1, fh - 1)), rng.randint(-4, 4))
         if face in ('right', 'left'):
@@ -178,10 +184,23 @@ def draw():
         return shade(MUZZLE, -20 + rng.randint(-4, 4))
     paint(im, 'muzzle', muzzle)
 
-    # The eyes: small and red in black rims. The nostrils: black.
-    paint(im, 'eyes', lambda face, x, y, fw, fh: shade(EYE_RED, 20) if face == 'front' and x == 1 and y == 0
-          else shade(EYE_RED, -30) if face == 'front' and x == 1 else shade(EYE_RIM, 0))
-    paint(im, 'nostrils', lambda face, x, y, fw, fh: shade((8, 6, 6), 0))
+    # The eyes: large and dark, a lashed lid over them, a crescent of white at the corner and a wet light caught in the
+    # brown, human the way a cow's eyes can look human (the owner: "It's not necessarily a monster"). Nostrils: black.
+    def eye(face, x, y, fw, fh):
+        if face != 'front':
+            return shade(HIDE, -14) if face in ('top', 'right', 'left') else shade(EYE_RIM, 0)
+        if y == 0:
+            # The upper lid and its lashes, the outer lash a little longer.
+            return shade(LASH, 0) if x >= 1 else shade(HIDE, -20)
+        if x == 0:
+            return shade(EYE_WHITE, 0 if y == 1 else -22)
+        if (x, y) == (2, 1):
+            return shade(EYE_LIGHT, 0)
+        if (x, y) == (2, 2):
+            return shade(EYE_BROWN, -34)
+        return shade(EYE_BROWN, (6 if y == 1 else -12) + (-8 if x == 3 else 0))
+    paint(im, 'eyes', eye)
+    paint(im, 'nostrils', lambda face, x, y, fw, fh: shade((40, 28, 26), 0))
 
     # The jaw: a pale chin under a dark lip, the throat bearded underneath; the inside of the mouth red.
     def jaw(face, x, y, fw, fh):

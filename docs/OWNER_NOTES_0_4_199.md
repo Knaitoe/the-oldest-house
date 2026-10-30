@@ -125,7 +125,8 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
 ## The Minotaur's skin
 - **"Can we also improve the Minotaur's texture?"** Every box of the Minotaur used to sample one of four flat swatches (hide, fur, horn, dark) from `minotaur_materials.png`, so it had no painted face, muscle, fur or hooves.
   - It now has its own skin, `minotaur.png`, drawn by `tools/draw_minotaur.py` at the model's own pixel scale, one region for each box (`MinotaurModel`):
-    - a bull's face with a curled poll, a heavy brow, red eyes sunk in dark sockets and a pale muzzle with a dark nose pad;
+    - a bull's face with a curled poll and a heavy brow, and a pale muzzle whose broad, moist nose pad holds the nostrils;
+    - its eyes large and dark, a lashed lid over each, a crescent of white at the outer corner and a wet light caught in the brown: human the way a cow's eyes can look human (owner: "Don't give it red eyes. It's not necessarily a monster." and "Try to make them look human in the way a cows eyes can look human"). The eye boxes grow from 3x1.5 to 4x3 pixels, flush with the face, to have room for it;
     - a bare, scarred chest under hair over the shoulders, a shaggy hump and back;
     - a rope belt and a frayed loincloth;
     - ridged ivory horns yellowing and darkening to the points;
