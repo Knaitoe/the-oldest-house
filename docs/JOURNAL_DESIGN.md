@@ -15,18 +15,13 @@ This document is the plan for that subsystem. Nothing here is built yet. Zampan√
 
 ## Defaults for the two open questions
 
-Both are easy to change.
+The first is easy to change; the owner has answered the second.
 
 1. **Where the journal comes from.** It arrives with Will's letter, as a second parcel on the doorstep, addressed in the reader's own hand. The reader does not remember sending it. Inside the cover is their name, in the same hand. It is blank.
    - It comes before the House, so the reader can write from the start.
    - It follows the self-addressed envelope ("Addressed in your own hand").
    - A reader who joins after the opening finds it on the doorstep the first time they reach the manor.
-2. **Whether the House may quote the reader's lines.** Not by default. When the owner turns it on, the reader's own House of Leaves may quote one line they wrote in the House:
-   - in their own book only;
-   - never for a reader who has opted out of the House's read;
-   - never in anything another reader sees.
-
-   It comes last in the build order, so it can wait for the owner.
+2. **Whether the House may quote the reader's lines.** The owner: "yes, the house should quote the player in some carefully chosen instances." See [Where the House quotes the reader](#where-the-house-quotes-the-reader).
 
 ## The journal
 
@@ -184,6 +179,30 @@ The journal is exempt from the Mother's custody.
 - **Taking a page back.** The writer can take back their own page at any time, and it goes back into its stub.
 - **Moderation.** Torn pages pass the server's text filter when torn. The server can clear a reader's pages with one command.
 
+## Where the House quotes the reader
+
+The owner: "yes, the house should quote the player in some carefully chosen instances."
+
+The House quotes a reader's own words rarely, exactly, and only to that reader. Three moments:
+
+1. **In the reader's own House of Leaves.** When a chapter tells of a place where the reader wrote something, it may quote one line written there.
+   - For example: *In the hall with the lamp you wrote: "it is longer than it was."*
+   - At most one quote a chapter.
+2. **The co-author, once.** On a later blank page, the other hand copies out one of the reader's own lines, word for word, in its hand, and adds nothing.
+3. **At an ending.** The last page the House writes quotes the first line the reader ever wrote in the House.
+
+**What is quoted:**
+- The words are the reader's own, unaltered, from pages begun in the House.
+- A line is at least a few words long and has passed the text filter.
+- The House never quotes:
+  - a line that names another player;
+  - a line that has been torn out;
+  - a line the reader has since deleted.
+
+**Who sees it:**
+- Only the reader. A quote is never put on a pinned page or in any account another reader can read.
+- A reader who has opted out of the House's read is never quoted. The read itself still never looks at the journal.
+
 ## Not in scope
 
 - The journal never counts toward anything: no Witness, no advancement, no reward, no ending.
@@ -238,6 +257,11 @@ Each step is its own version, with its own tests and proofs.
    - damage stages;
    - keepInventory;
    - nothing lost.
-8. **Quoting in the House of Leaves**, only if the owner agrees.
+8. **The House quoting the reader** at the three moments above. Tests:
+   - each moment;
+   - only in-House, unaltered lines that passed the filter;
+   - never a deleted or torn line, or one naming another player;
+   - never for a reader who opted out of the read;
+   - never seen by another reader.
 
 Each step adds payloads or items, so each bumps the protocol. The journal adds no Witness source: 55 sources / 42 required / two kinds / three endings stay.

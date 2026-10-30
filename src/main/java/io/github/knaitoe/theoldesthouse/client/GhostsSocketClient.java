@@ -28,7 +28,8 @@ public final class GhostsSocketClient {
         if(next==53){mc.options.keyUp.setDown(false);if(age>20&&!GhostsTakeClient.frozen()&&GhostsTakeClient.day()==0&&mc.getCameraEntity()==mc.player&&mc.player.distanceToSqr(at.getCenter())>32*32)pending="ghosts-restored-camera";return false;}
         var cast=mc.level.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(at.offset(-21,-5,-47)),Vec3.atLowerCornerOf(at.offset(22,13,1))),a->a.role()==LiteraryActor.GHOST_MARJORIE);
         if(cast.isEmpty())return false;require(cast.size()==1&&cast.getFirst().owner().filter(mc.player.getUUID()::equals).isPresent(),"the client receives only its own native Marjorie");var m=cast.getFirst();if(original==null)original=m.getUUID();require(original.equals(m.getUUID()),"the approach and held jump keep the original client UUID");
-        mc.options.keyUse.setDown(true);if(!mc.player.isUsingItem()&&age>10)mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);
+        // One click rolls the camera, as a reader does; the key is never held, so it cannot toggle back.
+        if(!CamcorderItem.filming(mc.player)&&age>10&&age%10==0)mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);
         if(!GhostsTakeClient.frozen()){
             // Through Marjorie's door on the middle of its clear half: the open panel takes the east 3/16 of the doorway.
             double z=mc.player.getZ()-at.getZ(),lane=at.getX()-6+(1-3/16D)/2;

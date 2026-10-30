@@ -23,7 +23,7 @@ public final class GhostsSetTests {
     private static final LabyrinthPlace P=LabyrinthPlace.GHOSTS_SET;
     private static LiteraryTests.Fixture fixture(GameTestHelper h){active=new LiteraryTests.Fixture(h);return active;}
     private static void save(LiteraryTests.Fixture f,ServerPlayer p,CompoundTag t){LiteraryVignettes.save(f.data(),p.getUUID(),P,t);}
-    private static void film(ServerPlayer p,ItemStack s){p.setItemInHand(InteractionHand.MAIN_HAND,s);p.startUsingItem(InteractionHand.MAIN_HAND);}
+    private static void film(ServerPlayer p,ItemStack s){p.setItemInHand(InteractionHand.MAIN_HAND,s);CamcorderItem.setRolling(p.getMainHandItem(),true);}
     private static ItemStack cam(ServerPlayer p){return p.getInventory().items.stream().filter(s->s.is(LiteraryRegistry.CAMCORDER.get())).findFirst().orElseThrow().copy();}
     // A missing original is an assertion, so a waiting step retries and a failed one fails its test, never the whole server (run 1336).
     private static LiteraryActor actor(LiteraryTests.Fixture f,ServerPlayer p,int role){return f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),a->a.role()==role&&a.owner().filter(p.getUUID()::equals).isPresent()).stream().findFirst().orElseThrow(()->new net.minecraft.gametest.framework.GameTestAssertException("the original "+role+" is not staged yet"));}
@@ -88,6 +88,26 @@ public final class GhostsSetTests {
         var t=f.own(p,P);GhostsSet.start(p,t);GhostsSet.reader(p,f.base(P),t);f.at(p,P,-6,0,-19);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);film(p,cam(p));p.lookAt(EntityAnchorArgument.Anchor.EYES,m.getEyePosition());for(int i=0;i<8;i++)GhostsSet.reader(p,f.base(P),t);save(f,p,t);
         h.assertTrue(t.getCompound("FilmLog1").getInt("Frames_Marjorie")>=20,"native use, real aim and clear ray record Marjorie");String cut=words(GhostsSet.edit(p,t,1,false));h.assertTrue(cut.contains("Marjorie"),"recorded framing enters the edited episode");
         film(peer,cam(p));h.assertTrue(!GhostsSet.recording(peer),"a borrowed camera cannot make the peer's camera log");peer.setGameMode(GameType.SPECTATOR);h.assertTrue(!GhostsSet.recording(peer),"an actual native observer earns no recording authority");h.assertTrue(f.own(peer,P).getCompound("FilmLog1").isEmpty(),"film records remain independent per reader");h.succeed();});}
+    @GameTest(template="empty",batch="ghosts_toggle0576",timeoutTicks=200)
+    public static void theCameraRollsOnOneClickAndStopsOnTheNext(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_toggle",P);
+        // The reader's own camera, moved to the hand as a reader would take it.
+        int slot=-1;for(int i=0;i<p.getInventory().items.size();i++)if(p.getInventory().items.get(i).is(LiteraryRegistry.CAMCORDER.get()))slot=i;h.assertTrue(slot>=0,"the reader carries their own camera");
+        var camera=p.getInventory().items.get(slot);p.getInventory().items.set(slot,ItemStack.EMPTY);p.getInventory().items.set(p.getInventory().selected,camera);
+        h.assertTrue(!GhostsSet.recording(p)&&!CamcorderItem.rolling(camera),"the camera starts stopped");
+        p.getMainHandItem().use(p.level(),p,InteractionHand.MAIN_HAND);
+        h.assertTrue(GhostsSet.recording(p),"one use starts it rolling");
+        p.releaseUsingItem();h.assertTrue(GhostsSet.recording(p)&&!p.isUsingItem(),"letting go of the button keeps it rolling, and the reader is not held to a camera walk");
+        p.getMainHandItem().use(p.level(),p,InteractionHand.MAIN_HAND);p.releaseUsingItem();
+        h.assertTrue(!GhostsSet.recording(p)&&!CamcorderItem.rolling(p.getMainHandItem()),"the next use stops it");
+        p.getMainHandItem().use(p.level(),p,InteractionHand.MAIN_HAND);p.releaseUsingItem();int held=p.getInventory().selected;
+        p.getInventory().selected=(held+1)%9;h.assertTrue(!GhostsSet.recording(p),"put away, it films nothing");
+        p.getInventory().selected=held;h.assertTrue(GhostsSet.recording(p),"taken out again, it is still rolling");
+        var peer=f.player("ghost_toggle_peer",P);peer.setItemInHand(InteractionHand.MAIN_HAND,p.getMainHandItem().copy());h.assertTrue(!GhostsSet.recording(peer),"a borrowed rolling camera is not the peer's");
+        f.at(p,P,0,0,40);p.getMainHandItem().inventoryTick(p.level(),p,held,true);
+        h.assertTrue(!CamcorderItem.rolling(p.getMainHandItem()),"carried off the set, it stops");
+        p.getMainHandItem().use(p.level(),p,InteractionHand.MAIN_HAND);p.releaseUsingItem();h.assertTrue(!CamcorderItem.rolling(p.getMainHandItem()),"off the set there is nothing to film");
+        h.succeed();}
+    @AfterBatch(batch="ghosts_toggle0576") public static void toggleDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="ghosts_ray",timeoutTicks=200)
     public static void TableAndWallOcclusionRemainReal(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_ray",P);f.at(p,P,0,0,-17);var at=new Vec3(f.base(P).getX()+.5,f.base(P).getY()+.6,f.base(P).getZ()-19.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,at);h.assertTrue(!GhostsSet.framed(p,at),"the table top occludes a body underneath even in an adjacent native block");var clear=p.getEyePosition().add(p.getLookAngle().scale(1));h.assertTrue(GhostsSet.framed(p,clear),"an unobstructed nearby point in the actual lens is usable");h.succeed();}
     @GameTest(template="empty",batch="ghosts_frames",timeoutTicks=200)

@@ -36,7 +36,7 @@ final class GhostsSocketProof {
             LiteraryVignettes.onArrive(p,LabyrinthPlace.GHOSTS_SET);var own=LiteraryVignettes.personal(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET);
             // Fixture selects the already-read day; production movement, camera lease and forced return remain untouched.
             own.putBoolean("Read_Source",true);own.putInt("FilmDay",6);own.putInt("ShotClock",p==a?590:600);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",true);LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET,own);
-            var camera=p.getInventory().items.stream().filter(s->s.is(LiteraryRegistry.CAMCORDER.get())).findFirst().orElseThrow();int slot=p.getInventory().items.indexOf(camera);if(slot!=0){var kept=p.getInventory().getItem(0);p.getInventory().setItem(0,camera);p.getInventory().setItem(slot,kept);}p.getInventory().selected=0;p.inventoryMenu.broadcastChanges();p.stopUsingItem();
+            var camera=p.getInventory().items.stream().filter(s->s.is(LiteraryRegistry.CAMCORDER.get())).findFirst().orElseThrow();int slot=p.getInventory().items.indexOf(camera);if(slot!=0){var kept=p.getInventory().getItem(0);p.getInventory().setItem(0,camera);p.getInventory().setItem(slot,kept);}p.getInventory().selected=0;CamcorderItem.setRolling(camera,false);p.inventoryMenu.broadcastChanges();p.stopUsingItem();
             MOVED.put(p.getUUID(),0);
         }
     }
