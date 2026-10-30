@@ -42,7 +42,9 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
 ## The buzzer threshold (the home-entrance opening)
 - **"Can you do anything to make the voice actually sound human?"** The voice at the intercom had been summed tones. It is now a person's voice: speech from the Piper neural voice en_US-ljspeech-high, trained on the LJ Speech dataset (public domain), saved once as `art/foyer_voice_source.wav` by `tools/make_foyer_voice.py`.
   - What it says: "Hello? ... Hello. It's me. I'm just outside, at the bottom. Can you... press it? Please. It's cold out here. I can see you."
-  - `tools/generate_foyer_audio.py` puts it through the building's intercom: a narrow, ringing speaker, driven too hard, humming, crackling and breaking up, so a word or two carries and the rest does not.
+  - `tools/generate_foyer_audio.py` puts it through the building's intercom: a telephone-narrow speaker, a little overdriven, with a faint hum and the odd crackle.
+  - **"Please ensure the voice in the vignette sounds human!"** The first pass drove the speaker hard and dropped whole words, so it read as a machine. Now every word carries, and only now and then does the line thin for a moment.
+    - Measured against the clean voice, the speech went from 8.2 dB above the distortion and noise to 17.8 dB.
   - It plays once, as before, from the intercom, now at its natural pitch. Its subtitle reads "A voice through the intercom".
   - The other four foyer cues are unchanged, and CI never needs the voice model.
 
