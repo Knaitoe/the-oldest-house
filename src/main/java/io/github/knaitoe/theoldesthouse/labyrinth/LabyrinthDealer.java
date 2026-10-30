@@ -501,8 +501,10 @@ public final class LabyrinthDealer {
             case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - LabyrinthPacing.STRANGE_DEPTH));
             case DEEP_MAZE -> 10 + Math.min(8, Math.max(0, depth - LabyrinthPacing.DEEP_DEPTH));
             case ABYSS_MAZE -> 18 + Math.min(12, Math.max(0, depth - LabyrinthPacing.ABYSS_DEPTH));
-            case STRAIGHT_HALL, BENT_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 26;
-            case CROSS_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
+            // 0.4.193 (owner: "Try to reduce the frequency of these bleeding rooms. Design more hallways that are just
+            // hallways."): the three halls with rooms bled into them come about a third as often as before.
+            case STRAIGHT_HALL, BENT_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 9;
+            case CROSS_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 4;
             case ALCOVE_HALL, OFFSET_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 22;
             case SERVICE_LANDING -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 26;
