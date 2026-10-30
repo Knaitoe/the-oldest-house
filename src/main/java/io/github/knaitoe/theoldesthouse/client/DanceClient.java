@@ -1,6 +1,5 @@
 package io.github.knaitoe.theoldesthouse.client;
 
-import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.BodyLoss;
 import io.github.knaitoe.theoldesthouse.labyrinth.HouseReadShelter;
@@ -18,6 +17,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * The reader's own arms in the shelter's slow dance (0.4.194). The owner: "The NPCs arms look great. The players arms are
@@ -62,7 +64,17 @@ public final class DanceClient {
         model.rightPants.copyFrom(model.rightLeg);model.leftPants.copyFrom(model.leftLeg);model.jacket.copyFrom(model.body);
     }
 
-    /** First person: both hands come up in front, a little apart, where the partner's waist is, and sway with them. */
+    /** Where each first-person hand rests, in view space: at the partner's side, a little below the chest. */
+    static final float HAND_X=.29F,HAND_Y=-.35F,HAND_Z=-.74F;
+    /** The way back along the forearm, from the hand toward the shoulder below the view, and the arm's scale. */
+    static final float BACK_X=.12F,BACK_Y=-.45F,BACK_Z=.58F,SCALE=.72F;
+
+    /**
+     * First person: both forearms come up from below the view to the partner's sides, thumbs up, and sway with them. 0.4.199
+     * (owner: "Player arms still need proper scaling"): the vanilla empty-hand basis drew each arm at full size spread past the
+     * partner's sides; the arm is now aimed from its hand back toward the shoulder and drawn at three quarters, so the hands rest
+     * on the partner the size a reader's own hands would be at arm's length.
+     */
     @SubscribeEvent public static void hand(RenderHandEvent e) {
         var mc = Minecraft.getInstance();
         if (mc.player == null) return;
@@ -74,15 +86,29 @@ public final class DanceClient {
         for (int side : new int[]{-1, 1}) {
             if (missing == (side < 0 ? HumanoidArm.LEFT : HumanoidArm.RIGHT)) continue;
             var pose = e.getPoseStack();pose.pushPose();
-            // The vanilla skin-arm basis (as the Shallows' carry uses it), brought forward and a hand's width apart.
-            pose.translate(side * .36 + sway * .04, -.52, -.98);
-            pose.mulPose(Axis.YP.rotationDegrees(side * 22));pose.mulPose(Axis.ZP.rotationDegrees(sway * 4));
-            pose.translate(-side, 3.6, 3.5);
-            pose.mulPose(Axis.ZP.rotationDegrees(side * 120));pose.mulPose(Axis.XP.rotationDegrees(196));
-            pose.mulPose(Axis.YP.rotationDegrees(-side * 135));pose.translate(side * 5.6, 0, 0);
+            var placed = aim(side, new Vector3f(side * HAND_X + sway * .03F, HAND_Y + Math.abs(sway) * .01F, HAND_Z), new Vector3f(side * BACK_X, BACK_Y, BACK_Z), SCALE);
+            pose.translate(placed.offset.x, placed.offset.y, placed.offset.z);pose.mulPose(placed.turn);pose.scale(SCALE, SCALE, SCALE);
             if (side > 0) renderer.renderRightHand(pose, e.getMultiBufferSource(), e.getPackedLight(), mc.player);
             else renderer.renderLeftHand(pose, e.getMultiBufferSource(), e.getPackedLight(), mc.player);
             pose.popPose();
         }
+    }
+    /** A turn and an offset that put the arm's hand end at {@code hand}, its length running back along {@code back}, thumb side up. */
+    record Aim(Vector3f offset, Quaternionf turn) {}
+    static Aim aim(int side, Vector3f hand, Vector3f back, float scale) {
+        // The arm as renderRightHand/LeftHand draws it: its pivot at (-5, 2, 0) or (5, 2, 0) pixels, turned by its idle bob (0.1),
+        // the box's middle at x -1 or 1, from the shoulder at y -2 to the hand at y 10.
+        float bob = side > 0 ? .1F : -.1F, cx = (side > 0 ? -1 : 1) / 16F;
+        var part = new Matrix4f().translation((side > 0 ? -5 : 5) / 16F, 2 / 16F, 0).rotateZ(bob);
+        var handEnd = part.transformPosition(new Vector3f(cx, 10 / 16F, 0));var shoulderEnd = part.transformPosition(new Vector3f(cx, -2 / 16F, 0));
+        var axis = new Vector3f(handEnd).sub(shoulderEnd).normalize();var want = new Vector3f(back).negate().normalize();
+        var turn = new Quaternionf().rotationTo(axis, want);
+        // Roll about the arm until its front face (the thumb side, -z on the model) faces as near up as the arm allows.
+        var front = turn.transform(new Vector3f(0, 0, -1));var up = new Vector3f(0, 1, 0);
+        front.sub(new Vector3f(want).mul(front.dot(want)));up.sub(new Vector3f(want).mul(up.dot(want)));
+        float roll = (float) Math.atan2(new Vector3f(front).cross(up).dot(want), front.dot(up));
+        turn = new Quaternionf().rotationAxis(roll, want.x, want.y, want.z).mul(turn);
+        var at = turn.transform(new Vector3f(handEnd).mul(scale));
+        return new Aim(new Vector3f(hand).sub(at), turn);
     }
 }
