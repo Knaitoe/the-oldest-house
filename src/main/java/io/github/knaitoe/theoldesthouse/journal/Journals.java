@@ -125,7 +125,8 @@ public final class Journals extends SavedData {
     public enum Edit { ACCEPTED, NOT_CARRIED, NO_SUCH_PAGE, TOO_MUCH, TOO_FAST }
     /**
      * A page the reader wrote, from their screen. It is kept only if they carry their own journal, it fits what the screen
-     * allows and their allowance holds; the words pass the server's text filter before they are kept.
+     * allows and their allowance holds; the words pass the server's text filter before they are kept. Only the writing is
+     * the reader's: lines set on the page in shapes are the House's alone.
      */
     public static Edit edit(ServerPlayer p,int index,CompoundTag sent){
         var data=get(p.server);
@@ -138,16 +139,14 @@ public final class Journals extends SavedData {
         if(b.tokens>=TOKENS)b.refilled=now;
         if(b.tokens<=0)return Edit.TOO_FAST;
         b.tokens--;
-        var words=new ArrayList<String>();words.add(page.text());for(var run:page.placed())words.add(run.text());
-        p.getTextFilter().processMessageBundle(words).thenAcceptAsync(filtered->data.keep(p,index,page,filtered),p.server);
+        p.getTextFilter().processMessageBundle(List.of(page.text())).thenAcceptAsync(filtered->data.keep(p,index,filtered),p.server);
         return Edit.ACCEPTED;
     }
-    private void keep(ServerPlayer p,int index,JournalPage page,List<FilteredText> filtered){
-        if(filtered.size()!=1+page.placed().size())return;
-        var runs=new ArrayList<JournalPage.Placed>();
-        for(int i=0;i<page.placed().size();i++){var run=page.placed().get(i);String text=filtered.get(i+1).filteredOrEmpty();if(!text.isBlank())runs.add(new JournalPage.Placed(text,run.shape(),run.x(),run.y(),run.angle(),run.size(),run.mirrored()));}
+    private void keep(ServerPlayer p,int index,List<FilteredText> filtered){
+        if(filtered.size()!=1)return;
         var b=book(p.getUUID());var before=b.pages.getOrDefault(index,JournalPage.BLANK);
-        var kept=before.withWriting(filtered.getFirst().filteredOrEmpty(),runs);
+        // The reader writes; any shaped lines already on the page were set there by the House and stay as they are.
+        var kept=before.withWriting(filtered.getFirst().filteredOrEmpty(),before.placed());
         // A page remembers where it was begun: the first time anything is written on it.
         if(before.begun().isEmpty()&&before.day()==0&&!kept.empty())kept=kept.begunAt(where(p),day(p),HouseDimensions.isHouseDimension(p.level().dimension()));
         if(kept.empty()&&before.begun().isEmpty())b.pages.remove(index);else b.pages.put(index,kept);

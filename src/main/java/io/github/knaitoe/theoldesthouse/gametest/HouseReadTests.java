@@ -102,8 +102,12 @@ public final class HouseReadTests {
               var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("kitchen");h.assertTrue(HouseReadProse.kitchen(seen).equals("drew yourself at the kitchen table, face and hands alike, and put the picture up on the fridge")&&StaircaseAccount.read(f.data(),p.getUUID()).drewHands(),"the account and the book recite the act, never a colour: "+HouseReadProse.kitchen(seen));
               HouseReadExport.save(f.in,b[0],K,"kitchen_picture_up");
           })
-          .thenIdle(120).thenExecute(()->{h.assertTrue(HouseReadSites.inside(p)==K&&!HouseReadStory.closing(p),"with the picture up the kitchen waits for the reader to walk through the open door; no timer ends it first");stand(p,f.in,b[0],5.5,0,-13);})
+          .thenIdle(120).thenExecute(()->{h.assertTrue(HouseReadSites.inside(p)==K&&!HouseReadStory.closing(p),"with the picture up the kitchen waits for the reader to walk through the open door; no timer ends it first");
+              // 0.4.185: in the crayon room the reader is a child's height, the eyes just over the table top.
+              h.assertTrue(HouseReadKitchen.small(p)&&Math.abs(p.getScale()-.7F)<.01F&&p.getEyeHeight()>1F&&p.getEyeHeight()<1.2F,"at the kitchen table the reader is a child's height, eyes just over the table top: "+p.getScale()+" "+p.getEyeHeight());
+              stand(p,f.in,b[0],5.5,0,-13);})
           .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"walking through the open hall door, the House takes the reader on"))
+          .thenWaitUntil(()->h.assertTrue(!HouseReadKitchen.small(p)&&Math.abs(p.getScale()-1F)<.01F,"out of the kitchen the reader is their own height again: "+p.getScale()))
           .thenExecute(()->{var shown=HouseReadStory.last(p.getUUID());h.assertTrue(shown!=null&&shown.text().equals(HouseReadStory.closing(K))&&shown.sound().equals("minecraft:block.iron_trapdoor.close"),"the kitchen is cut off with the fridge door and the House's closing line: "+shown);
               h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem())&&p.getInventory().items.stream().noneMatch(i->HouseReadSites.loan(i,p.getUUID())),"no crayon leaves the kitchen");})
           .thenSucceed();

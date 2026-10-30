@@ -36,6 +36,7 @@ Step 1 of [JOURNAL_DESIGN.md](JOURNAL_DESIGN.md): the journal itself and its pag
   - Vanilla's own multi-line text engine handles wrapping, the caret, selection and the clipboard.
   - A page holds 15 lines, 420 characters and no formatting codes.
   - A pencil scratches now and then while writing. Pages turn with a page sound.
+- **0.4.185: removed.** The owner: "the player shouldn't have fancy formatting options. those should only exist by the game." The reader only writes; the shapes below are the House's alone (docs/OWNER_NOTES_0_4_185.md).
 - **Lift line.** The wrapped line at the caret comes out of the writing and lies a little askew where it was, selected. It can then be:
   - dragged anywhere on its page;
   - turned with the scroll wheel, 15° a notch;

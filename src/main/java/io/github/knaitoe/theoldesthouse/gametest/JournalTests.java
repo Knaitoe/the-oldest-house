@@ -61,16 +61,14 @@ public final class JournalTests {
         h.assertTrue(Journals.edit(p,2,page("a".repeat(JournalPage.MAX_TEXT+1)))==Journals.Edit.TOO_MUCH,"no more writing than a page holds");
         h.assertTrue(Journals.edit(p,2,page("\n".repeat(JournalPage.MAX_NEWLINES+1)))==Journals.Edit.TOO_MUCH,"no more lines than a page holds");
         h.assertTrue(Journals.edit(p,2,page("§cred"))==Journals.Edit.TOO_MUCH,"no formatting codes");
-        var nine=new CompoundTag[JournalPage.MAX_PLACED+1];for(int i=0;i<nine.length;i++)nine[i]=run("line "+i,"line",.5F,.5F);
-        h.assertTrue(Journals.edit(p,2,page("",nine))==Journals.Edit.TOO_MUCH,"no more placed lines than a page holds");
-        h.assertTrue(Journals.edit(p,2,page("",run("x","wheel",.5F,.5F)))==Journals.Edit.TOO_MUCH,"only shapes the screen makes");
         h.assertTrue(Journals.edit(p,1,page("I measured the hall twice.\nLeft at the lamp.",run("it is longer than it was","line",5,.8F),run("the house keeps the measure","spiral",.5F,.3F)))==Journals.Edit.ACCEPTED,"the owner's page is taken");
         int accepted=1;while(Journals.edit(p,3+accepted,page("more"))==Journals.Edit.ACCEPTED)accepted++;
         h.assertTrue(accepted==8,"a reader's screen has an allowance of eight pages at once: "+accepted);
         h.startSequence().thenWaitUntil(()->h.assertTrue(data.page(p.getUUID(),1).text().startsWith("I measured"),"the page is kept once it has passed the text filter"))
         .thenExecute(()->{
             var kept=data.page(p.getUUID(),1);
-            h.assertTrue(kept.placed().size()==2&&kept.placed().get(0).x()==1&&kept.placed().get(1).shape()==JournalPage.Shape.SPIRAL,"placed lines keep their shapes and stay on the page: "+kept);
+            // 0.4.185: the reader only writes; shaped lines are the House's, so lines sent in shapes are never kept.
+            h.assertTrue(kept.text().equals("I measured the hall twice.\nLeft at the lamp.")&&kept.placed().isEmpty(),"only the writing is kept, never the reader's shaped lines: "+kept);
             h.assertTrue(kept.day()>0&&!kept.house()&&kept.begun().isEmpty(),"the page remembers when it was begun, and that it was not in the House");
             var registries=h.getLevel().registryAccess();var back=Journals.load(data.save(new CompoundTag(),registries),registries);
             h.assertTrue(back.issue(p.getUUID())==data.issue(p.getUUID())&&back.page(p.getUUID(),1).equals(kept),"the journal survives a save and reload");

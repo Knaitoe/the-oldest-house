@@ -240,7 +240,7 @@ public final class HouseReadSites {
     }
     static void sound(ServerPlayer p,SoundEvent event,BlockPos at,float volume){LiteraryVignettes.heard(p,event,at,volume,1);}
     private static void reader(ServerPlayer p){
-        var room=inside(p);HouseReadStory.tick(p,room);var own=state(p.server,p.getUUID());if(room==null){if(!own.getString("Active").isEmpty())left(p);return;}if(!LiteraryVignettes.participant(p)||LabyrinthDoors.isBusy(p)||HouseReadStory.holding(p))return;
+        var room=inside(p);HouseReadKitchen.small(p,room==Room.KITCHEN&&p.isAlive()&&!p.isSpectator());HouseReadStory.tick(p,room);var own=state(p.server,p.getUUID());if(room==null){if(!own.getString("Active").isEmpty())left(p);return;}if(!LiteraryVignettes.participant(p)||LabyrinthDoors.isBusy(p)||HouseReadStory.holding(p))return;
         var b=base(p.server,p.getUUID(),room);var visit=own.getCompound(room.key());if(!visit.getBoolean("Entered"))return;int age=visit.getInt("Age")+1;visit.putInt("Age",age);
         if(room==Room.COATROOM){if(!visit.getBoolean("Dressed"))p.setTicksFrozen(100);if(age>=200)visit.putBoolean("NoteArmed",true);
             // 0.4.166: the curtain hangs shut until the House has what the room is for; then it parts.

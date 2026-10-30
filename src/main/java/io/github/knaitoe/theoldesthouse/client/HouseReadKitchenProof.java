@@ -27,7 +27,8 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 
 /**
  * 0.4.168: the kitchen table's objects through the production renderer: the tin's two halves with one reader's crayons (one
- * taken), the drawing blank and coloured, the picture up on the fridge, the radio on and off; then the drawing in each of the
+ * taken), the drawing blank and coloured, the picture up on the fridge, the radio on and off, the kitchen clock and an office
+ * clock with their moving hands (0.4.185); then the drawing in each of the
  * twelve skin crayons with the crayons themselves as they are held. Runs after the bathroom's hair in the same client, before the wardrobe.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
@@ -41,6 +42,7 @@ public final class HouseReadKitchenProof extends Screen {
         if(page==0)objects(g);else tones(g);
     }
     private static BlockState part(HouseReadPropBlock.Part part){return HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,part).setValue(HorizontalDirectionalBlock.FACING,Direction.SOUTH);}
+    private static CompoundTag afterFour(){var t=new CompoundTag();t.putString("Clock",HouseReadKitchen.CLOCK_AFTER_FOUR);return t;}
     private static CompoundTag drawing(int face,int hands,int hair,int clothes){var t=new CompoundTag();t.putInt("Face",face);t.putInt("Hands",hands);t.putInt("Hair",hair);t.putInt("Clothes",clothes);return t;}
     private void objects(GuiGraphics g){
         var reader=new UUID(168,7);
@@ -51,9 +53,10 @@ public final class HouseReadKitchenProof extends Screen {
         var shown=new Shown[]{new Shown(part(HouseReadPropBlock.Part.TIN_LEFT).setValue(HouseReadPropBlock.WRITING,true),left,"tin, left half (one taken)"),new Shown(part(HouseReadPropBlock.Part.TIN_RIGHT),right,"tin, right half"),
             new Shown(part(HouseReadPropBlock.Part.SHEET),drawing(-1,-1,-1,-1),"the drawing, in pencil"),new Shown(part(HouseReadPropBlock.Part.SHEET),coloured,"the drawing, coloured"),
             new Shown(part(HouseReadPropBlock.Part.FRIDGE),new CompoundTag(),"fridge, old drawings"),new Shown(part(HouseReadPropBlock.Part.FRIDGE_TOP).setValue(HouseReadPropBlock.TURNED,true),coloured,"fridge door, picture up"),
-            new Shown(part(HouseReadPropBlock.Part.RADIO),new CompoundTag(),"radio, low"),new Shown(part(HouseReadPropBlock.Part.RADIO).setValue(HouseReadPropBlock.TURNED,true),new CompoundTag(),"radio, off")};
-        int columns=4;float cw=width/(float)columns,ch=(height-36)/2f;
-        for(int i=0;i<shown.length;i++){float cx=(i%columns+.5f)*cw,cy=32+(i/columns+.5f)*ch;block(g,shown[i].state(),shown[i].read(),cx,cy,Math.min(cw,ch)*.5f,shown[i].state().getValue(HouseReadPropBlock.PART).name().startsWith("FRIDGE")?12:62);
+            new Shown(part(HouseReadPropBlock.Part.RADIO),new CompoundTag(),"radio, low"),new Shown(part(HouseReadPropBlock.Part.RADIO).setValue(HouseReadPropBlock.TURNED,true),new CompoundTag(),"radio, off"),
+            new Shown(part(HouseReadPropBlock.Part.WALL_CLOCK),afterFour(),"kitchen clock"),new Shown(part(HouseReadPropBlock.Part.WALL_CLOCK),new CompoundTag(),"office clock")};
+        int columns=5;float cw=width/(float)columns,ch=(height-36)/2f;
+        for(int i=0;i<shown.length;i++){float cx=(i%columns+.5f)*cw,cy=32+(i/columns+.5f)*ch;block(g,shown[i].state(),shown[i].read(),cx,cy,Math.min(cw,ch)*.5f,shown[i].state().getValue(HouseReadPropBlock.PART).name().startsWith("FRIDGE")?12:shown[i].state().getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.WALL_CLOCK?0:62);
             g.drawCenteredString(font,shown[i].label(),(int)cx,(int)(32+(i/columns+1)*ch-10),0xffe5dcc8);}
     }
     /** Each of the twelve skin crayons on the drawing's face and hands, with the crayon beside it, and the eight others below. */
@@ -74,6 +77,8 @@ public final class HouseReadKitchenProof extends Screen {
         mc.getBlockRenderer().renderSingleBlock(state,p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
         var fitting=new HouseReadPropBlock.Fitting(BlockPos.ZERO,state);fitting.setRead(read);
         if(HouseReadKitchenClient.draws(state.getValue(HouseReadPropBlock.PART)))HouseReadKitchenClient.render(fitting,p,out,LightTexture.FULL_BRIGHT);
+        // 0.4.185: the clocks' moving hands, through the same renderer as in the room.
+        if(state.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.WALL_CLOCK)ClockHands.wall(fitting,p,out,LightTexture.FULL_BRIGHT);
         out.endBatch();p.popPose();
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
@@ -81,7 +86,7 @@ public final class HouseReadKitchenProof extends Screen {
         var folder=Path.of("../build/house-read-kitchen");Files.createDirectories(folder);
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;return;}
-        Files.writeString(folder.resolve("passed.txt"),"The kitchen table's tin, drawing, fridge and radio through the production model and fitting renderer, one reader's crayons with one taken, the picture on the fridge door, and the drawing in each of the twelve skin crayons with the held crayons.\n");
+        Files.writeString(folder.resolve("passed.txt"),"The kitchen table's tin, drawing, fridge, radio and the clocks' moving hands through the production model and fitting renderer, one reader's crayons with one taken, the picture on the fridge door, and the drawing in each of the twelve skin crayons with the held crayons.\n");
         mc.setScreen(new HouseReadWardrobeProof());
     }
 }

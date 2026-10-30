@@ -116,9 +116,7 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
         String text=t.getString("Text").replace("\r","");
         if(text.length()>MAX_TEXT||text.chars().filter(c->c=='\n').count()>MAX_NEWLINES)return null;
         for(int i=0;i<text.length();i++){char c=text.charAt(i);if(c!='\n'&&(c<' '||c==127||c=='§'))return null;}
-        var list=t.getList("Placed",Tag.TAG_COMPOUND);if(list.size()>MAX_PLACED)return null;
-        var runs=new ArrayList<Placed>();
-        for(int i=0;i<list.size();i++){var p=Placed.read(list.getCompound(i));if(p==null||p.text().chars().anyMatch(c->c<' '||c==127||c=='§'))return null;runs.add(p);}
-        return new JournalPage(text,List.copyOf(runs),"",0,false,List.of(),List.of());
+        // Shaped, turned and mirrored lines are the House's to set on a page, never the reader's (0.4.185): only writing is read.
+        return new JournalPage(text,List.of(),"",0,false,List.of(),List.of());
     }
 }
