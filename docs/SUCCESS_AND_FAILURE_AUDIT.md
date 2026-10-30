@@ -405,7 +405,7 @@ The owner: "most of the items you provided the player with don't really have an 
 
 Tools that already work (the tally counter, the shield, the Bone Ring, the Smoky Mirror, the stone of the house, the globes, the paw, the envelope, Tess's gifts, Harrigan's phone, the camcorder, the canoe phone, the blank journal) keep what they do. "House" means inside the House; "world" means the reader's own world.
 
-**Keepsakes in the game now, given an effect:**
+**Keepsakes in the game now, given an effect** (the first nine built in 0.4.192, docs/KEEPSAKES_0_4_192.md):
 
 | Artifact | Effect | Where | From the story |
 |---|---|---|---|
@@ -414,7 +414,7 @@ Tools that already work (the tally counter, the shield, the Bone Ring, the Smoky
 | The photograph with the vulture (plain) | Held while standing still, monsters more than six blocks away lose track of the keeper. | Both | The frame was made by holding still while the vulture waited. |
 | The brother's photograph (mapping) | The keeper's own companions within 16 blocks take half damage. | Both | In the house, the father kept watch over his boys. |
 | The elk's tooth (elk fan) | In the off hand, the keeper is hard to knock back, the Minotaur's throw included. | Both | The elk's weight. |
-| The bulb (elk fan) | Used, it hangs a small light where they stand for two minutes, then goes out; once every five minutes. Never in a room dark by design. | Both | The repaired light. |
+| The bulb (elk fan) | Used, it hangs a small light where they stand for two minutes, then goes out; once every five minutes. In their world and the manor; never in the halls, whose darkness is the House's. | Both | The repaired light. |
 | Father's knife (Holy Rabbit) | An animal killed with it drops one more cooked portion. | World | Father wasted nothing from the hunt. |
 | The rabbit's foot (Holy Rabbit) | Carried, the keeper has luck: better fishing and loot. | World | What the rabbit gave. |
 | The diary (Devil's Rock) | Read at night, its last page tells them which way and how far it is to their bed. | World | The pages were the way back. |

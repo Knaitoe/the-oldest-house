@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.191** gives the contests their trades. Ted's cave gives a quarter more breath under water and now and then pulls back the reader's trail line; the hides' smell turns animals away until washed off; the diner leaves nausea for a win and black frost for a loss; the Tell-Tale heart starts louder for a reader it sent out; and a blow in the Shallows sends the boys home. See [docs/CONTEST_TRADES_0_4_191.md](docs/CONTEST_TRADES_0_4_191.md).
+Development candidate **0.4.192** starts giving every artifact an effect. The elk's tooth steadies its keeper, the bulb hangs a light, Father's knife wastes nothing, the rabbit's foot brings luck, the brother's photograph shields companions, the wax cylinders keep monsters from spawning while they play, the diary's last page points home at night, the register leaf lets the dead pass over its keeper, and the cap leads animals. See [docs/KEEPSAKES_0_4_192.md](docs/KEEPSAKES_0_4_192.md).
+
+0.4.191 gives the contests their trades. Ted's cave gives a quarter more breath under water and now and then pulls back the reader's trail line; the hides' smell turns animals away until washed off; the diner leaves nausea for a win and black frost for a loss; the Tell-Tale heart starts louder for a reader it sent out; and a blow in the Shallows sends the boys home. See [docs/CONTEST_TRADES_0_4_191.md](docs/CONTEST_TRADES_0_4_191.md).
 
 0.4.190 lets the House remember eight rooms that are neither won nor lost. Once a reader has been through one, the manor plays something of it for them alone: yellow paper creeping along a wall, a tree outside a window that isn't there from outside, a door onto plaster, a toy climbing the stairs, a pew facing the way they came, a small figure of them where they last stood, pounding they can answer, and something behind their shoulder in the night glass. See [docs/HOUSE_REMEMBERS_0_4_190.md](docs/HOUSE_REMEMBERS_0_4_190.md).
 
