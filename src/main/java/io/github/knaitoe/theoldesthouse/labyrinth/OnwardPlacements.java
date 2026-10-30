@@ -35,7 +35,7 @@ final class OnwardPlacements {
         r.put(CONFESSION,0,0,-33,SOUTH,()->Blocks.DARK_OAK_DOOR);
         r.put(DEVILS_ROCK,0,0,-42,SOUTH,OnwardRegistry.CABIN);
         r.put(WHEEL,-3,0,-63,SOUTH,OnwardRegistry.PANEL);
-        r.put(GHOSTS_SET,0,0,-46,SOUTH,OnwardRegistry.PANEL);
+        r.put(GHOSTS_SET,0,0,-26,SOUTH,OnwardRegistry.PANEL);
         r.put(NIGHTCLUB,-9,0,-49,SOUTH,OnwardRegistry.SERVICE);
         r.put(FLOORBOARDS,0,0,-10,SOUTH,()->Blocks.DARK_OAK_DOOR);
         r.put(THREE_FINGERS,-9,0,-7,EAST,OnwardRegistry.CABIN);

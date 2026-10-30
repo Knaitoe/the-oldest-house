@@ -30,12 +30,12 @@ public final class GhostsSocketClient {
         if(cast.isEmpty())return false;require(cast.size()==1&&cast.getFirst().owner().filter(mc.player.getUUID()::equals).isPresent(),"the client receives only its own native Marjorie");var m=cast.getFirst();if(original==null)original=m.getUUID();require(original.equals(m.getUUID()),"the approach and held jump keep the original client UUID");
         mc.options.keyUse.setDown(true);if(!mc.player.isUsingItem()&&age>10)mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);
         if(!GhostsTakeClient.frozen()){
-            Vec3 goal=mc.player.getZ()<at.getZ()-21.6?new Vec3(at.getX()-8.5,at.getY()+5,at.getZ()-21.4):new Vec3(at.getX()+(reader.equals("A")?-7.5:-11.5),at.getY()+5,at.getZ()-18.5);
+            Vec3 goal=mc.player.getZ()<at.getZ()-12.6?new Vec3(at.getX()-5.5,at.getY()+5,at.getZ()-12.4):new Vec3(at.getX()+(reader.equals("A")?3.5:-1.5),at.getY()+5,at.getZ()-11.5);
             Vec3 delta=goal.subtract(mc.player.position());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));mc.player.setXRot(0);mc.options.keyUp.setDown(delta.horizontalDistanceSqr()>.09);
-            if(m.phase()==GhostsSet.STAND&&!shot&&m.getZ()>at.getZ()-27){pending="ghosts-native-approach";shot=true;}
+            if(m.phase()==GhostsSet.STAND&&!shot&&m.getZ()>at.getZ()-18){pending="ghosts-native-approach";shot=true;}
             return false;
         }
-        mc.options.keyUp.setDown(false);require(m.phase()==GhostsSet.LEAP&&m.getY()>at.getY()+6&&m.getZ()>at.getZ()-15,"the camera handoff waits for the real original beyond the native banister");
+        mc.options.keyUp.setDown(false);require(m.phase()==GhostsSet.LEAP&&m.getY()>at.getY()+6&&m.getZ()>at.getZ()-9,"the camera handoff waits for the real original beyond the native banister");
         if(heldBody==null){heldBody=m.position();heldEye=mc.getCameraEntity().position();head=m.getYHeadRot();
             // A local, unspawned native model fixture reproduces a cached standing pose first seen again at the held apex.
             var sample=LiteraryRegistry.ACTOR.get().create(mc.level);require(sample!=null,"the native pose fixture creates");sample.bind(LabyrinthPlace.GHOSTS_SET,mc.player.getUUID());sample.appearance(LiteraryActor.GHOST_MARJORIE,GhostsSet.STAND);
