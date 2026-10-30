@@ -14,13 +14,14 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class FinaleClientEvents {
-    public static final ResourceLocation MATERIALS=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/minotaur_materials.png");
+    /** 0.4.199: the Minotaur's own painted skin (tools/draw_minotaur.py); the old swatch sheet minotaur_materials.png is kept, unused. */
+    public static final ResourceLocation SKIN=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/minotaur.png");
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions event){event.registerLayerDefinition(MinotaurModel.LAYER,MinotaurModel::createBodyLayer);event.registerLayerDefinition(TreeTendrilRenderer.LAYER,TreeTendrilRenderer::layer);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){event.registerEntityRenderer(FinaleRegistry.MINOTAUR.get(),MinotaurRenderer::new);event.registerEntityRenderer(FinaleRegistry.WITNESS.get(),WitnessRenderer::new);event.registerBlockEntityRenderer(io.github.knaitoe.theoldesthouse.house.HouseBlockEntities.TREE_TENDRIL.get(),TreeTendrilRenderer::new);}
     private static final class MinotaurRenderer extends MobRenderer<MinotaurEntity,MinotaurModel>{
         private final CagedBoyRenderer boy;
         MinotaurRenderer(EntityRendererProvider.Context context){super(context,new MinotaurModel(context.bakeLayer(MinotaurModel.LAYER)),.9F);boy=new CagedBoyRenderer(context);}
-        @Override public ResourceLocation getTextureLocation(MinotaurEntity entity){return MATERIALS;}
+        @Override public ResourceLocation getTextureLocation(MinotaurEntity entity){return SKIN;}
         @Override public void render(MinotaurEntity e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){if(e.childAppearance())boy.render(e,yaw,partial,poses,buffers,light);else super.render(e,yaw,partial,poses,buffers,light);}
     }
     private static final class CagedBoyRenderer extends MobRenderer<MinotaurEntity,net.minecraft.client.model.PlayerModel<MinotaurEntity>>{

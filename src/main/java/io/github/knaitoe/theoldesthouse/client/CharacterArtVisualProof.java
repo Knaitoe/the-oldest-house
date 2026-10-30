@@ -151,7 +151,7 @@ public final class CharacterArtVisualProof extends Screen {
             else if(n==3){model=new MotherPekingeseModel(mc.getEntityModels().bakeLayer(MotherPekingeseModel.LAYER));skin=texture("mother_pekingese");}
             else if(n==4){var m=new ClapGhostModel(mc.getEntityModels().bakeLayer(ClapGhostModel.LAYER));m.pose(0,0);model=m;skin=texture("clap_ghost_girl");}
             else if(n==5||n==6){var m=new GoatmanFigureModel<>(mc.getEntityModels().bakeLayer(GoatmanFigureModel.LAYER));m.pose(0,0,0,n==6,0,0);model=m;skin=texture("goatman");}
-            else if(n<10){var m=new MinotaurModel(mc.getEntityModels().bakeLayer(MinotaurModel.LAYER));m.pose(n==7?MinotaurEntity.WATCHING:n==8?MinotaurEntity.WOUNDED:MinotaurEntity.RELEASED,0,0,0,0,0);model=m;skin=FinaleClientEvents.MATERIALS;}
+            else if(n<10){var m=new MinotaurModel(mc.getEntityModels().bakeLayer(MinotaurModel.LAYER));m.pose(n==7?MinotaurEntity.WATCHING:n==8?MinotaurEntity.WOUNDED:MinotaurEntity.RELEASED,0,0,0,0,0);model=m;skin=FinaleClientEvents.SKIN;}
             else if(n<12){var m=new NovelCreatureRenderers.VultureModel(mc.getEntityModels().bakeLayer(NovelCreatureRenderers.VULTURE));m.preview(n==10?70:3);model=m;skin=NovelCreatureRenderers.VULTURE_SKIN;}
             else if(n<15){var m=new LiteraryRenderers.ElkModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.ELK));if(n==14)m.dead(2,4);model=m;skin=texture(n==12?"literary_elk":n==13?"literary_elk_wounded":"literary_elk_carcass_skinned");}
             else{var m=new RabbitModel<>(mc.getEntityModels().bakeLayer(ModelLayers.RABBIT));m.young=false;model=m;skin=texture("literary_snow_rabbit");}

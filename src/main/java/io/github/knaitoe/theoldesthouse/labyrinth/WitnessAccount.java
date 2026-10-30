@@ -298,7 +298,7 @@ public final class WitnessAccount {
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,
                     "I returned with what I carried.\n\nI left space for what passed me on the stairs. I can say what I did. I cannot say what the House is."));
             if(shorter)pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,
-                    "I counted the turns going down, and again coming up.\n\nThere were fewer coming up.\n\nI counted twice."));
+                    "There were fewer coming up."));
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.ZAMPANO,
                     "From inside the cell\n\n[A different hand. No signature follows.]\n\nA door opens. Someone stays to listen.\n\n[Below: Who wrote this? No answer.]"));
         }
