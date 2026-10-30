@@ -122,7 +122,8 @@ public final class BarrettHome {
         put(l, b, 10, 0, -6, Kind.SOFA_B, Direction.WEST);
         put(l, b, 10, 2, -8, Kind.PHOTOS, Direction.WEST);
         put(l, b, 5, 0, -6, Kind.TV_STAND, Direction.EAST);
-        put(l, b, 5, 0, -7, Kind.BOOKSHELF, Direction.EAST);
+        // 0.4.199 (owner: "tv is cutting into shelf"): the screen is wider than its stand, so the shelf stands a block along.
+        put(l, b, 5, 0, -8, Kind.BOOKSHELF, Direction.EAST);
         put(l, b, 5, 2, -6, Kind.PHOTOS, Direction.EAST);
         put(l, b, 5, 0, -10, Kind.VILLAGE_CART, Direction.EAST);
         put(l, b, 7, 0, -9, Kind.DIRECTORS_CHAIR, Direction.NORTH);
@@ -151,10 +152,12 @@ public final class BarrettHome {
         furniture(l, b, -8, 0, -21, HouseholdFurnitureBlock.Kind.FORMICA_TABLE, Direction.SOUTH);
         furniture(l, b, -9, 0, -21, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.EAST);
         furniture(l, b, -7, 0, -21, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.WEST);
-        put(l, b, -8, 0, -13, Kind.TV_STAND, Direction.SOUTH);
-        furniture(l, b, -10, 0, -17, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.EAST);
-        set(l, b, -10, 1, -17, GhostsSetBlock.of(GhostsSetBlock.Kind.BOOKS, Direction.EAST));
-        put(l, b, -10, 0, -18, Kind.BOOKSHELF, Direction.EAST);
+        // 0.4.199 (owner: "furniture placement is also a bit off"): the corner's television faces the chairs, not the wall; the
+        // side table stands beside the green armchair rather than wedged behind it, and the shelf has the wall to itself.
+        put(l, b, -8, 0, -13, Kind.TV_STAND, Direction.NORTH);
+        furniture(l, b, -9, 0, -18, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.EAST);
+        set(l, b, -9, 1, -18, GhostsSetBlock.of(GhostsSetBlock.Kind.BOOKS, Direction.EAST));
+        put(l, b, -10, 0, -20, Kind.BOOKSHELF, Direction.EAST);
         put(l, b, -10, 2, -15, Kind.PHOTOS, Direction.EAST);
         put(l, b, -5, 0, -13, Kind.PLANT, Direction.SOUTH);
         put(l, b, 4, 0, -16, Kind.DESK, Direction.WEST);

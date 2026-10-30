@@ -92,9 +92,8 @@ public final class GhostsSetRooms {
             set(l,b,x,-1,-14-i,air);
             set(l,b,x,-1-i,-14-i,Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));
         }
-        // A banister round the stairwell in the utility strip; it opens only at the stair's head.
-        for(int z=-17;z<=-15;z++){prop(l,b,6,0,z,RAIL,Direction.NORTH);prop(l,b,10,0,z,RAIL,Direction.NORTH);}
-        for(int x=7;x<=9;x++)prop(l,b,x,0,-18,RAIL,Direction.EAST);
+        // 0.4.199 (owner: "remove the banisters atop the basement drop so the room behind is actually accessible"): the
+        // stairwell is open, with the strip's floor either side of it, so the washer and the shelves behind it can be reached.
         prop(l,b,4,-2,-24,LAMP,Direction.SOUTH);prop(l,b,10,-4,-24,CASE,Direction.WEST);
         prop(l,b,5,-4,-25,BOOKS,Direction.SOUTH);
         // Production equipment is kept against supported surfaces, leaving the rooms useful to a moving camera operator.

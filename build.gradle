@@ -118,6 +118,10 @@ neoForge {
                 systemProperty 'the_oldest_house.lakeHairSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
             }
+            if (providers.gradleProperty('ghostsLook').isPresent()) {
+                systemProperty 'the_oldest_house.ghostsLook', 'true'
+                programArguments.addAll '--width', '1200', '--height', '800'
+            }
             if (providers.gradleProperty('borrascaSmoke').isPresent()) {
                 systemProperty 'the_oldest_house.borrascaSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
