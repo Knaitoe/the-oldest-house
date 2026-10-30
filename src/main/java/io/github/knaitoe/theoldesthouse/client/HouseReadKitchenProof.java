@@ -81,8 +81,12 @@ public final class HouseReadKitchenProof extends Screen {
         var hung=sheets.get(2).copy();block(g,part(HouseReadPropBlock.Part.FRIDGE_TOP).setValue(HouseReadPropBlock.TURNED,true),hung,6.5f*cw,32+ch*.5f,Math.min(cw,ch)*.5f,12);
         var pencil=new ItemStack(HouseReadRegistry.CRAYON.get());pencil.set(DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(1));
         var p=g.pose();float scale=Math.min(cw,ch)*.3f/16f;p.pushPose();p.translate(6.5f*cw-8*scale,32+ch-30-8*scale,0);p.scale(scale,scale,1);g.renderItem(pencil,0,0);p.popPose();
-        float top=36+ch,size=Math.min((height-top-24)/1f,width/7.5f);int column=0;
-        for(var shown:skins()){float x=8+column*(size+10);g.blit(shown.texture(),(int)x,(int)top,(int)size,(int)size,0,0,64,64,64,64);g.drawString(font,shown.label(),(int)x,(int)(top+size+2),0xffe5dcc8,false);column++;}
+        // Two rows, one per arm model: each skin as its own sheet, with its face enlarged beside it.
+        float top=36+ch,rowHeight=(height-top-8)/2f,size=Math.min(rowHeight-14,width/5f/1.6f);var shown=skins();
+        for(int i=0;i<shown.size();i++){int row=i/5,column=i%5;float x=8+column*(width-16)/5f,y=top+row*rowHeight;
+            g.blit(shown.get(i).texture(),(int)x,(int)y,(int)size,(int)size,0,0,64,64,64,64);
+            g.blit(shown.get(i).texture(),(int)(x+size+4),(int)y,(int)(size*.5f),(int)(size*.5f),8,8,8,8,64,64);
+            g.drawString(font,shown.get(i).label(),(int)x,(int)(y+size+2),0xffe5dcc8,false);}
     }
     private record Skin(net.minecraft.resources.ResourceLocation texture,String label){}
     private java.util.List<Skin> skins;
@@ -99,7 +103,8 @@ public final class HouseReadKitchenProof extends Screen {
                     var drawn=k==0?copy(image):HouseBodyClient.drawn(image,cases[k][0],model,k==1?other:model,cases[k][1]);
                     var at=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"proof/kitchen_skin_"+model.id()+"_"+k);
                     mc.getTextureManager().register(at,new net.minecraft.client.renderer.texture.DynamicTexture(drawn));
-                    skins.add(new Skin(at,model.id()+(k==0?" own":k==1?" to "+other.id()+", toned, "+HouseReadKitchen.FACES.get(cases[k][1]-1):", "+(cases[k][0]>=0?"toned, ":"")+HouseReadKitchen.FACES.get(cases[k][1]-1))));
+                    String arms=model==net.minecraft.client.resources.PlayerSkin.Model.SLIM?"slim":"wide",to=other==net.minecraft.client.resources.PlayerSkin.Model.SLIM?"slim":"wide";
+                    skins.add(new Skin(at,arms+(k==0?", own":k==1?" to "+to+", toned, "+HouseReadKitchen.FACES.get(cases[k][1]-1):", "+(cases[k][0]>=0?"toned, ":"")+HouseReadKitchen.FACES.get(cases[k][1]-1))));
                 }
             }catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
         }
