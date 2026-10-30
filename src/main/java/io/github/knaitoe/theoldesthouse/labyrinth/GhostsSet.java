@@ -124,10 +124,9 @@ public final class GhostsSet {
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
         own.putBoolean("FilmDoorExit",true);own.remove("FrameNonce");LiteraryVignettes.save(d,p.getUUID(),PLACE,own);
     }
+    /** Click to roll, click to stop: the reader's own camera, in hand and rolling, on the set. */
     public static boolean recording(ServerPlayer p) {
-        if(!LiteraryVignettes.inside(p,PLACE)||!p.isUsingItem()||!(p.getUseItem().getItem() instanceof CamcorderItem))return false;
-        var custom=p.getUseItem().get(DataComponents.CUSTOM_DATA); if(custom==null)return false;
-        var t=custom.copyTag();return t.hasUUID(LiteraryVignettes.OWNER)&&t.getUUID(LiteraryVignettes.OWNER).equals(p.getUUID());
+        return LiteraryVignettes.inside(p,PLACE)&&CamcorderItem.filming(p);
     }
     /** A centred lens and an actual unobstructed native ray; adjacent table tops do not count as transparent. */
     public static boolean framed(ServerPlayer p,Vec3 target) {

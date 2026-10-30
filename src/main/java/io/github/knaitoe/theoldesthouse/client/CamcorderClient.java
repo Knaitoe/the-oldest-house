@@ -22,7 +22,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class CamcorderClient {
     private static UUID pending;private static Object world;private static int frames;private static CameraType previous;
     private CamcorderClient() {}
-    public static boolean active(){var p=Minecraft.getInstance().player;if(p==null||p.isSpectator()||!p.isAlive()||!p.isUsingItem()||!(p.getUseItem().getItem() instanceof CamcorderItem))return false;var data=p.getUseItem().get(DataComponents.CUSTOM_DATA);if(data==null)return false;var tag=data.copyTag();return tag.hasUUID(LiteraryVignettes.OWNER)&&tag.getUUID(LiteraryVignettes.OWNER).equals(p.getUUID());}
+    public static boolean active(){var p=Minecraft.getInstance().player;return p!=null&&CamcorderItem.filming(p);}
     public static void expose(CamcorderExposurePayload p){if(active()){pending=p.nonce();world=Minecraft.getInstance().level;frames=0;}}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){var mc=Minecraft.getInstance();if(active()){if(previous==null)previous=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);}else{if(previous!=null)mc.options.setCameraType(previous);previous=null;pending=null;world=null;}}
     @SubscribeEvent public static void fov(ViewportEvent.ComputeFov e){if(active())e.setFOV(70);}
