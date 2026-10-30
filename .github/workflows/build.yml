@@ -831,6 +831,8 @@ jobs:
           test -s build/font-smoke/novel-papers-passed.txt
           test -s build/font-smoke/embers-passed.txt
           test -s build/font-smoke/native-embers.png
+          test -s build/font-smoke/journal-passed.txt
+          for view in 0 1 2; do test -s build/font-smoke/native-journal-$view.png; done
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/native-harrigan-wake.png

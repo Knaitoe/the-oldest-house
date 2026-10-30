@@ -22,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -272,6 +273,9 @@ public final class OpeningSequence {
         Vec3 spot = Doorsteps.restingPoint(level, delivery.spot());
         level.addFreshEntity(DeliveredItemEntity.create(level, NavidsonLetter.createBook(), spot.add(-0.14D, 0.0D, 0.08D), player.getUUID()));
         level.addFreshEntity(DeliveredItemEntity.create(level, NavidsonLetter.createSnapshot(level, photo), spot.add(0.14D, 0.0D, -0.08D), player.getUUID()));
+        // A second parcel, addressed in the reader's own hand: a blank journal they don't remember sending (JOURNAL_DESIGN.md).
+        ItemStack journal = io.github.knaitoe.theoldesthouse.journal.Journals.get(player.server).parcel(player);
+        if (!journal.isEmpty()) level.addFreshEntity(DeliveredItemEntity.create(level, journal, spot.add(0.0D, 0.0D, 0.18D), player.getUUID()));
         if (OpeningConfig.KNOCK_SOUND.getAsBoolean()) {
             knock(player, delivery.door() != null ? delivery.door() : delivery.spot());
         }
@@ -455,6 +459,7 @@ public final class OpeningSequence {
             TheOldestHouse.LOGGER.info("{} has entered the House for the first time.", player.getGameProfile().getName());
         }
         state.markEntered();
+        io.github.knaitoe.theoldesthouse.journal.Journals.arrived(player);
     }
 
 }
