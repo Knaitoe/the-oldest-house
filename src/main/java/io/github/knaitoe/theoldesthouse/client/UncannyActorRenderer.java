@@ -78,7 +78,11 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         public Model(ModelPart part,boolean slim){super(part,slim);neck=part.hasChild("bent_neck")?part.getChild("bent_neck"):null;neckUpper=part.hasChild("bent_neck_upper")?part.getChild("bent_neck_upper"):null;}
         private java.util.List<ModelPart> necks(){var out=new java.util.ArrayList<ModelPart>(2);if(neck!=null)out.add(neck);if(neckUpper!=null)out.add(neckUpper);return out;}
         @Override protected Iterable<ModelPart> bodyParts(){return neck==null?super.bodyParts():com.google.common.collect.Iterables.concat(super.bodyParts(),necks());}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){boolean great=a.role()==LiteraryActor.UNCANNY_GIANT&&a.gesture()==1;if(a.role()==LiteraryActor.UNCANNY_GIANT){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/(great?6F:2.5F);amount=motion.amount();}pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch,great);if(!feed&&a.role()!=LiteraryActor.UNCANNY_WAITRESS)RecentActorMotion.blend(a,age,this);if(a.role()==LiteraryActor.UNCANNY_VISITOR&&a.gesture()==1){rightArm.xRot=-1.4F+Mth.sin(age*1.9F)*.035F;rightArm.zRot=.08F;rightArm.z=1.6F;rightSleeve.copyFrom(rightArm);}}
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){boolean great=a.role()==LiteraryActor.UNCANNY_GIANT&&a.gesture()==1;if(a.role()==LiteraryActor.UNCANNY_GIANT){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/(great?6F:2.5F);amount=motion.amount();
+            // 0.4.172 (owner: "ensure her head is tilted back, so her attention is towards the player"): her face is aimed at
+            // whoever is looking at her, from where her head hangs at the end of the bent neck.
+            var eye=net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();var from=a.position().add(0,a.getBbHeight()*.93,0);
+            double dx=eye.x-from.x,dy=eye.y-from.y,dz=eye.z-from.z;yaw=Mth.clamp(Mth.wrapDegrees((float)Math.toDegrees(Math.atan2(-dx,dz))-a.yBodyRot),-70,70);pitch=(float)Math.toDegrees(-Math.atan2(dy,Math.sqrt(dx*dx+dz*dz)));}pose(a.role(),a.phase(),feed,age,walk,amount,yaw,pitch,great);if(!feed&&a.role()!=LiteraryActor.UNCANNY_WAITRESS)RecentActorMotion.blend(a,age,this);if(a.role()==LiteraryActor.UNCANNY_VISITOR&&a.gesture()==1){rightArm.xRot=-1.4F+Mth.sin(age*1.9F)*.035F;rightArm.zRot=.08F;rightArm.z=1.6F;rightSleeve.copyFrom(rightArm);}}
         public void pose(int role,int phase,boolean feed,float age,float walk,float amount,float yaw,float pitch){
             pose(role,phase,feed,age,walk,amount,yaw,pitch,false);
         }
@@ -110,7 +114,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 leftArm.xRot=-.12F-gait*.25F;rightArm.xRot=-.12F+gait*.25F;leftArm.zRot=-.04F;rightArm.zRot=.04F;
                 // A long pale neck rising out of the collar, then bent: straight up from her shoulders, a kink, and the upper half
                 // bowed forward and tipped hard to one side, the small head (owner: "shorten the height of her head so you've
-                // got more room to display her neck") hanging further along it.
+                // got more room to display her neck") hanging further along it, tilted back so her face is on the reader.
                 float baseY=body.y+.8F*Mth.cos(lean),baseZ=body.z+.8F*Mth.sin(lean);
                 float lowBow=.2F,lowTip=.1F,lowLength=3.4F,highBow=.55F,highTip=.8F+gait*.02F,highLength=3.2F;
                 float lowX=Mth.cos(lowBow)*Mth.sin(lowTip),lowY=-Mth.cos(lowBow)*Mth.cos(lowTip),lowZ=-Mth.sin(lowBow);
@@ -119,7 +123,11 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 if(neck!=null){neck.visible=true;neck.x=lowX*lowLength/2;neck.y=baseY+lowY*lowLength/2;neck.z=baseZ+lowZ*lowLength/2;neck.xRot=lowBow;neck.yRot=0;neck.zRot=lowTip;neck.yScale=(lowLength+.3F)/4;}
                 if(neckUpper!=null){neckUpper.visible=true;neckUpper.x=kinkX+highX*highLength/2;neckUpper.y=kinkY+highY*highLength/2;neckUpper.z=kinkZ+highZ*highLength/2;neckUpper.xRot=highBow;neckUpper.yRot=0;neckUpper.zRot=highTip;neckUpper.yScale=(highLength+.4F)/4;}
                 head.xScale=.74F;head.yScale=.68F;head.zScale=.74F;
-                head.x=kinkX+highX*highLength;head.y=kinkY+highY*highLength;head.z=kinkZ+highZ*highLength;head.xRot=.65F+gait*.02F;head.zRot=.92F+gait*.02F;head.yRot*=.4F;
+                head.x=kinkX+highX*highLength;head.y=kinkY+highY*highLength;head.z=kinkZ+highZ*highLength;
+                // The tip to one side is the head's own, under the aim: turned and lifted toward the reader, then tipped, so her
+                // eyes stay on them whichever way she turns (a model part applies Z last, so the aim is re-expressed in its order).
+                var aim=new org.joml.Quaternionf().rotationYXZ(Mth.clamp(yaw,-70,70)*Mth.DEG_TO_RAD,Mth.clamp(pitch*Mth.DEG_TO_RAD-.12F,-.6F,.55F)+gait*.02F,.85F+gait*.02F).getEulerAnglesZYX(new org.joml.Vector3f());
+                head.xRot=aim.x;head.yRot=aim.y;head.zRot=aim.z;
                 var shrunk=new java.util.ArrayList<ModelPart>(java.util.List.of(head,body,leftArm,rightArm,leftLeg,rightLeg));shrunk.addAll(necks());
                 for(var part:shrunk){
                     part.x*=SHRINK;part.y=24-(24-part.y)*SHRINK;part.z*=SHRINK;part.xScale*=SHRINK;part.yScale*=SHRINK;part.zScale*=SHRINK;
