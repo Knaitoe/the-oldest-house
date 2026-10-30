@@ -124,17 +124,18 @@ public final class KeepsakeTests {
         var p = NativeTestPlayers.survival(h, "keeper_four");
         var server = h.getLevel().getServer();var store = server.overworld().getDataStorage();var old = LabyrinthData.get(server);
         var at = h.absoluteVec(new Vec3(2.5, 1, 2.5));p.teleportTo(h.getLevel(), at.x, at.y, at.z, 0, 0);
-        for (int x = 0; x < 9; x++) for (int z = 0; z < 9; z++) h.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        for (int x = 0; x < 9; x++) for (int z = 0; z < 13; z++) h.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
         // The photograph: a keeper standing still with it in hand.
         var photo = new ItemStack(Items.FILLED_MAP);
         net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, photo, t -> t.putUUID(NovelVignettes.PHOTO_OWNER, p.getUUID()));
         p.setItemInHand(InteractionHand.MAIN_HAND, photo);Keepsakes.tick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));
-        var far = h.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 8 + 1));var near = h.spawn(EntityType.ZOMBIE, new BlockPos(4, 1, 3));
+        // Run 1353: both stand where they are put (a wandering zombie could stroll inside six blocks), the far one on the floor nine off.
+        var far = h.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 11));var near = h.spawn(EntityType.ZOMBIE, new BlockPos(4, 1, 3));far.setNoAi(true);near.setNoAi(true);
         h.runAfterDelay(30, () -> {
             try {
                 h.assertTrue(Keepsakes.holdingStill(p), "a second held still with the photograph in hand");
                 far.setTarget(p);near.setTarget(p);
-                h.assertTrue(far.getTarget() == null && near.getTarget() == p, "the far one cannot fix on them, the near one can");
+                h.assertTrue(far.getTarget() == null && near.getTarget() == p, "the far one cannot fix on them, the near one can: far " + far.distanceTo(p) + " at " + far.getTarget() + ", near " + near.distanceTo(p) + " at " + near.getTarget());
                 // The compass, away from the House: where they last fell.
                 var fell = p.blockPosition().east(40);
                 p.setLastDeathLocation(java.util.Optional.of(net.minecraft.core.GlobalPos.of(p.level().dimension(), fell)));

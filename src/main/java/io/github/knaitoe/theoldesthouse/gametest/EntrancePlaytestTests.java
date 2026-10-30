@@ -17,7 +17,9 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_house_read") @PrefixGameTestTemplate(false)
 public final class EntrancePlaytestTests {
     private static LiteraryTests.Fixture active;
-    private static void close(){HouseReadSites.clear();HouseTransitionEvents.clearAll();if(active!=null){active.close();active=null;}}
+    // Run 1353: the readers' crossings are forgotten with the fixture, so the next fixture's reader at the same junction door
+    // is not sent after them (GroupCrossings keys a door by its position, which every fixture shares).
+    private static void close(){GroupCrossings.forget();HouseReadSites.clear();HouseTransitionEvents.clearAll();if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="read_entrance142") public static void entranceDone(ServerLevel l){close();}
     @AfterBatch(batch="cross_hall142") public static void crossDone(ServerLevel l){close();}
     @AfterBatch(batch="retire_entrance142") public static void retireDone(ServerLevel l){close();}
@@ -189,7 +191,7 @@ public final class EntrancePlaytestTests {
     @GameTest(template="empty",batch="finished_passage143",timeoutTicks=4000)
     public static void aFinishedStorysDealtDoorIsOnlyAWayBetweenHalls(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"passage_reader");
-        var halls=java.util.List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
+        var halls=HALLS;
         var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));
         for(var hall:halls){var slot=LabyrinthPlaces.slotBounds(f.origin,hall);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
         boolean[] ticking={false};LabyrinthData.Door[] west={null};var story=WitnessAccount.Story.of(LabyrinthPlace.HILL_NURSERY.id());
@@ -238,7 +240,13 @@ public final class EntrancePlaytestTests {
               h.assertTrue(HouseReadSites.inside(p)==null&&f.data().returnDepth(p.getUUID())==1,"the actual command crossing retains exactly its own ordinary return");
           }).thenSucceed();
     }
-    private static final java.util.List<LabyrinthPlace> HALLS=java.util.List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM);
+    /** Every ordinary hall a way on can lead into before the stone depth, the plain halls (0.4.197, 0.4.199) included: a fixture that builds fewer can be dealt one it never built. */
+    static final java.util.List<LabyrinthPlace> HALLS=ordinaryHalls();
+    static java.util.List<LabyrinthPlace> ordinaryHalls(){
+        var out=new java.util.ArrayList<>(java.util.List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM));
+        for(var place:LabyrinthPlace.values())if(HallVariations.plain(place))out.add(place);
+        return java.util.List.copyOf(out);
+    }
     private static boolean hall(LabyrinthPlace place){return place!=null&&(LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place));}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.level(place),new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
 
@@ -269,7 +277,7 @@ public final class EntrancePlaytestTests {
                 f.data().deal(p.getUUID(),onward[0],LabyrinthPlace.SEANCE.id(),false);
                 at(p,f.in,onward[0].lower.relative(onward[0].facing));click(p,onward[0].lower);
             })
-            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(p)&&hall(LabyrinthPlaces.placeAt(f.origin,p.blockPosition())),"the way on leads into an ordinary hall"))
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(p)&&hall(LabyrinthPlaces.placeAt(f.origin,p.blockPosition())),"the way on leads into an ordinary hall (busy "+LabyrinthDoors.isBusy(p)+", at "+LabyrinthPlaces.placeAt(f.origin,p.blockPosition())+" "+p.blockPosition()+")"))
             .thenExecute(()->{
                 var deal=f.data().deal(p.getUUID(),onward[0]);
                 h.assertTrue(deal!=null&&hall(LabyrinthPlace.byId(deal.place()))&&LabyrinthPlace.byId(deal.place())==LabyrinthPlaces.placeAt(f.origin,p.blockPosition()),"the story it had been dealt gave way to the hall the reader reached");
