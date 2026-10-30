@@ -1,3 +1,5 @@
+October 30 candidate 0.4.191: require both ContestTradeTests cases, the extended WitnessTests.observersCannotSpendTheHeartbeatOrBeForcedThroughItsExit and IndianLakeLinkedTests.lettingGoOrStoppingStartsTheCountAgainAndABlowStillRefuses. A trade never wounds and never touches a House original, an artifact or the Mother's custody.
+
 October 30 candidate 0.4.190: require HomeIntrusionTests.theManorRemembersEachExperienceOnlyForItsReaderAndChangesNothingReal. A House-only echo is shown to its reader alone, never changes a real block, never blocks a way and is withdrawn when they leave the manor.
 
 October 30 candidate 0.4.189: require LiteraryTests.theLadyFollowsTheOneSheHeldAndSetsThemDownAtTheWatersEdge and the extended Bly hold case.

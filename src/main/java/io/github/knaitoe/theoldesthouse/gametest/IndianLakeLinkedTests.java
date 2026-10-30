@@ -401,6 +401,9 @@ public final class IndianLakeLinkedTests {
                 h.assertTrue(girl.memoryPhase()==Shallows.CARRIED&&Shallows.count(girl)==0&&Math.abs(Shallows.swingAngle(girl))<.05F,"a swing left alone dies down and the count starts over: angle="+Shallows.swingAngle(girl));
                 Shallows.onAttack(new AttackEntityEvent(owner,boy));
                 h.assertTrue(Shallows.personal(data,owner.getUUID()).getBoolean("Cold")&&girl.isRemoved()&&boy.isRemoved()&&owner.getMainHandItem().isEmpty()&&!IndianLakeProgress.hasThrown(data,owner.getUUID()),"striking the boy at her feet darkens the visit without a throw");
+                // 0.4.191: the failure takes the boys' company, and the account keeps it.
+                var record=Shallows.personal(data,owner.getUUID());
+                h.assertTrue(record.getBoolean(Shallows.BOYS_LEFT)&&Shallows.witness(record,"I threw her.").endsWith("the boys went home without me."),"the boys go home, and the account says so");
                 step[0]=3;h.succeed();
             }
         });

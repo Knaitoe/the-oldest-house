@@ -136,13 +136,16 @@ public final class NavigationAids {
         List<BlockPos> pieces=new ArrayList<>();pieces.add(step);
         while(step.getX()!=at.getX()) {step=step.offset(Integer.compare(at.getX(),step.getX()),0,0);pieces.add(step);}
         while(step.getZ()!=at.getZ()) {step=step.offset(0,0,Integer.compare(at.getZ(),step.getZ()));pieces.add(step);}
+        boolean laid=false;
         for(BlockPos piece:pieces) {
             if(spool.isEmpty())break;
             if(placeLine(player.serverLevel(),piece)) {
                 remember(player.serverLevel(),piece,player.getUUID(),false);
-                spool.hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
+                spool.hurtAndBreak(1,player,EquipmentSlot.MAINHAND);laid=true;
             }
         }
+        // 0.4.191: a reader who retraced Ted's squeeze sometimes feels the cave take the line back.
+        if(laid)ContestTrades.laid(player,spool);
         tag.putLong(LAST,at.asLong());
     }
     public static boolean mayAlter(ServerLevel level,BlockPos pos,ServerPlayer player) {
