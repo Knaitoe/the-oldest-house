@@ -174,35 +174,91 @@ public final class LiteraryTests {
     }
     @AfterBatch(batch="literary_usher181") public static void usherDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_coffin",timeoutTicks=230)
-    public static void nativeCoffinChoiceRequiresAReturnAndKeepsTheSameWoman(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("coffin_reader",place);f.source(p,place);h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Woman"),"the living native body is present before the decision");p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"closing the physical lid grants no ending by itself");f.arrive(p,place);f.at(p,place,2,-3,-29);});h.runAfterDelay(150,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.getInt("Cracks")==1&&UsherStory.storm(f.own(p,place))&&!f.own(p,place).getBoolean("Ready"),"the next native visit brings a local crack and the storm night; the ending waits for the reading (0.4.182)");h.assertTrue(f.in.getEntity(world.getUUID("Woman")) instanceof LiteraryActor,"the same woman's native UUID survives the return");h.succeed();});}
+    public static void nativeCoffinChoiceRequiresAReturnAndKeepsTheSameWoman(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("coffin_reader",place);f.source(p,place);h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Woman"),"the living native body is present before the decision");p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"closing the physical lid grants no ending by itself");f.arrive(p,place);f.at(p,place,2,-3,-29);});h.runAfterDelay(150,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.getInt("Cracks")==1&&UsherStory.ownStorm(f.own(p,place),world)&&!f.own(p,place).getBoolean("Ready"),"the next native visit brings a local crack and the storm night; the ending waits for the reading (0.4.182)");h.assertTrue(f.in.getEntity(world.getUUID("Woman")) instanceof LiteraryActor,"the same woman's native UUID survives the return");h.succeed();});}
     /** 0.4.182: Roderick in his chair, the storm night's reading answered from the vault, her at the doors, the fall, and the flight over the causeway. */
     @GameTest(template="empty",batch="literary_usher_fall182",timeoutTicks=1000)
     public static void theStormNightsReadingIsAnsweredFromTheVaultAndTheReaderFleesAsTheHouseFalls(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("usher_reader",place);f.source(p,place);var books=new BlockPos(1,0,-26);
-        java.util.function.Function<String,LiteraryActor> own=key->{var world=LiteraryVignettes.shared(f.data(),place);String id=key+"_"+p.getUUID();return world.hasUUID(id)&&f.in.getEntity(world.getUUID(id)) instanceof LiteraryActor a&&!a.isRemoved()?a:null;};
         h.startSequence()
-            .thenWaitUntil(()->{var r=own.apply("Roderick");h.assertTrue(r!=null&&r.role()==LiteraryActor.STRANGER&&r.phase()==UsherStory.RODERICK&&r.owner().filter(p.getUUID()::equals).isPresent()&&r.blockPosition().equals(f.base(place).offset(UsherHouse.CHAIR)),"Roderick sits in his own chair, the reader's own: "+r);})
-            .thenExecute(()->{f.at(p,place,-4,0,-28);LiteraryVignettes.talk(p,own.apply("Roderick"));h.assertTrue(f.own(p,place).getInt("Talk0507")==1,"he answers when spoken to");
-                f.click(p,place,books);h.assertTrue(f.own(p,place).getInt("Trist0507")==0,"before the lid is chosen the books are only damp romances");
+            .thenWaitUntil(()->{var r=usherActor(f,"Roderick");h.assertTrue(r!=null&&r.role()==LiteraryActor.STRANGER&&r.phase()==UsherStory.RODERICK&&r.blockPosition().equals(f.base(place).offset(UsherHouse.CHAIR))&&r.broadcastToPlayer(p),"Roderick sits in his chair, and the reader sees him: "+r);})
+            .thenExecute(()->{f.at(p,place,-4,0,-28);LiteraryVignettes.talk(p,usherActor(f,"Roderick"));h.assertTrue(f.own(p,place).getInt("Talk0507")==1,"he answers when spoken to");
+                f.click(p,place,books);h.assertTrue(UsherStory.stage(f.data())==0,"before the lid is chosen the books are only damp romances");
                 p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"the lid is closed");
                 f.arrive(p,place);f.at(p,place,-2,0,-27);})
-            .thenWaitUntil(()->h.assertTrue(UsherStory.storm(f.own(p,place))&&own.apply("Roderick")!=null,"the return is the storm night, and he is still in his chair"))
-            .thenExecute(()->{f.click(p,place,books);h.assertTrue(f.own(p,place).getInt("Trist0507")==1,"the strewn books open the romance");f.at(p,place,-2,0,-27);})
-            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("TristHeard0507")>=1,"the vault answers the first passage"))
-            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("Trist0507")>=UsherStory.AT_DOOR&&f.own(p,place).getInt("TristHeard0507")==3,"three passages, three answers, then she is at the door: "+f.own(p,place).getInt("Trist0507")))
-            .thenExecute(()->{var her=own.apply("Madeline");h.assertTrue(her!=null&&her.role()==LiteraryActor.COFFIN_WOMAN&&her.owner().filter(p.getUUID()::equals).isPresent()&&her.position().distanceTo(Vec3.atBottomCenterOf(f.base(place).offset(UsherHouse.STUDIO_DOOR)))<2.5,"she stands at the studio doors, the reader's own");
-                var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(f.in.getEntity(world.getUUID("Woman")) instanceof LiteraryActor,"the shared coffin's woman is untouched");})
+            .thenWaitUntil(()->h.assertTrue(UsherStory.ownStorm(f.own(p,place),LiteraryVignettes.shared(f.data(),place))&&UsherStory.storm(p,f.own(p,place))&&usherActor(f,"Roderick")!=null,"the return is the storm night, and he is still in his chair"))
+            .thenExecute(()->{f.click(p,place,books);h.assertTrue(UsherStory.stage(f.data())==1&&f.own(p,place).getInt("NightId0507")>0,"the strewn books open the romance");f.at(p,place,-2,0,-27);})
+            .thenWaitUntil(()->h.assertTrue(UsherStory.answered(f.data())>=1,"the vault answers the first passage"))
+            .thenWaitUntil(()->h.assertTrue(UsherStory.stage(f.data())>=UsherStory.AT_DOOR&&UsherStory.answered(f.data())==3,"three passages, three answers, then she is at the door: "+UsherStory.stage(f.data())))
+            .thenExecute(()->{var her=usherActor(f,"Madeline");h.assertTrue(her!=null&&her.role()==LiteraryActor.COFFIN_WOMAN&&her.broadcastToPlayer(p)&&her.position().distanceTo(Vec3.atBottomCenterOf(f.base(place).offset(UsherHouse.STUDIO_DOOR)))<2.5,"she stands at the studio doors, for the night's reader");
+                h.assertTrue(f.in.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Woman")) instanceof LiteraryActor,"the coffin's woman is untouched");})
             .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Fell0507"),"she goes to him and the two go down together"))
-            .thenExecute(()->{h.assertTrue(own.apply("Roderick")==null&&own.apply("Madeline")==null&&!f.own(p,place).getBoolean("Ready"),"both are gone; inside the house the reader has not yet got away");
-                h.assertTrue(UsherBlock.is(f.in.getBlockState(f.base(place).offset(UsherHouse.fissure().getFirst().x(),UsherHouse.fissure().getFirst().y(),UsherHouse.FRONT)),UsherBlock.Kind.FISSURE)||UsherBlock.is(f.in.getBlockState(f.base(place).offset(UsherHouse.fissure().getFirst().x(),UsherHouse.fissure().getFirst().y(),UsherHouse.FRONT)),UsherBlock.Kind.FISSURE_B),"the opened fissure is only in the reader's view; the house's own blocks are unchanged");
+            .thenExecute(()->{var r=usherActor(f,"Roderick");h.assertTrue(r!=null&&!r.broadcastToPlayer(p)&&usherActor(f,"Madeline")==null&&!f.own(p,place).getBoolean("Ready")&&UsherStory.stage(f.data())==0,"he is gone from this reader's sight, she is gone, the night is over; inside the house the reader has not yet got away");
+                var first=UsherHouse.fissure().getFirst();var s=f.in.getBlockState(f.base(place).offset(first.x(),first.y(),UsherHouse.FRONT));h.assertTrue(UsherBlock.is(s,UsherBlock.Kind.FISSURE)||UsherBlock.is(s,UsherBlock.Kind.FISSURE_B),"the opened fissure is only in the reader's view; the house's own blocks are unchanged");
                 f.at(p,place,0,0,-2);})
             .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready")&&"fled_as_the_house_fell".equals(f.own(p,place).getString("Outcome")),"over the causeway to the bank, the reader has fled as the house fell"))
-            .thenExecute(()->{var text=LiteraryTexts.ending(p.getGameProfile().getName(),place,f.own(p,place)).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(x->x.raw().getString()).reduce("",String::concat);
-                h.assertTrue(text.contains("causeway")&&text.contains("read"),"the account tells the reading and the flight");f.read(p,place,LiteraryRooms.ending(place));
-                f.arrive(p,place);})
-            .thenExecuteAfter(15,()->h.assertTrue(own.apply("Roderick")==null,"after the fall he is not in his chair again for this reader"))
+            .thenExecute(()->{var text=usherPages(p,f,place);h.assertTrue(text.contains("causeway")&&text.contains("I read the old romance aloud")&&!text.contains("ran with me"),"the account tells the reading and the flight, alone: "+text);f.read(p,place,LiteraryRooms.ending(place));f.arrive(p,place);})
+            .thenExecuteAfter(15,()->h.assertTrue(!usherActor(f,"Roderick").broadcastToPlayer(p),"after the fall he is not in his chair again for this reader"))
             .thenSucceed();
     }
+    static @org.jetbrains.annotations.Nullable LiteraryActor usherActor(Fixture f,String key){var world=LiteraryVignettes.shared(f.data(),LabyrinthPlace.USHER);return world.hasUUID(key)&&f.in.getEntity(world.getUUID(key)) instanceof LiteraryActor a&&!a.isRemoved()?a:null;}
+    static String usherPages(ServerPlayer p,Fixture f,LabyrinthPlace place){return LiteraryTexts.ending(p.getGameProfile().getName(),place,f.own(p,place)).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(x->x.raw().getString()).reduce("",(a,b)->a+" "+b).replaceAll("\\s+"," ");}
+    /** 0.4.183: readers in the house together share one night: one Roderick, one reading, one Madeline, the fall for all; each flees on their own, and a later reader still finds him. */
+    @GameTest(template="empty",batch="literary_usher_together183",timeoutTicks=1100)
+    public static void readersInTheHouseTogetherShareOneStormNightAndEachFleesOnTheirOwn(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.USHER;var a=f.player("usher_chooser",place);var b=f.player("usher_friend",place);var books=new BlockPos(1,0,-26);
+        h.startSequence()
+            .thenWaitUntil(()->h.assertTrue(usherActor(f,"Roderick")!=null,"he is in his chair"))
+            .thenExecute(()->{var r=usherActor(f,"Roderick");h.assertTrue(r.broadcastToPlayer(a)&&r.broadcastToPlayer(b)&&r.owner().isEmpty(),"one Roderick, seen by both");
+                f.at(b,place,0,-3,-27);a.setShiftKeyDown(true);f.click(a,place,LiteraryRooms.COFFIN);a.setShiftKeyDown(false);})
+            .thenWaitUntil(()->h.assertTrue(f.own(b,place).contains("LidKnown0507")&&f.own(a,place).contains("LidKnown0507"),"both know the lid was chosen on this visit"))
+            .thenExecute(()->{f.arrive(a,place);f.arrive(b,place);f.at(a,place,-2,0,-27);f.at(b,place,2,0,-27);})
+            .thenWaitUntil(()->h.assertTrue(UsherStory.storm(a,f.own(a,place))&&UsherStory.storm(b,f.own(b,place)),"the friend who watched has the storm night too"))
+            .thenExecute(()->{f.click(b,place,books);f.at(b,place,2,0,-27);int id=f.own(a,place).getInt("NightId0507");h.assertTrue(UsherStory.stage(f.data())==1&&id>0&&id==f.own(b,place).getInt("NightId0507"),"one reading, and both are in it");})
+            .thenWaitUntil(()->h.assertTrue(UsherStory.stage(f.data())>=UsherStory.AT_DOOR,"the reading runs to the doors for both"))
+            .thenExecute(()->{var her=usherActor(f,"Madeline");h.assertTrue(her!=null&&her.broadcastToPlayer(a)&&her.broadcastToPlayer(b),"one Madeline, at the doors for both");})
+            .thenWaitUntil(()->h.assertTrue(f.own(a,place).getBoolean("Fell0507")&&f.own(b,place).getBoolean("Fell0507"),"the fall is for everyone who was in it"))
+            .thenExecute(()->{h.assertTrue(f.own(a,place).getString("With0507").equals("usher_friend")&&f.own(b,place).getString("With0507").equals("usher_chooser")&&f.own(b,place).getBoolean("ReadAloud0507")&&!f.own(a,place).getBoolean("ReadAloud0507"),"each remembers who was with them and who read");
+                f.at(a,place,0,0,-2);})
+            .thenWaitUntil(()->h.assertTrue(f.own(a,place).getBoolean("Ready")&&!f.own(b,place).getBoolean("Ready"),"each flees on their own feet: the one on the bank is out, the one inside is not"))
+            .thenExecute(()->{var mine=usherPages(a,f,place);h.assertTrue(mine.contains("I closed the lid")&&mine.contains("usher_friend read the old romance aloud")&&mine.contains("usher_friend ran with me"),"the chooser's account: "+mine);
+                f.at(b,place,1,0,-2);})
+            .thenWaitUntil(()->h.assertTrue(f.own(b,place).getBoolean("Ready"),"the reader follows over the causeway"))
+            .thenExecute(()->{var theirs=usherPages(b,f,place);h.assertTrue(theirs.contains("The lid had been closed")&&theirs.contains("I read the old romance aloud")&&theirs.contains("usher_chooser ran with me"),"the reader's account: "+theirs);
+                var c=f.player("usher_later",place);h.assertTrue(usherActor(f,"Roderick").broadcastToPlayer(c)&&!usherActor(f,"Roderick").broadcastToPlayer(a),"a later reader still finds him in his chair; those who saw the fall do not");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_usher_together183") public static void usherTogetherDone(ServerLevel l){close();}
+    /** 0.4.183: Roderick and the account know the house the reader came from, by the House's read; nothing changes without one. */
+    @GameTest(template="empty",batch="literary_usher_home183",timeoutTicks=200)
+    public static void roderickAndTheAccountKnowTheHouseTheReaderCameFrom(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.USHER;
+        h.assertTrue(UsherStory.homeLine("").isEmpty(),"without a read he says nothing of the reader's house");
+        var seen=new java.util.HashSet<String>();
+        for(String home:List.of("HAVEN","DANGER","RUNAWAY")){String line=UsherStory.homeLine(home);h.assertTrue(!line.isEmpty()&&seen.add(line),"his line for "+home);
+            var own=new CompoundTag();own.putBoolean("Fell0507",true);own.putBoolean("ReadAloud0507",true);own.putString("Home0507",home);var plain=new CompoundTag();plain.putBoolean("Fell0507",true);plain.putBoolean("ReadAloud0507",true);
+            String told=UsherStory.account(own),bare=UsherStory.account(plain);h.assertTrue(told.startsWith(bare)&&told.length()>bare.length(),"the account closes on the reader's own house for "+home);}
+        var p=f.player("usher_home",place);var d=f.data();var read=d.stateEntry(HouseRead.STATE,p.getUUID().toString());var home=new CompoundTag();home.putString("Value","RUNAWAY");home.putString("Strength","TENTATIVE");read.put("HOME",home);d.setStateEntry(HouseRead.STATE,p.getUUID().toString(),read);
+        h.assertTrue(HouseRead.category(p,HouseRead.Trait.HOME).isPresent()&&UsherStory.greeting(p).startsWith("You came. "),"a tentative home read, and no settled self-read: the plain greeting");
+        h.succeed();
+    }
+    @AfterBatch(batch="literary_usher_home183") public static void usherHomeDone(ServerLevel l){close();}
+    /** 0.4.183: on an open lid, once she has been seen standing in the wing, she comes to the studio doors while nobody looks, and stays there. */
+    @GameTest(template="empty",batch="literary_usher_open183",timeoutTicks=900)
+    public static void onAnOpenLidSheIsSeenInTheWingAndThenStandsAtTheStudioDoors(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("usher_open",place);var b=f.base(place);
+        h.startSequence()
+            .thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).hasUUID("Woman"),"she lies in the coffin"))
+            .thenExecute(()->{f.click(p,place,LiteraryRooms.COFFIN);h.assertTrue(LiteraryVignettes.shared(f.data(),place).contains("LidClosed")&&!LiteraryVignettes.shared(f.data(),place).getBoolean("LidClosed"),"the lid is left open");
+                f.arrive(p,place);f.at(p,place,0,0,-16);f.look(p,b.offset(-8,1,-16));})
+            .thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).getBoolean("WomanLeft"),"unwatched, she leaves the coffin for the wing"))
+            .thenExecute(()->{f.at(p,place,14,0,-26);f.look(p,b.offset(12,1,-34));})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready")&&"found_her_outside_the_open_coffin".equals(f.own(p,place).getString("Outcome")),"seen standing in the wing, the open lid's ending is ready"))
+            .thenExecute(()->{f.at(p,place,0,0,-2);f.look(p,b.offset(0,1,4));})
+            .thenWaitUntil(()->{var world=LiteraryVignettes.shared(f.data(),place);var woman=f.in.getEntity(world.getUUID("Woman"));h.assertTrue(world.getBoolean("AtDoor0507")&&woman!=null&&woman.position().distanceTo(Vec3.atBottomCenterOf(b.offset(UsherHouse.STUDIO_DOOR)))<2,"while nobody looks she comes to the studio doors");})
+            .thenExecuteAfter(40,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(f.in.getEntity(world.getUUID("Woman")).position().distanceTo(Vec3.atBottomCenterOf(b.offset(UsherHouse.STUDIO_DOOR)))<2,"and she stays there, never back to the wing");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_usher_open183") public static void usherOpenDone(ServerLevel l){close();}
     @AfterBatch(batch="literary_usher_fall182") public static void usherFallDone(ServerLevel l){close();}
     @AfterBatch(batch="literary_coffin") public static void coffinDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_cylinders",timeoutTicks=750)

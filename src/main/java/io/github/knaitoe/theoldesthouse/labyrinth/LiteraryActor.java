@@ -89,6 +89,8 @@ public final class LiteraryActor extends PathfinderMob {
         if(owner().isPresent()&&!sharedCopy&&!owner().get().equals(p.getUUID())&&!(role()==LAKE_WAX&&LakeHousePairs.sharesWith(p,owner().get())))return false;
         // 0.4.147: a thread's cast is seen by that thread's members alone.
         if(getPersistentData().contains(VignetteThreads.ACTOR_TAG)&&!VignetteThreads.sees(p,scene,getPersistentData().getString(VignetteThreads.ACTOR_TAG)))return false;
+        // 0.4.183: Usher's Roderick is not there for a reader who has seen the house fall, and Madeline at the doors is that night's alone.
+        if(scene.equals(LabyrinthPlace.USHER.id())&&!UsherStory.sees(p,this))return false;
         if(scene.equals(ElkLot.PLACE.id())&&role()==STRANGER&&phase()>=5&&phase()<=8){var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),ElkLot.PLACE);if(own.getBoolean("Ready")||own.getBoolean("Completed"))return false;}
         if((lakePartner(role())||role()==LAKE_WAX)&&owner().isPresent()&&p.isSpectator())return false;
         return super.broadcastToPlayer(p);
