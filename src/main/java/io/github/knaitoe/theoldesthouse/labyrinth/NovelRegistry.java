@@ -55,6 +55,9 @@ public final class NovelRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<InstituteNotebookBlock>> WARD_NOTEBOOK_TYPE=CODECS.register("institute_notebook",()->InstituteNotebookBlock.CODEC);
     public static final DeferredBlock<InstituteNotebookBlock> WARD_NOTEBOOK=BLOCKS.registerBlock("institute_notebook",InstituteNotebookBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<InstituteNotebookBlockEntity>> WARD_NOTEBOOK_ENTITY=BLOCK_ENTITIES.register("institute_notebook",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(InstituteNotebookBlockEntity::new,WARD_NOTEBOOK.get()).build(null));
+    /** 0.4.178: Zampano's filing cabinets in the courtyard archive (ZampanoDrawers); drawn by tools/draw_zampano_cabinet_art.py. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ZampanoCabinetBlock>> ZAMPANO_CABINET_TYPE=CODECS.register("zampano_cabinet",()->ZampanoCabinetBlock.CODEC);
+    public static final DeferredBlock<ZampanoCabinetBlock> ZAMPANO_CABINET=BLOCKS.registerBlock("zampano_cabinet",ZampanoCabinetBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).strength(-1,3600000).noOcclusion().noLootTable());
     public static final DeferredItem<Item> COLLAR=ITEMS.registerSimpleItem("cat_collar",new Item.Properties().stacksTo(1)),RIBBON=ITEMS.registerSimpleItem("well_ribbon",new Item.Properties().stacksTo(1)),
         ARCHIVE_KEY=ITEMS.registerSimpleItem("archive_key",new Item.Properties().stacksTo(1));
     public static final DeferredItem<ShieldItem> HOLLOWAY_SHIELD=ITEMS.register("holloway_shield",()->new ShieldItem(new Item.Properties().durability(336)));

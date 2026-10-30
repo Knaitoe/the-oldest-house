@@ -119,6 +119,14 @@ The structure suite ran all 885 of its tests and every one passed. The step stil
 
 **The fix.** They come out of the repository, with their template folder, and stay as local tools only. The count is now 888 declared, the 885 plus the three journal tests.
 
+## Run 1343
+
+Run 1343 tested 911cd98 (0.4.177): all seventeen jobs passed. That includes:
+- the structure suite, with 888 of 888 declared tests run;
+- the three journal cases;
+- the build job's three native journal views;
+- the live two-client expedition, where each player is now given a journal.
+
 ## Versions
 
 - **Mod version:** 0.4.177.

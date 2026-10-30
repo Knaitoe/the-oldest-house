@@ -63,6 +63,7 @@ jobs:
           python3 tools/generate_bath_decay_assets.py --check
           python3 tools/draw_reading_stands.py --check
           python3 tools/draw_barn_well.py --check
+          python3 tools/draw_zampano_cabinet_art.py --check
           python3 tools/generate_advancements.py --check
           python3 tools/draw_hair_styles.py --check
 
@@ -167,6 +168,12 @@ jobs:
               assert 'assets/the_oldest_house/blockstates/forest_cover.json' in z.namelist()
               for i in range(16):
                   assert f'assets/the_oldest_house/textures/block/zampano_scribble_{i}.png' in z.namelist()
+              for name in ('wood','carcass','front','brass','inside'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/zampano_cabinet_{name}.png').startswith(b'\x89PNG'), name
+              cabinet = json.loads(z.read('assets/the_oldest_house/blockstates/zampano_cabinet.json'))['variants']
+              assert len(cabinet) == 48 and all(f'assets/the_oldest_house/models/block/{v["model"].split("/")[-1]}.json' in z.namelist() for v in cabinet.values())
+              assert z.read('assets/the_oldest_house/textures/item/zampano_leaf.png').startswith(b'\x89PNG')
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/ZampanoDrawers.class' in z.namelist() and 'io/github/knaitoe/theoldesthouse/journal/ZampanoLeaves.class' in z.namelist()
               assert 'assets/the_oldest_house/textures/entity/costume_scarecrow.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneSupportRepairs.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/command/PlaytestCommands.class' in z.namelist()
@@ -833,6 +840,7 @@ jobs:
           test -s build/font-smoke/native-embers.png
           test -s build/font-smoke/journal-passed.txt
           for view in 0 1 2; do test -s build/font-smoke/native-journal-$view.png; done
+          for view in 0 1 2 3 4 5 6 7 8 9 10 11; do test -s build/font-smoke/native-courtyard-$view.png; done
           test -s build/font-smoke/npcs-passed.txt
           test -s build/font-smoke/native-npcs.png
           test -s build/font-smoke/native-harrigan-wake.png
@@ -1226,6 +1234,12 @@ jobs:
               assert 'assets/the_oldest_house/blockstates/forest_cover.json' in z.namelist()
               for i in range(16):
                   assert f'assets/the_oldest_house/textures/block/zampano_scribble_{i}.png' in z.namelist()
+              for name in ('wood','carcass','front','brass','inside'):
+                  assert z.read(f'assets/the_oldest_house/textures/block/zampano_cabinet_{name}.png').startswith(b'\x89PNG'), name
+              cabinet = json.loads(z.read('assets/the_oldest_house/blockstates/zampano_cabinet.json'))['variants']
+              assert len(cabinet) == 48 and all(f'assets/the_oldest_house/models/block/{v["model"].split("/")[-1]}.json' in z.namelist() for v in cabinet.values())
+              assert z.read('assets/the_oldest_house/textures/item/zampano_leaf.png').startswith(b'\x89PNG')
+              assert 'io/github/knaitoe/theoldesthouse/labyrinth/ZampanoDrawers.class' in z.namelist() and 'io/github/knaitoe/theoldesthouse/journal/ZampanoLeaves.class' in z.namelist()
               assert 'assets/the_oldest_house/textures/entity/costume_scarecrow.png' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/SceneSupportRepairs.class' in z.namelist()
               assert 'io/github/knaitoe/theoldesthouse/command/PlaytestCommands.class' in z.namelist()

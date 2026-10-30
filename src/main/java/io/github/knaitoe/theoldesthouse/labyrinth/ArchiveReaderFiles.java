@@ -57,5 +57,5 @@ public final class ArchiveReaderFiles {
         }
         saved.putInt(key,i+1);data.setState(DRAWERS,saved);return i+1>=NAMES.length;
     }
-    @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%5!=3||LabyrinthBuilder.isCarving())return;var o=HouseSavedData.get(s).houseOrigin();var l=s.getLevel(HouseDimensions.OUTSIDE);if(o!=null&&l!=null&&LabyrinthBuilder.isPlaceReady(s,LabyrinthPlace.ZAMPANO_COURTYARD)){var b=LabyrinthPlaces.base(o,LabyrinthPlace.ZAMPANO_COURTYARD);if(repair(l,b))drawers(l,b);}}
+    @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%5!=3||LabyrinthBuilder.isCarving())return;var o=HouseSavedData.get(s).houseOrigin();var l=s.getLevel(HouseDimensions.OUTSIDE);if(o!=null&&l!=null&&LabyrinthBuilder.isPlaceReady(s,LabyrinthPlace.ZAMPANO_COURTYARD)){var b=LabyrinthPlaces.base(o,LabyrinthPlace.ZAMPANO_COURTYARD);if(repair(l,b)&&drawers(l,b))ZampanoDrawers.place(l,b);}}
 }
