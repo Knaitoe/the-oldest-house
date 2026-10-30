@@ -1066,6 +1066,9 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void elkKillingBlowDragsTheReaderIntoThePileAndTheyTearTheirWayOut(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("drag_reader",place);var b=f.base(place);
         var wake=ElkCarcassMap.WAKE.add(b.getX(),b.getY(),b.getZ());
+        // 0.4.173 (run 1338): the drag runs from the ridge to the cave, far from the scene's base; held, so he is still in
+        // the level to be asked about when the blackout lifts on a loaded runner.
+        f.chunks.hold(f.out,new AABB(b.getX()-40,b.getY()+ElkCarcassMap.CAVE_Y-8,b.getZ()-212,b.getX()+76,b.getY()+ElkCarcassMap.SITE_TOP+10,b.getZ()-116));
         // Past the native three seconds of spawn protection, so the blow can land at all.
         h.startSequence().thenIdle(70).thenExecute(()->{elkAshore(f,p);p.setInvulnerable(false);
             var killer=elkKiller(f,p);f.at(p,place,50.5,ElkCarcassMap.SITE_TOP+1,-138.5);killer.moveTo(b.getX()+50.5,b.getY()+ElkCarcassMap.SITE_TOP+1,b.getZ()-140);
@@ -1074,7 +1077,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.assertTrue(p.isAlive()&&p.getHealth()>0&&own.getInt("ElkStage")==ElkHunt.DRAGGED&&ElkDrag.active(p)&&own.getInt("ElkDrags")==1,"his killing blow does not kill: the drag begins: "+own);
             h.assertTrue(p.position().distanceToSqr(wake)<.5,"the body is already where it will wake, under the pile");})
         .thenIdle(ElkDrag.BLACKOUT+100).thenExecute(()->{var killer=elkKiller(f,p);
-            h.assertTrue(killer.phase()==ElkHunt.DRAG,"he is pulling them along");
+            h.assertTrue(killer!=null&&killer.phase()==ElkHunt.DRAG,"he is pulling them along: "+(killer==null?"his body is not in the level":"phase "+killer.phase()));
             var on=ElkCarcassMap.drag(ElkDrag.along(100)+1.6).add(b.getX(),b.getY(),b.getZ());
             h.assertTrue(killer.position().distanceToSqr(on)<4,"he walks the drag's real line, ahead of the reader's head: "+killer.position()+" / "+on);
             var world=LiteraryVignettes.shared(f.data(),place);var camera=world.hasUUID("DragCamera_"+p.getUUID())?f.out.getEntity(world.getUUID("DragCamera_"+p.getUUID())):null;
