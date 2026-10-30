@@ -25,10 +25,13 @@ import org.lwjgl.opengl.GL11;
  * 0.4.173, "Third Floor Girls'": what the bathroom's glass does to what it shows, count by count. The reflection is the
  * reader's own House appearance throughout; only these change, and only in the glass.
  * <ul>
- * <li>First count: the eyes move, one and then the other, and the mouth fades away (the face the owner described: the way
- * a held stare loses a feature and gives it back wrong, never a monster's face).</li>
- * <li>Second count: the mouth comes back wrong, lower and wider, its corners dragged down; the first stall stands a few
- * inches ajar in the glass while the real one is shut.</li>
+ * <li>First count: nothing yet. 0.4.199 (owner: "the changes to the players face ... shouldn't start until the second count at
+ * least and should be much more gradual. like, difficult to discern until the face returns to normal").</li>
+ * <li>Second count: so slowly it is hard to say anything changed, one eye drifts a pixel aside, a fraction at a time, and the
+ * mouth begins to pale; the first stall stands a few inches ajar in the glass while the real one is shut.</li>
+ * <li>Then, through the third count, the other eye drifts, the mouth pales away and comes back wrong, lower and wider, its
+ * far corner dragged down, each as a slow fade. It is only when the face snaps back to the reader's own that the difference
+ * is plain.</li>
  * <li>Third count: the reflection's candle is gone and its arms hang; a second flame rises behind its left ear; a woman
  * stands at its back, chin on its shoulder, fingers on its collarbones, her head tilted back so she looks at the reader.</li>
  * </ul>
@@ -104,26 +107,40 @@ public final class DareReflection implements HouseReadReflection.Hook {
         for(int i:feature){int x=i%8+dx,y=i/8+dy;if(x>=0&&x<8&&y>=0&&y<8)layer[y*8+x]=old[i];}
     }
     private static int blend(int c,int to,float t){return abgr(255,(int)Mth.lerp(t,r(c),r(to)),(int)Mth.lerp(t,g(c),g(to)),(int)Mth.lerp(t,b(c),b(to)));}
-    /** The face at this count and moment, as a key that changes only when a pixel does. */
+    /** Each change fades in over this many steps, so no single frame jumps. */
+    static final int STEPS=8;
+    /** How far through a fade that starts at {@code start} and lasts {@code length} ticks, in steps. */
+    private static int step(float age,float start,float length){return Mth.clamp((int)((age-start)/length*STEPS),0,STEPS);}
+    /**
+     * The face at this count and moment, as a key that changes only when a pixel does: four digits, each in eighths, for the
+     * left eye's drift, the right eye's, the mouth paling and the wrong mouth coming in. The second count lasts about 26
+     * seconds of staring; the third until the reader holds still.
+     */
     static String key(int count,float age){
-        boolean eyeL=count>=2||count==1&&age>=20,eyeR=count>=2||count==1&&age>=100;
-        int mouthState=count==1?(age>=200?2:age>=160?1:0):count==2?(age<60?2:age<160?3:4):count==3?4:0;
-        return (eyeL?"L":"")+(eyeR?"R":"")+mouthState;
+        int eyeL=0,eyeR=0,pale=0,wrong=0;
+        if(count==2){eyeL=step(age,160,280);pale=Math.min(STEPS/2,step(age,300,400));}
+        else if(count==3){eyeL=STEPS;eyeR=step(age,0,160);pale=Math.max(STEPS/2,step(age,-80,160));wrong=step(age,60,200);}
+        return ""+eyeL+eyeR+pale+wrong;
+    }
+    /** A layer part way to another: each pixel's colour and opacity a fraction of the way there. */
+    private static void toward(int[] layer,int[] target,float t){
+        for(int i=0;i<64;i++){int c=layer[i],d=target[i];if(c==d)continue;
+            layer[i]=((int)Mth.lerp(t,a(c),a(d))<<24)|((int)Mth.lerp(t,b(c),b(d))<<16)|((int)Mth.lerp(t,g(c),g(d))<<8)|(int)Mth.lerp(t,r(c),r(d));}
     }
     private static void build(String key){
         var faceBase=base.clone();var faceHat=hat.clone();
-        if(key.contains("L")){int dx=leftEye.stream().allMatch(i->i%8>0)?-1:0;shift(faceBase,leftEye,dx,dx==0?1:0,false);shift(faceHat,leftEye,dx,dx==0?1:0,true);}
-        if(key.contains("R")){int dy=rightEye.stream().allMatch(i->i/8>0)?-1:0;shift(faceBase,rightEye,dy==0?1:0,dy,false);shift(faceHat,rightEye,dy==0?1:0,dy,true);}
-        int mouthState=key.charAt(key.length()-1)-'0';
-        if(mouthState==1)for(int i:mouth){faceBase[i]=blend(faceBase[i],skinTone,.5F);if(a(faceHat[i])>0)faceHat[i]=(faceHat[i]&0xffffff)|0x60000000;}
-        if(mouthState>=2)for(int i:mouth){faceBase[i]=skinTone;faceHat[i]=0;}
-        if(mouthState>=3){
+        float eyeL=(key.charAt(0)-'0')/(float)STEPS,eyeR=(key.charAt(1)-'0')/(float)STEPS,pale=(key.charAt(2)-'0')/(float)STEPS,wrongIn=(key.charAt(3)-'0')/(float)STEPS;
+        // Each eye drifts a pixel by fading from where it was to where it goes, never in one jump.
+        if(eyeL>0){int dx=leftEye.stream().allMatch(i->i%8>0)?-1:0;var b=faceBase.clone();var h=faceHat.clone();shift(b,leftEye,dx,dx==0?1:0,false);shift(h,leftEye,dx,dx==0?1:0,true);toward(faceBase,b,eyeL);toward(faceHat,h,eyeL);}
+        if(eyeR>0){int dy=rightEye.stream().allMatch(i->i/8>0)?-1:0;var b=faceBase.clone();var h=faceHat.clone();shift(b,rightEye,dy==0?1:0,dy,false);shift(h,rightEye,dy==0?1:0,dy,true);toward(faceBase,b,eyeR);toward(faceHat,h,eyeR);}
+        if(pale>0)for(int i:mouth){faceBase[i]=blend(faceBase[i],skinTone,pale);if(a(faceHat[i])>0)faceHat[i]=(faceHat[i]&0xffffff)|((int)(a(faceHat[i])*(1-pale))<<24);}
+        if(wrongIn>0){
             // It comes back a pixel to one side and a pixel too long; then its far corner sags (or, on the lowest row, lifts).
             var back=new ArrayList<Integer>();if(mouth.isEmpty())back.addAll(List.of(mouthRow*8+3,mouthRow*8+4));else back.addAll(mouth);
             int far=back.stream().mapToInt(i->i%8).max().getAsInt(),farRow=back.stream().filter(i->i%8==far).findFirst().get()/8;
             var wrong=new ArrayList<Integer>();for(int i:back){int x=Math.min(7,i%8+1);wrong.add(i/8*8+x);}if(far+2<8)wrong.add(farRow*8+far+2);
-            if(mouthState>=4){int end=wrong.stream().mapToInt(i->i%8).max().getAsInt();int endRow=wrong.stream().filter(i->i%8==end).findFirst().get()/8;wrong.removeIf(i->i%8==end);wrong.add((endRow<7?endRow+1:endRow-1)*8+end);}
-            for(int i:wrong){faceBase[i]=mouthInk;faceHat[i]=0;}
+            {int end=wrong.stream().mapToInt(i->i%8).max().getAsInt();int endRow=wrong.stream().filter(i->i%8==end).findFirst().get()/8;wrong.removeIf(i->i%8==end);wrong.add((endRow<7?endRow+1:endRow-1)*8+end);}
+            for(int i:wrong){faceBase[i]=blend(faceBase[i],mouthInk,wrongIn);faceHat[i]=0;}
         }
         var image=new NativeImage(16,8,true);
         for(int y=0;y<8;y++)for(int x=0;x<8;x++){image.setPixelRGBA(x,y,faceBase[y*8+x]);image.setPixelRGBA(8+x,y,faceHat[y*8+x]);}
