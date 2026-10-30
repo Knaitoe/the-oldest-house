@@ -1,3 +1,5 @@
+October 30 candidate 0.4.197: require ExplorationPassTests.fourPlainHallsAreJustHallwaysWithRealRoutes, the slot pins at 114-117, the thirteen-hall opening pool, and 103+7 architecture views.
+
 October 30 candidate 0.4.196: require the kitchen case's pencil, face and body checks, the writing namespace with the widest drawn line, and the third kitchen proof image (kitchen_drawn).
 
 October 30 candidate 0.4.195: require the house_read namespace (23 cases), including the toned human-skinned reader in aReaderWhoseFaceIsNotHumanWearsTheBodyTheHouseReadInsideTheHouseOnly.

@@ -14,7 +14,7 @@ The owner, on a screenshot of a laundry corner opening off a hall: "Try to reduc
 - **The cause.** Only three halls carry domestic fragments (kitchen, laundry, dining and bedroom corners): the straight, bent and cross halls. But they are among the commonest halls dealt before the stone depth, so about half the halls on the approach bled.
 - **The fix.** Their weights before the stone depth fall from 26, 26 and 12 to 9, 9 and 4. About a quarter of approach halls now bleed. The rest are the alcove, offset and service-landing halls, the junction, the quiet room and the gray corridor, which are just hallways.
 - **Unchanged.** Saved routes keep the halls already dealt to them. The bled-in homes still wait for their ten passes, and they come later now.
-- **Next.** The new plain hallways come in their own change, since they append layout slots.
+- **Since (0.4.197).** Four plain hallways: one with a jog in it, one that forks, one of pillars and one that zigzags. They append layout slots 114 to 117. See docs/PLAIN_HALLS_0_4_197.md.
 
 ## Built since
 

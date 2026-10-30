@@ -14,8 +14,14 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 public final class HallVariations {
     private HallVariations() {}
     public static boolean domestic(LabyrinthPlace p) {
-        return p==LabyrinthPlace.ALCOVE_HALL||p==LabyrinthPlace.OFFSET_HALL||p==LabyrinthPlace.SERVICE_LANDING;
+        return p==LabyrinthPlace.ALCOVE_HALL||p==LabyrinthPlace.OFFSET_HALL||p==LabyrinthPlace.SERVICE_LANDING||plain(p);
     }
+    /** 0.4.197: the four halls that are just hallways. */
+    public static boolean plain(LabyrinthPlace p) {
+        return p==LabyrinthPlace.JOGGED_HALL||p==LabyrinthPlace.FORKED_HALL||p==LabyrinthPlace.PILLAR_HALL||p==LabyrinthPlace.ZIGZAG_HALL;
+    }
+    /** The pillar hall's columns, down the middle of its floor. */
+    static final int[] PILLARS={-9,-15,-21,-27,-33,-39};
     public static boolean added(LabyrinthPlace p) { return domestic(p)||p==LabyrinthPlace.STONE_ARCADE||p==LabyrinthPlace.STONE_BEND||p==LabyrinthPlace.STONE_LANDING; }
     public static Set<BlockPos> floor(LabyrinthPlace p) {
         Set<BlockPos> out=new HashSet<>();
@@ -31,6 +37,20 @@ public final class HallVariations {
             case SERVICE_LANDING -> {
                 LabyrinthHalls.rectangle(out,-1,1,-30,0); LabyrinthHalls.rectangle(out,-8,8,-22,-10);
                 LabyrinthHalls.rectangle(out,-10,-7,-17,-15);
+            }
+            case JOGGED_HALL -> {
+                LabyrinthHalls.rectangle(out,-1,1,-27,0); LabyrinthHalls.rectangle(out,-2,-2,-15,-13);
+                LabyrinthHalls.rectangle(out,-1,3,-31,-27); LabyrinthHalls.rectangle(out,1,3,-55,-28);
+            }
+            case FORKED_HALL -> {
+                LabyrinthHalls.rectangle(out,-1,1,-16,0); LabyrinthHalls.rectangle(out,-11,11,-19,-17);
+                LabyrinthHalls.rectangle(out,-11,-9,-30,-17); LabyrinthHalls.rectangle(out,9,11,-30,-17);
+            }
+            case PILLAR_HALL -> LabyrinthHalls.rectangle(out,-2,2,-45,0);
+            case ZIGZAG_HALL -> {
+                LabyrinthHalls.rectangle(out,-1,1,-13,0); LabyrinthHalls.rectangle(out,-1,9,-15,-13);
+                LabyrinthHalls.rectangle(out,7,9,-28,-13); LabyrinthHalls.rectangle(out,-1,9,-30,-28);
+                LabyrinthHalls.rectangle(out,-1,1,-43,-28);
             }
             case STONE_ARCADE -> {
                 LabyrinthHalls.rectangle(out,-2,2,-39,0);
@@ -100,9 +120,13 @@ public final class HallVariations {
             }
         }
         for(int z=-6;z>p.room().minZ()+4;z-=10) {
-            int x=p==LabyrinthPlace.OFFSET_HALL&&z<-18?4:p==LabyrinthPlace.STONE_BEND&&z<-21?-9:0;
+            int x=p==LabyrinthPlace.OFFSET_HALL&&z<-18?4:p==LabyrinthPlace.STONE_BEND&&z<-21?-9:p==LabyrinthPlace.JOGGED_HALL&&z<-28?2:p==LabyrinthPlace.ZIGZAG_HALL&&z<-15&&z>-28?8:0;
             if(open.contains(new BlockPos(x,0,z)))LabyrinthBuilder.hangLantern(l,b.offset(x,roof,z),false);
         }
+        // 0.4.197: a lamp down each arm of the fork, so neither way is the dark one.
+        if(p==LabyrinthPlace.FORKED_HALL)for(int x:new int[]{-10,10})LabyrinthBuilder.hangLantern(l,b.offset(x,roof,-24),false);
+        // 0.4.197: the pillar hall's columns, each a plain post from floor to ceiling, an aisle either side.
+        if(p==LabyrinthPlace.PILLAR_HALL)for(int z:PILLARS)for(int y=0;y<=roof;y++)set(l,b.offset(0,y,z),Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState());
         if(p==LabyrinthPlace.SERVICE_LANDING||p==LabyrinthPlace.STONE_LANDING) {
             // Seating is supported at the side of a broad landing, with no new supplies.
             // Each bench's back is to its own wall, so it seats people facing into the landing.
