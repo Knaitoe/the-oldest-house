@@ -61,6 +61,8 @@ public final class Journals extends SavedData {
         int tornSerial;
         /** The halls left before a journal lost in a story room is found again; the pages written since the last death, and those soaked by it (PostMortem). */
         int waiting;final java.util.Set<Integer> since=new java.util.HashSet<>(),soaked=new java.util.HashSet<>();
+        /** The lines the House could quote, as written (Quotes); the order they came in; whether the other hand has copied one out; and the page the House's last page went on. */
+        final List<Quotes.Line> lines=new ArrayList<>();long lineOrder;boolean copied;int ended;
         // Not saved: the screen's allowance.
         int tokens=TOKENS; long refilled;
     }
@@ -163,6 +165,8 @@ public final class Journals extends SavedData {
         if(before.begun().isEmpty()&&before.day()==0&&!kept.empty())kept=kept.begunAt(where(p),day(p),HouseDimensions.isHouseDimension(p.level().dimension()));
         if(kept.empty()&&before.begun().isEmpty())b.pages.remove(index);else b.pages.put(index,kept);
         if(!kept.text().equals(before.text()))b.since.add(index);
+        // 0.4.199: the lines the House may one day quote back to this reader, and only to them (Quotes).
+        Quotes.wrote(b,index,before,kept,filtered.getFirst(),placeId(p));
         setDirty();
         // 0.4.199: a full new line written in a quiet hall settles the static the worst rooms leave (Grounding).
         Grounding.wrote(p,before.text(),kept.text());
@@ -228,6 +232,12 @@ public final class Journals extends SavedData {
         LabyrinthPlace place=origin==null||!p.level().dimension().equals(HouseDimensions.INTERIOR)?null:LabyrinthPlaces.placeAt(origin,p.blockPosition());
         return place==null?"somewhere in the House":StaircaseProse.place(place.id());
     }
+    /** The place the reader is writing in, as the House names it inside, or nothing when it has no name for it. */
+    static String placeId(ServerPlayer p){
+        var origin=HouseSavedData.get(p.server).houseOrigin();
+        if(origin==null||!p.level().dimension().equals(HouseDimensions.INTERIOR))return "";
+        var place=LabyrinthPlaces.placeAt(origin,p.blockPosition());return place==null?"":place.id();
+    }
     static int day(ServerPlayer p){return (int)(p.server.overworld().getDayTime()/24000L)+1;}
 
     /** The first journal: left on the doorstep with Will's letter, addressed in the reader's own hand. Empty once one is issued. */
@@ -285,6 +295,8 @@ public final class Journals extends SavedData {
             b.waiting=t.getInt("Waiting");for(int i:t.getIntArray("Since"))b.since.add(i);for(int i:t.getIntArray("Soaked"))b.soaked.add(i);
             b.tornSerial=t.getInt("TornSerial");var torn=t.getCompound("Torn");
             for(String k:torn.getAllKeys()){try{int i=Integer.parseInt(k);if(i>=1&&i<=PAGES)b.torn.put(i,TornPages.Torn.load(torn.getCompound(k)));}catch(NumberFormatException ignored){}}
+            var lines=t.getList("Lines",net.minecraft.nbt.Tag.TAG_COMPOUND);for(int i=0;i<lines.size()&&b.lines.size()<Quotes.KEPT;i++){var l=Quotes.Line.load(lines.getCompound(i));if(l!=null)b.lines.add(l);}
+            b.lineOrder=t.getLong("LineOrder");b.copied=t.getBoolean("Copied");b.ended=t.getInt("Ended");
             data.books.put(id,b);
         }
         data.tornOrder=tag.getLong("TornOrder");
@@ -298,6 +310,8 @@ public final class Journals extends SavedData {
             if(b.tornSerial>0)t.putInt("TornSerial",b.tornSerial);
             if(b.waiting>0)t.putInt("Waiting",b.waiting);if(!b.since.isEmpty())t.putIntArray("Since",b.since.stream().mapToInt(Integer::intValue).toArray());if(!b.soaked.isEmpty())t.putIntArray("Soaked",b.soaked.stream().mapToInt(Integer::intValue).toArray());
             if(!b.torn.isEmpty()){var torn=new CompoundTag();b.torn.forEach((i,page)->torn.put(Integer.toString(i),page.save()));t.put("Torn",torn);}
+            if(!b.lines.isEmpty()){var lines=new net.minecraft.nbt.ListTag();for(var l:b.lines)lines.add(l.save());t.put("Lines",lines);}
+            if(b.lineOrder>0)t.putLong("LineOrder",b.lineOrder);if(b.copied)t.putBoolean("Copied",true);if(b.ended>0)t.putInt("Ended",b.ended);
             all.put(e.getKey().toString(),t);}
         tag.put("Books",all);if(tornOrder>0)tag.putLong("TornOrder",tornOrder);return tag;
     }

@@ -172,6 +172,7 @@ public final class WitnessEnding {
                     &&!pet.getTags().contains(MotherOfStrays.PET)&&player.getUUID().equals(CompanionOrders.owner(pet)))companions.add(pet);
         record.putString("Phase",FinaleProgress.Phase.WITNESSED.name());record.putLong("EpilogueDue",player.server.overworld().getGameTime()+24000);
         FinaleProgress.save(player.server,player.getUUID(),record);
+        io.github.knaitoe.theoldesthouse.journal.Quotes.ending(player.server,player.getUUID());
         FinaleController.releaseClaim(player.server,player.getUUID());
         CompoundTag world=FinaleProgress.world(player.server);world.putBoolean("CellReleased",true);LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         LabyrinthData.get(player.server).clearReturns(player.getUUID());HouseTransitionEvents.cancelPending(player,"the account is complete");

@@ -243,6 +243,12 @@ public final class StaircaseProse {
         String clean = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
         return PLACES.getOrDefault(clean, "a room the House has not named");
     }
+    /** 0.4.199: the page after a leaf that quotes a line the reader wrote in their journal in a place (journal/Quotes). */
+    public static final String QUOTE_MARK = " you wrote:\n\n\"";
+    /** In a straight hall you wrote: "it is longer than it was" */
+    public static String quoted(String placeId, String line) { return "In " + place(placeId) + QUOTE_MARK + line + "\""; }
+    /** Whether the House has a name for this room. */
+    public static boolean named(String id) { return !id.isEmpty() && PLACES.containsKey(id.contains(":") ? id.substring(id.indexOf(':') + 1) : id); }
     public static int longestPlace() { return PLACES.values().stream().mapToInt(String::length).max().orElse(0); }
     /** A fact of a known kind, or nothing when the record holds none of it. */
     public static Optional<Fact> fact(String id, long count, String value) {
@@ -473,6 +479,8 @@ public final class StaircaseProse {
                 var t=new net.minecraft.nbt.CompoundTag();t.putInt("Mood",mood);t.putInt("Body",body);reads.add(new Read(-1,"","","",false,false,"","","",hands,HouseReadProse.drawn(t)));}
             for(var read:reads)for(int leaf=1;leaf<4;leaf++){String own=leaf==1?hands(read):leaf==2?eaves(read):door(read);if(!own.isEmpty())pages.add(new String[]{"II. The hands","III. What happened","IV. The door"}[leaf-1]+"\n\nThere is a thumbprint beside the next line. "+own+"\n\nYou turn the sheet without covering the print.");}
             for(String home:new String[]{"HAVEN","DANGER","RUNAWAY"})pages.add("V. Below\n\n"+ending(voice,home));
+            // 0.4.199: the page quoting the reader's own journal line, with the longest place name and the longest line quoted.
+            pages.add(quoted(PLACES.entrySet().stream().max(Comparator.comparingInt(e->e.getValue().length())).orElseThrow().getKey(),"WWWW ".repeat(19)+"W"));
         }
         return books;
     }

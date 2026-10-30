@@ -26,9 +26,12 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
         static Rubbing read(CompoundTag t){var id=t.getString("Id");return Rubbings.byId(id)==null?null:new Rubbing(id,Mth.clamp(t.getFloat("X"),0,1),Mth.clamp(t.getFloat("Y"),0,1),Mth.wrapDegrees(t.getFloat("Angle")));}
     }
 
-    /** What the other hand did: wrote on the page, struck through one of the reader's words, or answered a line beneath it. */
+    /**
+     * What the other hand did: wrote on the page, struck through one of the reader's words, answered a line beneath it, or
+     * copied out one of the reader's own lines word for word (Quotes, 0.4.199). A copied line is only ever its reader's to see.
+     */
     public enum Mark {
-        WRITTEN, STRUCK, DIRECTION;
+        WRITTEN, STRUCK, DIRECTION, QUOTED;
         public String id(){return name().toLowerCase(Locale.ROOT);}
         public static Mark of(String id){for(var m:values())if(m.id().equals(id))return m;return null;}
     }
@@ -43,7 +46,7 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
         CompoundTag save(){var t=new CompoundTag();t.putString("Mark",mark.id());if(!text.isEmpty())t.putString("Text",text);if(!word.isEmpty()){t.putString("Word",word);t.putInt("Use",use);}t.putFloat("X",x);t.putFloat("Y",y);return t;}
         static Note read(CompoundTag t){
             var mark=Mark.of(t.getString("Mark"));String text=t.getString("Text"),word=t.getString("Word");
-            if(mark==null||text.length()>MAX_RUN||word.length()>32||(mark==Mark.WRITTEN?text.isBlank():word.isBlank()))return null;
+            if(mark==null||text.length()>MAX_RUN||word.length()>32||(mark==Mark.WRITTEN||mark==Mark.QUOTED?text.isBlank():word.isBlank()))return null;
             float x=t.getFloat("X"),y=t.getFloat("Y");if(!Float.isFinite(x)||!Float.isFinite(y))return null;
             return new Note(mark,text,word,Math.max(0,t.getInt("Use")),Mth.clamp(x,0,1),Mth.clamp(y,0,1));
         }
@@ -88,6 +91,8 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
     public JournalPage withWriting(String text,List<Placed> placed){return new JournalPage(text,List.copyOf(placed),begun,day,house,rubbings,notes.stream().filter(n->n.mark()!=Mark.STRUCK||n.anchor(text)>=0).toList());}
     public JournalPage begunAt(String where,int day,boolean house){return new JournalPage(text,placed,where,day,house,rubbings,notes);}
     public JournalPage withRubbing(Rubbing r){var all=new ArrayList<>(rubbings);all.add(r);return new JournalPage(text,placed,begun,day,house,List.copyOf(all),notes);}
+    /** The page as anyone but its writer may see it: without the House's copies of the writer's own lines. */
+    public JournalPage unquoted(){return notes.stream().noneMatch(n->n.mark()==Mark.QUOTED)?this:new JournalPage(text,placed,begun,day,house,rubbings,notes.stream().filter(n->n.mark()!=Mark.QUOTED).toList());}
     public JournalPage withNote(Note n){var all=new ArrayList<>(notes);all.add(n);return new JournalPage(text,placed,begun,day,house,rubbings,List.copyOf(all));}
 
     public CompoundTag save(){

@@ -432,6 +432,8 @@ public final class FinaleController {
         }
         record.putString("Phase",FinaleProgress.Phase.ESCAPED.name());record.putBoolean("Guided",guided);record.putLong("EpilogueDue",player.server.overworld().getGameTime()+24000);
         FinaleProgress.save(player.server,player.getUUID(),record);player.removeEffect(MobEffects.DARKNESS);
+        // 0.4.199: the House's last page, in the reader's own journal: the first line they wrote in the House (Quotes).
+        io.github.knaitoe.theoldesthouse.journal.Quotes.ending(player.server,player.getUUID());
         // Evacuate every resident before disabling the House's origin; no peer can be stranded.
         for(ServerPlayer other:player.server.getPlayerList().getPlayers())if(HouseDimensions.isHouseDimension(other.serverLevel().dimension())){HouseTransitionEvents.cancelPending(other,"the House is collapsing");outside(other,landing);}
         if(!player.serverLevel().dimension().equals(Level.OVERWORLD))outside(player,landing);
@@ -545,6 +547,7 @@ public final class FinaleController {
         ServerLevel overworld=player.server.overworld();Vec3 landing=HouseProxyEntityEvacuation.frontDoorExit(overworld,origin);
         if(landing==null){BlockPos spawn=overworld.getSharedSpawnPos();overworld.getChunkAt(spawn);landing=Vec3.atBottomCenterOf(overworld.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,spawn));}
         record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());FinaleProgress.save(player.server,player.getUUID(),record);imprison(player.server,player.getUUID(),false);
+        io.github.knaitoe.theoldesthouse.journal.Quotes.ending(player.server,player.getUUID());
         ServerLevel level=player.serverLevel();BlockPos door=FinaleArchitecture.cellDoor(origin);
         level.playSound(null,door,SoundEvents.IRON_DOOR_OPEN,SoundSource.BLOCKS,1,.7F);
         io.github.knaitoe.theoldesthouse.network.HousePackets.send(player,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(6,6,10));
@@ -557,7 +560,8 @@ public final class FinaleController {
     private static void releaseAllImprisoned(MinecraftServer server){
         CompoundTag world=FinaleProgress.world(server);boolean changed=false;
         for(String key:new ArrayList<>(world.getCompound(IMPRISONED).getAllKeys())){CompoundTag record=world.getCompound(key);
-            if(FinaleProgress.phase(record)==FinaleProgress.Phase.IMPRISONED){record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());world.put(key,record);changed=true;}}
+            if(FinaleProgress.phase(record)==FinaleProgress.Phase.IMPRISONED){record.putString("Phase",FinaleProgress.Phase.LOCKED_OUT.name());world.put(key,record);changed=true;
+                try{io.github.knaitoe.theoldesthouse.journal.Quotes.ending(server,java.util.UUID.fromString(key));}catch(IllegalArgumentException ignored){}}}
         if(world.contains(IMPRISONED)){world.remove(IMPRISONED);changed=true;}
         if(changed)LabyrinthData.get(server).setState(FinaleProgress.STATE,world);
     }

@@ -104,7 +104,7 @@ public final class StaircaseStory {
         save(p,own);return reconcile(p,own);
     }
     private static HouseWriting.WritingStyle hand(CompoundTag own) { return StaircaseAccount.hand(own.contains("Hand")?own.getString("Hand"):"WILL"); }
-    private static String front(ServerPlayer p,CompoundTag own) { return own.contains("Front")?own.getString("Front"):StaircaseProse.legacyFront(p.getGameProfile().getName()); }
+    private static String front(String name,CompoundTag own) { return own.contains("Front")?own.getString("Front"):StaircaseProse.legacyFront(name); }
     /** The text of one story leaf, as its finder will read it. */
     public static String leaf(CompoundTag own,int index) { var all=own.getList("Pages",Tag.TAG_STRING);return index<all.size()?all.getString(index):""; }
     public static Component leafPage(CompoundTag own,int index) { return HouseWriting.page(hand(own),leaf(own,index)); }
@@ -116,11 +116,59 @@ public final class StaircaseStory {
         for(int i=0;i<=StaircaseFire.REQUIRED;i++)if(leafName(i).equals(name)||StaircaseFire.legacyName(i).equals(name))return true;
         return false;
     }
-    /** The written content of this explorer's binding: its title leaf, then every bound leaf not yet burned. */
+    /**
+     * The written content of this explorer's binding: its title leaf, then every bound leaf not yet burned, each followed by the
+     * line of the reader's own it quotes, if it quotes one (0.4.199).
+     */
     private static WrittenBookContent content(ServerPlayer p,CompoundTag own) {
-        var pages=new ArrayList<String>();pages.add(front(p,own));
-        for(int i=burned(own);i<found(own);i++)pages.add(leaf(own,i));
-        return HouseWriting.book("House of Leaves",p.getGameProfile().getName(),hand(own),pages).get(DataComponents.WRITTEN_BOOK_CONTENT);
+        String name=p.getGameProfile().getName();var quoted=quotes(p,own);
+        var pages=new ArrayList<String>();pages.add(front(name,own));
+        for(int i=burned(own);i<found(own);i++){pages.add(leaf(own,i));var line=quoted.get(i);if(line!=null)pages.add(line);}
+        return HouseWriting.book("House of Leaves",name,hand(own),pages).get(DataComponents.WRITTEN_BOOK_CONTENT);
+    }
+
+    // ------------------------------------------------------------------ 0.4.199: the reader's own words (journal/Quotes)
+
+    /** The chapter that tells of the House itself: IV, the door. */
+    static final int HOUSE_CHAPTER=3;
+    /**
+     * The lines the reader wrote in their journal that their House of Leaves quotes, by the leaf each follows. A chapter that tells
+     * of a place where they wrote quotes one line written there; when no chapter names such a place, the House's own chapter tells
+     * of the place where they first wrote, the same place from then on. At most one to a chapter, and only while the line is still
+     * on its page as they wrote it. A House of Leaves out of its reader's hands shows none of them (unquote).
+     */
+    public static Map<Integer,String> quotes(ServerPlayer p,CompoundTag own) {
+        var lines=io.github.knaitoe.theoldesthouse.journal.Quotes.eligible(p.server,p.getUUID());if(lines.isEmpty())return Map.of();
+        var at=new LinkedHashMap<String,String>();for(var l:lines)if(StaircaseProse.named(l.place()))at.putIfAbsent(l.place(),l.text());
+        if(at.isEmpty())return Map.of();
+        var out=new HashMap<Integer,String>();int leaves=own.getList("Pages",Tag.TAG_STRING).size();
+        for(int i=0;i<=HOUSE_CHAPTER&&i<leaves;i++){String leaf=leaf(own,i);
+            for(var e:at.entrySet())if(leaf.contains(StaircaseProse.place(e.getKey()))){out.put(i,quote(e.getKey(),e.getValue()));break;}}
+        if(out.isEmpty()&&leaves>HOUSE_CHAPTER){
+            String place=own.getString("QuotePlace");
+            if(!at.containsKey(place)){place=at.keySet().iterator().next();own.putString("QuotePlace",place);save(p,own);}
+            out.put(HOUSE_CHAPTER,quote(place,at.get(place)));
+        }
+        return out;
+    }
+    public static String quote(String place,String line) { return StaircaseProse.quoted(place,line); }
+    static boolean isQuote(String page) { return page.startsWith("In ")&&page.contains(StaircaseProse.QUOTE_MARK); }
+    /** A House of Leaves anyone else holds, or that lies on the ground or a lectern, keeps none of its reader's quoted lines. */
+    public static void unquote(ItemStack book) {
+        if(!book.is(Items.WRITTEN_BOOK))return;var data=book.get(DataComponents.CUSTOM_DATA);if(data==null||!data.copyTag().hasUUID("StairReader"))return;
+        var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);if(content==null)return;
+        var kept=content.pages().stream().filter(page->!isQuote(page.raw().getString())).toList();
+        if(kept.size()!=content.pages().size())book.set(DataComponents.WRITTEN_BOOK_CONTENT,new WrittenBookContent(content.title(),content.author(),content.generation(),kept,content.resolved()));
+    }
+    @SubscribeEvent public static void dropped(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e) {
+        if(!e.getLevel().isClientSide()&&e.getEntity() instanceof net.minecraft.world.entity.item.ItemEntity item){var book=item.getItem();if(book.is(Items.WRITTEN_BOOK)){var copy=book.copy();unquote(copy);if(!ItemStack.isSameItemSameComponents(copy,book))item.setItem(copy);}}
+    }
+    /** Read by a reader whose book it is not, or set on a lectern for anyone to read: without the quoted lines. */
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void reading(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem e) {
+        if(e.getEntity() instanceof ServerPlayer p&&foreign(p,e.getItemStack()))unquote(e.getItemStack());
+    }
+    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void lectern(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock e) {
+        if(e.getEntity() instanceof ServerPlayer&&e.getLevel().getBlockState(e.getPos()).is(net.minecraft.world.level.block.Blocks.LECTERN))unquote(e.getItemStack());
     }
     /** Bring a held binding up to date with the record, keeping every unrelated component. */
     private static void bind(ServerPlayer p,CompoundTag own,ItemStack book) {
@@ -187,6 +235,7 @@ public final class StaircaseStory {
         int keep=isCurrent(p,p.getMainHandItem(),own)?inv.selected:isCurrent(p,p.getOffhandItem(),own)?inv.getContainerSize()-1:-1;
         for(int i=0;i<inv.getContainerSize();i++){
             var book=inv.getItem(i);if(book.isEmpty()||!book.is(Items.WRITTEN_BOOK))continue;
+            if(foreign(p,book)){unquote(book);continue;}
             if(!exists(own)&&legacy(p,book)){
                 int leaves=StaircaseFire.leaves(book,p.getUUID());
                 own=snapshot(p,Math.max(StaircaseFire.REQUIRED-leaves,flames(p)),StaircaseFire.REQUIRED);

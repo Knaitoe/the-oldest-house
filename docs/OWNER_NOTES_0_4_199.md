@@ -166,6 +166,14 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - **Never the Mother's.** She never takes it.
   - **Elsewhere.** Outside the House it drops like anything else. With keepInventory it stays in hand, untouched.
 
+## The House quoting the reader (journal step 8)
+- **"yes, the house should quote the player in some carefully chosen instances."** The House now quotes a reader's own journal lines, rarely, exactly, and only to that reader. Canon: [JOURNAL_QUOTES_0_4_199.md](JOURNAL_QUOTES_0_4_199.md).
+  - **In their House of Leaves.** A chapter that tells of a place where they wrote is followed by a page quoting one line written there: *In a straight hall you wrote: "it is longer than it was"*. When no chapter names such a place, the House's own chapter quotes the first place they wrote in.
+  - **The other hand, once.** Once ever, it copies one of their lines word for word onto a later blank page, and adds nothing.
+  - **At an ending.** The House's last page, written in their journal, is the first line they ever wrote in the House.
+  - **What it quotes.** Only the reader's own lines, at least three words long, from pages begun in the House, that the filter left alone. Never a line naming another player, a torn line or a deleted one.
+  - **Who sees it.** Only the reader. A torn page or a House of Leaves in anyone else's hands shows no quote. With the House's read turned off on the server, nobody is quoted.
+
 ## The Goatman's bedside ending and its horns
 - **"The Goatman ending sequence doesn't show the Goatman-kid crawl. When the Goatman jumps up to the player it should be as the Goatman, not in his kid disguise."** The crawl to the bed used to be hidden: the body turned invisible for the whole way. Now it is seen. The child it is wearing goes down on its hands and knees and crawls the aisle to the foot of the bed, low, below the sleeper's eye line (`GoatmanBedtime`, stage 5).
   - At the foot of the bed it comes up as itself, the Goatman, and jumps up in front of the sleeper before the black (stage 6).
