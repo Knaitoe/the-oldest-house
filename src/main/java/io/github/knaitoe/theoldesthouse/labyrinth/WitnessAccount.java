@@ -293,8 +293,12 @@ public final class WitnessAccount {
                     "The weapon is the original. The old man can tell you which.\n\nRead the play at the cell's lectern. Lay the weapon nearby. Crouch and open the bars with empty hands.\n\nLeave the door open."));
         }
         if(epilogue){
+            // 0.4.199: the way up was shorter than the way down (StaircaseAscent), and Will, who measures, noticed.
+            boolean shorter=data.stateEntry(FinaleProgress.STATE,player.toString()).getInt("AscentLifts")>0;
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,
                     "I returned with what I carried.\n\nI left space for what passed me on the stairs. I can say what I did. I cannot say what the House is."));
+            if(shorter)pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,
+                    "I counted the turns going down, and again coming up.\n\nThere were fewer coming up.\n\nI counted twice."));
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.ZAMPANO,
                     "From inside the cell\n\n[A different hand. No signature follows.]\n\nA door opens. Someone stays to listen.\n\n[Below: Who wrote this? No answer.]"));
         }

@@ -79,6 +79,59 @@ public final class StaircaseAccessTests {
     }
     static void run(GameTestHelper h,int coordinate,Consumer<Fixture> test){run(h,coordinate,f->{},test);}
     @AfterBatch(batch="staircase_access") public static void cleanup(ServerLevel level){for(var f:ACTIVE)f.close();ACTIVE.clear();}
+    @AfterBatch(batch="staircase_ascent") public static void ascentCleanup(ServerLevel level){for(var f:ACTIVE)f.close();ACTIVE.clear();}
+    /** The corner landings at one corner of the spiral, from the bottom of the descent up, as feet positions. */
+    static List<BlockPos> cornerLandings(BlockPos origin){
+        var b=FinaleArchitecture.base(origin);var out=new ArrayList<BlockPos>();int last=Integer.MIN_VALUE;
+        for(var at:FinaleArchitecture.staircaseRoute(origin))if(at.getX()-b.getX()==FinaleArchitecture.STAIR_RADIUS&&at.getZ()-b.getZ()==FinaleArchitecture.STAIR_RADIUS&&at.getY()!=last){out.add(at);last=at.getY();}
+        Collections.reverse(out);return out;
+    }
+    /** 0.4.199, the owner: the climb up the great staircase is shorter than the way down. */
+    @GameTest(template="empty",batch="staircase_ascent",timeoutTicks=1200)
+    public static void theClimbBackUpIsShorterThanTheWayDown(GameTestHelper h){
+        var landings=cornerLandings(new BlockPos(517000,0,517000));
+        run(h,517000,f->{
+            var b=f.base;var col=landings.get(0);
+            f.chunks.hold(f.level,new AABB(col.getX()-3,FinaleArchitecture.ARENA,col.getZ()-3,col.getX()+4,FinaleArchitecture.TOP+4,col.getZ()+4));
+            for(var at:landings)for(int dx=-2;dx<=2;dx++)for(int dz=-2;dz<=2;dz++){f.put(f.level,at.offset(dx,-1,dz),Blocks.STONE.defaultBlockState());for(int y=0;y<3;y++)f.put(f.level,at.offset(dx,y,dz),Blocks.AIR.defaultBlockState());}
+        },f->{
+            var server=f.level.getServer();var p=f.player(h,"climber");var peer=f.player(h,"beside");var watcher=f.player(h,"watcher");
+            for(var q:List.of(p,peer))FinaleProgress.phase(server,q.getUUID(),FinaleProgress.Phase.HOMEWARD);
+            h.assertTrue(landings.get(1).getY()-landings.get(0).getY()==StaircaseAscent.TURN,"the spiral's corner landings are one turn of seventy blocks apart");
+            var at=landings.get(2);
+            java.util.function.BiConsumer<ServerPlayer,BlockPos> stand=(q,to)->{q.teleportTo(f.level,to.getX()+.5,to.getY(),to.getZ()+.5,0,0);q.setOnGround(true);};
+            // Going down never carries anyone.
+            stand.accept(p,landings.get(4));StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(3));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(3)),"a turn walked down is walked");
+            // A whole turn climbed, from the corner to the same corner a turn up, carries the reader up two more.
+            stand.accept(p,at);StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(3));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(5)),"a turn climbed rises three, to the same landing: at "+p.blockPosition()+", expected "+landings.get(5));
+            h.assertTrue(FinaleProgress.player(server,p.getUUID()).getInt("AscentLifts")==1,"the climb remembers it was carried");
+            // Climbing on from there counts from the landing they were carried to.
+            stand.accept(p,landings.get(6));h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(8)),"the next turn climbed carries again");
+            // Two readers climbing side by side are carried together.
+            p.getPersistentData().remove("StairAscent199");
+            stand.accept(p,landings.get(2));stand.accept(peer,landings.get(2).east());StaircaseAscent.step(p,f.origin);StaircaseAscent.step(peer,f.origin);
+            stand.accept(p,landings.get(3));stand.accept(peer,landings.get(3).east());
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(5))&&peer.blockPosition().equals(landings.get(5).east()),"a party climbing together is carried together");
+            // Anyone else who could see, a spectator included, keeps the reader walking.
+            p.getPersistentData().remove("StairAscent199");watcher.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+            stand.accept(peer,landings.get(0));stand.accept(p,landings.get(2));StaircaseAscent.step(p,f.origin);
+            stand.accept(watcher,landings.get(3).north(3));stand.accept(p,landings.get(3));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(3)),"a watched climb is walked");
+            stand.accept(watcher,landings.get(0).below(40));
+            // The top turns, where the leaves and the hearths are, are always walked.
+            p.getPersistentData().remove("StairAscent199");int top=landings.size()-1;
+            stand.accept(p,landings.get(top-2));StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(top-1));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(top-1)),"the last turns below the top are walked");
+            // Will, who measures, writes it down.
+            var book=WitnessAccount.book(f.data(),p.getUUID(),"climber",true);
+            var text=book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);
+            h.assertTrue(text.contains("There were fewer coming up."),"the completed account says the way up was shorter");
+            var plain=WitnessAccount.book(f.data(),watcher.getUUID(),"watcher",true).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);
+            h.assertTrue(!plain.contains("fewer coming up"),"a reader never carried is not told so");
+        });
+    }
 
     @GameTest(template="empty",batch="staircase_depth_cache",timeoutTicks=40)
     public static void firstVisitDepthChecksKeepTheLiveStaircaseRouteCached(GameTestHelper h){
