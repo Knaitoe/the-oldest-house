@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 53;
+    public static final int VERSION = 54;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -150,7 +150,8 @@ public final class LabyrinthBuilder {
             case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
             case DEEP_MAZE -> LabyrinthPacing.DEEP_DEPTH;
             case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING -> LabyrinthPacing.STONE_DEPTH;
-            case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL -> 0;
+            // 0.4.199: the first puzzle room stands with the halls, ready before anyone can be offered it (BorrowedLight.weight paces it).
+            case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT -> 0;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
             default -> LabyrinthPacing.STORY_DEPTH;
@@ -257,6 +258,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 51 && place == LabyrinthPlace.DARE_IN_THE_DARK)
                     || (data.builtVersion() < 52 && HallVariations.plain(place))
                     || (data.builtVersion() < 53 && (place == LabyrinthPlace.VAULTED_HALL || place == LabyrinthPlace.CRUMBLED_HALL))
+                    || (data.builtVersion() < 54 && place == LabyrinthPlace.BORROWED_LIGHT)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -646,6 +648,7 @@ public final class LabyrinthBuilder {
             case GRAY_CORRIDOR -> buildCorridor(level, base);
             case STRAIGHT_HALL, BENT_HALL, CROSS_HALL, QUIET_ROOM, ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL -> LabyrinthHalls.build(level, base, place);
             case FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE -> LabyrinthMaze.build(level, base, place, LabyrinthMaze.layout(server, place));
+            case BORROWED_LIGHT -> BorrowedLight.build(level, base);
             case FLOORBOARDS -> TellTaleFloorboards.build(level, base, !data.isCompleted(place.id()));
             case RED_ROOM -> RedRoom.build(server, level, base);
             case HIDE_AND_CLAP -> HideAndClap.build(server, level, base);

@@ -1,5 +1,7 @@
 October 30 candidate 0.4.199: two more plain halls, a vaulted hall with a fifteen-block ceiling and a crumbled hall crossed on the boards left over a shallow cellar. Canon: docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md.
 
+October 30 candidate 0.4.199, the first puzzle room: Borrowed Light, a dressing room where a lamp's beam is turned by a mirror on a track onto a brass sun to open the far door. Everything is in view first, every action answers, nothing counts down, hurts or is used up, and a solved room stays solved. It comes after a resolved story and some wandering. Layout 54, protocol 103. Canon: docs/BORROWED_LIGHT_0_4_199.md.
+
 October 30 candidate 0.4.198: four more keepsakes with effects (Zampanò's leaves, the vulture photograph, the Borrasca compass and patch), each written into its line and, for the patch, the account. Canon: docs/KEEPSAKES_0_4_198.md.
 
 October 30 candidate 0.4.197: four plain halls (jogged, forked, pillared, zigzag) at slots 114-117, layout 52, dealt on the approach before stone; about one approach hall in six now has a room bled in. Canon: docs/PLAIN_HALLS_0_4_197.md.

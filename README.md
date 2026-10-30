@@ -1,6 +1,6 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.199** adds two more hallways: one whose ceiling is far too high, its lamps hung low on long chains, and one whose floor has fallen into a shallow cellar, crossed by jumping from what is left of the boards. See [docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md](docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md).
+Development candidate **0.4.199** adds two more hallways: one whose ceiling is far too high, its lamps hung low on long chains, and one whose floor has fallen into a shallow cellar, crossed by jumping from what is left of the boards. See [docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md](docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md). It also has the first puzzle room. A dim dressing room with a stage lamp behind a shutter, a mirror on a scraped track and a cold brass sun beside a door with no handle. Lift the catch, turn the glass and slide it along the track until the beam lies on the sun. Nothing counts down or runs out, and once the room is solved it stays solved. See [docs/BORROWED_LIGHT_0_4_199.md](docs/BORROWED_LIGHT_0_4_199.md).
 
 0.4.198 gives four more keepsakes something to do. Zampanò's leaves show the door back in a plain hall. The vulture photograph, held still, keeps far monsters from fixing on you. Her compass points to where you last fell. Her name patch keeps what was in your hand when you die away from the House, once a day. See [docs/KEEPSAKES_0_4_198.md](docs/KEEPSAKES_0_4_198.md).
 

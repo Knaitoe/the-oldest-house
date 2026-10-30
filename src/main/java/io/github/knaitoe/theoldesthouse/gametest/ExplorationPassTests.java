@@ -320,6 +320,85 @@ public final class ExplorationPassTests {
                 h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"nothing is counted");
             }).thenSucceed();
     }
+    private static LiteraryTests.Fixture borrowedLight;
+    @AfterBatch(batch="borrowed_light") public static void borrowedLightDone(ServerLevel l){if(borrowedLight!=null){borrowedLight.close();borrowedLight=null;}}
+    /** 0.4.199, the first puzzle room: everything in view, every action answered, nothing used up, and once solved, solved. */
+    @GameTest(template="empty",batch="borrowed_light",timeoutTicks=1200)
+    public static void borrowedLightIsSolvedByLayingTheLampsBeamOnTheSun(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);borrowedLight=f;var place=LabyrinthPlace.BORROWED_LIGHT;var b=f.base(place);var l=f.in;
+        var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(l,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));
+        var p=NativeTestPlayers.survival(h,"borrowed_light_reader");f.players.add(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room is resident"))
+            .thenExecute(()->{
+                h.assertTrue(!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
+                BorrowedLight.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-4.5,180,0);
+                var sun=BorrowedLight.sun(l.getSeed());var mirrorAt=b.offset(0,BorrowedLight.MIRROR_Y,BorrowedLight.TRACK_Z);
+                java.util.function.Function<BlockPos,net.minecraft.world.level.block.state.BlockState> at=rel->l.getBlockState(b.offset(rel));
+                // Before anything is touched, everything is in view: the lamp behind its shutter, the mirror on its track, the cold sun.
+                h.assertTrue(BorrowedLightBlock.is(at.apply(BorrowedLight.LAMP),BorrowedLightBlock.Kind.LAMP)&&!at.apply(BorrowedLight.SHUTTER).getValue(BorrowedLightBlock.OPEN),"the lamp is lit behind a shut shutter");
+                h.assertTrue(BorrowedLightBlock.is(l.getBlockState(mirrorAt),BorrowedLightBlock.Kind.MIRROR)&&!l.getBlockState(mirrorAt).getValue(BorrowedLightBlock.TURNED),"the mirror stands on the track between its stops");
+                int stops=0;for(int x=BorrowedLight.TRACK_WEST;x<=BorrowedLight.TRACK_EAST;x++){var t=at.apply(new BlockPos(x,-1,BorrowedLight.TRACK_Z));h.assertTrue(BorrowedLightBlock.is(t,BorrowedLightBlock.Kind.TRACK),"the track runs the width of the room: "+x);if(t.getValue(BorrowedLightBlock.OPEN))stops++;}
+                h.assertTrue(stops==BorrowedLight.STOPS.length,"three deeper scrapes mark the stops");
+                h.assertTrue(Math.abs(sun.getX())==3&&BorrowedLightBlock.is(at.apply(sun),BorrowedLightBlock.Kind.PLATE)&&!at.apply(sun).getValue(BorrowedLightBlock.OPEN)&&BorrowedLightBlock.light(at.apply(sun))==0,"a cold brass sun beside the far door");
+                var lower=b.offset(BorrowedLight.farDoor());var far=f.data().door(place.id()+"/far");
+                h.assertTrue(l.getBlockState(lower).is(Blocks.IRON_DOOR)&&!l.getBlockState(lower).getValue(DoorBlock.OPEN)&&far!=null,"the far door is shut and has no handle");
+                h.assertTrue(BorrowedLight.holds(p,far)&&!BorrowedLight.holds(p,f.data().door(place.entryDoorId())),"the far door refuses, and the way back never does");
+                h.assertTrue(BorrowedLight.beam(l,b).path().isEmpty(),"no beam behind the shutter");
+                // Lifting the catch, by the reader's own hand: the beam comes out and stops at the mirror's edge.
+                var shutter=b.offset(BorrowedLight.SHUTTER);var native_=l.getBlockState(shutter).useWithoutItem(l,p,new BlockHitResult(shutter.getCenter(),Direction.EAST,shutter,false));
+                h.assertTrue(native_.consumesAction()&&l.getBlockState(shutter).getValue(BorrowedLightBlock.OPEN),"the catch lifts and the shutter latches open: "+native_);
+                var t=BorrowedLight.beam(l,b);h.assertTrue(t.path().size()==2&&t.path().get(1).equals(mirrorAt.above())&&!t.lit(),"the beam crosses to the mirror and stops at its edge: "+t.path());
+                for(int x=1;x<=4;x++)h.assertTrue(l.getBlockState(b.offset(x,BorrowedLight.BEAM_Y,BorrowedLight.TRACK_Z)).is(Blocks.LIGHT),"the beam lights the air it crosses: "+x);
+                h.assertTrue(l.getBlockEntity(b.offset(BorrowedLight.LAMP)) instanceof BorrowedLightBlock.Beam beam&&beam.points().equals(t.path()),"the lamp carries the beam for the renderer");
+                // A hand on the glass turns it an eighth: the beam goes to the far wall, to the door, not the sun.
+                h.assertTrue(BorrowedLight.use(p,mirrorAt,l.getBlockState(mirrorAt),.9),"the glass answers a hand");
+                t=BorrowedLight.beam(l,b);h.assertTrue(l.getBlockState(mirrorAt).getValue(BorrowedLightBlock.TURNED)&&t.path().size()==3&&t.path().get(2).getZ()==b.getZ()-22&&t.path().get(2).getX()==b.getX()&&!t.lit(),"turned, the glass sends the beam to the far door, beside the sun: "+t.path());
+                // A kick at its base slides it along the track, away from the reader, to the next stop: under the sun.
+                int toward=Integer.signum(sun.getX());p.teleportTo(l,mirrorAt.getX()+.5-toward*1.5,b.getY(),mirrorAt.getZ()+.5,toward>0?-90:90,20);
+                h.assertTrue(BorrowedLight.use(p,mirrorAt,l.getBlockState(mirrorAt),.2),"the base answers a kick");
+                var moved=b.offset(sun.getX(),BorrowedLight.MIRROR_Y,BorrowedLight.TRACK_Z);
+                h.assertTrue(l.getBlockState(mirrorAt).isAir()&&BorrowedLightBlock.is(l.getBlockState(moved),BorrowedLightBlock.Kind.MIRROR)&&l.getBlockState(moved).getValue(BorrowedLightBlock.TURNED),"it slides, still turned, to the stop under the sun");
+                t=BorrowedLight.beam(l,b);h.assertTrue(t.lit()&&t.path().get(t.path().size()-1).equals(b.offset(sun)),"the beam lies on the sun: "+t.path());
+                h.assertTrue(at.apply(sun).getValue(BorrowedLightBlock.OPEN)&&BorrowedLightBlock.light(at.apply(sun))>0,"the sun is lit and holds the light");
+                h.assertTrue(BorrowedLight.solved(l)&&l.getBlockState(lower).getValue(DoorBlock.OPEN)&&!BorrowedLight.holds(p,far),"the door gives, and the far door lets the reader on");
+                h.assertTrue(BorrowedLight.use(p,b.offset(sun),at.apply(sun),.5),"the sun answers a hand");
+                // Kicked again, at the end of the track, it says so and stays.
+                p.teleportTo(l,moved.getX()+.5-toward*1.5,b.getY(),moved.getZ()+.5,0,20);BorrowedLight.use(p,moved,l.getBlockState(moved),.2);
+                h.assertTrue(BorrowedLightBlock.is(l.getBlockState(moved),BorrowedLightBlock.Kind.MIRROR),"at the end of its track it stays");
+                // Solved stays solved: through a reload and a rebuild, the beam is laid on the sun as it was left.
+                f.reload();h.assertTrue(BorrowedLight.solved(l),"the room keeps that it was solved");
+                BorrowedLight.build(l,b);t=BorrowedLight.trace(l,b);
+                h.assertTrue(t.lit()&&at.apply(BorrowedLight.SHUTTER).getValue(BorrowedLightBlock.OPEN)&&l.getBlockState(lower).getValue(DoorBlock.OPEN)&&at.apply(sun).getValue(BorrowedLightBlock.OPEN),"rebuilt, it stands as it was left: shutter open, beam on the sun, door open");
+                h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getInventory().isEmpty(),"nothing hurt the reader and nothing was used up");
+                h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"nothing is counted toward the Witness");
+            }).thenSucceed();
+    }
+    /** 0.4.199: the puzzle room's rhythm: never early, never in the stone, and offered after a story and some wandering. */
+    @GameTest(template="empty")
+    public static void borrowedLightComesAfterAStoryAndSomeWandering(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);
+        try{
+            var p=NativeTestPlayers.survival(h,"borrowed_light_pacing");f.players.add(p);var id=p.getUUID();var data=f.data();var place=LabyrinthPlace.BORROWED_LIGHT;
+            java.util.function.IntUnaryOperator weight=depth->LabyrinthDealer.grayWeight(data,id,place,depth);
+            Runnable story=()->{var all=data.state(WitnessAccount.STATE);var own=all.getCompound(id.toString());var stories=own.getCompound("Stories");
+                for(var s:WitnessAccount.Story.values())if(!stories.contains(s.id)){stories.putString(s.id,"test");break;}
+                own.put("Stories",stories);all.put(id.toString(),own);data.setState(WitnessAccount.STATE,all);};
+            h.assertTrue(LabyrinthDealer.grayWeight(place,5)==0,"it is never dealt by depth alone");
+            h.assertTrue(weight.applyAsInt(5)==0,"not before the reader has resolved a story");
+            story.run();
+            h.assertTrue(weight.applyAsInt(2)==0&&weight.applyAsInt(LabyrinthPacing.STONE_DEPTH)==0,"never in the first crossings, never in the stone");
+            h.assertTrue(weight.applyAsInt(3)>0,"after a story, a few halls in, it is likely");
+            BorrowedLight.arrived(p);
+            h.assertTrue(weight.applyAsInt(6)==0,"once seen, not again until another story");
+            story.run();
+            h.assertTrue(weight.applyAsInt(2)==0&&weight.applyAsInt(3)>0,"after another story and three more halls past where it was seen, it comes back unsolved");
+            var state=data.state(BorrowedLight.STATE);state.putBoolean("Solved",true);data.setState(BorrowedLight.STATE,state);
+            BorrowedLight.arrived(p);
+            h.assertTrue(weight.applyAsInt(5)==0&&weight.applyAsInt(6)==1,"solved, it is only an occasional pleasant room on the way, six halls apart");
+            h.succeed();
+        }finally{f.close();}
+    }
     @GameTest(template="empty")
     public static void theVaultedHallAndTheCrumbledHallAreHallwaysToCrossNotRooms(GameTestHelper h)throws Exception {
         for(var hall:List.of(LabyrinthPlace.VAULTED_HALL,LabyrinthPlace.CRUMBLED_HALL)){

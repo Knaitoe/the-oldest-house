@@ -346,6 +346,13 @@ public enum LabyrinthPlace {
     CRUMBLED_HALL("crumbled_hall", Kind.GRAY, 119, new BoundingBox(-3,-5,-39,3,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(0,0,-39),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.199, the first puzzle room (BorrowedLight): a dim dressing room whose far door has no handle until a lamp's beam,
+     * turned by a dressing mirror on a scraped track, is laid on the brass sun beside it. It needs a sixteenth column.
+     */
+    BORROWED_LIGHT("borrowed_light", Kind.GRAY, 120, new BoundingBox(-7,-1,-22,7,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-22),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

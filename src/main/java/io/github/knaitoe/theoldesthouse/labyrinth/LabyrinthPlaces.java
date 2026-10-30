@@ -42,7 +42,8 @@ public final class LabyrinthPlaces {
     // Slot 32 starts a fifth column at low/common manor heights; older slots never move.
     // Slots 96–97 require column twelve at common house heights. Earlier columns and layers never move.
     // 0.4.168's kitchen (slot 112) needs a fifteenth column at the lowest supported manor heights.
-    private static final int MAX_COLUMNS = 15;
+    // 0.4.199's first puzzle room (slot 120) needs a sixteenth at common ones; earlier slots never move.
+    private static final int MAX_COLUMNS = 16;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 

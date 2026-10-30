@@ -218,7 +218,7 @@ public final class StaircaseProse {
             {"explorer_camp","the explorers' camp"},{"mother_of_strays","the Mother's den"},{"folded_maze","the folded maze"},
             {"deep_maze","the deep maze"},{"abyss_maze","the lowest maze"},{"straight_hall","a straight hall"},{"bent_hall","a bent hall"},
             {"alcove_hall","a hall with alcoves"},{"offset_hall","a hall that steps aside"},{"service_landing","a service landing"},
-            {"jogged_hall","a hall with a jog in it"},{"forked_hall","a hall that forks"},{"pillar_hall","a hall of pillars"},{"zigzag_hall","a hall that zigzags"},{"vaulted_hall","a hall with a ceiling far too high"},{"crumbled_hall","a hall whose floor had fallen in"},
+            {"jogged_hall","a hall with a jog in it"},{"forked_hall","a hall that forks"},{"pillar_hall","a hall of pillars"},{"zigzag_hall","a hall that zigzags"},{"vaulted_hall","a hall with a ceiling far too high"},{"crumbled_hall","a hall whose floor had fallen in"},{"borrowed_light","a dressing room with a lamp and a mirror"},
             {"cross_hall","a crossing hall"},{"quiet_room","the quiet room"},{"drowned_town","the drowned town"},
             {"preserved_cave","the cave under the lake"},{"shallows","the shallows"},{"phone_canoe","the canoe"},
             {"goatman","the door in the woods"},{"ted_caver","the narrow cave"},{"zampano_courtyard","the blind man's courtyard"},

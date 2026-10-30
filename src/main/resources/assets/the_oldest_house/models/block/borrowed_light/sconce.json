@@ -1,0 +1,75 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/borrowed_light/brass",
+    "g": "the_oldest_house:block/borrowed_light/shade",
+    "particle": "the_oldest_house:block/borrowed_light/brass"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        4,
+        14
+      ],
+      "to": [
+        9,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#b"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        7,
+        11
+      ],
+      "to": [
+        11,
+        12,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    }
+  ]
+}
