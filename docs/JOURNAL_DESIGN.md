@@ -2,7 +2,7 @@
 
 The owner wants players to keep journals and writings of their own: "to not just draft their own house of leaves, but to create their own wall of mad writings like zampano's." They proposed five ideas and dropped the first. On the other four, the owner's answer was: "I think the journal might be worth developing as a custom sub system. I especially like the idea of a damaged book returning on death. The custom sub system fixes worrying about signing the book too."
 
-This document is the plan for that subsystem. Nothing here is built yet.
+This document is the plan for that subsystem. Nothing here is built yet. Zampanò's courtyard shares its page renderer (below).
 
 ## Agreed
 
@@ -64,6 +64,41 @@ Both are easy to change.
 
   Text stays legible at every stage.
 - **No instructions on screen.** There is only the book.
+
+### One page renderer: the journal and Zampanò's courtyard
+
+The owner's follow-up: "You might be able to use the same journal system to help in zampano's courtyard. It should allow for the sort of spiraling and cascading text featured in the actual house of leaves book. The ergodic style?"
+
+The journal's page is built as a general page renderer, not a book of plain lines. A page is a list of placed pieces:
+
+- **Flowing text:** the reader's ordinary writing, wrapped in lines.
+- **Placed text runs.** Each run has a font, a position, a scale, a colour, struck or not, and one of these shapes:
+  - **a line at any angle**, including upside down;
+  - **mirrored**, readable only in a mirror;
+  - **a spiral** winding in or out from a point;
+  - **a cascade**: one word or a few letters to a line, falling down the page as on the book's stair pages;
+  - **columns** running side by side, or one column running sideways up the margin;
+  - **a boxed window** of text inside the page, as in the labyrinth chapter.
+- **Images:** rubbings and stains.
+- **Marks:** crossings-out and margin hands.
+
+The word "house" keeps the mod's existing blue (`HouseText.INK_BLUE`), as it already does in books.
+
+**Two uses of the one renderer:**
+
+1. **Zampanò's courtyard.** The filing drawers open onto the same screen showing authored pages in these shapes:
+   - the drawers are textured and can be opened;
+   - pages are pulled from them as from the book;
+   - a page's text spirals, cascades, runs in columns and boxes, or turns upside down, so the reader turns the page, tilts it or reads it backwards.
+
+   The text is written for the courtyard in Zampanò's manner, alongside the novel finds the mod already ships. It quotes nothing new from the book.
+2. **The reader's own pages.** After typing a line, the reader can:
+   - drag it into the margin;
+   - turn it at an angle or upside down;
+   - set it as a spiral or a cascade;
+   - mirror it.
+
+   That is the owner's "own wall of mad writings": a page can become as tangled as Zampanò's. Placed lines stay the reader's own text. The co-author still only adds.
 
 ### Network
 
@@ -159,39 +194,50 @@ The journal is exempt from the Mother's custody.
 
 Each step is its own version, with its own tests and proofs.
 
-1. **The journal itself.** Item, saved data, screen, payloads, the doorstep parcel and the loss-and-return rule. Tests:
+1. **The journal itself and the page renderer.**
+   - Item, saved data, screen, payloads, the doorstep parcel and the loss-and-return rule.
+   - The renderer with every shape: lines at any angle, mirrored, spiral, cascade, columns, boxed window.
+   - The reader's own placed lines.
+
+   Tests:
    - owner binding and inert old issues;
-   - edit validation (length, rate, owner, filter);
+   - edit validation (length, rate, owner, filter, placed-line bounds);
    - saving and reloading;
    - a destroyed journal coming back.
 
-   A client proof renders the screen: empty, written, and every damage stage.
-2. **Rubbings.** The registry, the first art, once per object per reader. Tests cover each listed object and repeat tries.
-3. **The co-author.** Tests:
+   A client proof renders the screen: empty, written, each shape, and every damage stage.
+2. **Zampanò's courtyard on the same renderer.** Textured filing drawers that open, pages pulled from them, and authored ergodic pages in every shape. Tests:
+   - the drawers open and close;
+   - each reader's pulled pages are their own;
+   - nothing is taken from the courtyard's finite originals.
+
+   A client proof renders each courtyard page.
+3. **Rubbings.** The registry, the first art, once per object per reader. Tests cover each listed object and repeat tries.
+4. **The co-author.** Tests:
    - each trigger;
    - the once-a-day cap;
    - only in-House pages;
    - never a page that is open;
    - text never removed;
    - a crossed-out word vanishing with the word.
-4. **Torn pages and pinning.** Tests:
+5. **Torn pages and pinning.** Tests:
    - the limits and the oldest coming back;
    - taking back;
    - the filter;
    - the manor wall having no limit.
-5. **Grounding.** Tests:
+6. **Grounding.** Tests:
    - the static on a listed ending;
    - the static fading by itself;
    - a full line in an ordinary hall fading it;
    - a line in a vignette not fading it;
    - the screen-effects scale at zero drawing nothing.
-6. **The post-mortem journal.** Tests:
+7. **The post-mortem journal.** Tests:
    - exemption from custody;
    - lying where the reader fell in a hall;
    - three arrivals later from a vignette;
    - damage stages;
    - keepInventory;
    - nothing lost.
-7. **Quoting in the House of Leaves**, only if the owner agrees.
+8. **Quoting in the House of Leaves**, only if the owner agrees.
 
 Each step adds payloads or items, so each bumps the protocol. The journal adds no Witness source: 55 sources / 42 required / two kinds / three endings stay.
