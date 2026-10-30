@@ -14,8 +14,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 
 /**
- * Native proof of the journal screen: the cover and a written page, then a spread with every shape (a turned line, a
- * spiral, a cascade, a column, a box, a mirrored line) dog-eared, then the same spread torn and tide-marked. The second
+ * Native proof of the journal screen: the cover and a written page, then a spread with every shape the House can set on a
+ * page (a turned line, a spiral, a cascade, a column, a box, a mirrored line) dog-eared, then the same spread torn and
+ * tide-marked. The second
  * view must carry the blue House word and the red Minotaur, because a journal page is literature. The fourth is a spread with
  * two pencil rubbings and their lines, written beside; then the other hand's ink in its own lettering. Then Zampanò's courtyard
  * pages on the same renderer: each of the nine folders (one with a leaf already taken), and three leaves lifted out: one
@@ -33,7 +34,7 @@ public final class JournalVisualProof {
         var mc=Minecraft.getInstance();
         if(state>=JOURNAL){int c=state-JOURNAL;
             mc.setScreen(c<FOLDERS?ZampanoScreen.proof(c,-1,TAKEN,0,false):switch(c-FOLDERS){case 0->ZampanoScreen.proof(2,5,0,0,true);case 1->ZampanoScreen.proof(3,7,0,2,false);default->ZampanoScreen.proof(7,15,0,1,false);});return;}
-        mc.setScreen(switch(state){case 0->JournalScreen.proof(sample(0),0,-1,-1);case 1->JournalScreen.proof(sample(2),1,0,1);case 2->JournalScreen.proof(sample(4),1,-1,-1);case 3->JournalScreen.proof(sample(1),2,-1,-1);default->JournalScreen.proof(sample(1),3,-1,-1);});
+        mc.setScreen(switch(state){case 0->JournalScreen.proof(sample(0),0);case 1->JournalScreen.proof(sample(2),1);case 2->JournalScreen.proof(sample(4),1);case 3->JournalScreen.proof(sample(1),2);default->JournalScreen.proof(sample(1),3);});
     }
     static CompoundTag run(String text,String shape,float x,float y,float angle,float size,boolean mirrored){var t=new CompoundTag();t.putString("Text",text);t.putString("Shape",shape);t.putFloat("X",x);t.putFloat("Y",y);t.putFloat("Angle",angle);t.putFloat("Size",size);if(mirrored)t.putBoolean("Mirrored",true);return t;}
     static CompoundTag page(String text,String begun,int day,CompoundTag... runs){var t=new CompoundTag();t.putString("Text",text);var list=new ListTag();for(var r:runs)list.add(r);t.put("Placed",list);t.putString("Begun",begun);t.putInt("Day",day);t.putBoolean("House",true);return t;}

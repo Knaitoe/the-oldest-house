@@ -8,6 +8,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.*;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -107,6 +109,8 @@ public final class HouseReadKitchen {
         // The counter along the back wall, tiled above, with the sink under the window and the radio beside it.
         for(int x=-5;x<=1;x++)if(x!=-2)put(l,b,new BlockPos(x,0,-11),HouseReadRegistry.COUNTER.get().defaultBlockState());
         box(l,b,-6,1,-12,2,1,-12,HouseReadRegistry.TILE.get());fit(l,b,SINK_AT,SINK,Direction.SOUTH);fit(l,b,RADIO_AT,RADIO,Direction.SOUTH);fit(l,b,CLOCK_AT,WALL_CLOCK,Direction.SOUTH);
+        // 0.4.185: the clock's hands move; this one says a little after four whenever it is first seen (client ClockHands).
+        if(l.getBlockEntity(b.offset(CLOCK_AT)) instanceof HouseReadPropBlock.Fitting clock){var t=new CompoundTag();t.putString("Clock",CLOCK_AFTER_FOUR);clock.setRead(t);}
         box(l,b,-3,2,-12,-1,3,-12,HouseReadRegistry.WINDOW.get());
         // Through the window: a yard in the afternoon, a fence and the sky going gold.
         box(l,b,-6,-1,-16,1,-1,-13,Blocks.GRASS_BLOCK.defaultBlockState());box(l,b,-6,-2,-16,1,-2,-13,Blocks.DIRT.defaultBlockState());
@@ -136,6 +140,21 @@ public final class HouseReadKitchen {
     private static void save(ServerPlayer p,CompoundTag visit){var own=HouseReadSites.state(p.server,p.getUUID());own.put(KITCHEN.key(),visit);HouseReadSites.save(p.server,p.getUUID(),own);}
     private static CompoundTag seen(ServerPlayer p){return HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(KITCHEN.key());}
     private static HouseReadPropBlock.Fitting fitting(ServerPlayer p,BlockPos at){return p.serverLevel().getBlockEntity(at) instanceof HouseReadPropBlock.Fitting f?f:null;}
+    /**
+     * 0.4.185 (owner: "ensure players are child height too for the crayon vignette"): at the kitchen table the reader is small
+     * again, a child's height with the eyes just over the table top and the fridge door above them. Transient, so it is never
+     * saved; gone the moment they leave the kitchen, log out or are no longer a living reader.
+     */
+    static final net.minecraft.resources.ResourceLocation SMALL=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(io.github.knaitoe.theoldesthouse.TheOldestHouse.MOD_ID,"kitchen_child_scale");
+    public static final double SMALL_BY=-.3;
+    static void small(ServerPlayer p,boolean on){
+        var a=p.getAttribute(Attributes.SCALE);if(a==null)return;
+        if(on&&!a.hasModifier(SMALL)){a.addTransientModifier(new AttributeModifier(SMALL,SMALL_BY,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));p.refreshDimensions();}
+        else if(!on&&a.hasModifier(SMALL)){a.removeModifier(SMALL);p.refreshDimensions();}
+    }
+    public static boolean small(ServerPlayer p){var a=p.getAttribute(Attributes.SCALE);return a!=null&&a.hasModifier(SMALL);}
+    /** The kitchen clock's own time, kept on its fitting for the client: a little after four. */
+    public static final String CLOCK_AFTER_FOUR="after_four";
     static boolean kitchenPart(HouseReadPropBlock.Part part){return part==TIN_LEFT||part==TIN_RIGHT||part==SHEET||part==FRIDGE||part==FRIDGE_TOP||part==RADIO;}
     /** The crayon this reader is holding, or -1. */
     public static int held(ServerPlayer p){var hand=p.getMainHandItem();if(!hand.is(HouseReadRegistry.CRAYON.get())||!HouseReadSites.loan(hand,p.getUUID()))return -1;var data=hand.get(DataComponents.CUSTOM_DATA);return data==null?-1:data.copyTag().getInt("Crayon");}

@@ -32,6 +32,8 @@ public final class HouseReadMirror implements BlockEntityRenderer<HouseReadPropB
         var state=be.getBlockState();
         // 0.4.168: the kitchen's tin, drawing and fridge carry their own colours.
         if(HouseReadKitchenClient.draws(state.getValue(HouseReadPropBlock.PART))){HouseReadKitchenClient.render(be,pose,out,light);return;}
+        // 0.4.185: the wall clocks' hands move over their painted faces; the kitchen's says a little after four, the rest are office clocks.
+        if(state.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.WALL_CLOCK){ClockHands.wall(be,pose,out,light);return;}
         if(state.getValue(HouseReadPropBlock.PART)!=HouseReadPropBlock.Part.MIRROR||state.getValue(HouseReadPropBlock.TURNED))return;
         // 0.4.161: a true plane mirror. The glass asks to be reflected and, once it is the nearest glass in front of the camera,
         // shows the room and the people in it as the glass would, the reader as the House's version of them.
