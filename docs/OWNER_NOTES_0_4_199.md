@@ -66,6 +66,17 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - The 108 approved correspondence pieces are unchanged; these notes stand beside them.
   - New case: `CollectedCorrespondenceTests.aReaderWhoAteInTheHouseHearsAboutItFromTheOtherRoom`.
 
+## The way up the great staircase is shorter than the way down
+- **"Making the climb up the grand staircase shorter than the way down could be really cool if we can make that work."** It works because the spiral repeats exactly: every full turn is the same 192 treads, 70 blocks lower (`StaircaseAscent`).
+  - A reader who climbs one whole turn, from a corner landing to the same corner a turn up, is carried up two more turns from that landing. They land on the same place on the same corner, facing the same way, with their stride and their following companions. Each turn climbed rises three, so the climb back up takes about half as long as the descent.
+  - The way down is never shortened.
+  - The top two turns, where the leaves and the hearths are, are always walked.
+  - Nobody else sees it happen. Readers climbing together, within a few blocks of each other, are carried together. Anyone else near either landing, spectators included, keeps the climb walked.
+  - A landing whose floor has worn through is passed over until the next one.
+  - This matters most after the peaceful release, when the reader climbs the whole staircase home.
+  - **Literature:** the completed account gains a page in Will's hand when the climb was shortened: "I counted the turns going down, and again coming up. There were fewer coming up. I counted twice."
+  - New case: `StaircaseAccessTests.theClimbBackUpIsShorterThanTheWayDown`. It covers going down, a turn climbed and the next, a party carried together, a spectator keeping the climb walked, the top turns walked, and the account's page. The staircase job's count is now 12.
+
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.
 - The Ghosts namespace (24 cases), the novel sites (16) and the shelter case pass locally.
