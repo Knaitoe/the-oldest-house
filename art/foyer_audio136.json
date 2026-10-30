@@ -10,9 +10,9 @@
     "authorship": "Original procedural synthesis; no sampled speech or music."
   },
   "babble": {
-    "sha256": "182861d46e9ec1696e8b19ec1f6a3ae6879d3b170162206bb349bdb8eacc9708",
-    "seconds": 4.0,
-    "authorship": "Original procedural synthesis; no sampled speech or music."
+    "sha256": "0e525dd28b5d4bd56db68175d906b826fdc581f35c0ca96c110f30b570751246",
+    "seconds": 11.110875,
+    "authorship": "Speech from the Piper neural voice en_US-ljspeech-high (LJ Speech dataset, public domain; tools/make_foyer_voice.py), put through a procedural intercom."
   },
   "steps": {
     "sha256": "851ba67e6b106a49a5e96012417e23f226babb955fff363450431595378c824c",
