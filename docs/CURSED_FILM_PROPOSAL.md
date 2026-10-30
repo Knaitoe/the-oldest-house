@@ -4,7 +4,7 @@ The owner asked to consider a vignette based on *The Ring*, "focused more on the
 
 *Owner's notes, October 30: the proposal sounds right; include the monster's costume in the shop, and an Easter egg for the ghost girl. Both are added below.*
 
-*Owner's answers, October 30: the count is seven House days; a solo reader may pass the dub to a villager; the costume is the vignette's artifact reward; and every vignette should have a success or a failure state, with something to represent each, as the Goatman does. The other proposed answers stand. The design below is updated to match; the decisions are listed at the end.*
+*Owner's suggestions, October 30, for consideration (not final decisions): the count could be seven House days; a solo reader could pass the dub to a villager; the costume could be the vignette's artifact reward. The owner also asked that every vignette have a success and a failure state, with rewards and repercussions, as the Goatman does. The design below works the suggestions in so they can be weighed; they are listed at the end with what remains open.*
 
 ## What each source brings
 
@@ -108,14 +108,15 @@ It is built whole, with custom textures, as the Last Stop and the Stanley were.
 - **The journal.** A rubbing of the rental card, and a co-author trigger at the seventh call, are natural later links. They are not required.
 - **Writing rules.** The House's writing rules apply to every line: it never genders the reader and never names a colour or an age.
 
-## Owner's decisions (October 30)
+## Owner's suggestions (October 30), for consideration
 
-1. **Setting:** the rental shop and edit suite.
-2. **The count:** seven House days.
-3. **Letting it run out:** the reader is taken into the film and walks out alive. This is the failure state, and the film follows them until they stop the count properly.
-4. **The dub alone:** a solo reader may pass it to a villager.
-5. **The reader in the footage:** yes, the House shows the reader in their own past halls.
-6. **The costume:** the vignette's artifact reward, the reader's own on either success.
-7. **Every vignette has a success or failure state** and something to represent each, as the Goatman does.
+These are suggestions, not settled decisions. The design above follows them so they can be judged in place.
+1. **Setting:** the rental shop and edit suite (Claude's proposal; not objected to).
+2. **The count:** seven House days, rather than seven arrivals.
+3. **Letting it run out:** the reader is taken into the film and walks out alive (Claude's proposal; not objected to). Here it is the failure state, and the film follows them until they stop the count properly.
+4. **The dub alone:** perhaps a solo reader could pass it to a villager.
+5. **The reader in the footage:** the House shows the reader in their own past halls (Claude's proposal; not objected to).
+6. **The costume:** perhaps the vignette's artifact reward, the reader's own on either success.
+7. **Every vignette has a success and a failure state**, with a reward and a repercussion, as the Goatman does. This one is a standing request, being applied across the vignettes.
 
-Still open, for the build: the costume's exact effect (the suggestion above) and the shop's place among the halls.
+Open: all of the above for the owner's final word, the costume's exact effect, and the shop's place among the halls.
