@@ -29,6 +29,6 @@ public final class ZampanoLeafItem extends Item {
     }
     @Override public Component getName(ItemStack s){int leaf=leafOf(s);return leaf<0?super.getName(s):Component.translatable("item.the_oldest_house.zampano_leaf.titled",ZampanoLeaves.titleOf(leaf));}
     @Override public void appendHoverText(ItemStack s,TooltipContext c,List<Component> lines,TooltipFlag f){
-        if(leafOf(s)>=0)lines.add(Component.translatable("item.the_oldest_house.zampano_leaf.tooltip").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
+        if(leafOf(s)>=0){lines.add(Component.translatable("item.the_oldest_house.zampano_leaf.tooltip").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));lines.add(Component.translatable("item.the_oldest_house.zampano_leaf.way").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));}
     }
 }

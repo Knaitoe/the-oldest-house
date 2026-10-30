@@ -27,7 +27,7 @@ public final class BorrascaBelongings {
         var s=new ItemStack(key.equals("Compass")?BorrascaRegistry.COMPASS.get():BorrascaRegistry.PATCH.get());
         s.set(DataComponents.CUSTOM_NAME,Component.literal(key.equals("Compass")?BorrascaStory.FRIEND+"'s compass":BorrascaStory.FRIEND+"'s name patch"));
         CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(TOKEN,token);t.putUUID(LiteraryVignettes.OWNER,p.getUUID());t.putString(LiteraryVignettes.KEY,key);t.putString(LiteraryVignettes.PLACE,LabyrinthPlace.BORRASCA.id());});
-        own.put(key+"Original",s.save(p.registryAccess()));return s;
+        Keepsakes.inscribe(s,LabyrinthPlace.BORRASCA,key);own.put(key+"Original",s.save(p.registryAccess()));return s;
     }
     public static boolean valid(ServerPlayer p,CompoundTag own,String key,ItemStack s){
         var c=s.get(DataComponents.CUSTOM_DATA);if(c==null||!own.hasUUID(key+"Token"))return false;var t=c.copyTag();

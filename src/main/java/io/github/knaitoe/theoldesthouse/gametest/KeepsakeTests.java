@@ -113,6 +113,55 @@ public final class KeepsakeTests {
         });
     }
 
+    /**
+     * 0.4.198: four more keepsakes. A leaf held in a plain hall marks the door back; the vulture photograph, held still, keeps
+     * far monsters from fixing on its keeper; her compass points to where they last fell; her patch keeps what is in hand,
+     * once a House day, when they die away from the House.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theLeavesPhotographCompassAndPatchEachDoWhatTheirStoryDid(GameTestHelper h) {
+        var p = NativeTestPlayers.survival(h, "keeper_four");
+        var server = h.getLevel().getServer();var store = server.overworld().getDataStorage();var old = LabyrinthData.get(server);
+        var at = h.absoluteVec(new Vec3(2.5, 1, 2.5));p.teleportTo(h.getLevel(), at.x, at.y, at.z, 0, 0);
+        for (int x = 0; x < 9; x++) for (int z = 0; z < 9; z++) h.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        // The photograph: a keeper standing still with it in hand.
+        var photo = new ItemStack(Items.FILLED_MAP);
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, photo, t -> t.putUUID(NovelVignettes.PHOTO_OWNER, p.getUUID()));
+        p.setItemInHand(InteractionHand.MAIN_HAND, photo);Keepsakes.tick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));
+        var far = h.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 8 + 1));var near = h.spawn(EntityType.ZOMBIE, new BlockPos(4, 1, 3));
+        h.runAfterDelay(30, () -> {
+            try {
+                h.assertTrue(Keepsakes.holdingStill(p), "a second held still with the photograph in hand");
+                far.setTarget(p);near.setTarget(p);
+                h.assertTrue(far.getTarget() == null && near.getTarget() == p, "the far one cannot fix on them, the near one can");
+                // The compass, away from the House: where they last fell.
+                var fell = p.blockPosition().east(40);
+                p.setLastDeathLocation(java.util.Optional.of(net.minecraft.core.GlobalPos.of(p.level().dimension(), fell)));
+                var line = Keepsakes.compass(p);
+                h.assertTrue(line.contains("east") && line.contains("where you last fell") && line.contains("40"), "the needle settles toward where they last fell: " + line);
+                // The patch: what is in hand when they fall, once a House day.
+                p.getInventory().setItem(9, LiteraryVignettes.mark(p, LabyrinthPlace.BORRASCA, "Patch", new ItemStack(BorrascaRegistry.PATCH.get())));
+                p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_SWORD));
+                var kept = Keepsakes.sew(p);
+                h.assertTrue(kept.is(Items.DIAMOND_SWORD) && p.getMainHandItem().isEmpty() && Keepsakes.record(p).contains("Sewn"), "the patch keeps the sword out of the fall");
+                h.assertTrue(Keepsakes.unsew(p) && p.getInventory().contains(new ItemStack(Items.DIAMOND_SWORD)) && !Keepsakes.record(p).contains("Sewn"), "and gives it back on waking");
+                p.getInventory().clearOrCountMatchingItems(st -> st.is(Items.DIAMOND_SWORD), -1, p.inventoryMenu.getCraftSlots());
+                p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE));
+                h.assertTrue(Keepsakes.sew(p).isEmpty() && p.getMainHandItem().is(Items.IRON_AXE), "only once a House day");
+                h.assertTrue(AccountAfterwards.patch(Keepsakes.record(p)).contains("once"), "the account says what the patch kept");
+                // The leaves: in a plain hall, the door back.
+                var origin = new BlockPos(41000, 80, 41000);var d = new LabyrinthData();d.setBuilt(LabyrinthBuilder.VERSION, origin);store.set("the_oldest_house_labyrinth", d);
+                var interior = HouseTestLevel.get(server, io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR);
+                var base = LabyrinthPlaces.base(origin, LabyrinthPlace.STRAIGHT_HALL);
+                p.teleportTo(interior, base.getX() + .5, base.getY(), base.getZ() - 10.5, 0, 0);
+                h.assertTrue(Keepsakes.leafWay(p) == null, "empty-handed, nothing marks the way");
+                p.setItemInHand(InteractionHand.MAIN_HAND, io.github.knaitoe.theoldesthouse.journal.ZampanoLeafItem.of(0));
+                h.assertTrue(base.offset(0, 0, 1).equals(Keepsakes.leafWay(p)), "with a leaf held up in a plain hall, the ash drifts at the door back: " + Keepsakes.leafWay(p));
+                h.succeed();
+            } finally { store.set("the_oldest_house_labyrinth", old);NativeTestPlayers.remove(p); }
+        });
+    }
+
     /** 0.4.194: the owner, "Ensure you're updating literature too": the accounts, the leaves and the keepsakes say what happened afterwards. */
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void theAccountsLeavesAndKeepsakesSayWhatHappenedAfterwards(GameTestHelper h) {
