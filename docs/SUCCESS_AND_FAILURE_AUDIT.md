@@ -17,7 +17,7 @@ The earlier drafts forced a failure onto every room. This draft sorts the 55 sto
 | **Choices** (6) | Several endings, none of them a loss. | Mostly complete already: the choices are the trade. |
 | **Experiences** (24) | The reader goes through it; it is neither won nor lost. | Leave it as it is. Completing it gives one singular artifact, or a subtle change or haunting that plays only in the House. |
 
-These are proposals for the owner to weigh. Nothing here is built except Usher (0.4.184, pushed), which the Usher section below recommends changing.
+The owner: "Start running with it. I'll edit as needed." Built so far: Usher's trade (0.4.186, docs/USHER_TRADE_0_4_186.md). The rest are being built in the suggested order.
 
 ## Contests: outcomes as trades
 
@@ -73,7 +73,7 @@ Several rooms already work like this:
   - **Takes:** the tarn keeps what was in their hands. It lies on the bank by the causeway on the night they get out in time.
   - **Gives:** a leaf from the vault register with their own name in the burial column. It can be offered to the Mother.
 
-The reading, the shared night and the flight stay as built; only `UsherHaunt` would go. **I won't change it until you say.**
+**Built in 0.4.186** (docs/USHER_TRADE_0_4_186.md): the reading, the shared night and the flight stay as they were, and `UsherHaunt` is removed.
 
 ### The contests, room by room
 

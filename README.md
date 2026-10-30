@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.185** takes the owner's latest notes. The journal is written in, not formatted: turned, mirrored and spiralling lines belong to the House alone. At the kitchen table the reader is a child again, eyes just over the table top. The wall clocks' hands move: the kitchen's says a little after four, the waiting room's office clock runs a few minutes slow. See [docs/OWNER_NOTES_0_4_185.md](docs/OWNER_NOTES_0_4_185.md).
+Development candidate **0.4.186** begins building the success-and-failure audit. Usher's failure no longer haunts: the tarn keeps what was in the reader's hands until they get out on a later night, and leaves them a page of the vault's register with their own name on it. Getting out as the house falls costs the house itself; its door never comes to that reader again. See [docs/USHER_TRADE_0_4_186.md](docs/USHER_TRADE_0_4_186.md).
+
+0.4.185 takes the owner's latest notes. The journal is written in, not formatted: turned, mirrored and spiralling lines belong to the House alone. At the kitchen table the reader is a child again, eyes just over the table top. The wall clocks' hands move: the kitchen's says a little after four, the waiting room's office clock runs a few minutes slow. See [docs/OWNER_NOTES_0_4_185.md](docs/OWNER_NOTES_0_4_185.md).
 
 0.4.184 gives Usher a success and a failure, as the Goatman's night has. Either way through it (out over the causeway as the house falls, or finding her standing in the wing) earns an artifact, a chip of the house's stone that, held to the ear, lets the nearest hidden thing answer. A reader still inside when the house comes down has failed: the tarn gives them back on the bank, nothing is resolved, and the scratching Roderick heard under the lid follows them home until a later night ends with them out in time. See docs/USHER_BINARY_0_4_184.md.
 

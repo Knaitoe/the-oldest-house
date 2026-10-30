@@ -156,16 +156,18 @@ public final class UsherStory {
             // The opened fissure stays open in this reader's view, and getting back to the bank is the flight.
             if (own.getInt("Present") % 100 == 0) { fissure(p, b); glow(p, b, true); }
             if (!own.getBoolean("Ready")) {
-                if (p.blockPosition().getZ() - b.getZ() >= -3 && p.getY() >= b.getY() - 1.5) { own.remove("Buried0507"); LiteraryVignettes.ready(p, PLACE, own, "fled_as_the_house_fell"); }
+                if (p.blockPosition().getZ() - b.getZ() >= -3 && p.getY() >= b.getY() - 1.5) { own.remove("Buried0507"); giveBack(p, own); LiteraryVignettes.ready(p, PLACE, own, "fled_as_the_house_fell"); }
                 else if (now - own.getLong("FellAt0507") > FLIGHT) buried(p, b, own);
             }
         }
     }
 
     /**
-     * 0.4.184, the failure: still inside when the house comes down. The tarn gives the reader back on the bank, nothing is
-     * resolved, and the scratching follows them ({@link UsherHaunt}) until a later night ends with them over the causeway in
-     * time. Roderick is gone for the rest of this visit; the house stands again for the next.
+     * 0.4.184, the failure: still inside when the house comes down. The tarn gives the reader back on the bank and nothing is
+     * resolved. Roderick is gone for the rest of this visit; the house stands again for the next. 0.4.185, the trade (owner:
+     * "Winning sometimes takes, too. Failing sometimes gives."): the tarn keeps what was in the reader's hands until a later
+     * night they get out in time, and gives them a leaf of the vault's register with their own name on it. Nothing follows
+     * them home: in Poe nothing follows the narrator out.
      */
     private static void buried(ServerPlayer p, BlockPos b, CompoundTag own) {
         var l = p.serverLevel();
@@ -185,7 +187,42 @@ public final class UsherStory {
         p.teleportTo(l, b.getX() + .5, b.getY(), b.getZ() - 1.5, 180, 0);
         p.setDeltaMovement(Vec3.ZERO);
         p.connection.resetPosition();
-        p.displayClientMessage(Component.literal("The house came down over you. The tarn gave you back.").withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), false);
+        var held = p.getMainHandItem();boolean kept = !own.contains(KEPT) && tarnTakes(held);
+        if (kept) { own.put(KEPT, held.save(p.registryAccess())); own.putBoolean("TarnKeptOnce0507", true); p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY); }
+        p.displayClientMessage(Component.literal(kept ? "The house came down over you. The tarn gave you back, and kept what you had in your hands." : "The house came down over you. The tarn gave you back.").withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), false);
+        LiteraryVignettes.reward(p, PLACE, own, "RegisterLeaf", registerLeaf(p));
+    }
+
+    /** What the tarn is keeping of a reader the house closed over: one stack from their hands. */
+    public static final String KEPT = "TarnKept0507";
+    /** Only an ordinary thing: never anything of the House's, an original, or anything bound to a reader. */
+    public static boolean tarnTakes(net.minecraft.world.item.ItemStack s) {
+        return !s.isEmpty() && !s.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA) && !net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace().equals(io.github.knaitoe.theoldesthouse.TheOldestHouse.MOD_ID);
+    }
+    /** On the night they get out in time, what the tarn kept lies on the bank by the causeway. */
+    static void giveBack(ServerPlayer p, CompoundTag own) {
+        if (!own.contains(KEPT)) return;
+        var s = net.minecraft.world.item.ItemStack.parseOptional(p.registryAccess(), own.getCompound(KEPT));own.remove(KEPT);
+        if (s.isEmpty()) return;
+        p.displayClientMessage(Component.literal("On the bank by the causeway: what the tarn kept of yours. " + s.getHoverName().getString() + ".").withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), false);
+        LiteraryVignettes.give(p, s);
+    }
+    /** The failure's keepsake: a leaf of the register R. keeps of who is carried down beneath the house. */
+    static net.minecraft.world.item.ItemStack registerLeaf(ServerPlayer p) {
+        String name = p.getGameProfile().getName();
+        return io.github.knaitoe.theoldesthouse.house.HouseWriting.book("A leaf of the vault register", "R.", io.github.knaitoe.theoldesthouse.house.HouseWriting.WritingStyle.PLAIN, List.of(
+            "Carried down beneath the house on the night of the storm:\n\n" + name + "\n\nThe house came down over " + name + ", and the tarn gave " + name + " back.",
+            "I have written the name here all the same. A house does not give back what it has once taken in. It only lends."));
+    }
+    /**
+     * 0.4.185, what fleeing takes: the reader saw the house go into the tarn, so its door no longer comes to them, as the
+     * cabin closes a room. Finding her in the wing takes nothing; the open lid already cost the storm night.
+     */
+    static void afterAccount(ServerPlayer p, CompoundTag own) {
+        if (!"fled_as_the_house_fell".equals(own.getString("Outcome")) || own.getBoolean(LiteraryVignettes.GONE)) return;
+        own.putBoolean(LiteraryVignettes.GONE, true);
+        LiteraryVignettes.save(LabyrinthData.get(p.server), p.getUUID(), PLACE, own);
+        p.displayClientMessage(Component.literal("There is no door to that house any more.").withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), false);
     }
 
     /** He sits facing the doors, and turns his head toward the nearest reader who still sees him. */
@@ -489,7 +526,7 @@ public final class UsherStory {
     public static String account(CompoundTag own) {
         var out = new StringBuilder();
         // 0.4.184: a reader the house once closed over says so first.
-        if (own.getBoolean("BuriedOnce0507")) out.append("The first time the house fell, I was still inside it. The tarn gave me back, and the scratching came home with me. ");
+        if (own.getBoolean("BuriedOnce0507")) out.append(own.getBoolean("TarnKeptOnce0507") ? "The first time the house fell, I was still inside it. The tarn gave me back, and kept what I had in my hands until I got out. " : "The first time the house fell, I was still inside it. The tarn gave me back. ");
         out.append(own.getBoolean("LidChosen") && own.getBoolean("LidClosed") ? "I closed the lid and came back on the night of the storm. " : "The lid had been closed. I came back on the night of the storm. ");
         String reader = own.getString("Reader0507");
         out.append(own.getBoolean("ReadAloud0507") || reader.isEmpty() ? "He asked me to read to him, and I read the old romance aloud. " : reader + " read the old romance aloud to him, because he asked. ");

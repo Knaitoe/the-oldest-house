@@ -214,7 +214,7 @@ public final class LabyrinthDoors {
             entry=chosen.door();
         }
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)entry=LiteraryCopies.prepareEntry(player,place);if(place==LabyrinthPlace.BORRASCA){entry=BorrascaSites.prepareEntry(player);if(entry==null){sticks(player,door);return;}}
-        if(place!=null&&LiteraryCabinChoices.closed(data,player.getUUID(),place)){if(reroute(player,door))return;locked(player);return;}
+        if(place!=null&&(LiteraryCabinChoices.closed(data,player.getUUID(),place)||LiteraryVignettes.gone(data,player.getUUID(),place))){if(reroute(player,door))return;locked(player);return;}
         if (entry == null || (place == LabyrinthPlace.RED_ROOM && !RedRoom.prepare(player))) {
             if(reroute(player,door))return;locked(player);
             return;
