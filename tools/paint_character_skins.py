@@ -92,6 +92,8 @@ LOOKS = {
     'literary_winter_hank': Look('#d8ae8e','#a4562e','short','#2a3550','#4a4339','jacket','#b8392e',eyes='#5a6a4a',mark='winter',sleeve=11,scarf='#e6dcc4'),
     'literary_winter_clay': Look('#d2a684','#c9a35a','messy','#7a5a38','#34383f','jacket','#d4a640',eyes='#506a80',mark='winter',sleeve=11,scarf='#5a7a4a'),
     'literary_winter_lonnie': Look('#bf9171','#2f241d','close','#4a5a3c','#3d4148','jacket','#6a6a72',eyes='#4a3c30',mark='winter',sleeve=11,scarf='#9a3a30'),
+    # Usher (0.4.182): Roderick, cadaverous, the hair floating rather than falling, a frock coat and a pale stock at the throat.
+    'literary_usher_roderick': Look('#ddd4ca','#3a312b','messy','#252229','#29262a','coat','#d6cfc0',eyes='#2c323e',age=1),
     'harrigan': Look('#c7ab91','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,glasses=True,logical=64),
     'harrigan_dead': Look('#b9b2a4','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,mark='dead',logical=64),
     'harrigan_mourner_0': Look('#ae7b59','#262320','close','#292e33','#26292f','suit','#343338',mark='mourner_flower',logical=64),

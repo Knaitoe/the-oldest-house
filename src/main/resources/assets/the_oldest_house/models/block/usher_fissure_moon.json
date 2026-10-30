@@ -1,0 +1,51 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "particle": "the_oldest_house:block/usher/stone",
+  "s": "the_oldest_house:block/usher/stone",
+  "m": "the_oldest_house:block/usher/fissure_moon"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "neoforge_data": {
+    "block_light": 15
+   },
+   "faces": {
+    "north": {
+     "texture": "#m",
+     "cullface": "north"
+    },
+    "south": {
+     "texture": "#s",
+     "cullface": "south"
+    },
+    "east": {
+     "texture": "#s",
+     "cullface": "east"
+    },
+    "west": {
+     "texture": "#s",
+     "cullface": "west"
+    },
+    "up": {
+     "texture": "#s",
+     "cullface": "up"
+    },
+    "down": {
+     "texture": "#s",
+     "cullface": "down"
+    }
+   }
+  }
+ ]
+}

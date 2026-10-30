@@ -243,6 +243,7 @@ public final class MiniatureNotes {
         Map.entry("heard_the_medium", "heard the medium out"),
         Map.entry("found_her_outside_the_open_coffin", "found her outside the open coffin"),
         Map.entry("returned_to_the_closed_lid", "came back to the closed lid"),
+        Map.entry("fled_as_the_house_fell", "fled as the house fell"),
         Map.entry("kept_the_hidden_pages", "kept the hidden pages"),
         Map.entry("read_all_eight_original_pages", "read all eight pages"),
         Map.entry("read_the_final_page", "read the last page"),
