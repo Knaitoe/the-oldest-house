@@ -29,7 +29,7 @@ public final class FoyerEncounter {
         if(held(own)){intrusion(p,b,own,clock);return;}
         if(FoyerMotion.wind(p.serverLevel(),b)>.2)own.putBoolean("FoyerWindSeen136",true);
         if(clock>=20&&!own.getBoolean("FoyerStepsHeard136")){own.putBoolean("FoyerStepsHeard136",true);cue(p,UncannyRegistry.FOYER_STEPS.get(),b.offset(1,0,-20),.32F,.9F);}
-        if(clock>=65&&!own.getBoolean("FoyerBabbleHeard136")){own.putBoolean("FoyerBabbleHeard136",true);cue(p,UncannyRegistry.FOYER_BABBLE.get(),b.offset(UncannyRooms.INTERCOM),.24F,.85F);}
+        if(clock>=65&&!own.getBoolean("FoyerBabbleHeard136")){own.putBoolean("FoyerBabbleHeard136",true);cue(p,UncannyRegistry.FOYER_BABBLE.get(),b.offset(UncannyRooms.INTERCOM),.24F,1F);}
         if(dark&&!own.getBoolean("FoyerDarkLast136")){own.putInt("FoyerDarkAge136",clock);own.putInt("DarkSeen",own.getInt("DarkSeen")+1);own.putInt("FoyerStill131",own.getInt("FoyerStill131")+1);cue(p,SoundEvents.IRON_TRAPDOOR_CLOSE,b.offset(UncannyRooms.FLOOD),.22F,.75F);cue(p,UncannyRegistry.FOYER_STEPS.get(),b.offset(-1,0,-17),.24F,.72F);}
         own.putBoolean("FoyerDarkLast136",dark);own.putBoolean("LastDark",dark);
         boolean reveal=dark&&clock>=105&&clock-own.getInt("FoyerDarkAge136")>=40;

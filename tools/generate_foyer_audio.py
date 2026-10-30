@@ -1,4 +1,4 @@
-"""Original foyer wind, electrical buzzer, indistinct babble and unseen movement."""
+"""Original foyer wind, electrical buzzer, a voice at the intercom and unseen movement."""
 import argparse
 import hashlib
 import json
@@ -19,6 +19,37 @@ def noise(seconds,seed):
 def low(x,n):
     return np.convolve(x,np.ones(n)/n,'same')
 
+SOURCE=ROOT/'art/foyer_voice_source.wav'
+
+def speech():
+    """0.4.199: the voice at the intercom is a person's (tools/make_foyer_voice.py), not summed tones."""
+    with wave.open(str(SOURCE),'rb') as w:
+        rate=w.getframerate();x=np.frombuffer(w.readframes(w.getnframes()),dtype='<i2').astype(np.float64)/32768
+    return np.interp(np.arange(int(len(x)*RATE/rate))*rate/RATE,np.arange(len(x)),x)
+
+def band(x,lo,hi):
+    spectrum=np.fft.rfft(x);f=np.fft.rfftfreq(len(x),1/RATE)
+    gain=np.clip((f-lo*.7)/(lo*.3),0,1)*np.clip((hi*1.3-f)/(hi*.3),0,1)
+    gain*=1+.6*np.exp(-((f-1800)/350)**2)  # the cheap speaker's ring
+    return np.fft.irfft(spectrum*gain,len(x))
+
+def intercom(x,seed):
+    """Through the building's intercom: a narrow, ringing speaker, driven too hard, humming, and the line breaking up."""
+    rng=np.random.default_rng(seed);t=np.arange(len(x))/RATE
+    y=band(x,330,3200);y=np.tanh(y/max(1e-4,np.max(np.abs(y)))*2.6)
+    # The line drops out for a few hundredths of a second, often enough that whole words go.
+    gate=np.ones_like(y);at=0
+    while at<len(y):
+        at+=int(RATE*rng.uniform(.25,.7))
+        if rng.random()<.45:
+            n=int(RATE*rng.uniform(.03,.11));fade=min(n//3,120);seg=np.zeros(n);seg[:fade]=np.linspace(1,0,fade);seg[-fade:]=np.linspace(0,1,fade)
+            gate[at:at+n]*=seg[:len(gate[at:at+n])]*.85+.15
+    y*=gate
+    hum=.05*np.sin(2*np.pi*60*t)+.03*np.sin(2*np.pi*180*t)
+    crackle=np.zeros_like(y);hits=rng.integers(0,len(y),int(len(y)/RATE*9));crackle[hits]=rng.uniform(-.6,.6,len(hits));crackle=band(crackle,800,5000)
+    hiss=band(rng.normal(0,.035,len(y)),1000,6000)
+    return y+hum+crackle+hiss
+
 def cues():
     out={};t=np.arange(RATE*8)/RATE;n=noise(8,136)
     out['wind']=(low(n,37)-low(n,240))*(.6+.2*np.sin(t*.91)+.15*np.sin(t*2.4))
@@ -26,13 +57,7 @@ def cues():
     buzz=(np.sin(2*np.pi*59.8*t)+.35*np.sin(2*np.pi*181*t)+.15*np.sin(2*np.pi*617*t))
     env=np.minimum(1,t*120)*np.minimum(1,(2-t)*120)*(np.sin(t*8.1)>-.85)
     out['buzzer']=buzz*env
-    t=np.arange(RATE*4)/RATE
-    voice=np.zeros_like(t)
-    for center,width,pitch in ((.35,.13,103),(1,.22,87),(1.7,.16,98),(2.45,.28,78),(3.2,.18,91)):
-        envelope=np.exp(-((t-center)/width)**2)
-        source=sum(np.sin(2*np.pi*(pitch*k*t+.012*np.sin(t*11)))/k for k in range(1,10))
-        voice+=source*envelope*(.6+.3*np.sin(t*38))
-    out['babble']=low(voice,11)-low(voice,160)+low(noise(4,137),45)*.12
+    out['babble']=intercom(speech(),137)
     t=np.arange(RATE*3)/RATE;steps=np.zeros_like(t);n=noise(3,138)
     for at in (.15,.86,1.75,2.6):
         d=np.maximum(0,t-at);env=np.where(t>=at,np.exp(-d*32),0)
@@ -63,7 +88,7 @@ def main():
             wav=Path(scratch)/(name+'.wav')
             with wave.open(str(wav),'wb') as w:w.setparams((1,2,RATE,0,'NONE',''));w.writeframes((samples*32767).astype('<i2').tobytes())
             path=FOLDER/(name+'.ogg');subprocess.run(['ffmpeg','-v','error','-y','-i',str(wav),'-c:a','libvorbis','-q:a','4',str(path)],check=True)
-            data[name]={'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'seconds':len(samples)/RATE,'authorship':'Original procedural synthesis; no sampled speech or music.'}
+            data[name]={'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'seconds':len(samples)/RATE,'authorship':'Speech from the Piper neural voice en_US-ljspeech-high (LJ Speech dataset, public domain; tools/make_foyer_voice.py), put through a procedural intercom.' if name=='babble' else 'Original procedural synthesis; no sampled speech or music.'}
     MANIFEST.write_text(json.dumps(data,indent=2)+'\n')
 
 if __name__=='__main__':main()
