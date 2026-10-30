@@ -34,6 +34,10 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - Through the third count the other eye drifts. The mouth pales away and then comes back wrong over ten seconds: lower and wider, its far corner dragged down.
   - Each change fades in eight steps, so no single frame jumps; the difference is plain only when the face snaps back to the reader's own (`DareReflection.key`, `toward`).
   - The dare's face proof shows the six moments: before, first count, an eye drifting, the mouth paling, both eyes, and the wrong mouth.
+- **"We should also try to not have bloody mary's arm poking through the player."** Her arms were posed reaching round the reader to the collarbones, so in the glass they went through the reflection's chest and out of its front.
+  - She now stands further back, still over the reader's right shoulder.
+  - Her inner hand comes up from behind and rests on top of the reader's shoulder, beside the neck. Her other arm hangs at her side.
+  - The pose was fitted in an offline model of the two bodies, so no part of her comes out of the front of the reflection's chest. It was then checked in the dare's third-count view (`DareReflection.draw`).
 
 ## The buzzer threshold (the home-entrance opening)
 - **"Can you do anything to make the voice actually sound human?"** The voice at the intercom had been summed tones. It is now a person's voice: speech from the Piper neural voice en_US-ljspeech-high, trained on the LJ Speech dataset (public domain), saved once as `art/foyer_voice_source.wav` by `tools/make_foyer_voice.py`.
