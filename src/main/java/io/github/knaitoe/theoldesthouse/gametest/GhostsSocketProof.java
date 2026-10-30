@@ -11,7 +11,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.*;
 
-/** Explicit day-six fixture; both socket clients use native walking/filming while each original performs the production leap. */
+/** Explicit day-six fixture; both socket clients use native walking/filming (A from Marjorie's room, B on the landing) while each original performs the production leap. */
 final class GhostsSocketProof {
     private static final NativeTestChunks CHUNKS=new NativeTestChunks();
     private static final Map<UUID,UUID> ORIGINALS=new HashMap<>();
@@ -29,10 +29,13 @@ final class GhostsSocketProof {
             p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setNoGravity(false);p.setInvulnerable(false);p.setHealth(p.getMaxHealth());p.getFoodData().setFoodLevel(20);p.setAirSupply(p.getMaxAirSupply());
             var back=Vec3.atBottomCenterOf(LabyrinthPlaces.base(origin,LabyrinthPlace.OFFSET_HALL).offset(0,0,-6));
             DEPTH.put(p.getUUID(),data.returnDepth(p.getUUID()));data.pushReturn(p.getUUID(),new LabyrinthData.Waypoint(level.dimension(),back,0,true));RETURNS.put(p.getUUID(),back.add(0,0,1));
-            p.teleportTo(level,site.getX()-4.5,site.getY()+5,site.getZ()-19.5-(p==b?1.2:0),0,0);p.hasChangedDimension();p.connection.resetPosition();
+            // A follows Marjorie out of her room; in the compact house the landing is in view the moment A is through her door,
+            // so A's own leap freezes A there. B waits on the far side of the landing, out of A's doorway and her path.
+            if(p==a)p.teleportTo(level,site.getX()-4.5,site.getY()+5,site.getZ()-19.5,0,0);else p.teleportTo(level,site.getX()+3.0,site.getY()+5,site.getZ()-11.6,90,0);
+            p.hasChangedDimension();p.connection.resetPosition();
             LiteraryVignettes.onArrive(p,LabyrinthPlace.GHOSTS_SET);var own=LiteraryVignettes.personal(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET);
             // Fixture selects the already-read day; production movement, camera lease and forced return remain untouched.
-            own.putBoolean("Read_Source",true);own.putInt("FilmDay",6);own.putInt("ShotClock",590);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",true);LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET,own);
+            own.putBoolean("Read_Source",true);own.putInt("FilmDay",6);own.putInt("ShotClock",p==a?590:600);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",true);LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET,own);
             var camera=p.getInventory().items.stream().filter(s->s.is(LiteraryRegistry.CAMCORDER.get())).findFirst().orElseThrow();int slot=p.getInventory().items.indexOf(camera);if(slot!=0){var kept=p.getInventory().getItem(0);p.getInventory().setItem(0,camera);p.getInventory().setItem(slot,kept);}p.getInventory().selected=0;p.inventoryMenu.broadcastChanges();p.stopUsingItem();
             MOVED.put(p.getUUID(),0);
         }

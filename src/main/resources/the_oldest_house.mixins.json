@@ -8,6 +8,7 @@
     "GoatmanBedCameraMixin",
     "GoatmanBedWakeMixin",
     "HouseFontMixin",
+    "BookLiteratureMixin",
     "HouseSceneClockMixin",
     "HouseSceneSkyMixin",
     "CabinStormLevelMixin",

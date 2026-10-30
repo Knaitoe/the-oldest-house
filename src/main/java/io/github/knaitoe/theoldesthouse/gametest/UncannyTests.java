@@ -151,7 +151,10 @@ public final class UncannyTests {
         var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("old_tunnel_reader",place);var l=f.level(place);var b=f.base(place);f.chunks.hold(l,IndianLakeRooms.bounds(b,place));UUID[] identity={null},paper={null};CompoundTag[] source={null};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual old tunnel and extension are resident")).thenExecute(()->{
             UncannyRooms0132.build(l,b,place);var state=f.data().stateEntry(TunnelPassage.STATE,Long.toString(b.asLong()));state.remove("Done");state.remove("Cursor");f.data().setStateEntry(TunnelPassage.STATE,Long.toString(b.asLong()),state);
-            f.source(p,place);source[0]=f.own(p,place).getCompound("Original_Source").copy();var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");identity[0]=a.getUUID();a.moveTo(Vec3.atBottomCenterOf(b.offset(0,0,-71)));a.appearance(LiteraryActor.UNCANNY_GIANT,0);
+            f.source(p,place);source[0]=f.own(p,place).getCompound("Original_Source").copy();
+        // Her body is placed by the scene after the source is read; a busy runner can take a few ticks.
+        }).thenWaitUntil(()->h.assertTrue(UncannyStories.actor(p,f.own(p,place),"CastGiant")!=null,"the saved original woman is in the tunnel")).thenExecute(()->{
+            var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");identity[0]=a.getUUID();a.moveTo(Vec3.atBottomCenterOf(b.offset(0,0,-71)));a.appearance(LiteraryActor.UNCANNY_GIANT,0);
             paper[0]=UUID.randomUUID();l.getBlockEntity(b.offset(TunnelPassage.OLD_ACCOUNT)).getPersistentData().putUUID("Original134",paper[0]);l.setBlock(b.offset(3,0,-100),Blocks.GOLD_BLOCK.defaultBlockState(),2|16);
             h.assertTrue(!TunnelPassage.repair(l,b)&&!TunnelPassage.extended(l,b),"a reader's actual camera prevents the extension");f.at(p,place,100,0,0);
             h.assertTrue(!TunnelPassage.repair(l,b)&&!l.getBlockState(b.offset(0,0,-73)).isAir(),"the first bounded slice leaves the old end wall shut");

@@ -82,7 +82,7 @@ The journal's page is built as a general page renderer, not a book of plain line
 - **Images:** rubbings and stains.
 - **Marks:** crossings-out and margin hands.
 
-The word "house" keeps the mod's existing blue (`HouseText.INK_BLUE`), as it already does in books.
+The word "house" keeps the mod's existing blue (`HouseText.INK_BLUE`), as it already does in books. "Minotaur" is red here, as in every book since 0.4.175: these pages raise `HouseText`'s literature count while they draw.
 
 **Two uses of the one renderer:**
 

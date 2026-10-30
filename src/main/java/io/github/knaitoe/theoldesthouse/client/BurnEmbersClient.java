@@ -27,7 +27,7 @@ public final class BurnEmbersClient {
     private static int ticks;private static List<FormattedCharSequence> lines=List.of();
     private BurnEmbersClient() {}
     public static Component words(BurnEmbersPayload p) {
-        return HouseText.color(Component.literal(p.text()).withStyle(s->s.withFont(p.hand())));
+        return HouseText.literature(Component.literal(p.text()).withStyle(s->s.withFont(p.hand())));
     }
     public static void accept(BurnEmbersPayload p) {
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||p.text().length()>256)return;
