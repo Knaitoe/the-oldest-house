@@ -17,7 +17,7 @@ The earlier drafts forced a failure onto every room. This draft sorts the 55 sto
 | **Choices** (6) | Several endings, none of them a loss. | Mostly complete already: the choices are the trade. |
 | **Experiences** (24) | The reader goes through it; it is neither won nor lost. | Leave it as it is. Completing it gives one singular artifact, or a subtle change or haunting that plays only in the House. |
 
-The owner: "Start running with it. I'll edit as needed." Built so far: Usher's trade (0.4.186, docs/USHER_TRADE_0_4_186.md); the Last Stop's elk (0.4.187, docs/LAST_STOP_ELK_0_4_187.md). The rest are being built in the suggested order.
+The owner: "Start running with it. I'll edit as needed." Built so far: Usher's trade (0.4.186, docs/USHER_TRADE_0_4_186.md); the Last Stop's elk (0.4.187, docs/LAST_STOP_ELK_0_4_187.md); Harrigan's two phones (0.4.188, docs/HARRIGAN_PHONES_0_4_188.md). The rest are being built in the suggested order.
 
 ## Contests: outcomes as trades
 

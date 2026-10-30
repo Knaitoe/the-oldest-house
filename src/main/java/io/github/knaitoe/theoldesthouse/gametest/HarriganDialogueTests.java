@@ -288,4 +288,35 @@ public final class HarriganDialogueTests {
             h.assertTrue(f.player.heard("Calls cannot leave the House"),"using the phone in the House explains dead air instead of giving an unexplained failure");h.succeed();
         });
     }
+
+    /**
+     * 0.4.188, the funeral's choice decides the phone. Kept: he is freed, and once a House day a kind line comes into the
+     * reader's thread from his number; he takes no name. Buried: he carries the obligation; the more names, the more his
+     * greeting rots, and at the last he rings the reader's own phone at night until it goes to a missed call.
+     */
+    @GameTest(template="empty",timeoutTicks=200)
+    public static void keepingHisPhoneFreesHimAndBuryingItLetsTheRotStart(GameTestHelper h){
+        var kept=NativeTestPlayers.survival(h,"kept_his_phone");var buried=NativeTestPlayers.survival(h,"buried_his_phone");var d=LabyrinthData.get(h.getLevel().getServer());
+        try{
+            var ks=HarriganVignette.playerState(d,kept.getUUID());ks.putBoolean("KeptHarriganPhone",true);HarriganVignette.savePlayerState(d,kept.getUUID(),ks);
+            h.assertTrue(HarriganPhones.kind(kept),"a reader who kept his phone hears from him");
+            var thread=HarriganVignette.phoneState(kept,null).getList("Thread",10);var last=thread.getCompound(thread.size()-1);
+            h.assertTrue(last.getInt("Who")==HarriganVignette.HIM&&Arrays.asList(HarriganPhones.KIND).contains(last.getString("Text")),"a kind line from his number: "+last);
+            h.assertTrue(!HarriganPhones.kind(kept),"once a House day");
+            h.assertTrue(!HarriganPhones.ring(kept),"freed, he never rings on his own");
+            var bs=HarriganVignette.playerState(d,buried.getUUID());bs.putBoolean("Contact",true);bs.putInt("TotalCalls",0);HarriganVignette.savePlayerState(d,buried.getUUID(),bs);
+            h.assertTrue(!HarriganPhones.kind(buried),"buried with his phone, he sends nothing kind");
+            h.assertTrue(HarriganPhones.greeting(bs).equals("This is Harrigan. I don't pick up this phone. If you have a name for me, leave it after the tone."),"before any name, the greeting is his own");
+            bs.putInt("TotalCalls",2);h.assertTrue(HarriganPhones.greeting(bs).contains("…")&&HarriganPhones.greeting(bs).contains("Harrigan"),"after names it slows: "+HarriganPhones.greeting(bs));
+            bs.putInt("TotalCalls",HarriganPhones.RINGS_AFTER);h.assertTrue(HarriganPhones.greeting(bs).contains("H rr gan"),"then it loses letters: "+HarriganPhones.greeting(bs));
+            HarriganVignette.savePlayerState(d,buried.getUUID(),bs);
+            h.assertTrue(!HarriganPhones.ring(buried),"he rings only a reader carrying their own phone");
+            buried.getInventory().add(new ItemStack(LabyrinthRegistry.PHONE.get()));
+            h.assertTrue(HarriganPhones.ring(buried)&&!HarriganPhones.ring(buried),"at the last he rings on his own, once a night");
+            for(int i=0;i<HarriganPhones.RINGS;i++)HarriganPhones.ringing(buried);
+            var calls=HarriganVignette.phoneState(buried,null).getList("Thread",10);
+            h.assertTrue(calls.getCompound(calls.size()-1).getString("Text").equals("Missed call · Mr. Harrigan"),"it rings out to a missed call");
+        }finally{NativeTestPlayers.remove(kept);NativeTestPlayers.remove(buried);}
+        h.succeed();
+    }
 }

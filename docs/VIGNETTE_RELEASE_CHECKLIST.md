@@ -1,3 +1,5 @@
+October 30 candidate 0.4.188: require HarriganDialogueTests.keepingHisPhoneFreesHimAndBuryingItLetsTheRotStart and the whole wake namespace.
+
 October 30 candidate 0.4.187: require LiteraryTests.strikingTheElkFailsTheNightAndSheFollowsUntilALaterNightLetsHerPass and whileSheFollowsSheAnswersWhatTheReaderDoesToAnimals, and every other Last Stop case (the field case now has the peer strike). What follows a reader never wounds them and never acts in the House.
 
 October 30 candidate 0.4.186: require LiteraryTests.stayingInsideAsTheHouseFallsFailsAndTheTarnKeepsWhatWasInHandUntilALaterNightIsSurvived (replacing the 0.4.184 case) and the six other Usher cases; the Goatman door case now waits for the vigil. UsherHaunt is removed and no longer packaged. A room a win takes from a reader (LiteraryVignettes.GONE) must never be dealt to them again and must reroute an existing door.

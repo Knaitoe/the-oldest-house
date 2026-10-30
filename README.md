@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.187** gives the Last Stop its elk woman, after *The Only Good Indians*. The men read your real record of animals killed back to you. Strike her and the night resolves nothing; she follows you home and answers what you do to animals, until a later night you let her pass. See [docs/LAST_STOP_ELK_0_4_187.md](docs/LAST_STOP_ELK_0_4_187.md).
+Development candidate **0.4.188** lets the funeral's choice decide what Mr. Harrigan's phone does after. Keep it and he is freed: a kind text from his number, now and then. Bury it with him and he carries the obligation, and the rot starts. See [docs/HARRIGAN_PHONES_0_4_188.md](docs/HARRIGAN_PHONES_0_4_188.md).
+
+0.4.187 gives the Last Stop its elk woman, after *The Only Good Indians*. The men read your real record of animals killed back to you. Strike her and the night resolves nothing; she follows you home and answers what you do to animals, until a later night you let her pass. See [docs/LAST_STOP_ELK_0_4_187.md](docs/LAST_STOP_ELK_0_4_187.md).
 
 0.4.186 begins building the success-and-failure audit. Usher's failure no longer haunts: the tarn keeps what was in the reader's hands until they get out on a later night, and leaves them a page of the vault's register with their own name on it. Getting out as the house falls costs the house itself; its door never comes to that reader again. See [docs/USHER_TRADE_0_4_186.md](docs/USHER_TRADE_0_4_186.md).
 
