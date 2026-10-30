@@ -249,9 +249,30 @@ public final class ExplorationPassTests {
     }
     @GameTest(template="empty")
     public static void sixHallwaysHaveRealRoutesSupportedLampsAndRoomForTwoBodies(GameTestHelper h)throws Exception {
+        halls(h,HALLS,2100);
+        h.succeed();
+    }
+    /**
+     * 0.4.197 (owner: "Design more hallways that are just hallways."): the four plain halls have the same real routes, supported
+     * lamps and room for two as the others, nothing bled into them, and come only before the stone depth.
+     */
+    @GameTest(template="empty")
+    public static void fourPlainHallsAreJustHallwaysWithRealRoutes(GameTestHelper h)throws Exception {
+        var plain=List.of(LabyrinthPlace.JOGGED_HALL,LabyrinthPlace.FORKED_HALL,LabyrinthPlace.PILLAR_HALL,LabyrinthPlace.ZIGZAG_HALL);
+        for(var hall:plain){
+            h.assertTrue(HallVariations.plain(hall)&&LabyrinthDomestic.fragments(hall).isEmpty()&&LabyrinthBuilder.requiredDepth(hall)==0,hall.id()+" is a plain hall from the start, with no room bled into it");
+            h.assertTrue(LabyrinthDealer.grayWeight(hall,0)>0&&LabyrinthDealer.grayWeight(hall,LabyrinthPacing.STONE_DEPTH)==0,hall.id()+" is dealt on the approach and gives way to stone");
+            h.assertTrue(!StaircaseProse.place(hall.id()).equals(StaircaseProse.place("unnamed_room_for_test")),hall.id()+" has a name in prose");
+        }
+        halls(h,plain,3500);
+        var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(3500+2*60,8,280);
+        for(int z:new int[]{-9,-15,-21,-27,-33,-39})h.assertTrue(l.getBlockState(b.offset(0,1,z)).is(Blocks.STRIPPED_SPRUCE_LOG),"the pillar hall's columns stand down its middle");
+        h.succeed();
+    }
+    private static void halls(GameTestHelper h,List<LabyrinthPlace> list,int x0)throws Exception {
         var l=h.getLevel();int i=0;
-        for(var hall:HALLS) {
-            BlockPos b=h.absolutePos(BlockPos.ZERO).offset(2100+i++*60,8,280);
+        for(var hall:list) {
+            BlockPos b=h.absolutePos(BlockPos.ZERO).offset(x0+i++*60,8,280);
             if(HallVariations.domestic(hall))LabyrinthHalls.build(l,b,hall);else StoneHalls.build(l,b,hall);
             HouseFurnishings.decorate(l,b,hall);
             ScenePolish.apply(l,b,hall);
@@ -273,7 +294,6 @@ public final class ExplorationPassTests {
             h.assertTrue(LabyrinthDealer.onward(hall)&&LabyrinthPacing.ordinary(hall),"variation is an ordinary route, not another hazard or Witness source");
             ArchitectureTests.export(l,b,hall);
         }
-        h.succeed();
     }
     @GameTest(template="empty")
     public static void hallwayConstructionIsPacedAndMatchesItsDirectNativeFixture(GameTestHelper h) {

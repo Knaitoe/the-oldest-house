@@ -54,8 +54,8 @@ public final class SceneVisualProof extends Screen {
         read=environment&&Boolean.getBoolean("the_oldest_house.houseReadSmoke");
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of(read?"../build/house-read139-proof":meal?"../build/goatman137-proof":foyer?"../build/foyer136-proof":interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=read?6:meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+11:environment?11:99+UncannyRooms.PLACES.size()+1;
-        if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (99 earlier, every uncanny room and the third-floor bathroom), found "+files.size());
+        int expected=read?6:meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+11:environment?11:103+UncannyRooms.PLACES.size()+1;
+        if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (103 earlier with 0.4.197's four plain halls, every uncanny room and the third-floor bathroom), found "+files.size());
         if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
         if(!environment&&files.stream().noneMatch(p->p.getFileName().toString().equals(LabyrinthPlace.DARE_IN_THE_DARK.id()+".json")))throw new IllegalStateException("Missing native architecture export for the third-floor bathroom");
         load();
@@ -111,7 +111,7 @@ public final class SceneVisualProof extends Screen {
             if(s.foyer){Files.writeString(folder.resolve("passed.txt"),"Four actual native foyer exports: standoff, admitted glass door, hinged service exit and opened unhinged hallway. Production shared leaf/collision cuboids and saved pendulum angles. Full-bright geometry/material review; actual lighting, actors and client audio remain separate checks.\n");mc.stop();return;}
             if(s.interiors){Files.writeString(Path.of("../build/font-smoke/interior-environments-passed.txt"),"Thirteen actual native rooms, three floor-specific cutaways, four selected domestic extensions with finite household records, the quiet room, steel dumpster and two institute shelf/window close-ups. Full bright architecture views; not a lighting proof.\n");mc.setScreen(new DomesticAssetProof());return;}
             if(s.environment){Files.writeString(Path.of("../build/font-smoke/uncanny-environments-passed.txt"),"Eleven native room, kitchen, bathroom, exterior and floor-specific cutaways rendered with shipped textures and collision-authored models. Full-bright views; not a lighting proof.\n");mc.setScreen(new UncannyAssetProof());return;}
-            Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All "+s.files.size()+" native generated architecture views rendered successfully, including the 99 earlier views and all six uncanny rooms.\n");
+            Files.writeString(Path.of("../build/font-smoke/architecture-passed.txt"),"All "+s.files.size()+" native generated architecture views rendered successfully, including the 99 earlier views, the four plain halls and all six uncanny rooms.\n");
             TheOldestHouse.LOGGER.info("HOUSE ARCHITECTURE CHECK PASSED: {} native architecture screenshots saved",s.files.size());mc.setScreen(new OutsideSkyProof());
         }
     }

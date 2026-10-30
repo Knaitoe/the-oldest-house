@@ -189,6 +189,11 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.ALCOVE_HALL);
         gray.add(LabyrinthPlace.OFFSET_HALL);
         gray.add(LabyrinthPlace.SERVICE_LANDING);
+        // 0.4.197: the four halls that are just hallways.
+        gray.add(LabyrinthPlace.JOGGED_HALL);
+        gray.add(LabyrinthPlace.FORKED_HALL);
+        gray.add(LabyrinthPlace.PILLAR_HALL);
+        gray.add(LabyrinthPlace.ZIGZAG_HALL);
         gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
@@ -507,6 +512,10 @@ public final class LabyrinthDealer {
             case CROSS_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 4;
             case ALCOVE_HALL, OFFSET_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 22;
             case SERVICE_LANDING -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
+            // 0.4.197 (owner: "Design more hallways that are just hallways."): the plain halls, together half again the weight
+            // of the 0.4.48 halls, so a bled-in room is about one approach hall in six.
+            case JOGGED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 14;
+            case FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 26;
             case STONE_CROSSING -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 14;
             case STONE_DESCENT -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 16;

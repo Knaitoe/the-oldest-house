@@ -314,6 +314,26 @@ public enum LabyrinthPlace {
     READ_KITCHEN("kitchen_table",Kind.INTERLUDE,112,new BoundingBox(-7,-3,-17,8,6,5),List.of()),
     /** 0.4.173: the owner's Bloody Mary vignette, "Third Floor Girls'": a school hallway and the girls' bathroom off it. */
     DARE_IN_THE_DARK("dare_in_the_dark",Kind.ONE_SHOT,113,new BoundingBox(-4,-2,-29,14,5,0),literaryEntry()),
+    /**
+     * 0.4.197 (owner: "Design more hallways that are just hallways."): four plain plaster halls with nothing bled into them, built
+     * by {@link HallVariations}. A hall with one jog and a side niche door; a hall that forks into two; a broad hall down a row
+     * of pillars with a door off its side; and a hall that zigzags twice.
+     */
+    JOGGED_HALL("jogged_hall", Kind.GRAY, 114, new BoundingBox(-3,-1,-56,4,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(-3,0,-14),Direction.EAST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(2,0,-56),Direction.SOUTH,LabyrinthData.DEALT))),
+    FORKED_HALL("forked_hall", Kind.GRAY, 115, new BoundingBox(-12,-1,-31,12,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("left",new BlockPos(-10,0,-31),Direction.SOUTH,LabyrinthData.DEALT),
+            new DoorSpec("right",new BlockPos(10,0,-31),Direction.SOUTH,LabyrinthData.DEALT))),
+    PILLAR_HALL("pillar_hall", Kind.GRAY, 116, new BoundingBox(-3,-1,-46,3,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(3,0,-24),Direction.WEST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-46),Direction.SOUTH,LabyrinthData.DEALT))),
+    ZIGZAG_HALL("zigzag_hall", Kind.GRAY, 117, new BoundingBox(-2,-1,-44,10,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-44),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

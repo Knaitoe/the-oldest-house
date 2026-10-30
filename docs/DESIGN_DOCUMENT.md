@@ -1,3 +1,5 @@
+October 30 candidate 0.4.197: four plain halls (jogged, forked, pillared, zigzag) at slots 114-117, layout 52, dealt on the approach before stone; about one approach hall in six now has a room bled in. Canon: docs/PLAIN_HALLS_0_4_197.md.
+
 October 30 candidate 0.4.196: the kitchen drawing's pencil draws the reader's face (smiling, sad, scared, cross, plain) and body (trousers or a dress), worn in the House on their own skin (slim or wide arms, the drawn face) or House body, and written into the account and the leaves. Protocol 102. Canon: docs/DRAWN_SELF_0_4_196.md.
 
 October 30 candidate 0.4.195: the tone drawn at the kitchen table recolours every reader's own skin inside the House, shading kept, not only the House body worn by inhuman skins. Canon: docs/SKIN_TONE_0_4_195.md.

@@ -19,7 +19,7 @@ public final class LabyrinthPacing {
         return place==LabyrinthPlace.JUNCTION || place==LabyrinthPlace.GRAY_CORRIDOR
                 || place==LabyrinthPlace.STRAIGHT_HALL || place==LabyrinthPlace.BENT_HALL
                 || place==LabyrinthPlace.CROSS_HALL || place==LabyrinthPlace.ALCOVE_HALL
-                || place==LabyrinthPlace.OFFSET_HALL || place==LabyrinthPlace.SERVICE_LANDING || StoneHalls.isStone(place);
+                || place==LabyrinthPlace.OFFSET_HALL || place==LabyrinthPlace.SERVICE_LANDING || HallVariations.plain(place) || StoneHalls.isStone(place);
     }
     public static boolean quiet(LabyrinthPlace place) {
         return place==LabyrinthPlace.QUIET_ROOM || place==LabyrinthPlace.EXPLORER_CAMP;

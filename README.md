@@ -1,6 +1,8 @@
 # This House Has Ghosts in It
 
-Development candidate **0.4.196** lets you draw yourself at the kitchen table the way a child would: a pencil gives your picture a face (smiling, sad, scared, cross or plain) and trousers or a dress. In the House you wear what you drew: the tone, slim or wide arms, and the face. The account and the House of Leaves remember it. See [docs/DRAWN_SELF_0_4_196.md](docs/DRAWN_SELF_0_4_196.md).
+Development candidate **0.4.197** adds four hallways that are just hallways: one with a jog in it, one that forks, one down a row of pillars and one that zigzags. Fewer of the halls on the way in have rooms bled into them. See [docs/PLAIN_HALLS_0_4_197.md](docs/PLAIN_HALLS_0_4_197.md).
+
+0.4.196 lets you draw yourself at the kitchen table the way a child would: a pencil gives your picture a face (smiling, sad, scared, cross or plain) and trousers or a dress. In the House you wear what you drew: the tone, slim or wide arms, and the face. The account and the House of Leaves remember it. See [docs/DRAWN_SELF_0_4_196.md](docs/DRAWN_SELF_0_4_196.md).
 
 0.4.195 puts the skin tone you draw at the kitchen table on your own skin while you are in the House, keeping your skin's own shading; until now it only coloured the House's stand-in body. See [docs/SKIN_TONE_0_4_195.md](docs/SKIN_TONE_0_4_195.md).
 

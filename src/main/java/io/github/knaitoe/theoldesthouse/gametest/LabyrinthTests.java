@@ -217,7 +217,9 @@ public final class LabyrinthTests {
         UUID player = UUID.randomUUID();
 
         List<LabyrinthPlace> start = LabyrinthDealer.grayAvailable(data, player);
-        helper.assertTrue(start.size() == 9 && start.contains(LabyrinthPlace.JUNCTION)
+        // 0.4.197: and the four plain halls.
+        helper.assertTrue(start.size() == 13 && start.containsAll(List.of(LabyrinthPlace.JOGGED_HALL, LabyrinthPlace.FORKED_HALL, LabyrinthPlace.PILLAR_HALL, LabyrinthPlace.ZIGZAG_HALL))
+                        && start.contains(LabyrinthPlace.JUNCTION)
                         && start.contains(LabyrinthPlace.STRAIGHT_HALL)
                         && start.contains(LabyrinthPlace.BENT_HALL) && start.contains(LabyrinthPlace.CROSS_HALL)
                         && start.contains(LabyrinthPlace.QUIET_ROOM)
