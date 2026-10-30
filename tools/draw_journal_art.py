@@ -16,6 +16,8 @@ textures/font/margin.png and font/margin.json. The other eight atlases are never
 0.4.199 adds torn pages (journal/TornPages.java): the torn page's 16x16 item icon, textures/item/torn_page.png, a sheet with a
 ragged edge and a few graphite lines; and the paper a pinned page is drawn on, textures/entity/pinned_page.png, 32x40, plain
 and a little foxed, torn along its left edge, a brass pin at the top. Its lines are written on it as text, not painted.
+It also adds the journal lying open where its reader fell (journal/PostMortem.java), textures/item/journal_open.png: the
+covers spread flat, cream pages either side of the spine, a few graphite lines and a water stain.
 """
 import json
 import sys
@@ -377,8 +379,29 @@ def pinned_page():
     return img
 
 
+def journal_open():
+    """The journal lying open, face up: brown covers spread flat, cream pages either side of the spine, lines and a stain."""
+    img = Image.new('RGBA', (16, 16), CLEAR)
+    px = img.load()
+    for y in range(4, 13):
+        for x in range(1, 15):
+            px[x, y] = COVER if y in (4, 12) or x in (1, 14) else PAGE if (x + y) % 4 else PAGE_SHADE
+    for y in range(4, 13):
+        px[7, y] = COVER_DARK
+        px[8, y] = PAGE_SHADE
+    for y in (6, 8, 10):
+        for x in list(range(3, 7)) + list(range(9, 13 - (y == 10) * 2)):
+            px[x, y] = (88, 86, 92, 255)
+    for x, y in ((10, 9), (11, 10), (12, 9), (11, 8)):
+        px[x, y] = TIDE
+    for x in range(2, 14):
+        px[x, 13] = COVER_DARK
+    return img
+
+
 def outputs():
     out = {OUT / f'journal_{wear}.png': journal(wear) for wear in range(5)}
+    out[OUT / 'journal_open.png'] = journal_open()
     out[OUT / 'torn_page.png'] = torn_page()
     out[ASSETS / 'textures/entity/pinned_page.png'] = pinned_page()
     for name, draw in RUBBING_ART.items():

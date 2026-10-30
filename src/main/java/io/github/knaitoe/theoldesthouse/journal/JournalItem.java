@@ -22,6 +22,10 @@ public final class JournalItem extends Item {
         if(p instanceof ServerPlayer reader)Journals.open(reader,stack);
         return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
     }
+    /** Picked up from where it lay open, it is shut again. */
+    @Override public void inventoryTick(ItemStack stack,Level level,net.minecraft.world.entity.Entity holder,int slot,boolean selected){
+        if(!level.isClientSide&&PostMortem.isOpen(stack))net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,stack,t->t.remove(PostMortem.OPEN));
+    }
     /** Burnt, crushed or torn apart out in the world: it finds its way back to its owner. */
     @Override public void onDestroyed(ItemEntity item){
         if(item.level() instanceof ServerLevel level)Journals.get(level.getServer()).markLost(item.getItem());

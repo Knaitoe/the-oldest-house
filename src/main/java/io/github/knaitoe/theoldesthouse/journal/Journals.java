@@ -49,7 +49,7 @@ public final class Journals extends SavedData {
     public enum Opening { OPEN, NOT_YOURS, OLD_ISSUE, NOT_A_JOURNAL }
 
     /** A reader's journal: which copy is theirs now, how worn it is, whether it is out in the world lost, and its pages. */
-    static final class Book {
+    public static final class Book {
         int issue, wear; boolean lost; String name="";
         /** The House day the other hand last wrote here (CoAuthor). */
         int inked;
@@ -59,6 +59,8 @@ public final class Journals extends SavedData {
         /** Pages torn out (TornPages), by the stub they came from; the serial says which torn copy is the page now. */
         final Map<Integer,TornPages.Torn> torn=new HashMap<>();
         int tornSerial;
+        /** The halls left before a journal lost in a story room is found again; the pages written since the last death, and those soaked by it (PostMortem). */
+        int waiting;final java.util.Set<Integer> since=new java.util.HashSet<>(),soaked=new java.util.HashSet<>();
         // Not saved: the screen's allowance.
         int tokens=TOKENS; long refilled;
     }
@@ -127,7 +129,8 @@ public final class Journals extends SavedData {
     public CompoundTag contents(UUID id){
         var b=book(id);var t=new CompoundTag();t.putString("Name",b.name);t.putInt("Wear",b.wear);
         var pages=new CompoundTag();for(var e:b.pages.entrySet())if(!e.getValue().empty()||!e.getValue().begun().isEmpty())pages.put(Integer.toString(e.getKey()),e.getValue().save());
-        t.put("Pages",pages);t.putIntArray("Torn",b.torn.keySet().stream().mapToInt(Integer::intValue).sorted().toArray());return t;
+        t.put("Pages",pages);t.putIntArray("Torn",b.torn.keySet().stream().mapToInt(Integer::intValue).sorted().toArray());
+        t.putIntArray("Soaked",b.soaked.stream().mapToInt(Integer::intValue).sorted().toArray());return t;
     }
 
     public enum Edit { ACCEPTED, NOT_CARRIED, NO_SUCH_PAGE, TOO_MUCH, TOO_FAST, TORN }
@@ -159,6 +162,7 @@ public final class Journals extends SavedData {
         // A page remembers where it was begun: the first time anything is written on it.
         if(before.begun().isEmpty()&&before.day()==0&&!kept.empty())kept=kept.begunAt(where(p),day(p),HouseDimensions.isHouseDimension(p.level().dimension()));
         if(kept.empty()&&before.begun().isEmpty())b.pages.remove(index);else b.pages.put(index,kept);
+        if(!kept.text().equals(before.text()))b.since.add(index);
         setDirty();
         // 0.4.199: a full new line written in a quiet hall settles the static the worst rooms leave (Grounding).
         Grounding.wrote(p,before.text(),kept.text());
@@ -278,6 +282,7 @@ public final class Journals extends SavedData {
             var t=all.getCompound(key);var b=new Book();b.issue=t.getInt("Issue");b.wear=t.getInt("Wear");b.lost=t.getBoolean("Lost");b.name=t.getString("Name");b.inked=t.getInt("Inked");
             var pages=t.getCompound("Pages");for(String k:pages.getAllKeys()){try{int i=Integer.parseInt(k);if(i>=1&&i<=PAGES)b.pages.put(i,JournalPage.load(pages.getCompound(k)));}catch(NumberFormatException ignored){}}
             var rubbed=t.getCompound("Rubbed");for(String k:rubbed.getAllKeys())if(Rubbings.byId(k)!=null)b.rubbed.put(k,rubbed.getInt(k));
+            b.waiting=t.getInt("Waiting");for(int i:t.getIntArray("Since"))b.since.add(i);for(int i:t.getIntArray("Soaked"))b.soaked.add(i);
             b.tornSerial=t.getInt("TornSerial");var torn=t.getCompound("Torn");
             for(String k:torn.getAllKeys()){try{int i=Integer.parseInt(k);if(i>=1&&i<=PAGES)b.torn.put(i,TornPages.Torn.load(torn.getCompound(k)));}catch(NumberFormatException ignored){}}
             data.books.put(id,b);
@@ -291,6 +296,7 @@ public final class Journals extends SavedData {
             var pages=new CompoundTag();for(var p:b.pages.entrySet())pages.put(Integer.toString(p.getKey()),p.getValue().save());t.put("Pages",pages);
             if(!b.rubbed.isEmpty()){var rubbed=new CompoundTag();b.rubbed.forEach(rubbed::putInt);t.put("Rubbed",rubbed);}
             if(b.tornSerial>0)t.putInt("TornSerial",b.tornSerial);
+            if(b.waiting>0)t.putInt("Waiting",b.waiting);if(!b.since.isEmpty())t.putIntArray("Since",b.since.stream().mapToInt(Integer::intValue).toArray());if(!b.soaked.isEmpty())t.putIntArray("Soaked",b.soaked.stream().mapToInt(Integer::intValue).toArray());
             if(!b.torn.isEmpty()){var torn=new CompoundTag();b.torn.forEach((i,page)->torn.put(Integer.toString(i),page.save()));t.put("Torn",torn);}
             all.put(e.getKey().toString(),t);}
         tag.put("Books",all);if(tornOrder>0)tag.putLong("TornOrder",tornOrder);return tag;

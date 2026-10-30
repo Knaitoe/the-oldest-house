@@ -37,6 +37,8 @@ public final class JournalScreen extends Screen {
     private final Map<Integer,JournalPage> pages=new HashMap<>();
     private final Set<Integer> dirty=new HashSet<>();
     private final Set<Integer> torn=new HashSet<>();
+    /** The pages written since the last death before this one: they took the worst of it (journal/PostMortem). */
+    private final Set<Integer> soaked=new HashSet<>();
     /** The page held by its corner to be torn out, and since when. */
     private int holding=-1;private long held;
     static final long HOLD_MS=900;
@@ -53,6 +55,7 @@ public final class JournalScreen extends Screen {
         name=journal.getString("Name");wear=journal.getInt("Wear");this.proof=proof;this.spread=Mth.clamp(spread,0,Journals.PAGES/2);
         var all=journal.getCompound("Pages");for(String key:all.getAllKeys()){try{int i=Integer.parseInt(key);if(i>=1&&i<=Journals.PAGES)pages.put(i,JournalPage.load(all.getCompound(key)));}catch(NumberFormatException ignored){}}
         for(int i:journal.getIntArray("Torn"))if(i>=1&&i<=Journals.PAGES)torn.add(i);
+        for(int i:journal.getIntArray("Soaked"))if(i>=1&&i<=Journals.PAGES)soaked.add(i);
     }
     public static void open(CompoundTag journal){Minecraft.getInstance().setScreen(new JournalScreen(journal,journal.getInt("Spread"),false));}
     static JournalScreen proof(CompoundTag journal,int spread){return new JournalScreen(journal,spread,true);}
@@ -106,7 +109,7 @@ public final class JournalScreen extends Screen {
             if(i>Journals.PAGES){g.fill(x,top,x+JournalPageRenderer.W,top+JournalPageRenderer.H,0xFF2A231C);continue;}
             if(torn.contains(i)){JournalPageRenderer.stub(g,x,top,side==0,i);continue;}
             var page=page(i);
-            JournalPageRenderer.paper(g,x,top,side==0,i==0,wear,i);
+            JournalPageRenderer.paper(g,x,top,side==0,i==0,soaked.contains(i)?Math.min(Journals.WORN,wear+1):wear,i);
             if(i==0){JournalPageRenderer.cover(g,font,x,top,name);continue;}
             JournalPageRenderer.rubbings(g,font,x,top,page);
             if(editors[side]!=null)editor(g,side,x,top);else JournalPageRenderer.writing(g,font,x,top,page.text());
