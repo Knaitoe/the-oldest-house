@@ -158,6 +158,14 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - **It fades by itself** over about five minutes of play and never blocks anything.
   - **Writing settles it.** One new line of at least twenty-four letters, written in an ordinary hallway with no story room or hunter about, settles it within three seconds. Nothing says so.
 
+## The journal after a death (journal step 7)
+- **"I especially like the idea of a damaged book returning on death."** Canon: [JOURNAL_POST_MORTEM_0_4_199.md](JOURNAL_POST_MORTEM_0_4_199.md).
+  - **In an ordinary hall or the manor,** the journal stays where its reader fell, lying open, and never despawns.
+  - **In a story room** it is not there; it lies by the door of the third hall they come into after.
+  - **Damage.** Either way it is a stage more worn, and the pages written since the last death take the worst of it. Nothing in it is lost.
+  - **Never the Mother's.** She never takes it.
+  - **Elsewhere.** Outside the House it drops like anything else. With keepInventory it stays in hand, untouched.
+
 ## The Goatman's bedside ending and its horns
 - **"The Goatman ending sequence doesn't show the Goatman-kid crawl. When the Goatman jumps up to the player it should be as the Goatman, not in his kid disguise."** The crawl to the bed used to be hidden: the body turned invisible for the whole way. Now it is seen. The child it is wearing goes down on its hands and knees and crawls the aisle to the foot of the bed, low, below the sleeper's eye line (`GoatmanBedtime`, stage 5).
   - At the foot of the bed it comes up as itself, the Goatman, and jumps up in front of the sleeper before the black (stage 6).

@@ -15,5 +15,9 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 public final class JournalClient {
     private JournalClient(){}
     @SubscribeEvent public static void renderers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event){event.registerEntityRenderer(JournalRegistry.PINNED_PAGE.get(),PinnedPageRenderer::new);}
-    @SubscribeEvent public static void setup(FMLClientSetupEvent event){event.enqueueWork(()->ItemProperties.register(JournalRegistry.JOURNAL.get(),ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"wear"),(stack,level,entity,seed)->Math.min(Journals.wearOf(stack),Journals.WORN)/(float)Journals.WORN));}
+    @SubscribeEvent public static void setup(FMLClientSetupEvent event){event.enqueueWork(()->{
+        ItemProperties.register(JournalRegistry.JOURNAL.get(),ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"wear"),(stack,level,entity,seed)->Math.min(Journals.wearOf(stack),Journals.WORN)/(float)Journals.WORN);
+        // 0.4.199: lying open where its reader fell (journal/PostMortem).
+        ItemProperties.register(JournalRegistry.JOURNAL.get(),ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"open"),(stack,level,entity,seed)->io.github.knaitoe.theoldesthouse.journal.PostMortem.isOpen(stack)?1F:0F);
+    });}
 }

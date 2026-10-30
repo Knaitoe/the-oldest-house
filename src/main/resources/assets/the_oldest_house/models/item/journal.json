@@ -27,6 +27,12 @@
         "the_oldest_house:wear": 1.0
       },
       "model": "the_oldest_house:item/journal_4"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:open": 1
+      },
+      "model": "the_oldest_house:item/journal_open"
     }
   ]
 }

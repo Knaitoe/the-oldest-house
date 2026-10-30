@@ -59,6 +59,7 @@ public final class HouseExperience {
         HouseCorrespondence.crossed(p);
         LabyrinthLoops.arrive(p,place);
         if(io.github.knaitoe.theoldesthouse.labyrinth.PuzzleRooms.is(place))io.github.knaitoe.theoldesthouse.labyrinth.PuzzleRooms.arrived(p,place);
+        io.github.knaitoe.theoldesthouse.journal.PostMortem.arrived(p,place);
         var d=LabyrinthData.get(p.server);var own=record(d,p.getUUID());own.putString("CurrentPlace",place.id());own.putInt("Deepest",Math.max(own.getInt("Deepest"),d.returnDepth(p.getUUID())));
         own.remove("EchoAt");
         if(place==LabyrinthPlace.QUIET_ROOM&&d.returnDepth(p.getUUID())>=8&&own.contains("SeatState")){

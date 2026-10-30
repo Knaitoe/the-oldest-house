@@ -393,4 +393,72 @@ public final class JournalTests {
             h.assertTrue(WitnessAccount.count(LabyrinthData.get(server),id)==0&&data.page(id,2).text().contains("same lamp"),"nothing is counted, and the words are kept as written");
         }).thenSucceed();
     }
+
+    // ------------------------------------------------------------------ 0.4.199: the post-mortem journal (PostMortem)
+    static java.util.List<ItemEntity> journalsNear(net.minecraft.server.level.ServerLevel l,java.util.UUID owner,net.minecraft.core.BlockPos at){
+        return l.getEntitiesOfClass(ItemEntity.class,new net.minecraft.world.phys.AABB(at).inflate(6),e->owner.equals(Journals.owner(e.getItem())));
+    }
+    static void floor(net.minecraft.server.level.ServerLevel l,net.minecraft.core.BlockPos at){for(int x=-4;x<=4;x++)for(int z=-4;z<=4;z++)l.setBlockAndUpdate(at.offset(x,-1,z),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());}
+    private static LiteraryTests.Fixture death;
+    @net.minecraft.gametest.framework.AfterBatch(batch="journal_death") public static void deathDone(net.minecraft.server.level.ServerLevel l){if(death!=null){death.close();death=null;}l.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY).set(false,l.getServer());}
+    /**
+     * 0.4.199: dying in an ordinary hall, the journal lies open where its reader fell and never despawns; dying in a story room, it
+     * waits and lies by the door of the third hall after. Either way it is a stage worse, the pages written since the last death soaked,
+     * and nothing in it lost. Kept in hand with keepInventory; outside the House it drops like anything else. Never the Mother's.
+     */
+    @GameTest(template="empty",batch="journal_death",timeoutTicks=600)
+    public static void aJournalLiesWhereItsReaderFellOrWaitsThreeHallsAfterAStoryRoom(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);death=f;var l=f.in;var server=l.getServer();var data=Journals.get(server);
+        var hall=f.base(LabyrinthPlace.STRAIGHT_HALL).offset(0,1,-6);var story=f.base(LabyrinthPlace.HILL_NURSERY).offset(0,1,-6);var later=f.base(LabyrinthPlace.BENT_HALL).offset(0,1,-4);
+        for(var at:List.of(hall,story,later))f.chunks.hold(l,new net.minecraft.world.phys.AABB(at).inflate(10));
+        var fell=NativeTestPlayers.survival(h,"journal_fell");var lost=NativeTestPlayers.survival(h,"journal_lost");var kept=NativeTestPlayers.survival(h,"journal_kept");var away=NativeTestPlayers.survival(h,"journal_away");
+        f.players.add(fell);f.players.add(lost);f.players.add(kept);f.players.add(away);var lostId=lost.getUUID();var back=new ServerPlayer[1];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the halls and the story room are resident")).thenExecute(()->{
+            for(var at:List.of(hall,story,later))floor(l,at);
+            for(var p:List.of(fell,lost,kept,away))p.getInventory().setItem(30,data.issue(p));
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.labyrinth.MotherCollection.meaningful(fell.getInventory().getItem(30)),"the journal is never the Mother's");
+            h.assertTrue(Journals.edit(fell,1,page("Written before the fall."))==Journals.Edit.ACCEPTED&&Journals.edit(fell,2,page("And this one too."))==Journals.Edit.ACCEPTED,"pages written since the last death");
+        }).thenIdle(3).thenExecute(()->{
+            // In an ordinary hall: it lies where they fell, open, and stays.
+            fell.teleportTo(l,hall.getX()+.5,hall.getY(),hall.getZ()+.5,0,0);fell.hasChangedDimension();
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.PostMortem.fellInHall(fell),"an ordinary hall");
+            fell.hurt(fell.damageSources().genericKill(),Float.MAX_VALUE);
+            var lying=journalsNear(l,fell.getUUID(),hall);
+            h.assertTrue(!fell.isAlive()&&lying.size()==1,"the journal lies where its reader fell: "+lying.size()+" alive="+fell.isAlive());
+            var it=lying.get(0);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.PostMortem.isOpen(it.getItem())&&it.getAge()==-32768&&it.distanceToSqr(fell)<1,"lying open, and it never despawns");
+            h.assertTrue(data.wear(fell.getUUID())==1&&Journals.wearOf(it.getItem())==1&&data.check(fell,it.getItem())==Journals.Opening.OPEN,"a stage worse, and still the reader's own copy");
+            var soaked=data.contents(fell.getUUID()).getIntArray("Soaked");
+            h.assertTrue(soaked.length==2&&data.page(fell.getUUID(),1).text().equals("Written before the fall."),"the pages written since the last death took the worst of it, and nothing in them is lost");
+            // Picked up, it is shut again.
+            var picked=it.getItem().copy();it.discard();var holder=NativeTestPlayers.survival(h,"journal_fell_again",fell.getUUID());f.players.add(holder);holder.getInventory().setItem(31,picked);
+            picked.getItem().inventoryTick(picked,l,holder,31,false);
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.journal.PostMortem.isOpen(picked)&&data.check(holder,picked)==Journals.Opening.OPEN,"picking it up gives it back, shut");
+            // In a story room: it is not there; it waits for the third hall after.
+            lost.teleportTo(l,story.getX()+.5,story.getY(),story.getZ()+.5,0,0);lost.hasChangedDimension();
+            h.assertTrue(!io.github.knaitoe.theoldesthouse.journal.PostMortem.fellInHall(lost),"a story room is not a hall");
+            lost.hurt(lost.damageSources().genericKill(),Float.MAX_VALUE);
+            h.assertTrue(journalsNear(l,lostId,story).isEmpty()&&io.github.knaitoe.theoldesthouse.journal.PostMortem.waiting(server,lostId)==3&&data.wear(lostId)==1,"dying in a story room, the journal is not there: it waits");
+            NativeTestPlayers.remove(lost);back[0]=NativeTestPlayers.survival(h,"journal_lost",lostId);f.players.add(back[0]);
+            back[0].teleportTo(l,later.getX()+.5,later.getY(),later.getZ()+.5,180,0);back[0].hasChangedDimension();
+            io.github.knaitoe.theoldesthouse.journal.PostMortem.arrived(back[0],LabyrinthPlace.STRAIGHT_HALL);
+            io.github.knaitoe.theoldesthouse.journal.PostMortem.arrived(back[0],LabyrinthPlace.HILL_NURSERY);
+            io.github.knaitoe.theoldesthouse.journal.PostMortem.arrived(back[0],LabyrinthPlace.CROSS_HALL);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.journal.PostMortem.waiting(server,lostId)==1&&journalsNear(l,lostId,later).isEmpty(),"two halls on, and a story room between, it has not turned up");
+            io.github.knaitoe.theoldesthouse.journal.PostMortem.arrived(back[0],LabyrinthPlace.BENT_HALL);
+            var found=journalsNear(l,lostId,later);
+            h.assertTrue(found.size()==1&&io.github.knaitoe.theoldesthouse.journal.PostMortem.isOpen(found.get(0).getItem())&&found.get(0).getAge()==-32768&&found.get(0).distanceTo(back[0])<2.5,"in the third hall it lies by the door, open");
+            // With keepInventory it stays in hand, untouched.
+            l.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY).set(true,server);
+            kept.teleportTo(l,hall.getX()+2.5,hall.getY(),hall.getZ()+.5,0,0);kept.hasChangedDimension();kept.hurt(kept.damageSources().genericKill(),Float.MAX_VALUE);
+            h.assertTrue(journalsNear(l,kept.getUUID(),hall).isEmpty()&&data.wear(kept.getUUID())==0&&kept.getInventory().items.stream().anyMatch(s->data.check(kept,s)==Journals.Opening.OPEN),"with keepInventory it stays in the reader's hands, untouched");
+            l.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY).set(false,server);
+            // Outside the House it drops like anything else.
+            var test=h.getLevel();var outside=h.absolutePos(net.minecraft.core.BlockPos.ZERO).offset(2,1,2);away.teleportTo(test,outside.getX()+.5,outside.getY(),outside.getZ()+.5,0,0);
+            away.hurt(away.damageSources().genericKill(),Float.MAX_VALUE);
+            var dropped=journalsNear(test,away.getUUID(),outside);
+            h.assertTrue(dropped.size()==1&&!io.github.knaitoe.theoldesthouse.journal.PostMortem.isOpen(dropped.get(0).getItem())&&dropped.get(0).getAge()>=0&&data.wear(away.getUUID())==0,"outside the House it drops like anything else");
+            dropped.get(0).discard();found.get(0).discard();
+        }).thenSucceed();
+    }
 }
