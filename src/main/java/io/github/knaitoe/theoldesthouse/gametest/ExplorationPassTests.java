@@ -275,6 +275,51 @@ public final class ExplorationPassTests {
      * hall's crossing is a chain of jumps none longer than two blocks or higher than one; its pit is three deep (a fall never
      * hurts), climbs back only to the near door, and offers no step out toward the far one.
      */
+    private static LiteraryTests.Fixture glimpses;
+    @AfterBatch(batch="domestic_glimpses") public static void glimpsesDone(ServerLevel l){if(glimpses!=null){glimpses.close();glimpses=null;}}
+    /** 0.4.199, the owner: "a small chance of players seeing occupants living inside" the household slices that lead nowhere yet. */
+    @GameTest(template="empty",batch="domestic_glimpses",timeoutTicks=1200)
+    public static void someoneIsSometimesSeenInAHouseholdSliceThatLeadsNowhereYet(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);glimpses=f;var place=LabyrinthPlace.STRAIGHT_HALL;var b=f.base(place);
+        var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));
+        var p=NativeTestPlayers.survival(h,"glimpse_reader");var peer=NativeTestPlayers.survival(h,"glimpse_peer");f.players.add(p);f.players.add(peer);
+        // The glimpse looks every fifth tick of the reader's own; the case's player is not ticked, so each look is lined up with one.
+        Runnable tick=()->{p.tickCount=p.tickCount/5*5+5;DomesticGlimpses.tick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));};
+        java.util.function.BiConsumer<BlockPos,Float> stand=(at,yaw)->{p.teleportTo(f.in,at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall is resident"))
+            .thenExecute(()->{
+                LabyrinthHalls.build(f.in,b,place);LabyrinthDomestic.decorateHall(f.in,b,place);
+                h.assertTrue(DomesticGlimpses.free(f.in,f.origin,place).equals(List.of(0,1)),"both slices lead nowhere while no home has bled in");
+                // A chosen visit: someone is put into one of them where the reader is not looking.
+                stand.accept(b.offset(0,0,-2),0F);DomesticGlimpses.force=true;tick.run();
+                var someone=DomesticGlimpses.occupant(p);
+                h.assertTrue(someone!=null,"someone is put in: at "+LabyrinthPlaces.placeAt(f.origin,p.blockPosition())+" "+p.level().dimension().location()+" state "+p.getPersistentData().getCompound("DomesticGlimpse199"));
+                h.assertTrue(someone.owner().filter(p.getUUID()::equals).isPresent()&&someone.role()==LiteraryActor.STRANGER&&!someone.broadcastToPlayer(peer),"someone is in a slice, for this reader's eyes alone");
+                int index=-1;for(int i=0;i<2;i++)if(someone.blockPosition().equals(DomesticGlimpses.stand(b,LabyrinthDomestic.fragments(place).get(i))))index=i;
+                h.assertTrue(index>=0,"they stand at the back of the slice, at its counter or tub: "+someone.blockPosition().subtract(b));
+                var frag=LabyrinthDomestic.fragments(place).get(index);var at=DomesticGlimpses.stand(b,frag);var head=Vec3.atBottomCenterOf(at).add(0,1.5,0);
+                float toward=frag.entrance().getOpposite().toYRot(),away=frag.entrance().toYRot();
+                // Looked at from across the hall, they stay; looked away from, they are gone.
+                stand.accept(at.relative(frag.entrance(),6),toward);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,head);
+                for(int i=0;i<5;i++)tick.run();
+                h.assertTrue(someone.isAlive(),"watched, they stay at what they are doing");
+                p.setYRot(away);p.setXRot(0);p.setYHeadRot(away);tick.run();
+                h.assertTrue(!someone.isAlive()&&DomesticGlimpses.occupant(p)==null,"looked away from, they are gone");
+                p.setYRot(toward);tick.run();p.setYRot(away);tick.run();
+                h.assertTrue(DomesticGlimpses.occupant(p)==null,"and nobody comes back on the same visit");
+                // Another visit: walked right up to, the slice is empty.
+                p.teleportTo(f.in,b.getX()+.5,b.getY()+200,b.getZ()+.5,0,0);tick.run();
+                stand.accept(b.offset(0,0,-2),0F);DomesticGlimpses.force=true;tick.run();
+                var again=DomesticGlimpses.occupant(p);h.assertTrue(again!=null,"a later chosen visit can see someone again");
+                var there=again.blockPosition();Direction way=null;for(var fr:LabyrinthDomestic.fragments(place))if(DomesticGlimpses.stand(b,fr).equals(there))way=fr.entrance();
+                stand.accept(there.relative(way,3),way.getOpposite().toYRot());tick.run();
+                h.assertTrue(!again.isAlive()&&DomesticGlimpses.occupant(p)==null,"walked up to, the slice is empty");
+                // A slice whose home has bled in is a doorway, and nobody is glimpsed there.
+                var family=DomesticLives.HOMES.get(0);var state=f.data().state(DomesticLives.STATE);state.putBoolean(DomesticLives.key(b,family),true);f.data().setState(DomesticLives.STATE,state);
+                h.assertTrue(DomesticGlimpses.free(f.in,f.origin,place).equals(List.of(1)),"the family's kitchen leads home now, so only the laundry is left");
+                h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"nothing is counted");
+            }).thenSucceed();
+    }
     @GameTest(template="empty")
     public static void theVaultedHallAndTheCrumbledHallAreHallwaysToCrossNotRooms(GameTestHelper h)throws Exception {
         for(var hall:List.of(LabyrinthPlace.VAULTED_HALL,LabyrinthPlace.CRUMBLED_HALL)){
