@@ -174,6 +174,13 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - **What it quotes.** Only the reader's own lines, at least three words long, from pages begun in the House, that the filter left alone. Never a line naming another player, a torn line or a deleted one.
   - **Who sees it.** Only the reader. A torn page or a House of Leaves in anyone else's hands shows no quote. With the House's read turned off on the server, nobody is quoted.
 
+## Twenty artifacts that do something (audit build 7)
+- **"most of the items you provided the player with don't really have an effect on the gameplay, either inside or outside of the house."** The twenty rooms that gave nothing to carry out now each give one artifact when they end, and each does one small thing from its room's story. Canon: [ARTIFACTS_0_4_199.md](ARTIFACTS_0_4_199.md).
+  - **A few examples.** Flora's doll keeps the Lady and phantoms away. The hunter's tag halves how far monsters see a crouching reader. The counsellor's whistle calls the reader's companions. The worker's blade is a sword that slows what it cuts. The dare's candle shows invisible things for twenty minutes of wick.
+  - **Which endings.** The séance's record comes only from driving the family out, the hotel's tag only from settling or signing, the family's photograph only from leaving when asked, and a failed uncanny room gives nothing.
+  - **Same rules as the keepsakes.** Each works only for its own reader, is offerable to the Mother, adds no Witness credit, and says in a line under its name what it does. Effects meant for the reader's own world never touch the House.
+  - **The Wheel key still waits,** since its effect would change the Mother's ransom.
+
 ## The Goatman's bedside ending and its horns
 - **"The Goatman ending sequence doesn't show the Goatman-kid crawl. When the Goatman jumps up to the player it should be as the Goatman, not in his kid disguise."** The crawl to the bed used to be hidden: the body turned invisible for the whole way. Now it is seen. The child it is wearing goes down on its hands and knees and crawls the aisle to the foot of the bed, low, below the sleeper's eye line (`GoatmanBedtime`, stage 5).
   - At the foot of the bed it comes up as itself, the Goatman, and jumps up in front of the sleeper before the black (stage 6).
