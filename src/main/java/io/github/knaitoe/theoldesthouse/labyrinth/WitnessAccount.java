@@ -189,6 +189,7 @@ public final class WitnessAccount {
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"story_resolve","story",story.id,"kind",story.kind,"outcome",outcome,"role",role.id(),"count",count(data,player.getUUID()),"kinds",kinds.size(),"ready",ready(data,player.getUUID()));
         updateBook(player,true);
         io.github.knaitoe.theoldesthouse.journal.CoAuthor.ended(player,story);
+        io.github.knaitoe.theoldesthouse.journal.Grounding.ended(player,story);
         player.displayClientMessage(Component.literal(ready(data,player.getUUID())
                 ?"A passage in your account is readable now. It describes a cell."
                 :"You can set this part of the account down now."),false);

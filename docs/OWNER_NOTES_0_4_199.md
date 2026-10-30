@@ -152,6 +152,12 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - **Moderation.** The words pass the server's filter as they are torn. `/ghosthouse journal clearpages <player>` sends every page of a reader home.
   - **Nothing is lost.** A page lost in the world goes back into its stub.
 
+## Writing as grounding (journal step 6)
+- **After the worst rooms, a static stays on the reader:** a faint ringing in the ears, the view not quite steady, the edges of sight a little dark. Canon: [JOURNAL_GROUNDING_0_4_199.md](JOURNAL_GROUNDING_0_4_199.md).
+  - **Screen effects.** It follows Minecraft's screen-effects setting, down to nothing at all.
+  - **It fades by itself** over about five minutes of play and never blocks anything.
+  - **Writing settles it.** One new line of at least twenty-four letters, written in an ordinary hallway with no story room or hunter about, settles it within three seconds. Nothing says so.
+
 ## The Goatman's bedside ending and its horns
 - **"The Goatman ending sequence doesn't show the Goatman-kid crawl. When the Goatman jumps up to the player it should be as the Goatman, not in his kid disguise."** The crawl to the bed used to be hidden: the body turned invisible for the whole way. Now it is seen. The child it is wearing goes down on its hands and knees and crawls the aisle to the foot of the bed, low, below the sleeper's eye line (`GoatmanBedtime`, stage 5).
   - At the foot of the bed it comes up as itself, the Goatman, and jumps up in front of the sleeper before the black (stage 6).
