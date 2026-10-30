@@ -102,7 +102,7 @@ public final class ContestTrades {
     public static int smell(ServerPlayer p) {
         if (!smells(p)) return 0;
         if (p.isInWater()) {
-            var own = record(p);own.remove("HideSmell");save(p, own);
+            var own = record(p);own.remove("HideSmell");own.putBoolean("HideWashed", true);save(p, own);
             say(p, "The water takes the smell of the hides.");
             return 0;
         }

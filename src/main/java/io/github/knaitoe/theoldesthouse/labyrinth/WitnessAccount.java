@@ -263,6 +263,8 @@ public final class WitnessAccount {
             // 0.4.146: a reader who watched, joined partway or came back afterwards reads the account drafted for that.
             var role=role(data,player,story);var scene=SharedVignettes.drafted(LabyrinthPlace.byId(story.id));
             if(role!=VignetteRole.ACTOR&&scene!=null){var drafted=scene.line(role,stories.getString(story.id),record(data,player).getCompound("Roles").getCompound(story.id).getString("Actor"));if(drafted!=null)text=drafted;}
+            // 0.4.194: what happened afterwards, from the reader's own records: trades, what followed them, what the manor kept.
+            if(!attic)text=text+AccountAfterwards.coda(data,player,story);
             // 0.4.162: a reader who came through a scene with others closes on who went ahead of them and who was still in it.
             var together=SharedVignettes.together(LabyrinthPlace.byId(story.id));var company=record(data,player).getCompound("Company").getCompound(story.id);
             if(together!=null&&role==VignetteRole.ACTOR&&!company.isEmpty()&&!stories.getString(story.id).equals("aftermath"))

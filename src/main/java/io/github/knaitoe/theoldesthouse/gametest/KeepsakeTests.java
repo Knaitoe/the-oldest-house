@@ -108,4 +108,48 @@ public final class KeepsakeTests {
             } finally { NativeTestPlayers.remove(p); }
         });
     }
+
+    /** 0.4.194: the owner, "Ensure you're updating literature too": the accounts, the leaves and the keepsakes say what happened afterwards. */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void theAccountsLeavesAndKeepsakesSayWhatHappenedAfterwards(GameTestHelper h) {
+        var d = new LabyrinthData();var id = java.util.UUID.randomUUID();
+        // Harrigan: kept frees him; buried rots by the names.
+        var harrigan = new net.minecraft.nbt.CompoundTag();harrigan.putBoolean("KeptHarriganPhone", true);harrigan.putInt("KindSent0188", 2);
+        h.assertTrue(AccountAfterwards.harrigan(harrigan).contains("never asked me for a name"), "kept, the account says he is freed");
+        harrigan = new net.minecraft.nbt.CompoundTag();harrigan.putBoolean("Contact", true);harrigan.putInt("TotalCalls", 1);
+        String slowed = AccountAfterwards.harrigan(harrigan);harrigan.putInt("TotalCalls", 9);
+        h.assertTrue(slowed.contains("slowed") && AccountAfterwards.harrigan(harrigan).contains("missed call"), "buried, the account follows the rot");
+        // Ted, Tell-Tale, the hides, the diner, the elk and the Lady.
+        var trades = new net.minecraft.nbt.CompoundTag();trades.putInt("Unwound", 3);trades.putInt("Unease", 2);trades.putBoolean("HideWashed", true);
+        h.assertTrue(AccountAfterwards.caver(trades).contains("three times") && AccountAfterwards.caver(trades).endsWith("Then it let go.")
+                && AccountAfterwards.floorboards(trades).contains("twice") && AccountAfterwards.hides(trades).contains("until water took it off"), "the trades are written down");
+        var elk = new net.minecraft.nbt.CompoundTag();elk.putInt(ElkFollows.STRUCK_VISIT, 2);
+        h.assertTrue(AccountAfterwards.elk(elk).contains("let me pass") && ElkLotEnding.account("Reader", elk).startsWith("Once I raised a hand to her"), "the Last Stop's account begins with the night she followed");
+        var bly = new net.minecraft.nbt.CompoundTag();bly.putInt(BlyFollows.CARRIED, 1);bly.putBoolean("Dragged", true);
+        h.assertTrue(AccountAfterwards.bly(bly).contains("once") && LiteraryTexts.ending("Reader", LabyrinthPlace.BLY_ROUTE, bly).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream()
+                .anyMatch(page -> page.raw().getString().contains("walked me to the edge")), "Bly's account remembers the carries");
+        // The Witness account: a resolved room, the manor's echo of it and the trades after it.
+        WitnessAccount.resolve(d, id, WitnessAccount.Story.WALLPAPER, "collected_the_pages");WitnessAccount.resolve(d, id, WitnessAccount.Story.TED_CAVER, "retraced_the_squeeze");
+        var remembers = new net.minecraft.nbt.CompoundTag();remembers.putLong("Since_wallpaper_nursery", 0);d.setStateEntry(io.github.knaitoe.theoldesthouse.house.HouseRemembers.STATE, id.toString(), remembers);
+        d.setStateEntry(ContestTrades.STATE, id.toString(), trades);
+        var pages = WitnessAccount.book(d, id, "Reader", false).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page -> page.raw().getString()).toList();
+        h.assertTrue(pages.stream().anyMatch(t -> t.contains("Afterwards the pattern came to the manor")) && pages.stream().anyMatch(t -> t.contains("pulled my line back")),
+                "the Witness account carries what happened afterwards");
+        // The keepsakes say what they do; the House of Leaves counts what the manor kept and what the cave took back.
+        var p = NativeTestPlayers.survival(h, "afterwards_reader");
+        try {
+            var tooth = LiteraryVignettes.mark(p, LabyrinthPlace.ELK_FAN, "Tooth", new ItemStack(LiteraryRegistry.TOOTH.get()));
+            var lore = tooth.get(net.minecraft.core.component.DataComponents.LORE);
+            h.assertTrue(lore != null && lore.lines().stream().anyMatch(c -> c.getString().contains("keeps your feet under you")), "the tooth says what it does");
+            var cap = LiteraryVignettes.mark(p, LabyrinthPlace.ELK_LOT, "Cap", ElkFollows.cap());
+            h.assertTrue(cap.get(net.minecraft.core.component.DataComponents.LORE).lines().size() == 2, "the cap keeps its own line and gains one");
+            var live = LabyrinthData.get(h.getLevel().getServer());
+            live.setStateEntry(io.github.knaitoe.theoldesthouse.house.HouseRemembers.STATE, p.getStringUUID(), remembers.copy());
+            live.setStateEntry(ContestTrades.STATE, p.getStringUUID(), trades.copy());
+            var facts = StaircaseAccount.facts(p, new net.minecraft.nbt.CompoundTag());
+            h.assertTrue(facts.stream().anyMatch(f -> f.kind().id().equals("remembered") && f.value().contains("pattern")) && facts.stream().anyMatch(f -> f.kind().id().equals("unwound") && f.count() == 3),
+                    "the leaves can tell of the manor's echo and the line taken back: " + facts.stream().map(f -> f.kind().id()).toList());
+        } finally { NativeTestPlayers.remove(p); }
+        h.succeed();
+    }
 }
