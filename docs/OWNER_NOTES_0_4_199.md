@@ -42,6 +42,13 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
   - It plays once, as before, from the intercom, now at its natural pitch. Its subtitle reads "A voice through the intercom".
   - The other four foyer cues are unchanged, and CI never needs the voice model.
 
+## Chalk
+- **"The player should be able to erase chalk markings by right-clicking to 'rub them' out."** A right-click on a mark now rubs it out in a little chalk dust, with a soft brushing sound (`ChalkMarkBlock.useWithoutItem`, `NavigationAids.rub`).
+  - It works with an empty hand, with most things in the hand, and with the chalk itself, with or without sneaking.
+  - A held block still places as before.
+  - As before, only the reader who drew a mark can rub it out; anyone else is told "You can only rub out your own chalk mark."
+  - The companions case right-clicks a mark through the native interaction: a peer's click leaves it; the owner's click, then the owner's chalk, rub it out.
+
 ## Tests
 - The shelter case walks the reader away after the dance and checks that the stranger stays put.
 - The Ghosts namespace (24 cases), the novel sites (16) and the shelter case pass locally.

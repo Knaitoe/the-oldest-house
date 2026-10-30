@@ -19,9 +19,8 @@ public final class NavigationItems {
             if(!(context.getPlayer() instanceof ServerPlayer player))return InteractionResult.SUCCESS;
             if(!NavigationAids.allowed(player))return InteractionResult.PASS;
             var clicked=context.getClickedPos();
-            if(player.isShiftKeyDown()&&player.serverLevel().getBlockState(clicked).is(HouseBlocks.CHALK_MARK.get())) {
-                if(!NavigationAids.erase(player,clicked))ExpeditionRhythm.refuse(player,clicked,"chalk_owner","You can only rub out your own chalk mark.");return InteractionResult.CONSUME;
-            }
+            // 0.4.199: the chalk on a mark rubs it out too, sneaking or not, as an empty hand does.
+            if(player.serverLevel().getBlockState(clicked).is(HouseBlocks.CHALK_MARK.get())){NavigationAids.rub(player,clicked);return InteractionResult.CONSUME;}
             var pos=clicked.relative(context.getClickedFace());
             if(NavigationAids.placeChalk(player.serverLevel(),pos,context.getClickedFace(),player.getDirection())) {
                 NavigationAids.remember(player.serverLevel(),pos,player.getUUID(),true);
