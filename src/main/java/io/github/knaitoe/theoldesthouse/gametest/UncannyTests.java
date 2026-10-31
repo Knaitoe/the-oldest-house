@@ -202,7 +202,9 @@ public final class UncannyTests {
         h.assertTrue(doll.phase()==0,"the figure is gone from the hall");
     });}
     /** A door the reader shut, having seen it: the knob rattles, the parents settle, and it folds away. */
-    @GameTest(template="empty",batch="uncanny_parents_door201",timeoutTicks=900) public static void aDoorShutOnWhatWasComingHoldsWhenItTriesTheKnob(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
+    @AfterBatch(batch="uncanny_parents_shut201") public static void parentsShutDone(ServerLevel l){close();}
+    // Its own batch: the two cases build the same room, and one shuts the door the other needs open.
+    @GameTest(template="empty",batch="uncanny_parents_shut201",timeoutTicks=900) public static void aDoorShutOnWhatWasComingHoldsWhenItTriesTheKnob(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         var place=LabyrinthPlace.MISSING_SLEEP;var b=f.base(place);var l=f.level(place);f.source(p,place);click(f,p,place,UncannyRooms.BED_AT);
         var own=f.own(p,place);own.putBoolean("MarionetteSeen",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
         click(f,p,place,UncannyRooms.PARENTS_DOOR);own=f.own(p,place);
