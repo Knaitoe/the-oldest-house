@@ -39,7 +39,14 @@ public final class LakeHouseCanoe extends Boat {
     private static final EntityDataAccessor<Integer> CHIPS=SynchedEntityData.defineId(LakeHouseCanoe.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> PUSH_SIDE=SynchedEntityData.defineId(LakeHouseCanoe.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> PUSH_TICKS=SynchedEntityData.defineId(LakeHouseCanoe.class,EntityDataSerializers.INT);
-    public static final int STROKE_TICKS=16;
+    /**
+     * 0.4.201 (owner: "the movement through the hand-push corridor is dreadfully slow and awkward"): a stroke's arm lasts ten
+     * ticks; the other hand may follow after eight, the same hand only once its stroke is done. Hand over hand the canoe now
+     * averages about three blocks a second through the culvert (it was about one), gliding between strokes.
+     */
+    public static final int STROKE_TICKS=10,HAND_OVER_HAND=8;
+    /** Each stroke's push along the culvert, the most the hull carries across the water, and how little the push sets it off its wall. */
+    static final double STROKE=.15,TOP_SPEED=.3,OFF_WALL=.03;
     public static final int MAX_CHIPS=2;
     /** Where the canoes wait, one per reader: either side of the dock's far end. */
     static final BlockPos[] SPOTS={new BlockPos(4,-1,-19),new BlockPos(-4,-1,-19),new BlockPos(4,-1,-16),new BlockPos(-4,-1,-16)};
@@ -102,6 +109,13 @@ public final class LakeHouseCanoe extends Boat {
         if(!level().hasChunkAt(BlockPos.containing(end)))return false;
         return level().clip(new ClipContext(from,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,this)).getType()==HitResult.Type.BLOCK;
     }
+    /** How far the nearest wall is across the culvert on one side (-1 left, 1 right), up to two blocks. */
+    double wallDistance(int side){
+        var from=position().add(0,.6,0);var end=from.add(right().scale(side*2.0));
+        if(!level().hasChunkAt(BlockPos.containing(end)))return 2;
+        var hit=level().clip(new ClipContext(from,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,this));
+        return hit.getType()==HitResult.Type.BLOCK?hit.getLocation().distanceTo(from):2;
+    }
     /**
      * One hand pushes off its own wall: the canoe goes along the culvert (back out, for a back stroke, {@code side} ±2) and
      * a little away from that wall. The same bounded stroke is predicted locally and checked against the server's actual
@@ -110,11 +124,14 @@ public final class LakeHouseCanoe extends Boat {
     public boolean push(Player player,int stroke){
         int side=Integer.signum(stroke);boolean back=Math.abs(stroke)==2;
         if(side==0||Math.abs(stroke)>2)return false;
+        // The other hand may start before this one's stroke is over; the same hand waits for its own. The server allows a few
+        // more ticks for the packet to arrive.
+        int last=entityData.get(PUSH_SIDE),wait=last==-side?STROKE_TICKS-HAND_OVER_HAND:0;
         if(!player.isAlive()||player.isSpectator()||player.getVehicle()!=this||getFirstPassenger()!=player||!underLowRoof()
-                ||entityData.get(PUSH_TICKS)>(level().isClientSide?0:3)||BodyLoss.missing(player)==(side<0?net.minecraft.world.entity.HumanoidArm.LEFT:net.minecraft.world.entity.HumanoidArm.RIGHT)||!wallWithinReach(side))return false;
-        var away=right().scale(-side*.085);
-        var motion=getDeltaMovement().add(forward().scale(back?-.13:.13)).add(away);var horizontal=motion.multiply(1,0,1);
-        if(horizontal.lengthSqr()>.22*.22)horizontal=horizontal.normalize().scale(.22);
+                ||entityData.get(PUSH_TICKS)>wait+(level().isClientSide?0:3)||BodyLoss.missing(player)==(side<0?net.minecraft.world.entity.HumanoidArm.LEFT:net.minecraft.world.entity.HumanoidArm.RIGHT)||!wallWithinReach(side))return false;
+        var away=right().scale(-side*OFF_WALL);
+        var motion=getDeltaMovement().add(forward().scale(back?-STROKE:STROKE)).add(away);var horizontal=motion.multiply(1,0,1);
+        if(horizontal.lengthSqr()>TOP_SPEED*TOP_SPEED)horizontal=horizontal.normalize().scale(TOP_SPEED);
         setDeltaMovement(new Vec3(horizontal.x,motion.y,horizontal.z));entityData.set(PUSH_SIDE,side);entityData.set(PUSH_TICKS,STROKE_TICKS);
         if(!level().isClientSide)level().playSound(null,getX(),getY(),getZ(),LakeHouseRegistry.SCRAPE.get(),SoundSource.NEUTRAL,.4F,1.1F);
         return true;
@@ -162,7 +179,12 @@ public final class LakeHouseCanoe extends Boat {
         }
         super.tick();
         if(low&&isControlledByLocalInstance()){
-            setDeltaMovement(getDeltaMovement().multiply(.94,1,.94));
+            // 0.4.201: it glides between strokes, and keeps to the middle of the channel rather than knocking from wall to
+            // wall: most of its drift across is lost each tick, and it eases toward the point between the two walls.
+            var v=getDeltaMovement();var across=right();double drift=v.x*across.x+v.z*across.z;
+            double toward=net.minecraft.util.Mth.clamp((wallDistance(1)-wallDistance(-1))*.04,-.02,.02);
+            v=v.add(across.scale(drift*.4-drift+toward));
+            setDeltaMovement(v.multiply(.97,1,.97));
             setYRot(net.minecraft.util.Mth.approachDegrees(getYRot(),channelYaw(),4F));
         }
         if(!low){entityData.set(PUSH_TICKS,0);entityData.set(PUSH_SIDE,0);}
