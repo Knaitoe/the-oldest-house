@@ -54,8 +54,10 @@ public final class SceneVisualProof extends Screen {
         read=environment&&Boolean.getBoolean("the_oldest_house.houseReadSmoke");
         var models=Minecraft.getInstance().getEntityModels();body=new LiteraryRenderers.CastModel(models.bakeLayer(LiteraryRenderers.CAST));elk=new LiteraryRenderers.ElkModel(models.bakeLayer(LiteraryRenderers.ELK));
         try(var stream=Files.list(Path.of(read?"../build/house-read139-proof":meal?"../build/goatman137-proof":foyer?"../build/foyer136-proof":interiors?"../build/interior-environment-proof":environment?"../build/uncanny-environment-proof":"../build/architecture-proof"))){files=stream.filter(p->p.toString().endsWith(".json")).sorted().toList();}
-        int expected=read?6:meal?3:foyer?4:interiors?io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriors.PLACES.size()+11:environment?11:112+UncannyRooms.PLACES.size()+1;
-        if(files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated architecture views (112 earlier with 0.4.197's four plain halls, 0.4.199's vaulted and crumbled halls, its six puzzle rooms and the way out, every uncanny room and the third-floor bathroom), found "+files.size());
+        int expected=read?6:meal?3:foyer?4:interiors?-1:environment?11:-1;
+        if(expected>=0&&files.size()!=expected)throw new IllegalStateException("Expected "+expected+" generated views, found "+files.size());
+        // The architecture views are every export the server wrote; the workflow checks the set against the places (vignettes.txt) and each rendered page.
+        if(files.isEmpty())throw new IllegalStateException("No native exports to render");
         if(!environment)for(var room:UncannyRooms.PLACES)if(files.stream().noneMatch(p->p.getFileName().toString().equals(room.id()+".json")))throw new IllegalStateException("Missing native architecture export for "+room.id());
         if(!environment&&files.stream().noneMatch(p->p.getFileName().toString().equals(LabyrinthPlace.DARE_IN_THE_DARK.id()+".json")))throw new IllegalStateException("Missing native architecture export for the third-floor bathroom");
         load();

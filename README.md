@@ -1,5 +1,27 @@
 # This House Has Ghosts in It
 
+*This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
+
+## Playing it
+
+- **Install.** NeoForge 21.1 for Minecraft 1.21.1, then the mod jar in `mods/`. On a server, the clients and the server must run the same mod version.
+- **The opening.** Settle in: three days and two nights in your own bed. A letter and a photograph of your home arrive; a dog, Hillary, turns up the morning after; the morning after that the House appears nearby, and she leads you to it.
+- **The manor.** Live with it. Things change between mornings. A room appears between two rooms; then a hallway opens where there was a wall.
+- **The halls.** Behind the hallway the House deals doors. Most lead to ordinary halls. Some lead to rooms with a story in them, borrowed from books and films and told from inside; each has its own way to end and its own account to read afterwards. Deeper in, the halls turn to stone, and a great staircase goes down.
+- **Your journal** arrives with the letter. You write in it; now and then the House writes back.
+- **Endings.** Three. The hardest is the Witness: an account of most of the House's stories, across more than one kind.
+- **With friends.** Everything is per reader: your doors, your rooms' progress, your account. Some rooms are shared when you are there together.
+- **What the House keeps about you.** See *What the House keeps about you* below; three server options turn its read off.
+- **Operators.** `/ghosthouse` (permission level 2) spawns, inspects and shortcuts the House; see *Development commands* below.
+
+## Building it
+
+Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServer` runs the native suite (about 75 minutes, 6 GiB); `gradle runClient -PfontSmoke` renders the client proofs. Every texture, model and blockstate under `tools/` is generated, and CI checks each in `--check` mode. Working notes for agents are in `AGENTS.md`; the design is in `docs/DESIGN_DOCUMENT.md`.
+
+## Release notes
+
+Later in 0.4.199: the night ward is rebuilt as a clinical ward with curtained bays (see [docs/NIGHT_WARD_CLINICAL_0_4_199.md](docs/NIGHT_WARD_CLINICAL_0_4_199.md)); a door opens onto a meadow that looks like the way out and is not (see [docs/WAY_OUT_0_4_199.md](docs/WAY_OUT_0_4_199.md)); the mod stops carrying migrations for older worlds, since it ships new builds only (see [docs/NEW_BUILDS_ONLY_0_4_199.md](docs/NEW_BUILDS_ONLY_0_4_199.md)); and the workflow gains a gate job and derived checks (see [docs/CI_GATE_0_4_199.md](docs/CI_GATE_0_4_199.md)).
+
 Development candidate **0.4.199** adds two more hallways: one whose ceiling is far too high, its lamps hung low on long chains, and one whose floor has fallen into a shallow cellar, crossed by jumping from what is left of the boards. See [docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md](docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md). It also has the first puzzle room. A dim dressing room with a stage lamp behind a shutter, a mirror on a scraped track and a cold brass sun beside a door with no handle. Lift the catch, turn the glass and slide it along the track until the beam lies on the sun. Nothing counts down or runs out, and once the room is solved it stays solved. See [docs/BORROWED_LIGHT_0_4_199.md](docs/BORROWED_LIGHT_0_4_199.md). Five more puzzle rooms follow it: a pantry dumbwaiter raised by weights in its counterweight pan, a stair landing turned by a heavy handle, and, deeper in, a lamp's beam carried through windows into rooms reached the long way round, two goods lifts on one counterweight ridden in turn to a gallery, and two landings geared together. See [docs/PUZZLE_ROOMS_0_4_199.md](docs/PUZZLE_ROOMS_0_4_199.md). Pages can now be torn out of the journal, read by anyone, pinned to walls or left on tables; the manor holds as many as a reader likes. See [docs/JOURNAL_TORN_PAGES_0_4_199.md](docs/JOURNAL_TORN_PAGES_0_4_199.md). The worst rooms now leave a lingering static that a few lines written in a quiet hall will settle; see [docs/JOURNAL_GROUNDING_0_4_199.md](docs/JOURNAL_GROUNDING_0_4_199.md). A journal comes back from a death in the House a stage more worn: where its reader fell, or by the door three halls on; see [docs/JOURNAL_POST_MORTEM_0_4_199.md](docs/JOURNAL_POST_MORTEM_0_4_199.md). And now and then the House quotes a reader's own journal lines back to them: in their House of Leaves, once through the other hand, and on its last page at an ending; see [docs/JOURNAL_QUOTES_0_4_199.md](docs/JOURNAL_QUOTES_0_4_199.md). Twenty rooms that gave nothing to carry out now each give an artifact that does something small from its story, such as a doll that keeps phantoms away, a whistle that calls companions or a candle that shows what is invisible; see [docs/ARTIFACTS_0_4_199.md](docs/ARTIFACTS_0_4_199.md).
 
 0.4.198 gives four more keepsakes something to do. Zampanò's leaves show the door back in a plain hall. The vulture photograph, held still, keeps far monsters from fixing on you. Her compass points to where you last fell. Her name patch keeps what was in your hand when you die away from the House, once a day. See [docs/KEEPSAKES_0_4_198.md](docs/KEEPSAKES_0_4_198.md).

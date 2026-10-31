@@ -102,7 +102,7 @@ public final class Playtest0488Tests {
                 h.runAfterDelay(20,()->{
                     double first=father.position().distanceTo(start);h.assertTrue(first>.3&&first<2.5&&father.phase()==1,"the original father takes actual guarded steps through the shelter entrance");
                     // Run 1353: on a busy server the rabbit's entity can load a few ticks after the choice; the case waits for it.
-                    whenRabbit(h,f,p,place,0,rabbit->{
+                    SceneReady.whenEntity(h,f.out,()->{var st=LiteraryVignettes.shared(f.data(),place);return st.hasUUID("Rabbit_"+p.getUUID())?st.getUUID("Rabbit_"+p.getUUID()):null;},Rabbit.class,r->HolyRabbit.owner(r).isPresent(),200,rabbit->{
                     h.assertTrue(rabbit!=null&&HolyRabbit.owner(rabbit).orElseThrow().equals(p.getUUID()),"the original native rabbit carries the synced private-renderer marker");
                     rabbit.setCustomName(net.minecraft.network.chat.Component.literal("Snow"));var rabbitId=rabbit.getUUID();var rabbitAt=rabbit.position();
                     var next=f.own(p,place);next.putInt("Night",2);next.putInt("NightTicks",35);next.putInt("FatherWaypoint0488",1);LiteraryVignettes.save(f.data(),p.getUUID(),place,next);
@@ -122,13 +122,6 @@ public final class Playtest0488Tests {
                     });
                 });
             });
-    }
-    /** The scene's own rabbit for this reader, once its entity is loaded and marked (up to ten seconds), or null. */
-    private static void whenRabbit(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,int tries,java.util.function.Consumer<Rabbit> then){
-        var state=LiteraryVignettes.shared(f.data(),place);
-        var rabbit=state.hasUUID("Rabbit_"+p.getUUID())&&f.out.getEntity(state.getUUID("Rabbit_"+p.getUUID())) instanceof Rabbit r?r:null;
-        if(rabbit!=null&&HolyRabbit.owner(rabbit).isPresent()||tries>=40){then.accept(rabbit);return;}
-        h.runAfterDelay(5,()->whenRabbit(h,f,p,place,tries+1,then));
     }
     @AfterBatch(batch="notes488_rabbit_motion") public static void rabbitMotionDone(ServerLevel ignored){if(rabbitMotion!=null){rabbitMotion.close();rabbitMotion=null;}}
 
