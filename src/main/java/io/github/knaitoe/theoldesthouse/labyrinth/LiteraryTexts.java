@@ -49,10 +49,11 @@ public final class LiteraryTexts {
         case ELK_FAN->book("An unfinished repair","The tenant",
             "The light flickers at the same point in each turn. I brought the old folding ladder in from the shed. The catches still hold. There is a screwdriver and a replacement bulb in the tray.\n\nI keep my hands below the blades.",
             "From the top step the carpet seems farther away. Something lies between the turns. I cannot make it out from the chair.\n\nThe room was taped off when I came back. Whoever did it had already gone.");
+        // 0.4.201 (docs/MAPPING_INTERIOR_REWORK.md): the older brother's measurements and nights, never the ending.
         case MAPPING_INTERIOR->book("A floor plan","The older brother",
-            "The trailer ends at the back bedroom. I know because I have walked around it. Under the hatch, the dirt keeps going.\n\nMy brother sleeps through breakfast now.",
-            "I saw someone cross the kitchen. He looked more like a shadow than a man. Each time I return, I can make out another part of his face.",
-            "His things are below the house. Break the pile, or take what he left. I do not know which one means letting him go.");
+            "Front room, eleven steps across. Kitchen, nine. The hall back to the utility room, seven. I walked the hall again with my eyes shut and it came out eight.\n\nThe clock on the stove says 2:49. It always says 2:49.",
+            "He comes out of the kitchen doorway and goes up the hall to the utility room. You hear the bells at his ankles before you see him. Every night there is a little more of him to see.\n\nDino sleeps later every morning.",
+            "Ghosts need something to hold on to here. There was a bead on the carpet where he walked.\n\nUnder the house the dirt keeps going past where the walls stop. I counted the steps out there and the steps in here. They don't add up.");
         // 0.4.101: the child's own words; the meat and the trousers are noticed, not yet understood.
         case HOLY_RABBIT->book("The hollow","A child",
             "He put me where the needles kept the snow out. His shoulders would not fit. He said we would wait for morning.\n\nMy own food was hard as the ground.",
@@ -116,7 +117,12 @@ public final class LiteraryTexts {
         case BORRASCA->BorrascaTexts.account();
         case ELK_LOT->ElkLotEnding.account(name,own);
         case ELK_FAN->"From above the ladder I could see what lay below the moving blades. I stayed up there longer than I meant to. The blade caught me; when I could see again I was outside the room. A tooth lay in my hand. When I returned, tape held the shape of the deer.";
-        case MAPPING_INTERIOR->own.getBoolean("PileBroken")?"I broke the pile under the trailer. The boy woke when I came back. The crawlspace still ran beyond the walls, but the things at its end could no longer hold him there.":"I took what lay under the trailer. The photograph came with me. When I returned, the boy was harder to wake. Keeping a father's things was not the same as keeping a brother.";
+        case MAPPING_INTERIOR->{
+            boolean drowned=own.getBoolean("Drowned201"),free=own.getBoolean("LetGo201");
+            String nights="Every night at 2:49 I came to at the front window, and he crossed from the kitchen doorway to the hall, the bells first and a little more of him each time. Dino slept later every morning. Under the house the dirt ran on past the walls, down to black water.";
+            String water=free?" When he went down into it I held him under until he stopped, and let the bead go into the water after him. The next night Dino was at the kitchen table, asking what there was to eat.":drowned?" When he went down into it I held him under until he stopped. I kept the bead. The next night Dino would not wake, and somewhere in the house there were bells.":" When he went down into it I could not hold him under. I kept the bead. The next night Dino would not wake, and the bells were in the hall.";
+            yield nights+water+(free?" Years later I still pace a room out when I come into it. Some nights I can see the old walls rising around me.":" Years later I still have it. Some nights I can see the old walls rising around me, and I know who is walking in them.");
+        }
         case HOLY_RABBIT->rabbitAccount(own);
         case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\n"+confessionLast(own)+"The signature was mine. The chair opposite me had not changed.";
         case ELK_CARCASSES->"I held still beneath the hides. His boots passed the opening twice and did not slow: nobody looks twice at a pile of things already dead. When the boots stopped coming back, I followed the service path. The smell of the hides came with me.";
@@ -135,7 +141,7 @@ public final class LiteraryTexts {
         if(place==LabyrinthPlace.HOLY_RABBIT)return book(WitnessAccount.Story.HOLY_RABBIT.title,name,GhostsSet.pages(text).toArray(String[]::new));
         String title=switch(place){case MOVIE_NIGHT->"The account: after the show";case COSTUME_NIGHT->"The account: the ribbon";case WINTER_LAKE->"The account: the dare";default->accountTitle(place);};
         // The longer generated accounts are paged (Confession's count is written out now); every other keeps its one page.
-        boolean paged=place==LabyrinthPlace.CONFESSION||place==LabyrinthPlace.MOVIE_NIGHT||place==LabyrinthPlace.COSTUME_NIGHT||place==LabyrinthPlace.WINTER_LAKE||place==LabyrinthPlace.ELK_LOT||place==LabyrinthPlace.WINCHESTER||place==LabyrinthPlace.USHER&&own.getBoolean("Fell0507");
+        boolean paged=place==LabyrinthPlace.CONFESSION||place==LabyrinthPlace.MOVIE_NIGHT||place==LabyrinthPlace.COSTUME_NIGHT||place==LabyrinthPlace.WINTER_LAKE||place==LabyrinthPlace.ELK_LOT||place==LabyrinthPlace.WINCHESTER||place==LabyrinthPlace.MAPPING_INTERIOR||place==LabyrinthPlace.USHER&&own.getBoolean("Fell0507");
         return paged?book(title,name,GhostsSet.pages(text).toArray(String[]::new)):book(title,name,text);}
     /** 0.4.105: the rule a source paper used to state outright, given once in plain words after its paper is read; the paper stays in its writer's voice. */
     public static String hint(LabyrinthPlace place){return switch(place){
@@ -151,7 +157,7 @@ public final class LiteraryTexts {
     public static String accountTitle(LabyrinthPlace place){
         if(UncannyRooms.isUncanny(place))return UncannyTexts.title(place);
         String title="The account: "+StaircaseProse.place(place.id());if(title.length()<=32)return title;
-        return "The account: "+switch(place){case HILL_NURSERY->"the nursery";case MINIATURES->"the workshop";case ELK_FAN->"the fan room";case MAPPING_INTERIOR->"the crawlspace";
+        return "The account: "+switch(place){case HILL_NURSERY->"the nursery";case MINIATURES->"the workshop";case ELK_FAN->"the fan room";case MAPPING_INTERIOR->"the floor plan";
             case ELK_CARCASSES->"the ridge";case END_WORLD_CABIN->"the cabin";case FAMILY_COPY->"the copied home";case THREE_FINGERS->"the cottage";case LAKE_HOUSE->"the lake house";case DARE_IN_THE_DARK->"the third floor";case FEET_UP->"the family house";default->"the room";};
     }
     /** 0.4.101: what the child saw, in order, with the rabbit's own name; the carving only if they looked up at it. */

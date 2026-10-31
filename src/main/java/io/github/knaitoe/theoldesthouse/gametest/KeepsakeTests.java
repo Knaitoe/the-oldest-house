@@ -58,7 +58,7 @@ public final class KeepsakeTests {
             var wolf = h.spawn(EntityType.WOLF, new BlockPos(3, 1, 3));wolf.tame(p);
             var stray = h.spawn(EntityType.WOLF, new BlockPos(5, 1, 3));stray.tame(other);
             float full = wolf.getHealth();
-            p.getInventory().setItem(10, keepsake(p, LabyrinthPlace.MAPPING_INTERIOR, "Photograph", new ItemStack(LiteraryRegistry.PHOTOGRAPH.get())));
+            p.getInventory().setItem(10, keepsake(p, LabyrinthPlace.MAPPING_INTERIOR, "Bead", new ItemStack(LiteraryRegistry.BEAD.get())));
             wolf.hurt(h.getLevel().damageSources().generic(), 4);stray.hurt(h.getLevel().damageSources().generic(), 4);
             h.assertTrue(Math.abs(full - wolf.getHealth() - 2) < .01 && Math.abs(stray.getMaxHealth() - stray.getHealth() - 4) < .01,
                     "the keeper's companion takes half, another's the whole: " + (full - wolf.getHealth()) + " / " + (stray.getMaxHealth() - stray.getHealth()));

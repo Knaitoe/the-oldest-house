@@ -82,7 +82,7 @@ public final class SceneCraft {
     // lot, field and woods, Movie Night (0.4.102) its own banks, woods and piers, Costume Night (0.4.103) its beach, lake and
     // park, and Winter Lake (0.4.104) its frozen lake and snowy banks: nothing generic is planted over them. The barn well's
     // farm (0.4.164) is built whole by BarnWell, its barn, shed, well and wood with it.
-    static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.MAPPING_INTERIOR, LabyrinthPlace.HOLY_RABBIT,
+    static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.HOLY_RABBIT,
             LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
             LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
     /** How far outside its room box a scene's banks and woods reach. */

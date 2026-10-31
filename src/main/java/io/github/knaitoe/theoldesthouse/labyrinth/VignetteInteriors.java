@@ -15,7 +15,7 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.K
 public final class VignetteInteriors {
  public static final String STATE="vignette_interiors_0125b";
  public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.FLOORBOARDS,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY,
-  LabyrinthPlace.HILL_NURSERY,LabyrinthPlace.MINIATURES,LabyrinthPlace.CRIMSON_HALL,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CONFESSION,
+  LabyrinthPlace.HILL_NURSERY,LabyrinthPlace.MINIATURES,LabyrinthPlace.CRIMSON_HALL,LabyrinthPlace.CONFESSION,
   LabyrinthPlace.DEVILS_ROCK,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOLLOWAY_CAMP);
  private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
  public record Edit(BlockPos relative,BlockState expected,BlockState next){}
@@ -77,11 +77,6 @@ public final class VignetteInteriors {
    shell(e,-18,18,-43,0,1,5,Blocks.POLISHED_BLACKSTONE_BRICKS,CRIMSON_SILK);
    for(int x:new int[]{-11,11}){fit(e,x,0,-32,CYLINDER_CABINET);fit(e,x,1,-32,CYLINDER_HORN);fit(e,x,0,-29,FOLDING_MUSIC_STAND);fit(e,x<0?-17:17,2,-8,CRIMSON_COAT_HOOK,x<0?Direction.EAST:Direction.WEST);}
    fill(e,-17,-1,-42,-15,-1,-1,LiteraryRegistry.RED_FLOOR.get(),CRIMSON_WALNUT);fill(e,15,-1,-42,17,-1,-1,LiteraryRegistry.RED_FLOOR.get(),CRIMSON_WALNUT);
-  }
-  case MAPPING_INTERIOR->{
-   shell(e,-13,13,-36,-8,1,4,LiteraryRegistry.SIDING.get(),TRAILER_PAPER);fill(e,-12,0,-24,12,4,-24,Blocks.CALCITE,TRAILER_PAPER);
-   fill(e,-12,-1,-23,-6,-1,-9,Blocks.BIRCH_PLANKS,TRAILER_VINYL);
-   fit(e,-10,0,-13,TRAILER_SINK,Direction.EAST);fit(e,-11,0,-13,TRAILER_CUPBOARD,Direction.EAST);fit(e,-11,0,-14,TRAILER_CUPBOARD,Direction.EAST);fit(e,-11,1,-14,HOLIDAY_CROCKERY,Direction.EAST);
   }
   case CONFESSION->{
    shell(e,-12,12,-33,0,1,7,LiteraryRegistry.DARK_PANEL.get(),CONFESSION_PAPER);shell(e,-12,12,-33,0,0,0,Blocks.DARK_OAK_PLANKS,CONFESSION_OAK);

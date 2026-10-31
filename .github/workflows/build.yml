@@ -73,6 +73,7 @@ jobs:
           python3 tools/draw_split_feed_night.py --check
           python3 tools/draw_zampano_naturalized.py --check
           python3 tools/draw_hallway_bat.py --check
+          python3 tools/draw_mapping_bead.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v

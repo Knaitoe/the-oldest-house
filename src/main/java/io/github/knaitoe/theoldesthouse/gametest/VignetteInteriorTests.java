@@ -66,7 +66,6 @@ public final class VignetteInteriorTests {
     if(p==LabyrinthPlace.CONFESSION){body(h,l,b,1,0,-12,"interview entrance");body(h,l,b,-3,0,-24,"archive-to-interview side opening");}
     if(p==LabyrinthPlace.DEVILS_ROCK){body(h,l,b,-4,0,-8,"kitchen entrance");h.assertTrue(l.getBlockState(b.offset(-9,0,-12)).isAir(),"the first loose page retains its original landing inside the kitchen");}
     if(p==LabyrinthPlace.MINIATURES)for(int x:new int[]{-8,0,8})body(h,l,b,x,0,-16,"model examination front");
-    if(p==LabyrinthPlace.MAPPING_INTERIOR){body(h,l,b,0,0,-16,"original hatch approach");var c=b.offset(0,-5,-40);h.assertTrue(l.noCollision(null,new AABB(c.getX()+.2,c.getY()+.01,c.getZ()+.2,c.getX()+.8,c.getY()+.6,c.getZ()+.8)),"the low crawl stays traversable while crawling");}
     if(p==LabyrinthPlace.CONFESSION){body(h,l,b,1,0,-19,"the two original interview chairs");h.assertTrue(l.getBlockState(b.offset(11,0,-20)).is(Blocks.BOOKSHELF),"the original shelf still receives the blank-book story interaction");}
     if(p==LabyrinthPlace.CRIMSON_HALL)h.assertTrue(l.getBlockEntity(b.offset(0,0,-30)) instanceof net.minecraft.world.level.block.entity.JukeboxBlockEntity,"the three originals still play in a real native jukebox");
     try{ArchitectureTests.export(l,b,p);}catch(Exception ex){throw new RuntimeException(ex);}
