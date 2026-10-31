@@ -1,0 +1,39 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "the_oldest_house:block/feet_up/cobweb",
+    "particle": "the_oldest_house:block/feet_up/cobweb"
+  },
+  "elements": [
+    {
+      "from": [
+        6.343,
+        8,
+        11.99
+      ],
+      "to": [
+        17.657,
+        16,
+        12.01
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          12,
+          8,
+          12
+        ]
+      }
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+October 31 candidate 0.4.200 adds Feet Up, a parkour vignette: the children's floor-is-lava game in a family house, from the big chair to the attic, with bases, a count of three, chairs that come closer unseen, boards that give way, a sweeping fan and a dumbwaiter. Survival kind; 56 sources / 42 required. Canon: docs/FEET_UP_0_4_200.md.
+
 October 30 candidate 0.4.199: two more plain halls, a vaulted hall with a fifteen-block ceiling and a crumbled hall crossed on the boards left over a shallow cellar. Canon: docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md.
 
 October 30 candidate 0.4.199, the first puzzle room: Borrowed Light, a dressing room where a lamp's beam is turned by a mirror on a track onto a brass sun to open the far door. Everything is in view first, every action answers, nothing counts down, hurts or is used up, and a solved room stays solved. It comes after a resolved story and some wandering. Layout 54, protocol 103. Canon: docs/BORROWED_LIGHT_0_4_199.md.

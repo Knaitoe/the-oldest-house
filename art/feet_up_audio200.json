@@ -1,0 +1,22 @@
+{
+  "sounds": {
+    "shout": {
+      "samples": 41895,
+      "rate": 22050,
+      "ticks": 38,
+      "sha256": "9213278649ddb3cf480753f172107c493c21be7f9bae3eee23255fa3d90c4b2b"
+    },
+    "count": {
+      "samples": 9261,
+      "rate": 22050,
+      "ticks": 9,
+      "sha256": "e93204b17c4553d912c25658762266ea6f3d8363739163e4ebcedd55dc98d387"
+    },
+    "crack": {
+      "samples": 23152,
+      "rate": 22050,
+      "ticks": 21,
+      "sha256": "0a457c6a2536de9a635779f3aa4fabe1ab26dbcfae852d80dcbd7611caada3df"
+    }
+  }
+}

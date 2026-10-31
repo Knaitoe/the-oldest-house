@@ -1118,7 +1118,13 @@ jobs:
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/literary-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path(f'src/main/java/io/github/knaitoe/theoldesthouse/gametest/{name}.java').read_text())) for name in ('LiteraryTests','ElkFanTests','GhostsSetTests','LakeHouseTests','LakeHouseCompletionTests','Vignette0492Tests','VignetteAnimationTests','BorrascaTests','DareTests'))
+          # Every case in the namespaces this job runs, read from each file's holder: a new file in them is counted without a list to keep.
+          spaces={'literary','ghosts','fan488','lake_house','playtest492','borrasca'}
+          declared=0
+          for source in Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest').glob('*.java'):
+              text=source.read_text();holder=re.search(r'@GameTestHolder\(\s*TheOldestHouse\.MOD_ID\s*\+\s*"_([a-z0-9_]+)"\s*\)',text)
+              if holder and holder.group(1) in spaces:declared+=len(re.findall(r'@GameTest\s*\(',text))
+          assert declared>=152,declared
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native literary cases passed; the complete suite remains required.')
           PY
@@ -2226,6 +2232,8 @@ jobs:
           python3 tools/draw_paw_clench.py --check
           python3 tools/draw_ghosts_playhouse.py --check
           python3 tools/draw_dare_in_the_dark.py --check
+          python3 tools/draw_feet_up_art.py --check
+          python3 tools/generate_feet_up_audio.py --check
       - name: Native room geometry, standard/slim coats and the two-block mirror
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m

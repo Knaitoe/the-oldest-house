@@ -1,0 +1,27 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/feet_up/tally",
+    "particle": "the_oldest_house:block/feet_up/tally"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15.98
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        }
+      }
+    }
+  ]
+}

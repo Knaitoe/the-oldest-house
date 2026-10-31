@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/feet_up/mattress_side",
+    "t": "the_oldest_house:block/feet_up/mattress_top",
+    "particle": "the_oldest_house:block/feet_up/mattress_top"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        9,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

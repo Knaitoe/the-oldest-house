@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "side": "the_oldest_house:block/feet_up/cage",
+    "up": "the_oldest_house:block/feet_up/board",
+    "down": "the_oldest_house:block/feet_up/board",
+    "particle": "the_oldest_house:block/feet_up/cage"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#up"
+        },
+        "down": {
+          "texture": "#down"
+        }
+      }
+    }
+  ]
+}

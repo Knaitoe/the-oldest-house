@@ -50,6 +50,7 @@ final class OnwardPlacements {
         r.put(SECOND_WAITRESS,0,0,-32,SOUTH,OnwardRegistry.SERVICE);
         r.put(DARE_IN_THE_DARK,0,0,DareRooms.EXIT_Z,SOUTH,DareRegistry.STAIR_DOOR); // the stairwell at the end of the third-floor hall
         r.put(WAY_OUT,0,0,-76,SOUTH,OnwardRegistry.PANEL); // the cottage's front door: home, which is the House
+        r.put(FEET_UP,0,FeetUpRooms.ATTIC,FeetUpRooms.Z0-1,SOUTH,OnwardRegistry.PANEL); // the attic's north gable, reached once the ladder is down
         // The novel sites.
         r.put(WHALE,6,0,-32,SOUTH,NovelRegistry.WARD_DOOR);
         r.put(HOSPITAL,4,0,-23,SOUTH,NovelRegistry.NIGHT_WARD_DOOR);
