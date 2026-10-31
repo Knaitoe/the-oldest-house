@@ -184,6 +184,20 @@ setting-up case checks that the four hang where they should.
   the marks.
 - The rest of the review of his home (its architecture and layout) is the next piece of work.
 
+## The kitchen picture goes up by hand
+
+> "it would be clearer, if possible, for players to pick up the completed picture in the first vignette and manually post it to
+> the fridge"
+
+The finished drawing used to go up on the fridge when the reader clicked the fridge from anywhere. Now, once any part of it is
+coloured, an empty hand on the drawing picks it up ("You pick up your picture."): it leaves the table and comes into the hand as
+"Your picture", drawn as a sheet with a coloured figure on it (`tools/house_read_kitchen_art.py`). Clicking the table again lays
+it back down. The fridge takes it only from the reader's hands ("There's room on the door for one more. Your picture's still on
+the table." otherwise); putting it up works as before (magnet, account, the hall door opens) and gives the reader's own item
+back. Taking a crayon while holding the picture lays it down first, and if the picture leaves the reader's hands any other way
+(moved, dropped, a logout) it is back on the table, so the room can never be left without it. The house-read case walks the
+whole order (23 pass).
+
 ## Five vignette proposals
 
 The owner sent five vignette specifications (the Left-Right Game, the Dead Air Broadcast, the God of the Pitt, the Polaroid
