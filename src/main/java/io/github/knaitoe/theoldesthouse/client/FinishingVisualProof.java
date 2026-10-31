@@ -45,8 +45,11 @@ public final class FinishingVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof FinishingVisualProof s)||++s.frames<10)return;
         var dir=Path.of("../build/font-smoke");try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
-            var colors=new java.util.HashSet<Integer>();for(int y=50;y<image.getHeight()-10;y++)for(int x=10;x<image.getWidth()-10;x++)colors.add(image.getPixelRGBA(x,y));
-            if(colors.size()<16)throw new IllegalStateException("Native finishing view lacks its meshes/materials: "+s.page);
+            var colors=new java.util.HashSet<Integer>();long drawn=0,area=0;int ground=0xff2a2724;
+            for(int y=50;y<image.getHeight()-10;y++)for(int x=10;x<image.getWidth()-10;x++){int c=image.getPixelRGBA(x,y);colors.add(c);area++;if(c!=ground)drawn++;}
+            // 0.4.201: the wall's sheets are drawn at vanilla scale in a handful of flat tones (draw_zampano_naturalized.py), so
+            // that page is judged by how much of it the twenty-one sheets cover, not by how many colours they use.
+            if(s.page==0?colors.size()<16:colors.size()<6||drawn<area/4)throw new IllegalStateException("Native finishing view lacks its meshes/materials: "+s.page+" ("+colors.size()+" colours, "+drawn+"/"+area+" drawn)");
             image.writeToFile(dir.resolve(s.page==0?"native-finishing-props.png":"native-finishing-wall.png"));
         }
         if(++s.page<2){s.frames=0;return;}

@@ -117,10 +117,12 @@ def gouges():
 
 
 def scribble_model(i):
-    """The sheet's own model: a thin panel, unchanged in shape, naming the new sheet."""
+    """The sheet's own model, unchanged in shape, naming the new sheet: sheets 0-7 lie flat on desks and floors, sheets 8-15
+    stand against the wall behind them (the first version laid every one flat, so the handwriting wall lay on the floor)."""
     faces = {f: {'uv': [0, 0, 16, 16], 'texture': '#paper'} for f in ('north', 'south', 'east', 'west', 'up', 'down')}
+    frm, to = ([1, 0, 1], [15, 0.25, 15]) if i < 8 else ([1, 0, 15.75], [15, 16, 16])
     return {'ambientocclusion': False, 'textures': {'paper': NS + f'zampano_sheet_{i}', 'particle': NS + f'zampano_sheet_{i}'},
-            'elements': [{'from': [1, 0, 1], 'to': [15, 0.25, 15], 'faces': faces}]}
+            'elements': [{'from': frm, 'to': to, 'faces': faces}]}
 
 
 def files():
