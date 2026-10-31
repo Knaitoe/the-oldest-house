@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""The twenty artifacts of the audit's build 7 (labyrinth/Artifacts.java, docs/ARTIFACTS_0_4_199.md), 16x16, in vanilla's item style.
+"""The artifacts of the audit's build 7 (labyrinth/Artifacts.java, docs/ARTIFACTS_0_4_199.md), 16x16, in vanilla's item style: the
+twenty, and the family copy's front-door key for the reader who would not leave.
 
 Each icon is drawn pixel by pixel from a grid below, one character a pixel, with its own small palette; '.' is clear.
 Run with python3 from the repository root (--check compares instead of writing). Writes
@@ -381,6 +382,24 @@ ART = {
         '.....oooooo.....',
         '................',
         '................']),
+    # The front-door key (family copy, would not leave): an old brass house key, a little worn at the bow.
+    'front_door_key': ({'o': '#3d2f17', 'b': '#c9a14a', 'B': '#9c7a30', 'h': '#e6c877'}, [
+        '................',
+        '......oooo......',
+        '.....obhbbo.....',
+        '....obBooBbo....',
+        '....obo..obo....',
+        '....obBooBbo....',
+        '.....obbbbo.....',
+        '......obbo......',
+        '......ohBo......',
+        '......obBo......',
+        '......obBo......',
+        '......obBooo....',
+        '......obBbbbo...',
+        '......obBoBbo...',
+        '......obbooo....',
+        '.......oo.......']),
 }
 HELD = {'broken_blade'}
 

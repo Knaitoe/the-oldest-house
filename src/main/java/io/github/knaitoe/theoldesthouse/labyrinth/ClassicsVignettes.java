@@ -87,7 +87,7 @@ public final class ClassicsVignettes {
             if(!super.clickMenuButton(player,button))return false;int count=original.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size();
             if(owned&&getPage()==count-1){own.putBoolean("Read_"+key,true);save(data,reader.getUUID(),own);
                 if(ending&&inside(reader,place)){
-                    if(place==LabyrinthPlace.SEANCE&&seanceEvidence(data,own)){String outcome=own.getBoolean("SeanceFinished")?own.getString("SeanceOutcome"):"examined_the_empty_sitting";WitnessAccount.resolve(reader,WitnessAccount.Story.SEANCE,outcome);data.setCompleted(place.id(),true);reward(reader,own,"Planchette",original(reader,new ItemStack(ClassicsRegistry.PLANCHETTE.get()),"Planchette",place));}
+                    if(place==LabyrinthPlace.SEANCE&&seanceEvidence(data,own)){String outcome=own.getBoolean("SeanceFinished")?own.getString("SeanceOutcome"):"examined_the_empty_sitting";WitnessAccount.resolve(reader,WitnessAccount.Story.SEANCE,outcome);data.setCompleted(place.id(),true);var planchette=original(reader,new ItemStack(ClassicsRegistry.PLANCHETTE.get()),"Planchette",place);if(Artifacts.HEARD.equals(outcome))Keepsakes.lore(planchette,Artifacts.PLANCHETTE_LINE);reward(reader,own,"Planchette",planchette);}
                     if(place==LabyrinthPlace.WALLPAPER_NURSERY&&own.getInt("Found")==15){WitnessAccount.resolve(reader,WitnessAccount.Story.WALLPAPER,"kept_the_hidden_pages");data.setCompleted(place.id(),true);reward(reader,own,"Folio",original(reader,ClassicsTexts.folio(),"Folio",place));}
                     save(data,reader.getUUID(),own);
                 }

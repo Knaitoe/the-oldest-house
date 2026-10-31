@@ -42,6 +42,10 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.Vec3;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForgeMod;
@@ -101,7 +105,9 @@ public final class Artifacts {
         STONE("initial_stone",WitnessAccount.Story.BARN_WELL,"InitialStone","The wait, kept. Low gaps are easier going."),
         BRACELET("patient_bracelet",WitnessAccount.Story.HOSPITAL,"Bracelet","The night on the ward. Out in your world, you mend on less than a full stomach."),
         CANDLE("dare_candle",WitnessAccount.Story.DARE_IN_THE_DARK,"Candle","The dare done. Lit, it shows what hides by not being seen. Twenty minutes of wick."),
-        VIAL("dust_vial",WitnessAccount.Story.SILO,"DustVial","The roof, opened. Broken open, it slows and weakens what is near you. Three times.");
+        VIAL("dust_vial",WitnessAccount.Story.SILO,"DustVial","The roof, opened. Broken open, it slows and weakens what is near you. Three times."),
+        /** The other ending of the family copy (0.4.199): the reader would not leave the house they remembered. */
+        DOOR_KEY("front_door_key",WitnessAccount.Story.FAMILY_COPY,"FrontDoorKey","You would not leave the house they remembered. Carried, any bed in your own world is home: nothing nearby keeps you from sleeping, and you wake mended.");
         public final String id,key,line;public final WitnessAccount.Story story;
         Kind(String id,WitnessAccount.Story story,String key,String line){this.id=id;this.story=story;this.key=key;this.line=line;}
         public LabyrinthPlace place(){return LabyrinthPlace.byId(story.id);}
@@ -122,6 +128,7 @@ public final class Artifacts {
             case RECORD->"drove_the_family_out".equals(outcome);
             case KEY_TAG->HotelVignette.SETTLED.equals(outcome)||HotelVignette.SIGNED.equals(outcome);
             case PHOTO->"left_when_the_family_asked".equals(outcome);
+            case DOOR_KEY->REFUSED.equals(outcome);
             case SCRAWL,BLADE,RECEIPT->!UncannyStories.failed(LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),k.place()));
             default->true;
         };
@@ -160,8 +167,13 @@ public final class Artifacts {
     // ------------------------------------------------------------------ carried
 
     @SubscribeEvent public static void tick(PlayerTickEvent.Post e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||!p.isAlive()||p.isSpectator()||p.tickCount%10!=0)return;
+        if(!(e.getEntity() instanceof ServerPlayer p)||!p.isAlive()||p.isSpectator())return;
+        steps(p);
+        if(p.tickCount%10!=0)return;
         boolean world=ownWorld(p);
+        if(planchetteWakes(p)){var harm=unseenHarm(p);if(harm!=null)drift(p,harm);}
+        if(p.tickCount%200==0&&hearsTheSitting(p)&&p.getRandom().nextInt(SITTING_CHANCE)==0)sitting(p);
+        if(world&&p.getSleepTimer()>=FAMILY_WAKES_AT&&familyWakes(p,day(p))){wakeByFamily(p);return;}
         modifier(p,NeoForgeMod.SWIM_SPEED,SWIM,ESSAY_SWIM,AttributeModifier.Operation.ADD_MULTIPLIED_BASE,world&&carries(p,Kind.ESSAY));
         modifier(p,Attributes.SNEAKING_SPEED,CRAWL,STONE_CRAWL,AttributeModifier.Operation.ADD_VALUE,p.getPose()==Pose.SWIMMING&&!p.isInWater()&&carries(p,Kind.STONE));
         if(world&&mine(p.getOffhandItem(),p,Kind.BLINDFOLD)){p.removeEffect(MobEffects.BLINDNESS);p.removeEffect(MobEffects.DARKNESS);}
@@ -213,12 +225,104 @@ public final class Artifacts {
         if((effect==MobEffects.BLINDNESS.value()||effect==MobEffects.DARKNESS.value())&&mine(p.getOffhandItem(),p,Kind.BLINDFOLD)
                 ||(effect==MobEffects.POISON.value()||effect==MobEffects.HUNGER.value())&&carries(p,Kind.INVITATION))e.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
     }
-    /** The hotel's key tag: waking in their world after a night's sleep, they are fed in full. */
+    /** The hotel's key tag: waking in their world after a night's sleep, they are fed in full; the front-door key, mended. */
     @SubscribeEvent public static void woke(PlayerWakeUpEvent e){
-        if(e.getEntity() instanceof ServerPlayer p&&!e.wakeImmediately()&&!e.updateLevel()&&ownWorld(p)&&carries(p,Kind.KEY_TAG)){
-            var food=p.getFoodData();food.setFoodLevel(20);food.setSaturation(Math.max(food.getSaturationLevel(),10F));
-        }
+        if(!(e.getEntity() instanceof ServerPlayer p)||e.wakeImmediately()||e.updateLevel()||!ownWorld(p))return;
+        if(carries(p,Kind.KEY_TAG)){var food=p.getFoodData();food.setFoodLevel(20);food.setSaturation(Math.max(food.getSaturationLevel(),10F));}
+        // The front-door key: they wake mended.
+        if(carries(p,Kind.DOOR_KEY))p.setHealth(p.getMaxHealth());
     }
+
+    // ------------------------------------------------------------------ 0.4.199: the two choices that gave nothing
+
+    /**
+     * Giving the séance's record and the family's photograph to one ending each left the other endings empty, so those choices
+     * read as wrong answers. Each of those endings now gives and takes something of its own (docs/ARTIFACTS_0_4_199.md).
+     * <ul>
+     * <li><b>Heard the medium out:</b> the séance's planchette, which every ending gives, wakes for that reader. Held, it drifts
+     * toward whatever means them harm and is out of their sight. The family goes on sitting, and in the manor that reader hears
+     * them on the stairs now and then.</li>
+     * <li><b>Would not leave the family copy:</b> the front-door key. Carried, any bed in their own world is home: nothing nearby
+     * keeps them from sleeping, and they wake mended. But the family is still in the house: one night in three, in their own bed,
+     * someone moving about wakes them before dawn.</li>
+     * </ul>
+     */
+    public static final String HEARD="heard_the_medium",REFUSED="refused_the_familys_request_to_leave";
+    public static final String PLANCHETTE_LINE="She was heard out to the end. Held, it drifts toward what means you harm and cannot be seen.";
+    public static final double PLANCHETTE_REACH=16;
+    /** One chance in this many, every ten seconds in the manor, that the family is on the stairs; at most once a House day. */
+    public static final int SITTING_CHANCE=12, STEP_TICKS=9, STEPS=5, FAMILY_NIGHTS=3, FAMILY_WAKES_AT=50;
+    record Steps(BlockPos from,Vec3 dir,int start){}
+    private static final Map<UUID,Steps> STAIRS=new HashMap<>();
+
+    public static long day(ServerPlayer p){return p.server.overworld().getDayTime()/24000L;}
+    static String ending(ServerPlayer p,WitnessAccount.Story story){return WitnessAccount.record(LabyrinthData.get(p.server),p.getUUID()).getCompound("Stories").getString(story.id);}
+    public static boolean heardHerOut(ServerPlayer p){return HEARD.equals(ending(p,WitnessAccount.Story.SEANCE));}
+    public static boolean refused(ServerPlayer p){return REFUSED.equals(ending(p,WitnessAccount.Story.FAMILY_COPY));}
+    /** The séance's own planchette, given to this reader. */
+    public static boolean planchette(ItemStack s,Player p){
+        if(!s.is(ClassicsRegistry.PLANCHETTE.get()))return false;var data=s.get(DataComponents.CUSTOM_DATA);if(data==null)return false;var t=data.copyTag();
+        return t.hasUUID(ClassicsVignettes.OWNER)&&t.getUUID(ClassicsVignettes.OWNER).equals(p.getUUID());
+    }
+    public static boolean planchetteWakes(ServerPlayer p){return (planchette(p.getMainHandItem(),p)||planchette(p.getOffhandItem(),p))&&heardHerOut(p);}
+    /** The nearest thing within sixteen blocks that means them harm and that they cannot see: in the House only what is hunting them. */
+    public static Mob unseenHarm(ServerPlayer p){
+        boolean world=ownWorld(p);Mob best=null;double near=Double.MAX_VALUE;var look=p.getViewVector(1);
+        for(var m:p.serverLevel().getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(PLANCHETTE_REACH),m->m.isAlive()&&(m.getTarget()==p||world&&m instanceof Enemy))){
+            var to=m.getEyePosition().subtract(p.getEyePosition());double d=to.lengthSqr();
+            if(to.normalize().dot(look)>.5&&p.hasLineOfSight(m))continue;
+            if(d<near){best=m;near=d;}
+        }
+        return best;
+    }
+    /** A faint pull from the hand toward it, and now and then the dry scrape of the planchette, seen and heard by the holder alone. */
+    static void drift(ServerPlayer p,Mob harm){
+        var from=p.position().add(0,1.1,0);var dir=harm.getEyePosition().subtract(from).normalize();
+        for(int i=1;i<=3;i++){var at=from.add(dir.scale(.45+i*.3));p.serverLevel().sendParticles(p,ParticleTypes.SOUL,true,at.x,at.y,at.z,1,0,0,0,0);}
+        if(p.tickCount%40==0)LiteraryVignettes.heard(p,SoundEvents.WOOD_HIT,BlockPos.containing(from.add(dir.scale(1.5))),.2F,1.7F);
+    }
+    static boolean inManor(ServerPlayer p){
+        var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();
+        return origin!=null&&p.level().dimension().equals(HouseDimensions.INTERIOR)&&io.github.knaitoe.theoldesthouse.house.HouseLayout.isInsideDomesticVolume(p.getX()-origin.getX(),p.getY()-origin.getY(),p.getZ()-origin.getZ());
+    }
+    /** One who heard the medium out, in the manor, not yet today. */
+    public static boolean hearsTheSitting(ServerPlayer p){
+        if(!heardHerOut(p)||!inManor(p))return false;var own=LabyrinthData.get(p.server).stateEntry(STATE,p.getStringUUID());return own.getLong("SittingDay")!=day(p)+1;
+    }
+    /** The family on the stairs: a few steps climbing somewhere behind them, then nothing. Theirs alone to hear. */
+    public static boolean sitting(ServerPlayer p){
+        var data=LabyrinthData.get(p.server);var own=data.stateEntry(STATE,p.getStringUUID());own.putLong("SittingDay",day(p)+1);data.setStateEntry(STATE,p.getStringUUID(),own);
+        var behind=p.getViewVector(1).multiply(-1,0,-1).normalize();var side=new Vec3(-behind.z,0,behind.x);
+        STAIRS.put(p.getUUID(),new Steps(BlockPos.containing(p.position().add(behind.scale(6)).add(side.scale(2)).add(0,-2,0)),side.scale(-.7),p.tickCount));
+        return true;
+    }
+    static void steps(ServerPlayer p){
+        var s=STAIRS.get(p.getUUID());if(s==null)return;int age=p.tickCount-s.start();
+        if(age<0||age>STEP_TICKS*STEPS){STAIRS.remove(p.getUUID());return;}
+        if(age%STEP_TICKS!=0)return;int n=age/STEP_TICKS;
+        LiteraryVignettes.heard(p,SoundEvents.WOOD_STEP,BlockPos.containing(Vec3.atCenterOf(s.from()).add(s.dir().scale(n)).add(0,n*.5,0)),.35F,.85F+n*.02F);
+    }
+    /** One night in three, by the day and the reader, the family is up and about. */
+    public static boolean familyNight(UUID id,long day){return Math.floorMod(java.util.Objects.hash(id,day),FAMILY_NIGHTS)==0;}
+    /** One who would not leave, asleep in their own bed on one of the family's nights, long enough to be woken. */
+    public static boolean familyWakes(ServerPlayer p,long day){
+        if(!p.isSleeping()||!refused(p)||!familyNight(p.getUUID(),day))return false;
+        var bed=p.getRespawnPosition();var at=p.getSleepingPos().orElse(null);
+        if(bed==null||at==null||!bed.equals(at)||!p.getRespawnDimension().equals(p.level().dimension()))return false;
+        var own=LabyrinthData.get(p.server).stateEntry(STATE,p.getStringUUID());return own.getLong("WokenDay")!=day+1;
+    }
+    /** Woken before dawn by someone moving about in the house: no night passes. Never hurt. */
+    public static void wakeByFamily(ServerPlayer p){
+        var data=LabyrinthData.get(p.server);var own=data.stateEntry(STATE,p.getStringUUID());own.putLong("WokenDay",day(p)+1);data.setStateEntry(STATE,p.getStringUUID(),own);
+        var at=p.blockPosition();p.stopSleepInBed(true,true);
+        LiteraryVignettes.heard(p,SoundEvents.WOOD_STEP,at.offset(3,-1,2),.5F,.9F);LiteraryVignettes.heard(p,SoundEvents.WOODEN_DOOR_CLOSE,at.offset(-4,0,3),.4F,.8F);
+        p.displayClientMessage(Component.literal("Someone is moving about in the house.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
+    }
+    /** The key: in their own world a bed is not refused them for monsters nearby. */
+    @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.HIGHEST) public static void bed(net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent e){
+        var p=e.getEntity();if(e.getProblem()==Player.BedSleepingProblem.NOT_SAFE&&ownWorld(p)&&carries(p,Kind.DOOR_KEY))e.setProblem(null);
+    }
+    @SubscribeEvent public static void stopping(net.neoforged.neoforge.event.server.ServerStoppingEvent e){STAIRS.clear();}
 
     // ------------------------------------------------------------------ used
 
@@ -245,11 +349,23 @@ public final class Artifacts {
     public static int whistle(ServerPlayer p){
         var level=p.serverLevel();int came=0;
         for(var pet:level.getEntitiesOfClass(TamableAnimal.class,p.getBoundingBox().inflate(WHISTLE_REACH),a->a.isAlive()&&p.getUUID().equals(a.getOwnerUUID())&&!a.isOrderedToSit()&&!a.isPassenger()&&!a.isLeashed()&&!a.getTags().contains(MotherOfStrays.PET))){
-            if(pet.distanceToSqr(p)>12*12)pet.tryToTeleportToOwner();
-            pet.getNavigation().moveTo(p,1.3);came++;
+            // Far off, or with no way through, it comes to the reader's side as a called animal does; near, it walks.
+            if(pet.distanceToSqr(p)>12*12||!pet.getNavigation().moveTo(p,1.3))fetch(pet,p);
+            came++;
         }
         level.playSound(null,p.blockPosition(),SoundEvents.NOTE_BLOCK_FLUTE.value(),SoundSource.PLAYERS,1.4F,2F);
         return came;
+    }
+    /** A clear, supported spot within two blocks of the reader, for a called companion; it stays where it is if there is none. */
+    static void fetch(TamableAnimal pet,ServerPlayer p){
+        var level=p.serverLevel();var base=p.blockPosition();
+        for(int r=1;r<=2;r++)for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++){
+            if(Math.max(Math.abs(dx),Math.abs(dz))!=r)continue;var at=base.offset(dx,0,dz);
+            if(!level.getBlockState(at.below()).isFaceSturdy(level,at.below(),net.minecraft.core.Direction.UP))continue;
+            var box=pet.getType().getDimensions().makeBoundingBox(Vec3.atBottomCenterOf(at));
+            if(!level.noCollision(pet,box))continue;
+            pet.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,pet.getYRot(),pet.getXRot());pet.getNavigation().stop();return;
+        }
     }
     /** The sitting record, read aloud: the game's monsters within six blocks are driven back and lose hold of the reader. */
     public static int record(ServerPlayer p){
