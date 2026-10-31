@@ -54,9 +54,9 @@ public final class GhostsSetBlock extends Block {
         };
     }
     private static VoxelShape stairRail(boolean top){
-        var shape=Shapes.or(Block.box(6,-8,13,10,11,15),Block.box(6,-8,12,18,-6,16));
-        for(int z=top?9:0;z<16;z++)shape=Shapes.or(shape,Block.box(5,22.1-z,z,11,24.9-z,z+1));
-        return top?Shapes.or(shape,Block.box(5,14,-16,11,16,9)):shape;
+        var shape=Shapes.or(Block.box(13,-8,12,15,11,14),Block.box(13,0,4,15,top?14:19,6));
+        for(int z=top?9:0;z<16;z++)shape=Shapes.or(shape,Block.box(12.5,22.1-z,z,15.5,24.9-z,z+1));
+        return top?Shapes.or(shape,Block.box(12.5,14,-11,16,16,9),Block.box(12,0,-10.5,16,17,-5.5)):shape;
     }
     private static VoxelShape shape(BlockState s) {
         var original=north(s.getValue(KIND)); int turns=(s.getValue(FACING).get2DDataValue()+2)%4;

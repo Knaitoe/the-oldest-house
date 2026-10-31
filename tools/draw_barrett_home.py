@@ -904,8 +904,12 @@ def box(frm, to, tex, faces=DIRS, uv=None, over=None, rot=None):
         if uv:
             face['uv'] = list(uv)
         f[d] = face
+    # 0.4.201: an overriding texture keeps the box's explicit UVs; dropping them sampled the photos' transparent margin, so
+    # the dresser's framed photograph showed only its black edges.
     for d, t in (over or {}).items():
         f[d] = {'texture': '#' + t}
+        if uv:
+            f[d]['uv'] = list(uv)
     # Faces of elements that reach past the block get explicit coordinates inside their own sprite.
     if any(c < 0 or c > 16 for c in list(frm) + list(to)):
         for d, face in f.items():

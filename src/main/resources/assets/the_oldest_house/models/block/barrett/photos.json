@@ -21,7 +21,13 @@
    ],
    "faces": {
     "north": {
-     "texture": "#p"
+     "texture": "#p",
+     "uv": [
+      0,
+      1,
+      16,
+      13
+     ]
     },
     "south": {
      "texture": "#k",

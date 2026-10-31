@@ -117,6 +117,22 @@ The moving boxes (the Wheel's first flat) were drawn a pixel inside their cell o
 
 The build job of the 0.4.201 run failed `tornPagesPinAndOnlySixAreLeftOutInTheHouseBeyondTheManor`: torn pages were handed over by the same code as the journal, so the hotbar change above put the ninth page into the hand's slot, where the test then put another page. The owner asked for the journal on the hotbar; a torn page now goes where any picked-up item would, as before. The case passes on its own; its message now says what failed.
 
+## The Ghosts set: banister, photographs, clutter
+
+> "the banisters in ghosts set are still disconnected... did you touch that at all?"
+> "textures are also still messed up." / "family photos on windows? a lot of the furniture looks more like clutter than actual living space."
+
+- **The banister.** The 0.4.199 change joined the top of the stair rail to the landing rail, but the rail pieces stood in the column beside the treads, over the open foyer: every post hung in the air, with its foot bar pointing away from the stair. The banister now stands in the treads' own open-edge column (`GhostsSetRooms.STAIR_RAIL_X`). Each piece has a baluster on the tread's low half and one on its high half, and the handrail rises a block a block, so the pieces meet. At the top it levels at the landing banister's height, runs onto the landing, stops at a newel and turns into the landing banister, which now starts at that newel (four pieces, x 0 to 3). Collision follows the mesh (`tools/generate_ghosts_stairs.py`). The proof's staircase view was redrawn and checked.
+- **The photographs on the dresser and on the wall.** The Barrett models' generator dropped a box's explicit texture coordinates whenever a face took another texture, so the dresser's framed photograph sampled the photo sheet's transparent margin and showed only its black edges, and the wall photographs sat a row off. Overridden faces now keep their coordinates (`tools/draw_barrett_home.py`); the dresser, photographs and sofa seat models change.
+- **Photographs on a window.** The family corner's photographs hung on the side window's blind; they are on plain wall now. `GhostsSetTests` checks that no photograph, poster or calendar in the house hangs over a window.
+- **Clutter.** The laundry baskets, clothes heaps and boxes left in the hall, on the landing and in the bedrooms are gone. The utility room keeps its basket, Marjorie's room its clothes on the floor, and the den the crew's gear. The ghosts namespace passes (22).
+
+## The vault can be reached
+
+> "redesign the architecture of usher home to be more grandiose, as intended. the player cannot currently reach the basement."
+
+The stair to the vault ended under the hall floor: the floor over the landing began right at the last step, so a reader stepping off it hit their head and stayed on the step. The opening in the hall floor now runs one cell past the last step (its rail moves with it). The Usher case checks the headroom over every step, the three cells a reader passes through stepping onto the landing, and the landing to the vault door. The grander rebuild is the next piece of work.
+
 ## Not changed yet
 
 - The coatroom's closing line, "That's how you'll look here.", waits on the owner's choice among the suggestions given in conversation.

@@ -165,6 +165,13 @@ public final class LiteraryTests {
             for(var at:List.of(new BlockPos(0,0,-2),new BlockPos(0,0,-8),UsherHouse.ARCH,new BlockPos(0,0,-18),new BlockPos(11,0,-17),new BlockPos(-11,0,-17),new BlockPos(7,-3,-21),new BlockPos(0,-3,-27),new BlockPos(0,0,-28),new BlockPos(14,0,-30),new BlockPos(0,0,-38))){
                 var c=b.offset(at);h.assertTrue(l.noCollision(null,new AABB(c.getX()+.2,c.getY()+.01,c.getZ()+.2,c.getX()+.8,c.getY()+1.8,c.getZ()+.8)),"a body passes at "+at);}
             h.assertTrue(l.getBlockState(b.offset(UsherHouse.VAULT_DOOR)).getBlock() instanceof DoorBlock&&l.getBlockState(b.offset(UsherHouse.VAULT_DOOR)).is(Blocks.WAXED_WEATHERED_COPPER_DOOR),"the vault's door is iron sheathed in copper");
+            // 0.4.201: a body fits all the way down: two cells clear over each step, and over the landing's first cell the
+            // three cells a reader stepping off the last step passes through (the hall floor there held them before).
+            for(int x=6;x<=8;x++){
+                for(int i=0;i<3;i++)for(int y=-i;y<=1-i;y++)h.assertTrue(l.getBlockState(b.offset(x,y,-17-i)).getCollisionShape(l,b.offset(x,y,-17-i)).isEmpty(),"headroom over vault step "+i+" at "+x+","+y);
+                for(int y=-3;y<=-1;y++)h.assertTrue(l.getBlockState(b.offset(x,y,-20)).getCollisionShape(l,b.offset(x,y,-20)).isEmpty(),"headroom stepping off onto the vault landing at "+x+","+y);
+                for(int z=-22;z<=-21;z++)for(int y=-3;y<=-2;y++)h.assertTrue(l.getBlockState(b.offset(x,y,z)).getCollisionShape(l,b.offset(x,y,z)).isEmpty(),"the landing is clear to the vault door at "+x+","+y+","+z);
+            }
             for(var rel:List.of(LiteraryRooms.COFFIN,LiteraryRooms.COFFIN.north()))h.assertTrue(l.getBlockState(b.offset(rel)).is(LiteraryRegistry.PROP.get()),"her coffin lies in the vault");
             h.assertTrue(UsherBlock.is(l.getBlockState(b.offset(UsherHouse.CHAIR)),UsherBlock.Kind.CHAIR)&&UsherBlock.is(l.getBlockState(b.offset(UsherHouse.EASEL)),UsherBlock.Kind.EASEL)&&UsherBlock.is(l.getBlockState(b.offset(UsherHouse.GUITAR)),UsherBlock.Kind.GUITAR),"Roderick's chair, easel and guitar are in the studio");
             int hearths=0,windows=0;for(var at:BlockPos.betweenClosed(b.offset(-18,-4,-42),b.offset(18,13,0))){var s=l.getBlockState(at);if(s.is(Blocks.CAMPFIRE))hearths++;if(UsherBlock.is(s,UsherBlock.Kind.WINDOW))windows++;}

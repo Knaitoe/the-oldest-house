@@ -62,9 +62,16 @@ public final class GhostsSetTests {
             for(var at:BlockPos.betweenClosed(b.offset(-20,-5,-46),b.offset(20,11,0))){var s=in.getBlockState(at);if(!s.is(LiteraryRegistry.BARRETT_HOME.get()))continue;var kind=s.getValue(BarrettHomeBlock.KIND);
                 if(kind==BarrettHomeBlock.Kind.WINDOW)windows++;
                 for(var c:BarrettHomeBlock.covers(at,kind,s.getValue(BarrettHomeBlock.FACING)))if(!BarrettHomeBlock.is(in.getBlockState(c),BarrettHomeBlock.Kind.BED_FILL))missing++;}
+            // 0.4.201 (owner: "family photos on windows?"): nothing hangs on a window.
+            var overWindows=new java.util.ArrayList<BlockPos>();
+            for(var at:BlockPos.betweenClosed(b.offset(-11,-5,-26),b.offset(11,9,0))){var s=in.getBlockState(at);
+                if(!BarrettHomeBlock.is(s,BarrettHomeBlock.Kind.PHOTOS)&&!BarrettHomeBlock.is(s,BarrettHomeBlock.Kind.POSTER_A)&&!BarrettHomeBlock.is(s,BarrettHomeBlock.Kind.POSTER_B)&&!BarrettHomeBlock.is(s,BarrettHomeBlock.Kind.CALENDAR))continue;
+                if(BarrettHomeBlock.is(in.getBlockState(at.relative(s.getValue(BarrettHomeBlock.FACING).getOpposite())),BarrettHomeBlock.Kind.WINDOW))overWindows.add(at.subtract(b));}
+            h.assertTrue(overWindows.isEmpty(),"no photograph, poster or calendar hangs over a window: "+overWindows);
             h.assertTrue(windows>=60&&missing==0,"windows with their blinds drawn on every outside wall ("+windows+") and every bed and tub has its body ("+missing+" missing)");
             // Every route the days walk the cast along: a body fits at each mark and all the way between marks on one floor.
-            for(int i=0;i<5;i++)h.assertTrue(in.getBlockState(b.offset(0,i+1,-4-i)).getValue(GhostsSetBlock.KIND)==(i==4?GhostsSetBlock.Kind.STAIR_RAIL_TOP:GhostsSetBlock.Kind.STAIR_RAIL),"each native stair tread has its connected slope, including the landing joint");
+            for(int i=0;i<5;i++)h.assertTrue(in.getBlockState(b.offset(GhostsSetRooms.STAIR_RAIL_X,i+1,-4-i)).getValue(GhostsSetBlock.KIND)==(i==4?GhostsSetBlock.Kind.STAIR_RAIL_TOP:GhostsSetBlock.Kind.STAIR_RAIL)&&in.getBlockState(b.offset(GhostsSetRooms.STAIR_RAIL_X,i,-4-i)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.STAIR,"each tread carries its piece of the banister, standing on the tread, including the landing joint");
+            for(int x=0;x<=3;x++)h.assertTrue(in.getBlockState(b.offset(x,5,-9)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.RAIL,"the landing banister runs from the newel at the stair's head across the foyer: "+x);
             List<double[]> routes=GhostsSet.filmingRoutes();double[] last=null;int checked=0;
             for(var at:routes){
                 if(at==null){last=null;continue;}

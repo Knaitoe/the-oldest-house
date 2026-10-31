@@ -90,7 +90,13 @@
      ]
     },
     "up": {
-     "texture": "#u"
+     "texture": "#u",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
     },
     "down": {
      "texture": "#f",
