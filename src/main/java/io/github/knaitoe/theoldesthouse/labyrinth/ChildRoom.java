@@ -26,9 +26,6 @@ import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * The child's room, rebuilt (0.4.74): a real child's bedroom with its own furniture and toys, a crawlspace under the floor
@@ -45,11 +42,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * for another's crawl; the account is written for how each was there: who opened the card, who was shut in with them,
  * whether the exits had begun to go before they came, and who went beneath the bed ahead of them or stayed behind.
  */
-@EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class ChildRoom {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.CHILD_ROOM;
     /** Saved-world rebuild checkpoint, keyed by the room's base. */
-    public static final String STATE="child_room_0474";
     public static final BlockPos CARD=new BlockPos(8,1,-18),ACCOUNT=new BlockPos(8,-3,-10),HATCH=new BlockPos(4,-1,-4),
             BED_HEAD=new BlockPos(0,0,-23),BED_FOOT=new BlockPos(0,0,-22),GAP=new BlockPos(0,-1,-23),BASEMENT_DROP=new BlockPos(6,-2,-17);
     /** The four exits, in the order they go: two windows, then two doors. */
@@ -148,10 +143,7 @@ public final class ChildRoom {
         // The ladder up, and the hatch that comes out beside the door the reader came in by.
         for(int y=-4;y<=-2;y++)set(l,b,4,y,-4,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.NORTH));
         set(l,b,HATCH,Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.FACING,Direction.NORTH).setValue(TrapDoorBlock.OPEN,false));
-        NurserySupport0492.fresh(l,b);markBuilt(LabyrinthData.get(l.getServer()),b);
     }
-    static void markBuilt(LabyrinthData d,BlockPos b){var s=d.state(STATE);s.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,s);}
-    public static boolean built(LabyrinthData d,BlockPos b){return d.state(STATE).getBoolean(Long.toString(b.asLong()));}
 
     // ------------------------------------------------------------------------------------------------ where a reader is
     private static BlockPos rel(ServerPlayer p,BlockPos b){return BlockPos.containing(p.getX(),p.getY()+.05,p.getZ()).subtract(b);}
@@ -384,27 +376,5 @@ public final class ChildRoom {
         for(int x=(int)Math.floor(area.minX)>>4;x<=(int)Math.floor(area.maxX)>>4;x++)for(int z=(int)Math.floor(area.minZ)>>4;z<=(int)Math.floor(area.maxZ)>>4;z++)
             if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
         return true;
-    }
-    public static boolean rebuild(ServerLevel l,BlockPos b){
-        var d=LabyrinthData.get(l.getServer());if(built(d,b))return true;var area=area(b);if(!loaded(l,b))return false;
-        if(l.players().stream().anyMatch(p->area.inflate(16).intersects(p.getCamera().getBoundingBox())))return false;
-        if(!l.getEntitiesOfClass(LivingEntity.class,area,e->e.isAlive()&&!e.isSpectator()&&!(e instanceof LiteraryActor)).isEmpty())return false;
-        var world=LiteraryVignettes.shared(d,PLACE);
-        if(world.hasUUID("CeilingToy")&&l.getEntity(world.getUUID("CeilingToy")) instanceof LiteraryActor old)old.discard();
-        for(var actor:l.getEntitiesOfClass(LiteraryActor.class,area))actor.discard();
-        LiteraryRooms.build(l,b,PLACE);
-        world=LiteraryVignettes.shared(d,PLACE);world.remove("CeilingToy");world.remove("BedShifted127");world.remove("Dinnerbone");world.remove("LostExits");world.remove("CardBy0149");world.remove("CardName0149");world.putInt("Exits0474",0);world.putInt("SealClock",0);LiteraryVignettes.shared(d,PLACE,world);
-        for(var key:d.stateKeys(LiteraryVignettes.stateId(PLACE))){java.util.UUID id;try{id=java.util.UUID.fromString(key);}catch(IllegalArgumentException notReader){continue;}var own=LiteraryVignettes.personal(d,id,PLACE);
-            if(own.getBoolean("Completed"))continue;
-            for(var k:List.of("Ready","Outcome","ExaminedLostExits","CrawledUnderBed","ExitSeen0474","Crawled0474","AllSeen0474","StoodUp0474","UnderFloor0474","ExitsAtArrival0474","With0149","Ahead0149","Behind0149","CardBy0149","CardMine0149","Drafted0149"))own.remove(k);
-            for(int i=0;i<5;i++){own.remove("ExitExamineTicks"+i);own.remove("ExitLook0474_"+i);}
-            LiteraryVignettes.save(d,id,PLACE,own);}
-        markBuilt(d,b);
-        return true;
-    }
-    @SubscribeEvent public static void tick(ServerTickEvent.Post e){
-        var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=19||LabyrinthBuilder.isCarving())return;
-        var data=LabyrinthData.get(s);var b=base(s);if(b==null||data.door(PLACE.entryDoorId())==null||!LabyrinthBuilder.isPlaceReady(data,PLACE)||built(data,b))return;
-        var l=s.getLevel(NovelRooms.dimension(PLACE));if(l!=null)rebuild(l,b);
     }
 }

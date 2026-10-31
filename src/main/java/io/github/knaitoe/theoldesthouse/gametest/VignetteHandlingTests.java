@@ -96,27 +96,6 @@ public final class VignetteHandlingTests {
    h.assertTrue(first[0].view().cursor()==VignetteHandlingBlockEntity.LENGTH&&first[0].view().mode()==0,"the finite recording reaches its real end and stops");snapshot("24_tape_ended",first[0]);h.succeed();
   });
  }
- @GameTest(template="empty",batch="handling_upgrade",timeoutTicks=450)
- public static void earlierIncidentalFittingsUpgradeWithoutResettingOriginalsUsedControlsOrPlayerContainers(GameTestHelper h){
-  var f=new LiteraryTests.Fixture(h,144);workshop=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();var room=LabyrinthPlace.KAREN_ROOM;var l=f.level(room);var b=f.base(room);f.chunks.hold(l,SceneReview.area(b,room));
-  h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"legacy bedroom sections resident")).thenExecute(()->{
-   NovelRooms.build(l.getServer(),l,b,room);
-   for(var stale:l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,SceneReview.area(b,room)))stale.discard(); // Only debris from this fixture's previous native world.
-   var original=l.getBlockEntity(b.offset(6,1,-11));var at=b.offset(7,1,-10);
-   l.setBlock(at.below(),VignetteInteriorBlock.of(VignetteInteriorBlock.Kind.SLIDE_CABINET,Direction.WEST),3);
-   l.setBlock(at,VignetteInteriorBlock.of(VignetteInteriorBlock.Kind.KAREN_SLIDE_SORTER,Direction.WEST).setValue(VignetteInteriorBlock.ACTIVE,true),3);
-   var body=net.minecraft.world.entity.EntityType.ARMOR_STAND.create(l);body.setNoGravity(true);body.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5);l.addFreshEntity(body);f.extras.add(body);
-   h.assertTrue(!VignetteHandlingUpgrade.step(l,f.origin,room)&&l.getBlockState(at).is(LiteraryRegistry.INTERIOR.get()),"an occupied legacy fitting is not changed");body.discard();
-   h.assertTrue(VignetteHandlingUpgrade.step(l,f.origin,room),"the same fitting upgrades once its own resident cell is vacant: "+l.getEntities((net.minecraft.world.entity.Entity)null,new AABB(at).inflate(.02),net.minecraft.world.entity.Entity::isAlive));var handled=(VignetteHandlingBlockEntity)l.getBlockEntity(at);
-   h.assertTrue(handled!=null&&handled.view().lamp()&&l.getBlockState(at).getValue(VignetteHandlingBlock.FACING)==Direction.WEST,"the old switched-on light and physical orientation survive");
-   h.assertTrue(l.getBlockEntity(b.offset(6,1,-11))==original,"the original source is never recreated or restocked");
-   f.reload();h.assertTrue(VignetteHandlingUpgrade.step(l,f.origin,room)&&l.getBlockEntity(at)==handled,"the loaded checkpoint retains the same handled block entity");
-   l.setBlock(at,Blocks.CHEST.defaultBlockState(),3);var chest=l.getBlockEntity(at);((net.minecraft.world.Container)chest).setItem(0,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND));
-   var data=f.data();var tag=data.state(VignetteHandlingUpgrade.STATE);tag.remove(f.origin.asLong()+":"+room.id());data.setState(VignetteHandlingUpgrade.STATE,tag);
-   h.assertTrue(VignetteHandlingUpgrade.step(l,f.origin,room)&&l.getBlockEntity(at)==chest&&((net.minecraft.world.Container)chest).getItem(0).is(net.minecraft.world.item.Items.DIAMOND),"even a repeated migration cannot replace a player's container or contents");h.succeed();
-  });
- }
- @AfterBatch(batch="handling_upgrade") public static void closeUpgrade(ServerLevel l){close();}
  @AfterBatch(batch="handling_keys") public static void closeKeys(ServerLevel l){close();}
  @AfterBatch(batch="handling_models") public static void closeModels(ServerLevel l){close();}
  @AfterBatch(batch="handling_tape") public static void closeTape(ServerLevel l){close();}

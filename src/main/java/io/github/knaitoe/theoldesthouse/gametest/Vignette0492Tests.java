@@ -48,20 +48,6 @@ public final class Vignette0492Tests {
     }
     @AfterBatch(batch="review492_nursery") public static void nurseryDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="review492_nursery_saved",timeoutTicks=400)
-    public static void aSavedToyRepairWaitsForNativeSectionsCamerasAndBodiesAndNeverRestocksAnEdit(GameTestHelper h){
-        var f=fixture(h);var place=ChildRoom.PLACE;var p=f.player("nursery_camera",place);var b=f.base(place);var l=f.in;lease(f,place);
-        var shelf=b.offset(ChildRoom.TOY_HOMES.get(1));var t=f.data().state(NurserySupport0492.STATE);t.remove(Long.toString(b.asLong()));f.data().setState(NurserySupport0492.STATE,t);
-        l.setBlock(shelf,l.getBlockState(shelf).setValue(NurseryBlock.STAGE,0),18);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native entity sections load")).thenExecute(()->{
-            p.setGameMode(GameType.SPECTATOR);f.at(p,place,-9,2,-20);h.assertTrue(!NurserySupport0492.repair(l,b),"a spectator's actual camera protects the props");
-            var body=LiteraryRegistry.ACTOR.get().create(l);f.extras.add(body);body.bind(place,null);body.setNoGravity(true);body.moveTo(shelf.getX()+.5,shelf.getY(),shelf.getZ()+.5);h.assertTrue(l.addFreshEntity(body),"the fixture body joins the native level");f.at(p,place,0,0,100);
-            h.assertTrue(!NurserySupport0492.repair(l,b),"an actual living body blocks the changed cell");body.discard();
-            h.assertTrue(NurserySupport0492.repair(l,b)&&l.getBlockState(shelf).getValue(NurseryBlock.STAGE)==1,"the recognised original mount is fitted");
-            l.setBlock(shelf,Blocks.AIR.defaultBlockState(),18);f.reload();h.assertTrue(NurserySupport0492.repair(l,b)&&l.getBlockState(shelf).isAir(),"the saved checkpoint never restores a later removal");
-        }).thenSucceed();
-    }
-    @AfterBatch(batch="review492_nursery_saved") public static void savedNurseryDone(ServerLevel l){close();}
 
     @GameTest(template="empty",batch="review492_interactivity",timeoutTicks=300)
     public static void lampsClutterAndChessRespondWithoutLootOrStoryCreditAndRespectNativeReach(GameTestHelper h){
@@ -157,20 +143,6 @@ public final class Vignette0492Tests {
             h.assertTrue(ids.equals(new HashSet<>(ClassicsVignettes.cast(f.l).stream().map(Entity::getUUID).toList())),"no original is replaced to manufacture an escape");
             for(var a:ClassicsVignettes.cast(f.l))h.assertTrue(a.getZ()<f.b.getZ()-23&&!a.seated()&&f.l.noCollision(a,a.getBoundingBox()),"each actor finishes clear of the native room collision: "+a.role());
             h.assertTrue(!f.l.getBlockState(f.b.offset(-5,0,-22)).getValue(DoorBlock.OPEN),"the last original shuts the physical door");
-        }).thenSucceed();
-    }
-    @AfterBatch(batch="review492_courtyard_saved") public static void courtyardDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="review492_courtyard_saved",timeoutTicks=350)
-    public static void checkpointedCourtyardDecorBecomesChessWithoutRestockingLaterEdits(GameTestHelper h){
-        var f=fixture(h);var place=LabyrinthPlace.ZAMPANO_COURTYARD;var b=f.base(place);var l=f.out;f.built.add(place);var box=new AABB(Vec3.atLowerCornerOf(b.offset(-16,-2,-42)),Vec3.atLowerCornerOf(b.offset(17,18,8)));f.chunks.hold(l,box);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native courtyard sections are loaded")).thenExecute(()->{
-            NovelRooms.build(l.getServer(),l,b,place);VignetteArchitecture.decorateOnce(l,f.origin,place);
-            for(int x:new int[]{-8,8}){var table=b.offset(x,0,-12);h.assertTrue(l.getBlockState(table).getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CHESS_TABLE&&l.getBlockState(table.above()).getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.CHESS,"the actual builder authors chess before any review can run");l.setBlock(table,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH),18);l.setBlock(table.above(),SceneDetailBlock.state(SceneDetailBlock.Kind.VASE,Direction.SOUTH),18);}
-            var old=f.data().state(PlaytestSceneReview.STATE);old.putBoolean(f.origin.asLong()+":"+place.id(),true);f.data().setState(PlaytestSceneReview.STATE,old);f.reload();
-            var p=NativeTestPlayers.survival(h,"courtyard_camera");f.players.add(p);p.teleportTo(l,b.getX(),b.getY(),b.getZ()-11,0,0);p.setGameMode(GameType.SPECTATOR);h.assertTrue(!CourtyardChess0492.repair(l,b),"an actual spectator camera postpones the saved geometry change");p.teleportTo(l,b.getX(),b.getY(),b.getZ()+100,0,0);
-            h.assertTrue(CourtyardChess0492.repair(l,b),"the old completed checkpoint cannot suppress the recognised correction");
-            for(int x:new int[]{-8,8})h.assertTrue(l.getBlockState(b.offset(x,0,-12)).getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CHESS_TABLE&&l.getBlockState(b.offset(x,1,-12)).getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.CHESS,"both actual settings retain boards and chessmen");
-            l.setBlock(b.offset(-8,1,-12),Blocks.AIR.defaultBlockState(),18);f.reload();h.assertTrue(CourtyardChess0492.repair(l,b)&&l.getBlockState(b.offset(-8,1,-12)).isAir(),"later removal stays removed across native saved-data reload");
         }).thenSucceed();
     }
     @AfterBatch(batch="review492_men_exit") public static void menExitDone(ServerLevel l){close();}

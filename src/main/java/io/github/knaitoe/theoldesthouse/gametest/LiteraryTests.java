@@ -622,37 +622,6 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             h.succeed();});
     }
     @AfterBatch(batch="literary_child_toys") public static void childToysDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_child_rebuild",timeoutTicks=300)
-    public static void anOlderChildRoomIsRebuiltOnceOnlyWhenEmptyAndUnwatched(GameTestHelper h){
-        var f=new Fixture(h);var place=LabyrinthPlace.CHILD_ROOM;f.build(place);var b=f.base(place);var l=f.in;var d=f.data();
-        // Make it the room as it stood before 0.4.74: no checkpoint, the old lectern, the figure on the ceiling, and old records.
-        var done=d.state(ChildRoom.STATE);done.remove(Long.toString(b.asLong()));d.setState(ChildRoom.STATE,done);
-        l.setBlock(b.offset(6,1,-20),Blocks.LECTERN.defaultBlockState(),3);
-        var finishedId=UUID.randomUUID();var partwayId=UUID.randomUUID();
-        var finished=new CompoundTag();finished.putBoolean("Completed",true);finished.putBoolean("Read_Source",true);finished.putString("Outcome","examined_the_lost_exits_and_crawled_below_the_bed");LiteraryVignettes.save(d,finishedId,place,finished);
-        var partway=new CompoundTag();partway.putBoolean("Read_Source",true);partway.putBoolean("Ready",true);partway.putInt("ExaminedLostExits",31);partway.putInt("ExitSeen0474",15);LiteraryVignettes.save(d,partwayId,place,partway);
-        var r=place.room();f.chunks.hold(l,new AABB(b.getX()+r.minX()-1,b.getY()+r.minY()-2,b.getZ()+r.minZ()-1,b.getX()+r.maxX()+2,b.getY()+r.maxY()+2,b.getZ()+r.maxZ()+2));
-        final LiteraryActor[] figure={null};final net.minecraft.world.entity.decoration.ArmorStand[] stand={null};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&ChildRoom.loaded(l,b),"wait for native chunks and entity sections")).thenExecute(()->{
-            figure[0]=LiteraryRegistry.ACTOR.get().create(l);figure[0].moveTo(Vec3.atBottomCenterOf(b.offset(7,4,-16)));figure[0].setNoGravity(true);l.addFreshEntity(figure[0]);
-            var world=LiteraryVignettes.shared(d,place);world.putUUID("CeilingToy",figure[0].getUUID());world.putInt("LostExits",31);LiteraryVignettes.shared(d,place,world);
-            stand[0]=new net.minecraft.world.entity.decoration.ArmorStand(l,b.getX()+.5,b.getY(),b.getZ()-10.5);l.addFreshEntity(stand[0]);
-        }).thenExecute(()->{
-            h.assertTrue(!ChildRoom.rebuild(l,b)&&l.getBlockState(b.offset(6,1,-20)).is(Blocks.LECTERN),"nothing changes while a body is in the room");
-            stand[0].discard();var watcher=NativeTestPlayers.survival(h,"child_rebuild_watcher");f.players.add(watcher);watcher.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+8.5,180,0);
-            h.assertTrue(!ChildRoom.rebuild(l,b)&&l.getBlockState(b.offset(6,1,-20)).is(Blocks.LECTERN),"nothing changes while someone stands where they could see in");
-            watcher.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+120.5,180,0);
-            h.assertTrue(ChildRoom.rebuild(l,b)&&ChildRoom.built(f.data(),b)&&!l.getBlockState(b.offset(6,1,-20)).is(Blocks.LECTERN)&&figure[0].isRemoved(),"empty and unwatched, the old room and its ceiling figure go");
-            h.assertTrue(NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.BED_HEAD)),NurseryBlock.Kind.BED_HEAD)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.ACCOUNT)),NurseryBlock.Kind.ACCOUNT)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"the new room, crawlspace and basement stand in its place");
-            var after=LiteraryVignettes.shared(f.data(),place);
-            h.assertTrue(after.getInt("Exits0474")==0&&!after.contains("LostExits")&&!after.hasUUID("CeilingToy"),"the room's exits are back, for everyone");
-            var keep=LiteraryVignettes.personal(f.data(),finishedId,place);var redo=LiteraryVignettes.personal(f.data(),partwayId,place);
-            h.assertTrue(keep.getBoolean("Completed")&&"examined_the_lost_exits_and_crawled_below_the_bed".equals(keep.getString("Outcome")),"a reader who finished keeps everything");
-            h.assertTrue(!redo.contains("Ready")&&!redo.contains("ExaminedLostExits")&&!redo.contains("ExitSeen0474")&&redo.getBoolean("Read_Source"),"an unfinished reader starts the room over, the card still read");
-            f.reload();h.assertTrue(ChildRoom.built(f.data(),b)&&ChildRoom.rebuild(l,b),"the checkpoint survives reload and never repeats");
-        }).thenSucceed();
-    }
-    @AfterBatch(batch="literary_child_rebuild") public static void childRebuildDone(ServerLevel l){close();}
     // ------------------------------------------------------------------------------------------------ the Last Stop (0.4.78)
     private static List<ItemStack> drinks(ServerPlayer p){var out=new ArrayList<ItemStack>();for(var s:p.getInventory().items){var tag=s.get(DataComponents.CUSTOM_DATA);if(tag!=null&&tag.copyTag().contains(ElkLotNight.DRINK))out.add(s);}return out;}
     private static void order(ServerPlayer p,LiteraryActor marla,int slot){LiteraryVignettes.talk(p,marla);if(p.containerMenu instanceof LiteraryChoiceMenu menu)menu.clicked(slot,0,ClickType.PICKUP,p);}
@@ -1033,31 +1002,6 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_paw_endings") public static void pawEndingsDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_crimson_gallery",timeoutTicks=300)
-    public static void theCrimsonGalleryStairIsRepairedOnceKeepingWhatAReaderPutThere(GameTestHelper h){
-        var f=new Fixture(h);var place=LabyrinthPlace.CRIMSON_HALL;f.build(place);var b=f.base(place);var l=f.in;var d=f.data();
-        h.assertTrue(CrimsonGallery.built(d,b)&&l.getBlockState(b.offset(-11,6,-14)).is(Blocks.STONE_BRICK_STAIRS)&&l.getBlockState(b.offset(-11,6,-13)).isAir()&&l.getBlockState(b.offset(-14,7,-16)).isAir(),"a new hall has the whole stair and an opening onto the gallery");
-        // The hall as it was built before 0.4.77, with one block a reader put in the railing.
-        var done=d.state(CrimsonGallery.STATE);done.remove(Long.toString(b.asLong()));d.setState(CrimsonGallery.STATE,done);
-        for(int x=-12;x<=-10;x++){l.setBlock(b.offset(x,6,-13),Blocks.DARK_OAK_PLANKS.defaultBlockState(),3);l.setBlock(b.offset(x,6,-14),Blocks.DARK_OAK_PLANKS.defaultBlockState(),3);l.setBlock(b.offset(x,5,-14),Blocks.AIR.defaultBlockState(),3);}
-        for(int z=-17;z<=-15;z++)l.setBlock(b.offset(-14,7,z),Blocks.DARK_OAK_FENCE.defaultBlockState(),3);l.setBlock(b.offset(-14,7,-16),Blocks.COBBLESTONE.defaultBlockState(),3);
-        f.chunks.hold(l,new AABB(b.getX()-16,b.getY()+4,b.getZ()-19,b.getX()-7,b.getY()+12,b.getZ()-10));
-        final net.minecraft.world.entity.decoration.ArmorStand[] stand={null};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"wait for native chunks and entity sections")).thenExecute(()->{
-            stand[0]=new net.minecraft.world.entity.decoration.ArmorStand(l,b.getX()-10.5,b.getY()+7,b.getZ()-15.5);stand[0].setNoGravity(true);l.addFreshEntity(stand[0]);
-        }).thenExecute(()->{
-            h.assertTrue(!CrimsonGallery.repair(l,b)&&l.getBlockState(b.offset(-11,6,-14)).is(Blocks.DARK_OAK_PLANKS),"nothing changes while a body stands on the landing");
-            stand[0].discard();var watcher=NativeTestPlayers.survival(h,"crimson_watcher");f.players.add(watcher);watcher.teleportTo(l,b.getX()-11.5,b.getY(),b.getZ()+2.5,180,0);
-            h.assertTrue(!CrimsonGallery.repair(l,b)&&l.getBlockState(b.offset(-11,6,-14)).is(Blocks.DARK_OAK_PLANKS),"nothing changes while someone could see it happen");
-            watcher.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+120.5,180,0);
-            h.assertTrue(CrimsonGallery.repair(l,b)&&CrimsonGallery.built(f.data(),b),"unwatched and empty, the stair is repaired");
-            for(int x=-12;x<=-10;x++)h.assertTrue(l.getBlockState(b.offset(x,6,-14)).is(Blocks.STONE_BRICK_STAIRS)&&l.getBlockState(b.offset(x,5,-14)).is(Blocks.STONE_BRICKS)&&l.getBlockState(b.offset(x,6,-13)).isAir(),"the last tread has its stone and headroom at x "+x);
-            h.assertTrue(l.getBlockState(b.offset(-14,7,-15)).isAir()&&l.getBlockState(b.offset(-14,7,-17)).isAir()&&l.getBlockState(b.offset(-14,7,-16)).is(Blocks.COBBLESTONE),"the railing opens onto the gallery, and the reader's own block stays");
-            l.setBlock(b.offset(-11,6,-14),Blocks.DARK_OAK_PLANKS.defaultBlockState(),3);f.reload();
-            h.assertTrue(CrimsonGallery.repair(l,b)&&l.getBlockState(b.offset(-11,6,-14)).is(Blocks.DARK_OAK_PLANKS),"the checkpoint survives reload and the repair never runs again");
-        }).thenSucceed();
-    }
-    @AfterBatch(batch="literary_crimson_gallery") public static void crimsonGalleryDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_movie_recovery",timeoutTicks=1400)
     public static void fourCanoesRowToTheFarPierAndAnEmptyCanoeReturnsToItsSlot(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var p=f.player("movie_rower",place);var peer=f.player("movie_next",place);f.source(p,place);
@@ -1381,63 +1325,6 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.onEachTick(()->{if(!watching[0])return;var a=elkKiller(f,p);if(a!=null&&a.swinging&&a.swingTime==1)chops[0]++;});
     }
     @AfterBatch(batch="literary_elk_work") public static void elkWorkDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_upgrade",timeoutTicks=200)
-    public static void elkRebuildKeepsTheSceneKillerPetsAndDroppedThings(GameTestHelper h){
-        var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;f.build(place);var b=f.base(place);var l=f.out;
-        // Keep both the saved body's source and its landing entity section native and loaded.
-        // The first reader's view does not reach the killer waiting under the far yacht deck.
-        f.chunks.hold(l,new AABB(Vec3.atBottomCenterOf(b.offset(7,0,-43)),Vec3.atBottomCenterOf(b.offset(7,0,-43))).inflate(3));
-        f.chunks.hold(l,new AABB(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START)),Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START))).inflate(3));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the original and landing entity sections are ready before staging the saved residents")).thenExecute(()->{
-        h.assertTrue(ElkUpgrade.rebuilds(32)&&ElkUpgrade.rebuilds(35)&&!ElkUpgrade.rebuilds(31)&&!ElkUpgrade.rebuilds(36),"only a saved layout with the earlier elk scene carves it again");
-        // The earlier scene's shared killer, a pet left sitting, and a dropped original, as a saved world would hold them.
-        var legacy=LiteraryRegistry.ACTOR.get().create(l);legacy.bind(place,null);legacy.appearance(LiteraryActor.KILLER,0);legacy.moveTo(Vec3.atBottomCenterOf(b.offset(7,0,-43)));l.addFreshEntity(legacy);f.extras.add(legacy);
-        var world=LiteraryVignettes.shared(f.data(),place);world.putUUID("Killer",legacy.getUUID());LiteraryVignettes.shared(f.data(),place,world);
-        var wolf=EntityType.WOLF.create(l);wolf.moveTo(Vec3.atBottomCenterOf(b.offset(30,ElkCarcassMap.surface(30,-150)-2,-150)));wolf.setTame(true,true);wolf.setOwnerUUID(UUID.randomUUID());wolf.setOrderedToSit(true);l.addFreshEntity(wolf);f.extras.add(wolf);
-        var item=new net.minecraft.world.entity.item.ItemEntity(l,b.getX()+20.5,b.getY()-4,b.getZ()-20.5,new ItemStack(Items.WRITTEN_BOOK));item.setNoGravity(true);l.addFreshEntity(item);f.extras.add(item);
-        var ids=List.of(legacy.getUUID(),wolf.getUUID(),item.getUUID());
-        var visitor=NativeTestPlayers.survival(h,"elk_visitor");f.players.add(visitor);visitor.teleportTo(l,b.getX()+.5,b.getY()+4,b.getZ()-60.5,0,0);
-        h.assertTrue(!ElkUpgrade.vacant(l,b,true),"the old scene is not taken down around anyone in it");
-        visitor.teleportTo(f.in,b.getX()+.5,200,b.getZ()+.5,0,0);
-        h.assertTrue(ElkUpgrade.vacant(l,b,true),"empty, it may be carved again");
-        wolf.setHealth(11);var owner=wolf.getOwnerUUID();var itemData=new CompoundTag();item.saveWithoutId(itemData);itemData.putShort("Age",(short)37);item.load(itemData);
-        ElkUpgrade.protectResidents(l,b);var savedPet=new CompoundTag();wolf.saveWithoutId(savedPet);wolf.load(savedPet);
-        h.assertTrue(wolf.isNoAi()&&wolf.isInvulnerable()&&wolf.isNoGravity()&&!wolf.hurt(wolf.damageSources().inWall(),4)&&wolf.getHealth()==11,"the actual pet cannot suffocate or fall during bounded carving, including reload");
-        ElkUpgrade.settle(l,b);
-        item.saveWithoutId(itemData);h.assertTrue(wolf.getHealth()==11&&owner.equals(wolf.getOwnerUUID())&&!wolf.isNoAi()&&!wolf.isInvulnerable()&&!wolf.isNoGravity()&&itemData.getShort("Age")==37&&item.isNoGravity()&&!item.isInvulnerable(),"settling restores health, ownership, physics, native AI and the original finite item age");
-        h.assertTrue(legacy.isAlive()&&legacy.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(ElkCarcassMap.KILLER_START)))<1,"the scene's own killer keeps his identity and waits below decks");
-        h.assertTrue(wolf.isAlive()&&wolf.isOrderedToSit()&&l.noCollision(wolf,wolf.getBoundingBox())&&!wolf.isInWater(),"a buried pet is set down on the new ground with its orders");
-        h.assertTrue(item.isAlive()&&!ElkUpgrade.stranded(l,item),"a dropped original is kept, set on dry ground");
-        for(var id:ids)h.assertTrue(l.getEntity(id)!=null,"identity kept: "+id);
-        var reader=f.player("elk_adopter",place);
-        h.succeedWhen(()->{var shared=LiteraryVignettes.shared(f.data(),place);
-            h.assertTrue(shared.hasUUID("Killer_"+reader.getUUID())&&shared.getUUID("Killer_"+reader.getUUID()).equals(legacy.getUUID())&&!shared.hasUUID("Killer"),"the next reader inherits the scene's killer rather than a new one");
-            h.assertTrue(legacy.owner().isPresent()&&legacy.owner().get().equals(reader.getUUID())&&!legacy.isNoAi(),"he is now that reader's alone");});
-        });
-    }
-    @AfterBatch(batch="literary_elk_upgrade") public static void elkUpgradeDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="literary_scene_upgrade",timeoutTicks=200)
-    public static void cabinAndTrailerRebuildsKeepNativeResidentsAndFiniteDroppedOriginals(GameTestHelper h){
-        var f=new Fixture(h);f.build(LabyrinthPlace.END_WORLD_CABIN);
-        var animals=new java.util.ArrayList<net.minecraft.world.entity.animal.Wolf>();var originals=new java.util.ArrayList<net.minecraft.world.entity.item.ItemEntity>();
-        var scenes=List.of(LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.GOATMAN);
-        for(var place:scenes){var r=place.room();var b=f.base(place);f.chunks.hold(f.level(place),new AABB(b.getX()+r.minX()-1,b.getY()+r.minY()-2,b.getZ()+r.minZ()-1,b.getX()+r.maxX()+2,b.getY()+r.maxY()+2,b.getZ()+r.maxZ()+2));}
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native source and landing entity sections are ready before the rebuild starts")).thenExecute(()->{
-        for(var place:scenes){var l=f.level(place);var b=f.base(place);f.built.add(place);
-            for(int x=-4;x<=3;x++)for(int z=place==LabyrinthPlace.GOATMAN?-50:-13;z<=(place==LabyrinthPlace.GOATMAN?-45:-9);z++)l.setBlock(b.offset(x,-1,z),Blocks.STONE.defaultBlockState(),3);
-            var wolf=new net.minecraft.world.entity.animal.Wolf(EntityType.WOLF,l);wolf.setTame(true,true);wolf.setOwnerUUID(java.util.UUID.randomUUID());wolf.setOrderedToSit(true);wolf.setHealth(7);wolf.moveTo(Vec3.atBottomCenterOf(b.offset(0,0,-12)));l.addFreshEntity(wolf);f.extras.add(wolf);animals.add(wolf);
-            var item=new net.minecraft.world.entity.item.ItemEntity(l,b.getX()+1.5,b.getY(),b.getZ()-11.5,new ItemStack(Items.PAPER,3));item.setNoGravity(true);l.addFreshEntity(item);f.extras.add(item);originals.add(item);
-            ElkUpgrade.protectResidents(l,b,place);var saved=new CompoundTag();wolf.saveWithoutId(saved);wolf.load(saved);
-        }
-        h.runAfterDelay(15,()->{for(int i=0;i<scenes.size();i++){var place=scenes.get(i);var l=f.level(place);var b=f.base(place);var wolf=animals.get(i);var item=originals.get(i);var wolfId=wolf.getUUID();var owner=wolf.getOwnerUUID();var itemId=item.getUUID();
-            h.assertTrue(wolf.isNoAi()&&wolf.isInvulnerable()&&wolf.getHealth()==7&&item.getItem().getCount()==3,"a sliced scene rebuild protects its wounded native resident and finite original across entity reload");
-            l.setBlock(wolf.blockPosition(),Blocks.STONE.defaultBlockState(),3);l.setBlock(item.blockPosition(),Blocks.STONE.defaultBlockState(),3);ElkUpgrade.settle(l,b,place);
-            h.assertTrue(l.getEntity(wolfId)==wolf&&l.getEntity(itemId)==item&&wolf.getOwnerUUID().equals(owner)&&wolf.isOrderedToSit()&&wolf.getHealth()==7,"settling preserves exact bodies, ownership, orders and health: "+place+", wolf="+(l.getEntity(wolfId)==wolf)+", item="+(l.getEntity(itemId)==item)+", owner="+wolf.getOwnerUUID()+", sit="+wolf.isOrderedToSit()+", health="+wolf.getHealth());
-            h.assertTrue(!wolf.isNoAi()&&!wolf.isInvulnerable()&&!wolf.isNoGravity()&&item.isNoGravity()&&item.getItem().getCount()==3&&!ElkUpgrade.stranded(l,wolf)&&!ElkUpgrade.stranded(l,item),"the original native physics return on safe ground without replenishing the item");
-        }h.succeed();});
-        });
-    }
-    @AfterBatch(batch="literary_scene_upgrade") public static void sceneUpgradeDone(ServerLevel l){close();}
 
 }

@@ -25,7 +25,6 @@ public final class ImmediateFindingsTests {
     private static LiteraryTests.Fixture root;
     @AfterBatch(batch="review491_supper") public static void supperDone(ServerLevel l){if(supper!=null){supper.close();supper=null;}}
     @AfterBatch(batch="review491_family") public static void familyDone(ServerLevel l){if(family!=null){family.close();family=null;}}
-    @AfterBatch(batch="review491_root") public static void rootDone(ServerLevel l){if(root!=null){root.close();root=null;}}
 
     @GameTest(template="empty",batch="review491_supper",timeoutTicks=600)
     public static void aStalePlateBitCannotRejectAnActualFrankOrReplaceItsComponents(GameTestHelper h){
@@ -57,20 +56,4 @@ public final class ImmediateFindingsTests {
         }).thenSucceed();
     }
 
-    @GameTest(template="empty",batch="review491_root",timeoutTicks=600)
-    public static void theCarvedCampTreeIsRootedAndItsSavedRepairWaitsForActualCamerasAndBodies(GameTestHelper h){
-        root=new LiteraryTests.Fixture(h);var f=root;var place=LabyrinthPlace.HOLY_RABBIT;var p=f.player("review491_tree",place);var b=f.base(place);var l=f.out;var marker=l.getBlockEntity(b.offset(0,3,-25));
-        h.assertTrue(marker!=null&&l.getBlockState(b.offset(0,0,-25)).is(net.minecraft.world.level.block.Blocks.OAK_LOG)&&l.getBlockState(b.offset(0,1,-25)).is(net.minecraft.world.level.block.Blocks.OAK_LOG),"the new carved trunk is supported by real logs down to the ground");
-        l.setBlock(b.offset(0,0,-25),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),18);l.setBlock(b.offset(0,1,-25),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),18);l.setBlock(b.offset(0,4,-25),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),18);
-        var saved=f.data().state(ReviewScenery0491.STATE);saved.remove(b.asLong()+":"+place.id());f.data().setState(ReviewScenery0491.STATE,saved);f.chunks.hold(l,new net.minecraft.world.phys.AABB(net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(0,-1,-25)),net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(1,6,-23))));
-        p.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);f.at(p,place,.5,2,-23.5);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the original tree's native sections are ready")).thenExecute(()->{
-            h.assertTrue(!ReviewScenery0491.repair(l,b,place),"an actual spectator camera delays the saved repair");p.moveTo(b.getX()+100,b.getY(),b.getZ()+100);
-            var body=net.minecraft.world.entity.EntityType.PIG.create(l);body.setNoGravity(true);body.moveTo(net.minecraft.world.phys.Vec3.atBottomCenterOf(b.offset(0,0,-25)));l.addFreshEntity(body);
-            h.assertTrue(!ReviewScenery0491.repair(l,b,place),"a living body in the new support volume also delays it");body.discard();
-            h.assertTrue(ReviewScenery0491.repair(l,b,place)&&l.getBlockState(b.offset(0,0,-25)).is(net.minecraft.world.level.block.Blocks.OAK_LOG)&&l.getBlockState(b.offset(0,1,-25)).is(net.minecraft.world.level.block.Blocks.OAK_LOG),"the vacant old floating trunk gains native root supports");
-            h.assertTrue(l.getBlockEntity(b.offset(0,3,-25))==marker&&l.getBlockState(b.offset(0,4,-25)).is(net.minecraft.world.level.block.Blocks.STONE),"the exact original carving block entity and unexpected player edit survive");
-            l.setBlock(b.offset(0,0,-25),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),18);h.assertTrue(ReviewScenery0491.repair(l,b,place)&&l.getBlockState(b.offset(0,0,-25)).isAir(),"a later removal is not repeatedly refilled");
-        }).thenSucceed();
-    }
 }

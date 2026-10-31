@@ -44,9 +44,7 @@ public final class NovelTests {
     private static Fixture courtyard,whale,well,plain,ward,karen,upgrade,signRepair;
     private static Fixture hospitalStyle,hospitalSave,hospitalWriting,hospitalInterrupted;
     @AfterBatch(batch="novel_hospital_style0470") public static void hospitalStyleDone(ServerLevel l){if(hospitalStyle!=null){hospitalStyle.close();hospitalStyle=null;}}
-    @AfterBatch(batch="novel_hospital_save0470") public static void hospitalSaveDone(ServerLevel l){if(hospitalSave!=null){hospitalSave.close();hospitalSave=null;}}
     @AfterBatch(batch="novel_hospital_writing0470") public static void hospitalWritingDone(ServerLevel l){if(hospitalWriting!=null){hospitalWriting.close();hospitalWriting=null;}}
-    @AfterBatch(batch="novel_hospital_interrupted0470") public static void hospitalInterruptedDone(ServerLevel l){if(hospitalInterrupted!=null){hospitalInterrupted.close();hospitalInterrupted=null;}}
     @GameTest(template="empty",batch="novel_hospital_style0470",timeoutTicks=240)
     public static void instituteHasNativeWardFurnitureAndReadableBedsideNotebooks(GameTestHelper h){
         hospitalStyle=new Fixture(h,35200,LabyrinthPlace.WHALE);var f=hospitalStyle;var p=f.player();
@@ -61,36 +59,6 @@ public final class NovelTests {
             f.at(p,9.5,0,-22.5);f.click(p,WhaleInstitute.CALENDAR_BOOK);h.assertTrue(p.containerMenu instanceof NovelVignettes.NovelBookMenu,"the notebook opens through the real private native reading menu");p.closeContainer();
             for(int i=0;i<=5;i++)for(int z:new int[]{-30,-31})h.assertTrue(f.l.noCollision(null,new AABB(f.b.getX()-6-i+.2,f.b.getY()+i+1.01,f.b.getZ()+z+.2,f.b.getX()-6-i+.8,f.b.getY()+i+2.81,f.b.getZ()+z+.8)),"every enamel stair retains its original standing headroom");
             h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE),"the calendar and new scenery confer no resolution");h.succeed();
-        });
-    }
-    @GameTest(template="empty",batch="novel_hospital_save0470",timeoutTicks=2400)
-    public static void hospitalRefitWaitsForNativeResidentsAndKeepsExactOriginalsWithoutRestocking(GameTestHelper h){
-        hospitalSave=new Fixture(h,35600,LabyrinthPlace.WHALE);var f=hospitalSave;var p=f.player();f.chunks.hold(f.l,new AABB(Vec3.atLowerCornerOf(f.b.offset(-16,-1,-35)),Vec3.atLowerCornerOf(f.b.offset(17,13,3))));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"all ward entity sections are native and ready")).thenExecute(()->{
-            WhaleHospital.forget(f.l.getServer(),f.origin);var at=f.b.offset(-9,0,-18);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);
-            var original=letter(p,"Keep this sentence exactly.");original.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("My actual stored letter"));var old=(BarrelBlockEntity)f.l.getBlockEntity(at);old.setItem(26,original.copy());var named=old.saveWithFullMetadata(f.l.registryAccess());named.putString("CustomName",net.minecraft.network.chat.Component.Serializer.toJson(net.minecraft.network.chat.Component.literal("Custom ward drawer"),f.l.registryAccess()));old.loadWithComponents(named,f.l.registryAccess());
-            var source=letter(p,"This is the actual lectern original, not the default text.");var sourceAt=f.b.offset(WhaleInstitute.LECTERN);f.l.setBlock(sourceAt,Blocks.LECTERN.defaultBlockState(),2);((LecternBlockEntity)f.l.getBlockEntity(sourceAt)).setBook(source);
-            var own=f.own(p);var sent=new CompoundTag();sent.putInt("Sent",2);sent.putString("Exact","An earlier private exchange");own.put(WhaleInstitute.KEY,sent);NovelVignettes.save(f.data(),p.getUUID(),own);
-            h.assertTrue(!WhaleHospital.apply(f.l,f.b),"a camera in the institute holds the whole in-place repair");p.moveTo(100,80,100);
-            var cat=EntityType.CAT.create(f.l);h.assertTrue(cat!=null,"the native resident is created");cat.setNoAi(true);cat.moveTo(f.b.getX()+4.5,f.b.getY(),f.b.getZ()-22.5);cat.tame(p);cat.setHealth(4);var id=cat.getUUID();
-            h.assertTrue(f.l.addFreshEntity(cat)&&f.l.getEntity(id)==cat,"the actual owned resident passes native spawn rules and is registered before testing its guard");f.extra.add(cat);
-            h.assertTrue(!WhaleHospital.apply(f.l,f.b),"a living resident holds the refit even after the camera leaves");cat.moveTo(100,80,110);
-            h.assertTrue(WhaleHospital.apply(f.l,f.b),"the unseen, vacant, loaded ward is repaired in place");var cabinet=(InstituteCabinetBlockEntity)f.l.getBlockEntity(at);
-            h.assertTrue(cabinet.getContainerSize()==27&&ItemStack.isSameItemSameComponents(cabinet.getItem(26),original)&&cabinet.getName().getString().equals("Custom ward drawer"),"the same slot, exact item components and native custom name survive the barrel conversion");
-            h.assertTrue(ItemStack.isSameItemSameComponents(((InstituteNotebookBlockEntity)f.l.getBlockEntity(f.b.offset(WhaleInstitute.LECTERN))).book(),source)&&f.own(p).getCompound(WhaleInstitute.KEY).equals(sent),"actual source words and the writer's private exchange remain exact");
-            h.assertTrue(cat.getUUID().equals(id)&&cat.getOwnerUUID().equals(p.getUUID())&&cat.getHealth()==4,"the resident keeps identity, ownership and health");
-            cabinet.removeItemNoUpdate(26);cabinet.setChanged();f.l.setBlock(f.b.offset(0,0,-30),Blocks.AIR.defaultBlockState(),2);f.reload();WhaleHospital.apply(f.l,f.b);
-            h.assertTrue(cabinet.isEmpty()&&f.l.getBlockState(f.b.offset(0,0,-30)).isAir(),"reload never restocks a drawer or replaces a later removed chair");h.succeed();
-        });
-    }
-    @GameTest(template="empty",batch="novel_hospital_interrupted0470",timeoutTicks=2400)
-    public static void interruptedHospitalCustodyFinishesWithoutReplacingTheSavedOriginalWithAnEmptyBarrel(GameTestHelper h){
-        hospitalInterrupted=new Fixture(h,36000,LabyrinthPlace.WHALE);var f=hospitalInterrupted;var p=f.player();f.chunks.hold(f.l,new AABB(Vec3.atLowerCornerOf(f.b.offset(-16,-1,-35)),Vec3.atLowerCornerOf(f.b.offset(17,13,3))));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the interrupted ward's native sections are ready")).thenExecute(()->{
-            WhaleHospital.forget(f.l.getServer(),f.origin);var at=f.b.offset(-9,0,-18);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);var old=(BarrelBlockEntity)f.l.getBlockEntity(at);var original=letter(p,"Already in saved custody.");old.setItem(11,original.copy());
-            var containers=new CompoundTag();containers.put(Long.toString(at.asLong()),old.saveWithFullMetadata(f.l.registryAccess()));var pending=new CompoundTag();pending.put("Containers",containers);var checkpoint=f.data().state(WhaleHospital.STATE);checkpoint.put(Long.toString(f.b.asLong()),pending);f.data().setState(WhaleHospital.STATE,checkpoint);
-            old.clearContent();f.reload();p.moveTo(100,80,100);h.assertTrue(WhaleHospital.apply(f.l,f.b),"an interrupted clear resumes from saved native custody");
-            h.assertTrue(ItemStack.isSameItemSameComponents(((InstituteCabinetBlockEntity)f.l.getBlockEntity(at)).getItem(11),original),"the emptied old barrel does not overwrite the saved exact original");h.succeed();
         });
     }
     @GameTest(template="empty",batch="novel_hospital_writing0470",timeoutTicks=240)
@@ -111,27 +79,12 @@ public final class NovelTests {
             h.assertTrue(f.own(p).getCompound(WhaleInstitute.KEY).getInt("Blanks")==4&&p.getInventory().countItem(Items.WRITABLE_BOOK)==0,"the physical drawer supplies only its original four sheets");h.succeed();
         });
     }
-    @AfterBatch(batch="novel_sign_repair0468") public static void c8(ServerLevel l){if(signRepair!=null){signRepair.close();signRepair=null;}}
-    @GameTest(template="empty",batch="novel_sign_repair0468",timeoutTicks=2400)
-    public static void instituteRepairsWaitForCamerasAndKeepTheExactPrivateCorrespondence(GameTestHelper h){
-        signRepair=new Fixture(h,34800,LabyrinthPlace.WHALE);var f=signRepair;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.WHALE));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the institute's native entity sections are ready")).thenExecute(()->{
-            f.l.setBlock(f.b.offset(1,2,-23),Blocks.AIR.defaultBlockState(),2);NovelRooms.sign(f.l,f.b.offset(1,2,-22),Direction.WEST,new String[]{"","·      ·","",""});
-            f.l.setBlock(f.b.offset(-8,5,-30),Blocks.SMOOTH_STONE.defaultBlockState(),2);f.l.setBlock(f.b.offset(1,10,-28),Blocks.AIR.defaultBlockState(),2);
-            var own=f.own(p);var saved=new CompoundTag();saved.putInt("Sent",2);saved.putString("Exact","The original page in this writer's own custody");own.put(WhaleInstitute.KEY,saved);NovelVignettes.save(f.data(),p.getUUID(),own);
-            h.assertTrue(!PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.WHALE),"an occupied institute is not changed under its reader's camera");p.moveTo(100,80,100);h.assertTrue(PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.WHALE),"the unseen loaded institute gets its bounded repairs");
-            h.assertTrue(f.l.getBlockState(f.b.offset(1,2,-22)).isAir()&&f.l.getBlockState(f.b.offset(1,2,-23)).getValue(InstituteSignBlock.KIND)==InstituteSignBlock.Kind.MISSING,"the same missing plate moves exactly above her real doorway");
-            h.assertTrue(f.l.getBlockState(f.b.offset(-8,5,-30)).isAir()&&!f.l.getBlockState(f.b.offset(1,10,-28)).isAir()&&f.own(p).getCompound(WhaleInstitute.KEY).equals(saved),"headroom and the roof change while the exact private correspondence stays untouched");
-            f.reload();f.l.setBlock(f.b.offset(1,2,-23),Blocks.AIR.defaultBlockState(),2);PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.WHALE);h.assertTrue(f.l.getBlockState(f.b.offset(1,2,-23)).isAir(),"the reloaded checkpoint preserves later removals instead of replacing the plate again");h.succeed();
-        });
-    }
     @AfterBatch(batch="novel_courtyard") public static void c1(ServerLevel l){if(courtyard!=null){courtyard.close();courtyard=null;}}
     @AfterBatch(batch="novel_whale") public static void c2(ServerLevel l){if(whale!=null){whale.close();whale=null;}}
     @AfterBatch(batch="novel_well") public static void c3(ServerLevel l){if(well!=null){well.close();well=null;}}
     @AfterBatch(batch="novel_plain") public static void c4(ServerLevel l){if(plain!=null){plain.close();plain=null;}}
     @AfterBatch(batch="novel_ward") public static void c5(ServerLevel l){if(ward!=null){ward.close();ward=null;}}
     @AfterBatch(batch="novel_karen") public static void c6(ServerLevel l){if(karen!=null){karen.close();karen=null;}}
-    @AfterBatch(batch="novel_upgrade") public static void c7(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
     @GameTest(template="empty") public static void novelSitesAppendAndOutdoorEntriesUseTheirRealDimension(GameTestHelper h){
         for(int y:new int[]{65,80,150,250})for(var place:NovelVignettes.PLACES){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,place);var slot=LabyrinthPlaces.slotBounds(origin,place);var r=place.room();
             h.assertTrue(b!=null&&slot.isInside(b.offset(r.minX(),r.minY(),r.minZ()))&&slot.isInside(b.offset(r.maxX(),r.maxY(),r.maxZ())),"the appended scene fits its native height at "+y+": "+place.id());}
@@ -173,21 +126,6 @@ public final class NovelTests {
             f.at(p,cat.getX()-f.b.getX(),0,cat.getZ()-f.b.getZ()+1.5);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,cat));
             h.assertTrue(f.data().state(NovelVignettes.STATE).getBoolean("CatCoaxed")&&cat.isTame()&&p.getMainHandItem().isEmpty(),"the fountain's fish coaxes the cat off the mat");
             fish.get().forEach(Entity::discard);var third=f.player();h.assertTrue(fish.get().isEmpty()&&WitnessAccount.count(f.data(),p.getUUID())==0,"once the cat is off the mat no more fish come, and a fish is no story");
-            // A courtyard saved before 0.4.77: indoor tables at the edges and no fountain.
-            var marks=f.data().state(CourtyardFountain.STATE);marks.remove(Long.toString(f.b.asLong()));f.data().setState(CourtyardFountain.STATE,marks);
-            for(var at:CourtyardFountain.fountain(f.b).keySet()){int y=at.getY()-f.b.getY();f.l.setBlock(at,y==-1?Blocks.MOSSY_STONE_BRICKS.defaultBlockState():Blocks.AIR.defaultBlockState(),2);}
-            for(var at:CourtyardFountain.planters(f.b).keySet())f.l.setBlock(at,at.getY()==f.b.getY()?HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH):SceneDetailBlock.state(SceneDetailBlock.Kind.TABLE_LAMP,Direction.SOUTH),2);
-            h.assertTrue(!CourtyardFountain.repair(f.l,f.b),"nothing changes while readers stand in the courtyard");
-            for(var r:List.of(p,peer,third))r.moveTo(f.b.getX()+300,f.b.getY(),f.b.getZ()+300);f.l.getEntitiesOfClass(Cat.class,IndianLakeRooms.bounds(f.b,f.place)).forEach(Entity::discard);
-        }).thenWaitUntil(()->{
-            // It waits on loaded sections, cameras and bodies; say which, if it never goes ahead.
-            if(CourtyardFountain.repair(f.l,f.b))return;var near=new AABB(Vec3.atLowerCornerOf(f.b.offset(-16,-3,-17)),Vec3.atLowerCornerOf(f.b.offset(17,4,-2)));
-            h.fail("unwatched, a saved courtyard goes ahead; still waiting on living "+f.l.getEntitiesOfClass(LivingEntity.class,near,e->e.isAlive()).stream().map(e->e.getType().toShortString()+"@"+e.blockPosition().subtract(f.b)).toList()
-                +", players "+f.l.players().stream().map(pl->pl.getCamera().blockPosition().subtract(f.b)).toList());
-        }).thenExecute(()->{
-            h.assertTrue(f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)).is(Blocks.WATER_CAULDRON)&&f.l.getBlockState(f.b.offset(CourtyardFountain.CENTRE).north()).is(Blocks.WATER),"the saved courtyard gets its fountain: "+f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)));
-            h.assertTrue(f.l.getBlockState(f.b.offset(13,0,-6)).is(Blocks.MOSSY_STONE_BRICK_WALL)&&f.l.getBlockState(f.b.offset(13,1,-6)).is(Blocks.POTTED_AZALEA),"and its planters where the tables stood: "+f.l.getBlockState(f.b.offset(13,0,-6))+" / "+f.l.getBlockState(f.b.offset(13,1,-6)));
-            h.assertTrue(CourtyardFountain.done(f.data(),f.b),"once");
         }).thenSucceed();
     }
     private static Fixture cabinets,leaves;
@@ -371,21 +309,5 @@ public final class NovelTests {
         h.runAfterDelay(65,()->{h.assertTrue(f.own(p).getList("Record",Tag.TAG_COMPOUND).size()==1,"the bounded real photograph renderer stores this explorer's visited room");f.at(p,.5,0,-4.5);f.click(p,NovelRooms.PROJECTOR);
             var photo=ItemStack.parseOptional(p.registryAccess(),f.own(p).getList("Record",Tag.TAG_COMPOUND).getCompound(0));h.assertTrue(photo.has(DataComponents.MAP_ID)&&f.l.getMapData(photo.get(DataComponents.MAP_ID))!=null,"the private projector's original is an actual captured native map");
             h.assertTrue(f.l.getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class,IndianLakeRooms.bounds(f.b,f.place)).isEmpty(),"a private projection creates no shared frame that reveals another player's photograph");h.assertTrue(!new SecretPhotographs.Album(1,p.getInventory(),p).getSlot(0).getItem().isEmpty(),"the original is available for native album pickup");h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"a navigation anchor grants no Witness evidence");h.succeed();});}
-    @GameTest(template="empty",batch="novel_upgrade",timeoutTicks=2400) public static void layoutTwentyAppendsNovelPlacesWithoutRebuildingEarlierRooms(GameTestHelper h){
-        upgrade=new Fixture(h,34700,LabyrinthPlace.KAREN_ROOM);var f=upgrade;HouseTestLevel.get(f.l.getServer(),HouseDimensions.OUTSIDE);
-        var old=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);f.chunks.hold(f.l,IndianLakeRooms.bounds(old,LabyrinthPlace.HARRIGAN));var at=old.offset(2,0,-4);f.l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);var barrel=(BarrelBlockEntity)f.l.getBlockEntity(at);barrel.setItem(0,new ItemStack(Items.DIAMOND,3));
-        NovelRooms.box(f.l,old,-3,-1,-5,3,-1,-1,Blocks.SMOOTH_STONE.defaultBlockState());
-        var id=UUID.randomUUID();final Entity[] original={null};final UUID[] identity={null};final boolean[] checked={false};
-        h.onEachTick(()->{
-            if(original[0]==null){
-                if(!f.chunks.ready())return;
-                var actor=FinaleRegistry.WITNESS.get().create(f.l);actor.moveTo(Vec3.atBottomCenterOf(old.north(3)));h.assertTrue(f.l.addFreshEntity(actor),"the preserved fixture actor is actually added");f.extra.add(actor);original[0]=actor;identity[0]=actor.getUUID();
-                var scene=new CompoundTag();scene.putBoolean("ReadingFinished",true);f.data().setState(HarriganVignette.ID,scene);WitnessAccount.resolve(f.data(),id,WitnessAccount.Story.HARRIGAN,"buried_phone");
-                f.data().setBuilt(20,f.origin);LabyrinthBuilder.ensureBuilt(f.l.getServer());LabyrinthBuilder.finishGameTest(f.l.getServer());return;
-            }
-            if(checked[0])return;checked[0]=true;var actor=original[0];
-            h.assertTrue(LabyrinthBuilder.isBuilt(f.l.getServer()),"the appended layout finishes");h.assertTrue(f.l.getBlockEntity(at)==barrel&&barrel.getItem(0).getCount()==3&&actor.getUUID().equals(identity[0])&&actor.isAlive(),"earlier native containers and actors retain identity; same barrel="+(f.l.getBlockEntity(at)==barrel)+" count="+barrel.getItem(0).getCount()+" alive="+actor.isAlive()+" actor="+actor.position());
-            h.assertTrue(f.data().state(HarriganVignette.ID).getBoolean("ReadingFinished")&&WitnessAccount.has(f.data(),id,WitnessAccount.Story.HARRIGAN),"saved reading and personal evidence remain");
-            for(var place:NovelVignettes.PLACES){var door=f.data().door(place.entryDoorId());var level=f.l.getServer().getLevel(NovelRooms.dimension(place));h.assertTrue(door!=null&&level.getBlockState(door.lower).getBlock() instanceof DoorBlock,"the appended site has an actual entrance in its own dimension");}h.succeed();});}
 
 }

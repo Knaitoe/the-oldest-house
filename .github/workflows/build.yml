@@ -341,7 +341,7 @@ jobs:
               # Proofrock (0.4.67): the town's signboards and school fittings, and the teachers' desks.
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/town_fixture.json'))['variants']) == 256
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/streetlight.json'))['variants']) == 40
-              for name in ('TownStreetlightBlock','StreetlightUpgrade'):
+              for name in ('TownStreetlightBlock',):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('metal','base','glass'):
                   assert z.read(f'assets/the_oldest_house/textures/block/streetlight_{name}.png').startswith(b'\x89PNG')
@@ -349,7 +349,7 @@ jobs:
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/trailer_cooler.json'))['variants']) == 16
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/vehicle_wheel.json'))['variants']) == 16
               assert len(json.loads(z.read('assets/the_oldest_house/blockstates/notice_post.json'))['variants']) == 4
-              for cls in ('NoticePostBlock','NoticePostBlockEntity','InstituteSignBlock','PlaytestFixes'):
+              for cls in ('NoticePostBlock','NoticePostBlockEntity','InstituteSignBlock'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{cls}.class' in z.namelist()
               for kind in ('post','outgoing','hours','writing','room_1','room_2','room_3','room_4','room_5','room_6','room_8','missing'):
                   assert z.read(f'assets/the_oldest_house/textures/block/institute_{kind}.png').startswith(b'\x89PNG')
@@ -374,7 +374,6 @@ jobs:
               for cue in ('exhale', 'inhale', 'scrape', 'line_taut', 'stone_roll', 'chisel', 'gasp', 'choke'):
                   assert z.read(f'assets/the_oldest_house/sounds/caver/{cue}.ogg').startswith(b'OggS')
                   assert caver_sounds[f'caver.{cue}']['subtitle'] == f'subtitles.the_oldest_house.caver.{cue}'
-              assert 'io/github/knaitoe/theoldesthouse/labyrinth/CaverRedesign.class' in z.namelist()
               # 0.4.75: the reader's own breath gauge replaces the air bubbles in the crawls.
               assert z.read('assets/the_oldest_house/textures/gui/caver_breath.png').startswith(b'\x89PNG')
               # 0.4.77: the town board and back, the car tread, the ward lights' off state and their hum and flicker, and the new passes.
@@ -386,7 +385,7 @@ jobs:
               for cue in ('hum', 'flicker'):
                   assert z.read(f'assets/the_oldest_house/sounds/ward/{cue}.ogg').startswith(b'OggS')
                   assert caver_sounds[f'ward.{cue}']['subtitle'] == f'subtitles.the_oldest_house.ward.{cue}'
-              for name in ('CourtyardFountain','CrimsonGallery','ProofrockRepairs'):
+              for name in ('CourtyardFountain','CrimsonGallery'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               # 0.4.78: the Last Stop, one roadhouse block for the bar, road, lot, field and pickups; four subtitled cues; five placeholder skins.
               roadhouse = json.loads(z.read('assets/the_oldest_house/blockstates/roadhouse.json'))['variants']
@@ -436,7 +435,7 @@ jobs:
                   assert mesh['elements'][0]['from'][1] == 12, name
                   assert mesh['elements'][0]['to'][1] == 16, name
                   assert all(b['to'][0]-b['from'][0] <= 2 or b['from'][1] >= 12 for b in mesh['elements'][1:]), name
-              for name in ('labyrinth/CampBedCrawl','labyrinth/CampDecorBlock','labyrinth/CampBloodDecor','labyrinth/PlaytestSceneRepairs','labyrinth/MillLetterItem','client/CampBedClient','client/PawClutchClient','client/Playtest0483VisualProof','network/CampBedPayload','network/PawClutchPayload'):
+              for name in ('labyrinth/CampBedCrawl','labyrinth/CampDecorBlock','labyrinth/CampBloodDecor','labyrinth/MillLetterItem','client/CampBedClient','client/PawClutchClient','client/Playtest0483VisualProof','network/CampBedPayload','network/PawClutchPayload'):
                   assert f'io/github/knaitoe/theoldesthouse/{name}.class' in z.namelist(), name
               assert z.read('assets/the_oldest_house/textures/entity/paw_clutch.png').startswith(b'\x89PNG')
               assert z.read('assets/the_oldest_house/textures/item/mill_letter.png').startswith(b'\x89PNG')
@@ -582,7 +581,7 @@ jobs:
                   image = Image.open(BytesIO(raw)).convert('RGBA')
                   assert list(image.size) == record['size'], name
                   assert hashlib.sha256(image.getchannel('A').tobytes()).hexdigest() == record['alpha_sha256'], name
-              for name in ('TrailerFixtureBlock','TrailerDoorBlock','TrailerDoorBlockEntity','GoatmanStalking','GoatmanTrailerUpgrade'):
+              for name in ('TrailerFixtureBlock','TrailerDoorBlock','TrailerDoorBlockEntity','GoatmanStalking'):
                   assert f'io/github/knaitoe/theoldesthouse/labyrinth/{name}.class' in z.namelist()
               for name in ('HumanoidMotion','TrailerDoorRenderer','TrailerVisualProof'):
                   assert f'io/github/knaitoe/theoldesthouse/client/{name}.class' in z.namelist()
@@ -700,7 +699,7 @@ jobs:
           import re
           from pathlib import Path
           passed = re.findall(r'All (\d+) required tests passed', Path('build/native-playtest488.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('Playtest0488Tests.java','Finishing488Tests.java','LakeSettlementTests.java','NightclubTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('Playtest0488Tests.java','Finishing488Tests.java','NightclubTests.java'))
           assert passed and int(passed[-1]) == declared, 'The actual navigation, speech, survival and scene finishing repairs did not complete.'
           PYTEST
 
@@ -1917,16 +1916,6 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native hospital save and seating check
-        timeout-minutes: 4
-        env:
-          JAVA_TOOL_OPTIONS: -Xmx6g
-        run: |
-          mkdir -p build run
-          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
-          set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_nightward --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/night-ward-native.log
-          python3 -c "from pathlib import Path; assert 'All 1 required tests passed' in Path('build/night-ward-native.log').read_text()"
       - name: Native trailer, funeral and hospital gameplay
         timeout-minutes: 12
         env:
@@ -1935,12 +1924,12 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_nightward,the_oldest_house_goatman_windows,the_oldest_house_goatman_entry,the_oldest_house_goatman_meal --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_goatman_windows,the_oldest_house_goatman_entry,the_oldest_house_goatman_meal --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/goatman-native.log').read_text())
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','GoatmanBedtimeTests.java','GoatmanMealTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','NightWardTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
+          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('GoatmanTests.java','GoatmanExteriorTests.java','GoatmanBedtimeTests.java','GoatmanMealTests.java','StreetlightTests.java','HarriganWakeTests.java','HarriganDialogueTests.java','OctoberFollowupTests.java','ImmediateFindingsTests.java'))
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused trailer, funeral and hospital native cases passed; the complete suite remains required.')
           PY

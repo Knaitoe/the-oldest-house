@@ -165,7 +165,7 @@ public final class SceneReviewTests {
         var before=farm(f);
         h.assertTrue(!ScenePolish.applies(f.place)&&!SceneCraft.applies(f.place)&&!VignetteArchitecture.applies(f.place)&&!SceneShells.shapes(f.place),"no polish, composition, architecture or shell pass applies to the farm");
         // Every pass that once dressed it, run again; and the farm's own checkpoint forgotten, as an explicit rebuild would.
-        Farmstead.forget(f.level.getServer(),f.origin);Farmstead.fresh(f.level,f.origin);BarnFarm.upgrade(f.level,f.origin);
+        Farmstead.forget(f.level.getServer(),f.origin);Farmstead.fresh(f.level,f.origin);
         ScenePolish.forget(f.level.getServer(),f.origin,f.place);ScenePolish.polishOnce(f.level,f.origin,f.place);
         SceneCraft.craftOnce(f.level,f.origin,f.place);VignetteArchitecture.decorateOnce(f.level,f.origin,f.place);SceneSupportRepairs.repairOnce(f.level,f.origin,f.place);
         h.startSequence().thenIdle(40).thenExecute(()->{

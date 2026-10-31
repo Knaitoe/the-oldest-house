@@ -67,16 +67,4 @@ public final class WallNotesTests {
         for(int i=0;i<5;i++)saved.visit(reader,LabyrinthPlace.STRAIGHT_HALL);
         h.assertTrue(LabyrinthDealer.vignettesAvailable(saved,reader).contains(LabyrinthPlace.RED_ROOM),"six intervening native visits restore the recurring source without resetting its story");h.succeed();
     }
-    @GameTest(template="empty") public static void nativeWestMazeEntryKeepsItsPassageAndClosesTheSkyHole(GameTestHelper h){
-        var l=h.getLevel();var origin=h.absolutePos(BlockPos.ZERO).offset(160,0,160);var b=FinaleArchitecture.base(origin);var plan=new LinkedHashMap<BlockPos,BlockState>();StaircaseMazes.plan(plan,b);
-        plan.forEach((at,s)->{int x=at.getX()-b.getX(),z=at.getZ()-b.getZ();if(x>=-24&&x<=-18&&z>=32&&z<=38)l.setBlock(at,s,2);});
-        var opening=b.offset(-20,FinaleArchitecture.ARENA,38);for(int y=0;y<3;y++)l.setBlock(opening.above(y),Blocks.AIR.defaultBlockState(),2);
-        var changed=b.offset(-24,FinaleArchitecture.ARENA+3,38);l.setBlock(changed,Blocks.EMERALD_BLOCK.defaultBlockState(),2);
-        var p=NativeTestPlayers.survival(h,"maze_cap");
-        try{
-            p.moveTo(Vec3.atBottomCenterOf(opening));h.assertTrue(l.noCollision(p,p.getBoundingBox()),"the reproduced old connector cap exposes a native player-sized opening");WallNotesRepairs.repairWestConnector(l,origin);
-            h.assertTrue(!l.noCollision(p,p.getBoundingBox())&&l.getBlockState(changed).is(Blocks.EMERALD_BLOCK),"the new backing closes the actual outside hole while preserving an edit");
-            for(int x=18;x<=23;x++){p.moveTo(Vec3.atBottomCenterOf(b.offset(-x,FinaleArchitecture.ARENA,36)));h.assertTrue(l.noCollision(p,p.getBoundingBox()),"the real west connector remains physically walkable");}h.succeed();
-        }finally{NativeTestPlayers.remove(p);}
-    }
 }

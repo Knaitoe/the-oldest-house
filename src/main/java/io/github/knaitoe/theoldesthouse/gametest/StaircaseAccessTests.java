@@ -210,22 +210,6 @@ public final class StaircaseAccessTests {
         h.assertTrue(f.data().returnDepth(p.getUUID())==0&&p.position().distanceToSqr(Vec3.atBottomCenterOf(f.source))<4,"crossing the real entry corridor returns to the exact saved source door");
     });}
 
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
-    public static void alreadyPolishedWorldReceivesTargetedRepairsOnceWithoutRestaging(GameTestHelper h){run(h,514000,f->{
-        var b=LabyrinthPlaces.base(f.origin,LabyrinthPlace.END_WORLD_CABIN);var r=LabyrinthPlace.END_WORLD_CABIN.room();
-        f.chunks.hold(f.outside,new AABB(b.getX()+r.minX()-14,b.getY()+r.minY()-2,b.getZ()+r.minZ()-14,b.getX()+r.maxX()+15,b.getY()+r.maxY()+3,b.getZ()+r.maxZ()+15));
-    },f->{
-        var place=LabyrinthPlace.END_WORLD_CABIN;var b=LabyrinthPlaces.base(f.origin,place);var cabinet=b.offset(7,0,-24);var tv=cabinet.above();var barrel=b.offset(-8,0,-25);var removed=b.offset(6,0,-29);
-        f.put(f.outside,tv,LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,LiteraryPropBlock.Kind.TELEVISION));
-        f.put(f.outside,cabinet,Blocks.AIR.defaultBlockState());f.put(f.outside,barrel,Blocks.BARREL.defaultBlockState());f.put(f.outside,removed,Blocks.AIR.defaultBlockState());
-        var original=new ItemStack(Items.PAPER,3);original.set(DataComponents.CUSTOM_NAME,Component.literal("Player's kept notes"));((BarrelBlockEntity)f.outside.getBlockEntity(barrel)).setItem(0,original.copy());
-        var originalTv=f.outside.getBlockEntity(tv);var originalBarrel=f.outside.getBlockEntity(barrel);String key=f.origin.asLong()+":"+place.id();var done=new CompoundTag();done.putBoolean(key,true);f.data().setState(ScenePolish.STATE,done);
-        ScenePolish.polishOnce(f.outside,f.origin,place);
-        h.assertTrue(f.outside.getBlockState(cabinet).is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&f.data().state(ScenePolish.REPAIR_STATE).getBoolean(key),"a legacy polished scene receives the previously skipped cabinet correction");
-        h.assertTrue(f.outside.getBlockEntity(tv)==originalTv&&f.outside.getBlockEntity(barrel)==originalBarrel&&ItemStack.isSameItemSameComponents(original,((BarrelBlockEntity)originalBarrel).getItem(0))&&f.outside.getBlockState(removed).isAir(),"the upgrade retains original entities and player property without rebuilding removed scenery");
-        f.reload();f.outside.setBlock(cabinet,Blocks.AIR.defaultBlockState(),F);ScenePolish.polishOnce(f.outside,f.origin,place);
-        h.assertTrue(f.outside.getBlockState(cabinet).isAir()&&f.data().state(ScenePolish.REPAIR_STATE).getBoolean(key),"the saved repair checkpoint prevents later restaging");
-    });}
 
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void theCampIsCarriedByBeamsAndChainsAndArrivalsCopyOnlyTheirHall(GameTestHelper h){run(h,514500,f->{
@@ -315,75 +299,5 @@ public final class StaircaseAccessTests {
         String key=f.origin.asLong()+":"+place.id();var done=f.data().state(SceneCraft.STATE);done.putBoolean(key,true);f.data().setState(SceneCraft.STATE,done);
     }
 
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
-    public static void alreadyComposedRoofsReceiveOnlyTheirMissedRepairsOnce(GameTestHelper h){run(h,516000,f->{
-        // The Last Stop (0.4.78) builds its own bar whole and is no longer composed, nor is the barn well's farm (0.4.164).
-        for(var place:List.of(LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN))holdScene(f,place);
-    },f->{
-        var places=List.of(LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.END_WORLD_CABIN);
-        for(var place:places)composed(f,place);
-        oldRoof(f,LabyrinthPlaces.base(f.origin,LabyrinthPlace.MAPPING_INTERIOR),-13,13,-36,-8,5);
-        var camp=LabyrinthPlaces.base(f.origin,LabyrinthPlace.CAMP_BLOOD);
-        for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})oldRoof(f,camp,x-8,x+8,z-7,z+7,5);
-        var cabin=LabyrinthPlaces.base(f.origin,LabyrinthPlace.END_WORLD_CABIN);oldRoof(f,cabin,-12,12,-35,-13,6);
-        var custom=cabin.offset(-13,6,-25);f.put(f.outside,custom,Blocks.GOLD_BLOCK.defaultBlockState());
-        var cache=cabin.offset(-8,0,-25);f.put(f.outside,cache,Blocks.BARREL.defaultBlockState());var inventory=(BarrelBlockEntity)f.outside.getBlockEntity(cache);
-        var notes=new ItemStack(Items.PAPER,3);notes.set(DataComponents.CUSTOM_NAME,Component.literal("Kept personal leaves"));inventory.setItem(7,notes.copy());
-        var absent=cabin.offset(6,0,-29);f.put(f.outside,absent,Blocks.AIR.defaultBlockState());
-        var p=f.player(h,"roof_visitor");p.teleportTo(f.outside,cabin.getX()+.5,cabin.getY()+1,cabin.getZ()-24.5,0,0);
-        SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.END_WORLD_CABIN);
-        String cabinKey=f.origin.asLong()+":"+LabyrinthPlace.END_WORLD_CABIN.id();
-        h.assertTrue(!f.data().state(SceneCraft.REPAIR_STATE).getBoolean(cabinKey)&&f.outside.getBlockState(cabin.offset(-13,6,-30)).is(Blocks.SPRUCE_STAIRS),"an occupied saved composition waits for its structural repair");
-        var pet=EntityType.WOLF.create(f.outside);h.assertTrue(pet!=null,"a native roof companion exists");pet.tame(p);pet.setNoAi(true);pet.setNoGravity(true);
-        pet.moveTo(Vec3.atBottomCenterOf(cabin.offset(-13,7,-30)));CompanionOrders.issue(pet,p,CompanionOrders.Order.STAY);f.outside.addFreshEntity(pet);
-        try{
-            p.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+.5,0,0);SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.END_WORLD_CABIN);
-            h.assertTrue(!f.data().state(SceneCraft.REPAIR_STATE).getBoolean(cabinKey)&&f.outside.getBlockState(cabin.offset(-13,6,-30)).is(Blocks.SPRUCE_STAIRS),"a Stay companion on the old roof keeps its supporting slope until it leaves");
-            pet.moveTo(Vec3.atBottomCenterOf(cabin.offset(0,0,-25)));
-            for(var place:places)SceneCraft.craftOnce(f.outside,f.origin,place);
-            for(var place:places)h.assertTrue(SceneCraft.done(f.level.getServer(),f.origin,place)&&f.data().state(SceneCraft.REPAIR_STATE).getBoolean(f.origin.asLong()+":"+place.id()),"the existing "+place.id()+" completion receives a separate repair checkpoint");
-            h.assertTrue(f.outside.getBlockState(cabin.offset(-13,6,-30)).is(Blocks.DARK_OAK_SLAB)&&f.outside.getBlockState(custom).is(Blocks.GOLD_BLOCK),"the old cabin slope changes while customized roof cells remain");
-            h.assertTrue(f.outside.getBlockState(LabyrinthPlaces.base(f.origin,LabyrinthPlace.MAPPING_INTERIOR).offset(-14,5,-20)).is(Blocks.SPRUCE_SLAB),"the lodge receives its missed half-pitch roof");
-            for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})h.assertTrue(f.outside.getBlockState(camp.offset(x-9,5,z)).getBlock() instanceof SlabBlock,"each of the six cabins receives its missed roof");
-            h.assertTrue(f.outside.getBlockEntity(cache)==inventory&&ItemStack.isSameItemSameComponents(notes,inventory.getItem(7))&&inventory.getItem(0).isEmpty()&&f.outside.getBlockState(absent).isAir(),"the targeted repair retains exact finite property and never repeats the scene's furnishings");
-            var removed=cabin.offset(-13,6,-30);f.outside.setBlock(removed,Blocks.AIR.defaultBlockState(),F);f.reload();SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.END_WORLD_CABIN);
-            h.assertTrue(f.outside.getBlockState(removed).isAir(),"the saved structural repair never replenishes a roof the player removed later");
-            var repaired=f.data().state(SceneCraft.REPAIR_STATE);repaired.remove(cabinKey);f.data().setState(SceneCraft.REPAIR_STATE,repaired);SceneCraft.craftOnce(f.outside,f.origin,LabyrinthPlace.END_WORLD_CABIN);
-            h.assertTrue(f.outside.getBlockState(removed).isAir(),"a latest 0.4.46 roof without the new checkpoint is recognized and left alone");
-        }finally{pet.discard();}
-    });}
 
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
-    public static void alreadyComposedGoatmanThicketRepairsOnceAndKeepsNativeCompanionsAndTheTrail(GameTestHelper h){run(h,516500,f->holdScene(f,LabyrinthPlace.GOATMAN),f->{
-        var place=LabyrinthPlace.GOATMAN;var b=LabyrinthPlaces.base(f.origin,place);composed(f,place);track(f,f.level,b.offset(-22,-1,-81),b.offset(22,12,-1));
-        var leaves=Blocks.DARK_OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true);BlockPos root=null;
-        for(int x=-22;x<=22;x++)for(int z=-81;z<=-1;z++){
-            var at=new Vec3(x+.5,0,z+.5);boolean trail=GoatmanWoods.clearing(at)||GoatmanWoods.project(at).distance()<1.6;
-            f.put(f.level,b.offset(x,-1,z),(trail?Blocks.DIRT_PATH:Blocks.GRASS_BLOCK).defaultBlockState());
-            if(trail)continue;
-            for(int y=0;y<=3;y++)f.put(f.level,b.offset(x,y,z),leaves);
-            if(Math.floorMod(x*17+z*13,7)==0){for(int y=0;y<=8;y++)f.put(f.level,b.offset(x,y,z),Blocks.DARK_OAK_LOG.defaultBlockState());if(root==null)root=b.offset(x,9,z);}
-        }
-        h.assertTrue(root!=null,"the legacy forest has its original lattice trunks");var p=f.player(h,"thicket_owner");p.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+.5,0,0);
-        var pet=EntityType.WOLF.create(f.level);h.assertTrue(pet!=null,"a native forest companion exists");pet.tame(p);pet.setNoAi(true);pet.setNoGravity(true);pet.setHealth(9);pet.moveTo(Vec3.atBottomCenterOf(root));
-        CompanionOrders.issue(pet,p,CompanionOrders.Order.STAY);f.level.addFreshEntity(pet);var id=pet.getUUID();String key=f.origin.asLong()+":"+place.id();
-        try{
-            SceneCraft.craftOnce(f.level,f.origin,place);
-            h.assertTrue(!f.data().state(SceneCraft.REPAIR_STATE).getBoolean(key)&&f.level.getBlockState(root.below()).is(Blocks.DARK_OAK_LOG),"a native companion above the thicket defers its repair");
-            pet.moveTo(Vec3.atBottomCenterOf(b.offset(0,0,-20)));var position=pet.position();SceneCraft.craftOnce(f.level,f.origin,place);
-            h.assertTrue(f.data().state(SceneCraft.REPAIR_STATE).getBoolean(key),"the old completed composition receives its missed thicket");
-            int mixed=0;BlockPos removable=null;
-            for(var at:BlockPos.betweenClosed(b.offset(-22,0,-81),b.offset(22,0,-1))){var s=f.level.getBlockState(at);if(s.is(net.minecraft.tags.BlockTags.LEAVES)&&!s.is(Blocks.DARK_OAK_LEAVES))mixed++;}
-            for(var at:BlockPos.betweenClosed(b.offset(-22,4,-81),b.offset(22,12,-1)))if(f.level.getBlockState(at).is(net.minecraft.tags.BlockTags.LOGS))removable=at.immutable();
-            h.assertTrue(mixed>=16&&removable!=null,"the flat leaf wall and lattice become mixed woods");
-            for(double distance=0;distance<83;distance+=.5){var feet=GoatmanWoods.path(distance).add(b.getX(),b.getY(),b.getZ());
-                h.assertTrue(f.level.noCollision(null,new AABB(feet.x-.3,feet.y+.01,feet.z-.3,feet.x+.3,feet.y+1.8,feet.z+.3)),"the repaired trail clears a native player body at "+distance);}
-            h.assertTrue(f.level.getEntity(id)==pet&&pet.getHealth()==9&&pet.position().equals(position)&&CompanionOrders.order(pet)==CompanionOrders.Order.STAY,"a parked companion on the safe trail keeps its identity, health, position and order");
-            f.level.setBlock(removable,Blocks.AIR.defaultBlockState(),F);f.reload();SceneCraft.craftOnce(f.level,f.origin,place);h.assertTrue(f.level.getBlockState(removable).isAir(),"the saved thicket repair cannot grow a removed tree again");
-            var repaired=f.data().state(SceneCraft.REPAIR_STATE);repaired.remove(key);f.data().setState(SceneCraft.REPAIR_STATE,repaired);
-            var snapshot=new HashMap<BlockPos,BlockState>();for(var at:BlockPos.betweenClosed(b.offset(-22,0,-81),b.offset(22,12,-1)))snapshot.put(at.immutable(),f.level.getBlockState(at));
-            SceneCraft.craftOnce(f.level,f.origin,place);
-            h.assertTrue(snapshot.entrySet().stream().allMatch(e->f.level.getBlockState(e.getKey()).equals(e.getValue())),"a latest 0.4.46 thicket without the new checkpoint is recognized without restaging");
-        }finally{pet.discard();}
-    });}
 }

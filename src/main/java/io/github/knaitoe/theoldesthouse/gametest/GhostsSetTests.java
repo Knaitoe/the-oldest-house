@@ -174,24 +174,6 @@ public final class GhostsSetTests {
     }
     @GameTest(template="empty",batch="ghosts_lead",timeoutTicks=200)
     public static void TheLongestCentredSubjectChangesTheBroadcastStory(GameTestHelper h){var a=new CompoundTag();var l=new CompoundTag();l.putInt("Frames_Marjorie",40);l.putInt("Frames_Sarah",40);l.putInt("LeadTicks_Sarah",30);a.put("FilmLog2",l);String first=words(GhostsSet.edit("reader",a,2,false));l.putInt("LeadTicks_Marjorie",60);a.put("FilmLog2",l);String second=words(GhostsSet.edit("reader",a,2,false));h.assertTrue(first.contains("medical concerns")&&second.contains("possession story")&&!first.equals(second),"centring a different face changes the production's lead, even when both appear in the footage");h.succeed();}
-    @GameTest(template="empty",batch="ghosts_upgrade",timeoutTicks=800)
-    public static void SavedUpgradeWaitsForAnActualCameraAndPreservesOriginalsAcrossRestart(GameTestHelper h){
-        var f=fixture(h);var p=f.player("ghost_upgrade",P);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(b.offset(-22,-5,-48)),Vec3.atLowerCornerOf(b.offset(23,13,2))));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native fixture entity sections are ready")).thenExecute(()->{
-            var t=f.own(p,P);GhostsSet.reader(p,b,t);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);UUID id=m.getUUID();var original=t.getCompound("Original_Source").copy();t.putBoolean("Completed",true);save(f,p,t);
-            var source=f.in.getBlockEntity(b.offset(LiteraryRooms.source(P)));var area=new AABB(Vec3.atLowerCornerOf(b.offset(-21,-5,-47)),Vec3.atLowerCornerOf(b.offset(22,13,1)));
-            // A preceding fixture's lectern can drop its original when this fixture rebuilds.
-            // Recover it through the native inventory path before testing a vacant upgrade.
-            for(var loose:f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,area)){p.teleportTo(loose.getX(),loose.getY(),loose.getZ());loose.setNoPickUpDelay();loose.playerTouch(p);h.assertTrue(!loose.isAlive(),"native setup recovers the preceding fixture's loose original without deleting it");}
-            var chestAt=b.offset(6,0,-8);f.in.setBlock(chestAt,Blocks.CHEST.defaultBlockState(),3);var chest=(net.minecraft.world.level.block.entity.ChestBlockEntity)f.in.getBlockEntity(chestAt);var note=new ItemStack(Items.PAPER,3);note.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("A kept original"));chest.setItem(0,note.copy());
-            var edit=b.offset(5,2,-8);f.in.setBlock(edit,Blocks.GOLD_BLOCK.defaultBlockState(),3);var floor=b.offset(-9,-1,-6);f.in.setBlock(floor,Blocks.OAK_PLANKS.defaultBlockState(),3);
-            var state=f.data().state(GhostsSet.STATE);state.remove(Long.toString(b.asLong()));f.data().setState(GhostsSet.STATE,state);
-            p.setGameMode(GameType.SPECTATOR);p.setCamera(m);f.at(p,P,100,0,-8);h.assertTrue(!GhostsSet.rebuild(f.in,b),"a real spectator camera in the set pauses the saved upgrade even with its body outside");p.setCamera(null);f.at(p,P,100,0,-8);
-            boolean first=GhostsSet.rebuild(f.in,b);h.assertTrue(!first&&f.data().state(GhostsSet.STATE).contains("Repair_"+b.asLong(),12),"the first bounded slice persists its protection before editing the room: finished="+first+", camera="+p.getCamera().position()+", body="+p.position()+", sections="+f.chunks.ready()+", residents="+f.in.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,area,e->e.isAlive()&&!(e instanceof LiteraryActor)).stream().map(e->e.getType()+" at "+e.position()).toList());f.reload();GhostsSet.clearAll();boolean done=false;for(int n=0;n<400&&!done;n++)done=GhostsSet.rebuild(f.in,b);
-            h.assertTrue(done&&GhostsSet.built(f.data(),b),"the protected saved upgrade resumes after losing its runtime cursor");h.assertTrue(f.in.getBlockEntity(b.offset(LiteraryRooms.source(P)))==source&&f.in.getBlockEntity(chestAt)==chest&&ItemStack.matches(chest.getItem(0),note),"native source and custom container instances, exact contents and quantities survive without removal or restocking");
-            h.assertTrue(f.in.getBlockState(edit).is(Blocks.GOLD_BLOCK)&&f.in.getBlockState(floor).is(LiteraryRegistry.GHOST_SET.get()),"the player's edit survives while an unchanged legacy floor receives the new authored surface");h.assertTrue(f.in.getEntity(id)==m&&f.own(p,P).getBoolean("Completed")&&f.own(p,P).getCompound("Original_Source").equals(original),"family identity, finished personal state and immutable original survive the same restart");h.succeed();
-        });
-    }
     @GameTest(template="empty",batch="ghosts_full_take",timeoutTicks=12000)
     public static void SevenActualTakesReachThePrivateCollapseMechanismAndHeldJump(GameTestHelper h){
         var f=fixture(h);var p=f.player("ghost_full_take",P);f.source(p,P);var b=f.base(P);
@@ -250,7 +232,6 @@ public final class GhostsSetTests {
     @AfterBatch(batch="ghosts_call_sheet") public static void callSheetDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_crawl") public static void crawlDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_pickup") public static void pickupDone(ServerLevel l){close();}
-    @AfterBatch(batch="ghosts_upgrade") public static void upgradeDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_full_take") public static void fullTakeDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_frozen_return") public static void frozenReturnDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="ghosts_furniture0488",timeoutTicks=240)
@@ -268,28 +249,6 @@ public final class GhostsSetTests {
         });
     }
     @AfterBatch(batch="ghosts_furniture0488") public static void furnitureDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="ghosts_dressing0488",timeoutTicks=540)
-    public static void SavedDressingWaitsForObserversAndKeepsNativeOriginalsAndEdits(GameTestHelper h){
-        var f=fixture(h);var p=f.player("ghost_dressing",P);var b=f.base(P);f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(b.offset(-22,-5,-48)),Vec3.atLowerCornerOf(b.offset(23,13,2))));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native dressing sections are ready")).thenExecute(()->{
-            GhostsSet.reader(p,b,f.own(p,P));var source=f.in.getBlockEntity(b.offset(LiteraryRooms.source(P)));var original=actor(f,p,LiteraryActor.GHOST_MARJORIE);UUID body=original.getUUID();
-            var state=f.data().state(GhostsSetDressing.STATE);state.remove(Long.toString(b.asLong()));f.data().setState(GhostsSetDressing.STATE,state);
-            f.in.setBlock(b.offset(-12,9,-26),Blocks.AIR.defaultBlockState(),3);f.in.setBlock(b.offset(-12,10,-26),GhostsSetBlock.of(GhostsSetBlock.Kind.LAMP,Direction.NORTH),3);f.in.setBlock(b.offset(-11,5,-41),Blocks.AIR.defaultBlockState(),3);
-            var ceilingEdit=b.offset(2,10,-30);f.in.setBlock(ceilingEdit,Blocks.GOLD_BLOCK.defaultBlockState(),3);
-            // 0.4.174: the compact house keeps no case where the 0.4.88 set did, so the saved set's own case is laid here.
-            f.in.setBlock(b.offset(17,0,-12),LiteraryRegistry.GHOST_CASE.get().defaultBlockState().setValue(GhostsCaseBlock.FACING,Direction.SOUTH),3);var retained=(GhostsCaseBlockEntity)f.in.getBlockEntity(b.offset(17,0,-12));var notes=new ItemStack(Items.PAPER,2);notes.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Saved case original"));retained.setItem(0,notes.copy());
-            var oldCase=b.offset(18,0,-33);f.in.setBlock(oldCase,GhostsSetBlock.of(GhostsSetBlock.Kind.CASE,Direction.WEST),3);
-            // Reusing this native scene between batches can drop the preceding fixture's lectern original.
-            // Recover actual loose originals through normal pickup before testing vacancy; never delete them.
-            for(var loose:f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(Vec3.atLowerCornerOf(b.offset(-21,-5,-47)),Vec3.atLowerCornerOf(b.offset(22,13,1))))){p.teleportTo(loose.getX(),loose.getY(),loose.getZ());loose.setNoPickUpDelay();loose.playerTouch(p);h.assertTrue(!loose.isAlive(),"the fixture recovers its preceding loose original through native pickup");}
-            p.setGameMode(GameType.SPECTATOR);p.setCamera(original);f.at(p,P,100,0,-8);h.assertTrue(!GhostsSetDressing.repair(f.in,b),"an actual borrowed spectator camera pauses the structural dressing");p.setCamera(null);f.at(p,P,100,0,-8);
-            boolean done=false;for(int n=0;n<100&&!done;n++)done=GhostsSetDressing.repair(f.in,b);h.assertTrue(done,"bounded dressing finishes after observers leave: body="+p.position()+", camera="+p.getCamera().position()+", residents="+f.in.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,new AABB(Vec3.atLowerCornerOf(b.offset(-21,-5,-47)),Vec3.atLowerCornerOf(b.offset(22,13,1))),e->e.isAlive()&&!(e instanceof LiteraryActor)).stream().map(e->e.getType()+" at "+e.position()).toList());
-            h.assertTrue(f.in.getBlockEntity(b.offset(LiteraryRooms.source(P)))==source&&f.in.getEntity(body)==original&&f.in.getBlockState(ceilingEdit).is(Blocks.GOLD_BLOCK),"the exact source entity, cast body and custom ceiling cell survive");h.assertTrue(f.in.getBlockEntity(b.offset(17,0,-12))==retained&&ItemStack.matches(retained.getItem(0),notes)&&f.in.getBlockEntity(oldCase) instanceof GhostsCaseBlockEntity,"existing case stock stays exact while an original old case becomes usable empty storage");
-            h.assertTrue(f.in.getBlockState(b.offset(-12,9,-26)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.LAMP&&f.in.getBlockState(b.offset(-12,10,-26)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.CEILING&&f.in.getBlockState(b.offset(-11,5,-41)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.COUNTER,"lamps meet the lowered ceiling and the borrowed hat has physical support");
-            f.in.setBlock(b.offset(-11,5,-41),Blocks.AIR.defaultBlockState(),3);retained.clearContent();f.reload();GhostsSetDressing.clear();h.assertTrue(GhostsSetDressing.repair(f.in,b)&&f.in.getBlockState(b.offset(-11,5,-41)).isAir()&&retained.isEmpty(),"the saved checkpoint never restores a removed prop or replenishes emptied stock");h.succeed();
-        });
-    }
-    @AfterBatch(batch="ghosts_dressing0488") public static void dressingDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="ghosts_recorded_review0488",timeoutTicks=200)
     public static void EveryDayReviewsOnlyItsActualRecordedSubjects(GameTestHelper h){
         String[] first={"Marjorie","UnderTable","Handholds","PrivateConfession","Evaluation","DrawerMechanism","DinnerMouth"};

@@ -124,56 +124,6 @@ public final class DomesticLabyrinthTests {
         h.succeed();
     }
 
-    @GameTest(template = "empty")
-    public static void domesticUpgradeKeepsCachesDropsCompanionsAndResolvedStories(GameTestHelper h) {
-        var level = h.getLevel();
-        var worldData = LabyrinthData.get(level.getServer());
-        var previousUpgrade = worldData.state("domestic_0417");
-        BlockPos origin = h.absolutePos(BlockPos.ZERO).offset(3700, 0, 0);
-        BlockPos base = LabyrinthPlaces.base(origin, LabyrinthPlace.JUNCTION);
-        h.assertTrue(base != null, "the junction slot fits");
-        LabyrinthBuilder.buildJunction(level, base);
-        LabyrinthLighting.buildEarlyAid(level.getServer(), level, base);
-        var cache = (Container) level.getBlockEntity(base.offset(LabyrinthLighting.TOM_CACHE));
-        ItemStack saved = new ItemStack(Items.DIAMOND_SWORD);
-        saved.set(DataComponents.CUSTOM_NAME, Component.literal("Still mine")); saved.setDamageValue(37);
-        cache.setItem(0, saved); for (int i = 1; i < cache.getContainerSize(); i++) cache.setItem(i, ItemStack.EMPTY);
-        BlockPos lamp = base.offset(1, 0, -5); level.setBlock(lamp, Blocks.TORCH.defaultBlockState(), 3);
-        var item = new ItemEntity(level, base.getX() + .5, base.getY() + .2, base.getZ() - 4.5, new ItemStack(Items.GOLD_INGOT, 3));
-        level.addFreshEntity(item);
-        Cat cat = EntityType.CAT.create(level); h.assertTrue(cat != null, "a real companion exists");
-        cat.moveTo(base.getX() + .5, base.getY(), base.getZ() - 7.5); cat.setPersistenceRequired(); level.addFreshEntity(cat);
-        UUID id = cat.getUUID();
-        try {
-            LabyrinthDomestic.upgrade(level, origin, LabyrinthPlace.JUNCTION);
-            h.assertTrue(cache == level.getBlockEntity(base.offset(LabyrinthLighting.TOM_CACHE)) && cache.getItem(0).getDamageValue() == 37
-                    && cache.getItem(0).getHoverName().getString().equals("Still mine") && cache.getItem(1).isEmpty(), "upgrade keeps the cache identity and cannot refill it");
-            h.assertTrue(level.getBlockState(lamp).is(Blocks.TORCH) && !item.isRemoved() && item.getItem().getCount() == 3, "placed lights and dropped items survive");
-            h.assertTrue(!cat.isRemoved() && cat.getUUID().equals(id), "companions retain identity");
-            h.assertTrue(level.getBlockState(base.offset(0, -1, -3)).is(Blocks.SPRUCE_PLANKS)
-                    && level.getBlockState(base.offset(0, 4, -3)).is(Blocks.LANTERN), "the entrance has boards and ordinary warm lamps");
-            BlockPos hallBase = LabyrinthPlaces.base(origin, LabyrinthPlace.STRAIGHT_HALL);
-            h.assertTrue(hallBase != null, "the hall slot fits");
-            LabyrinthHalls.build(level, hallBase, LabyrinthPlace.STRAIGHT_HALL);
-            LabyrinthDomestic.upgrade(level, origin, LabyrinthPlace.STRAIGHT_HALL);
-            BlockPos spentLight = hallBase.offset(-4, 0, -19);
-            level.setBlock(spentLight, Blocks.TORCH.defaultBlockState(), 3);
-            var checkpoint = LabyrinthData.FACTORY.deserializer().apply(worldData.save(new CompoundTag(), level.registryAccess()), level.registryAccess());
-            h.assertTrue(checkpoint.state("domestic_0417").getBoolean(LabyrinthPlace.STRAIGHT_HALL.id()), "completed decoration is checkpointed across reload");
-            LabyrinthDomestic.upgrade(level, origin, LabyrinthPlace.STRAIGHT_HALL);
-            h.assertTrue(level.getBlockState(spentLight).is(Blocks.TORCH), "a resumed upgrade cannot clear a finished alcove");
-            BlockPos hallOrigin = h.absolutePos(BlockPos.ZERO).offset(4100, 5, 0);
-            HouseImpossibleHallway.build(level, hallOrigin);
-            for(int dz=12;dz<=14;dz++)h.assertTrue(level.getBlockState(hallOrigin.offset(HouseLayout.AXIS_X - 2,1,HouseImpossibleHallway.START_Z_OFFSET+dz)).is(Blocks.SPRUCE_PLANKS), "the entire approach wall has matching paneling");
-            var data = new LabyrinthData(); UUID player = UUID.randomUUID();
-            WitnessAccount.resolve(data, player, WitnessAccount.Story.FLOORBOARDS, "the ending");
-            data.setCompleted(TellTaleFloorboards.ID, true);
-            var loaded = LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(), level.registryAccess()), level.registryAccess());
-            h.assertTrue(loaded.isCompleted(TellTaleFloorboards.ID) && WitnessAccount.has(loaded, player, WitnessAccount.Story.FLOORBOARDS)
-                    && WitnessAccount.REQUIRED == WitnessAccount.requiredForPoolSize(WitnessAccount.Story.values().length), "existing evidence survives decoration and the quota follows the eligible story pool");
-        } finally { item.discard(); cat.discard(); worldData.setState("domestic_0417", previousUpgrade); }
-        h.succeed();
-    }
 
     private static void deepen(LabyrinthData data, UUID player, int depth) {
         while (data.returnDepth(player) < depth) data.pushReturn(player, new LabyrinthData.Waypoint(HouseDimensions.INTERIOR, Vec3.ZERO, 0));

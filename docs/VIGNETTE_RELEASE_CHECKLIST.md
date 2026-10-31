@@ -1,3 +1,5 @@
+October 31, 0.4.199, new builds only: no change adds a save migration, an in-place upgrade or a once-only repair of older worlds, and a change that touches one that remains removes it. A new place is carved by the builder for any layout that lacks it; nothing standing is dressed again. Require the architecture namespace and the full suite as before. See [NEW_BUILDS_ONLY_0_4_199.md](NEW_BUILDS_ONLY_0_4_199.md).
+
 October 30 candidate 0.4.199: require ExplorationPassTests.theVaultedHallAndTheCrumbledHallAreHallwaysToCrossNotRooms; 105 earlier architecture views.
 
 October 30 candidate 0.4.198: require KeepsakeTests.theLeavesPhotographCompassAndPatchEachDoWhatTheirStoryDid.

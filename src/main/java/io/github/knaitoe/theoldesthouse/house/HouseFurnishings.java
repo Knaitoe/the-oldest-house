@@ -39,23 +39,6 @@ public final class HouseFurnishings {
         long hash=rel.getX()*73428767L ^ rel.getY()*912931L ^ rel.getZ()*42317861L ^ thread.ordinal()*137L;
         hash^=hash>>>17;return Math.floorMod(hash,3)==0;
     }
-    /** An in-place reduction never refills removed paper or changes saved reading snapshots. */
-    public static void reduceNotes(ServerLevel level,BlockPos origin,LabyrinthPlace place) {
-        LabyrinthData data=LabyrinthData.get(level.getServer());CompoundTag state=data.state("paper_density_0426");
-        if(!state.contains("Origin") || state.getLong("Origin")!=origin.asLong()) state=new CompoundTag();
-        if(state.getBoolean(place.id())) return;
-        BlockPos base=LabyrinthPlaces.base(origin,place);
-        if(base!=null) {
-            var r=place.room();
-            for(BlockPos at:BlockPos.betweenClosed(base.offset(r.minX(),0,r.minZ()),base.offset(r.maxX(),3,r.maxZ()))) {
-                BlockState paper=level.getBlockState(at);
-                if(paper.getBlock() instanceof NoteSurfaceBlock && (!NoteSurfaceBlock.supported(level,at)
-                        || !keepPaper(level,at,paper.getValue(NoteSurfaceBlock.THREAD))))
-                    level.setBlock(at,Blocks.AIR.defaultBlockState(),HouseCanvas.BUILD_FLAGS);
-            }
-        }
-        state.putLong("Origin",origin.asLong());state.putBoolean(place.id(),true);data.setState("paper_density_0426",state);
-    }
     private static void table(ServerLevel level,BlockPos pos,Block expected,HouseholdFurnitureBlock.Kind kind,Direction facing) {
         if(!level.getBlockState(pos).is(expected) || !level.getBlockState(pos.above()).is(Blocks.OAK_PRESSURE_PLATE)) return;
         replace(level,pos,expected,kind,facing);
@@ -134,19 +117,6 @@ public final class HouseFurnishings {
         }
         if(!level.getBlockState(surface.below()).isAir() && !level.getBlockState(surface.below()).is(Blocks.WHITE_BED))
             paper(level,surface,HouseMarginalia.Thread.values()[Math.floorMod(variation,4)],front);
-    }
-    public static void upgrade(ServerLevel level,BlockPos origin,LabyrinthPlace place) {
-        LabyrinthData data=LabyrinthData.get(level.getServer()); CompoundTag state=data.state(ID);
-        if(!state.contains("Origin") || state.getLong("Origin")!=origin.asLong()) state=new CompoundTag();
-        if(state.getBoolean(place.id())) return;
-        BlockPos base=LabyrinthPlaces.base(origin,place); if(base!=null) decorate(level,base,place);
-        state.putLong("Origin",origin.asLong()); state.putBoolean(place.id(),true); data.setState(ID,state);
-    }
-    public static void upgradeManor(ServerLevel level,BlockPos origin) {
-        LabyrinthData data=LabyrinthData.get(level.getServer()); CompoundTag state=data.state(ID);
-        if(!state.contains("Origin") || state.getLong("Origin")!=origin.asLong()) state=new CompoundTag();
-        if(state.getBoolean("Manor")) return;
-        decorateManor(level,origin); state.putLong("Origin",origin.asLong()); state.putBoolean("Manor",true); data.setState(ID,state);
     }
     static void decorateManor(ServerLevel level,BlockPos origin) {
         replace(level,origin.offset(4,1,5),Blocks.DARK_OAK_STAIRS,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.SOUTH);

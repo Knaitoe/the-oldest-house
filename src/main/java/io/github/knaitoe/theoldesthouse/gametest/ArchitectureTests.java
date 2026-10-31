@@ -167,13 +167,11 @@ public final class ArchitectureTests {
             var ids=beings.stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet());
             UUID observer=UUID.randomUUID();WitnessAccount.resolve(data,observer,WitnessAccount.Story.HARRIGAN,"remembered");
             var round=new CompoundTag();round.putInt("ArchitectureRound",137);data.setState(HideAndClap.ID,round);
-            // A saved prior layout must go through the builder's real in-place upgrade, never its native builders.
-            BlockPos oldDoor=LabyrinthPlaces.base(origin,LabyrinthPlace.HARRIGAN).offset(0,0,1);
-            interior.setBlock(oldDoor,Blocks.DARK_OAK_PLANKS.defaultBlockState(),2);interior.setBlock(oldDoor.above(),Blocks.DARK_OAK_PLANKS.defaultBlockState(),2);
-            data.setState(VignetteArchitecture.STATE,new CompoundTag());data.setBuilt(23,origin);
-            h.assertTrue(!LabyrinthBuilder.ensureBuilt(server),"the old layout schedules an in-place architectural upgrade");LabyrinthBuilder.finishGameTest(server);
+            // A layout saved by an earlier version is not upgraded in place (0.4.199): the carve finds every place standing and adds nothing.
+            data.setBuilt(23,origin);
+            h.assertTrue(!LabyrinthBuilder.ensureBuilt(server),"an older layout schedules a carve");LabyrinthBuilder.finishGameTest(server);
+            h.assertTrue(LabyrinthBuilder.isBuilt(server),"with every place standing the carve has nothing to add, and the layout is current");
             h.assertTrue(cache==interior.getBlockEntity(camp.offset(LabyrinthCampsite.CACHE))&&cache.getItem(0).isEmpty()&&cache.getItem(7).getCount()==3,"a emptied cache stays the same original inventory");
-            h.assertTrue(interior.getBlockState(oldDoor).getBlock() instanceof DoorBlock,"the authored wall in an older Harrigan return doorway is repaired in place");
             h.assertTrue(ids.equals(interior.getEntitiesOfClass(Entity.class,box(mother.offset(-11,-5,-26),mother.offset(11,15,1))).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet())),"native den residents retain their original UUIDs");
             h.assertTrue(WitnessAccount.has(data,observer,WitnessAccount.Story.HARRIGAN)&&data.state(HideAndClap.ID).getInt("ArchitectureRound")==137,"personal evidence and active story state survive the architectural upgrade");
             BlockPos removed=camp.offset(4,1,-9);h.assertTrue(interior.getBlockState(removed).is(HouseBlocks.SCENE_DETAIL.get()),"the camp satchel stands on the original cache");
@@ -518,45 +516,6 @@ public final class ArchitectureTests {
         Files.writeString(folder.resolve(name+".json"),new Gson().toJson(file));
     }
 
-    @GameTest(template="empty") public static void nativeHallPatchAndBedroomFinishPreserveTheOriginalFurnishings(GameTestHelper h){
-        var l=h.getLevel();var o=h.absolutePos(BlockPos.ZERO).offset(10,20,100);HouseImpossibleHallway.build(l,o);
-        var patch=o.offset(HouseLayout.AXIS_X+2,2,HouseImpossibleHallway.START_Z_OFFSET+26);l.setBlock(patch,Blocks.YELLOW_TERRACOTTA.defaultBlockState(),2);
-        var custom=patch.above();l.setBlock(custom,Blocks.BRICKS.defaultBlockState(),2);
-        var first=o.offset(HouseLayout.AXIS_X-2,1,HouseImpossibleHallway.START_Z_OFFSET+12);
-        for(int step=12;step<=14;step++){
-            var at=o.offset(HouseLayout.AXIS_X-2,1,HouseImpossibleHallway.START_Z_OFFSET+step);
-            h.assertTrue(l.getBlockState(at).equals(l.getBlockState(first.north()))&&l.getBlockState(at).is(Blocks.SPRUCE_PLANKS)
-                            &&l.getBlockEntity(at)==null&&l.getBlockState(at.east()).isAir(),
-                    "a fresh hallway has continuous matching paneling with no barrel, cupboard or protruding fitting");
-            l.setBlock(at,Blocks.BARREL.defaultBlockState(),2);
-            var contents=new ItemStack(Items.EMERALD,step);contents.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Hallway fixture"));
-            ((BarrelBlockEntity)l.getBlockEntity(at)).setItem(4,contents);
-        }
-        HouseImpossibleHallway.dressDomesticApproach(l,o);
-        HouseImpossibleHallway.removeWallBarrels(l,o);
-        var reader=NativeTestPlayers.survival(h,"plain_hall_wall");
-        try{
-            for(int step=12;step<=14;step++){
-                var at=o.offset(HouseLayout.AXIS_X-2,1,HouseImpossibleHallway.START_Z_OFFSET+step);
-                h.assertTrue(l.getBlockState(at).is(Blocks.SPRUCE_PLANKS)&&l.getBlockEntity(at)==null,
-                        "each old barrel becomes the same paneling as the rest of the hallway");
-                reader.moveTo(at.getX()+1.5,at.getY(),at.getZ()+.5);
-                h.assertTrue(l.noCollision(reader,reader.getBoundingBox()),"the full hallway width stays clear beside the repaired wall");
-            }
-            int kept=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(first).inflate(5),e->{
-                var name=e.getItem().get(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
-                return e.getItem().is(Items.EMERALD)&&name!=null&&name.getString().equals("Hallway fixture");
-            }).stream().mapToInt(e->e.getItem().getCount()).sum();
-            h.assertTrue(kept==39,"any stored originals keep their exact components and quantity after removal; repetition creates no extra items");
-        }finally{
-            NativeTestPlayers.remove(reader);
-            l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(first).inflate(5),e->e.getItem().is(Items.EMERALD)).forEach(net.minecraft.world.entity.item.ItemEntity::discard);
-        }
-        var b=o.offset(80,0,0);LabyrinthHalls.build(l,b,LabyrinthPlace.BENT_HALL);
-        var bedPos=b.offset(-9,0,-28);var bed=l.getBlockState(bedPos);var wall=b.offset(-13,1,-27);l.setBlock(wall,Blocks.PINK_TERRACOTTA.defaultBlockState(),2);WallNotesRepairs.neutralBedroom(l,b);
-        h.assertTrue(l.getBlockState(patch).is(Blocks.WHITE_TERRACOTTA)&&l.getBlockState(custom).is(Blocks.BRICKS)&&l.getBlockState(first).is(Blocks.SPRUCE_PLANKS),"the old yellow patch and barrel section become matching wall while an unrelated edit remains");
-        h.assertTrue(bed.getBlock() instanceof BedBlock&&l.getBlockState(wall).is(Blocks.LIGHT_GRAY_TERRACOTTA)&&l.getBlockState(bedPos).equals(bed),"the red-looking bedroom gets an ordinary neutral finish without rebuilding its actual bed");h.succeed();
-    }
     @GameTest(template="empty") public static void ordinaryRoomsKeepOneReadingAndDoNotRemoveAuthoredBooks(GameTestHelper h){
         try(var f=new MarginaliaTests.Fixture(h,205600)){
             var l=f.level;var place=LabyrinthPlace.QUIET_ROOM;var b=LabyrinthPlaces.base(f.origin,place);

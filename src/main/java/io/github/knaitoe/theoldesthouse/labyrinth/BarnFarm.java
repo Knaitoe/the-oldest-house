@@ -50,11 +50,6 @@ public final class BarnFarm {
         NovelRooms.safeApproach(l,b);
         SceneSupportRepairs.barn(l,b);
     }
-    public static void upgrade(ServerLevel l,BlockPos origin){
-        var data=LabyrinthData.get(l.getServer());var state=data.state("barn_farm_0426");
-        if(state.getLong("Origin")==origin.asLong()&&state.getBoolean("Done")||Farmstead.whole(data,origin))return;
-        dress(l,LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL));state.putLong("Origin",origin.asLong());state.putBoolean("Done",true);data.setState("barn_farm_0426",state);
-    }
     /** Stock once after native entity chunks load, including across restarts/deaths. */
     public static void animals(ServerPlayer p){
         var data=LabyrinthData.get(p.server);var state=data.state("barn_farm_0426");if(state.getBoolean("AnimalsMade"))return;

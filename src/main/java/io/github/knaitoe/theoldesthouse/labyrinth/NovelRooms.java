@@ -27,7 +27,6 @@ public final class NovelRooms {
         switch(p){case ZAMPANO_COURTYARD->courtyard(l,b);case WHALE->WhaleInstitute.build(l,b);case BARN_WELL->well(l,b);case PLAIN->plain(l,b);case HOSPITAL->hospital(l,b);case KAREN_ROOM->karen(l,b);default->throw new IllegalArgumentException(p.id());}
         for(var spec:p.doors()){if(OnwardDoors.isOnward(spec))continue;var at=b.offset(spec.rel());door(l,at,spec.facing(),Blocks.DARK_OAK_DOOR,false);BuildBlocks.set(l,at.below(),Blocks.SMOOTH_STONE.defaultBlockState(),F);}
         for(int x=-3;x<=3;x++)for(int z=1;z<=4;z++)BuildBlocks.set(l,b.offset(x,-1,z),Blocks.SMOOTH_STONE.defaultBlockState(),F);
-        if(p==LabyrinthPlace.HOSPITAL)BuildBlocks.after(l,()->NightWardMaterials.fresh(l,b));
     }
     public static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,BlockState state){
         BuildBlocks.box(l,b.offset(x0,y0,z0),b.offset(x1,y1,z1),state,F);

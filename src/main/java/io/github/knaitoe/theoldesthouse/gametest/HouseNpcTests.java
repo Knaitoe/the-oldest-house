@@ -105,7 +105,6 @@ public final class HouseNpcTests {
     @AfterBatch(batch="npc_resume") public static void c3(ServerLevel l){if(resume!=null){resume.close();resume=null;}}
     @AfterBatch(batch="npc_torches") public static void c4(ServerLevel l){if(torches!=null){torches.close();torches=null;}}
     @AfterBatch(batch="npc_guards") public static void c5(ServerLevel l){if(guards!=null){guards.close();guards=null;}}
-    @AfterBatch(batch="npc_upgrade") public static void c6(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
 
     @GameTest(template="empty",batch="npc_cache") public static void simultaneousNativeCacheMenusArmOnlyThePlayerWhoTakesSupplies(GameTestHelper h){
         cache=new Fixture(h,41000);var f=cache;var a=f.player();var b=f.player();var id=f.actor().getUUID();
@@ -171,35 +170,6 @@ public final class HouseNpcTests {
         a.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);HollowayVignette.playerTick(a);h.assertTrue(!HollowayVignette.pursued(a),"an observer is excluded from pursuit and progression");
         a.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);f.at(a,0,-3);HollowayVignette.enter(a);HollowayVignette.death(new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(a,f.l.damageSources().generic()));
         h.assertTrue(!f.own(a).getBoolean("Run")&&f.own(a).getBoolean("Looted")&&!WitnessAccount.has(f.data(),a.getUUID(),WitnessAccount.Story.HOLLOWAY),"death ends the attempt while preserving the theft that arms another visit");h.succeed();
-    }
-    @GameTest(template="empty",batch="npc_upgrade",timeoutTicks=2400) public static void layoutTwentyOneAppendsTheCampWithoutRefillingOrReplacingOldScenes(GameTestHelper h){
-        upgrade=new Fixture(h,43000);var f=upgrade;var old=f.b.offset(30,0,0);f.chunks.hold(f.l,new AABB(old).inflate(1));f.l.setBlock(old,Blocks.BARREL.defaultBlockState(),3);var container=f.l.getBlockEntity(old);((BarrelBlockEntity)container).setItem(0,new ItemStack(Items.DIAMOND,3));
-        var harrigan=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN);f.chunks.hold(f.l,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN));
-        var prior=new CompoundTag();prior.putBoolean("TicketVisible",true);prior.putBoolean("ReadingFinished",true);prior.putInt("Visit",1);
-        final LiteraryActor[] original={null};final UUID[] identity={null};final int[] stage={0};
-        h.onEachTick(()->{
-            if(stage[0]==0){
-                if(!f.chunks.ready())return;
-                HarriganVignette.build(f.l.getServer(),f.l,harrigan);
-                var reader=f.player();reader.moveTo(harrigan.getX()-2.5,harrigan.getY(),harrigan.getZ()-5.5);stage[0]=1;return;
-            }
-            if(stage[0]==1){
-                var body=HarriganVignette.harrigan(f.l,harrigan,HarriganVignette.ALIVE_PHASE);if(body==null)return;
-                original[0]=body;identity[0]=body.getUUID();
-                var saved=f.data().state(HarriganVignette.ID);prior.putUUID("Harrigan0505",identity[0]);prior.putBoolean("FuneralHome0505",saved.getBoolean("FuneralHome0505"));
-                f.data().setState(HarriganVignette.ID,prior);f.data().setBuilt(21,f.origin);LabyrinthBuilder.ensureBuilt(f.l.getServer());
-                // This case tests preservation; the hallway cases independently test paced construction.
-                LabyrinthBuilder.finishGameTest(f.l.getServer());stage[0]=2;return;
-            }
-            if(stage[0]!=2)return;stage[0]=3;var body=original[0];var id=identity[0];
-            h.assertTrue(LabyrinthBuilder.isBuilt(f.l.getServer()),"the actual native append finishes");
-            h.assertTrue(f.data().builtVersion()==LabyrinthBuilder.VERSION&&f.l.getBlockEntity(old)==container&&((BarrelBlockEntity)container).getItem(0).getCount()==3,"an append preserves existing container identity and contents");
-            h.assertTrue(body.isAlive()&&body.getUUID().equals(id)&&body.role()==LiteraryActor.HARRIGAN&&body.phase()==HarriganVignette.ALIVE_PHASE&&f.data().state(HarriganVignette.ID).equals(prior),"seated identity and dialogue state survive: alive="+body.isAlive()+", phase="+body.phase()+", state="+f.data().state(HarriganVignette.ID));
-            h.assertTrue(f.l.getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(harrigan,LabyrinthPlace.HARRIGAN),a->a.role()==LiteraryActor.HARRIGAN).size()==1,"the append adds no second Mr. Harrigan");
-            var saved=body.saveWithoutId(new CompoundTag());var restored=LiteraryRegistry.ACTOR.get().create(f.l);restored.load(saved);
-            h.assertTrue(restored.role()==LiteraryActor.HARRIGAN&&restored.phase()==HarriganVignette.ALIVE_PHASE&&restored.getUUID().equals(id),"his role and state persist with the native actor");
-            restored.discard();body.discard();h.succeed();
-        });
     }
     @GameTest(template="empty") public static void newCampFitsWithoutMovingAnyOlderSlots(GameTestHelper h){
         for(int y:new int[]{65,80,150,250}){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.HOLLOWAY_CAMP);var bounds=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.HOLLOWAY_CAMP);var room=LabyrinthPlace.HOLLOWAY_CAMP.room();

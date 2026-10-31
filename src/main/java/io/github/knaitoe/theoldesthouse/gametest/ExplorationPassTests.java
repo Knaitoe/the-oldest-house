@@ -872,48 +872,6 @@ public final class ExplorationPassTests {
             }finally{cat.discard();NativeTestPlayers.remove(p);lease.close();}
         });
     }
-    @GameTest(template="empty",batch="exploration_append",timeoutTicks=1200)
-    public static void layoutThirtyThreeAppendsOnlyNewHallsAndKeepsExistingDoorsUsable(GameTestHelper h) {
-        var server=h.getLevel().getServer();var l=HouseTestLevel.get(server);var store=server.overworld().getDataStorage();
-        var oldHouse=HouseSavedData.get(server);var oldData=LabyrinthData.get(server);var origin=new BlockPos(590000,80,590000);
-        var b=LabyrinthPlaces.base(origin,LabyrinthPlace.STRAIGHT_HALL);var lease=new NativeTestChunks();lease.hold(l,new AABB(Vec3.atLowerCornerOf(b.offset(-8,-1,-38)),Vec3.atLowerCornerOf(b.offset(8,8,18))));
-        LabyrinthHalls.build(l,b,LabyrinthPlace.STRAIGHT_HALL);var at=b.offset(-1,0,-7);l.setBlock(at,Blocks.BARREL.defaultBlockState(),3);
-        var cache=(net.minecraft.world.Container)l.getBlockEntity(at);cache.setItem(0,new ItemStack(Items.DIAMOND,7));
-        var cat=EntityType.CAT.create(l);cat.moveTo(Vec3.atBottomCenterOf(b.offset(1,0,-4)));cat.setTame(true,true);cat.setOwnerUUID(UUID.randomUUID());cat.setOrderedToSit(true);cat.setHealth(5);l.addFreshEntity(cat);var id=cat.getUUID();
-        final boolean[] done={false};h.onEachTick(()->{if(done[0]||!lease.ready())return;done[0]=true;
-            try {
-                var house=new HouseSavedData();house.markSpawned(origin);store.set("the_oldest_house",house);
-                var d=new LabyrinthData();d.setBuilt(33,origin);store.set("the_oldest_house_labyrinth",d);
-                for(var p:LabyrinthPlace.values())if(p.slot()>=0&&p.slot()<72)LabyrinthBuilder.registerDoors(d,p,LabyrinthPlaces.base(origin,p));
-                var reader=UUID.randomUUID();d.pushReturn(reader,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(b),0,true));
-                var savedDoor=d.door(LabyrinthPlace.STRAIGHT_HALL.doorId(LabyrinthPlace.STRAIGHT_HALL.doors().get(1)));d.deal(reader,savedDoor,LabyrinthPlace.FLOODED_PASSAGE.id(),false);var savedDeal=d.deal(reader,savedDoor);
-                var keep=new CompoundTag();keep.putInt("Burned",3);keep.putString("Front","my saved words");d.setStateEntry(StaircaseStory.STATE,reader.toString(),keep);
-                var goat=new CompoundTag();var goatPlayers=new CompoundTag();var mine=new CompoundTag();mine.putBoolean("Haunted",true);mine.putInt("Hauntings",2);goatPlayers.put(reader.toString(),mine);goat.put("Players",goatPlayers);
-                var oldRun=new CompoundTag();oldRun.putInt("Phase",GoatmanVignette.VIGIL);goat.put("Run",oldRun);d.setState(GoatmanVignette.ID,goat);
-                var letters=new CompoundTag();letters.putInt("Letters",3);letters.putBoolean("AtticKnocked",true);NovelVignettes.save(d,reader,letters);WitnessAccount.resolve(d,reader,WitnessAccount.Story.WHALE,"read_the_final_page");
-                LabyrinthBuilder.clearAll();LabyrinthBuilder.gateForGameTest(true);
-                h.assertTrue(LabyrinthBuilder.ensureReachable(server),"standing 0.4.47 doors stay usable immediately while new halls wait for carving");
-                h.assertTrue(!LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.ALCOVE_HALL),"a new hall cannot be dealt before native construction finishes");
-                LabyrinthBuilder.ensureBuilt(server);LabyrinthBuilder.finishGameTest(server);
-                for(var hall:HALLS)h.assertTrue(d.door(hall.entryDoorId())!=null&&l.getBlockState(d.door(hall.entryDoorId()).lower).getBlock() instanceof DoorBlock,"all six appended rooms finish with real registered doors");
-                h.assertTrue(d.builtVersion()==LabyrinthBuilder.VERSION&&cache==l.getBlockEntity(at)&&cache.getItem(0).getCount()==7&&cache.getItem(1).isEmpty(),"the native append keeps original container identity and finite contents");
-                for(var hazard:LabyrinthPlace.values())if(HazardVariety.added(hazard))h.assertTrue(d.door(hazard.entryDoorId())!=null&&l.getBlockState(d.door(hazard.entryDoorId()).lower).getBlock() instanceof DoorBlock&&LabyrinthBuilder.isPlaceReady(d,hazard),"all sixteen hazards append through the sliced builder: "+hazard);
-                h.assertTrue(savedDeal.equals(d.deal(reader,savedDoor)),"a discovered hazard link remains exact after the append");
-                // 0.4.50: the saved world's elk scene is carved again as its two stages, with the crew's gate as a second way back.
-                var elk=LabyrinthPlace.ELK_CARCASSES;var elkBase=LabyrinthPlaces.base(origin,elk);var service=elk.doors().stream().filter(door->door.name().equals("service")).findFirst().orElseThrow();
-                h.assertTrue(HouseTestLevel.get(server,HouseDimensions.OUTSIDE).getBlockState(elkBase.offset(9,1,-10)).is(LiteraryRegistry.YACHT_PORTHOLE.get())&&d.door(elk.doorId(service))!=null&&LabyrinthBuilder.isPlaceReady(d,elk),"the elk scene is rebuilt in place and dealt again only once it stands");
-                // 0.4.53: the saved world's trailer is carved again with its seats, lamps, bathroom window and shed; every child's own record stays.
-                var trailer=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);
-                h.assertTrue(l.getBlockState(trailer.offset(GoatmanWoods.WINDOW)).is(GoatmanRegistry.WINDOW.get())&&l.getBlockState(trailer.offset(GoatmanWoods.TOILET)).is(GoatmanRegistry.TOILET.get())&&l.getBlockState(trailer.offset(GoatmanWoods.SINK)).is(GoatmanRegistry.SINK.get())&&l.getBlockState(trailer.offset(0,4,-62)).is(Blocks.LANTERN)&&l.getBlockState(trailer.offset(11,0,-62)).getBlock() instanceof DoorBlock,"the trailer is rebuilt with its actual bathroom fixtures, lamps and the generator shed");
-                // 0.4.66: the saved world's institute is carved again around its post room; an earlier reader's letters and ending stay theirs.
-                var institute=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);var box=l.getBlockState(institute.offset(WhaleInstitute.pigeonhole(WhaleInstitute.ROOM)));
-                h.assertTrue(box.is(NovelRegistry.PIGEONHOLE.get())&&box.getValue(PigeonholeBlock.NUMBER)==WhaleInstitute.ROOM&&l.getBlockState(institute.offset(WhaleInstitute.DESK)).is(NovelRegistry.WARD_FIXTURE.get())&&LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.WHALE),"the institute is rebuilt in place with its numbered boxes and her ward writing desk");
-                h.assertTrue(NovelVignettes.personal(d,reader).getInt("Letters")==3&&WitnessAccount.has(d,reader,WitnessAccount.Story.WHALE),"an earlier reader's correspondence and resolution survive the carve");
-                h.assertTrue(GoatmanVignette.personal(d,reader).getBoolean("Haunted")&&GoatmanVignette.personal(d,reader).getInt("Hauntings")==2&&!d.state(GoatmanVignette.ID).contains("Run"),"a haunted reader stays haunted while the old evening is forgotten");
-                h.assertTrue(cat.isAlive()&&cat.getUUID().equals(id)&&cat.getHealth()==5&&cat.isOrderedToSit()&&d.returnDepth(reader)==1&&d.stateEntry(StaircaseStory.STATE,reader.toString()).equals(keep),"native pet identity, Stay, health, saved retreat and personal burned pages survive");h.succeed();
-            }finally{cat.discard();lease.close();LabyrinthBuilder.gateForGameTest(null);LabyrinthBuilder.clearAll();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);}
-        });
-    }
     @GameTest(template="empty",batch="exploration_notes")
     public static void actualLooseNotesAreUniquePrivateFiniteAndKeepLegacyOriginalsAfterReload(GameTestHelper h){
         var server=h.getLevel().getServer();var l=HouseTestLevel.get(server);var store=server.overworld().getDataStorage();

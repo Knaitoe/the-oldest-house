@@ -111,7 +111,6 @@ public final class ProofrockTown {
         car(23,-26,Blocks.LIGHT_BLUE_TERRACOTTA);car(26,-32,Blocks.BROWN_TERRACOTTA);
         // 0.4.77: parked along School Street at the school-side kerb, not across it.
         for(var e:CYAN_ALONG.apply(b).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
-        ProofrockRepairs.markDone(LabyrinthData.get(l.getServer()),b);
         // Dumpsters against the far side of the alleys, clear of every back door: a body's width of passage stays beside each.
         for(int[] d:new int[][]{{19,-19},{19,-31},{19,-48},{19,-75},{-19,-9},{-19,-21}})dumpster(d[0],d[1]);
     }

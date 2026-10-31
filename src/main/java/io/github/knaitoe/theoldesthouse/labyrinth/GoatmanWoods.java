@@ -83,7 +83,6 @@ public final class GoatmanWoods {
         BuildBlocks.after(l,()->supplies(l,b,5));
         LabyrinthBuilder.entrance(l,b,Blocks.WHITE_TERRACOTTA.defaultBlockState(),Blocks.DIRT_PATH.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());
         BuildBlocks.after(l,()->repairEntrance(l,b));LabyrinthBuilder.doors(l,b,LabyrinthPlace.GOATMAN);
-        ReviewScenery0491.fresh(l,b,LabyrinthPlace.GOATMAN);
         BuildBlocks.after(l,()->GoatmanWindowCircuit.built(l,b));
     }
     /** Remove only the original painted horizon across the return door's actual throat. */

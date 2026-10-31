@@ -3,28 +3,23 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.house.*;
 import java.util.*;
 import net.minecraft.core.*;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.AABB;
 
-/** Recognized-cell furnishing repairs; no source, reward, actor or container is constructed here. */
+/**
+ * The 0.4.130 furnishing of three authored rooms, applied as each is built: the cabin's log table, stools, chairs, ferns and
+ * masonry fireback; the quiet room's armchairs, coffee table, bookcases, counter and shelves; the Last Stop's steel bins. No
+ * source, reward, actor or container is constructed here. (Until 0.4.199 the same plan also walked saved rooms in place.)
+ */
 public final class PlaytestScenery130 {
-    public static final String STATE="playtest_furnishings_0130";
     public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.QUIET_ROOM,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.ELK_LOT);
     public record Edit(BlockPos relative,BlockState expected,BlockState next){}
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
-    private static Work work;
-    private static final class Work {
-        final ServerLevel level;final BlockPos origin,base;final LabyrinthPlace place;final List<Edit> edits;int cursor;
-        Work(ServerLevel l,BlockPos o,LabyrinthPlace p,int n){level=l;origin=o.immutable();base=LabyrinthPlaces.base(o,p);place=p;edits=plan(p);cursor=n;}
-    }
     private PlaytestScenery130(){}
-    private static String key(BlockPos o,LabyrinthPlace p){return o.asLong()+":"+p.id();}
     private static BlockState furniture(HouseholdFurnitureBlock.Kind k,Direction f){return HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,k).setValue(HouseholdFurnitureBlock.FACING,f);}
     private static void add(List<Edit> edits,int x,int y,int z,BlockState old,BlockState next){edits.add(new Edit(new BlockPos(x,y,z),old,next));}
     private static void fit(List<Edit> edits,int x,int y,int z,VignetteInteriorBlock.Kind k,Direction f){add(edits,x,y,z,Blocks.AIR.defaultBlockState(),VignetteInteriorBlock.of(k,f));}
@@ -79,29 +74,9 @@ public final class PlaytestScenery130 {
         }
         return l.getEntities((Entity)null,new AABB(at).inflate(.01),a->a.isAlive()&&!a.isSpectator()).isEmpty();
     }
+    /** Applied inside the room's own recorded build: each edit only where the cell is as authored and nobody stands in it. */
     public static void fresh(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!PLACES.contains(p))return;var base=LabyrinthPlaces.base(origin,p);
         for(var e:plan(p)){var at=base.offset(e.relative());if(safe(l,at,e,true))BuildBlocks.guardedSet(l,at,e.next(),F,()->safe(l,at,e,false)||l.getBlockState(at).equals(e.next()));}
-        BuildBlocks.after(l,()->{var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);state.putBoolean(key(origin,p),true);d.setState(STATE,state);});
-    }
-    public static boolean step(ServerLevel l,BlockPos origin,LabyrinthPlace p){
-        if(!PLACES.contains(p))return true;var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);var key=key(origin,p);if(state.getBoolean(key))return true;
-        var area=SceneReview.area(LabyrinthPlaces.base(origin,p),p);
-        if(l.players().stream().anyMatch(a->area.inflate(24).intersects(a.getCamera().getBoundingBox())))return false;
-        var edits=plan(p);var base=LabyrinthPlaces.base(origin,p);
-        for(var e:edits){var at=base.offset(e.relative());if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;}
-        if(work==null||work.level.getServer()!=l.getServer()||!work.origin.equals(origin))work=new Work(l,origin,p,state.getInt(key+":cursor"));
-        if(work.level!=l||work.place!=p)return false;
-        int visited=0;long deadline=System.nanoTime()+3_000_000;
-        while(work.cursor<work.edits.size()&&visited++<256&&(visited==1||System.nanoTime()<deadline)){
-            var e=work.edits.get(work.cursor++);var at=work.base.offset(e.relative());if(safe(l,at,e,false))l.setBlock(at,e.next(),F);
-        }
-        state.putInt(key+":cursor",work.cursor);boolean done=work.cursor>=work.edits.size();if(done){state.putBoolean(key,true);work=null;}d.setState(STATE,state);return done;
-    }
-    public static void tick(MinecraftServer s){
-        if(s instanceof net.minecraft.gametest.framework.GameTestServer||LabyrinthBuilder.isCarving())return;
-        var origin=HouseSavedData.get(s).houseOrigin();if(origin==null){work=null;return;}var d=LabyrinthData.get(s);if(!origin.equals(d.builtOrigin()))return;
-        if(work!=null){if(work.level.getServer()!=s||!work.origin.equals(origin)){work=null;return;}step(work.level,origin,work.place);return;}
-        if(s.getTickCount()%20!=0)return;for(var p:PLACES)if(d.door(p.entryDoorId())!=null&&!d.state(STATE).getBoolean(key(origin,p))){var l=s.getLevel(NovelRooms.dimension(p));if(l!=null&&!step(l,origin,p))return;}
     }
 }

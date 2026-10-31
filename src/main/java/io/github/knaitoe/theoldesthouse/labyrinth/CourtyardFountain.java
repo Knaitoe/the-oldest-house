@@ -85,28 +85,6 @@ public final class CourtyardFountain {
     private static final Set<HouseholdFurnitureBlock.Kind> TABLES=Set.of(HouseholdFurnitureBlock.Kind.WALNUT_DESK,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,HouseholdFurnitureBlock.Kind.READING_DESK,HouseholdFurnitureBlock.Kind.FORMICA_TABLE);
     private static boolean table(BlockState s){return s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&TABLES.contains(s.getValue(HouseholdFurnitureBlock.KIND));}
     private static boolean top(BlockState s){return s.isAir()||s.is(HouseBlocks.SCENE_DETAIL.get())&&Set.of(SceneDetailBlock.Kind.TABLE_LAMP,SceneDetailBlock.Kind.VASE).contains(s.getValue(SceneDetailBlock.KIND));}
-    public static boolean repair(ServerLevel l,BlockPos b){
-        var data=LabyrinthData.get(l.getServer());if(done(data,b))return true;
-        var fountain=fountain(b);var planters=planters(b);
-        var cells=new java.util.ArrayList<BlockPos>(fountain.keySet());cells.addAll(planters.keySet());
-        for(var at:cells)if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;
-        var area=new AABB(Vec3.atLowerCornerOf(b.offset(-14,-2,-15)),Vec3.atLowerCornerOf(b.offset(15,3,-4)));
-        if(l.players().stream().anyMatch(p->area.inflate(16).intersects(p.getCamera().getBoundingBox())))return false;
-        var edits=new LinkedHashMap<BlockPos,BlockState>();
-        for(var e:planters.entrySet())if(e.getValue().getBlock() instanceof WallBlock&&table(l.getBlockState(e.getKey()))&&top(l.getBlockState(e.getKey().above()))){edits.put(e.getKey(),e.getValue());edits.put(e.getKey().above(),planters.get(e.getKey().above()));}
-        // The fountain goes in only where the ground and the air above it are still as the House left them.
-        var c=b.offset(CENTRE);boolean open=true;
-        for(var at:fountain.keySet()){var s=l.getBlockState(at);int y=at.getY()-c.getY();open&=y<=0?s.isSolidRender(l,at)||s.isAir()&&y<0:s.isAir();}
-        if(open)edits.putAll(fountain);
-        for(var at:edits.keySet())if(!l.getEntitiesOfClass(LivingEntity.class,new AABB(at).inflate(.3),e->e.isAlive()).isEmpty()||l.getBlockEntity(at)!=null&&!l.getBlockState(at).is(HouseBlocks.HOUSEHOLD_FURNITURE.get()))return false;
-        for(var e:edits.entrySet())l.setBlock(e.getKey(),e.getValue(),F);
-        markDone(data,b);return true;
-    }
-    @SubscribeEvent public static void repairTick(ServerTickEvent.Post e){
-        var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=31||LabyrinthBuilder.isCarving()||!LabyrinthBuilder.isPlaceReady(s,PLACE))return;
-        var origin=HouseSavedData.get(s).houseOrigin();var l=s.getLevel(NovelRooms.dimension(PLACE));var b=origin==null?null:LabyrinthPlaces.base(origin,PLACE);
-        if(l!=null&&b!=null&&!done(LabyrinthData.get(s),b))repair(l,b);
-    }
 
     // ------------------------------------------------------------------------------------------------ the fish
     /** On a reader's arrival: one fish in the basin, unless the cat is off the mat or this reader has already had one. */
