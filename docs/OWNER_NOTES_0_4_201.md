@@ -42,6 +42,12 @@ The owner's words replace "Every house is a haunted house. / But a warning, befo
 
 A journal handed over (the first one for a reader who missed the letter, or a lost one coming back) goes in the first empty hotbar slot other than the one in hand. If the slot in hand is the only empty one, it goes there. With a full hotbar it goes in the pack, as before, and at the reader's feet only when everything is full. `JournalTests.theJournalIsItsOwnersAndAnOldCopyGoesBlank` checks the slot past the hand, the hand's slot when it is the only open one, and the pack after a full hotbar.
 
+## Tearing a page shows how
+
+> "did you finish your work on the journal? I'm not seeing the ability to tear a page free"
+
+Tearing has worked since 0.4.199: hold right-click on a page with writing on it for about a second, the corner lifts and the page comes away; a right-click on the stub takes it back. Nothing on the screen said so. Now a written page's bottom outer corner curls up a little while the pointer is over the page, and on the corner itself a tooltip says "Hold right-click to tear it out". The inside cover and blank pages show neither, since they cannot be torn. The journal's visual proof is unchanged (the hint is off in proof mode).
+
 ## Not in the phone's shot
 
 > "can you try to ensure the player can't see themselves in lake_canoe during the camera fall sequence?"
