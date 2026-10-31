@@ -112,7 +112,8 @@ public final class TornPages {
         if(text.isBlank()){p.displayClientMessage(Component.literal("Nothing on the page would come away."),true);reopen(p,index);return;}
         var torn=new Torn();torn.serial=++b.tornSerial;torn.page=page.withWriting(text,page.placed());
         b.pages.remove(index);b.torn.put(index,torn);Quotes.torn(b,index);data.setDirty();
-        Journals.give(p,stack(p.getUUID(),b.name.isEmpty()?p.getGameProfile().getName():b.name,index,torn.serial));
+        // The journal itself goes to the hotbar (0.4.201); a torn page goes where any picked-up item would.
+        var leaf=stack(p.getUUID(),b.name.isEmpty()?p.getGameProfile().getName():b.name,index,torn.serial);if(!p.getInventory().add(leaf))p.drop(leaf,false);
         p.serverLevel().playSound(null,p.blockPosition(),SoundEvents.BOOK_PAGE_TURN,SoundSource.PLAYERS,1F,.55F);
         reopen(p,index);
     }

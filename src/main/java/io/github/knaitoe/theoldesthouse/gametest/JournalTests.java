@@ -351,7 +351,8 @@ public final class JournalTests {
             h.assertTrue(flat.face()==net.minecraft.core.Direction.UP&&Math.abs(flat.getY()-(table.getY()+1))<1e-6&&!data.torn(id,2),"it lies on the table, and the next oldest has gone home");
             // In the manor there is no limit.
             p.teleportTo(l,manor.getX()+.5,manor.getY(),manor.getZ()+.5,180,0);
-            h.assertTrue(pin(p,tornIn(p,9),manor.offset(0,0,-2),net.minecraft.core.Direction.SOUTH).consumesAction()&&TornPages.out(server,id)==6&&data.torn(id,3),"a page pinned in the manor counts toward nothing and sends nothing home");
+            var manorPin=pin(p,tornIn(p,9),manor.offset(0,0,-2),net.minecraft.core.Direction.SOUTH);
+            h.assertTrue(manorPin.consumesAction()&&TornPages.out(server,id)==6&&data.torn(id,3),"a page pinned in the manor counts toward nothing and sends nothing home: "+manorPin+" out="+TornPages.out(server,id)+" page3="+data.torn(id,3));
             // Nobody else can take a page down; its writer, crouching, takes it back.
             var four=pinnedBy(l,p,hall).stream().filter(e->e.ref().page()==4).findFirst().orElseThrow();
             four.skipAttackInteraction(peer);four.interact(peer,net.minecraft.world.InteractionHand.MAIN_HAND);

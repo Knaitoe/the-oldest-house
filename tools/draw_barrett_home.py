@@ -1117,7 +1117,8 @@ def m_dryer():
 
 @spec('boxes', {'c': 'cardboard', 'l': 'box_label'}, 'cardboard')
 def m_boxes():
-    return [box((1, 0, 2), (15, 8, 15), 'c', over={'north': 'l'}), box((3, 8, 4), (13, 14, 13), 'c', over={'north': 'l'})]
+    # 0.4.201: the lower box fills the cell, so a row of these meets, and the upper box sits on its lid.
+    return [box((0, 0, 0), (16, 8, 16), 'c', over={'north': 'l'}), box((2, 8, 3), (14, 15, 13), 'c', over={'north': 'l'})]
 
 
 @spec('water_heater', {'h': 'heater', 'l': 'heater_label', 'c': 'chrome'}, 'heater')

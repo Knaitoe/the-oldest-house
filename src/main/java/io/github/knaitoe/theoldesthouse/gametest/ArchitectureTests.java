@@ -101,6 +101,18 @@ public final class ArchitectureTests {
             for(var scene:LabyrinthPlace.values())if(SceneHuntReview.applies(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);var hide=scene==LabyrinthPlace.ELK_CARCASSES?level.getBlockEntity(base.offset(-2,0,-37)):null;h.assertTrue(SceneHuntReview.apply(level,origin,scene),scene.id()+" completes its actual playtest dressing");if(scene==LabyrinthPlace.ELK_CARCASSES)h.assertTrue(hide!=null&&level.getBlockEntity(base.offset(-2,0,-37))==hide,"the actual original carcass block entity survives its visual and forest upgrade");}
             VignetteAudit.write(server,origin);
             int dressed=0,props=0;
+            // 0.4.201 (owner: "Try to clear the gap between vignette boundaries and doors"): the row the entry door opens onto has a
+            // floor wherever the scene's ground runs up behind it.
+            var gaps=new ArrayList<String>();
+            for(var scene:LabyrinthPlace.values()){
+                var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));BlockPos base=LabyrinthPlaces.base(origin,scene);
+                if(base==null||!level.isLoaded(base)||!(level.getBlockState(base.offset(0,0,1)).getBlock() instanceof DoorBlock))continue;
+                for(int x=-LabyrinthPlaces.VESTIBULE_HALF_WIDTH;x<=LabyrinthPlaces.VESTIBULE_HALF_WIDTH;x++){
+                    var row=base.offset(x,-1,0);var behind=base.offset(x,-1,-1);
+                    if(level.getBlockState(row).isAir()&&(x==0||level.getBlockState(behind).isCollisionShapeFullBlock(level,behind)))gaps.add(scene.id()+"@"+x);
+                }
+            }
+            h.assertTrue(gaps.isEmpty(),"every entry door opens onto a floor: "+gaps);
             for(var scene:LabyrinthPlace.values()){
                 if(!VignetteArchitecture.applies(scene))continue;
                 var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));BlockPos base=LabyrinthPlaces.base(origin,scene);var bounds=scene.room();int count=0;

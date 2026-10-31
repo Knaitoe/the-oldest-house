@@ -19,6 +19,9 @@ public final class UncannyDiner {
     private static final List<Vec3> WALK=List.of(new Vec3(-7.5,0,-5.5),new Vec3(-3.5,0,-4.5),new Vec3(3.5,0,-5.5),new Vec3(3.5,0,-18.5));
     private static final List<Vec3> KITCHEN=List.of(new Vec3(3.5,0,-23.5),new Vec3(-7.5,0,-23.5),new Vec3(-7.5,0,-28.5));
     private static final List<Vec3> RETURN=List.of(new Vec3(-7.5,0,-23.5),new Vec3(-3.5,0,-23.5),new Vec3(-3.5,0,-5.5),new Vec3(-7.5,0,-8.5));
+    /** 0.4.201 (owner: "the second waitress should eventually transform after following the player"): twenty seconds of
+     *  her following a reader who has left the table, counted across every time they get up, and she changes. */
+    public static final int FOLLOWED_UNTIL_SHE_CHANGES=400;
     private static final String[] PRESSURE={"Aren't you going to eat?","What's wrong, honey?","What's wrong?","What's wrong?","Eat up.","Eat eat eat."};
     private UncannyDiner(){}
     public static boolean counter(ServerPlayer p,BlockPos b,BlockPos rel){
@@ -41,7 +44,7 @@ public final class UncannyDiner {
     public static LiteraryActor waitress(ServerPlayer p,BlockPos b){var w=UncannyStories.world(p.serverLevel(),b,PLACE);return w.hasUUID("Waitress")&&p.serverLevel().getEntity(w.getUUID("Waitress")) instanceof LiteraryActor a?a:null;}
     public static void greet(ServerPlayer p,BlockPos b,CompoundTag own){
         if(own.getBoolean("DinerGreeted127")||own.getBoolean("Completed")||UncannyStories.failed(own))return;
-        if(waitress(p,b)!=null){own.putBoolean("DinerGreeted127",true);p.displayClientMessage(Component.literal("“Come in out of the rain. Just you?”"),false);}
+        if(waitress(p,b)!=null){own.putBoolean("DinerGreeted127",true);p.displayClientMessage(Component.literal("“Come in out of the rain. Just you?”"),true);}
     }
     private static boolean busy(ServerPlayer p,CompoundTag w){
         if(!w.hasUUID("Host127")||w.getUUID("Host127").equals(p.getUUID()))return false;
@@ -52,13 +55,13 @@ public final class UncannyDiner {
     public static void talk(ServerPlayer p,LiteraryActor a,BlockPos b,CompoundTag own){
         if(b==null)return;var fake=UncannyStories.actor(p,own,"CastFake");
         if(fake!=null&&fake.phase()>=2){own.putBoolean("AskedRota",true);
-            if(own.getBoolean("MealServed")){own.putBoolean("Refused",true);p.displayClientMessage(Component.literal("“Leave it on the table. Staff door's beside the till.”"),false);}
-            else p.displayClientMessage(Component.literal("“Keep your coffee. I'll see to the table.”"),false);return;
+            if(own.getBoolean("MealServed")){own.putBoolean("Refused",true);p.displayClientMessage(Component.literal("“Leave it on the table. Staff door's beside the till.”"),true);}
+            else p.displayClientMessage(Component.literal("“Keep your coffee. I'll see to the table.”"),true);return;
         }
-        if(own.getBoolean("DinerHosted127")){p.displayClientMessage(Component.literal("“I'll be right with you.”"),false);return;}
-        var w=UncannyStories.world(p.serverLevel(),b,PLACE);if(busy(p,w)){p.displayClientMessage(Component.literal("“Be with you in a moment.”"),false);return;}
+        if(own.getBoolean("DinerHosted127")){p.displayClientMessage(Component.literal("“I'll be right with you.”"),true);return;}
+        var w=UncannyStories.world(p.serverLevel(),b,PLACE);if(busy(p,w)){p.displayClientMessage(Component.literal("“Be with you in a moment.”"),true);return;}
         w.putUUID("Host127",p.getUUID());UncannyStories.world(p.serverLevel(),b,PLACE,w);
-        if(!own.getBoolean("DinerSeating127")){own.putBoolean("DinerSeating127",true);p.displayClientMessage(Component.literal("“Booth by the window. This way.”"),false);}
+        if(!own.getBoolean("DinerSeating127")){own.putBoolean("DinerSeating127",true);p.displayClientMessage(Component.literal("“Booth by the window. This way.”"),true);}
         if(own.getInt("DinerHostLeg127")>=WALK.size()&&!seated(p,b))HouseSitting.sit(p,b.offset(SEAT));
         if(own.getBoolean("DinerMenuGiven130")&&!own.contains("Breakfast130")&&seated(p,b))for(var item:p.getInventory().items)if(item.is(UncannyRegistry.MENU.get())){UncannyBreakfast.open(p,item);break;}
     }
@@ -71,7 +74,7 @@ public final class UncannyDiner {
     }
     private static void handMenu(ServerPlayer p,BlockPos b,CompoundTag own){
         if(own.getBoolean("DinerMenuGiven130"))return;var menu=UncannyBreakfast.menu(p);own.putBoolean("DinerMenuGiven130",true);own.putBoolean("DinerMenuFoodSeen133",true);
-        p.displayClientMessage(Component.literal("“Take your time. What can I get you?”"),false);LiteraryVignettes.give(p,menu.copy());
+        p.displayClientMessage(Component.literal("“Take your time. What can I get you?”"),true);LiteraryVignettes.give(p,menu.copy());
         LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);UncannyBreakfast.openFood(p,menu);
     }
     public static boolean host(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -100,7 +103,7 @@ public final class UncannyDiner {
         }
         if(!own.contains("Breakfast130")){
             faceBooth(a,b);
-            if(!own.getBoolean("DinerSeatOffered127")){own.putBoolean("DinerSeatOffered127",true);p.displayClientMessage(Component.literal("“Here you are.”"),false);}
+            if(!own.getBoolean("DinerSeatOffered127")){own.putBoolean("DinerSeatOffered127",true);p.displayClientMessage(Component.literal("“Here you are.”"),true);}
             if(!seated(p,b))return false;own.putBoolean("DinerSeated127",true);
             var look=Vec3.atCenterOf(b.offset(SEAT)).subtract(a.position());float wanted=(float)Math.toDegrees(Math.atan2(-look.x,look.z));
             if(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-wanted))<8)handMenu(p,b,own);return false;
@@ -115,13 +118,14 @@ public final class UncannyDiner {
     public static boolean pressure(ServerPlayer p,LiteraryActor fake,BlockPos b,CompoundTag own){
         boolean sitting=seated(p,b);SceneFootpaths.face(fake,p.position(),12);
         if(!sitting){
-            if(!own.getBoolean("DinerLeftTable133")){own.putBoolean("DinerLeftTable133",true);fake.say("Where are you going, honey?");p.displayClientMessage(Component.literal("“Where are you going, honey?”"),false);}
+            if(!own.getBoolean("DinerLeftTable133")){own.putBoolean("DinerLeftTable133",true);fake.say("Where are you going, honey?");p.displayClientMessage(Component.literal("“Where are you going, honey?”"),true);}
             if(fake.distanceToSqr(p)>2.3)DinerWalk.follow(fake,p.position(),fake.phase()>=3?.15:.10);
+            own.putInt("DinerFollowed201",own.getInt("DinerFollowed201")+5);
         }else own.remove("DinerLeftTable133");
         long age=own.getLong("BoothPressureClock130")+5;own.putLong("BoothPressureClock130",age);if(!own.contains("BoothPressureNext130")){own.putLong("BoothPressureNext130",age+160);return sitting;}
         if(age<own.getLong("BoothPressureNext130"))return sitting;
         int line=own.getInt("BoothPressureLine130");String text=PRESSURE[line<PRESSURE.length?line:2+(line-PRESSURE.length)%4];
         if(!sitting&&line%3==0)text="You haven't finished. Come back and eat.";
-        fake.say(text);p.displayClientMessage(Component.literal("“"+text+"”"),false);own.putInt("BoothPressureLine130",line>=100?6:line+1);own.putLong("BoothPressureNext130",age+160+(line%3)*40);return sitting;
+        fake.say(text);p.displayClientMessage(Component.literal("“"+text+"”"),true);own.putInt("BoothPressureLine130",line>=100?6:line+1);own.putLong("BoothPressureNext130",age+160+(line%3)*40);return sitting;
     }
 }

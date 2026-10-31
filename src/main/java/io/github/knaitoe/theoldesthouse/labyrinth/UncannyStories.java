@@ -194,6 +194,10 @@ public final class UncannyStories {
             if(at!=null){fake.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);own.putLong("PlatePos131",at.asLong());own.putBoolean("MealServed",true);ask(p,fake,own);}
         }
         if(stage>=2&&(own.getBoolean("MealServed")||stage==3))UncannyDiner.pressure(p,fake,b,own);
+        if(stage==2&&own.getInt("DinerFollowed201")>=UncannyDiner.FOLLOWED_UNTIL_SHE_CHANGES){
+            transformWaitress(p,fake,own,"followed");stage=3;own.putInt("UncannyStage",stage);
+            fake.say("Sit down.");p.displayClientMessage(Component.literal("“Sit down.”"),true);
+        }
         if(stage==3&&age-own.getInt("DinerTransformAge133")>=280&&!own.getBoolean("Ready")){
             DinerWalk.follow(fake,p.position(),.15);
             if(fake.getBoundingBox().inflate(.08).intersects(p.getBoundingBox())&&UncannySenses.clear(p,fake.getEyePosition()))caught(p,b,LabyrinthPlace.SECOND_WAITRESS,own,own.getBoolean("MealEaten127")?"ate_what_she_brought":"stayed_after_closing");
@@ -201,7 +205,7 @@ public final class UncannyStories {
         boolean front=p.getZ()>b.getZ()-2&&Math.abs(p.getX()-b.getX())<2;
         if(own.getBoolean("SawSecond")&&front){own.putBoolean("Refused",!own.getBoolean("MealEaten127"));ready(p,LabyrinthPlace.SECOND_WAITRESS,own,own.getBoolean("MealEaten127")?"left_after_tasting_the_meal":own.getBoolean("MealServed")?"left_the_plate_and_walked_out":"left_before_the_plate");}
     }
-    private static void ask(ServerPlayer p,LiteraryActor fake,CompoundTag own){own.putBoolean("AskedMeal",true);fake.say("How's your meal?");p.displayClientMessage(Component.literal("“How’s your meal?”"),false);}
+    private static void ask(ServerPlayer p,LiteraryActor fake,CompoundTag own){own.putBoolean("AskedMeal",true);fake.say("How's your meal?");p.displayClientMessage(Component.literal("“How’s your meal?”"),true);}
     public static void ate(ServerPlayer p,ItemStack s){
         var c=s.get(DataComponents.CUSTOM_DATA);if(c==null||!c.copyTag().hasUUID("UncannyMealOwner")||!c.copyTag().getUUID("UncannyMealOwner").equals(p.getUUID())||!LiteraryVignettes.inside(p,LabyrinthPlace.SECOND_WAITRESS))return;
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS);if(failed(own)||own.getBoolean("Completed"))return;

@@ -129,6 +129,30 @@ def note_post():
     model('notice_post',{'wood':'minecraft:block/spruce_planks','face':'waterline_note','particle':'minecraft:block/spruce_planks'},
           [box([6,0,6],[10,16,10],'#wood'),box([0,6,6],[16,16,10],'#wood'),box([1,7,5.8],[15,15,6],'#wood','#face')]);states('notice_post')
 
+def car_cabin():
+    """0.4.201 (owner: "Fix the car windows for drowned_town"): the cabin is a 2 by 2 of these, one at each corner of the car's
+    roof, each turned so its outer corner (north-west in the model) is the car's. A pillar stands at that corner; tinted glass
+    you can see through runs from it along the outer front and side to the block's edge, meeting the next block's pane to
+    make one windshield, rear window or side window; a roof over it and a seat inside. Drawn in the translucent layer."""
+    glass=Image.new('RGBA',(16,16))
+    for x in range(16):
+        for y in range(16):
+            streak=abs((x+y)-13)<=1 or abs((x+y)-19)==0
+            glass.putpixel((x,y),(214,232,236,150) if streak else (126,164,176,92) if y>2 else (96,128,140,120))
+    save('car_glass',glass)
+    trim=grain((16,16),(40,43,44));rect(trim,(0,15),(16,16),(28,30,31));save('car_trim',trim)
+    seat=grain((16,16),(92,68,52))
+    for x in range(16):seat.putpixel((x,8),(70,51,39,255))
+    for y in range(16):seat.putpixel((8,y),(70,51,39,255))
+    save('car_seat',seat)
+    def pane(a,b,faces):
+        uv=[0,3,16,16]
+        return {'from':a,'to':b,'faces':{f:{'texture':'#glass','uv':uv} for f in faces}}
+    elements=[box([0,13,0],[16,16,16],'#trim'),box([0,0,0],[2,13,2],'#trim'),
+              pane([2,0,0.5],[16,13,0.5],('north','south')),pane([0.5,0,2],[0.5,13,16],('west','east')),
+              box([4,0,4],[14,4,14],'#seat')]
+    write('models/block/town_fixture_car_cabin.json',{'render_type':'minecraft:translucent','textures':{'glass':f'{NS}:block/car_glass','trim':f'{NS}:block/car_trim','seat':f'{NS}:block/car_seat','particle':f'{NS}:block/car_trim'},'elements':elements})
+
 def cars():
     palette={'red':(135,39,33),'blue':(46,69,101),'green':(73,88,54),'white':(190,185,164),'light_blue':(95,130,137),'brown':(107,74,48),'cyan':(51,101,108),'orange':(164,89,47)}
     kinds=[]
@@ -140,8 +164,7 @@ def cars():
         hood=grain((16,16),colour);rect(hood,(0,12),(16,16),(72,77,76));rect(hood,(5,9),(11,12),(38,41,41));rect(hood,(1,8),(4,11),(218,213,164));rect(hood,(12,8),(15,11),(218,213,164));save('car_hood_'+name,hood)
         for k,tex,element in [(f'car_{name}','car_'+name,box([0,0,0],[16,16,16],'#body')),(f'hood_{name}','car_hood_'+name,box([0,0,0],[16,8,16],'#body'))]:
             model('town_fixture_'+k,{'body':tex,'particle':tex},[element]);kinds.append(k)
-    glass=grain((16,16),(42,60,64));rect(glass,(0,0),(16,3),(68,74,71));rect(glass,(0,14),(16,16),(65,71,69));rect(glass,(0,3),(2,14),(79,83,78));rect(glass,(14,3),(16,14),(79,83,78));rect(glass,(7,3),(9,14),(76,81,78));rect(glass,(3,4),(6,6),(72,103,107));rect(glass,(10,5),(13,7),(61,91,95));save('car_glass',glass)
-    model('town_fixture_car_cabin',{'glass':'car_glass','particle':'car_glass'},[box([0,0,0],[16,16,16],'#glass')]);kinds.append('car_cabin')
+    car_cabin();kinds.append('car_cabin')
     car_wheel();kinds.append('car_wheel')
     path=A/'blockstates/town_fixture.json';data=json.loads(path.read_text())
     for facing,turn in TURN.items():
@@ -155,6 +178,8 @@ if __name__=='__main__':
     import sys
     if sys.argv[1:]==['wheel']:
         car_wheel();raise SystemExit(print('Redrew the car wheel: outward hub, tread round it.'))
+    if sys.argv[1:]==['cabin']:
+        car_cabin();raise SystemExit(print('Redrew the car cabin: pillars, roof, seats and glass you can see through.'))
     signs();cooler_and_wheel();note_post();cars()
     p=A/'lang/en_us.json';lang=json.loads(p.read_text());lang.update({'block.the_oldest_house.trailer_cooler':'Cooler','block.the_oldest_house.vehicle_wheel':'Wheel','block.the_oldest_house.institute_sign':'Institute sign','block.the_oldest_house.notice_post':'Note'})
     write('lang/en_us.json',lang)

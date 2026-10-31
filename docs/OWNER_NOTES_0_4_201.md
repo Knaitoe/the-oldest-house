@@ -1,6 +1,6 @@
 # Owner notes: 0.4.201
 
-Four notes from the owner on October 31, after a look at the bathroom mirror, the quiet rooms and their last card.
+Notes from the owner on October 31: the bathroom mirror, the quiet rooms and their last card, then a round of fixes across the rooms.
 
 ## Everyone wears the House's body inside the House
 
@@ -76,6 +76,48 @@ The lake house namespace's sixteen cases pass, the stroke case included (an imme
 
 **Coming back.** A reader caught by the woman was marked failed and left inside the tunnel; coming back in found it as they had left it, the woman standing where she had caught them and the signals mid-cycle. Now, coming back into the tunnel after more than three seconds away starts it over: the signals from the beginning, the same woman folded at the far end, and the catch forgotten. A passage already made (past the last green, or read) is kept. Being caught leaves the reader in the tunnel, so it starts over only once they have left and come back. `UncannyTests.comingBackIntoTheTunnelStartsItOverButKeepsAPassageMade` covers staying, coming back and a passage kept; the uncanny and foyer namespaces pass (59) and the uncanny environment case passes.
 
+## No gap at the door
+
+> "Try to clear the gap between vignette boundaries and doors."
+
+Four of the uncanny rooms (the tunnel, the split-feed bedroom, the basement and the buzzer foyer) stand their front wall at z = -1, a block inside the doorway plane. Only the doorway column was joined to the hall's door, so the cells beside it were a one-block slot between the hall's wall and the room's, with no floor: a reader in the doorway looked sideways into the void. `UncannyRooms.closeSlot` now fills that slot with the room's own front wall and floor, block for block, and leaves only the doorway open. The diner keeps its forecourt as it was.
+
+`ArchitectureTests` now checks every built scene whose entry door stands at (0, 0, 1): no cell of the threshold row is a hole beside a solid floor, and the doorway itself always has a floor. Before the fix it listed the four rooms; with it the architecture namespace passes (5).
+
+## Proofrock's car windows
+
+> "Fix the car windows for drowned_town."
+
+The cabin of each parked car was four blocks of one model that drew glass only on its north face, so every car had one strip of windshield turned a different way per block and solid sides elsewhere. The cabin model is redrawn (`tools/generate_playtest_fixes_assets.py cabin`): a roof, one corner pillar, and tinted glass you can see through running from that pillar along the outer front and side to the block's edge, plus a seat inside. Each of the four cabin blocks is turned so the pillar is the car's own corner (`ProofrockTown.cabinCorner`), so the panes meet as one windshield, rear window and side windows. The cabin no longer culls the faces of the body under it. New textures `car_glass`, `car_trim` and `car_seat`; the fixture block keeps its 256 states.
+
+## Stacey comes up the sand at Costume Night
+
+> "Stacey graves still isn't wanting to cross to land."
+
+Her steps up from the water work (0.4.164). What kept her in the lake was the route: after the lights go out she goes for the nearest reader on the sand, and a reader standing where she may not go (within ten blocks of the entrance, up on the stage, among the props) left her with no route at all, so she waited where she was. She now heads for the open ground nearest that reader, out to twelve blocks, and waits at the edge of what is hers. The Costume Night case adds a reader by the entrance and checks that she comes out of the lake and up the sand to the edge nearest them, and reaches nobody; the literary namespace passes (88).
+
+## The diner: the restroom, the griddle, her words and her change
+
+> "please fix the bathroom in second waitress vignette. no see-through door in a diner lol... no "bathroom" texture that bleeds into the diner decal. it should be appropriately grungy"
+> "also messed up textures in second waitress"
+> "the second waitress should eventually transform after following the player"
+
+- **The restroom** no longer borrows the diner's east wall, where its tiles showed on the diner side and covered a window. The diner keeps its own wall, dado and windows; a solid steel door in it (`uncanny_restroom_door`, painted, scuffed, a kick plate, a push plate and a small plaque, no glass) opens into an annex whose outside is the diner's own finish under the diner's roof and whose inside is a tiled lining three blocks by five. The tiles are yellowed and grimy, with dirty grout, a crack, a chipped tile and a rust run; the floor's small tiles have gone dark at the joints, with a stain in one corner (`tools/draw_vignette_details.py`). The fittings keep their kinds and controls at new places (`DinerDetails.TOILET`, `BASIN`, `SOAP`, `DRYER`).
+- **The griddle**'s black cooking plate shared the steel top's surface and the two flickered through each other in streaks. The plate now sits half a pixel down inside a steel rim.
+- **Her words** went to chat; they are on the action bar now, as the rule for speech asks.
+- **She changes after following.** Once the plate is served, a reader who gets up is followed. Twenty seconds of being followed, counted across every time they get up (`UncannyDiner.FOLLOWED_UNTIL_SHE_CHANGES`), and she changes: her mouth splits, she says "Sit down.", and, as when the plate is eaten or the night runs on, she comes for them fourteen seconds later. The front door and the staff door are still ways out. `ServiceFollowupTests.herOriginalBodyChangesAfterFollowingAReaderAwayFromTheTable` checks that she follows, still a waitress, and then changes without anything eaten, the same body and no catch yet. The service, uncanny and uncanny environment namespaces pass (66).
+
+## Cardboard boxes touch
+
+> "try to have the various instances of cardboard boxes actually touching rather than floating in space"
+
+The moving boxes (the Wheel's first flat) were drawn a pixel inside their cell on every side and three short of the top, so boxes side by side had gaps and a box stacked on another floated over it. Each now fills its cell; the open box's walls run to the cell's edge. The Barrett house's pile of boxes has its lower box full width with the upper sitting on its lid. Their collision follows.
+
+## Torn pages go back to the pack
+
+The build job of the 0.4.201 run failed `tornPagesPinAndOnlySixAreLeftOutInTheHouseBeyondTheManor`: torn pages were handed over by the same code as the journal, so the hotbar change above put the ninth page into the hand's slot, where the test then put another page. The owner asked for the journal on the hotbar; a torn page now goes where any picked-up item would, as before. The case passes on its own; its message now says what failed.
+
 ## Not changed yet
 
-The coatroom's closing line, "That's how you'll look here.", waits on the owner's choice among the suggestions given in conversation.
+- The coatroom's closing line, "That's how you'll look here.", waits on the owner's choice among the suggestions given in conversation.
+- The Wheel's mother dropping fire charges: nothing in the mod gives, drops or names a fire charge, and her actor cannot be hurt, so where they came from is not yet known.

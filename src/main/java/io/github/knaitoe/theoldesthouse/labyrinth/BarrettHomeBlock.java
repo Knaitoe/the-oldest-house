@@ -68,7 +68,7 @@ public final class BarrettHomeBlock extends Block {
         case TUB->Block.box(0,0,0,16,9,16);
         case VANITY->Block.box(0,0,4,16,13,16);
         case WASHER,DRYER->Block.box(1,0,2,15,15,16);
-        case BOXES->Block.box(1,0,2,15,14,15);
+        case BOXES->Shapes.or(Block.box(0,0,0,16,8,16),Block.box(2,8,3,14,15,13));
         case WATER_HEATER->Block.box(3,0,3,13,16,13);
         case SHELVES->Block.box(0,0,8,16,16,16);
         case CABLE,CABLE_CORNER->Block.box(0,0,0,16,.25,16);
