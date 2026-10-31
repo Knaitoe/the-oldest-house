@@ -78,5 +78,4 @@ public final class FeetUpTexts {
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.FEET_UP),name,HouseWriting.WritingStyle.WILL,pages(account(own),PAGE));
     }
     /** The Witness line. */
-    public static final String WITNESS="I kept off the floor all the way to the attic. The chairs came while I was not looking; the boards went while I was. Three touches would have put me out, and the lamps would have gone down. I pulled the ladder up after me.";
 }
