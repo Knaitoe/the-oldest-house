@@ -322,7 +322,7 @@ public final class UncannyStories {
         }
         if(place==LabyrinthPlace.MOTION_LIGHT){
             if(rel.equals(FoyerMotion.PULL))return FoyerMotion.pull(p,b,own);
-            if(rel.equals(UncannyRooms.INTERCOM)){FoyerEncounter.admit(p,b,own,"pressed_the_buzzer_release");return true;}
+            if(rel.equals(UncannyRooms.INTERCOM)){if(!FoyerEncounter.warned(own)){cue(p,"The brass button clicks. Nothing answers it. Words are scratched into the wall beside it.");return true;}FoyerEncounter.admit(p,b,own,"pressed_the_buzzer_release");return true;}
             if(rel.equals(FoyerEncounter.GLASS_DOOR)||rel.equals(FoyerEncounter.GLASS_DOOR.above())){FoyerEncounter.admit(p,b,own,"opened_the_courtyard_door");return true;}
             if(rel.equals(UncannyRooms.HINGED)||rel.equals(UncannyRooms.HINGED.above())){own.putBoolean("HingeSeen",true);setDoor(p.serverLevel(),b.offset(UncannyRooms.HINGED),true);return true;}
             if((UncannyRooms.FALSE_DOORS.contains(rel)||UncannyRooms.FALSE_DOORS.stream().anyMatch(r->r.above().equals(rel)))&&p.serverLevel().getBlockState(b.offset(rel)).is(UncannyRegistry.PROP.get())&&p.serverLevel().getBlockState(b.offset(rel)).getValue(UncannyPropBlock.KIND)==FALSE_DOOR){own.putBoolean("FalseExamined",true);cue(p,"The frame has no hinge pins.");return true;}

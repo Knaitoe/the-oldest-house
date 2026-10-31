@@ -305,6 +305,37 @@ the old shell (`LiteraryRooms.winchester` lays only the walls) and runs the nigh
   the robe and the bell, each piece built only unseen and closed behind, the last room's ledger and account, and the walled
   reader; the route case walks every tread, turn, step, joist, window and board with a real player body.
 
+## The buzzer's light decides it, and the service door says what it does
+
+> "what's the logic - win/lose state behind the motion threshold?" / "I would suggest altering the light in motion threshold,
+> both in it affecting the outcome and ensuring the player is aware what leaving through the service door does or at least
+> providing them with an explanation"
+
+Before, the floodlight was only atmosphere: pulling the chain postponed the dark, and the dark was needed to win, so the light
+never decided anything. The found text already says what the dark is for (something standing dead still by the glass, waiting
+out the sensor's timer), and the room now plays it that way (`FoyerEncounter`):
+
+- **Each darkness brings it closer.** Every time the floodlight drops out it stands one step nearer the glass, as before; on
+  the third it is against it. A stillness held there lets it in: after five seconds its hand is flat on the glass, and after
+  ten the glass door swings open on its own and the room is lost (`left_it_against_the_glass_in_the_dark`), with the same
+  intrusion and return to the House as opening the glass.
+- **Light holds it.** While the floodlight is on, from the wind or from the chain, it can only wait outside, however long. A
+  reader who keeps the pendulum swinging keeps it off the glass; each lapse into darkness is another step.
+- **The cues say so.** "The light is out again. It is standing closer than before." / "...right up against the glass now." /
+  "Its hand is flat on the glass." / "The light swings back on. The yard is empty again." The passage the room adds once the
+  visitor is seen now reads: "Every time the light goes out, it stands closer to the glass. Keep the light swinging, and leave
+  by the door that has hinges."
+- **The service door explains itself.** Beside it, before anything has come: "The service door has real hinges. It lets out
+  the back, but nothing has come to the glass yet." After: "...Go out the back this way and whatever is at the glass stays
+  outside." Leaving by it too early is still allowed, and says why it did not count ("There was nothing yet to leave
+  outside"); leaving by it after resolves the room as before, and says what was left behind.
+- **The button needs the warning read.** The 0.4.116 canon said the brass button admits nothing before the scrawl beside it is
+  read; the code admitted on any press. Now an unread press only clicks, and points at the words beside it.
+- The account opens with the light (kept swinging by the chain, or it was already against the glass), and the Witness line
+  says each darkness brought it closer. New foyer case: three darknesses to the glass, the light holding it there however
+  long, and a fresh darkness letting it in; the service-door case checks both hints and the early leaving; the buzzer case
+  checks the unread press.
+
 ## Five vignette proposals
 
 The owner sent five vignette specifications (the Left-Right Game, the Dead Air Broadcast, the God of the Pitt, the Polaroid

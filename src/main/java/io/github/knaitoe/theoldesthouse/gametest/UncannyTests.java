@@ -278,7 +278,11 @@ public final class UncannyTests {
     });}
     @AfterBatch(batch="uncanny_light") public static void lightDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_buzzer",timeoutTicks=900) public static void invitingTheVisitorDoesNotInviteOrResolveThePeer(GameTestHelper h){run(h,LabyrinthPlace.MOTION_LIGHT,(f,p)->{
-        var place=LabyrinthPlace.MOTION_LIGHT;var peer=f.player("buzzer_peer",place);click(f,peer,place,UncannyRooms.INTERCOM);h.assertTrue(f.own(peer,place).getBoolean("FoyerAdmitted136")&&!f.own(peer,place).getBoolean("Read_Source")&&!f.own(p,place).getBoolean("FoyerAdmitted136"),"the first actual unread release admits only its own reader's visitor");
+        var place=LabyrinthPlace.MOTION_LIGHT;var peer=f.player("buzzer_peer",place);click(f,peer,place,UncannyRooms.INTERCOM);
+        // 0.4.201: as the 0.4.116 canon has it, the button admits nothing before the warning scratched beside it is read.
+        h.assertTrue(!f.own(peer,place).getBoolean("FoyerAdmitted136")&&!FoyerEncounter.warned(f.own(peer,place)),"before the scrawl beside it is read, the brass button admits nothing");
+        f.source(peer,place);click(f,peer,place,UncannyRooms.INTERCOM);
+        h.assertTrue(f.own(peer,place).getBoolean("FoyerAdmitted136")&&!f.own(p,place).getBoolean("FoyerAdmitted136"),"once read, the release admits only its own reader's visitor");
         f.source(p,place);var before=f.own(p,place).getUUID("CastVisitor");click(f,p,place,UncannyRooms.INTERCOM);
         h.assertTrue(f.own(p,place).getBoolean("UncannyFailed")&&f.own(peer,place).getBoolean("FoyerAdmitted136"),"each brass release keeps its own independent admission");h.assertTrue(before.equals(f.own(p,place).getUUID("CastVisitor"))&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.MOTION_LIGHT),"the same visitor remains and no survival is awarded");
     });}
