@@ -144,8 +144,10 @@ jobs:
               for material in ('harrigan_casket_wood','harrigan_casket_brass','harrigan_casket_lining','harrigan_plaque_front','harrigan_plaque_back'):
                   assert z.read(f'assets/the_oldest_house/textures/block/{material}.png').startswith(b'\x89PNG')
               assert len(json.loads(z.read('assets/the_oldest_house/models/block/harrigan_plaque.json'))['elements']) >= 6
-              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/night_ward.json'))['variants']) == 56
-              for material in ('wall','dado','floor','ceiling','enamel','steel','sheet','blanket','curtain','glass','light','call','controls','door_lower','door_upper'):
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/night_ward.json'))['variants']) == 96
+              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/night_ward_curtain.json'))['multipart']) == 15
+              for material in ('wall','dado','floor','ceiling','enamel','steel','sheet','blanket','curtain','glass','light','call','controls','door_lower','door_upper',
+                               'column','light_off','bed_unit','monitor','night_light','trolley','bag','rubber','counter','worktop','ceramic','cloth','cloth_top','cloth_hem'):
                   assert z.read(f'assets/the_oldest_house/textures/block/night_ward/{material}.png').startswith(b'\x89PNG')
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
@@ -937,7 +939,7 @@ jobs:
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/institute-0470-passed.txt
           test -s build/font-smoke/night-ward-passed.txt
-          for page in 0 1 2; do test -s build/font-smoke/native-night-ward-$page.png; done
+          for page in 0 1 2 3 4; do test -s build/font-smoke/native-night-ward-$page.png; done
           test -s build/font-smoke/native-goatman-fear0472-0.png
           test -s build/font-smoke/native-goatman-fear0472-1.png
           test -s build/font-smoke/native-goatman-fear0472-2.png
@@ -1845,7 +1847,7 @@ jobs:
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/institute-0470-passed.txt
           test -s build/font-smoke/night-ward-passed.txt
-          for page in 0 1 2; do test -s build/font-smoke/native-night-ward-$page.png; done
+          for page in 0 1 2 3 4; do test -s build/font-smoke/native-night-ward-$page.png; done
           test -s build/font-smoke/native-goatman-fear0472-0.png
           test -s build/font-smoke/native-goatman-fear0472-1.png
           test -s build/font-smoke/native-goatman-fear0472-2.png

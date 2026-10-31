@@ -1,0 +1,278 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "bag": "the_oldest_house:block/night_ward/bag",
+    "steel": "the_oldest_house:block/night_ward/steel",
+    "particle": "the_oldest_house:block/night_ward/bag"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        7.5
+      ],
+      "to": [
+        13,
+        1,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        0,
+        3
+      ],
+      "to": [
+        8.5,
+        1,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        1,
+        7.75
+      ],
+      "to": [
+        8.25,
+        30,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            0,
+            8.25,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            0,
+            8.25,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            0,
+            8.25,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            0,
+            8.25,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            7.75,
+            8.25,
+            8.25
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            7.75,
+            8.25,
+            8.25
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        28,
+        7.75
+      ],
+      "to": [
+        11,
+        28.5,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            3.5,
+            11,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            3.5,
+            11,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            3.5,
+            8.25,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            3.5,
+            8.25,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            7.75,
+            11,
+            8.25
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            7.75,
+            11,
+            8.25
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4.75,
+        20,
+        7.25
+      ],
+      "to": [
+        7.25,
+        26,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bag",
+          "uv": [
+            8.75,
+            6,
+            11.25,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#bag",
+          "uv": [
+            4.75,
+            6,
+            7.25,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#bag",
+          "uv": [
+            7.25,
+            6,
+            8.75,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#bag",
+          "uv": [
+            7.25,
+            6,
+            8.75,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#bag",
+          "uv": [
+            4.75,
+            7.25,
+            7.25,
+            8.75
+          ]
+        },
+        "down": {
+          "texture": "#bag",
+          "uv": [
+            4.75,
+            7.25,
+            7.25,
+            8.75
+          ]
+        }
+      }
+    }
+  ]
+}

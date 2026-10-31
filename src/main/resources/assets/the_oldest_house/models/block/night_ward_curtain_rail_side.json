@@ -1,0 +1,41 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "steel": "the_oldest_house:block/night_ward/steel",
+    "particle": "the_oldest_house:block/night_ward/cloth"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        15,
+        0
+      ],
+      "to": [
+        9,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    }
+  ]
+}

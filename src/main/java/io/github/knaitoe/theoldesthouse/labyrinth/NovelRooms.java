@@ -98,14 +98,8 @@ public final class NovelRooms {
         var volume=new net.minecraft.world.phys.AABB(b.getX()-28,l.getMinBuildHeight(),b.getZ()-64,b.getX()+29,b.getY()+1,b.getZ()+1);
         for(var debris:l.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class,volume,e->e.getBlockState().is(Blocks.SAND)))debris.discard();
     }
-    private static void hospital(ServerLevel l,BlockPos b){
-        room(l,b,-9,9,-23,0,0,5,NovelRegistry.INSTITUTE.get(),Blocks.WHITE_CONCRETE);door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);
-        BuildBlocks.set(l,b.offset(0,0,-14),prop(NovelPropBlock.Kind.INCUBATOR,Direction.SOUTH),F);
-        furniture(l,b.offset(3,0,-12),HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
-        BuildBlocks.set(l,b.offset(BUTTON),NovelRegistry.NIGHT_WARD_CALL_BUTTON.get().defaultBlockState().setValue(ButtonBlock.FACING,Direction.WEST).setValue(ButtonBlock.FACE,AttachFace.WALL),F);
-        at(l,b,6,1,-14,NovelRegistry.INSTITUTE.get());lectern(l,b.offset(WARD_NOTE),NovelTexts.hospitalOpening());
-        at(l,b,0,4,-10,Blocks.SEA_LANTERN);at(l,b,0,4,-19,Blocks.SEA_LANTERN);
-    }
+    /** 0.4.199: the ward is built whole by NightWard, as a clinical ward with curtained bays. */
+    private static void hospital(ServerLevel l,BlockPos b){NightWard.build(l,b);}
     private static void karen(ServerLevel l,BlockPos b){
         room(l,b,-9,9,-18,0,0,5,Blocks.BIRCH_PLANKS,Blocks.OAK_PLANKS);door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);
         bed(l,b.offset(BED),Blocks.RED_BED,Direction.NORTH);furniture(l,b.offset(6,0,-11),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);

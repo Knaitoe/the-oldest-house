@@ -1,0 +1,178 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "cloth_top": "the_oldest_house:block/night_ward/cloth_top",
+    "steel": "the_oldest_house:block/night_ward/steel",
+    "particle": "the_oldest_house:block/night_ward/cloth"
+  },
+  "elements": [
+    {
+      "from": [
+        7.5,
+        0,
+        7.5
+      ],
+      "to": [
+        8.5,
+        15,
+        8.5
+      ],
+      "faces": {
+        "east": {
+          "texture": "#cloth_top",
+          "uv": [
+            0,
+            0,
+            1.0,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#cloth_top",
+          "uv": [
+            0,
+            0,
+            1.0,
+            15
+          ]
+        },
+        "north": {
+          "texture": "#cloth_top",
+          "uv": [
+            7.5,
+            0,
+            8.5,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#cloth_top",
+          "uv": [
+            7.5,
+            0,
+            8.5,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#cloth_top",
+          "uv": [
+            7.5,
+            7.5,
+            8.5,
+            8.5
+          ]
+        },
+        "down": {
+          "texture": "#cloth_top",
+          "uv": [
+            7.5,
+            7.5,
+            8.5,
+            8.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        15,
+        7
+      ],
+      "to": [
+        9,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel"
+        },
+        "south": {
+          "texture": "#steel"
+        },
+        "east": {
+          "texture": "#steel"
+        },
+        "west": {
+          "texture": "#steel"
+        },
+        "up": {
+          "texture": "#steel"
+        },
+        "down": {
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        16,
+        7.75
+      ],
+      "to": [
+        8.25,
+        32,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            0,
+            8.25,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            0,
+            8.25,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            0,
+            8.25,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            0,
+            8.25,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            7.75,
+            8.25,
+            8.25
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            7.75,
+            7.75,
+            8.25,
+            8.25
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "light_off": "the_oldest_house:block/night_ward/light_off",
+    "particle": "the_oldest_house:block/night_ward/light_off"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#light_off"
+        },
+        "south": {
+          "texture": "#light_off"
+        },
+        "east": {
+          "texture": "#light_off"
+        },
+        "west": {
+          "texture": "#light_off"
+        },
+        "up": {
+          "texture": "#light_off"
+        },
+        "down": {
+          "texture": "#light_off"
+        }
+      }
+    }
+  ]
+}

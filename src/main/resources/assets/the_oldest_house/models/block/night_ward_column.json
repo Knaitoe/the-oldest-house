@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": true,
+  "textures": {
+    "column": "the_oldest_house:block/night_ward/column",
+    "enamel": "the_oldest_house:block/night_ward/enamel",
+    "particle": "the_oldest_house:block/night_ward/column"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#column"
+        },
+        "south": {
+          "texture": "#column"
+        },
+        "east": {
+          "texture": "#column"
+        },
+        "west": {
+          "texture": "#column"
+        },
+        "up": {
+          "texture": "#enamel"
+        },
+        "down": {
+          "texture": "#enamel"
+        }
+      }
+    }
+  ]
+}

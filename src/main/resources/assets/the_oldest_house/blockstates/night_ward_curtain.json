@@ -1,0 +1,145 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "part": "lower"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_lower_post"
+      }
+    },
+    {
+      "when": {
+        "part": "lower",
+        "north": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_lower_side"
+      }
+    },
+    {
+      "when": {
+        "part": "lower",
+        "east": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_lower_side",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "part": "lower",
+        "south": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_lower_side",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "part": "lower",
+        "west": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_lower_side",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "part": "upper"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_upper_post"
+      }
+    },
+    {
+      "when": {
+        "part": "upper",
+        "north": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_upper_side"
+      }
+    },
+    {
+      "when": {
+        "part": "upper",
+        "east": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_upper_side",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "part": "upper",
+        "south": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_upper_side",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "part": "upper",
+        "west": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_upper_side",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "part": "rail"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_rail_post"
+      }
+    },
+    {
+      "when": {
+        "part": "rail",
+        "north": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_rail_side"
+      }
+    },
+    {
+      "when": {
+        "part": "rail",
+        "east": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_rail_side",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "part": "rail",
+        "south": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_rail_side",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "part": "rail",
+        "west": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/night_ward_curtain_rail_side",
+        "y": 270
+      }
+    }
+  ]
+}
