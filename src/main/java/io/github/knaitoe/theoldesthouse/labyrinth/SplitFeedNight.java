@@ -37,7 +37,24 @@ public final class SplitFeedNight {
     private static final double[] LURCH={.45,.2,0,0,.35,.1,0,0};
     /** Through their door as it comes: affirmations, then calling it in, by how far along the hall it has come. */
     private static final String[] VOICES={"Mm. Is that you, sweetheart?","We're so proud of you. You know that?","Don't stay up too late, okay?","Come here. Let me see you."};
+    /**
+     * 0.4.201 (owner: "The parents should speak to the reader when they first enter, them telling the reader how sleepy they -
+     * the parents are - and that the reader should go to bed too. This instills the proximity of the parents prior to the bit
+     * of horror"): from their bed, once, as the reader comes in. The last line is why their door stands open.
+     */
+    private static final String[] GREETING={"Is that you, sweetheart? We're turning in.","God, I'm wiped. I can barely keep my eyes open.","You should get to bed too. It's late.","Leave our door open, okay? In case you need us."};
+    /** Ticks between the greeting's lines. */
+    public static final int GREET_GAP=60;
     private SplitFeedNight(){}
+    /** Before the night: the parents' greeting, a line every few seconds once the reader is near enough to hear them. */
+    static void greet(ServerPlayer p,BlockPos b,CompoundTag own){
+        int said=own.getInt("Greeted201");if(said>=GREETING.length)return;
+        if(p.distanceToSqr(Vec3.atCenterOf(b.offset(UncannyRooms.PARENTS_DOOR)))>18*18)return;
+        int age=own.getInt("UncannyAge");if(said>0&&age-own.getInt("GreetedAt201")<GREET_GAP)return;
+        voice(p,b,GREETING[said]);own.putInt("Greeted201",said+1);own.putInt("GreetedAt201",age);
+    }
+    public static int greeted(CompoundTag own){return own.getInt("Greeted201");}
+    public static String greeting(int line){return GREETING[line];}
 
     static Vec3 at(BlockPos b,Vec3 rel){return rel.add(b.getX(),b.getY(),b.getZ());}
     public static boolean doorOpen(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(UncannyRooms.PARENTS_DOOR));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
@@ -76,6 +93,8 @@ public final class SplitFeedNight {
             double done=leg>=1?.75+.25*(1-Math.min(1,doll.position().distanceTo(at(b,DOOR_FRONT))/1.8)):.75*(1-Math.min(1,(doll.getZ()-b.getZ()-TURN.z)/(START.z-TURN.z)));
             int said=own.getInt("ParentsLine201");int due=done<.05?0:done<.35?1:done<.7?2:3;
             if(said<=due&&said<VOICES.length){voice(p,b,VOICES[said]);own.putInt("ParentsLine201",said+1);}
+            // "dragging the baseball bat along the drywall": the scrape of it, as it comes.
+            if(lurch>0&&since%10==0)UncannyStories.heard(p,SoundEvents.GRINDSTONE_USE,doll.position().add(0,.4,0),.18F,.5F);
             // The wet purr that clicks on and off in its throat.
             if(since%40==0)UncannyStories.heard(p,SoundEvents.CAT_PURR,doll.getEyePosition(),.55F,.45F);
             if(since%40==20)UncannyStories.heard(p,SoundEvents.NOTE_BLOCK_HAT.value(),doll.getEyePosition(),.2F,.5F);

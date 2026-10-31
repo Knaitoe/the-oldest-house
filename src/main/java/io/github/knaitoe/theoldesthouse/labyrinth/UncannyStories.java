@@ -264,7 +264,7 @@ public final class UncannyStories {
             if(night&&channel==0)own.putBoolean("EmptyBedSeen",true);
             if(night&&channel==1&&doll.getZ()<b.getZ()-15&&doll.phase()==1){own.putBoolean("OwnFaceSeen",true);if(own.getString("FirstView").isEmpty())own.putString("FirstView","camera");}
         }
-        if(!night)return;
+        if(!night){SplitFeedNight.greet(p,b,own);return;}
         if(doll.phase()==1){var delta=doll.getEyePosition().subtract(UncannySenses.eye(p));if(delta.lengthSqr()<100&&UncannySenses.look(p).dot(delta.normalize())>.8&&UncannySenses.clear(p,doll.getEyePosition())){own.putBoolean("MarionetteSeen",true);if(own.getString("FirstView").isEmpty())own.putString("FirstView","hall");}}
         if(!own.getBoolean("Ready")&&own.getBoolean("BlockedDoor")&&(own.getBoolean("MarionetteSeen")||own.getBoolean("OwnFaceSeen")))ready(p,LabyrinthPlace.MISSING_SLEEP,own,"closed_the_door_on_the_other_feed");
         SplitFeedNight.night(p,b,own,doll);
@@ -300,6 +300,9 @@ public final class UncannyStories {
                 if(own.getInt("Sleeps")>=2){cue(p,"You are not tired. Not any more.");return true;}
                 own.putInt("Sleeps",2);own.putInt("NightClock",own.getInt("NightClock")+7200);own.putInt("FirstSleepAge",own.getInt("UncannyAge"));own.putInt("SecondSleepAge",own.getInt("UncannyAge"));
                 HousePackets.send(p,new HouseFadePayload(8,8,16));var target=b.offset(-6,5,-24);p.teleportTo(p.serverLevel(),target.getX()+.5,target.getY(),target.getZ()+.5,0,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();
+                // 0.4.201 (owner: "the door to the parent's room should be opened upon waking even if the player closed it
+                // previously"): they asked for it open, and it is open now.
+                setDoor(p.serverLevel(),b.offset(UncannyRooms.PARENTS_DOOR),true);own.putBoolean("BlockedDoor",false);
                 cue(p,"06:00. You wake with dried mud on your feet.");return true;
             }
             if((rel.equals(UncannyRooms.PARENTS_DOOR)||rel.equals(UncannyRooms.PARENTS_DOOR.above()))&&own.getInt("Sleeps")>=2){

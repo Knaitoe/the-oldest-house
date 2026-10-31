@@ -170,7 +170,9 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 head.xRot=head.yRot=0;leftArm.xRot=rightArm.xRot=0;leftArm.zRot=-.05F;rightArm.zRot=.05F;leftLeg.xRot=rightLeg.xRot=0;
                 if(phase==1){head.yRot=.5F;head.xRot=-.2F;rightArm.zRot=.6F;leftLeg.zRot=-.1F;}
             }
-            if(role==LiteraryActor.UNCANNY_MARIONETTE&&feed){head.xRot=0;head.yRot=0;head.zRot=0;body.yRot=.04F*Mth.sin(age*.07F);}
+            if(role==LiteraryActor.UNCANNY_MARIONETTE&&feed){head.xRot=0;head.yRot=0;head.zRot=0;body.yRot=.04F*Mth.sin(age*.07F);
+                // "dragging the baseball bat along the drywall": the bat arm hangs out and a little back, so the bat trails.
+                rightArm.xRot=.35F+Mth.sin(age*.07F)*.04F;rightArm.zRot=.42F;}
             if(role==LiteraryActor.UNCANNY_PEELER){float breath=Mth.sin(age*(phase>=1?.17F:.09F));body.xRot=.27F+breath*(phase>=1?.045F:.015F);head.xRot=.24F+breath*.025F;if(phase<3){rightArm.xRot=phase>=1?-1.4F+Mth.sin(age*.21F)*.12F:-.8F-Mth.abs(Mth.sin(age*.27F));leftArm.xRot=-.65F;leftArm.zRot=phase>=1?Mth.sin(age*.71F)*.025F:0;}}
             if(role==LiteraryActor.UNCANNY_VISITOR){leftLeg.xRot=phase>0&&phase<4?0:-step*.35F;rightLeg.xRot=phase>0&&phase<4?0:step*.35F;leftArm.xRot=phase>0?0:step*.08F;rightArm.xRot=phase>=3?-1.4F:phase>0?0:-step*.06F;rightArm.zRot=phase>=3?.08F:0;rightArm.z=phase>=3?1.6F:0;head.xRot=phase>=2?.12F:-.08F;body.xRot=phase>0?0:.015F*Mth.sin(age*.04F);}
             hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);

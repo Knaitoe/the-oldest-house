@@ -42,6 +42,14 @@ public final class WayOutTests {
                 h.assertTrue(l.getBlockState(b.offset(0,0,1)).getBlock() instanceof DoorBlock&&l.getBlockState(b.offset(WayOut.COTTAGE_DOOR)).getBlock() instanceof DoorBlock,"the door in from the hall, and the cottage door on the far side");
                 h.assertTrue(l.getBlockState(b.offset(0,-1,-6)).is(Blocks.GRASS_BLOCK)||l.getBlockState(b.offset(0,-1,-6)).is(Blocks.DIRT_PATH),"daylight and grass beyond the shed");
                 h.assertTrue(l.getEntitiesOfClass(Animal.class,WayOut.bounds(b)).size()>=12,"cows, sheep, pigs and chickens about the meadow");
+                // 0.4.201 (owner: "still too obviously recognizable as a house room, given the obvious nature of its artificial
+                // borders"): no rim, no wall of trees; the land rises into hills past where a reader can walk.
+                int barriers=0;for(var at:BlockPos.betweenClosed(b.offset(-WayOutRooms.WALK,0,WayOutRooms.WALK_FAR),b.offset(WayOutRooms.WALK,12,0)))if(l.getBlockState(at).is(Blocks.BARRIER))barriers++;
+                h.assertTrue(barriers==0,"no invisible wall anywhere a reader can walk: "+barriers);
+                int hill=WayOutRooms.height(WayOutRooms.WALK+40,-40);
+                h.assertTrue(hill>=4&&l.getBlockState(b.offset(WayOutRooms.WALK+40,hill-1,-40)).is(Blocks.GRASS_BLOCK)&&l.getBlockState(b.offset(0,WayOutRooms.height(0,WayOutRooms.WALK_FAR-40)-1,WayOutRooms.WALK_FAR-40)).is(Blocks.GRASS_BLOCK),"turf goes on past the walk, rising into hills: "+hill);
+                h.assertTrue(l.getBlockState(b.offset(WayOutRooms.BARN_X,3,10)).is(Blocks.SPRUCE_PLANKS)&&l.getBlockState(b.offset(0,3,WayOutRooms.BARN_BACK)).is(Blocks.SPRUCE_PLANKS)&&l.getBlockState(b.offset(0,16,10)).is(Blocks.SPRUCE_SLAB),"the barn walls and roofs over the hall copied behind the door");
+                h.assertTrue(!WayOut.beyond(0,-40)&&!WayOut.beyond(-30,20)&&WayOut.beyond(WayOutRooms.WALK+1,-40)&&WayOut.beyond(0,WayOutRooms.WALK_FAR-1)&&WayOut.beyond(20,WayOutRooms.WALK_BACK+1),"walking out towards the hills is one more way it ends");
                 h.assertTrue(SceneClock.at(f.origin,b.offset(0,0,-20),HouseDimensions.OUTSIDE)==12&&SceneClock.time(12,0,0)==SceneClock.time(12,9999,123456),"a fine morning, and the sun never moves");
                 // Dealt only to a reader who has been in the House long enough to want out.
                 h.assertTrue(!WayOut.canDeal(f.data(),p.getUUID()),"not to a newcomer");

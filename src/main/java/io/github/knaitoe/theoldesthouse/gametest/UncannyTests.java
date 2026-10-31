@@ -187,9 +187,19 @@ public final class UncannyTests {
     /** 0.4.201: at the parents' door the figure reaches for the knob. Left open, it goes in: the fail state, blood on the
      *  reader's screen, the parents dead in their red beds and the reader free to go and see them. */
     @GameTest(template="empty",batch="uncanny_parents_door201",timeoutTicks=900) public static void theFigureReachingAnOpenParentsDoorKillsThemAndFailsTheNight(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
-        var place=LabyrinthPlace.MISSING_SLEEP;var b=f.base(place);var l=f.level(place);f.source(p,place);click(f,p,place,UncannyRooms.BED_AT);
-        var own=f.own(p,place);var doll=UncannyStories.actor(p,own,"CastDoll");
-        h.assertTrue(SplitFeedNight.doorOpen(l,b),"their door stands open as the night begins");
+        var place=LabyrinthPlace.MISSING_SLEEP;var b=f.base(place);var l=f.level(place);f.source(p,place);
+        // From their bed, as the reader comes up: how tired they are, that the reader should go to bed, and to leave the door open.
+        f.at(p,place,1.5,5,-16.5);var own=step(f,p,place);
+        h.assertTrue(SplitFeedNight.greeted(own)==1,"the parents speak as soon as the reader is near enough to hear them");
+        own=step(f,p,place);h.assertTrue(SplitFeedNight.greeted(own)==1,"a line at a time, a few seconds apart");
+        for(int i=0;i<3;i++){own.putInt("UncannyAge",own.getInt("UncannyAge")+SplitFeedNight.GREET_GAP);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);}
+        h.assertTrue(SplitFeedNight.greeted(own)==4&&SplitFeedNight.greeting(3).contains("door open"),"all four lines, the last asking for their door open");
+        own.putInt("UncannyAge",own.getInt("UncannyAge")+SplitFeedNight.GREET_GAP*3);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
+        h.assertTrue(SplitFeedNight.greeted(own)==4,"and only once");
+        // Shut before the sleep, it is open again on waking.
+        UncannyStories.setDoor(l,b.offset(UncannyRooms.PARENTS_DOOR),false);click(f,p,place,UncannyRooms.BED_AT);
+        own=f.own(p,place);var doll=UncannyStories.actor(p,own,"CastDoll");
+        h.assertTrue(SplitFeedNight.doorOpen(l,b)&&!own.getBoolean("BlockedDoor"),"their door stands open as the night begins, even if the reader shut it before sleeping");
         own.putInt("UncannyAge",own.getInt("SecondSleepAge")+SplitFeedNight.WAKE_BEAT+40);own.putInt("DollLeg201",2);own.putInt("AtDoorAge201",own.getInt("UncannyAge")-SplitFeedNight.KNOB_TICKS+10);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
         var standing=p.position();own=step(f,p,place);
         h.assertTrue(doll.gesture()==2&&!UncannyStories.failed(own),"at the door the hand goes to the knob first");
