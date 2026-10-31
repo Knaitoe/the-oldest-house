@@ -11,28 +11,11 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Once-only repair of ordinary hall fabric and retired side doors. Originals are retained. */
+/** The ordinary halls' fabric and the retired side doors, settled as a hall is built. */
 public final class DomesticHallUpgrade {
-    public static final String STATE="domestic_halls_0430";
     private static final Set<String> RETIRED=Set.of("straight_hall/west_near","straight_hall/east_middle","straight_hall/west_far",
             "bent_hall/east_near","bent_hall/bend","bent_hall/west_far","cross_hall/west_near","cross_hall/east_far");
     private DomesticHallUpgrade(){}
-    public static void tick(MinecraftServer server){
-        var l=server.getLevel(HouseDimensions.INTERIOR);var origin=HouseSavedData.get(server).houseOrigin();
-        if(l==null||origin==null||l.getGameTime()%20!=0||LabyrinthBuilder.isCarving())return;
-        var data=LabyrinthData.get(server);if(!origin.equals(data.builtOrigin())||data.builtVersion()<17)return;
-        var state=data.state(STATE);String prefix=origin.asLong()+":";
-        for(var place:List.of(LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL)){
-            if(state.getBoolean(prefix+place.id()))continue;
-            var base=LabyrinthPlaces.base(origin,place);var bounds=LabyrinthPlaces.placeBounds(origin,place);
-            if(base==null||bounds==null||l.players().stream().anyMatch(p->bounds.isInside(p.blockPosition())))continue;
-            // A Stay order can leave a real pet here after every explorer departs.
-            // Do not close an old door around that resident's living collision body.
-            if(!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(bounds.minX(),bounds.minY(),bounds.minZ(),bounds.maxX()+1,bounds.maxY()+1,bounds.maxZ()+1),e->e.isAlive()).isEmpty())continue;
-            if(data.door(place.entryDoorId())==null)continue;
-            apply(l,base,place);state.putBoolean(prefix+place.id(),true);data.setState(STATE,state);
-        }
-    }
     public static void apply(ServerLevel l,BlockPos base,LabyrinthPlace place){
         if(!LabyrinthHalls.isHall(place))return;
         var data=LabyrinthData.get(l.getServer());var floor=LabyrinthHalls.floor(place);int height=LabyrinthHalls.height(place),f=LabyrinthBuilder.flags();

@@ -55,14 +55,10 @@ public final class LabyrinthBuilder {
     private static Deque<LabyrinthPlace> pending;
     @Nullable
     private static BlockPos pendingOrigin;
-    private static final Set<LabyrinthPlace> domesticUpgrades = new HashSet<>();
-    private static final Set<LabyrinthPlace> architecturalUpgrades = new HashSet<>();
     /**
      * Standing scenes the owner asked to have authored again (0.4.50: the elk carcasses' two stages).
      * Carved last, once nobody is in the old one or can see it; until then the old scene is not dealt.
      */
-    private static final Set<LabyrinthPlace> rebuildUpgrades = new HashSet<>();
-    private static boolean legacyDomesticUpgrade;
     private static boolean fixtureDrain;
     /** Places queued for construction (not upgrades of standing places), built on demand by depth. */
     private static final Set<LabyrinthPlace> structuralPending = new HashSet<>();
@@ -74,9 +70,12 @@ public final class LabyrinthBuilder {
     /** Whether the current construction is depth-gated (always in play; GameTests opt in). */
     private static boolean gatingActive;
     /** Whether the running queue extends an existing world rather than carving a new one. */
-    private static boolean upgrading;
     /** Saved construction progress, so a restart never rebuilds a place that already stands. */
     public static final String PROGRESS = "labyrinth_carve_0440";
+    /** Every place carved for this manor, kept across layout bumps so a saved layout gains only what it lacks. */
+    public static final String CARVED = "labyrinth_places";
+    /** Whether the carve on is adding to a layout saved by an earlier version. */
+    private static boolean appending;
     /** Places are built this many crossings ahead of the deepest explorer. */
     public static final int LEAD = 3;
     public static final List<LabyrinthPlace> CORE = List.of(LabyrinthPlace.JUNCTION, LabyrinthPlace.GRAY_CORRIDOR,
@@ -124,9 +123,9 @@ public final class LabyrinthBuilder {
         if (!gatingActive) return false;
         LabyrinthData data = LabyrinthData.get(server);
         for (LabyrinthPlace place : CORE) {
-            // In an upgraded world the standing core is reachable already; a core room this layout adds
-            // (the stone gallery) is carved in the queue without holding every existing door shut.
-            if (upgrading && structuralPending.contains(place)) continue;
+            // In a saved layout the standing core is reachable already; a core room this layout adds
+            // is carved in the queue without holding every existing door shut.
+            if (appending && structuralPending.contains(place)) continue;
             if (!isPlaceReady(data, place)) return false;
         }
         return true;
@@ -138,7 +137,7 @@ public final class LabyrinthBuilder {
 
     /** A place can be dealt and entered unless it is still queued for construction. */
     public static boolean isPlaceReady(LabyrinthData data, LabyrinthPlace place) {
-        return place.slot() < 0 || pending == null || !rebuildUpgrades.contains(place) && (!gatingActive || !structuralPending.contains(place));
+        return place.slot() < 0 || pending == null || !gatingActive || !structuralPending.contains(place);
     }
 
     /** The route depth at which explorers can first be dealt a place. */
@@ -180,6 +179,10 @@ public final class LabyrinthBuilder {
     private static void recordBuilt(MinecraftServer server, LabyrinthPlace place) {
         if (!structuralPending.remove(place) || pendingOrigin == null) return;
         LabyrinthData data = LabyrinthData.get(server);
+        var carved = data.state(CARVED);
+        if (carved.getLong("Origin") != pendingOrigin.asLong()) { carved = new net.minecraft.nbt.CompoundTag(); carved.putLong("Origin", pendingOrigin.asLong()); }
+        var places = carved.getList("Places", net.minecraft.nbt.Tag.TAG_STRING);
+        if (places.stream().noneMatch(t -> t.getAsString().equals(place.id()))) { places.add(net.minecraft.nbt.StringTag.valueOf(place.id())); carved.put("Places", places); data.setState(CARVED, carved); }
         var progress = data.state(PROGRESS);
         if (progress.getLong("Origin") != pendingOrigin.asLong() || progress.getInt("Version") > VERSION) {
             progress = new net.minecraft.nbt.CompoundTag();
@@ -210,15 +213,13 @@ public final class LabyrinthBuilder {
         releasePreparation();
         preparing = null;
         geometry = null;
-        domesticUpgrades.clear();
-        architecturalUpgrades.clear();
-        rebuildUpgrades.clear();
         structuralPending.clear();
         active = true;
         gatingActive = gated(server);
         LabyrinthData data = LabyrinthData.get(server);
         if (force) {
             data.setState(PROGRESS, new net.minecraft.nbt.CompoundTag());
+            data.setState(CARVED, new net.minecraft.nbt.CompoundTag());
             demandAll = true;
         }
         var progress = data.state(PROGRESS);
@@ -227,60 +228,23 @@ public final class LabyrinthBuilder {
         // with their contents and player edits, and are not carved again.
         if (progress.getLong("Origin") == origin.asLong() && progress.getInt("Version") <= VERSION)
             for (var tag : progress.getList("Built", net.minecraft.nbt.Tag.TAG_STRING)) alreadyBuilt.add(tag.getAsString());
-        if(!force&&!LakeLandscape.upgradeWorld(server,origin)){pending=null;pendingOrigin=null;return false;}
-        if(!force&&!OutdoorRelocation.upgrade(server,origin)){pending=null;pendingOrigin=null;return false;}
-        legacyDomesticUpgrade=!force && data.builtVersion()<17 && origin.equals(data.builtOrigin());
-        // Older structural upgrades keep their scope. 0.4.17 dresses existing halls in place.
-        boolean extend = !force && data.builtVersion() >= 10 && data.builtVersion() < VERSION && origin.equals(data.builtOrigin());
-        upgrading = extend;
+        // A layout saved by an earlier version is not upgraded in place: the mod ships new builds only. It gains
+        // the places it lacks and nothing standing is carved or dressed again. Standing places are known from the
+        // carve record and, for layouts saved before that record existed, from the entry door each one registered.
+        var carved = data.state(CARVED);
+        Set<String> standing = new HashSet<>();
+        if (!force && carved.getLong("Origin") == origin.asLong())
+            for (var tag : carved.getList("Places", net.minecraft.nbt.Tag.TAG_STRING)) standing.add(tag.getAsString());
+        appending = !force && data.builtVersion() > 0 && origin.equals(data.builtOrigin());
         List<LabyrinthPlace> queue = new ArrayList<>();
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            boolean structural = !extend || (data.builtVersion() < 13 && place.slot() >= 23)
-                    || (data.builtVersion() < 14 && place.slot() >= 27)
-                    || (data.builtVersion() < 15 && place.slot() >= 28)
-                    || (data.builtVersion() < 16 && place.slot() >= 30)
-                    || (data.builtVersion() < 18 && place.slot() >= 31)
-                    || (data.builtVersion() < 20 && place.slot() >= 32)
-                    || (data.builtVersion() < 21 && place.slot() >= 33)
-                    || (data.builtVersion() < 22 && place.slot() >= 39)
-                    || (data.builtVersion() < 30 && place.slot() >= 40)
-                    || (data.builtVersion() < 31 && place.slot() >= 42)
-                    || (data.builtVersion() < 32 && place.slot() >= 45)
-                    || (data.builtVersion() < 33 && place.slot() >= 69)
-                    || (data.builtVersion() < 34 && place.slot() >= 72)
-                    || (data.builtVersion() < 41 && HazardVariety.added(place))
-                    || (data.builtVersion() < 42 && place == LabyrinthPlace.THREE_FINGERS)
-                    || (data.builtVersion() < 43 && place == LabyrinthPlace.NIGHTCLUB)
-                    || (data.builtVersion() < LakeHouse.LAYOUT && (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY))
-                    || (data.builtVersion() < 45 && place == LabyrinthPlace.BORRASCA)
-                    || (data.builtVersion() < 47 && place == LabyrinthPlace.BACKSEAT)
-                    || (data.builtVersion() < 48 && place == LabyrinthPlace.SILO)
-                    || (data.builtVersion() < 49 && (place==LabyrinthPlace.READ_COATROOM||place==LabyrinthPlace.READ_PORCH))
-                    || (data.builtVersion() < 50 && HouseReadSites.added139(place))
-                    || (data.builtVersion() < 51 && place == LabyrinthPlace.DARE_IN_THE_DARK)
-                    || (data.builtVersion() < 52 && HallVariations.plain(place))
-                    || (data.builtVersion() < 53 && (place == LabyrinthPlace.VAULTED_HALL || place == LabyrinthPlace.CRUMBLED_HALL))
-                    || (data.builtVersion() < 54 && place == LabyrinthPlace.BORROWED_LIGHT)
-                    || (data.builtVersion() < 55 && PuzzleRooms.is(place) && place != LabyrinthPlace.BORROWED_LIGHT)
-                    || (data.builtVersion() < 56 && place == LabyrinthPlace.WAY_OUT)
-                    || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
-                    || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
-            boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
-            boolean architecture=VignetteArchitecture.applies(place);
-            if (structural && alreadyBuilt.contains(place.id())) continue;
-            if (!structural && extend && ElkUpgrade.rebuilds(place, data.builtVersion())) {
-                queue.add(place);
-                rebuildUpgrades.add(place);
-                continue;
-            }
-            if (place.slot() >= 0 && (structural || domestic || architecture)) {
-                queue.add(place);
-                if (structural) structuralPending.add(place);
-                else {if(architecture)architecturalUpgrades.add(place);else domesticUpgrades.add(place);}
-            }
+            if (place.slot() < 0 || alreadyBuilt.contains(place.id())) continue;
+            if (appending && (standing.contains(place.id()) || data.door(place.entryDoorId()) != null)) continue;
+            queue.add(place);
+            structuralPending.add(place);
         }
-        // Upgrades of standing places first, then construction in the order explorers can reach it.
-        queue.sort(Comparator.comparingInt((LabyrinthPlace p) -> rebuildUpgrades.contains(p) ? Integer.MAX_VALUE : structuralPending.contains(p) ? requiredDepth(p) : -1)
+        // Construction in the order explorers can reach it, the den first among equals.
+        queue.sort(Comparator.comparingInt(LabyrinthBuilder::requiredDepth)
                 .thenComparingInt(p -> p == LabyrinthPlace.MOTHER_DEN ? 0 : 1)
                 .thenComparingInt(LabyrinthPlace::slot));
         pending.addAll(queue);
@@ -291,8 +255,7 @@ public final class LabyrinthBuilder {
     /** What construction is on and what it waits for, for diagnostics. */
     public static String describePending() {
         if (pending == null) return "nothing pending";
-        return pending.size() + " pending, next " + pending.peek() + (geometry != null ? " (recorded)" : "") + (active ? "" : " (waiting)")
-                + (rebuildUpgrades.contains(pending.peek()) ? " (rebuild upgrade)" : "");
+        return pending.size() + " pending, next " + pending.peek() + (geometry != null ? " (recorded)" : "") + (active ? "" : " (waiting)");
     }
 
     /** True while construction is actually working, not while it waits for explorers to go deeper. */
@@ -302,21 +265,15 @@ public final class LabyrinthBuilder {
 
     /** One place per tick. */
     public static void tick(MinecraftServer server) {
-        DomesticHallUpgrade.tick(server);
         DomesticLives.tick(server);
         DomesticDisturbances.tick(server);
         DomesticContinuity.tick(server);
-        WallNotesRepairs.tick(server);
         UncannyEnvironmentRepairs.tick(server);
         UncannyPlaytestRepairs.tick(server);
         TunnelPassage.tick(server);
         UncannyAnatomyUpgrade.tick(server);
         VignetteInteriors.tick(server);
-        PlaytestScenery130.tick(server);
-        VignetteHandlingUpgrade.tick(server);
         io.github.knaitoe.theoldesthouse.house.RoomNotes.tick(server);
-        ScenePolish.tick(server);
-        SceneCraft.tick(server);
         if (pending == null || pendingOrigin == null) {
             return;
         }
@@ -332,15 +289,8 @@ public final class LabyrinthBuilder {
         }
         active = true;
         if (place != null && geometry != null) {
-            if(rebuildUpgrades.contains(place)){var level=server.getLevel(NovelRooms.dimension(place));if(level==null||!ElkUpgrade.vacant(level,LabyrinthPlaces.base(pendingOrigin,place),place,fixtureDrain)){active=false;return;}}
             if (!geometry.tick()) return;
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
-            // A scene carved again in place settles what its new ground displaced.
-            if (rebuildUpgrades.remove(place) && site != null) {
-                ElkUpgrade.settle(site, LabyrinthPlaces.base(pendingOrigin, place), place);
-                // The trailer's own furnishing and exterior passes dress the new carve, as they dress a fresh one.
-                if (place == LabyrinthPlace.GOATMAN || place == LabyrinthPlace.WHALE || place == LabyrinthPlace.DROWNED_TOWN) { VignetteArchitecture.forget(site, pendingOrigin, place); VignetteArchitecture.decorateOnce(site, pendingOrigin, place); }
-            }
             if (site != null) ScenePolish.polishOnce(site, pendingOrigin, place);
             if(site!=null){var dressing=SceneHuntReview.prepareFresh(site,pendingOrigin,place);if(dressing!=null){geometry=dressing;return;}}
             if (site != null) OnwardDoors.install(site, LabyrinthPlaces.base(pendingOrigin, place), place);
@@ -355,61 +305,29 @@ public final class LabyrinthBuilder {
         if (place != null && !prepared(server, place)) {
             return;
         }
-        if(place!=null&&HazardVariety.added(place)&&!architecturalUpgrades.contains(place)&&!domesticUpgrades.contains(place)){
+        if(place!=null&&HazardVariety.added(place)){
             BlockPos base=LabyrinthPlaces.base(pendingOrigin,place);geometry=BuildBlocks.record(interior,()->HazardMaps.build(interior,base,place));return;
         }
-        if(place!=null&&HallVariations.added(place)&&!architecturalUpgrades.contains(place)&&!domesticUpgrades.contains(place)) {
+        if(place!=null&&HallVariations.added(place)) {
             BlockPos base=LabyrinthPlaces.base(pendingOrigin,place);ScenePolish.forget(server,pendingOrigin,place);
             geometry=BuildBlocks.record(interior,()->{if(HallVariations.domestic(place))LabyrinthHalls.build(interior,base,place);else StoneHalls.build(interior,base,place);});
             return;
         }
-        if (place != null && (LiteraryRooms.isLiterary(place)||place==LabyrinthPlace.LAKE_HOUSE_EMPTY)
-                && !architecturalUpgrades.contains(place) && !domesticUpgrades.contains(place)) {
+        if (place != null && (LiteraryRooms.isLiterary(place)||place==LabyrinthPlace.LAKE_HOUSE_EMPTY)) {
             ServerLevel site = server.getLevel(NovelRooms.dimension(place));
             if (site != null) {
                 BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
-                // A saved world's old elk scene is only taken down once nobody is in it or can see it.
-                if (rebuildUpgrades.contains(place) && !ElkUpgrade.vacant(site, base, place, fixtureDrain)) { active = false; return; }
-                if(rebuildUpgrades.contains(place))ElkUpgrade.protectResidents(site,base,place);
                 ScenePolish.forget(server, pendingOrigin, place);
                 geometry = BuildBlocks.record(site, () -> {if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY)LakeHouse.buildEmpty(site,base);else LiteraryRooms.build(site, base, place);});
                 if (place == LabyrinthPlace.ELK_CARCASSES) TheOldestHouse.LOGGER.info("Recorded {}: {}", place.id(), geometry.describe());
                 return;
             }
         }
-        // 0.4.53: a saved world's old trailer is taken down only once nobody is in the woods or can see them, then carved again in slices.
-        if (place == LabyrinthPlace.GOATMAN && rebuildUpgrades.contains(place)) {
-            BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
-            if (!ElkUpgrade.vacant(interior, base, place, fixtureDrain)) { active = false; return; }
-            ElkUpgrade.protectResidents(interior,base,place);
-            ScenePolish.forget(server, pendingOrigin, place);
-            for (var e : interior.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, IndianLakeRooms.bounds(base, place),
-                    e -> e instanceof GoatmanChild || e instanceof net.minecraft.world.entity.Display.ItemDisplay d && d.getTags().contains(GoatmanWoods.PLATE))) e.discard();
-            GoatmanVignette.forgetRun(server);
-            geometry = BuildBlocks.record(interior, () -> GoatmanVignette.build(server, interior, base));
-            return;
-        }
-        // 0.4.66: the old institute likewise waits until nobody is inside or watching; every reader's letters and record stay theirs.
-        if (place == LabyrinthPlace.WHALE && rebuildUpgrades.contains(place)) {
-            BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
-            if (!ElkUpgrade.vacant(interior, base, place, fixtureDrain)) { active = false; return; }
-            ElkUpgrade.protectResidents(interior,base,place);
-            ScenePolish.forget(server, pendingOrigin, place);
-            WhaleInstitute.clearClocks(interior, base);
-            geometry = BuildBlocks.record(interior, () -> NovelRooms.build(server, interior, base, place));
-            return;
-        }
-        // 0.4.67: Proofrock is large enough that both a saved world's rebuild and a fresh carve go in slices. Before a
-        // rebuild the old town's finite containers go into saved custody; nobody may be inside or watching.
-        if (place == LabyrinthPlace.DROWNED_TOWN && !architecturalUpgrades.contains(place) && !domesticUpgrades.contains(place)) {
+        // 0.4.67: Proofrock is large enough that its carve goes in slices.
+        if (place == LabyrinthPlace.DROWNED_TOWN) {
             ServerLevel site = server.getLevel(HouseDimensions.OUTSIDE);
             if (site != null) {
                 BlockPos base = LabyrinthPlaces.base(pendingOrigin, place);
-                if (rebuildUpgrades.contains(place)) {
-                    if (!ElkUpgrade.vacant(site, base, place, fixtureDrain)) { active = false; return; }
-                    ElkUpgrade.protectResidents(site, base, place);
-                    TownCarry.capture(site, base);
-                }
                 ScenePolish.forget(server, pendingOrigin, place);
                 geometry = BuildBlocks.record(site, () -> DrownedTown.build(server, site, base));
                 return;
@@ -418,21 +336,11 @@ public final class LabyrinthBuilder {
         pending.poll();
         long started = System.nanoTime();
         if (place != null) {
-            if (architecturalUpgrades.remove(place)) {
-                ServerLevel site=server.getLevel(NovelRooms.dimension(place));
-                if(site!=null){if(LakeLandscape.isLake(place))LakeSettlement.decorateOnce(site,LabyrinthPlaces.base(pendingOrigin,place),place);VignetteArchitecture.decorateOnce(site,pendingOrigin,place);}
-            } else if (domesticUpgrades.remove(place)) {
-                if(legacyDomesticUpgrade) LabyrinthDomestic.upgrade(interior, pendingOrigin, place);
-                io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgrade(interior,pendingOrigin,place);
-                io.github.knaitoe.theoldesthouse.house.HouseFurnishings.reduceNotes(interior,pendingOrigin,place);
-            }
-            else {
-                build(server, interior, pendingOrigin, place);
-                ServerLevel site=server.getLevel(NovelRooms.dimension(place));
-                var dressing=site==null?null:SceneHuntReview.prepareFresh(site,pendingOrigin,place);
-                if(dressing!=null){pending.addFirst(place);geometry=dressing;return;}
-                recordBuilt(server, place);
-            }
+            build(server, interior, pendingOrigin, place);
+            ServerLevel site=server.getLevel(NovelRooms.dimension(place));
+            var dressing=site==null?null:SceneHuntReview.prepareFresh(site,pendingOrigin,place);
+            if(dressing!=null){pending.addFirst(place);geometry=dressing;return;}
+            recordBuilt(server, place);
             long millis = (System.nanoTime() - started) / 1_000_000L;
             if (millis > 100) TheOldestHouse.LOGGER.info("Carving {} took {} ms in one tick.", place.id(), millis);
         }
@@ -450,20 +358,10 @@ public final class LabyrinthBuilder {
             demandAll = false;
             active = true;
             structuralPending.clear();
-            MotherOfStrays.upgradeDen(interior,origin);
-            ServerLevel outside=server.getLevel(HouseDimensions.OUTSIDE);
-            if(outside!=null)BarnFarm.upgrade(outside,origin);
-            // Those finishing upgrades dress two scenes once more: finish them again.
-            ScenePolish.forget(server,origin,LabyrinthPlace.MOTHER_DEN);ScenePolish.polishOnce(interior,origin,LabyrinthPlace.MOTHER_DEN);
-            if(outside!=null){ScenePolish.forget(server,origin,LabyrinthPlace.BARN_WELL);ScenePolish.polishOnce(outside,origin,LabyrinthPlace.BARN_WELL);}
             FinaleArchitecture.retirePreparationShield(interior,origin);
-            io.github.knaitoe.theoldesthouse.house.HouseFurnishings.upgradeManor(interior,origin);
-            // WallNotesRepairs dresses the revealed approach after the hallway is vacant.
-            // Finishing an append must never rewrite the corridor around its waiting player.
+            // Finishing a carve must never rewrite the corridor around its waiting player.
             pending = null;
             pendingOrigin = null;
-            domesticUpgrades.clear();
-            architecturalUpgrades.clear();
             LabyrinthDoors.syncSealedDoors(server);
             TheOldestHouse.LOGGER.info("Carved the labyrinth around the manor, {} slot(s) above it (version {}).",
                     LabyrinthPlaces.slotsAbove(origin), VERSION);
@@ -497,8 +395,7 @@ public final class LabyrinthBuilder {
             if (!synchronous) return false;
             for (ChunkPos chunk : preparationChunks) level.getChunk(chunk.x, chunk.z);
         }
-        boolean upgrade = architecturalUpgrades.contains(place) || domesticUpgrades.contains(place);
-        if (!upgrade && prefills(place)) {
+        if (prefills(place)) {
             BoundingBox slot = LabyrinthPlaces.slotBounds(pendingOrigin, place);
             if (slot != null && !fillSlice(level, slot, synchronous)) {
                 return false;
@@ -603,9 +500,6 @@ public final class LabyrinthBuilder {
         preparing = null;
         pending = null;
         pendingOrigin = null;
-        rebuildUpgrades.clear();
-        domesticUpgrades.clear();
-        architecturalUpgrades.clear();
     }
 
     private static void build(MinecraftServer server, ServerLevel level, BlockPos origin, LabyrinthPlace place) {

@@ -72,9 +72,6 @@ import static io.github.knaitoe.theoldesthouse.house.RugFloorBlock.Tone.*;
  */
 public final class SceneCraft {
     public static final String STATE = "scene_craft_0446";
-    public static final String REPAIR_STATE = "scene_craft_repairs_0447";
-    private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.MAPPING_INTERIOR,
-            LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.GOATMAN);
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     // The Masque and Bly (0.4.105) are built whole by MasqueSuite and BlyManor, the Wheel, the Winchester house and the Barretts' house (0.4.121) by WheelHouse, WinchesterHouse and BarrettHome, and the house of Usher (0.4.181) by UsherHouse.
@@ -103,15 +100,12 @@ public final class SceneCraft {
         return LabyrinthData.get(server).state(STATE).getBoolean(key(origin, place));
     }
 
-    /** Composes a freshly polished scene, unless somebody is in it; the in-place pass finishes it later. */
+    /** Composes a freshly polished scene, unless somebody is in it. */
     public static void craftOnce(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
         if (!applies(place)) return;
         LabyrinthData data = LabyrinthData.get(level.getServer());
         CompoundTag done = data.state(STATE);
-        if (done.getBoolean(key(origin, place))) {
-            repairOnce(level, origin, place);
-            return;
-        }
+        if (done.getBoolean(key(origin, place))) return;
         BlockPos base = LabyrinthPlaces.base(origin, place);
         if (base == null) return;
         AABB area = area(base, place);
@@ -119,30 +113,9 @@ public final class SceneCraft {
         apply(level, base, place);
         done.putBoolean(key(origin, place), true);
         data.setState(STATE, done);
-        markRepaired(data, origin, place);
     }
 
-    private static void markRepaired(LabyrinthData data, BlockPos origin, LabyrinthPlace place) {
-        if (!REPAIR_PLACES.contains(place)) return;
-        CompoundTag repaired = data.state(REPAIR_STATE);
-        repaired.putBoolean(key(origin, place), true);
-        data.setState(REPAIR_STATE, repaired);
-    }
 
-    /** Late 0.4.46 structural fixes for scenes whose original composition was already saved. */
-    public static void repairOnce(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
-        if (!REPAIR_PLACES.contains(place)) return;
-        LabyrinthData data = LabyrinthData.get(level.getServer());
-        if (!done(level.getServer(), origin, place) || data.state(REPAIR_STATE).getBoolean(key(origin, place))) return;
-        BlockPos base = LabyrinthPlaces.base(origin, place);
-        if (base == null) return;
-        AABB area = area(base, place);
-        if (level.players().stream().anyMatch(p -> area.intersects(p.getBoundingBox())) || !loaded(level, area, base)) return;
-        SceneCraft craft = new SceneCraft(level, base, place);
-        if (craft.structureOccupied(area)) return;
-        craft.repairStructures();
-        markRepaired(data, origin, place);
-    }
 
     /** An explicit rebuild authors the room again, so it is composed again. */
     public static void forget(MinecraftServer server, BlockPos origin, LabyrinthPlace place) {
@@ -150,38 +123,8 @@ public final class SceneCraft {
         CompoundTag done = data.state(STATE);
         done.remove(key(origin, place));
         data.setState(STATE, done);
-        CompoundTag repaired = data.state(REPAIR_STATE);
-        repaired.remove(key(origin, place));
-        data.setState(REPAIR_STATE, repaired);
     }
 
-    /** Existing worlds: one polished, empty, loaded scene at a time. */
-    public static void tick(MinecraftServer server) {
-        if (server.getTickCount() % 40 != 23 || server instanceof net.minecraft.gametest.framework.GameTestServer
-                || LabyrinthBuilder.isCarving()) return;
-        BlockPos origin = HouseSavedData.get(server).houseOrigin();
-        if (origin == null) return;
-        LabyrinthData data = LabyrinthData.get(server);
-        if (!origin.equals(data.builtOrigin())) return;
-        CompoundTag done = data.state(STATE), polished = data.state(ScenePolish.STATE), repaired = data.state(REPAIR_STATE);
-        for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            boolean composed = done.getBoolean(key(origin, place));
-            if (!applies(place) || !polished.getBoolean(key(origin, place))
-                    || composed && (!REPAIR_PLACES.contains(place) || repaired.getBoolean(key(origin, place)))) continue;
-            if (data.door(place.entryDoorId()) == null || !LabyrinthBuilder.isPlaceReady(data, place)) continue;
-            ServerLevel level = server.getLevel(NovelRooms.dimension(place));
-            BlockPos base = LabyrinthPlaces.base(origin, place);
-            if (level == null || base == null) continue;
-            AABB area = area(base, place);
-            if (level.players().stream().anyMatch(p -> area.intersects(p.getBoundingBox()))) continue;
-            if (!loaded(level, area, base)) return;
-            long started = System.nanoTime();
-            if (composed && new SceneCraft(level, base, place).structureOccupied(area)) continue;
-            craftOnce(level, origin, place);
-            TheOldestHouse.LOGGER.info("{} {} in place ({} ms).", composed ? "Repaired" : "Composed", place.id(), (System.nanoTime() - started) / 1_000_000L);
-            return;
-        }
-    }
 
     private static AABB area(BlockPos base, LabyrinthPlace place) {
         BoundingBox r = place.room();
@@ -1625,36 +1568,7 @@ public final class SceneCraft {
         };
     }
 
-    /** Check living bodies in the structural work, not permanent cast safely beneath it. */
-    private boolean structureOccupied(AABB area) {
-        for (LivingEntity resident : l.getEntitiesOfClass(LivingEntity.class, area, LivingEntity::isAlive)) {
-            AABB body = resident.getBoundingBox();
-            for (Roof roof : repairRoofs())
-                if (body.intersects(new AABB(Vec3.atLowerCornerOf(p(roof.x0 - 1, roof.eaves - 1, roof.z0 - 1)),
-                        Vec3.atLowerCornerOf(p(roof.x1 + 2, roof.eaves + (roof.x1 - roof.x0) / 4 + 3, roof.z1 + 2))))) return true;
-            if (scene == LabyrinthPlace.GOATMAN) {
-                if (body.maxY > b.getY() + 4) return true;
-                for (int x = (int) Math.floor(body.minX) - b.getX(); x <= (int) Math.floor(body.maxX) - b.getX(); x++)
-                    for (int z = (int) Math.floor(body.minZ) - b.getZ(); z <= (int) Math.floor(body.maxZ) - b.getZ(); z++)
-                        if (x >= -22 && x <= 22 && z >= -81 && z <= -1 && !trail(x, z)) return true;
-            }
-        }
-        return false;
-    }
 
-    /** Repair only recognizable old structures; a finished roof or removed prop is left alone. */
-    private void repairStructures() {
-        for (Roof roof : repairRoofs()) {
-            boolean legacy = false;
-            for (int x = roof.x0 - 1; x <= roof.x1 + 1; x++) {
-                int y = roof.eaves + Math.min(x - roof.x0 + 1, roof.x1 + 1 - x) / 2;
-                for (int z = roof.z0 - 1; z <= roof.z1 + 1; z++)
-                    legacy |= at(x, y, z).is(Blocks.DARK_OAK_STAIRS) || at(x, y, z).is(Blocks.SPRUCE_STAIRS);
-            }
-            if (legacy) roof(roof.x0, roof.x1, roof.z0, roof.z1, roof.eaves, roof.slab, roof.boards, roof.ridge);
-        }
-        if (scene == LabyrinthPlace.GOATMAN && legacyThicket()) thicket();
-    }
 
     private boolean legacyThicket() {
         int mixed = 0, grid = 0;

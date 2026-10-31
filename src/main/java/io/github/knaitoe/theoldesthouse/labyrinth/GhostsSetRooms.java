@@ -102,7 +102,7 @@ public final class GhostsSetRooms {
         literary(l,b,LiteraryRooms.BOOTH,LiteraryPropBlock.Kind.RECEIVER,Direction.WEST);
         for(var at:new BlockPos[]{new BlockPos(-10,0,-13),new BlockPos(4,0,-25)})literary(l,b,at,LiteraryPropBlock.Kind.LIGHT_STAND,Direction.SOUTH);
         BarrettHome.build(l,b);
-        BuildBlocks.after(l,()->{var data=LabyrinthData.get(l.getServer());GhostsSet.markBuilt(data,b);GhostsSetDressing.markBuilt(data,b);GhostsSetFinish.markBuilt(l,b);});
+        BuildBlocks.after(l,()->{var data=LabyrinthData.get(l.getServer());GhostsSet.markBuilt(data,b);});
     }
     public static net.minecraft.world.level.block.state.BlockState tableState(int x,int z){
         if(x==0&&z==-20)return GhostsSetBlock.of(BOLTS,Direction.NORTH);

@@ -77,7 +77,7 @@ public final class GhostsSet {
     private GhostsSet() {}
     public static boolean built(LabyrinthData d,BlockPos b) { return d.state(STATE).getBoolean(Long.toString(b.asLong())); }
     public static void markBuilt(LabyrinthData d,BlockPos b) {var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);t.remove("Repair_"+b.asLong());d.setState(STATE,t);}
-    public static void clearAll() { REPAIRS.clear();REPAIR_CELLS.clear();GhostsSetDressing.clear(); }
+    public static void clearAll() { REPAIRS.clear();REPAIR_CELLS.clear(); }
     private static int day(CompoundTag own) { return Math.max(1,Math.min(DAYS,own.getInt("FilmDay"))); }
     public static void arrive(ServerPlayer p,CompoundTag own) {
         if(own.getBoolean("Completed")||own.getBoolean("Ready")&&!own.getBoolean("Filming0485"))return;

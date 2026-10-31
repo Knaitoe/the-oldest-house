@@ -14,12 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /** Recognized ward fixtures only: an in-place material pass, with exact container/source custody. */
-@EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class WhaleHospital {
     public static final String STATE="whale_hospital_0470";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
@@ -28,15 +24,7 @@ public final class WhaleHospital {
     public static void fresh(ServerLevel l,BlockPos origin){var b=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);BuildBlocks.after(l,()->{refit(l,b,false);PlaytestScenes0488.repair(l,b,LabyrinthPlace.WHALE,false);});}
     static void freshBase(ServerLevel l,BlockPos b){BuildBlocks.after(l,()->{refit(l,b,false);PlaytestScenes0488.repair(l,b,LabyrinthPlace.WHALE,false);});}
     public static void forget(net.minecraft.server.MinecraftServer s,BlockPos origin){var d=LabyrinthData.get(s);var state=d.state(STATE);state.remove(key(LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE)));d.setState(STATE,state);}
-    public static boolean apply(ServerLevel l,BlockPos b){return refit(l,b,true)&&orientAtticCabinets(l,b);}
     private static boolean atticCabinet(int x,int y,int z){return z==-27&&(y==6&&(x==-12||x==-11)||y==7&&x==-12);}
-    private static boolean orientAtticCabinets(ServerLevel l,BlockPos b){
-        var d=LabyrinthData.get(l.getServer());var saved=d.state(STATE);String key="AtticCabinets131_"+b.asLong();if(saved.getBoolean(key))return true;
-        var cells=java.util.List.of(b.offset(-12,6,-27),b.offset(-11,6,-27),b.offset(-12,7,-27));
-        for(var at:cells){if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;if(l.players().stream().anyMatch(p->new AABB(at).inflate(24).intersects(p.getCamera().getBoundingBox())))return false;}
-        for(var at:cells){var state=l.getBlockState(at);if(state.is(NovelRegistry.WARD_CABINET.get())&&state.getValue(InstituteCabinetBlock.FACING)==Direction.SOUTH)l.setBlock(at,state.setValue(InstituteCabinetBlock.FACING,Direction.NORTH),F);}
-        saved.putBoolean(key,true);d.setState(STATE,saved);return true;
-    }
     private static boolean refit(ServerLevel l,BlockPos b,boolean guarded){
         var d=LabyrinthData.get(l.getServer());var all=d.state(STATE);String key=key(b);var saved=all.getCompound(key);if(guarded&&saved.getBoolean("Done"))return true;
         var area=new AABB(Vec3.atLowerCornerOf(b.offset(-15,-1,-34)),Vec3.atLowerCornerOf(b.offset(16,12,2)));
@@ -117,5 +105,4 @@ public final class WhaleHospital {
     private static BlockState paint(int x,int y,int z){var kind=y<3&&(Math.abs(x)>=12||z<=-31)&&Math.floorMod(x*7+z,9)<3?InstituteFixtureBlock.Kind.DAMP:Math.floorMod(x*11+z*7+y/2,7)<2?InstituteFixtureBlock.Kind.PEEL:InstituteFixtureBlock.Kind.PAINT;return InstituteFixtureBlock.of(kind);}
     private static BlockState stairs(BlockState s){return NovelRegistry.WARD_STAIRS.get().defaultBlockState().setValue(StairBlock.FACING,s.getValue(StairBlock.FACING)).setValue(StairBlock.HALF,s.getValue(StairBlock.HALF)).setValue(StairBlock.SHAPE,s.getValue(StairBlock.SHAPE)).setValue(StairBlock.WATERLOGGED,s.getValue(StairBlock.WATERLOGGED));}
     private static BlockState rail(BlockState s){var next=NovelRegistry.WARD_RAIL.get().defaultBlockState();for(var p:new BooleanProperty[]{FenceBlock.NORTH,FenceBlock.SOUTH,FenceBlock.EAST,FenceBlock.WEST,FenceBlock.WATERLOGGED})next=next.setValue(p,s.getValue(p));return next;}
-    @SubscribeEvent public static void tick(ServerTickEvent.Post e){var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=27||LabyrinthBuilder.isCarving())return;var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;var d=LabyrinthData.get(s);var l=s.getLevel(HouseDimensions.INTERIOR);if(l!=null&&d.builtVersion()>=39&&LabyrinthBuilder.isPlaceReady(d,LabyrinthPlace.WHALE)){var base=LabyrinthPlaces.base(origin,LabyrinthPlace.WHALE);if(apply(l,base))WhaleFinishing.repair(l,base);}}
 }

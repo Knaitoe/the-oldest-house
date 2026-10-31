@@ -59,16 +59,13 @@ public final class CaverTests {
     }
     private static Fixture work,journals,escape,cleanup,upgrade,route,breath,line,repair,air,crawls;
     @AfterBatch(batch="caver_air") public static void cleanAir(ServerLevel l){if(air!=null){air.close();air=null;}}
-    @AfterBatch(batch="caver_crawls") public static void cleanCrawls(ServerLevel l){if(crawls!=null){crawls.close();crawls=null;}}
     @AfterBatch(batch="caver_route") public static void cleanRoute(ServerLevel l){if(route!=null){route.close();route=null;}}
     @AfterBatch(batch="caver_breath") public static void cleanBreath(ServerLevel l){if(breath!=null){breath.close();breath=null;}}
     @AfterBatch(batch="caver_line") public static void cleanLine(ServerLevel l){if(line!=null){line.close();line=null;}}
-    @AfterBatch(batch="caver_repair") public static void cleanRepair(ServerLevel l){if(repair!=null){repair.close();repair=null;}}
     @AfterBatch(batch="caver_work") public static void cleanWork(ServerLevel l){if(work!=null){work.close();work=null;}}
     @AfterBatch(batch="caver_journals") public static void cleanJournals(ServerLevel l){if(journals!=null){journals.close();journals=null;}}
     @AfterBatch(batch="caver_escape") public static void cleanEscape(ServerLevel l){if(escape!=null){escape.close();escape=null;}}
     @AfterBatch(batch="caver_cleanup") public static void cleanCleanup(ServerLevel l){if(cleanup!=null){cleanup.close();cleanup=null;}}
-    @AfterBatch(batch="caver_upgrade") public static void cleanUpgrade(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
     @GameTest(template="empty") public static void caveAppendsAndFitsWithoutReinterpretingSavedSlots(GameTestHelper h){
         for(int y:new int[]{65,80,150,250}){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.TED_CAVER);var slot=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.TED_CAVER);
             h.assertTrue(slot.isInside(b.offset(-9,-4,-60))&&slot.isInside(b.offset(9,8,0)),"the low cave stays inside its native slot at manor height "+y);}
@@ -185,18 +182,6 @@ public final class CaverTests {
             p.hurt(p.damageSources().genericKill(),Float.MAX_VALUE);h.assertTrue(!p.isAlive()&&!CaverVignette.crawling(p)&&p.getForcedPose()==null,"an actual native death clears the transient pose");
             var after=CaverVignette.personal(f.data(),p.getUUID());h.assertTrue(!after.getBoolean("Pursuit")&&after.getInt("ReturnCrawl")==0&&!after.getBoolean("Escaped")&&CaverVignette.journal(f.data(),p.getUUID()).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()==7,"dying cannot turn a later arrival into an escape or erase the written observations");h.succeed();});
     }
-    @GameTest(template="empty",batch="caver_upgrade",timeoutTicks=100)
-    public static void oldLayoutAppendsCaveWithoutErasingFurnitureActorsCachesOrEvidence(GameTestHelper h){
-        upgrade=new Fixture(h,32000);var f=upgrade;var d=f.data();var p=f.player();
-        BlockPos old=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HARRIGAN).offset(3,0,-4);f.l.setBlock(old,Blocks.BARREL.defaultBlockState(),3);var cache=(BarrelBlockEntity)f.l.getBlockEntity(old);cache.setItem(4,new ItemStack(Items.DIAMOND,3));
-        var read=new CompoundTag();read.putBoolean("ReadingFinished",true);d.setState(HarriganVignette.ID,read);
-        var random=new CompoundTag();random.putUUID("SavedRound",UUID.randomUUID());d.setState(GoatmanVignette.ID,random);
-        WitnessAccount.resolve(d,p.getUUID(),WitnessAccount.Story.HARRIGAN,"kept_phone");var paper=new CompoundTag();paper.putString("Original","kept");d.setState(HouseMarginalia.ID,paper);
-        d.setState(CaverVignette.ID,new CompoundTag());d.setBuilt(19,f.origin);
-        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.l.getServer()),"the existing version-19 world begins an append upgrade");LabyrinthBuilder.finishGameTest(f.l.getServer());
-        h.assertTrue(d.builtVersion()==LabyrinthBuilder.VERSION&&d.door(LabyrinthPlace.TED_CAVER.entryDoorId())!=null&&f.l.getBlockState(f.b.offset(CaverCave.APERTURE)).is(LabyrinthRegistry.CAVE_RUBBLE.get()),"the new physical cave and its return door are appended");
-        h.assertTrue(f.l.getBlockEntity(old)==cache&&cache.getItem(0).isEmpty()&&cache.getItem(4).getCount()==3&&read.equals(d.state(HarriganVignette.ID))&&random.equals(d.state(GoatmanVignette.ID))&&paper.equals(d.state(HouseMarginalia.ID))&&WitnessAccount.has(d,p.getUUID(),WitnessAccount.Story.HARRIGAN),"old storage identity, finite cache, reading, run and personal evidence remain");h.succeed();
-    }
 
     static final double CROUCH=1.49,CRAWL=.59;
     /** Every cell a crouching reader's body fits on real support, reached on foot from {@code start}: steps up one, drops up to three. */
@@ -304,41 +289,6 @@ public final class CaverTests {
         f.l.setBlock(f.b.offset(CaverCave.APERTURE),Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState(),2);
         for(int i=1;i<CaverCave.RUBBLE;i++)f.l.setBlock(f.b.offset(CaverCave.rubbleCell(i)),air,2);
     }
-    @GameTest(template="empty",batch="caver_repair",timeoutTicks=300)
-    public static void anOlderCaveIsReshapedOnceKeepingWorkAndTorchesAndWaitingForCamerasAndBodies(GameTestHelper h){
-        repair=new Fixture(h,34300);var f=repair;
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.deepLoaded(),"wait for native chunks and entity sections in the deep cave")).thenExecute(()->{
-            legacy(f);var d=f.data();var state=d.state(CaverVignette.ID);state.putInt("Work",12);d.setState(CaverVignette.ID,state);
-            var done=d.state(CaverRedesign.STATE);done.remove(Long.toString(f.b.asLong()));d.setState(CaverRedesign.STATE,done);
-            var marked=d.state(CaverRedesign.MARKS);marked.remove(Long.toString(f.b.asLong()));d.setState(CaverRedesign.MARKS,marked);var mark=f.b.offset(CaverCave.MARK);
-            var crawled=d.state(CaverRedesign.CRAWLS);crawled.remove(Long.toString(f.b.asLong()));d.setState(CaverRedesign.CRAWLS,crawled);
-            h.assertTrue(reachable(f,f.b.offset(0,-3,-36)).stream().anyMatch(at->behindStone(f,at)),"the older cave really could be walked round its stone");
-            var p=f.player();var torch=f.b.offset(3,-3,-44);f.l.setBlock(torch,Blocks.TORCH.defaultBlockState(),3);
-            var placed=d.state(CaverVignette.ID);var torches=placed.getCompound("Torches");torches.putUUID(Long.toString(torch.asLong()),p.getUUID());placed.put("Torches",torches);d.setState(CaverVignette.ID,placed);
-            f.at(p,.5,-3,-40.5);
-            h.assertTrue(!CaverRedesign.repair(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&f.l.getBlockState(f.b.offset(4,-2,-54)).isAir()&&f.l.getBlockState(mark).is(Blocks.CHISELED_DEEPSLATE),"a reader in the deep cave sees nothing change");
-            f.at(p,.5,0,-3.5);var stand=new ArmorStand(f.l,f.b.getX()+4.5,f.b.getY()-3,f.b.getZ()-54.5);f.l.addFreshEntity(stand);
-            h.assertTrue(!CaverRedesign.repair(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&f.l.getBlockState(f.b.offset(4,-2,-54)).isAir()&&f.l.getBlockState(f.b.offset(3,-3,-45)).isAir(),"nothing changes, anywhere, while new rock would close through a body in the chamber");
-            stand.discard();
-            h.assertTrue(CaverRedesign.repair(f.l,f.b)&&f.l.getBlockState(mark).is(LabyrinthRegistry.CAVE_MARKS.get())&&CaverRedesign.marked(f.data(),f.b),"the reshaping finishes once the chamber is clear and unwatched, and the dressed mark becomes marked rock");
-            var barrel=(BarrelBlockEntity)f.l.getBlockEntity(f.b.offset(CaverCave.CACHE));
-            h.assertTrue(!f.l.getBlockState(torch).isAir()&&!f.l.getBlockState(torch).is(Blocks.TORCH)&&barrel.getItem(2).is(Items.TORCH)&&barrel.getItem(2).getCount()==7&&CaverVignette.torchOwner(f.data(),torch)==null,"a torch standing where rock returns goes back to the camp barrel");
-            h.assertTrue(f.l.getBlockState(f.b.offset(4,-2,-54)).is(Blocks.TUFF_SLAB)&&!f.l.getBlockState(f.b.offset(4,-1,-54)).isAir()&&f.l.getBlockState(f.b.offset(5,-3,-54)).is(Blocks.LIGHT)&&!f.l.getBlockState(f.b.offset(5,1,-52)).is(Blocks.LIGHT),"the chamber gets its low ceiling and keeps a faint light");
-            h.assertTrue(!f.l.getBlockState(f.b.offset(4,-1,-46)).isAir()&&!f.l.getBlockState(f.b.offset(3,-3,-45)).isAir()&&!f.l.getBlockState(f.b.offset(4,-1,-43)).isAir(),"the passage and the bowl's back close round the stone");
-            h.assertTrue(f.l.getBlockState(f.b.offset(CaverCave.rubbleCell(0))).isAir()&&f.l.getBlockState(f.b.offset(CaverCave.rubbleCell(1))).isAir()&&CaverCave.isRubble(f.l.getBlockState(f.b.offset(CaverCave.rubbleCell(2))))&&CaverCave.front(f.l,f.b)==2&&f.data().state(CaverVignette.ID).getInt("Work")==12,"saved strokes keep the two blocks they had earned; the rest of the crack is packed");
-            h.assertTrue(reachable(f,f.b.offset(0,-3,-36)).stream().noneMatch(at->behindStone(f,at)),"after the reshaping the stone is the only way on");
-            f.reload();h.assertTrue(CaverRedesign.done(f.data(),f.b)&&CaverRedesign.repair(f.l,f.b),"the saved checkpoint survives reload and never repeats");
-            // An older cave that had already been opened stays open, with its work counted as complete.
-            var open=f.data().state(CaverVignette.ID);open.putInt("Work",24);f.data().setState(CaverVignette.ID,open);var again=f.data().state(CaverRedesign.STATE);again.remove(Long.toString(f.b.asLong()));f.data().setState(CaverRedesign.STATE,again);
-            for(int i=0;i<CaverCave.RUBBLE;i++)f.l.setBlock(f.b.offset(CaverCave.rubbleCell(i)),Blocks.AIR.defaultBlockState(),2);
-            h.assertTrue(CaverRedesign.repair(f.l,f.b)&&CaverCave.front(f.l,f.b)<0&&f.data().state(CaverVignette.ID).getInt("Work")==CaverVignette.STROKES,"an already opened crack is never packed again");
-            // A cave reshaped by 0.4.71 still has the dressed mark: it alone changes, once, and only unwatched.
-            f.l.setBlock(mark,Blocks.CHISELED_DEEPSLATE.defaultBlockState(),2);var again2=f.data().state(CaverRedesign.MARKS);again2.remove(Long.toString(f.b.asLong()));f.data().setState(CaverRedesign.MARKS,again2);
-            f.at(p,-2.5,-3,-39.5);h.assertTrue(!CaverRedesign.marks(f.l,f.b)&&f.l.getBlockState(mark).is(Blocks.CHISELED_DEEPSLATE),"the mark does not change while a reader can see it");
-            f.at(p,.5,0,-3.5);h.assertTrue(CaverRedesign.marks(f.l,f.b)&&f.l.getBlockState(mark).is(LabyrinthRegistry.CAVE_MARKS.get())&&CaverCave.isMark(f.l.getBlockState(mark)),"unwatched, the dressed mark becomes marked rock");
-            f.reload();h.assertTrue(CaverRedesign.marked(f.data(),f.b),"its checkpoint survives reload");
-        }).thenSucceed();
-    }
 
     @GameTest(template="empty",batch="caver_air",timeoutTicks=260)
     public static void badAirDrainsOnTheInBreathTheBellsHoldItAndChokingBeforeABlackoutWakesTheReaderWhereTheyLastHadAir(GameTestHelper h){
@@ -380,30 +330,5 @@ public final class CaverTests {
             h.assertTrue(written.size()==1&&written.get(0).text().equals(io.github.knaitoe.theoldesthouse.journal.CoAuthor.BLANK),"coming round, the reader's journal has something in it they did not write: "+written);
             io.github.knaitoe.theoldesthouse.journal.CoAuthor.certain(p.getUUID(),false);});
         h.runAfterDelay(200,()->{h.assertTrue(f.own(who[0]).getInt("Blackout")==0&&WitnessAccount.count(f.data(),who[0].getUUID())==0,"the blackout ends and confers nothing");h.succeed();});
-    }
-    @GameTest(template="empty",batch="caver_crawls",timeoutTicks=300)
-    public static void aCaveCarvedBy071GetsBothWindingCrawlsOnceKeepingTorchesAndWaitingForCamerasAndBodies(GameTestHelper h){
-        crawls=new Fixture(h,34900);var f=crawls;f.open();
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.deepLoaded(),"wait for native chunks and entity sections in the deep cave")).thenExecute(()->{
-            legacy71(f);CaverCave.stone(f.l,f.b,true);var d=f.data();var key=Long.toString(f.b.asLong());
-            var cs=d.state(CaverRedesign.CRAWLS);cs.remove(key);d.setState(CaverRedesign.CRAWLS,cs);
-            var mouth=f.b.offset(0,-3,-22);var straight=steps(f,mouth,CRAWL);
-            h.assertTrue(straight.containsKey(f.b.offset(0,-3,-34))&&straight.get(f.b.offset(0,-3,-34))<=13&&reachable(f,f.b.offset(0,-3,-36)).contains(f.b.offset(5,-3,-54)),"the 0.4.71 squeeze ran straight and the chamber could be walked into");
-            var p=f.player();var torch=f.b.offset(0,-3,-30);f.l.setBlock(torch,Blocks.TORCH.defaultBlockState(),3);
-            var placed=d.state(CaverVignette.ID);var torches=placed.getCompound("Torches");torches.putUUID(Long.toString(torch.asLong()),p.getUUID());placed.put("Torches",torches);d.setState(CaverVignette.ID,placed);
-            f.at(p,.5,-3,-40.5);
-            h.assertTrue(!CaverRedesign.crawls(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&!f.l.getBlockState(f.b.offset(-5,-3,-51)).isAir(),"a reader in the deep cave sees nothing change");
-            f.at(p,.5,0,-3.5);var stand=new ArmorStand(f.l,f.b.getX()+5.5,f.b.getY()-3,f.b.getZ()-47.5);f.l.addFreshEntity(stand);
-            h.assertTrue(!CaverRedesign.crawls(f.l,f.b)&&f.l.getBlockState(torch).is(Blocks.TORCH)&&!f.l.getBlockState(f.b.offset(-5,-3,-51)).isAir()&&f.l.getBlockState(f.b.offset(5,-3,-48)).isAir(),"nothing changes, anywhere, while rock would come back through a body in the old passage");
-            stand.discard();
-            h.assertTrue(CaverRedesign.crawls(f.l,f.b)&&CaverRedesign.crawled(f.data(),f.b),"the crawls are cut once the passage is clear and unwatched");
-            var barrel=(BarrelBlockEntity)f.l.getBlockEntity(f.b.offset(CaverCave.CACHE));
-            h.assertTrue(!f.l.getBlockState(torch).isAir()&&!f.l.getBlockState(torch).is(Blocks.TORCH)&&barrel.getItem(2).is(Items.TORCH)&&barrel.getItem(2).getCount()==7&&CaverVignette.torchOwner(f.data(),torch)==null,"a torch standing where rock returns goes back to the camp barrel");
-            for(int x=-6;x<=6;x++)for(int y=-3;y<=-1;y++)for(int z=-53;z<=-28;z++){var open=CaverCave.crawlTemplate(x,y,z);if(open==null)continue;
-                h.assertTrue(open==f.l.getBlockState(f.b.offset(x,y,z)).isAir(),"the reshaped cave matches a new one at "+x+","+y+","+z);}
-            var through=steps(f,mouth,CRAWL);var behind=steps(f,f.b.offset(0,-3,-36),CRAWL);
-            h.assertTrue(through.get(f.b.offset(0,-3,-34))>=28&&behind.containsKey(f.b.offset(5,-3,-54))&&!reachable(f,f.b.offset(0,-3,-36)).contains(f.b.offset(5,-3,-54)),"now both ways in are long crawls, and the chamber is reached only crawling");
-            f.reload();h.assertTrue(CaverRedesign.crawled(f.data(),f.b)&&CaverRedesign.crawls(f.l,f.b),"the checkpoint survives reload and never repeats");
-        }).thenSucceed();
     }
 }

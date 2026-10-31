@@ -96,26 +96,4 @@ public final class IntegrationRepairsTests {
         }
     }
     private static Fixture relocation;
-    @AfterBatch(batch="integration_relocation")public static void cleanupRelocation(ServerLevel l){if(relocation!=null){relocation.close();relocation=null;}}
-    @GameTest(template="empty",batch="integration_relocation",timeoutTicks=160)
-    public static void nativeIslandRelocationPreservesInventoryFramesRidersAndReturnCoordinates(GameTestHelper h){
-        relocation=new Fixture(h,98000);var f=relocation;var scene=LabyrinthPlace.PHONE_CANOE;var l=f.level(scene);var old=LabyrinthPlaces.legacyBase(f.origin,scene);var dest=LabyrinthPlaces.base(f.origin,scene);var delta=dest.subtract(old);f.data.setBuilt(26,f.origin);
-        for(int x=-2;x<=2;x++)for(int z=-14;z<=0;z++)l.setBlock(old.offset(x,-1,z),Blocks.SPRUCE_PLANKS.defaultBlockState(),2);
-        var cache=old.offset(2,0,-8);l.setBlock(cache,Blocks.BARREL.defaultBlockState(),2);var barrel=(BarrelBlockEntity)l.getBlockEntity(cache);barrel.setItem(5,new ItemStack(Items.EMERALD,9));
-        var backing=old.offset(-1,1,-7);l.setBlock(backing,Blocks.STONE_BRICKS.defaultBlockState(),2);var frame=f.keep(new ItemFrame(l,backing.south(),Direction.SOUTH));frame.setItem(new ItemStack(Items.MAP));l.addFreshEntity(frame);
-        var boat=f.keep(DrownedTownRegistry.CAVE_CANOE.get().create(l));boat.addTag(PhoneCanoe.CANOE);boat.mobile(true);boat.moveTo(Vec3.atBottomCenterOf(old.offset(PhoneCanoe.BOAT)));l.addFreshEntity(boat);
-        var rider=f.player(h,l,boat.position());rider.startRiding(boat,true);var beforeBoat=boat.position();var beforeRider=rider.position();UUID boatId=boat.getUUID(),frameId=frame.getUUID();var frameAnchor=frame.getPos();
-        f.data.pushReturn(rider.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,Vec3.atBottomCenterOf(old.offset(0,0,1)),180,true));
-        var own=new CompoundTag();own.putDouble("DropX",old.getX()+1.2);own.putDouble("DropY",old.getY()-.1);own.putDouble("DropZ",old.getZ()-32.5);var phones=f.data.state(PhoneCanoe.ID);phones.put(rider.getUUID().toString(),own);f.data.setState(PhoneCanoe.ID,phones);
-        h.succeedWhen(()->{
-            h.assertTrue(OutdoorRelocation.upgrade(f.server,f.origin),"the original scene's native entity chunks finish loading before migration");
-            var moved=(BarrelBlockEntity)l.getBlockEntity(cache.offset(delta));h.assertTrue(moved!=null&&moved.getItem(0).isEmpty()&&moved.getItem(5).getCount()==9&&l.getBlockState(cache).isAir(),"the original finite cache moves without restocking or leaving a second item source");
-            h.assertTrue(boat.getUUID().equals(boatId)&&frame.getUUID().equals(frameId)&&frame.getPos().equals(frameAnchor.offset(delta))&&ItemStack.isSameItemSameComponents(frame.getItem(),new ItemStack(Items.MAP)),"native canoe and hanging original retain identities, attachments and contents");
-            h.assertTrue(rider.getVehicle()==boat&&boat.position().distanceToSqr(beforeBoat.add(delta.getX(),delta.getY(),delta.getZ()))<.1&&rider.position().distanceToSqr(beforeRider.add(delta.getX(),delta.getY(),delta.getZ()))<2,"an occupied canoe and its native rider move together without ejecting or double-translating");
-            var returned=f.data.popReturn(rider.getUUID());h.assertTrue(returned!=null&&returned.pos().distanceToSqr(Vec3.atBottomCenterOf(dest.offset(0,0,1)))<.01&&f.data.door(scene.entryDoorId()).lower.equals(dest.offset(0,0,1)),"saved return coordinates and the registered physical doorway translate to the isolated island");
-            h.assertTrue(Math.abs(PhoneCanoe.personal(f.data,rider.getUUID()).getDouble("DropZ")-(dest.getZ()-32.5))<.01,"the dropped-camera location follows its actual lake");
-            h.assertTrue(OutdoorRelocation.upgrade(f.server,f.origin)&&moved.getItem(5).getCount()==9,"the saved relocation checkpoint cannot copy originals twice");
-            var outside=Arrays.stream(LabyrinthPlace.values()).filter(NovelRooms::outside).toList();for(int a=0;a<outside.size();a++)for(int c=a+1;c<outside.size();c++)h.assertTrue(Math.abs(LabyrinthPlaces.base(f.origin,outside.get(a)).getZ()-LabyrinthPlaces.base(f.origin,outside.get(c)).getZ())>=4096,"outdoor islands are physically separate beyond native maximum render distance");
-        });
-    }
 }

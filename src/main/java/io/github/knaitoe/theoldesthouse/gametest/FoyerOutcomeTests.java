@@ -25,7 +25,6 @@ public final class FoyerOutcomeTests {
     private static LiteraryTests.Fixture active;
     @AfterBatch(batch="foyer136_admission") public static void admissionDone(ServerLevel l){close();}
     @AfterBatch(batch="foyer136_return") public static void returnDone(ServerLevel l){close();}
-    @AfterBatch(batch="foyer136_routes") public static void routesDone(ServerLevel l){close();}
     private static void close(){if(active!=null){active.close();active=null;}}
     private static LiteraryTests.Fixture fixture(GameTestHelper h){var f=new LiteraryTests.Fixture(h);active=f;f.build(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(f.base(P),P).inflate(2));f.chunks.hold(f.in,new AABB(f.origin).inflate(12));h.onEachTick(()->{for(var p:List.copyOf(f.players))if(LabyrinthDoors.isBusy(p))HouseTransitionEvents.onPlayerTick(new net.neoforged.neoforge.event.tick.PlayerTickEvent.Post(p));});return f;}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=f.player(name,P);p.connection.resetPosition();var from=f.origin.offset(0,0,6);for(var at:BlockPos.betweenClosed(from.offset(-5,-1,-5),from.offset(5,-1,5)))f.in.setBlock(at,Blocks.STONE.defaultBlockState(),18);NovelRooms.door(f.in,from,Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);f.data().putDoor(new LabyrinthData.Door("foyer136/native/source",f.in.dimension(),from,Direction.SOUTH,"place:motion_light",false));f.data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(f.in.dimension(),Vec3.atBottomCenterOf(from),180,true));return p;}
@@ -56,17 +55,6 @@ public final class FoyerOutcomeTests {
         .thenExecute(()->{h.assertTrue(WitnessAccount.has(f.data(),p[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT)&&f.own(p[0],P).getBoolean("Completed")&&!f.own(p[0],P).getBoolean("Read_Source")&&f.data().returnDepth(p[0].getUUID())==0,"the actual escape alone grants the personal account without a paper checklist");h.assertTrue(!WitnessAccount.has(f.data(),peer[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT)&&p[0].getHealth()==20,"a peer and a health payment cannot substitute for this reader's successful return");}).thenSucceed();
     }
 
-    @GameTest(template="empty",batch="foyer136_routes",timeoutTicks=1500)
-    public static void savedRouteAdditionsPreserveOriginalsAndActuallyEnteringTheUnhingedHallLoses(GameTestHelper h){
-        var f=fixture(h);ServerPlayer[] p={null};net.minecraft.world.level.block.entity.BlockEntity[] paper={null};UUID[] original={null};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"saved foyer footprint is resident")).thenExecute(()->{p[0]=player(h,f,"foyer_false_hall");paper[0]=f.in.getBlockEntity(f.base(P).offset(UncannyRooms.source(P)));original[0]=f.own(p[0],P).getUUID("CastVisitor");f.in.setBlock(f.base(P).offset(FoyerEncounter.EXIT),UncannyRegistry.material("lobby_wall").defaultBlockState(),18);f.in.setBlock(f.base(P).offset(FoyerEncounter.EXIT.above()),UncannyRegistry.material("lobby_wall").defaultBlockState(),18);f.in.setBlock(f.base(P).offset(-6,0,-8),Blocks.GOLD_BLOCK.defaultBlockState(),18);for(int y=0;y<2;y++)f.in.setBlock(f.base(P).offset(4,y,-11),UncannyPropBlock.of(UncannyPropBlock.Kind.FALSE_DOOR,Direction.SOUTH).setValue(UncannyPropBlock.STAGE,2+y),18);h.assertTrue(!FoyerRefit.step(f.in,f.origin),"a present native camera pauses the actual saved route additions");f.at(p[0],P,80,0,-5);})
-        .thenWaitUntil(()->h.assertTrue(FoyerRefit.step(f.in,f.origin),"the bounded, unwatched recognized-cell additions complete"))
-        .thenExecute(()->{h.assertTrue(f.in.getBlockEntity(f.base(P).offset(UncannyRooms.source(P)))==paper[0]&&f.in.getBlockState(f.base(P).offset(-6,0,-8)).is(Blocks.GOLD_BLOCK)&&f.in.getBlockState(f.base(P).offset(FoyerEncounter.EXIT)).getBlock() instanceof DoorBlock,"the new return route preserves the exact original surface and a player's edit");for(int y=0;y<2;y++){var frame=f.in.getBlockState(f.base(P).offset(4,y,-11));h.assertTrue(frame.getValue(UncannyPropBlock.FACING)==Direction.EAST&&frame.getValue(UncannyPropBlock.STAGE)==2+y,"the recognized legacy east frame retains both open stages while facing its supported passage");}f.at(p[0],P,.5,0,-10.5);})
-        .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getBoolean("FoyerThreat136"),"the reader experiences a real dark standoff"))
-        .thenExecute(()->{f.at(p[0],P,-3.0,0,-3.5);p[0].setYRot(180);p[0].setYHeadRot(180);tick(f,p[0]);var door=f.base(P).offset(UncannyRooms.FALSE_DOORS.getFirst());h.assertTrue(f.in.getBlockState(door).getValue(UncannyPropBlock.STAGE)>=2,"the actual unhinged leaf opens onto its bounded hallway");export(f,"foyer_unhinged_hall",-9,-2,-5,-3,-1,3,-45);p[0].move(net.minecraft.world.entity.MoverType.SELF,new Vec3(-2.2,0,0));tick(f,p[0]);h.assertTrue(f.own(p[0],P).getString("FoyerLastFailure136").equals("entered_the_unhinged_hall"),"actual native crossing chooses the dangerous hallway");})
-        .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getBoolean("FoyerFailureReturned136")&&!LabyrinthDoors.isBusy(p[0]),"the wrong hallway also concludes with a confirmed native House return"))
-        .thenExecute(()->{f.reload();h.assertTrue(f.own(p[0],P).getUUID("CastVisitor").equals(original[0])&&!WitnessAccount.has(f.data(),p[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT)&&p[0].getHealth()==20,"reload retains the original visitor, real failure and unspent personal resolution");}).thenSucceed();
-    }
     private static void export(LiteraryTests.Fixture f,String name,int x0,int x1,int z0,int z1,int y0,int y1,float yaw){
         var l=f.level(P);var b=f.base(P);var file=new JsonObject();file.addProperty("name",name);file.addProperty("viewYaw",yaw);
         var palette=new JsonArray();var blocks=new JsonArray();Map<BlockState,Integer> states=new LinkedHashMap<>();
@@ -83,4 +71,14 @@ public final class FoyerOutcomeTests {
         try{var folder=Path.of("../build/foyer136-proof");Files.createDirectories(folder);Files.writeString(folder.resolve(name+".json"),new Gson().toJson(file));}catch(java.io.IOException e){throw new IllegalStateException(e);}
     }
 
+    @AfterBatch(batch="foyer136_routes") public static void routesDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="foyer136_routes",timeoutTicks=1500)
+    public static void actuallyEnteringTheUnhingedHallLosesAndReturnsToTheHouse(GameTestHelper h){
+        var f=fixture(h);ServerPlayer[] p={null};UUID[] original={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the foyer footprint is resident")).thenExecute(()->{p[0]=player(h,f,"foyer_false_hall");original[0]=f.own(p[0],P).getUUID("CastVisitor");f.at(p[0],P,.5,0,-10.5);})
+        .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getBoolean("FoyerThreat136"),"the reader experiences a real dark standoff"))
+        .thenExecute(()->{f.at(p[0],P,-3.0,0,-3.5);p[0].setYRot(180);p[0].setYHeadRot(180);tick(f,p[0]);var door=f.base(P).offset(UncannyRooms.FALSE_DOORS.getFirst());h.assertTrue(f.in.getBlockState(door).getValue(UncannyPropBlock.STAGE)>=2,"the actual unhinged leaf opens onto its bounded hallway");export(f,"foyer_unhinged_hall",-9,-2,-5,-3,-1,3,-45);p[0].move(net.minecraft.world.entity.MoverType.SELF,new Vec3(-2.2,0,0));tick(f,p[0]);h.assertTrue(f.own(p[0],P).getString("FoyerLastFailure136").equals("entered_the_unhinged_hall"),"actual native crossing chooses the dangerous hallway");})
+        .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getBoolean("FoyerFailureReturned136")&&!LabyrinthDoors.isBusy(p[0]),"the wrong hallway also concludes with a confirmed native House return"))
+        .thenExecute(()->{f.reload();h.assertTrue(f.own(p[0],P).getUUID("CastVisitor").equals(original[0])&&!WitnessAccount.has(f.data(),p[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT)&&p[0].getHealth()==20,"reload retains the original visitor, real failure and unspent personal resolution");}).thenSucceed();
+    }
 }

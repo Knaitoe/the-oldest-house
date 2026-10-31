@@ -28,27 +28,6 @@ public final class LakeLandscape {
     private LakeLandscape(){}
     public static boolean isLake(LabyrinthPlace p){return SITES.contains(p);}
     private static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){l.setBlock(b.offset(x,y,z),block.defaultBlockState(),F);}
-    private record Cell(BlockPos position,BlockState state,CompoundTag data){}
-    private static List<Cell> capture(ServerLevel l,BlockPos min,BlockPos max){
-        List<Cell> cells=new ArrayList<>();for(BlockPos pos:BlockPos.betweenClosed(min,max)){
-            var be=l.getBlockEntity(pos);cells.add(new Cell(pos.immutable(),l.getBlockState(pos),be==null?null:be.saveWithFullMetadata(l.registryAccess())));
-        }return cells;
-    }
-    private static void paste(ServerLevel l,List<Cell> cells,BlockPos shift,boolean dry){
-        for(Cell cell:cells){var at=cell.position().offset(shift);BlockState state=cell.state();
-            if(dry){if(state.is(Blocks.WATER)||state.is(Blocks.BUBBLE_COLUMN))state=Blocks.AIR.defaultBlockState();if(state.hasProperty(BlockStateProperties.WATERLOGGED))state=state.setValue(BlockStateProperties.WATERLOGGED,false);}
-            l.setBlock(at,state,F);
-            var be=l.getBlockEntity(at);if(cell.data()!=null&&be!=null){var nbt=cell.data().copy();nbt.putInt("x",at.getX());nbt.putInt("y",at.getY());nbt.putInt("z",at.getZ());be.loadWithComponents(nbt,l.registryAccess());be.setChanged();}
-        }
-    }
-    public static void liftSchool(ServerLevel l,BlockPos b){
-        var cells=capture(l,b.offset(-26,-12,-35),b.offset(-6,-5,-22));paste(l,cells,new BlockPos(0,11,0),true);clearCopiedContents(l,cells);
-        var houses=capture(l,b.offset(-25,-12,-60),b.offset(-14,-7,-45));paste(l,houses,new BlockPos(0,11,0),true);clearCopiedContents(l,houses);
-    }
-    private static void clearCopiedContents(ServerLevel l,List<Cell> cells){
-        // setBlock invokes native onRemove drops. Empty only after the full contents have been pasted.
-        for(Cell cell:cells)net.minecraft.world.Clearable.tryClear(l.getBlockEntity(cell.position()));
-    }
     public static void dress(ServerLevel l,BlockPos b,LabyrinthPlace site){
         var r=site.room();
         // Remove the old stage-box ceiling, moon blocks and flat walls, without removing player construction.
@@ -111,70 +90,10 @@ public final class LakeLandscape {
         for(int y=3;y<=8;y++)for(int dx=-2;dx<=2;dx++)for(int dz=-2;dz<=2;dz++)if(Math.abs(dx)+Math.abs(dz)<=8-y)
             l.setBlock(b.offset(x+dx,y,z+dz),Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);
     }
-    private static Vec3 relocated(LabyrinthPlace site,BlockPos old,BlockPos dest,Vec3 position){
-        var delta=dest.subtract(old);var relative=position.subtract(Vec3.atLowerCornerOf(old));
-        // The dry western town was raised with its school. Residents and saved arrivals must rise too.
-        boolean raised=site==LabyrinthPlace.DROWNED_TOWN&&relative.x>=-28&&relative.x<=3&&relative.z>=-63&&relative.z<=-12&&relative.y>=-12&&relative.y<0;
-        return position.add(delta.getX(),delta.getY()+(raised?11:0),delta.getZ());
-    }
-    /** The rooms as they stood in the interior before 0.4.29; Drowned Town has since grown into Proofrock (0.4.67). */
-    private static net.minecraft.world.level.levelgen.structure.BoundingBox legacyRoom(LabyrinthPlace site){
-        return site==LabyrinthPlace.DROWNED_TOWN?new net.minecraft.world.level.levelgen.structure.BoundingBox(-29,-13,-64,29,8,0):site.room();
-    }
-    private static AABB legacyBounds(BlockPos b,LabyrinthPlace site){
-        var r=legacyRoom(site);return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+18);
-    }
-    public static boolean upgradeWorld(MinecraftServer server,BlockPos origin){
-        var data=LabyrinthData.get(server);if(data.builtVersion()<14||data.builtVersion()>=23||!origin.equals(data.builtOrigin()))return true;
-        var from=server.getLevel(HouseDimensions.INTERIOR);var to=server.getLevel(HouseDimensions.OUTSIDE);if(from==null||to==null)return false;
-        var progress=data.state("lake_landscape_0426");
-        // Load old native entity chunks before taking the snapshot. Block-only chunk reads are insufficient.
-        boolean ready=true;
-        for(var site:SITES)if(!progress.getBoolean(site.id())){
-            var dest=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);
-            // A partial development/test layout may never have constructed this site at all.
-            boolean exists=from.getBlockState(old.offset(0,-1,-3)).is(Blocks.COARSE_DIRT)
-                    ||from.getBlockState(old.offset(0,-1,-3)).is(Blocks.DARK_OAK_PLANKS)
-                    ||from.getBlockState(old.offset(0,-1,-3)).is(Blocks.GRASS_BLOCK)
-                    ||from.getBlockState(old.offset(0,0,1)).getBlock() instanceof DoorBlock;
-            if(!exists){progress.putBoolean(site.id(),true);data.setState("lake_landscape_0426",progress);continue;}
-            IndianLakeRooms.keepLoaded(from,old,site);
-            var bounds=legacyBounds(old,site);
-            for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++){
-                from.getChunk(x,z);ready&=from.areEntitiesLoaded(ChunkPos.asLong(x,z));
-            }
-        }
-        if(!ready)return false;
-        for(var site:SITES){
-            if(progress.getBoolean(site.id()))continue;
-            var dest=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);var r=legacyRoom(site);var delta=dest.subtract(old);
-            var cells=capture(from,old.offset(r.minX(),r.minY(),r.minZ()),old.offset(r.maxX(),r.maxY(),18));
-            paste(to,cells,delta,false);
-            if(site==LabyrinthPlace.DROWNED_TOWN)liftSchool(to,dest);
-            dress(to,dest,site);LabyrinthBuilder.registerDoors(data,site,dest);
-            data.remapReturns(w->w.dimension().equals(HouseDimensions.INTERIOR)&&legacyBounds(old,site).contains(w.pos())?new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,relocated(site,old,dest,w.pos()),w.yaw(),w.door()):w);
-            List<Entity> roots=new ArrayList<>();for(Entity e:from.getAllEntities())if(!e.isPassenger()&&legacyBounds(old,site).contains(e.position()))roots.add(e);
-            for(Entity e:roots){
-                if(e instanceof LakeWitchEntity witch)witch.relocateLandscape(delta);
-                e.changeDimension(new DimensionTransition(to,relocated(site,old,dest,e.position()),e.getDeltaMovement(),e.getYRot(),e.getXRot(),DimensionTransition.DO_NOTHING));
-            }
-            // Clear source only after preserving native inventories and actors in the destination.
-            clearCopiedContents(from,cells);
-            for(Cell cell:cells)from.setBlock(cell.position(),Blocks.AIR.defaultBlockState(),F);
-            progress.putBoolean(site.id(),true);data.setState("lake_landscape_0426",progress);
-        }
-        return true;
-    }
-    @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent event){
-        if(!(event.getEntity() instanceof ServerPlayer p)||!p.level().dimension().equals(HouseDimensions.INTERIOR))return;
-        var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return;var state=LabyrinthData.get(p.server).state("lake_landscape_0426");
-        for(var site:SITES){var b=LabyrinthPlaces.base(origin,site);var old=LabyrinthPlaces.legacyBase(origin,site).offset(0,0,4096+site.slot()*192);if(state.getBoolean(site.id())&&legacyBounds(old,site).contains(p.position())){
-            var dest=p.server.getLevel(HouseDimensions.OUTSIDE);if(dest!=null)p.changeDimension(new DimensionTransition(dest,relocated(site,old,b,p.position()),p.getDeltaMovement(),p.getYRot(),p.getXRot(),DimensionTransition.DO_NOTHING));return;
-        }}
-    }
     @SubscribeEvent public static void night(ServerTickEvent.Post event){
         if(event.getServer().getTickCount()%20!=0)return;
         var origin=HouseSavedData.get(event.getServer()).houseOrigin();var outside=event.getServer().getLevel(HouseDimensions.OUTSIDE);
+        // A lake's woods are settled as it is built; this finishes one whose entity sections or cameras made the build's own pass wait.
         if(origin!=null&&outside!=null)for(var site:SITES)LakeSettlement.decorateOnce(outside,LabyrinthPlaces.base(origin,site),site);
         for(ServerPlayer p:event.getServer().getPlayerList().getPlayers())for(var site:SITES)if(IndianLakeRooms.inside(p,site)){
             io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.NovelScenePayload(7,0,"",0,0));break;

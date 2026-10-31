@@ -33,7 +33,6 @@ public final class VignetteArchitecture {
         if(!shells.getBoolean(key)){SceneShells.apply(l,base,p);shells.putBoolean(key,true);d.setState(SceneShells.STATE,shells);}
         SceneExteriors.decorateOnce(l,origin,p);
         SceneReview.fresh(l,origin,p);
-        if(fresh&&p==LabyrinthPlace.HOSPITAL)NightWardMaterials.fresh(l,base);
         if(fresh&&p==LabyrinthPlace.TED_CAVER)SceneSupportRepairs.cave(l,base);
     }
     /** Explicit structural rebuilds can dress their newly authored room again. */

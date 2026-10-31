@@ -793,32 +793,15 @@ public final class GoatmanTests {
         });
     }
     @GameTest(template="empty",batch="goat_fixture0465",timeoutTicks=2400)
-    public static void actualBathroomFixturesToggleAndAnOldTrailerUpgradesOnceWithoutRestocking(GameTestHelper h){
+    public static void actualBathroomFixturesTheDoorFrameAndTheWindowWorkOnAFreshTrailer(GameTestHelper h){
         fixtures=new Fixture(h,31000);var f=fixtures;var p=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"bathroom and door sections are loaded")).thenExecute(()->{
             h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET)).is(GoatmanRegistry.TOILET.get())&&f.l.getBlockState(f.b.offset(GoatmanWoods.SINK)).is(GoatmanRegistry.SINK.get()),"the generated room contains actual toilet and sink blocks");
             var doorPos=f.b.offset(GoatmanWoods.DOOR);var frame=(TrailerDoorBlockEntity)f.l.getBlockEntity(doorPos);frame.impact(3);var received=new TrailerDoorBlockEntity(doorPos,frame.getBlockState());received.setLevel(f.l);received.loadWithComponents(frame.getUpdatePacket().getTag(),f.l.registryAccess());h.assertTrue(Math.abs(received.recoil(2))>.1&&received.stress()==3,"the actual native block-entity packet retains an active recoil and stress");received.loadWithComponents(frame.saveWithoutMetadata(f.l.registryAccess()),f.l.registryAccess());h.assertTrue(received.recoil(2)==0&&received.stress()==3,"disk reload keeps stress without replaying an old impact");
-            p.moveTo(new Vec3(6.5,1,-75.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));f.use(p,GoatmanWoods.WINDOW);h.assertTrue(GoatmanWoods.windowShut(f.l,f.b),"a native window interaction shuts the glazed sash");f.use(p,GoatmanWoods.WINDOW);h.assertTrue(!GoatmanWoods.windowShut(f.l,f.b),"the same actual window opens again");
-            f.l.setBlock(f.b.offset(GoatmanWoods.TOILET),Blocks.QUARTZ_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST),2);f.l.setBlock(f.b.offset(GoatmanWoods.TOILET).above(),Blocks.QUARTZ_SLAB.defaultBlockState(),2);f.l.setBlock(f.b.offset(GoatmanWoods.SINK),Blocks.WATER_CAULDRON.defaultBlockState(),2);
-            p.moveTo(100,80,100);var packetData=f.run();packetData.putInt("PacketsIssued0464",2);f.run(packetData);h.assertTrue(GoatmanTrailerUpgrade.apply(f.l,f.b),"an unseen, loaded old bathroom upgrades in place");
-            h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET)).is(GoatmanRegistry.TOILET.get())&&f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET).above()).isAir()&&f.run().getInt("PacketsIssued0464")==2,"the placeholders change while finite packets and saved scene state remain exact");
-            f.l.setBlock(f.b.offset(GoatmanWoods.TOILET),Blocks.AIR.defaultBlockState(),2);GoatmanTrailerUpgrade.apply(f.l,f.b);h.assertTrue(f.l.getBlockState(f.b.offset(GoatmanWoods.TOILET)).isAir(),"the saved checkpoint preserves later player removals");
-            var cooler=f.b.offset(GoatmanWoods.COOLER);f.l.setBlock(cooler,Blocks.AIR.defaultBlockState(),2);for(int x:new int[]{-9,9})for(int z:new int[]{-59,-73})f.l.setBlock(f.b.offset(x,0,z),Blocks.BLACK_CONCRETE.defaultBlockState(),2);
-            f.indoors(p);h.assertTrue(!PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.GOATMAN)&&f.l.getBlockState(cooler).isAir(),"a nearby camera postpones the saved cooler and wheel changes");p.moveTo(100,80,100);h.assertTrue(PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.GOATMAN),"the loaded unseen trailer gets a cooler and four native wheels without a re-carve");
-            h.assertTrue(f.l.getBlockState(cooler).is(GoatmanRegistry.COOLER.get())&&f.l.getBlockState(f.b.offset(-9,0,-73)).is(GoatmanRegistry.WHEEL.get())&&f.run().getInt("PacketsIssued0464")==2,"finite wrappers and the running evening survive the fixture upgrade");f.l.setBlock(cooler,Blocks.AIR.defaultBlockState(),2);PlaytestFixes.apply(f.l,f.b,LabyrinthPlace.GOATMAN);h.assertTrue(f.l.getBlockState(cooler).isAir(),"the saved once-only repair does not undo later cooler removals");
-            var shelf=Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP);
-            for(int x:new int[]{-7,7}){for(int y:new int[]{2,3})f.l.setBlock(f.b.offset(x,y,-57),Blocks.AIR.defaultBlockState(),2);f.l.setBlock(f.b.offset(x,2,-59),shelf,2);f.l.setBlock(f.b.offset(x,3,-59),Blocks.LANTERN.defaultBlockState(),2);}
-            f.indoors(p);h.assertTrue(!GoatmanTrailerUpgrade.clearWindowSpill(f.l,f.b)&&f.l.getBlockState(f.b.offset(-7,2,-59)).equals(shelf),"a native reader camera postpones clearing the authored window obstruction");p.moveTo(100,80,100);
-            var resident=EntityType.ARMOR_STAND.create(f.l);h.assertTrue(resident!=null,"the native living destination probe creates");resident.setNoGravity(true);resident.moveTo(Vec3.atLowerCornerOf(f.b.offset(-7,2,-57)).add(.5,.5,.5));f.l.addFreshEntity(resident);
-            h.assertTrue(!GoatmanTrailerUpgrade.clearWindowSpill(f.l,f.b),"a native living body in the destination also postpones the entire transfer");resident.discard();
-            f.l.setBlock(f.b.offset(7,3,-59),Blocks.GLOWSTONE.defaultBlockState(),2);
-            h.assertTrue(GoatmanTrailerUpgrade.clearWindowSpill(f.l,f.b)&&f.l.getBlockState(f.b.offset(-7,2,-59)).isAir()&&f.l.getBlockState(f.b.offset(-7,3,-59)).isAir()&&f.l.getBlockState(f.b.offset(-7,2,-57)).equals(shelf)&&f.l.getBlockState(f.b.offset(-7,3,-57)).is(Blocks.LANTERN),"the complete recognized lamp pair moves beside the glazing once, without filling the window");
-            h.assertTrue(f.l.getBlockState(f.b.offset(7,3,-59)).is(Blocks.GLOWSTONE)&&f.l.getBlockState(f.b.offset(7,2,-57)).isAir()&&f.run().getInt("PacketsIssued0464")==2,"an edited lamp and finite supplies remain exact");
-            var saved=LabyrinthData.get(f.server).save(new CompoundTag(),f.l.registryAccess());var loaded=LabyrinthData.FACTORY.deserializer().apply(saved,f.l.registryAccess());f.server.overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);
-            f.l.setBlock(f.b.offset(-7,3,-57),Blocks.AIR.defaultBlockState(),2);GoatmanTrailerUpgrade.clearWindowSpill(f.l,f.b);h.assertTrue(f.l.getBlockState(f.b.offset(-7,3,-57)).isAir()&&f.l.getBlockState(f.b.offset(-7,3,-59)).isAir(),"the saved window checkpoint cannot restore a removed lamp or its old obstruction");h.succeed();
+            p.moveTo(new Vec3(6.5,1,-75.5).add(f.b.getX(),f.b.getY(),f.b.getZ()));f.use(p,GoatmanWoods.WINDOW);h.assertTrue(GoatmanWoods.windowShut(f.l,f.b),"a native window interaction shuts the glazed sash");f.use(p,GoatmanWoods.WINDOW);h.assertTrue(!GoatmanWoods.windowShut(f.l,f.b),"the same actual window opens again");h.succeed();
         });
     }
-    private static Fixture path,night,taken,window,lost,counter,resume,upgrade;
+    private static Fixture path,night,taken,window,lost,counter,resume;
     @AfterBatch(batch="goat_path") public static void cleanPath(ServerLevel l){if(path!=null){path.close();path=null;}}
     @AfterBatch(batch="goat_night") public static void cleanNight(ServerLevel l){if(night!=null){night.close();night=null;}}
     @AfterBatch(batch="goat_taken") public static void cleanTaken(ServerLevel l){if(taken!=null){taken.close();taken=null;}}
@@ -826,7 +809,6 @@ public final class GoatmanTests {
     @AfterBatch(batch="goat_lost") public static void cleanLost(ServerLevel l){if(lost!=null){lost.close();lost=null;}}
     @AfterBatch(batch="goat_counter") public static void cleanCounter(ServerLevel l){if(counter!=null){counter.close();counter=null;}}
     @AfterBatch(batch="goat_resume") public static void cleanResume(ServerLevel l){if(resume!=null){resume.close();resume=null;}}
-    @AfterBatch(batch="goat_upgrade") public static void cleanUpgrade(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
 
     @GameTest(template="empty",batch="goat_path",timeoutTicks=1200)
     public static void nativeFollowingChildAndTheShapesInTheHollowsMeetTheLatecomerThenLeave(GameTestHelper h){
@@ -1137,17 +1119,4 @@ public final class GoatmanTests {
         });
     }
 
-    @GameTest(template="empty",batch="goat_upgrade",timeoutTicks=200)
-    public static void nativeVersionSeventeenUpgradePreservesCachesActorsAndExistingEvidence(GameTestHelper h){
-        upgrade=new Fixture(h,30100);var f=upgrade;var data=LabyrinthData.get(f.server);
-        BlockPos junction=LabyrinthPlaces.base(f.origin,LabyrinthPlace.JUNCTION);LabyrinthBuilder.buildJunction(f.l,junction);LabyrinthLighting.buildEarlyAid(f.server,f.l,junction);
-        var cache=(BarrelBlockEntity)f.l.getBlockEntity(junction.offset(LabyrinthLighting.TOM_CACHE));cache.setItem(0,ItemStack.EMPTY);cache.setItem(3,new ItemStack(Items.DIAMOND));
-        BlockPos canoeBase=LabyrinthPlaces.base(f.origin,LabyrinthPlace.PHONE_CANOE);PhoneCanoe.build(f.server,f.l,canoeBase);var canoe=PhoneCanoe.stage(f.l,canoeBase);UUID canoeId=canoe.getUUID();
-        CompoundTag reading=data.state(HarriganVignette.ID);reading.putBoolean("ReadingFinished",true);data.setState(HarriganVignette.ID,reading);
-        UUID player=UUID.randomUUID();WitnessAccount.resolve(data,player,WitnessAccount.Story.HARRIGAN,"kept_phone");data.setBuilt(17,f.origin);
-        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"the old layout starts its incremental upgrade");LabyrinthBuilder.finishGameTest(f.server);
-        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&data.door(LabyrinthPlace.GOATMAN.entryDoorId())!=null,"the trailer's physical slot and return door are appended");
-        h.assertTrue(f.l.getBlockEntity(junction.offset(LabyrinthLighting.TOM_CACHE))==cache&&cache.getItem(0).isEmpty()&&cache.getItem(3).is(Items.DIAMOND),"existing finite supplies are neither rebuilt nor replenished");
-        h.assertTrue(!canoe.isRemoved()&&canoe.getUUID().equals(canoeId)&&data.state(HarriganVignette.ID).getBoolean("ReadingFinished")&&WitnessAccount.has(data,player,WitnessAccount.Story.HARRIGAN),"the existing recording actor, finished dialogue and personal evidence survive unchanged");h.succeed();
-    }
 }

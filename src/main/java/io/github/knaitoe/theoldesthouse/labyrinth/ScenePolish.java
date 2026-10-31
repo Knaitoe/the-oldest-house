@@ -52,11 +52,6 @@ import net.minecraft.world.phys.AABB;
  */
 public final class ScenePolish {
     public static final String STATE = "scene_polish_0442";
-    public static final String REPAIR_STATE = "scene_polish_repairs_0443";
-    private static final Set<LabyrinthPlace> REPAIR_PLACES = EnumSet.of(LabyrinthPlace.PHONE_CANOE,
-            LabyrinthPlace.MASQUE, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.ELK_FAN, LabyrinthPlace.HILL_NURSERY,
-            LabyrinthPlace.ZAMPANO_COURTYARD, LabyrinthPlace.BLY_ROUTE,
-            LabyrinthPlace.MOTHER_DEN);
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     /** Darkness is the point of these. */
     private static final Set<LabyrinthPlace> DARK_BY_DESIGN = EnumSet.of(LabyrinthPlace.LIGHT_SINK, LabyrinthPlace.BLIND_STRETCH,
@@ -109,7 +104,6 @@ public final class ScenePolish {
         if(place==LabyrinthPlace.BARN_WELL)Farmstead.fresh(level,origin);
         if(place==LabyrinthPlace.WHALE)WhaleHospital.fresh(level,origin);
         PlaytestScenes0488.fresh(level,LabyrinthPlaces.base(origin,place),place);
-        if(place==LabyrinthPlace.HOSPITAL)NightWardMaterials.fresh(level,LabyrinthPlaces.base(origin,place));
         VignetteInteriors.fresh(level,origin,place);
         PlaytestScenery130.fresh(level,origin,place);
     }
@@ -118,25 +112,15 @@ public final class ScenePolish {
         if (!applies(place)) return;
         LabyrinthData data = LabyrinthData.get(level.getServer());
         CompoundTag done = data.state(STATE);
-        CompoundTag repaired = data.state(REPAIR_STATE);
-        boolean polished = done.getBoolean(key(origin, place));
-        if (polished && (repaired.getBoolean(key(origin, place)) || !REPAIR_PLACES.contains(place))) return;
+        if (done.getBoolean(key(origin, place))) return;
         BlockPos base = LabyrinthPlaces.base(origin, place);
         if (base == null) return;
-        if (polished) {
-            AABB area = repairArea(base, place);
-            if (level.players().stream().anyMatch(p -> area.intersects(p.getBoundingBox())) || !loaded(level, area, base)) return;
-            repairs(level, base, place);
-        } else {
-            long started = System.nanoTime();
-            apply(level, base, place);
-            if (place == LabyrinthPlace.ELK_CARCASSES)
-                TheOldestHouse.LOGGER.info("Polished {} ({} ms).", place.id(), (System.nanoTime() - started) / 1_000_000L);
-        }
+        long started = System.nanoTime();
+        apply(level, base, place);
+        if (place == LabyrinthPlace.ELK_CARCASSES)
+            TheOldestHouse.LOGGER.info("Polished {} ({} ms).", place.id(), (System.nanoTime() - started) / 1_000_000L);
         done.putBoolean(key(origin, place), true);
         data.setState(STATE, done);
-        repaired.putBoolean(key(origin, place), true);
-        data.setState(REPAIR_STATE, repaired);
     }
 
     /** An explicit rebuild authors the room again, so it is polished (and composed) again. */
@@ -158,58 +142,10 @@ public final class ScenePolish {
             done.remove(key(origin, place));
             data.setState(STATE, done);
         }
-        CompoundTag repaired = data.state(REPAIR_STATE);
-        if (repaired.contains(key(origin, place))) {
-            repaired.remove(key(origin, place));
-            data.setState(REPAIR_STATE, repaired);
-        }
     }
 
-    // ------------------------------------------------------------------
-    // Existing worlds: one standing scene at a time, once nobody is in it.
 
-    public static void tick(MinecraftServer server) {
-        if (server.getTickCount() % 40 != 7 || server instanceof net.minecraft.gametest.framework.GameTestServer
-                || LabyrinthBuilder.isCarving()) return;
-        BlockPos origin = HouseSavedData.get(server).houseOrigin();
-        if (origin == null) return;
-        LabyrinthData data = LabyrinthData.get(server);
-        if (!origin.equals(data.builtOrigin())) return;
-        CompoundTag done = data.state(STATE);
-        CompoundTag repaired = data.state(REPAIR_STATE);
-        for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            boolean polished = done.getBoolean(key(origin, place));
-            if (!applies(place) || polished && (repaired.getBoolean(key(origin, place)) || !REPAIR_PLACES.contains(place)) || data.door(place.entryDoorId()) == null) continue;
-            if (!LabyrinthBuilder.isPlaceReady(data, place)) continue;
-            ServerLevel level = server.getLevel(NovelRooms.dimension(place));
-            BlockPos base = LabyrinthPlaces.base(origin, place);
-            if (level == null || base == null) continue;
-            AABB area = repairArea(base, place);
-            if (level.players().stream().anyMatch(p -> area.intersects(p.getBoundingBox()))) continue;
-            if (!loaded(level, area, base)) return; // one scene at a time: wait for this one's chunks
-            long started = System.nanoTime();
-            if (polished) repairs(level, base, place); else apply(level, base, place);
-            done.putBoolean(key(origin, place), true);
-            data.setState(STATE, done);
-            repaired.putBoolean(key(origin, place), true);
-            data.setState(REPAIR_STATE, repaired);
-            TheOldestHouse.LOGGER.info("Polished {} in place ({} ms).", place.id(), (System.nanoTime() - started) / 1_000_000L);
-            return;
-        }
-    }
 
-    private static AABB repairArea(BlockPos base, LabyrinthPlace place) {
-        BoundingBox r = place.room();
-        int margin = NovelRooms.outside(place) ? BORDER + 1 : 1;
-        return new AABB(base.getX() + r.minX() - margin, base.getY() + r.minY() - 1, base.getZ() + r.minZ() - margin,
-                base.getX() + r.maxX() + margin + 1, base.getY() + r.maxY() + 2, base.getZ() + r.maxZ() + margin + 1);
-    }
-
-    /** Already polished worlds receive targeted corrections without repeating scenery or supplies. */
-    private static void repairs(ServerLevel level, BlockPos base, LabyrinthPlace place) {
-        specifics(level, base, place);
-        if (place == LabyrinthPlace.MOTHER_DEN) unbury(level, base, place);
-    }
 
     /** Tickets let chunks load between ticks; a scene is never pulled in synchronously. The elk rebuild waits on the same test. */
     static boolean loaded(ServerLevel level, AABB area, BlockPos ticket) {

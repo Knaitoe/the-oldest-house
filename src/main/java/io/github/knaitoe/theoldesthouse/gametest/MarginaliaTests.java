@@ -94,7 +94,6 @@ public final class MarginaliaTests {
     private static Fixture serial,personal,upgrade,seats;
     @AfterBatch(batch="marginalia_serial") public static void cleanSerial(ServerLevel l){if(serial!=null){serial.close();serial=null;}}
     @AfterBatch(batch="marginalia_personal") public static void cleanPersonal(ServerLevel l){if(personal!=null){personal.close();personal=null;}}
-    @AfterBatch(batch="marginalia_upgrade") public static void cleanUpgrade(ServerLevel l){if(upgrade!=null){upgrade.close();upgrade=null;}}
     @AfterBatch(batch="marginalia_seats") public static void cleanSeats(ServerLevel l){if(seats!=null){seats.close();seats=null;}}
     private static String text(ItemStack book) {return book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).reduce("",(a,b)->a+"\n"+b);}
 
@@ -136,26 +135,6 @@ public final class MarginaliaTests {
             a.moveTo(Vec3.atBottomCenterOf(pos.below().south()));NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(a,InteractionHand.MAIN_HAND,pos,new BlockHitResult(Vec3.atCenterOf(pos),Direction.UP,pos,false)));
             h.assertTrue(!(a.containerMenu instanceof HouseMarginalia.NotebookMenu)&&HouseMarginalia.next(f.data(),a.getUUID(),HouseMarginalia.Thread.CALLS)==0,"spectators cannot produce discoveries");h.succeed();
         });
-    }
-    @GameTest(template="empty",batch="marginalia_upgrade",timeoutTicks=130)
-    public static void versionEighteenDecorationPreservesContainersPlayerEditsActorsAndEvidence(GameTestHelper h){
-        upgrade=new Fixture(h,30200);var f=upgrade;var data=f.data();LabyrinthLighting.buildEarlyAid(f.level.getServer(),f.level,f.base);
-        var cache=(BarrelBlockEntity)f.level.getBlockEntity(f.base.offset(LabyrinthLighting.TOM_CACHE));cache.clearContent();cache.setItem(4,new ItemStack(Items.DIAMOND,3));
-        BlockPos hall=LabyrinthPlaces.base(f.origin,LabyrinthPlace.STRAIGHT_HALL);LabyrinthHalls.build(f.level,hall,LabyrinthPlace.STRAIGHT_HALL);
-        var fragment=LabyrinthDomestic.fragments(LabyrinthPlace.STRAIGHT_HALL).getFirst();BlockPos changed=hall.offset(fragment.x0(),0,fragment.z0());f.level.setBlock(changed,Blocks.CHEST.defaultBlockState(),3);
-        var chest=f.level.getBlockEntity(changed);((net.minecraft.world.Container)chest).setItem(0,new ItemStack(Items.GOLD_INGOT,5));
-        BlockPos lamp=hall.offset(0,0,-10);f.level.setBlock(lamp,Blocks.TORCH.defaultBlockState(),3);
-        var p=f.player();f.open(p,HouseMarginalia.Thread.POEMS);WitnessAccount.resolve(data,p.getUUID(),WitnessAccount.Story.HARRIGAN,"kept_phone");
-        CompoundTag harrigan=data.state(HarriganVignette.ID);harrigan.putBoolean("ReadingFinished",true);data.setState(HarriganVignette.ID,harrigan);
-        CompoundTag goat=data.state(GoatmanVignette.ID);goat.putUUID("UnchangedRun",UUID.randomUUID());data.setState(GoatmanVignette.ID,goat);
-        var before=HouseMarginalia.record(data,p.getUUID());data.setBuilt(18,f.origin);
-        h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.level.getServer()),"the established layout starts a decoration upgrade");LabyrinthBuilder.finishGameTest(f.level.getServer());
-        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&f.level.getBlockEntity(changed)==chest&&((net.minecraft.world.Container)chest).getItem(0).getCount()==5,"older domestic fragments are not reconstructed over player storage");
-        h.assertTrue(f.level.getBlockEntity(f.base.offset(LabyrinthLighting.TOM_CACHE))==cache&&cache.getItem(0).isEmpty()&&cache.getItem(4).getCount()==3&&f.level.getBlockState(lamp).is(Blocks.TORCH),"finite caches and placed lights survive the decoration pass");
-        h.assertTrue(before.equals(HouseMarginalia.record(data,p.getUUID()))&&WitnessAccount.has(data,p.getUUID(),WitnessAccount.Story.HARRIGAN)
-                &&data.state(HarriganVignette.ID).getBoolean("ReadingFinished")&&goat.equals(data.state(GoatmanVignette.ID)),"personal writing, old dialogue, random runs and resolutions remain intact");
-        BlockPos cleared=f.surface(HouseMarginalia.Thread.CALLS);f.level.setBlock(cleared,Blocks.AIR.defaultBlockState(),3);HouseFurnishings.upgrade(f.level,f.origin,LabyrinthPlace.JUNCTION);
-        h.assertTrue(f.level.getBlockState(cleared).isAir(),"the saved decoration checkpoint does not replenish removed papers");h.succeed();
     }
     @GameTest(template="empty",batch="marginalia_seats",timeoutTicks=130)
     public static void nativeFurnitureHasVoidsAndCorrectSeatedFacingWithoutBlockingHallRoutes(GameTestHelper h){

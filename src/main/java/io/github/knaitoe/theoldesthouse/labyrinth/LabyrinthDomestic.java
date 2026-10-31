@@ -86,31 +86,6 @@ public final class LabyrinthDomestic {
         warmVestibule(level, base);
     }
 
-    /** In-place upgrade: ordinary caches, drops, animals, marks and placed lights are not rebuilt. */
-    public static void upgrade(ServerLevel level, BlockPos origin, LabyrinthPlace place) {
-        BlockPos base = LabyrinthPlaces.base(origin, place);
-        if (base == null) return;
-        var data = LabyrinthData.get(level.getServer());
-        var state = data.state("domestic_0417");
-        if (!state.contains("Origin") || state.getLong("Origin") != origin.asLong()) state = new net.minecraft.nbt.CompoundTag();
-        if (state.getBoolean(place.id())) return;
-        if (place == LabyrinthPlace.JUNCTION) decorateJunction(level, base);
-        else if (LabyrinthHalls.isHall(place)) decorateHall(level, base, place);
-        else if (LabyrinthMaze.isMaze(place)) {
-            var layout = LabyrinthMaze.layout(level.getServer(), place);
-            decorateMaze(level, base, place, layout);
-            if (place == LabyrinthPlace.GRAY_CORRIDOR) {
-                for (int variant = 0; variant < 3; variant++)
-                    for (BlockPos lamp : LabyrinthMaze.lightPositions(place, 0, variant))
-                        replace(level, base.offset(lamp), Blocks.SOUL_LANTERN,
-                                Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
-                warmVestibule(level, base);
-            }
-        }
-        state.putLong("Origin", origin.asLong());
-        state.putBoolean(place.id(), true);
-        data.setState("domestic_0417", state);
-    }
 
     private static void warmVestibule(ServerLevel level, BlockPos base) {
         var box = LabyrinthPlaces.localVestibule();

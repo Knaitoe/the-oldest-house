@@ -76,7 +76,6 @@ public final class IndianLakeLinkedTests {
             base=LabyrinthPlaces.base(origin,place);
             if(place==LabyrinthPlace.PRESERVED_CAVE)PreservedCave.build(server,level,base);
             else if(place==LabyrinthPlace.SHALLOWS)Shallows.build(server,level,base);
-            else if(legacy){DrownedTownArchitecture.build(level,base);LakeLandscape.liftSchool(level,base);}
             else DrownedTown.build(server,level,base);
             LabyrinthBuilder.registerDoors(data,place,base);load();
         }
@@ -258,7 +257,6 @@ public final class IndianLakeLinkedTests {
     }
     @AfterBatch(batch="lake_cave") public static void cleanCave(ServerLevel level){if(cave!=null){cave.close();cave=null;}}
     @AfterBatch(batch="lake_throw") public static void cleanThrow(ServerLevel level){if(throwing!=null){throwing.close();throwing=null;}}
-    @AfterBatch(batch="lake_upgrade") public static void cleanUpgrade(ServerLevel level){if(upgrade!=null){upgrade.close();upgrade=null;}}
     @GameTest(template="empty",batch="lake_cave",timeoutTicks=200)
     public static void nativeQuietSoundsOccupiedVisitsRoofAndCanoePreserveTheSequence(GameTestHelper h){
         cave=new Fixture(h,new BlockPos(6800,80,6800),LabyrinthPlace.PRESERVED_CAVE);Fixture f=cave;var data=LabyrinthData.get(f.server);
@@ -407,21 +405,5 @@ public final class IndianLakeLinkedTests {
                 step[0]=3;h.succeed();
             }
         });
-    }
-    @GameTest(template="empty",batch="lake_upgrade",timeoutTicks=200)
-    public static void actualFourteenUpgradeCarriesTheSchoolsFiniteInventoryIntoProofrock(GameTestHelper h){
-        upgrade=new Fixture(h,new BlockPos(7600,80,7600),LabyrinthPlace.DROWNED_TOWN,true);Fixture f=upgrade;LabyrinthData data=LabyrinthData.get(f.server);
-        // The old school's first desk, already emptied of its essay and holding something else; its key desk holding the key.
-        var old=(net.minecraft.world.Container)f.level.getBlockEntity(f.base.offset(-23,1,-33));old.setItem(0,ItemStack.EMPTY);old.setItem(3,new ItemStack(Items.DIAMOND));old.setChanged();
-        f.level.setBlock(f.base.offset(-14,1,-32),Blocks.BARREL.defaultBlockState(),3);((net.minecraft.world.Container)f.level.getBlockEntity(f.base.offset(-14,1,-32))).setItem(0,new ItemStack(DrownedTownRegistry.CHURCH_KEY.get()));
-        CompoundTag state=data.state(DrownedTown.ID);state.putInt("Visit",2);state.putInt("DryMask",7);state.putBoolean("ChurchUnlocked",true);state.putBoolean("PaperStocked",true);state.putBoolean("KeyPlaced",true);data.setState(DrownedTown.ID,state);
-        data.setBuilt(14,f.origin);h.assertTrue(!LabyrinthBuilder.ensureBuilt(f.server),"an older stack begins its incremental upgrade");
-        LabyrinthBuilder.finishGameTest(f.server);
-        var desk=(net.minecraft.world.Container)f.level.getBlockEntity(f.base.offset(DrownedTown.PAPERS[0]));var keyDesk=(net.minecraft.world.Container)f.level.getBlockEntity(f.base.offset(DrownedTown.KEY_DESK));
-        h.assertTrue(data.builtVersion()==LabyrinthBuilder.VERSION&&desk!=null&&desk.getItem(0).isEmpty()&&desk.getItem(3).is(Items.DIAMOND),"the rebuilt school carries the depleted desk's exact contents and never restocks it");
-        int keys=0;for(int i=0;i<keyDesk.getContainerSize();i++)if(keyDesk.getItem(i).is(DrownedTownRegistry.CHURCH_KEY.get()))keys++;
-        h.assertTrue(keys==1&&f.level.getBlockState(f.base.offset(DrownedTown.SCHOOL_DOOR)).getBlock() instanceof DoorBlock&&!data.state(DrownedTown.ID).contains("Carry0467"),"the one key moves to the principal's desk, Indian Lake High stands, and custody is released");
-        h.assertTrue(data.state(DrownedTown.ID).getInt("Visit")==2&&data.state(DrownedTown.ID).getBoolean("ChurchUnlocked")
-                &&data.door(LabyrinthPlace.PRESERVED_CAVE.entryDoorId())!=null&&data.door(LabyrinthPlace.SHALLOWS.entryDoorId())!=null,"new native doorways are added while church progress stays intact");h.succeed();
     }
 }

@@ -112,7 +112,6 @@ public final class CaverCave {
             barrel.setItem(2,new ItemStack(Items.TORCH,6));barrel.setItem(3,new ItemStack(Items.STRING,2));barrel.setChanged();
             state.putBoolean("Supplied",true);d.setState(CaverVignette.ID,state);
         }
-        CaverRedesign.markBuilt(d,b);
         LabyrinthBuilder.entrance(l,b,Blocks.STONE.defaultBlockState(),Blocks.STONE.defaultBlockState(),Blocks.STONE.defaultBlockState());
         repairEntrance(l,b);
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.TED_CAVER);

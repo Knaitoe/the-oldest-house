@@ -105,20 +105,6 @@ public final class LabyrinthHazards {
         for(int i=0;i<corners.length-1;i++){int x=corners[i][0],z=corners[i][1];while(x!=corners[i+1][0]||z!=corners[i+1][1]){route.add(base.offset(x,-1,z));x+=Integer.signum(corners[i+1][0]-x);z+=Integer.signum(corners[i+1][1]-z);}}
         route.add(base.offset(0,-1,-27));return List.copyOf(route);
     }
-    public static void upgradeFlooded(ServerLevel level,BlockPos origin){
-        if(LabyrinthBuilder.isCarving()||!LabyrinthBuilder.isPlaceReady(level.getServer(),LabyrinthPlace.FLOODED_PASSAGE))return;var base=LabyrinthPlaces.base(origin,LabyrinthPlace.FLOODED_PASSAGE);if(base==null)return;
-        var d=LabyrinthData.get(level.getServer());if(d.state("water_trial_0427").getBoolean(Long.toString(base.asLong())))return;
-        var bounds=LabyrinthPlaces.placeBounds(origin,LabyrinthPlace.FLOODED_PASSAGE);if(bounds==null)return;
-        var first=new BlockPos(bounds.minX()-1,bounds.minY()-1,bounds.minZ()-1);var last=new BlockPos(bounds.maxX()+1,bounds.maxY()+1,bounds.maxZ()+1);
-        var area=new AABB(Vec3.atLowerCornerOf(first),Vec3.atLowerCornerOf(last.offset(1,1,1)));
-        // The entrance includes the full copied vestibule. A routine tick must never force cold
-        // chunks onto the main thread, or mistake unloaded original residents for an empty room.
-        for(int x=first.getX()>>4;x<=last.getX()>>4;x++)for(int z=first.getZ()>>4;z<=last.getZ()>>4;z++)if(!level.hasChunk(x,z)||!level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return;
-        if(level.players().stream().anyMatch(p->area.inflate(48).intersects(p.getCamera().getBoundingBox()))||!level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,area).isEmpty())return;
-        // Preserve a player-authored container instead of replacing its identity during a scenery upgrade.
-        for(BlockPos pos:BlockPos.betweenClosed(first,last))if(level.getBlockEntity(pos)!=null)return;
-        buildFloodedPassage(level,base);
-    }
 
     public static void buildFracturedWalkway(ServerLevel level, BlockPos base) {
         LabyrinthBuilder.room(level, base, -3, 3, 10, -27, -1, WALL, FLOOR, CEILING);
@@ -259,7 +245,6 @@ public final class LabyrinthHazards {
         }
 
         long now = server.getTickCount();
-        if(now%100==0)upgradeFlooded(level,origin);
         tickFlooded(level, origin, now);
         tickCompression(level, origin, now);
         tickFalseDistance(level, origin, now);

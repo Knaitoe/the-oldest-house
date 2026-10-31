@@ -185,13 +185,6 @@ public final class MotherOfStrays {
         for(int x=-6;x<=-4;x++)for(int z=-20;z>=-22;z--)
             level.setBlock(base.offset(x,8,z),Blocks.DARK_OAK_PLANKS.defaultBlockState(),FLAGS);
     }
-    public static void upgradeDen(ServerLevel level,BlockPos origin) {
-        var data=LabyrinthData.get(level.getServer());var state=data.state("den_stairs_0426");
-        if(state.contains("Origin")&&state.getLong("Origin")==origin.asLong())return;
-        BlockPos base=LabyrinthPlaces.base(origin,LabyrinthPlace.MOTHER_DEN);
-        if(base!=null && level.getBlockState(base.offset(CHAIR)).is(Blocks.DARK_OAK_STAIRS))galleryStairs(level,base);
-        state.putLong("Origin",origin.asLong());data.setState("den_stairs_0426",state);
-    }
     public static boolean activeDogThreat(ServerLevel level) {
         var owner=MotherCollection.get(level.getServer()).dogThreatOwner();
         return owner!=null && level.players().stream().anyMatch(p->p.getUUID().equals(owner)&&p.isAlive()
