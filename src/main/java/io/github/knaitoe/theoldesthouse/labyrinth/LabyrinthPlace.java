@@ -223,7 +223,7 @@ public enum LabyrinthPlace {
     MOVIE_NIGHT("movie_night",Kind.ONE_SHOT,60,new BoundingBox(-35,-12,-93,35,18,0),literaryEntry()),
     WINTER_LAKE("winter_lake",Kind.ONE_SHOT,61,new BoundingBox(-35,-12,-87,35,18,0),literaryEntry()),
     CAMP_BLOOD("camp_blood",Kind.ONE_SHOT,62,new BoundingBox(-33,-3,-104,33,19,0),literaryEntry()),
-    DEVILS_ROCK("devils_rock",Kind.MULTI_VISIT,63,new BoundingBox(-17,-1,-43,17,11,0),literaryEntry()),
+    DEVILS_ROCK("devils_rock",Kind.MULTI_VISIT,63,new BoundingBox(-34,-6,-124,34,18,0),literaryEntry()), // 0.4.201: the Sandersons' house and the park behind it
     WHEEL("wheel",Kind.MULTI_VISIT,64,new BoundingBox(-27,-1,-65,27,13,0),literaryEntry()),
     GHOSTS_SET("ghosts_set",Kind.MULTI_VISIT,65,new BoundingBox(-12,-5,-27,12,12,0),literaryEntry()),
     END_WORLD_CABIN("end_world_cabin",Kind.ONE_SHOT,66,new BoundingBox(-31,-9,-81,31,19,0),literaryEntry()),

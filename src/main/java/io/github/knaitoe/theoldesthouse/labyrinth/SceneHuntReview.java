@@ -173,12 +173,6 @@ public final class SceneHuntReview {
         if(p==LabyrinthPlace.CAMP_BLOOD)for(int[] node:new int[][]{{-4,-8},{4,-8},{10,-29},{27,-81},{-27,-77}})ready&=cover(l,b,node[0],node[1]);
         if(p==LabyrinthPlace.ELK_CARCASSES)ready&=forest(l,b);
         if(p==LabyrinthPlace.COSTUME_NIGHT)ready&=costumeLake(l,b);
-        if(p==LabyrinthPlace.DEVILS_ROCK){
-            ready&=surface(l,b,15,2,-32,FAMILY_BOARD,Direction.WEST);
-            ready&=add(l,b.offset(14,0,-6),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.WEST));
-            ready&=surface(l,b,14,1,-6,RECORDER,Direction.WEST);
-            ready&=surface(l,b,-13,2,-32,CHILD_FABRIC,Direction.EAST);
-        }
         ready&=source(l,origin,b,p);
         return ready;
     }

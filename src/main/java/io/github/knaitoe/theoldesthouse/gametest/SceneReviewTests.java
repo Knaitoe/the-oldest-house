@@ -332,7 +332,7 @@ public final class SceneReviewTests {
     });}
 
     @GameTest(template="empty",batch="review_source_custody",timeoutTicks=1600)
-    public static void replacingARepeatedLecternRetainsExactOriginalWordsComponentsAndPrivateReads(GameTestHelper h){run(h,LabyrinthPlace.DEVILS_ROCK,556000,f->{
+    public static void replacingARepeatedLecternRetainsExactOriginalWordsComponentsAndPrivateReads(GameTestHelper h){run(h,LabyrinthPlace.MINIATURES,556000,f->{
         for(int x=-16;x<=16;x++)for(int z=-42;z<=-2;z++)f.put(x,-1,z,Blocks.OAK_PLANKS);
         var rel=LiteraryRooms.source(f.place);f.put(rel.below(),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH));f.put(rel,Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true));
         var original=LiteraryTexts.source(f.place);original.set(DataComponents.CUSTOM_NAME,Component.literal("The actual found original"));((LecternBlockEntity)f.level.getBlockEntity(f.base.offset(rel))).setBook(original.copy());

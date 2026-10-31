@@ -79,7 +79,7 @@ public final class WitnessAccount {
         MOVIE_NIGHT("movie_night","The flashes over water","survival","Each burst held her where it found her, and I rowed in the dark between them to the pier. Nobody drowns in Indian Lake. It keeps the people she takes."),
         WINTER_LAKE("winter_lake","The dare","survival","I carried her ribbon out to the hole where she went down, and a hand took it. By June it was back on Hank's table, dry."),
         CAMP_BLOOD("camp_blood","The service road","survival","The essay had remembered an ordinary summer. I escaped beyond the last cabin before that summer returned."),
-        DEVILS_ROCK("devils_rock","The eight loose pages","memory","I read the eight pages in order. The last one asked me to tell him the path was still there."),
+        DEVILS_ROCK("devils_rock","The eight loose pages","memory","I read the eight pages in order and went out to the rock. Something in his shape ran from me, then after me, until I could not say which of us was chasing. It swam to the island, and his pennies were there."),
         WHEEL("wheel","The numbered doors","memory","Every numbered room had measured me against her. Beyond them, Mother was the size I remembered, and the front door opened onto an outside where I could stand up."),
         GHOSTS_SET("ghosts_set","The tape and the cut","connection","I returned to film the family. My frame kept some things and missed others. I left my own account beside the production's cut."),
         END_WORLD_CABIN("end_world_cabin","The visitors at dusk","release","I answered the visitors for myself. The screen held the consequence after my answer."),

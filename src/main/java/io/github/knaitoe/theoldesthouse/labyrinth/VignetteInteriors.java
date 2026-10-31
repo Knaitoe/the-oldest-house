@@ -16,7 +16,7 @@ public final class VignetteInteriors {
  public static final String STATE="vignette_interiors_0125b";
  public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.FLOORBOARDS,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY,
   LabyrinthPlace.HILL_NURSERY,LabyrinthPlace.MINIATURES,LabyrinthPlace.CRIMSON_HALL,LabyrinthPlace.CONFESSION,
-  LabyrinthPlace.DEVILS_ROCK,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.HOLLOWAY_CAMP);
+  LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.HOLLOWAY_CAMP);
  private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
  public record Edit(BlockPos relative,BlockState expected,BlockState next){}
  private static Work work;
@@ -84,17 +84,6 @@ public final class VignetteInteriors {
    for(int x:new int[]{-3,5})for(int z=-27;z<=-12;z++)if(!(x==-3&&(z==-24||z==-23)))partition(e,x,z,CONFESSION_OAK,CONFESSION_PAPER);
    for(int x=-3;x<=5;x++)for(int z:new int[]{-27,-12})if(!(z==-12&&x>=0&&x<=2))partition(e,x,z,CONFESSION_OAK,CONFESSION_PAPER);
    for(int z:new int[]{-12,-13})fit(e,-8,0,z,DICTATION_DESK);fit(e,-8,1,-12,INK_SET);fit(e,-8,1,-13,BEDSIDE_LAMP);fit(e,-9,0,-12,DICTATION_FILES,Direction.EAST);fit(e,8,0,-12,DICTATION_FILES,Direction.WEST);fit(e,8,1,-12,DESK_BELL);
-  }
-  case DEVILS_ROCK->{
-   shell(e,-16,16,-42,0,1,6,Blocks.CALCITE,WATCHROOM_FLOWERS);shell(e,-14,-3,-38,-20,1,3,Blocks.CALCITE,WATCHROOM_FLOWERS);fill(e,-15,-1,-41,15,-1,-1,Blocks.OAK_PLANKS,WATCHROOM_BOARDS);
-   // A real domestic kitchen beside the arrival, away from the camera, string and plate line at -18.
-   for(int z=-13;z<=-3;z++)if(z!=-9&&z!=-8)partition(e,-4,z,WATCHROOM_BOARDS,WATCHROOM_FLOWERS);
-   for(int x=-14;x<=-4;x++)partition(e,x,-13,WATCHROOM_BOARDS,WATCHROOM_FLOWERS);
-   for(int z:new int[]{-6,-7,-8})fit(e,-14,0,z,WATCHROOM_CUPBOARD,Direction.EAST);
-   fit(e,-14,0,-9,TRAILER_SINK,Direction.EAST);fit(e,-14,1,-6,HOLIDAY_CROCKERY);
-   for(int x:new int[]{-10,-9})fit(e,x,0,-8,KITCHEN_WORKTABLE);fit(e,-10,1,-8,HOLIDAY_CROCKERY);
-   fit(e,11,0,-27,CRAFT_BENCH);fit(e,11,1,-27,WATCHROOM_TRIPOD_CASE);fit(e,12,0,-27,WATCHROOM_DRAWER,Direction.WEST);fit(e,12,1,-27,WATCHROOM_TAPE);
-   fit(e,-12,0,-35,WATCHROOM_DRAWER,Direction.EAST);fit(e,-12,1,-35,BEDSIDE_LAMP);
   }
   case END_WORLD_CABIN->{
    shell(e,-12,12,-35,-13,1,5,Blocks.SPRUCE_PLANKS,HOLIDAY_PINE);fill(e,-4,0,-34,-4,5,-25,Blocks.SPRUCE_PLANKS,HOLIDAY_PINE);fill(e,-11,0,-25,-4,5,-25,Blocks.SPRUCE_PLANKS,HOLIDAY_PINE);

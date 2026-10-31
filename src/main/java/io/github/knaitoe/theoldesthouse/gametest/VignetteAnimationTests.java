@@ -312,19 +312,65 @@ public final class VignetteAnimationTests {
             if(finished[0])return;f.at(peer,place,.5,0,-3);f.look(peer,b.offset(0,1,5));
             var own=f.own(p,place);int placed=own.getInt("DiaryPlaced"),read=own.getInt("DiaryRead");
             for(int i=0;i<8;i++)if((placed&(1<<i))!=0&&(read&(1<<i))==0){
-                h.assertTrue(f.in.getBlockState(b.offset(LiteraryVignettes.diaryPosition(i))).is(LiteraryRegistry.PROP.get()),"a genuine unseen native page appears before it is read");
+                h.assertTrue(f.level(place).getBlockState(b.offset(LiteraryVignettes.diaryPosition(i))).is(LiteraryRegistry.PROP.get()),"a genuine unseen native page appears before it is read");
                 f.read(p,place,LiteraryVignettes.diaryPosition(i));if(i==0)firstOriginal[0]=f.own(p,place).getCompound("Original_Diary0").copy();break;
             }
             own=f.own(p,place);int visit=own.getInt("Visit"),target=Math.min(8,visit*3),expected=(1<<target)-1;
             if(own.getInt("DiaryRead")==expected&&own.getInt("Beat")>=visit){
                 h.assertTrue(visit==returns[0]+1,"the native arrival sequence advances only one distinct visit at a time");
                 if(visit<3){h.assertTrue(!own.getBoolean("Ready")&&Integer.bitCount(own.getInt("DiaryRead"))==visit*3,"one or two visits cannot read all eight original pages");f.reload();f.arrive(p,place);returns[0]++;}
-                else{finished[0]=true;h.assertTrue(returns[0]==2&&own.getInt("DiaryRead")==255&&own.getBoolean("Ready")&&firstOriginal[0]!=null,"all eight native page menus and three visits produce the original personal ending");f.reload();h.assertTrue(f.own(p,place).getCompound("Original_Diary0").equals(firstOriginal[0])&&f.own(peer,place).getInt("DiaryRead")==0&&!f.own(peer,place).getBoolean("Ready"),"reload retains exact reader-original words while the actual peer reads none");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"no shared page appearance grants a peer this memory");h.succeed();return;}
+                else{finished[0]=true;h.assertTrue(returns[0]==2&&own.getInt("DiaryRead")==255&&own.getInt(DevilsRockNights.CHASE)==DevilsRockNights.ARMED&&!own.getBoolean("Ready")&&firstOriginal[0]!=null,"all eight native page menus over three visits send the reader out to the rock; the pages alone are not the ending");f.reload();h.assertTrue(f.own(p,place).getCompound("Original_Diary0").equals(firstOriginal[0])&&f.own(peer,place).getInt("DiaryRead")==0&&f.own(peer,place).getInt(DevilsRockNights.CHASE)==0,"reload retains exact reader-original words while the actual peer reads none");h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"no page, and no shared page appearance, grants this memory before the island");h.succeed();return;}
             }
             f.at(p,place,.5,0,-3);f.look(p,b.offset(0,1,5));
         });
     }
     @AfterBatch(batch="literary_diary_sequence") public static void diaryDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.201 (owner: "the maddened chase sequence ... we chased each other until we forgot which was prey and which was
+     * predator"): at the rock the double runs; nearly caught, it is behind the reader; letting it catch up puts it ahead again.
+     * After the turns it swims to the island, crouches between the two rocks and is gone when looked at straight; only then is
+     * the account ready. The double is the reader's own.
+     */
+    @GameTest(template="empty",batch="literary_devils_chase",timeoutTicks=2000)
+    public static void theChaseTurnsRoundUntilItSwimsToTheIslandAndIsGoneWhenLookedAt(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.DEVILS_ROCK;var p=f.player("chase_reader",place);var peer=f.player("chase_peer",place);var b=f.base(place);var l=f.level(place);
+        f.chunks.hold(l,new net.minecraft.world.phys.AABB(Vec3.atLowerCornerOf(b.offset(-34,-6,-124)),Vec3.atLowerCornerOf(b.offset(34,18,0))));
+        final int[] stage={0},hunts={0},catches={0};
+        h.onEachTick(()->{
+            if(stage[0]==0){if(!f.chunks.ready())return;
+                var own=f.own(p,place);own.putInt("Visit",3);own.putInt("Beat",3);own.putInt("DiaryRead",255);own.putInt("DiaryPlaced",255);own.putInt(DevilsRockNights.CHASE,DevilsRockNights.ARMED);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+                f.at(p,place,.5,0,-71.5);f.look(p,b.offset(0,1,-60));stage[0]=1;return;}
+            f.at(peer,place,.5,0,-3);
+            var r=DevilsRockNights.run(p);
+            if(stage[0]==1){f.at(p,place,.5,0,-71.5);if(r==null)return;stage[0]=2;}
+            if(stage[0]==2){
+                h.assertTrue(r!=null,"the chase keeps running while the reader stays in the park");
+                var a=(LiteraryActor)l.getEntity(r.actor);h.assertTrue(a!=null&&a.role()==LiteraryActor.SILHOUETTE&&a.phase()==DevilsRockNights.DOUBLE_PHASE&&a.broadcastToPlayer(p)&&!a.broadcastToPlayer(peer),"the double in Tommy's shape is the reader's own");
+                h.assertTrue(f.own(p,place).getInt(DevilsRockNights.CHASE)==DevilsRockNights.RUNNING&&!f.own(p,place).getBoolean("Ready"),"running is not finishing");
+                var it=a.position().subtract(Vec3.atLowerCornerOf(b));
+                switch(r.mode){
+                    // Chasing it: come within reach, and it is behind the reader.
+                    case FLEE->{f.at(p,place,it.x+1.2,0,it.z+.6);}
+                    // Running from it: stand still, and it catches up and is ahead again.
+                    case HUNT->{if(r.ticks%40==0)hunts[0]++;}
+                    case BREAK->{f.at(p,place,2.5,0,-90.5);f.look(p,a.blockPosition().above());}
+                    case CROUCHED->{h.assertTrue(r.flips>=DevilsRockNights.FLIPS,"it broke for the pond only after turning round enough times: "+r.flips);
+                        f.at(p,place,10.5,0,-106.2);f.look(p,a.blockPosition().above());stage[0]=3;}
+                }
+                return;
+            }
+            if(stage[0]==3){
+                var own=f.own(p,place);if(!own.getBoolean("Ready"))return;
+                h.assertTrue(own.getInt(DevilsRockNights.CHASE)==DevilsRockNights.DONE&&DevilsRockNights.run(p)==null&&"followed_him_to_the_island".equals(own.getString("Outcome")),"looked at straight, it is gone and the island readies the account");
+                h.assertTrue(l.getBlockState(b.offset(DevilsRockHouse.ISLAND_PENNIES)).is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.VIGNETTE_DETAIL.get()),"his pennies lie between the two rocks");
+                f.source(p,place);f.read(p,place,LiteraryRooms.ending(place));
+                h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the reader who ran it has the memory; the peer in the house does not");
+                stage[0]=4;h.succeed();
+            }
+        });
+    }
+    @AfterBatch(batch="literary_devils_chase") public static void devilsChaseDone(ServerLevel l){close();}
 
     @GameTest(template="empty",batch="literary_wheel_sequence",timeoutTicks=420)
     public static void theWheelGoesRoundUntilTheReaderGoesBackThenOpensOnMotherAndLetsThemOutGrown(GameTestHelper h){

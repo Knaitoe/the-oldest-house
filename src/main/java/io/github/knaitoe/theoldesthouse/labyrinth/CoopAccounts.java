@@ -84,8 +84,8 @@ final class CoopAccounts {
             "%s {was} still out on the ice when I reached the bank."));
         together(CAMP_BLOOD,party("%s had got past the last cabin before me.",
             "%s {was} still among the cabins when I reached the service road."));
-        together(DEVILS_ROCK,party("%s had read the pages before me.",
-            "%s {was} still reading when I put down the eighth page."));
+        together(DEVILS_ROCK,party("%s had been out to the island before me.",
+            "%s {was} still somewhere in the woods when I reached the island."));
         together(GHOSTS_SET,party("%s had finished filming before me. Their footage kept different moments of the same days.",
             "%s {was} still behind a camera of their own when I left."));
         together(END_WORLD_CABIN,party("%s had answered the visitors before me.",
