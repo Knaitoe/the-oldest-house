@@ -80,6 +80,7 @@ A tall brick lift hall on three floors. From the door you see the far door high 
 - **The way.** Call the west lift down and ride it to the walkway; the east lift has come down to meet you there. Ride the east lift up, and the west lift goes back to the ground.
 - **Nobody stranded:**
   - A lift never comes down onto someone below it in its shaft. Someone at the very bottom is safe under a lift stopping a floor above them.
+  - This is checked at every step, not only when a lift is sent. A review found that someone coming into the shaft after a lift was sent could have its boards laid through them. Now a lift whose next step would close on anyone not riding it stops short, and the other lift, on the same counterweight, waits with it. Both go on once they are clear. Creatures standing on a lift ride it as players do.
   - The bottom of each shaft holds water.
   - The west shaft's bottom opens onto the floor.
   - The east shaft has a ladder in a slot in its back wall, up to the walkway's height, with its own call cord in a niche beside it.
@@ -142,6 +143,7 @@ All in `ExplorationPassTests`, each room in its own batch:
   - across the walkway, up the east lift, to the far door;
   - the gallery solving and the ladders, with their rails rejoined;
   - someone at the bottom of the east shaft safe under a lift stopping above and refused when it would come further, and the ladder out;
+  - a lift sent down with its shaft clear stops short of someone who comes in under it, the other lift waits, nobody is hurt, and both go on once they are clear;
   - kept through a reload and a rebuild.
 - **`theTurningStairNeedsBothHandles`:**
   - the geared handle alone never lines it up;

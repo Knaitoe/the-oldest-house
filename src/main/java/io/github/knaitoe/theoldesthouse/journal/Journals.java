@@ -145,7 +145,9 @@ public final class Journals extends SavedData {
         var data=get(p.server);
         if(!data.carries(p))return Edit.NOT_CARRIED;
         if(index<1||index>PAGES)return Edit.NO_SUCH_PAGE;
-        if(data.torn(p.getUUID(),index))return Edit.TORN;
+        // A page torn out is refused here only when nothing the screen sent before is still on its way; otherwise keep() decides,
+        // after whatever came first (a page taken back into its stub may be written again).
+        if(!waiting(p)&&data.torn(p.getUUID(),index))return Edit.TORN;
         var page=JournalPage.fromReader(sent);if(page==null)return Edit.TOO_MUCH;
         var b=data.book(p.getUUID());long now=p.server.getTickCount();
         long refill=(now-b.refilled)/REFILL_TICKS;
@@ -153,8 +155,28 @@ public final class Journals extends SavedData {
         if(b.tokens>=TOKENS)b.refilled=now;
         if(b.tokens<=0)return Edit.TOO_FAST;
         b.tokens--;
-        p.getTextFilter().processMessageBundle(List.of(page.text())).thenAcceptAsync(filtered->data.keep(p,index,filtered),p.server);
+        inOrder(p,()->p.getTextFilter().processMessageBundle(List.of(page.text())).thenAcceptAsync(filtered->get(p.server).keep(p,index,filtered),p.server));
         return Edit.ACCEPTED;
+    }
+    /**
+     * 0.4.199: each reader's writing, tearing and taking back, in the order their screen sent them. The text filter answers
+     * later, so a page torn out just after it was written waited for nothing and could come away with the words from before, or
+     * not at all while the screen already showed its stub. Each step now starts only when the one before has been kept; with
+     * nothing on its way, a step runs at once, as before.
+     */
+    private static final Map<UUID,java.util.concurrent.CompletableFuture<?>> ORDER=new HashMap<>();
+    static boolean waiting(ServerPlayer p){return ORDER.containsKey(p.getUUID());}
+    /** A server stopping drops what was still on its way, so the next one never waits on it. */
+    @SubscribeEvent public static void stopping(net.neoforged.neoforge.event.server.ServerStoppingEvent e){ORDER.clear();}
+    static void inOrder(ServerPlayer p,java.util.function.Supplier<java.util.concurrent.CompletableFuture<?>> step){
+        var id=p.getUUID();var server=p.server;var before=ORDER.get(id);
+        java.util.concurrent.CompletableFuture<Void> next=before==null?started(step):before.handle((v,e)->(Void)null).thenComposeAsync(v->started(step),server);
+        if(next.isDone())return;
+        ORDER.put(id,next);next.whenCompleteAsync((v,e)->ORDER.remove(id,next),server);
+    }
+    private static java.util.concurrent.CompletableFuture<Void> started(java.util.function.Supplier<java.util.concurrent.CompletableFuture<?>> step){
+        java.util.concurrent.CompletableFuture<?> f;try{f=step.get();}catch(RuntimeException e){TheOldestHouse.LOGGER.warn("A journal step failed.",e);f=null;}
+        return f==null?java.util.concurrent.CompletableFuture.completedFuture(null):f.handle((v,e)->{if(e!=null)TheOldestHouse.LOGGER.warn("A journal step failed.",e);return (Void)null;});
     }
     private void keep(ServerPlayer p,int index,List<FilteredText> filtered){
         if(filtered.size()!=1)return;

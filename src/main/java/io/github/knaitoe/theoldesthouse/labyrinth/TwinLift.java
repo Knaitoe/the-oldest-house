@@ -13,9 +13,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -31,7 +33,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * cord to go down; each landing has a brass-handled cord that calls its lift a floor toward it. Ride the west lift to the
  * walkway, and the east lift has come down to meet you there; ride it up, and the west lift goes back to the ground.
  *
- * Nothing can be stranded: a lift never comes down onto someone below it; the bottom of each shaft holds water; the west
+ * Nothing can be stranded: a lift never comes down onto someone below it, checked at every step (0.4.199): a lift sent while
+ * the shaft was clear stops short of anyone who has come into its way since, and the two go on once they are clear. The
+ * bottom of each shaft holds water; the west
  * shaft's bottom opens onto the floor, and the east shaft has a ladder in a slot in its back wall up to the walkway's
  * height, with its own call cord beside it. Once anyone has stood on the top gallery, ladders are let down from the walkway
  * and the gallery, so the room is quick to cross again.
@@ -150,19 +154,43 @@ public final class TwinLift {
     public static void step(ServerLevel l,BlockPos b){
         var s=state(l);int a=s.getInt("A");
         int ha=s.getInt("HA"),hb=s.getInt("HB"),ta=height(a),tb=height(2-a);
+        // One counterweight: if either lift's next step would close on someone, neither moves until they are clear.
+        var held=new ArrayList<LivingEntity>();
+        if(ha!=ta)held.addAll(inTheWay(l,b,AX,ha,Integer.signum(ta-ha)));
+        if(hb!=tb)held.addAll(inTheWay(l,b,BX,hb,Integer.signum(tb-hb)));
+        if(!held.isEmpty()){
+            for(var e:held)if(e instanceof ServerPlayer p)PuzzleRooms.say(p,"The lift has stopped short of you. It waits for you to be clear of the shaft.");
+            if(s.getLong("Held")<l.getGameTime()-40){s.putLong("Held",l.getGameTime());save(l,s);l.playSound(null,b.offset(0,8,SZ+1),SoundEvents.CHAIN_HIT,SoundSource.BLOCKS,1F,.6F);}
+            return;
+        }
         if(ha!=ta){s.putInt("HA",move(l,b,AX,ha,Integer.signum(ta-ha),false));}
         if(hb!=tb){s.putInt("HB",move(l,b,BX,hb,Integer.signum(tb-hb),true));}
         save(l,s);
         if(!moving(l))l.playSound(null,b.offset(0,8,SZ+1),SoundEvents.CHAIN_STEP,SoundSource.BLOCKS,1F,.7F);
     }
+    /** Whoever stands on a lift: players and creatures alike ride it. */
+    static List<LivingEntity> riders(ServerLevel l,BlockPos b,int x0,int h){
+        double top=b.getY()+h+1;
+        return l.getEntitiesOfClass(LivingEntity.class,shaft(b,x0),e->e.isAlive()&&!e.isSpectator()&&e.getY()>=top-.3&&e.getY()<=top+1.5);
+    }
+    static AABB shaft(BlockPos b,int x0){return new AABB(b.getX()+x0,b.getY()-2,b.getZ()+SZ,b.getX()+x0+3,b.getY()+16,b.getZ()+SZ+3);}
+    /**
+     * 0.4.199: anyone, not riding, whose body is where the lift's boards would go next. Checked at every step, since someone can
+     * come into the shaft after the lift was sent: under it, or beside its boards, or in the water at the bottom.
+     */
+    static List<LivingEntity> inTheWay(ServerLevel l,BlockPos b,int x0,int h,int dir){
+        var riders=riders(l,b,x0,h);int y=h+dir;
+        var boards=new AABB(b.getX()+x0,b.getY()+y,b.getZ()+SZ,b.getX()+x0+3,b.getY()+y+1,b.getZ()+SZ+3).deflate(.01);
+        return l.getEntitiesOfClass(LivingEntity.class,boards,e->e.isAlive()&&!e.isSpectator()&&!riders.contains(e));
+    }
     static int move(ServerLevel l,BlockPos b,int x0,int h,int dir,boolean east){
-        var riders=new ArrayList<ServerPlayer>();double top=b.getY()+h+1;
-        for(var p:l.players())if(!p.isSpectator()&&inShaft(b,x0,p)&&p.getY()>=top-.3&&p.getY()<=top+1.5)riders.add(p);
-        if(dir>0)for(var p:riders)HouseInternalTeleport.translate(p,0,1,0);
+        var riders=riders(l,b,x0,h);
+        if(dir>0)for(var e:riders)ride(e,1);
         clearCords(l,b,x0,h);layer(l,b,x0,h,false,east);layer(l,b,x0,h+dir,true,east);
-        if(dir<0)for(var p:riders)HouseInternalTeleport.translate(p,0,-1,0);
+        if(dir<0)for(var e:riders)ride(e,-1);
         return h+dir;
     }
+    private static void ride(LivingEntity e,int dy){if(e instanceof ServerPlayer p)HouseInternalTeleport.translate(p,0,dy,0);else e.teleportTo(e.getX(),e.getY()+dy,e.getZ());}
 
     // ------------------------------------------------------------------ hands on
     static boolean use(ServerPlayer p,ServerLevel l,BlockPos b,BlockPos pos,BlockState s){

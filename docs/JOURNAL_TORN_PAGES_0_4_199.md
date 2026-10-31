@@ -14,6 +14,7 @@ This is step 5 of [JOURNAL_DESIGN.md](JOURNAL_DESIGN.md): torn pages and pinning
   - the other hand's ink;
   - where and when it was begun.
 - **The filter.** The words pass the server's text filter as they are torn, as they did when they were written.
+- **In order.** Each reader's writing, tearing and taking back are kept in the order their screen sent them (`Journals.inOrder`). The filter answers later, so in the first version a page torn just after it was written could come away with the words from before. A page begun and torn at once could be refused as blank while the screen already showed its stub. Now each step starts only when the one before has been kept. If a tear or a taking back that had to wait cannot go ahead, the screen is redrawn from the server's copy of the book.
 - **Server side.** `TornPages.tear` and `JournalTearPayload` handle tearing. The screen is redrawn from the server's copy of the book.
 
 ## Reading, pinning and leaving it
@@ -68,6 +69,10 @@ It counts toward nothing: no Witness, no advancement, no reward. Witness stays 5
   - the writer takes it back from the stub;
   - the other copy goes blank and leaves the pocket;
   - a page torn again is a new copy.
+- **`JournalTests.aPageTornJustAfterItWasWrittenTakesTheWordsWrittenLast`:**
+  - an edit and a tear sent in the same tick: the torn page holds the words written last;
+  - a blank page written and torn at once is not refused as blank;
+  - with nothing on its way, the stub answers at once.
 - **`JournalTests.tornPagesPinAndOnlySixAreLeftOutInTheHouseBeyondTheManor`:**
   - six pages pinned on a wall in a hall, their glance and placement checked;
   - no page pinned over another;

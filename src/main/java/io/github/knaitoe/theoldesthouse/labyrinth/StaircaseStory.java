@@ -116,15 +116,23 @@ public final class StaircaseStory {
         for(int i=0;i<=StaircaseFire.REQUIRED;i++)if(leafName(i).equals(name)||StaircaseFire.legacyName(i).equals(name))return true;
         return false;
     }
+    /** The written content of this explorer's binding, as the item keeps it: its title leaf, then every bound leaf not yet burned. */
+    private static WrittenBookContent content(ServerPlayer p,CompoundTag own) { return content(p,own,Map.of()); }
     /**
-     * The written content of this explorer's binding: its title leaf, then every bound leaf not yet burned, each followed by the
-     * line of the reader's own it quotes, if it quotes one (0.4.199).
+     * As its reader reads it: each leaf followed by the line of the reader's own it quotes, if it quotes one (0.4.199). The item
+     * never keeps these (0.4.199): a book set in a chest, lent or left anywhere would carry them to whoever's client is sent it.
+     * They are written into the reader's own screen when they open it, and nowhere else (reading).
      */
-    private static WrittenBookContent content(ServerPlayer p,CompoundTag own) {
-        String name=p.getGameProfile().getName();var quoted=quotes(p,own);
+    private static WrittenBookContent content(ServerPlayer p,CompoundTag own,Map<Integer,String> quoted) {
+        String name=p.getGameProfile().getName();
         var pages=new ArrayList<String>();pages.add(front(name,own));
         for(int i=burned(own);i<found(own);i++){pages.add(leaf(own,i));var line=quoted.get(i);if(line!=null)pages.add(line);}
         return HouseWriting.book("House of Leaves",name,hand(own),pages).get(DataComponents.WRITTEN_BOOK_CONTENT);
+    }
+    /** The pages a reader sees on opening this book: their own living original shows its quoted lines; any other book, its own pages. */
+    public static List<String> shown(ServerPlayer p,ItemStack book) {
+        var own=record(p);var content=exists(own)&&isCurrent(p,book,own)?content(p,own,quotes(p,own)):book.get(DataComponents.WRITTEN_BOOK_CONTENT);
+        return content==null?List.of():content.pages().stream().map(page->page.raw().getString()).toList();
     }
 
     // ------------------------------------------------------------------ 0.4.199: the reader's own words (journal/Quotes)
@@ -153,7 +161,7 @@ public final class StaircaseStory {
     }
     public static String quote(String place,String line) { return StaircaseProse.quoted(place,line); }
     static boolean isQuote(String page) { return page.startsWith("In ")&&page.contains(StaircaseProse.QUOTE_MARK); }
-    /** A House of Leaves anyone else holds, or that lies on the ground or a lectern, keeps none of its reader's quoted lines. */
+    /** Older stacks (0.4.199) kept the quoted lines; anyone else's, or one on the ground or a lectern, loses them. */
     public static void unquote(ItemStack book) {
         if(!book.is(Items.WRITTEN_BOOK))return;var data=book.get(DataComponents.CUSTOM_DATA);if(data==null||!data.copyTag().hasUUID("StairReader"))return;
         var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);if(content==null)return;
@@ -163,9 +171,22 @@ public final class StaircaseStory {
     @SubscribeEvent public static void dropped(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e) {
         if(!e.getLevel().isClientSide()&&e.getEntity() instanceof net.minecraft.world.entity.item.ItemEntity item){var book=item.getItem();if(book.is(Items.WRITTEN_BOOK)){var copy=book.copy();unquote(copy);if(!ItemStack.isSameItemSameComponents(copy,book))item.setItem(copy);}}
     }
-    /** Read by a reader whose book it is not, or set on a lectern for anyone to read: without the quoted lines. */
+    /**
+     * Opened by its own reader, the book shows their quoted lines: they are set on the stack, sent to that reader's client alone,
+     * the book is opened from them and they are taken off again before anything else can be sent, so the stack never keeps them
+     * (0.4.199). Opened by anyone else, it is the book as it is (an older stack that still holds quotes loses them).
+     */
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void reading(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem e) {
-        if(e.getEntity() instanceof ServerPlayer p&&foreign(p,e.getItemStack()))unquote(e.getItemStack());
+        if(!(e.getEntity() instanceof ServerPlayer p))return;var book=e.getItemStack();
+        if(foreign(p,book)){unquote(book);return;}
+        var own=record(p);if(!exists(own)||!isCurrent(p,book,own))return;
+        var quoted=quotes(p,own);if(quoted.isEmpty())return;
+        var plain=book.get(DataComponents.WRITTEN_BOOK_CONTENT);var read=content(p,own,quoted);if(read.equals(plain))return;
+        book.set(DataComponents.WRITTEN_BOOK_CONTENT,read);p.containerMenu.broadcastChanges();
+        p.openItemGui(book,e.getHand());
+        if(plain==null)book.remove(DataComponents.WRITTEN_BOOK_CONTENT);else book.set(DataComponents.WRITTEN_BOOK_CONTENT,plain);p.containerMenu.broadcastChanges();
+        p.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(book.getItem()));
+        e.setCanceled(true);e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void lectern(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock e) {
         if(e.getEntity() instanceof ServerPlayer&&e.getLevel().getBlockState(e.getPos()).is(net.minecraft.world.level.block.Blocks.LECTERN))unquote(e.getItemStack());

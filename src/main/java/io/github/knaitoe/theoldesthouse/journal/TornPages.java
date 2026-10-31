@@ -94,16 +94,22 @@ public final class TornPages {
         var data=Journals.get(p.server);
         if(!data.carries(p))return Tear.NOT_CARRIED;
         if(index<1||index>Journals.PAGES)return Tear.NO_SUCH_PAGE;
-        var b=data.book(p.getUUID());if(b.torn.containsKey(index))return Tear.ALREADY;
-        var page=b.pages.get(index);if(page==null||page.text().isBlank())return Tear.BLANK;
-        p.getTextFilter().processMessageBundle(List.of(page.text())).thenAcceptAsync(filtered->tornOut(p,index,filtered),p.server);
-        return Tear.TEARING;
+        // 0.4.199: the tear waits for any writing the screen sent before it (Journals.inOrder), and takes the page as last kept.
+        // If it runs at once its answer is known here; if it waits, the screen is shown the book as it is once it has run.
+        var result=new Tear[]{Tear.TEARING};
+        Journals.inOrder(p,()->{
+            var b=Journals.get(p.server).book(p.getUUID());var page=b.pages.get(index);
+            result[0]=b.torn.containsKey(index)?Tear.ALREADY:page==null||page.text().isBlank()?Tear.BLANK:Tear.TEARING;
+            if(result[0]!=Tear.TEARING){reopen(p,index);return null;}
+            return p.getTextFilter().processMessageBundle(List.of(page.text())).thenAcceptAsync(filtered->tornOut(p,index,filtered),p.server);
+        });
+        return result[0];
     }
     private static void tornOut(ServerPlayer p,int index,List<FilteredText> filtered){
         var data=Journals.get(p.server);var b=data.book(p.getUUID());var page=b.pages.get(index);
-        if(filtered.size()!=1||page==null||b.torn.containsKey(index)||!data.carries(p))return;
+        if(filtered.size()!=1||page==null||b.torn.containsKey(index)||!data.carries(p)){reopen(p,index);return;}
         String text=filtered.getFirst().filteredOrEmpty();
-        if(text.isBlank()){p.displayClientMessage(Component.literal("Nothing on the page would come away."),true);return;}
+        if(text.isBlank()){p.displayClientMessage(Component.literal("Nothing on the page would come away."),true);reopen(p,index);return;}
         var torn=new Torn();torn.serial=++b.tornSerial;torn.page=page.withWriting(text,page.placed());
         b.pages.remove(index);b.torn.put(index,torn);Quotes.torn(b,index);data.setDirty();
         Journals.give(p,stack(p.getUUID(),b.name.isEmpty()?p.getGameProfile().getName():b.name,index,torn.serial));
@@ -192,7 +198,10 @@ public final class TornPages {
     /** The writer takes their own page back: from the stub in their journal, or from the page itself. */
     public static boolean reclaim(ServerPlayer p,int index){
         var data=Journals.get(p.server);if(!data.carries(p))return false;
-        return takeBack(p.server,p.getUUID(),index,null);
+        // 0.4.199: in turn with the reader's writing and tearing (Journals.inOrder).
+        var result=new boolean[]{true};
+        Journals.inOrder(p,()->{result[0]=takeBack(p.server,p.getUUID(),index,null);if(!result[0])reopen(p,index);return null;});
+        return result[0];
     }
     /** Moderation: every torn page of a reader goes back into its stub, wherever it was. Returns how many. */
     public static int clear(MinecraftServer server,UUID owner){

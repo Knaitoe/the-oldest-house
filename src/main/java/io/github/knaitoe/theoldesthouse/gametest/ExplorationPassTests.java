@@ -611,9 +611,20 @@ public final class ExplorationPassTests {
                 h.assertTrue(press(l,down,niche)&&TwinLift.level(l)==1&&!TwinLift.moving(l),"and will not come further down onto them");
                 for(int y=0;y<=TwinLift.LADDER_TOP;y++)h.assertTrue(l.getBlockState(b.offset(TwinLift.SLOT.atY(y))).is(Blocks.LADDER),"a ladder in the slot in the shaft's back wall: "+y);
                 h.assertTrue(clear(l,b.offset(TwinLift.SLOT.atY(TwinLift.LADDER_TOP+1)))&&stands(l,b.offset(TwinLift.SLOT.getX(),TwinLift.LADDER_TOP,sz)),"from its top they step onto the lift at the walkway");
+                // 0.4.199: checked at every step. Sent down while its shaft is clear, the east lift stops short of someone who comes in
+                // under it after it was sent, and both lifts wait; once they are clear, the two go on.
+                down.teleportTo(l,b.getX()+.5,b.getY()+10,b.getZ()-13.5,0,0);
+                h.assertTrue(press(l,p,b.offset(bx+2,TwinLift.heightB(l)+1,sz+1))&&TwinLift.moving(l)&&TwinLift.level(l)==2,"the east lift's dark cord sends it down, the shaft clear");
+                TwinLift.step(l,b);int heldA=TwinLift.heightA(l),heldB=TwinLift.heightB(l);
+                down.teleportTo(l,b.getX()+bx+1.5,b.getY()+heldB-2,b.getZ()+sz+1.5,0,0);
+                for(int i=0;i<4;i++)TwinLift.step(l,b);
+                h.assertTrue(TwinLift.moving(l)&&TwinLift.heightA(l)==heldA&&TwinLift.heightB(l)==heldB&&!PuzzleFittingBlock.is(l.getBlockState(b.offset(bx+1,heldB-1,sz+1)),PuzzleFittingBlock.Kind.PLATFORM),"it stops short of the one who came in under it, and the other lift waits with it: "+heldA+"/"+heldB);
+                h.assertTrue(down.isAlive()&&down.getHealth()==down.getMaxHealth(),"nothing laid through them");
+                down.teleportTo(l,b.getX()+.5,b.getY()+10,b.getZ()-13.5,0,0);settle.run();
+                h.assertTrue(!TwinLift.moving(l)&&TwinLift.heightB(l)==TwinLift.height(0)&&TwinLift.heightA(l)==TwinLift.height(2),"clear of the shaft, the two go on to where they were sent");
                 // Solved stays solved: through a reload and a rebuild.
                 f.reload();TwinLift.build(l,b);
-                h.assertTrue(PuzzleRooms.solved(f.data(),place)&&TwinLift.level(l)==1&&l.getBlockState(b.offset(0,2,sz+3)).is(Blocks.LADDER)&&l.getBlockState(b.offset(0,7,-12)).is(Blocks.LADDER),"rebuilt, the lifts stand as they were left and the ladders stay down");
+                h.assertTrue(PuzzleRooms.solved(f.data(),place)&&TwinLift.level(l)==2&&l.getBlockState(b.offset(0,2,sz+3)).is(Blocks.LADDER)&&l.getBlockState(b.offset(0,7,-12)).is(Blocks.LADDER),"rebuilt, the lifts stand as they were left and the ladders stay down");
                 h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth()&&p.getInventory().isEmpty()&&WitnessAccount.count(f.data(),p.getUUID())==0,"nothing hurt, nothing carried, nothing counted");
                 exportRoom(l,b,place);
             }).thenSucceed();
