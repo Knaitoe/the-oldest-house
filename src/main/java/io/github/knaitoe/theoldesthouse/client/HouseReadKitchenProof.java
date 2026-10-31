@@ -103,7 +103,7 @@ public final class HouseReadKitchenProof extends Screen {
             try{
                 var at=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"proof/kitchen_body_"+k);
                 mc.getTextureManager().register(at,new net.minecraft.client.renderer.texture.DynamicTexture(HouseBodyClient.painted(body,HouseBodyClient.defaults(account))));
-                skins.add(new Skin(at,(c[3]<0?"account colours":"crayon "+c[3])+", "+(c[4]==0?"its own face":HouseReadKitchen.FACES.get(c[4]-1))));
+                skins.add(new Skin(at,c[3]<0?"account colours":"crayon "+c[3]+", "+HouseReadKitchen.FACES.get(c[4]-1)));
             }catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
         }
         return skins;
