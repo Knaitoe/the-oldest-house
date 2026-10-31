@@ -31,7 +31,7 @@ final class OnwardPlacements {
         r.put(CRIMSON_HALL,0,0,-43,SOUTH,()->Blocks.DARK_OAK_DOOR);
         r.put(BLY_ROUTE,0,0,-53,SOUTH,OnwardRegistry.PANEL); // beyond the conservatory pond
         r.put(ELK_FAN,4,0,-28,SOUTH,()->Blocks.OAK_DOOR);
-        r.put(MAPPING_INTERIOR,0,0,-36,SOUTH,HouseReadRegistry.SCREEN);
+        r.put(MAPPING_INTERIOR,7,2,-28,NORTH,HouseReadRegistry.SCREEN);
         r.put(CONFESSION,0,0,-33,SOUTH,()->Blocks.DARK_OAK_DOOR);
         r.put(DEVILS_ROCK,0,0,-42,SOUTH,OnwardRegistry.CABIN);
         r.put(WHEEL,-3,0,-63,SOUTH,OnwardRegistry.PANEL);

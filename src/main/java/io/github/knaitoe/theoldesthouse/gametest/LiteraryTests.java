@@ -312,14 +312,53 @@ public final class LiteraryTests {
         for(int n=0;n<3;n++){final int index=n;h.runAfterDelay(10+n*210,()->{var disc=p.getInventory().items.stream().filter(s->s.is(records[index])).findFirst().orElseThrow().copy();box.setItem(0,disc);h.assertTrue(box.getSongPlayer().isPlaying(),"the owned cylinder starts native audio");});}
         h.runAfterDelay(25,()->h.assertTrue(f.own(p,place).getInt("HeardCylinders")==0,"a few present ticks cannot complete the first voice"));h.runAfterDelay(635,()->{h.assertTrue(f.own(p,place).getInt("HeardCylinders")==7&&f.own(p,place).getBoolean("Ready"),"all three actual native song lengths and the shovel action resolve the hall");f.read(p,place,LiteraryRooms.ending(place));h.succeed();});}
     @AfterBatch(batch="literary_cylinders") public static void cylindersDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_mapping",timeoutTicks=900)
-    public static void theRealLowPassageChoiceAndReturnObserveTheBrothersConsequence(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;var p=f.player("mapping_reader",place);f.source(p,place);f.at(p,place,-6,0,-26);f.look(p,f.base(place).offset(-9,1,-26));
-        // Each step waits for the one before it, so a slow full run cannot spend the clock before the brother arrives.
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("SilhouetteSeen"),"the native silhouette must actually be seen")).thenExecute(()->f.at(p,place,0,-5,-42))
-          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("BeyondRoof")&&p.getForcedPose()==Pose.SWIMMING,"the player actually crawls beyond the manufactured roof"))
-          .thenExecute(()->{f.click(p,place,LiteraryRooms.PILE);h.assertTrue(f.own(p,place).getBoolean("PileChosen")&&p.getInventory().countItem(LiteraryRegistry.PHOTOGRAPH.get())==1,"taking the actual pile creates one owned photograph");f.arrive(p,place);f.at(p,place,3,0,-31);f.look(p,f.base(place).offset(6,1,-32));})
-          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("PileBroken"),"returning to see the fading brother resolves this player's kept-things choice"))
-          .thenExecute(()->f.read(p,place,LiteraryRooms.ending(place))).thenSucceed();}
+    /** 0.4.201 (docs/MAPPING_INTERIOR_REWORK.md): five visits to the house. The window at 2:49, the crossing and the bead; the
+     *  map, the crawl past the roofline, the seizure and deadfooting; the dogs gone and him over the bed; the water; Dino. */
+    @GameTest(template="empty",batch="literary_mapping",timeoutTicks=4000)
+    public static void fourNightsAtTheWindowEndInTheWaterUnderTheHouse(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;var p=f.player("mapping_reader",place);var b=f.base(place);
+        boolean[] holding={false};Vec3 base=Vec3.atLowerCornerOf(b);
+        h.onEachTick(()->{if(holding[0]){f.at(p,place,4.5,-5,-63.7);p.setShiftKeyDown(true);}});
+        java.util.function.IntFunction<Boolean> woke=v->f.own(p,place).getInt("WokeVisit201")==v;
+        h.startSequence()
+          // Night one: the front window, his crossing, the bead where he walked, the floor plan and its map.
+          .thenWaitUntil(()->h.assertTrue(woke.apply(1)&&p.position().distanceToSqr(base.add(MappingHouse.WAKE))<1,"night one begins at the front window"))
+          .thenExecute(()->f.look(p,b.offset(0,3,-19)))
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("CrossedVisit201")==1&&f.own(p,place).getBoolean("SilhouetteSeen"),"he crosses from the kitchen doorway down the hall, and is seen doing it: "+crossingState(f,p,place)))
+          .thenExecute(()->{var beads=f.level(place).getEntitiesOfClass(ItemEntity.class,new AABB(b).inflate(40),e->e.getItem().is(LiteraryRegistry.BEAD.get()));
+              h.assertTrue(beads.size()==1&&beads.getFirst().position().distanceToSqr(base.add(MappingHouse.BEAD))<1,"one bead lies on the hall carpet where he walked");
+              p.getInventory().add(beads.getFirst().getItem().copy());beads.getFirst().discard();f.source(p,place);})
+          .thenWaitUntil(()->h.assertTrue(p.getInventory().countItem(Items.FILLED_MAP)==1,"the floor plan comes with a real map of the lot"))
+          // Night two: the crossing again, Dino's seizure, the feet gone to sleep, the crawl past the roofline.
+          .thenExecute(()->f.arrive(p,place)).thenWaitUntil(()->h.assertTrue(woke.apply(2),"night two, the window again"))
+          .thenExecute(()->f.look(p,b.offset(0,3,-19)))
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("CrossedVisit201")==2&&f.own(p,place).contains("Seizure201"),"he crosses again, and in the boys' room Dino begins to seize"))
+          .thenExecute(()->{f.at(p,place,-5.5,2,-24.5);p.setShiftKeyDown(true);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("DinoHelped")&&f.own(p,place).getBoolean("Deadfooted201")&&MappingHouse.hatchShown(f.level(place),b),"kneeling turns Dino on his side, and the feet go to sleep and show the seam in the utility room floor"))
+          .thenExecute(()->{p.setShiftKeyDown(false);f.at(p,place,4.5,-2,-41.5);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("BeyondRoof")&&p.getForcedPose()==Pose.SWIMMING,"crawling, past where the house stops"))
+          .thenExecute(()->{f.click(p,place,MappingHouse.PLYWOOD);h.assertTrue(!f.level(place).getBlockState(b.offset(MappingHouse.PLYWOOD)).getValue(TrapDoorBlock.OPEN),"the plywood door will not lift yet");})
+          // Night three: the dogs gone, what is left of them, him over Dino's bed.
+          .thenExecute(()->f.arrive(p,place)).thenWaitUntil(()->h.assertTrue(woke.apply(3),"night three"))
+          .thenExecute(()->{f.at(p,place,-3.5,2,-22.5);f.look(p,b.offset(-6,3,-25));})
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("OverSeenVisit201_3")&&f.level(place).getBlockState(b.offset(MappingHouse.DOG_GATE)).getValue(FenceGateBlock.OPEN)&&f.level(place).getBlockState(b.offset(MappingHouse.REMAINS)).is(Blocks.SKELETON_SKULL),"he stands over Dino's bed; the dogs' gate hangs open and their remains are under the yard"))
+          // Night four: he goes down to the water; held under, he stops; the bead goes in after him.
+          .thenExecute(()->f.arrive(p,place)).thenWaitUntil(()->h.assertTrue(woke.apply(4),"night four"))
+          .thenExecute(()->{f.at(p,place,-3.5,2,-22.5);f.look(p,b.offset(-6,3,-25));})
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("FatherWent201")&&f.level(place).getBlockState(b.offset(MappingHouse.PLYWOOD)).getValue(TrapDoorBlock.OPEN),"he goes down through the floor, and the plywood door stands open over the water"))
+          .thenExecute(()->holding[0]=true)
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Drowned201"),"crouched on him in the water, he is held under until he stops"))
+          .thenExecute(()->{var bead=new ItemEntity(f.level(place),b.getX()+4.5,b.getY()-4.8,b.getZ()-64.5,new ItemStack(LiteraryRegistry.BEAD.get()));f.level(place).addFreshEntity(bead);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("LetGo201"),"the bead dropped into the water goes down after him"))
+          .thenExecute(()->{holding[0]=false;p.setShiftKeyDown(false);f.at(p,place,4.5,-2,-60.5);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Chosen")&&f.own(p,place).getBoolean("PileBroken"),"climbing back out of the water settles it"))
+          // The next night: Dino awake at the kitchen table, and the account.
+          .thenExecute(()->f.arrive(p,place)).thenWaitUntil(()->h.assertTrue(woke.apply(5),"the night after"))
+          .thenExecute(()->{f.at(p,place,3.5,2,-17.5);f.look(p,b.offset(5,3,-15));})
+          .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready")&&f.own(p,place).getString("Outcome").equals("drowned_him_again_and_let_the_bead_go"),"seeing Dino awake at the table readies the account"))
+          .thenExecute(()->{f.read(p,place,LiteraryRooms.ending(place));var book=LiteraryTexts.ending(p,place,f.own(p,place));var words=String.join(" ",book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(x->x.raw().getString()).toList()).replaceAll("\\s+"," ");h.assertTrue(words.contains("let the bead go into the water after him"),"the account tells it: "+words);}).thenSucceed();}
+    private static String crossingState(Fixture f,ServerPlayer p,LabyrinthPlace place){var own=f.own(p,place);var world=LiteraryVignettes.shared(f.data(),place);String key="Father_"+p.getUUID();
+        String father=world.hasUUID(key)&&f.level(place).getEntity(world.getUUID(key)) instanceof LiteraryActor a?a.position().subtract(Vec3.atLowerCornerOf(f.base(place)))+(a.isInvisible()?" unseen":" in view"):"no father";
+        return "crossed "+own.getInt("CrossedVisit201")+", seen "+own.getBoolean("SilhouetteSeen")+", route "+own.getInt("Route201")+", father "+father+", reader "+p.position().subtract(Vec3.atLowerCornerOf(f.base(place)));}
     @AfterBatch(batch="literary_mapping") public static void mappingDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_fan",timeoutTicks=250)
     public static void ActualPlacedReachRepairAndFiveSecondsCompleteTheFan(GameTestHelper h){

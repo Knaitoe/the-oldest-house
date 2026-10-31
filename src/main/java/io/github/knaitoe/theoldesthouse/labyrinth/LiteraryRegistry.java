@@ -97,7 +97,7 @@ public final class LiteraryRegistry {
     public static final DeferredBlock<IronBarsBlock> YACHT_RAIL=BLOCKS.registerBlock("yacht_rail",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noLootTable()),
         SAFETY_FENCE=BLOCKS.registerBlock("safety_fence",IronBarsBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).sound(net.minecraft.world.level.block.SoundType.WOOL).noLootTable());
     public static final DeferredItem<Item> LIGHTBULB=item("fan_lightbulb");
-    public static final DeferredItem<Item> TOOTH=item("elk_tooth"),KEY=item("wheel_house_key"),KNIFE=item("father_knife"),JAR=item("grasshopper_jar"),PHOTOGRAPH=item("literary_photograph"),FILM=item("family_film");
+    public static final DeferredItem<Item> TOOTH=item("elk_tooth"),KEY=item("wheel_house_key"),KNIFE=item("father_knife"),JAR=item("grasshopper_jar"),PHOTOGRAPH=item("literary_photograph"),BEAD=item("mapping_bead"),FILM=item("family_film");
     public static final DeferredItem<LiteraryMealItem> MEAL=ITEMS.register("father_meal",()->new LiteraryMealItem(new Item.Properties().stacksTo(1).food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(8).saturationModifier(.4F).alwaysEdible().build())));
     public static final DeferredItem<LiteraryMealItem> STEW=ITEMS.register("family_stew",()->new LiteraryMealItem(new Item.Properties().stacksTo(1).food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(6).saturationModifier(.2F).alwaysEdible().build())));
     // The cabin bargain (0.4.51): a globe for the reader who gave everything, a cracked one for the reader who refused; the arm the keeper holds.

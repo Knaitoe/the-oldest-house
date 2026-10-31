@@ -69,16 +69,25 @@ public final class VignetteAnimationTests {
     }
     @AfterBatch(batch="literary_bly_hold") public static void blyHoldDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="literary_mapping_motion",timeoutTicks=900)
-    public static void privateMappingSilhouetteUsesContinuousNativeCollisionBetweenScriptStops(GameTestHelper h){
-        var f=fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;var p=f.player("mapping_motion",place);f.at(p,place,3,0,-26);
-        final LiteraryActor[] actor={null};final UUID[] id={null};final Vec3[] previous={null};final int[] ticks={0},steps={0};
-        // The clock starts when the silhouette is there: in a full run its section can take a while to load.
-        h.onEachTick(()->{if(actor[0]==null){var world=LiteraryVignettes.shared(f.data(),place);String key="Father_"+p.getUUID();if(world.hasUUID(key)&&f.level(place).getEntity(world.getUUID(key)) instanceof LiteraryActor a){actor[0]=a;id[0]=a.getUUID();previous[0]=a.position();ticks[0]=0;}return;}
-            int tick=++ticks[0];Vec3 at=actor[0].position(),step=at.subtract(previous[0]);previous[0]=at;
-            if(tick>100&&tick<190){h.assertTrue(step.horizontalDistance()<=.025,"mapping movement is bounded on each native tick: "+step);if(step.horizontalDistance()>.015)steps[0]++;}
-            h.assertTrue(actor[0].getUUID().equals(id[0])&&actor[0].owner().orElseThrow().equals(p.getUUID()),"the walking silhouette stays the same privately tracked original");
-            if(tick==230){h.assertTrue(steps[0]>=65,"the original moves between decisions instead of resting four ticks then jumping: "+steps[0]);h.assertTrue(!f.own(p,place).getBoolean("Ready"),"watching continuous movement does not bypass the crawl, choice and return");h.succeed();}
+    /** 0.4.201: from the window at 2:49 the reader looks toward the hall, and the father walks his whole crossing from the
+     *  kitchen doorway to the utility room in small steady steps, the same private original throughout, then is gone. */
+    @GameTest(template="empty",batch="literary_mapping_motion",timeoutTicks=1200)
+    public static void mappingFatherWalksHisWholeCrossingInSteadyPrivateSteps(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;var p=f.player("mapping_motion",place);var b=f.base(place);
+        final LiteraryActor[] actor={null};final UUID[] id={null};final Vec3[] previous={null};final int[] steps={0};final boolean[] wasSeen={false};
+        h.onEachTick(()->{
+            if(f.own(p,place).getInt("WokeVisit201")!=1)return;
+            f.look(p,b.offset(0,3,-19));
+            if(actor[0]==null){var world=LiteraryVignettes.shared(f.data(),place);String key="Father_"+p.getUUID();
+                if(world.hasUUID(key)&&f.level(place).getEntity(world.getUUID(key)) instanceof LiteraryActor a){actor[0]=a;id[0]=a.getUUID();previous[0]=a.position();wasSeen[0]=!a.isInvisible();}return;}
+            Vec3 at=actor[0].position(),step=at.subtract(previous[0]);previous[0]=at;boolean shown=!actor[0].isInvisible();
+            h.assertTrue(actor[0].getUUID().equals(id[0])&&actor[0].owner().orElseThrow().equals(p.getUUID()),"the walking father stays the same privately tracked original");
+            // Only a step taken while he is in view on both ticks is a step of his walk; being set out of sight, or into the doorway out of sight, is not.
+            if(shown&&wasSeen[0]){h.assertTrue(step.horizontalDistance()<=.15,"his walk is bounded on each native tick: "+step);if(step.horizontalDistance()>.02)steps[0]++;}
+            wasSeen[0]=shown;
+            if(f.own(p,place).getInt("CrossedVisit201")==1){
+                h.assertTrue(steps[0]>=30,"he walks the crossing rather than jumping between its stops: "+steps[0]);
+                h.assertTrue(actor[0].isInvisible()&&!f.own(p,place).getBoolean("Ready"),"then he is gone into the utility room, and nothing is resolved by watching");h.succeed();}
         });
     }
     @AfterBatch(batch="literary_mapping_motion") public static void mappingDone(ServerLevel l){close();}

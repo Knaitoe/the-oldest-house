@@ -336,6 +336,39 @@ out the sensor's timer), and the room now plays it that way (`FoyerEncounter`):
   long, and a fresh darkness letting it in; the service-door case checks both hints and the early leaving; the buzzer case
   checks the unread press.
 
+## Mapping the Interior, rebuilt
+
+> "mapping_interior, based on Stephen Graham Jones's mapping the interior needs a near total rework" / (on the open choices)
+> "I'll leave all that for you to decide"
+
+The full design, and what the novella gives it, is docs/MAPPING_INTERIOR_REWORK.md. In short:
+
+- **The place.** `MappingHouse` builds the whole lot: a modular house on a skirt (front room, kitchen with the floor plan on its
+  table, the hall back to the utility room, the boys' room with Dino's bed, the mother's shut door), the crawl under the floor,
+  a slope down at its back, a tunnel one block high past the roofline to a plywood door, black water under it, a ladder from the
+  water up to the old tetherball pole, the neighbour's dog run, the propane tank. Its clock is fixed at 2:49 in the morning.
+  The generic dressing passes leave it alone.
+- **Four nights** (`MappingNights`), each beginning at the front window. He is private to each reader and walks the house
+  without touching it: no door, bed or wall stops him, and he neither falls nor floats off his route.
+  1. He crosses from the kitchen doorway down the hall to the utility room, his ankle bells heard first; one bead lies where he
+     walked. Reading the floor plan gives a real map of the lot; under the house its mark slides out past the roof.
+  2. He crosses again, more of him. Dino has a seizure; kneeling by him turns him on his side. Crouching still until the feet
+     go to sleep (deadfooting), then walking, shows his steps and the hatch in the utility room floor. The crawl runs past the
+     roofline; the plywood door will not lift.
+  3. The dogs are gone, their gate open, their remains in the crawl. He is standing over Dino's bed.
+  4. He goes down through the floor; the plywood door opens over the water. Crouching on him holds him under, and he throws the
+     reader off now and then, until he stops. The bead dropped into the water goes after him; kept, it stays.
+  5. The next night, seeing Dino readies the account: awake at the kitchen table if the bead was let go, asleep and hard to wake
+     with the bells in the hall if it was kept.
+- **Decisions.** The drowning is the ending, with no gun and no deputy. His regalia is shown by its bells and a silhouette that
+  gains each night, never painted. The bead (a new item, `tools/draw_mapping_bead.py`) replaces the old pile of his things and
+  the photograph keepsake.
+- **Writing.** A new source ("A floor plan", the older brother's measurements and nights, never the ending), a new account in
+  three versions looking back from years later and ending on the walls rising, a new Witness title and line ("The hall at
+  2:49"), its advancement description, the co-op line and the keepsake line.
+- **Tests.** The literary case walks all five visits; the animation case watches his whole crossing in steady private steps;
+  the architecture case expects the floor plan's lectern; the keepsake case carries the bead.
+
 ## Five vignette proposals
 
 The owner sent five vignette specifications (the Left-Right Game, the Dead Air Broadcast, the God of the Pitt, the Polaroid

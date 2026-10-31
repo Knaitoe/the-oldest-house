@@ -29,11 +29,12 @@ public final class SceneClock {
             case END_WORLD_CABIN->10;
             case LAKE_HOUSE,LAKE_HOUSE_EMPTY->4;
             case WAY_OUT->12; // 0.4.199: a fine morning, and the sun never moves
+            case MAPPING_INTERIOR->13; // 0.4.201: 2:49 in the morning, every night
             default->0;
         };
     }
     public static long time(int mode,int elapsed,long nativeTime){return switch(mode){
         case 1->21000;case 3,10->12500;case 7,8,9->18000;case 4->6000;
-        case 11->1000;case 12->3000;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
+        case 11->1000;case 12->3000;case 13->20820;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
     };}
 }

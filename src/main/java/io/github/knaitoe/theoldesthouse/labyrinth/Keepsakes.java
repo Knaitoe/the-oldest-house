@@ -122,7 +122,7 @@ public final class Keepsakes {
             case "elk_fan/Lightbulb" -> "It still lights for a little while, if you ask it.";
             case "holy_rabbit/Knife" -> "Father wasted nothing he killed.";
             case "holy_rabbit/RabbitFoot" -> "Carried, things fall your way a little more often.";
-            case "mapping_interior/Photograph" -> "He kept watch over his boys. Kept close, it watches over yours.";
+            case "mapping_interior/Bead" -> "One bead, found where he walked. Kept close, it watches over yours.";
             case "crimson_hall/Cylinder0", "crimson_hall/Cylinder1", "crimson_hall/Cylinder2" -> "Played, the voices keep the house. Nothing else comes near it.";
             case "devils_rock/Diary7" -> "Read it at night, away from the House. The last page knows the way home.";
             case "usher/RegisterLeaf" -> "Your name among those carried down. The dead read it too.";
@@ -237,13 +237,13 @@ public final class Keepsakes {
     }
 
     // ------------------------------------------------------------------
-    // The brother's photograph
+    // The father's bead
     // ------------------------------------------------------------------
 
     @SubscribeEvent public static void hurt(LivingIncomingDamageEvent e) {
         if (!(e.getEntity() instanceof TamableAnimal pet) || !pet.isTame() || pet.getOwnerUUID() == null || !(pet.level() instanceof ServerLevel level)) return;
         var owner = level.getServer().getPlayerList().getPlayer(pet.getOwnerUUID());
-        if (owner == null || owner.level() != pet.level() || owner.distanceToSqr(pet) > PHOTO_REACH * PHOTO_REACH || !carries(owner, LabyrinthPlace.MAPPING_INTERIOR, "Photograph")) return;
+        if (owner == null || owner.level() != pet.level() || owner.distanceToSqr(pet) > PHOTO_REACH * PHOTO_REACH || !carries(owner, LabyrinthPlace.MAPPING_INTERIOR, "Bead")) return;
         e.setAmount(e.getAmount() * .5F);
     }
 

@@ -72,8 +72,8 @@ final class CoopAccounts {
             "%s {was} still out in the field when it let me go."));
         together(ELK_FAN,party("%s had been thrown out from under the fan before me.",
             "%s {was} still standing under the blades when they threw me out."));
-        together(MAPPING_INTERIOR,party("%s had come back to the boy before me.",
-            "%s {was} still in the crawl beyond the roof when I went back to him."));
+        together(MAPPING_INTERIOR,party("%s had been to the water under the house before me.",
+            "%s {was} still standing at the edge of the water when I climbed out by the pole."));
         together(ELK_CARCASSES,party("%s had taken the service path before me.",
             "%s {was} still under the hides when the boots went by and I left."));
         together(COSTUME_NIGHT,party("%s had reached the park grass before me.",
