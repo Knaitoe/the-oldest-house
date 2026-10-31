@@ -42,6 +42,12 @@ The owner's words replace "Every house is a haunted house. / But a warning, befo
 
 A journal handed over (the first one for a reader who missed the letter, or a lost one coming back) goes in the first empty hotbar slot other than the one in hand. If the slot in hand is the only empty one, it goes there. With a full hotbar it goes in the pack, as before, and at the reader's feet only when everything is full. `JournalTests.theJournalIsItsOwnersAndAnOldCopyGoesBlank` checks the slot past the hand, the hand's slot when it is the only open one, and the pack after a full hotbar.
 
+## Not in the phone's shot
+
+> "can you try to ensure the player can't see themselves in lake_canoe during the camera fall sequence?"
+
+When the phone goes over the side in Phone in the Canoe, the view becomes the falling phone's. Until now the game drew the reader as it draws anyone the camera can see, so their body, the name over it and the first-person hand all showed in the shot. While the view is the phone's, `LakePhoneClient` now cancels the player renderer for the reader's own body, which also drops the name, and cancels the hand. Other readers in the scene are drawn as before. The body's shadow on the canoe is not suppressed; at night it barely shows.
+
 ## Not changed yet
 
 The coatroom's closing line, "That's how you'll look here.", waits on the owner's choice among the suggestions given in conversation.

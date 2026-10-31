@@ -81,6 +81,14 @@ public final class LakePhoneClient {
         input.up=false;input.down=false;input.left=false;input.right=false;input.jumping=false;input.shiftKeyDown=false;
     }
     @SubscribeEvent public static void interact(InputEvent.InteractionKeyMappingTriggered event){if(bound()&&phase>=3){event.setCanceled(true);event.setSwingHand(false);}}
+    /**
+     * 0.4.201 (owner: "can you try to ensure the player can't see themselves in lake_canoe during the camera fall sequence?"):
+     * while the view is the falling phone's, the reader is not in its shot. Their own body and the name over it go (the player
+     * renderer draws both), and so does the first-person hand the game would still draw over the lens. Other readers stay.
+     */
+    static boolean filming(){return bound()&&phase>=3&&Minecraft.getInstance().getCameraEntity() instanceof LakePhoneCamera;}
+    @SubscribeEvent public static void self(RenderPlayerEvent.Pre event){if(filming()&&event.getEntity()==Minecraft.getInstance().player)event.setCanceled(true);}
+    @SubscribeEvent public static void hand(RenderHandEvent event){if(filming())event.setCanceled(true);}
     @SubscribeEvent public static void angles(ViewportEvent.ComputeCameraAngles event){
         if(!bound()||phase<3)return;float t=sinceDrop((float)event.getPartialTick());
         if(t<TUMBLE){
