@@ -56,13 +56,13 @@ The House quotes a reader's own words rarely, exactly, and only to that reader. 
 Only the reader:
 
 - **A torn page** never carries the House's copy of the reader's line, whether it is read, pinned or glanced at. Back in its stub, the copy is there again.
-- **A House of Leaves out of its reader's hands** holds none of its quotes:
-  - in another reader's inventory;
-  - lying on the ground;
-  - read by anyone else;
-  - set on a lectern.
+- **The House of Leaves item never holds its quotes.** They are shown only when its own reader opens it: set on the book, sent to that reader's client alone, opened, and taken off again before anything else can be sent. So nothing anyone else's client is sent carries them, wherever the book goes:
+  - another reader's inventory;
+  - the ground;
+  - a lectern;
+  - a chest, or any other container.
 
-  Back with its reader, the quotes come back.
+  A review found the first version kept the quotes on the item and took them off only on the ground, on a lectern or in another inventory. A chest was missed, and another player's client could be sent the quoted lines before the cleanup. Books from before this change lose their stored quotes the next time their reader's book is brought up to date, or when anyone else holds or reads them.
 - **The ending's page** is in the reader's journal, which only its owner opens.
 
 ## What it is not
@@ -75,7 +75,7 @@ It counts toward nothing. Witness stays 55 / 42 / two kinds / three endings.
   - New: `journal/Quotes`.
   - The journal's saved data keeps each reader's quotable lines and their order, whether the other hand has copied one out, and the page the ending went on.
   - `JournalPage.Mark.QUOTED` and `JournalPage.unquoted()`.
-  - Also changed: `StaircaseStory` (the quotes, and taking them out of anyone else's copy), `StaircaseProse.named`, `CoAuthor`, `TornPages`, `FinaleController` and `WitnessEnding`.
+  - Also changed: `StaircaseStory` (the quotes, shown to the reader when they open their book and never kept on the item; older stacks lose any they kept), `StaircaseProse.named`, `CoAuthor`, `TornPages`, `FinaleController` and `WitnessEnding`.
 - **Protocol 107.** The new mark is something the journal screen must know.
 - **No art or sound changes.**
 
@@ -95,8 +95,10 @@ It then checks the three moments:
 - **The House of Leaves:**
   - the House's chapter quotes the first place the reader wrote in;
   - a chapter that names the nursery quotes the line written there instead;
-  - in another reader's hands, or on the ground, the book quotes nothing;
-  - back with its reader, the quotes return.
+  - the item itself never keeps a quoted line; only its reader's screen shows one (`StaircaseStory.shown`);
+  - opened by its reader, the book is opened from the quoted pages, and the stack is left without them;
+  - a copy set in a chest carries none;
+  - in another reader's hands, or on the ground, the book quotes nothing.
 - **The other hand:**
   - one line copied word for word onto the next blank page, once only;
   - a torn page shows none of it, and it is there again in the stub.
