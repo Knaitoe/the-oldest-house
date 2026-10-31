@@ -23,7 +23,7 @@ public final class VignetteInteriorTests {
   f.built.add(p);var l=f.level(p);var b=f.base(p);var s=l.getServer();
   switch(p){
    case FLOORBOARDS->TellTaleFloorboards.build(l,b,true);case HIDE_AND_CLAP->HideAndClap.build(s,l,b);
-   case SEANCE,WALLPAPER_NURSERY->ClassicsRooms.build(l,b,p);case KAREN_ROOM->NovelRooms.build(s,l,b,p);
+   case SEANCE,WALLPAPER_NURSERY->ClassicsRooms.build(l,b,p);
    case HOLLOWAY_CAMP->HollowayCamp.build(l,b);default->LiteraryRooms.build(l,b,p);
   }
   LabyrinthBuilder.registerDoors(f.data(),p,b);
@@ -73,7 +73,6 @@ public final class VignetteInteriorTests {
    h.assertTrue(missing.isEmpty(),"Every authored fitting has an unobstructed position: "+missing);
    try{var folder=java.nio.file.Path.of("../build/interior-environment-proof");java.nio.file.Files.createDirectories(folder);
     for(var p:VignetteInteriors.PLACES)java.nio.file.Files.copy(java.nio.file.Path.of("../build/architecture-proof",p.id()+".json"),folder.resolve(p.id()+".json"),java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-    slice(folder,"mapping_interior","mapping_living_rooms",-13,13,-36,-8,-1,3);
     slice(folder,"end_world_cabin","holiday_living_rooms",-12,12,-35,-13,-1,3);
     slice(folder,"hill_nursery","hill_cellar",-13,13,-42,-30,-5,-2);
     var quiet=LabyrinthPlace.QUIET_ROOM;f.built.add(quiet);var qb=f.base(quiet);LabyrinthHalls.build(f.in,qb,quiet);ScenePolish.polishOnce(f.in,f.origin,quiet);ArchitectureTests.export(f.in,qb,quiet);

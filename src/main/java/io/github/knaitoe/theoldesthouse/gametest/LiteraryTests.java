@@ -1121,7 +1121,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         // first: in the full suite the server can spend this case's whole clock before the disk worker returns them, and the
         // bare entity-ticking wait has no pacing of its own (run 1360).
         f.chunks.hold(f.out,new AABB(Vec3.atLowerCornerOf(b.offset(-4,8,5)),Vec3.atLowerCornerOf(b.offset(5,13,8))));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&f.out.isPositionEntityTicking(b.offset(-2,9,6))&&f.out.isPositionEntityTicking(b.offset(4,9,6)),"wait for the deck to tick entities")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.entityTicking(f.out,b.offset(-2,9,6),b.offset(4,9,6)),"wait for the deck to tick entities")).thenExecute(()->{
         // This corridor and the cleared deck lie outside the room box a rebuild clears, so they are put back after the batch.
         railSaved=new HashMap<>();for(var at:BlockPos.betweenClosed(b.offset(-4,-10,5),b.offset(4,12,7)))railSaved.put(at.immutable(),f.out.getBlockState(at));
         // A deck corridor prevents walking around the railing. Its floor and roof are real blocks.

@@ -58,6 +58,17 @@ final class NativeTestChunks implements AutoCloseable {
         return true;
     }
 
+    /**
+     * Whether the chunks are ready and every given position ticks entities. The promotion to entity ticking follows loading by
+     * a ticket-level update, so this is paced like {@link #ready()}: a bare check can spend a fixture's whole clock in a burst
+     * of fast ticks before the promotion lands (run 1370).
+     */
+    boolean entityTicking(ServerLevel level, net.minecraft.core.BlockPos... at) {
+        if (!ready()) return false;
+        for (var p : at) if (!level.isPositionEntityTicking(p)) { java.util.concurrent.locks.LockSupport.parkNanos(5_000_000L); return false; }
+        return true;
+    }
+
     /** Whether every leased chunk has been promoted to ticking: generated, post-processed and its scheduled fluids settled in. */
     boolean ticking() {
         for (var lease : held)
