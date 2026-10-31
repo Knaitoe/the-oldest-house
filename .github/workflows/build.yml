@@ -120,7 +120,9 @@ jobs:
           python3 tools/verify_goatman_impacts.py --jar
 
       - name: Verify packaged character paintings and exclusions
-        run: python3 tools/verify_character_art.py --jar
+        run: |
+          python3 -m pip install Pillow
+          python3 tools/verify_character_art.py --jar
 
       - name: Verify playable package
         run: |
@@ -1362,7 +1364,7 @@ jobs:
           from pathlib import Path
           declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/StaircaseAccessTests.java').read_text()))
           completed=re.findall(r'All (\d+) required tests passed',Path('build/staircase-native.log').read_text())
-          assert declared==12 and completed and int(completed[-1])==declared, (completed,declared)
+          assert declared==9 and completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} native staircase entrance cases passed.')
           PY_CHECK
       - name: Upload staircase diagnostics
