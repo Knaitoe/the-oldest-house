@@ -150,6 +150,7 @@ public final class ArchitectureTests {
             // The hotel (0.4.105) is built whole: its three floors, and the grounds with the rear wall they see.
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL);
             // 0.4.201: Zampano's apartment court is built whole by ZampanoApartment, outside the generic dressing, and exports itself.
+            export(HouseTestLevel.get(server,NovelRooms.dimension(LabyrinthPlace.KAREN_ROOM)),LabyrinthPlaces.base(origin,LabyrinthPlace.KAREN_ROOM),LabyrinthPlace.KAREN_ROOM);
             export(HouseTestLevel.get(server,NovelRooms.dimension(LabyrinthPlace.ZAMPANO_COURTYARD)),LabyrinthPlaces.base(origin,LabyrinthPlace.ZAMPANO_COURTYARD),LabyrinthPlace.ZAMPANO_COURTYARD);
             export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL_GROUNDS),LabyrinthPlace.HOTEL_GROUNDS);
             // The barn well's farm (0.4.164) is built whole by BarnWell, outside the generic loop, so it is exported here too.
@@ -172,8 +173,8 @@ public final class ArchitectureTests {
             literaryRoutes(h,interior,LabyrinthPlaces.base(origin,LabyrinthPlace.WINCHESTER));
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
-            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell, the night ward (0.4.199) by NightWard and Zampano's apartment court (0.4.201) by ZampanoApartment, outside the generic dressing.
-            h.assertTrue(dressed==18&&props>=72,"all eighteen generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
+            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell, the night ward (0.4.199) by NightWard and Zampano's apartment court and Karen's room (0.4.201) by ZampanoApartment and KarenRoom, outside the generic dressing.
+            h.assertTrue(dressed==17&&props>=68,"all seventeen generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
             shellsAndEdges(h,server,origin,data);
             composition(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);

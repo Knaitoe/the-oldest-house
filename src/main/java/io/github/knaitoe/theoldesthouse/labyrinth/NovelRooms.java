@@ -17,7 +17,7 @@ public final class NovelRooms {
     public static final BlockPos ARCHIVE_DOOR=new BlockPos(0,0,-19),ARCHIVE_DESK=new BlockPos(-5,0,-30),MAT=new BlockPos(0,0,-16),
         WELL=new BlockPos(0,0,-23),CARVING=new BlockPos(0,-10,-22),OLD_CARVING=new BlockPos(0,-12,-24),RIBBON=new BlockPos(2,0,-25),
         APOLOGY=new BlockPos(-4,0,-7),FIGURE=new BlockPos(0,0,-93),BUTTON=new BlockPos(5,1,-14),WARD_NOTE=new BlockPos(-4,0,-15),
-        BED=new BlockPos(4,0,-10),PROJECTOR=new BlockPos(0,1,-6);
+        BED=new BlockPos(7,0,-16),PROJECTOR=new BlockPos(0,1,-6),KAREN_BOOK=new BlockPos(6,1,-17);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private NovelRooms(){}
     public static boolean outside(LabyrinthPlace p){return p==LabyrinthPlace.WAY_OUT||p==LabyrinthPlace.SILO||p==LabyrinthPlace.BACKSEAT||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL||p==LabyrinthPlace.PLAIN||LakeLandscape.isLake(p)||p==LabyrinthPlace.HOTEL_GROUNDS||LiteraryRooms.outside(p);}
@@ -86,14 +86,8 @@ public final class NovelRooms {
     }
     /** 0.4.199: the ward is built whole by NightWard, as a clinical ward with curtained bays. */
     private static void hospital(ServerLevel l,BlockPos b){NightWard.build(l,b);}
-    private static void karen(ServerLevel l,BlockPos b){
-        room(l,b,-9,9,-18,0,0,5,Blocks.BIRCH_PLANKS,Blocks.OAK_PLANKS);door(l,b,Direction.SOUTH,Blocks.BIRCH_DOOR,true);
-        bed(l,b.offset(BED),Blocks.RED_BED,Direction.NORTH);furniture(l,b.offset(6,0,-11),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);
-        furniture(l,b.offset(-4,0,-8),HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.NORTH);
-        at(l,b,0,0,-6,Blocks.OAK_PLANKS);BuildBlocks.set(l,b.offset(PROJECTOR),prop(NovelPropBlock.Kind.PROJECTOR,Direction.NORTH),F);
-        box(l,b,-3,1,-15,3,3,-15,Blocks.WHITE_CONCRETE.defaultBlockState());lectern(l,b.offset(6,1,-11),NovelTexts.karen());
-        for(int x:new int[]{-6,6})at(l,b,x,4,-8,Blocks.LANTERN);
-    }
+    /** 0.4.201: Karen's room is built whole by KarenRoom, and none of the later scene passes dress it. */
+    private static void karen(ServerLevel l,BlockPos b){KarenRoom.build(l,b);}
     public static void bed(ServerLevel l,BlockPos pos,Block block,Direction facing){BuildBlocks.set(l,pos,block.defaultBlockState().setValue(BedBlock.FACING,facing).setValue(BedBlock.PART,BedPart.FOOT),F);BuildBlocks.set(l,pos.relative(facing),block.defaultBlockState().setValue(BedBlock.FACING,facing).setValue(BedBlock.PART,BedPart.HEAD),F);}
     public static void door(ServerLevel l,BlockPos at,Direction facing,Block block,boolean open){
         BuildBlocks.set(l,at,block.defaultBlockState().setValue(DoorBlock.FACING,facing).setValue(DoorBlock.OPEN,open),F);

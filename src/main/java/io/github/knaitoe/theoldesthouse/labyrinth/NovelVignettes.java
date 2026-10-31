@@ -126,7 +126,7 @@ public final class NovelVignettes {
         }else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.WARD_NOTE)){
             open(p,place,own.getBoolean("WardFinished")?NovelTexts.hospitalLast():NovelTexts.hospitalOpening(),own.getBoolean("WardFinished")?"WardLast":"WardOpening",own.getBoolean("WardFinished"),own);
         }else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.PROJECTOR)){if(p.isShiftKeyDown())SecretPhotographs.open(p);else{own.putInt("Projection",own.getInt("Projection")+1);showRecord(p,own);}}
-        else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(new BlockPos(6,1,-11)))open(p,place,NovelTexts.karen(),"KarenBook",false,own);
+        else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.KAREN_BOOK))open(p,place,NovelTexts.karen(),"KarenBook",false,own);
         else handled=false;
         if(handled){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);save(data,p.getUUID(),own);}
         trackPhotoStore(p,e.getPos(),own);

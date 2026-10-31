@@ -20,7 +20,7 @@ public final class VignetteArchitecture {
     private boolean rugsOnly;
     private VignetteArchitecture(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;scene=place;}
     /** The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell, and the night ward (0.4.199) by NightWard. */
-    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.WAY_OUT&&p!=LabyrinthPlace.HOSPITAL&&p!=LabyrinthPlace.SILO&&p!=LabyrinthPlace.BACKSEAT&&p!=LabyrinthPlace.NIGHTCLUB&&p!=LabyrinthPlace.HOTEL&&p!=LabyrinthPlace.BARN_WELL&&p!=LabyrinthPlace.ZAMPANO_COURTYARD&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
+    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.WAY_OUT&&p!=LabyrinthPlace.HOSPITAL&&p!=LabyrinthPlace.SILO&&p!=LabyrinthPlace.BACKSEAT&&p!=LabyrinthPlace.NIGHTCLUB&&p!=LabyrinthPlace.HOTEL&&p!=LabyrinthPlace.BARN_WELL&&p!=LabyrinthPlace.ZAMPANO_COURTYARD&&p!=LabyrinthPlace.KAREN_ROOM&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!applies(p))return;
         var d=LabyrinthData.get(l.getServer());CompoundTag done=d.state(STATE);
@@ -48,7 +48,7 @@ public final class VignetteArchitecture {
         case HARRIGAN->harrigan();case MOTHER_DEN->mother();case EXPLORER_CAMP->camp();
         // 0.4.66: the institute authors its own rooms, furniture and windows.
         case WHALE->{ }
-        case PLAIN->plain();case HOSPITAL->hospital();case KAREN_ROOM->karen();
+        case PLAIN->plain();case HOSPITAL->hospital();
         case HOLLOWAY_CAMP->holloway();case GOATMAN->trailer();case TED_CAVER->caver();
         // 0.4.67: Proofrock is authored whole.
         case PRESERVED_CAVE->chapel();case DROWNED_TOWN->{ }case SHALLOWS->shore(false);
@@ -213,16 +213,6 @@ public final class VignetteArchitecture {
         cabinet(7,0,-7,MEDICAL_TRAY);furniture(8,0,-5,RADIATOR,Direction.WEST);
         detail(8,2,-12,CLOCK,Direction.WEST);detail(-8,0,-3,DUSTPAN);
         for(int z:new int[]{-10,-19}){add(-1,4,z,Blocks.IRON_BLOCK);add(1,4,z,Blocks.IRON_BLOCK);}
-    }
-    private void karen(){
-        wainscot(-9,9,-18,0,4,Blocks.OAK_PLANKS,Blocks.STRIPPED_BIRCH_WOOD);
-        table(-6,0,-8,TEA_SET);cabinet(-7,0,-12,BOOKS);table(-7,0,-5,TABLE_LAMP);
-        furniture(-4,0,-10,FOOTSTOOL,Direction.NORTH);cabinet(7,0,-14,BLANKET);
-        table(7,0,-5,FILE_TRAY);detail(6,0,-6,SATCHEL);detail(7,0,-2,SHOES);
-        detail(8,2,-8,FRAME,Direction.WEST);detail(-8,2,-3,COAT,Direction.EAST);
-        pot(-8,0,-16,Blocks.POTTED_OAK_SAPLING);pot(8,0,-17,Blocks.POTTED_FERN);
-        rug(-8,-4,-12,-5,Blocks.BROWN_CARPET,Blocks.GRAY_CARPET);rug(4,7,-13,-8,Blocks.GRAY_CARPET,Blocks.LIGHT_GRAY_CARPET);
-        pendant(-6,4,-8,5);pendant(6,4,-8,5);
     }
     private void holloway(){
         for(var door:scene.doors()){

@@ -404,6 +404,25 @@ layering over the last. `ZampanoApartment` now builds it whole, and none of thos
   0.4.88 handwriting-wall and bowl pass with its case, and the saved-courtyard paths for the fountain and the cabinets (new
   builds only).
 
+## Karen's room, arranged by hand
+
+> (Karen's room: custom textures, a natural arrangement, and no photos on curtains or windows.)
+
+The room was a plank box that four generic passes dressed in turn: they strung chests of drawers with lamps along every wall,
+ran beams across it at head height and left the slide cabinets, the noticeboard and the lamp wherever they fell. `KarenRoom`
+now builds it whole, with the room's own papered walls and cork floor, and no generic pass touches it.
+
+- **The west wall:** two windows, set back behind the wall's plane on sills, with nothing pinned to them; the bookshelves
+  between them; a fern by the door.
+- **The reading corner:** the green chair and its footstool on a rug, facing the screen, with the projector on its table
+  behind. The screen is a white sheet hung from a dark roller, its lower edge clear of the floor.
+- **The slide desk:** the two slide cabinets against the east wall with the light sorter and a file tray on them, its chair,
+  and the noticeboard over it, where the photographs belong.
+- **The bed:** in the far corner with its head to the wall, the book on the table at one side and her lamp on the other. The
+  bed is still the one the room remembers, and the book still opens where it lies.
+- One lantern from the ceiling by the door; the rest of the light is the lamps and the projector. A chest of drawers by the
+  door.
+
 ## The content warning at the beginning
 
 The first time a player joins a world with the mod, a short book opens in the ordinary lectern view (`ContentWarning`): what

@@ -16,7 +16,7 @@ public final class VignetteInteriors {
  public static final String STATE="vignette_interiors_0125b";
  public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.FLOORBOARDS,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY,
   LabyrinthPlace.HILL_NURSERY,LabyrinthPlace.MINIATURES,LabyrinthPlace.CRIMSON_HALL,LabyrinthPlace.CONFESSION,
-  LabyrinthPlace.DEVILS_ROCK,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.HOLLOWAY_CAMP);
+  LabyrinthPlace.DEVILS_ROCK,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.HOLLOWAY_CAMP);
  private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
  public record Edit(BlockPos relative,BlockState expected,BlockState next){}
  private static Work work;
@@ -99,10 +99,6 @@ public final class VignetteInteriors {
   case END_WORLD_CABIN->{
    shell(e,-12,12,-35,-13,1,5,Blocks.SPRUCE_PLANKS,HOLIDAY_PINE);fill(e,-4,0,-34,-4,5,-25,Blocks.SPRUCE_PLANKS,HOLIDAY_PINE);fill(e,-11,0,-25,-4,5,-25,Blocks.SPRUCE_PLANKS,HOLIDAY_PINE);
    fill(e,-11,-1,-24,-5,-1,-14,Blocks.SPRUCE_PLANKS,HOLIDAY_TILE);fit(e,-9,0,-22,HOLIDAY_LARDER,Direction.EAST);fit(e,-9,1,-22,HOLIDAY_CROCKERY);fit(e,-9,0,-21,HOLIDAY_SINK,Direction.EAST);
-  }
-  case KAREN_ROOM->{
-   shell(e,-9,9,-18,0,1,4,Blocks.BIRCH_PLANKS,KAREN_PAPER);fill(e,-8,-1,-17,8,-1,-1,Blocks.OAK_PLANKS,KAREN_CORK);
-   fit(e,7,0,-10,SLIDE_CABINET,Direction.WEST);fit(e,7,1,-10,KAREN_SLIDE_SORTER,Direction.WEST);fit(e,7,0,-11,SLIDE_CABINET,Direction.WEST);fit(e,7,1,-11,KAREN_LAMP,Direction.WEST);fit(e,8,3,-5,KAREN_NOTICEBOARD,Direction.WEST);
   }
   case HOLLOWAY_CAMP->{fit(e,-5,0,-6,CAMP_KIT,Direction.EAST);fit(e,4,0,-10,CAMP_WORKTABLE);fit(e,4,1,-10,DRAFTING_BOARD);fit(e,5,0,-10,CAMP_WORKTABLE);fit(e,5,1,-10,TASK_LAMP);}
   default->{}
