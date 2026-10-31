@@ -11,7 +11,7 @@
 - **Do not push while a CI run is in progress** on the branch: a push cancels it.
 - **New builds only (October 31, 2026):** the mod is not publicly shared and needs no backward compatibility. Do not add save migrations, in-place upgrades or once-only repairs of older worlds; when you touch one that remains, remove it. A layout saved by an earlier version only gains the places it lacks (`LabyrinthBuilder`, the `labyrinth_places` carve record); nothing standing is carved or dressed again. Data-format tolerance (older SavedData, entity NBT, Witness records) is cheap and stays.
 - **The Mother of Strays is not to be changed** ("Mother pvp is not something I've asked you to manipulate").
-- **Witness** stays derived and hard: currently 55 sources / 42 required / two kinds / three endings.
+- **Witness** stays derived and hard: currently 56 sources / 42 required / two kinds / three endings.
 - **Literature travels with mechanics:** a change to a room changes its account, its Witness line, its House of Leaves fact and any keepsake line ("Ensure you're updating literature too").
 - **House writing** never genders the reader and never names a colour or an age. "House" is blue everywhere; "Minotaur" is red in literature only.
 - **Speech is never chat:** people speak through displays and the action bar; `sendSystemMessage` is for operators.

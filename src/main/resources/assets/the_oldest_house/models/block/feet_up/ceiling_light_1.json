@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/feet_up/ceiling_light_side",
+    "g": "the_oldest_house:block/feet_up/ceiling_light_out",
+    "particle": "the_oldest_house:block/feet_up/ceiling_light_side"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        13,
+        3
+      ],
+      "to": [
+        13,
+        16,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    }
+  ]
+}

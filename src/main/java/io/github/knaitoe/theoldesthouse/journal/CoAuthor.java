@@ -69,7 +69,7 @@ public final class CoAuthor {
         WitnessAccount.Story.COSTUME_NIGHT,WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.BORRASCA,WitnessAccount.Story.CHILD_ROOM,
         WitnessAccount.Story.HILL_NURSERY,WitnessAccount.Story.CLAP,WitnessAccount.Story.PAINTED_INTERIOR,WitnessAccount.Story.SECOND_WAITRESS,
         WitnessAccount.Story.TUNNEL_PERIPHERY,WitnessAccount.Story.MISSING_SLEEP,WitnessAccount.Story.LAYERED_MAN,WitnessAccount.Story.MOTION_LIGHT,
-        WitnessAccount.Story.BACKSEAT,WitnessAccount.Story.SILO,WitnessAccount.Story.DARE_IN_THE_DARK);
+        WitnessAccount.Story.BACKSEAT,WitnessAccount.Story.SILO,WitnessAccount.Story.DARE_IN_THE_DARK,WitnessAccount.Story.FEET_UP);
     private CoAuthor(){}
 
     /** One of the moments the other hand may write after: one time in six. */

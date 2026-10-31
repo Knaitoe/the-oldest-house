@@ -378,6 +378,8 @@ public enum LabyrinthPlace {
             new DoorSpec("far",new BlockPos(3,10,-22),Direction.SOUTH,LabyrinthData.DEALT))),
     /** 0.4.199, the way out: a meadow outside that is not outside (WayOut). Dealt once to each reader; no Witness source. */
     WAY_OUT("way_out",Kind.ONE_SHOT,126,new BoundingBox(-44,-6,-92,44,16,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    /** 0.4.200, Feet Up: the family house where the floor is lava, played from the big chair to the attic (FeetUp). Survival. */
+    FEET_UP("feet_up",Kind.ONE_SHOT,127,new BoundingBox(-11,-1,-27,11,14,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

@@ -2589,5 +2589,32 @@
         "pitch": 0.7
       }
     ]
+  },
+  "feet_up.shout": {
+    "subtitle": "subtitles.the_oldest_house.feet_up.shout",
+    "sounds": [
+      {
+        "name": "the_oldest_house:feet_up/shout",
+        "stream": false
+      }
+    ]
+  },
+  "feet_up.count": {
+    "subtitle": "subtitles.the_oldest_house.feet_up.count",
+    "sounds": [
+      {
+        "name": "the_oldest_house:feet_up/count",
+        "stream": false
+      }
+    ]
+  },
+  "feet_up.crack": {
+    "subtitle": "subtitles.the_oldest_house.feet_up.crack",
+    "sounds": [
+      {
+        "name": "the_oldest_house:feet_up/crack",
+        "stream": false
+      }
+    ]
   }
 }

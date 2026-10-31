@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/feet_up/seat_panel",
+    "c": "the_oldest_house:block/feet_up/cushion",
+    "particle": "the_oldest_house:block/feet_up/cushion"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

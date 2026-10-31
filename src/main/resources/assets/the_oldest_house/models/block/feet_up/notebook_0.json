@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "p": "the_oldest_house:block/feet_up/notebook_pages",
+    "c": "the_oldest_house:block/feet_up/notebook_cover",
+    "particle": "the_oldest_house:block/feet_up/notebook_cover"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        3
+      ],
+      "to": [
+        12,
+        2,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}

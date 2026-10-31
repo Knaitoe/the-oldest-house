@@ -98,6 +98,9 @@ final class CoopAccounts {
             "%s {was} still in the cellar when I reached the top step."));
         together(MOTION_LIGHT,party("%s had gone out through the service door before me.",
             "%s {was} still in the courtyard when I opened the service door."));
+        // 0.4.200: each reader keeps off the floor for themselves; the ladder is left down for whoever is still below.
+        together(FEET_UP,party("%s had reached the attic before me. Their marks were already on the rafter beside the empty column.",
+            "%s {was} still on the furniture below when I reached the attic, so I left the ladder down."));
 
         // The scenes where one reader's act changes the room for everyone in it.
         SharedVignettes.draft(FLOORBOARDS,FLOOR);

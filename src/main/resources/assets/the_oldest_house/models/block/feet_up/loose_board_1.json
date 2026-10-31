@@ -1,0 +1,52 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/feet_up/board",
+    "t": "the_oldest_house:block/feet_up/loose_board",
+    "particle": "the_oldest_house:block/feet_up/loose_board"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        2
+      ],
+      "to": [
+        15,
+        2,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#b"
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          8,
+          1,
+          8
+        ]
+      }
+    }
+  ]
+}
