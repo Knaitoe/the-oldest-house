@@ -26,8 +26,8 @@ public final class LiteraryTexts {
             "We carried her down before the physician returned. My brother listened at the lid. He said the sound was the wood settling.",
             "I left the hinges oiled. A living person should not have to shout through a bad hinge.\n\nTonight I will close the lid for good, or leave it as it is. In the morning I will go down and see what I have kept in, or let out into the wing.");
         case WINCHESTER->book("Construction ledger","S. W.",
-            "Pay the carpenters by the night. Do not ask them to estimate the end. Do not watch them work; they will not work while they are watched.",
-            "The plans come from the Blue Room. A robe first, then the bell. Each night the clock strikes thirteen while they build, and whoever is not upstairs in the last room by the thirteenth stroke is given a room of their own.\n\nThe upper ledger keeps a name beside every room.");
+            "Pay the carpenters by the night. Do not ask them to estimate the end. Do not watch them work; they will not work while they are watched.\n\nThe upper ledger names every room.",
+            "The plans come from the Blue Room: a robe, then the bell. The clock strikes thirteen while they build. Whoever is not in the last room upstairs by the thirteenth stroke is given a room of their own.");
         case CHILD_ROOM->book("The bedtime card","Dad",
             "I left the little lamp on. Your mum says it makes the curtains look yellow.\n\nThe train was on the rug when I came in. I have put it back there.",
             "You used to lose things under that bed. I could never get my shoulder far enough in to fetch them.\n\nIf you hear us, wait until morning. We are asleep downstairs.");
@@ -135,7 +135,7 @@ public final class LiteraryTexts {
         if(place==LabyrinthPlace.HOLY_RABBIT)return book(WitnessAccount.Story.HOLY_RABBIT.title,name,GhostsSet.pages(text).toArray(String[]::new));
         String title=switch(place){case MOVIE_NIGHT->"The account: after the show";case COSTUME_NIGHT->"The account: the ribbon";case WINTER_LAKE->"The account: the dare";default->accountTitle(place);};
         // The longer generated accounts are paged (Confession's count is written out now); every other keeps its one page.
-        boolean paged=place==LabyrinthPlace.CONFESSION||place==LabyrinthPlace.MOVIE_NIGHT||place==LabyrinthPlace.COSTUME_NIGHT||place==LabyrinthPlace.WINTER_LAKE||place==LabyrinthPlace.ELK_LOT||place==LabyrinthPlace.USHER&&own.getBoolean("Fell0507");
+        boolean paged=place==LabyrinthPlace.CONFESSION||place==LabyrinthPlace.MOVIE_NIGHT||place==LabyrinthPlace.COSTUME_NIGHT||place==LabyrinthPlace.WINTER_LAKE||place==LabyrinthPlace.ELK_LOT||place==LabyrinthPlace.WINCHESTER||place==LabyrinthPlace.USHER&&own.getBoolean("Fell0507");
         return paged?book(title,name,GhostsSet.pages(text).toArray(String[]::new)):book(title,name,text);}
     /** 0.4.105: the rule a source paper used to state outright, given once in plain words after its paper is read; the paper stays in its writer's voice. */
     public static String hint(LabyrinthPlace place){return switch(place){
