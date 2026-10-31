@@ -396,6 +396,17 @@ layering over the last. `ZampanoApartment` now builds it whole, and none of thos
   0.4.88 handwriting-wall and bowl pass with its case, and the saved-courtyard paths for the fountain and the cabinets (new
   builds only).
 
+## The content warning at the beginning
+
+The first time a player joins a world with the mod, a short book opens in the ordinary lectern view (`ContentWarning`): what
+the mod is; that it holds death and grief, violence and gore, body horror, harm to children and to animals, abduction and
+abuse (sexual abuse included, never shown), drowning, suffocation and being shut in, dark and cramped places, sudden loud
+sounds and flashing lights; and that a few rooms ask again before they go further (Borrasca's own note stays). It closes like
+any book, nothing can be taken from it, and once closed it is never shown to that player again (kept in the data that
+survives death). It waits a few seconds after login and for no other screen to be open. Game tests and the proof runs never
+see it. The opening case checks its pages, that it turns and gives nothing, and that closing it marks it seen; the client
+writing check measures its pages.
+
 ## Five vignette proposals
 
 The owner sent five vignette specifications (the Left-Right Game, the Dead Air Broadcast, the God of the Pitt, the Polaroid

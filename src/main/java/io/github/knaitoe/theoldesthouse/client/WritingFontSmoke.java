@@ -39,6 +39,7 @@ public final class WritingFontSmoke {
         NativeModelTextures.verify();
         List<ItemStack> books = new ArrayList<>(HouseWriting.samples());
         books.add(NavidsonLetter.createBook());
+        books.add(io.github.knaitoe.theoldesthouse.opening.ContentWarning.book());
         books.addAll(io.github.knaitoe.theoldesthouse.labyrinth.ClassicsTexts.specimens());
         books.addAll(io.github.knaitoe.theoldesthouse.labyrinth.HotelTexts.specimens());
         books.addAll(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryTexts.specimens());

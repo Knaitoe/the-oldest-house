@@ -10,6 +10,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseProxyEntityEvacuation;
 import io.github.knaitoe.theoldesthouse.house.HouseSpawnManager;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
+import io.github.knaitoe.theoldesthouse.opening.ContentWarning;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.Hillary;
@@ -110,6 +111,28 @@ public final class OpeningTests {
             }
         }
         return false;
+    }
+
+    /** 0.4.201: the content warning at the beginning, a closable book shown once. */
+    @GameTest(template = "empty")
+    public static void contentWarningIsAClosableBookShownOnce(GameTestHelper helper) {
+        WrittenBookContent content = ContentWarning.book().get(DataComponents.WRITTEN_BOOK_CONTENT);
+        helper.assertTrue(content != null && content.pages().size() == 4, "the warning is a four-page book");
+        for (int i = 0; i < content.pages().size(); i++) {
+            int lines = wrappedLines(content.pages().get(i).raw().getString());
+            helper.assertTrue(lines <= BOOK_PAGE_LINES, "warning page " + (i + 1) + " wraps to " + lines + " lines");
+        }
+        String all = String.join(" ", content.pages().stream().map(page -> page.raw().getString()).toList());
+        helper.assertTrue(all.contains("horror") && all.contains("never shown") && all.contains("flashing lights") && all.contains("will not be shown again"), "it says what the mod is and holds");
+        var p = helper.makeMockServerPlayerInLevel();
+        helper.assertTrue(!ContentWarning.seen(p), "a new player has not seen it");
+        ContentWarning.open(p);
+        helper.assertTrue(p.containerMenu instanceof net.minecraft.world.inventory.LecternMenu menu && !menu.clickMenuButton(p, 3) && menu.clickMenuButton(p, 2) && menu.getPage() == 1,
+                "it opens as a book whose pages turn and from which nothing can be taken");
+        p.closeContainer();
+        helper.assertTrue(ContentWarning.seen(p) && p.getPersistentData().getCompound(net.minecraft.world.entity.player.Player.PERSISTED_NBT_TAG).getBoolean(ContentWarning.SEEN),
+                "closing it marks it seen, in the data that survives death");
+        helper.succeed();
     }
 
     @GameTest(template = "empty")
