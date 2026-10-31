@@ -96,7 +96,7 @@ public final class WitnessAccount {
         BACKSEAT("backseat","Twenty seconds","survival","I closed the car door against the rain. Something rose behind my shoulder. The trees came through the windshield, and I was back at the House door with my belongings still in my hands."),
         SILO("silo","Yellow dust","memory","I climbed above the corn while a voice below invented places she could have gone. The roof opened onto painted tin. I came back down into the grain."),
         DARE_IN_THE_DARK("dare_in_the_dark","The third count","survival","I shut the door until the latch clicked and said it three times to my own eyes. The handle held from the hall. When it gave, the sheets lay empty on the floor and the glass broke behind me."),
-        FEET_UP("feet_up","Feet up","survival",FeetUpTexts.WITNESS);
+        FEET_UP("feet_up","Feet up","survival","I kept off the floor all the way to the attic. The chairs came while I was not looking; the boards went while I was. Three touches would have put me out, and the lamps would have gone down. I pulled the ladder up after me.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}
