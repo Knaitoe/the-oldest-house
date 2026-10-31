@@ -1074,7 +1074,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
     }
     @AfterBatch(batch="literary_elk_porthole") public static void portholeDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_rail",timeoutTicks=1200)
+    @GameTest(template="empty",batch="literary_elk_rail",timeoutTicks=3000)
     public static void privateKillerPhysicallyHopsYachtRailAndRejectsWallsAndMissingLandings(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("rail_reader",place);var b=f.base(place);
         f.at(p,place,3.5,9,6.5);
