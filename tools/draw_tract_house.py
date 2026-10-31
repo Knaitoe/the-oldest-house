@@ -448,6 +448,96 @@ def photo():
     return img
 
 
+def snapshot(w, h, border, draw):
+    """A print w by h pixels in the top-left of the sheet: a one-pixel border and the picture inside it."""
+    img = canvas()
+    for y in range(h):
+        for x in range(w):
+            px(img, x, y, border)
+    draw(img)
+    return img
+
+
+def photo_wedding():
+    """0.4.201 (owner: "the model home could use some custom artwork for its wall photos"): the wedding portrait, eight by ten
+    in a gilt frame: the bride in white beside the groom in a dark suit, against a studio's grey-blue backdrop."""
+    def draw(img):
+        for y in range(1, 9):
+            for x in range(1, 7):
+                px(img, x, y, (116, 126, 146) if y < 5 else (104, 114, 134))
+        for x, y in ((2, 2), (3, 2), (2, 3)):
+            px(img, x, y, (238, 234, 222))  # veil
+        px(img, 3, 3, (228, 194, 166))
+        for y in range(4, 9):
+            for x in (2, 3):
+                px(img, x, y, (242, 238, 228))
+        px(img, 3, 6, (196, 78, 98)); px(img, 2, 6, (120, 160, 90))  # the bouquet
+        px(img, 4, 2, (82, 58, 40)); px(img, 5, 2, (82, 58, 40))
+        px(img, 4, 3, (222, 184, 156)); px(img, 5, 3, (222, 184, 156))
+        for y in range(4, 9):
+            for x in (4, 5):
+                px(img, x, y, (42, 42, 50))
+        px(img, 4, 4, (226, 226, 226))
+    return snapshot(8, 10, (178, 142, 64), draw)
+
+
+def photo_beach():
+    """Two children at the beach in a white-bordered print: sky, a line of sea, sand, a striped umbrella and a bucket."""
+    def draw(img):
+        for y in range(1, 7):
+            for x in range(1, 11):
+                px(img, x, y, (152, 198, 230) if y < 4 else (64, 124, 172) if y == 4 else (226, 206, 152))
+        px(img, 9, 1, (250, 222, 110))
+        for x in (6, 7, 8):
+            px(img, x, 2, (214, 66, 60) if x % 2 == 0 else (240, 236, 226))
+        for y in (3, 4, 5):
+            px(img, 7, y, (190, 190, 190))
+        px(img, 3, 3, (232, 190, 160)); px(img, 3, 4, (210, 60, 70)); px(img, 3, 5, (232, 190, 160))
+        px(img, 2, 3, (120, 80, 50))
+        px(img, 5, 4, (232, 190, 160)); px(img, 5, 5, (70, 130, 200)); px(img, 5, 3, (230, 200, 120))
+        px(img, 9, 5, (250, 200, 60))
+    return snapshot(12, 8, (236, 232, 220), draw)
+
+
+def photo_school():
+    """A school picture, eight by ten: a child with long fair hair on the mottled blue backdrop, in a card mount."""
+    def draw(img):
+        for y in range(1, 9):
+            for x in range(1, 7):
+                px(img, x, y, (92, 122, 172) if (x * 3 + y * 5) % 4 else (104, 134, 184))
+        for y in range(2, 7):
+            for x in (2, 5):
+                px(img, x, y, (222, 192, 112))
+        for x in (3, 4):
+            px(img, x, 2, (222, 192, 112))
+            px(img, x, 3, (234, 200, 174)); px(img, x, 4, (234, 200, 174))
+        px(img, 3, 3, (138, 104, 92)); px(img, 4, 3, (138, 104, 92)); px(img, 3, 5, (206, 140, 140))
+        px(img, 4, 5, (234, 200, 174))
+        for y in range(6, 9):
+            for x in range(2, 6):
+                px(img, x, y, (220, 150, 172))
+    return snapshot(8, 10, (206, 196, 172), draw)
+
+
+def photo_dog():
+    """The family dog on the lawn in front of the siding, in a white-bordered print."""
+    def draw(img):
+        for y in range(1, 7):
+            for x in range(1, 11):
+                px(img, x, y, (206, 196, 164) if y < 5 else (96, 150, 72))
+        for x in range(1, 11):
+            px(img, x, 2, (186, 176, 146))
+        for x in range(4, 8):
+            px(img, x, 4, (204, 150, 70))
+            px(img, x, 3, (214, 160, 80))
+        px(img, 8, 2, (214, 160, 80)); px(img, 9, 2, (214, 160, 80)); px(img, 8, 3, (204, 150, 70))
+        px(img, 8, 1, (170, 112, 52)); px(img, 10, 2, (40, 30, 30)); px(img, 9, 1, (214, 160, 80))
+        px(img, 3, 3, (214, 160, 80)); px(img, 2, 2, (214, 160, 80))
+        for x in (4, 7):
+            px(img, x, 5, (190, 136, 60))
+    return snapshot(12, 8, (236, 232, 220), draw)
+
+
 TEXTURES = {
     'paneling': paneling, 'shag': shag, 'linoleum': linoleum, 'popcorn': popcorn, 'kitchen_paper': kitchen_paper,
     'oak': oak, 'plaid': plaid, 'corduroy': corduroy, 'gold': gold, 'fridge_upper': lambda: fridge_front(True),
@@ -455,6 +545,7 @@ TEXTURES = {
     'cabinet': cabinet, 'steel': steel, 'basin': basin, 'tv_wood': tv_wood, 'tv_front': tv_front, 'screen_off': screen_off,
     'screen_static': screen_static, 'lampshade': lampshade, 'brass': brass, 'tiffany': tiffany, 'frosted': frosted,
     'clown': clown, 'toy_chest': toy_chest, 'curtain': curtain, 'phone': phone, 'photo': photo,
+    'photo_wedding': photo_wedding, 'photo_beach': photo_beach, 'photo_school': photo_school, 'photo_dog': photo_dog,
 }
 MATERIALS = ('paneling', 'shag', 'linoleum', 'popcorn', 'kitchen_paper')
 
@@ -677,6 +768,14 @@ def m_wall_phone():
 @spec('family_photo', {'p': 'photo'}, 'photo')
 def m_family_photo():
     return [box((3, 5, 15), (13, 13, 16), 'p', uv=(0, 0, 16, 16))]
+
+
+# The four snapshots: each picture's own size, its pixels square on the wall.
+for _name, _w, _h in (('photo_wedding', 8, 10), ('photo_beach', 12, 8), ('photo_school', 8, 10), ('photo_dog', 12, 8)):
+    def _make(w=_w, h=_h):
+        x0, y0 = 8 - w // 2, 9 - h // 2
+        return [box((x0, y0, 15), (x0 + w, y0 + h, 16), 'p', uv=(0, 0, w, h))]
+    MODEL_SPECS[_name] = (_make, {'p': _name}, _name)
 
 
 KINDS = list(MODEL_SPECS)

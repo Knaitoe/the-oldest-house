@@ -60,6 +60,10 @@ public final class ModelHomeTests {
                 && is(level, base, new BlockPos(8, 0, -17), TractHouseBlock.Kind.STOVE)
                 && is(level, base, new BlockPos(8, 1, -18), TractHouseBlock.Kind.FRIDGE_UPPER)
                 && is(level, base, new BlockPos(-7, 0, -16), TractHouseBlock.Kind.CLOWN_DOLL), "sofa, range, fridge and the clown are in their rooms");
+        helper.assertTrue(is(level, base, new BlockPos(-8, 2, -4), TractHouseBlock.Kind.PHOTO_WEDDING)
+                && is(level, base, new BlockPos(-3, 2, -1), TractHouseBlock.Kind.PHOTO_BEACH)
+                && is(level, base, new BlockPos(2, 2, -1), TractHouseBlock.Kind.PHOTO_SCHOOL)
+                && is(level, base, new BlockPos(5, 2, -1), TractHouseBlock.Kind.PHOTO_DOG), "the four wall photographs are four different pictures");
         helper.assertTrue(TractHouseBlock.light(TractHouseBlock.of(TractHouseBlock.Kind.CEILING_LIGHT, Direction.NORTH)) > 10
                 && is(level, base, new BlockPos(-3, 4, -4), TractHouseBlock.Kind.CEILING_LIGHT), "a show home is lit");
 

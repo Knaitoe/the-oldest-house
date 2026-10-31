@@ -1,20 +1,20 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "paper": "the_oldest_house:block/zampano_scribble_13",
-    "particle": "the_oldest_house:block/zampano_scribble_13"
+    "paper": "the_oldest_house:block/zampano_sheet_13",
+    "particle": "the_oldest_house:block/zampano_sheet_13"
   },
   "elements": [
     {
       "from": [
         1,
         0,
-        15.75
+        1
       ],
       "to": [
         15,
-        16,
-        16
+        0.25,
+        15
       ],
       "faces": {
         "north": {
