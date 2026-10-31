@@ -54,6 +54,20 @@ Tearing has worked since 0.4.199: hold right-click on a page with writing on it 
 
 When the phone goes over the side in Phone in the Canoe, the view becomes the falling phone's. Until now the game drew the reader as it draws anyone the camera can see, so their body, the name over it and the first-person hand all showed in the shot. While the view is the phone's, `LakePhoneClient` now cancels the player renderer for the reader's own body, which also drops the name, and cancels the hand. Other readers in the scene are drawn as before. The body's shadow on the canoe is not suppressed; at night it barely shows.
 
+## The lake house culvert moves
+
+> "for the lake house, the movement through the hand-push corridor is dreadfully slow and awkward"
+
+Under the culvert's roof a stroke could start only every sixteen ticks, each added .13 to the canoe's speed, and the canoe lost a further 6% a tick on top of the water's own drag, so it crawled about a block a second: the eighteen-block channel took about nineteen seconds of holding forward. Each stroke also set the hull .085 off its wall, so in the two-wide channel it knocked across into the other.
+
+`LakeHouseCanoe` now:
+
+- **strokes faster hand over hand.** A stroke's arm lasts ten ticks; the other hand may follow after eight, the same hand once its stroke is done. Holding forward still alternates hands by itself; left or right still uses that hand, and a one-armed reader still uses theirs.
+- **glides between strokes.** Each stroke adds .15 (to at most .3), and the culvert's extra drag is 3% a tick. Hand over hand it averages about 2.6 blocks a second (one hand about 2.1): the channel in about seven seconds.
+- **keeps to the middle.** A stroke sets the hull only .03 off its wall, and under the roof the canoe loses most of its drift across the channel each tick and eases toward the point between the two walls.
+
+The lake house namespace's sixteen cases pass, the stroke case included (an immediate second stroke is still refused; the same hand pushes again after a stroke; a back stroke runs back out).
+
 ## Not changed yet
 
 The coatroom's closing line, "That's how you'll look here.", waits on the owner's choice among the suggestions given in conversation.
