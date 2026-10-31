@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "paper": "the_oldest_house:block/zampano_scribble_0",
-    "particle": "the_oldest_house:block/zampano_scribble_0"
+    "paper": "the_oldest_house:block/zampano_sheet_0",
+    "particle": "the_oldest_house:block/zampano_sheet_0"
   },
   "elements": [
     {

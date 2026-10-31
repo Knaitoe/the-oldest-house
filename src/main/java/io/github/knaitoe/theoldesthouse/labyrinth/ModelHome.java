@@ -310,10 +310,11 @@ public final class ModelHome {
         furnish(level, base, -6, 0, -4, Kind.COFFEE_TABLE, Direction.EAST);
         furnish(level, base, -6, 0, -6, Kind.RECLINER, Direction.SOUTH);
         furnish(level, base, -6, 0, -2, Kind.RECLINER, Direction.NORTH);
-        furnish(level, base, -8, 2, -4, Kind.FAMILY_PHOTO, Direction.EAST);
-        furnish(level, base, -3, 2, -1, Kind.FAMILY_PHOTO, Direction.NORTH);
-        furnish(level, base, 2, 2, -1, Kind.FAMILY_PHOTO, Direction.NORTH);
-        furnish(level, base, 5, 2, -1, Kind.FAMILY_PHOTO, Direction.NORTH);
+        // 0.4.201: four different snapshots (owner: "the model home could use some custom artwork for its wall photos").
+        furnish(level, base, -8, 2, -4, Kind.PHOTO_WEDDING, Direction.EAST);
+        furnish(level, base, -3, 2, -1, Kind.PHOTO_BEACH, Direction.NORTH);
+        furnish(level, base, 2, 2, -1, Kind.PHOTO_SCHOOL, Direction.NORTH);
+        furnish(level, base, 5, 2, -1, Kind.PHOTO_DOG, Direction.NORTH);
         furnish(level, base, -8, 2, -5, Kind.CURTAIN_LEFT, Direction.EAST);
         put(level, base, 8, 0, -7, Blocks.POTTED_FERN.defaultBlockState());
         put(level, base, 8, 0, -1, Blocks.POTTED_FERN.defaultBlockState());

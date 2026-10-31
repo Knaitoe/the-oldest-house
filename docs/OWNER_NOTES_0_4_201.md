@@ -149,6 +149,48 @@ The stair to the vault ended under the hall floor: the floor over the landing be
 
 The uncanny namespace passes (58, including two new cases: the figure reaching an open door kills them and fails the night; a shut door holds when it tries the knob). The two-client proof now takes one bed use.
 
+## The model home's photographs
+
+> "casa verde/the model home could use some custom artwork for its wall photos"
+
+Every photograph in the show home was the same small picture of a house on a lawn. There are four now, each its own original
+snapshot in its own frame shape and drawn at native pixel scale (`tools/draw_tract_house.py`): a wedding portrait in a gilt
+frame on the side wall, and along the back wall the two children at the beach, a school picture on the blue backdrop, and the
+family dog on the lawn, each in a white-bordered print. They are four new kinds of the tract-house block
+(`PHOTO_WEDDING`, `PHOTO_BEACH`, `PHOTO_SCHOOL`, `PHOTO_DOG`), with collision-free shapes like the old one. The model home's
+setting-up case checks that the four hang where they should.
+
+## Zampano's courtyard: the files, their labels, and his textures
+
+> "zampano's courtyard - the books should simply show the intended text rather than describing it. the signposts should be
+> fixed too." / "other zampanos textures should be naturalized to look more in-line with vanilla minecraft"
+
+- **The files show themselves.** Each reader's drawers held pages that described their paper instead of being it ("No hour
+  beside the name. A place has been left for it."; "A pencil line crosses the margin and continues on the next leaf."; "One
+  sheet has been folded into quarters. The reverse is blank."). Now: the appointments page lists all seven readers with their
+  hours and leaves this reader's hour as a blank, with a "Next visit:" line to fill on the next leaf; the pencil line is drawn
+  and runs off one leaf onto the next to its doorway; the folded sheet is the sheet, its words in four quarters, and its
+  reverse is a blank page (`ServiceFittingEntity.file`).
+- **The labels.** Each stack of drawers had a three-line sign ("Readers' files / name / Appointments") stuck to the face of its
+  top drawer. Each now has one label with the reader's name, hung on the wall above the stack (`ArchiveReaderFiles.label`); the
+  lanterns that stood there hang from the ceiling instead. The archive case checks the label and that nothing covers the drawer.
+- **His textures.** The scrawled sheets on his wall, the plaster and the gouges were 64-pixel paintings that read as
+  photographs pasted into the world. They are sixteen-pixel textures now, with vanilla's few flat tones: sixteen sheets of
+  wavering hand (struck through, written over in rust, spiralled, run past a ruled margin), old cream plaster with a hairline
+  crack, and deepslate scored by four even grooves (`tools/draw_zampano_naturalized.py`, checked in CI). The old 64-pixel
+  sheets stay in the pack unchanged for the historical inventory; nothing draws them. The plaster and gouges models are shared
+  with the staircase's collapse and the cell, which take the new look too.
+- **The gouges.** The gouged block hung a block above the floor beside the trunk; it is in the floor now, where the novel puts
+  the marks.
+- The rest of the review of his home (its architecture and layout) is the next piece of work.
+
+## Five vignette proposals
+
+The owner sent five vignette specifications (the Left-Right Game, the Dead Air Broadcast, the God of the Pitt, the Polaroid
+Trail, the Whistlers in the Pines) and two shorter ideas (Polybius; the companion's replacement). They are recorded in
+`docs/OWNER_VIGNETTE_PROPOSALS_2026_10_31.md` with a first reading of each against multiplayer, the literature and the
+reader's House of Leaves, and win and lose states. None is built yet.
+
 ## Not changed yet
 
 - The coatroom's closing line, "That's how you'll look here.", waits on the owner's choice among the suggestions given in conversation.

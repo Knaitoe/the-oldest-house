@@ -27,9 +27,14 @@ public final class ServiceFittingEntity extends BaseContainerBlockEntity {
  public void file(int reader,int drawer){
   if(filed||level==null||getBlockState().getValue(ServiceFittingBlock.KIND)!=ServiceFittingBlock.Kind.DRAWER)return;filed=true;
   String name=ArchiveReaderFiles.NAMES[reader],title=drawer==2?"Appointments":drawer==1?"Cross references":"Loose leaves";fileLabel=name+" — "+title;
-  var pages=drawer==2?java.util.List.of("READERS’ APPOINTMENTS\n\n"+name+"\n\nBeatrice\nLeonie\nPauline\nRuth\nAnne\nEsther\nHelen","No hour beside the name.\n\nA place has been left for it."):
-   drawer==1?java.util.List.of("CROSS REFERENCES\n\n"+name+"\n\nDoorway → passage\nPassage → stair\nStair → landing\nLanding → doorway",reader%2==0?"door\n    passage\n        stair\n            landing\n\n            landing\n        stair\n    passage\ndoor\n\n      no room":"A pencil line crosses the margin and continues on the next leaf."):
-   java.util.List.of("LOOSE LEAVES\n\n"+name+"\n\nOne sheet has been folded into quarters. The reverse is blank.");
+  // 0.4.201 (owner: "the books should simply show the intended text rather than describing it"): each file is the paper
+  // itself, the blank left blank and the line drawn, not a sentence about them.
+  String[] hours={"10:00","2:30","9:15","4:00","11:30","1:00","3:45"};var list=new StringBuilder("READERS\u2019 APPOINTMENTS\n\n");
+  for(int i=0;i<ArchiveReaderFiles.NAMES.length;i++)list.append(ArchiveReaderFiles.NAMES[i]).append("   ").append(i==reader?"____":hours[i]).append('\n');
+  var pages=drawer==2?java.util.List.of(list.toString(),name+"\n\nNext visit:\n\n__________"):
+   drawer==1?(reader%2==0?java.util.List.of("CROSS REFERENCES\n\n"+name+"\n\nDoorway \u2192 passage\nPassage \u2192 stair\nStair \u2192 landing\nLanding \u2192 doorway","door\n    passage\n        stair\n            landing\n\n            landing\n        stair\n    passage\ndoor\n\n      no room"):
+    java.util.List.of("CROSS REFERENCES\n\n"+name+"\n\nDoorway \u2192 passage\nPassage \u2192 stair\nStair \u2192 landing\nLanding \u2192 doorway","landing\n\n-------------------->","-------------------\n\n          doorway")):
+   java.util.List.of("LOOSE LEAVES\n\n"+name,"stair      |      stair\n           |\n-----------+-----------\n           |\nlanding  |  landing"," ");
   var paper=HouseWriting.book(name+" — "+title,"",HouseWriting.WritingStyle.ZAMPANO,pages);CustomData.update(DataComponents.CUSTOM_DATA,paper,t->{t.putUUID("ArchivePaper133",java.util.UUID.randomUUID());t.putString("FiledUnder133",name);});items.set(0,paper);setChanged();
  }
  @Override public int getContainerSize(){return 9;}

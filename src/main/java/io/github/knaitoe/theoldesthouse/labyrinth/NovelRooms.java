@@ -49,7 +49,7 @@ public final class NovelRooms {
         door(l,b.offset(ARCHIVE_DOOR),Direction.SOUTH,Blocks.IRON_DOOR,false);
         for(int x:new int[]{-12,12})for(int z:new int[]{-23,-29,-35})for(int y=1;y<=3;y++)at(l,b,x,y,z,NovelRegistry.SEALED_WINDOW.get());
         for(int z=-3;z>=-15;z-=3)for(int x:new int[]{-10,10}){at(l,b,x,0,z,Blocks.MOSS_BLOCK);at(l,b,x,1,z,Blocks.AZALEA);}
-        at(l,b,0,0,-16,Blocks.BROWN_CARPET);at(l,b,5,0,-34,Blocks.CHEST);at(l,b,5,1,-33,NovelRegistry.GOUGES.get());
+        at(l,b,0,0,-16,Blocks.BROWN_CARPET);at(l,b,5,0,-34,Blocks.CHEST);at(l,b,5,-1,-33,NovelRegistry.GOUGES.get());
         lectern(l,b.offset(ARCHIVE_DESK),NovelTexts.archive());
         if(l.getBlockEntity(b.offset(5,0,-34)) instanceof ChestBlockEntity chest&&chest.isEmpty()){
             chest.setItem(0,HouseWriting.book("Readers' appointments","Zampano",HouseWriting.WritingStyle.ZAMPANO,List.of("Seven names. Seven visits.\n\nThe margins remember the voices more clearly than the survey remembers the walls.")));chest.setChanged();}

@@ -78,6 +78,18 @@
   "facing=north,kind=family_photo": {
    "model": "the_oldest_house:block/tract_house/family_photo"
   },
+  "facing=north,kind=photo_wedding": {
+   "model": "the_oldest_house:block/tract_house/photo_wedding"
+  },
+  "facing=north,kind=photo_beach": {
+   "model": "the_oldest_house:block/tract_house/photo_beach"
+  },
+  "facing=north,kind=photo_school": {
+   "model": "the_oldest_house:block/tract_house/photo_school"
+  },
+  "facing=north,kind=photo_dog": {
+   "model": "the_oldest_house:block/tract_house/photo_dog"
+  },
   "facing=east,kind=dining_chair": {
    "model": "the_oldest_house:block/tract_house/dining_chair",
    "y": 90
@@ -180,6 +192,22 @@
   },
   "facing=east,kind=family_photo": {
    "model": "the_oldest_house:block/tract_house/family_photo",
+   "y": 90
+  },
+  "facing=east,kind=photo_wedding": {
+   "model": "the_oldest_house:block/tract_house/photo_wedding",
+   "y": 90
+  },
+  "facing=east,kind=photo_beach": {
+   "model": "the_oldest_house:block/tract_house/photo_beach",
+   "y": 90
+  },
+  "facing=east,kind=photo_school": {
+   "model": "the_oldest_house:block/tract_house/photo_school",
+   "y": 90
+  },
+  "facing=east,kind=photo_dog": {
+   "model": "the_oldest_house:block/tract_house/photo_dog",
    "y": 90
   },
   "facing=south,kind=dining_chair": {
@@ -286,6 +314,22 @@
    "model": "the_oldest_house:block/tract_house/family_photo",
    "y": 180
   },
+  "facing=south,kind=photo_wedding": {
+   "model": "the_oldest_house:block/tract_house/photo_wedding",
+   "y": 180
+  },
+  "facing=south,kind=photo_beach": {
+   "model": "the_oldest_house:block/tract_house/photo_beach",
+   "y": 180
+  },
+  "facing=south,kind=photo_school": {
+   "model": "the_oldest_house:block/tract_house/photo_school",
+   "y": 180
+  },
+  "facing=south,kind=photo_dog": {
+   "model": "the_oldest_house:block/tract_house/photo_dog",
+   "y": 180
+  },
   "facing=west,kind=dining_chair": {
    "model": "the_oldest_house:block/tract_house/dining_chair",
    "y": 270
@@ -388,6 +432,22 @@
   },
   "facing=west,kind=family_photo": {
    "model": "the_oldest_house:block/tract_house/family_photo",
+   "y": 270
+  },
+  "facing=west,kind=photo_wedding": {
+   "model": "the_oldest_house:block/tract_house/photo_wedding",
+   "y": 270
+  },
+  "facing=west,kind=photo_beach": {
+   "model": "the_oldest_house:block/tract_house/photo_beach",
+   "y": 270
+  },
+  "facing=west,kind=photo_school": {
+   "model": "the_oldest_house:block/tract_house/photo_school",
+   "y": 270
+  },
+  "facing=west,kind=photo_dog": {
+   "model": "the_oldest_house:block/tract_house/photo_dog",
    "y": 270
   }
  }

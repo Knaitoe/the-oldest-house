@@ -1,0 +1,79 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "p": "the_oldest_house:block/tract_house/photo_dog",
+  "particle": "the_oldest_house:block/tract_house/photo_dog"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    5,
+    15
+   ],
+   "to": [
+    14,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#p",
+     "uv": [
+      0,
+      0,
+      12,
+      8
+     ]
+    },
+    "south": {
+     "texture": "#p",
+     "uv": [
+      0,
+      0,
+      12,
+      8
+     ]
+    },
+    "east": {
+     "texture": "#p",
+     "uv": [
+      0,
+      0,
+      12,
+      8
+     ]
+    },
+    "west": {
+     "texture": "#p",
+     "uv": [
+      0,
+      0,
+      12,
+      8
+     ]
+    },
+    "up": {
+     "texture": "#p",
+     "uv": [
+      0,
+      0,
+      12,
+      8
+     ]
+    },
+    "down": {
+     "texture": "#p",
+     "uv": [
+      0,
+      0,
+      12,
+      8
+     ]
+    }
+   }
+  }
+ ]
+}
