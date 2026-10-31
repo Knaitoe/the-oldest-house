@@ -158,9 +158,9 @@ public final class UncannySocketProof {
                 for(var p:List.of(a,b))if(!p.onGround()||p.isNoGravity()||Math.abs(p.getY()-base(LabyrinthPlace.MISSING_SLEEP).getY()-5)>=.3)return;
                 for(var p:List.of(a,b)){DOLLS.put(p.getUUID(),own(p,LabyrinthPlace.MISSING_SLEEP).getUUID("CastDoll"));at(p,LabyrinthPlace.MISSING_SLEEP,p==a?-5.5:-6.5,5,-23.5);}step(s,6);
             }
-            else if(phase==6){for(var p:List.of(a,b)){require(own(p,LabyrinthPlace.MISSING_SLEEP).getInt("Sleeps")==1,"first native bed use");at(p,LabyrinthPlace.MISSING_SLEEP,-5.5,5,-23.5);}step(s,7);}
-            else if(phase==7){
-                for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.MISSING_SLEEP);require(own.getInt("Sleeps")==2,"second native bed use");
+            // 0.4.201: one native bed use begins the night.
+            else if(phase==6){
+                for(var p:List.of(a,b)){var own=own(p,LabyrinthPlace.MISSING_SLEEP);require(own.getInt("Sleeps")==2,"the one native bed use begins the night");
                     // Explicit timeout fixture lets slow software-rendered clients inspect four real feeds.
                     own.putInt("SecondSleepAge",own.getInt("UncannyAge")+3600);save(p,LabyrinthPlace.MISSING_SLEEP,own);at(p,LabyrinthPlace.MISSING_SLEEP,p==a?1.2:2.8,5,-20.5);
                 }step(s,8);
@@ -180,7 +180,7 @@ public final class UncannySocketProof {
                     p.getFoodData().setFoodLevel(17);
                 }step(s,16);}
             else if(phase==16){for(var p:List.of(a,b)){require(p.getHealth()<=18&&UncannySenses.mirror(p)&&UncannySenses.ring(p),"native use spends actual health and sends personal true view");require(WitnessAccount.count(LabyrinthData.get(s),p.getUUID())==2,"the genuine tunnel escape and bedroom account are the only two personal resolutions");}
-                write("passed.txt","Two actual socket clients rendered all six production-built spaces and original cast. Board/diner/basement/foyer positions were staged visual fixtures. Both clients then genuinely sprinted the longer tunnel past its faster original pursuer and read its far account, earning their own survival. Each bedroom source, two bed actions, four native CCTV channels, naked-eye sight, personal door close and final account used actual client packets. Hallway head pixels were required on both clients, including same-profile reconnect, retaining the exact saved night and original doll UUID. Mirror use paid actual health and ring sight retained private ownership. Earlier full expedition/reconnects remain separately required.\n");step(s,17);
+                write("passed.txt","Two actual socket clients rendered all six production-built spaces and original cast. Board/diner/basement/foyer positions were staged visual fixtures. Both clients then genuinely sprinted the longer tunnel past its faster original pursuer and read its far account, earning their own survival. Each bedroom source, one bed action, four native CCTV channels, naked-eye sight, personal door close and final account used actual client packets. Hallway head pixels were required on both clients, including same-profile reconnect, retaining the exact saved night and original doll UUID. Mirror use paid actual health and ring sight retained private ownership. Earlier full expedition/reconnects remain separately required.\n");step(s,17);
             }
         }catch(Throwable ex){write("failed.txt",ex.toString()+"\n");s.halt(false);throw new IllegalStateException(ex);}
     }

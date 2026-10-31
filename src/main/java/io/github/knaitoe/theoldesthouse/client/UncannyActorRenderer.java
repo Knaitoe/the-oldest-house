@@ -34,6 +34,22 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     public UncannyActorRenderer(EntityRendererProvider.Context c){
         super(c,new Model(c.bakeLayer(WIDE),false),.25F);wide=model;slim=new Model(c.bakeLayer(SLIM),true);bent=new Model(c.bakeLayer(BENT),false);
         addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<>(this,c.getItemInHandRenderer()));
+        addLayer(new Overlay());
+    }
+    /** 0.4.201: the split-feed bedroom's figure and parents wear the reader's own House body (owner: "it can use the player's
+     *  house skin"; the parents use "the player's skin tone and hair texture"). */
+    static boolean houseBody(LiteraryActor a){return a.role()==LiteraryActor.UNCANNY_MARIONETTE||a.role()==LiteraryActor.UNCANNY_PARENT;}
+    static net.minecraft.client.resources.PlayerSkin houseSkin(){var p=Minecraft.getInstance().player;if(p==null)return null;var s=HouseBodyClient.skin(p.getUUID());return s!=null?s:p.getSkin();}
+    static final ResourceLocation BLOOD=ResourceLocation.fromNamespaceAndPath("the_oldest_house","textures/entity/uncanny_parent_blood.png"),
+            FACE=ResourceLocation.fromNamespaceAndPath("the_oldest_house","textures/entity/uncanny_marionette_face.png");
+    /** Over the body: the parents' blood once they are dead; the wet, quivering face the hallway shows and the feed does not. */
+    private final class Overlay extends net.minecraft.client.renderer.entity.layers.RenderLayer<LiteraryActor,Model>{
+        Overlay(){super(UncannyActorRenderer.this);}
+        @Override public void render(PoseStack p,MultiBufferSource buffers,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
+            ResourceLocation texture=a.role()==LiteraryActor.UNCANNY_PARENT&&a.phase()==1?BLOOD:a.role()==LiteraryActor.UNCANNY_MARIONETTE&&!getParentModel().feed?FACE:null;
+            if(texture==null)return;
+            getParentModel().renderToBuffer(p,buffers.getBuffer(RenderType.entityTranslucent(texture)),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,-1);
+        }
     }
     public static boolean visible(LiteraryActor a){
         var mc=Minecraft.getInstance();if(a.owner().isPresent()&&(mc.player==null||!a.owner().get().equals(mc.player.getUUID())))return false;
@@ -49,7 +65,8 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack poses,MultiBufferSource buffers,int light){
         if(!visible(a)||UncannyCameras.maskDoll()&&a.getId()==UncannyClient.doll())return;
         var mc=Minecraft.getInstance();boolean feed=a.role()==LiteraryActor.UNCANNY_MARIONETTE&&UncannyCameras.recording()&&!UncannyClient.mirror();
-        model=feed&&mc.player!=null&&mc.player.getSkin().model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:a.role()==LiteraryActor.UNCANNY_GIANT?bent:wide;
+        var body=houseBody(a)?houseSkin():null;
+        model=body!=null&&body.model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:a.role()==LiteraryActor.UNCANNY_GIANT?bent:wide;
         model.feed=feed;
         if(a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS&&a.phase()<2){
             if(a.phase()==0&&!UncannyClient.mirror()&&!UncannyClient.outline(a))return;
@@ -63,7 +80,8 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         if(feed)UncannyCameras.dollDrawn(a);
     }
     @Override public ResourceLocation getTextureLocation(LiteraryActor a){
-        var p=Minecraft.getInstance().player;return model.feed&&p!=null?p.getSkin().texture():UncannyTextures.skin(a.role(),a.phase());
+        if(houseBody(a)){var body=houseSkin();if(body!=null)return body.texture();}
+        return UncannyTextures.skin(a.role()==LiteraryActor.UNCANNY_PARENT?LiteraryActor.UNCANNY_MARIONETTE:a.role(),a.phase());
     }
     @Override protected RenderType getRenderType(LiteraryActor a,boolean body,boolean translucent,boolean glowing){
         if(a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS&&a.phase()<2)return RenderType.entityTranslucent(getTextureLocation(a));
@@ -134,15 +152,31 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 }
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&!feed){
-                float twitch=Mth.sin(age*.7F)*.045F;leftArm.zRot=-(float)Math.PI/2;rightArm.zRot=(float)Math.PI/2;
-                head.zRot=twitch;head.xRot=.1F+twitch;body.y=-.45F;leftLeg.xRot=-.08F;rightLeg.xRot=.08F;
+                // 0.4.201, after the text: "his arms are jetted straight out from his shoulders and his head bobs like a
+                // marionette on tangled string. His feet don't touch the carpet—they glide an inch above the clutter,
+                // tiptoeing his jerking body". The string snags: every few ticks the head and shoulders are yanked to a new
+                // angle and hang there; the legs dangle and swing, toes down, an inch clear of the floor.
+                int beat=(int)(age/5);float r=((beat*73856093^beat*19349663)&1023)/1023F,r2=((beat*83492791^beat*2654435)&1023)/1023F;
+                float snag=Mth.clamp((age%5)/1.5F,0,1);
+                head.xRot=.18F+(r-.5F)*.7F*snag+Mth.sin(age*.9F)*.05F;head.zRot=(r2-.5F)*.75F*snag;head.yRot+=Mth.sin(age*.21F)*.18F;
+                leftArm.zRot=-(float)Math.PI/2+(r2-.5F)*.12F;rightArm.zRot=(float)Math.PI/2+(r-.5F)*.12F;
+                leftArm.xRot=(r-.5F)*.18F;rightArm.xRot=(r2-.5F)*.18F;
+                body.zRot=(r-.5F)*.07F*snag;body.xRot=-.04F;
+                leftLeg.xRot=Mth.sin(age*.37F)*.2F+.05F;rightLeg.xRot=-Mth.sin(age*.37F+.6F)*.2F+.05F;leftLeg.zRot=-.03F;rightLeg.zRot=.03F;
+                for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y-=1.5F;
+            }
+            if(role==LiteraryActor.UNCANNY_PARENT){
+                // Lying on their backs in bed (the native sleeping pose turns the body): arms at their sides.
+                head.xRot=head.yRot=0;leftArm.xRot=rightArm.xRot=0;leftArm.zRot=-.05F;rightArm.zRot=.05F;leftLeg.xRot=rightLeg.xRot=0;
+                if(phase==1){head.yRot=.5F;head.xRot=-.2F;rightArm.zRot=.6F;leftLeg.zRot=-.1F;}
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&feed){head.xRot=0;head.yRot=0;head.zRot=0;body.yRot=.04F*Mth.sin(age*.07F);}
             if(role==LiteraryActor.UNCANNY_PEELER){float breath=Mth.sin(age*(phase>=1?.17F:.09F));body.xRot=.27F+breath*(phase>=1?.045F:.015F);head.xRot=.24F+breath*.025F;if(phase<3){rightArm.xRot=phase>=1?-1.4F+Mth.sin(age*.21F)*.12F:-.8F-Mth.abs(Mth.sin(age*.27F));leftArm.xRot=-.65F;leftArm.zRot=phase>=1?Mth.sin(age*.71F)*.025F:0;}}
             if(role==LiteraryActor.UNCANNY_VISITOR){leftLeg.xRot=phase>0&&phase<4?0:-step*.35F;rightLeg.xRot=phase>0&&phase<4?0:step*.35F;leftArm.xRot=phase>0?0:step*.08F;rightArm.xRot=phase>=3?-1.4F:phase>0?0:-step*.06F;rightArm.zRot=phase>=3?.08F:0;rightArm.z=phase>=3?1.6F:0;head.xRot=phase>=2?.12F:-.08F;body.xRot=phase>0?0:.015F*Mth.sin(age*.04F);}
             hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
-            hat.visible=feed||role==LiteraryActor.UNCANNY_WAITRESS||role==LiteraryActor.UNCANNY_FALSE_WAITRESS;
-            jacket.visible=leftSleeve.visible=rightSleeve.visible=leftPants.visible=rightPants.visible=feed;
+            boolean house=role==LiteraryActor.UNCANNY_MARIONETTE||role==LiteraryActor.UNCANNY_PARENT;
+            hat.visible=feed||house||role==LiteraryActor.UNCANNY_WAITRESS||role==LiteraryActor.UNCANNY_FALSE_WAITRESS;
+            jacket.visible=leftSleeve.visible=rightSleeve.visible=leftPants.visible=rightPants.visible=feed||house;
         }
     }
 }

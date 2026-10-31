@@ -167,16 +167,51 @@ public final class UncannyTests {
         h.assertTrue(own.getBoolean("TunnelPassed130")&&own.getBoolean("Ready"),"a passage already made is not taken back: "+own);
     });}
     @AfterBatch(batch="uncanny_tunnel_reentry201") public static void tunnelReentryDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_sleep",timeoutTicks=900) public static void sleepingCutsOnlyThisNightAndNeverPutsTheReaderInTheEmptyBed(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
-        var place=LabyrinthPlace.MISSING_SLEEP;var peer=f.player("sleep_peer",place);f.source(p,place);long time=f.level(place).getDayTime();click(f,p,place,UncannyRooms.BED_AT);
-        h.assertTrue(f.own(p,place).getInt("Sleeps")==1&&f.own(p,place).getInt("NightClock")==7200&&!p.isSleeping(),"a genuine bed interaction moves to a missing interval");h.assertTrue(f.level(place).getDayTime()==time&&f.own(peer,place).getInt("Sleeps")==0,"the world's day and the peer's night do not jump");h.assertTrue(p.position().distanceToSqr(Vec3.atCenterOf(f.base(place).offset(UncannyRooms.BED_AT)))>4,"the reader wakes somewhere the bed camera cannot explain");f.reload();h.assertTrue(UncannyStories.locked(p),"an explicit bed attempt retains its committed night across reload");
-        var own=f.own(p,place);own.putInt("UncannyAge",own.getInt("FirstSleepAge")+1805);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
-        h.assertTrue(own.getInt("Sleeps")==0&&!own.getBoolean("UncannyFailed")&&!UncannyStories.locked(p),"a first night left unfinished lapses and unlocks the room; it does not fail it");
+    /** 0.4.201 (owner: "the player should only need to sleep once. You wake with mud on your feet."). */
+    @GameTest(template="empty",batch="uncanny_sleep",timeoutTicks=900) public static void oneSleepStartsTheNightAndNeverPutsTheReaderInTheEmptyBed(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
+        var place=LabyrinthPlace.MISSING_SLEEP;var peer=f.player("sleep_peer",place);f.source(p,place);long time=f.level(place).getDayTime();
+        var asleep=step(f,p,place);for(var key:new String[]{"CastParentA","CastParentB"}){var parent=UncannyStories.actor(p,asleep,key);h.assertTrue(parent!=null&&parent.isSleeping()&&parent.phase()==0&&parent.role()==LiteraryActor.UNCANNY_PARENT,"a parent is asleep in their bed before the night begins: "+key);}
+        var doll=UncannyStories.actor(p,asleep,"CastDoll");h.assertTrue(doll!=null&&doll.phase()==0,"nothing is in the hall before the reader sleeps");
+        click(f,p,place,UncannyRooms.BED_AT);
+        h.assertTrue(f.own(p,place).getInt("Sleeps")==2&&f.own(p,place).getInt("NightClock")==7200&&!p.isSleeping(),"one genuine bed interaction moves straight to the missing night");h.assertTrue(f.level(place).getDayTime()==time&&f.own(peer,place).getInt("Sleeps")==0,"the world's day and the peer's night do not jump");h.assertTrue(p.position().distanceToSqr(Vec3.atCenterOf(f.base(place).offset(UncannyRooms.BED_AT)))>2,"the reader wakes beside the bed, not in it");
+        click(f,p,place,UncannyRooms.BED_AT);h.assertTrue(f.own(p,place).getInt("NightClock")==7200,"there is no second sleep");
+        f.reload();h.assertTrue(UncannyStories.locked(p),"the night holds the room across reload");
+        var own=step(f,p,place);h.assertTrue(UncannyStories.actor(p,own,"CastDoll").phase()==1,"after waking, the figure is in the hall");
     });}
     @AfterBatch(batch="uncanny_sleep") public static void sleepDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_closed_door",timeoutTicks=900) public static void aClosedParentsDoorAloneCannotStandInForBothKindsOfEvidence(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
-        var place=LabyrinthPlace.MISSING_SLEEP;f.source(p,place);click(f,p,place,UncannyRooms.BED_AT);click(f,p,place,UncannyRooms.BED_AT);click(f,p,place,UncannyRooms.PARENTS_DOOR);
-        h.assertTrue(!f.own(p,place).getBoolean("Ready")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"closing a door without seeing direct and recorded forms grants nothing");h.assertTrue(f.own(p,place).getInt("Sleeps")==2,"the interrupted night keeps both actual bed attempts");
+        var place=LabyrinthPlace.MISSING_SLEEP;f.source(p,place);click(f,p,place,UncannyRooms.BED_AT);click(f,p,place,UncannyRooms.PARENTS_DOOR);
+        h.assertTrue(!f.own(p,place).getBoolean("Ready")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.MISSING_SLEEP),"closing a door without seeing direct and recorded forms grants nothing");h.assertTrue(f.own(p,place).getInt("Sleeps")==2,"the night began with the one sleep");
+    });}
+    @AfterBatch(batch="uncanny_parents_door201") public static void parentsDoorDone(ServerLevel l){close();}
+    /** 0.4.201: at the parents' door the figure reaches for the knob. Left open, it goes in: the fail state, blood on the
+     *  reader's screen, the parents dead in their red beds and the reader free to go and see them. */
+    @GameTest(template="empty",batch="uncanny_parents_door201",timeoutTicks=900) public static void theFigureReachingAnOpenParentsDoorKillsThemAndFailsTheNight(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
+        var place=LabyrinthPlace.MISSING_SLEEP;var b=f.base(place);var l=f.level(place);f.source(p,place);click(f,p,place,UncannyRooms.BED_AT);
+        var own=f.own(p,place);var doll=UncannyStories.actor(p,own,"CastDoll");
+        h.assertTrue(SplitFeedNight.doorOpen(l,b),"their door stands open as the night begins");
+        own.putInt("UncannyAge",own.getInt("SecondSleepAge")+SplitFeedNight.WAKE_BEAT+40);own.putInt("DollLeg201",2);own.putInt("AtDoorAge201",own.getInt("UncannyAge")-SplitFeedNight.KNOB_TICKS+10);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        var standing=p.position();own=step(f,p,place);
+        h.assertTrue(doll.gesture()==2&&!UncannyStories.failed(own),"at the door the hand goes to the knob first");
+        own.putInt("UncannyAge",own.getInt("UncannyAge")+5);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
+        h.assertTrue(UncannyStories.failed(own)&&own.getString("Failure").equals("watched_the_hand_reach_the_door")&&own.contains("Slaughter201")&&!own.getBoolean("Ready"),"through the open door: the fail state");
+        h.assertTrue(UncannySenses.view(p).contains("Slaughter201"),"the reader's client is told, for the red flash and the blood across the screen");
+        for(var key:new String[]{"CastParentA","CastParentB"}){var parent=UncannyStories.actor(p,own,key);h.assertTrue(parent!=null&&parent.phase()==1&&parent.isSleeping(),"a parent lies dead in their bed: "+key);}
+        h.assertTrue(l.getBlockState(b.offset(SplitFeedNight.BED_A)).is(net.minecraft.world.level.block.Blocks.RED_BED)&&l.getBlockState(b.offset(SplitFeedNight.BED_B)).is(net.minecraft.world.level.block.Blocks.RED_BED),"their sheets are soaked");
+        h.assertTrue(p.position().distanceToSqr(standing)<.01&&!UncannyStories.locked(p),"the reader is left where they stood, free to go into the room");
+        h.assertTrue(doll.phase()==0,"the figure is gone from the hall");
+    });}
+    /** A door the reader shut, having seen it: the knob rattles, the parents settle, and it folds away. */
+    @GameTest(template="empty",batch="uncanny_parents_door201",timeoutTicks=900) public static void aDoorShutOnWhatWasComingHoldsWhenItTriesTheKnob(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
+        var place=LabyrinthPlace.MISSING_SLEEP;var b=f.base(place);var l=f.level(place);f.source(p,place);click(f,p,place,UncannyRooms.BED_AT);
+        var own=f.own(p,place);own.putBoolean("MarionetteSeen",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        click(f,p,place,UncannyRooms.PARENTS_DOOR);own=f.own(p,place);
+        h.assertTrue(own.getBoolean("Ready")&&!SplitFeedNight.doorOpen(l,b),"shutting their door, having seen it, saves them");
+        click(f,p,place,UncannyRooms.PARENTS_DOOR);h.assertTrue(!SplitFeedNight.doorOpen(l,b),"and it stays shut");
+        own=f.own(p,place);own.putInt("UncannyAge",own.getInt("SecondSleepAge")+SplitFeedNight.WAKE_BEAT+40);own.putInt("DollLeg201",2);own.putInt("AtDoorAge201",own.getInt("UncannyAge")-SplitFeedNight.KNOB_TICKS);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        own=step(f,p,place);var doll=UncannyStories.actor(p,own,"CastDoll");
+        h.assertTrue(own.getBoolean("DollGone201")&&doll.phase()==0&&!UncannyStories.failed(own)&&!own.contains("Slaughter201"),"it tries the knob, the door holds and it folds away");
+        for(var key:new String[]{"CastParentA","CastParentB"})h.assertTrue(UncannyStories.actor(p,own,key).phase()==0,"the parents sleep on: "+key);
     });}
     @AfterBatch(batch="uncanny_closed_door") public static void bedroomDoorDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_peel",timeoutTicks=600) public static void actualPeelingRetainsTheUnbreakableToolAndNeverTakesAnotherReadersProgress(GameTestHelper h){

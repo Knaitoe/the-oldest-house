@@ -203,22 +203,60 @@ public final class UncannyRooms {
         TunnelPassage.fresh(l,b);
     }
     private static void bedroom(ServerLevel l,BlockPos b){
-        room(l,b,-9,9,-29,-1,0,10,material("bedroom_paper"),Blocks.SPRUCE_PLANKS);
-        box(l,b,-9,4,-29,9,4,-1,Blocks.SPRUCE_PLANKS);
-        for(int z=-11;z>=-28;z--)for(int x:new int[]{-3,4}){
-            at(l,b,x,5,z,material("dark_wood"));for(int y=6;y<=9;y++)at(l,b,x,y,z,material("bedroom_paper"));
+        // 0.4.201 (owner: "cctv needs retexturing, a reconstruction of its environment"): a family's upstairs. A landing at the
+        // top of the stair; the child's room to the west, open to the landing where the stair arrives; a hall down the middle
+        // to the parents' room, closed on every side but its one door, which is what the figure walks to; a bathroom off the
+        // landing. Cream paper in the hall and on the landing, blue in the child's room, rose in the parents', painted wainscot
+        // round every upstairs wall, carpet over a popcorn ceiling.
+        Block hall=material("home_hall_paper"),child=material("home_child_paper"),parents=material("home_parents_paper"),wainscot=material("home_wainscot"),tile=material("home_bath_tile");
+        room(l,b,-9,9,-29,-1,0,10,hall,Blocks.SPRUCE_PLANKS);
+        box(l,b,-9,10,-29,9,10,-1,material("home_ceiling"));
+        box(l,b,-9,4,-29,9,4,-1,material("home_floor"));
+        // Downstairs, the same paper over a painted skirting.
+        for(int z=-1;z>=-29;z--)for(int x:new int[]{-9,9})at(l,b,x,0,z,wainscot);
+        for(int x=-9;x<=9;x++)for(int z:new int[]{-1,-29})at(l,b,x,0,z,wainscot);
+        // Upstairs walls: wainscot at the floor, each room's own paper above it.
+        for(int z=-1;z>=-29;z--){
+            at(l,b,-9,5,z,wainscot);box(l,b,-9,6,z,-9,9,z,z<=-11&&z>=-28?child:hall);
+            boolean bath=z>=-9;at(l,b,9,5,z,bath?tile:wainscot);box(l,b,9,6,z,9,9,z,bath?tile:z<=-11&&z>=-28?parents:hall);
         }
+        for(int x=-9;x<=9;x++){
+            at(l,b,x,5,-29,wainscot);box(l,b,x,6,-29,x,9,-29,x>=-8&&x<=-4?child:x>=5&&x<=8?parents:hall);
+            boolean bath=x>=5;at(l,b,x,5,-1,bath?tile:wainscot);box(l,b,x,6,-1,x,9,-1,bath?tile:hall);
+        }
+        // The hall's two partitions, the parents' room's front wall, and the stub that makes the child's room a room.
+        for(int z=-11;z>=-28;z--)for(int x:new int[]{-3,4}){at(l,b,x,5,z,wainscot);box(l,b,x,6,z,x,9,z,hall);}
+        for(int x=4;x<=8;x++){at(l,b,x,5,-10,wainscot);box(l,b,x,6,-10,x,9,-10,parents);}
+        for(int x=-5;x<=-4;x++){at(l,b,x,5,-11,wainscot);box(l,b,x,6,-11,x,9,-11,child);}
+        // The bathroom off the landing: a tiled box inside the landing's papered wall.
+        for(int z=-2;z>=-9;z--){at(l,b,4,5,z,wainscot);box(l,b,4,6,z,4,9,z,hall);box(l,b,5,5,z,5,9,z,tile);}
+        box(l,b,5,5,-9,8,9,-9,tile);box(l,b,6,4,-8,8,4,-2,tile);
         for(int i=0;i<5;i++){int z=-4-i;box(l,b,-8,0,z,-6,i-1,z,Blocks.SPRUCE_PLANKS);for(int x=-8;x<=-6;x++)state(l,b,new BlockPos(x,i,z),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));box(l,b,-8,i+1,z,-6,5,z,Blocks.AIR);}
-        box(l,b,-8,4,-11,-4,4,-9,Blocks.SPRUCE_PLANKS);
+        box(l,b,-8,4,-11,-4,4,-9,material("home_floor"));
         door(l,b,new BlockPos(-3,5,-16),Direction.WEST,true);door(l,b,PARENTS_DOOR,Direction.EAST,true);
+        box(l,b,5,5,-5,5,6,-5,Blocks.AIR);door(l,b,new BlockPos(4,5,-5),Direction.WEST,false);
         for(int z=-4;z>=-9;z--)state(l,b,new BlockPos(-5,5,z),Blocks.SPRUCE_FENCE.defaultBlockState().setValue(FenceBlock.NORTH,z>-9).setValue(FenceBlock.SOUTH,z<-4));
         for(int x=-8;x<=-5;x++)state(l,b,new BlockPos(x,5,-3),Blocks.SPRUCE_FENCE.defaultBlockState().setValue(FenceBlock.EAST,x<-5).setValue(FenceBlock.WEST,x>-8));
-        for(int x=2;x<=4;x++)furnishing(l,b,x,5,-2,UncannyFurnitureBlock.Kind.SIDEBOARD);
-        furnishing(l,b,4,6,-2,UncannyFurnitureBlock.Kind.DESK_LAMP);
-        furnishing(l,b,3,7,-2,UncannyFurnitureBlock.Kind.PICTURE);
-        for(int z=-13;z>=-26;z--)for(int x=0;x<=1;x++)at(l,b,x,5,z,UncannyRegistry.PARLOR_RUG.get());
+        // The landing: a sideboard with a lamp, a fern and the family's photograph over it; the linen press by the stair.
+        for(int x=1;x<=3;x++)furnishing(l,b,x,5,-2,UncannyFurnitureBlock.Kind.SIDEBOARD);
+        furnishing(l,b,3,6,-2,UncannyFurnitureBlock.Kind.DESK_LAMP);at(l,b,1,6,-2,Blocks.POTTED_FERN);
+        furnishing(l,b,2,7,-2,UncannyFurnitureBlock.Kind.PICTURE);
+        furnishing(l,b,-4,5,-2,UncannyFurnitureBlock.Kind.WARDROBE);
+        NovelRooms.furniture(l,b.offset(-1,5,-2),HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.NORTH);
+        // The hall: a runner to the parents' door and past it, a table with a lamp and photographs, pictures between the
+        // doors, a window at the far end with the radiator under it.
+        for(int z=-4;z>=-27;z--)for(int x=0;x<=1;x++)at(l,b,x,5,z,UncannyRegistry.PARLOR_RUG.get());
+        for(int z=-21;z>=-22;z--)furnishing(l,b,-2,5,z,UncannyFurnitureBlock.Kind.SIDEBOARD,Direction.EAST);
+        furnishing(l,b,-2,6,-21,UncannyFurnitureBlock.Kind.DESK_LAMP);furnishing(l,b,-2,7,-22,UncannyFurnitureBlock.Kind.PICTURE,Direction.EAST);
+        furnishing(l,b,3,7,-19,UncannyFurnitureBlock.Kind.PICTURE,Direction.WEST);furnishing(l,b,3,7,-24,UncannyFurnitureBlock.Kind.PICTURE,Direction.WEST);
+        for(int x=1;x<=2;x++)for(int y=6;y<=7;y++)furnishing(l,b,x,y,-29,UncannyFurnitureBlock.Kind.WINDOW_FRAME,Direction.SOUTH);
+        furnishing(l,b,2,5,-28,UncannyFurnitureBlock.Kind.RADIATOR,Direction.SOUTH);
+        // The bathroom.
+        state(l,b,new BlockPos(8,5,-8),ServiceFittingBlock.of(ServiceFittingBlock.Kind.TOILET,Direction.WEST));
+        state(l,b,new BlockPos(8,5,-4),ServiceFittingBlock.of(ServiceFittingBlock.Kind.BASIN,Direction.WEST));state(l,b,new BlockPos(8,7,-4),ServiceFittingBlock.of(ServiceFittingBlock.Kind.MIRROR,Direction.WEST));
+        at(l,b,7,5,-4,Blocks.LIGHT_BLUE_CARPET);at(l,b,7,5,-5,Blocks.LIGHT_BLUE_CARPET);
         // A furnished home below the five real stair treads, rather than an empty plinth.
-        box(l,b,-8,0,-12,8,3,-12,material("bedroom_paper"));door(l,b,new BlockPos(1,0,-12),Direction.SOUTH,true);
+        box(l,b,-8,0,-12,8,3,-12,hall);for(int x=-8;x<=8;x++)at(l,b,x,0,-12,wainscot);door(l,b,new BlockPos(1,0,-12),Direction.SOUTH,true);
         sofa(l,b,6,0,-18,Direction.WEST);
         for(int x=-2;x<=2;x++)for(int z=-23;z<=-17;z++)at(l,b,x,0,z,Blocks.LIGHT_GRAY_CARPET);
         furnishing(l,b,0,0,-20,UncannyFurnitureBlock.Kind.COFFEE_TABLE);
@@ -231,23 +269,40 @@ public final class UncannyRooms {
         for(int z=-5;z>=-9;z--)furnishing(l,b,8,0,z,z==-8?UncannyFurnitureBlock.Kind.SINK:UncannyFurnitureBlock.Kind.CABINET,Direction.WEST);
         furnishing(l,b,6,0,-10,UncannyFurnitureBlock.Kind.FRIDGE,Direction.SOUTH);
         furnishing(l,b,3,0,-4,UncannyFurnitureBlock.Kind.SIDEBOARD,Direction.SOUTH);
+        // The kitchen table, set for three.
+        for(int x=2;x<=3;x++){NovelRooms.furniture(l,b.offset(x,0,-7),HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.NORTH);NovelRooms.furniture(l,b.offset(x,0,-8),HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.SOUTH);}
+        NovelRooms.furniture(l,b.offset(2,0,-6),HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.NORTH);
         furnishing(l,b,8,2,-11,UncannyFurnitureBlock.Kind.PICTURE,Direction.WEST);
-        NovelRooms.bed(l,b.offset(BED_AT),Blocks.GRAY_BED,Direction.NORTH);NovelRooms.bed(l,b.offset(6,5,-25),Blocks.BLUE_BED,Direction.NORTH);
+        for(int z:new int[]{-8,-18,-27})state(l,b,new BlockPos(0,3,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
+        // The child's room: the bed under the window, a lamp beside it, a rug, books, the wardrobe and the hamper, and the desk
+        // with the monitor where the house's cameras come in.
+        NovelRooms.bed(l,b.offset(BED_AT),Blocks.GRAY_BED,Direction.NORTH);
         furnishing(l,b,-6,5,-28,UncannyFurnitureBlock.Kind.HEADBOARD,Direction.SOUTH);
-        furnishing(l,b,6,5,-27,UncannyFurnitureBlock.Kind.HEADBOARD,Direction.SOUTH);
-        for(int x:new int[]{-7,7}){furnishing(l,b,x,5,-27,UncannyFurnitureBlock.Kind.BEDSIDE,Direction.SOUTH);furnishing(l,b,x,6,-27,UncannyFurnitureBlock.Kind.DESK_LAMP);}
+        furnishing(l,b,-7,5,-27,UncannyFurnitureBlock.Kind.BEDSIDE,Direction.SOUTH);furnishing(l,b,-7,6,-27,UncannyFurnitureBlock.Kind.DESK_LAMP);
+        for(int x=-5;x<=-4;x++)furnishing(l,b,x,5,-28,UncannyFurnitureBlock.Kind.BOOKCASE,Direction.SOUTH);
+        for(int x=-8;x<=-7;x++)for(int z=-22;z>=-23;z--)at(l,b,x,5,z,Blocks.LIGHT_BLUE_CARPET);
         furnishing(l,b,-8,5,-17,UncannyFurnitureBlock.Kind.WARDROBE,Direction.EAST);
         furnishing(l,b,-8,5,-25,UncannyFurnitureBlock.Kind.HAMPER);
-        furnishing(l,b,8,5,-19,UncannyFurnitureBlock.Kind.WARDROBE,Direction.WEST);
-        furnishing(l,b,8,7,-23,UncannyFurnitureBlock.Kind.PICTURE,Direction.WEST);
+        furnishing(l,b,-8,7,-21,UncannyFurnitureBlock.Kind.PICTURE,Direction.EAST);
         for(int x=-6;x<=-5;x++)furnishing(l,b,x,5,-22,UncannyFurnitureBlock.Kind.DESK,Direction.SOUTH);
         // One straight monitoring desk, a chair in front, and an open aisle to the bed.
         chair(l,b,-5,5,-21,Direction.NORTH);
         fit(l,b,MONITOR_AT,MONITOR,Direction.SOUTH);fit(l,b,source(LabyrinthPlace.MISSING_SLEEP),PAPER,Direction.SOUTH);
+        for(int x:new int[]{-7,-6})for(int y=6;y<=7;y++)furnishing(l,b,x,y,-29,UncannyFurnitureBlock.Kind.WINDOW_FRAME,Direction.SOUTH);
+        // The parents' room: two singles pushed together under the window, a parent asleep in each, a lamp on each side (one
+        // left on), the wardrobe, a chest of drawers by the door wall and a rug where the floor is walked.
+        NovelRooms.bed(l,b.offset(SplitFeedNight.BED_A.south()),Blocks.BLUE_BED,Direction.NORTH);NovelRooms.bed(l,b.offset(SplitFeedNight.BED_B.south()),Blocks.BLUE_BED,Direction.NORTH);
+        for(int x=6;x<=7;x++)furnishing(l,b,x,5,-27,UncannyFurnitureBlock.Kind.HEADBOARD,Direction.SOUTH);
+        for(int x:new int[]{5,8}){furnishing(l,b,x,5,-26,UncannyFurnitureBlock.Kind.BEDSIDE,Direction.SOUTH);state(l,b,new BlockPos(x,6,-26),UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.DESK_LAMP,Direction.NORTH).setValue(UncannyFurnitureBlock.OPEN,x==5));}
+        for(int x=5;x<=8;x++)for(int z=-22;z>=-24;z--)at(l,b,x,5,z,Blocks.LIGHT_GRAY_CARPET);
+        furnishing(l,b,8,5,-19,UncannyFurnitureBlock.Kind.WARDROBE,Direction.WEST);
+        furnishing(l,b,8,7,-23,UncannyFurnitureBlock.Kind.PICTURE,Direction.WEST);
+        NovelRooms.furniture(l,b.offset(7,5,-11),HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.NORTH);furnishing(l,b,7,7,-11,UncannyFurnitureBlock.Kind.PICTURE,Direction.NORTH);
+        for(int x=6;x<=7;x++)for(int y=6;y<=7;y++)furnishing(l,b,x,y,-29,UncannyFurnitureBlock.Kind.WINDOW_FRAME,Direction.SOUTH);
         for(var camera:List.of(new BlockPos(-8,8,-24),new BlockPos(0,8,-28),new BlockPos(8,8,-12),new BlockPos(0,3,-4)))fit(l,b,camera,CAMERA,Direction.SOUTH);
-        for(int z:new int[]{-8,-18,-27}){furnishing(l,b,0,9,z,UncannyFurnitureBlock.Kind.FLUORESCENT);furnishing(l,b,0,3,z,UncannyFurnitureBlock.Kind.FLUORESCENT);}
-        for(int x:new int[]{-7,-6,6,7})for(int y=6;y<=7;y++)furnishing(l,b,x,y,-29,UncannyFurnitureBlock.Kind.WINDOW_FRAME,Direction.SOUTH);
-        furnishing(l,b,2,5,-28,UncannyFurnitureBlock.Kind.RADIATOR,Direction.SOUTH);
+        // Domestic ceiling lights in the plaster; the parents' and the bathroom's are off.
+        for(var light:List.of(new BlockPos(0,10,-6),new BlockPos(1,10,-14),new BlockPos(1,10,-24),new BlockPos(-6,10,-18),new BlockPos(6,10,-19),new BlockPos(7,10,-5)))
+            state(l,b,light,UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.FLUSH_LIGHT,Direction.NORTH).setValue(UncannyFurnitureBlock.OPEN,light.getX()>=5));
     }
     private static void cellar(ServerLevel l,BlockPos b){
         // A complete house over a brick cellar. Solid backing continues under the stair well.

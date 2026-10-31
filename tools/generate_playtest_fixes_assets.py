@@ -139,7 +139,9 @@ def car_cabin():
         for y in range(16):
             streak=abs((x+y)-13)<=1 or abs((x+y)-19)==0
             glass.putpixel((x,y),(214,232,236,150) if streak else (126,164,176,92) if y>2 else (96,128,140,120))
-    save('car_glass',glass)
+    save('car_window',glass)
+    # The 0.4.68 glass sheet stays as it was (the historical texture inventory holds it); it is the cabin's breaking particle.
+    old=grain((16,16),(42,60,64));rect(old,(0,0),(16,3),(68,74,71));rect(old,(0,14),(16,16),(65,71,69));rect(old,(0,3),(2,14),(79,83,78));rect(old,(14,3),(16,14),(79,83,78));rect(old,(7,3),(9,14),(76,81,78));rect(old,(3,4),(6,6),(72,103,107));rect(old,(10,5),(13,7),(61,91,95));save('car_glass',old)
     trim=grain((16,16),(40,43,44));rect(trim,(0,15),(16,16),(28,30,31));save('car_trim',trim)
     seat=grain((16,16),(92,68,52))
     for x in range(16):seat.putpixel((x,8),(70,51,39,255))
@@ -151,7 +153,7 @@ def car_cabin():
     elements=[box([0,13,0],[16,16,16],'#trim'),box([0,0,0],[2,13,2],'#trim'),
               pane([2,0,0.5],[16,13,0.5],('north','south')),pane([0.5,0,2],[0.5,13,16],('west','east')),
               box([4,0,4],[14,4,14],'#seat')]
-    write('models/block/town_fixture_car_cabin.json',{'render_type':'minecraft:translucent','textures':{'glass':f'{NS}:block/car_glass','trim':f'{NS}:block/car_trim','seat':f'{NS}:block/car_seat','particle':f'{NS}:block/car_trim'},'elements':elements})
+    write('models/block/town_fixture_car_cabin.json',{'render_type':'minecraft:translucent','textures':{'glass':f'{NS}:block/car_window','trim':f'{NS}:block/car_trim','seat':f'{NS}:block/car_seat','particle':f'{NS}:block/car_glass'},'elements':elements})
 
 def cars():
     palette={'red':(135,39,33),'blue':(46,69,101),'green':(73,88,54),'white':(190,185,164),'light_blue':(95,130,137),'brown':(107,74,48),'cyan':(51,101,108),'orange':(164,89,47)}

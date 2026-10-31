@@ -81,6 +81,17 @@ public final class UncannyClient {
         if(!active())return;var mc=Minecraft.getInstance();var g=event.getGuiGraphics();
         if(room().equals("second_waitress")&&view.getInt("Age")>0){int w=mc.getWindow().getGuiScaledWidth(),h=mc.getWindow().getGuiScaledHeight();g.fill(0,0,3,h,0x99101418);g.fill(w-3,0,w,h,0x99101418);}
         if(room().equals("layered_man")&&!UncannyCameras.recording())engulfed(g,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight(),view.getInt("Engulfment")/100F,mc.player.tickCount);
+        if(room().equals("missing_sleep")&&view.contains("Slaughter201")&&!UncannyCameras.recording()&&mc.level!=null)slaughter(g,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight(),mc.level.getGameTime()-view.getLong("Slaughter201"));
+    }
+    /** 0.4.201: when it reaches their room, the screen flashes red and the reader's view is spattered, fading over eight seconds. */
+    static void slaughter(net.minecraft.client.gui.GuiGraphics g,int w,int h,long since){
+        if(since<0||since>=160)return;float scale=(float)(double)Minecraft.getInstance().options.screenEffectScale().get();
+        float flash=Math.max(0,1-since/24F)*(.35F+.65F*scale);if(flash>0)g.fill(0,0,w,h,((int)(flash*180)<<24)|0xa80000);
+        float blood=since<40?1:Math.max(0,1-(since-40)/120F);if(blood<=0)return;
+        var texture=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/misc/blood_splatter.png");
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();g.setColor(1,1,1,blood);
+        var p=g.pose();p.pushPose();p.scale(w/256F,h/256F,1);g.blit(texture,0,0,0,0,256,256,256,256);p.popPose();
+        g.setColor(1,1,1,1);com.mojang.blaze3d.systems.RenderSystem.disableBlend();
     }
     static void engulfed(net.minecraft.client.gui.GuiGraphics g,int w,int h,float amount,float time){
         if(amount<=0)return;float pulse=1+.025F*Mth.sin(time*.14F);float edge=Mth.clamp((.035F+amount*.47F)*pulse,0,.52F);

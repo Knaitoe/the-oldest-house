@@ -24,6 +24,8 @@ public final class LiteraryActor extends PathfinderMob {
     public static final int LAKE_THEO=41;
     /** 0.4.173: the two kids under bedsheets outside the third-floor girls' bathroom; phase 0 waiting, 1 giggling, 2 silent. */
     public static final int DARE_KID_A=42,DARE_KID_B=43;
+    /** The split-feed bedroom's parents (0.4.201): asleep in their beds, or dead in them; drawn in the reader's own body. */
+    public static final int UNCANNY_PARENT=44;
     public static boolean dareKid(int role){return role==DARE_KID_A||role==DARE_KID_B;}
     /** The lake house partner, whichever of the two they are. */
     public static boolean lakePartner(int role){return role==LAKE_TESS||role==LAKE_THEO;}
