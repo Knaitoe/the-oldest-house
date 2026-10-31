@@ -30,7 +30,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class ZampanoDrawers {
-    public static final String STATE="zampano_cabinets0178",PULLED="ZampanoLeaves0178";
+    public static final String PULLED="ZampanoLeaves0178";
     /** The left cabinet; the others stand at x 0 and 1, backs to the paper wall. */
     public static final BlockPos FIRST=new BlockPos(-1,0,-38);
     static final double REACH=6;
@@ -44,26 +44,9 @@ public final class ZampanoDrawers {
 
     public static BlockState cabinet(int i){return NovelRegistry.ZAMPANO_CABINET.get().defaultBlockState().setValue(ZampanoCabinetBlock.FACING,Direction.SOUTH).setValue(ZampanoCabinetBlock.CABINET,i);}
     public static BlockPos cell(int i){return FIRST.offset(i,0,0);}
-    /** New courtyards stand the cabinets as they are built. */
+    /** The apartment stands the cabinets as it is built (ZampanoApartment). */
     public static void build(ServerLevel l,BlockPos b){
         for(int i=0;i<ZampanoLeaves.CABINETS;i++)BuildBlocks.set(l,b.offset(cell(i)),cabinet(i),F);
-        BuildBlocks.after(l,()->done(l.getServer(),b));
-    }
-    private static void done(MinecraftServer s,BlockPos b){var d=LabyrinthData.get(s);var saved=d.state(STATE);saved.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,saved);}
-    public static boolean placed(MinecraftServer s,BlockPos b){return LabyrinthData.get(s).state(STATE).getBoolean(Long.toString(b.asLong()));}
-    /**
-     * Saved courtyards get theirs once, while the archive is loaded, unwatched and empty, and only where the three cells and
-     * the floor before them are still bare: a reader's own building there is kept, and the courtyard is never given them twice.
-     */
-    public static boolean place(ServerLevel l,BlockPos b){
-        if(placed(l.getServer(),b))return true;
-        var area=new AABB(Vec3.atLowerCornerOf(b.offset(FIRST)),Vec3.atLowerCornerOf(b.offset(cell(ZampanoLeaves.CABINETS-1)).offset(1,2,2)));
-        for(int i=0;i<ZampanoLeaves.CABINETS;i++){var at=b.offset(cell(i));if(!l.hasChunkAt(at)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return false;}
-        if(l.players().stream().anyMatch(p->area.inflate(24).intersects(p.getCamera().getBoundingBox()))||!l.getEntitiesOfClass(LivingEntity.class,area.inflate(.05),LivingEntity::isAlive).isEmpty())return false;
-        boolean bare=true;
-        for(int i=0;i<ZampanoLeaves.CABINETS;i++){var at=b.offset(cell(i));if(!l.getBlockState(at).isAir()||!l.getBlockState(at.south()).isAir()||l.getBlockState(at.below()).isAir())bare=false;}
-        if(bare)for(int i=0;i<ZampanoLeaves.CABINETS;i++)l.setBlock(b.offset(cell(i)),cabinet(i),F);
-        done(l.getServer(),b);return true;
     }
 
     /** The reader's hand on a drawer front: that drawer slides out and its folder opens on their screen. */

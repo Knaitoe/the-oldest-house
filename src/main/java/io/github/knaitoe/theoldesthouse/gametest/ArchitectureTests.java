@@ -149,6 +149,8 @@ public final class ArchitectureTests {
             elkStages(h,HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.ELK_CARCASSES));
             // The hotel (0.4.105) is built whole: its three floors, and the grounds with the rear wall they see.
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL);
+            // 0.4.201: Zampano's apartment court is built whole by ZampanoApartment, outside the generic dressing, and exports itself.
+            export(HouseTestLevel.get(server,NovelRooms.dimension(LabyrinthPlace.ZAMPANO_COURTYARD)),LabyrinthPlaces.base(origin,LabyrinthPlace.ZAMPANO_COURTYARD),LabyrinthPlace.ZAMPANO_COURTYARD);
             export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL_GROUNDS),LabyrinthPlace.HOTEL_GROUNDS);
             // The barn well's farm (0.4.164) is built whole by BarnWell, outside the generic loop, so it is exported here too.
             export(HouseTestLevel.get(server,NovelRooms.dimension(LabyrinthPlace.BARN_WELL)),LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL),LabyrinthPlace.BARN_WELL);
@@ -170,8 +172,8 @@ public final class ArchitectureTests {
             literaryRoutes(h,interior,LabyrinthPlaces.base(origin,LabyrinthPlace.WINCHESTER));
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
-            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell and the night ward (0.4.199) by NightWard, outside the generic dressing.
-            h.assertTrue(dressed==19&&props>=76,"all nineteen generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
+            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell, the night ward (0.4.199) by NightWard and Zampano's apartment court (0.4.201) by ZampanoApartment, outside the generic dressing.
+            h.assertTrue(dressed==18&&props>=72,"all eighteen generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
             shellsAndEdges(h,server,origin,data);
             composition(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);
@@ -226,7 +228,7 @@ public final class ArchitectureTests {
         h.assertTrue(!level.noCollision(null,new AABB(xx+.2,yy-.04,zz+.2,xx+.8,yy-.01,zz+.8)),route+" has an actual supporting tread at "+x+","+feet+","+z);
     }
     private static void frontsAndInteriors(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){
-        for(var scene:List.of(LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD))h.assertTrue(data.state(SceneExteriors.STATE).getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" has a finite exterior checkpoint");
+        for(var scene:List.of(LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP))h.assertTrue(data.state(SceneExteriors.STATE).getBoolean(origin.asLong()+":"+scene.id()),scene.id()+" has a finite exterior checkpoint");
         var town=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.DROWNED_TOWN);
         int lamps=0;
         for(var e:ProofrockTown.streetlights(b).entrySet()){
@@ -244,8 +246,11 @@ public final class ArchitectureTests {
         var interior=HouseTestLevel.get(server);var trailer=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);var hut=LabyrinthPlaces.base(origin,LabyrinthPlace.HOLLOWAY_CAMP);var archive=LabyrinthPlaces.base(origin,LabyrinthPlace.ZAMPANO_COURTYARD);
         h.assertTrue(interior.getBlockState(trailer.offset(0,7,-65)).is(Blocks.SMOOTH_STONE_SLAB)&&interior.getBlockState(trailer.offset(5,0,-51)).is(Blocks.IRON_BARS),"the trailer has a stepped metal roof and a physical tow frame");
         h.assertTrue(interior.getBlockState(hut.offset(3,3,0)).is(Blocks.STRIPPED_SPRUCE_LOG)&&!interior.getBlockState(hut.offset(0,8,-5)).isAir(),"the dugout has a braced entry and an earth-covered roof");
-        h.assertTrue(town.getBlockState(archive.offset(3,3,-18)).is(Blocks.STONE_BRICKS)&&town.getBlockState(archive.offset(0,9,-25)).is(Blocks.LIGHT_GRAY_STAINED_GLASS),"the archive has projecting pilasters and glazed rooflights");
-        var removed=archive.offset(0,9,-25);town.setBlock(removed,Blocks.AIR.defaultBlockState(),2);SceneExteriors.decorateOnce(town,origin,LabyrinthPlace.ZAMPANO_COURTYARD);h.assertTrue(town.getBlockState(removed).isAir(),"completed exterior upgrades do not replenish removed scenery");
+        // 0.4.201: Zampano's court is one apartment building, built whole: galleries on posts down both wings, a hood over his
+        // door, the upper storey's windows, and no exterior pass of its own.
+        h.assertTrue(town.getBlockState(archive.offset(12,5,-10)).is(Blocks.SPRUCE_FENCE)&&town.getBlockState(archive.offset(-13,4,-10)).is(Blocks.SPRUCE_PLANKS)
+            &&town.getBlockState(archive.offset(12,6,-12)).is(Blocks.STRIPPED_SPRUCE_LOG)&&town.getBlockState(archive.offset(0,3,-18)).is(Blocks.SPRUCE_SLAB)
+            &&town.getBlockState(archive.offset(-4,9,-19)).is(Blocks.WHITE_STAINED_GLASS_PANE)&&!data.state(SceneExteriors.STATE).getBoolean(origin.asLong()+":"+LabyrinthPlace.ZAMPANO_COURTYARD.id()),"the apartment court has its galleries, his door's hood and the flats above, and no exterior pass");
     }
     /** 0.4.46: literary rooms and outdoor scenes are composed once, in place, and the generic pass's defects are gone. */
     private static void composition(GameTestHelper h,net.minecraft.server.MinecraftServer server,BlockPos origin,LabyrinthData data){

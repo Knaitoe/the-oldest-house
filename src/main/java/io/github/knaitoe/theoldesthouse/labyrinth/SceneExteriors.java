@@ -20,7 +20,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class SceneExteriors {
     public static final String STATE="scene_exteriors_0429";
-    private static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP,LabyrinthPlace.ZAMPANO_COURTYARD);
+    private static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.GOATMAN,LabyrinthPlace.HOLLOWAY_CAMP);
     private final ServerLevel l;private final BlockPos b;private final LabyrinthPlace site;
     private SceneExteriors(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;site=place;}
     /** Builders and fixtures call this with the scene in hand: it reads the scene as it is. */
@@ -34,7 +34,7 @@ public final class SceneExteriors {
         // 0.4.165: only that check waits; a builder or fixture holding the scene decorates it at once (run 1330).
         if(loadedOnly&&!loaded(l,box)||l.getBlockState(b.offset(0,-1,-3)).isAir())return;
         if(l.players().stream().anyMatch(p->box.intersects(p.getBoundingBox())))return;
-        var work=new SceneExteriors(l,b,site);switch(site){case DROWNED_TOWN->work.town();case GOATMAN->work.trailer();case HOLLOWAY_CAMP->work.hut();case ZAMPANO_COURTYARD->work.archive();default->{}}
+        var work=new SceneExteriors(l,b,site);switch(site){case DROWNED_TOWN->work.town();case GOATMAN->work.trailer();case HOLLOWAY_CAMP->work.hut();default->{}}
         done.putBoolean(key,true);d.setState(STATE,done);
     }
     private static boolean loaded(ServerLevel l,AABB a){
@@ -62,7 +62,7 @@ public final class SceneExteriors {
     private boolean safe(BlockPos at,BlockState target){
         var old=l.getBlockState(at);if(reserved(at)||l.getBlockEntity(at)!=null||old.getBlock() instanceof DoorBlock||old.getBlock() instanceof TrapDoorBlock||old.getBlock() instanceof BedBlock)return false;
         if(!old.isAir()&&!net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(old.getBlock()).getNamespace().equals("minecraft")
-                &&!old.is(NovelRegistry.PAPER.get())&&!(site==LabyrinthPlace.ZAMPANO_COURTYARD&&old.is(NovelRegistry.PLASTER.get()))&&!old.is(LabyrinthBuilder.SOLID.getBlock()))return false;
+                &&!old.is(NovelRegistry.PAPER.get())&&!old.is(LabyrinthBuilder.SOLID.getBlock()))return false;
         if(!l.getEntitiesOfClass(Entity.class,new AABB(at)).isEmpty())return false;
         // Preserve attached original props, signs and frames, including their real backing blocks.
         for(Direction side:Direction.values()){
@@ -195,24 +195,5 @@ public final class SceneExteriors {
         for(int x:new int[]{-5,5}){add(x,0,-1,Blocks.SPRUCE_LOG);add(x,1,-1,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));}
         // Bundle and tools stay beside the entrance, clear of his real patrol and supply barrel.
         prop(5,2,-1,SceneDetailBlock.Kind.ROPE_COIL,Direction.NORTH);prop(-5,2,-1,SceneDetailBlock.Kind.TOOLS,Direction.NORTH);
-    }
-    private void archive(){
-        // A narrow brick/stucco archive with paired pilasters, a recessed entrance and a lead roof.
-        for(int x=-12;x<=12;x++)for(int y=0;y<=6;y++){
-            var old=l.getBlockState(p(x,y,-19));if(old.is(NovelRegistry.PAPER.get())||old.isCollisionShapeFullBlock(l,p(x,y,-19)))set(x,y,-19,y==0?Blocks.STONE_BRICKS:y==2?Blocks.POLISHED_ANDESITE:Blocks.LIGHT_GRAY_TERRACOTTA);
-        }
-        for(int x:new int[]{-12,-7,-3,3,7,12})for(int y=0;y<=6;y++){
-            set(x,y,-18,y==0?Blocks.CHISELED_STONE_BRICKS:Blocks.STONE_BRICKS);set(x,7,-18,Blocks.STONE_BRICK_SLAB);
-        }
-        for(int x:new int[]{-10,-5,5,10})windowSouth(x,x+1,3,-19,Blocks.BRICKS);
-        for(int x=-2;x<=2;x++){set(x,4,-18,Blocks.CHISELED_STONE_BRICKS);set(x,5,-18,Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));}
-        for(int x=-12;x<=12;x++){set(x,7,-18,Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));set(x,8,-19,Blocks.STONE_BRICK_SLAB);}
-        for(int side:new int[]{-12,12})for(int z=-38;z<=-20;z++)for(int y=0;y<=6;y++){
-            var old=l.getBlockState(p(side,y,z));if(old.is(NovelRegistry.PAPER.get())||old.is(NovelRegistry.PLASTER.get()))set(side,y,z,y==0||y==6?Blocks.STONE_BRICKS:Math.floorMod(z,5)==0?Blocks.BRICKS:Blocks.LIGHT_GRAY_TERRACOTTA);
-        }
-        for(int x=-11;x<=11;x++)for(int z=-38;z<=-20;z++)set(x,8,z,Blocks.DEEPSLATE_TILE_SLAB);
-        // Small glazed rooflights have a physical upstand; no ambient world-time change is involved.
-        for(int z:new int[]{-25,-32})for(int x=-3;x<=3;x++)for(int zz=z-1;zz<=z+1;zz++)set(x,9,zz,Math.abs(x)==3||Math.abs(zz-z)==1?Blocks.POLISHED_ANDESITE:Blocks.LIGHT_GRAY_STAINED_GLASS);
-        for(int x:new int[]{-8,8})add(x,0,-18,Blocks.POTTED_FERN);
     }
 }

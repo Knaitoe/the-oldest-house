@@ -61,11 +61,10 @@ public final class SceneHuntReview {
     private static boolean surface(ServerLevel l,BlockPos b,int x,int y,int z,VignetteDetailBlock.Kind kind,Direction face){return detail(l,b,new BlockPos(x,y,z),kind,face);}
     /** The exact former native source is archived once, before its reading surface changes. */
     private static boolean source(ServerLevel l,BlockPos origin,BlockPos b,LabyrinthPlace p){
-        boolean archive=p==LabyrinthPlace.ZAMPANO_COURTYARD;
-        if(!archive&&(!LiteraryRooms.isLiterary(p)||p==LabyrinthPlace.FAMILY_COPY||p==LabyrinthPlace.OLD_CABIN))return true;
-        var rel=archive?NovelRooms.ARCHIVE_DESK:LiteraryRooms.source(p);var at=b.offset(rel);var old=BuildBlocks.state(l,at);
+        if((!LiteraryRooms.isLiterary(p)||p==LabyrinthPlace.FAMILY_COPY||p==LabyrinthPlace.OLD_CABIN))return true;
+        var rel=LiteraryRooms.source(p);var at=b.offset(rel);var old=BuildBlocks.state(l,at);
         var kind=SceneReview.readingKind(p);if(rel.getY()>0&&kind==BOOK_TRAY)kind=FIELD_NOTEBOOK;
-        var next=archive?HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.READING_DESK,Direction.SOUTH):VignetteDetailBlock.state(kind,Direction.SOUTH);
+        var next=VignetteDetailBlock.state(kind,Direction.SOUTH);
         if(old.is(Blocks.LECTERN)){
             if(!safe(l,at,next,true))return false;
             if(l.getBlockEntity(at) instanceof LecternBlockEntity lectern){
@@ -75,10 +74,8 @@ public final class SceneHuntReview {
             }
             BuildBlocks.guardedSet(l,at,next,F,()->{if(!safe(l,at,next,true))return false;emptyLectern(l,at);return true;});
         }else if(old.isAir()){
-            if(archive){var floor=at.below();if(!BuildBlocks.state(l,floor).getShape(l,floor).isEmpty())set(l,at,next);}
-            else detail(l,b,rel,kind,Direction.SOUTH);
+            detail(l,b,rel,kind,Direction.SOUTH);
         }
-        if(archive)return detail(l,b,rel.above(),SCRIBBLE_7,Direction.SOUTH);
         // Remove only the redundant alternate object authored by 0.4.54.
         var alias=b.offset(SceneReview.readingSurface(p));var s=BuildBlocks.state(l,alias);
         if(!alias.equals(at)&&s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(VignetteDetailBlock.KIND)==SceneReview.readingKind(p))
@@ -176,15 +173,6 @@ public final class SceneHuntReview {
         if(p==LabyrinthPlace.CAMP_BLOOD)for(int[] node:new int[][]{{-4,-8},{4,-8},{10,-29},{27,-81},{-27,-77}})ready&=cover(l,b,node[0],node[1]);
         if(p==LabyrinthPlace.ELK_CARCASSES)ready&=forest(l,b);
         if(p==LabyrinthPlace.COSTUME_NIGHT)ready&=costumeLake(l,b);
-        if(p==LabyrinthPlace.ZAMPANO_COURTYARD){
-            for(int i=0;i<SceneReview.DRAFTS.size();i++){var at=b.offset(SceneReview.DRAFTS.get(i));var old=BuildBlocks.state(l,at);
-                if(old.is(HouseBlocks.SCENE_DETAIL.get())||old.is(HouseBlocks.VIGNETTE_DETAIL.get()))ready&=set(l,at,VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_"+i),Direction.SOUTH));
-                else ready&=detail(l,b,SceneReview.DRAFTS.get(i),VignetteDetailBlock.Kind.valueOf("SCRIBBLE_"+i),Direction.SOUTH);
-            }
-            for(int i=8;i<16;i++){int z=-22-(i-8)*2;var at=b.offset(-11,4,z);var backing=at.west();
-                if(!BuildBlocks.state(l,backing).getShape(l,backing).isEmpty())ready&=add(l,at,VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_"+i),Direction.EAST));
-            }
-        }
         if(p==LabyrinthPlace.DEVILS_ROCK){
             ready&=surface(l,b,15,2,-32,FAMILY_BOARD,Direction.WEST);
             ready&=add(l,b.offset(14,0,-6),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.WEST));

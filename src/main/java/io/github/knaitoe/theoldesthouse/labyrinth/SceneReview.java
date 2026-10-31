@@ -28,7 +28,7 @@ public final class SceneReview {
     private static Work work;private static int cursor;
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}
     private SceneReview(){}
-    public static boolean applies(LabyrinthPlace p){if(UncannyRooms.isUncanny(p)||DareRooms.is(p)||FeetUpRooms.is(p))return false;if(p==LabyrinthPlace.GHOSTS_SET||p==LabyrinthPlace.WHEEL||p==LabyrinthPlace.WINCHESTER||p==LabyrinthPlace.MAPPING_INTERIOR||p==LabyrinthPlace.ELK_CARCASSES||p==LabyrinthPlace.CHILD_ROOM||p==LabyrinthPlace.MASQUE||p==LabyrinthPlace.BLY_ROUTE||p==LabyrinthPlace.USHER||p==LabyrinthPlace.HOTEL||p==LabyrinthPlace.HOTEL_GROUNDS||p==LabyrinthPlace.ELK_LOT||p==LabyrinthPlace.THREE_FINGERS||p==LabyrinthPlace.MOVIE_NIGHT||p==LabyrinthPlace.COSTUME_NIGHT||p==LabyrinthPlace.WINTER_LAKE||p==LabyrinthPlace.LAKE_HOUSE||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.BORRASCA)return false;return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL
+    public static boolean applies(LabyrinthPlace p){if(UncannyRooms.isUncanny(p)||DareRooms.is(p)||FeetUpRooms.is(p))return false;if(p==LabyrinthPlace.GHOSTS_SET||p==LabyrinthPlace.WHEEL||p==LabyrinthPlace.WINCHESTER||p==LabyrinthPlace.MAPPING_INTERIOR||p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.ELK_CARCASSES||p==LabyrinthPlace.CHILD_ROOM||p==LabyrinthPlace.MASQUE||p==LabyrinthPlace.BLY_ROUTE||p==LabyrinthPlace.USHER||p==LabyrinthPlace.HOTEL||p==LabyrinthPlace.HOTEL_GROUNDS||p==LabyrinthPlace.ELK_LOT||p==LabyrinthPlace.THREE_FINGERS||p==LabyrinthPlace.MOVIE_NIGHT||p==LabyrinthPlace.COSTUME_NIGHT||p==LabyrinthPlace.WINTER_LAKE||p==LabyrinthPlace.LAKE_HOUSE||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.BORRASCA)return false;return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL
             ||LiteraryRooms.isLiterary(p)&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.OLD_CABIN;}
     public static AABB area(BlockPos b,LabyrinthPlace p){var r=p.room();return new AABB(Vec3.atLowerCornerOf(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2)),Vec3.atLowerCornerOf(b.offset(r.maxX()+3,r.maxY()+4,8)));}
     private static String key(BlockPos o,LabyrinthPlace p){return o.asLong()+":"+p.id();}
@@ -86,23 +86,6 @@ public final class SceneReview {
             if(Math.abs(stand.getY()-y)>1.0E-4&&l.noCollision(stand,stand.getBoundingBox().move(0,y-stand.getY(),0)))stand.setPos(stand.getX(),y,stand.getZ());
         }
     }
-    private static boolean courtyard(ServerLevel l,BlockPos b){boolean ready=true;
-        for(int x:new int[]{-8,8}){
-            var chair=b.offset(x,0,-10);var s=BuildBlocks.state(l,chair);
-            if(s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&s.getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CANE_CHAIR)
-                ready&=set(l,chair,s.setValue(HouseholdFurnitureBlock.FACING,Direction.NORTH));
-            var desk=b.offset(x,0,-12);s=BuildBlocks.state(l,desk);
-            if(s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&Set.of(HouseholdFurnitureBlock.Kind.WALNUT_DESK,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,HouseholdFurnitureBlock.Kind.FORMICA_TABLE).contains(s.getValue(HouseholdFurnitureBlock.KIND)))
-                ready&=set(l,desk,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CHESS_TABLE,Direction.SOUTH));
-            var top=desk.above();s=BuildBlocks.state(l,top);
-            if(s.is(HouseBlocks.SCENE_DETAIL.get())&&s.getValue(SceneDetailBlock.KIND)==SceneDetailBlock.Kind.VASE)
-                ready&=set(l,top,VignetteDetailBlock.state(CHESS,Direction.NORTH));
-            else if(s.isAir()&&BuildBlocks.state(l,desk).is(HouseBlocks.HOUSEHOLD_FURNITURE.get()))detail(l,b,x,1,-12,CHESS,Direction.NORTH);
-        }
-        ready&=PlaytestSceneReview.courtyard(l,b);
-        for(var rel:DRAFTS){var at=b.offset(rel);var s=BuildBlocks.state(l,at);if(s.is(HouseBlocks.SCENE_DETAIL.get())&&Set.of(SceneDetailBlock.Kind.INK_PAPERS,SceneDetailBlock.Kind.FILE_TRAY,SceneDetailBlock.Kind.BOOKS).contains(s.getValue(SceneDetailBlock.KIND)))set(l,at,VignetteDetailBlock.state(FIELD_NOTEBOOK,Direction.SOUTH));}
-        return ready;
-    }
     /** Two shallow bays, a retained central beach and native half-height ways out of the water. */
     public static boolean shore(ServerLevel l,BlockPos b){boolean ready=true;
         for(int side:new int[]{-1,1})for(int ax=16;ax<=23;ax++)for(int z=-54;z<=-36;z++){
@@ -119,7 +102,6 @@ public final class SceneReview {
         return ready;
     }
     public static boolean apply(ServerLevel l,BlockPos b,LabyrinthPlace p){boolean ready=true;
-        if(p==LabyrinthPlace.ZAMPANO_COURTYARD)ready&=courtyard(l,b);
         if(p==LabyrinthPlace.CHILD_ROOM){
             detail(l,b,-8,0,-9,BEAR,Direction.EAST);detail(l,b,8,0,-12,TRAIN,Direction.NORTH);
             detail(l,b,-7,0,-21,TOY_BLOCKS,Direction.SOUTH);detail(l,b,10,1,-7,DOLL,Direction.WEST);

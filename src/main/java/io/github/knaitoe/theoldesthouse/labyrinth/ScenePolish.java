@@ -82,7 +82,7 @@ public final class ScenePolish {
         // The model home (0.4.121) is a tract house ModelHome builds and lights whole, the Wheel (0.4.121) is WheelHouse's and the Winchester house WinchesterHouse's.
         // The barn well's farm (0.4.164) is BarnWell's, and the night ward (0.4.199) NightWard's.
         // The puzzle rooms (0.4.199) are built whole by PuzzleRooms' rooms, nothing set in a beam's or a lift's way.
-        return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM && place != LabyrinthPlace.MODEL_HOME && place != LabyrinthPlace.WHEEL && place != LabyrinthPlace.WINCHESTER && place != LabyrinthPlace.MAPPING_INTERIOR
+        return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM && place != LabyrinthPlace.MODEL_HOME && place != LabyrinthPlace.WHEEL && place != LabyrinthPlace.WINCHESTER && place != LabyrinthPlace.MAPPING_INTERIOR && place != LabyrinthPlace.ZAMPANO_COURTYARD
                 && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM && place != LabyrinthPlace.MASQUE && place != LabyrinthPlace.BLY_ROUTE && place != LabyrinthPlace.USHER && place != LabyrinthPlace.HOTEL && place != LabyrinthPlace.HOTEL_GROUNDS
                 && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.MOVIE_NIGHT && place != LabyrinthPlace.COSTUME_NIGHT && place != LabyrinthPlace.WINTER_LAKE && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && place != LabyrinthPlace.BORRASCA && place != LabyrinthPlace.BARN_WELL && place != LabyrinthPlace.HOSPITAL && place != LabyrinthPlace.WAY_OUT && !PuzzleRooms.is(place) && !HazardVariety.added(place);
     }
@@ -235,7 +235,6 @@ public final class ScenePolish {
                 }
             }
             // The cell wall's gouged block reaches the floor.
-            case ZAMPANO_COURTYARD -> changed += support(level, base.offset(5, 0, -33), Blocks.DEEPSLATE_TILES.defaultBlockState());
             // The garden pool is a basin with walls, not water hanging over the space under the floor.
             case BLY_ROUTE -> {
                 for (int y = -4; y <= -2; y++)

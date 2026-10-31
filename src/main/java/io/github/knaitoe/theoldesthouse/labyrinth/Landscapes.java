@@ -24,7 +24,6 @@ public final class Landscapes {
     static void apply(ServerLevel level, BlockPos base, LabyrinthPlace place) {
         switch (place) {
             case PLAIN -> plain(level, base);
-            case ZAMPANO_COURTYARD -> courtyard(level, base);
             case BARN_WELL -> barnForest(level, base);
             default -> {}
         }
@@ -99,63 +98,6 @@ public final class Landscapes {
     private static boolean dune(BlockState st) {
         return st.is(Blocks.SANDSTONE) || st.is(Blocks.SAND) || st.is(Blocks.SANDSTONE_SLAB) || st.is(Blocks.DEAD_BUSH)
                 || st.is(Blocks.SMOOTH_SANDSTONE) || st.is(Blocks.BARRIER);
-    }
-
-    // ------------------------------------------------------------------
-    // Zampano's courtyard
-
-    static void courtyard(ServerLevel l, BlockPos b) {
-        // The former invisible box becomes the facades of the surrounding blocks of flats.
-        for (int x = -15; x <= 15; x++) for (int z = -41; z <= 0; z++) {
-            boolean side = Math.abs(x) == 15, back = z == -41, front = z == 0;
-            if (!side && !back && !front) continue;
-            int u = side ? z : x;
-            Direction out = side ? (x > 0 ? Direction.EAST : Direction.WEST) : back ? Direction.NORTH : Direction.SOUTH;
-            for (int y = 0; y <= 17; y++) {
-                var st = get(l, b, x, y, z);
-                if (y == 17) {
-                    if (st.isAir() && get(l, b, x, 16, z).is(Blocks.STONE_BRICKS)) set(l, b, x, 17, z, parapet(side ? Direction.Axis.Z : Direction.Axis.X));
-                    continue;
-                }
-                if (!st.is(Blocks.BARRIER)) continue;
-                set(l, b, x, y, z, facade(u, y, front && Math.abs(x) <= 8));
-                if (window(u, y, front && Math.abs(x) <= 8)) {
-                    int bx = x + out.getStepX(), bz = z + out.getStepZ();
-                    if (get(l, b, bx, y, bz).isAir()) set(l, b, bx, y, bz, Blocks.BLACK_CONCRETE.defaultBlockState());
-                }
-            }
-        }
-        // The archive's flat top gets a stone cornice and a parapet where it meets the sky.
-        for (int x = -12; x <= 12; x++) for (int z = -39; z <= -19; z++) {
-            boolean edge = Math.abs(x) == 12 || z == -39 || z == -19;
-            if (!edge || !get(l, b, x, 7, z).is(Blocks.BIRCH_PLANKS) || !get(l, b, x, 8, z).isAir()) continue;
-            set(l, b, x, 7, z, Blocks.STONE_BRICKS.defaultBlockState());
-            set(l, b, x, 8, z, parapet(Math.abs(x) == 12 ? Direction.Axis.Z : Direction.Axis.X));
-        }
-    }
-
-    private static boolean window(int u, int y, boolean blindFront) {
-        if (blindFront) return false;
-        int row = y % 5;
-        return Math.floorMod(u + 4, 5) == 0 && y < 15 && (row == 2 || row == 3);
-    }
-
-    private static BlockState facade(int u, int y, boolean blindFront) {
-        if (y == 0) return Blocks.POLISHED_ANDESITE.defaultBlockState();
-        if (y == 5 || y == 10 || y == 16) return Blocks.STONE_BRICKS.defaultBlockState();
-        if (y == 15) return Blocks.SMOOTH_STONE.defaultBlockState();
-        if (window(u, y, blindFront)) return Blocks.GLASS_PANE.defaultBlockState();
-        // Lintels and sills frame each window; pilasters divide the bays.
-        if (!blindFront && Math.floorMod(u + 4, 5) == 0 && (y % 5 == 1 || y % 5 == 4)) return Blocks.SMOOTH_STONE.defaultBlockState();
-        if (Math.floorMod(u + 2, 5) == 0) return Blocks.STONE_BRICKS.defaultBlockState();
-        return Blocks.BRICKS.defaultBlockState();
-    }
-
-    private static BlockState parapet(Direction.Axis axis) {
-        BlockState wall = Blocks.STONE_BRICK_WALL.defaultBlockState();
-        return axis == Direction.Axis.X
-                ? wall.setValue(WallBlock.EAST_WALL, WallSide.LOW).setValue(WallBlock.WEST_WALL, WallSide.LOW)
-                : wall.setValue(WallBlock.NORTH_WALL, WallSide.LOW).setValue(WallBlock.SOUTH_WALL, WallSide.LOW);
     }
 
     // ------------------------------------------------------------------

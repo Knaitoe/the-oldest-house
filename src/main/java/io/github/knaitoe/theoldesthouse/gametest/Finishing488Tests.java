@@ -41,7 +41,6 @@ public final class Finishing488Tests {
         @Override public void close(){if(active!=this)return;NovelVignettes.clearAll();LiteraryVignettes.clearAll();players.forEach(NativeTestPlayers::remove);extras.forEach(Entity::discard);chunks.close();var store=l.getServer().overworld().getDataStorage();store.set("the_oldest_house",oldHouse);store.set("the_oldest_house_labyrinth",oldData);active=null;}
     }
     @AfterBatch(batch="finish488_plain") public static void plainDone(ServerLevel ignored){if(active!=null)active.close();}
-    @AfterBatch(batch="finish488_archive") public static void archiveDone(ServerLevel ignored){if(active!=null)active.close();}
     @AfterBatch(batch="finish488_lighting") public static void lightsDone(ServerLevel ignored){if(active!=null)active.close();}
     @AfterBatch(batch="finish488_camp") public static void campDone(ServerLevel ignored){if(active!=null)active.close();}
 
@@ -60,22 +59,6 @@ public final class Finishing488Tests {
             h.assertTrue(!WitnessAccount.has(f.d(),p.getUUID(),WitnessAccount.Story.PLAIN),"reading the note cannot replace the actual camera resolution");p.closeContainer();f.away(p);
             f.l.setBlock(at,Blocks.AIR.defaultBlockState(),3);h.assertTrue(PlaytestScenes0488.repair(f.l,f.b,f.place,true)&&f.l.getBlockState(at).isAir(),"the saved checkpoint never refills a subsequently removed case");
             for(int z=-60;z<=17;z++)h.assertTrue(SceneClock.time(SceneClock.at(f.origin,f.b.offset(0,0,z),HouseDimensions.OUTSIDE),0,18000)==6000,"the whole actual approach and plain use daylight while native time is night");
-        }).thenSucceed();
-    }
-
-    @GameTest(template="empty",batch="finish488_archive",timeoutTicks=400)
-    public static void denseWritingAndStoneBowlKeepOriginalsEditsAndLivingResidents(GameTestHelper h){
-        var f=new Fixture(h,LabyrinthPlace.ZAMPANO_COURTYARD,643000);h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native archive sections are ready")).thenExecute(()->{
-            for(int x=-11;x<=11;x++)for(int y=0;y<=6;y++){f.put(x,y,-39,NovelRegistry.PAPER.get());f.put(x,y,-38,Blocks.AIR);}
-            f.put(0,1,-7,Blocks.WATER_CAULDRON);f.put(-5,0,-30,Blocks.LECTERN);var lectern=(LecternBlockEntity)f.l.getBlockEntity(f.b.offset(NovelRooms.ARCHIVE_DESK));lectern.setBook(NovelTexts.archive());var book=lectern.getBook().copy();
-            f.put(0,2,-38,Blocks.DIAMOND_BLOCK);var cat=EntityType.CAT.create(f.l);cat.setNoAi(true);cat.setNoGravity(true);cat.moveTo(Vec3.atBottomCenterOf(f.b.offset(CourtyardFountain.BOWL)));f.l.addFreshEntity(cat);f.extras.add(cat);var id=cat.getUUID();
-            h.assertTrue(!PlaytestScenes0488.repair(f.l,f.b,f.place,true),"a real body postpones bowl collision changes");cat.moveTo(Vec3.atBottomCenterOf(f.b.offset(8,0,-12)));
-            h.assertTrue(PlaytestScenes0488.repair(f.l,f.b,f.place,true),"the safe native handwriting and bowl pass completes");
-            int written=0;for(int x=-10;x<=10;x++)for(int y=1;y<=5;y++){var s=f.l.getBlockState(f.b.offset(x,y,-38));if(s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(VignetteDetailBlock.KIND).name().startsWith("SCRIBBLE_"))written++;}
-            h.assertTrue(written==104&&f.l.getBlockState(f.b.offset(0,2,-38)).is(Blocks.DIAMOND_BLOCK),"the wall uses dense original handwriting and preserves the edited cell");
-            h.assertTrue(CourtyardFountain.bowl(f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)))&&f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL)).is(HouseBlocks.VIGNETTE_DETAIL.get()),"the actual fountain has its custom stone bowl");
-            h.assertTrue(lectern==f.l.getBlockEntity(f.b.offset(NovelRooms.ARCHIVE_DESK))&&ItemStack.matches(book,lectern.getBook())&&cat.getUUID().equals(id)&&cat.isAlive(),"source container, book and resident identities remain exact");
-            f.reload();f.l.setBlock(f.b.offset(-10,1,-38),Blocks.AIR.defaultBlockState(),3);PlaytestScenes0488.repair(f.l,f.b,f.place,true);h.assertTrue(f.l.getBlockState(f.b.offset(-10,1,-38)).isAir(),"reload never replaces a later removed writing");
         }).thenSucceed();
     }
 

@@ -182,7 +182,7 @@ setting-up case checks that the four hang where they should.
   with the staircase's collapse and the cell, which take the new look too.
 - **The gouges.** The gouged block hung a block above the floor beside the trunk; it is in the floor now, where the novel puts
   the marks.
-- The rest of the review of his home (its architecture and layout) is the next piece of work.
+- The rest of the review of his home (its architecture and layout) follows in "Zampano's apartment, built whole" below.
 
 ## The coatroom's closing line, and the crop top
 
@@ -368,6 +368,33 @@ The full design, and what the novella gives it, is docs/MAPPING_INTERIOR_REWORK.
   2:49"), its advancement description, the co-op line and the keepsake line.
 - **Tests.** The literary case walks all five visits; the animation case watches his whole crossing in steady private steps;
   the architecture case expects the floor plan's lectern; the keepsake case carries the bead.
+
+## Zampano's apartment, built whole
+
+> (The review of his home's architecture and layout, after the files, labels and textures above.)
+
+The courtyard was a mossy box that seven later passes dressed in turn: facades painted onto its invisible walls, an archive
+exterior with rooflights, framing beams, chess tables, the drafts, the wall sheets and the dense handwriting wall, each pass
+layering over the last. `ZampanoApartment` now builds it whole, and none of those passes touch it.
+
+- **The court.** An old courtyard building of stucco flats, the way the novel has him: a two-storey range over the street with
+  the way in an arch beneath it; a wing of flats down each side, their ground floors fronting the court (the two side doors
+  are theirs), a gallery above on posts with its rail, lanterns under its roof and the upper flats' doors and windows behind
+  it, most windows dark and one lit; worn paving, moss in the joints and cracks along the path to his door; the fountain, the
+  planters (moved in front of the wing walls), pots, the two chess tables with their players' chairs, lamps on posts, and the
+  cat's mat before his door.
+- **His front.** The flat is the ground floor at the back of the court, a storey of flats above it. The sealed iron door has a
+  hood and a lamp over it; the two front windows are sealed like the side ones, with window boxes nobody waters.
+- **Inside.** Plaster walls with dark skirting, a beamed ceiling, his floor and a runner of old rugs. A kitchen corner by the
+  door, his chair turned toward where the readers sat with a footstool and lamp, a radiator under the sealed window, the
+  shelves along the west wall, the readers' desks in two rows, his reading desk with the survey, the trunk with the four
+  gouges in the floor beside it and the readers' appointments inside, and at the back the cabinets under the wall of his hand.
+- **Kept where they were.** The entry, the side doors, the fountain, the mat, the iron door, the reading desk, the trunk and its
+  gouges, the cabinets, the files and their labels, the drafts on their desks and the sheets on his walls are all where the
+  mechanics and tests expect them. The cat, the fish, the key, the drawers and the reading are unchanged.
+- **Removed.** The courtyard's share of the landscape facades, the architecture, exterior, shell and both review passes, the
+  0.4.88 handwriting-wall and bowl pass with its case, and the saved-courtyard paths for the fountain and the cabinets (new
+  builds only).
 
 ## Five vignette proposals
 

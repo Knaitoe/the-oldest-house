@@ -43,21 +43,8 @@ public final class NovelRooms {
         box(l,b,-width,0,-depth,width,16,-depth,Blocks.BARRIER.defaultBlockState());box(l,b,-width,0,0,width,12,0,Blocks.BARRIER.defaultBlockState());
         box(l,b,-1,0,0,1,2,0,Blocks.AIR.defaultBlockState());
     }
-    private static void courtyard(ServerLevel l,BlockPos b){
-        outdoor(l,b,15,41,Blocks.MOSSY_STONE_BRICKS);room(l,b,-12,12,-39,-19,0,7,NovelRegistry.PLASTER.get(),Blocks.DARK_OAK_PLANKS);
-        for(int x=-11;x<=11;x++)for(int y=2;y<=4;y++)if(PlaytestSceneReview.paperPatch(x,y,-39))at(l,b,x,y,-39,NovelRegistry.PAPER.get());
-        door(l,b.offset(ARCHIVE_DOOR),Direction.SOUTH,Blocks.IRON_DOOR,false);
-        for(int x:new int[]{-12,12})for(int z:new int[]{-23,-29,-35})for(int y=1;y<=3;y++)at(l,b,x,y,z,NovelRegistry.SEALED_WINDOW.get());
-        for(int z=-3;z>=-15;z-=3)for(int x:new int[]{-10,10}){at(l,b,x,0,z,Blocks.MOSS_BLOCK);at(l,b,x,1,z,Blocks.AZALEA);}
-        at(l,b,0,0,-16,Blocks.BROWN_CARPET);at(l,b,5,0,-34,Blocks.CHEST);at(l,b,5,-1,-33,NovelRegistry.GOUGES.get());
-        lectern(l,b.offset(ARCHIVE_DESK),NovelTexts.archive());
-        if(l.getBlockEntity(b.offset(5,0,-34)) instanceof ChestBlockEntity chest&&chest.isEmpty()){
-            chest.setItem(0,HouseWriting.book("Readers' appointments","Zampano",HouseWriting.WritingStyle.ZAMPANO,List.of("Seven names. Seven visits.\n\nThe margins remember the voices more clearly than the survey remembers the walls.")));chest.setChanged();}
-        ArchiveReaderFiles.build(l,b);ZampanoDrawers.build(l,b);
-        at(l,b,-7,5,-25,Blocks.LANTERN);
-        CourtyardFountain.build(l,b);
-        PlaytestScenes0488.fresh(l,b,LabyrinthPlace.ZAMPANO_COURTYARD);
-    }
+    /** 0.4.201: the apartment court is built whole by ZampanoApartment, and none of the later scene passes dress it. */
+    private static void courtyard(ServerLevel l,BlockPos b){ZampanoApartment.build(l,b);}
     /** 0.4.164: the farm is built whole by BarnWell, and none of the later scene passes dress it. */
     private static void well(ServerLevel l,BlockPos b){BarnWell.build(l,b);Farmstead.composed(l,b);}
     /** A copied return vestibule must never open onto unsupported outside air. */
