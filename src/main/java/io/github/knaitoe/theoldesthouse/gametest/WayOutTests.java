@@ -48,6 +48,8 @@ public final class WayOutTests {
                 int n=0;for(var story:WitnessAccount.Story.values()){if(n>=WayOut.RESOLUTIONS)break;if(WitnessAccount.resolve(f.data(),p.getUUID(),story,"resolved"))n++;}
                 for(var story:WitnessAccount.Story.values()){if(WitnessAccount.count(f.data(),q.getUUID())>=WayOut.RESOLUTIONS)break;WitnessAccount.resolve(f.data(),q.getUUID(),story,"resolved");}
                 h.assertTrue(WayOut.canDeal(f.data(),p.getUUID())&&LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(place),"dealt once they have resolved enough");
+                // The dealer's finished flag holds for it as for every one-shot: a finished way out is never dealt, nor found by the scent.
+                f.data().setCompleted(place.id(),true);h.assertTrue(!WayOut.canDeal(f.data(),p.getUUID())&&!LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(place),"never once the House counts it finished");f.data().setCompleted(place.id(),false);
                 p.getInventory().add(Journals.get(server).issue(p));p.getInventory().add(new ItemStack(Items.BREAD,5));
                 f.data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(f.in.dimension(),hall,0F,false));
                 p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-6.5,180,0);p.hasChangedDimension();p.setOnGround(true);
