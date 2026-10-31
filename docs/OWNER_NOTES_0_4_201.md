@@ -223,6 +223,43 @@ back. Taking a crayon while holding the picture lays it down first, and if the p
 (moved, dropped, a logout) it is back on the table, so the room can never be left without it. The house-read case walks the
 whole order (23 pass).
 
+## The monitor room: the bat, their door, their voices
+
+> "the changes to monitor_room are good, but the dagger/weapon in the npc's hand should be more apparent and the door to the
+> parent's room should be opened upon waking even if the player closed it previously. The parents should speak to the reader
+> when they first enter, them telling the reader how sleepy they - the parents are - and that the reader should go to bed too.
+> This instills the proximity of the parents prior to the bit of horror"
+
+- **The bat.** The found text has him "dragging the baseball bat along the drywall"; the old model was a thin stick of
+  stripped oak at six tenths size, which read as a knife. It is a bat now: a knob, a taped grip, a taper and a thick barrel
+  with a burnt brand, held at near full size (`tools/draw_hallway_bat.py`, checked in CI). On the feed his bat arm hangs out
+  and back so it trails, and in the hall the scrape of it comes with him as he lurches.
+- **Their door.** Waking at 06:00 opens the parents' door, whatever the reader did with it before sleeping; only a door shut
+  after waking, on what is coming, holds.
+- **Their voices first.** As the reader comes in, the parents speak from their bed, a line every three seconds and only once:
+  "Is that you, sweetheart? We're turning in." / "God, I'm wiped. I can barely keep my eyes open." / "You should get to bed
+  too. It's late." / "Leave our door open, okay? In case you need us." The last is why the door stands open. The account opens
+  "They had asked me to leave their door open." for a reader who heard them. The parents' door case checks the greeting, its
+  spacing and that it comes once, and the door open on waking after it was shut.
+
+## The way out goes on
+
+> "the way_out vignette is still too obviously recognizable as a house room, given the obvious nature of its artificial
+> borders"
+
+- **No rim.** The barrier rim and the solid band of spruce round the meadow are gone. The land goes on 72 blocks past where a
+  reader can walk on every side, rising gently into hills (`WayOutRooms.height`), with woods that start as a tree here and
+  there and thicken into forest, spruce higher up, bushes and ferns between (`WayOutRooms.woods`).
+- **A haze.** Inside the way out, the land fades into an ordinary daytime haze from 26 to 86 blocks (`WayOutClient.haze`), so
+  the countryside is lost in the distance before it stops.
+- **Walking out ends it.** Past x ±56, beyond the cottage to z -112 or behind the barn to z 26, the static begins as at the
+  cottage door (`WayOut.beyond`), well before anything could stop the reader.
+- **The barn.** The little shed left the hall copied behind the door (fifteen wide, sixteen deep, seven high) standing in the
+  open behind it. A spruce barn on dark oak posts now encloses it, with a steep roof over it and big doors open onto the
+  meadow; inside the doors are the shed's crafting table and furnace, hay and a torch.
+- The way out's case checks no barrier anywhere a reader can walk, turf and hills past the walk, the barn's walls and roof
+  over the copied hall, and where walking out begins the end.
+
 ## Five vignette proposals
 
 The owner sent five vignette specifications (the Left-Right Game, the Dead Air Broadcast, the God of the Pitt, the Polaroid

@@ -62,7 +62,10 @@ public final class WayOut {
     /** Dealt once, to a reader who has been in the House long enough to want out, and never once the House counts it finished like any other one-shot. */
     public static boolean canDeal(LabyrinthData d,UUID id){return !d.isCompleted(PLACE.id())&&!d.stateEntry(STATE,id.toString()).getBoolean("Seen")&&WitnessAccount.count(d,id)>=RESOLUTIONS;}
     public static BlockPos base(MinecraftServer s){var o=HouseSavedData.get(s).houseOrigin();return o==null?null:LabyrinthPlaces.base(o,PLACE);}
-    public static AABB bounds(BlockPos b){var r=PLACE.room();return new AABB(Vec3.atLowerCornerOf(b.offset(r.minX(),r.minY(),r.minZ())),Vec3.atLowerCornerOf(b.offset(r.maxX()+1,r.maxY()+1,r.maxZ()+1)));}
+    /** The whole of where a reader can be there, the land behind the barn and the copied hall in it included (0.4.201). */
+    public static AABB bounds(BlockPos b){return new AABB(b.getX()-WayOutRooms.WALK-6,b.getY()-12,b.getZ()+WayOutRooms.WALK_FAR-6,b.getX()+WayOutRooms.WALK+7,b.getY()+40,b.getZ()+WayOutRooms.WALK_BACK+7);}
+    /** 0.4.201: past where the reader may walk (relative to the base), the land goes on under the haze; going out to it ends the dream. */
+    public static boolean beyond(double x,double z){return Math.abs(x)>WayOutRooms.WALK||z<WayOutRooms.WALK_FAR||z>WayOutRooms.WALK_BACK;}
     public static boolean inside(ServerPlayer p){
         if(!p.isAlive()||p.gameMode.getGameModeForPlayer()==GameType.SPECTATOR||!p.level().dimension().equals(HouseDimensions.OUTSIDE))return false;
         var b=base(p.server);return b!=null&&bounds(b).contains(p.position());
@@ -102,7 +105,7 @@ public final class WayOut {
         if(t>=CALM){footsteps(p,l);if(t%5==0)watch(p,l,b);}
         double home=Vec3.atBottomCenterOf(b.offset(COTTAGE_DOOR)).subtract(p.position()).horizontalDistance();
         save(p.server,p.getUUID(),own);
-        if(home<HOME||t>=LONG_ENOUGH)begin(p);
+        if(home<HOME||t>=LONG_ENOUGH||beyond(p.getX()-b.getX()-.5,p.getZ()-b.getZ()-.5))begin(p);
     }
     /** Back in the hall they came from, as if they had never left it. */
     static void wake(ServerPlayer p){

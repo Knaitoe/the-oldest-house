@@ -45,6 +45,8 @@ public final class OutdoorBounds {
             case PLAIN -> new Area(-Landscapes.PLAIN_HALF_WIDTH - 1, Landscapes.PLAIN_HALF_WIDTH + 1, Landscapes.PLAIN_FAR, vestibule, r.minY() - 3);
             case ZAMPANO_COURTYARD -> new Area(-14, 14, -40, vestibule, r.minY() - 3);
             case BARN_WELL -> new Area(-19, 19, -41, vestibule, r.minY() - 3);
+            // 0.4.201: the way out has no rim; the dream ends before the reader reaches this (WayOut.beyond).
+            case WAY_OUT -> new Area(-WayOutRooms.WALK - 6, WayOutRooms.WALK + 6, WayOutRooms.WALK_FAR - 6, WayOutRooms.WALK_BACK + 6, r.minY() - 3);
             default -> new Area(r.minX() - 2, r.maxX() + 2, r.minZ() - 2, vestibule, r.minY() - 4);
         };
     }

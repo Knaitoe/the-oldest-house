@@ -51,6 +51,13 @@ public final class WayOutClient {
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){inside=false;ending=card=blip=0;stopTape();}
     /** The game's usual music is held back: the tape is the only music here. */
     @SubscribeEvent public static void music(SelectMusicEvent e){if(active())e.setMusic(null);}
+    /** The haze nearer than the land's end (0.4.201): an ordinary summer distance, so the countryside fades before it stops. */
+    public static final float HAZE_NEAR=26F,HAZE_FAR=86F;
+    @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.LOW) public static void haze(net.neoforged.neoforge.client.event.ViewportEvent.RenderFog e){
+        if(!inside||e.getMode()!=net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN)return;
+        float far=Math.min(e.getFarPlaneDistance(),HAZE_FAR),near=Math.min(e.getNearPlaneDistance(),Math.min(HAZE_NEAR,far*.5F));
+        e.setNearPlaneDistance(near);e.setFarPlaneDistance(far);e.setCanceled(true);
+    }
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null){return;}
         if(blip>0)blip--;

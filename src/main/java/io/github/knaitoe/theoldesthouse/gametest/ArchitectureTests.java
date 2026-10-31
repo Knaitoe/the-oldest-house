@@ -385,7 +385,7 @@ public final class ArchitectureTests {
             if(st.is(Blocks.STRIPPED_DARK_OAK_LOG))posts++;if(st.is(Blocks.DARK_OAK_LOG))beams++;if(st.is(Blocks.GREEN_TERRACOTTA))plaster++;
         }
         h.assertTrue(posts>=10&&beams>=10&&plaster>=20,"the study is framed, beamed and plastered: "+posts+"/"+beams+"/"+plaster);
-        // Outdoor edges: no invisible walls remain around the plain or the courtyard.
+        // Outdoor edges: no invisible walls remain around the plain or the courtyard (the way out's own case checks it, 0.4.201).
         var outside=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
         for(var scene:List.of(LabyrinthPlace.PLAIN,LabyrinthPlace.ZAMPANO_COURTYARD)){
             var b=LabyrinthPlaces.base(origin,scene);int barriers=0;
