@@ -59,8 +59,8 @@ public final class WayOut {
     public static CompoundTag own(MinecraftServer s,UUID id){return LabyrinthData.get(s).stateEntry(STATE,id.toString());}
     static void save(MinecraftServer s,UUID id,CompoundTag t){LabyrinthData.get(s).setStateEntry(STATE,id.toString(),t);}
     public static boolean seen(MinecraftServer s,UUID id){return own(s,id).getBoolean("Seen");}
-    /** Dealt once, to a reader who has been in the House long enough to want out. */
-    public static boolean canDeal(LabyrinthData d,UUID id){return !d.stateEntry(STATE,id.toString()).getBoolean("Seen")&&WitnessAccount.count(d,id)>=RESOLUTIONS;}
+    /** Dealt once, to a reader who has been in the House long enough to want out, and never once the House counts it finished like any other one-shot. */
+    public static boolean canDeal(LabyrinthData d,UUID id){return !d.isCompleted(PLACE.id())&&!d.stateEntry(STATE,id.toString()).getBoolean("Seen")&&WitnessAccount.count(d,id)>=RESOLUTIONS;}
     public static BlockPos base(MinecraftServer s){var o=HouseSavedData.get(s).houseOrigin();return o==null?null:LabyrinthPlaces.base(o,PLACE);}
     public static AABB bounds(BlockPos b){var r=PLACE.room();return new AABB(Vec3.atLowerCornerOf(b.offset(r.minX(),r.minY(),r.minZ())),Vec3.atLowerCornerOf(b.offset(r.maxX()+1,r.maxY()+1,r.maxZ()+1)));}
     public static boolean inside(ServerPlayer p){
