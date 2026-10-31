@@ -10,14 +10,14 @@
  "elements": [
   {
    "from": [
-    1,
     0,
-    1
+    0,
+    0
    ],
    "to": [
-    15,
-    12,
-    2
+    16,
+    14,
+    1
    ],
    "faces": {
     "north": {
@@ -42,13 +42,77 @@
   },
   {
    "from": [
-    1,
     0,
-    14
+    0,
+    15
    ],
    "to": [
+    16,
+    14,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c"
+    },
+    "south": {
+     "texture": "#c"
+    },
+    "east": {
+     "texture": "#c"
+    },
+    "west": {
+     "texture": "#c"
+    },
+    "up": {
+     "texture": "#c"
+    },
+    "down": {
+     "texture": "#c"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0,
+    1
+   ],
+   "to": [
+    1,
+    14,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c"
+    },
+    "south": {
+     "texture": "#c"
+    },
+    "east": {
+     "texture": "#c"
+    },
+    "west": {
+     "texture": "#c"
+    },
+    "up": {
+     "texture": "#c"
+    },
+    "down": {
+     "texture": "#c"
+    }
+   }
+  },
+  {
+   "from": [
     15,
-    12,
+    0,
+    1
+   ],
+   "to": [
+    16,
+    14,
     15
    ],
    "faces": {
@@ -75,77 +139,13 @@
   {
    "from": [
     1,
-    0,
-    2
-   ],
-   "to": [
-    2,
-    12,
-    14
-   ],
-   "faces": {
-    "north": {
-     "texture": "#c"
-    },
-    "south": {
-     "texture": "#c"
-    },
-    "east": {
-     "texture": "#c"
-    },
-    "west": {
-     "texture": "#c"
-    },
-    "up": {
-     "texture": "#c"
-    },
-    "down": {
-     "texture": "#c"
-    }
-   }
-  },
-  {
-   "from": [
-    14,
-    0,
-    2
+    11,
+    1
    ],
    "to": [
     15,
     12,
-    14
-   ],
-   "faces": {
-    "north": {
-     "texture": "#c"
-    },
-    "south": {
-     "texture": "#c"
-    },
-    "east": {
-     "texture": "#c"
-    },
-    "west": {
-     "texture": "#c"
-    },
-    "up": {
-     "texture": "#c"
-    },
-    "down": {
-     "texture": "#c"
-    }
-   }
-  },
-  {
-   "from": [
-    2,
-    9,
-    2
-   ],
-   "to": [
-    14,
-    10,
-    14
+    15
    ],
    "faces": {
     "north": {
@@ -170,14 +170,14 @@
   },
   {
    "from": [
-    1,
-    12,
-    -2.5
+    0,
+    14,
+    -3.5
    ],
    "to": [
-    15,
-    12.5,
-    1
+    16,
+    14.5,
+    0
    ],
    "faces": {
     "north": {
@@ -202,14 +202,14 @@
   },
   {
    "from": [
-    1,
-    12,
-    15
+    0,
+    14,
+    16
    ],
    "to": [
-    15,
-    12.5,
-    18.5
+    16,
+    14.5,
+    19.5
    ],
    "faces": {
     "north": {

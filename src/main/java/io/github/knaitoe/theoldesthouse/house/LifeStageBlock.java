@@ -72,8 +72,8 @@ public final class LifeStageBlock extends Block {
         case CLOTHES->Block.box(1,0,2,15,5.5,14);
         case TEEN_BED_HEAD->Shapes.or(Block.box(0,0,0,16,10,14.5),Block.box(0,0,14.5,16,15,16));
         case TEEN_BED_FOOT->Shapes.or(Block.box(0,0,0,16,11,1.5),Block.box(0,0,1.5,16,10,16));
-        case BOX,BOX_KITCHEN->Block.box(1,0,1,15,13,15);
-        case BOX_OPEN->Block.box(1,0,1,15,12.5,15);
+        case BOX,BOX_KITCHEN->Shapes.block();
+        case BOX_OPEN->Block.box(0,0,0,16,14.5,16);
         case MATTRESS_HEAD,MATTRESS_FOOT->Block.box(0,0,0,16,6,16);
         case HOT_PLATE->Block.box(1,0,1,15,14,15);
         case BULB->Block.box(6.5,3,6.5,9.5,16,9.5);

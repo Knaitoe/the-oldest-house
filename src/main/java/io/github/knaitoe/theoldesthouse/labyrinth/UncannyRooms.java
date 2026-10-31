@@ -33,8 +33,24 @@ public final class UncannyRooms {
         // Join both cells without deleting the diner's own door farther inside the forecourt.
         box(l,b,0,0,-1,0,1,0,Blocks.AIR);
         Block threshold=switch(p){case PAINTED_INTERIOR->Blocks.COARSE_DIRT;case SECOND_WAITRESS->Blocks.GRAVEL;case TUNNEL_PERIPHERY->Blocks.SMOOTH_STONE;case MISSING_SLEEP->Blocks.SPRUCE_PLANKS;default->Blocks.DARK_OAK_PLANKS;};
+        if(p!=LabyrinthPlace.SECOND_WAITRESS)closeSlot(l,b,r.maxY());
         for(int z=-1;z<=0;z++)if(BuildBlocks.state(l,b.offset(0,-1,z)).isAir())at(l,b,0,-1,z,threshold);
         if(p!=LabyrinthPlace.SECOND_WAITRESS)fit(l,b,account(p),LEDGER,Direction.SOUTH);
+    }
+    /** These rooms' front walls stand at z=-1, a block in from the doorway plane. That left a one-block slot between the
+     *  hall's wall and the room's, open to the threshold and floorless, so a reader in the doorway looked sideways into the
+     *  void. The slot takes the room's own front wall and floor, block for block; only the doorway itself stays open. */
+    private static void closeSlot(ServerLevel l,BlockPos b,int top){
+        for(int x=-LabyrinthPlaces.VESTIBULE_HALF_WIDTH;x<=LabyrinthPlaces.VESTIBULE_HALF_WIDTH;x++){
+            if(x!=0&&!BuildBlocks.state(l,b.offset(x,-1,0)).isAir())continue;
+            for(int y=-1;y<=top;y++){
+                if(x==0&&y>=-1&&y<=1)continue;
+                var at=b.offset(x,y,0);var wall=b.offset(x,y,-1);
+                if(!BuildBlocks.state(l,at).isAir()||l.getBlockEntity(wall)!=null)continue;
+                var s=BuildBlocks.state(l,wall);
+                if(s.isCollisionShapeFullBlock(l,wall)&&s.getFluidState().isEmpty())BuildBlocks.set(l,at,s,FLAGS);
+            }
+        }
     }
     private static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),FLAGS);}
     private static void state(ServerLevel l,BlockPos b,BlockPos rel,BlockState s){BuildBlocks.set(l,b.offset(rel),s,FLAGS);}
@@ -159,7 +175,7 @@ public final class UncannyRooms {
         furnishing(l,b,0,6,-3,UncannyFurnitureBlock.Kind.SIGN_CENTER,Direction.SOUTH);
         furnishing(l,b,1,6,-3,UncannyFurnitureBlock.Kind.SIGN_RIGHT,Direction.SOUTH);
         for(int x:new int[]{-1,1})at(l,b,x,5,-3,material("roof"));
-        furnishing(l,b,11,0,-30,UncannyFurnitureBlock.Kind.BIN,Direction.EAST);
+        furnishing(l,b,12,0,-32,UncannyFurnitureBlock.Kind.BIN,Direction.EAST);
         // A second actual exterior exit beside the till, not merely a door into the kitchen.
         door(l,b,new BlockPos(-10,0,-6),Direction.WEST,false);
         box(l,b,-12,-1,-8,-11,-1,-2,material("pavement"));

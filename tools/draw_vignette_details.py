@@ -26,11 +26,38 @@ d=tile('#93afb1');d.polygon([(0,3),(3,0),(10,0),(0,10)],fill='#b7c9c2');d.polygo
 atlas=Image.new('RGBA',(128,64),(0,0,0,0))
 for i,im in enumerate(tiles):atlas.paste(im,(i%8*16,i//8*16))
 b=io.BytesIO();atlas.save(b,format='PNG');out[A/'textures/block/details/atlas.png']=b.getvalue()
-for name,base,grout,shine in [('bathroom_wall','#c9d1c4','#768f89','#e0e0cc'),('bathroom_floor','#657e79','#394f4a','#80988c')]:
- im=Image.new('RGBA',(16,16),base);d=ImageDraw.Draw(im);step=8 if name.endswith('wall') else 16
- for x in range(0,16,step):d.line((x,0,x,15),fill=grout);d.line((x+1,1,x+1,15),fill=shine)
- for y in range(0,16,step):d.line((0,y,15,y),fill=grout);d.line((1,y+1,15,y+1),fill=shine)
- d.point((11,12),fill=grout);b=io.BytesIO();im.save(b,format='PNG');out[A/f'textures/block/uncanny/{name}.png']=b.getvalue()
+import random
+def grimy_wall():
+ """0.4.201 (owner: the diner's restroom "should be appropriately grungy"): yellowed square tiles, dirty grout, a cracked
+ and a chipped tile, rust run from the grout and grime gathered at the joints. Four tiles a block, as the old clean ones."""
+ rnd=random.Random(20131);im=Image.new('RGBA',(16,16));d=ImageDraw.Draw(im)
+ for tx in (0,8):
+  for ty in (0,8):
+   base=rnd.choice(((198,192,162),(190,185,154),(203,196,165),(185,181,151)))
+   d.rectangle((tx,ty,tx+7,ty+7),fill=base+(255,))
+   for _ in range(5):
+    x,y=tx+rnd.randrange(1,7),ty+rnd.randrange(1,7);c=tuple(v-rnd.randrange(8,18) for v in base);d.point((x,y),fill=c+(255,))
+   d.line((tx+1,ty+1,tx+6,ty+1),fill=tuple(min(255,v+12) for v in base)+(255,))
+ for i in (0,8):d.line((i,0,i,15),fill='#5d5745');d.line((0,i,15,i),fill='#5d5745')
+ for x,y in ((1,7),(7,9),(9,15),(15,4),(8,6),(0,12)):d.point((x,y),fill='#3f3a2c')
+ d.line((10,1,12,3,12,5,14,7),fill='#7d7560')
+ d.rectangle((6,14,7,15),fill='#8d8670');d.point((7,13),fill='#8d8670')
+ for y,c in ((9,'#8a6a42'),(10,'#977652'),(11,'#a58a63'),(12,'#b29b74')):d.point((8,y),fill=c)
+ return im
+def grimy_floor():
+ """Small grey-green floor tiles gone dark at the joints, a scuffed path and a stain spreading from the corner."""
+ rnd=random.Random(20132);im=Image.new('RGBA',(16,16));d=ImageDraw.Draw(im)
+ for tx in range(0,16,4):
+  for ty in range(0,16,4):
+   base=rnd.choice(((112,122,112),(104,114,105),(118,126,115),(98,108,100)))
+   if (tx//4+ty//4)%5==0:base=(168,164,142)
+   d.rectangle((tx,ty,tx+3,ty+3),fill=base+(255,));d.point((tx+1,ty+1),fill=tuple(min(255,v+10) for v in base)+(255,))
+ for i in range(0,16,4):d.line((i,0,i,15),fill='#33392f');d.line((0,i,15,i),fill='#33392f')
+ for x,y in ((2,13),(3,14),(13,2),(14,3),(14,14),(6,9)):d.point((x,y),fill='#4e4a35')
+ for x,y in ((11,11),(12,11),(11,12),(12,12),(13,12),(12,13)):d.point((x,y),fill='#5f5a3e')
+ return im
+for name,im in (('bathroom_wall',grimy_wall()),('bathroom_floor',grimy_floor())):
+ b=io.BytesIO();im.save(b,format='PNG');out[A/f'textures/block/uncanny/{name}.png']=b.getvalue()
  out[A/f'blockstates/uncanny_{name}.json']=json.dumps({'variants':{'':{'model':f'the_oldest_house:block/uncanny/{name}'}}}).encode()
  out[A/f'models/block/uncanny/{name}.json']=json.dumps({'parent':'minecraft:block/cube_all','textures':{'all':f'the_oldest_house:block/uncanny/{name}'}}).encode()
 out[A/'models/block/service_fitting.json']=json.dumps({'textures':{'particle':'the_oldest_house:block/interiors/iron'},'elements':[]}).encode()
@@ -38,4 +65,4 @@ out[A/'blockstates/service_fitting.json']=json.dumps({'variants':{f'kind={k},fac
 for path,data in out.items():
  if check:assert path.read_bytes()==data,path
  else:path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
-print(('Verified' if check else 'Painted')+' native archival steel, porcelain/appliance atlas and contemporary bathroom tiles.')
+print(('Verified' if check else 'Painted')+' native archival steel, porcelain/appliance atlas and grimy restroom tiles.')

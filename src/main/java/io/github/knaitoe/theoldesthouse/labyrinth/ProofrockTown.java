@@ -150,8 +150,14 @@ public final class ProofrockTown {
         for(int i=0;i<4;i++)for(int j=0;j<2;j++){int cx=alongX?x+i:x+j,cz=alongX?z-j:z-i;boolean wheel=i==0||i==3;
             Direction side=alongX?(j==0?Direction.SOUTH:Direction.NORTH):(j==0?Direction.WEST:Direction.EAST),end=alongX?(i==0?Direction.WEST:Direction.EAST):(i==0?Direction.SOUTH:Direction.NORTH);
             states.put(b.offset(cx,0,cz),TownFixtureBlock.of(wheel?TownFixtureBlock.Kind.CAR_WHEEL:TownFixtureBlock.Kind.valueOf("CAR_"+colour),side));
-            states.put(b.offset(cx,1,cz),TownFixtureBlock.of(i==1||i==2?TownFixtureBlock.Kind.CAR_CABIN:TownFixtureBlock.Kind.valueOf("HOOD_"+colour),end));}
+            states.put(b.offset(cx,1,cz),i==1||i==2?TownFixtureBlock.of(TownFixtureBlock.Kind.CAR_CABIN,cabinCorner(alongX,i,j)):TownFixtureBlock.of(TownFixtureBlock.Kind.valueOf("HOOD_"+colour),end));}
         return states;
+    }
+    /** The cabin is four blocks, each with its pillar and the start of two panes at the model's north-west corner; each is
+     *  turned so that corner is the car's own (facing north keeps north-west, east turns it north-east, and so on). */
+    private static Direction cabinCorner(boolean alongX,int i,int j){
+        boolean north=alongX?j==1:i==2,east=alongX?i==2:j==1;
+        return north?(east?Direction.EAST:Direction.NORTH):(east?Direction.SOUTH:Direction.WEST);
     }
     /** The cyan car as it stood across School Street until 0.4.77, and where it is parked now. */
     public static final java.util.function.Function<BlockPos,Map<BlockPos,BlockState>> CYAN_ACROSS=b->carStates(b,-34,-41,Blocks.CYAN_TERRACOTTA,false),CYAN_ALONG=b->carStates(b,-37,-42,Blocks.CYAN_TERRACOTTA,true);

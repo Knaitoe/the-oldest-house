@@ -32,6 +32,8 @@ public final class UncannyRegistry {
     public static final DeferredHolder<MobEffect,EngulfedEffect> ENGULFED=EFFECTS.register("engulfed",EngulfedEffect::new);
     public static final DeferredBlock<UncannyFurnitureBlock> FURNITURE=BLOCKS.registerBlock("uncanny_furniture",UncannyFurnitureBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(UncannyFurnitureBlock::light));
     public static final DeferredBlock<DoorBlock> DINER_DOOR=BLOCKS.register("uncanny_diner_door",()->new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_DOOR).noOcclusion().noLootTable()));
+    /** 0.4.201: the diner's restroom door, solid painted steel (the glazed entrance door showed the restroom through it). */
+    public static final DeferredBlock<DoorBlock> RESTROOM_DOOR=BLOCKS.register("uncanny_restroom_door",()->new DoorBlock(net.minecraft.world.level.block.state.properties.BlockSetType.COPPER,BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_DOOR).noLootTable()));
     public static final DeferredBlock<CarpetBlock> PARLOR_RUG=BLOCKS.registerBlock("uncanny_parlor_rug",CarpetBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GREEN_CARPET).noLootTable());
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     static {

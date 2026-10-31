@@ -1318,18 +1318,20 @@ def m_teen_bed_foot():
 # ---------------------------------------------------------------- the first flat
 @spec('box', {'c': 'cardboard', 't': 'cardboard_top'}, 'cardboard')
 def m_box():
-    return [box((1, 0, 1), (15, 13, 15), 'c', over={'up': 't'})]
+    # 0.4.201 (owner: "have the various instances of cardboard boxes actually touching rather than floating in space"):
+    # a box fills its cell, so boxes side by side meet and one stacked on another sits on its lid.
+    return [box((0, 0, 0), (16, 16, 16), 'c', over={'up': 't'})]
 
 
 @spec('box_kitchen', {'c': 'cardboard', 't': 'cardboard_top', 'k': 'box_kitchen'}, 'cardboard')
 def m_box_kitchen():
-    return [box((1, 0, 1), (15, 13, 15), 'c', over={'up': 't', 'north': 'k'})]
+    return [box((0, 0, 0), (16, 16, 16), 'c', over={'up': 't', 'north': 'k'})]
 
 
 @spec('box_open', {'c': 'cardboard', 'o': 'box_open'}, 'cardboard')
 def m_box_open():
-    return [box((1, 0, 1), (15, 12, 2), 'c'), box((1, 0, 14), (15, 12, 15), 'c'), box((1, 0, 2), (2, 12, 14), 'c'), box((14, 0, 2), (15, 12, 14), 'c'),
-            box((2, 9, 2), (14, 10, 14), 'c', over={'up': 'o'}), box((1, 12, -2.5), (15, 12.5, 1), 'c'), box((1, 12, 15), (15, 12.5, 18.5), 'c')]
+    return [box((0, 0, 0), (16, 14, 1), 'c'), box((0, 0, 15), (16, 14, 16), 'c'), box((0, 0, 1), (1, 14, 15), 'c'), box((15, 0, 1), (16, 14, 15), 'c'),
+            box((1, 11, 1), (15, 12, 15), 'c', over={'up': 'o'}), box((0, 14, -3.5), (16, 14.5, 0), 'c'), box((0, 14, 16), (16, 14.5, 19.5), 'c')]
 
 
 @spec('mattress_head', {'t': 'ticking', 's': 'sleeping_bag', 'p': 'pillow'}, 'ticking')

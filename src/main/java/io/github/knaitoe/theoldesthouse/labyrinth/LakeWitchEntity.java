@@ -497,13 +497,23 @@ public final class LakeWitchEntity extends PathfinderMob {
     private void literaryRoute(BlockPos goal){
         route.clear();routeGoal=goal;var start=BlockPos.containing(getX(),literaryBase.getY(),getZ());
         if(!literaryWalkable(start))return;
-        if(!literaryWalkable(goal)){
-            BlockPos nearest=null;double distance=Double.MAX_VALUE;
-            for(var candidate:BlockPos.betweenClosed(goal.offset(-1,0,-1),goal.offset(1,0,1)))
-                if(literaryWalkable(candidate)&&candidate.distSqr(start)<distance){distance=candidate.distSqr(start);nearest=candidate.immutable();}
-            if(nearest==null)return;goal=nearest;
-        }
+        if(!literaryWalkable(goal)){goal=nearestOpen(goal,start);if(goal==null)return;}
         addRoute(start,goal,true);
+    }
+    /** 0.4.201 (owner: "Stacey graves still isn't wanting to cross to land"): a reader standing where she may not go (by the
+     *  entrance, up on the stage, among the props) left her with no route at all, so she waited in the water. She now comes to
+     *  the open ground nearest them, out to twelve blocks, and waits at the edge of what is hers. */
+    private @Nullable BlockPos nearestOpen(BlockPos goal,BlockPos start){
+        for(int r=1;r<=12;r++){
+            BlockPos nearest=null;double best=Double.MAX_VALUE;
+            for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++){
+                if(Math.max(Math.abs(dx),Math.abs(dz))!=r)continue;
+                var candidate=goal.offset(dx,0,dz);double score=dx*dx+dz*dz+candidate.distSqr(start)*.001;
+                if(score<best&&literaryWalkable(candidate)){best=score;nearest=candidate;}
+            }
+            if(nearest!=null)return nearest;
+        }
+        return null;
     }
     private BlockPos literaryCover(ServerLevel l,ServerPlayer target){
         BlockPos best=null;double score=-Double.MAX_VALUE;

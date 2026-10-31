@@ -443,7 +443,7 @@ public final class VignetteAnimationTests {
     // ------------------------------------------------------------------------------------------------ Costume Night (0.4.103)
     private static void costumeState(LiteraryTests.Fixture f,java.util.function.Consumer<CompoundTag> change){var w=LiteraryVignettes.shared(f.data(),LabyrinthPlace.COSTUME_NIGHT);change.accept(w);LiteraryVignettes.shared(f.data(),LabyrinthPlace.COSTUME_NIGHT,w);}
     private static void lookUp(ServerPlayer p){p.lookAt(EntityAnchorArgument.Anchor.EYES,p.getEyePosition().add(0,10,0));}
-    @GameTest(template="empty",batch="literary_costume_still",timeoutTicks=420)
+    @GameTest(template="empty",batch="literary_costume_still",timeoutTicks=520)
     public static void theThirteenthWitchHoldsStillWhileWatchedAndHuntsOnlyOnceTheLightsAreOut(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_judge",place);var peer=f.player("costume_peer",place);var b=f.base(place);
         var room=place.room();
@@ -474,7 +474,13 @@ public final class VignetteAnimationTests {
         h.runAfterDelay(175,()->{var witch=CostumeNight.witch(f.out);
             h.assertTrue(reach[0]>1&&p.getHealth()<20&&f.own(p,place).getBoolean("Struck0503"),"the moment nobody looks she comes, fast, and strikes the reader unseen: health="+p.getHealth()+" came="+reach[0]);
             p.setHealth(20);f.at(p,place,.5,0,-60.5);});
-        h.runAfterDelay(300,()->{h.assertTrue(p.getHealth()==20&&peer.getHealth()==20,"on the park grass, and where she cannot come by the entrance, nobody is hurt");h.succeed();TheOldestHouse.LOGGER.info("COSTUME NATIVE PASS: original cast, watched stillness, unseen strike and living-grass refuge");});
+        h.runAfterDelay(300,()->h.assertTrue(p.getHealth()==20&&peer.getHealth()==20,"on the park grass, and where she cannot come by the entrance, nobody is hurt"));
+        // 0.4.201: the reader by the entrance stands where she may not go; she still leaves the water and comes up the sand
+        // as far as she may, to the edge ten blocks in, rather than waiting in the lake for a route that cannot exist.
+        h.runAfterDelay(400,()->{var witch=CostumeNight.witch(f.out);double x=witch.getX()-b.getX(),z=witch.getZ()-b.getZ();
+            h.assertTrue(x<13.5&&z<-10&&z>-14.5&&Math.abs(x-.5)<4&&!f.out.getFluidState(witch.blockPosition().below()).is(net.minecraft.tags.FluidTags.WATER),"she comes out of the lake and up the sand to the edge nearest the reader by the entrance: "+x+", "+z);
+            h.assertTrue(p.getHealth()==20&&peer.getHealth()==20,"and from there she reaches nobody");
+            h.succeed();TheOldestHouse.LOGGER.info("COSTUME NATIVE PASS: original cast, watched stillness, unseen strike, living-grass refuge and the edge by the entrance");});
         });
     }
     @AfterBatch(batch="literary_costume_still") public static void costumeStillDone(ServerLevel l){close();}

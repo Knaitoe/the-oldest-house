@@ -128,6 +128,27 @@ def paintings():
         if part=='lower':d.rectangle((2,10,13,14),fill='#526f70');d.rectangle((11,1,12,7),fill='#bec5b9')
         else:d.line((4,8,9,3),fill='#a4bbb5');d.line((8,12,12,8),fill='#c9d8cf')
         out['door_'+part]=im
+    # 0.4.201 (owner: "no see-through door in a diner"): the restroom door is solid painted steel, scuffed at the handle and
+    # kicked at the foot, with a push plate and a small plaque. No glass, no cutout pixels.
+    rnd=random.Random(20133)
+    for part in ('lower','upper'):
+        im=Image.new('RGBA',(16,16),'#59655f');d=ImageDraw.Draw(im)
+        for x in range(16):
+            for y in range(16):
+                if rnd.randrange(6)==0:d.point((x,y),fill=shade('#59655f',rnd.choice((-8,-5,4))))
+        d.line((0,0,0,15),fill='#3d4743');d.line((15,0,15,15),fill='#3d4743');d.line((1,0,1,15),fill='#6c7871')
+        if part=='lower':
+            d.rectangle((1,11,14,15),fill='#848b80');d.line((1,11,14,11),fill='#a2a898');d.line((1,15,14,15),fill='#5c6158')
+            for x,y in ((3,13),(4,13),(9,12),(12,14),(6,14)):d.point((x,y),fill='#5f655b')
+            for x,y in ((2,8),(3,9),(11,7),(12,9),(6,10)):d.point((x,y),fill='#434c47')
+            d.line((15,15,15,15),fill='#2e3531')
+        else:
+            d.rectangle((0,15,15,15),fill='#3d4743');d.rectangle((0,0,15,0),fill='#3d4743')
+            d.rectangle((11,9,13,15),fill='#9ca293');d.line((11,9,13,9),fill='#c0c4b4');d.line((13,10,13,15),fill='#6f7468')
+            for x,y in ((11,12),(12,14),(10,13),(10,10)):d.point((x,y),fill='#3f4843')
+            d.rectangle((5,3,10,6),fill='#d3cfb6');d.rectangle((5,3,10,6),outline='#8f8a71')
+            d.point((7,4),fill='#5d5945');d.line((7,5,7,5),fill='#5d5945');d.point((8,4),fill='#5d5945');d.point((8,5),fill='#5d5945')
+        out['restroom_'+part]=im
     return out
 
 def piece(a,b,material,**faces):
@@ -144,7 +165,9 @@ def furniture():
     out['cabinet']=[p((0,0,2),(16,2,16),'steel'),p((0,2,15),(16,15,16),'enamel'),p((0,2,2),(1,15,15),'enamel'),p((15,2,2),(16,15,15),'enamel'),p((0,15,1),(16,16,16),'steel'),p((1,2,1),(15,15,2),'enamel'),p((11,8,0),(13,10,1),'steel')]
     out['fridge']=[p((0,0,1),(1,32,16),'enamel'),p((15,0,1),(16,32,16),'enamel'),p((1,0,1),(15,1,16),'enamel'),p((1,31,1),(15,32,16),'enamel'),p((1,1,15),(15,31,16),'enamel'),p((1,22,1),(15,23,15),'enamel'),p((1,10,2),(15,11,15),'steel'),p((1,1,0),(15,22,1),'ceramic'),p((12,6,-1),(13,19,0),'steel'),p((1,23,0),(15,31,1),'ceramic'),p((12,25,-1),(13,29,0),'steel')]
     out['coffee_maker']=[p((2,0,4),(14,2,14),'steel'),p((3,2,11),(13,13,14),'enamel'),p((3,11,3),(13,14,14),'steel'),p((5,2,4),(11,8,10),'black'),p((11,4,5),(13,7,8),'steel'),p((5,8,4),(11,9,10),'black')]
-    out['griddle']=[p((0,0,0),(16,14,16),'enamel'),p((0,14,0),(16,16,16),'steel'),p((2,15,2),(14,16,13),'black'),p((2,10,0),(5,12,1),'black'),p((10,10,0),(13,12,1),'black')]
+    # 0.4.201: the cooking plate sits a half pixel down inside a steel rim. Its top face used to lie in the steel top's
+    # plane, and the two flickered through each other in streaks.
+    out['griddle']=[p((0,0,0),(16,14,16),'enamel'),p((0,14,0),(16,15,16),'steel'),p((0,15,0),(16,16,2),'steel'),p((0,15,13),(16,16,16),'steel'),p((0,15,2),(2,16,13),'steel'),p((14,15,2),(16,16,13),'steel'),p((2,15,2),(14,15.5,13),'black'),p((2,10,0),(5,12,1),'black'),p((10,10,0),(13,12,1),'black')]
     out['sink']=[p((0,0,3),(16,12,16),'enamel'),p((0,12,1),(16,14,16),'steel'),p((2,14,3),(4,15,13),'steel'),p((12,14,3),(14,15,13),'steel'),p((4,14,3),(12,15,5),'steel'),p((4,14,11),(12,15,13),'steel'),p((6,14,13),(8,16,15),'steel')]
     out['shelf']=[p((0,1,4),(16,2,16),'steel'),p((0,8,4),(16,9,16),'steel'),p((0,15,4),(16,16,16),'steel'),p((0,2,14),(1,15,16),'steel'),p((15,2,14),(16,15,16),'steel'),p((2,9,6),(7,14,14),'enamel'),p((9,2,7),(14,7,14),'dark_wood')]
     out['fluorescent']=[p((0,14,3),(16,16,13),'steel'),p((1,11,4),(15,14,12),'lamp'),p((0,11,3),(1,14,13),'steel'),p((15,11,3),(16,14,13),'steel')]
@@ -263,20 +286,21 @@ def models():
     result['blockstates/uncanny_furniture.json']={'variants':variants}
     result['models/block/uncanny_parlor_rug.json']={'parent':'minecraft:block/carpet','textures':{'wool':PREFIX+'parlor_rug'}}
     result['blockstates/uncanny_parlor_rug.json']={'variants':{'':{'model':'the_oldest_house:block/uncanny_parlor_rug'}}}
-    for half in ('lower','upper'):
-        for hinge in ('left','right'):
-            for opened in (False,True):
-                name='uncanny_diner_door_'+half+'_'+hinge+('_open' if opened else '')
-                parent='minecraft:block/door_'+('bottom' if half=='lower' else 'top')+'_'+hinge+('_open' if opened else '')
-                result['models/block/'+name+'.json']={'parent':parent,'render_type':'minecraft:cutout','textures':{'top':PREFIX+'door_upper','bottom':PREFIX+'door_lower'}}
-    variants={}
-    for facing,y in [('east',0),('south',90),('west',180),('north',270)]:
+    for door,textures in (('diner_door',('door_upper','door_lower')),('restroom_door',('restroom_upper','restroom_lower'))):
         for half in ('lower','upper'):
             for hinge in ('left','right'):
                 for opened in (False,True):
-                    rotation=(y+(90 if hinge=='left' else -90) if opened else y)%360
-                    variants[f'facing={facing},half={half},hinge={hinge},open={str(opened).lower()}']={'model':'the_oldest_house:block/uncanny_diner_door_'+half+'_'+hinge+('_open' if opened else ''),'y':rotation}
-    result['blockstates/uncanny_diner_door.json']={'variants':variants}
+                    name='uncanny_'+door+'_'+half+'_'+hinge+('_open' if opened else '')
+                    parent='minecraft:block/door_'+('bottom' if half=='lower' else 'top')+'_'+hinge+('_open' if opened else '')
+                    result['models/block/'+name+'.json']={'parent':parent,'render_type':'minecraft:cutout','textures':{'top':PREFIX+textures[0],'bottom':PREFIX+textures[1]}}
+        variants={}
+        for facing,y in [('east',0),('south',90),('west',180),('north',270)]:
+            for half in ('lower','upper'):
+                for hinge in ('left','right'):
+                    for opened in (False,True):
+                        rotation=(y+(90 if hinge=='left' else -90) if opened else y)%360
+                        variants[f'facing={facing},half={half},hinge={hinge},open={str(opened).lower()}']={'model':'the_oldest_house:block/uncanny_'+door+'_'+half+'_'+hinge+('_open' if opened else ''),'y':rotation}
+        result['blockstates/uncanny_'+door+'.json']={'variants':variants}
     return result
 
 def shape_source():
@@ -301,7 +325,7 @@ def main():
         else:path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(obj,indent=2)+'\n')
     if check:assert JAVA.read_text()==shape_source(),'Native furniture collision differs from its generated meshes'
     else:JAVA.write_text(shape_source())
-    print(('Verified' if check else 'Painted')+f' {len(paintings())} native materials, {len(furniture())} fitted furnishings and the glazed diner entrance.')
+    print(('Verified' if check else 'Painted')+f' {len(paintings())} native materials, {len(furniture())} fitted furnishings, the glazed diner entrance and the restroom door.')
     from draw_optical_fittings import main as optical_main
     optical_main()
     from draw_uncanny_cellar import main as cellar_main

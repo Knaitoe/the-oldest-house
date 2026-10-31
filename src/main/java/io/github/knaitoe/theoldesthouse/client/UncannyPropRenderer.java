@@ -26,7 +26,7 @@ public final class UncannyPropRenderer implements BlockEntityRenderer<UncannyPro
         ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.FURNITURE.get(),RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(DomesticRegistry.FITTING.get(),RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(LiteraryRegistry.PROP.get(),RenderType.cutout());
-        ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.DINER_DOOR.get(),RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.DINER_DOOR.get(),RenderType.cutout());ItemBlockRenderTypes.setRenderLayer(UncannyRegistry.RESTROOM_DOOR.get(),RenderType.cutout());
     });}
     @Override public void render(UncannyPropBlock.Fitting fitting,float partial,PoseStack p,MultiBufferSource buffers,int light,int overlay){
         if(fitting.getBlockState().getValue(UncannyPropBlock.KIND)==UncannyPropBlock.Kind.PLATE){

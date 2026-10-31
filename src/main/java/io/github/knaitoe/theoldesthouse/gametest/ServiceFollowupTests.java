@@ -63,6 +63,20 @@ public final class ServiceFollowupTests {
    h.assertTrue(a[0].getUUID().equals(id[0])&&a[0].distanceToSqr(p)<before[0]-10&&f.out.noCollision(a[0],a[0].getBoundingBox().deflate(.001)),"the same solid original follows through the actual aisle");var own=f.own(p,D);own.putLong("BoothPressureNext130",0);own.putInt("DinerPresence133",3595);LiteraryVignettes.save(f.data(),p.getUUID(),D,own);var menu=UncannyBreakfast.menu(p);p.setItemInHand(InteractionHand.MAIN_HAND,menu);menu.use(f.out,p,InteractionHand.MAIN_HAND);step(p);p.closeContainer();step(p);own=f.own(p,D);h.assertTrue(own.getBoolean("DinerTransformed133")&&own.getString("DinerTransformCause133").equals("time")&&!own.getBoolean("MealEaten127")&&a[0].phase()==3,"café time, including reading, transforms her without eating");f.reload();h.assertTrue(f.own(p,D).getUUID("CastFake").equals(id[0]),"reload retains original identity");
   }).thenSucceed();
  }
+ @AfterBatch(batch="service_followed201") public static void followedDone(ServerLevel l){close();}
+ /** 0.4.201 (owner: "the second waitress should eventually transform after following the player"). */
+ @GameTest(template="empty",batch="service_followed201",timeoutTicks=400)
+ public static void herOriginalBodyChangesAfterFollowingAReaderAwayFromTheTable(GameTestHelper h){var p=diner(h,"followed201");LiteraryActor[] a={null};UUID[] id={null};
+  h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"serving aisle resident")).thenExecute(()->{
+   var own=step(p);a[0]=UncannyStories.actor(p,own,"CastFake");id[0]=a[0].getUUID();a[0].moveTo(Vec3.atBottomCenterOf(f.base(D).offset(3,0,-19)));a[0].appearance(LiteraryActor.UNCANNY_FALSE_WAITRESS,2);a[0].noPhysics=false;a[0].setNoGravity(false);own.putBoolean("SecondPlaced131",true);own.putInt("SecondManifestAge131",0);own.putBoolean("DinerFlow130",true);own.putBoolean("DinerHosted127",true);own.putBoolean("DinerRealReturned130",true);own.putInt("UncannyAge",600);own.putBoolean("MealServed",true);own.putBoolean("MealReleased",true);LiteraryVignettes.save(f.data(),p.getUUID(),D,own);f.at(p,D,.5,0,-13.5);step(p);
+  }).thenIdle(40).thenExecute(()->{
+   var own=f.own(p,D);h.assertTrue(own.getInt("DinerFollowed201")>0&&!own.getBoolean("DinerTransformed133")&&a[0].phase()==2,"away from the table she follows, still a waitress: "+own.getInt("DinerFollowed201"));
+   own.putInt("DinerFollowed201",UncannyDiner.FOLLOWED_UNTIL_SHE_CHANGES-5);LiteraryVignettes.save(f.data(),p.getUUID(),D,own);
+  }).thenIdle(20).thenExecute(()->{
+   var own=f.own(p,D);h.assertTrue(own.getBoolean("DinerTransformed133")&&own.getString("DinerTransformCause133").equals("followed")&&!own.getBoolean("MealEaten127")&&a[0].phase()==3&&a[0].getUUID().equals(id[0]),"followed long enough, the same original changes without the reader eating anything");
+   h.assertTrue(!UncannyStories.failed(own)&&!own.getBoolean("Ready"),"changing is not yet a catch; the front door is still a way out");
+  }).thenSucceed();
+ }
  @AfterBatch(batch="service_till133") public static void tillDone(ServerLevel l){close();}
  @GameTest(template="empty",batch="service_till133",timeoutTicks=600)
  public static void theActualTillCrossingAndConfirmedHouseLandingConcludeOnlyThatReadersEncounter(GameTestHelper h){var p=diner(h,"till133");var peer=f.player("till_peer",D);var b=f.base(D);var door=b.offset(-10,0,-6);var home=f.origin.offset(0,0,20);var back=new LabyrinthData.Waypoint(f.in.dimension(),Vec3.atBottomCenterOf(home),0);f.chunks.hold(f.in,new AABB(home).inflate(4));
@@ -94,10 +108,10 @@ public final class ServiceFollowupTests {
  @GameTest(template="empty",batch="service_appliances133",timeoutTicks=900)
  public static void nativeBathroomAndKitchenControlsOperateAndFinishTheirCycle(GameTestHelper h){var p=diner(h,"controls133");var l=f.out;var b=f.base(D);
   h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual café resident")).thenExecute(()->{
-   for(var rel:List.of(new BlockPos(13,0,-27),new BlockPos(14,0,-24),new BlockPos(11,1,-25),new BlockPos(14,1,-25),new BlockPos(4,1,-31),new BlockPos(6,1,-31),new BlockPos(8,1,-31))){var at=b.offset(rel);p.moveTo(at.getX()+.5,at.getY(),at.getZ()+2.7);p.gameMode.useItemOn(p,l,ItemStack.EMPTY,InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));h.assertTrue(l.getBlockState(at).getValue(ServiceFittingBlock.ACTIVE),"native input operates each actual bathroom/kitchen control");}
-   h.assertTrue(l.getBlockState(b.offset(DinerDetails.BATH_DOOR)).getBlock() instanceof DoorBlock&&l.getBlockState(b.offset(12,-1,-24)).is(UncannyRegistry.material("bathroom_floor"))&&l.getBlockState(b.offset(DinerDetails.ROACH)).getCollisionShape(l,b.offset(DinerDetails.ROACH)).isEmpty()&&!ServiceFittingGeometry.parts(ServiceFittingBlock.Kind.ROACH,false,0).equals(ServiceFittingGeometry.parts(ServiceFittingBlock.Kind.ROACH,false,6)),"textured bathroom has a real door and the small roach animates without obstructing the floor");
+   for(var rel:List.of(DinerDetails.TOILET,DinerDetails.BASIN,DinerDetails.DRYER,DinerDetails.SOAP,new BlockPos(4,1,-31),new BlockPos(6,1,-31),new BlockPos(8,1,-31))){var at=b.offset(rel);p.moveTo(at.getX()+.5,at.getY(),at.getZ()+(rel.getX()>10?1.7:2.7));p.gameMode.useItemOn(p,l,ItemStack.EMPTY,InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));h.assertTrue(l.getBlockState(at).getValue(ServiceFittingBlock.ACTIVE),"native input operates each actual bathroom/kitchen control");}
+   h.assertTrue(l.getBlockState(b.offset(DinerDetails.BATH_DOOR)).is(UncannyRegistry.RESTROOM_DOOR.get())&&l.getBlockState(b.offset(13,-1,-26)).is(UncannyRegistry.material("bathroom_floor"))&&l.getBlockState(b.offset(10,2,-26)).is(UncannyRegistry.material("diner_wall"))&&l.getBlockState(b.offset(11,2,-26)).is(UncannyRegistry.material("bathroom_wall"))&&l.getBlockState(b.offset(16,2,-26)).is(UncannyRegistry.material("diner_wall"))&&l.getBlockState(b.offset(DinerDetails.ROACH)).getCollisionShape(l,b.offset(DinerDetails.ROACH)).isEmpty()&&!ServiceFittingGeometry.parts(ServiceFittingBlock.Kind.ROACH,false,0).equals(ServiceFittingGeometry.parts(ServiceFittingBlock.Kind.ROACH,false,6)),"the restroom has a solid door in the diner's own wall, tile only on its inside, and the small roach animates without obstructing the floor");
   }).thenIdle(130).thenExecute(()->{
-   for(var rel:List.of(new BlockPos(13,0,-27),new BlockPos(14,0,-24),new BlockPos(11,1,-25),new BlockPos(6,1,-31),new BlockPos(8,1,-31)))h.assertTrue(!l.getBlockState(b.offset(rel)).getValue(ServiceFittingBlock.ACTIVE),"native scheduled controls finish their cycle");
+   for(var rel:List.of(DinerDetails.TOILET,DinerDetails.BASIN,DinerDetails.DRYER,new BlockPos(6,1,-31),new BlockPos(8,1,-31)))h.assertTrue(!l.getBlockState(b.offset(rel)).getValue(ServiceFittingBlock.ACTIVE),"native scheduled controls finish their cycle");
   }).thenSucceed();
  }
 }
