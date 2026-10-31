@@ -81,7 +81,7 @@ public final class HouseReadKitchenProof extends Screen {
         var hung=sheets.get(2).copy();block(g,part(HouseReadPropBlock.Part.FRIDGE_TOP).setValue(HouseReadPropBlock.TURNED,true),hung,6.5f*cw,32+ch*.5f,Math.min(cw,ch)*.5f,12);
         var pencil=new ItemStack(HouseReadRegistry.CRAYON.get());pencil.set(DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(1));
         var p=g.pose();float scale=Math.min(cw,ch)*.3f/16f;p.pushPose();p.translate(6.5f*cw-8*scale,32+ch-30-8*scale,0);p.scale(scale,scale,1);g.renderItem(pencil,0,0);p.popPose();
-        // Two rows, one per arm model: each skin as its own sheet, with its face enlarged beside it.
+        // Two rows of the House's body as worn (0.4.201): each as its own sheet, with its face enlarged beside it.
         float top=36+ch,rowHeight=(height-top-8)/2f,size=Math.min(rowHeight-14,width/5f/1.6f);var shown=skins();
         for(int i=0;i<shown.size();i++){int row=i/5,column=i%5;float x=8+column*(width-16)/5f,y=top+row*rowHeight;
             g.blit(shown.get(i).texture(),(int)x,(int)y,(int)size,(int)size,0,0,64,64,64,64);
@@ -90,27 +90,24 @@ public final class HouseReadKitchenProof extends Screen {
     }
     private record Skin(net.minecraft.resources.ResourceLocation texture,String label){}
     private java.util.List<Skin> skins;
-    /** The default skins drawn as a reader drew them, registered once for the page. */
+    /**
+     * 0.4.201: the House's body as a reader wears it, registered once for the page: a reader who has drawn nothing, in their
+     * account's default colours, and bodies in drawn tones with each drawn face, as trousers and as a dress.
+     */
     private java.util.List<Skin> skins(){
-        if(skins!=null)return skins;skins=new java.util.ArrayList<>();var mc=Minecraft.getInstance();
-        for(var model:net.minecraft.client.resources.PlayerSkin.Model.values()){
-            net.minecraft.client.resources.PlayerSkin skin=null;for(long i=0;i<64&&(skin==null||skin.model()!=model);i++)skin=net.minecraft.client.resources.DefaultPlayerSkin.get(new UUID(196,i));
-            if(skin==null||skin.model()!=model)continue;
-            try(var in=mc.getResourceManager().open(skin.texture());var image=com.mojang.blaze3d.platform.NativeImage.read(in)){
-                var other=model==net.minecraft.client.resources.PlayerSkin.Model.SLIM?net.minecraft.client.resources.PlayerSkin.Model.WIDE:net.minecraft.client.resources.PlayerSkin.Model.SLIM;
-                int[][] cases={{-1,0},{HouseReadKitchen.rgb(1),2},{HouseReadKitchen.rgb(10),1},{-1,3},{-1,4}};
-                for(int k=0;k<cases.length;k++){
-                    var drawn=k==0?copy(image):HouseBodyClient.drawn(image,cases[k][0],model,k==1?other:model,cases[k][1]);
-                    var at=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"proof/kitchen_skin_"+model.id()+"_"+k);
-                    mc.getTextureManager().register(at,new net.minecraft.client.renderer.texture.DynamicTexture(drawn));
-                    String arms=model==net.minecraft.client.resources.PlayerSkin.Model.SLIM?"slim":"wide",to=other==net.minecraft.client.resources.PlayerSkin.Model.SLIM?"slim":"wide";
-                    skins.add(new Skin(at,arms+(k==0?", own":k==1?" to "+to+", toned, "+HouseReadKitchen.FACES.get(cases[k][1]-1):", "+(cases[k][0]>=0?"toned, ":"")+HouseReadKitchen.FACES.get(cases[k][1]-1))));
-                }
+        if(skins!=null)return skins;skins=new java.util.ArrayList<>();var mc=Minecraft.getInstance();var account=new UUID(196,0);
+        // age, body (0 plain, 1 trousers, 2 dress), cut, tone crayon (-1 for the account's own), face (0 for the body's own)
+        int[][] cases={{0,0,0,-1,0},{0,1,0,1,1},{0,2,3,1,2},{1,1,1,5,3},{1,2,2,5,4},{2,1,4,10,5},{2,2,3,10,1},{0,1,2,3,2},{1,2,1,7,3},{2,1,0,11,4}};
+        for(int k=0;k<cases.length;k++){int[] c=cases[k];
+            var body=new io.github.knaitoe.theoldesthouse.labyrinth.HouseBodies.Body(c[0],c[1],c[2],c[3]<0?-1:HouseReadKitchen.rgb(c[3]),-1,c[4]);
+            try{
+                var at=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"proof/kitchen_body_"+k);
+                mc.getTextureManager().register(at,new net.minecraft.client.renderer.texture.DynamicTexture(HouseBodyClient.painted(body,HouseBodyClient.defaults(account))));
+                skins.add(new Skin(at,(c[3]<0?"account colours":"crayon "+c[3])+", "+(c[4]==0?"its own face":HouseReadKitchen.FACES.get(c[4]-1))));
             }catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
         }
         return skins;
     }
-    private static com.mojang.blaze3d.platform.NativeImage copy(com.mojang.blaze3d.platform.NativeImage image){var out=new com.mojang.blaze3d.platform.NativeImage(image.getWidth(),image.getHeight(),true);out.copyFrom(image);return out;}
     private void crayon(GuiGraphics g,int colour,float x,float y,float size){
         var stack=new ItemStack(HouseReadRegistry.CRAYON.get());stack.set(DataComponents.DYED_COLOR,new DyedItemColor(HouseReadKitchen.rgb(colour),false));
         var p=g.pose();float scale=size/16f;p.pushPose();p.translate(x-8*scale,y-8*scale,0);p.scale(scale,scale,1);g.renderItem(stack,0,0);p.popPose();
@@ -131,7 +128,7 @@ public final class HouseReadKitchenProof extends Screen {
         var folder=Path.of("../build/house-read-kitchen");Files.createDirectories(folder);
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;return;}
-        Files.writeString(folder.resolve("passed.txt"),"The kitchen table's tin, drawing, fridge, radio and the clocks' moving hands through the production model and fitting renderer, one reader's crayons with one taken, the picture on the fridge door, the drawing in each of the twelve skin crayons with the held crayons, and (0.4.196) the pencil's five faces, trousers and a dress, the pencil in the hand, and default skins toned, refitted between arm widths and given the drawn faces.\n");
+        Files.writeString(folder.resolve("passed.txt"),"The kitchen table's tin, drawing, fridge, radio and the clocks' moving hands through the production model and fitting renderer, one reader's crayons with one taken, the picture on the fridge door, the drawing in each of the twelve skin crayons with the held crayons, and (0.4.196) the pencil's five faces, trousers and a dress, the pencil in the hand, and (0.4.201) the House's body as every reader wears it: in an account's default colours, and in drawn tones with each drawn face, as trousers and as a dress.\n");
         mc.setScreen(new HouseReadWardrobeProof());
     }
 }

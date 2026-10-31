@@ -51,44 +51,42 @@ public final class HouseReadReaderTests {
         return out;
     }
 
-    /** 0.4.163, the owner: "have you implemented the check for 'human' skins yet? my player skin is still displaying." */
+    /**
+     * 0.4.163, the owner: "have you implemented the check for 'human' skins yet? my player skin is still displaying." 0.4.201, the
+     * owner: "the skin layering over human minecraft skins is more than a little faulty. if you can't fix that confidently, just
+     * give all players a house skin inside the house." Every reader wears the body inside the House, whatever their skin.
+     */
     @GameTest(template="empty",batch="read_body163",timeoutTicks=200)
-    public static void aReaderWhoseFaceIsNotHumanWearsTheBodyTheHouseReadInsideTheHouseOnly(GameTestHelper h){
-        // The face check each client makes of its own skin: the front of the head, with the hat layer over it.
-        int tone=0xffc8946e,green=0xff5ea948,grey=0xff3c3c3c;
-        java.util.function.IntBinaryOperator person=(x,y)->x>=40?0:(y<10?0xff4a3326:tone),creeper=(x,y)->x>=40?0:green,wither=(x,y)->x>=40?0:grey;
-        java.util.function.IntBinaryOperator masked=(x,y)->x>=40&&x<48&&y>=8&&y<16?green:(y<10?0xff4a3326:tone),bare=(x,y)->0;
-        h.assertTrue(HouseBodies.humanFace(person)&&!HouseBodies.humanFace(creeper)&&!HouseBodies.humanFace(wither),"a face in human skin colours reads human; a creeper's or a wither's does not");
-        h.assertTrue(!HouseBodies.humanFace(masked)&&!HouseBodies.humanFace(bare),"the hat layer over the face counts, and an empty face reads nothing human");
+    public static void everyReaderWearsTheBodyTheHouseReadInsideTheHouseOnly(GameTestHelper h){
+        // The skin colours the default skins' tones and the faces drawn on a body are found by.
         for(int c:new int[]{0xf5d6c6,0xe0ac69,0xc68642,0x8d5524,0x5c3a21,0x3b2219})h.assertTrue(HouseBodies.skinColour(c>>16&255,c>>8&255,c&255),"every human skin tone reads as skin: "+Integer.toHexString(c));
         for(int c:new int[]{0x5ea948,0x3c3c3c,0xbebebe,0x4682dc,0x46825e,0x191919})h.assertTrue(!HouseBodies.skinColour(c>>16&255,c>>8&255,c&255),"greens, greys, blues and black do not: "+Integer.toHexString(c));
-        var f=fixture(h);var p=player(h,f,"body_creeper");var q=player(h,f,"body_person");var d=f.data();
+        var f=fixture(h);var p=player(h,f,"body_read");var q=player(h,f,"body_unread");var d=f.data();
         // The body follows the read; what isn't read takes the neutral choices.
         h.assertTrue(HouseBodies.body(d,p.getUUID()).equals(new HouseBodies.Body(0,0,0,-1,-1)),"an unread reader is a young adult in plain clothes with short hair, in their account's default colours");
         HouseRead.restart(p,AGE,"ANALOG");HouseRead.restart(p,HAIR,"BRAIDED_AND_OILED");HouseRead.restart(p,SELF,"FEM");
         h.assertTrue(HouseBodies.body(d,p.getUUID()).equals(new HouseBodies.Body(2,0,2,-1,-1)),"age and hair follow the read; the clothes wait for a settled presentation: "+HouseBodies.body(d,p.getUUID()));
         HouseRead.signal(p,SELF,"FEM",true);
         h.assertTrue(HouseBodies.body(d,p.getUUID()).equals(new HouseBodies.Body(2,2,2,-1,-1))&&HouseBodies.body(d,p.getUUID()).sheet().equals("older_fem_braids"),"settled, the clothes follow too: "+HouseBodies.body(d,p.getUUID()).sheet());
-        // Only an inhuman skin, and only inside the House.
-        stand(p,f.out,f.origin,0,0,0);stand(q,f.out,f.origin,2,0,0);HouseBodies.report(p,false);HouseBodies.report(q,true);
-        h.assertTrue(HouseBodies.worn(p)!=null&&HouseBodies.worn(q)==null,"inside the House the inhuman-skinned reader wears the body and the human-skinned reader keeps their own");
+        // Every reader, and only inside the House.
+        stand(p,f.out,f.origin,0,0,0);stand(q,f.out,f.origin,2,0,0);
+        h.assertTrue(HouseBodies.worn(p)!=null&&HouseBodies.worn(p).sheet().equals("older_fem_braids")&&HouseBodies.worn(q)!=null&&HouseBodies.worn(q).sheet().equals("young_plain_short"),"inside the House every reader wears the body the House read: "+HouseBodies.worn(p)+" / "+HouseBodies.worn(q));
         bodies(p);bodies(q);HouseBodies.sync(p.server);
-        for(var reader:List.of(p,q)){var sent=bodies(reader);h.assertTrue(sent.size()==1&&sent.getFirst().bodies().size()==1&&sent.getFirst().bodies().getFirst().reader().equals(p.getUUID())&&sent.getFirst().bodies().getFirst().body().sheet().equals("older_fem_braids"),"every reader there is told the body, and only the inhuman-skinned reader's: "+sent);}
+        for(var reader:List.of(p,q)){var sent=bodies(reader);h.assertTrue(sent.size()==1&&sent.getFirst().bodies().stream().anyMatch(e->e.reader().equals(p.getUUID())&&e.body().sheet().equals("older_fem_braids"))&&sent.getFirst().bodies().stream().anyMatch(e->e.reader().equals(q.getUUID())&&e.body().sheet().equals("young_plain_short")),"every reader there is told both bodies (other tests' readers in the House may be listed too): "+sent);}
         HouseBodies.sync(p.server);h.assertTrue(bodies(p).isEmpty(),"nothing is sent again until something changes");
         stand(p,h.getLevel(),h.absolutePos(BlockPos.ZERO).above(),0,0,0);
         h.assertTrue(HouseBodies.worn(p)==null,"outside the House their own skin returns");HouseBodies.sync(p.server);var after=bodies(q);
-        h.assertTrue(after.size()==1&&after.getFirst().bodies().isEmpty(),"and everyone is told: "+after);
+        h.assertTrue(after.size()==1&&after.getFirst().bodies().stream().noneMatch(e->e.reader().equals(p.getUUID()))&&after.getFirst().bodies().stream().anyMatch(e->e.reader().equals(q.getUUID())),"and everyone is told: "+after);
         stand(p,f.out,f.origin,0,0,0);
-        try{HouseConfig.HOUSE_BODIES.set(false);h.assertTrue(HouseBodies.worn(p)==null,"the server option turns the House's body off");}finally{HouseConfig.HOUSE_BODIES.set(true);}
-        HouseBodies.report(p,true);h.assertTrue(HouseBodies.worn(p)==null,"a reader whose skin is human again wears their own");
-        // 0.4.195 (owner: "skin tone isn't being properly applied"): a human-skinned reader who drew a tone wears it on their own skin.
+        try{HouseConfig.HOUSE_BODIES.set(false);h.assertTrue(HouseBodies.worn(p)==null&&HouseBodies.worn(q)==null,"the server option turns the House's body off for everyone");}finally{HouseConfig.HOUSE_BODIES.set(true);}
+        // The tone drawn at the kitchen table colours the body, not the reader's own skin.
         String crayon=HouseReadKitchen.SKIN.stream().sorted().findFirst().orElseThrow();int drawn=Integer.parseInt(crayon.substring(1),16);
-        HouseRead.restart(q,HouseRead.Trait.TONE,crayon);var toned=HouseBodies.toned(q);
-        h.assertTrue(HouseBodies.worn(q)==null&&toned!=null&&toned.own()&&toned.tone()==drawn,"the drawn tone is for their own skin, not a body: "+toned);
+        HouseRead.restart(q,HouseRead.Trait.TONE,crayon);var toned=HouseBodies.worn(q);
+        h.assertTrue(toned!=null&&toned.tone()==drawn&&toned.sheet().equals("young_plain_short"),"the drawn tone colours the House's body: "+toned);
         bodies(q);HouseBodies.sync(q.server);var told=bodies(q);
-        h.assertTrue(told.size()==1&&told.getFirst().bodies().stream().anyMatch(e->e.reader().equals(q.getUUID())&&e.body().own()&&e.body().tone()==drawn),"every reader is told only that tone, never the skin: "+told);
+        h.assertTrue(told.size()==1&&told.getFirst().bodies().stream().anyMatch(e->e.reader().equals(q.getUUID())&&e.body().tone()==drawn),"every reader is told the body in that tone: "+told);
         stand(q,h.getLevel(),h.absolutePos(BlockPos.ZERO).above(),2,0,0);
-        h.assertTrue(HouseBodies.toned(q)==null,"outside the House their own colouring returns");
+        h.assertTrue(HouseBodies.worn(q)==null,"outside the House their own skin returns");
         h.succeed();
     }
 

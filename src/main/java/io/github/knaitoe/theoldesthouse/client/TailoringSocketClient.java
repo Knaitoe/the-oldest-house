@@ -47,10 +47,10 @@ public final class TailoringSocketClient {
             // 0.4.161: the coatroom glass. Face it square, and capture once it has drawn the reflected room for a while.
             if(!mc.levelRenderer.isSectionCompiled(at)||age<40)return;look(mc,Vec3.atCenterOf(at).add(0,.5,0));
             if(!mirrored){if(age>=200){require(HouseReadReflection.showing(at),"the glass in front of this reader is drawing the reflected room");
-                // 0.4.163: B's reader has a skin that is not human; inside the House both clients draw them in the House's body.
+                // 0.4.201: inside the House both clients draw both readers in the House's body.
                 var b=role().equals("B")?mc.player:mc.level.players().stream().filter(other->other!=mc.player).findFirst().orElse(null);
                 require(b!=null&&HouseBodyClient.wearing(b.getUUID())&&b.getSkin().texture().getPath().startsWith("house_body/"),"B's reader is drawn in the House's body on "+role()+"'s client");
-                require(role().equals("B")||!HouseBodyClient.wearing(mc.player.getUUID()),"A's human skin is never replaced");
+                require(HouseBodyClient.wearing(mc.player.getUUID())&&mc.player.getSkin().texture().getPath().startsWith("house_body/"),role()+"'s own reader is drawn in the House's body too");
                 shot=role()+"-mirror";}}
             // 0.4.163: then the inventory, whose figure stays empty inside the House.
             else if(!inventoried){if(mc.screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen&&age-opened>=20)shot=role()+"-inventory";}

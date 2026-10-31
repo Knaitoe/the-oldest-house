@@ -7,8 +7,6 @@ import io.github.knaitoe.theoldesthouse.network.HouseBodiesPayload;
 import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.netty.buffer.ByteBuf;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.IntBinaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.network.codec.*;
 import net.minecraft.server.MinecraftServer;
@@ -20,12 +18,17 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
- * The House's body (the owner's decisions, October 29; built in 0.4.163). A reader whose own skin is not human (a creeper,
- * a robot, a mascot) can't feel the coats, glasses and portraits made for a person, so inside the House they wear a human
- * body the House chose from its read: age from {@code AGE}, clothes from a settled {@code SELF}, the hair from {@code HAIR}'s
- * routine, and the tone and hair colour of the default skin Minecraft gives their account until the self-portrait is built.
- * Their own client checks their own face and says only yes or no. Everyone sees the body, which is the one place a read
- * leaves the server; readers with human skins never have theirs sent anywhere. Their own skin returns in the manor and outside.
+ * The House's body (the owner's decisions, October 29; built in 0.4.163). Inside the House a reader wears a human body the
+ * House chose from its read: age from {@code AGE}, clothes from a settled {@code SELF}, the hair from {@code HAIR}'s routine,
+ * and the tone, hair colour, body and face drawn at the kitchen table, or the tone and hair colour of the default skin
+ * Minecraft gives their account until they draw them. Everyone sees the body, which is the one place a read leaves the
+ * server. Their own skin returns in the manor and outside.
+ *
+ * <p>0.4.201 (owner: "the skin layering over human minecraft skins is more than a little faulty. if you can't fix that
+ * confidently, just give all players a house skin inside the house."): until then only a reader whose own skin was not human
+ * wore the body, and a human skin was recoloured to the drawn tone on every client. No recolouring of an arbitrary skin can
+ * be trusted (its shading, lips and hat layer fall outside any match and keep the old tone), so every reader wears the body,
+ * and nobody's own skin is read or changed.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HouseBodies {
@@ -41,38 +44,17 @@ public final class HouseBodies {
         public Body(int age,int presentation,int cut,int tone,int hair){this(age,presentation,cut,tone,hair,0);}
         /** The painted sheet, {@code textures/entity/house_body/<sheet>.png}. */
         public String sheet(){return AGES.get(age)+"_"+PRESENTATIONS.get(presentation)+"_"+CUTS.get(cut);}
-        /**
-         * 0.4.195: not a body at all, only what was drawn at the kitchen table, for the reader's own skin: the tone, and (0.4.196)
-         * in {@code presentation} the body drawn (1 trousers, wide arms; 2 a dress, slim arms; 0 their own) and the face.
-         */
-        public boolean own(){return hair==OWN;}
     }
-    /** The hair value that marks a reader's own skin worn in their drawn tone rather than a painted body. */
-    public static final int OWN=Integer.MIN_VALUE;
 
-    // ---- The check each reader's own client makes of their own face.
-    /** How much of a face must be in human skin colours. The nine default skins read 44% or more; mobs and machines read none. */
-    public static final int FACE_SHARE=25;
+    // ---- Skin colours, for the account's default skin and the faces drawn on a body.
     /** Within the range of human skin colours, as a box in YCbCr: any lightness above near-black, the warm chroma skin has. */
     public static boolean skinColour(int r,int g,int b){
         double y=.299*r+.587*g+.114*b,cb=128-.168736*r-.331264*g+.5*b,cr=128+.5*r-.418688*g-.081312*b;
         return y>=30&&cr>=133&&cr<=180&&cb>=77&&cb<=130;
     }
-    /** The face as others see it: the front of the head with the hat layer over it. {@code argb} reads the skin in its 64-texel grid. */
-    public static boolean humanFace(IntBinaryOperator argb){
-        int skin=0,seen=0;
-        for(int y=8;y<16;y++)for(int x=8;x<16;x++){
-            int hat=argb.applyAsInt(x+32,y),c=hat>>>24>=128?hat:argb.applyAsInt(x,y);if(c>>>24<128)continue;
-            seen++;if(skinColour(c>>16&255,c>>8&255,c&255))skin++;
-        }
-        return seen>0&&skin*100>=seen*FACE_SHARE;
-    }
 
-    // ---- Which readers wear one.
-    private static final Map<UUID,Boolean> INHUMAN=new ConcurrentHashMap<>();
+    // ---- Who wears one.
     private static Map<UUID,Body> sent=Map.of();
-    public static void report(ServerPlayer reader,boolean human){if(human)INHUMAN.remove(reader.getUUID());else INHUMAN.put(reader.getUUID(),true);}
-    public static boolean inhuman(UUID reader){return INHUMAN.containsKey(reader);}
     /** The body the read chooses. Unread traits take the neutral choices: a young adult, plain clothes, short hair. */
     public static Body body(LabyrinthData d,UUID reader){
         int age=switch(HouseRead.value(d,reader,HouseRead.Trait.AGE,false)){case "ANALOG"->2;case "TRANSITIONAL"->1;default->0;};
@@ -83,29 +65,18 @@ public final class HouseBodies {
         // 0.4.168: the tone and hair colour the reader drew at the kitchen table, when there is one.
         return new Body(age,presentation,cut,HouseReadKitchen.tone(d,reader),HouseReadKitchen.hair(d,reader),HouseReadKitchen.mood(d,reader));
     }
-    /** The body a reader is wearing now, if any: only an inhuman skin, only inside the House, and only while the option is on. */
+    /** The body a reader is wearing now, if any: every reader, only inside the House, and only while the option is on. */
     public static @Nullable Body worn(ServerPlayer reader){
-        return HouseConfig.houseBodies()&&inhuman(reader.getUUID())&&inside(reader)?body(LabyrinthData.get(reader.server),reader.getUUID()):null;
+        return HouseConfig.houseBodies()&&inside(reader)?body(LabyrinthData.get(reader.server),reader.getUUID()):null;
     }
     /** The House beyond the manor: the manor's own rooms, and the rooms between them, keep the reader's own skin. */
     public static boolean inside(ServerPlayer reader){
         var dimension=reader.level().dimension();
         return HouseDimensions.isHouseDimension(dimension)&&!dimension.equals(HouseDimensions.BETWEEN)&&!io.github.knaitoe.theoldesthouse.house.HouseExperience.inManor(reader,reader.blockPosition());
     }
-    /**
-     * 0.4.195 (owner: "skin tone isn't being properly applied"): a human-skinned reader who drew their tone at the kitchen
-     * table wears it on their own skin, wherever a body would be worn. Only the tone is sent; their skin stays on their client,
-     * and every client recolours that reader's own skin to it, shading and all. 0.4.196: and the body and face they drew there.
-     */
-    public static @Nullable Body toned(ServerPlayer reader){
-        if(!HouseConfig.houseBodies()||inhuman(reader.getUUID())||!inside(reader))return null;
-        var d=LabyrinthData.get(reader.server);var id=reader.getUUID();
-        int tone=HouseReadKitchen.tone(d,id),form=HouseReadKitchen.form(d,id),mood=HouseReadKitchen.mood(d,id);
-        return tone<0&&form==0&&mood==0?null:new Body(0,form,0,tone,OWN,mood);
-    }
     public static Map<UUID,Body> worn(MinecraftServer server){
         var out=new LinkedHashMap<UUID,Body>();
-        for(var p:server.getPlayerList().getPlayers()){var b=worn(p);if(b==null)b=toned(p);if(b!=null)out.put(p.getUUID(),b);}
+        for(var p:server.getPlayerList().getPlayers()){var b=worn(p);if(b!=null)out.put(p.getUUID(),b);}
         return out;
     }
     private static HouseBodiesPayload payload(Map<UUID,Body> bodies){var list=new ArrayList<HouseBodiesPayload.Entry>();bodies.forEach((id,b)->list.add(new HouseBodiesPayload.Entry(id,b)));return new HouseBodiesPayload(list);}
@@ -116,6 +87,5 @@ public final class HouseBodies {
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){if(e.getServer().getTickCount()%10==7)sync(e.getServer());}
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p&&p.connection!=null)HousePackets.send(p,payload(worn(p.server)));}
-    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){INHUMAN.remove(e.getEntity().getUUID());}
-    @SubscribeEvent public static void stopped(ServerStoppedEvent e){INHUMAN.clear();sent=Map.of();}
+    @SubscribeEvent public static void stopped(ServerStoppedEvent e){sent=Map.of();}
 }

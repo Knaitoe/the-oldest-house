@@ -10,8 +10,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 /**
  * 0.4.163: every House body being worn, sent to every client: which reader, and the body the House chose from their read.
- * Only readers whose own skins don't look human ever appear here with a body, and (0.4.195) human-skinned readers with only the tone
- * they drew ({@link HouseBodies.Body#own()}); both only while they are inside the House.
+ * 0.4.201: every reader appears here while they are inside the House, and nobody outside it.
  */
 public record HouseBodiesPayload(List<Entry> bodies) implements CustomPacketPayload {
     public record Entry(UUID reader,HouseBodies.Body body){

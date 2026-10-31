@@ -195,8 +195,6 @@ neoForge {
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofRole', 'B'
-            // 0.4.163: in the tailoring proof B's reader wears a skin that is not human, so both clients see the House's body.
-            systemProperty 'the_oldest_house.inhumanSkin', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.backseatSocketSmoke', backseatSocketSmoke.toString()
             systemProperty 'org.lwjgl.system.SharedLibraryExtractPath', project.file("${proofRoot}/natives-b").absolutePath
             systemProperty 'the_oldest_house.liveProofDir', project.file(proofReport).absolutePath

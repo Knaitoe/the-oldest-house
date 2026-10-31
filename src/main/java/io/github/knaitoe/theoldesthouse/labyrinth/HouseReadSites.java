@@ -239,6 +239,8 @@ public final class HouseReadSites {
         var start=p.getEyePosition();for(int i=0;i<12;i++){var hit=p.serverLevel().clip(new net.minecraft.world.level.ClipContext(start,target,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,p));if(hit.getType()==HitResult.Type.MISS||hit.getBlockPos().equals(at))return true;var block=p.serverLevel().getBlockState(hit.getBlockPos()).getBlock();if(!(block==Blocks.GLASS||block instanceof StainedGlassBlock)&&!(block instanceof IronBarsBlock)&&!(block instanceof HouseReadPropBlock))return false;start=hit.getLocation().add(delta.normalize().scale(.15));if(start.distanceToSqr(target)<.025)return true;}return false;
     }
     static void sound(ServerPlayer p,SoundEvent event,BlockPos at,float volume){LiteraryVignettes.heard(p,event,at,volume,1);}
+    /** Words said to this reader from elsewhere in the house: on the action bar (speech is never chat), quoted, grey and italic. */
+    static void called(ServerPlayer p,String words){p.displayClientMessage(net.minecraft.network.chat.Component.literal("“"+words+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);}
     private static void reader(ServerPlayer p){
         var room=inside(p);HouseReadKitchen.small(p,room==Room.KITCHEN&&p.isAlive()&&!p.isSpectator());HouseReadStory.tick(p,room);var own=state(p.server,p.getUUID());if(room==null){if(!own.getString("Active").isEmpty())left(p);return;}if(!LiteraryVignettes.participant(p)||LabyrinthDoors.isBusy(p)||HouseReadStory.holding(p))return;
         var b=base(p.server,p.getUUID(),room);var visit=own.getCompound(room.key());if(!visit.getBoolean("Entered"))return;int age=visit.getInt("Age")+1;visit.putInt("Age",age);
@@ -273,7 +275,9 @@ public final class HouseReadSites {
             if(age==cue+200&&!first){visit.remove("Whistle");visit.putInt("WhistleAgain",age+100);}
             if(p.isPassenger()&&p.getZ()<b.getZ()-15&&p.getZ()>b.getZ()-20){remember(visit,"AtTable","sat at the warm table");if(seen.getString("First").equals("in")&&!seen.getBoolean("Table")){HouseRead.flag(p,Room.PORCH,"Table");HouseRead.signal(p,HouseRead.Trait.HOME,"HAVEN",true);}}
         }
-        if(cue>0&&age==cue+26)sound(p,HouseReadRegistry.SUPPER.get(),b.offset(1,4,-11),1.8f);if(cue>0&&age==cue+190)sound(p,HouseReadRegistry.STEP.get(),b.offset(1,3,-13),1f);
+        // 0.4.201 (owner: "just remove the voice lines for now ... and add text instead. it still sounds inhuman"): the call in from
+        // the kitchen is read, not heard.
+        if(cue>0&&age==cue+26)called(p,HouseReadTexts.SUPPER);if(cue>0&&age==cue+190)sound(p,HouseReadRegistry.STEP.get(),b.offset(1,3,-13),1f);
         if(age%240==1)sound(p,HouseReadRegistry.NEWS.get(),b.offset(4,4,-15),.5f);if(age%160==1)sound(p,HouseReadRegistry.DISHES.get(),b.offset(-3,4,-12),.7f);if(age==90)sound(p,HouseReadRegistry.ICE.get(),b.offset(-3,4,-11),.7f);
         if(cue>0&&age>=cue+200){visit.putBoolean("NoteArmed",true);if(!visit.getBoolean("LightsOut")&&underPorch(p,b)){visit.putBoolean("LightsOut",true);for(var light:HouseReadRooms.PORCH_LIGHTS){var lamp=p.serverLevel().getBlockState(b.offset(light));if(lamp.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(b.offset(light),lamp.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);}for(var pos:List.of(b.offset(HouseReadRooms.SCREEN),b.offset(HouseReadRooms.SCREEN).above())){var door=p.serverLevel().getBlockState(pos);if(door.getBlock() instanceof DoorBlock)p.serverLevel().setBlock(pos,door.setValue(DoorBlock.OPEN,false),Block.UPDATE_CLIENTS);}sound(p,SoundEvents.WOODEN_DOOR_CLOSE,b.offset(HouseReadRooms.SCREEN),.5f);
             // Still hidden when the kitchen light goes off settles it.

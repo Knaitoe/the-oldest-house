@@ -1,3 +1,5 @@
+October 31 candidate 0.4.201: every reader wears the House's painted body inside the House (no reader's own skin is read or recoloured); the supper call is text; the bathroom opening loses "still"; the last card is the owner's "Every house is haunted. Old arguments and worse habits keep these walls standing. A word of caution before the door closes: This House Has Ghosts in It"; a handed journal goes on the hotbar. Protocol 109. Canon: docs/OWNER_NOTES_0_4_201.md.
+
 October 31 candidate 0.4.200 adds Feet Up, a parkour vignette: the children's floor-is-lava game in a family house, from the big chair to the attic, with bases, a count of three, chairs that come closer unseen, boards that give way, a sweeping fan and a dumbwaiter. Survival kind; 56 sources / 42 required. Canon: docs/FEET_UP_0_4_200.md.
 
 October 30 candidate 0.4.199: two more plain halls, a vaulted hall with a fifteen-block ceiling and a crumbled hall crossed on the boards left over a shallow cellar. Canon: docs/VAULTED_AND_CRUMBLED_HALLS_0_4_199.md.

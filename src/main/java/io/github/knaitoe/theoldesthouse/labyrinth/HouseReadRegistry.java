@@ -55,10 +55,10 @@ public final class HouseReadRegistry {
     public static final java.util.Map<String,DeferredItem<Garment>> GARMENTS=new java.util.LinkedHashMap<>();
     public static final DeferredItem<Garment> WOOL=garment("wool",EquipmentSlot.CHEST),TRENCH=garment("trench",EquipmentSlot.CHEST),BARN=garment("barn",EquipmentSlot.CHEST),WOOL_BOOTS=garment("wool_boots",EquipmentSlot.FEET),TRENCH_BOOTS=garment("trench_boots",EquipmentSlot.FEET),BARN_BOOTS=garment("barn_boots",EquipmentSlot.FEET);
     static{for(var g:HouseReadWardrobe.ALL)if(!GARMENTS.containsKey(g.id()))garment(g.id(),g.slot());}
-    public static final DeferredHolder<SoundEvent,SoundEvent> RAIN=sound("rain"),RADIATOR=sound("radiator"),WHISTLE=sound("whistle"),SUPPER=sound("supper"),NEWS=sound("news"),DISHES=sound("dishes"),ICE=sound("ice"),STEP=sound("step");
+    public static final DeferredHolder<SoundEvent,SoundEvent> RAIN=sound("rain"),RADIATOR=sound("radiator"),WHISTLE=sound("whistle"),NEWS=sound("news"),DISHES=sound("dishes"),ICE=sound("ice"),STEP=sound("step");
     public static final DeferredHolder<SoundEvent,SoundEvent> BELL=sound("bell"),HISS=sound("hiss"),GLUG=sound("glug"),TAP=sound("tap"),CLOCK=sound("clock"),START=sound("start"),SONG=sound("song");
     public static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> MUSIC=java.util.stream.IntStream.range(0,9).mapToObj(i->sound("song_"+i)).toList();
-    public static java.util.List<DeferredHolder<SoundEvent,SoundEvent>> sounds(){var all=new java.util.ArrayList<>(java.util.List.of(RAIN,RADIATOR,WHISTLE,SUPPER,NEWS,DISHES,ICE,STEP,BELL,HISS,GLUG,TAP,CLOCK,START,SONG));all.addAll(MUSIC);return all;}
+    public static java.util.List<DeferredHolder<SoundEvent,SoundEvent>> sounds(){var all=new java.util.ArrayList<>(java.util.List.of(RAIN,RADIATOR,WHISTLE,NEWS,DISHES,ICE,STEP,BELL,HISS,GLUG,TAP,CLOCK,START,SONG));all.addAll(MUSIC);return all;}
     public static final DeferredItem<HouseReadBorrowedItem> PAPER=borrowed("paper"),MAGAZINE=borrowed("magazine"),GLASSES=borrowed("glasses"),PHONE=borrowed("phone"),CONE=borrowed("cone"),
         // 0.4.168: a crayon from the kitchen tin, its colour carried as a dye.
         CRAYON=borrowed("crayon");
