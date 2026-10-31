@@ -49,6 +49,8 @@ public final class SceneShells {
 
     /** Whether the 0.4.28 pass reshapes this scene's shell, surfaces or outdoor edge. */
     public static boolean shapes(LabyrinthPlace place) {
+        // The night ward (0.4.199) is built whole by NightWard; its interior is still given here for the window checks.
+        if (place == LabyrinthPlace.HOSPITAL) return false;
         return spec(place) != null || WEATHERED.contains(place) || place == LabyrinthPlace.PLAIN
                 || place == LabyrinthPlace.ZAMPANO_COURTYARD;
     }

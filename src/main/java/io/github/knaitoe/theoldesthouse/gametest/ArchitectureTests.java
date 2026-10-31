@@ -138,6 +138,13 @@ public final class ArchitectureTests {
             export(HouseTestLevel.get(server,HouseDimensions.OUTSIDE),LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL_GROUNDS),LabyrinthPlace.HOTEL_GROUNDS);
             // The barn well's farm (0.4.164) is built whole by BarnWell, outside the generic loop, so it is exported here too.
             export(HouseTestLevel.get(server,NovelRooms.dimension(LabyrinthPlace.BARN_WELL)),LabyrinthPlaces.base(origin,LabyrinthPlace.BARN_WELL),LabyrinthPlace.BARN_WELL);
+            // The night ward (0.4.199) is built whole by NightWard, outside the generic loop: its door, its anchors and its view.
+            var ward=LabyrinthPlaces.base(origin,LabyrinthPlace.HOSPITAL);
+            h.assertTrue(interior.getBlockState(ward).getBlock() instanceof DoorBlock&&interior.getBlockState(ward.offset(0,0,-2)).getCollisionShape(interior,ward.offset(0,0,-2)).isEmpty(),"the ward keeps its door and a clear approach inside it");
+            h.assertTrue(interior.getBlockState(ward.offset(0,0,-14)).is(NovelRegistry.PROP.get())&&interior.getBlockState(ward.offset(NovelRooms.BUTTON)).is(NovelRegistry.NIGHT_WARD_CALL_BUTTON.get())&&interior.getBlockState(ward.offset(NovelRooms.WARD_NOTE)).is(Blocks.LECTERN),"the incubator, the call button and the chart stand where the night needs them");
+            int drawn=0;for(var at:BlockPos.betweenClosed(ward.offset(-9,0,-23),ward.offset(9,1,0)))if(interior.getBlockState(at).is(NovelRegistry.NIGHT_WARD_CURTAIN.get()))drawn++;
+            h.assertTrue(drawn>=40,"the bays have their curtains: "+drawn);
+            export(interior,ward,LabyrinthPlace.HOSPITAL);
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_upstairs");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.HOTEL),LabyrinthPlace.HOTEL,"hotel_basement");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.GHOSTS_SET),LabyrinthPlace.GHOSTS_SET,"ghosts_upstairs");
@@ -149,8 +156,8 @@ public final class ArchitectureTests {
             literaryRoutes(h,interior,LabyrinthPlaces.base(origin,LabyrinthPlace.WINCHESTER));
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
-            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, and the barn well's farm (0.4.164) by BarnWell, outside the generic dressing.
-            h.assertTrue(dressed==20&&props>=80,"all twenty generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
+            // The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell and the night ward (0.4.199) by NightWard, outside the generic dressing.
+            h.assertTrue(dressed==19&&props>=76,"all nineteen generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
             shellsAndEdges(h,server,origin,data);
             composition(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);
@@ -465,6 +472,7 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.MOTHER_DEN)maxY=12;
         if(scene==LabyrinthPlace.PRESERVED_CAVE)maxY=4;
         if(scene==LabyrinthPlace.WHALE)maxY=9;
+        if(scene==LabyrinthPlace.HOSPITAL)maxY=NightWard.CEILING_Y-1; // 0.4.199: the ward's suspended ceiling comes off
         if(scene==LabyrinthPlace.PLAIN)minZ=-105;
         if(LakeLandscape.isLake(scene))maxY=16;
         if(scene==LabyrinthPlace.HOTEL){maxX=28;maxY=4;}

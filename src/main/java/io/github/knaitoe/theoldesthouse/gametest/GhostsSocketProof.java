@@ -46,6 +46,9 @@ final class GhostsSocketProof {
             var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),LabyrinthPlace.GHOSTS_SET);String key="FilmMarjorie_"+p.getUUID();if(!world.hasUUID(key))continue;
             require(p.server.getLevel(HouseDimensions.INTERIOR).getEntity(world.getUUID(key)) instanceof LiteraryActor,"the reader's original is loaded");var m=(LiteraryActor)p.server.getLevel(HouseDimensions.INTERIOR).getEntity(world.getUUID(key));
             ORIGINALS.putIfAbsent(p.getUUID(),m.getUUID());require(ORIGINALS.get(p.getUUID()).equals(m.getUUID()),"approach, jump and return never replace the original UUID");
+            // The day's staging places the cast once all six are loaded; Marjorie can exist a moment before that, at her home spot.
+            // Only movement after the staging is the approach being measured.
+            if(!LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.GHOSTS_SET).getBoolean("CastPlaced")){PREVIOUS.remove(p.getUUID());POSE.remove(p.getUUID());continue;}
             var previous=PREVIOUS.put(p.getUUID(),m.position());Integer oldPose=POSE.put(p.getUUID(),m.phase());if(previous!=null&&oldPose!=null&&oldPose==GhostsSet.STAND&&m.phase()==GhostsSet.STAND){double distance=m.position().distanceTo(previous);require(distance<.151,"native approach has no scripted five-tick displacement: "+distance);if(distance>.005)MOVED.merge(p.getUUID(),1,Integer::sum);}
             var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.GHOSTS_SET);
             if(own.getBoolean("JumpFrozen0488")){HELD.putIfAbsent(p.getUUID(),m.position());require(m.position().distanceToSqr(HELD.get(p.getUUID()))<.000001&&m.getY()>site.getY()+6&&m.getZ()>site.getZ()-9,"the physical leap clears the native banister and holds the same apex");}

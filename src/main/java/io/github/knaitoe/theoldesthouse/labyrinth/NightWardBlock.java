@@ -14,7 +14,10 @@ import net.minecraft.world.phys.shapes.*;
 public final class NightWardBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<NightWardBlock> CODEC=simpleCodec(NightWardBlock::new);
     public enum Kind implements StringRepresentable {
-        WALL,DADO,FLOOR,CEILING,CURTAIN,CALL_PANEL,WINDOW,BED_HEAD,BED_FOOT,CHAIR,BEDSIDE,TABLE,STOOL,LIGHT;
+        WALL,DADO,FLOOR,CEILING,CURTAIN,CALL_PANEL,WINDOW,BED_HEAD,BED_FOOT,CHAIR,BEDSIDE,TABLE,STOOL,LIGHT,
+        // 0.4.199, the clinical ward (NightWard): the station counter, a basin, the call column, unlit ceiling panels, bed-head
+        // service panels, a monitor on a wheeled stand, skirting night lights, a trolley and a drip stand.
+        COUNTER,SINK,COLUMN,LIGHT_OFF,BED_UNIT,MONITOR_STAND,MONITOR,NIGHT_LIGHT,TROLLEY,DRIP;
         public String getSerializedName(){return name().toLowerCase(Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -31,6 +34,14 @@ public final class NightWardBlock extends HorizontalDirectionalBlock {
         case TABLE->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.TABLE);
         case STOOL->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.STOOL);
         case LIGHT->new double[][]{{0,0,0,16,16,16}}; // keeps the authored sea lantern's support and light volume
+        case COUNTER->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.COUNTER);
+        case SINK->InstituteFixtureBlock.boxes(InstituteFixtureBlock.Kind.SINK);
+        case BED_UNIT->new double[][]{{0,3,13,16,13,16},{5,9,9,11,12,13}};
+        case MONITOR_STAND->new double[][]{{2,0,2,14,2,14},{7,2,7,9,16,9}};
+        case MONITOR->new double[][]{{3,6,6,13,14,10},{7,0,7,9,7,9}};
+        case NIGHT_LIGHT->new double[][]{{5,2,14,11,5,16}};
+        case TROLLEY->new double[][]{{1,0,2,15,14,14}};
+        case DRIP->new double[][]{{3,0,3,13,1,13},{7,1,7,9,16,9}};
         default->new double[][]{{0,0,0,16,16,16}};
     };}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
@@ -38,7 +49,9 @@ public final class NightWardBlock extends HorizontalDirectionalBlock {
         for(var b:boxes(s.getValue(KIND))){double x0=b[0],z0=b[2],x1=b[3],z1=b[5];for(int i=0;i<turns;i++){double a=16-z1,e=16-z0;z0=x0;z1=x1;x0=a;x1=e;}result=Shapes.or(result,Block.box(x0,b[1],z0,x1,b[4],z1));}
         return result;
     }
-    private static boolean solid(Kind k){return k.ordinal()<=Kind.CALL_PANEL.ordinal();}
+    private static boolean solid(Kind k){return k.ordinal()<=Kind.CALL_PANEL.ordinal()||k==Kind.COLUMN||k==Kind.LIGHT_OFF;}
+    /** The lit panels, the skirting night lights and a monitor's screen give light; nothing else does. */
+    public static int light(BlockState s){return switch(s.getValue(KIND)){case LIGHT->15;case NIGHT_LIGHT->6;case MONITOR->3;default->0;};}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return solid(s.getValue(KIND))?Shapes.block():Shapes.empty();}
     @Override protected int getLightBlock(BlockState s,BlockGetter l,BlockPos p){return solid(s.getValue(KIND))?15:0;}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}

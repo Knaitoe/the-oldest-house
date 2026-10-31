@@ -25,7 +25,7 @@ Fixes to things the owner saw while playing. Hallways, puzzle rooms and artifact
 
 ## The night ward
 - **"The double text should also be fixed."** A cue inside a novel site went to the action bar and also to the site's own caption, so it showed twice. Inside a site it now goes only to the caption, sent the same tick (`NovelVignettes.cue`, `CueFresh`).
-- **"The monitor in the hospital needs to have a base."** The "monitor" is the red call button on the wall, standing directly over a light seam in the dado, which reads as a screen on a pole. It is part of the clinical redesign of the ward that follows: a proper call unit, and a monitor on a wheeled stand with a base.
+- **"The monitor in the hospital needs to have a base."** The "monitor" is the red call button on the wall, standing directly over a light seam in the dado, which reads as a screen on a pole. The clinical redesign of the ward ([NIGHT_WARD_CLINICAL_0_4_199.md](NIGHT_WARD_CLINICAL_0_4_199.md)) sets the button on a service column at the end of a partition, and stands a real monitor beside the incubator on a wheeled stand with a five-point base.
 
 ## Third Floor Girls' (the Bloody Mary dare)
 - **"The changes to the players face ... shouldn't start until the second count at least and should be much more gradual. like, difficult to discern until the face returns to normal."**
