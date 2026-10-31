@@ -248,6 +248,7 @@ public final class MiniatureNotes {
         Map.entry("fled_as_the_house_fell", "fled as the house fell"),
         Map.entry("kept_the_hidden_pages", "kept the hidden pages"),
         Map.entry("read_all_eight_original_pages", "read all eight pages"),
+        Map.entry("followed_him_to_the_island", "followed him to the island"),
         Map.entry("read_the_final_page", "read the last page"),
         Map.entry("left_by_the_unpainted_door", "left by the unpainted door"),
         Map.entry("left_the_second_waitress_meal", "left the meal she brought where it was"),

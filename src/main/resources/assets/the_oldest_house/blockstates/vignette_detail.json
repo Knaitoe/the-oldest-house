@@ -719,6 +719,22 @@
     "facing=west,kind=fountain_bowl": {
       "model": "the_oldest_house:block/fountain_bowl",
       "y": 270
+    },
+    "facing=north,kind=pennies": {
+      "model": "the_oldest_house:block/devils_pennies",
+      "y": 0
+    },
+    "facing=east,kind=pennies": {
+      "model": "the_oldest_house:block/devils_pennies",
+      "y": 90
+    },
+    "facing=south,kind=pennies": {
+      "model": "the_oldest_house:block/devils_pennies",
+      "y": 180
+    },
+    "facing=west,kind=pennies": {
+      "model": "the_oldest_house:block/devils_pennies",
+      "y": 270
     }
   }
 }

@@ -423,6 +423,45 @@ now builds it whole, with the room's own papered walls and cork floor, and no ge
 - One lantern from the ceiling by the door; the rest of the light is the lamps and the projector. A chest of drawers by the
   door.
 
+## Disappearance at Devil's Rock, rebuilt
+
+> "Devil's Rock: complete rework." Then: "I'd really like to incorporate the maddened chase sequence from devil's rock story
+> - we chased each other until we forgot which was prey and which was predator?"
+
+The design, from the novel the owner sent, is `docs/DEVILS_ROCK_REWORK.md`. `DevilsRockHouse` builds the scene whole as an
+outdoor scene at midnight, and `DevilsRockNights` runs it; no generic pass touches it.
+
+- **The Sandersons' house:** a one-storey ranch house reached from the front walk. It has the living room with the couch,
+  the television and the camera on its tripod; the kitchen with the mother's watch log on the table and a missing poster on
+  the fridge; the hall with her thread across it; Tommy's room with its blue walls, his bed, the bureau with his old pennies
+  and his desk; Kate's room; and Elizabeth's room, with the plush chair and the little end table and the space between them.
+  The walls are two blocks thick, so every room keeps its own colour inside and siding outside. The flowered paper, boards,
+  cupboards, tripod case and tapes are the watch-room textures the old room had.
+- **The park behind it:** a deck, the yard fence and a gate; woods with old stone walls; the split boulder with the trail
+  through the split, a ramp of stones up one side and the devil's footprint worn into the top; a trail camera on a trunk
+  facing it; and a weedy pond with an island where two rocks stand almost pushed together.
+- **The pages** keep their rule (three a visit, eight over three visits, each read where it lies) and land in the house's
+  rooms, the last in the middle of Tommy's floor. The source and the eight pages are rewritten in Elizabeth's and Tommy's
+  voices.
+- **The shape** crouches between the chair and the end table on the first night, at the end of the hall on the second, and
+  in the split of the rock on the third. It is there only at the corner of the reader's eye and gone when looked at.
+- **The cameras:** the living-room camera prints the arrival times of the pages. The trail camera shows no motion on the
+  first night, something crouched on the rock on the second, and the same time on every frame on the third.
+- **The pennies** are gone from the bureau on the last night (for that reader) and lie between the two rocks on the island.
+- **The chase:** after the eighth page the path is still there. At the rock, a double in Tommy's shape, pennies over its eyes
+  (a new skin drawn from the silhouette's), comes out of the trees and runs round the woods. Come within reach of it, or
+  lose sight of it, and it is behind the reader. Let it catch up (a moment of dark) or turn and run at it, and it is ahead
+  again. Nothing is written on screen while it runs. After six turns it breaks for the pond, swims to the island and
+  crouches between the two rocks; looked at straight, it is gone, and the account is ready. Leaving the park ends a chase,
+  and it starts again at the rock. Everything in it is the reader's own.
+- **The way on** is Tommy's closet door.
+- **Resolution:** still the memory source "The eight loose pages", now `followed_him_to_the_island`. The Witness line, the
+  account (paged), the co-op lines, the hint and the advancement text follow it.
+- **Tests:** the eight-page case now ends with the chase waiting at the rock and no memory yet. A new chase case drives the
+  turns, the break for the pond and the look on the island through to the Witness record, and checks that the double is the
+  reader's own. The source-custody case moves to the miniatures, and the interior case drops the old room. The architecture
+  case exports the house's plan and its exterior.
+
 ## The content warning at the beginning
 
 The first time a player joins a world with the mod, a short book opens in the ordinary lectern view (`ContentWarning`): what

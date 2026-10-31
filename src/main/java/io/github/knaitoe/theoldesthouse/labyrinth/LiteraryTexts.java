@@ -82,9 +82,12 @@ public final class LiteraryTexts {
         case CAMP_BLOOD->book("Last camp essay","J.",
             "A cabin is safe only while you know where its doors are. A path through the woods is safe only while somebody else is willing to be first.",
             "The killer follows noise and the last place he saw you. Put timber between you and him. Keep moving when he loses the line.\n\nThe service road is behind the last cabins.");
+        // 0.4.201 (docs/DEVILS_ROCK_REWORK.md): Elizabeth's log, kept on the kitchen table.
         case DEVILS_ROCK->book("The watch log","The mother",
-            "I slept by the bedroom door. In the morning there were two pages on the floor. The paper was dry. The window was shut.",
-            "I tried string, plates and a camera. Each showed that something happened, after it had happened.\n\nNow I leave each page where it lands and read it there. Another comes when I have stopped looking. It took three nights for the last of them.");
+            "I slept on the couch, facing the hall. In the morning there were two pages on the floor. The paper was dry. Every window was shut.",
+            "I strung thread across the hall and set the camera up on the couch. Each showed that something had happened, after it had happened.\n\nNow I leave each page where it lands and read it there. Another comes when I have stopped looking.",
+            "It took three nights for the last of them.\n\nKate says the path behind the yard still goes up to the rock. I have not been out there at night.",
+            "I keep seeing him in the corner of my room, between the chair and the little table, crouched down the way he used to hide.");
         case WHEEL->book("House numbers","The daughter",
             "Room two comes after room one. I wrote that so I would not forget. When I went back through two, the chair in one was smaller.",
             "The front door takes me to the beginning. Mother's room is farther in than the numbers suggest.\n\nWhen I found her, I wanted none of the numbered doors after that. I left by the one with no number, and I was my own height again.");
@@ -130,7 +133,7 @@ public final class LiteraryTexts {
         case MOVIE_NIGHT->MovieNight.account(own);
         case WINTER_LAKE->WinterLake.account(own);
         case CAMP_BLOOD->"I read the essay, crossed the cabins and lost him among the trees. The service road had no gate. I had spent the night looking for one.";
-        case DEVILS_ROCK->"I laid the pages in order. The camera had times for each arrival, but never a face. The last page asked me to tell him the path was still there. It did not say who he was, or how the paper had entered the room.";
+        case DEVILS_ROCK->DevilsRockNights.account(own);
         case WHEEL->"I reached Mother's room. She was the only thing in the house still the size I remembered; every room before hers had measured me against her. The front door opened onto an outside I could stand up in. I kept the key.";
         case GHOSTS_SET->own.getBoolean("Filming0485")?GhostsSet.account(name,own):"TRANSCRIPT\n\n"+(own.getString("Confession").isEmpty()?"[The booth recorded silence.]":own.getString("Confession"))+"\n\nThe lights had shown a family waiting on its marks. Off the carpet, another conversation had gone on behind my back.";
         case END_WORLD_CABIN->own.getBoolean("Offered")?"I chose what went to the keeper. The visitors thanked me by name. On her shelf it would remain exactly what I gave up. I could see it; I would not carry it again.":"I refused. One visitor walked into the lake. On the screen, "+StaircaseProse.place(own.getString("ClosedRoom"))+" went dark. My hands were still full.";
@@ -141,7 +144,7 @@ public final class LiteraryTexts {
         if(place==LabyrinthPlace.HOLY_RABBIT)return book(WitnessAccount.Story.HOLY_RABBIT.title,name,GhostsSet.pages(text).toArray(String[]::new));
         String title=switch(place){case MOVIE_NIGHT->"The account: after the show";case COSTUME_NIGHT->"The account: the ribbon";case WINTER_LAKE->"The account: the dare";default->accountTitle(place);};
         // The longer generated accounts are paged (Confession's count is written out now); every other keeps its one page.
-        boolean paged=place==LabyrinthPlace.CONFESSION||place==LabyrinthPlace.MOVIE_NIGHT||place==LabyrinthPlace.COSTUME_NIGHT||place==LabyrinthPlace.WINTER_LAKE||place==LabyrinthPlace.ELK_LOT||place==LabyrinthPlace.WINCHESTER||place==LabyrinthPlace.MAPPING_INTERIOR||place==LabyrinthPlace.USHER&&own.getBoolean("Fell0507");
+        boolean paged=place==LabyrinthPlace.CONFESSION||place==LabyrinthPlace.MOVIE_NIGHT||place==LabyrinthPlace.COSTUME_NIGHT||place==LabyrinthPlace.WINTER_LAKE||place==LabyrinthPlace.ELK_LOT||place==LabyrinthPlace.WINCHESTER||place==LabyrinthPlace.MAPPING_INTERIOR||place==LabyrinthPlace.DEVILS_ROCK||place==LabyrinthPlace.USHER&&own.getBoolean("Fell0507");
         return paged?book(title,name,GhostsSet.pages(text).toArray(String[]::new)):book(title,name,text);}
     /** 0.4.105: the rule a source paper used to state outright, given once in plain words after its paper is read; the paper stays in its writer's voice. */
     public static String hint(LabyrinthPlace place){return switch(place){
@@ -149,7 +152,7 @@ public final class LiteraryTexts {
         case FEET_UP->"Start on the big chair and keep off the floor to the attic. The bases are rests; the third touch puts you out at the front door.";
         case MINIATURES->"Examine the models on three separate visits.";
         case USHER->"Close the coffin lid or leave it open, then come back on a later visit.";
-        case DEVILS_ROCK->"Read each loose page where it lies. More appear over three visits.";
+        case DEVILS_ROCK->"Read each loose page where it lies; more appear over three visits. After the last page, the path to the rock is still there.";
         case WHEEL->"Find Mother's room, then leave by the door with no number.";
         case FAMILY_COPY->"Knock and ask to be let in. The family's welcome lasts eight visits.";
         default->null;};}
@@ -199,6 +202,6 @@ public final class LiteraryTexts {
     /** 0.4.121: the account ends on the reader's own last answer, or on the line that says they gave none. */
     static String confessionLast(CompoundTag own){String last=ConfessionAnswers.last(own);if(last.isEmpty())return "";return last.equals(ConfessionAnswers.SILENCE)?"Under his last question, the line said I did not answer.\n\n":"Under his last question, in my hand: \u201c"+(last.length()>90?last.substring(0,90)+"\u2026":last)+"\u201d\n\n";}
     public static final String[] CONFESSION={"I came to a town that had room for another name. ","I learned which doors would open when I knocked, and which people would step aside. ","I mistook those things for permission. ","The first account left out everyone who could no longer answer it. ","I kept a chair for a listener. I thought the distance between our chairs would keep the story mine. ","Now I want you to put down the pen and count with your own hands. ","There are names the world remembers without a witness. There are numbers it remembers without a name. ","This chapter belongs to the person who has been writing. "};
-    public static ItemStack diary(int i){String[] pages={"We went up to the rocks before dark. I told him the path would still be there when we came back.","He asked whether a missing person knows they are missing. I laughed because I thought it was a joke.","The house was lit when we got home. There was one chair nobody sat in.","I left a page by the door so someone would know where I had stopped looking.","I heard the floor from the wrong side. I could not make it happen a second time.","If the camera saw me, it must have seen the room I was in. The time on the print is later than the time on my watch.","I have put the pages down where you can find them. I do not know how to put myself there.","This is the last page. If you see him, tell him the path was still there. I went back for it, and it was."};return book("Loose diary page "+(i+1),"T.",pages[Math.floorMod(i,pages.length)],"The paper is dry. There is no fold where it would have fitted through the door.");}
+    public static ItemStack diary(int i){String[] pages={"We went up to the rock before dark, the three of us. I told them the path would still be there when we came back.","Arnold says the rock is split because something sat down on it once and it couldn't hold the weight. He says he can see things before they happen. Luis laughed. I didn't.","Arnold says a missing person never knows they're missing. Everybody else does the missing for them.","I left a page by the door so someone would know where I stopped looking.","I drew the shadow man again. He's in the corner of the picture, crouched down, like he's hiding from whoever is looking at it.","If the camera saw me, it saw the room I was in. The time on the picture is later than the time on my watch.","I'm putting the pages down where you'll find them. I don't know how to put myself there.","This is the last page. If you see him, tell him the path was still there. I went back for it, and it was."};return book("Loose diary page "+(i+1),"T.",pages[Math.floorMod(i,pages.length)],"The paper is dry. There is no fold where it would have fitted through the door.");}
     public static ItemStack cylinder(int i){return book("Cylinder transcript "+(i+1),"A former wife",new String[]{"I thought the roof was being repaired. The snow came through it the next winter too. I learned to move my chair before it fell.","He kept the house warm in the rooms where people were expected. I walked farther to find a room where I could speak without being heard.","I have left this voice where a hand might find it. Listen to the whole cylinder. Do not let him tell you what I meant."}[i]);}
 }

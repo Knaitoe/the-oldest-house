@@ -28,7 +28,7 @@ public final class SceneReview {
     private static Work work;private static int cursor;
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}
     private SceneReview(){}
-    public static boolean applies(LabyrinthPlace p){if(UncannyRooms.isUncanny(p)||DareRooms.is(p)||FeetUpRooms.is(p))return false;if(p==LabyrinthPlace.GHOSTS_SET||p==LabyrinthPlace.WHEEL||p==LabyrinthPlace.WINCHESTER||p==LabyrinthPlace.MAPPING_INTERIOR||p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.KAREN_ROOM||p==LabyrinthPlace.ELK_CARCASSES||p==LabyrinthPlace.CHILD_ROOM||p==LabyrinthPlace.MASQUE||p==LabyrinthPlace.BLY_ROUTE||p==LabyrinthPlace.USHER||p==LabyrinthPlace.HOTEL||p==LabyrinthPlace.HOTEL_GROUNDS||p==LabyrinthPlace.ELK_LOT||p==LabyrinthPlace.THREE_FINGERS||p==LabyrinthPlace.MOVIE_NIGHT||p==LabyrinthPlace.COSTUME_NIGHT||p==LabyrinthPlace.WINTER_LAKE||p==LabyrinthPlace.LAKE_HOUSE||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.BORRASCA)return false;return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL
+    public static boolean applies(LabyrinthPlace p){if(UncannyRooms.isUncanny(p)||DareRooms.is(p)||FeetUpRooms.is(p))return false;if(p==LabyrinthPlace.GHOSTS_SET||p==LabyrinthPlace.WHEEL||p==LabyrinthPlace.WINCHESTER||p==LabyrinthPlace.MAPPING_INTERIOR||p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.KAREN_ROOM||p==LabyrinthPlace.DEVILS_ROCK||p==LabyrinthPlace.ELK_CARCASSES||p==LabyrinthPlace.CHILD_ROOM||p==LabyrinthPlace.MASQUE||p==LabyrinthPlace.BLY_ROUTE||p==LabyrinthPlace.USHER||p==LabyrinthPlace.HOTEL||p==LabyrinthPlace.HOTEL_GROUNDS||p==LabyrinthPlace.ELK_LOT||p==LabyrinthPlace.THREE_FINGERS||p==LabyrinthPlace.MOVIE_NIGHT||p==LabyrinthPlace.COSTUME_NIGHT||p==LabyrinthPlace.WINTER_LAKE||p==LabyrinthPlace.LAKE_HOUSE||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.BORRASCA)return false;return p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL
             ||LiteraryRooms.isLiterary(p)&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.OLD_CABIN;}
     public static AABB area(BlockPos b,LabyrinthPlace p){var r=p.room();return new AABB(Vec3.atLowerCornerOf(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2)),Vec3.atLowerCornerOf(b.offset(r.maxX()+3,r.maxY()+4,8)));}
     private static String key(BlockPos o,LabyrinthPlace p){return o.asLong()+":"+p.id();}
@@ -58,7 +58,7 @@ public final class SceneReview {
     public static BlockPos readingSurface(LabyrinthPlace p){return LiteraryRooms.source(p).offset(2,-LiteraryRooms.source(p).getY(),0);}
     public static VignetteDetailBlock.Kind readingKind(LabyrinthPlace p){return switch(p){
         case COSTUME_NIGHT,MOVIE_NIGHT,WINTER_LAKE,BLY_ROUTE,MAPPING_INTERIOR->MAP_BOARD;
-        case CAMP_BLOOD,DEVILS_ROCK,GHOSTS_SET,ELK_LOT->NOTICE_BOARD;
+        case CAMP_BLOOD,GHOSTS_SET,ELK_LOT->NOTICE_BOARD;
         case USHER,MASQUE,HOLY_RABBIT,CRIMSON_HALL,CONFESSION->VignetteDetailBlock.Kind.BOOK_TRAY;
         case CHILD_ROOM,HILL_NURSERY,ELK_FAN,MINIATURES->FIELD_NOTEBOOK;
         case ELK_CARCASSES->MISSING_NOTICE;
@@ -108,16 +108,6 @@ public final class SceneReview {
             for(int z:new int[]{-8,-13,-18})add(l,b.offset(-10,2,z),VignetteDetailBlock.state(CHILD_WALL,Direction.EAST));
         }
         if(p==LabyrinthPlace.CONFESSION){detail(l,b,1,0,-20,VignetteDetailBlock.Kind.BOOK_TRAY,Direction.NORTH);detail(l,b,-10,1,-22,FIELD_NOTEBOOK,Direction.EAST);}
-        if(p==LabyrinthPlace.DEVILS_ROCK){
-            piece(l,b,14,-30,HouseholdFurnitureBlock.Kind.BLUE_SOFA,null,Direction.WEST);
-            piece(l,b,14,-31,HouseholdFurnitureBlock.Kind.BLUE_SOFA,null,Direction.WEST);
-            piece(l,b,11,-31,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,DIARY_STACK,Direction.WEST);
-            piece(l,b,14,-36,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,SEALED_BOX,Direction.WEST);
-            piece(l,b,14,-6,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,CASSETTE,Direction.WEST);
-            piece(l,b,-13,-24,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,FLASHLIGHT,Direction.EAST);
-            detail(l,b,-12,0,-30,TOY_BLOCKS,Direction.SOUTH);detail(l,b,8,0,-39,NOTICE_BOARD,Direction.SOUTH);
-            detail(l,b,13,0,-22,MAP_BOARD,Direction.WEST);detail(l,b,-10,0,-28,SEALED_BOX,Direction.SOUTH);
-        }
         if(p==LabyrinthPlace.COSTUME_NIGHT){ready&=shore(l,b);BuildBlocks.after(l,()->dressCostume(l,b));}
         if(LiteraryRooms.isLiterary(p)&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.OLD_CABIN){
             var rel=readingSurface(p);if(p.room().isInside(rel))detail(l,b,rel.getX(),rel.getY(),rel.getZ(),readingKind(p),Direction.SOUTH);

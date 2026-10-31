@@ -77,7 +77,7 @@ public final class SceneCraft {
     // The Masque and Bly (0.4.105) are built whole by MasqueSuite and BlyManor, the Wheel, the Winchester house and the Barretts' house (0.4.121) by WheelHouse, WinchesterHouse and BarrettHome, and the house of Usher (0.4.181) by UsherHouse.
     static final Set<LabyrinthPlace> ROOMS = EnumSet.of(LabyrinthPlace.HILL_NURSERY, LabyrinthPlace.MINIATURES,
             LabyrinthPlace.CRIMSON_HALL,
-            LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION, LabyrinthPlace.DEVILS_ROCK);
+            LabyrinthPlace.ELK_FAN, LabyrinthPlace.CONFESSION);
     // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore, the Last Stop (0.4.78) its own road,
     // lot, field and woods, Movie Night (0.4.102) its own banks, woods and piers, Costume Night (0.4.103) its beach, lake and
     // park, and Winter Lake (0.4.104) its frozen lake and snowy banks: nothing generic is planted over them. The barn well's
@@ -225,7 +225,6 @@ public final class SceneCraft {
             case BLY_ROUTE -> new int[][]{{-1, 1, -39, -1, 0, 3}};
             case ELK_FAN -> new int[][]{{-2, 2, -20, -14, 0, 8}, {-1, 1, -13, -1, 0, 3}};
             case CONFESSION -> new int[][]{{0, 2, -23, -16, 0, 3}, {-1, 1, -15, -1, 0, 3}};
-            case DEVILS_ROCK -> new int[][]{{-15, 15, -19, -17, 0, 2}, {-2, 2, -30, -26, 0, 3}, {-3, 1, -22, -18, -1, 2}, {-1, 1, -16, -1, 0, 3}};
             default -> new int[0][];
         };
     }
@@ -238,11 +237,6 @@ public final class SceneCraft {
                 if (Math.abs(k.getX() - x) <= 2 && Math.abs(k.getZ() - z) <= 2 && Math.abs(k.getY() - y) <= 2) return true;
         for (int[] lane : lanes())
             if (x >= lane[0] && x <= lane[1] && z >= lane[2] && z <= lane[3] && y >= lane[4] && y <= lane[5]) return true;
-        if (scene == LabyrinthPlace.DEVILS_ROCK)
-            for (int i = 0; i < 8; i++) {
-                BlockPos page = LiteraryVignettes.diaryPosition(i);
-                if (Math.abs(page.getX() - x) <= 1 && Math.abs(page.getZ() - z) <= 1 && y <= 2) return true;
-            }
         BlockPos at = p(x, y, z);
         for (BlockPos near : BlockPos.betweenClosed(at.offset(-2, -1, -2), at.offset(2, 2, 2))) {
             if (placed.contains(near)) continue;
@@ -628,7 +622,6 @@ public final class SceneCraft {
             case USHER -> { panel(rooms().get(0), Blocks.POLISHED_DEEPSLATE, Blocks.DEEPSLATE_TILES, Blocks.POLISHED_DEEPSLATE); windows(rooms().get(0), 2, 6, false, false, true, true); }
             case CRIMSON_HALL -> { panel(rooms().get(0), Blocks.DARK_OAK_PLANKS, Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.POLISHED_BLACKSTONE); windows(rooms().get(0), 2, 4, false, false, true, true); }
             case BLY_ROUTE -> { panel(rooms().get(0), Blocks.DARK_OAK_PLANKS, Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD); windows(rooms().get(0), 2, 4, false, false, true, true); }
-            case DEVILS_ROCK -> { for (Rect room : rooms()) panel(room, Blocks.BIRCH_PLANKS, Blocks.STRIPPED_BIRCH_WOOD, null); windows(rooms().get(0), 2, 4, false, false, true, true); }
             case ELK_FAN -> windows(rooms().get(0), 2, 4, false, false, true, true);
             default -> { }
         }
@@ -741,7 +734,6 @@ public final class SceneCraft {
             case BLY_ROUTE -> List.of(new Rect(-12, 12, -53, 0, 0, 7));
             case ELK_FAN -> List.of(new Rect(-11, 11, -28, 0, 0, 9));
             case CONFESSION -> List.of(new Rect(-12, 12, -33, 0, 0, 9));
-            case DEVILS_ROCK -> List.of(new Rect(-16, 16, -42, 0, 0, 8), new Rect(-14, -3, -38, -20, 0, 4));
             default -> List.of();
         };
     }
@@ -757,7 +749,6 @@ public final class SceneCraft {
             case CRIMSON_HALL -> List.of(new BlockPos(0, 8, -10));
             case BLY_ROUTE -> List.of(new BlockPos(0, 4, -6), new BlockPos(0, 4, -17), new BlockPos(0, 4, -28));
             case CONFESSION -> List.of(new BlockPos(0, 4, -21));
-            case DEVILS_ROCK -> List.of(new BlockPos(0, 4, -8), new BlockPos(8, 4, -32));
             default -> List.of();
         };
     }
@@ -775,7 +766,6 @@ public final class SceneCraft {
             case BLY_ROUTE -> bly();
             case ELK_FAN -> fan();
             case CONFESSION -> confession();
-            case DEVILS_ROCK -> diary();
             default -> { }
         }
         structure();
@@ -1069,16 +1059,6 @@ public final class SceneCraft {
         lamp(9, 0, -3);
     }
 
-    private void diary() {
-        rug(-12, -7, -36, -31, 0, GRAY);
-        piece(-9, 0, -34, BEDSIDE_TABLE, Direction.SOUTH, SceneDetailBlock.Kind.TABLE_LAMP);
-        shelves(-13, -24, Direction.SOUTH, 3, Direction.WEST, 0, 2);
-        for (int[] corner : new int[][]{{-15, -2}, {15, -2}, {15, -41}, {-1, -41}}) lamp(corner[0], 0, corner[1]);
-        chandelier(-8, -10, 0, Blocks.DARK_OAK_FENCE);
-        chandelier(8, -12, 0, Blocks.DARK_OAK_FENCE);
-        detail(15, 2, -24, SceneDetailBlock.Kind.CLOCK, Direction.WEST);
-        detail(-15, 2, -10, SceneDetailBlock.Kind.FRAME, Direction.EAST);
-    }
 
     // ------------------------------------------------------------------
     // Outdoors.
