@@ -177,6 +177,8 @@ public final class ArchitectureTests {
             BlockPos removed=camp.offset(4,1,-9);h.assertTrue(interior.getBlockState(removed).is(HouseBlocks.SCENE_DETAIL.get()),"the camp satchel stands on the original cache");
             interior.setBlock(removed,Blocks.AIR.defaultBlockState(),3);VignetteArchitecture.decorateOnce(interior,origin,LabyrinthPlace.EXPLORER_CAMP);
             h.assertTrue(interior.getBlockState(removed).isAir(),"a completed decoration checkpoint does not respawn removed props");
+            // 0.4.199: the vignettes a native view is required for, derived from the places; the workflow checks each has an export and a rendered page.
+            Files.writeString(Path.of("../build/architecture-proof/vignettes.txt"),java.util.Arrays.stream(LabyrinthPlace.values()).filter(p->p.isVignette()&&p!=LabyrinthPlace.RED_ROOM).map(LabyrinthPlace::id).collect(java.util.stream.Collectors.joining("\n"))+"\n");
             Files.writeString(Path.of("../build/architecture-proof/manifest.txt"),"Native generated scenes: "+dressed+"\nSupported ambient details: "+props+"\nOld inventories, actors, evidence and story state preserved.\n");
             h.succeed();
         }finally{

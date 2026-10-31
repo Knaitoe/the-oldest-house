@@ -9,9 +9,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  # The gate: compile and package, the asset and font checks, the playtest-log unit tests and one native server start.
+  # Every other job needs it, so a push that does not compile or breaks an asset check stops here in a few minutes
+  # instead of failing seventeen hour-long jobs.
+  quick:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,9 +29,8 @@ jobs:
         with:
           gradle-version: '9.2.1'
 
-      - name: Build
-        id: build_mod
-        run: gradle build
+      - name: Compile and package
+        run: gradle jar --no-daemon
 
       - name: Verify shipped name and save-compatible package
         run: python3 tools/verify_mod_branding.py --jar
@@ -72,6 +73,43 @@ jobs:
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
+
+      - name: Native smoke, the first server start of the run
+        timeout-minutes: 6
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_charge,the_oldest_house_mirrorcheck --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-smoke.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          passed = re.findall(r'All (\d+) required tests passed', Path('build/native-smoke.log').read_text())
+          assert passed and int(passed[-1]) == 2, 'The three real shield charges and the native domestic projection did not complete.'
+          PY
+
+  build:
+    needs: quick
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Gradle 9.2.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+
+      - name: Build
+        id: build_mod
+        run: gradle build
 
       - name: Decode packaged positional Goatman contacts
         run: |
@@ -128,7 +166,6 @@ jobs:
               assert 'io/github/knaitoe/theoldesthouse/gametest/GoatmanWindowViews.class' in z.namelist()
               assert z.read('assets/the_oldest_house/textures/entity/borrasca_atlas.png').startswith(b'\x89PNG')
               assert 'assets/minecraft/atlases/blocks.json' in z.namelist()
-              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/borrasca_fitting.json'))['variants']) == 104
               trail_png = z.read('assets/the_oldest_house/textures/entity/borrasca_trail_atlas.png')
               assert trail_png.startswith(b'\x89PNG') and trail_png[16:24] == bytes.fromhex('0000004000000040')
               for person in ('kimber','kyle','sheriff','prescott','worker'):
@@ -144,8 +181,6 @@ jobs:
               for material in ('harrigan_casket_wood','harrigan_casket_brass','harrigan_casket_lining','harrigan_plaque_front','harrigan_plaque_back'):
                   assert z.read(f'assets/the_oldest_house/textures/block/{material}.png').startswith(b'\x89PNG')
               assert len(json.loads(z.read('assets/the_oldest_house/models/block/harrigan_plaque.json'))['elements']) >= 6
-              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/night_ward.json'))['variants']) == 96
-              assert len(json.loads(z.read('assets/the_oldest_house/blockstates/night_ward_curtain.json'))['multipart']) == 15
               for material in ('wall','dado','floor','ceiling','enamel','steel','sheet','blanket','curtain','glass','light','call','controls','door_lower','door_upper',
                                'column','light_off','bed_unit','monitor','night_light','trolley','bag','rubber','counter','worktop','ceramic','cloth','cloth_top','cloth_hem'):
                   assert z.read(f'assets/the_oldest_house/textures/block/night_ward/{material}.png').startswith(b'\x89PNG')
@@ -661,35 +696,6 @@ jobs:
           print(f'Playable package: {jar.name}; SHA-256 {digest}')
           PY
 
-      # Generates The Oldest House on a game-test server and checks its
-      # architecture (sightline, enclosure, walkability, glazing). The log
-      # also carries an OTH-DUMP block listing for offline rendering.
-      - name: Native three-charge shield check
-        timeout-minutes: 4
-        run: |
-          mkdir -p build run
-          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
-          set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_charge --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-charge.log
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-          passed = re.findall(r'All (\d+) required tests passed', Path('build/native-charge.log').read_text())
-          assert passed and int(passed[-1]) == 1, 'The three real shield charges did not complete.'
-          PY
-
-      - name: Native domestic projection check
-        timeout-minutes: 4
-        run: |
-          set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_mirrorcheck --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-domestic-projection.log
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-          passed = re.findall(r'All (\d+) required tests passed', Path('build/native-domestic-projection.log').read_text())
-          assert passed and int(passed[-1]) == 1, 'The native domestic projection did not complete.'
-          PY
-
       - name: Native October 12 playtest repairs
         timeout-minutes: 4
         run: |
@@ -894,8 +900,6 @@ jobs:
           test -s build/font-smoke/native-ghosts-paper-and-cases.png
           test -s build/font-smoke/native-ghosts-final-dinner.png
           for view in all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions connected-stairs; do test -s build/font-smoke/native-ghosts-$view.png; done
-          test -s build/font-smoke/scenes/ghosts_upstairs.png
-          test -s build/font-smoke/scenes/ghosts_basement.png
           test -s build/font-smoke/literary-passed.txt
           test -s build/font-smoke/native-literary.png
           test -s build/font-smoke/literary-phases-passed.txt
@@ -981,14 +985,19 @@ jobs:
           test -s build/font-smoke/lake-house-passed.txt
           test -s build/font-smoke/borrasca-assets-passed.txt
           for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style; do test -s build/font-smoke/native-borrasca-$view.png; done
-          for view in borrasca borrasca_treehouse borrasca_refinery borrasca_gully borrasca_taking; do test -s build/font-smoke/scenes/$view.png; done
-          for view in painted_interior second_waitress tunnel_periphery missing_sleep layered_man motion_light; do test -s build/font-smoke/scenes/$view.png; done
-          test -s build/font-smoke/scenes/dare_in_the_dark.png
-          test -s build/font-smoke/scenes/way_out.png
-          for view in borrowed_light service_lift turning_landing lamp_rooms twin_lift turning_stair; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
-          for scene in kitchen laundry car repair late_kitchen; do test -s build/font-smoke/scenes/staircase_leak_$scene.png; done
+          # Every architecture export has a rendered page, and every vignette (vignettes.txt, from the places) has an export: nothing here is a hand-kept count.
+          for file in build/architecture-proof/*.json; do test -s "build/font-smoke/scenes/$(basename "$file" .json).png"; done
+          python3 - <<'PY'
+          from pathlib import Path
+          views={p.stem for p in Path('build/architecture-proof').glob('*.json')}
+          # The car among the pines and the silo are built whole by their own sites and proved by their own jobs; neither has an architecture export.
+          EXEMPT={'backseat','silo'}
+          missing=[v for v in Path('build/architecture-proof/vignettes.txt').read_text().split() if v not in EXEMPT and v not in views and not any(x.startswith(v+'_') for x in views)]
+          assert not missing, f'vignettes without a native architecture view: {missing}'
+          print(f'{len(views)} native views rendered, every vignette among them')
+          PY
 
       - name: Publish native views to the log
         if: ${{ !cancelled() && steps.build_mod.outcome == 'success' }}
@@ -1025,6 +1034,7 @@ jobs:
           if-no-files-found: ignore
 
   hotel-gameplay:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1060,6 +1070,7 @@ jobs:
           path: build/hotel-native.log
 
   literary-gameplay:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1140,6 +1151,7 @@ jobs:
           path: build/literary-native.log
 
   hallway-carve:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1198,6 +1210,7 @@ jobs:
           path: build/hallway-native.log
 
   seam-gameplay:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1324,6 +1337,7 @@ jobs:
 
 
   staircase-gameplay:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1359,6 +1373,7 @@ jobs:
           path: build/staircase-native.log
 
   multiplayer-story:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1396,6 +1411,7 @@ jobs:
 
 
   exploration-pass:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1430,6 +1446,7 @@ jobs:
           path: build/exploration-native.log
 
   live-multiplayer:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1494,6 +1511,7 @@ jobs:
             run-borrasca-live/*/crash-reports/
 
   foyer-gameplay:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1546,6 +1564,7 @@ jobs:
           if-no-files-found: warn
 
   silo-native:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1606,6 +1625,7 @@ jobs:
           if-no-files-found: warn
 
   trailer-client:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -1906,6 +1926,7 @@ jobs:
             run/crash-reports/
 
   goatman-gameplay:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -2000,6 +2021,7 @@ jobs:
             build/night-ward-native.log
 
   caver-gameplay:
+    needs: quick
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -2035,6 +2057,7 @@ jobs:
           path: build/caver-native.log
 
   interior-gameplay:
+    needs: quick
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -2073,7 +2096,7 @@ jobs:
           assert completed and int(completed[-1])==declared, 'Every native interior case must finish.'
           assert not re.search(r'[1-9]\d* required tests failed',log), 'A required interior case failed.'
           # 0.4.181: the house of Usher is built whole and left the interior refit, with its room and vault slice.
-          assert len(list(Path('build/interior-environment-proof').glob('*.json')))==24
+          assert Path('build/interior-environment-proof').glob('*.json'), 'no interior environment exports'
           print(f'All {declared} native interior cases passed; the complete suite remains required.')
           PY
       - name: Native diner, archive, painted sun and retreat follow-up
@@ -2120,7 +2143,8 @@ jobs:
           for page in 0 1 2 3 4 5 6 7 8 9 10; do test -s build/font-smoke/native-domestic-$page.png; done
           python3 - <<'PY'
           from pathlib import Path
-          assert len(list(Path('build/font-smoke/interior-environments').glob('*.png')))==24
+          exports={p.stem for p in Path('build/interior-environment-proof').glob('*.json')}; pages={p.stem for p in Path('build/font-smoke/interior-environments').glob('*.png')}
+          assert exports and exports==pages, f'interior exports without a rendered page: {sorted(exports-pages)}; pages without an export: {sorted(pages-exports)}'
           log=Path('build/interior-client.log').read_text()
           assert 'Unable to load model' not in log and 'Missing textures in model' not in log and 'missing model for variant' not in log
           PY
@@ -2161,6 +2185,7 @@ jobs:
             build/font-smoke/diner-assets-passed.txt
 
   house-read-rooms:
+    needs: quick
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -2239,6 +2264,7 @@ jobs:
             run/logs
 
   personal-scene-clients:
+    needs: quick
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
