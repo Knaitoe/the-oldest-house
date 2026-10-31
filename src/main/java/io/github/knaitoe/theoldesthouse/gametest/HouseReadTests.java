@@ -103,12 +103,18 @@ public final class HouseReadTests {
               h.assertTrue(sheet.read().getInt("Body")==2&&drawnBody.presentation()==2&&drawnBody.face()==2&&drawnBody.tone()==HouseReadKitchen.rgb(9),"again, a dress: the House's body is the one drawn, with the face drawn: "+drawnBody);
               draw(p,f.in,b[0],7,1);h.assertTrue(sheet.read().getInt("Body")==2&&sheet.read().getInt("Mood")==2,"the pencil on the hair only goes over the lines");
               var worn=HouseBodies.worn(p);h.assertTrue(worn!=null&&worn.presentation()==2&&worn.face()==2&&worn.tone()==HouseReadKitchen.rgb(9),"the reader wears the drawn tone, body and face on the House's body: "+worn);
-              // Up on the fridge: the picture leaves the table, the crayon goes back, the doors open.
+              // 0.4.201: the pencil goes back to the margin; the fridge takes the picture only from the reader's hand.
+              draw(p,f.in,b[0],14,4);h.assertTrue(HouseReadKitchen.held(p)<0&&!HouseReadKitchen.carrying(p),"the pencil goes back to the margin");
+              stand(p,f.in,b[0],3.5,0,-8.5);click(p,b[0].offset(HouseReadKitchen.FRIDGE_AT));h.assertTrue(!visit(p,K).getBoolean("Hung"),"the fridge waits for the picture to be brought over");
+              draw(p,f.in,b[0],7,7);h.assertTrue(HouseReadKitchen.carrying(p)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED),"an empty hand picks the finished picture up off the table");
+              draw(p,f.in,b[0],7,7);h.assertTrue(!HouseReadKitchen.carrying(p)&&!f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED),"and puts it back down on the table");
+              draw(p,f.in,b[0],7,7);
+              // Up on the fridge: the picture leaves the hand, the doors open.
               stand(p,f.in,b[0],3.5,0,-8.5);click(p,b[0].offset(HouseReadKitchen.FRIDGE_AT));
               var top=(HouseReadPropBlock.Fitting)f.in.getBlockEntity(b[0].offset(HouseReadKitchen.FRIDGE_AT.above()));
               h.assertTrue(visit(p,K).getBoolean("Hung")&&f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.FRIDGE_AT.above())).getValue(HouseReadPropBlock.TURNED)&&top.read().getInt("Face")==9,"the picture goes up on the fridge door and leaves the table");
               h.assertTrue(HouseReadStory.ready(p,K)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.EXIT)).getValue(DoorBlock.OPEN),"with the picture up, the hall door past the fridge opens");
-              h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem()),"the crayon goes back into the tin");
+              h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem()),"the picture leaves the hand and the reader's own item comes back");
               var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("kitchen");h.assertTrue(HouseReadProse.kitchen(seen).equals("drew yourself sad, with a tear, in a dress, at the kitchen table, face and hands alike, and put the picture up on the fridge")&&StaircaseAccount.read(f.data(),p.getUUID()).drewHands()&&StaircaseAccount.read(f.data(),p.getUUID()).drawn().equals("sad, with a tear, in a dress"),"the account and the book recite the act and what the pencil drew, never a colour: "+HouseReadProse.kitchen(seen));
               h.assertTrue(!sheet.read().getBoolean("PencilTaken"),"the pencil goes back with the picture up");
               HouseReadExport.save(f.in,b[0],K,"kitchen_picture_up");

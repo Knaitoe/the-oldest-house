@@ -211,7 +211,19 @@ def sprites():
     q.point((14, 1), fill=(40, 38, 36, 255))
     for i in range(3, 10, 3):
         q.point((2 + i + 1, 13 - i), fill=(224, 176, 52, 255))
-    return {'crayon': body, 'crayon_wrapper': wrapper, 'pencil': pencil}
+    # 0.4.201 (owner: "for players to pick up the completed picture ... and manually post it to the fridge"): the picture in
+    # the hand, a sheet of drawing paper with a figure on it, coloured in.
+    picture = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    r = ImageDraw.Draw(picture)
+    r.rectangle((2, 1, 13, 14), fill=(244, 240, 228, 255))
+    r.line((13, 2, 13, 14), fill=(214, 206, 188, 255)); r.line((3, 14, 13, 14), fill=(214, 206, 188, 255))
+    r.rectangle((6, 3, 9, 6), fill=(214, 168, 130, 255))       # the face
+    r.line((6, 3, 9, 3), fill=(110, 76, 50, 255))               # the hair
+    r.point((7, 5), fill=(60, 50, 44, 255)); r.point((8, 5), fill=(60, 50, 44, 255))
+    r.rectangle((5, 7, 10, 10), fill=(86, 130, 196, 255))      # the shirt
+    r.line((6, 11, 6, 12), fill=(60, 60, 70, 255)); r.line((9, 11, 9, 12), fill=(60, 60, 70, 255))
+    r.point((11, 2), fill=(240, 200, 60, 255)); r.point((12, 3), fill=(240, 200, 60, 255))  # a sun in the corner
+    return {'crayon': body, 'crayon_wrapper': wrapper, 'pencil': pencil, 'picture': picture}
 
 
 def write(out, textures):
@@ -226,7 +238,8 @@ def write(out, textures):
         out['textures/item/read_' + name + '.png'] = buf.getvalue()
     # 0.4.196: the kitchen's pencil is a crayon stack with custom model data 1, drawn as a pencil.
     out['models/item/read_crayon.json'] = (json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{NS}:item/read_crayon', 'layer1': f'{NS}:item/read_crayon_wrapper'},
-        'overrides': [{'predicate': {'custom_model_data': 1}, 'model': f'{NS}:item/read_pencil'}]}, indent=2) + '\n').encode()
+        'overrides': [{'predicate': {'custom_model_data': 1}, 'model': f'{NS}:item/read_pencil'}, {'predicate': {'custom_model_data': 2}, 'model': f'{NS}:item/read_picture'}]}, indent=2) + '\n').encode()
+    out['models/item/read_picture.json'] = (json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{NS}:item/read_picture'}}, indent=2) + '\n').encode()
     out['models/item/read_pencil.json'] = (json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{NS}:item/read_pencil'}}, indent=2) + '\n').encode()
     # The window's four o'clock sky: gold low down, paler above, a few soft clouds.
     im = Image.new('RGBA', (16, 16))

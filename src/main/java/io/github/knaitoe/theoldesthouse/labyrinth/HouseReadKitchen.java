@@ -191,7 +191,7 @@ public final class HouseReadKitchen {
     public static final String CLOCK_AFTER_FOUR="after_four";
     static boolean kitchenPart(HouseReadPropBlock.Part part){return part==TIN_LEFT||part==TIN_RIGHT||part==SHEET||part==FRIDGE||part==FRIDGE_TOP||part==RADIO;}
     /** The crayon this reader is holding ({@link #PENCIL} for the pencil), or -1. */
-    public static int held(ServerPlayer p){var hand=p.getMainHandItem();if(!hand.is(HouseReadRegistry.CRAYON.get())||!HouseReadSites.loan(hand,p.getUUID()))return -1;var data=hand.get(DataComponents.CUSTOM_DATA);return data==null?-1:data.copyTag().getInt("Crayon");}
+    public static int held(ServerPlayer p){var hand=p.getMainHandItem();if(!hand.is(HouseReadRegistry.CRAYON.get())||!HouseReadSites.loan(hand,p.getUUID()))return -1;var data=hand.get(DataComponents.CUSTOM_DATA);return data==null||!data.copyTag().contains("Crayon")?-1:data.copyTag().getInt("Crayon");}
     /** The kitchen's fittings, and its sink, plate and clock. False for anything that is not the kitchen's to answer. */
     public static boolean use(ServerPlayer p,BlockPos at,BlockState state,BlockHitResult hit){
         var part=state.getValue(HouseReadPropBlock.PART);boolean own=HouseReadSites.inside(p)==KITCHEN;
@@ -215,6 +215,7 @@ public final class HouseReadKitchen {
         var t=visit(p);if(t.getBoolean("Hung")){p.displayClientMessage(Component.literal("The picture's done."),true);return;}
         int colour=fitting.read().getIntArray("Colours").length>slot?fitting.read().getIntArray("Colours")[slot]:-1;if(colour<0)return;
         // What the reader holds goes back first; picking the same crayon again just puts it back.
+        if(carrying(p)){lift(p,b,false);t=visit(p);}
         boolean same=t.contains("HeldAt")&&t.getLong("HeldAt")==at.asLong()&&t.getInt("HeldSlot")==slot;
         putBack(p,b);if(same){HouseReadSites.act(p,KITCHEN,"put the crayon back in the tin");return;}
         var crayon=new ItemStack(HouseReadRegistry.CRAYON.get());crayon.set(DataComponents.DYED_COLOR,new DyedItemColor(rgb(colour),false));CustomData.update(DataComponents.CUSTOM_DATA,crayon,c->c.putInt("Crayon",colour));
@@ -224,6 +225,21 @@ public final class HouseReadKitchen {
         if(!seen(p).contains("FirstCrayon"))HouseRead.see(p,KITCHEN,s->{s.putInt("FirstCrayon",colour);s.putInt("FirstSlot",slot+(at.equals(b.offset(TIN_RIGHT_AT))?10:0));});
         HouseReadSites.act(p,KITCHEN,"took a crayon from the tin");
     }
+    /** 0.4.201: the finished picture in the reader's hand, carried from the table to the fridge. */
+    public static boolean carrying(ServerPlayer p){for(int i=0;i<p.getInventory().getContainerSize();i++)if(isPicture(p,p.getInventory().getItem(i)))return true;return isPicture(p,p.containerMenu.getCarried());}
+    private static boolean isPicture(ServerPlayer p,ItemStack s){if(!s.is(HouseReadRegistry.CRAYON.get())||!HouseReadSites.loan(s,p.getUUID()))return false;var data=s.get(DataComponents.CUSTOM_DATA);return data!=null&&data.copyTag().getBoolean("Picture");}
+    private static ItemStack picture(){
+        var stack=new ItemStack(HouseReadRegistry.CRAYON.get());stack.set(DataComponents.CUSTOM_NAME,Component.literal("Your picture").withStyle(s->s.withItalic(false)));
+        stack.set(DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(2));CustomData.update(DataComponents.CUSTOM_DATA,stack,c->c.putBoolean("Picture",true));return stack;
+    }
+    /** The sheet taken up off the table, or laid back down on it. */
+    private static void lift(ServerPlayer p,BlockPos b,boolean up){
+        var at=b.offset(SHEET_AT);var state=p.serverLevel().getBlockState(at);
+        if(state.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(at,state.setValue(HouseReadPropBlock.TURNED,up),Block.UPDATE_CLIENTS);
+        var t=visit(p);if(up){t.putBoolean("Carrying",true);save(p,t);HouseReadMoments.borrow(p,KITCHEN,picture(),false);}
+        else{t.remove("Carrying");save(p,t);HouseReadMoments.giveBack(p,KITCHEN,false);}
+        HouseReadSites.sound(p,up?SoundEvents.ITEM_PICKUP:SoundEvents.BOOK_PUT,at,.3f);
+    }
     /** The crayon in hand back into its place in the tin. */
     static void putBack(ServerPlayer p,BlockPos b){
         var t=visit(p);if(!t.contains("HeldAt"))return;var at=BlockPos.of(t.getLong("HeldAt"));
@@ -231,7 +247,9 @@ public final class HouseReadKitchen {
         t.remove("HeldAt");t.remove("HeldSlot");save(p,t);HouseReadMoments.giveBack(p,KITCHEN,false);
     }
     private static void sheet(ServerPlayer p,BlockPos b,BlockPos at,BlockHitResult hit){
-        var state=p.serverLevel().getBlockState(at);if(state.getValue(HouseReadPropBlock.TURNED))return;var fitting=fitting(p,at);if(fitting==null)return;
+        var state=p.serverLevel().getBlockState(at);
+        if(state.getValue(HouseReadPropBlock.TURNED)){if(carrying(p)&&!visit(p).getBoolean("Hung")){lift(p,b,false);p.displayClientMessage(Component.literal("You put your picture back down."),true);HouseReadSites.act(p,KITCHEN,"put the picture back down on the table");}return;}
+        var fitting=fitting(p,at);if(fitting==null)return;
         int colour=held(p);var read=fitting.read();
         // 0.4.196: the pencil down the margin. Taking it puts back what is in hand; the pencil again puts it back.
         if(pencilAt(at,hit.getLocation())&&(colour==PENCIL||!read.getBoolean("PencilTaken"))){
@@ -241,7 +259,9 @@ public final class HouseReadKitchen {
             t=visit(p);t.putLong("HeldAt",at.asLong());t.putInt("HeldSlot",PENCIL_SLOT);save(p,t);read=fitting.read();read.putBoolean("PencilTaken",true);fitting.setRead(read);
             HouseReadSites.sound(p,SoundEvents.ITEM_PICKUP,at,.25f);HouseReadSites.act(p,KITCHEN,"took the pencil");return;
         }
-        if(colour<0){p.displayClientMessage(Component.literal(read.getInt("Mood")<=0?"A drawing of you, in pencil. It doesn't have a face yet.":coloured(read)?"Your picture. It isn't up on the fridge yet.":"A drawing of you, in pencil, waiting to be coloured in."),true);HouseReadSites.act(p,KITCHEN,"looked at the drawing");return;}
+        // 0.4.201: an empty hand on a finished picture picks it up, to be carried to the fridge.
+        if(colour<0&&coloured(read)){lift(p,b,true);p.displayClientMessage(Component.literal("You pick up your picture."),true);HouseReadSites.act(p,KITCHEN,"picked up the picture");return;}
+        if(colour<0){p.displayClientMessage(Component.literal(read.getInt("Mood")<=0?"A drawing of you, in pencil. It doesn't have a face yet.":"A drawing of you, in pencil, waiting to be coloured in."),true);HouseReadSites.act(p,KITCHEN,"looked at the drawing");return;}
         int body=read.getInt("Body");var region=regionAt(at,hit.getLocation(),body);
         if(colour==PENCIL){pencil(p,at,hit,fitting,region);return;}
         if(region==null){p.displayClientMessage(Component.literal("You draw a line in the margin."),true);return;}
@@ -303,7 +323,8 @@ public final class HouseReadKitchen {
         var t=visit(p);if(t.getBoolean("Hung")){p.displayClientMessage(Component.literal("Your picture, under a magnet."),true);return;}
         var sheetAt=b.offset(SHEET_AT);var sheet=fitting(p,sheetAt);var read=sheet==null?new CompoundTag():sheet.read();
         if(!coloured(read)){p.displayClientMessage(Component.literal(t.getBoolean("FridgeSeen")?"There's room on the door for one more.":"Magnets, and old drawings: a house, a dog, a sun with a face, a rainbow."),true);t.putBoolean("FridgeSeen",true);save(p,t);HouseReadSites.act(p,KITCHEN,"looked at the drawings on the fridge");return;}
-        putBack(p,b);
+        if(!carrying(p)){p.displayClientMessage(Component.literal("There's room on the door for one more. Your picture's still on the table."),true);HouseReadSites.act(p,KITCHEN,"looked at the room on the fridge door");return;}
+        var carried=visit(p);carried.remove("Carrying");save(p,carried);HouseReadMoments.giveBack(p,KITCHEN,false);
         var top=b.offset(FRIDGE_AT.above());var door=fitting(p,top);if(door!=null)door.setRead(read);var topState=p.serverLevel().getBlockState(top);if(topState.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(top,topState.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);
         var sheetState=p.serverLevel().getBlockState(sheetAt);if(sheetState.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(sheetAt,sheetState.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);
         t=visit(p);t.putBoolean("Hung",true);t.putInt("HungAt",t.getInt("Age"));t.putBoolean("NoteArmed",true);save(p,t);
@@ -318,6 +339,7 @@ public final class HouseReadKitchen {
     private static void voice(ServerPlayer p,String words){p.displayClientMessage(Component.literal("“"+words+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),false);}
     /** The room's clock: its sounds, the voice from the next room for a reader who has not drawn or not put it up, and the way on. */
     static void tick(ServerPlayer p,BlockPos b,CompoundTag t,int age){
+        if(t.getBoolean("Carrying")&&!t.getBoolean("Hung")&&!carrying(p)){var at=b.offset(SHEET_AT);var s=p.serverLevel().getBlockState(at);if(s.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(at,s.setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);t.remove("Carrying");}
         if(age%160==1)HouseReadSites.sound(p,HouseReadRegistry.RADIATOR.get(),b.offset(FRIDGE_AT),.22f);
         if(age%20==1)HouseReadSites.sound(p,HouseReadRegistry.CLOCK.get(),b.offset(CLOCK_AT),.18f);
         var radio=p.serverLevel().getBlockState(b.offset(RADIO_AT));if(age%240==40&&radio.is(HouseReadRegistry.FITTING.get())&&!radio.getValue(HouseReadPropBlock.TURNED))HouseReadSites.sound(p,HouseReadRegistry.NEWS.get(),b.offset(RADIO_AT),.25f);
