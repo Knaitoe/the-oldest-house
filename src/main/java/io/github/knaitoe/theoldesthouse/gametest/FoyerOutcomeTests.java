@@ -46,13 +46,43 @@ public final class FoyerOutcomeTests {
     @GameTest(template="empty",batch="foyer136_return",timeoutTicks=1200)
     public static void actualServiceDoorAndConfirmedHouseLandingResolveWhileOrdinaryRetreatDoesNot(GameTestHelper h){
         var f=fixture(h);ServerPlayer[] p={null},peer={null};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native foyer routes are resident")).thenExecute(()->{p[0]=player(h,f,"foyer_service_reader");peer[0]=player(h,f,"foyer_early_retreat");ordinaryExit(f,peer[0]);})
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native foyer routes are resident")).thenExecute(()->{p[0]=player(h,f,"foyer_service_reader");peer[0]=player(h,f,"foyer_early_retreat");ordinaryExit(f,peer[0]);
+            // 0.4.201: beside the service door, before anything has come to the glass, it says what the door is; leaving by it
+            // then is allowed, and says why it does not count.
+            f.at(p[0],P,7.5,0,-4.5);tick(f,p[0]);h.assertTrue(f.own(p[0],P).getInt("FoyerExitHint201")==1,"beside the service door the reader is told what it is before anything has come");
+            FoyerEncounter.returned(p[0],f.data().door(P.id()+"/service_exit"));h.assertTrue(f.own(p[0],P).getBoolean("FoyerEarlyService201")&&!f.own(p[0],P).getBoolean("Completed"),"leaving by it too early is explained and resolves nothing");})
         .thenWaitUntil(()->h.assertTrue(f.data().returnDepth(peer[0].getUUID())==0&&!LabyrinthDoors.isBusy(peer[0]),"ordinary unfinished retreat lands at its actual House source"))
         .thenExecute(()->h.assertTrue(!WitnessAccount.has(f.data(),peer[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT),"an early ordinary retreat is not the successful standoff"))
         .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getBoolean("FoyerThreat136"),"the reader actually experiences the first windless standoff"))
-        .thenExecute(()->{var b=f.base(P);f.at(p[0],P,3.2,0,-4.5);tick(f,p[0]);use(p[0],b.offset(UncannyRooms.HINGED));p[0].move(net.minecraft.world.entity.MoverType.SELF,new Vec3(3.7,0,0));LabyrinthDoors.tickPlayer(p[0],f.origin);use(p[0],b.offset(FoyerEncounter.EXIT));p[0].move(net.minecraft.world.entity.MoverType.SELF,new Vec3(2.6,0,0));h.assertTrue(!WitnessAccount.has(f.data(),p[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT),"touching and crossing the exit confer nothing before the actual House landing");export(f,"foyer_service_exit",3,10,-9,-4,-1,4,-45);LabyrinthDoors.tickPlayer(p[0],f.origin);})
+        .thenExecute(()->{var b=f.base(P);f.at(p[0],P,7.5,0,-4.5);tick(f,p[0]);h.assertTrue(f.own(p[0],P).getInt("FoyerExitHint201")==2,"once it has come, the service door says that going out this way leaves it outside");
+            f.at(p[0],P,3.2,0,-4.5);tick(f,p[0]);use(p[0],b.offset(UncannyRooms.HINGED));p[0].move(net.minecraft.world.entity.MoverType.SELF,new Vec3(3.7,0,0));LabyrinthDoors.tickPlayer(p[0],f.origin);use(p[0],b.offset(FoyerEncounter.EXIT));p[0].move(net.minecraft.world.entity.MoverType.SELF,new Vec3(2.6,0,0));h.assertTrue(!WitnessAccount.has(f.data(),p[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT),"touching and crossing the exit confer nothing before the actual House landing");export(f,"foyer_service_exit",3,10,-9,-4,-1,4,-45);LabyrinthDoors.tickPlayer(p[0],f.origin);})
         .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getBoolean("FoyerServiceReturned136")&&!LabyrinthDoors.isBusy(p[0]),"the real service exit confirms its native House landing"))
         .thenExecute(()->{h.assertTrue(WitnessAccount.has(f.data(),p[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT)&&f.own(p[0],P).getBoolean("Completed")&&!f.own(p[0],P).getBoolean("Read_Source")&&f.data().returnDepth(p[0].getUUID())==0,"the actual escape alone grants the personal account without a paper checklist");h.assertTrue(!WitnessAccount.has(f.data(),peer[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT)&&p[0].getHealth()==20,"a peer and a health payment cannot substitute for this reader's successful return");}).thenSucceed();
+    }
+
+    /** A lull: the pendulum long settled and no gust due, so the sensor is timed out and the floodlight off. */
+    private static void lull(LiteraryTests.Fixture f){
+        var l=f.level(P);var pendulum=FoyerMotion.fitting(l,f.base(P));var motion=pendulum.swing.save();motion.putBoolean("Initialized",true);
+        motion.putLong("Epoch",l.getGameTime()-2000);motion.putLong("LastSensed",l.getGameTime()-1000);motion.putLong("WeatherEpoch136",l.getGameTime()-350);pendulum.swing.load(motion);
+    }
+    @AfterBatch(batch="foyer201_glass") public static void glassDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="foyer201_glass",timeoutTicks=600)
+    public static void eachDarknessBringsItCloserAndAtTheGlassTheLightAloneKeepsItOut(GameTestHelper h){
+        var f=fixture(h);ServerPlayer[] p={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the foyer and its yard are resident")).thenExecute(()->{
+            p[0]=player(h,f,"foyer_glass_watch");var b=f.base(P);var glass=b.offset(FoyerEncounter.GLASS_DOOR);f.at(p[0],P,2.5,0,-11.5);
+            // It has stood still twice already and been seen; the next darkness puts it against the glass.
+            var own=f.own(p[0],P);own.putInt("FoyerClock136",200);own.putInt("FoyerStill131",FoyerEncounter.GLASS_STILL-1);own.putBoolean("FoyerThreat136",true);own.putBoolean("FoyerDarkLast136",false);LiteraryVignettes.save(f.data(),p[0].getUUID(),P,own);
+            lull(f);for(int i=0;i<1+(40+FoyerEncounter.HAND_WARNING)/5;i++)tick(f,p[0]);
+            h.assertTrue(f.own(p[0],P).getInt("FoyerStill131")==FoyerEncounter.GLASS_STILL&&f.own(p[0],P).getBoolean("FoyerHand201")&&!f.own(p[0],P).getBoolean("FoyerAdmitted136"),"the third darkness puts it against the glass, its hand flat on it, and it is not in yet");
+            h.assertTrue(FoyerMotion.pull(p[0],b,f.own(p[0],P)),"the chain is in reach");
+            for(int i=0;i<40;i++)tick(f,p[0]);
+            h.assertTrue(!f.own(p[0],P).getBoolean("FoyerAdmitted136")&&!f.in.getBlockState(glass).getValue(DoorBlock.OPEN),"while the light is on it can only wait outside, however long");
+            lull(f);for(int i=0;i<1+(FoyerEncounter.GLASS_HOLD+40)/5-1;i++)tick(f,p[0]);
+            h.assertTrue(!f.own(p[0],P).getBoolean("FoyerAdmitted136"),"a new darkness gives it the whole hold again");
+            tick(f,p[0]);
+            h.assertTrue(f.own(p[0],P).getBoolean("FoyerAdmitted136")&&f.own(p[0],P).getString("FoyerLastFailure136").equals("left_it_against_the_glass_in_the_dark")&&f.in.getBlockState(glass).getValue(DoorBlock.OPEN)&&!WitnessAccount.has(f.data(),p[0].getUUID(),WitnessAccount.Story.MOTION_LIGHT),"left in the dark against the glass, it opens the door itself, and the room is lost");
+        }).thenSucceed();
     }
 
     private static void export(LiteraryTests.Fixture f,String name,int x0,int x1,int z0,int z1,int y0,int y1,float yaw){

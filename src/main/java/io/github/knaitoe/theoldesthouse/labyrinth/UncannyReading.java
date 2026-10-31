@@ -66,7 +66,7 @@ public final class UncannyReading {
             };
             case MOTION_LIGHT->switch(index){
                 case 0->"Do not touch the brass button. The motion light stays on in the wind. When it goes out, watch the glass.";
-                case 1->"Someone is holding perfectly still outside. Don't back up without looking behind you.";
+                case 1->"Every time the light goes out, it stands closer to the glass. Keep the light swinging, and leave by the door that has hinges.";
                 case 2->"There are no hinge pins in that frame. The hallway behind it doesn't belong to this street.";
                 default->"The service door had hinges. Its frame did not move when the light went out.";
             };
