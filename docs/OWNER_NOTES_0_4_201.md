@@ -260,6 +260,51 @@ whole order (23 pass).
 - The way out's case checks no barrier anywhere a reader can walk, turf and hills past the walk, the barn's walls and roof
   over the copied hall, and where walking out begins the end.
 
+## The Winchester house, rebuilt
+
+> "how might you consider "improving" the winchester vignette?" / "I agree with all of your suggested changes to the winchester
+> too, if you'd like to start with those."
+
+The six agreed changes: the carpenters build while the reader isn't looking; the séance room comes first; fewer, stranger
+stairs; names that belong to the reader; a lose state; period architecture. `WinchesterHouse` builds the whole house inside
+the old shell (`LiteraryRooms.winchester` lays only the walls) and runs the night.
+
+- **The house.** A warren on two floors and mismatched levels. Downstairs: the entrance hall with the thirteen-hour clock and
+  the construction ledger; a parlour a step up, whose chimney rises from the hearth and stops short of the ceiling, with a
+  spider-web window (a new `winchester_fitting` kind, drawn by `tools/draw_winchester.py`) and a leaded window onto
+  wallpaper; a dining room with a door in its far wall onto wallpaper; a spine of doors, one onto wall, one with the brass
+  13; a narrow passage to the Blue Room, and the sewing room and storeroom beside it, open above. At the back, the
+  carpenters' court stands open to a glazed roof over hay. Upstairs: the room above the stair, the room with its floor
+  taken up, and the last room, with the upper ledger on its desk.
+- **The séance first.** The Blue Room has thirteen robes on their hooks and the table with its bell. The bell will not
+  sound for a reader in their own clothes. Robed, it rings: the hall clock begins to strike thirteen, one stroke every seven
+  seconds, for everyone in the house not yet done with it, and the ringer is given tonight's plan (S. W.'s hand): the door
+  with the brass thirteen, the stair that goes into the ceiling, the room with its floor up ("cross on the glass"), the door
+  that opens on nothing, and the rule, "Do not look at the work."
+- **The carpenters build where nobody is looking.** Each piece of the way up goes up only when a reader in the night needs it
+  and no reader or camera has any part of it in view (`LiteraryVignettes.watched`), and the hammering comes from where they
+  will work next. In order: the wall behind the brass 13 comes down; the stair's last steps, which run into the ceiling,
+  have a hatch cut above them; the door upstairs opens on nothing over the court until boards are laid out from it, in three
+  stretches, to the last room's door. Each piece nobody needs any more comes down again unseen, with nobody on it: the
+  doorway behind the 13 is plastered over once everyone is past it, the hatch shuts once nobody is on the stair, and the
+  boards behind a reader are taken up while they look ahead. A reader who falls into the court lands on hay and is let
+  back in the same way.
+- **Fewer, stranger stairs.** Seven one-wide flights double back inside one stairwell, each half a block above the last at
+  its turn (the real switchback staircase climbs forty-four steps to rise about nine feet); the last climbs into the ceiling.
+- **The thirteenth stroke.** A reader not yet in the last room when the thirteenth stroke has sounded hears hammering close
+  all round, the screen goes dark, and they wake by the front door. They can ring the bell again.
+- **The ledger's names.** On reaching the last room, the upper ledger gives a room to every kind of creature the reader has
+  killed in their own world, from the game's own kill statistics, most first ("The parlour: forty-one zombies. The dining
+  room: two skeletons."), and its last line is the reader's name, with no room yet; or, for a reader they walled in, beside
+  the room they built. The account, the Witness line ("The upper ledger kept a room for everything I had killed. The last
+  name was mine."), the construction ledger and a new House of Leaves fact (rooms in the ledger) say so.
+- **Multiplayer.** The house is now a copyable private scene (`SceneInstances`): unrelated readers each get their own
+  house, and a party that comes in together shares one night. The bell starts the strokes for everyone inside (spectators only
+  watch); the carpenters wait for anyone's eyes, and close nothing on anyone.
+- The ending stand moved to the last room's desk and the onward door to its back wall. The animation case covers the house,
+  the robe and the bell, each piece built only unseen and closed behind, the last room's ledger and account, and the walled
+  reader; the route case walks every tread, turn, step, joist, window and board with a real player body.
+
 ## Five vignette proposals
 
 The owner sent five vignette specifications (the Left-Right Game, the Dead Air Broadcast, the God of the Pitt, the Polaroid

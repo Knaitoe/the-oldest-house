@@ -350,41 +350,58 @@ public final class VignetteAnimationTests {
     @AfterBatch(batch="literary_wheel_sequence") public static void wheelDone(ServerLevel l){close();}
 
     @GameTest(template="empty",batch="literary_winchester_house",timeoutTicks=200)
-    public static void theWinchesterIsNeverFinishedAndItsCarpentersRebuildOnlyAnEmptyUnwatchedHouse(GameTestHelper h){
+    public static void theWinchesterBuildsItsWayUpUnseenAndTheThirteenthStrokeWallsInWhoeverIsLate(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.WINCHESTER;var p=f.player("winchester_reader",place);var b=f.base(place);var in=f.in;
         h.startSequence().thenExecute(()->{
-            h.assertTrue(in.getBlockState(b.offset(-30,3,-12)).is(LiteraryRegistry.WINCHESTER_WALLPAPER.get())&&in.getBlockState(b.offset(5,-1,-30)).is(LiteraryRegistry.WINCHESTER_PARQUET.get()),"damask walls on a parquet floor");
-            h.assertTrue(in.getBlockState(b.offset(WinchesterHouse.FLOOR_WINDOW)).is(LiteraryRegistry.WINCHESTER_LEADED_GLASS.get()),"a window in the ledger's floor");
-            h.assertTrue(in.getBlockState(b.offset(-30,3,-22)).is(LiteraryRegistry.WINCHESTER_LEADED_GLASS.get())&&in.getBlockState(b.offset(-31,3,-22)).is(LiteraryRegistry.WINCHESTER_WALLPAPER.get()),"a leaded window looks onto more wallpaper");
-            for(int k=0;k<WinchesterHouse.STAIR_STEPS;k++)h.assertTrue(in.getBlockState(b.offset(-28,k,WinchesterHouse.STAIR_Z-k)).getBlock() instanceof net.minecraft.world.level.block.StairBlock,"step "+(k+1)+" of thirteen");
-            h.assertTrue(!in.getBlockState(b.offset(-28,13,WinchesterHouse.STAIR_Z-12)).isAir()&&!in.getBlockState(b.offset(-28,12,WinchesterHouse.STAIR_Z-11)).isAir(),"the last two steps go on into the ceiling");
-            var wallDoor=b.offset(-29,0,-40);
-            h.assertTrue(in.getBlockState(wallDoor).getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!in.getBlockState(wallDoor.west()).isAir(),"a door opens onto the wall");
-            var highDoor=b.offset(29,9,-40);
-            h.assertTrue(in.getBlockState(highDoor).getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&in.getBlockState(highDoor.west()).isAir()&&in.getBlockState(highDoor.west().below()).isAir(),"a door high in the east wall opens onto nothing");
-            int robes=0;for(int x=25;x<=29;x++)for(int z=-76;z<=-65;z++){var s=in.getBlockState(b.offset(x,2,z));if(s.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.SCENE_DETAIL.get())&&s.getValue(io.github.knaitoe.theoldesthouse.house.SceneDetailBlock.KIND)==io.github.knaitoe.theoldesthouse.house.SceneDetailBlock.Kind.COAT)robes++;}
-            h.assertTrue(robes==13&&WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.TABLE)),WinchesterFittingBlock.Kind.SEANCE_TABLE)&&WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.CHAIR)),WinchesterFittingBlock.Kind.SEANCE_CHAIR)&&in.getBlockState(b.offset(24,3,-70)).is(LiteraryRegistry.WINCHESTER_SEANCE_PAPER.get()),"the blue séance room keeps its table, one chair and thirteen robes: "+robes);
-            h.assertTrue(WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.CLOCK.above())),WinchesterFittingBlock.Kind.CLOCK_TOP),"the hall clock stands in the entrance bay");
-            var doors=WinchesterHouse.CHANGING_DOORS;
-            for(var d:doors)h.assertTrue(in.getBlockState(b.offset(d)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock,"every side passage keeps its own door");
-            h.assertTrue(!WinchesterHouse.walled(in,b,doors.get(0))&&WinchesterHouse.walled(in,b,doors.get(1))&&WinchesterHouse.walled(in,b,doors.get(2))&&!WinchesterHouse.walled(in,b,doors.get(3)),"on the first visit two side doors open onto wall");
-            // Another reader is in the house: the carpenters wait.
-            var peer=f.player("winchester_peer",place);f.at(peer,place,.5,0,-40.5);
-            p.teleportTo(in,b.getX()+.5,b.getY(),b.getZ()-2.5,0,0);LiteraryVignettes.onArrive(p,place);
-            h.assertTrue(WinchesterHouse.layout(f.data(),b)==0&&WinchesterHouse.walled(in,b,doors.get(1)),"nothing is rebuilt while someone else is inside");
-            // The house to themselves, facing the front door: the carpenters have been at work since the last visit.
-            f.at(peer,place,.5,0,160.5);
-            p.teleportTo(in,b.getX()+.5,b.getY(),b.getZ()-2.5,0,0);LiteraryVignettes.onArrive(p,place);
-            h.assertTrue(WinchesterHouse.layout(f.data(),b)==1,"an empty, unwatched house is rebuilt between visits");
-            h.assertTrue(WinchesterHouse.walled(in,b,doors.get(0))&&!WinchesterHouse.walled(in,b,doors.get(1))&&!WinchesterHouse.walled(in,b,doors.get(2))&&WinchesterHouse.walled(in,b,doors.get(3)),"the other two side doors open onto wall now");
-            for(var d:doors)h.assertTrue(in.getBlockState(b.offset(d)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock,"the doors themselves stay");
-            h.assertTrue(WinchesterFittingBlock.is(in.getBlockState(b.offset(-27,0,-40)),WinchesterFittingBlock.Kind.SAWHORSE)&&in.getBlockState(b.offset(27,0,-40)).isAir(),"the sawhorse has moved across the house");
-            // The clock and the carpenters are the reader's own.
-            var own=f.own(p,place);h.assertTrue(own.getInt("Strikes")==0&&own.getInt("StrikeAt")==WinchesterHouse.STRIKE_AT,"the clock waits for its hour on a new visit");
-            int heard=0;for(int t=0;t<=1200;t+=5){own.putInt("ThisVisitTicks",t);int before=own.getInt("Carpenter");WinchesterHouse.reader(p,b,own);if(own.getInt("Carpenter")!=before)heard++;
-                if(t==WinchesterHouse.STRIKE_AT-5)h.assertTrue(own.getInt("Strikes")==0,"not before its hour");}
-            h.assertTrue(own.getInt("Strikes")==13,"the clock strikes thirteen, and no more: "+own.getInt("Strikes"));
-            h.assertTrue(heard>=5,"the carpenters are heard again and again behind the walls: "+heard);
+            var peer=f.player("winchester_peer",place);f.at(peer,place,.5,0,160.5);
+            h.assertTrue(in.getBlockState(b.offset(-30,3,-12)).is(LiteraryRegistry.WINCHESTER_WALLPAPER.get())&&in.getBlockState(b.offset(0,-1,-6)).is(LiteraryRegistry.WINCHESTER_PARQUET.get()),"damask walls on a parquet floor");
+            h.assertTrue(WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.CLOCK.above())),WinchesterFittingBlock.Kind.CLOCK_TOP)&&in.getBlockState(b.offset(LiteraryRooms.source(place))).getBlock() instanceof net.minecraft.world.level.block.LecternBlock,"the hall clock and the construction ledger in the entrance hall");
+            // The house's mistakes, before anyone is building.
+            h.assertTrue(in.getBlockState(b.offset(WinchesterHouse.DOOR13)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!WinchesterHouse.built(in,b,WinchesterHouse.Stage.DOOR13)&&!in.getBlockState(b.offset(-28,1,-18)).isAir(),"the door with the brass 13 opens onto wall");
+            h.assertTrue(in.getBlockState(b.offset(-16,5,-34)).getBlock() instanceof net.minecraft.world.level.block.StairBlock&&!in.getBlockState(b.offset(WinchesterHouse.HATCH_B)).isAir(),"the stair goes up into the ceiling");
+            h.assertTrue(in.getBlockState(b.offset(WinchesterHouse.NOTHING_DOOR)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&in.getBlockState(b.offset(15,7,-26)).isAir()&&in.getBlockState(b.offset(15,6,-26)).isAir(),"the door upstairs opens on nothing");
+            h.assertTrue(in.getBlockState(b.offset(WinchesterHouse.FLOOR_WINDOW)).is(LiteraryRegistry.WINCHESTER_LEADED_GLASS.get())&&in.getBlockState(b.offset(5,6,-24)).isAir()&&in.getBlockState(b.offset(5,6,-23)).is(net.minecraft.world.level.block.Blocks.STRIPPED_DARK_OAK_LOG),"a window in the floor of the room with its floor taken up, over joists");
+            h.assertTrue(in.getBlockState(b.offset(-18,4,-12)).is(net.minecraft.world.level.block.Blocks.BRICKS)&&in.getBlockState(b.offset(-18,5,-12)).isAir(),"the parlour chimney stops short of the ceiling");
+            h.assertTrue(WinchesterFittingBlock.is(in.getBlockState(b.offset(-29,2,-6)),WinchesterFittingBlock.Kind.SPIDER_WINDOW)&&in.getBlockState(b.offset(30,0,-6)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!in.getBlockState(b.offset(31,0,-6)).isAir(),"the spider-web window, and a dining-room door onto wall");
+            for(int k=0;k<WinchesterHouse.LANES;k++)h.assertTrue(in.getBlockState(b.offset(WinchesterHouse.laneX(k),WinchesterHouse.laneY(k),-25)).is(net.minecraft.world.level.block.Blocks.OAK_SLAB),"flight "+(k+1)+" of seven");
+            int robes=0;for(int x=-8;x<=8;x++)for(int z=-58;z<=-45;z++){var s=in.getBlockState(b.offset(x,2,z));if(s.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.SCENE_DETAIL.get())&&s.getValue(io.github.knaitoe.theoldesthouse.house.SceneDetailBlock.KIND)==io.github.knaitoe.theoldesthouse.house.SceneDetailBlock.Kind.COAT)robes++;}
+            h.assertTrue(robes==13&&WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.TABLE)),WinchesterFittingBlock.Kind.SEANCE_TABLE),"thirteen robes and the bell's table in the Blue Room");
+            // Before the night the carpenters are only heard.
+            var own=f.own(p,place);f.at(p,place,.5,0,-6.5);int heard=0;
+            for(int t=0;t<=1200;t+=5){own.putInt("ThisVisitTicks",t);int before=own.getInt("Carpenter");WinchesterHouse.reader(p,b,own);if(own.getInt("Carpenter")!=before)heard++;}
+            h.assertTrue(heard>=5&&!own.getBoolean("InRun"),"the carpenters are heard again and again behind the walls: "+heard);
+            // The bell will not sound for a reader in their own clothes; in a robe it starts the night and gives the plan.
+            f.at(p,place,.5,0,-50.5);h.assertTrue(WinchesterHouse.click(p,b,WinchesterHouse.TABLE,own)&&!own.getBoolean("InRun"),"no robe, no bell");
+            h.assertTrue(WinchesterHouse.click(p,b,new BlockPos(-8,2,-49),own)&&own.getBoolean("Robed"),"a robe from its hook");
+            h.assertTrue(WinchesterHouse.click(p,b,WinchesterHouse.TABLE,own)&&own.getBoolean("InRun")&&p.getInventory().items.stream().anyMatch(i->i.getHoverName().getString().equals("Tonight's plan")),"the bell starts the strokes and gives tonight's plan");
+            LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            // The wall behind the 13 comes down only while nobody looks at it: with the door open and the reader looking through.
+            var door13=b.offset(WinchesterHouse.DOOR13);in.setBlock(door13,in.getBlockState(door13).setValue(net.minecraft.world.level.block.DoorBlock.OPEN,true),2);
+            f.at(p,place,-27.5,0,-15.5);p.setYRot(180);p.setXRot(0);WinchesterHouse.work(in,b);
+            h.assertTrue(!WinchesterHouse.built(in,b,WinchesterHouse.Stage.DOOR13),"not while the reader is looking through the open door at it");
+            p.setYRot(0);WinchesterHouse.work(in,b);
+            h.assertTrue(WinchesterHouse.built(in,b,WinchesterHouse.Stage.DOOR13)&&in.getBlockState(b.offset(-28,0,-18)).is(net.minecraft.world.level.block.Blocks.OAK_SLAB),"looking away, the wall is gone and the stair begins behind the door");
+            // On the last flight, looking up: the hatch is cut, and behind them the 13 opens onto wall again.
+            f.at(p,place,-15.5,WinchesterHouse.laneFloor(6),-25.5);p.setXRot(-90);WinchesterHouse.work(in,b);
+            h.assertTrue(WinchesterHouse.built(in,b,WinchesterHouse.Stage.HATCH)&&in.getBlockState(b.offset(WinchesterHouse.TOP_STEP)).getBlock() instanceof net.minecraft.world.level.block.StairBlock,"the hatch is cut and the stair goes on into the room above");
+            h.assertTrue(!WinchesterHouse.built(in,b,WinchesterHouse.Stage.DOOR13),"and the doorway they came through is plastered over behind them");
+            // The door that opens on nothing: open it, look back into the room, and the boards are laid.
+            f.at(p,place,12.5,7,-25.5);p.setXRot(0);p.setYRot(90);var nothing=b.offset(WinchesterHouse.NOTHING_DOOR);in.setBlock(nothing,in.getBlockState(nothing).setValue(net.minecraft.world.level.block.DoorBlock.OPEN,true),2);WinchesterHouse.work(in,b);
+            h.assertTrue(WinchesterHouse.built(in,b,WinchesterHouse.Stage.BOARDS1)&&!WinchesterHouse.built(in,b,WinchesterHouse.Stage.BOARDS2)&&!WinchesterHouse.built(in,b,WinchesterHouse.Stage.HATCH),"boards out over the court, nothing yet beyond them, and the hatch shut behind");
+            f.at(p,place,20.5,7,-25.5);WinchesterHouse.work(in,b);h.assertTrue(WinchesterHouse.built(in,b,WinchesterHouse.Stage.BOARDS2),"the next stretch while their back is to it");
+            f.at(p,place,22.5,7,-37.5);p.setYRot(0);WinchesterHouse.work(in,b);
+            h.assertTrue(WinchesterHouse.built(in,b,WinchesterHouse.Stage.BOARDS3)&&WinchesterHouse.built(in,b,WinchesterHouse.Stage.BOARDS1),"the last stretch, and the first kept while they look back at it");
+            p.setYRot(180);WinchesterHouse.work(in,b);h.assertTrue(!WinchesterHouse.built(in,b,WinchesterHouse.Stage.BOARDS1),"looking ahead, the boards behind them are taken up");
+            // The last room before the thirteenth stroke: the ledger names a room for what they have killed, and their own name last.
+            p.awardStat(net.minecraft.stats.Stats.ENTITY_KILLED.get(net.minecraft.world.entity.EntityType.ZOMBIE),41);p.awardStat(net.minecraft.stats.Stats.ENTITY_KILLED.get(net.minecraft.world.entity.EntityType.SKELETON),2);
+            f.at(p,place,22.5,7,-65.5);own=f.own(p,place);WinchesterHouse.reader(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            h.assertTrue(own.getBoolean("Ready")&&!own.getBoolean("InRun")&&own.getString("Ledger201").startsWith("The parlour: forty-one zombies. The dining room: two skeletons."),"in the last room, the ledger: "+own.getString("Ledger201"));
+            var account=WinchesterHouse.account(own);h.assertTrue(account.contains("forty-one zombies")&&account.endsWith("It had no room yet."),"the account names them and leaves the last name without a room: "+account);
+            // A reader still downstairs at the thirteenth stroke has a room built round them, and wakes by the front door.
+            var late=f.player("winchester_late",place);f.at(late,place,-20.5,0,-15.5);var t=f.own(late,place);t.putBoolean("Robed",true);t.putBoolean("InRun",true);t.putLong("RunAt",in.getGameTime()-WinchesterHouse.STRIKES*WinchesterHouse.STRIKE_EVERY);
+            WinchesterHouse.reader(late,b,t);LiteraryVignettes.save(f.data(),late.getUUID(),place,t);
+            h.assertTrue(t.getInt("Walled")==1&&!t.getBoolean("InRun")&&!t.getBoolean("Ready")&&late.blockPosition().distManhattan(b.offset(WinchesterHouse.WAKE))<=1,"walled in at the thirteenth stroke, waking by the front door");
+            t.putString("Ledger201","");h.assertTrue(WinchesterHouse.account(t).endsWith("Beside it was the room they had built around me."),"and if they reach the ledger yet, their name already has its room");
             h.succeed();
         });
     }

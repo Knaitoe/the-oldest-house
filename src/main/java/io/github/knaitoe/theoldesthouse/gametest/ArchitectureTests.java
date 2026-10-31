@@ -204,14 +204,22 @@ public final class ArchitectureTests {
         }
     }
     public static void literaryRoutes(GameTestHelper h,ServerLevel level,BlockPos b){
-        // The slow stair rises eight blocks through sixteen long flights and fifteen connected turns.
-        for(int flight=0;flight<16;flight++){int layer=flight/2,z=-8-flight*4;double feet=layer+(flight%2==0?.5:1);
-            for(int x=-23;x<=23;x++)supportedBody(h,level,b,x,feet,z,"Winchester flight "+flight);
-            if(flight<15){int turn=flight%2==0?23:-23;for(int dz=1;dz<4;dz++)supportedBody(h,level,b,turn,feet,z-dz,"Winchester turn "+flight);}
-        }
-        for(int z=-69;z>=-72;z--)supportedBody(h,level,b,-23,8,z,"Winchester upper landing");
-        for(int x=-23;x<=25;x++)supportedBody(h,level,b,x,8,-72,"Winchester ledger approach");
-        h.assertTrue(level.getBlockState(b.offset(26,9,-70)).is(LiteraryRegistry.PROP.get())&&level.getBlockState(b.offset(25,-1,-60)).is(Blocks.HAY_BLOCK),"the real upper ledger and survivable drop remain in the authored wing");
+        // 0.4.201: the Winchester's way up, every piece built as on a night: seven one-wide flights each half a block above the
+        // last at its turn, the steps into the ceiling through the cut hatch, the joists and the window in the floor, the boards.
+        for(var stage:WinchesterHouse.Stage.values())WinchesterHouse.build(level,b,stage);
+        supportedBody(h,level,b,-28,WinchesterHouse.laneFloor(0),-18,"Winchester, behind the brass 13");
+        for(int k=0;k<WinchesterHouse.LANES;k++)for(int z=-31;z<=-19;z++)supportedBody(h,level,b,WinchesterHouse.laneX(k),WinchesterHouse.laneFloor(k),z,"Winchester flight "+(k+1));
+        for(int k=0;k<WinchesterHouse.LANES-1;k++){int z=k%2==0?-32:-18;supportedBody(h,level,b,WinchesterHouse.laneX(k),WinchesterHouse.laneFloor(k),z,"Winchester turn "+(k+1));
+            for(int dx=1;dx<=2;dx++)supportedBody(h,level,b,WinchesterHouse.laneX(k)+dx,WinchesterHouse.laneFloor(k+1),z,"Winchester turn "+(k+1));}
+        for(int i=0;i<4;i++)supportedBody(h,level,b,-16,4+i,-32-i,"Winchester steps into the ceiling");
+        supportedBody(h,level,b,-15,7,-26,"Winchester room above the stair");supportedBody(h,level,b,-13,7,-26,"Winchester floored edge");
+        for(int x=-12;x<=12;x++)supportedBody(h,level,b,x,7,-26,Math.abs(x)<=3?"Winchester window in the floor":"Winchester joist");
+        supportedBody(h,level,b,13,7,-26,"Winchester floored edge by the door onto nothing");
+        for(int x=15;x<=23;x++)supportedBody(h,level,b,x,7,-26,"Winchester boards over the court");
+        for(int z=-58;z<=-27;z++)supportedBody(h,level,b,22,7,z,"Winchester boards across the court");
+        for(int z=-68;z<=-60;z++)supportedBody(h,level,b,22,7,z,"Winchester last room");
+        h.assertTrue(!level.getBlockState(b.offset(WinchesterHouse.ENDING)).isAir()&&level.getBlockState(b.offset(20,-1,-30)).is(Blocks.HAY_BLOCK),"the upper ledger on its desk, and hay under the court for whoever falls");
+        for(var stage:WinchesterHouse.Stage.values())WinchesterHouse.unbuild(level,b,stage);
     }
     private static void supportedBody(GameTestHelper h,ServerLevel level,BlockPos b,int x,double feet,int z,String route){double xx=b.getX()+x,yy=b.getY()+feet,zz=b.getZ()+z;
         h.assertTrue(level.noCollision(null,new AABB(xx+.2,yy+.01,zz+.2,xx+.8,yy+1.8,zz+.8)),route+" clears a native player body at "+x+","+feet+","+z);

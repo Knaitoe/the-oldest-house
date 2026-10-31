@@ -164,6 +164,11 @@ public final class StaircaseProse {
             "The manor kept {n|room|rooms} for you. Nobody else could see what it kept.",
             "In the manor you saw {x}. Nobody else did.",
             "{n|room|rooms} came back to the manor with you, small enough to keep."),
+        // 0.4.201: the Winchester's upper ledger, which kept a room for every kind of creature the reader had killed.
+        new Kind("ledger","house",2.4,4,"Rooms in the ledger: {n|room|rooms}",
+            "The upper ledger kept {n|room|rooms} for what you had killed. Your name was written under them.",
+            "{n|room|rooms} in a house that is never finished, one for each kind of thing you killed.",
+            "The carpenters built {n|room|rooms} for your dead, and left a line for your name."),
         new Kind("unwound","house",2.0,1,"Line taken back: {times}",
             "{Times} the line paid out through your fingers, back toward the cave.",
             "The cave pulled your line back {times}. Each time you let it go.",
@@ -379,6 +384,7 @@ public final class StaircaseProse {
             case "followed"->"Something followed you home: "+value+". The writer has left the door in the margin unlatched.";
             case "remembered"->"The manor kept "+value+" for you. In the margin, a room has been drawn very small.";
             case "unwound"->"The cave took your line back. A thread runs off the edge of the page.";
+            case "ledger"->"The upper ledger kept a room for everything you killed. The plan of a house is drawn in the margin, its last room empty.";
             default->"The page has room for a memory that has not been written.";};
     }
 

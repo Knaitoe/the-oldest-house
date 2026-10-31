@@ -65,7 +65,7 @@ public final class WitnessAccount {
         MINIATURES("miniatures","The little rooms","memory","I recognized the rooms on the tables. In the latest, someone stood just behind my figure, in a room I had crossed alone."),
         MASQUE("masque","The last clock","release","I crossed seven colored rooms and put my hand on the clock. The next chime never came."),
         USHER("usher","The coffin lid","understanding","I returned to the consequence of the lid I had chosen. The sound had followed the stone."),
-        WINCHESTER("winchester","The upper ledger","understanding","A long stair gained one floor. The upper ledger kept a name beside every room. The last name had no room yet."),
+        WINCHESTER("winchester","The upper ledger","understanding","The clock struck thirteen while I climbed, and the carpenters built only where I was not looking. The upper ledger kept a room for everything I had killed. The last name was mine."),
         CHILD_ROOM("child_room","The disappearing exits","survival","I crawled below the bed after the windows and doors had gone. I found a floor that still led somewhere."),
         CRIMSON_HALL("crimson_hall","The recorded voices","connection","I played all three voices through their endings. Beneath the snow, the floor was red."),
         BLY_ROUTE("bly_route","The wet boards","survival","I waited in a shut cupboard while the drips passed. A child once hid from her in one. She has never opened one."),
