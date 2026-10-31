@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "the_oldest_house:block/uncanny/home_carpet",
+    "bottom": "the_oldest_house:block/uncanny/home_ceiling",
+    "side": "the_oldest_house:block/uncanny/home_floor_side"
+  }
+}

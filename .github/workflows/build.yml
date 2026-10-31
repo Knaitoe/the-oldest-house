@@ -70,6 +70,7 @@ jobs:
           python3 tools/draw_usher_art.py --check
           python3 tools/generate_advancements.py --check
           python3 tools/draw_hair_styles.py --check
+          python3 tools/draw_split_feed_night.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v

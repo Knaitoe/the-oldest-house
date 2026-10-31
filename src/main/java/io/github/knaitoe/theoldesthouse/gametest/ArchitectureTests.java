@@ -331,7 +331,7 @@ public final class ArchitectureTests {
                 case SECOND_WAITRESS->UncannyRegistry.material("diner_tile");
                 case TUNNEL_PERIPHERY->Blocks.SMOOTH_STONE;
                 case LAYERED_MAN->UncannyRegistry.material("cellar_floor");
-                case MISSING_SLEEP->Blocks.SPRUCE_PLANKS;
+                case MISSING_SLEEP->UncannyRegistry.material("home_floor");
                 default->throw new IllegalArgumentException(scene.id());
             };
             var at=b.offset(rel);var floor=level.getBlockState(at);

@@ -124,7 +124,7 @@ public final class UncannySocketClient {
         }
         if(phase==5&&UncannyClient.room().equals("missing_sleep")){require(!TunnelAtmosphere.active()&&!TunnelAtmosphere.playing(),"tunnel traffic stops on departure");}
         if(phase==5&&UncannyClient.room().equals("missing_sleep")&&bedroomWalk(mc,b))paper(mc,b.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)),"bedroom-source",data.getBoolean("PaperRead"));
-        if(phase==6||phase==7){if(age>15&&clicked<0)click(mc,b.offset(UncannyRooms.BED_AT));if(age>35&&UncannyClient.sleeps()==(phase==6?1:2))ack(mc,phase==6?"bedroom-first-cut":"bedroom-second-cut");}
+        if(phase==6){if(age>15&&clicked<0)click(mc,b.offset(UncannyRooms.BED_AT));if(age>35&&UncannyClient.sleeps()==2)ack(mc,"bedroom-one-sleep");}
         if(phase==8&&age>30){var doll=actor(mc,LiteraryActor.UNCANNY_MARIONETTE);if(doll!=null&&doll.phase()==1){look(mc,doll.getEyePosition());require(UncannyActorRenderer.visible(doll),"the direct form is visible to its owner");ack(mc,"bedroom-direct");}}
         if((phase==9||phase==11)&&UncannyClient.room().equals("missing_sleep")){
             if(!(mc.screen instanceof UncannyCameras.MonitorScreen)){click(mc,b.offset(UncannyRooms.MONITOR_AT));}

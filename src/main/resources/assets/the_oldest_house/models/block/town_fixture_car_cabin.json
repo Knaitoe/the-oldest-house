@@ -1,10 +1,10 @@
 {
   "render_type": "minecraft:translucent",
   "textures": {
-    "glass": "the_oldest_house:block/car_glass",
+    "glass": "the_oldest_house:block/car_window",
     "trim": "the_oldest_house:block/car_trim",
     "seat": "the_oldest_house:block/car_seat",
-    "particle": "the_oldest_house:block/car_trim"
+    "particle": "the_oldest_house:block/car_glass"
   },
   "elements": [
     {
