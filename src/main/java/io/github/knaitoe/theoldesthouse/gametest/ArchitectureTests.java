@@ -167,7 +167,7 @@ public final class ArchitectureTests {
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.GHOSTS_SET),LabyrinthPlace.GHOSTS_SET,"ghosts_basement");
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.BLIND_STRETCH),LabyrinthPlace.BLIND_STRETCH,"blind_stretch");
             // The composed buildings from outside, roofs and all, without the woods' crowns in front of them.
-            for(var scene:List.of(LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.ELK_LOT,LabyrinthPlace.BARN_WELL))
+            for(var scene:List.of(LabyrinthPlace.CAMP_BLOOD,LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.ELK_LOT,LabyrinthPlace.BARN_WELL,LabyrinthPlace.USHER))
                 export(HouseTestLevel.get(server,NovelRooms.dimension(scene)),LabyrinthPlaces.base(origin,scene),scene,scene.id()+"_exterior");
             literaryRoutes(h,interior,LabyrinthPlaces.base(origin,LabyrinthPlace.WINCHESTER));
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
@@ -531,6 +531,8 @@ public final class ArchitectureTests {
         for(int x=minX;x<=maxX;x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
             var at=b.offset(x,y,z);var s=l.getBlockState(at);if(s.is(LiteraryRegistry.FROZEN.get()))s=LiteraryFrozenBlock.original(l,at);
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
+            // The Usher house's night is its sky, drawn around it as blocks; a view of the house looks through it.
+            if(s.getBlock() instanceof UsherBlock&&s.getValue(UsherBlock.KIND)==UsherBlock.Kind.NIGHT)continue;
             if(s.is(Blocks.WATER)&&(!LakeLandscape.isLake(scene)&&!LiteraryRooms.outside(scene)&&scene!=LabyrinthPlace.USHER||!l.getBlockState(at.above()).isAir()))continue;
             if(exterior&&s.is(net.minecraft.tags.BlockTags.LEAVES))continue;
             // A documented cutaway removes roofs and the near walls, not interior contents.

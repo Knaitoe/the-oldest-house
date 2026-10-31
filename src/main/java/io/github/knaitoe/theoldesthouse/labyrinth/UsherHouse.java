@@ -76,6 +76,58 @@ public final class UsherHouse {
         vault(l, b);
         studio(l, b);
         galleries(l, b);
+        grandeur(l, b);
+    }
+
+    /**
+     * 0.4.201 (owner: "redesign the architecture of usher home to be more grandiose, as intended"): the house cannot rise past
+     * the night over it, so it is made grander in its forms. Corner towers step out into the tarn; buttresses stand in the
+     * water between the windows with pinnacles over them; a deep pointed portal projects before the archway; a rose window
+     * of dark glass sits over it. Inside, the hall and the studio are ribbed across their ceilings on corbels, and an iron
+     * chandelier hangs over the hall's black floor. Nothing the story uses moves.
+     */
+    private static void grandeur(ServerLevel l, BlockPos b) {
+        var air = Blocks.AIR.defaultBlockState();var stone = u(Kind.STONE);
+        // Corner towers, two blocks out into the tarn, the full height of the front.
+        for (int side : new int[]{-1, 1}) fill(l, b, side * 14, -3, FRONT + 1, side * 17, 12, FRONT + 2, stone);
+        for (int side : new int[]{-1, 1}) for (int x = 14; x <= 17; x++) for (int z = FRONT + 1; z <= FRONT + 2; z++)
+            if ((x + z) % 2 == 0) set(l, b, side * x, 12, z, air);
+        for (int side : new int[]{-1, 1}) for (int y : new int[]{3, 8}) {
+            set(l, b, side * 15, y, FRONT + 2, Blocks.TINTED_GLASS.defaultBlockState());set(l, b, side * 15, y + 1, FRONT + 2, Blocks.TINTED_GLASS.defaultBlockState());
+        }
+        // Buttresses between the windows, stepped, capped and topped with pinnacles; clear of the fissure at x 9 to 10.
+        for (int x : new int[]{-11, -5, 5, 11}) {
+            fill(l, b, x, -3, FRONT + 1, x, 9, FRONT + 1, stone);
+            fill(l, b, x, -3, FRONT + 2, x, 3, FRONT + 2, stone);
+            set(l, b, x, 4, FRONT + 2, Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH));
+            set(l, b, x, 10, FRONT + 1, Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH));
+            set(l, b, x, 11, FRONT, Blocks.STONE_BRICK_WALL.defaultBlockState());set(l, b, x, 12, FRONT, Blocks.STONE_BRICK_WALL.defaultBlockState());
+        }
+        // The portal: a deeper, taller pointed order before the archway, its keystone over the way in.
+        fill(l, b, -3, 0, FRONT + 1, 3, 5, FRONT + 1, stone);
+        for (int side : new int[]{-1, 1}) fill(l, b, side * 3, -3, FRONT + 1, side * 3, -1, FRONT + 1, stone);
+        fill(l, b, -1, 0, FRONT + 1, 1, 3, FRONT + 1, air);
+        set(l, b, 0, 4, FRONT + 1, air);
+        for (int side : new int[]{-1, 1}) set(l, b, side, 4, FRONT + 1, Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, side < 0 ? Direction.EAST : Direction.WEST).setValue(StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP));
+        set(l, b, 0, 5, FRONT + 1, Blocks.CHISELED_STONE_BRICKS.defaultBlockState());
+        for (int side : new int[]{-1, 1}) for (int y = 0; y <= 3; y++) set(l, b, side * 2, y, FRONT + 1, Blocks.POLISHED_DEEPSLATE.defaultBlockState());
+        // The rose window over the portal: a disc of dark glass in a ring of carved stone.
+        for (int dx = -3; dx <= 3; dx++) for (int dy = -3; dy <= 3; dy++) {
+            int r = dx * dx + dy * dy;
+            if (r <= 4) set(l, b, dx, 8 + dy, FRONT, Blocks.TINTED_GLASS.defaultBlockState());
+            else if (r <= 8) set(l, b, dx, 8 + dy, FRONT, Blocks.CHISELED_STONE_BRICKS.defaultBlockState());
+        }
+        // Ribs across the hall's and the studio's ceilings, sprung from corbels on the walls.
+        for (int z : new int[]{-16, -19, -26, -30}) {
+            for (int x = -10; x <= 10; x++) set(l, b, x, 8, z, Blocks.DEEPSLATE_BRICKS.defaultBlockState());
+            for (int side : new int[]{-1, 1}) set(l, b, side * 10, 7, z, Blocks.DEEPSLATE_BRICK_STAIRS.defaultBlockState()
+                    .setValue(StairBlock.FACING, side < 0 ? Direction.WEST : Direction.EAST).setValue(StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP));
+        }
+        for (int z = -14; z >= -21; z--) set(l, b, 0, 8, z, Blocks.DEEPSLATE_BRICKS.defaultBlockState());
+        // The iron chandelier, hung from the ridge over the hall.
+        for (int y = 6; y <= 7; y++) set(l, b, 0, y, -18, Blocks.CHAIN.defaultBlockState());
+        set(l, b, 0, 5, -18, Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
     }
 
     /** The bank at the reader's door, the causeway, the tarn and its dead trunks, and the faint light over the water. */

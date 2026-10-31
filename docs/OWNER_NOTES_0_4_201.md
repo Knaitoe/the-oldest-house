@@ -131,7 +131,15 @@ The build job of the 0.4.201 run failed `tornPagesPinAndOnlySixAreLeftOutInTheHo
 
 > "redesign the architecture of usher home to be more grandiose, as intended. the player cannot currently reach the basement."
 
-The stair to the vault ended under the hall floor: the floor over the landing began right at the last step, so a reader stepping off it hit their head and stayed on the step. The opening in the hall floor now runs one cell past the last step (its rail moves with it). The Usher case checks the headroom over every step, the three cells a reader passes through stepping onto the landing, and the landing to the vault door. The grander rebuild is the next piece of work.
+The stair to the vault ended under the hall floor: the floor over the landing began right at the last step, so a reader stepping off it hit their head and stayed on the step. The opening in the hall floor now runs one cell past the last step (its rail moves with it). The Usher case checks the headroom over every step, the three cells a reader passes through stepping onto the landing, and the landing to the vault door. The grander rebuild follows.
+
+The house cannot rise past the night drawn over it, so it is made grander in its forms (`UsherHouse.grandeur`). Corner towers
+step two blocks out into the tarn with their own battlements and dark windows; stepped buttresses stand in the water between
+the windows, capped and carried up into pinnacles, clear of the fissure; a deeper, taller pointed portal projects before the
+archway, on dark columns under a keystone; a rose window of dark glass in a ring of carved stone sits over it. Inside, the
+hall and the studio are ribbed across their ceilings on corbels, a ridge rib runs the hall, and an iron chandelier hangs over
+its black floor. Nothing the story uses moves. The architecture case now exports the house's exterior as well (the night
+around it is left out of the view).
 
 ## The split-feed bedroom: one sleep, the hall, their door
 
