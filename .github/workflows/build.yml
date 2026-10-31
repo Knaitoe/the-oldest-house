@@ -985,6 +985,7 @@ jobs:
           for view in borrasca borrasca_treehouse borrasca_refinery borrasca_gully borrasca_taking; do test -s build/font-smoke/scenes/$view.png; done
           for view in painted_interior second_waitress tunnel_periphery missing_sleep layered_man motion_light; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/scenes/dare_in_the_dark.png
+          test -s build/font-smoke/scenes/way_out.png
           for view in borrowed_light service_lift turning_landing lamp_rooms twin_lift turning_stair; do test -s build/font-smoke/scenes/$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png

@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 55;
+    public static final int VERSION = 56;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -153,7 +153,7 @@ public final class LabyrinthBuilder {
             // 0.4.199: the early puzzle rooms stand with the halls, ready before anyone can be offered them (PuzzleRooms.weight paces them);
             // the deep ones are built ahead of the strange depths they are offered from.
             case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING -> 0;
-            case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR -> LabyrinthPacing.STRANGE_DEPTH;
+            case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, WAY_OUT -> LabyrinthPacing.STRANGE_DEPTH;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
             default -> LabyrinthPacing.STORY_DEPTH;
@@ -262,6 +262,7 @@ public final class LabyrinthBuilder {
                     || (data.builtVersion() < 53 && (place == LabyrinthPlace.VAULTED_HALL || place == LabyrinthPlace.CRUMBLED_HALL))
                     || (data.builtVersion() < 54 && place == LabyrinthPlace.BORROWED_LIGHT)
                     || (data.builtVersion() < 55 && PuzzleRooms.is(place) && place != LabyrinthPlace.BORROWED_LIGHT)
+                    || (data.builtVersion() < 56 && place == LabyrinthPlace.WAY_OUT)
                     || (data.builtVersion() < 12 && LabyrinthMaze.isMaze(place))
                     || (data.builtVersion() == 10 && place == LabyrinthPlace.MOTHER_DEN);
             boolean domestic = place == LabyrinthPlace.JUNCTION || LabyrinthHalls.isHall(place) || LabyrinthMaze.isMaze(place);
@@ -624,6 +625,7 @@ public final class LabyrinthBuilder {
         if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){LakeHouse.buildEmpty(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.BACKSEAT){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){BackseatRooms.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(HouseReadSites.kind(place)!=null)return; // Only owner copies are ever constructed.
+        if(place==LabyrinthPlace.WAY_OUT){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){WayOutRooms.site(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.SILO){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){SiloRooms.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.NIGHTCLUB){fillSolid(level,slot);Nightclub.build(level,base);registerDoors(dataFor(server),place,base);return;}
         if(LiteraryRooms.isLiterary(place)){var site=server.getLevel(NovelRooms.dimension(place));if(site!=null){if(!LiteraryRooms.outside(place))fillSolid(site,slot);LiteraryRooms.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}

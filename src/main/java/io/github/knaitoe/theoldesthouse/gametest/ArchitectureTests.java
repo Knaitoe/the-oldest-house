@@ -474,6 +474,7 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.WHALE)maxY=9;
         if(scene==LabyrinthPlace.HOSPITAL)maxY=NightWard.CEILING_Y-1; // 0.4.199: the ward's suspended ceiling comes off
         if(scene==LabyrinthPlace.PLAIN)minZ=-105;
+        if(scene==LabyrinthPlace.WAY_OUT){minY=-3;maxY=7;} // 0.4.199: the meadow dips to y -2 and its trees stand above the default cut
         if(LakeLandscape.isLake(scene))maxY=16;
         if(scene==LabyrinthPlace.HOTEL){maxX=28;maxY=4;}
         if(name.equals("hotel_upstairs")){minY=5;maxY=8;}

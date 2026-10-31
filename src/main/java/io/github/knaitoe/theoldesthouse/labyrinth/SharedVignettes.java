@@ -43,7 +43,7 @@ public final class SharedVignettes {
      * They are one reader's at a time. 0.4.158: so is the clapping game, played blindfolded and alone (owner, October 29);
      * 0.4.173: so is the dare in the third-floor bathroom, a reader alone with their own face.
      */
-    private static final Set<LabyrinthPlace> ONE_AT_A_TIME=EnumSet.of(HARRIGAN,CONFESSION,HOLY_RABBIT,WHEEL,WHALE,PHONE_CANOE,SECOND_WAITRESS,MISSING_SLEEP,HIDE_AND_CLAP,DARE_IN_THE_DARK);
+    private static final Set<LabyrinthPlace> ONE_AT_A_TIME=EnumSet.of(HARRIGAN,CONFESSION,HOLY_RABBIT,WHEEL,WHALE,PHONE_CANOE,SECOND_WAITRESS,MISSING_SLEEP,HIDE_AND_CLAP,DARE_IN_THE_DARK,WAY_OUT);
     /** One reader's own: the backseat's one seat, the private sites and copies, the Red Room, and the scenes above. The quiet rooms are not dealt at all. */
     private static final Set<LabyrinthPlace> PRIVATE=EnumSet.of(BACKSEAT,SILO,BORRASCA,FAMILY_COPY,OLD_CABIN,RED_ROOM);
     static{PRIVATE.addAll(ONE_AT_A_TIME);}

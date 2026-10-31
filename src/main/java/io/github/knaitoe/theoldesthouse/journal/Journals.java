@@ -135,6 +135,17 @@ public final class Journals extends SavedData {
         t.putIntArray("Soaked",b.soaked.stream().mapToInt(Integer::intValue).sorted().toArray());return t;
     }
 
+    /**
+     * 0.4.199: a line the House writes in a reader's journal, in the other hand, on the page after their last: the way out's
+     * "you really thought you were out?". Only in a journal they have been given; returns the page, or 0 if it could not go in.
+     */
+    public static int houseLine(MinecraftServer s,UUID reader,String text,float x,float y){
+        var data=get(s);var b=data.books().get(reader);if(b==null||b.issue==0)return 0;
+        int last=0;for(var e:b.pages.entrySet())if(!e.getValue().empty())last=Math.max(last,e.getKey());for(int i:b.torn.keySet())last=Math.max(last,i);
+        int at=last+1;if(at>PAGES)return 0;
+        b.pages.put(at,b.pages.getOrDefault(at,JournalPage.BLANK).withNote(new JournalPage.Note(JournalPage.Mark.WRITTEN,text,"",0,x,y)));
+        data.setDirty();return at;
+    }
     public enum Edit { ACCEPTED, NOT_CARRIED, NO_SUCH_PAGE, TOO_MUCH, TOO_FAST, TORN }
     /**
      * A page the reader wrote, from their screen. It is kept only if they carry their own journal, it fits what the screen
