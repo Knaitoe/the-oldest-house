@@ -166,9 +166,12 @@ public final class UsherHouse {
         for (var at : new int[][]{{-8, 0, -15}, {-8, 0, -20}, {3, 0, -15}}) set(l, b, at[0], at[1], at[2], u(Kind.CANDELABRA));
         set(l, b, -10, 3, -21, VignetteInteriorBlock.of(VignetteInteriorBlock.Kind.USHER_PORTRAIT, Direction.EAST));
         // The stair in the east corner, railed in the hall, down past the studio to the vault's landing.
-        fill(l, b, 6, -1, -17, 8, -1, -19, air);
-        for (int z = -17; z >= -19; z--) for (int x = 5; x <= 9; x += 4) set(l, b, x, 0, z, Blocks.DARK_OAK_FENCE.defaultBlockState());
-        fill(l, b, 6, 0, -20, 8, 0, -20, Blocks.DARK_OAK_FENCE.defaultBlockState());
+        // 0.4.201 (owner: "the player cannot currently reach the basement"): the opening runs one cell past the last step, so a
+        // reader stepping down off it has headroom over the landing; the hall floor over the landing began right there before,
+        // and a reader's head met it and held them on the step.
+        fill(l, b, 6, -1, -17, 8, -1, -20, air);
+        for (int z = -17; z >= -20; z--) for (int x = 5; x <= 9; x += 4) set(l, b, x, 0, z, Blocks.DARK_OAK_FENCE.defaultBlockState());
+        fill(l, b, 6, 0, -21, 8, 0, -21, Blocks.DARK_OAK_FENCE.defaultBlockState());
         for (int i = 0; i < 3; i++) {
             int z = -17 - i, y = -1 - i;
             fill(l, b, 6, y - 1, z, 8, -4, z, u(Kind.VAULT));

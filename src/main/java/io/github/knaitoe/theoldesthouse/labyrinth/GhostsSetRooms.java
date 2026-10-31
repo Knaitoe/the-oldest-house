@@ -13,6 +13,8 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.GhostsSetBlock.Kind.*;
 
 /** The Barretts' home where the days are filmed: downstairs, landing, two bedrooms and a basement; BarrettHome makes the rest of the house (0.4.121, condensed in 0.4.174). */
 public final class GhostsSetRooms {
+    /** The column the stair's banister stands in: the treads' open (east) edge. */
+    public static final int STAIR_RAIL_X=-1;
     public static final BlockPos TABLE=new BlockPos(0,0,-19),MARJORIE_ROOM=new BlockPos(-7,5,-24),
             MERRY_ROOM=new BlockPos(7,5,-23),BASEMENT=new BlockPos(7,-4,-18),MONITOR_AT=new BlockPos(8,0,-11);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
@@ -58,9 +60,10 @@ public final class GhostsSetRooms {
             fill(l,b,x,-1,-4-i,x,i-1,-4-i,floor);
             set(l,b,x,i,-4-i,GhostsSetBlock.of(STAIR,Direction.NORTH));
         }
-        for(int i=0;i<5;i++)prop(l,b,0,i+1,-4-i,i==4?STAIR_RAIL_TOP:STAIR_RAIL,Direction.NORTH);
+        // The banister stands on the treads' open edge and turns at a newel into the landing's banister (0.4.201).
+        for(int i=0;i<5;i++)prop(l,b,STAIR_RAIL_X,i+1,-4-i,i==4?STAIR_RAIL_TOP:STAIR_RAIL,Direction.NORTH);
         // The landing's banister over the foyer, where the day-six leap is filmed; the stair's head is kept clear.
-        for(int x=1;x<=3;x++)prop(l,b,x,5,-9,RAIL,Direction.EAST);
+        for(int x=0;x<=3;x++)prop(l,b,x,5,-9,RAIL,Direction.EAST);
         for(int[] at:new int[][]{{-8,3,-23},{2,3,-24},{-8,9,-23},{-8,9,-17},{8,9,-23},{8,9,-17}})prop(l,b,at[0],at[1],at[2],LAMP,Direction.NORTH);
         // One two-by-three table, four corner legs, and chairs close enough to eat.
         for(int x=0;x<=1;x++)for(int z=-20;z<=-18;z++)set(l,b,x,0,z,tableState(x,z));

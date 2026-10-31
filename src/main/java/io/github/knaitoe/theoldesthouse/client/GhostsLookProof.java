@@ -53,9 +53,9 @@ public final class GhostsLookProof extends Screen {
             out.add(new Scene("den_tv",-70,15,at,st));}
         {var at=new ArrayList<BlockPos>();var st=new ArrayList<BlockState>();
             for(int i=0;i<5;i++)for(int x=-3;x<=-1;x++){for(int y=-1;y<i;y++){at.add(new BlockPos(x,y,-4-i));st.add(floor);}at.add(new BlockPos(x,i,-4-i));st.add(ghost(GhostsSetBlock.Kind.STAIR,Direction.NORTH));}
-            for(int i=0;i<5;i++){at.add(new BlockPos(0,i+1,-4-i));st.add(ghost(i==4?GhostsSetBlock.Kind.STAIR_RAIL_TOP:GhostsSetBlock.Kind.STAIR_RAIL,Direction.NORTH));}
+            for(int i=0;i<5;i++){at.add(new BlockPos(io.github.knaitoe.theoldesthouse.labyrinth.GhostsSetRooms.STAIR_RAIL_X,i+1,-4-i));st.add(ghost(i==4?GhostsSetBlock.Kind.STAIR_RAIL_TOP:GhostsSetBlock.Kind.STAIR_RAIL,Direction.NORTH));}
             for(int x=-3;x<=3;x++)for(int z=-12;z<=-9;z++){at.add(new BlockPos(x,4,z));st.add(BarrettHomeBlock.of(BarrettHomeBlock.Kind.STOREY));}
-            for(int x=1;x<=3;x++){at.add(new BlockPos(x,5,-9));st.add(ghost(GhostsSetBlock.Kind.RAIL,Direction.EAST));}
+            for(int x=0;x<=3;x++){at.add(new BlockPos(x,5,-9));st.add(ghost(GhostsSetBlock.Kind.RAIL,Direction.EAST));}
             out.add(new Scene("stair_banister",-60,12,at,st));}
         {var at=new ArrayList<BlockPos>();var st=new ArrayList<BlockState>();
             for(int x=6;x<=10;x++)for(int z=-20;z<=-13;z++){boolean well=x>=7&&x<=9&&z>=-17&&z<=-14;if(!well){at.add(new BlockPos(x,-1,z));st.add(floor);}}

@@ -19,13 +19,15 @@ def models():
             if a is not b and all(min(a['to'][i],b['to'][i])>max(a['from'][i],b['from'][i]) for i in range(3)):
                 raise AssertionError('Stair materials overlap')
     out={'stair':stair}
+    # 0.4.201 (owner: "the banisters in ghosts set are still disconnected"): the banister stands on the treads' open edge
+    # (the props sit in the tread column, not over the foyer beside it). Every baluster rests on a tread: one on the low
+    # half, one on the high half. The handrail rises one block a block, so each piece meets the next; at the top it levels
+    # at the landing banister's height, runs on to the landing, stops at a newel there and turns along the landing rail.
     for top in (False,True):
         end=16-7*math.sqrt(2) if top else 16-16*math.sqrt(2)
-        rail=box([5,7,end],[11,9,16]);rail['rotation']={'origin':[8,8,16],'axis':'x','angle':45,'rescale':False}
-        parts=[box([6,-8,13],[10,11,15]),box([6,-8,12],[18,-6,16]),rail]
-        # 0.4.199 (owner: "ensure banisters are connected"): the top runs on only to the landing banister's line, turns along
-        # it to meet the first landing post, and a newel stands on the landing at the corner.
-        if top:parts+=[box([5,14,-11],[11,16,9]),box([11,14,-11],[16,16,-5]),box([6,0,-10],[10,14,-6])]
+        rail=box([12.5,7,end],[15.5,9,16]);rail['rotation']={'origin':[14,8,16],'axis':'x','angle':45,'rescale':False}
+        parts=[box([13,-8,12],[15,11,14]),box([13,0,4],[15,14 if top else 19,6]),rail]
+        if top:parts+=[box([12.5,14,-11],[15.5,16,9]),box([15.5,14,-11],[16,16,-5]),box([12,0,-10.5],[16,17,-5.5])]
         out['stair_rail_top' if top else 'stair_rail']={'textures':{'white':'minecraft:block/quartz_block_side'},'elements':parts}
     return out
 
