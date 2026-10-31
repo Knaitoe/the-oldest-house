@@ -189,6 +189,9 @@ public final class UncannyTests {
     @GameTest(template="empty",batch="uncanny_parents_door201",timeoutTicks=900) public static void theFigureReachingAnOpenParentsDoorKillsThemAndFailsTheNight(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         var place=LabyrinthPlace.MISSING_SLEEP;var b=f.base(place);var l=f.level(place);f.source(p,place);
         // From their bed, as the reader comes up: how tired they are, that the reader should go to bed, and to leave the door open.
+        // Run 1367: on a loaded runner the room's own ticks can greet the reader during the fixture's setup, so the greeting
+        // starts here from nothing.
+        var fresh=f.own(p,place);fresh.putInt("Greeted201",0);fresh.remove("GreetedAt201");LiteraryVignettes.save(f.data(),p.getUUID(),place,fresh);
         f.at(p,place,1.5,5,-16.5);var own=step(f,p,place);
         h.assertTrue(SplitFeedNight.greeted(own)==1,"the parents speak as soon as the reader is near enough to hear them");
         own=step(f,p,place);h.assertTrue(SplitFeedNight.greeted(own)==1,"a line at a time, a few seconds apart");
