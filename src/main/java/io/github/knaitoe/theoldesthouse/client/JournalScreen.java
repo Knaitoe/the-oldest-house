@@ -26,9 +26,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * The reader's journal open in their hands: two pages at a time, written straight onto the paper. The reader only writes:
  * lines turned, mirrored, wound into spirals, cascaded, narrowed to columns or boxed are the House's to set on a page, and
  * are drawn where they lie (0.4.185, owner: "the player shouldn't have fancy formatting options; those should only exist
- * by the game"). The pages go back to the server as they are left; nothing is ever signed. There are no instructions here.
+ * by the game"). The pages go back to the server as they are left; nothing is ever signed.
  * 0.4.199 (journal/TornPages): a written page held by its corner, a right-click held down, lifts and tears out; what is left is
- * the stub, and a right-click on the stub takes the page back, wherever it has got to.
+ * the stub, and a right-click on the stub takes the page back, wherever it has got to. 0.4.201: a written page's corner curls
+ * under the pointer, and the corner itself carries the only instruction here, how to tear it out.
  */
 public final class JournalScreen extends Screen {
     private final String name;
@@ -103,7 +104,7 @@ public final class JournalScreen extends Screen {
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){g.fill(0,0,width,height,0xE01E1A16);}
     @Override public void render(GuiGraphics g,int mouseX,int mouseY,float partial){
         super.render(g,mouseX,mouseY,partial);
-        int top=pageY();
+        int top=pageY();boolean hint=false;
         for(int side=0;side<2;side++){
             int x=pageX(side),i=index(side);
             if(i>Journals.PAGES){g.fill(x,top,x+JournalPageRenderer.W,top+JournalPageRenderer.H,0xFF2A231C);continue;}
@@ -120,15 +121,25 @@ public final class JournalScreen extends Screen {
             g.disableScissor();
             JournalPageRenderer.header(g,font,x,top,page);JournalPageRenderer.number(g,font,x,top,i);
             if(holding==side)lift(g,side,x,top);
+            // 0.4.201 (owner: "I'm not seeing the ability to tear a page free"): a written page's corner curls up under the
+            // pointer, and on the corner itself the hand is told how.
+            else if(!proof&&sideAt(mouseX,mouseY)==side&&!currentText(side).isBlank()){curl(g,side,x,top,6);hint|=atCorner(side,mouseX,mouseY);}
         }
+        if(hint)g.renderTooltip(font,net.minecraft.network.chat.Component.literal("Hold right-click to tear it out"),mouseX,mouseY);
     }
+    /** Whether the pointer is on a page's bottom outer corner, the one that lifts. */
+    boolean atCorner(int side,double mx,double my){int x=pageX(side),foot=pageY()+JournalPageRenderer.H,outer=side==0?x:x+JournalPageRenderer.W;return my>=foot-16&&my<foot&&Math.abs(mx-outer)<16;}
     /** The corner held to tear the page: it lifts further the longer it is held, and then the page comes away. */
     private void lift(GuiGraphics g,int side,int x,int y){
         float progress=Math.min(1F,(Util.getMillis()-held)/(float)HOLD_MS);
-        int size=6+(int)(progress*46),outer=side==0?x:x+JournalPageRenderer.W-1,dir=side==0?1:-1,foot=y+JournalPageRenderer.H;
+        curl(g,side,x,y,6+(int)(progress*46));
+        if(progress>=1)tear(side);
+    }
+    /** The page's bottom outer corner turned up by {@code size} pixels, the dark of the desk showing under it. */
+    private static void curl(GuiGraphics g,int side,int x,int y,int size){
+        int outer=side==0?x:x+JournalPageRenderer.W-1,dir=side==0?1:-1,foot=y+JournalPageRenderer.H;
         for(int i=0;i<size;i++){int cx=outer+dir*i,h=size-i;g.fill(cx,foot-h,cx+1,foot,0xFF231D17);g.fill(cx,foot-h-2,cx+1,foot-h,0x50000000);}
         for(int i=0;i<size;i++){int cx=outer+dir*(size-1-i),h=i;g.fill(cx,foot-size,cx+1,foot-size+h,0xFFD8CBAE);}
-        if(progress>=1)tear(side);
     }
     /** The page comes away in the reader's hand; the server tears it out and the stub is all that is left here. */
     private void tear(int side){
