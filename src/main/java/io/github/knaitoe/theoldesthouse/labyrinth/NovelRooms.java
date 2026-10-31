@@ -20,7 +20,7 @@ public final class NovelRooms {
         BED=new BlockPos(4,0,-10),PROJECTOR=new BlockPos(0,1,-6);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private NovelRooms(){}
-    public static boolean outside(LabyrinthPlace p){return p==LabyrinthPlace.SILO||p==LabyrinthPlace.BACKSEAT||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL||p==LabyrinthPlace.PLAIN||LakeLandscape.isLake(p)||p==LabyrinthPlace.HOTEL_GROUNDS||LiteraryRooms.outside(p);}
+    public static boolean outside(LabyrinthPlace p){return p==LabyrinthPlace.WAY_OUT||p==LabyrinthPlace.SILO||p==LabyrinthPlace.BACKSEAT||p==LabyrinthPlace.LAKE_HOUSE_EMPTY||p==LabyrinthPlace.ZAMPANO_COURTYARD||p==LabyrinthPlace.BARN_WELL||p==LabyrinthPlace.PLAIN||LakeLandscape.isLake(p)||p==LabyrinthPlace.HOTEL_GROUNDS||LiteraryRooms.outside(p);}
     public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension(LabyrinthPlace p){return outside(p)?HouseDimensions.OUTSIDE:HouseDimensions.INTERIOR;}
     public static void build(MinecraftServer server,ServerLevel l,BlockPos b,LabyrinthPlace p){
         var r=p.room();box(l,b,r.minX(),r.minY(),r.minZ(),r.maxX(),r.maxY(),r.maxZ(),Blocks.AIR.defaultBlockState());

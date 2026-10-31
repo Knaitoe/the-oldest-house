@@ -46,6 +46,7 @@ public final class LabyrinthDealer {
                     || place == LabyrinthPlace.TED_CAVER
                     || place == LabyrinthPlace.BACKSEAT
                     || place == LabyrinthPlace.SILO
+                    || place == LabyrinthPlace.WAY_OUT
                     || place == LabyrinthPlace.HOLLOWAY_CAMP
                     || place == LabyrinthPlace.HIDE_AND_CLAP
                     || (NovelVignettes.isNovel(place) && place.kind()!=LabyrinthPlace.Kind.RECURRING)
@@ -81,6 +82,8 @@ public final class LabyrinthDealer {
         if (HollowayVignette.canDeal(data,player)) places.add(LabyrinthPlace.HOLLOWAY_CAMP);
         if (BackseatSites.canDeal(data,player)) places.add(LabyrinthPlace.BACKSEAT);
         if (SiloSites.canDeal(data,player)) places.add(LabyrinthPlace.SILO);
+        // 0.4.199: the way out, once to each reader who has been in the House long enough to want out.
+        if (WayOut.canDeal(data,player)) places.add(LabyrinthPlace.WAY_OUT);
         // 0.4.158: every reader plays the clapping game once, in a room of their own.
         if (HideAndClap.canDeal(data,player)) places.add(LabyrinthPlace.HIDE_AND_CLAP);
         for(var p:NovelVignettes.PLACES)if(NovelVignettes.canDeal(data,player,p)&&!places.contains(p))places.add(p);
