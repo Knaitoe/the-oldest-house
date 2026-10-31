@@ -21,6 +21,9 @@
   "facing=north,kind=nail_keg": {
    "model": "the_oldest_house:block/winchester/nail_keg"
   },
+  "facing=north,kind=spider_window": {
+   "model": "the_oldest_house:block/winchester/spider_window"
+  },
   "facing=north,kind=plaque": {
    "model": "the_oldest_house:block/winchester/plaque"
   },
@@ -50,6 +53,10 @@
   },
   "facing=east,kind=nail_keg": {
    "model": "the_oldest_house:block/winchester/nail_keg",
+   "y": 90
+  },
+  "facing=east,kind=spider_window": {
+   "model": "the_oldest_house:block/winchester/spider_window",
    "y": 90
   },
   "facing=east,kind=plaque": {
@@ -84,6 +91,10 @@
    "model": "the_oldest_house:block/winchester/nail_keg",
    "y": 180
   },
+  "facing=south,kind=spider_window": {
+   "model": "the_oldest_house:block/winchester/spider_window",
+   "y": 180
+  },
   "facing=south,kind=plaque": {
    "model": "the_oldest_house:block/winchester/plaque",
    "y": 180
@@ -114,6 +125,10 @@
   },
   "facing=west,kind=nail_keg": {
    "model": "the_oldest_house:block/winchester/nail_keg",
+   "y": 270
+  },
+  "facing=west,kind=spider_window": {
+   "model": "the_oldest_house:block/winchester/spider_window",
    "y": 270
   },
   "facing=west,kind=plaque": {

@@ -261,6 +261,27 @@ def plaque():
     return img
 
 
+def spider_window():
+    """0.4.201: the spider-web window. Lead cames run out from the top corner like a web's spokes and round it in rings;
+    the panes between are pale clear glass, a few amethyst, as in the house's own."""
+    img = canvas()
+    lead = (52, 50, 54)
+    import math
+    for y in range(16):
+        for x in range(16):
+            r = math.hypot(x + .5, y + .5)
+            a = math.degrees(math.atan2(y + .5, x + .5))
+            spoke = any(abs(a - s) < 3.2 + 20 / max(r, 1) for s in (8, 30, 52, 74))
+            ring = any(abs(r - k) < .55 for k in (4.5, 8.5, 12.5, 16.5))
+            if x in (0, 15) or y in (0, 15) or spoke or ring:
+                px(img, x, y, lead, 255)
+            else:
+                amethyst = int(r // 4) % 2 == 1 and int(a // 22) % 2 == 0
+                px(img, x, y, (176, 140, 206) if amethyst else (214, 226, 220), 150 if amethyst else 96)
+    return img
+
+
+TEXTURES.update({'spider_window': spider_window})
 TEXTURES.update({'mahogany': mahogany, 'velvet': velvet, 'brass': brass, 'clock_face': clock_face, 'pendulum': pendulum,
                  'pine': pine, 'pine_end': pine_end, 'keg': keg, 'nails': nails, 'steel': steel, 'plaque': plaque})
 
@@ -339,6 +360,11 @@ def m_nail_keg():
             box((11, 10, 6), (13, 12, 10), 's')]
 
 
+@spec('spider_window', {'g': 'spider_window'}, 'spider_window')
+def m_spider_window():
+    return [box((0, 0, 15.25), (16, 16, 16), 'g', faces=('north', 'south'))]
+
+
 @spec('plaque', {'b': 'plaque'}, 'plaque')
 def m_plaque():
     return [box((4, 5, 15), (12, 12, 16), 'b', uv=(2, 2, 14, 13))]
@@ -351,7 +377,7 @@ def model_json(name):
     fn, textures, particle = MODEL_SPECS[name]
     tex = {k: NS + v for k, v in textures.items()}
     tex['particle'] = NS + particle
-    return {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout', 'ambientocclusion': False, 'textures': tex, 'elements': fn()}
+    return {'parent': 'minecraft:block/block', 'render_type': 'minecraft:translucent' if name == 'spider_window' else 'minecraft:cutout', 'ambientocclusion': False, 'textures': tex, 'elements': fn()}
 
 
 

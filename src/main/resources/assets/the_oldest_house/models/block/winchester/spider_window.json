@@ -1,0 +1,31 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false,
+ "textures": {
+  "g": "the_oldest_house:block/winchester/spider_window",
+  "particle": "the_oldest_house:block/winchester/spider_window"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    15.25
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g"
+    },
+    "south": {
+     "texture": "#g"
+    }
+   }
+  }
+ ]
+}

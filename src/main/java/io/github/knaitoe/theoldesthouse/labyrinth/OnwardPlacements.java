@@ -26,7 +26,7 @@ final class OnwardPlacements {
         r.put(MINIATURES,14,0,-27,WEST,()->Blocks.DARK_OAK_DOOR);
         r.put(USHER,3,0,-41,SOUTH,()->Blocks.DARK_OAK_DOOR);
         r.put(MASQUE,-6,0,-77,SOUTH,()->Blocks.DARK_OAK_DOOR); // out of the black room
-        r.put(WINCHESTER,29,0,-77,SOUTH,OnwardRegistry.PANEL);
+        r.put(WINCHESTER,22,7,-77,SOUTH,OnwardRegistry.PANEL); // 0.4.201: the back wall of the last room, upstairs
         r.put(CHILD_ROOM,11,-4,-10,WEST,OnwardRegistry.CELLAR); // from the brick basement
         r.put(CRIMSON_HALL,0,0,-43,SOUTH,()->Blocks.DARK_OAK_DOOR);
         r.put(BLY_ROUTE,0,0,-53,SOUTH,OnwardRegistry.PANEL); // beyond the conservatory pond

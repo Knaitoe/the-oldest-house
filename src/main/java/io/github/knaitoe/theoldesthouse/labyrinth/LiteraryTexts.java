@@ -26,8 +26,8 @@ public final class LiteraryTexts {
             "We carried her down before the physician returned. My brother listened at the lid. He said the sound was the wood settling.",
             "I left the hinges oiled. A living person should not have to shout through a bad hinge.\n\nTonight I will close the lid for good, or leave it as it is. In the morning I will go down and see what I have kept in, or let out into the wing.");
         case WINCHESTER->book("Construction ledger","S. W.",
-            "Pay the carpenters by the day. Do not ask them to estimate the end. The landing needs a room even if the room does not need a landing.",
-            "The new door opens above the courtyard. There is hay below it. I have ordered another staircase.\n\nThe long switchback reaches the upper ledger. The short stair reaches only plaster.");
+            "Pay the carpenters by the night. Do not ask them to estimate the end. Do not watch them work; they will not work while they are watched.",
+            "The plans come from the Blue Room. A robe first, then the bell. Each night the clock strikes thirteen while they build, and whoever is not upstairs in the last room by the thirteenth stroke is given a room of their own.\n\nThe upper ledger keeps a name beside every room.");
         case CHILD_ROOM->book("The bedtime card","Dad",
             "I left the little lamp on. Your mum says it makes the curtains look yellow.\n\nThe train was on the rug when I came in. I have put it back there.",
             "You used to lose things under that bed. I could never get my shoulder far enough in to fetch them.\n\nIf you hear us, wait until morning. We are asleep downstairs.");
@@ -107,7 +107,7 @@ public final class LiteraryTexts {
         case MINIATURES->"The tables held rooms I had walked through, a little figure standing where I had stood. In the latest, a second figure stood just behind mine, close enough to touch its shoulder. I had crossed that room alone.";
         case MASQUE->"I put my hand on the clock. The next chime did not come. Seven rooms of people had been waiting for it; now there was only the sound of my hand leaving the wood.";
         case USHER->own.getBoolean("Fell0507")?UsherStory.account(own):own.getBoolean("LidClosed")?"I returned to the closed coffin. Scratching had crossed the stone along with the crack. I could no longer call it the wood settling.":"I left the lid open. When I returned, the coffin was empty. I found her in the wing, standing where there had been no chair.";
-        case WINCHESTER->"The switchbacks brought me one floor up, to the upper ledger. Beside every room it kept a name, and none of the names were the builders'. The last name had no room yet. That was why the work could not stop.";
+        case WINCHESTER->WinchesterHouse.account(own);
         case CHILD_ROOM->ChildRoom.account(own);
         case CRIMSON_HALL->"I played the three voices all the way through. Under the snow, the floor was red. A house can keep a voice much longer than it keeps a person.";
         case BLY_ROUTE->own.getBoolean("Dragged")?"The first time I stood where she walks and came up in the lake room's water. "+(AccountAfterwards.bly(own).isEmpty()?"":AccountAfterwards.bly(own)+" ")+"Then I shut a cupboard from inside. The catches are inside because a child once hid from her in one. I think she was looking for that child when she found me.":"I shut a cupboard from inside while the drips passed on their way to the lake room. The catches are inside because a child once hid from her in one. She has never opened one. I think she is still looking for that child.";

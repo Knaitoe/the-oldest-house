@@ -81,6 +81,9 @@ public final class StaircaseAccount {
         var kept = remembered(d, p.getUUID());
         if (!kept.isEmpty()) StaircaseProse.fact("remembered", kept.size(), kept.getFirst()).ifPresent(out::add);
         count(out, "unwound", d.stateEntry(ContestTrades.STATE, p.getStringUUID()).getInt("Unwound"));
+        // 0.4.201: the rooms the Winchester's upper ledger kept for this reader's dead.
+        var ledger = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.WINCHESTER).getString("Ledger201");
+        if (!ledger.isBlank()) count(out, "ledger", ledger.split("\\. ").length);
         return out;
     }
     /** Who follows this reader home now, in prose, from the rooms' own records. */
