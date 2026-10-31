@@ -2310,15 +2310,6 @@
       }
     ]
   },
-  "house_read.supper": {
-    "subtitle": "subtitles.the_oldest_house.house_read.supper",
-    "sounds": [
-      {
-        "name": "the_oldest_house:house_read/supper",
-        "stream": true
-      }
-    ]
-  },
   "house_read.news": {
     "subtitle": "subtitles.the_oldest_house.house_read.news",
     "sounds": [

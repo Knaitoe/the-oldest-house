@@ -22,12 +22,14 @@ public final class HouseReadStory {
     public static final String PAGE="\f";
     public static final String WELCOME="Come in. Shut the door behind you; it sticks. Every house keeps a story about the people who live in it, and you've only just arrived, so I'll have to learn yours.";
     // 0.4.172 (owner: "I would have played it off of the domestic setting you just had the player in. ended with something like -
-    // every house is a haunted house. But a warning, before you proceed: this house has ghosts in it.")
-    public static final String HAUNTED="Every house is a haunted house.",WARNING_LEAD="But a warning, before you proceed:",WARNING="this house has ghosts in it.";
+    // every house is a haunted house. But a warning, before you proceed: this house has ghosts in it."). 0.4.201, the owner's
+    // own words: "Every house is haunted. Old arguments and worse habits keep these walls standing. A word of caution before the
+    // door closes: This House Has Ghosts in It". The last page is the title.
+    public static final String HAUNTED="Every house is haunted. Old arguments and worse habits keep these walls standing.",WARNING_LEAD="A word of caution before the door closes:",WARNING="This House Has Ghosts in It";
 
     public static String opening(HouseReadSites.Room room){return switch(room){
         case WAITING->"You grew up the way everyone does, mostly by waiting. A clock, a row of chairs, and a door that would open when it was ready.";
-        case BATHROOM->"Some nights you came home late and worn through, and your hands still knew what to do before bed.";
+        case BATHROOM->"Some nights you came home late and worn through, and your hands knew what to do before bed.";
         case COATROOM->"Once you came in out of the rain, soaked to the skin, into a hall where nobody was looking, and dressed yourself.";
         case SHELTER->"There was a summer storm, and a roof over the water, and two people you hadn't found the nerve to talk to.";
         case PORCH->"And at the end of every day, somebody called you in for supper.";

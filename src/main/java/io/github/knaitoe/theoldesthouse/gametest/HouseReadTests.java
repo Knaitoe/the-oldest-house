@@ -102,7 +102,7 @@ public final class HouseReadTests {
               draw(p,f.in,b[0],7,12);var drawnBody=HouseBodies.body(f.data(),p.getUUID());
               h.assertTrue(sheet.read().getInt("Body")==2&&drawnBody.presentation()==2&&drawnBody.face()==2&&drawnBody.tone()==HouseReadKitchen.rgb(9),"again, a dress: the House's body is the one drawn, with the face drawn: "+drawnBody);
               draw(p,f.in,b[0],7,1);h.assertTrue(sheet.read().getInt("Body")==2&&sheet.read().getInt("Mood")==2,"the pencil on the hair only goes over the lines");
-              var ownSkin=HouseBodies.toned(p);h.assertTrue(ownSkin!=null&&ownSkin.own()&&ownSkin.presentation()==2&&ownSkin.face()==2&&ownSkin.tone()==HouseReadKitchen.rgb(9),"a human-skinned reader wears the drawn tone, body and face on their own skin: "+ownSkin);
+              var worn=HouseBodies.worn(p);h.assertTrue(worn!=null&&worn.presentation()==2&&worn.face()==2&&worn.tone()==HouseReadKitchen.rgb(9),"the reader wears the drawn tone, body and face on the House's body: "+worn);
               // Up on the fridge: the picture leaves the table, the crayon goes back, the doors open.
               stand(p,f.in,b[0],3.5,0,-8.5);click(p,b[0].offset(HouseReadKitchen.FRIDGE_AT));
               var top=(HouseReadPropBlock.Fitting)f.in.getBlockEntity(b[0].offset(HouseReadKitchen.FRIDGE_AT.above()));
@@ -129,9 +129,10 @@ public final class HouseReadTests {
     public static void theHouseStoryWelcomesTheReaderAndEndsOnItsWarningWithoutNamingThem(GameTestHelper h){
         var words=new ArrayList<String>(List.of(HouseReadStory.WELCOME,HouseReadStory.HAUNTED,HouseReadStory.WARNING_LEAD,HouseReadStory.WARNING));
         for(var room:HouseReadSites.Room.values()){words.add(HouseReadStory.opening(room));words.add(HouseReadStory.closing(room));h.assertTrue(!HouseReadStory.opening(room).isBlank()&&!HouseReadStory.closing(room).isBlank(),"every quiet room has its opening and closing line: "+room);}
-        h.assertTrue(HouseReadStory.WELCOME.startsWith("Come in")&&HouseReadStory.WARNING.equals("this house has ghosts in it."),"the story welcomes the reader in and ends on the warning that this house has ghosts in it");
+        h.assertTrue(HouseReadStory.WELCOME.startsWith("Come in")&&HouseReadStory.WARNING.equals("This House Has Ghosts in It"),"the story welcomes the reader in and ends on the warning, the title: this House has ghosts in it");
         var forbidden=java.util.regex.Pattern.compile("\\b(he|she|him|her|his|hers|man|woman|boy|girl|son|daughter|brother|sister|black|white|brown|young|old|older|younger)\\b",java.util.regex.Pattern.CASE_INSENSITIVE);
-        for(String line:words){h.assertTrue(!forbidden.matcher(line).find(),"the House's story never genders the reader, names a colour or an age: "+line);h.assertTrue(!line.contains(HouseReadStory.PAGE),"each line is one page");}
+        // 0.4.201: the owner's "Old arguments" ages the arguments, not anyone in the house.
+        for(String line:words){h.assertTrue(!forbidden.matcher(line.replace("Old arguments","arguments")).find(),"the House's story never genders the reader, names a colour or an age: "+line);h.assertTrue(!line.contains(HouseReadStory.PAGE),"each line is one page");}
         for(String line:words){int t=HouseReadStory.ticks(line);h.assertTrue(t>=40&&t<=200,"each page holds long enough to read and no longer: "+t+" for "+line);}
         h.assertTrue(HouseReadStory.ticks(HouseReadStory.WELCOME+HouseReadStory.PAGE+HouseReadStory.opening(HouseReadSites.Room.WAITING))==HouseReadStory.page(HouseReadStory.WELCOME)+HouseReadStory.page(HouseReadStory.opening(HouseReadSites.Room.WAITING)),"a card's length is the sum of its pages, as the client counts it");
         h.succeed();
@@ -266,8 +267,10 @@ public final class HouseReadTests {
               stand(p,f.out,b[0],.5,0,8.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,b[0].offset(HouseReadRooms.RAIL_AT).getCenter());HouseReadExport.save(f.out,b[0],HouseReadSites.Room.PORCH,"porch");})
           .thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.PORCH).getInt("Age")>=435,"the actual ten-second whistle and quiet observation window finish"))
           .thenExecute(()->{
-              var packets=packets(p);h.assertTrue(packets.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s&&s.getSound().value()==HouseReadRegistry.WHISTLE.get())&&packets.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s&&s.getSound().value()==HouseReadRegistry.SUPPER.get()),"the actual reader receives both original positional supper cues");
-              h.assertTrue(packets(peer).stream().noneMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s&&s.getSound().value()==HouseReadRegistry.SUPPER.get()),"the other reader receives no private kitchen voice");h.assertTrue(!visit(p,HouseReadSites.Room.PORCH).getBoolean("Written"),"watching the rail through the entire window keeps it plain");p.setYRot(0);p.setXRot(0);
+              var packets=packets(p);h.assertTrue(packets.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s&&s.getSound().value()==HouseReadRegistry.WHISTLE.get()),"the actual reader hears the original positional whistle");
+              // 0.4.201: the call in for supper is a line of text, not a voice.
+              h.assertTrue(packets.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket c&&c.overlay()&&c.content().getString().equals("“"+HouseReadTexts.SUPPER+"”")),"the reader is called in for supper in words on the action bar");
+              h.assertTrue(packets(peer).stream().noneMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket c&&c.content().getString().contains(HouseReadTexts.SUPPER)),"the other reader is not called in to this reader's supper");h.assertTrue(!visit(p,HouseReadSites.Room.PORCH).getBoolean("Written"),"watching the rail through the entire window keeps it plain");p.setYRot(0);p.setXRot(0);
           }).thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.PORCH).getBoolean("Written"),"the supplied carving appears only after the actual reader looks away"))
           .thenExecute(()->{
               for(var rel:List.of(new BlockPos(0,3,-24),new BlockPos(-15,0,-8),new BlockPos(14,0,-42)))h.assertTrue(f.data().doorAt(f.out.dimension(),b[0].offset(rel))!=null,"kitchen, side and road each have their own real way on");

@@ -39,7 +39,13 @@ public final class JournalTests {
             h.assertTrue(!first.isEmpty()&&data.parcel(p).isEmpty()&&!data.grantIfNone(p),"one journal, once, whether it comes on the doorstep or on the first arrival");
             h.assertTrue(data.check(p,first)==Journals.Opening.OPEN&&data.check(peer,first)==Journals.Opening.NOT_YOURS,"only its owner opens it");
             h.assertTrue(Journals.nameOf(first).equals("journal_owner")&&Journals.wearOf(first)==0,"the owner's name is inside the cover, and it is new");
+            // 0.4.201: into the first open hotbar slot, past the hand; a full hotbar sends it to the pack.
+            peer.getInventory().selected=0;peer.getInventory().setItem(1,new ItemStack(net.minecraft.world.item.Items.TORCH));
             h.assertTrue(data.grantIfNone(peer)&&!held(peer).isEmpty()&&data.check(peer,held(peer))==Journals.Opening.OPEN,"a reader who missed the letter is given theirs");
+            h.assertTrue(Journals.owner(peer.getInventory().getItem(2))!=null&&peer.getInventory().getItem(0).isEmpty(),"it lands in the first open hotbar slot that is not in hand: "+peer.getInventory().items.subList(0,9));
+            var full=new net.minecraft.world.entity.player.Inventory(peer);for(int i=0;i<9;i++)if(i!=4)full.setItem(i,new ItemStack(net.minecraft.world.item.Items.STICK));full.selected=4;
+            h.assertTrue(Journals.slot(full)==4,"the hand's slot when it is the only open one in the hotbar");
+            full.setItem(4,new ItemStack(net.minecraft.world.item.Items.STICK));h.assertTrue(Journals.slot(full)==9,"then the pack");
             h.assertTrue(!data.returnLost(p),"a journal that is not lost does not come back");
             data.markLost(first);
             h.assertTrue(data.returnLost(p),"a lost journal comes back to its owner");

@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("108")
+        event.registrar("109")
                 .playToClient(WayOutPayload.TYPE,WayOutPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WayOutClient.accept(payload)))
                 .playToClient(GroundingPayload.TYPE,GroundingPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.GroundingClient.accept(payload)))
                 .playToServer(JournalTearPayload.TYPE,JournalTearPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p){if(payload.back())io.github.knaitoe.theoldesthouse.journal.TornPages.reclaim(p,payload.page());else io.github.knaitoe.theoldesthouse.journal.TornPages.tear(p,payload.page());}}))
@@ -27,7 +27,6 @@ public final class HouseNetwork {
                 .playToClient(HouseReadLinePayload.TYPE,HouseReadLinePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseReadLineScreen.show(payload)))
                 .playToClient(HouseReadLookPayload.TYPE,HouseReadLookPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseReadLookClient.accept(payload)))
                 .playToClient(HouseBodiesPayload.TYPE,HouseBodiesPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseBodyClient.accept(payload)))
-                .playToServer(HouseBodyReportPayload.TYPE,HouseBodyReportPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.HouseBodies.report(p,payload.human());}))
                 .playToClient(UncannyViewPayload.TYPE,UncannyViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.UncannyClient.accept(payload)))
                 .playToServer(UncannyCameraPayload.TYPE,UncannyCameraPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.UncannySenses.camera(p,payload);}))
                 .playToClient(HarriganPhonePayload.TYPE,HarriganPhonePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HarriganPhoneScreen.accept(payload)))

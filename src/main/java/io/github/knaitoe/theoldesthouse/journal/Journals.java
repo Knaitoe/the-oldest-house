@@ -289,11 +289,24 @@ public final class Journals extends SavedData {
         p.displayClientMessage(Component.literal(wear(p.getUUID())>=WORN?"Your journal is back in your hands, swollen and torn. Every word is still there.":"Your journal is back in your hands, water-stained. Every word is still there."),false);
         return true;
     }
-    /** Into the pack rather than the hotbar, so it never lands in a hand that was kept empty for something else. */
+    /**
+     * 0.4.201 (owner: "try to place the journal in the first open slot of the player's hotbar if you can, rather than the first
+     * open space in their inventory. so they're quicker to recognize its addition"): the first empty hotbar slot other than the
+     * one in hand, then the slot in hand if it is the only empty one there, then the pack, and dropped at their feet only when all
+     * of it is full.
+     */
     static void give(ServerPlayer p,ItemStack stack){
-        var items=p.getInventory().items;
-        for(int i=9;i<items.size();i++)if(items.get(i).isEmpty()){p.getInventory().setItem(i,stack);p.inventoryMenu.broadcastChanges();return;}
+        int slot=slot(p.getInventory());
+        if(slot>=0){p.getInventory().setItem(slot,stack);p.inventoryMenu.broadcastChanges();return;}
         if(!p.getInventory().add(stack))p.drop(stack,false);
+    }
+    /** Where {@link #give} puts a journal: a slot index into the inventory's items, or -1 when every one is full. */
+    public static int slot(net.minecraft.world.entity.player.Inventory inventory){
+        var items=inventory.items;int hotbar=net.minecraft.world.entity.player.Inventory.getSelectionSize();
+        for(int i=0;i<hotbar;i++)if(i!=inventory.selected&&items.get(i).isEmpty())return i;
+        if(items.get(inventory.selected).isEmpty())return inventory.selected;
+        for(int i=hotbar;i<items.size();i++)if(items.get(i).isEmpty())return i;
+        return -1;
     }
     public void markLost(ItemStack s){var owner=owner(s);if(owner==null)return;var b=books.get(owner);if(b==null||issueOf(s)!=b.issue)return;b.lost=true;setDirty();}
 

@@ -101,9 +101,9 @@ public final class HouseConfig {
                 .define("readReaders", true);
         READ_DRAWN_TO = builder.comment("Read who a reader is drawn to in the shelter (the lake house partner follows it). Off leaves that one trait unread.")
                 .define("readDrawnTo", true);
-        HOUSE_BODIES = builder.comment("Give a reader whose own skin doesn't look human a human body while inside the House, chosen from the read",
-                        "(age, clothes and hair) and seen by every player there. Their client says only whether their face looks human.",
-                        "Off keeps every reader's own skin everywhere.")
+        HOUSE_BODIES = builder.comment("Give every reader the House's body while inside the House, chosen from the read (age, clothes and hair)",
+                        "and coloured as they drew themselves at the kitchen table, seen by every player there. Their own skin returns",
+                        "in the manor and outside. Off keeps every reader's own skin everywhere.")
                 .define("houseBodies", true);
         builder.pop();
         builder.push("playtest");
