@@ -348,7 +348,9 @@ def outfits_worn():
     for n in OUTFITS:
         im = Image.new('RGBA', (64, 32), (0, 0, 0, 0)); d = ImageDraw.Draw(im); rng = rooms160._rng('wardrobe_' + n)
         top, bottoms = {'tee_jeans': (TEE, JEANS), 'crop_shorts': (CROP, CUTOFFS), 'tank_shorts': (TANK, JERSEY)}[n]
-        rows = 8 if n == 'crop_shorts' else 12
+        # 0.4.201 (owner: "The crop top should also show the player's midriff+navel!"): six rows, so the midriff shows between it
+        # and the cut-offs' waistband (HouseReadClothes draws it there in the wearer's own tone, from 'midriff').
+        rows = 6 if n == 'crop_shorts' else 12
         body = _rows(OUTFIT_BODY, rows)
         _jersey(d, body, *top, rng, rib=n == 'tank_shorts')
         if n != 'tank_shorts':
@@ -405,4 +407,13 @@ def outfits_worn():
                 x0, y0, x1, y1 = OUTFIT_WAIST[name]
                 for x in (x0 + 1, x1 - 1): d.line((x, y0, x, y1), fill=bottoms[1])
         sheets[n] = im
+    # The bare midriff under the crop top: plain white, so the client's tint (the skin colour the body is drawn in) is the skin
+    # itself, with the navel: a dark pixel with a softer one beside it, a little right of the middle like a skin's own features.
+    # The 8x3x4 box at (0,0) on the 64x32 sheet HouseReadClothes' mesh is laid out on: top (4,0), bottom (12,0), sides from row 4,
+    # the front face columns 4-11, rows 4-6.
+    mid = Image.new('RGBA', (64, 32), (0, 0, 0, 0)); d = ImageDraw.Draw(mid)
+    d.rectangle((4, 0, 19, 3), fill=(255, 255, 255, 255))
+    d.rectangle((0, 4, 23, 6), fill=(255, 255, 255, 255))
+    d.point((8, 5), fill=(150, 150, 150, 255)); d.point((7, 5), fill=(214, 214, 214, 255))
+    sheets['midriff'] = mid
     return sheets
