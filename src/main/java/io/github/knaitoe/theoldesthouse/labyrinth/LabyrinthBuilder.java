@@ -268,9 +268,6 @@ public final class LabyrinthBuilder {
         DomesticLives.tick(server);
         DomesticDisturbances.tick(server);
         DomesticContinuity.tick(server);
-        UncannyEnvironmentRepairs.tick(server);
-        UncannyPlaytestRepairs.tick(server);
-        TunnelPassage.tick(server);
         UncannyAnatomyUpgrade.tick(server);
         VignetteInteriors.tick(server);
         io.github.knaitoe.theoldesthouse.house.RoomNotes.tick(server);

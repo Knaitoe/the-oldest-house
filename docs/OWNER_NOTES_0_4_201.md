@@ -68,6 +68,14 @@ Under the culvert's roof a stroke could start only every sixteen ticks, each add
 
 The lake house namespace's sixteen cases pass, the stroke case included (an immediate second stroke is still refused; the same hand pushes again after a stroke; a back stroke runs back out).
 
+## The tunnel: a stoplight in the middle, and no fresh start
+
+> "stoplight spawned in middle of vignette? The vignette also doesnt reset upon re-entry"
+
+**The stoplight.** The tunnel's stoplight and bin belong against its far wall, at z -144. Two saved-world refits were still running on new worlds: `UncannyEnvironmentRepairs` and `UncannyPlaytestRepairs` compared each block with older plans of the rooms and wrote in their target plan wherever a block still matched. For the tunnel that target was the 0.4.132 plan, when the tunnel ended at z -73 with its stoplight at (0, 1, -72) and bin at (2, 0, -71). In the long tunnel those cells are open corridor, which matched the older plans' air, so the refits put the old stoplight and bin down in the middle of it. Both refits are removed, with the tunnel's own lengthening refit in `TunnelPassage` and the four old room plans (`UncannyRooms0121`, `0122`, `0129`, `0132`) that only they used, as the standing rule asks of any migration that is touched. Their tests go with them; the fresh-build checks in those cases stay, including the case that exports the eleven room views. They never ran in the test server, which is why CI never saw them.
+
+**Coming back.** A reader caught by the woman was marked failed and left inside the tunnel; coming back in found it as they had left it, the woman standing where she had caught them and the signals mid-cycle. Now, coming back into the tunnel after more than three seconds away starts it over: the signals from the beginning, the same woman folded at the far end, and the catch forgotten. A passage already made (past the last green, or read) is kept. Being caught leaves the reader in the tunnel, so it starts over only once they have left and come back. `UncannyTests.comingBackIntoTheTunnelStartsItOverButKeepsAPassageMade` covers staying, coming back and a passage kept; the uncanny and foyer namespaces pass (59) and the uncanny environment case passes.
+
 ## Not changed yet
 
 The coatroom's closing line, "That's how you'll look here.", waits on the owner's choice among the suggestions given in conversation.

@@ -57,33 +57,4 @@ public final class FoyerMotionTests {
     }
     @AfterBatch(batch="foyer_motion_native") public static void nativeDone(ServerLevel l){close();}
 
-    @GameTest(template="empty",batch="foyer_motion_custody",timeoutTicks=800)
-    public static void boundedOldFoyerRepairAndNativeBlockEntityReloadPreserveMotionAndOriginals(GameTestHelper h){
-        var f=new LiteraryTests.Fixture(h);fixture=f;var l=f.level(PLACE);var b=f.base(PLACE);f.chunks.hold(l,IndianLakeRooms.bounds(b,PLACE));
-        ServerPlayer[] reader={null};BlockEntity[] source={null},account={null};CompoundTag[] original={null};UUID[] visitor={null};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the old foyer is resident"))
-        .thenExecute(()->{
-            f.built.add(PLACE);UncannyRooms0129.build(l,b,PLACE);LabyrinthBuilder.registerDoors(f.data(),PLACE,b);
-            var p=f.player("chain_old",PLACE);reader[0]=p;f.source(p,PLACE);original[0]=f.own(p,PLACE).getCompound("Original_Source").copy();visitor[0]=f.own(p,PLACE).getUUID("CastVisitor");
-            source[0]=l.getBlockEntity(b.offset(UncannyRooms.source(PLACE)));account[0]=l.getBlockEntity(b.offset(UncannyRooms.account(PLACE)));
-            l.setBlock(b.offset(3,3,-13),Blocks.GOLD_BLOCK.defaultBlockState(),3);
-            h.assertTrue(!UncannyPlaytestRepairs.step(l,f.origin,PLACE),"a present camera pauses the real bounded scenery repair");
-            f.at(p,PLACE,80,0,-5);
-        }).thenWaitUntil(()->{UncannyPlaytestRepairs.step(l,f.origin,PLACE);h.assertTrue(l.getBlockEntity(b.offset(FoyerMotion.PENDULUM)) instanceof UncannyPropBlock.Fitting,"the recognized old empty cells receive the new physical fitting");})
-        .thenWaitUntil(()->{UncannyPlaytestRepairs.step(l,f.origin,PLACE);h.assertTrue(f.data().state(UncannyPlaytestRepairs.STATE).getBoolean(f.origin.asLong()+":"+PLACE.id()),"the saved bounded repair finishes");})
-        .thenExecute(()->{
-            var p=reader[0];h.assertTrue(l.getBlockEntity(b.offset(UncannyRooms.source(PLACE)))==source[0]&&l.getBlockEntity(b.offset(UncannyRooms.account(PLACE)))==account[0],"neither original finite reading surface is replaced");
-            h.assertTrue(l.getBlockState(b.offset(3,3,-13)).is(Blocks.GOLD_BLOCK),"the repair retains a player's edited chain-route cell");
-            f.arrive(p,PLACE);pull(f,p);var at=b.offset(FoyerMotion.PENDULUM);var motion=FoyerMotion.fitting(l,b);var before=motion.swing.sample(l.getGameTime());
-            var restored=BlockEntity.loadStatic(at,motion.getBlockState(),motion.saveWithFullMetadata(l.registryAccess()),l.registryAccess());
-            h.assertTrue(restored instanceof UncannyPropBlock.Fitting,"the native block-entity loader restores the actual fitting");l.setBlockEntity(restored);
-            var after=((UncannyPropBlock.Fitting)restored).swing.sample(l.getGameTime());
-            h.assertTrue(Math.abs(after.angle()-before.angle())<1e-12&&Math.abs(after.velocity()-before.velocity())<1e-12&&((UncannyPropBlock.Fitting)restored).swing.pulls()==1,"native reload preserves exact angle, velocity, epoch and use history");
-            h.assertTrue(((UncannyPropBlock.Fitting)restored).getUpdatePacket()!=null&&((UncannyPropBlock.Fitting)restored).getUpdateTag(l.registryAccess()).contains("CourtyardMotion131"),"actual clients receive the saved physical initial conditions");
-            f.reload();UncannyPlaytestRepairs.step(l,f.origin,PLACE);
-            h.assertTrue(l.getBlockEntity(at)==restored&&original[0].equals(f.own(p,PLACE).getCompound("Original_Source"))&&visitor[0].equals(f.own(p,PLACE).getUUID("CastVisitor")),"finished migration and saved progress never reset the used fitting, original page or private visitor");
-            var saved=((UncannyPropBlock.Fitting)restored).swing.save();p.setGameMode(GameType.SPECTATOR);pull(f,p);h.assertTrue(saved.equals(((UncannyPropBlock.Fitting)restored).swing.save()),"a spectator cannot operate the chain");h.succeed();
-        });
-    }
-    @AfterBatch(batch="foyer_motion_custody") public static void custodyDone(ServerLevel l){close();}
 }

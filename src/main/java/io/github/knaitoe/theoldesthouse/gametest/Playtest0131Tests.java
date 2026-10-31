@@ -95,16 +95,6 @@ public final class Playtest0131Tests {
                 for(int z=-23;z>=-26;z--)h.assertTrue(l.noCollision(null,new AABB(bed.getX()-4.8,bed.getY()+5.01,bed.getZ()+z+.2,bed.getX()-4.2,bed.getY()+6.8,bed.getZ()+z+.8)),"a full native body has an open aisle between the monitoring desk and bed at "+z);
                 h.assertTrue(l.isEmptyBlock(bed.offset(-6,5,-23))&&l.getBlockState(bed.offset(-5,5,-21)).getBlock() instanceof HouseholdFurnitureBlock&&l.getBlockState(bed.offset(-5,5,-21)).getValue(HouseholdFurnitureBlock.FACING)==Direction.NORTH,"one chair faces the straight CCTV desk; the overlapping third desk is absent");
                 h.assertTrue(l.getBlockEntity(bed.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)))!=null&&l.getBlockState(bed.offset(UncannyRooms.BED_AT)).getBlock() instanceof net.minecraft.world.level.block.BedBlock,"the actual monitor/source and native bed remain usable originals");
-                f.at(p,place,80,0,40);
-                // Simulate the bad fill in an already-checkpointed 0.4.131 house, retaining its real props.
-                for(var r:BlockPos.betweenClosed(-7,0,-27,7,4,-8))if(!(r.getX()==0&&r.getZ()==-15&&r.getY()<=1)&&l.isEmptyBlock(b.offset(r)))l.setBlock(b.offset(r),Blocks.DIRT.defaultBlockState(),3);
-                for(var r:BlockPos.betweenClosed(9,0,-13,11,2,-9))if(l.isEmptyBlock(b.offset(r)))l.setBlock(b.offset(r),Blocks.DIRT.defaultBlockState(),3);
-                l.setBlock(b.offset(5,0,-10),Blocks.GOLD_BLOCK.defaultBlockState(),3);var prior=f.data().state("uncanny_playtest_shell_0131b");prior.putBoolean(f.origin.asLong()+":"+place.id(),true);f.data().setState("uncanny_playtest_shell_0131b",prior);
-                h.assertTrue(l.getBlockState(b.offset(0,0,-16)).is(Blocks.DIRT),"the recognized bad checkpoint begins with actual erroneous dirt inside");
-            }).thenWaitUntil(()->{UncannyPlaytestRepairs.step(l,f.origin,place);h.assertTrue(f.data().state(UncannyPlaytestRepairs.STATE).getBoolean(f.origin.asLong()+":"+place.id()),"the loaded vacant house receives its bounded saved repair");})
-            .thenExecute(()->{
-                h.assertTrue(l.isEmptyBlock(b.offset(0,0,-16))&&l.isEmptyBlock(b.offset(10,1,-12))&&l.getBlockState(b.offset(5,0,-10)).is(Blocks.GOLD_BLOCK),"the saved repair clears recognized internal fill while keeping a player's edited cell");
-                h.assertTrue(l.getBlockEntity(b.offset(UncannyRooms.source(place)))!=null&&l.isEmptyBlock(b.offset(0,0,-15))&&l.isEmptyBlock(b.offset(0,1,-15)),"the repair preserves the actual source and already-removed sun boards");
             }).thenSucceed();
     }
     @AfterBatch(batch="review131_rooms") public static void roomsDone(ServerLevel l){close();}
