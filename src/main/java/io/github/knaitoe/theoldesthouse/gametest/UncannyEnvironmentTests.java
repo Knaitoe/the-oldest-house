@@ -23,7 +23,6 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_uncanny_environment") @PrefixGameTestTemplate(false)
 public final class UncannyEnvironmentTests {
     private static LiteraryTests.Fixture fixture;
-    private static final List<net.minecraft.world.level.ChunkPos> FORCED=new ArrayList<>();private static ServerLevel forcedLevel;
     @GameTest(template="empty",batch="uncanny_environment",timeoutTicks=600)
     public static void fittedRoomsKeepTheirServingAislesOriginalsAndNativeSeats(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);fixture=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();
@@ -67,54 +66,6 @@ public final class UncannyEnvironmentTests {
         h.assertTrue(l.noCollision(null,new AABB(xx+.2,yy+.01,zz+.2,xx+.8,yy+1.8,zz+.8)),route+" clears an actual player body at "+x+","+y+","+z);
         h.assertTrue(!l.noCollision(null,new AABB(xx+.2,yy-.04,zz+.2,xx+.8,yy-.01,zz+.8)),route+" supports the body");
     }
-    @GameTest(template="empty",batch="uncanny_environment_refit",timeoutTicks=1200)
-    public static void oldRoomsRefitOnlyUnwatchedAndKeepTheActualServedMealAndPeelHoles(GameTestHelper h){
-        var f=new LiteraryTests.Fixture(h);fixture=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();
-        var place=LabyrinthPlace.SECOND_WAITRESS;var p=f.player("refit_reader",place);var l=f.level(place);var b=f.base(place);
-        UncannyRooms0121.build(l,b,place);f.build(LabyrinthPlace.LAYERED_MAN);UncannyRooms0121.build(f.level(LabyrinthPlace.LAYERED_MAN),f.base(LabyrinthPlace.LAYERED_MAN),LabyrinthPlace.LAYERED_MAN);
-        f.chunks.hold(l,IndianLakeRooms.bounds(b,place));f.chunks.hold(f.level(LabyrinthPlace.LAYERED_MAN),IndianLakeRooms.bounds(f.base(LabyrinthPlace.LAYERED_MAN),LabyrinthPlace.LAYERED_MAN));
-        var yard=f.base(LabyrinthPlace.MOTION_LIGHT);var yardLevel=f.level(LabyrinthPlace.MOTION_LIGHT);
-        f.chunks.hold(yardLevel,IndianLakeRooms.bounds(yard,LabyrinthPlace.MOTION_LIGHT));
-        LiteraryActor[] settledVisitor={null};
-        var kept=new CompoundTag();var meal=new ItemEntity[1];var source=new net.minecraft.world.level.block.entity.BlockEntity[1];
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both original room slots are loaded")).thenExecute(()->{
-            // Native gravity creates falling entities. Start it only after their destination sections
-            // are loaded, rather than losing the legacy floor during the full suite's disk backlog.
-            UncannyRooms0121.build(yardLevel,yard,LabyrinthPlace.MOTION_LIGHT);f.built.add(LabyrinthPlace.MOTION_LIGHT);
-            for(var at:BlockPos.betweenClosed(yard.offset(-7,-3,-25),yard.offset(7,-3,-15)))yardLevel.setBlock(at,Blocks.STONE.defaultBlockState(),3);
-            // The yard is in the interior while the reader is outside, and a level with no player or forced chunk stops
-            // ticking entities after 300 ticks: the falling gravel would hang in the air. Force the yard until the batch ends.
-            forcedLevel=yardLevel;for(int x:new int[]{-7,7})for(int z:new int[]{-25,-15}){var c=new net.minecraft.world.level.ChunkPos(yard.offset(x,0,z));if(!yardLevel.getForcedChunks().contains(c.toLong())&&yardLevel.setChunkForced(c.x,c.z,true))FORCED.add(c);}
-            f.source(p,place);var own=f.own(p,place);own.putInt("UncannyAge",300);
-            // This is the actual pre-0.4.131 floating original, before the new placed-plate migration.
-            var legacy=ItemStack.parseOptional(p.registryAccess(),own.getCompound("OriginalMeal"));var oldPlate=new ItemEntity(l,b.getX()+5.5,b.getY()+1.015,b.getZ()-18.5,legacy);oldPlate.setTarget(p.getUUID());oldPlate.setNoGravity(true);l.addFreshEntity(oldPlate);
-            own.remove("OriginalMeal");own.putBoolean("MealReleased",true);own.putBoolean("MealServed",true);own.putUUID("PlateEntity",oldPlate.getUUID());LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
-            meal[0]=oldPlate;kept.putUUID("Meal",oldPlate.getUUID());kept.put("Stack",oldPlate.getItem().save(p.registryAccess()));kept.putUUID("Actor",own.getUUID("CastFake"));kept.put("Source",own.getCompound("Original_Source").copy());
-            source[0]=l.getBlockEntity(b.offset(UncannyRooms.source(place)));
-            h.assertTrue(!UncannyEnvironmentRepairs.step(l,f.origin,place)&&!l.getBlockState(b.offset(-2,-1,-16)).is(UncannyRegistry.material("diner_tile")),"a reader in the room prevents every refit edit");
-            l.setBlock(b.offset(-1,-1,-16),Blocks.GOLD_BLOCK.defaultBlockState(),3);
-            // Scene bounds include eighteen blocks of approach; leave that and the eight-block watch margin.
-            f.at(p,place,0,0,40);
-            var cb=f.base(LabyrinthPlace.LAYERED_MAN);f.level(LabyrinthPlace.LAYERED_MAN).setBlock(cb.offset(-1,-3,-19),Blocks.AIR.defaultBlockState(),3);
-            var world=f.data().stateEntry(UncannyStories.WORLD,LabyrinthPlace.LAYERED_MAN.id()+":"+cb.asLong());world.putInt("Layers",2);world.putInt("Pulse",7);f.data().setStateEntry(UncannyStories.WORLD,LabyrinthPlace.LAYERED_MAN.id()+":"+cb.asLong(),world);
-        }).thenWaitUntil(()->h.assertTrue(UncannyEnvironmentRepairs.step(l,f.origin,place),"the bounded native diner refit completed"))
-        .thenWaitUntil(()->h.assertTrue(UncannyEnvironmentRepairs.step(f.level(LabyrinthPlace.LAYERED_MAN),f.origin,LabyrinthPlace.LAYERED_MAN),"the bounded native cellar refit completed"))
-        .thenWaitUntil(()->h.assertTrue(yardLevel.getBlockState(yard.offset(0,-1,-20)).isAir()&&yardLevel.getBlockState(yard.offset(0,-2,-20)).is(Blocks.GRAVEL),"the legacy unsupported gravel actually settles into the cleared row; floor="+yardLevel.getBlockState(yard.offset(0,-1,-20))+", below="+yardLevel.getBlockState(yard.offset(0,-2,-20))))
-        .thenExecute(()->{settledVisitor[0]=LiteraryRegistry.ACTOR.get().create(yardLevel);h.assertTrue(settledVisitor[0]!=null,"the original visitor is created for the settled-floor fixture");settledVisitor[0].bind(LabyrinthPlace.MOTION_LIGHT,p.getUUID());settledVisitor[0].appearance(LiteraryActor.UNCANNY_VISITOR,1);settledVisitor[0].moveTo(yard.getX()+.5,yard.getY()-1,yard.getZ()-19.5,180,0);yardLevel.addFreshEntity(settledVisitor[0]);})
-        .thenWaitUntil(()->h.assertTrue(UncannyEnvironmentRepairs.step(yardLevel,f.origin,LabyrinthPlace.MOTION_LIGHT),"the bounded native courtyard repair completed"))
-        .thenExecute(()->{
-            h.assertTrue(yardLevel.getEntity(settledVisitor[0].getUUID())==settledVisitor[0]&&Math.abs(settledVisitor[0].getY()-yard.getY())<.1,"the same settled visitor is lifted onto its restored native floor");
-            for(int x=-6;x<=6;x++)for(int z=-24;z<=-16;z++)h.assertTrue(yardLevel.getBlockState(yard.offset(x,-1,z)).is(Blocks.GRAVEL)&&yardLevel.getBlockState(yard.offset(x,-2,z)).is(Blocks.STONE),"settled legacy gravel returns to a fully supported yard without changing its surface");
-            h.assertTrue(l.getBlockState(b.offset(-2,-1,-16)).is(UncannyRegistry.material("diner_tile"))&&l.getBlockState(b.offset(-1,-1,-16)).is(Blocks.GOLD_BLOCK),"authored tile changes while a player's edit remains");
-            var own=f.own(p,place);h.assertTrue(own.getBoolean("Read_Source")&&own.getBoolean("MealServed")&&!own.contains("OriginalMeal")&&own.getCompound("Original_Source").equals(kept.getCompound("Source")),"reading and exhausted original custody survive");
-            h.assertTrue(l.getBlockEntity(b.offset(UncannyRooms.source(place)))==source[0]&&UncannyStories.actor(p,own,"CastFake").getUUID().equals(kept.getUUID("Actor")),"the actual source block entity and actor survive, not replacements");
-            h.assertTrue(l.getEntity(kept.getUUID("Meal"))==meal[0]&&meal[0].getItem().save(p.registryAccess()).equals(kept.get("Stack")),"the same served item and components remain");
-            var cb=f.base(LabyrinthPlace.LAYERED_MAN);var world=f.data().stateEntry(UncannyStories.WORLD,LabyrinthPlace.LAYERED_MAN.id()+":"+cb.asLong());
-            h.assertTrue(f.level(LabyrinthPlace.LAYERED_MAN).getBlockState(cb.offset(-1,-3,-19)).isAir()&&world.getInt("Layers")==2&&world.getInt("Pulse")==7,"peeled holes and shared work progress are not restored or restarted");
-            var cabinet=b.offset(-9,0,-13);l.setBlock(cabinet,l.getBlockState(cabinet).setValue(UncannyFurnitureBlock.OPEN,true),3);f.reload();
-            h.assertTrue(UncannyEnvironmentRepairs.step(l,f.origin,place)&&l.getBlockState(cabinet).getValue(UncannyFurnitureBlock.OPEN)&&l.getEntity(kept.getUUID("Meal"))==meal[0],"the saved checkpoint never repeats, shuts furniture or replaces the original after reload");
-        }).thenSucceed();
-    }
     private static void export(LiteraryTests.Fixture f,LabyrinthPlace place,String name,int x0,int x1,int z0,int z1,int y0,int y1,boolean cut,int sliceX,int sliceZ)throws Exception{
         var l=f.level(place);var b=f.base(place);var file=new JsonObject();file.addProperty("name",name);
         var palette=new JsonArray();var blocks=new JsonArray();Map<BlockState,Integer> states=new LinkedHashMap<>();
@@ -132,5 +83,4 @@ public final class UncannyEnvironmentTests {
         file.add("palette",palette);file.add("blocks",blocks);var folder=Path.of("../build/uncanny-environment-proof");Files.createDirectories(folder);Files.writeString(folder.resolve(name+".json"),new Gson().toJson(file));
     }
     @AfterBatch(batch="uncanny_environment") public static void close(ServerLevel l){if(fixture!=null){fixture.close();fixture=null;}}
-    @AfterBatch(batch="uncanny_environment_refit") public static void closeRefit(ServerLevel l){if(forcedLevel!=null)for(var c:FORCED)forcedLevel.setChunkForced(c.x,c.z,false);FORCED.clear();forcedLevel=null;close(l);}
 }

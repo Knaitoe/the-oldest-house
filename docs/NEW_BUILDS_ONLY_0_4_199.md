@@ -25,3 +25,7 @@ The owner, October 31, 2026: "The mod is not yet being publicly shared, it doesn
 ## What a saved world sees
 
 A world saved by this or a later version and opened after a layout bump: its standing rooms as they were, the new places carved as the reader approaches, and no re-dressing. A world saved by an earlier version than this one: the same, except the six quiet rooms (which have no entry door and predate the carve record) are carved once more. Nothing older is supported.
+
+## Later
+
+0.4.201: the uncanny rooms' refit walkers went too (`UncannyEnvironmentRepairs`, `UncannyPlaytestRepairs`, the tunnel's lengthening in `TunnelPassage`, and the four old room plans they compared against). They ran on fresh worlds as well, and for the tunnel their target was an older, shorter plan, so they set its old stoplight and bin down in the middle of the long passage. The environment proofs' views come from the fresh-build case, which stays. See [OWNER_NOTES_0_4_201.md](OWNER_NOTES_0_4_201.md).

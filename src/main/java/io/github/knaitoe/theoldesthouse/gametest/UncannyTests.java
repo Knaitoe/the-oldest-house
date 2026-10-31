@@ -150,26 +150,23 @@ public final class UncannyTests {
         var place=LabyrinthPlace.TUNNEL_PERIPHERY;f.source(p,place);age(f,p,place,160);var own=step(f,p,place);var a=UncannyStories.actor(p,own,"CastGiant");var id=a.getUUID();a.load(a.saveWithoutId(new CompoundTag()));f.reload();h.assertTrue(a.getUUID().equals(id)&&a.getBbHeight()<=2.8&&a.getScale()==2.5F,"the five-block standing mesh fits the tunnel in its folded native bounds");h.assertTrue(UncannyStories.green(f.own(p,place))&&WitnessAccount.Story.TUNNEL_PERIPHERY.kind.equals("survival"),"save/load preserves signal phase and a fixed Witness kind");
     });}
     @AfterBatch(batch="uncanny_giant_reload") public static void giantLoadDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="tunnel134_old",timeoutTicks=1300)
-    public static void theLongerPassageBuildsBehindItsOldWallAndKeepsTheOriginalWomanAndAccount(GameTestHelper h){
-        var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("old_tunnel_reader",place);var l=f.level(place);var b=f.base(place);f.chunks.hold(l,IndianLakeRooms.bounds(b,place));UUID[] identity={null},paper={null};CompoundTag[] source={null};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual old tunnel and extension are resident")).thenExecute(()->{
-            UncannyRooms0132.build(l,b,place);var state=f.data().stateEntry(TunnelPassage.STATE,Long.toString(b.asLong()));state.remove("Done");state.remove("Cursor");f.data().setStateEntry(TunnelPassage.STATE,Long.toString(b.asLong()),state);
-            f.source(p,place);source[0]=f.own(p,place).getCompound("Original_Source").copy();
-        // Her body is placed by the scene after the source is read; a busy runner can take a few ticks.
-        }).thenWaitUntil(()->h.assertTrue(UncannyStories.actor(p,f.own(p,place),"CastGiant")!=null,"the saved original woman is in the tunnel")).thenExecute(()->{
-            var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");identity[0]=a.getUUID();a.moveTo(Vec3.atBottomCenterOf(b.offset(0,0,-71)));a.appearance(LiteraryActor.UNCANNY_GIANT,0);
-            paper[0]=UUID.randomUUID();l.getBlockEntity(b.offset(TunnelPassage.OLD_ACCOUNT)).getPersistentData().putUUID("Original134",paper[0]);l.setBlock(b.offset(3,0,-100),Blocks.GOLD_BLOCK.defaultBlockState(),2|16);
-            h.assertTrue(!TunnelPassage.repair(l,b)&&!TunnelPassage.extended(l,b),"a reader's actual camera prevents the extension");f.at(p,place,100,0,0);
-            h.assertTrue(!TunnelPassage.repair(l,b)&&!l.getBlockState(b.offset(0,0,-73)).isAir(),"the first bounded slice leaves the old end wall shut");
-        }).thenWaitUntil(()->h.assertTrue(TunnelPassage.repair(l,b),"the bounded hidden extension completes before the join opens")).thenExecute(()->{
-            h.assertTrue(l.getBlockState(b.offset(0,0,-73)).isAir()&&l.getBlockState(b.offset(0,-1,-130)).getCollisionShape(l,b.offset(0,-1,-130)).bounds().maxY>.99,"the old throat opens onto a supported longer native road");
-            h.assertTrue(TunnelPassage.pass(l,b)< -130&&TunnelPassage.account(l,b).equals(TunnelPassage.ACCOUNT),"the refuge and actual ending are at the new far end");h.assertTrue(l.getBlockEntity(b.offset(TunnelPassage.ACCOUNT)).getPersistentData().getUUID("Original134").equals(paper[0]),"the ending fitting keeps its original metadata");
-            h.assertTrue(l.getEntity(identity[0])!=null&&f.own(p,place).getUUID("CastGiant").equals(identity[0])&&f.own(p,place).getCompound("Original_Source").equals(source[0]),"the same saved original woman and finite personal source remain");h.assertTrue(l.getBlockState(b.offset(3,0,-100)).is(Blocks.GOLD_BLOCK),"a player edit in the extension stays exact");
-            f.reload();l.setBlock(b.offset(2,0,-125),Blocks.GOLD_BLOCK.defaultBlockState(),2|16);TunnelPassage.repair(l,b);h.assertTrue(l.getBlockState(b.offset(2,0,-125)).is(Blocks.GOLD_BLOCK),"the saved completion never rebuilds the passage");h.succeed();
-        });
-    }
-    @AfterBatch(batch="tunnel134_old") public static void tunnel134Done(ServerLevel l){close();}
+    /** 0.4.201 (owner: "The vignette also doesnt reset upon re-entry"): back in the tunnel after time away, it starts over. */
+    @GameTest(template="empty",batch="uncanny_tunnel_reentry201",timeoutTicks=900) public static void comingBackIntoTheTunnelStartsItOverButKeepsAPassageMade(GameTestHelper h){run(h,LabyrinthPlace.TUNNEL_PERIPHERY,(f,p)->{
+        var place=LabyrinthPlace.TUNNEL_PERIPHERY;var b=f.base(place);f.at(p,place,.5,0,-8);var own=step(f,p,place);var giant=UncannyStories.actor(p,own,"CastGiant");
+        h.assertTrue(giant!=null,"the original woman is in the tunnel");var id=giant.getUUID();
+        // Caught, with the woman left halfway down the tunnel.
+        own.putBoolean("UncannyFailed",true);own.putString("Failure","paced_to_the_last_red_light");own.putInt("UncannyAge",900);own.putInt("GreenSteps",3);own.putBoolean("TunnelStarted127",true);
+        TunnelStride.placeOriginal(giant,Vec3.atBottomCenterOf(b.offset(0,0,-72)));giant.appearance(LiteraryActor.UNCANNY_GIANT,2);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        own=step(f,p,place);h.assertTrue(UncannyStories.failed(own)&&own.getBoolean("TunnelStarted127")&&giant.getZ()<b.getZ()-60,"while the reader stays in the tunnel nothing resets");
+        // Away for longer than the gap, then back in.
+        own.putLong("TunnelSeen201",h.getLevel().getGameTime()-UncannyStories.AWAY_TICKS-20);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
+        h.assertTrue(!UncannyStories.failed(own)&&own.getString("Failure").isEmpty()&&!own.getBoolean("TunnelStarted127")&&own.getInt("GreenSteps")==0&&own.getInt("UncannyAge")<=5,"coming back starts the tunnel over: "+own);
+        h.assertTrue(giant.isAlive()&&giant.getUUID().equals(id)&&giant.position().distanceTo(Vec3.atBottomCenterOf(b.offset(0,0,TunnelPassage.WALL+2)))<.01&&giant.phase()==0,"the same woman stands folded at the far end again: "+giant.position()+" phase "+giant.phase());
+        // A passage already made is kept.
+        own.putBoolean("TunnelPassed130",true);own.putBoolean("Ready",true);own.putLong("TunnelSeen201",h.getLevel().getGameTime()-UncannyStories.AWAY_TICKS-20);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
+        h.assertTrue(own.getBoolean("TunnelPassed130")&&own.getBoolean("Ready"),"a passage already made is not taken back: "+own);
+    });}
+    @AfterBatch(batch="uncanny_tunnel_reentry201") public static void tunnelReentryDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_sleep",timeoutTicks=900) public static void sleepingCutsOnlyThisNightAndNeverPutsTheReaderInTheEmptyBed(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         var place=LabyrinthPlace.MISSING_SLEEP;var peer=f.player("sleep_peer",place);f.source(p,place);long time=f.level(place).getDayTime();click(f,p,place,UncannyRooms.BED_AT);
         h.assertTrue(f.own(p,place).getInt("Sleeps")==1&&f.own(p,place).getInt("NightClock")==7200&&!p.isSleeping(),"a genuine bed interaction moves to a missing interval");h.assertTrue(f.level(place).getDayTime()==time&&f.own(peer,place).getInt("Sleeps")==0,"the world's day and the peer's night do not jump");h.assertTrue(p.position().distanceToSqr(Vec3.atCenterOf(f.base(place).offset(UncannyRooms.BED_AT)))>4,"the reader wakes somewhere the bed camera cannot explain");f.reload();h.assertTrue(UncannyStories.locked(p),"an explicit bed attempt retains its committed night across reload");

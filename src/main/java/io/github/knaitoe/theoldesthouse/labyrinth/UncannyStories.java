@@ -80,6 +80,7 @@ public final class UncannyStories {
     }
     public static void reader(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){
         if(!LiteraryVignettes.participant(p)||!LiteraryVignettes.inside(p,place))return;
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY)reenter(p,b,own);
         arrive(p,place,own);observe(p,b,place,own);
         if(place==LabyrinthPlace.MOTION_LIGHT){FoyerEncounter.tick(p,b,own);return;}
         UncannyReading.resolve(p,place,own);
@@ -93,6 +94,21 @@ public final class UncannyStories {
             case PAINTED_INTERIOR->boarded(p,b,own);case SECOND_WAITRESS->diner(p,b,own);case TUNNEL_PERIPHERY->tunnel(p,b,own);
             case MISSING_SLEEP->bedroom(p,b,own);case LAYERED_MAN->cellar(p,b,own);case MOTION_LIGHT->foyer(p,b,own);default->{}
         }
+    }
+    /** How long a reader must have been out of the tunnel for coming back to count as coming back. */
+    public static final int AWAY_TICKS=60;
+    /**
+     * 0.4.201 (owner: "The vignette also doesnt reset upon re-entry"): a reader who comes back into the tunnel after time away
+     * starts it over: the signals from the beginning, the woman folded at the far end, and a catch forgotten. A passage
+     * already made (ready or read) is kept. Being caught leaves the reader inside, so it resets only once they have left.
+     */
+    static void reenter(ServerPlayer p,BlockPos b,CompoundTag own){
+        long now=p.serverLevel().getGameTime(),last=own.getLong("TunnelSeen201");own.putLong("TunnelSeen201",now);
+        if(last==0||now-last<=AWAY_TICKS||own.getBoolean("Completed")||own.getBoolean("TunnelPassed130"))return;
+        for(var key:List.of("UncannyFailed","Failure","Ready","GreenSteps","LastX","LastZ","TunnelStarted127","UncannyStage"))own.remove(key);
+        own.putInt("UncannyAge",0);
+        var giant=actor(p,own,"CastGiant");
+        if(giant!=null){giant.appearance(LiteraryActor.UNCANNY_GIANT,0);TunnelStride.placeOriginal(giant,Vec3.atBottomCenterOf(b.offset(0,0,TunnelPassage.WALL+2)));}
     }
     static void ready(ServerPlayer p,LabyrinthPlace place,CompoundTag own,String outcome){if(LiteraryVignettes.participant(p)&&!failed(own)){LiteraryVignettes.ready(p,place,own,outcome);UncannyReading.resolve(p,place,own);}}
     private static boolean seen(ServerPlayer p,LiteraryActor a){return a!=null&&HouseWatchers.sees(p,a.getEyePosition());}
