@@ -45,6 +45,25 @@ The keepsakes the rooms already gave were given effects in 0.4.192 and 0.4.198. 
 | The third count (third-floor bathroom) | The dare's candle stub | Lit: what is near and unseen shows; it burns twenty minutes in all, only while lit. | Both |
 | Yellow dust (silo) | A vial of the dust | Broken open: monsters within five blocks are slowed and weakened for ten seconds; three times. | Both |
 
+## The two choices that were left empty
+
+Giving the séance's record and the family's photograph to one ending each left the other endings with nothing. That turned them into wrong answers, against the audit's rule for choices: "several endings, none a loss". The owner chose to give each of those endings something of its own, with a cost.
+
+- **Heard the medium out (séance).**
+  - **Gives:** the planchette, which every séance ending already gives, wakes for that reader. Held in either hand, it drifts toward the nearest thing within sixteen blocks that means them harm and is out of their sight:
+    - a faint pull of light from the hand, now and then the dry scrape of the planchette, seen and heard by the holder alone;
+    - in their own world, any monster;
+    - in the House, only what is hunting them, so it never gives a room's disguise away.
+
+    The planchette given for this ending carries a line saying so.
+  - **Takes:** the family goes on sitting. In the manor, that reader now and then hears them on the stairs: a few steps climbing somewhere behind them, at most once a House day, for that reader alone.
+- **Would not leave (family copy).** The family copy is the reader's own home, with a family living in it.
+  - **Gives:** the front-door key. Carried, any bed in their own world is home: monsters nearby don't keep them from sleeping, and they wake mended.
+  - **Takes:** the family is still in the house. One night in three, asleep in their own bed, someone moving about wakes them before dawn, and no night passes. Any other bed, they sleep through. Never hurt.
+  - **Why mended, not fed:** waking fed is the hotel's key tag, so the key heals instead.
+
+Driving the family out, leaving when asked and the hotel's endings are unchanged.
+
 ## Not in this change
 
 - **The key to Mother's room** (the Wheel). Its effect would change the Mother's ransom, and the owner has asked that the Mother not be changed. It waits for the owner's word, as in 0.4.198.
@@ -52,10 +71,10 @@ The keepsakes the rooms already gave were given effects in 0.4.192 and 0.4.198. 
 ## Build
 
 - **Code.**
-  - New: `labyrinth/Artifacts` (the twenty kinds, giving, effects), `labyrinth/ArtifactRegistry` (the items) and `client/ArtifactVisualProof`.
+  - New: `labyrinth/Artifacts` (the twenty kinds and the key, giving, effects, and the planchette's waking and the two costs), `labyrinth/ArtifactRegistry` (the items) and `client/ArtifactVisualProof`.
   - New mixins, run on both sides because the reader's own client moves them: `ArtifactGripMixin` (ice friction), `ArtifactPaddleMixin` (the boat's push) and `ArtifactSnowMixin` (powder snow).
   - `WitnessAccount` hands out the artifact; `Keepsakes.line` gives each its line; `BlyFollows` lets the doll's keeper be.
-- **Art.** `tools/draw_artifacts.py` draws the twenty 16×16 icons and their item models. CI runs it in check mode. No existing PNG changes.
+- **Art.** `tools/draw_artifacts.py` draws the twenty 16×16 icons, and the key's, with their item models. CI runs it in check mode. No existing PNG changes.
 - **State.** `artifacts_0199` in the House's saved data remembers which artifacts each reader has been given.
 - **Protocol.** No new payloads.
 
@@ -80,12 +99,19 @@ The keepsakes the rooms already gave were given effects in 0.4.192 and 0.4.198. 
   - mending by the photograph and the bracelet.
 
   For each it checks that a copy carried by someone else does nothing.
+- **`ArtifactTests.theSeanceAndFamilyCopyEndingsThatGaveNothingNowEachGiveAndTake`:**
+  - hearing the medium out gives no record, and the planchette wakes only for that reader;
+  - it drifts toward a zombie behind them and stops once they face it;
+  - the family is heard only in the manor, only by that reader, and once a House day;
+  - refusing gives the key and leaving gives the photograph;
+  - with the key, monsters nearby don't keep them from a bed, and they wake mended;
+  - in their own bed, only on one of the family's nights, they are woken, never hurt; in any other bed they sleep through.
 - **`ArtifactTests.theUsedArtifactsCallDriveBackShowAndSlow`:**
   - the whistle calls only the keeper's free companion;
   - the record drives back only the near zombie, then rests, and does nothing in another's hand;
   - the blade slows what it cuts;
   - the candle shows an invisible zombie, burns only while lit and burns out;
   - the vial slows and weakens a skeleton but not a wolf, and is spent after three bursts.
-- **The client proof** renders all twenty baked models (`native-artifacts.png`). CI requires it.
+- **The client proof** renders every artifact's baked model, the key included (`native-artifacts.png`). CI requires it.
 
 Witness stays 55 / 42 / two kinds / three endings.

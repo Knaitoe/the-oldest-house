@@ -48,13 +48,15 @@ public final class ArtifactTests {
         try{
             // The rooms that choose: only the ending that earns it.
             Artifacts.ended(p,WitnessAccount.Story.SEANCE,"heard_the_medium");Artifacts.ended(p,WitnessAccount.Story.HOTEL,HotelVignette.WALKED);Artifacts.ended(p,WitnessAccount.Story.FAMILY_COPY,"refused_the_familys_request_to_leave");
-            h.assertTrue(held(p,Kind.RECORD).isEmpty()&&held(p,Kind.KEY_TAG).isEmpty()&&held(p,Kind.PHOTO).isEmpty(),"hearing the medium, walking out of the hotel and refusing the family give nothing");
+            h.assertTrue(held(p,Kind.RECORD).isEmpty()&&held(p,Kind.KEY_TAG).isEmpty()&&held(p,Kind.PHOTO).isEmpty(),"hearing the medium, walking out of the hotel and refusing the family give none of those three");
+            h.assertTrue(held(p,Kind.DOOR_KEY).size()==1,"refusing the family gives the front-door key instead");
             var failed=LiteraryVignettes.personal(data,p.getUUID(),Kind.BLADE.place());failed.putBoolean("UncannyFailed",true);LiteraryVignettes.save(data,p.getUUID(),Kind.BLADE.place(),failed);
             Artifacts.ended(p,WitnessAccount.Story.LAYERED_MAN,"closed_the_cellar_after_the_blade_broke");
             h.assertTrue(held(p,Kind.BLADE).isEmpty(),"a failed uncanny room gives nothing");
             failed.remove("UncannyFailed");LiteraryVignettes.save(data,p.getUUID(),Kind.BLADE.place(),failed);
             Artifacts.ended(p,WitnessAccount.Story.SEANCE,"drove_the_family_out");Artifacts.ended(p,WitnessAccount.Story.HOTEL,HotelVignette.SIGNED);Artifacts.ended(p,WitnessAccount.Story.FAMILY_COPY,"left_when_the_family_asked");
-            for(var k:Kind.values())if(k!=Kind.RECORD&&k!=Kind.KEY_TAG&&k!=Kind.PHOTO&&k!=Kind.VIAL)Artifacts.ended(p,k.story,"came_through");
+            for(var k:Kind.values())if(k!=Kind.RECORD&&k!=Kind.KEY_TAG&&k!=Kind.PHOTO&&k!=Kind.VIAL&&k!=Kind.DOOR_KEY)Artifacts.ended(p,k.story,"came_through");
+            h.assertTrue(held(p,Kind.DOOR_KEY).size()==1,"leaving the family copy when asked gives the photograph, and no second key");
             // The silo's comes through the account itself, as every room's does.
             WitnessAccount.resolve(p,WitnessAccount.Story.SILO,"opened_the_roof_and_returned_to_the_grain");
             for(var k:Kind.values()){
@@ -179,6 +181,63 @@ public final class ArtifactTests {
             vial.use(l,p,InteractionHand.MAIN_HAND);vial.use(l,p,InteractionHand.MAIN_HAND);
             h.assertTrue(p.getMainHandItem().isEmpty(),"after the third burst the vial is spent");
         }finally{NativeTestPlayers.remove(p);}
+        h.succeed();
+    }
+
+    static void face(ServerPlayer p,float yaw){p.setYRot(yaw);p.yRotO=yaw;p.setYHeadRot(yaw);p.setXRot(0);p.xRotO=0;}
+    static ItemStack planchette(ServerPlayer p){var s=new ItemStack(ClassicsRegistry.PLANCHETTE.get());net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(ClassicsVignettes.OWNER,p.getUUID());t.putString(ClassicsVignettes.KEY,"Planchette");});return s;}
+    private static LiteraryTests.Fixture choices;
+    @AfterBatch(batch="artifact_choices") public static void choicesDone(net.minecraft.server.level.ServerLevel l){if(choices!=null){choices.close();choices=null;}}
+    /**
+     * 0.4.199: the séance's and the family copy's other endings were left empty once the record and the photograph went to one
+     * ending each. Hearing the medium out wakes the planchette, and the family is heard on the manor stairs; refusing to leave
+     * gives the front-door key, and the family wakes them in their own bed one night in three.
+     */
+    @GameTest(template="empty",batch="artifact_choices",timeoutTicks=300)
+    public static void theSeanceAndFamilyCopyEndingsThatGaveNothingNowEachGiveAndTake(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);choices=f;var l=h.getLevel();
+        var heard=NativeTestPlayers.survival(h,"artifact_heard");var drove=NativeTestPlayers.survival(h,"artifact_drove");var refused=NativeTestPlayers.survival(h,"artifact_refused");var left=NativeTestPlayers.survival(h,"artifact_left");
+        f.players.add(heard);f.players.add(drove);f.players.add(refused);f.players.add(left);
+        floor(h,12);var at=h.absoluteVec(new Vec3(5.5,1,5.5));for(var p:List.of(heard,drove,refused,left))p.teleportTo(l,at.x,at.y,at.z,0,0);
+        // The séance.
+        WitnessAccount.resolve(heard,WitnessAccount.Story.SEANCE,Artifacts.HEARD);WitnessAccount.resolve(drove,WitnessAccount.Story.SEANCE,"drove_the_family_out");
+        h.assertTrue(held(heard,Kind.RECORD).isEmpty()&&held(drove,Kind.RECORD).size()==1,"hearing the medium out gives no record; driving the family out does");
+        heard.setItemInHand(InteractionHand.MAIN_HAND,planchette(heard));drove.setItemInHand(InteractionHand.MAIN_HAND,planchette(drove));
+        h.assertTrue(Artifacts.planchetteWakes(heard)&&!Artifacts.planchetteWakes(drove),"the planchette wakes only for the one who heard her out");
+        // Faced by the zombie's actual position: test plots may be placed turned.
+        var behind=h.spawn(EntityType.ZOMBIE,new BlockPos(5,1,1));behind.setNoAi(true);
+        var toward=behind.position().subtract(heard.position());float yaw=(float)(net.minecraft.util.Mth.atan2(toward.z,toward.x)*180/Math.PI)-90;
+        face(heard,yaw+180);
+        h.assertTrue(Artifacts.unseenHarm(heard)==behind,"it drifts toward the zombie behind them");
+        face(heard,yaw);
+        // Neighbouring test plots can hold monsters within sixteen blocks, so only this zombie is the check.
+        h.assertTrue(Artifacts.unseenHarm(heard)!=behind,"turned to face it, it no longer drifts toward the zombie: facing "+heard.getViewVector(1)+", zombie at "+toward+", in sight "+heard.hasLineOfSight(behind));
+        heard.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(!Artifacts.planchetteWakes(heard),"put away, it is still");
+        // The cost: the family on the manor stairs, once a House day, for that reader only.
+        var manor=f.origin.offset(io.github.knaitoe.theoldesthouse.house.HouseLayout.AXIS_X,1,io.github.knaitoe.theoldesthouse.house.HouseLayout.FRONT_DOOR_Z+3);
+        h.assertTrue(!Artifacts.hearsTheSitting(heard),"outside the manor nobody is on the stairs");
+        heard.teleportTo(f.in,manor.getX()+.5,manor.getY(),manor.getZ()+.5,0,0);heard.hasChangedDimension();drove.teleportTo(f.in,manor.getX()+.5,manor.getY(),manor.getZ()+.5,0,0);drove.hasChangedDimension();
+        h.assertTrue(Artifacts.hearsTheSitting(heard)&&!Artifacts.hearsTheSitting(drove),"in the manor, the one who heard her out may hear the family; the one who drove them out never");
+        h.assertTrue(Artifacts.sitting(heard)&&!Artifacts.hearsTheSitting(heard),"once a House day");
+        // The family copy.
+        WitnessAccount.resolve(refused,WitnessAccount.Story.FAMILY_COPY,Artifacts.REFUSED);WitnessAccount.resolve(left,WitnessAccount.Story.FAMILY_COPY,"left_when_the_family_asked");
+        h.assertTrue(held(refused,Kind.DOOR_KEY).size()==1&&held(refused,Kind.PHOTO).isEmpty()&&held(left,Kind.PHOTO).size()==1&&held(left,Kind.DOOR_KEY).isEmpty(),"refusing gives the key, leaving the photograph");
+        var key=held(refused,Kind.DOOR_KEY).get(0);var lore=key.get(DataComponents.LORE);
+        h.assertTrue(Artifacts.mine(key,refused,Kind.DOOR_KEY)&&lore!=null&&lore.lines().stream().anyMatch(line->line.getString().equals(Kind.DOOR_KEY.line)),"the key is theirs and says what it does");
+        var bed=h.absolutePos(new BlockPos(2,1,2));
+        var night=NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent(refused,bed,net.minecraft.world.entity.player.Player.BedSleepingProblem.NOT_SAFE));
+        var other=NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent(left,bed,net.minecraft.world.entity.player.Player.BedSleepingProblem.NOT_SAFE));
+        h.assertTrue(night.getProblem()==null&&other.getProblem()==net.minecraft.world.entity.player.Player.BedSleepingProblem.NOT_SAFE,"with the key, monsters nearby do not keep them from a bed");
+        refused.setHealth(6);NeoForge.EVENT_BUS.post(new PlayerWakeUpEvent(refused,false,false));
+        h.assertTrue(refused.getHealth()==refused.getMaxHealth(),"and they wake mended");
+        // The cost: in their own bed, one night in three, the family wakes them before dawn.
+        long family=-1,quiet=-1;for(long d=0;d<40&&(family<0||quiet<0);d++){if(Artifacts.familyNight(refused.getUUID(),d)){if(family<0)family=d;}else if(quiet<0)quiet=d;}
+        refused.setRespawnPosition(l.dimension(),bed,0,true,false);refused.startSleeping(bed);left.setRespawnPosition(l.dimension(),bed,0,true,false);left.startSleeping(bed);
+        h.assertTrue(Artifacts.familyWakes(refused,family)&&!Artifacts.familyWakes(refused,quiet)&&!Artifacts.familyWakes(left,family),"asleep in their own bed on one of the family's nights, and only then, the one who refused is woken");
+        refused.stopSleeping();refused.startSleeping(bed.east(4));
+        h.assertTrue(!Artifacts.familyWakes(refused,family),"in any other bed they sleep through");
+        refused.stopSleeping();refused.startSleeping(bed);Artifacts.wakeByFamily(refused);
+        h.assertTrue(!refused.isSleeping()&&refused.getHealth()==refused.getMaxHealth(),"woken, never hurt");
         h.succeed();
     }
 }

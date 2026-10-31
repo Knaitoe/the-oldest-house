@@ -261,6 +261,7 @@ The choices are the trade. Each one gives and takes something different.
 **The empty chair (séance).**
 - **Now:** drove the family out, heard the medium, or left when asked.
 - **Proposed:** driving them out also takes the family, who don't return for that reader. It gives the sitting record.
+- **Built (0.4.199):** driving them out gives the sitting record. Hearing the medium out wakes the planchette (it drifts toward unseen harm) and costs a family heard on the manor stairs.
 
 **The closing account (Stanley).**
 - **Now:** settled (which pays the bill), signed, or walked out with the master key.
@@ -277,6 +278,7 @@ The choices are the trade. Each one gives and takes something different.
 **The house they remembered (family copy, old cabin).**
 - **Now:** left when asked, refused, or heard his story.
 - **Proposed:** leaving when asked gives the family's photograph.
+- **Built (0.4.199):** leaving when asked gives the photograph. Refusing gives the front-door key (any bed in their world is home) and costs one night in three woken in their own bed.
 
 ## Experiences: gone through, not won
 

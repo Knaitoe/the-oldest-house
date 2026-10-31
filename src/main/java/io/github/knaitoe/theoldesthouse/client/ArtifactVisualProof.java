@@ -24,18 +24,18 @@ public final class ArtifactVisualProof extends Screen {
     @Override public void render(GuiGraphics g,int x,int y,float delta){
         var mc=Minecraft.getInstance();var kinds=Artifacts.Kind.values();g.fill(0,0,width,height,0xFF27241F);
         g.drawString(font,"Native artifacts / "+kinds.length+" items",12,10,0xFFE4DACA,false);
-        int cellW=width/5,cellH=(height-30)/4;
+        int rows=(kinds.length+4)/5,cellW=width/5,cellH=(height-30)/rows;
         for(int i=0;i<kinds.length;i++){
             var stack=new ItemStack(kinds[i].item());
             if(mc.getItemRenderer().getModel(stack,null,null,0)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing artifact model: "+kinds[i].id);
             int left=(i%5)*cellW+5,top=28+(i/5)*cellH;
-            g.fill(left,top,left+cellW-10,top+cellH-5,0xFF3B352D);var pose=g.pose();pose.pushPose();pose.translate(left+cellW/2F-21,top+4,0);pose.scale(2.5F,2.5F,2.5F);g.renderItem(stack,0,0);pose.popPose();
+            g.fill(left,top,left+cellW-10,top+cellH-5,0xFF3B352D);var pose=g.pose();pose.pushPose();pose.translate(left+cellW/2F-21,top+4,0);pose.scale(2F,2F,2F);g.renderItem(stack,0,0);pose.popPose();
             g.drawString(font,font.plainSubstrByWidth(stack.getHoverName().getString(),cellW-18),left+4,top+cellH-18,0xFFE4DACA,false);
         }
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof ArtifactVisualProof p)||++p.frames<4)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-artifacts.png"));}
-        Files.writeString(dir.resolve("artifacts-passed.txt"),"All twenty artifacts rendered with native baked models.\n");mc.setScreen(new CompanionVisualProof());
+        Files.writeString(dir.resolve("artifacts-passed.txt"),"All "+Artifacts.Kind.values().length+" artifacts rendered with native baked models.\n");mc.setScreen(new CompanionVisualProof());
     }
 }
