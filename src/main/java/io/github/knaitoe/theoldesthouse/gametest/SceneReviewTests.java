@@ -252,18 +252,19 @@ public final class SceneReviewTests {
     });}
 
     @GameTest(template="empty",batch="review_archive",timeoutTicks=1600)
-    public static void courtyardFurnitureAndNewDraftsKeepActualOriginalsPersonalAndFinite(GameTestHelper h){run(h,LabyrinthPlace.ZAMPANO_COURTYARD,554000,f->{
-        for(int x=-12;x<=12;x++)for(int z=-37;z<=-6;z++)f.put(x,-1,z,Blocks.MOSSY_STONE_BRICKS);
-        for(int x:new int[]{-8,8}){f.put(new BlockPos(x,0,-10),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH));f.put(new BlockPos(x,0,-12),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH));f.put(new BlockPos(x,1,-12),SceneDetailBlock.state(SceneDetailBlock.Kind.VASE,Direction.SOUTH));}
-        for(var rel:SceneReview.DRAFTS){f.put(rel.below(),HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH));f.put(rel,SceneDetailBlock.state(SceneDetailBlock.Kind.INK_PAPERS,Direction.SOUTH));}
-        var originalAt=new BlockPos(5,0,-34);f.put(originalAt,Blocks.CHEST.defaultBlockState());var cache=(ChestBlockEntity)f.level.getBlockEntity(f.base.offset(originalAt));var original=NovelTexts.archive();cache.setItem(4,original.copy());
-        SceneReview.fresh(f.level,f.origin,f.place);
-        for(int x:new int[]{-8,8})h.assertTrue(f.level.getBlockState(f.base.offset(x,0,-10)).getValue(HouseholdFurnitureBlock.FACING)==Direction.NORTH&&f.level.getBlockState(f.base.offset(x,0,-14)).getValue(HouseholdFurnitureBlock.FACING)==Direction.SOUTH&&f.level.getBlockState(f.base.offset(x,0,-12)).getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CHESS_TABLE&&f.level.getBlockState(f.base.offset(x,1,-12)).getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.CHESS,"actual chess tables each have two opposing native chairs");
+    public static void apartmentChessAndDraftsKeepActualOriginalsPersonalAndFinite(GameTestHelper h){run(h,LabyrinthPlace.ZAMPANO_COURTYARD,554000,f->{
+        // 0.4.201: the apartment court is built whole, its chess tables and drafts with it; no review pass dresses it.
+        ZampanoApartment.build(f.level,f.base);
+        h.assertTrue(!SceneReview.applies(f.place)&&!ScenePolish.applies(f.place)&&!VignetteArchitecture.applies(f.place)&&!SceneShells.shapes(f.place),"no generic pass dresses the built court");
+        for(int x:new int[]{-8,8})h.assertTrue(f.level.getBlockState(f.base.offset(x,0,-10)).getValue(HouseholdFurnitureBlock.FACING)==Direction.NORTH&&f.level.getBlockState(f.base.offset(x,0,-14)).getValue(HouseholdFurnitureBlock.FACING)==Direction.SOUTH
+                &&f.level.getBlockState(f.base.offset(x,0,-12)).getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CHESS_TABLE&&f.level.getBlockState(f.base.offset(x,1,-12)).getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.CHESS,"the court's chess tables face their two chairs");
+        for(int i=0;i<SceneReview.DRAFTS.size();i++){var rel=SceneReview.DRAFTS.get(i);var s=f.level.getBlockState(f.base.offset(rel));
+            h.assertTrue(s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.valueOf("SCRIBBLE_"+i)&&!f.level.getBlockState(f.base.offset(rel.below())).getShape(f.level,f.base.offset(rel.below())).isEmpty(),"draft "+i+" lies on its own desk");}
         var owner=f.player("review_archive_owner");var peer=f.player("review_archive_peer");f.click(owner,SceneReview.DRAFTS.get(0));var menu=(NovelVignettes.NovelBookMenu)owner.containerMenu;var text=menu.book().copy();
         h.assertTrue(!menu.clickMenuButton(peer,3)&&menu.clickMenuButton(owner,3)&&!menu.clickMenuButton(owner,3),"the native draft menu yields its original once to its actual reader");owner.closeContainer();
         var saved=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(saved,f.level.registryAccess()));f.click(owner,SceneReview.DRAFTS.get(0));
         h.assertTrue(ItemStack.isSameItemSameComponents(((NovelVignettes.NovelBookMenu)owner.containerMenu).book(),text)&&!((NovelVignettes.NovelBookMenu)owner.containerMenu).clickMenuButton(owner,3),"native reload and rereading retain the same finite words/components");
-        h.assertTrue(f.level.getBlockEntity(f.base.offset(originalAt))==cache&&cache.getItem(0).isEmpty()&&ItemStack.isSameItemSameComponents(cache.getItem(4),original)&&WitnessAccount.count(f.data(),owner.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"new scenery and drafts never restock the old container or grant a story resolution");f.done();
+        h.assertTrue(WitnessAccount.count(f.data(),owner.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the drafts never grant a story resolution");f.done();
     });}
 
     @GameTest(template="empty",batch="review_fan_supply",timeoutTicks=1600)

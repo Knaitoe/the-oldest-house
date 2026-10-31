@@ -23,7 +23,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class PlaytestScenes0488 {
     public static final String STATE="scene_finishing_0488",ORIGINALS="plain_notes_originals_0488";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
-    private static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHALE,LabyrinthPlace.ZAMPANO_COURTYARD,LabyrinthPlace.PLAIN);
+    private static final List<LabyrinthPlace> SITES=List.of(LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHALE,LabyrinthPlace.PLAIN);
     private PlaytestScenes0488(){}
     public static boolean applies(LabyrinthPlace p){return SITES.contains(p);}
     private static String key(BlockPos b,LabyrinthPlace p){return b.asLong()+":"+p.id();}
@@ -43,19 +43,6 @@ public final class PlaytestScenes0488 {
     }
 
     /** The original handwriting fills the north wall, laid against actual plaster instead of generic notice papers. */
-    private static void archive(ServerLevel l,BlockPos b,Map<BlockPos,BlockState> edits){
-        for(int x=-11;x<=11;x++)for(int y=0;y<=6;y++){
-            var wall=b.offset(x,y,-39);if(l.getBlockState(wall).is(NovelRegistry.PAPER.get()))edits.put(wall,NovelRegistry.PLASTER.get().defaultBlockState());
-            if(Math.abs(x)>10||y<1||y>5)continue;
-            var at=wall.south();var old=l.getBlockState(at);var backing=l.getBlockState(wall);
-            if(!backing.is(NovelRegistry.PLASTER.get())&&!backing.is(NovelRegistry.PAPER.get()))continue;
-            if(old.isAir()||old.is(HouseBlocks.VIGNETTE_DETAIL.get())&&old.getValue(VignetteDetailBlock.KIND).name().startsWith("SCRIBBLE_"))
-                edits.put(at,VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_"+(8+Math.floorMod(x*3+y*5,8))),Direction.SOUTH));
-        }
-        var bowl=b.offset(CourtyardFountain.BOWL);
-        if(l.getBlockState(bowl).is(Blocks.WATER_CAULDRON))edits.put(bowl,VignetteDetailBlock.state(VignetteDetailBlock.Kind.FOUNTAIN_BOWL,Direction.NORTH));
-    }
-
     /** All authored illumination comes from the yellow fixtures attached to the ceiling. */
     private static void institute(ServerLevel l,BlockPos b,Map<BlockPos,BlockState> edits){
         for(int x=-14;x<=14;x++)for(int z=-33;z<=0;z++)for(int y=0;y<=10;y++){
@@ -96,7 +83,7 @@ public final class PlaytestScenes0488 {
         if(!SITES.contains(p)||done(l,b,p))return true;var area=area(b,p);
         if(guarded&&(!loaded(l,area)||l.players().stream().anyMatch(reader->area.inflate(48).intersects(reader.getCamera().getBoundingBox()))))return false;
         var edits=new LinkedHashMap<BlockPos,BlockState>();
-        switch(p){case HOLY_RABBIT->camp(l,b,edits);case WHALE->institute(l,b,edits);case ZAMPANO_COURTYARD->archive(l,b,edits);case PLAIN->plain(l,b,edits);default->{}}
+        switch(p){case HOLY_RABBIT->camp(l,b,edits);case WHALE->institute(l,b,edits);case PLAIN->plain(l,b,edits);default->{}}
         for(var entry:edits.entrySet()){
             var at=entry.getKey();var old=l.getBlockState(at);var next=entry.getValue();
             if(l.getBlockEntity(at)!=null&&!(p==LabyrinthPlace.PLAIN&&old.is(Blocks.LECTERN)&&l.getBlockEntity(at) instanceof LecternBlockEntity))return false;
@@ -117,7 +104,6 @@ public final class PlaytestScenes0488 {
         var s=e.getServer();if(s instanceof net.minecraft.gametest.framework.GameTestServer||s.getTickCount()%40!=19||LabyrinthBuilder.isCarving())return;
         var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;
         for(var p:SITES){if(!LabyrinthBuilder.isPlaceReady(s,p))continue;var l=s.getLevel(NovelRooms.dimension(p));if(l==null)continue;var b=LabyrinthPlaces.base(origin,p);
-            if(p==LabyrinthPlace.ZAMPANO_COURTYARD&&!CourtyardFountain.done(LabyrinthData.get(s),b))continue;
             if(!done(l,b,p)&&repair(l,b,p,true))break;}
     }
 }

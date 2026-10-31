@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -50,7 +51,8 @@ public final class CourtyardFountain {
     static final LabyrinthPlace PLACE=LabyrinthPlace.ZAMPANO_COURTYARD;
     /** The basin's middle and the bowl on its pedestal. */
     public static final BlockPos CENTRE=new BlockPos(0,-1,-7),BOWL=new BlockPos(0,1,-7);
-    private static final int[][] PLANTERS={{-13,-6},{13,-6},{-13,-14},{13,-14}};
+    /** Against the wing walls, either side of the side doors (0.4.201: the wings now front the court at x ±12). */
+    private static final int[][] PLANTERS={{-11,-6},{11,-6},{-11,-14},{11,-14}};
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private CourtyardFountain(){}
 
@@ -62,7 +64,7 @@ public final class CourtyardFountain {
             out.put(c.offset(dx,1,dz),Blocks.MOSSY_STONE_BRICK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM));
         out.put(c,Blocks.MOSSY_STONE_BRICK_WALL.defaultBlockState().setValue(WallBlock.WATERLOGGED,true));
         out.put(c.above(),Blocks.STONE_BRICK_WALL.defaultBlockState());
-        out.put(b.offset(BOWL),Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL,3));
+        out.put(b.offset(BOWL),io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.state(io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.Kind.FOUNTAIN_BOWL,Direction.NORTH));
         return out;
     }
     public static Map<BlockPos,BlockState> planters(BlockPos b){
@@ -80,11 +82,6 @@ public final class CourtyardFountain {
     static void markDone(LabyrinthData d,BlockPos b){var s=d.state(STATE);s.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,s);}
     public static boolean done(LabyrinthData d,BlockPos b){return d.state(STATE).getBoolean(Long.toString(b.asLong()));}
     public static boolean bowl(BlockState s){return s.is(Blocks.WATER_CAULDRON)||s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.KIND)==io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.Kind.FOUNTAIN_BOWL;}
-
-    // ------------------------------------------------------------------------------------------------ saved courtyards
-    private static final Set<HouseholdFurnitureBlock.Kind> TABLES=Set.of(HouseholdFurnitureBlock.Kind.WALNUT_DESK,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,HouseholdFurnitureBlock.Kind.READING_DESK,HouseholdFurnitureBlock.Kind.FORMICA_TABLE);
-    private static boolean table(BlockState s){return s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&TABLES.contains(s.getValue(HouseholdFurnitureBlock.KIND));}
-    private static boolean top(BlockState s){return s.isAir()||s.is(HouseBlocks.SCENE_DETAIL.get())&&Set.of(SceneDetailBlock.Kind.TABLE_LAMP,SceneDetailBlock.Kind.VASE).contains(s.getValue(SceneDetailBlock.KIND));}
 
     // ------------------------------------------------------------------------------------------------ the fish
     /** On a reader's arrival: one fish in the basin, unless the cat is off the mat or this reader has already had one. */

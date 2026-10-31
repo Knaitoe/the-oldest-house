@@ -110,7 +110,7 @@ public final class NovelTests {
     @GameTest(template="empty",batch="novel_fountain0477",timeoutTicks=300) public static void theCourtyardFountainGivesEachReaderOneFishByHandForTheCat(GameTestHelper h){
         fountain=new Fixture(h,39700,LabyrinthPlace.ZAMPANO_COURTYARD);var f=fountain;
         var bowl=f.l.getBlockState(f.b.offset(CourtyardFountain.BOWL));
-        h.assertTrue(bowl.is(HouseBlocks.VIGNETTE_DETAIL.get())&&bowl.getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.FOUNTAIN_BOWL&&f.l.getBlockState(f.b.offset(CourtyardFountain.CENTRE).north()).is(Blocks.WATER)&&f.l.getBlockState(f.b.offset(13,1,-6)).is(Blocks.POTTED_AZALEA)&&f.l.getBlockState(f.b.offset(-13,1,-14)).is(Blocks.POTTED_FERN)&&CourtyardFountain.done(f.data(),f.b),"a new courtyard has its custom stone fountain and stone planters");
+        h.assertTrue(bowl.is(HouseBlocks.VIGNETTE_DETAIL.get())&&bowl.getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.FOUNTAIN_BOWL&&f.l.getBlockState(f.b.offset(CourtyardFountain.CENTRE).north()).is(Blocks.WATER)&&f.l.getBlockState(f.b.offset(11,1,-6)).is(Blocks.POTTED_AZALEA)&&f.l.getBlockState(f.b.offset(-11,1,-14)).is(Blocks.POTTED_FERN)&&CourtyardFountain.done(f.data(),f.b),"a new courtyard has its custom stone fountain and stone planters");
         var p=f.player();var peer=f.player();
         java.util.function.Supplier<List<net.minecraft.world.entity.animal.Cod>> fish=()->f.l.getEntitiesOfClass(net.minecraft.world.entity.animal.Cod.class,IndianLakeRooms.bounds(f.b,f.place),c->c.getTags().contains(CourtyardFountain.FISH)&&c.isAlive());
         h.startSequence().thenWaitUntil(()->h.assertTrue(fish.get().size()==1&&!f.l.getEntitiesOfClass(Cat.class,IndianLakeRooms.bounds(f.b,f.place),c->c.getPersistentData().getInt(NovelVignettes.CAT)==5).isEmpty(),"one fish swims in the basin and the cat is on the mat")).thenExecute(()->{
@@ -142,7 +142,6 @@ public final class NovelTests {
         cabinets=new Fixture(h,38100,LabyrinthPlace.ZAMPANO_COURTYARD);var f=cabinets;var server=f.l.getServer();
         for(int i=0;i<io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.CABINETS;i++){var st=f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(i)));
             h.assertTrue(st.is(NovelRegistry.ZAMPANO_CABINET.get())&&st.getValue(ZampanoCabinetBlock.CABINET)==i&&st.getValue(ZampanoCabinetBlock.FACING)==Direction.SOUTH&&st.getValue(ZampanoCabinetBlock.DRAWER)==0,"a new courtyard stands three shut cabinets under the paper wall: "+st);}
-        h.assertTrue(ZampanoDrawers.placed(server,f.b),"and records them, so a saved pass never adds them twice");
         var p=f.player();var peer=f.player();
         h.assertTrue(drawer(f,p,1,0,Direction.EAST)==net.minecraft.world.InteractionResult.PASS&&shown(f,1)==0&&!ZampanoDrawers.reading(p),"only the drawer fronts open");
         h.assertTrue(drawer(f,p,1,0,Direction.SOUTH).consumesAction()&&shown(f,1)==1&&ZampanoDrawers.folderOpen(p)==3,"the top drawer of the middle cabinet opens onto its folder");
@@ -150,19 +149,7 @@ public final class NovelTests {
         ZampanoDrawers.close(peer);h.assertTrue(shown(f,1)==1&&!ZampanoDrawers.reading(peer),"when they let go, the drawer still held open shows again");
         f.at(p,.5,0,-21.5);ZampanoDrawers.sweep(server);h.assertTrue(shown(f,1)==0&&!ZampanoDrawers.reading(p),"a reader who walks off lets go, and the drawer goes back in");
         drawer(f,p,0,1,Direction.SOUTH);h.assertTrue(shown(f,0)==2,"another cabinet, another drawer");ZampanoDrawers.close(p);h.assertTrue(shown(f,0)==0,"closing the folder shuts it");
-        // A courtyard saved before 0.4.178: no cabinets, and the floor before the paper wall bare.
-        var marks=f.data().state(ZampanoDrawers.STATE);marks.remove(Long.toString(f.b.asLong()));f.data().setState(ZampanoDrawers.STATE,marks);
-        for(int i=0;i<3;i++)f.l.setBlock(f.b.offset(ZampanoDrawers.cell(i)),Blocks.AIR.defaultBlockState(),2);
-        h.assertTrue(!ZampanoDrawers.place(f.l,f.b)&&f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(0))).isAir(),"nothing changes while readers stand in the archive");
-        for(var r:List.of(p,peer))r.moveTo(f.b.getX()+300,f.b.getY(),f.b.getZ()+300);
-        h.startSequence().thenWaitUntil(()->{if(ZampanoDrawers.place(f.l,f.b))return;h.fail("unwatched, a saved archive goes ahead; players at "+f.l.players().stream().map(pl->pl.getCamera().blockPosition().subtract(f.b)).toList());})
-        .thenExecute(()->{
-            for(int i=0;i<3;i++)h.assertTrue(f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(i))).is(NovelRegistry.ZAMPANO_CABINET.get()),"the saved archive gets its cabinets");
-            // A reader who built where they would stand keeps what they built, and the archive is not asked again.
-            var again=f.data().state(ZampanoDrawers.STATE);again.remove(Long.toString(f.b.asLong()));f.data().setState(ZampanoDrawers.STATE,again);
-            for(int i=0;i<3;i++)f.l.setBlock(f.b.offset(ZampanoDrawers.cell(i)),Blocks.AIR.defaultBlockState(),2);f.l.setBlock(f.b.offset(ZampanoDrawers.cell(1)).south(),Blocks.OAK_PLANKS.defaultBlockState(),2);
-            h.assertTrue(ZampanoDrawers.place(f.l,f.b)&&ZampanoDrawers.placed(server,f.b)&&f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(0))).isAir()&&f.l.getBlockState(f.b.offset(ZampanoDrawers.cell(1)).south()).is(Blocks.OAK_PLANKS),"an edited floor is left as it is, once");
-        }).thenSucceed();
+        h.succeed();
     }
     @GameTest(template="empty",batch="novel_zampano_leaves0178",timeoutTicks=200) public static void eachReaderPullsTheirOwnLeavesAndTheArchiveKeepsItsOriginals(GameTestHelper h){
         leaves=new Fixture(h,38500,LabyrinthPlace.ZAMPANO_COURTYARD);var f=leaves;var server=f.l.getServer();

@@ -25,23 +25,6 @@ public final class PlaytestSceneReview {
         return l.hasChunkAt(at)&&l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX()>>4,at.getZ()>>4))&&SceneHuntReview.safe(l,at,next,lectern);
     }
     private static boolean set(ServerLevel l,BlockPos at,BlockState next){return BuildBlocks.state(l,at).equals(next)||safe(l,at,next,false)&&BuildBlocks.guardedSet(l,at,next,F,()->safe(l,at,next,false));}
-    public static boolean courtyard(ServerLevel l,BlockPos b){boolean ready=true;
-        for(int x:new int[]{-8,8}){
-            var at=b.offset(x,0,-12);var old=BuildBlocks.state(l,at);
-            if(!old.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())||!Set.of(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,HouseholdFurnitureBlock.Kind.WALNUT_DESK,HouseholdFurnitureBlock.Kind.READING_DESK,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,HouseholdFurnitureBlock.Kind.CHESS_TABLE).contains(old.getValue(HouseholdFurnitureBlock.KIND)))continue;
-            ready&=set(l,at,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CHESS_TABLE,Direction.SOUTH));
-            var top=at.above();old=BuildBlocks.state(l,top);
-            if(old.is(HouseBlocks.SCENE_DETAIL.get())&&Set.of(SceneDetailBlock.Kind.VASE,SceneDetailBlock.Kind.TABLE_LAMP).contains(old.getValue(SceneDetailBlock.KIND)))
-                ready&=set(l,top,VignetteDetailBlock.state(VignetteDetailBlock.Kind.CHESS,Direction.NORTH));
-            else if(old.isAir())ready&=set(l,top,VignetteDetailBlock.state(VignetteDetailBlock.Kind.CHESS,Direction.NORTH));
-            for(int z:new int[]{-10,-14}){var seat=b.offset(x,0,z);old=BuildBlocks.state(l,seat);
-                if(old.isAir()||old.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&old.getValue(HouseholdFurnitureBlock.KIND)==HouseholdFurnitureBlock.Kind.CANE_CHAIR)
-                    ready&=set(l,seat,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CANE_CHAIR,z==-10?Direction.NORTH:Direction.SOUTH));}
-        }
-        // The owner requests the original dense handwriting wall; generic paper patches are retired by the final scenery pass.
-        return ready;
-    }
-    public static boolean paperPatch(int x,int y,int z){return z==-39&&y>=2&&y<=4&&(x>=-8&&x<=-5||x>=-1&&x<=2||x>=6&&x<=8);}
     private static boolean diaries(BlockState s){return s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(VignetteDetailBlock.KIND)==VignetteDetailBlock.Kind.DIARY_STACK;}
     public static boolean cabin(ServerLevel l,BlockPos origin,BlockPos b){
         var low=b.offset(-8,0,-31);var high=low.above();var old=BuildBlocks.state(l,low);var top=BuildBlocks.state(l,high);
@@ -55,7 +38,7 @@ public final class PlaytestSceneReview {
         boolean done=BuildBlocks.guardedSet(l,low,table,F,()->{if(!safe(l,low,table,true))return false;SceneHuntReview.emptyLectern(l,low);return true;});
         return done&&set(l,high,notes);
     }
-    public static boolean apply(ServerLevel l,BlockPos origin,LabyrinthPlace p){var b=LabyrinthPlaces.base(origin,p);return p==LabyrinthPlace.ZAMPANO_COURTYARD?courtyard(l,b):p!=LabyrinthPlace.END_WORLD_CABIN||cabin(l,origin,b);}
+    public static boolean apply(ServerLevel l,BlockPos origin,LabyrinthPlace p){var b=LabyrinthPlaces.base(origin,p);return p!=LabyrinthPlace.END_WORLD_CABIN||cabin(l,origin,b);}
     private static boolean available(ServerLevel l,BlockPos o,LabyrinthPlace p){var a=SceneReview.area(LabyrinthPlaces.base(o,p),p);
         for(int x=(int)Math.floor(a.minX)>>4;x<=(int)Math.floor(a.maxX)>>4;x++)for(int z=(int)Math.floor(a.minZ)>>4;z<=(int)Math.floor(a.maxZ)>>4;z++)
             if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x,z)))return false;
@@ -66,7 +49,7 @@ public final class PlaytestSceneReview {
         if(work!=null){var w=work;if(!w.origin.equals(HouseSavedData.get(s).houseOrigin())||!available(w.level,w.origin,w.place)){work=null;return;}
             if(w.plan.tick()){var d=LabyrinthData.get(s);var t=d.state(STATE);t.putBoolean(key(w.origin,w.place),true);d.setState(STATE,t);work=null;}return;}
         if(s.getTickCount()%40!=31)return;var o=HouseSavedData.get(s).houseOrigin();if(o==null)return;var d=LabyrinthData.get(s);
-        for(var p:new LabyrinthPlace[]{LabyrinthPlace.ZAMPANO_COURTYARD,LabyrinthPlace.END_WORLD_CABIN}){var l=s.getLevel(NovelRooms.dimension(p));
+        for(var p:new LabyrinthPlace[]{LabyrinthPlace.END_WORLD_CABIN}){var l=s.getLevel(NovelRooms.dimension(p));
             if(l==null||d.state(STATE).getBoolean(key(o,p))||!d.state(SceneHuntReview.STATE).getBoolean(key(o,p))||!available(l,o,p))continue;
             boolean[] ready={true};var plan=BuildBlocks.record(l,()->ready[0]=apply(l,o,p));if(ready[0])work=new Work(l,o,p,plan);break;}
     }

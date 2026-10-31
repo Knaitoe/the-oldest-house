@@ -51,8 +51,7 @@ public final class SceneShells {
     public static boolean shapes(LabyrinthPlace place) {
         // The night ward (0.4.199) is built whole by NightWard; its interior is still given here for the window checks.
         if (place == LabyrinthPlace.HOSPITAL) return false;
-        return spec(place) != null || WEATHERED.contains(place) || place == LabyrinthPlace.PLAIN
-                || place == LabyrinthPlace.ZAMPANO_COURTYARD;
+        return spec(place) != null || WEATHERED.contains(place) || place == LabyrinthPlace.PLAIN;
     }
 
     /** The open interior a scene's shell encloses, relative to its base, or null for scenes without one. */
@@ -100,13 +99,6 @@ public final class SceneShells {
                     Blocks.SPRUCE_PLANKS, null, null,
                     Blocks.BIRCH_SLAB, Blocks.GLASS_PANE, Blocks.LIGHT_GRAY_WOOL, Blocks.WHITE_CONCRETE,
                     null, 0, true, 4));
-            // The archive, inside an outdoor courtyard: framing and beams only, nothing pushed into the alley.
-            case ZAMPANO_COURTYARD -> new Spec(-11, 0, -38, 11, 6, -20, new Palette(
-                    Blocks.STRIPPED_SPRUCE_LOG, null, Blocks.STRIPPED_SPRUCE_WOOD, 2, null,
-                    Blocks.SPRUCE_LOG, 4, false, true, null,
-                    Blocks.SPRUCE_PLANKS, null, null,
-                    Blocks.SPRUCE_SLAB, Blocks.GLASS_PANE, null, Blocks.WHITE_CONCRETE,
-                    null, 0, false, 5));
             // The trailer's single skin is also its outside: only its floor and ceiling change.
             case GOATMAN -> new Spec(-7, 1, -76, 7, 5, -56, new Palette(
                     null, null, null, 0, null,

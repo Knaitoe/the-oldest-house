@@ -20,7 +20,7 @@ public final class VignetteArchitecture {
     private boolean rugsOnly;
     private VignetteArchitecture(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;scene=place;}
     /** The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell, and the night ward (0.4.199) by NightWard. */
-    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.WAY_OUT&&p!=LabyrinthPlace.HOSPITAL&&p!=LabyrinthPlace.SILO&&p!=LabyrinthPlace.BACKSEAT&&p!=LabyrinthPlace.NIGHTCLUB&&p!=LabyrinthPlace.HOTEL&&p!=LabyrinthPlace.BARN_WELL&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
+    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.WAY_OUT&&p!=LabyrinthPlace.HOSPITAL&&p!=LabyrinthPlace.SILO&&p!=LabyrinthPlace.BACKSEAT&&p!=LabyrinthPlace.NIGHTCLUB&&p!=LabyrinthPlace.HOTEL&&p!=LabyrinthPlace.BARN_WELL&&p!=LabyrinthPlace.ZAMPANO_COURTYARD&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!applies(p))return;
         var d=LabyrinthData.get(l.getServer());CompoundTag done=d.state(STATE);
@@ -46,7 +46,6 @@ public final class VignetteArchitecture {
         // 0.4.121: the model home is a tract house, furnished whole by ModelHome.
         case MODEL_HOME->{ }
         case HARRIGAN->harrigan();case MOTHER_DEN->mother();case EXPLORER_CAMP->camp();
-        case ZAMPANO_COURTYARD->archive();
         // 0.4.66: the institute authors its own rooms, furniture and windows.
         case WHALE->{ }
         case PLAIN->plain();case HOSPITAL->hospital();case KAREN_ROOM->karen();
@@ -96,7 +95,7 @@ public final class VignetteArchitecture {
                 ||s.is(Blocks.WHITE_TERRACOTTA)||s.is(Blocks.LIGHT_BLUE_TERRACOTTA)||s.is(Blocks.BROWN_TERRACOTTA)
                 ||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.WHITE_CONCRETE)||s.is(Blocks.LIGHT_GRAY_CONCRETE)
                 ||s.is(NovelRegistry.INSTITUTE.get())||s.is(NovelRegistry.PAPER.get())
-                ||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&s.is(Blocks.BARRIER)))l.setBlock(at,block.defaultBlockState(),F);
+                )l.setBlock(at,block.defaultBlockState(),F);
     }
     private void furniture(int x,int y,int z,HouseholdFurnitureBlock.Kind kind,Direction facing){add(x,y,z,HouseholdFurnitureBlock.state(kind,facing));}
     private void detail(int x,int y,int z,SceneDetailBlock.Kind kind,Direction facing){
@@ -182,32 +181,6 @@ public final class VignetteArchitecture {
         for(int z=-12;z<=-10;z++)add(4,2,z,Blocks.BROWN_WOOL);
         for(int y=0;y<=2;y++)add(4,y,-13,Blocks.SPRUCE_FENCE);
         pendant(-4,4,-3,5);
-    }
-    private void archive(){
-        // Continuous apartment facades frame the courtyard, with recessed windows and cornices.
-        for(int x:new int[]{-15,15})for(int z=-17;z<=-2;z++)for(int y=0;y<=9;y++){
-            if((z+2)%5==0)trim(x,y,z,Blocks.STONE_BRICKS);
-            else trim(x,y,z,y==0||y==5||y==9?Blocks.POLISHED_ANDESITE:Blocks.BRICKS);
-        }
-        for(int x:new int[]{-15,15})for(int z:new int[]{-4,-9,-14})for(int y:new int[]{2,3,7,8})trim(x,y,z,Blocks.LIGHT_GRAY_STAINED_GLASS);
-        for(int x:new int[]{-14,14})for(int z=-17;z<=-2;z++)add(x,6,z,Blocks.STONE_BRICK_SLAB);
-        for(int x:new int[]{-8,8}){
-            furniture(x,0,-10,CANE_CHAIR,Direction.NORTH);furniture(x,0,-14,CANE_CHAIR,Direction.SOUTH);
-            furniture(x,0,-12,HouseholdFurnitureBlock.Kind.CHESS_TABLE,Direction.SOUTH);
-            add(x,1,-12,VignetteDetailBlock.state(VignetteDetailBlock.Kind.CHESS,Direction.NORTH));
-        }
-        table(-8,0,-34,INK_PAPERS);table(-7,0,-34,BOOKS);table(-6,0,-34,TABLE_LAMP);
-        furniture(-7,0,-32,CANE_CHAIR,Direction.NORTH);cabinet(8,0,-37,FILE_TRAY);cabinet(7,0,-37,BOOKS);
-        cabinet(-10,0,-24,FILE_TRAY);detail(-10,0,-27,CRATE);detail(-9,0,-27,BOOKS);
-        for(int z:new int[]{-26,-32,-36})for(int y=0;y<=2;y++)add(-11,y,z,Blocks.BOOKSHELF);
-        for(int z:new int[]{-27,-33}){
-            table(-3,0,z,INK_PAPERS);table(-2,0,z,BOOKS);table(2,0,z,FILE_TRAY);table(3,0,z,BOOKS);
-            furniture(-3,0,z+2,CANE_CHAIR,Direction.NORTH);furniture(3,0,z+2,CANE_CHAIR,Direction.NORTH);
-        }
-        rug(-4,3,-35,-25,Blocks.BROWN_CARPET,Blocks.GRAY_CARPET);
-        detail(11,2,-37,CLOCK,Direction.WEST);detail(-11,2,-21,COAT,Direction.EAST);
-        pendant(-7,5,-25,8);pendant(4,5,-28,8);
-        // 0.4.77: stone planters stand here instead of indoor tables; CourtyardFountain puts them in.
     }
     private void plain(){
         // Continuous distant ground hides the old empty seam beneath the isolated figure.
