@@ -38,7 +38,7 @@ public final class HouseReadStory {
     public static String closing(HouseReadSites.Room room){return switch(room){
         case WAITING->"They called your name, and you went through.";
         case BATHROOM->"The light went out. You found the bed in the dark and slept.";
-        case COATROOM->"That's how you'll look here.";
+        case COATROOM->"Don't mind me. I wasn't looking.";
         case SHELTER->"The song ended. The rain kept on, and you went home in it.";
         case PORCH->"Welcome home. I've set a place for you at the table.";
         case KITCHEN->"There you are. Now I'll know you when I see you.";

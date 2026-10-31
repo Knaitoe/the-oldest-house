@@ -47,7 +47,7 @@ public final class HouseBodyClient {
         var skin=compose(reader,body);if(skin!=null)WORN.put(reader,new Worn(body,skin));return skin;
     }
     /** A skin's own tone: the commonest skin colour on the lower face, below the eyes where no hair falls, or -1 for none. */
-    static int base(NativeImage skin){
+    public static int base(NativeImage skin){
         int scale=Math.max(1,skin.getWidth()/64);var counts=new HashMap<Integer,Integer>();
         for(int y=12*scale;y<16*scale;y++)for(int x=9*scale;x<15*scale;x++){int c=argb(skin.getPixelRGBA(x,y));if(c>>>24>=128&&HouseBodies.skinColour(c>>16&255,c>>8&255,c&255))counts.merge(c&0xffffff,1,Integer::sum);}
         return counts.isEmpty()?-1:commonest(counts,0);
@@ -119,6 +119,8 @@ public final class HouseBodyClient {
      * The tone and hair colour of the default skin Minecraft gives this account: the commonest skin colour on the lower face
      * (below the eyes, where no hair falls), and the commonest colour on the crown.
      */
+    /** 0.4.201: the skin tone a reader wears in the House (the one drawn at the kitchen table, else their account's), as RGB. */
+    public static int tone(UUID reader){var body=BODIES.get(reader);int tone=body==null?-1:body.tone();return tone>=0?tone&0xffffff:defaults(reader)[0];}
     public static int[] defaults(UUID reader){
         return DEFAULTS.computeIfAbsent(reader,id->{
             try(var in=Minecraft.getInstance().getResourceManager().open(DefaultPlayerSkin.get(id).texture());var image=NativeImage.read(in)){

@@ -49,7 +49,9 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
         // the crop top, with short sleeves; jeans or shorts, each leg its own; and the cut-offs' waistband below the crop top.
         var shirt=new CubeDeformation(.3f);var sleeve=new CubeDeformation(.32f);var jeans=new CubeDeformation(.22f);var shorts=new CubeDeformation(.24f);int arm=slim?3:4;
         r.addOrReplaceChild("top",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,-2,8,12,4,shirt),PartPose.ZERO);
-        r.addOrReplaceChild("crop",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,-2,8,8,4,shirt),PartPose.ZERO);
+        r.addOrReplaceChild("crop",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,-2,8,6,4,shirt),PartPose.ZERO);
+        // 0.4.201: the bare midriff between the crop top and the waistband, over the body's own torso, in the skin it is drawn in.
+        r.addOrReplaceChild("midriff",CubeListBuilder.create().texOffs(0,0).addBox(-4,6,-2,8,3,4,new CubeDeformation(.28f)),PartPose.ZERO);
         r.addOrReplaceChild("right_sleeve",CubeListBuilder.create().texOffs(24,0).addBox(1-arm,-2,-2,arm,5,4,sleeve),PartPose.ZERO);
         r.addOrReplaceChild("left_sleeve",CubeListBuilder.create().texOffs(24,0).mirror().addBox(-1,-2,-2,arm,5,4,sleeve),PartPose.ZERO);
         r.addOrReplaceChild("right_jeans",CubeListBuilder.create().texOffs(40,0).addBox(-2,0,-2,4,12,4,jeans),PartPose.ZERO);
@@ -77,12 +79,38 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
         part(body.body,cloth.getChild(cut==HouseReadWardrobe.Cut.CROP?"crop":"top"),pose,out,light,tex);
         if(cut!=HouseReadWardrobe.Cut.TANK){part(body.rightArm,cloth.getChild("right_sleeve"),pose,out,light,tex);part(body.leftArm,cloth.getChild("left_sleeve"),pose,out,light,tex);}
         String legs=cut==HouseReadWardrobe.Cut.TEE?"_jeans":"_shorts";part(body.rightLeg,cloth.getChild("right"+legs),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left"+legs),pose,out,light,tex);
-        if(cut==HouseReadWardrobe.Cut.CROP)part(body.body,cloth.getChild("waist"),pose,out,light,tex);
+        if(cut==HouseReadWardrobe.Cut.CROP){part(body.body,cloth.getChild("waist"),pose,out,light,tex);midriff(body,cloth,pose,out,light);}
+    }
+    /** The skin drawn under the clothes, whose own bare skin the midriff matches; null for the local reader's (mirrors, looks). */
+    private static ResourceLocation under;
+    /** Each skin texture's bare skin colour, worked out once per texture (a reader's new House body is a new texture). */
+    private static final java.util.Map<net.minecraft.client.renderer.texture.AbstractTexture,Integer> BARE=new java.util.WeakHashMap<>();
+    private static final ResourceLocation MIDRIFF=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/midriff.png");
+    /** A coat or outfit over the given skin (the wardrobe proof's bodies), the midriff matched to that skin. */
+    public static void coat(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,ResourceLocation skin,PoseStack pose,MultiBufferSource out,int light){
+        var before=under;under=skin;try{coat(body,cloth,type,pose,out,light);}finally{under=before;}
+    }
+    /**
+     * The colour the skin itself is painted in: the commonest skin colour on the lower face, below the eyes, as the House body
+     * paints it (its tone plus the painter's shading), so the bare midriff is the same skin as the face and hands beside it.
+     */
+    static int bare(ResourceLocation skin){
+        var mc=net.minecraft.client.Minecraft.getInstance();
+        if(skin==null&&mc.player!=null)skin=mc.player.getSkin().texture();
+        int fallback=mc.player==null?0xc9966f:HouseBodyClient.tone(mc.player.getUUID());if(skin==null)return fallback;
+        var texture=mc.getTextureManager().getTexture(skin);var known=BARE.get(texture);if(known!=null)return known;
+        int colour=-1;
+        if(texture instanceof net.minecraft.client.renderer.texture.DynamicTexture painted&&painted.getPixels()!=null)colour=HouseBodyClient.base(painted.getPixels());
+        else try(var in=mc.getResourceManager().open(skin);var image=com.mojang.blaze3d.platform.NativeImage.read(in)){colour=HouseBodyClient.base(image);}catch(java.io.IOException|RuntimeException e){colour=-1;}
+        colour=colour<0?fallback:colour&0xffffff;BARE.put(texture,colour);return colour;
+    }
+    private static void midriff(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,PoseStack pose,MultiBufferSource out,int light){
+        pose.pushPose();body.body.translateAndRotate(pose);cloth.getChild("midriff").render(pose,out.getBuffer(RenderType.entityCutoutNoCull(MIDRIFF)),light,OverlayTexture.NO_OVERLAY,0xff000000|bare(under));pose.popPose();
     }
     public static void boots(net.minecraft.client.model.HumanoidModel<?> body,ModelPart cloth,String type,PoseStack pose,MultiBufferSource out,int light){var tex=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/house_read/"+type+".png");part(body.rightLeg,cloth.getChild("right_leg"),pose,out,light,tex);part(body.leftLeg,cloth.getChild("left_leg"),pose,out,light,tex);}
     public static void draw(PlayerModel<AbstractClientPlayer> body,ModelPart cloth,AbstractClientPlayer player,PoseStack pose,MultiBufferSource out,int light){
         ItemStack chest=player.getItemBySlot(EquipmentSlot.CHEST),feet=player.getItemBySlot(EquipmentSlot.FEET);
-        if(chest.getItem() instanceof HouseReadRegistry.Garment garment)coat(body,cloth,garment.cloth,pose,out,light);
+        if(chest.getItem() instanceof HouseReadRegistry.Garment garment)coat(body,cloth,garment.cloth,player.getSkin().texture(),pose,out,light);
         if(feet.getItem() instanceof HouseReadRegistry.Garment boots)boots(body,cloth,boots.cloth,pose,out,light);
     }
     @Override public void render(PoseStack pose,MultiBufferSource out,int light,AbstractClientPlayer p,float walk,float amount,float partial,float age,float yaw,float pitch){if(!p.isInvisible())draw(getParentModel(),cloth,p,pose,out,light);}

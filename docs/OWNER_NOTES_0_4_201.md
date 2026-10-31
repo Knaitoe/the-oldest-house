@@ -184,6 +184,31 @@ setting-up case checks that the four hang where they should.
   the marks.
 - The rest of the review of his home (its architecture and layout) is the next piece of work.
 
+## The coatroom's closing line, and the crop top
+
+> "What are your suggestions for the coatroom's closing line?" / "You buttoned up and went back out into the rain <- this may
+> read as unnatural for clothing without buttons." / "The crop top should also show the player's midriff+navel!" / "the navel
+> doesn't exactly look like a navel, and the stomach tone doesn't quite match the rest of the skin" / "for closing the closet
+> vignette - what do you think of this line? There's nobody here to impress. You can stop whenever you like." / "which line do
+> you think works best? Don't mind me. I wasn't looking. / It's all right. You don't have to explain yourself to me. / There's
+> nobody here to impress. You can stop whenever you like." / "the shading beneath the navel looks like hair. i'd go back to the horizontal
+> shading you'd applied previously"
+
+- **The closing line** is the first of the owner's three: "Don't mind me. I wasn't looking." The room opens on "a hall where
+  nobody was looking", and the House has just spent the room guessing at what the reader put on; the line gives that away
+  as a polite fib, in the House's own voice, short like the porch's and the kitchen table's lines. (Interim lines: "Dry
+  again, you went back out into the rain.", after "buttoned up" read wrongly for clothes without buttons; then "There's
+  nobody here to impress. You can stop whenever you like.")
+- **The crop top** is cut two rows shorter (six rows of the torso, not eight), and the band between it and the cut-offs'
+  waistband is bare skin: a plain white sheet (`house_read/midriff`, drawn by `tools/house_read_wardrobe_art.py` on the 64x32
+  layout the clothes' mesh uses) on its own box just over the body's torso. `HouseReadClothes` tints it with the colour the
+  skin under the clothes is actually painted in: the commonest skin colour on that skin's lower face (`HouseBodyClient.base`),
+  which for a House body is its tone plus the painter's shading, so the stomach is the same skin as the face and hands. The
+  first version tinted with the bare tone and came out a shade off. Mirrors and looks use the local reader's skin.
+- **The navel** is a dark pixel with a softer one beside it, just right of the middle as a skin's own features sit. An upright
+  version (a dark pixel over a softer one) read as hair below the navel, so the owner asked for the side-by-side shading back.
+- The wardrobe proof draws each outfit over the skin it shows, so its crop top is matched to that skin.
+
 ## The kitchen picture goes up by hand
 
 > "it would be clearer, if possible, for players to pick up the completed picture in the first vignette and manually post it to
@@ -207,5 +232,4 @@ reader's House of Leaves, and win and lose states. None is built yet.
 
 ## Not changed yet
 
-- The coatroom's closing line, "That's how you'll look here.", waits on the owner's choice among the suggestions given in conversation.
 - The Wheel's mother dropping fire charges: nothing in the mod gives, drops or names a fire charge, and her actor cannot be hurt, so where they came from is not yet known.

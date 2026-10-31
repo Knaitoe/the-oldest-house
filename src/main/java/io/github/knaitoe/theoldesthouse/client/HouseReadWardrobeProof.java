@@ -59,7 +59,7 @@ public final class HouseReadWardrobeProof extends Screen {
             if(back){body.rightArm.xRot=.5f;body.leftArm.xRot=-.5f;body.rightLeg.xRot=-.45f;body.leftLeg.xRot=.45f;}
             var p=g.pose();p.pushPose();p.translate((i%columns+.5f)*cw,30+(i/columns)*ch+ch*.28f,180);p.scale(scale,scale,scale);p.mulPose(Axis.YP.rotationDegrees(back?-20:200));
             var skin=DefaultPlayerSkin.get(new UUID(169,i)).texture();body.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
-            var cloth=mc.getEntityModels().bakeLayer(slim?HouseReadClothes.SLIM:HouseReadClothes.STANDARD);HouseReadClothes.coat(body,cloth,coats.get(i).id(),p,out,LightTexture.FULL_BRIGHT);HouseReadClothes.boots(body,cloth,boots.get(i%boots.size()).id(),p,out,LightTexture.FULL_BRIGHT);
+            var cloth=mc.getEntityModels().bakeLayer(slim?HouseReadClothes.SLIM:HouseReadClothes.STANDARD);HouseReadClothes.coat(body,cloth,coats.get(i).id(),skin,p,out,LightTexture.FULL_BRIGHT);HouseReadClothes.boots(body,cloth,boots.get(i%boots.size()).id(),p,out,LightTexture.FULL_BRIGHT);
             out.endBatch();p.popPose();
             g.drawCenteredString(font,coats.get(i).name(),(int)((i%columns+.5f)*cw),(int)(30+(i/columns+1)*ch-18),0xffe5dcc8);g.drawCenteredString(font,boots.get(i%boots.size()).name(),(int)((i%columns+.5f)*cw),(int)(30+(i/columns+1)*ch-8),0xffa59d8c);
         }
