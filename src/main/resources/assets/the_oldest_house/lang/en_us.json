@@ -984,5 +984,22 @@
   "block.the_oldest_house.swimmer_blockwork": "Painted Blockwork",
   "block.the_oldest_house.swimmer_lino": "Lino",
   "advancements.the_oldest_house.account.last_swimmer.title": "The last swimmer",
-  "advancements.the_oldest_house.account.last_swimmer.description": "I helped close a pool."
+  "advancements.the_oldest_house.account.last_swimmer.description": "I helped close a pool.",
+  "block.the_oldest_house.vacant_fitting": "Furniture",
+  "block.the_oldest_house.vacant_wallpaper": "Faded Wallpaper",
+  "block.the_oldest_house.vacant_boards": "Worn Boards",
+  "block.the_oldest_house.vacant_boards_new": "Unfaded Boards",
+  "block.the_oldest_house.vacant_plaster": "Plaster",
+  "block.the_oldest_house.vacant_stair_carpet": "Stair Runner",
+  "block.the_oldest_house.vacant_lino": "Hall Lino",
+  "block.the_oldest_house.vacant_brick": "Terrace Brick",
+  "block.the_oldest_house.vacant_pavement": "Paving Flag",
+  "block.the_oldest_house.vacant_kerb": "Kerbstone",
+  "block.the_oldest_house.vacant_road": "Road",
+  "block.the_oldest_house.vacant_van_panel": "Van Panel",
+  "block.the_oldest_house.vacant_van_wheel": "Van Wheel",
+  "block.the_oldest_house.vacant_van_floor": "Van Floor",
+  "item.the_oldest_house.vacant_piece": "Furniture",
+  "advancements.the_oldest_house.account.vacant_possession.title": "Vacant possession",
+  "advancements.the_oldest_house.account.vacant_possession.description": "I helped empty a flat on moving day."
 }

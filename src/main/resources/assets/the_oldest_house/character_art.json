@@ -1248,6 +1248,14 @@
     "phase": 50
   },
   {
+    "name": "literary_vacant_tenant",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 53
+  },
+  {
     "name": "literary_swimmer_attendant",
     "logical": 128,
     "model": "literary",

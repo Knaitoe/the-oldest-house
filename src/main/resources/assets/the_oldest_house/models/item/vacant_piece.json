@@ -1,0 +1,59 @@
+{
+  "parent": "the_oldest_house:item/vacant_piece_boxes",
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/vacant_piece_dresser"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/vacant_piece_rug"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "the_oldest_house:item/vacant_piece_bed"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "the_oldest_house:item/vacant_piece_wardrobe"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "the_oldest_house:item/vacant_piece_table"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "the_oldest_house:item/vacant_piece_armchair"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "the_oldest_house:item/vacant_piece_boxes"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "the_oldest_house:item/vacant_piece_lamp"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "the_oldest_house:item/vacant_piece_chair"
+    }
+  ]
+}

@@ -69,6 +69,8 @@ rule is no copyrighted text in the repository. Instead:
 
 ## 3. Vacant Possession (0.4.228)
 
+Done; see `docs/VACANT_POSSESSION_0_4_228.md`. Readers who come in together empty the same flat.
+
 A small apartment on a landing. An older tenant asks for help emptying it.
 
 - Each piece (dresser, rug, bed, wardrobe, table, armchair, boxes, lamp) is lifted with a right-click and carried down to the van

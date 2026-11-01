@@ -1,0 +1,201 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/vacant/rug_centre",
+    "e": "the_oldest_house:block/vacant/rug_edge",
+    "k": "the_oldest_house:block/vacant/rug_corner",
+    "particle": "the_oldest_house:block/vacant/rug_centre"
+  },
+  "elements": [
+    {
+      "from": [
+        -16,
+        0,
+        -16
+      ],
+      "to": [
+        0,
+        0.5,
+        0
+      ],
+      "faces": {
+        "up": {
+          "texture": "#k",
+          "rotation": 0
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        -16,
+        0,
+        0
+      ],
+      "to": [
+        0,
+        0.5,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#e",
+          "rotation": 270
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        -16,
+        0,
+        16
+      ],
+      "to": [
+        0,
+        0.5,
+        32
+      ],
+      "faces": {
+        "up": {
+          "texture": "#k",
+          "rotation": 270
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        -16
+      ],
+      "to": [
+        16,
+        0.5,
+        0
+      ],
+      "faces": {
+        "up": {
+          "texture": "#e",
+          "rotation": 0
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        0.5,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#c",
+          "rotation": 0
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        16
+      ],
+      "to": [
+        16,
+        0.5,
+        32
+      ],
+      "faces": {
+        "up": {
+          "texture": "#e",
+          "rotation": 180
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        16,
+        0,
+        -16
+      ],
+      "to": [
+        32,
+        0.5,
+        0
+      ],
+      "faces": {
+        "up": {
+          "texture": "#k",
+          "rotation": 90
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        16,
+        0,
+        0
+      ],
+      "to": [
+        32,
+        0.5,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#e",
+          "rotation": 90
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        16,
+        0,
+        16
+      ],
+      "to": [
+        32,
+        0.5,
+        32
+      ],
+      "faces": {
+        "up": {
+          "texture": "#k",
+          "rotation": 180
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    }
+  ]
+}
