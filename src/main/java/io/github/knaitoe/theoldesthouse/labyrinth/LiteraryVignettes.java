@@ -241,6 +241,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.END_WORLD_CABIN)CabinBargain.open(p);
         else if(place==PittGame.PLACE&&actor.role()==LiteraryActor.STRANGER&&PittGame.bradPhase(actor.phase()))PittGame.talk(p);
         else if(place==Polybius.PLACE&&actor.role()==LiteraryActor.STRANGER&&Polybius.regular(actor.phase()))Polybius.regularLine(p,actor.phase()-Polybius.REGULAR_PHASE);
+        else if(place==Polybius.PLACE&&actor.role()==LiteraryActor.STRANGER&&Polybius.teen(actor.phase()))Polybius.teenLine(p);
         else if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.talk(p,place,actor,own);
         else if (place == LabyrinthPlace.HOLY_RABBIT && actor.role() == LiteraryActor.FATHER) {
             if (!rabbitCommitted(own) && !own.getBoolean("Ready")) {

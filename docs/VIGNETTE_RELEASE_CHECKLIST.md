@@ -1,3 +1,5 @@
+November 1 candidate 0.4.224, Block Party's classes, combos and items and the Polybius pizza counter: no vignette, source kind, Witness or protocol change; one new cast member (the teenager, phase 50) listed in the character review. Tests: PolybiusTests classes/chains/specials/items and pizza counter cases.
+
 November 1 candidate 0.4.223, the owner's second batch (waiting-room glasses, hall windows/trim/cracks, Winchester mirror/seats/piano, manor and captured portraits, Block Party drawing): no vignette, source kind, Witness or protocol change; the portrait string gains an optional fifth line (older portraits decode as before). Tests: ExplorationPassTests (skirting, straight-run windows, no dark backs), the Winchester animation case (mirror entity, settee seat, piano keys), the client portrait proof (House look).
 
 November 1 candidate 0.4.222, the opening warning without Take Book and the title-screen splash: no vignette, source kind, Witness or protocol change. Tests: OpeningTests (the warning's book carries its mark; no other book does).

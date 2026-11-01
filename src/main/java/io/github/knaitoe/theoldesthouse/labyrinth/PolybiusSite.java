@@ -42,6 +42,12 @@ public final class PolybiusSite {
     public static final BlockPos BRAWL=new BlockPos(-8,0,-16),BRAWL_RIGHT=new BlockPos(-8,0,-17);
     public static final List<BlockPos> OTHERS=List.of(new BlockPos(-8,0,-9),new BlockPos(8,0,-9),new BlockPos(8,0,-12));
     public static final List<BlockPos> REGULARS=List.of(new BlockPos(-7,0,-9),new BlockPos(7,0,-9),new BlockPos(7,0,-12));
+    /**
+     * 0.4.224 (owner: "add a pizza and soda booth/vendor, too! ... staffed by a teenager with a poor attitude"): the pizza counter on
+     * the east wall, in the taped-up cabinet's old place: the counter with its warmer and napkins, the back counter with the soda
+     * fountain, the boxes and the oven, the menu on the wall, and the teenager behind it all.
+     */
+    public static final BlockPos WARMER=new BlockPos(6,1,-15),SODA=new BlockPos(8,1,-14),TEEN=new BlockPos(7,0,-15);
     /** Which prize a shelf cell holds, or -1. */
     public static int prize(BlockPos rel){if(rel.getZ()!=FAR||rel.getX()<5||rel.getX()>8||rel.getY()<0||rel.getY()>1)return -1;return rel.getX()-5+rel.getY()*4;}
     public static boolean brawl(BlockPos rel){return rel.getX()==BRAWL.getX()&&(rel.getZ()==BRAWL.getZ()||rel.getZ()==BRAWL_RIGHT.getZ())&&(rel.getY()==0||rel.getY()==1);}
@@ -67,7 +73,11 @@ public final class PolybiusSite {
         for(int i=0;i<OTHERS.size();i++){var c=OTHERS.get(i);var f=c.getX()<0?Direction.EAST:Direction.WEST;set(l,b,c,PolybiusBlock.of(OTHER,f,i));set(l,b,c.above(),PolybiusBlock.of(OTHER_SCREEN,f,i));}
         set(l,b,BRAWL,PolybiusBlock.of(PolybiusBlock.Kind.BRAWL,Direction.EAST,0));set(l,b,BRAWL.above(),PolybiusBlock.of(BRAWL_SCREEN,Direction.EAST,0));
         set(l,b,BRAWL_RIGHT,PolybiusBlock.of(PolybiusBlock.Kind.BRAWL,Direction.EAST,1));set(l,b,BRAWL_RIGHT.above(),PolybiusBlock.of(BRAWL_SCREEN,Direction.EAST,1));
-        int[][] dead={{-8,-19,0},{8,-15,1}};
+        int[][] dead={{-8,-19,0}};
+        for(int z=-16;z<=-14;z++){set(l,b,6,0,z,PolybiusBlock.of(PolybiusBlock.Kind.PIZZA_COUNTER,Direction.WEST));set(l,b,8,0,z,PolybiusBlock.of(PolybiusBlock.Kind.BACK_COUNTER,Direction.WEST));}
+        set(l,b,WARMER,PolybiusBlock.of(PolybiusBlock.Kind.PIZZA_WARMER,Direction.WEST));set(l,b,6,1,-16,PolybiusBlock.of(PolybiusBlock.Kind.NAPKINS,Direction.WEST));
+        set(l,b,SODA,PolybiusBlock.of(PolybiusBlock.Kind.SODA,Direction.WEST));set(l,b,8,1,-15,PolybiusBlock.of(PolybiusBlock.Kind.PIZZA_BOXES,Direction.WEST));
+        set(l,b,8,1,-16,PolybiusBlock.of(PolybiusBlock.Kind.PIZZA_OVEN,Direction.WEST));set(l,b,8,2,-15,PolybiusBlock.of(PolybiusBlock.Kind.MENU_BOARD,Direction.WEST));
         for(int[] d:dead){var f=d[0]<0?Direction.EAST:Direction.WEST;set(l,b,d[0],0,d[1],PolybiusBlock.of(DEAD,f,d[2]));set(l,b,d[0],1,d[1],PolybiusBlock.of(DEAD_SCREEN,f,d[2]));}
         set(l,b,-7,0,-6,PolybiusBlock.of(STOOL,Direction.NORTH));set(l,b,-7,0,-12,PolybiusBlock.of(STOOL,Direction.NORTH));set(l,b,7,0,-6,PolybiusBlock.of(STOOL,Direction.NORTH));
         // By the door: the change machine with the clipboard's place on top, and the notice board opposite.

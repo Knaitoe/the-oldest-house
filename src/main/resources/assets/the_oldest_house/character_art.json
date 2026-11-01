@@ -1238,5 +1238,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 49
+  },
+  {
+    "name": "literary_polybius_teen",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 50
   }
 ]

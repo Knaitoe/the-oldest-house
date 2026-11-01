@@ -87,4 +87,6 @@ def entries():
     # Polybius (0.4.221): the arcade's three regulars on stranger phases forty-seven to forty-nine.
     for i,name in enumerate(['kid_a','kid_b','kid_c']):
         rows.append({'name':'literary_polybius_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':47+i})
+    # Polybius (0.4.224): the teenager behind the pizza counter on stranger phase fifty.
+    rows.append({'name':'literary_polybius_teen','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':50})
     return rows
