@@ -73,7 +73,7 @@ public final class BorrascaStory {
     }
     public static ItemStack markEvidence(ServerPlayer p,ItemStack s){CustomData.update(DataComponents.CUSTOM_DATA,s,t->t.putUUID("BorrascaEvidence",p.getUUID()));return s;}
     public static boolean carriesEvidence(ServerPlayer p,CompoundTag own){return BorrascaBelongings.has(p,own,"Patch");}
-    public static void read(ServerPlayer p,String key,CompoundTag own){if(BorrascaSites.inside(p)&&own.getBoolean("Here")&&own.getInt("Visit")==4&&key.equals("Evidence"))own.putBoolean("EvidenceRead",true);}
+    public static void read(ServerPlayer p,String key,CompoundTag own){if(!BorrascaSites.inside(p)||!own.getBoolean("Here")||own.getInt("Visit")!=4)return;switch(key){case "Evidence"->own.putBoolean("EvidenceRead",true);case "Ledger"->own.putBoolean("LedgerRead",true);case "Letter"->own.putBoolean("LetterRead",true);default->{}}}
     public static void held(ServerPlayer p,ItemStack s,String key){
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
         if(!BorrascaBelongings.valid(p,own,key,s))return;
@@ -124,6 +124,10 @@ public final class BorrascaStory {
         if(rel.equals(BorrascaRooms.TRAIL_MAP)){LiteraryVignettes.open(p,PLACE,own,"Map",BorrascaTexts.document("Map"),b.offset(rel));return true;}
         if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.boardKey(visit),BorrascaTexts.board(visit),b.offset(rel));return true;}
         if(rel.equals(BorrascaRooms.NOTES)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.notesKey(visit>=3),BorrascaTexts.notes(visit>=3),b.offset(rel));return true;}
+        // 0.4.237: the desk under the depot, and the numbers behind the shed.
+        if(rel.equals(BorrascaRooms.NIGHT_BOOK)){LiteraryVignettes.open(p,PLACE,own,"Ledger",BorrascaTexts.document("Ledger"),b.offset(rel));return true;}
+        if(rel.equals(BorrascaRooms.LETTER)){LiteraryVignettes.open(p,PLACE,own,"Letter",BorrascaTexts.document("Letter"),b.offset(rel));return true;}
+        for(int i=0;i<BorrascaRooms.GRAVE_TAGS.length;i++)if(rel.equals(BorrascaRooms.grave(i))){graves(p,own);cue(p,"A number on a stake: "+BorrascaRooms.GRAVE_TAGS[i]+". No name.");return true;}
         if(rel.equals(BorrascaRooms.EVIDENCE)){if(visit==4)LiteraryVignettes.open(p,PLACE,own,"Evidence",BorrascaTexts.document("Evidence",own.getBoolean("CompassEverConfiscated")),b.offset(rel));return true;}
         if(rel.equals(FRONT_LEVER)){if(visit==4)openDoor(p.serverLevel(),b.offset(BorrascaRooms.FACTORY_DOOR),true);return true;}
         if(rel.equals(BorrascaRooms.POWER)){
@@ -408,14 +412,26 @@ public final class BorrascaStory {
         if(!own.getBoolean("PowerOff")&&own.getInt("TrailClock")%200==0)heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),1);
         if(!own.getBoolean("GougeSeen")&&looksAt(p,b.offset(BorrascaRooms.CARVING),7))noticeGouge(p,own);
         if(carriesEvidence(p,own))own.putBoolean("PatchRecovered",true);
+        lowerRooms(p,b,own);
         if(own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&own.getBoolean("PatchRecovered")&&carriesEvidence(p,own)&&(own.getInt("ConfirmedVisits")&7)==7&&p.getZ()>b.getZ()-106){own.putBoolean("EscapedWithOriginal",true);LiteraryVignettes.ready(p,PLACE,own,"silenced_the_mountain");}
     }
+
+    /** 0.4.237: what the reader finds under the depot and behind the shed on the last night. Nothing is shown happening; it is all after. */
+    private static void lowerRooms(ServerPlayer p,BlockPos b,CompoundTag own){
+        double x=p.getX()-b.getX(),y=p.getY()-b.getY(),z=p.getZ()-b.getZ();
+        if(!own.getBoolean("LowerRooms")&&BorrascaRooms.inLowerRooms(x,y,z)){own.putBoolean("LowerRooms",true);cue(p,"A corridor under the depot, rooms along both sides. Every bolt is on this side of the door.");}
+        if(!own.getBoolean("NellsRoom")&&BorrascaRooms.inRoom(BorrascaRooms.NELL_ROOM,x,y,z)){own.putBoolean("NellsRoom",true);cue(p,"Room 6 is empty. Scratched into the wall: "+FRIEND.toUpperCase(Locale.ROOT)+", and beside it your name, the way you both cut them into the tree.");}
+        if(!own.getBoolean("MarasRoom")&&BorrascaRooms.inRoom(BorrascaRooms.MARA_ROOM,x,y,z)){own.putBoolean("MarasRoom",true);cue(p,"The blanket on the cot is folded. It is still warm. The trucks went up the ridge road tonight.");}
+        if(!own.getBoolean("GravesSeen")&&x>=-7.5&&x<7.5&&z>=-211&&z<-201&&y>11&&y<14)graves(p,own);
+    }
+    private static void graves(ServerPlayer p,CompoundTag own){if(own.getBoolean("GravesSeen"))return;own.putBoolean("GravesSeen",true);cue(p,"Behind the shed, low mounds in rows, a number on a stake at the head of each. No names.");}
 
     // ------------------------------------------------------------------ the place
     private static void scene(ServerPlayer p,BlockPos b,CompoundTag own){
         if(own.getBoolean("PowerOff")&&p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.MACHINE))){var at=b.offset(BorrascaRooms.MACHINE);var s=p.serverLevel().getBlockState(at);if(s.is(BorrascaRegistry.MACHINE.get())&&s.getValue(BorrascaMachineBlock.RUNNING))p.serverLevel().setBlock(at,s.setValue(BorrascaMachineBlock.RUNNING,false),F);var lamp=b.offset(BorrascaRooms.LAMP);var light=p.serverLevel().getBlockState(lamp);if(light.is(BorrascaRegistry.FITTING.get())&&light.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.LAMP)fit(p,b,BorrascaRooms.LAMP,BorrascaFittingBlock.Kind.LAMP_OFF);}
         int visit=own.getInt("Visit");if(!p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.CARVING))||!p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.PACK))||visit==4&&!p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.GATE)))return;
         int stage=own.getBoolean("RestoredName")?4:visit>=3?3:own.getBoolean("PactCarved")?2:own.getBoolean("FriendCarved")?1:0;bark(p,b,stage);
+        if(visit==4&&p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.NELL_WALL)))BorrascaCarvingEntity.names(p.serverLevel(),b.offset(BorrascaRooms.NELL_WALL),FRIEND,p.getGameProfile().getName());
         if(own.getInt("SceneryVisit")==visit)return;
         if(visit>=3){for(int x=-5;x<=5;x++)for(int y=5;y<=11;y++)for(int z=-100;z<=-88;z++){var s=p.serverLevel().getBlockState(b.offset(x,y,z));if(s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.OAK_PLANKS))fit(p,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.AGED_WOOD);}for(int x=-1;x<=5;x++)fit(p,b,new BlockPos(x,5,-125),BorrascaFittingBlock.Kind.TAPE);}
         // Her pack is not at the sorting table until after she is taken.

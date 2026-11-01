@@ -28,6 +28,25 @@ public final class BorrascaTexts {
             "Case: closed.\nRelease to family: none.\nHeld at: sorting table.",
             "Transfer D-417\nNight access: authorized\nFuel: county maintenance account\nApproved: Sheriff's office",
             "Next tag: 264-A\nName: Mara\nRelease to family: none.");
+        // 0.4.237: the book on the desk under the depot. Nothing in it is described; it is kept like any other book of nights.
+        case "Ledger"->typed("Night book, lower rooms","Ridge Depot",
+            "NIGHT BOOK\nLower rooms\n\nAccess at night by approval only. Sign in and out. Fees to the county maintenance account.",
+            "No names in this book. Rooms by number, tags by number.",
+            "1964\nRm 2. In 11:40. Out 1:05.\nRm 5. In 12:10. Out 12:50.\nApproved: Sheriff's office.\nCounted: E. Prescott",
+            "1979\nRm 1. In 11:15. Out 12:30.\nRm 5. Transfer, D-118.\nApproved: Sheriff's office.\nCounted: W. Prescott",
+            "1993\nRm 3. In 10:50. Out 12:00.\nRm 4. No visitors. Unwell.\nRm 4. Closed. To the yard.",
+            "Rm 2. Letter withheld.\nApproved: Sheriff's office.\nCounted: W. Prescott",
+            "263-A. Rm 6. Received, 6:40 pm.\nRm 6. No visitors. Will not eat.\nRm 6. Asks for her friend by name.\nRm 6. Transfer, D-417. Night.",
+            "264-A. Rm 7. Received.\nNight shift tonight.\nApproved: Sheriff's office.\nCounted: J. Prescott");
+        // 0.4.237: a girl's letter home from room 2, taken off her and kept. She does not say the rest.
+        case "Letter"->book("A letter, not sent","Dana",HouseWriting.WritingStyle.CHILD,110,
+            "Mom,\n\nThey said I could write if I was good. They said you think I went to Aunt Ruth's. I didn't.",
+            "I'm under the depot past the second marker.",
+            "There are other girls. We knock on the walls at night so we know who's still here. The girl in four stopped knocking.",
+            "Men come down at night. Mr. Prescott writes in a book. The Sheriff comes too.",
+            "I'm not allowed to say the rest and I don't want to.",
+            "Please come up past the marker. Please tell Ellie not to go to the fort.\n\nDana",
+            "WITHHELD\nNot to be posted.\nW. P.");
         case "Map"->typed("Pine trail map","County Trails",
             "OZARK PINE TRAIL\n\nTrailhead to Triple Tree: one mile, Marker 1.\nTriple Tree to Marker 2: the public walk ends here.",
             "Beyond Marker 2: county property, no public access. Markers 3 and 4 are maintenance markers on the ridge road.",
@@ -79,10 +98,17 @@ public final class BorrascaTexts {
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
-            +" At the ridge, his office's papers and Prescott's signature lay beside her things. I stopped the machine. The wind was still in the pines."
+            +" At the ridge, his office's papers and Prescott's signature lay beside her things."
+            +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
+            +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine. The room was empty.":"")
+            +(own.getBoolean("MarasRoom")?" The newest room was still warm.":"")
+            +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Beside her number it said transfer, and nothing after.":"")
+            +(own.getBoolean("LetterRead")?" A girl had written home from down there. Her letter was never sent.":"")
+            +(own.getBoolean("GravesSeen")?" Behind the shed there were numbers in the ground.":"")
+            +" I stopped the machine. The wind was still in the pines."
             +(own.getBoolean("NameReturned")||own.getBoolean("RestoredName")?" "+restored():" I carried her name out in the cloth.");
     }
     public static ItemStack accountBook(String reader,CompoundTag own){return book("The name beside mine",reader,account(own));}
     public static String restored(){return "I cut her name beside mine again. The gouges were still there.";}
-    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("NameReturned")?" "+restored():"");}
+    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
 }

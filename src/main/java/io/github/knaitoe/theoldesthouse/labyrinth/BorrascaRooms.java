@@ -26,6 +26,24 @@ public final class BorrascaRooms {
     public static final BlockPos TRAIL_MAP=new BlockPos(6,1,-7),NOTES=new BlockPos(-1,7,-99);
     public static final BlockPos[] BOARD={new BlockPos(-15,1,-21),new BlockPos(-15,1,-20),new BlockPos(-15,2,-21),new BlockPos(-15,2,-20)};
     public static final BlockPos TRUCK=new BlockPos(12,12,-166);
+    /**
+     * 0.4.237: the rooms under the depot. A hatch in the back room's floor and a ladder down; a corridor with six rooms either side,
+     * every one bolted from the corridor (a lever by each door); at its far end a desk with the night book and a letter that was never
+     * posted. The east rooms are numbered 1 to 6 from the ladder, the west 7 to 12. Nell's is 6, open and empty, her name scratched beside
+     * the reader's; Mara's is 7, by the ladder, bolted.
+     */
+    public static final BlockPos HATCH=new BlockPos(-19,11,-202),NIGHT_BOOK=new BlockPos(-19,7,-172),LETTER=new BlockPos(-18,7,-172),NELL_WALL=new BlockPos(-15,7,-181);
+    public static final int[] ROOM_Z={-199,-195,-191,-187,-183,-179};
+    public static final int NELL_ROOM=6,MARA_ROOM=7;
+    /** The numbers in the ground behind the shed: the tags before Nell's. */
+    public static final String[] GRAVE_TAGS={"211-A","214-A","219-A","222-A","226-A","230-A","234-A","238-A","241-A","245-A","247-A","251-A","255-A","258-A","260-A"};
+    public static BlockPos grave(int i){return new BlockPos(-6+3*(i%5),12,-202-3*(i/5));}
+    /** A room's door, by number: east rooms open onto x -17, west rooms onto x -21. */
+    public static BlockPos roomDoor(int room){return room<=6?new BlockPos(-17,6,ROOM_Z[room-1]):new BlockPos(-21,6,ROOM_Z[room-7]);}
+    public static BlockPos roomLever(int room){return room<=6?new BlockPos(-18,7,ROOM_Z[room-1]+1):new BlockPos(-20,7,ROOM_Z[room-7]+1);}
+    /** Inside a room: the three-by-three floor behind its door. */
+    public static boolean inRoom(int room,double x,double y,double z){int x0=room<=6?-16:-24,zc=room<=6?ROOM_Z[room-1]:ROOM_Z[room-7];return y<9&&x>=x0&&x<x0+3&&z>=zc-1&&z<zc+2;}
+    public static boolean inLowerRooms(double x,double y,double z){return y<9.5&&x>=-25&&x<-12&&z>=-203&&z<-171;}
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private BorrascaRooms(){}
     static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,Block block){LiteraryRooms.box(l,b,x,y,z,X,Y,Z,block);}
@@ -43,7 +61,7 @@ public final class BorrascaRooms {
         for(int z=-18;z>=-211;z-=11)for(int side:new int[]{-1,1}){if(z>-36)continue;int x=side*(12+Math.floorMod(z*7,23));int y=trailY(z);tree(l,b,x,z,y,9+Math.floorMod(z,5));if(z>-142&&z<-104)box(l,b,side<0?-7:8,y,z,side<0?-5:11,y+3,z+3,Blocks.MOSSY_COBBLESTONE);}
         for(int z=-211;z<=-9;z+=9)for(int x:new int[]{-41,40}){tree(l,b,x,z,trailY(z),10);box(l,b,x,0,z,x+1,trailY(z)+3,z+8,Blocks.STONE);}
         box(l,b,-44,0,-220,44,23,-217,Blocks.STONE);
-        BorrascaTown.fort(l,b);gully(l,b);compound(l,b);serviceDescent(l,b);
+        BorrascaTown.fort(l,b);gully(l,b);compound(l,b);serviceDescent(l,b);lowerRooms(l,b);graves(l,b);
         marker(l,b,MARKER_ONE,BorrascaFittingBlock.Kind.MARKER_ONE);marker(l,b,MARKER_TWO,BorrascaFittingBlock.Kind.MARKER_TWO);marker(l,b,MARKER_THREE,BorrascaFittingBlock.Kind.MARKER_THREE);marker(l,b,MARKER_FOUR,BorrascaFittingBlock.Kind.MARKER_FOUR);
         path(l,b,trail(-125),SHELTER_TWO);path(l,b,SHELTER_TWO,new BlockPos(1,6,-131));path(l,b,new BlockPos(1,6,-131),trail(-141));
         // The shelter branch starts on this rise; its floor must not replace the main trail's half-step.
@@ -98,6 +116,48 @@ public final class BorrascaRooms {
         for(int z=-213;z<=-168;z++){if(z>=-210&&z<=-207)continue;for(int y=12;y<=15;y++)fit(l,b,new BlockPos(-30,y,z),BorrascaFittingBlock.Kind.FENCE,Direction.EAST);}
         BuildBlocks.set(l,b.offset(RELEASE),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),F);sign(l,b,RELEASE.above(2),"SERVICE EXIT","Mechanical release","Keep low","Return to trail");
         box(l,b,34,-5,-61,41,-1,-53,Blocks.STONE_BRICKS);box(l,b,35,-4,-60,40,-2,-54,Blocks.AIR);
+    }
+    /** 0.4.237: the rooms under the depot (see HATCH). Nothing in them is shown happening; what they were for is in the book. */
+    private static void lowerRooms(ServerLevel l,BlockPos b){
+        box(l,b,-25,5,-203,-13,9,-171,Blocks.LIGHT_GRAY_CONCRETE);
+        // The hatch in the back room's floor, and a ladder down through the rock.
+        BuildBlocks.set(l,b.offset(HATCH),Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.FACING,Direction.NORTH).setValue(TrapDoorBlock.OPEN,false),F);
+        box(l,b,-19,6,-202,-19,10,-202,Blocks.AIR);
+        for(int y=6;y<=10;y++)BuildBlocks.set(l,b.offset(-19,y,-202),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);
+        // The corridor, and its far end.
+        box(l,b,-20,6,-201,-18,8,-172,Blocks.AIR);box(l,b,-18,6,-202,-18,8,-202,Blocks.AIR);
+        for(int z:new int[]{-196,-186,-176})BuildBlocks.set(l,b.offset(-19,8,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);
+        NovelRooms.furniture(l,b.offset(NIGHT_BOOK.below()),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);NovelRooms.furniture(l,b.offset(LETTER.below()),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);
+        NovelRooms.furniture(l,b.offset(-20,6,-173),HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);
+        fit(l,b,NIGHT_BOOK,BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);fit(l,b,LETTER,BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);
+        // Twelve rooms, three by three, each bolted from the corridor: a cot, a bucket, and nothing else.
+        for(int room=1;room<=12;room++){
+            boolean east=room<=6;int zc=ROOM_Z[(room-1)%6],x0=east?-16:-24,cot=east?-14:-24;
+            box(l,b,x0,6,zc-1,x0+2,8,zc+1,Blocks.AIR);
+            for(int z=zc-1;z<=zc;z++)BuildBlocks.set(l,b.offset(cot,6,z),Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);
+            set(l,b,east?-14:-24,6,zc+1,Blocks.CAULDRON);
+            boolean open=room==NELL_ROOM;
+            NovelRooms.door(l,b.offset(roomDoor(room)),east?Direction.WEST:Direction.EAST,Blocks.IRON_DOOR,open);
+            BuildBlocks.set(l,b.offset(roomLever(room)),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.WALL).setValue(LeverBlock.FACING,east?Direction.WEST:Direction.EAST).setValue(LeverBlock.POWERED,open),F);
+            var tag=room==NELL_ROOM?new String[]{"RM 6","263-A","TRANSFER","D-417"}:room==MARA_ROOM?new String[]{"RM 7","264-A","",""}:new String[]{"RM "+room,"","",""};
+            NovelRooms.sign(l,b.offset(east?-18:-20,8,zc),east?Direction.WEST:Direction.EAST,tag);
+        }
+        // Her room: the blanket gone, her name scratched into the wall beside the reader's (the names are set for each reader).
+        BuildBlocks.set(l,b.offset(NELL_WALL),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,2).setValue(BorrascaCarvingBlock.WALL,true),F);
+        // Mara's: a blanket folded on the cot.
+        set(l,b,-24,7,ROOM_Z[0],Blocks.WHITE_CARPET);set(l,b,-24,7,ROOM_Z[0]-1,Blocks.WHITE_CARPET);
+        // Older names, scratched low in other rooms, from other years.
+        String[] older={"DANA","RUTH ANN","LISA P","JO","KATIE"};int[] rooms={2,4,9,10,12};
+        for(int i=0;i<older.length;i++){int room=rooms[i];int zc=ROOM_Z[(room-1)%6];var at=new BlockPos(room<=6?-15:-23,6,zc-2);BuildBlocks.set(l,b.offset(at),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,1).setValue(BorrascaCarvingBlock.WALL,true),F);final String name=older[i];BuildBlocks.after(l,()->BorrascaCarvingEntity.names(l,b.offset(at),name,""));}
+    }
+    /** 0.4.237: behind the shed, low mounds in rows, a number on a stake at the head of each. No names. */
+    private static void graves(ServerLevel l,BlockPos b){
+        for(int i=0;i<GRAVE_TAGS.length;i++){
+            var head=grave(i);set(l,b,head.getX(),11,head.getZ()-1,Blocks.COARSE_DIRT);set(l,b,head.getX(),11,head.getZ()-2,Blocks.COARSE_DIRT);
+            var at=b.offset(head);final String tag=GRAVE_TAGS[i];
+            BuildBlocks.set(l,at,Blocks.SPRUCE_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION,8),F);
+            BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign){var text=sign.getFrontText().setMessage(1,net.minecraft.network.chat.Component.literal(tag));sign.setText(text,true);sign.setWaxed(true);}});
+        }
     }
     private static void marker(ServerLevel l,BlockPos b,BlockPos at,BorrascaFittingBlock.Kind k){box(l,b,at.getX(),at.getY(),at.getZ()-1,at.getX(),at.getY()+1,at.getZ()-1,Blocks.SPRUCE_LOG);fit(l,b,at.above(),k,Direction.SOUTH);}
     private static void path(ServerLevel l,BlockPos b,BlockPos a,BlockPos c){int n=Math.max(Math.abs(a.getX()-c.getX()),Math.abs(a.getZ()-c.getZ()));int previous=a.getY();for(int i=0;i<=n;i++){double t=n==0?0:(double)i/n;int x=(int)Math.round(a.getX()+(c.getX()-a.getX())*t),y=(int)Math.round(a.getY()+(c.getY()-a.getY())*t),z=(int)Math.round(a.getZ()+(c.getZ()-a.getZ())*t);box(l,b,x-1,y-2,z,x+1,y-1,z,Blocks.STONE);box(l,b,x-1,y,z,x+1,y+2,z,Blocks.AIR);for(int dx=-1;dx<=1;dx++){fit(l,b,new BlockPos(x+dx,y-1,z),BorrascaFittingBlock.Kind.TRAIL,Direction.NORTH);if(y!=previous){Direction facing=Math.abs(c.getZ()-a.getZ())>=Math.abs(c.getX()-a.getX())?(c.getZ()<a.getZ()?Direction.NORTH:Direction.SOUTH):(c.getX()<a.getX()?Direction.WEST:Direction.EAST);if(y<previous)facing=facing.getOpposite();BuildBlocks.set(l,b.offset(x+dx,y>previous?y-1:y,z),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,facing),F);}}previous=y;}}
