@@ -85,6 +85,8 @@ A small apartment on a landing. An older tenant asks for help emptying it.
 
 ## 4. Sound through connected doors (0.4.229)
 
+Done; see `docs/DOOR_SOUNDS_0_4_229.md`.
+
 Sound follows the House's actual connections.
 
 - **Knocking.** Striking a closed door inside the House knocks on it (the House never lets doors break, so the strike was wasted

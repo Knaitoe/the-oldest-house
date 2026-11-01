@@ -123,6 +123,8 @@ public final class LabyrinthDoors {
         if (!player.isAlive() || isBusy(player)) {
             return;
         }
+        // 0.4.229: whoever last used a door is who its shutting is heard for, on their far side.
+        DoorSounds.used(player,door);
         if(HouseReadSites.door(player,door))return;
         if(HazardVariety.blocksDoor(player,door))return;
         if(PuzzleRooms.holds(player,door))return;
@@ -972,6 +974,7 @@ public final class LabyrinthDoors {
         if (changed) {
             level.playSound(null, lower, open ? SoundEvents.WOODEN_DOOR_OPEN : SoundEvents.WOODEN_DOOR_CLOSE,
                     SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
+            DoorSounds.changed(level, lower, open);
         }
     }
 

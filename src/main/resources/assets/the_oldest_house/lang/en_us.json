@@ -1001,5 +1001,12 @@
   "block.the_oldest_house.vacant_van_floor": "Van Floor",
   "item.the_oldest_house.vacant_piece": "Furniture",
   "advancements.the_oldest_house.account.vacant_possession.title": "Vacant possession",
-  "advancements.the_oldest_house.account.vacant_possession.description": "I helped empty a flat on moving day."
+  "advancements.the_oldest_house.account.vacant_possession.description": "I helped empty a flat on moving day.",
+  "subtitles.the_oldest_house.door.knock": "Knock on a door",
+  "subtitles.the_oldest_house.door.knock_far": "Knocking, through a door",
+  "subtitles.the_oldest_house.door.thud_far": "A door shuts, through a door",
+  "subtitles.the_oldest_house.door.through_clock": "A clock ticks behind the door",
+  "subtitles.the_oldest_house.door.through_water": "Water behind the door",
+  "subtitles.the_oldest_house.door.through_music": "Music behind the door",
+  "subtitles.the_oldest_house.door.through_voices": "Voices behind the door"
 }
