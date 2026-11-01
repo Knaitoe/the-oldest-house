@@ -99,8 +99,24 @@ public final class OwnLightTests {
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ready"),"going on without looking back"))
             .thenExecute(()->{var own=f.own(p,P);h.assertTrue(own.getString("Outcome").equals("let_it_take_them")&&own.getInt("SetBack213")==2,"the outcome: "+own);
                 var wall=OwnLightSite.wall();h.assertTrue(f.in.getBlockState(b.offset(wall.get(0))).is(Blocks.WALL_TORCH)&&f.in.getBlockState(b.offset(wall.get(1))).is(Blocks.WALL_TORCH)&&f.in.getBlockState(b.offset(wall.get(2))).isAir(),"in the far wall, their torches, in the order they were placed");
-                h.assertTrue(own.getString("Note213").equals("Not yet.")&&own.getBoolean("Home213"),"and it goes home first, to leave a note");})
+                h.assertTrue(own.getString("Note213").equals("Not yet.")&&own.getBoolean("Home213"),"and it goes home first, to leave a note");
+                // 0.4.216: until they next sleep, other readers see them a beat late.
+                h.assertTrue(OwnLightLate.late(p),"and from now they move a beat late to their friends");})
+            .thenWaitUntil(()->h.assertTrue(told(p),"every client is told who is late"))
+            .thenExecute(()->{
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent(p,true,true));
+                h.assertTrue(OwnLightLate.late(p),"getting up before morning does not end it");
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent(p,false,true));
+                h.assertTrue(!OwnLightLate.late(p)&&!f.own(p,P).getBoolean(OwnLightLate.KEY),"sleeping through a night does");})
             .thenSucceed();
+    }
+    private static final java.util.Set<java.util.UUID> TOLD=new java.util.HashSet<>();
+    /** Whether a late-bodies broadcast naming the reader has reached their own connection. */
+    private static boolean told(ServerPlayer p){
+        var queue=new java.util.ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));
+        while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);
+            else if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.LateBodiesPayload late&&late.readers().contains(p.getUUID()))TOLD.add(p.getUUID());}
+        return TOLD.contains(p.getUUID());
     }
     @AfterBatch(batch="own_turn") public static void turnDone(ServerLevel l){close();}
 
