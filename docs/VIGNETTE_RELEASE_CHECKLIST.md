@@ -1,3 +1,5 @@
+November 1 candidate 0.4.216, a beat late: no new source; the cost belongs to your own light and is presentation only (protocol 115). Tests: OwnLightTests (the turn case).
+
 November 1 candidate 0.4.215, the household's last rooms: one new Witness source, household (understanding, resolved by putting the last landing's camp in order), 67 sources / 51 required; the Witness line, House of Leaves place and advancement are added; the landing needs three household rooms first and is offered once per reader. Tests: StaircaseLeakTests (one new case), WitnessPool, the dealer cases' PITT fixture.
 
 November 1 candidate 0.4.214, the household on the stairs: no new Witness source (the household's story resolves at the last landing, not yet built); the leaks and four household rooms share one rhythm by stretch; each room has a success and a failure, recorded per reader, and a household note shown with its sheet. Tests: StaircaseLeakTests (three new cases), the live proof's note scene moved to the second stretch.

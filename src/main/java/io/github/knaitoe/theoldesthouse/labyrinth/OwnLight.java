@@ -179,7 +179,7 @@ public final class OwnLight {
         home(own,"Not yet.");LiteraryVignettes.ready(p,PLACE,own,"let_it_take_them");save(p,own);
         cue(p,n==0?"In the far room, nothing. You brought no light of your own, and nothing has been set back.":"In the far wall, your torches, every one, burning in the order you set them down.");
     }
-    static void home(CompoundTag own,String note){own.putString("Note213",note);own.putBoolean("Home213",true);}
+    static void home(CompoundTag own,String note){own.putString("Note213",note);own.putBoolean("Home213",true);OwnLightLate.begin(own);}
 
     // ------------------------------------------------------------------------------------------------ it goes home first
     /** At their bed, after: slept in, a chest turned round, the lights out, a note on the pillow. */

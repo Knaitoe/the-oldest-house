@@ -92,10 +92,27 @@ bring its own".
 - the reader's gender, colour and age are never named;
 - lines are on the action bar, never in chat.
 
-## Left out
+## A beat late (0.4.216)
 
-The proposal also had other readers' clients, until the reader next sleeps, now and then showing them a beat behind their own body.
-That needs a client-side render delay for one player as others see them. It is not built in this pass.
+The proposal's last cost, left out of 0.4.213, is now built: until the reader next sleeps, other readers' clients now and then show
+them a beat behind their own body, the way the double moved in the hall.
+
+**When:**
+- It begins when the double goes home, whether the reader followed it or went on (`Late213`, set with `Home213`).
+- It ends when the reader sleeps through a night. Getting into bed and out again before morning does not end it.
+
+**What peers see** (`client/LateBodyClient`):
+- Now and then (a spell of about four seconds, roughly every twenty-five, at a moment of its own for each reader), the reader's
+  body is drawn where they were eight ticks before, turned the way they were turned.
+- Each spell eases in and out.
+- A teleport or a door is never drawn late: the body stays where it is.
+
+**What does not change:**
+- The reader's own client draws them as they are.
+- Nothing moves on the server: positions, hits and collisions are the real ones.
+- Nothing about it is said to anyone.
+
+Every client is told who is late by `LateBodiesPayload`, sent when the set changes and at login (`OwnLightLate`). Protocol 115.
 
 ## Art and sound
 
