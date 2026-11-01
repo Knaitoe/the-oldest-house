@@ -46,12 +46,14 @@ public final class StaircaseLeaks {
         @Override public void close(){for(var c:chunks)level.getChunkSource().removeRegionTicket(TICKET,c,3,key);chunks.clear();}
     }
     private static final class Offer {
-        final ServerPlayer reader;final Vec3 position;final BlockPos paper;final int index;final long after;int slot=-1;long entering;
-        Offer(ServerPlayer reader,BlockPos paper,int index){this.reader=reader;this.paper=paper.immutable();this.index=index;position=reader.position();after=reader.serverLevel().getGameTime()+60;}
+        final ServerPlayer reader;final Vec3 position;final BlockPos paper;final int index;final long after;final StaircaseLeakRooms.Kind kind;final BlockPos door;int slot=-1;long entering;
+        Offer(ServerPlayer reader,BlockPos paper,int index){this(reader,paper,index,StaircaseLeakRooms.kind(index),null);}
+        /** 0.4.214: a household door is walked through, not waited for: no three still seconds. */
+        Offer(ServerPlayer reader,BlockPos paper,int index,StaircaseLeakRooms.Kind kind,BlockPos door){this.reader=reader;this.paper=paper.immutable();this.index=index;this.kind=kind;this.door=door==null?null:door.immutable();position=reader.position();after=reader.serverLevel().getGameTime()+(door==null?60:0);}
     }
     private static final class Room {
         final int slot;final BlockPos base;final StaircaseLeakRooms.Kind kind;final StaircaseLeakRooms.Template template;final Lease lease;final CompoundTag record;
-        Room(ServerLevel l,int slot,CompoundTag record){this.slot=slot;this.record=record;base=BlockPos.of(record.getLong("Base"));kind=StaircaseLeakRooms.kind(record.getInt("Index"));template=StaircaseLeakRooms.Template.load(l,record.getCompound("Template"));lease=new Lease(l,StaircaseLeakRooms.bounds(base));}
+        Room(ServerLevel l,int slot,CompoundTag record){this.slot=slot;this.record=record;base=BlockPos.of(record.getLong("Base"));kind=kind(record);template=StaircaseLeakRooms.Template.load(l,record.getCompound("Template"));lease=new Lease(l,StaircaseLeakRooms.bounds(base));}
         void close(){lease.close();}
     }
     private static final class Engine {
@@ -88,6 +90,18 @@ public final class StaircaseLeaks {
         var room=request(e,stale.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}
     }
     public static boolean active(ServerPlayer p){return session(p)!=null;}
+    /** 0.4.214: rooms and sessions name their kind; older ones are known by their sheet. */
+    static StaircaseLeakRooms.Kind kind(CompoundTag t){return t.contains("Kind")?StaircaseLeakRooms.Kind.values()[t.getInt("Kind")]:StaircaseLeakRooms.kind(t.getInt("Index"));}
+    public static StaircaseLeakRooms.Kind activeKind(ServerPlayer p){var s=session(p);return s==null?null:kind(s);}
+    /** This reader has already been through the room this sheet opens. */
+    public static boolean done(ServerPlayer p,int index){return own(p).getCompound("Done").getBoolean(Integer.toString(index));}
+    /** Marks an entity made inside a room, so the room's restoration removes it. */
+    public static void virtual(net.minecraft.world.entity.Entity e){e.getPersistentData().putBoolean(VIRTUAL,true);}
+    /** 0.4.214: through a household door (StaircaseHousehold.useDoor). False if the reader cannot go now. */
+    public static boolean enterDoor(ServerPlayer p,int index,StaircaseLeakRooms.Kind kind,BlockPos paper,BlockPos door){
+        if(!eligible(p)||active(p)||kind==null||!kind.household())return false;var e=engine(p.server);if(e.offers.containsKey(p.getUUID()))return true;
+        e.offers.put(p.getUUID(),new Offer(p,paper,index,kind,door));return true;
+    }
     public static boolean active(MinecraftServer server,UUID id){var p=server.getPlayerList().getPlayer(id);return p!=null&&session(p)!=null&&!session(p).getBoolean("Recovering");}
     public static boolean offered(ServerPlayer p){return engine(p.server).offers.containsKey(p.getUUID());}
     public static BlockPos activeBase(ServerPlayer p){var s=session(p);return s==null?null:BlockPos.of(s.getLong("RoomBase"));}
@@ -100,22 +114,25 @@ public final class StaircaseLeaks {
     static void offer(ServerPlayer p,BlockPos paper,ItemStack original){
         if(!eligible(p)||active(p))return;var pages=LabyrinthData.get(p.server).stateEntry(StaircaseWriting.ID,p.getUUID().toString());String key=Long.toString(paper.asLong());
         if(!pages.getCompound("Books").contains(key)||!ItemStack.isSameItemSameComponents(original,ItemStack.parseOptional(p.registryAccess(),pages.getCompound("Books").getCompound(key))))return;
-        var indices=pages.getCompound("Indices");int index=indices.contains(key)?indices.getInt(key):Math.floorMod(StaircaseWriting.ordinal(HouseSavedData.get(p.server).houseOrigin(),paper),StaircaseNotes.TEXTS.size());
-        if(StaircaseLeakRooms.kind(index)==null||own(p).getCompound("Done").getBoolean(Integer.toString(index)))return;
+        var indices=pages.getCompound("Indices");int index=indices.contains(key)?indices.getInt(key):StaircaseNotes.dealt(StaircaseWriting.ordinal(HouseSavedData.get(p.server).houseOrigin(),paper));
+        // 0.4.214: a household source leaves its door; a leak waits for three still seconds. Both keep the descent's rhythm.
+        if(StaircaseHousehold.room(index)!=null){StaircaseHousehold.read(p,paper,index);return;}
+        if(StaircaseLeakRooms.kind(index)==null||own(p).getCompound("Done").getBoolean(Integer.toString(index))||!StaircaseHousehold.allows(p))return;
         engine(p.server).offers.put(p.getUUID(),new Offer(p,paper,index));
     }
     private static boolean eligible(ServerPlayer p){
         var origin=HouseSavedData.get(p.server).houseOrigin();var phase=FinaleProgress.phase(p.server,p.getUUID());
         return p.isAlive()&&!p.isSpectator()&&!p.isPassenger()&&origin!=null&&p.serverLevel().dimension().equals(HouseDimensions.INTERIOR)&&FinaleArchitecture.contains(origin,p.blockPosition())&&(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.HOMEWARD)&&!HouseTransitionEvents.isPending(p);
     }
-    private static boolean safe(Offer offer){var p=offer.reader;return !p.isRemoved()&&eligible(p)&&p.containerMenu==p.inventoryMenu&&p.distanceToSqr(offer.position)<.0025&&p.hurtTime==0&&p.serverLevel().getEntitiesOfClass(Monster.class,p.getBoundingBox().inflate(16),LivingEntity::isAlive).isEmpty();}
+    private static boolean safe(Offer offer){var p=offer.reader;return !p.isRemoved()&&eligible(p)&&p.containerMenu==p.inventoryMenu&&(offer.door!=null?p.distanceToSqr(offer.door.getCenter())<25:p.distanceToSqr(offer.position)<.0025)&&p.hurtTime==0&&p.serverLevel().getEntitiesOfClass(Monster.class,p.getBoundingBox().inflate(16),LivingEntity::isAlive).isEmpty();}
 
-    private static int allocate(ServerPlayer p,int index){
-        var e=engine(p.server);var record=own(p);var slots=record.getCompound("Slots");String key=Integer.toString(index);
+    private static int allocate(ServerPlayer p,int index,StaircaseLeakRooms.Kind kind){
+        // A household room is one room per reader, whichever of its sheets opened it; a leak is one room per sheet.
+        var e=engine(p.server);var record=own(p);var slots=record.getCompound("Slots");String key=kind.household()?kind.name():Integer.toString(index);
         if(slots.contains(key))return slots.getInt(key);
         var meta=e.data.stateEntry(ROOMS,"meta");int slot=meta.getInt("Next");meta.putInt("Next",slot+1);e.data.setStateEntry(ROOMS,"meta",meta);
-        var room=new CompoundTag();room.putUUID("Owner",p.getUUID());room.putInt("Index",index);room.putLong("Base",StaircaseLeakRooms.base(HouseSavedData.get(p.server).houseOrigin(),slot).asLong());room.putBoolean("Dirty",true);room.putInt("Cursor",0);room.put("Source",pose(p));
-        room.put("Template",StaircaseLeakRooms.authored(StaircaseLeakRooms.kind(index),record.getIntArray("KitchenCups")).save());e.data.setStateEntry(ROOMS,Integer.toString(slot),room);
+        var room=new CompoundTag();room.putUUID("Owner",p.getUUID());room.putInt("Index",index);room.putInt("Kind",kind.ordinal());room.putLong("Base",StaircaseLeakRooms.base(HouseSavedData.get(p.server).houseOrigin(),slot).asLong());room.putBoolean("Dirty",true);room.putInt("Cursor",0);room.put("Source",pose(p));
+        room.put("Template",StaircaseLeakRooms.authored(kind,record.getIntArray("KitchenCups")).save());e.data.setStateEntry(ROOMS,Integer.toString(slot),room);
         slots.putInt(key,slot);record.put("Slots",slots);save(p,record);request(e,slot);return slot;
     }
     private static Room request(Engine e,int slot){var old=e.work.get(slot);if(old!=null)return old;var level=e.server.getLevel(HouseDimensions.INTERIOR);var record=e.data.stateEntry(ROOMS,Integer.toString(slot));if(level==null||record.isEmpty())return null;var room=new Room(level,slot,record);e.work.put(slot,room);return room;}
@@ -156,7 +173,7 @@ public final class StaircaseLeaks {
         p.inventoryMenu.broadcastChanges();p.connection.send(new ClientboundSetHealthPacket(p.getHealth(),p.getFoodData().getFoodLevel(),p.getFoodData().getSaturationLevel()));p.connection.send(new ClientboundSetExperiencePacket(p.experienceProgress,p.totalExperience,p.experienceLevel));
     }
     private static void enter(ServerPlayer p,Offer offer,Room room){
-        var e=engine(p.server);var s=new CompoundTag();s.putInt("Index",offer.index);s.putLong("Paper",offer.paper.asLong());s.putInt("Slot",room.slot);s.putLong("RoomBase",room.base.asLong());s.put("Return",snapshot(p));s.putLong("Started",p.serverLevel().getGameTime());s.put("Chore",new CompoundTag());
+        var e=engine(p.server);var s=new CompoundTag();s.putInt("Index",offer.index);s.putInt("Kind",room.kind.ordinal());if(offer.door!=null)s.putLong("Door",offer.door.asLong());else StaircaseHousehold.mark(p,"leak:"+offer.index);s.putLong("Paper",offer.paper.asLong());s.putInt("Slot",room.slot);s.putLong("RoomBase",room.base.asLong());s.put("Return",snapshot(p));s.putLong("Started",p.serverLevel().getGameTime());s.put("Chore",new CompoundTag());
         var waits=new ListTag();for(var pet:CompanionOrders.followingAll(p)){var tag=new CompoundTag();tag.putUUID("Id",pet.getUUID());tag.putBoolean("NoAI",pet.isNoAi());waits.add(tag);pet.getNavigation().stop();pet.getPersistentData().putUUID(WAITING,p.getUUID());pet.getPersistentData().putBoolean(WAITING+"NoAI",pet.isNoAi());pet.setNoAi(true);}
         s.put("Pets",waits);e.sources.put(p.getUUID(),new Lease(p.serverLevel(),p.getBoundingBox().inflate(34,5,34)));e.sessions.put(p.getUUID(),s);persist(p,s);
         var echo=StaircaseLeakRegistry.READER.get().create(p.serverLevel());if(echo!=null){echo.reader(p);echo.moveTo(p.position());echo.setYRot(p.getYRot());echo.setYHeadRot(p.getYHeadRot());if(p.serverLevel().addFreshEntity(echo))s.putUUID("Echo",echo.getUUID());}
@@ -164,6 +181,7 @@ public final class StaircaseLeaks {
         HouseInternalTeleport.shiftPlayerOnly(p,StaircaseLeakRooms.spawn(room.base,room.kind),180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.send(new ClientboundSetEntityMotionPacket(p));
         if(room.kind==StaircaseLeakRooms.Kind.CAR){HouseSitting.sit(p,room.base.offset(1,0,0));if(p.getVehicle()!=null){p.getVehicle().getPersistentData().putBoolean(VIRTUAL,true);s.putUUID("Seat",p.getVehicle().getUUID());}}
         persist(p,s);HousePackets.send(p,new StaircaseLeakPayload(true,room.kind.ordinal(),0));
+        if(room.kind.household())StaircaseHouseholdChores.arrive(p,room.base,room.kind);
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"note_scene_enter","index",offer.index);
         // One faint call through the floorboards; this is not a second staircase quake clock.
         p.playNotifySound(SoundEvent.createVariableRangeEvent(Growl.Kind.BELOW.sound()),SoundSource.AMBIENT,.16F,.68F);
@@ -177,7 +195,11 @@ public final class StaircaseLeaks {
         if(p.serverLevel()==level)HouseInternalTeleport.shiftPlayerOnly(p,pos,source.getFloat("Yaw"),source.getFloat("Pitch"));else{p.teleportTo(level,pos.x,pos.y,pos.z,source.getFloat("Yaw"),source.getFloat("Pitch"));p.connection.resetPosition();}
         restore(p,source);p.setDeltaMovement(new Vec3(source.getDouble("Vx"),source.getDouble("Vy"),source.getDouble("Vz")));p.connection.send(new ClientboundSetEntityMotionPacket(p));p.resetFallDistance();
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"note_scene_leave","place","staircase","activity","staircase","index",s.getInt("Index"),"finished",s.contains("Closing"),"recovered",s.getBoolean("Recovering"),"seconds",(p.serverLevel().getGameTime()-s.getLong("Started"))/20);
-        cleanupSource(p,s);var record=own(p);var done=record.getCompound("Done");done.putBoolean(Integer.toString(s.getInt("Index")),true);record.put("Done",done);
+        var kind=kind(s);boolean forced=s.getBoolean("Recovering")||!s.contains("Closing")&&!s.getBoolean("WalkedOut");
+        cleanupSource(p,s);var record=own(p);var done=record.getCompound("Done");
+        // A household room forced shut (a blow, a death, a disconnect) is not spent; one walked out of, or finished, is.
+        if(!kind.household()||!forced)done.putBoolean(Integer.toString(s.getInt("Index")),true);record.put("Done",done);
+        if(kind.household())StaircaseHousehold.returned(p,s,forced);else StaircaseHousehold.leakReturned(p,s.getInt("Index"),s.contains("Closing"));
         if(s.getInt("Index")==0&&s.getCompound("Chore").getInt("Cups")==3){
             record.putIntArray("KitchenCups",s.getCompound("Chore").getIntArray("HookColors"));
             // A late kitchen allocated before this one was finished is rebuilt with the cups where they now hang.
@@ -187,7 +209,7 @@ public final class StaircaseLeaks {
         record.remove("Active");save(p,record);p.getPersistentData().remove(BACKUP);e.sessions.remove(p.getUUID());
         var room=request(e,s.getInt("Slot"));if(room!=null){room.record.putBoolean("Dirty",true);room.record.putInt("Cursor",0);e.data.setStateEntry(ROOMS,Integer.toString(room.slot),room.record);}var held=e.sources.remove(p.getUUID());if(held!=null)held.close();
         HousePackets.send(p,new StaircaseLeakPayload(false,0,s.getInt("Index")==32?200:0));HousePackets.send(p,new HouseFadePayload(0,1,12));
-        if(s.contains("Closing")&&!s.getBoolean("Recovering")&&p.isAlive()&&!p.isSpectator()&&p.server.getPlayerList().getPlayer(p.getUUID())==p){var paper=BlockPos.of(s.getLong("Paper"));if(p.serverLevel().getBlockState(paper).is(HouseBlocks.NOTE_SURFACE.get())&&StaircaseWriting.open(p,paper)){var book=p.containerMenu.getSlot(0).getItem().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);if(book!=null&&book.pages().size()>1)p.containerMenu.clickMenuButton(p,100+book.pages().size()-1);}}
+        if(!kind.household()&&s.contains("Closing")&&!s.getBoolean("Recovering")&&p.isAlive()&&!p.isSpectator()&&p.server.getPlayerList().getPlayer(p.getUUID())==p){var paper=BlockPos.of(s.getLong("Paper"));if(p.serverLevel().getBlockState(paper).is(HouseBlocks.NOTE_SURFACE.get())&&StaircaseWriting.open(p,paper)){var book=p.containerMenu.getSlot(0).getItem().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);if(book!=null&&book.pages().size()>1)p.containerMenu.clickMenuButton(p,100+book.pages().size()-1);}}
     }
     private static void cleanupSource(ServerPlayer p,CompoundTag s){
         var l=p.server.getLevel(HouseDimensions.INTERIOR);if(l==null)return;
@@ -211,8 +233,8 @@ public final class StaircaseLeaks {
             p.setCamera(p);if(lease.ready()){HouseInternalTeleport.shiftPlayerOnly(p,pos,source.getFloat("Yaw"),source.getFloat("Pitch"));lease.close();e.sources.remove(p.getUUID());}return true;
         }
         if(s.getBoolean("Recovering")||!p.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||p.isSpectator()){returnNow(p);return true;}
-        var b=BlockPos.of(s.getLong("RoomBase"));var kind=StaircaseLeakRooms.kind(s.getInt("Index"));
-        if(!StaircaseLeakRooms.inside(b,kind,p.position())||kind==StaircaseLeakRooms.Kind.CAR&&!p.isPassenger()){returnNow(p);return true;}
+        var b=BlockPos.of(s.getLong("RoomBase"));var kind=kind(s);
+        if(!StaircaseLeakRooms.inside(b,kind,p.position())||kind==StaircaseLeakRooms.Kind.CAR&&!p.isPassenger()){s.putBoolean("WalkedOut",true);persist(p,s);returnNow(p);return true;}
         p.resetFallDistance();return true;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
@@ -220,7 +242,7 @@ public final class StaircaseLeaks {
         for(var offer:new ArrayList<>(e.offers.values())){
             if(!safe(offer)){e.offers.remove(offer.reader.getUUID());if(offer.entering>0&&!HouseTransitionEvents.isPending(offer.reader))HousePackets.send(offer.reader,new HouseFadePayload(0,0,6));continue;}
             if(offer.reader.serverLevel().getGameTime()<offer.after)continue;
-            if(offer.slot<0)offer.slot=allocate(offer.reader,offer.index);var room=request(e,offer.slot);
+            if(offer.slot<0)offer.slot=allocate(offer.reader,offer.index,offer.kind);var room=request(e,offer.slot);
             if(room!=null&&room.lease.ready()&&room.record.getBoolean("Ready")&&!room.record.getBoolean("Dirty")){
                 if(offer.entering==0){offer.entering=offer.reader.serverLevel().getGameTime()+8;HousePackets.send(offer.reader,new HouseFadePayload(8,3,12));}
                 else if(offer.reader.serverLevel().getGameTime()>=offer.entering){enter(offer.reader,offer,room);e.offers.remove(offer.reader.getUUID());}
@@ -230,12 +252,14 @@ public final class StaircaseLeaks {
             var s=session(p);if(s==null)continue;
             for(var spectator:server.getPlayerList().getPlayers())if(spectator.isSpectator()&&spectator.getCamera()==p){spectator.setCamera(spectator);var back=s.getCompound("Return");if(spectator.serverLevel()==p.serverLevel())HouseInternalTeleport.shiftPlayerOnly(spectator,new Vec3(back.getDouble("X"),back.getDouble("Y"),back.getDouble("Z")),back.getFloat("Yaw"),back.getFloat("Pitch"));}
             if(s.getBoolean("Recovering")||s.contains("Closing")&&p.serverLevel().getGameTime()>=s.getLong("Closing")){returnNow(p);continue;}
-            if(!p.isAlive()){returnNow(p);continue;}var kind=StaircaseLeakRooms.kind(s.getInt("Index"));long elapsed=p.serverLevel().getGameTime()-s.getLong("Started");
-            if(kind!=StaircaseLeakRooms.Kind.REPAIR&&elapsed>=2400){returnNow(p);continue;}
+            if(!p.isAlive()){returnNow(p);continue;}var kind=kind(s);long elapsed=p.serverLevel().getGameTime()-s.getLong("Started");
+            // A household room runs longer than a leak: a meal is sat through. Both end in time.
+            if(kind!=StaircaseLeakRooms.Kind.REPAIR&&elapsed>=(kind.household()?7200:2400)){s.putBoolean("WalkedOut",true);persist(p,s);returnNow(p);continue;}
+            if(kind.household())StaircaseHouseholdChores.tick(p,BlockPos.of(s.getLong("RoomBase")),kind,elapsed);
             if(server.getTickCount()%40==0)HousePackets.send(p,new StaircaseLeakPayload(true,kind.ordinal(),0));
             if(elapsed%100==0&&(kind==StaircaseLeakRooms.Kind.KITCHEN||kind==StaircaseLeakRooms.Kind.LATE_KITCHEN))p.playNotifySound(StaircaseLeakRegistry.DRIP.get(),SoundSource.AMBIENT,.18F,1);
             if(elapsed%80==0&&kind!=StaircaseLeakRooms.Kind.CAR)p.playNotifySound(StaircaseLeakRegistry.RAIN.get(),SoundSource.AMBIENT,.07F,1);
-            if(elapsed%20==0&&kind==StaircaseLeakRooms.Kind.REPAIR)p.playNotifySound(StaircaseLeakRegistry.CLOCK.get(),SoundSource.AMBIENT,.12F,1);
+            if(elapsed%20==0&&(kind==StaircaseLeakRooms.Kind.REPAIR||kind==StaircaseLeakRooms.Kind.MENDING||kind==StaircaseLeakRooms.Kind.DINING))p.playNotifySound(StaircaseLeakRegistry.CLOCK.get(),SoundSource.AMBIENT,kind==StaircaseLeakRooms.Kind.DINING?.06F:.12F,1);
             if(elapsed%100==0&&kind==StaircaseLeakRooms.Kind.CAR&&!s.getCompound("Chore").getBoolean("RadioOff"))p.playNotifySound(StaircaseLeakRegistry.RADIO.get(),SoundSource.AMBIENT,.1F,1);
         }
         // A completed, clean room needs no perpetual ticket or in-memory decoded template.

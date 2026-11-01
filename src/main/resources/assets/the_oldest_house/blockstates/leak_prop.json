@@ -559,6 +559,1046 @@
     "kind=small_light,facing=west": {
       "model": "the_oldest_house:block/leak/small_light",
       "y": 270
+    },
+    "kind=place_bare,facing=north": {
+      "model": "the_oldest_house:block/leak/place_bare",
+      "y": 0
+    },
+    "kind=place_bare,facing=east": {
+      "model": "the_oldest_house:block/leak/place_bare",
+      "y": 90
+    },
+    "kind=place_bare,facing=south": {
+      "model": "the_oldest_house:block/leak/place_bare",
+      "y": 180
+    },
+    "kind=place_bare,facing=west": {
+      "model": "the_oldest_house:block/leak/place_bare",
+      "y": 270
+    },
+    "kind=place_laid,facing=north": {
+      "model": "the_oldest_house:block/leak/place_laid",
+      "y": 0
+    },
+    "kind=place_laid,facing=east": {
+      "model": "the_oldest_house:block/leak/place_laid",
+      "y": 90
+    },
+    "kind=place_laid,facing=south": {
+      "model": "the_oldest_house:block/leak/place_laid",
+      "y": 180
+    },
+    "kind=place_laid,facing=west": {
+      "model": "the_oldest_house:block/leak/place_laid",
+      "y": 270
+    },
+    "kind=place_odd,facing=north": {
+      "model": "the_oldest_house:block/leak/place_odd",
+      "y": 0
+    },
+    "kind=place_odd,facing=east": {
+      "model": "the_oldest_house:block/leak/place_odd",
+      "y": 90
+    },
+    "kind=place_odd,facing=south": {
+      "model": "the_oldest_house:block/leak/place_odd",
+      "y": 180
+    },
+    "kind=place_odd,facing=west": {
+      "model": "the_oldest_house:block/leak/place_odd",
+      "y": 270
+    },
+    "kind=place_cup,facing=north": {
+      "model": "the_oldest_house:block/leak/place_cup",
+      "y": 0
+    },
+    "kind=place_cup,facing=east": {
+      "model": "the_oldest_house:block/leak/place_cup",
+      "y": 90
+    },
+    "kind=place_cup,facing=south": {
+      "model": "the_oldest_house:block/leak/place_cup",
+      "y": 180
+    },
+    "kind=place_cup,facing=west": {
+      "model": "the_oldest_house:block/leak/place_cup",
+      "y": 270
+    },
+    "kind=place_bowl,facing=north": {
+      "model": "the_oldest_house:block/leak/place_bowl",
+      "y": 0
+    },
+    "kind=place_bowl,facing=east": {
+      "model": "the_oldest_house:block/leak/place_bowl",
+      "y": 90
+    },
+    "kind=place_bowl,facing=south": {
+      "model": "the_oldest_house:block/leak/place_bowl",
+      "y": 180
+    },
+    "kind=place_bowl,facing=west": {
+      "model": "the_oldest_house:block/leak/place_bowl",
+      "y": 270
+    },
+    "kind=table_end,facing=north": {
+      "model": "the_oldest_house:block/leak/table_end",
+      "y": 0
+    },
+    "kind=table_end,facing=east": {
+      "model": "the_oldest_house:block/leak/table_end",
+      "y": 90
+    },
+    "kind=table_end,facing=south": {
+      "model": "the_oldest_house:block/leak/table_end",
+      "y": 180
+    },
+    "kind=table_end,facing=west": {
+      "model": "the_oldest_house:block/leak/table_end",
+      "y": 270
+    },
+    "kind=table_end_laid,facing=north": {
+      "model": "the_oldest_house:block/leak/table_end_laid",
+      "y": 0
+    },
+    "kind=table_end_laid,facing=east": {
+      "model": "the_oldest_house:block/leak/table_end_laid",
+      "y": 90
+    },
+    "kind=table_end_laid,facing=south": {
+      "model": "the_oldest_house:block/leak/table_end_laid",
+      "y": 180
+    },
+    "kind=table_end_laid,facing=west": {
+      "model": "the_oldest_house:block/leak/table_end_laid",
+      "y": 270
+    },
+    "kind=table_end_cup,facing=north": {
+      "model": "the_oldest_house:block/leak/table_end_cup",
+      "y": 0
+    },
+    "kind=table_end_cup,facing=east": {
+      "model": "the_oldest_house:block/leak/table_end_cup",
+      "y": 90
+    },
+    "kind=table_end_cup,facing=south": {
+      "model": "the_oldest_house:block/leak/table_end_cup",
+      "y": 180
+    },
+    "kind=table_end_cup,facing=west": {
+      "model": "the_oldest_house:block/leak/table_end_cup",
+      "y": 270
+    },
+    "kind=table_plain,facing=north": {
+      "model": "the_oldest_house:block/leak/table_plain",
+      "y": 0
+    },
+    "kind=table_plain,facing=east": {
+      "model": "the_oldest_house:block/leak/table_plain",
+      "y": 90
+    },
+    "kind=table_plain,facing=south": {
+      "model": "the_oldest_house:block/leak/table_plain",
+      "y": 180
+    },
+    "kind=table_plain,facing=west": {
+      "model": "the_oldest_house:block/leak/table_plain",
+      "y": 270
+    },
+    "kind=bread_board,facing=north": {
+      "model": "the_oldest_house:block/leak/bread_board",
+      "y": 0
+    },
+    "kind=bread_board,facing=east": {
+      "model": "the_oldest_house:block/leak/bread_board",
+      "y": 90
+    },
+    "kind=bread_board,facing=south": {
+      "model": "the_oldest_house:block/leak/bread_board",
+      "y": 180
+    },
+    "kind=bread_board,facing=west": {
+      "model": "the_oldest_house:block/leak/bread_board",
+      "y": 270
+    },
+    "kind=bread_cut,facing=north": {
+      "model": "the_oldest_house:block/leak/bread_cut",
+      "y": 0
+    },
+    "kind=bread_cut,facing=east": {
+      "model": "the_oldest_house:block/leak/bread_cut",
+      "y": 90
+    },
+    "kind=bread_cut,facing=south": {
+      "model": "the_oldest_house:block/leak/bread_cut",
+      "y": 180
+    },
+    "kind=bread_cut,facing=west": {
+      "model": "the_oldest_house:block/leak/bread_cut",
+      "y": 270
+    },
+    "kind=sideboard_shut,facing=north": {
+      "model": "the_oldest_house:block/leak/sideboard_shut",
+      "y": 0
+    },
+    "kind=sideboard_shut,facing=east": {
+      "model": "the_oldest_house:block/leak/sideboard_shut",
+      "y": 90
+    },
+    "kind=sideboard_shut,facing=south": {
+      "model": "the_oldest_house:block/leak/sideboard_shut",
+      "y": 180
+    },
+    "kind=sideboard_shut,facing=west": {
+      "model": "the_oldest_house:block/leak/sideboard_shut",
+      "y": 270
+    },
+    "kind=sideboard_open,facing=north": {
+      "model": "the_oldest_house:block/leak/sideboard_open",
+      "y": 0
+    },
+    "kind=sideboard_open,facing=east": {
+      "model": "the_oldest_house:block/leak/sideboard_open",
+      "y": 90
+    },
+    "kind=sideboard_open,facing=south": {
+      "model": "the_oldest_house:block/leak/sideboard_open",
+      "y": 180
+    },
+    "kind=sideboard_open,facing=west": {
+      "model": "the_oldest_house:block/leak/sideboard_open",
+      "y": 270
+    },
+    "kind=cupboard_cups,facing=north": {
+      "model": "the_oldest_house:block/leak/cupboard_cups",
+      "y": 0
+    },
+    "kind=cupboard_cups,facing=east": {
+      "model": "the_oldest_house:block/leak/cupboard_cups",
+      "y": 90
+    },
+    "kind=cupboard_cups,facing=south": {
+      "model": "the_oldest_house:block/leak/cupboard_cups",
+      "y": 180
+    },
+    "kind=cupboard_cups,facing=west": {
+      "model": "the_oldest_house:block/leak/cupboard_cups",
+      "y": 270
+    },
+    "kind=cupboard_empty,facing=north": {
+      "model": "the_oldest_house:block/leak/cupboard_empty",
+      "y": 0
+    },
+    "kind=cupboard_empty,facing=east": {
+      "model": "the_oldest_house:block/leak/cupboard_empty",
+      "y": 90
+    },
+    "kind=cupboard_empty,facing=south": {
+      "model": "the_oldest_house:block/leak/cupboard_empty",
+      "y": 180
+    },
+    "kind=cupboard_empty,facing=west": {
+      "model": "the_oldest_house:block/leak/cupboard_empty",
+      "y": 270
+    },
+    "kind=vase_flowers,facing=north": {
+      "model": "the_oldest_house:block/leak/vase_flowers",
+      "y": 0
+    },
+    "kind=vase_flowers,facing=east": {
+      "model": "the_oldest_house:block/leak/vase_flowers",
+      "y": 90
+    },
+    "kind=vase_flowers,facing=south": {
+      "model": "the_oldest_house:block/leak/vase_flowers",
+      "y": 180
+    },
+    "kind=vase_flowers,facing=west": {
+      "model": "the_oldest_house:block/leak/vase_flowers",
+      "y": 270
+    },
+    "kind=vase_cup,facing=north": {
+      "model": "the_oldest_house:block/leak/vase_cup",
+      "y": 0
+    },
+    "kind=vase_cup,facing=east": {
+      "model": "the_oldest_house:block/leak/vase_cup",
+      "y": 90
+    },
+    "kind=vase_cup,facing=south": {
+      "model": "the_oldest_house:block/leak/vase_cup",
+      "y": 180
+    },
+    "kind=vase_cup,facing=west": {
+      "model": "the_oldest_house:block/leak/vase_cup",
+      "y": 270
+    },
+    "kind=hatch_empty,facing=north": {
+      "model": "the_oldest_house:block/leak/hatch_empty",
+      "y": 0
+    },
+    "kind=hatch_empty,facing=east": {
+      "model": "the_oldest_house:block/leak/hatch_empty",
+      "y": 90
+    },
+    "kind=hatch_empty,facing=south": {
+      "model": "the_oldest_house:block/leak/hatch_empty",
+      "y": 180
+    },
+    "kind=hatch_empty,facing=west": {
+      "model": "the_oldest_house:block/leak/hatch_empty",
+      "y": 270
+    },
+    "kind=hatch_bowls,facing=north": {
+      "model": "the_oldest_house:block/leak/hatch_bowls",
+      "y": 0
+    },
+    "kind=hatch_bowls,facing=east": {
+      "model": "the_oldest_house:block/leak/hatch_bowls",
+      "y": 90
+    },
+    "kind=hatch_bowls,facing=south": {
+      "model": "the_oldest_house:block/leak/hatch_bowls",
+      "y": 180
+    },
+    "kind=hatch_bowls,facing=west": {
+      "model": "the_oldest_house:block/leak/hatch_bowls",
+      "y": 270
+    },
+    "kind=bed_foot_bare,facing=north": {
+      "model": "the_oldest_house:block/leak/bed_foot_bare",
+      "y": 0
+    },
+    "kind=bed_foot_bare,facing=east": {
+      "model": "the_oldest_house:block/leak/bed_foot_bare",
+      "y": 90
+    },
+    "kind=bed_foot_bare,facing=south": {
+      "model": "the_oldest_house:block/leak/bed_foot_bare",
+      "y": 180
+    },
+    "kind=bed_foot_bare,facing=west": {
+      "model": "the_oldest_house:block/leak/bed_foot_bare",
+      "y": 270
+    },
+    "kind=bed_foot_made,facing=north": {
+      "model": "the_oldest_house:block/leak/bed_foot_made",
+      "y": 0
+    },
+    "kind=bed_foot_made,facing=east": {
+      "model": "the_oldest_house:block/leak/bed_foot_made",
+      "y": 90
+    },
+    "kind=bed_foot_made,facing=south": {
+      "model": "the_oldest_house:block/leak/bed_foot_made",
+      "y": 180
+    },
+    "kind=bed_foot_made,facing=west": {
+      "model": "the_oldest_house:block/leak/bed_foot_made",
+      "y": 270
+    },
+    "kind=bed_head_bare,facing=north": {
+      "model": "the_oldest_house:block/leak/bed_head_bare",
+      "y": 0
+    },
+    "kind=bed_head_bare,facing=east": {
+      "model": "the_oldest_house:block/leak/bed_head_bare",
+      "y": 90
+    },
+    "kind=bed_head_bare,facing=south": {
+      "model": "the_oldest_house:block/leak/bed_head_bare",
+      "y": 180
+    },
+    "kind=bed_head_bare,facing=west": {
+      "model": "the_oldest_house:block/leak/bed_head_bare",
+      "y": 270
+    },
+    "kind=bed_head_made,facing=north": {
+      "model": "the_oldest_house:block/leak/bed_head_made",
+      "y": 0
+    },
+    "kind=bed_head_made,facing=east": {
+      "model": "the_oldest_house:block/leak/bed_head_made",
+      "y": 90
+    },
+    "kind=bed_head_made,facing=south": {
+      "model": "the_oldest_house:block/leak/bed_head_made",
+      "y": 180
+    },
+    "kind=bed_head_made,facing=west": {
+      "model": "the_oldest_house:block/leak/bed_head_made",
+      "y": 270
+    },
+    "kind=bed_head_plain,facing=north": {
+      "model": "the_oldest_house:block/leak/bed_head_plain",
+      "y": 0
+    },
+    "kind=bed_head_plain,facing=east": {
+      "model": "the_oldest_house:block/leak/bed_head_plain",
+      "y": 90
+    },
+    "kind=bed_head_plain,facing=south": {
+      "model": "the_oldest_house:block/leak/bed_head_plain",
+      "y": 180
+    },
+    "kind=bed_head_plain,facing=west": {
+      "model": "the_oldest_house:block/leak/bed_head_plain",
+      "y": 270
+    },
+    "kind=bed_head_striped,facing=north": {
+      "model": "the_oldest_house:block/leak/bed_head_striped",
+      "y": 0
+    },
+    "kind=bed_head_striped,facing=east": {
+      "model": "the_oldest_house:block/leak/bed_head_striped",
+      "y": 90
+    },
+    "kind=bed_head_striped,facing=south": {
+      "model": "the_oldest_house:block/leak/bed_head_striped",
+      "y": 180
+    },
+    "kind=bed_head_striped,facing=west": {
+      "model": "the_oldest_house:block/leak/bed_head_striped",
+      "y": 270
+    },
+    "kind=airing_low,facing=north": {
+      "model": "the_oldest_house:block/leak/airing_low",
+      "y": 0
+    },
+    "kind=airing_low,facing=east": {
+      "model": "the_oldest_house:block/leak/airing_low",
+      "y": 90
+    },
+    "kind=airing_low,facing=south": {
+      "model": "the_oldest_house:block/leak/airing_low",
+      "y": 180
+    },
+    "kind=airing_low,facing=west": {
+      "model": "the_oldest_house:block/leak/airing_low",
+      "y": 270
+    },
+    "kind=airing_low_empty,facing=north": {
+      "model": "the_oldest_house:block/leak/airing_low_empty",
+      "y": 0
+    },
+    "kind=airing_low_empty,facing=east": {
+      "model": "the_oldest_house:block/leak/airing_low_empty",
+      "y": 90
+    },
+    "kind=airing_low_empty,facing=south": {
+      "model": "the_oldest_house:block/leak/airing_low_empty",
+      "y": 180
+    },
+    "kind=airing_low_empty,facing=west": {
+      "model": "the_oldest_house:block/leak/airing_low_empty",
+      "y": 270
+    },
+    "kind=airing_high,facing=north": {
+      "model": "the_oldest_house:block/leak/airing_high",
+      "y": 0
+    },
+    "kind=airing_high,facing=east": {
+      "model": "the_oldest_house:block/leak/airing_high",
+      "y": 90
+    },
+    "kind=airing_high,facing=south": {
+      "model": "the_oldest_house:block/leak/airing_high",
+      "y": 180
+    },
+    "kind=airing_high,facing=west": {
+      "model": "the_oldest_house:block/leak/airing_high",
+      "y": 270
+    },
+    "kind=airing_high_stacked,facing=north": {
+      "model": "the_oldest_house:block/leak/airing_high_stacked",
+      "y": 0
+    },
+    "kind=airing_high_stacked,facing=east": {
+      "model": "the_oldest_house:block/leak/airing_high_stacked",
+      "y": 90
+    },
+    "kind=airing_high_stacked,facing=south": {
+      "model": "the_oldest_house:block/leak/airing_high_stacked",
+      "y": 180
+    },
+    "kind=airing_high_stacked,facing=west": {
+      "model": "the_oldest_house:block/leak/airing_high_stacked",
+      "y": 270
+    },
+    "kind=basket_full,facing=north": {
+      "model": "the_oldest_house:block/leak/basket_full",
+      "y": 0
+    },
+    "kind=basket_full,facing=east": {
+      "model": "the_oldest_house:block/leak/basket_full",
+      "y": 90
+    },
+    "kind=basket_full,facing=south": {
+      "model": "the_oldest_house:block/leak/basket_full",
+      "y": 180
+    },
+    "kind=basket_full,facing=west": {
+      "model": "the_oldest_house:block/leak/basket_full",
+      "y": 270
+    },
+    "kind=basket_half,facing=north": {
+      "model": "the_oldest_house:block/leak/basket_half",
+      "y": 0
+    },
+    "kind=basket_half,facing=east": {
+      "model": "the_oldest_house:block/leak/basket_half",
+      "y": 90
+    },
+    "kind=basket_half,facing=south": {
+      "model": "the_oldest_house:block/leak/basket_half",
+      "y": 180
+    },
+    "kind=basket_half,facing=west": {
+      "model": "the_oldest_house:block/leak/basket_half",
+      "y": 270
+    },
+    "kind=basket_empty,facing=north": {
+      "model": "the_oldest_house:block/leak/basket_empty",
+      "y": 0
+    },
+    "kind=basket_empty,facing=east": {
+      "model": "the_oldest_house:block/leak/basket_empty",
+      "y": 90
+    },
+    "kind=basket_empty,facing=south": {
+      "model": "the_oldest_house:block/leak/basket_empty",
+      "y": 180
+    },
+    "kind=basket_empty,facing=west": {
+      "model": "the_oldest_house:block/leak/basket_empty",
+      "y": 270
+    },
+    "kind=basket_striped,facing=north": {
+      "model": "the_oldest_house:block/leak/basket_striped",
+      "y": 0
+    },
+    "kind=basket_striped,facing=east": {
+      "model": "the_oldest_house:block/leak/basket_striped",
+      "y": 90
+    },
+    "kind=basket_striped,facing=south": {
+      "model": "the_oldest_house:block/leak/basket_striped",
+      "y": 180
+    },
+    "kind=basket_striped,facing=west": {
+      "model": "the_oldest_house:block/leak/basket_striped",
+      "y": 270
+    },
+    "kind=basket_sock,facing=north": {
+      "model": "the_oldest_house:block/leak/basket_sock",
+      "y": 0
+    },
+    "kind=basket_sock,facing=east": {
+      "model": "the_oldest_house:block/leak/basket_sock",
+      "y": 90
+    },
+    "kind=basket_sock,facing=south": {
+      "model": "the_oldest_house:block/leak/basket_sock",
+      "y": 180
+    },
+    "kind=basket_sock,facing=west": {
+      "model": "the_oldest_house:block/leak/basket_sock",
+      "y": 270
+    },
+    "kind=fold_empty,facing=north": {
+      "model": "the_oldest_house:block/leak/fold_empty",
+      "y": 0
+    },
+    "kind=fold_empty,facing=east": {
+      "model": "the_oldest_house:block/leak/fold_empty",
+      "y": 90
+    },
+    "kind=fold_empty,facing=south": {
+      "model": "the_oldest_house:block/leak/fold_empty",
+      "y": 180
+    },
+    "kind=fold_empty,facing=west": {
+      "model": "the_oldest_house:block/leak/fold_empty",
+      "y": 270
+    },
+    "kind=sheet_one_end,facing=north": {
+      "model": "the_oldest_house:block/leak/sheet_one_end",
+      "y": 0
+    },
+    "kind=sheet_one_end,facing=east": {
+      "model": "the_oldest_house:block/leak/sheet_one_end",
+      "y": 90
+    },
+    "kind=sheet_one_end,facing=south": {
+      "model": "the_oldest_house:block/leak/sheet_one_end",
+      "y": 180
+    },
+    "kind=sheet_one_end,facing=west": {
+      "model": "the_oldest_house:block/leak/sheet_one_end",
+      "y": 270
+    },
+    "kind=sheet_lifted,facing=north": {
+      "model": "the_oldest_house:block/leak/sheet_lifted",
+      "y": 0
+    },
+    "kind=sheet_lifted,facing=east": {
+      "model": "the_oldest_house:block/leak/sheet_lifted",
+      "y": 90
+    },
+    "kind=sheet_lifted,facing=south": {
+      "model": "the_oldest_house:block/leak/sheet_lifted",
+      "y": 180
+    },
+    "kind=sheet_lifted,facing=west": {
+      "model": "the_oldest_house:block/leak/sheet_lifted",
+      "y": 270
+    },
+    "kind=sheet_folded,facing=north": {
+      "model": "the_oldest_house:block/leak/sheet_folded",
+      "y": 0
+    },
+    "kind=sheet_folded,facing=east": {
+      "model": "the_oldest_house:block/leak/sheet_folded",
+      "y": 90
+    },
+    "kind=sheet_folded,facing=south": {
+      "model": "the_oldest_house:block/leak/sheet_folded",
+      "y": 180
+    },
+    "kind=sheet_folded,facing=west": {
+      "model": "the_oldest_house:block/leak/sheet_folded",
+      "y": 270
+    },
+    "kind=sheet_creased,facing=north": {
+      "model": "the_oldest_house:block/leak/sheet_creased",
+      "y": 0
+    },
+    "kind=sheet_creased,facing=east": {
+      "model": "the_oldest_house:block/leak/sheet_creased",
+      "y": 90
+    },
+    "kind=sheet_creased,facing=south": {
+      "model": "the_oldest_house:block/leak/sheet_creased",
+      "y": 180
+    },
+    "kind=sheet_creased,facing=west": {
+      "model": "the_oldest_house:block/leak/sheet_creased",
+      "y": 270
+    },
+    "kind=floor_sock,facing=north": {
+      "model": "the_oldest_house:block/leak/floor_sock",
+      "y": 0
+    },
+    "kind=floor_sock,facing=east": {
+      "model": "the_oldest_house:block/leak/floor_sock",
+      "y": 90
+    },
+    "kind=floor_sock,facing=south": {
+      "model": "the_oldest_house:block/leak/floor_sock",
+      "y": 180
+    },
+    "kind=floor_sock,facing=west": {
+      "model": "the_oldest_house:block/leak/floor_sock",
+      "y": 270
+    },
+    "kind=lamp_stand,facing=north": {
+      "model": "the_oldest_house:block/leak/lamp_stand",
+      "y": 0
+    },
+    "kind=lamp_stand,facing=east": {
+      "model": "the_oldest_house:block/leak/lamp_stand",
+      "y": 90
+    },
+    "kind=lamp_stand,facing=south": {
+      "model": "the_oldest_house:block/leak/lamp_stand",
+      "y": 180
+    },
+    "kind=lamp_stand,facing=west": {
+      "model": "the_oldest_house:block/leak/lamp_stand",
+      "y": 270
+    },
+    "kind=sewing_box,facing=north": {
+      "model": "the_oldest_house:block/leak/sewing_box",
+      "y": 0
+    },
+    "kind=sewing_box,facing=east": {
+      "model": "the_oldest_house:block/leak/sewing_box",
+      "y": 90
+    },
+    "kind=sewing_box,facing=south": {
+      "model": "the_oldest_house:block/leak/sewing_box",
+      "y": 180
+    },
+    "kind=sewing_box,facing=west": {
+      "model": "the_oldest_house:block/leak/sewing_box",
+      "y": 270
+    },
+    "kind=sewing_threaded,facing=north": {
+      "model": "the_oldest_house:block/leak/sewing_threaded",
+      "y": 0
+    },
+    "kind=sewing_threaded,facing=east": {
+      "model": "the_oldest_house:block/leak/sewing_threaded",
+      "y": 90
+    },
+    "kind=sewing_threaded,facing=south": {
+      "model": "the_oldest_house:block/leak/sewing_threaded",
+      "y": 180
+    },
+    "kind=sewing_threaded,facing=west": {
+      "model": "the_oldest_house:block/leak/sewing_threaded",
+      "y": 270
+    },
+    "kind=coat_sleeve,facing=north": {
+      "model": "the_oldest_house:block/leak/coat_sleeve",
+      "y": 0
+    },
+    "kind=coat_sleeve,facing=east": {
+      "model": "the_oldest_house:block/leak/coat_sleeve",
+      "y": 90
+    },
+    "kind=coat_sleeve,facing=south": {
+      "model": "the_oldest_house:block/leak/coat_sleeve",
+      "y": 180
+    },
+    "kind=coat_sleeve,facing=west": {
+      "model": "the_oldest_house:block/leak/coat_sleeve",
+      "y": 270
+    },
+    "kind=coat_turned,facing=north": {
+      "model": "the_oldest_house:block/leak/coat_turned",
+      "y": 0
+    },
+    "kind=coat_turned,facing=east": {
+      "model": "the_oldest_house:block/leak/coat_turned",
+      "y": 90
+    },
+    "kind=coat_turned,facing=south": {
+      "model": "the_oldest_house:block/leak/coat_turned",
+      "y": 180
+    },
+    "kind=coat_turned,facing=west": {
+      "model": "the_oldest_house:block/leak/coat_turned",
+      "y": 270
+    },
+    "kind=coat_shut,facing=north": {
+      "model": "the_oldest_house:block/leak/coat_shut",
+      "y": 0
+    },
+    "kind=coat_shut,facing=east": {
+      "model": "the_oldest_house:block/leak/coat_shut",
+      "y": 90
+    },
+    "kind=coat_shut,facing=south": {
+      "model": "the_oldest_house:block/leak/coat_shut",
+      "y": 180
+    },
+    "kind=coat_shut,facing=west": {
+      "model": "the_oldest_house:block/leak/coat_shut",
+      "y": 270
+    },
+    "kind=coat_sewn,facing=north": {
+      "model": "the_oldest_house:block/leak/coat_sewn",
+      "y": 0
+    },
+    "kind=coat_sewn,facing=east": {
+      "model": "the_oldest_house:block/leak/coat_sewn",
+      "y": 90
+    },
+    "kind=coat_sewn,facing=south": {
+      "model": "the_oldest_house:block/leak/coat_sewn",
+      "y": 180
+    },
+    "kind=coat_sewn,facing=west": {
+      "model": "the_oldest_house:block/leak/coat_sewn",
+      "y": 270
+    },
+    "kind=coat_buttoned,facing=north": {
+      "model": "the_oldest_house:block/leak/coat_buttoned",
+      "y": 0
+    },
+    "kind=coat_buttoned,facing=east": {
+      "model": "the_oldest_house:block/leak/coat_buttoned",
+      "y": 90
+    },
+    "kind=coat_buttoned,facing=south": {
+      "model": "the_oldest_house:block/leak/coat_buttoned",
+      "y": 180
+    },
+    "kind=coat_buttoned,facing=west": {
+      "model": "the_oldest_house:block/leak/coat_buttoned",
+      "y": 270
+    },
+    "kind=button_tin_open,facing=north": {
+      "model": "the_oldest_house:block/leak/button_tin_open",
+      "y": 0
+    },
+    "kind=button_tin_open,facing=east": {
+      "model": "the_oldest_house:block/leak/button_tin_open",
+      "y": 90
+    },
+    "kind=button_tin_open,facing=south": {
+      "model": "the_oldest_house:block/leak/button_tin_open",
+      "y": 180
+    },
+    "kind=button_tin_open,facing=west": {
+      "model": "the_oldest_house:block/leak/button_tin_open",
+      "y": 270
+    },
+    "kind=kettle_cold,facing=north": {
+      "model": "the_oldest_house:block/leak/kettle_cold",
+      "y": 0
+    },
+    "kind=kettle_cold,facing=east": {
+      "model": "the_oldest_house:block/leak/kettle_cold",
+      "y": 90
+    },
+    "kind=kettle_cold,facing=south": {
+      "model": "the_oldest_house:block/leak/kettle_cold",
+      "y": 180
+    },
+    "kind=kettle_cold,facing=west": {
+      "model": "the_oldest_house:block/leak/kettle_cold",
+      "y": 270
+    },
+    "kind=kettle_on,facing=north": {
+      "model": "the_oldest_house:block/leak/kettle_on",
+      "y": 0
+    },
+    "kind=kettle_on,facing=east": {
+      "model": "the_oldest_house:block/leak/kettle_on",
+      "y": 90
+    },
+    "kind=kettle_on,facing=south": {
+      "model": "the_oldest_house:block/leak/kettle_on",
+      "y": 180
+    },
+    "kind=kettle_on,facing=west": {
+      "model": "the_oldest_house:block/leak/kettle_on",
+      "y": 270
+    },
+    "kind=kettle_boiled,facing=north": {
+      "model": "the_oldest_house:block/leak/kettle_boiled",
+      "y": 0
+    },
+    "kind=kettle_boiled,facing=east": {
+      "model": "the_oldest_house:block/leak/kettle_boiled",
+      "y": 90
+    },
+    "kind=kettle_boiled,facing=south": {
+      "model": "the_oldest_house:block/leak/kettle_boiled",
+      "y": 180
+    },
+    "kind=kettle_boiled,facing=west": {
+      "model": "the_oldest_house:block/leak/kettle_boiled",
+      "y": 270
+    },
+    "kind=teacup_empty,facing=north": {
+      "model": "the_oldest_house:block/leak/teacup_empty",
+      "y": 0
+    },
+    "kind=teacup_empty,facing=east": {
+      "model": "the_oldest_house:block/leak/teacup_empty",
+      "y": 90
+    },
+    "kind=teacup_empty,facing=south": {
+      "model": "the_oldest_house:block/leak/teacup_empty",
+      "y": 180
+    },
+    "kind=teacup_empty,facing=west": {
+      "model": "the_oldest_house:block/leak/teacup_empty",
+      "y": 270
+    },
+    "kind=teacup_full,facing=north": {
+      "model": "the_oldest_house:block/leak/teacup_full",
+      "y": 0
+    },
+    "kind=teacup_full,facing=east": {
+      "model": "the_oldest_house:block/leak/teacup_full",
+      "y": 90
+    },
+    "kind=teacup_full,facing=south": {
+      "model": "the_oldest_house:block/leak/teacup_full",
+      "y": 180
+    },
+    "kind=teacup_full,facing=west": {
+      "model": "the_oldest_house:block/leak/teacup_full",
+      "y": 270
+    },
+    "kind=potatoes,facing=north": {
+      "model": "the_oldest_house:block/leak/potatoes",
+      "y": 0
+    },
+    "kind=potatoes,facing=east": {
+      "model": "the_oldest_house:block/leak/potatoes",
+      "y": 90
+    },
+    "kind=potatoes,facing=south": {
+      "model": "the_oldest_house:block/leak/potatoes",
+      "y": 180
+    },
+    "kind=potatoes,facing=west": {
+      "model": "the_oldest_house:block/leak/potatoes",
+      "y": 270
+    },
+    "kind=potatoes_peeled,facing=north": {
+      "model": "the_oldest_house:block/leak/potatoes_peeled",
+      "y": 0
+    },
+    "kind=potatoes_peeled,facing=east": {
+      "model": "the_oldest_house:block/leak/potatoes_peeled",
+      "y": 90
+    },
+    "kind=potatoes_peeled,facing=south": {
+      "model": "the_oldest_house:block/leak/potatoes_peeled",
+      "y": 180
+    },
+    "kind=potatoes_peeled,facing=west": {
+      "model": "the_oldest_house:block/leak/potatoes_peeled",
+      "y": 270
+    },
+    "kind=supper_plate,facing=north": {
+      "model": "the_oldest_house:block/leak/supper_plate",
+      "y": 0
+    },
+    "kind=supper_plate,facing=east": {
+      "model": "the_oldest_house:block/leak/supper_plate",
+      "y": 90
+    },
+    "kind=supper_plate,facing=south": {
+      "model": "the_oldest_house:block/leak/supper_plate",
+      "y": 180
+    },
+    "kind=supper_plate,facing=west": {
+      "model": "the_oldest_house:block/leak/supper_plate",
+      "y": 270
+    },
+    "kind=supper_wrapped,facing=north": {
+      "model": "the_oldest_house:block/leak/supper_wrapped",
+      "y": 0
+    },
+    "kind=supper_wrapped,facing=east": {
+      "model": "the_oldest_house:block/leak/supper_wrapped",
+      "y": 90
+    },
+    "kind=supper_wrapped,facing=south": {
+      "model": "the_oldest_house:block/leak/supper_wrapped",
+      "y": 180
+    },
+    "kind=supper_wrapped,facing=west": {
+      "model": "the_oldest_house:block/leak/supper_wrapped",
+      "y": 270
+    },
+    "kind=supper_named,facing=north": {
+      "model": "the_oldest_house:block/leak/supper_named",
+      "y": 0
+    },
+    "kind=supper_named,facing=east": {
+      "model": "the_oldest_house:block/leak/supper_named",
+      "y": 90
+    },
+    "kind=supper_named,facing=south": {
+      "model": "the_oldest_house:block/leak/supper_named",
+      "y": 180
+    },
+    "kind=supper_named,facing=west": {
+      "model": "the_oldest_house:block/leak/supper_named",
+      "y": 270
+    },
+    "kind=sleeper_in,facing=north": {
+      "model": "the_oldest_house:block/leak/sleeper_in",
+      "y": 0
+    },
+    "kind=sleeper_in,facing=east": {
+      "model": "the_oldest_house:block/leak/sleeper_in",
+      "y": 90
+    },
+    "kind=sleeper_in,facing=south": {
+      "model": "the_oldest_house:block/leak/sleeper_in",
+      "y": 180
+    },
+    "kind=sleeper_in,facing=west": {
+      "model": "the_oldest_house:block/leak/sleeper_in",
+      "y": 270
+    },
+    "kind=sleeper_out,facing=north": {
+      "model": "the_oldest_house:block/leak/sleeper_out",
+      "y": 0
+    },
+    "kind=sleeper_out,facing=east": {
+      "model": "the_oldest_house:block/leak/sleeper_out",
+      "y": 90
+    },
+    "kind=sleeper_out,facing=south": {
+      "model": "the_oldest_house:block/leak/sleeper_out",
+      "y": 180
+    },
+    "kind=sleeper_out,facing=west": {
+      "model": "the_oldest_house:block/leak/sleeper_out",
+      "y": 270
+    },
+    "kind=sleeper_awake,facing=north": {
+      "model": "the_oldest_house:block/leak/sleeper_awake",
+      "y": 0
+    },
+    "kind=sleeper_awake,facing=east": {
+      "model": "the_oldest_house:block/leak/sleeper_awake",
+      "y": 90
+    },
+    "kind=sleeper_awake,facing=south": {
+      "model": "the_oldest_house:block/leak/sleeper_awake",
+      "y": 180
+    },
+    "kind=sleeper_awake,facing=west": {
+      "model": "the_oldest_house:block/leak/sleeper_awake",
+      "y": 270
+    },
+    "kind=settee_feet,facing=north": {
+      "model": "the_oldest_house:block/leak/settee_feet",
+      "y": 0
+    },
+    "kind=settee_feet,facing=east": {
+      "model": "the_oldest_house:block/leak/settee_feet",
+      "y": 90
+    },
+    "kind=settee_feet,facing=south": {
+      "model": "the_oldest_house:block/leak/settee_feet",
+      "y": 180
+    },
+    "kind=settee_feet,facing=west": {
+      "model": "the_oldest_house:block/leak/settee_feet",
+      "y": 270
+    },
+    "kind=side_empty,facing=north": {
+      "model": "the_oldest_house:block/leak/side_empty",
+      "y": 0
+    },
+    "kind=side_empty,facing=east": {
+      "model": "the_oldest_house:block/leak/side_empty",
+      "y": 90
+    },
+    "kind=side_empty,facing=south": {
+      "model": "the_oldest_house:block/leak/side_empty",
+      "y": 180
+    },
+    "kind=side_empty,facing=west": {
+      "model": "the_oldest_house:block/leak/side_empty",
+      "y": 270
+    },
+    "kind=side_cup,facing=north": {
+      "model": "the_oldest_house:block/leak/side_cup",
+      "y": 0
+    },
+    "kind=side_cup,facing=east": {
+      "model": "the_oldest_house:block/leak/side_cup",
+      "y": 90
+    },
+    "kind=side_cup,facing=south": {
+      "model": "the_oldest_house:block/leak/side_cup",
+      "y": 180
+    },
+    "kind=side_cup,facing=west": {
+      "model": "the_oldest_house:block/leak/side_cup",
+      "y": 270
     }
   }
 }
