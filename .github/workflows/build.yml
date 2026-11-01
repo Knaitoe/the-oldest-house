@@ -83,6 +83,7 @@ jobs:
           python3 tools/generate_swimmer_audio.py --check
           python3 tools/draw_vacant_art.py --check
           python3 tools/generate_door_sound_audio.py --check
+          python3 tools/draw_draft_fittings.py --check
           python3 tools/generate_staircase_leak_assets.py --check
           python3 tools/draw_hall_art.py --check
 

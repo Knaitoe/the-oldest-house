@@ -100,6 +100,8 @@ Sound follows the House's actual connections.
 
 ## 5. Drafts and pressure (0.4.230)
 
+Done; see `docs/DRAFTS_0_4_230.md`.
+
 Air moves from one opening to another, and you can see it: curtains pulling toward a doorway, dust moving under a closed door, a
 door settling shut when another passage opens.
 

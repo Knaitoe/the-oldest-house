@@ -22,9 +22,9 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 /**
  * 0.4.199: what the puzzle rooms share. The owner: "a story, some wandering, then a place where the player can stop and work
- * something out. Solving one should make the House feel briefly understandable." Three families, each an early room that
+ * something out. Solving one should make the House feel briefly understandable." Four families (0.4.230 added the air), each an early room that
  * teaches one household mechanism and a deep room that combines it across spaces: Borrowed Light and the lamp rooms, the
- * Service Lift and the twin lifts, the Turning Landing and the turning stair.
+ * Service Lift and the twin lifts, the Turning Landing and the turning stair, the drying room and the vent rooms.
  *
  * One rhythm for all of them, so they stay rare: a reader is offered a puzzle only after resolving a story since their last
  * puzzle and walking a few halls past it; the offer is shared among the puzzles they could have, never more than one room's
@@ -35,14 +35,17 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * counts toward the Witness.
  */
 public final class PuzzleRooms {
-    public enum Family {LIGHT,LIFT,LANDING}
+    public enum Family {LIGHT,LIFT,LANDING,AIR}
     public enum Puzzle {
         BORROWED_LIGHT(LabyrinthPlace.BORROWED_LIGHT,Family.LIGHT,false,"The door has no handle on this side. The sun beside it is cold."),
         SERVICE_LIFT(LabyrinthPlace.SERVICE_LIFT,Family.LIFT,false,null),
         TURNING_LANDING(LabyrinthPlace.TURNING_LANDING,Family.LANDING,false,null),
         LAMP_ROOMS(LabyrinthPlace.LAMP_ROOMS,Family.LIGHT,true,"The door has no handle on this side. The sun beside it is cold."),
         TWIN_LIFT(LabyrinthPlace.TWIN_LIFT,Family.LIFT,true,null),
-        TURNING_STAIR(LabyrinthPlace.TURNING_STAIR,Family.LANDING,true,null);
+        TURNING_STAIR(LabyrinthPlace.TURNING_STAIR,Family.LANDING,true,null),
+        // 0.4.230: the House's air (DraftRooms).
+        DRAFT_ROOM(LabyrinthPlace.DRAFT_ROOM,Family.AIR,false,"The door is stuck in its frame. It gives a little and settles back, as if it wanted pushing harder than you can."),
+        VENT_ROOMS(LabyrinthPlace.VENT_ROOMS,Family.AIR,true,"The door has no handle on this side. Cold air comes round its edges.");
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;
