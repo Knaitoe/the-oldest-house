@@ -1008,5 +1008,9 @@
   "subtitles.the_oldest_house.door.through_clock": "A clock ticks behind the door",
   "subtitles.the_oldest_house.door.through_water": "Water behind the door",
   "subtitles.the_oldest_house.door.through_music": "Music behind the door",
-  "subtitles.the_oldest_house.door.through_voices": "Voices behind the door"
+  "subtitles.the_oldest_house.door.through_voices": "Voices behind the door",
+  "block.the_oldest_house.draft_fitting": "Draft Fitting",
+  "block.the_oldest_house.draft_plaster": "Distempered Plaster",
+  "block.the_oldest_house.draft_boards": "Scrubbed Boards",
+  "block.the_oldest_house.draft_tile": "Quarry Tile"
 }

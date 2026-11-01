@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 73;
+    public static final int VERSION = 74;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -151,8 +151,8 @@ public final class LabyrinthBuilder {
             case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING -> LabyrinthPacing.STONE_DEPTH;
             // 0.4.199: the early puzzle rooms stand with the halls, ready before anyone can be offered them (PuzzleRooms.weight paces them);
             // the deep ones are built ahead of the strange depths they are offered from.
-            case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING -> 0;
-            case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, WAY_OUT -> LabyrinthPacing.STRANGE_DEPTH;
+            case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, DRAFT_ROOM -> 0;
+            case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, VENT_ROOMS, WAY_OUT -> LabyrinthPacing.STRANGE_DEPTH;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
             case DARK_LONG, DARK_FORK, DARK_MAZE, DARK_SPIRAL, DARK_EDGE -> DarkHalls.DARK_DEPTH;
@@ -547,6 +547,8 @@ public final class LabyrinthBuilder {
             case FOLDED_MAZE, DEEP_MAZE, ABYSS_MAZE -> LabyrinthMaze.build(level, base, place, LabyrinthMaze.layout(server, place));
             case BORROWED_LIGHT -> BorrowedLight.build(level, base);
             case SERVICE_LIFT -> ServiceLift.build(level, base);
+            case DRAFT_ROOM -> DraftRooms.buildDrying(level, base);
+            case VENT_ROOMS -> DraftRooms.buildVents(level, base);
             case TURNING_LANDING -> TurningLandings.buildEarly(level, base);
             case LAMP_ROOMS -> LampRooms.build(level, base);
             case TWIN_LIFT -> TwinLift.build(level, base);

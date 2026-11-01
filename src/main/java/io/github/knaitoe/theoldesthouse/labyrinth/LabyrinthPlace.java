@@ -421,6 +421,14 @@ public enum LabyrinthPlace {
     LAST_SWIMMER("last_swimmer",Kind.ONE_SHOT,146,new BoundingBox(-15,-7,-46,15,10,0),literaryEntry()),
     /** 0.4.228, Vacant Possession (VacantPossession, VacantSite): a first-floor flat on moving day, every piece carried down to the van, the tenant fading with each, and one chair left at the end. Understanding, one visit. */
     VACANT_POSSESSION("vacant_possession",Kind.ONE_SHOT,147,new BoundingBox(-7,-7,-19,18,8,0),literaryEntry()),
+    /** 0.4.230, drafts and pressure (DraftRooms): the drying room, a laundry and its scullery, where the air from a vent opens the far door once it has no other way out. An early puzzle room, family AIR. */
+    DRAFT_ROOM("draft_room", Kind.GRAY, 148, new BoundingBox(-7,-1,-20,7,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-20),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The vent rooms, the drying room's deep room: one draft through three rooms, and a door in plain plaster found only by what the air does at it. */
+    VENT_ROOMS("vent_rooms", Kind.GRAY, 149, new BoundingBox(-12,-1,-28,12,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(11,0,-28),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

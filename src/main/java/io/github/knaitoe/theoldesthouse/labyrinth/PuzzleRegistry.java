@@ -27,6 +27,13 @@ public final class PuzzleRegistry {
     /** 0.4.199: the lifts' and landings' working parts (PuzzleFittingBlock), drawn by tools/draw_puzzle_fittings.py. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PuzzleFittingBlock>> FITTING_TYPE=CODECS.register("puzzle_fitting",()->PuzzleFittingBlock.CODEC);
     public static final DeferredBlock<PuzzleFittingBlock> FITTING=BLOCKS.registerBlock("puzzle_fitting",PuzzleFittingBlock::new,fixed(Blocks.DARK_OAK_PLANKS).noOcclusion());
+    /** 0.4.230: the draft rooms' distempered plaster, scrubbed boards and scullery quarry tiles, and their working parts (DraftBlock), drawn by tools/draw_draft_fittings.py. */
+    private static final java.util.Map<String,DeferredBlock<Block>> DRAFT_MATERIALS=new java.util.LinkedHashMap<>();
+    public static final java.util.List<String> DRAFT_MATERIAL_NAMES=java.util.List.of("plaster","boards","tile");
+    static{for(String name:DRAFT_MATERIAL_NAMES)DRAFT_MATERIALS.put(name,BLOCKS.registerSimpleBlock("draft_"+name,fixed(name.equals("tile")?Blocks.STONE:Blocks.SPRUCE_PLANKS)));}
+    public static Block draftMaterial(String name){var block=DRAFT_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<DraftBlock>> DRAFT_TYPE=CODECS.register("draft_fitting",()->DraftBlock.CODEC);
+    public static final DeferredBlock<DraftBlock> DRAFT=BLOCKS.registerBlock("draft_fitting",DraftBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion());
     private PuzzleRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);}
 }
