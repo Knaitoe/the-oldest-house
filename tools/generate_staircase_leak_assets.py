@@ -233,6 +233,52 @@ def household(props):
     props['sleeper_in'], props['sleeper_out'], props['sleeper_awake'] = sleeper('in'), sleeper('out'), sleeper('awake')
     props['settee_feet'] = [box(0, 0, 0, 16, 7, 16, 'blue_wool'), box(0, 7, 0, 2, 14, 16, 'blue_wool'), box(0, 7, 14, 16, 12, 16, 'blue_wool'), box(2, 7, 1, 16, 9, 14, 'red_wool')]
     props['side_empty'] = [box(2, 0, 2, 4, 10, 4, 'oak_log'), box(12, 0, 12, 14, 10, 14, 'oak_log'), box(1, 10, 1, 15, 11, 15, 'oak_planks')]
+    # The long way home.
+    props['handbrake_down'] = [box(6, 0, 4, 10, 2, 12, 'black_wool'), box(7, 2, 5, 9, 4, 13, 'black_wool'), box(7.5, 3, 12, 8.5, 4.5, 13.5, 'iron_block')]
+    props['handbrake_up'] = [box(6, 0, 4, 10, 2, 12, 'black_wool'), box(7, 2, 9, 9, 9, 11, 'black_wool'), box(7.5, 9, 9.5, 8.5, 10.5, 10.5, 'iron_block')]
+    props['windscreen_fogged'] = [box(0, 0, 15, 16, 16, 16, 'white_stained_glass')]
+    props['windscreen_wiped'] = [box(0, 0, 15, 16, 4, 16, 'white_stained_glass'), box(0, 12, 15, 16, 16, 16, 'white_stained_glass'), box(0, 4, 15, 4, 12, 16, 'white_stained_glass'), box(12, 4, 15, 16, 12, 16, 'white_stained_glass')]
+    props['road_map'] = [box(2, 0, 3, 14, .4, 12, 'white_wool'), box(3, .4, 4, 8, .5, 6, 'green_wool'), box(8, .4, 7, 13, .5, 8, 'red_wool'), box(4, .4, 9, 12, .5, 9.5, 'blue_wool')]
+    # Washing day.
+    props['wet_basket'] = basket(5) + [box(4, 6, 6, 12, 7, 10, 'light_blue_wool')]
+    props['wet_basket_empty'] = basket()
+    props['dry_basket'] = basket(4) + [box(4, 5, 5, 12, 5.5, 11, 'white_wool')]
+    line = [box(0, 15, 7.75, 16, 15.5, 8.25, 'white_wool')]
+    props['line_empty'] = line
+    props['line_shirt'] = line + [box(3, 6, 7.5, 13, 15, 8.5, 'white_wool'), box(1, 11, 7.5, 3, 15, 8.5, 'white_wool'), box(13, 11, 7.5, 15, 15, 8.5, 'white_wool'), box(7, 15, 7.4, 9, 16, 8.6, 'spruce_planks')]
+    props['line_soaked'] = line + [box(3, 4, 7.5, 13, 15, 8.5, 'light_gray_wool'), box(1, 9, 7.5, 3, 15, 8.5, 'light_gray_wool'), box(13, 9, 7.5, 15, 15, 8.5, 'light_gray_wool')]
+    props['blanket_folded'] = [box(3, 0, 4, 13, 3, 12, 'red_wool'), box(3, 3, 4, 13, 3.2, 12, 'brown_wool')]
+    props['blanket_one_end'] = [box(2, 0, 13, 14, 14, 14, 'red_wool'), box(2, 0, 3, 14, 1, 13, 'red_wool')]
+    props['blanket_shaken'] = [box(1, 0, 3, 15, 1, 13, 'red_wool'), box(4, 0, 0, 5, .2, 1, 'sandstone'), box(9, 0, -1, 10, .2, 0, 'sandstone')]
+    horse = [box(1, 0, 7, 2, 14, 9, 'stripped_birch_log'), box(14, 0, 7, 15, 14, 9, 'stripped_birch_log'), box(2, 4, 7.5, 14, 5, 8.5, 'stripped_birch_log'), box(2, 9, 7.5, 14, 10, 8.5, 'stripped_birch_log'), box(2, 13, 7.5, 14, 14, 8.5, 'stripped_birch_log')]
+    props['clothes_horse'] = horse
+    props['clothes_horse_sleeve'] = horse + [box(5, 6, 7, 11, 14, 9, 'light_gray_wool')]
+    # The lay-by.
+    props['sandwiches'] = [box(3, 0, 4, 13, .5, 12, 'white_wool'), box(4, .5, 5, 8, 2.5, 9, 'sandstone'), box(8.5, .5, 6, 12, 2.5, 10, 'sandstone'), box(4, 1.4, 5, 8, 1.6, 9, 'lime_wool')]
+    props['wrapper'] = [box(3, 0, 4, 13, .4, 12, 'white_wool'), box(5, .4, 6, 7, .5, 7, 'sandstone')]
+    props['wrapper_folded'] = [box(6, 0, 6, 10, 1, 10, 'white_wool')]
+    coffee = lambda x, z: [box(x, 0, z, x+3, 4.5, z+3, 'white_concrete'), box(x+.5, 4, z+.5, x+2.5, 4.4, z+2.5, 'brown_terracotta')]
+    props['coffees'] = coffee(3, 5) + coffee(9, 7)
+    props['bell_window'] = [box(15, 0, 0, 16, 16, 16, 'black_stained_glass'), box(14.9, 4, 4, 15, 12, 11, 'white_stained_glass'), box(14.9, 8, 3, 15, 11, 12, 'white_stained_glass')]
+    props['car_wheel'] = [box(3, 4, 6, 13, 5, 7, 'black_wool'), box(3, 12, 6, 13, 13, 7, 'black_wool'), box(3, 5, 6, 4, 12, 7, 'black_wool'), box(12, 5, 6, 13, 12, 7, 'black_wool'), box(7, 5, 6.2, 9, 12, 6.8, 'gray_wool'), box(7.5, 0, 6.5, 8.5, 8, 9, 'gray_wool')]
+    # The last landing.
+    def cups(counted):
+        if counted: return [box(5, 0, 5, 9, 3, 9, 'white_concrete'), box(5, 3, 5, 9, 6, 9, 'white_concrete'), box(5, 6, 5, 9, 9, 9, 'light_blue_concrete'), box(5, 9, 5, 9, 12, 9, 'red_concrete')]
+        return [box(2, 0, 3, 5, 3, 6, 'white_concrete'), box(9, 0, 3, 12, 3, 6, 'light_blue_concrete'), box(3, 0, 9, 6, 3, 12, 'red_concrete'), box(10, 0, 10, 13, 3, 13, 'white_concrete')]
+    props['camp_cups'], props['camp_cups_counted'] = cups(False), cups(True)
+    props['camp_spoons'] = [box(2 + i * 3, 0, 4 + (i % 2) * 3, 3 + i * 3, .4, 10 + (i % 2) * 3, 'iron_block') for i in range(4)]
+    props['camp_spoons_counted'] = [box(5, 0, 6, 11, 1.6, 7, 'iron_block'), box(5, 0, 6, 6, 1.6, 12, 'iron_block')]
+    lamp = [box(5, 0, 5, 11, 1, 11, 'iron_block'), box(6, 1, 6, 10, 7, 10, 'glass'), box(5, 7, 5, 11, 8, 11, 'iron_block'), box(7.5, 8, 7.5, 8.5, 10, 8.5, 'iron_block')]
+    props['camp_lamp'] = lamp
+    props['camp_lamp_lit'] = lamp + [box(7, 1, 7, 9, 5, 9, 'yellow_concrete')]
+    props['camp_candle'] = [box(4, 0, 6, 12, .5, 10, 'spruce_planks'), box(6, .5, 7.5, 7, 6, 8.5, 'white_wool'), box(8, .5, 7.5, 12, 1, 8.2, 'iron_block')]
+    props['camp_candle_cut'] = [box(4, 0, 6, 12, .5, 10, 'spruce_planks'), box(6, .5, 7.5, 7, 3, 8.5, 'white_wool'), box(8, .5, 7.5, 12, 1, 8.2, 'iron_block'), box(2, 0, 2, 5, 3, 5, 'iron_block')]
+    props['camp_tins'] = [box(2, 0, 3, 6, 5, 7, 'iron_block'), box(7, 0, 4, 11, 5, 8, 'iron_block'), box(9, 0, 9, 13, 5, 13, 'iron_block'), box(2.5, 5, 3.5, 5.5, 5.2, 6.5, 'gray_wool')]
+    props['camp_list'] = [box(2, 0, 3, 14, 6, 13, 'brown_wool'), box(4, 6, 5, 12, 6.3, 11, 'white_wool'), box(5, 6.3, 6, 10, 6.4, 6.4, 'gray_wool'), box(5, 6.3, 8, 11, 6.4, 8.4, 'gray_wool')]
+    props['camp_line'] = [box(0, 13, 7.75, 16, 13.5, 8.25, 'white_wool'), box(3, 8, 7.5, 6, 13, 8.5, 'gray_wool'), box(10, 8, 7.5, 13, 13, 8.5, 'brown_wool')]
+    props['camp_coat'] = [box(1, 0, 3, 15, 7, 13, 'stone_bricks'), box(1, 7, 3, 15, 8, 13, 'brown_wool'), box(1, 4, 12, 15, 8, 13, 'brown_wool')]
+    props['camp_roll'] = [box(2, 0, 4, 14, 6, 10, 'red_wool'), box(5, 0, 3.8, 6, 6.2, 10.2, 'black_wool'), box(10, 0, 3.8, 11, 6.2, 10.2, 'black_wool')]
+    props['camp_kept'] = [box(7, 0, 7, 9, .2, 9, 'gray_wool')]
     props['side_cup'] = props['side_empty'] + [box(6, 11, 6, 10, 15, 10, 'white_concrete'), box(6.5, 14.6, 6.5, 9.5, 14.8, 9.5, 'brown_terracotta'), box(10, 12, 7.5, 11.5, 14, 8.5, 'white_concrete')]
 
 def prop_meshes():

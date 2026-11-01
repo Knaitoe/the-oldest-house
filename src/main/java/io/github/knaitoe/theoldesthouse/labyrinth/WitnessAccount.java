@@ -106,7 +106,8 @@ public final class WitnessAccount {
         STOREROOM("storeroom","The storeroom","survival","I didn't turn round. I went into a storeroom for three things on a list in my own handwriting, and I backed out of it with all three."),
         STILLNESS("stillness","The stillness","survival","I let it breathe on me. Something I never saw stood over me in a low hall in the dark, and I counted its breaths, and I did not move."),
         LINE("line","The line","survival","I held on. I followed a line through a dark with no walls, with something coming along it behind me, and I got to the end of it first."),
-        OWN_LIGHT("own_light","Your own light","understanding","I let it take them. Something with my walk and my light walked beside me in the dark, and turned back halfway, and I did not follow it.");
+        OWN_LIGHT("own_light","Your own light","understanding","I let it take them. Something with my walk and my light walked beside me in the dark, and turned back halfway, and I did not follow it."),
+        HOUSEHOLD("household","The household","understanding","I put their things back in order. A household went down the stairs before me, and on a landing near the bottom I counted their cups, and read my own name at the end of their list.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

@@ -179,7 +179,7 @@ public final class StaircaseLeaks {
         var echo=StaircaseLeakRegistry.READER.get().create(p.serverLevel());if(echo!=null){echo.reader(p);echo.moveTo(p.position());echo.setYRot(p.getYRot());echo.setYHeadRot(p.getYHeadRot());if(p.serverLevel().addFreshEntity(echo))s.putUUID("Echo",echo.getUUID());}
         for(var spectator:p.serverLevel().players())if(spectator.isSpectator()&&spectator.getCamera()==p)spectator.setCamera(spectator);
         HouseInternalTeleport.shiftPlayerOnly(p,StaircaseLeakRooms.spawn(room.base,room.kind),180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.send(new ClientboundSetEntityMotionPacket(p));
-        if(room.kind==StaircaseLeakRooms.Kind.CAR){HouseSitting.sit(p,room.base.offset(1,0,0));if(p.getVehicle()!=null){p.getVehicle().getPersistentData().putBoolean(VIRTUAL,true);s.putUUID("Seat",p.getVehicle().getUUID());}}
+        if(room.kind==StaircaseLeakRooms.Kind.CAR||room.kind==StaircaseLeakRooms.Kind.DRIVE){HouseSitting.sit(p,room.base.offset(1,0,0));if(p.getVehicle()!=null){p.getVehicle().getPersistentData().putBoolean(VIRTUAL,true);s.putUUID("Seat",p.getVehicle().getUUID());}}
         persist(p,s);HousePackets.send(p,new StaircaseLeakPayload(true,room.kind.ordinal(),0));
         if(room.kind.household())StaircaseHouseholdChores.arrive(p,room.base,room.kind);
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"note_scene_enter","index",offer.index);
@@ -234,7 +234,7 @@ public final class StaircaseLeaks {
         }
         if(s.getBoolean("Recovering")||!p.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||p.isSpectator()){returnNow(p);return true;}
         var b=BlockPos.of(s.getLong("RoomBase"));var kind=kind(s);
-        if(!StaircaseLeakRooms.inside(b,kind,p.position())||kind==StaircaseLeakRooms.Kind.CAR&&!p.isPassenger()){s.putBoolean("WalkedOut",true);persist(p,s);returnNow(p);return true;}
+        if(!StaircaseLeakRooms.inside(b,kind,p.position())||(kind==StaircaseLeakRooms.Kind.CAR||kind==StaircaseLeakRooms.Kind.DRIVE)&&!p.isPassenger()){s.putBoolean("WalkedOut",true);persist(p,s);returnNow(p);return true;}
         p.resetFallDistance();return true;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
@@ -258,7 +258,7 @@ public final class StaircaseLeaks {
             if(kind.household())StaircaseHouseholdChores.tick(p,BlockPos.of(s.getLong("RoomBase")),kind,elapsed);
             if(server.getTickCount()%40==0)HousePackets.send(p,new StaircaseLeakPayload(true,kind.ordinal(),0));
             if(elapsed%100==0&&(kind==StaircaseLeakRooms.Kind.KITCHEN||kind==StaircaseLeakRooms.Kind.LATE_KITCHEN))p.playNotifySound(StaircaseLeakRegistry.DRIP.get(),SoundSource.AMBIENT,.18F,1);
-            if(elapsed%80==0&&kind!=StaircaseLeakRooms.Kind.CAR)p.playNotifySound(StaircaseLeakRegistry.RAIN.get(),SoundSource.AMBIENT,.07F,1);
+            if(elapsed%80==0&&kind!=StaircaseLeakRooms.Kind.CAR&&kind!=StaircaseLeakRooms.Kind.DRIVE&&kind!=StaircaseLeakRooms.Kind.LANDING&&kind!=StaircaseLeakRooms.Kind.YARD)p.playNotifySound(StaircaseLeakRegistry.RAIN.get(),SoundSource.AMBIENT,.07F,1);
             if(elapsed%20==0&&(kind==StaircaseLeakRooms.Kind.REPAIR||kind==StaircaseLeakRooms.Kind.MENDING||kind==StaircaseLeakRooms.Kind.DINING))p.playNotifySound(StaircaseLeakRegistry.CLOCK.get(),SoundSource.AMBIENT,kind==StaircaseLeakRooms.Kind.DINING?.06F:.12F,1);
             if(elapsed%100==0&&kind==StaircaseLeakRooms.Kind.CAR&&!s.getCompound("Chore").getBoolean("RadioOff"))p.playNotifySound(StaircaseLeakRegistry.RADIO.get(),SoundSource.AMBIENT,.1F,1);
         }

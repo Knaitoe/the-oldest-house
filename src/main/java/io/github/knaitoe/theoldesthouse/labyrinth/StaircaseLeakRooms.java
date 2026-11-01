@@ -17,7 +17,7 @@ public final class StaircaseLeakRooms {
      * The five leaks, then (0.4.214) the household's own rooms behind its doors (StaircaseHousehold). A household room keeps the
      * leak engine's pocket slot, saved template, return and restoration; it stands in the same street.
      */
-    public enum Kind { KITCHEN,LAUNDRY,CAR,REPAIR,LATE_KITCHEN,DINING,BEDROOM,MENDING,DAWN;
+    public enum Kind { KITCHEN,LAUNDRY,CAR,REPAIR,LATE_KITCHEN,DINING,BEDROOM,MENDING,DAWN,DRIVE,YARD,LAYBY,LANDING;
         public boolean household(){return ordinal()>=DINING.ordinal();}
     }
     public static final BlockPos MIN=new BlockPos(-12,-3,-20),MAX=new BlockPos(12,8,11);
@@ -27,8 +27,8 @@ public final class StaircaseLeakRooms {
     public static Kind kind(int index){return switch(index){case 0->Kind.KITCHEN;case 12->Kind.LAUNDRY;case 6->Kind.CAR;case 9->Kind.REPAIR;case 32->Kind.LATE_KITCHEN;default->null;};}
     public static BlockPos base(BlockPos origin,int slot){return new BlockPos(origin.getX()+8192+Math.floorMod(slot,64)*64,80,origin.getZ()+8192+Math.floorDiv(slot,64)*64);}
     public static AABB bounds(BlockPos base){return new AABB(Vec3.atLowerCornerOf(base.offset(MIN)),Vec3.atLowerCornerOf(base.offset(MAX).offset(1,1,1)));}
-    public static Vec3 spawn(BlockPos base,Kind kind){if(kind.household())return StaircaseHouseholdRooms.spawn(base,kind);return kind==Kind.CAR?new Vec3(base.getX()+1.5,base.getY(),base.getZ()+.5):new Vec3(base.getX()+1.5,base.getY(),base.getZ()-2.5);}
-    public static boolean inside(BlockPos base,Kind kind,Vec3 p){if(kind.household())return StaircaseHouseholdRooms.inside(base,kind,p);int half=kind==Kind.REPAIR?4:3;return kind==Kind.CAR?bounds(base).contains(p):p.x>base.getX()-half-.7&&p.x<base.getX()+half+.7&&p.z>base.getZ()-(kind==Kind.KITCHEN||kind==Kind.LATE_KITCHEN?6:7)+.2&&p.z<base.getZ()+.5&&p.y>=base.getY()-.5&&p.y<base.getY()+4.5;}
+    public static Vec3 spawn(BlockPos base,Kind kind){if(kind==Kind.DRIVE)return new Vec3(base.getX()+1.5,base.getY(),base.getZ()+.5);if(kind.household())return StaircaseHouseholdRooms.spawn(base,kind);return kind==Kind.CAR?new Vec3(base.getX()+1.5,base.getY(),base.getZ()+.5):new Vec3(base.getX()+1.5,base.getY(),base.getZ()-2.5);}
+    public static boolean inside(BlockPos base,Kind kind,Vec3 p){if(kind==Kind.DRIVE)return bounds(base).contains(p);if(kind.household())return StaircaseHouseholdRooms.inside(base,kind,p);int half=kind==Kind.REPAIR?4:3;return kind==Kind.CAR?bounds(base).contains(p):p.x>base.getX()-half-.7&&p.x<base.getX()+half+.7&&p.z>base.getZ()-(kind==Kind.KITCHEN||kind==Kind.LATE_KITCHEN?6:7)+.2&&p.z<base.getZ()+.5&&p.y>=base.getY()-.5&&p.y<base.getY()+4.5;}
     public static BlockPos position(BlockPos base,int i){return base.offset(MIN.getX()+i%SX,MIN.getY()+i/(SX*SZ),MIN.getZ()+i/SX%SZ);}
     private static int index(int x,int y,int z){return (y-MIN.getY())*SX*SZ+(z-MIN.getZ())*SX+x-MIN.getX();}
 
@@ -57,6 +57,8 @@ public final class StaircaseLeakRooms {
         Template done(){var ids=new LinkedHashMap<BlockState,Integer>();int[] encoded=new int[CELLS];for(int i=0;i<CELLS;i++){var s=cells[i];encoded[i]=ids.computeIfAbsent(s,k->ids.size());}return new Template(List.copyOf(ids.keySet()),encoded);}
     }
     public static Template authored(Kind kind,int[] kitchenCups){
+        // The household's last landing is a piece of the staircase, not a room in the street.
+        if(kind==Kind.LANDING||kind==Kind.LAYBY){var l=new Plan();StaircaseHouseholdRooms.authored(kind,l);return l.done();}
         var p=new Plan();street(p);var wood=Blocks.OAK_PLANKS.defaultBlockState();var paper=StaircaseLeakRegistry.WALLPAPER.get().defaultBlockState();
         if(kind.household()){StaircaseHouseholdRooms.authored(kind,p);return p.done();}
         if(kind==Kind.CAR){car(p,0,0);p.put(0,0,-1,Blocks.LIGHT_BLUE_TERRACOTTA.defaultBlockState());p.prop(0,1,-1,RADIO);p.prop(1,0,-1,BREAD_BAG);p.prop(-1,1,0,BELT);p.prop(1,0,0,CAR_SEAT);p.put(0,5,0,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,10));return p.done();}
@@ -104,7 +106,7 @@ public final class StaircaseLeakRooms {
         p.box(-11,0,10,11,5,10,brick);for(int x=-10;x<=10;x+=4){p.box(x,1,10,x+1,2,10,glass);p.box(x,3,10,x+1,4,10,glass);if(Math.floorMod(x,8)==2)p.box(x,3,11,x+1,4,11,lit);}
         p.box(-11,6,10,11,6,10,roof.setValue(StairBlock.FACING,Direction.SOUTH));
     }
-    private static void car(Plan p,int ox,int oz){
+    static void car(Plan p,int ox,int oz){
         var paint=Blocks.LIGHT_BLUE_TERRACOTTA.defaultBlockState();p.box(ox-2,0,oz-2,ox+2,0,oz+2,paint);p.box(ox-2,1,oz-2,ox-2,2,oz+2,Blocks.BLACK_STAINED_GLASS.defaultBlockState());p.box(ox+2,1,oz-2,ox+2,2,oz+2,Blocks.BLACK_STAINED_GLASS.defaultBlockState());p.box(ox-2,1,oz-2,ox+2,2,oz-2,Blocks.BLACK_STAINED_GLASS.defaultBlockState());p.box(ox-2,1,oz+2,ox+2,2,oz+2,Blocks.BLACK_STAINED_GLASS.defaultBlockState());p.box(ox-2,3,oz-1,ox+2,3,oz+1,paint);
         for(int x:new int[]{-2,2})for(int z:new int[]{-1,1})p.put(ox+x,-1,oz+z,Blocks.BLACK_CONCRETE.defaultBlockState());p.prop(ox-1,0,oz,CAR_SEAT);p.prop(ox+1,0,oz,CAR_SEAT);
         // Clear native seated bodies, not solid blocks inside the passenger cabin.

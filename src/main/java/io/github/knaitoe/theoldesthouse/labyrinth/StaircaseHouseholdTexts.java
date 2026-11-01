@@ -16,6 +16,10 @@ public final class StaircaseHouseholdTexts {
             case BEDROOM->"A door has been left in the wall beside the landing. Painted, with a brass knob. It smells of clean washing.";
             case MENDING->"A door has been left in the wall beside the landing. Painted, with a brass knob. There's lamplight under it.";
             case DAWN->"A door has been left in the wall beside the landing. Painted, with a brass knob. Behind it, very quietly, a kettle.";
+            case DRIVE->"A door has been left in the wall beside the landing. Painted, with a brass knob. Behind it, an engine idling.";
+            case YARD->"A door has been left in the wall beside the landing. A back door, with a brass knob. Washing flaps somewhere behind it.";
+            case LAYBY->"A door has been left in the wall beside the landing. Painted, with a brass knob. It smells of rain on a road.";
+            case LANDING->"A door has been left in the wall beside the landing, plainer than the others. Behind it, someone is counting cups.";
             default->"A door has been left in the wall beside the landing, painted, with a brass knob.";
         };
     }
@@ -26,6 +30,10 @@ public final class StaircaseHouseholdTexts {
             case BEDROOM->"Washing day's over. The bed's stripped, and the basket's full and warm.";
             case MENDING->"Thursday, by the lamp. The blue coat has lost a button, and its sleeve wants a stitch.";
             case DAWN->"Before it's light. Somebody's asleep on the settee. Be quiet.";
+            case DRIVE->"The passenger seat. Mara pulls out after the bus. The bread taps the door at every turn.";
+            case YARD->"After the rain. The washing's wet in the basket and the line is free.";
+            case LAYBY->"A lay-by, in the drizzle. Sandwiches on the bonnet. Bell's asleep in the car.";
+            case LANDING->"A landing, near the bottom. Their camp is still out. Put it back the way they had it.";
             default->"";
         };
     }
@@ -45,6 +53,35 @@ public final class StaircaseHouseholdTexts {
         new String[]{"Marsh","Who laid the table? The forks match for once."},
         new String[]{"Bell","We should have the good cups out more often."},
         new String[]{"Ruth","That's what they're for."});
+    /** What the household says of a reader who walked out of its room before it was done. */
+    public static String walkedOut(StaircaseLeakRooms.Kind kind){
+        return switch(kind){
+            case DINING->"Behind you, the talk stops.";
+            case BEDROOM->"The bed's left as it is.";
+            case MENDING->"The coat stays over the table, unfinished.";
+            case DAWN->"Behind you, somebody turns over on the settee.";
+            case DRIVE->"The car drives on without you, the passenger door open.";
+            case YARD->"The washing's left on the line.";
+            case LAYBY->"Behind you, the car's engine starts.";
+            case LANDING->"Their things are still out on the landing.";
+            default->"";
+        };
+    }
+    /** The household's morning list, read at the last landing: the reader's own name last on it, in their own hand. */
+    public static void openList(net.minecraft.server.level.ServerPlayer p){
+        var list=io.github.knaitoe.theoldesthouse.house.HouseWriting.book("The morning list","Ruth",java.util.List.of(
+            io.github.knaitoe.theoldesthouse.house.HouseWriting.page(io.github.knaitoe.theoldesthouse.house.HouseWriting.WritingStyle.KAREN,"water\nfood\ndry socks\n\nRuth\nMara\nA. Bell\nJonah\nE. Marsh\nSabine"),
+            io.github.knaitoe.theoldesthouse.house.HouseWriting.page(io.github.knaitoe.theoldesthouse.house.HouseWriting.WritingStyle.PLAIN,"and, at the bottom, in your own handwriting:\n\n"+p.getGameProfile().getName())));
+        p.openMenu(new net.minecraft.world.SimpleMenuProvider((id,inv,reader)->new ListMenu(id,p,list),net.minecraft.network.chat.Component.literal("The morning list")));
+    }
+    private static final class ListMenu extends net.minecraft.world.inventory.LecternMenu {
+        private final net.minecraft.server.level.ServerPlayer reader;
+        ListMenu(int id,net.minecraft.server.level.ServerPlayer p,net.minecraft.world.item.ItemStack book){this(id,p,book,new net.minecraft.world.SimpleContainer(1));}
+        ListMenu(int id,net.minecraft.server.level.ServerPlayer p,net.minecraft.world.item.ItemStack book,net.minecraft.world.SimpleContainer display){super(id,display,new net.minecraft.world.inventory.SimpleContainerData(1));reader=p;display.setItem(0,book.copy());}
+        @Override public boolean stillValid(net.minecraft.world.entity.player.Player p){return p==reader&&StaircaseLeaks.activeKind(reader)==StaircaseLeakRooms.Kind.LANDING;}
+        @Override public boolean clickMenuButton(net.minecraft.world.entity.player.Player p,int button){return button!=3&&stillValid(p)&&super.clickMenuButton(p,button);}
+        @Override public net.minecraft.world.item.ItemStack quickMoveStack(net.minecraft.world.entity.player.Player p,int slot){return net.minecraft.world.item.ItemStack.EMPTY;}
+    }
     public static String lunchLine(int i,String name){var l=LUNCH.get(i);return l[0]+": \""+l[1].replace("{name}",name)+"\"";}
 
     /** The household's sheet about the reader, kept with the sheet that opened the room. */
@@ -62,6 +99,14 @@ public final class StaircaseHouseholdTexts {
                 :"Thursday\n\n"+name+" sewed the sleeve of Ruth's coat shut, and Ruth unpicked it, and "+name+" sewed it shut again. Ruth hung the coat up as it was. She wears the other one now. Nobody minds. We have the tin, and Thursdays.\n\nE. Marsh";
             case DAWN->ok?"First light\n\n"+name+" was up before any of us. The kettle was taken off before it sang. The first cup was for warm hands and the second was by Ruth's head when she woke, still hot. Bell's plate was wrapped, with his name on it, and an extra potato under the paper.\n\nRuth slept through it all.\n\nMara"
                 :"First light\n\nRuth woke before it was light and asked what time it was. "+name+" told her. Ten to six. She lay a while looking at the ceiling and then got up anyway. There was no sense going back to sleep by then.\n\nMara";
+            case DRIVE->ok?"The long way home\n\n"+name+" rode with Mara and held the bread. The radio went down for the pear tree. At the lights there was a clear patch on the windscreen. "+(chore.getBoolean("Wrong")?"At the junction "+name+" said yes too soon and we saw the sheep, and that was all right. ":"At the junction "+name+" checked the map. ")+"At home Mara pulled the handbrake up twice to be certain, and they sat a little longer.\n\nJonah"
+                :"The long way home\n\n"+name+" got out before we were home. Mara drove the rest of the way with the passenger door open. The car's still outside the front room like that, if anyone looks.\n\nJonah";
+            case YARD->ok?"Washing day\n\n"+name+" hung the shirts, some by the shoulders and one by the hem, and the wind settled it. We shook the blanket at the back door and the sparrows came. Then the rain, and "+name+" had everything in before it was wet, but one sleeve. It's on the clothes horse.\n\nSabine"
+                :"Washing day\n\nThe rain got the washing. "+name+" brought in what could be brought in. The rest hung out there all night and was no worse for it in the morning, only heavier.\n\nSabine";
+            case LAYBY->ok?"The lay-by\n\nWe stopped for the sandwiches. "+name+" folded the wrapping into a small square and counted three tractors, and got back in the car without waking Bell. He slept with his head against the glass the whole way.\n\nMara"
+                :"The lay-by\n\n"+name+" leaned on the horn. Bell woke up and asked where we were. We told him. He didn't go back to sleep, and talked about the river the rest of the way.\n\nMara";
+            case LANDING->ok?"Before we moved on\n\nI dried the last cup against my sleeve. Mara waited while I put it away. Nobody called this delay. We were still together.\n\n"+name
+                :"Before we moved on\n\nWe didn't. "+name+" kept "+chore.getString("Kept")+", and everything stayed out on the landing, the cups, the line, the coat on the seat, the way it was.\n\nRuth";
             default->"";
         };
     }

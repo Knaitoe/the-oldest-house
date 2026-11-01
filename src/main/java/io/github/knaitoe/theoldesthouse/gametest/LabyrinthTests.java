@@ -165,6 +165,8 @@ public final class LabyrinthTests {
             if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
                 var story=WitnessAccount.Story.of(place.id());if(story!=null)WitnessAccount.resolve(data,player,story,"resolved");
+                // A place with no Witness story (the passages under the cave) is finished by its own reading, as its journal does.
+                else if(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRooms.isLiterary(place)){var own=io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes.personal(data,player,place);own.putBoolean("Completed",true);io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes.save(data,player,place,own);}
             }
         }
         helper.assertTrue(LabyrinthDealer.vignetteChance(data, player) > 0
@@ -181,7 +183,7 @@ public final class LabyrinthTests {
                 LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
                 LabyrinthData.Deal answer = data.deal(player, door);
                 LabyrinthPlace dealtPlace = answer == null ? null : LabyrinthPlace.byId(answer.place());
-                helper.assertTrue(dealtPlace == null || !dealtPlace.isFinishable(), "a finished vignette was dealt again");
+                helper.assertTrue(dealtPlace == null || !dealtPlace.isFinishable(), "a finished vignette was dealt again: "+dealtPlace);
             }
         }
         helper.succeed();
@@ -248,6 +250,8 @@ public final class LabyrinthTests {
             if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
                 var story=WitnessAccount.Story.of(place.id());if(story!=null)WitnessAccount.resolve(data,player,story,"resolved");
+                // A place with no Witness story (the passages under the cave) is finished by its own reading, as its journal does.
+                else if(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRooms.isLiterary(place)){var own=io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes.personal(data,player,place);own.putBoolean("Completed",true);io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes.save(data,player,place,own);}
             }
         }
         RandomSource random = RandomSource.create(17);
@@ -888,6 +892,8 @@ public final class LabyrinthTests {
             if (place.isFinishable()) {
                 data.setCompleted(place.id(), true);
                 var story=WitnessAccount.Story.of(place.id());if(story!=null)WitnessAccount.resolve(data,player,story,"resolved");
+                // A place with no Witness story (the passages under the cave) is finished by its own reading, as its journal does.
+                else if(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRooms.isLiterary(place)){var own=io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes.personal(data,player,place);own.putBoolean("Completed",true);io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes.save(data,player,place,own);}
             }
         }
         helper.assertTrue(LabyrinthDealer.giveScent(data, player) == LabyrinthDealer.Scent.SEEKING,
@@ -898,7 +904,7 @@ public final class LabyrinthTests {
             LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
             LabyrinthData.Deal answer = door == null ? null : data.deal(player, door);
             if (answer != null && answer.bark()) {
-                helper.assertTrue(LabyrinthPlace.byId(answer.place())!=null&&LabyrinthPlace.byId(answer.place()).kind()==LabyrinthPlace.Kind.RECURRING&&LabyrinthDealer.vignettesAvailable(data,player).contains(LabyrinthPlace.byId(answer.place())), "the scent finds an actually available recurring anchor");
+                helper.assertTrue(LabyrinthPlace.byId(answer.place())!=null&&LabyrinthPlace.byId(answer.place()).kind()==LabyrinthPlace.Kind.RECURRING&&LabyrinthDealer.vignettesAvailable(data,player).contains(LabyrinthPlace.byId(answer.place())), "the scent finds an actually available recurring anchor: "+answer.place()+" of "+LabyrinthDealer.vignettesAvailable(data,player));
                 motherDoors++;
             }
         }

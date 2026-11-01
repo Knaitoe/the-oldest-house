@@ -34,7 +34,15 @@ public final class StaircaseLeakProps extends Block {
         LAMP_STAND,SEWING_BOX,SEWING_THREADED,COAT_SLEEVE,COAT_TURNED,COAT_SHUT,COAT_SEWN,COAT_BUTTONED,BUTTON_TIN_OPEN,
         // First light: the kettle, the cups, the potatoes, Bell's plate, the settee with someone asleep under a blanket and its side table.
         KETTLE_COLD,KETTLE_ON,KETTLE_BOILED,TEACUP_EMPTY,TEACUP_FULL,POTATOES,POTATOES_PEELED,SUPPER_PLATE,SUPPER_WRAPPED,SUPPER_NAMED,
-        SLEEPER_IN,SLEEPER_OUT,SLEEPER_AWAKE,SETTEE_FEET,SIDE_EMPTY,SIDE_CUP;
+        SLEEPER_IN,SLEEPER_OUT,SLEEPER_AWAKE,SETTEE_FEET,SIDE_EMPTY,SIDE_CUP,
+        // The long way home: the handbrake, the fogged windscreen, the road map on the dash.
+        HANDBRAKE_DOWN,HANDBRAKE_UP,WINDSCREEN_FOGGED,WINDSCREEN_WIPED,ROAD_MAP,
+        // Washing day: the basket of wet washing, the line, the blanket at the back door, the clothes horse.
+        WET_BASKET,WET_BASKET_EMPTY,DRY_BASKET,LINE_EMPTY,LINE_SHIRT,LINE_SOAKED,BLANKET_FOLDED,BLANKET_ONE_END,BLANKET_SHAKEN,CLOTHES_HORSE,CLOTHES_HORSE_SLEEVE,
+        // The lay-by: sandwiches and two coffees on the bonnet, the wrapper, Bell's window and the horn.
+        SANDWICHES,WRAPPER,WRAPPER_FOLDED,COFFEES,BELL_WINDOW,CAR_WHEEL,
+        // The last landing: the household's camp.
+        CAMP_CUPS,CAMP_CUPS_COUNTED,CAMP_SPOONS,CAMP_SPOONS_COUNTED,CAMP_LAMP,CAMP_LAMP_LIT,CAMP_CANDLE,CAMP_CANDLE_CUT,CAMP_TINS,CAMP_LIST,CAMP_LINE,CAMP_COAT,CAMP_ROLL,CAMP_KEPT;
         /** The table's cells and the sideboard stand solid at table height; the hatch fills its opening. */
         public boolean table(){return name().startsWith("PLACE_")||name().startsWith("TABLE_")||name().startsWith("BREAD_");}
         @Override public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
@@ -48,7 +56,8 @@ public final class StaircaseLeakProps extends Block {
         if(k==Kind.DRAWER||k==Kind.DRAWER_OPEN)return box(1,0,1,15,16,15);
         if(k.table())return box(0,0,0,16,12,16);
         if(k.name().startsWith("BED_")||k.name().startsWith("SLEEPER_")||k==Kind.SETTEE_FEET)return box(0,0,0,16,9,16);
-        if(k.name().startsWith("AIRING_"))return Shapes.block();
+        if(k.name().startsWith("AIRING_")||k==Kind.WINDSCREEN_FOGGED||k==Kind.WINDSCREEN_WIPED||k==Kind.BELL_WINDOW)return Shapes.block();
+        if(k==Kind.CLOTHES_HORSE||k==Kind.CLOTHES_HORSE_SLEEVE)return box(1,0,6,15,14,10);
         if(k.name().startsWith("COAT_")||k.name().startsWith("SIDE_"))return box(0,0,0,16,11,16);
         if(k==Kind.SIDEBOARD_SHUT||k==Kind.SIDEBOARD_OPEN)return box(0,0,0,16,14,16);
         if(k==Kind.HATCH_EMPTY||k==Kind.HATCH_BOWLS)return Shapes.block();

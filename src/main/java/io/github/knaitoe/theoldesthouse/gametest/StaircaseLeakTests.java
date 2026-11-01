@@ -42,12 +42,13 @@ public final class StaircaseLeakTests {
         StaircaseWriting.open(p,at);var book=p.containerMenu.getSlot(0).getItem();int last=book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1;
         if(last>0)p.containerMenu.clickMenuButton(p,100+last);
     }
-    private static void run(GameTestHelper h,int coordinate,java.util.function.BiConsumer<StaircaseAccessTests.Fixture,long[]> step){
+    private static void run(GameTestHelper h,int coordinate,java.util.function.BiConsumer<StaircaseAccessTests.Fixture,long[]> step){run(h,coordinate,1799,step);}
+    private static void run(GameTestHelper h,int coordinate,int limit,java.util.function.BiConsumer<StaircaseAccessTests.Fixture,long[]> step){
         var f=new StaircaseAccessTests.Fixture(h,coordinate);current=f;
         for(int slot=0;slot<8;slot++)f.chunks.hold(f.level,StaircaseLeakRooms.bounds(StaircaseLeakRooms.base(f.origin,slot)));
         f.chunks.hold(f.level,new AABB(paper(f)).inflate(35,6,35));long[] state={0,0};
         Runnable cleanup=()->{var ids=f.players.stream().map(ServerPlayer::getUUID).collect(java.util.stream.Collectors.toSet());var remove=new ArrayList<Entity>();for(var entity:f.level.getAllEntities())if(entity instanceof net.minecraft.world.entity.TamableAnimal pet&&ids.contains(pet.getOwnerUUID())||entity instanceof StaircaseReaderEcho echo&&echo.owner().filter(ids::contains).isPresent())remove.add(entity);remove.forEach(Entity::discard);StaircaseLeaks.clearForServer(f.level.getServer());for(int slot=0;slot<8;slot++){var base=StaircaseLeakRooms.base(f.origin,slot);for(int i=0;i<StaircaseLeakRooms.CELLS;i++)f.level.setBlock(StaircaseLeakRooms.position(base,i),Blocks.AIR.defaultBlockState(),18);}f.close();if(current==f)current=null;};
-        h.runAfterDelay(1799,()->{if(!f.finished){String detail="Staircase scene stage "+state[0]+": "+f.players.stream().map(p->p.getGameProfile().getName()+" pos="+p.position()+" active="+StaircaseLeaks.active(p)+" offered="+StaircaseLeaks.offered(p)+" hurt="+p.hurtTime).toList();f.finished=true;cleanup.run();h.fail(detail);}});
+        h.runAfterDelay(limit,()->{if(!f.finished){String detail="Staircase scene stage "+state[0]+": "+f.players.stream().map(p->p.getGameProfile().getName()+" pos="+p.position()+" active="+StaircaseLeaks.active(p)+" offered="+StaircaseLeaks.offered(p)+" hurt="+p.hurtTime).toList();f.finished=true;cleanup.run();h.fail(detail);}});
         h.onEachTick(()->{if(f.finished||!f.chunks.ready())return;try{if(!f.started){f.start();StaircaseLeaks.clearForServer(f.level.getServer());}for(var player:new ArrayList<>(f.players))if(!player.isRemoved())player.doTick();step.accept(f,state);if(state[1]!=state[0]){TheOldestHouse.LOGGER.info("STAIRCASE LEAK native fixture {} stage {}",f.origin,state[0]);state[1]=state[0];}if(state[0]==99){f.finished=true;cleanup.run();h.succeed();}}catch(RuntimeException|Error ex){f.finished=true;cleanup.run();throw ex;}});
     }
     @AfterBatch(batch="leak_ownership") public static void cleanOwnership(ServerLevel l){cleanup();}
@@ -56,6 +57,7 @@ public final class StaircaseLeakTests {
     @AfterBatch(batch="household_rhythm") public static void cleanRhythm(ServerLevel l){cleanup();}
     @AfterBatch(batch="household_door") public static void cleanDoor(ServerLevel l){cleanup();}
     @AfterBatch(batch="household_rooms") public static void cleanRooms(ServerLevel l){cleanup();}
+    @AfterBatch(batch="household_landing") public static void cleanLanding(ServerLevel l){cleanup();}
     private static void cleanup(){if(current!=null){StaircaseLeaks.clearForServer(current.level.getServer());current.close();current=null;}}
 
     @GameTest(template="empty",batch="leak_ownership",timeoutTicks=1800)
@@ -156,7 +158,7 @@ public final class StaircaseLeakTests {
     @GameTest(template="empty",batch="household_door",timeoutTicks=3000)
     public static void aHouseholdDoorIsLeftItsLunchIsSatThroughOrLeftAndTheWallIsPutBack(GameTestHelper h){
         ServerPlayer[] p=new ServerPlayer[2];BlockPos[] door={null};net.minecraft.world.level.block.state.BlockState[] wall={null,null};long[] born={0};
-        run(h,660000,(f,s)->{
+        run(h,660000,2900,(f,s)->{
             long now=f.level.getGameTime();var paper=paper(f);
             if(s[0]==0){door[0]=StaircaseHousehold.doorAt(f.origin,paper);f.chunks.hold(f.level,new AABB(door[0]).inflate(8));
                 wall[0]=f.level.getBlockState(door[0]);wall[1]=f.level.getBlockState(door[0].west(4));
@@ -221,7 +223,7 @@ public final class StaircaseLeakTests {
     @GameTest(template="empty",batch="household_rooms",timeoutTicks=3600)
     public static void freshSheetsMendingDayAndFirstLightArePlayedThroughTheirDoors(GameTestHelper h){
         ServerPlayer[] p={null};BlockPos[] door={null};long[] born={0};
-        run(h,662000,(f,s)->{
+        run(h,662000,3500,(f,s)->{
             long now=f.level.getGameTime();var paper=paper(f);
             if(s[0]==0){door[0]=StaircaseHousehold.doorAt(f.origin,paper);f.chunks.hold(f.level,new AABB(door[0]).inflate(8));p[0]=f.player(h,"house_rooms");read(f,p[0],15);born[0]=now;s[0]=1;return;}
             // Fresh sheets: two sheets folded with the other end, the older sheets on the bed, the sock home, the striped pillowcase.
@@ -274,6 +276,70 @@ public final class StaircaseLeakTests {
             if(s[0]==15&&!StaircaseLeaks.active(p[0])){
                 h.assertTrue(StaircaseHousehold.own(p[0]).getCompound("Rooms").getCompound("DAWN").getBoolean("Success"),"the cup by the sleeper and the plate wrapped, without waking anyone");
                 h.assertTrue(StaircaseHousehold.rooms(p[0])==3,"three of the household's rooms");s[0]=99;}
+        });
+    }
+    /** Reads a sheet at any height in the shaft, as read() does at the second stretch. */
+    private static void readAt(StaircaseAccessTests.Fixture f,ServerPlayer p,int index,BlockPos at){
+        for(int x=-3;x<=3;x++)for(int z=-2;z<=3;z++)for(int y=-1;y<=2;y++)f.put(f.level,at.offset(x,y,z),(y==-1?Blocks.STONE:Blocks.AIR).defaultBlockState());
+        f.put(f.level,at,NoteSurfaceBlock.state(HouseMarginalia.Thread.HOUSEKEEPING,Direction.NORTH));
+        p.teleportTo(f.level,at.getX()+.5,at.getY(),at.getZ()+1.5,37,11);p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);FinaleProgress.phase(p.server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);
+        var own=f.data().stateEntry(StaircaseWriting.ID,p.getUUID().toString());var books=own.getCompound("Books");var indices=own.getCompound("Indices");var key=Long.toString(at.asLong());
+        books.put(key,StaircaseNotes.specimen(index).save(p.registryAccess()));indices.putInt(key,index);own.put("Books",books);own.put("Indices",indices);f.data().setStateEntry(StaircaseWriting.ID,p.getUUID().toString(),own);
+        StaircaseWriting.open(p,at);var book=p.containerMenu.getSlot(0).getItem();int last=book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1;if(last>0)p.containerMenu.clickMenuButton(p,100+last);
+    }
+    private static void aim(ServerPlayer p,Vec3 at){var d=at.subtract(p.getEyePosition());float yaw=(float)(Math.toDegrees(Math.atan2(-d.x,d.z)));float pitch=(float)(-Math.toDegrees(Math.atan2(d.y,Math.sqrt(d.x*d.x+d.z*d.z))));p.setYRot(yaw);p.setYHeadRot(yaw);p.setXRot(pitch);}
+    @GameTest(template="empty",batch="household_landing",timeoutTicks=7200)
+    public static void theLongWayHomeWashingDayAndTheLayByOpenTheLastLanding(GameTestHelper h){
+        ServerPlayer[] p={null};BlockPos[] door={null,null};BlockPos[] low={null};long[] born={0};
+        run(h,664000,7100,(f,s)->{
+            long now=f.level.getGameTime();var paper=paper(f);
+            if(s[0]==0){door[0]=StaircaseHousehold.doorAt(f.origin,paper);f.chunks.hold(f.level,new AABB(door[0]).inflate(8));
+                low[0]=f.base.offset(3,FinaleArchitecture.TOP-1200,24);door[1]=StaircaseHousehold.doorAt(f.origin,low[0]);f.chunks.hold(f.level,new AABB(low[0]).inflate(35,6,35));
+                p[0]=f.player(h,"house_landing");read(f,p[0],2);born[0]=now;s[0]=1;return;}
+            // The long way home: the radio down for the pear tree, a clear patch at the lights, leaning into the bends, the map, the handbrake twice.
+            if(s[0]==1&&now-born[0]>=22){throughDoor(f,p[0],door[0]);s[0]=2;return;}
+            if(s[0]==2&&StaircaseLeaks.active(p[0])){h.assertTrue(StaircaseLeaks.activeKind(p[0])==StaircaseLeakRooms.Kind.DRIVE&&p[0].isPassenger(),"On the way home seats the reader in the passenger seat");s[0]=3;return;}
+            var drive=StaircaseLeaks.active(p[0])&&StaircaseLeaks.activeKind(p[0])==StaircaseLeakRooms.Kind.DRIVE?StaircaseLeaks.progress(p[0]):null;
+            if(s[0]==3&&drive!=null&&drive.getInt("Stage")==1){var b=StaircaseLeaks.activeBase(p[0]);StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.RADIO_AT));s[0]=4;return;}
+            if(s[0]==4&&drive!=null&&drive.getInt("Stage")==2){var b=StaircaseLeaks.activeBase(p[0]);StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.WINDSCREEN));h.assertTrue(StaircaseLeaks.progress(p[0]).getBoolean("Wiped"),"a clear patch at the lights");s[0]=5;return;}
+            if(s[0]==5&&drive!=null&&drive.getInt("Stage")>=3){p[0].setYRot(90);p[0].setYHeadRot(90);if(drive.getInt("Stage")==5){var b=StaircaseLeaks.activeBase(p[0]);StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.MAP));
+                h.assertTrue(StaircaseLeaks.progress(p[0]).getBoolean("TallyLean")&&StaircaseLeaks.progress(p[0]).getInt("Stage")==7,"leaned into both bends, and checked the map at the junction");born[0]=now;s[0]=6;}return;}
+            if(s[0]==6&&now-born[0]>=25){var b=StaircaseLeaks.activeBase(p[0]);StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.HANDBRAKE));StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.HANDBRAKE));s[0]=7;return;}
+            if(s[0]==7&&!StaircaseLeaks.active(p[0])){h.assertTrue(StaircaseHousehold.own(p[0]).getCompound("Rooms").getCompound("DRIVE").getBoolean("Success"),"home, and the handbrake up twice");
+                p[0].teleportTo(f.level,paper.getX()+.5,paper.getY(),paper.getZ()+1.5,0,0);read(f,p[0],5);born[0]=now;s[0]=8;return;}
+            // Washing day: four on the line, the blanket shaken with someone, everything in before the rain, the damp sleeve on the horse.
+            if(s[0]==8&&now-born[0]>=22){throughDoor(f,p[0],door[0]);s[0]=9;return;}
+            if(s[0]==9&&StaircaseLeaks.active(p[0])){var b=StaircaseLeaks.activeBase(p[0]);h.assertTrue(StaircaseLeaks.activeKind(p[0])==StaircaseLeakRooms.Kind.YARD,"After the rain opens Washing day");
+                p[0].teleportTo(f.level,b.getX()+.5,b.getY(),b.getZ()-3.5,180,0);
+                for(int i=0;i<4;i++){StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.WASHING));StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.LINE[i]));}
+                h.assertTrue(StaircaseLeaks.progress(p[0]).getInt("Hung")==4,"four on the line");StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.BLANKET));s[0]=10;return;}
+            if(s[0]==10&&StaircaseLeaks.progress(p[0]).contains("Rain")){var b=StaircaseLeaks.activeBase(p[0]);
+                for(int i=0;i<4;i++)StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.LINE[i]));StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.HORSE));s[0]=11;return;}
+            if(s[0]==11&&!StaircaseLeaks.active(p[0])){h.assertTrue(StaircaseHousehold.own(p[0]).getCompound("Rooms").getCompound("YARD").getBoolean("Success"),"everything in, dry, and the damp sleeve on the clothes horse");
+                p[0].teleportTo(f.level,paper.getX()+.5,paper.getY(),paper.getZ()+1.5,0,0);read(f,p[0],19);born[0]=now;s[0]=12;return;}
+            // The lay-by: the sandwiches, the wrapper folded small, three tractors counted, back in the car without waking Bell.
+            if(s[0]==12&&now-born[0]>=22){throughDoor(f,p[0],door[0]);s[0]=13;return;}
+            if(s[0]==13&&StaircaseLeaks.active(p[0])){var b=StaircaseLeaks.activeBase(p[0]);h.assertTrue(StaircaseLeaks.activeKind(p[0])==StaircaseLeakRooms.Kind.LAYBY,"A longer way opens the lay-by");
+                p[0].teleportTo(f.level,b.getX()+3.5,b.getY(),b.getZ()-8.5,90,0);StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.SANDWICH_AT));StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.SANDWICH_AT));
+                h.assertTrue(StaircaseLeaks.progress(p[0]).getBoolean("Folded"),"the wrapping folded into a small square");s[0]=14;return;}
+            if(s[0]==14&&StaircaseLeaks.active(p[0])){var own=StaircaseLeaks.progress(p[0]);
+                if(own.hasUUID("Tractor")){var t=f.level.getEntity(own.getUUID("Tractor"));if(t!=null)aim(p[0],t.position().add(1.2,.6,.6));}
+                if(own.getInt("Tractors")>=3){var b=StaircaseLeaks.activeBase(p[0]);p[0].teleportTo(f.level,b.getX()+3.5,b.getY(),b.getZ()-4.5,90,0);StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.SEAT_AT));s[0]=15;}return;}
+            if(s[0]==15&&!StaircaseLeaks.active(p[0])){h.assertTrue(StaircaseHousehold.own(p[0]).getCompound("Rooms").getCompound("LAYBY").getBoolean("Success"),"three tractors counted and back in the car without the horn");
+                h.assertTrue(StaircaseHousehold.rooms(p[0])==3,"three of the household's rooms");
+                readAt(f,p[0],48,low[0]);born[0]=now;s[0]=16;return;}
+            // The last landing: everything put back in its order, the list read with the reader's own name last; the household moves on.
+            if(s[0]==16&&now-born[0]>=22){p[0].closeContainer();h.assertTrue(f.level.getBlockState(door[1]).is(StaircaseLeakRegistry.HOUSEHOLD_DOOR.get()),"three rooms in, The landing leaves a door at the bottom");
+                throughDoor(f,p[0],door[1]);s[0]=17;return;}
+            if(s[0]==17&&StaircaseLeaks.active(p[0])){var b=StaircaseLeaks.activeBase(p[0]);h.assertTrue(StaircaseLeaks.activeKind(p[0])==StaircaseLeakRooms.Kind.LANDING,"behind it, the household's last landing");
+                p[0].teleportTo(f.level,b.getX()+.5,b.getY(),b.getZ()-3.5,180,0);
+                for(var at:List.of(StaircaseHouseholdRooms.CUPS,StaircaseHouseholdRooms.SPOONS,StaircaseHouseholdRooms.CAMP_LAMP_AT,StaircaseHouseholdRooms.CANDLE_AT))StaircaseLeakChores.interact(p[0],b.offset(at));
+                h.assertTrue(!StaircaseLeaks.progress(p[0]).contains("Result"),"not done until the morning list is read");
+                StaircaseLeakChores.interact(p[0],b.offset(StaircaseHouseholdRooms.LIST));var list=p[0].containerMenu.getSlot(0).getItem().get(DataComponents.WRITTEN_BOOK_CONTENT);
+                h.assertTrue(list!=null&&list.pages().getLast().raw().getString().contains(p[0].getGameProfile().getName()),"the reader's own name last on the morning list");p[0].closeContainer();s[0]=18;return;}
+            if(s[0]==18&&!StaircaseLeaks.active(p[0])){
+                h.assertTrue(StaircaseHousehold.own(p[0]).getBoolean("MovedOn")&&WitnessAccount.has(f.data(),p[0].getUUID(),WitnessAccount.Story.HOUSEHOLD),"the household moves on, and its story resolves");
+                h.assertTrue(!StaircaseHousehold.landingAllowed(p[0]),"its landing does not open again");s[0]=99;}
         });
     }
     private static void export(ServerLevel l,BlockPos b,StaircaseLeakRooms.Kind kind)throws Exception{
