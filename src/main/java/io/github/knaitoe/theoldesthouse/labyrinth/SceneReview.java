@@ -23,7 +23,7 @@ import static io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.Kind.*;
 public final class SceneReview {
     public static final String STATE="scene_review_0454",COSTUME="HouseCostumeSkin";
     public static final BlockPos BOOK_TRAY=new BlockPos(1,0,-20),BLANK_SHELF=new BlockPos(-11,0,-22);
-    public static final List<BlockPos> DRAFTS=List.of(new BlockPos(-3,1,-27),new BlockPos(2,1,-27),new BlockPos(-3,1,-33),new BlockPos(3,1,-33),new BlockPos(-7,1,-34),new BlockPos(-10,1,-24),new BlockPos(8,1,-37),new BlockPos(7,1,-37));
+    public static final List<BlockPos> DRAFTS=List.of(new BlockPos(-9,1,-33),new BlockPos(-4,1,-33),new BlockPos(-9,1,-37),new BlockPos(-4,1,-37),new BlockPos(5,1,-21),new BlockPos(-9,1,-23),new BlockPos(8,1,-37),new BlockPos(7,1,-37)); // 0.4.201: the study's desks, the front room's writing table, the kitchen table, the bedroom chests
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static Work work;private static int cursor;
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}

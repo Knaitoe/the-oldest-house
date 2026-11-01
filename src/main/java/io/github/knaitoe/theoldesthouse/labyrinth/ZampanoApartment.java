@@ -22,9 +22,10 @@ import net.minecraft.world.level.block.state.properties.WallSide;
  * a handwriting wall. Here it is one old courtyard building, the way the novel has him: a ground-floor flat at the back of a
  * court of stucco flats, his windows sealed, cats in the court, and inside, the papers.
  *
- * <p>Every place the scene's mechanics and tests name is where it was: the entry, the two side doors at x ±12, the
- * fountain, the mat, the sealed iron door, the reading desk, the trunk and its gouges, the drawers, the files and their
- * labels, the drafts on their desks and the sheets on his walls. No generic dressing pass touches the court.
+ * <p>Inside, the flat is an apartment: a hall from the front door to his cabinets, the kitchen, bathroom and study off one
+ * side, the front room and bedroom off the other. The places the mechanics and tests name are read from their constants (the
+ * reading desk, the drafts, the file stacks and labels, the trunk and its gouges, the drawers); the entry, the side doors at
+ * x ±12, the fountain, the mat and the sealed iron door are where they were. No generic dressing pass touches the court.
  */
 public final class ZampanoApartment {
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
@@ -171,60 +172,99 @@ public final class ZampanoApartment {
     }
 
     // ------------------------------------------------------------------------------------------------ inside
-    /** The flat itself: plaster walls, his floor, a beamed ceiling, and the side windows he sealed too. */
+    /*
+     * 0.4.201 (owner: "Do you not think the interior of his apartment should look more like an... apartment?"): rooms, not a
+     * reading hall. The front door opens on a hall that runs straight back to his three cabinets and the wall of his hand.
+     * Off it, left: the kitchen at the front, then the bathroom, then the study wrapped round it; right: the front room where
+     * the readers came, with their files along its wall, and his bedroom with the trunk at the back. Ceilings at an ordinary
+     * height, plaster walls with doors in them, and papers in every room.
+     *
+     *   x  -11 ......... -3 -2 -1 0 1  2  3 ......... 11
+     *   z -20  kitchen       |  hall  |   front room       (front door at z -19)
+     *   z -26  ------------  |        |                    (openings at z -21..-22 either side)
+     *   z -27  study | bath  D        |
+     *   z -29  study | bath  |        |  ------------
+     *   z -31  study ------  |        |   bedroom
+     *   z -34  study         D        D   bedroom (trunk)
+     *   z -38  papers .......  cabinets  ....... papers
+     */
+    private static final int CEILING = 4;
+    /** The flat's floor plan: floors, a ceiling at an ordinary height, the walls and doors between its rooms, and the sealed windows. */
     private static void flat(ServerLevel l, BlockPos b) {
+        var plaster = PLASTER.defaultBlockState();var air = Blocks.AIR.defaultBlockState();
         box(l, b, -11, -1, -38, 11, -1, -20, Blocks.DARK_OAK_PLANKS.defaultBlockState());
-        box(l, b, -11, 7, -38, 11, 7, -20, Blocks.SPRUCE_PLANKS.defaultBlockState());
-        for (int z : new int[]{-25, -31}) for (int x = -11; x <= 11; x++) set(l, b, x, 6, z, Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X));
-        for (int x : new int[]{-12, 12}) for (int z : new int[]{-23, -29, -35}) for (int y = 1; y <= 3; y++) set(l, b, x, y, z, NovelRegistry.SEALED_WINDOW.get().defaultBlockState());
-        // A skirting of dark wood along every wall.
-        for (int x = -11; x <= 11; x++) for (int z : new int[]{-20, -38}) skirting(l, b, x, z, z == -20 ? Direction.NORTH : Direction.SOUTH);
-        for (int z = -37; z <= -21; z++) for (int x : new int[]{-11, 11}) skirting(l, b, x, z, x < 0 ? Direction.EAST : Direction.WEST);
-        // Lamps hung from the beams and the ceiling: enough to read by, never more.
-        hang(l, b, -7, -25);hang(l, b, 4, -28);hang(l, b, 6, -35);hang(l, b, -6, -21);
-        // A runner of old rugs from the door to the desks.
-        for (int x = -4; x <= 3; x++) for (int z = -35; z <= -25; z++) set(l, b, x, 0, z, (x == -4 || x == 3 || z == -35 || z == -25 ? Blocks.GRAY_CARPET : Blocks.BROWN_CARPET).defaultBlockState());
-        for (int z = -24; z <= -20; z++) set(l, b, 0, 0, z, Blocks.BROWN_CARPET.defaultBlockState());
+        box(l, b, -11, CEILING, -38, 11, 7, -20, plaster);
+        box(l, b, -11, 0, -38, 11, CEILING - 1, -20, air);
+        // The hall's two walls, open either side at the front onto the kitchen and the front room.
+        for (int x : new int[]{-2, 2}) for (int z = -38; z <= -20; z++) for (int y = 0; y < CEILING; y++) if (!(z >= -22 && z <= -21 && y <= 2)) set(l, b, x, y, z, plaster);
+        // Kitchen from the study and bathroom; the bathroom's walls; the front room from the bedroom.
+        for (int x = -11; x <= -3; x++) wall(l, b, x, -26);
+        for (int z = -30; z <= -27; z++) wall(l, b, -7, z);
+        for (int x = -7; x <= -3; x++) wall(l, b, x, -31);
+        for (int x = 3; x <= 11; x++) wall(l, b, x, -29);
+        // Doors off the hall: the bathroom's shut, the study's and the bedroom's open.
+        NovelRooms.door(l, b.offset(-2, 0, -28), Direction.WEST, Blocks.DARK_OAK_DOOR, false);
+        NovelRooms.door(l, b.offset(-2, 0, -34), Direction.WEST, Blocks.DARK_OAK_DOOR, true);
+        NovelRooms.door(l, b.offset(2, 0, -33), Direction.EAST, Blocks.DARK_OAK_DOOR, true);
+        // Tile in the kitchen and the bathroom; a runner down the hall.
+        var tile = VignetteInteriorBlock.of(VignetteInteriorBlock.Kind.HOLIDAY_TILE, Direction.NORTH);
+        box(l, b, -11, -1, -25, -3, -1, -20, tile);box(l, b, -6, -1, -30, -3, -1, -27, tile);
+        for (int z = -37; z <= -20; z++) set(l, b, 0, 0, z, Blocks.BROWN_CARPET);
+        // The side windows he sealed: the kitchen's and the study's on the west, the bedroom's on the east.
+        for (int[] w : new int[][]{{-12, -23}, {-12, -28}, {-12, -35}, {12, -32}, {12, -36}}) for (int y = 1; y <= 2; y++) set(l, b, w[0], y, w[1], NovelRegistry.SEALED_WINDOW.get().defaultBlockState());
+        // A little light in each room, enough for a reader; he had no use for more.
+        hang(l, b, 0, -24);hang(l, b, 0, -32);hang(l, b, 7, -24);hang(l, b, 7, -34);hang(l, b, -7, -22);hang(l, b, -6, -35);
+        light(l, b, -5, -29, 6);light(l, b, -9, -28, 6);
     }
-    private static void skirting(ServerLevel l, BlockPos b, int x, int z, Direction out) {
-        if (!get(l, b, x, 0, z).isAir()) return;
-        set(l, b, x, 0, z, Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF, Half.BOTTOM).setValue(TrapDoorBlock.FACING, out).setValue(TrapDoorBlock.OPEN, true));
-    }
+    private static void wall(ServerLevel l, BlockPos b, int x, int z) { for (int y = 0; y < CEILING; y++) set(l, b, x, y, z, PLASTER.defaultBlockState()); }
     private static void hang(ServerLevel l, BlockPos b, int x, int z) {
-        if (get(l, b, x, 6, z).isAir()) set(l, b, x, 6, z, Blocks.CHAIN.defaultBlockState());
-        set(l, b, x, 5, z, Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true));
+        set(l, b, x, CEILING - 1, z, Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true));
     }
+    private static void light(ServerLevel l, BlockPos b, int x, int z, int level) { set(l, b, x, CEILING - 1, z, Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, level)); }
 
-    /** What he lived with: the kitchen corner, his chair, the shelves, the desks the readers used, the trunk. */
+    /** Each room as he lived in it. */
     private static void furnish(ServerLevel l, BlockPos b) {
-        // The kitchen corner against the front wall, left of the door.
+        // ---- the kitchen: the units under the sealed front window, a small table with a draft on it, two stools
         tract(l, b, -10, 0, -20, TractHouseBlock.Kind.FRIDGE_LOWER);tract(l, b, -10, 1, -20, TractHouseBlock.Kind.FRIDGE_UPPER);
         tract(l, b, -9, 0, -20, TractHouseBlock.Kind.COUNTER);tract(l, b, -8, 0, -20, TractHouseBlock.Kind.COUNTER_SINK);tract(l, b, -7, 0, -20, TractHouseBlock.Kind.STOVE);
         tract(l, b, -9, 2, -20, TractHouseBlock.Kind.WALL_CABINET);tract(l, b, -8, 2, -20, TractHouseBlock.Kind.WALL_CABINET);
         detail(l, b, -9, 1, -20, SceneDetailBlock.Kind.CROCK, Direction.NORTH);detail(l, b, -8, 1, -20, SceneDetailBlock.Kind.DISH_RACK, Direction.NORTH);
-        detail(l, b, 2, 0, -20, SceneDetailBlock.Kind.CROCK, Direction.NORTH);
+        furniture(l, b, -9, 0, -23, HouseholdFurnitureBlock.Kind.FORMICA_TABLE, Direction.SOUTH);
+        furniture(l, b, -9, 0, -24, HouseholdFurnitureBlock.Kind.KITCHEN_STOOL, Direction.NORTH);furniture(l, b, -8, 0, -23, HouseholdFurnitureBlock.Kind.KITCHEN_STOOL, Direction.WEST);
         detail(l, b, -11, 2, -21, SceneDetailBlock.Kind.COAT, Direction.EAST);
-        // His chair right of the door, turned to where the readers sat, and the radiator under the sealed window.
-        furniture(l, b, 8, 0, -21, HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR, Direction.WEST);
-        furniture(l, b, 7, 0, -21, HouseholdFurnitureBlock.Kind.FOOTSTOOL, Direction.WEST);
-        furniture(l, b, 9, 0, -20, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.NORTH);detail(l, b, 9, 1, -20, SceneDetailBlock.Kind.TABLE_LAMP, Direction.NORTH);
-        furniture(l, b, 5, 0, -21, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.EAST);
-        furniture(l, b, 7, 0, -20, HouseholdFurnitureBlock.Kind.RADIATOR, Direction.NORTH);
-        // Shelves along the west wall, and what spills off them.
-        for (int z : new int[]{-26, -32, -36}) for (int y = 0; y <= 2; y++) set(l, b, -11, y, z, Blocks.BOOKSHELF.defaultBlockState());
-        cabinet(l, b, -10, 0, -24, SceneDetailBlock.Kind.FILE_TRAY);detail(l, b, -10, 0, -27, SceneDetailBlock.Kind.CRATE, Direction.NORTH);detail(l, b, -9, 0, -27, SceneDetailBlock.Kind.BOOKS, Direction.NORTH);
-        // The readers' desks, two rows of two, each with its cane chair.
-        for (int z : new int[]{-27, -33}) {
-            table(l, b, -3, z, SceneDetailBlock.Kind.INK_PAPERS);table(l, b, -2, z, SceneDetailBlock.Kind.BOOKS);
-            table(l, b, 2, z, SceneDetailBlock.Kind.FILE_TRAY);table(l, b, 3, z, SceneDetailBlock.Kind.BOOKS);
-            furniture(l, b, -3, 0, z + 2, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);furniture(l, b, 3, 0, z + 2, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);
+        detail(l, b, -4, 0, -25, SceneDetailBlock.Kind.CRATE, Direction.NORTH);detail(l, b, -3, 0, -25, SceneDetailBlock.Kind.BOTTLES, Direction.NORTH);
+        // ---- the bathroom: toilet and basin, a towel, no mirror
+        set(l, b, -6, 0, -27, ServiceFittingBlock.of(ServiceFittingBlock.Kind.TOILET, Direction.EAST));
+        set(l, b, -6, 0, -30, ServiceFittingBlock.of(ServiceFittingBlock.Kind.BASIN, Direction.EAST));
+        set(l, b, -3, 0, -30, ServiceFittingBlock.of(ServiceFittingBlock.Kind.SOAP, Direction.NORTH));
+        detail(l, b, -3, 1, -27, SceneDetailBlock.Kind.TOWELS, Direction.WEST);
+        // ---- the study: shelves on the west wall, desks crowded with drafts, his reading desk with the survey on it
+        for (int z : new int[]{-29, -30, -33, -34, -36, -37}) for (int y = 0; y <= 2; y++) set(l, b, -11, y, z, Blocks.BOOKSHELF.defaultBlockState());
+        detail(l, b, -10, 0, -27, SceneDetailBlock.Kind.CRATE, Direction.NORTH);detail(l, b, -9, 0, -27, SceneDetailBlock.Kind.BOOKS, Direction.NORTH);
+        cabinet(l, b, -8, 0, -27, SceneDetailBlock.Kind.FILE_TRAY);
+        for (int[] d : new int[][]{{-9, -33}, {-4, -33}, {-9, -37}, {-4, -37}}) {
+            furniture(l, b, d[0], 0, d[1], HouseholdFurnitureBlock.Kind.WALNUT_DESK, Direction.SOUTH);
+            furniture(l, b, d[0], 0, d[1] + 1, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);
         }
-        table(l, b, -8, -34, SceneDetailBlock.Kind.INK_PAPERS);table(l, b, -7, -34, SceneDetailBlock.Kind.BOOKS);table(l, b, -6, -34, SceneDetailBlock.Kind.TABLE_LAMP);
-        furniture(l, b, -7, 0, -32, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);
-        cabinet(l, b, 8, 0, -37, SceneDetailBlock.Kind.FILE_TRAY);cabinet(l, b, 7, 0, -37, SceneDetailBlock.Kind.BOOKS);
-        detail(l, b, 11, 2, -37, SceneDetailBlock.Kind.CLOCK, Direction.WEST);
-        // His reading desk, where the survey is.
+        furniture(l, b, -8, 0, -33, HouseholdFurnitureBlock.Kind.WALNUT_DESK, Direction.SOUTH);detail(l, b, -8, 1, -33, SceneDetailBlock.Kind.TABLE_LAMP, Direction.NORTH);
         set(l, b, NovelRooms.ARCHIVE_DESK.getX(), NovelRooms.ARCHIVE_DESK.getY(), NovelRooms.ARCHIVE_DESK.getZ(), HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.READING_DESK, Direction.SOUTH));
+        detail(l, b, -3, 0, -32, SceneDetailBlock.Kind.INK_PAPERS, Direction.WEST);
+        // ---- the front room: his chair facing the two the readers sat in, a writing table, the radiator, the lamp
+        furniture(l, b, 9, 0, -25, HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR, Direction.WEST);
+        furniture(l, b, 8, 0, -25, HouseholdFurnitureBlock.Kind.FOOTSTOOL, Direction.WEST);
+        furniture(l, b, 5, 0, -24, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.EAST);furniture(l, b, 5, 0, -26, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.EAST);
+        furniture(l, b, 5, 0, -21, HouseholdFurnitureBlock.Kind.WALNUT_DESK, Direction.NORTH);
+        furniture(l, b, 7, 0, -20, HouseholdFurnitureBlock.Kind.RADIATOR, Direction.NORTH);
+        furniture(l, b, 9, 0, -20, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.NORTH);detail(l, b, 9, 1, -20, SceneDetailBlock.Kind.TABLE_LAMP, Direction.NORTH);
+        detail(l, b, 3, 0, -28, SceneDetailBlock.Kind.BOOKS, Direction.EAST);detail(l, b, 4, 0, -28, SceneDetailBlock.Kind.CRATE, Direction.NORTH);
+        rug(l, b, 6, 8, -27, -23);
+        // ---- the bedroom: the bed against the east wall, a chair with his clothes on it, the trunk and the marks beside it, and
+        // the two chests at the foot of the paper wall
+        NovelRooms.bed(l, b.offset(10, 0, -34), Blocks.BROWN_BED, Direction.EAST);
+        furniture(l, b, 11, 0, -33, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.WEST);
+        furniture(l, b, 4, 0, -30, HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS, Direction.SOUTH);detail(l, b, 4, 1, -30, SceneDetailBlock.Kind.COAT, Direction.SOUTH);
+        furniture(l, b, 10, 0, -30, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.SOUTH);detail(l, b, 11, 2, -31, SceneDetailBlock.Kind.COAT, Direction.WEST);
+        for (int x : new int[]{7, 8}) furniture(l, b, x, 0, -37, HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS, Direction.SOUTH);
         // The trunk, the marks in the floor beside it, and the readers' appointments inside.
         set(l, b, 5, -1, -33, NovelRegistry.GOUGES.get().defaultBlockState());
         set(l, b, 5, 0, -34, Blocks.CHEST.defaultBlockState());
@@ -235,17 +275,42 @@ public final class ZampanoApartment {
                 chest.setChanged();
             }
         });
+        skirting(l, b);
+    }
+    /** Dark skirting along the foot of every wall the rooms leave bare. */
+    private static void skirting(ServerLevel l, BlockPos b) {
+        for (int x = -11; x <= 11; x++) for (int z = -38; z <= -20; z++) {
+            if (!get(l, b, x, 0, z).isAir()) continue;
+            for (var d : Direction.Plane.HORIZONTAL) {
+                int nx = x + d.getStepX(), nz = z + d.getStepZ();
+                var n = Math.abs(nx) > 11 || nz > -20 || nz < -38 ? PLASTER.defaultBlockState() : get(l, b, nx, 0, nz);
+                if (!n.is(PLASTER) && !n.is(Blocks.LIGHT_BLUE_TERRACOTTA)) continue;
+                if (nx == 0 && nz == -19) continue;
+                set(l, b, x, 0, z, Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF, Half.BOTTOM).setValue(TrapDoorBlock.FACING, d.getOpposite()).setValue(TrapDoorBlock.OPEN, true));
+                break;
+            }
+        }
+    }
+    private static void rug(ServerLevel l, BlockPos b, int x0, int x1, int z0, int z1) {
+        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) set(l, b, x, 0, z, (x == x0 || x == x1 || z == z0 || z == z1 ? Blocks.GRAY_CARPET : Blocks.BROWN_CARPET).defaultBlockState());
     }
 
-    /** The drafts on the desks, the sheets along the west wall and the dense wall of his hand behind the cabinets. */
+    /** The drafts on their desks and tables, his sheets pinned down both sides of the hall, and the dense wall of his hand at the back. */
     private static void papers(ServerLevel l, BlockPos b) {
         for (int i = 0; i < SceneReview.DRAFTS.size(); i++) {
             var at = SceneReview.DRAFTS.get(i);
             set(l, b, at.getX(), at.getY(), at.getZ(), VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_" + i), Direction.SOUTH));
         }
-        for (int i = 8; i < 16; i++) set(l, b, -11, 4, -22 - (i - 8) * 2, VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_" + i), Direction.EAST));
-        for (int x = -10; x <= 10; x++) for (int y = 1; y <= 5; y++)
-            set(l, b, x, y, -38, VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_" + (8 + Math.floorMod(x * 3 + y * 5, 8))), Direction.SOUTH));
+        int[] west = {-24, -26, -30, -32}, east = {-24, -26, -31, -36};
+        for (int i = 0; i < 4; i++) {
+            set(l, b, -1, 2, west[i], VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_" + (8 + i)), Direction.EAST));
+            set(l, b, 1, 2, east[i], VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_" + (12 + i)), Direction.WEST));
+        }
+        for (int x = -10; x <= 10; x++) {
+            if (Math.abs(x) == 2) continue;
+            for (int y = 1; y < CEILING; y++)
+                set(l, b, x, y, -38, VignetteDetailBlock.state(VignetteDetailBlock.Kind.valueOf("SCRIBBLE_" + (8 + Math.floorMod(x * 3 + y * 5, 8))), Direction.SOUTH));
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ small pieces

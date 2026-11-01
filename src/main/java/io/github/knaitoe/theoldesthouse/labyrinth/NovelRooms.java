@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.properties.*;
 
 /** Six authored places. Outdoor sites really have sky in the outside dimension. */
 public final class NovelRooms {
-    public static final BlockPos ARCHIVE_DOOR=new BlockPos(0,0,-19),ARCHIVE_DESK=new BlockPos(-5,0,-30),MAT=new BlockPos(0,0,-16),
+    public static final BlockPos ARCHIVE_DOOR=new BlockPos(0,0,-19),ARCHIVE_DESK=new BlockPos(-6,0,-35),MAT=new BlockPos(0,0,-16),
         WELL=new BlockPos(0,0,-23),CARVING=new BlockPos(0,-10,-22),OLD_CARVING=new BlockPos(0,-12,-24),RIBBON=new BlockPos(2,0,-25),
         APOLOGY=new BlockPos(-4,0,-7),FIGURE=new BlockPos(0,0,-93),BUTTON=new BlockPos(5,1,-14),WARD_NOTE=new BlockPos(-4,0,-15),
         BED=new BlockPos(7,0,-16),PROJECTOR=new BlockPos(0,1,-6),KAREN_BOOK=new BlockPos(6,1,-17);

@@ -541,6 +541,8 @@ public final class ArchitectureTests {
             if(y>=0&&((scene==LabyrinthPlace.WHALE&&x==13)||(scene==LabyrinthPlace.HOSPITAL&&x==9)
                     ||(scene==LabyrinthPlace.KAREN_ROOM&&x==9)||(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&x==12&&z<=-19)))continue;
             if(!exterior&&y>2&&s.is(Blocks.BIRCH_PLANKS))continue;
+            // 0.4.201: Zampano's flat is seen through its ceiling and the storey above it, so its rooms show.
+            if(scene==LabyrinthPlace.ZAMPANO_COURTYARD&&y>=4&&Math.abs(x)<=11&&z<=-20&&z>=-38)continue;
             // The institute's ward ceiling comes off; over the dayroom it is the attics' floor and stays.
             if(!exterior&&scene==LabyrinthPlace.WHALE&&y==5&&z>-25&&s.is(Blocks.SMOOTH_STONE))continue;
             boolean exposed=false;for(var side:Direction.values())if(l.getBlockState(at.relative(side)).isAir()||!l.getBlockState(at.relative(side)).isSolid()){exposed=true;break;}
