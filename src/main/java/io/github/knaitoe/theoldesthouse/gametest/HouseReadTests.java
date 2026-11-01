@@ -85,6 +85,7 @@ public final class HouseReadTests {
               boolean taken=false;for(var half:List.of(HouseReadKitchen.TIN_LEFT_AT,HouseReadKitchen.TIN_RIGHT_AT))if(f.in.getBlockEntity(b[0].offset(half)) instanceof HouseReadPropBlock.Fitting t&&t.read().getInt("Taken")>=0)taken=true;h.assertTrue(taken,"and leaves its place in the tin");
               pick(p,f.in,b[0],4);h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem())&&HouseReadKitchen.held(p)<0,"picking the same crayon again puts it back, and the reader's own item returns");
               // The face sets the read; a different face disagrees; hands in that crayon settle it.
+              h.assertTrue(HouseReadKitchen.waiting(p).contains("nothing's on it yet"),"before anything is drawn the door says the picture is still blank: "+HouseReadKitchen.waiting(p));
               pick(p,f.in,b[0],4);draw(p,f.in,b[0],7,4);
               h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).equals(new HouseRead.Category(HouseReadKitchen.hex(4),HouseRead.Strength.TENTATIVE)),"the first face sets the tone, tentatively: "+HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE));
               pick(p,f.in,b[0],9);draw(p,f.in,b[0],8,5);h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).strength()==HouseRead.Strength.UNCERTAIN,"a face coloured again in another crayon disagrees");
@@ -106,7 +107,10 @@ public final class HouseReadTests {
               // 0.4.201: the pencil goes back to the margin; the fridge takes the picture only from the reader's hand.
               draw(p,f.in,b[0],14,4);h.assertTrue(HouseReadKitchen.held(p)<0&&!HouseReadKitchen.carrying(p),"the pencil goes back to the margin");
               stand(p,f.in,b[0],3.5,0,-8.5);click(p,b[0].offset(HouseReadKitchen.FRIDGE_AT));h.assertTrue(!visit(p,K).getBoolean("Hung"),"the fridge waits for the picture to be brought over");
-              draw(p,f.in,b[0],7,7);h.assertTrue(HouseReadKitchen.carrying(p)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED),"an empty hand picks the finished picture up off the table");
+              // 0.4.202: a door tried before the picture is up says what it is waiting for.
+              h.assertTrue(HouseReadKitchen.waiting(p).contains("still on the table"),"a drawn picture left on the table: the door says where it should go: "+HouseReadKitchen.waiting(p));
+              draw(p,f.in,b[0],7,7);h.assertTrue(HouseReadKitchen.waiting(p).contains("goes up on the fridge"),"with the picture in hand, the door says to put it up: "+HouseReadKitchen.waiting(p));
+              h.assertTrue(HouseReadKitchen.carrying(p)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED),"an empty hand picks the finished picture up off the table");
               draw(p,f.in,b[0],7,7);h.assertTrue(!HouseReadKitchen.carrying(p)&&!f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED),"and puts it back down on the table");
               draw(p,f.in,b[0],7,7);
               // Up on the fridge: the picture leaves the hand, the doors open.
