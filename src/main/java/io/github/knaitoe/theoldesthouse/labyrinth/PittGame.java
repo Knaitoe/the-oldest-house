@@ -52,6 +52,13 @@ import org.joml.Vector3f;
 public final class PittGame {
     private PittGame(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.PITT;
+    /**
+     * 0.4.220 (owner: Brad's textures were "not in line with the mod"): Brad is a painted actor on stranger phases forty-four
+     * (lamp dark), forty-five (lamp lit white) and forty-six (lamp lit amber), sitting on his kit box at {@link PittCave#BRAD}.
+     * He is there exactly while the box is; the lamp's light is a light block at his head.
+     */
+    public static final int BRAD_PHASE=44;
+    public static boolean bradPhase(int phase){return phase>=BRAD_PHASE&&phase<=BRAD_PHASE+2;}
     /** The draft cycle, in ticks: draft, warning, still air. */
     public static final int SAFE=280,WARN=60,CRUSH=120,CYCLE=SAFE+WARN+CRUSH;
     public static final int P_OFF=-1,P_SAFE=0,P_WARN=1,P_CRUSH=2,P_STILL=3,P_COLLAPSE=4;
@@ -126,9 +133,7 @@ public final class PittGame {
                 int given=0;for(var item:List.of(PittRegistry.LAMP.get(),PittRegistry.HAMMER.get(),PittRegistry.BAROMETER.get()))if(!has(p,item)){LiteraryVignettes.give(p,new ItemStack(item));given++;}
                 own.putBoolean("GotGear207",true);send(p,t);
                 cue(p,given>0?"Brad's crate: a carbide lamp, his masonry hammer, a brass barometer with its needle in the green.":"The crate has carbide canisters and a smell of rope. You have everything that was in it.");return true;}
-            case BRAD,BRAD_HEAD->{
-                int ph=phase(t);
-                brad(p,ph==P_CRUSH?"Brad, very low: \"Don't move. Lamp away. It comes back.\"":ph==P_WARN?"Brad: \"Needle's going. Get flat.\"":run<=1?"Brad: \"Two flashes, you're good. Amber, you lie still. Four seams, then the hole.\"":"Brad: \"Clip in at every bolt. I've got you.\"");return true;}
+            case BRAD,BRAD_HEAD->{talk(p);return true;}
             case BELAY->{belay(p,b,own,t);return true;}
             case SEAM->{seam(p,b,rel,own,t,s);return true;}
             case HOLE->{
@@ -269,7 +274,7 @@ public final class PittGame {
         if(t.hasUUID("Belayer")){var q=s.getPlayerList().getPlayer(t.getUUID("Belayer"));if(q==null||!group.contains(q)||q.position().distanceTo(Vec3.atCenterOf(b.offset(PittCave.BELAY)))>4.5){if(q!=null)cue(q,"You let the line go.");t.remove("Belayer");}}
         for(var p:group)reader(l,b,t,p,ph,tick);
         if(tick%10==0&&(ph==P_SAFE||ph==P_STILL))lift(l,b);
-        if(t.getInt("RunVisit")<=2&&!t.hasUUID("Belayer"))bradLamp(l,b,ph,tick);
+        if(t.getInt("RunVisit")<=2&&!t.hasUUID("Belayer"))bradLamp(l,b,ph,tick);else if(tick%10==0)bradActor(l,b);
         if(t.getInt("RunVisit")>=3&&tick%6==0){var h=b.offset(PittCave.HELMET);var hs=l.getBlockState(h);if(PittBlock.is(hs,PittBlock.Kind.HELMET))l.setBlock(h,hs.setValue(PittBlock.STAGE,(tick/6)%2==0?1:0),F);}
         if(tick%8==0)crawler(l,b,t,group,ph);
         if(ph==P_COLLAPSE)collapse(l,b,t,group);
@@ -325,11 +330,38 @@ public final class PittGame {
     }
     /** Slabs lift a stage at a time while the draft blows. */
     static void lift(ServerLevel l,BlockPos b){for(int z=PittCave.TOMB_Z0;z>=PittCave.TOMB_Z1;z--){var at=b.offset(0,1,z);var s=l.getBlockState(at);if(PittBlock.is(s,PittBlock.Kind.SLAB)&&s.getValue(PittBlock.STAGE)>0)l.setBlock(at,s.setValue(PittBlock.STAGE,s.getValue(PittBlock.STAGE)-1),F);}}
+    /** What Brad says when a reader speaks to him (or to the box he sits on), by where the draft is. */
+    public static void talk(ServerPlayer p){
+        var t=set(p.server);int run=t.getInt("RunVisit");int ph=phase(t);
+        brad(p,ph==P_CRUSH?"Brad, very low: \"Don't move. Lamp away. It comes back.\"":ph==P_WARN?"Brad: \"Needle's going. Get flat.\"":run<=1?"Brad: \"Two flashes, you're good. Amber, you lie still. Four seams, then the hole.\"":"Brad: \"Clip in at every bolt. I've got you.\"");
+    }
+    /**
+     * Brad himself: on his box while it stands at {@link PittCave#BRAD}, gone the moment it is gone (a reader holding the belay
+     * in his place, the third visit on). Found by looking on the box, so a reset or a reload never leaves two of him; made only
+     * where the cave is ticking.
+     */
+    @Nullable static LiteraryActor bradActor(ServerLevel l,BlockPos b){
+        var seat=b.offset(PittCave.BRAD);boolean there=PittBlock.is(l.getBlockState(seat),PittBlock.Kind.BRAD);
+        var found=l.getEntitiesOfClass(LiteraryActor.class,new net.minecraft.world.phys.AABB(seat).inflate(2),a->a.scene().equals(PLACE.id())&&a.role()==LiteraryActor.STRANGER&&bradPhase(a.phase()));
+        var lamp=seat.above();
+        if(!there){found.forEach(net.minecraft.world.entity.Entity::discard);if(l.getBlockState(lamp).is(Blocks.LIGHT))l.setBlock(lamp,Blocks.AIR.defaultBlockState(),F);return null;}
+        for(int i=1;i<found.size();i++)found.get(i).discard();
+        if(!found.isEmpty())return found.get(0);
+        if(!l.isPositionEntityTicking(seat))return null;
+        var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
+        a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,BRAD_PHASE);
+        float yaw=l.getBlockState(seat).getValue(PittBlock.FACING).toYRot();
+        a.moveTo(seat.getX()+.5,seat.getY(),seat.getZ()+.5,yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);
+        l.addFreshEntity(a);return a;
+    }
     /** Brad's lamp, on his helmet at the belay: two white flashes in the draft, an amber strobe when it dies. */
     static void bradLamp(ServerLevel l,BlockPos b,int ph,long tick){
-        var at=b.offset(PittCave.BRAD.above());var s=l.getBlockState(at);if(!PittBlock.is(s,PittBlock.Kind.BRAD_HEAD))return;
+        var a=bradActor(l,b);if(a==null)return;
         int k=(int)(tick%40);int want=ph==P_SAFE?(k<4||k>=8&&k<12?1:0):ph==P_WARN||ph==P_CRUSH||ph==P_COLLAPSE?((tick/3)%2==0?2:0):1;
-        if(s.getValue(PittBlock.STAGE)!=want)l.setBlock(at,s.setValue(PittBlock.STAGE,want),F);
+        if(a.phase()!=BRAD_PHASE+want)a.appearance(LiteraryActor.STRANGER,BRAD_PHASE+want);
+        var lamp=b.offset(PittCave.BRAD.above());var now=l.getBlockState(lamp);
+        if(want==0){if(now.is(Blocks.LIGHT))l.setBlock(lamp,Blocks.AIR.defaultBlockState(),F);}
+        else if(now.isAir()||now.is(Blocks.LIGHT)){int level=want==1?12:9;if(!now.is(Blocks.LIGHT)||now.getValue(LightBlock.LEVEL)!=level)l.setBlock(lamp,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,level),F);}
     }
     /** The Seam-Crawler: its eyes in the fissure, keeping pace; in the still air it comes along it, and reaches. */
     static void crawler(ServerLevel l,BlockPos b,CompoundTag t,List<ServerPlayer> group,int ph){

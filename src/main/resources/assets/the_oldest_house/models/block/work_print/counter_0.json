@@ -2,11 +2,15 @@
   "ambientocclusion": false,
   "render_type": "minecraft:cutout",
   "textures": {
-    "s": "the_oldest_house:block/work_print/counter_front",
+    "s": "the_oldest_house:block/work_print/counter_side",
+    "r": "the_oldest_house:block/work_print/counter_back",
     "f": "the_oldest_house:block/work_print/counter_front",
     "t": "the_oldest_house:block/work_print/counter_top",
-    "k": "the_oldest_house:block/work_print/till_side",
-    "kf": "the_oldest_house:block/work_print/till_front",
+    "b": "the_oldest_house:block/work_print/till_side",
+    "k": "the_oldest_house:block/work_print/till_front",
+    "v": "the_oldest_house:block/work_print/till_display",
+    "d": "the_oldest_house:block/work_print/till_drawer",
+    "o": "the_oldest_house:block/work_print/till_open",
     "particle": "the_oldest_house:block/work_print/counter_top"
   },
   "elements": [
@@ -26,7 +30,7 @@
           "texture": "#f"
         },
         "south": {
-          "texture": "#s"
+          "texture": "#r"
         },
         "east": {
           "texture": "#s"

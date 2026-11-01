@@ -39,7 +39,7 @@ public final class WorkPrintBlock extends HorizontalDirectionalBlock {
     public static boolean is(BlockState s,Kind kind){return s.is(WorkPrintRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
     public static Kind kind(BlockState s){return s.is(WorkPrintRegistry.FITTING.get())?s.getValue(KIND):null;}
     /** How many stages each kind is drawn in. */
-    public static int stages(Kind k){return switch(k){case POSTER,CART->4;case SHELF,RETURNS,CRT,PHOTOS,FLATBED,TRIPOD->3;case COUNTER,PHONE,MANNEQUIN,TUBE,SPLICER,LIGHT_TABLE,BULB,FLAT->2;default->1;};}
+    public static int stages(Kind k){return switch(k){case POSTER,CART->4;case SHELF,RETURNS,CRT,PHOTOS,FLATBED,TRIPOD->3;case COUNTER->3;case PHONE,MANNEQUIN,TUBE,SPLICER,LIGHT_TABLE,BULB,FLAT->2;default->1;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     public static int light(BlockState s){

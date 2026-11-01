@@ -56,7 +56,7 @@ public final class PittBlock extends HorizontalDirectionalBlock {
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
             case SLAB,SEAM,FISSURE,ANCHOR,CRATE,HOLE,WHEEL,WHEEL_LOW,GROOVE,BRIDGE,RUBBLE,CUT->Shapes.block();
-            case BRAD->Block.box(2,0,2,14,16,14);
+            case BRAD->Block.box(2,0,3,14,8,13);
             case BRAD_HEAD->Block.box(3,0,3,13,11,13);
             case BELAY->Block.box(6,0,6,10,13,10);
             case NOTE->box(f,4,3,15,12,13,16);

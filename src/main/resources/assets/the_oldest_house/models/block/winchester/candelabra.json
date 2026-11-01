@@ -1,0 +1,276 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "b": "the_oldest_house:block/winchester/brass",
+  "w": "the_oldest_house:block/winchester/lamp_glass",
+  "particle": "the_oldest_house:block/winchester/brass"
+ },
+ "elements": [
+  {
+   "from": [
+    6,
+    0,
+    6
+   ],
+   "to": [
+    10,
+    1,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    7.5,
+    1,
+    7.5
+   ],
+   "to": [
+    8.5,
+    8,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    8,
+    7.5
+   ],
+   "to": [
+    13,
+    9,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    9,
+    7.5
+   ],
+   "to": [
+    4,
+    12,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "south": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "east": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "west": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "up": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "down": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    }
+   }
+  },
+  {
+   "from": [
+    7.5,
+    9,
+    7.5
+   ],
+   "to": [
+    8.5,
+    13,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "south": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "east": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "west": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "up": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "down": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    }
+   }
+  },
+  {
+   "from": [
+    12,
+    9,
+    7.5
+   ],
+   "to": [
+    13,
+    12,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "south": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "east": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "west": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "up": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "down": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    }
+   }
+  }
+ ]
+}

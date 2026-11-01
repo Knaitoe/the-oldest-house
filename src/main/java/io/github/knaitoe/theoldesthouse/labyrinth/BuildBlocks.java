@@ -23,6 +23,37 @@ public final class BuildBlocks {
         return state;
     }
 
+    /**
+     * 0.4.220 (owner: "yet more disconnected banisters"): builders lay fences, walls and panes with known shapes, so a rail
+     * placed before its neighbour never joined it. These blocks are recorded as they are placed and, once the whole plan has
+     * run, each is given the connections vanilla would give it against what now stands beside it. Iron bars keep the shape
+     * they were placed with (pipes and grilles are drawn by hand), and a fence under a carpet or pressure plate is a table leg.
+     */
+    static boolean joins(BlockState state){
+        var block=state.getBlock();
+        return block instanceof net.minecraft.world.level.block.FenceBlock||block instanceof net.minecraft.world.level.block.WallBlock
+                ||block instanceof net.minecraft.world.level.block.IronBarsBlock&&!state.is(net.minecraft.world.level.block.Blocks.IRON_BARS);
+    }
+    private static final int JOIN_FLAGS=net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE|net.minecraft.world.level.block.Block.UPDATE_SUPPRESS_DROPS;
+    /** Give a fence, wall or pane the connections vanilla would, against its neighbours as they stand now. */
+    public static void join(ServerLevel level,BlockPos at){
+        var state=level.getBlockState(at);if(!joins(state))return;
+        if(state.getBlock() instanceof net.minecraft.world.level.block.FenceBlock){var above=level.getBlockState(at.above());
+            if(above.getBlock() instanceof net.minecraft.world.level.block.CarpetBlock||above.getBlock() instanceof net.minecraft.world.level.block.BasePressurePlateBlock)return;}
+        var shaped=state;
+        for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){var next=at.relative(side);shaped=shaped.updateShape(side,level.getBlockState(next),level,at,next);}
+        if(shaped.getBlock() instanceof net.minecraft.world.level.block.WallBlock){var up=at.above();shaped=shaped.updateShape(net.minecraft.core.Direction.UP,level.getBlockState(up),level,at,up);}
+        if(!shaped.equals(state))level.setBlock(at,shaped,JOIN_FLAGS);
+    }
+
+    /** The last command of a plan: every fence, wall and pane it placed joins what stands beside it. */
+    private static final class Join implements Command {
+        private final List<BlockPos> cells;
+        private int cursor;
+        Join(java.util.Collection<BlockPos> cells){this.cells=List.copyOf(cells);}
+        public boolean step(ServerLevel level){if(cursor<cells.size())join(level,cells.get(cursor));return ++cursor>=cells.size();}
+    }
+
     private interface Command {
         boolean step(ServerLevel level);
         default BlockState stateAt(BlockPos pos) { return null; }
@@ -124,6 +155,8 @@ public final class BuildBlocks {
         private final Map<Long, List<Command>> stateIndex = new HashMap<>();
         private int cursor;
         private int lastVisits;
+        /** Every cell this plan lays a fence, wall or pane in, joined to its neighbours once the plan has run. */
+        private final java.util.LinkedHashSet<BlockPos> joins = new java.util.LinkedHashSet<>();
         private Plan(ServerLevel level) { this.level = level; }
 
         private void add(Command command, BlockPos a, BlockPos b) {
@@ -192,6 +225,7 @@ public final class BuildBlocks {
         Plan plan = new Plan(level);
         recording = plan;
         try { author.run(); } finally { recording = null; }
+        if (!plan.joins.isEmpty()) plan.add(new Join(plan.joins));
         return plan;
     }
 
@@ -200,12 +234,18 @@ public final class BuildBlocks {
         if(state.getBlock() instanceof net.minecraft.world.level.block.IronBarsBlock&&!state.is(net.minecraft.world.level.block.Blocks.IRON_BARS))
             flags &= ~net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE;
         if (recording != null && recording.level == level) {
+            if (joins(state)) for (BlockPos pos : BlockPos.betweenClosed(a, b)) recording.joins.add(pos.immutable());
             if (a.equals(b)) { recording.add(new Place(a, state, flags), a, a); return; }
             Fill fill = new Fill(a, b, state, flags);
             if (state.isAir() && fill.size > 4096) recording.add(new Clear(fill.low, fill.high, state, flags), fill.low, fill.high);
             else recording.add(fill, fill.low, fill.high);
         } else {
             for (BlockPos pos : BlockPos.betweenClosed(a, b)) level.setBlock(pos, nativeShape(level,pos,state), flags);
+            // Placed directly, outside a plan: the box and the cells round it join once it is all in place.
+            if (joins(state) && (flags & net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE) != 0
+                    && (long) (Math.abs(a.getX() - b.getX()) + 3) * (Math.abs(a.getZ() - b.getZ()) + 3) * (Math.abs(a.getY() - b.getY()) + 1) <= 4096)
+                for (BlockPos pos : BlockPos.betweenClosed(new BlockPos(Math.min(a.getX(), b.getX()) - 1, Math.min(a.getY(), b.getY()), Math.min(a.getZ(), b.getZ()) - 1),
+                        new BlockPos(Math.max(a.getX(), b.getX()) + 1, Math.max(a.getY(), b.getY()), Math.max(a.getZ(), b.getZ()) + 1))) join(level, pos);
         }
     }
 

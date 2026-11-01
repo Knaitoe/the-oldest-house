@@ -5,6 +5,7 @@
     "s": "the_oldest_house:block/work_print/shelf_side",
     "f": "the_oldest_house:block/work_print/shelf_2",
     "t": "the_oldest_house:block/work_print/shelf_side",
+    "l": "the_oldest_house:block/work_print/shelf_2",
     "particle": "the_oldest_house:block/work_print/shelf_side"
   },
   "elements": [
@@ -37,6 +38,94 @@
         },
         "down": {
           "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        1,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#l"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#l"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        8,
+        1
+      ],
+      "to": [
+        16,
+        9,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            0,
+            7,
+            16,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#l"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l",
+          "uv": [
+            0,
+            7,
+            16,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#l"
         }
       }
     }

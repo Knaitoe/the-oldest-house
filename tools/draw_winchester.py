@@ -171,8 +171,8 @@ def clock_face():
     for k in range(13):
         a = 2 * math.pi * k / 13 - math.pi / 2
         px(img, round(7.5 + 5.3 * math.cos(a)), round(7.5 + 5.3 * math.sin(a)), (40, 30, 24))
-    for x, y in ((7, 7), (8, 7), (7, 6), (7, 5), (7, 4), (8, 8), (9, 9), (10, 10)):
-        px(img, x, y, (24, 20, 18))
+    # 0.4.220: no painted hands; WinchesterClockRenderer draws hands that move round its thirteen hours.
+    px(img, 7, 7, (60, 50, 40)); px(img, 8, 8, (60, 50, 40))
     bevel(img, 0, 0, 15, 15, 1.2, .7)
     return img
 
@@ -470,6 +470,423 @@ def m_plaque():
     return [box((4, 5, 15), (12, 12, 16), 'b', uv=(2, 2, 14, 13))]
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.220: the house furnished
+# The owner: "winchester could use custom chair textures", "random small dresser in winchester... review the furniture placement
+# to ensure accuracy to environment", the clock "could have animated arms, and be pushed against the wall". The house had modern
+# sofas, desks for a dining table and wallpaper for ceilings. These are its own: a coffered redwood ceiling, balloon-back dining
+# chairs in oxblood velvet, a mahogany table with its runner and candelabra, a mirrored sideboard, a camelback settee, a wing
+# chair, a lamp table, an upright piano, a fern on its stand, a hall stand, a treadle sewing machine and a dress form, gas
+# sconces, and Persian rugs and runners.
+def ceiling():
+    """A coffered redwood ceiling: a sunk panel in each square, a lighter moulding round it, the grain running across."""
+    rng = random.Random(4130)
+    img = ground((112, 54, 36), 4130, .03)
+    for y in range(16):
+        for x in range(16):
+            if x in (0, 15) or y in (0, 15):
+                px(img, x, y, (150, 84, 52) if x == 0 or y == 0 else (70, 32, 22))
+            elif x in (1, 14) or y in (1, 14):
+                px(img, x, y, (132, 70, 44) if x == 1 or y == 1 else (84, 40, 26))
+            elif (y + rng.randrange(2)) % 5 == 0:
+                r, g, b, _ = img.getpixel((x, y)); px(img, x, y, mul((r, g, b), .88))
+    for x, y in ((7, 7), (8, 7), (7, 8), (8, 8)):
+        px(img, x, y, (176, 140, 64))
+    return img
+
+
+def velvet_red():
+    """Oxblood velvet on the dining chairs and the settee, crushed darker where people sit, a tack every few pixels at the edge."""
+    rng = random.Random(4131)
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            px(img, x, y, mul((128, 28, 34), .84 + d * .02 + rng.uniform(-.04, .04)))
+    for i in range(0, 16, 3):
+        for x, y in ((i, 0), (i, 15), (0, i), (15, i)):
+            px(img, x, y, (186, 150, 70))
+    return img
+
+
+def tufted():
+    """The settee's buttoned back: oxblood velvet drawn into diamonds by covered buttons."""
+    img = velvet_red()
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 8 == 0 or (x - y) % 8 == 0:
+                r, g, b, _ = img.getpixel((x, y)); px(img, x, y, mul((r, g, b), .78))
+    for x, y in ((4, 4), (12, 4), (8, 8), (4, 12), (12, 12), (0, 8), (8, 0)):
+        px(img, x, y, (60, 14, 18))
+    return img
+
+
+def velvet_green():
+    """Bottle-green velvet on the wing chair, worn paler on the arms."""
+    rng = random.Random(4132)
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((40, 82, 58), .9 + rng.uniform(-.06, .06) + (.08 if x in (0, 1, 14, 15) else 0)))
+    return img
+
+
+def table_top():
+    """The dining table's top: French-polished mahogany, a long pale reflection down it from the window."""
+    img = mahogany()
+    for x in range(16):
+        for y in (5, 6):
+            r, g, b, _ = img.getpixel((x, y)); px(img, x, y, mul((r, g, b), 1.18))
+    return img
+
+
+def lace():
+    """A lace runner: cream thread in an open pattern, the table showing dark through it."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 4 == 0 or (x - y) % 4 == 0 or x in (0, 15):
+                px(img, x, y, (232, 224, 204))
+            else:
+                px(img, x, y, (232, 224, 204), 0)
+    return img
+
+
+def persian():
+    """A Persian rug's field: a medallion on madder red, indigo and ivory in the guls, the pattern meeting itself at every edge."""
+    img = ground((134, 34, 34), 4133, .05)
+    for y in range(16):
+        for x in range(16):
+            u, v = abs(x - 7.5), abs(y - 7.5)
+            if abs(u + v - 5) < .6:
+                px(img, x, y, (226, 206, 160))
+            elif u + v < 2.6:
+                px(img, x, y, (44, 52, 104))
+            elif abs(u + v - 8) < .6 and min(u, v) > 1:
+                px(img, x, y, (44, 52, 104))
+            elif (x in (0, 15)) ^ (y in (0, 15)) and (x + y) % 2 == 0:
+                px(img, x, y, (196, 148, 72))
+    return img
+
+
+def runner_edge():
+    """Half the width of a Persian runner: its border down the outer edge, the field beside it."""
+    img = persian()
+    for y in range(16):
+        px(img, 0, y, (44, 52, 104)); px(img, 1, y, (226, 206, 160)); px(img, 2, y, (44, 52, 104))
+        px(img, 3, y, (196, 148, 72) if y % 4 < 2 else (134, 34, 34))
+    return img
+
+
+def runner_narrow():
+    """A runner one block wide: the border down both edges, a line of small guls between."""
+    img = ground((134, 34, 34), 4134, .05)
+    for y in range(16):
+        for x, c in ((0, (44, 52, 104)), (1, (226, 206, 160)), (14, (226, 206, 160)), (15, (44, 52, 104))):
+            px(img, x, y, c)
+        k = abs((y % 8) - 4)
+        for x in range(3, 13):
+            if abs(abs(x - 7.5) - (4 - k)) < .6:
+                px(img, x, y, (226, 206, 160))
+            elif abs(x - 7.5) < 4 - k - 1:
+                px(img, x, y, (44, 52, 104))
+    return img
+
+
+def piano_front():
+    """The upright piano's face: a fretwork panel over silk, candle brackets either side, the maker's gilt name."""
+    img = mahogany()
+    for y in range(2, 10):
+        for x in range(3, 13):
+            px(img, x, y, (150, 40, 44) if (x + y) % 3 else (60, 24, 18))
+    for x in range(3, 13):
+        px(img, x, 1, (70, 30, 22)); px(img, x, 10, (70, 30, 22))
+    for x in range(6, 10):
+        px(img, x, 12, (196, 160, 80))
+    return img
+
+
+def piano_keys():
+    """The keyboard seen from in front and above: ivory keys, the black keys in their twos and threes, the felt behind."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (236, 228, 206) if x % 2 == 0 or y > 9 else (214, 206, 186))
+    for x in (1, 3, 7, 9, 11, 15):
+        for y in range(0, 9):
+            px(img, x, y, (24, 20, 18))
+    for x in range(16):
+        px(img, x, 0, (120, 30, 34))
+    return img
+
+
+def buffet_front():
+    """The sideboard's doors: two raised and carved panels, brass keyholes, a drawer over them."""
+    img = mahogany()
+    for x in range(16):
+        px(img, x, 4, (60, 24, 18))
+    for x0 in (1, 9):
+        for y in range(6, 15):
+            for x in range(x0, x0 + 6):
+                if x in (x0, x0 + 5) or y in (6, 14):
+                    px(img, x, y, (140, 70, 50))
+    px(img, 7, 2, (196, 160, 80)); px(img, 8, 2, (196, 160, 80)); px(img, 6, 10, (196, 160, 80)); px(img, 9, 10, (196, 160, 80))
+    return img
+
+
+def mirror_glass():
+    """Old mirror glass, a little silvering gone at the corners, a pale reflection across it."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            v = 150 + ((x + y) % 9) * 6
+            px(img, x, y, (v - 30, v - 22, v - 10))
+    for x, y in ((0, 0), (1, 0), (0, 1), (15, 15), (14, 15), (15, 14)):
+        px(img, x, y, (90, 84, 70))
+    return img
+
+
+def fern():
+    """A Boston fern's fronds, arching, light underneath and dark in the middle."""
+    rng = random.Random(4135)
+    img = canvas()
+    for x in range(16):
+        for y in range(16):
+            if rng.random() < .62 and abs(x - 7.5) < 8 - y * .35:
+                px(img, x, y, mul((62, 120, 50), .8 + rng.uniform(0, .45)))
+    return img
+
+
+def lamp_glass():
+    """An oil lamp's chimney and shade: a frosted globe lit from inside."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (250, 226, 170) if 4 < x < 11 else (236, 206, 150))
+    return img
+
+
+def sewing():
+    """The sewing machine's head: black japanning, gilt scrolls, the nickel wheel."""
+    img = ground((24, 22, 22), 4136, .04)
+    for x, y in ((3, 4), (4, 3), (5, 3), (6, 4), (9, 6), (10, 5), (11, 5), (12, 6), (6, 9), (7, 10), (8, 10)):
+        px(img, x, y, (200, 160, 70))
+    return img
+
+
+def treadle():
+    """The treadle stand's cast iron: openwork scrolls."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 5 == 0 or (x - y) % 5 == 0 or x in (0, 15) or y in (0, 15):
+                px(img, x, y, (40, 38, 38))
+    return img
+
+
+def linen():
+    """The dress form's linen torso, pinned with a half-made sleeve."""
+    img = ground((214, 200, 172), 4137, .03)
+    for y in range(16):
+        px(img, 8, y, (170, 156, 128))
+    for x, y in ((3, 4), (12, 6), (5, 11), (11, 12)):
+        px(img, x, y, (200, 200, 210))
+    return img
+
+
+def frosted():
+    """A gas sconce's frosted glass, the mantle bright inside."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 9) ** 2) ** .5
+            px(img, x, y, (255, 236, 196) if d < 3 else (238, 222, 190))
+    return img
+
+
+TEXTURES.update({f.__name__: f for f in (ceiling, velvet_red, tufted, velvet_green, table_top, lace, persian, runner_edge,
+                                         runner_narrow, piano_front, piano_keys, buffet_front, mirror_glass, fern, lamp_glass,
+                                         sewing, treadle, linen, frosted)})
+BLOCKS['winchester_ceiling'] = 'ceiling'
+GLOWING = {'lamp_glass': 14, 'frosted': 14}
+
+
+def legs4(x0, x1, z0, z1, top, t, w=1.5):
+    return [box((x, 0, z), (x + w, top, z + w), t) for x in (x0, x1 - w) for z in (z0, z1 - w)]
+
+
+@spec('dining_chair', {'m': 'mahogany', 'v': 'velvet_red'}, 'velvet_red')
+def m_dining_chair():
+    """A balloon-back dining chair: turned front legs, an oxblood velvet seat, the back's round loop with its padded panel."""
+    return legs4(3, 13, 3, 13, 8, 'm') + [box((3, 8, 3), (13, 9, 13), 'm'), box((3.5, 9, 3.5), (12.5, 10.5, 12.5), 'v', over={'down': 'm'}),
+            box((3.5, 9, 11.5), (5, 21, 13), 'm'), box((11, 9, 11.5), (12.5, 21, 13), 'm'), box((4, 20, 11.5), (12, 22.5, 13), 'm'),
+            box((5, 13, 12), (11, 19.5, 12.8), 'v')]
+
+
+@spec('table_end', {'m': 'mahogany', 't': 'table_top'}, 'table_top')
+def m_table_end():
+    """An end of the dining table: its top and apron, two turned legs at the end."""
+    return [box((0, 14, 0), (16, 15.5, 16), 'm', over={'up': 't'}), box((1, 12, 1), (16, 14, 15), 'm'),
+            box((1.5, 0, 1.5), (4, 12, 4), 'm'), box((1.5, 0, 12), (4, 12, 14.5), 'm')]
+
+
+@spec('table_mid', {'m': 'mahogany', 't': 'table_top', 'l': 'lace'}, 'table_top')
+def m_table_mid():
+    """The middle of the table: the top, the apron down both sides, the lace runner along it."""
+    return [box((0, 14, 0), (16, 15.5, 16), 'm', over={'up': 't'}), box((0, 12, 1), (16, 14, 2.5), 'm'), box((0, 12, 13.5), (16, 14, 15), 'm'),
+            box((0, 15.5, 4), (16, 15.7, 12), 'l', faces=('up',), uv=(0, 0, 16, 16))]
+
+
+@spec('table_pedestal', {'m': 'mahogany', 't': 'table_top', 'l': 'lace'}, 'table_top')
+def m_table_pedestal():
+    """The middle of a long table, where its pedestal stands: a turned column on four splayed feet."""
+    return [box((0, 14, 0), (16, 15.5, 16), 'm', over={'up': 't'}), box((0, 12, 1), (16, 14, 2.5), 'm'), box((0, 12, 13.5), (16, 14, 15), 'm'),
+            box((0, 15.5, 4), (16, 15.7, 12), 'l', faces=('up',), uv=(0, 0, 16, 16)),
+            box((6, 2, 6), (10, 12, 10), 'm'), box((1, 0, 7), (15, 2, 9), 'm'), box((7, 0, 1), (9, 2, 15), 'm')]
+
+
+@spec('candelabra', {'b': 'brass', 'w': 'lamp_glass'}, 'brass')
+def m_candelabra():
+    """A brass candelabra of three lights, set on the runner."""
+    return [box((6, 0, 6), (10, 1, 10), 'b'), box((7.5, 1, 7.5), (8.5, 8, 8.5), 'b'), box((3, 8, 7.5), (13, 9, 8.5), 'b'),
+            box((3, 9, 7.5), (4, 12, 8.5), 'w'), box((7.5, 9, 7.5), (8.5, 13, 8.5), 'w'), box((12, 9, 7.5), (13, 12, 8.5), 'w')]
+
+
+def buffet(right):
+    edge = (14.5, 16) if right else (0, 1.5)
+    return [box((0, 1, 4), (16, 14, 16), 'm', over={'north': 'f'}), box((0, 14, 3), (16, 15, 16), 'm'), box((1, 0, 5), (15, 1, 15), 'm'),
+            box((0, 15, 14.5), (16, 31, 16), 'm', over={'north': 'g'}), box((edge[0], 15, 14), (edge[1], 32, 16), 'm'),
+            box((0, 30.5, 14), (16, 32, 16), 'm')]
+
+
+@spec('buffet_l', {'m': 'mahogany', 'f': 'buffet_front', 'g': 'mirror_glass'}, 'mahogany')
+def m_buffet_l():
+    return buffet(False)
+
+
+@spec('buffet_r', {'m': 'mahogany', 'f': 'buffet_front', 'g': 'mirror_glass'}, 'mahogany')
+def m_buffet_r():
+    return buffet(True)
+
+
+def settee(right):
+    arm = (14, 16) if right else (0, 2)
+    return legs4(0.5, 15.5, 2, 14, 3, 'm', 1.5) + [box((0, 3, 2), (16, 7, 15), 'm'), box((0, 7, 3), (16, 9.5, 13), 'v', over={'down': 'm'}),
+            box((0, 7, 12), (16, 22, 15), 'u', over={'up': 'v', 'south': 'v'}), box((arm[0], 7, 2), (arm[1], 15, 15), 'v'),
+            box((arm[0], 15, 2), (arm[1], 16, 15), 'm')]
+
+
+@spec('settee_l', {'m': 'mahogany', 'v': 'velvet_red', 'u': 'tufted'}, 'velvet_red')
+def m_settee_l():
+    return settee(False)
+
+
+@spec('settee_r', {'m': 'mahogany', 'v': 'velvet_red', 'u': 'tufted'}, 'velvet_red')
+def m_settee_r():
+    return settee(True)
+
+
+@spec('wing_chair', {'m': 'mahogany', 'v': 'velvet_green'}, 'velvet_green')
+def m_wing_chair():
+    """A wing chair in bottle-green velvet: rolled arms, the tall back and its wings."""
+    return legs4(1.5, 14.5, 2, 14, 3, 'm', 1.5) + [box((1.5, 3, 2), (14.5, 7.5, 14), 'v'), box((2, 7.5, 2.5), (14, 9.5, 12), 'v'),
+            box((1.5, 7.5, 12), (14.5, 26, 14.5), 'v'), box((1, 7.5, 2), (3, 14, 14), 'v'), box((13, 7.5, 2), (15, 14, 14), 'v'),
+            box((1, 14, 9), (3, 24, 14), 'v'), box((13, 14, 9), (15, 24, 14), 'v')]
+
+
+@spec('lamp_table', {'m': 'mahogany', 'b': 'brass', 'w': 'lamp_glass'}, 'mahogany')
+def m_lamp_table():
+    """A round lamp table on its pedestal, and the oil lamp on it."""
+    return [box((3, 11, 3), (13, 12, 13), 'm'), box((7, 1, 7), (9, 11, 9), 'm'), box((4, 0, 7), (12, 1, 9), 'm'),
+            box((7, 0, 4), (9, 1, 12), 'm'), box((6.5, 12, 6.5), (9.5, 14, 9.5), 'b'), box((7.5, 14, 7.5), (8.5, 16, 8.5), 'b'),
+            box((6, 16, 6), (10, 21, 10), 'w')]
+
+
+def piano(right):
+    edge = (14, 16) if right else (0, 2)
+    return [box((0, 0, 7), (16, 22, 16), 'm', over={'north': 'f'}), box((0, 10, 3), (16, 11, 7), 'm', over={'up': 'k'}),
+            box((edge[0], 2, 3), (edge[1], 12, 7), 'm'), box((0, 22, 6.5), (16, 23, 16), 'm'), box((1, 1, 4), (15, 2, 7), 'm')]
+
+
+@spec('piano_l', {'m': 'mahogany', 'f': 'piano_front', 'k': 'piano_keys'}, 'mahogany')
+def m_piano_l():
+    return piano(False)
+
+
+@spec('piano_r', {'m': 'mahogany', 'f': 'piano_front', 'k': 'piano_keys'}, 'mahogany')
+def m_piano_r():
+    return piano(True)
+
+
+@spec('fern_stand', {'m': 'mahogany', 'f': 'fern', 'b': 'brass'}, 'fern')
+def m_fern_stand():
+    """A Boston fern in a brass pot on a tall mahogany stand."""
+    leaf = []
+    for angle in (45, -45):
+        e = box((0, 13, 8), (16, 29, 8), 'f', faces=('north', 'south'))
+        e['rotation'] = {'origin': [8, 8, 8], 'axis': 'y', 'angle': angle}
+        leaf.append(e)
+    return [box((5, 0, 5), (11, 1, 11), 'm'), box((7, 1, 7), (9, 10, 9), 'm'), box((4.5, 10, 4.5), (11.5, 11, 11.5), 'm'),
+            box((5, 11, 5), (11, 15, 11), 'b')] + leaf
+
+
+@spec('hall_stand', {'m': 'mahogany', 'b': 'brass'}, 'mahogany')
+def m_hall_stand():
+    """The hall stand's foot: a box seat for gloves, the umbrella rails either side, its drip pans."""
+    return [box((0, 0, 8), (16, 1, 16), 'm'), box((2, 1, 9), (14, 9, 16), 'm'), box((1.5, 9, 8.5), (14.5, 10, 16), 'm'),
+            box((0, 0, 8), (1.5, 16, 9.5), 'm'), box((14.5, 0, 8), (16, 16, 9.5), 'm'), box((0, 12, 8), (16, 13, 9), 'b'),
+            box((0.5, 1, 9), (1, 10, 15), 'b')]
+
+
+@spec('hall_stand_top', {'m': 'mahogany', 'b': 'brass', 'g': 'mirror_glass', 'c': 'velvet_green'}, 'mahogany')
+def m_hall_stand_top():
+    """The hall stand's top: the mirror in its frame, the brass hooks, a bowler hat hung on one."""
+    return [box((0, 0, 14.5), (16, 14, 16), 'm', over={'north': 'g'}, uv=(0, 0, 16, 16)), box((0, 14, 14), (16, 16, 16), 'm'),
+            box((0, 0, 9.5), (1.5, 14, 15), 'm'), box((14.5, 0, 9.5), (16, 14, 15), 'm'),
+            box((2, 10, 12), (3, 11, 14.5), 'b'), box((13, 10, 12), (14, 11, 14.5), 'b'),
+            box((11, 7, 10), (15, 9, 14), 'c'), box((12, 9, 11), (14, 11, 13), 'c')]
+
+
+@spec('sewing_machine', {'m': 'mahogany', 's': 'sewing', 't': 'treadle', 'b': 'brass'}, 'sewing')
+def m_sewing_machine():
+    """A treadle sewing machine: the iron stand and its pedal, the oak top, the black head with its wheel and needle."""
+    return [box((1, 0, 3), (2, 11, 13), 't'), box((14, 0, 3), (15, 11, 13), 't'), box((2, 1, 5), (14, 2, 11), 't'),
+            box((0, 11, 2), (16, 12.5, 14), 'm'), box((3, 12.5, 6), (12, 14, 10), 's'), box((10, 14, 6), (12, 19, 10), 's'),
+            box((3, 17, 6.5), (12, 19, 9.5), 's'), box((3, 14, 7.5), (4, 17, 8.5), 's'), box((12, 15, 7), (13, 19, 9), 'b')]
+
+
+@spec('dress_form', {'m': 'mahogany', 'l': 'linen', 'b': 'brass'}, 'linen')
+def m_dress_form():
+    """A dress form on its stand, a half-made sleeve pinned to it."""
+    return [box((4, 0, 7), (12, 1, 9), 'm'), box((7, 0, 4), (9, 1, 12), 'm'), box((7.5, 1, 7.5), (8.5, 10, 8.5), 'b'),
+            box((4.5, 10, 6), (11.5, 16, 10), 'l'), box((4, 16, 5.5), (12, 21, 10.5), 'l'), box((6.5, 21, 7), (9.5, 23, 9), 'l')]
+
+
+@spec('sconce', {'b': 'brass', 'w': 'frosted'}, 'frosted')
+def m_sconce():
+    """A gas sconce on the wall: the brass plate and arm, the frosted globe."""
+    return [box((6, 3, 15), (10, 9, 16), 'b'), box((7.5, 5, 11), (8.5, 6, 15), 'b'), box((6.5, 6, 10), (9.5, 7, 13), 'b'),
+            box((5.5, 7, 9), (10.5, 12, 14), 'w')]
+
+
+@spec('console', {'m': 'mahogany', 't': 'table_top', 'b': 'brass'}, 'table_top')
+def m_console():
+    """A hall console against the wall: the top the ledger stands on, a carved apron with its drawer pull, two front legs, a
+    shelf low between them."""
+    return [box((0, 14, 5), (16, 16, 16), 'm', over={'up': 't'}), box((1, 11, 6), (15, 14, 15.5), 'm'),
+            box((1.5, 0, 6), (3, 11, 7.5), 'm'), box((13, 0, 6), (14.5, 11, 7.5), 'm'), box((1.5, 0, 14), (3, 11, 15.5), 'm'),
+            box((13, 0, 14), (14.5, 11, 15.5), 'm'), box((2, 3, 7), (14, 4, 15), 'm'), box((7, 12, 5.5), (9, 13, 6), 'b')]
+
+
+def flat(name, tex):
+    spec(name, {'r': tex}, tex)(lambda: [box((0, 0, 0), (16, .5, 16), 'r', faces=('up', 'north', 'south', 'east', 'west'), uv=(0, 0, 16, 16))])
+
+
+flat('rug_persian', 'persian')
+flat('runner_edge', 'runner_edge')
+flat('runner_mid', 'persian')
+flat('runner_narrow', 'runner_narrow')
+
+
 TURN = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
 
@@ -477,7 +894,13 @@ def model_json(name):
     fn, textures, particle = MODEL_SPECS[name]
     tex = {k: NS + v for k, v in textures.items()}
     tex['particle'] = NS + particle
-    return {'parent': 'minecraft:block/block', 'render_type': 'minecraft:translucent' if name == 'spider_window' else 'minecraft:cutout', 'ambientocclusion': False, 'textures': tex, 'elements': fn()}
+    elements = fn()
+    for e in elements:
+        for face in e['faces'].values():
+            glow = GLOWING.get(textures.get(face['texture'][1:], ''))
+            if glow:
+                face['neoforge_data'] = {'block_light': glow, 'sky_light': 0}
+    return {'parent': 'minecraft:block/block', 'render_type': 'minecraft:translucent' if name == 'spider_window' else 'minecraft:cutout', 'ambientocclusion': False, 'textures': tex, 'elements': elements}
 
 
 

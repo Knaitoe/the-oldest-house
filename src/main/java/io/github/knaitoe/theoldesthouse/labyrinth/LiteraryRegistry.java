@@ -78,7 +78,11 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BarrettHomeBlock>> BARRETT_HOME_TYPE=CODECS.register("barrett_home",()->BarrettHomeBlock.CODEC);
     public static final DeferredBlock<BarrettHomeBlock> BARRETT_HOME=BLOCKS.registerBlock("barrett_home",BarrettHomeBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable().lightLevel(BarrettHomeBlock::light));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<WinchesterFittingBlock>> WINCHESTER_FITTING_TYPE=CODECS.register("winchester_fitting",()->WinchesterFittingBlock.CODEC);
-    public static final DeferredBlock<WinchesterFittingBlock> WINCHESTER_FITTING=BLOCKS.registerBlock("winchester_fitting",WinchesterFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noOcclusion().noLootTable());
+    public static final DeferredBlock<WinchesterFittingBlock> WINCHESTER_FITTING=BLOCKS.registerBlock("winchester_fitting",WinchesterFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noOcclusion().noLootTable().lightLevel(WinchesterFittingBlock::light));
+    /** 0.4.220: the Winchester's coffered redwood ceiling, laid wherever its rooms had only wallpaper overhead. */
+    public static final DeferredBlock<Block> WINCHESTER_CEILING=BLOCKS.registerBlock("winchester_ceiling",Block::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).noLootTable());
+    /** 0.4.220: the hall clock's top carries an entity so its hands can be drawn moving. */
+    public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<WinchesterClockEntity>> WINCHESTER_CLOCK=BES.register("winchester_clock",()->BlockEntityType.Builder.of(WinchesterClockEntity::new,WINCHESTER_FITTING.get()).build(null));
     public static final DeferredBlock<net.minecraft.world.level.block.TransparentBlock> WINCHESTER_LEADED_GLASS=BLOCKS.registerBlock("winchester_leaded_glass",net.minecraft.world.level.block.TransparentBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).noLootTable());
     public static final DeferredBlock<LiteraryFrozenBlock> FROZEN=BLOCKS.registerBlock("literary_frozen",LiteraryFrozenBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).dynamicShape().noOcclusion().noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ReadingStandBlock>> READING_STAND_TYPE=CODECS.register("reading_stand",()->ReadingStandBlock.CODEC);

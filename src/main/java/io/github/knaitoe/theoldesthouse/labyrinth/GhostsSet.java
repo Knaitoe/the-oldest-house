@@ -217,7 +217,8 @@ public final class GhostsSet {
     private static void stage(BlockPos b,LiteraryActor[] cast,int d) {
         for(var actor:cast){GhostsMotion.stop(actor);GhostsJump.clear(actor);}
         for(int i=0;i<4;i++){place(cast[i],b,i==0||i==2?-.4:2.4,seatedHeight(cast[i].getScale()),i<2?-19.5:-17.5,i==0||i==2?-90:90,SIT);cast[i].getPersistentData().putBoolean("GhostSeat0492",true);}
-        place(cast[4],b,8.5,0,-6.5,90,STAND);place(cast[5],b,7.5,0,-4.5,90,STAND);
+        // 0.4.220 (owner: "barry should be facing the monitor"): Barry sits in his director's chair, turned to the field monitor.
+        place(cast[4],b,7.5,seatedHeight(cast[4].getScale()),-8.5,-153,SIT);cast[4].getPersistentData().putBoolean("GhostSeat0492",true);place(cast[5],b,7.5,0,-4.5,90,STAND);
         if(d==1){place(cast[0],b,-6,0,-14.5,90,STAND);place(cast[1],b,-9,0,-14.5,-90,STAND);}
         if(d==3||d==6){place(cast[0],b,d==6?-6.5:-9.5,5,d==6?-23.5:-24,d==6?0:90,d==6?BED:STAND);place(cast[1],b,-3,5,-19,180,STAND);place(cast[2],b,-5,5,-25,-90,STAND);place(cast[3],b,-5,5,-20,180,STAND);place(cast[5],b,-8,5,-22,180,STAND);}
         if(d==4){place(cast[0],b,7,-4,-20,0,STAND);place(cast[1],b,7,-4,-23,180,STAND);}

@@ -207,9 +207,12 @@ public final class PittCave {
         rubble(l,b,false);
         var hatch=BuildBlocks.state(l,b.offset(HATCH));if(hatch.is(Blocks.IRON_TRAPDOOR)&&hatch.getValue(TrapDoorBlock.OPEN))set(l,b,HATCH,hatch.setValue(TrapDoorBlock.OPEN,false));
     }
-    /** Brad on his crate by the stoopway, his lamp on his helmet; gone from the third visit. */
+    /**
+     * Brad's kit box by the stoopway; gone from the third visit. 0.4.220: Brad himself is a painted actor who sits on it
+     * ({@link PittGame#bradActor}), there while the box is; the cell over it is left for his lamp's light.
+     */
     public static void brad(ServerLevel l,BlockPos b,boolean there){
-        set(l,b,BRAD,there?fit(PittBlock.Kind.BRAD,Direction.NORTH):AIR);set(l,b,BRAD.above(),there?fit(BRAD_HEAD,Direction.NORTH,0):AIR);
+        set(l,b,BRAD,there?fit(PittBlock.Kind.BRAD,Direction.NORTH):AIR);set(l,b,BRAD.above(),AIR);
     }
     /** The round stone, sixteen faces in a four-by-four disc standing on edge, its face to the east, at x. */
     public static void wheel(ServerLevel l,BlockPos b,int x){

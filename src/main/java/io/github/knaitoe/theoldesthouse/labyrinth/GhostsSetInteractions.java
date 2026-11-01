@@ -13,9 +13,9 @@ public final class GhostsSetInteractions {
     private GhostsSetInteractions(){}
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var state=p.serverLevel().getBlockState(b.offset(rel));
-        if(rel.equals(GhostsSetRooms.MONITOR_AT.above())&&state.is(LiteraryRegistry.PROP.get())&&state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.TELEVISION){
+        if(rel.equals(GhostsSetRooms.MONITOR_AT.above())&&(BarrettHomeBlock.is(state,BarrettHomeBlock.Kind.FIELD_MONITOR)||state.is(LiteraryRegistry.PROP.get())&&state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.TELEVISION)){
             if(own.getBoolean("DayDone")){int day=Math.max(1,Math.min(7,own.getInt("FilmDay")));boolean raw=p.isShiftKeyDown();LiteraryVignettes.open(p,GhostsSet.PLACE,own,(raw?"Rushes":"Episode")+day,GhostsSet.edit(p,own,day,raw),b.offset(rel));}
-            else p.displayClientMessage(Component.literal("The monitor holds your recorded frames. The day's cut is reviewed after the take."),true);
+            else p.displayClientMessage(Component.literal("The feed from the crew's camera. The day's cut is reviewed here after the take."),true);
             return true;
         }
         // 0.4.202 (owner: "i really need you to flesh out the personality of each vignette you touch"): the family's own things
@@ -56,55 +56,75 @@ public final class GhostsSetInteractions {
     }
     /** What each of the Barretts' things tells a hand that picks it up or looks close. */
     static String family(BarrettHomeBlock.Kind kind){return switch(kind){
-        case TV_STAND->"A cartoon nobody turned off. Merry knows all the words to the song.";
-        case COFFEE_TABLE->"A colouring book open to a horse, half done, the crayons lined up the way Merry lines them up. John's mug, gone cold.";
-        case PORTRAIT->"A studio portrait, the four of them in their good clothes. Marjorie is giving the camera the smile she gives cameras.";
-        case PHOTO_BEACH->"The four of them on a beach, squinting into the sun. Somebody else took this one.";
-        case PHOTO_MARJORIE->"Marjorie's school picture. Somebody drew a moustache on the glass in marker and somebody else tried to rub it off.";
-        case PHOTO_MERRY->"Merry's school picture: a tooth out, the pigtails at two different heights.";
-        case PHOTO_WEDDING->"John and Sarah on their wedding day, younger than people get to look for long.";
-        case PHOTO_BABY->"Sarah on the old couch with a baby in a blanket, and Marjorie, small, leaning in to see her sister.";
-        case PHOTO_SISTERS->"Marjorie giving Merry a piggyback across the yard. Both of them caught mid-laugh.";
-        case CRUCIFIX->"A crucifix over the bed. The nail it hangs on is newer than the paint around it.";
-        case MERRY_DRAWING->"Four people holding hands in front of a house, in crayon. Somebody has added a cat they do not have.";
-        case PRINT_SOAP->"SOAP OPERA, over bubbles. Somebody bought it as a joke, before there were cameras in the house.";
-        case PRINT_WHALE->"WHALE HELLO, and the whale saying it. Merry picked it out.";
-        case TUB_SHOWER->"Shampoo, conditioner, a third bottle nobody owns up to. The rubber duck has been turned to face the wall.";
-        case VANITY_FAMILY->"Four toothbrushes in one cup. The purple one has been chewed flat.";
-        case VANITY_KIDS->"Two toothbrushes, the detangling spray, hair ties wound round the tap.";
-        case STEP_STOOL->"Merry's stool, so she can see herself in the mirror.";
-        case HAMPER->"Lights, darks, colours. All three bags are full, and most of the darks are Marjorie's.";
-        case TOWEL_BAR->"Four towels for four people. One of them has a duck on it.";
-        case DIRTY_TOWELS->"A wet towel on the floor with a sock rolled up in it. Nobody will say whose.";
+        case TV_STAND->"A cartoon, the sound turned low. Merry knows all the words to the song.";
+        case COFFEE_TABLE->"A colouring book open to a half-done horse, the crayons lined up in a row. John's mug, gone cold.";
+        case PORTRAIT->"A studio portrait of the four of them in their good clothes.";
+        case PHOTO_BEACH->"The four of them on a beach, squinting into the sun.";
+        case PHOTO_MARJORIE->"Marjorie's school picture. A marker moustache on the glass, half rubbed off.";
+        case PHOTO_MERRY->"Merry's school picture: a tooth out, the pigtails at two heights.";
+        case PHOTO_WEDDING->"John and Sarah on their wedding day.";
+        case PHOTO_BABY->"Sarah with a new baby on the old couch, and a small Marjorie leaning in to see.";
+        case PHOTO_SISTERS->"Marjorie giving Merry a piggyback across the yard, both of them laughing.";
+        case CRUCIFIX->"A crucifix over the bed, on a new nail.";
+        case MERRY_DRAWING->"Four people holding hands in front of a house, in crayon, and a cat they do not have.";
+        case PRINT_SOAP->"SOAP OPERA, over bubbles. A joke print.";
+        case PRINT_WHALE->"WHALE HELLO, and the whale saying it.";
+        case TUB_SHOWER->"Shampoo and conditioner. The rubber duck has been turned to face the wall.";
+        case VANITY_FAMILY->"Four toothbrushes in one cup. The purple one is chewed flat.";
+        case VANITY_KIDS->"Two toothbrushes, detangling spray, hair ties round the tap.";
+        case STEP_STOOL->"Merry's step stool, for the mirror.";
+        case HAMPER->"Lights, darks, colours. All three bags are full.";
+        case TOWEL_BAR->"Four towels. One of them has a duck on it.";
+        case DIRTY_TOWELS->"A wet towel on the floor with a sock rolled up in it.";
         case BATH_MAT->"The bath mat is still damp.";
-        case LINEN_SHELVES->"Towels, sheets, the board games with half their pieces. The closet smells of dryer sheets.";
-        case FRUIT_BOWL->"Apples, and a banana going brown. The fruit nobody eats.";
-        case CORK_BOARD->"The chore chart, more stars in Merry's column than Marjorie's. A permission slip nobody signed. The parish bulletin.";
-        case BACKPACKS->"Two school bags on their hooks. Marjorie's is covered in pen. Merry's has a keyring of a cat.";
-        case COVERED->"The family's sofa and their old set, under dust sheets since the crew moved in. A corner held with gaffer tape.";
-        case SCHEDULE_BOARD->"The shooting schedule in marker, the days crossed off as they go. Somebody has written a priest's name with a question mark.";
-        case STUFFED->"A bear, a lamb and a frog, set in a row facing the door.";
-        case CEILING_STARS->"Stars that glow in the dark. Somebody stood on the bed to stick them up.";
-        case DRAWINGS->"Three drawings taped in a row: the cardboard house, her sister, and a monster under a bed with enormous feet.";
-        case TOYS->"A stuffed rabbit, letter blocks, a plastic pony with its mane brushed flat.";
-        case FAIRY_LIGHTS->"Fairy lights pinned along the wall. Half the bulbs still work.";
+        case LINEN_SHELVES->"Towels, sheets and board games. It smells of dryer sheets.";
+        case FRUIT_BOWL->"Apples, and a banana going brown.";
+        case CORK_BOARD->"The chore chart, more stars in Merry's column. The parish bulletin.";
+        case BACKPACKS->"Two school bags. Marjorie's is covered in pen; Merry's has a cat keyring.";
+        case COVERED->"The family's sofa and old set, under dust sheets taped down by the crew.";
+        case SCHEDULE_BOARD->"The shooting schedule, the days crossed off. A priest's name with a question mark.";
+        case STUFFED->"A bear, a lamb and a frog in a row, facing the door.";
+        case CEILING_STARS->"Glow-in-the-dark stars on the ceiling.";
+        case DRAWINGS->"Three drawings: the cardboard house, her sister, and a monster with enormous feet.";
+        case TOYS->"A stuffed rabbit, letter blocks, a plastic pony.";
+        case FAIRY_LIGHTS->"Fairy lights along the wall. Half the bulbs work.";
         case POSTER_C->"A band poster with half the faces scratched out in pen.";
-        case PINBOARD->"Photo-booth strips with friends from school, two ticket stubs, a pressed flower going brown.";
-        case GUITAR->"A guitar with a string missing. A chord chart is still taped to the neck.";
-        case BOOMBOX->"A boombox, and its CDs out of their cases in a stack.";
-        case NIGHTSTAND_JOHN->"His side of the bed. A Bible with a rosary laid on it, and the alarm set early.";
-        case NIGHTSTAND_SARAH->"Her side. A paperback face down where she stopped, her reading glasses on top of it.";
-        case DESK->"The family computer, the job listings in a stack beside it. Two are circled. One is crossed out hard.";
-        case FRIDGE,FRIDGE_TOP->"Magnets, a takeout menu, one of Merry's drawings, the school lunch calendar.";
-        case CONSOLE->"The mail on the hall table. The bills are on top, still in their envelopes.";
-        case CALENDAR->"Appointments in two hands. One day is written in red, all capitals: FILMING STARTS.";
-        case WINDOW,WINDOW_HEAD->"The blinds are drawn. The crew keeps the daylight out of the house.";
-        case DOUBLE_BED->"Their bed, made in a hurry. One pillow has been slept on and one has not.";
-        case DESK_KID->"Merry's homework, a spelling list with a gold star, and a pencil chewed at the end.";
-        case POSTER_A->"A band poster, the corners curling where the tape is giving up.";
-        case POSTER_B->"The planets, in order. Pluto has been put back in in pen.";
+        case PINBOARD->"Photo-booth strips, two ticket stubs, a pressed flower.";
+        case GUITAR->"A guitar with a string missing, a chord chart taped to the neck.";
+        case BOOMBOX->"A boombox and a stack of loose CDs.";
+        case NIGHTSTAND_JOHN->"His side: a Bible with a rosary on it, the alarm set early.";
+        case NIGHTSTAND_SARAH->"Her side: a paperback face down, her reading glasses on top.";
+        case DESK->"The family computer and a stack of job listings, two of them circled.";
+        case FRIDGE,FRIDGE_TOP->"Magnets, a takeout menu, one of Merry's drawings.";
+        case CONSOLE->"The mail. The bills are on top, unopened.";
+        case CALENDAR->"Appointments in two hands. One day in red capitals: FILMING STARTS.";
+        case WINDOW,WINDOW_HEAD->"The blinds are drawn for the crew's lights.";
+        case DOUBLE_BED->"Their bed, made in a hurry.";
+        case DESK_KID->"Merry's homework, a spelling list with a gold star.";
+        case POSTER_A->"A band poster, its corners curling.";
+        case POSTER_B->"The planets, in order. Pluto added back in pen.";
         case CLOTHES->"Clothes where they were dropped.";
-        case SOFTBOX,DIRECTORS_CHAIR,VILLAGE_CART,APPLE_BOXES,SANDBAGS,CRAFT_TABLE,FOLDING_TABLE->"The crew's. Nobody in the family has touched it.";
+        case COAT_HOOKS->"John's navy coat, Sarah's red raincoat, Merry's school bag.";
+        case COAT_HOOKS_B->"A trench coat, Merry's yellow raincoat, a long striped scarf.";
+        case SIDEBOARD_L,SIDEBOARD_R->"The good placemats and the napkins nobody uses, in the sideboard.";
+        case RANGE->"The stove is still warm. A pan soaks in the sink.";
+        case RANGE_HOOD->"The hood light is left on at night.";
+        case WALL_CABINET->"Plates, mismatched glasses, the cereal on the top shelf.";
+        case MICROWAVE->"The clock on the microwave is four minutes fast.";
+        case TOASTER->"Crumbs in the tray. The jar beside it is for coins.";
+        case COFFEE_MAKER->"Half a pot of coffee from this morning.";
+        case DISHWASHER->"Clean dishes nobody has put away.";
+        case RUG_RUNNER,RUG_RUNNER_NARROW->"The runner, worn thin down the middle.";
+        case RUG_LIVING->"The rug is worn paler where the sofa's feet go.";
+        case MERRY_RUG->"Merry's rug: a moon, Saturn with its rings, and stars.";
+        case RUG_SHAG->"Marjorie's rug. It needs vacuuming.";
+        case SOFTBOX->"A softbox on its stand, aimed at where the family sits.";
+        case DIRECTORS_CHAIR->"A canvas director's chair.";
+        case VILLAGE_CART->"The crew's cart of cables and spare batteries.";
+        case APPLE_BOXES->"Apple boxes, for standing a camera or a person taller.";
+        case SANDBAGS->"Sandbags for the light stands.";
+        case CRAFT_TABLE->"Coffee urn and a box of doughnuts.";
+        case FOLDING_TABLE->"Tape, markers and spare call sheets.";
         default->null;
     };}
     private static String meal(int day,boolean plain){return switch(day){case 1->"Stew waits in the bowls while the crew finishes the interviews.";case 3->"Sandwiches, cut before anyone asked whether the girls were hungry.";case 4->"Soup has gone cool during the private conversation.";case 5->"Roast and vegetables, served around another upstairs evaluation.";case 6->"Potatoes and peas. The equipment is already being carried upstairs.";case 7->plain?"Merry's spaghetti has no sauce. Her plate looks ordinary.":"Spaghetti again. The family is eating after the programme has ended.";default->plain?"Plain spaghetti on Merry's plate.":"Spaghetti, eaten under the crew's lights.";};}

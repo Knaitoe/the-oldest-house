@@ -2159,6 +2159,373 @@ def m_nightstand_sarah():
     return nightstand() + [box((3, 12, 5), (9, 12.8, 12), 'p'), box((4, 12.8, 7), (8, 13.2, 8), 'k'), box((11, 12, 8), (13.5, 16, 10.5), 'g')]
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.220: the owner's walk-through
+# "duplicate clothes", "more repeated clutter", "a kitchen with no appliances", "barry should be facing the monitor. something
+# should be on the monitor", "add a unique rug to mary's room": a second coat rail with its own coats, a sideboard instead of
+# two dressers, a kitchen with its stove, hood, wall cabinets, microwave, toaster, coffee maker and dishwasher, the crew's field
+# monitor showing the dinner table, and a rug of each room's own.
+def coats_b():
+    """The second rail: John's tan trench coat with its belt, Merry's yellow raincoat with the hood up on the hook, a striped scarf."""
+    img = canvas()
+    rect(img, 0, 0, 5, 15, (176, 146, 102), .05, 5301)
+    for x in range(6):
+        px(img, x, 8, (132, 104, 70))
+    px(img, 2, 8, (210, 190, 140)); px(img, 1, 0, (140, 112, 76)); px(img, 4, 0, (140, 112, 76))
+    for y in (3, 6, 11):
+        px(img, 1, y, (110, 86, 58))
+    rect(img, 6, 1, 10, 13, (236, 196, 56), .05, 5302)
+    rect(img, 7, 1, 9, 3, (214, 174, 42)); px(img, 8, 2, (60, 52, 40))
+    for y in (6, 9):
+        px(img, 8, y, (250, 250, 250))
+    for x in range(6, 11):
+        px(img, x, 13, (196, 156, 36))
+    for y in range(0, 16):
+        c = (178, 44, 52) if (y // 2) % 2 == 0 else (232, 224, 206)
+        px(img, 12, y, c); px(img, 13, y, mul(c, .9))
+    for y in (14, 15):
+        px(img, 11, y, (232, 224, 206)); px(img, 14, y, (178, 44, 52))
+    return img
+
+
+def sideboard_drawers():
+    """The sideboard's left half: two drawers over a cupboard, brass pulls, the walnut's grain across them."""
+    img = walnut()
+    rect(img, 0, 0, 15, 15, (98, 68, 46), .03, 5303)
+    for (y0, y1) in ((1, 4), (6, 14)):
+        rect(img, 1, y0, 14, y1, (112, 78, 54), .03, 5304 + y0); bevel(img, 1, y0, 14, y1)
+    rect(img, 6, 2, 9, 2, (200, 168, 92)); rect(img, 12, 9, 12, 11, (200, 168, 92))
+    return img
+
+
+def sideboard_doors():
+    """The right half: two cupboard doors with raised panels and brass knobs."""
+    img = canvas()
+    rect(img, 0, 0, 15, 15, (98, 68, 46), .03, 5306)
+    for x0 in (1, 8):
+        rect(img, x0, 1, x0 + 6, 14, (112, 78, 54), .03, 5307 + x0); bevel(img, x0, 1, x0 + 6, 14)
+        rect(img, x0 + 2, 3, x0 + 4, 12, (106, 74, 50)); bevel(img, x0 + 2, 3, x0 + 4, 12, .86, 1.12)
+    px(img, 6, 8, (204, 172, 96)); px(img, 9, 8, (204, 172, 96))
+    return img
+
+
+def range_top():
+    """The stove's top: four black coil burners on white enamel, the big ones at the front, a chrome trim round the edge."""
+    img = ground((238, 236, 230), 5310, .012)
+    for x in range(16):
+        px(img, x, 0, (180, 184, 190)); px(img, x, 15, (180, 184, 190))
+    for y in range(16):
+        px(img, 0, y, (180, 184, 190)); px(img, 15, y, (180, 184, 190))
+    for cx, cy, r in ((4.5, 4.5, 2.6), (11.5, 4.5, 2.2), (4.5, 11, 3.0), (11.5, 11, 2.6)):
+        for y in range(16):
+            for x in range(16):
+                d = ((x - cx) ** 2 + (y - cy) ** 2) ** .5
+                if d <= r:
+                    ring = abs(d - r * .66) < .55 or d > r - .6
+                    px(img, x, y, (30, 30, 32) if ring else (74, 74, 78))
+    return img
+
+
+def range_front():
+    """The oven door: a dark window with the rack's shadow in it, the bar handle, the drawer beneath."""
+    img = ground((236, 234, 228), 5311, .012)
+    rect(img, 1, 2, 14, 2, (186, 190, 196)); rect(img, 1, 1, 14, 1, (220, 224, 230))
+    rect(img, 3, 4, 12, 9, (28, 28, 32)); bevel(img, 3, 4, 12, 9, 1.3, .9)
+    for x in range(4, 12):
+        px(img, x, 7, (52, 50, 48))
+    rect(img, 1, 12, 14, 12, (200, 198, 192)); rect(img, 6, 13, 9, 13, (170, 174, 180))
+    return img
+
+
+def range_back():
+    """The stove's backguard: four knobs and the little clock between them."""
+    img = ground((236, 234, 228), 5312, .012)
+    for x in (2, 4, 11, 13):
+        px(img, x, 7, (40, 40, 42)); px(img, x, 8, (70, 70, 74))
+    rect(img, 6, 6, 9, 9, (30, 32, 30)); px(img, 7, 7, (120, 220, 120)); px(img, 8, 8, (120, 220, 120))
+    return img
+
+
+def hood():
+    """The range hood: brushed steel, a seam where the vent goes up into the cabinet."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mix((196, 200, 206), (150, 156, 164), (y % 4) / 6))
+    for x in range(16):
+        px(img, x, 15, (120, 126, 134))
+    return img
+
+
+def hood_light():
+    """The hood from below: the grease filter and the little bulb that is always on."""
+    img = ground((90, 94, 100), 5313, .04)
+    for y in range(1, 15, 2):
+        for x in range(1, 15):
+            px(img, x, y, (60, 64, 70))
+    rect(img, 6, 6, 9, 9, (255, 236, 180))
+    return img
+
+
+def cabinet_front():
+    """An upper cabinet: two white shaker doors, a brass knob on each where they meet."""
+    img = ground((238, 236, 228), 5314, .012)
+    for x0 in (0, 8):
+        rect(img, x0, 0, x0 + 7, 15, (236, 234, 226)); bevel(img, x0, 0, x0 + 7, 15, 1.04, .82)
+        rect(img, x0 + 2, 2, x0 + 5, 13, (230, 228, 220)); bevel(img, x0 + 2, 2, x0 + 5, 13, .9, 1.04)
+    px(img, 6, 12, (196, 164, 90)); px(img, 9, 12, (196, 164, 90))
+    return img
+
+
+def microwave_front():
+    """The microwave: its dark door, a plate's shadow inside, the keypad and the green clock."""
+    img = canvas()
+    rect(img, 0, 0, 15, 15, (210, 210, 206), .02, 5315)
+    rect(img, 1, 1, 10, 14, (24, 24, 28)); bevel(img, 1, 1, 10, 14, 1.4, .9)
+    for x in range(3, 9):
+        px(img, x, 11, (44, 44, 48))
+    rect(img, 12, 2, 14, 3, (24, 30, 24)); px(img, 12, 2, (110, 220, 110)); px(img, 14, 2, (110, 220, 110))
+    for y in range(5, 13, 2):
+        for x in (12, 14):
+            px(img, x, y, (150, 150, 150))
+    return img
+
+
+def toaster():
+    """A chrome toaster: the two slots on top, the lever, a crumb or two."""
+    img = chrome()
+    for y in (4, 11):
+        rect(img, 3, y, 12, y + 1, (40, 40, 42))
+    return img
+
+
+def coffee_front():
+    """The coffee maker: the black body, its warming plate, the glass carafe a third full."""
+    img = canvas()
+    rect(img, 0, 0, 15, 15, (34, 34, 36), .04, 5316)
+    rect(img, 2, 6, 13, 14, (170, 190, 196)); bevel(img, 2, 6, 13, 14, 1.2, .8)
+    rect(img, 3, 11, 12, 13, (84, 48, 28))
+    rect(img, 1, 15, 14, 15, (60, 60, 64)); px(img, 12, 2, (220, 50, 40))
+    return img
+
+
+def dishwasher_front():
+    """The dishwasher: a stainless door with its handle bar and the control strip along the top."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mix((200, 204, 208), (170, 174, 180), ((x * 3 + y) % 7) / 7))
+    rect(img, 0, 0, 15, 2, (60, 62, 66)); px(img, 3, 1, (110, 220, 110)); px(img, 12, 1, (200, 200, 200)); px(img, 13, 1, (200, 200, 200))
+    rect(img, 2, 4, 13, 4, (236, 238, 242)); rect(img, 2, 5, 13, 5, (130, 134, 140))
+    return img
+
+
+def feed():
+    """The crew's field monitor: the camera's live picture of the dinner table from the corner, the family at their plates,
+    the safe-area lines, a red REC light and the running timecode."""
+    rng = random.Random(5317)
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            v = rng.randrange(6)
+            px(img, x, y, (54 + v, 46 + v, 40 + v))
+    rect(img, 3, 7, 12, 10, (126, 96, 66)); rect(img, 4, 8, 11, 9, (150, 116, 80))
+    for x, hair, shirt in ((4, (60, 40, 30), (70, 90, 130)), (7, (150, 70, 38), (180, 90, 90)), (10, (44, 30, 24), (60, 60, 64))):
+        px(img, x, 4, hair); px(img, x, 5, (214, 176, 148)); px(img, x, 6, shirt); px(img, x + 1, 6, shirt)
+    px(img, 6, 11, (176, 128, 70)); px(img, 6, 12, (214, 176, 148)); px(img, 6, 13, (120, 78, 160))
+    for x in range(1, 15):
+        if x % 3:
+            px(img, x, 1, (220, 220, 220), 140); px(img, x, 14, (220, 220, 220), 140)
+    px(img, 1, 1, (230, 40, 40)); px(img, 2, 1, (230, 40, 40))
+    for x in range(9, 15):
+        px(img, x, 15, (230, 230, 230) if x % 2 else (40, 40, 40))
+    return img
+
+
+def rug_runner():
+    """The hall runner, one half of its width: burgundy wool, a cream and gold border down its outer edge, lozenges down its middle."""
+    img = ground((112, 30, 36), 5318, .05)
+    for y in range(16):
+        px(img, 0, y, (226, 210, 170)); px(img, 1, y, (196, 150, 70)); px(img, 2, y, (226, 210, 170))
+        px(img, 3, y, (90, 22, 28))
+    for y in range(16):
+        k = abs((y % 8) - 4)
+        for x in range(16):
+            if abs(x - 11) == k:
+                px(img, x, y, (206, 168, 92))
+            elif abs(x - 11) < k:
+                px(img, x, y, (62, 70, 102))
+    return img
+
+
+def rug_runner_narrow():
+    """The landing's runner, one block wide: a border down both edges, lozenges between."""
+    img = ground((60, 70, 100), 5319, .05)
+    for y in range(16):
+        for x, c in ((0, (210, 196, 160)), (1, (150, 46, 44)), (14, (150, 46, 44)), (15, (210, 196, 160))):
+            px(img, x, y, c)
+    for y in range(16):
+        k = abs((y % 8) - 4)
+        for x in range(3, 13):
+            if abs(x - 7.5) <= k - .5 and abs(x - 7.5) > k - 1.5:
+                px(img, x, y, (206, 180, 120))
+    return img
+
+
+def rug_living():
+    """The living room's rug: a faded rust and cream lattice on navy, worn paler where the sofa's feet go."""
+    img = ground((44, 54, 84), 5320, .05)
+    for y in range(16):
+        for x in range(16):
+            u, v = (x + y) % 8, (x - y) % 8
+            if u == 0 or v == 0:
+                px(img, x, y, (206, 190, 156))
+            elif u == 4 and v == 4:
+                px(img, x, y, (170, 84, 52))
+            elif (u in (3, 5)) and (v in (3, 5)):
+                px(img, x, y, (140, 70, 46))
+    return img
+
+
+def merry_rug():
+    """Merry's own rug, two blocks by two: a round night sky, navy with a fringe, a fat crescent moon, ringed Saturn, red Mars and
+    stars, to go with the planets on her wall and the glow stars on her ceiling. Returns the whole 32-pixel picture."""
+    rng = random.Random(5321)
+    img = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
+    def put(x, y, c, a=255):
+        if 0 <= x < 32 and 0 <= y < 32:
+            img.putpixel((x, y), clamp(c) + (a,))
+    for y in range(32):
+        for x in range(32):
+            d = ((x - 15.5) ** 2 + (y - 15.5) ** 2) ** .5
+            if d <= 15.6:
+                fringe = d > 14.4
+                put(x, y, (226, 214, 180) if fringe and (x + y) % 2 else (196, 182, 146) if fringe else mul((34, 42, 92), 1 + rng.uniform(-.06, .06)))
+    for y in range(32):
+        for x in range(32):
+            d1 = ((x - 11) ** 2 + (y - 10) ** 2) ** .5; d2 = ((x - 13.5) ** 2 + (y - 8.5) ** 2) ** .5
+            if d1 <= 4.6 and d2 > 4.2:
+                put(x, y, (246, 216, 96))
+    for y in range(32):
+        for x in range(32):
+            if ((x - 21) ** 2 + (y - 19) ** 2) ** .5 <= 2.6:
+                put(x, y, (226, 150, 70) if (y - 19) % 2 else (240, 176, 96))
+    for x in range(16, 27):
+        if abs(x - 21) > 1:
+            put(x, 19 + (1 if x < 21 else 0) - (1 if x > 23 else 0), (220, 200, 150))
+    for y in range(32):
+        for x in range(32):
+            if ((x - 9) ** 2 + (y - 23) ** 2) ** .5 <= 1.6:
+                put(x, y, (200, 70, 54))
+    for x, y in ((20, 7), (25, 11), (7, 16), (15, 26), (24, 25), (17, 13), (5, 11), (12, 19), (27, 16), (19, 23)):
+        put(x, y, (250, 246, 220))
+    for x, y in ((20, 7), (7, 16), (24, 25)):
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            put(x + dx, y + dy, (236, 222, 150))
+    return img
+
+
+def merry_rug_part(i):
+    """One quarter of Merry's rug: 0 north-west, 1 north-east, 2 south-east, 3 south-west."""
+    x, y = ((0, 0), (16, 0), (16, 16), (0, 16))[i]
+    return merry_rug().crop((x, y, x + 16, y + 16))
+
+
+def rug_shag():
+    """Marjorie's shag rug: deep plum pile, tufts lighter and darker where it has been walked on and sat on."""
+    rng = random.Random(5322)
+    img = ground((92, 46, 96), 5322, .08)
+    for _ in range(70):
+        x, y = rng.randrange(16), rng.randrange(16)
+        px(img, x, y, mul((92, 46, 96), rng.choice((.7, .8, 1.25, 1.35))))
+    return img
+
+
+TEXTURES.update({f.__name__: f for f in (coats_b, sideboard_drawers, sideboard_doors, range_top, range_front, range_back, hood,
+                                         hood_light, cabinet_front, microwave_front, toaster, coffee_front, dishwasher_front, feed,
+                                         rug_runner, rug_runner_narrow, rug_living, rug_shag)})
+TEXTURES.update({f'merry_rug_{i}': (lambda i=i: merry_rug_part(i)) for i in range(4)})
+GLOW.update({'feed': 8, 'hood_light': 10})
+
+
+@spec('coat_hooks_b', {'o': 'oak', 'c': 'coats_b'}, 'coats_b')
+def m_coat_hooks_b():
+    return [box((0, 13, 14.5), (16, 14.5, 16), 'o'), box((1, 1, 13), (5.5, 13, 15.5), 'c', uv=(0, 0, 6, 16)),
+            box((6, 3, 12.5), (10.5, 13, 15.5), 'c', uv=(6, 1, 11, 14)), box((11.5, 0, 14), (14.5, 13, 15.5), 'c', uv=(11, 0, 15, 16))]
+
+
+@spec('sideboard_l', {'w': 'walnut', 'f': 'sideboard_drawers', 'k': 'black', 'c': 'ceramic', 'l': 'lamp_shade'}, 'walnut')
+def m_sideboard_l():
+    """The sideboard's left half, against the wall: two drawers over a cupboard; on top, the table lamp."""
+    return [box((0, 1, 3), (16, 13, 16), 'w', over={'north': 'f'}), box((1, 0, 4), (15, 1, 15), 'k'),
+            box((5, 13, 8), (9, 14, 12), 'c'), box((6.5, 14, 9.5), (7.5, 20, 10.5), 'c'),
+            box((3.5, 20, 6.5), (10.5, 25, 13.5), 'l', faces=('north', 'south', 'east', 'west', 'down'))]
+
+
+@spec('sideboard_r', {'w': 'walnut', 'f': 'sideboard_doors', 'k': 'black', 'c': 'ceramic', 'g': 'leaves', 'm': 'white'}, 'walnut')
+def m_sideboard_r():
+    """The right half: two cupboard doors; on top, a vase of flowers from the garden and the good placemats in a stack."""
+    return [box((0, 1, 3), (16, 13, 16), 'w', over={'north': 'f'}), box((1, 0, 4), (15, 1, 15), 'k'),
+            box((9.5, 13, 8), (12.5, 19, 11), 'c'), box((8, 18, 9.5), (14, 24, 9.5), 'g', faces=('north', 'south')),
+            box((2, 13, 6), (7, 14.2, 12), 'm')]
+
+
+@spec('range', {'t': 'range_top', 'f': 'range_front', 'b': 'range_back', 'w': 'white', 'k': 'black'}, 'range_front')
+def m_range():
+    return [box((0, 1, 1), (16, 15, 16), 'w', over={'north': 'f', 'up': 't'}), box((1, 0, 2), (15, 1, 15), 'k'),
+            box((0, 15, 14), (16, 19, 16), 'w', over={'north': 'b'})]
+
+
+@spec('range_hood', {'h': 'hood', 'l': 'hood_light'}, 'hood')
+def m_range_hood():
+    return [box((0, -2, 7), (16, 3, 16), 'h', over={'down': 'l'}), box((4, 3, 10), (12, 16, 16), 'h')]
+
+
+@spec('wall_cabinet', {'w': 'white', 'f': 'cabinet_front'}, 'cabinet_front')
+def m_wall_cabinet():
+    return [box((0, -4, 9), (16, 14, 16), 'w', over={'north': 'f'}, uv=(0, 0, 16, 16))]
+
+
+@spec('microwave', {'f': 'microwave_front', 'w': 'white', 'k': 'black'}, 'microwave_front')
+def m_microwave():
+    return [box((2, .5, 5), (15, 8.5, 14), 'w', over={'north': 'f'}, uv=(0, 0, 16, 16)), box((3, 0, 6), (14, .5, 13), 'k')]
+
+
+@spec('toaster', {'t': 'toaster', 'k': 'black', 'c': 'ceramic'}, 'toaster')
+def m_toaster():
+    return [box((3, 0, 7), (10, 6, 12), 't'), box((10, 3, 9), (10.6, 4, 10), 'k'),
+            box((11.5, 0, 6), (14.5, 4, 9), 'c')]
+
+
+@spec('coffee_maker', {'f': 'coffee_front', 'k': 'black'}, 'coffee_front')
+def m_coffee_maker():
+    return [box((4, 0, 6), (12, 11, 14), 'k', over={'north': 'f'}, uv=(0, 0, 16, 16))]
+
+
+@spec('dishwasher', {'f': 'dishwasher_front', 'w': 'white', 't': 'the_oldest_house:block/ghosts/formica'}, 'dishwasher_front')
+def m_dishwasher():
+    return [box((0, 0, 1), (16, 14, 16), 'w', over={'north': 'f'}, uv=(0, 0, 16, 16)), box((0, 14, 0), (16, 16, 16), 't')]
+
+
+@spec('field_monitor', {'s': 'feed', 'k': 'black'}, 'feed')
+def m_field_monitor():
+    """The crew's field monitor on its stand, turned to the director's chairs, showing the camera's live picture of the table."""
+    return [box((5, 0, 8), (11, 1, 13), 'k'), box((7.5, 1, 10), (8.5, 4, 11), 'k'),
+            box((1, 4, 9), (15, 14, 11), 'k', over={'north': 's'}, uv=(0, 0, 16, 16))]
+
+
+def rug(name, tex):
+    spec(name, {'r': tex}, tex)(lambda: [box((0, 0, 0), (16, .5, 16), 'r', faces=('up', 'north', 'south', 'east', 'west'), uv=(0, 0, 16, 16))])
+
+
+rug('rug_runner', 'rug_runner')
+rug('rug_runner_narrow', 'rug_runner_narrow')
+rug('rug_living', 'rug_living')
+rug('rug_shag', 'rug_shag')
+# Merry's rug: one kind, its quarter chosen by the block's facing (see files()); each quarter is drawn unturned.
+for _i, _q in enumerate(('nw', 'ne', 'se', 'sw')):
+    spec(f'merry_rug_{_q}', {'r': f'merry_rug_{_i}'}, f'merry_rug_{_i}')(lambda: [box((0, 0, 0), (16, .5, 16), 'r', faces=('up', 'north', 'south', 'east', 'west'), uv=(0, 0, 16, 16))])
+
+
 @spec('case_closed', {'s': 'case_shell', 'l': 'case_label', 'k': 'black'}, 'case_shell')
 def m_case_closed():
     return [box((1, 0, 1), (15, 10, 15), 's', over={'up': 'l'}), box((6, 10, 6), (10, 11.5, 7), 'k'), box((6, 10, 9), (10, 11.5, 10), 'k'),
@@ -2170,14 +2537,16 @@ def m_case_open():
     return [box((1, 0, 1), (15, 8, 15), 's', over={'up': 'f'}), box((1, 8, 14), (15, 21, 15.5), 's', over={'north': 'l'})]
 
 
-KINDS = [k for k in MODEL_SPECS if k not in ('case_closed', 'case_open')]
+MERRY_QUARTERS = {'north': 'merry_rug_nw', 'east': 'merry_rug_ne', 'south': 'merry_rug_se', 'west': 'merry_rug_sw'}
+KINDS = [k for k in MODEL_SPECS if k not in ('case_closed', 'case_open') and k not in MERRY_QUARTERS.values()]
+MODELLED = KINDS + list(MERRY_QUARTERS.values())
 TURN = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 CUBES = {'paint', 'concrete', 'drywall'}
 
 
 def model_json(name):
     fn, textures, particle = MODEL_SPECS[name]
-    tex = {k: NS + v for k, v in textures.items()}
+    tex = {k: v if ':' in v else NS + v for k, v in textures.items()}
     tex['particle'] = NS + particle
     if name in CUBES:
         return {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + textures['t']}}
@@ -2193,7 +2562,7 @@ def files():
     out = {}
     for name, fn in TEXTURES.items():
         out[TEX / f'{name}.png'] = fn()
-    for name in KINDS:
+    for name in MODELLED:
         out[MODELS / f'{name}.json'] = json.dumps(model_json(name), indent=1) + '\n'
     out[TEX / 'tv_cartoon.png.mcmeta'] = json.dumps({'animation': {'frametime': 4, 'interpolate': False}}, indent=2) + '\n'
     # 0.4.202: the crew's case and the day-three crack, in this house's style (their blocks belong to the set's older art).
@@ -2209,6 +2578,7 @@ def files():
             if y:
                 v['y'] = y
             variants[f'facing={facing},kind={kind}'] = v
+        variants[f'facing={facing},kind=merry_rug'] = {'model': NS + MERRY_QUARTERS[facing]}
     out[STATES / 'barrett_home.json'] = json.dumps({'variants': variants}, indent=1) + '\n'
     return out
 

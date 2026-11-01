@@ -101,6 +101,10 @@ LOOKS = {
     # Polybius (0.4.217): the two men in suits by the black cabinet, on stranger phases forty-one and forty-two.
     'literary_polybius_a': Look('#c9a283','#2a2622','close','#16171b','#141519','suit','#e6e6e8',eyes='#3a3a3a',age=1,glasses=True),
     'literary_polybius_b': Look('#94684c','#1c1a18','receding','#1a1b20','#16171b','suit','#dcdcde',eyes='#2c2a28',age=2),
+    # 0.4.220 (owner: Brad's textures were "not in line with the mod"): Brad in the God of the Pitt, painted like the rest of the
+    # cast instead of built from blocks: a mud-stained orange oversuit, the harness over it, a short beard, his caving helmet
+    # with the lamp on its front (stranger phases forty-four to forty-six: lamp dark, flashing white, strobing amber).
+    'literary_pitt_brad': Look('#c79a7a','#5a3e2a','close','#a8502c','#93462a','crew','#2e2e2c',eyes='#4a5866',age=1,beard='short',mark='caver',sleeve=10),
     # The replacement (0.4.218): the one who keeps house in the open house on the street, on stranger phase forty-three.
     'literary_replacement': Look('#cdb29a','#7a7068','messy','#7c6c52','#4a443c','cardigan','#9a8c72',eyes='#4e4c44',age=2),
     'literary_usher_roderick': Look('#ddd4ca','#3a312b','messy','#252229','#29262a','coat','#d6cfc0',eyes='#2c323e',age=1),
@@ -929,6 +933,17 @@ def paint(look):
             fill_net(net(48,32,1,1,10),'#886c40');fill_net(net(72,32,2,5,3),'#9b9d90')
         if look.mark=='hardhat':
             fill_net(net(64,0,8,3,8),'#a68d49');fill_net(net(64,16,10,1,10),'#c1a35c')
+        if look.mark=='caver':
+            # A yellow caving helmet scuffed with clay, its brim, and the lamp's brass housing on the front of the shell.
+            fill_net(net(64,0,8,3,8),'#c9a12e');fill_net(net(64,16,10,1,10),'#a8862a')
+            d=ImageDraw.Draw(im);f=net(64,0,8,3,8)['front']
+            for x,y in ((f[0]+1,f[1]+2),(f[0]+6,f[1]+1)):d.rectangle((x*S,y*S,x*S+S-1,y*S+S-1),fill='#8c6a3a')
+            d.rectangle(((f[0]+3)*S,f[1]*S,(f[0]+5)*S-1,(f[1]+2)*S-1),fill='#7a6a46')
+            d.rectangle((round((f[0]+3.5)*S),round((f[1]+.5)*S),round((f[0]+4.5)*S)-1,round((f[1]+1.5)*S)-1),fill='#e6e2c8')
+            # Clay on the knees and the seat of the suit, and the harness's buckle at the waist.
+            for islands,c in ((net(0,16,4,12,4),'#7a5a3e'),(net(16,48,4,12,4),'#7a5a3e')):
+                b=islands['front'];d.rectangle((b[0]*S,(b[1]+5)*S,b[2]*S-1,(b[1]+7)*S-1),fill=c)
+            b=net(16,16,8,12,4)['front'];d.rectangle(((b[0]+3)*S,(b[1]+8)*S,(b[0]+5)*S-1,(b[1]+9)*S-1),fill='#b8b4a6')
         if look==LOOKS.get('literary_lake_tess'):
             for box in ((64,0,82,24),(84,0,100,24)):put(box,panel((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look.hair,'hair'))
         if look.style in ('uniform','waistcoat') or look in HOTEL or look==LOOKS.get('stanley_bath_ghost'):
@@ -1068,6 +1083,13 @@ def house_body(age,presentation,cut):
     return out
 
 
+def brad_lamp():
+    """Brad's lamp alone, for the glow drawn over his helmet when it is lit: black everywhere but the glass."""
+    im=Image.new('RGBA',(128*S,64*S),(0,0,0,0));f=net(64,0,8,3,8)['front']
+    ImageDraw.Draw(im).rectangle(((f[0]+3)*S,f[1]*S,(f[0]+5)*S-1,(f[1]+2)*S-1),fill=(255,255,255,255))
+    return im
+
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');args=parser.parse_args()
     paintings={name:paint(look) for name,look in LOOKS.items()}
@@ -1080,6 +1102,7 @@ def main():
     paintings['finale_materials']=material_sheet(256,512)
     for name,wound,skinned in [('literary_elk',False,False),('literary_elk_wounded',True,False),('literary_elk_carcass',True,False),('literary_elk_carcass_skinned',True,True)]:paintings[name]=elk_skin(wound,skinned)
     paintings['literary_snow_rabbit']=rabbit_skin()
+    paintings['literary_pitt_brad_lamp']=brad_lamp()
     # Historical alternate DJ sheet remains valid for resource packs, but production uses the proper head net.
     paintings['nightclub_dj_head0490']=paint(LOOKS['nightclub_dj'])
     for age in BODY_AGES:

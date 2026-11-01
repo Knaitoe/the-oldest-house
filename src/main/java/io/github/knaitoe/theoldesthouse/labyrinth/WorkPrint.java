@@ -239,6 +239,13 @@ public final class WorkPrint {
                 cue(p,issue==1?"A tape, no label, no box. It is warm, as if someone has only just let go of it.":"The tape is back in the bin, the way it always is.");return true;
             }
             case PHONE->{phone(p,b,own);return true;}
+            // 0.4.220 (owner: "make it interactable"): the till rings up nothing, its drawer opens on the day's float and shuts again.
+            case COUNTER->{
+                int st=s.getValue(WorkPrintBlock.STAGE);if(st==0)return false;
+                stage(l,b.offset(rel),st==1?2:1);
+                l.playSound(null,b.offset(rel),net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BELL.value(),net.minecraft.sounds.SoundSource.BLOCKS,.5F,st==1?1.6F:1.2F);
+                cue(p,st==1?"No sale. The drawer opens on the float and a stack of late-fee slips.":"You push the drawer shut.");return true;
+            }
             case MANNEQUIN->{
                 if(s.getValue(WorkPrintBlock.STAGE)==0&&!own.getBoolean("CostumeTaken")){own.putBoolean("CostumeTaken",true);LiteraryVignettes.give(p,costume(p,own.getBoolean("CountDone")));stage(l,b.offset(rel),1);
                     cue(p,WorkPrintTexts.tag(false,p.getGameProfile().getName())+" You take it down.");}
@@ -248,6 +255,8 @@ public final class WorkPrint {
             case CART,CRT->{deck(p,b,own,held);return true;}
             case BLANKS->{
                 if(own.getInt("BlanksTaken")>=BLANKS){cue(p,"The box of blanks is empty.");return true;}
+                // 0.4.220 (owner): one blank at a time; a reader already carrying one is told so and given none.
+                if(p.getInventory().contains(new ItemStack(WorkPrintRegistry.BLANK.get()))){cue(p,"You already have a blank.");return true;}
                 own.putInt("BlanksTaken",own.getInt("BlanksTaken")+1);LiteraryVignettes.give(p,new ItemStack(WorkPrintRegistry.BLANK.get()));cue(p,"A blank tape, still in its cellophane.");return true;
             }
             case CALL_SHEET->{read(p,b,own,"CallSheet","Call sheet",WorkPrintTexts.CALL_SHEET,rel);return true;}

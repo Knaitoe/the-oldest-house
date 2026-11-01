@@ -70,8 +70,12 @@ public final class LookoutTower {
         for(int i=0;i<5;i++)out.add(new Tread(CX-3+i,CZ+4,16+i));
         return List.copyOf(out);
     }
-    /** The lantern over a landing. */
-    public static BlockPos lantern(Tread t){return new BlockPos(t.x(),t.h()+2,t.z());}
+    /**
+     * The lantern at a landing: hung from a beam over its outer rail, beside the way rather than in it. 0.4.220 (owner: "stairs
+     * that don't allow the player to reach the opening"): it hung over the middle of the landing, in front of the face of
+     * whoever turned onto the next flight.
+     */
+    public static BlockPos lantern(Tread t){return new BlockPos(t.x()+Integer.signum(t.x()-CX),t.h()+2,t.z());}
     public static AABB bounds(BlockPos b){return new AABB(b.offset(-40,-8,-280).getCenter(),b.offset(40,30,0).getCenter());}
 
     // ------------------------------------------------------------------------------------------------ geometry of a cab
@@ -171,9 +175,12 @@ public final class LookoutTower {
             else s=boards;
             set(l,b,t.x(),t.h()-1,t.z(),s);
         }
-        // The rails: both sides of every tread, where nothing else already stands.
-        for(var t:STAIR){if(t.h()<=0||t.h()>=FLOOR)continue;
-            for(var side:Direction.Plane.HORIZONTAL){int x=t.x()+side.getStepX(),z=t.z()+side.getStepZ();if(onStair(x,z))continue;var at=b.offset(x,t.h(),z);if(BuildBlocks.state(l,at).isAir())BuildBlocks.set(l,at,Blocks.SPRUCE_FENCE.defaultBlockState(),F);}}
+        // The rails: both sides of every tread, where nothing else already stands. Where the next tread is a step up, the post
+        // stands two high, so that it meets the next post at the height they share and the rail runs on unbroken up the flight.
+        for(int i=0;i<STAIR.size();i++){var t=STAIR.get(i);if(t.h()<=0||t.h()>=FLOOR)continue;
+            boolean rises=i+1<STAIR.size()&&STAIR.get(i+1).h()>t.h();
+            for(var side:Direction.Plane.HORIZONTAL){int x=t.x()+side.getStepX(),z=t.z()+side.getStepZ();if(onStair(x,z))continue;
+                for(int y=t.h();y<=t.h()+(rises?1:0);y++){var at=b.offset(x,y,z);if(BuildBlocks.state(l,at).isAir())BuildBlocks.set(l,at,Blocks.SPRUCE_FENCE.defaultBlockState(),F);}}}
         // Posts under the three corner landings, down to the snow.
         for(var t:LANDINGS){if(t.h()<=0)continue;for(int y=0;y<t.h()-1;y++)set(l,b,t.x(),y,t.z(),Blocks.SPRUCE_FENCE.defaultBlockState());}
         // A lantern hung over each landing from a beam.
@@ -221,7 +228,9 @@ public final class LookoutTower {
         for(int y=21;y<=ROOF+1;y++)set(l,b,STOVE.getX(),y,cz+(STOVE.getZ()-CZ),Blocks.IRON_BARS.defaultBlockState());
         put(l,b,new BlockPos(CX-4,20,CZ),cz,LookoutBlock.of(LookoutBlock.Kind.COT,Direction.EAST,0));put(l,b,new BlockPos(CX-4,20,CZ+1),cz,LookoutBlock.of(LookoutBlock.Kind.COT,Direction.EAST,1));
         // The hatch onto the stair, railed on its open sides; in the void, a hatch that will not lift.
-        for(var t:TRAPDOORS)put(l,b,t,cz,clearing?Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.FACING,Direction.NORTH).setValue(TrapDoorBlock.OPEN,false):LookoutBlock.of(LookoutBlock.Kind.HATCH,Direction.NORTH,0));
+        // 0.4.220 (owner: "stairs that don't allow the player to reach the opening"): the clearing's hatch stands open against the
+        // south wall, so the stair comes up into the cab through a railed opening rather than under a lid.
+        for(var t:TRAPDOORS)put(l,b,t,cz,clearing?Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.FACING,Direction.NORTH).setValue(TrapDoorBlock.OPEN,true):LookoutBlock.of(LookoutBlock.Kind.HATCH,Direction.NORTH,0));
         if(clearing){
             var top=STAIR.get(STAIR.size()-1);set(l,b,top.x(),FLOOR,cz+(top.z()-CZ),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
             for(var at:new BlockPos[]{new BlockPos(CX-1,20,CZ+3),new BlockPos(CX,20,CZ+3),new BlockPos(CX-2,20,CZ+4)})put(l,b,at,cz,Blocks.SPRUCE_FENCE.defaultBlockState());
