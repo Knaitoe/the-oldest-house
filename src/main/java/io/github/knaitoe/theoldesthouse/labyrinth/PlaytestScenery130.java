@@ -11,12 +11,13 @@ import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.AABB;
 
 /**
- * The 0.4.130 furnishing of three authored rooms, applied as each is built: the cabin's log table, stools, chairs, ferns and
- * masonry fireback; the quiet room's armchairs, coffee table, bookcases, counter and shelves; the Last Stop's steel bins. No
- * source, reward, actor or container is constructed here. (Until 0.4.199 the same plan also walked saved rooms in place.)
+ * The 0.4.130 furnishing of two dressed rooms, applied as each is built: the cabin's log table, stools, chairs, ferns and
+ * masonry fireback; the quiet room's armchairs, coffee table, bookcases, counter and shelves. No source, reward, actor or
+ * container is constructed here. (Until 0.4.199 the same plan also walked saved rooms in place; the Last Stop's steel bins
+ * moved into ElkLot itself in 0.4.226, since a room built whole takes nothing from a pass.)
  */
 public final class PlaytestScenery130 {
-    public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.QUIET_ROOM,LabyrinthPlace.END_WORLD_CABIN,LabyrinthPlace.ELK_LOT);
+    public static final List<LabyrinthPlace> PLACES=List.of(LabyrinthPlace.QUIET_ROOM,LabyrinthPlace.END_WORLD_CABIN);
     public record Edit(BlockPos relative,BlockState expected,BlockState next){}
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private PlaytestScenery130(){}
@@ -58,10 +59,6 @@ public final class PlaytestScenery130 {
             for(int z:new int[]{-8,-10})add(e,4,2,z,air,UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.SHELF,Direction.WEST));
             add(e,4,1,-9,air,UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.CUP,Direction.WEST));
             add(e,2,0,-13,air,UncannyFurnitureBlock.of(UncannyFurnitureBlock.Kind.ARMCHAIR,Direction.EAST));
-        }
-        if(p==LabyrinthPlace.ELK_LOT)for(int x=-12;x<=-11;x++){
-            add(e,x,1,-31,Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.BOTTOM),Blocks.AIR.defaultBlockState());
-            add(e,x,0,-31,Blocks.GREEN_TERRACOTTA.defaultBlockState(),VignetteInteriorBlock.of(x==-12?VignetteInteriorBlock.Kind.DUMPSTER_LEFT:VignetteInteriorBlock.Kind.DUMPSTER_RIGHT,Direction.NORTH));
         }
         return List.copyOf(e);
     }

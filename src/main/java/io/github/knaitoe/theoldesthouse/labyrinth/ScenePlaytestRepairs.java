@@ -32,8 +32,8 @@ public final class ScenePlaytestRepairs {
     @SubscribeEvent public static void stopped(net.neoforged.neoforge.event.server.ServerStoppingEvent event){
         if(work!=null&&work.server==event.getServer()){work.close();work=null;}nextPlace=0;
     }
-    static boolean applies(LabyrinthPlace p){return !DarkHalls.horror(p)&&!UncannyRooms.isUncanny(p)&&!DareRooms.is(p)&&!FeetUpRooms.is(p)&&p!=LabyrinthPlace.WHISTLERS&&p!=LabyrinthPlace.WORK_PRINT&&p!=LabyrinthPlace.POLAROID_TRAIL&&p!=LabyrinthPlace.LEFT_RIGHT&&p!=LabyrinthPlace.DEAD_AIR&&p!=LabyrinthPlace.PITT&&p!=LabyrinthPlace.POLYBIUS&&p!=LabyrinthPlace.REPLACEMENT&&p!=LabyrinthPlace.BARN_WELL&&p!=LabyrinthPlace.HOSPITAL&&p!=LabyrinthPlace.WAY_OUT&&p!=LabyrinthPlace.MODEL_HOME&&p!=LabyrinthPlace.WHEEL&&p!=LabyrinthPlace.WINCHESTER&&p!=LabyrinthPlace.MAPPING_INTERIOR&&p!=LabyrinthPlace.ZAMPANO_COURTYARD&&p!=LabyrinthPlace.KAREN_ROOM&&p!=LabyrinthPlace.DEVILS_ROCK&&p!=LabyrinthPlace.MASQUE&&p!=LabyrinthPlace.BLY_ROUTE&&p!=LabyrinthPlace.USHER&&p!=LabyrinthPlace.HOTEL&&p!=LabyrinthPlace.HOTEL_GROUNDS&&p!=LabyrinthPlace.FAMILY_COPY&&p!=LabyrinthPlace.OLD_CABIN&&p!=LabyrinthPlace.ELK_LOT&&p!=LabyrinthPlace.THREE_FINGERS&&p!=LabyrinthPlace.LAKE_HOUSE
-        &&(p.isVignette()||NovelRooms.outside(p)||p==LabyrinthPlace.FLOODED_PASSAGE);}
+    /** Vignettes, outdoor scenes and the flooded passage the House dresses; never a room built whole (0.4.226). */
+    public static boolean applies(LabyrinthPlace p){return !p.authored()&&(p.isVignette()||NovelRooms.outside(p)||p==LabyrinthPlace.FLOODED_PASSAGE);}
     public static BlockState connected(ServerLevel level,BlockPos at){
         var s=level.getBlockState(at);
         if(!(s.getBlock() instanceof IronBarsBlock)||s.is(Blocks.IRON_BARS))return s;

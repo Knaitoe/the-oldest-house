@@ -89,7 +89,7 @@ public final class SceneCraft {
     private static final int REACH = 6;
 
     public static boolean applies(LabyrinthPlace place) {
-        return ROOMS.contains(place) || GROUNDS.contains(place);
+        return !place.authored() && (ROOMS.contains(place) || GROUNDS.contains(place));
     }
 
     private static String key(BlockPos origin, LabyrinthPlace place) {
