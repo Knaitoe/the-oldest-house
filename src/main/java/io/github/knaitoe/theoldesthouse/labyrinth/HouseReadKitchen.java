@@ -296,7 +296,7 @@ public final class HouseReadKitchen {
         if(region==Region.FACE){
             int mood=read.getInt("Mood")%FACES.size()+1;boolean again=read.getInt("Mood")>0;read.putInt("Mood",mood);fitting.setRead(read);
             HouseRead.see(p,KITCHEN,s->{s.putInt("Mood",mood);if(!s.contains("FirstMood"))s.putInt("FirstMood",mood);});
-            p.displayClientMessage(Component.literal((again?"You rub it out and draw yourself ":"You draw yourself ")+face(mood)+"."),true);
+            p.displayClientMessage(Component.literal((again?"You rub it out and draw yourself ":"You draw yourself ")+faceDrawn(mood)+"."),true);
             HouseReadSites.act(p,KITCHEN,(again?"rubbed out the face and drew it ":"drew the face ")+FACES.get(mood-1));
         }else if(region==Region.CLOTHES||below){
             int body=read.getInt("Body")%BODIES.size()+1;boolean again=read.getInt("Body")>0;read.putInt("Body",body);fitting.setRead(read);
@@ -309,7 +309,10 @@ public final class HouseReadKitchen {
         var t=visit(p);t.putBoolean("NoteArmed",true);save(p,t);
     }
     /** How a face reads in the room's words. */
-    public static String face(int mood){return switch(mood){case 1->"smiling";case 2->"sad, with a tear";case 3->"scared, with wide eyes";case 4->"cross, with narrowed eyes";case 5->"with a straight mouth";default->"";};}
+    /** The face as the House writes it down (its account, the staircase leaves): short, so a leaf keeps to its page. */
+    public static String face(int mood){return switch(mood){case 1->"smiling";case 2->"sad, with a tear";case 3->"scared";case 4->"cross";case 5->"with a straight mouth";default->"";};}
+    /** The face as it is drawn, said at the table (0.4.224): the eyes too. */
+    public static String faceDrawn(int mood){return switch(mood){case 3->"scared, with wide eyes";case 4->"cross, with narrowed eyes";default->face(mood);};}
     /**
      * The read. The first face in a colour a person could be sets {@code TONE} tentatively; hands in the same crayon settle it;
      * a face coloured again in another tone, or hands in another, disagree, and the next decides. A face in blue or green is
