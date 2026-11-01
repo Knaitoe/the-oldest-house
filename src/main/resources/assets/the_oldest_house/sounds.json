@@ -3039,5 +3039,41 @@
         "stream": false
       }
     ]
+  },
+  "dark_hall.rumble": {
+    "subtitle": "subtitles.the_oldest_house.dark_hall.rumble",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dark_hall/rumble",
+        "stream": false
+      }
+    ]
+  },
+  "dark_hall.steps": {
+    "subtitle": "subtitles.the_oldest_house.dark_hall.steps",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dark_hall/steps",
+        "stream": false
+      }
+    ]
+  },
+  "dark_hall.slam": {
+    "subtitle": "subtitles.the_oldest_house.dark_hall.slam",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dark_hall/slam",
+        "stream": false
+      }
+    ]
+  },
+  "dark_hall.land": {
+    "subtitle": "subtitles.the_oldest_house.dark_hall.land",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dark_hall/land",
+        "stream": false
+      }
+    ]
   }
 }

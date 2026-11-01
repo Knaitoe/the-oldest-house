@@ -1,0 +1,28 @@
+{
+  "sounds": {
+    "rumble": {
+      "samples": 74970,
+      "rate": 22050,
+      "ticks": 68,
+      "sha256": "688102161baf95b2b8040ba052fc6be00fce8ad30b1ca97fd389ae84f27b33c0"
+    },
+    "steps": {
+      "samples": 47848,
+      "rate": 22050,
+      "ticks": 44,
+      "sha256": "45e07bfdd793fc2a4775de816c0bd5496ea0a5a9fe19198a47fe864621c6dbfb"
+    },
+    "slam": {
+      "samples": 43659,
+      "rate": 22050,
+      "ticks": 40,
+      "sha256": "bc0177a63f40d689dbab9cdbc8c29217dbc76c94298e5df82336c62b820888d6"
+    },
+    "land": {
+      "samples": 13230,
+      "rate": 22050,
+      "ticks": 12,
+      "sha256": "91a5bf7561beb0b46e8b6847148288421687b92bd47c708feb46249b05fc07e3"
+    }
+  }
+}

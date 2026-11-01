@@ -76,6 +76,8 @@ public final class ScenePolish {
 
     public static boolean applies(LabyrinthPlace place) {
         if(HouseReadSites.kind(place)!=null)return false;
+        // 0.4.208: the dark halls have no fixtures and no light, by design.
+        if(DarkHalls.isDark(place))return false;
         if(UncannyRooms.isUncanny(place)||DareRooms.is(place)||FeetUpRooms.is(place)||place==LabyrinthPlace.WHISTLERS||place==LabyrinthPlace.WORK_PRINT||place==LabyrinthPlace.POLAROID_TRAIL||place==LabyrinthPlace.LEFT_RIGHT||place==LabyrinthPlace.DEAD_AIR||place==LabyrinthPlace.PITT)return false;
         // The child's room (0.4.74) is furnished, lit and dressed whole by ChildRoom, the Last Stop (0.4.78) by ElkLot, and
         // the Three Fingers cottage (0.4.81) by ThreeFingers, the house at the bottom of the lake by LakeHouse, Movie Night (0.4.102) by MovieNight, Costume Night (0.4.103) by CostumeNight and Winter Lake (0.4.104) by WinterLake.

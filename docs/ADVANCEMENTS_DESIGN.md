@@ -40,7 +40,8 @@ Background: the manor's wallpaper. Icons are proposals.
 | `six_doors` | Six doors deep | Far enough in for the House to start telling stories. | `junction` | task | no | return depth 6 | written book |
 | `growl` | Something below | You heard it breathe. | `six_doors` | task | yes | the reader first hears the Growl | sculk shrieker |
 | `stone` | Stone | The papered walls gave way to stone. | `six_doors` | task | no | the reader first enters a stone hall (depth 12) | cobblestone |
-| `twenty_doors` | Twenty doors deep | Deep enough to be offered the stairs. | `stone` | goal | no | return depth 20 | ladder |
+| `dark` | The dark halls | Smooth grey walls, no fixtures, and no light but what you brought. | `stone` | task | no | the reader first enters a dark hall (depth 16, 0.4.208) | gray concrete |
+| `twenty_doors` | Twenty-two doors deep | Deep enough to be offered the stairs. | `dark` | goal | no | return depth 22 (`LabyrinthPacing.STAIRCASE_DEPTH`, 0.4.208) | ladder |
 | `camp` | The explorers' camp | Someone came this way before you and left their things. | `twenty_doors` | task | yes | the reader reaches the camp at the head of the great staircase | campfire |
 | `bound` | Your own book | You bound the first leaf of your House of Leaves. | `camp` | task | yes | the reader binds their first leaf | their House of Leaves |
 | `first_fire` | The first fire | Your own words, burned for light. | `bound` | task | yes | the reader lights the first hearth | flint and steel |

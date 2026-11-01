@@ -392,6 +392,17 @@ public enum LabyrinthPlace {
     DEAD_AIR("dead_air",Kind.MULTI_VISIT,132,new BoundingBox(-26,-5,-70,26,26,0),literaryEntry()),
     /** 0.4.207, the God of the Pitt: Ted the Caver's deeper passages, dealt only after the squeeze is retraced; four visits, no Witness story of its own (PittCave, PittGame). Stands at its own height (PittCave.BASE_Y). */
     PITT("god_of_the_pitt",Kind.MULTI_VISIT,133,new BoundingBox(-24,-38,-64,24,16,0),literaryEntry()),
+    /** 0.4.208, the dark halls (DarkHalls): the third series of ordinary halls, from depth sixteen, the only ones from twenty-one. The long hall. */
+    DARK_LONG("dark_long",Kind.GRAY,134,new BoundingBox(-3,-1,-106,3,9,0),grayDoors(0,0,-105)),
+    /** The forking hall: three branches, one through. */
+    DARK_FORK("dark_fork",Kind.GRAY,135,new BoundingBox(-19,-1,-60,19,8,0),grayDoors(16,0,-59)),
+    /** The ash maze: a small labyrinth with two ways out. */
+    DARK_MAZE("dark_maze",Kind.GRAY,136,new BoundingBox(-13,-1,-27,13,6,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far_west",new BlockPos(-10,0,-26),Direction.SOUTH,LabyrinthData.DEALT),new DoorSpec("far_east",new BlockPos(10,0,-26),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The spiral that goes down round itself and comes out under where it started. */
+    DARK_SPIRAL("dark_spiral",Kind.GRAY,137,new BoundingBox(-5,-12,-17,5,5,0),grayDoors(0,-10,-16)),
+    /** The edge of a great dark room: a walkway along a drop nobody can see the bottom of. */
+    DARK_EDGE("dark_edge",Kind.GRAY,138,new BoundingBox(-3,-13,-66,21,9,0),grayDoors(0,0,-65)),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
