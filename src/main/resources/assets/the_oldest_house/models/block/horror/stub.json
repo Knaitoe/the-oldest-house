@@ -1,0 +1,59 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "u": "the_oldest_house:block/horror/stub",
+    "particle": "the_oldest_house:block/horror/stub"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        0.1,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#u"
+        }
+      }
+    },
+    {
+      "from": [
+        7.25,
+        0,
+        7.25
+      ],
+      "to": [
+        8.75,
+        3,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u"
+        },
+        "south": {
+          "texture": "#u"
+        },
+        "east": {
+          "texture": "#u"
+        },
+        "west": {
+          "texture": "#u"
+        },
+        "up": {
+          "texture": "#u"
+        },
+        "down": {
+          "texture": "#u"
+        }
+      }
+    }
+  ]
+}

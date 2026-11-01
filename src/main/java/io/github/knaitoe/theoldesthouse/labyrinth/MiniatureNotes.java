@@ -187,6 +187,8 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.DARE_IN_THE_DARK, "Two scraps of tissue stand in a corridor, outside a door marked GIRLS."),
         Map.entry(LabyrinthPlace.WAY_OUT, "A square of green felt with a mirror-glass pond, a few painted animals, and a cottage whose door is only painted on."),
         Map.entry(LabyrinthPlace.WHISTLERS, "A lookout tower on matchstick legs, its glass room no bigger than a thumbnail, three blinds drawn and the fourth not."),
+        Map.entry(LabyrinthPlace.OWN_LIGHT, "Two matchboxes laid side by side with a playing card standing on edge down the middle, a spent match in one and a whole one in the other, both pointing the same way."),
+        Map.entry(LabyrinthPlace.LINE, "A cigar box painted black inside, a single cotton thread running from a pin at the lid across the dark to a rucksack the size of a pea."),
         Map.entry(LabyrinthPlace.STILLNESS, "A long, low matchbox with the striking strips for walls, empty but for a ring of cloven prints pressed into the wax around a pinhead."),
         Map.entry(LabyrinthPlace.STOREROOM, "A spice drawer lined with tinfoil shelves, a bead of black ink on the lowest, and a paper tag no bigger than a fingernail with your name on it."),
         Map.entry(LabyrinthPlace.CLOSING_HALL, "A matchbox drawer, pushed almost shut, and two crayon stubs inside it, one standing, one lying down."),

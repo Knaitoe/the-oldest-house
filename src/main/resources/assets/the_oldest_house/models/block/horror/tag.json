@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/horror/tag",
+    "particle": "the_oldest_house:block/horror/tag"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        2,
+        15
+      ],
+      "to": [
+        11,
+        14,
+        15.9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            4,
+            1,
+            12,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            12,
+            1,
+            4,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

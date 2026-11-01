@@ -13,6 +13,10 @@ cardboard boxes; and the footnote page.
 The stillness (0.4.211): a surveyor's log page nailed to the wall; a count scratched into the floor dust in rows of five; and a
 cloven print pressed into the dust where something stood.
 
+The line (0.4.212): a luggage tag knotted onto the line at the doorframe; an explorer's canvas pack; and a cassette tape recorder.
+
+Your own light (0.4.213): words scratched into the ash wall; and the stub of a torch burnt down to nothing.
+
 --check verifies everything already written.
 """
 from pathlib import Path
@@ -312,6 +316,76 @@ def hoof():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ the line
+def tag():
+    """A manila luggage tag with a reinforced hole and string, small pencil writing on it."""
+    im = new(None)
+    for y in range(3, 15):
+        for x in range(4, 12):
+            if not (y == 3 and x in (4, 11)):
+                put(im, x, y, '#cfb47c')
+    put(im, 7, 5, '#8a7348'); put(im, 8, 5, '#8a7348')
+    for y in (8, 10, 12):
+        line(im, 5, y, 10, y, '#55504a', 200)
+    for y in range(0, 5):
+        put(im, 8 if y % 2 else 7, y, '#e8e6e0')
+    return im
+
+
+def canvas():
+    """Worn olive canvas with a strap and a buckle."""
+    im = new('#5f6247', 981, 6)
+    for y in range(16):
+        put(im, 7, y, '#3e402c'); put(im, 8, y, '#46483a')
+    for x in range(5, 11):
+        put(im, x, 9, '#9a8a5a')
+    put(im, 7, 10, '#b8a878'); put(im, 8, 10, '#b8a878')
+    return im
+
+
+def recorder():
+    """A cassette recorder from above: black case, the cassette window, keys along the front."""
+    im = new('#1d1d1f', 991, 3)
+    for y in range(4, 10):
+        for x in range(3, 13):
+            put(im, x, y, '#3a3d42')
+    for cx in (6, 10):
+        put(im, cx, 6, '#8d8f93'); put(im, cx, 7, '#8d8f93'); put(im, cx - 1, 7, '#55585c')
+    for x in range(3, 13, 2):
+        put(im, x, 12, '#b7b9bd'); put(im, x, 13, '#6e7074')
+    put(im, 13, 12, '#c0392b')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ your own light
+def scratch():
+    """Pale scratches gone over and over into grey ash: one line of capitals, a smaller line under it."""
+    im = new(None)
+    c = '#cfccc6'
+    for i, x in enumerate(range(1, 15)):
+        if x % 3 != 0:
+            line(im, x, 5, x, 8, c, 210 if i % 2 else 170)
+    line(im, 1, 5, 14, 5, c, 120)
+    for x in range(4, 12):
+        if x % 2 == 0:
+            put(im, x, 11, c, 150); put(im, x, 12, c, 120)
+    return im
+
+
+def stub():
+    """A torch burnt down to a blackened stick in a smear of soot."""
+    im = new(None)
+    for y in range(4, 12):
+        for x in range(4, 12):
+            dx, dy = (x - 7.5) / 4, (y - 7.5) / 4
+            if dx * dx + dy * dy < 1:
+                put(im, x, y, '#1a1816', 90)
+    for y in range(6, 10):
+        put(im, 7, y, '#3b2a1a'); put(im, 8, y, '#2a1d12')
+    put(im, 7, 6, '#0e0c0a'); put(im, 8, 6, '#0e0c0a')
+    return im
+
+
 def textures():
     return {f'block/horror/{k}.png': v for k, v in {
         'drawing': drawing(), 'folder': folder(), 'pages': pages(), 'stool_seat': stool_seat(), 'stool_leg': stool_leg(),
@@ -319,6 +393,8 @@ def textures():
         'shelf': steel(), 'shelf_ink': stocked('ink'), 'shelf_needles': stocked('needles'), 'shelf_own': stocked('own'), 'shelf_boxes': stocked('boxes'),
         'shelf_side': shelf_side(), 'bulb_lit': bulb(True), 'bulb_out': bulb(False), 'chain': chain(), 'list': listing(), 'footnote': footnote(),
         'log': log_page(), 'tally': tally(), 'hoof': hoof(),
+        'tag': tag(), 'canvas': canvas(), 'recorder': recorder(),
+        'scratch': scratch(), 'stub': stub(),
     }.items()}
 
 
@@ -338,7 +414,7 @@ def model(elements, textures, particle, render='cutout'):
     return {'ambientocclusion': False, 'render_type': 'minecraft:' + render, 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
 
 
-KINDS = ('drawing', 'transcript', 'crayons', 'handprint', 'shelf', 'shelf_ink', 'shelf_needles', 'shelf_own', 'bulb', 'list', 'boxes', 'footnote', 'log', 'tally', 'hoof')
+KINDS = ('drawing', 'transcript', 'crayons', 'handprint', 'shelf', 'shelf_ink', 'shelf_needles', 'shelf_own', 'bulb', 'list', 'boxes', 'footnote', 'log', 'tally', 'hoof', 'tag', 'pack', 'recorder', 'scratch', 'stub')
 STAGES = {'bulb': 4}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
@@ -372,6 +448,14 @@ def fitting_models():
     # The stillness: the log page against its wall (the south side as drawn, like the list), the count and the print on the floor.
     m['log'] = model([element([3, 3, 15.9], [13, 15, 16], {'north': 'g'}, uv={'north': [3, 1, 13, 13]})], {'g': 'log'}, 'log')
     m['tally'] = model([element([1, 0, 1], [15, .1, 15], {'up': 't'})], {'t': 'tally'}, 'tally', 'translucent')
+    # The line: the tag hanging off the knot against the frame (its back to the wall), the pack slumped on the floor, the recorder.
+    m['tag'] = model([element([5, 2, 15], [11, 14, 15.9], {'north': 't', 'south': 't'}, uv={'north': [4, 1, 12, 15], 'south': [12, 1, 4, 15]})], {'t': 'tag'}, 'tag')
+    m['pack'] = model([element([3, 0, 4], [13, 9, 12], {'all': 'c'}), element([4, 9, 5], [12, 11, 11], {'all': 'c'}),
+                       element([2, 1, 5], [3, 6, 10], {'all': 'c'})], {'c': 'canvas'}, 'canvas')
+    m['recorder'] = model([element([4, 0, 5], [12, 2.5, 11], {'up': 'r', 'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r', 'down': 'r'})], {'r': 'recorder'}, 'recorder')
+    # Your own light: the words on the wall (their back to it, like the list), and the stub on the floor.
+    m['scratch'] = model([element([1, 3, 15.9], [15, 13, 16], {'north': 's'}, uv={'north': [1, 3, 15, 13]})], {'s': 'scratch'}, 'scratch', 'translucent')
+    m['stub'] = model([element([2, 0, 2], [14, .1, 14], {'up': 'u'}), element([7.25, 0, 7.25], [8.75, 3, 8.75], {'all': 'u'})], {'u': 'stub'}, 'stub', 'translucent')
     m['hoof'] = model([element([3, 0, 2], [13, .05, 14], {'up': 'o'})], {'o': 'hoof'}, 'hoof', 'translucent')
     return m
 

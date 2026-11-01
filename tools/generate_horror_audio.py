@@ -22,6 +22,12 @@ The stillness (0.4.211):
   stillness.nudge   a heavy head shoving: a dull thump and a grunt
   stillness.gore    the horns: a crack and a heavy, tearing thud
 
+The line (0.4.212):
+  line.twang   a fishing line snapped taut: a thin bright twang and its shiver
+  line.creak   a line under a weight it can barely take: a slow, thin creak
+  line.steps   something heavy walking in the dark, uneven, on a dusty floor
+  line.slack   the line going slack all at once: a soft whip, then nothing
+
 --check verifies the encoded files against art/horror_audio.json and that none of them clips.
 """
 import argparse
@@ -258,10 +264,52 @@ def horns():
     return normalise(out, .7)
 
 
+def twang():
+    """A thin taut line plucked hard: a high partial with vibrato, decaying, a little noise at the pluck."""
+    rng = random.Random(9401); out = []; total = 1.2
+    for i in range(int(total * RATE)):
+        t = i / RATE; f = 620 + 25 * math.sin(2 * math.pi * 7 * t)
+        out.append((math.sin(2 * math.pi * f * t) + .4 * math.sin(2 * math.pi * 2.01 * f * t)) * math.exp(-t * 3.2) + rng.uniform(-1, 1) * math.exp(-t * 80) * .6)
+    return normalise(out, .55)
+
+
+def creak():
+    """A line straining: a slow rising creak of tiny stick-slips."""
+    rng = random.Random(9402); out = []; total = 1.6; phase = 0
+    for i in range(int(total * RATE)):
+        t = i / RATE; rate = 18 + 30 * t; phase += rate / RATE
+        click = math.exp(-((phase % 1) * 40)) * (rng.uniform(.6, 1))
+        out.append(click * math.sin(2 * math.pi * 900 * t) * min(1, t / .2) * max(0, 1 - max(0, t - 1.3) / .3))
+    return normalise(out, .45)
+
+
+def steps():
+    """Four heavy uneven footfalls on dust, irregularly spaced."""
+    rng = random.Random(9403); out = []; band = 0; total = 2.0; falls = (.0, .52, .9, 1.55)
+    for i in range(int(total * RATE)):
+        t = i / RATE; n = rng.uniform(-1, 1); band += .25 * (n - band); v = 0
+        for start in falls:
+            if t >= start:
+                d = t - start
+                v += (math.sin(2 * math.pi * 60 * d) * math.exp(-d * 22) * 1.1 + band * math.exp(-d * 14) * .5)
+        out.append(v)
+    return normalise(out, .6)
+
+
+def slack():
+    """A soft whip of line through air, then silence."""
+    rng = random.Random(9404); out = []; band = 0; total = .7
+    for i in range(int(total * RATE)):
+        t = i / RATE; n = rng.uniform(-1, 1); band += .5 * (n - band)
+        env = math.sin(math.pi * min(1, t / .25)) if t < .25 else math.exp(-(t - .25) * 18)
+        out.append(band * env * (1 + .5 * math.sin(2 * math.pi * 40 * t)))
+    return normalise(out, .4)
+
+
 NAMES = ('closing.grind', 'closing.hold', 'closing.crack', 'closing.cry', 'closing.call', 'closing.wall',
-         'storeroom.breath', 'storeroom.scrape', 'storeroom.flicker', 'storeroom.slam', 'storeroom.heart', 'storeroom.blow', 'stillness.breath', 'stillness.sniff', 'stillness.nudge', 'stillness.gore')
+         'storeroom.breath', 'storeroom.scrape', 'storeroom.flicker', 'storeroom.slam', 'storeroom.heart', 'storeroom.blow', 'stillness.breath', 'stillness.sniff', 'stillness.nudge', 'stillness.gore', 'line.twang', 'line.creak', 'line.steps', 'line.slack')
 MAKERS = {'closing.grind': grind, 'closing.hold': hold, 'closing.crack': crack, 'closing.cry': cry, 'closing.call': call, 'closing.wall': lambda: call(True),
-          'storeroom.breath': breath, 'storeroom.scrape': scrape, 'storeroom.flicker': flicker, 'storeroom.slam': slam, 'storeroom.heart': heart, 'storeroom.blow': blow, 'stillness.breath': huge_breath, 'stillness.sniff': snuffle, 'stillness.nudge': shove, 'stillness.gore': horns}
+          'storeroom.breath': breath, 'storeroom.scrape': scrape, 'storeroom.flicker': flicker, 'storeroom.slam': slam, 'storeroom.heart': heart, 'storeroom.blow': blow, 'stillness.breath': huge_breath, 'stillness.sniff': snuffle, 'stillness.nudge': shove, 'stillness.gore': horns, 'line.twang': twang, 'line.creak': creak, 'line.steps': steps, 'line.slack': slack}
 
 
 def file_of(name):

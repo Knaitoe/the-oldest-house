@@ -109,6 +109,12 @@ final class CoopAccounts {
         // 0.4.209: two readers, a hand each; it closed twice as fast with two in it.
         // 0.4.210: back to back, one of them always facing the door; every look shrank the room for both.
         // 0.4.211: one sound drew it to all of them; a noise could draw it off a friend.
+        // 0.4.212: one held the line at the door while another followed it; two pulls was a warning.
+        // 0.4.213: each reader's double is theirs alone; a peer sees an empty branch.
+        together(OWN_LIGHT,party("%s {was} at the fork with me. When I said there was someone in the other branch, they looked, and said there wasn't.",
+            "%s {was} still in the dark behind me when I reached the far room."));
+        together(LINE,party("%s {was} on the line with me in the dark. When it pulled from behind, we both felt it, and neither of us let go first.",
+            "%s {was} still holding the line at the door when I reached the pack."));
         together(STILLNESS,party("%s {was} in the low hall with me when it came. One sound drew it to all of us, and none of us made one we could help.",
             "%s {was} still standing still in the hall when I reached the far door."));
         together(STOREROOM,party("%s {was} in the storeroom with me, back to back. One of us watched the door while the other fetched, and every time either of us looked, the shelves came nearer for both.",

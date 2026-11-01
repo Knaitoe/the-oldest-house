@@ -409,6 +409,10 @@ public enum LabyrinthPlace {
     STOREROOM("storeroom",Kind.ONE_SHOT,140,new BoundingBox(-4,-1,-35,4,5,0),literaryEntry()),
     /** 0.4.211, the stillness, the third of the dark halls' horrors (Stillness, StillnessSite): the growl made flesh in a wide, low hall; it hunts by sound and stands over the still. Survival, dealt only from depth sixteen. */
     STILLNESS("stillness",Kind.ONE_SHOT,141,new BoundingBox(-7,-1,-51,7,4,0),literaryEntry()),
+    /** 0.4.212, the line, the fourth of the dark halls' horrors (Line, LineSite): a line in a space with no walls, and something that takes hold of it behind the reader. Survival, dealt only from depth sixteen. */
+    LINE("line",Kind.ONE_SHOT,142,new BoundingBox(-25,-1,-90,25,6,0),literaryEntry()),
+    /** 0.4.213, your own light, the last of the dark halls' horrors (OwnLight, OwnLightSite): twin branches, and someone walking the other one with your walk and your light. Understanding, dealt only from depth sixteen. */
+    OWN_LIGHT("own_light",Kind.ONE_SHOT,143,new BoundingBox(-5,-1,-50,5,4,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

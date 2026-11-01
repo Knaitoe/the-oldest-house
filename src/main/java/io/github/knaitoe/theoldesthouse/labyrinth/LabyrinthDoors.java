@@ -1149,7 +1149,8 @@ public final class LabyrinthDoors {
                     && !HollowayVignette.allowsPlacing(level,event.getPos(),event.getPlacedBlock())
                     && !HotelVignette.allowsTorchPlacing(level,event.getPos(),event.getPlacedBlock())
                     && !(event.getEntity() instanceof ServerPlayer sp&&CaverVignette.allowsPlacing(sp,event.getPos(),event.getPlacedBlock()))
-                    && !(event.getEntity() instanceof ServerPlayer sp&&LiteraryVignettes.mayPlace(sp,event.getPos()))) event.setCanceled(true);
+                    && !(event.getEntity() instanceof ServerPlayer sp&&LiteraryVignettes.mayPlace(sp,event.getPos()))
+                    && !(event.getEntity() instanceof ServerPlayer sp&&OwnLight.allowsPlacing(sp,event.getPos(),event.getPlacedBlock()))) event.setCanceled(true);
         }
     }
 

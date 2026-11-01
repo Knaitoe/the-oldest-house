@@ -51,6 +51,8 @@ final class OnwardPlacements {
         r.put(DARE_IN_THE_DARK,0,0,DareRooms.EXIT_Z,SOUTH,DareRegistry.STAIR_DOOR); // the stairwell at the end of the third-floor hall
         r.put(WAY_OUT,0,0,-76,SOUTH,OnwardRegistry.PANEL); // the cottage's front door: home, which is the House
         r.put(WHISTLERS,0,0,LookoutTower.ONWARD_Z,SOUTH,OnwardRegistry.WEATHERED,()->LookoutRegistry.material("timber")); // 0.4.202: a trail door in the treeline behind the tower
+        r.put(OWN_LIGHT,OwnLightSite.ONWARD.getX(),0,OwnLightSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.213: the far room's door
+        r.put(LINE,LineSite.ONWARD.getX(),0,LineSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.212: the far wall behind the pack
         r.put(STILLNESS,StillnessSite.ONWARD.getX(),0,StillnessSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.211: the far door at the end of the low hall
         r.put(STOREROOM,StoreroomSite.ONWARD.getX(),0,StoreroomSite.ONWARD.getZ(),WEST,()->Blocks.DARK_OAK_DOOR); // 0.4.210: a side door in the dark hall before the storeroom
         r.put(CLOSING_HALL,ClosingHallSite.ONWARD.getX(),0,ClosingHallSite.ONWARD.getZ(),EAST,()->Blocks.DARK_OAK_DOOR); // 0.4.209: out of the room past the squeeze

@@ -95,6 +95,30 @@
       "rate": 22050,
       "ticks": 20,
       "sha256": "7a4fc332adae15f3938b53d27592bba8e41a5e853c0227f0edfe29ccaf0cd8c3"
+    },
+    "line.twang": {
+      "samples": 26460,
+      "rate": 22050,
+      "ticks": 24,
+      "sha256": "ae589c134857bcd7b2e4b7357efc12dd9eb9cfd7b88624488c816141ab10eba8"
+    },
+    "line.creak": {
+      "samples": 35280,
+      "rate": 22050,
+      "ticks": 32,
+      "sha256": "9ced397a454540244ec4b747461e964036ba260717b831c4d70f7a482d1fe3c4"
+    },
+    "line.steps": {
+      "samples": 44100,
+      "rate": 22050,
+      "ticks": 40,
+      "sha256": "53ba32737d994a281909917fe075aef198223123a019de7f4b667038382ff739"
+    },
+    "line.slack": {
+      "samples": 15434,
+      "rate": 22050,
+      "ticks": 14,
+      "sha256": "70c7f0bd23b817f8e968d5fe8078fc0ca7d4acc1bd532fe8f06bdd08e3b81c61"
     }
   }
 }

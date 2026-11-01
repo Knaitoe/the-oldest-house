@@ -3219,5 +3219,41 @@
         "stream": false
       }
     ]
+  },
+  "line.twang": {
+    "subtitle": "subtitles.the_oldest_house.line.twang",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/line_twang",
+        "stream": false
+      }
+    ]
+  },
+  "line.creak": {
+    "subtitle": "subtitles.the_oldest_house.line.creak",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/line_creak",
+        "stream": false
+      }
+    ]
+  },
+  "line.steps": {
+    "subtitle": "subtitles.the_oldest_house.line.steps",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/line_steps",
+        "stream": false
+      }
+    ]
+  },
+  "line.slack": {
+    "subtitle": "subtitles.the_oldest_house.line.slack",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/line_slack",
+        "stream": false
+      }
+    ]
   }
 }
