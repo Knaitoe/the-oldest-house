@@ -99,7 +99,7 @@ public final class NovelTests {
             h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"feeding and arrival grant no ending");
             f.at(p,.5,0,-17.5);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(NovelRegistry.ARCHIVE_KEY.get()));f.click(p,NovelRooms.ARCHIVE_DOOR);
             h.assertTrue(f.l.getBlockState(f.b.offset(NovelRooms.ARCHIVE_DOOR)).getValue(DoorBlock.OPEN),"the key opens the real sealed apartment");
-            f.at(p,-4.5,0,-28.5);f.click(p,NovelRooms.ARCHIVE_DESK);var menu=(NovelVignettes.NovelBookMenu)p.containerMenu;
+            f.at(p,NovelRooms.ARCHIVE_DESK.getX()+.5,0,NovelRooms.ARCHIVE_DESK.getZ()+1.5);f.click(p,NovelRooms.ARCHIVE_DESK);var menu=(NovelVignettes.NovelBookMenu)p.containerMenu;
             h.assertTrue(menu.clickMenuButton(p,3)&&!menu.clickMenuButton(p,3)&&!menu.clickMenuButton(p,999),"one original collection and native page bounds");
             h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ZAMPANO),"taking the survey early is not reading its ending");
             h.assertTrue(menu.clickMenuButton(p,102)&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.ZAMPANO),"the native final page records a personal understanding");
@@ -155,7 +155,7 @@ public final class NovelTests {
         leaves=new Fixture(h,38500,LabyrinthPlace.ZAMPANO_COURTYARD);var f=leaves;var server=f.l.getServer();
         // Every finite original in the archive, as it stands before anyone opens a drawer.
         java.util.function.Supplier<List<ItemStack>> originals=()->{var all=new ArrayList<ItemStack>();
-            for(int z=-22;z>=-34;z-=2)for(int y=0;y<3;y++)if(f.l.getBlockEntity(f.b.offset(11,y,z)) instanceof net.minecraft.world.Container c)for(int i=0;i<c.getContainerSize();i++)all.add(c.getItem(i).copy());
+            for(int r=0;r<ArchiveReaderFiles.NAMES.length;r++)for(int y=0;y<3;y++)if(f.l.getBlockEntity(f.b.offset(ArchiveReaderFiles.stack(r).above(y))) instanceof net.minecraft.world.Container c)for(int i=0;i<c.getContainerSize();i++)all.add(c.getItem(i).copy());
             if(f.l.getBlockEntity(f.b.offset(5,0,-34)) instanceof ChestBlockEntity chest)for(int i=0;i<chest.getContainerSize();i++)all.add(chest.getItem(i).copy());
             if(f.l.getBlockEntity(f.b.offset(NovelRooms.ARCHIVE_DESK)) instanceof LecternBlockEntity desk)all.add(desk.getBook().copy());return all;};
         var before=originals.get();h.assertTrue(before.stream().filter(s->!s.isEmpty()).count()>=22,"the readers' files, the chest's book and the survey are there: "+before.stream().filter(s->!s.isEmpty()).count());

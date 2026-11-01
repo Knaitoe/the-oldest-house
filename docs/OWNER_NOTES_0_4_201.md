@@ -393,13 +393,19 @@ layering over the last. `ZampanoApartment` now builds it whole, and none of thos
   cat's mat before his door.
 - **His front.** The flat is the ground floor at the back of the court, a storey of flats above it. The sealed iron door has a
   hood and a lamp over it; the two front windows are sealed like the side ones, with window boxes nobody waters.
-- **Inside.** Plaster walls with dark skirting, a beamed ceiling, his floor and a runner of old rugs. A kitchen corner by the
-  door, his chair turned toward where the readers sat with a footstool and lamp, a radiator under the sealed window, the
-  shelves along the west wall, the readers' desks in two rows, his reading desk with the survey, the trunk with the four
-  gouges in the floor beside it and the readers' appointments inside, and at the back the cabinets under the wall of his hand.
-- **Kept where they were.** The entry, the side doors, the fountain, the mat, the iron door, the reading desk, the trunk and its
-  gouges, the cabinets, the files and their labels, the drafts on their desks and the sheets on his walls are all where the
-  mechanics and tests expect them. The cat, the fish, the key, the drawers and the reading are unchanged.
+- **Inside, an apartment** (owner: "Do you not think the interior of his apartment should look more like an... apartment?").
+  It was one tall hall of desks, which read as a reading room. Now it has rooms at an ordinary ceiling height, with plaster
+  walls and doors. The front door opens on a hall that runs straight back to his three cabinets and the wall of his hand, with
+  his sheets pinned down both sides. Off the hall to the left are the kitchen at the front (the units under the sealed window,
+  a small table with a draft on it, two stools, his coat on its hook), then the bathroom (toilet, basin, towels, no mirror),
+  then the study wrapped round it (shelves on the west wall, four desks crowded with drafts, his reading desk with the
+  survey). Off the hall to the right are the front room where the readers came (his chair facing the two chairs they sat in, a
+  writing table, the radiator and the lamp, their seven files side by side along the wall under their labels) and his bedroom
+  (the bed against the east wall, his clothes on a chair, the trunk with the four gouges beside it and the readers'
+  appointments inside, and two chests at the foot of the paper wall). The kitchen and bathroom are tiled; the hall has a runner.
+- **Kept, moved where needed.** The entry, the side doors, the fountain, the mat, the iron door, the trunk and its gouges, and
+  the cabinets are where they were. The reading desk, the eight drafts and the seven file stacks moved into the new rooms;
+  the mechanics and tests read them from their constants. The cat, the fish, the key, the drawers and the reading are unchanged.
 - **Removed.** The courtyard's share of the landscape facades, the architecture, exterior, shell and both review passes, the
   0.4.88 handwriting-wall and bowl pass with its case, and the saved-courtyard paths for the fountain and the cabinets (new
   builds only).
