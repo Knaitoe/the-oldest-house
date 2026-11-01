@@ -568,3 +568,7 @@ reader's House of Leaves, and win and lose states. None is built yet.
 ## Not changed yet
 
 - The Wheel's mother dropping fire charges: nothing in the mod gives, drops or names a fire charge, and her actor cannot be hurt, so where they came from is not yet known.
+  0.4.218: looked again. No code, loot table, structure, item model or particle in the mod makes a fire charge, a small fireball
+  or anything drawn like one, and the Wheel's mother holds and wears nothing. Every literary actor now drops nothing whatever
+  happens to it: no loot, no equipment, no experience, and nothing can be spawned at its feet (`LiteraryActor`). The Wheel case
+  checks that she drops nothing. If it happens again, where she was and what the reader was doing would find the rest.

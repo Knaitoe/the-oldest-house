@@ -80,6 +80,12 @@ public final class LiteraryActor extends PathfinderMob {
             if(horizontal>KillerNavigation.CHASE_STEP){double scale=KillerNavigation.CHASE_STEP/horizontal;movement=new net.minecraft.world.phys.Vec3(movement.x*scale,movement.y,movement.z*scale);}
         }super.move(type,movement);
     }
+    /** 0.4.218: the cast drops nothing, ever: no loot, no equipment, no experience, nothing spawned at its feet (the owner saw the Wheel's mother drop fire charges). */
+    @Override protected boolean shouldDropLoot(){return false;}
+    @Override public boolean shouldDropExperience(){return false;}
+    @Override protected void dropEquipment(){}
+    @Override protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel level,DamageSource source,boolean recentlyHit){}
+    @Override public net.minecraft.world.entity.item.ItemEntity spawnAtLocation(net.minecraft.world.item.ItemStack stack,float offsetY){return null;}
     /** A PathfinderMob never advances its swing on its own; the cast's blows and chops are seen only if it does (0.4.120). */
     @Override public void aiStep(){updateSwingTime();super.aiStep();}
     @Override public boolean isPickable(){return !(role()==UNCANNY_FALSE_WAITRESS&&phase()<2)&&super.isPickable();}
