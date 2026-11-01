@@ -6,6 +6,10 @@ Drawn in code from fixed seeds: no source pictures. The rooms themselves are bui
 The closing hall (0.4.209): Daisy's crayon drawing on the floor, Karen's interview in a folder on a stool, the children's
 crayons worn to stubs, and a small handprint (only ever shown to one reader, on the inside of a door).
 
+The storeroom (0.4.210): grey steel shelving, bare or holding the black ink, the needles in their sterile packs, or a thing with a
+paper tag; the bulb on its pull chain (out, lit, and its chain swung one way and the other); the list in the reader's hand;
+cardboard boxes; and the footnote page.
+
 --check verifies everything already written.
 """
 from pathlib import Path
@@ -147,10 +151,126 @@ def handprint():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ the storeroom
+def steel(seed=921):
+    """Grey steel shelving seen from the front: two shelf boards with a dark gap between, uprights at the edges, a few rust flecks."""
+    im = new('#7a7d80', seed, 3)
+    for y in (0, 7, 8, 15):
+        for x in range(16):
+            put(im, x, y, '#5f6265' if y in (7, 15) else '#9a9da0')
+    for y in range(16):
+        put(im, 0, y, '#55585b'); put(im, 15, y, '#55585b')
+    for y in range(1, 7):
+        for x in range(1, 15):
+            put(im, x, y, '#2a2826'); put(im, x, y + 8, '#2a2826')
+    rnd = random.Random(seed + 1)
+    for _ in range(4):
+        put(im, rnd.randrange(1, 15), rnd.choice((0, 8)), '#7a4a2a')
+    return im
+
+
+def stocked(kind):
+    """The shelf front with something on its lower board: boxes, the ink, the needles, or a thing with a tag."""
+    im = steel()
+    rnd = random.Random({'boxes': 931, 'ink': 932, 'needles': 933, 'own': 934}[kind])
+    if kind == 'boxes':
+        for x0, w, c in ((1, 5, '#a8865a'), (7, 4, '#9a7a50'), (12, 3, '#b0905e')):
+            for y in range(10, 15):
+                for x in range(x0, x0 + w):
+                    put(im, x, y, shade(c, rnd.randint(-6, 6))[:3] and c)
+            line(im, x0, 10, x0 + w - 1, 10, shade(c, 20)[:3] and '#c8a878')
+        for x0, c in ((2, '#8a6a40'), (9, '#9a7a50')):
+            for y in range(2, 7):
+                for x in range(x0, x0 + 4):
+                    put(im, x, y, c)
+    elif kind == 'ink':
+        for y in range(9, 15):
+            for x in range(5, 11):
+                put(im, x, y, '#14141c' if 6 <= x <= 9 or y > 10 else '#20202a')
+        put(im, 7, 9, '#3a3a50'); put(im, 8, 9, '#3a3a50'); put(im, 6, 11, '#e8e0cc'); put(im, 6, 12, '#e8e0cc'); put(im, 7, 12, '#e8e0cc')
+        for x0 in (1, 12):
+            for y in range(12, 15):
+                put(im, x0, y, '#1a1a22'); put(im, x0 + 1, y, '#1a1a22')
+    elif kind == 'needles':
+        for x0 in (2, 6, 10):
+            for y in range(10, 15):
+                for x in range(x0, x0 + 3):
+                    put(im, x, y, '#e6eaee')
+            line(im, x0 + 1, 11, x0 + 1, 13, '#a8b0b8')
+            put(im, x0, 10, '#4a8acc'); put(im, x0 + 2, 10, '#4a8acc')
+    elif kind == 'own':
+        for y in range(10, 15):
+            for x in range(6, 11):
+                put(im, x, y, '#6a5040')
+        put(im, 8, 9, '#c8c0a8')
+        for y in range(11, 14):
+            for x in range(11, 14):
+                put(im, x, y, '#efe6c8')
+        put(im, 12, 12, '#2a2620'); line(im, 10, 11, 11, 11, '#8a8070')
+    return im
+
+
+def shelf_side():
+    """The end of a run of shelving: an upright and the edges of the boards."""
+    im = new('#6e7174', 941, 3)
+    for y in (0, 7, 8, 15):
+        for x in range(16):
+            put(im, x, y, '#5a5d60')
+    return im
+
+
+def bulb(lit):
+    im = new(None)
+    glass = '#fff4c8' if lit else '#9a968a'
+    for y in range(9, 15):
+        for x in range(5, 11):
+            if (x - 7.5) ** 2 + (y - 11.5) ** 2 <= 9:
+                put(im, x, y, glass)
+    if lit:
+        put(im, 7, 11, '#ffffff'); put(im, 8, 11, '#ffffff')
+    for y in range(6, 9):
+        for x in range(6, 10):
+            put(im, x, y, '#8a7a5a')
+    return im
+
+
+def chain():
+    im = new(None)
+    for y in range(16):
+        put(im, 7 + (y % 2), y, '#8a8a8a')
+    return im
+
+
+def listing():
+    """A torn notebook page, a list in a careful hand, the last line pressed through."""
+    im = new('#ede6d2', 951, 3)
+    for y in (3, 6, 9, 12):
+        line(im, 2, y, 13, y, '#c4ccd8', 150)
+    for y, w in ((2, 6), (5, 9), (8, 8), (11, 10)):
+        line(im, 3, y, 3 + w, y, '#2a2e48')
+    line(im, 3, 14, 12, 14, '#14182a')
+    for x in range(16):
+        if x % 3 == 0:
+            put(im, x, 0, '#d8d0bc')
+    return im
+
+
+def footnote():
+    """A page that is mostly footnote: small type, a superscript, the lines running off the edge."""
+    im = new('#eae4d4', 961, 3)
+    put(im, 2, 2, '#1a1a1a')
+    for y in range(4, 15, 2):
+        line(im, 1, y, 15 if y > 8 else 13, y, '#3a3632', 200)
+    line(im, 9, 12, 15, 13, '#2a2e48')
+    return im
+
+
 def textures():
     return {f'block/horror/{k}.png': v for k, v in {
         'drawing': drawing(), 'folder': folder(), 'pages': pages(), 'stool_seat': stool_seat(), 'stool_leg': stool_leg(),
         'crayons': crayons(), 'handprint': handprint(),
+        'shelf': steel(), 'shelf_ink': stocked('ink'), 'shelf_needles': stocked('needles'), 'shelf_own': stocked('own'), 'shelf_boxes': stocked('boxes'),
+        'shelf_side': shelf_side(), 'bulb_lit': bulb(True), 'bulb_out': bulb(False), 'chain': chain(), 'list': listing(), 'footnote': footnote(),
     }.items()}
 
 
@@ -170,7 +290,8 @@ def model(elements, textures, particle, render='cutout'):
     return {'ambientocclusion': False, 'render_type': 'minecraft:' + render, 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
 
 
-KINDS = ('drawing', 'transcript', 'crayons', 'handprint')
+KINDS = ('drawing', 'transcript', 'crayons', 'handprint', 'shelf', 'shelf_ink', 'shelf_needles', 'shelf_own', 'bulb', 'list', 'boxes', 'footnote')
+STAGES = {'bulb': 4}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
 
@@ -185,6 +306,21 @@ def fitting_models():
     m['crayons'] = model([element([1, 0, 1], [15, .5, 15], {'up': 'c'})], {'c': 'crayons'}, 'crayons')
     # Drawn against the north side of its block, low, at a child's height; turned by facing.
     m['handprint'] = model([element([3, 2, 0], [13, 12, .1], {'north': 'h', 'south': 'h'}, uv={'north': [3, 2, 13, 12], 'south': [13, 2, 3, 12]})], {'h': 'handprint'}, 'handprint', 'translucent')
+    # Steel shelving: a full block whose front (north as drawn) carries the stock; the other faces are uprights and boards.
+    for name, front in (('shelf', 'shelf'), ('shelf_ink', 'shelf_ink'), ('shelf_needles', 'shelf_needles'), ('shelf_own', 'shelf_own'), ('boxes', 'shelf_boxes')):
+        m[name] = model([element([0, 0, 0], [16, 16, 16], {'north': 'f', 'south': 'f', 'east': 's', 'west': 's', 'up': 's', 'down': 's'})], {'f': front, 's': 'shelf_side'}, 'shelf', 'solid')
+    # The bulb: out, lit, and lit with its chain swung one way and then the other.
+    for stage in range(4):
+        lit = stage > 0
+        tilt = {0: 0, 1: 0, 2: 22.5, 3: -22.5}[stage]
+        parts = [element([7.5, 8, 7.5], [8.5, 16, 8.5], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c'}),
+                 element([5, 2, 5], [11, 8, 11], {'all': 'b'}), element([6, 8, 6], [10, 10, 10], {'all': 'b'})]
+        if tilt:
+            for p in parts:
+                p['rotation'] = {'origin': [8, 16, 8], 'axis': 'z', 'angle': tilt}
+        m[f'bulb_{stage}'] = model(parts, {'c': 'chain', 'b': 'bulb_lit' if lit else 'bulb_out'}, 'bulb_lit' if lit else 'bulb_out')
+    m['list'] = model([element([3, 4, 15.9], [13, 14, 16], {'north': 'l'}, uv={'north': [3, 2, 13, 12]})], {'l': 'list'}, 'list')
+    m['footnote'] = model([element([2, 0, 2], [14, .25, 14], {'up': 'n', 'down': 'n'})], {'n': 'footnote'}, 'footnote')
     return m
 
 
@@ -195,10 +331,12 @@ def files():
     variants = {}
     for kind in KINDS:
         for facing, y in FACING_Y.items():
-            v = {'model': NS + f'block/horror/{kind}'}
-            if y:
-                v['y'] = y
-            variants[f'facing={facing},kind={kind}'] = v
+            for stage in range(4):
+                drawn = f'{kind}_{stage if stage < STAGES.get(kind, 1) else 0}' if kind in STAGES else kind
+                v = {'model': NS + f'block/horror/{drawn}'}
+                if y:
+                    v['y'] = y
+                variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/horror_fitting.json'] = {'variants': variants}
     return out
 
@@ -212,7 +350,8 @@ def main():
         for tex in obj['textures'].values():
             assert f'block/horror/{tex.split("block/horror/")[-1]}.png' in images, (key, tex)
     for kind in KINDS:
-        assert kind in fitting_models(), kind
+        for stage in range(STAGES.get(kind, 1)):
+            assert (f'{kind}_{stage}' if kind in STAGES else kind) in fitting_models(), (kind, stage)
     for rel, im in images.items():
         path = A / 'textures' / rel
         if check:

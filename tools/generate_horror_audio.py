@@ -8,6 +8,14 @@ The closing hall (0.4.209):
   closing.call   a child calling far off: two falling notes, a long hall's echo behind
   closing.wall   a child's voice from inside a wall: the same call, muffled through stone
 
+The storeroom (0.4.210):
+  storeroom.breath   breathing an arm's length behind: slow, wet, close to the ear, not the reader's own rhythm
+  storeroom.scrape   steel shelving dragged a block nearer across concrete
+  storeroom.flicker  a bulb buzzing as it dies, and the tick of the filament
+  storeroom.slam     a door on a spring banging shut in its frame
+  storeroom.heart    one heartbeat, low and thick
+  storeroom.blow     a blow from behind: a dull heavy thud with no ring to it
+
 --check verifies the encoded files against art/horror_audio.json and that none of them clips.
 """
 import argparse
@@ -127,8 +135,78 @@ def call(muffled=False):
     return normalise(tail(out, .29, .45, 5), .5)
 
 
-NAMES = ('closing.grind', 'closing.hold', 'closing.crack', 'closing.cry', 'closing.call', 'closing.wall')
-MAKERS = {'closing.grind': grind, 'closing.hold': hold, 'closing.crack': crack, 'closing.cry': cry, 'closing.call': call, 'closing.wall': lambda: call(True)}
+def breath():
+    """Two slow breaths, wet and close, in and out, a little out of step with anyone listening."""
+    rng = random.Random(9201); out = []; low = 0; band = 0; total = 3.0
+    for i in range(int(total * RATE)):
+        t = i / RATE; n = rng.uniform(-1, 1); band += .3 * (n - band); low += .05 * (n - low)
+        cycle = (t % 1.5) / 1.5
+        env = math.sin(math.pi * cycle / .45) if cycle < .45 else (math.sin(math.pi * (cycle - .55) / .4) * .8 if .55 <= cycle < .95 else 0)
+        out.append((band * .7 + low * 1.5) * max(0, env) * (1 + .3 * math.sin(2 * math.pi * 3.1 * t)))
+    return normalise(out, .5)
+
+
+def scrape():
+    """Steel dragged over concrete: a harsh band of noise with a squealing partial, juddering."""
+    rng = random.Random(9202); out = []; band = 0; total = 1.4
+    for i in range(int(total * RATE)):
+        t = i / RATE; env = min(1, t / .05) * max(0, 1 - max(0, t - 1.0) / .4)
+        n = rng.uniform(-1, 1); band += .6 * (n - band)
+        squeal = math.sin(2 * math.pi * (1450 + 120 * math.sin(t * 9)) * t) * .25
+        judder = .6 + .4 * abs(math.sin(2 * math.pi * 11 * t))
+        out.append((band * .8 + squeal) * env * judder + math.sin(2 * math.pi * 70 * t) * .3 * env)
+    return normalise(out, .65)
+
+
+def flicker():
+    """Mains buzz breaking up, a filament ticking, then nothing."""
+    rng = random.Random(9203); out = []; total = 1.1
+    for i in range(int(total * RATE)):
+        t = i / RATE; on = 1 if (t < .7 and rng.random() < (.9 - t)) else 0
+        buzz = (math.sin(2 * math.pi * 100 * t) * .6 + math.sin(2 * math.pi * 200 * t) * .3 + math.sin(2 * math.pi * 300 * t) * .15) * on
+        tick = rng.uniform(-1, 1) * math.exp(-((t - .74) * 400) ** 2) * 1.2
+        out.append(buzz * (1 if t < .7 else 0) * .7 + tick)
+    return normalise(out, .5)
+
+
+def slam():
+    """A door banging shut on its spring: the hit, the latch, the frame rattling."""
+    rng = random.Random(9204); out = []; total = .8
+    for i in range(int(total * RATE)):
+        t = i / RATE
+        hit = (math.sin(2 * math.pi * 85 * t) * math.exp(-t * 18) + math.sin(2 * math.pi * 260 * t) * math.exp(-t * 30) * .5) if t >= 0 else 0
+        latch = math.sin(2 * math.pi * 1900 * (t - .03)) * math.exp(-(t - .03) * 90) * .4 if t >= .03 else 0
+        rattle = rng.uniform(-1, 1) * .2 * math.exp(-(t - .05) * 20) if t > .05 else 0
+        out.append(hit + latch + rattle)
+    return normalise(out, .7)
+
+
+def heart():
+    """One heartbeat, lub-dub, low and thick, as if heard from inside."""
+    out = []; total = .7
+    for i in range(int(total * RATE)):
+        t = i / RATE
+        lub = math.sin(2 * math.pi * 52 * t) * math.exp(-t * 22) if t >= 0 else 0
+        dub = math.sin(2 * math.pi * 64 * (t - .18)) * math.exp(-(t - .18) * 26) * .75 if t >= .18 else 0
+        out.append(lub + dub)
+    return normalise(lowpass(out, .25), .7)
+
+
+def blow():
+    """A dull heavy blow from behind, no ring: the thud, the body taking it, the air going out."""
+    rng = random.Random(9206); out = []; total = .9
+    for i in range(int(total * RATE)):
+        t = i / RATE
+        thud = math.sin(2 * math.pi * 48 * t) * math.exp(-t * 14) + rng.uniform(-1, 1) * math.exp(-t * 60) * .8
+        gasp = rng.uniform(-1, 1) * .15 * math.sin(math.pi * min(1, max(0, (t - .25) / .5))) if t > .25 else 0
+        out.append(thud + gasp)
+    return normalise(lowpass(out, .4), .75)
+
+
+NAMES = ('closing.grind', 'closing.hold', 'closing.crack', 'closing.cry', 'closing.call', 'closing.wall',
+         'storeroom.breath', 'storeroom.scrape', 'storeroom.flicker', 'storeroom.slam', 'storeroom.heart', 'storeroom.blow')
+MAKERS = {'closing.grind': grind, 'closing.hold': hold, 'closing.crack': crack, 'closing.cry': cry, 'closing.call': call, 'closing.wall': lambda: call(True),
+          'storeroom.breath': breath, 'storeroom.scrape': scrape, 'storeroom.flicker': flicker, 'storeroom.slam': slam, 'storeroom.heart': heart, 'storeroom.blow': blow}
 
 
 def file_of(name):

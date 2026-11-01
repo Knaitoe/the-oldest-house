@@ -1,0 +1,33 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "l": "the_oldest_house:block/horror/list",
+    "particle": "the_oldest_house:block/horror/list"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        4,
+        15.9
+      ],
+      "to": [
+        13,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            3,
+            2,
+            13,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

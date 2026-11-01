@@ -35,6 +35,42 @@
       "rate": 22050,
       "ticks": 30,
       "sha256": "6bd3b8c788885938bb4be726e25db0c78f4c3c5b6a4f28ad5c8fa361590afd68"
+    },
+    "storeroom.breath": {
+      "samples": 66150,
+      "rate": 22050,
+      "ticks": 60,
+      "sha256": "450402d379890afb237bb7a107e511d5448f1e73604a8953f836fb8fcd16c5a0"
+    },
+    "storeroom.scrape": {
+      "samples": 30869,
+      "rate": 22050,
+      "ticks": 28,
+      "sha256": "5af3a9335a5a18b0d6cf68f4185da9ed7e4a4150e581a466cfda546d9001c829"
+    },
+    "storeroom.flicker": {
+      "samples": 24255,
+      "rate": 22050,
+      "ticks": 22,
+      "sha256": "38b010d4b57fba8a416b70cefe40b977fba2eb4a24a1e8961453d37307cd0b5e"
+    },
+    "storeroom.slam": {
+      "samples": 17640,
+      "rate": 22050,
+      "ticks": 16,
+      "sha256": "a0f5c18ac35b66ac9d4988efb5f3d9050870094d241069618791497d2e8ed45c"
+    },
+    "storeroom.heart": {
+      "samples": 15434,
+      "rate": 22050,
+      "ticks": 14,
+      "sha256": "e9e11835a8033e10f6dc0720c2d161bd96b265c0666b24762dedd18b0299f9ac"
+    },
+    "storeroom.blow": {
+      "samples": 19845,
+      "rate": 22050,
+      "ticks": 18,
+      "sha256": "b4e5904bc29fdb7f9f66ae3761715e2a928cbd2259d76083a63d95d1b245fc39"
     }
   }
 }

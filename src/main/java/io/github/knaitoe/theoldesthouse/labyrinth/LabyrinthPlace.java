@@ -405,6 +405,8 @@ public enum LabyrinthPlace {
     DARK_EDGE("dark_edge",Kind.GRAY,138,new BoundingBox(-3,-13,-66,21,9,0),grayDoors(0,0,-65)),
     /** 0.4.209, the closing hall, the first of the dark halls' horrors (ClosingHall, ClosingHallSite): Chad and Daisy at the end of a hall that closes. Survival, dealt only from depth sixteen. */
     CLOSING_HALL("closing_hall",Kind.ONE_SHOT,139,new BoundingBox(-19,-1,-48,5,7,0),literaryEntry()),
+    /** 0.4.210, the storeroom, the second of the dark halls' horrors (Storeroom, StoreroomSite): Johnny's storeroom, the list in the reader's own hand, and don't turn round. Survival, dealt only from depth sixteen. */
+    STOREROOM("storeroom",Kind.ONE_SHOT,140,new BoundingBox(-4,-1,-35,4,5,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

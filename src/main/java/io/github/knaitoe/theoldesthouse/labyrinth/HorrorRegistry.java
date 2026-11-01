@@ -26,6 +26,12 @@ public final class HorrorRegistry {
      */
     public static final DeferredHolder<SoundEvent,SoundEvent> CLOSING_GRIND=sound("closing.grind"),CLOSING_HOLD=sound("closing.hold"),CLOSING_CRACK=sound("closing.crack"),
         CLOSING_CRY=sound("closing.cry"),CLOSING_CALL=sound("closing.call"),CLOSING_WALL=sound("closing.wall");
+    /**
+     * The storeroom (0.4.210): breathing an arm's length behind, the shelves dragged a block nearer, the bulb buzzing as it dies,
+     * the spring door banging shut, a heartbeat, and a blow from behind.
+     */
+    public static final DeferredHolder<SoundEvent,SoundEvent> STORE_BREATH=sound("storeroom.breath"),STORE_SCRAPE=sound("storeroom.scrape"),STORE_FLICKER=sound("storeroom.flicker"),
+        STORE_SLAM=sound("storeroom.slam"),STORE_HEART=sound("storeroom.heart"),STORE_BLOW=sound("storeroom.blow");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register(name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,name)));}
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HorrorBlock>> FITTING_TYPE=CODECS.register("horror_fitting",()->HorrorBlock.CODEC);
