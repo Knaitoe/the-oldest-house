@@ -4,6 +4,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -162,6 +163,10 @@ public final class LastSwimmer {
     static void clearActors(ServerLevel l,BlockPos b){
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-16,-8,-46)).minmax(new AABB(b.offset(16,11,2))),a->a.role()==LiteraryActor.STRANGER&&(a.phase()==ATTENDANT||a.phase()==SWIMMER)))a.discard();
     }
+    static boolean peopleLoaded(ServerLevel l,BlockPos b){
+        for(int x=(b.getX()-16)>>4;x<=(b.getX()+16)>>4;x++)for(int z=(b.getZ()-46)>>4;z<=(b.getZ()+2)>>4;z++)if(!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
+        return true;
+    }
     static void start(ServerLevel l,Pool pool){
         var b=pool.base;clearActors(l,b);SwimmerSite.cover(l,b,0);lights(l,b,0);door(l,b,false);
         var a=spawn(l,ATTENDANT,Vec3.atBottomCenterOf(b.offset(SwimmerSite.ATTENDANT_START)),180);pool.attendant=a==null?null:a.getUUID();
@@ -199,7 +204,8 @@ public final class LastSwimmer {
     }
     static void step(ServerLevel l,Pool pool){
         var b=pool.base;
-        if(pool.tick==0)start(l,pool);
+        // The pool starts only once its people can be seen: an actor added to a section still loading is not found again, and would be added twice.
+        if(pool.tick==0){if(!peopleLoaded(l,b))return;start(l,pool);}
         pool.tick++;
         // The pace clock's sweep hand: a mark every five seconds.
         var pace=b.offset(SwimmerSite.PACE);var ps=l.getBlockState(pace);int stage=(int)(pool.tick/100%12);
@@ -247,7 +253,7 @@ public final class LastSwimmer {
         }
         double frac=(t+1)/(double)LENGTH_TICKS;double z=north?SwimmerSite.POOL_SOUTH+.5-(SwimmerSite.POOL_SOUTH-SwimmerSite.POOL_NORTH)*frac:SwimmerSite.POOL_NORTH+.5+(SwimmerSite.POOL_SOUTH-SwimmerSite.POOL_NORTH)*frac;
         var pos=at(b,swimX(pool),SwimmerSite.SURFACE-.55,z);
-        if(s==null){s=spawn(l,SWIMMER,pos,north?180:0);pool.swimmer=s==null?null:s.getUUID();if(s!=null)s.setNoGravity(true);}
+        if(s==null&&l.areEntitiesLoaded(ChunkPos.asLong(BlockPos.containing(pos)))){s=spawn(l,SWIMMER,pos,north?180:0);pool.swimmer=s==null?null:s.getUUID();if(s!=null)s.setNoGravity(true);}
         if(s!=null){
             s.moveTo(pos.x,pos.y,pos.z,north?180:0,0);s.setYHeadRot(north?180:0);s.setDeltaMovement(Vec3.ZERO);
             // Seen only in glimpses: pushing off each wall, and now and then for a moment in the middle of a length.
