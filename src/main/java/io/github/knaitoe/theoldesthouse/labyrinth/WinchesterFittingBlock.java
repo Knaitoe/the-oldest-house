@@ -26,7 +26,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class WinchesterFittingBlock extends Block {
     public static final MapCodec<WinchesterFittingBlock> CODEC=simpleCodec(WinchesterFittingBlock::new);
     public enum Kind implements StringRepresentable {
-        SEANCE_TABLE,SEANCE_CHAIR,CLOCK,CLOCK_TOP,SAWHORSE,LUMBER,NAIL_KEG,PLAQUE,SPIDER_WINDOW;
+        SEANCE_TABLE,SEANCE_CHAIR,CLOCK,CLOCK_TOP,SAWHORSE,LUMBER,NAIL_KEG,PLAQUE,SPIDER_WINDOW,
+        /** 0.4.202 (owner: "i don't know if this weirdly placed clutter is intentional"): her stockpile and the carpenters' work. */
+        SPARE_DOOR,SPARE_WINDOW,STUDS,WORKBENCH,SAWDUST;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -49,6 +51,11 @@ public final class WinchesterFittingBlock extends Block {
         case PLAQUE->Block.box(4,5,15,12,12,16);
         // 0.4.201: the spider-web window, a leaded pane set flat against the wall behind it.
         case SPIDER_WINDOW->Block.box(0,0,15,16,16,16);
+        case SPARE_DOOR->Block.box(2,0,8,14,16,16);
+        case SPARE_WINDOW->Block.box(1,0,8,15,15,16);
+        case STUDS->Block.box(0,0,6.5,16,16,9.5);
+        case WORKBENCH->Block.box(0,0,1,16,15,15);
+        case SAWDUST->Block.box(0,0,0,16,.5,16);
     };}
     private static VoxelShape rotated(VoxelShape shape,Direction facing){
         if(facing==Direction.NORTH)return shape;var out=new VoxelShape[]{Shapes.empty()};int turns=facing.get2DDataValue()==0?2:facing.get2DDataValue()==1?3:facing.get2DDataValue()==3?1:0;
@@ -62,6 +69,6 @@ public final class WinchesterFittingBlock extends Block {
         return all[i];
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return shape(s);}
-    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.PLAQUE||s.getValue(KIND)==Kind.SPIDER_WINDOW?Shapes.empty():shape(s);}
+    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.PLAQUE||s.getValue(KIND)==Kind.SPIDER_WINDOW||s.getValue(KIND)==Kind.SAWDUST?Shapes.empty():shape(s);}
     @Override protected boolean propagatesSkylightDown(BlockState s,BlockGetter l,BlockPos p){return true;}
 }

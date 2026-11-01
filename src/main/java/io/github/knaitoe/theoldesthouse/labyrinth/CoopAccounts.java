@@ -99,6 +99,9 @@ final class CoopAccounts {
         together(MOTION_LIGHT,party("%s had gone out through the service door before me.",
             "%s {was} still in the courtyard when I opened the service door."));
         // 0.4.200: each reader keeps off the floor for themselves; the ladder is left down for whoever is still below.
+        // 0.4.202: one tower for the party; one on the cords and one on the finder, and any look raised the one tier.
+        together(WHISTLERS,party("%s had kept watch in the cab before me. The cords were where they had left them.",
+            "%s {was} still on watch in the cab when the hatch let me down."));
         together(FEET_UP,party("%s had reached the attic before me. Their marks were already on the rafter beside the empty column.",
             "%s {was} still on the furniture below when I reached the attic, so I left the ladder down."));
 

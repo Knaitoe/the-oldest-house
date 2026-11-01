@@ -113,7 +113,7 @@ public final class ElkCarcassMap {
             HATCH_DECK = new BlockPos(0, MAIN, -32), LANDING_WATER = new BlockPos(30, -2, -60), LANDING = new BlockPos(34, 0, -72);
     /** Where each murdered guest lies, so a reader's discoveries can be counted. */
     public static final List<BlockPos> GUESTS = List.of(new BlockPos(7, 1, -3), new BlockPos(-5, 0, -10), new BlockPos(-5, 0, -17),
-            new BlockPos(3, 0, -16), new BlockPos(0, 0, -28), new BlockPos(-3, MAIN, -2), new BlockPos(0, MAIN, -6),
+            new BlockPos(4, 0, -16), new BlockPos(0, 0, -28), new BlockPos(-3, MAIN, -2), new BlockPos(0, MAIN, -6),
             new BlockPos(5, MAIN, -12), new BlockPos(1, MAIN, -13), new BlockPos(2, MAIN, -16), new BlockPos(0, MAIN, -24),
             new BlockPos(0, MAIN + 1, -30), new BlockPos(3, SUN + 1, 12));
     /** A search through the open valley and both woods; y is filled in from the ground. */
@@ -1028,7 +1028,8 @@ public final class ElkCarcassMap {
             prop(-5, 0, -17, G, Direction.NORTH, 3);
             set(-4, 0, -14, Blocks.BARREL);
             mattress(7, 8, -18, -15);
-            prop(3, 0, -16, G, Direction.EAST, 1);
+            // 0.4.202: a step in from the cabin door, so the doorway itself is never something to climb under its lintel.
+            prop(4, 0, -16, G, Direction.EAST, 1);
             prop(0, 0, -15, LiteraryPropBlock.Kind.STAIN, Direction.NORTH, 3);
             // The lobby and the companionway up to the wheelhouse.
             room(-3, 3, -23, -20, carpet);

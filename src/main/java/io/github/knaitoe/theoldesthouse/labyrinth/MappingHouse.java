@@ -29,7 +29,7 @@ public final class MappingHouse {
     /** Where every night begins: standing at the front window, looking out. */
     public static final Vec3 WAKE = new Vec3(-6.5, 2, -13.4);
     /** The floor plan on the kitchen table, and the account on the boys' desk. */
-    public static final BlockPos SOURCE = new BlockPos(4, 2, -16), ENDING = new BlockPos(-3, 2, -27);
+    public static final BlockPos SOURCE = new BlockPos(4, 2, -15), ENDING = new BlockPos(-3, 2, -27);
     /** His walk: out of the kitchen doorway, up the hall, in at the utility room door. */
     public static final Vec3[] CROSSING = {new Vec3(.5, 2, -17.5), new Vec3(.5, 2, -19.5), new Vec3(.5, 2, -23.5), new Vec3(2.5, 2, -23.5), new Vec3(5.5, 2, -24.5)};
     /** Where the bead lies after his first crossing: on the hall carpet. */
@@ -210,11 +210,13 @@ public final class MappingHouse {
         for (int x = 4; x <= 6; x++) set(l, b, x, 3, -12, Blocks.GLASS_PANE);
         for (int z = -25; z <= -23; z++) set(l, b, -10, 3, z, Blocks.GLASS_PANE);
         set(l, b, 10, 3, -21, Blocks.GLASS_PANE);
-        // Floors: carpet in the front room, the hall and the bedrooms, linoleum in the kitchen and the utility room.
-        fill(l, b, -9, 2, -18, -1, 2, -13, Blocks.BROWN_CARPET);
-        fill(l, b, 0, 2, -24, 1, 2, -19, Blocks.BROWN_CARPET);
-        fill(l, b, -9, 2, -27, -2, 2, -20, Blocks.BLUE_CARPET);
-        fill(l, b, 3, 2, -22, 9, 2, -20, Blocks.LIGHT_GRAY_CARPET);
+        // Floors: wall-to-wall carpet in the front room, the hall and the bedrooms, linoleum in the kitchen and the utility room.
+        // 0.4.202 (owner: "breaks in the carpet"): the carpet is the floor itself, so nothing set on it (a bed's legs, a chair, a
+        // dresser) leaves a square of bare boards round it.
+        fill(l, b, -9, 1, -18, -1, 1, -13, Blocks.BROWN_WOOL);
+        fill(l, b, 0, 1, -24, 1, 1, -19, Blocks.BROWN_WOOL);
+        fill(l, b, -9, 1, -27, -2, 1, -20, Blocks.BLUE_WOOL);
+        fill(l, b, 3, 1, -22, 9, 1, -20, Blocks.LIGHT_GRAY_WOOL);
         fill(l, b, 1, 1, -18, 9, 1, -13, Blocks.WHITE_TERRACOTTA);
         fill(l, b, 3, 1, -27, 9, 1, -24, Blocks.WHITE_TERRACOTTA);
 
@@ -225,30 +227,35 @@ public final class MappingHouse {
         // The back steps from the utility room's screen door.
         set(l, b, 7, 1, -29, Blocks.SPRUCE_PLANKS);set(l, b, 7, 0, -30, Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH));
 
-        // ---- the front room: the couch, the recliner, the television, curtains
-        tract(l, b, -9, 2, -14, Kind.SOFA_LEFT, Direction.EAST);tract(l, b, -9, 2, -15, Kind.SOFA_MIDDLE, Direction.EAST);tract(l, b, -9, 2, -16, Kind.SOFA_RIGHT, Direction.EAST);
-        tract(l, b, -6, 2, -15, Kind.COFFEE_TABLE, Direction.EAST);tract(l, b, -3, 2, -17, Kind.RECLINER, Direction.WEST);
-        tract(l, b, -2, 2, -14, Kind.TV_OFF, Direction.WEST);tract(l, b, -9, 2, -18, Kind.END_TABLE_LAMP, Direction.EAST);
-        tract(l, b, -8, 4, -13, Kind.CURTAIN_LEFT, Direction.SOUTH);tract(l, b, -6, 4, -13, Kind.CURTAIN_RIGHT, Direction.SOUTH);
-        tract(l, b, -5, 3, -18, Kind.FAMILY_PHOTO, Direction.SOUTH);
-        // ---- the kitchen: counter, sink and stove along the east wall, the fridge, the table with the floor plan
-        tract(l, b, 9, 2, -13, Kind.FRIDGE_LOWER, Direction.WEST);tract(l, b, 9, 3, -13, Kind.FRIDGE_UPPER, Direction.WEST);
-        tract(l, b, 9, 2, -14, Kind.COUNTER, Direction.WEST);tract(l, b, 9, 2, -15, Kind.COUNTER_SINK, Direction.WEST);
-        tract(l, b, 9, 2, -16, Kind.STOVE, Direction.WEST);tract(l, b, 9, 2, -17, Kind.COUNTER, Direction.WEST);
-        tract(l, b, 9, 4, -15, Kind.WALL_CABINET, Direction.WEST);tract(l, b, 9, 4, -17, Kind.WALL_CABINET, Direction.WEST);
+        // ---- the front room (0.4.202, owner: "duplicated pictures", "recycled cabinets"): the boys' house has its own things now.
+        // The couch with the afghan over its back, his recliner with the taped arm that nobody sits in, the set with its rabbit
+        // ears, the lamp, a bed sheet tacked over the window for a curtain. On the wall the one picture of him: a young man by a
+        // pickup with a baby in his arms. By the television the boys at the tetherball pole. The TV listings on the table.
+        tract(l, b, -9, 2, -14, Kind.MAP_SOFA_LEFT, Direction.EAST);tract(l, b, -9, 2, -15, Kind.MAP_SOFA_MIDDLE, Direction.EAST);tract(l, b, -9, 2, -16, Kind.MAP_SOFA_RIGHT, Direction.EAST);
+        tract(l, b, -6, 2, -15, Kind.COFFEE_TABLE, Direction.EAST);tract(l, b, -3, 2, -17, Kind.MAP_RECLINER, Direction.WEST);
+        tract(l, b, -2, 2, -14, Kind.MAP_TV, Direction.WEST);tract(l, b, -9, 2, -18, Kind.END_TABLE_LAMP, Direction.EAST);
+        tract(l, b, -8, 4, -13, Kind.MAP_CURTAIN_LEFT, Direction.SOUTH);tract(l, b, -6, 4, -13, Kind.MAP_CURTAIN_RIGHT, Direction.SOUTH);
+        tract(l, b, -5, 3, -18, Kind.MAP_PHOTO_FATHER, Direction.SOUTH);tract(l, b, -1, 3, -16, Kind.MAP_PHOTO_BOYS, Direction.WEST);
+        // ---- the kitchen: laminate counters, the sink and the range (its clock reads 2:49) along the east wall, the fridge with
+        // the seizure log taped to it, and the table where he drew the floor plan, the plan still on it and the pencil
+        tract(l, b, 9, 2, -13, Kind.MAP_FRIDGE_LOWER, Direction.WEST);tract(l, b, 9, 3, -13, Kind.MAP_FRIDGE_UPPER, Direction.WEST);
+        tract(l, b, 9, 2, -14, Kind.MAP_COUNTER, Direction.WEST);tract(l, b, 9, 2, -15, Kind.MAP_COUNTER_SINK, Direction.WEST);
+        tract(l, b, 9, 2, -16, Kind.MAP_STOVE, Direction.WEST);tract(l, b, 9, 2, -17, Kind.MAP_COUNTER, Direction.WEST);
+        tract(l, b, 9, 4, -15, Kind.MAP_WALL_CABINET, Direction.WEST);tract(l, b, 9, 4, -17, Kind.MAP_WALL_CABINET, Direction.WEST);
         tract(l, b, 1, 3, -13, Kind.WALL_PHONE, Direction.EAST);
-        tract(l, b, 4, 2, -15, Kind.TABLE_WEST, Direction.SOUTH);tract(l, b, 5, 2, -15, Kind.TABLE_EAST, Direction.SOUTH);
-        tract(l, b, 4, 2, -14, Kind.DINING_CHAIR, Direction.NORTH);tract(l, b, 6, 2, -15, Kind.KIDS_CHAIR, Direction.WEST);
-        tract(l, b, 3, 2, -15, Kind.DINING_CHAIR, Direction.EAST);
-        // ---- the boys' room: two beds, the toy chest, the desk where the account will lie
+        tract(l, b, 5, 2, -15, Kind.MAP_TABLE_EAST, Direction.SOUTH);
+        tract(l, b, 4, 2, -14, Kind.MAP_CHAIR, Direction.NORTH);tract(l, b, 6, 2, -15, Kind.MAP_CHAIR, Direction.WEST);
+        tract(l, b, 3, 2, -15, Kind.MAP_CHAIR, Direction.EAST);
+        // ---- the boys' room: two beds, the toy chest, Dino's toys on the carpet by it, their dresser with its stickers, the
+        // desk where the account will lie
         NovelRooms.bed(l, b.offset(DINO_BED), Blocks.BLUE_BED, Direction.NORTH);
         NovelRooms.bed(l, b.offset(-4, 2, -24), Blocks.RED_BED, Direction.NORTH);
-        tract(l, b, -9, 2, -21, Kind.TOY_CHEST, Direction.EAST);detail(l, b, -9, 3, -20, SceneDetailBlock.Kind.TOYS, Direction.EAST);
+        tract(l, b, -9, 2, -21, Kind.TOY_CHEST, Direction.EAST);tract(l, b, -8, 2, -21, Kind.MAP_TOYS, Direction.EAST);
         furniture(l, b, ENDING.getX(), ENDING.getY() - 1 + 1, ENDING.getZ() + 1, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);
-        furniture(l, b, -6, 2, -27, HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS, Direction.SOUTH);
-        // ---- the mother's room behind its shut door
+        tract(l, b, -6, 2, -27, Kind.MAP_DRESSER, Direction.SOUTH);
+        // ---- the mother's room behind its shut door: her bed, her dresser with the lace runner and her jewellery box
         NovelRooms.bed(l, b.offset(6, 2, -21), Blocks.WHITE_BED, Direction.EAST);
-        furniture(l, b, 4, 2, -20, HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS, Direction.SOUTH);
+        tract(l, b, 4, 2, -20, Kind.MAP_MOM_DRESSER, Direction.SOUTH);
         // ---- the utility room: the washer, the water heater, the hamper
         furniture(l, b, 9, 2, -27, HouseholdFurnitureBlock.Kind.WASHING_MACHINE, Direction.WEST);
         set(l, b, 9, 2, -26, Blocks.CAULDRON);set(l, b, 9, 3, -26, Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF, Half.BOTTOM));

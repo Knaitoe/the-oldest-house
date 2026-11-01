@@ -16,6 +16,38 @@ public final class NovelTexts {
         case 5->List.of("I have not left a gap.\n\nIt is all on top of yesterday. The nib slips into the same wet place.\n\nStart lower.\n\nLower.","Someone is breathing beside the window.\n\nI counted the cats.\n\nI kept counting after they moved.");
         case 6->List.of("The reader said this was the last page. I could feel another beneath it.\n\nShe would not lift the corner.","One sheet. Two edges.\n\nI held them apart with my nail until the paper tore.\n\nNow she says there are two.");
         default->List.of("Where does this line begin.\n\nI have turned the sheet. I have turned it again.\n\nThe ink comes through to my knuckle.","Do not read the last word.\n\nI have crossed it out.\n\nI am crossing it out.");});}
+    /**
+     * 0.4.202 (owner: "each page on zampano's wall should be readable by players, ideally pulled from house of leaves"): the
+     * sheets pinned in his hall and covering the wall at its end carry lines from his own account of The Navidson Record, a
+     * sentence or two each, in his hand. Which line a sheet carries follows from where it hangs, so neighbouring sheets differ.
+     */
+    public static final List<String> WALL=List.of(
+        "While enthusiasts and detractors will continue to empty entire dictionaries attempting to describe or deride it, \"authenticity\" still remains the word most likely to stir a debate.",
+        "The width of the house inside would appear to exceed the width of the house as measured from the outside by 1/4\".",
+        "Using the same line, Navidson goes outside, stretches the fishing line from one side of the house to the other only to find it is a quarter of an inch too long.\n\nExactly.",
+        "The interior of the house exceeds the exterior not by 1/4\" but by 5/16\".",
+        "A Hi 8 captures her sitting in the living room, watching the men fade into the darkness of the hallway.",
+        "Navidson keeps his attention focused on the floor ahead of him, and no doubt because he keeps looking down, the floor begins to assume a new meaning.",
+        "Implicit in 'labyrinth' is a required effort to keep from slipping or falling; in other words stopping.",
+        "With only 24 matches plus the matchbook cover, which Staker figured out would burn for 36 seconds, Navidson had a total of five minutes and forty-four seconds of light.",
+        "Now, however, it is perfectly clear that the hallway which was well over sixty feet deep when the children entered it is now a little less than ten feet.",
+        "No matter how hard he tries—and Navidson tries six consecutive times in six consecutive segments—he cannot slaughter that tiny sliver of space.",
+        "Due to the absence of any exterior cameras, all experiences outside the house rely on personal accounts.",
+        "In their absence, the Navidsons' home had become something else, and while not exactly sinister or even threatening, the change still destroyed any sense of security or well-being.",
+        "Though Exploration #2 ends up lasting over eight hours, Holloway, Jed, Wax only hear the growl once and the resulting shifts are negligible.",
+        "When Navidson and Reston finally reach the foot of the stairway, Tom is not there.",
+        "The only exception is that on this occasion, after dashing up and over the sofa, both puppy and cat head straight down the hallway and disappear into the darkness.",
+        "Toward the end of their second day inside (making this the ninth day since Holloway's team set out into the house), both men seem uncertain whether to continue or return.",
+        "In order to have a third dimension, depth cues are required, which in the case of the stairway means more light.",
+        "But Echo is an insurgent.",
+        "As with previous explorations, Exploration #4 can also be considered a personal journey.",
+        "Right before the bed is sheared in half, Karen succeeds in scrambling into the strange closet space intervening between parent and child.",
+        "Navidson finally has to let go.",
+        "When the video tape flickers back to life, it is 9:30 P.M. and Ash Tree Lane is dark.",
+        "Not once during those initial minutes does Navidson indicate he knows anything about the impending nightmare he and his entire family are about to face.",
+        "This is not for you.");
+    public static int wallIndex(net.minecraft.core.BlockPos rel){return Math.floorMod(rel.getX()*7+rel.getY()*13+rel.getZ()*3,WALL.size());}
+    public static ItemStack wallSheet(int index){return HouseWriting.book("A sheet from the wall","Zampano",HouseWriting.WritingStyle.ZAMPANO,List.of(WALL.get(Math.floorMod(index,WALL.size()))));}
     private NovelTexts(){}
     public static ItemStack archive(){return HouseWriting.book("The unfinished survey","Zampano",HouseWriting.WritingStyle.ZAMPANO,List.of(
         "The windows were sealed before the measurements began.\n\nA reader described the sky to me. I asked her to start again.",

@@ -86,6 +86,7 @@ public final class LiteraryVignettes {
         if(UncannyRooms.isUncanny(place)){UncannyStories.arrive(p,place,own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.DARE_IN_THE_DARK){DareInTheDark.arrive(p,own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.FEET_UP){FeetUp.arrive(p,own);save(d,p.getUUID(),place,own);}
+        if(place==LabyrinthPlace.WHISTLERS){LookoutNight.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
     }
     public static ItemStack mark(ServerPlayer p,LabyrinthPlace place,String key,ItemStack item){var s=VignetteYields.mark(item.copy(),place.id());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(OWNER,p.getUUID());t.putString(KEY,key);t.putString(PLACE,place.id());});if(place==LabyrinthPlace.BORRASCA&&key.equals("Evidence"))BorrascaStory.markEvidence(p,s);Keepsakes.inscribe(s,place,key);return s;}
     public static void give(ServerPlayer p,ItemStack s){if(p.getInventory().add(s))return;var e=new ItemEntity(p.serverLevel(),p.getX(),p.getY()+.2,p.getZ(),s);e.setTarget(p.getUUID());p.serverLevel().addFreshEntity(e);}
@@ -145,6 +146,7 @@ public final class LiteraryVignettes {
             case WINCHESTER->handled=WinchesterHouse.click(p,b,rel,own);
             case DARE_IN_THE_DARK->handled=DareInTheDark.click(p,b,rel,own);
             case FEET_UP->handled=FeetUp.click(p,b,rel,own);
+            case WHISTLERS->handled=LookoutNight.click(p,b,rel,own);
             case CAMP_BLOOD->handled=CampSession.click(p,b,rel,own);
             case ELK_FAN->handled=ElkFanSequence.click(p,b,rel,own);
             case LAKE_HOUSE->handled=LakeHouse.click(p,b,rel,own);case BORRASCA->handled=BorrascaStory.click(p,b,rel,own);

@@ -44,7 +44,8 @@ public final class LabyrinthPlaces {
     // 0.4.168's kitchen (slot 112) needs a fifteenth column at the lowest supported manor heights.
     // 0.4.199's first puzzle room (slot 120) needs a sixteenth at common ones; earlier slots never move.
     // 0.4.200's Feet Up (slot 127) is the last slot the sixteenth column holds at manor heights 80-100 (eight to a column); a slot 128 would need a seventeenth.
-    private static final int MAX_COLUMNS = 16;
+    // 0.4.202's lookout (slot 128) needs a seventeenth column at common manor heights; earlier slots never move.
+    private static final int MAX_COLUMNS = 17;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 
@@ -138,7 +139,7 @@ public final class LabyrinthPlaces {
         }
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
-                place == LabyrinthPlace.BORRASCA ? 80 : (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
+                place == LabyrinthPlace.BORRASCA ? 80 : place == LabyrinthPlace.WHISTLERS ? LookoutTower.BASE_Y : (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
                 origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing
                         : place.slot() >= APPENDED_INTERIOR_FIRST_SLOT ? APPENDED_INTERIOR_NORTH : 0)
         );
@@ -171,6 +172,10 @@ public final class LabyrinthPlaces {
         BoundingBox bounds = placeBounds(origin, place);
         if (bounds == null) {
             return null;
+        }
+        // 0.4.202: the lookout stands at its own height (LookoutTower.BASE_Y), not in the stacked slots, so its slot is its own box.
+        if (place == LabyrinthPlace.WHISTLERS) {
+            return new BoundingBox(bounds.minX() - PAD, bounds.minY(), bounds.minZ() - PAD, bounds.maxX() + PAD, bounds.maxY(), bounds.maxZ() + PAD);
         }
         int bottom = slotBottom(origin, place.slot());
         return new BoundingBox(

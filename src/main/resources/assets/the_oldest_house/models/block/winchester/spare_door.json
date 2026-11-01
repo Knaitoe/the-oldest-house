@@ -1,0 +1,172 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "d": "the_oldest_house:block/winchester/door_panel",
+  "m": "the_oldest_house:block/winchester/mahogany",
+  "b": "the_oldest_house:block/winchester/brass",
+  "particle": "the_oldest_house:block/winchester/door_panel"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    12
+   ],
+   "to": [
+    14,
+    15,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#d"
+    },
+    "south": {
+     "texture": "#d"
+    },
+    "east": {
+     "texture": "#d"
+    },
+    "west": {
+     "texture": "#d"
+    },
+    "up": {
+     "texture": "#d"
+    },
+    "down": {
+     "texture": "#d"
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     13
+    ],
+    "axis": "x",
+    "angle": 22.5
+   }
+  },
+  {
+   "from": [
+    2,
+    15,
+    12
+   ],
+   "to": [
+    14,
+    30,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#d",
+     "uv": [
+      2,
+      1,
+      14,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#d",
+     "uv": [
+      2,
+      1,
+      14,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#d",
+     "uv": [
+      2,
+      1,
+      4,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#d",
+     "uv": [
+      12,
+      1,
+      14,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#d",
+     "uv": [
+      2,
+      12,
+      14,
+      14
+     ]
+    },
+    "down": {
+     "texture": "#d",
+     "uv": [
+      2,
+      2,
+      14,
+      4
+     ]
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     13
+    ],
+    "axis": "x",
+    "angle": 22.5
+   }
+  },
+  {
+   "from": [
+    11,
+    13,
+    11.5
+   ],
+   "to": [
+    12.5,
+    14.5,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     13
+    ],
+    "axis": "x",
+    "angle": 22.5
+   }
+  }
+ ]
+}

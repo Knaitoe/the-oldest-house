@@ -131,7 +131,6 @@ public final class DevilsRockHouse {
         // ---- living room: the couch facing the television, the rug, the camera on its tripod facing the couch
         rug(l, b, -10, -6, -15, -11);
         for (int z = -14; z <= -12; z++) furniture(l, b, -6, 0, z, HouseholdFurnitureBlock.Kind.BLUE_SOFA, Direction.WEST);
-        set(l, b, -6, 1, -12, SceneDetailBlock.state(SceneDetailBlock.Kind.BLANKET, Direction.WEST));
         furniture(l, b, -12, 0, -13, HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS, Direction.EAST);
         LiteraryRooms.prop(l, b, new BlockPos(-12, 1, -13), LiteraryPropBlock.Kind.TELEVISION, Direction.EAST);
         set(l, b, -12, 0, -12, VignetteDetailBlock.state(VignetteDetailBlock.Kind.CASSETTE, Direction.EAST));
@@ -140,15 +139,16 @@ public final class DevilsRockHouse {
         furniture(l, b, -12, 0, -18, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.SOUTH);set(l, b, -12, 1, -18, SceneDetailBlock.state(SceneDetailBlock.Kind.TABLE_LAMP, Direction.SOUTH));
         LiteraryRooms.prop(l, b, CAMERA, LiteraryPropBlock.Kind.CAMERA, Direction.WEST);
         fit(l, b, -3, 0, -17, VignetteInteriorBlock.Kind.WATCHROOM_TRIPOD_CASE, Direction.WEST);fit(l, b, -3, 1, -17, VignetteInteriorBlock.Kind.WATCHROOM_TAPE, Direction.WEST);
-        set(l, b, -3, 2, -10, SceneDetailBlock.state(SceneDetailBlock.Kind.FRAME, Direction.WEST));
-        set(l, b, -6, 2, -9, SceneDetailBlock.state(SceneDetailBlock.Kind.CLOCK, Direction.SOUTH));
+        set(l, b, -12, 2, -11, SceneDetailBlock.state(SceneDetailBlock.Kind.FRAME, Direction.EAST));
+        set(l, b, -6, 2, -9, SceneDetailBlock.state(SceneDetailBlock.Kind.CLOCK, Direction.NORTH));
         // ---- the entry: shoes and coats by the door
         set(l, b, -2, 0, -9, SceneDetailBlock.state(SceneDetailBlock.Kind.SHOES, Direction.EAST));
-        set(l, b, 2, 2, -9, SceneDetailBlock.state(SceneDetailBlock.Kind.COAT, Direction.WEST));
+        set(l, b, 2, 2, -9, SceneDetailBlock.state(SceneDetailBlock.Kind.COAT, Direction.NORTH));
         // ---- kitchen: counters, stove and sink along the east wall, the fridge with his poster on it, the table with the log
-        for (int z = -16; z <= -10; z++) { set(l, b, 12, 0, z, Blocks.STRIPPED_OAK_WOOD);set(l, b, 12, 1, z, Blocks.SMOOTH_QUARTZ_SLAB); }
+        // 0.4.202: counters a block high, cupboards under them; the dish rack stands on the one by the window.
+        for (int z = -16; z <= -10; z++) set(l, b, 12, 0, z, Blocks.STRIPPED_OAK_WOOD);
         set(l, b, 12, 0, -13, Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, Direction.WEST));set(l, b, 12, 1, -13, Blocks.AIR);
-        for (int z : new int[]{-16, -15, -14, -12, -10}) fit(l, b, 12, 0, z, VignetteInteriorBlock.Kind.WATCHROOM_CUPBOARD, Direction.WEST);
+        for (int z : new int[]{-15, -14, -12, -10}) fit(l, b, 12, 0, z, VignetteInteriorBlock.Kind.WATCHROOM_CUPBOARD, Direction.WEST);
         fit(l, b, 12, 0, -11, VignetteInteriorBlock.Kind.TRAILER_SINK, Direction.WEST);set(l, b, 12, 1, -11, Blocks.AIR);
         set(l, b, 12, 1, -16, SceneDetailBlock.state(SceneDetailBlock.Kind.DISH_RACK, Direction.WEST));
         for (int y = 0; y <= 1; y++) set(l, b, 12, y, -17, Blocks.IRON_BLOCK);

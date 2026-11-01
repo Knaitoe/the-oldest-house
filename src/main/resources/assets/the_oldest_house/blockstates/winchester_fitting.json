@@ -21,6 +21,21 @@
   "facing=north,kind=nail_keg": {
    "model": "the_oldest_house:block/winchester/nail_keg"
   },
+  "facing=north,kind=spare_door": {
+   "model": "the_oldest_house:block/winchester/spare_door"
+  },
+  "facing=north,kind=spare_window": {
+   "model": "the_oldest_house:block/winchester/spare_window"
+  },
+  "facing=north,kind=studs": {
+   "model": "the_oldest_house:block/winchester/studs"
+  },
+  "facing=north,kind=workbench": {
+   "model": "the_oldest_house:block/winchester/workbench"
+  },
+  "facing=north,kind=sawdust": {
+   "model": "the_oldest_house:block/winchester/sawdust"
+  },
   "facing=north,kind=spider_window": {
    "model": "the_oldest_house:block/winchester/spider_window"
   },
@@ -53,6 +68,26 @@
   },
   "facing=east,kind=nail_keg": {
    "model": "the_oldest_house:block/winchester/nail_keg",
+   "y": 90
+  },
+  "facing=east,kind=spare_door": {
+   "model": "the_oldest_house:block/winchester/spare_door",
+   "y": 90
+  },
+  "facing=east,kind=spare_window": {
+   "model": "the_oldest_house:block/winchester/spare_window",
+   "y": 90
+  },
+  "facing=east,kind=studs": {
+   "model": "the_oldest_house:block/winchester/studs",
+   "y": 90
+  },
+  "facing=east,kind=workbench": {
+   "model": "the_oldest_house:block/winchester/workbench",
+   "y": 90
+  },
+  "facing=east,kind=sawdust": {
+   "model": "the_oldest_house:block/winchester/sawdust",
    "y": 90
   },
   "facing=east,kind=spider_window": {
@@ -91,6 +126,26 @@
    "model": "the_oldest_house:block/winchester/nail_keg",
    "y": 180
   },
+  "facing=south,kind=spare_door": {
+   "model": "the_oldest_house:block/winchester/spare_door",
+   "y": 180
+  },
+  "facing=south,kind=spare_window": {
+   "model": "the_oldest_house:block/winchester/spare_window",
+   "y": 180
+  },
+  "facing=south,kind=studs": {
+   "model": "the_oldest_house:block/winchester/studs",
+   "y": 180
+  },
+  "facing=south,kind=workbench": {
+   "model": "the_oldest_house:block/winchester/workbench",
+   "y": 180
+  },
+  "facing=south,kind=sawdust": {
+   "model": "the_oldest_house:block/winchester/sawdust",
+   "y": 180
+  },
   "facing=south,kind=spider_window": {
    "model": "the_oldest_house:block/winchester/spider_window",
    "y": 180
@@ -125,6 +180,26 @@
   },
   "facing=west,kind=nail_keg": {
    "model": "the_oldest_house:block/winchester/nail_keg",
+   "y": 270
+  },
+  "facing=west,kind=spare_door": {
+   "model": "the_oldest_house:block/winchester/spare_door",
+   "y": 270
+  },
+  "facing=west,kind=spare_window": {
+   "model": "the_oldest_house:block/winchester/spare_window",
+   "y": 270
+  },
+  "facing=west,kind=studs": {
+   "model": "the_oldest_house:block/winchester/studs",
+   "y": 270
+  },
+  "facing=west,kind=workbench": {
+   "model": "the_oldest_house:block/winchester/workbench",
+   "y": 270
+  },
+  "facing=west,kind=sawdust": {
+   "model": "the_oldest_house:block/winchester/sawdust",
    "y": 270
   },
   "facing=west,kind=spider_window": {

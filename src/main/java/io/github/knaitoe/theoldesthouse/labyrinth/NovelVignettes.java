@@ -112,6 +112,9 @@ public final class NovelVignettes {
             if(data.state(STATE).getBoolean("ArchiveOpen"))open(p,place,SceneHuntReview.sourceBook(p.serverLevel(),b,place),"ArchiveBook",true,own);else handled=false;
         }else if(place==LabyrinthPlace.ZAMPANO_COURTYARD&&SceneReview.DRAFTS.contains(rel)&&p.serverLevel().getBlockState(e.getPos()).is(HouseBlocks.VIGNETTE_DETAIL.get())){
             int index=SceneReview.DRAFTS.indexOf(rel);open(p,place,NovelTexts.archiveDraft(index),"ArchiveDraft"+index,false,own);
+        }else if(place==LabyrinthPlace.ZAMPANO_COURTYARD&&scribble(p.serverLevel().getBlockState(e.getPos()))){
+            // 0.4.202: every other sheet in his hand, in the hall and on the wall at its end, can be read where it hangs.
+            int index=NovelTexts.wallIndex(rel);open(p,place,NovelTexts.wallSheet(index),"WallSheet"+index,false,own);
         }else if(place==LabyrinthPlace.WHALE)handled=WhaleInstitute.click(p,b,rel,own);
         else if(place==LabyrinthPlace.BARN_WELL&&rel.equals(NovelRooms.WELL)){
             if(waitingBelow(p.server)&&own.getInt("WellTicks")<WELL_WAIT)cue(p,own,"The cover will not lift. Someone remains above the shaft.");
@@ -263,6 +266,7 @@ public final class NovelVignettes {
             if(level.getBlockEntity(at) instanceof Container c){for(int i=0;i<c.getContainerSize();i++)if(photo(c.getItem(i),p.getUUID()))c.setItem(i,ItemStack.EMPTY);c.setChanged();}}
         give(p,ItemStack.parseOptional(p.registryAccess(),own.getCompound("Photo")));cue(p,own,"The photograph is back. It has not become easier to look at.");
     }
+    static boolean scribble(net.minecraft.world.level.block.state.BlockState s){return s.is(HouseBlocks.VIGNETTE_DETAIL.get())&&s.getValue(io.github.knaitoe.theoldesthouse.house.VignetteDetailBlock.KIND).name().startsWith("SCRIBBLE_");}
     static void open(ServerPlayer p,LabyrinthPlace place,ItemStack book,String key,boolean ending,CompoundTag own){
         var data=LabyrinthData.get(p.server);String slot="Original_"+key;
         if(!own.contains(slot))own.put(slot,book.save(p.registryAccess()));var original=ItemStack.parseOptional(p.registryAccess(),own.getCompound(slot));save(data,p.getUUID(),own);

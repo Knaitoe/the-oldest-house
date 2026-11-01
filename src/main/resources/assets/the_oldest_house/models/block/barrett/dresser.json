@@ -5,7 +5,7 @@
  "textures": {
   "w": "the_oldest_house:block/barrett/walnut",
   "d": "the_oldest_house:block/barrett/drawers",
-  "p": "the_oldest_house:block/barrett/photos",
+  "m": "the_oldest_house:block/barrett/ceramic",
   "k": "the_oldest_house:block/barrett/black",
   "particle": "the_oldest_house:block/barrett/walnut"
  },
@@ -78,67 +78,31 @@
    "from": [
     3,
     13,
-    11
+    9
    ],
    "to": [
     7,
-    17,
-    12
+    13.8,
+    13
    ],
    "faces": {
     "north": {
-     "texture": "#p",
-     "uv": [
-      5,
-      5,
-      11,
-      13
-     ]
+     "texture": "#m"
     },
     "south": {
-     "texture": "#k",
-     "uv": [
-      5,
-      5,
-      11,
-      13
-     ]
+     "texture": "#m"
     },
     "east": {
-     "texture": "#k",
-     "uv": [
-      5,
-      5,
-      11,
-      13
-     ]
+     "texture": "#m"
     },
     "west": {
-     "texture": "#k",
-     "uv": [
-      5,
-      5,
-      11,
-      13
-     ]
+     "texture": "#m"
     },
     "up": {
-     "texture": "#k",
-     "uv": [
-      5,
-      5,
-      11,
-      13
-     ]
+     "texture": "#m"
     },
     "down": {
-     "texture": "#k",
-     "uv": [
-      5,
-      5,
-      11,
-      13
-     ]
+     "texture": "#m"
     }
    }
   },

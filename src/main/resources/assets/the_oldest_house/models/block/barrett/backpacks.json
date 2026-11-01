@@ -1,0 +1,180 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "b": "the_oldest_house:block/barrett/backpacks",
+  "o": "the_oldest_house:block/barrett/oak",
+  "particle": "the_oldest_house:block/barrett/backpacks"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    11,
+    15
+   ],
+   "to": [
+    16,
+    12.5,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#o"
+    },
+    "south": {
+     "texture": "#o"
+    },
+    "east": {
+     "texture": "#o"
+    },
+    "west": {
+     "texture": "#o"
+    },
+    "up": {
+     "texture": "#o"
+    },
+    "down": {
+     "texture": "#o"
+    }
+   }
+  },
+  {
+   "from": [
+    1,
+    2,
+    12
+   ],
+   "to": [
+    7,
+    11,
+    15.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b",
+     "uv": [
+      0,
+      2,
+      6,
+      11
+     ]
+    },
+    "south": {
+     "texture": "#b",
+     "uv": [
+      0,
+      2,
+      6,
+      11
+     ]
+    },
+    "east": {
+     "texture": "#b",
+     "uv": [
+      0,
+      2,
+      6,
+      11
+     ]
+    },
+    "west": {
+     "texture": "#b",
+     "uv": [
+      0,
+      2,
+      6,
+      11
+     ]
+    },
+    "up": {
+     "texture": "#b",
+     "uv": [
+      0,
+      2,
+      6,
+      11
+     ]
+    },
+    "down": {
+     "texture": "#b",
+     "uv": [
+      0,
+      2,
+      6,
+      11
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    9,
+    1,
+    12.5
+   ],
+   "to": [
+    15,
+    10,
+    15.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b",
+     "uv": [
+      9,
+      2,
+      15,
+      11
+     ]
+    },
+    "south": {
+     "texture": "#b",
+     "uv": [
+      9,
+      2,
+      15,
+      11
+     ]
+    },
+    "east": {
+     "texture": "#b",
+     "uv": [
+      9,
+      2,
+      15,
+      11
+     ]
+    },
+    "west": {
+     "texture": "#b",
+     "uv": [
+      9,
+      2,
+      15,
+      11
+     ]
+    },
+    "up": {
+     "texture": "#b",
+     "uv": [
+      9,
+      2,
+      15,
+      11
+     ]
+    },
+    "down": {
+     "texture": "#b",
+     "uv": [
+      9,
+      2,
+      15,
+      11
+     ]
+    }
+   }
+  }
+ ]
+}

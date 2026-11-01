@@ -876,6 +876,711 @@ TEXTURES = {f.__name__: f for f in (
 # ------------------------------------------------------------------------------------------------ models
 DIRS = ('north', 'south', 'east', 'west', 'up', 'down')
 GLOW = {'blinds': 6, 'ceiling_light': 15, 'softbox': 15, 'monitor': 8, 'monitor_b': 8, 'laptop_screen': 8, 'tv_screen': 0}
+# ------------------------------------------------------------------------------------------------ 0.4.202: the family's own things
+# The owner: "far too many repeated pictures... not indicative of a family of four", "the tv should be showing something",
+# "blinds should be single columns facing opposite directions", "bathroom is host to a family of four. there is clutter. a cup
+# with toothbrushes. punny artwork. a tubshower with curtains. dirty towels and clothes bins", "very little character for a
+# young girl's bedroom", "very little character to marjorie's bedroom too", "hallway should end with a closet".
+JOHN_HAIR, SARAH_HAIR, MARJ_HAIR, MERRY_HAIR = (58, 40, 30), (150, 70, 38), (44, 30, 24), (176, 128, 70)
+SKIN, SKIN_D = (226, 186, 156), (196, 156, 126)
+
+
+def pic(w, h, border, draw):
+    img = canvas()
+    for y in range(h):
+        for x in range(w):
+            px(img, x, y, border)
+    draw(img)
+    return img
+
+
+def figure(img, x, top, hair, shirt, tall=5, long_hair=False, beard=False):
+    """A person at photo scale: hair, a face, a shirt, from `top` down."""
+    px(img, x, top, hair); px(img, x, top + 1, SKIN)
+    if beard:
+        px(img, x, top + 2, hair)
+    if long_hair:
+        px(img, x - 1, top + 1, hair); px(img, x + 1, top + 1, hair)
+    for y in range(top + (3 if beard else 2), top + tall):
+        px(img, x, y, shirt)
+
+
+def blinds_cell(head):
+    """One column of a double window with its blind drawn. The trim runs down the outer edge only, so the two columns (one turned
+    to face the other way) meet as one window; the lower column has the sill, the upper the blind's head rail."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            if y % 2 == 1:
+                px(img, x, y, (248, 236, 200) if x > 2 else (236, 224, 190))
+            else:
+                px(img, x, y, mul((228, 226, 220), 1 - .02 * (x % 3 == 0)))
+    for y in range(16):
+        px(img, 0, y, (238, 236, 230)); px(img, 1, y, (212, 210, 204))
+    if head:
+        for x in range(16):
+            px(img, x, 0, (238, 236, 230)); px(img, x, 1, (214, 210, 200)); px(img, x, 2, (190, 186, 178))
+    else:
+        for x in range(16):
+            px(img, x, 15, (238, 236, 230)); px(img, x, 14, (204, 202, 196))
+    for y in range(3 if head else 0, 16 if head else 13):
+        px(img, 4, y, (196, 192, 184))
+    if not head:
+        px(img, 4, 12, (150, 146, 140))
+    return img
+
+
+def tv_cartoon():
+    """The living room set is on: a Saturday cartoon, a round yellow critter hopping over a hill under a sun, eight frames."""
+    frames = 8
+    img = Image.new('RGBA', (16, 16 * frames), (0, 0, 0, 0))
+    for f in range(frames):
+        oy = 16 * f
+        for y in range(16):
+            for x in range(16):
+                sky = (110, 178, 236) if y < 9 else (96, 176, 84)
+                if 9 <= y <= 10 and abs(x - 8) > 6 - (y - 9) * 2:
+                    sky = (110, 178, 236)
+                img.putpixel((x, oy + y), sky + (255,))
+        sx = 12 + (1 if f % 4 < 2 else 0)
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
+            img.putpixel((sx + dx, oy + 2 + dy), (252, 226, 90, 255))
+        hop = (0, 2, 3, 2, 0, 0, 1, 0)[f]
+        cx = 3 + f
+        for dx in range(3):
+            for dy in range(3):
+                img.putpixel((min(15, cx + dx), oy + 8 - hop + dy), (250, 200, 60, 255))
+        img.putpixel((min(15, cx + 2), oy + 8 - hop), (30, 30, 30, 255))
+        for x in range(16):
+            img.putpixel((x, oy), (12, 12, 14, 255)); img.putpixel((x, oy + 15), (12, 12, 14, 255))
+    return img
+
+
+def photo_wedding():
+    def draw(img):
+        for y in range(1, 9):
+            for x in range(1, 7):
+                px(img, x, y, (132, 138, 152))
+        figure(img, 2, 2, SARAH_HAIR, (244, 240, 230), tall=7, long_hair=True)
+        px(img, 2, 5, (210, 90, 110)); px(img, 1, 5, (120, 160, 90))
+        figure(img, 4, 1, JOHN_HAIR, (40, 40, 48), tall=8)
+        px(img, 4, 3, (230, 230, 230))
+    return pic(8, 10, (184, 150, 70), draw)
+
+
+def school(hair, shirt, pigtails):
+    def draw(img):
+        for y in range(1, 9):
+            for x in range(1, 7):
+                px(img, x, y, (92, 122, 172) if (x * 3 + y * 5) % 4 else (104, 134, 184))
+        for x in (2, 3, 4, 5):
+            px(img, x, 2, hair)
+        for x in (3, 4):
+            px(img, x, 3, SKIN); px(img, x, 4, SKIN)
+        px(img, 3, 3, (60, 46, 40)); px(img, 4, 3, (60, 46, 40)); px(img, 3, 5, (200, 120, 120)); px(img, 4, 5, SKIN)
+        if pigtails:
+            px(img, 1, 4, hair); px(img, 6, 4, hair); px(img, 2, 3, hair); px(img, 5, 3, hair)
+        else:
+            for y in range(3, 7):
+                px(img, 2, y, hair); px(img, 5, y, hair)
+        for y in range(6, 9):
+            for x in range(2, 6):
+                px(img, x, y, shirt)
+    return draw
+
+
+def photo_marjorie():
+    return pic(8, 10, (214, 206, 186), school(MARJ_HAIR, (70, 110, 80), False))
+
+
+def photo_merry():
+    return pic(8, 10, (214, 206, 186), school(MERRY_HAIR, (200, 120, 170), True))
+
+
+def photo_beach():
+    """The four of them on the beach at the end of a summer: sea, sand, the girls in front, John and Sarah behind."""
+    def draw(img):
+        for y in range(1, 9):
+            for x in range(1, 11):
+                px(img, x, y, (156, 200, 232) if y < 4 else (64, 124, 172) if y == 4 else (228, 210, 156))
+        figure(img, 3, 2, JOHN_HAIR, (90, 120, 160), tall=6, beard=True)
+        figure(img, 7, 2, SARAH_HAIR, (220, 90, 70), tall=6, long_hair=True)
+        figure(img, 4, 5, MARJ_HAIR, (70, 110, 80), tall=3)
+        figure(img, 6, 6, MERRY_HAIR, (240, 200, 70), tall=2)
+        px(img, 9, 7, (230, 60, 60))
+    return pic(12, 10, (240, 236, 226), draw)
+
+
+def photo_baby():
+    """Sarah on the old couch with Merry new in a blanket, and Marjorie, six, leaning in to look."""
+    def draw(img):
+        for y in range(1, 9):
+            for x in range(1, 9):
+                px(img, x, y, (206, 190, 160) if y < 6 else (110, 80, 120))
+        figure(img, 3, 2, SARAH_HAIR, (120, 150, 190), tall=5, long_hair=True)
+        px(img, 4, 4, (246, 240, 226)); px(img, 5, 4, (246, 240, 226)); px(img, 5, 3, SKIN)
+        figure(img, 7, 4, MARJ_HAIR, (230, 120, 150), tall=3)
+    return pic(10, 10, (240, 236, 226), draw)
+
+
+def photo_sisters():
+    """Marjorie giving Merry a piggyback across the yard, both of them laughing."""
+    def draw(img):
+        for y in range(1, 7):
+            for x in range(1, 9):
+                px(img, x, y, (150, 196, 226) if y < 4 else (96, 160, 80))
+        figure(img, 4, 2, MARJ_HAIR, (70, 110, 80), tall=5, long_hair=True)
+        figure(img, 5, 1, MERRY_HAIR, (240, 200, 70), tall=3)
+        px(img, 6, 3, SKIN)
+    return pic(10, 8, (240, 236, 226), draw)
+
+
+def portrait():
+    """The studio portrait over the front door, two blocks square: John and Sarah standing, Marjorie and Merry in front."""
+    img = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
+    def p(x, y, c):
+        img.putpixel((x, y), clamp(c) + (255,))
+    for y in range(32):
+        for x in range(32):
+            edge = x in (0, 1, 30, 31) or y in (0, 1, 30, 31)
+            p(x, y, (120, 82, 44) if edge else mix((96, 106, 128), (70, 76, 96), y / 32))
+    def person(cx, top, hair, shirt, h, beard=False, long_hair=False):
+        for dx in (-1, 0, 1):
+            p(cx + dx, top, hair); p(cx + dx, top + 1, hair if dx else SKIN)
+            for y in range(top + 2, top + 4):
+                p(cx + dx, y, SKIN)
+        p(cx - 1, top + 2, (50, 40, 36)); p(cx + 1, top + 2, (50, 40, 36))
+        if beard:
+            for dx in (-1, 0, 1):
+                p(cx + dx, top + 4, hair)
+        if long_hair:
+            for y in range(top + 1, top + 6):
+                p(cx - 2, y, hair); p(cx + 2, y, hair)
+        for y in range(top + 4 + (1 if beard else 0), top + h):
+            for dx in (-2, -1, 0, 1, 2):
+                p(cx + dx, y, shirt)
+    person(11, 5, JOHN_HAIR, (50, 64, 96), 26, beard=True)
+    person(20, 6, SARAH_HAIR, (120, 60, 70), 25, long_hair=True)
+    person(13, 15, MARJ_HAIR, (60, 100, 76), 15, long_hair=True)
+    person(19, 18, MERRY_HAIR, (210, 130, 170), 12)
+    return img
+
+
+def portrait_part(i):
+    def make():
+        full = portrait()
+        x0, y0 = (i % 2) * 16, (i // 2) * 16
+        return full.crop((x0, y0, x0 + 16, y0 + 16))
+    return make
+
+
+def crucifix():
+    img = canvas()
+    for y in range(1, 15):
+        for x in (7, 8):
+            px(img, x, y, (110, 74, 42) if x == 7 else (92, 60, 34))
+    for x in range(3, 13):
+        for y in (4, 5):
+            px(img, x, y, (110, 74, 42) if y == 4 else (92, 60, 34))
+    for x, y in ((7, 4), (8, 4), (7, 5), (8, 5), (7, 6), (8, 6), (7, 7), (8, 8), (7, 9), (5, 4), (10, 4)):
+        px(img, x, y, (206, 170, 90))
+    return img
+
+
+def merry_drawing():
+    """Merry's crayon drawing taped up: a house, a sun, four of them holding hands, a cat."""
+    img = canvas()
+    for y in range(1, 15):
+        for x in range(1, 15):
+            px(img, x, y, (248, 246, 236))
+    for x in range(10, 14):
+        px(img, x, 2, (250, 210, 40))
+    px(img, 12, 1, (250, 210, 40)); px(img, 12, 3, (250, 210, 40))
+    for x in range(2, 7):
+        px(img, x, 4, (200, 50, 50))
+    for y in range(5, 9):
+        px(img, 2, y, (200, 50, 50)); px(img, 6, y, (200, 50, 50))
+    for i, (x, c) in enumerate(((3, (60, 60, 200)), (6, (200, 60, 120)), (9, (60, 160, 60)), (12, (230, 140, 40)))):
+        px(img, x, 9 + (i // 2), (60, 40, 30)); px(img, x, 11, c); px(img, x, 12, c)
+    for x in range(3, 13):
+        px(img, x, 11, mul(get(img, x, 11), .9)) if get(img, x, 11) == (248, 246, 236) else None
+    for x in range(1, 15):
+        px(img, x, 14, (60, 170, 60))
+    px(img, 1, 1, (232, 226, 190)); px(img, 14, 1, (232, 226, 190))
+    return img
+
+
+FONT = {'A': ['.#.', '#.#', '###', '#.#', '#.#'], 'E': ['###', '#..', '##.', '#..', '###'], 'H': ['#.#', '#.#', '###', '#.#', '#.#'],
+        'L': ['#..', '#..', '#..', '#..', '###'], 'O': ['.#.', '#.#', '#.#', '#.#', '.#.'], 'P': ['##.', '#.#', '##.', '#..', '#..'],
+        'R': ['##.', '#.#', '##.', '#.#', '#.#'], 'S': ['.##', '#..', '.#.', '..#', '##.'], 'W': ['#.#', '#.#', '#.#', '###', '#.#']}
+
+
+def lettering(img, x, y, word, c):
+    for ch in word:
+        for j, row in enumerate(FONT[ch]):
+            for i, cell in enumerate(row):
+                if cell == '#':
+                    img.putpixel((x + i, y + j), clamp(c) + (255,))
+        x += 4
+
+
+def print_soap():
+    """SOAP OPERA, in the family bathroom: block letters over bubbles in a white frame. The house is on television now."""
+    img = Image.new('RGBA', (32, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(32):
+            edge = x in (0, 31) or y in (0, 15)
+            img.putpixel((x, y), ((236, 234, 228) if edge else (186, 220, 232)) + (255,))
+    lettering(img, 9, 2, 'SOAP', (40, 60, 110))
+    lettering(img, 6, 8, 'OPERA', (40, 60, 110))
+    for x, y in ((3, 3), (4, 6), (27, 4), (28, 9), (3, 11), (26, 12)):
+        img.putpixel((x, y), (255, 255, 255, 255))
+        img.putpixel((x + 1, y), (220, 240, 248, 255))
+    return img
+
+
+def print_whale():
+    """WHALE HELLO, in the girls' bathroom, a blue whale blowing its spout."""
+    img = Image.new('RGBA', (32, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(32):
+            edge = x in (0, 31) or y in (0, 15)
+            img.putpixel((x, y), ((200, 150, 100) if edge else (244, 240, 226)) + (255,))
+    lettering(img, 3, 2, 'WHALE', (40, 80, 140))
+    lettering(img, 3, 8, 'HELLO', (40, 80, 140))
+    for x in range(23, 30):
+        for y in range(8, 12):
+            img.putpixel((x, y), (70, 120, 180, 255))
+    img.putpixel((22, 9, ), (70, 120, 180, 255)); img.putpixel((21, 8), (70, 120, 180, 255))
+    img.putpixel((27, 9), (20, 20, 30, 255))
+    for y in (5, 6, 7):
+        img.putpixel((25, y), (150, 200, 240, 255))
+    img.putpixel((24, 4), (150, 200, 240, 255)); img.putpixel((26, 4), (150, 200, 240, 255))
+    return img
+
+
+def half(fn, right):
+    def make():
+        im = fn()
+        return im.crop((16, 0, 32, 16) if right else (0, 0, 16, 16))
+    return make
+
+
+def curtain_fish():
+    """The shower curtain: little fish and bubbles on sea green, the folds shaded."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((124, 196, 186), 1.08 if x % 4 == 1 else .86 if x % 4 == 3 else 1.0))
+    for x, y in ((2, 3), (9, 7), (5, 12), (12, 1), (13, 13)):
+        px(img, x, y, (246, 160, 70)); px(img, x + 1, y, (246, 160, 70)); px(img, x - 1, y, (230, 120, 50))
+    for x, y in ((7, 2), (3, 8), (11, 10)):
+        px(img, x, y, (236, 248, 248))
+    return img
+
+
+def tile_floor():
+    """Small white hexagonal tile with grey grout, a few gone yellow."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            grout = (y % 4 == 0) or ((x + (2 if (y // 4) % 2 else 0)) % 4 == 0)
+            px(img, x, y, (170, 170, 166) if grout else ((236, 232, 214) if (x * 7 + y * 3) % 11 == 0 else (244, 244, 240)))
+    return img
+
+
+def wall_tile():
+    """Wainscot tile to waist height: white subway tile, grey grout, a navy band and a cap at the top; paint above."""
+    img = paint()
+    for y in range(6, 16):
+        for x in range(16):
+            grout = y % 3 == 0 or (x + (4 if (y // 3) % 2 else 0)) % 8 == 0
+            px(img, x, y, (176, 178, 176) if grout else (240, 242, 240))
+    for x in range(16):
+        px(img, x, 5, (52, 66, 110)); px(img, x, 4, (236, 236, 232))
+    return img
+
+
+def toothbrushes():
+    """The family's four toothbrushes in a cup, blue, pink, green and purple; a squeezed tube; the soap pump."""
+    img = canvas()
+    for x, c in ((2, (60, 110, 210)), (5, (230, 110, 160)), (8, (70, 170, 90)), (11, (150, 90, 200))):
+        for y in range(16):
+            px(img, x, y, c)
+    for x in range(16):
+        px(img, x, 15, (240, 240, 236))
+    return img
+
+
+def towels():
+    """Bath towels on the bar: a navy one, a striped one, a pink one and a small one with a duck on it."""
+    img = canvas()
+    cols = [(46, 60, 110), (226, 190, 90), (230, 150, 170), (120, 190, 200)]
+    for y in range(16):
+        for x in range(16):
+            c = cols[x // 4]
+            if x // 4 == 1 and y % 4 < 2:
+                c = (240, 236, 220)
+            px(img, x, y, mul(c, .9 if y % 3 == 2 else 1.0))
+    px(img, 13, 10, (250, 220, 60)); px(img, 14, 10, (250, 220, 60)); px(img, 14, 9, (250, 220, 60))
+    return img
+
+
+def towel_heap():
+    """A wet towel dropped on the floor with a sock and somebody's jeans."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((46, 60, 110), .9 if (x + y) % 5 == 0 else 1.0))
+    for y in range(9, 16):
+        for x in range(0, 6):
+            px(img, x, y, (70, 96, 150))
+    for x, y in ((11, 3), (12, 3), (12, 4), (13, 4)):
+        px(img, x, y, (240, 240, 236))
+    return img
+
+
+def sorter():
+    """The laundry sorter: three canvas bags on a frame, lights, darks and colours, all of them full."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            c = ((226, 222, 210), (70, 70, 80), (190, 110, 90))[min(2, x // 6)]
+            if x in (5, 11) or y in (0, 1):
+                c = (180, 180, 184)
+            px(img, x, y, mul(c, .92 if y % 4 == 3 else 1.0))
+    return img
+
+
+def bath_mat():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((130, 170, 200), .9 if (x + y) % 2 else 1.0))
+    for x in range(16):
+        px(img, x, 0, (240, 240, 236)); px(img, x, 15, (240, 240, 236))
+    return img
+
+
+def coloring():
+    """Merry's colouring book open on the coffee table, a horse half coloured purple, crayons beside it; the remote; a mug."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (248, 246, 238))
+    for x, y in ((4, 5), (5, 5), (6, 5), (6, 4), (7, 4), (4, 6), (6, 6), (3, 4)):
+        px(img, x, y, (150, 90, 200))
+    for y in range(16):
+        px(img, 8, y, (210, 206, 196))
+    for x, y in ((10, 6), (11, 6), (12, 7), (11, 8), (10, 8)):
+        px(img, x, y, (60, 60, 60))
+    return img
+
+
+def lamp_shade():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((244, 226, 186), 1.06 if x % 3 == 0 else 1.0))
+    return img
+
+
+def toys():
+    """Merry's things on the rug: a grey stuffed rabbit, letter blocks, a plastic pony with a purple mane."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (170, 170, 176) if y < 6 else (220, 60, 60) if y < 9 else (60, 120, 210) if y < 12 else (240, 200, 220))
+    for x in range(16):
+        px(img, x, 12, (150, 90, 200))
+    return img
+
+
+def dust_sheet():
+    """A dust sheet thrown over the family's den sofa and TV when the crew moved in, gaffer tape holding a corner."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((226, 222, 210), 1.05 if (x + y // 3) % 5 == 0 else .94 if (x - y) % 7 == 0 else 1.0))
+    for x in range(5, 11):
+        px(img, x, 13, (90, 90, 96)); px(img, x, 14, (70, 70, 76))
+    return img
+
+
+def schedule():
+    """The crew's whiteboard: seven days in marker, crossed off as they go, a call time circled in red."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (244, 246, 246) if 0 < x < 15 and 0 < y < 13 else (190, 192, 196))
+    for i in range(7):
+        y = 2 + i * 1 + (i // 4)
+        for x in range(2, 6 + (i % 3)):
+            px(img, x, y if y < 12 else 11, (40, 60, 140))
+    for x in range(9, 13):
+        px(img, x, 3, (200, 50, 50)); px(img, x, 6, (200, 50, 50))
+    px(img, 9, 4, (200, 50, 50)); px(img, 9, 5, (200, 50, 50)); px(img, 12, 4, (200, 50, 50)); px(img, 12, 5, (200, 50, 50))
+    for x in range(2, 14):
+        px(img, x, 14, (150, 150, 156))
+    return img
+
+
+def cork():
+    """The kitchen cork board: the chore chart with stars, a permission slip, the parish bulletin, a spelling test with an A."""
+    rng = random.Random(5170)
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((186, 140, 92), 1 + rng.uniform(-.08, .08)) if 0 < x < 15 and 0 < y < 15 else (120, 84, 50))
+    for y in range(2, 8):
+        for x in range(2, 8):
+            px(img, x, y, (250, 250, 244))
+    for y in (3, 5, 7):
+        for x in range(3, 7):
+            px(img, x, y, (120, 140, 190))
+    px(img, 6, 3, (240, 200, 40)); px(img, 6, 5, (240, 200, 40))
+    for y in range(3, 9):
+        for x in range(9, 14):
+            px(img, x, y, (236, 220, 170))
+    for y in range(10, 14):
+        for x in range(3, 9):
+            px(img, x, y, (250, 250, 244))
+    px(img, 7, 11, (220, 40, 40)); px(img, 8, 11, (220, 40, 40))
+    for y in range(10, 14):
+        for x in range(10, 14):
+            px(img, x, y, (190, 220, 240))
+    return img
+
+
+def backpacks():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (40, 40, 46) if x < 8 else (170, 110, 200))
+    for x in range(16):
+        px(img, x, 2, (70, 70, 76) if x < 8 else (210, 150, 230))
+    px(img, 4, 8, (200, 60, 60)); px(img, 12, 7, (250, 230, 90)); px(img, 11, 9, (100, 200, 120))
+    return img
+
+
+def fruit():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            c = (220, 60, 50) if (x // 4 + y // 4) % 3 == 0 else (240, 200, 50) if (x // 4 + y // 4) % 3 == 1 else (240, 140, 40)
+            px(img, x, y, c)
+    return img
+
+
+def stuffed():
+    """Merry's stuffed animals: a brown bear, a white lamb, a green frog."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (150, 100, 60) if x < 6 else (240, 240, 232) if x < 11 else (100, 180, 90))
+    px(img, 2, 4, (30, 20, 20)); px(img, 4, 4, (30, 20, 20)); px(img, 8, 4, (30, 20, 20)); px(img, 13, 3, (30, 20, 20))
+    return img
+
+
+def stars():
+    """Glow-in-the-dark stars stuck on Merry's ceiling."""
+    img = canvas()
+    for x, y in ((2, 3), (10, 2), (6, 8), (13, 11), (3, 13), (9, 13)):
+        for dx, dy in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)):
+            if 0 <= x + dx < 16 and 0 <= y + dy < 16:
+                px(img, x + dx, y + dy, (210, 250, 200))
+    return img
+
+
+def drawings():
+    """Three of Merry's drawings taped in a row: the cardboard house, her sister, a monster under a bed with big feet."""
+    img = canvas()
+    for y in range(2, 14):
+        for x in range(16):
+            if x % 5 != 4:
+                px(img, x, y, (248, 246, 236))
+    for x in range(1, 4):
+        px(img, x, 6, (170, 120, 60)); px(img, x, 9, (170, 120, 60))
+    px(img, 2, 5, (200, 50, 50))
+    px(img, 7, 5, MARJ_HAIR); px(img, 7, 6, SKIN); px(img, 7, 7, (70, 110, 80)); px(img, 7, 8, (70, 110, 80))
+    for x in range(10, 14):
+        px(img, x, 10, (40, 40, 40))
+    px(img, 11, 7, (40, 40, 40)); px(img, 12, 8, (200, 30, 30))
+    return img
+
+
+def fairy():
+    """Marjorie's string of fairy lights, warm white bulbs on a thin green wire."""
+    img = canvas()
+    for x in range(16):
+        y = 3 + int(1.5 * math.sin(x / 2.5))
+        px(img, x, y, (60, 90, 50))
+        if x % 3 == 1:
+            px(img, x, y + 1, (255, 236, 170)); px(img, x, y + 2, (255, 220, 140))
+    return img
+
+
+def band_poster():
+    """A band poster, half the faces scratched out in pen; a torn corner."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (24, 24, 30))
+    for x in range(2, 14):
+        px(img, x, 2, (220, 40, 60)); px(img, x, 3, (220, 40, 60))
+    for i, x in enumerate((3, 6, 9, 12)):
+        px(img, x, 7, (220, 200, 180)); px(img, x, 8, (60, 60, 70)); px(img, x, 9, (60, 60, 70))
+        if i % 2:
+            px(img, x, 7, (10, 10, 10)); px(img, x - 1, 6, (10, 10, 10)); px(img, x + 1, 8, (10, 10, 10))
+    for x in range(2, 14):
+        px(img, x, 12, (200, 200, 200)) if x % 2 else None
+    px(img, 15, 15, (0, 0, 0)); px(img, 14, 15, (0, 0, 0)); px(img, 15, 14, (0, 0, 0))
+    return img
+
+
+def pinboard():
+    """Marjorie's pinboard: photo-booth strips with her friends, two concert ticket stubs, a pressed flower."""
+    rng = random.Random(5171)
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((176, 132, 90), 1 + rng.uniform(-.08, .08)) if 0 < x < 15 and 0 < y < 15 else (40, 30, 26))
+    for y in range(2, 13):
+        for x in (3, 4):
+            px(img, x, y, (240, 240, 236) if y % 3 else (60, 60, 64))
+    for y in range(3, 6):
+        for x in range(7, 13):
+            px(img, x, y, (230, 80, 90))
+    for y in range(8, 11):
+        for x in range(8, 13):
+            px(img, x, y, (90, 180, 220))
+    px(img, 11, 12, (200, 60, 140)); px(img, 11, 13, (70, 130, 70))
+    return img
+
+
+def guitar():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (170, 96, 42) if y > 5 else (60, 40, 26))
+    for x, y in ((7, 10), (8, 10), (7, 11), (8, 11)):
+        px(img, x, y, (30, 20, 16))
+    return img
+
+
+def boombox():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (54, 56, 62))
+    for cx in (4, 11):
+        for y in range(5, 12):
+            for x in range(cx - 3, cx + 4):
+                if (x - cx) ** 2 + (y - 8.5) ** 2 < 9:
+                    px(img, x, y, (24, 24, 28) if (x + y) % 2 else (40, 40, 44))
+    for x in range(6, 10):
+        px(img, x, 2, (180, 220, 240))
+    return img
+
+
+def linen():
+    """Folded towels and sheets on the closet shelves, the board games on top, the vacuum's hose."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            shelf = y in (5, 10, 15)
+            c = (140, 104, 66) if shelf else ((240, 236, 226) if (x // 4) % 2 else (150, 186, 214)) if y < 5 else \
+                ((230, 150, 170) if x < 8 else (240, 230, 200)) if y < 10 else ((200, 60, 60) if x < 5 else (60, 120, 200) if x < 10 else (240, 210, 80))
+            px(img, x, y, mul(c, .9 if (y % 5 == 4 and not shelf) else 1.0))
+    return img
+
+
+def nightstand_top():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (108, 70, 44))
+    return img
+
+
+def bible():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (40, 30, 26))
+    for x in range(16):
+        px(img, x, 0, (200, 170, 90)); px(img, x, 15, (240, 236, 224))
+    px(img, 8, 6, (200, 170, 90)); px(img, 8, 7, (200, 170, 90)); px(img, 7, 7, (200, 170, 90)); px(img, 9, 7, (200, 170, 90)); px(img, 8, 8, (200, 170, 90))
+    return img
+
+
+def paperback():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (200, 70, 90))
+    for x in range(3, 13):
+        px(img, x, 4, (250, 240, 220)); px(img, x, 6, (250, 240, 220))
+    return img
+
+
+def plaster_crack():
+    """0.4.202 (owner: "crack looks out of place with the rest"): the crack day three opens, in the house's own paint: a thin dark
+    line down the wall with a few flakes of paint off, the plaster greyer where they came away."""
+    img = paint()
+    path = [(9, 0), (9, 1), (8, 2), (8, 3), (7, 4), (7, 5), (8, 6), (8, 7), (9, 8), (9, 9), (8, 10), (7, 11), (7, 12), (6, 13), (6, 14), (5, 15)]
+    for x, y in path:
+        px(img, x, y, (92, 84, 74))
+        px(img, x + 1, y, (176, 168, 156))
+    for x, y in ((10, 4), (11, 5), (5, 9), (6, 9), (4, 12)):
+        px(img, x, y, (184, 178, 168))
+    px(img, 10, 3, (120, 112, 102)); px(img, 6, 8, (120, 112, 102))
+    return img
+
+
+def case_shell():
+    """0.4.202 (owner: "the camera case texture also doesn't carry the same style as the rest of the set"): the crew's hard case
+    as the house draws its things: matte black plastic, a moulded rib, two latches and a handle."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (44, 46, 50) if (x + y) % 7 else (50, 52, 56))
+    for x in range(16):
+        px(img, x, 7, (30, 30, 34)); px(img, x, 8, (64, 66, 70))
+    for x in (3, 4, 11, 12):
+        for y in (6, 7, 8, 9):
+            px(img, x, y, (170, 172, 176) if y in (7, 8) else (120, 122, 126))
+    bevel(img, 0, 0, 15, 15, 1.2, .7)
+    return img
+
+
+def case_label():
+    """The case's lid: black, with the production's paper label taped on and written over in marker."""
+    img = case_shell()
+    for y in range(3, 7):
+        for x in range(3, 13):
+            px(img, x, y, (232, 222, 190))
+    for x in (4, 5, 7, 8, 9, 11):
+        px(img, x, 4, (40, 40, 60))
+    for x in (4, 6, 7, 10):
+        px(img, x, 5, (40, 40, 60))
+    return img
+
+
+TEXTURES.update({
+    'blinds_low': lambda: blinds_cell(False), 'blinds_head': lambda: blinds_cell(True), 'tv_cartoon': tv_cartoon,
+    'photo_wedding': photo_wedding, 'photo_marjorie': photo_marjorie, 'photo_merry': photo_merry, 'photo_beach': photo_beach,
+    'photo_baby': photo_baby, 'photo_sisters': photo_sisters, 'portrait_tl': portrait_part(0), 'portrait_tr': portrait_part(1),
+    'portrait_bl': portrait_part(2), 'portrait_br': portrait_part(3), 'crucifix': crucifix, 'merry_drawing': merry_drawing,
+    'print_soap_l': half(print_soap, False), 'print_soap_r': half(print_soap, True), 'print_whale_l': half(print_whale, False),
+    'print_whale_r': half(print_whale, True), 'curtain_fish': curtain_fish, 'tile_floor': tile_floor, 'wall_tile': wall_tile,
+    'toothbrushes': toothbrushes, 'towels': towels, 'towel_heap': towel_heap, 'sorter': sorter, 'bath_mat': bath_mat,
+    'coloring': coloring, 'lamp_shade': lamp_shade, 'toys': toys, 'dust_sheet': dust_sheet, 'schedule': schedule, 'cork': cork,
+    'backpacks': backpacks, 'fruit': fruit, 'stuffed': stuffed, 'stars': stars, 'drawings': drawings, 'fairy': fairy,
+    'band_poster': band_poster, 'pinboard': pinboard, 'guitar': guitar, 'boombox': boombox, 'linen': linen,
+    'nightstand_top': nightstand_top, 'bible': bible, 'paperback': paperback, 'plaster_crack': plaster_crack,
+    'case_shell': case_shell, 'case_label': case_label})
+GLOW.update({'tv_cartoon': 9, 'fairy': 10, 'stars': 6, 'lamp_shade': 12, 'blinds_low': 6, 'blinds_head': 6})
 
 
 def default_uv(frm, to, d):
@@ -947,9 +1652,6 @@ cube('drywall', 'drywall')
 
 
 # Authored facing north: the front toward -z, anything on a wall against +z.
-@spec('window', {'b': 'blinds', 'p': 'paint'}, 'blinds')
-def m_window():
-    return [box((0, 0, 0), (16, 16, 16), 'p', over={'north': 'b', 'south': 'b'})]
 
 
 @spec('garage_door', {'g': 'garage_door', 'p': 'drywall'}, 'garage_door')
@@ -1021,7 +1723,7 @@ def m_sofa_b():
     return sofa(False)
 
 
-@spec('tv_stand', {'w': 'walnut', 't': 'tv_screen', 'k': 'black'}, 'walnut')
+@spec('tv_stand', {'w': 'walnut', 't': 'tv_cartoon', 'k': 'black'}, 'walnut')
 def m_tv_stand():
     return [box((0, 0, 5), (16, 5, 15), 'w'), box((5, 5, 9), (11, 5.5, 11), 'k'), box((7, 5.5, 9.5), (9, 7, 10.5), 'k'),
             box((-2, 6.5, 9.5), (18, 17, 10.5), 'k', over={'north': 't'}), box((2, 1, 4.9), (7, 3, 5), 'k')]
@@ -1074,10 +1776,12 @@ def m_poster_b():
     return [box((1, 2, 15.6), (15, 14, 16), 'p')]
 
 
-@spec('dresser', {'w': 'walnut', 'd': 'drawers', 'p': 'photos', 'k': 'black'}, 'walnut')
+@spec('dresser', {'w': 'walnut', 'd': 'drawers', 'm': 'ceramic', 'k': 'black'}, 'walnut')
 def m_dresser():
+    # 0.4.202 (owner: "far too many repeated pictures"): no framed photograph on every dresser; a little dish for whatever is in
+    # the pockets, and a wooden box.
     return [box((0, 1, 4), (16, 13, 16), 'w', over={'north': 'd'}), box((1, 0, 5), (15, 1, 15), 'k'),
-            box((3, 13, 11), (7, 17, 12), 'k', over={'north': 'p'}, uv=(5, 5, 11, 13)), box((9, 13, 8), (13, 14.5, 12), 'w')]
+            box((3, 13, 9), (7, 13.8, 13), 'm'), box((9, 13, 8), (13, 14.5, 12), 'w')]
 
 
 @spec('double_bed', {'w': 'walnut', 'd': 'duvet', 'p': 'pillow', 'h': 'headboard'}, 'duvet')
@@ -1198,7 +1902,275 @@ def m_office_chair():
             box((3, 6, 3), (13, 8, 13), 'm'), box((3, 9, 12.5), (13, 19, 13.5), 'm'), box((7.5, 7, 13), (8.5, 10, 14), 'k')]
 
 
-KINDS = list(MODEL_SPECS)
+
+
+# ------------------------------------------------------------------------------------------------ 0.4.202 models
+def mirrored(tex, over_tex):
+    """A cube whose room face shows the texture as drawn and whose other face shows it mirrored: turned to face the other way,
+    the same block is the window's other column."""
+    e = box((0, 0, 0), (16, 16, 16), tex, over={'north': over_tex, 'south': over_tex})
+    e['faces']['north']['uv'] = [0, 0, 16, 16]
+    e['faces']['south']['uv'] = [16, 0, 0, 16]
+    return e
+
+
+@spec('window', {'b': 'blinds_low', 'p': 'paint', 'w': 'white'}, 'blinds_low')
+def m_window():
+    return [mirrored('p', 'b'), box((0, 0, -1.5), (16, 1, 0), 'w'), box((0, 0, 16), (16, 1, 17.5), 'w')]
+
+
+@spec('window_head', {'b': 'blinds_head', 'p': 'paint', 'w': 'white'}, 'blinds_head')
+def m_window_head():
+    return [mirrored('p', 'b'), box((0, 14, -1), (16, 16, 0), 'w'), box((0, 14, 16), (16, 16, 17), 'w')]
+
+
+def framed(name, w, h, y0=None):
+    def make():
+        x0 = 8 - w // 2
+        y = (9 - h // 2) if y0 is None else y0
+        return [box((x0, y, 15), (x0 + w, y + h, 16), 'p', faces=('north', 'east', 'west', 'up', 'down'), uv=(0, 0, w, h))]
+    MODEL_SPECS[name] = (make, {'p': name}, name)
+
+
+for _n, _w, _h in (('photo_wedding', 8, 10), ('photo_marjorie', 8, 10), ('photo_merry', 8, 10), ('photo_beach', 12, 10),
+                   ('photo_baby', 10, 10), ('photo_sisters', 10, 8)):
+    framed(_n, _w, _h)
+
+
+@spec('portrait', {'tl': 'portrait_tl', 'tr': 'portrait_tr', 'bl': 'portrait_bl', 'br': 'portrait_br', 'k': 'walnut'}, 'portrait_tl')
+def m_portrait():
+    """Two blocks square, hung centred over the door: the canvas's left half on the +x side, as a north face reads it."""
+    def part(x0, y0, t):
+        e = box((x0, y0, 15), (x0 + 16, y0 + 16, 16), 'k', over={'north': t})
+        e['faces']['north']['uv'] = [0, 0, 16, 16]
+        return e
+    return [part(8, 16, 'tl'), part(-8, 16, 'tr'), part(8, 0, 'bl'), part(-8, 0, 'br')]
+
+
+@spec('crucifix', {'c': 'crucifix'}, 'crucifix')
+def m_crucifix():
+    return [box((3, 1, 15.4), (13, 15, 16), 'c', faces=('north',), uv=(3, 1, 13, 15))]
+
+
+@spec('merry_drawing', {'d': 'merry_drawing'}, 'merry_drawing')
+def m_merry_drawing():
+    return [box((1, 1, 15.6), (15, 15, 16), 'd', faces=('north',), uv=(1, 1, 15, 15))]
+
+
+def two_wide(name, y0):
+    def make():
+        a = box((8, y0, 15.4), (24, y0 + 16, 16), 'l', faces=('north',)); a['faces']['north']['uv'] = [0, 0, 16, 16]
+        b = box((-8, y0, 15.4), (8, y0 + 16, 16), 'r', faces=('north',)); b['faces']['north']['uv'] = [0, 0, 16, 16]
+        return [a, b]
+    MODEL_SPECS[name] = (make, {'l': name + '_l', 'r': name + '_r'}, name + '_l')
+
+
+two_wide('print_soap', 0)
+two_wide('print_whale', 0)
+
+
+@spec('tub_shower', {'p': 'porcelain', 't': 'tub_top', 'c': 'chrome', 'f': 'curtain_fish', 'b': 'toothbrushes', 'y': 'fruit'}, 'porcelain')
+def m_tub_shower():
+    """The tub-shower: the tub against the wall on its +x side, the curtain on the open side drawn most of the way, the rod, the
+    shower head over the taps, shampoo on the rim and the girls' rubber duck."""
+    tub = [box((0, 0, 0), (16, 2, 32), 'p', over={'up': 't'}), box((0, 2, 0), (1.5, 9, 32), 'p'), box((14.5, 2, 0), (16, 9, 32), 'p'),
+           box((1.5, 2, 0), (14.5, 9, 1.5), 'p'), box((1.5, 2, 30.5), (14.5, 9, 32), 'p'), box((7, 9, 30), (9, 12, 32), 'c'),
+           box((7.5, 11, 28), (8.5, 12, 30), 'c')]
+    curtain = [box((.2, 9, 9), (.8, 31, 32), 'f', faces=('east', 'west')), box((0, 9, 5), (1.6, 31, 9), 'f'),
+               box((0, 31, 0), (.6, 31.6, 32), 'c'), box((7.5, 26, 30.5), (8.5, 27, 32), 'c'), box((7, 24.5, 29), (9, 26, 30.5), 'c')]
+    rim = [box((14.6, 9, 3), (15.6, 12.5, 4.5), 'b', uv=(2, 2, 3, 6)), box((14.6, 9, 5), (15.6, 11.5, 6.5), 'b', uv=(5, 2, 6, 6)),
+           box((14.6, 9, 7), (15.6, 12, 8.5), 'b', uv=(11, 2, 12, 6)), box((12, 9, 27.5), (13.5, 10.5, 29), 'y', uv=(4, 4, 6, 6)),
+           box((12.2, 10.5, 28.6), (13.2, 11.5, 29.4), 'y', uv=(4, 4, 6, 6))]
+    return tub + curtain + rim
+
+
+def vanity_base():
+    return [box((1, 0, 5), (15, 12, 16), 'w', over={'north': 'v'}), box((0, 12, 4), (16, 13, 16), 'm', over={'up': 's'}),
+            box((2, 17, 15.5), (14, 29, 16), 'r'), box((7, 13, 13), (9, 15.5, 14.5), 'c'), box((7.5, 15, 11), (8.5, 15.5, 14), 'c')]
+
+
+@spec('vanity_family', {'w': 'white', 'v': 'vanity_front', 'm': 'marble', 's': 'sink_top', 'r': 'mirror', 'c': 'chrome', 'b': 'toothbrushes', 'p': 'porcelain'}, 'white')
+def m_vanity_family():
+    """The family's vanity: four toothbrushes in the cup, the soap pump, a squeezed tube, a hairbrush left on the edge."""
+    brushes = [box((11 + i * .7, 15, 11.2), (11.4 + i * .7, 19, 11.6), 'b', uv=(2 + i * 3, 0, 3 + i * 3, 16)) for i in range(4)]
+    return vanity_base() + [box((10.5, 13, 10.5), (14, 15.5, 12.5), 'p')] + brushes + [
+        box((2.5, 13, 11), (4.5, 16, 13), 'p'), box((3, 16, 11.5), (4, 17, 12.5), 'c'), box((2, 13, 6), (6, 13.6, 7.5), 'b', uv=(2, 0, 3, 4)),
+        box((10, 13, 5.5), (14, 14, 7), 'b', uv=(8, 0, 9, 4))]
+
+
+@spec('vanity_kids', {'w': 'white', 'v': 'vanity_front', 'm': 'marble', 's': 'sink_top', 'r': 'mirror', 'c': 'chrome', 'b': 'toothbrushes', 'p': 'porcelain', 'y': 'fruit'}, 'white')
+def m_vanity_kids():
+    """The girls' vanity: two toothbrushes, the detangling spray, hair ties round the tap, the duck that lives on the edge."""
+    brushes = [box((11 + i * .9, 15, 11.2), (11.4 + i * .9, 19, 11.6), 'b', uv=(5 + i * 6, 0, 6 + i * 6, 16)) for i in range(2)]
+    return vanity_base() + [box((10.5, 13, 10.5), (13.5, 15.5, 12.5), 'p')] + brushes + [
+        box((2.5, 13, 10.5), (4, 17, 12), 'b', uv=(5, 2, 6, 6)), box((2.7, 17, 10.7), (3.8, 18, 11.8), 'p'),
+        box((6.6, 13.2, 12.6), (9.4, 13.8, 13.4), 'b', uv=(11, 0, 12, 2)), box((12, 13, 5.5), (13.5, 14.5, 7), 'y', uv=(4, 4, 6, 6))]
+
+
+@spec('step_stool', {'w': 'white', 'b': 'bath_mat'}, 'white')
+def m_step_stool():
+    return [box((3, 0, 4), (13, 4, 12), 'w'), box((3.5, 4, 4.5), (12.5, 4.5, 11.5), 'b')]
+
+
+@spec('hamper', {'s': 'sorter', 'c': 'chrome', 'l': 'clothes'}, 'sorter')
+def m_hamper():
+    return [box((1, 0, 4), (15, 12, 13), 's'), box((1.5, 12, 4.5), (14.5, 13.5, 12.5), 'l'), box((4, 13.5, 6), (8, 15, 10), 'l'),
+            box((.5, 12, 3.5), (15.5, 12.5, 4), 'c'), box((.5, 12, 13), (15.5, 12.5, 13.5), 'c')]
+
+
+@spec('towel_bar', {'t': 'towels', 'c': 'chrome'}, 'towels')
+def m_towel_bar():
+    hang = [box((1.5 + i * 3.4, 1 + (i % 2), 14.6), (4.5 + i * 3.4, 11, 15.4), 't', uv=(i * 4, 0, i * 4 + 4, 10)) for i in range(4)]
+    return [box((0.5, 10.5, 15), (15.5, 11.5, 16), 'c'), box((0.5, 10, 15.5), (1.5, 12, 16), 'c'), box((14.5, 10, 15.5), (15.5, 12, 16), 'c')] + hang
+
+
+@spec('dirty_towels', {'t': 'towel_heap'}, 'towel_heap')
+def m_dirty_towels():
+    return [box((1, 0, 2), (13, 1.5, 13), 't'), box((3, 1.5, 4), (10, 3, 10), 't', uv=(2, 2, 9, 8)), box((9, 0, 11), (15, 1, 15), 't', uv=(0, 9, 6, 13))]
+
+
+@spec('bath_mat', {'b': 'bath_mat'}, 'bath_mat')
+def m_bath_mat():
+    return [box((1, 0, 2), (15, .5, 14), 'b')]
+
+
+spec('storey_tile', {'up': 'tile_floor', 'down': 'ceiling_plaster', 'side': 'paint'}, 'tile_floor')(lambda: [])
+
+
+@spec('bath_wall', {'t': 'wall_tile', 'p': 'paint'}, 'wall_tile')
+def m_bath_wall():
+    return [box((0, 0, 0), (16, 16, 16), 'p', over={'north': 't'})]
+
+
+@spec('coffee_table', {'w': 'walnut', 'c': 'coloring', 'k': 'black', 'm': 'ceramic', 'y': 'fruit'}, 'walnut')
+def m_coffee_table():
+    """The coffee table in front of the TV: Merry's colouring book open on it with the crayons, the remote, John's mug."""
+    legs = [box((x, 0, z), (x + 1.5, 6, z + 1.5), 'w') for x in (1, 13.5) for z in (3, 11.5)]
+    return legs + [box((0, 6, 2), (16, 8, 14), 'w'), box((2, 8, 4), (10, 8.3, 10), 'c', faces=('up',)),
+                   box((2.5, 8, 10.5), (5, 8.6, 11), 'y', uv=(0, 0, 2, 1)), box((5.5, 8, 10.5), (8, 8.6, 11), 'y', uv=(8, 8, 10, 9)),
+                   box((11, 8, 5), (12.5, 8.8, 9), 'k'), box((11.5, 8, 10), (14, 11, 12.5), 'm')]
+
+
+@spec('floor_lamp', {'c': 'chrome', 'l': 'lamp_shade', 'k': 'black'}, 'lamp_shade')
+def m_floor_lamp():
+    return [box((5, 0, 5), (11, 1, 11), 'k'), box((7.5, 1, 7.5), (8.5, 24, 8.5), 'c'),
+            box((4, 24, 4), (12, 30, 12), 'l', faces=('north', 'south', 'east', 'west', 'down'))]
+
+
+@spec('toys', {'t': 'toys'}, 'toys')
+def m_toys():
+    return [box((2, 0, 3), (6, 4, 6), 't', uv=(0, 0, 4, 4)), box((2.5, 4, 3.5), (5.5, 7, 5.5), 't', uv=(0, 0, 3, 3)),
+            box((2.6, 7, 4), (3.4, 9.5, 4.6), 't', uv=(0, 0, 1, 2)), box((4.6, 7, 4), (5.4, 9.5, 4.6), 't', uv=(0, 0, 1, 2)),
+            box((8, 0, 4), (10, 2, 6), 't', uv=(0, 6, 2, 8)), box((10.5, 0, 5), (12.5, 2, 7), 't', uv=(0, 9, 2, 11)),
+            box((9, 2, 4.5), (11, 4, 6.5), 't', uv=(4, 6, 6, 8)), box((6, 0, 10), (12, 4, 12), 't', uv=(0, 12, 6, 15)),
+            box((10, 4, 10), (12, 7, 12), 't', uv=(0, 12, 2, 15))]
+
+
+@spec('covered', {'d': 'dust_sheet'}, 'dust_sheet')
+def m_covered():
+    return [box((0, 0, 1), (16, 9, 16), 'd'), box((0, 9, 9), (16, 15, 16), 'd'), box((1, 15, 11), (15, 16.5, 15), 'd')]
+
+
+@spec('schedule_board', {'s': 'schedule', 'c': 'chrome'}, 'schedule')
+def m_schedule_board():
+    return [box((1, 2, 15), (15, 15, 16), 'c', over={'north': 's'}), box((2, 2, 14), (14, 3, 15), 'c')]
+
+
+@spec('cork_board', {'c': 'cork'}, 'cork')
+def m_cork_board():
+    return [box((1, 1, 15.2), (15, 15, 16), 'c')]
+
+
+@spec('backpacks', {'b': 'backpacks', 'o': 'oak'}, 'backpacks')
+def m_backpacks():
+    return [box((0, 11, 15), (16, 12.5, 16), 'o'), box((1, 2, 12), (7, 11, 15.5), 'b', uv=(0, 2, 6, 11)), box((9, 1, 12.5), (15, 10, 15.5), 'b', uv=(9, 2, 15, 11))]
+
+
+@spec('fruit_bowl', {'m': 'ceramic', 'f': 'fruit'}, 'fruit')
+def m_fruit_bowl():
+    return [box((4, 0, 4), (12, 2, 12), 'm'), box((5, 2, 5), (8, 5, 8), 'f', uv=(0, 0, 3, 3)), box((8, 2, 6), (11, 5, 9), 'f', uv=(4, 4, 7, 7)),
+            box((6, 2, 8), (9, 4.5, 11), 'f', uv=(8, 0, 11, 3)), box((7, 4.5, 6.5), (10, 7, 9.5), 'f', uv=(0, 4, 3, 7))]
+
+
+@spec('stuffed', {'s': 'stuffed'}, 'stuffed')
+def m_stuffed():
+    return [box((1, 0, 5), (6, 5, 10), 's', uv=(0, 6, 5, 11)), box((2, 5, 6), (5, 8, 9), 's', uv=(1, 2, 4, 5)),
+            box((7, 0, 4), (11, 4, 9), 's', uv=(6, 6, 10, 11)), box((7.5, 4, 4.5), (10.5, 6.5, 7), 's', uv=(7, 2, 10, 5)),
+            box((11, 0, 9), (15, 3, 13), 's', uv=(11, 6, 15, 10)), box((11.5, 3, 9.5), (14.5, 5, 12), 's', uv=(11, 2, 14, 4))]
+
+
+@spec('ceiling_stars', {'s': 'stars'}, 'stars')
+def m_ceiling_stars():
+    return [box((0, 15.8, 0), (16, 16, 16), 's', faces=('down',))]
+
+
+@spec('drawings', {'d': 'drawings'}, 'drawings')
+def m_drawings():
+    return [box((0, 2, 15.6), (16, 14, 16), 'd', faces=('north',), uv=(0, 2, 16, 14))]
+
+
+@spec('fairy_lights', {'f': 'fairy'}, 'fairy')
+def m_fairy_lights():
+    return [box((0, 9, 15.6), (16, 16, 16), 'f', faces=('north',), uv=(0, 0, 16, 7))]
+
+
+@spec('poster_c', {'p': 'band_poster'}, 'band_poster')
+def m_poster_c():
+    return [box((2, 1, 15.6), (14, 15, 16), 'p')]
+
+
+@spec('pinboard', {'p': 'pinboard'}, 'pinboard')
+def m_pinboard():
+    return [box((1, 1, 15.2), (15, 15, 16), 'p')]
+
+
+@spec('guitar', {'g': 'guitar', 'k': 'black'}, 'guitar')
+def m_guitar():
+    rot = {'origin': [8, 0, 14], 'axis': 'x', 'angle': 22.5}
+    return [dict(box((4, 0, 11.5), (12, 9, 14), 'g', uv=(4, 6, 12, 15)), rotation=rot), dict(box((7, 9, 12), (9, 24, 13), 'g', uv=(7, 0, 9, 6)), rotation=rot),
+            dict(box((6.5, 24, 11.8), (9.5, 27, 13.2), 'k'), rotation=rot)]
+
+
+@spec('boombox', {'b': 'boombox', 'k': 'black', 'c': 'chrome', 'p': 'paperback'}, 'boombox')
+def m_boombox():
+    return [box((2, 0, 6), (14, 7, 10), 'k', over={'north': 'b'}), box((4, 7, 7.5), (12, 8, 8.5), 'c'),
+            box((1, 0, 11), (4.5, 3, 14.5), 'p'), box((1.2, 3, 11.2), (4.3, 3.6, 14.3), 'k')]
+
+
+@spec('linen_shelves', {'s': 'shelf_side', 'l': 'linen'}, 'linen')
+def m_linen_shelves():
+    return [box((0, 0, 7), (16, 16, 16), 's', over={'north': 'l'})]
+
+
+def nightstand():
+    return [box((1, 0, 3), (15, 11, 14), 'w', over={'north': 'd'}), box((0.5, 11, 2.5), (15.5, 12, 14.5), 'w', over={'up': 'n'})]
+
+
+@spec('nightstand_john', {'w': 'walnut', 'd': 'drawers', 'n': 'nightstand_top', 'b': 'bible', 'c': 'chrome', 'k': 'black'}, 'walnut')
+def m_nightstand_john():
+    """John's side: the Bible he reads now, a rosary on it, the alarm clock set for the job interviews."""
+    return nightstand() + [box((3, 12, 5), (9, 13.5, 13), 'b'), box((4, 13.5, 7), (8, 13.7, 11), 'k'),
+                           box((10.5, 12, 8), (14, 15, 10), 'k', over={'north': 'c'})]
+
+
+@spec('nightstand_sarah', {'w': 'walnut', 'd': 'drawers', 'n': 'nightstand_top', 'p': 'paperback', 'k': 'black', 'g': 'white'}, 'walnut')
+def m_nightstand_sarah():
+    """Sarah's side: a paperback face down where she stopped, her reading glasses folded on it, a glass of water."""
+    return nightstand() + [box((3, 12, 5), (9, 12.8, 12), 'p'), box((4, 12.8, 7), (8, 13.2, 8), 'k'), box((11, 12, 8), (13.5, 16, 10.5), 'g')]
+
+
+@spec('case_closed', {'s': 'case_shell', 'l': 'case_label', 'k': 'black'}, 'case_shell')
+def m_case_closed():
+    return [box((1, 0, 1), (15, 10, 15), 's', over={'up': 'l'}), box((6, 10, 6), (10, 11.5, 7), 'k'), box((6, 10, 9), (10, 11.5, 10), 'k'),
+            box((6, 11.5, 6), (10, 12.5, 10), 'k')]
+
+
+@spec('case_open', {'s': 'case_shell', 'l': 'case_label', 'k': 'black', 'f': 'black'}, 'case_shell')
+def m_case_open():
+    return [box((1, 0, 1), (15, 8, 15), 's', over={'up': 'f'}), box((1, 8, 14), (15, 21, 15.5), 's', over={'north': 'l'})]
+
+
+KINDS = [k for k in MODEL_SPECS if k not in ('case_closed', 'case_open')]
 TURN = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 CUBES = {'paint', 'concrete', 'drywall'}
 
@@ -1209,7 +2181,7 @@ def model_json(name):
     tex['particle'] = NS + particle
     if name in CUBES:
         return {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + textures['t']}}
-    if name == 'storey':
+    if name in ('storey', 'storey_tile'):
         up, down, side = (t if ':' in t else NS + t for t in (textures['up'], textures['down'], textures['side']))
         return {'parent': 'minecraft:block/cube', 'textures': {'up': up, 'down': down, 'north': side, 'south': side, 'east': side, 'west': side, 'particle': side}}
     m = {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout', 'ambientocclusion': name in ('window', 'garage_door'),
@@ -1223,6 +2195,13 @@ def files():
         out[TEX / f'{name}.png'] = fn()
     for name in KINDS:
         out[MODELS / f'{name}.json'] = json.dumps(model_json(name), indent=1) + '\n'
+    out[TEX / 'tv_cartoon.png.mcmeta'] = json.dumps({'animation': {'frametime': 4, 'interpolate': False}}, indent=2) + '\n'
+    # 0.4.202: the crew's case and the day-three crack, in this house's style (their blocks belong to the set's older art).
+    for name, target in (('case_closed', 'ghosts_case_closed'), ('case_open', 'ghosts_case_open')):
+        out[MODELS.parent / f'{target}.json'] = json.dumps(model_json(name), indent=1) + '\n'
+    out[MODELS.parent / 'ghosts_plaster.json'] = json.dumps({'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout',
+        'textures': {'p': NS + 'paint', 'c': NS + 'plaster_crack', 'particle': NS + 'paint'},
+        'elements': [box((0, 0, 0), (16, 16, 16), 'p', over={'north': 'c'})]}, indent=1) + '\n'
     variants = {}
     for facing, y in TURN.items():
         for kind in KINDS:

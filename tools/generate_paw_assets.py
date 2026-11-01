@@ -443,7 +443,8 @@ def models():
     model('lamp_head_0', [box((4, 1, 4), (12, 10, 12), 'l', glow=True), box((3, 10, 3), (13, 12, 13), 'r'), box((7, 0, 7), (9, 1, 9), 'r')], {'l': 'lamp_lit', 'r': 'range_side'}, 'lamp_lit')
     model('lamp_head_1', [box((4, 1, 4), (12, 10, 12), 'l'), box((3, 10, 3), (13, 12, 13), 'r'), box((7, 0, 7), (9, 1, 9), 'r')], {'l': 'lamp_dim', 'r': 'range_side'}, 'lamp_dim')
     model('milestone', [box((3, 0, 4), (13, 10, 12), 'm'), box((4, 10, 5), (12, 12, 11), 'm')], {'m': 'milestone'})
-    model('doorstep', [box((0, 0, 0), (16, 4, 16), 'd')], {'d': 'doorstep'})
+    # 0.4.202: a worn sill three pixels high, low enough to step over under the door's lintel.
+    model('doorstep', [box((0, 0, 0), (16, 3, 16), 'd')], {'d': 'doorstep'})
 
 
 KINDS = ['wallpaper', 'wainscot', 'flagstone', 'whitewash', 'thatch', 'range', 'kettle', 'dresser', 'dresser_top', 'mantel', 'sampler',

@@ -30,7 +30,8 @@ public final class SceneClock {
             case LAKE_HOUSE,LAKE_HOUSE_EMPTY->4;
             case WAY_OUT->12; // 0.4.199: a fine morning, and the sun never moves
             case MAPPING_INTERIOR->13; // 0.4.201: 2:49 in the morning, every night
-            case DEVILS_ROCK->9; // 0.4.201: midnight at the Sandersons' and in the park
+            case DEVILS_ROCK->9;
+            case WHISTLERS->9; // 0.4.202: night at the lookout, stars over the forest of towers // 0.4.201: midnight at the Sandersons' and in the park
             default->0;
         };
     }

@@ -28,9 +28,24 @@ public final class BarrettHomeBlock extends Block {
         PAINT,CONCRETE,DRYWALL,WINDOW,GARAGE_DOOR,STOREY,CEILING_LIGHT,CONSOLE,COAT_HOOKS,SHOE_RACK,PHOTOS,CALENDAR,FRIDGE,FRIDGE_TOP,
         SOFA_A,SOFA_B,TV_STAND,BOOKSHELF,PLANT,LAUNDRY,CLOTHES,DESK,DESK_KID,POSTER_A,POSTER_B,DRESSER,DOUBLE_BED,BED_FILL,
         TOILET,TUB,VANITY,WASHER,DRYER,BOXES,WATER_HEATER,SHELVES,CABLE,CABLE_CORNER,SOFTBOX,DIRECTORS_CHAIR,VILLAGE_CART,
-        APPLE_BOXES,SANDBAGS,CRAFT_TABLE,FOLDING_TABLE,OFFICE_CHAIR;
+        APPLE_BOXES,SANDBAGS,CRAFT_TABLE,FOLDING_TABLE,OFFICE_CHAIR,
+        /** 0.4.202 (the owner's notes on the Barretts' house): the upper column of a double window; the family's own photographs,
+         *  the portrait over the door, the crucifix, Merry's drawing and the bathroom prints; the bathrooms' tub-shower, vanities,
+         *  stool, sorter, towels, mat, tiled floor and wainscot; the living room's coffee table, lamp and Merry's toys; the den's
+         *  dust sheet and schedule board; the kitchen's cork board, backpacks and fruit; the girls' rooms; the linen closet; the
+         *  parents' nightstands. Drawn by tools/draw_barrett_home.py. */
+        WINDOW_HEAD,PHOTO_WEDDING,PHOTO_MARJORIE,PHOTO_MERRY,PHOTO_BEACH,PHOTO_BABY,PHOTO_SISTERS,PORTRAIT,CRUCIFIX,MERRY_DRAWING,
+        PRINT_SOAP,PRINT_WHALE,TUB_SHOWER,VANITY_FAMILY,VANITY_KIDS,STEP_STOOL,HAMPER,TOWEL_BAR,DIRTY_TOWELS,BATH_MAT,STOREY_TILE,
+        BATH_WALL,COFFEE_TABLE,FLOOR_LAMP,TOYS,COVERED,SCHEDULE_BOARD,CORK_BOARD,BACKPACKS,FRUIT_BOWL,STUFFED,CEILING_STARS,DRAWINGS,
+        FAIRY_LIGHTS,POSTER_C,PINBOARD,GUITAR,BOOMBOX,LINEN_SHELVES,NIGHTSTAND_JOHN,NIGHTSTAND_SARAH;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
-        public boolean cube(){return ordinal()<=STOREY.ordinal();}
+        public boolean cube(){return ordinal()<=STOREY.ordinal()||this==WINDOW_HEAD||this==STOREY_TILE||this==BATH_WALL;}
+        /** Both halves of a window. */
+        public boolean window(){return this==WINDOW||this==WINDOW_HEAD;}
+        /** Hung on a wall or a ceiling: walked past, never into. */
+        public boolean flat(){return switch(this){case CEILING_LIGHT,COAT_HOOKS,PHOTOS,CALENDAR,CLOTHES,POSTER_A,POSTER_B,CABLE,CABLE_CORNER,PHOTO_WEDDING,PHOTO_MARJORIE,PHOTO_MERRY,
+            PHOTO_BEACH,PHOTO_BABY,PHOTO_SISTERS,PORTRAIT,CRUCIFIX,MERRY_DRAWING,PRINT_SOAP,PRINT_WHALE,TOWEL_BAR,DIRTY_TOWELS,BATH_MAT,TOYS,SCHEDULE_BOARD,
+            CORK_BOARD,BACKPACKS,CEILING_STARS,DRAWINGS,FAIRY_LIGHTS,POSTER_C,PINBOARD,STUFFED->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final DirectionProperty FACING=HorizontalDirectionalBlock.FACING;
@@ -41,10 +56,21 @@ public final class BarrettHomeBlock extends Block {
     public static BlockState of(Kind kind,Direction facing){return LiteraryRegistry.BARRETT_HOME.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     public static BlockState of(Kind kind){return of(kind,Direction.NORTH);}
     public static boolean is(BlockState s,Kind kind){return s.is(LiteraryRegistry.BARRETT_HOME.get())&&s.getValue(KIND)==kind;}
-    public static int light(BlockState s){return switch(s.getValue(KIND)){case CEILING_LIGHT->14;case SOFTBOX->15;case WINDOW->6;case VILLAGE_CART->5;default->0;};}
+    public static int light(BlockState s){return switch(s.getValue(KIND)){case CEILING_LIGHT->14;case SOFTBOX->15;case WINDOW,WINDOW_HEAD->6;case VILLAGE_CART->5;case FLOOR_LAMP->12;case FAIRY_LIGHTS->7;case TV_STAND->6;case CEILING_STARS->3;default->0;};}
 
     private static VoxelShape base(Kind k){return switch(k){
-        case PAINT,CONCRETE,DRYWALL,WINDOW,GARAGE_DOOR,STOREY,FOLDING_TABLE->Shapes.block();
+        case PAINT,CONCRETE,DRYWALL,WINDOW,GARAGE_DOOR,STOREY,FOLDING_TABLE,WINDOW_HEAD,STOREY_TILE,BATH_WALL->Shapes.block();
+        case PHOTO_WEDDING,PHOTO_MARJORIE,PHOTO_MERRY,PHOTO_BABY->Block.box(3,3,15,13,14,16);case PHOTO_BEACH,PHOTO_SISTERS->Block.box(2,4,15,14,13,16);
+        case PORTRAIT->Block.box(0,0,15,16,16,16);case CRUCIFIX->Block.box(3,1,15,13,15,16);case MERRY_DRAWING,DRAWINGS,CORK_BOARD,PINBOARD->Block.box(1,1,15,15,15,16);
+        case PRINT_SOAP,PRINT_WHALE->Block.box(0,0,15,16,16,16);case TUB_SHOWER->Block.box(0,0,0,16,9,16);
+        case VANITY_FAMILY,VANITY_KIDS->Block.box(0,0,4,16,13,16);case STEP_STOOL->Block.box(3,0,4,13,4.5,12);case HAMPER->Block.box(1,0,4,15,14,13);
+        case TOWEL_BAR->Block.box(0,1,14,16,12,16);case DIRTY_TOWELS->Block.box(1,0,2,15,3,15);case BATH_MAT->Block.box(1,0,2,15,.5,14);
+        case COFFEE_TABLE->Block.box(0,0,2,16,8,14);case FLOOR_LAMP->Block.box(5,0,5,11,16,11);case TOYS->Block.box(2,0,3,12,7,12);
+        case COVERED->Shapes.or(Block.box(0,0,1,16,9,16),Block.box(0,9,9,16,15,16));case SCHEDULE_BOARD->Block.box(1,2,14,15,15,16);
+        case BACKPACKS->Block.box(1,1,12,15,12.5,16);case FRUIT_BOWL->Block.box(4,0,4,12,7,12);case STUFFED->Block.box(1,0,4,15,8,13);
+        case CEILING_STARS->Block.box(0,15.8,0,16,16,16);case FAIRY_LIGHTS->Block.box(0,9,15.6,16,16,16);case POSTER_C->Block.box(2,1,15.6,14,15,16);
+        case GUITAR->Block.box(4,0,8,12,16,15);case BOOMBOX->Block.box(1,0,6,14,8,14.5);case LINEN_SHELVES->Block.box(0,0,7,16,16,16);
+        case NIGHTSTAND_JOHN,NIGHTSTAND_SARAH->Block.box(.5,0,2.5,15.5,12,14.5);
         case CEILING_LIGHT->Block.box(4,14.5,4,12,16,12);
         case CONSOLE->Block.box(0,0,4,16,12.5,15.5);
         case COAT_HOOKS->Block.box(0,2,11.5,16,14.5,16);
@@ -93,7 +119,7 @@ public final class BarrettHomeBlock extends Block {
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return shape(s);}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
-        return switch(s.getValue(KIND)){case CEILING_LIGHT,COAT_HOOKS,PHOTOS,CALENDAR,CLOTHES,POSTER_A,POSTER_B,CABLE,CABLE_CORNER->Shapes.empty();default->shape(s);};
+        return s.getValue(KIND).flat()?Shapes.empty():shape(s);
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return s.getValue(KIND).cube()?Shapes.block():Shapes.empty();}
     // Walls and windows keep the light where it is; everything else lets it past.
@@ -104,7 +130,7 @@ public final class BarrettHomeBlock extends Block {
         var right=facing.getClockWise();var back=facing.getOpposite();
         return switch(kind){
             case DOUBLE_BED->java.util.List.of(at.relative(right),at.relative(back),at.relative(right).relative(back));
-            case TUB->java.util.List.of(at.relative(back));
+            case TUB,TUB_SHOWER->java.util.List.of(at.relative(back));
             default->java.util.List.of();
         };
     }

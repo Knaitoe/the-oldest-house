@@ -655,7 +655,7 @@ def m_recliner():
             box((0, 3, 1), (3, 12, 14), 'c'), box((13, 3, 1), (16, 12, 14), 'c'), box((3, 15, 13), (13, 19, 15), 'c')]
 
 
-@spec('coffee_table', {'oak': 'oak', 'mag': 'photo'}, 'oak')
+@spec('coffee_table', {'oak': 'oak', 'mag': 'tv_guide'}, 'oak')
 def m_coffee_table():
     els = legs(1, 3, 15, 13, 6, 'oak') + [box((1, 6, 3), (15, 8, 13), 'oak'), box((1.5, 2, 3.5), (14.5, 3, 12.5), 'oak')]
     els.append(box((3, 8, 5), (8, 8.5, 9), 'mag', uv=(1, 1, 15, 15)))
@@ -772,6 +772,299 @@ def m_family_photo():
 
 # The four snapshots: each picture's own size, its pixels square on the wall.
 for _name, _w, _h in (('photo_wedding', 8, 10), ('photo_beach', 12, 8), ('photo_school', 8, 10), ('photo_dog', 12, 8)):
+    def _make(w=_w, h=_h):
+        x0, y0 = 8 - w // 2, 9 - h // 2
+        return [box((x0, y0, 15), (x0 + w, y0 + h, 16), 'p', uv=(0, 0, w, h))]
+    MODEL_SPECS[_name] = (_make, {'p': _name}, _name)
+
+
+
+# ------------------------------------------------------------------------------------------------ Mapping the Interior (0.4.202)
+# The owner: "duplicated pictures", "recycled cabinets", "floating, recycled clutter blocks". The boys' modular house has its
+# own things now: what a mother on her own with two boys has in a small house at the edge of a dirt lot.
+def tv_guide():
+    """The week's TV listings, folded back on the coffee table: a red masthead, grey columns of listings, a pen ring."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (228, 224, 212) if y > 3 else (186, 44, 40))
+    for y in range(5, 15, 2):
+        for x in range(2, 14):
+            if (x * 7 + y * 3) % 5:
+                px(img, x, y, (120, 118, 112))
+    for x, y in ((9, 7), (10, 7), (11, 8), (11, 9), (10, 10), (9, 10), (8, 9), (8, 8)):
+        px(img, x, y, (40, 60, 150))
+    return img
+
+
+def map_couch():
+    """The couch: worn brown upholstery, the arms rubbed pale, a crocheted afghan in zigzags over its back."""
+    rng = random.Random(1260)
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((110, 82, 58), 1 + rng.uniform(-.05, .05) + (.08 if y % 3 == 0 else 0)))
+    for y in range(0, 6):
+        for x in range(16):
+            band = ((x + (y if (x // 2) % 2 else -y)) // 2) % 3
+            px(img, x, y, ((196, 120, 52), (214, 196, 150), (96, 128, 72))[band])
+    return img
+
+
+def map_recliner():
+    """His recliner, that nobody sits in: olive vinyl gone shiny, a strip of grey tape over a split in the arm."""
+    rng = random.Random(1261)
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((104, 108, 66), 1 + rng.uniform(-.04, .04) + (.1 if (x + y) % 7 == 0 else 0)))
+    for x in range(9, 15):
+        for y in (6, 7):
+            px(img, x, y, (156, 156, 150) if (x + y) % 3 else (130, 130, 126))
+    return img
+
+
+def map_cabinet():
+    """Kitchen cabinet doors in pale wood-grain laminate; one corner of the face has chipped off to the board underneath."""
+    img = oak(1262, (196, 160, 112))
+    dark = (138, 104, 66)
+    for i in range(1, 15):
+        px(img, 1, i, dark); px(img, 14, i, dark); px(img, i, 1, dark); px(img, i, 14, dark)
+    for x, y in ((13, 12), (13, 13), (12, 13)):
+        px(img, x, y, (176, 150, 112))
+    px(img, 3, 8, (200, 200, 196)); px(img, 3, 9, (150, 150, 146))
+    return img
+
+
+def map_counter():
+    """Almond laminate with a brown fleck, and the burn ring where a pan went down hot."""
+    rng = random.Random(1263)
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((222, 210, 182), .84 if rng.random() < .06 else 1.0))
+    for x, y in ((5, 5), (6, 4), (7, 4), (8, 5), (8, 6), (7, 7), (6, 7), (5, 6)):
+        px(img, x, y, (140, 112, 74))
+    return img
+
+
+def map_stove():
+    """The white range: its oven window, four dials, and the clock in green: 2:49."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (232, 230, 222))
+    for x in range(2, 14):
+        px(img, x, 1, (40, 40, 42)); px(img, x, 2, (40, 40, 42)); px(img, x, 3, (40, 40, 42))
+    digits = {'2': ['##', '.#', '##', '#.', '##'], '4': ['#.#', '#.#', '###', '..#', '..#'], '9': ['###', '#.#', '###', '..#', '###']}
+    for ch, ox in (('2', 4), ('4', 8), ('9', 11)):
+        pat = digits[ch]
+        for j, row in enumerate(pat[:3]):
+            for i, c in enumerate(row):
+                if c == '#':
+                    px(img, ox + i, 1 + j, (90, 230, 120))
+    px(img, 7, 2, (90, 230, 120))
+    for x in (3, 6, 9, 12):
+        px(img, x, 5, (60, 60, 60)); px(img, x + 1, 5, (90, 90, 90))
+    for y in range(7, 15):
+        for x in range(3, 13):
+            px(img, x, y, (70, 66, 62) if 8 <= y <= 13 and 4 <= x <= 11 else (200, 198, 190))
+    return img
+
+
+def map_fridge(upper):
+    """The white fridge. Up top a school picture and a drawing of a dog; below, the seizure log taped on, dates and times in
+    her hand, and the number for the clinic."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (236, 236, 230))
+    if upper:
+        for y in range(3, 10):
+            for x in range(3, 8):
+                px(img, x, y, (96, 126, 176) if y < 6 else (180, 140, 110))
+        px(img, 5, 4, (230, 196, 170)); px(img, 5, 5, (60, 40, 30))
+        for y in range(4, 12):
+            for x in range(9, 14):
+                px(img, x, y, (246, 244, 236))
+        for x, y in ((10, 7), (11, 7), (12, 7), (10, 8), (12, 8), (11, 6)):
+            px(img, x, y, (160, 100, 50))
+        px(img, 11, 10, (40, 160, 60))
+        px(img, 1, 14, (200, 200, 196)); px(img, 1, 15, (200, 200, 196))
+    else:
+        for y in range(1, 13):
+            for x in range(3, 13):
+                px(img, x, y, (248, 248, 240))
+        for y in range(3, 12, 2):
+            for x in range(4, 12):
+                if (x + y) % 4:
+                    px(img, x, y, (70, 70, 120))
+        for x in range(3, 13):
+            px(img, x, 1, (210, 60, 60))
+        px(img, 3, 0, (220, 210, 150)); px(img, 12, 0, (220, 210, 150))
+        px(img, 1, 1, (200, 200, 196)); px(img, 1, 2, (200, 200, 196))
+    return img
+
+
+def map_table():
+    """The kitchen table's top: walnut-look laminate, scratched pale along its edge."""
+    img = oak(1264, (132, 92, 56))
+    for x in range(0, 16, 3):
+        px(img, x, 15, (180, 146, 104))
+    return img
+
+
+def map_dresser():
+    """The boys' dresser: brown veneer drawers, the knobs gone from one, stickers up the side, a scrape along the top."""
+    img = oak(1265, (122, 84, 52))
+    for y in (5, 10):
+        for x in range(16):
+            px(img, x, y, (74, 50, 30))
+    for y in (2, 7, 12):
+        px(img, 5, y, (210, 190, 120)); px(img, 10, y, (210, 190, 120))
+    px(img, 10, 7, (74, 50, 30))
+    for x, y, c in ((1, 1, (230, 60, 60)), (2, 1, (230, 60, 60)), (13, 8, (60, 120, 220)), (14, 8, (60, 120, 220)), (13, 9, (240, 210, 60)), (2, 13, (80, 190, 90))):
+        px(img, x, y, c)
+    return img
+
+
+def map_dresser_mom():
+    """Her dresser: the same veneer, a lace runner across the top, her jewellery box and a bottle of lotion on it."""
+    img = oak(1266, (130, 90, 56))
+    for y in (5, 10):
+        for x in range(16):
+            px(img, x, y, (80, 54, 32))
+    for y in (2, 7, 12):
+        px(img, 4, y, (226, 214, 180)); px(img, 11, y, (226, 214, 180))
+    return img
+
+
+def map_lace():
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (236, 230, 214) if (x + y) % 3 else (214, 206, 186))
+    return img
+
+
+def map_toys():
+    """Dino's toys on the carpet: a yellow dump truck, a plastic horse, two action figures and a red ball."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, (224, 190, 48) if y < 6 else (190, 50, 44) if y < 10 else (110, 90, 70) if y < 13 else (70, 110, 170))
+    for x in range(16):
+        px(img, x, 5, (170, 140, 30))
+    return img
+
+
+def map_curtain():
+    """A flowered bed sheet tacked over the window for a curtain, the tacks showing at its hem."""
+    img = canvas()
+    for y in range(16):
+        for x in range(16):
+            px(img, x, y, mul((214, 206, 230), 1.06 if x % 4 == 1 else .9 if x % 4 == 3 else 1.0))
+    for x, y in ((2, 3), (9, 7), (5, 12), (12, 13), (13, 2)):
+        px(img, x, y, (206, 110, 150)); px(img, x + 1, y, (120, 160, 90)); px(img, x, y + 1, (206, 110, 150))
+    return img
+
+
+def map_photo_father():
+    """A snapshot gone orange with age: a young man by a pickup, a baby in a blanket in his arms. No face to make out."""
+    def draw(img):
+        for y in range(1, 9):
+            for x in range(1, 11):
+                px(img, x, y, (206, 170, 120) if y < 5 else (150, 130, 96))
+        for x in range(5, 11):
+            for y in range(4, 7):
+                px(img, x, y, (120, 60, 46))
+        px(img, 6, 7, (40, 36, 34)); px(img, 9, 7, (40, 36, 34))
+        for y in range(3, 9):
+            px(img, 3, y, (60, 52, 70))
+        px(img, 3, 2, (176, 130, 100)); px(img, 3, 1, (40, 30, 26))
+        px(img, 4, 4, (238, 232, 214)); px(img, 4, 5, (238, 232, 214))
+    return snapshot(12, 10, (240, 236, 224), draw)
+
+
+def map_photo_boys():
+    """The two boys by the old tetherball pole in the yard, the bigger one's hand on the little one's head."""
+    def draw(img):
+        for y in range(1, 9):
+            for x in range(1, 9):
+                px(img, x, y, (170, 200, 220) if y < 5 else (176, 156, 110))
+        for y in range(1, 8):
+            px(img, 6, y, (150, 150, 150))
+        px(img, 7, 2, (220, 200, 60))
+        for y in range(4, 8):
+            px(img, 2, y, (70, 90, 150))
+        px(img, 2, 3, (176, 130, 100))
+        for y in (6, 7):
+            px(img, 4, y, (190, 60, 50))
+        px(img, 4, 5, (176, 130, 100)); px(img, 3, 4, (70, 90, 150))
+    return snapshot(10, 10, (240, 236, 224), draw)
+
+
+TEXTURES.update({'tv_guide': tv_guide, 'map_couch': map_couch, 'map_recliner': map_recliner, 'map_cabinet': map_cabinet,
+                 'map_counter': map_counter, 'map_stove': map_stove, 'map_fridge_upper': lambda: map_fridge(True),
+                 'map_fridge_lower': lambda: map_fridge(False), 'map_table': map_table, 'map_dresser': map_dresser,
+                 'map_dresser_mom': map_dresser_mom, 'map_lace': map_lace, 'map_toys': map_toys, 'map_curtain': map_curtain,
+                 'map_photo_father': map_photo_father, 'map_photo_boys': map_photo_boys})
+
+
+def _like(name, base, textures, particle):
+    """A Mapping piece on another piece's frame, with its own textures."""
+    MODEL_SPECS[name] = (MODEL_SPECS[base][0], textures, particle)
+
+
+for _n, _b in (('map_sofa_left', 'sofa_left'), ('map_sofa_middle', 'sofa_middle'), ('map_sofa_right', 'sofa_right')):
+    _like(_n, _b, {'plaid': 'map_couch', 'oak': 'tv_wood'}, 'map_couch')
+_like('map_recliner', 'recliner', {'c': 'map_recliner', 'oak': 'tv_wood'}, 'map_recliner')
+_like('map_counter', 'counter', {'c': 'map_cabinet', 'top': 'map_counter', 'oak': 'map_table'}, 'map_cabinet')
+_like('map_counter_sink', 'counter_sink', {'c': 'map_cabinet', 'top': 'map_counter', 'oak': 'map_table', 'st': 'steel', 'b': 'basin'}, 'map_cabinet')
+_like('map_wall_cabinet', 'wall_cabinet', {'c': 'map_cabinet', 'oak': 'map_table'}, 'map_cabinet')
+_like('map_stove', 'stove', {'g': 'map_lace', 'f': 'map_stove', 't': 'stove_top'}, 'map_stove')
+_like('map_fridge_lower', 'fridge_lower', {'g': 'map_lace', 'f': 'map_fridge_lower'}, 'map_fridge_lower')
+_like('map_fridge_upper', 'fridge_upper', {'g': 'map_lace', 'f': 'map_fridge_upper'}, 'map_fridge_upper')
+_like('map_table_east', 'table_east', {'oak': 'map_table'}, 'map_table')
+_like('map_chair', 'dining_chair', {'oak': 'map_table'}, 'map_table')
+_like('map_curtain_left', 'curtain_left', {'c': 'map_curtain', 'b': 'steel'}, 'map_curtain')
+_like('map_curtain_right', 'curtain_right', {'c': 'map_curtain', 'b': 'steel'}, 'map_curtain')
+
+
+@spec('map_tv', {'w': 'tv_wood', 'f': 'tv_front', 's': 'screen_off', 'st': 'steel'}, 'tv_wood')
+def m_map_tv():
+    """The set on its cart, rabbit ears up, the VCR under it blinking nothing."""
+    rod = lambda angle: dict(box((7.8, 16, 8.3), (8.2, 26, 8.7), 'st', faces=('north', 'south', 'east', 'west')),
+                             rotation={'origin': [8, 16, 8.5], 'axis': 'z', 'angle': angle})
+    return tv() + [box((7, 15.5, 7.5), (9, 16.5, 9.5), 'st'), rod(22.5), rod(-22.5)]
+
+
+def dresser():
+    return [box((1, 0, 3), (15, 14, 15), 'oak', over={'north': 'd'}), box((0.5, 14, 2.5), (15.5, 15, 15.5), 'oak')]
+
+
+@spec('map_dresser', {'oak': 'map_table', 'd': 'map_dresser', 'k': 'map_toys'}, 'map_dresser')
+def m_map_dresser():
+    return dresser() + [box((3, 15, 8), (6, 18, 11), 'k', uv=(0, 0, 4, 4)), box((9, 15, 6), (13, 16, 12), 'k', uv=(0, 13, 6, 16))]
+
+
+@spec('map_mom_dresser', {'oak': 'map_table', 'd': 'map_dresser_mom', 'l': 'map_lace', 'j': 'tv_wood', 'g': 'brass'}, 'map_dresser_mom')
+def m_map_mom_dresser():
+    return dresser() + [box((2, 15, 6), (14, 15.25, 13), 'l', faces=('up', 'north')), box((4, 15.25, 8), (8, 17.5, 11), 'j'),
+                        box((4.5, 17.5, 8.5), (7.5, 17.75, 10.5), 'g'), box((10.5, 15.25, 9), (11.5, 19, 10), 'l')]
+
+
+@spec('map_toys', {'k': 'map_toys'}, 'map_toys')
+def m_map_toys():
+    """On the carpet: the dump truck with its bed tipped, the plastic horse, two action figures face down, the ball."""
+    return [box((2, 0, 3), (8, 2.5, 6), 'k', uv=(0, 0, 6, 3)), box((6, 2.5, 3), (8, 4, 6), 'k', uv=(0, 0, 2, 2)),
+            box((2.5, 0, 2.5), (3.5, 1, 3), 'k', uv=(0, 13, 1, 14)), box((6.5, 0, 2.5), (7.5, 1, 3), 'k', uv=(0, 13, 1, 14)),
+            box((10, 0, 4), (13, 3, 5), 'k', uv=(0, 10, 3, 13)), box((12, 3, 4), (13, 4.5, 5), 'k', uv=(0, 10, 1, 11)),
+            box((4, 0, 10), (8, .8, 11), 'k', uv=(0, 13, 4, 14)), box((9, 0, 11), (12.5, .8, 12), 'k', uv=(0, 6, 4, 7)),
+            box((11, 0, 7), (14, 3, 10), 'k', uv=(0, 6, 3, 9))]
+
+
+for _name, _w, _h in (('map_photo_father', 12, 10), ('map_photo_boys', 10, 10)):
     def _make(w=_w, h=_h):
         x0, y0 = 8 - w // 2, 9 - h // 2
         return [box((x0, y0, 15), (x0 + w, y0 + h, 16), 'p', uv=(0, 0, w, h))]

@@ -264,6 +264,10 @@ public final class SceneReviewTests {
         h.assertTrue(!menu.clickMenuButton(peer,3)&&menu.clickMenuButton(owner,3)&&!menu.clickMenuButton(owner,3),"the native draft menu yields its original once to its actual reader");owner.closeContainer();
         var saved=f.data().save(new CompoundTag(),f.level.registryAccess());f.level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",LabyrinthData.FACTORY.deserializer().apply(saved,f.level.registryAccess()));f.click(owner,SceneReview.DRAFTS.get(0));
         h.assertTrue(ItemStack.isSameItemSameComponents(((NovelVignettes.NovelBookMenu)owner.containerMenu).book(),text)&&!((NovelVignettes.NovelBookMenu)owner.containerMenu).clickMenuButton(owner,3),"native reload and rereading retain the same finite words/components");
+        // 0.4.202: every sheet on the wall at the hall's end reads where it hangs, a line from his account, and neighbours differ.
+        owner.closeContainer();var wallSheet=new BlockPos(-10,1,-38);h.assertTrue(f.level.getBlockState(f.base.offset(wallSheet)).getValue(VignetteDetailBlock.KIND).name().startsWith("SCRIBBLE_"),"a sheet in his hand on the far wall");
+        f.click(owner,wallSheet);var wall=((NovelVignettes.NovelBookMenu)owner.containerMenu).book().get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);
+        h.assertTrue(wall!=null&&wall.pages().get(0).raw().getString().contains(NovelTexts.WALL.get(NovelTexts.wallIndex(wallSheet)).split("\n")[0])&&NovelTexts.wallIndex(wallSheet)!=NovelTexts.wallIndex(wallSheet.east()),"the wall sheet opens on its own line from the survey: "+wall);owner.closeContainer();
         h.assertTrue(WitnessAccount.count(f.data(),owner.getUUID())==0&&WitnessAccount.count(f.data(),peer.getUUID())==0,"the drafts never grant a story resolution");f.done();
     });}
 

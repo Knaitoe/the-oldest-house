@@ -4,7 +4,7 @@
  "ambientocclusion": false,
  "textures": {
   "w": "the_oldest_house:block/barrett/walnut",
-  "t": "the_oldest_house:block/barrett/tv_screen",
+  "t": "the_oldest_house:block/barrett/tv_cartoon",
   "k": "the_oldest_house:block/barrett/black",
   "particle": "the_oldest_house:block/barrett/walnut"
  },

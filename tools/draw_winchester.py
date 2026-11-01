@@ -10,6 +10,7 @@ Run with --check to confirm the committed files.
 """
 import argparse
 import json
+import math
 import random
 import sys
 from pathlib import Path
@@ -281,6 +282,36 @@ def spider_window():
     return img
 
 
+def door_panel():
+    """One of the spare doors she bought by the dozen: four raised mahogany panels in their stiles and rails, never hung."""
+    img = mahogany()
+    for y in range(16):
+        for x in range(16):
+            r, g, b, _ = img.getpixel((x, y))
+            frame = x in (0, 1, 14, 15) or y in (0, 1, 7, 8, 14, 15) or x in (7, 8)
+            if not frame:
+                inner = x in (2, 9) or y in (2, 9)
+                px(img, x, y, mul((r, g, b), 1.12 if inner else 1.04))
+    for x in range(16):
+        px(img, x, 0, mul(img.getpixel((x, 0))[:3], .7))
+    return img
+
+
+def shavings():
+    """Curls of pine shaving and sawdust on the floor where the carpenters work, the hay showing through."""
+    rng = random.Random(4120)
+    img = canvas()
+    for _ in range(70):
+        x, y = rng.randrange(16), rng.randrange(16)
+        px(img, x, y, mul((226, 196, 140), rng.uniform(.85, 1.08)))
+    for _ in range(9):
+        x, y = rng.randrange(14), rng.randrange(15)
+        for i in range(3):
+            px(img, x + i, y + (i == 1), (238, 210, 156))
+    return img
+
+
+TEXTURES.update({'door_panel': door_panel, 'shavings': shavings})
 TEXTURES.update({'spider_window': spider_window})
 TEXTURES.update({'mahogany': mahogany, 'velvet': velvet, 'brass': brass, 'clock_face': clock_face, 'pendulum': pendulum,
                  'pine': pine, 'pine_end': pine_end, 'keg': keg, 'nails': nails, 'steel': steel, 'plaque': plaque})
@@ -297,7 +328,33 @@ def box(frm, to, tex, faces=DIRS, uv=None, over=None):
         f[d] = face
     for d, t in (over or {}).items():
         f[d] = {'texture': '#' + t}
+        if uv:
+            f[d]['uv'] = list(uv)
+    # 0.4.202: faces of elements that reach past the block (the spare door's upper half, the studs) sample inside their own
+    # sprite, as the Barretts' house does.
+    if any(c < 0 or c > 16 for c in list(frm) + list(to)):
+        (x1, y1, z1), (x2, y2, z2) = frm, to
+        for d, face in f.items():
+            if 'uv' in face:
+                continue
+            u0, v0, u1, v1 = {'down': [x1, 16 - z2, x2, 16 - z1], 'up': [x1, z1, x2, z2], 'north': [16 - x2, 16 - y2, 16 - x1, 16 - y1],
+                              'south': [x1, 16 - y2, x2, 16 - y1], 'west': [z1, 16 - y2, z2, 16 - y1], 'east': [16 - z2, 16 - y2, 16 - z1, 16 - y1]}[d]
+            (u0, u1), (v0, v1) = fit(u0, u1), fit(v0, v1)
+            face['uv'] = [round(u0, 3), round(v0, 3), round(u1, 3), round(v1, 3)]
     return {'from': list(frm), 'to': list(to), 'faces': f}
+
+
+def fit(a, b):
+    """Bring one UV span inside the sprite: shifted by whole tiles when it fits, else stretched over the whole sprite."""
+    lo, hi = min(a, b), max(a, b)
+    if 0 <= lo and hi <= 16:
+        return a, b
+    if hi - lo <= 16:
+        shift = math.floor(lo / 16) * 16
+        if hi - shift > 16:
+            shift = hi - 16
+        return a - shift, b - shift
+    return (0, 16) if a <= b else (16, 0)
 
 
 MODEL_SPECS = {}
@@ -358,6 +415,49 @@ def m_lumber():
 def m_nail_keg():
     return [box((4, 0, 4), (12, 10, 12), 'k', over={'up': 'n', 'down': 'p'}), box((5, 10, 7.5), (12, 11, 8.5), 'p'),
             box((11, 10, 6), (13, 12, 10), 's')]
+
+
+@spec('spare_door', {'d': 'door_panel', 'm': 'mahogany', 'b': 'brass'}, 'door_panel')
+def m_spare_door():
+    """A spare door leaning against the wall, its foot a hand out from the skirting: never hung."""
+    rot = {'origin': [8, 0, 13], 'axis': 'x', 'angle': 22.5}
+    return [dict(box((2, 0, 12), (14, 15, 14), 'd', over={'north': 'd', 'south': 'd'}), rotation=rot),
+            dict(box((2, 15, 12), (14, 30, 14), 'd', over={'north': 'd', 'south': 'd'}), rotation=rot),
+            dict(box((11, 13, 11.5), (12.5, 14.5, 12), 'b'), rotation=rot)]
+
+
+@spec('spare_window', {'g': 'leaded_glass', 'm': 'mahogany', 'p': 'pine'}, 'leaded_glass')
+def m_spare_window():
+    """A leaded window still in its crate's slats, propped against the wall: one of the hundreds she never set."""
+    rot = {'origin': [8, 0, 13], 'axis': 'x', 'angle': 22.5}
+    return [dict(box((1.5, 1, 12.5), (14.5, 15, 13.5), 'g', faces=('north', 'south')), rotation=rot),
+            dict(box((1, 0, 12), (15, 1, 14), 'm'), rotation=rot), dict(box((1, 15, 12), (15, 16, 14), 'm'), rotation=rot),
+            dict(box((1, 1, 12), (2, 15, 14), 'm'), rotation=rot), dict(box((14, 1, 12), (15, 15, 14), 'm'), rotation=rot),
+            dict(box((0, 3, 11), (16, 4.5, 12), 'p'), rotation=rot), dict(box((0, 11, 11), (16, 12.5, 12), 'p'), rotation=rot)]
+
+
+@spec('studs', {'p': 'pine', 'e': 'pine_end', 's': 'steel'}, 'pine')
+def m_studs():
+    """A wall going up where there was none: the sole plate nailed to the floor, three studs, the top plate, no lath yet."""
+    over = {'up': 'e', 'down': 'e'}
+    return [box((0, 0, 6.5), (16, 1.5, 9.5), 'p'), box((0, 28.5, 6.5), (16, 30, 9.5), 'p'),
+            box((0.5, 1.5, 6.5), (2, 28.5, 9.5), 'p', over=over), box((7.25, 1.5, 6.5), (8.75, 28.5, 9.5), 'p', over=over),
+            box((14, 1.5, 6.5), (15.5, 28.5, 9.5), 'p', over=over), box((2, 14, 7), (7.25, 15.5, 9), 'p'), box((8.75, 16, 7), (14, 17.5, 9), 'p')]
+
+
+@spec('workbench', {'p': 'pine', 'e': 'pine_end', 's': 'steel', 'm': 'mahogany'}, 'pine')
+def m_workbench():
+    """The carpenters' bench: a thick pine top on four legs and a stretcher, the vise at one end, a plane and a saw left on it."""
+    legs = [box((x, 0, z), (x + 2, 12, z + 2), 'p') for x in (1, 13) for z in (2, 12)]
+    return legs + [box((2, 3, 3), (14, 4.5, 13), 'p'), box((0, 12, 1), (16, 15, 15), 'p', over={'east': 'e', 'west': 'e'}),
+                   box((-1, 10, 1), (1, 15, 5), 'm'), box((-2, 12.5, 2.5), (-1, 13.5, 3.5), 's'),
+                   box((4, 15, 4), (9, 17, 6.5), 'm'), box((5, 17, 4.75), (8, 17.5, 5.75), 's'),
+                   box((9, 15, 9), (15, 15.25, 13), 's'), box((14, 15, 10), (16.5, 17, 12), 'm')]
+
+
+@spec('sawdust', {'s': 'shavings'}, 'shavings')
+def m_sawdust():
+    return [box((0, 0, 0), (16, 0.5, 16), 's', faces=('up',))]
 
 
 @spec('spider_window', {'g': 'spider_window'}, 'spider_window')

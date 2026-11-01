@@ -2607,5 +2607,95 @@
         "stream": false
       }
     ]
+  },
+  "lookout.whistle": {
+    "subtitle": "subtitles.the_oldest_house.lookout.whistle",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/whistle",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.knock": {
+    "subtitle": "subtitles.the_oldest_house.lookout.knock",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/knock",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.shutter": {
+    "subtitle": "subtitles.the_oldest_house.lookout.shutter",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/shutter",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.crack": {
+    "subtitle": "subtitles.the_oldest_house.lookout.crack",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/crack",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.shatter": {
+    "subtitle": "subtitles.the_oldest_house.lookout.shatter",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/shatter",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.tty": {
+    "subtitle": "subtitles.the_oldest_house.lookout.tty",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/tty",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.radio": {
+    "subtitle": "subtitles.the_oldest_house.lookout.radio",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/radio",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.generator": {
+    "subtitle": "subtitles.the_oldest_house.lookout.generator",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/generator",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.crank": {
+    "subtitle": "subtitles.the_oldest_house.lookout.crank",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/crank",
+        "stream": false
+      }
+    ]
+  },
+  "lookout.gust": {
+    "subtitle": "subtitles.the_oldest_house.lookout.gust",
+    "sounds": [
+      {
+        "name": "the_oldest_house:lookout/gust",
+        "stream": false
+      }
+    ]
   }
 }

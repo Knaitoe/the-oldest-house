@@ -3,9 +3,10 @@
  "render_type": "minecraft:cutout",
  "ambientocclusion": true,
  "textures": {
-  "b": "the_oldest_house:block/barrett/blinds",
+  "b": "the_oldest_house:block/barrett/blinds_low",
   "p": "the_oldest_house:block/barrett/paint",
-  "particle": "the_oldest_house:block/barrett/blinds"
+  "w": "the_oldest_house:block/barrett/white",
+  "particle": "the_oldest_house:block/barrett/blinds_low"
  },
  "elements": [
   {
@@ -21,10 +22,22 @@
    ],
    "faces": {
     "north": {
-     "texture": "#b"
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
     },
     "south": {
-     "texture": "#b"
+     "texture": "#b",
+     "uv": [
+      16,
+      0,
+      0,
+      16
+     ]
     },
     "east": {
      "texture": "#p"
@@ -37,6 +50,142 @@
     },
     "down": {
      "texture": "#p"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0,
+    -1.5
+   ],
+   "to": [
+    16,
+    1,
+    0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#w",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#w",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#w",
+     "uv": [
+      0,
+      15,
+      1.5,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#w",
+     "uv": [
+      14.5,
+      15,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#w",
+     "uv": [
+      0,
+      14.5,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#w",
+     "uv": [
+      0,
+      0,
+      16,
+      1.5
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0,
+    16
+   ],
+   "to": [
+    16,
+    1,
+    17.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#w",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#w",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#w",
+     "uv": [
+      14.5,
+      15,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#w",
+     "uv": [
+      0,
+      15,
+      1.5,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#w",
+     "uv": [
+      0,
+      0,
+      16,
+      1.5
+     ]
+    },
+    "down": {
+     "texture": "#w",
+     "uv": [
+      0,
+      14.5,
+      16,
+      16
+     ]
     }
    }
   }

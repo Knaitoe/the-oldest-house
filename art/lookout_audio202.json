@@ -1,0 +1,64 @@
+{
+  "sounds": {
+    "whistle": {
+      "samples": 29767,
+      "rate": 22050,
+      "ticks": 27,
+      "sha256": "6537fe891bb3efd811d8bd62e37850ad3f66d8e13f270c5a0031f035c9960471"
+    },
+    "knock": {
+      "samples": 26460,
+      "rate": 22050,
+      "ticks": 24,
+      "sha256": "ffc08e48072f7b258a6c58a5c958e3874a75343bfa47ccc3cb26babd590c0ab2"
+    },
+    "shutter": {
+      "samples": 19845,
+      "rate": 22050,
+      "ticks": 18,
+      "sha256": "0f188d6ebbc3b611d7c6ac321de37e2d1d22d284703ce499cb35fbd6d9f71227"
+    },
+    "crack": {
+      "samples": 13230,
+      "rate": 22050,
+      "ticks": 12,
+      "sha256": "2fd1509d94292abe5d9ad8ff6185fdafa6cdee5c6acbdd3db595494d127682e9"
+    },
+    "shatter": {
+      "samples": 35280,
+      "rate": 22050,
+      "ticks": 32,
+      "sha256": "b841ca1909490624b310fe50da594f1a9d352b4465b843cf894c96bd469a5293"
+    },
+    "tty": {
+      "samples": 30869,
+      "rate": 22050,
+      "ticks": 28,
+      "sha256": "1184bcf04322d82f60c1a878f5d8c8d8085aff5ddcb703bc2aacd2d0798da768"
+    },
+    "radio": {
+      "samples": 28665,
+      "rate": 22050,
+      "ticks": 26,
+      "sha256": "ce2319a3a3b2d48da6d57db82397e542dd2926669568717d71cdc8598e7f237d"
+    },
+    "generator": {
+      "samples": 48510,
+      "rate": 22050,
+      "ticks": 44,
+      "sha256": "796c9b1088d6b665e6d22949a6c3788b7ddff0941d29a4301da19498b6745f53"
+    },
+    "crank": {
+      "samples": 17640,
+      "rate": 22050,
+      "ticks": 16,
+      "sha256": "e5537603098ee6f3b9b84e5e862146f9e6bf9763fa9f5d2fb5718be9f01bf49a"
+    },
+    "gust": {
+      "samples": 57330,
+      "rate": 22050,
+      "ticks": 52,
+      "sha256": "c5abd5b6a6ecbe37211780531c2e3cfcf07a1eb750e2e0c53e5a4b6776f1e507"
+    }
+  }
+}

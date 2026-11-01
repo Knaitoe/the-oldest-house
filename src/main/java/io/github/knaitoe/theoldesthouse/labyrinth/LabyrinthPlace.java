@@ -380,6 +380,8 @@ public enum LabyrinthPlace {
     WAY_OUT("way_out",Kind.ONE_SHOT,126,new BoundingBox(-60,-8,-116,60,24,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
     /** 0.4.200, Feet Up: the family house where the floor is lava, played from the big chair to the attic (FeetUp). Survival. */
     FEET_UP("feet_up",Kind.ONE_SHOT,127,new BoundingBox(-11,-1,-27,11,14,0),literaryEntry()),
+    /** 0.4.202, the Whistlers in the Pines: a fire lookout over a snowbound clearing, and the forest of towers far to its north (LookoutTower, LookoutNight). Survival, four visits. */
+    WHISTLERS("whistlers",Kind.MULTI_VISIT,128,new BoundingBox(-40,-8,-280,40,30,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

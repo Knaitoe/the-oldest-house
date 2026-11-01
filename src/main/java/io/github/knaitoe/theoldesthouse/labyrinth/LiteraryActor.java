@@ -26,6 +26,8 @@ public final class LiteraryActor extends PathfinderMob {
     public static final int DARE_KID_A=42,DARE_KID_B=43;
     /** The split-feed bedroom's parents (0.4.201): asleep in their beds, or dead in them; drawn in the reader's own body. */
     public static final int UNCANNY_PARENT=44;
+    /** 0.4.202, the Whistlers in the Pines: the thing in the woods (phase is its tier, 0 to 3); and the figures in the eight towers round tower four, drawn in the reader's own body (phase 1 crouching; gesture 1 binoculars up). */
+    public static final int WHISTLER=45,LOOKOUT_DOUBLE=46;
     public static boolean dareKid(int role){return role==DARE_KID_A||role==DARE_KID_B;}
     /** The lake house partner, whichever of the two they are. */
     public static boolean lakePartner(int role){return role==LAKE_TESS||role==LAKE_THEO;}
@@ -52,7 +54,7 @@ public final class LiteraryActor extends PathfinderMob {
         super.lerpTo(x,y,z,yaw,pitch,steps);
     }
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE||key==GESTURE)refreshDimensions();}
-    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT?2.5:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
+    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT?2.5:role==WHISTLER?1.12:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
     @Override public void startSeenByPlayer(ServerPlayer p){
         super.startSeenByPlayer(p);
