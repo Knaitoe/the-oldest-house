@@ -103,8 +103,9 @@ kitchen table changed only the mouth (with brows for cross and a tear for sad). 
   the outer lid drooping, looking down; scared, wide open under a raised brow, a small pupil with white all round; cross, the
   brow pressed down toward the nose and the lid half over the eye. Plain is as painted. It only changes eyes that are the
   House's own (white either side of a dark pupil, nothing worn over them); a reader's own skin keeps its eyes.
-- **In words:** the cue and the House's account say "scared, with wide eyes" and "cross, with narrowed eyes" (sad was already
-  "sad, with a tear").
+- **In words:** the cue at the table says "scared, with wide eyes" and "cross, with narrowed eyes" (sad was already "sad, with a
+  tear"). The House's written account and the staircase leaves keep "scared" and "cross": the longer words pushed a ledger leaf
+  past its page (run 1389's font check), and a leaf has no room to spare.
 
 ## Not changed
 
