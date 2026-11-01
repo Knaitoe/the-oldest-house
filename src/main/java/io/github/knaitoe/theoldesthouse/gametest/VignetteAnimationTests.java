@@ -399,7 +399,9 @@ public final class VignetteAnimationTests {
             f.at(p,place,.5,0,-54.5);
         });
         h.runAfterDelay(140,()->{var world=LiteraryVignettes.shared(f.data(),place);var mother=(LiteraryActor)f.in.getEntity(world.getUUID("Mother_"+p.getUUID()));
-            h.assertTrue(mother!=null&&mother.owner().orElseThrow().equals(p.getUUID()),"the reader's own Mother waits in her room");p.lookAt(EntityAnchorArgument.Anchor.EYES,mother.getEyePosition());});
+            h.assertTrue(mother!=null&&mother.owner().orElseThrow().equals(p.getUUID()),"the reader's own Mother waits in her room");
+            // 0.4.218: the cast drops nothing (the owner saw her drop fire charges): nothing spawns at her feet, and she leaves no loot.
+            h.assertTrue(mother.spawnAtLocation(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.FIRE_CHARGE))==null&&f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,mother.getBoundingBox().inflate(4)).isEmpty(),"Mother drops nothing");p.lookAt(EntityAnchorArgument.Anchor.EYES,mother.getEyePosition());});
         h.runAfterDelay(170,()->{h.assertTrue(f.own(p,place).getBoolean("LeftMother")&&!f.own(peer,place).getBoolean("ReachedMother"),"only the reader has seen her");
             f.click(p,place,WheelHouse.MOTHERS.back());h.assertTrue(room.getAsInt()==0,"the door with no number lets them out to the hall");});
         h.runAfterDelay(200,()->{h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Memory")&&p.getBbHeight()>1.5&&!f.own(peer,place).getBoolean("Ready"),"out in the hall they are their own height again, and only they");f.reload();f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the account completes only this reader");h.succeed();});
