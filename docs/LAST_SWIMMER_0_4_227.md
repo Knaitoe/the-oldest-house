@@ -69,6 +69,9 @@ It starts again from the beginning when nobody has been in it for five seconds. 
 
 ## Against "Falling Out the Sky"
 
+0.4.233 corrects this section: the song is not a warm summer song, and the closing is now played against what it says; see
+`docs/LAST_SWIMMER_SONG_0_4_233.md`. What follows is what 0.4.227 shipped.
+
 The scene is written against the song (Armand Hammer and The Alchemist, *Haram*, 2021, with Earl Sweatshirt): unhurried, loping,
 a summer song, played against a pool closing at night.
 

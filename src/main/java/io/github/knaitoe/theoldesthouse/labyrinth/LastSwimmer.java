@@ -42,12 +42,28 @@ public final class LastSwimmer {
     public static final int HAUL_GAP=12,QUIET=60,LIGHTS_EVERY=12,STEPS_AFTER=150,STEP_EVERY=14,EMPTY_RESET=100;
     /** The lamps left on near the fire door. */
     private static final int KEEP_LIT=2;
+    /**
+     * 0.4.233: the radio's clock. Ticks after the radio starts at which each part of "Falling Out the Sky" begins (Armand Hammer and
+     * The Alchemist, 2021, 3:40): the first verse, the first spoken interlude, the second verse, the second spoken interlude, the
+     * third verse, and the end. Estimated from the verses' lengths, not timed against the recording: tune these to the track.
+     */
+    public static final int[] SONG={0,940,1280,2620,2960,4400};
+    public static final int SECOND_TALK=3,LAST_VERSE=4;
+    /** How long the splashing stops when the last verse begins. */
+    public static final int HELD_BREATH=100;
+    /** The stars the skylight lays on the water, as pool cells (x, z) under it: a handle of three and a bowl of four. */
+    public static final int[][] STARS={{3,-21},{2,-22},{0,-23},{-1,-24},{-1,-26},{-3,-26},{-3,-24}};
+    /** Deep water: from here north the floor is at its lowest. */
+    public static final int DEEP_FROM=-29;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
     /** One pool's closing. */
     static final class Pool {
         final BlockPos base;long tick;int hauls,lane=3,lastHaul=-100,closedAt=-1,lightsOut,empty;
         @Nullable UUID attendant,swimmer;@Nullable BlockPos pressed,stepAt;int pressedUntil,lastStep,radio=-1;boolean held,cuedLane;
+        /** 0.4.233: the radio's part now playing, the lamp that wavered and when it comes back, and when the held breath ends. */
+        int part=-1,flicker=-1,flickerUntil,breathUntil=-1;
+        int song(){return radio<0?-1:(int)(tick-radio);}
         Pool(BlockPos b){base=b;}
         boolean closed(){return closedAt>=0;}
         int since(){return closed()?(int)(tick-closedAt):-1;}
@@ -76,6 +92,14 @@ public final class LastSwimmer {
     public static boolean held(BlockPos b){var p=pool(b);return p!=null&&p.held;}
     public static long tick(BlockPos b){var p=pool(b);return p==null?-1:p.tick;}
     @Nullable public static BlockPos pressed(BlockPos b){var p=pool(b);return p==null?null:p.pressed;}
+    /** For tests: the part of the song the radio is in (0 to 4, 5 once it has ended), and whether the swimmer is holding a breath. */
+    public static int part(BlockPos b){var p=pool(b);return p==null?-1:p.part;}
+    public static boolean holding(BlockPos b){var p=pool(b);return p!=null&&p.breathUntil>p.tick;}
+    /** The stars still on the water: those the cover has not reached. */
+    public static int stars(int hauls){int n=0;for(var s:STARS)if(!covered(hauls,s[0]))n++;return n;}
+    static boolean covered(int hauls,int x){return x>SwimmerSite.POOL_X1-hauls;}
+    /** Which part of the song a moment after the radio starts falls in. */
+    public static int part(int song){if(song<0)return -1;for(int i=SONG.length-1;i>=0;i--)if(song>=SONG[i])return i;return 0;}
     /** For tests: runs the closing on to the steps without waiting. */
     public static void hurry(BlockPos b,int ticks){var p=pool(b);if(p!=null)p.tick+=ticks;}
 
@@ -85,10 +109,10 @@ public final class LastSwimmer {
         if(kind==null)return false;
         var pool=pool(b);
         switch(kind){
-            case REEL_END,REEL->{if(rel.getZ()>=SwimmerSite.POOL_SOUTH)return haul(p,b,own,pool);cue(p,"The crank at this end turns with the other. Pull from the shallow end.");return true;}
+            case REEL_END,REEL->{if(p.isShiftKeyDown()){cue(p,SwimmerTexts.NO_REVERSE);return true;}if(rel.getZ()>=SwimmerSite.POOL_SOUTH)return haul(p,b,own,pool);cue(p,"The crank at this end turns with the other. Pull from the shallow end.");return true;}
             case COVER->{if(s.getValue(SwimmerBlock.STAGE)==2&&rel.getZ()>=SwimmerSite.POOL_SOUTH-2)return haul(p,b,own,pool);cue(p,pool!=null&&pool.closed()?"Taut. It doesn't give.":"Heavy, wet fabric. The strap is at the shallow end.");return true;}
             case PACE_CLOCK->{own.putBoolean("Clock227",true);cue(p,pool!=null&&!pool.closed()?"The sweep hand goes round. Every turn at the wall lands on a quarter.":"The sweep hand goes round.");return true;}
-            case RADIO->{cue(p,"A radio, turned low. Something slow and warm, a song for an afternoon, playing to nobody at night.");return true;}
+            case RADIO->{own.putBoolean("Radio227",true);cue(p,pool==null||pool.part<SONG.length-1?SwimmerTexts.RADIO:SwimmerTexts.RADIO_ENDED);return true;}
             case LOCKERS->{cue(p,s.getValue(SwimmerBlock.STAGE)==1?"One locker is open. Inside: a towel folded square, and a pair of shoes, dry.":"Locked.");return true;}
             case START->{cue(p,"Lane "+(s.getValue(SwimmerBlock.STAGE)+1)+".");return true;}
             case SIGN->{cue(p,s.getValue(SwimmerBlock.STAGE)==0?"NO RUNNING.":"LAST SWIM half an hour before closing.");return true;}
@@ -107,6 +131,8 @@ public final class LastSwimmer {
         l.playSound(null,b.offset(SwimmerSite.REEL_SOUTH),SwimmerRegistry.HAUL.get(),SoundSource.BLOCKS,1F,.9F+l.random.nextFloat()*.2F);
         String line=SwimmerTexts.haul(pool.hauls);
         if(pool.hauls>=SwimmerSite.COLUMNS){close(l,pool,p,own);return true;}
+        // 0.4.233: the cover takes the sky off the water, star by star; the last one gone is said.
+        if(stars(pool.hauls)==0&&stars(pool.hauls-1)>0){for(var r:readers(l,b))cue(r,SwimmerTexts.STARS_OUT);return true;}
         if(line!=null)for(var r:readers(l,b))cue(r,line);
         return true;
     }
@@ -179,13 +205,38 @@ public final class LastSwimmer {
         var pace=b.offset(SwimmerSite.PACE);var ps=l.getBlockState(pace);int stage=(int)(pool.tick/100%12);
         if(SwimmerBlock.is(ps,SwimmerBlock.Kind.PACE_CLOCK)&&ps.getValue(SwimmerBlock.STAGE)!=stage)l.setBlock(pace,ps.setValue(SwimmerBlock.STAGE,stage),F);
         if(pool.radio<0){pool.radio=(int)pool.tick;l.playSound(null,b.offset(SwimmerSite.RADIO),SwimmerRegistry.RADIO.get(),SoundSource.RECORDS,2F,1F);}
+        song(l,pool);
         if(!pool.closed())swim(l,pool);else after(l,pool);
         attend(l,pool);
         // A pressed cell settles back.
         if(pool.pressed!=null&&pool.tick>=pool.pressedUntil){var at=b.offset(pool.pressed);var s=l.getBlockState(at);if(SwimmerBlock.is(s,SwimmerBlock.Kind.COVER)&&s.getValue(SwimmerBlock.STAGE)==1)l.setBlock(at,s.setValue(SwimmerBlock.STAGE,pool.pressed.getX()==SwimmerSite.POOL_X0?2:0),F);pool.pressed=null;}
     }
+    /**
+     * 0.4.233: the closing played against the song on the radio. In the second spoken part (a daydream that takes over and comes apart)
+     * the hall's lights waver one after another and steady; when the last verse begins (learning to swim where someone went under, and
+     * voices in the deep end), the splashing stops and nothing comes up for a breath, then goes on as if it had not. Only while the cover
+     * is still being pulled; the stars on the water go out as the cover reaches them.
+     */
+    static void song(ServerLevel l,Pool pool){
+        var b=pool.base;int part=part(pool.song());
+        if(part!=pool.part){
+            pool.part=part;
+            if(!pool.closed()&&part==SECOND_TALK)for(var r:readers(l,b))cue(r,SwimmerTexts.WAVER);
+            if(!pool.closed()&&part==LAST_VERSE){pool.breathUntil=(int)pool.tick+HELD_BREATH;for(var r:readers(l,b)){cue(r,SwimmerTexts.BREATH);var own=own(r);own.putBoolean("Breath227",true);save(r,own);}}
+        }
+        if(pool.flicker>=0&&pool.tick>=pool.flickerUntil){lamp(l,b,pool.flicker,pool.closed()&&pool.flicker<pool.lightsOut?1:0);pool.flicker=-1;}
+        if(!pool.closed()&&part==SECOND_TALK&&pool.flicker<0&&pool.tick%9==0){
+            int i=l.random.nextInt(SwimmerSite.LAMPS.size());pool.flicker=i;pool.flickerUntil=(int)pool.tick+3+l.random.nextInt(4);lamp(l,b,i,1);
+            l.playSound(null,b.offset(SwimmerSite.LAMPS.get(i)),SoundEvents.REDSTONE_TORCH_BURNOUT,SoundSource.BLOCKS,.15F,1.6F);
+        }
+        if(!pool.closed()&&pool.tick%5==0){
+            for(var star:STARS){if(covered(pool.hauls,star[0]))continue;var at=b.offset(star[0],SwimmerSite.SURFACE,star[1]);
+                l.sendParticles(new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.92F,.93F,1F),.55F),at.getX()+.5,at.getY()+1.02,at.getZ()+.5,1,.04,0,.04,0);}
+        }
+    }
+    static void lamp(ServerLevel l,BlockPos b,int i,int stage){var at=b.offset(SwimmerSite.LAMPS.get(i));var s=l.getBlockState(at);if(SwimmerBlock.is(s,SwimmerBlock.Kind.LAMP)&&s.getValue(SwimmerBlock.STAGE)!=stage)l.setBlock(at,s.setValue(SwimmerBlock.STAGE,stage),F);}
     static void swim(ServerLevel l,Pool pool){
-        var b=pool.base;var s=swimmerActor(l,pool);
+        var b=pool.base;var s=swimmerActor(l,pool);boolean breath=pool.breathUntil>pool.tick;
         int t=(int)(pool.tick%LENGTH_TICKS);int length=(int)(pool.tick/LENGTH_TICKS);boolean north=length%2==0;
         if(t==0){
             // At each turn: if the cover has reached their lane, they come back a lane over. Every length the same length.
@@ -200,8 +251,10 @@ public final class LastSwimmer {
         if(s!=null){
             s.moveTo(pos.x,pos.y,pos.z,north?180:0,0);s.setYHeadRot(north?180:0);s.setDeltaMovement(Vec3.ZERO);
             // Seen only in glimpses: pushing off each wall, and now and then for a moment in the middle of a length.
-            boolean seen=t<12||(pool.tick/80)%4==1&&pool.tick%80<9;s.setInvisible(!seen);
+            boolean seen=!breath&&(t<12||(pool.tick/80)%4==1&&pool.tick%80<9);s.setInvisible(!seen);
         }
+        // Holding a breath: no splash, no sound. Their lengths go on all the same.
+        if(breath)return;
         if(pool.tick%3==0)l.sendParticles(ParticleTypes.SPLASH,pos.x,b.getY()+SwimmerSite.SURFACE+.95,pos.z+(north?-.6:.6),4,.35,0,.35,0);
         if(pool.tick%16==0)l.playSound(null,pos.x,pos.y+.5,pos.z,SoundEvents.PLAYER_SWIM,SoundSource.AMBIENT,.45F,.8F+l.random.nextFloat()*.3F);
         if(pool.tick%40==0)l.sendParticles(ParticleTypes.BUBBLE,pos.x,pos.y+.3,pos.z,3,.2,.1,.2,.02);
@@ -271,6 +324,11 @@ public final class LastSwimmer {
         if(SwimmerSite.inHall(r)&&!own.getBoolean("Hall227")){own.putBoolean("Hall227",true);changed=true;cue(p,"\"Closing up. Take the strap at the shallow end, would you? We pull it across together.\"");}
         var s=swimmerActor(p.serverLevel(),pool);
         if(s!=null&&!s.isInvisible()&&p.hasLineOfSight(s)&&!own.getBoolean("Seen227")){own.putBoolean("Seen227",true);changed=true;cue(p,"Under the water, for a moment, something pale. Then only the splashing.");}
+        // 0.4.233: under the water at the deep end, while the pool is still open, voices nobody can make out, for this reader alone.
+        if(!pool.closed()&&p.level().getFluidState(BlockPos.containing(p.getEyePosition())).is(net.minecraft.tags.FluidTags.WATER)&&SwimmerSite.inPool(BlockPos.containing(r))&&r.z<DEEP_FROM+1&&pool.tick%60==0){
+            p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(DoorSounds.Carry.VOICES.sound,SoundSource.AMBIENT,p.getX(),p.getEyeY(),p.getZ(),.9F,.7F,p.getRandom().nextLong()));
+            if(!own.getBoolean("Voices227")){own.putBoolean("Voices227",true);changed=true;cue(p,SwimmerTexts.VOICES);}
+        }
         // Walking out through the held door is the ending.
         if(own.getBoolean("Ready")&&pool.held&&!own.getBoolean("Completed")&&p.position().distanceToSqr(at(b,SwimmerSite.EXIT_X+.5,0,SwimmerSite.EXIT_Z+.5))<4.0){complete(p,own);changed=true;}
         if(changed)save(p,own);
