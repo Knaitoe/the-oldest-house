@@ -34,7 +34,7 @@ public final class BorrascaNativeArt {
         return LayerDefinition.create(mesh,64,64);
     }
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);}
-    public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{public CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.25F);addLayer(new ItemInHandLayer<>(this,c.getItemInHandRenderer()));}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE)),a.phase()>=BorrascaStory.WORKER);}@Override protected boolean shouldShowName(LiteraryActor a){return false;}}
+    public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{public CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.25F);addLayer(new ItemInHandLayer<>(this,c.getItemInHandRenderer()));}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE)),a.phase()>=BorrascaStory.WORKER);}@Override protected boolean shouldShowName(LiteraryActor a){return a.isCustomNameVisible()&&!a.isInvisible()&&super.shouldShowName(a);}}
     public static final class CastModel extends HumanoidModel<LiteraryActor>{public CastModel(ModelPart root){super(root);hat.visible=false;}
         @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);young=false;super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
             pose(a.gesture(),a.role()==LiteraryActor.BORRASCA_SHERIFF,age);HumanoidMotion.connect(this);RecentActorMotion.blend(a,age,this);}
@@ -45,6 +45,10 @@ public final class BorrascaNativeArt {
                 case 3->{body.yRot=-.15F;head.xRot=.5F;leftArm.xRot=-1.1F;rightArm.xRot=-1.3F+.18F*(float)Math.sin(age*.5F);}
                 case 4->{rightArm.xRot=sheriff?-1.35F:-1.1F;rightArm.zRot=-.1F;}
                 case 5->{body.xRot=.42F;leftLeg.xRot=-.3F;rightLeg.xRot=-.3F;leftArm.xRot=-.35F;rightArm.xRot=-.35F;head.xRot=-.1F;}
+                // 0.4.235: led by the arm, the right arm drawn forward and up, the head turned back over the shoulder.
+                case 6->{rightArm.xRot=-1.25F;rightArm.zRot=.15F;leftArm.xRot=.35F;head.yRot=2.1F;head.xRot=-.1F;body.xRot=.08F;}
+                // A taker's hand held out, low, the other arm at his side.
+                case 7->{rightArm.xRot=-1.05F;rightArm.zRot=-.05F;body.xRot=.06F;head.xRot=.25F;}
                 default->{}
             }}
         /** Keep the approved child review poses; adults use the same full-length body as their live renderer. */

@@ -31,7 +31,7 @@ public final class BorrascaAtmosphere {
     public static void accept(BorrascaViewPayload p){var mc=Minecraft.getInstance();state=p;world=mc.level;received=world==null?0:world.getGameTime();if(!p.active())stop();}
     public static boolean active(){var mc=Minecraft.getInstance();if(state==null||!state.active()||mc.level==null||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.level.dimension()!=HouseDimensions.OUTSIDE)return false;var b=state.source().subtract(BorrascaRooms.MACHINE);return BorrascaSites.bounds(b).contains(mc.player.position());}
     public static boolean playing(){var mc=Minecraft.getInstance();return clear!=null&&muffled!=null&&mc.getSoundManager().isActive(clear)&&mc.getSoundManager().isActive(muffled);}
-    public static long time(long normal){return !active()?normal:switch(state.visit()){case 1->6000;case 2->9000;case 3->12500;default->18000;};}
+    public static long time(long normal){return !active()?normal:switch(state.visit()){case 1->10000;case 2->11500;case 3->800;default->18000;};}
     public static BlockPos source(){return state==null?BlockPos.ZERO:state.source();}
     private static void stop(){var mc=Minecraft.getInstance();for(var s:new Loop[]{clear,muffled,wind})if(s!=null)mc.getSoundManager().stop(s);clear=muffled=wind=null;retry=0;}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){var mc=Minecraft.getInstance();if(!active()){stop();state=null;world=null;return;}mc.getMusicManager().stopPlaying();
@@ -50,7 +50,7 @@ public final class BorrascaAtmosphere {
     @SubscribeEvent public static void beams(RenderLevelStageEvent e){
         if(!active()||e.getStage()!=RenderLevelStageEvent.Stage.AFTER_PARTICLES)return;var mc=Minecraft.getInstance();var b=state.source().subtract(BorrascaRooms.MACHINE);
         if(state.visit()==3){double clock=state.clock()+mc.level.getGameTime()-received;double yaw=Math.toRadians(180+55*Math.sin(clock*.018));Vec3 start=state.sheriff().getCenter().add(0,1,0);for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&a.role()==LiteraryActor.BORRASCA_SHERIFF&&a.scene().equals(LabyrinthPlace.BORRASCA.id())&&a.owner().filter(mc.player.getUUID()::equals).isPresent()){yaw=Math.toRadians(a.getYRot());start=a.getEyePosition();break;}beam(e,start,new Vec3(-Math.sin(yaw),-.03,Math.cos(yaw)),22,5.8,.065F);}
-        if(state.takingTicks()>0&&state.takingTicks()<=60||state.visit()==4&&state.running()){var direction=b.offset(BorrascaRooms.TAKING).getCenter().subtract(b.offset(BorrascaRooms.LAMP).getCenter()).normalize();beam(e,b.offset(BorrascaRooms.LAMP).getCenter().add(direction.scale(.65)),direction,48,8,.09F);}
+        if(state.takingTicks()>0||state.visit()==4&&state.running()){var direction=b.offset(BorrascaRooms.TAKING).getCenter().subtract(b.offset(BorrascaRooms.LAMP).getCenter()).normalize();beam(e,b.offset(BorrascaRooms.LAMP).getCenter().add(direction.scale(.65)),direction,48,8,.09F);}
     }
     private static void beam(RenderLevelStageEvent e,Vec3 start,Vec3 direction,double length,double radius,float opacity){
         var mc=Minecraft.getInstance();var camera=e.getCamera().getPosition();var pose=e.getPoseStack();var buffers=mc.renderBuffers().bufferSource();var type=RenderType.lightning();var v=buffers.getBuffer(type);var side=direction.cross(new Vec3(0,1,0)).normalize();var up=side.cross(direction).normalize();Vec3[] ring=new Vec3[17];

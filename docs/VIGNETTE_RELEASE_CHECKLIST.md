@@ -1,3 +1,5 @@
+November 1 candidate 0.4.235, Borrasca played in any order (docs/BORRASCA_MODULAR_0_4_235.md): the friend is Nell Garrity (display; internal ids kept), every beat happens where the reader is, the refinery is sealed until the last night, speech on displays and the action bar. Borrasca stays one understanding source resolved by silenced_the_mountain; Witness unchanged. No protocol or layout change. Tests: BorrascaTests (borrasca namespace, also in the literary job).
+
 November 1 candidate 0.4.234, traces in the stone (the grit gallery, `TraceRooms.buildStoneDust`; docs/STONE_TRACES_0_4_234.md): one ordinary stone hall (slot 154) dealt from seven to twenty; no vignette, source kind, Witness or protocol change. Layout 77. Tests: TraceRoomTests (the grit gallery).
 
 November 1 candidate 0.4.233, the last swimmer against "Falling Out the Sky" (docs/LAST_SWIMMER_SONG_0_4_233.md): the closing timed and written against the song's content, no lyric used; story, resolution and Witness unchanged. Tests: LastSwimmerTests (both cases).

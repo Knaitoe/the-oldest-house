@@ -130,7 +130,7 @@ public final class LiteraryVignettes {
                 if(button==3)return false;
             }
             var custom=book.get(DataComponents.CUSTOM_DATA);if(surface&&custom!=null&&custom.copyTag().getBoolean(UncannyReading.VIEW)&&(button==3||button>=400))return UncannyReading.button(reader,place,own,at,book,button);
-            if(button==3){if(!surface||!owned||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),place,own);give(reader,book.copy());if(place==LabyrinthPlace.BORRASCA)BorrascaStory.took(reader,key,at);return true;}
+            if(button==3){if(!surface||!owned||own.getBoolean("Taken_"+key))return false;own.putBoolean("Taken_"+key,true);save(d,reader.getUUID(),place,own);give(reader,book.copy());return true;}
             if(!super.clickMenuButton(who,button))return false;if(getPage()==book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1)reached(d,own);return true;}
         /** A one-page paper has no page to turn to, and the lectern sends nothing for it: opening it is reading it to the end. */
         public void opened(){opened(personal(LabyrinthData.get(reader.server),reader.getUUID(),place));}

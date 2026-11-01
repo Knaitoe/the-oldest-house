@@ -25,7 +25,18 @@ public final class BorrascaCast {
     private static LabyrinthData store;
     public static final List<String> KEYS=List.of("CastKimber","CastSheriff","CastPrescott","Worker0","Worker1");
     private BorrascaCast(){}
-    public static BlockPos target(String key,int visit){return switch(key){case "CastKyle"->new BlockPos(36,-4,-57);case "CastKimber"->visit>=3?new BlockPos(39,-4,-57):visit==2?new BlockPos(1,0,-76):new BlockPos(1,0,-18);case "CastSheriff"->visit>=3?BorrascaRooms.SHERIFF:new BlockPos(4,0,-16);case "CastPrescott"->visit>=2?new BlockPos(15,12,-171):new BlockPos(11,0,-25);case "Worker0"->visit>=4?new BlockPos(-6,12,-193):new BlockPos(-8,13,-157);case "Worker1"->visit>=4?new BlockPos(5,12,-195):new BlockPos(9,13,-157);default->throw new IllegalArgumentException(key);};}
+    /**
+     * Where each of the cast stands at the start of a visit (0.4.235). Anyone who is not about is kept out of the way in the sealed
+     * store under the far bank: the friend once she is gone; the two men in childhood (they come down the ridge road only for her) and on the
+     * last night; Prescott on the last night. Years later the men are at work in the yard, seen through the wire.
+     */
+    public static BlockPos target(String key,int visit){return switch(key){
+        case "CastKimber"->visit>=3?new BlockPos(39,-4,-57):visit==2?new BlockPos(1,0,-76):new BlockPos(1,0,-18);
+        case "CastSheriff"->visit>=3?BorrascaRooms.SHERIFF:new BlockPos(4,0,-16);
+        case "CastPrescott"->visit>=4?new BlockPos(40,-4,-55):visit>=2?new BlockPos(15,12,-171):new BlockPos(11,0,-25);
+        case "Worker0"->visit==3?new BlockPos(-6,12,-178):new BlockPos(35,-4,-59);
+        case "Worker1"->visit==3?new BlockPos(8,12,-182):new BlockPos(37,-4,-59);
+        default->throw new IllegalArgumentException(key);};}
     public static void prepare(ServerPlayer p,BlockPos base,CompoundTag own){var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}if(leases.containsKey(p.getUUID()))return;var level=p.server.getLevel(HouseDimensions.OUTSIDE);if(level==null)return;int visit=own.contains("CastNextVisit")?own.getInt("CastNextVisit"):own.getInt("Visit");var chunks=new LinkedHashSet<ChunkPos>();for(String key:KEYS){var from=own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")):base.offset(target(key,1));var to=base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:visit));chunks.add(new ChunkPos(from));chunks.add(new ChunkPos(to));}var held=List.copyOf(chunks);for(var c:held)level.getChunkSource().addRegionTicket(TICKET,c,3,p.getUUID());leases.put(p.getUUID(),new Lease(level,held));}
     /** Prepare the next cast while the reader is still at the original House door, before travel. */
     public static boolean prepareNext(ServerPlayer p){
