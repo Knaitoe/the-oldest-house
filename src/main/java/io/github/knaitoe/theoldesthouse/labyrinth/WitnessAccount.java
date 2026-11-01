@@ -100,7 +100,8 @@ public final class WitnessAccount {
         WHISTLERS("whistlers","The north tower","survival","I kept my eyes on the boards whenever it whistled and pulled the cords without looking. When the storm stopped there were eight towers round mine, and the one to the north was watching me through binoculars."),
         WORK_PRINT("work_print","Work print","survival","I watched a tape with no label in the back of a closed shop until the film was about me. Seven days, a count on the phone and no voice. I stopped it before it stopped me."),
         POLAROID_TRAIL("polaroid_trail","The yellow balloons","understanding","I stood where every photograph had been taken of me and looked back at where he had stood. In the trees I looked straight up, and there was nobody there, only balloons."),
-        LEFT_RIGHT("left_right","The left-right game","survival","I kept to the turns the road gave me and did not look away from her. Past the place where the road fell in, a green wagon was idling with its tailgate down.");
+        LEFT_RIGHT("left_right","The left-right game","survival","I kept to the turns the road gave me and did not look away from her. Past the place where the road fell in, a green wagon was idling with its tailgate down."),
+        DEAD_AIR("dead_air","Dead air","understanding","I tuned the set to a channel that was never on the air and walked into the show. At the top of the stair there was nobody in the booth, only a highchair facing nine screens of snow.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

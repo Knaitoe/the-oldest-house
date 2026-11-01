@@ -454,7 +454,8 @@ public final class WorkPrint {
         }
     }
     /** The costume's gift: while its wearer stands still, nothing that hunts by sight takes them for prey. */
-    public static boolean unseen(Player p){
+    public static boolean unseen(Player p){if(DeadAirGame.quiet(p))return true; // 0.4.206: the dead-air breaker, thrown
+        
         if(!wearing(p))return false;var since=STILL_SINCE.get(p.getUUID());
         return since!=null&&p.getServer()!=null&&p.getServer().getTickCount()-since>=40;
     }

@@ -1,0 +1,50 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/dead_air/strings",
+    "particle": "the_oldest_house:block/dead_air/strings"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        8
+      ],
+      "to": [
+        13,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        0,
+        3
+      ],
+      "to": [
+        8,
+        16,
+        13
+      ],
+      "faces": {
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}
