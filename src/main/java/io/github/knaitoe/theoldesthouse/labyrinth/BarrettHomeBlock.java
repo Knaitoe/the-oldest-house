@@ -37,7 +37,11 @@ public final class BarrettHomeBlock extends Block {
         WINDOW_HEAD,PHOTO_WEDDING,PHOTO_MARJORIE,PHOTO_MERRY,PHOTO_BEACH,PHOTO_BABY,PHOTO_SISTERS,PORTRAIT,CRUCIFIX,MERRY_DRAWING,
         PRINT_SOAP,PRINT_WHALE,TUB_SHOWER,VANITY_FAMILY,VANITY_KIDS,STEP_STOOL,HAMPER,TOWEL_BAR,DIRTY_TOWELS,BATH_MAT,STOREY_TILE,
         BATH_WALL,COFFEE_TABLE,FLOOR_LAMP,TOYS,COVERED,SCHEDULE_BOARD,CORK_BOARD,BACKPACKS,FRUIT_BOWL,STUFFED,CEILING_STARS,DRAWINGS,
-        FAIRY_LIGHTS,POSTER_C,PINBOARD,GUITAR,BOOMBOX,LINEN_SHELVES,NIGHTSTAND_JOHN,NIGHTSTAND_SARAH;
+        FAIRY_LIGHTS,POSTER_C,PINBOARD,GUITAR,BOOMBOX,LINEN_SHELVES,NIGHTSTAND_JOHN,NIGHTSTAND_SARAH,
+        /** 0.4.220 (the owner's walk-through): the second coat rail, the sideboard's halves, the kitchen's stove, hood, wall cabinets,
+         *  microwave, toaster, coffee maker and dishwasher, the crew's field monitor, and a rug of each room's own. */
+        COAT_HOOKS_B,SIDEBOARD_L,SIDEBOARD_R,RANGE,RANGE_HOOD,WALL_CABINET,MICROWAVE,TOASTER,COFFEE_MAKER,DISHWASHER,FIELD_MONITOR,
+        RUG_RUNNER,RUG_RUNNER_NARROW,RUG_LIVING,MERRY_RUG,RUG_SHAG;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         public boolean cube(){return ordinal()<=STOREY.ordinal()||this==WINDOW_HEAD||this==STOREY_TILE||this==BATH_WALL;}
         /** Both halves of a window. */
@@ -45,7 +49,7 @@ public final class BarrettHomeBlock extends Block {
         /** Hung on a wall or a ceiling: walked past, never into. */
         public boolean flat(){return switch(this){case CEILING_LIGHT,COAT_HOOKS,PHOTOS,CALENDAR,CLOTHES,POSTER_A,POSTER_B,CABLE,CABLE_CORNER,PHOTO_WEDDING,PHOTO_MARJORIE,PHOTO_MERRY,
             PHOTO_BEACH,PHOTO_BABY,PHOTO_SISTERS,PORTRAIT,CRUCIFIX,MERRY_DRAWING,PRINT_SOAP,PRINT_WHALE,TOWEL_BAR,DIRTY_TOWELS,BATH_MAT,TOYS,SCHEDULE_BOARD,
-            CORK_BOARD,BACKPACKS,CEILING_STARS,DRAWINGS,FAIRY_LIGHTS,POSTER_C,PINBOARD,STUFFED->true;default->false;};}
+            CORK_BOARD,BACKPACKS,CEILING_STARS,DRAWINGS,FAIRY_LIGHTS,POSTER_C,PINBOARD,STUFFED,COAT_HOOKS_B,RUG_RUNNER,RUG_RUNNER_NARROW,RUG_LIVING,MERRY_RUG,RUG_SHAG->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final DirectionProperty FACING=HorizontalDirectionalBlock.FACING;
@@ -56,7 +60,7 @@ public final class BarrettHomeBlock extends Block {
     public static BlockState of(Kind kind,Direction facing){return LiteraryRegistry.BARRETT_HOME.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     public static BlockState of(Kind kind){return of(kind,Direction.NORTH);}
     public static boolean is(BlockState s,Kind kind){return s.is(LiteraryRegistry.BARRETT_HOME.get())&&s.getValue(KIND)==kind;}
-    public static int light(BlockState s){return switch(s.getValue(KIND)){case CEILING_LIGHT->14;case SOFTBOX->15;case WINDOW,WINDOW_HEAD->6;case VILLAGE_CART->5;case FLOOR_LAMP->12;case FAIRY_LIGHTS->7;case TV_STAND->6;case CEILING_STARS->3;default->0;};}
+    public static int light(BlockState s){return switch(s.getValue(KIND)){case CEILING_LIGHT->14;case SOFTBOX->15;case WINDOW,WINDOW_HEAD->6;case VILLAGE_CART->5;case FLOOR_LAMP->12;case FAIRY_LIGHTS->7;case TV_STAND->6;case CEILING_STARS->3;case FIELD_MONITOR->5;case RANGE_HOOD->9;default->0;};}
 
     private static VoxelShape base(Kind k){return switch(k){
         case PAINT,CONCRETE,DRYWALL,WINDOW,GARAGE_DOOR,STOREY,FOLDING_TABLE,WINDOW_HEAD,STOREY_TILE,BATH_WALL->Shapes.block();
@@ -71,6 +75,11 @@ public final class BarrettHomeBlock extends Block {
         case CEILING_STARS->Block.box(0,15.8,0,16,16,16);case FAIRY_LIGHTS->Block.box(0,9,15.6,16,16,16);case POSTER_C->Block.box(2,1,15.6,14,15,16);
         case GUITAR->Block.box(4,0,8,12,16,15);case BOOMBOX->Block.box(1,0,6,14,8,14.5);case LINEN_SHELVES->Block.box(0,0,7,16,16,16);
         case NIGHTSTAND_JOHN,NIGHTSTAND_SARAH->Block.box(.5,0,2.5,15.5,12,14.5);
+        case COAT_HOOKS_B->Block.box(0,0,12.5,16,14.5,16);case SIDEBOARD_L,SIDEBOARD_R->Block.box(0,0,3,16,13,16);
+        case RANGE->Block.box(0,0,1,16,15,16);case RANGE_HOOD->Block.box(0,0,7,16,16,16);case WALL_CABINET->Block.box(0,0,9,16,14,16);
+        case MICROWAVE->Block.box(2,0,5,15,8.5,14);case TOASTER->Block.box(3,0,6,14.5,6,12);case COFFEE_MAKER->Block.box(4,0,6,12,11,14);
+        case DISHWASHER->Shapes.block();case FIELD_MONITOR->Block.box(1,0,8,15,14,13);
+        case RUG_RUNNER,RUG_RUNNER_NARROW,RUG_LIVING,MERRY_RUG,RUG_SHAG->Block.box(0,0,0,16,.5,16);
         case CEILING_LIGHT->Block.box(4,14.5,4,12,16,12);
         case CONSOLE->Block.box(0,0,4,16,12.5,15.5);
         case COAT_HOOKS->Block.box(0,2,11.5,16,14.5,16);

@@ -388,9 +388,9 @@ def fitting_models():
         m[f'anchor_{s}'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'l'}), element([6, 6, -3], [10, 10, 0], {'all': 'b'})] +
                                  ([element([7, 7.5, -4], [9, 8.5, -1], {'all': 'c'})] if s else []), {'l': 'limestone_dark', 'b': 'bolt_1' if s else 'bolt_0', 'c': 'cord'}, 'limestone_dark')
     m['crate_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'c'})], {'c': 'crate'}, 'crate', 'solid')
-    m['brad_0'] = model([element([2, 0, 2], [14, 5, 14], {'all': 'k'}), element([4, 5, 7], [12, 16, 11], {'all': 'o'}), element([4.5, 5, 1], [11.5, 8, 7], {'all': 'o'}),
-                         element([4.5, 0, 0.5], [11.5, 5, 3], {'all': 'o'}), element([2.5, 8, 4], [4, 15, 9], {'all': 'o'}), element([12, 8, 4], [13.5, 15, 9], {'all': 'o'}),
-                         element([3, 9, 3], [13, 10, 4], {'all': 'r'})], {'k': 'crate', 'o': 'coveralls', 'r': 'cord'}, 'coveralls')
+    # 0.4.220: Brad himself is a painted actor; this is the kit box he sits on, a rope coiled on its lid.
+    m['brad_0'] = model([element([2, 0, 3], [14, 8, 13], {'all': 'k'}), element([2, 3, 2.5], [14, 4, 13.5], {'all': 'r'}),
+                         element([4, 8, 5], [12, 9, 11], {'all': 'r'})], {'k': 'crate', 'r': 'cord'}, 'crate')
     for s in range(3):
         m[f'brad_head_{s}'] = model([element([4.5, 0, 5], [11.5, 7, 11], {'all': 'f', 'north': 'f'}), element([4, 6, 4.5], [12, 9, 11.5], {'all': 'y'}),
                                      element([7, 6.5, 3.5], [9, 8.5, 4.5], {'all': 'p'})], {'f': 'face', 'y': 'hardhat', 'p': f'lamp_{s}'}, 'face')

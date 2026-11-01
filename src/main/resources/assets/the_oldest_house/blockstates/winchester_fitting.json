@@ -42,6 +42,78 @@
   "facing=north,kind=plaque": {
    "model": "the_oldest_house:block/winchester/plaque"
   },
+  "facing=north,kind=dining_chair": {
+   "model": "the_oldest_house:block/winchester/dining_chair"
+  },
+  "facing=north,kind=table_end": {
+   "model": "the_oldest_house:block/winchester/table_end"
+  },
+  "facing=north,kind=table_mid": {
+   "model": "the_oldest_house:block/winchester/table_mid"
+  },
+  "facing=north,kind=table_pedestal": {
+   "model": "the_oldest_house:block/winchester/table_pedestal"
+  },
+  "facing=north,kind=candelabra": {
+   "model": "the_oldest_house:block/winchester/candelabra"
+  },
+  "facing=north,kind=buffet_l": {
+   "model": "the_oldest_house:block/winchester/buffet_l"
+  },
+  "facing=north,kind=buffet_r": {
+   "model": "the_oldest_house:block/winchester/buffet_r"
+  },
+  "facing=north,kind=settee_l": {
+   "model": "the_oldest_house:block/winchester/settee_l"
+  },
+  "facing=north,kind=settee_r": {
+   "model": "the_oldest_house:block/winchester/settee_r"
+  },
+  "facing=north,kind=wing_chair": {
+   "model": "the_oldest_house:block/winchester/wing_chair"
+  },
+  "facing=north,kind=lamp_table": {
+   "model": "the_oldest_house:block/winchester/lamp_table"
+  },
+  "facing=north,kind=piano_l": {
+   "model": "the_oldest_house:block/winchester/piano_l"
+  },
+  "facing=north,kind=piano_r": {
+   "model": "the_oldest_house:block/winchester/piano_r"
+  },
+  "facing=north,kind=fern_stand": {
+   "model": "the_oldest_house:block/winchester/fern_stand"
+  },
+  "facing=north,kind=hall_stand": {
+   "model": "the_oldest_house:block/winchester/hall_stand"
+  },
+  "facing=north,kind=hall_stand_top": {
+   "model": "the_oldest_house:block/winchester/hall_stand_top"
+  },
+  "facing=north,kind=sewing_machine": {
+   "model": "the_oldest_house:block/winchester/sewing_machine"
+  },
+  "facing=north,kind=dress_form": {
+   "model": "the_oldest_house:block/winchester/dress_form"
+  },
+  "facing=north,kind=sconce": {
+   "model": "the_oldest_house:block/winchester/sconce"
+  },
+  "facing=north,kind=console": {
+   "model": "the_oldest_house:block/winchester/console"
+  },
+  "facing=north,kind=rug_persian": {
+   "model": "the_oldest_house:block/winchester/rug_persian"
+  },
+  "facing=north,kind=runner_edge": {
+   "model": "the_oldest_house:block/winchester/runner_edge"
+  },
+  "facing=north,kind=runner_mid": {
+   "model": "the_oldest_house:block/winchester/runner_mid"
+  },
+  "facing=north,kind=runner_narrow": {
+   "model": "the_oldest_house:block/winchester/runner_narrow"
+  },
   "facing=east,kind=seance_table": {
    "model": "the_oldest_house:block/winchester/seance_table",
    "y": 90
@@ -96,6 +168,102 @@
   },
   "facing=east,kind=plaque": {
    "model": "the_oldest_house:block/winchester/plaque",
+   "y": 90
+  },
+  "facing=east,kind=dining_chair": {
+   "model": "the_oldest_house:block/winchester/dining_chair",
+   "y": 90
+  },
+  "facing=east,kind=table_end": {
+   "model": "the_oldest_house:block/winchester/table_end",
+   "y": 90
+  },
+  "facing=east,kind=table_mid": {
+   "model": "the_oldest_house:block/winchester/table_mid",
+   "y": 90
+  },
+  "facing=east,kind=table_pedestal": {
+   "model": "the_oldest_house:block/winchester/table_pedestal",
+   "y": 90
+  },
+  "facing=east,kind=candelabra": {
+   "model": "the_oldest_house:block/winchester/candelabra",
+   "y": 90
+  },
+  "facing=east,kind=buffet_l": {
+   "model": "the_oldest_house:block/winchester/buffet_l",
+   "y": 90
+  },
+  "facing=east,kind=buffet_r": {
+   "model": "the_oldest_house:block/winchester/buffet_r",
+   "y": 90
+  },
+  "facing=east,kind=settee_l": {
+   "model": "the_oldest_house:block/winchester/settee_l",
+   "y": 90
+  },
+  "facing=east,kind=settee_r": {
+   "model": "the_oldest_house:block/winchester/settee_r",
+   "y": 90
+  },
+  "facing=east,kind=wing_chair": {
+   "model": "the_oldest_house:block/winchester/wing_chair",
+   "y": 90
+  },
+  "facing=east,kind=lamp_table": {
+   "model": "the_oldest_house:block/winchester/lamp_table",
+   "y": 90
+  },
+  "facing=east,kind=piano_l": {
+   "model": "the_oldest_house:block/winchester/piano_l",
+   "y": 90
+  },
+  "facing=east,kind=piano_r": {
+   "model": "the_oldest_house:block/winchester/piano_r",
+   "y": 90
+  },
+  "facing=east,kind=fern_stand": {
+   "model": "the_oldest_house:block/winchester/fern_stand",
+   "y": 90
+  },
+  "facing=east,kind=hall_stand": {
+   "model": "the_oldest_house:block/winchester/hall_stand",
+   "y": 90
+  },
+  "facing=east,kind=hall_stand_top": {
+   "model": "the_oldest_house:block/winchester/hall_stand_top",
+   "y": 90
+  },
+  "facing=east,kind=sewing_machine": {
+   "model": "the_oldest_house:block/winchester/sewing_machine",
+   "y": 90
+  },
+  "facing=east,kind=dress_form": {
+   "model": "the_oldest_house:block/winchester/dress_form",
+   "y": 90
+  },
+  "facing=east,kind=sconce": {
+   "model": "the_oldest_house:block/winchester/sconce",
+   "y": 90
+  },
+  "facing=east,kind=console": {
+   "model": "the_oldest_house:block/winchester/console",
+   "y": 90
+  },
+  "facing=east,kind=rug_persian": {
+   "model": "the_oldest_house:block/winchester/rug_persian",
+   "y": 90
+  },
+  "facing=east,kind=runner_edge": {
+   "model": "the_oldest_house:block/winchester/runner_edge",
+   "y": 90
+  },
+  "facing=east,kind=runner_mid": {
+   "model": "the_oldest_house:block/winchester/runner_mid",
+   "y": 90
+  },
+  "facing=east,kind=runner_narrow": {
+   "model": "the_oldest_house:block/winchester/runner_narrow",
    "y": 90
   },
   "facing=south,kind=seance_table": {
@@ -154,6 +322,102 @@
    "model": "the_oldest_house:block/winchester/plaque",
    "y": 180
   },
+  "facing=south,kind=dining_chair": {
+   "model": "the_oldest_house:block/winchester/dining_chair",
+   "y": 180
+  },
+  "facing=south,kind=table_end": {
+   "model": "the_oldest_house:block/winchester/table_end",
+   "y": 180
+  },
+  "facing=south,kind=table_mid": {
+   "model": "the_oldest_house:block/winchester/table_mid",
+   "y": 180
+  },
+  "facing=south,kind=table_pedestal": {
+   "model": "the_oldest_house:block/winchester/table_pedestal",
+   "y": 180
+  },
+  "facing=south,kind=candelabra": {
+   "model": "the_oldest_house:block/winchester/candelabra",
+   "y": 180
+  },
+  "facing=south,kind=buffet_l": {
+   "model": "the_oldest_house:block/winchester/buffet_l",
+   "y": 180
+  },
+  "facing=south,kind=buffet_r": {
+   "model": "the_oldest_house:block/winchester/buffet_r",
+   "y": 180
+  },
+  "facing=south,kind=settee_l": {
+   "model": "the_oldest_house:block/winchester/settee_l",
+   "y": 180
+  },
+  "facing=south,kind=settee_r": {
+   "model": "the_oldest_house:block/winchester/settee_r",
+   "y": 180
+  },
+  "facing=south,kind=wing_chair": {
+   "model": "the_oldest_house:block/winchester/wing_chair",
+   "y": 180
+  },
+  "facing=south,kind=lamp_table": {
+   "model": "the_oldest_house:block/winchester/lamp_table",
+   "y": 180
+  },
+  "facing=south,kind=piano_l": {
+   "model": "the_oldest_house:block/winchester/piano_l",
+   "y": 180
+  },
+  "facing=south,kind=piano_r": {
+   "model": "the_oldest_house:block/winchester/piano_r",
+   "y": 180
+  },
+  "facing=south,kind=fern_stand": {
+   "model": "the_oldest_house:block/winchester/fern_stand",
+   "y": 180
+  },
+  "facing=south,kind=hall_stand": {
+   "model": "the_oldest_house:block/winchester/hall_stand",
+   "y": 180
+  },
+  "facing=south,kind=hall_stand_top": {
+   "model": "the_oldest_house:block/winchester/hall_stand_top",
+   "y": 180
+  },
+  "facing=south,kind=sewing_machine": {
+   "model": "the_oldest_house:block/winchester/sewing_machine",
+   "y": 180
+  },
+  "facing=south,kind=dress_form": {
+   "model": "the_oldest_house:block/winchester/dress_form",
+   "y": 180
+  },
+  "facing=south,kind=sconce": {
+   "model": "the_oldest_house:block/winchester/sconce",
+   "y": 180
+  },
+  "facing=south,kind=console": {
+   "model": "the_oldest_house:block/winchester/console",
+   "y": 180
+  },
+  "facing=south,kind=rug_persian": {
+   "model": "the_oldest_house:block/winchester/rug_persian",
+   "y": 180
+  },
+  "facing=south,kind=runner_edge": {
+   "model": "the_oldest_house:block/winchester/runner_edge",
+   "y": 180
+  },
+  "facing=south,kind=runner_mid": {
+   "model": "the_oldest_house:block/winchester/runner_mid",
+   "y": 180
+  },
+  "facing=south,kind=runner_narrow": {
+   "model": "the_oldest_house:block/winchester/runner_narrow",
+   "y": 180
+  },
   "facing=west,kind=seance_table": {
    "model": "the_oldest_house:block/winchester/seance_table",
    "y": 270
@@ -208,6 +472,102 @@
   },
   "facing=west,kind=plaque": {
    "model": "the_oldest_house:block/winchester/plaque",
+   "y": 270
+  },
+  "facing=west,kind=dining_chair": {
+   "model": "the_oldest_house:block/winchester/dining_chair",
+   "y": 270
+  },
+  "facing=west,kind=table_end": {
+   "model": "the_oldest_house:block/winchester/table_end",
+   "y": 270
+  },
+  "facing=west,kind=table_mid": {
+   "model": "the_oldest_house:block/winchester/table_mid",
+   "y": 270
+  },
+  "facing=west,kind=table_pedestal": {
+   "model": "the_oldest_house:block/winchester/table_pedestal",
+   "y": 270
+  },
+  "facing=west,kind=candelabra": {
+   "model": "the_oldest_house:block/winchester/candelabra",
+   "y": 270
+  },
+  "facing=west,kind=buffet_l": {
+   "model": "the_oldest_house:block/winchester/buffet_l",
+   "y": 270
+  },
+  "facing=west,kind=buffet_r": {
+   "model": "the_oldest_house:block/winchester/buffet_r",
+   "y": 270
+  },
+  "facing=west,kind=settee_l": {
+   "model": "the_oldest_house:block/winchester/settee_l",
+   "y": 270
+  },
+  "facing=west,kind=settee_r": {
+   "model": "the_oldest_house:block/winchester/settee_r",
+   "y": 270
+  },
+  "facing=west,kind=wing_chair": {
+   "model": "the_oldest_house:block/winchester/wing_chair",
+   "y": 270
+  },
+  "facing=west,kind=lamp_table": {
+   "model": "the_oldest_house:block/winchester/lamp_table",
+   "y": 270
+  },
+  "facing=west,kind=piano_l": {
+   "model": "the_oldest_house:block/winchester/piano_l",
+   "y": 270
+  },
+  "facing=west,kind=piano_r": {
+   "model": "the_oldest_house:block/winchester/piano_r",
+   "y": 270
+  },
+  "facing=west,kind=fern_stand": {
+   "model": "the_oldest_house:block/winchester/fern_stand",
+   "y": 270
+  },
+  "facing=west,kind=hall_stand": {
+   "model": "the_oldest_house:block/winchester/hall_stand",
+   "y": 270
+  },
+  "facing=west,kind=hall_stand_top": {
+   "model": "the_oldest_house:block/winchester/hall_stand_top",
+   "y": 270
+  },
+  "facing=west,kind=sewing_machine": {
+   "model": "the_oldest_house:block/winchester/sewing_machine",
+   "y": 270
+  },
+  "facing=west,kind=dress_form": {
+   "model": "the_oldest_house:block/winchester/dress_form",
+   "y": 270
+  },
+  "facing=west,kind=sconce": {
+   "model": "the_oldest_house:block/winchester/sconce",
+   "y": 270
+  },
+  "facing=west,kind=console": {
+   "model": "the_oldest_house:block/winchester/console",
+   "y": 270
+  },
+  "facing=west,kind=rug_persian": {
+   "model": "the_oldest_house:block/winchester/rug_persian",
+   "y": 270
+  },
+  "facing=west,kind=runner_edge": {
+   "model": "the_oldest_house:block/winchester/runner_edge",
+   "y": 270
+  },
+  "facing=west,kind=runner_mid": {
+   "model": "the_oldest_house:block/winchester/runner_mid",
+   "y": 270
+  },
+  "facing=west,kind=runner_narrow": {
+   "model": "the_oldest_house:block/winchester/runner_narrow",
    "y": 270
   }
  }

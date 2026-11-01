@@ -43,6 +43,8 @@ public final class PittTests {
     /** The reader has already retraced Ted the Caver's squeeze, and has done this many visits of the deeper passages. */
     private static void caver(LiteraryTests.Fixture f,ServerPlayer p){WitnessAccount.resolve(p,WitnessAccount.Story.TED_CAVER,"retraced_the_squeeze");}
     private static void visit(LiteraryTests.Fixture f,ServerPlayer p,int done){var own=f.own(p,P);own.putInt("Visit",done);own.putInt("Beat",done);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);f.arrive(p,P);}
+    /** Brad, the painted actor on his kit box (0.4.220), if he is there. */
+    private static LiteraryActor brad(LiteraryTests.Fixture f){var at=f.base(P).offset(PittCave.BRAD);var found=f.out.getEntitiesOfClass(LiteraryActor.class,new AABB(at).inflate(2),a->a.role()==LiteraryActor.STRANGER&&PittGame.bradPhase(a.phase()));return found.isEmpty()?null:found.get(0);}
     private static int slab(LiteraryTests.Fixture f,int z){var s=f.out.getBlockState(f.base(P).offset(0,1,z));return PittBlock.is(s,PittBlock.Kind.SLAB)?s.getValue(PittBlock.STAGE):-1;}
 
     @GameTest(template="empty",batch="pitt_deal",timeoutTicks=400)
@@ -66,6 +68,7 @@ public final class PittTests {
     public static void theSeamsAreCutOnlyInTheDraftAndTheFistHoleEndsTheFirstVisit(GameTestHelper h){
         var f=fixture(h);var p=f.player("pitt_seams",P);var b=f.base(P);
         h.startSequence().thenExecute(()->{hold(f);caver(f,p);}).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the passages are resident"))
+            .thenWaitUntil(()->{var a=brad(f);h.assertTrue(a!=null&&a.blockPosition().equals(f.base(P).offset(PittCave.BRAD))&&a.owner().isEmpty(),"Brad sits on his kit box at the belay, painted like the rest of the cast, one Brad for everyone");})
             .thenExecute(()->{PittGame.TEST_FAST=true;
                 f.click(p,P,PittCave.CRATE);h.assertTrue(count(p,PittRegistry.HAMMER.get())==1&&count(p,PittRegistry.LAMP.get())==1&&count(p,PittRegistry.BAROMETER.get())==1,"Brad's crate gives the hammer, the lamp and the barometer");
                 hold(p,PittRegistry.HAMMER.get());var seam=new BlockPos(0,0,PittCave.SEAMS[0]);
@@ -128,6 +131,7 @@ public final class PittTests {
     public static void onTheThirdVisitBradIsGoneTheStoneIsOutAndTheChimneyHasChanged(GameTestHelper h){
         var f=fixture(h);var p=f.player("pitt_shift",P);var b=f.base(P);var l=f.out;
         h.startSequence().thenExecute(()->{hold(f);caver(f,p);visit(f,p,2);}).thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&set(f).getInt("RunVisit")==3,"the third visit"))
+            .thenWaitUntil(()->h.assertTrue(brad(f)==null,"Brad himself is gone with his box"))
             .thenExecute(()->{
                 h.assertTrue(l.getBlockState(b.offset(PittCave.BRAD)).isAir()&&l.getBlockState(b.offset(PittCave.BELAY)).getValue(PittBlock.STAGE)==1,"Brad is gone and his belay hangs slack");
                 h.assertTrue(PittBlock.is(l.getBlockState(b.offset(PittCave.WHEEL_OUT_X,PittCave.ROOM_Y,PittCave.WHEEL_Z)),PittBlock.Kind.WHEEL_LOW)&&l.getBlockState(b.offset(PittCave.WHEEL_X,PittCave.ROOM_Y,PittCave.WHEEL_Z)).isAir(),"the round stone has been pushed out along its grooves, and there is a way behind it");

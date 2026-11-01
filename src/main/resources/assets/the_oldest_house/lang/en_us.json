@@ -957,5 +957,6 @@
   "block.the_oldest_house.hall_floor_worn_x": "Worn Floorboards",
   "block.the_oldest_house.hall_ceiling": "Ceiling",
   "block.the_oldest_house.hall_window_lower": "Sash Window",
-  "block.the_oldest_house.hall_window_upper": "Sash Window"
+  "block.the_oldest_house.hall_window_upper": "Sash Window",
+  "block.the_oldest_house.winchester_ceiling": "Coffered ceiling"
 }

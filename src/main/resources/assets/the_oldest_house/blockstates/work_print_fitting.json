@@ -67,7 +67,7 @@
       "model": "the_oldest_house:block/work_print/counter_1"
     },
     "facing=north,kind=counter,stage=2": {
-      "model": "the_oldest_house:block/work_print/counter_0"
+      "model": "the_oldest_house:block/work_print/counter_2"
     },
     "facing=north,kind=counter,stage=3": {
       "model": "the_oldest_house:block/work_print/counter_0"
@@ -81,7 +81,7 @@
       "y": 90
     },
     "facing=east,kind=counter,stage=2": {
-      "model": "the_oldest_house:block/work_print/counter_0",
+      "model": "the_oldest_house:block/work_print/counter_2",
       "y": 90
     },
     "facing=east,kind=counter,stage=3": {
@@ -97,7 +97,7 @@
       "y": 180
     },
     "facing=south,kind=counter,stage=2": {
-      "model": "the_oldest_house:block/work_print/counter_0",
+      "model": "the_oldest_house:block/work_print/counter_2",
       "y": 180
     },
     "facing=south,kind=counter,stage=3": {
@@ -113,7 +113,7 @@
       "y": 270
     },
     "facing=west,kind=counter,stage=2": {
-      "model": "the_oldest_house:block/work_print/counter_0",
+      "model": "the_oldest_house:block/work_print/counter_2",
       "y": 270
     },
     "facing=west,kind=counter,stage=3": {

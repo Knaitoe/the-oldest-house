@@ -239,6 +239,7 @@ public final class LiteraryVignettes {
     public static void talk(ServerPlayer p,LiteraryActor actor){var place=current(p);if(actor==null||place==null||!actor.scene().equals(place.id())||p.distanceToSqr(actor)>36||actor.owner().isPresent()&&!actor.owner().get().equals(p.getUUID()))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
         if(UncannyRooms.isUncanny(place))UncannyStories.talk(p,actor,place,own);
         else if(place==LabyrinthPlace.END_WORLD_CABIN)CabinBargain.open(p);
+        else if(place==PittGame.PLACE&&actor.role()==LiteraryActor.STRANGER&&PittGame.bradPhase(actor.phase()))PittGame.talk(p);
         else if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)LiteraryCopies.talk(p,place,actor,own);
         else if (place == LabyrinthPlace.HOLY_RABBIT && actor.role() == LiteraryActor.FATHER) {
             if (!rabbitCommitted(own) && !own.getBoolean("Ready")) {

@@ -24,7 +24,8 @@
     "UncannyGlowMixin",
     "UncannyTargetMixin",
     "InventorySelfMixin",
-    "PlayerInfoSkinMixin"
+    "PlayerInfoSkinMixin",
+    "ActionBarWrapMixin"
   ],
   "injectors": {
     "defaultRequire": 1

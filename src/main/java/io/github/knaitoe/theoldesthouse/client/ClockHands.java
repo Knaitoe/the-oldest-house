@@ -32,12 +32,16 @@ public final class ClockHands {
         /** "The kitchen clock says a little after four": 4:05 when first seen, then running. */
         AFTER_FOUR,
         /** "A plain office clock, a few minutes slow": the real hour, four minutes behind. */
-        OFFICE_SLOW;
+        OFFICE_SLOW,
+        /** 0.4.220: the Winchester hall clock, on a dial of thirteen hours, a few minutes short of the last when first seen. */
+        THIRTEEN;
+        int hours(){return this==THIRTEEN?13:12;}
         double seconds(BlockEntity clock){
             long now=System.currentTimeMillis();
             return switch(this){
                 case AFTER_FOUR->{long first=FIRST.computeIfAbsent(clock,c->now);yield 4*3600+5*60+(now-first)/1000.0;}
                 case OFFICE_SLOW->{var t=LocalTime.now();yield t.toSecondOfDay()-4*60+(now%1000)/1000.0;}
+                case THIRTEEN->{long first=FIRST.computeIfAbsent(clock,c->now);yield 12*3600+51*60+(now-first)/1000.0;}
             };
         }
     }
@@ -53,15 +57,15 @@ public final class ClockHands {
      * ({@code cx},{@code cy}); {@code facing} turns it as the block's model is turned.
      */
     public static void draw(BlockEntity clock,Direction facing,Time time,float cx,float cy,float faceZ,PoseStack pose,MultiBufferSource out,int light){
-        double s=time.seconds(clock);s=((s%43200)+43200)%43200;
-        double second=Math.floor(s%60),minute=(s/60)%60,hour=(s/3600)%12;
+        int dial=time.hours();double s=time.seconds(clock);s=((s%(dial*3600.0))+dial*3600.0)%(dial*3600.0);
+        double second=Math.floor(s%60),minute=(s/60)%60,hour=(s/3600)%dial;
         var vc=out.getBuffer(RenderType.entityCutoutNoCull(WHITE));
         pose.pushPose();
         pose.translate(.5,0,.5);pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));pose.translate(-.5,0,-.5);
         pose.translate(cx,cy,faceZ);
         // Pixel widths on a twelve-pixel face: a short broad hour hand, a long minute hand, a fine second hand; each a hair
         // in front of the last so none flickers through another.
-        hand(vc,pose,hour*30,1.1f,3.2f,.6f,.0015f,INK,light);
+        hand(vc,pose,hour*360/dial,1.1f,3.2f,.6f,.0015f,INK,light);
         hand(vc,pose,minute*6,.8f,4.6f,.6f,.003f,INK,light);
         hand(vc,pose,second*6,.35f,4.9f,1.2f,.0045f,RED,light);
         hand(vc,pose,0,.9f,.45f,.45f,.006f,INK,light);

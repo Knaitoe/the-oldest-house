@@ -1,0 +1,112 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "h": "the_oldest_house:block/barrett/hood",
+  "l": "the_oldest_house:block/barrett/hood_light",
+  "particle": "the_oldest_house:block/barrett/hood"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    -2,
+    7
+   ],
+   "to": [
+    16,
+    3,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#h",
+     "uv": [
+      0,
+      11,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#h",
+     "uv": [
+      0,
+      11,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#h",
+     "uv": [
+      0,
+      11,
+      9,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#h",
+     "uv": [
+      7,
+      11,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#h",
+     "uv": [
+      0,
+      7,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#l",
+     "uv": [
+      0,
+      0,
+      16,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    4,
+    3,
+    10
+   ],
+   "to": [
+    12,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#h"
+    },
+    "south": {
+     "texture": "#h"
+    },
+    "east": {
+     "texture": "#h"
+    },
+    "west": {
+     "texture": "#h"
+    },
+    "up": {
+     "texture": "#h"
+    },
+    "down": {
+     "texture": "#h"
+    }
+   }
+  }
+ ]
+}

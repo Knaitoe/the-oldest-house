@@ -158,23 +158,72 @@ def materials():
 SPINES = ['#1d1d1d', '#2a2a2a', '#c8c0a8', '#3a5a8a', '#8a2a2a', '#d0b040', '#2a6a4a', '#e0e0d8', '#5a3a6a', '#8a8a8a']
 
 
+# 0.4.220 (owner: "make the shelves more discernably dvds/vhses"): the rental wall's tapes face out, as a shop shows them: each
+# box a cover with its title band, its art and the shop's orange sticker, on a shelf with its strip of price tags. One stage in
+# three is a shelf of DVD cases, thinner, with their blue bands.
+COVERS = [('#151515', '#c0302a'), ('#101824', '#3a7ad0'), ('#1e1c10', '#e0c040'), ('#1a0c0c', '#e06020'), ('#0c1810', '#40a060'),
+          ('#ece6d6', '#222222'), ('#24102a', '#a050c0'), ('#0a0a0a', '#e0e0d8'), ('#2a1a08', '#d08a30')]
+
+
 def shelf_front(stage):
-    """A shelf unit's face: laminate frame, two rows of tape boxes, spines in rental-shop colours, a gap or two."""
-    im = new(base='#5a4a3a', seed=81, spread=2); px = im.load(); rnd = random.Random(82 + stage)
-    for y0, y1 in ((1, 7), (9, 15)):
-        x = 1
-        while x < 15:
-            w = rnd.choice((1, 2, 2))
-            if rnd.random() < .12:
-                x += w; continue
-            colour = rnd.choice(SPINES)
-            for xx in range(x, min(15, x + w)):
-                for y in range(y0 + rnd.randint(0, 1), y1):
-                    px[xx, y] = shade(colour, rnd.randint(-4, 4))
-                px[xx, y0 + 2] = shade('#efe8d0', -10)
-            x += w
+    """A rental shelf's face: two rows of boxes face out over strips of price tags; VHS covers, or (stage 2) DVD cases."""
+    im = new(base='#3e3024', seed=81, spread=2); px = im.load(); rnd = random.Random(82 + stage)
+    dvd = stage == 2
+    for y0 in (1, 9):
+        x, width, step = 1, (3 if dvd else 4), (4 if dvd else 5)
+        while x + width <= 15:
+            if rnd.random() < .08:
+                x += step; continue
+            base, art = rnd.choice(COVERS)
+            for xx in range(x, x + width):
+                for y in range(y0, y0 + 6):
+                    px[xx, y] = shade(base, rnd.randint(-3, 3))
+            # 0.4.220 (owner: "more discernably dvds/vhses"): the art is one of six covers a shop wall is made of: a face
+            # with its eyes and mouth, a figure dark against a lit ground, a moon over a black horizon, a red drip from the
+            # title, a house with one lit window, a knife; never a lone line under the title band, which read as a letter T.
+            motif = rnd.randrange(6); mid = x + width // 2
+            if motif == 0:
+                px[x, y0 + 2] = shade(art, 20); px[x + width - 1, y0 + 2] = shade(art, 20)
+                for xx in range(x + 1, x + width - 1):
+                    px[xx, y0 + 4] = shade(art, -10)
+            elif motif == 1:
+                for xx in range(x, x + width):
+                    for y in range(y0 + 1, y0 + 6):
+                        px[xx, y] = shade(art, -20 + 4 * (y - y0))
+                px[mid - (1 if width > 3 else 0), y0 + 2] = shade(base, 0)
+                for y in range(y0 + 3, y0 + 6):
+                    px[mid - (1 if width > 3 else 0), y] = shade(base, -4)
+            elif motif == 2:
+                px[x + width - 1, y0 + 1] = shade('#e8e2c8', 0); px[x + width - 2, y0 + 1] = shade('#e8e2c8', -8)
+                for xx in range(x, x + width):
+                    px[xx, y0 + 4] = shade(art, -30); px[xx, y0 + 5] = shade(art, -40)
+            elif motif == 3:
+                for xx in range(x, x + width):
+                    px[xx, y0 + 1] = shade('#a01818', 0)
+                for xx in range(x, x + width, 2):
+                    px[xx, y0 + 2] = shade('#a01818', -6)
+                px[x + 1, y0 + 3] = shade('#a01818', -14)
+            elif motif == 4:
+                for xx in range(x, x + width):
+                    px[xx, y0 + 4] = shade(art, -24); px[xx, y0 + 5] = shade(art, -24)
+                px[mid, y0 + 3] = shade(art, -24); px[mid - 1, y0 + 3] = shade(art, -24) if width > 3 else px[mid - 1, y0 + 3]
+                px[mid, y0 + 4] = shade('#f0c040', 0)
+            else:
+                for y in range(y0 + 2, y0 + 5):
+                    px[mid, y] = shade('#c8ccd0', 6 - 3 * (y - y0))
+                px[mid, y0 + 5] = shade('#3a2a1a', 0)
+            # The title band: a pale strip with the title's letters in it on VHS; the blue band DVDs carry.
+            for xx in range(x, x + width):
+                px[xx, y0] = shade('#2a50a8', 0) if dvd else shade(art, 40 if (xx - x) % 2 else 10)
+            if not dvd:
+                px[x + width - 1, y0 + 5] = shade('#f09030', 0)
+            x += step
+        for xx in range(16):
+            px[xx, y0 + 6] = shade('#e6dfcc', 0)
+        for xx in range(2, 16, 5):
+            px[xx, y0 + 6] = shade('#c03028', 0); px[xx + 1, y0 + 6] = shade('#c03028', 0)
     for x in range(16):
-        px[x, 0] = shade('#6a5846', 6); px[x, 8] = shade('#6a5846', 6); px[x, 15] = shade('#3a2e24', 0)
+        px[x, 0] = shade('#4e3e2e', 4); px[x, 8] = shade('#4e3e2e', 4); px[x, 15] = shade('#2a2018', 0)
     return im
 
 
@@ -187,13 +236,42 @@ def wood(base, seam, seed):
 
 
 def counter_front():
-    """The counter's front: panelled in the shop's laminate, a kick strip at the floor, a sticker on one panel."""
+    """The counter's front: panelled in the shop's laminate, a kick strip at the floor. 0.4.220: the sticker every panel
+    carried read as a row of drawer labels along the whole counter, so the panels are plain."""
     im = wood('#6a4e36', '#4a3626', 91); px = im.load()
     for x in (0, 8):
         for y in range(16):
             px[x, y] = shade('#3e2c1e', 0)
     fill(im, 0, 14, 16, 16, '#232323')
-    fill(im, 10, 5, 14, 8, '#c84030'); px[11, 6] = shade('#f0e0d0', 0); px[12, 6] = shade('#f0e0d0', 0)
+    return im
+
+
+def counter_back():
+    """The clerk's side of the counter: two open shelves under the top, returned tapes stacked on the upper one waiting to
+    be put back, the bag of slips and a roll of receipt paper on the lower, the kick strip at the floor."""
+    im = wood('#5e4430', '#4a3626', 92); px = im.load()
+    fill(im, 1, 2, 15, 7, '#1c140e'); fill(im, 1, 8, 15, 13, '#1c140e')
+    for x in range(16):
+        px[x, 7] = shade('#4a3626', 6); px[x, 13] = shade('#4a3626', 6)
+    rnd = random.Random(93)
+    for x0 in (2, 5, 8, 11):
+        h = rnd.randint(2, 4)
+        for x in range(x0, x0 + 2):
+            for y in range(7 - h, 7):
+                px[x, y] = shade('#141414', rnd.randint(-2, 2))
+            px[x, 7 - h] = shade('#e6dfcc', 0)
+    fill(im, 2, 10, 6, 13, '#8a7a5a'); px[3, 10] = shade('#c03028', 0)
+    fill(im, 9, 11, 12, 13, '#efe9da'); px[10, 11] = shade('#c8c0ae', 0)
+    fill(im, 0, 14, 16, 16, '#232323')
+    return im
+
+
+def counter_side():
+    """The counter's ends: the laminate plain, a seam down the middle, the kick strip."""
+    im = wood('#6a4e36', '#4a3626', 94); px = im.load()
+    for y in range(16):
+        px[0, y] = shade('#3e2c1e', 0); px[15, y] = shade('#3e2c1e', 0)
+    fill(im, 0, 14, 16, 16, '#232323')
     return im
 
 
@@ -205,14 +283,44 @@ def counter_top():
 
 
 def till(part):
+    """0.4.220 (owner: "improve texture and properly face the cash register"): the shop's register, its keys toward the clerk
+    behind the counter and its little display turned to the customer. part: 0 keys, 1 body, 2 display, 3 drawer, 4 open drawer."""
     if part == 0:
-        im = new(base='#d4cbb8', seed=101, spread=2)
-        fill(im, 2, 2, 14, 7, '#203020'); fill(im, 3, 3, 9, 5, '#60c060')
-        for y in range(9, 15, 2):
-            for x in range(2, 14, 3):
-                fill(im, x, y, x + 2, y + 1, '#8a8478')
+        im = new(base='#cfc6b2', seed=101, spread=2)
+        fill(im, 1, 1, 15, 4, '#2a2a2a'); fill(im, 2, 2, 10, 3, '#3a2a10')
+        for x in range(3, 9):
+            im.load()[x, 2] = shade('#e8a040', 0) if x % 2 else shade('#3a2a10', 0)
+        keys = ('#8a8478', '#8a8478', '#8a8478', '#c84a3a', '#4a7aa8')
+        for row, y in enumerate(range(6, 15, 2)):
+            for col, x in enumerate(range(2, 14, 3)):
+                fill(im, x, y, x + 2, y + 1, keys[4] if col == 3 and row < 2 else keys[3] if col == 3 else keys[0])
+        fill(im, 13, 6, 15, 15, '#e8e2d2')
         return im
-    return new(base='#bfb6a2', seed=102, spread=2)
+    if part == 1:
+        im = new(base='#bfb6a2', seed=102, spread=2)
+        for x in range(16):
+            im.load()[x, 15] = shade('#8a8270', 0)
+        return im
+    if part == 2:
+        im = new(base='#2a2a2a', seed=103, spread=1)
+        fill(im, 2, 4, 14, 12, '#0c1a10')
+        digits = ['111', '101', '101', '101', '111']
+        for x0 in (3, 7, 11):
+            for j, row in enumerate(digits):
+                for i, c in enumerate(row):
+                    if c == '1' and x0 + i < 14:
+                        im.load()[x0 + i, 5 + j] = shade('#40e070', 0)
+        return im
+    if part == 3:
+        im = new(base='#b8af9a', seed=104, spread=2)
+        fill(im, 1, 1, 15, 15, '#c4bba6'); fill(im, 6, 6, 10, 8, '#6a6458')
+        return im
+    im = new(base='#2a2a2a', seed=105, spread=2)
+    for i, x0 in enumerate(range(1, 15, 3)):
+        fill(im, x0, 1, x0 + 2, 8, ('#7a9a6a', '#8aa878', '#7a9a6a', '#a8b890', '#7a9a6a')[i % 5])
+    for i, x0 in enumerate(range(1, 15, 3)):
+        fill(im, x0, 10, x0 + 2, 14, '#a8a8a0' if i % 2 else '#c8a050')
+    return im
 
 
 def ledger(part):
@@ -1021,12 +1129,24 @@ def legs(x0, x1, z0, z1, top, t, w=1):
 def fitting_models():
     m = {}
     for s in range(3):
-        m[f'shelf_{s}'] = model([element([0, 0, 2], [16, 16, 14], {'all': 's', 'north': 'f', 'up': 't', 'down': 't'})], {'s': 'shelf_side', 'f': f'shelf_{s}', 't': 'shelf_side'}, 'shelf_side')
-    for s in range(2):
-        es = [element([0, 0, 0], [16, 16, 16], {'all': 's', 'north': 'f', 'up': 't'})]
+        # 0.4.220: a lip in front of each row, so the tapes stand on shelves rather than being painted on a board.
+        m[f'shelf_{s}'] = model([element([0, 0, 2], [16, 16, 14], {'all': 's', 'north': 'f', 'up': 't', 'down': 't'}),
+                                 element([0, 0, 1], [16, 1, 2], {'all': 'l'}, None, {'north': [0, 15, 16, 16], 'up': [0, 15, 16, 16]}),
+                                 element([0, 8, 1], [16, 9, 2], {'all': 'l'}, None, {'north': [0, 7, 16, 8], 'up': [0, 7, 16, 8]})],
+                                {'s': 'shelf_side', 'f': f'shelf_{s}', 't': 'shelf_side', 'l': f'shelf_{s}'}, 'shelf_side')
+    # The counter faces the shop (its front, north in the model, is turned to the customers). 0.4.220: the till on it keys toward
+    # the clerk (the model's south), its drawer under them; the display stands at the back, turned to the customer. Stage 2 is
+    # the till with its drawer open.
+    for s in range(3):
+        es = [element([0, 0, 0], [16, 16, 16], {'all': 's', 'north': 'f', 'south': 'r', 'up': 't'})]
         if s:
-            es += [element([3, 16, 4], [13, 21, 12], {'all': 'k', 'north': 'kf', 'up': 'k'}), element([5, 21, 6], [11, 23, 11], {'all': 'k', 'north': 'kf'}, None, {'north': [2, 2, 14, 7]})]
-        m[f'counter_{s}'] = model(es, {'s': 'counter_front', 'f': 'counter_front', 't': 'counter_top', 'k': 'till_side', 'kf': 'till_front'}, 'counter_top')
+            es += [element([2.5, 16, 3], [13.5, 18.5, 13], {'all': 'b', 'south': 'd'}, None, {'south': [0, 0, 16, 16]}),
+                   element([2.5, 18.5, 5], [13.5, 20, 13], {'all': 'b', 'up': 'k'}, None, {'up': [0, 0, 16, 16]}),
+                   element([4, 20, 4], [12, 23.5, 6], {'all': 'b', 'north': 'v'}, None, {'north': [0, 2, 16, 14]})]
+            if s == 2:
+                es += [element([3, 16.2, 13], [13, 18.2, 17], {'all': 'b', 'up': 'o', 'south': 'd'}, None, {'up': [0, 0, 16, 16], 'south': [0, 0, 16, 16]})]
+        m[f'counter_{s}'] = model(es, {'s': 'counter_side', 'r': 'counter_back', 'f': 'counter_front', 't': 'counter_top', 'b': 'till_side', 'k': 'till_front',
+                                       'v': 'till_display', 'd': 'till_drawer', 'o': 'till_open'}, 'counter_top')
     m['ledger_0'] = model([element([3, 0, 3], [13, 2, 13], {'all': 's', 'up': 'p'})], {'s': 'ledger_side', 'p': 'ledger_page'}, 'ledger_page')
     m['card_0'] = model([element([4, 0, 4], [12, .5, 12], {'up': 'c', 'down': 'c', 'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c'})], {'c': 'card'}, 'card')
     for s in range(3):
@@ -1102,7 +1222,9 @@ def textures():
         out[f'block/work_print/flatbed_top_{s}.png'] = flatbed('top', s)
     out['block/work_print/shelf_side.png'] = wood('#5a4a3a', '#4a3c2e', 83)
     out['block/work_print/counter_front.png'] = counter_front(); out['block/work_print/counter_top.png'] = counter_top()
+    out['block/work_print/counter_back.png'] = counter_back(); out['block/work_print/counter_side.png'] = counter_side()
     out['block/work_print/till_front.png'] = till(0); out['block/work_print/till_side.png'] = till(1)
+    out['block/work_print/till_display.png'] = till(2); out['block/work_print/till_drawer.png'] = till(3); out['block/work_print/till_open.png'] = till(4)
     out['block/work_print/ledger_page.png'] = ledger(0); out['block/work_print/ledger_side.png'] = ledger(1)
     out['block/work_print/card.png'] = card()
     out['block/work_print/returns_front.png'] = returns('front'); out['block/work_print/returns_side.png'] = returns('side')
@@ -1156,7 +1278,7 @@ KINDS = ['shelf', 'counter', 'ledger', 'card', 'returns', 'slot', 'phone', 'mann
          'desk', 'mic',
          'flat', 'bulb', 'mark', 'tripod', 'slate']
 STAGES = {'poster': 4, 'cart': 4, 'shelf': 3, 'returns': 3, 'crt': 3, 'photos': 3, 'flatbed': 3, 'tripod': 3,
-          'counter': 2, 'phone': 2, 'mannequin': 2, 'tube': 2, 'splicer': 2, 'light_table': 2, 'bulb': 2, 'flat': 2}
+          'counter': 3, 'phone': 2, 'mannequin': 2, 'tube': 2, 'splicer': 2, 'light_table': 2, 'bulb': 2, 'flat': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 ITEMS = ('work_print_tape', 'work_print_blank', 'work_print_copy', 'work_print_scene', 'work_print_camera', 'work_print_costume', 'work_print_stained')
 

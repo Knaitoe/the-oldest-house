@@ -54,8 +54,12 @@ public final class WinchesterHouse {
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     static final String STATE = "winchester_0201";
     static final LabyrinthPlace PLACE = LabyrinthPlace.WINCHESTER;
-    /** The hall clock, two blocks tall, on the hall's east side; the construction ledger on its table by the west wall. */
-    public static final BlockPos CLOCK = new BlockPos(5, 0, -7), SOURCE = new BlockPos(-4, 1, -5);
+    /**
+     * The hall clock, two blocks tall, back to the hall's east wall; the construction ledger on its console against the west
+     * wall. 0.4.220 (owner: "pushed against the wall", "random small dresser"): the clock stood a block out from the wall, and
+     * the ledger stood on a bedside table in the middle of the hall.
+     */
+    public static final BlockPos CLOCK = new BlockPos(6, 0, -7), SOURCE = new BlockPos(-6, 1, -9);
     /** The upper ledger on its desk in the last room, and where its reader stands to have reached it. */
     public static final BlockPos ENDING = new BlockPos(22, 8, -70);
     /** The door with the brass 13, in the spine's north wall; the Blue Room's door at the end of the passage. */
@@ -92,9 +96,28 @@ public final class WinchesterHouse {
     private static BlockState paper() { return LiteraryRegistry.WINCHESTER_WALLPAPER.get().defaultBlockState(); }
     private static BlockState parquet() { return LiteraryRegistry.WINCHESTER_PARQUET.get().defaultBlockState(); }
     private static BlockState boards() { return Blocks.DARK_OAK_PLANKS.defaultBlockState(); }
-    /** A room: air from y0 to y1 over a parquet floor at y0-1. */
+    /**
+     * A room: air from y0 to y1 over a parquet floor at y0-1, under a coffered ceiling at y1+1. 0.4.220: the rooms were cut out
+     * of a block of wallpaper, so every ceiling was papered. The ceiling goes only where the paper still is (a room cut later
+     * through it, or a floor laid over it, keeps what it put there).
+     */
     private static void room(ServerLevel l, BlockPos b, int x0, int x1, int z0, int z1, int y0, int y1) {
         fill(l, b, x0, y0, z0, x1, y1, z1, Blocks.AIR.defaultBlockState());fill(l, b, x0, y0 - 1, z0, x1, y0 - 1, z1, parquet());
+        ceiling(l, b, x0, x1, z0, z1, y1 + 1);
+    }
+    private static void ceiling(ServerLevel l, BlockPos b, int x0, int x1, int z0, int z1, int y) {
+        var ceiling = LiteraryRegistry.WINCHESTER_CEILING.get().defaultBlockState();
+        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++)
+            if (BuildBlocks.state(l, b.offset(x, y, z)).is(LiteraryRegistry.WINCHESTER_WALLPAPER.get())) set(l, b, x, y, z, ceiling);
+    }
+    /** A Persian rug laid from (x0, z0) to (x1, z1): the field inside, the border round its edge. */
+    private static void rug(ServerLevel l, BlockPos b, int x0, int x1, int z0, int z1, int y) {
+        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) {
+            Kind k = x == x0 || x == x1 || z == z0 || z == z1 ? Kind.RUNNER_EDGE : Kind.RUG_PERSIAN;
+            // The edge piece's border is on its west side when it faces north; turned, it lies along the rug's outside.
+            Direction f = x == x0 ? Direction.NORTH : x == x1 ? Direction.SOUTH : z == z0 ? Direction.EAST : z == z1 ? Direction.WEST : Direction.NORTH;
+            fit(l, b, new BlockPos(x, y, z), k, f);
+        }
     }
     private static void door(ServerLevel l, BlockPos b, int x, int y, int z, Direction facing) { NovelRooms.door(l, b.offset(x, y, z), facing, Blocks.DARK_OAK_DOOR, false); }
 
@@ -156,7 +179,7 @@ public final class WinchesterHouse {
         // ---- upstairs: the room above the stair, the room with its floor up, and the last room
         room(l, b, -29, -15, -36, -18, 7, 11);
         door(l, b, -14, 7, -26, Direction.EAST);
-        fill(l, b, -13, 6, -36, 13, 11, -18, air);
+        fill(l, b, -13, 6, -36, 13, 11, -18, air);ceiling(l, b, -13, 13, -36, -18, 12);
         for (int z = -36; z <= -18; z++) { set(l, b, -13, 6, z, planks);set(l, b, 13, 6, z, planks); }
         for (int x = -13; x <= 13; x++) { set(l, b, x, 6, -36, planks);set(l, b, x, 6, -18, planks); }
         for (int z : new int[]{-20, -23, -26, -29, -32, -35}) for (int x = -12; x <= 12; x++)
@@ -170,27 +193,59 @@ public final class WinchesterHouse {
         fill(l, b, 16, 12, -57, 28, 12, -19, glass);
 
         // ---- the period rooms
-        // The hall: the clock, the ledger's table against the west wall, a runner, a chandelier.
+        // The hall: the clock against the east wall, the ledger's console against the west, the hall stand by the front door with
+        // a fern across from it, a Persian runner, sconces either side and the lantern overhead.
         fit(l, b, CLOCK, Kind.CLOCK, Direction.WEST);fit(l, b, CLOCK.above(), Kind.CLOCK_TOP, Direction.WEST);
+        fit(l, b, SOURCE.below(), Kind.CONSOLE, Direction.EAST);
+        fit(l, b, new BlockPos(-6, 0, -2), Kind.HALL_STAND, Direction.EAST);fit(l, b, new BlockPos(-6, 1, -2), Kind.HALL_STAND_TOP, Direction.EAST);
+        fit(l, b, new BlockPos(6, 0, -2), Kind.FERN_STAND, Direction.WEST);
+        fit(l, b, new BlockPos(-6, 2, -4), Kind.SCONCE, Direction.EAST);fit(l, b, new BlockPos(6, 2, -4), Kind.SCONCE, Direction.WEST);
         // The runner stops short of the doormat, where every reader comes in (and the walled wake).
-        fill(l, b, -1, 0, -11, 1, 0, -5, Blocks.RED_CARPET.defaultBlockState());
+        for (int z = -11; z <= -5; z++) { fit(l, b, new BlockPos(-1, 0, z), Kind.RUNNER_EDGE, Direction.NORTH);fit(l, b, new BlockPos(0, 0, z), Kind.RUNNER_MID, Direction.NORTH);fit(l, b, new BlockPos(1, 0, z), Kind.RUNNER_EDGE, Direction.SOUTH); }
         set(l, b, 0, 5, -6, Blocks.CHAIN.defaultBlockState());set(l, b, 0, 4, -6, Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true));
         // The parlour: its chimney rises from the hearth and stops short of the ceiling; a spider-web window; a window onto wallpaper.
         fill(l, b, -19, 1, -12, -17, 4, -12, Blocks.BRICKS.defaultBlockState());set(l, b, -18, 1, -12, Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT, false));
         fill(l, b, -19, 4, -11, -17, 4, -11, Blocks.BRICK_SLAB.defaultBlockState());
         fit(l, b, new BlockPos(-29, 2, -6), Kind.SPIDER_WINDOW, Direction.EAST);fit(l, b, new BlockPos(-29, 3, -6), Kind.SPIDER_WINDOW, Direction.EAST);
         fill(l, b, -30, 2, -3, -30, 3, -2, glass);fill(l, b, -31, 2, -3, -31, 3, -2, paper);
-        fill(l, b, -23, 1, -11, -15, 1, -9, Blocks.BROWN_CARPET.defaultBlockState());
-        furniture(l, b, -22, 1, -8, HouseholdFurnitureBlock.Kind.BLUE_SOFA, Direction.NORTH);furniture(l, b, -21, 1, -8, HouseholdFurnitureBlock.Kind.BLUE_SOFA, Direction.NORTH);
-        furniture(l, b, -24, 1, -10, HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR, Direction.EAST);furniture(l, b, -14, 1, -10, HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR, Direction.WEST);
+        // 0.4.220 (owner: "review the furniture placement"): the parlour is sat round its hearth. A rug before it, the settee
+        // facing it across the rug with a lamp table at its end, a wing chair either side; the upright piano against the south
+        // wall with its chair; a reading corner under the spider-web window; ferns in the corners; sconces either side of the
+        // chimney breast.
+        rug(l, b, -20, -16, -11, -8, 1);
+        fit(l, b, new BlockPos(-19, 1, -7), Kind.SETTEE_L, Direction.NORTH);fit(l, b, new BlockPos(-18, 1, -7), Kind.SETTEE_R, Direction.NORTH);
+        fit(l, b, new BlockPos(-20, 1, -7), Kind.LAMP_TABLE, Direction.NORTH);
+        fit(l, b, new BlockPos(-21, 1, -10), Kind.WING_CHAIR, Direction.EAST);fit(l, b, new BlockPos(-15, 1, -10), Kind.WING_CHAIR, Direction.WEST);
+        fit(l, b, new BlockPos(-12, 1, -1), Kind.PIANO_L, Direction.NORTH);fit(l, b, new BlockPos(-11, 1, -1), Kind.PIANO_R, Direction.NORTH);
+        fit(l, b, new BlockPos(-12, 1, -2), Kind.DINING_CHAIR, Direction.SOUTH);
+        fit(l, b, new BlockPos(-27, 1, -6), Kind.WING_CHAIR, Direction.EAST);fit(l, b, new BlockPos(-27, 1, -7), Kind.LAMP_TABLE, Direction.EAST);
+        fit(l, b, new BlockPos(-28, 1, -11), Kind.FERN_STAND, Direction.SOUTH);fit(l, b, new BlockPos(-9, 1, -11), Kind.FERN_STAND, Direction.SOUTH);
+        fit(l, b, new BlockPos(-22, 3, -12), Kind.SCONCE, Direction.SOUTH);fit(l, b, new BlockPos(-14, 3, -12), Kind.SCONCE, Direction.SOUTH);
         light(l, b, -18, 5, -6, 10);
-        // The dining room: a long table and its chairs, a sideboard.
-        for (int x = 14; x <= 22; x++) { furniture(l, b, x, 0, -6, HouseholdFurnitureBlock.Kind.WALNUT_DESK, Direction.SOUTH);if (x % 2 == 0) { furniture(l, b, x, 0, -5, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);furniture(l, b, x, 0, -7, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.SOUTH); } }
-        furniture(l, b, 18, 0, -11, HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS, Direction.SOUTH);light(l, b, 18, 5, -6, 10);
+        // The dining room: one long table (two ends, its pedestal in the middle, a lace runner and two candelabra), ten chairs
+        // set to it, and the mirrored buffet against the north wall between two sconces. 0.4.220: it was nine writing desks in a
+        // row, cane chairs, and a chest of drawers by itself in the middle of the floor.
+        fit(l, b, new BlockPos(14, 0, -6), Kind.TABLE_END, Direction.NORTH);fit(l, b, new BlockPos(22, 0, -6), Kind.TABLE_END, Direction.SOUTH);
+        for (int x = 15; x <= 21; x++) fit(l, b, new BlockPos(x, 0, -6), x == 18 ? Kind.TABLE_PEDESTAL : Kind.TABLE_MID, Direction.NORTH);
+        for (int x = 15; x <= 21; x += 2) { fit(l, b, new BlockPos(x, 0, -7), Kind.DINING_CHAIR, Direction.SOUTH);fit(l, b, new BlockPos(x, 0, -5), Kind.DINING_CHAIR, Direction.NORTH); }
+        fit(l, b, new BlockPos(13, 0, -6), Kind.DINING_CHAIR, Direction.EAST);fit(l, b, new BlockPos(23, 0, -6), Kind.DINING_CHAIR, Direction.WEST);
+        fit(l, b, new BlockPos(16, 1, -6), Kind.CANDELABRA, Direction.NORTH);fit(l, b, new BlockPos(20, 1, -6), Kind.CANDELABRA, Direction.NORTH);
+        fit(l, b, new BlockPos(17, 0, -12), Kind.BUFFET_R, Direction.SOUTH);fit(l, b, new BlockPos(18, 0, -12), Kind.BUFFET_L, Direction.SOUTH);
+        fit(l, b, new BlockPos(15, 2, -12), Kind.SCONCE, Direction.SOUTH);fit(l, b, new BlockPos(20, 2, -12), Kind.SCONCE, Direction.SOUTH);
+        fit(l, b, new BlockPos(9, 0, -12), Kind.FERN_STAND, Direction.SOUTH);fit(l, b, new BlockPos(28, 0, -12), Kind.FERN_STAND, Direction.SOUTH);
+        light(l, b, 18, 5, -6, 10);
         // The spine, the passage, the sewing room and the storeroom.
+        // A narrow runner the length of the spine and down the passage, sconces along the spine between its doors.
         for (int x = -24; x <= 24; x += 12) light(l, b, x, 4, -15, 8);
+        for (int x = -27; x <= 27; x++) fit(l, b, new BlockPos(x, 0, -15), Kind.RUNNER_NARROW, Direction.EAST);
+        for (int x : new int[]{-18, -6, 6, 18}) fit(l, b, new BlockPos(x, 2, -16), Kind.SCONCE, Direction.SOUTH);
+        for (int z = -42; z <= -18; z++) fit(l, b, new BlockPos(0, 0, z), Kind.RUNNER_NARROW, Direction.NORTH);
         light(l, b, 0, 4, -30, 6);
-        furniture(l, b, -8, 1, -30, HouseholdFurnitureBlock.Kind.READING_DESK, Direction.SOUTH);furniture(l, b, -8, 1, -29, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);
+        // The sewing room: her writing desk and its chair, the treadle machine against the west wall with a chair at it, the dress
+        // form beside it, a crate of cloth.
+        furniture(l, b, -8, 1, -30, HouseholdFurnitureBlock.Kind.READING_DESK, Direction.SOUTH);fit(l, b, new BlockPos(-8, 1, -29), Kind.DINING_CHAIR, Direction.NORTH);
+        fit(l, b, new BlockPos(-13, 1, -24), Kind.SEWING_MACHINE, Direction.EAST);fit(l, b, new BlockPos(-12, 1, -24), Kind.DINING_CHAIR, Direction.WEST);
+        fit(l, b, new BlockPos(-13, 1, -21), Kind.DRESS_FORM, Direction.EAST);
         detail(l, b, -12, 1, -34, SceneDetailBlock.Kind.CRATE, Direction.SOUTH);detail(l, b, -11, 1, -34, SceneDetailBlock.Kind.BLANKET, Direction.SOUTH);light(l, b, -8, 4, -25, 7);
         // The storeroom keeps what she bought and never used: doors that open on nothing yet, leaning along one wall, and leaded
         // windows still in their crate slats along the other; a tidy row of crates; the lumber stacked under the far wall.
@@ -222,7 +277,7 @@ public final class WinchesterHouse {
         for (int[] c : new int[][]{{-28, -19}, {-27, -19}, {-28, -20}, {-20, -36}, {-19, -36}}) detail(l, b, c[0], 7, c[1], SceneDetailBlock.Kind.CRATE, Direction.SOUTH);
         light(l, b, -22, 10, -27, 8);light(l, b, 0, 10, -27, 9);
         furniture(l, b, ENDING.getX(), ENDING.getY() - 1, ENDING.getZ(), HouseholdFurnitureBlock.Kind.WALNUT_DESK, Direction.SOUTH);
-        furniture(l, b, ENDING.getX(), ENDING.getY() - 1, ENDING.getZ() + 1, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);
+        fit(l, b, new BlockPos(ENDING.getX(), ENDING.getY() - 1, ENDING.getZ() + 1), Kind.DINING_CHAIR, Direction.NORTH);
         for (int x = 16; x <= 28; x++) if (Math.abs(x - 22) > 1) fill(l, b, x, 7, -76, x, 9, -76, Blocks.BOOKSHELF.defaultBlockState());
         light(l, b, 22, 10, -68, 10);
 

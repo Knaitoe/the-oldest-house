@@ -1,0 +1,164 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "b": "the_oldest_house:block/winchester/brass",
+  "w": "the_oldest_house:block/winchester/frosted",
+  "particle": "the_oldest_house:block/winchester/frosted"
+ },
+ "elements": [
+  {
+   "from": [
+    6,
+    3,
+    15
+   ],
+   "to": [
+    10,
+    9,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    7.5,
+    5,
+    11
+   ],
+   "to": [
+    8.5,
+    6,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    6.5,
+    6,
+    10
+   ],
+   "to": [
+    9.5,
+    7,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b"
+    },
+    "south": {
+     "texture": "#b"
+    },
+    "east": {
+     "texture": "#b"
+    },
+    "west": {
+     "texture": "#b"
+    },
+    "up": {
+     "texture": "#b"
+    },
+    "down": {
+     "texture": "#b"
+    }
+   }
+  },
+  {
+   "from": [
+    5.5,
+    7,
+    9
+   ],
+   "to": [
+    10.5,
+    12,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "south": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "east": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "west": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "up": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    },
+    "down": {
+     "texture": "#w",
+     "neoforge_data": {
+      "block_light": 14,
+      "sky_light": 0
+     }
+    }
+   }
+  }
+ ]
+}

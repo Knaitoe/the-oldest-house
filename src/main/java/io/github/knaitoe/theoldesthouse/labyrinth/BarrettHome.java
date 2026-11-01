@@ -68,8 +68,8 @@ public final class BarrettHome {
         window(l, b, -8, 0, -7, 0, 6, Direction.NORTH); window(l, b, -11, -9, -11, -8, 6, Direction.EAST);       // John and Sarah's room
         window(l, b, 11, -9, 11, -8, 6, Direction.WEST);                                                         // the family bathroom
         window(l, b, -11, -13, -11, -12, 6, Direction.EAST);                                                     // the end of the landing
-        window(l, b, -11, -19, -11, -18, 6, Direction.EAST); window(l, b, -5, -26, -4, -26, 6, Direction.SOUTH); // Marjorie's room
-        window(l, b, 11, -19, 11, -18, 6, Direction.WEST); window(l, b, 4, -26, 5, -26, 6, Direction.SOUTH);     // Merry's room
+        window(l, b, -11, -19, -11, -18, 6, Direction.EAST); window(l, b, -7, -26, -6, -26, 6, Direction.SOUTH); // Marjorie's room
+        window(l, b, 11, -19, 11, -18, 6, Direction.WEST); window(l, b, 7, -26, 8, -26, 6, Direction.SOUTH);     // Merry's room
 
         // Ceiling lights in every room the lamps do not reach, the foyer's from its upper ceiling.
         for (int[] at : new int[][]{{-7, 3, -6}, {1, 3, -10}, {8, 3, -5}, {-7, 3, -15}, {8, 3, -21},
@@ -93,14 +93,15 @@ public final class BarrettHome {
     private static void hall(ServerLevel l, BlockPos b) {
         put(l, b, 3, 0, -1, Kind.PLANT, Direction.WEST);
         put(l, b, 3, 1, -5, Kind.COAT_HOOKS, Direction.WEST);
-        put(l, b, 3, 1, -6, Kind.COAT_HOOKS, Direction.WEST);
+        put(l, b, 3, 1, -6, Kind.COAT_HOOKS_B, Direction.WEST);
         put(l, b, 3, 0, -5, Kind.SHOE_RACK, Direction.WEST);
         put(l, b, 3, 0, -8, Kind.CONSOLE, Direction.WEST);
         put(l, b, 3, 2, -8, Kind.PHOTO_BEACH, Direction.WEST);
         put(l, b, -2, 1, -11, Kind.PHOTO_MARJORIE, Direction.SOUTH);
         put(l, b, 2, 1, -11, Kind.PHOTO_MERRY, Direction.SOUTH);
         put(l, b, 0, 6, -1, Kind.PORTRAIT, Direction.NORTH);
-        for (int x = 1; x <= 2; x++) for (int z = -8; z <= -1; z++) set(l, b, x, 0, z, GhostsSetBlock.of(GhostsSetBlock.Kind.RUG, Direction.NORTH));
+        // 0.4.220: a runner of the hall's own, its border down both outer edges.
+        for (int x = 1; x <= 2; x++) for (int z = -8; z <= -1; z++) set(l, b, x, 0, z, BarrettHomeBlock.of(Kind.RUG_RUNNER, x == 1 ? Direction.NORTH : Direction.SOUTH));
         cable(l, b, 1, 0, -3, 4, -3);
         put(l, b, 0, 0, -3, Kind.CABLE_CORNER, Direction.NORTH);
         cable(l, b, 0, 0, -11, 0, -4);
@@ -121,7 +122,7 @@ public final class BarrettHome {
         put(l, b, -6, 0, -6, Kind.FLOOR_LAMP, Direction.WEST);
         furniture(l, b, -8, 0, -5, HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR, Direction.NORTH);
         furniture(l, b, -8, 0, -10, HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR, Direction.SOUTH);
-        for (int x = -9; x <= -8; x++) for (int z = -9; z <= -6; z++) set(l, b, x, 0, z, GhostsSetBlock.of(GhostsSetBlock.Kind.RUG, Direction.NORTH));
+        for (int x = -9; x <= -8; x++) for (int z = -9; z <= -6; z++) set(l, b, x, 0, z, BarrettHomeBlock.of(Kind.RUG_LIVING, Direction.NORTH));
         put(l, b, -9, 0, -3, Kind.TOYS, Direction.EAST);
         furniture(l, b, -8, 0, -1, HouseholdFurnitureBlock.Kind.RADIATOR, Direction.NORTH);
         furniture(l, b, -7, 0, -1, HouseholdFurnitureBlock.Kind.RADIATOR, Direction.NORTH);
@@ -135,7 +136,8 @@ public final class BarrettHome {
      *  sheets; the call sheets are on the folding table, the shooting schedule on a whiteboard, coffee and doughnuts on the craft
      *  table, the monitor and its chairs, cases, sandbags and apple boxes. */
     private static void den(ServerLevel l, BlockPos b) {
-        put(l, b, 9, 0, -2, Kind.FOLDING_TABLE, Direction.NORTH);
+        // 0.4.220 (owner: "this should just be on the ground"): the call sheet's stand stands on the floor by the folding table.
+        put(l, b, 8, 0, -1, Kind.FOLDING_TABLE, Direction.NORTH);
         put(l, b, 5, 0, -1, Kind.SANDBAGS, Direction.NORTH);
         put(l, b, 10, 0, -1, Kind.APPLE_BOXES, Direction.WEST);
         put(l, b, 10, 0, -3, Kind.SOFTBOX, Direction.WEST);
@@ -179,8 +181,19 @@ public final class BarrettHome {
         put(l, b, -5, 0, -13, Kind.PLANT, Direction.SOUTH);
         put(l, b, 4, 0, -16, Kind.DESK, Direction.WEST);
         put(l, b, 3, 0, -16, Kind.OFFICE_CHAIR, Direction.EAST);
-        put(l, b, 4, 0, -20, Kind.DRESSER, Direction.WEST);
-        put(l, b, 4, 0, -21, Kind.DRESSER, Direction.WEST);
+        // 0.4.220 (owner: "more repeated clutter"): one sideboard in two halves, not two dressers side by side.
+        put(l, b, 4, 0, -21, Kind.SIDEBOARD_L, Direction.WEST);
+        put(l, b, 4, 0, -20, Kind.SIDEBOARD_R, Direction.WEST);
+        // 0.4.220 (owner: "a kitchen with no appliances"): the stove under its hood, the dishwasher by the sink, cabinets on the walls
+        // either side of the windows, the microwave, the toaster and the coffee maker on the counters.
+        put(l, b, -6, 0, -25, Kind.DISHWASHER, Direction.SOUTH);
+        put(l, b, -5, 0, -25, Kind.RANGE, Direction.SOUTH);
+        put(l, b, -5, 2, -25, Kind.RANGE_HOOD, Direction.SOUTH);
+        for (int x : new int[]{-9, -6, -4}) put(l, b, x, 2, -25, Kind.WALL_CABINET, Direction.SOUTH);
+        for (int z : new int[]{-22, -19}) put(l, b, -10, 2, z, Kind.WALL_CABINET, Direction.EAST);
+        put(l, b, -6, 1, -25, Kind.COFFEE_MAKER, Direction.SOUTH);
+        put(l, b, -10, 1, -22, Kind.MICROWAVE, Direction.EAST);
+        put(l, b, -10, 1, -19, Kind.TOASTER, Direction.EAST);
         put(l, b, 4, 0, -23, Kind.SOFTBOX, Direction.SOUTH);
         put(l, b, -3, 0, -23, Kind.SOFTBOX, Direction.SOUTH);
         furniture(l, b, 1, 0, -25, HouseholdFurnitureBlock.Kind.RADIATOR, Direction.SOUTH);
@@ -208,7 +221,7 @@ public final class BarrettHome {
         put(l, b, 3, 5, -11, Kind.PLANT, Direction.WEST);
         put(l, b, 5, 6, -13, Kind.MERRY_DRAWING, Direction.SOUTH);
         cable(l, b, -6, 5, -13, -1, -13);
-        for (int x = -9; x <= 8; x++) set(l, b, x, 5, -12, GhostsSetBlock.of(GhostsSetBlock.Kind.RUG, Direction.NORTH));
+        for (int x = -9; x <= 8; x++) set(l, b, x, 5, -12, BarrettHomeBlock.of(Kind.RUG_RUNNER_NARROW, Direction.EAST));
     }
 
     /** 0.4.202 (owner: "bathroom is host to a family of four. there is clutter. a cup with toothbrushes. punny artwork. a
@@ -217,23 +230,24 @@ public final class BarrettHome {
      *  bathroom over the den is a wall shorter now, and the girls' between their rooms stops where its tub does. */
     private static void bathrooms(ServerLevel l, BlockPos b) {
         var wall = BarrettHomeBlock.of(Kind.PAINT);
-        // The family bathroom: x 5..10, z -4..-10; behind its south wall, the chase over the front door is closed.
-        fill(l, b, 5, 5, -3, 10, 9, -1, wall);
-        tiled(l, b, 5, -10, 10, -4, -11, 7, 4, -3, -1, 11);
-        put(l, b, 10, 5, -5, Kind.TUB_SHOWER, Direction.NORTH);
-        put(l, b, 9, 5, -5, Kind.BATH_MAT, Direction.NORTH);
-        put(l, b, 5, 5, -6, Kind.VANITY_FAMILY, Direction.EAST);
-        put(l, b, 5, 5, -7, Kind.VANITY_FAMILY, Direction.EAST);
+        // The family bathroom: x 7..10, z -6..-10 (0.4.220, owner: "this bathroom is far too large. too much unused space"); the
+        // rest of the old room, and the chase over the front door, are closed in behind its walls.
+        fill(l, b, 5, 5, -5, 10, 9, -1, wall);
+        fill(l, b, 5, 5, -10, 6, 9, -6, wall);
+        tiled(l, b, 7, -10, 10, -6, -11, 7, 6, -5, -99, 11);
+        put(l, b, 10, 5, -7, Kind.TUB_SHOWER, Direction.NORTH);
+        put(l, b, 9, 5, -7, Kind.BATH_MAT, Direction.NORTH);
+        put(l, b, 7, 5, -8, Kind.VANITY_FAMILY, Direction.EAST);
         put(l, b, 10, 5, -9, Kind.TOILET, Direction.WEST);
-        put(l, b, 8, 6, -4, Kind.TOWEL_BAR, Direction.NORTH);
-        put(l, b, 5, 5, -10, Kind.HAMPER, Direction.EAST);
-        put(l, b, 6, 5, -9, Kind.DIRTY_TOWELS, Direction.NORTH);
-        put(l, b, 6, 7, -10, Kind.PRINT_SOAP, Direction.SOUTH);
+        put(l, b, 8, 6, -6, Kind.TOWEL_BAR, Direction.NORTH);
+        put(l, b, 7, 5, -6, Kind.HAMPER, Direction.EAST);
+        put(l, b, 8, 5, -6, Kind.DIRTY_TOWELS, Direction.NORTH);
+        put(l, b, 9, 7, -10, Kind.PRINT_SOAP, Direction.SOUTH);
         // The girls' bathroom: x -1..2, z -15..-21, the tub across its far end.
         fill(l, b, -1, 5, -25, 2, 9, -22, wall);
         tiled(l, b, -1, -21, 2, -15, -14, 0, -2, -22, -99, 3);
         put(l, b, 0, 5, -21, Kind.TUB_SHOWER, Direction.WEST);
-        for (int x = 0; x <= 1; x++) put(l, b, x, 5, -20, Kind.BATH_MAT, Direction.NORTH);
+        put(l, b, 0, 5, -20, Kind.BATH_MAT, Direction.NORTH);
         put(l, b, 2, 5, -19, Kind.TOILET, Direction.WEST);
         put(l, b, -1, 5, -18, Kind.VANITY_KIDS, Direction.EAST);
         put(l, b, 0, 5, -18, Kind.STEP_STOOL, Direction.EAST);
@@ -275,7 +289,7 @@ public final class BarrettHome {
         put(l, b, -3, 5, -16, Kind.SOFTBOX, Direction.WEST);
         put(l, b, -10, 5, -16, Kind.DRESSER, Direction.EAST);
         put(l, b, -10, 5, -17, Kind.BOOKSHELF, Direction.EAST);
-        for (int x = -6; x <= -4; x++) for (int z = -20; z <= -18; z++) set(l, b, x, 5, z, GhostsSetBlock.of(GhostsSetBlock.Kind.RUG, Direction.NORTH));
+        for (int x = -6; x <= -4; x++) for (int z = -20; z <= -18; z++) set(l, b, x, 5, z, BarrettHomeBlock.of(Kind.RUG_SHAG, Direction.NORTH));
         // Merry's room, eight: her homework desk, the planets poster, her drawings taped up in a row, the stuffed animals by her
         // bed, glow-in-the-dark stars on the ceiling, her picture books, toys on the floor, the cardboard house in the middle of it.
         put(l, b, 4, 5, -22, Kind.DESK_KID, Direction.EAST);
@@ -288,7 +302,10 @@ public final class BarrettHome {
         put(l, b, 10, 5, -15, Kind.PLANT, Direction.WEST);
         furniture(l, b, 10, 5, -25, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.WEST);
         for (int[] c : new int[][]{{9, -23}, {9, -25}, {7, -24}, {8, -21}, {6, -22}, {9, -20}}) put(l, b, c[0], 9, c[1], Kind.CEILING_STARS, Direction.NORTH);
-        for (int x = 5; x <= 6; x++) for (int z = -18; z <= -16; z++) set(l, b, x, 5, z, GhostsSetBlock.of(GhostsSetBlock.Kind.RUG, Direction.NORTH));
+        // 0.4.220 (owner: "add a unique rug to mary's room", "don't recycle the same child's playmat"): her own round rug, a night sky
+        // with a moon and planets like the poster on her wall; one picture over four blocks, each block's facing naming its quarter.
+        set(l, b, 5, 5, -18, BarrettHomeBlock.of(Kind.MERRY_RUG, Direction.NORTH));set(l, b, 6, 5, -18, BarrettHomeBlock.of(Kind.MERRY_RUG, Direction.EAST));
+        set(l, b, 6, 5, -17, BarrettHomeBlock.of(Kind.MERRY_RUG, Direction.SOUTH));set(l, b, 5, 5, -17, BarrettHomeBlock.of(Kind.MERRY_RUG, Direction.WEST));
     }
 
     /** The basement: the boxes nobody unpacked, the water heater, shelves. The day-four marks and the stair stay clear. */
@@ -297,5 +314,11 @@ public final class BarrettHome {
         put(l, b, 4, -4, -17, Kind.BOXES, Direction.EAST);
         put(l, b, 4, -4, -21, Kind.SHELVES, Direction.EAST);
         put(l, b, 10, -4, -22, Kind.WATER_HEATER, Direction.WEST);
+        // 0.4.220: what a family keeps in a basement, round the walls; the middle stays clear for day four.
+        put(l, b, 10, -4, -15, Kind.COVERED, Direction.WEST);
+        put(l, b, 4, -4, -23, Kind.BOXES, Direction.EAST);
+        put(l, b, 7, -4, -25, Kind.SHELVES, Direction.SOUTH);
+        put(l, b, 8, -4, -25, Kind.BOXES, Direction.SOUTH);
+        put(l, b, 9, -4, -25, Kind.LAUNDRY, Direction.SOUTH);
     }
 }

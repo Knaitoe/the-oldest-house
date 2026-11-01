@@ -261,6 +261,54 @@
   "facing=north,kind=nightstand_sarah": {
    "model": "the_oldest_house:block/barrett/nightstand_sarah"
   },
+  "facing=north,kind=coat_hooks_b": {
+   "model": "the_oldest_house:block/barrett/coat_hooks_b"
+  },
+  "facing=north,kind=sideboard_l": {
+   "model": "the_oldest_house:block/barrett/sideboard_l"
+  },
+  "facing=north,kind=sideboard_r": {
+   "model": "the_oldest_house:block/barrett/sideboard_r"
+  },
+  "facing=north,kind=range": {
+   "model": "the_oldest_house:block/barrett/range"
+  },
+  "facing=north,kind=range_hood": {
+   "model": "the_oldest_house:block/barrett/range_hood"
+  },
+  "facing=north,kind=wall_cabinet": {
+   "model": "the_oldest_house:block/barrett/wall_cabinet"
+  },
+  "facing=north,kind=microwave": {
+   "model": "the_oldest_house:block/barrett/microwave"
+  },
+  "facing=north,kind=toaster": {
+   "model": "the_oldest_house:block/barrett/toaster"
+  },
+  "facing=north,kind=coffee_maker": {
+   "model": "the_oldest_house:block/barrett/coffee_maker"
+  },
+  "facing=north,kind=dishwasher": {
+   "model": "the_oldest_house:block/barrett/dishwasher"
+  },
+  "facing=north,kind=field_monitor": {
+   "model": "the_oldest_house:block/barrett/field_monitor"
+  },
+  "facing=north,kind=rug_runner": {
+   "model": "the_oldest_house:block/barrett/rug_runner"
+  },
+  "facing=north,kind=rug_runner_narrow": {
+   "model": "the_oldest_house:block/barrett/rug_runner_narrow"
+  },
+  "facing=north,kind=rug_living": {
+   "model": "the_oldest_house:block/barrett/rug_living"
+  },
+  "facing=north,kind=rug_shag": {
+   "model": "the_oldest_house:block/barrett/rug_shag"
+  },
+  "facing=north,kind=merry_rug": {
+   "model": "the_oldest_house:block/barrett/merry_rug_nw"
+  },
   "facing=east,kind=paint": {
    "model": "the_oldest_house:block/barrett/paint",
    "y": 90
@@ -608,6 +656,69 @@
   "facing=east,kind=nightstand_sarah": {
    "model": "the_oldest_house:block/barrett/nightstand_sarah",
    "y": 90
+  },
+  "facing=east,kind=coat_hooks_b": {
+   "model": "the_oldest_house:block/barrett/coat_hooks_b",
+   "y": 90
+  },
+  "facing=east,kind=sideboard_l": {
+   "model": "the_oldest_house:block/barrett/sideboard_l",
+   "y": 90
+  },
+  "facing=east,kind=sideboard_r": {
+   "model": "the_oldest_house:block/barrett/sideboard_r",
+   "y": 90
+  },
+  "facing=east,kind=range": {
+   "model": "the_oldest_house:block/barrett/range",
+   "y": 90
+  },
+  "facing=east,kind=range_hood": {
+   "model": "the_oldest_house:block/barrett/range_hood",
+   "y": 90
+  },
+  "facing=east,kind=wall_cabinet": {
+   "model": "the_oldest_house:block/barrett/wall_cabinet",
+   "y": 90
+  },
+  "facing=east,kind=microwave": {
+   "model": "the_oldest_house:block/barrett/microwave",
+   "y": 90
+  },
+  "facing=east,kind=toaster": {
+   "model": "the_oldest_house:block/barrett/toaster",
+   "y": 90
+  },
+  "facing=east,kind=coffee_maker": {
+   "model": "the_oldest_house:block/barrett/coffee_maker",
+   "y": 90
+  },
+  "facing=east,kind=dishwasher": {
+   "model": "the_oldest_house:block/barrett/dishwasher",
+   "y": 90
+  },
+  "facing=east,kind=field_monitor": {
+   "model": "the_oldest_house:block/barrett/field_monitor",
+   "y": 90
+  },
+  "facing=east,kind=rug_runner": {
+   "model": "the_oldest_house:block/barrett/rug_runner",
+   "y": 90
+  },
+  "facing=east,kind=rug_runner_narrow": {
+   "model": "the_oldest_house:block/barrett/rug_runner_narrow",
+   "y": 90
+  },
+  "facing=east,kind=rug_living": {
+   "model": "the_oldest_house:block/barrett/rug_living",
+   "y": 90
+  },
+  "facing=east,kind=rug_shag": {
+   "model": "the_oldest_house:block/barrett/rug_shag",
+   "y": 90
+  },
+  "facing=east,kind=merry_rug": {
+   "model": "the_oldest_house:block/barrett/merry_rug_ne"
   },
   "facing=south,kind=paint": {
    "model": "the_oldest_house:block/barrett/paint",
@@ -957,6 +1068,69 @@
    "model": "the_oldest_house:block/barrett/nightstand_sarah",
    "y": 180
   },
+  "facing=south,kind=coat_hooks_b": {
+   "model": "the_oldest_house:block/barrett/coat_hooks_b",
+   "y": 180
+  },
+  "facing=south,kind=sideboard_l": {
+   "model": "the_oldest_house:block/barrett/sideboard_l",
+   "y": 180
+  },
+  "facing=south,kind=sideboard_r": {
+   "model": "the_oldest_house:block/barrett/sideboard_r",
+   "y": 180
+  },
+  "facing=south,kind=range": {
+   "model": "the_oldest_house:block/barrett/range",
+   "y": 180
+  },
+  "facing=south,kind=range_hood": {
+   "model": "the_oldest_house:block/barrett/range_hood",
+   "y": 180
+  },
+  "facing=south,kind=wall_cabinet": {
+   "model": "the_oldest_house:block/barrett/wall_cabinet",
+   "y": 180
+  },
+  "facing=south,kind=microwave": {
+   "model": "the_oldest_house:block/barrett/microwave",
+   "y": 180
+  },
+  "facing=south,kind=toaster": {
+   "model": "the_oldest_house:block/barrett/toaster",
+   "y": 180
+  },
+  "facing=south,kind=coffee_maker": {
+   "model": "the_oldest_house:block/barrett/coffee_maker",
+   "y": 180
+  },
+  "facing=south,kind=dishwasher": {
+   "model": "the_oldest_house:block/barrett/dishwasher",
+   "y": 180
+  },
+  "facing=south,kind=field_monitor": {
+   "model": "the_oldest_house:block/barrett/field_monitor",
+   "y": 180
+  },
+  "facing=south,kind=rug_runner": {
+   "model": "the_oldest_house:block/barrett/rug_runner",
+   "y": 180
+  },
+  "facing=south,kind=rug_runner_narrow": {
+   "model": "the_oldest_house:block/barrett/rug_runner_narrow",
+   "y": 180
+  },
+  "facing=south,kind=rug_living": {
+   "model": "the_oldest_house:block/barrett/rug_living",
+   "y": 180
+  },
+  "facing=south,kind=rug_shag": {
+   "model": "the_oldest_house:block/barrett/rug_shag",
+   "y": 180
+  },
+  "facing=south,kind=merry_rug": {
+   "model": "the_oldest_house:block/barrett/merry_rug_se"
+  },
   "facing=west,kind=paint": {
    "model": "the_oldest_house:block/barrett/paint",
    "y": 270
@@ -1304,6 +1478,69 @@
   "facing=west,kind=nightstand_sarah": {
    "model": "the_oldest_house:block/barrett/nightstand_sarah",
    "y": 270
+  },
+  "facing=west,kind=coat_hooks_b": {
+   "model": "the_oldest_house:block/barrett/coat_hooks_b",
+   "y": 270
+  },
+  "facing=west,kind=sideboard_l": {
+   "model": "the_oldest_house:block/barrett/sideboard_l",
+   "y": 270
+  },
+  "facing=west,kind=sideboard_r": {
+   "model": "the_oldest_house:block/barrett/sideboard_r",
+   "y": 270
+  },
+  "facing=west,kind=range": {
+   "model": "the_oldest_house:block/barrett/range",
+   "y": 270
+  },
+  "facing=west,kind=range_hood": {
+   "model": "the_oldest_house:block/barrett/range_hood",
+   "y": 270
+  },
+  "facing=west,kind=wall_cabinet": {
+   "model": "the_oldest_house:block/barrett/wall_cabinet",
+   "y": 270
+  },
+  "facing=west,kind=microwave": {
+   "model": "the_oldest_house:block/barrett/microwave",
+   "y": 270
+  },
+  "facing=west,kind=toaster": {
+   "model": "the_oldest_house:block/barrett/toaster",
+   "y": 270
+  },
+  "facing=west,kind=coffee_maker": {
+   "model": "the_oldest_house:block/barrett/coffee_maker",
+   "y": 270
+  },
+  "facing=west,kind=dishwasher": {
+   "model": "the_oldest_house:block/barrett/dishwasher",
+   "y": 270
+  },
+  "facing=west,kind=field_monitor": {
+   "model": "the_oldest_house:block/barrett/field_monitor",
+   "y": 270
+  },
+  "facing=west,kind=rug_runner": {
+   "model": "the_oldest_house:block/barrett/rug_runner",
+   "y": 270
+  },
+  "facing=west,kind=rug_runner_narrow": {
+   "model": "the_oldest_house:block/barrett/rug_runner_narrow",
+   "y": 270
+  },
+  "facing=west,kind=rug_living": {
+   "model": "the_oldest_house:block/barrett/rug_living",
+   "y": 270
+  },
+  "facing=west,kind=rug_shag": {
+   "model": "the_oldest_house:block/barrett/rug_shag",
+   "y": 270
+  },
+  "facing=west,kind=merry_rug": {
+   "model": "the_oldest_house:block/barrett/merry_rug_sw"
   }
  }
 }
