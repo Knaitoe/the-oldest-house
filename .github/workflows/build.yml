@@ -1459,7 +1459,9 @@ jobs:
           python3 - <<'PYTHON'
           import re
           from pathlib import Path
-          declared=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('ExplorationPassTests.java','RhythmTests.java','HazardVarietyTests.java','DarkHallTests.java'))
+          # Every class that holds exploration cases, not a hand-kept list (run 1392: the draft and trace rooms' cases were missed).
+          names=[p for p in Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest').glob('*.java') if re.search(r'@GameTestHolder\s*\(\s*TheOldestHouse\.MOD_ID\s*\+\s*"_exploration"',p.read_text())]
+          declared=sum(len(re.findall(r'@GameTest\s*\(',p.read_text())) for p in names)
           passed=re.findall(r'All (\d+) required tests passed',Path('build/exploration-native.log').read_text())
           assert passed and int(passed[-1])==declared, (passed,declared)
           print(f'All {declared} native exploration cases passed.')
