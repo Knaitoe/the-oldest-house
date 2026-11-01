@@ -1,0 +1,27 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "t": "the_oldest_house:block/horror/tally",
+    "particle": "the_oldest_house:block/horror/tally"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        0.1,
+        15
+      ],
+      "faces": {
+        "up": {
+          "texture": "#t"
+        }
+      }
+    }
+  ]
+}

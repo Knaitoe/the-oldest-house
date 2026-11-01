@@ -10,6 +10,9 @@ The storeroom (0.4.210): grey steel shelving, bare or holding the black ink, the
 paper tag; the bulb on its pull chain (out, lit, and its chain swung one way and the other); the list in the reader's hand;
 cardboard boxes; and the footnote page.
 
+The stillness (0.4.211): a surveyor's log page nailed to the wall; a count scratched into the floor dust in rows of five; and a
+cloven print pressed into the dust where something stood.
+
 --check verifies everything already written.
 """
 from pathlib import Path
@@ -265,12 +268,57 @@ def footnote():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ the stillness
+def log_page():
+    """A page from a survey log, squared paper, columns of figures and then a looser hand; a nail through the top."""
+    im = new('#e2dccb', 971, 3)
+    for x in range(1, 16, 3):
+        line(im, x, 1, x, 15, '#cfd6cf', 110)
+    for y in range(1, 16, 3):
+        line(im, 1, y, 15, y, '#cfd6cf', 110)
+    for y in (3, 5):
+        for x in (2, 6, 10):
+            line(im, x, y, x + 2, y, '#3b3a44')
+    for y, w in ((8, 10), (10, 8), (12, 11)):
+        line(im, 2, y, 2 + w, y, '#2c2a30', 220)
+    line(im, 2, 14, 5, 14, '#1c1a1e')
+    put(im, 8, 0, '#55504a'); put(im, 7, 0, '#6d675e'); put(im, 8, 1, '#3e3a35')
+    return im
+
+
+def tally():
+    """Scratches in grey dust: rows of four strokes and a fifth across, more rows than fit."""
+    im = new(None)
+    c = '#d8d4cc'
+    for row, y in enumerate((2, 6, 10, 14)):
+        for group in range(3 if row < 3 else 1):
+            x0 = 1 + group * 5
+            for k in range(4):
+                line(im, x0 + k, y - 1, x0 + k, y + 1, c, 200)
+            line(im, x0 - 1, y + 1, x0 + 4, y - 1, c, 230)
+    return im
+
+
+def hoof():
+    """One cloven print pressed into dust: two blunt crescents side by side, darker at the toe."""
+    im = new(None)
+    for cx in (5, 10):
+        for y in range(3, 13):
+            for x in range(cx - 2, cx + 3):
+                dx = (x - cx) / 2.6
+                dy = (y - 8) / 5.2
+                if dx * dx + dy * dy <= 1:
+                    put(im, x, y, '#141210', 120 + (12 - y) * 8)
+    return im
+
+
 def textures():
     return {f'block/horror/{k}.png': v for k, v in {
         'drawing': drawing(), 'folder': folder(), 'pages': pages(), 'stool_seat': stool_seat(), 'stool_leg': stool_leg(),
         'crayons': crayons(), 'handprint': handprint(),
         'shelf': steel(), 'shelf_ink': stocked('ink'), 'shelf_needles': stocked('needles'), 'shelf_own': stocked('own'), 'shelf_boxes': stocked('boxes'),
         'shelf_side': shelf_side(), 'bulb_lit': bulb(True), 'bulb_out': bulb(False), 'chain': chain(), 'list': listing(), 'footnote': footnote(),
+        'log': log_page(), 'tally': tally(), 'hoof': hoof(),
     }.items()}
 
 
@@ -290,7 +338,7 @@ def model(elements, textures, particle, render='cutout'):
     return {'ambientocclusion': False, 'render_type': 'minecraft:' + render, 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
 
 
-KINDS = ('drawing', 'transcript', 'crayons', 'handprint', 'shelf', 'shelf_ink', 'shelf_needles', 'shelf_own', 'bulb', 'list', 'boxes', 'footnote')
+KINDS = ('drawing', 'transcript', 'crayons', 'handprint', 'shelf', 'shelf_ink', 'shelf_needles', 'shelf_own', 'bulb', 'list', 'boxes', 'footnote', 'log', 'tally', 'hoof')
 STAGES = {'bulb': 4}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
@@ -321,6 +369,10 @@ def fitting_models():
         m[f'bulb_{stage}'] = model(parts, {'c': 'chain', 'b': 'bulb_lit' if lit else 'bulb_out'}, 'bulb_lit' if lit else 'bulb_out')
     m['list'] = model([element([3, 4, 15.9], [13, 14, 16], {'north': 'l'}, uv={'north': [3, 2, 13, 12]})], {'l': 'list'}, 'list')
     m['footnote'] = model([element([2, 0, 2], [14, .25, 14], {'up': 'n', 'down': 'n'})], {'n': 'footnote'}, 'footnote')
+    # The stillness: the log page against its wall (the south side as drawn, like the list), the count and the print on the floor.
+    m['log'] = model([element([3, 3, 15.9], [13, 15, 16], {'north': 'g'}, uv={'north': [3, 1, 13, 13]})], {'g': 'log'}, 'log')
+    m['tally'] = model([element([1, 0, 1], [15, .1, 15], {'up': 't'})], {'t': 'tally'}, 'tally', 'translucent')
+    m['hoof'] = model([element([3, 0, 2], [13, .05, 14], {'up': 'o'})], {'o': 'hoof'}, 'hoof', 'translucent')
     return m
 
 

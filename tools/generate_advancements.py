@@ -99,7 +99,7 @@ STORY_ICONS = {
     'tunnel_periphery': 'minecraft:lime_stained_glass', 'missing_sleep': 'minecraft:white_bed', 'layered_man': NS + ':cellar_cleaver',
     'motion_light': 'minecraft:redstone_lamp', 'backseat': 'minecraft:iron_door', 'silo': 'minecraft:yellow_dye',
     'dare_in_the_dark': NS + ':candle_stub', 'feet_up': 'minecraft:ladder', 'whistlers': NS + ':lookout_crank',
-    'work_print': NS + ':work_print_tape', 'polaroid_trail': NS + ':polaroid_walkie', 'left_right': NS + ':left_right_flare', 'dead_air': NS + ':dead_air_tube', 'closing_hall': 'minecraft:pink_dye', 'storeroom': 'minecraft:ink_sac',
+    'work_print': NS + ':work_print_tape', 'polaroid_trail': NS + ':polaroid_walkie', 'left_right': NS + ':left_right_flare', 'dead_air': NS + ':dead_air_tube', 'closing_hall': 'minecraft:pink_dye', 'storeroom': 'minecraft:ink_sac', 'stillness': 'minecraft:goat_horn',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 
