@@ -103,6 +103,12 @@ final class CoopAccounts {
         together(WHISTLERS,party("%s had kept watch in the cab before me. The cords were where they had left them.",
             "%s {was} still on watch in the cab when the hatch let me down."));
         // 0.4.203: one shop for the party; the count is each reader's own, and one of them may hold the camera for the other's turn.
+        // 0.4.204: one trail for the party; the photographs can be of either of them, and either can stand where one was taken.
+        // 0.4.205: one road for the party, one sequence; a wrong turn by any of them took them all to the salt.
+        together(LEFT_RIGHT,party("%s {was} on the road with me. When we went the wrong way one of us held her in sight while the rest walked backward off the salt.",
+            "%s {was} still out on the road behind me when the tailgate came down."));
+        together(POLAROID_TRAIL,party("%s had been down the trail before me. Some of the photographs under the balloons were of them.",
+            "%s {was} still in the yard with a photograph in their hand when the balloons lit."));
         together(WORK_PRINT,party("%s had been through the shop before me. Their name was on a rental card in the drawer, crossed out.",
             "%s {was} still in the back room with the snow on the set when I left by the set's door."));
         together(FEET_UP,party("%s had reached the attic before me. Their marks were already on the rafter beside the empty column.",

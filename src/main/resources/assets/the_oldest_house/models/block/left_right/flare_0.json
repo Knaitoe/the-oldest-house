@@ -1,0 +1,66 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/left_right/flare",
+    "particle": "the_oldest_house:block/left_right/flare"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        6,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            6,
+            1,
+            10,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#f",
+          "uv": [
+            6,
+            1,
+            10,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#f",
+          "uv": [
+            6,
+            1,
+            10,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#f",
+          "uv": [
+            6,
+            1,
+            10,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    }
+  ]
+}

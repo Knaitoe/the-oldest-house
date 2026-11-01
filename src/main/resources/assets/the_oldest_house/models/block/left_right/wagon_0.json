@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:solid",
+  "textures": {
+    "w": "the_oldest_house:block/left_right/wagon",
+    "r": "the_oldest_house:block/left_right/wagon_roof",
+    "particle": "the_oldest_house:block/left_right/wagon"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    }
+  ]
+}

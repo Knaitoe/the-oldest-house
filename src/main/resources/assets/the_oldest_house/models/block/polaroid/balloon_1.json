@@ -1,0 +1,101 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "b": "the_oldest_house:block/polaroid/balloon_lit",
+    "s": "the_oldest_house:block/polaroid/string",
+    "particle": "the_oldest_house:block/polaroid/balloon"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        2,
+        7.99
+      ],
+      "to": [
+        13,
+        14,
+        8.01
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        }
+      }
+    },
+    {
+      "from": [
+        7.99,
+        2,
+        3
+      ],
+      "to": [
+        8.01,
+        14,
+        13
+      ],
+      "faces": {
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        }
+      }
+    },
+    {
+      "from": [
+        7.9,
+        -16,
+        7.9
+      ],
+      "to": [
+        8.1,
+        2,
+        8.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}
