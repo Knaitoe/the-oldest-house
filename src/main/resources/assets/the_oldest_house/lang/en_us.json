@@ -911,5 +911,12 @@
   "subtitles.the_oldest_house.storeroom.heart": "Your heart",
   "subtitles.the_oldest_house.storeroom.blow": "A blow from behind",
   "advancements.the_oldest_house.account.storeroom.title": "The storeroom",
-  "advancements.the_oldest_house.account.storeroom.description": "I didn't turn round."
+  "advancements.the_oldest_house.account.storeroom.description": "I didn't turn round.",
+  "death.attack.the_oldest_house.stillness": "%1$s moved",
+  "subtitles.the_oldest_house.stillness.breath": "Something huge breathes out, right over you",
+  "subtitles.the_oldest_house.stillness.sniff": "Snuffling at the floor",
+  "subtitles.the_oldest_house.stillness.nudge": "A heavy head shoves",
+  "subtitles.the_oldest_house.stillness.gore": "Horns",
+  "advancements.the_oldest_house.account.stillness.title": "The stillness",
+  "advancements.the_oldest_house.account.stillness.description": "I let it breathe on me."
 }

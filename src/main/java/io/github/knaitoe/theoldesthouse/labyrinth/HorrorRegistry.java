@@ -32,6 +32,12 @@ public final class HorrorRegistry {
      */
     public static final DeferredHolder<SoundEvent,SoundEvent> STORE_BREATH=sound("storeroom.breath"),STORE_SCRAPE=sound("storeroom.scrape"),STORE_FLICKER=sound("storeroom.flicker"),
         STORE_SLAM=sound("storeroom.slam"),STORE_HEART=sound("storeroom.heart"),STORE_BLOW=sound("storeroom.blow");
+    /**
+     * The stillness (0.4.211): something enormous breathing out over the reader, snuffling at the floor, the thud and grunt of its
+     * head shoving at them, and the horns.
+     */
+    public static final DeferredHolder<SoundEvent,SoundEvent> STILL_BREATH=sound("stillness.breath"),STILL_SNIFF=sound("stillness.sniff"),STILL_NUDGE=sound("stillness.nudge"),
+        STILL_GORE=sound("stillness.gore");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register(name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,name)));}
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HorrorBlock>> FITTING_TYPE=CODECS.register("horror_fitting",()->HorrorBlock.CODEC);

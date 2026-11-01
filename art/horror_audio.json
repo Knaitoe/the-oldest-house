@@ -71,6 +71,30 @@
       "rate": 22050,
       "ticks": 18,
       "sha256": "b4e5904bc29fdb7f9f66ae3761715e2a928cbd2259d76083a63d95d1b245fc39"
+    },
+    "stillness.breath": {
+      "samples": 57330,
+      "rate": 22050,
+      "ticks": 52,
+      "sha256": "511c5143fb1216d8dc7158133005ec8d94f82d589dfea9a95654506cff7de914"
+    },
+    "stillness.sniff": {
+      "samples": 33075,
+      "rate": 22050,
+      "ticks": 30,
+      "sha256": "1c9fedbc199ea714ea56682585ddca7cbc2748cf1702bc34ce83492febcdd314"
+    },
+    "stillness.nudge": {
+      "samples": 19845,
+      "rate": 22050,
+      "ticks": 18,
+      "sha256": "f41a1bff697c32fc85db423d1cf0405fd15c53bfbc56153247b24edc56cde73f"
+    },
+    "stillness.gore": {
+      "samples": 22050,
+      "rate": 22050,
+      "ticks": 20,
+      "sha256": "7a4fc332adae15f3938b53d27592bba8e41a5e853c0227f0edfe29ccaf0cd8c3"
     }
   }
 }

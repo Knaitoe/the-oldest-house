@@ -16,6 +16,8 @@ import net.neoforged.neoforge.client.event.*;
 public final class NovelSceneClient {
     /** The staircase's dust shake (mode 13) keeps its own lease, so it never replaces a scene's mode, fog or caption. */
     private static final int STAIR_SHAKE=13;
+    /** 0.4.211, the stillness: the floor shaking under its hoofs, the reader's heart, and the fog of its breath (elapsed counts from each breath). */
+    private static final int STILLNESS=21;
     private static int mode,lease,elapsed,captionTicks,stairLease;private static float shake,stairShake;private static String caption="";
     private static ClientLevel sceneWorld;private static java.util.UUID sceneReader;
     private static ClientLevel clockWorld;private static net.minecraft.core.BlockPos clockPosition,clockOrigin;private static int spatialClock;
@@ -49,7 +51,7 @@ public final class NovelSceneClient {
         }
         return spatialClock==0&&active()&&mode==4?4:spatialClock;
     }
-    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.27F);e.setGreen(.15F);e.setBlue(.38F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode==12||mode==14){e.setRed(0);e.setGreen(0);e.setBlue(0);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
+    @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(!active())return;if(mode==5){e.setRed(.27F);e.setGreen(.15F);e.setBlue(.38F);}else if(mode==1||mode==3){e.setRed(.035F);e.setGreen(.05F);e.setBlue(.073F);}else if(mode==4){e.setRed(.76F);e.setGreen(.67F);e.setBlue(.46F);}else if(mode==12||mode==14||mode==STILLNESS){e.setRed(0);e.setGreen(0);e.setBlue(0);}else if(mode>=10){e.setRed(.065F);e.setGreen(.059F);e.setBlue(.05F);}}
     @SubscribeEvent public static void mist(ViewportEvent.RenderFog e){
         if(active()&&mode==14&&e.getMode()==net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN){float opacity=WellSequence.darkness(elapsed);if(opacity>0){e.setNearPlaneDistance(0);e.setFarPlaneDistance(32*(1-opacity)+.05F*opacity);e.setCanceled(true);}return;}
         if(active()&&mode==5&&e.getMode()==net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN){e.setNearPlaneDistance(1.5F);e.setFarPlaneDistance(20);e.setCanceled(true);return;}
@@ -70,6 +72,7 @@ public final class NovelSceneClient {
                 if(mode==14)drawWellFade(g,elapsed);
             }
             if(active()&&mode==12&&elapsed>=5)g.fill(0,0,g.guiWidth(),g.guiHeight(),0xF8000000);
+            if(active()&&mode==STILLNESS&&elapsed<40){int a=Math.round(150*(float)Math.sin(Math.PI*elapsed/40.0));if(a>0){g.fill(0,0,g.guiWidth(),g.guiHeight()/2,(a<<24)|0xD4D6D8);g.fill(0,g.guiHeight()/2,g.guiWidth(),g.guiHeight(),((a/2)<<24)|0xD4D6D8);}}
             if(!active()||captionTicks<=0||caption.isEmpty())return;var mc=Minecraft.getInstance();var lines=mc.font.split(net.minecraft.network.chat.Component.literal(caption),Math.min(380,g.guiWidth()-32));int y=g.guiHeight()-72-lines.size()*10;
             for(var line:lines){int width=mc.font.width(line);g.fill((g.guiWidth()-width)/2-5,y-2,(g.guiWidth()+width)/2+5,y+10,0x88000000);g.drawString(mc.font,line,(g.guiWidth()-width)/2,y,0xFFE8DED1);y+=11;}
         });}

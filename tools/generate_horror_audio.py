@@ -16,6 +16,12 @@ The storeroom (0.4.210):
   storeroom.heart    one heartbeat, low and thick
   storeroom.blow     a blow from behind: a dull heavy thud with no ring to it
 
+The stillness (0.4.211):
+  stillness.breath  something enormous breathing out right overhead: a long, wet, ragged exhale through a big chest
+  stillness.sniff   snuffling at the floor: short wet inhalations, a snort
+  stillness.nudge   a heavy head shoving: a dull thump and a grunt
+  stillness.gore    the horns: a crack and a heavy, tearing thud
+
 --check verifies the encoded files against art/horror_audio.json and that none of them clips.
 """
 import argparse
@@ -203,10 +209,59 @@ def blow():
     return normalise(lowpass(out, .4), .75)
 
 
+def huge_breath():
+    """One long exhale out of a chest the size of a barrel: low rumble, wet rasp, ragged at the end."""
+    rng = random.Random(9301); out = []; low = 0; band = 0; total = 2.6
+    for i in range(int(total * RATE)):
+        t = i / RATE; n = rng.uniform(-1, 1); band += .22 * (n - band); low += .03 * (n - low)
+        env = min(1, t / .25) * max(0, 1 - max(0, t - 1.4) / 1.2)
+        rasp = 1 + .5 * math.sin(2 * math.pi * 23 * t) * (1 if t > 1.3 else .3)
+        out.append((band * .6 + low * 2.4) * env * rasp + math.sin(2 * math.pi * 48 * t) * .18 * env)
+    return normalise(out, .6)
+
+
+def snuffle():
+    """Three short wet inhalations at the floor and a snort."""
+    rng = random.Random(9302); out = []; band = 0; total = 1.5
+    for i in range(int(total * RATE)):
+        t = i / RATE; n = rng.uniform(-1, 1); band += .45 * (n - band)
+        env = 0
+        for start in (0, .22, .44):
+            if start <= t < start + .14:
+                env = math.sin(math.pi * (t - start) / .14)
+        if 1.0 <= t < 1.25:
+            env = math.sin(math.pi * (t - 1.0) / .25) * 1.4
+        out.append(band * env)
+    return normalise(out, .5)
+
+
+def shove():
+    """A heavy head against a body: a dull low thump, cloth, and a grunt."""
+    rng = random.Random(9303); out = []; band = 0; total = .9
+    for i in range(int(total * RATE)):
+        t = i / RATE; n = rng.uniform(-1, 1); band += .3 * (n - band)
+        thump = math.sin(2 * math.pi * 55 * t) * math.exp(-t * 18)
+        grunt = (math.sin(2 * math.pi * 95 * t) + .5 * math.sin(2 * math.pi * 190 * t)) * math.exp(-max(0, t - .12) * 6) * (1 if t > .1 else 0) * .5
+        out.append(thump * 1.2 + grunt + band * .25 * math.exp(-t * 10))
+    return normalise(out, .65)
+
+
+def horns():
+    """A crack, then a heavy tearing thud with no ring to it."""
+    rng = random.Random(9304); out = []; band = 0; total = 1.0
+    for i in range(int(total * RATE)):
+        t = i / RATE; n = rng.uniform(-1, 1); band += .7 * (n - band)
+        crack = n * math.exp(-t * 60) * 1.4
+        thud = math.sin(2 * math.pi * 42 * t) * math.exp(-max(0, t - .02) * 9)
+        tear = band * .5 * math.exp(-max(0, t - .05) * 5) * (1 if t > .05 else 0)
+        out.append(crack + thud * 1.3 + tear)
+    return normalise(out, .7)
+
+
 NAMES = ('closing.grind', 'closing.hold', 'closing.crack', 'closing.cry', 'closing.call', 'closing.wall',
-         'storeroom.breath', 'storeroom.scrape', 'storeroom.flicker', 'storeroom.slam', 'storeroom.heart', 'storeroom.blow')
+         'storeroom.breath', 'storeroom.scrape', 'storeroom.flicker', 'storeroom.slam', 'storeroom.heart', 'storeroom.blow', 'stillness.breath', 'stillness.sniff', 'stillness.nudge', 'stillness.gore')
 MAKERS = {'closing.grind': grind, 'closing.hold': hold, 'closing.crack': crack, 'closing.cry': cry, 'closing.call': call, 'closing.wall': lambda: call(True),
-          'storeroom.breath': breath, 'storeroom.scrape': scrape, 'storeroom.flicker': flicker, 'storeroom.slam': slam, 'storeroom.heart': heart, 'storeroom.blow': blow}
+          'storeroom.breath': breath, 'storeroom.scrape': scrape, 'storeroom.flicker': flicker, 'storeroom.slam': slam, 'storeroom.heart': heart, 'storeroom.blow': blow, 'stillness.breath': huge_breath, 'stillness.sniff': snuffle, 'stillness.nudge': shove, 'stillness.gore': horns}
 
 
 def file_of(name):

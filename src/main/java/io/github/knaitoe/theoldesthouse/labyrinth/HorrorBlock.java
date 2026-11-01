@@ -22,12 +22,17 @@ import net.minecraft.world.phys.shapes.*;
  * thing with a tag on it (each a full block of shelf); the bulb on its pull chain (stage 0 out, 1 lit, 2 and 3 its chain swung one
  * way and the other, lit); the list in the reader's hand pinned beside the door (the source); boxes; and the footnote page by the
  * way in (the account).
+ *
+ * <p>The stillness's (0.4.211): a surveyor's page nailed to the wall by the way in (the source), a count scratched into the dust
+ * before the far door in rows of five (the account), and a cloven print pressed into the dust where the thing nobody sees has
+ * stood or walked. The print has no shape: it must never stop a step, and nobody can pick at it.
  */
 public final class HorrorBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<HorrorBlock> CODEC=simpleCodec(HorrorBlock::new);
     public enum Kind implements StringRepresentable {
         DRAWING,TRANSCRIPT,CRAYONS,HANDPRINT,
-        SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BULB,LIST,BOXES,FOOTNOTE;
+        SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BULB,LIST,BOXES,FOOTNOTE,
+        LOG,TALLY,HOOF;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -53,7 +58,9 @@ public final class HorrorBlock extends HorizontalDirectionalBlock {
         return switch(s.getValue(KIND)){
             case DRAWING,CRAYONS,FOOTNOTE->Block.box(2,0,2,14,1,14);
             case TRANSCRIPT->Block.box(3,0,3,13,10,13);
-            case HANDPRINT->Shapes.empty();
+            case HANDPRINT,HOOF->Shapes.empty();
+            case LOG->box(f,3,3,15,13,15,16);
+            case TALLY->Block.box(1,0,1,15,.5,15);
             case SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BOXES->Shapes.block();
             case BULB->Block.box(5,4,5,11,16,11);
             case LIST->box(f,3,4,15,13,14,16);

@@ -407,6 +407,8 @@ public enum LabyrinthPlace {
     CLOSING_HALL("closing_hall",Kind.ONE_SHOT,139,new BoundingBox(-19,-1,-48,5,7,0),literaryEntry()),
     /** 0.4.210, the storeroom, the second of the dark halls' horrors (Storeroom, StoreroomSite): Johnny's storeroom, the list in the reader's own hand, and don't turn round. Survival, dealt only from depth sixteen. */
     STOREROOM("storeroom",Kind.ONE_SHOT,140,new BoundingBox(-4,-1,-35,4,5,0),literaryEntry()),
+    /** 0.4.211, the stillness, the third of the dark halls' horrors (Stillness, StillnessSite): the growl made flesh in a wide, low hall; it hunts by sound and stands over the still. Survival, dealt only from depth sixteen. */
+    STILLNESS("stillness",Kind.ONE_SHOT,141,new BoundingBox(-7,-1,-51,7,4,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

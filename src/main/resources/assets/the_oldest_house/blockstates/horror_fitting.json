@@ -719,6 +719,186 @@
     "facing=west,kind=footnote,stage=3": {
       "model": "the_oldest_house:block/horror/footnote",
       "y": 270
+    },
+    "facing=north,kind=log,stage=0": {
+      "model": "the_oldest_house:block/horror/log"
+    },
+    "facing=north,kind=log,stage=1": {
+      "model": "the_oldest_house:block/horror/log"
+    },
+    "facing=north,kind=log,stage=2": {
+      "model": "the_oldest_house:block/horror/log"
+    },
+    "facing=north,kind=log,stage=3": {
+      "model": "the_oldest_house:block/horror/log"
+    },
+    "facing=east,kind=log,stage=0": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 90
+    },
+    "facing=east,kind=log,stage=1": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 90
+    },
+    "facing=east,kind=log,stage=2": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 90
+    },
+    "facing=east,kind=log,stage=3": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 90
+    },
+    "facing=south,kind=log,stage=0": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 180
+    },
+    "facing=south,kind=log,stage=1": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 180
+    },
+    "facing=south,kind=log,stage=2": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 180
+    },
+    "facing=south,kind=log,stage=3": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 180
+    },
+    "facing=west,kind=log,stage=0": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 270
+    },
+    "facing=west,kind=log,stage=1": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 270
+    },
+    "facing=west,kind=log,stage=2": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 270
+    },
+    "facing=west,kind=log,stage=3": {
+      "model": "the_oldest_house:block/horror/log",
+      "y": 270
+    },
+    "facing=north,kind=tally,stage=0": {
+      "model": "the_oldest_house:block/horror/tally"
+    },
+    "facing=north,kind=tally,stage=1": {
+      "model": "the_oldest_house:block/horror/tally"
+    },
+    "facing=north,kind=tally,stage=2": {
+      "model": "the_oldest_house:block/horror/tally"
+    },
+    "facing=north,kind=tally,stage=3": {
+      "model": "the_oldest_house:block/horror/tally"
+    },
+    "facing=east,kind=tally,stage=0": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 90
+    },
+    "facing=east,kind=tally,stage=1": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 90
+    },
+    "facing=east,kind=tally,stage=2": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 90
+    },
+    "facing=east,kind=tally,stage=3": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 90
+    },
+    "facing=south,kind=tally,stage=0": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 180
+    },
+    "facing=south,kind=tally,stage=1": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 180
+    },
+    "facing=south,kind=tally,stage=2": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 180
+    },
+    "facing=south,kind=tally,stage=3": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 180
+    },
+    "facing=west,kind=tally,stage=0": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 270
+    },
+    "facing=west,kind=tally,stage=1": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 270
+    },
+    "facing=west,kind=tally,stage=2": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 270
+    },
+    "facing=west,kind=tally,stage=3": {
+      "model": "the_oldest_house:block/horror/tally",
+      "y": 270
+    },
+    "facing=north,kind=hoof,stage=0": {
+      "model": "the_oldest_house:block/horror/hoof"
+    },
+    "facing=north,kind=hoof,stage=1": {
+      "model": "the_oldest_house:block/horror/hoof"
+    },
+    "facing=north,kind=hoof,stage=2": {
+      "model": "the_oldest_house:block/horror/hoof"
+    },
+    "facing=north,kind=hoof,stage=3": {
+      "model": "the_oldest_house:block/horror/hoof"
+    },
+    "facing=east,kind=hoof,stage=0": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 90
+    },
+    "facing=east,kind=hoof,stage=1": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 90
+    },
+    "facing=east,kind=hoof,stage=2": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 90
+    },
+    "facing=east,kind=hoof,stage=3": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 90
+    },
+    "facing=south,kind=hoof,stage=0": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 180
+    },
+    "facing=south,kind=hoof,stage=1": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 180
+    },
+    "facing=south,kind=hoof,stage=2": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 180
+    },
+    "facing=south,kind=hoof,stage=3": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 180
+    },
+    "facing=west,kind=hoof,stage=0": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 270
+    },
+    "facing=west,kind=hoof,stage=1": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 270
+    },
+    "facing=west,kind=hoof,stage=2": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 270
+    },
+    "facing=west,kind=hoof,stage=3": {
+      "model": "the_oldest_house:block/horror/hoof",
+      "y": 270
     }
   }
 }

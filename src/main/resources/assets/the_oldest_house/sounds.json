@@ -3183,5 +3183,41 @@
         "stream": false
       }
     ]
+  },
+  "stillness.breath": {
+    "subtitle": "subtitles.the_oldest_house.stillness.breath",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/stillness_breath",
+        "stream": false
+      }
+    ]
+  },
+  "stillness.sniff": {
+    "subtitle": "subtitles.the_oldest_house.stillness.sniff",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/stillness_sniff",
+        "stream": false
+      }
+    ]
+  },
+  "stillness.nudge": {
+    "subtitle": "subtitles.the_oldest_house.stillness.nudge",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/stillness_nudge",
+        "stream": false
+      }
+    ]
+  },
+  "stillness.gore": {
+    "subtitle": "subtitles.the_oldest_house.stillness.gore",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/stillness_gore",
+        "stream": false
+      }
+    ]
   }
 }

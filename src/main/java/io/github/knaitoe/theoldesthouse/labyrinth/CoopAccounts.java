@@ -108,6 +108,9 @@ final class CoopAccounts {
         // 0.4.206: one set, one dial; dead air stopped the tall one for all of them.
         // 0.4.209: two readers, a hand each; it closed twice as fast with two in it.
         // 0.4.210: back to back, one of them always facing the door; every look shrank the room for both.
+        // 0.4.211: one sound drew it to all of them; a noise could draw it off a friend.
+        together(STILLNESS,party("%s {was} in the low hall with me when it came. One sound drew it to all of us, and none of us made one we could help.",
+            "%s {was} still standing still in the hall when I reached the far door."));
         together(STOREROOM,party("%s {was} in the storeroom with me, back to back. One of us watched the door while the other fetched, and every time either of us looked, the shelves came nearer for both.",
             "%s {was} still in the storeroom when I backed out."));
         together(CLOSING_HALL,party("%s {was} in the hall with me. We took a hand each, and it closed twice as fast for there being two of us.",
