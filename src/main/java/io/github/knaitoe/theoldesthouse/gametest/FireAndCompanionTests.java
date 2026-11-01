@@ -22,7 +22,7 @@ public final class FireAndCompanionTests {
     private static ServerLevel routeLevel;private static BlockPos routeTicket;
     private static void remove(ServerPlayer p){NativeTestPlayers.remove(p);}
     @AfterBatch(batch="companion_route") public static void cleanRoute(ServerLevel level){for(var e:ROUTE_ENTITIES){if(e instanceof ServerPlayer p)remove(p);else e.discard();}ROUTE_ENTITIES.clear();if(routeLevel!=null){routeLevel.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(routeTicket),3,routeTicket);routeLevel=null;}}
-    @GameTest(template="empty",batch="companion_route",timeoutTicks=300)
+    @GameTest(template="empty",batch="companion_route",timeoutTicks=900)
     public static void nativeGuideActuallyWalksPastStoppingRadiusAndAroundBend(GameTestHelper h){
         var owner=NativeTestPlayers.survival(h,"walking_guide_owner");var level=HouseTestLevel.get(owner.server,HouseDimensions.INTERIOR);
         BlockPos base=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+240000,180,240000);var floor=LabyrinthHalls.floor(LabyrinthPlace.BENT_HALL);
@@ -34,10 +34,17 @@ public final class FireAndCompanionTests {
         owner.teleportTo(level,base.getX()+.5,base.getY(),base.getZ()+.5,0,0);
         var dog=EntityType.WOLF.create(level);dog.tame(owner);dog.moveTo(Vec3.atBottomCenterOf(base));level.addFreshEntity(dog);ROUTE_ENTITIES.add(owner);ROUTE_ENTITIES.add(dog);
         BlockPos goal=base.offset(-15,0,-30);
-        h.runAtTickTime(280,()->h.assertTrue(dog.getX()<base.getX()-8&&dog.getZ()<base.getZ()-17,
-                "native route did not advance: ticks="+dog.tickCount+", position="+dog.position()+", base="+base+", noAi="+dog.isNoAi()+", navigationDone="+dog.getNavigation().isDone()));
+        // The remote area ticks entities only once its ticket has promoted it, which on a busy server (run 1387: hundreds of chunks
+        // still generating) can take longer than the route itself; the route's 280 ticks start when the dog first ticks there.
+        long[] start={-1};
         h.onEachTick(()->{
             if(level.getEntity(dog.getUUID())!=dog)return;
+            if(start[0]<0){
+                if(dog.tickCount>0&&level.isPositionEntityTicking(dog.blockPosition()))start[0]=h.getTick();
+                else if(h.getTick()>600)h.fail("the route's area never ticked entities: ticks="+dog.tickCount+", entityTicking="+level.isPositionEntityTicking(dog.blockPosition()));
+                return;
+            }
+            if(h.getTick()-start[0]>280)h.fail("native route did not advance: ticks="+dog.tickCount+", position="+dog.position()+", base="+base+", noAi="+dog.isNoAi()+", navigationDone="+dog.getNavigation().isDone());
             owner.moveTo(dog.position().add(0,0,2));HillaryPaths.lead(dog,owner,goal,LabyrinthPlace.BENT_HALL,base);
             if(dog.getX()<base.getX()-8&&dog.getZ()<base.getZ()-17){
                 h.assertTrue(dog.getY()>base.getY()-1&&dog.getHealth()>0,"the native guide walked on the connected floor around the bend");
