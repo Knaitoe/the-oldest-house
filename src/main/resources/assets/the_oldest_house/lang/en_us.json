@@ -866,5 +866,22 @@
   "advancements.the_oldest_house.account.left_right.title": "The left-right game",
   "advancements.the_oldest_house.account.left_right.description": "I kept to the turns the road gave me and did not look away from her.",
   "advancements.the_oldest_house.account.dead_air.title": "Dead air",
-  "advancements.the_oldest_house.account.dead_air.description": "I tuned the set to a channel that was never on the air and walked into the show."
+  "advancements.the_oldest_house.account.dead_air.description": "I tuned the set to a channel that was never on the air and walked into the show.",
+  "block.the_oldest_house.pitt_limestone": "Wet Limestone",
+  "block.the_oldest_house.pitt_ochre": "Ochre Limestone",
+  "block.the_oldest_house.pitt_clay": "Cave Clay",
+  "block.the_oldest_house.pitt_calcite": "Calcite Flowstone",
+  "block.the_oldest_house.pitt_fitting": "Cave Fitting",
+  "block.the_oldest_house.pitt_climb": "Fixed Rope",
+  "item.the_oldest_house.pitt_masonry_hammer": "Heavy Masonry Hammer",
+  "item.the_oldest_house.pitt_carbide_lamp": "Carbide Caver Lamp",
+  "item.the_oldest_house.pitt_aneroid_barometer": "Brass Aneroid Barometer",
+  "subtitles.the_oldest_house.pitt.draft": "A draft moves through stone",
+  "subtitles.the_oldest_house.pitt.groan": "Rock takes the weight",
+  "subtitles.the_oldest_house.pitt.grind": "A slab grinds lower",
+  "subtitles.the_oldest_house.pitt.chisel": "A hammer rings on stone",
+  "subtitles.the_oldest_house.pitt.scrape": "Something scrapes in a crack",
+  "subtitles.the_oldest_house.pitt.step": "A footstep on stone, early",
+  "subtitles.the_oldest_house.pitt.rumble": "The passage comes down",
+  "subtitles.the_oldest_house.pitt.tick": "A barometer's needle jumps"
 }

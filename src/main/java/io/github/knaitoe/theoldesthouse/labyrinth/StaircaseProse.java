@@ -218,6 +218,7 @@ public final class StaircaseProse {
     static { PLACES.put("polaroid_trail","the back yard"); }
     static { PLACES.put("left_right","the road past the toll"); }
     static { PLACES.put("dead_air","the basement studio"); }
+    static { PLACES.put("god_of_the_pitt","the passages under the cave"); }
     static {
         String[][] names = {
             {"junction","the junction"},{"gray_corridor","the gray corridor"},{"floorboards","the room of loose boards"},

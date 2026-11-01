@@ -31,6 +31,7 @@ public final class SceneClock {
             case WAY_OUT->12; // 0.4.199: a fine morning, and the sun never moves
             case MAPPING_INTERIOR->13; // 0.4.201: 2:49 in the morning, every night
             case DEVILS_ROCK->9;
+            case PITT->14; // 0.4.207: first light over the moor, for whoever climbs out
             case DEAD_AIR->3; // 0.4.206: an overcast evening over the marsh
             case LEFT_RIGHT->9; // 0.4.205: two in the morning at the toll
             case POLAROID_TRAIL->3; // 0.4.204: late autumn twilight over the yard and the pines
@@ -40,6 +41,6 @@ public final class SceneClock {
     }
     public static long time(int mode,int elapsed,long nativeTime){return switch(mode){
         case 1->21000;case 3,10->12500;case 7,8,9->18000;case 4->6000;
-        case 11->1000;case 12->3000;case 13->20820;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
+        case 11->1000;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
     };}
 }

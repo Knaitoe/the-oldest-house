@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,kind=rope": {
+      "model": "the_oldest_house:block/pitt/climb_rope"
+    },
+    "facing=east,kind=rope": {
+      "model": "the_oldest_house:block/pitt/climb_rope",
+      "y": 90
+    },
+    "facing=south,kind=rope": {
+      "model": "the_oldest_house:block/pitt/climb_rope",
+      "y": 180
+    },
+    "facing=west,kind=rope": {
+      "model": "the_oldest_house:block/pitt/climb_rope",
+      "y": 270
+    },
+    "facing=north,kind=ladder": {
+      "model": "the_oldest_house:block/pitt/climb_ladder"
+    },
+    "facing=east,kind=ladder": {
+      "model": "the_oldest_house:block/pitt/climb_ladder",
+      "y": 90
+    },
+    "facing=south,kind=ladder": {
+      "model": "the_oldest_house:block/pitt/climb_ladder",
+      "y": 180
+    },
+    "facing=west,kind=ladder": {
+      "model": "the_oldest_house:block/pitt/climb_ladder",
+      "y": 270
+    }
+  }
+}
