@@ -45,6 +45,8 @@ class Look:
     number: int = 0
     scarf: str = ''
     face_style: str = ''
+    # 0.4.202 (owner: "eyes are just a smidge off"): the House body's irises sit in the middle of both eyes, looking ahead.
+    level_eyes: bool = False
 
 
 # Each row is a character design, rather than an index into a repeated picture.
@@ -408,7 +410,7 @@ def face(look):
         for x in (3,10):
             d.line((x,6,x+2,6),fill=shade(hair,-4))
             d.rectangle((x,7,x+2,8),fill='#e9e2ce')
-            iris=x+(1 if x==3 else 0)
+            iris=x+(1 if x==3 or look.level_eyes else 0)
             d.line((iris,7,iris,8),fill=rgb(look.eyes));d.point((iris,8),fill='#343331')
         if look.mark=='despair':
             d.line((3,5,5,6),fill=hair);d.line((10,6,12,5),fill=hair)
@@ -1042,7 +1044,7 @@ BODY_CLOTHES={
 
 def body_look(age,presentation,cut,skin=BODY_REF,hair=BODY_REF):
     style,cloth,pants,accent,sleeve=BODY_CLOTHES[presentation][BODY_AGES.index(age)]
-    return Look(skin,hair,cut,cloth,pants,style,accent,eyes='#4b3d33',age=BODY_AGES.index(age),sleeve=sleeve,logical=64)
+    return Look(skin,hair,cut,cloth,pants,style,accent,eyes='#4b3d33',age=BODY_AGES.index(age),sleeve=sleeve,logical=64,level_eyes=True)
 
 
 def house_body(age,presentation,cut):
