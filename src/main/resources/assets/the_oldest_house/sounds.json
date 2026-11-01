@@ -2967,5 +2967,77 @@
         "stream": false
       }
     ]
+  },
+  "pitt.draft": {
+    "subtitle": "subtitles.the_oldest_house.pitt.draft",
+    "sounds": [
+      {
+        "name": "the_oldest_house:pitt/draft",
+        "stream": false
+      }
+    ]
+  },
+  "pitt.groan": {
+    "subtitle": "subtitles.the_oldest_house.pitt.groan",
+    "sounds": [
+      {
+        "name": "the_oldest_house:pitt/groan",
+        "stream": false
+      }
+    ]
+  },
+  "pitt.grind": {
+    "subtitle": "subtitles.the_oldest_house.pitt.grind",
+    "sounds": [
+      {
+        "name": "the_oldest_house:pitt/grind",
+        "stream": false
+      }
+    ]
+  },
+  "pitt.chisel": {
+    "subtitle": "subtitles.the_oldest_house.pitt.chisel",
+    "sounds": [
+      {
+        "name": "the_oldest_house:pitt/chisel",
+        "stream": false
+      }
+    ]
+  },
+  "pitt.scrape": {
+    "subtitle": "subtitles.the_oldest_house.pitt.scrape",
+    "sounds": [
+      {
+        "name": "the_oldest_house:pitt/scrape",
+        "stream": false
+      }
+    ]
+  },
+  "pitt.step": {
+    "subtitle": "subtitles.the_oldest_house.pitt.step",
+    "sounds": [
+      {
+        "name": "the_oldest_house:pitt/step",
+        "stream": false
+      }
+    ]
+  },
+  "pitt.rumble": {
+    "subtitle": "subtitles.the_oldest_house.pitt.rumble",
+    "sounds": [
+      {
+        "name": "the_oldest_house:pitt/rumble",
+        "stream": false
+      }
+    ]
+  },
+  "pitt.tick": {
+    "subtitle": "subtitles.the_oldest_house.pitt.tick",
+    "sounds": [
+      {
+        "name": "the_oldest_house:pitt/tick",
+        "stream": false
+      }
+    ]
   }
 }

@@ -390,6 +390,8 @@ public enum LabyrinthPlace {
     LEFT_RIGHT("left_right",Kind.MULTI_VISIT,131,new BoundingBox(-16,-5,-60,47,9,0),literaryEntry()),
     /** 0.4.206, the Dead Air Broadcast: a 1983 basement standing as a set in a black studio, a hallway that is whatever the receiver is tuned to, the salt marsh relay and the master booth (DeadAirSet, DeadAirGame). Understanding, four visits. */
     DEAD_AIR("dead_air",Kind.MULTI_VISIT,132,new BoundingBox(-26,-5,-70,26,26,0),literaryEntry()),
+    /** 0.4.207, the God of the Pitt: Ted the Caver's deeper passages, dealt only after the squeeze is retraced; four visits, no Witness story of its own (PittCave, PittGame). Stands at its own height (PittCave.BASE_Y). */
+    PITT("god_of_the_pitt",Kind.MULTI_VISIT,133,new BoundingBox(-24,-38,-64,24,16,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

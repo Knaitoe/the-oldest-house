@@ -1,0 +1,52 @@
+{
+  "sounds": {
+    "draft": {
+      "samples": 79380,
+      "rate": 22050,
+      "ticks": 72,
+      "sha256": "0f83b9ccd2ec30b075c36da4901bc659bb9f5e2c3cfb78423845e80d421c1e76"
+    },
+    "groan": {
+      "samples": 52920,
+      "rate": 22050,
+      "ticks": 48,
+      "sha256": "d18cdb4cc2e1debf0729d9273f1e6d2c5ac7437a4b06639e80bafa173d7aa067"
+    },
+    "grind": {
+      "samples": 12127,
+      "rate": 22050,
+      "ticks": 11,
+      "sha256": "924302ef1c656fdbefd0c0b0686c347d8db31070f1f9ed0a5856251ac0e91f47"
+    },
+    "chisel": {
+      "samples": 15434,
+      "rate": 22050,
+      "ticks": 14,
+      "sha256": "02eff9aded3c00e72cca813964edcd63dc3f38b801450854b21fa178a002172c"
+    },
+    "scrape": {
+      "samples": 24255,
+      "rate": 22050,
+      "ticks": 22,
+      "sha256": "ed4dbc9cb6d61780ffdfa62e46c59ebfccdce79eb8419d50a44ff5c7b480248b"
+    },
+    "step": {
+      "samples": 7717,
+      "rate": 22050,
+      "ticks": 7,
+      "sha256": "51e4288bf0d2322e5cf080d71550df8f0a74ef97614c09b07e24643781d3d4a1"
+    },
+    "rumble": {
+      "samples": 66150,
+      "rate": 22050,
+      "ticks": 60,
+      "sha256": "5e8a8c7c852afcaf9b893c7f50d8c67bb6bd3e33e4a55b288ec419a5700421f8"
+    },
+    "tick": {
+      "samples": 13230,
+      "rate": 22050,
+      "ticks": 12,
+      "sha256": "063e2d4d7d62c6fdeed015f00d61ce0d8a3088f36df04f8327015c7c3f72e9c4"
+    }
+  }
+}

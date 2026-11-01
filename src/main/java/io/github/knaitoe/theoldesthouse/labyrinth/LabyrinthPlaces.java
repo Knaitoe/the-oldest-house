@@ -140,7 +140,7 @@ public final class LabyrinthPlaces {
         }
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
-                place == LabyrinthPlace.BORRASCA ? 80 : place == LabyrinthPlace.WHISTLERS ? LookoutTower.BASE_Y : (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
+                place == LabyrinthPlace.BORRASCA ? 80 : place == LabyrinthPlace.WHISTLERS ? LookoutTower.BASE_Y : place == LabyrinthPlace.PITT ? PittCave.BASE_Y : (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.BARN_WELL ? 14 : FLOOR_IN_SLOT),
                 origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing
                         : place.slot() >= APPENDED_INTERIOR_FIRST_SLOT ? APPENDED_INTERIOR_NORTH : 0)
         );
@@ -188,7 +188,7 @@ public final class LabyrinthPlaces {
      */
     @Nullable
     public static BoundingBox reach(BlockPos origin, LabyrinthPlace place) {
-        if (place == LabyrinthPlace.WHISTLERS) {
+        if (place == LabyrinthPlace.WHISTLERS || place == LabyrinthPlace.PITT) {
             BoundingBox bounds = placeBounds(origin, place);
             return bounds == null ? null : bounds.inflatedBy(PAD);
         }
