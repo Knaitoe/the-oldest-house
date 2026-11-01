@@ -28,7 +28,7 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'src/main/resources/assets/the_oldest_house'
 NS = 'the_oldest_house'
-KINDS = ('program', 'scorecard', 'folded_note', 'ledger_rest', 'script_stand', 'trail_rack', 'vault_register')
+KINDS = ('program', 'scorecard', 'folded_note', 'ledger_rest', 'script_stand', 'trail_rack', 'vault_register', 'floor_plan')
 
 
 def rng(name):
@@ -232,6 +232,18 @@ def textures():
     d.rectangle((11, 11, 12, 12), fill='#8e1d1a')
     d.point((12, 11), fill='#b23a2e')
     t['register_pages'] = im
+    # ---------------------------------------------------------------- Mapping the Interior (0.4.202): the floor plan lies on the
+    # kitchen table where he drew it, on graph paper, in pencil, with the pencil left on it.
+    im = Image.new('RGBA', (16, 16), '#eef0ea')
+    d = ImageDraw.Draw(im)
+    for i in range(0, 16, 2):
+        d.line((i, 0, i, 15), fill='#d4dde6'); d.line((0, i, 15, i), fill='#d4dde6')
+    d.rectangle((2, 3, 13, 12), outline='#5a5a5e')
+    d.line((7, 3, 7, 8), fill='#5a5a5e'); d.line((2, 8, 13, 8), fill='#5a5a5e'); d.line((9, 8, 9, 12), fill='#5a5a5e')
+    for x, y in ((8, 5), (8, 6), (8, 7), (8, 9), (8, 10)):
+        d.point((x, y), fill='#7a7a80')
+    d.point((11, 14), fill='#5a5a5e'); d.point((12, 15), fill='#5a5a5e'); d.point((12, 13), fill='#5a5a5e')
+    t['graph_plan'] = im
     return t
 
 
@@ -327,6 +339,16 @@ def models():
         el((2, 13.5, 3), (14, 14.5, 14), {'all': 'edge', 'up': 'pages'}, slope),
         el((1, 13, 2), (15, 14.25, 2.75), {'all': 'iron'}, slope),
     ])
+    # Mapping (0.4.202, owner: "unnaturally placed podium"): no podium. The floor plan lies on the west half of the kitchen table,
+    # which this block is; the table's other half is the boys' house's own piece beside it.
+    table = 'the_oldest_house:block/tract_house/map_table'
+    els = [el((0, 14, 1), (16, 16, 15), {'all': 'table'})]
+    els += [el((1, 12, 2), (16, 14, 3), {'all': 'table'}), el((1, 12, 13), (16, 14, 14), {'all': 'table'}), el((1, 12, 3), (2, 14, 13), {'all': 'table'})]
+    for z in (2, 12.5):
+        els += [el((1.5, 0, z), (3, 2, z + 1.5), {'all': 'table'}), el((1.75, 2, z + .25), (2.75, 9, z + 1.25), {'all': 'table'}),
+                el((1.5, 9, z), (3, 12, z + 1.5), {'all': 'table'})]
+    els += [el((2, 16, 2.5), (14, 16.2, 13.5), {'all': 'edge', 'up': 'plan'}), el((10, 16.2, 10), (15, 16.8, 10.6), {'all': 'pencil'})]
+    m['floor_plan'] = ({'table': table, 'plan': 'graph_plan', 'edge': 'paper_edge', 'pencil': 'pencil'}, els)
     return m
 
 
@@ -340,7 +362,7 @@ def outputs():
         out['textures/block/reading_stand/%s.png' % name] = buf.getvalue()
     variants = {}
     for kind, (keys, elements) in models().items():
-        tex = {k: '%s:block/reading_stand/%s' % (NS, v) for k, v in keys.items()}
+        tex = {k: v if ':' in v else '%s:block/reading_stand/%s' % (NS, v) for k, v in keys.items()}
         tex['particle'] = tex[next(iter(keys))]
         model = {'render_type': 'minecraft:cutout', 'ambientocclusion': False, 'textures': tex, 'elements': elements}
         out['models/block/reading_stand_%s.json' % kind] = (json.dumps(model, indent=2) + '\n').encode()

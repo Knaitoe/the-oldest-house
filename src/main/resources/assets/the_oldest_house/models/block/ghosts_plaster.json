@@ -1,76 +1,43 @@
 {
-  "textures": {
-    "plaster": "the_oldest_house:block/ghosts/materials_atlas"
-  },
-  "elements": [
-    {
-      "from": [
-        0,
-        0,
-        0
-      ],
-      "to": [
-        16,
-        16,
-        16
-      ],
-      "faces": {
-        "north": {
-          "texture": "#plaster",
-          "uv": [
-            12.0,
-            12.0,
-            16.0,
-            16.0
-          ]
-        },
-        "south": {
-          "texture": "#plaster",
-          "uv": [
-            12.0,
-            12.0,
-            16.0,
-            16.0
-          ]
-        },
-        "east": {
-          "texture": "#plaster",
-          "uv": [
-            12.0,
-            12.0,
-            16.0,
-            16.0
-          ]
-        },
-        "west": {
-          "texture": "#plaster",
-          "uv": [
-            12.0,
-            12.0,
-            16.0,
-            16.0
-          ]
-        },
-        "up": {
-          "texture": "#plaster",
-          "uv": [
-            12.0,
-            12.0,
-            16.0,
-            16.0
-          ]
-        },
-        "down": {
-          "texture": "#plaster",
-          "uv": [
-            12.0,
-            12.0,
-            16.0,
-            16.0
-          ]
-        }
-      }
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "p": "the_oldest_house:block/barrett/paint",
+  "c": "the_oldest_house:block/barrett/plaster_crack",
+  "particle": "the_oldest_house:block/barrett/paint"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c"
+    },
+    "south": {
+     "texture": "#p"
+    },
+    "east": {
+     "texture": "#p"
+    },
+    "west": {
+     "texture": "#p"
+    },
+    "up": {
+     "texture": "#p"
+    },
+    "down": {
+     "texture": "#p"
     }
-  ],
-  "ambientocclusion": true
+   }
+  }
+ ]
 }

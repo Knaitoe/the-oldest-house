@@ -1,0 +1,179 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "t": "the_oldest_house:block/barrett/towel_heap",
+  "particle": "the_oldest_house:block/barrett/towel_heap"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    2
+   ],
+   "to": [
+    13,
+    1.5,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t"
+    },
+    "south": {
+     "texture": "#t"
+    },
+    "east": {
+     "texture": "#t"
+    },
+    "west": {
+     "texture": "#t"
+    },
+    "up": {
+     "texture": "#t"
+    },
+    "down": {
+     "texture": "#t"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    1.5,
+    4
+   ],
+   "to": [
+    10,
+    3,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      2,
+      2,
+      9,
+      8
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      2,
+      2,
+      9,
+      8
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      2,
+      2,
+      9,
+      8
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      2,
+      2,
+      9,
+      8
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      2,
+      2,
+      9,
+      8
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      2,
+      2,
+      9,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    9,
+    0,
+    11
+   ],
+   "to": [
+    15,
+    1,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      9,
+      6,
+      13
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0,
+      9,
+      6,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      0,
+      9,
+      6,
+      13
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      0,
+      9,
+      6,
+      13
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0,
+      9,
+      6,
+      13
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0,
+      9,
+      6,
+      13
+     ]
+    }
+   }
+  }
+ ]
+}

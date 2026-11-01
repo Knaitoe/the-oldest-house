@@ -1,0 +1,243 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "g": "the_oldest_house:block/barrett/guitar",
+  "k": "the_oldest_house:block/barrett/black",
+  "particle": "the_oldest_house:block/barrett/guitar"
+ },
+ "elements": [
+  {
+   "from": [
+    4,
+    0,
+    11.5
+   ],
+   "to": [
+    12,
+    9,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g",
+     "uv": [
+      4,
+      6,
+      12,
+      15
+     ]
+    },
+    "south": {
+     "texture": "#g",
+     "uv": [
+      4,
+      6,
+      12,
+      15
+     ]
+    },
+    "east": {
+     "texture": "#g",
+     "uv": [
+      4,
+      6,
+      12,
+      15
+     ]
+    },
+    "west": {
+     "texture": "#g",
+     "uv": [
+      4,
+      6,
+      12,
+      15
+     ]
+    },
+    "up": {
+     "texture": "#g",
+     "uv": [
+      4,
+      6,
+      12,
+      15
+     ]
+    },
+    "down": {
+     "texture": "#g",
+     "uv": [
+      4,
+      6,
+      12,
+      15
+     ]
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     14
+    ],
+    "axis": "x",
+    "angle": 22.5
+   }
+  },
+  {
+   "from": [
+    7,
+    9,
+    12
+   ],
+   "to": [
+    9,
+    24,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g",
+     "uv": [
+      7,
+      0,
+      9,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#g",
+     "uv": [
+      7,
+      0,
+      9,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#g",
+     "uv": [
+      7,
+      0,
+      9,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#g",
+     "uv": [
+      7,
+      0,
+      9,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#g",
+     "uv": [
+      7,
+      0,
+      9,
+      6
+     ]
+    },
+    "down": {
+     "texture": "#g",
+     "uv": [
+      7,
+      0,
+      9,
+      6
+     ]
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     14
+    ],
+    "axis": "x",
+    "angle": 22.5
+   }
+  },
+  {
+   "from": [
+    6.5,
+    24,
+    11.8
+   ],
+   "to": [
+    9.5,
+    27,
+    13.2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      6.5,
+      5,
+      9.5,
+      8
+     ]
+    },
+    "south": {
+     "texture": "#k",
+     "uv": [
+      6.5,
+      5,
+      9.5,
+      8
+     ]
+    },
+    "east": {
+     "texture": "#k",
+     "uv": [
+      2.8,
+      5,
+      4.2,
+      8
+     ]
+    },
+    "west": {
+     "texture": "#k",
+     "uv": [
+      11.8,
+      5,
+      13.2,
+      8
+     ]
+    },
+    "up": {
+     "texture": "#k",
+     "uv": [
+      6.5,
+      11.8,
+      9.5,
+      13.2
+     ]
+    },
+    "down": {
+     "texture": "#k",
+     "uv": [
+      6.5,
+      2.8,
+      9.5,
+      4.2
+     ]
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     14
+    ],
+    "axis": "x",
+    "angle": 22.5
+   }
+  }
+ ]
+}

@@ -1,0 +1,34 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "d": "the_oldest_house:block/barrett/merry_drawing",
+  "particle": "the_oldest_house:block/barrett/merry_drawing"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    1,
+    15.6
+   ],
+   "to": [
+    15,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#d",
+     "uv": [
+      1,
+      1,
+      15,
+      15
+     ]
+    }
+   }
+  }
+ ]
+}

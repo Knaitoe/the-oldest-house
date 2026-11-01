@@ -186,6 +186,7 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.MOTION_LIGHT, "A pinhead bulb over the door. It comes on when you lean close."),
         Map.entry(LabyrinthPlace.DARE_IN_THE_DARK, "Two scraps of tissue stand in a corridor, outside a door marked GIRLS."),
         Map.entry(LabyrinthPlace.WAY_OUT, "A square of green felt with a mirror-glass pond, a few painted animals, and a cottage whose door is only painted on."),
+        Map.entry(LabyrinthPlace.WHISTLERS, "A lookout tower on matchstick legs, its glass room no bigger than a thumbnail, three blinds drawn and the fourth not."),
         Map.entry(LabyrinthPlace.FEET_UP, "A doll's house with its front off: chalk on the paper walls, two armchairs a little nearer together than the plan shows, and a ladder to the attic that is only painted on."),
         Map.entry(LabyrinthPlace.QUIET_ROOM, "A bare room with one chair in it, and the chair is turned toward you."),
         Map.entry(LabyrinthPlace.EXPLORER_CAMP, "A tent pegged at the top of a long spiral of card, and a ladder going down out of sight."),

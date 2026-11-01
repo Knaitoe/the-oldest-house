@@ -1,0 +1,143 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "d": "the_oldest_house:block/barrett/dust_sheet",
+  "particle": "the_oldest_house:block/barrett/dust_sheet"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    1
+   ],
+   "to": [
+    16,
+    9,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#d"
+    },
+    "south": {
+     "texture": "#d"
+    },
+    "east": {
+     "texture": "#d"
+    },
+    "west": {
+     "texture": "#d"
+    },
+    "up": {
+     "texture": "#d"
+    },
+    "down": {
+     "texture": "#d"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    9,
+    9
+   ],
+   "to": [
+    16,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#d"
+    },
+    "south": {
+     "texture": "#d"
+    },
+    "east": {
+     "texture": "#d"
+    },
+    "west": {
+     "texture": "#d"
+    },
+    "up": {
+     "texture": "#d"
+    },
+    "down": {
+     "texture": "#d"
+    }
+   }
+  },
+  {
+   "from": [
+    1,
+    15,
+    11
+   ],
+   "to": [
+    15,
+    16.5,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#d",
+     "uv": [
+      1,
+      14.5,
+      15,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#d",
+     "uv": [
+      1,
+      14.5,
+      15,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#d",
+     "uv": [
+      1,
+      14.5,
+      5,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#d",
+     "uv": [
+      11,
+      14.5,
+      15,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#d",
+     "uv": [
+      1,
+      11,
+      15,
+      15
+     ]
+    },
+    "down": {
+     "texture": "#d",
+     "uv": [
+      1,
+      1,
+      15,
+      5
+     ]
+    }
+   }
+  }
+ ]
+}

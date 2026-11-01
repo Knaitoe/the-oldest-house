@@ -99,7 +99,8 @@ final class BorrascaTown {
         for(int z:new int[]{-26,-23,-20})box(l,b,-28,1,z,-28,2,z,Blocks.GLASS_PANE);
         for(int x:new int[]{-25,-19})box(l,b,x,1,-16,x,2,-16,Blocks.GLASS_PANE);
         // Porch: a raised deck, posts and a lean-to roof; the board hangs between the door and the north window.
-        box(l,b,-15,0,-29,-13,0,-17,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
+        // 0.4.202: the porch boards lie flush with the store's door, so nobody steps up under its lintel on the way out.
+        box(l,b,-15,-1,-29,-13,-1,-17,Blocks.SPRUCE_PLANKS);
         for(int z:new int[]{-29,-17})box(l,b,-13,0,z,-13,3,z,Blocks.SPRUCE_FENCE);
         box(l,b,-15,4,-29,-13,4,-17,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
         for(var at:BorrascaRooms.BOARD)fitAt(l,b,at,BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
@@ -122,7 +123,7 @@ final class BorrascaTown {
         box(l,b,18,-1,-30,30,-1,-16,Blocks.STONE_BRICKS);box(l,b,19,-1,-29,29,-1,-17,Blocks.POLISHED_ANDESITE);
         for(int x=18;x<=30;x++)for(int z=-30;z<=-16;z++){if(x!=18&&x!=30&&z!=-30&&z!=-16)continue;box(l,b,x,0,z,x,4,z,Blocks.BRICKS);set(l,b,x,5,z,slab(Blocks.STONE_BRICK_SLAB,SlabType.BOTTOM));}
         box(l,b,19,5,-29,29,5,-17,Blocks.STONE_BRICKS);box(l,b,18,4,-30,30,4,-30,Blocks.STONE_BRICKS);box(l,b,18,4,-16,30,4,-16,Blocks.STONE_BRICKS);box(l,b,18,4,-29,18,4,-17,Blocks.STONE_BRICKS);box(l,b,30,4,-29,30,4,-17,Blocks.STONE_BRICKS);
-        door(l,b,18,0,-23,Direction.WEST,Blocks.SPRUCE_DOOR);set(l,b,17,-1,-23,Blocks.STONE_BRICKS);set(l,b,17,0,-23,slab(Blocks.STONE_BRICK_SLAB,SlabType.BOTTOM));
+        door(l,b,18,0,-23,Direction.WEST,Blocks.SPRUCE_DOOR);set(l,b,17,-1,-23,Blocks.STONE_BRICKS);
         for(int z:new int[]{-27,-26,-20,-19})box(l,b,18,1,z,18,2,z,Blocks.GLASS_PANE);
         for(int z:new int[]{-26,-20})box(l,b,30,1,z,30,2,z,Blocks.GLASS_PANE);
         sign(l,b,17,3,-23,Direction.WEST,"COUNTY","SHERIFF","Drisking","Office");

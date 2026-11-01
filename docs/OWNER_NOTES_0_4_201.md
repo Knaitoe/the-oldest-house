@@ -479,6 +479,85 @@ survives death). It waits a few seconds after login and for no other screen to b
 see it. The opening case checks its pages, that it turns and gives nothing, and that closing it marks it seen; the client
 writing check measures its pages.
 
+## The November 1 notes: lived-in houses
+
+> "in the ghosts set, there's far too many repeated pictures... the pictures also aren't indicative of a family of four. i
+> really need you to flesh out the personality of each vignette you touch." "you've also still got two living/lounging spaces
+> in the house". "the tv should be showing something". "the camera case texture also doesn't carry the same style as the rest
+> of the set". "blinds should be single columns facing opposite directions rather than four blocks". "bathroom is host to a
+> family of four. there is clutter. a cup with toothbrushes. punny artwork. a tubshower with curtains. dirty towels and clothes
+> bins. this is the sort of characterization i need." "hallway should end with a closet". "very little character for a young
+> girl's bedroom", "very little character to marjorie's bedroom too". "crack looks out of place with the rest".
+
+**The Barretts' house** (`BarrettHome`, `GhostsSetRooms`, `tools/draw_barrett_home.py`):
+
+- **One living room.** The front room is the family's: the sofa faces the set, which is on (an eight-frame cartoon that lights
+  the room), the two armchairs face each other across the rug where the day-one interviews are shot, Merry's colouring book and
+  crayons and John's cold mug are on the coffee table, her toys are by the window, a floor lamp stands at the sofa's end. The
+  kitchen's second table and its armchair corner with a second set are gone; the kitchen has an island with two stools and a
+  fruit bowl, counters under its side window, the cork board (the chore chart with more stars in Merry's column, an unsigned
+  permission slip, the parish bulletin) and the girls' backpacks on their hooks. The den is the crew's alone: the family's sofa
+  and old set pushed against the wall under dust sheets, the shooting schedule on a whiteboard, coffee and doughnuts on the craft
+  table, the call sheets, the monitor and its chairs.
+- **Photographs of the four of them, none repeated.** A two-block studio portrait of all four hangs high over the front door,
+  facing the landing (where the window that made no sense was); the girls' school pictures under the landing; the four of them on
+  a beach over the hall console; Sarah with Merry new and Marjorie leaning in, and Marjorie giving Merry a piggyback, over the
+  sofa; John and Sarah's wedding picture beside the crucifix over their bed; Merry's crayon drawing of the four of them taped by
+  her door. The framed photograph every dresser carried is gone.
+- **Windows** are double windows two blocks wide and two high, one to a wall where a room wants one, centred on it. Each column
+  draws its trim on its outer edge only and the two columns face opposite ways, so they read as one window; the lower half has the
+  sill, the upper the blind's head rail (`WINDOW`, `WINDOW_HEAD`).
+- **Two bathrooms a family of four uses.** Both are tiled to the waist over a tile floor and have a tub-shower with its curtain
+  drawn, the rod and the shower head, shampoo on the rim and the rubber duck. The family bathroom (a wall shorter now, the space
+  over the front door closed off) has a double vanity with four toothbrushes in a cup, the soap pump, a squeezed tube and a
+  hairbrush; a towel bar with four towels; a wet towel and a sock on the floor; the laundry sorter (lights, darks, colours) full;
+  and a SOAP OPERA print. The girls' bathroom stops where its tub does: two toothbrushes, the detangling spray and hair ties at the
+  tap, Merry's step stool, a WHALE HELLO print, their own sorter and towels.
+- **The landing ends in a linen closet** (towels, sheets, the board games), with a window at the corridor's other end.
+- **Merry's room** (eight): her drawings taped up in a row, the stuffed animals by her bed, glow-in-the-dark stars on the ceiling,
+  her picture books, toys on the floor, the planets poster, her homework desk and the cardboard house.
+- **Marjorie's room** (fourteen): fairy lights pinned along the wall, a band poster with half its faces scratched out, a pinboard
+  of photo-booth strips and ticket stubs over her desk, the guitar she was learning, a boombox and its CDs on the floor, clothes
+  where she dropped them.
+- **John and Sarah's room**: his nightstand (a Bible with a rosary on it, the alarm set early), hers (a paperback face down, her
+  reading glasses), the crucifix and their wedding picture, his job listings on the desk.
+- **The crew's case** is drawn as the house draws its things (matte black, a moulded rib, latches and handle, a taped label);
+  the brown block on its lid was its old handle. **The day-three crack** is a thin dark line in the house's own paint.
+- **Everything answers a hand**: right-clicking the family's things gives a line about the people who live there (the purple
+  toothbrush chewed flat, the nail the crucifix hangs on newer than the paint, the bills on the console still in their envelopes,
+  FILMING STARTS in red on the calendar).
+
+**Mapping the Interior** (owner: "duplicated pictures", "unnaturally placed podium", "breaks in the carpet", "recycled
+cabinets", "floating, recycled clutter blocks"): the boys' house has its own things now (`TractHouseBlock` `MAP_*`, drawn by
+`tools/draw_tract_house.py`): the couch with an afghan over its back, the father's recliner with tape on its arm that nobody sits
+in, the set with its rabbit ears, a bed sheet tacked over the window, laminate kitchen cabinets with a chipped corner, the range
+whose clock reads 2:49, the fridge with Dino's seizure log taped to it, the boys' dresser with its stickers, the mother's with its
+lace runner and jewellery box, Dino's toys on the carpet (no longer floating over it). The one picture of the father (a young man
+by a pickup, a baby in his arms) hangs in the front room and the boys at the tetherball pole by the television; the coffee table
+holds the TV listings rather than a second copy of the wall photograph (in the model home too). The floor plan lies on the kitchen
+table with the pencil on it (a `FLOOR_PLAN` reading stand that is the table's west half), not on a podium. The carpet is the floor
+itself (wool), so nothing set on it leaves a square of bare boards.
+
+**Sleeping NPCs** (owner: "give npcs an actual sleeping animation"): a sleeper lies along the bed they are in the way the game
+lays down a sleeping player, the head on the pillow, on the mattress, arms loose at the sides, the head turned a little, eyes shut
+(lids drawn from the face's own cheek row) and a slow breath in the chest (`LiteraryRenderers.lieInBed`, `CastModel.asleep`).
+Dino's bed is the first.
+
+**The Winchester** (owner: "you've again placed stairs in a way players can't move past", "i don't know if this weirdly placed
+clutter is intentional"): the parlour's and the sewing room's half steps stood just inside their doors, where a reader stepping up
+still has their head under the lintel; the steps now stand before the doors on the lower side and the doors are hung at the upper
+floor's height. The storeroom holds what she bought and never used (spare doors leaning along one wall, leaded windows still in
+their crate slats along the other, a tidy row of crates, the lumber stacked) instead of scattered crates; the carpenters' court has
+a partition going up with no room on either side of it, their bench with plane and saw, the sawhorse, the lumber by the wall, the
+nail keg and shavings round where they work, the straw under the boards left clear for whoever falls.
+
+**Devil's Rock**: the clock, the picture and the coat hung on nothing in the open living room and entry; they hang on real walls
+now, and every loose diary page is one page with no narrator's line after it.
+
+**Checks that keep these from coming back** (`ArchitectureTests`): every small thing a scene sets about (a clock, picture or coat on
+a wall, toys, books, a lamp) rests on something, and every one that does not is listed; and no doorway in any scene has a step, a
+chair or a bed just inside it, under its lintel.
+
 ## Five vignette proposals
 
 The owner sent five vignette specifications (the Left-Right Game, the Dead Air Broadcast, the God of the Pitt, the Polaroid

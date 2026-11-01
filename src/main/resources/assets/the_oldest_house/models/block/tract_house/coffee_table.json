@@ -4,7 +4,7 @@
  "ambientocclusion": false,
  "textures": {
   "oak": "the_oldest_house:block/tract_house/oak",
-  "mag": "the_oldest_house:block/tract_house/photo",
+  "mag": "the_oldest_house:block/tract_house/tv_guide",
   "particle": "the_oldest_house:block/tract_house/oak"
  },
  "elements": [

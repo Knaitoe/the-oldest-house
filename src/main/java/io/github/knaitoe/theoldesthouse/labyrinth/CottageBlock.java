@@ -52,7 +52,7 @@ public final class CottageBlock extends Block {
         case KETTLE->Block.box(4,0,4,12,8,12);case DRESSER->Block.box(0,0,2,16,16,16);case DRESSER_TOP->Block.box(0,0,9,16,14,16);
         case MANTEL->Block.box(0,10,6,16,14,16);case SAMPLER->Block.box(2,3,15,14,13,16);case POCKETBOOK->Block.box(4,0,5,12,2,11);
         case BIBLE->Block.box(3,0,3,13,4,13);case LAMP_HEAD->Block.box(4,0,4,12,12,12);case MILESTONE->Block.box(3,0,4,13,12,12);
-        case DOORSTEP->Block.box(0,0,0,16,4,16);case CHESSBOARD->Block.box(1,0,1,15,4,15);
+        case DOORSTEP->Block.box(0,0,0,16,3,16);case CHESSBOARD->Block.box(1,0,1,15,4,15);
         default->Shapes.block();
     };}
     private static VoxelShape rotated(VoxelShape shape,Direction facing){

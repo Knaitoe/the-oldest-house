@@ -1,0 +1,58 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "l": "the_oldest_house:block/barrett/print_soap_l",
+  "r": "the_oldest_house:block/barrett/print_soap_r",
+  "particle": "the_oldest_house:block/barrett/print_soap_l"
+ },
+ "elements": [
+  {
+   "from": [
+    8,
+    0,
+    15.4
+   ],
+   "to": [
+    24,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#l",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    -8,
+    0,
+    15.4
+   ],
+   "to": [
+    8,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#r",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

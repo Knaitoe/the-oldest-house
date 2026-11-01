@@ -72,10 +72,7 @@ public final class GhostsSetRooms {
         // The kitchen along the back wall, either side of the back door.
         for(int x=-9;x<=-4;x++)prop(l,b,x,0,-25,x==-7?SINK:x==-5?COOKER:COUNTER,Direction.SOUTH);
         prop(l,b,-9,1,-25,JUG,Direction.SOUTH);prop(l,b,-4,1,-25,BOOKS,Direction.SOUTH);
-        // The family corner where the day-one interviews are shot: two armchairs facing each other on a rug.
-        furniture(l,b,-9,0,-17,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
-        furniture(l,b,-6,0,-17,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.WEST);
-        for(int x=-8;x<=-7;x++)for(int z=-18;z<=-14;z++)prop(l,b,x,0,z,RUG,Direction.NORTH);
+        // 0.4.202: the day-one interviews are shot in the living room now, its two armchairs facing each other (BarrettHome).
         // Distinct, lived-in bedrooms rather than a bed on the stage: books, the borrowed hat, a jug trap and the sisters' pictures.
         prop(l,b,-7,5,-24,BED_HEAD,Direction.NORTH);prop(l,b,-7,5,-23,BED_FOOT,Direction.NORTH);
         prop(l,b,9,5,-25,BED_HEAD,Direction.NORTH);prop(l,b,9,5,-24,BED_FOOT,Direction.NORTH);

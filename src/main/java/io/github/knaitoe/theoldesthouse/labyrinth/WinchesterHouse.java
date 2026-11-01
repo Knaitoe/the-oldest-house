@@ -115,7 +115,10 @@ public final class WinchesterHouse {
         // ---- the ground floor
         room(l, b, -6, 6, -12, -1, 0, 5);                                   // the entrance hall
         room(l, b, -29, -8, -12, -1, 1, 5);                                 // the parlour, a step up
-        set(l, b, -8, 0, -6, Blocks.OAK_SLAB.defaultBlockState());          // the half step into it
+        // 0.4.202 (owner: "you've again placed stairs in a way players can't move past"): the half step stands in the hall,
+        // before the door, and the door is hung at the parlour's height. A step just inside a doorway lifts the reader's head
+        // into its lintel while they are still under it, so nobody could climb it.
+        set(l, b, -6, 0, -6, Blocks.OAK_SLAB.defaultBlockState());          // the half step up to it
         room(l, b, 8, 29, -12, -1, 0, 5);                                   // the dining room
         room(l, b, -29, 29, -16, -14, 0, 4);                                // the spine
         room(l, b, -1, 1, -43, -18, 0, 5);                                  // the passage, open to the room above
@@ -124,12 +127,12 @@ public final class WinchesterHouse {
         room(l, b, -8, 8, -58, -45, 0, 5);                                  // the Blue Room
         room(l, b, 15, 29, -58, -18, 0, 11);                                // the carpenters' court, open to the roof
         fill(l, b, 15, -1, -58, 29, -1, -18, Blocks.HAY_BLOCK.defaultBlockState());
-        door(l, b, 0, 0, -13, Direction.SOUTH);door(l, b, -7, 0, -6, Direction.EAST);door(l, b, 7, 0, -6, Direction.WEST);
+        door(l, b, 0, 0, -13, Direction.SOUTH);door(l, b, -7, 1, -6, Direction.EAST);door(l, b, 7, 0, -6, Direction.WEST);
         door(l, b, DOOR13.getX(), 0, DOOR13.getZ(), Direction.SOUTH);fit(l, b, new BlockPos(-27, 1, -16), Kind.PLAQUE, Direction.SOUTH);
         door(l, b, 0, 0, -17, Direction.SOUTH);door(l, b, 22, 0, -17, Direction.SOUTH);
         // Doors onto wall: one off the spine, one in the dining room's far wall.
         door(l, b, 14, 0, -17, Direction.SOUTH);door(l, b, 30, 0, -6, Direction.WEST);fill(l, b, 31, 0, -6, 31, 1, -6, paper);
-        door(l, b, -2, 0, -27, Direction.EAST);set(l, b, -3, 0, -27, Blocks.OAK_SLAB.defaultBlockState());door(l, b, 2, 0, -27, Direction.WEST);
+        door(l, b, -2, 1, -27, Direction.EAST);set(l, b, -1, 0, -27, Blocks.OAK_SLAB.defaultBlockState());door(l, b, 2, 0, -27, Direction.WEST);
         door(l, b, SEANCE_DOOR.getX(), 0, SEANCE_DOOR.getZ(), Direction.SOUTH);
 
         // ---- the stair of seven short flights: one-wide lanes between walls, each half a block above the last at its turn
@@ -189,8 +192,12 @@ public final class WinchesterHouse {
         light(l, b, 0, 4, -30, 6);
         furniture(l, b, -8, 1, -30, HouseholdFurnitureBlock.Kind.READING_DESK, Direction.SOUTH);furniture(l, b, -8, 1, -29, HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.NORTH);
         detail(l, b, -12, 1, -34, SceneDetailBlock.Kind.CRATE, Direction.SOUTH);detail(l, b, -11, 1, -34, SceneDetailBlock.Kind.BLANKET, Direction.SOUTH);light(l, b, -8, 4, -25, 7);
-        for (int[] c : new int[][]{{5, -33}, {6, -33}, {5, -32}, {11, -21}, {12, -21}, {12, -22}}) detail(l, b, c[0], 0, c[1], SceneDetailBlock.Kind.CRATE, Direction.SOUTH);
-        fit(l, b, new BlockPos(9, 0, -24), Kind.LUMBER, Direction.NORTH);light(l, b, 8, 4, -27, 7);
+        // The storeroom keeps what she bought and never used: doors that open on nothing yet, leaning along one wall, and leaded
+        // windows still in their crate slats along the other; a tidy row of crates; the lumber stacked under the far wall.
+        for (int z : new int[]{-20, -21, -22, -24, -25}) fit(l, b, new BlockPos(13, 0, z), Kind.SPARE_DOOR, Direction.WEST);
+        for (int z : new int[]{-21, -22, -23, -30, -31}) fit(l, b, new BlockPos(3, 0, z), Kind.SPARE_WINDOW, Direction.EAST);
+        for (int x : new int[]{4, 5, 6, 10, 11}) detail(l, b, x, 0, -35, SceneDetailBlock.Kind.CRATE, Direction.SOUTH);
+        for (int x = 7; x <= 9; x++) fit(l, b, new BlockPos(x, 0, -35), Kind.LUMBER, Direction.EAST);light(l, b, 8, 4, -27, 7);
         // The Blue Room: blue paper all round, the table with its bell, one chair, thirteen robes on their hooks, a dim light.
         for (int y = 0; y <= 5; y++) {
             for (int z = -59; z <= -44; z++) { set(l, b, -9, y, z, blue);set(l, b, 9, y, z, blue); }
@@ -201,7 +208,15 @@ public final class WinchesterHouse {
         for (int x : new int[]{-2, 0, 2}) detail(l, b, x, 2, -58, SceneDetailBlock.Kind.COAT, Direction.SOUTH);
         light(l, b, 0, 4, -52, 6);fit(l, b, new BlockPos(1, 1, -45), Kind.PLAQUE, Direction.NORTH);
         // The court: the carpenters' sawhorse, lumber and nails on the hay.
-        fit(l, b, new BlockPos(20, 0, -40), Kind.SAWHORSE, Direction.NORTH);fit(l, b, new BlockPos(24, 0, -44), Kind.LUMBER, Direction.NORTH);fit(l, b, new BlockPos(18, 0, -46), Kind.NAIL_KEG, Direction.SOUTH);
+        // 0.4.202: the court reads as their yard. A partition going up across its back with no room on either side of it, the
+        // bench against the west wall with its plane and saw, the sawhorse with a board half cut, the lumber stacked by the east
+        // wall, the nail keg, and shavings round where they work. The straw under the boards stays clear for whoever falls.
+        fit(l, b, new BlockPos(18, 0, -40), Kind.SAWHORSE, Direction.NORTH);fit(l, b, new BlockPos(18, 0, -46), Kind.NAIL_KEG, Direction.SOUTH);
+        for (int z : new int[]{-35, -36}) fit(l, b, new BlockPos(15, 0, z), Kind.WORKBENCH, Direction.EAST);
+        for (int z = -44; z >= -47; z--) fit(l, b, new BlockPos(28, 0, z), Kind.LUMBER, Direction.WEST);
+        for (int x = 25; x <= 29; x++) fit(l, b, new BlockPos(x, 0, -52), Kind.STUDS, Direction.NORTH);
+        for (int[] c : new int[][]{{16, -35}, {16, -36}, {16, -34}, {17, -39}, {17, -40}, {19, -40}, {18, -41}, {19, -41}, {17, -41}, {26, -51}, {27, -51}, {28, -51}, {27, -53}})
+            fit(l, b, new BlockPos(c[0], 0, c[1]), Kind.SAWDUST, Direction.NORTH);
         light(l, b, 22, 10, -38, 11);
         // Upstairs: the room above the stair kept as a lumber room; the floored edges of the next; the last room's desk and shelves.
         for (int[] c : new int[][]{{-28, -19}, {-27, -19}, {-28, -20}, {-20, -36}, {-19, -36}}) detail(l, b, c[0], 7, c[1], SceneDetailBlock.Kind.CRATE, Direction.SOUTH);

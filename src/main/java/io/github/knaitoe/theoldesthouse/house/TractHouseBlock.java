@@ -29,9 +29,14 @@ public final class TractHouseBlock extends Block {
         TV_OFF,TV_STATIC,FRIDGE_LOWER,FRIDGE_UPPER,STOVE,COUNTER,COUNTER_SINK,WALL_CABINET,CEILING_LIGHT,PENDANT_LIGHT,
         CLOWN_DOLL,TOY_CHEST,CURTAIN_LEFT,CURTAIN_RIGHT,WALL_PHONE,FAMILY_PHOTO,
         /** 0.4.201: the model home's own snapshots, one picture to a frame (tools/draw_tract_house.py). */
-        PHOTO_WEDDING,PHOTO_BEACH,PHOTO_SCHOOL,PHOTO_DOG;
+        PHOTO_WEDDING,PHOTO_BEACH,PHOTO_SCHOOL,PHOTO_DOG,
+        /** 0.4.202 (owner: "duplicated pictures", "recycled cabinets", "floating, recycled clutter blocks"): the boys' house in
+         *  Mapping the Interior has its own things, on the same frames where a frame fits (tools/draw_tract_house.py). */
+        MAP_SOFA_LEFT,MAP_SOFA_MIDDLE,MAP_SOFA_RIGHT,MAP_RECLINER,MAP_COUNTER,MAP_COUNTER_SINK,MAP_WALL_CABINET,MAP_STOVE,
+        MAP_FRIDGE_LOWER,MAP_FRIDGE_UPPER,MAP_TABLE_EAST,MAP_CHAIR,MAP_CURTAIN_LEFT,MAP_CURTAIN_RIGHT,MAP_TV,MAP_DRESSER,
+        MAP_MOM_DRESSER,MAP_TOYS,MAP_PHOTO_FATHER,MAP_PHOTO_BOYS;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
-        public boolean television(){return this==TV_OFF||this==TV_STATIC;}
+        public boolean television(){return this==TV_OFF||this==TV_STATIC||this==MAP_TV;}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final DirectionProperty FACING=HorizontalDirectionalBlock.FACING;
@@ -41,7 +46,7 @@ public final class TractHouseBlock extends Block {
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,FACING);}
     public static BlockState of(Kind kind,Direction facing){return HouseBlocks.TRACT_HOUSE.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     public static boolean is(BlockState s,Kind kind){return s.is(HouseBlocks.TRACT_HOUSE.get())&&s.getValue(KIND)==kind;}
-    public static int light(BlockState s){return switch(s.getValue(KIND)){case END_TABLE_LAMP->11;case CEILING_LIGHT->14;case PENDANT_LIGHT->13;case TV_STATIC->7;case TV_OFF->1;default->0;};}
+    public static int light(BlockState s){return switch(s.getValue(KIND)){case END_TABLE_LAMP->11;case CEILING_LIGHT->14;case PENDANT_LIGHT->13;case TV_STATIC->7;case TV_OFF,MAP_TV->1;default->0;};}
 
     /** Outline shapes, authored facing north (front toward -z) in sixteenths. */
     private static VoxelShape base(Kind k){return switch(k){
@@ -58,6 +63,13 @@ public final class TractHouseBlock extends Block {
         case CURTAIN_LEFT->Block.box(0,0,14,5,16,16);case CURTAIN_RIGHT->Block.box(11,0,14,16,16,16);
         case WALL_PHONE->Block.box(3,4,13,11,13,16);case FAMILY_PHOTO->Block.box(3,5,15,13,13,16);
         case PHOTO_WEDDING,PHOTO_SCHOOL->Block.box(4,4,15,12,14,16);case PHOTO_BEACH,PHOTO_DOG->Block.box(2,5,15,14,13,16);
+        case MAP_SOFA_LEFT,MAP_SOFA_MIDDLE,MAP_SOFA_RIGHT,MAP_RECLINER->Shapes.or(Block.box(0,0,1,16,8,16),Block.box(0,8,12,16,16,16));
+        case MAP_COUNTER,MAP_COUNTER_SINK,MAP_STOVE->Block.box(0,0,0,16,16,16);case MAP_WALL_CABINET->Block.box(0,1,8,16,15,16);
+        case MAP_FRIDGE_LOWER->Block.box(1,0,1,15,16,15);case MAP_FRIDGE_UPPER->Block.box(1,0,1,15,15,15);
+        case MAP_TABLE_EAST->Block.box(0,0,1,16,16,15);case MAP_CHAIR->Shapes.or(Block.box(2,0,2,14,9,14),Block.box(2,9,12,14,16,14));
+        case MAP_CURTAIN_LEFT->Block.box(0,0,14,5,16,16);case MAP_CURTAIN_RIGHT->Block.box(11,0,14,16,16,16);
+        case MAP_TV->Block.box(1,0,3,15,15,14);case MAP_DRESSER,MAP_MOM_DRESSER->Block.box(1,0,3,15,15,15);
+        case MAP_TOYS->Block.box(2,0,2,14,4,12);case MAP_PHOTO_FATHER->Block.box(2,4,15,14,14,16);case MAP_PHOTO_BOYS->Block.box(3,4,15,13,14,16);
     };}
     private static VoxelShape rotated(VoxelShape shape,Direction facing){
         if(facing==Direction.NORTH)return shape;var out=new VoxelShape[]{Shapes.empty()};int turns=facing.get2DDataValue()==0?2:facing.get2DDataValue()==1?3:facing.get2DDataValue()==3?1:0;
@@ -74,7 +86,7 @@ public final class TractHouseBlock extends Block {
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return shape(s);}
     /** Wall pieces and lamps overhead are walked past and under. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
-        return switch(s.getValue(KIND)){case CURTAIN_LEFT,CURTAIN_RIGHT,WALL_PHONE,FAMILY_PHOTO,PHOTO_WEDDING,PHOTO_BEACH,PHOTO_SCHOOL,PHOTO_DOG,CEILING_LIGHT,PENDANT_LIGHT->Shapes.empty();default->shape(s);};
+        return switch(s.getValue(KIND)){case CURTAIN_LEFT,CURTAIN_RIGHT,WALL_PHONE,FAMILY_PHOTO,PHOTO_WEDDING,PHOTO_BEACH,PHOTO_SCHOOL,PHOTO_DOG,CEILING_LIGHT,PENDANT_LIGHT,MAP_CURTAIN_LEFT,MAP_CURTAIN_RIGHT,MAP_PHOTO_FATHER,MAP_PHOTO_BOYS,MAP_TOYS->Shapes.empty();default->shape(s);};
     }
     @Override protected boolean propagatesSkylightDown(BlockState s,BlockGetter l,BlockPos p){return true;}
 }
