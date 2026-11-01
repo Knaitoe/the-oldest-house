@@ -148,6 +148,17 @@ public final class HallVariations {
         }
         finish(l,b,p);
     }
+    /**
+     * 0.4.223 (owner: "can you fix the windows in the hallway?"): a window only in a straight run of wall, never on a corner (its
+     * frame wrapped round both faces), with the dark behind it out of every room's sight (it had been laid into the next window's
+     * place on an alcove's end wall); on an end wall, every other block, so they stand apart.
+     */
+    static boolean window(Set<BlockPos> open,BlockPos wall,Direction side){
+        for(Direction d:Direction.Plane.HORIZONTAL)if(d!=side.getOpposite()&&open.contains(wall.relative(d)))return false;
+        var back=wall.relative(side);if(open.contains(back))return false;
+        for(Direction d:Direction.Plane.HORIZONTAL)if(open.contains(back.relative(d)))return false;
+        return side.getAxis()==Direction.Axis.X||Math.floorMod(wall.getX(),2)==0;
+    }
     public static void finish(ServerLevel l,BlockPos b,LabyrinthPlace p) {
         boolean stone=!domestic(p);int roof=roof(p);boolean vaulted=p==LabyrinthPlace.VAULTED_HALL;
         var open=shell(p);
@@ -164,7 +175,7 @@ public final class HallVariations {
                 var at=b.offset(wall);
                 if(l.getBlockEntity(at)!=null)continue;
                 set(l,at,(stone?Blocks.CHISELED_STONE_BRICKS:Blocks.STRIPPED_SPRUCE_WOOD).defaultBlockState());
-                if(!stone&&Math.floorMod(wall.getZ(),11)==0) {
+                if(!stone&&Math.floorMod(wall.getZ(),11)==0&&window(open,wall,side)) {
                     // Glass has a real, dark back, rather than opening onto uncarved space.
                     set(l,at.above(),Blocks.GRAY_STAINED_GLASS.defaultBlockState());
                     set(l,at.above(2),Blocks.GRAY_STAINED_GLASS.defaultBlockState());

@@ -1,7 +1,21 @@
 {
   "variants": {
-    "": {
-      "model": "the_oldest_house:block/hall_plaster_cracked"
-    }
+    "": [
+      {
+        "model": "the_oldest_house:block/hall_plaster_cracked"
+      },
+      {
+        "model": "the_oldest_house:block/hall_plaster_cracked_1"
+      },
+      {
+        "model": "the_oldest_house:block/hall_plaster_cracked_2"
+      },
+      {
+        "model": "the_oldest_house:block/hall_plaster_cracked_3"
+      },
+      {
+        "model": "the_oldest_house:block/hall_plaster_cracked_4"
+      }
+    ]
   }
 }

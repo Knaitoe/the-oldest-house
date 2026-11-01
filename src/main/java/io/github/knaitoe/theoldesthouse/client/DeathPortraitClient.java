@@ -72,7 +72,7 @@ public final class DeathPortraitClient {
             try (var pixels = new NativeImage(64, 64, false);
                  var stream = mc.getResourceManager().open(party?ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/block/stanley/party.png"):FAMILY); var family = NativeImage.read(stream)) {
                 mc.getTextureManager().getTexture(skin.texture()).bind(); pixels.downloadTexture(0, false);
-                var texture = new DynamicTexture(party?HotelPhotoPainter.paint(pixels,family):PortraitPainter.paint(pixels, family)); texture.setFilter(false, false);
+                var texture = new DynamicTexture(party?HotelPhotoPainter.paint(pixels,family):house(profile, pixels, family)); texture.setFilter(false, false);
                 entry.texture = mc.getTextureManager().register("the_oldest_house_portrait_" + profile.owner(), texture);
             } catch (Exception exception) {
                 TheOldestHouse.LOGGER.warn("Could not paint the House portrait for {}", profile.owner(), exception);
@@ -80,6 +80,37 @@ public final class DeathPortraitClient {
             } finally { GlStateManager._bindTexture(previous); }
         }));
         return entry.texture;
+    }
+
+    /**
+     * 0.4.223 (owner: "character captured portraits should use their house-overlays"): a portrait taken in the House is painted
+     * from the House's version of the reader as it was at the death, kept on the painting: the House's body in place of the skin,
+     * and the coat or outfit, reading glasses or veil the glass showed them in. Older portraits keep the skin alone.
+     */
+    public static NativeImage house(PortraitProfile profile, NativeImage skin, NativeImage family) throws java.io.IOException {
+        if (profile.look().isEmpty()) return PortraitPainter.paint(skin, family);
+        NativeImage body = null; var images = new java.util.ArrayList<NativeImage>();
+        try {
+            var fields = profile.lookField("body").split(",");
+            if (fields.length == 6) {
+                int[] v = new int[6]; for (int i = 0; i < 6; i++) v[i] = Integer.parseInt(fields[i]);
+                body = HouseBodyClient.painted(new io.github.knaitoe.theoldesthouse.labyrinth.HouseBodies.Body(v[0], v[1], v[2], v[3], v[4], v[5]), HouseBodyClient.defaults(profile.owner()));
+            }
+            String coat = profile.lookField("coat"); var garment = coat.isEmpty() ? null : io.github.knaitoe.theoldesthouse.labyrinth.HouseReadWardrobe.byId(coat);
+            var coatImage = garment == null || garment.boots() ? null : read("textures/entity/house_read/" + coat + ".png", images);
+            var specs = profile.lookField("glasses").equals("1") ? read("textures/entity/house_read/specs.png", images) : null;
+            var veil = profile.lookField("veil").equals("1") ? read("textures/entity/house_read/veil.png", images) : null;
+            var overlay = new PortraitPainter.Overlay(coatImage, garment != null && garment.outfit(), garment != null && garment.cut() == io.github.knaitoe.theoldesthouse.labyrinth.HouseReadWardrobe.Cut.CROP, specs, veil);
+            return PortraitPainter.paint(body != null ? body : skin, family, overlay);
+        } catch (NumberFormatException exception) {
+            return PortraitPainter.paint(skin, family);
+        } finally {
+            if (body != null) body.close();
+            for (var image : images) image.close();
+        }
+    }
+    private static NativeImage read(String path, java.util.List<NativeImage> opened) throws java.io.IOException {
+        try (var in = Minecraft.getInstance().getResourceManager().open(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, path))) { var image = NativeImage.read(in); opened.add(image); return image; }
     }
 
     public static void clear() {

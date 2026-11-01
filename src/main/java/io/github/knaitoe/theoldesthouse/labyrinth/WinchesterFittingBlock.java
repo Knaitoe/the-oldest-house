@@ -89,8 +89,35 @@ public final class WinchesterFittingBlock extends Block implements net.minecraft
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return shape(s);}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){case PLAQUE,SPIDER_WINDOW,SAWDUST,SCONCE,RUG_PERSIAN,RUNNER_EDGE,RUNNER_MID,RUNNER_NARROW,CANDELABRA->Shapes.empty();default->shape(s);};}
-    /** 0.4.220: only the clock's top has an entity, for its moving hands. */
-    @Override public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos at,BlockState s){return s.getValue(KIND)==Kind.CLOCK_TOP?new WinchesterClockEntity(at,s):null;}
+    /** 0.4.220: the clock's top has an entity, for its moving hands; 0.4.223: and the hall stand's top, for its mirror. */
+    @Override public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos at,BlockState s){return s.getValue(KIND)==Kind.CLOCK_TOP||s.getValue(KIND)==Kind.HALL_STAND_TOP?new WinchesterClockEntity(at,s):null;}
+    /** 0.4.223 (owner: "the chair should be sittable"): the house's chairs and its settee seat a reader, facing the way they face. */
+    public static boolean seat(BlockState s){return s.is(LiteraryRegistry.WINCHESTER_FITTING.get())&&switch(s.getValue(KIND)){case SEANCE_CHAIR,DINING_CHAIR,WING_CHAIR,SETTEE_L,SETTEE_R->true;default->false;};}
+    /** Where the seat is, in pixels: on the cushion, a little under its top. */
+    public static double seatHeight(BlockState s){return switch(s.getValue(KIND)){case DINING_CHAIR->9.5;case SEANCE_CHAIR->9;default->8.5;}/16.0;}
+    /**
+     * 0.4.223 (owner: "the piano should be playable"): each key sounds where the hand falls on the keyboard, two octaves across the
+     * piano's two halves, the low notes to the left of whoever stands at it, as on any piano. A note rises off the keys.
+     */
+    @Override protected net.minecraft.world.InteractionResult useWithoutItem(BlockState s,net.minecraft.world.level.Level l,BlockPos at,net.minecraft.world.entity.player.Player p,net.minecraft.world.phys.BlockHitResult hit){
+        if(s.getValue(KIND)!=Kind.PIANO_L&&s.getValue(KIND)!=Kind.PIANO_R)return net.minecraft.world.InteractionResult.PASS;
+        int note=note(l,at,s,hit.getLocation());
+        if(!l.isClientSide){
+            float pitch=(float)Math.pow(2,(note-12)/12.0);
+            l.playSound(null,at,net.minecraft.sounds.SoundEvents.NOTE_BLOCK_HARP.value(),net.minecraft.sounds.SoundSource.RECORDS,.8f,pitch);
+            if(l instanceof net.minecraft.server.level.ServerLevel server){var keys=hit.getLocation();server.sendParticles(net.minecraft.core.particles.ParticleTypes.NOTE,keys.x,at.getY()+1.15,keys.z,0,note/24.0,0,0,1);}
+        }
+        return net.minecraft.world.InteractionResult.sidedSuccess(l.isClientSide);
+    }
+    /** The key under a point on the piano: 0 at the left of whoever faces it, 24 at the right. */
+    public static int note(BlockGetter l,BlockPos at,BlockState s,net.minecraft.world.phys.Vec3 point){
+        Direction right=s.getValue(FACING).getCounterClockWise();
+        var other=l.getBlockState(at.relative(right));boolean left=other.is(s.getBlock())&&other.getValue(KIND)!=s.getValue(KIND)&&(other.getValue(KIND)==Kind.PIANO_L||other.getValue(KIND)==Kind.PIANO_R);
+        BlockPos start=left?at:at.relative(right.getOpposite());
+        var corner=net.minecraft.world.phys.Vec3.atCenterOf(start).subtract(right.getStepX()*.5,0,right.getStepZ()*.5);
+        double across=(point.x-corner.x)*right.getStepX()+(point.z-corner.z)*right.getStepZ();
+        return Math.max(0,Math.min(24,(int)Math.floor(across/2*25)));
+    }
     /** The lamps and sconces give light. */
     public static int light(BlockState s){return switch(s.getValue(KIND)){case LAMP_TABLE->12;case SCONCE->11;case CANDELABRA->8;default->0;};}
     @Override protected boolean propagatesSkylightDown(BlockState s,BlockGetter l,BlockPos p){return true;}

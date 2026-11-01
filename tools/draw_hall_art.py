@@ -63,15 +63,59 @@ def plaster(seed, base=PLASTER, spread=3):
     return im
 
 
-def cracked(seed):
-    """A hairline crack, wandering down the wall from edge to edge, darker on one side and catching the light on the other."""
-    im = plaster(seed); rnd = random.Random(seed + 7); x = 5
-    for y in range(16):
-        dot(im, x, y, shade(PLASTER, -46)); dot(im, x + 1, y, shade(PLASTER, 7))
-        if y in (6, 11):
-            dot(im, x - 1, y, shade(PLASTER, -30)); dot(im, x - 2, y + 1, shade(PLASTER, -22))
-        x = max(2, min(12, x + rnd.choice((0, 0, 1, 1, -1))))
+def _line(im, pts, dark=-46, light=7):
+    """A hairline along points: dark in the crack, a pixel catching the light beside it, fainter at both tips."""
+    n = len(pts)
+    for i, (x, y) in enumerate(pts):
+        tip = min(i, n - 1 - i)
+        k = dark if tip >= 2 else dark // 2 if tip == 1 else dark // 3
+        dot(im, x, y, shade(PLASTER, k))
+        if tip >= 1 and (x + 1, y) not in pts:
+            dot(im, x + 1, y, shade(PLASTER, light))
+
+
+def _walk(rnd, x, y, steps, dx_choices, dy=1):
+    pts = [(x, y)]
+    for _ in range(steps):
+        x = max(1, min(14, x + rnd.choice(dx_choices))); y = max(1, min(14, y + dy))
+        pts.append((x, y))
+    return pts
+
+
+def cracked(seed, kind=0):
+    """0.4.223 (owner: "wall fissures require more variance"): five kinds of crack, each starting and ending inside its own block,
+    so none is cut off at a block's edge: a long wandering hairline with a spur; a diagonal from a corner that forks; a settlement
+    crack stepping down like brickwork; a star of short hairlines round a chipped point; two short parallel hairlines."""
+    im = plaster(seed); rnd = random.Random(seed + 7)
+    if kind == 0:
+        x = rnd.randint(4, 10); pts = _walk(rnd, x, 1, 12, (0, 0, 1, -1))
+        _line(im, pts); bx, by = pts[6]; _line(im, _walk(rnd, bx - 1, by, 3, (-1,), 1), -34, 0)
+    elif kind == 1:
+        pts = [(2 + i + (i // 4) % 2, 2 + i) for i in range(9)]
+        _line(im, pts); ex, ey = pts[-1]
+        _line(im, [(ex + 1, ey), (ex + 2, ey), (ex + 3, ey - 1)], -38, 0); _line(im, [(ex, ey + 1), (ex, ey + 2), (ex - 1, ey + 3)], -38, 0)
+    elif kind == 2:
+        pts = []; x, y = rnd.randint(2, 4), rnd.randint(3, 5)
+        for _ in range(3):
+            for i in range(3):
+                pts.append((x + i, y))
+            x += 3
+            for j in range(1, 3):
+                pts.append((x - 1, y + j))
+            y += 3
+        _line(im, [(min(14, a), min(14, b)) for a, b in pts])
+    elif kind == 3:
+        cx, cy = rnd.randint(6, 9), rnd.randint(6, 9)
+        dot(im, cx, cy, shade(PLASTER, -60)); dot(im, cx + 1, cy, shade(PLASTER, -40)); dot(im, cx, cy + 1, shade(PLASTER, -36))
+        for dx, dy, n in ((1, -1, 4), (-1, -1, 3), (-1, 1, 4), (1, 1, 3), (1, 0, 3)):
+            _line(im, [(cx + dx * (i + 1) + (i // 2 if dy else 0), cy + dy * (i + 1)) for i in range(n)], -36, 0)
+    else:
+        for x0, y0, n in ((rnd.randint(3, 6), rnd.randint(2, 4), 7), (rnd.randint(8, 11), rnd.randint(5, 7), 6)):
+            _line(im, _walk(rnd, x0, y0, n, (0, 0, 1)), -40)
     return im
+
+
+CRACKS = 5
 
 
 def stained(seed):
@@ -195,6 +239,7 @@ BLOCKS = [
 def textures():
     return {
         'plaster': plaster(219), 'plaster_cracked': cracked(2191), 'plaster_stained': stained(2192), 'rail': rail(2193),
+        **{f'plaster_cracked_{k}': cracked(2191 + 10 * k, k) for k in range(1, CRACKS)},
         'skirting': skirting(2194), 'floor': floor(2195), 'floor_worn': floor(2195, worn=True), 'ceiling': ceiling(2196),
         'window_lower': window(False), 'window_upper': window(True),
     }
@@ -209,6 +254,11 @@ def files():
         variant = {'model': model}
         if name.endswith('_x'):
             variant['y'] = 90
+        if name == 'plaster_cracked':
+            # 0.4.223: each cracked block picks one of the five cracks by where it stands.
+            for k in range(1, CRACKS):
+                out[f'models/block/hall_plaster_cracked_{k}.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': P + f'plaster_cracked_{k}'}}
+            variant = [{'model': model}] + [{'model': model + f'_{k}'} for k in range(1, CRACKS)]
         out[f'blockstates/hall_{name}.json'] = {'variants': {'': variant}}
     return out
 

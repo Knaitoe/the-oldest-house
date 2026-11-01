@@ -54,7 +54,10 @@ public final class HallFinish {
         for(BlockPos cell:open){
             if(skip.test(cell))continue;
             for(Direction side:Direction.Plane.HORIZONTAL){
-                BlockPos wall=cell.relative(side);if(skip.test(wall))continue;
+                // 0.4.223 (owner: "the trim you added isn't applied evenly"): a household room's wall that faces the passage is
+                // dressed like the rest of the passage where it is the plain terracotta wall, so the skirting and rail run on.
+                BlockPos wall=cell.relative(side);boolean household=skip.test(wall);
+                if(household&&open.contains(wall))continue;
                 if(open.contains(wall)){
                     // Over an open neighbour, only a face this cell looks at: the vaulted hall's end walls, standing over its low necks.
                     for(int y=1;y<=roof;y++){var here=BuildBlocks.state(l,b.offset(cell).above(y));
@@ -64,7 +67,9 @@ public final class HallFinish {
                 }
                 for(int y=0;y<=roof;y++){
                     var at=b.offset(wall).above(y);var s=BuildBlocks.state(l,at);
-                    if(y==0){if(s.is(Blocks.STRIPPED_SPRUCE_WOOD)||s.is(Blocks.STRIPPED_OAK_WOOD)||s.is(Blocks.SPRUCE_PLANKS))set(l,at,surface("skirting"));continue;}
+                    if(household&&!s.is(Blocks.WHITE_TERRACOTTA))continue;
+                    // 0.4.223: skirting along the foot of every wall, the terracotta beside doors and at corners too.
+                    if(y==0){if(s.is(Blocks.STRIPPED_SPRUCE_WOOD)||s.is(Blocks.STRIPPED_OAK_WOOD)||s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.WHITE_TERRACOTTA))set(l,at,surface("skirting"));continue;}
                     if(y==1&&s.is(Blocks.GRAY_STAINED_GLASS)&&BuildBlocks.state(l,at.above()).is(Blocks.GRAY_STAINED_GLASS)){
                         set(l,at,surface("window_lower"));set(l,at.above(),surface("window_upper"));y++;continue;
                     }

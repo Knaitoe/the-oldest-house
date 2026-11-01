@@ -420,6 +420,13 @@ public final class VignetteAnimationTests {
             var peer=f.player("winchester_peer",place);f.at(peer,place,.5,0,160.5);
             h.assertTrue(in.getBlockState(b.offset(-30,3,-12)).is(LiteraryRegistry.WINCHESTER_WALLPAPER.get())&&in.getBlockState(b.offset(0,-1,-6)).is(LiteraryRegistry.WINCHESTER_PARQUET.get()),"damask walls on a parquet floor");
             h.assertTrue(WinchesterFittingBlock.is(in.getBlockState(b.offset(WinchesterHouse.CLOCK.above())),WinchesterFittingBlock.Kind.CLOCK_TOP)&&in.getBlockState(b.offset(LiteraryRooms.source(place))).getBlock() instanceof net.minecraft.world.level.block.LecternBlock,"the hall clock and the construction ledger in the entrance hall");
+            // 0.4.223: the hall stand's mirror has its entity (the plane mirror draws on it); the chairs and settee seat a reader; the
+            // piano's keys run two octaves, low at the left of whoever faces it.
+            var stand=b.offset(-6,1,-2);h.assertTrue(WinchesterFittingBlock.is(in.getBlockState(stand),WinchesterFittingBlock.Kind.HALL_STAND_TOP)&&in.getBlockEntity(stand) instanceof WinchesterClockEntity,"the hall stand's mirror is the House's glass");
+            var settee=b.offset(-19,1,-7);h.assertTrue(WinchesterFittingBlock.seat(in.getBlockState(settee))&&io.github.knaitoe.theoldesthouse.house.HouseSitting.isSeat(in.getBlockState(settee)),"the settee is a seat");
+            var pianoL=b.offset(-12,1,-1);var pianoR=b.offset(-11,1,-1);var keys=in.getBlockState(pianoL);
+            int east=WinchesterFittingBlock.note(in,pianoR,in.getBlockState(pianoR),net.minecraft.world.phys.Vec3.atLowerCornerOf(pianoR).add(.95,1,.2)),west=WinchesterFittingBlock.note(in,pianoL,keys,net.minecraft.world.phys.Vec3.atLowerCornerOf(pianoL).add(.05,1,.2));
+            h.assertTrue(east<=1&&west>=23,"the keys run low to high from the left of whoever faces the piano: "+east+" to "+west);
             // The house's mistakes, before anyone is building.
             h.assertTrue(in.getBlockState(b.offset(WinchesterHouse.DOOR13)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!WinchesterHouse.built(in,b,WinchesterHouse.Stage.DOOR13)&&!in.getBlockState(b.offset(-28,1,-18)).isAir(),"the door with the brass 13 opens onto wall");
             h.assertTrue(in.getBlockState(b.offset(-16,5,-34)).getBlock() instanceof net.minecraft.world.level.block.StairBlock&&!in.getBlockState(b.offset(WinchesterHouse.HATCH_B)).isAir(),"the stair goes up into the ceiling");

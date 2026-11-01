@@ -43,7 +43,7 @@ public final class HouseReadClothes extends RenderLayer<AbstractClientPlayer,Pla
         r.addOrReplaceChild("scarf",CubeListBuilder.create().texOffs(28,18).addBox(-4.45f,-2.2f,-4.55f,8.9f,3.7f,9.1f),PartPose.ZERO);
         r.addOrReplaceChild("belt",CubeListBuilder.create().texOffs(28,18).addBox(-4.5f,8.8f,-2.5f,9,.9f,5),PartPose.ZERO);
         // 0.4.159: reading glasses, and the veil over an obscured face, each with its own small texture.
-        r.addOrReplaceChild("glasses",CubeListBuilder.create().texOffs(0,0).addBox(-4,-5,-4.65f,8,2,1),PartPose.ZERO);
+        r.addOrReplaceChild("glasses",CubeListBuilder.create().texOffs(0,0).addBox(-4,-5,-4.65f,8,2,1).texOffs(20,0).addBox(-4.7f,-4.95f,-3.7f,.5f,.5f,4.4f).addBox(4.2f,-4.95f,-3.7f,.5f,.5f,4.4f),PartPose.ZERO);
         r.addOrReplaceChild("veil",CubeListBuilder.create().texOffs(0,0).addBox(-4,-8,-4.75f,8,8,1,new CubeDeformation(.15f)),PartPose.ZERO);
         // 0.4.172: the everyday outfits, each on its own sheet (tools/house_read_wardrobe_art.py): a top on the body, cut short for
         // the crop top, with short sleeves; jeans or shorts, each leg its own; and the cut-offs' waistband below the crop top.

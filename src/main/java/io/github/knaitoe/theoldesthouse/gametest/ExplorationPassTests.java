@@ -730,6 +730,13 @@ public final class ExplorationPassTests {
                     h.assertTrue(!under.is(Blocks.SPRUCE_PLANKS),"no bare spruce floor shows in "+hall.id()+": "+cell);
                     if(HallRegistry.is(under)){boards++;if(under.is(HallRegistry.surface("floor_worn"))||under.is(HallRegistry.surface("floor_worn_x")))worn++;}
                     for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){var wall=cell.relative(side);if(open.contains(wall))continue;
+                        // 0.4.223: skirting at the foot of every wall; windows only in a straight run, the dark behind them unseen.
+                        var foot=l.getBlockState(b.offset(wall));
+                        h.assertTrue(foot.is(HallRegistry.surface("skirting"))||foot.getBlock() instanceof DoorBlock||l.getBlockEntity(b.offset(wall))!=null||!foot.isCollisionShapeFullBlock(l,b.offset(wall))||foot.is(Blocks.STRIPPED_SPRUCE_LOG),"skirting runs along "+hall.id()+"'s walls: "+wall+" is "+foot);
+                        if(l.getBlockState(b.offset(wall).above()).is(HallRegistry.surface("window_lower"))){
+                            int faces=0;for(var d:net.minecraft.core.Direction.Plane.HORIZONTAL)if(open.contains(wall.relative(d)))faces++;
+                            h.assertTrue(faces==1,"a window in "+hall.id()+" stands in a straight run of wall, not on a corner: "+wall);}
+                        for(int y=1;y<=2;y++)h.assertTrue(!l.getBlockState(b.offset(wall).above(y)).is(Blocks.DEEPSLATE),"no window's dark back shows in "+hall.id()+": "+wall+" y "+y);
                         for(int y=1;y<=Math.min(4,HallVariations.roof(hall));y++){var s=l.getBlockState(b.offset(wall).above(y));
                             h.assertTrue(!s.is(Blocks.WHITE_TERRACOTTA),"no bare terracotta shows on "+hall.id()+"'s walls: "+wall+" y "+y);
                             if(s.is(HallRegistry.surface("plaster"))||s.is(HallRegistry.surface("plaster_cracked"))||s.is(HallRegistry.surface("plaster_stained")))plaster++;}}}
