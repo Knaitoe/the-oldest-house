@@ -16,14 +16,20 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/main/resources/assets/the_oldest_house/textures/painting'
 
 # Who hangs in the manor: a father in his work jacket, a mother with her hair up, their child, the grandfather, and the woman
-# nobody in the family can name, in her wine-dark dress. Each keeps its painting's old ground.
+# nobody in the family can name, in her wine-dark dress. Each keeps its painting's old ground, and each looks straight out of
+# the frame (both irises in the middle of the eye; the cast's painter otherwise turns the right one in a little).
 FAMILY = {
-    'will_portrait': (Look('#c99c7c', '#3b2c22', 'part', '#5b6a4e', '#3e4636', 'jacket', '#b9ab88', eyes='#5a6650', age=1, beard='stubble'), (0x3b, 0x37, 0x32)),
-    'karen_portrait': (Look('#d8ae92', '#6a4a30', 'long', '#7d5a6a', '#4a3c44', 'cardigan', '#d6c8b0', eyes='#59705e'), (0x3e, 0x34, 0x30)),
-    'child_portrait': (Look('#d4a98c', '#7a5634', 'messy', '#5f7f96', '#3e4c56', 'tee', '#c8b890', eyes='#5d6a74', sleeve=4), (0x42, 0x3b, 0x33)),
-    'old_man_portrait': (Look('#c8a488', '#c4bdb0', 'receding', '#4a4a52', '#38383e', 'suit', '#a6a090', eyes='#646c74', age=2, beard='short'), (0x34, 0x34, 0x30)),
-    'unknown_woman_portrait': (Look('#c99a7e', '#241c1a', 'long', '#6e2a30', '#4a2226', 'dress', '#d2bca0', eyes='#4e4038'), (0x3c, 0x35, 0x33)),
+    'will_portrait': (Look('#c99c7c', '#3b2c22', 'part', '#5b6a4e', '#3e4636', 'jacket', '#b9ab88', eyes='#5a6650', age=1, beard='stubble', level_eyes=True), (0x3b, 0x37, 0x32)),
+    'karen_portrait': (Look('#d8ae92', '#6a4a30', 'long', '#7d5a6a', '#4a3c44', 'cardigan', '#d6c8b0', eyes='#59705e', level_eyes=True), (0x3e, 0x34, 0x30)),
+    'child_portrait': (Look('#d4a98c', '#7a5634', 'messy', '#5f7f96', '#3e4c56', 'tee', '#c8b890', eyes='#5d6a74', sleeve=4, level_eyes=True), (0x42, 0x3b, 0x33)),
+    'old_man_portrait': (Look('#c8a488', '#c4bdb0', 'receding', '#4a4a52', '#38383e', 'suit', '#a6a090', eyes='#646c74', age=2, beard='short', level_eyes=True), (0x34, 0x34, 0x30)),
+    'unknown_woman_portrait': (Look('#c99a7e', '#241c1a', 'long', '#6e2a30', '#4a2226', 'dress', '#d2bca0', eyes='#4e4038', level_eyes=True), (0x3c, 0x35, 0x33)),
 }
+
+
+# client/PortraitPainter.COLS2/ROWS2 (0.4.224): mirror-symmetric, both eyes, the nose and the cheeks kept whole.
+COLS2 = (1, 3, 4, 5, 7, 8, 10, 11, 12, 14)
+ROWS2 = (1, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14)
 
 
 def native(sheet):
@@ -64,7 +70,7 @@ def bust(skin, ground):
                     colour = over(px[44 * s + a, 20 * s + v], px[44 * s + a, 36 * s + v])
                 colour = pigment(colour, x, y, False)
             if 3 <= x <= 12 and 5 <= y <= 16:
-                u = (x - 3) * 8 * s // 10; v = (y - 5) * 8 * s // 12
+                u = COLS2[x - 3]; v = ROWS2[y - 5]
                 colour = pigment(over(px[8 * s + u, 8 * s + v], px[40 * s + u, 8 * s + v]), x, y, True)
             o[x, y] = colour
     return out

@@ -80,6 +80,17 @@ It's always pepperoni. The other kind ran out in, like, spring."; "I'm on till c
 
 Without the tickets: "That's four tickets. You've got two." They go back to the magazine.
 
+## The portraits' eyes
+
+The owner: "Do you not see the eyes of the portraits." Every portrait had one eye with a dark pupil and the other a pale smear. A
+bust's head is ten pixels wide, and a face painted at sixteen pixels was squeezed into it by skipping columns; it skipped one
+iris and kept the other. The cast's painter also turns the right iris in a little, so even kept it sat in a different place.
+The bust now keeps a fixed, mirror-symmetric set of the face's columns and rows (`PortraitPainter.COLS2/ROWS2`, and the same in
+`tools/draw_manor_portraits.py`): both eyes whole (white, iris, white) under their brows, the nose between them, the cheeks. The
+manor's five family portraits are repainted with it and look straight out of the frame (level irises); their hashes are
+recorded again in `art/inventory/manor_portraits_04223.json`. Portraits taken in the House are painted the same way, and one
+from a vanilla-size skin no longer doubles a column right of centre (its eyes are centred).
+
 ## Not changed
 
 The black cabinet, the men, the walk and the account; the three games and their tables; the prize shelf; the Witness pool. No new
