@@ -2697,5 +2697,86 @@
         "stream": false
       }
     ]
+  },
+  "work_print.insert": {
+    "subtitle": "subtitles.the_oldest_house.work_print.insert",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/insert",
+        "stream": false
+      }
+    ]
+  },
+  "work_print.deck": {
+    "subtitle": "subtitles.the_oldest_house.work_print.deck",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/deck",
+        "stream": false
+      }
+    ]
+  },
+  "work_print.eject": {
+    "subtitle": "subtitles.the_oldest_house.work_print.eject",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/eject",
+        "stream": false
+      }
+    ]
+  },
+  "work_print.ring": {
+    "subtitle": "subtitles.the_oldest_house.work_print.ring",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/ring",
+        "stream": false
+      }
+    ]
+  },
+  "work_print.snow": {
+    "subtitle": "subtitles.the_oldest_house.work_print.snow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/snow",
+        "stream": false
+      }
+    ]
+  },
+  "work_print.splice": {
+    "subtitle": "subtitles.the_oldest_house.work_print.splice",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/splice",
+        "stream": false
+      }
+    ]
+  },
+  "work_print.flatbed": {
+    "subtitle": "subtitles.the_oldest_house.work_print.flatbed",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/flatbed",
+        "stream": false
+      }
+    ]
+  },
+  "work_print.rec": {
+    "subtitle": "subtitles.the_oldest_house.work_print.rec",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/rec",
+        "stream": false
+      }
+    ]
+  },
+  "work_print.camera": {
+    "subtitle": "subtitles.the_oldest_house.work_print.camera",
+    "sounds": [
+      {
+        "name": "the_oldest_house:work_print/camera",
+        "stream": false
+      }
+    ]
   }
 }

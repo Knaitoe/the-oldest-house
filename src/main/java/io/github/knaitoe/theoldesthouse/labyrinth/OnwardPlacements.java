@@ -51,6 +51,7 @@ final class OnwardPlacements {
         r.put(DARE_IN_THE_DARK,0,0,DareRooms.EXIT_Z,SOUTH,DareRegistry.STAIR_DOOR); // the stairwell at the end of the third-floor hall
         r.put(WAY_OUT,0,0,-76,SOUTH,OnwardRegistry.PANEL); // the cottage's front door: home, which is the House
         r.put(WHISTLERS,0,0,LookoutTower.ONWARD_Z,SOUTH,OnwardRegistry.WEATHERED,()->LookoutRegistry.material("timber")); // 0.4.202: a trail door in the treeline behind the tower
+        r.put(WORK_PRINT,WorkPrintShop.EXIT_X,0,WorkPrintShop.EXIT_Z,SOUTH,OnwardRegistry.PANEL); // 0.4.203: the set's back wall, the door the crew used
         r.put(FEET_UP,0,FeetUpRooms.ATTIC,FeetUpRooms.Z0-1,SOUTH,OnwardRegistry.PANEL); // the attic's north gable, reached once the ladder is down
         // The novel sites.
         r.put(WHALE,6,0,-32,SOUTH,NovelRegistry.WARD_DOOR);

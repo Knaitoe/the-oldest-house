@@ -97,7 +97,8 @@ public final class WitnessAccount {
         SILO("silo","Yellow dust","memory","I climbed above the corn while a voice below invented places she could have gone. The roof opened onto painted tin. I came back down into the grain."),
         DARE_IN_THE_DARK("dare_in_the_dark","The third count","survival","I shut the door until the latch clicked and said it three times to my own eyes. The handle held from the hall. When it gave, the sheets lay empty on the floor and the glass broke behind me."),
         FEET_UP("feet_up","Feet up","survival","I kept off the floor all the way to the attic. The chairs came while I was not looking; the boards went while I was. Three touches would have put me out, and the lamps would have gone down. I pulled the ladder up after me."),
-        WHISTLERS("whistlers","The north tower","survival","I kept my eyes on the boards whenever it whistled and pulled the cords without looking. When the storm stopped there were eight towers round mine, and the one to the north was watching me through binoculars.");
+        WHISTLERS("whistlers","The north tower","survival","I kept my eyes on the boards whenever it whistled and pulled the cords without looking. When the storm stopped there were eight towers round mine, and the one to the north was watching me through binoculars."),
+        WORK_PRINT("work_print","Work print","survival","I watched a tape with no label in the back of a closed shop until the film was about me. Seven days, a count on the phone and no voice. I stopped it before it stopped me.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

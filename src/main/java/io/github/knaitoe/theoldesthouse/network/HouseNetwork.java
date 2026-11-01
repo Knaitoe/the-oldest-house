@@ -13,7 +13,9 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("109")
+        event.registrar("110")
+                .playToClient(WorkPrintFilmPayload.TYPE,WorkPrintFilmPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WorkPrintClient.film(payload)))
+                .playToClient(WorkPrintHauntPayload.TYPE,WorkPrintHauntPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WorkPrintClient.haunt(payload)))
                 .playToClient(WayOutPayload.TYPE,WayOutPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WayOutClient.accept(payload)))
                 .playToClient(GroundingPayload.TYPE,GroundingPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.GroundingClient.accept(payload)))
                 .playToServer(JournalTearPayload.TYPE,JournalTearPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p){if(payload.back())io.github.knaitoe.theoldesthouse.journal.TornPages.reclaim(p,payload.page());else io.github.knaitoe.theoldesthouse.journal.TornPages.tear(p,payload.page());}}))

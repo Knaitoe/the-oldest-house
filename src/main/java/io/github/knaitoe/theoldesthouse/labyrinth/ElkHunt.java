@@ -381,7 +381,7 @@ public final class ElkHunt {
 
     /** Whether he can see the reader: in front of him, in the open, within reach of his eyes. */
     private static boolean sees(ServerPlayer p, LiteraryActor killer, BlockPos b) {
-        if (hidden(p, b) || !LiteraryVignettes.participant(p) || killer.distanceToSqr(p)>9&&CarcassHunt.concealed(p,b)) return false;
+        if (WorkPrint.unseen(p) || hidden(p, b) || !LiteraryVignettes.participant(p) || killer.distanceToSqr(p)>9&&CarcassHunt.concealed(p,b)) return false;
         double range = p.isShiftKeyDown() ? (cover(p) ? 5 : 12) : 28;
         // Bent over his work he sees only what is close and in front of him.
         boolean busy = killer.phase() == HACK || killer.phase() == HAUL;

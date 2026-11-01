@@ -1,0 +1,27 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "x": "the_oldest_house:block/work_print/mark",
+    "particle": "the_oldest_house:block/work_print/mark"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        0.05,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#x"
+        }
+      }
+    }
+  ]
+}

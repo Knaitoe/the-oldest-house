@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 public final class LiteraryTexts {
     private LiteraryTexts(){}
     private static ItemStack book(String title,String author,String... pages){return HouseWriting.book(title,author,HouseWriting.WritingStyle.WILL,List.of(pages));}
-    public static ItemStack source(LabyrinthPlace p){if(UncannyRooms.isUncanny(p))return UncannyTexts.source(p);if(DareRooms.is(p))return DareTexts.source();if(FeetUpRooms.is(p))return FeetUpTexts.source();if(p==LabyrinthPlace.WHISTLERS)return LookoutTexts.source();return switch(p){
+    public static ItemStack source(LabyrinthPlace p){if(UncannyRooms.isUncanny(p))return UncannyTexts.source(p);if(DareRooms.is(p))return DareTexts.source();if(FeetUpRooms.is(p))return FeetUpTexts.source();if(p==LabyrinthPlace.WHISTLERS)return LookoutTexts.source();if(p==LabyrinthPlace.WORK_PRINT)return WorkPrintTexts.source();return switch(p){
         case BORRASCA->BorrascaTexts.source();
         case HILL_NURSERY->book("A mother's night book","O.",
             "Tuesday\n\nI measured the children's beds. Both will fit in the room at the end. The room has no outside wall. I think they will be warm there.",
@@ -106,7 +106,7 @@ public final class LiteraryTexts {
             "Bring the weapon you have used most. I can tell whether it has a past, or whether the House has made another one.\n\nThe lamp speaks my name slowly.");
         default->throw new IllegalArgumentException(p.id());};}
     public static ItemStack ending(ServerPlayer p,LabyrinthPlace place,CompoundTag own){return ending(p.getGameProfile().getName(),place,own);}
-    public static ItemStack ending(String name,LabyrinthPlace place,CompoundTag own){if(UncannyRooms.isUncanny(place))return UncannyTexts.account(name,place,own);if(DareRooms.is(place))return DareTexts.account(name,own);if(FeetUpRooms.is(place))return FeetUpTexts.account(name,own);if(place==LabyrinthPlace.WHISTLERS)return LookoutTexts.account(name,own);if(place==LabyrinthPlace.BORRASCA)return BorrascaTexts.accountBook(name,own);if(place==LabyrinthPlace.END_WORLD_CABIN&&own.getBoolean("Bargain0451"))return cabin(name,own);String text=switch(place){
+    public static ItemStack ending(String name,LabyrinthPlace place,CompoundTag own){if(UncannyRooms.isUncanny(place))return UncannyTexts.account(name,place,own);if(DareRooms.is(place))return DareTexts.account(name,own);if(FeetUpRooms.is(place))return FeetUpTexts.account(name,own);if(place==LabyrinthPlace.WHISTLERS)return LookoutTexts.account(name,own);if(place==LabyrinthPlace.WORK_PRINT)return WorkPrintTexts.account(name,own);if(place==LabyrinthPlace.BORRASCA)return BorrascaTexts.accountBook(name,own);if(place==LabyrinthPlace.END_WORLD_CABIN&&own.getBoolean("Bargain0451"))return cabin(name,own);String text=switch(place){
         case HILL_NURSERY->"I knocked "+own.getInt("Knocks")+" times. The cellar returned each one. Beside the cold door hung a photograph of the two children grown, in clothes from years the house had not reached. The diary called the same thing protection that I had called a locked room.";
         case MINIATURES->"The tables held rooms I had walked through, a little figure standing where I had stood. In the latest, a second figure stood just behind mine, close enough to touch its shoulder. I had crossed that room alone.";
         case MASQUE->"I put my hand on the clock. The next chime did not come. Seven rooms of people had been waiting for it; now there was only the sound of my hand leaving the wood.";
@@ -150,6 +150,7 @@ public final class LiteraryTexts {
     public static String hint(LabyrinthPlace place){return switch(place){
         case DARE_IN_THE_DARK->"Shut the door, stand on the mat with the candle, and keep looking at your own eyes in the glass.";
         case WHISTLERS->LookoutTexts.HINT;
+        case WORK_PRINT->WorkPrintTexts.HINT;
         case FEET_UP->"Start on the big chair and keep off the floor to the attic. The bases are rests; the third touch puts you out at the front door.";
         case MINIATURES->"Examine the models on three separate visits.";
         case USHER->"Close the coffin lid or leave it open, then come back on a later visit.";

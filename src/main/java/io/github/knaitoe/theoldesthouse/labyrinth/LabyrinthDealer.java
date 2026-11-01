@@ -136,6 +136,8 @@ public final class LabyrinthDealer {
     private static int begunWeight(LabyrinthData data, UUID player, LabyrinthPlace place) {
         if (place.isMultiVisit() && LiteraryRooms.isLiterary(place)) {
             var own = LiteraryVignettes.personal(data, player, place);
+            // 0.4.203: while the tape's count runs, the shop comes back to its reader far more often; stopping it is there.
+            if (place == LabyrinthPlace.WORK_PRINT && WorkPrint.running(own)) return UNFINISHED_WEIGHT * 3;
             return own.getInt("Visit") > 0 && !own.getBoolean("Completed") ? UNFINISHED_WEIGHT : 1;
         }
         if (place == LabyrinthPlace.HOLLOWAY_CAMP) {

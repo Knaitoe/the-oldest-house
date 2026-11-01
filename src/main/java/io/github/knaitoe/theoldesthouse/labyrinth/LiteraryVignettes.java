@@ -87,6 +87,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.DARE_IN_THE_DARK){DareInTheDark.arrive(p,own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.FEET_UP){FeetUp.arrive(p,own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.WHISTLERS){LookoutNight.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
+        if(place==LabyrinthPlace.WORK_PRINT){WorkPrint.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
     }
     public static ItemStack mark(ServerPlayer p,LabyrinthPlace place,String key,ItemStack item){var s=VignetteYields.mark(item.copy(),place.id());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(OWNER,p.getUUID());t.putString(KEY,key);t.putString(PLACE,place.id());});if(place==LabyrinthPlace.BORRASCA&&key.equals("Evidence"))BorrascaStory.markEvidence(p,s);Keepsakes.inscribe(s,place,key);return s;}
     public static void give(ServerPlayer p,ItemStack s){if(p.getInventory().add(s))return;var e=new ItemEntity(p.serverLevel(),p.getX(),p.getY()+.2,p.getZ(),s);e.setTarget(p.getUUID());p.serverLevel().addFreshEntity(e);}
@@ -135,6 +136,8 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.SECOND_WAITRESS&&(rel.equals(LiteraryRooms.source(place))||rel.equals(LiteraryRooms.ending(place)))){handled=UncannyDiner.counter(p,b,rel);}
         else if(UncannyRooms.isUncanny(place)&&rel.equals(LiteraryRooms.source(place))){UncannyReading.open(p,place,own,e.getPos());handled=true;}
         else if(place==LabyrinthPlace.BORRASCA&&own.getInt("Visit")>=2&&rel.equals(BorrascaRooms.SOURCE)){open(p,place,own,"ContentNote",BorrascaTexts.contentNote(),e.getPos());handled=true;}
+        // 0.4.203: the rental card has the reader's own name on its borrower's line.
+        else if(place==LabyrinthPlace.WORK_PRINT&&rel.equals(WorkPrintShop.CARD)){open(p,place,own,"Source",WorkPrintTexts.source(p.getGameProfile().getName()),e.getPos());handled=true;}
         else if(rel.equals(LiteraryRooms.source(place))&&!oldLot||oldLot&&rel.equals(ElkLot.OLD_SOURCE)||SceneReview.readingAlias(p.serverLevel(),b,place,rel)){open(p,place,own,"Source",SceneHuntReview.sourceBook(p.serverLevel(),b,place),e.getPos());handled=true;}
         else if((oldLot?rel.equals(ElkLot.OLD_ENDING):place==LabyrinthPlace.TUNNEL_PERIPHERY?rel.equals(TunnelPassage.account(p.serverLevel(),b)):rel.equals(LiteraryRooms.ending(place)))&&own.getBoolean("Ready")){open(p,place,own,"Ending",LiteraryTexts.ending(p,place,own),e.getPos());handled=true;}
         else switch(place){
@@ -147,6 +150,7 @@ public final class LiteraryVignettes {
             case DARE_IN_THE_DARK->handled=DareInTheDark.click(p,b,rel,own);
             case FEET_UP->handled=FeetUp.click(p,b,rel,own);
             case WHISTLERS->handled=LookoutNight.click(p,b,rel,own);
+            case WORK_PRINT->handled=WorkPrint.click(p,b,rel,own);
             case CAMP_BLOOD->handled=CampSession.click(p,b,rel,own);
             case ELK_FAN->handled=ElkFanSequence.click(p,b,rel,own);
             case LAKE_HOUSE->handled=LakeHouse.click(p,b,rel,own);case BORRASCA->handled=BorrascaStory.click(p,b,rel,own);
