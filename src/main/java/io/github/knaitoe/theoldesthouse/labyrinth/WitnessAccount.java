@@ -107,6 +107,7 @@ public final class WitnessAccount {
         STILLNESS("stillness","The stillness","survival","I let it breathe on me. Something I never saw stood over me in a low hall in the dark, and I counted its breaths, and I did not move."),
         LINE("line","The line","survival","I held on. I followed a line through a dark with no walls, with something coming along it behind me, and I got to the end of it first."),
         OWN_LIGHT("own_light","Your own light","understanding","I let it take them. Something with my walk and my light walked beside me in the dark, and turned back halfway, and I did not follow it."),
+        POLYBIUS("polybius","Polybius","survival","I stopped playing. There was a black machine at the back of an arcade with no name on it, and two men who wrote down how I did, and when it asked for me by name I walked away from it."),
         HOUSEHOLD("household","The household","understanding","I put their things back in order. A household went down the stairs before me, and on a landing near the bottom I counted their cups, and read my own name at the end of their list.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}

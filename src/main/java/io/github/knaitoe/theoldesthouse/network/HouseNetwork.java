@@ -13,7 +13,9 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("115")
+        event.registrar("116")
+                .playToClient(PolybiusPayload.TYPE,PolybiusPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolybiusScreen.accept(payload)))
+                .playToServer(PolybiusScorePayload.TYPE,PolybiusScorePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.Polybius.submit(p,payload.token(),payload.score(),payload.ticks());}))
                 .playToClient(LateBodiesPayload.TYPE,LateBodiesPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LateBodyClient.accept(payload)))
                 .playToClient(PittPayload.TYPE,PittPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PittClient.set(payload)))
                 .playToClient(DeadAirPayload.TYPE,DeadAirPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.DeadAirClient.set(payload)))

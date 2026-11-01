@@ -1,0 +1,844 @@
+{
+  "variants": {
+    "facing=north,kind=cabinet,stage=0": {
+      "model": "the_oldest_house:block/polybius/cabinet_0"
+    },
+    "facing=north,kind=cabinet,stage=1": {
+      "model": "the_oldest_house:block/polybius/cabinet_1"
+    },
+    "facing=north,kind=cabinet,stage=2": {
+      "model": "the_oldest_house:block/polybius/cabinet_2"
+    },
+    "facing=north,kind=cabinet,stage=3": {
+      "model": "the_oldest_house:block/polybius/cabinet_3"
+    },
+    "facing=east,kind=cabinet,stage=0": {
+      "model": "the_oldest_house:block/polybius/cabinet_0",
+      "y": 90
+    },
+    "facing=east,kind=cabinet,stage=1": {
+      "model": "the_oldest_house:block/polybius/cabinet_1",
+      "y": 90
+    },
+    "facing=east,kind=cabinet,stage=2": {
+      "model": "the_oldest_house:block/polybius/cabinet_2",
+      "y": 90
+    },
+    "facing=east,kind=cabinet,stage=3": {
+      "model": "the_oldest_house:block/polybius/cabinet_3",
+      "y": 90
+    },
+    "facing=south,kind=cabinet,stage=0": {
+      "model": "the_oldest_house:block/polybius/cabinet_0",
+      "y": 180
+    },
+    "facing=south,kind=cabinet,stage=1": {
+      "model": "the_oldest_house:block/polybius/cabinet_1",
+      "y": 180
+    },
+    "facing=south,kind=cabinet,stage=2": {
+      "model": "the_oldest_house:block/polybius/cabinet_2",
+      "y": 180
+    },
+    "facing=south,kind=cabinet,stage=3": {
+      "model": "the_oldest_house:block/polybius/cabinet_3",
+      "y": 180
+    },
+    "facing=west,kind=cabinet,stage=0": {
+      "model": "the_oldest_house:block/polybius/cabinet_0",
+      "y": 270
+    },
+    "facing=west,kind=cabinet,stage=1": {
+      "model": "the_oldest_house:block/polybius/cabinet_1",
+      "y": 270
+    },
+    "facing=west,kind=cabinet,stage=2": {
+      "model": "the_oldest_house:block/polybius/cabinet_2",
+      "y": 270
+    },
+    "facing=west,kind=cabinet,stage=3": {
+      "model": "the_oldest_house:block/polybius/cabinet_3",
+      "y": 270
+    },
+    "facing=north,kind=screen,stage=0": {
+      "model": "the_oldest_house:block/polybius/screen_0"
+    },
+    "facing=north,kind=screen,stage=1": {
+      "model": "the_oldest_house:block/polybius/screen_1"
+    },
+    "facing=north,kind=screen,stage=2": {
+      "model": "the_oldest_house:block/polybius/screen_2"
+    },
+    "facing=north,kind=screen,stage=3": {
+      "model": "the_oldest_house:block/polybius/screen_3"
+    },
+    "facing=east,kind=screen,stage=0": {
+      "model": "the_oldest_house:block/polybius/screen_0",
+      "y": 90
+    },
+    "facing=east,kind=screen,stage=1": {
+      "model": "the_oldest_house:block/polybius/screen_1",
+      "y": 90
+    },
+    "facing=east,kind=screen,stage=2": {
+      "model": "the_oldest_house:block/polybius/screen_2",
+      "y": 90
+    },
+    "facing=east,kind=screen,stage=3": {
+      "model": "the_oldest_house:block/polybius/screen_3",
+      "y": 90
+    },
+    "facing=south,kind=screen,stage=0": {
+      "model": "the_oldest_house:block/polybius/screen_0",
+      "y": 180
+    },
+    "facing=south,kind=screen,stage=1": {
+      "model": "the_oldest_house:block/polybius/screen_1",
+      "y": 180
+    },
+    "facing=south,kind=screen,stage=2": {
+      "model": "the_oldest_house:block/polybius/screen_2",
+      "y": 180
+    },
+    "facing=south,kind=screen,stage=3": {
+      "model": "the_oldest_house:block/polybius/screen_3",
+      "y": 180
+    },
+    "facing=west,kind=screen,stage=0": {
+      "model": "the_oldest_house:block/polybius/screen_0",
+      "y": 270
+    },
+    "facing=west,kind=screen,stage=1": {
+      "model": "the_oldest_house:block/polybius/screen_1",
+      "y": 270
+    },
+    "facing=west,kind=screen,stage=2": {
+      "model": "the_oldest_house:block/polybius/screen_2",
+      "y": 270
+    },
+    "facing=west,kind=screen,stage=3": {
+      "model": "the_oldest_house:block/polybius/screen_3",
+      "y": 270
+    },
+    "facing=north,kind=dead,stage=0": {
+      "model": "the_oldest_house:block/polybius/dead_0"
+    },
+    "facing=north,kind=dead,stage=1": {
+      "model": "the_oldest_house:block/polybius/dead_1"
+    },
+    "facing=north,kind=dead,stage=2": {
+      "model": "the_oldest_house:block/polybius/dead_0"
+    },
+    "facing=north,kind=dead,stage=3": {
+      "model": "the_oldest_house:block/polybius/dead_0"
+    },
+    "facing=east,kind=dead,stage=0": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 90
+    },
+    "facing=east,kind=dead,stage=1": {
+      "model": "the_oldest_house:block/polybius/dead_1",
+      "y": 90
+    },
+    "facing=east,kind=dead,stage=2": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 90
+    },
+    "facing=east,kind=dead,stage=3": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 90
+    },
+    "facing=south,kind=dead,stage=0": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 180
+    },
+    "facing=south,kind=dead,stage=1": {
+      "model": "the_oldest_house:block/polybius/dead_1",
+      "y": 180
+    },
+    "facing=south,kind=dead,stage=2": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 180
+    },
+    "facing=south,kind=dead,stage=3": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 180
+    },
+    "facing=west,kind=dead,stage=0": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 270
+    },
+    "facing=west,kind=dead,stage=1": {
+      "model": "the_oldest_house:block/polybius/dead_1",
+      "y": 270
+    },
+    "facing=west,kind=dead,stage=2": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 270
+    },
+    "facing=west,kind=dead,stage=3": {
+      "model": "the_oldest_house:block/polybius/dead_0",
+      "y": 270
+    },
+    "facing=north,kind=dead_screen,stage=0": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0"
+    },
+    "facing=north,kind=dead_screen,stage=1": {
+      "model": "the_oldest_house:block/polybius/dead_screen_1"
+    },
+    "facing=north,kind=dead_screen,stage=2": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0"
+    },
+    "facing=north,kind=dead_screen,stage=3": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0"
+    },
+    "facing=east,kind=dead_screen,stage=0": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 90
+    },
+    "facing=east,kind=dead_screen,stage=1": {
+      "model": "the_oldest_house:block/polybius/dead_screen_1",
+      "y": 90
+    },
+    "facing=east,kind=dead_screen,stage=2": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 90
+    },
+    "facing=east,kind=dead_screen,stage=3": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 90
+    },
+    "facing=south,kind=dead_screen,stage=0": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 180
+    },
+    "facing=south,kind=dead_screen,stage=1": {
+      "model": "the_oldest_house:block/polybius/dead_screen_1",
+      "y": 180
+    },
+    "facing=south,kind=dead_screen,stage=2": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 180
+    },
+    "facing=south,kind=dead_screen,stage=3": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 180
+    },
+    "facing=west,kind=dead_screen,stage=0": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 270
+    },
+    "facing=west,kind=dead_screen,stage=1": {
+      "model": "the_oldest_house:block/polybius/dead_screen_1",
+      "y": 270
+    },
+    "facing=west,kind=dead_screen,stage=2": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 270
+    },
+    "facing=west,kind=dead_screen,stage=3": {
+      "model": "the_oldest_house:block/polybius/dead_screen_0",
+      "y": 270
+    },
+    "facing=north,kind=change,stage=0": {
+      "model": "the_oldest_house:block/polybius/change_0"
+    },
+    "facing=north,kind=change,stage=1": {
+      "model": "the_oldest_house:block/polybius/change_0"
+    },
+    "facing=north,kind=change,stage=2": {
+      "model": "the_oldest_house:block/polybius/change_0"
+    },
+    "facing=north,kind=change,stage=3": {
+      "model": "the_oldest_house:block/polybius/change_0"
+    },
+    "facing=east,kind=change,stage=0": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 90
+    },
+    "facing=east,kind=change,stage=1": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 90
+    },
+    "facing=east,kind=change,stage=2": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 90
+    },
+    "facing=east,kind=change,stage=3": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 90
+    },
+    "facing=south,kind=change,stage=0": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 180
+    },
+    "facing=south,kind=change,stage=1": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 180
+    },
+    "facing=south,kind=change,stage=2": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 180
+    },
+    "facing=south,kind=change,stage=3": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 180
+    },
+    "facing=west,kind=change,stage=0": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 270
+    },
+    "facing=west,kind=change,stage=1": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 270
+    },
+    "facing=west,kind=change,stage=2": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 270
+    },
+    "facing=west,kind=change,stage=3": {
+      "model": "the_oldest_house:block/polybius/change_0",
+      "y": 270
+    },
+    "facing=north,kind=notice,stage=0": {
+      "model": "the_oldest_house:block/polybius/notice_0"
+    },
+    "facing=north,kind=notice,stage=1": {
+      "model": "the_oldest_house:block/polybius/notice_0"
+    },
+    "facing=north,kind=notice,stage=2": {
+      "model": "the_oldest_house:block/polybius/notice_0"
+    },
+    "facing=north,kind=notice,stage=3": {
+      "model": "the_oldest_house:block/polybius/notice_0"
+    },
+    "facing=east,kind=notice,stage=0": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 90
+    },
+    "facing=east,kind=notice,stage=1": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 90
+    },
+    "facing=east,kind=notice,stage=2": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 90
+    },
+    "facing=east,kind=notice,stage=3": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 90
+    },
+    "facing=south,kind=notice,stage=0": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 180
+    },
+    "facing=south,kind=notice,stage=1": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 180
+    },
+    "facing=south,kind=notice,stage=2": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 180
+    },
+    "facing=south,kind=notice,stage=3": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 180
+    },
+    "facing=west,kind=notice,stage=0": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 270
+    },
+    "facing=west,kind=notice,stage=1": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 270
+    },
+    "facing=west,kind=notice,stage=2": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 270
+    },
+    "facing=west,kind=notice,stage=3": {
+      "model": "the_oldest_house:block/polybius/notice_0",
+      "y": 270
+    },
+    "facing=north,kind=clipboard,stage=0": {
+      "model": "the_oldest_house:block/polybius/clipboard_0"
+    },
+    "facing=north,kind=clipboard,stage=1": {
+      "model": "the_oldest_house:block/polybius/clipboard_0"
+    },
+    "facing=north,kind=clipboard,stage=2": {
+      "model": "the_oldest_house:block/polybius/clipboard_0"
+    },
+    "facing=north,kind=clipboard,stage=3": {
+      "model": "the_oldest_house:block/polybius/clipboard_0"
+    },
+    "facing=east,kind=clipboard,stage=0": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 90
+    },
+    "facing=east,kind=clipboard,stage=1": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 90
+    },
+    "facing=east,kind=clipboard,stage=2": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 90
+    },
+    "facing=east,kind=clipboard,stage=3": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 90
+    },
+    "facing=south,kind=clipboard,stage=0": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 180
+    },
+    "facing=south,kind=clipboard,stage=1": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 180
+    },
+    "facing=south,kind=clipboard,stage=2": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 180
+    },
+    "facing=south,kind=clipboard,stage=3": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 180
+    },
+    "facing=west,kind=clipboard,stage=0": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 270
+    },
+    "facing=west,kind=clipboard,stage=1": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 270
+    },
+    "facing=west,kind=clipboard,stage=2": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 270
+    },
+    "facing=west,kind=clipboard,stage=3": {
+      "model": "the_oldest_house:block/polybius/clipboard_0",
+      "y": 270
+    },
+    "facing=north,kind=neon,stage=0": {
+      "model": "the_oldest_house:block/polybius/neon_0"
+    },
+    "facing=north,kind=neon,stage=1": {
+      "model": "the_oldest_house:block/polybius/neon_1"
+    },
+    "facing=north,kind=neon,stage=2": {
+      "model": "the_oldest_house:block/polybius/neon_2"
+    },
+    "facing=north,kind=neon,stage=3": {
+      "model": "the_oldest_house:block/polybius/neon_0"
+    },
+    "facing=east,kind=neon,stage=0": {
+      "model": "the_oldest_house:block/polybius/neon_0",
+      "y": 90
+    },
+    "facing=east,kind=neon,stage=1": {
+      "model": "the_oldest_house:block/polybius/neon_1",
+      "y": 90
+    },
+    "facing=east,kind=neon,stage=2": {
+      "model": "the_oldest_house:block/polybius/neon_2",
+      "y": 90
+    },
+    "facing=east,kind=neon,stage=3": {
+      "model": "the_oldest_house:block/polybius/neon_0",
+      "y": 90
+    },
+    "facing=south,kind=neon,stage=0": {
+      "model": "the_oldest_house:block/polybius/neon_0",
+      "y": 180
+    },
+    "facing=south,kind=neon,stage=1": {
+      "model": "the_oldest_house:block/polybius/neon_1",
+      "y": 180
+    },
+    "facing=south,kind=neon,stage=2": {
+      "model": "the_oldest_house:block/polybius/neon_2",
+      "y": 180
+    },
+    "facing=south,kind=neon,stage=3": {
+      "model": "the_oldest_house:block/polybius/neon_0",
+      "y": 180
+    },
+    "facing=west,kind=neon,stage=0": {
+      "model": "the_oldest_house:block/polybius/neon_0",
+      "y": 270
+    },
+    "facing=west,kind=neon,stage=1": {
+      "model": "the_oldest_house:block/polybius/neon_1",
+      "y": 270
+    },
+    "facing=west,kind=neon,stage=2": {
+      "model": "the_oldest_house:block/polybius/neon_2",
+      "y": 270
+    },
+    "facing=west,kind=neon,stage=3": {
+      "model": "the_oldest_house:block/polybius/neon_0",
+      "y": 270
+    },
+    "facing=north,kind=stool,stage=0": {
+      "model": "the_oldest_house:block/polybius/stool_0"
+    },
+    "facing=north,kind=stool,stage=1": {
+      "model": "the_oldest_house:block/polybius/stool_0"
+    },
+    "facing=north,kind=stool,stage=2": {
+      "model": "the_oldest_house:block/polybius/stool_0"
+    },
+    "facing=north,kind=stool,stage=3": {
+      "model": "the_oldest_house:block/polybius/stool_0"
+    },
+    "facing=east,kind=stool,stage=0": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 90
+    },
+    "facing=east,kind=stool,stage=1": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 90
+    },
+    "facing=east,kind=stool,stage=2": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 90
+    },
+    "facing=east,kind=stool,stage=3": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 90
+    },
+    "facing=south,kind=stool,stage=0": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 180
+    },
+    "facing=south,kind=stool,stage=1": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 180
+    },
+    "facing=south,kind=stool,stage=2": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 180
+    },
+    "facing=south,kind=stool,stage=3": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 180
+    },
+    "facing=west,kind=stool,stage=0": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 270
+    },
+    "facing=west,kind=stool,stage=1": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 270
+    },
+    "facing=west,kind=stool,stage=2": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 270
+    },
+    "facing=west,kind=stool,stage=3": {
+      "model": "the_oldest_house:block/polybius/stool_0",
+      "y": 270
+    },
+    "facing=north,kind=counter,stage=0": {
+      "model": "the_oldest_house:block/polybius/counter_0"
+    },
+    "facing=north,kind=counter,stage=1": {
+      "model": "the_oldest_house:block/polybius/counter_0"
+    },
+    "facing=north,kind=counter,stage=2": {
+      "model": "the_oldest_house:block/polybius/counter_0"
+    },
+    "facing=north,kind=counter,stage=3": {
+      "model": "the_oldest_house:block/polybius/counter_0"
+    },
+    "facing=east,kind=counter,stage=0": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 90
+    },
+    "facing=east,kind=counter,stage=1": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 90
+    },
+    "facing=east,kind=counter,stage=2": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 90
+    },
+    "facing=east,kind=counter,stage=3": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 90
+    },
+    "facing=south,kind=counter,stage=0": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 180
+    },
+    "facing=south,kind=counter,stage=1": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 180
+    },
+    "facing=south,kind=counter,stage=2": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 180
+    },
+    "facing=south,kind=counter,stage=3": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 180
+    },
+    "facing=west,kind=counter,stage=0": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 270
+    },
+    "facing=west,kind=counter,stage=1": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 270
+    },
+    "facing=west,kind=counter,stage=2": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 270
+    },
+    "facing=west,kind=counter,stage=3": {
+      "model": "the_oldest_house:block/polybius/counter_0",
+      "y": 270
+    },
+    "facing=north,kind=prizes,stage=0": {
+      "model": "the_oldest_house:block/polybius/prizes_0"
+    },
+    "facing=north,kind=prizes,stage=1": {
+      "model": "the_oldest_house:block/polybius/prizes_0"
+    },
+    "facing=north,kind=prizes,stage=2": {
+      "model": "the_oldest_house:block/polybius/prizes_0"
+    },
+    "facing=north,kind=prizes,stage=3": {
+      "model": "the_oldest_house:block/polybius/prizes_0"
+    },
+    "facing=east,kind=prizes,stage=0": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 90
+    },
+    "facing=east,kind=prizes,stage=1": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 90
+    },
+    "facing=east,kind=prizes,stage=2": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 90
+    },
+    "facing=east,kind=prizes,stage=3": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 90
+    },
+    "facing=south,kind=prizes,stage=0": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 180
+    },
+    "facing=south,kind=prizes,stage=1": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 180
+    },
+    "facing=south,kind=prizes,stage=2": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 180
+    },
+    "facing=south,kind=prizes,stage=3": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 180
+    },
+    "facing=west,kind=prizes,stage=0": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 270
+    },
+    "facing=west,kind=prizes,stage=1": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 270
+    },
+    "facing=west,kind=prizes,stage=2": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 270
+    },
+    "facing=west,kind=prizes,stage=3": {
+      "model": "the_oldest_house:block/polybius/prizes_0",
+      "y": 270
+    },
+    "facing=north,kind=poster,stage=0": {
+      "model": "the_oldest_house:block/polybius/poster_0"
+    },
+    "facing=north,kind=poster,stage=1": {
+      "model": "the_oldest_house:block/polybius/poster_1"
+    },
+    "facing=north,kind=poster,stage=2": {
+      "model": "the_oldest_house:block/polybius/poster_2"
+    },
+    "facing=north,kind=poster,stage=3": {
+      "model": "the_oldest_house:block/polybius/poster_0"
+    },
+    "facing=east,kind=poster,stage=0": {
+      "model": "the_oldest_house:block/polybius/poster_0",
+      "y": 90
+    },
+    "facing=east,kind=poster,stage=1": {
+      "model": "the_oldest_house:block/polybius/poster_1",
+      "y": 90
+    },
+    "facing=east,kind=poster,stage=2": {
+      "model": "the_oldest_house:block/polybius/poster_2",
+      "y": 90
+    },
+    "facing=east,kind=poster,stage=3": {
+      "model": "the_oldest_house:block/polybius/poster_0",
+      "y": 90
+    },
+    "facing=south,kind=poster,stage=0": {
+      "model": "the_oldest_house:block/polybius/poster_0",
+      "y": 180
+    },
+    "facing=south,kind=poster,stage=1": {
+      "model": "the_oldest_house:block/polybius/poster_1",
+      "y": 180
+    },
+    "facing=south,kind=poster,stage=2": {
+      "model": "the_oldest_house:block/polybius/poster_2",
+      "y": 180
+    },
+    "facing=south,kind=poster,stage=3": {
+      "model": "the_oldest_house:block/polybius/poster_0",
+      "y": 180
+    },
+    "facing=west,kind=poster,stage=0": {
+      "model": "the_oldest_house:block/polybius/poster_0",
+      "y": 270
+    },
+    "facing=west,kind=poster,stage=1": {
+      "model": "the_oldest_house:block/polybius/poster_1",
+      "y": 270
+    },
+    "facing=west,kind=poster,stage=2": {
+      "model": "the_oldest_house:block/polybius/poster_2",
+      "y": 270
+    },
+    "facing=west,kind=poster,stage=3": {
+      "model": "the_oldest_house:block/polybius/poster_0",
+      "y": 270
+    },
+    "facing=north,kind=bin,stage=0": {
+      "model": "the_oldest_house:block/polybius/bin_0"
+    },
+    "facing=north,kind=bin,stage=1": {
+      "model": "the_oldest_house:block/polybius/bin_0"
+    },
+    "facing=north,kind=bin,stage=2": {
+      "model": "the_oldest_house:block/polybius/bin_0"
+    },
+    "facing=north,kind=bin,stage=3": {
+      "model": "the_oldest_house:block/polybius/bin_0"
+    },
+    "facing=east,kind=bin,stage=0": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 90
+    },
+    "facing=east,kind=bin,stage=1": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 90
+    },
+    "facing=east,kind=bin,stage=2": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 90
+    },
+    "facing=east,kind=bin,stage=3": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 90
+    },
+    "facing=south,kind=bin,stage=0": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 180
+    },
+    "facing=south,kind=bin,stage=1": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 180
+    },
+    "facing=south,kind=bin,stage=2": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 180
+    },
+    "facing=south,kind=bin,stage=3": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 180
+    },
+    "facing=west,kind=bin,stage=0": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 270
+    },
+    "facing=west,kind=bin,stage=1": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 270
+    },
+    "facing=west,kind=bin,stage=2": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 270
+    },
+    "facing=west,kind=bin,stage=3": {
+      "model": "the_oldest_house:block/polybius/bin_0",
+      "y": 270
+    },
+    "facing=north,kind=light,stage=0": {
+      "model": "the_oldest_house:block/polybius/light_0"
+    },
+    "facing=north,kind=light,stage=1": {
+      "model": "the_oldest_house:block/polybius/light_1"
+    },
+    "facing=north,kind=light,stage=2": {
+      "model": "the_oldest_house:block/polybius/light_0"
+    },
+    "facing=north,kind=light,stage=3": {
+      "model": "the_oldest_house:block/polybius/light_0"
+    },
+    "facing=east,kind=light,stage=0": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 90
+    },
+    "facing=east,kind=light,stage=1": {
+      "model": "the_oldest_house:block/polybius/light_1",
+      "y": 90
+    },
+    "facing=east,kind=light,stage=2": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 90
+    },
+    "facing=east,kind=light,stage=3": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 90
+    },
+    "facing=south,kind=light,stage=0": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 180
+    },
+    "facing=south,kind=light,stage=1": {
+      "model": "the_oldest_house:block/polybius/light_1",
+      "y": 180
+    },
+    "facing=south,kind=light,stage=2": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 180
+    },
+    "facing=south,kind=light,stage=3": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 180
+    },
+    "facing=west,kind=light,stage=0": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 270
+    },
+    "facing=west,kind=light,stage=1": {
+      "model": "the_oldest_house:block/polybius/light_1",
+      "y": 270
+    },
+    "facing=west,kind=light,stage=2": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 270
+    },
+    "facing=west,kind=light,stage=3": {
+      "model": "the_oldest_house:block/polybius/light_0",
+      "y": 270
+    }
+  }
+}

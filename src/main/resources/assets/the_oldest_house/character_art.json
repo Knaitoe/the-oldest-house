@@ -1182,5 +1182,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 40
+  },
+  {
+    "name": "literary_polybius_a",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 41
+  },
+  {
+    "name": "literary_polybius_b",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 42
   }
 ]

@@ -413,6 +413,8 @@ public enum LabyrinthPlace {
     LINE("line",Kind.ONE_SHOT,142,new BoundingBox(-25,-1,-90,25,6,0),literaryEntry()),
     /** 0.4.213, your own light, the last of the dark halls' horrors (OwnLight, OwnLightSite): twin branches, and someone walking the other one with your walk and your light. Understanding, dealt only from depth sixteen. */
     OWN_LIGHT("own_light",Kind.ONE_SHOT,143,new BoundingBox(-5,-1,-50,5,4,0),literaryEntry()),
+    /** 0.4.217, Polybius (Polybius, PolybiusSite): an arcade with three real games, their tables kept for the whole server, and a black cabinet with no maker's name. Survival, over as many evenings as it takes. */
+    POLYBIUS("polybius",Kind.MULTI_VISIT,144,new BoundingBox(-10,-1,-24,10,6,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

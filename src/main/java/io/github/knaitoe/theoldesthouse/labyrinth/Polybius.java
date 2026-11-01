@@ -1,0 +1,213 @@
+package io.github.knaitoe.theoldesthouse.labyrinth;
+
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.network.HouseFadePayload;
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
+import io.github.knaitoe.theoldesthouse.network.PolybiusPayload;
+import java.util.*;
+import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+
+/**
+ * 0.4.217, Polybius (docs/POLYBIUS_0_4_217.md): the arcade, its three working games and their tables, and the black cabinet.
+ *
+ * <p>Every working cabinet is a real game on the reader's screen (client/PolybiusScreen); a finished game's score goes on that
+ * game's table, kept for the whole server, when the server believes it (a session it opened, no faster than the game can score).
+ * One reader plays a cabinet at a time.
+ *
+ * <p>The black cabinet has no table. Two men in suits stand either side of it, the reader's own (no one else sees them), and write
+ * something down after each play. A play counts once it has lasted five seconds. After three, it calls the reader by name, and the
+ * men watch them, not the machine. Walking away, to the front of the arcade, without playing it again, readies the account (the
+ * clipboard the men leave on the change machine): {@code walked_away}. Playing it a fourth time costs the evening: the screen keeps
+ * them, the reader comes to at the front at closing time, and their name is gone from every table. They may come back another
+ * night and try again.
+ */
+@EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
+public final class Polybius {
+    private Polybius(){}
+    public static final LabyrinthPlace PLACE=LabyrinthPlace.POLYBIUS;
+    /** The two men's skins, on the stranger phases after the closing hall's children. */
+    public static final int MAN_A_PHASE=41,MAN_B_PHASE=42;
+    /** A play of the black cabinet counts after five seconds; three are enough; a fourth keeps the reader six seconds, then takes them. */
+    public static final int MIN_PLAY=100,PLAYS=3,TAKEN_AFTER=120,CALL_EVERY=50;
+    /** The most each game can score in a tick, with room to spare, and the longest a session is kept. */
+    static final int[] RATE={3,2,3,0},LONGEST={12000,12000,12000,1600};
+    public record Session(int game,long token,long start,boolean taken){}
+    static final Map<UUID,Session> SESSIONS=new HashMap<>();
+    public static @Nullable Session session(UUID id){return SESSIONS.get(id);}
+    public static boolean playing(UUID id){return SESSIONS.containsKey(id);}
+
+    static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
+    static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
+    static CompoundTag own(MinecraftServer s,UUID id){return LiteraryVignettes.personal(LabyrinthData.get(s),id,PLACE);}
+    static void save(MinecraftServer s,UUID id,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(s),id,PLACE,own);}
+    @Nullable static BlockPos base(ServerPlayer p){return LiteraryVignettes.base(p,PLACE);}
+    static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
+    static void heard(ServerPlayer p,Vec3 at,SoundEvent s,float volume,float pitch){p.connection.send(new ClientboundSoundPacket(Holder.direct(s),SoundSource.BLOCKS,at.x,at.y,at.z,volume,pitch,p.getRandom().nextLong()));}
+    static Vec3 rel(ServerPlayer p,BlockPos b){return p.position().subtract(b.getX(),b.getY(),b.getZ());}
+    public static void clearAll(){SESSIONS.clear();}
+
+    // ------------------------------------------------------------------------------------------------ arrival
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
+        SESSIONS.remove(p.getUUID());
+        boolean lost=own.getBoolean("Lost217");
+        // Another night: the black cabinet starts again from nothing.
+        if(lost||!own.getBoolean("Ready")){own.remove("Lost217");own.putInt("Plays217",0);own.remove("Call217");}
+        PolybiusSite.boards(p.serverLevel(),b);
+        if(own.getBoolean("Ready")&&!own.getBoolean("Completed"))cue(p,"The clipboard is still on the change machine by the door.");
+        else if(lost)cue(p,"The arcade again, another night. Your name is not on any of the tables. At the back, the black cabinet's screen is dark until you look at it.");
+        else cue(p,"An arcade at the end of a strip mall, on a weeknight. Every machine is playing to itself. At the back, two men in suits stand either side of a black cabinet.");
+    }
+
+    // ------------------------------------------------------------------------------------------------ hands
+    public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        var l=p.serverLevel();var kind=PolybiusBlock.kind(l.getBlockState(b.offset(rel)));if(kind==null)return false;
+        switch(kind){
+            case CABINET,SCREEN->{int g=PolybiusSite.game(rel);if(g<0)return false;play(p,b,own,g);return true;}
+            case DEAD,DEAD_SCREEN->{cue(p,"OUT OF ORDER, on a strip of masking tape across the screen.");return true;}
+            case CHANGE->{cue(p,"A card taped over the coin slot: FREE PLAY TONIGHT.");return true;}
+            case CLIPBOARD->{cue(p,own.getBoolean("Ready")?"The men's clipboard.":"A clipboard. The top sheet is blank but for tonight's date.");return true;}
+            case COUNTER->{cue(p,"Tickets for prizes. Nobody behind the counter.");return true;}
+            case PRIZES->{cue(p,"Rubber spiders, finger traps, a plush dog with one eye. Every prize has the same price on it.");return true;}
+            case POSTER->{cue(p,"A poster for a game this arcade doesn't have.");return true;}
+            case STOOL->{cue(p,"The vinyl is split and taped.");return true;}
+            case BIN->{cue(p,"Cups, a straw, a token nobody spent.");return true;}
+            default->{return false;}
+        }
+    }
+    /** A cabinet's screen opened for one reader. */
+    static void play(ServerPlayer p,BlockPos b,CompoundTag own,int game){
+        if(playing(p.getUUID())){cue(p,"You're already playing.");return;}
+        for(var e:SESSIONS.entrySet())if(e.getValue().game()==game&&!e.getKey().equals(p.getUUID())){cue(p,"Someone is playing it.");return;}
+        boolean taken=false;
+        if(game==PolybiusSite.BLACK){
+            if(own.getBoolean("Ready")){cue(p,"The screen is dark. The men are gone.");return;}
+            if(own.getBoolean("Lost217")){cue(p,"The screen is dark.");return;}
+            taken=own.getInt("Plays217")>=PLAYS;
+            if(taken){own.putBoolean("Fourth217",true);save(p,own);}
+        }
+        long now=p.serverLevel().getGameTime();long token=p.getRandom().nextLong();
+        SESSIONS.put(p.getUUID(),new Session(game,token,now,taken));
+        HousePackets.send(p,new PolybiusPayload(game,token,p.getGameProfile().getName(),own.getInt("Plays217"),taken,PolybiusScores.tag(p.server,game)));
+        heard(p,Vec3.atCenterOf(b.offset(PolybiusSite.CABINETS.get(game)).above()),SoundEvents.NOTE_BLOCK_BIT.value(),.5F,game==PolybiusSite.BLACK?.5F:1.4F);
+    }
+    /** A game over, from the reader's screen. Whether it stands is decided here. */
+    public static boolean submit(ServerPlayer p,long token,int score,int ticks){
+        var s=SESSIONS.get(p.getUUID());if(s==null||s.token()!=token||s.taken())return false;
+        SESSIONS.remove(p.getUUID());
+        long now=p.serverLevel().getGameTime();int played=(int)Math.min(Math.max(0,ticks),now-s.start()+40);
+        var own=own(p);var b=base(p);
+        if(s.game()==PolybiusSite.BLACK){
+            if(played<MIN_PLAY){cue(p,"The screen goes back to its slow pattern.");return false;}
+            int plays=own.getInt("Plays217")+1;own.putInt("Plays217",plays);own.putInt("EverPlayed217",own.getInt("EverPlayed217")+1);
+            if(plays>=PLAYS&&!own.contains("Call217"))own.putLong("Call217",now);
+            save(p,own);
+            cue(p,switch(plays){
+                case 1->"When you look up, one of the men is writing something down.";
+                case 2->"Both of them write this time. You can't remember what the last words on the screen were.";
+                default->"The screen says PLAY AGAIN. It says it in your name.";
+            });
+            return true;
+        }
+        if(score<0||score>RATE[s.game()]*played+50)return false;
+        int rank=PolybiusScores.record(p.server,s.game(),p,score);
+        own.putInt("Games217",own.getInt("Games217")+1);save(p,own);
+        if(b!=null)PolybiusSite.boards(p.serverLevel(),b);
+        cue(p,rank==0?"GAME OVER. "+score+". Not enough for the table.":rank==1?"GAME OVER. "+score+". Your name goes to the top of the table.":"GAME OVER. "+score+". Your name goes up the table, "+ordinal(rank)+".");
+        return true;
+    }
+    static String ordinal(int n){return n+(n%100>=11&&n%100<=13?"th":switch(n%10){case 1->"st";case 2->"nd";case 3->"rd";default->"th";});}
+
+    // ------------------------------------------------------------------------------------------------ the two men
+    static List<LiteraryActor> men(ServerPlayer p,BlockPos b){
+        return p.serverLevel().getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-PolybiusSite.SIDE,-1,PolybiusSite.FAR)).minmax(new AABB(b.offset(PolybiusSite.SIDE+1,PolybiusSite.HIGH,1))),
+            a->a.role()==LiteraryActor.STRANGER&&(a.phase()==MAN_A_PHASE||a.phase()==MAN_B_PHASE)&&a.owner().isPresent()&&a.owner().get().equals(p.getUUID()));
+    }
+    /** The men stand by the black cabinet until the reader walks away from it or loses the evening to it, and watch them. */
+    static void tend(ServerPlayer p,BlockPos b,CompoundTag own){
+        var l=p.serverLevel();var men=men(p,b);boolean wanted=!own.getBoolean("Ready")&&!own.getBoolean("Lost217");
+        if(!wanted){for(var a:men)a.discard();return;}
+        for(int phase:new int[]{MAN_A_PHASE,MAN_B_PHASE}){
+            var mine=men.stream().filter(a->a.phase()==phase).toList();
+            for(int i=1;i<mine.size();i++)mine.get(i).discard();
+            var a=mine.isEmpty()?null:mine.get(0);
+            var at=phase==MAN_A_PHASE?PolybiusSite.MAN_A:PolybiusSite.MAN_B;
+            if(a==null){if(!l.isPositionEntityTicking(b.offset(at)))continue;a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;a.bind(PLACE,p.getUUID());a.appearance(LiteraryActor.STRANGER,phase);a.moveTo(Vec3.atBottomCenterOf(b.offset(at)));if(!l.addFreshEntity(a))continue;}
+            // They watch the reader; while the black cabinet is being played, they watch its screen.
+            var s=SESSIONS.get(p.getUUID());Vec3 look=s!=null&&s.game()==PolybiusSite.BLACK&&!own.contains("Call217")?Vec3.atCenterOf(b.offset(PolybiusSite.CABINETS.get(PolybiusSite.BLACK)).above()):p.getEyePosition();
+            var d=look.subtract(a.getEyePosition());float yaw=(float)(Mth.atan2(d.z,d.x)*180/Math.PI)-90;
+            a.setYRot(yaw);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------ the evening
+    @SubscribeEvent public static void tick(ServerTickEvent.Post e){
+        var s=e.getServer();
+        for(var it=SESSIONS.entrySet().iterator();it.hasNext();){var en=it.next();var p=s.getPlayerList().getPlayer(en.getKey());var ses=en.getValue();
+            if(p==null){it.remove();continue;}
+            long age=p.serverLevel().getGameTime()-ses.start();
+            if(ses.taken()&&age>=TAKEN_AFTER){it.remove();fail(p);continue;}
+            if(!LiteraryVignettes.inside(p,PLACE)||age>LONGEST[ses.game()]+400){it.remove();HousePackets.send(p,PolybiusPayload.close());}
+        }
+        if(s.getTickCount()%10!=0)return;
+        for(var p:s.getPlayerList().getPlayers()){
+            if(!LiteraryVignettes.inside(p,PLACE))continue;var b=base(p);if(b==null)continue;var own=own(p);
+            tend(p,b,own);
+            if(!own.contains("Call217")||own.getBoolean("Ready")||own.getBoolean("Lost217"))continue;
+            if(PolybiusSite.front(rel(p,b))&&!playing(p.getUUID())){walkAway(p,b,own);continue;}
+            long since=p.serverLevel().getGameTime()-own.getLong("Call217");
+            if(since%CALL_EVERY<10&&!playing(p.getUUID())){
+                String[] lines={"Behind you, the black cabinet plays your name.","PLAY AGAIN, it says. It knows how to spell your name.","The two men are watching you, not the machine.","It is quieter at the back than it should be. It plays your name again."};
+                cue(p,lines[(int)(since/CALL_EVERY)%lines.length]);
+                heard(p,Vec3.atCenterOf(b.offset(PolybiusSite.CABINETS.get(PolybiusSite.BLACK)).above()),SoundEvents.NOTE_BLOCK_BASS.value(),.7F,.5F);
+            }
+        }
+    }
+    /** Three plays, and then the front of the arcade without a fourth: the men leave their clipboard, and the account is ready. */
+    static void walkAway(ServerPlayer p,BlockPos b,CompoundTag own){
+        for(int g=0;g<PolybiusSite.BLACK;g++){own.putInt("Best217_"+g,PolybiusScores.best(p.server,g,p.getUUID()));own.putInt("Rank217_"+g,PolybiusScores.rank(p.server,g,p.getUUID()));}
+        own.putBoolean("Walked217",true);own.remove("Call217");
+        LiteraryVignettes.ready(p,PLACE,own,"walked_away");save(p,own);
+        for(var a:men(p,b))a.discard();
+        cue(p,"The calling stops. When you look back, the two men are gone. Their clipboard is on the change machine by the door.");
+    }
+    /** A fourth play: the screen keeps the reader, they come to at the front at closing time, and their name is off every table. */
+    static void fail(ServerPlayer p){
+        var b=base(p);var own=own(p);
+        int struck=PolybiusScores.strike(p.server,p.getUUID());
+        own.putBoolean("Lost217",true);own.remove("Call217");own.putInt("Plays217",0);own.putInt("Taken217",own.getInt("Taken217")+1);own.putInt("Struck217",struck);save(p,own);
+        HousePackets.send(p,PolybiusPayload.close());
+        HousePackets.send(p,new HouseFadePayload(10,40,40));
+        p.addEffect(new MobEffectInstance(MobEffects.DARKNESS,200,0,false,false,false));
+        if(b!=null){
+            for(var a:men(p,b))a.discard();
+            p.teleportTo(p.serverLevel(),b.getX()+.5,b.getY(),b.getZ()-1.5,180,0);p.connection.resetPosition();
+            PolybiusSite.boards(p.serverLevel(),b);
+        }
+        cue(p,"It's later. Most of the machines are off and someone is putting the stools up. You don't remember the last hour. Your name isn't on any of the tables.");
+    }
+    @SubscribeEvent public static void left(PlayerEvent.PlayerLoggedOutEvent e){
+        var id=e.getEntity().getUUID();var ses=SESSIONS.remove(id);
+        if(ses!=null&&ses.taken()){var s=e.getEntity().getServer();if(s==null)return;var own=own(s,id);PolybiusScores.strike(s,id);own.putBoolean("Lost217",true);own.remove("Call217");own.putInt("Plays217",0);own.putInt("Taken217",own.getInt("Taken217")+1);save(s,id,own);}
+    }
+}
