@@ -45,6 +45,8 @@ public final class BorrascaStory {
     public static final int MISSING=10,WORKER=20;
     /** The taking: the longest the men may take to reach her before she is led anyway, and how long she is led before she is gone. */
     static final int TAKEN_BY=160,LED_FOR=25;
+    /** 0.4.236: the Shiny Gentleman stands as long as the strokes last, between these distances from a child, this tall. */
+    public static final int GENT_TICKS=70;public static final double GENT_NEAR=28,GENT_FAR=70,GENT_HEIGHT=4.5;
     /** 0.4.235 gestures: the friend led by the arm, and a taker's hand held out to her. */
     public static final int LED=6,TAKING_HAND=7;
     /** How long a spoken line stays over the speaker's head. */
@@ -166,7 +168,8 @@ public final class BorrascaStory {
     }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         if(LabyrinthDoors.isBusy(p))return;if(!own.getBoolean("Here")){if(own.getBoolean("BorrascaDeparted"))return;own.putBoolean("Here",true);own.remove("ExitEligible");}
-        own.putInt("TrailClock",(own.getInt("TrailClock")+5)%60000);int visit=own.getInt("Visit");if(!own.getBoolean("CastRecalled"))BorrascaCast.prepare(p,b,own);
+        own.putInt("TrailClock",(own.getInt("TrailClock")+5)%60000);int visit=own.getInt("Visit");
+        var standing=gentleman(own);if(standing!=null&&!own.getBoolean("SawGentleman")&&seesGentleman(p,standing))own.putBoolean("SawGentleman",true);if(own.getInt("GentTicks")>0)own.putInt("GentTicks",visit<=2?Math.max(0,own.getInt("GentTicks")-5):0);if(!own.getBoolean("CastRecalled"))BorrascaCast.prepare(p,b,own);
         var friend=ensure(p,b,own,"CastKimber",LiteraryActor.BORRASCA_KIMBER);var sheriff=ensure(p,b,own,"CastSheriff",LiteraryActor.BORRASCA_SHERIFF);var prescott=ensure(p,b,own,"CastPrescott",LiteraryActor.BORRASCA_PRESCOTT);
         var w0=ensure(p,b,own,"Worker0",LiteraryActor.BORRASCA_KYLE);var w1=ensure(p,b,own,"Worker1",LiteraryActor.BORRASCA_KYLE);
         if(!own.getBoolean("CastRecalled")&&friend!=null&&sheriff!=null&&prescott!=null&&w0!=null&&w1!=null){
@@ -244,7 +247,32 @@ public final class BorrascaStory {
         if(own.getBoolean("PastTwo"+visit)&&!own.getBoolean("WarnedTwo"+visit)&&p.getZ()>b.getZ()+MARKER_TWO_Z+3&&near(p,friend.blockPosition(),8)){own.putBoolean("WarnedTwo"+visit,true);say(p,friend,"You went past the second marker? Don't. That's where he is.");}
     }
     /** The noise from the ridge: three strokes, heard wherever the reader is, the dust lifting with it. */
-    private static void echo(ServerPlayer p,BlockPos b,CompoundTag own,float volume){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),volume);dust(p);own.putInt("Echoes",own.getInt("Echoes")+1);own.putInt("EchoAt",own.getInt("TrailClock"));}
+    private static void echo(ServerPlayer p,BlockPos b,CompoundTag own,float volume){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),volume);dust(p);own.putInt("Echoes",own.getInt("Echoes")+1);own.putInt("EchoAt",own.getInt("TrailClock"));if(own.getInt("Visit")<=2)glimpse(p,b,own);}
+    /** 0.4.236: while the strokes last, a child may see him standing in the pines past the second marker. Only that reader sees him. */
+    private static void glimpse(ServerPlayer p,BlockPos b,CompoundTag own){
+        var at=gentlemanSpot(p,b);if(at==null)return;
+        own.putDouble("GentX",at.x);own.putDouble("GentY",at.y);own.putDouble("GentZ",at.z);own.putInt("GentTicks",GENT_TICKS);own.putInt("Gentlemen",own.getInt("Gentlemen")+1);send(p,own);
+    }
+    /** Where a child can see him from here: on the ground among the pines past the second marker, 28 to 70 blocks off, in clear sight, preferring what is already in front of them. */
+    static @Nullable Vec3 gentlemanSpot(ServerPlayer p,BlockPos b){
+        var l=p.serverLevel();var eye=p.getEyePosition();var look=p.getLookAngle();Vec3 best=null;double bestScore=-9;
+        for(int z=MARKER_TWO_Z-4;z>=-165;z-=3)for(int x=-30;x<=30;x+=3){
+            var column=new BlockPos(b.getX()+x,b.getY(),b.getZ()+z);if(!l.hasChunkAt(column))continue;
+            int y=l.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,column.getX(),column.getZ());
+            if(y<b.getY()-1||y>b.getY()+16)continue;var feet=new BlockPos(column.getX(),y,column.getZ());
+            // On the ground, not on a trunk or a rock, with room to stand.
+            var under=l.getBlockState(feet.below());if(under.is(net.minecraft.tags.BlockTags.LOGS)||under.is(net.minecraft.tags.BlockTags.LEAVES)||under.is(BorrascaRegistry.FITTING.get()))continue;
+            boolean room=true;for(int i=0;i<5&&room;i++)room=l.getBlockState(feet.above(i)).getCollisionShape(l,feet.above(i)).isEmpty();if(!room)continue;
+            var base=Vec3.atBottomCenterOf(feet);var head=base.add(0,GENT_HEIGHT-.4,0);double d=head.distanceTo(eye);if(d<GENT_NEAR||d>GENT_FAR)continue;
+            if(l.clip(new ClipContext(eye,head,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p)).getType()!=HitResult.Type.MISS)continue;
+            double score=look.dot(head.subtract(eye).normalize())+p.getRandom().nextDouble()*.2;if(score>bestScore){bestScore=score;best=base;}
+        }
+        return best;
+    }
+    /** Where he stands for this reader now, or null when he is not there. */
+    public static @Nullable Vec3 gentleman(CompoundTag own){return own.getInt("GentTicks")>0&&own.getInt("Visit")<=2?new Vec3(own.getDouble("GentX"),own.getDouble("GentY"),own.getDouble("GentZ")):null;}
+    /** Whether the reader is looking straight at him, with nothing in the way. */
+    static boolean seesGentleman(ServerPlayer p,Vec3 at){var head=at.add(0,GENT_HEIGHT*.6,0);var eye=p.getEyePosition();var d=head.subtract(eye);if(p.getLookAngle().dot(d.normalize())<.95)return false;return p.level().clip(new ClipContext(eye,head,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS;}
     /** She walks a route at her own pace; she waits only for a reader far behind her, and calls them once each time. True at its end. */
     private static boolean follow(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend,String key,BlockPos[] points){
         int i=own.getInt(key);if(i>=points.length){BorrascaCast.stop(friend);return true;}var at=Vec3.atBottomCenterOf(b.offset(points[i]));
@@ -411,7 +439,9 @@ public final class BorrascaStory {
     private static void heard(ServerPlayer p,net.minecraft.sounds.SoundEvent sound,BlockPos at,float volume){LiteraryVignettes.heard(p,sound,at,volume,1);}
     private static void dust(ServerPlayer p){p.serverLevel().sendParticles(p,ParticleTypes.ASH,false,p.getX(),p.getY()+.4,p.getZ(),32,2,.5,2,.03);}
     private static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
-    private static void send(ServerPlayer p,CompoundTag own){var b=BorrascaSites.base(p.server,p.getUUID());var sheriff=actor(p,own,"CastSheriff");if(b!=null)HousePackets.send(p,new BorrascaViewPayload(b.offset(BorrascaRooms.MACHINE),own.getInt("Visit"),own.getBoolean("Here"),!own.getBoolean("PowerOff")&&(own.getInt("Visit")>1||own.getBoolean("PactCarved")),lit(own)?own.getInt("TakingTicks"):0,own.getInt("TrailClock"),sheriff==null?b.offset(BorrascaRooms.SHERIFF):sheriff.blockPosition(),flashlightYaw(own)));}
+    private static void send(ServerPlayer p,CompoundTag own){var view=view(p,own);if(view!=null)HousePackets.send(p,view);}
+    /** What this reader's client is told: the machine, the visit, the light, the Sheriff's beam and, for a child, where he stands. */
+    public static @Nullable BorrascaViewPayload view(ServerPlayer p,CompoundTag own){var b=BorrascaSites.base(p.server,p.getUUID());var sheriff=actor(p,own,"CastSheriff");if(b==null)return null;var standing=gentleman(own);return new BorrascaViewPayload(b.offset(BorrascaRooms.MACHINE),own.getInt("Visit"),own.getBoolean("Here"),!own.getBoolean("PowerOff")&&(own.getInt("Visit")>1||own.getBoolean("PactCarved")),lit(own)?own.getInt("TakingTicks"):0,own.getInt("TrailClock"),sheriff==null?b.offset(BorrascaRooms.SHERIFF):sheriff.blockPosition(),flashlightYaw(own),standing==null?Vec3.ZERO:standing,standing==null?0:own.getInt("GentTicks"));}
     /** Per-native-tick motion; native collision and ladder physics remain enabled. Spoken lines clear after a few seconds. */
     public static void actorTick(LiteraryActor a){
         if(!a.scene().equals(PLACE.id())||!(a.level() instanceof ServerLevel l))return;

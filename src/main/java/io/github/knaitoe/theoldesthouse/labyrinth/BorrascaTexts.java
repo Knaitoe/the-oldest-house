@@ -76,6 +76,7 @@ public final class BorrascaTexts {
     public static String account(){return account(new CompoundTag());}
     public static String account(CompoundTag own){
         return "We cut our names into the three trees, mine beside hers."+(own.getBoolean("Sheltered6")||own.getBoolean("Sheltered10")?" When the noise came she pulled me down behind the timber.":"")
+            +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
             +" At the ridge, his office's papers and Prescott's signature lay beside her things. I stopped the machine. The wind was still in the pines."

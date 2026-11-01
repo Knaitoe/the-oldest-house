@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("119")
+        event.registrar("120")
                 .playToClient(PolybiusBrawlPayload.TYPE,PolybiusBrawlPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolybiusBrawlScreen.accept(payload)))
                 .playToServer(PolybiusBrawlKeysPayload.TYPE,PolybiusBrawlKeysPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.PolybiusBrawl.keys(p,payload.keys());}))
                 .playToClient(PolybiusPayload.TYPE,PolybiusPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolybiusScreen.accept(payload)))
