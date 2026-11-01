@@ -25,7 +25,7 @@ A candidate is verified only when every job of the workflow passes on that exact
 ## Layout
 
 - `labyrinth/`: the places (`LabyrinthPlace`), the dealer, the doors, the builders and every vignette. `house/`: the manor, calendar, opening, config and Witness. `journal/`, `opening/`, `network/`, `client/`, `command/`, `mixin/`, `gametest/`.
-- A scene built whole opts out of the generic passes by hand: `VignetteArchitecture.applies`, `ScenePolish.applies`, `ScenePlaytestRepairs.applies`, `SceneShells.shapes`; and is exported in `ArchitectureTests` when the generic loop skips it. One flag on the place would be better; it has not been done.
+- How a room is made is one property on the place (0.4.226): `LabyrinthPlace.Made.WHOLE` (the default: built whole by its own builder) or `Made.DRESSED` (the older rooms the generic passes light and furnish). Every generic pass (polish, dressing, composition, the scene reviews, the playtest repairs, the vignette architecture, shells, exteriors) asks `place.authored()` and nothing else; never add a room to a pass by name to keep it out. A room built whole is exported in `ArchitectureTests` when the generic loop skips it. See `docs/AUTHORED_ROOMS_0_4_226.md`.
 - A new vignette follows `docs/VIGNETTE_RELEASE_CHECKLIST.md`.
 - Textures, models and blockstates are drawn by `tools/*.py`; CI runs each in `--check` mode. Never hand-edit a generated PNG.
 

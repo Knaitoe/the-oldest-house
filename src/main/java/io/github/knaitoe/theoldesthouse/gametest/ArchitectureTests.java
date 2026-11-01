@@ -32,6 +32,36 @@ public final class ArchitectureTests {
         h.succeed();
     }
 
+    /**
+     * 0.4.226: one property on the room, {@link LabyrinthPlace#authored()}, decides what the generic passes may touch. Every pass
+     * refuses every room built whole; the rooms the old lists named are built whole; the named refits only name dressed rooms;
+     * and a room that does not say otherwise is built whole, so a new one is never dressed by accident.
+     */
+    @GameTest(template="empty") public static void everyGenericPassLeavesRoomsBuiltWholeAlone(GameTestHelper h){
+        int whole=0,dressed=0;
+        for(var p:LabyrinthPlace.values()){
+            if(p.authored()){whole++;
+                h.assertTrue(!ScenePolish.applies(p)&&!SceneCraft.applies(p)&&!SceneReview.applies(p)&&!SceneHuntReview.applies(p)&&!ScenePlaytestRepairs.applies(p)&&!VignetteArchitecture.applies(p)&&!SceneShells.shapes(p),
+                        p.id()+" is built whole, and no generic pass touches it");
+            }else{dressed++;
+                h.assertTrue(p.room()!=null&&p.slot()>=0&&ScenePolish.applies(p),p.id()+" asks for the passes and is polished");}
+        }
+        for(var p:List.of(LabyrinthPlace.RED_ROOM,LabyrinthPlace.MODEL_HOME,LabyrinthPlace.HOTEL,LabyrinthPlace.HOTEL_GROUNDS,LabyrinthPlace.HOSPITAL,LabyrinthPlace.KAREN_ROOM,
+                LabyrinthPlace.ZAMPANO_COURTYARD,LabyrinthPlace.BARN_WELL,LabyrinthPlace.WAY_OUT,LabyrinthPlace.NIGHTCLUB,LabyrinthPlace.SILO,LabyrinthPlace.BACKSEAT,
+                LabyrinthPlace.CHILD_ROOM,LabyrinthPlace.MASQUE,LabyrinthPlace.BLY_ROUTE,LabyrinthPlace.USHER,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHEEL,LabyrinthPlace.GHOSTS_SET,
+                LabyrinthPlace.MAPPING_INTERIOR,LabyrinthPlace.DEVILS_ROCK,LabyrinthPlace.ELK_LOT,LabyrinthPlace.THREE_FINGERS,LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.COSTUME_NIGHT,
+                LabyrinthPlace.WINTER_LAKE,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.LAKE_HOUSE_EMPTY,LabyrinthPlace.BORRASCA,LabyrinthPlace.FAMILY_COPY,LabyrinthPlace.OLD_CABIN,
+                LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LEFT_RIGHT,LabyrinthPlace.DEAD_AIR,LabyrinthPlace.PITT,
+                LabyrinthPlace.POLYBIUS,LabyrinthPlace.REPLACEMENT,LabyrinthPlace.HALLWAY_END))
+            h.assertTrue(p.authored(),p.id()+" is built whole by its own builder");
+        for(var p:LabyrinthPlace.values())if(UncannyRooms.isUncanny(p)||DareRooms.is(p)||FeetUpRooms.is(p)||PuzzleRooms.is(p)||HazardVariety.added(p)||DarkHalls.isDark(p)||DarkHalls.horror(p)||HouseReadSites.kind(p)!=null)
+            h.assertTrue(p.authored(),p.id()+" belongs to a family built whole");
+        for(var p:VignetteInteriors.PLACES)h.assertTrue(!p.authored(),"the old refit names only dressed rooms: "+p.id());
+        for(var p:PlaytestScenery130.PLACES)h.assertTrue(!p.authored(),"the 0.4.130 furnishing names only dressed rooms: "+p.id());
+        h.assertTrue(whole>0&&dressed==61,"the dressed rooms are the older halls, hazards and scenes ("+dressed+"), the rest are built whole ("+whole+")");
+        h.succeed();
+    }
+
     private static AABB box(BlockPos a,BlockPos b){return new AABB(a.getX(),a.getY(),a.getZ(),b.getX(),b.getY(),b.getZ());}
     @GameTest(template="empty",batch="architecture_stair",timeoutTicks=200)
     public static void nativeGreatStaircaseUpgradeWaitsForResidentsAndPreservesEncounter(GameTestHelper h)throws Exception{
@@ -179,7 +209,7 @@ public final class ArchitectureTests {
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
             // The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell, the night ward (0.4.199) by NightWard and Zampano's apartment court and Karen's room (0.4.201) by ZampanoApartment and KarenRoom, outside the generic dressing.
-            h.assertTrue(dressed==17&&props>=68,"all seventeen generically dressed scenes/camps receive supported detail; the copied Red Room stays personal: "+dressed+" / "+props);
+            h.assertTrue(dressed==16&&props>=64,"all sixteen generically dressed scenes/camps receive supported detail (0.4.226: the model home and the copied Red Room are built whole): "+dressed+" / "+props);
             shellsAndEdges(h,server,origin,data);
             composition(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);

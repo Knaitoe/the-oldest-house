@@ -26,7 +26,7 @@ public final class SceneExteriors {
     /** Builders and fixtures call this with the scene in hand: it reads the scene as it is. */
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace site){decorate(l,origin,site,false);}
     private static void decorate(ServerLevel l,BlockPos origin,LabyrinthPlace site,boolean loadedOnly){
-        if(!SITES.contains(site))return;var d=LabyrinthData.get(l.getServer());String key=origin.asLong()+":"+site.id();var done=d.state(STATE);
+        if(site.authored()||!SITES.contains(site))return;var d=LabyrinthData.get(l.getServer());String key=origin.asLong()+":"+site.id();var done=d.state(STATE);
         if(done.getBoolean(key))return;var b=LabyrinthPlaces.base(origin,site);if(b==null)return;
         var r=site.room();var box=new AABB(Vec3.atLowerCornerOf(b.offset(r.minX()-2,r.minY()-2,r.minZ()-2)),Vec3.atLowerCornerOf(b.offset(r.maxX()+3,r.maxY()+6,18)));
         // 0.4.164: the once-a-second check never loads the scene itself. Reading an unloaded site's floor made the server load

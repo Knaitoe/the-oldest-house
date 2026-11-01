@@ -137,7 +137,7 @@ final class SceneDressing {
     }
 
     static int apply(ServerLevel level, BlockPos base, LabyrinthPlace place, List<BlockPos> floor) {
-        Theme theme = theme(place);
+        Theme theme = place.authored() ? null : theme(place); // 0.4.226: nothing is set in a room built whole.
         if (theme == null || floor.isEmpty()) return 0;
         BoundingBox r = place.room();
         if (theme.furnishes() && density(level, base, r, floor) >= 0.10D) return 0;

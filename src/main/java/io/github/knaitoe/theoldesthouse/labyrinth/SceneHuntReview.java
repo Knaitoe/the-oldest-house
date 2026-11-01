@@ -30,7 +30,7 @@ public final class SceneHuntReview {
     private record Work(ServerLevel level,BlockPos origin,LabyrinthPlace place,BuildBlocks.Plan plan){}
     private SceneHuntReview(){}
     private static String key(BlockPos origin,LabyrinthPlace place){return origin.asLong()+":"+place.id();}
-    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.ELK_CARCASSES&&SceneReview.applies(p);}
+    public static boolean applies(LabyrinthPlace p){return SceneReview.applies(p);}
     private static boolean loaded(ServerLevel l,AABB a){
         for(int x=(int)Math.floor(a.minX)>>4;x<=((int)Math.ceil(a.maxX)-1)>>4;x++)
             for(int z=(int)Math.floor(a.minZ)>>4;z<=((int)Math.ceil(a.maxZ)-1)>>4;z++)

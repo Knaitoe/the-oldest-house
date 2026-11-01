@@ -113,8 +113,8 @@ public final class ElkLot {
         for(int x=-35;x<=26;x++)for(int z=-38;z<=-11;z++){int h=hash(x,z)%23;s.r(x,-1,z,Kind.GRAVEL,Direction.from2DDataValue(hash(z,x)%4),h<2?1:h<4?2:h<6?3:0);}
         // A sodium lamp by the side door lights the lot; past the trucks it is dark.
         for(var e:ProofrockTown.lampStates(s.b,-10,-29,Direction.EAST).entrySet())BuildBlocks.set(s.l,e.getKey(),e.getValue(),F);
-        // A dumpster against the bar's back corner.
-        for(int x=-12;x<=-11;x++){s.set(x,0,-31,Blocks.GREEN_TERRACOTTA);s.set(x,1,-31,Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.BOTTOM));}
+        // A steel dumpster against the bar's back corner (0.4.226: built here, no longer swapped in by PlaytestScenery130 afterwards).
+        for(int x=-12;x<=-11;x++)s.set(x,0,-31,VignetteInteriorBlock.of(x==-12?VignetteInteriorBlock.Kind.DUMPSTER_LEFT:VignetteInteriorBlock.Kind.DUMPSTER_RIGHT,Direction.NORTH));
         // Headlights left on: each pickup throws light on the gravel ahead of it.
         for(var p:PICKUPS)headlights(s.l,s.b,p,true);
     }

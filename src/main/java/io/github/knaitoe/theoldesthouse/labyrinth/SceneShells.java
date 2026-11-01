@@ -49,8 +49,8 @@ public final class SceneShells {
 
     /** Whether the 0.4.28 pass reshapes this scene's shell, surfaces or outdoor edge. */
     public static boolean shapes(LabyrinthPlace place) {
-        // The night ward (0.4.199) is built whole by NightWard; its interior is still given here for the window checks.
-        if (place == LabyrinthPlace.HOSPITAL || place == LabyrinthPlace.KAREN_ROOM) return false; // 0.4.201: Karen's room is KarenRoom's.
+        // The night ward (0.4.199) and Karen's room (0.4.201) are built whole; their interiors are still given below for the window checks.
+        if (place.authored()) return false;
         return spec(place) != null || WEATHERED.contains(place) || place == LabyrinthPlace.PLAIN;
     }
 
@@ -124,6 +124,7 @@ public final class SceneShells {
     }
 
     static void apply(ServerLevel level, BlockPos base, LabyrinthPlace place) {
+        if (place.authored()) return; // 0.4.226: a room built whole keeps its own walls, floors and edges.
         Spec spec = spec(place);
         if (spec != null) new Room(level, base, place, spec).build();
         if (WEATHERED.contains(place)) weather(level, base, place);

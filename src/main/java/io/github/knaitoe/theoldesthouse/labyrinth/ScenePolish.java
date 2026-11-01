@@ -74,19 +74,12 @@ public final class ScenePolish {
 
     private ScenePolish() {}
 
+    /**
+     * Every room the House builds and then dresses ({@link LabyrinthPlace.Made#DRESSED}). A room built whole by its own builder is
+     * never polished (0.4.226: one property in place of this method's list of exceptions, which a new room could be missing from).
+     */
     public static boolean applies(LabyrinthPlace place) {
-        if(HouseReadSites.kind(place)!=null)return false;
-        // 0.4.208: the dark halls have no fixtures and no light, by design.
-        if(DarkHalls.isDark(place)||DarkHalls.horror(place))return false;
-        if(UncannyRooms.isUncanny(place)||DareRooms.is(place)||FeetUpRooms.is(place)||place==LabyrinthPlace.WHISTLERS||place==LabyrinthPlace.WORK_PRINT||place==LabyrinthPlace.POLAROID_TRAIL||place==LabyrinthPlace.LEFT_RIGHT||place==LabyrinthPlace.DEAD_AIR||place==LabyrinthPlace.PITT||place==LabyrinthPlace.POLYBIUS||place==LabyrinthPlace.REPLACEMENT)return false;
-        // The child's room (0.4.74) is furnished, lit and dressed whole by ChildRoom, the Last Stop (0.4.78) by ElkLot, and
-        // the Three Fingers cottage (0.4.81) by ThreeFingers, the house at the bottom of the lake by LakeHouse, Movie Night (0.4.102) by MovieNight, Costume Night (0.4.103) by CostumeNight and Winter Lake (0.4.104) by WinterLake.
-        // The model home (0.4.121) is a tract house ModelHome builds and lights whole, the Wheel (0.4.121) is WheelHouse's and the Winchester house WinchesterHouse's.
-        // The barn well's farm (0.4.164) is BarnWell's, and the night ward (0.4.199) NightWard's.
-        // The puzzle rooms (0.4.199) are built whole by PuzzleRooms' rooms, nothing set in a beam's or a lift's way.
-        return place.room() != null && place.slot() >= 0 && place != LabyrinthPlace.RED_ROOM && place != LabyrinthPlace.MODEL_HOME && place != LabyrinthPlace.WHEEL && place != LabyrinthPlace.WINCHESTER && place != LabyrinthPlace.MAPPING_INTERIOR && place != LabyrinthPlace.ZAMPANO_COURTYARD && place != LabyrinthPlace.KAREN_ROOM && place != LabyrinthPlace.DEVILS_ROCK
-                && place != LabyrinthPlace.FAMILY_COPY && place != LabyrinthPlace.OLD_CABIN && place != LabyrinthPlace.CHILD_ROOM && place != LabyrinthPlace.MASQUE && place != LabyrinthPlace.BLY_ROUTE && place != LabyrinthPlace.USHER && place != LabyrinthPlace.HOTEL && place != LabyrinthPlace.HOTEL_GROUNDS
-                && place != LabyrinthPlace.GHOSTS_SET && place != LabyrinthPlace.ELK_LOT && place != LabyrinthPlace.THREE_FINGERS && place != LabyrinthPlace.MOVIE_NIGHT && place != LabyrinthPlace.COSTUME_NIGHT && place != LabyrinthPlace.WINTER_LAKE && place != LabyrinthPlace.NIGHTCLUB && place != LabyrinthPlace.LAKE_HOUSE && place != LabyrinthPlace.LAKE_HOUSE_EMPTY && place != LabyrinthPlace.BORRASCA && place != LabyrinthPlace.BARN_WELL && place != LabyrinthPlace.HOSPITAL && place != LabyrinthPlace.WAY_OUT && !PuzzleRooms.is(place) && !HazardVariety.added(place);
+        return !place.authored() && place.room() != null && place.slot() >= 0;
     }
 
     private static String key(BlockPos origin, LabyrinthPlace place) {

@@ -19,8 +19,8 @@ public final class VignetteArchitecture {
     private final LabyrinthPlace scene;
     private boolean rugsOnly;
     private VignetteArchitecture(ServerLevel level,BlockPos base,LabyrinthPlace place){l=level;b=base;scene=place;}
-    /** The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell, and the night ward (0.4.199) by NightWard. */
-    public static boolean applies(LabyrinthPlace p){return p!=LabyrinthPlace.WAY_OUT&&p!=LabyrinthPlace.HOSPITAL&&p!=LabyrinthPlace.SILO&&p!=LabyrinthPlace.BACKSEAT&&p!=LabyrinthPlace.NIGHTCLUB&&p!=LabyrinthPlace.HOTEL&&p!=LabyrinthPlace.BARN_WELL&&p!=LabyrinthPlace.ZAMPANO_COURTYARD&&p!=LabyrinthPlace.KAREN_ROOM&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
+    /** The dressed vignettes outside the literary wing, and the explorers' camp; never a room built whole (0.4.226). */
+    public static boolean applies(LabyrinthPlace p){return !p.authored()&&!LiteraryRooms.isLiterary(p)&&(p.isVignette()||p==LabyrinthPlace.EXPLORER_CAMP);}
     public static void decorateOnce(ServerLevel l,BlockPos origin,LabyrinthPlace p){
         if(!applies(p))return;
         var d=LabyrinthData.get(l.getServer());CompoundTag done=d.state(STATE);

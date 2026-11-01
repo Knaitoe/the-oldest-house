@@ -27,16 +27,16 @@ public enum LabyrinthPlace {
             new DoorSpec("west", new BlockPos(-5, 0, -6), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(5, 0, -6), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("north", new BlockPos(0, 0, -13), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** The first physical maze: branching halls, dead ends and a way onward. */
     GRAY_CORRIDOR("gray_corridor", Kind.GRAY, 1, new BoundingBox(-13, -1, -28, 13, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** The Tell-Tale Heart: a one-shot vignette. */
     FLOORBOARDS("floorboards", Kind.ONE_SHOT, 2, new BoundingBox(-6, -3, -10, 6, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /**
      * Hill House's Red Room: a copy of the player's own room, recurring. Its
      * room box is the most a copy may take up (see {@link RedRoom}); the
@@ -48,19 +48,19 @@ public enum LabyrinthPlace {
     /** The Conjuring: hide-and-clap, a one-shot vignette. */
     HIDE_AND_CLAP("hide_and_clap", Kind.ONE_SHOT, 4, new BoundingBox(-6, -1, -13, 6, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /** The long hallway: a testable seamless loop with a bounded occupied-time fallback (see {@link LabyrinthLoops}). */
     LONG_HALLWAY("long_hallway", Kind.GRAY, 5, new BoundingBox(-2, -1, -49, 14, 3, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(12, 0, -45), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** The spiral staircase: longer to climb than to descend. */
     SPIRAL_STAIR("spiral_stair", Kind.GRAY, 6, new BoundingBox(-2, -1, -4, 2, 18, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 16, 0), Direction.NORTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** The hotel hallway: numbered doors, all locked, the numbers climbing and repeating. */
-    HOTEL_HALLWAY("hotel_hallway", Kind.GRAY, 7, new BoundingBox(-2, -1, -49, 14, 3, 0), hotelDoors()),
+    HOTEL_HALLWAY("hotel_hallway", Kind.GRAY, 7, new BoundingBox(-2, -1, -49, 14, 3, 0), hotelDoors(), Made.DRESSED),
     /** Poltergeist: the model home, with the kid's-room window onto a yard (x -23..-9). See {@link ModelHome}. */
     MODEL_HOME("model_home", Kind.MULTI_VISIT, 8, new BoundingBox(-23, -1, -21, 9, 10, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
@@ -68,165 +68,165 @@ public enum LabyrinthPlace {
     /** Mr Harrigan's Phone: reading, the funeral, then the artifact that follows the player home. */
     HARRIGAN("harrigan", Kind.MULTI_VISIT, 9, new BoundingBox(-8, -1, -25, 8, 7, 1), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /** A submerged gray corridor with deliberately spaced air chimneys. */
     FLOODED_PASSAGE("flooded_passage", Kind.GRAY, 10, new BoundingBox(-8, -3, -28, 8, 6, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** A raised broken route: missing the span hurts, but a lower recovery path remains. */
     FRACTURED_WALKWAY("fractured_walkway", Kind.GRAY, 11, new BoundingBox(-4, -1, -28, 4, 10, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 7, -28), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** A broad corridor that audibly presses inward until only its center line remains. */
     COMPRESSION_PASSAGE("compression_passage", Kind.GRAY, 12, new BoundingBox(-3, -1, -28, 3, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** A corridor whose far door refuses to become as close as it looks. */
     FALSE_DISTANCE("false_distance", Kind.GRAY, 13, new BoundingBox(-2, -1, -34, 2, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -34), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** A dim stretch that consumes the light sources brought into it. */
     LIGHT_SINK("light_sink", Kind.GRAY, 14, new BoundingBox(-3, -1, -28, 3, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** One exit, three possible walls; it moves only when nobody sees it. */
     MOVING_THRESHOLD("moving_threshold", Kind.GRAY, 15, new BoundingBox(-8, -1, -15, 8, 5, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("north", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT),
             new DoorSpec("west", new BlockPos(-8, 0, -8), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(8, 0, -8), Direction.WEST, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** Three identical exits: two return to the same room, one actually advances. */
     DUPLICATE_PASSAGE("duplicate_passage", Kind.GRAY, 16, new BoundingBox(-8, -1, -15, 8, 5, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("north", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT),
             new DoorSpec("west", new BlockPos(-8, 0, -8), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(8, 0, -8), Direction.WEST, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** Sideways gravity drags the player toward a shallow recovery trench. */
     GRAVITY_DRIFT("gravity_drift", Kind.GRAY, 17, new BoundingBox(-5, -6, -28, 4, 6, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -28), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** An abandoned explorer camp: finite supplies and one real chance to recover. */
     EXPLORER_CAMP("explorer_camp", Kind.GRAY, 18, new BoundingBox(-6, -1, -15, 6, 5, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** The Mother's den: a recurring anchor, never exhausted by completion. */
     MOTHER_DEN("mother_of_strays", Kind.RECURRING, 19, new BoundingBox(-10, -4, -25, 10, 13, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /** A larger maze, with one pair of distant, identical bends sewn together. */
     FOLDED_MAZE("folded_maze", Kind.GRAY, 20, new BoundingBox(-19, -1, -66, 19, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("north", new BlockPos(0, 0, -66), Direction.SOUTH, LabyrinthData.DEALT),
             new DoorSpec("west", new BlockPos(-19, 0, -18), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(19, 0, -18), Direction.WEST, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** Two fold pairs rotate the player's route as well as changing adjacency. */
     DEEP_MAZE("deep_maze", Kind.GRAY, 21, new BoundingBox(-25, -1, -76, 25, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("north", new BlockPos(0, 0, -76), Direction.SOUTH, LabyrinthData.DEALT),
             new DoorSpec("west", new BlockPos(-25, 0, -23), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(25, 0, -23), Direction.WEST, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** The widest maze: six hidden crossings, more cycles and longer backtracking. */
     ABYSS_MAZE("abyss_maze", Kind.GRAY, 22, new BoundingBox(-37, -1, -86, 37, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("north", new BlockPos(0, 0, -86), Direction.SOUTH, LabyrinthData.DEALT),
             new DoorSpec("west", new BlockPos(-37, 0, -28), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(37, 0, -28), Direction.WEST, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** Ordinary connected hallways. Doorways belong at destinations, rather than filling every wall. */
     STRAIGHT_HALL("straight_hall", Kind.GRAY, 23, new BoundingBox(-7, -1, -36, 7, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -36), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     BENT_HALL("bent_hall", Kind.GRAY, 24, new BoundingBox(-17, -1, -33, 7, 4, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(-15, 0, -33), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     CROSS_HALL("cross_hall", Kind.GRAY, 25, new BoundingBox(-15, -1, -32, 15, 5, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("west", new BlockPos(-15, 0, -15), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(15, 0, -15), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("far", new BlockPos(0, 0, -32), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** A quiet waiting room, with chairs and a small finite cache. */
     QUIET_ROOM("quiet_room", Kind.GRAY, 26, new BoundingBox(-6, -1, -15, 6, 5, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, 0, -15), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** Indian Lake: Proofrock on the bank, its high school's essays, then the drowned church (0.4.67: the whole town). */
     DROWNED_TOWN("drowned_town", Kind.MULTI_VISIT, 27, new BoundingBox(-64, -13, -128, 64, 8, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /** Indian Lake: a congregation kept fresh by the lake. */
     PRESERVED_CAVE("preserved_cave", Kind.MULTI_VISIT, 28, new BoundingBox(-15, -3, -47, 15, 10, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /** A personal recollection, available only after the shore hunt. */
     SHALLOWS("shallows", Kind.ONE_SHOT, 29, new BoundingBox(-18, -4, -36, 18, 10, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /** The recording that survives its recorder. Personal, like the Shallows recollection. */
     PHONE_CANOE("phone_canoe", Kind.ONE_SHOT, 30, new BoundingBox(-26,-4,-60,26,10,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /** Anansi's Goatman: the latecomer's path, one extra child, and a closed trailer door. */
     GOATMAN("goatman",Kind.ONE_SHOT,31,new BoundingBox(-23,-1,-82,23,13,0),List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     /** A worked opening, a tight squeeze, and the line that leads back. */
     TED_CAVER("ted_caver",Kind.MULTI_VISIT,32,new BoundingBox(-9,-4,-60,9,8,0),List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)
-    )),
+    ), Made.DRESSED),
     ZAMPANO_COURTYARD("zampano_courtyard",Kind.RECURRING,33,new BoundingBox(-15,-1,-41,15,16,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("apartment_west",new BlockPos(-12,0,-8),Direction.EAST,LabyrinthData.DEALT),new DoorSpec("apartment_east",new BlockPos(12,0,-8),Direction.WEST,LabyrinthData.DEALT))),
-    WHALE("whale",Kind.MULTI_VISIT,34,new BoundingBox(-14,-1,-33,14,17,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    WHALE("whale",Kind.MULTI_VISIT,34,new BoundingBox(-14,-1,-33,14,17,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)), Made.DRESSED),
     BARN_WELL("barn_well",Kind.ONE_SHOT,35,new BoundingBox(-17,-13,-39,17,8,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
-    PLAIN("plain",Kind.ONE_SHOT,36,new BoundingBox(-30,-1,-65,30,16,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
+    PLAIN("plain",Kind.ONE_SHOT,36,new BoundingBox(-30,-1,-65,30,16,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)), Made.DRESSED),
     HOSPITAL("hospital",Kind.MULTI_VISIT,37,new BoundingBox(-10,-1,-24,10,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
     KAREN_ROOM("karen_room",Kind.RECURRING,38,new BoundingBox(-10,-1,-19,10,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
     HOLLOWAY_CAMP("holloway_camp",Kind.MULTI_VISIT,39,new BoundingBox(-11,-1,-71,11,7,0),List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
-            new DoorSpec("service",new BlockPos(-7,0,-70),Direction.NORTH,LabyrinthData.RETURN))),
-    SEANCE("seance",Kind.ONE_SHOT,40,new BoundingBox(-11,-1,-32,11,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
-    WALLPAPER_NURSERY("wallpaper_nursery",Kind.MULTI_VISIT,41,new BoundingBox(-10,-1,-28,10,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
-    BLIND_STRETCH("blind_stretch",Kind.GRAY,42,new BoundingBox(-13,-1,-42,13,4,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("far",new BlockPos(0,0,-41),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("service",new BlockPos(-7,0,-70),Direction.NORTH,LabyrinthData.RETURN)), Made.DRESSED),
+    SEANCE("seance",Kind.ONE_SHOT,40,new BoundingBox(-11,-1,-32,11,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)), Made.DRESSED),
+    WALLPAPER_NURSERY("wallpaper_nursery",Kind.MULTI_VISIT,41,new BoundingBox(-10,-1,-28,10,7,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN)), Made.DRESSED),
+    BLIND_STRETCH("blind_stretch",Kind.GRAY,42,new BoundingBox(-13,-1,-42,13,4,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("far",new BlockPos(0,0,-41),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     /** The hotel (0.4.105): its guest corridor's end door into the numbered corridor, the back door, and the staff entrance out. */
     HOTEL("hotel",Kind.RECURRING,43,new BoundingBox(-29,-5,-68,29,14,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("numbers",new BlockPos(-14,6,-45),Direction.SOUTH,"place:hotel_hallway"),new DoorSpec("grounds",new BlockPos(0,0,-67),Direction.SOUTH,"place:hotel_grounds"),new DoorSpec("service",new BlockPos(-10,0,-67),Direction.SOUTH,LabyrinthData.DEALT))),
     HOTEL_GROUNDS("hotel_grounds",Kind.GRAY,44,new BoundingBox(-28,-3,-68,28,14,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN))),
-    HILL_NURSERY("hill_nursery",Kind.ONE_SHOT,45,new BoundingBox(-15,-5,-44,15,12,0),literaryEntry()),
-    MINIATURES("miniatures",Kind.MULTI_VISIT,46,new BoundingBox(-15,-1,-31,15,9,0),literaryEntry()),
+    HILL_NURSERY("hill_nursery",Kind.ONE_SHOT,45,new BoundingBox(-15,-5,-44,15,12,0),literaryEntry(), Made.DRESSED),
+    MINIATURES("miniatures",Kind.MULTI_VISIT,46,new BoundingBox(-15,-1,-31,15,9,0),literaryEntry(), Made.DRESSED),
     MASQUE("masque",Kind.ONE_SHOT,47,new BoundingBox(-12,-1,-78,12,11,0),literaryEntry()),
     USHER("usher",Kind.MULTI_VISIT,48,new BoundingBox(-18,-4,-42,18,13,0),literaryEntry()),
     WINCHESTER("winchester",Kind.ONE_SHOT,49,new BoundingBox(-31,-1,-78,31,17,0),literaryEntry()),
     CHILD_ROOM("child_room",Kind.ONE_SHOT,50,new BoundingBox(-12,-5,-25,12,8,0),literaryEntry()), // 0.4.74: down to the basement
-    CRIMSON_HALL("crimson_hall",Kind.MULTI_VISIT,51,new BoundingBox(-19,-1,-44,19,15,0),literaryEntry()),
+    CRIMSON_HALL("crimson_hall",Kind.MULTI_VISIT,51,new BoundingBox(-19,-1,-44,19,15,0),literaryEntry(), Made.DRESSED),
     BLY_ROUTE("bly_route",Kind.RECURRING,52,new BoundingBox(-13,-5,-54,13,10,0),literaryEntry()),
     ELK_LOT("elk_lot",Kind.ONE_SHOT,53,new BoundingBox(-35,-3,-113,35,17,0),literaryEntry()),
-    ELK_FAN("elk_fan",Kind.MULTI_VISIT,54,new BoundingBox(-12,-1,-29,12,11,0),literaryEntry()),
+    ELK_FAN("elk_fan",Kind.MULTI_VISIT,54,new BoundingBox(-12,-1,-29,12,11,0),literaryEntry(), Made.DRESSED),
     MAPPING_INTERIOR("mapping_interior",Kind.MULTI_VISIT,55,new BoundingBox(-22,-6,-79,22,15,0),literaryEntry()),
-    HOLY_RABBIT("holy_rabbit",Kind.ONE_SHOT,56,new BoundingBox(-35,-5,-126,35,26,0),literaryEntry()),
-    CONFESSION("confession",Kind.MULTI_VISIT,57,new BoundingBox(-13,-1,-34,13,11,0),literaryEntry()),
+    HOLY_RABBIT("holy_rabbit",Kind.ONE_SHOT,56,new BoundingBox(-35,-5,-126,35,26,0),literaryEntry(), Made.DRESSED),
+    CONFESSION("confession",Kind.MULTI_VISIT,57,new BoundingBox(-13,-1,-34,13,11,0),literaryEntry(), Made.DRESSED),
     /** Two stages (0.4.50): the yacht moored under the bluff, then the stream woods and the cave of carcasses; the crew's gate leads back. */
     ELK_CARCASSES("elk_carcasses",Kind.ONE_SHOT,58,new BoundingBox(-64,-9,-250,64,24,0),List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
-            new DoorSpec("service",new BlockPos(44,11,-247),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("service",new BlockPos(44,11,-247),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     COSTUME_NIGHT("costume_night",Kind.ONE_SHOT,59,new BoundingBox(-33,-6,-77,33,18,0),literaryEntry()),
     MOVIE_NIGHT("movie_night",Kind.ONE_SHOT,60,new BoundingBox(-35,-12,-93,35,18,0),literaryEntry()),
     WINTER_LAKE("winter_lake",Kind.ONE_SHOT,61,new BoundingBox(-35,-12,-87,35,18,0),literaryEntry()),
-    CAMP_BLOOD("camp_blood",Kind.ONE_SHOT,62,new BoundingBox(-33,-3,-104,33,19,0),literaryEntry()),
+    CAMP_BLOOD("camp_blood",Kind.ONE_SHOT,62,new BoundingBox(-33,-3,-104,33,19,0),literaryEntry(), Made.DRESSED),
     DEVILS_ROCK("devils_rock",Kind.MULTI_VISIT,63,new BoundingBox(-34,-6,-124,34,18,0),literaryEntry()), // 0.4.201: the Sandersons' house and the park behind it
     WHEEL("wheel",Kind.MULTI_VISIT,64,new BoundingBox(-27,-1,-65,27,13,0),literaryEntry()),
     GHOSTS_SET("ghosts_set",Kind.MULTI_VISIT,65,new BoundingBox(-12,-5,-27,12,12,0),literaryEntry()),
-    END_WORLD_CABIN("end_world_cabin",Kind.ONE_SHOT,66,new BoundingBox(-31,-9,-81,31,19,0),literaryEntry()),
+    END_WORLD_CABIN("end_world_cabin",Kind.ONE_SHOT,66,new BoundingBox(-31,-9,-81,31,19,0),literaryEntry(), Made.DRESSED),
     FAMILY_COPY("family_copy",Kind.MULTI_VISIT,67,new BoundingBox(-34,-17,-71,34,33,0),literaryEntry()),
     OLD_CABIN("old_cabin",Kind.RECURRING,68,new BoundingBox(-12,-9,-29,12,17,0),literaryEntry()),
     /** The deep tier turns to stone: a long vaulted gallery with a side way. */
@@ -234,41 +234,41 @@ public enum LabyrinthPlace {
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("side", new BlockPos(4, 0, -21), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("far", new BlockPos(0, 0, -42), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** A pillared stone crossing around a dry fountain. */
     STONE_CROSSING("stone_crossing", Kind.GRAY, 70, new BoundingBox(-12, -1, -26, 12, 8, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("west", new BlockPos(-12, 0, -13), Direction.EAST, LabyrinthData.DEALT),
             new DoorSpec("east", new BlockPos(12, 0, -13), Direction.WEST, LabyrinthData.DEALT),
             new DoorSpec("far", new BlockPos(0, 0, -26), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** A stone stair that physically descends before the way goes on. */
     STONE_DESCENT("stone_descent", Kind.GRAY, 71, new BoundingBox(-4, -5, -34, 4, 6, 0), List.of(
             new DoorSpec("entry", new BlockPos(0, 0, 1), Direction.SOUTH, LabyrinthData.RETURN),
             new DoorSpec("far", new BlockPos(0, -4, -34), Direction.SOUTH, LabyrinthData.DEALT)
-    )),
+    ), Made.DRESSED),
     /** Familiar additions keep their own physical addresses; existing halls are never rebuilt. */
     ALCOVE_HALL("alcove_hall", Kind.GRAY, 72, new BoundingBox(-8,-1,-42,8,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(-8,0,-17),Direction.EAST,LabyrinthData.DEALT),
-            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     OFFSET_HALL("offset_hall", Kind.GRAY, 73, new BoundingBox(-5,-1,-40,10,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
-            new DoorSpec("far",new BlockPos(4,0,-40),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(4,0,-40),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     SERVICE_LANDING("service_landing", Kind.GRAY, 74, new BoundingBox(-11,-1,-31,11,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(-11,0,-16),Direction.EAST,LabyrinthData.DEALT),
-            new DoorSpec("far",new BlockPos(0,0,-31),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(0,0,-31),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     STONE_ARCADE("stone_arcade", Kind.GRAY, 75, new BoundingBox(-6,-1,-40,6,8,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
-            new DoorSpec("far",new BlockPos(0,0,-40),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(0,0,-40),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     STONE_BEND("stone_bend", Kind.GRAY, 76, new BoundingBox(-12,-1,-36,6,7,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
-            new DoorSpec("far",new BlockPos(-9,0,-36),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(-9,0,-36),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     STONE_LANDING("stone_landing", Kind.GRAY, 77, new BoundingBox(-12,-1,-28,12,8,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(12,0,-16),Direction.WEST,LabyrinthData.DEALT),
-            new DoorSpec("far",new BlockPos(0,0,-28),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(0,0,-28),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     /** 0.4.80: appended hazards; every older physical address remains exact. */
     COLD_STORE("cold_store",Kind.GRAY,78,new BoundingBox(-5,-2,-43,5,6,0),grayDoors(0,0,-43)),
     LISTING_HALL("listing_hall",Kind.GRAY,79,new BoundingBox(-5,-3,-43,5,5,0),grayDoors(0,0,-43)),
@@ -322,18 +322,18 @@ public enum LabyrinthPlace {
     JOGGED_HALL("jogged_hall", Kind.GRAY, 114, new BoundingBox(-3,-1,-56,4,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(-3,0,-14),Direction.EAST,LabyrinthData.DEALT),
-            new DoorSpec("far",new BlockPos(2,0,-56),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(2,0,-56),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     FORKED_HALL("forked_hall", Kind.GRAY, 115, new BoundingBox(-12,-1,-31,12,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("left",new BlockPos(-10,0,-31),Direction.SOUTH,LabyrinthData.DEALT),
-            new DoorSpec("right",new BlockPos(10,0,-31),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("right",new BlockPos(10,0,-31),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     PILLAR_HALL("pillar_hall", Kind.GRAY, 116, new BoundingBox(-3,-1,-46,3,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(3,0,-24),Direction.WEST,LabyrinthData.DEALT),
-            new DoorSpec("far",new BlockPos(0,0,-46),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(0,0,-46),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     ZIGZAG_HALL("zigzag_hall", Kind.GRAY, 117, new BoundingBox(-2,-1,-44,10,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
-            new DoorSpec("far",new BlockPos(0,0,-44),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(0,0,-44),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     /**
      * 0.4.199 (owner: "You can add further variant hallways too - say, one with a massive ceiling and one with a crumbled floor
      * players have to 'parkour' across"). A plaster hall whose ceiling is fifteen blocks up, lamps hung on long chains below a
@@ -342,10 +342,10 @@ public enum LabyrinthPlace {
     VAULTED_HALL("vaulted_hall", Kind.GRAY, 118, new BoundingBox(-4,-1,-42,4,17,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(-4,0,-21),Direction.EAST,LabyrinthData.DEALT),
-            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     CRUMBLED_HALL("crumbled_hall", Kind.GRAY, 119, new BoundingBox(-3,-5,-39,3,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
-            new DoorSpec("far",new BlockPos(0,0,-39),Direction.SOUTH,LabyrinthData.DEALT))),
+            new DoorSpec("far",new BlockPos(0,0,-39),Direction.SOUTH,LabyrinthData.DEALT)), Made.DRESSED),
     /**
      * 0.4.199, the first puzzle room (BorrowedLight): a dim dressing room whose far door has no handle until a lamp's beam,
      * turned by a dressing mirror on a scraped track, is laid on the brass sun beside it. It needs a sixteenth column.
@@ -454,19 +454,53 @@ public enum LabyrinthPlace {
     public record DoorSpec(String name, BlockPos rel, Direction facing, String destination) {
     }
 
+    /**
+     * How a place is made (0.4.226). The one property every generic pass reads: polish and its dressing, composition
+     * ({@link SceneCraft}), the scene reviews, the playtest repairs, the vignette architecture and its shells and exteriors. Each
+     * of those used to keep its own list of rooms to leave alone, and a room missing from one list was altered by that pass.
+     */
+    public enum Made {
+        /**
+         * Built whole by its own builder: walls, floors, furniture, lights, grounds and papers. No generic pass touches it. A
+         * place that does not say otherwise is made this way, so a new room is protected unless it asks for the passes.
+         */
+        WHOLE,
+        /** Built, then dressed by the generic passes: the older halls, hazards and scenes that rely on them for their lights and furniture. */
+        DRESSED
+    }
+
     private final String id;
     private final Kind kind;
     private final int slot;
     @Nullable
     private final BoundingBox room;
     private final List<DoorSpec> doors;
+    private final Made made;
 
     LabyrinthPlace(String id, Kind kind, int slot, @Nullable BoundingBox room, List<DoorSpec> doors) {
+        this(id, kind, slot, room, doors, Made.WHOLE);
+    }
+
+    LabyrinthPlace(String id, Kind kind, int slot, @Nullable BoundingBox room, List<DoorSpec> doors, Made made) {
         this.id = id;
         this.kind = kind;
         this.slot = slot;
         this.room = room;
         this.doors = doors;
+        this.made = made;
+    }
+
+    /** How the place is made: whole by its own builder, or dressed by the generic passes afterwards. */
+    public Made made() {
+        return made;
+    }
+
+    /**
+     * Built whole by its own builder ({@link Made#WHOLE}): no generic furnishing, lighting, shell, composition, review or repair
+     * pass may change it. Every such pass asks this, and nothing else, before touching a room.
+     */
+    public boolean authored() {
+        return made == Made.WHOLE;
     }
 
     public String id() {
