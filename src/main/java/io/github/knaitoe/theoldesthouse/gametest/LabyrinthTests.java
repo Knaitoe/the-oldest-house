@@ -220,8 +220,8 @@ public final class LabyrinthTests {
 
         List<LabyrinthPlace> start = LabyrinthDealer.grayAvailable(data, player);
         // 0.4.197: and the four plain halls; 0.4.199: and the vaulted and crumbled halls (the crumbled one at no weight until the third crossing),
-        // and the early puzzle rooms (Borrowed Light, the Service Lift, the Turning Landing; 0.4.230 the drying room), at no weight until the reader's own pacing offers them.
-        helper.assertTrue(start.size() == 19 && start.contains(LabyrinthPlace.DRAFT_ROOM) && start.containsAll(List.of(LabyrinthPlace.JOGGED_HALL, LabyrinthPlace.FORKED_HALL, LabyrinthPlace.PILLAR_HALL, LabyrinthPlace.ZIGZAG_HALL, LabyrinthPlace.VAULTED_HALL, LabyrinthPlace.CRUMBLED_HALL, LabyrinthPlace.BORROWED_LIGHT, LabyrinthPlace.SERVICE_LIFT, LabyrinthPlace.TURNING_LANDING))
+        // and the early puzzle rooms (Borrowed Light, the Service Lift, the Turning Landing; 0.4.230 the drying room, 0.4.231 the cloakroom), at no weight until the reader's own pacing offers them; 0.4.231 the shut-up rooms, at no weight before the fourth crossing.
+        helper.assertTrue(start.size() == 21 && start.contains(LabyrinthPlace.DRAFT_ROOM) && start.contains(LabyrinthPlace.DUST_HALL) && start.contains(LabyrinthPlace.PROPPED_DOOR) && start.containsAll(List.of(LabyrinthPlace.JOGGED_HALL, LabyrinthPlace.FORKED_HALL, LabyrinthPlace.PILLAR_HALL, LabyrinthPlace.ZIGZAG_HALL, LabyrinthPlace.VAULTED_HALL, LabyrinthPlace.CRUMBLED_HALL, LabyrinthPlace.BORROWED_LIGHT, LabyrinthPlace.SERVICE_LIFT, LabyrinthPlace.TURNING_LANDING))
                         && LabyrinthDealer.grayWeight(data, player, LabyrinthPlace.BORROWED_LIGHT, 0) == 0
                         && start.contains(LabyrinthPlace.JUNCTION)
                         && start.contains(LabyrinthPlace.STRAIGHT_HALL)

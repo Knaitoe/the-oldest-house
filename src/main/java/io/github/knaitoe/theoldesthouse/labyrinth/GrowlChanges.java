@@ -116,6 +116,7 @@ public final class GrowlChanges {
         }
         Collections.shuffle(choices,new Random(player.getRandom().nextLong()));
         for(var door:choices){
+            if(Wedges.pin(data,player.getUUID(),door.id)!=null)continue; // 0.4.231: a wedged route holds
             var old=data.deal(player.getUUID(),door);LabyrinthPlace oldPlace=old==null?null:LabyrinthPlace.byId(old.place());
             if(old==null||old.bark()||oldPlace==null||!LabyrinthPacing.ordinary(oldPlace)||!mayChangeDoor(level,door))continue;
             var alternatives=LabyrinthDealer.grayAvailable(data,player.getUUID()).stream()

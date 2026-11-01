@@ -207,10 +207,13 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.SERVICE_LIFT);
         gray.add(LabyrinthPlace.TURNING_LANDING);
         gray.add(LabyrinthPlace.DRAFT_ROOM);
+        // 0.4.231: the shut-up rooms (an ordinary hall from the fourth crossing) and the cloakroom (a puzzle room).
+        gray.add(LabyrinthPlace.DUST_HALL);
+        gray.add(LabyrinthPlace.PROPPED_DOOR);
         gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
-        if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS));
+        if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS));
         if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
         if (depth >= LabyrinthPacing.ABYSS_DEPTH) gray.add(LabyrinthPlace.ABYSS_MAZE);
         // After seven forward crossings, newly discovered ordinary halls are stone.
@@ -376,6 +379,11 @@ public final class LabyrinthDealer {
             }
             data.setBoundedStateEntry("shared_halls_0448", Long.toUnsignedString(key ^ salt), shared, 2048);
         }
+        // 0.4.231: a door whose hall a wedge holds still leads there, however the reader has come back to it.
+        for (LabyrinthData.Door door : doors) {
+            String pinned = Wedges.pin(data, player, door.id);
+            if (pinned != null && LabyrinthPlace.byId(pinned) != null) { data.deal(player, door, pinned, false, false); now.put(door.id, data.deal(player, door)); }
+        }
         data.rememberNode(player, key, now);
         if(breathe)ExpeditionRhythm.consumed(data,player);
         dealOnward(data, player, place, salt, remembered);
@@ -540,7 +548,9 @@ public final class LabyrinthDealer {
             // 0.4.199 (owner: "one with a massive ceiling and one with a crumbled floor players have to 'parkour' across"): the
             // vaulted hall a little rarer than the others, so it stays a surprise; the crumbled hall never in the first three
             // crossings, so nobody's first steps in the House are a jump.
-            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS -> 0;
+            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS -> 0;
+            // 0.4.231: the shut-up rooms under dust, a plaster hall, from the third crossing until the halls turn to stone; a little more often than a plain hall.
+            case DUST_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             case VAULTED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case CRUMBLED_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 26;

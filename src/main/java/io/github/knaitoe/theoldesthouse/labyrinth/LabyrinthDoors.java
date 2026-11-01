@@ -358,6 +358,8 @@ public final class LabyrinthDoors {
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {arrive(player,from,suppliedEntry,place,false);}
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place,boolean fromRead) {
         final LabyrinthData.Door entry=HotelVignette.destinationEntry(player,from,LakeHouse.destinationEntry(player,suppliedEntry,place),place);
+        // 0.4.231: a wedge holds this entry open on the hall it was set from; from anywhere else the door stops against it.
+        if(Wedges.blocks(player,from,entry))return;
         MinecraftServer server = player.server;
         ServerLevel fromLevel = fromRead?server.getLevel(from.dimension):player.serverLevel();
         ServerLevel toLevel = server.getLevel(entry.dimension);
@@ -372,7 +374,7 @@ public final class LabyrinthDoors {
 
         // Someone else may be standing in this entry's doorway: it stays open
         // for them, and the copied vestibule leaves the cells they occupy.
-        if (!othersAtDoor(toLevel, entry.lower, player)) setDoorOpen(toLevel, entry.lower, false, null);
+        if (!othersAtDoor(toLevel, entry.lower, player) && !Wedges.at(toLevel, entry.lower)) setDoorOpen(toLevel, entry.lower, false, null);
         // A door inside a standing room (the hotel's own 217) keeps the room as built: nothing is copied over its corridor.
         if (!HotelVignette.withinRoom(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player);
         Vec3 target = fromRead?Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),3)):shifted(player.position(), from.lower, entry.lower, turn);
@@ -500,7 +502,7 @@ public final class LabyrinthDoors {
             // Shut once per crossing, so a player who turns back can open it
             // from any reach, and never on another player still in the doorway.
             if (into >= SHUT_BEHIND && !entry.lower.equals(SHUT_FOR.get(id))
-                    && !othersAtDoor(player.serverLevel(), entry.lower, player)) {
+                    && !othersAtDoor(player.serverLevel(), entry.lower, player) && !Wedges.at(player.serverLevel(), entry.lower)) {
                 SHUT_FOR.put(id, entry.lower);
                 setDoorOpen(player.serverLevel(), entry.lower, false, player);
             }
@@ -579,7 +581,7 @@ public final class LabyrinthDoors {
         UUID id = player.getUUID();
         STEPS.remove(id);
         SHUT_FOR.remove(id);
-        if (!othersAtDoor(player.serverLevel(), entry.lower, player)) setDoorOpen(player.serverLevel(), entry.lower, false, null);
+        if (!othersAtDoor(player.serverLevel(), entry.lower, player) && !Wedges.at(player.serverLevel(), entry.lower)) setDoorOpen(player.serverLevel(), entry.lower, false, null);
         LabyrinthData.Waypoint back = data.peekReturn(id);
         Consumer<ServerPlayer> caveDeparture=entry.id.equals(LabyrinthPlace.PRESERVED_CAVE.entryDoorId())?PreservedCave.departure(player):p->{};
         String correspondenceSource=io.github.knaitoe.theoldesthouse.house.HouseExperience.record(data,id).getString("CurrentPlace");
@@ -797,7 +799,7 @@ public final class LabyrinthDoors {
         Vec3 to = Vec3.atBottomCenterOf(base.offset(0, 0, place == LabyrinthPlace.JUNCTION ? -9 : -21));
         travelAbsolute(player,new LabyrinthData.Waypoint(level.dimension(),to,Direction.NORTH.toYRot(),false),p->{
             var current=LabyrinthData.get(p.server);current.pushReturn(p.getUUID(),back);
-            if(!othersAtDoor(level,entry.lower,p))setDoorOpen(level,entry.lower,false,null);
+            if(!othersAtDoor(level,entry.lower,p)&&!Wedges.at(level,entry.lower))setDoorOpen(level,entry.lower,false,null);
             if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR)current.visit(p.getUUID(),place);
             LabyrinthDealer.dealPlace(current,p.getUUID(),place,p.getRandom());INSIDE.add(p.getUUID());
             RedRoom.prepareIfDealt(p,place);LabyrinthLighting.onArrive(p,place);
@@ -963,6 +965,8 @@ public final class LabyrinthDoors {
     }
 
     static void setDoorOpen(ServerLevel level, BlockPos lower, boolean open, @Nullable ServerPlayer hearer) {
+        // 0.4.231: shut hard on a wedge, the wedge skids loose.
+        if (!open && Wedges.at(level, lower)) Wedges.knockLoose(level, lower);
         boolean changed = false;
         for (BlockPos half : new BlockPos[]{lower, lower.above()}) {
             BlockState state = level.getBlockState(half);
