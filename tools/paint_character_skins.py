@@ -101,6 +101,11 @@ LOOKS = {
     # Polybius (0.4.217): the two men in suits by the black cabinet, on stranger phases forty-one and forty-two.
     'literary_polybius_a': Look('#c9a283','#2a2622','close','#16171b','#141519','suit','#e6e6e8',eyes='#3a3a3a',age=1,glasses=True),
     'literary_polybius_b': Look('#94684c','#1c1a18','receding','#1a1b20','#16171b','suit','#dcdcde',eyes='#2c2a28',age=2),
+    # 0.4.221 (owner: "add npcs playing unused games"): the arcade's three regulars, each at their own cabinet (stranger phases
+    # forty-seven to forty-nine): a denim jacket, a red tee, a knit sweater and glasses.
+    'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
+    'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
+    'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
     # 0.4.220 (owner: Brad's textures were "not in line with the mod"): Brad in the God of the Pitt, painted like the rest of the
     # cast instead of built from blocks: a mud-stained orange oversuit, the harness over it, a short beard, his caving helmet
     # with the lamp on its front (stranger phases forty-four to forty-six: lamp dark, flashing white, strobing amber).

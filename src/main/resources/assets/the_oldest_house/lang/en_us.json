@@ -958,5 +958,14 @@
   "block.the_oldest_house.hall_ceiling": "Ceiling",
   "block.the_oldest_house.hall_window_lower": "Sash Window",
   "block.the_oldest_house.hall_window_upper": "Sash Window",
-  "block.the_oldest_house.winchester_ceiling": "Coffered ceiling"
+  "block.the_oldest_house.winchester_ceiling": "Coffered ceiling",
+  "item.the_oldest_house.polybius_tickets": "Prize Tickets",
+  "item.the_oldest_house.polybius_prize_spider": "Rubber Spider",
+  "item.the_oldest_house.polybius_prize_finger_trap": "Finger Trap",
+  "item.the_oldest_house.polybius_prize_bouncy_ball": "Bouncy Ball",
+  "item.the_oldest_house.polybius_prize_glow_star": "Glow Star",
+  "item.the_oldest_house.polybius_prize_slap_bracelet": "Slap Bracelet",
+  "item.the_oldest_house.polybius_prize_kazoo": "Kazoo",
+  "item.the_oldest_house.polybius_prize_mood_ring": "Mood Ring",
+  "item.the_oldest_house.polybius_prize_plush_dog": "Plush Dog with One Eye"
 }

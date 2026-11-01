@@ -48,6 +48,9 @@ public final class Polybius {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.POLYBIUS;
     /** The two men's skins, on the stranger phases after the closing hall's children. */
     public static final int MAN_A_PHASE=41,MAN_B_PHASE=42;
+    /** 0.4.221: the three regulars at their own cabinets, on the stranger phases after Brad's. */
+    public static final int REGULAR_PHASE=47;
+    public static boolean regular(int phase){return phase>=REGULAR_PHASE&&phase<REGULAR_PHASE+3;}
     /** A play of the black cabinet counts after five seconds; three are enough; a fourth keeps the reader six seconds, then takes them. */
     public static final int MIN_PLAY=100,PLAYS=3,TAKEN_AFTER=120,CALL_EVERY=50;
     /** The most each game can score in a tick, with room to spare, and the longest a session is kept. */
@@ -65,7 +68,7 @@ public final class Polybius {
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     static void heard(ServerPlayer p,Vec3 at,SoundEvent s,float volume,float pitch){p.connection.send(new ClientboundSoundPacket(Holder.direct(s),SoundSource.BLOCKS,at.x,at.y,at.z,volume,pitch,p.getRandom().nextLong()));}
     static Vec3 rel(ServerPlayer p,BlockPos b){return p.position().subtract(b.getX(),b.getY(),b.getZ());}
-    public static void clearAll(){SESSIONS.clear();}
+    public static void clearAll(){SESSIONS.clear();PolybiusBrawl.clearAll();}
 
     // ------------------------------------------------------------------------------------------------ arrival
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -85,10 +88,12 @@ public final class Polybius {
         switch(kind){
             case CABINET,SCREEN->{int g=PolybiusSite.game(rel);if(g<0)return false;play(p,b,own,g);return true;}
             case DEAD,DEAD_SCREEN->{cue(p,"OUT OF ORDER, on a strip of masking tape across the screen.");return true;}
+            case BRAWL,BRAWL_SCREEN->{PolybiusBrawl.join(p,b);return true;}
+            case OTHER,OTHER_SCREEN->{int i=PolybiusSite.OTHERS.indexOf(rel.getY()==0?rel:rel.below());regularLine(p,i);return true;}
+            case PRIZES->{exchange(p,PolybiusSite.prize(rel));return true;}
             case CHANGE->{cue(p,"A card taped over the coin slot: FREE PLAY TONIGHT.");return true;}
             case CLIPBOARD->{cue(p,own.getBoolean("Ready")?"The men's clipboard.":"A clipboard. The top sheet is blank but for tonight's date.");return true;}
-            case COUNTER->{cue(p,"Tickets for prizes. Nobody behind the counter.");return true;}
-            case PRIZES->{cue(p,"Rubber spiders, finger traps, a plush dog with one eye. Every prize has the same price on it.");return true;}
+            case COUNTER->{cue(p,"Tickets for prizes. Nobody behind the counter; the prices are on the shelf. Point at what you want.");return true;}
             case POSTER->{cue(p,"A poster for a game this arcade doesn't have.");return true;}
             case STOOL->{cue(p,"The vinyl is split and taped.");return true;}
             case BIN->{cue(p,"Cups, a straw, a token nobody spent.");return true;}
@@ -97,7 +102,7 @@ public final class Polybius {
     }
     /** A cabinet's screen opened for one reader. */
     static void play(ServerPlayer p,BlockPos b,CompoundTag own,int game){
-        if(playing(p.getUUID())){cue(p,"You're already playing.");return;}
+        if(playing(p.getUUID())||PolybiusBrawl.playing(p.getUUID())){cue(p,"You're already playing.");return;}
         for(var e:SESSIONS.entrySet())if(e.getValue().game()==game&&!e.getKey().equals(p.getUUID())){cue(p,"Someone is playing it.");return;}
         boolean taken=false;
         if(game==PolybiusSite.BLACK){
@@ -132,10 +137,46 @@ public final class Polybius {
         if(score<0||score>RATE[s.game()]*played+50)return false;
         int rank=PolybiusScores.record(p.server,s.game(),p,score);
         own.putInt("Games217",own.getInt("Games217")+1);save(p,own);
+        if(score>0)LiteraryVignettes.give(p,new net.minecraft.world.item.ItemStack(PolybiusRegistry.TICKETS.get(),tickets(score)));
         if(b!=null)PolybiusSite.boards(p.serverLevel(),b);
         cue(p,rank==0?"GAME OVER. "+score+". Not enough for the table.":rank==1?"GAME OVER. "+score+". Your name goes to the top of the table.":"GAME OVER. "+score+". Your name goes up the table, "+ordinal(rank)+".");
         return true;
     }
+    /** Prize tickets for a game of one of the three: one, and one more for every hundred points, up to thirty. */
+    public static int tickets(int score){return score<=0?0:Math.min(30,1+score/100);}
+
+    // ------------------------------------------------------------------------------------------------ the prize counter
+    /** Prizes for tickets: whatever is on the shelf cell, at the price on it. */
+    static void exchange(ServerPlayer p,int prize){
+        if(prize<0)return;var item=PolybiusRegistry.PRIZES.get(prize).get();int cost=PolybiusRegistry.PRIZE_COST[prize];
+        String name=new net.minecraft.world.item.ItemStack(item).getHoverName().getString();
+        int have=0;var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(PolybiusRegistry.TICKETS.get()))have+=inv.getItem(i).getCount();
+        if(have<cost){cue(p,name+": "+cost+" tickets. You have "+have+".");return;}
+        int left=cost;for(int i=0;i<inv.getContainerSize()&&left>0;i++){var st=inv.getItem(i);if(!st.is(PolybiusRegistry.TICKETS.get()))continue;int take=Math.min(left,st.getCount());st.shrink(take);left-=take;}
+        LiteraryVignettes.give(p,new net.minecraft.world.item.ItemStack(item));
+        heard(p,p.position(),SoundEvents.NOTE_BLOCK_CHIME.value(),.6F,1.2F);
+        cue(p,"You count out "+cost+" tickets on the counter and take the "+name.toLowerCase(java.util.Locale.ROOT)+" down off the shelf yourself.");
+    }
+
+    // ------------------------------------------------------------------------------------------------ the regulars
+    static final String[][] REGULAR_LINES={
+        {"\"Wait your turn.\" They don't look up.","\"I've been on this one since six.\"","\"Don't play the black one. My brother did.\""},
+        {"\"You're in my light.\"","\"Free play. Nobody's ever said free play before.\"","\"Those two in the suits were here last week too. They don't play anything.\""},
+        {"\"Shh. I'm on the last board.\"","\"If you're going to watch, watch from over there.\"","\"It's later than it was. Is it later than it was?\""}};
+    static void regularLine(ServerPlayer p,int i){if(i<0)return;cue(p,REGULAR_LINES[i][(int)(p.serverLevel().getGameTime()/60)%REGULAR_LINES[i].length]);}
+    /** The three regulars at their cabinets, the same three for everyone: made where they are missing, never doubled. */
+    static void regulars(ServerLevel l,BlockPos b){
+        var found=l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-PolybiusSite.SIDE,-1,PolybiusSite.FAR)).minmax(new AABB(b.offset(PolybiusSite.SIDE+1,PolybiusSite.HIGH,1))),a->a.role()==LiteraryActor.STRANGER&&regular(a.phase()));
+        for(int i=0;i<PolybiusSite.REGULARS.size();i++){int phase=REGULAR_PHASE+i;var mine=found.stream().filter(a->a.phase()==phase).toList();
+            for(int k=1;k<mine.size();k++)mine.get(k).discard();
+            var at=PolybiusSite.REGULARS.get(i);float yaw=at.getX()<0?90:-90;
+            var a=mine.isEmpty()?null:mine.get(0);
+            if(a==null){if(!l.isPositionEntityTicking(b.offset(at)))continue;a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,phase);l.addFreshEntity(a);}
+            var home=Vec3.atBottomCenterOf(b.offset(at));if(a.position().distanceToSqr(home)>.04)a.moveTo(home.x,home.y,home.z,yaw,0);
+            a.setYRot(yaw);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
+        }
+    }
+
     static String ordinal(int n){return n+(n%100>=11&&n%100<=13?"th":switch(n%10){case 1->"st";case 2->"nd";case 3->"rd";default->"th";});}
 
     // ------------------------------------------------------------------------------------------------ the two men
@@ -172,7 +213,7 @@ public final class Polybius {
         if(s.getTickCount()%10!=0)return;
         for(var p:s.getPlayerList().getPlayers()){
             if(!LiteraryVignettes.inside(p,PLACE))continue;var b=base(p);if(b==null)continue;var own=own(p);
-            tend(p,b,own);
+            tend(p,b,own);regulars(p.serverLevel(),b);
             if(!own.contains("Call217")||own.getBoolean("Ready")||own.getBoolean("Lost217"))continue;
             if(PolybiusSite.front(rel(p,b))&&!playing(p.getUUID())){walkAway(p,b,own);continue;}
             long since=p.serverLevel().getGameTime()-own.getLong("Call217");

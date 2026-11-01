@@ -3,8 +3,8 @@
   "render_type": "minecraft:cutout",
   "textures": {
     "s": "the_oldest_house:block/polybius/prizes_side",
-    "f": "the_oldest_house:block/polybius/prizes",
-    "particle": "the_oldest_house:block/polybius/prizes"
+    "f": "the_oldest_house:block/polybius/prizes_0",
+    "particle": "the_oldest_house:block/polybius/prizes_0"
   },
   "elements": [
     {

@@ -59,7 +59,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_pitt_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -82,4 +82,9 @@ def entries():
         rows.append({'name':'literary_polybius_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':41+i})
     # The replacement (0.4.218) on stranger phase forty-three.
     rows.append({'name':'literary_replacement','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':43})
+    # God of the Pitt (0.4.220): Brad on stranger phase forty-four (his lamp dark; forty-five and forty-six light it).
+    rows.append({'name':'literary_pitt_brad','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':44})
+    # Polybius (0.4.221): the arcade's three regulars on stranger phases forty-seven to forty-nine.
+    for i,name in enumerate(['kid_a','kid_b','kid_c']):
+        rows.append({'name':'literary_polybius_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':47+i})
     return rows
