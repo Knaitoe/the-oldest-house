@@ -1193,7 +1193,9 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
     }
     @AfterBatch(batch="literary_elk_attack_delay") public static void attackDelayDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_elk_journey",timeoutTicks=2600)
+    // Run 1378: the test server runs idle ticks far faster than twenty a second, so 2600 ticks ran out six seconds in, while the
+    // yacht's chunks and the reader's own killer were still loading off-thread. The budget is ticks; the loading is wall time.
+    @GameTest(template="empty",batch="literary_elk_journey",timeoutTicks=12000)
     public static void elkReaderWakesAboardEscapesHidesUnderTheCarcassesAndLeavesByTheGate(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_CARCASSES;var p=f.player("elk_reader",place);var b=f.base(place);
         h.assertTrue(f.out.getBlockState(b.offset(0,-1,-3)).is(LiteraryRegistry.YACHT_CARPET.get()),"the reader comes through the door into the yacht's cabin");
