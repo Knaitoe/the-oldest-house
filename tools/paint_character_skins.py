@@ -104,6 +104,9 @@ LOOKS = {
     # 0.4.221 (owner: "add npcs playing unused games"): the arcade's three regulars, each at their own cabinet (stranger phases
     # forty-seven to forty-nine): a denim jacket, a red tee, a knit sweater and glasses.
     'literary_polybius_teen': Look('#d2a283','#3a2a20','messy','#b0302a','#2a2a30','shirt','#f0e8d8',eyes='#5a5040',mark='pizza_visor',sleeve=4),
+    # The last swimmer (0.4.227): the pool's attendant, and the one still in the water.
+    'literary_swimmer_attendant': Look('#c39a7c','#b8b4ac','receding','#e8e4d8','#2e3a4a','tee','#2a3a5a',eyes='#5a5e58',age=2,mark='whistle',sleeve=4),
+    'literary_swimmer_swimmer': Look('#e4ddd6','#1e1c1e','short','#1c2230','#1c2230','swim','#d8dcd8',eyes='#2a2e32',mark='swim_cap',sleeve=0),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
@@ -679,6 +682,10 @@ def cloth_face(size,look,side='front'):
         d.polygon([(w-6,5),(w-3,5),(w-4,8)],fill='#f0b040');d.point((w-5,6),fill='#b02818')
         d.rectangle((mid-4,12,mid+3,h-2),fill='#e8e2d4');d.line((mid-4,12,mid+3,12),fill='#c8c0b0')
         d.point((mid-1,15),fill='#d8b070');d.point((mid+1,18),fill='#c8a060')
+    if look.mark=='whistle':
+        # 0.4.227: the attendant's lanyard down from the collar, and the whistle on it.
+        for k in range(0,6):d.point((mid-4+k//2,4+k),fill='#2a3a6a');d.point((mid+3-k//2,4+k),fill='#2a3a6a')
+        d.rectangle((mid-1,10,mid+1,11),fill='#c8c8cc');d.point((mid+2,10),fill='#9a9aa0')
     if look.style=='ragged':
         d.line((mid,3,mid,h-3),fill=lo);d.rectangle((3,h-7,5,h-4),fill=shade(c,16))
         for y in (6,12,18):d.point((mid+1,y),fill=a)
@@ -779,6 +786,18 @@ def paint(look):
                 d.rectangle((0,2,15,4),fill='#c8302a');d.line((0,5,15,5),fill='#8a1e1a');d.rectangle((5,2,10,3),fill='#f0e2c0')
             elif side in ('left','right','back'):
                 d.rectangle((0,2,15,3),fill='#c8302a');d.line((0,4,15,4),fill='#a02420')
+            put(box,art)
+    if look.mark=='swim_cap':
+        # 0.4.227: a tight swim cap over the hair on the hat layer, and dark goggles across the eyes: nothing of the face shows above the nose.
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='bottom':put(box,art);continue
+            d.rectangle((0,0,15,7 if side=='front' else 11),fill='#d8dad6');d.line((0,7 if side=='front' else 11,15,7 if side=='front' else 11),fill='#b8bab6')
+            if side=='front':
+                d.rectangle((2,8,6,10),fill='#16181c');d.rectangle((9,8,13,10),fill='#16181c');d.line((7,9,8,9),fill='#2a2c30')
+                d.point((3,8),fill='#4a5058');d.point((10,8),fill='#4a5058')
+            if side in ('left','right'):d.line((0,9,15,9),fill='#202226')
+            if side=='back':d.line((0,9,15,9),fill='#202226')
             put(box,art)
     if look.mark=='movie_cap':
         # A flat cloth cap on the hat layer; its brim shades the front edge only.

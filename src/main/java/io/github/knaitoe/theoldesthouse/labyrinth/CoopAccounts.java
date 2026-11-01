@@ -112,6 +112,9 @@ final class CoopAccounts {
         // 0.4.212: one held the line at the door while another followed it; two pulls was a warning.
         // 0.4.213: each reader's double is theirs alone; a peer sees an empty branch.
         // 0.4.218: each reader's replacement is their own; a peer sees nobody at their heels.
+        // 0.4.227: two readers who came in together close the same pool; each pulls from the shallow end in turn.
+        together(LAST_SWIMMER,party("%s {was} on the deck with me. We took turns at the strap. Neither of us said anything about the lane that was left.",
+            "%s {was} still in the hall when I went out through the fire door."));
         together(REPLACEMENT,party("%s {was} on the street with me. Neither of us said anything about what was following the other.",
             "%s {was} still on the street when I came out of the open house with mine."));
         // 0.4.217: every table is the whole server's; the black cabinet's men are each reader's own.
