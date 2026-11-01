@@ -61,7 +61,7 @@ public final class HouseBodyClient {
      * or has anything worn over its mouth keeps its own.
      */
     public static void face(NativeImage out,NativeImage original,int tone,int mood){
-        if(mood<1||mood>FACES.length)return;int scale=Math.max(1,original.getWidth()/64),base=base(original);if(base<0)return;
+        if(mood<1||mood>FACES.length)return;boolean shaped=eyes(out,original,mood);int scale=Math.max(1,original.getWidth()/64),base=base(original);if(base<0)return;
         int br=base>>16&255,bg=base>>8&255,bb=base&255,skin=tone>=0?tone:base,kept=0,ink=-1,inkSum=999;
         for(int j=5;j<8;j++)for(int i=1;i<7;i++){
             if(argb(original.getPixelRGBA((40+i)*scale,(8+j)*scale))>>>24>=128)return;
@@ -72,9 +72,40 @@ public final class HouseBodyClient {
         if(kept<9)return;
         if(ink<0)ink=(int)((skin>>16&255)*.45f)<<16|(int)((skin>>8&255)*.45f)<<8|(int)((skin&255)*.45f);
         for(int j=5;j<8;j++)for(int i=1;i<7;i++){int c=argb(original.getPixelRGBA((8+i)*scale,(8+j)*scale));if(Math.abs((c>>16&255)-br)+Math.abs((c>>8&255)-bg)+Math.abs((c&255)-bb)>40)paint(out,scale,i,j,skin);}
-        for(int[] m:FACES[mood-1])paint(out,scale,m[0],m[1],ink);
+        // Where the eyes were shaped (with their brows), the cross face's eight-pixel brows are left off.
+        for(int[] m:FACES[mood-1])if(!(shaped&&m[1]==3))paint(out,scale,m[0],m[1],ink);
         if(mood==2)paint(out,scale,TEAR[0],TEAR[1],0x7fb2e5);
     }
+    /**
+     * 0.4.224 (owner: "can you try adjusting eye shape for faces drawn too?"): the drawn face's eyes, at the body's own
+     * sixteen-to-the-face detail and mirrored for the right eye. Smiling: closed, curved up. Sad: the brow raised in the middle,
+     * the outer lid drooping, looking down. Scared: wide open under a raised brow, a small pupil with white all round. Cross:
+     * the brow pressed down toward the nose and the lid half over the eye. Plain: as painted. Only where the eyes are the
+     * House's own (white either side of a dark pupil, nothing worn over them); answers whether it shaped them.
+     */
+    static boolean eyes(NativeImage out,NativeImage original,int mood){
+        int scale=original.getWidth()/64;if(scale<2||mood<1||mood>4)return false;int h=scale/2;
+        for(int side=0;side<2;side++){
+            if(!light(eye(original,scale,side,3,7))||!light(eye(original,scale,side,5,7))||rgbSum(eye(original,scale,side,4,8))>220)return false;
+            for(int u=3;u<=5;u++)for(int v=5;v<=8;v++){int x=side==0?u:15-u;if(original.getPixelRGBA(40*scale+x*h,8*scale+v*h)>>>24>=128)return false;}
+        }
+        int white=eye(original,scale,0,3,7),pupil=eye(original,scale,0,4,8),brow=eye(original,scale,0,4,6),skin=original.getPixelRGBA(8*scale+7*h,8*scale+7*h);
+        int lid=(skin&0xff000000)|(int)((skin>>16&255)*.8f)<<16|(int)((skin>>8&255)*.8f)<<8|(int)((skin&255)*.8f);
+        for(int side=0;side<2;side++){
+            switch(mood){
+                case 1->{for(int u=3;u<=5;u++)for(int v=7;v<=8;v++)dot(out,scale,side,u,v,skin);dot(out,scale,side,3,8,pupil);dot(out,scale,side,4,7,pupil);dot(out,scale,side,5,8,pupil);}
+                case 2->{dot(out,scale,side,3,6,skin);dot(out,scale,side,5,5,brow);dot(out,scale,side,3,7,lid);dot(out,scale,side,4,7,white);}
+                case 3->{for(int u=3;u<=5;u++){dot(out,scale,side,u,5,brow);dot(out,scale,side,u,6,white);}dot(out,scale,side,4,7,pupil);dot(out,scale,side,4,8,white);}
+                default->{dot(out,scale,side,3,6,skin);dot(out,scale,side,3,5,brow);dot(out,scale,side,5,7,brow);dot(out,scale,side,3,7,lid);dot(out,scale,side,4,7,lid);}
+            }
+        }
+        return true;
+    }
+    /** A pixel of the face at sixteen to the face (the left eye's column, mirrored for the right), as the image stores it. */
+    private static int eye(NativeImage img,int scale,int side,int u,int v){int h=scale/2,x=side==0?u:15-u;return img.getPixelRGBA(8*scale+x*h,8*scale+v*h);}
+    private static void dot(NativeImage img,int scale,int side,int u,int v,int abgr){int h=scale/2,x=side==0?u:15-u;for(int y=0;y<h;y++)for(int i=0;i<h;i++)img.setPixelRGBA(8*scale+x*h+i,8*scale+v*h+y,abgr);}
+    private static int rgbSum(int c){return (c&255)+(c>>8&255)+(c>>16&255);}
+    private static boolean light(int c){return c>>>24>=128&&rgbSum(c)>=560;}
     private static void paint(NativeImage out,int scale,int i,int j,int rgb){
         int abgr=0xff000000|(rgb&255)<<16|(rgb>>8&255)<<8|(rgb>>16&255);
         for(int y=0;y<scale;y++)for(int x=0;x<scale;x++)out.setPixelRGBA((8+i)*scale+x,(8+j)*scale+y,abgr);
