@@ -35,6 +35,7 @@ public final class SceneClock {
             case DEAD_AIR->3; // 0.4.206: an overcast evening over the marsh
             case LEFT_RIGHT->9; // 0.4.205: two in the morning at the toll
             case REPLACEMENT->9; // 0.4.218: midnight on the street
+            case VACANT_POSSESSION->3; // 0.4.228: moving day, the light going over the street
             case LAST_SWIMMER->9; // 0.4.227: closing time at the pool, dark over the skylight
             case POLAROID_TRAIL->3; // 0.4.204: late autumn twilight over the yard and the pines
             case WHISTLERS->9; // 0.4.202: night at the lookout, stars over the forest of towers // 0.4.201: midnight at the Sandersons' and in the park

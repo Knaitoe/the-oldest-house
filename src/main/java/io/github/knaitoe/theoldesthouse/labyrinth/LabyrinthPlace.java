@@ -419,6 +419,8 @@ public enum LabyrinthPlace {
     REPLACEMENT("replacement",Kind.MULTI_VISIT,145,new BoundingBox(-18,-2,-64,18,12,0),literaryEntry()),
     /** 0.4.227, the last swimmer (LastSwimmer, SwimmerSite): a small municipal pool at closing time, the cover pulled across a lane at a time over someone still swimming, and the fire door held open. Understanding, one visit. */
     LAST_SWIMMER("last_swimmer",Kind.ONE_SHOT,146,new BoundingBox(-15,-7,-46,15,10,0),literaryEntry()),
+    /** 0.4.228, Vacant Possession (VacantPossession, VacantSite): a first-floor flat on moving day, every piece carried down to the van, the tenant fading with each, and one chair left at the end. Understanding, one visit. */
+    VACANT_POSSESSION("vacant_possession",Kind.ONE_SHOT,147,new BoundingBox(-7,-7,-19,18,8,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

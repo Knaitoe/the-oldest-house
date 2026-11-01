@@ -104,6 +104,8 @@ LOOKS = {
     # 0.4.221 (owner: "add npcs playing unused games"): the arcade's three regulars, each at their own cabinet (stranger phases
     # forty-seven to forty-nine): a denim jacket, a red tee, a knit sweater and glasses.
     'literary_polybius_teen': Look('#d2a283','#3a2a20','messy','#b0302a','#2a2a30','shirt','#f0e8d8',eyes='#5a5040',mark='pizza_visor',sleeve=4),
+    # Vacant Possession (0.4.228): the tenant, in a cardigan, on moving day.
+    'literary_vacant_tenant': Look('#c8a08a','#cfcac2','bun','#7a5a62','#4a4440','cardigan','#d8ccb0',eyes='#5a5c5a',age=2,glasses=True),
     # The last swimmer (0.4.227): the pool's attendant, and the one still in the water.
     'literary_swimmer_attendant': Look('#c39a7c','#b8b4ac','receding','#e8e4d8','#2e3a4a','tee','#2a3a5a',eyes='#5a5e58',age=2,mark='whistle',sleeve=4),
     'literary_swimmer_swimmer': Look('#e4ddd6','#1e1c1e','short','#1c2230','#1c2230','swim','#d8dcd8',eyes='#2a2e32',mark='swim_cap',sleeve=0),

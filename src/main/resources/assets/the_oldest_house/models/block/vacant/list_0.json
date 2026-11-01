@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/vacant/list",
+    "particle": "the_oldest_house:block/vacant/list"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        2,
+        15.5
+      ],
+      "to": [
+        12,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            4,
+            2,
+            12,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            4,
+            2,
+            12,
+            14
+          ]
+        }
+      }
+    }
+  ]
+}

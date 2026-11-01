@@ -1,0 +1,301 @@
+package io.github.knaitoe.theoldesthouse.labyrinth;
+
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import java.util.*;
+import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+
+/**
+ * 0.4.228, Vacant Possession (docs/VACANT_POSSESSION_0_4_228.md). A first-floor flat on moving day. The tenant asks for everything
+ * on their list to go down to the van. Each piece is lifted with a right-click and carried down the stairs in the reader's arms, and
+ * set down in the van; what it was hiding is there where it stood. Each piece set down takes something of the tenant with it: their
+ * words come shorter and fainter and they are harder to see. When everything else has gone they are sitting in the last chair, and
+ * stand when the reader comes close: "That's the last of it." Carry it down and the flat is empty, its window dark; put it back where
+ * it stood and they sit down in it again, the light still on. Either way the story ends on the street.
+ * <p>
+ * The flat's state belongs to the flat (its base), so readers who come in together empty it together; a reader on their own has their
+ * own copy (SceneInstances). It starts again from the beginning when nobody has been in it for five seconds. Nothing in it can hurt.
+ */
+@EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
+public final class VacantPossession {
+    private VacantPossession(){}
+    public static final LabyrinthPlace PLACE=LabyrinthPlace.VACANT_POSSESSION;
+    public static final int TENANT=53;
+    /** How much of the tenant each piece in the van takes, out of a hundred. */
+    public static final int FADE_EACH=8;
+    public static final int EMPTY_RESET=100;
+    /** The tenant at the window (0), in the last chair (1), standing beside it (2), sitting again after it was put back (3), gone (4). */
+    public static final int STANDING=0,SITTING=1,STOOD=2,KEPT=3,GONE=4;
+    private static final String TAG="Vacant228";
+    private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
+
+    /** One flat's moving day. */
+    static final class Flat {
+        final BlockPos base;long tick;int empty,seat=STANDING,sittingSince=-1;@Nullable UUID tenant;
+        final EnumMap<VacantBlock.Kind,Integer> van=new EnumMap<>(VacantBlock.Kind.class);
+        final EnumMap<VacantBlock.Kind,UUID> carried=new EnumMap<>(VacantBlock.Kind.class);
+        Flat(BlockPos b){base=b;}
+        /** How many of the eight pieces on the list are in the van. */
+        int loaded(){int n=0;for(var k:van.keySet())if(k!=VacantBlock.Kind.CHAIR)n++;return n;}
+        boolean ended(){return seat==KEPT||seat==GONE;}
+    }
+    private static final Map<Long,Flat> FLATS=new HashMap<>();
+    public static void clearAll(){FLATS.clear();}
+    public static boolean tenant(int phase){return phase==TENANT;}
+
+    static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
+    static void say(ServerPlayer p,Component line){p.displayClientMessage(line,true);}
+    static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
+    static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
+    static Vec3 rel(Vec3 at,BlockPos b){return at.subtract(b.getX(),b.getY(),b.getZ());}
+
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
+        if(own.getBoolean("Completed"))return;
+        cue(p,"A landing, a bare bulb, and a door standing open. Inside, someone has been waiting for help.");
+    }
+    @Nullable static Flat flat(BlockPos b){return FLATS.get(b.asLong());}
+    /** For tests: this flat's moving day, from the base. */
+    public static int loaded(BlockPos b){var f=flat(b);return f==null?0:f.loaded();}
+    public static int seat(BlockPos b){var f=flat(b);return f==null?-1:f.seat;}
+    public static boolean inVan(BlockPos b,VacantBlock.Kind kind){var f=flat(b);return f!=null&&f.van.containsKey(kind);}
+    @Nullable public static LiteraryActor tenantActor(ServerLevel l,BlockPos b){var f=flat(b);return f==null?null:actor(l,f.tenant);}
+
+    // ------------------------------------------------------------------------------------------------ the piece in the reader's arms
+    /** The piece as an item in the reader's arms: drawn as itself, and marked as the tenant's and the reader's. */
+    static ItemStack carried(ServerPlayer p,VacantSite.Piece piece){
+        var stack=new ItemStack(VacantRegistry.PIECE.get());
+        stack.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(piece.kind().ordinal()+1));
+        var name=piece.name();stack.set(DataComponents.ITEM_NAME,Component.literal(Character.toUpperCase(name.charAt(0))+name.substring(1)));
+        var t=new CompoundTag();t.putString(TAG,piece.kind().name());t.putUUID("Owner",p.getUUID());stack.set(DataComponents.CUSTOM_DATA,CustomData.of(t));
+        return stack;
+    }
+    static boolean loan(ItemStack s){if(!s.is(VacantRegistry.PIECE.get()))return false;var c=s.get(DataComponents.CUSTOM_DATA);return c!=null&&c.copyTag().contains(TAG);}
+    static boolean holding(ServerPlayer p){for(int i=0;i<p.getInventory().getContainerSize();i++)if(loan(p.getInventory().getItem(i)))return true;return loan(p.containerMenu.getCarried());}
+    /** Takes the piece out of the reader's arms and gives back what they were holding before. */
+    static void release(ServerPlayer p,CompoundTag own){
+        var inv=p.getInventory();
+        for(int i=0;i<inv.getContainerSize();i++)if(loan(inv.getItem(i)))inv.setItem(i,ItemStack.EMPTY);
+        if(loan(p.containerMenu.getCarried()))p.containerMenu.setCarried(ItemStack.EMPTY);
+        if(own.contains("Before228")){
+            var before=ItemStack.parseOptional(p.registryAccess(),own.getCompound("Before228"));int slot=own.getInt("Slot228");
+            if(!before.isEmpty()){if(slot>=0&&slot<inv.getContainerSize()&&inv.getItem(slot).isEmpty())inv.setItem(slot,before);else inv.placeItemBackInInventory(before);}
+        }
+        own.remove("Before228");own.remove("Slot228");own.remove("Carrying228");
+        p.inventoryMenu.broadcastChanges();
+    }
+    static void take(ServerPlayer p,CompoundTag own,VacantSite.Piece piece){
+        var inv=p.getInventory();int slot=inv.selected;
+        own.put("Before228",inv.getItem(slot).saveOptional(p.registryAccess()));own.putInt("Slot228",slot);own.putString("Carrying228",piece.kind().name());
+        inv.setItem(slot,carried(p,piece));p.inventoryMenu.broadcastChanges();
+    }
+    @Nullable static VacantSite.Piece carrying(CompoundTag own){
+        if(!own.contains("Carrying228"))return null;
+        try{return VacantSite.piece(VacantBlock.Kind.valueOf(own.getString("Carrying228")));}catch(IllegalArgumentException e){return null;}
+    }
+
+    // ------------------------------------------------------------------------------------------------ right-clicks
+    public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        var l=p.serverLevel();var s=l.getBlockState(b.offset(rel));var kind=VacantBlock.kind(s);var flat=flat(b);
+        if(flat==null)return false;
+        var held=carrying(own);
+        if(held!=null){
+            if(VacantSite.van(rel))return setDown(p,b,own,flat,held);
+            // Back where it stood: its own cells, the floor under them, or what it hid above them.
+            if(held.cells().contains(rel)||held.cells().contains(rel.above())||held.cells().contains(rel.below()))return putBack(p,b,own,flat,held,true);
+            if(kind!=null){cue(p,"Your arms are full. Set "+held.name()+" down in the van, or back where it stood.");return true;}
+            return false;
+        }
+        if(kind==null){
+            if(s.is(VacantRegistry.material("boards_new"))){own.putBoolean("Floor228",true);cue(p,VacantTexts.trace(VacantBlock.Kind.RUG));return true;}
+            return false;
+        }
+        switch(kind){
+            case MARKS->{own.putBoolean("Marks228",true);cue(p,VacantTexts.trace(kind));return true;}
+            case SCRATCHES->{own.putBoolean("Scratch228",true);cue(p,VacantTexts.trace(kind));return true;}
+            case SQUARE->{own.putBoolean("Square228",true);cue(p,VacantTexts.trace(kind));return true;}
+            case BULB->{cue(p,"A bare bulb. No shade: that must have gone already.");return true;}
+            case RADIATOR->{cue(p,"Cold. Turned off at the valve.");return true;}
+            case HOOKS->{cue(p,"One coat on the hook by the door. It isn't on the list.");return true;}
+            case MAILBOXES->{cue(p,"Four mailboxes. The one for the first floor has tape across its slot.");return true;}
+            case DOCKET->{cue(p,"A removal docket, clipped to a board on the van floor, half filled in.");return true;}
+            case VAN_DOOR->{cue(p,"The van's back doors, swung open against its sides.");return true;}
+            case STREETLAMP,LIST->{return false;}
+            default->{}
+        }
+        if(!kind.piece())return false;
+        if(VacantSite.van(rel)){cue(p,"It's in the van.");return true;}
+        var piece=VacantSite.pieceAt(rel);if(piece==null)return false;
+        if(piece.kind()==VacantBlock.Kind.CHAIR){
+            if(flat.seat==STANDING){say(p,Component.literal("\"Leave the chair. The chair can wait.\"").withStyle(ChatFormatting.GRAY));return true;}
+            if(flat.seat==SITTING){cue(p,"They're sitting in it.");return true;}
+            if(flat.seat!=STOOD){cue(p,flat.seat==KEPT?"They're sitting in it again.":"It's only a chair.");return true;}
+        }
+        return lift(p,b,own,flat,piece);
+    }
+    static boolean lift(ServerPlayer p,BlockPos b,CompoundTag own,Flat flat,VacantSite.Piece piece){
+        var l=p.serverLevel();
+        VacantSite.lift(l,b,piece);flat.carried.put(piece.kind(),p.getUUID());take(p,own,piece);
+        l.playSound(null,b.offset(piece.at()),SoundEvents.WOOD_HIT,SoundSource.BLOCKS,.9F,.6F);
+        String hid=switch(piece.kind()){
+            case DRESSER->" Behind it, pencil marks climb the wall.";
+            case RUG->" The boards under it are paler, newer.";
+            case BED->" Underneath, the floor is worn where its legs stood.";
+            case WARDROBE->" The wallpaper behind it is brighter.";
+            default->"";
+        };
+        cue(p,"You lift "+piece.name()+"."+hid);
+        return true;
+    }
+    static boolean setDown(ServerPlayer p,BlockPos b,CompoundTag own,Flat flat,VacantSite.Piece piece){
+        var l=p.serverLevel();int slot=-1;
+        var used=new HashSet<>(flat.van.values());
+        for(int i=0;i<VacantSite.SLOTS.size();i++){
+            if(used.contains(i))continue;
+            var at=b.offset(VacantSite.SLOTS.get(i));
+            if(!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new AABB(at).expandTowards(0,1,0)).isEmpty())continue;
+            slot=i;break;
+        }
+        if(slot<0){cue(p,"There's someone in the way.");return true;}
+        VacantSite.stow(l,b,piece.kind(),slot);flat.van.put(piece.kind(),slot);flat.carried.remove(piece.kind());release(p,own);
+        own.putInt("Loaded228",own.getInt("Loaded228")+1);
+        l.playSound(null,b.offset(VacantSite.SLOTS.get(slot)),SoundEvents.WOOD_PLACE,SoundSource.BLOCKS,1F,.7F);
+        if(piece.kind()!=VacantBlock.Kind.CHAIR){
+            int n=flat.loaded();var line=VacantTexts.after(n);
+            for(var r:readers(l,b))say(r,line);
+            var t=actor(l,flat.tenant);if(t!=null)t.fade(n*FADE_EACH);
+            if(n>=VacantSite.PIECES.size()&&flat.seat==STANDING){flat.seat=SITTING;flat.sittingSince=(int)flat.tick;}
+            return true;
+        }
+        // The last chair is in the van: the flat is empty.
+        flat.seat=GONE;var t=actor(l,flat.tenant);if(t!=null)t.discard();flat.tenant=null;
+        VacantSite.lights(l,b,false,true);
+        ready(l,flat,p,own,"carried_out_the_last_chair");
+        cue(p,"You look up at the window. It's dark.");
+        return true;
+    }
+    static boolean putBack(ServerPlayer p,BlockPos b,CompoundTag own,Flat flat,VacantSite.Piece piece,boolean chosen){
+        var l=p.serverLevel();
+        VacantSite.place(l,b,piece,true);flat.carried.remove(piece.kind());release(p,own);
+        l.playSound(null,b.offset(piece.at()),SoundEvents.WOOD_PLACE,SoundSource.BLOCKS,.9F,.8F);
+        if(piece.kind()!=VacantBlock.Kind.CHAIR||!chosen){if(chosen)cue(p,"You set "+piece.name()+" back where it stood.");return true;}
+        // The last chair, put back: they sit down in it again.
+        flat.seat=KEPT;var t=actor(l,flat.tenant);if(t!=null){sit(t,b);t.fade(Math.max(0,t.fade()-24));}
+        ready(l,flat,p,own,"put_the_chair_back");
+        for(var r:readers(l,b))say(r,VacantTexts.faint("They sit back down in it. \"Thank you.\""));
+        return true;
+    }
+    /** Both choices end the story on the street; everyone in the flat when it was made goes down with it. */
+    static void ready(ServerLevel l,Flat flat,ServerPlayer chooser,CompoundTag chosen,String outcome){
+        mark(chosen,outcome);
+        for(var r:readers(l,flat.base)){if(r==chooser)continue;var own=own(r);if(own.getBoolean("Completed"))continue;mark(own,outcome);save(r,own);}
+    }
+    private static void mark(CompoundTag own,String outcome){if(own.getBoolean("Ready"))return;own.putBoolean("Ready",true);own.putString("Outcome",outcome);own.putInt("Beat",own.getInt("Visit"));}
+
+    // ------------------------------------------------------------------------------------------------ the flat's clock
+    static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
+        var out=new ArrayList<ServerPlayer>();
+        for(var p:l.players())if(!p.isSpectator()&&p.isAlive()&&LiteraryVignettes.current(p)==PLACE&&b.equals(LiteraryVignettes.base(p,PLACE))&&VacantSite.inside(rel(p.position(),b)))out.add(p);
+        return out;
+    }
+    @Nullable static LiteraryActor actor(ServerLevel l,@Nullable UUID id){if(id==null)return null;var e=l.getEntity(id);return e instanceof LiteraryActor a&&a.isAlive()?a:null;}
+    static void clearActors(ServerLevel l,BlockPos b){
+        for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-7,-8,-19)).minmax(new AABB(b.offset(19,9,1))),a->a.role()==LiteraryActor.STRANGER&&a.phase()==TENANT))a.discard();
+    }
+    static void start(ServerLevel l,Flat flat){
+        var b=flat.base;clearActors(l,b);VacantSite.reset(l,b,true);
+        var a=LiteraryRegistry.ACTOR.get().create(l);
+        if(a!=null){a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,TENANT);var at=Vec3.atBottomCenterOf(b.offset(VacantSite.TENANT_START));a.moveTo(at.x,at.y,at.z,90,0);if(l.addFreshEntity(a))flat.tenant=a.getUUID();}
+    }
+    static void sit(LiteraryActor a,BlockPos b){var at=Vec3.atBottomCenterOf(b.offset(VacantSite.CHAIR_PIECE.at()));a.moveTo(at.x,at.y,at.z,-90,0);a.setYHeadRot(-90);a.setYBodyRot(-90);a.setDeltaMovement(Vec3.ZERO);}
+
+    @SubscribeEvent public static void tick(ServerTickEvent.Post e){
+        var server=e.getServer();var seen=new HashSet<Long>();
+        for(var p:server.getPlayerList().getPlayers()){
+            if(p.isSpectator()||!p.isAlive()||LiteraryVignettes.current(p)!=PLACE)continue;
+            var b=LiteraryVignettes.base(p,PLACE);if(b==null||!VacantSite.inside(rel(p.position(),b)))continue;
+            var flat=FLATS.computeIfAbsent(b.asLong(),k->new Flat(b));
+            if(seen.add(b.asLong()))step(p.serverLevel(),flat);
+            var own=own(p);if(!own.getBoolean("Completed"))reader(p,b,own,flat);
+        }
+        for(var it=FLATS.values().iterator();it.hasNext();){var flat=it.next();if(seen.contains(flat.base.asLong())){flat.empty=0;continue;}
+            if(++flat.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(flat.base)){clearActors(l,flat.base);VacantSite.reset(l,flat.base,true);}it.remove();}}
+        // A piece carried out of the flat some other way (a door, a death, a logout) goes back to the reader's own things.
+        if(server.getTickCount()%20==0)for(var p:server.getPlayerList().getPlayers()){
+            boolean in=LiteraryVignettes.current(p)==PLACE&&LiteraryVignettes.base(p,PLACE)!=null&&VacantSite.inside(rel(p.position(),LiteraryVignettes.base(p,PLACE)))&&p.isAlive();
+            if(in)continue;
+            boolean has=holding(p);var own=has?own(p):null;
+            if(!has){own=LiteraryVignettes.personal(LabyrinthData.get(server),p.getUUID(),PLACE);if(!own.contains("Carrying228"))continue;}
+            var piece=carrying(own);release(p,own);save(p,own);
+            if(piece!=null)for(var flat:FLATS.values())if(p.getUUID().equals(flat.carried.get(piece.kind()))){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null)VacantSite.place(l,flat.base,piece,true);flat.carried.remove(piece.kind());}
+        }
+    }
+    static void step(ServerLevel l,Flat flat){
+        var b=flat.base;
+        if(flat.tick==0)start(l,flat);
+        flat.tick++;
+        var t=actor(l,flat.tenant);
+        if(t!=null){
+            switch(flat.seat){
+                case STANDING,STOOD->{var r=closest(l,b,t.position());if(r!=null)SceneFootpaths.face(t,r.position(),10);}
+                case SITTING->{
+                    var chair=Vec3.atBottomCenterOf(b.offset(VacantSite.CHAIR_PIECE.at()));
+                    // They go to the chair while nobody in the flat is looking at them.
+                    if(t.position().distanceToSqr(chair)>.04){boolean watched=false;for(var r:readers(l,b))if(VacantSite.inFlat(rel(r.position(),b))&&r.hasLineOfSight(t))watched=true;if(!watched||flat.tick-flat.sittingSince>200)sit(t,b);}
+                    else{sit(t,b);
+                        // They get up when someone comes close: that's the last of it.
+                        for(var r:readers(l,b))if(VacantSite.inFlat(rel(r.position(),b))&&r.position().distanceToSqr(chair)<6.25){
+                            flat.seat=STOOD;var stand=Vec3.atBottomCenterOf(b.offset(VacantSite.STAND));t.moveTo(stand.x,stand.y,stand.z,0,0);
+                            for(var each:readers(l,b))say(each,VacantTexts.faint(VacantTexts.LAST));break;}
+                    }
+                }
+                case KEPT->sit(t,b);
+                default->{}
+            }
+        }
+        // Nothing of the tenant's is left lying about: a piece dropped from someone's arms goes back where it stood.
+        if(flat.tick%10==0)for(var item:l.getEntitiesOfClass(ItemEntity.class,new AABB(b.offset(-7,-8,-19)).minmax(new AABB(b.offset(19,9,1))),i->loan(i.getItem())))item.discard();
+    }
+    @Nullable static ServerPlayer closest(ServerLevel l,BlockPos b,Vec3 from){ServerPlayer best=null;double d=Double.MAX_VALUE;for(var r:readers(l,b)){double dd=r.position().distanceToSqr(from);if(dd<d){d=dd;best=r;}}return best;}
+
+    // ------------------------------------------------------------------------------------------------ each reader
+    static void reader(ServerPlayer p,BlockPos b,CompoundTag own,Flat flat){
+        var r=rel(p.position(),b);boolean changed=false;
+        if(VacantSite.inFlat(r)&&!own.getBoolean("Flat228")){own.putBoolean("Flat228",true);changed=true;say(p,Component.literal(VacantTexts.GREETING));}
+        if(VacantSite.inFlat(r)&&flat.seat==SITTING&&seated(p.serverLevel(),flat)&&!own.getBoolean("Sat228")){own.putBoolean("Sat228",true);changed=true;cue(p,VacantTexts.SITTING);}
+        // A piece that has left the reader's arms (dropped, or put somewhere else) goes back where it stood.
+        var piece=carrying(own);
+        if(piece!=null&&!holding(p)){putBack(p,b,own,flat,piece,false);changed=true;cue(p,capital(piece.name())+" is back where it stood.");}
+        // On the street, with the choice made, the story is over.
+        if(own.getBoolean("Ready")&&!own.getBoolean("Completed")&&VacantSite.onStreet(r)){complete(p,own);changed=true;}
+        if(changed)save(p,own);
+    }
+    static boolean seated(ServerLevel l,Flat flat){var t=actor(l,flat.tenant);return t!=null&&t.position().distanceToSqr(Vec3.atBottomCenterOf(flat.base.offset(VacantSite.CHAIR_PIECE.at())))<=.04;}
+    static String capital(String s){return Character.toUpperCase(s.charAt(0))+s.substring(1);}
+    /** The ending: the removal docket in the reader's hand, and their Witness line. */
+    public static void complete(ServerPlayer p,CompoundTag own){
+        if(own.getBoolean("Completed")||!own.getBoolean("Ready"))return;
+        var book=LiteraryTexts.ending(p.getGameProfile().getName(),PLACE,own);
+        if(!p.getInventory().add(book))p.drop(book,false);
+        var story=WitnessAccount.Story.of(PLACE.id());if(story!=null)WitnessAccount.resolve(p,story,own.getString("Outcome"));
+        own.putBoolean("Completed",true);LabyrinthData.get(p.server).setCompleted(PLACE.id(),true);
+        cue(p,"carried_out_the_last_chair".equals(own.getString("Outcome"))?"The docket on the van floor is filled in, all but where it's going. You take it.":"Above you, the light's still on in the window. The docket on the van floor is filled in. You take it.");
+    }
+}
