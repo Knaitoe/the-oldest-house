@@ -21,7 +21,8 @@ public final class StoneHalls {
 
     public static boolean isStone(LabyrinthPlace place) {
         return place == LabyrinthPlace.STONE_GALLERY || place == LabyrinthPlace.STONE_CROSSING || place == LabyrinthPlace.STONE_DESCENT
-                || place == LabyrinthPlace.STONE_ARCADE || place == LabyrinthPlace.STONE_BEND || place == LabyrinthPlace.STONE_LANDING;
+                || place == LabyrinthPlace.STONE_ARCADE || place == LabyrinthPlace.STONE_BEND || place == LabyrinthPlace.STONE_LANDING
+                || place == LabyrinthPlace.STONE_DUST;
     }
 
     private static final BlockState BRICK = Blocks.STONE_BRICKS.defaultBlockState();
@@ -31,12 +32,12 @@ public final class StoneHalls {
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
     /** Aged masonry: mostly dressed brick, with cracked and mossy courses. */
-    private static BlockState wall(BlockPos at) {
+    static BlockState wall(BlockPos at) {
         int h = Math.floorMod(at.getX() * 73428767 ^ at.getY() * 19349663 ^ at.getZ() * 83492791, 100);
         return h < 9 ? Blocks.CRACKED_STONE_BRICKS.defaultBlockState() : h < 17 ? Blocks.MOSSY_STONE_BRICKS.defaultBlockState() : BRICK;
     }
 
-    private static BlockState stair(Direction facing, boolean top) {
+    static BlockState stair(Direction facing, boolean top) {
         return Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, facing).setValue(StairBlock.HALF, top ? Half.TOP : Half.BOTTOM);
     }
 

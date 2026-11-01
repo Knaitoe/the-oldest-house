@@ -1,3 +1,5 @@
+November 1 candidate 0.4.234, traces in the stone (the grit gallery, `TraceRooms.buildStoneDust`; docs/STONE_TRACES_0_4_234.md): one ordinary stone hall (slot 154) dealt from seven to twenty; no vignette, source kind, Witness or protocol change. Layout 77. Tests: TraceRoomTests (the grit gallery).
+
 November 1 candidate 0.4.233, the last swimmer against "Falling Out the Sky" (docs/LAST_SWIMMER_SONG_0_4_233.md): the closing timed and written against the song's content, no lyric used; story, resolution and Witness unchanged. Tests: LastSwimmerTests (both cases).
 
 November 1 candidate 0.4.232, the familiar room (`FamiliarRoom`; docs/FAMILIAR_ROOM_0_4_232.md): one shared kitchen (slot 153) dealt like a hall from the third crossing; no vignette, source kind, Witness or protocol change. Layout 76. Tests: FamiliarRoomTests (the kitchen, its pantry, chairs, clock and dealing; the window), LabyrinthTests (twenty-two gray places at the start).

@@ -4,7 +4,8 @@ Draws, in native Minecraft pixels from fixed seeds: four materials (grey unpolis
 stained plaster) and every fitting of the trace_fitting block, its models facing north and turned by its facing: dust clean, walked
 through (a pair of shoe prints pointing the way the reader went), a second set of bare prints, both, and scored where a chair was
 dragged; the loose chair; a small table; furniture under a dust sheet; a coat hook with the wedge on it; a door closer's arm. And the
-wedge itself, as an item. Writes the models, the block states and the names. --check verifies everything.
+wedge itself, as an item. 0.4.234: grit over a stone floor (polished andesite), the same five stages, for the grit gallery in the stone
+depths. Writes the models, the block states and the names. --check verifies everything.
 """
 from pathlib import Path
 import argparse
@@ -104,6 +105,8 @@ def materials():
 # ------------------------------------------------------------------ fittings
 DUST = '#a49e93'
 BARE = '#6f6a62'
+GRIT = '#a3a199'
+STONE = '#7e807f'
 
 
 def dust(seed=2321):
@@ -114,38 +117,49 @@ def dust(seed=2321):
     return im
 
 
-def shoe(im, x, y):
+def grit(seed=2361):
+    """Grit shed from a stone vault: grey, coarser than dust, with darker grains and a few pale chips."""
+    im = new(base=GRIT, seed=seed, spread=5)
+    rnd = random.Random(seed + 1)
+    for _ in range(12):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#8e8c86')
+    for _ in range(8):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#b7b5ad')
+    return im
+
+
+def shoe(im, x, y, colour=BARE):
     """A shoe print pointing north (toward the top): sole four rows, a gap, a heel."""
     for dy, (x0, x1) in enumerate(((1, 3), (0, 3), (0, 3), (0, 3))):
-        fill(im, x + x0, y + dy, x + x1, y + dy + 1, BARE)
-    fill(im, x, y + 5, x + 3, y + 7, BARE)
+        fill(im, x + x0, y + dy, x + x1, y + dy + 1, colour)
+    fill(im, x, y + 5, x + 3, y + 7, colour)
 
 
-def bare(im, x, y):
+def bare(im, x, y, colour='#7a756d'):
     """A bare footprint pointing north: a narrow sole and a heel, four toes above."""
     for dx in range(4):
-        dot(im, x + dx, y, '#7a756d')
-    fill(im, x, y + 2, x + 3, y + 5, '#7a756d')
-    fill(im, x + 1, y + 5, x + 3, y + 7, '#7a756d')
+        dot(im, x + dx, y, colour)
+    fill(im, x, y + 2, x + 3, y + 5, colour)
+    fill(im, x + 1, y + 5, x + 3, y + 7, colour)
 
 
-def prints():
-    im = dust(); shoe(im, 3, 8); shoe(im, 9, 1); return im
+def prints(floor=None, under=BARE):
+    im = floor() if floor else dust(); shoe(im, 3, 8, under); shoe(im, 9, 1, under); return im
 
 
-def other():
-    im = dust(2331); bare(im, 4, 9); bare(im, 9, 2); return im
+def other(floor=None, toes='#7a756d'):
+    im = floor(2371) if floor else dust(2331); bare(im, 4, 9, toes); bare(im, 9, 2, toes); return im
 
 
-def both():
-    im = dust(2333); shoe(im, 1, 8); shoe(im, 5, 1); bare(im, 10, 9); bare(im, 12, 2); return im
+def both(floor=None, under=BARE, toes='#7a756d'):
+    im = floor(2373) if floor else dust(2333); shoe(im, 1, 8, under); shoe(im, 5, 1, under); bare(im, 10, 9, toes); bare(im, 12, 2, toes); return im
 
 
-def dragged():
-    im = dust(2335)
+def dragged(floor=None, scored=('#8a847a', '#7c766d')):
+    im = floor(2375) if floor else dust(2335)
     for x in (3, 4, 11, 12):
         for y in range(16):
-            dot(im, x, y, '#8a847a' if x in (3, 11) else '#7c766d')
+            dot(im, x, y, scored[0] if x in (3, 11) else scored[1])
     return im
 
 
@@ -207,6 +221,8 @@ def wedge_side():
 def textures():
     out = {f'block/trace/{k}.png': v for k, v in materials().items()}
     t = {'dust_0': dust(), 'dust_1': prints(), 'dust_2': other(), 'dust_3': both(), 'dust_4': dragged(),
+         'grit_0': grit(), 'grit_1': prints(grit, STONE), 'grit_2': other(grit, '#888a89'), 'grit_3': both(grit, STONE, '#888a89'),
+         'grit_4': dragged(grit, ('#8b8d8c', '#7e807f')),
          'chair': wood(), 'table': wood('#6a4a30', 2349), 'table_top': wood('#74543a', 2351), 'sheet': sheet(),
          'brass': brass(), 'metal': metal(), 'wedge_side': wedge_side()}
     out.update({f'block/trace/{k}.png': v for k, v in t.items()})
@@ -235,6 +251,7 @@ def fitting_models():
     # Dust lies a quarter of a pixel thick over the boards; its prints point north and turn with the block.
     for stage in range(5):
         m[f'dust_{stage}'] = model([element([0, 0, 0], [16, 0.25, 16], {'all': 'd'})], {'d': f'dust_{stage}'}, f'dust_{stage}')
+        m[f'grit_{stage}'] = model([element([0, 0, 0], [16, 0.25, 16], {'all': 'd'})], {'d': f'grit_{stage}'}, f'grit_{stage}')
     # The loose chair: four legs, a seat, a back of two posts and a rail, the sitter facing north.
     legs = [element([x, 0, z], [x + 2, 8, z + 2], {'all': 'w'}) for x in (2, 12) for z in (2, 12)]
     m['chair_0'] = model(legs + [element([2, 8, 2], [14, 10, 14], {'all': 'w'}),
@@ -251,8 +268,8 @@ def fitting_models():
     return m
 
 
-KINDS = ['dust', 'chair', 'table', 'sheet', 'hook', 'closer']
-STAGES = {'dust': 5}
+KINDS = ['dust', 'chair', 'table', 'sheet', 'hook', 'closer', 'grit']
+STAGES = {'dust': 5, 'grit': 5}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 5
 NAMES = {'block.the_oldest_house.trace_fitting': 'Furniture', 'block.the_oldest_house.trace_boards': 'Grey Boards',
@@ -298,6 +315,9 @@ def main():
         px = im.load(); return [px[x, y][:3] for y in range(16) for x in range(16)]
     assert rgb(BARE) not in pixels(images['block/trace/dust_0.png'])
     assert rgb(BARE) in pixels(images['block/trace/dust_1.png'])
+    # And grit the same over its stone.
+    assert rgb(STONE) not in pixels(images['block/trace/grit_0.png'])
+    assert rgb(STONE) in pixels(images['block/trace/grit_1.png'])
     for rel, im in images.items():
         path = A / 'textures' / rel
         if check:

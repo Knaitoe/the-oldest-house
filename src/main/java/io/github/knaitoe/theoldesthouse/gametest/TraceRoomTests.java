@@ -23,6 +23,7 @@ import net.neoforged.neoforge.gametest.*;
  * second chair is drawn up across the reader's table. The cloakroom's far door gives only while the door behind is held, and the
  * wedge on the hook holds it; the sprung rooms need both their doors held at once, by the wedge and the chair. In the House's own
  * doors a wedge holds the door a reader came in by: the hall behind it stays what it was, and nobody comes in by it from elsewhere.
+ * 0.4.234: below the turn to stone, the grit gallery keeps prints and the dragged chair's scoring the same way.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_exploration") @PrefixGameTestTemplate(false)
 public final class TraceRoomTests {
@@ -34,6 +35,7 @@ public final class TraceRoomTests {
     @AfterBatch(batch="trace_cloak") public static void doneCloak(ServerLevel l){close();}
     @AfterBatch(batch="trace_sprung") public static void doneSprung(ServerLevel l){close();}
     @AfterBatch(batch="trace_wedge") public static void doneWedge(ServerLevel l){close();}
+    @AfterBatch(batch="trace_stone") public static void doneStone(ServerLevel l){close();}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static int stage(ServerLevel l,BlockPos at){var s=l.getBlockState(at);return s.is(TraceRegistry.FITTING.get())?s.getValue(TraceBlock.STAGE):-1;}
     private static boolean is(ServerLevel l,BlockPos at,TraceBlock.Kind kind){return TraceBlock.is(l.getBlockState(at),kind);}
@@ -181,6 +183,45 @@ public final class TraceRoomTests {
                 h.assertTrue(!Wedges.blocks(q,east,entry)&&!Wedges.at(l,entry.lower),"knocked loose");
                 h.assertTrue(!l.getEntitiesOfClass(ItemEntity.class,new AABB(entry.lower).inflate(2),e->e.getItem().is(TraceRegistry.WEDGE.get())).isEmpty(),"the wedge lies by the door");
                 h.assertTrue(l.getEntitiesOfClass(Display.ItemDisplay.class,new AABB(entry.lower).inflate(1),d->d.getTags().contains(Wedges.TAG)).isEmpty(),"and is no longer in it");
+            })
+            .thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="trace_stone",timeoutTicks=600)
+    public static void theGritGalleryKeepsPrintsBelowTheTurnToStone(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.STONE_DUST;var b=f.base(place);var l=f.in;hold(f,place);
+        var p=NativeTestPlayers.survival(h,"grit_reader");f.players.add(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the gallery is resident"))
+            .thenExecute(()->{
+                h.assertTrue(LabyrinthPacing.ordinary(place)&&StoneHalls.isStone(place)&&place.authored()&&!place.isVignette()&&WitnessAccount.Story.of(place.id())==null,"an ordinary stone hall, built whole, and no story");
+                h.assertTrue(LabyrinthBuilder.requiredDepth(place)==LabyrinthPacing.STONE_DEPTH,"built ahead of the stone depths");
+                int stone=LabyrinthPacing.STONE_DEPTH;
+                h.assertTrue(LabyrinthDealer.grayWeight(place,stone-1)==0&&LabyrinthDealer.grayWeight(place,stone)>0&&LabyrinthDealer.grayWeight(place,DarkHalls.ONLY_DEPTH-1)>0&&LabyrinthDealer.grayWeight(place,DarkHalls.ONLY_DEPTH)==0,"dealt from the turn to stone until only the dark halls remain");
+                h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.DUST_HALL,stone)==0,"where the shut-up rooms leave off");
+                TraceRooms.buildStoneDust(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                h.assertTrue(is(l,b.offset(0,0,-6),TraceBlock.Kind.GRIT)&&stage(l,b.offset(0,0,-6))==TraceBlock.CLEAN,"grit over the floor, clean");
+                h.assertTrue(l.getBlockState(b.offset(2,-1,-6)).is(Blocks.POLISHED_ANDESITE)&&l.getBlockState(b.offset(-4,2,-6)).is(net.minecraft.tags.BlockTags.STONE_BRICKS),"stone underfoot and masonry walls");
+                h.assertTrue(is(l,b.offset(TraceRooms.STONE_TABLE),TraceBlock.Kind.TABLE)&&l.getBlockState(b.offset(TraceRooms.STONE_LAMP)).is(Blocks.LANTERN),"someone's table, and a lantern left on the floor by it");
+                h.assertTrue(l.getBlockState(b.offset(-2,5,TraceRooms.STONE_FALLEN_RIB)).is(Blocks.STONE_BRICK_SLAB)&&l.getBlockState(b.offset(0,5,TraceRooms.STONE_FALLEN_RIB)).isAir()&&l.getBlockState(b.offset(-1,0,TraceRooms.STONE_FALLEN_RIB)).is(Blocks.STONE_BRICK_SLAB),"a rib come down, its stones on the floor under the gap");
+                h.assertTrue(f.data().door(place.id()+"/side")!=null&&f.data().door(place.id()+"/far")!=null,"a side door and a far door lead on");
+                // A walk up the gallery: prints in the grit, pointing the way the reader went, and nowhere else; the path their own.
+                for(int z=-6;z>=-11;z--)walkNorth(l,p,b.offset(0,0,z));
+                var printed=l.getBlockState(b.offset(0,0,-8));
+                h.assertTrue(is(l,b.offset(0,0,-8),TraceBlock.Kind.GRIT)&&stage(l,b.offset(0,0,-8))==TraceBlock.PRINTS&&printed.getValue(TraceBlock.FACING)==Direction.NORTH,"prints in the grit pointing the way the reader went: "+printed);
+                h.assertTrue(stage(l,b.offset(1,0,-8))==TraceBlock.CLEAN,"and nowhere they did not");
+                h.assertTrue(TraceRooms.pathLength(f.data(),p.getUUID(),place)==6,"the path is the reader's own");
+                // The loose chair, pulled north a block: the grit it stood in is scored, and it stands in grit.
+                var chair=b.offset(TraceRooms.STONE_CHAIR);h.assertTrue(is(l,chair,TraceBlock.Kind.CHAIR)&&stage(l,chair)==2,"the loose chair stands in the grit");
+                p.teleportTo(l,chair.getX()+.5,chair.getY(),chair.getZ()-2.5,p.getYRot(),p.getXRot());
+                h.assertTrue(TraceRooms.chair(p,chair,l.getBlockState(chair))&&is(l,chair.north(),TraceBlock.Kind.CHAIR)&&stage(l,chair.north())==2,"a hand pulls it a block toward the reader, into the grit");
+                h.assertTrue(is(l,chair,TraceBlock.Kind.GRIT)&&stage(l,chair)==TraceBlock.DRAGGED,"the grit where it stood is scored");
+                // Many dependable returns; then, leaving with nobody there and nobody looking, a second set of prints beside the reader's.
+                for(int i=0;i<TraceRooms.MANY;i++)TraceRooms.arrived(p,place);
+                h.assertTrue(TraceRooms.returns(f.data(),p.getUUID())>=TraceRooms.MANY,"each return found the prints as left");
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+3.5,0,0);
+                TraceRooms.always=true;TraceRooms.departed(l,p,place);TraceRooms.always=false;
+                h.assertTrue(is(l,b.offset(1,0,-8),TraceBlock.Kind.GRIT)&&stage(l,b.offset(1,0,-8))==TraceBlock.OTHER,"a second set of prints beside the reader's own");
+                h.assertTrue(TraceRooms.added(f.data(),p.getUUID(),place)&&stage(l,b.offset(0,0,-8))==TraceBlock.PRINTS,"once, and the reader's own prints as they were");
             })
             .thenSucceed();
     }
