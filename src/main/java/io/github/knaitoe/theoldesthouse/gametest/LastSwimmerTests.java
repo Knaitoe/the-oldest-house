@@ -70,4 +70,41 @@ public final class LastSwimmerTests {
             .thenSucceed();
     }
     @AfterBatch(batch="swim_close") public static void closeDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.233: the closing played against "Falling Out the Sky" on the radio (no lyric anywhere): the radio's clock through the song's
+     * parts; in the second spoken part the lights waver; when the last verse begins the swimmer holds a breath and nothing is heard;
+     * stars on the water go out as the cover reaches them; the crank only turns one way; and under the water at the deep end, voices
+     * the reader can't make out, remembered in the account.
+     */
+    @GameTest(template="empty",batch="swim_radio",timeoutTicks=1200)
+    public static void theClosingIsPlayedAgainstTheSongOnTheRadio(GameTestHelper h){
+        var f=fixture(h);var p=f.player("swim_listener",P);var b=f.base(P);var l=f.level(P);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,new AABB(b.getX()-16,b.getY()-8,b.getZ()-47,b.getX()+16,b.getY()+11,b.getZ()+2)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the pool is resident"))
+            .thenExecute(()->{
+                h.assertTrue(LastSwimmer.part(0)==0&&LastSwimmer.part(LastSwimmer.SONG[LastSwimmer.SECOND_TALK])==LastSwimmer.SECOND_TALK&&LastSwimmer.part(LastSwimmer.SONG[LastSwimmer.LAST_VERSE]+5)==LastSwimmer.LAST_VERSE&&LastSwimmer.part(4400)==5&&LastSwimmer.SONG[5]==4400,"the radio's clock runs through the song's five parts, 3:40 in all");
+                h.assertTrue(LastSwimmer.stars(0)==LastSwimmer.STARS.length&&LastSwimmer.stars(6)>0&&LastSwimmer.stars(6)<LastSwimmer.STARS.length&&LastSwimmer.stars(12)==0,"the stars on the water go out as the cover reaches them");
+                var text=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);var all=text==null?"":String.join(" ",text.pages().stream().map(page->page.raw().getString()).toList());
+                h.assertTrue(all.contains("since last summer"),"the note under the card says since when: "+all);
+                at(f,p,.5,-10.5,180);})
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.tick(b)>5&&swimmers(l,b)==1,"the pool is closing"))
+            .thenExecute(()->{
+                var own=f.own(p,P);at(f,p,.5,-11.5,180);p.setShiftKeyDown(true);
+                h.assertTrue(LastSwimmer.click(p,b,SwimmerSite.REEL_SOUTH,own)&&LastSwimmer.hauls(b)==0,"the crank won't turn back");p.setShiftKeyDown(false);
+                LastSwimmer.hurry(b,LastSwimmer.SONG[LastSwimmer.SECOND_TALK]-(int)(LastSwimmer.tick(b)-1));})
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.part(b)==LastSwimmer.SECOND_TALK,"the radio reaches its second spoken part: "+LastSwimmer.part(b)))
+            .thenExecute(()->LastSwimmer.hurry(b,LastSwimmer.SONG[LastSwimmer.LAST_VERSE]-(int)(LastSwimmer.tick(b)-1)))
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.holding(b),"the last verse: the splashing stops"))
+            .thenExecute(()->{
+                h.assertTrue(f.own(p,P).getBoolean("Breath227"),"the reader in the hall heard it stop");
+                var swimmer=l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-16,-8,-46)).minmax(new AABB(b.offset(16,11,2))),a->a.phase()==LastSwimmer.SWIMMER).stream().findFirst();
+                h.assertTrue(swimmer.isPresent()&&swimmer.get().isInvisible(),"and nothing comes up");
+                // Under the water at the deep end.
+                at(f,p,-6.5,-33.5,0);p.teleportTo(l,p.getX(),b.getY()-4,p.getZ(),0,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Voices227"),"under the water at the deep end, voices: eyes in "+l.getBlockState(BlockPos.containing(p.getEyePosition()))))
+            .thenExecute(()->h.assertTrue(SwimmerTexts.afterwards(p.getGameProfile().getName(),f.own(p,P)).contains("voices down there"),"the account remembers the voices"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="swim_radio") public static void radioDone(ServerLevel l){close();}
 }
