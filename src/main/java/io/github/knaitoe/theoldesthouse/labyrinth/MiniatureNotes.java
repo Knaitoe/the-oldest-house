@@ -189,6 +189,7 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.WHISTLERS, "A lookout tower on matchstick legs, its glass room no bigger than a thumbnail, three blinds drawn and the fourth not."),
         Map.entry(LabyrinthPlace.OWN_LIGHT, "Two matchboxes laid side by side with a playing card standing on edge down the middle, a spent match in one and a whole one in the other, both pointing the same way."),
         Map.entry(LabyrinthPlace.POLYBIUS, "An arcade cabinet the size of a matchbox, painted black all over, with a screen no bigger than a fingernail and nothing written on it anywhere."),
+        Map.entry(LabyrinthPlace.REPLACEMENT, "A street of matchbox houses with their windows taped over, all but one, and on that one's door a collar no bigger than a ring."),
         Map.entry(LabyrinthPlace.LINE, "A cigar box painted black inside, a single cotton thread running from a pin at the lid across the dark to a rucksack the size of a pea."),
         Map.entry(LabyrinthPlace.STILLNESS, "A long, low matchbox with the striking strips for walls, empty but for a ring of cloven prints pressed into the wax around a pinhead."),
         Map.entry(LabyrinthPlace.STOREROOM, "A spice drawer lined with tinfoil shelves, a bead of black ink on the lowest, and a paper tag no bigger than a fingernail with your name on it."),

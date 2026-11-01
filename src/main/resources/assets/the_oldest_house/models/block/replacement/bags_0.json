@@ -1,0 +1,74 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/replacement/bags",
+    "particle": "the_oldest_house:block/replacement/bags"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        9,
+        9,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#b"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        0,
+        6
+      ],
+      "to": [
+        15,
+        7,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#b"
+        }
+      }
+    }
+  ]
+}

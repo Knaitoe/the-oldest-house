@@ -63,6 +63,8 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.ELK_FAN&&!personal(d,p,LabyrinthPlace.ELK_LOT).getBoolean("Ready"))return false;
         // 0.4.207: the deeper passages only open for a reader who has already retraced Ted the Caver's squeeze.
         if(place==LabyrinthPlace.PITT&&!WitnessAccount.has(d,p,WitnessAccount.Story.TED_CAVER))return false;
+        // 0.4.218: the street is dealt only to a reader who has a companion following them.
+        if(place==LabyrinthPlace.REPLACEMENT&&!Replacement.hasCompanion(d,p))return false;
         // 0.4.209: the dark halls' horrors are dealt only in the dark band.
         if(DarkHalls.horror(place)&&d.returnDepth(p)<DarkHalls.DARK_DEPTH)return false;
         if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)return d.isReady("literary_copy_"+p+"_"+place.id())&&!personal(d,p,place).getBoolean("Completed");
@@ -102,6 +104,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.LINE){Line.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.OWN_LIGHT){OwnLight.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.POLYBIUS){Polybius.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
+        if(place==LabyrinthPlace.REPLACEMENT){Replacement.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
     }
     public static ItemStack mark(ServerPlayer p,LabyrinthPlace place,String key,ItemStack item){var s=VignetteYields.mark(item.copy(),place.id());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(OWNER,p.getUUID());t.putString(KEY,key);t.putString(PLACE,place.id());});if(place==LabyrinthPlace.BORRASCA&&key.equals("Evidence"))BorrascaStory.markEvidence(p,s);Keepsakes.inscribe(s,place,key);return s;}
     public static void give(ServerPlayer p,ItemStack s){if(p.getInventory().add(s))return;var e=new ItemEntity(p.serverLevel(),p.getX(),p.getY()+.2,p.getZ(),s);e.setTarget(p.getUUID());p.serverLevel().addFreshEntity(e);}
@@ -155,6 +158,8 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.LINE&&rel.equals(LineSite.TAG)&&own.getBoolean("Read_Source")){handled=Line.click(p,b,rel,own);}
         else if(place==LabyrinthPlace.STOREROOM&&rel.equals(StoreroomSite.LIST)){open(p,place,own,"Source",Storeroom.list(p,own),e.getPos());handled=true;}
         else if(place==LabyrinthPlace.CLOSING_HALL&&rel.equals(ClosingHallSite.DRAWING)){open(p,place,own,"Source",ClosingHallTexts.source(),e.getPos());ClosingHall.drawing(p,b);handled=true;}
+        // 0.4.218: the newest poster on the pole is in the reader's own hand, for their own companion.
+        else if(place==LabyrinthPlace.REPLACEMENT&&rel.equals(ReplacementSite.POSTER)){open(p,place,own,"Source",ReplacementTexts.source(p.getGameProfile().getName(),own),e.getPos());handled=true;}
         else if(place==LabyrinthPlace.WORK_PRINT&&rel.equals(WorkPrintShop.CARD)){open(p,place,own,"Source",WorkPrintTexts.source(p.getGameProfile().getName()),e.getPos());handled=true;}
         // 0.4.204: the balloon tag on the porch rail has the reader's own name on it, in the child's hand.
         else if(place==LabyrinthPlace.POLAROID_TRAIL&&rel.equals(PolaroidSite.TAG1)){open(p,place,own,"Source",PolaroidTexts.tag(1,p.getGameProfile().getName()),e.getPos());handled=true;}
@@ -181,6 +186,7 @@ public final class LiteraryVignettes {
             case LINE->handled=Line.click(p,b,rel,own);
             case OWN_LIGHT->handled=OwnLight.click(p,b,rel,own);
             case POLYBIUS->handled=Polybius.click(p,b,rel,own);
+            case REPLACEMENT->handled=Replacement.click(p,b,rel,own);
             case CAMP_BLOOD->handled=CampSession.click(p,b,rel,own);
             case ELK_FAN->handled=ElkFanSequence.click(p,b,rel,own);
             case LAKE_HOUSE->handled=LakeHouse.click(p,b,rel,own);case BORRASCA->handled=BorrascaStory.click(p,b,rel,own);
@@ -319,7 +325,7 @@ public final class LiteraryVignettes {
         else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
     }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();ClosingHall.clearAll();Storeroom.clearAll();Stillness.clearAll();Line.clearAll();OwnLight.clearAll();Polybius.clearAll();}
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();ClosingHall.clearAll();Storeroom.clearAll();Stillness.clearAll();Line.clearAll();OwnLight.clearAll();Polybius.clearAll();Replacement.clearAll();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);HolyRabbit.release(p);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}

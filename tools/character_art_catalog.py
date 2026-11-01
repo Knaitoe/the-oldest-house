@@ -59,7 +59,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -80,4 +80,6 @@ def entries():
     # Polybius (0.4.217): the two men by the black cabinet on stranger phases forty-one and forty-two.
     for i,name in enumerate(POLYBIUS):
         rows.append({'name':'literary_polybius_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':41+i})
+    # The replacement (0.4.218) on stranger phase forty-three.
+    rows.append({'name':'literary_replacement','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':43})
     return rows
