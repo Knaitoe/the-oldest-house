@@ -99,12 +99,16 @@ public final class HouseReadKitchen {
     }
     /** The faces the pencil draws, in the order it draws them, 1 to 5 (0, no face yet). */
     public static final List<String> FACES=List.of("smiling","sad","scared","cross","plain");
-    /** Each face's pencil marks on the page, as column and row, within the head's six by three middle. */
+    /**
+     * Each face's pencil marks on the page, as column and row, within the head. 0.4.224 (owner: "can you try adjusting eye shape
+     * for faces drawn too?"): the eyes change with the face as well as the mouth: smiling and plain keep their dots, sad eyes
+     * droop down and out toward the tear, scared eyes are drawn tall, and cross eyes slant down toward the nose over a flat mouth.
+     */
     public static final int[][][] FACE_MARKS={
         {{6,4},{9,4},{5,5},{10,5},{6,6},{7,6},{8,6},{9,6}},
-        {{6,4},{9,4},{7,5},{8,5},{6,6},{9,6}},
-        {{6,4},{9,4},{7,5},{8,5},{7,6},{8,6}},
-        {{5,4},{6,4},{9,4},{10,4},{6,5},{9,5},{6,6},{7,6},{8,6},{9,6}},
+        {{6,3},{5,4},{9,3},{10,4},{7,5},{8,5},{6,6},{9,6}},
+        {{6,3},{6,4},{9,3},{9,4},{7,5},{8,5},{7,6},{8,6}},
+        {{5,3},{6,4},{10,3},{9,4},{6,6},{7,6},{8,6},{9,6}},
         {{6,4},{9,4},{7,6},{8,6}}};
     /** The sad face's tear, in the blue crayon's colour. */
     public static final int[] TEAR={5,5};
@@ -305,7 +309,7 @@ public final class HouseReadKitchen {
         var t=visit(p);t.putBoolean("NoteArmed",true);save(p,t);
     }
     /** How a face reads in the room's words. */
-    public static String face(int mood){return switch(mood){case 1->"smiling";case 2->"sad, with a tear";case 3->"scared";case 4->"cross";case 5->"with a straight mouth";default->"";};}
+    public static String face(int mood){return switch(mood){case 1->"smiling";case 2->"sad, with a tear";case 3->"scared, with wide eyes";case 4->"cross, with narrowed eyes";case 5->"with a straight mouth";default->"";};}
     /**
      * The read. The first face in a colour a person could be sets {@code TONE} tentatively; hands in the same crayon settle it;
      * a face coloured again in another tone, or hands in another, disagree, and the next decides. A face in blue or green is

@@ -91,6 +91,21 @@ manor's five family portraits are repainted with it and look straight out of the
 recorded again in `art/inventory/manor_portraits_04223.json`. Portraits taken in the House are painted the same way, and one
 from a vanilla-size skin no longer doubles a column right of centre (its eyes are centred).
 
+## The drawn faces' eyes
+
+The owner, after the portraits: "Can you try adjusting eye shape for faces drawn too?" The five faces the pencil draws at the
+kitchen table changed only the mouth (with brows for cross and a tear for sad). Now the eyes change too.
+
+- **On the drawing** (`HouseReadKitchen.FACE_MARKS`): smiling and plain keep their dots; sad eyes droop down and out toward the
+  tear; scared eyes are drawn tall; cross eyes slant down toward the nose, over a flat mouth.
+- **On the House's body** (`HouseBodyClient.eyes`, at the body's sixteen-to-the-face detail, mirrored for the right eye), and so
+  in mirrors and in the portraits the House takes: smiling, the eyes closed and curved up; sad, the brow raised in the middle,
+  the outer lid drooping, looking down; scared, wide open under a raised brow, a small pupil with white all round; cross, the
+  brow pressed down toward the nose and the lid half over the eye. Plain is as painted. It only changes eyes that are the
+  House's own (white either side of a dark pupil, nothing worn over them); a reader's own skin keeps its eyes.
+- **In words:** the cue and the House's account say "scared, with wide eyes" and "cross, with narrowed eyes" (sad was already
+  "sad, with a tear").
+
 ## Not changed
 
 The black cabinet, the men, the walk and the account; the three games and their tables; the prize shelf; the Witness pool. No new
