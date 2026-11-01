@@ -20,7 +20,9 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.216**: a beat late. After your own light's double has gone home before you, your friends will now and then see you a beat behind yourself, where you were a moment ago, turned the way you were turned, until you sleep through a night. You won't see it yourself. See [docs/OWN_LIGHT_0_4_213.md](docs/OWN_LIGHT_0_4_213.md#a-beat-late-04216).
+Development candidate **0.4.217**: Polybius. An arcade at the end of a strip mall, 1981, free play tonight. Three real games (a moth round a porch lamp, a swimmer under a black lake, a needle on a radio dial), and their high-score tables are the whole server's: beat your friends. At the back stands a black cabinet with no maker's name, and two men in suits who write down how you do. Three plays is enough. It will ask for a fourth. A new survival story: 68 sources, 51 required. See [docs/POLYBIUS_0_4_217.md](docs/POLYBIUS_0_4_217.md).
+
+Candidate **0.4.216**: a beat late. After your own light's double has gone home before you, your friends will now and then see you a beat behind yourself, where you were a moment ago, turned the way you were turned, until you sleep through a night. You won't see it yourself. See [docs/OWN_LIGHT_0_4_213.md](docs/OWN_LIGHT_0_4_213.md#a-beat-late-04216).
 
 Candidate **0.4.215**: the household's last rooms. Four more doors on the great staircase: a drive home in the passenger seat with the bread between your knees, washing to get in before the rain, a lay-by in the drizzle with somebody asleep in the car, and, near the bottom, the landing where the household made its camp. Count their cups, cut the last candle and read their morning list. Your own name is at the bottom of it, in your handwriting. Put the camp back in order and the household moves on: a new understanding story, 67 sources, 51 required. See [docs/STAIRCASE_HOUSEHOLD_0_4_215.md](docs/STAIRCASE_HOUSEHOLD_0_4_215.md).
 

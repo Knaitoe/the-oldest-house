@@ -111,6 +111,9 @@ final class CoopAccounts {
         // 0.4.211: one sound drew it to all of them; a noise could draw it off a friend.
         // 0.4.212: one held the line at the door while another followed it; two pulls was a warning.
         // 0.4.213: each reader's double is theirs alone; a peer sees an empty branch.
+        // 0.4.217: every table is the whole server's; the black cabinet's men are each reader's own.
+        together(POLYBIUS,party("%s {was} at the next machine. Our names went up the same table, a place apart. Neither of us could see the men by the other one.",
+            "%s {was} still playing when I walked out."));
         together(OWN_LIGHT,party("%s {was} at the fork with me. When I said there was someone in the other branch, they looked, and said there wasn't.",
             "%s {was} still in the dark behind me when I reached the far room."));
         together(LINE,party("%s {was} on the line with me in the dark. When it pulled from behind, we both felt it, and neither of us let go first.",

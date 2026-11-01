@@ -1,3 +1,5 @@
+November 1 candidate 0.4.217, Polybius: one new Witness source, polybius (survival, walked_away), 68 sources / 51 required; source, account, Witness line, House of Leaves place, co-op lines, miniature and advancement all added; success and failure both per reader; the tables are server-wide by design. Tests: PolybiusTests (four), WitnessPool, ArchitectureTests (carpet, notice, black cabinet).
+
 November 1 candidate 0.4.216, a beat late: no new source; the cost belongs to your own light and is presentation only (protocol 115). Tests: OwnLightTests (the turn case).
 
 November 1 candidate 0.4.215, the household's last rooms: one new Witness source, household (understanding, resolved by putting the last landing's camp in order), 67 sources / 51 required; the Witness line, House of Leaves place and advancement are added; the landing needs three household rooms first and is offered once per reader. Tests: StaircaseLeakTests (one new case), WitnessPool, the dealer cases' PITT fixture.
