@@ -88,7 +88,7 @@ public final class LastSwimmerTests {
                 var text=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);var all=text==null?"":String.join(" ",text.pages().stream().map(page->page.raw().getString()).toList());
                 h.assertTrue(all.contains("since last summer"),"the note under the card says since when: "+all);
                 at(f,p,.5,-10.5,180);})
-            .thenWaitUntil(()->h.assertTrue(LastSwimmer.tick(b)>5&&swimmers(l,b)==1,"the pool is closing"))
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.tick(b)>5&&swimmers(l,b)==1,"the pool is closing: tick "+LastSwimmer.tick(b)+", swimmers "+swimmers(l,b)+", current "+LiteraryVignettes.current(p)+", at "+p.position()))
             .thenExecute(()->{
                 var own=f.own(p,P);at(f,p,.5,-11.5,180);p.setShiftKeyDown(true);
                 h.assertTrue(LastSwimmer.click(p,b,SwimmerSite.REEL_SOUTH,own)&&LastSwimmer.hauls(b)==0,"the crank won't turn back");p.setShiftKeyDown(false);
