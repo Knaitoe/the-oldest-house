@@ -1,10 +1,10 @@
 {
-  "note": "0.4.223, the owner: \"improve the paintings here, bring them in line with the character-captured portraits\". The manor's five family portraits, repainted by tools/draw_manor_portraits.py through the captured portraits' bust. They supersede only their own 0.4.100 hashes.",
+  "note": "0.4.223, the owner: \"improve the paintings here, bring them in line with the character-captured portraits\". The manor's five family portraits, repainted by tools/draw_manor_portraits.py through the captured portraits' bust. They supersede only their own 0.4.100 hashes. 0.4.224: repainted again with the bust's mirror-symmetric face columns and level irises, so both eyes come through whole.",
   "repainted": [
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/painting/will_portrait.png",
       "review_04100_sha256": "0ac553e5678a52899c261a2b738412ea1abc1dd8948510534a4e2db84c3247cc",
-      "sha256": "18a13f8ff87c695d07ed973d898d2c52bfa754068086d7b69d38ea0b264b4b8a",
+      "sha256": "ce3ae6c675242891fa6bc11ff6396b28b2f91cd7e2ef4e28711bb37bb2bc04e2",
       "size": [
         16,
         32
@@ -14,7 +14,7 @@
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/painting/karen_portrait.png",
       "review_04100_sha256": "b719d6c43182500fdb4d4213dde12f7ef4ffec75f0a957ad602b77a11edc533c",
-      "sha256": "3d9e7d565c3ecfb46bbfaa672742d4ac997ed4832f7cbe8a69cc9f96b4c3e458",
+      "sha256": "c73ffcea204031d6d3d1c1a01713c534087415fd5a5ed8c88177c5cd4510587d",
       "size": [
         16,
         32
@@ -24,7 +24,7 @@
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/painting/child_portrait.png",
       "review_04100_sha256": "711952b7e5b01e19c072464e95ecbfba832f6f0e03d2401ba158ebbd161c5090",
-      "sha256": "1f081edb7f8da206dfec60a33019d1f7ba1e6346cc64558d7e4ba2f76a1d15fc",
+      "sha256": "9ae34178c477ddbaa40e930d19cbf5c7496b1424cdf38cc5eb871fc5e00ba2e1",
       "size": [
         16,
         32
@@ -34,7 +34,7 @@
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/painting/old_man_portrait.png",
       "review_04100_sha256": "429e0f15eb07a6a0f3272a1699a391b4bb3923fe5acb91b16f2f3d344e2a00ea",
-      "sha256": "76b2156c2803282d67ed889ff1f0f895917224baecc6d0a8e0d53a11f83f3dc8",
+      "sha256": "82dfb86d63c2595b4199257f1733653919bd8e49fa31169cb8beb275e796de10",
       "size": [
         16,
         32
@@ -44,7 +44,7 @@
     {
       "path": "src/main/resources/assets/the_oldest_house/textures/painting/unknown_woman_portrait.png",
       "review_04100_sha256": "9bf7ba58a8df88a460c070ac71a8b233ebb4b2ef48eaf57ad26a3a98d95df3f8",
-      "sha256": "50b8986aba0708965804816e0d2dca3f74ddf850b3360a095eacfdcddb9a6250",
+      "sha256": "bed29f7faac6768879d68fc1d89510d7c1c2582801f97ab534150c1df131f4d9",
       "size": [
         16,
         32

@@ -17,6 +17,15 @@ public final class PortraitPainter {
         static final Overlay NONE = new Overlay(null, false, false, null, null);
     }
 
+    /**
+     * 0.4.224 (owner: "do you not see the eyes of the portraits"): which of the face's columns and rows the head's ten columns and
+     * twelve rows show. A sixteen-wide face squeezed into ten by skipping every few columns lost one iris and kept the other, so
+     * every portrait looked lopsided; and an eight-wide face doubled a column right of centre. These are mirror-symmetric, and the
+     * sixteen-wide ones keep both eyes whole (white, iris, white), the nose between them and the cheeks.
+     */
+    static final int[] COLS1 = {0, 0, 1, 2, 3, 4, 5, 6, 7, 7}, ROWS1 = {0, 0, 1, 2, 2, 3, 4, 4, 5, 6, 6, 7},
+            COLS2 = {1, 3, 4, 5, 7, 8, 10, 11, 12, 14}, ROWS2 = {1, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14};
+
     public static NativeImage paint(NativeImage skin, NativeImage family) { return paint(skin, family, Overlay.NONE); }
 
     public static NativeImage paint(NativeImage skin, NativeImage family, Overlay overlay) {
@@ -43,7 +52,7 @@ public final class PortraitPainter {
                 colour = pigment(colour, x, y, false);
             }
             if (x >= 3 && x <= 12 && y >= 5 && y <= 16) {
-                int u = (x - 3) * 8 * d / 10, v = (y - 5) * 8 * d / 12;
+                int u = (d == 2 ? COLS2 : COLS1)[x - 3], v = (d == 2 ? ROWS2 : ROWS1)[y - 5];
                 int face = over(skin.getPixelRGBA(8 * s + u * step, 8 * s + v * step), skin.getPixelRGBA(40 * s + u * step, 8 * s + v * step));
                 // The reading glasses sit on the eyes' rows; the obscured face is veiled whole.
                 int fu = u / d, fv = v / d;
