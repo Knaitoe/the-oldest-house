@@ -95,7 +95,7 @@ Then the reader's own words:
 
 - **Witness line (understanding):** "It wasn't mine. Something wore my companion's noises at my heels down a street of boarded houses,
   and I found mine shut in a crate in the one house that was open, among the ones that weren't so lucky, and I brought mine home."
-- **House of Leaves place:** "the street where every house was boarded but one". The account's title is "The account: the street".
+- **House of Leaves place:** "the street where one house stood open". The account's title is "The account: the street".
 - **Co-op lines:** "on the street with me. Neither of us said anything about what was following the other." / "still on the street
   when I came out of the open house with mine."
 - **Miniature:** matchbox houses with their windows taped over, all but one, with a collar no bigger than a ring on its door.
