@@ -73,7 +73,7 @@ public final class Wedges {
     }
     /** House doors a wedge may hold: the entry of an ordinary hall, a quiet room or a puzzle room, the same room for everyone. */
     public static boolean holdsIn(LabyrinthPlace place){
-        return !place.isVignette()&&!SceneInstances.copyable(place)&&(LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place)||PuzzleRooms.is(place));
+        return !place.isVignette()&&!SceneInstances.copyable(place)&&(LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place)||PuzzleRooms.is(place)||place==LabyrinthPlace.FAMILIAR_KITCHEN);
     }
 
     // ------------------------------------------------------------------ hands

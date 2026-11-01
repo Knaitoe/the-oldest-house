@@ -124,6 +124,8 @@ Done; see `docs/TRACES_0_4_231.md`.
 
 ## 7. The familiar room (0.4.232)
 
+Done; see `docs/FAMILIAR_ROOM_0_4_232.md`.
+
 A modest kitchen that comes back through different approaches.
 
 - Its contents persist: supplies left, chairs arranged. Its ordinary sounds (the fridge, the clock, the tap) are its own, and can be

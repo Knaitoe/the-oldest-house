@@ -59,7 +59,7 @@ public final class DoorSounds {
     /** The rooms that carry, and what they carry. A room not here is silent through its door. */
     private static final Map<LabyrinthPlace,Carry> CARRIES=new EnumMap<>(LabyrinthPlace.class);
     static{
-        for(var p:List.of(LabyrinthPlace.WINCHESTER,LabyrinthPlace.MASQUE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.CONFESSION,LabyrinthPlace.USHER,LabyrinthPlace.WHALE,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.READ_WAITING,LabyrinthPlace.READ_KITCHEN))CARRIES.put(p,Carry.CLOCK);
+        for(var p:List.of(LabyrinthPlace.WINCHESTER,LabyrinthPlace.MASQUE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.CONFESSION,LabyrinthPlace.USHER,LabyrinthPlace.WHALE,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.READ_WAITING,LabyrinthPlace.READ_KITCHEN,LabyrinthPlace.FAMILIAR_KITCHEN))CARRIES.put(p,Carry.CLOCK);
         for(var p:List.of(LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.FLOODED_PASSAGE,LabyrinthPlace.BARN_WELL,LabyrinthPlace.SHALLOWS,LabyrinthPlace.DROWNED_TOWN,LabyrinthPlace.BENT_CISTERN,LabyrinthPlace.READ_BATHROOM))CARRIES.put(p,Carry.WATER);
         for(var p:List.of(LabyrinthPlace.NIGHTCLUB,LabyrinthPlace.POLYBIUS,LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.ELK_LOT,LabyrinthPlace.DEAD_AIR))CARRIES.put(p,Carry.MUSIC);
         for(var p:List.of(LabyrinthPlace.HOTEL,LabyrinthPlace.GOATMAN,LabyrinthPlace.SEANCE,LabyrinthPlace.GHOSTS_SET,LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.VACANT_POSSESSION))CARRIES.put(p,Carry.VOICES);
