@@ -224,6 +224,7 @@ public final class StaircaseProse {
     static { PLACES.put("stillness","the low hall where it breathed on me"); }
     static { PLACES.put("line","the dark with the line through it"); }
     static { PLACES.put("own_light","the fork where my light went on without me"); }
+    static { PLACES.put("household","the landing where the household left its camp"); }
     static {
         String[][] names = {
             {"junction","the junction"},{"gray_corridor","the gray corridor"},{"floorboards","the room of loose boards"},

@@ -45,6 +45,10 @@ public final class StaircaseHousehold {
             case 15,27,33,45->StaircaseLeakRooms.Kind.BEDROOM;
             case 4,18,30,42,47->StaircaseLeakRooms.Kind.MENDING;
             case 3,7,14,29,38->StaircaseLeakRooms.Kind.DAWN;
+            case 2,10,13,43,46->StaircaseLeakRooms.Kind.DRIVE;
+            case 5,21,36,39->StaircaseLeakRooms.Kind.YARD;
+            case 19,22,28,37->StaircaseLeakRooms.Kind.LAYBY;
+            case 48,52->StaircaseLeakRooms.Kind.LANDING;
             default->null;
         };
     }
@@ -61,6 +65,10 @@ public final class StaircaseHousehold {
         if(FinaleProgress.phase(p.server,p.getUUID())!=FinaleProgress.Phase.STAIRCASE||p.getY()<FinaleArchitecture.ARENA)return false;
         int s=stretch(p);if(s<=0||s>=STRETCHES-1)return false;var marks=own(p).getCompound("Marks");
         return !marks.contains(Integer.toString(s))&&!marks.contains(Integer.toString(s-1));
+    }
+    /** The household's last landing: in the bottom stretch, once three of its rooms have been entered, until it has moved on. */
+    public static boolean landingAllowed(ServerPlayer p){
+        return FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.STAIRCASE&&p.getY()>=FinaleArchitecture.ARENA&&stretch(p)==STRETCHES-1&&rooms(p)>=3&&!own(p).getBoolean("MovedOn");
     }
     /** Something happened in this stretch: a leak opened, or a door was left. */
     public static void mark(ServerPlayer p,String what){var own=own(p);var marks=own.getCompound("Marks");marks.putString(Integer.toString(stretch(p)),what);own.put("Marks",marks);save(p,own);}
@@ -96,7 +104,7 @@ public final class StaircaseHousehold {
 
     /** A household sheet read to its last line on the stairs (StaircaseLeaks.offer). */
     static void read(ServerPlayer p,BlockPos paper,int index){
-        var room=room(index);var origin=HouseSavedData.get(p.server).houseOrigin();if(room==null||origin==null||!allows(p))return;
+        var room=room(index);var origin=HouseSavedData.get(p.server).houseOrigin();if(room==null||origin==null||!(room==StaircaseLeakRooms.Kind.LANDING?landingAllowed(p):allows(p)))return;
         if(StaircaseLeaks.done(p,index))return;
         var data=LabyrinthData.get(p.server);var door=doorAt(origin,paper);var record=data.stateEntry(DOORS,key(door));var level=p.serverLevel();
         if(record.isEmpty()){
@@ -140,17 +148,20 @@ public final class StaircaseHousehold {
         var kind=StaircaseLeakRooms.Kind.values()[session.getInt("Kind")];var chore=session.getCompound("Chore");
         if(forced&&!chore.contains("Result"))return;
         String result=chore.contains("Result")?chore.getString("Result"):"failure";
+        if(!chore.contains("Result"))StaircaseLeaks.caption(p,StaircaseHouseholdTexts.walkedOut(kind));
         var own=own(p);var rooms=own.getCompound("Rooms");var room=rooms.getCompound(kind.name());room.putInt("Tries",room.getInt("Tries")+1);room.putString("Last",result);if(result.equals("success"))room.putBoolean("Success",true);
         for(var k:chore.getAllKeys())if(k.startsWith("Tally"))room.putBoolean(k,true);
         rooms.put(kind.name(),room);own.put("Rooms",rooms);
         var accounts=own.getCompound("Accounts");accounts.putString(Long.toString(session.getLong("Paper")),StaircaseHouseholdTexts.account(kind,result,p.getGameProfile().getName(),chore));own.put("Accounts",accounts);save(p,own);
+        // The last landing put in order: the household moves on, and its story resolves.
+        if(kind==StaircaseLeakRooms.Kind.LANDING&&result.equals("success")){var o=own(p);o.putBoolean("MovedOn",true);save(p,o);WitnessAccount.resolve(p,WitnessAccount.Story.HOUSEHOLD,"moved_on");}
         if(session.contains("Door")){var data=LabyrinthData.get(p.server);String k=Long.toString(session.getLong("Door"));var record=data.stateEntry(DOORS,k);if(!record.isEmpty()){var used=record.getCompound("Used");used.putBoolean(p.getUUID().toString(),true);record.put("Used",used);data.setStateEntry(DOORS,k,record);}}
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"household_room","room",kind.name(),"result",result);
     }
     /** A leak's room closed: it counts in the household's rooms, as a door's vignette does. */
     static void leakReturned(ServerPlayer p,int index,boolean finished){var own=own(p);var leaks=own.getCompound("Leaks");if(!leaks.getBoolean(Integer.toString(index)+"Finished"))leaks.putBoolean(Integer.toString(index)+"Finished",finished);leaks.putBoolean(Integer.toString(index),true);own.put("Leaks",leaks);save(p,own);}
     /** How many of the household's rooms this reader has been in: leaks and doors' vignettes, whatever came of them. */
-    public static int rooms(ServerPlayer p){var own=own(p);int n=0;for(var k:own.getCompound("Leaks").getAllKeys())if(!k.endsWith("Finished"))n++;return n+own.getCompound("Rooms").size();}
+    public static int rooms(ServerPlayer p){var own=own(p);int n=0;for(var k:own.getCompound("Leaks").getAllKeys())if(!k.endsWith("Finished"))n++;var rooms=own.getCompound("Rooms");return n+rooms.size()-(rooms.contains("LANDING")?1:0);}
     /** The household's note about the reader, for the sheet that opened its room: shown after the sheet's own words. */
     public static ItemStack withAccount(ServerPlayer p,BlockPos paper,ItemStack book){
         String text=own(p).getCompound("Accounts").getString(Long.toString(paper.asLong()));if(text.isEmpty())return book;

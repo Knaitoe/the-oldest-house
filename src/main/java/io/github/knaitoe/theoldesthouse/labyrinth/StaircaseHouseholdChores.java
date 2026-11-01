@@ -44,6 +44,10 @@ public final class StaircaseHouseholdChores {
             case BEDROOM->bedroom(p,b,at,state,own);
             case MENDING->mending(p,b,at,state,own);
             case DAWN->dawn(p,b,at,state,own);
+            case DRIVE->drive(p,b,at,state,own);
+            case YARD->yard(p,b,at,state,own);
+            case LAYBY->layby(p,b,at,state,own);
+            case LANDING->landing(p,b,at,state,own);
             default->false;
         };
         StaircaseLeaks.progress(p,own);return done;
@@ -54,9 +58,206 @@ public final class StaircaseHouseholdChores {
             case BEDROOM->bedroomTick(p,b,elapsed);
             case MENDING->mendingTick(p,b,elapsed);
             case DAWN->dawnTick(p,b,elapsed);
+            case DRIVE->driveTick(p,b,elapsed);
+            case YARD->yardTick(p,b,elapsed);
+            case LAYBY->laybyTick(p,b,elapsed);
+            case LANDING->landingTick(p,b,elapsed);
             default->{}
         }
     }
+    // ------------------------------------------------------------------------------------------------ The long way home
+    private static void stage(ServerPlayer p,CompoundTag own,int stage,String line){own.putInt("Stage",stage);own.putLong("StageAt",p.serverLevel().getGameTime());if(line!=null)StaircaseLeaks.caption(p,line);}
+    private static boolean drive(ServerPlayer p,BlockPos b,BlockPos at,BlockState state,CompoundTag own){
+        if(own.contains("Result"))return true;var k=kindAt(state);if(k==null)return false;int stage=own.getInt("Stage");
+        switch(k){
+            case RADIO->{
+                if(stage<1){cue(p,"The radio, low.");break;}
+                set(p,at,RADIO_OFF);own.putBoolean("RadioOff",true);cue(p,"Mara: \"That house used to have the pear tree. Its roots were lifting the pavement.\"");
+                if(stage==1)stage(p,own,1,null);
+            }
+            case RADIO_OFF->cue(p,"Quiet, but for the engine.");
+            case WINDSCREEN_FOGGED->{
+                if(stage!=2){cue(p,"Fogged a little at the edges.");break;}
+                set(p,at,WINDSCREEN_WIPED);own.putBoolean("Wiped",true);cue(p,"You wipe a clear patch with your sleeve. Beyond it, a boy is teaching his little sister to wait for the green man.");
+            }
+            case WINDSCREEN_WIPED->cue(p,"A clear patch, already misting at its edges.");
+            case ROAD_MAP->{
+                if(stage!=5){cue(p,"A road map, folded open at the wrong page.");break;}
+                own.putBoolean("Checked",true);cue(p,"You check the map. \"Not this one. The next.\"");stage(p,own,7,null);
+            }
+            case HANDBRAKE_DOWN,HANDBRAKE_UP->{
+                if(stage!=7||p.serverLevel().getGameTime()-own.getLong("StageAt")<20){blocked(p,at,"Not while you're moving.");break;}
+                int pulls=own.getInt("Pulls")+1;own.putInt("Pulls",pulls);set(p,at,HANDBRAKE_UP);p.playNotifySound(SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.4F,.7F);
+                if(pulls==1)cue(p,"The handbrake.");
+                else{own.putBoolean("TallyHome",true);finish(p,own,true,"Up again, to be certain. You sit a little longer. Rain runs down the windscreen in pairs that become one line.",120);}
+            }
+            case BREAD_BAG->cue(p,"The bread between your knees. It taps the door at every turn.");
+            case CAR_WHEEL->cue(p,"The wheel turns by itself, a little, with the road.");
+            case BELT->cue(p,"Fastened, across an empty seat.");
+            default->{return false;}
+        }
+        return true;
+    }
+    private static void driveTick(ServerPlayer p,BlockPos b,long elapsed){
+        var own=StaircaseLeaks.progress(p);if(own.contains("Result"))return;int stage=own.getInt("Stage");long t=p.serverLevel().getGameTime()-own.getLong("StageAt");var l=p.serverLevel();
+        boolean moving=stage!=2&&stage!=7&&stage!=6||stage==6&&t<40;
+        // The street going by: a lamp on each side passing from the bonnet to the boot.
+        int last=own.contains("LampZ")?own.getInt("LampZ"):99,lamp=moving?8-(int)(elapsed/2%17):99;
+        if(lamp!=last){for(int side:new int[]{-3,3}){if(last!=99)l.setBlock(b.offset(side,2,last),Blocks.AIR.defaultBlockState(),F);if(lamp!=99&&l.getBlockState(b.offset(side,2,lamp)).isAir())l.setBlock(b.offset(side,2,lamp),Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,13),F);}own.putInt("LampZ",lamp);}
+        if(moving&&elapsed%30==0)p.playNotifySound(SoundEvents.MINECART_RIDING,SoundSource.AMBIENT,.12F,.45F);
+        if(stage==0&&t>=100){stage(p,own,1,"Mara: \"Turn that down a minute.\"");p.playNotifySound(StaircaseLeakRegistry.RADIO.get(),SoundSource.AMBIENT,.5F,1);}
+        else if(stage==1&&own.getBoolean("RadioOff")&&t>=80)stage(p,own,2,"At the lights. The windscreen has fogged up.");
+        else if(stage==2&&own.getBoolean("Wiped")&&t>=80)stage(p,own,3,"The bend by the school. Lean into it.");
+        else if(stage==3||stage==4){
+            // Leaning is turning to look into the bend, to the left: a seated reader cannot crouch without getting out.
+            float yaw=net.minecraft.util.Mth.wrapDegrees(p.getYHeadRot());
+            if(!own.getBoolean("Leant"+stage)&&yaw>45&&yaw<135){own.putBoolean("Leant"+stage,true);StaircaseLeaks.caption(p,stage==3?"Mara: \"That won't help.\"":"You lean again, and she leans with you.");if(stage==4)own.putBoolean("TallyLean",true);}
+            if(t>=70)stage(p,own,stage+1,stage==3?"Another bend.":"The junction. Mara: \"Is this our road?\"");
+        }
+        else if(stage==5&&t>=90){own.putBoolean("Wrong",true);stage(p,own,6,"You say yes, too soon.");}
+        else if(stage==6){
+            if(t==40){StaircaseLeaks.caption(p,"A field gate. Mara reverses, carefully, and stops to look at the sheep. There's plenty of road.");
+                for(int i=0;i<3;i++){var sheep=net.minecraft.world.entity.EntityType.SHEEP.create(l);if(sheep==null)continue;sheep.moveTo(b.getX()-1.5+i*1.5,b.getY(),b.getZ()-6.5,i*60,0);sheep.setNoAi(true);StaircaseLeaks.virtual(sheep);l.addFreshEntity(sheep);}}
+            if(t>=160){for(var e:l.getEntitiesOfClass(net.minecraft.world.entity.animal.Sheep.class,StaircaseLeakRooms.bounds(b)))e.discard();stage(p,own,7,"Home. The engine ticks as it cools.");}
+        }
+        else if(stage==7&&t==1&&!own.getBoolean("Wrong"))StaircaseLeaks.caption(p,"Home. The engine ticks as it cools.");
+        StaircaseLeaks.progress(p,own);
+    }
+
+    // ------------------------------------------------------------------------------------------------ Washing day
+    private static final int RAIN_TIME=500;
+    private static boolean yard(ServerPlayer p,BlockPos b,BlockPos at,BlockState state,CompoundTag own){
+        if(own.contains("Result"))return true;var k=kindAt(state);if(k==null)return false;boolean raining=own.contains("Rain");
+        switch(k){
+            case WET_BASKET->{
+                if(own.getBoolean("Holding")){blocked(p,at,"There's one in your hands already.");break;}
+                int taken=own.getInt("Taken")+1;own.putInt("Taken",taken);own.putBoolean("Holding",true);if(taken>=4)set(p,at,WET_BASKET_EMPTY);cue(p,taken==4?"The last shirt. One sleeve's heavier than the rest.":"A wet shirt from the basket.");
+            }
+            case WET_BASKET_EMPTY,DRY_BASKET->cue(p,raining?"Everything goes in here.":"Empty.");
+            case LINE_EMPTY->{
+                if(!own.getBoolean("Holding")){blocked(p,at,"The washing's in the basket.");break;}
+                set(p,at,LINE_SHIRT);own.putBoolean("Holding",false);int hung=own.getInt("Hung")+1;own.putInt("Hung",hung);
+                cue(p,switch(hung){case 1->"By the shoulders.";case 2->"By the hem, this time.";case 3->"By the shoulders. The wind can settle it.";default->"Four on the line. The wind takes them.";});
+            }
+            case LINE_SHIRT->{
+                if(!raining){cue(p,"Flapping. Drying, slowly.");break;}
+                set(p,at,LINE_EMPTY);int in=own.getInt("In")+1;own.putInt("In",in);set(p,b.offset(StaircaseHouseholdRooms.WASHING),DRY_BASKET);
+                cue(p,in>=4?"All in. One sleeve is still damp.":"In.");
+            }
+            case LINE_SOAKED->cue(p,"Soaked through.");
+            case BLANKET_FOLDED->{
+                if(own.getInt("Hung")<4){blocked(p,at,"The washing first. Then the blanket wants shaking.");break;}
+                set(p,at,BLANKET_ONE_END);own.putLong("Spread",p.serverLevel().getGameTime());cue(p,"You take one end at the back door. It wants two.");
+            }
+            case BLANKET_ONE_END->blocked(p,at,"Wait for the other end.");
+            case BLANKET_SHAKEN->cue(p,"Shaken, and folded over the step.");
+            case CLOTHES_HORSE->{
+                if(own.getInt("In")<4){blocked(p,at,raining?"Get it in first.":"For whatever won't dry outside.");break;}
+                set(p,at,CLOTHES_HORSE_SLEEVE);own.putBoolean("TallyWashing",true);finish(p,own,true,"No rail free, so you fold the damp sleeve over the other one. It stays damp longest.",100);
+            }
+            case CLOTHES_HORSE_SLEEVE->cue(p,"Damp.");
+            default->{return false;}
+        }
+        return true;
+    }
+    private static void yardTick(ServerPlayer p,BlockPos b,long elapsed){
+        var own=StaircaseLeaks.progress(p);if(own.contains("Result"))return;boolean changed=false;var l=p.serverLevel();long now=l.getGameTime();
+        if(own.contains("Spread")){long t=now-own.getLong("Spread");
+            if(t>=30){set(p,b.offset(BLANKET),BLANKET_SHAKEN);own.remove("Spread");own.putLong("Sparrows",now);changed=true;StaircaseLeaks.caption(p,"The other end lifts, and you shake it out together. Crumbs fall into the grass.");p.playNotifySound(SoundEvents.WOOL_HIT,SoundSource.BLOCKS,.5F,.8F);}}
+        if(own.contains("Sparrows")&&!own.contains("Rain")){long t=now-own.getLong("Sparrows");
+            if(t==30){StaircaseLeaks.caption(p,"The sparrows come down for them.");p.playNotifySound(SoundEvents.PARROT_FLY,SoundSource.AMBIENT,.4F,1.6F);}
+            if(t>=100){own.putLong("Rain",now);changed=true;StaircaseLeaks.caption(p,"Rain's coming in over the roofs. Get it all in.");}}
+        if(own.contains("Rain")){long t=now-own.getLong("Rain");
+            if(elapsed%4==0)l.sendParticles(p,net.minecraft.core.particles.ParticleTypes.FALLING_WATER,true,p.getX(),p.getY()+4,p.getZ(),Math.min(60,(int)t/6),5,1,5,0);
+            if(elapsed%40==0)p.playNotifySound(StaircaseLeakRegistry.RAIN.get(),SoundSource.AMBIENT,Math.min(.6F,.1F+t/800F),1);
+            if(own.getInt("In")<4&&t>=RAIN_TIME){for(var at:LINE)if(is(p,b.offset(at),LINE_SHIRT))set(p,b.offset(at),LINE_SOAKED);finish(p,own,false,"The rain gets it. What's left on the line hangs soaked.",100);return;}
+        }
+        if(changed)StaircaseLeaks.progress(p,own);
+    }
+
+    // ------------------------------------------------------------------------------------------------ The lay-by
+    private static boolean layby(ServerPlayer p,BlockPos b,BlockPos at,BlockState state,CompoundTag own){
+        if(own.contains("Result"))return true;
+        if(state.is(StaircaseLeakRegistry.PROP.get())&&state.getValue(StaircaseLeakProps.KIND)==CAR_SEAT){
+            if(!own.getBoolean("Ate")||!own.getBoolean("Folded")||own.getInt("Tractors")<3){blocked(p,at,"Not yet. There's no hurry.");return true;}
+            if(!HouseSitting.sit(p,at)){blocked(p,at,"Closer to the seat.");return true;}
+            if(p.getVehicle()!=null)StaircaseLeaks.virtual(p.getVehicle());own.putBoolean("TallyBell",true);finish(p,own,true,"Back in the car. Bell doesn't stir. The window's still fogged in the shape of his head.",120);return true;
+        }
+        var k=kindAt(state);if(k==null)return false;
+        switch(k){
+            case SANDWICHES->{set(p,at,WRAPPER);own.putBoolean("Ate",true);p.playNotifySound(SoundEvents.GENERIC_EAT,SoundSource.PLAYERS,.4F,1);cue(p,"Egg and cress. You eat yours standing up.");}
+            case WRAPPER->{set(p,at,WRAPPER_FOLDED);own.putBoolean("Folded",true);cue(p,"You fold the wrapping into a small square, the way Mara does.");}
+            case WRAPPER_FOLDED->cue(p,"A small square.");
+            case COFFEES->cue(p,"Too hot to hold. The steam lifts into the drizzle.");
+            case BELL_WINDOW->cue(p,"Bell, asleep against the glass. The window has fogged in the shape of his head.");
+            case CAR_WHEEL->{own.putBoolean("Horn",true);p.playNotifySound(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(),SoundSource.BLOCKS,1F,.8F);finish(p,own,false,"The horn. Bell wakes with a start and asks where you are.",100);}
+            default->{return false;}
+        }
+        return true;
+    }
+    private static void laybyTick(ServerPlayer p,BlockPos b,long elapsed){
+        var own=StaircaseLeaks.progress(p);if(own.contains("Result"))return;var l=p.serverLevel();boolean changed=false;
+        if(elapsed%60==0)l.sendParticles(p,net.minecraft.core.particles.ParticleTypes.FALLING_WATER,true,p.getX(),p.getY()+4,p.getZ(),20,6,1,6,0);
+        // Tractors along the road: a body and a cab, moving the length of the lay-by. Each one looked at as it passes is counted.
+        if(!own.hasUUID("Tractor")&&elapsed>=100&&elapsed%240==100){
+            var body=display(l,Blocks.RED_CONCRETE.defaultBlockState(),2.4F,1.2F,1.3F);var cab=display(l,Blocks.GLASS.defaultBlockState(),1.1F,1.1F,1.1F);
+            if(body!=null&&cab!=null){body.moveTo(b.getX()-11,b.getY()+.3,b.getZ()-13.6);cab.moveTo(b.getX()-11.2,b.getY()+1.5,b.getZ()-13.5);l.addFreshEntity(body);l.addFreshEntity(cab);own.putUUID("Tractor",body.getUUID());own.putUUID("Cab",cab.getUUID());own.putInt("Seen",0);changed=true;
+                p.playNotifySound(SoundEvents.MINECART_RIDING,SoundSource.AMBIENT,.3F,.4F);}
+        }
+        if(own.hasUUID("Tractor")){
+            var body=l.getEntity(own.getUUID("Tractor"));var cab=own.hasUUID("Cab")?l.getEntity(own.getUUID("Cab")):null;
+            if(body==null||body.getX()>b.getX()+11){if(body!=null)body.discard();if(cab!=null)cab.discard();own.remove("Tractor");own.remove("Cab");changed=true;}
+            else{body.moveTo(body.getX()+.18,body.getY(),body.getZ());if(cab!=null)cab.moveTo(cab.getX()+.18,cab.getY(),cab.getZ());
+                if(elapsed%20==0)p.playNotifySound(SoundEvents.MINECART_RIDING,SoundSource.AMBIENT,.2F,.4F);
+                if(!own.getBoolean("Counted")&&looking(p,body.position().add(1.2,.6,.6))){int seen=own.getInt("Seen")+1;own.putInt("Seen",seen);
+                    if(seen>=10){int n=own.getInt("Tractors")+1;own.putInt("Tractors",n);own.putBoolean("Counted",true);StaircaseLeaks.caption(p,n==1?"One tractor.":n==2?"Two.":"Three tractors. You can tell Bell, when he wakes.");}changed=true;}
+            }
+            if(!own.hasUUID("Tractor"))own.remove("Counted");
+        }
+        if(changed)StaircaseLeaks.progress(p,own);
+    }
+    static net.minecraft.world.entity.Display.BlockDisplay display(net.minecraft.server.level.ServerLevel l,BlockState state,float sx,float sy,float sz){
+        var d=net.minecraft.world.entity.EntityType.BLOCK_DISPLAY.create(l);if(d==null)return null;var tag=new CompoundTag();d.saveWithoutId(tag);tag.put("block_state",net.minecraft.nbt.NbtUtils.writeBlockState(state));
+        var t=new CompoundTag();t.put("left_rotation",floats(0,0,0,1));t.put("right_rotation",floats(0,0,0,1));t.put("translation",floats(0,0,0));t.put("scale",floats(sx,sy,sz));tag.put("transformation",t);tag.putInt("teleport_duration",2);
+        d.load(tag);StaircaseLeaks.virtual(d);return d;
+    }
+    private static net.minecraft.nbt.ListTag floats(float... v){var list=new net.minecraft.nbt.ListTag();for(float f:v)list.add(net.minecraft.nbt.FloatTag.valueOf(f));return list;}
+
+    // ------------------------------------------------------------------------------------------------ The last landing
+    private static boolean landing(ServerPlayer p,BlockPos b,BlockPos at,BlockState state,CompoundTag own){
+        if(own.contains("Result"))return true;var k=kindAt(state);if(k==null)return false;
+        // A crouching hand keeps something; the household cannot move on without it.
+        if(p.isShiftKeyDown()&&(k==CAMP_CUPS||k==CAMP_CUPS_COUNTED||k==CAMP_SPOONS||k==CAMP_SPOONS_COUNTED||k==CAMP_TINS||k==CAMP_CANDLE_CUT)){
+            String what=k.name().startsWith("CAMP_CUPS")?"a cup":k.name().startsWith("CAMP_SPOONS")?"a spoon":k==CAMP_TINS?"a tin":"the half candle";
+            own.putString("Kept",what);finish(p,own,false,"You keep "+what+". Nobody says anything. Nobody packs.",100);return true;
+        }
+        switch(k){
+            case CAMP_CUPS->{set(p,at,CAMP_CUPS_COUNTED);own.putBoolean("Cups",true);cue(p,"One, two, three, four. Mara counted them the same.");}
+            case CAMP_SPOONS->{set(p,at,CAMP_SPOONS_COUNTED);own.putBoolean("Spoons",true);cue(p,"The spoons. Four, and the one Ruth found in a coat.");}
+            case CAMP_CUPS_COUNTED,CAMP_SPOONS_COUNTED->cue(p,"Counted.");
+            case CAMP_LAMP->{set(p,at,CAMP_LAMP_LIT);own.putLong("LampLit",p.serverLevel().getGameTime());own.putBoolean("Lamp",true);cue(p,"It lights. It will light again.");}
+            case CAMP_LAMP_LIT->cue(p,"Burning low.");
+            case CAMP_CANDLE->{
+                if(!own.getBoolean("Lamp")){blocked(p,at,"Check the lamp first, in case.");break;}
+                set(p,at,CAMP_CANDLE_CUT);own.putBoolean("Candle",true);cue(p,"You cut the last candle in half with the warm knife. One half for now. The other goes in the tin.");
+            }
+            case CAMP_CANDLE_CUT->cue(p,"Half a candle, and the knife cooling.");
+            case CAMP_TINS->cue(p,"Three tins. Four people. They ate from the lids.");
+            case CAMP_LIST->{own.putBoolean("List",true);StaircaseHouseholdTexts.openList(p);}
+            case CAMP_LINE->cue(p,"Socks along the line, and a space in the middle for Bell's shirt.");
+            case CAMP_COAT->cue(p,"Bell's coat, spread on the seat by the wall for Ruth.");
+            case CAMP_ROLL->cue(p,"The blanket roll, strapped tight.");
+            default->{return false;}
+        }
+        if(own.getBoolean("Cups")&&own.getBoolean("Spoons")&&own.getBoolean("Lamp")&&own.getBoolean("Candle")&&own.getBoolean("List")&&!own.contains("Result"))
+            finish(p,own,true,"Everything back in the same order. You dry the last cup against your sleeve. Nobody calls this delay.",140);
+        return true;
+    }
+    private static void landingTick(ServerPlayer p,BlockPos b,long elapsed){
+        var own=StaircaseLeaks.progress(p);if(!own.contains("LampLit"))return;
+        if(p.serverLevel().getGameTime()-own.getLong("LampLit")>=50){set(p,b.offset(CAMP_LAMP_AT),CAMP_LAMP);own.remove("LampLit");StaircaseLeaks.progress(p,own);}
+    }
+
     private static StaircaseLeakProps.Kind kindAt(BlockState state){return state.is(StaircaseLeakRegistry.PROP.get())?state.getValue(StaircaseLeakProps.KIND):null;}
     private static void finish(ServerPlayer p,CompoundTag own,boolean ok,String line,int beat){own.putString("Result",ok?"success":"failure");StaircaseLeaks.progress(p,own);StaircaseLeaks.caption(p,line);StaircaseLeaks.returnAfterBeat(p,beat);}
 

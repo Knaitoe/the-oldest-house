@@ -5,7 +5,7 @@ The owner, 1 November: "You should review and revise the existing leak vignettes
 - lays the frame the household vignettes (docs/STAIRCASE_HOUSEHOLD_PROPOSAL.md) are built on;
 - builds the first four of them: Sunday lunch, Fresh sheets, Mending day and First light.
 
-The long way home, Washing day, the lay-by and the last landing follow.
+The long way home, Washing day, the lay-by and the last landing follow in 0.4.215 (docs/STAIRCASE_HOUSEHOLD_0_4_215.md).
 
 No protocol change. Layout 69 (the staircase is built fresh in new worlds only).
 
@@ -38,15 +38,15 @@ split into eight stretches of 160 blocks, three sheets to a stretch:
 | Stretch | Sheets | What they can open |
 |---|---|---|
 | 1 (top) | A blue sock, Six o'clock, The cupboard | nothing: the shaft's own dark and the first fire come first |
-| 2 | The last plate, Breakfast, On the way home | leak: kitchen; doors: First light, (the long way home) |
+| 2 | The last plate, Breakfast, On the way home | leak: kitchen; doors: First light, the long way home |
 | 3 | Saturday washing, The good cups, Thursday | leak: laundry; doors: Sunday lunch, Mending day |
-| 4 | The passenger seat, The airing cupboard, After the rain | leak: car; doors: Fresh sheets, (washing day) |
-| 5 | A small repair, A longer way, For tomorrow | leak: front room; doors: (the lay-by), First light |
-| 6 | Before bed, The table, At the lights | leak: late kitchen; doors: Sunday lunch, (the long way home) |
-| 7 | Fresh sheets, The hem, The blanket | doors: Fresh sheets, Mending day, (washing day) |
+| 4 | The passenger seat, The airing cupboard, After the rain | leak: car; doors: Fresh sheets, washing day |
+| 5 | A small repair, A longer way, For tomorrow | leak: front room; doors: the lay-by, First light |
+| 6 | Before bed, The table, At the lights | leak: late kitchen; doors: Sunday lunch, the long way home |
+| 7 | Fresh sheets, The hem, The blanket | doors: Fresh sheets, Mending day, washing day |
+| 8 (bottom) | The landing, The wool scarf | the household's last landing |
 
-Doors in brackets open once their vignettes are built; until then those sheets are only reading.
-| 8 (bottom) | The landing, Our supper | the household's last landing |
+The long way home, washing day, the lay-by and the last landing are built in 0.4.215 (docs/STAIRCASE_HOUSEHOLD_0_4_215.md).
 
 - The house sheets come first, then the stair sheets at the bottom: the household went down before the reader.
 - Below the cell, the continuation carries the rest in their old order.
