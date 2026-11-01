@@ -48,7 +48,7 @@ public final class HouseDeathPortraits {
         var house = HouseSavedData.get(player.server);
         if (house.houseOrigin() == null || house.isOutdated() || house.isCollapsed()) return;
         PENDING.computeIfAbsent(player.server, ignored -> new LinkedHashMap<>()).putIfAbsent(player.getUUID(),
-                new Pending(player, deaths(player), PortraitProfile.of(player.getGameProfile()), house.houseOrigin().asLong()));
+                new Pending(player, deaths(player), PortraitProfile.of(player), house.houseOrigin().asLong()));
     }
 
     /** Native death statistics are awarded only after the entire cancellable death event has succeeded. */
@@ -129,7 +129,7 @@ public final class HouseDeathPortraits {
         if (own.getBoolean("Preview")) return true;
         own.putBoolean("Preview", true); own.putBoolean("Pending", true);
         own.putLong("Origin", HouseSavedData.get(player.server).houseOrigin().asLong());
-        own.putString("Profile", PortraitProfile.of(player.getGameProfile()).encode());
+        own.putString("Profile", PortraitProfile.of(player).encode());
         save(player.server, player.getUUID(), own); return true;
     }
     public static boolean resetPreview(ServerPlayer player) {

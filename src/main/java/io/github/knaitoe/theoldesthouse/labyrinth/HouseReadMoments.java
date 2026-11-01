@@ -99,8 +99,8 @@ public final class HouseReadMoments {
                     // What the reader already holds goes back where it came from.
                     var lent=switch(part){case PAPER->HouseReadRegistry.PAPER.get();case MAGAZINES->HouseReadRegistry.MAGAZINE.get();case PHONE->HouseReadRegistry.PHONE.get();default->null;};
                     if(lent!=null&&holding(p,lent)){giveBack(p,room,false);HouseReadSites.act(p,room,switch(part){case PAPER->"put the paper back";case MAGAZINES->"put the magazine back";default->"put the phone back on its charger";});return true;}
-                    if(part==GLASSES&&HouseReadSites.loan(p.getItemBySlot(EquipmentSlot.HEAD),p.getUUID())){giveBack(p,room,true);HouseReadSites.act(p,room,"took off the reading glasses");return true;}
-                    if(part==GLASSES)borrow(p,HouseReadRegistry.GLASSES.get(),true);
+                    if(part==GLASSES&&HouseReadSites.loan(p.getItemBySlot(EquipmentSlot.HEAD),p.getUUID())){giveBack(p,room,true);HouseReadSites.act(p,room,"took off the reading glasses");p.displayClientMessage(Component.literal("The glasses go back on the table."),true);return true;}
+                    if(part==GLASSES){borrow(p,HouseReadRegistry.GLASSES.get(),true);p.displayClientMessage(Component.literal("Someone's reading glasses. Close up, the print sharpens; the rest of the room goes soft."),true);}
                     else borrow(p,switch(part){case PAPER->HouseReadRegistry.PAPER.get();case MAGAZINES->HouseReadRegistry.MAGAZINE.get();case PHONE->HouseReadRegistry.PHONE.get();default->HouseReadRegistry.CONE.get();},false);
                     age(p,switch(part){case PAPER->"paper";case MAGAZINES->"magazine";case GLASSES->"glasses";case PHONE->"phone";default->"cooler";},part==PHONE?"DIGITAL":part==COOLER?"TRANSITIONAL":"ANALOG");
                     arm(p,room,switch(part){case PAPER->"opened the local newspaper";case MAGAZINES->"opened the gardening magazine";case GLASSES->"put on the reading glasses";case PHONE->"picked up the phone from the armrest";default->"filled a paper cone at the water cooler";});

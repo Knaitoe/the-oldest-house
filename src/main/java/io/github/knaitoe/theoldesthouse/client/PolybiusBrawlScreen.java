@@ -96,12 +96,16 @@ public final class PolybiusBrawlScreen extends Screen {
     }
     /** Where a body's parts are in its picture: the picture's height, then each leg's and arm's front face and their widths. */
     record Rig(int texH,int legW,int legRU,int legRV,int legLU,int legLV,int armW,int armRU,int armRV,int armLU,int armLV,boolean overlay){}
-    static final Rig PLAYER=new Rig(64,4,4,20,20,52,4,44,20,36,52,true),SKELETON_RIG=new Rig(32,2,2,18,2,18,2,42,18,42,18,false);
+    static final Rig PLAYER=new Rig(64,4,4,20,20,52,4,44,20,36,52,true),SKELETON_RIG=new Rig(32,2,2,18,2,18,2,42,18,42,18,false),
+            // 0.4.223: a zombie's picture has no left arm or leg of its own (the game mirrors the right ones), so they were drawn blank.
+            ZOMBIE_RIG=new Rig(64,4,4,20,4,20,4,44,20,44,20,false);
     /** A paper doll: head, body, arms and legs, front on, turned by the way it faces; walking swings a leg and an arm. */
     void doll(GuiGraphics g,ResourceLocation tex,Rig r,float x,float y,int facing,int step,boolean punching){
         float top=y-32,left=x-4;int swing=step==0?0:(step%16<8?1:-1);
         g.pose().pushPose();
-        if(facing<0){g.pose().translate(x*2,0,0);g.pose().scale(-1,1,1);}
+        // 0.4.223 (owner: "rendering is messed up on brawler"): turned to the left the doll is drawn mirrored, which turns its
+        // faces inside out, and the screen culled them: everything walking left was invisible but its shadow.
+        if(facing<0){g.pose().translate(x*2,0,0);g.pose().scale(-1,1,1);RenderSystem.disableCull();}
         g.blit(tex,Math.round(left+4-r.legW()),Math.round(top+20+swing),r.legRU(),r.legRV(),r.legW(),12,64,r.texH());
         g.blit(tex,Math.round(left+4),Math.round(top+20-swing),r.legLU(),r.legLV(),r.legW(),12,64,r.texH());
         g.blit(tex,Math.round(left),Math.round(top+8),20,20,8,12,64,r.texH());
@@ -110,6 +114,7 @@ public final class PolybiusBrawlScreen extends Screen {
         else g.blit(tex,Math.round(left+8),Math.round(top+8-swing),r.armLU(),r.armLV(),r.armW(),12,64,r.texH());
         g.blit(tex,Math.round(left),Math.round(top),8,8,8,8,64,r.texH());
         if(r.overlay())g.blit(tex,Math.round(left),Math.round(top),40,8,8,8,64,r.texH());
+        if(facing<0)RenderSystem.enableCull();
         g.pose().popPose();
     }
     ResourceLocation skin(UUID id){
@@ -132,7 +137,7 @@ public final class PolybiusBrawlScreen extends Screen {
         // A lit creeper whitens steadily as its fuse burns down, rather than flashing.
         if(hurt>0)RenderSystem.setShaderColor(1,.45F,.45F,1);else if(fuse>0){float w=1+fuse/30F*.9F;RenderSystem.setShaderColor(w,w,w,1);}
         switch(type){
-            case PolybiusBrawl.ZOMBIE->doll(g,ZOMBIE,PLAYER,x,y,c.getInt("Facing"),c.getInt("Walk"),false);
+            case PolybiusBrawl.ZOMBIE->doll(g,ZOMBIE,ZOMBIE_RIG,x,y,c.getInt("Facing"),c.getInt("Walk"),false);
             case PolybiusBrawl.SKELETON->doll(g,SKELETON,SKELETON_RIG,x,y,c.getInt("Facing"),c.getInt("Walk"),false);
             default->creeper(g,x,y,c.getInt("Walk"));
         }

@@ -20,7 +20,9 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.222**: the opening warning has only Done (its Take Book button is gone), and the title screen's splash reads "This House Has Ghosts in It".
+Development candidate **0.4.223**: the second batch of the owner's notes from a playthrough. The waiting room's reading glasses say when they go on and show their rims at the edges of sight, and the House's version of a reader wears thin gold frames instead of a dark band. The halls' windows stand only in straight runs of wall, the skirting runs along every wall, and cracks come in five shapes. The Winchester's hall stand holds a real mirror, its chairs and settee can be sat in, and its piano plays. The manor's family portraits are painted like the portraits the House takes of the dead, and those now show the House's version of the reader. Block Party draws everything walking left again. See [docs/OWNER_NOTES_0_4_223.md](docs/OWNER_NOTES_0_4_223.md).
+
+Candidate **0.4.222**: the opening warning has only Done (its Take Book button is gone), and the title screen's splash reads "This House Has Ghosts in It".
 
 Candidate **0.4.221**: the Polybius arcade comes alive around the black cabinet. Every game pays out prize tickets, and the shelf behind the counter sells eight prizes for them. Three regulars stand playing cabinets of their own. And Block Party, a four-player cabinet, has up to four readers fighting down a night street together, each as their own Minecraft skin, against zombies, skeletons and creepers. See [docs/POLYBIUS_ARCADE_0_4_221.md](docs/POLYBIUS_ARCADE_0_4_221.md).
 

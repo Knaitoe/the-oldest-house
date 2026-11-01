@@ -12,6 +12,7 @@ from character_art_catalog import entries
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=ROOT/'art/inventory/character_review_04100.json'
 FAMILY_REVIEW=ROOT/'art/inventory/painted_family_04123.json'
+PORTRAIT_REVIEW=ROOT/'art/inventory/manor_portraits_04223.json'
 FAMILY_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
               for role in ('father','mother','child') for phase in ('','_changed')}
 
@@ -43,7 +44,15 @@ def main():
         packaged=zipfile.ZipFile(jars[0]);assert packaged.testzip() is None
     def read(path):
         return packaged.read(path.removeprefix('src/main/resources/')) if packaged else (ROOT/path).read_bytes()
+    # 0.4.223: the manor's five family portraits, repainted at the owner's request; each supersedes only its own historical hash.
+    portraits={r['path']:r for r in json.loads(PORTRAIT_REVIEW.read_text())['repainted']}
+    assert len(portraits)==5 and all(path.endswith('_portrait.png') for path in portraits)
     for path,digest in review['unchanged_png_sha256'].items():
+        if path in portraits:
+            row=portraits[path];assert row['review_04100_sha256']==digest,('Historical portrait review changed',path)
+            raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],('Manor portrait changed since its repaint',path)
+            im=Image.open(BytesIO(raw)).convert('RGBA');assert list(im.size)==row['size'] and hashlib.sha256(im.getchannel('A').tobytes()).hexdigest()==row['alpha_sha256'],path
+            continue
         assert hashlib.sha256(read(path)).hexdigest()==digest,('Unreviewed/excluded painting changed',path)
     for path,row in changed.items():
         raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],path

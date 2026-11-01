@@ -1,36 +1,73 @@
 package io.github.knaitoe.theoldesthouse.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import javax.annotation.Nullable;
 
-/** A native 16-by-32 painted bust. Skin pixels, including the hat and jacket, remain recognizable. */
+/**
+ * A native 16-by-32 painted bust. Skin pixels, including the hat and jacket, remain recognizable. 0.4.223: a skin at more than
+ * the vanilla scale (the House's bodies are painted four to a texel) is read at up to twice the detail, as the manor's own
+ * family portraits are (tools/draw_manor_portraits.py); and what the glass shows the reader in, their coat or outfit, the
+ * reading glasses and the obscured face, is painted over the House's body.
+ */
 public final class PortraitPainter {
     private PortraitPainter() {}
 
-    public static NativeImage paint(NativeImage skin, NativeImage family) {
+    /** What the House's version of the reader wears over their body, each a 64-by-32 garment sheet or null. */
+    public record Overlay(@Nullable NativeImage coat, boolean outfit, boolean crop, @Nullable NativeImage specs, @Nullable NativeImage veil) {
+        static final Overlay NONE = new Overlay(null, false, false, null, null);
+    }
+
+    public static NativeImage paint(NativeImage skin, NativeImage family) { return paint(skin, family, Overlay.NONE); }
+
+    public static NativeImage paint(NativeImage skin, NativeImage family, Overlay overlay) {
         if (skin.getWidth() < 64 || skin.getHeight() < 32 || family.getWidth() != 16 || family.getHeight() != 32)
             throw new IllegalArgumentException("Portraits require a native skin and the existing 16x32 family painting");
+        int s = Math.max(1, skin.getWidth() / 64), d = Math.min(2, s), step = s / d;
+        boolean layered = skin.getHeight() >= 64 * s;
         var result = new NativeImage(16, 32, false);
         // The family's actual ground colour, not a photographic background or high-resolution filter.
         int ground = family.getPixelRGBA(0, 0);
         for (int y = 0; y < 32; y++) for (int x = 0; x < 16; x++) {
             int colour = ground;
             if (y >= 16 && x >= (y == 16 ? 2 : 1) && x <= (y == 16 ? 13 : 14)) {
-                int u = Math.min(7, (x - 1) * 8 / 14), v = Math.min(11, (y - 16) * 12 / 16);
-                colour = skin.getPixelRGBA(20 + u, 20 + v);
-                if (skin.getHeight() >= 64) colour = over(colour, skin.getPixelRGBA(20 + u, 36 + v));
-                if (x < 3 || x > 12) {
-                    colour = skin.getPixelRGBA(44 + (x % 3), 20 + v);
-                    if (skin.getHeight() >= 64) colour = over(colour, skin.getPixelRGBA(44 + (x % 3), 36 + v));
+                int u = Math.min(8 * d - 1, (x - 1) * 8 * d / 14), v = Math.min(12 * d - 1, (y - 16) * 12 * d / 16);
+                colour = skin.getPixelRGBA(20 * s + u * step, 20 * s + v * step);
+                if (layered) colour = over(colour, skin.getPixelRGBA(20 * s + u * step, 36 * s + v * step));
+                boolean sleeve = x < 3 || x > 12;
+                if (sleeve) {
+                    int a = (x % 3) * d;
+                    colour = skin.getPixelRGBA(44 * s + a * step, 20 * s + v * step);
+                    if (layered) colour = over(colour, skin.getPixelRGBA(44 * s + a * step, 36 * s + v * step));
                 }
+                colour = garment(colour, overlay, x, y, sleeve);
                 colour = pigment(colour, x, y, false);
             }
             if (x >= 3 && x <= 12 && y >= 5 && y <= 16) {
-                int u = (x - 3) * 8 / 10, v = (y - 5) * 8 / 12;
-                colour = pigment(over(skin.getPixelRGBA(8 + u, 8 + v), skin.getPixelRGBA(40 + u, 8 + v)), x, y, true);
+                int u = (x - 3) * 8 * d / 10, v = (y - 5) * 8 * d / 12;
+                int face = over(skin.getPixelRGBA(8 * s + u * step, 8 * s + v * step), skin.getPixelRGBA(40 * s + u * step, 8 * s + v * step));
+                // The reading glasses sit on the eyes' rows; the obscured face is veiled whole.
+                int fu = u / d, fv = v / d;
+                if (overlay.specs() != null && (fv == 3 || fv == 4)) face = over(face, overlay.specs().getPixelRGBA(1 + fu, 1 + fv - 3));
+                if (overlay.veil() != null) face = over(face, overlay.veil().getPixelRGBA(1 + fu, 1 + fv));
+                colour = pigment(face, x, y, true);
             }
             result.setPixelRGBA(x, y, colour);
         }
         return result;
+    }
+
+    /** A coat's front (its body box laid at 0,0, 8.7 by 13 by 4.7) or an outfit's top (8 by 12 by 4, a crop top 6 high), over the body. */
+    private static int garment(int under, Overlay overlay, int x, int y, boolean sleeve) {
+        var coat = overlay.coat(); if (coat == null) return under;
+        if (overlay.outfit()) {
+            if (sleeve) { int v = (y - 16) * 12 / 16; return v < 5 ? over(under, coat.getPixelRGBA(28 + x % 3, 4 + v)) : under; }
+            int u = Math.min(7, (x - 1) * 8 / 14), v = Math.min(11, (y - 16) * 12 / 16);
+            if (overlay.crop() && v >= 6) return under;
+            return over(under, coat.getPixelRGBA(4 + u, 4 + v));
+        }
+        if (sleeve) { int v = Math.min(12, (y - 16) * 13 / 16); return over(under, coat.getPixelRGBA(33 + x % 3, 5 + v)); }
+        int u = Math.min(8, (x - 1) * 9 / 14), v = Math.min(12, (y - 16) * 13 / 16);
+        return over(under, coat.getPixelRGBA(5 + u, 5 + v));
     }
 
     private static int over(int under, int top) {

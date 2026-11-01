@@ -143,6 +143,8 @@ public final class PolybiusBrawl {
     @Nullable static Fighter nearest(Game g,Foe foe){
         Fighter best=null;double d=1e9;for(var f:g.seats)if(f!=null&&f.up()){double e=Math.abs(f.x-foe.x)+Math.abs(f.y-foe.y)*1.5;if(e<d){d=e;best=f;}}return best;
     }
+    /** Which side of its fighter a foe keeps to: the one it is on (right of them if it stands exactly on them). */
+    static int side(Foe foe,Fighter t){return foe.x<t.x?-1:1;}
     static void foe(Game g,Foe foe){
         if(foe.hurt>0){foe.hurt--;return;}
         if(foe.cool>0)foe.cool--;
@@ -150,8 +152,11 @@ public final class PolybiusBrawl {
         double dx=t.x-foe.x,dy=t.y-foe.y;foe.facing=dx>=0?1:-1;
         switch(foe.type){
             case ZOMBIE->{
-                if(Math.abs(dx)<11&&Math.abs(dy)<6){if(foe.cool==0){hurt(t,2);foe.cool=26;}}
-                else{foe.x+=Math.signum(dx)*.6;foe.y+=Math.signum(dy)*Math.min(.5,Math.abs(dy));foe.walk++;}
+                // 0.4.223 (owner: "rendering is messed up"): a zombie comes up beside its fighter, a fist's length off on its own
+                // side, and swings from there; walking on the diagonal it had come to stand inside them.
+                double stand=t.x+side(foe,t)*10;
+                if(Math.abs(stand-foe.x)<2&&Math.abs(dy)<4){if(foe.cool==0){hurt(t,2);foe.cool=26;}}
+                else{if(Math.abs(stand-foe.x)>=1)foe.x+=Math.signum(stand-foe.x)*.6;foe.y+=Math.signum(dy)*Math.min(.5,Math.abs(dy));foe.walk++;}
             }
             case SKELETON->{
                 double want=t.x-foe.facing*55;
@@ -164,7 +169,7 @@ public final class PolybiusBrawl {
                 if(d<16||foe.fuse>0&&d<26){if(++foe.fuse>=30){
                     for(var f:g.seats)if(f!=null&&f.up()&&Math.hypot(f.x-foe.x,(f.y-foe.y)*1.5)<26)hurt(f,7);
                     g.foes.remove(foe);}}
-                else{foe.fuse=Math.max(0,foe.fuse-1);foe.x+=Math.signum(dx)*.5;foe.y+=Math.signum(dy)*Math.min(.4,Math.abs(dy));foe.walk++;}
+                else{foe.fuse=Math.max(0,foe.fuse-1);double stand=t.x+side(foe,t)*9;if(Math.abs(stand-foe.x)>=1)foe.x+=Math.signum(stand-foe.x)*.5;foe.y+=Math.signum(dy)*Math.min(.4,Math.abs(dy));foe.walk++;}
             }
         }
         foe.x=Mth.clamp(foe.x,-10,W+10);foe.y=Mth.clamp(foe.y,TOP,BOTTOM);

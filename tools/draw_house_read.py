@@ -154,12 +154,23 @@ def outputs():
  materials.blocks(out)
  kitchen.write(out,textures)
  # 0.4.159: the House's version of a reader wears these over their own skin, only in glass and copies.
- im=Image.new('RGBA',(64,32),(0,0,0,0));d=ImageDraw.Draw(im);frame='#2b2622'
- for x in [1,2,3,6,7,8]:d.point((x,1),fill=frame)
- d.line((4,1,5,1),fill='#6d5a3a')
- for x in [1,3,6,8]:d.point((x,2),fill=frame)
- for x in [0,9]:d.line((x,1,x,2),fill=frame)
+ # 0.4.223 (owner: "weird glasses overlay?"): the near-black frames covered the pupils and read as a band across the eyes. Thin
+ # gold wire now: rims over each lens and a bridge across the brow row, the lenses themselves open over both eye pixels, a rim
+ # at each outer and inner edge on the eye row, hinges at the sides, and two arms back to the ears (their own cubes, at 20,0).
+ im=Image.new('RGBA',(64,32),(0,0,0,0));d=ImageDraw.Draw(im);rim='#9b7b3c';lit='#caa65c';bridge='#7f6431'
+ for col,c in enumerate([None,rim,lit,bridge,bridge,lit,rim,None]):
+  if c:d.point((1+col,1),fill=c)
+ for col in (0,3,4,7):d.point((1+col,2),fill=rim)
+ for x in (0,9):d.line((x,1,x,2),fill=rim)
+ d.rectangle((20,0,31,5),fill=rim)
  buf=io.BytesIO();im.save(buf,format='PNG');out['textures/entity/house_read/specs.png']=buf.getvalue()
+ # 0.4.223: what the reader sees with the waiting room's reading glasses on: the rims, out of focus, at the edges of sight.
+ view=Image.new('RGBA',(320,180),(0,0,0,0));v=ImageDraw.Draw(view)
+ for x0 in (8,166):v.rounded_rectangle((x0,26,x0+146,190),radius=46,outline=(58,44,22,170),width=7)
+ v.arc((146,18,174,46),200,340,fill=(58,44,22,170),width=6)
+ from PIL import ImageFilter
+ view=view.filter(ImageFilter.GaussianBlur(5))
+ buf=io.BytesIO();view.save(buf,format='PNG');out['textures/gui/house_read/reading_glasses.png']=buf.getvalue()
  im=Image.new('RGBA',(64,32),(0,0,0,0));d=ImageDraw.Draw(im);rng=random.Random(159)
  for y in range(0,10):
   for x in range(0,18):v=34+rng.randrange(18);d.point((x,y),fill=(v,v-2,v-4,236))

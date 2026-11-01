@@ -45,6 +45,12 @@ public final class DeathPortraitVisualProof extends Screen {
                  var original = mc.getResourceManager().open(DeathPortraitClient.FAMILY); var family = NativeImage.read(original)) {
                 var painted = PortraitPainter.paint(skin, family);
                 verify(painted, family);
+                // 0.4.223: a portrait taken in the House is painted from the House's version of the reader, body, coat and glasses.
+                try (var house = DeathPortraitClient.house(new io.github.knaitoe.theoldesthouse.house.PortraitProfile(id, "PortraitProof", "", "", "body=1,2,3,-1,-1,0;coat=trench;glasses=1;veil=0"), skin, family)) {
+                    verify(house, family); boolean differs = false;
+                    for (int y = 5; y < 32 && !differs; y++) for (int x = 1; x < 15; x++) if (house.getPixelRGBA(x, y) != painted.getPixelRGBA(x, y)) { differs = true; break; }
+                    if (!differs) throw new IllegalStateException("A House portrait ignored the House's version of the reader");
+                }
                 var texture = new DynamicTexture(painted); texture.setFilter(false, false);
                 textures.add(mc.getTextureManager().register("portrait_proof_" + id, texture));
             } catch (java.io.IOException exception) { throw new java.io.UncheckedIOException(exception); }

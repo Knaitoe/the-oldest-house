@@ -1,3 +1,5 @@
+November 1 candidate 0.4.223, the owner's second batch (waiting-room glasses, hall windows/trim/cracks, Winchester mirror/seats/piano, manor and captured portraits, Block Party drawing): no vignette, source kind, Witness or protocol change; the portrait string gains an optional fifth line (older portraits decode as before). Tests: ExplorationPassTests (skirting, straight-run windows, no dark backs), the Winchester animation case (mirror entity, settee seat, piano keys), the client portrait proof (House look).
+
 November 1 candidate 0.4.222, the opening warning without Take Book and the title-screen splash: no vignette, source kind, Witness or protocol change. Tests: OpeningTests (the warning's book carries its mark; no other book does).
 
 November 1 candidate 0.4.221, Polybius additions (tickets, prize exchange, three regulars, the four-player Block Party): no new Witness source or account change; protocol 117. Tests: PolybiusTests (Block Party seats, server play and payout; tickets and prizes; the regulars), the existing four Polybius cases.
