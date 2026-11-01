@@ -124,6 +124,8 @@ public final class OpeningTests {
         }
         String all = String.join(" ", content.pages().stream().map(page -> page.raw().getString()).toList());
         helper.assertTrue(all.contains("horror") && all.contains("never shown") && all.contains("flashing lights") && all.contains("will not be shown again"), "it says what the mod is and holds");
+        helper.assertTrue(ContentWarning.is(ContentWarning.book()) && !ContentWarning.is(NavidsonLetter.createBook()),
+                "the warning's book carries the mark the lectern view hides Take Book for, and no other book does");
         var p = helper.makeMockServerPlayerInLevel();
         helper.assertTrue(!ContentWarning.seen(p), "a new player has not seen it");
         ContentWarning.open(p);

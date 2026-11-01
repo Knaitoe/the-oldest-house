@@ -25,7 +25,8 @@
     "UncannyTargetMixin",
     "InventorySelfMixin",
     "PlayerInfoSkinMixin",
-    "ActionBarWrapMixin"
+    "ActionBarWrapMixin",
+    "TitleSplashMixin"
   ],
   "injectors": {
     "defaultRequire": 1

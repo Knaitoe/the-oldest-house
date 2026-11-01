@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -25,7 +26,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 /**
  * 0.4.201: the content warning, at the very beginning. The first time a player joins a world with the mod, a short book
  * opens in the native lectern view: what the mod is, what it contains, and that a few rooms ask again before they go
- * further. It closes like any book (Done or Escape), and once closed it is not shown to that player again.
+ * further. It closes like any book (Done or Escape), and once closed it is not shown to that player again. 0.4.222 (owner:
+ * remove the "take book" option): the book carries {@link #MARK}, and the client hides the lectern's Take Book button for it,
+ * leaving one centred Done; the server already refused the take.
  *
  * <p>It waits a few seconds after login and for no other screen to be open, so the world has finished loading behind it.
  * Game tests and the opt-in proof runs (any {@code the_oldest_house.*} system property) never see it.
@@ -34,17 +37,28 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class ContentWarning {
     /** Kept in the player's persisted data, so it survives death and respawn. */
     public static final String SEEN = "ContentWarningSeen201";
+    /** In the book's custom data, so the client's lectern view can tell it from any other book. */
+    public static final String MARK = "ContentWarning201";
     private static final int DELAY = 60;
     private static final Set<UUID> PENDING = new HashSet<>();
 
     private ContentWarning() {}
 
     public static ItemStack book() {
-        return HouseWriting.book("Before you go in", "This House Has Ghosts in It", HouseWriting.WritingStyle.PLAIN, List.of(
+        var tag = new CompoundTag();tag.putBoolean(MARK, true);
+        var book = HouseWriting.book("Before you go in", "This House Has Ghosts in It", HouseWriting.WritingStyle.PLAIN, List.of(
                 "This House Has Ghosts in It is a horror mod.\n\nIt is quiet for long stretches, and then it is not. Its rooms are made from stories, and many of them are about loss.",
                 "Inside there is death and grief, violence and gore, and body horror.\n\nThere is harm to children and to animals, abduction, and abuse, including sexual abuse, which is never shown.",
                 "There is drowning, suffocation and being shut in, dark and cramped places, sudden loud sounds and flashing lights.\n\nA few rooms ask again before they go further.",
                 "Close this book to begin. It will not be shown again."));
+        CustomData.update(DataComponents.CUSTOM_DATA, book, data -> data.merge(tag));
+        return book;
+    }
+
+    /** Whether a book is this warning (read on the client from the lectern view's synced book). */
+    public static boolean is(ItemStack book) {
+        var data = book.get(DataComponents.CUSTOM_DATA);
+        return data != null && data.copyTag().getBoolean(MARK);
     }
 
     public static boolean seen(ServerPlayer p) { return p.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getBoolean(SEEN); }

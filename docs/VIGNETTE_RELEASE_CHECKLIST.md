@@ -1,3 +1,5 @@
+November 1 candidate 0.4.222, the opening warning without Take Book and the title-screen splash: no vignette, source kind, Witness or protocol change. Tests: OpeningTests (the warning's book carries its mark; no other book does).
+
 November 1 candidate 0.4.221, Polybius additions (tickets, prize exchange, three regulars, the four-player Block Party): no new Witness source or account change; protocol 117. Tests: PolybiusTests (Block Party seats, server play and payout; tickets and prizes; the regulars), the existing four Polybius cases.
 
 November 1 candidate 0.4.220, the room review (Ghosts set, Winchester, Work print, Whistlers, shared rail joins and action-bar wrap): no vignette, source kind or Witness change; the Ghosts set's call sheet and the Winchester's ledger move within their rooms (LiteraryRooms.source follows). Tests: GhostsSetTests (call sheet, fittings), the Winchester animation case, architecture and route cases, the rail-join support cases.
