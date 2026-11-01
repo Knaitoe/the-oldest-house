@@ -1,6 +1,6 @@
 # Borrasca — development 0.4.108
 
-Later: the friend is Nell Garrity, the beats follow the reader and the refinery is sealed until the last night ([0.4.235](BORRASCA_MODULAR_0_4_235.md)).
+Later: the friend is Nell Garrity, the beats follow the reader and the refinery is sealed until the last night ([0.4.235](BORRASCA_MODULAR_0_4_235.md)); the Shiny Gentleman is seen when the noise comes on the child visits ([0.4.236](BORRASCA_GENTLEMAN_0_4_236.md)).
 
 This implements the [reviewed four-visit design](BORRASCA_FOUR_VISITS_PROPOSAL.md) for new builds. It replaces the earlier town itinerary with the pine trail, the Triple Tree pact, Kimber's disappearance, the adult return and Sheriff's blockade, and the refinery investigation.
 

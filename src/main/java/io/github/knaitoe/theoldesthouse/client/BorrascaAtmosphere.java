@@ -4,7 +4,14 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import io.github.knaitoe.theoldesthouse.network.BorrascaViewPayload;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
@@ -52,6 +59,27 @@ public final class BorrascaAtmosphere {
         if(state.visit()==3){double clock=state.clock()+mc.level.getGameTime()-received;double yaw=Math.toRadians(180+55*Math.sin(clock*.018));Vec3 start=state.sheriff().getCenter().add(0,1,0);for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&a.role()==LiteraryActor.BORRASCA_SHERIFF&&a.scene().equals(LabyrinthPlace.BORRASCA.id())&&a.owner().filter(mc.player.getUUID()::equals).isPresent()){yaw=Math.toRadians(a.getYRot());start=a.getEyePosition();break;}beam(e,start,new Vec3(-Math.sin(yaw),-.03,Math.cos(yaw)),22,5.8,.065F);}
         if(state.takingTicks()>0||state.visit()==4&&state.running()){var direction=b.offset(BorrascaRooms.TAKING).getCenter().subtract(b.offset(BorrascaRooms.LAMP).getCenter()).normalize();beam(e,b.offset(BorrascaRooms.LAMP).getCenter().add(direction.scale(.65)),direction,48,8,.09F);}
     }
+    /** 0.4.236: the Shiny Gentleman, where the server says he stands for this reader, for as long as the strokes last. */
+    private static final ResourceLocation GENTLEMAN=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_gentleman.png");
+    @SubscribeEvent public static void gentleman(RenderLevelStageEvent e){
+        if(!active()||e.getStage()!=RenderLevelStageEvent.Stage.AFTER_PARTICLES||state.visit()>2||state.gentlemanTicks()<=0)return;var mc=Minecraft.getInstance();
+        double left=state.gentlemanTicks()-(mc.level.getGameTime()-received);if(left<=0)return;
+        // He is simply there with the first stroke, and fades as the last one dies.
+        float alpha=(float)Mth.clamp(Math.min((BorrascaStory.GENT_TICKS-left+3)/3D,left/20D),0,1);
+        var at=state.gentleman();var camera=e.getCamera().getPosition();var pose=e.getPoseStack();pose.pushPose();pose.translate(at.x-camera.x,at.y-camera.y,at.z-camera.z);
+        pose.mulPose(Axis.YP.rotation((float)Math.atan2(camera.x-at.x,camera.z-at.z)));drawGentleman(pose,mc.renderBuffers().bufferSource(),alpha,mc.level.getGameTime());pose.popPose();
+    }
+    /** Him, standing at the pose's origin and facing +Z: faintly lit, so he shows at dusk, and shining a little as he stands. */
+    public static void drawGentleman(PoseStack pose,MultiBufferSource.BufferSource buffers,float alpha,long time){
+        var type=RenderType.entityTranslucentEmissive(GENTLEMAN);var v=buffers.getBuffer(type);float w=2F,h=(float)BorrascaStory.GENT_HEIGHT;
+        int c=(int)(255*(.84F+.1F*(float)Math.sin(time*.27)));int a=(int)(255*alpha);var last=pose.last();
+        // Both faces, so he is never culled away.
+        corner(v,last,-w/2,0,0,1,c,a,1);corner(v,last,w/2,0,1,1,c,a,1);corner(v,last,w/2,h,1,0,c,a,1);corner(v,last,-w/2,h,0,0,c,a,1);
+        corner(v,last,w/2,0,1,1,c,a,-1);corner(v,last,-w/2,0,0,1,c,a,-1);corner(v,last,-w/2,h,0,0,c,a,-1);corner(v,last,w/2,h,1,0,c,a,-1);
+        buffers.endBatch(type);
+    }
+    /** The normal points up, so the entity shader's lighting leaves him at full brightness whichever way he faces: he shines. */
+    private static void corner(VertexConsumer v,PoseStack.Pose last,float x,float y,float u,float t,int c,int a,float n){v.addVertex(last,x,y,0).setColor(c,c,c,a).setUv(u,t).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(last,0,1,0);}
     private static void beam(RenderLevelStageEvent e,Vec3 start,Vec3 direction,double length,double radius,float opacity){
         var mc=Minecraft.getInstance();var camera=e.getCamera().getPosition();var pose=e.getPoseStack();var buffers=mc.renderBuffers().bufferSource();var type=RenderType.lightning();var v=buffers.getBuffer(type);var side=direction.cross(new Vec3(0,1,0)).normalize();var up=side.cross(direction).normalize();Vec3[] ring=new Vec3[17];
         for(int i=0;i<=16;i++){double a=i*Math.PI/8;var end=start.add(direction.scale(length)).add(side.scale(Math.cos(a)*radius)).add(up.scale(Math.sin(a)*radius));var hit=mc.level.clip(new ClipContext(start,end,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,mc.player));ring[i]=hit.getType()==HitResult.Type.MISS?end:hit.getLocation();}
