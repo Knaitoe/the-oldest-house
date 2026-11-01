@@ -91,6 +91,12 @@ public final class Polybius {
             case BRAWL,BRAWL_SCREEN->{PolybiusBrawl.join(p,b);return true;}
             case OTHER,OTHER_SCREEN->{int i=PolybiusSite.OTHERS.indexOf(rel.getY()==0?rel:rel.below());regularLine(p,i);return true;}
             case PRIZES->{exchange(p,PolybiusSite.prize(rel));return true;}
+            case PIZZA_WARMER->{counter(p,PolybiusRegistry.PIZZA.get(),PolybiusRegistry.PIZZA_COST,SLICE_SOLD);return true;}
+            case SODA->{counter(p,PolybiusRegistry.SODA.get(),PolybiusRegistry.SODA_COST,SODA_SOLD);return true;}
+            case PIZZA_COUNTER,BACK_COUNTER,NAPKINS->{cue(p,"\"Slice is four tickets, soda's three. It's on the menu. It's always been on the menu.\"");return true;}
+            case PIZZA_OVEN->{cue(p,"The oven ticks. Something on its belt has been going round a long time.");return true;}
+            case PIZZA_BOXES->{cue(p,"Pizza boxes, folded flat. A chef with a moustache on every lid.");return true;}
+            case MENU_BOARD->{cue(p,"A slice, four tickets. A soda, three. Nothing else.");return true;}
             case CHANGE->{cue(p,"A card taped over the coin slot: FREE PLAY TONIGHT.");return true;}
             case CLIPBOARD->{cue(p,own.getBoolean("Ready")?"The men's clipboard.":"A clipboard. The top sheet is blank but for tonight's date.");return true;}
             case COUNTER->{cue(p,"Tickets for prizes. Nobody behind the counter; the prices are on the shelf. Point at what you want.");return true;}
@@ -150,12 +156,46 @@ public final class Polybius {
     static void exchange(ServerPlayer p,int prize){
         if(prize<0)return;var item=PolybiusRegistry.PRIZES.get(prize).get();int cost=PolybiusRegistry.PRIZE_COST[prize];
         String name=new net.minecraft.world.item.ItemStack(item).getHoverName().getString();
-        int have=0;var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(PolybiusRegistry.TICKETS.get()))have+=inv.getItem(i).getCount();
-        if(have<cost){cue(p,name+": "+cost+" tickets. You have "+have+".");return;}
-        int left=cost;for(int i=0;i<inv.getContainerSize()&&left>0;i++){var st=inv.getItem(i);if(!st.is(PolybiusRegistry.TICKETS.get()))continue;int take=Math.min(left,st.getCount());st.shrink(take);left-=take;}
+        int have=tickets(p);
+        if(!pay(p,cost)){cue(p,name+": "+cost+" tickets. You have "+have+".");return;}
         LiteraryVignettes.give(p,new net.minecraft.world.item.ItemStack(item));
         heard(p,p.position(),SoundEvents.NOTE_BLOCK_CHIME.value(),.6F,1.2F);
         cue(p,"You count out "+cost+" tickets on the counter and take the "+name.toLowerCase(java.util.Locale.ROOT)+" down off the shelf yourself.");
+    }
+
+    // ------------------------------------------------------------------------------------------------ the pizza counter
+    /** 0.4.224: the teenager behind the pizza counter, the same one for everyone. */
+    public static final int TEEN_PHASE=50;
+    public static boolean teen(int phase){return phase==TEEN_PHASE;}
+    static final String[] TEEN_LINES={
+        "\"Yeah?\" They don't look up from the magazine.",
+        "\"It's pepperoni. It's always pepperoni. The other kind ran out in, like, spring.\"",
+        "\"Tickets only. Don't ask me. Ask whoever owns this place. Nobody's seen them.\"",
+        "\"The soda's flat. Everybody says. I've told them.\"",
+        "\"If you're not getting anything you can stand somewhere else.\"",
+        "\"I'm on till close. There isn't a close. That's a joke. Kind of.\"",
+        "\"Don't play the black one. Or do. I'm not in charge of you.\""};
+    static final String[] SLICE_SOLD={
+        "\"Here.\" They slide it across without looking. It's shining. The plate's already gone see-through.",
+        "\"Don't fold it. It pours.\" They wipe their hands on the apron and leave a stripe.",
+        "\"Napkins are by the shakers. There's one. Good luck.\""};
+    static final String[] SODA_SOLD={"\"Ice is free.\" It's mostly ice. It's flat.","\"Machine's been doing that. It's fine.\" It isn't.","They fill it to the top and the top comes off the side. \"There.\""};
+    static void teenLine(ServerPlayer p){cue(p,TEEN_LINES[(int)(p.serverLevel().getGameTime()/60)%TEEN_LINES.length]);}
+    /** Tickets a reader carries. */
+    static int tickets(ServerPlayer p){int have=0;var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(PolybiusRegistry.TICKETS.get()))have+=inv.getItem(i).getCount();return have;}
+    /** Takes so many tickets from a reader who has them. */
+    static boolean pay(ServerPlayer p,int cost){
+        if(tickets(p)<cost)return false;var inv=p.getInventory();
+        int left=cost;for(int i=0;i<inv.getContainerSize()&&left>0;i++){var st=inv.getItem(i);if(!st.is(PolybiusRegistry.TICKETS.get()))continue;int take=Math.min(left,st.getCount());st.shrink(take);left-=take;}
+        return true;
+    }
+    /** A slice or a soda over the counter, for tickets, with the teenager's opinion of it. */
+    static void counter(ServerPlayer p,net.minecraft.world.item.Item item,int cost,String[] sold){
+        int have=tickets(p);
+        if(!pay(p,cost)){cue(p,"\"That's "+cost+" tickets. You've got "+have+".\" They go back to the magazine.");return;}
+        LiteraryVignettes.give(p,new net.minecraft.world.item.ItemStack(item));
+        heard(p,p.position(),SoundEvents.NOTE_BLOCK_HAT.value(),.5F,.9F);
+        cue(p,sold[(int)(p.serverLevel().getGameTime()/40)%sold.length]);
     }
 
     // ------------------------------------------------------------------------------------------------ the regulars
@@ -175,6 +215,12 @@ public final class Polybius {
             var home=Vec3.atBottomCenterOf(b.offset(at));if(a.position().distanceToSqr(home)>.04)a.moveTo(home.x,home.y,home.z,yaw,0);
             a.setYRot(yaw);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
         }
+        // 0.4.224: and the teenager behind the pizza counter, facing the customers' side.
+        var teens=l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-PolybiusSite.SIDE,-1,PolybiusSite.FAR)).minmax(new AABB(b.offset(PolybiusSite.SIDE+1,PolybiusSite.HIGH,1))),a->a.role()==LiteraryActor.STRANGER&&teen(a.phase()));
+        for(int k=1;k<teens.size();k++)teens.get(k).discard();
+        var t=teens.isEmpty()?null:teens.get(0);
+        if(t==null&&l.isPositionEntityTicking(b.offset(PolybiusSite.TEEN))){t=LiteraryRegistry.ACTOR.get().create(l);if(t!=null){t.bind(PLACE,null);t.appearance(LiteraryActor.STRANGER,TEEN_PHASE);l.addFreshEntity(t);}}
+        if(t!=null){var home=Vec3.atBottomCenterOf(b.offset(PolybiusSite.TEEN));if(t.position().distanceToSqr(home)>.04)t.moveTo(home.x,home.y,home.z,90,0);t.setYRot(90);t.setYBodyRot(90);t.setYHeadRot(90);}
     }
 
     static String ordinal(int n){return n+(n%100>=11&&n%100<=13?"th":switch(n%10){case 1->"st";case 2->"nd";case 3->"rd";default->"th";});}

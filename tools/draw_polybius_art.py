@@ -476,6 +476,184 @@ def light(lit):
 
 
 # ------------------------------------------------------------------------------------------------ models
+# ------------------------------------------------------------------------------------------------ the pizza counter (0.4.224)
+# The owner: "add a pizza and soda booth/vendor, too! describe the pizza as overly greasy, staffed by a teenager with a poor attitude".
+LETTERS = {'S': ['111', '100', '111', '001', '111'], 'L': ['100', '100', '100', '100', '111'], 'I': ['111', '010', '010', '010', '111'],
+           'C': ['111', '100', '100', '100', '111'], 'E': ['111', '100', '110', '100', '111'], 'O': ['111', '101', '101', '101', '111'],
+           'D': ['110', '101', '101', '101', '110'], 'A': ['111', '101', '111', '101', '101'], 'P': ['111', '101', '111', '100', '100'],
+           'Z': ['111', '001', '010', '100', '111'], '3': ['111', '001', '111', '001', '111'], '4': ['101', '101', '111', '001', '001']}
+
+
+def word(im, x, y, text, colour):
+    for ch in text:
+        if ch == ' ':
+            x += 2; continue
+        for r, row in enumerate(LETTERS[ch]):
+            for c, bit in enumerate(row):
+                if bit == '1':
+                    dot(im, x + c, y + r, colour)
+        x += 4
+
+
+def pizza_counter(part):
+    """The pizza counter: a red laminate front with a cream stripe and a steel kick plate; a speckled top with a grease ring."""
+    if part == 'front':
+        im = new(base='#9a2a26', seed=290, spread=3)
+        fill(im, 0, 5, 16, 7, '#e8dcc0'); fill(im, 0, 7, 16, 8, '#b8ac90')
+        fill(im, 0, 13, 16, 16, '#9aa0a8'); fill(im, 0, 13, 16, 14, '#c0c6cc')
+        return im
+    if part == 'top':
+        im = new(base='#e0d6c0', seed=291, spread=3)
+        for x, y in [(3, 4), (9, 2), (12, 10), (5, 12), (14, 6)]:
+            dot(im, x, y, '#a89a80')
+        for x, y in [(6, 7), (7, 6), (8, 6), (9, 7), (9, 8), (8, 9), (7, 9), (6, 8)]:
+            dot(im, x, y, '#c8b078')  # where a slice sat
+        return im
+    im = new(base='#8a2622', seed=292, spread=3)
+    fill(im, 0, 13, 16, 16, '#9aa0a8')
+    return im
+
+
+def back_counter(part):
+    """Behind the counter: brushed steel doors with their handles."""
+    im = new(base='#a8aeb4', seed=293, spread=4)
+    for y in range(16):
+        dot(im, 0, y, '#7a8086')
+    if part == 'front':
+        fill(im, 1, 2, 7, 13, '#b6bcc2'); fill(im, 9, 2, 15, 13, '#b6bcc2')
+        fill(im, 6, 6, 7, 9, '#5a6066'); fill(im, 9, 6, 10, 9, '#5a6066')
+    return im
+
+
+SLICE = ['#####', '#####', ' ### ', ' ### ', '  #  ']
+
+
+def warmer(part):
+    """A warming case: slices on two racks behind fogged glass, everything shining orange under the lamp, grease pooled on the trays."""
+    if part == 'front':
+        im = new(base='#2a1c12', seed=294, spread=2)
+        for shelf, y0 in enumerate((2, 8)):
+            fill(im, 1, y0 + 5, 15, y0 + 6, '#7a7068')  # the tray
+            for k in range(3):
+                x0 = 1 + k * 5
+                for r, row in enumerate(SLICE):
+                    for c, bit in enumerate(row):
+                        if bit == '#':
+                            dot(im, x0 + c, y0 + r, '#c88038' if r == 0 else '#f0b040')
+                dot(im, x0 + 1, y0 + 2, '#b02818'); dot(im, x0 + 3, y0 + 1, '#b02818')  # pepperoni
+                dot(im, x0 + 2, y0 + 1, '#fff4b0')  # the shine of grease
+                dot(im, x0 + 1, y0 + 5, '#d8a048'); dot(im, x0 + 3, y0 + 5, '#d8a048')  # pooled on the tray
+        for y in range(16):  # the glass, fogged at the edges
+            dot(im, 0, y, '#c8c0b0', 200); dot(im, 15, y, '#c8c0b0', 200)
+        fill(im, 0, 0, 16, 1, '#c8c0b0')
+        return im
+    if part == 'top':
+        im = new(base='#9aa0a8', seed=295, spread=3)
+        fill(im, 3, 6, 13, 10, '#ffb050')  # the lamp
+        return im
+    im = new(base='#3a2a1c', seed=296, spread=2)
+    fill(im, 1, 1, 15, 15, '#c8a070', 120)
+    return im
+
+
+def soda(part):
+    """A soda fountain: three flavour panels over their levers, the ice chute, a drip tray with a puddle."""
+    if part == 'front':
+        im = new(base='#b8bec4', seed=297, spread=3)
+        for i, c in enumerate(('#b02020', '#e0c020', '#5a3018')):
+            fill(im, 1 + i * 5, 1, 5 + i * 5, 7, c); fill(im, 2 + i * 5, 2, 4 + i * 5, 4, '#f0f0f0', 180)
+            fill(im, 2 + i * 5, 8, 4 + i * 5, 10, '#2a2a2e')  # the lever
+        fill(im, 1, 12, 15, 14, '#3a3e44'); fill(im, 4, 13, 9, 14, '#6a4020')  # the drip tray, and what's in it
+        return im
+    if part == 'top':
+        return new(base='#9aa0a8', seed=298, spread=3)
+    im = new(base='#b0b6bc', seed=299, spread=3)
+    word(im, 1, 5, 'SODA', '#c02828')
+    return im
+
+
+def oven(part):
+    """A conveyor pizza oven: brushed steel, a dark mouth with its red glow and the belt running out of it."""
+    im = new(base='#9ea4aa', seed=300, spread=4)
+    if part == 'front':
+        fill(im, 2, 3, 14, 8, '#1a1210'); fill(im, 2, 7, 14, 8, '#c03010')
+        for x in range(1, 15, 2):
+            dot(im, x, 9, '#3a3a3e')
+        fill(im, 12, 11, 15, 13, '#2a2a2e'); dot(im, 13, 12, '#e04020')
+    return im
+
+
+def boxes(part):
+    """Pizza boxes stacked flat, the top one printed with a slice and a moustache."""
+    im = new(base='#c8a878', seed=301, spread=3)
+    if part == 'top':
+        fill(im, 1, 1, 15, 15, '#d4b484')
+        fill(im, 5, 3, 11, 4, '#f4f0e8'); fill(im, 6, 2, 10, 3, '#f4f0e8')  # the chef's hat
+        dot(im, 6, 6, '#3a2010'); dot(im, 9, 6, '#3a2010')
+        for x in range(5, 11):
+            dot(im, x, 9, '#3a2010')  # and his moustache
+        dot(im, 4, 8, '#3a2010'); dot(im, 11, 8, '#3a2010')
+        fill(im, 3, 12, 13, 13, '#a02018')
+    else:
+        for y in (3, 7, 11):
+            fill(im, 0, y, 16, y + 1, '#8a6a40')
+    return im
+
+
+def napkins():
+    """A chrome napkin dispenser and two shakers."""
+    im = new(base='#c0c6cc', seed=302, spread=3)
+    fill(im, 4, 2, 12, 6, '#f4f0e8'); fill(im, 1, 9, 7, 15, '#e8e0c8'); fill(im, 9, 9, 15, 15, '#c03020')
+    return im
+
+
+def menu_board():
+    """The menu: two things, both in tickets, a slice and a cup each with its price and a ticket's notch beside it."""
+    im = new(base='#141212', seed=303, spread=2)
+    fill(im, 0, 0, 16, 1, '#6a4a28'); fill(im, 0, 15, 16, 16, '#6a4a28')
+    for r, row in enumerate(SLICE):
+        for c, bit in enumerate(row):
+            if bit == '#':
+                dot(im, 2 + c, 2 + r, '#c88038' if r == 0 else '#f0b040')
+    dot(im, 3, 4, '#b02818')
+    word(im, 9, 2, '4', '#ffd060'); fill(im, 13, 3, 15, 6, '#f08a30')
+    fill(im, 3, 9, 6, 14, '#f0ece0'); fill(im, 3, 10, 6, 12, '#c02828'); dot(im, 5, 8, '#e04040')
+    word(im, 9, 9, '3', '#ffd060'); fill(im, 13, 10, 15, 13, '#f08a30')
+    return im
+
+
+def slice_icon():
+    """A slice on a paper plate gone see-through with grease."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(9, 14):
+        fill(im, 2 + (13 - y) // 3, y, 14 - (13 - y) // 3, y + 1, '#e8e4d8', 230)
+    for x, y in [(4, 12), (9, 12), (11, 11), (6, 10)]:
+        dot(im, x, y, '#c8b890', 200)  # the grease through the plate
+    for r in range(9):
+        fill(im, 4 + r // 2, 2 + r, 13 - r // 2 - (1 if r > 6 else 0), 3 + r, '#f0b040')
+    fill(im, 4, 2, 13, 4, '#c88038')  # the crust
+    for x, y in [(6, 5), (10, 5), (8, 8)]:
+        dot(im, x, y, '#b02818'); dot(im, x + 1, y, '#901810')
+    for x, y in [(7, 4), (9, 7), (11, 4)]:
+        dot(im, x, y, '#fff4b0')  # grease shining on top
+    dot(im, 8, 11, '#d8a048'); dot(im, 8, 12, '#d8a048')  # a drip off the point
+    return im
+
+
+def soda_icon():
+    """A waxed cup with a straw, beaded on the outside."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(4, 15):
+        w = 4 - (y - 4) // 4
+        fill(im, 8 - w, y, 8 + w, y + 1, '#f0ece0')
+    fill(im, 4, 7, 12, 10, '#c02828')
+    fill(im, 4, 3, 12, 4, '#e0dcd0')
+    fill(im, 9, 0, 10, 4, '#e04040'); dot(im, 10, 0, '#e04040')
+    for x, y in [(5, 11), (10, 6), (7, 13)]:
+        dot(im, x, y, '#ffffff', 200)
+    return im
+
+
 def element(lo, hi, textures, uv=None):
     faces = {}
     for face in ('north', 'south', 'east', 'west', 'up', 'down'):
@@ -536,6 +714,19 @@ def fitting_models():
                                         element([1, 13, 1], [15, 16, 3], {'all': 's', 'north': 'b'}, {'north': [1, 0, 15, 3]})],
                                        {'s': f'other_side_{g}', 'b': f'other_bezel_{g}', 't': 'cab_top', 'v': f'other_screen_{g}'}, f'other_side_{g}')
     m['bin_0'] = model([element([4, 0, 4], [12, 12, 12], {'all': 's', 'up': 'i'})], {'s': 'bin_side', 'i': 'bin_inside'}, 'bin_side')
+    # 0.4.224: the pizza counter.
+    m['pizza_counter_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 's', 'north': 'f', 'up': 't'})], {'s': 'pizza_counter_side', 'f': 'pizza_counter_front', 't': 'pizza_counter_top'}, 'pizza_counter_front')
+    m['back_counter_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 's', 'north': 'f', 'up': 't'})], {'s': 'back_counter_side', 'f': 'back_counter_front', 't': 'warmer_top'}, 'back_counter_front')
+    m['pizza_warmer_0'] = model([element([1, 0, 3], [15, 11, 13], {'all': 's', 'north': 'f', 'south': 'f', 'up': 't', 'down': 't'}),
+                                 element([1, 11, 3], [15, 12, 13], {'all': 't'})], {'s': 'warmer_side', 'f': 'warmer_front', 't': 'warmer_top'}, 'warmer_front')
+    m['soda_0'] = model([element([1, 0, 3], [15, 14, 15], {'all': 's', 'north': 'f', 'up': 't'}),
+                         element([3, 6, 2], [13, 7, 3], {'all': 't'})], {'s': 'soda_side', 'f': 'soda_front', 't': 'soda_top'}, 'soda_front')
+    m['pizza_oven_0'] = model([element([0, 0, 1], [16, 10, 15], {'all': 's', 'north': 'f'}),
+                              element([0, 0, 0], [16, 1, 1], {'all': 'f'})], {'s': 'oven_side', 'f': 'oven_front'}, 'oven_front')
+    m['pizza_boxes_0'] = model([element([2, 0, 2], [14, 7, 14], {'all': 's', 'up': 't', 'down': 't'})], {'s': 'boxes_side', 't': 'boxes_top'}, 'boxes_top')
+    m['napkins_0'] = model([element([3, 0, 6], [8, 6, 10], {'all': 'n'}), element([9, 0, 6], [11, 4, 8], {'all': 'n'}), element([12, 0, 7], [14, 4, 9], {'all': 'n'})],
+                           {'n': 'napkins'}, 'napkins')
+    m['menu_board_0'] = model([element([0, 2, 15.5], [16, 14, 16], {'north': 'm', 'south': 'm'}, {'north': [0, 2, 16, 14], 'south': [0, 2, 16, 14]})], {'m': 'menu_board'}, 'menu_board')
     return m
 
 
@@ -575,16 +766,27 @@ def textures():
         out[f'block/polybius/other_side_{g}.png'] = other_side(g); out[f'block/polybius/other_front_{g}.png'] = other_front(g)
         out[f'block/polybius/other_bezel_{g}.png'] = other_bezel(g); out[f'block/polybius/other_screen_{g}.png'] = other_frames(g)
     out['block/polybius/bin_side.png'] = bin_side(); out['block/polybius/bin_inside.png'] = new(base='#1a1a1c', seed=285, spread=2)
+    for part in ('front', 'top', 'side'):
+        out[f'block/polybius/pizza_counter_{part}.png'] = pizza_counter(part)
+        out[f'block/polybius/warmer_{part}.png'] = warmer(part)
+        out[f'block/polybius/soda_{part}.png'] = soda(part)
+    out['block/polybius/back_counter_front.png'] = back_counter('front'); out['block/polybius/back_counter_side.png'] = back_counter('side')
+    out['block/polybius/oven_front.png'] = oven('front'); out['block/polybius/oven_side.png'] = oven('side')
+    out['block/polybius/boxes_top.png'] = boxes('top'); out['block/polybius/boxes_side.png'] = boxes('side')
+    out['block/polybius/napkins.png'] = napkins(); out['block/polybius/menu_board.png'] = menu_board()
+    out['item/polybius_pizza.png'] = slice_icon(); out['item/polybius_soda.png'] = soda_icon()
     return out
 
 
 KINDS = ['cabinet', 'screen', 'dead', 'dead_screen', 'change', 'notice', 'clipboard', 'neon', 'stool', 'counter', 'prizes', 'poster', 'bin', 'light',
-         'brawl', 'brawl_screen', 'other', 'other_screen']
+         'brawl', 'brawl_screen', 'other', 'other_screen', 'pizza_counter', 'back_counter', 'pizza_warmer', 'soda', 'pizza_oven', 'pizza_boxes',
+         'napkins', 'menu_board']
 STAGES = {'cabinet': 4, 'screen': 4, 'neon': 3, 'poster': 3, 'dead': 2, 'dead_screen': 2, 'light': 2, 'prizes': 8, 'brawl': 2, 'brawl_screen': 2,
           'other': 3, 'other_screen': 3}
 ITEM_NAMES = {'polybius_tickets': 'Prize Tickets', 'polybius_prize_spider': 'Rubber Spider', 'polybius_prize_finger_trap': 'Finger Trap',
               'polybius_prize_bouncy_ball': 'Bouncy Ball', 'polybius_prize_glow_star': 'Glow Star', 'polybius_prize_slap_bracelet': 'Slap Bracelet',
-              'polybius_prize_kazoo': 'Kazoo', 'polybius_prize_mood_ring': 'Mood Ring', 'polybius_prize_plush_dog': 'Plush Dog with One Eye'}
+              'polybius_prize_kazoo': 'Kazoo', 'polybius_prize_mood_ring': 'Mood Ring', 'polybius_prize_plush_dog': 'Plush Dog with One Eye',
+              'polybius_pizza': 'Slice of Pizza', 'polybius_soda': 'Fountain Soda'}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'polybius_fitting': 'Arcade Fitting', 'polybius_carpet': 'Arcade Carpet', 'polybius_wall': 'Arcade Wall', 'polybius_ceiling': 'Arcade Ceiling'}
 

@@ -25,7 +25,9 @@ import net.minecraft.world.phys.shapes.*;
 public final class PolybiusBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<PolybiusBlock> CODEC=simpleCodec(PolybiusBlock::new);
     public enum Kind implements StringRepresentable {
-        CABINET,SCREEN,DEAD,DEAD_SCREEN,CHANGE,NOTICE,CLIPBOARD,NEON,STOOL,COUNTER,PRIZES,POSTER,BIN,LIGHT,BRAWL,BRAWL_SCREEN,OTHER,OTHER_SCREEN;
+        CABINET,SCREEN,DEAD,DEAD_SCREEN,CHANGE,NOTICE,CLIPBOARD,NEON,STOOL,COUNTER,PRIZES,POSTER,BIN,LIGHT,BRAWL,BRAWL_SCREEN,OTHER,OTHER_SCREEN,
+        /** 0.4.224 (owner: "add a pizza and soda booth/vendor"): the pizza counter and what is on and behind it. */
+        PIZZA_COUNTER,BACK_COUNTER,PIZZA_WARMER,SODA,PIZZA_OVEN,PIZZA_BOXES,NAPKINS,MENU_BOARD;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -48,6 +50,8 @@ public final class PolybiusBlock extends HorizontalDirectionalBlock {
             case CHANGE->4;
             case LIGHT->stage==0?9:0;
             case PRIZES->3;
+            case PIZZA_WARMER->10;
+            case SODA->3;
             default->0;
         };
     }
@@ -69,15 +73,22 @@ public final class PolybiusBlock extends HorizontalDirectionalBlock {
             case POSTER->box(f,1,1,15,15,15,16);
             case BIN->Block.box(4,0,4,12,12,12);
             case LIGHT->Block.box(2,14,2,14,16,14);
+            case PIZZA_COUNTER,BACK_COUNTER->Shapes.block();
+            case PIZZA_WARMER->box(f,1,0,3,15,12,13);
+            case SODA->box(f,1,0,2,15,14,15);
+            case PIZZA_OVEN->box(f,0,0,0,16,10,15);
+            case PIZZA_BOXES->Block.box(2,0,2,14,7,14);
+            case NAPKINS->Block.box(3,0,6,14,6,10);
+            case MENU_BOARD->box(f,0,2,15,16,14,16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case NOTICE,CLIPBOARD,NEON,POSTER,LIGHT->Shapes.empty();
+            case NOTICE,CLIPBOARD,NEON,POSTER,LIGHT,MENU_BOARD->Shapes.empty();
             default->getShape(s,l,p,c);
         };
     }
-    @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return s.getValue(KIND)==Kind.COUNTER?Shapes.block():Shapes.empty();}
+    @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){var k=s.getValue(KIND);return k==Kind.COUNTER||k==Kind.PIZZA_COUNTER||k==Kind.BACK_COUNTER?Shapes.block():Shapes.empty();}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
 }

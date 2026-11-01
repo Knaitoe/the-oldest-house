@@ -58,6 +58,60 @@ public final class PolybiusTests {
     }
     @AfterBatch(batch="poly_party") public static void partyDone(ServerLevel l){close();}
 
+    /** 0.4.224: classes picked before the start, a chain whose third hit is the finisher, a special, and items walked over. */
+    @GameTest(template="empty",batch="poly_classes",timeoutTicks=900)
+    public static void blockPartyHasClassesChainsSpecialsAndItems(GameTestHelper h){
+        var f=fixture(h);ServerPlayer a=f.player("poly_class0",P),k=f.player("poly_class1",P);var A=a.getUUID();var K=k.getUUID();double[] x0={0};
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the arcade is resident"))
+            .thenExecute(()->{f.click(a,P,PolybiusSite.BRAWL);f.click(k,P,PolybiusSite.BRAWL);at(f,a,-6.5,-15.5);at(f,k,-6.5,-15.5);
+                h.assertTrue(PolybiusBrawl.fighterClass(A)==PolybiusBrawl.BRAWLER&&PolybiusBrawl.fighterClass(K)==PolybiusBrawl.KNIGHT,"each stick starts on a class of its own");
+                PolybiusBrawl.keys(a,PolybiusBrawl.RIGHT);PolybiusBrawl.keys(k,PolybiusBrawl.LEFT);})
+            .thenIdle(1).thenExecute(()->{PolybiusBrawl.keys(a,0);PolybiusBrawl.keys(k,0);})
+            .thenIdle(1).thenExecute(()->PolybiusBrawl.keys(a,PolybiusBrawl.RIGHT))
+            .thenIdle(1).thenExecute(()->{PolybiusBrawl.keys(a,0);
+                h.assertTrue(PolybiusBrawl.fighterClass(A)==PolybiusBrawl.ARCHER&&PolybiusBrawl.fighterClass(K)==PolybiusBrawl.BRAWLER,"left and right, while the game waits, pick who you are: "+PolybiusBrawl.fighterClass(A)+", "+PolybiusBrawl.fighterClass(K));
+                h.assertTrue(PolybiusBrawl.fighterHp(A)==16&&PolybiusBrawl.fighterHp(K)==20,"and each class has its own health");
+                PolybiusBrawl.start(A);PolybiusBrawl.calm(A);PolybiusBrawl.foe(K,PolybiusBrawl.ZOMBIE,12,40);PolybiusBrawl.keys(k,PolybiusBrawl.PUNCH);})
+            .thenIdle(2).thenExecute(()->PolybiusBrawl.keys(k,0)).thenIdle(11).thenExecute(()->PolybiusBrawl.keys(k,PolybiusBrawl.PUNCH))
+            .thenIdle(2).thenExecute(()->PolybiusBrawl.keys(k,0)).thenIdle(11).thenExecute(()->PolybiusBrawl.keys(k,PolybiusBrawl.PUNCH))
+            .thenIdle(2).thenExecute(()->PolybiusBrawl.keys(k,0)).thenIdle(4)
+            .thenExecute(()->{h.assertTrue(PolybiusBrawl.combo(K)==3&&PolybiusBrawl.foeHp(K)==40-5-5-9,"three punches in a row are a chain, and the third is the uppercut: chain "+PolybiusBrawl.combo(K)+", zombie at "+PolybiusBrawl.foeHp(K));
+                x0[0]=PolybiusBrawl.fighterX(K);PolybiusBrawl.keys(k,PolybiusBrawl.SPECIAL);})
+            .thenIdle(2).thenExecute(()->PolybiusBrawl.keys(k,0)).thenIdle(8)
+            .thenExecute(()->{h.assertTrue(PolybiusBrawl.fighterX(K)>x0[0]+20,"the brawler's special is a dash: "+x0[0]+" to "+PolybiusBrawl.fighterX(K));
+                PolybiusBrawl.calm(A);PolybiusBrawl.wound(A,10);PolybiusBrawl.drop(A,PolybiusBrawl.STEAK,0);})
+            .thenIdle(2).thenExecute(()->{h.assertTrue(PolybiusBrawl.fighterHp(A)==12&&PolybiusBrawl.drops(A)==0,"a steak, walked over, heals: "+PolybiusBrawl.fighterHp(A));
+                PolybiusBrawl.drop(A,PolybiusBrawl.TOTEM,0);})
+            .thenIdle(2).thenExecute(()->{h.assertTrue(PolybiusBrawl.lives(A)==4,"a totem is a life: "+PolybiusBrawl.lives(A));
+                PolybiusBrawl.drop(A,PolybiusBrawl.TNT,0);})
+            .thenIdle(2).thenExecute(()->{PolybiusBrawl.foe(A,PolybiusBrawl.ZOMBIE,30,40);PolybiusBrawl.keys(a,PolybiusBrawl.PUNCH);})
+            .thenIdle(2).thenExecute(()->PolybiusBrawl.keys(a,0)).thenIdle(26)
+            .thenExecute(()->h.assertTrue(PolybiusBrawl.foeHp(A)==28,"carried TNT goes with the next attack, in place of an arrow, and goes up where it lands: zombie at "+PolybiusBrawl.foeHp(A)))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="poly_classes") public static void classesDone(ServerLevel l){close();}
+
+    /** 0.4.224: the pizza counter, its sullen teenager, and what a slice and a soda cost. */
+    @GameTest(template="empty",batch="poly_pizza",timeoutTicks=600)
+    public static void thePizzaCounterSellsGreasySlicesForTickets(GameTestHelper h){
+        var f=fixture(h);var p=f.player("poly_pizza",P);var b=f.base(P);
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the arcade is resident"))
+            .thenWaitUntil(()->h.assertTrue(f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(30),a->a.phase()==Polybius.TEEN_PHASE&&a.owner().isEmpty()).size()==1,"one teenager behind the pizza counter, the same for everyone"))
+            .thenExecute(()->{
+                h.assertTrue(PolybiusBlock.is(f.in.getBlockState(b.offset(PolybiusSite.WARMER)),PolybiusBlock.Kind.PIZZA_WARMER)&&PolybiusBlock.is(f.in.getBlockState(b.offset(PolybiusSite.SODA)),PolybiusBlock.Kind.SODA),"a warmer of slices and a soda fountain on the counter");
+                f.click(p,P,PolybiusSite.WARMER);
+                h.assertTrue(count(p,PolybiusRegistry.PIZZA.get())==0,"no tickets, no slice");
+                p.getInventory().add(new net.minecraft.world.item.ItemStack(PolybiusRegistry.TICKETS.get(),8));
+                f.click(p,P,PolybiusSite.WARMER);
+                h.assertTrue(count(p,PolybiusRegistry.PIZZA.get())==1&&count(p,PolybiusRegistry.TICKETS.get())==8-PolybiusRegistry.PIZZA_COST,"a slice for "+PolybiusRegistry.PIZZA_COST+" tickets");
+                f.click(p,P,PolybiusSite.SODA);
+                h.assertTrue(count(p,PolybiusRegistry.SODA.get())==1&&count(p,PolybiusRegistry.TICKETS.get())==8-PolybiusRegistry.PIZZA_COST-PolybiusRegistry.SODA_COST,"and a soda for "+PolybiusRegistry.SODA_COST);
+                var slice=new net.minecraft.world.item.ItemStack(PolybiusRegistry.PIZZA.get());
+                h.assertTrue(slice.getFoodProperties(p)!=null&&slice.getFoodProperties(p).nutrition()>=6,"the slice is a meal");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="poly_pizza") public static void pizzaDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="poly_prizes",timeoutTicks=600)
     public static void ticketsBuyWhatIsOnTheShelfAndTheRegularsKeepToTheirCabinets(GameTestHelper h){
         var f=fixture(h);var p=f.player("poly_prizes",P);var b=f.base(P);

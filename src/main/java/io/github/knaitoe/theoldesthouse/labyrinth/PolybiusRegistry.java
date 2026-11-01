@@ -35,6 +35,16 @@ public final class PolybiusRegistry {
     public static final List<String> PRIZE_NAMES=List.of("spider","finger_trap","bouncy_ball","glow_star","slap_bracelet","kazoo","mood_ring","plush_dog");
     public static final int[] PRIZE_COST={5,5,10,10,15,20,25,40};
     public static final List<DeferredItem<net.minecraft.world.item.Item>> PRIZES=PRIZE_NAMES.stream().map(n->ITEMS.registerSimpleItem("polybius_prize_"+n,new net.minecraft.world.item.Item.Properties().stacksTo(16))).toList();
+    /**
+     * 0.4.224 (owner: "add a pizza and soda booth/vendor, too! describe the pizza as overly greasy"): a slice off the warmer and a
+     * fountain soda, sold for tickets at the pizza counter.
+     */
+    public static final DeferredItem<PolybiusFood> PIZZA=ITEMS.register("polybius_pizza",()->new PolybiusFood(new net.minecraft.world.item.Item.Properties().stacksTo(16)
+        .food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(6).saturationModifier(.3F).build()),false));
+    public static final DeferredItem<PolybiusFood> SODA=ITEMS.register("polybius_soda",()->new PolybiusFood(new net.minecraft.world.item.Item.Properties().stacksTo(16)
+        .food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(1).saturationModifier(.1F).alwaysEdible()
+            .effect(()->new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED,300,0),1).build()),true));
+    public static final int PIZZA_COST=4,SODA_COST=3;
     private PolybiusRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);}
 }

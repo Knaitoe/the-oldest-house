@@ -103,6 +103,7 @@ LOOKS = {
     'literary_polybius_b': Look('#94684c','#1c1a18','receding','#1a1b20','#16171b','suit','#dcdcde',eyes='#2c2a28',age=2),
     # 0.4.221 (owner: "add npcs playing unused games"): the arcade's three regulars, each at their own cabinet (stranger phases
     # forty-seven to forty-nine): a denim jacket, a red tee, a knit sweater and glasses.
+    'literary_polybius_teen': Look('#d2a283','#3a2a20','messy','#b0302a','#2a2a30','shirt','#f0e8d8',eyes='#5a5040',mark='pizza_visor',sleeve=4),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
@@ -672,6 +673,12 @@ def cloth_face(size,look,side='front'):
         d.rectangle((2,5,6,12),fill=a);d.rectangle((3,6,5,11),fill=c);d.rectangle((3,6,4,8),fill=a);d.point((5,9),fill=a)
     if look.mark=='movie_badge':
         d.rectangle((w-7,6,w-3,8),fill='#efe8d4');d.line((w-6,7,w-4,7),fill='#7a3036')
+    if look.mark=='pizza_visor':
+        # 0.4.224: the pizza counter's uniform: a name tag nobody reads, a slice embroidered on the other side, an apron's bib below.
+        d.rectangle((2,6,6,8),fill='#efe8d4');d.line((3,7,5,7),fill='#3a3a40')
+        d.polygon([(w-6,5),(w-3,5),(w-4,8)],fill='#f0b040');d.point((w-5,6),fill='#b02818')
+        d.rectangle((mid-4,12,mid+3,h-2),fill='#e8e2d4');d.line((mid-4,12,mid+3,12),fill='#c8c0b0')
+        d.point((mid-1,15),fill='#d8b070');d.point((mid+1,18),fill='#c8a060')
     if look.style=='ragged':
         d.line((mid,3,mid,h-3),fill=lo);d.rectangle((3,h-7,5,h-4),fill=shade(c,16))
         for y in (6,12,18):d.point((mid+1,y),fill=a)
@@ -763,6 +770,15 @@ def paint(look):
             elif side!='bottom':
                 d.rectangle((0,0,15,5),fill='#242326');d.line((0,4,15,4),fill='#111519')
                 d.line((1,1,14,1),fill='#38383a')
+            put(box,art)
+    if look.mark=='pizza_visor':
+        # 0.4.224: a paper visor: a band round the head on the hat layer and a brim over the eyes, the hair left showing above.
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='front':
+                d.rectangle((0,2,15,4),fill='#c8302a');d.line((0,5,15,5),fill='#8a1e1a');d.rectangle((5,2,10,3),fill='#f0e2c0')
+            elif side in ('left','right','back'):
+                d.rectangle((0,2,15,3),fill='#c8302a');d.line((0,4,15,4),fill='#a02420')
             put(box,art)
     if look.mark=='movie_cap':
         # A flat cloth cap on the hat layer; its brim shades the front edge only.
