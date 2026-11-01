@@ -14,7 +14,8 @@ source kind, Witness or protocol change.
 
 An ordinary hall, built whole: grey boards under dust, panelling to the dado and faded sprigged paper above, furniture under dust
 sheets along the walls, a small table, one loose chair, cobwebs in the corners. A side door and a far door lead on. Dealt a little more
-often than a plain hall (weight 12) from the third crossing until the halls turn to stone.
+often than a plain hall (weight 12) from the third crossing until the halls turn to stone. (0.4.234: below that, the grit gallery
+keeps prints the same way in the stone; docs/STONE_TRACES_0_4_234.md.)
 
 - **Dust keeps footprints.** Every floor cell is dust (`TraceBlock` DUST). A reader walking through it leaves prints pointing the way
   they went (stage 1, turned by the block's facing); walking it again in another direction turns them. Nothing tidies them away.

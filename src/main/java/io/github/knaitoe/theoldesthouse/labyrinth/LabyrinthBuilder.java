@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 76;
+    public static final int VERSION = 77;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -148,7 +148,7 @@ public final class LabyrinthBuilder {
             case FOLDED_MAZE -> LabyrinthPacing.STRANGE_DEPTH;
             case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
             case DEEP_MAZE -> LabyrinthPacing.DEEP_DEPTH;
-            case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING -> LabyrinthPacing.STONE_DEPTH;
+            case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING, STONE_DUST -> LabyrinthPacing.STONE_DEPTH;
             // 0.4.199: the early puzzle rooms stand with the halls, ready before anyone can be offered them (PuzzleRooms.weight paces them);
             // the deep ones are built ahead of the strange depths they are offered from.
             case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, DRAFT_ROOM, DUST_HALL, PROPPED_DOOR, FAMILIAR_KITCHEN -> 0;
@@ -553,6 +553,7 @@ public final class LabyrinthBuilder {
             case PROPPED_DOOR -> TraceRooms.buildCloak(level, base);
             case SPRUNG_ROOMS -> TraceRooms.buildSprung(level, base);
             case FAMILIAR_KITCHEN -> FamiliarRoom.build(level, base);
+            case STONE_DUST -> TraceRooms.buildStoneDust(level, base);
             case TURNING_LANDING -> TurningLandings.buildEarly(level, base);
             case LAMP_ROOMS -> LampRooms.build(level, base);
             case TWIN_LIFT -> TwinLift.build(level, base);

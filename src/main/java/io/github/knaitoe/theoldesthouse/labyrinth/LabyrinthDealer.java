@@ -226,6 +226,8 @@ public final class LabyrinthDealer {
             gray.add(LabyrinthPlace.STONE_ARCADE);
             gray.add(LabyrinthPlace.STONE_BEND);
             gray.add(LabyrinthPlace.STONE_LANDING);
+            // 0.4.234: the gallery whose vault sheds grit, so footprints keep in the stone too.
+            gray.add(LabyrinthPlace.STONE_DUST);
         }
         // 0.4.208: the dark halls, from sixteen.
         if (depth >= DarkHalls.DARK_DEPTH) gray.addAll(DarkHalls.HALLS);
@@ -563,6 +565,8 @@ public final class LabyrinthDealer {
             case STONE_DESCENT -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 16;
             case STONE_ARCADE, STONE_BEND -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 22;
             case STONE_LANDING -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 12;
+            // 0.4.234: the grit gallery, as often as the shut-up rooms were above it, until only the dark halls remain.
+            case STONE_DUST -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 12;
             // 0.4.208: the dark halls, from sixteen, the only ordinary halls from twenty-one.
             case DARK_LONG, DARK_FORK, DARK_MAZE, DARK_SPIRAL, DARK_EDGE -> DarkHalls.weight(place, depth);
             case LONG_HALLWAY, HOTEL_HALLWAY, SPIRAL_STAIR, DUPLICATE_PASSAGE -> 1;

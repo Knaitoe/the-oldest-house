@@ -41,11 +41,14 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * <p>Rarely, and only after many dependable returns (arriving to find one's own prints, chair or wedge as they were left), the House
  * adds one thing while nobody is there to see: a second set of prints beside the reader's own, or, if they drew the chair up to a
  * table, a second chair drawn up across it. Once to a place, for each reader. Most traces stay exactly as left.
+ *
+ * <p>0.4.234: the grit gallery (STONE_DUST), an ordinary hall of the stone depths whose vault sheds a fine grit over its floor. The grit
+ * keeps prints and scores under the dragged chair exactly as the dust above does, so traces go on below the turn to stone.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TraceRooms {
     private TraceRooms(){}
-    public static final LabyrinthPlace DUST=LabyrinthPlace.DUST_HALL,CLOAK=LabyrinthPlace.PROPPED_DOOR,SPRUNG=LabyrinthPlace.SPRUNG_ROOMS;
+    public static final LabyrinthPlace DUST=LabyrinthPlace.DUST_HALL,CLOAK=LabyrinthPlace.PROPPED_DOOR,SPRUNG=LabyrinthPlace.SPRUNG_ROOMS,STONE=LabyrinthPlace.STONE_DUST;
     public static final String STATE="traces_0231";
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     /** A door on a closer swings shut this long after it was last held open. */
@@ -59,6 +62,11 @@ public final class TraceRooms {
     /** The table in the shut-up rooms, the loose chair's first place, the dust sheets. */
     public static final BlockPos DUST_TABLE=new BlockPos(-1,0,-24),DUST_CHAIR=new BlockPos(1,0,-12);
     static final BlockPos[] DUST_SHEETS={new BlockPos(-3,0,-5),new BlockPos(-3,0,-6),new BlockPos(3,0,-9),new BlockPos(-3,0,-13),new BlockPos(3,0,-14),new BlockPos(3,1,-14),new BlockPos(3,0,-27),new BlockPos(3,0,-28),new BlockPos(-3,0,-31)};
+
+    // ------------------------------------------------------------------ the grit gallery (0.4.234)
+    /** In the grit gallery: the table, the loose chair's first place, the lantern left on the floor by the table, and the rib that has come down. */
+    public static final BlockPos STONE_TABLE=new BlockPos(-2,0,-26),STONE_CHAIR=new BlockPos(1,0,-13),STONE_LAMP=new BlockPos(-3,0,-25);
+    public static final int STONE_FALLEN_RIB=-34;
 
     // ------------------------------------------------------------------ the cloakroom
     /** The wedge's hook, the inner door on its closer, the passage's turn, and the cell in front of the far door. */
@@ -87,9 +95,11 @@ public final class TraceRooms {
     }
     static void wall(ServerLevel l,BlockPos b,int x0,int x1,int z){for(int x=x0;x<=x1;x++)for(int y=0;y<=5;y++)set(l,b,x,y,z,y<=1?mat("panel"):mat("paper"));}
     /** Dust over every bare floor cell in a box. */
-    static void dust(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1){
+    static void dust(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1){dust(l,b,x0,z0,x1,z1,TraceBlock.dust());}
+    /** Dust, or grit, over every bare floor cell in a box. */
+    static void dust(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1,BlockState floor){
         for(int x=Math.min(x0,x1);x<=Math.max(x0,x1);x++)for(int z=Math.min(z0,z1);z<=Math.max(z0,z1);z++)
-            if(l.getBlockState(b.offset(x,0,z)).isAir()&&l.getBlockState(b.offset(x,-1,z)).isSolid())set(l,b,x,0,z,TraceBlock.dust());
+            if(l.getBlockState(b.offset(x,0,z)).isAir()&&l.getBlockState(b.offset(x,-1,z)).isSolid())set(l,b,x,0,z,floor);
     }
 
     public static void buildDust(ServerLevel l,BlockPos b){
@@ -102,6 +112,40 @@ public final class TraceRooms {
         LabyrinthBuilder.entrance(l,b,mat("paper"),mat("boards"),mat("plaster"));
         LabyrinthBuilder.doors(l,b,DUST);
         dust(l,b,-3,-1,3,-35);
+    }
+    /**
+     * The grit gallery: a stone gallery nobody keeps, whose vault sheds a fine grit that lies over the whole floor and keeps prints as
+     * the shut-up rooms' dust does. Aged masonry, a vault chamfered with upturned steps, ribs on pilasters every six blocks; one rib has
+     * come down and lies where it fell. Someone once worked here: a table, a loose chair, a lantern left standing on the floor.
+     */
+    public static void buildStoneDust(ServerLevel l,BlockPos b){
+        var brick=Blocks.STONE_BRICKS.defaultBlockState();var polished=Blocks.POLISHED_ANDESITE.defaultBlockState();var air=Blocks.AIR.defaultBlockState();
+        for(int x=-4;x<=4;x++)for(int z=-40;z<=0;z++)for(int y=-1;y<=6;y++){
+            boolean inside=Math.abs(x)<=3&&z>=-39&&z<=-1;var at=b.offset(x,y,z);
+            l.setBlock(at,!inside?StoneHalls.wall(at):y==-1?(x==0?brick:polished):y==6?brick:air,FLAGS);
+        }
+        for(int z=-39;z<=-1;z++){set(l,b,-3,5,z,StoneHalls.stair(Direction.WEST,true));set(l,b,3,5,z,StoneHalls.stair(Direction.EAST,true));}
+        var rib=Blocks.STONE_BRICK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP);
+        for(int z=-4;z>=-34;z-=6){
+            for(int x:new int[]{-3,3}){
+                if(x==3&&z<=-17&&z>=-23)continue; // the side way stays clear
+                set(l,b,x,0,z,Blocks.CHISELED_STONE_BRICKS.defaultBlockState());
+                for(int y=1;y<=4;y++)set(l,b,x,y,z,brick);
+            }
+            for(int x=-2;x<=2;x++)if(z!=STONE_FALLEN_RIB||x<-1||x>1)set(l,b,x,5,z,rib);
+        }
+        // The rib that came down: its three stones on the floor under the gap, where they fell.
+        var fallen=Blocks.STONE_BRICK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
+        set(l,b,-1,0,STONE_FALLEN_RIB,fallen);set(l,b,1,0,STONE_FALLEN_RIB-1,fallen);set(l,b,0,0,STONE_FALLEN_RIB+2,fallen);
+        // Someone's place: a table, a chair, a lantern left on the floor.
+        set(l,b,STONE_TABLE,TraceBlock.of(TraceBlock.Kind.TABLE,Direction.NORTH));
+        set(l,b,STONE_CHAIR,TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.EAST,2));
+        set(l,b,STONE_LAMP,Blocks.LANTERN.defaultBlockState());
+        for(var at:List.of(new BlockPos(2,5,-2),new BlockPos(-2,5,-17),new BlockPos(2,5,-37)))set(l,b,at,Blocks.COBWEB.defaultBlockState());
+        for(int z:new int[]{-7,-19,-31})hang(l,b,0,5,z);
+        LabyrinthBuilder.entrance(l,b,brick,polished,brick);
+        LabyrinthBuilder.doors(l,b,STONE);
+        dust(l,b,-3,-1,3,-39,TraceBlock.grit());
     }
     public static void buildCloak(ServerLevel l,BlockPos b){
         shell(l,b,CLOAK);boolean solved=PuzzleRooms.solved(l.getServer(),CLOAK);
@@ -167,13 +211,14 @@ public final class TraceRooms {
         double dx=p.getX()-(pos.getX()+.5),dz=p.getZ()-(pos.getZ()+.5);
         var toward=Math.abs(dx)>=Math.abs(dz)?(dx>0?Direction.EAST:Direction.WEST):(dz>0?Direction.SOUTH:Direction.NORTH);
         var to=pos.relative(toward);var there=l.getBlockState(to);
-        boolean floor=(there.isAir()||TraceBlock.is(there,TraceBlock.Kind.DUST))&&l.getBlockState(to.below()).isFaceSturdy(l,to.below(),Direction.UP)&&l.getBlockState(to.above()).isAir();
+        boolean floor=(there.isAir()||TraceBlock.dusty(there))&&l.getBlockState(to.below()).isFaceSturdy(l,to.below(),Direction.UP)&&l.getBlockState(to.above()).isAir();
         if(!floor){PuzzleRooms.say(p,"It won't go that way.");return true;}
         if(!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new AABB(to).deflate(.05)).isEmpty()){PuzzleRooms.say(p,"There is no room to pull it to.");return true;}
-        boolean dusty=s.getValue(TraceBlock.STAGE)==1;
-        l.setBlock(pos,dusty?TraceBlock.of(TraceBlock.Kind.DUST,toward,TraceBlock.DRAGGED):Blocks.AIR.defaultBlockState(),FLAGS);
-        l.setBlock(to,s.setValue(TraceBlock.STAGE,TraceBlock.is(there,TraceBlock.Kind.DUST)?1:0),FLAGS);
+        int stood=s.getValue(TraceBlock.STAGE);
+        l.setBlock(pos,stood==1?TraceBlock.of(TraceBlock.Kind.DUST,toward,TraceBlock.DRAGGED):stood==2?TraceBlock.of(TraceBlock.Kind.GRIT,toward,TraceBlock.DRAGGED):Blocks.AIR.defaultBlockState(),FLAGS);
+        l.setBlock(to,s.setValue(TraceBlock.STAGE,TraceBlock.under(there)),FLAGS);
         l.playSound(null,to,SoundEvents.WOOD_STEP,SoundSource.BLOCKS,1F,.55F);l.playSound(null,to,SoundEvents.WOOD_PLACE,SoundSource.BLOCKS,.5F,.6F);
+        if(stood==2)l.playSound(null,to,SoundEvents.GRAVEL_STEP,SoundSource.BLOCKS,.8F,.7F);
         var place=placeOf(p.server,l,to);
         if(place!=null){
             var data=LabyrinthData.get(p.server);var own=own(data,p.getUUID());var chairs=own.getCompound("Chairs");
@@ -253,6 +298,13 @@ public final class TraceRooms {
             if(someone||!OPENED.isEmpty())springs(l,b,place,now);
         }
         if(now%20==3)for(var p:server.getPlayerList().getPlayers())moved(l,p,origin);
+        if(now%8==5)for(var p:l.players())if(!p.isSpectator()&&LabyrinthPlaces.placeAt(origin,p.blockPosition())==STONE)grit(l,p,LabyrinthPlaces.base(origin,STONE));
+    }
+    /** The grit gallery's vault, shedding: a fleck now and then from the ceiling near each reader, for that reader. */
+    static void grit(ServerLevel l,ServerPlayer p,@Nullable BlockPos b){
+        if(b==null)return;var r=l.random;
+        double x=b.getX()+.5+r.nextInt(7)-3+r.nextDouble()*.8-.4,z=Math.max(b.getZ()-39.5,Math.min(b.getZ()-.5,p.getZ()+r.nextInt(13)-6));
+        l.sendParticles(p,new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.FALLING_DUST,Blocks.GRAVEL.defaultBlockState()),false,x,b.getY()+5.9,z,1,0,0,0,0);
     }
     static @Nullable LabyrinthPlace placeOf(net.minecraft.server.MinecraftServer server,ServerLevel l,BlockPos pos){
         var origin=HouseSavedData.get(server).houseOrigin();if(origin==null||!l.dimension().equals(HouseDimensions.INTERIOR))return null;return LabyrinthPlaces.placeAt(origin,pos);
@@ -285,7 +337,7 @@ public final class TraceRooms {
     }
     static boolean dependable(ServerLevel l,LabyrinthData data,UUID reader,LabyrinthPlace place,CompoundTag own){
         var path=own.getCompound("Prints").getLongArray(place.id());
-        if(path.length>=4){int kept=0;for(long at:path){var s=l.getBlockState(BlockPos.of(at));if(TraceBlock.is(s,TraceBlock.Kind.DUST)&&(s.getValue(TraceBlock.STAGE)==TraceBlock.PRINTS||s.getValue(TraceBlock.STAGE)==TraceBlock.BOTH))kept++;}if(kept*2>=path.length)return true;}
+        if(path.length>=4){int kept=0;for(long at:path){var s=l.getBlockState(BlockPos.of(at));if(TraceBlock.dusty(s)&&(s.getValue(TraceBlock.STAGE)==TraceBlock.PRINTS||s.getValue(TraceBlock.STAGE)==TraceBlock.BOTH))kept++;}if(kept*2>=path.length)return true;}
         var chair=own.getCompound("Chairs").getCompound(place.id());
         if(chair.contains("At")&&TraceBlock.is(l.getBlockState(BlockPos.of(chair.getLong("At"))),TraceBlock.Kind.CHAIR))return true;
         return Wedges.ownedIn(data,reader,place);
@@ -306,17 +358,17 @@ public final class TraceRooms {
             var at=BlockPos.of(chair.getLong("At"));var table=BlockPos.of(chair.getLong("Table"));var s=l.getBlockState(at);
             if(TraceBlock.is(s,TraceBlock.Kind.CHAIR)&&TraceBlock.is(l.getBlockState(table),TraceBlock.Kind.TABLE)){
                 var facing=s.getValue(TraceBlock.FACING);var across=table.relative(facing);var there=l.getBlockState(across);
-                if((there.isAir()||TraceBlock.is(there,TraceBlock.Kind.DUST))&&!HouseWatchers.isWatched(l,across)){
-                    l.setBlock(across,TraceBlock.of(TraceBlock.Kind.CHAIR,facing.getOpposite(),TraceBlock.is(there,TraceBlock.Kind.DUST)?1:0),FLAGS);return true;
+                if((there.isAir()||TraceBlock.dusty(there))&&!HouseWatchers.isWatched(l,across)){
+                    l.setBlock(across,TraceBlock.of(TraceBlock.Kind.CHAIR,facing.getOpposite(),TraceBlock.under(there)),FLAGS);return true;
                 }
             }
         }
         var path=own.getCompound("Prints").getLongArray(place.id());if(path.length<4)return false;
         int laid=0;
         for(long at:path){
-            var pos=BlockPos.of(at);var s=l.getBlockState(pos);if(!TraceBlock.is(s,TraceBlock.Kind.DUST))continue;int stage=s.getValue(TraceBlock.STAGE);
+            var pos=BlockPos.of(at);var s=l.getBlockState(pos);if(!TraceBlock.dusty(s))continue;int stage=s.getValue(TraceBlock.STAGE);
             if(stage!=TraceBlock.PRINTS&&stage!=TraceBlock.BOTH)continue;var facing=s.getValue(TraceBlock.FACING);var beside=pos.relative(facing.getClockWise());var b=l.getBlockState(beside);
-            if(!TraceBlock.is(b,TraceBlock.Kind.DUST)||HouseWatchers.isWatched(l,beside))continue;int was=b.getValue(TraceBlock.STAGE);
+            if(!TraceBlock.dusty(b)||HouseWatchers.isWatched(l,beside))continue;int was=b.getValue(TraceBlock.STAGE);
             int next=was==TraceBlock.PRINTS||was==TraceBlock.BOTH?TraceBlock.BOTH:TraceBlock.OTHER;
             l.setBlock(beside,b.setValue(TraceBlock.STAGE,next).setValue(TraceBlock.FACING,facing),FLAGS);laid++;
         }

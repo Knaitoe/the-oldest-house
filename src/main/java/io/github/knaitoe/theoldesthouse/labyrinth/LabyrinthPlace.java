@@ -447,6 +447,11 @@ public enum LabyrinthPlace {
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(6,0,-6),Direction.WEST,LabyrinthData.DEALT),
             new DoorSpec("far",new BlockPos(3,0,-15),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.234, traces in the stone (TraceRooms): a disused stone gallery whose vault sheds grit, which keeps footprints as the shut-up rooms' dust does; an ordinary stone hall. */
+    STONE_DUST("stone_dust", Kind.GRAY, 154, new BoundingBox(-4,-1,-40,4,7,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(4,0,-20),Direction.WEST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-40),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

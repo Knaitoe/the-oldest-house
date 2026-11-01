@@ -449,6 +449,81 @@
     "facing=west,kind=closer,stage=4": {
       "model": "the_oldest_house:block/trace/closer_0",
       "y": 270
+    },
+    "facing=north,kind=grit,stage=0": {
+      "model": "the_oldest_house:block/trace/grit_0"
+    },
+    "facing=north,kind=grit,stage=1": {
+      "model": "the_oldest_house:block/trace/grit_1"
+    },
+    "facing=north,kind=grit,stage=2": {
+      "model": "the_oldest_house:block/trace/grit_2"
+    },
+    "facing=north,kind=grit,stage=3": {
+      "model": "the_oldest_house:block/trace/grit_3"
+    },
+    "facing=north,kind=grit,stage=4": {
+      "model": "the_oldest_house:block/trace/grit_4"
+    },
+    "facing=east,kind=grit,stage=0": {
+      "model": "the_oldest_house:block/trace/grit_0",
+      "y": 90
+    },
+    "facing=east,kind=grit,stage=1": {
+      "model": "the_oldest_house:block/trace/grit_1",
+      "y": 90
+    },
+    "facing=east,kind=grit,stage=2": {
+      "model": "the_oldest_house:block/trace/grit_2",
+      "y": 90
+    },
+    "facing=east,kind=grit,stage=3": {
+      "model": "the_oldest_house:block/trace/grit_3",
+      "y": 90
+    },
+    "facing=east,kind=grit,stage=4": {
+      "model": "the_oldest_house:block/trace/grit_4",
+      "y": 90
+    },
+    "facing=south,kind=grit,stage=0": {
+      "model": "the_oldest_house:block/trace/grit_0",
+      "y": 180
+    },
+    "facing=south,kind=grit,stage=1": {
+      "model": "the_oldest_house:block/trace/grit_1",
+      "y": 180
+    },
+    "facing=south,kind=grit,stage=2": {
+      "model": "the_oldest_house:block/trace/grit_2",
+      "y": 180
+    },
+    "facing=south,kind=grit,stage=3": {
+      "model": "the_oldest_house:block/trace/grit_3",
+      "y": 180
+    },
+    "facing=south,kind=grit,stage=4": {
+      "model": "the_oldest_house:block/trace/grit_4",
+      "y": 180
+    },
+    "facing=west,kind=grit,stage=0": {
+      "model": "the_oldest_house:block/trace/grit_0",
+      "y": 270
+    },
+    "facing=west,kind=grit,stage=1": {
+      "model": "the_oldest_house:block/trace/grit_1",
+      "y": 270
+    },
+    "facing=west,kind=grit,stage=2": {
+      "model": "the_oldest_house:block/trace/grit_2",
+      "y": 270
+    },
+    "facing=west,kind=grit,stage=3": {
+      "model": "the_oldest_house:block/trace/grit_3",
+      "y": 270
+    },
+    "facing=west,kind=grit,stage=4": {
+      "model": "the_oldest_house:block/trace/grit_4",
+      "y": 270
     }
   }
 }
