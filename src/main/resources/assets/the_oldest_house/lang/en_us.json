@@ -945,5 +945,17 @@
   "block.the_oldest_house.replacement_siding_stained": "Stained Siding",
   "block.the_oldest_house.replacement_carpet_stained": "Stained Carpet",
   "advancements.the_oldest_house.account.replacement.title": "The replacement",
-  "advancements.the_oldest_house.account.replacement.description": "It wasn't mine."
+  "advancements.the_oldest_house.account.replacement.description": "It wasn't mine.",
+  "block.the_oldest_house.hall_plaster": "Plaster",
+  "block.the_oldest_house.hall_plaster_cracked": "Cracked Plaster",
+  "block.the_oldest_house.hall_plaster_stained": "Stained Plaster",
+  "block.the_oldest_house.hall_rail": "Picture Rail",
+  "block.the_oldest_house.hall_skirting": "Skirting",
+  "block.the_oldest_house.hall_floor": "Floorboards",
+  "block.the_oldest_house.hall_floor_x": "Floorboards",
+  "block.the_oldest_house.hall_floor_worn": "Worn Floorboards",
+  "block.the_oldest_house.hall_floor_worn_x": "Worn Floorboards",
+  "block.the_oldest_house.hall_ceiling": "Ceiling",
+  "block.the_oldest_house.hall_window_lower": "Sash Window",
+  "block.the_oldest_house.hall_window_upper": "Sash Window"
 }

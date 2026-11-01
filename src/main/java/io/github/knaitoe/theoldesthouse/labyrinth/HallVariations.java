@@ -135,6 +135,8 @@ public final class HallVariations {
         if(p==LabyrinthPlace.VAULTED_HALL)vault(l,b);
         LabyrinthBuilder.entrance(l,b,LabyrinthDomestic.WALL,LabyrinthDomestic.FLOOR,LabyrinthDomestic.CEILING);
         LabyrinthBuilder.doors(l,b,p);
+        // 0.4.219: the hall's own plaster, boards, ceiling and windows (docs/TEXTURE_PASS_HALLS_0_4_219.md).
+        HallFinish.domestic(l,b,p);
     }
     public static void buildStone(ServerLevel l,BlockPos b,LabyrinthPlace p) {
         var open=floor(p);var box=p.room();int roof=p==LabyrinthPlace.STONE_BEND?5:6;

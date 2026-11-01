@@ -1,3 +1,5 @@
+November 1 candidate 0.4.219, the texture pass's first release (the ordinary halls): no vignette, source or Witness change; surfaces swapped one for one at build, same collision, no coordinates moved. Tests: ExplorationPassTests (hall shapes), the interior review cases.
+
 November 1 candidate 0.4.218, the replacement: one new Witness source, replacement (understanding, took_it_home), 69 sources / 52 required; dealt only to a reader with a companion following; the reader's real companion is held unhurtable and given back on success, or sent home to the manor on failure, never harmed; source, account, Witness line, House of Leaves place, co-op lines, miniature and advancement added. Tests: ReplacementTests (four), WitnessPool, ArchitectureTests.
 
 November 1 candidate 0.4.217, Polybius: one new Witness source, polybius (survival, walked_away), 68 sources / 51 required; source, account, Witness line, House of Leaves place, co-op lines, miniature and advancement all added; success and failure both per reader; the tables are server-wide by design. Tests: PolybiusTests (four), WitnessPool, ArchitectureTests (carpet, notice, black cabinet).

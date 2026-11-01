@@ -115,6 +115,8 @@ public final class LabyrinthHalls {
         DomesticLives.fresh(level,base,place);
         DomesticContinuity.freshSmall(level,base,place);
         DomesticDisturbances.apply(level,base,place);
+        // 0.4.219: the corridor's own plaster, skirting and ceiling; its rooms and floor keep theirs.
+        if(isHall(place))HallFinish.first(level,base,place,rel->DomesticHallUpgrade.inFragment(place,rel));
     }
     public static int height(LabyrinthPlace place){return place==LabyrinthPlace.CROSS_HALL||place==LabyrinthPlace.QUIET_ROOM||HallVariations.domestic(place)?4:3;}
     public static net.minecraft.world.level.block.state.BlockState floorState(LabyrinthPlace place){
