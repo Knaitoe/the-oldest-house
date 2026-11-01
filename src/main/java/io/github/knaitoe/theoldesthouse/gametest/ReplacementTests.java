@@ -5,6 +5,8 @@ import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import io.github.knaitoe.theoldesthouse.opening.CompanionOrders;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.network.chat.Component;
@@ -111,4 +113,37 @@ public final class ReplacementTests {
             .thenSucceed();
     }
     @AfterBatch(batch="repl_left") public static void leftDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.225 (review: "replacement can strand a captured pet"): a companion held where nothing is loaded when the reader leaves is
+     * not crossed off. The pass that can't find it keeps it on the record and loads the crate's chunk for it; it is sent home, and
+     * crossed off, only once it has arrived. The record also survives being saved and loaded again, as across a restart.
+     */
+    private static NativeTestChunks cage;
+    @GameTest(template="empty",batch="repl_unloaded",timeoutTicks=3000)
+    public static void aCompanionHeldOutOfReachIsKeptOnTheRecordUntilItIsHome(GameTestHelper h){
+        var f=fixture(h);var p=f.player("repl_unloaded",P);var l=street(f);var b=f.base(P);
+        var far=new BlockPos(b.getX(),b.getY(),b.getZ()-480);UUID[] id={null};cage=new NativeTestChunks();
+        h.startSequence().thenExecute(()->{hold(f);var home=Replacement.home(f.in.getServer());h.assertTrue(home!=null,"the manor is there to go home to");
+                f.chunks.hold(f.in.getServer().getLevel(HouseDimensions.INTERIOR),new AABB(home,home).inflate(8));cage.hold(l,new AABB(far).inflate(2));})
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&cage.ready(),"the street, the manor's hall and the far crate are resident"))
+            .thenExecute(()->{l.setBlock(far.below(),Blocks.STONE.defaultBlockState(),3);
+                var cat=EntityType.CAT.create(l);cat.moveTo(far.getX()+.5,far.getY(),far.getZ()+.5,0,0);cat.tame(p);cat.setCustomName(Component.literal("Pip"));l.addFreshEntity(cat);id[0]=cat.getUUID();
+                // The reader stays on the street while the crate's part of it is let go, so nothing sends Pip home yet.
+                at(f,p,.5,-1.5,180);Replacement.holdFor(p,cat,far);
+                h.assertTrue(cat.isInvulnerable()&&cat.isOrderedToSit()&&Replacement.isHeld(cat),"Pip is held at the crate, sitting, and cannot be hurt");
+                cage.close();})
+            .thenWaitUntil(()->h.assertTrue(l.getEntity(id[0])==null,"the crate's part of the street unloads, and Pip with it"))
+            .thenExecute(()->{f.reload();h.assertTrue(f.own(p,P).getList("Held218",11).size()==1,"Pip is still on the record, saved and loaded again, while out of reach");
+                var b2=f.base(P);p.teleportTo(f.in,b2.getX()+.5,b2.getY()+40,b2.getZ()+.5,0,0);
+                Replacement.resolve(p);var own=f.own(p,P);
+                h.assertTrue(own.getList("Held218",11).size()==1&&!own.getBoolean("LeftBehind218"),"leaving with Pip out of reach keeps Pip on the record (it used to be cleared here): "+own);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("LeftBehind218"),"the crate's chunk is loaded for Pip, and Pip is sent home"))
+            .thenExecute(()->{var own=f.own(p,P);h.assertTrue(own.getList("Held218",11).isEmpty(),"crossed off only once home");
+                var home=f.in.getServer().getLevel(HouseDimensions.INTERIOR).getEntity(id[0]);
+                h.assertTrue(home instanceof Cat c&&c.isOrderedToSit()&&!c.isInvulnerable()&&!Replacement.isHeld(c)&&p.getUUID().equals(c.getOwnerUUID()),"Pip waits at the manor, sitting, no longer held, still the reader's: "+home);
+                h.assertTrue(l.getEntity(id[0])==null,"and is not left behind in the crate as well");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="repl_unloaded") public static void unloadedDone(ServerLevel l){if(cage!=null){cage.close();cage=null;}close();}
 }

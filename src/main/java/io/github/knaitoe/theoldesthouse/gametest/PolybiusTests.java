@@ -29,6 +29,12 @@ public final class PolybiusTests {
     private static long token(ServerPlayer p){var s=Polybius.session(p.getUUID());return s==null?0:s.token();}
     private static int men(LiteraryTests.Fixture f,ServerPlayer p){var b=f.base(P);return f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(30),a->a.owner().isPresent()&&a.owner().get().equals(p.getUUID())&&(a.phase()==Polybius.MAN_A_PHASE||a.phase()==Polybius.MAN_B_PHASE)).size();}
 
+    /** A key log, as the screen sends it: pairs of how many ticks and which keys. */
+    private static java.util.List<Integer> keys(int... pairs){var out=new java.util.ArrayList<Integer>();for(int i=0;i+1<pairs.length;i+=2)out.add(pairs[i]<<5|pairs[i+1]);return out;}
+    /** Idle for so many ticks: a play of the black cabinet, as far as the server is concerned. */
+    private static java.util.List<Integer> idle(int ticks){return keys(ticks,0);}
+    /** What the server will make of a log for a reader's open session. */
+    private static int replayed(ServerPlayer p,java.util.List<Integer> log){var ses=Polybius.session(p.getUUID());var r=PolybiusGames.replay(ses.game(),ses.token(),log,Polybius.LONGEST[ses.game()]);return r==null?-1:r.score();}
     private static int count(ServerPlayer p,net.minecraft.world.item.Item item){int n=0;var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(item))n+=inv.getItem(i).getCount();return n;}
 
     @GameTest(template="empty",batch="poly_party",timeoutTicks=900)
@@ -160,13 +166,23 @@ public final class PolybiusTests {
             .thenExecute(()->{
                 cabinet(f,p,PolybiusSite.MOTHLIGHT);var ses=Polybius.session(p.getUUID());h.assertTrue(ses!=null&&ses.game()==PolybiusSite.MOTHLIGHT,"the cabinet opens a game for its reader");
                 cabinet(f,q,PolybiusSite.MOTHLIGHT);h.assertTrue(Polybius.session(q.getUUID())==null,"one reader plays a cabinet at a time");
-                h.assertTrue(!Polybius.submit(p,token(p)+1,50,30),"a score with another session's token is not believed");
-                h.assertTrue(!Polybius.submit(p,token(p),100000,30)&&PolybiusScores.table(s,PolybiusSite.MOTHLIGHT).isEmpty(),"nor one faster than the game can score");
-                cabinet(f,p,PolybiusSite.MOTHLIGHT);h.assertTrue(Polybius.submit(p,token(p),120,30),"a believable game over stands");
-                cabinet(f,q,PolybiusSite.MOTHLIGHT);h.assertTrue(Polybius.submit(q,token(q),90,30),"and the next reader's");
-                cabinet(f,p,PolybiusSite.MOTHLIGHT);h.assertTrue(Polybius.submit(p,token(p),60,30),"a worse game stands too");
+                h.assertTrue(!Polybius.submit(p,token(p)+1,idle(30)),"a game with another session's token is not believed");
+                // 0.4.225 (review: "Polybius trusts client-reported scores too much"): the screen sends its keys, never a score.
+                h.assertTrue(!Polybius.submit(p,token(p),keys())&&PolybiusScores.table(s,PolybiusSite.MOTHLIGHT).isEmpty()&&count(p,PolybiusRegistry.TICKETS.get())==0,"nothing played, nothing scored or paid");
+                cabinet(f,p,PolybiusSite.MOTHLIGHT);
+                h.assertTrue(!Polybius.submit(p,token(p),keys(2000,PolybiusGames.LEFT))&&PolybiusScores.table(s,PolybiusSite.MOTHLIGHT).isEmpty(),"nor a game longer than the session has been open");
+                cabinet(f,p,PolybiusSite.MOTHLIGHT);Polybius.backdate(p.getUUID(),100);h.assertTrue(!Polybius.submit(p,token(p),keys(0,PolybiusGames.LEFT,20,0)),"nor a log with a run of nothing in it");
+                cabinet(f,p,PolybiusSite.MOTHLIGHT);Polybius.backdate(p.getUUID(),Polybius.LONGEST[PolybiusSite.MOTHLIGHT]+500);
+                h.assertTrue(!Polybius.submit(p,token(p),idle(Polybius.LONGEST[PolybiusSite.MOTHLIGHT]+1))&&PolybiusScores.table(s,PolybiusSite.MOTHLIGHT).isEmpty(),"nor one longer than the game runs");
+                // A game played: the server plays it again from the session's seed with the reader's keys and keeps what it scores.
+                var drift=keys(30,PolybiusGames.LEFT,30,PolybiusGames.UP|PolybiusGames.RIGHT,40,PolybiusGames.DOWN,400,0);
+                cabinet(f,p,PolybiusSite.MOTHLIGHT);int first=replayed(p,drift);Polybius.backdate(p.getUUID(),500);
+                h.assertTrue(first>0&&Polybius.submit(p,token(p),drift)&&PolybiusScores.best(s,PolybiusSite.MOTHLIGHT,p.getUUID())==first,"a game played stands, at the score the server's replay reaches: "+first);
+                h.assertTrue(count(p,PolybiusRegistry.TICKETS.get())==Polybius.tickets(first),"and it is paid for that score");
+                cabinet(f,q,PolybiusSite.MOTHLIGHT);int theirs=replayed(q,idle(300));Polybius.backdate(q.getUUID(),300);h.assertTrue(Polybius.submit(q,token(q),idle(300)),"and the next reader's");
+                cabinet(f,p,PolybiusSite.MOTHLIGHT);int worse=replayed(p,idle(10));h.assertTrue(worse<first&&Polybius.submit(p,token(p),idle(10)),"a shorter game stands too, closed after ten ticks: "+worse);
                 var t=PolybiusScores.table(s,PolybiusSite.MOTHLIGHT);
-                h.assertTrue(t.size()==2&&t.get(0).id().equals(p.getUUID())&&t.get(0).score()==120&&t.get(1).id().equals(q.getUUID()),"one place each, best kept, in order: "+t);
+                h.assertTrue(t.size()==2&&t.get(0).score()>=t.get(1).score()&&PolybiusScores.best(s,PolybiusSite.MOTHLIGHT,p.getUUID())==first&&PolybiusScores.best(s,PolybiusSite.MOTHLIGHT,q.getUUID())==theirs,"one place each, best kept, in order: "+t);
                 h.assertTrue(PolybiusScores.table(s,PolybiusSite.UNDERTOW).isEmpty()&&PolybiusScores.tag(s,PolybiusSite.BLACK).getList("Rows",10).isEmpty(),"each game keeps its own table, and the black cabinet none");
                 var b=f.base(P);var at=Vec3.atBottomCenterOf(b.offset(PolybiusSite.CABINETS.get(PolybiusSite.MOTHLIGHT))).add(0,2.15,0);
                 var board=f.in.getEntitiesOfClass(Display.TextDisplay.class,new AABB(at,at).inflate(1),e->e.getTags().contains("polybius_board_0"));
@@ -184,7 +200,7 @@ public final class PolybiusTests {
             .thenWaitUntil(()->h.assertTrue(men(f,p)==2,"two men in suits stand by the black cabinet, the reader's own"));
         for(int i=1;i<=Polybius.PLAYS;i++){int n=i;
             seq=seq.thenExecute(()->cabinet(f,p,PolybiusSite.BLACK)).thenIdle(Polybius.MIN_PLAY-30)
-                .thenExecute(()->{h.assertTrue(Polybius.submit(p,token(p),40,Polybius.MIN_PLAY),"a play of the black cabinet that lasted counts");h.assertTrue(f.own(p,P).getInt("Plays217")==n,"play "+n);});
+                .thenExecute(()->{h.assertTrue(Polybius.submit(p,token(p),idle(Polybius.MIN_PLAY)),"a play of the black cabinet that lasted counts");h.assertTrue(f.own(p,P).getInt("Plays217")==n,"play "+n);});
         }
         seq.thenExecute(()->{h.assertTrue(f.own(p,P).contains("Call217")&&!f.own(p,P).getBoolean("Ready"),"after three, it calls them by name");at(f,p,.5,-1.5);})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ready"),"walking to the front without a fourth play"))
@@ -201,11 +217,12 @@ public final class PolybiusTests {
     public static void aFourthPlayTakesTheEveningAndEveryPlaceOnTheTables(GameTestHelper h){
         var f=fixture(h);var p=f.player("poly_fourth",P);var s=h.getLevel().getServer();
         var seq=h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the arcade is resident"))
-            .thenExecute(()->{cabinet(f,p,PolybiusSite.SIGNAL);h.assertTrue(Polybius.submit(p,token(p),75,30)&&PolybiusScores.rank(s,PolybiusSite.SIGNAL,p.getUUID())==1,"a place on the signal table first");});
-        for(int i=1;i<=Polybius.PLAYS;i++)seq=seq.thenExecute(()->cabinet(f,p,PolybiusSite.BLACK)).thenIdle(Polybius.MIN_PLAY-30).thenExecute(()->Polybius.submit(p,token(p),40,Polybius.MIN_PLAY));
+            .thenExecute(()->{cabinet(f,p,PolybiusSite.SIGNAL);var tune=keys(20,PolybiusGames.SPACE,20,0,20,PolybiusGames.SPACE,20,0);Polybius.backdate(p.getUUID(),100);
+                h.assertTrue(replayed(p,tune)>0&&Polybius.submit(p,token(p),tune)&&PolybiusScores.rank(s,PolybiusSite.SIGNAL,p.getUUID())==1,"a place on the signal table first");});
+        for(int i=1;i<=Polybius.PLAYS;i++)seq=seq.thenExecute(()->cabinet(f,p,PolybiusSite.BLACK)).thenIdle(Polybius.MIN_PLAY-30).thenExecute(()->Polybius.submit(p,token(p),idle(Polybius.MIN_PLAY)));
         seq.thenExecute(()->{h.assertTrue(f.own(p,P).getInt("Plays217")==Polybius.PLAYS,"three plays");cabinet(f,p,PolybiusSite.BLACK);
                 var ses=Polybius.session(p.getUUID());h.assertTrue(ses!=null&&ses.taken(),"the fourth is the one it keeps");
-                h.assertTrue(!Polybius.submit(p,token(p),40,Polybius.MIN_PLAY),"and no game over from the screen ends it");})
+                h.assertTrue(!Polybius.submit(p,token(p),idle(Polybius.MIN_PLAY)),"and no game over from the screen ends it");})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Lost217"),"it takes the evening"))
             .thenExecute(()->{var own=f.own(p,P);var b=f.base(P);
                 h.assertTrue(PolybiusScores.table(s,PolybiusSite.SIGNAL).isEmpty()&&own.getInt("Struck217")==1,"every place the reader held is gone from the tables");

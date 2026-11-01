@@ -18,12 +18,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.AABB;
@@ -50,6 +52,11 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  *
  * <p>A reader who leaves the street with their companion still in the crate has it sent home to the manor, where it waits for them,
  * sitting; no account that visit. They may come back another time.
+ *
+ * <p>0.4.225 (review: "replacement can strand a captured pet"): a held companion stays on the reader's record ({@code Held218})
+ * until its return is confirmed, whether it was let out of the crate or arrived at the manor. One whose part of the street isn't
+ * loaded when the reader leaves (or after a restart) is looked for again with the crate's chunk loaded for it; it is crossed off
+ * only once that chunk's creatures are loaded and it is not among them.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Replacement {
@@ -83,7 +90,7 @@ public final class Replacement {
 
     // ------------------------------------------------------------------------------------------------ arrival
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
-        HERE.remove(p.getUUID());own.putBoolean("Taken218",false);own.putInt("Here218",0);own.remove("Stood218");own.remove("Lay218");own.remove("HouseCue218");own.remove("Freed218");
+        HERE.remove(p.getUUID());own.putBoolean("Taken218",false);own.putInt("Here218",0);own.remove("Stood218");own.remove("Lay218");own.remove("HouseCue218");own.remove("Freed218");own.remove("Released218");own.remove("Leaving218");
         if(own.getBoolean("Ready")&&!own.getBoolean("Completed")){cue(p,"There's something in the mailbox of the house you came out of.");return;}
         cue(p,"A street at midnight. Every house is boarded up, every window and every door. Far down the street, one door is open.");
     }
@@ -119,26 +126,38 @@ public final class Replacement {
             hold(p,b,pet);var id=NbtUtils.createUUID(pet.getUUID());if(!held.contains(id))held.add(id);
         }
         if(pets.isEmpty()&&!already){if(own.getInt("Here218")<TAKE_AFTER*2)return;if(!own.contains("Species218"))own.putString("Species218","cat");}
-        own.put("Held218",held);own.putBoolean("Taken218",true);
+        own.put("Held218",held);own.putBoolean("Taken218",true);own.putLong("Pen218",b.offset(ReplacementSite.PEN).asLong());
         if(where==null)where=behind(p,HEEL);
         for(var a:replacements(p,b))a.discard();
         spawn(p,where);
         save(p,own);
         cue(p,dog(own)?"At your heels, something says \"Woof.\"":"At your heels, something says \"Mrrow.\"");
     }
-    static void hold(ServerPlayer p,BlockPos b,TamableAnimal pet){
+    static void hold(ServerPlayer p,BlockPos b,TamableAnimal pet){holdAt(p,pet,b.offset(ReplacementSite.PEN));}
+    static void holdAt(ServerPlayer p,TamableAnimal pet,BlockPos pen){
         CompanionOrders.issue(pet,p,CompanionOrders.Order.STAY);pet.setOrderedToSit(true);
         if(!pet.isInvulnerable()){pet.setInvulnerable(true);pet.addTag(INVULNERABLE_TAG);}
         pet.addTag(HELD_TAG);pet.getNavigation().stop();pet.setDeltaMovement(Vec3.ZERO);
-        var at=Vec3.atBottomCenterOf(b.offset(ReplacementSite.PEN));pet.teleportTo(at.x,at.y,at.z);
+        var at=Vec3.atBottomCenterOf(pen);pet.teleportTo(at.x,at.y,at.z);
     }
+    /** Back at the manor, or let out at home: it sits and waits, still the reader's. */
+    static void settle(ServerPlayer p,TamableAnimal pet){release(pet);CompanionOrders.issue(pet,p,CompanionOrders.Order.STAY);pet.setOrderedToSit(true);}
     static void release(TamableAnimal pet){
         pet.removeTag(HELD_TAG);if(pet.getTags().contains(INVULNERABLE_TAG)){pet.removeTag(INVULNERABLE_TAG);pet.setInvulnerable(false);}
     }
-    static List<TamableAnimal> held(ServerLevel l,CompoundTag own){
+    static List<TamableAnimal> held(ServerLevel l,CompoundTag own){return loaded(l,own,"Held218");}
+    /** The loaded, living companions under one of the reader's lists: still in the crate (Held218), or let out of it this visit (Released218). */
+    static List<TamableAnimal> loaded(ServerLevel l,CompoundTag own,String key){
         var out=new ArrayList<TamableAnimal>();
-        for(Tag t:own.getList("Held218",Tag.TAG_INT_ARRAY)){var e=l.getEntity(NbtUtils.loadUUID(t));if(e instanceof TamableAnimal pet&&pet.isAlive())out.add(pet);}
+        for(Tag t:own.getList(key,Tag.TAG_INT_ARRAY)){var e=l.getEntity(NbtUtils.loadUUID(t));if(e instanceof TamableAnimal pet&&pet.isAlive())out.add(pet);}
         return out;
+    }
+    /** Let out of the crate: it follows the reader again, and moves from the held list to the released one. */
+    static void letOut(ServerPlayer p,CompoundTag own,List<TamableAnimal> pets){
+        if(pets.isEmpty())return;var ids=new HashSet<UUID>();for(var pet:pets){release(pet);CompanionOrders.issue(pet,p,CompanionOrders.Order.FOLLOW);pet.setOrderedToSit(false);ids.add(pet.getUUID());}
+        var still=new ListTag();var out=own.getList("Released218",Tag.TAG_INT_ARRAY).copy();
+        for(Tag t:own.getList("Held218",Tag.TAG_INT_ARRAY))if(ids.contains(NbtUtils.loadUUID(t)))out.add(t);else still.add(t);
+        own.put("Held218",still);own.put("Released218",out);
     }
 
     /** It keeps at the reader's heels on all fours; left behind, it is behind them again the next time they look round. */
@@ -192,7 +211,8 @@ public final class Replacement {
         if(own.getBoolean("Freed218")){cue(p,"The crate is open, and empty, but for the blanket.");return;}
         var pets=held(l,own);
         l.setBlock(crate,s.setValue(ReplacementBlock.STAGE,1),3);l.playSound(null,crate,SoundEvents.CHAIN_PLACE,SoundSource.BLOCKS,.8F,1.2F);
-        for(var pet:pets){release(pet);CompanionOrders.issue(pet,p,CompanionOrders.Order.FOLLOW);pet.setOrderedToSit(false);}
+        // What is in the crate is let out; one not loaded yet is let out when it is (the street's tick), never left held.
+        letOut(p,own,pets);
         own.putBoolean("Freed218",true);own.putInt("Freed218Count",pets.size());save(p,own);
         if(pets.isEmpty())cue(p,"The crate is empty. The blanket inside is still warm.");
         else cue(p,name(own).equals("the cat")||name(own).equals("the dog")?"It's yours. It comes out low and fast, and doesn't leave your side.":name(own)+" comes out low and fast, and doesn't leave your side.");
@@ -214,7 +234,7 @@ public final class Replacement {
         var s=e.getServer();boolean slow=s.getTickCount()%40==3,often=s.getTickCount()%20==7;
         for(var p:s.getPlayerList().getPlayers()){
             if(slow)noteCompanion(p);
-            if(!LiteraryVignettes.inside(p,PLACE)){HERE.remove(p.getUUID());if(often){var own=own(p);if(!own.getList("Held218",Tag.TAG_INT_ARRAY).isEmpty()&&!own.getBoolean("Freed218"))leftBehind(p,own);}continue;}
+            if(!LiteraryVignettes.inside(p,PLACE)){HERE.remove(p.getUUID());if(often){var own=own(p);if(!own.getList("Held218",Tag.TAG_INT_ARRAY).isEmpty())leftBehind(p,own);}continue;}
             var b=base(p);if(b==null)continue;long now=p.serverLevel().getGameTime();var own=own(p);
             int here=HERE.merge(p.getUUID(),1,Integer::sum);
             if(!own.getBoolean("Taken218")&&!own.getBoolean("Ready")){if(here>=TAKE_AFTER){own.putInt("Here218",here);take(p,b,own);}continue;}
@@ -223,11 +243,13 @@ public final class Replacement {
             var a=replacement(p);
             if(a==null&&!own.getBoolean("Freed218"))a=spawn(p,behind(p,HEEL));
             if(a!=null)heel(p,b,own,a,now);
+            // The crate open, a companion that wasn't loaded when it was opened is let out as soon as it is.
+            if(own.getBoolean("Freed218")){var late=held(p.serverLevel(),own);if(!late.isEmpty()){own.putInt("Freed218Count",own.getInt("Freed218Count")+late.size());letOut(p,own,late);}}
             // A held companion can be heard from the street, faintly, now and then.
             if(!own.getBoolean("Freed218")&&now%120==60&&!held(p.serverLevel(),own).isEmpty())heard(p,Vec3.atCenterOf(b.offset(ReplacementSite.PEN)),dog(own)?SoundEvents.WOLF_WHINE:SoundEvents.CAT_STRAY_AMBIENT,.5F,1F);
             // Out on the street again with the companion at their side: home.
             if(own.getBoolean("Freed218")&&ReplacementSite.street(rel(p.position(),b))){
-                boolean together=true;for(var pet:held(p.serverLevel(),own))if(pet.distanceTo(p)>16)together=false;
+                boolean together=true;for(var pet:loaded(p.serverLevel(),own,"Released218"))if(pet.distanceTo(p)>16)together=false;
                 if(together){own.putBoolean("TookHome218",true);LiteraryVignettes.ready(p,PLACE,own,"took_it_home");
                     var mailbox=b.offset(ReplacementSite.MAILBOX);var ms=p.serverLevel().getBlockState(mailbox);if(ReplacementBlock.is(ms,ReplacementBlock.Kind.MAILBOX))p.serverLevel().setBlock(mailbox,ms.setValue(ReplacementBlock.STAGE,1),3);
                     cue(p,"The street is quiet behind you. In the mailbox of the house you came out of, there's a page that wasn't there before.");}
@@ -238,14 +260,48 @@ public final class Replacement {
     /** Gone from the street with the companion still in the crate: it is sent home to the manor, and waits there, sitting. */
     /** Where a companion left behind goes to wait: inside the manor's front hall. */
     public static @Nullable Vec3 home(net.minecraft.server.MinecraftServer s){var origin=HouseSavedData.get(s).houseOrigin();return origin==null?null:Vec3.atBottomCenterOf(origin.offset(HouseLayout.AXIS_X,1,HouseLayout.THRESHOLD_Z+4));}
+    /**
+     * Gone from the street with a companion still held: each one is sent home to the manor, and crossed off the record only once it
+     * is there (or once it is clear it isn't in the crate at all). One whose part of the street isn't loaded, after the reader has
+     * walked away from it or after a restart, is looked for again with the crate's chunk loaded for a while; a move that fails
+     * leaves it held, safe, and on the record, to try again.
+     */
     static void leftBehind(ServerPlayer p,CompoundTag own){
         var s=p.server;var manor=s.getLevel(HouseDimensions.INTERIOR);var street=s.getLevel(NovelRooms.dimension(PLACE));var at=home(s);
-        if(street!=null)for(var pet:held(street,own)){release(pet);
-            if(at==null||manor==null)continue;
-            var moved=pet.changeDimension(new DimensionTransition(manor,at,Vec3.ZERO,0,0,DimensionTransition.PLACE_PORTAL_TICKET));
-            if(moved instanceof TamableAnimal home){CompanionOrders.issue(home,p,CompanionOrders.Order.STAY);home.setOrderedToSit(true);}
+        if(!own.getBoolean("Leaving218")){own.putBoolean("Leaving218",true);own.putInt("TimesLeft218",own.getInt("TimesLeft218")+1);}
+        var still=new ListTag();boolean arrived=false;
+        for(Tag t:own.getList("Held218",Tag.TAG_INT_ARRAY)){
+            var id=NbtUtils.loadUUID(t);
+            // Already at the manor (moved before the record caught up): it waits there.
+            if(manor!=null&&manor.getEntity(id) instanceof TamableAnimal there&&there.isAlive()){settle(p,there);arrived=true;continue;}
+            var e=street==null?null:street.getEntity(id);
+            if(e instanceof TamableAnimal pet&&pet.isAlive()){
+                var moved=at==null||manor==null?null:pet.changeDimension(new DimensionTransition(manor,at,Vec3.ZERO,0,0,DimensionTransition.PLACE_PORTAL_TICKET));
+                if(moved instanceof TamableAnimal home){settle(p,home);arrived=true;}else still.add(t);
+                continue;
+            }
+            if(e!=null)continue;
+            if(street!=null&&own.contains("Pen218")){
+                var pen=BlockPos.of(own.getLong("Pen218"));var chunk=new ChunkPos(pen);
+                // Its creatures loaded, and it isn't among them: it is not in the crate, and nothing is left to strand.
+                if(street.areEntitiesLoaded(chunk.toLong()))continue;
+                street.getChunkSource().addRegionTicket(TicketType.PORTAL,chunk,2,pen);
+            }
+            still.add(t);
         }
-        own.remove("Held218");own.putBoolean("LeftBehind218",true);own.putInt("TimesLeft218",own.getInt("TimesLeft218")+1);save(p,own);
-        cue(p,dog(own)?"Somewhere behind you, something barks in your companion's voice. Yours has gone home ahead of you. It will be waiting.":"Somewhere behind you, something meows in your companion's voice. Yours has gone home ahead of you. It will be waiting.");
+        own.put("Held218",still);
+        if(arrived&&!own.getBoolean("HomeCue218")){own.putBoolean("HomeCue218",true);
+            cue(p,dog(own)?"Somewhere behind you, something barks in your companion's voice. Yours has gone home ahead of you. It will be waiting.":"Somewhere behind you, something meows in your companion's voice. Yours has gone home ahead of you. It will be waiting.");}
+        if(still.isEmpty()){own.putBoolean("LeftBehind218",true);own.remove("Leaving218");own.remove("HomeCue218");}
+        save(p,own);
     }
+    /** For the tests: a companion held for a reader at a given place, as the street would hold it. */
+    public static void holdFor(ServerPlayer p,TamableAnimal pet,BlockPos pen){
+        var own=own(p);holdAt(p,pet,pen);var held=own.getList("Held218",Tag.TAG_INT_ARRAY).copy();held.add(NbtUtils.createUUID(pet.getUUID()));
+        own.put("Held218",held);own.putLong("Pen218",pen.asLong());own.putBoolean("Taken218",true);if(!own.contains("Species218"))own.putString("Species218",pet instanceof Wolf?"dog":"cat");save(p,own);
+    }
+    /** For the tests: one pass of sending a reader's held companions home. */
+    public static void resolve(ServerPlayer p){var own=own(p);if(!own.getList("Held218",Tag.TAG_INT_ARRAY).isEmpty())leftBehind(p,own);}
+    /** Whether a creature is held in the crate. */
+    public static boolean isHeld(net.minecraft.world.entity.Entity e){return e.getTags().contains(HELD_TAG);}
 }

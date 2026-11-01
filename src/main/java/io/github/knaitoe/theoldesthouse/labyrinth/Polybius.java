@@ -53,9 +53,12 @@ public final class Polybius {
     public static boolean regular(int phase){return phase>=REGULAR_PHASE&&phase<REGULAR_PHASE+3;}
     /** A play of the black cabinet counts after five seconds; three are enough; a fourth keeps the reader six seconds, then takes them. */
     public static final int MIN_PLAY=100,PLAYS=3,TAKEN_AFTER=120,CALL_EVERY=50;
-    /** The most each game can score in a tick, with room to spare, and the longest a session is kept. */
-    static final int[] RATE={3,2,3,0},LONGEST={12000,12000,12000,1600};
-    public record Session(int game,long token,long start,boolean taken){}
+    /** The longest each game runs (the screen ends it there), in ticks. */
+    public static final int[] LONGEST={12000,12000,12000,1600};
+    /** How far a key log may run ahead of the time the session has been open, in ticks: the screen opens a moment after the session. */
+    static final int SLACK=40;
+    /** A session: the game, its token (the game's seed too), when it opened by the server's clock and by the wall clock, and whether the black cabinet keeps the reader. */
+    public record Session(int game,long token,long start,long startMillis,boolean taken){}
     static final Map<UUID,Session> SESSIONS=new HashMap<>();
     public static @Nullable Session session(UUID id){return SESSIONS.get(id);}
     public static boolean playing(UUID id){return SESSIONS.containsKey(id);}
@@ -118,18 +121,27 @@ public final class Polybius {
             if(taken){own.putBoolean("Fourth217",true);save(p,own);}
         }
         long now=p.serverLevel().getGameTime();long token=p.getRandom().nextLong();
-        SESSIONS.put(p.getUUID(),new Session(game,token,now,taken));
+        SESSIONS.put(p.getUUID(),new Session(game,token,now,System.currentTimeMillis(),taken));
         HousePackets.send(p,new PolybiusPayload(game,token,p.getGameProfile().getName(),own.getInt("Plays217"),taken,PolybiusScores.tag(p.server,game)));
         heard(p,Vec3.atCenterOf(b.offset(PolybiusSite.CABINETS.get(game)).above()),SoundEvents.NOTE_BLOCK_BIT.value(),.5F,game==PolybiusSite.BLACK?.5F:1.4F);
     }
-    /** A game over, from the reader's screen. Whether it stands is decided here. */
-    public static boolean submit(ServerPlayer p,long token,int score,int ticks){
+    /**
+     * A game over, from the reader's screen: the keys it held on each tick. Whether it stands, and what it scored, is decided here.
+     * 0.4.225: the screen sends no score. The log may run no longer than the session has been open (by the server's clock or the
+     * wall clock, whichever is further on, so neither a slow server nor a fast one turns a real game away), and the game is played
+     * again from the session's seed with those keys; the score that replay reaches is the one recorded and paid. A log of nothing
+     * scores nothing.
+     */
+    public static boolean submit(ServerPlayer p,long token,List<Integer> runs){
         var s=SESSIONS.get(p.getUUID());if(s==null||s.token()!=token||s.taken())return false;
         SESSIONS.remove(p.getUUID());
-        long now=p.serverLevel().getGameTime();int played=(int)Math.min(Math.max(0,ticks),now-s.start()+40);
+        long now=p.serverLevel().getGameTime();
+        long open=Math.max(now-s.start(),(System.currentTimeMillis()-s.startMillis())/50);
+        int length=PolybiusGames.length(runs);
+        if(length<0||length>open+SLACK||length>LONGEST[s.game()])return false;
         var own=own(p);var b=base(p);
         if(s.game()==PolybiusSite.BLACK){
-            if(played<MIN_PLAY){cue(p,"The screen goes back to its slow pattern.");return false;}
+            if(length<MIN_PLAY){cue(p,"The screen goes back to its slow pattern.");return false;}
             int plays=own.getInt("Plays217")+1;own.putInt("Plays217",plays);own.putInt("EverPlayed217",own.getInt("EverPlayed217")+1);
             if(plays>=PLAYS&&!own.contains("Call217"))own.putLong("Call217",now);
             save(p,own);
@@ -140,7 +152,9 @@ public final class Polybius {
             });
             return true;
         }
-        if(score<0||score>RATE[s.game()]*played+50)return false;
+        var game=PolybiusGames.replay(s.game(),s.token(),runs,LONGEST[s.game()]);
+        if(game==null||game.ticks()==0)return false;
+        int score=game.score();
         int rank=PolybiusScores.record(p.server,s.game(),p,score);
         own.putInt("Games217",own.getInt("Games217")+1);save(p,own);
         if(score>0)LiteraryVignettes.give(p,new net.minecraft.world.item.ItemStack(PolybiusRegistry.TICKETS.get(),tickets(score)));
@@ -148,6 +162,8 @@ public final class Polybius {
         cue(p,rank==0?"GAME OVER. "+score+". Not enough for the table.":rank==1?"GAME OVER. "+score+". Your name goes to the top of the table.":"GAME OVER. "+score+". Your name goes up the table, "+ordinal(rank)+".");
         return true;
     }
+    /** For the tests: a reader's session as if it had opened so many ticks ago, by both clocks. */
+    public static void backdate(UUID id,int ticks){var s=SESSIONS.get(id);if(s!=null)SESSIONS.put(id,new Session(s.game(),s.token(),s.start()-ticks,s.startMillis()-ticks*50L,s.taken()));}
     /** Prize tickets for a game of one of the three: one, and one more for every hundred points, up to thirty. */
     public static int tickets(int score){return score<=0?0:Math.min(30,1+score/100);}
 
