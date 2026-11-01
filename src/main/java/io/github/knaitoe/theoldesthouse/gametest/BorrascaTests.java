@@ -72,6 +72,7 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_ahead_taking") public static void aheadTakingDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_any_route") public static void anyRouteDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_gentleman") public static void gentlemanDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_lower") public static void lowerDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="borrasca_diagnostics")
     public static void preEntrySocketDiagnosticsNeverGeneratePrivateCoordinatesInEitherDimension(GameTestHelper h){
@@ -289,6 +290,38 @@ public final class BorrascaTests {
             for(int i=0;i<15;i++)f.refresh(p);var after=f.own(p);h.assertTrue(BorrascaStory.gentleman(after)==null&&BorrascaStory.view(p,after).gentlemanTicks()==0,"he is gone when the strokes end");
             // Grown, the reader never sees him.
             f.stage(p,3);var grown=f.own(p);grown.putInt("GentTicks",BorrascaStory.GENT_TICKS);f.save(p,grown);h.assertTrue(BorrascaStory.gentleman(f.own(p))==null,"on the adult visits he never comes");
+        }).thenSucceed();
+    }
+
+    /** The child's hand swaps some letters for alternate glyphs (HouseWriting); read them back as the letters they stand for. */
+    private static String childPlain(String text){var base="aeiotrshnldcmyug";var out=new StringBuilder();for(char c:text.toCharArray()){if(c>=0xE100&&c<0xE110+base.length()){int i=c>=0xE110?c-0xE110:c-0xE100;out.append(i<base.length()?base.charAt(i):c);}else out.append(c);}return out.toString();}
+    /** 0.4.237: what the trailhead note warns of is in the vignette, off-screen: the rooms under the depot, the night book, the letter, the graves. */
+    @GameTest(template="empty",batch="borrasca_lower",timeoutTicks=1800)
+    public static void theRoomsUnderTheDepotHoldWhatTheNoteWarnedOf(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_lower");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the last night")).thenExecute(()->{
+            var b=f.base(p);var l=f.out;
+            h.assertTrue(l.getBlockState(b.offset(BorrascaRooms.HATCH)).getBlock() instanceof TrapDoorBlock&&l.getBlockState(b.offset(-19,8,-202)).is(Blocks.LADDER)&&l.getBlockState(b.offset(-19,7,-190)).isAir(),"a hatch in the back room's floor, a ladder down, a corridor");
+            for(int room=1;room<=12;room++){var door=l.getBlockState(b.offset(BorrascaRooms.roomDoor(room)));var lever=l.getBlockState(b.offset(BorrascaRooms.roomLever(room)));
+                h.assertTrue(door.is(Blocks.IRON_DOOR)&&lever.is(Blocks.LEVER)&&door.getValue(DoorBlock.OPEN)==(room==BorrascaRooms.NELL_ROOM),"room "+room+": an iron door, bolted from the corridor"+(room==BorrascaRooms.NELL_ROOM?"; hers stands open":""));}
+            var lever=b.offset(BorrascaRooms.roomLever(BorrascaRooms.MARA_ROOM));((LeverBlock)Blocks.LEVER).pull(l.getBlockState(lever),l,lever,p);
+            h.assertTrue(l.getBlockState(b.offset(BorrascaRooms.roomDoor(BorrascaRooms.MARA_ROOM))).getValue(DoorBlock.OPEN),"throwing the bolt opens the door");
+            f.read(p,BorrascaRooms.NIGHT_BOOK,false);f.read(p,BorrascaRooms.LETTER,false);var own=f.own(p);
+            h.assertTrue(own.getBoolean("LedgerRead")&&own.getBoolean("LetterRead"),"the night book and the letter are read on the desk");
+            var book=String.join(" ",BorrascaTexts.document("Ledger").get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList());
+            h.assertTrue(book.contains("Approved: Sheriff's office")&&book.contains("E. Prescott")&&book.contains("W. Prescott")&&book.contains("J. Prescott")&&book.contains("263-A")&&book.contains("Transfer, D-417")&&book.contains("To the yard")&&book.contains("264-A"),"the night book: the Sheriff's approvals, three Prescotts, her tag and her transfer, the yard, and the newest tag");
+            var letter=childPlain(String.join(" ",BorrascaTexts.document("Letter").get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList()));
+            h.assertTrue(letter.contains("Men come down at night")&&letter.contains("I don't want to")&&letter.contains("WITHHELD"),"the letter says what it can, and no more, and was never sent");
+            f.at(p,-15,6,-179);f.refresh(p);own=f.own(p);var wall=l.getBlockEntity(b.offset(BorrascaRooms.NELL_WALL));
+            h.assertTrue(own.getBoolean("LowerRooms")&&own.getBoolean("NellsRoom"),"under the depot, and in her room");
+            h.assertTrue(wall instanceof BorrascaCarvingEntity e&&e.friend().equals(BorrascaStory.FRIEND)&&e.reader().equals(p.getGameProfile().getName())&&l.getBlockState(b.offset(BorrascaRooms.NELL_WALL)).getValue(BorrascaCarvingBlock.WALL),"her name scratched into the wall beside the reader's");
+            f.at(p,-23,6,-199);f.refresh(p);h.assertTrue(f.own(p).getBoolean("MarasRoom"),"the newest room, bolted, still warm");
+            h.assertTrue(l.getBlockEntity(b.offset(BorrascaRooms.grave(0))) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign&&sign.getFrontText().getMessage(1,false).getString().equals(BorrascaRooms.GRAVE_TAGS[0])&&sign.isWaxed(),"a number on a stake, no name");
+            f.at(p,0,12,-204);f.refresh(p);own=f.own(p);h.assertTrue(own.getBoolean("GravesSeen"),"the rows behind the shed");
+            var account=BorrascaTexts.account(own);
+            h.assertTrue(account.contains("bolts on the outside")&&account.contains("scratched into the wall beside mine")&&account.contains("counted by a Prescott")&&account.contains("never sent")&&account.contains("numbers in the ground")&&account.contains("transfer, and nothing after"),"the account keeps what was found: "+account);
+            h.assertTrue(BorrascaTexts.witness(own).contains("night book"),"and the Witness line the book");
+            h.assertTrue(!own.getBoolean("Completed"),"none of it is required to finish; finding it is the reader's own");
         }).thenSucceed();
     }
 

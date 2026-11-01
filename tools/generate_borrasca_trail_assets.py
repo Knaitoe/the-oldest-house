@@ -501,7 +501,9 @@ def outputs():
         if stage >= 3:
             bark['faces']['south']['uv'] = uv(1)
         out[f'models/block/borrasca_bark_{stage}.json'] = model([bark])
-    out['blockstates/borrasca_bark.json'] = {'variants': {f'stage={i}': {'model':f'the_oldest_house:block/borrasca_bark_{i}'} for i in range(5)}}
+    # 0.4.237: the same block as a stretch of cell wall (plain light concrete; the names are drawn by the block entity).
+    out['models/block/borrasca_bark_wall.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': 'minecraft:block/light_gray_concrete'}}
+    out['blockstates/borrasca_bark.json'] = {'variants': {f'stage={i},wall={w}': {'model': 'the_oldest_house:block/borrasca_bark_wall' if w == 'true' else f'the_oldest_house:block/borrasca_bark_{i}'} for i in range(5) for w in ('false', 'true')}}
     display = {'gui': {'rotation':[0,180,0],'translation':[0,0,0],'scale':[1,1,1]},
                'ground': {'rotation':[90,0,0],'translation':[0,1,0],'scale':[.5,.5,.5]},
                'thirdperson_righthand': {'rotation':[0,0,0],'translation':[0,2,0],'scale':[.5,.5,.5]},

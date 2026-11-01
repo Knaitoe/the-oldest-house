@@ -21,6 +21,13 @@ public final class BorrascaCarvingEntity extends BlockEntity {
             l.sendBlockUpdated(at,e.getBlockState(),e.getBlockState(),Block.UPDATE_CLIENTS);
         }
     }
+    /** 0.4.237: a wall in the rooms under the depot keeps whichever names were scratched into it, not only the friend's. */
+    public static void names(ServerLevel l,BlockPos at,String friend,String reader){
+        if(l.getBlockEntity(at) instanceof BorrascaCarvingEntity e&&!(e.reader.equals(reader)&&e.friend.equals(friend))){
+            e.reader=reader.substring(0,Math.min(40,reader.length()));e.friend=friend.substring(0,Math.min(40,friend.length()));e.setChanged();
+            l.sendBlockUpdated(at,e.getBlockState(),e.getBlockState(),Block.UPDATE_CLIENTS);
+        }
+    }
     @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){super.loadAdditional(t,r);reader=t.getString("ReaderName");friend=t.contains("FriendName")?t.getString("FriendName"):BorrascaStory.FRIEND;}
     @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){super.saveAdditional(t,r);t.putString("ReaderName",reader);t.putString("FriendName",friend);}
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider r){return saveWithoutMetadata(r);}

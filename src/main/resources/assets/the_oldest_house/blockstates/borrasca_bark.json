@@ -1,19 +1,34 @@
 {
   "variants": {
-    "stage=0": {
+    "stage=0,wall=false": {
       "model": "the_oldest_house:block/borrasca_bark_0"
     },
-    "stage=1": {
+    "stage=0,wall=true": {
+      "model": "the_oldest_house:block/borrasca_bark_wall"
+    },
+    "stage=1,wall=false": {
       "model": "the_oldest_house:block/borrasca_bark_1"
     },
-    "stage=2": {
+    "stage=1,wall=true": {
+      "model": "the_oldest_house:block/borrasca_bark_wall"
+    },
+    "stage=2,wall=false": {
       "model": "the_oldest_house:block/borrasca_bark_2"
     },
-    "stage=3": {
+    "stage=2,wall=true": {
+      "model": "the_oldest_house:block/borrasca_bark_wall"
+    },
+    "stage=3,wall=false": {
       "model": "the_oldest_house:block/borrasca_bark_3"
     },
-    "stage=4": {
+    "stage=3,wall=true": {
+      "model": "the_oldest_house:block/borrasca_bark_wall"
+    },
+    "stage=4,wall=false": {
       "model": "the_oldest_house:block/borrasca_bark_4"
+    },
+    "stage=4,wall=true": {
+      "model": "the_oldest_house:block/borrasca_bark_wall"
     }
   }
 }
