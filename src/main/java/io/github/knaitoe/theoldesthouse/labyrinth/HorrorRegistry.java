@@ -38,6 +38,8 @@ public final class HorrorRegistry {
      */
     public static final DeferredHolder<SoundEvent,SoundEvent> STILL_BREATH=sound("stillness.breath"),STILL_SNIFF=sound("stillness.sniff"),STILL_NUDGE=sound("stillness.nudge"),
         STILL_GORE=sound("stillness.gore");
+    /** The line (0.4.212): the line snapped taut, the line under a weight, something walking in the dark, and the line going slack. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> LINE_TWANG=sound("line.twang"),LINE_CREAK=sound("line.creak"),LINE_STEPS=sound("line.steps"),LINE_SLACK=sound("line.slack");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String name){return SOUNDS.register(name,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,name)));}
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HorrorBlock>> FITTING_TYPE=CODECS.register("horror_fitting",()->HorrorBlock.CODEC);

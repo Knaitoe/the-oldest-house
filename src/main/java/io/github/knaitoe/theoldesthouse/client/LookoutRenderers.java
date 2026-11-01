@@ -60,14 +60,15 @@ public final class LookoutRenderers {
     public static final class DoubleModel extends PlayerModel<LiteraryActor> {
         public DoubleModel(ModelPart part,boolean slim){super(part,slim);}
         @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){
-            crouching=a.phase()==1;super.setupAnim(a,0,0,age,yaw,pitch);
+            // 0.4.213: walking beside a reader (gesture 2), it walks as they do; in the tower it stands still.
+            boolean walks=a.gesture()==2;crouching=a.phase()==1;super.setupAnim(a,walks?walk:0,walks?amount:0,age,yaw,pitch);
             if(a.gesture()==1){rightArm.xRot=-1.72F;leftArm.xRot=-1.72F;rightArm.yRot=-.42F;leftArm.yRot=.42F;rightArm.zRot=0;leftArm.zRot=0;head.xRot=0;
                 rightSleeve.copyFrom(rightArm);leftSleeve.copyFrom(leftArm);hat.copyFrom(head);}
         }
     }
     public static final class Double extends MobRenderer<LiteraryActor,DoubleModel> {
         private final DoubleModel wide,slim;
-        public Double(EntityRendererProvider.Context c){super(c,new DoubleModel(c.bakeLayer(ModelLayers.PLAYER),false),.3F);wide=model;slim=new DoubleModel(c.bakeLayer(ModelLayers.PLAYER_SLIM),true);}
+        public Double(EntityRendererProvider.Context c){super(c,new DoubleModel(c.bakeLayer(ModelLayers.PLAYER),false),.3F);wide=model;slim=new DoubleModel(c.bakeLayer(ModelLayers.PLAYER_SLIM),true);addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<>(this,c.getItemInHandRenderer()));}
         @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){
             var skin=UncannyActorRenderer.houseSkin();model=skin!=null&&skin.model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:wide;
             p.pushPose();if(a.phase()==1)p.translate(0,-.125,0);super.render(a,yaw,partial,p,out,light);p.popPose();

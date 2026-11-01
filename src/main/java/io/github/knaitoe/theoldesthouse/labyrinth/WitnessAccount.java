@@ -104,7 +104,9 @@ public final class WitnessAccount {
         DEAD_AIR("dead_air","Dead air","understanding","I tuned the set to a channel that was never on the air and walked into the show. At the top of the stair there was nobody in the booth, only a highchair facing nine screens of snow."),
         CLOSING_HALL("closing_hall","The closing hall","survival","I went down a hall that was getting smaller and brought two children back up it. I sent them through first."),
         STOREROOM("storeroom","The storeroom","survival","I didn't turn round. I went into a storeroom for three things on a list in my own handwriting, and I backed out of it with all three."),
-        STILLNESS("stillness","The stillness","survival","I let it breathe on me. Something I never saw stood over me in a low hall in the dark, and I counted its breaths, and I did not move.");
+        STILLNESS("stillness","The stillness","survival","I let it breathe on me. Something I never saw stood over me in a low hall in the dark, and I counted its breaths, and I did not move."),
+        LINE("line","The line","survival","I held on. I followed a line through a dark with no walls, with something coming along it behind me, and I got to the end of it first."),
+        OWN_LIGHT("own_light","Your own light","understanding","I let it take them. Something with my walk and my light walked beside me in the dark, and turned back halfway, and I did not follow it.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

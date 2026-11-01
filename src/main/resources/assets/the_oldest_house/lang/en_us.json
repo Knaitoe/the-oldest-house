@@ -918,5 +918,14 @@
   "subtitles.the_oldest_house.stillness.nudge": "A heavy head shoves",
   "subtitles.the_oldest_house.stillness.gore": "Horns",
   "advancements.the_oldest_house.account.stillness.title": "The stillness",
-  "advancements.the_oldest_house.account.stillness.description": "I let it breathe on me."
+  "advancements.the_oldest_house.account.stillness.description": "I let it breathe on me.",
+  "death.attack.the_oldest_house.the_line": "%1$s was dragged across the floor in the dark",
+  "subtitles.the_oldest_house.line.twang": "The line snaps taut",
+  "subtitles.the_oldest_house.line.creak": "The line creaks under a weight",
+  "subtitles.the_oldest_house.line.steps": "Something walking in the dark",
+  "subtitles.the_oldest_house.line.slack": "The line goes slack",
+  "advancements.the_oldest_house.account.line.title": "The line",
+  "advancements.the_oldest_house.account.line.description": "I held on.",
+  "advancements.the_oldest_house.account.own_light.title": "Your own light",
+  "advancements.the_oldest_house.account.own_light.description": "I let it take them."
 }

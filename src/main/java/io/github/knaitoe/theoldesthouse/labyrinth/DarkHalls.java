@@ -58,7 +58,7 @@ public final class DarkHalls {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
     /** 0.4.209 onward: the horrors dealt only in the dark band (docs/DARK_HALL_HORRORS_PROPOSAL.md), built whole and left alone by the polish passes. */
-    public static boolean horror(LabyrinthPlace p){return p==LabyrinthPlace.CLOSING_HALL||p==LabyrinthPlace.STOREROOM||p==LabyrinthPlace.STILLNESS;}
+    public static boolean horror(LabyrinthPlace p){return p==LabyrinthPlace.CLOSING_HALL||p==LabyrinthPlace.STOREROOM||p==LabyrinthPlace.STILLNESS||p==LabyrinthPlace.LINE||p==LabyrinthPlace.OWN_LIGHT;}
     public static boolean isDark(@Nullable LabyrinthPlace p){return p==LabyrinthPlace.DARK_LONG||p==LabyrinthPlace.DARK_FORK||p==LabyrinthPlace.DARK_MAZE||p==LabyrinthPlace.DARK_SPIRAL||p==LabyrinthPlace.DARK_EDGE;}
     public static final List<LabyrinthPlace> HALLS=List.of(LabyrinthPlace.DARK_LONG,LabyrinthPlace.DARK_FORK,LabyrinthPlace.DARK_MAZE,LabyrinthPlace.DARK_SPIRAL,LabyrinthPlace.DARK_EDGE);
     /** How often each is dealt as an ordinary way on: none above sixteen, then more as the band goes on; the edge only at the end. */

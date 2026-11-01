@@ -26,13 +26,21 @@ import net.minecraft.world.phys.shapes.*;
  * <p>The stillness's (0.4.211): a surveyor's page nailed to the wall by the way in (the source), a count scratched into the dust
  * before the far door in rows of five (the account), and a cloven print pressed into the dust where the thing nobody sees has
  * stood or walked. The print has no shape: it must never stop a step, and nobody can pick at it.
+ *
+ * <p>The line's (0.4.212): a luggage tag on the knot where the line is tied round the doorframe (the source), the explorer's pack at
+ * the end of the line, and the tape recorder on it (the account).
+ *
+ * <p>Your own light's (0.4.213): words scratched into the lobby wall (the source), and the stub of a torch burnt down to nothing in
+ * the far room (the account).
  */
 public final class HorrorBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<HorrorBlock> CODEC=simpleCodec(HorrorBlock::new);
     public enum Kind implements StringRepresentable {
         DRAWING,TRANSCRIPT,CRAYONS,HANDPRINT,
         SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BULB,LIST,BOXES,FOOTNOTE,
-        LOG,TALLY,HOOF;
+        LOG,TALLY,HOOF,
+        TAG,PACK,RECORDER,
+        SCRATCH,STUB;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -61,6 +69,11 @@ public final class HorrorBlock extends HorizontalDirectionalBlock {
             case HANDPRINT,HOOF->Shapes.empty();
             case LOG->box(f,3,3,15,13,15,16);
             case TALLY->Block.box(1,0,1,15,.5,15);
+            case TAG->box(f,5,2,15,11,14,16);
+            case SCRATCH->box(f,1,3,15,15,13,16);
+            case STUB->Block.box(5,0,5,11,3,11);
+            case PACK->Block.box(2,0,4,13,11,12);
+            case RECORDER->Block.box(4,0,5,12,2.5,11);
             case SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BOXES->Shapes.block();
             case BULB->Block.box(5,4,5,11,16,11);
             case LIST->box(f,3,4,15,13,14,16);
@@ -68,7 +81,7 @@ public final class HorrorBlock extends HorizontalDirectionalBlock {
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case TRANSCRIPT,SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BOXES->getShape(s,l,p,c);
+            case TRANSCRIPT,SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BOXES,PACK->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }
