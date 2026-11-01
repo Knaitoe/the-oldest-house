@@ -163,7 +163,10 @@ public final class LiveExpeditionProof {
             }
             if(ACKS.contains("B")) {
                 require(StaircaseStory.burned(StaircaseStory.record(b))==1,"reconnected owner can burn their own leaf at the shared fire");
-                var note=FinaleArchitecture.base(ORIGIN).offset(3,FinaleArchitecture.TOP,24);var l=s.getLevel(HouseDimensions.INTERIOR);
+                // 0.4.214: the household's rhythm opens nothing in the first 160 blocks, where the five fires are, so the note lies in the
+                // second stretch; both readers' fires are opened for them, as the sheet itself is injected, to reach it.
+                var note=FinaleArchitecture.base(ORIGIN).offset(3,FinaleArchitecture.TOP-200,24);var l=s.getLevel(HouseDimensions.INTERIOR);
+                for(var p:List.of(a,b)){var fires=FinaleProgress.player(s,p.getUUID());fires.putInt("StairFires",StaircaseFire.REQUIRED);fires.putBoolean("StairFireVersion",true);FinaleProgress.save(s,p.getUUID(),fires);StaircaseHousehold.forget(p);}
                 for(int x=-3;x<=3;x++)for(int z=-2;z<=4;z++)for(int y=-1;y<=2;y++)l.setBlock(note.offset(x,y,z),(y==-1?Blocks.STONE:Blocks.AIR).defaultBlockState(),18);
                 l.setBlock(note,NoteSurfaceBlock.state(HouseMarginalia.Thread.HOUSEKEEPING,Direction.NORTH),18);
                 for(var p:List.of(a,b)){var record=d.stateEntry(StaircaseWriting.ID,p.getUUID().toString());var books=record.getCompound("Books");var indices=record.getCompound("Indices");var key=Long.toString(note.asLong());books.put(key,StaircaseNotes.specimen(9).save(p.registryAccess()));indices.putInt(key,9);record.put("Books",books);record.put("Indices",indices);d.setStateEntry(StaircaseWriting.ID,p.getUUID().toString(),record);at(p,note.south(2),180,p==a?-.65:.65);}

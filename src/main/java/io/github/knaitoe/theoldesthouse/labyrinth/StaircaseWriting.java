@@ -24,8 +24,9 @@ public final class StaircaseWriting {
         // A read or collected original is immutable, including editions older than this pool.
         if(books.contains(key))return ItemStack.parseOptional(p.registryAccess(),books.getCompound(key));
         var indices=own.getCompound("Indices");var used=own.getCompound("Used");int number=ordinal(HouseSavedData.get(p.server).houseOrigin(),pos);
-        int chosen=Math.floorMod(number,StaircaseNotes.TEXTS.size());
-        for(int n=0;n<StaircaseNotes.TEXTS.size()&&used.getBoolean(Integer.toString(chosen));n++)chosen=(chosen+1)%StaircaseNotes.TEXTS.size();
+        // 0.4.214: the descent's sheets are dealt in a chosen order (StaircaseNotes.DESCENT).
+        int step=number,chosen=StaircaseNotes.dealt(step);
+        for(int n=0;n<StaircaseNotes.TEXTS.size()&&used.getBoolean(Integer.toString(chosen));n++)chosen=StaircaseNotes.dealt(++step);
         // The last paper ABOVE the chamber anticipates the prisoner. The shaft continues below it.
         // Saved lower-shaft editions remain exact and cannot mint a second copy here.
         boolean panther=pos.equals(pantherLanding(HouseSavedData.get(p.server).houseOrigin()))&&!used.getBoolean(Integer.toString(StaircaseNotes.TEXTS.size()));
@@ -65,11 +66,11 @@ public final class StaircaseWriting {
         }data.setState(ID,all);
     }
     private static final class PageMenu extends LecternMenu {
-        private final ServerPlayer reader;private final BlockPos pos;private final ItemStack book;private final int pages;
+        private final ServerPlayer reader;private final BlockPos pos;private final ItemStack book,original;private final int pages;
         private long lastPageAt;
         PageMenu(int id,ServerPlayer p,BlockPos pos){this(id,p,pos,new SimpleContainer(1));}
-        PageMenu(int id,ServerPlayer p,BlockPos pos,SimpleContainer display){super(id,display,new SimpleContainerData(1));reader=p;this.pos=pos.immutable();book=original(p,pos);display.setItem(0,book.copy());pages=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().size();lastPageAt=pages==1?p.serverLevel().getGameTime():-1;}
-        @Override public void removed(Player p){boolean full=p==reader&&stillValid(p)&&getPage()==pages-1&&lastPageAt>=0&&reader.serverLevel().getGameTime()-lastPageAt>=20;super.removed(p);if(full)StaircaseLeaks.offer(reader,pos,book);}
+        PageMenu(int id,ServerPlayer p,BlockPos pos,SimpleContainer display){super(id,display,new SimpleContainerData(1));reader=p;this.pos=pos.immutable();original=original(p,pos);book=StaircaseHousehold.withAccount(p,pos,original);display.setItem(0,book.copy());pages=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().size();lastPageAt=pages==1?p.serverLevel().getGameTime():-1;}
+        @Override public void removed(Player p){boolean full=p==reader&&stillValid(p)&&getPage()==pages-1&&lastPageAt>=0&&reader.serverLevel().getGameTime()-lastPageAt>=20;super.removed(p);if(full)StaircaseLeaks.offer(reader,pos,original);}
         @Override public boolean stillValid(Player p){return p==reader&&reader.isAlive()&&reader.distanceToSqr(pos.getCenter())<25&&reader.level().getBlockState(pos).is(HouseBlocks.NOTE_SURFACE.get());}
         @Override public boolean clickMenuButton(Player p,int button){
             if(!stillValid(p))return false;

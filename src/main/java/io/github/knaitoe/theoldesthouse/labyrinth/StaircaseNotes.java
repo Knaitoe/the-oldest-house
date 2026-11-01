@@ -73,6 +73,23 @@ public final class StaircaseNotes {
         "The morning list\n\nRuth wrote water, food, dry socks. Bell added the names of the people carrying them. The list made our bags feel lighter.",
         "Before we moved on\n\nI dried the last cup against my sleeve. Mara waited while I put it away. Nobody called this delay. We were still together."
     );
+    /**
+     * 0.4.214: the order the sheets are dealt down the shaft. Only the first 23 corners above the cell are walked, three to a
+     * 160-block stretch (StaircaseHousehold.STRETCH), so those are chosen: the house first, each stretch from the second to the
+     * seventh holding one leak's sheet and two household doors' sources, and the stairs at the bottom. Below the cell the rest
+     * follow in their old order. Saved originals keep their words.
+     */
+    public static final int[] DESCENT={1,16,20, 0,3,2, 12,11,4, 6,15,5, 9,19,7, 32,17,10, 27,18,21, 48,52};
+    private static final int[] DEALT;
+    static {
+        var order=new ArrayList<Integer>();for(int i:DESCENT)order.add(i);
+        for(int i=0;i<TEXTS.size();i++)if(!order.contains(i))order.add(i);
+        DEALT=order.stream().mapToInt(Integer::intValue).toArray();
+    }
+    /** The sheet dealt at the n-th loose page down the shaft. */
+    public static int dealt(int ordinal){return DEALT[Math.floorMod(ordinal,DEALT.length)];}
+    /** Where a sheet comes in the dealing order (the inverse of {@link #dealt}). */
+    public static int place(int index){for(int i=0;i<DEALT.length;i++)if(DEALT[i]==index)return i;return -1;}
     public static ItemStack specimen(int index){
         var hands=new HouseWriting.WritingStyle[]{HouseWriting.WritingStyle.KAREN,HouseWriting.WritingStyle.WILL,HouseWriting.WritingStyle.ZAMPANO};
         return HouseWriting.book("A loose sheet",signer(index),hands[Math.floorMod(index,hands.length)],List.of(TEXTS.get(index)));

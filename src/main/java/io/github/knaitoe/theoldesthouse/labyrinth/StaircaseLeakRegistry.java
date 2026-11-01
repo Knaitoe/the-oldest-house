@@ -20,7 +20,9 @@ public final class StaircaseLeakRegistry {
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     public static final DeferredBlock<Block> WALLPAPER=BLOCKS.register("leak_wallpaper",()->new Block(BlockBehaviour.Properties.of().strength(.8F)));
     public static final DeferredBlock<StaircaseLeakProps> PROP=BLOCKS.register("leak_prop",()->new StaircaseLeakProps(BlockBehaviour.Properties.of().noOcclusion().noLootTable().strength(.4F)
-            .lightLevel(s->switch(s.getValue(StaircaseLeakProps.KIND)){case LIGHT->14;case SMALL_LIGHT->6;default->0;})));
+            .lightLevel(s->switch(s.getValue(StaircaseLeakProps.KIND)){case LIGHT->14;case SMALL_LIGHT->6;case LAMP_STAND->12;case KETTLE_ON,KETTLE_BOILED->3;default->0;})));
+    /** 0.4.214: the household's painted door in the shaft wall (StaircaseHousehold). */
+    public static final DeferredBlock<HouseholdDoorBlock> HOUSEHOLD_DOOR=BLOCKS.register("household_door",()->new HouseholdDoorBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.OAK_DOOR).noOcclusion().noLootTable().strength(-1F,3600000F)));
     public static final DeferredItem<Item> SHEET=ITEMS.registerSimpleItem("leak_reading_sheet");
     public static final List<DeferredItem<Item>> SOCKS=List.of(ITEMS.registerSimpleItem("leak_sock_blue"),ITEMS.registerSimpleItem("leak_sock_ochre"),ITEMS.registerSimpleItem("leak_sock_grey"),ITEMS.registerSimpleItem("leak_sock_green"),ITEMS.registerSimpleItem("leak_sock_red"),ITEMS.registerSimpleItem("leak_sock_single"));
     public static final DeferredHolder<EntityType<?>,EntityType<StaircaseReaderEcho>> READER=ENTITIES.register("staircase_reader",()->EntityType.Builder.<StaircaseReaderEcho>of(StaircaseReaderEcho::new,MobCategory.MISC).sized(.6F,1.8F).eyeHeight(1.62F).clientTrackingRange(12).updateInterval(3).build("staircase_reader"));

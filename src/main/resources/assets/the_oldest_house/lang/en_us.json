@@ -927,5 +927,6 @@
   "advancements.the_oldest_house.account.line.title": "The line",
   "advancements.the_oldest_house.account.line.description": "I held on.",
   "advancements.the_oldest_house.account.own_light.title": "Your own light",
-  "advancements.the_oldest_house.account.own_light.description": "I let it take them."
+  "advancements.the_oldest_house.account.own_light.description": "I let it take them.",
+  "block.the_oldest_house.household_door": "A Painted Door"
 }
