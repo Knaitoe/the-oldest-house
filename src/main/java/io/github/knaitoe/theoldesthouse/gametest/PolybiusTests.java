@@ -29,6 +29,56 @@ public final class PolybiusTests {
     private static long token(ServerPlayer p){var s=Polybius.session(p.getUUID());return s==null?0:s.token();}
     private static int men(LiteraryTests.Fixture f,ServerPlayer p){var b=f.base(P);return f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(30),a->a.owner().isPresent()&&a.owner().get().equals(p.getUUID())&&(a.phase()==Polybius.MAN_A_PHASE||a.phase()==Polybius.MAN_B_PHASE)).size();}
 
+    private static int count(ServerPlayer p,net.minecraft.world.item.Item item){int n=0;var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(item))n+=inv.getItem(i).getCount();return n;}
+
+    @GameTest(template="empty",batch="poly_party",timeoutTicks=900)
+    public static void blockPartySeatsFourPlaysOnTheServerAndPaysInTickets(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);ServerPlayer[] r=new ServerPlayer[5];for(int i=0;i<5;i++)r[i]=f.player("poly_party"+i,P);
+        double[] x0={0};
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the arcade is resident"))
+            .thenExecute(()->{
+                h.assertTrue(PolybiusBlock.is(f.in.getBlockState(b.offset(PolybiusSite.BRAWL)),PolybiusBlock.Kind.BRAWL)&&PolybiusBlock.is(f.in.getBlockState(b.offset(PolybiusSite.BRAWL_RIGHT).above()),PolybiusBlock.Kind.BRAWL_SCREEN),"Block Party stands two blocks wide on the west wall");
+                for(var p:r)f.click(p,P,PolybiusSite.BRAWL);
+                var seats=new java.util.HashSet<Integer>();for(int i=0;i<4;i++)seats.add(PolybiusBrawl.seat(r[i].getUUID()));
+                h.assertTrue(seats.equals(java.util.Set.of(0,1,2,3))&&PolybiusBrawl.seat(r[4].getUUID())<0,"four readers take the four sticks and a fifth is turned away: "+seats);
+                f.click(r[0],P,PolybiusSite.CABINETS.get(PolybiusSite.MOTHLIGHT));h.assertTrue(Polybius.session(r[0].getUUID())==null,"a reader at Block Party cannot play another cabinet at once");at(f,r[0],-6.5,-15.5);
+                PolybiusBrawl.start(r[0].getUUID());x0[0]=PolybiusBrawl.fighterX(r[0].getUUID());PolybiusBrawl.keys(r[0],PolybiusBrawl.RIGHT);})
+            .thenIdle(10)
+            .thenExecute(()->{h.assertTrue(PolybiusBrawl.fighterX(r[0].getUUID())>x0[0]+8,"the keys a reader holds move their fighter, on the server: "+x0[0]+" to "+PolybiusBrawl.fighterX(r[0].getUUID()));
+                PolybiusBrawl.keys(r[0],0);PolybiusBrawl.foe(r[0].getUUID(),PolybiusBrawl.ZOMBIE,12);PolybiusBrawl.keys(r[0],PolybiusBrawl.PUNCH);})
+            .thenIdle(2).thenExecute(()->PolybiusBrawl.keys(r[0],0)).thenIdle(12).thenExecute(()->PolybiusBrawl.keys(r[0],PolybiusBrawl.PUNCH))
+            .thenIdle(2).thenExecute(()->PolybiusBrawl.keys(r[0],0)).thenIdle(6)
+            .thenExecute(()->{h.assertTrue(PolybiusBrawl.score(r[0].getUUID())>=100,"two punches knock a zombie down and it is scored: "+PolybiusBrawl.score(r[0].getUUID()));
+                PolybiusBrawl.keys(r[3],PolybiusBrawl.LEAVE);h.assertTrue(PolybiusBrawl.seat(r[3].getUUID())<0,"closing the screen gives the seat up");
+                f.click(r[4],P,PolybiusSite.BRAWL);h.assertTrue(PolybiusBrawl.seat(r[4].getUUID())==3,"and the fifth reader drops into it");
+                PolybiusBrawl.end(r[0].getUUID());})
+            .thenWaitUntil(()->h.assertTrue(PolybiusBrawl.seat(r[0].getUUID())<0,"when every fighter is out of lives the game ends and the seats empty"))
+            .thenExecute(()->{h.assertTrue(count(r[0],PolybiusRegistry.TICKETS.get())>=1&&count(r[1],PolybiusRegistry.TICKETS.get())==0,"the one who knocked something down is paid in tickets, and nobody is paid for nothing");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="poly_party") public static void partyDone(ServerLevel l){close();}
+
+    @GameTest(template="empty",batch="poly_prizes",timeoutTicks=600)
+    public static void ticketsBuyWhatIsOnTheShelfAndTheRegularsKeepToTheirCabinets(GameTestHelper h){
+        var f=fixture(h);var p=f.player("poly_prizes",P);var b=f.base(P);
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the arcade is resident"))
+            .thenWaitUntil(()->h.assertTrue(f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(30),a->Polybius.regular(a.phase())&&a.owner().isEmpty()).size()==3,"three regulars, the same for everyone, at their own cabinets"))
+            .thenExecute(()->{
+                for(int i=0;i<PolybiusSite.REGULARS.size();i++){int phase=Polybius.REGULAR_PHASE+i;var at=Vec3.atBottomCenterOf(b.offset(PolybiusSite.REGULARS.get(i)));
+                    h.assertTrue(!f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(at,at).inflate(.6),a->a.phase()==phase).isEmpty(),"regular "+i+" stands at their cabinet");
+                    h.assertTrue(PolybiusBlock.is(f.in.getBlockState(b.offset(PolybiusSite.OTHERS.get(i))),PolybiusBlock.Kind.OTHER),"and the cabinet is one they are playing");}
+                for(int k=0;k<8;k++){var cell=new net.minecraft.core.BlockPos(5+k%4,k/4,PolybiusSite.FAR);var st=f.in.getBlockState(b.offset(cell));
+                    h.assertTrue(PolybiusBlock.is(st,PolybiusBlock.Kind.PRIZES)&&st.getValue(PolybiusBlock.STAGE)==k&&PolybiusSite.prize(cell)==k,"shelf cell "+k+" holds its own prize");}
+                h.assertTrue(Polybius.tickets(0)==0&&Polybius.tickets(50)==1&&Polybius.tickets(450)==5&&Polybius.tickets(100000)==30,"a game pays a ticket and one more a hundred points, up to thirty");
+                p.getInventory().add(new net.minecraft.world.item.ItemStack(PolybiusRegistry.TICKETS.get(),12));
+                var plush=new net.minecraft.core.BlockPos(8,1,PolybiusSite.FAR);f.click(p,P,plush);
+                h.assertTrue(count(p,PolybiusRegistry.TICKETS.get())==12&&count(p,PolybiusRegistry.PRIZES.get(7).get())==0,"twelve tickets don't buy the plush dog");
+                var ball=new net.minecraft.core.BlockPos(7,0,PolybiusSite.FAR);f.click(p,P,ball);
+                h.assertTrue(count(p,PolybiusRegistry.TICKETS.get())==2&&count(p,PolybiusRegistry.PRIZES.get(2).get())==1,"ten of them buy the bouncy ball off its cell");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="poly_prizes") public static void prizesDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="poly_build",timeoutTicks=400)
     public static void theArcadeHasThreeWorkingCabinetsTheirTablesAndABlackOne(GameTestHelper h){
         var f=fixture(h);var p=f.player("poly_build",P);var b=f.base(P);

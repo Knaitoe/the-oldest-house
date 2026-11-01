@@ -17,6 +17,7 @@ import net.neoforged.neoforge.registries.*;
 public final class PolybiusRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final Map<String,DeferredBlock<Block>> MATERIALS=new LinkedHashMap<>();
     /** The arcade's black carpet with its scattered neon shapes, its dark painted walls, and its ceiling of black tiles. */
@@ -26,6 +27,14 @@ public final class PolybiusRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PolybiusBlock>> FITTING_TYPE=CODECS.register("polybius_fitting",()->PolybiusBlock.CODEC);
     /** Every fitting of the arcade. */
     public static final DeferredBlock<PolybiusBlock> FITTING=BLOCKS.registerBlock("polybius_fitting",PolybiusBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(PolybiusBlock::light));
+    /**
+     * 0.4.221 (owner: "Add tickets/ticket exchange"): prize tickets, paid out by every game, and the eight prizes on the shelf
+     * behind the counter, each with its price; the shelf's cells hold them in this order, the lower row first.
+     */
+    public static final DeferredItem<net.minecraft.world.item.Item> TICKETS=ITEMS.registerSimpleItem("polybius_tickets",new net.minecraft.world.item.Item.Properties());
+    public static final List<String> PRIZE_NAMES=List.of("spider","finger_trap","bouncy_ball","glow_star","slap_bracelet","kazoo","mood_ring","plush_dog");
+    public static final int[] PRIZE_COST={5,5,10,10,15,20,25,40};
+    public static final List<DeferredItem<net.minecraft.world.item.Item>> PRIZES=PRIZE_NAMES.stream().map(n->ITEMS.registerSimpleItem("polybius_prize_"+n,new net.minecraft.world.item.Item.Properties().stacksTo(16))).toList();
     private PolybiusRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);}
 }

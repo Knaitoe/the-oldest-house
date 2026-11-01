@@ -245,13 +245,204 @@ def counter(part):
     return new(base='#b8c8cc', seed=267, spread=2)
 
 
-def prizes():
-    im = new(base='#3a2a1e', seed=268, spread=3)
-    for y in (5, 11):
+# 0.4.221 (owner: "Add tickets/ticket exchange. Vary textures on vendor stand."): eight prizes, each on its own shelf cell with its
+# price card, and the same prizes as the things a reader carries away; and the strip of tickets every game pays out.
+PRIZE_NAMES = ['spider', 'finger_trap', 'bouncy_ball', 'glow_star', 'slap_bracelet', 'kazoo', 'mood_ring', 'plush_dog']
+PRIZE_COST = [5, 5, 10, 10, 15, 20, 25, 40]
+DIGITS = {'0': ['111', '101', '101', '101', '111'], '1': ['010', '110', '010', '010', '111'], '2': ['111', '001', '111', '100', '111'],
+          '4': ['101', '101', '111', '001', '001'], '5': ['111', '100', '111', '001', '111']}
+
+
+def digits(im, x, y, text, colour):
+    for ch in text:
+        for r, row in enumerate(DIGITS[ch]):
+            for c, bit in enumerate(row):
+                if bit == '1':
+                    dot(im, x + c, y + r, colour)
+        x += 4
+
+
+def prize_icon(k, im=None, ox=0, oy=0, small=False):
+    """One prize, drawn at 16 pixels (an item) or 7 (on the shelf, two to a row)."""
+    im = im or Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    def d(x, y, c):
+        if small:
+            dot(im, ox + x // 2, oy + y // 2, c)
+        else:
+            dot(im, ox + x, oy + y, c)
+    def f(x0, y0, x1, y1, c):
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                d(x, y, c)
+    if k == 0:  # a rubber spider: a black body, eight bent legs
+        f(6, 6, 10, 10, '#1a1a1a'); f(7, 5, 9, 6, '#1a1a1a')
+        for i, (x, y) in enumerate([(3, 4), (2, 7), (3, 10), (4, 12), (12, 4), (13, 7), (12, 10), (11, 12)]):
+            sx = 1 if x < 8 else -1
+            d(x, y, '#2a2a2a'); d(x + sx, y, '#2a2a2a'); d(x + 2 * sx, y + (1 if y < 8 else -1), '#2a2a2a')
+        d(7, 6, '#c02020'); d(8, 6, '#c02020')
+    elif k == 1:  # a woven finger trap, striped
+        for x in range(2, 14):
+            for y in range(6, 10):
+                d(x, y, '#d84060' if (x + y) % 3 == 0 else '#f0d050' if (x + y) % 3 == 1 else '#3070c0')
+        f(1, 7, 2, 9, '#a03040'); f(14, 7, 15, 9, '#a03040')
+    elif k == 2:  # a bouncy ball, swirled
+        for x in range(4, 12):
+            for y in range(4, 12):
+                if (x - 7.5) ** 2 + (y - 7.5) ** 2 <= 14:
+                    d(x, y, '#f05a28' if (x * 2 + y) % 5 < 2 else '#30b0e0' if (x + y * 2) % 5 < 2 else '#f0e040')
+        d(6, 5, '#ffffff')
+    elif k == 3:  # a glow-in-the-dark star
+        for x, y in [(7, 2), (8, 2), (7, 3), (8, 3), (6, 4), (9, 4)]:
+            d(x, y, '#c8f0a0')
+        f(2, 6, 14, 8, '#c8f0a0'); f(4, 8, 12, 10, '#c8f0a0'); f(4, 10, 6, 13, '#c8f0a0'); f(10, 10, 12, 13, '#c8f0a0')
+        f(6, 6, 10, 9, '#e8ffd0')
+    elif k == 4:  # a slap bracelet, curled, in leopard print
+        for x in range(2, 14):
+            for y in range(5, 11):
+                if 3 <= ((x - 8) ** 2 / 36 + (y - 8) ** 2 / 9) * 4 <= 4.6 or y in (6, 10) and 3 < x < 13:
+                    d(x, y, '#e0a040' if (x + y) % 4 else '#3a2010')
+    elif k == 5:  # a kazoo
+        f(2, 7, 12, 10, '#c03030'); f(12, 6, 14, 11, '#c03030'); f(6, 6, 8, 7, '#f0e0a0'); d(3, 8, '#801818')
+    elif k == 6:  # a mood ring: a band and its dark stone
+        for x in range(4, 12):
+            for y in range(7, 13):
+                if 6 <= (x - 7.5) ** 2 + (y - 10) ** 2 * 2 <= 14:
+                    d(x, y, '#c8b060')
+        f(6, 4, 10, 8, '#2a1a40'); d(7, 5, '#6a4ab0'); d(8, 6, '#40a080')
+    else:  # a plush dog with one eye
+        f(3, 6, 12, 12, '#c89a68'); f(10, 3, 15, 8, '#c89a68'); f(10, 2, 12, 4, '#8a6040'); f(4, 12, 6, 14, '#c89a68'); f(9, 12, 11, 14, '#c89a68')
+        d(13, 5, '#141414'); d(14, 6, '#3a2010'); d(2, 7, '#8a6040')
+    return im
+
+
+def prizes(k):
+    """A shelf cell: two rows of one prize, and its price on a card at the front."""
+    im = new(base='#3a2a1e', seed=268 + k, spread=3)
+    for y in (6, 12):
         fill(im, 0, y, 16, y + 1, '#5a4a3a')
-    for x, y, c in [(1, 2, '#d0a070'), (5, 3, '#202020'), (9, 1, '#e060a0'), (13, 3, '#40a0f0'), (2, 8, '#f0e040'), (7, 8, '#60c060'), (11, 7, '#c04040')]:
-        fill(im, x, y, x + 3, y + 3, c)
-    dot(im, 10, 2, '#202020')  # the plush dog's one eye
+    for row, oy in ((0, -1), (1, 5)):
+        for ox in (0, 8):
+            prize_icon(k, im, ox, oy, small=True)
+    text = str(PRIZE_COST[k]); w = len(text) * 4 - 1
+    fill(im, 8 - w // 2 - 1, 10, 8 - w // 2 + w + 1, 16, '#f0ead8'); digits(im, 8 - w // 2, 11, text, '#c02020')
+    return im
+
+
+def tickets():
+    """A strip of three orange tickets, folded on their perforations."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for i, (x, y) in enumerate([(1, 9), (5, 6), (9, 3)]):
+        fill(im, x, y, x + 6, y + 5, '#f08a30' if i % 2 == 0 else '#e87a28')
+        fill(im, x + 1, y + 1, x + 5, y + 2, '#fff0d0'); dot(im, x + 2, y + 3, '#a04010'); dot(im, x + 3, y + 3, '#a04010')
+        dot(im, x + 5, y + 2, '#a85a20')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ Block Party and the regulars' games
+BRAWL_BODY = '#2a1a3a'
+
+
+def brawl_front(half):
+    """Block Party's control panel, two players to each half: a stick and two buttons each, in the players' colours."""
+    im = new(base=BRAWL_BODY, seed=300 + half, spread=2)
+    fill(im, 0, 0, 16, 6, shade(BRAWL_BODY, 22))
+    colours = [['#60d0ff', '#ff7060'], ['#80e060', '#f0d050']][half]
+    for i, c in enumerate(colours):
+        x = 2 + i * 8
+        dot(im, x, 1, c); dot(im, x, 2, '#202020'); dot(im, x + 2, 3, c); dot(im, x + 4, 3, c)
+    fill(im, 4, 8, 12, 13, '#2a2a2e')
+    dot(im, 5, 9, '#ff7030'); dot(im, 10, 9, '#ff7030'); fill(im, 5, 11, 7, 12, '#0a0a0a'); fill(im, 9, 11, 11, 12, '#0a0a0a')
+    fill(im, 0, 14, 16, 16, shade(BRAWL_BODY, -10))
+    return im
+
+
+def brawl_side():
+    im = new(base=BRAWL_BODY, seed=304, spread=3)
+    for x, y in [(4, 5), (5, 4), (6, 5), (10, 9), (11, 8), (12, 9)]:  # two fists, flying
+        dot(im, x, y, '#f0c080')
+    return im
+
+
+def brawl_marquee(half):
+    """The marquee: a row of blocks in the four players' colours stacked up like a party, lit from behind, across both halves."""
+    im = new(base='#2a1408', seed=306 + half, spread=2)
+    fill(im, 0, 0, 16, 1, '#5a3010'); fill(im, 0, 15, 16, 16, '#5a3010')
+    colours = ['#60d0ff', '#ff7060', '#80e060', '#f0d050']
+    for i, (x, y) in enumerate([(1, 8), (5, 5), (9, 8), (12, 4)] if half == 0 else [(1, 4), (4, 8), (8, 5), (12, 8)]):
+        c = colours[(i + half * 2) % 4]
+        fill(im, x, y, x + 4, y + 4, c); fill(im, x, y, x + 4, y + 1, shade(c, 40)); fill(im, x + 3, y + 1, x + 4, y + 4, shade(c, -40))
+    return im
+
+
+def brawl_frames(half):
+    """The attract mode across the wide screen: a street at night going by, two of the players walking along it."""
+    im = Image.new('RGBA', (16, 16 * FRAMES), (0, 0, 0, 255))
+    for f in range(FRAMES):
+        oy = f * 16
+        fill(im, 0, oy, 16, oy + 8, '#0a0c1e')
+        for i in range(4):
+            x = (i * 5 - f * 2 + half * 3) % 18 - 1
+            fill(im, x, oy + 3, x + 4, oy + 8, '#161424'); dot(im, x + 1, oy + 5, '#e0b860')
+        fill(im, 0, oy + 8, 16, oy + 16, '#2c2c30')
+        x = 4 + (f % 2) + half * 3
+        fill(im, x, oy + 9, x + 2, oy + 11, '#c89a78'); fill(im, x, oy + 11, x + 2, oy + 14, ['#60d0ff', '#80e060'][half]); dot(im, x + (f % 2), oy + 14, '#303050')
+        fill(im, 12 - half * 2, oy + 9, 14 - half * 2, oy + 14, '#4a7a3a')  # a zombie, coming
+    return im
+
+
+OTHER_BODY = ['#3a2010', '#10302a', '#302a10']
+OTHER_ACCENT = ['#f0e080', '#80e0a0', '#e0a050']
+
+
+def other_frames(g):
+    """The regulars' games, in play: a lighthouse beam over the sea, a dragonfly over lily pads, crates falling into a cart."""
+    im = Image.new('RGBA', (16, 16 * FRAMES), (0, 0, 0, 255))
+    for f in range(FRAMES):
+        oy = f * 16
+        if g == 0:
+            fill(im, 0, oy + 11, 16, oy + 16, '#0a2040'); fill(im, 2, oy + 5, 4, oy + 11, '#d8d8d0'); dot(im, 3, oy + 4, '#f0e080')
+            for i in range(6):
+                dot(im, 4 + i * 2, oy + 4 + (i * (f - 1)) // 3, '#f0e080')
+            dot(im, 11 - f, oy + 12, '#a0a0a0'); dot(im, 12 - f, oy + 12, '#a0a0a0')
+        elif g == 1:
+            fill(im, 0, oy, 16, oy + 16, '#0a2a1a')
+            for x, y in [(3, 11), (10, 13), (12, 6)]:
+                fill(im, x, oy + y, x + 3, oy + y + 2, '#3a8a3a')
+            x, y = 5 + f * 2, 6 + (f % 2)
+            dot(im, x, oy + y, '#80e0a0'); dot(im, x - 1, oy + y - 1, '#c0f0ff'); dot(im, x + 1, oy + y - 1, '#c0f0ff')
+            dot(im, (9 + f * 3) % 16, oy + 3, '#e0e0a0')
+        else:
+            fill(im, 0, oy, 16, oy + 16, '#1a1408')
+            fill(im, 5, oy + 12, 11, oy + 15, '#806030'); dot(im, 5, oy + 15, '#303030'); dot(im, 10, oy + 15, '#303030')
+            fill(im, 7, oy + 2 + f * 2, 9, oy + 4 + f * 2, '#e0a050'); fill(im, 3, oy + (f * 3 + 5) % 10, 5, oy + (f * 3 + 5) % 10 + 2, '#c08040')
+    return im
+
+
+def other_side(g):
+    im = new(base=OTHER_BODY[g], seed=320 + g, spread=3)
+    for y in range(16):
+        dot(im, 0, y, shade(OTHER_BODY[g], -12))
+    for i in range(4):
+        dot(im, 4 + i * 2, 6 + (i % 2), OTHER_ACCENT[g])
+    return im
+
+
+def other_front(g):
+    body = OTHER_BODY[g]
+    im = new(base=body, seed=330 + g, spread=2)
+    fill(im, 1, 0, 15, 5, shade(body, 18)); dot(im, 4, 2, '#202020'); dot(im, 4, 1, OTHER_ACCENT[g]); dot(im, 9, 2, '#f0d040'); dot(im, 11, 2, '#40a0f0')
+    fill(im, 5, 8, 11, 13, '#2a2a2e'); dot(im, 6, 9, '#ff7030'); dot(im, 9, 9, '#ff7030')
+    fill(im, 1, 14, 15, 16, shade(body, -10))
+    return im
+
+
+def other_bezel(g):
+    body = OTHER_BODY[g]
+    im = new(base=body, seed=340 + g, spread=2)
+    fill(im, 1, 0, 15, 3, shade(OTHER_ACCENT[g], -10))
+    for x in range(3, 13, 2):
+        dot(im, x, 1, '#ffffff')
+    fill(im, 2, 4, 14, 13, '#050505')
     return im
 
 
@@ -326,7 +517,24 @@ def fitting_models():
     m['stool_0'] = model([element([7, 0, 7], [9, 8, 9], {'all': 'l'}), element([5, 0, 5], [11, 1, 11], {'all': 'l'}), element([4, 8, 4], [12, 10, 12], {'all': 's', 'up': 't'})],
                          {'l': 'stool_leg', 's': 'stool_top', 't': 'stool_top'}, 'stool_top')
     m['counter_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 's', 'north': 'f', 'up': 't'})], {'s': 'counter_side', 'f': 'counter_front', 't': 'counter_top'}, 'counter_front')
-    m['prizes_0'] = model([element([0, 0, 8], [16, 16, 16], {'all': 's', 'north': 'f'})], {'s': 'prizes_side', 'f': 'prizes'}, 'prizes')
+    for k in range(8):
+        m[f'prizes_{k}'] = model([element([0, 0, 8], [16, 16, 16], {'all': 's', 'north': 'f'})], {'s': 'prizes_side', 'f': f'prizes_{k}'}, f'prizes_{k}')
+    for h in range(2):
+        m[f'brawl_{h}'] = model([element([0, 0, 1], [16, 16, 15], {'all': 's', 'north': 'f', 'up': 't', 'down': 't'}),
+                                 element([0, 13, 0], [16, 15, 1], {'all': 's', 'north': 'f', 'up': 'f'})],
+                                {'s': 'brawl_side', 'f': f'brawl_front_{h}', 't': 'cab_top'}, 'brawl_side')
+        m[f'brawl_screen_{h}'] = model([element([0, 0, 3], [16, 16, 15], {'all': 's', 'north': 's', 'up': 't', 'down': 't'}),
+                                        element([0 if h else 1, 3, 2.9], [15 if h == 0 else 16, 12, 3], {'north': 'v'}, {'north': [0, 3, 16, 12]}),
+                                        element([0, 12, 1], [16, 16, 3], {'all': 's', 'north': 'm'}, {'north': [0, 0, 16, 16]})],
+                                       {'s': 'brawl_side', 'm': f'brawl_marquee_{h}', 't': 'cab_top', 'v': f'brawl_screen_{h}'}, 'brawl_side')
+    for g in range(3):
+        m[f'other_{g}'] = model([element([1, 0, 1], [15, 16, 15], {'all': 's', 'north': 'f', 'up': 't', 'down': 't'}),
+                                 element([1, 13, 0], [15, 15, 1], {'all': 's', 'north': 'f', 'up': 'f'})],
+                                {'s': f'other_side_{g}', 'f': f'other_front_{g}', 't': 'cab_top'}, f'other_side_{g}')
+        m[f'other_screen_{g}'] = model([element([1, 0, 3], [15, 16, 15], {'all': 's', 'north': 'b', 'up': 't', 'down': 't'}),
+                                        element([3, 4, 2.9], [13, 12, 3], {'north': 'v'}, {'north': [3, 4, 13, 12]}),
+                                        element([1, 13, 1], [15, 16, 3], {'all': 's', 'north': 'b'}, {'north': [1, 0, 15, 3]})],
+                                       {'s': f'other_side_{g}', 'b': f'other_bezel_{g}', 't': 'cab_top', 'v': f'other_screen_{g}'}, f'other_side_{g}')
     m['bin_0'] = model([element([4, 0, 4], [12, 12, 12], {'all': 's', 'up': 'i'})], {'s': 'bin_side', 'i': 'bin_inside'}, 'bin_side')
     return m
 
@@ -354,13 +562,29 @@ def textures():
         out[f'block/polybius/poster_{s}.png'] = poster(s)
     out['block/polybius/stool_top.png'] = stool('top'); out['block/polybius/stool_leg.png'] = stool('leg')
     out['block/polybius/counter_front.png'] = counter('front'); out['block/polybius/counter_top.png'] = counter('top'); out['block/polybius/counter_side.png'] = new(base='#2a2620', seed=283, spread=3)
-    out['block/polybius/prizes.png'] = prizes(); out['block/polybius/prizes_side.png'] = new(base='#3a2a1e', seed=284, spread=3)
+    for k in range(8):
+        out[f'block/polybius/prizes_{k}.png'] = prizes(k)
+        out[f'item/polybius_prize_{PRIZE_NAMES[k]}.png'] = prize_icon(k)
+    out['item/polybius_tickets.png'] = tickets()
+    out['block/polybius/prizes_side.png'] = new(base='#3a2a1e', seed=284, spread=3)
+    for h in range(2):
+        out[f'block/polybius/brawl_front_{h}.png'] = brawl_front(h); out[f'block/polybius/brawl_marquee_{h}.png'] = brawl_marquee(h)
+        out[f'block/polybius/brawl_screen_{h}.png'] = brawl_frames(h)
+    out['block/polybius/brawl_side.png'] = brawl_side()
+    for g in range(3):
+        out[f'block/polybius/other_side_{g}.png'] = other_side(g); out[f'block/polybius/other_front_{g}.png'] = other_front(g)
+        out[f'block/polybius/other_bezel_{g}.png'] = other_bezel(g); out[f'block/polybius/other_screen_{g}.png'] = other_frames(g)
     out['block/polybius/bin_side.png'] = bin_side(); out['block/polybius/bin_inside.png'] = new(base='#1a1a1c', seed=285, spread=2)
     return out
 
 
-KINDS = ['cabinet', 'screen', 'dead', 'dead_screen', 'change', 'notice', 'clipboard', 'neon', 'stool', 'counter', 'prizes', 'poster', 'bin', 'light']
-STAGES = {'cabinet': 4, 'screen': 4, 'neon': 3, 'poster': 3, 'dead': 2, 'dead_screen': 2, 'light': 2}
+KINDS = ['cabinet', 'screen', 'dead', 'dead_screen', 'change', 'notice', 'clipboard', 'neon', 'stool', 'counter', 'prizes', 'poster', 'bin', 'light',
+         'brawl', 'brawl_screen', 'other', 'other_screen']
+STAGES = {'cabinet': 4, 'screen': 4, 'neon': 3, 'poster': 3, 'dead': 2, 'dead_screen': 2, 'light': 2, 'prizes': 8, 'brawl': 2, 'brawl_screen': 2,
+          'other': 3, 'other_screen': 3}
+ITEM_NAMES = {'polybius_tickets': 'Prize Tickets', 'polybius_prize_spider': 'Rubber Spider', 'polybius_prize_finger_trap': 'Finger Trap',
+              'polybius_prize_bouncy_ball': 'Bouncy Ball', 'polybius_prize_glow_star': 'Glow Star', 'polybius_prize_slap_bracelet': 'Slap Bracelet',
+              'polybius_prize_kazoo': 'Kazoo', 'polybius_prize_mood_ring': 'Mood Ring', 'polybius_prize_plush_dog': 'Plush Dog with One Eye'}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'polybius_fitting': 'Arcade Fitting', 'polybius_carpet': 'Arcade Carpet', 'polybius_wall': 'Arcade Wall', 'polybius_ceiling': 'Arcade Ceiling'}
 
@@ -375,7 +599,7 @@ def files():
     variants = {}
     for kind in KINDS:
         for facing, y in FACING_Y.items():
-            for stage in range(4):
+            for stage in range(8):
                 drawn = stage if stage < STAGES.get(kind, 1) else 0
                 v = {'model': NS + f'block/polybius/{kind}_{drawn}'}
                 if y:
@@ -384,6 +608,12 @@ def files():
     out['blockstates/polybius_fitting.json'] = {'variants': variants}
     for g in range(4):
         out[f'textures/block/polybius/screen_{g}.png.mcmeta'] = BLACK_META if g == 3 else SCREEN_META
+    for h in range(2):
+        out[f'textures/block/polybius/brawl_screen_{h}.png.mcmeta'] = SCREEN_META
+    for g in range(3):
+        out[f'textures/block/polybius/other_screen_{g}.png.mcmeta'] = SCREEN_META
+    for item in ITEM_NAMES:
+        out[f'models/item/{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/{item}'}}
     return out
 
 
@@ -399,6 +629,8 @@ def main():
     for key, obj in models.items():
         for tex in obj['textures'].values():
             assert f'block/polybius/{tex.split("polybius/")[1]}.png' in images, (key, tex)
+    for item in ITEM_NAMES:
+        assert f'item/{item}.png' in images, item
     for rel, im in images.items():
         path = A / 'textures' / rel
         if check:
@@ -413,8 +645,8 @@ def main():
         else:
             path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
-    for block, name in NAMES.items():
-        key = f'block.the_oldest_house.{block}'
+    for block, name in list(NAMES.items()) + [('item:' + k, v) for k, v in ITEM_NAMES.items()]:
+        key = f'item.the_oldest_house.{block[5:]}' if block.startswith('item:') else f'block.the_oldest_house.{block}'
         if check:
             assert lang.get(key) == name, key
         else:

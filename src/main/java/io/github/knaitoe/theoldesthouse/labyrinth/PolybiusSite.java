@@ -34,6 +34,17 @@ public final class PolybiusSite {
     /** Where the two men stand, either side of the black cabinet. */
     public static final BlockPos MAN_A=new BlockPos(-2,0,-19),MAN_B=new BlockPos(2,0,-19);
     public static final int EXIT_X=-6,EXIT_Z=FAR-1;
+    /**
+     * 0.4.221 (owner: "Add a brawler that supports 4 players", "Add npcs playing unused games"): Block Party, two blocks wide on the
+     * west wall (its left half, as a player faces it, and its right); the three cabinets the arcade's regulars are playing, and
+     * where each of them stands; and the shelf's eight prize cells, lower row first.
+     */
+    public static final BlockPos BRAWL=new BlockPos(-8,0,-16),BRAWL_RIGHT=new BlockPos(-8,0,-17);
+    public static final List<BlockPos> OTHERS=List.of(new BlockPos(-8,0,-9),new BlockPos(8,0,-9),new BlockPos(8,0,-12));
+    public static final List<BlockPos> REGULARS=List.of(new BlockPos(-7,0,-9),new BlockPos(7,0,-9),new BlockPos(7,0,-12));
+    /** Which prize a shelf cell holds, or -1. */
+    public static int prize(BlockPos rel){if(rel.getZ()!=FAR||rel.getX()<5||rel.getX()>8||rel.getY()<0||rel.getY()>1)return -1;return rel.getX()-5+rel.getY()*4;}
+    public static boolean brawl(BlockPos rel){return rel.getX()==BRAWL.getX()&&(rel.getZ()==BRAWL.getZ()||rel.getZ()==BRAWL_RIGHT.getZ())&&(rel.getY()==0||rel.getY()==1);}
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
     static BlockState mat(String name){return PolybiusRegistry.material(name).defaultBlockState();}
@@ -51,16 +62,19 @@ public final class PolybiusSite {
             set(l,b,x,-1,z,mat("carpet"));set(l,b,x,HIGH,z,mat("ceiling"));
             for(int y=0;y<HIGH;y++)set(l,b,x,y,z,air);
         }
-        // The cabinets that work, and the ones taped up.
+        // The cabinets that work, the regulars' three, Block Party, and the two still taped up.
         for(int g=0;g<GAMES;g++){var c=CABINETS.get(g);var f=FACING.get(g);set(l,b,c,PolybiusBlock.of(CABINET,f,g));set(l,b,c.above(),PolybiusBlock.of(SCREEN,f,g));}
-        int[][] dead={{-8,-9,0},{-8,-15,1},{8,-9,1},{8,-12,0},{8,-15,1}};
+        for(int i=0;i<OTHERS.size();i++){var c=OTHERS.get(i);var f=c.getX()<0?Direction.EAST:Direction.WEST;set(l,b,c,PolybiusBlock.of(OTHER,f,i));set(l,b,c.above(),PolybiusBlock.of(OTHER_SCREEN,f,i));}
+        set(l,b,BRAWL,PolybiusBlock.of(PolybiusBlock.Kind.BRAWL,Direction.EAST,0));set(l,b,BRAWL.above(),PolybiusBlock.of(BRAWL_SCREEN,Direction.EAST,0));
+        set(l,b,BRAWL_RIGHT,PolybiusBlock.of(PolybiusBlock.Kind.BRAWL,Direction.EAST,1));set(l,b,BRAWL_RIGHT.above(),PolybiusBlock.of(BRAWL_SCREEN,Direction.EAST,1));
+        int[][] dead={{-8,-19,0},{8,-15,1}};
         for(int[] d:dead){var f=d[0]<0?Direction.EAST:Direction.WEST;set(l,b,d[0],0,d[1],PolybiusBlock.of(DEAD,f,d[2]));set(l,b,d[0],1,d[1],PolybiusBlock.of(DEAD_SCREEN,f,d[2]));}
         set(l,b,-7,0,-6,PolybiusBlock.of(STOOL,Direction.NORTH));set(l,b,-7,0,-12,PolybiusBlock.of(STOOL,Direction.NORTH));set(l,b,7,0,-6,PolybiusBlock.of(STOOL,Direction.NORTH));
         // By the door: the change machine with the clipboard's place on top, and the notice board opposite.
         set(l,b,CHANGE,PolybiusBlock.of(PolybiusBlock.Kind.CHANGE,Direction.EAST));set(l,b,CLIPBOARD,PolybiusBlock.of(PolybiusBlock.Kind.CLIPBOARD,Direction.EAST));
         set(l,b,NOTICE,PolybiusBlock.of(PolybiusBlock.Kind.NOTICE,Direction.WEST));
         // The prize counter at the back on the right, and the prizes on the shelf behind it.
-        for(int x=5;x<=8;x++){set(l,b,x,0,-19,PolybiusBlock.of(COUNTER,Direction.SOUTH));set(l,b,x,0,FAR,PolybiusBlock.of(PRIZES,Direction.SOUTH));set(l,b,x,1,FAR,PolybiusBlock.of(PRIZES,Direction.SOUTH));}
+        for(int x=5;x<=8;x++){set(l,b,x,0,-19,PolybiusBlock.of(COUNTER,Direction.SOUTH));set(l,b,x,0,FAR,PolybiusBlock.of(PRIZES,Direction.SOUTH,x-5));set(l,b,x,1,FAR,PolybiusBlock.of(PRIZES,Direction.SOUTH,x-1));}
         set(l,b,-7,0,-21,PolybiusBlock.of(BIN,Direction.NORTH));
         // Neon along both walls and the back, posters between the cabinets.
         for(int z=-4;z>=FAR+2;z-=3){set(l,b,-SIDE,3,z,PolybiusBlock.of(NEON,Direction.EAST,(-z/3)%3));set(l,b,SIDE,3,z,PolybiusBlock.of(NEON,Direction.WEST,(-z/3+1)%3));}

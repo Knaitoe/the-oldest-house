@@ -17,28 +17,33 @@ import net.minecraft.world.phys.shapes.*;
  * ({@link Kind#SCREEN}); their stage is the game: Mothlight (0), Undertow (1), Signal (2), and the black cabinet with no maker's
  * name (3). Out-of-order cabinets ({@link Kind#DEAD} and {@link Kind#DEAD_SCREEN}) come in two looks. Neon strips come in three
  * colours, posters in three, and a ceiling light is lit (0) or dead (1).
+ *
+ * <p>0.4.221: the prize shelf's eight cells each hold one prize with its price (stage 0 to 7); Block Party, the four-player
+ * cabinet, is two blocks wide, its left half stage 0 and its right half stage 1 ({@link Kind#BRAWL} and {@link Kind#BRAWL_SCREEN});
+ * and three cabinets the arcade's regulars are playing ({@link Kind#OTHER} and {@link Kind#OTHER_SCREEN}, one stage a game).
  */
 public final class PolybiusBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<PolybiusBlock> CODEC=simpleCodec(PolybiusBlock::new);
     public enum Kind implements StringRepresentable {
-        CABINET,SCREEN,DEAD,DEAD_SCREEN,CHANGE,NOTICE,CLIPBOARD,NEON,STOOL,COUNTER,PRIZES,POSTER,BIN,LIGHT;
+        CABINET,SCREEN,DEAD,DEAD_SCREEN,CHANGE,NOTICE,CLIPBOARD,NEON,STOOL,COUNTER,PRIZES,POSTER,BIN,LIGHT,BRAWL,BRAWL_SCREEN,OTHER,OTHER_SCREEN;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
-    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
+    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,7);
     public PolybiusBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.CABINET).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return PolybiusRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,stage);}
     public static boolean is(BlockState s,Kind kind){return s.is(PolybiusRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
     public static Kind kind(BlockState s){return s.is(PolybiusRegistry.FITTING.get())?s.getValue(KIND):null;}
     /** How many stages each kind is drawn in. */
-    public static int stages(Kind k){return switch(k){case CABINET,SCREEN->4;case NEON,POSTER->3;case DEAD,DEAD_SCREEN,LIGHT->2;default->1;};}
+    public static int stages(Kind k){return switch(k){case PRIZES->8;case CABINET,SCREEN->4;case NEON,POSTER,OTHER,OTHER_SCREEN->3;case DEAD,DEAD_SCREEN,LIGHT,BRAWL,BRAWL_SCREEN->2;default->1;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     public static int light(BlockState s){
         int stage=s.getValue(STAGE);
         return switch(s.getValue(KIND)){
             case SCREEN->stage==3?5:8;
+            case BRAWL_SCREEN,OTHER_SCREEN->8;
             case NEON->10;
             case CHANGE->4;
             case LIGHT->stage==0?9:0;
@@ -50,8 +55,10 @@ public final class PolybiusBlock extends HorizontalDirectionalBlock {
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
-            case CABINET,DEAD->box(f,1,0,1,15,16,15);
-            case SCREEN,DEAD_SCREEN->box(f,1,0,2,15,16,15);
+            case CABINET,DEAD,OTHER->box(f,1,0,1,15,16,15);
+            case SCREEN,DEAD_SCREEN,OTHER_SCREEN->box(f,1,0,2,15,16,15);
+            case BRAWL->box(f,0,0,1,16,16,15);
+            case BRAWL_SCREEN->box(f,0,0,2,16,16,15);
             case CHANGE->box(f,2,0,6,14,16,16);
             case NOTICE->box(f,1,1,15,15,15,16);
             case CLIPBOARD->Block.box(4,0,3,12,1,13);

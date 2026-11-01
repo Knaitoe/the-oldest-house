@@ -1206,5 +1206,37 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 43
+  },
+  {
+    "name": "literary_pitt_brad",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 44
+  },
+  {
+    "name": "literary_polybius_kid_a",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 47
+  },
+  {
+    "name": "literary_polybius_kid_b",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 48
+  },
+  {
+    "name": "literary_polybius_kid_c",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 49
   }
 ]
