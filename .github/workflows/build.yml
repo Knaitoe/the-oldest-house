@@ -79,6 +79,8 @@ jobs:
           python3 tools/draw_household_art.py --check
           python3 tools/draw_polybius_art.py --check
           python3 tools/draw_replacement_art.py --check
+          python3 tools/draw_swimmer_art.py --check
+          python3 tools/generate_swimmer_audio.py --check
           python3 tools/generate_staircase_leak_assets.py --check
           python3 tools/draw_hall_art.py --check
 

@@ -38,6 +38,8 @@ anywhere.
 
 ## 2. The Last Swimmer (0.4.227)
 
+Done; see `docs/LAST_SWIMMER_0_4_227.md`. Readers who come in together close the same pool; a reader on their own gets their own copy.
+
 A small municipal pool at closing. Built whole: the pool hall (six lanes, tiled deck, lane ropes, a pace clock with a sweep hand on
 the end wall, starting blocks, a skylight whose square of sky lies on the water), the attendant's office with its window onto the
 hall, the changing-room corridor, and the exit.

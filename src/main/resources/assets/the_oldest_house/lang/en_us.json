@@ -969,5 +969,20 @@
   "item.the_oldest_house.polybius_prize_mood_ring": "Mood Ring",
   "item.the_oldest_house.polybius_prize_plush_dog": "Plush Dog with One Eye",
   "item.the_oldest_house.polybius_pizza": "Slice of Pizza",
-  "item.the_oldest_house.polybius_soda": "Fountain Soda"
+  "item.the_oldest_house.polybius_soda": "Fountain Soda",
+  "subtitles.the_oldest_house.swimmer.turn": "Swimmer turns at the wall",
+  "subtitles.the_oldest_house.swimmer.haul": "Pool cover reels out",
+  "subtitles.the_oldest_house.swimmer.step": "Wet footstep under the cover",
+  "subtitles.the_oldest_house.swimmer.radio": "Radio plays in the office",
+  "block.the_oldest_house.swimmer_fitting": "Pool Fitting",
+  "block.the_oldest_house.swimmer_pool_tile": "Pool Tile",
+  "block.the_oldest_house.swimmer_pool_line": "Lane Line Tile",
+  "block.the_oldest_house.swimmer_deck": "Pool Deck",
+  "block.the_oldest_house.swimmer_wall_tile": "Wall Tile",
+  "block.the_oldest_house.swimmer_wall_band": "Wall Tile Band",
+  "block.the_oldest_house.swimmer_ceiling": "Ceiling Panel",
+  "block.the_oldest_house.swimmer_blockwork": "Painted Blockwork",
+  "block.the_oldest_house.swimmer_lino": "Lino",
+  "advancements.the_oldest_house.account.last_swimmer.title": "The last swimmer",
+  "advancements.the_oldest_house.account.last_swimmer.description": "I helped close a pool."
 }

@@ -1,0 +1,73 @@
+package io.github.knaitoe.theoldesthouse.gametest;
+
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.gametest.framework.*;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.gametest.*;
+
+/**
+ * 0.4.227, the last swimmer, played with a real reader: the pool built whole and closing; the cover hauled across a lane at a time
+ * from the shallow end, the swimmer a lane further over each time the cover reaches theirs, every length the same length; the cover
+ * closed and the splashing stopped; the steps pressing the cover up from underneath; the attendant holding the fire door; and walking
+ * out through it, which is the ending.
+ */
+@GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
+public final class LastSwimmerTests {
+    private LastSwimmerTests(){}
+    private static final LabyrinthPlace P=LabyrinthPlace.LAST_SWIMMER;
+    private static LiteraryTests.Fixture active;
+    private static LiteraryTests.Fixture fixture(GameTestHelper h){if(active!=null)active.close();active=new LiteraryTests.Fixture(h);LastSwimmer.clearAll();return active;}
+    private static void close(){if(active!=null){active.close();active=null;}LastSwimmer.clearAll();}
+    private static void at(LiteraryTests.Fixture f,ServerPlayer p,double x,double z,float yaw){var b=f.base(P);p.teleportTo(f.level(P),b.getX()+x,b.getY(),b.getZ()+z,yaw,0);}
+    private static int swimmers(ServerLevel l,BlockPos b){return l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-16,-8,-46)).minmax(new AABB(b.offset(16,11,2))),a->a.role()==LiteraryActor.STRANGER&&a.phase()==LastSwimmer.SWIMMER).size();}
+    private static void haul(LiteraryTests.Fixture f,ServerPlayer p){var b=f.base(P);var own=f.own(p,P);LastSwimmer.click(p,b,SwimmerSite.REEL_SOUTH,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);}
+
+    @GameTest(template="empty",batch="swim_close",timeoutTicks=2400)
+    public static void theCoverGoesOnOverTheLastSwimmerAndTheAttendantHoldsTheDoor(GameTestHelper h){
+        var f=fixture(h);var p=f.player("swim_reader",P);var b=f.base(P);var l=f.level(P);
+        var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,new AABB(b.getX()-16,b.getY()-8,b.getZ()-47,b.getX()+16,b.getY()+11,b.getZ()+2)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the pool is resident"))
+            .thenExecute(()->{
+                h.assertTrue(LiteraryRooms.isLiterary(P)&&!LiteraryRooms.outside(P)&&P.isOneShot()&&P.authored(),"a literary pool indoors, one visit, built whole");
+                var story=WitnessAccount.Story.of(P.id());h.assertTrue(story!=null&&story.kind.equals("understanding")&&WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED,"an understanding story, and the quota derives from the pool");
+                h.assertTrue(SwimmerBlock.is(l.getBlockState(b.offset(SwimmerSite.CHECKLIST)),SwimmerBlock.Kind.CLIPBOARD)&&SwimmerBlock.is(l.getBlockState(b.offset(SwimmerSite.LOG)),SwimmerBlock.Kind.CLIPBOARD),"the checklist and the closing log on the counter");
+                h.assertTrue(SwimmerBlock.is(l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-20)),SwimmerBlock.Kind.ROPE)&&l.getBlockState(b.offset(-8,SwimmerSite.SURFACE,-20)).is(Blocks.WATER)&&SwimmerBlock.is(l.getBlockState(b.offset(SwimmerSite.REEL_X,0,-20)),SwimmerBlock.Kind.REEL),"the water, the lane ropes, the cover on its reel");
+                h.assertTrue(l.getBlockState(b.offset(-7,-4,-34)).is(Blocks.WATER)&&l.getBlockState(b.offset(-7,-5,-34)).is(SwimmerRegistry.material("pool_tile"))&&l.getBlockState(b.offset(-7,-3,-15)).is(SwimmerRegistry.material("pool_tile"))&&l.getBlockState(b.offset(-8,-4,-25)).is(SwimmerRegistry.material("pool_line")),"deep at the north end, shallow at the south, a lane line down each lane: "+l.getBlockState(b.offset(-7,-4,-34))+" "+l.getBlockState(b.offset(-7,-5,-34))+" "+l.getBlockState(b.offset(-7,-3,-15))+" "+l.getBlockState(b.offset(-8,-4,-25)));
+                var text=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);var all=text==null?"":String.join(" ",text.pages().stream().map(page->page.raw().getString()).toList());
+                h.assertTrue(all.contains("NEVER put the cover on with anyone in the water")&&all.contains("Hold it for whoever helped you"),"the checklist, and what is written under it: "+all);
+                at(f,p,.5,-10.5,180);})
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.tick(b)>5&&swimmers(l,b)==1,"the pool is closing, and someone is still swimming: tick "+LastSwimmer.tick(b)+", swimmers "+swimmers(l,b)+", current "+LiteraryVignettes.current(p)+", base "+LiteraryVignettes.base(p,P)+" vs "+b+", at "+p.position()+", completed "+f.own(p,P).getBoolean("Completed")))
+            .thenExecute(()->{h.assertTrue(LastSwimmer.lane(b)==3&&LastSwimmer.LENGTH_TICKS==300,"in lane four, fifteen seconds a length");
+                var own=f.own(p,P);at(f,p,.5,-30.5,180);h.assertTrue(LastSwimmer.click(p,b,SwimmerSite.REEL_SOUTH,own)&&LastSwimmer.hauls(b)==0,"the cover is hauled from the shallow end only");at(f,p,.5,-10.5,180);});
+        // Nine hauls take the cover over lanes six, five and four's ropes and over lane four: at the next turn they are a lane over.
+        for(int i=0;i<9;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
+        seq=seq.thenExecute(()->{h.assertTrue(LastSwimmer.hauls(b)==9&&SwimmerBlock.is(l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-20)),SwimmerBlock.Kind.COVER)&&SwimmerBlock.is(l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-20)),SwimmerBlock.Kind.COVER)&&l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-20)).getValue(SwimmerBlock.STAGE)==2&&l.getBlockState(b.offset(-1,SwimmerSite.SURFACE,-20)).is(Blocks.WATER),"nine columns covered, the leading edge on the ninth: "+LastSwimmer.hauls(b));
+                long t=LastSwimmer.tick(b);LastSwimmer.hurry(b,(int)(LastSwimmer.LENGTH_TICKS-t%LastSwimmer.LENGTH_TICKS)-1);})
+            .thenIdle(3)
+            .thenExecute(()->h.assertTrue(LastSwimmer.lane(b)==2,"at the next turn, the swimmer is a lane further over: "+LastSwimmer.lane(b)));
+        for(int i=0;i<8;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
+        seq.thenExecute(()->{h.assertTrue(LastSwimmer.closed(b)&&swimmers(l,b)==0,"the cover is on, and the splashing stops");
+                for(int x=SwimmerSite.POOL_X0;x<=SwimmerSite.POOL_X1;x++)h.assertTrue(SwimmerBlock.is(l.getBlockState(b.offset(x,SwimmerSite.SURFACE,-25)),SwimmerBlock.Kind.COVER),"every column covered: "+x);
+                h.assertTrue(f.own(p,P).getBoolean("Covered227")&&!f.own(p,P).getBoolean("Ready"),"not yet the ending");
+                LastSwimmer.hurry(b,LastSwimmer.STEPS_AFTER);})
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.stepping(b)&&LastSwimmer.pressed(b)!=null,"something crosses the cover"))
+            .thenExecute(()->{var at=b.offset(LastSwimmer.pressed(b));h.assertTrue(SwimmerBlock.is(l.getBlockState(at),SwimmerBlock.Kind.COVER)&&l.getBlockState(at).getValue(SwimmerBlock.STAGE)==1,"the cover rises under the step");
+                var own=f.own(p,P);h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("held_the_door"),"ready, held_the_door: "+own);
+                var lamp=b.offset(SwimmerSite.LAMPS.get(0));h.assertTrue(l.getBlockState(lamp).getValue(SwimmerBlock.STAGE)==1,"the far lamps are off");})
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.held(b),"the attendant reaches the fire door and holds it"))
+            .thenExecute(()->{var top=l.getBlockState(b.offset(SwimmerSite.EXIT_X,0,SwimmerSite.EXIT_Z));h.assertTrue(top.getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&top.getValue(net.minecraft.world.level.block.DoorBlock.OPEN),"the fire door stands open: "+top);
+                at(f,p,SwimmerSite.EXIT_X+1.5,SwimmerSite.EXIT_Z+.5,90);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"walking out is the ending"))
+            .thenExecute(()->{boolean log=false;for(var s:p.getInventory().items)if(s.is(Items.WRITTEN_BOOK)){var c=s.get(DataComponents.WRITTEN_BOOK_CONTENT);if(c!=null&&String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList()).contains("IN AT CLOSE"))log=true;}
+                h.assertTrue(log,"the closing log is in the reader's hand");h.assertTrue(f.data().isCompleted(P.id()),"the pool is finished");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="swim_close") public static void closeDone(ServerLevel l){close();}
+}

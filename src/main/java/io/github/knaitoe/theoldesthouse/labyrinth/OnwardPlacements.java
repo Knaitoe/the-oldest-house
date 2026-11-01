@@ -54,6 +54,7 @@ final class OnwardPlacements {
         r.put(OWN_LIGHT,OwnLightSite.ONWARD.getX(),0,OwnLightSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.213: the far room's door
         r.put(POLYBIUS,PolybiusSite.EXIT_X,0,PolybiusSite.EXIT_Z,SOUTH,OnwardRegistry.PANEL); // 0.4.217: the arcade's fire door, back left
         r.put(REPLACEMENT,ReplacementSite.EXIT_X,0,ReplacementSite.EXIT_Z,SOUTH,OnwardRegistry.PANEL); // 0.4.218: the open house's kitchen door
+        r.put(LAST_SWIMMER,SwimmerSite.EXIT_X,0,SwimmerSite.EXIT_Z,EAST,OnwardRegistry.PANEL); // 0.4.227: the pool hall's fire door, which the attendant holds
         r.put(LINE,LineSite.ONWARD.getX(),0,LineSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.212: the far wall behind the pack
         r.put(STILLNESS,StillnessSite.ONWARD.getX(),0,StillnessSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.211: the far door at the end of the low hall
         r.put(STOREROOM,StoreroomSite.ONWARD.getX(),0,StoreroomSite.ONWARD.getZ(),WEST,()->Blocks.DARK_OAK_DOOR); // 0.4.210: a side door in the dark hall before the storeroom

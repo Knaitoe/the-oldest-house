@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/swimmer/sign_0",
+    "particle": "the_oldest_house:block/swimmer/sign_0"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        3,
+        15.5
+      ],
+      "to": [
+        14,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            2,
+            3,
+            14,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            2,
+            3,
+            14,
+            13
+          ]
+        }
+      }
+    }
+  ]
+}

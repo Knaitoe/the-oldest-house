@@ -417,6 +417,8 @@ public enum LabyrinthPlace {
     POLYBIUS("polybius",Kind.MULTI_VISIT,144,new BoundingBox(-10,-1,-24,10,6,0),literaryEntry()),
     /** 0.4.218, the replacement (Replacement, ReplacementSite): a street of boarded houses, dealt only to a reader with a companion following them, and something at their heels in its place. Understanding, outside, over as many visits as it takes. */
     REPLACEMENT("replacement",Kind.MULTI_VISIT,145,new BoundingBox(-18,-2,-64,18,12,0),literaryEntry()),
+    /** 0.4.227, the last swimmer (LastSwimmer, SwimmerSite): a small municipal pool at closing time, the cover pulled across a lane at a time over someone still swimming, and the fire door held open. Understanding, one visit. */
+    LAST_SWIMMER("last_swimmer",Kind.ONE_SHOT,146,new BoundingBox(-15,-7,-46,15,10,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

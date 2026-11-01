@@ -1246,5 +1246,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 50
+  },
+  {
+    "name": "literary_swimmer_attendant",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 51
+  },
+  {
+    "name": "literary_swimmer_swimmer",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 52
   }
 ]

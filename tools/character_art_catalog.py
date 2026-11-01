@@ -59,7 +59,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_pitt_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_pitt_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -89,4 +89,7 @@ def entries():
         rows.append({'name':'literary_polybius_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':47+i})
     # Polybius (0.4.224): the teenager behind the pizza counter on stranger phase fifty.
     rows.append({'name':'literary_polybius_teen','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':50})
+    # The last swimmer (0.4.227): the attendant on stranger phase fifty-one, the swimmer on fifty-two.
+    rows.append({'name':'literary_swimmer_attendant','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':51})
+    rows.append({'name':'literary_swimmer_swimmer','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':52})
     return rows
