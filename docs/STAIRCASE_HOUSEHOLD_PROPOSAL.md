@@ -41,6 +41,25 @@ The vignettes below let the reader live a day of theirs. They are mundane on pur
 - **Followers wait at the tread.**
 - **The five leaks stay as they are.** Their sheets are not source sheets for the vignettes.
 
+## Pacing: rare, but they break up the descent
+
+The owner: "they're not frequent but they should break up the monotony of the descent."
+
+- **Spread over the shaft.** The 1,280-block descent is split into eight stretches of 160 blocks.
+  - In each stretch, at most one household thing happens to a reader: a door, or one of the five leaks. Nothing comes twice
+    close together.
+  - A stretch only offers a door if the one above it offered nothing.
+  - The descent then gets about four domestic interruptions, evenly spaced, rather than none for a long way and then three at
+    once.
+- **The first source sheet read in an eligible stretch leaves the door.** Later sheets in that stretch are only reading.
+- **Never the first stretch.** The descent begins with the shaft's own dark and the first fire. The last landing sits in the
+  bottom stretch, and its stretch offers nothing else.
+- **A door left behind stays.** If the reader walks on past an unopened door, it stays in the wall for that descent. It is gone the
+  next time they come down; its sheet can leave it again in a later stretch.
+- **Spacing is per reader.** Two readers on the stairs each get their own rhythm. A party following one reader's door uses that
+  reader's stretch, not their own.
+- **On the way back up there are no doors.** The homeward climb is the staircase's own.
+
 ## Every vignette has a success and a failure
 
 The failures are mundane, but they are real: they are recorded, the household remembers them, and the last landing counts them.
