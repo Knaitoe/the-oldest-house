@@ -1012,5 +1012,11 @@
   "block.the_oldest_house.draft_fitting": "Draft Fitting",
   "block.the_oldest_house.draft_plaster": "Distempered Plaster",
   "block.the_oldest_house.draft_boards": "Scrubbed Boards",
-  "block.the_oldest_house.draft_tile": "Quarry Tile"
+  "block.the_oldest_house.draft_tile": "Quarry Tile",
+  "block.the_oldest_house.trace_fitting": "Furniture",
+  "block.the_oldest_house.trace_boards": "Grey Boards",
+  "block.the_oldest_house.trace_paper": "Faded Paper",
+  "block.the_oldest_house.trace_panel": "Dark Panelling",
+  "block.the_oldest_house.trace_plaster": "Stained Plaster",
+  "item.the_oldest_house.door_wedge": "Door Wedge"
 }

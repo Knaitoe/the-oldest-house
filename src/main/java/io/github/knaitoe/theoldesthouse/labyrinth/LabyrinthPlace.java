@@ -429,6 +429,19 @@ public enum LabyrinthPlace {
     VENT_ROOMS("vent_rooms", Kind.GRAY, 149, new BoundingBox(-12,-1,-28,12,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(11,0,-28),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.231, traces (TraceRooms): the shut-up rooms, an ordinary hall under dust, whose floor keeps footprints and whose one loose chair stays where it is dragged. */
+    DUST_HALL("dust_hall", Kind.GRAY, 150, new BoundingBox(-4,-1,-36,4,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(4,0,-21),Direction.WEST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-36),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.231, the door wedge (TraceRooms): a cloakroom whose inner door shuts itself, a long passage, and a far door that gives only while the way behind stands open. An early puzzle room, family HOLD; the wedge is on a hook by the door. */
+    PROPPED_DOOR("propped_door", Kind.GRAY, 151, new BoundingBox(-6,-1,-22,6,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(4,0,-22),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The cloakroom's deep room: three rooms under dust and two doors that shut themselves, held by the wedge and a chair dragged into a doorway. */
+    SPRUNG_ROOMS("sprung_rooms", Kind.GRAY, 152, new BoundingBox(-8,-1,-30,8,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-30),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

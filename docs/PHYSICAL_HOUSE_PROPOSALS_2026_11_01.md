@@ -114,6 +114,8 @@ door settling shut when another passage opens.
 
 ## 6. Traces, and the door wedge (0.4.231)
 
+Done; see `docs/TRACES_0_4_231.md`.
+
 - Dust keeps footprints; a chair stays where it was dragged; a wedge holds a door where it was left. Readers can know a room by what
   they did in it.
 - **The wedge** holds an unstable route open: a wedged door is not shut behind the reader, and the hall beyond it stays what it was.
