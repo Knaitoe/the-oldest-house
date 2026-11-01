@@ -1,0 +1,46 @@
+{
+  "sounds": {
+    "cb": {
+      "samples": 30869,
+      "rate": 22050,
+      "ticks": 28,
+      "sha256": "5f48c46eaf01abf58060ba58a5e326873ffeef77000fd14eb0b404492b2601d4"
+    },
+    "ring": {
+      "samples": 48510,
+      "rate": 22050,
+      "ticks": 44,
+      "sha256": "5e351e4774ec8da74a54ee60ef80aad930d5c6db86dc4993672680adbfd4c658"
+    },
+    "hum": {
+      "samples": 39690,
+      "rate": 22050,
+      "ticks": 36,
+      "sha256": "e5f762902ef1b994916264144264b8e3d00c10fc736ee80d697d2b285e00bbbc"
+    },
+    "lunge": {
+      "samples": 19845,
+      "rate": 22050,
+      "ticks": 18,
+      "sha256": "4415507093371e63b8efb6102b5564fb3ab66a14245740c1369edd3eb29927a1"
+    },
+    "flare": {
+      "samples": 35280,
+      "rate": 22050,
+      "ticks": 32,
+      "sha256": "c463a6b6d57c2db33d59d5bea3b2f69c3f8b8c4f277d83cd751e67652e87a4a4"
+    },
+    "wagon": {
+      "samples": 52920,
+      "rate": 22050,
+      "ticks": 48,
+      "sha256": "e3815594cfe1f68617bf99ed91a03e901e1cbdd11d3341015c209b5e8d95e812"
+    },
+    "gate": {
+      "samples": 28665,
+      "rate": 22050,
+      "ticks": 26,
+      "sha256": "c5b09c0d27c80733fd389652ea1deb8d01cfdfc292fe5a082d8c725a34d2c36c"
+    }
+  }
+}

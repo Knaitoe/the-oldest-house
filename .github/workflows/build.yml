@@ -2243,6 +2243,10 @@ jobs:
           python3 tools/generate_lookout_audio.py --check
           python3 tools/draw_work_print_art.py --check
           python3 tools/generate_work_print_audio.py --check
+          python3 tools/draw_polaroid_trail_art.py --check
+          python3 tools/generate_polaroid_trail_audio.py --check
+          python3 tools/draw_left_right_art.py --check
+          python3 tools/generate_left_right_audio.py --check
       - name: Native room geometry, standard/slim coats and the two-block mirror
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m

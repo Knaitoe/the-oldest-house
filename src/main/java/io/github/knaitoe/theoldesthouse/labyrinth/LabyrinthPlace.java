@@ -384,6 +384,10 @@ public enum LabyrinthPlace {
     WHISTLERS("whistlers",Kind.MULTI_VISIT,128,new BoundingBox(-40,-8,-280,40,30,0),literaryEntry()),
     /** 0.4.203, Work print: a closed video rental shop, a tape with no label in its returns bin, and behind the back room the edit bay and the set of the film it holds (WorkPrintShop, WorkPrint). Survival, over seven House days. */
     WORK_PRINT("work_print",Kind.MULTI_VISIT,129,new BoundingBox(-18,-2,-42,12,7,0),literaryEntry()),
+    /** 0.4.204, the Polaroid Trail: a back yard, the crawlspace next door, a neighbourhood cinema and a pine wood, each place a visit, every one photographed from where something stood and watched (PolaroidSite, PolaroidTrail). Understanding, four visits. */
+    POLAROID_TRAIL("polaroid_trail",Kind.MULTI_VISIT,130,new BoundingBox(-26,-5,-152,26,18,0),literaryEntry()),
+    /** 0.4.205, the Left-Right Game: the road past the Bristol Ferry toll, forking and forking; left, then right, never twice, and the salt for a wrong turn (LeftRightRoad, LeftRightGame). Survival, four visits. */
+    LEFT_RIGHT("left_right",Kind.MULTI_VISIT,131,new BoundingBox(-16,-5,-60,47,9,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

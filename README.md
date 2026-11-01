@@ -20,7 +20,11 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.203**: a new vignette, Work print: a closed video shop with a tape that has no label. Watch it through and the phone starts counting down seven days; every time you watch it again there is more of you in it. Pass a copy on, or put on the costume and finish the film the actor in it would not. See [docs/WORK_PRINT_0_4_203.md](docs/WORK_PRINT_0_4_203.md).
+Development candidate **0.4.205**: a new vignette, the Left-Right Game: the road past a closed toll forks and keeps forking, and there is one rule, left, then right, never the same way twice. Take a wrong turn and the road ends in salt, where a woman stands by the cars and moves only when nobody is looking at her. Four nights, the last ending at a green wagon idling with its tailgate down. See [docs/LEFT_RIGHT_0_4_205.md](docs/LEFT_RIGHT_0_4_205.md).
+
+Previously, candidate **0.4.204**: a new vignette, the Polaroid Trail: four visits to the places you walked as a child (the creek behind the house, the crawlspace next door, the neighbourhood cinema, the pine wood), every one of them photographed from somewhere you could not see. Each photograph is left under a yellow balloon; stand where it was taken and look back. Never look at the flash. See [docs/POLAROID_TRAIL_0_4_204.md](docs/POLAROID_TRAIL_0_4_204.md).
+
+Before that, candidate **0.4.203**: a new vignette, Work print: a closed video shop with a tape that has no label. Watch it through and the phone starts counting down seven days; every time you watch it again there is more of you in it. Pass a copy on, or put on the costume and finish the film the actor in it would not. See [docs/WORK_PRINT_0_4_203.md](docs/WORK_PRINT_0_4_203.md).
 
 Previously, candidate **0.4.202**: a new vignette, the Whistlers in the Pines: four nights in a fire lookout where something whistles at the glass and looking is what lets it nearer. The Barretts' house in the Ghosts set is a home a family of four lives in (their own photographs, one living room with the set on, bathrooms with toothbrushes in a cup and a curtain on the tub, the girls' rooms their own), Mapping the Interior has its own furniture and its floor plan on the kitchen table, sleepers lie in their beds, and the Winchester's doorways can be walked through again. See [docs/WHISTLERS_0_4_202.md](docs/WHISTLERS_0_4_202.md) and [docs/OWNER_NOTES_0_4_201.md](docs/OWNER_NOTES_0_4_201.md).
 

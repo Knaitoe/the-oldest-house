@@ -2778,5 +2778,131 @@
         "stream": false
       }
     ]
+  },
+  "polaroid.charge": {
+    "subtitle": "subtitles.the_oldest_house.polaroid.charge",
+    "sounds": [
+      {
+        "name": "the_oldest_house:polaroid/charge",
+        "stream": false
+      }
+    ]
+  },
+  "polaroid.flash": {
+    "subtitle": "subtitles.the_oldest_house.polaroid.flash",
+    "sounds": [
+      {
+        "name": "the_oldest_house:polaroid/flash",
+        "stream": false
+      }
+    ]
+  },
+  "polaroid.click": {
+    "subtitle": "subtitles.the_oldest_house.polaroid.click",
+    "sounds": [
+      {
+        "name": "the_oldest_house:polaroid/click",
+        "stream": false
+      }
+    ]
+  },
+  "polaroid.balloon": {
+    "subtitle": "subtitles.the_oldest_house.polaroid.balloon",
+    "sounds": [
+      {
+        "name": "the_oldest_house:polaroid/balloon",
+        "stream": false
+      }
+    ]
+  },
+  "polaroid.walkie": {
+    "subtitle": "subtitles.the_oldest_house.polaroid.walkie",
+    "sounds": [
+      {
+        "name": "the_oldest_house:polaroid/walkie",
+        "stream": false
+      }
+    ]
+  },
+  "polaroid.projector": {
+    "subtitle": "subtitles.the_oldest_house.polaroid.projector",
+    "sounds": [
+      {
+        "name": "the_oldest_house:polaroid/projector",
+        "stream": false
+      }
+    ]
+  },
+  "polaroid.power": {
+    "subtitle": "subtitles.the_oldest_house.polaroid.power",
+    "sounds": [
+      {
+        "name": "the_oldest_house:polaroid/power",
+        "stream": false
+      }
+    ]
+  },
+  "left_right.cb": {
+    "subtitle": "subtitles.the_oldest_house.left_right.cb",
+    "sounds": [
+      {
+        "name": "the_oldest_house:left_right/cb",
+        "stream": false
+      }
+    ]
+  },
+  "left_right.ring": {
+    "subtitle": "subtitles.the_oldest_house.left_right.ring",
+    "sounds": [
+      {
+        "name": "the_oldest_house:left_right/ring",
+        "stream": false
+      }
+    ]
+  },
+  "left_right.hum": {
+    "subtitle": "subtitles.the_oldest_house.left_right.hum",
+    "sounds": [
+      {
+        "name": "the_oldest_house:left_right/hum",
+        "stream": false
+      }
+    ]
+  },
+  "left_right.lunge": {
+    "subtitle": "subtitles.the_oldest_house.left_right.lunge",
+    "sounds": [
+      {
+        "name": "the_oldest_house:left_right/lunge",
+        "stream": false
+      }
+    ]
+  },
+  "left_right.flare": {
+    "subtitle": "subtitles.the_oldest_house.left_right.flare",
+    "sounds": [
+      {
+        "name": "the_oldest_house:left_right/flare",
+        "stream": false
+      }
+    ]
+  },
+  "left_right.wagon": {
+    "subtitle": "subtitles.the_oldest_house.left_right.wagon",
+    "sounds": [
+      {
+        "name": "the_oldest_house:left_right/wagon",
+        "stream": false
+      }
+    ]
+  },
+  "left_right.gate": {
+    "subtitle": "subtitles.the_oldest_house.left_right.gate",
+    "sounds": [
+      {
+        "name": "the_oldest_house:left_right/gate",
+        "stream": false
+      }
+    ]
   }
 }

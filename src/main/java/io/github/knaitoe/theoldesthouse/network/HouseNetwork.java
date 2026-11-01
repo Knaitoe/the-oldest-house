@@ -13,7 +13,10 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("110")
+        event.registrar("112")
+                .playToClient(LeftRightFogPayload.TYPE,LeftRightFogPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LeftRightClient.fog(payload)))
+                .playToClient(PolaroidFlashPayload.TYPE,PolaroidFlashPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolaroidClient.flash(payload)))
+                .playToClient(PolaroidViewPayload.TYPE,PolaroidViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolaroidClient.view(payload)))
                 .playToClient(WorkPrintFilmPayload.TYPE,WorkPrintFilmPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WorkPrintClient.film(payload)))
                 .playToClient(WorkPrintHauntPayload.TYPE,WorkPrintHauntPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WorkPrintClient.haunt(payload)))
                 .playToClient(WayOutPayload.TYPE,WayOutPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WayOutClient.accept(payload)))

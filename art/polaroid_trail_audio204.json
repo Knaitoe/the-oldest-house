@@ -1,0 +1,46 @@
+{
+  "sounds": {
+    "charge": {
+      "samples": 33075,
+      "rate": 22050,
+      "ticks": 30,
+      "sha256": "204ec2760d4346189f05fd857c38e9a41c2e4e71bdb850b05a49a1529465fbdd"
+    },
+    "flash": {
+      "samples": 15434,
+      "rate": 22050,
+      "ticks": 14,
+      "sha256": "ec3bffa68221bdc6681ffa032ce6f1e1f5fb7bf74890830dd91d5a762b91a8d4"
+    },
+    "click": {
+      "samples": 19845,
+      "rate": 22050,
+      "ticks": 18,
+      "sha256": "7e9a69bcbe3609bff30a72e6b5cfa2c6f0e2646620c899d83cdf7ba9a68bca0a"
+    },
+    "balloon": {
+      "samples": 17640,
+      "rate": 22050,
+      "ticks": 16,
+      "sha256": "3bc287656972b32db5de0499feb83a0d4dd3dbd1e9eec40c83c38df9ebdaf445"
+    },
+    "walkie": {
+      "samples": 26460,
+      "rate": 22050,
+      "ticks": 24,
+      "sha256": "9e6fa73ef034f6885268ccdc26ec4f3fd02ad7e30a25cbf3891e1bdcc7104747"
+    },
+    "projector": {
+      "samples": 52920,
+      "rate": 22050,
+      "ticks": 48,
+      "sha256": "e2e5ceb3f8966974be5a9bfcc5cbbbe94ce3e3bce7980445c6290ded9f7a285a"
+    },
+    "power": {
+      "samples": 35280,
+      "rate": 22050,
+      "ticks": 32,
+      "sha256": "3028d715975de84fcbc58ed4136ad2f04291725993b5f84938a14f55fc943f5d"
+    }
+  }
+}

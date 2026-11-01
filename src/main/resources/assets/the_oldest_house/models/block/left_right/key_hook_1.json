@@ -1,0 +1,30 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "k": "the_oldest_house:block/left_right/key_hook_empty",
+    "particle": "the_oldest_house:block/left_right/key_hook"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        3,
+        15
+      ],
+      "to": [
+        11,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        }
+      }
+    }
+  ]
+}

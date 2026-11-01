@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/polaroid/tag",
+    "particle": "the_oldest_house:block/polaroid/tag"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        2,
+        15.5
+      ],
+      "to": [
+        12,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            3,
+            2,
+            13,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            3,
+            2,
+            13,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

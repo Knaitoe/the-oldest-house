@@ -98,7 +98,7 @@ STORY_ICONS = {
     'tunnel_periphery': 'minecraft:lime_stained_glass', 'missing_sleep': 'minecraft:white_bed', 'layered_man': NS + ':cellar_cleaver',
     'motion_light': 'minecraft:redstone_lamp', 'backseat': 'minecraft:iron_door', 'silo': 'minecraft:yellow_dye',
     'dare_in_the_dark': NS + ':candle_stub', 'feet_up': 'minecraft:ladder', 'whistlers': NS + ':lookout_crank',
-    'work_print': NS + ':work_print_tape',
+    'work_print': NS + ':work_print_tape', 'polaroid_trail': NS + ':polaroid_walkie', 'left_right': NS + ':left_right_flare',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

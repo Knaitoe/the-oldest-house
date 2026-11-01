@@ -31,6 +31,8 @@ public final class SceneClock {
             case WAY_OUT->12; // 0.4.199: a fine morning, and the sun never moves
             case MAPPING_INTERIOR->13; // 0.4.201: 2:49 in the morning, every night
             case DEVILS_ROCK->9;
+            case LEFT_RIGHT->9; // 0.4.205: two in the morning at the toll
+            case POLAROID_TRAIL->3; // 0.4.204: late autumn twilight over the yard and the pines
             case WHISTLERS->9; // 0.4.202: night at the lookout, stars over the forest of towers // 0.4.201: midnight at the Sandersons' and in the park
             default->0;
         };
