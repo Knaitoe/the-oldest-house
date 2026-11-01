@@ -53,10 +53,10 @@ public final class DomesticHallUpgrade {
             }
         }
     }
-    private static boolean inFragment(LabyrinthPlace place,BlockPos p){
+    static boolean inFragment(LabyrinthPlace place,BlockPos p){
         for(var fragment:LabyrinthDomestic.fragments(place))if(p.getX()>=fragment.x0()-1&&p.getX()<=fragment.x1()+1&&p.getZ()>=fragment.z0()-1&&p.getZ()<=fragment.z1()+1)return true;
         return false;
     }
-    private static boolean fabric(BlockState s){return s.is(Blocks.WHITE_TERRACOTTA)||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.SPRUCE_PLANKS)
+    private static boolean fabric(BlockState s){return HallFinish.fabric(s)||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.SPRUCE_PLANKS)
             ||s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.DARK_OAK_PLANKS)||s.is(Blocks.SMOOTH_STONE)||s.is(Blocks.WHITE_CONCRETE)||s.is(Blocks.POLISHED_ANDESITE)||s.is(Blocks.CRACKED_STONE_BRICKS);}
 }

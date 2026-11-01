@@ -18,7 +18,7 @@ public final class DomesticHomeRepairs {
         return DomesticLives0128.plan(old).stream().map(e->new DomesticLives.Edit(e.at(),e.next())).toList();
     });}
     public static void complete(ServerLevel l,BlockPos b,DomesticLives.Home h){var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);state.putBoolean(DomesticLives.key(b,h),true);d.setState(STATE,state);}
-    private static boolean fabric(BlockState s){return s.isAir()||s.is(Blocks.WHITE_TERRACOTTA)||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.YELLOW_TERRACOTTA)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.STONE);}
+    private static boolean fabric(BlockState s){return s.isAir()||HallFinish.fabric(s)||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.YELLOW_TERRACOTTA)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.STONE);}
     /** True only when a bounded slice actually ran, so another loaded home is not starved. */
     public static boolean step(ServerLevel l,BlockPos b,DomesticLives.Home home){
         var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String key=DomesticLives.key(b,home);

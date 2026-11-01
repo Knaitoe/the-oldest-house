@@ -723,6 +723,17 @@ public final class ExplorationPassTests {
             if(HallVariations.domestic(hall))LabyrinthHalls.build(l,b,hall);else StoneHalls.build(l,b,hall);
             HouseFurnishings.decorate(l,b,hall);
             ScenePolish.apply(l,b,hall);
+            // 0.4.219: a domestic hall wears its own plaster, skirting and boards; none of the terracotta or spruce it was laid in shows.
+            if(HallVariations.domestic(hall)){var open=HallVariations.shell(hall);int plaster=0,boards=0,worn=0,ceilings=0;
+                for(var cell:open){var under=l.getBlockState(b.offset(cell).below());
+                    for(int y=1;y<=HallVariations.roof(hall)+1;y++){var up=l.getBlockState(b.offset(cell).above(y));if(up.isAir()||up.is(Blocks.LANTERN)||up.is(Blocks.CHAIN))continue;if(up.is(HallRegistry.surface("ceiling")))ceilings++;break;}
+                    h.assertTrue(!under.is(Blocks.SPRUCE_PLANKS),"no bare spruce floor shows in "+hall.id()+": "+cell);
+                    if(HallRegistry.is(under)){boards++;if(under.is(HallRegistry.surface("floor_worn"))||under.is(HallRegistry.surface("floor_worn_x")))worn++;}
+                    for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){var wall=cell.relative(side);if(open.contains(wall))continue;
+                        for(int y=1;y<=Math.min(4,HallVariations.roof(hall));y++){var s=l.getBlockState(b.offset(wall).above(y));
+                            h.assertTrue(!s.is(Blocks.WHITE_TERRACOTTA),"no bare terracotta shows on "+hall.id()+"'s walls: "+wall+" y "+y);
+                            if(s.is(HallRegistry.surface("plaster"))||s.is(HallRegistry.surface("plaster_cracked"))||s.is(HallRegistry.surface("plaster_stained")))plaster++;}}}
+                h.assertTrue(plaster>40&&(boards>20||hall==LabyrinthPlace.CRUMBLED_HALL)&&(worn>0||hall==LabyrinthPlace.CRUMBLED_HALL)&&(ceilings*2>open.size()||hall==LabyrinthPlace.VAULTED_HALL),hall.id()+" is plastered and boarded, worn down the middle, under a plaster ceiling: plaster "+plaster+", boards "+boards+", worn "+worn+", ceiling "+ceilings+" of "+open.size());}
             var reached=walk(l,b.offset(0,0,-1));
             for(var door:hall.doors()) {
                 var at=b.offset(door.rel());h.assertTrue(l.getBlockState(at).getBlock() instanceof DoorBlock,hall.id()+" retains its native "+door.name()+" door");

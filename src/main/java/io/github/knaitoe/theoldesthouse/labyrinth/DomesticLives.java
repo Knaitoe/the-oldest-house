@@ -162,7 +162,7 @@ public final class DomesticLives {
         DomesticStories.plan(e,h.id);
         return e.entrySet().stream().map(v->new Edit(v.getKey(),v.getValue())).toList();
     });}
-    private static boolean fabric(BlockState s){return s.isAir()||s.is(Blocks.WHITE_TERRACOTTA)||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.STONE)||s.is(Blocks.SMOOTH_STONE);}
+    private static boolean fabric(BlockState s){return s.isAir()||HallFinish.fabric(s)||s.is(Blocks.LIGHT_GRAY_TERRACOTTA)||s.is(Blocks.OAK_PLANKS)||s.is(Blocks.STONE)||s.is(Blocks.SMOOTH_STONE);}
     /**
      * 0.4.170, the owner: "Ensure they don't appear until several passes through the hallways, so they feel more impactful
      * when first encountered." A new home is built behind its fragment's wall, but every cell a reader in the hall could see
