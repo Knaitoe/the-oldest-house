@@ -403,6 +403,8 @@ public enum LabyrinthPlace {
     DARK_SPIRAL("dark_spiral",Kind.GRAY,137,new BoundingBox(-5,-12,-17,5,5,0),grayDoors(0,-10,-16)),
     /** The edge of a great dark room: a walkway along a drop nobody can see the bottom of. */
     DARK_EDGE("dark_edge",Kind.GRAY,138,new BoundingBox(-3,-13,-66,21,9,0),grayDoors(0,0,-65)),
+    /** 0.4.209, the closing hall, the first of the dark halls' horrors (ClosingHall, ClosingHallSite): Chad and Daisy at the end of a hall that closes. Survival, dealt only from depth sixteen. */
+    CLOSING_HALL("closing_hall",Kind.ONE_SHOT,139,new BoundingBox(-19,-1,-48,5,7,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

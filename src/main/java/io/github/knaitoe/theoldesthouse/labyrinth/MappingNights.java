@@ -41,7 +41,8 @@ public final class MappingNights {
     public static final int HOLD = 160;
     /** Crouched still this long and the feet go to sleep; then they stay asleep this long. */
     public static final int NUMB = 80, DEADFOOT = 300;
-    private static final Vec3 PARKED = new Vec3(6.5, 2, -26.5);
+    /** Where he waits out of sight, in the utility room. */
+    public static final Vec3 PARKED = new Vec3(6.5, 2, -26.5);
 
     private MappingNights() {}
 

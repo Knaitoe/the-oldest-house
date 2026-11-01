@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "the_oldest_house:minotaur_charge"
+    "the_oldest_house:minotaur_charge",
+    "the_oldest_house:closing_hall"
   ]
 }

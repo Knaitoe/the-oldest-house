@@ -133,7 +133,10 @@ public final class LeftRightTests {
         h.startSequence().thenExecute(()->{hold(f);night(f,p,2);LeftRightGame.HOLD_LIT.add(window);})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&road(f).getInt("RunVisit")==3&&LeftRightBlock.is(f.out.getBlockState(b.offset(window)),LeftRightBlock.Kind.DORMER),"Jubilation's houses with only dormer windows"))
             .thenWaitUntil(()->h.assertTrue(f.out.getBlockState(b.offset(window)).getValue(LeftRightBlock.STAGE)==1,"a window lights"))
-            .thenExecute(()->{f.at(p,P,.5,0,-16.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,b.offset(window).getCenter());})
+            // The other dormers light at random as the night goes on, and one may already have held the reader on the way in:
+            // the count starts clean here, so it counts this window alone.
+            .thenExecute(()->{f.at(p,P,.5,0,-16.5);var own=f.own(p,P);own.putInt("Gaze205",0);own.putInt("Locks205",0);own.putBoolean("GazeEp205",false);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                p.lookAt(EntityAnchorArgument.Anchor.EYES,b.offset(window).getCenter());})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("Gaze205")>=5&&p.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"left_right_gaze"))!=null,"looking at the lit window, the reader's legs go slow"))
             .thenExecute(()->p.setXRot(60))
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("Gaze205")==0&&p.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"left_right_gaze"))==null,"looking down at the yellow line lets it go"))

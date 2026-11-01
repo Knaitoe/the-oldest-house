@@ -49,7 +49,7 @@ public final class PittTests {
     public static void onlyAReaderWhoRetracedTheSqueezeIsDealtTheDeeperPassages(GameTestHelper h){
         var f=fixture(h);var p=f.player("pitt_deal",P);var l=f.out;var b=f.base(P);
         h.assertTrue(LiteraryRooms.isLiterary(P)&&LiteraryRooms.outside(P)&&P.kind()==LabyrinthPlace.Kind.MULTI_VISIT&&WitnessAccount.Story.of(P.id())==null,"an outdoor literary place over four visits, with no Witness story of its own");
-        h.assertTrue(WitnessAccount.Story.values().length==61&&WitnessAccount.REQUIRED==46,"the Witness pool is unchanged");
+        h.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED,"the Witness pool is unchanged");
         h.assertTrue(b.getY()==PittCave.BASE_Y&&LiteraryVignettes.inside(p,P),"the passages stand at their own height and a reader in them is found there");
         var fresh=java.util.UUID.randomUUID();h.assertTrue(!LiteraryVignettes.canDeal(f.data(),fresh,P),"a reader who has not retraced the squeeze is never dealt them");
         caver(f,p);h.assertTrue(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"one who has is");

@@ -95,6 +95,9 @@ LOOKS = {
     'literary_winter_clay': Look('#d2a684','#c9a35a','messy','#7a5a38','#34383f','jacket','#d4a640',eyes='#506a80',mark='winter',sleeve=11,scarf='#5a7a4a'),
     'literary_winter_lonnie': Look('#bf9171','#2f241d','close','#4a5a3c','#3d4148','jacket','#6a6a72',eyes='#4a3c30',mark='winter',sleeve=11,scarf='#9a3a30'),
     # Usher (0.4.182): Roderick, cadaverous, the hair floating rather than falling, a frock coat and a pale stock at the throat.
+    # 0.4.209, the closing hall: Chad and Daisy Navidson, at the end of the long dark hall (stranger phases 39 and 40, child scale).
+    'literary_closing_chad': Look('#d6ac8c','#5a3a24','messy','#3f5f86','#3b4656','tee','#c9d2dc',eyes='#56677a',sleeve=4),
+    'literary_closing_daisy': Look('#e0bc9f','#8a5c36','long','#c97f95','#7b8fa8','dress','#f0e2e6',eyes='#5f7064',sleeve=4),
     'literary_usher_roderick': Look('#ddd4ca','#3a312b','messy','#252229','#29262a','coat','#d6cfc0',eyes='#2c323e',age=1),
     'harrigan': Look('#c7ab91','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,glasses=True,logical=64),
     'harrigan_dead': Look('#b9b2a4','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,mark='dead',logical=64),

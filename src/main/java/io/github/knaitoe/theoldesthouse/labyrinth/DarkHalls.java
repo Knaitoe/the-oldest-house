@@ -57,6 +57,8 @@ public final class DarkHalls {
     public static boolean TEST_TAKE=false,TEST_ECHO=false;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
+    /** 0.4.209 onward: the horrors dealt only in the dark band (docs/DARK_HALL_HORRORS_PROPOSAL.md), built whole and left alone by the polish passes. */
+    public static boolean horror(LabyrinthPlace p){return p==LabyrinthPlace.CLOSING_HALL;}
     public static boolean isDark(@Nullable LabyrinthPlace p){return p==LabyrinthPlace.DARK_LONG||p==LabyrinthPlace.DARK_FORK||p==LabyrinthPlace.DARK_MAZE||p==LabyrinthPlace.DARK_SPIRAL||p==LabyrinthPlace.DARK_EDGE;}
     public static final List<LabyrinthPlace> HALLS=List.of(LabyrinthPlace.DARK_LONG,LabyrinthPlace.DARK_FORK,LabyrinthPlace.DARK_MAZE,LabyrinthPlace.DARK_SPIRAL,LabyrinthPlace.DARK_EDGE);
     /** How often each is dealt as an ordinary way on: none above sixteen, then more as the band goes on; the edge only at the end. */
@@ -202,7 +204,9 @@ public final class DarkHalls {
         var s=e.getServer();long tick=s.getTickCount();var l=s.getLevel(HouseDimensions.INTERIOR);if(l==null)return;
         for(var p:l.players()){
             if(p.isSpectator())continue;var place=placeOf(p);var id=p.getUUID();var was=HERE.get(id);
-            if(place!=was){if(place==null){HERE.remove(id);PLAN.remove(id);LIGHTS.remove(id);continue;}HERE.put(id,place);arrived(p,place);}
+            if(place!=was){if(place==null){HERE.remove(id);PLAN.remove(id);LIGHTS.remove(id);continue;}HERE.put(id,place);arrived(p,place);
+                // 0.4.209: the first door of a visit to the dark halls, for a reader who left a child in the closing hall.
+                if(was==null){var at=LabyrinthPlaces.base(origin(s),place);if(at!=null)ClosingHall.firstDarkDoor(p,at);}}
             if(place==null)continue;var base=LabyrinthPlaces.base(origin(s),place);if(base==null)continue;var r=p.position().subtract(base.getX(),base.getY(),base.getZ());
             if(tick%20==0)takeTorch(p,l);
             echo(p,l,base,place,r);

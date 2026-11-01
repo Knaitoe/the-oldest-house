@@ -1,0 +1,40 @@
+{
+  "sounds": {
+    "closing.grind": {
+      "samples": 57330,
+      "rate": 22050,
+      "ticks": 52,
+      "sha256": "c28ec6e08c89854ed89845773649e28404d1726730a561f859176cd02f3043c6"
+    },
+    "closing.hold": {
+      "samples": 39690,
+      "rate": 22050,
+      "ticks": 36,
+      "sha256": "0d174ee578f90d3fb97d0f440c4573d8f822d09538e9937bf349cc618ef4730d"
+    },
+    "closing.crack": {
+      "samples": 38145,
+      "rate": 22050,
+      "ticks": 35,
+      "sha256": "ae64b01ee4bded2f2ff8655a910add5fd1a707d8d35dfabe0b91972bc2985366"
+    },
+    "closing.cry": {
+      "samples": 48510,
+      "rate": 22050,
+      "ticks": 44,
+      "sha256": "6d9aa2e0bb52309444cd3ae383afc7d49a3f66824b58e2e1620a8121e1d5da96"
+    },
+    "closing.call": {
+      "samples": 60637,
+      "rate": 22050,
+      "ticks": 55,
+      "sha256": "fca0da80b602e96d3264770464c51e64352a4ce930e3c4024bad63bc7d1f0278"
+    },
+    "closing.wall": {
+      "samples": 32634,
+      "rate": 22050,
+      "ticks": 30,
+      "sha256": "6bd3b8c788885938bb4be726e25db0c78f4c3c5b6a4f28ad5c8fa361590afd68"
+    }
+  }
+}

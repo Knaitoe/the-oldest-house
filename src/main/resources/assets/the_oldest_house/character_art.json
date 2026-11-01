@@ -1166,5 +1166,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 38
+  },
+  {
+    "name": "literary_closing_chad",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 39
+  },
+  {
+    "name": "literary_closing_daisy",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 40
   }
 ]
