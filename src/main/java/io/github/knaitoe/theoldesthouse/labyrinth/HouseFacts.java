@@ -28,7 +28,9 @@ public final class HouseFacts {
             new HouseAdvancements.Step("six_doors",p->deepest(p)>=LabyrinthPacing.STORY_DEPTH),
             new HouseAdvancements.Step("growl",p->Growl.GrowlData.get(p.server).heard(p.getUUID())>0),
             new HouseAdvancements.Step("stone",p->{for(String id:data(p).visited(p.getUUID())){var place=LabyrinthPlace.byId(id);if(place!=null&&StoneHalls.isStone(place))return true;}return false;}),
-            new HouseAdvancements.Step("twenty_doors",p->deepest(p)>=20),
+            // 0.4.208: the dark halls from sixteen, and the staircase offered from twenty-two.
+            new HouseAdvancements.Step("dark",p->{for(String id:data(p).visited(p.getUUID())){var place=LabyrinthPlace.byId(id);if(place!=null&&DarkHalls.isDark(place))return true;}return false;}),
+            new HouseAdvancements.Step("twenty_doors",p->deepest(p)>=LabyrinthPacing.STAIRCASE_DEPTH),
             new HouseAdvancements.Step("camp",p->finale(p).getBoolean("Discovered")),
             new HouseAdvancements.Step("bound",p->StaircaseStory.found(data(p).stateEntry(StaircaseStory.STATE,p.getStringUUID()))>=1),
             new HouseAdvancements.Step("first_fire",p->StaircaseFire.flames(finale(p))>=1),

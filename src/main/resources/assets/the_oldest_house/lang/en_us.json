@@ -526,7 +526,7 @@
   "advancements.the_oldest_house.house.growl.description": "You heard it breathe.",
   "advancements.the_oldest_house.house.stone.title": "Stone",
   "advancements.the_oldest_house.house.stone.description": "The papered walls gave way to stone.",
-  "advancements.the_oldest_house.house.twenty_doors.title": "Twenty doors deep",
+  "advancements.the_oldest_house.house.twenty_doors.title": "Twenty-two doors deep",
   "advancements.the_oldest_house.house.twenty_doors.description": "Deep enough to be offered the stairs.",
   "advancements.the_oldest_house.house.camp.title": "The explorers' camp",
   "advancements.the_oldest_house.house.camp.description": "Someone came this way before you and left their things.",
@@ -883,5 +883,14 @@
   "subtitles.the_oldest_house.pitt.scrape": "Something scrapes in a crack",
   "subtitles.the_oldest_house.pitt.step": "A footstep on stone, early",
   "subtitles.the_oldest_house.pitt.rumble": "The passage comes down",
-  "subtitles.the_oldest_house.pitt.tick": "A barometer's needle jumps"
+  "subtitles.the_oldest_house.pitt.tick": "A barometer's needle jumps",
+  "block.the_oldest_house.dark_hall_ash": "Ash Wall",
+  "block.the_oldest_house.dark_hall_floor": "Ash Floor",
+  "block.the_oldest_house.dark_hall_ceiling": "Ash Ceiling",
+  "subtitles.the_oldest_house.dark_hall.rumble": "Stone shifts, low and slow",
+  "subtitles.the_oldest_house.dark_hall.steps": "Footsteps behind you",
+  "subtitles.the_oldest_house.dark_hall.slam": "A door slams, far behind",
+  "subtitles.the_oldest_house.dark_hall.land": "Something lands, far below",
+  "advancements.the_oldest_house.house.dark.title": "The dark halls",
+  "advancements.the_oldest_house.house.dark.description": "Smooth grey walls, no fixtures, and no light but what you brought."
 }

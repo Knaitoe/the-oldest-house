@@ -41,7 +41,8 @@ public final class ExplorationPassTests {
             for(int seed=0;seed<300;seed++){
                 d.setDryDeals(p,0);LabyrinthDealer.dealPlace(d,p,room,RandomSource.create(seed));
                 for(var id:map(d,p,room).values()){var destination=LabyrinthPlace.byId(id);
-                    if(LabyrinthPacing.ordinary(destination))h.assertTrue(StoneHalls.isStone(destination),"new ordinary halls are stone at depth "+at+": "+id);
+                    // 0.4.208: from sixteen the dark halls join the stone ones; both are the deep ordinary halls.
+                    if(LabyrinthPacing.ordinary(destination))h.assertTrue(StoneHalls.isStone(destination)||at>=DarkHalls.DARK_DEPTH&&DarkHalls.isDark(destination),"new ordinary halls are stone at depth "+at+": "+id);
                 }
             }
         }

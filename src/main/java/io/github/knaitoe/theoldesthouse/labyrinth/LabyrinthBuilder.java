@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 63;
+    public static final int VERSION = 64;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -155,6 +155,7 @@ public final class LabyrinthBuilder {
             case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, WAY_OUT -> LabyrinthPacing.STRANGE_DEPTH;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
+            case DARK_LONG, DARK_FORK, DARK_MAZE, DARK_SPIRAL, DARK_EDGE -> DarkHalls.DARK_DEPTH;
             default -> LabyrinthPacing.STORY_DEPTH;
         };
     }
@@ -578,6 +579,7 @@ public final class LabyrinthBuilder {
             case EXPLORER_CAMP -> LabyrinthCampsite.build(server, level, base);
             case MOTHER_DEN -> MotherOfStrays.build(server, level, base);
             case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING -> StoneHalls.build(level, base, place);
+            case DARK_LONG, DARK_FORK, DARK_MAZE, DARK_SPIRAL, DARK_EDGE -> DarkHalls.build(level, base, place);
             default -> {
             }
         }

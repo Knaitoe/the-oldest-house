@@ -28,7 +28,7 @@ public final class AdvancementTests {
 
     @GameTest(template="empty") public static void twoTabsEveryStoryUnderItsKindNothingAnnouncedNothingPaidEveryEndingHidden(GameTestHelper h){
         var house=tab(h,"house");var account=tab(h,"account");
-        h.assertTrue(house.size()==26,"the journey tab has its 26 advancements: "+house.size());
+        h.assertTrue(house.size()==27,"the journey tab has its 27 advancements: "+house.size());
         h.assertTrue(account.size()==7+5+WitnessAccount.Story.values().length,"the account tab has its progress, the five kinds and one advancement for every story: "+account.size());
         for(var holder:house)h.assertTrue(holder.value().parent().isPresent()==!holder.id().getPath().equals("house/house"),"the journey tab has one root, the house: "+holder.id());
         // 0.4.171 (owner: "advancements are broken in-game", an empty menu): the root is earned by being in the world, so the tab is never missing.

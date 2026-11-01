@@ -1,5 +1,5 @@
 {
-  "parent": "the_oldest_house:house/stone",
+  "parent": "the_oldest_house:house/dark",
   "display": {
     "icon": {
       "id": "minecraft:ladder"

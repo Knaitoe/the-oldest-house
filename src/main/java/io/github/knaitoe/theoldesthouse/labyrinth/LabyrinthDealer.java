@@ -221,6 +221,8 @@ public final class LabyrinthDealer {
             gray.add(LabyrinthPlace.STONE_BEND);
             gray.add(LabyrinthPlace.STONE_LANDING);
         }
+        // 0.4.208: the dark halls, from sixteen.
+        if (depth >= DarkHalls.DARK_DEPTH) gray.addAll(DarkHalls.HALLS);
         if (tier >= 1) {
             gray.add(LabyrinthPlace.LONG_HALLWAY);
             gray.add(LabyrinthPlace.FLOODED_PASSAGE);
@@ -540,11 +542,13 @@ public final class LabyrinthDealer {
             case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR -> 0;
             case VAULTED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case CRUMBLED_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
-            case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 26;
-            case STONE_CROSSING -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 14;
-            case STONE_DESCENT -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 16;
-            case STONE_ARCADE, STONE_BEND -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 22;
-            case STONE_LANDING -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : 12;
+            case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 26;
+            case STONE_CROSSING -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 14;
+            case STONE_DESCENT -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 16;
+            case STONE_ARCADE, STONE_BEND -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 22;
+            case STONE_LANDING -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 12;
+            // 0.4.208: the dark halls, from sixteen, the only ordinary halls from twenty-one.
+            case DARK_LONG, DARK_FORK, DARK_MAZE, DARK_SPIRAL, DARK_EDGE -> DarkHalls.weight(place, depth);
             case LONG_HALLWAY, HOTEL_HALLWAY, SPIRAL_STAIR, DUPLICATE_PASSAGE -> 1;
             case JUNCTION -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case GRAY_CORRIDOR -> depth < 4 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 2;

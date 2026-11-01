@@ -156,9 +156,15 @@ public final class Growl {
             }
             record.noteDepth(id, depth);
             Schedule schedule = SCHEDULE.get(id);
+            boolean dark = DarkHalls.isDark(place);
             if (schedule == null) {
-                SCHEDULE.put(id, new Schedule(now + gap(depth, player.getRandom()), depth));
+                SCHEDULE.put(id, new Schedule(now + (dark ? DarkHalls.roarGap(player.getRandom()) : gap(depth, player.getRandom())), depth));
                 continue;
+            }
+            // 0.4.208: in the dark halls it is heard more often than in the stone halls, not much more.
+            if (dark && schedule.next() > now + (long) (DarkHalls.ROAR_MEAN * 1.5)) {
+                schedule = new Schedule(now + DarkHalls.roarGap(player.getRandom()), schedule.depth());
+                SCHEDULE.put(id, schedule);
             }
             if (depth > schedule.depth()) {
                 // Deeper: the next one may come sooner, never later.
@@ -168,7 +174,7 @@ public final class Growl {
             }
             if (now >= schedule.next()) {
                 growl(player, pick(depth, player.getRandom()));
-                SCHEDULE.put(id, new Schedule(now + gap(depth, player.getRandom()), depth));
+                SCHEDULE.put(id, new Schedule(now + (dark ? DarkHalls.roarGap(player.getRandom()) : gap(depth, player.getRandom())), depth));
             }
         }
     }
