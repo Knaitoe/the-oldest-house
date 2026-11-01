@@ -107,6 +107,9 @@ final class CoopAccounts {
         // 0.4.205: one road for the party, one sequence; a wrong turn by any of them took them all to the salt.
         // 0.4.206: one set, one dial; dead air stopped the tall one for all of them.
         // 0.4.209: two readers, a hand each; it closed twice as fast with two in it.
+        // 0.4.210: back to back, one of them always facing the door; every look shrank the room for both.
+        together(STOREROOM,party("%s {was} in the storeroom with me, back to back. One of us watched the door while the other fetched, and every time either of us looked, the shelves came nearer for both.",
+            "%s {was} still in the storeroom when I backed out."));
         together(CLOSING_HALL,party("%s {was} in the hall with me. We took a hand each, and it closed twice as fast for there being two of us.",
             "%s {was} still in the hall when the children went through."));
         together(DEAD_AIR,party("%s {was} on the set with me. One of us turned the dial and threw the breakers while the rest crawled.",

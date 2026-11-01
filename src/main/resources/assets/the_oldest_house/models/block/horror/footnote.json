@@ -1,0 +1,30 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "n": "the_oldest_house:block/horror/footnote",
+    "particle": "the_oldest_house:block/horror/footnote"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        0.25,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
+        }
+      }
+    }
+  ]
+}

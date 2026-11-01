@@ -102,7 +102,8 @@ public final class WitnessAccount {
         POLAROID_TRAIL("polaroid_trail","The yellow balloons","understanding","I stood where every photograph had been taken of me and looked back at where he had stood. In the trees I looked straight up, and there was nobody there, only balloons."),
         LEFT_RIGHT("left_right","The left-right game","survival","I kept to the turns the road gave me and did not look away from her. Past the place where the road fell in, a green wagon was idling with its tailgate down."),
         DEAD_AIR("dead_air","Dead air","understanding","I tuned the set to a channel that was never on the air and walked into the show. At the top of the stair there was nobody in the booth, only a highchair facing nine screens of snow."),
-        CLOSING_HALL("closing_hall","The closing hall","survival","I went down a hall that was getting smaller and brought two children back up it. I sent them through first.");
+        CLOSING_HALL("closing_hall","The closing hall","survival","I went down a hall that was getting smaller and brought two children back up it. I sent them through first."),
+        STOREROOM("storeroom","The storeroom","survival","I didn't turn round. I went into a storeroom for three things on a list in my own handwriting, and I backed out of it with all three.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

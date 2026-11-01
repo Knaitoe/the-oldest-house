@@ -3129,5 +3129,59 @@
         "stream": false
       }
     ]
+  },
+  "storeroom.breath": {
+    "subtitle": "subtitles.the_oldest_house.storeroom.breath",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/storeroom_breath",
+        "stream": false
+      }
+    ]
+  },
+  "storeroom.scrape": {
+    "subtitle": "subtitles.the_oldest_house.storeroom.scrape",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/storeroom_scrape",
+        "stream": false
+      }
+    ]
+  },
+  "storeroom.flicker": {
+    "subtitle": "subtitles.the_oldest_house.storeroom.flicker",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/storeroom_flicker",
+        "stream": false
+      }
+    ]
+  },
+  "storeroom.slam": {
+    "subtitle": "subtitles.the_oldest_house.storeroom.slam",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/storeroom_slam",
+        "stream": false
+      }
+    ]
+  },
+  "storeroom.heart": {
+    "subtitle": "subtitles.the_oldest_house.storeroom.heart",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/storeroom_heart",
+        "stream": false
+      }
+    ]
+  },
+  "storeroom.blow": {
+    "subtitle": "subtitles.the_oldest_house.storeroom.blow",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/storeroom_blow",
+        "stream": false
+      }
+    ]
   }
 }

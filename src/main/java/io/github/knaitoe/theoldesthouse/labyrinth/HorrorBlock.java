@@ -17,21 +17,32 @@ import net.minecraft.world.phys.shapes.*;
  * in the room past the squeeze, and a second copy by the way in for a reader who comes back to read it), the children's crayons
  * scattered at the far end, and a small handprint. The handprint has no shape at all: it is only ever shown to one reader, on the
  * inside of a door, and must never stop a hand or a step.
+ *
+ * <p>The storeroom's (0.4.210): steel shelving, bare, or holding the black ink, the needles in their packs, or the reader's own
+ * thing with a tag on it (each a full block of shelf); the bulb on its pull chain (stage 0 out, 1 lit, 2 and 3 its chain swung one
+ * way and the other, lit); the list in the reader's hand pinned beside the door (the source); boxes; and the footnote page by the
+ * way in (the account).
  */
 public final class HorrorBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<HorrorBlock> CODEC=simpleCodec(HorrorBlock::new);
     public enum Kind implements StringRepresentable {
-        DRAWING,TRANSCRIPT,CRAYONS,HANDPRINT;
+        DRAWING,TRANSCRIPT,CRAYONS,HANDPRINT,
+        SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BULB,LIST,BOXES,FOOTNOTE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
-    public HorrorBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.DRAWING));}
-    public static BlockState of(Kind kind,Direction facing){return HorrorRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
+    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
+    public HorrorBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.DRAWING).setValue(STAGE,0));}
+    public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
+    public static BlockState of(Kind kind,Direction facing,int stage){return HorrorRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,stage);}
     public static boolean is(BlockState s,Kind kind){return s.is(HorrorRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
     public static Kind kind(BlockState s){return s.is(HorrorRegistry.FITTING.get())?s.getValue(KIND):null;}
+    public static boolean shelf(BlockState s){var k=kind(s);return k==Kind.SHELF||k==Kind.SHELF_INK||k==Kind.SHELF_NEEDLES||k==Kind.SHELF_OWN;}
+    /** How many stages a kind draws; the rest draw its first. */
+    public static int stages(Kind k){return k==Kind.BULB?4:1;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND);}
-    public static int light(BlockState s){return 0;}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
+    public static int light(BlockState s){return s.getValue(KIND)==Kind.BULB&&s.getValue(STAGE)>0?9:0;}
     static VoxelShape box(Direction f,double x0,double y0,double z0,double x1,double y1,double z1){
         double[] a=turn(f,x0,z0),b=turn(f,x1,z1);
         return Block.box(Math.min(a[0],b[0]),y0,Math.min(a[1],b[1]),Math.max(a[0],b[0]),y1,Math.max(a[1],b[1]));
@@ -40,15 +51,17 @@ public final class HorrorBlock extends HorizontalDirectionalBlock {
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
-            case DRAWING->Block.box(2,0,2,14,1,14);
+            case DRAWING,CRAYONS,FOOTNOTE->Block.box(2,0,2,14,1,14);
             case TRANSCRIPT->Block.box(3,0,3,13,10,13);
-            case CRAYONS->Block.box(2,0,2,14,1,14);
             case HANDPRINT->Shapes.empty();
+            case SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BOXES->Shapes.block();
+            case BULB->Block.box(5,4,5,11,16,11);
+            case LIST->box(f,3,4,15,13,14,16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case TRANSCRIPT->getShape(s,l,p,c);
+            case TRANSCRIPT,SHELF,SHELF_INK,SHELF_NEEDLES,SHELF_OWN,BOXES->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }
