@@ -98,7 +98,7 @@ Then the reader's own words:
 - **House of Leaves place:** "the street where one house stood open". The account's title is "The account: the street".
 - **Co-op lines:** "on the street with me. Neither of us said anything about what was following the other." / "still on the street
   when I came out of the open house with mine."
-- **Miniature:** matchbox houses with their windows taped over, all but one, with a collar no bigger than a ring on its door.
+- **Miniature:** a street of matchbox houses, every window taped over but one house's, and on its door a collar no bigger than a ring.
 - **Advancement:** `account/replacement`, shown with a lead.
 
 ## Multiplayer

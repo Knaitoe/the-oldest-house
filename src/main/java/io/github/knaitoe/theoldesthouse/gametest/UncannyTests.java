@@ -300,7 +300,12 @@ public final class UncannyTests {
     }
     @AfterBatch(batch="uncanny_mirror") public static void mirrorDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_mirror_no_blood",timeoutTicks=900) public static void absorptionAndInvulnerabilityCannotBuyBloodSight(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
-        p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.setHealth(20);p.setAbsorptionAmount(4);p.invulnerableTime=0;h.assertTrue(!UncannySenses.wakeMirror(p)&&!UncannySenses.mirror(p)&&p.getHealth()==20,"absorbed damage is not a blood payment");p.setAbsorptionAmount(0);p.setGameMode(GameType.CREATIVE);h.assertTrue(!UncannySenses.wakeMirror(p)&&!UncannySenses.mirror(p),"invulnerability grants no free activation");
+        p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(UncannyRegistry.SMOKY_MIRROR.get()));p.setHealth(20);
+        // Absorption is clamped to the player's max absorption, which is 0 without the effect: give it room, or the hearts never exist
+        // and the case passed only while the fresh player's spawn invulnerability lasted.
+        var cap=p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_ABSORPTION);cap.setBaseValue(4);p.setAbsorptionAmount(4);p.invulnerableTime=0;
+        h.assertTrue(p.getAbsorptionAmount()==4,"the absorption hearts are really there");
+        h.assertTrue(!UncannySenses.wakeMirror(p)&&!UncannySenses.mirror(p)&&p.getHealth()==20,"absorbed damage is not a blood payment: health "+p.getHealth()+", absorption "+p.getAbsorptionAmount());p.setAbsorptionAmount(0);cap.setBaseValue(0);p.setGameMode(GameType.CREATIVE);h.assertTrue(!UncannySenses.wakeMirror(p)&&!UncannySenses.mirror(p),"invulnerability grants no free activation");
     });}
     @AfterBatch(batch="uncanny_mirror_no_blood") public static void noBloodDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_ring",timeoutTicks=900) public static void theRingShowsOnlyTrackedNativeHumanoidsAndNeverGrantsWitness(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
