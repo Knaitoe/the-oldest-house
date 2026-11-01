@@ -13,7 +13,8 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("112")
+        event.registrar("113")
+                .playToClient(DeadAirPayload.TYPE,DeadAirPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.DeadAirClient.set(payload)))
                 .playToClient(LeftRightFogPayload.TYPE,LeftRightFogPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LeftRightClient.fog(payload)))
                 .playToClient(PolaroidFlashPayload.TYPE,PolaroidFlashPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolaroidClient.flash(payload)))
                 .playToClient(PolaroidViewPayload.TYPE,PolaroidViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolaroidClient.view(payload)))

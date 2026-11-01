@@ -105,6 +105,9 @@ final class CoopAccounts {
         // 0.4.203: one shop for the party; the count is each reader's own, and one of them may hold the camera for the other's turn.
         // 0.4.204: one trail for the party; the photographs can be of either of them, and either can stand where one was taken.
         // 0.4.205: one road for the party, one sequence; a wrong turn by any of them took them all to the salt.
+        // 0.4.206: one set, one dial; dead air stopped the tall one for all of them.
+        together(DEAD_AIR,party("%s {was} on the set with me. One of us turned the dial and threw the breakers while the rest crawled.",
+            "%s {was} still down in the basement when the centre monitor cleared."));
         together(LEFT_RIGHT,party("%s {was} on the road with me. When we went the wrong way one of us held her in sight while the rest walked backward off the salt.",
             "%s {was} still out on the road behind me when the tailgate came down."));
         together(POLAROID_TRAIL,party("%s had been down the trail before me. Some of the photographs under the balloons were of them.",

@@ -1,0 +1,46 @@
+{
+  "sounds": {
+    "static": {
+      "samples": 44100,
+      "rate": 22050,
+      "ticks": 40,
+      "sha256": "5706f534139c4154bd37aa58f22350cd61657e8343b8eeff5b9cfa73a6d3dc91"
+    },
+    "tune": {
+      "samples": 24255,
+      "rate": 22050,
+      "ticks": 22,
+      "sha256": "f1dea3facb1a32867e6d3e99048863392b463bc7a9b7c46aa557ff256248d91c"
+    },
+    "dead": {
+      "samples": 35280,
+      "rate": 22050,
+      "ticks": 32,
+      "sha256": "57bda7e3efc45fd87b6c73391afd247fc01a284f72fe5183d2d19e5556081e5f"
+    },
+    "feedback": {
+      "samples": 22050,
+      "rate": 22050,
+      "ticks": 20,
+      "sha256": "70f8ffdb67c5f447f88b5c3a960671c948a236af7b3c91a7c6289e2371411039"
+    },
+    "clack": {
+      "samples": 11025,
+      "rate": 22050,
+      "ticks": 10,
+      "sha256": "aaf584f7564fa4b2009e1c3aa40195867566ce6bced623b88f59964e7a081b50"
+    },
+    "creak": {
+      "samples": 26460,
+      "rate": 22050,
+      "ticks": 24,
+      "sha256": "5bc1a95732222c6293cae9b1ee4f4db8e88306a47217c3cba8f21af620cc409e"
+    },
+    "breaker": {
+      "samples": 24255,
+      "rate": 22050,
+      "ticks": 22,
+      "sha256": "cf42c726953a6e9af08718188b1dfb4a30e8dc5dcb063d646c983df853cca286"
+    }
+  }
+}

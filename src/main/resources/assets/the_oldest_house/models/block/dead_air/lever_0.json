@@ -1,0 +1,30 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "l": "the_oldest_house:block/dead_air/lever",
+    "particle": "the_oldest_house:block/dead_air/lever"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        3,
+        15
+      ],
+      "to": [
+        11,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "south": {
+          "texture": "#l"
+        }
+      }
+    }
+  ]
+}

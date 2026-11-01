@@ -2904,5 +2904,68 @@
         "stream": false
       }
     ]
+  },
+  "dead_air.static": {
+    "subtitle": "subtitles.the_oldest_house.dead_air.static",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dead_air/static",
+        "stream": false
+      }
+    ]
+  },
+  "dead_air.tune": {
+    "subtitle": "subtitles.the_oldest_house.dead_air.tune",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dead_air/tune",
+        "stream": false
+      }
+    ]
+  },
+  "dead_air.dead": {
+    "subtitle": "subtitles.the_oldest_house.dead_air.dead",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dead_air/dead",
+        "stream": false
+      }
+    ]
+  },
+  "dead_air.feedback": {
+    "subtitle": "subtitles.the_oldest_house.dead_air.feedback",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dead_air/feedback",
+        "stream": false
+      }
+    ]
+  },
+  "dead_air.clack": {
+    "subtitle": "subtitles.the_oldest_house.dead_air.clack",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dead_air/clack",
+        "stream": false
+      }
+    ]
+  },
+  "dead_air.creak": {
+    "subtitle": "subtitles.the_oldest_house.dead_air.creak",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dead_air/creak",
+        "stream": false
+      }
+    ]
+  },
+  "dead_air.breaker": {
+    "subtitle": "subtitles.the_oldest_house.dead_air.breaker",
+    "sounds": [
+      {
+        "name": "the_oldest_house:dead_air/breaker",
+        "stream": false
+      }
+    ]
   }
 }
