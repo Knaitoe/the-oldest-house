@@ -210,6 +210,8 @@ public final class LabyrinthDealer {
         // 0.4.231: the shut-up rooms (an ordinary hall from the fourth crossing) and the cloakroom (a puzzle room).
         gray.add(LabyrinthPlace.DUST_HALL);
         gray.add(LabyrinthPlace.PROPPED_DOOR);
+        // 0.4.232: the familiar room, from the third crossing, and far more readily while someone is in it (FamiliarRoom.weight).
+        gray.add(LabyrinthPlace.FAMILIAR_KITCHEN);
         gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
@@ -526,6 +528,7 @@ public final class LabyrinthDealer {
 
     /** A reader's weight for a gray place: the puzzle rooms go by the reader's own pacing, everything else by depth. */
     public static int grayWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int depth) {
+        if (place == LabyrinthPlace.FAMILIAR_KITCHEN) return FamiliarRoom.weight(player, depth);
         return PuzzleRooms.is(place) ? PuzzleRooms.weight(data, player, place, depth) : grayWeight(place, depth);
     }
 
@@ -551,6 +554,8 @@ public final class LabyrinthDealer {
             case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS -> 0;
             // 0.4.231: the shut-up rooms under dust, a plaster hall, from the third crossing until the halls turn to stone; a little more often than a plain hall.
             case DUST_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
+            // 0.4.232: without a reader (the shared hall cache), the kitchen at its ordinary weight.
+            case FAMILIAR_KITCHEN -> depth < 3 ? 0 : FamiliarRoom.WEIGHT;
             case VAULTED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case CRUMBLED_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 26;

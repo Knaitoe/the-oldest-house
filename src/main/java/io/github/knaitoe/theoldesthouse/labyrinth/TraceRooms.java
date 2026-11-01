@@ -264,7 +264,7 @@ public final class TraceRooms {
         var before=HERE.get(p.getUUID());if(before==now)return;
         if(now==null)HERE.remove(p.getUUID());else HERE.put(p.getUUID(),now);
         if(before!=null)departed(l,p,before);
-        if(now!=null)arrived(p,now);
+        if(now!=null){arrived(p,now);FamiliarRoom.walked(p,now);if(now==FamiliarRoom.KITCHEN)FamiliarRoom.arrived(p);}
     }
     public static void forget(UUID reader){HERE.remove(reader);}
 

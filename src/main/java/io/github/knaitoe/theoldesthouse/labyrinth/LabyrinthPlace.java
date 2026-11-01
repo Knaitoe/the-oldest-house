@@ -442,6 +442,11 @@ public enum LabyrinthPlace {
     SPRUNG_ROOMS("sprung_rooms", Kind.GRAY, 152, new BoundingBox(-8,-1,-30,8,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(0,0,-30),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.232, the familiar room (FamiliarRoom): one kitchen, the same for everyone, dealt like a hall through whatever door; it keeps what is left in it, its clock is heard through its doors, and its window looks down on a yard laid out like the halls each reader last walked. */
+    FAMILIAR_KITCHEN("familiar_kitchen", Kind.GRAY, 153, new BoundingBox(-31,-5,-15,6,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("side",new BlockPos(6,0,-6),Direction.WEST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(3,0,-15),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
