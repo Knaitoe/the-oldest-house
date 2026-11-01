@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "h": "the_oldest_house:block/horror/handprint",
+    "particle": "the_oldest_house:block/horror/handprint"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        2,
+        0
+      ],
+      "to": [
+        13,
+        12,
+        0.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h",
+          "uv": [
+            3,
+            2,
+            13,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#h",
+          "uv": [
+            13,
+            2,
+            3,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

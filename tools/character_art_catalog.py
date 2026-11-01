@@ -8,6 +8,7 @@ MOVIE=['ray','dot','frank','june','jamie','bobby','lynn']
 COSTUME=['hank','tina','danny','ron','kaylee','marcus','shelly','owen','brooke','wes','rosa','pip','lyle']
 WINTER=['bud','hank','clay','lonnie']
 USHER=['roderick']
+CLOSING=['chad','daisy']
 CLUB=['dancer_male','dancer_female','dancer_vest','dancer_copper','dancer_mustard','dancer_silver','dancer_brick','dancer_braids','dj']
 
 
@@ -57,7 +58,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -72,4 +73,7 @@ def entries():
     # Usher (0.4.182): Roderick on stranger phase thirty-eight.
     for i,name in enumerate(USHER):
         rows.append({'name':'literary_usher_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':38+i})
+    # The closing hall (0.4.209): Chad and Daisy on stranger phases thirty-nine and forty.
+    for i,name in enumerate(CLOSING):
+        rows.append({'name':'literary_closing_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':39+i})
     return rows

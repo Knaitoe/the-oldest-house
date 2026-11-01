@@ -3075,5 +3075,59 @@
         "stream": false
       }
     ]
+  },
+  "closing.grind": {
+    "subtitle": "subtitles.the_oldest_house.closing.grind",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/closing_grind",
+        "stream": false
+      }
+    ]
+  },
+  "closing.hold": {
+    "subtitle": "subtitles.the_oldest_house.closing.hold",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/closing_hold",
+        "stream": false
+      }
+    ]
+  },
+  "closing.crack": {
+    "subtitle": "subtitles.the_oldest_house.closing.crack",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/closing_crack",
+        "stream": false
+      }
+    ]
+  },
+  "closing.cry": {
+    "subtitle": "subtitles.the_oldest_house.closing.cry",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/closing_cry",
+        "stream": false
+      }
+    ]
+  },
+  "closing.call": {
+    "subtitle": "subtitles.the_oldest_house.closing.call",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/closing_call",
+        "stream": false
+      }
+    ]
+  },
+  "closing.wall": {
+    "subtitle": "subtitles.the_oldest_house.closing.wall",
+    "sounds": [
+      {
+        "name": "the_oldest_house:horror/closing_wall",
+        "stream": false
+      }
+    ]
   }
 }

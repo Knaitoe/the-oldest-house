@@ -83,7 +83,9 @@ public final class VignetteAnimationTests {
             Vec3 at=actor[0].position(),step=at.subtract(previous[0]);previous[0]=at;boolean shown=!actor[0].isInvisible();
             h.assertTrue(actor[0].getUUID().equals(id[0])&&actor[0].owner().orElseThrow().equals(p.getUUID()),"the walking father stays the same privately tracked original");
             // Only a step taken while he is in view on both ticks is a step of his walk; being set out of sight, or into the doorway out of sight, is not.
-            if(shown&&wasSeen[0]){h.assertTrue(step.horizontalDistance()<=.15,"his walk is bounded on each native tick: "+step);if(step.horizontalDistance()>.02)steps[0]++;}
+            // Set out from the utility room, where he waits out of sight, to the kitchen doorway is not a step of his walk either.
+            boolean setOut=previous[0]!=null&&at.subtract(step).distanceTo(Vec3.atLowerCornerOf(b).add(MappingNights.PARKED))<.6;
+            if(shown&&wasSeen[0]&&!setOut){h.assertTrue(step.horizontalDistance()<=.15,"his walk is bounded on each native tick: "+step);if(step.horizontalDistance()>.02)steps[0]++;}
             wasSeen[0]=shown;
             if(f.own(p,place).getInt("CrossedVisit201")==1){
                 h.assertTrue(steps[0]>=30,"he walks the crossing rather than jumping between its stops: "+steps[0]);

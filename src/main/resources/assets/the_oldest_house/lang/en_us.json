@@ -892,5 +892,15 @@
   "subtitles.the_oldest_house.dark_hall.slam": "A door slams, far behind",
   "subtitles.the_oldest_house.dark_hall.land": "Something lands, far below",
   "advancements.the_oldest_house.house.dark.title": "The dark halls",
-  "advancements.the_oldest_house.house.dark.description": "Smooth grey walls, no fixtures, and no light but what you brought."
+  "advancements.the_oldest_house.house.dark.description": "Smooth grey walls, no fixtures, and no light but what you brought.",
+  "block.the_oldest_house.horror_fitting": "Something Left Behind",
+  "subtitles.the_oldest_house.closing.grind": "The walls step in, breathing",
+  "subtitles.the_oldest_house.closing.hold": "The wall holds, and waits",
+  "subtitles.the_oldest_house.closing.crack": "Stone cracks open, low down",
+  "subtitles.the_oldest_house.closing.cry": "A child crying",
+  "subtitles.the_oldest_house.closing.call": "A child calling, far off",
+  "subtitles.the_oldest_house.closing.wall": "A child's voice, inside the wall",
+  "advancements.the_oldest_house.account.closing_hall.title": "The closing hall",
+  "advancements.the_oldest_house.account.closing_hall.description": "I went down a hall that was getting smaller and brought two children back up it.",
+  "death.attack.the_oldest_house.closing_hall": "%1$s was crushed in a hall that closed"
 }

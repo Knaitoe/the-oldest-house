@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,kind=drawing": {
+      "model": "the_oldest_house:block/horror/drawing"
+    },
+    "facing=east,kind=drawing": {
+      "model": "the_oldest_house:block/horror/drawing",
+      "y": 90
+    },
+    "facing=south,kind=drawing": {
+      "model": "the_oldest_house:block/horror/drawing",
+      "y": 180
+    },
+    "facing=west,kind=drawing": {
+      "model": "the_oldest_house:block/horror/drawing",
+      "y": 270
+    },
+    "facing=north,kind=transcript": {
+      "model": "the_oldest_house:block/horror/transcript"
+    },
+    "facing=east,kind=transcript": {
+      "model": "the_oldest_house:block/horror/transcript",
+      "y": 90
+    },
+    "facing=south,kind=transcript": {
+      "model": "the_oldest_house:block/horror/transcript",
+      "y": 180
+    },
+    "facing=west,kind=transcript": {
+      "model": "the_oldest_house:block/horror/transcript",
+      "y": 270
+    },
+    "facing=north,kind=crayons": {
+      "model": "the_oldest_house:block/horror/crayons"
+    },
+    "facing=east,kind=crayons": {
+      "model": "the_oldest_house:block/horror/crayons",
+      "y": 90
+    },
+    "facing=south,kind=crayons": {
+      "model": "the_oldest_house:block/horror/crayons",
+      "y": 180
+    },
+    "facing=west,kind=crayons": {
+      "model": "the_oldest_house:block/horror/crayons",
+      "y": 270
+    },
+    "facing=north,kind=handprint": {
+      "model": "the_oldest_house:block/horror/handprint"
+    },
+    "facing=east,kind=handprint": {
+      "model": "the_oldest_house:block/horror/handprint",
+      "y": 90
+    },
+    "facing=south,kind=handprint": {
+      "model": "the_oldest_house:block/horror/handprint",
+      "y": 180
+    },
+    "facing=west,kind=handprint": {
+      "model": "the_oldest_house:block/horror/handprint",
+      "y": 270
+    }
+  }
+}
