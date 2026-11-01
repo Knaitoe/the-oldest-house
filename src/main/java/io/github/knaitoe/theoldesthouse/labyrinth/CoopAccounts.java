@@ -102,6 +102,9 @@ final class CoopAccounts {
         // 0.4.202: one tower for the party; one on the cords and one on the finder, and any look raised the one tier.
         together(WHISTLERS,party("%s had kept watch in the cab before me. The cords were where they had left them.",
             "%s {was} still on watch in the cab when the hatch let me down."));
+        // 0.4.203: one shop for the party; the count is each reader's own, and one of them may hold the camera for the other's turn.
+        together(WORK_PRINT,party("%s had been through the shop before me. Their name was on a rental card in the drawer, crossed out.",
+            "%s {was} still in the back room with the snow on the set when I left by the set's door."));
         together(FEET_UP,party("%s had reached the attic before me. Their marks were already on the rafter beside the empty column.",
             "%s {was} still on the furniture below when I reached the attic, so I left the ladder down."));
 

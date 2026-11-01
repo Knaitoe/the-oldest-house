@@ -382,6 +382,8 @@ public enum LabyrinthPlace {
     FEET_UP("feet_up",Kind.ONE_SHOT,127,new BoundingBox(-11,-1,-27,11,14,0),literaryEntry()),
     /** 0.4.202, the Whistlers in the Pines: a fire lookout over a snowbound clearing, and the forest of towers far to its north (LookoutTower, LookoutNight). Survival, four visits. */
     WHISTLERS("whistlers",Kind.MULTI_VISIT,128,new BoundingBox(-40,-8,-280,40,30,0),literaryEntry()),
+    /** 0.4.203, Work print: a closed video rental shop, a tape with no label in its returns bin, and behind the back room the edit bay and the set of the film it holds (WorkPrintShop, WorkPrint). Survival, over seven House days. */
+    WORK_PRINT("work_print",Kind.MULTI_VISIT,129,new BoundingBox(-18,-2,-42,12,7,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

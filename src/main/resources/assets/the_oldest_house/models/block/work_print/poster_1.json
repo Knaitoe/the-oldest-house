@@ -1,0 +1,30 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "p": "the_oldest_house:block/work_print/poster_1",
+    "particle": "the_oldest_house:block/work_print/poster_1"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        1,
+        15.5
+      ],
+      "to": [
+        15,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        }
+      }
+    }
+  ]
+}

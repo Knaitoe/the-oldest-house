@@ -36,7 +36,7 @@ public final class SceneInstances {
      * The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone
      * canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy; 0.4.156: the lake house, two readers to a copy.
      */
-    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS);
+    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT);
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     /** Columns of an interior copy's slot filled solid per tick, before its rooms are carved into it, as the original's are. */
@@ -138,7 +138,7 @@ public final class SceneInstances {
         // The lake house stands at its own height rather than its slot's layer, as its original does.
         var lake=LabyrinthPlaces.base(shifted,LabyrinthPlace.LAKE_HOUSE);
         if(lake!=null&&IndianLakeRooms.bounds(lake,LabyrinthPlace.LAKE_HOUSE).contains(Vec3.atCenterOf(pos)))return LabyrinthPlace.LAKE_HOUSE;
-        for(var p:COPYABLE){if(p==LabyrinthPlace.LAKE_HOUSE)continue;var slot=LabyrinthPlaces.slotBounds(shifted,p);if(slot!=null&&slot.isInside(pos))return p;}
+        for(var p:COPYABLE){if(p==LabyrinthPlace.LAKE_HOUSE)continue;var slot=LabyrinthPlaces.reach(shifted,p);if(slot!=null&&slot.isInside(pos))return p;}
         return null;
     }
     /** Which copy of a scene a position is in: 0 for the original, -1 for neither. */

@@ -1,0 +1,58 @@
+{
+  "sounds": {
+    "insert": {
+      "samples": 19845,
+      "rate": 22050,
+      "ticks": 18,
+      "sha256": "731cb43049619d8c8a7c3533e4f1678144436c931a4af23a102a52028ec75e67"
+    },
+    "deck": {
+      "samples": 52920,
+      "rate": 22050,
+      "ticks": 48,
+      "sha256": "28278359d90ee8c0f0cf4de567136b88a573d352f1f0fe8ea6886ebdabe5c7a8"
+    },
+    "eject": {
+      "samples": 17640,
+      "rate": 22050,
+      "ticks": 16,
+      "sha256": "126d720eb3baf36c9d9b0a3edb1ec1afd5b9c686ad6f6af8644588c45515f88b"
+    },
+    "ring": {
+      "samples": 57330,
+      "rate": 22050,
+      "ticks": 52,
+      "sha256": "31ee8d3e3ea917e4252b828946c816511086f7c31f3dd3c6618eab8dc617cc93"
+    },
+    "snow": {
+      "samples": 44100,
+      "rate": 22050,
+      "ticks": 40,
+      "sha256": "2687b083a60b2c3f9c7afe64ce0345b861324139db2a79d3608d3ae60a55d13e"
+    },
+    "splice": {
+      "samples": 22050,
+      "rate": 22050,
+      "ticks": 20,
+      "sha256": "35d50be933b7726152790fcb6385ca83c06384c7647682afa86c1a1e5e97063f"
+    },
+    "flatbed": {
+      "samples": 52920,
+      "rate": 22050,
+      "ticks": 48,
+      "sha256": "f0752a943b351ee0baae04424e439e2eb29d4ff3f7eaa885c2f69948fdf8b9ef"
+    },
+    "rec": {
+      "samples": 9922,
+      "rate": 22050,
+      "ticks": 9,
+      "sha256": "7dd21fd35e5fefab2ace1f1a1fe52b8829ab7cbd194649341617a6e8d2a6d472"
+    },
+    "camera": {
+      "samples": 30869,
+      "rate": 22050,
+      "ticks": 28,
+      "sha256": "b33642aa0928a80e6bad53527ac611e9211201d17e493932cc175bdcba2c8483"
+    }
+  }
+}

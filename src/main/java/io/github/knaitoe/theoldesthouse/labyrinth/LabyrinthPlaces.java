@@ -45,7 +45,8 @@ public final class LabyrinthPlaces {
     // 0.4.199's first puzzle room (slot 120) needs a sixteenth at common ones; earlier slots never move.
     // 0.4.200's Feet Up (slot 127) is the last slot the sixteenth column holds at manor heights 80-100 (eight to a column); a slot 128 would need a seventeenth.
     // 0.4.202's lookout (slot 128) needs a seventeenth column at common manor heights; earlier slots never move.
-    private static final int MAX_COLUMNS = 17;
+    // 0.4.203's video shop (slot 129) can need an eighteenth at the lowest manor heights; earlier slots never move.
+    private static final int MAX_COLUMNS = 18;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 
@@ -173,15 +174,25 @@ public final class LabyrinthPlaces {
         if (bounds == null) {
             return null;
         }
-        // 0.4.202: the lookout stands at its own height (LookoutTower.BASE_Y), not in the stacked slots, so its slot is its own box.
-        if (place == LabyrinthPlace.WHISTLERS) {
-            return new BoundingBox(bounds.minX() - PAD, bounds.minY(), bounds.minZ() - PAD, bounds.maxX() + PAD, bounds.maxY(), bounds.maxZ() + PAD);
-        }
         int bottom = slotBottom(origin, place.slot());
         return new BoundingBox(
                 bounds.minX() - PAD, bottom, bounds.minZ() - PAD,
                 bounds.maxX() + PAD, bottom + SLOT_HEIGHT - 1, bounds.maxZ() + PAD
         );
+    }
+
+    /**
+     * The box a position is looked up in for a place: its slot, except for the lookout (0.4.202), which stands at its own height
+     * (LookoutTower.BASE_Y) out of the stacked slots in the outside dimension, so a reader in its raised cab is found by its real
+     * bounds. The slot itself stays in the stack, so it never reaches the manor's height in the grid.
+     */
+    @Nullable
+    public static BoundingBox reach(BlockPos origin, LabyrinthPlace place) {
+        if (place == LabyrinthPlace.WHISTLERS) {
+            BoundingBox bounds = placeBounds(origin, place);
+            return bounds == null ? null : bounds.inflatedBy(PAD);
+        }
+        return slotBounds(origin, place);
     }
 
     /** Whether a position lies in any slot of the stack. */
@@ -198,7 +209,7 @@ public final class LabyrinthPlaces {
     public static LabyrinthPlace placeAt(BlockPos origin, BlockPos pos) {
         for (var lake : new LabyrinthPlace[]{LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.LAKE_HOUSE_EMPTY}) {var b=base(origin,lake);if(b!=null&&IndianLakeRooms.bounds(b,lake).contains(net.minecraft.world.phys.Vec3.atCenterOf(pos)))return lake;}
         for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            BoundingBox slot = slotBounds(origin, place);
+            BoundingBox slot = reach(origin, place);
             if (slot != null && slot.isInside(pos)) {
                 return place;
             }
