@@ -34,7 +34,7 @@ public final class LiveExpeditionProof {
     private static final Set<String> PORTHOLE_CRAWLERS=new HashSet<>();
     private static int phase,changed;private static boolean restarted;private static UUID secondId,nightGoatmanId;
     private static CompoundTag secondStory;private static Map<String,String> firstMap;
-    private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static final Map<UUID,Integer> leakBurned=new HashMap<>();private static boolean leakRestarted,firstReturned;
+    private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static final Map<UUID,Integer> leakBurned=new HashMap<>();private static final Map<UUID,Boolean> leakBook=new HashMap<>();private static boolean leakRestarted,firstReturned;
     private static LakeWitchEntity stacy;private static LiteraryActor slasher;private static UUID stacyId,slasherId;private static int crackStarted=-1;
     private static Vec3 lastHunterPosition;private static LiteraryActor privateA,privateB;private static UUID privateAId,privateBId;
     private static final NativeTestChunks huntChunks=new NativeTestChunks();
@@ -174,7 +174,7 @@ public final class LiveExpeditionProof {
             }
         }else if(phase==9&&a!=null&&b!=null&&StaircaseLeaks.active(a)&&StaircaseLeaks.active(b)){
             require(!StaircaseLeaks.activeBase(a).equals(StaircaseLeaks.activeBase(b)),"the two socket readers enter independent native pocket rooms");
-            for(var p:List.of(a,b)){var back=d.stateEntry(StaircaseLeaks.STATE,p.getUUID().toString()).getCompound("Active").getCompound("Return");leakReturns.put(p.getUUID(),new Vec3(back.getDouble("X"),back.getDouble("Y"),back.getDouble("Z")));leakBurned.put(p.getUUID(),StaircaseStory.burned(StaircaseStory.record(p)));}
+            for(var p:List.of(a,b)){var back=d.stateEntry(StaircaseLeaks.STATE,p.getUUID().toString()).getCompound("Active").getCompound("Return");leakReturns.put(p.getUUID(),new Vec3(back.getDouble("X"),back.getDouble("Y"),back.getDouble("Z")));leakBurned.put(p.getUUID(),StaircaseStory.burned(StaircaseStory.record(p)));leakBook.put(p.getUUID(),StaircaseStory.carries(p));}
             step(s,10,StaircaseLeaks.activeBase(a));marker(b,10,StaircaseLeaks.activeBase(b));
         }else if(phase==10&&a!=null&&b!=null&&StaircaseLeaks.progress(a).getBoolean("Waxed")&&StaircaseLeaks.progress(b).getBoolean("Waxed")&&ACKS.size()==2){
             step(s,11,StaircaseLeaks.activeBase(a));marker(b,11,StaircaseLeaks.activeBase(b));
@@ -182,9 +182,11 @@ public final class LiveExpeditionProof {
             phase=12;changed=s.getTickCount();ACKS.clear();write("restart-b-leak.txt","Reconnect the same profile after leaving during a personal note scene.\n");marker(a,12,a.blockPosition());
         }else if(phase==12&&a!=null&&b!=null&&!StaircaseLeaks.active(b)){
             require(b.getUUID().equals(secondId)&&b.position().distanceToSqr(leakReturns.get(b.getUUID()))<.01,"logout inside a leak restores the actual reconnected socket reader to their own tread");
-            // 0.4.218: the fires opened in phase 8 reconcile the cursor upward (a lit hearth has used its leaf); it is kept as it stood in the scene.
-            Integer inScene=leakBurned.get(b.getUUID());int expected=inScene==null?-1:Math.max(inScene,StaircaseFire.flames(FinaleProgress.player(s,b.getUUID())));
-            require(StaircaseStory.isCurrent(b,b.getOffhandItem())&&StaircaseStory.burned(StaircaseStory.record(b))==expected,"scene recovery preserves the living book and personal burned cursor: book "+StaircaseStory.isCurrent(b,b.getOffhandItem())+", burned "+StaircaseStory.burned(StaircaseStory.record(b))+", expected "+expected);
+            // 0.4.218: the second stretch lies past all five fires, so by the note the House of Leaves has burned away (a finished
+            // original leaves the inventory) and the cursor stands at five. Recovery gives back what the reader carried into the scene,
+            // book or no book, and the cursor as it stood there; it never brings a burned book back.
+            Integer inScene=leakBurned.get(b.getUUID());Boolean carried=leakBook.get(b.getUUID());int expected=inScene==null?-1:Math.max(inScene,StaircaseFire.flames(FinaleProgress.player(s,b.getUUID())));
+            require(carried!=null&&StaircaseStory.carries(b)==carried&&StaircaseStory.burned(StaircaseStory.record(b))==expected,"scene recovery preserves the living book and personal burned cursor: book "+StaircaseStory.carries(b)+" (carried in "+carried+"), burned "+StaircaseStory.burned(StaircaseStory.record(b))+", expected "+expected);
             if(!leakRestarted){step(s,13,b.blockPosition());leakRestarted=true;}
         }else if(phase==13&&ACKS.size()==2){
             var l=s.getLevel(HouseDimensions.OUTSIDE);var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.WINTER_LAKE);

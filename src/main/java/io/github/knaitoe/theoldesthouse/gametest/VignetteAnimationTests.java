@@ -397,15 +397,20 @@ public final class VignetteAnimationTests {
             h.assertTrue(room.getAsInt()==7&&own.getBoolean("ReachedMother")&&own.getBoolean("Memory")&&!own.getBoolean("LeftMother"),"having gone back and seen all six, the 1 opens on Mother's room, and they are small again: "+own);
             f.click(p,place,WheelHouse.MOTHERS.back());h.assertTrue(room.getAsInt()==7,"her door does not open before she has been seen");
             f.at(p,place,.5,0,-54.5);
-        });
-        h.runAfterDelay(140,()->{var world=LiteraryVignettes.shared(f.data(),place);var mother=(LiteraryActor)f.in.getEntity(world.getUUID("Mother_"+p.getUUID()));
-            h.assertTrue(mother!=null&&mother.owner().orElseThrow().equals(p.getUUID()),"the reader's own Mother waits in her room");
+        })
+        // Chained, not timed from the start: the wait for the rooms above can take longer than the old fixed delays on a slow runner.
+        .thenWaitUntil(()->{var mother=wheelMother(f,place,p);h.assertTrue(mother!=null&&mother.owner().orElseThrow().equals(p.getUUID()),"the reader's own Mother waits in her room");})
+        .thenExecute(()->{var mother=wheelMother(f,place,p);
             // 0.4.218: the cast drops nothing (the owner saw her drop fire charges): nothing spawns at her feet, and she leaves no loot.
-            h.assertTrue(mother.spawnAtLocation(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.FIRE_CHARGE))==null&&f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,mother.getBoundingBox().inflate(4)).isEmpty(),"Mother drops nothing");p.lookAt(EntityAnchorArgument.Anchor.EYES,mother.getEyePosition());});
-        h.runAfterDelay(170,()->{h.assertTrue(f.own(p,place).getBoolean("LeftMother")&&!f.own(peer,place).getBoolean("ReachedMother"),"only the reader has seen her");
-            f.click(p,place,WheelHouse.MOTHERS.back());h.assertTrue(room.getAsInt()==0,"the door with no number lets them out to the hall");});
-        h.runAfterDelay(200,()->{h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Memory")&&p.getBbHeight()>1.5&&!f.own(peer,place).getBoolean("Ready"),"out in the hall they are their own height again, and only they");f.reload();f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the account completes only this reader");h.succeed();});
+            h.assertTrue(mother.spawnAtLocation(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.FIRE_CHARGE))==null&&f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,mother.getBoundingBox().inflate(4)).isEmpty(),"Mother drops nothing");p.lookAt(EntityAnchorArgument.Anchor.EYES,mother.getEyePosition());})
+        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("LeftMother"),"seeing her lets the reader leave"))
+        .thenExecute(()->{h.assertTrue(!f.own(peer,place).getBoolean("ReachedMother"),"only the reader has seen her");
+            f.click(p,place,WheelHouse.MOTHERS.back());h.assertTrue(room.getAsInt()==0,"the door with no number lets them out to the hall");})
+        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Ready")&&!f.own(p,place).getBoolean("Memory")&&p.getBbHeight()>1.5,"out in the hall they are their own height again: "+f.own(p,place)))
+        .thenExecute(()->{h.assertTrue(!f.own(peer,place).getBoolean("Ready"),"and only they");f.reload();f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()))&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.of(place.id())),"the account completes only this reader");})
+        .thenSucceed();
     }
+    private static LiteraryActor wheelMother(LiteraryTests.Fixture f,LabyrinthPlace place,ServerPlayer p){var world=LiteraryVignettes.shared(f.data(),place);return world.hasUUID("Mother_"+p.getUUID())&&f.in.getEntity(world.getUUID("Mother_"+p.getUUID())) instanceof LiteraryActor a?a:null;}
     @AfterBatch(batch="literary_wheel_sequence") public static void wheelDone(ServerLevel l){close();}
 
     @GameTest(template="empty",batch="literary_winchester_house",timeoutTicks=200)
