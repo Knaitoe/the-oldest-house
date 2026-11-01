@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/replacement/collars",
+    "particle": "the_oldest_house:block/replacement/collars"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        6,
+        15.5
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            2,
+            16,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            0,
+            2,
+            16,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

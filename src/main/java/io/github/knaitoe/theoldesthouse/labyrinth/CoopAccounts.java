@@ -111,6 +111,9 @@ final class CoopAccounts {
         // 0.4.211: one sound drew it to all of them; a noise could draw it off a friend.
         // 0.4.212: one held the line at the door while another followed it; two pulls was a warning.
         // 0.4.213: each reader's double is theirs alone; a peer sees an empty branch.
+        // 0.4.218: each reader's replacement is their own; a peer sees nobody at their heels.
+        together(REPLACEMENT,party("%s {was} on the street with me. Neither of us said anything about what was following the other.",
+            "%s {was} still on the street when I came out of the open house with mine."));
         // 0.4.217: every table is the whole server's; the black cabinet's men are each reader's own.
         together(POLYBIUS,party("%s {was} at the next machine. Our names went up the same table, a place apart. Neither of us could see the men by the other one.",
             "%s {was} still playing when I walked out."));

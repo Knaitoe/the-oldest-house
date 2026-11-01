@@ -1198,5 +1198,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 42
+  },
+  {
+    "name": "literary_replacement",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 43
   }
 ]

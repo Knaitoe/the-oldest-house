@@ -936,5 +936,14 @@
   "block.the_oldest_house.polybius_wall": "Arcade Wall",
   "block.the_oldest_house.polybius_ceiling": "Arcade Ceiling",
   "advancements.the_oldest_house.account.polybius.title": "Polybius",
-  "advancements.the_oldest_house.account.polybius.description": "I stopped playing."
+  "advancements.the_oldest_house.account.polybius.description": "I stopped playing.",
+  "block.the_oldest_house.replacement_fitting": "Street Fitting",
+  "block.the_oldest_house.replacement_asphalt": "Asphalt",
+  "block.the_oldest_house.replacement_siding_a": "Siding",
+  "block.the_oldest_house.replacement_siding_b": "Siding",
+  "block.the_oldest_house.replacement_siding_c": "Siding",
+  "block.the_oldest_house.replacement_siding_stained": "Stained Siding",
+  "block.the_oldest_house.replacement_carpet_stained": "Stained Carpet",
+  "advancements.the_oldest_house.account.replacement.title": "The replacement",
+  "advancements.the_oldest_house.account.replacement.description": "It wasn't mine."
 }

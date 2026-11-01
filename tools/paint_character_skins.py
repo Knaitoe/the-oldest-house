@@ -101,6 +101,8 @@ LOOKS = {
     # Polybius (0.4.217): the two men in suits by the black cabinet, on stranger phases forty-one and forty-two.
     'literary_polybius_a': Look('#c9a283','#2a2622','close','#16171b','#141519','suit','#e6e6e8',eyes='#3a3a3a',age=1,glasses=True),
     'literary_polybius_b': Look('#94684c','#1c1a18','receding','#1a1b20','#16171b','suit','#dcdcde',eyes='#2c2a28',age=2),
+    # The replacement (0.4.218): the one who keeps house in the open house on the street, on stranger phase forty-three.
+    'literary_replacement': Look('#cdb29a','#7a7068','messy','#7c6c52','#4a443c','cardigan','#9a8c72',eyes='#4e4c44',age=2),
     'literary_usher_roderick': Look('#ddd4ca','#3a312b','messy','#252229','#29262a','coat','#d6cfc0',eyes='#2c323e',age=1),
     'harrigan': Look('#c7ab91','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,glasses=True,logical=64),
     'harrigan_dead': Look('#b9b2a4','#b9b7ac','receding','#343941','#2c3037','suit','#7d3940',age=2,mark='dead',logical=64),

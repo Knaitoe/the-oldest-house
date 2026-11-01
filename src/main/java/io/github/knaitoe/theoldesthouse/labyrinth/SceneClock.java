@@ -34,6 +34,7 @@ public final class SceneClock {
             case PITT->14; // 0.4.207: first light over the moor, for whoever climbs out
             case DEAD_AIR->3; // 0.4.206: an overcast evening over the marsh
             case LEFT_RIGHT->9; // 0.4.205: two in the morning at the toll
+            case REPLACEMENT->9; // 0.4.218: midnight on the street
             case POLAROID_TRAIL->3; // 0.4.204: late autumn twilight over the yard and the pines
             case WHISTLERS->9; // 0.4.202: night at the lookout, stars over the forest of towers // 0.4.201: midnight at the Sandersons' and in the park
             default->0;

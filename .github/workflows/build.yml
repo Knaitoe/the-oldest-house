@@ -77,6 +77,7 @@ jobs:
           python3 tools/draw_devils_rock_art.py --check
           python3 tools/draw_household_art.py --check
           python3 tools/draw_polybius_art.py --check
+          python3 tools/draw_replacement_art.py --check
           python3 tools/generate_staircase_leak_assets.py --check
 
       - name: Verify playtest journey measurements
