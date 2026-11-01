@@ -117,7 +117,7 @@ public final class LiteraryTexts {
         case BLY_ROUTE->own.getBoolean("Dragged")?"The first time I stood where she walks and came up in the lake room's water. "+(AccountAfterwards.bly(own).isEmpty()?"":AccountAfterwards.bly(own)+" ")+"Then I shut a cupboard from inside. The catches are inside because a child once hid from her in one. I think she was looking for that child when she found me.":"I shut a cupboard from inside while the drips passed on their way to the lake room. The catches are inside because a child once hid from her in one. She has never opened one. I think she is still looking for that child.";
         case THREE_FINGERS->ThreeFingers.account(own);
         case LAKE_HOUSE->LakeHouse.account(own);
-        case BORRASCA->BorrascaTexts.account();
+        case BORRASCA->BorrascaTexts.account(own);
         case ELK_LOT->ElkLotEnding.account(name,own);
         case ELK_FAN->"From above the ladder I could see what lay below the moving blades. I stayed up there longer than I meant to. The blade caught me; when I could see again I was outside the room. A tooth lay in my hand. When I returned, tape held the shape of the deer.";
         case MAPPING_INTERIOR->{

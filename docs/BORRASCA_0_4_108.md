@@ -1,5 +1,7 @@
 # Borrasca — development 0.4.108
 
+Later: the friend is Nell Garrity, the beats follow the reader and the refinery is sealed until the last night ([0.4.235](BORRASCA_MODULAR_0_4_235.md)).
+
 This implements the [reviewed four-visit design](BORRASCA_FOUR_VISITS_PROPOSAL.md) for new builds. It replaces the earlier town itinerary with the pine trail, the Triple Tree pact, Kimber's disappearance, the adult return and Sheriff's blockade, and the refinery investigation.
 
 The development branch starts at `89ec9f9`, retaining the Claude, Harrigan and night-ward work. Version 0.4.108 / network protocol 82 / layout 45. Borrasca remains one Understanding source: 46 eligible stories, 35 required across two kinds, three House endings. The optional restored name changes the bark and adds an account line.

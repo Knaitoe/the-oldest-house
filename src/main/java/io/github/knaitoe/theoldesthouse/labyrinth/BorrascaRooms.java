@@ -12,14 +12,20 @@ public final class BorrascaRooms {
     public static final BlockPos MARKER_ONE=new BlockPos(5,0,-76),MARKER_TWO=new BlockPos(7,4,-123),MARKER_THREE=new BlockPos(5,9,-148),MARKER_FOUR=new BlockPos(5,12,-165);
     public static final BlockPos SHERIFF=new BlockPos(2,4,-122),TAPE=new BlockPos(2,5,-125),TAKING=new BlockPos(-2,9,-148),DROP=new BlockPos(1,10,-151),HIDE=new BlockPos(-12,9,-151);
     public static final BlockPos SHELTER_ONE=new BlockPos(3,2,-114),SHELTER_TWO=new BlockPos(-2,6,-131);
-    public static final BlockPos GATE=new BlockPos(0,12,-169),LOCK=new BlockPos(0,13,-168),PACK=new BlockPos(-24,13,-195),PATCH=PACK;
+    public static final BlockPos GATE=new BlockPos(0,12,-169),LOCK=new BlockPos(0,13,-168),PACK=new BlockPos(-24,13,-195);
     public static final BlockPos EVIDENCE=new BlockPos(-26,13,-195),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169),LAMP=new BlockPos(0,17,-184);
     public static final BlockPos[] GULLY={new BlockPos(-9,0,-97),new BlockPos(-15,0,-107),new BlockPos(-16,2,-117),new BlockPos(-13,4,-128),new BlockPos(-8,6,-137),new BlockPos(-2,8,-143)};
-    public static final BlockPos[] RETURN_ROUTE={new BlockPos(-17,12,-208),new BlockPos(-31,11,-209),new BlockPos(-32,8,-189),new BlockPos(-32,4,-165),new BlockPos(-27,0,-131),new BlockPos(-18,0,-106),new BlockPos(-12,0,-73)};
-    /** 0.4.121: the trail map in the station, the noticeboard on the store's porch and Kimber's notes in the fort. */
+    /**
+     * The way down the far side from the service gate, outside the wire all the way (0.4.235: it used to run along the west fence and
+     * cut it open, so a child could walk into the yard on the first visit).
+     */
+    public static final BlockPos[] RETURN_ROUTE={new BlockPos(-31,11,-209),new BlockPos(-33,11,-205),new BlockPos(-33,8,-189),new BlockPos(-33,4,-165),new BlockPos(-27,0,-131),new BlockPos(-18,0,-106),new BlockPos(-12,0,-73)};
+    /** The depot's iron back door and the gate in the west fence the service tunnel ends at; the release opens both on the last night. */
+    public static final BlockPos SERVICE_DOOR=new BlockPos(-17,12,-206),SERVICE_GATE=new BlockPos(-30,12,-209);
+    /** 0.4.121: the trail map in the station, the noticeboard on the store's porch and the friend's notes in the fort. */
     public static final BlockPos TRAIL_MAP=new BlockPos(6,1,-7),NOTES=new BlockPos(-1,7,-99);
     public static final BlockPos[] BOARD={new BlockPos(-15,1,-21),new BlockPos(-15,1,-20),new BlockPos(-15,2,-21),new BlockPos(-15,2,-20)};
-    public static final BlockPos BEDROOM=PACK,REGISTER=EVIDENCE,MAP=MARKER_TWO,NOTICE=SOURCE,SIGN=MARKER_FOUR,TRUCK=new BlockPos(12,12,-166),SERVICE=EVIDENCE,TESTIMONY=EVIDENCE;
+    public static final BlockPos TRUCK=new BlockPos(12,12,-166);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private BorrascaRooms(){}
     static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,Block block){LiteraryRooms.box(l,b,x,y,z,X,Y,Z,block);}
@@ -73,10 +79,24 @@ public final class BorrascaRooms {
         for(var e:ElkLot.pickupStates(b.offset(0,12,0),TRUCK.getX(),TRUCK.getZ(),Direction.NORTH,3,false).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
         for(int z=-180;z>=-201;z--)box(l,b,-11,12,z,-11,14,z,Blocks.IRON_BARS);join(l,b,-11,12,-201,-11,14,-180);box(l,b,-11,12,-179,-11,13,-179,Blocks.AIR);
     }
+    /**
+     * The service exit: the depot's iron back door opens into a low tunnel walled off from the yard, which runs west under the wire to
+     * an iron gate in the fence; outside it the way goes down the far side, outside the wire all the way. Until the release is pulled
+     * both doors stay shut and the fence is whole, so the yard cannot be reached from the woods (0.4.235).
+     */
     private static void serviceDescent(ServerLevel l,BlockPos b){
         box(l,b,-17,12,-204,-17,13,-204,Blocks.AIR);
-        box(l,b,-18,12,-207,-14,15,-206,Blocks.STONE_BRICKS);NovelRooms.door(l,b.offset(-17,12,-206),Direction.NORTH,Blocks.IRON_DOOR,false);box(l,b,-17,12,-207,-17,13,-207,Blocks.AIR);for(int i=0;i<RETURN_ROUTE.length-1;i++)path(l,b,RETURN_ROUTE[i],RETURN_ROUTE[i+1]);
-        for(int x=-21;x<=-15;x++)for(int z=-210;z<=-208;z++)BuildBlocks.set(l,b.offset(x,13,z),Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);BuildBlocks.set(l,b.offset(RELEASE),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),F);sign(l,b,RELEASE.above(2),"SERVICE EXIT","Mechanical release","Keep low","Return to trail");
+        box(l,b,-18,12,-207,-14,15,-206,Blocks.STONE_BRICKS);NovelRooms.door(l,b.offset(SERVICE_DOOR),Direction.NORTH,Blocks.IRON_DOOR,false);
+        for(int i=0;i<RETURN_ROUTE.length-1;i++)path(l,b,RETURN_ROUTE[i],RETURN_ROUTE[i+1]);
+        // The tunnel: two blocks wide, roofed low enough that an adult must crouch, walled on both sides.
+        box(l,b,-30,11,-210,-16,14,-207,Blocks.STONE_BRICKS);
+        box(l,b,-29,12,-209,-17,12,-208,Blocks.AIR);
+        for(int x=-29;x<=-17;x++)for(int z=-209;z<=-208;z++)BuildBlocks.set(l,b.offset(x,13,z),Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);
+        set(l,b,-17,12,-207,Blocks.AIR);BuildBlocks.set(l,b.offset(-17,13,-207),Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);
+        NovelRooms.door(l,b.offset(SERVICE_GATE),Direction.WEST,Blocks.IRON_DOOR,false);
+        // The west fence, whole again wherever the way down touched it.
+        for(int z=-213;z<=-168;z++){if(z>=-210&&z<=-207)continue;for(int y=12;y<=15;y++)fit(l,b,new BlockPos(-30,y,z),BorrascaFittingBlock.Kind.FENCE,Direction.EAST);}
+        BuildBlocks.set(l,b.offset(RELEASE),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),F);sign(l,b,RELEASE.above(2),"SERVICE EXIT","Mechanical release","Keep low","Return to trail");
         box(l,b,34,-5,-61,41,-1,-53,Blocks.STONE_BRICKS);box(l,b,35,-4,-60,40,-2,-54,Blocks.AIR);
     }
     private static void marker(ServerLevel l,BlockPos b,BlockPos at,BorrascaFittingBlock.Kind k){box(l,b,at.getX(),at.getY(),at.getZ()-1,at.getX(),at.getY()+1,at.getZ()-1,Blocks.SPRUCE_LOG);fit(l,b,at.above(),k,Direction.SOUTH);}

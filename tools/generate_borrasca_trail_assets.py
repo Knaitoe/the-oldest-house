@@ -24,6 +24,7 @@ GLYPHS = {
     'K': ('101','110','100','110','101'), 'I': ('111','010','010','010','111'),
     'M': ('101','111','111','101','101'), 'B': ('110','101','110','101','110'),
     'E': ('111','100','110','100','111'), 'R': ('110','101','110','110','101'),
+    'N': ('110','101','101','101','101'), 'L': ('100','100','100','100','111'),
 }
 
 
@@ -183,7 +184,7 @@ def paintings():
     t.set(7, 7, '#2e2a22'); t.set(8, 7, '#2e2a22')
     for x in range(10, 16):
         t.set(x, 15 - (x - 10), '#9a3b33'); t.set(x, 14 - (x - 10), '#b2463c')
-    # 8 Kimber's pack: teal canvas, tan straps and buckles, a zip.
+    # 8 Her pack: teal canvas, tan straps and buckles, a zip.
     t = tile('#3f6f68', 80)
     for y in range(16):
         for x in range(16):
@@ -506,7 +507,7 @@ def outputs():
                'thirdperson_righthand': {'rotation':[0,0,0],'translation':[0,2,0],'scale':[.5,.5,.5]},
                'firstperson_righthand': {'rotation':[0,-30,0],'translation':[0,2,0],'scale':[.8,.8,.8]}}
     compass = model([cube((2,2,7,14,14,9),7),cube((6,14,7,10,16,9),8)])
-    patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('KIMBER',1.1,6,7.35,.6,12,mirror=False)])
+    patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('NELL',2,6,7.35,.8,12,mirror=False)])
     flashlight = model([cube((6,0,6,10,12,10),5),cube((5.5,2,5.5,10.5,10,10.5),10),cube((4,10,4,12,16,12),14)])
     for name, asset in (('compass',compass),('name_patch',patch),('flashlight',flashlight)):
         asset['display'] = display
@@ -522,8 +523,8 @@ def outputs():
     out['../minecraft/atlases/blocks.json'] = atlas
     lang = json.loads((ASSETS / 'lang/en_us.json').read_text())
     lang.update({'block.the_oldest_house.borrasca_bark':'Carved pine bark',
-                 'item.the_oldest_house.borrasca_compass':"Kimber's compass",
-                 'item.the_oldest_house.borrasca_name_patch':"Kimber's name patch",
+                 'item.the_oldest_house.borrasca_compass':"Nell's compass",
+                 'item.the_oldest_house.borrasca_name_patch':"Nell's name patch",
                  'item.the_oldest_house.borrasca_flashlight':'County flashlight',
                  'subtitles.the_oldest_house.borrasca.triple_chime':'Metallic cry from the ridge',
                  'subtitles.the_oldest_house.borrasca.carve':'Knife scrapes wood',

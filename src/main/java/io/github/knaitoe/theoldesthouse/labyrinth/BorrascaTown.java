@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.properties.*;
  * Borrasca's buildings (0.4.121): the trailhead station the reader arrives in, Drisking's store and the Sheriff's office
  * round the lot, the children's fort in the Triple Tree, and the ridge depot's office, sorting room, back room, machine
  * shed and gate hut. Every story position, walk and sightline that BorrascaRooms and BorrascaStory use is kept: the
- * station's aisle, the fort's ladder landing, doorway and Kimber's steps, the gaps either side of the Triple Tree, the
+ * station's aisle, the fort's ladder landing, doorway and the friend's steps, the gaps either side of the Triple Tree, the
  * depot's aisle from its front door to the service exit, and the line from the taking to the ridge lamp.
  */
 final class BorrascaTown {
@@ -178,7 +178,7 @@ final class BorrascaTown {
         box(l,b,-5,5,-100,5,5,-88,Blocks.SPRUCE_PLANKS);for(int[] at:new int[][]{{-2,-95},{1,-97},{3,-92},{-4,-91},{2,-99}})set(l,b,at[0],5,at[1],hash(at[0],5,at[1])%2==0?Blocks.BIRCH_PLANKS:Blocks.OAK_PLANKS);
         for(int x:new int[]{-5,5})for(int z:new int[]{-100,-89})box(l,b,x,0,z,x,5,z,log(Blocks.SPRUCE_LOG,Direction.Axis.Y));
         for(int z:new int[]{-100,-89}){set(l,b,-4,4,z,stair(Blocks.SPRUCE_STAIRS,Direction.WEST,Half.TOP));set(l,b,4,4,z,stair(Blocks.SPRUCE_STAIRS,Direction.EAST,Half.TOP));}
-        // Walls: a doorway beside the hatch, a window each side; Kimber's notes go up on the back wall.
+        // Walls: a doorway beside the hatch, a window each side; her notes go up on the back wall.
         box(l,b,-5,6,-100,5,8,-100,Blocks.SPRUCE_PLANKS);box(l,b,-5,6,-100,-5,8,-89,Blocks.SPRUCE_PLANKS);box(l,b,5,6,-100,5,8,-89,Blocks.SPRUCE_PLANKS);
         box(l,b,-5,6,-89,0,8,-89,Blocks.SPRUCE_PLANKS);box(l,b,4,6,-89,5,8,-89,Blocks.SPRUCE_PLANKS);set(l,b,3,8,-89,Blocks.SPRUCE_PLANKS);box(l,b,1,8,-89,2,8,-89,Blocks.SPRUCE_PLANKS);
         for(int[] at:new int[][]{{-5,7,-97},{5,6,-92},{-2,8,-100},{4,7,-89},{-5,8,-91}})set(l,b,at[0],at[1],at[2],hash(at[0],at[1],at[2])%2==0?Blocks.BIRCH_PLANKS:Blocks.OAK_PLANKS);
