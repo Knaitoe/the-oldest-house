@@ -146,7 +146,7 @@ public final class HouseReadSites {
         if(!door.id.startsWith("house_read/"))return false;var room=inside(p);if(room==null||!door.id.startsWith("house_read/"+p.getUUID()+"/"+room.key()+"/")||p.level().dimension()!=door.dimension||p.distanceToSqr(door.lower.getCenter())>36)return true;
         // 0.4.166 (owner: "The doors can also just be locked ... Until the vignettes are completed."): both ways stay shut until
         // the House has what the room is for.
-        if(!HouseReadStory.ready(p,room)){HouseReadStory.locked(p,door.lower);return true;}
+        if(!HouseReadStory.ready(p,room)){HouseReadStory.locked(p,room,door.lower);return true;}
         boolean forward=!door.id.endsWith("/entry");{if(room==Room.PORCH&&forward){String out=door.id.endsWith("/kitchen")?"kitchen":door.id.endsWith("/side")?"gate":"road";HouseRead.first(p,Room.PORCH,"Out",out);act(p,room,switch(out){case "kitchen"->"left through the front hall";case "gate"->"left by the side gate";default->"left by the road through the trees";});}leave(p,forward);}return true;
     }
     /** Leaves a complete room: the House's closing line on black first, then {@link #depart}. */

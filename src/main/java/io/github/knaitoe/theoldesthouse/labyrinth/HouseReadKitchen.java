@@ -173,6 +173,16 @@ public final class HouseReadKitchen {
     private static CompoundTag visit(ServerPlayer p){return HouseReadSites.state(p.server,p.getUUID()).getCompound(KITCHEN.key());}
     private static void save(ServerPlayer p,CompoundTag visit){var own=HouseReadSites.state(p.server,p.getUUID());own.put(KITCHEN.key(),visit);HouseReadSites.save(p.server,p.getUUID(),own);}
     private static CompoundTag seen(ServerPlayer p){return HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(KITCHEN.key());}
+    /**
+     * 0.4.202 (owner: "being met with this for at least ten minutes"): what the kitchen's doors are waiting for, said at the
+     * door a reader is trying: something drawn, then the picture in hand, then the picture up on the fridge.
+     */
+    public static String waiting(ServerPlayer p){
+        var b=HouseReadSites.base(p.server,p.getUUID(),KITCHEN);var sheet=b==null?null:fitting(p,b.offset(SHEET_AT));
+        if(sheet==null||!coloured(sheet.read()))return "The door won't open. Your picture's on the table, and nothing's on it yet.";
+        if(!carrying(p))return "The door won't open. Your picture's still on the table. There's room for it on the fridge door.";
+        return "The door won't open. Your picture goes up on the fridge door.";
+    }
     private static HouseReadPropBlock.Fitting fitting(ServerPlayer p,BlockPos at){return p.serverLevel().getBlockEntity(at) instanceof HouseReadPropBlock.Fitting f?f:null;}
     /**
      * 0.4.185 (owner: "ensure players are child height too for the crayon vignette"): at the kitchen table the reader is small

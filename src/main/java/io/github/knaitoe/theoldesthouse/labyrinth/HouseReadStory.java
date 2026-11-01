@@ -72,8 +72,9 @@ public final class HouseReadStory {
     }
     /** The shelter has its answer once the reader has gone to someone, stayed between them, or walked out past both. */
     static boolean answered(CompoundTag seen){return seen.contains("Looked")||seen.contains("Stood")||seen.getBoolean("FirstLantern");}
-    static void locked(ServerPlayer p,net.minecraft.core.BlockPos at){
-        p.displayClientMessage(Component.literal("The door won't open."),true);HouseReadSites.sound(p,SoundEvents.CHEST_LOCKED,at,.6f);
+    static void locked(ServerPlayer p,HouseReadSites.Room room,net.minecraft.core.BlockPos at){
+        // 0.4.202 (owner, stuck at the kitchen's near door for ten minutes): the kitchen says what its door is waiting for.
+        p.displayClientMessage(Component.literal(room==HouseReadSites.Room.KITCHEN?HouseReadKitchen.waiting(p):"The door won't open."),true);HouseReadSites.sound(p,SoundEvents.CHEST_LOCKED,at,.6f);
     }
 
     /** A card on screen: until when, and for a closing card the room, the way out and when the reader is taken on. */
