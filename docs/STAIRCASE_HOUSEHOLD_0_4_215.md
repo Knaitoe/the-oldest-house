@@ -141,7 +141,7 @@ bed is left, the car drives on, the washing stays out.
 
 - **Witness line:** "I put their things back in order. A household went down the stairs before me, and on a landing near the bottom
   I counted their cups, and read my own name at the end of their list."
-- **House of Leaves place:** "the landing where the household left its camp".
+- **House of Leaves place:** "the landing where the household camped" (shortened in 0.4.218 to fit a page in the Witness hand).
 - **Advancement:** `account/household`, shown with a flower pot.
 - **The household's notes:** each room's note, success or failure, is shown with its sheet whenever that sheet is read again.
 
