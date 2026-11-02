@@ -24,6 +24,7 @@ public final class CoopTests {
     private static void close(){GroupCrossings.forget();SharedVignettes.undraft(LabyrinthPlace.HILL_NURSERY);DrownedTown.clearAll();HouseTransitionEvents.clearAll();if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="coop_follow146") public static void followDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_mixed146") public static void mixedDone(ServerLevel l){close();}
+    @AfterBatch(batch="coop_cues270") public static void cuesDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_thread146") public static void threadDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_town148") public static void townDone(ServerLevel l){close();}
     @AfterBatch(batch="coop_child149") public static void childDone(ServerLevel l){close();}
@@ -111,6 +112,43 @@ public final class CoopTests {
                 var swapped=LabyrinthPlace.byId(data.deal(lead.getUUID(),far).place());
                 h.assertTrue(swapped!=LabyrinthPlace.HIDE_AND_CLAP&&SharedVignettes.followable(swapped),"the clapping game has one blindfold, so a group is dealt a shared scene instead: "+swapped);
                 h.assertTrue(!SharedVignettes.followable(LabyrinthPlace.BACKSEAT)&&!SharedVignettes.followable(LabyrinthPlace.BORRASCA)&&SharedVignettes.followable(LabyrinthPlace.THREE_FINGERS),"the backseat and the private sites stay one reader's");
+            }).thenSucceed();
+    }
+
+    /**
+     * 0.4.270 (the owner: "Add a subtle indication that friends can follow through this door, plus feedback when private scenes or
+     * different story progress will separate them"): at a door held by a friend's crossing, a reader who can follow is told the way is
+     * open; one who has finished what lies behind it is told so; nobody too far off, nor the one who went, is told anything. A reader
+     * who comes through after and cannot follow is told why; when the group splits at the door, the first through is told the others
+     * will find their own way, and each friend who cannot follow is told so, while a friend who could is not.
+     */
+    @GameTest(template="empty",batch="coop_cues270",timeoutTicks=1200)
+    public static void friendsAtAHeldDoorAreToldWhetherTheyCanFollowAndWhyTheySplit(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var lead=player(h,f,"cue_lead");var friend=player(h,f,"cue_friend");var done=player(h,f,"cue_done");var away=player(h,f,"cue_away");
+        hold(f,LabyrinthPlace.STRAIGHT_HALL);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall is resident"))
+            .thenExecute(()->{
+                hall(f,LabyrinthPlace.STRAIGHT_HALL);var data=f.data();var far=data.door(LabyrinthPlace.STRAIGHT_HALL.id()+"/far");var front=far.lower.relative(far.facing);
+                WitnessAccount.resolve(data,done.getUUID(),WitnessAccount.Story.of(SCENE.id()),"heard_the_knocks_answered");
+                GroupCrossings.forget();
+                at(lead,f.in,front);at(friend,f.in,front.east(1));at(done,f.in,front.west(1));at(away,f.in,front.south(14));
+                GroupCrossings.crossed(lead,far,SCENE);
+                var open=GroupCrossings.cue(friend);
+                h.assertTrue(open!=null&&open.contains("cue_lead")&&open.contains("still open"),"a friend who can follow is told the way is open: "+open);
+                var closed=GroupCrossings.cue(done);
+                h.assertTrue(closed!=null&&closed.contains("already been"),"a friend who finished the nursery is told they have been there: "+closed);
+                h.assertTrue(GroupCrossings.cue(away)==null&&GroupCrossings.cue(lead)==null,"nobody far off, nor the one who went, is told anything");
+                GroupCrossings.before(done,far);
+                h.assertTrue(GroupCrossings.owed(done.getUUID()).stream().anyMatch(l->l.contains("already been")),"coming through after, they are told why their door leads elsewhere: "+GroupCrossings.owed(done.getUUID()));
+                // The group splits at the door: nothing left that all of them could go into.
+                GroupCrossings.forget();
+                for(var v:LabyrinthDealer.vignettesAvailable(data,lead.getUUID()))data.visit(done.getUUID(),v);
+                data.deal(lead.getUUID(),far,SCENE.id(),false);GroupCrossings.before(lead,far);
+                h.assertTrue(SCENE.id().equals(data.deal(lead.getUUID(),far).place()),"the first through keeps the nursery");
+                h.assertTrue(GroupCrossings.owed(lead.getUUID()).stream().anyMatch(l->l.contains("find their own way")),"and is told the others will find their own way: "+GroupCrossings.owed(lead.getUUID()));
+                h.assertTrue(GroupCrossings.owed(done.getUUID()).stream().anyMatch(l->l.contains("cue_lead")&&l.contains("cannot follow")),"the friend who cannot follow is told so: "+GroupCrossings.owed(done.getUUID()));
+                h.assertTrue(GroupCrossings.owed(friend.getUUID()).isEmpty(),"a friend who could follow is told nothing");
+                GroupCrossings.forget();
             }).thenSucceed();
     }
 
