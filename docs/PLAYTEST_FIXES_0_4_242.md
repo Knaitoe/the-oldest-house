@@ -93,3 +93,9 @@ Barretts on seven days" and no longer closes on an aphorism.
 The twenty-three `GhostsSetTests` cases (one new) and the saved-seat case (`Vignette0492Tests`) pass locally; the broadcast-story case now looks
 for the rewritten lead. The meal case checks both last-supper plates. Quick-gate checks pass: textures, character art (with Merry's
 record), model particles, the Barrett home and supper drawings, and the painted sheets.
+
+## Run 1397
+
+Seventeen of eighteen jobs passed. In the full suite the keepsake case's cow, which stands outside its one-block template, was
+removed before it settled ("alive false"), most likely by a neighbouring test clearing its own area. A cow that is gone is now put
+down again until one has settled.
