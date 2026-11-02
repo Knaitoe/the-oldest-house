@@ -899,6 +899,51 @@
     "facing=west,kind=hooks,stage=2": {
       "model": "the_oldest_house:block/vacant/hooks_0",
       "y": 270
+    },
+    "facing=north,kind=van_wheel,stage=0": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0"
+    },
+    "facing=north,kind=van_wheel,stage=1": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0"
+    },
+    "facing=north,kind=van_wheel,stage=2": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0"
+    },
+    "facing=east,kind=van_wheel,stage=0": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 90
+    },
+    "facing=east,kind=van_wheel,stage=1": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 90
+    },
+    "facing=east,kind=van_wheel,stage=2": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 90
+    },
+    "facing=south,kind=van_wheel,stage=0": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 180
+    },
+    "facing=south,kind=van_wheel,stage=1": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 180
+    },
+    "facing=south,kind=van_wheel,stage=2": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 180
+    },
+    "facing=west,kind=van_wheel,stage=0": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 270
+    },
+    "facing=west,kind=van_wheel,stage=1": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 270
+    },
+    "facing=west,kind=van_wheel,stage=2": {
+      "model": "the_oldest_house:block/vacant/van_wheel_0",
+      "y": 270
     }
   }
 }

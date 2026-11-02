@@ -72,3 +72,33 @@ hand) or put back (sitting again, the light on, the docket saying so).
 
 `ArchitectureTests`: the flat keeps its boards, the list by the door, the dresser and the van; its source is the list; it is built
 whole.
+
+## 0.4.260: the van turned round, and weight
+
+The owner's notes: the van "needs to be flipped around", placed objects must not "carry beyond the van", and carrying should have
+some weight to it, with "a second or third player" able to help.
+
+**The van.** It backs onto the kerb. The load bay is x 10..14, z -9..-5, with side panels at z -5 and -9 and a bulkhead at x 14; the
+cab is beyond the bulkhead at x 15, a panel, a row of glass and a panel. The nine places a piece is set down (`VacantSite.SLOTS`) are
+x 13, 12 and 11 by z -8, -7 and -6, front to back, so nothing set down reaches the cab or stands out of the bay. The rear doors are
+plain panels with a locking rod, swung right round and hooked back against the sides at x 10 (z -4 and z -10), so the pavement at
+x 9 stays clear. Four wheels (`VacantBlock.Kind.VAN_WHEEL`) sit outside the sides. Clicking any of it with a piece in hand sets the
+piece down.
+
+**Weight.** Each piece has a weight (`VacantPossession.weight`):
+
+| Weight | Pieces | Carried alone |
+|---|---|---|
+| Heavy | bed, wardrobe | walking at 55%, jumping at 55%, no running, dragged along the floor |
+| Medium | dresser, table, armchair | walking at 75%, jumping at 80% |
+| Light | rug, boxes, lamp, chair | walking at 90% |
+
+The weight is a set of transient attribute modifiers, recomputed every tick for each reader in the flat and removed from anyone who
+is not in it, so a logout, a death or a door takes it away. Another reader in the flat with empty hands right-clicks the one carrying
+a heavy or medium piece to take the other end, and a third can take the middle; with two pairs of hands each bears a third of what
+one would alone, with three a sixth. Walking more than four blocks apart, picking up something of their own, or a second right-click
+lets go, and both are told. Light pieces need nobody's help.
+
+`VacantPossessionTests.aHeavyPieceIsSharedWithASecondPairOfHands`: the bed slows the lifter and lowers their jump; a helper with
+bread in hand cannot take hold, with empty hands can; the weight is then a third each; the helper walking to the street lets go; set
+down, the bed weighs nothing; the lamp needs nobody's help; and out of the flat the piece goes back with its weight.

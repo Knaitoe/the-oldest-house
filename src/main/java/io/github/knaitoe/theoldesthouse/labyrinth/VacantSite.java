@@ -21,8 +21,10 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.VacantBlock.Kind.*;
  * reader comes in at the front (the base) onto the upper landing (x -5 to 2, z -1 to -3); the flat's door is straight ahead in its
  * double wall (z -4 and -5), the stair down on the left (x -5 to -4, treads z -1 to -5). The flat (x -2 to 7, z -6 to -17) is a
  * living room and, through the partition at z -12, a bedroom; its windows look east onto the street. Downstairs the hall (x -5 to 7,
- * z -6 to -8, floor at y -6) runs east to the front door at x 8, which stands open onto the pavement. The van is parked at the kerb
- * with its back to the door (x 11 to 15, z -5 to -9), its load bay three by three. Every position is relative to the base.
+ * z -6 to -8, floor at y -6) runs east to the front door at x 8, which stands open onto the pavement. The van is backed onto the kerb
+ * with its back to the door (x 10 to 15, z -5 to -9): its load bay three by three behind a bulkhead, and its cab, lower, at the road
+ * end (0.4.260, owner: "the van needs to be flipped around"; its back doors had windows and read as a cab at the house end, and the
+ * load bay ran up to the windscreen). Every position is relative to the base.
  */
 public final class VacantSite {
     private VacantSite(){}
@@ -50,28 +52,32 @@ public final class VacantSite {
     /** The piece whose cells include this one, where it stands in the flat. */
     @Nullable public static Piece pieceAt(BlockPos rel){for(var p:PIECES)if(p.cells().contains(rel))return p;return CHAIR_PIECE.cells().contains(rel)?CHAIR_PIECE:null;}
     /** The tenant's list, taped by the door inside the flat (the source); the removal docket on the van's floor (the account). */
-    public static final BlockPos LIST=new BlockPos(1,1,-6),DOCKET=new BlockPos(11,GROUND,-6);
+    public static final BlockPos LIST=new BlockPos(1,1,-6),DOCKET=new BlockPos(10,GROUND,-6);
     /** Where the tenant waits, by the window; where they stand when they get up from the last chair. */
     public static final BlockPos TENANT_START=new BlockPos(6,0,-7),STAND=new BlockPos(6,0,-10);
     /** The bulbs: the landing, the living room, the bedroom, the downstairs hall. The flat's two go dark when it is empty. */
     public static final BlockPos LANDING_BULB=new BlockPos(0,3,-2),LIVING_BULB=new BlockPos(2,3,-8),BEDROOM_BULB=new BlockPos(2,3,-15),HALL_BULB=new BlockPos(1,GROUND+3,-7);
     /** The way on: the back door at the west end of the downstairs hall. */
     public static final int BACK_X=-6,BACK_Z=-7;
-    /** The van's load bay, front to back: where each piece goes, in the order it is set down. */
+    /** The van's load bay, front (against the bulkhead) to back: where each piece goes, in the order it is set down. */
     public static final List<BlockPos> SLOTS=List.of(
-        new BlockPos(14,GROUND,-8),new BlockPos(14,GROUND,-7),new BlockPos(14,GROUND,-6),
         new BlockPos(13,GROUND,-8),new BlockPos(13,GROUND,-7),new BlockPos(13,GROUND,-6),
-        new BlockPos(12,GROUND,-8),new BlockPos(12,GROUND,-7),new BlockPos(12,GROUND,-6));
+        new BlockPos(12,GROUND,-8),new BlockPos(12,GROUND,-7),new BlockPos(12,GROUND,-6),
+        new BlockPos(11,GROUND,-8),new BlockPos(11,GROUND,-7),new BlockPos(11,GROUND,-6));
+    /** The van's rear doors, swung right round against its sides so the pavement stays clear; its wheels, on the outside of its sides. */
+    public static final List<BlockPos> VAN_DOORS=List.of(new BlockPos(10,GROUND,-4),new BlockPos(10,GROUND,-10));
+    public static final List<BlockPos> WHEELS=List.of(new BlockPos(11,GROUND,-4),new BlockPos(15,GROUND,-4),new BlockPos(11,GROUND,-10),new BlockPos(15,GROUND,-10));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
     public static boolean inFlat(Vec3 r){return r.x>=-2&&r.x<8&&r.z>=-17&&r.z<-5&&r.y>=-.5&&r.y<4;}
     public static boolean onStreet(Vec3 r){return r.x>=9&&r.x<17&&r.z>=-18&&r.z<0&&r.y<GROUND+3;}
     public static boolean inside(Vec3 r){return r.x>=-6&&r.x<18&&r.z>=-18&&r.z<1&&r.y>=GROUND-1&&r.y<8;}
-    /** The van: its panels, floor, roof and the rear doors swung back against its sides. */
+    /** The van: its panels, floor, roof, cab, wheels and the rear doors swung wide. */
     public static boolean van(BlockPos rel){
         int x=rel.getX(),y=rel.getY(),z=rel.getZ();
-        if(x==11&&(z==-4||z==-10)&&y>=GROUND&&y<=GROUND+1)return true;
-        return x>=11&&x<=15&&z>=-9&&z<=-5&&y>=GROUND-1&&y<=GROUND+3;
+        for(var d:VAN_DOORS)if(x==d.getX()&&z==d.getZ()&&y>=GROUND&&y<=GROUND+1)return true;
+        if(WHEELS.contains(rel))return true;
+        return x>=10&&x<=15&&z>=-9&&z<=-5&&y>=GROUND-1&&y<=GROUND+3;
     }
 
     static BlockState mat(String name){return VacantRegistry.material(name).defaultBlockState();}
@@ -127,12 +133,16 @@ public final class VacantSite {
         for(int z:new int[]{-3,-4,-9,-10,-14,-15})for(int y:new int[]{GROUND+1,GROUND+2,1,2}){set(l,b,17,y,z,Blocks.GLASS_PANE.defaultBlockState());set(l,b,18,y,z,Blocks.BLACK_CONCRETE.defaultBlockState());}
         // Two street lamps on the near pavement.
         for(int z:new int[]{-3,-14}){for(int y=GROUND;y<=GROUND+2;y++)set(l,b,9,y,z,VacantBlock.of(STREETLAMP,Direction.EAST,0));set(l,b,9,GROUND+3,z,VacantBlock.of(STREETLAMP,Direction.EAST,1));}
-        // The van, its back to the front door: panels, wheels, roof, the cab's windscreen, the load bay's floor, the rear doors back.
-        box(l,b,11,GROUND-1,-8,14,GROUND-1,-6,mat("van_floor"));
-        for(int z:new int[]{-5,-9}){box(l,b,11,GROUND,z,15,GROUND+2,z,mat("van_panel"));set(l,b,12,GROUND,z,mat("van_wheel"));set(l,b,14,GROUND,z,mat("van_wheel"));}
-        box(l,b,11,GROUND+3,-9,15,GROUND+3,-5,mat("van_panel"));
-        box(l,b,15,GROUND,-8,15,GROUND+2,-6,mat("van_panel"));for(int z=-8;z<=-6;z++)set(l,b,15,GROUND+1,z,Blocks.GLASS_PANE.defaultBlockState());
-        for(int y=0;y<=1;y++){set(l,b,11,GROUND+y,-4,VacantBlock.of(VAN_DOOR,Direction.SOUTH,y));set(l,b,11,GROUND+y,-10,VacantBlock.of(VAN_DOOR,Direction.NORTH,y));}
+        // The van, backed onto the kerb with its back to the front door. The box: floor, sides, roof, and the bulkhead behind the cab,
+        // so what goes in stands in the load bay and nowhere else. The cab at the road end, a block lower: its bumper, its glass
+        // round the front and both sides, its roof. The wheels outside the sides, the rear doors swung right round against them.
+        var panel=mat("van_panel");
+        box(l,b,10,GROUND-1,-9,15,GROUND-1,-5,mat("van_floor"));
+        for(int z:new int[]{-5,-9})box(l,b,10,GROUND,z,14,GROUND+2,z,panel);
+        box(l,b,10,GROUND+3,-9,14,GROUND+3,-5,panel);box(l,b,14,GROUND,-8,14,GROUND+2,-6,panel);
+        box(l,b,15,GROUND,-9,15,GROUND,-5,panel);for(int z=-9;z<=-5;z++)set(l,b,15,GROUND+1,z,Blocks.GLASS_PANE.defaultBlockState());box(l,b,15,GROUND+2,-9,15,GROUND+2,-5,panel);
+        for(var w:WHEELS)set(l,b,w,VacantBlock.of(VAN_WHEEL,w.getZ()>-7?Direction.SOUTH:Direction.NORTH));
+        for(int y=0;y<=1;y++){set(l,b,10,GROUND+y,-4,VacantBlock.of(VAN_DOOR,Direction.SOUTH,y));set(l,b,10,GROUND+y,-10,VacantBlock.of(VAN_DOOR,Direction.NORTH,y));}
         set(l,b,DOCKET,VacantBlock.of(VacantBlock.Kind.DOCKET,Direction.WEST));
         // The downstairs hall: the mailboxes, the bulb.
         set(l,b,3,GROUND+1,-8,VacantBlock.of(MAILBOXES,Direction.SOUTH));
@@ -142,7 +152,7 @@ public final class VacantSite {
         for(var at:List.of(LANDING_BULB,LIVING_BULB,BEDROOM_BULB,HALL_BULB))set(l,b,at,VacantBlock.of(BULB,Direction.NORTH));
         // Everything on the list, and the chair.
         reset(l,b,false);
-        BuildBlocks.after(l,()->{for(int y=1;y<=2;y++)for(int z:new int[]{-8,-9,-14,-15})join(l,b.offset(8,y,z));for(int z=-8;z<=-6;z++)join(l,b.offset(15,GROUND+1,z));
+        BuildBlocks.after(l,()->{for(int y=1;y<=2;y++)for(int z:new int[]{-8,-9,-14,-15})join(l,b.offset(8,y,z));for(int z=-9;z<=-5;z++)join(l,b.offset(15,GROUND+1,z));
             for(int z=-3;z<=-2;z++){var at=b.offset(-3,0,z);var s=l.getBlockState(at);for(var d:Direction.Plane.HORIZONTAL)s=s.updateShape(d,l.getBlockState(at.relative(d)),l,at,at.relative(d));l.setBlock(at,s,F);}});
     }
     private static void join(ServerLevel l,BlockPos at){var s=l.getBlockState(at);if(!(s.getBlock() instanceof IronBarsBlock))return;for(var d:Direction.Plane.HORIZONTAL)s=s.updateShape(d,l.getBlockState(at.relative(d)),l,at,at.relative(d));l.setBlock(at,s,F);}

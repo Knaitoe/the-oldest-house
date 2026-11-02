@@ -58,6 +58,18 @@ public final class NovelTests {
             var saved=(InstituteNotebookBlockEntity)f.l.getBlockEntity(f.b.offset(WhaleInstitute.LECTERN));h.assertTrue(ItemStack.isSameItemSameComponents(saved.book(),NovelTexts.whaleOpening()),"the reading table holds the exact original opening letter");
             f.at(p,9.5,0,-22.5);f.click(p,WhaleInstitute.CALENDAR_BOOK);h.assertTrue(p.containerMenu instanceof NovelVignettes.NovelBookMenu,"the notebook opens through the real private native reading menu");p.closeContainer();
             for(int i=0;i<=5;i++)for(int z:new int[]{-30,-31})h.assertTrue(f.l.noCollision(null,new AABB(f.b.getX()-6-i+.2,f.b.getY()+i+1.01,f.b.getZ()+z+.2,f.b.getX()-6-i+.8,f.b.getY()+i+2.81,f.b.getZ()+z+.8)),"every enamel stair retains its original standing headroom");
+            // 0.4.260: the clocks are wall clocks with real hands, each set to its own hour (the dayroom's stopped at seven); no framed clocks.
+            for(var e:WhaleInstitute.CLOCKS.entrySet()){var at=f.b.offset(e.getKey());var st=f.l.getBlockState(at);
+                h.assertTrue(st.is(HouseReadRegistry.FITTING.get())&&st.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.WALL_CLOCK&&f.l.getBlockEntity(at) instanceof HouseReadPropBlock.Fitting clock&&clock.read().equals(WhaleInstitute.clockRead(e.getValue())),"a wall clock with hands at "+e.getKey()+", set to "+e.getValue()+": "+st);
+                var behind=at.relative(st.getValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING).getOpposite());h.assertTrue(!f.l.getBlockState(behind).isAir(),"the clock at "+e.getKey()+" hangs on a wall");}
+            h.assertTrue(WhaleInstitute.clockRead(WhaleInstitute.STOPPED_HOUR).getBoolean("Stopped")&&!WhaleInstitute.clockRead(3).getBoolean("Stopped")&&WhaleInstitute.CLOCKS.values().stream().distinct().count()==WhaleInstitute.CLOCKS.size(),"no two clocks agree, and one has stopped");
+            h.assertTrue(f.l.getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class,new AABB(f.b).inflate(40),fr->fr.getItem().is(Items.CLOCK)).isEmpty(),"no framed clocks are left");
+            // 0.4.260: the attic banister stands on the floor right round the well, and only the top tread is open.
+            for(int x=-12;x<=-5;x++)for(int z=-31;z<=-26;z++){var cell=new BlockPos(x,5,z);h.assertTrue(f.l.getBlockState(f.b.offset(cell)).isAir()==WhaleInstitute.WELL.contains(cell),"the attic floor is open only over the stair: "+cell+" "+f.l.getBlockState(f.b.offset(cell)));}
+            for(var r:WhaleInstitute.RAIL)h.assertTrue(f.l.getBlockState(f.b.offset(r)).is(NovelRegistry.WARD_RAIL.get())&&!f.l.getBlockState(f.b.offset(r.below())).isAir(),"the banister stands on the floor at "+r);
+            for(var w:WhaleInstitute.WELL)for(var d:Direction.Plane.HORIZONTAL){var n=w.relative(d);if(WhaleInstitute.WELL.contains(n))continue;
+                var below=f.l.getBlockState(f.b.offset(n));var above=f.l.getBlockState(f.b.offset(n.above()));
+                h.assertTrue(below.getBlock() instanceof StairBlock||!above.isAir(),"every edge of the well is railed, walled or the top tread: "+n+" "+below+" "+above);}
             h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WHALE),"the calendar and new scenery confer no resolution");h.succeed();
         });
     }

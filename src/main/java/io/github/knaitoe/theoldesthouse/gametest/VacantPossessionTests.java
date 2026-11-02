@@ -75,7 +75,7 @@ public final class VacantPossessionTests {
                 }
                 h.assertTrue(click(f,p,new BlockPos(-2,0,-9))&&f.own(p,P).getBoolean("Marks228"),"the pencil marks read");
                 h.assertTrue(click(f,p,new BlockPos(2,-1,-8))&&f.own(p,P).getBoolean("Floor228"),"the new boards read");
-                h.assertTrue(VacantPossession.seat(b)==VacantPossession.SITTING&&VacantBlock.is(l.getBlockState(b.offset(14,VacantSite.GROUND,-8)),VacantBlock.Kind.DRESSER),"everything on the list in the van, the dresser at the front");
+                h.assertTrue(VacantPossession.seat(b)==VacantPossession.SITTING&&VacantBlock.is(l.getBlockState(b.offset(13,VacantSite.GROUND,-8)),VacantBlock.Kind.DRESSER),"everything on the list in the van, the dresser at the front, against the bulkhead");
                 var faint=VacantPossession.heard(b);h.assertTrue(faint!=null&&faint.carry()==DoorSounds.Carry.SOMEONE&&faint.volume()<1F,"through the door, they are fainter now too: "+faint);
                 at(f,p,12.5,VacantSite.GROUND,-3.5,0);})
             .thenWaitUntil(()->h.assertTrue(tenantSeated(f),"in the last chair"))
@@ -165,4 +165,44 @@ public final class VacantPossessionTests {
         WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.of(P.id()),outcome);
     }
     @AfterBatch(batch="vacant_after") public static void afterDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.260: the pieces have weight. The bed carried alone slows the reader, and they jump lower; a second reader with empty hands
+     * takes the other end and the weight is shared, a third of it each; walking apart lets go; the lamp needs nobody's help; and set
+     * down, it weighs nothing at all.
+     */
+    @GameTest(template="empty",batch="vacant_weight",timeoutTicks=900)
+    public static void aHeavyPieceIsSharedWithASecondPairOfHands(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);
+        var p=f.player("vacant_lifter",P);var q=f.player("vacant_helper",P);
+        var bed=VacantSite.piece(VacantBlock.Kind.BED);var lamp=VacantSite.piece(VacantBlock.Kind.LAMP);
+        var heavy=VacantPossession.Weight.HEAVY;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,new AABB(b.getX()-8,b.getY()-8,b.getZ()-20,b.getX()+19,b.getY()+9,b.getZ()+2)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the flat is resident"))
+            .thenExecute(()->{at(f,p,3.5,0,-7.5,180);at(f,q,3.5,0,-9.5,0);})
+            .thenWaitUntil(()->h.assertTrue(VacantPossession.tenantActor(l,b)!=null,"moving day has begun"))
+            .thenExecute(()->{
+                h.assertTrue(VacantPossession.weight(VacantBlock.Kind.BED)==heavy&&VacantPossession.weight(VacantBlock.Kind.TABLE)==VacantPossession.Weight.MEDIUM&&VacantPossession.weight(VacantBlock.Kind.LAMP)==VacantPossession.Weight.LIGHT,"the bed heavy, the table a weight, the lamp light");
+                h.assertTrue(click(f,p,bed.at())&&carrying(f,p),"the bed lifted");})
+            .thenWaitUntil(()->h.assertTrue(Math.abs(VacantPossession.burden(p)-(1+heavy.speed))<1e-6&&Math.abs(VacantPossession.jumpBurden(p)-(1+heavy.jump))<1e-6,"carried alone, the bed slows the reader and they jump lower: "+VacantPossession.burden(p)+" "+VacantPossession.jumpBurden(p)))
+            .thenExecute(()->{
+                q.getInventory().setItem(q.getInventory().selected,new ItemStack(Items.BREAD));
+                h.assertTrue(VacantPossession.help(q,p)&&VacantPossession.helpers(b,p.getUUID()).isEmpty(),"not with their hands full");
+                q.getInventory().setItem(q.getInventory().selected,ItemStack.EMPTY);
+                h.assertTrue(VacantPossession.help(q,p)&&VacantPossession.helpers(b,p.getUUID()).equals(java.util.List.of(q.getUUID())),"the helper takes the other end");})
+            .thenWaitUntil(()->h.assertTrue(Math.abs(VacantPossession.burden(p)-(1+heavy.speed/3))<1e-6&&Math.abs(VacantPossession.burden(q)-(1+heavy.speed/3))<1e-6,"the weight shared, a third each: "+VacantPossession.burden(p)+" "+VacantPossession.burden(q)))
+            .thenExecute(()->at(f,q,12.5,VacantSite.GROUND,-3.5,0))
+            .thenWaitUntil(()->h.assertTrue(VacantPossession.helpers(b,p.getUUID()).isEmpty()&&VacantPossession.burden(q)==1&&Math.abs(VacantPossession.burden(p)-(1+heavy.speed))<1e-6,"walking apart lets go: all the weight back on the lifter"))
+            .thenExecute(()->h.assertTrue(click(f,p,bed.at())&&!carrying(f,p),"the bed set back where it stood"))
+            .thenWaitUntil(()->h.assertTrue(VacantPossession.burden(p)==1&&VacantPossession.jumpBurden(p)==1,"set down, it weighs nothing"))
+            .thenExecute(()->{
+                at(f,q,3.5,0,-9.5,0);
+                h.assertTrue(click(f,p,lamp.at())&&carrying(f,p),"the lamp lifted");
+                h.assertTrue(VacantPossession.help(q,p)&&VacantPossession.helpers(b,p.getUUID()).isEmpty(),"the lamp needs nobody's help");})
+            .thenWaitUntil(()->h.assertTrue(Math.abs(VacantPossession.burden(p)-(1+VacantPossession.Weight.LIGHT.speed))<1e-6&&VacantPossession.jumpBurden(p)==1,"the lamp barely slows anyone, and costs no jump"))
+            .thenExecute(()->{q.teleportTo(l,b.getX()+.5,b.getY()+30,b.getZ()+40,0,0);p.teleportTo(l,b.getX()+.5,b.getY()+30,b.getZ()+42,0,0);})
+            .thenWaitUntil(()->h.assertTrue(VacantPossession.burden(p)==1&&!carrying(f,p),"out of the flat, the piece goes back and its weight with it"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="vacant_weight") public static void weightDone(ServerLevel l){close();}
 }

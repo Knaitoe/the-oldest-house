@@ -34,7 +34,12 @@ public final class ClockHands {
         /** "A plain office clock, a few minutes slow": the real hour, four minutes behind. */
         OFFICE_SLOW,
         /** 0.4.220: the Winchester hall clock, on a dial of thirteen hours, a few minutes short of the last when first seen. */
-        THIRTEEN;
+        THIRTEEN,
+        /**
+         * 0.4.260: a clock that keeps its own hour, from the "From" seconds its fitting carries when first seen, or stopped there if
+         * it carries "Stopped" (the Whalestoe Institute's clocks, no two of which agree).
+         */
+        OWN;
         int hours(){return this==THIRTEEN?13:12;}
         double seconds(BlockEntity clock){
             long now=System.currentTimeMillis();
@@ -42,13 +47,15 @@ public final class ClockHands {
                 case AFTER_FOUR->{long first=FIRST.computeIfAbsent(clock,c->now);yield 4*3600+5*60+(now-first)/1000.0;}
                 case OFFICE_SLOW->{var t=LocalTime.now();yield t.toSecondOfDay()-4*60+(now%1000)/1000.0;}
                 case THIRTEEN->{long first=FIRST.computeIfAbsent(clock,c->now);yield 12*3600+51*60+(now-first)/1000.0;}
+                case OWN->{var read=clock instanceof io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Fitting f?f.read():new net.minecraft.nbt.CompoundTag();
+                    if(read.getBoolean("Stopped"))yield read.getInt("From");long first=FIRST.computeIfAbsent(clock,c->now);yield read.getInt("From")+(now-first)/1000.0;}
             };
         }
     }
 
     /** The quiet rooms' wall clock: a twelve-pixel face on a plate against the north of the block, facing out of the wall. */
     public static void wall(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.Fitting clock,PoseStack pose,MultiBufferSource out,int light){
-        var time=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadKitchen.CLOCK_AFTER_FOUR.equals(clock.read().getString("Clock"))?Time.AFTER_FOUR:Time.OFFICE_SLOW;
+        var read=clock.read();var time=read.contains("From")?Time.OWN:io.github.knaitoe.theoldesthouse.labyrinth.HouseReadKitchen.CLOCK_AFTER_FOUR.equals(read.getString("Clock"))?Time.AFTER_FOUR:Time.OFFICE_SLOW;
         draw(clock,clock.getBlockState().getValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING),time,.5f,.5f,1.5f/16,pose,out,light);
     }
 

@@ -141,7 +141,8 @@ public final class SceneReviewSocketClient {
         stop(mc);var van=b.offset(12,GROUND-1,-7);
         if(carrying(mc)){look(mc,van.getCenter().add(0,.5,0));click(mc,van,age,20);mark=age;return false;}
         // Out from behind the van and across the street, to look back up at the living room's window past the van's end.
-        var across=new Vec3[]{at(b,10.4,GROUND,-11.5),at(b,16.2,GROUND,-11.5)};
+        // 0.4.260: the van is backed onto the kerb, so the way across is along the pavement and round its nose.
+        var across=new Vec3[]{at(b,9.5,GROUND,-6.4),at(b,9.5,GROUND,-11.5),at(b,16.2,GROUND,-11.5)};
         if(!flag){if(walk(mc,across[route2],.3)){route2++;if(route2>=across.length){flag=true;mark=age;}}return false;}
         stop(mc);look(mc,at(b,8,1.5,-10.5));if(age-mark==30)shoot("A-flat-window-dark");
         return age-mark>40;

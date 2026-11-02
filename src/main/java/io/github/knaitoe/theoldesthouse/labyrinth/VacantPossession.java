@@ -8,6 +8,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -21,6 +26,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
@@ -33,6 +39,11 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * <p>
  * The flat's state belongs to the flat (its base), so readers who come in together empty it together; a reader on their own has their
  * own copy (SceneInstances). It starts again from the beginning when nobody has been in it for five seconds. Nothing in it can hurt.
+ * <p>
+ * 0.4.260: the pieces have weight. The bed and the wardrobe are heavy, the dresser, table and armchair a weight, the rest light: a
+ * reader carrying one alone is slowed by it, jumps lower with anything but the light things, cannot run with the heavy ones and drags
+ * them. Another reader in the flat with empty hands takes the other end with a right-click on the one carrying it (a third reader the
+ * middle), and the weight is shared between them; walking more than four blocks apart, or a second right-click, lets go.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class VacantPossession {
@@ -60,6 +71,10 @@ public final class VacantPossession {
         final Map<UUID,UUID> shown=new HashMap<>();
         final EnumMap<VacantBlock.Kind,Integer> van=new EnumMap<>(VacantBlock.Kind.class);
         final EnumMap<VacantBlock.Kind,UUID> carried=new EnumMap<>(VacantBlock.Kind.class);
+        /** 0.4.260: who has the other end of what each reader is carrying, in the order they took hold. */
+        final Map<UUID,List<UUID>> helping=new HashMap<>();
+        /** 0.4.260: where each reader carrying something alone stood last tick, to hear it dragged. */
+        final Map<UUID,Vec3> last=new HashMap<>();
         Flat(BlockPos b){base=b;}
         /** How many of the eight pieces on the list are in the van. */
         int loaded(){int n=0;for(var k:van.keySet())if(k!=VacantBlock.Kind.CHAIR)n++;return n;}
@@ -142,6 +157,103 @@ public final class VacantPossession {
         try{return VacantSite.piece(VacantBlock.Kind.valueOf(own.getString("Carrying228")));}catch(IllegalArgumentException e){return null;}
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.260, weight
+    /** How a piece weighs in the arms: what it takes from walking, and from a jump, carried alone. */
+    public enum Weight{
+        LIGHT(-.1,0),MEDIUM(-.25,-.2),HEAVY(-.45,-.45);
+        public final double speed,jump;Weight(double speed,double jump){this.speed=speed;this.jump=jump;}
+    }
+    public static Weight weight(VacantBlock.Kind k){return switch(k){case BED,WARDROBE->Weight.HEAVY;case DRESSER,TABLE,ARMCHAIR->Weight.MEDIUM;default->Weight.LIGHT;};}
+    /** Each reader's share of the weight with this many others holding it: alone all of it, two a third each, three a sixth. */
+    public static double share(int others){return others<=0?1:others==1?1/3D:1/6D;}
+    /** How far apart two readers carrying one piece can be before the other end is let go. */
+    public static final double HELP_REACH=4;
+    public static final int MAX_HELPERS=2;
+    static final ResourceLocation CARRY_SPEED=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"vacant_carry_speed");
+    static final ResourceLocation CARRY_JUMP=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"vacant_carry_jump");
+    /** Running with a heavy piece alone gets nothing for it: this undoes the sprint's own 0.3. */
+    static final ResourceLocation CARRY_RUN=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"vacant_carry_run");
+    static final double NO_RUN=1/1.3-1;
+    /** For tests: what a reader's walking is multiplied by now (1 when they carry nothing). */
+    public static double burden(ServerPlayer p){var a=p.getAttribute(Attributes.MOVEMENT_SPEED);var m=a==null?null:a.getModifier(CARRY_SPEED);return m==null?1:1+m.amount();}
+    public static double jumpBurden(ServerPlayer p){var a=p.getAttribute(Attributes.JUMP_STRENGTH);var m=a==null?null:a.getModifier(CARRY_JUMP);return m==null?1:1+m.amount();}
+    /** For tests: who has the other end of what this reader carries. */
+    public static List<UUID> helpers(BlockPos b,UUID carrier){var f=flat(b);return f==null?List.of():List.copyOf(f.helping.getOrDefault(carrier,List.of()));}
+    private static void modifier(ServerPlayer p,net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attr,ResourceLocation id,double amount){
+        var a=p.getAttribute(attr);if(a==null)return;var m=a.getModifier(id);
+        if(amount==0){if(m!=null)a.removeModifier(id);return;}
+        if(m!=null&&Math.abs(m.amount()-amount)<1e-6)return;
+        a.removeModifier(id);a.addTransientModifier(new AttributeModifier(id,amount,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+    }
+    static void weigh(ServerPlayer p,@Nullable Weight w,int others){
+        double s=w==null?0:share(others);
+        modifier(p,Attributes.MOVEMENT_SPEED,CARRY_SPEED,w==null?0:w.speed*s);
+        modifier(p,Attributes.JUMP_STRENGTH,CARRY_JUMP,w==null?0:w.jump*s);
+        modifier(p,Attributes.MOVEMENT_SPEED,CARRY_RUN,w==Weight.HEAVY&&others==0&&p.isSprinting()?NO_RUN:0);
+    }
+    static void unweigh(ServerPlayer p){weigh(p,null,0);}
+    /**
+     * The other end: a reader in the flat with empty hands takes hold of what another is carrying, or lets go of it again. Light things
+     * need no second pair of hands.
+     */
+    public static boolean help(ServerPlayer helper,ServerPlayer carrier){
+        if(helper==carrier||LiteraryVignettes.current(helper)!=PLACE||LiteraryVignettes.current(carrier)!=PLACE)return false;
+        var b=LiteraryVignettes.base(carrier,PLACE);if(b==null||!b.equals(LiteraryVignettes.base(helper,PLACE)))return false;
+        var flat=flat(b);if(flat==null)return false;
+        var piece=carrying(own(carrier));if(piece==null)return false;
+        var list=flat.helping.computeIfAbsent(carrier.getUUID(),k->new ArrayList<>());
+        if(list.remove(helper.getUUID())){
+            cue(helper,"You let go of the other end of "+piece.name()+".");cue(carrier,helper.getGameProfile().getName()+" lets go of "+piece.name()+".");
+            return true;
+        }
+        if(carrying(own(helper))!=null){cue(helper,"Your arms are full.");return true;}
+        if(!helper.getMainHandItem().isEmpty()){cue(helper,"You'd need both hands free.");return true;}
+        if(weight(piece.kind())==Weight.LIGHT){cue(helper,capital(piece.name())+" doesn't need two.");return true;}
+        if(list.size()>=MAX_HELPERS){cue(helper,"There's no room for another pair of hands on it.");return true;}
+        for(var other:flat.helping.values())other.remove(helper.getUUID());
+        list.add(helper.getUUID());
+        cue(helper,list.size()==1?"You take the other end of "+piece.name()+".":"You get your hands under the middle of "+piece.name()+".");
+        cue(carrier,helper.getGameProfile().getName()+(list.size()==1?" takes the other end.":" takes some of the weight too."));
+        return true;
+    }
+    @SubscribeEvent public static void interact(PlayerInteractEvent.EntityInteract e){
+        if(e.getHand()!=InteractionHand.MAIN_HAND||!(e.getEntity() instanceof ServerPlayer helper)||!(e.getTarget() instanceof ServerPlayer carrier))return;
+        if(LiteraryVignettes.current(helper)!=PLACE)return;
+        if(help(helper,carrier)){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}
+    }
+    /** Every reader in the flat feels what they are carrying, and what they are helping with; anyone else, nothing. */
+    static void weights(ServerLevel l,Flat flat){
+        var here=readers(l,flat.base);var byId=new HashMap<UUID,ServerPlayer>();for(var r:here)byId.put(r.getUUID(),r);
+        var held=new HashMap<UUID,VacantSite.Piece>();for(var r:here){var piece=carrying(own(r));if(piece!=null)held.put(r.getUUID(),piece);}
+        // Hands come off what nobody is carrying any more, and off a carrier who has walked too far from them.
+        for(var it=flat.helping.entrySet().iterator();it.hasNext();){
+            var e=it.next();var carrier=byId.get(e.getKey());var piece=held.get(e.getKey());
+            if(carrier==null||piece==null){it.remove();continue;}
+            for(var h=e.getValue().iterator();h.hasNext();){
+                var helper=byId.get(h.next());
+                if(helper==null){h.remove();continue;}
+                if(held.containsKey(helper.getUUID())||helper.distanceToSqr(carrier)>HELP_REACH*HELP_REACH){
+                    h.remove();cue(helper,"You've let go of "+piece.name()+".");cue(carrier,"You have all the weight of "+piece.name()+" again.");}
+            }
+            if(e.getValue().isEmpty())it.remove();
+        }
+        var helpingWith=new HashMap<UUID,UUID>();for(var e:flat.helping.entrySet())for(var h:e.getValue())helpingWith.put(h,e.getKey());
+        for(var r:here){
+            var piece=held.get(r.getUUID());
+            if(piece!=null){
+                int others=flat.helping.getOrDefault(r.getUUID(),List.of()).size();var w=weight(piece.kind());weigh(r,w,others);
+                // A heavy piece carried alone scrapes and knocks along the floor.
+                var was=flat.last.put(r.getUUID(),r.position());
+                if(w==Weight.HEAVY&&others==0&&was!=null&&r.onGround()&&was.distanceToSqr(r.position())>.0016&&flat.tick%8==0)
+                    l.playSound(null,r.blockPosition(),SoundEvents.WOOD_HIT,SoundSource.BLOCKS,.5F,.45F+l.random.nextFloat()*.1F);
+                continue;
+            }
+            flat.last.remove(r.getUUID());
+            var carrierId=helpingWith.get(r.getUUID());var carried=carrierId==null?null:held.get(carrierId);
+            if(carried!=null)weigh(r,weight(carried.kind()),flat.helping.get(carrierId).size());else unweigh(r);
+        }
+    }
+
     // ------------------------------------------------------------------------------------------------ right-clicks
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();var s=l.getBlockState(b.offset(rel));var kind=VacantBlock.kind(s);var flat=flat(b);
@@ -167,7 +279,8 @@ public final class VacantPossession {
             case HOOKS->{cue(p,"One coat on the hook by the door. It isn't on the list.");return true;}
             case MAILBOXES->{cue(p,"Four mailboxes. The one for the first floor has tape across its slot.");return true;}
             case DOCKET->{cue(p,own.getBoolean("Completed")?"The board on the van floor, where the docket was clipped.":"A removal docket, clipped to a board on the van floor, half filled in.");return true;}
-            case VAN_DOOR->{cue(p,"The van's back doors, swung open against its sides.");return true;}
+            case VAN_DOOR->{cue(p,"The van's back doors, swung right round and hooked back against its sides.");return true;}
+            case VAN_WHEEL->{cue(p,"A van wheel, the tread worn smooth on the kerb side.");return true;}
             case STREETLAMP,LIST->{return false;}
             default->{}
         }
@@ -192,7 +305,9 @@ public final class VacantPossession {
             case WARDROBE->" The wallpaper behind it is brighter.";
             default->"";
         };
-        cue(p,"You lift "+piece.name()+"."+hid);
+        var w=weight(piece.kind());boolean others=readers(l,b).size()>1;
+        String feel=switch(w){case HEAVY->others?" It's heavy. Someone could take the other end.":" It's heavy.";case MEDIUM->others?" Awkward on your own.":"";default->"";};
+        cue(p,"You lift "+piece.name()+"."+hid+feel);
         return true;
     }
     static boolean setDown(ServerPlayer p,BlockPos b,CompoundTag own,Flat flat,VacantSite.Piece piece){
@@ -306,6 +421,11 @@ public final class VacantPossession {
             if(!own.getBoolean("Completed"))reader(p,b,own,flat);
             else if(flat.after&&Aftermath.counted(p,PLACE))cue(p,kept(own.getString("Outcome"))?VacantTexts.AFTER_KEPT:VacantTexts.AFTER_EMPTY);
         }
+        // 0.4.260: nobody outside a flat carries any of its weight.
+        for(var p:server.getPlayerList().getPlayers()){
+            var b=LiteraryVignettes.current(p)==PLACE?LiteraryVignettes.base(p,PLACE):null;
+            if(b==null||p.isSpectator()||!p.isAlive()||!VacantSite.inside(rel(p.position(),b)))unweigh(p);
+        }
         for(var it=FLATS.values().iterator();it.hasNext();){var flat=it.next();if(seen.contains(flat.base.asLong())){flat.empty=0;continue;}
             if(++flat.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(flat.base)){clearActors(l,flat.base);VacantSite.reset(l,flat.base,true);}it.remove();}}
         // A piece carried out of the flat some other way (a door, a death, a logout) goes back to the reader's own things.
@@ -323,6 +443,7 @@ public final class VacantPossession {
         if(flat.tick==0){flat.after=afterOf(l,b);start(l,flat);}
         flat.tick++;
         if(flat.after)keptViews(l,flat);
+        weights(l,flat);
         var t=actor(l,flat.tenant);
         if(t!=null){
             switch(flat.seat){

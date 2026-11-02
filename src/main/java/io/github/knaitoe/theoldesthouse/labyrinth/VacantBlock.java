@@ -20,7 +20,9 @@ import net.minecraft.world.phys.shapes.*;
 public final class VacantBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<VacantBlock> CODEC=simpleCodec(VacantBlock::new);
     public enum Kind implements StringRepresentable {
-        DRESSER,RUG,BED,WARDROBE,TABLE,ARMCHAIR,BOXES,LAMP,CHAIR,MARKS,SCRATCHES,SQUARE,LIST,DOCKET,BULB,VAN_DOOR,MAILBOXES,STREETLAMP,RADIATOR,HOOKS;
+        DRESSER,RUG,BED,WARDROBE,TABLE,ARMCHAIR,BOXES,LAMP,CHAIR,MARKS,SCRATCHES,SQUARE,LIST,DOCKET,BULB,VAN_DOOR,MAILBOXES,STREETLAMP,RADIATOR,HOOKS,
+        /** 0.4.260: a van wheel, on the outside of its side, so the load bay's walls are plain panel inside. */
+        VAN_WHEEL;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** The pieces that go down to the van, the last chair among them. */
         public boolean piece(){return ordinal()<=CHAIR.ordinal();}
@@ -59,6 +61,7 @@ public final class VacantBlock extends HorizontalDirectionalBlock {
             case STREETLAMP->stage==0?Block.box(6,0,6,10,16,10):Block.box(4,0,0,12,6,16);
             case RADIATOR->box(f,1,1,12,15,11,16);
             case HOOKS->box(f,1,6,13,15,14,16);
+            case VAN_WHEEL->box(f,1,0,13,15,14,16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
