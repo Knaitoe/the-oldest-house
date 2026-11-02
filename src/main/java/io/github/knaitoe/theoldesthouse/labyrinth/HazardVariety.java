@@ -159,7 +159,18 @@ public final class HazardVariety {
             boolean answer=p.getZ()-b.getZ()<-30;double x=answer?b.getX()-14-(-4+4*r.own.getInt("MirrorDoor"))+.5:2*(b.getX()-6.5)-sample.x();double z=answer?b.getZ()-39:sample.z();float yaw=answer?0:-sample.yaw();HousePackets.send(p,HazardViewPayload.mirror(b,x,answer?b.getY():sample.y(),z,yaw,sample.pitch(),!answer&&sample.crouch(),answer?0:sample.stride()));}}
     private static void weight(BlockPos b,List<Reader> here){for(var r:here){var p=r.player;boolean heavy=p.getZ()-b.getZ()>-22;modifier(p,Attributes.GRAVITY,GRAVITY,heavy?2:-.65);modifier(p,Attributes.JUMP_STRENGTH,JUMP,heavy?-.5:.3);modifier(p,Attributes.FALL_DAMAGE_MULTIPLIER,FALL,-1);modifier(p,Attributes.MOVEMENT_SPEED,SPEED,heavy?-.2:0);
             if(heavy&&p.onClimbable()&&p.getDeltaMovement().y>.06)p.setDeltaMovement(p.getDeltaMovement().multiply(1,0,1).add(0,.06,0));if(!heavy&&p.getZ()-b.getZ()<-29&&p.getZ()-b.getZ()>-32&&p.getY()>b.getY()-.5){p.push(0,-.025,0);p.hurtMarked=true;}}}
-    public static double nestedScale(double relativeZ){return relativeZ<=-26?.34:relativeZ<=-17?.5:relativeZ<=-8?.7:1;}
+    /**
+     * How small the reader is at a depth into the nested rooms. 0.4.259 (owner: "even shrunk down, a player is still too small to
+     * enter this place"): each size used to begin at the face of the wall whose opening needed it, so a reader at the size before
+     * could never get far enough into that opening to become small enough for it, and stopped at the second arch. Now the reader
+     * shrinks across the middle of each parlour and reaches every opening already its size: the doorway at seven tenths, the first
+     * arch at a half, the second arch and the skirting gap at a third.
+     */
+    public static double nestedScale(double relativeZ){
+        if(relativeZ>=-2)return 1;if(relativeZ>=-6)return lerp(relativeZ,-2,-6,1,.7);if(relativeZ>=-11)return .7;
+        if(relativeZ>=-14)return lerp(relativeZ,-11,-14,.7,.5);if(relativeZ>=-20)return .5;if(relativeZ>=-23)return lerp(relativeZ,-20,-23,.5,.34);return .34;
+    }
+    private static double lerp(double z,double from,double to,double a,double b){return a+(b-a)*(z-from)/(to-from);}
     private static void nested(BlockPos b,List<Reader> here){for(var r:here)modifier(r.player,Attributes.SCALE,SCALE,nestedScale(r.player.getZ()-b.getZ())-1);}
     public static int landingAt(Vec3 pos,BlockPos b){for(int i=1;i<=7;i++){var at=b.offset(HazardMaps.landing(i));if(Math.abs(pos.y-at.getY())<.8&&Math.abs(pos.z-at.getZ())<2.1&&pos.x-b.getX()>-2.4&&pos.x-b.getX()<6.5)return i;}return 0;}
     private static void counting(BlockPos b,long clock,List<Reader> here){for(var r:here){int at=landingAt(r.player.position(),b);if(at>0&&at!=r.own.getInt("LastLanding")){int count=r.own.getInt("Landings");if(at==count+1){r.own.putInt("Landings",count+1);r.player.causeFoodExhaustion(.3F);}r.own.putInt("LastLanding",at);}else if(at==0)r.own.putInt("LastLanding",0);if(clock%400==0)r.player.causeFoodExhaustion(.25F);}}
