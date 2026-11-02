@@ -45,6 +45,60 @@ public final class GhostsSetTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="ghosts_room0490") public static void room0490Done(ServerLevel ignored){if(active!=null){active.close();active=null;}}
+    /**
+     * 0.4.247, ordinary errands between takes (docs/GHOSTS_ERRANDS_0_4_247.md): before the first day's take, Barry gets up from the
+     * monitors and crouches over the cable while he talks, then sits back down; then Sarah takes a plate from the table to the sink.
+     * Called to the take while she is on her way back, she comes back to her chair first, and the take waits for her.
+     */
+    @GameTest(template="empty",batch="ghosts_errands",timeoutTicks=3600)
+    public static void betweenTakesBarryAndSarahGoAboutErrandsAndTheTakeWaitsForThem(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_errands",P);var held=f.base(P);
+        f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(held.offset(-21,-5,-47)),Vec3.atLowerCornerOf(held.offset(22,13,1))));
+        java.util.function.Supplier<String> state=()->GhostsErrands.state(f.own(p,P));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the house is ready"))
+            .thenExecute(()->{
+                h.assertTrue(GhostsErrands.day(1).size()==2&&GhostsErrands.day(3).equals(java.util.List.of(GhostsErrands.Errand.BARRY_CABLE))&&GhostsErrands.day(5).isEmpty()&&GhostsErrands.day(6).isEmpty()&&GhostsErrands.day(7).isEmpty(),"errands on the earlier days only; from the fifth day nobody goes about anything");
+                var own=f.own(p,P);own.putInt("FilmDay",1);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);own.putInt("ShotClock",0);own.putBoolean("DayDone",false);own.remove(GhostsErrands.KEY);save(f,p,own);f.at(p,P,3,0,-14);})
+            .thenWaitUntil(()->h.assertTrue(state.get().startsWith("BARRY_CABLE/1/"),"Barry gets up and goes to the cable: "+state.get()))
+            .thenExecute(()->{var b=f.base(P);var barry=actor(f,p,LiteraryActor.GHOST_PRODUCER);
+                h.assertTrue(barry.phase()==GhostsSet.CROUCH&&Math.abs(barry.getX()-b.getX()-7.4)<.3&&Math.abs(barry.getZ()-b.getZ()+6.5)<.3&&Math.abs(barry.getY()-b.getY())<.1,"crouched over the cable by the den, on the floor: "+barry.position().subtract(Vec3.atLowerCornerOf(b)));
+                h.assertTrue(f.own(p,P).getInt("ShotClock")==0,"no take is running");})
+            .thenWaitUntil(()->h.assertTrue(state.get().equals("none/1"),"Barry's errand done: "+state.get()))
+            .thenExecute(()->{var b=f.base(P);var barry=actor(f,p,LiteraryActor.GHOST_PRODUCER);
+                h.assertTrue(barry.phase()==GhostsSet.SIT&&barry.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(7.5,GhostsSet.seatedHeight(barry.getScale()),-8.5))<.05,"back in his chair: "+barry.position().subtract(Vec3.atLowerCornerOf(b)));})
+            .thenWaitUntil(()->h.assertTrue(state.get().startsWith("SARAH_PLATE/0/")&&GhostsErrands.plateTaken(f.own(p,P)),"Sarah takes a plate from the table: "+state.get()))
+            .thenExecute(()->{var sarah=actor(f,p,LiteraryActor.GHOST_SARAH);h.assertTrue(sarah.getMainHandItem().is(GoatmanRegistry.PLATE.get())&&sarah.phase()==GhostsSet.STAND,"the plate in her hand");})
+            .thenWaitUntil(()->h.assertTrue(state.get().startsWith("SARAH_PLATE/1/"),"at the sink: "+state.get()))
+            .thenExecute(()->{var b=f.base(P);var sarah=actor(f,p,LiteraryActor.GHOST_SARAH);
+                h.assertTrue(sarah.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(-6.5,0,-23.4))<.1&&sarah.getMainHandItem().isEmpty(),"at the sink, the plate set down: "+sarah.position().subtract(Vec3.atLowerCornerOf(b)));})
+            .thenWaitUntil(()->h.assertTrue(state.get().startsWith("SARAH_PLATE/2/"),"on her way back: "+state.get()))
+            .thenExecute(()->{var own=f.own(p,P);own.putBoolean("Rolling",true);own.putInt("AcceptedScene131",2);save(f,p,own);f.at(p,P,3,0,-14);})
+            .thenIdle(20)
+            .thenExecute(()->h.assertTrue(f.own(p,P).getInt("ShotClock")==0&&GhostsErrands.busy(f.own(p,P)),"the take waits for her: "+state.get()))
+            .thenWaitUntil(()->h.assertTrue(state.get().equals("none/2"),"Sarah back in her chair: "+state.get()))
+            .thenExecute(()->{var b=f.base(P);var sarah=actor(f,p,LiteraryActor.GHOST_SARAH);
+                h.assertTrue(sarah.phase()==GhostsSet.SIT&&sarah.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(2.4,GhostsSet.seatedHeight(sarah.getScale()),-17.5))<.05,"seated where the day put her: "+sarah.position().subtract(Vec3.atLowerCornerOf(b)));})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("ShotClock")>0,"and then the take rolls"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="ghosts_errands") public static void errandsDone(ServerLevel ignored){if(active!=null){active.close();active=null;}}
+    /** 0.4.247: on the second day John goes back to the kitchen for his mug, sits down with it, and puts it down by his plate. */
+    @GameTest(template="empty",batch="ghosts_errand_mug",timeoutTicks=2400)
+    public static void johnGoesBackForHisMugAndSitsDownWithIt(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_mug",P);var held=f.base(P);
+        f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(held.offset(-21,-5,-47)),Vec3.atLowerCornerOf(held.offset(22,13,1))));
+        java.util.function.Supplier<String> state=()->GhostsErrands.state(f.own(p,P));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the house is ready"))
+            .thenExecute(()->{var own=f.own(p,P);own.putInt("FilmDay",2);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);own.putInt("ShotClock",0);own.putBoolean("DayDone",false);
+                var e=new CompoundTag();e.putInt("Wait",GhostsErrands.FIRST-5);own.put(GhostsErrands.KEY,e);save(f,p,own);f.at(p,P,3,0,-14);})
+            .thenWaitUntil(()->h.assertTrue(state.get().startsWith("JOHN_MUG/2/"),"on his way back from the kitchen: "+state.get()))
+            .thenExecute(()->h.assertTrue(actor(f,p,LiteraryActor.GHOST_JOHN).getMainHandItem().is(LiteraryRegistry.GHOSTS_MUG.get()),"his mug in his hand"))
+            .thenWaitUntil(()->h.assertTrue(state.get().startsWith("JOHN_MUG/4/"),"sitting down with it: "+state.get()))
+            .thenExecute(()->{var john=actor(f,p,LiteraryActor.GHOST_JOHN);h.assertTrue(john.phase()==GhostsSet.SIT&&john.getMainHandItem().is(LiteraryRegistry.GHOSTS_MUG.get()),"seated, still holding it");})
+            .thenWaitUntil(()->h.assertTrue(state.get().equals("none/1")&&actor(f,p,LiteraryActor.GHOST_JOHN).getMainHandItem().isEmpty(),"and then he puts it down: "+state.get()))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="ghosts_errand_mug") public static void errandMugDone(ServerLevel ignored){if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="ghosts_home0121") public static void homeDone(ServerLevel ignored){if(active!=null){active.close();active=null;}}
     @GameTest(template="empty",batch="ghosts_home0121",timeoutTicks=300)
     public static void theBarrettsHouseIsAHomeWithTheCrewInItAndEveryFilmingRouteStaysClear(GameTestHelper h){
