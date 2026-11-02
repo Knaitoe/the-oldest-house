@@ -77,8 +77,23 @@ public final class Nightclub {
         var area=bounds(b);for(int x=(b.getX()-16)>>4;x<=(b.getX()+16)>>4;x++)for(int z=(b.getZ()-49)>>4;z<=b.getZ()>>4;z++)if(!l.hasChunk(x,z)||!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return;
         if(l.players().stream().anyMatch(p->area.inflate(32).intersects(p.getCamera().getBoundingBox()))||!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,area,e->e.isAlive()&&!(e instanceof NightclubActor)).isEmpty())return;
         for(int x:new int[]{-2,2}){var at=b.offset(x,5,-45);if(l.getBlockState(at).isAir()&&l.getBlockEntity(at)==null)prop(l,b,x,5,-45,NightclubBlock.Kind.DJ_LIGHT,Direction.NORTH);}
-        var exit=b.offset(0,4,-1);if(l.getBlockState(exit).isAir()&&l.getBlockEntity(exit)==null)prop(l,b,0,4,-1,NightclubBlock.Kind.EXIT,Direction.NORTH);
+        // 0.4.240 (owner: "obvious error here"): the club has one EXIT sign over its door, the one it is built with; this pass no
+        // longer hangs a second above it.
         state.putBoolean(key,true);d.setState(STATE,state);
+    }
+    /** How long the speakers stay off before the DJ puts the music back on: forty-five seconds of a room going still. */
+    public static final int RESUME_TICKS=900;
+    /**
+     * 0.4.240 (owner: "the music should pulse out on its own"): the club's music is its own. A reader can switch it off at the desk;
+     * the floor goes still around them, and after a while the DJ reaches across and the bass comes back without anyone asking.
+     */
+    static void resume(ServerLevel l,BlockPos b,net.minecraft.world.level.block.state.BlockState mixer){
+        if(!mixer.is(NightclubRegistry.BLOCK.get()))return;var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String key="Silent0240_"+b.asLong();
+        if(mixer.getValue(NightclubBlock.STAGE)>0){if(state.contains(key)){state.remove(key);d.setState(STATE,state);}return;}
+        long now=l.getGameTime();if(!state.contains(key)){state.putLong(key,now);d.setState(STATE,state);return;}
+        if(now-state.getLong(key)<RESUME_TICKS)return;
+        l.setBlock(b.offset(MIXER),mixer.setValue(NightclubBlock.STAGE,1),3);state.remove(key);d.setState(STATE,state);
+        for(var p:l.players())if(p.isAlive()&&!p.isSpectator()&&bounds(b).contains(p.position()))p.displayClientMessage(net.minecraft.network.chat.Component.literal("The DJ reaches across the desk. The bass comes back.").withStyle(net.minecraft.ChatFormatting.GRAY),true);
     }
     public static void ensureCast(ServerLevel l,BlockPos b){
         var d=LabyrinthData.get(l.getServer());var state=d.state(STATE);String origin=Long.toString(b.asLong());var cast=state.getCompound(origin);
@@ -93,7 +108,7 @@ public final class Nightclub {
         if(server.getTickCount()%10==0){lights(l,b,false);finish(l,b);}
         if(l.players().stream().noneMatch(p->p.isAlive()&&!p.isSpectator()&&bounds(b).contains(p.position())))return;
         if(server.getTickCount()%10==0){IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.NIGHTCLUB);ensureCast(l,b);}
-        var mixer=l.getBlockState(b.offset(MIXER));boolean flash=strobe(l.getGameTime(),mixer.is(NightclubRegistry.BLOCK.get())&&mixer.getValue(NightclubBlock.STAGE)>0);
+        var mixer=l.getBlockState(b.offset(MIXER));resume(l,b,mixer);mixer=l.getBlockState(b.offset(MIXER));boolean flash=strobe(l.getGameTime(),mixer.is(NightclubRegistry.BLOCK.get())&&mixer.getValue(NightclubBlock.STAGE)>0);
         for(int z:new int[]{-21,-35}){var at=b.offset(0,8,z);var s=l.getBlockState(at);if(s.is(NightclubRegistry.BLOCK.get())&&s.getValue(NightclubBlock.KIND)==NightclubBlock.Kind.STROBE&&s.getValue(NightclubBlock.STAGE)!=(flash?1:0))l.setBlock(at,s.setValue(NightclubBlock.STAGE,flash?1:0),3);}
     }
 }

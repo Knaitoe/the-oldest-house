@@ -3,6 +3,7 @@
   "render_type": "minecraft:cutout",
   "textures": {
     "s": "the_oldest_house:block/trace/sheet",
+    "t": "the_oldest_house:block/trace/sheet_top",
     "particle": "the_oldest_house:block/trace/sheet"
   },
   "elements": [
@@ -31,10 +32,7 @@
           "texture": "#s"
         },
         "up": {
-          "texture": "#s"
-        },
-        "down": {
-          "texture": "#s"
+          "texture": "#t"
         }
       }
     },
@@ -63,10 +61,57 @@
           "texture": "#s"
         },
         "up": {
-          "texture": "#s"
+          "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.25,
+        0,
+        -0.25
+      ],
+      "to": [
+        16.25,
+        1,
+        16.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
         },
-        "down": {
-          "texture": "#s"
+        "south": {
+          "texture": "#s",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            0,
+            15,
+            16,
+            16
+          ]
         }
       }
     }

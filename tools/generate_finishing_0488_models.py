@@ -19,7 +19,8 @@ def write(path, value):
 def main():
     notes = {'case': 'minecraft:block/cyan_terracotta', 'rim': 'minecraft:block/iron_block',
              'paper': 'minecraft:block/white_wool', 'ink': 'minecraft:block/gray_concrete', 'leg': 'minecraft:block/spruce_planks'}
-    parts = [box([3,0,3,5,12,5], 'leg'), box([11,0,11,13,12,13], 'leg'), box([1,12,1,15,13,15], 'rim'),
+    # 0.4.240 (owner: "legs out of sync on plains vignette"): four legs, one under each corner, not two on a diagonal.
+    parts = [box([x,0,z,x+2,12,z+2], 'leg') for x in (2,12) for z in (2,12)] + [box([1,12,1,15,13,15], 'rim'),
              box([1,13,1,15,15,15], 'case'), box([2,15,2,14,15.3,11], 'paper'), box([3,15.3,2,13,15.5,10], 'paper'),
              box([1,15,12,15,22,14], 'case'), box([1,21,12,15,22,14], 'rim'), box([7,14,0.5,9,16,1.5], 'rim')]
     for y in range(4):

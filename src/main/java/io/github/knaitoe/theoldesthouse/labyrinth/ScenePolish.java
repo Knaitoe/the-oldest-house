@@ -552,19 +552,60 @@ public final class ScenePolish {
                 changed += 5;
                 boolean snowy = top.is(Blocks.SNOW_BLOCK);
                 BlockState leaves = Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+                // 0.4.240 (owner, on the plain: "let's make trees more appropriate to plains"): the plain and any other dry ground
+                // (sandstone, red sand; a lake's sand beach keeps its pine woods) grows flat-topped acacias and dead brush, and ends in
+                // a dune ridge rather than a wall of spruce.
+                boolean dry = place == LabyrinthPlace.PLAIN || top.is(Blocks.SANDSTONE) || top.is(Blocks.RED_SAND);
+                int hash = Math.floorMod(x * 734287 + z * 912931 + place.ordinal() * 31, 97);
                 if (distance >= BORDER - 1) {
+                    if (dry) {
+                        // The far edge is a dune too high to see over, in steps.
+                        int ridge = 6 + Math.floorMod(x + z, 3) + (distance >= BORDER ? 2 : 0);
+                        for (int y = surface + 1; y <= surface + ridge; y++)
+                            level.setBlock(base.offset(x, y, z), (y == surface + ridge ? Blocks.SAND : Blocks.SANDSTONE).defaultBlockState(), FLAGS);
+                        changed += ridge;
+                        continue;
+                    }
                     // The far edge is undergrowth too thick to see through.
                     for (int y = surface + 1; y <= surface + 9; y++) level.setBlock(base.offset(x, y, z), leaves, FLAGS);
                     changed += 9;
                     continue;
                 }
-                int hash = Math.floorMod(x * 734287 + z * 912931 + place.ordinal() * 31, 97);
+                if (dry) {
+                    BlockPos root = base.offset(x, surface + 1, z);
+                    if (distance >= 2 && hash < 5) changed += acacia(level, root, 4 + hash % 2, hash);
+                    else if (distance >= 1 && hash > 82 && level.getBlockState(root).isAir())
+                        level.setBlock(root, Blocks.DEAD_BUSH.defaultBlockState(), FLAGS);
+                    continue;
+                }
                 if (distance >= 2 && hash < 11 && !top.is(Blocks.SAND)) changed += spruce(level, base.offset(x, surface + 1, z), 6 + hash % 5, leaves);
                 else if (distance >= 1 && hash > 80 && top.is(Blocks.GRASS_BLOCK))
                     level.setBlock(base.offset(x, surface + 1, z), (hash % 2 == 0 ? Blocks.FERN : Blocks.SHORT_GRASS).defaultBlockState(), FLAGS);
                 else if (snowy && level.getBlockState(base.offset(x, surface + 1, z)).isAir() && hash % 3 == 0)
                     level.setBlock(base.offset(x, surface + 1, z), Blocks.SNOW.defaultBlockState(), FLAGS);
             }
+        return changed;
+    }
+
+    /** 0.4.240: an acacia of the savanna shape: a trunk that leans one way partway up, under a flat crown and a smaller one over it. */
+    private static int acacia(ServerLevel level, BlockPos root, int height, int hash) {
+        Direction lean = Direction.from2DDataValue(hash % 4);
+        int bend = 2, changed = 0;
+        BlockPos top = root.relative(lean, height - bend).above(height);
+        for (int y = 0; y <= height + 2; y++) if (!level.getBlockState(root.above(y)).canBeReplaced()) return 0;
+        BlockState log = Blocks.ACACIA_LOG.defaultBlockState(), leaf = Blocks.ACACIA_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+        for (int y = 0; y < bend; y++) { level.setBlock(root.above(y), log, FLAGS); changed++; }
+        for (int i = 1; i <= height - bend; i++) { level.setBlock(root.relative(lean, i).above(bend - 1 + i), log, FLAGS); changed++; }
+        level.setBlock(top.below(), log, FLAGS);
+        for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) {
+            if (Math.abs(dx) + Math.abs(dz) > 4 || Math.abs(dx) == 3 && Math.abs(dz) == 3) continue;
+            BlockPos at = top.offset(dx, 0, dz);
+            if (level.getBlockState(at).isAir()) { level.setBlock(at, leaf, FLAGS); changed++; }
+        }
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) {
+            BlockPos at = top.offset(dx, 1, dz);
+            if (level.getBlockState(at).isAir()) { level.setBlock(at, leaf, FLAGS); changed++; }
+        }
         return changed;
     }
 

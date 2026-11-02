@@ -72,6 +72,25 @@ public final class UncannyBranchTests {
         h.assertTrue(other.getBoolean("StoopingSeen")&&!other.getBoolean("Completed")&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.TUNNEL_PERIPHERY),"looking back unlocks knowledge, not another player's escape credit");
     });}
     @AfterBatch(batch="branch_tunnel") public static void tunnelDone(ServerLevel l){close();}
+    /** 0.4.240 (owner: "bent necked woman doesnt properly reset once players exit the vignette"). */
+    @GameTest(template="empty",batch="branch_tunnel_home",timeoutTicks=300) public static void theBentNeckedWomanGoesHomeWhenHerReaderLeavesAndWhenTheyComeBack(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("tunnel_home_reader",place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(f.base(place),place));
+        final LiteraryActor[] giant={null};final BlockPos[] home={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual tunnel and her body loaded")).thenExecute(()->{
+            step(f,p,place);giant[0]=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(giant[0]!=null,"she stands folded at the far end");home[0]=giant[0].blockPosition();
+            // Mid-chase, the reader walks out.
+            giant[0].appearance(LiteraryActor.UNCANNY_GIANT,2);TunnelStride.placeOriginal(giant[0],Vec3.atBottomCenterOf(f.base(place).offset(0,0,-40)));
+            p.teleportTo(f.level(place),f.base(place).getX()+.5,f.base(place).getY(),f.base(place).getZ()+60,0,0);
+        }).thenIdle(25).thenExecute(()->{
+            h.assertTrue(giant[0].phase()==0&&giant[0].blockPosition().distManhattan(home[0])<=1,"with her reader gone she is back at the far end, folded: "+giant[0].position()+" phase "+giant[0].phase()+" home "+home[0]);
+            // Through, then out and back some time later: she is folded at the far end again, the passage kept.
+            var own=f.own(p,place);own.putBoolean("TunnelPassed130",true);own.putBoolean("Completed",true);own.putLong("TunnelSeen201",f.level(place).getGameTime()-200);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            f.at(p,place,.5,0,-6);giant[0].appearance(LiteraryActor.UNCANNY_GIANT,2);TunnelStride.placeOriginal(giant[0],Vec3.atBottomCenterOf(f.base(place).offset(0,0,-40)));
+            own=step(f,p,place);
+            h.assertTrue(giant[0].phase()==0&&giant[0].blockPosition().distManhattan(home[0])<=1&&own.getBoolean("Completed"),"coming back finds her at her place, and the passage is still made: "+giant[0].position());
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="branch_tunnel_home") public static void tunnelHomeDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="branch_bedroom",timeoutTicks=300) public static void directSightAllowsEarlyDoorInterventionWithoutAFourFeedChecklist(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         var place=LabyrinthPlace.MISSING_SLEEP;var peer=f.player("branch_sleep_peer",place);f.click(p,place,UncannyRooms.BED_AT);f.click(p,place,UncannyRooms.BED_AT);
         var doll=UncannyStories.actor(p,f.own(p,place),"CastDoll");f.at(p,place,1.5,5,-23);look(p,doll);var own=step(f,p,place);h.assertTrue(own.getBoolean("MarionetteSeen")&&!own.getBoolean("OwnFaceSeen"),"direct physical view is its own branch");

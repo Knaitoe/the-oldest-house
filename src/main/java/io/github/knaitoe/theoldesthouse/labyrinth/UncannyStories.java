@@ -65,7 +65,7 @@ public final class UncannyStories {
                 var s=new ItemStack(UncannyRegistry.MEAL.get());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID("UncannyMealOwner",p.getUUID());t.putUUID("UncannyMeal",UUID.randomUUID());});own.put("OriginalMeal",s.save(p.registryAccess()));
             }
         }
-        if(place==LabyrinthPlace.TUNNEL_PERIPHERY)create(p.serverLevel(),b,place,own,"CastGiant",LiteraryActor.UNCANNY_GIANT,new BlockPos(0,0,TunnelPassage.extended(p.serverLevel(),b)?TunnelPassage.WALL+2:-71),p.getUUID());
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY){var giant=create(p.serverLevel(),b,place,own,"CastGiant",LiteraryActor.UNCANNY_GIANT,giantHome(p.serverLevel(),b).subtract(b),p.getUUID());if(giant!=null)TunnelStride.remember(giant,giantHome(p.serverLevel(),b));}
         if(place==LabyrinthPlace.MISSING_SLEEP){create(p.serverLevel(),b,place,own,"CastParentA",LiteraryActor.UNCANNY_PARENT,SplitFeedNight.BED_A,p.getUUID());create(p.serverLevel(),b,place,own,"CastParentB",LiteraryActor.UNCANNY_PARENT,SplitFeedNight.BED_B,p.getUUID());SplitFeedNight.parents(p,b,own);}
         if(place==LabyrinthPlace.MISSING_SLEEP){var doll=create(p.serverLevel(),b,place,own,"CastDoll",LiteraryActor.UNCANNY_MARIONETTE,new BlockPos(1,5,-27),p.getUUID());if(doll!=null&&!own.getBoolean("DollBatGiven")){doll.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(UncannyRegistry.BAT.get()));own.putBoolean("DollBatGiven",true);}}
         if(place==LabyrinthPlace.MOTION_LIGHT)create(p.serverLevel(),b,place,own,"CastVisitor",LiteraryActor.UNCANNY_VISITOR,new BlockPos(0,0,-18),p.getUUID());
@@ -108,12 +108,17 @@ public final class UncannyStories {
      */
     static void reenter(ServerPlayer p,BlockPos b,CompoundTag own){
         long now=p.serverLevel().getGameTime(),last=own.getLong("TunnelSeen201");own.putLong("TunnelSeen201",now);
-        if(last==0||now-last<=AWAY_TICKS||own.getBoolean("Completed")||own.getBoolean("TunnelPassed130"))return;
+        if(last==0||now-last<=AWAY_TICKS)return;
+        // 0.4.240 (owner: "bent necked woman doesnt properly reset once players exit the vignette"): she is folded at the far end
+        // again whenever the reader comes back, a passage made or not; only the reader's progress is kept once they are through.
+        var giant=actor(p,own,"CastGiant");
+        if(giant!=null)TunnelStride.home(giant,giantHome(p.serverLevel(),b));
+        if(own.getBoolean("Completed")||own.getBoolean("TunnelPassed130"))return;
         for(var key:List.of("UncannyFailed","Failure","Ready","GreenSteps","LastX","LastZ","TunnelStarted127","UncannyStage"))own.remove(key);
         own.putInt("UncannyAge",0);
-        var giant=actor(p,own,"CastGiant");
-        if(giant!=null){giant.appearance(LiteraryActor.UNCANNY_GIANT,0);TunnelStride.placeOriginal(giant,Vec3.atBottomCenterOf(b.offset(0,0,TunnelPassage.WALL+2)));}
     }
+    /** Where the bent-necked woman stands folded, at the tunnel's far end. */
+    static BlockPos giantHome(ServerLevel l,BlockPos b){return b.offset(0,0,TunnelPassage.extended(l,b)?TunnelPassage.WALL+2:-71);}
     static void ready(ServerPlayer p,LabyrinthPlace place,CompoundTag own,String outcome){if(LiteraryVignettes.participant(p)&&!failed(own)){LiteraryVignettes.ready(p,place,own,outcome);UncannyReading.resolve(p,place,own);}}
     private static boolean seen(ServerPlayer p,LiteraryActor a){return a!=null&&HouseWatchers.sees(p,a.getEyePosition());}
     private static void observe(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){

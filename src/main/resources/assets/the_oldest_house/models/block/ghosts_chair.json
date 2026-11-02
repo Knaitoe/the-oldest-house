@@ -1,7 +1,8 @@
 {
   "textures": {
     "cloth": "the_oldest_house:block/ghosts/materials_atlas",
-    "wood": "the_oldest_house:block/ghosts/materials_atlas"
+    "wood": "the_oldest_house:block/ghosts/materials_atlas",
+    "particle": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {

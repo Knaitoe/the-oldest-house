@@ -1,7 +1,8 @@
 {
   "textures": {
     "red": "the_oldest_house:block/ghosts/materials_atlas",
-    "denim": "the_oldest_house:block/ghosts/materials_atlas"
+    "denim": "the_oldest_house:block/ghosts/materials_atlas",
+    "particle": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {

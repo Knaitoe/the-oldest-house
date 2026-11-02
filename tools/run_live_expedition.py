@@ -13,9 +13,11 @@ os.chdir(ROOT)
 borrasca_only = "--borrasca-only" in sys.argv[1:]
 uncanny_only = "--uncanny-only" in sys.argv[1:]
 backseat_only = "--backseat-only" in sys.argv[1:]
-proof_flags = ["-PbackseatSocketSmoke"] if backseat_only else (["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else []))
-proof_root = ROOT / ("run-backseat-live" if backseat_only else ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live")))
-report = ROOT / ("build/backseat-live-proof" if backseat_only else ("build/uncanny-live-proof" if uncanny_only else ("build/borrasca-live-proof" if borrasca_only else "build/live-proof")))
+# 0.4.240: the pool and the flat looked at in play (a review aid, not a CI gate).
+scenes_only = "--scenes-only" in sys.argv[1:]
+proof_flags = ["-PsceneReviewSocketSmoke"] if scenes_only else ["-PbackseatSocketSmoke"] if backseat_only else (["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else []))
+proof_root = ROOT / ("run-scene-review-live" if scenes_only else "run-backseat-live" if backseat_only else ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live")))
+report = ROOT / ("build/scene-review-live-proof" if scenes_only else "build/backseat-live-proof" if backseat_only else ("build/uncanny-live-proof" if uncanny_only else ("build/borrasca-live-proof" if borrasca_only else "build/live-proof")))
 if backseat_only and ((proof_root / "server/world/level.dat").exists() or any((report / name).exists() for name in ("passed.txt", "failed.txt", "restart-b.txt"))):
     raise SystemExit("Backseat proof requires a fresh isolated world and report. Preserve the previous run-backseat-live and build/backseat-live-proof folders elsewhere before rerunning.")
 report.mkdir(parents=True, exist_ok=True)
@@ -85,7 +87,8 @@ def wait_for(check, seconds, context):
             started = ("phase 2" in text
                        or backseat_only and "BACKSEAT SOCKET phase 1" in text
                        or uncanny_only and "UNCANNY SOCKET phase 1" in text
-                       or borrasca_only and "LIVE EXPEDITION phase 54" in text)
+                       or borrasca_only and "LIVE EXPEDITION phase 54" in text
+                       or scenes_only and "LIVE EXPEDITION phase 63" in text)
             if started and quiet_since != stalled_at and time.time() - quiet_since >= 10:
                 stalls += 1
                 stalled_at = quiet_since
@@ -149,6 +152,13 @@ try:
         native_log = (server / "logs/latest.log").read_text(errors="replace")
         assert "Seeding the house interior in the background." not in native_log, "The isolated uncanny fixture started an unrelated manor terrain copy."
         assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
+        print((report / "passed.txt").read_text(), flush=True)
+        raise SystemExit(0)
+    if scenes_only:
+        wait_for(lambda: (report / "passed.txt").exists(), 900, "the pool and the flat in play")
+        for p in processes:
+            p.wait(timeout=90)
+        assert (report / "scene-review-passed.txt").is_file()
         print((report / "passed.txt").read_text(), flush=True)
         raise SystemExit(0)
     if borrasca_only:

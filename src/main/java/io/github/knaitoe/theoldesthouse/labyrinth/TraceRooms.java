@@ -102,9 +102,11 @@ public final class TraceRooms {
             if(l.getBlockState(b.offset(x,0,z)).isAir()&&l.getBlockState(b.offset(x,-1,z)).isSolid())set(l,b,x,0,z,floor);
     }
 
+    /** 0.4.240: a sheet with another over it is the lower block of one tall covered piece (stage 1), the one on top its upper block (2). */
+    static int sheetStage(BlockPos at){var all=List.of(DUST_SHEETS);return all.contains(at.above())?1:all.contains(at.below())?2:0;}
     public static void buildDust(ServerLevel l,BlockPos b){
         shell(l,b,DUST);
-        for(var at:DUST_SHEETS)set(l,b,at,TraceBlock.of(TraceBlock.Kind.SHEET,Direction.NORTH));
+        for(var at:DUST_SHEETS)set(l,b,at,TraceBlock.of(TraceBlock.Kind.SHEET,Direction.NORTH,sheetStage(at)));
         set(l,b,DUST_TABLE,TraceBlock.of(TraceBlock.Kind.TABLE,Direction.NORTH));
         set(l,b,DUST_CHAIR,TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.EAST,1));
         for(var at:List.of(new BlockPos(-3,5,-1),new BlockPos(3,5,-18),new BlockPos(-3,5,-35)))set(l,b,at,Blocks.COBWEB.defaultBlockState());

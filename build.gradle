@@ -30,11 +30,12 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 def goatmanBedSocketSmoke = providers.gradleProperty('goatmanBedSocketSmoke').isPresent()
 def borrascaSocketSmoke = providers.gradleProperty('borrascaSocketSmoke').isPresent()
+def sceneReviewSocketSmoke = providers.gradleProperty('sceneReviewSocketSmoke').isPresent()
 def uncannySocketSmoke = providers.gradleProperty('uncannySocketSmoke').isPresent()
 def tailoringSocketSmoke = providers.gradleProperty('tailoringSocketSmoke').isPresent()
 def backseatSocketSmoke = providers.gradleProperty('backseatSocketSmoke').isPresent()
-def proofRoot = tailoringSocketSmoke ? 'run-tailoring-live' : goatmanBedSocketSmoke ? 'run-goatman-bed137' : backseatSocketSmoke ? 'run-backseat-live' : uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
-def proofReport = tailoringSocketSmoke ? 'build/tailoring-live-proof' : goatmanBedSocketSmoke ? 'build/goatman-bed137-proof' : backseatSocketSmoke ? 'build/backseat-live-proof' : uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
+def proofRoot = sceneReviewSocketSmoke ? 'run-scene-review-live' : tailoringSocketSmoke ? 'run-tailoring-live' : goatmanBedSocketSmoke ? 'run-goatman-bed137' : backseatSocketSmoke ? 'run-backseat-live' : uncannySocketSmoke ? 'run-uncanny-live' : borrascaSocketSmoke ? 'run-borrasca-live' : 'run-live'
+def proofReport = sceneReviewSocketSmoke ? 'build/scene-review-live-proof' : tailoringSocketSmoke ? 'build/tailoring-live-proof' : goatmanBedSocketSmoke ? 'build/goatman-bed137-proof' : backseatSocketSmoke ? 'build/backseat-live-proof' : uncannySocketSmoke ? 'build/uncanny-live-proof' : borrascaSocketSmoke ? 'build/borrasca-live-proof' : 'build/live-proof'
 
 neoForge {
     version = project.neo_version
@@ -82,6 +83,8 @@ neoForge {
             }
             if(providers.gradleProperty('houseReadSmoke').isPresent()){systemProperty 'the_oldest_house.houseReadSmoke','true'}
             if(providers.gradleProperty('dareSmoke').isPresent()){systemProperty 'the_oldest_house.dareSmoke','true'}
+            if(providers.gradleProperty('splashSmoke').isPresent()){systemProperty 'the_oldest_house.splashSmoke','true'}
+            if(providers.gradleProperty('uvSmoke').isPresent()){systemProperty 'the_oldest_house.uvSmoke','true'}
             if (providers.gradleProperty('goatmanMealSmoke').isPresent()) {
                 systemProperty 'the_oldest_house.goatmanMealSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
@@ -167,6 +170,7 @@ neoForge {
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
             systemProperty 'the_oldest_house.uncannySocketSmoke', uncannySocketSmoke.toString()
             systemProperty 'the_oldest_house.borrascaSocketSmoke', borrascaSocketSmoke.toString()
+            systemProperty 'the_oldest_house.sceneReviewSocketSmoke', sceneReviewSocketSmoke.toString()
             systemProperty 'the_oldest_house.backseatSocketSmoke', backseatSocketSmoke.toString()
             systemProperty 'the_oldest_house.liveProofDir', project.file(proofReport).absolutePath
         }

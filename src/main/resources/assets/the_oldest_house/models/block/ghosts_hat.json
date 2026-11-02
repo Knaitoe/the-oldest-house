@@ -1,6 +1,7 @@
 {
   "textures": {
-    "hat": "the_oldest_house:block/ghosts/equipment_atlas"
+    "hat": "the_oldest_house:block/ghosts/equipment_atlas",
+    "particle": "the_oldest_house:block/ghosts/equipment_atlas"
   },
   "elements": [
     {

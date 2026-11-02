@@ -64,6 +64,8 @@ public final class VignetteHandlingTests {
   var f=new LiteraryTests.Fixture(h,144);workshop=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();var room=LabyrinthPlace.MINIATURES;var l=f.level(room);var b=f.base(room);f.chunks.hold(l,SceneReview.area(b,room));
   h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual workshop sections resident")).thenExecute(()->{
    f.build(room);ScenePolish.polishOnce(l,f.origin,room);
+  // The build and its refit place their blocks in bounded slices; on a slow runner the spare kit can land a few ticks later.
+  }).thenWaitUntil(()->h.assertTrue(l.getBlockEntity(b.offset(-10,1,-10)) instanceof VignetteHandlingBlockEntity&&l.getBlockEntity(b.offset(LiteraryRooms.source(room)))!=null&&java.util.stream.IntStream.of(-8,0,8).allMatch(x->l.getBlockEntity(b.offset(x,1,-18))!=null),"the workshop's refit has placed the spare kit; found "+l.getBlockState(b.offset(-10,1,-10)))).thenExecute(()->{
    var originals=List.of(l.getBlockEntity(b.offset(-8,1,-18)),l.getBlockEntity(b.offset(0,1,-18)),l.getBlockEntity(b.offset(8,1,-18)));
    var originalData=originals.stream().map(o->o.getUpdateTag(l.registryAccess()).copy()).toList();var source=l.getBlockEntity(b.offset(LiteraryRooms.source(room)));
    var kit=(VignetteHandlingBlockEntity)l.getBlockEntity(b.offset(-10,1,-10));h.assertTrue(kit!=null,"the spare kit occupies the workbench, not a story-model stand");var p=reader(h,"model_maker");

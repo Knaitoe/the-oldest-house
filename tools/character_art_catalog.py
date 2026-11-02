@@ -33,8 +33,9 @@ def entry(name,logical):
     elif name.startswith(('hotel_','stanley_')):
         role=name.split('_',1)[1];row.update(model='hotel',number=HOTEL.index(role))
     elif name.startswith('nightclub_'):
-        role=name[10:];despair=role.endswith('_despair')
+        role=name[10:];despair=role.endswith('_despair');unsure=role.endswith('_unsure')
         if despair:role=role[:-8]
+        if unsure:role=role[:-7]
         row.update(model='club',number=CLUB.index(role),phase=int(despair))
     elif name.startswith('seance_'):
         row.update(model='seance',number=['medium','mother','father','daughter'].index(name[7:]))

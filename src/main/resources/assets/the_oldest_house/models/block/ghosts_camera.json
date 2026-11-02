@@ -1,7 +1,8 @@
 {
   "textures": {
     "metal": "the_oldest_house:block/ghosts/materials_atlas",
-    "controls": "the_oldest_house:block/ghosts/equipment_atlas"
+    "controls": "the_oldest_house:block/ghosts/equipment_atlas",
+    "particle": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {

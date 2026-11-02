@@ -5,7 +5,8 @@
     "noodle": "minecraft:block/sandstone_top",
     "bread": "minecraft:block/brown_mushroom_block",
     "green": "minecraft:block/moss_block",
-    "potato": "minecraft:block/stripped_oak_log"
+    "potato": "minecraft:block/stripped_oak_log",
+    "particle": "the_oldest_house:block/ghosts/meals_atlas"
   },
   "render_type": "minecraft:cutout",
   "ambientocclusion": false,
