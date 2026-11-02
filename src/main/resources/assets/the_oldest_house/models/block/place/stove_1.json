@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/place/stove",
+    "e": "the_oldest_house:block/place/china",
+    "h": "the_oldest_house:block/place/hob_1",
+    "particle": "the_oldest_house:block/place/stove"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#h"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    }
+  ]
+}

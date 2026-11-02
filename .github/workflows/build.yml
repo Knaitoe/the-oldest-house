@@ -94,6 +94,7 @@ jobs:
           python3 tools/draw_winch_fittings.py --check
           python3 tools/draw_exchange_fittings.py --check
           python3 tools/draw_people_lights_art.py --check
+          python3 tools/draw_place_for_you_art.py --check
           python3 tools/generate_people_lights_audio.py --check
           python3 tools/draw_power_fittings.py --check
           python3 tools/generate_power_audio.py --check

@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("120")
+        event.registrar("121")
                 .playToClient(PolybiusBrawlPayload.TYPE,PolybiusBrawlPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolybiusBrawlScreen.accept(payload)))
                 .playToServer(PolybiusBrawlKeysPayload.TYPE,PolybiusBrawlKeysPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.PolybiusBrawl.keys(p,payload.keys());}))
                 .playToClient(PolybiusPayload.TYPE,PolybiusPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolybiusScreen.accept(payload)))
@@ -41,6 +41,8 @@ public final class HouseNetwork {
                 .playToClient(HouseBodiesPayload.TYPE,HouseBodiesPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseBodyClient.accept(payload)))
                 .playToClient(UncannyViewPayload.TYPE,UncannyViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.UncannyClient.accept(payload)))
                 .playToServer(UncannyCameraPayload.TYPE,UncannyCameraPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.UncannySenses.camera(p,payload);}))
+                .playToClient(TalkPayload.TYPE,TalkPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.TalkScreen.accept(payload)))
+                .playToServer(TalkReplyPayload.TYPE,TalkReplyPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.Talk.reply(p,payload.token(),payload.reply());}))
                 .playToClient(HarriganPhonePayload.TYPE,HarriganPhonePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HarriganPhoneScreen.accept(payload)))
                 .playToServer(HarriganPhoneActionPayload.TYPE,HarriganPhoneActionPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette.phoneAction(p,payload.action(),payload.text());}))
                 .playToServer(ShallowsSwingPayload.TYPE,ShallowsSwingPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.Shallows.swing(p,payload.side());}))

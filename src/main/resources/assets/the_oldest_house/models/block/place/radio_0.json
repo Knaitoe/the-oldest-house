@@ -1,0 +1,49 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "the_oldest_house:block/place/wood",
+    "r": "the_oldest_house:block/place/radio",
+    "particle": "the_oldest_house:block/place/radio"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        5
+      ],
+      "to": [
+        14,
+        9,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r",
+          "uv": [
+            2,
+            7,
+            14,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    }
+  ]
+}

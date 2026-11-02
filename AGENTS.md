@@ -15,7 +15,7 @@
 - **Witness** stays derived and hard: currently 72 sources / 54 required / two kinds / three endings. The cases pin these in one place, `gametest/WitnessPool`.
 - **Literature travels with mechanics:** a change to a room changes its account, its Witness line, its House of Leaves fact and any keepsake line ("Ensure you're updating literature too").
 - **House writing** never genders the reader and never names a colour or an age. "House" is blue everywhere; "Minotaur" is red in literature only.
-- **Speech is never chat:** people speak through displays and the action bar; `sendSystemMessage` is for operators.
+- **Speech is never chat:** people speak through displays and the action bar; `sendSystemMessage` is for operators. A conversation that asks the reader something uses `Talk` (the conversation panel, 0.4.257): lines, then replies the reader picks; a reply is honoured once.
 - "Start running with it. I'll edit as needed": build, then let the owner edit.
 - Never put a model identifier in a commit message, PR text, code comment or any pushed artifact.
 
