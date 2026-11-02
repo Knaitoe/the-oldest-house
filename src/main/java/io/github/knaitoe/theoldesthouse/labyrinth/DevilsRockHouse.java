@@ -141,9 +141,20 @@ public final class DevilsRockHouse {
         fit(l, b, -3, 0, -17, VignetteInteriorBlock.Kind.WATCHROOM_TRIPOD_CASE, Direction.WEST);fit(l, b, -3, 1, -17, VignetteInteriorBlock.Kind.WATCHROOM_TAPE, Direction.WEST);
         set(l, b, -12, 2, -11, SceneDetailBlock.state(SceneDetailBlock.Kind.FRAME, Direction.EAST));
         set(l, b, -6, 2, -9, SceneDetailBlock.state(SceneDetailBlock.Kind.CLOCK, Direction.NORTH));
+        // 0.4.241 (the owner: "add more family details to the house... the same lived-in nature as the barret home", their own
+        // pieces, tools/devils_rock_household.py): the coffee table with the papers and the tissues, the basket of laundry by her
+        // chair, the plant nobody waters, the three of them at a lake one summer, and his school photograph.
+        dr(l, b, -7, 0, -13, VignetteDetailBlock.Kind.SANDERSON_COFFEE_TABLE, Direction.EAST);
+        dr(l, b, -9, 0, -18, VignetteDetailBlock.Kind.SANDERSON_LAUNDRY, Direction.SOUTH);
+        dr(l, b, -12, 0, -9, VignetteDetailBlock.Kind.SANDERSON_PLANT, Direction.NORTH);
+        dr(l, b, -11, 2, -9, VignetteDetailBlock.Kind.SANDERSON_PHOTO, Direction.NORTH);
+        dr(l, b, -12, 2, -15, VignetteDetailBlock.Kind.TOMMY_PHOTO, Direction.EAST);
         // ---- the entry: shoes and coats by the door
         set(l, b, -2, 0, -9, SceneDetailBlock.state(SceneDetailBlock.Kind.SHOES, Direction.EAST));
         set(l, b, 2, 2, -9, SceneDetailBlock.state(SceneDetailBlock.Kind.COAT, Direction.NORTH));
+        // His jacket still on its peg beside theirs; the mail nobody has opened.
+        dr(l, b, -2, 1, -11, VignetteDetailBlock.Kind.SANDERSON_COATS, Direction.SOUTH);
+        dr(l, b, 2, 0, -11, VignetteDetailBlock.Kind.SANDERSON_MAIL, Direction.SOUTH);
         // ---- kitchen: counters, stove and sink along the east wall, the fridge with his poster on it, the table with the log
         // 0.4.202: counters a block high, cupboards under them; the dish rack stands on the one by the window.
         for (int z = -16; z <= -10; z++) set(l, b, 12, 0, z, Blocks.STRIPPED_OAK_WOOD);
@@ -151,8 +162,14 @@ public final class DevilsRockHouse {
         for (int z : new int[]{-15, -14, -12, -10}) fit(l, b, 12, 0, z, VignetteInteriorBlock.Kind.WATCHROOM_CUPBOARD, Direction.WEST);
         fit(l, b, 12, 0, -11, VignetteInteriorBlock.Kind.TRAILER_SINK, Direction.WEST);set(l, b, 12, 1, -11, Blocks.AIR);
         set(l, b, 12, 1, -16, SceneDetailBlock.state(SceneDetailBlock.Kind.DISH_RACK, Direction.WEST));
-        for (int y = 0; y <= 1; y++) set(l, b, 12, y, -17, Blocks.IRON_BLOCK);
-        set(l, b, 11, 1, -17, VignetteDetailBlock.state(VignetteDetailBlock.Kind.MISSING_NOTICE, Direction.WEST));
+        // The fridge, his flyer under a magnet on the freezer door; the neighbours' casseroles on the counter; the calendar with
+        // the day circled; her board of flyers and the park map with its pins.
+        dr(l, b, 12, 0, -17, VignetteDetailBlock.Kind.SANDERSON_FRIDGE_LOW, Direction.WEST);
+        dr(l, b, 12, 1, -17, VignetteDetailBlock.Kind.SANDERSON_FRIDGE_HIGH, Direction.WEST);
+        dr(l, b, 12, 1, -15, VignetteDetailBlock.Kind.SANDERSON_CASSEROLES, Direction.WEST);
+        dr(l, b, 12, 1, -12, VignetteDetailBlock.Kind.SANDERSON_CASSEROLES, Direction.SOUTH);
+        dr(l, b, 6, 1, -9, VignetteDetailBlock.Kind.SANDERSON_CALENDAR, Direction.NORTH);
+        dr(l, b, 11, 1, -9, VignetteDetailBlock.Kind.SANDERSON_SEARCH_BOARD, Direction.NORTH);
         furniture(l, b, 7, 0, -14, HouseholdFurnitureBlock.Kind.FORMICA_TABLE, Direction.SOUTH);
         furniture(l, b, 7, 0, -13, HouseholdFurnitureBlock.Kind.KITCHEN_STOOL, Direction.NORTH);furniture(l, b, 7, 0, -15, HouseholdFurnitureBlock.Kind.KITCHEN_STOOL, Direction.SOUTH);
         furniture(l, b, 6, 0, -14, HouseholdFurnitureBlock.Kind.KITCHEN_STOOL, Direction.EAST);
@@ -167,17 +184,27 @@ public final class DevilsRockHouse {
         for (int y = 0; y <= 1; y++) for (int x = -8; x <= -7; x++) set(l, b, x, y, -29, Blocks.BOOKSHELF);
         furniture(l, b, -4, 0, -21, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.WEST);set(l, b, -4, 1, -21, SceneDetailBlock.state(SceneDetailBlock.Kind.BOOKS, Direction.WEST));
         set(l, b, -4, 2, -26, SceneDetailBlock.state(SceneDetailBlock.Kind.FRAME, Direction.WEST));
+        // His poster, his skateboard against the wall under it, the clothes he left on the floor.
+        dr(l, b, -12, 1, -25, VignetteDetailBlock.Kind.SANDERSON_POSTER, Direction.EAST);
+        dr(l, b, -12, 0, -24, VignetteDetailBlock.Kind.SANDERSON_SKATEBOARD, Direction.EAST);
+        dr(l, b, -9, 0, -23, VignetteDetailBlock.Kind.SANDERSON_CLOTHES, Direction.NORTH);
         // ---- Kate's room: her bed, desk and books
         NovelRooms.bed(l, b.offset(11, 0, -22), Blocks.PURPLE_BED, Direction.EAST);
-        furniture(l, b, 5, 0, -21, HouseholdFurnitureBlock.Kind.WALNUT_DESK, Direction.NORTH);set(l, b, 5, 1, -21, SceneDetailBlock.state(SceneDetailBlock.Kind.BOOKS, Direction.NORTH));
+        furniture(l, b, 5, 0, -21, HouseholdFurnitureBlock.Kind.WALNUT_DESK, Direction.NORTH);
+        // She paints: her jars and palette on the desk, her flowers taped up on the wall.
+        dr(l, b, 5, 1, -21, VignetteDetailBlock.Kind.SANDERSON_PAINT_JARS, Direction.NORTH);
+        dr(l, b, 8, 1, -23, VignetteDetailBlock.Kind.SANDERSON_PAINTINGS, Direction.SOUTH);
         set(l, b, 12, 0, -23, VignetteDetailBlock.state(VignetteDetailBlock.Kind.BEAR, Direction.WEST));
         // ---- Elizabeth's room: the bed, and the plush chair and the little end table with the empty space between them
         NovelRooms.bed(l, b.offset(11, 0, -27), Blocks.WHITE_BED, Direction.EAST);
         furniture(l, b, 12, 0, -29, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.WEST);set(l, b, 12, 1, -29, SceneDetailBlock.state(SceneDetailBlock.Kind.TABLE_LAMP, Direction.WEST));
         fit(l, b, 9, 0, -29, VignetteInteriorBlock.Kind.WATCHROOM_DRAWER, Direction.SOUTH);
+        dr(l, b, 9, 1, -29, VignetteDetailBlock.Kind.SIBLINGS_PHOTO, Direction.SOUTH);
+        dr(l, b, 10, 0, -26, VignetteDetailBlock.Kind.SANDERSON_LAUNDRY, Direction.SOUTH);
         furniture(l, b, 4, 0, -29, HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR, Direction.SOUTH);
         furniture(l, b, 6, 0, -29, HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE, Direction.SOUTH);set(l, b, 6, 1, -29, SceneDetailBlock.state(SceneDetailBlock.Kind.VASE, Direction.SOUTH));
     }
+    private static void dr(ServerLevel l, BlockPos b, int x, int y, int z, VignetteDetailBlock.Kind k, Direction f) { set(l, b, x, y, z, VignetteDetailBlock.state(k, f)); }
     private static void doorway(ServerLevel l, BlockPos b, int x, int z) { set(l, b, x, 0, z, Blocks.AIR);set(l, b, x, 1, z, Blocks.AIR); }
     private static void window(ServerLevel l, BlockPos b, int x, int z, int ix, int iz, Direction.Axis along) {
         for (int y = 1; y <= 2; y++) { set(l, b, x, y, z, pane(along));set(l, b, ix, y, iz, Blocks.AIR); }

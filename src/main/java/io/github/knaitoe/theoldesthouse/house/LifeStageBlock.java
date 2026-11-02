@@ -30,7 +30,9 @@ public final class LifeStageBlock extends Block {
         LAMP,BABY_BOOK,CHAIR_SMALL,CHAIR_BIG_LOWER,CHAIR_BIG_UPPER,BIGBED_HEAD,BIGBED_HEADBOARD,BIGBED_MID,BIGBED_FOOT,CRAYON_RED,CRAYON_BLUE,
         DRAWING,NIGHT_LIGHT,POSTER_BAND,POSTER_MOON,STEREO,LAVA_LAMP,DIARY,CLOTHES,KEEP_OUT,TEEN_BED_HEAD,TEEN_BED_FOOT,BOX,BOX_KITCHEN,
         BOX_OPEN,MATTRESS_HEAD,MATTRESS_FOOT,HOT_PLATE,BULB,LETTER,HOSP_BED_HEAD,HOSP_BED_FOOT,IV_LOWER,IV_UPPER,MONITOR,VISITOR_CHAIR,
-        CARNATIONS,MOTHER_BED_HEAD,MOTHER_BED_FOOT,WARDROBE_LOWER,WARDROBE_UPPER,NOTEBOOK,NUMBER_1,NUMBER_2,NUMBER_3,NUMBER_4,NUMBER_5,NUMBER_6;
+        CARNATIONS,MOTHER_BED_HEAD,MOTHER_BED_FOOT,WARDROBE_LOWER,WARDROBE_UPPER,NOTEBOOK,NUMBER_1,NUMBER_2,NUMBER_3,NUMBER_4,NUMBER_5,NUMBER_6,
+        /** 0.4.241: a letter block sitting on another, drawn three sixteenths down so it rests on the one below's top. */
+        TOY_STACKED;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         public static Kind number(int n){return values()[NUMBER_1.ordinal()+n-1];}
     }
@@ -54,6 +56,7 @@ public final class LifeStageBlock extends Block {
         case MOBILE,MOBILE_BIG,MOBILE_STRING->Block.box(6,0,6,10,16,10);
         case DRAWERS->Block.box(0,0,.5,16,16,16);
         case TOY_A,TOY_B,TOY_C->Block.box(1.5,0,1.5,14.5,13,14.5);
+        case TOY_STACKED->Block.box(1.5,0,1.5,14.5,10,14.5);
         case LAMP->Block.box(3,0,3,13,16,13);
         case BABY_BOOK->Block.box(2,0,4,14,1,12);
         case CHAIR_SMALL->Shapes.or(Block.box(2.5,0,2.5,13.5,7.5,13.5),Block.box(3,7.5,11.5,13,15,13));

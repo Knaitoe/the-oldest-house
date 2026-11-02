@@ -1,0 +1,79 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "t": "the_oldest_house:block/life_stage/toy_c",
+  "particle": "the_oldest_house:block/life_stage/toy_c"
+ },
+ "elements": [
+  {
+   "from": [
+    1.5,
+    -3,
+    1.5
+   ],
+   "to": [
+    14.5,
+    10,
+    14.5
+   ],
+   "faces": {
+    "up": {
+     "texture": "#t",
+     "uv": [
+      1.5,
+      1.5,
+      14.5,
+      14.5
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      1.5,
+      1.5,
+      14.5,
+      14.5
+     ]
+    },
+    "north": {
+     "texture": "#t",
+     "uv": [
+      1.5,
+      3,
+      14.5,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      1.5,
+      3,
+      14.5,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      1.5,
+      3,
+      14.5,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      1.5,
+      3,
+      14.5,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -86,7 +86,16 @@ public final class MovieNightCast {
 
     private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0502",a.level().getGameTime());}
     /** A line said to the readers near enough to hear it. */
-    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,line);for(var p:near)if(p.distanceToSqr(a)<24*24)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
+    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,line);for(var p:near)if(p.distanceToSqr(a)<24*24)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),true);}
+    /**
+     * 0.4.241 (owner: "something should implore the player to check the first [paper] so they can complete it after running to the
+     * grass"). The program waits on its stand by the door the reader came in at, and the account across the lake answers it. Ray calls
+     * after a reader who takes a canoe out without one; Dot sends a reader who comes round to the pier without one back for it.
+     */
+    static final String RAY_PROGRAM="Hey! Take a program off the stand by the door before you go out. You'll want it on the far side.";
+    static final String DOT_PROGRAM="You never picked up a program, hon? Ray leaves them on the stand by the door you came in at. Your account won't make sense without one. The path round the shore's quicker than it looks.";
+    /** True when this reader has not read the program yet. */
+    private static boolean noProgram(CompoundTag own){return !own.getBoolean("Read_Source");}
 
     // ------------------------------------------------------------------------------------------------ the shared clock
     /** Every tick from Movie Night's own clock, with the readers who are here. */
@@ -210,13 +219,18 @@ public final class MovieNightCast {
         }
         // The ticket seller on the far bank greets each reader who comes round, once.
         var dot=cast(l,LiteraryVignettes.shared(d,PLACE),DOT);
-        if(dot!=null&&!p.isSpectator()&&!own.getBoolean("MetDot0502")&&p.distanceToSqr(dot)<25){own.putBoolean("MetDot0502",true);speak(dot,DOT,gone!=0?DOT_AFTER[0]:IDLE.get("Dot")[0],List.of(p));}
+        boolean sendBack=own.getBoolean("Ready")&&noProgram(own)&&!own.getBoolean("Completed");
+        if(dot!=null&&!p.isSpectator()&&sendBack&&!own.getBoolean("DotProgram0524")&&p.distanceToSqr(dot)<100){own.putBoolean("MetDot0502",true);own.putBoolean("DotProgram0524",true);speak(dot,DOT,DOT_PROGRAM,List.of(p));}
+        else if(dot!=null&&!p.isSpectator()&&!own.getBoolean("MetDot0502")&&p.distanceToSqr(dot)<25){own.putBoolean("MetDot0502",true);speak(dot,DOT,gone!=0?DOT_AFTER[0]:IDLE.get("Dot")[0],List.of(p));}
+        // Out on the water with no program: Ray calls after them from the dock, once.
+        var ray=cast(l,LiteraryVignettes.shared(d,PLACE),RAY);
+        if(ray!=null&&!p.isSpectator()&&noProgram(own)&&!own.getBoolean("RayProgram0524")&&p.getVehicle() instanceof LakeCanoeEntity){own.putBoolean("RayProgram0524",true);say(ray,RAY_PROGRAM);p.displayClientMessage(Component.literal(RAY.name()+": “"+RAY_PROGRAM+"”"),true);}
     }
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         var who=person(a);if(who==null)return;int gone=LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE).getInt("Gone0502");
         int n=own.getInt("Talk_"+who.key());own.putInt("Talk_"+who.key(),n+1);
         String line;
-        if(who==DOT){own.putBoolean("MetDot0502",true);line=!own.getBoolean("Ready")?"You came round early, hon. It isn't over out there yet.":n%2==0?"There's your account, on the stand. Somebody wrote it all down while you were out there.":line(who,gone,n/2+1);}
+        if(who==DOT){own.putBoolean("MetDot0502",true);line=!own.getBoolean("Ready")?"You came round early, hon. It isn't over out there yet.":noProgram(own)&&!own.getBoolean("Completed")?DOT_PROGRAM:n%2==0?"There's your account, on the stand. Somebody wrote it all down while you were out there.":line(who,gone,n/2+1);}
         else line=line(who,gone,n);
         speak(a,who,line,List.of(p));
     }

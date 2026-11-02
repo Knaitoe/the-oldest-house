@@ -10,7 +10,14 @@ import net.minecraft.world.phys.shapes.*;
 /** Custom scene objects; mesh and rotated selection share exact dimensions. */
 public final class VignetteDetailBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<VignetteDetailBlock> CODEC=simpleCodec(VignetteDetailBlock::new);
-    public enum Kind implements StringRepresentable { BEAR, TRAIN, TOY_BLOCKS, DOLL, CHESS, NOTICE_BOARD, MAP_BOARD, MISSING_NOTICE, DIARY_STACK, FIELD_NOTEBOOK, FLASHLIGHT, CASSETTE, SEALED_BOX, BOOK_TRAY, SHADOW, CHILD_WALL, TOOL_TRAY, REPAIR_DIAGRAM, FAN_WALLPAPER, CURTAIN, CUSHION, CARCASS, ELK_SKULL, LOW_BRANCH, FAMILY_BOARD, RECORDER, CHILD_FABRIC, SCRIBBLE_0, SCRIBBLE_1, SCRIBBLE_2, SCRIBBLE_3, SCRIBBLE_4, SCRIBBLE_5, SCRIBBLE_6, SCRIBBLE_7, SCRIBBLE_8, SCRIBBLE_9, SCRIBBLE_10, SCRIBBLE_11, SCRIBBLE_12, SCRIBBLE_13, SCRIBBLE_14, SCRIBBLE_15, PLAIN_NOTES, FOUNTAIN_BOWL, PENNIES;
+    public enum Kind implements StringRepresentable { BEAR, TRAIN, TOY_BLOCKS, DOLL, CHESS, NOTICE_BOARD, MAP_BOARD, MISSING_NOTICE, DIARY_STACK, FIELD_NOTEBOOK, FLASHLIGHT, CASSETTE, SEALED_BOX, BOOK_TRAY, SHADOW, CHILD_WALL, TOOL_TRAY, REPAIR_DIAGRAM, FAN_WALLPAPER, CURTAIN, CUSHION, CARCASS, ELK_SKULL, LOW_BRANCH, FAMILY_BOARD, RECORDER, CHILD_FABRIC, SCRIBBLE_0, SCRIBBLE_1, SCRIBBLE_2, SCRIBBLE_3, SCRIBBLE_4, SCRIBBLE_5, SCRIBBLE_6, SCRIBBLE_7, SCRIBBLE_8, SCRIBBLE_9, SCRIBBLE_10, SCRIBBLE_11, SCRIBBLE_12, SCRIBBLE_13, SCRIBBLE_14, SCRIBBLE_15, PLAIN_NOTES, FOUNTAIN_BOWL, PENNIES,
+        /** 0.4.241: the Sandersons' photographs at Devil's Rock (tools/draw_devils_rock_props.py): the three at a lake, Tommy's school
+         *  photograph, both on a wall; Kate and Tommy pulling faces, in a frame that stands on a table. */
+        SANDERSON_PHOTO, TOMMY_PHOTO, SIBLINGS_PHOTO,
+        /** 0.4.241: the Sandersons' household, their own pieces (tools/devils_rock_household.py). */
+        SANDERSON_COATS, SANDERSON_MAIL, SANDERSON_FRIDGE_LOW, SANDERSON_FRIDGE_HIGH, SANDERSON_CALENDAR, SANDERSON_CASSEROLES,
+        SANDERSON_SEARCH_BOARD, SANDERSON_COFFEE_TABLE, SANDERSON_LAUNDRY, SANDERSON_PLANT, SANDERSON_SKATEBOARD, SANDERSON_CLOTHES,
+        SANDERSON_POSTER, SANDERSON_PAINTINGS, SANDERSON_PAINT_JARS;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}}
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public VignetteDetailBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.BEAR));}
@@ -22,19 +29,36 @@ public final class VignetteDetailBlock extends HorizontalDirectionalBlock {
             case PLAIN_NOTES -> new double[][]{{2,0,2,4,12,4},{12,0,2,14,12,4},{2,0,12,4,12,14},{12,0,12,14,12,14},{1,12,1,15,15,15},{1,15,12,15,22,14}};
             // 0.4.201: Tommy's old pennies (Devil's Rock), a few coins flat on whatever they lie on.
             case PENNIES -> new double[][]{{4,0,4,12,1,12}};
+            case SANDERSON_PHOTO, TOMMY_PHOTO -> new double[][]{{2,3,15.2,14,13,16}};
+            case SIBLINGS_PHOTO -> new double[][]{{4,0,8.5,12,8,9.5},{7,0,9.5,9,6,11.5}};
+            case SANDERSON_COATS -> new double[][]{{1,12,14.5,15,14,16},{1.5,2,12.8,5.5,12,15.5},{6,3,13.1,10,12,15.5},{10.5,4,13.3,14.5,12,15.5}};
+            case SANDERSON_MAIL -> new double[][]{{1,11,3,15,12.5,15},{1.5,0,3.5,3,11,5},{1.5,0,13,3,11,14.5},{13,0,3.5,14.5,11,5},{13,0,13,14.5,11,14.5},{3,12.5,5,9,13.5,10},{11,12.5,7,13,12.8,9}};
+            case SANDERSON_FRIDGE_LOW -> new double[][]{{1,0,1,15,16,16}};
+            case SANDERSON_FRIDGE_HIGH -> new double[][]{{1,0,1,15,13,16}};
+            case SANDERSON_CALENDAR -> new double[][]{{4,2,15.6,12,14,16}};
+            case SANDERSON_CASSEROLES -> new double[][]{{2,0,3,14,3,13},{3,3,4,13,6,12},{6,6,6,9,6.1,9}};
+            case SANDERSON_SEARCH_BOARD -> new double[][]{{0.5,1,15,15.5,15,16}};
+            case SANDERSON_COFFEE_TABLE -> new double[][]{{0,7,2,16,8.5,14},{0.5,0,2.5,2,7,4},{0.5,0,12,2,7,13.5},{14,0,2.5,15.5,7,4},{14,0,12,15.5,7,13.5},{1,2,3,15,3,13},{2,8.5,4,8,9.3,10},{10,8.5,5,11.5,10.5,6.5},{10.5,8.5,8.5,13.5,10.5,11.5},{11.5,10.5,9.5,12.5,11.8,10.5}};
+            case SANDERSON_LAUNDRY -> new double[][]{{2,0,3,14,8,13},{3,8,4,13,9.5,12}};
+            case SANDERSON_PLANT -> new double[][]{{5,0,5,11,5,11},{7.5,5,7.5,8.5,9,8.5},{3.5,7,7.5,7.5,7.5,8.5},{8.5,8,7.5,12.5,8.5,8.5},{7.5,6.5,3.5,8.5,7,7.5},{7.5,8.5,8.5,8.5,9,12.5},{3,4.5,7.5,4,7,8.5}};
+            case SANDERSON_SKATEBOARD -> new double[][]{{4.5,0.5,14.6,11.5,15.5,15.6},{6,2.25,13.6,10,3.25,14.6},{4.5,2,12.8,6,3.5,14.6},{10,2,12.8,11.5,3.5,14.6},{6,12.75,13.6,10,13.75,14.6},{4.5,12.5,12.8,6,14,14.6},{10,12.5,12.8,11.5,14,14.6}};
+            case SANDERSON_CLOTHES -> new double[][]{{1,0,2,8,1,14},{7,0,3,14,1.4,11},{9,0,11,14,0.6,13}};
+            case SANDERSON_POSTER -> new double[][]{{1.5,1,15.6,14.5,15,16}};
+            case SANDERSON_PAINTINGS -> new double[][]{{1,6,15.7,6,12,16},{6.5,3,15.7,11.5,9,16},{12,7,15.7,16,13,16}};
+            case SANDERSON_PAINT_JARS -> new double[][]{{2.5,0,4,4.5,3,6},{5,0,4,7,3,6},{7.5,0,4,9.5,3,6},{3,0,8,9,0.5,13},{11,0,9,13,4,11},{11.5,4,9.5,12,7,10},{12.5,4,10,13,7,10.5}};
             case FOUNTAIN_BOWL -> new double[][]{{2,0,2,14,3,14},{0,3,0,3,9,16},{13,3,0,16,9,16},{3,3,0,13,9,3},{3,3,13,13,9,16},{7,3,7,9,11,9}};
-            case BEAR -> new double[][]{{4,0,4,12,8,12},{3,8,3,13,14,13},{2,12,4,5,16,7},{11,12,4,14,16,7},{1,1,5,4,7,10},{12,1,5,15,7,10}};
+            case BEAR -> new double[][]{{4,0,6,12,7,11},{4.5,0,3.5,7,2.5,6},{9,0,3.5,11.5,2.5,6},{2.5,2,7,4,6.5,9.5},{12,2,7,13.5,6.5,9.5},{4.5,7,5.5,11.5,13,11},{6.5,7.5,4.5,9.5,9.5,5.5},{4.5,12.5,7.5,6.5,14.5,8.5},{9.5,12.5,7.5,11.5,14.5,8.5}}; // 0.4.241: tools/draw_devils_rock_props.py
             case TRAIN -> new double[][]{{1,2,3,15,6,12},{1,6,4,6,11,11},{9,6,5,12,9,10},{10,9,6,12,13,8},{2,0,2,5,3,13},{11,0,2,14,3,13}};
             case TOY_BLOCKS -> new double[][]{{1,0,2,6,5,7},{7,0,6,12,5,11},{3,5,4,8,10,9},{10,0,1,15,5,6}};
             case DOLL -> new double[][]{{4,0,5,7,5,8},{9,0,5,12,5,8},{4,5,4,12,11,10},{5,11,4,11,16,10},{1,6,5,4,10,8},{12,6,5,15,10,8}};
             case CHESS -> new double[][]{{1,0,1,15,1,15},{1,1,1,15,1.2,15},{3,1.2,3,4,3,4},{11,1.2,11,12,4,12}};
             case NOTICE_BOARD -> new double[][]{{7,0,7,9,14,9},{1,10,7,15,25,9},{2,11,6.8,14,24,7}};
             case MAP_BOARD -> new double[][]{{7,0,7,9,14,9},{1,10,7,15,25,9},{2,11,6.8,14,24,7}};
-            case MISSING_NOTICE -> new double[][]{{1,0,13,15,16,16},{2,1,12.8,14,15,13}};
+            case MISSING_NOTICE -> new double[][]{{.5,0,13,15.5,16,16},{1,1,12.8,15,15,13}};
             case DIARY_STACK -> new double[][]{{1,0,2,14,1,14},{3,1,1,15,2,12},{2,2,4,8,2.7,4.5}};
             case FIELD_NOTEBOOK -> new double[][]{{2,0,2,14,2,13},{3,2,3,13,2.3,12}};
             case FLASHLIGHT -> new double[][]{{2,0,5,12,3,8},{12,0,4,15,4,9}};
-            case CASSETTE -> new double[][]{{2,0,3,14,2,11},{3,2,4,13,2.2,10}};
+            case CASSETTE -> new double[][]{{3,0,4.5,13,1.5,10.5}};
             case SEALED_BOX -> new double[][]{{1,0,1,15,11,15},{6,11,1,10,11.2,15}};
             case BOOK_TRAY -> new double[][]{{1,14,1,15,16,15},{2,0,2,4,14,4},{12,0,2,14,14,4},{2,0,12,4,14,14},{12,0,12,14,14,14}};
             case SHADOW -> new double[][]{{6,0,13,8,9,15},{9,0,13,11,9,15},{5,9,13,12,22,15},{6,22,13,11,28,15},{2,12,13,5,21,15},{12,12,13,15,21,15}};

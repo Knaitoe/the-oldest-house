@@ -1,0 +1,78 @@
+{
+ "parent": "minecraft:block/block",
+ "ambientocclusion": false,
+ "textures": {
+  "t": "the_oldest_house:block/devils_calendar",
+  "particle": "the_oldest_house:block/devils_calendar"
+ },
+ "elements": [
+  {
+   "from": [
+    4,
+    2,
+    15.6
+   ],
+   "to": [
+    12,
+    14,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      8,
+      12
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      8,
+      0,
+      8.4,
+      12
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      8,
+      0,
+      8.4,
+      12
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      8,
+      0,
+      8.4,
+      12
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      8,
+      0,
+      16,
+      0.4
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      8,
+      0,
+      16,
+      0.4
+     ]
+    }
+   }
+  }
+ ]
+}

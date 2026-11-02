@@ -1177,6 +1177,19 @@ def m_toy_c():
     return letter_toy('t')
 
 
+def stacked_toy(tex):
+    """0.4.241: a letter block resting on another. The ones below stand thirteen sixteenths high, so this one is drawn three
+    sixteenths down into its cell and sits on the top of the one beneath, with the faces of an ordinary block."""
+    side = (1.5, 3, 14.5, 16)
+    return [box((1.5, -3, 1.5), (14.5, 10, 14.5), tex, faces=('up', 'down'), uv=(1.5, 1.5, 14.5, 14.5),
+                over={d: (tex, side) for d in ('north', 'south', 'east', 'west')})]
+
+
+@spec('toy_stacked', {'t': 'toy_c'}, 'toy_c')
+def m_toy_stacked():
+    return stacked_toy('t')
+
+
 @spec('lamp', {'c': 'ceramic', 'w': 'white_paint', 'l': 'lamp_shade'}, 'lamp_shade')
 def m_lamp():
     return [box((5, 0, 5), (11, 6, 11), 'c'), box((7.5, 6, 7.5), (8.5, 9, 8.5), 'w'),

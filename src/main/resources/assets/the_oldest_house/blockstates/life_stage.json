@@ -36,6 +36,9 @@
   "facing=north,kind=toy_c": {
    "model": "the_oldest_house:block/life_stage/toy_c"
   },
+  "facing=north,kind=toy_stacked": {
+   "model": "the_oldest_house:block/life_stage/toy_stacked"
+  },
   "facing=north,kind=lamp": {
    "model": "the_oldest_house:block/life_stage/lamp"
   },
@@ -226,6 +229,10 @@
   },
   "facing=east,kind=toy_c": {
    "model": "the_oldest_house:block/life_stage/toy_c",
+   "y": 90
+  },
+  "facing=east,kind=toy_stacked": {
+   "model": "the_oldest_house:block/life_stage/toy_stacked",
    "y": 90
   },
   "facing=east,kind=lamp": {
@@ -468,6 +475,10 @@
    "model": "the_oldest_house:block/life_stage/toy_c",
    "y": 180
   },
+  "facing=south,kind=toy_stacked": {
+   "model": "the_oldest_house:block/life_stage/toy_stacked",
+   "y": 180
+  },
   "facing=south,kind=lamp": {
    "model": "the_oldest_house:block/life_stage/lamp",
    "y": 180
@@ -706,6 +717,10 @@
   },
   "facing=west,kind=toy_c": {
    "model": "the_oldest_house:block/life_stage/toy_c",
+   "y": 270
+  },
+  "facing=west,kind=toy_stacked": {
+   "model": "the_oldest_house:block/life_stage/toy_stacked",
    "y": 270
   },
   "facing=west,kind=lamp": {

@@ -1,0 +1,214 @@
+{
+ "parent": "minecraft:block/block",
+ "ambientocclusion": false,
+ "textures": {
+  "t": "the_oldest_house:block/devils_clothes",
+  "particle": "the_oldest_house:block/devils_clothes"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    2
+   ],
+   "to": [
+    8,
+    1,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      12,
+      7,
+      13
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0,
+      12,
+      7,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      0,
+      12,
+      7,
+      13
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      0,
+      12,
+      7,
+      13
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      7,
+      12
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      7,
+      12
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    7,
+    0,
+    3
+   ],
+   "to": [
+    14,
+    1.4,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      7,
+      12,
+      14,
+      13
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      7,
+      12,
+      14,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      7,
+      12,
+      14,
+      13
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      7,
+      12,
+      14,
+      13
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      7,
+      0,
+      14,
+      8
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      7,
+      0,
+      14,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    9,
+    0,
+    11
+   ],
+   "to": [
+    14,
+    0.6,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      7,
+      8,
+      12,
+      8.6
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      7,
+      8,
+      12,
+      8.6
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      7,
+      8,
+      12,
+      8.6
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      7,
+      8,
+      12,
+      8.6
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      7,
+      8,
+      12,
+      10
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      7,
+      8,
+      12,
+      10
+     ]
+    }
+   }
+  }
+ ]
+}

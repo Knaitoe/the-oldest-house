@@ -1,0 +1,146 @@
+{
+ "parent": "minecraft:block/block",
+ "ambientocclusion": false,
+ "textures": {
+  "t": "the_oldest_house:block/devils_laundry",
+  "particle": "the_oldest_house:block/devils_laundry"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    3
+   ],
+   "to": [
+    14,
+    8,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      8,
+      12,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0,
+      8,
+      10,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      0,
+      8,
+      10,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      0,
+      8,
+      10,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      10,
+      8
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      10,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    8,
+    4
+   ],
+   "to": [
+    13,
+    9.5,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      6,
+      10,
+      7.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      0,
+      6,
+      10,
+      7.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      0,
+      6,
+      10,
+      7.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      0,
+      6,
+      10,
+      7.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      10,
+      8
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      10,
+      8
+     ]
+    }
+   }
+  }
+ ]
+}

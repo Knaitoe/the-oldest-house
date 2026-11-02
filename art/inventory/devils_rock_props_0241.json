@@ -1,0 +1,42 @@
+{
+  "authorization": "Owner, 2 November 2026: \"try to remove obviously ai-textures from devils rock\".",
+  "tool": "tools/draw_devils_rock_props.py",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/review_bear.png",
+      "review_04100_sha256": "f2ae65e19c89942d45f630507789d9f36bfffbb199779b057d567b4e8cf48a3f",
+      "sha256": "e8b170b852c5ccd6ada9f661d27eefd79449411c922983f3c7ef305377483d70",
+      "size": [
+        16,
+        16
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/review_missing_notice.png",
+      "review_04100_sha256": "97d08704e0f889de468add018cce7df21b9eadf88c09dcc71b5242d53cf68b3a",
+      "sha256": "6df08eaccb6c063ee7f95d6a5c8e469f9d1adb3907ab3c906c261378b19b6079",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/review_pier.png",
+      "review_04100_sha256": "f0132df10b9dde857e26ca990dab1f183d97e4d9a6d99aedebff850f616f3b05",
+      "sha256": "5fc8cab2f8a0a404b22df3fb393dbd3221c1fbe38c500581b87eff6318e3b2c8",
+      "size": [
+        16,
+        16
+      ]
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/review_reading_wood.png",
+      "review_04100_sha256": "9795d7d9b954ece8aede044f4b2f0a6f246f632f50c736d7439d3f667b8d54a1",
+      "sha256": "c83913964e38948491ce50ce0b4acc4e07ad8872171c851d2800919871b3b687",
+      "size": [
+        16,
+        16
+      ]
+    }
+  ]
+}

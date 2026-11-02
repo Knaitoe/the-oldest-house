@@ -1,0 +1,78 @@
+{
+ "parent": "minecraft:block/block",
+ "ambientocclusion": false,
+ "textures": {
+  "t": "the_oldest_house:block/devils_poster",
+  "particle": "the_oldest_house:block/devils_poster"
+ },
+ "elements": [
+  {
+   "from": [
+    1.5,
+    1,
+    15.6
+   ],
+   "to": [
+    14.5,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      13,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      13,
+      0,
+      13.4,
+      14
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      13,
+      0,
+      13.4,
+      14
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      13,
+      0,
+      13.4,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      13,
+      0.4
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      13,
+      0.4
+     ]
+    }
+   }
+  }
+ ]
+}

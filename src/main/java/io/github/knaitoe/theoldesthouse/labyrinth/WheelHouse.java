@@ -137,7 +137,6 @@ public final class WheelHouse {
         set(l, b, FRONT_DOOR.above(2), Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());
         set(l, b, NOTEBOOK, LifeStageBlock.of(Kind.NOTEBOOK, Direction.EAST));
         set(l, b, 0, 3, -3, Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
-        for (int z : new int[]{-5, -2}) { set(l, b, -4, 1, z, Blocks.OAK_FENCE.defaultBlockState()); set(l, b, 4, 1, z, Blocks.OAK_FENCE.defaultBlockState()); }
 
         // 1. The nursery, at twice the size: the crib against the west wall, its mobile, the drawers, toys and the chair.
         var r1 = ROOMS.get(0);
@@ -147,7 +146,7 @@ public final class WheelHouse {
         for (int y = 5; y < r1.ceiling; y++) piece(l, b, -24, y, -17, Kind.MOBILE_STRING, Direction.NORTH);
         for (int x = -12; x <= -11; x++) for (int y = 0; y <= 1; y++) piece(l, b, x, y, -22, Kind.DRAWERS, Direction.SOUTH);
         piece(l, b, -12, 2, -22, Kind.LAMP, Direction.SOUTH);piece(l, b, -11, 2, -22, Kind.BABY_BOOK, Direction.SOUTH);
-        piece(l, b, -19, 0, -12, Kind.TOY_A, Direction.NORTH);piece(l, b, -19, 1, -12, Kind.TOY_C, Direction.EAST);piece(l, b, -17, 0, -13, Kind.TOY_B, Direction.WEST);
+        piece(l, b, -19, 0, -12, Kind.TOY_A, Direction.NORTH);piece(l, b, -19, 1, -12, Kind.TOY_STACKED, Direction.EAST);piece(l, b, -17, 0, -13, Kind.TOY_B, Direction.WEST);
         piece(l, b, -21, 0, -20, Kind.TOY_B, Direction.SOUTH);piece(l, b, -14, 0, -16, Kind.TOY_C, Direction.NORTH);
         piece(l, b, -24, 0, -20, Kind.NIGHT_LIGHT, Direction.EAST);
         rug(l, b, -20, -14, -16, -11, RugFloorBlock.Tone.GRAY);

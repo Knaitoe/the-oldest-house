@@ -1,146 +1,78 @@
 {
-  "ambientocclusion": true,
-  "textures": {
-    "pier": "the_oldest_house:block/review_pier",
-    "missing_notice": "the_oldest_house:block/review_missing_notice",
-    "particle": "the_oldest_house:block/review_pier"
-  },
-  "elements": [
-    {
-      "from": [
-        2,
-        0,
-        3
-      ],
-      "to": [
-        14,
-        2,
-        11
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#pier"
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#pier"
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#pier"
-        },
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#pier"
-        },
-        "up": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#pier"
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#pier"
-        }
-      }
+ "parent": "minecraft:block/block",
+ "ambientocclusion": false,
+ "textures": {
+  "tape": "the_oldest_house:block/review_cassette",
+  "particle": "the_oldest_house:block/review_cassette"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    0,
+    4.5
+   ],
+   "to": [
+    13,
+    1.5,
+    10.5
+   ],
+   "faces": {
+    "up": {
+     "texture": "#tape",
+     "uv": [
+      0,
+      0,
+      10,
+      6
+     ]
     },
-    {
-      "from": [
-        3,
-        2,
-        4
-      ],
-      "to": [
-        13,
-        2.2,
-        10
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#missing_notice"
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#missing_notice"
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#missing_notice"
-        },
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#missing_notice"
-        },
-        "up": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#missing_notice"
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#missing_notice"
-        }
-      }
+    "down": {
+     "texture": "#tape",
+     "uv": [
+      0,
+      8,
+      10,
+      14
+     ]
+    },
+    "north": {
+     "texture": "#tape",
+     "uv": [
+      0,
+      6,
+      10,
+      7.5
+     ]
+    },
+    "south": {
+     "texture": "#tape",
+     "uv": [
+      0,
+      14,
+      10,
+      15.5
+     ]
+    },
+    "east": {
+     "texture": "#tape",
+     "uv": [
+      10,
+      8,
+      16,
+      9.5
+     ]
+    },
+    "west": {
+     "texture": "#tape",
+     "uv": [
+      10,
+      10,
+      16,
+      11.5
+     ]
     }
-  ]
+   }
+  }
+ ]
 }

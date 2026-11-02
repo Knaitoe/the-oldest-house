@@ -59,6 +59,7 @@ jobs:
           python3 tools/draw_site_machines.py --check
           python3 tools/draw_tract_house.py --check
           python3 tools/draw_wheel_house.py --check
+          python3 tools/draw_devils_rock_props.py --check
           python3 tools/draw_camp_session.py --check
           python3 tools/draw_winchester.py --check
           python3 tools/draw_barrett_home.py --check
