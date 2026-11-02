@@ -95,7 +95,8 @@ public final class DraftRooms {
         PuzzleRooms.fill(l,b,-6,0,-10,6,5,-10,plaster);door(l,b,INNER_DOOR,Direction.SOUTH,false);
         // The laundry: the vent in the west wall, its grille shut; a line across the room with four sheets on it; a copper and a basket.
         set(l,b,VENT,DraftBlock.of(DraftBlock.Kind.VENT,Direction.EAST,solved?1:0));
-        for(int x=-5;x<=6;x++)set(l,b,new BlockPos(x,LINE_Y,LINE_Z),DraftBlock.of(LINE,Direction.NORTH));
+        // 0.4.263: the line runs wall to wall (it stopped a block short of the west wall, its end in the air).
+        for(int x=-6;x<=6;x++)set(l,b,new BlockPos(x,LINE_Y,LINE_Z),DraftBlock.of(LINE,Direction.NORTH));
         for(var at:SHEETS)set(l,b,at,DraftBlock.of(SHEET,Direction.NORTH));
         set(l,b,new BlockPos(5,0,-2),Blocks.CAULDRON.defaultBlockState());set(l,b,new BlockPos(5,0,-3),Blocks.BARREL.defaultBlockState());
         set(l,b,new BlockPos(-5,0,-2),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));
@@ -117,7 +118,7 @@ public final class DraftRooms {
         // The first room: the grate in the ceiling the air comes down through, two sheets hung to dry in it, the door to the second.
         PuzzleRooms.fill(l,b,-11,0,-8,-5,5,-1,plaster);PuzzleRooms.fill(l,b,5,0,-8,11,5,-1,plaster);
         set(l,b,GRATE,DraftBlock.of(DraftBlock.Kind.GRATE,Direction.NORTH));
-        for(int x=-3;x<=3;x++)set(l,b,new BlockPos(x,3,-6),DraftBlock.of(LINE,Direction.NORTH));
+        for(int x=-4;x<=4;x++)set(l,b,new BlockPos(x,3,-6),DraftBlock.of(LINE,Direction.NORTH));
         for(var at:A_SHEETS)set(l,b,at,DraftBlock.of(SHEET,Direction.NORTH));
         PuzzleRooms.fill(l,b,-11,0,-9,11,5,-9,plaster);door(l,b,AB,Direction.SOUTH,false);
         // The second room, wide: the louvre in its west wall, open, curtains either side of it; benches; the door to the third.
@@ -144,7 +145,7 @@ public final class DraftRooms {
         // The first room, narrow: the grate the air comes down through, two sheets on a line under it, the hook by the way in.
         for(int x0:new int[]{-11,5})for(int x=x0;x<=x0+6;x++)for(int z=-8;z<=-1;z++)for(int y=0;y<=5;y++)set(l,b,new BlockPos(x,y,z),y<=1?panel:paper);
         set(l,b,GRATE,DraftBlock.of(DraftBlock.Kind.GRATE,Direction.NORTH));
-        for(int x=-3;x<=3;x++)set(l,b,new BlockPos(x,3,-6),DraftBlock.of(LINE,Direction.NORTH));
+        for(int x=-4;x<=4;x++)set(l,b,new BlockPos(x,3,-6),DraftBlock.of(LINE,Direction.NORTH));
         for(var at:A_SHEETS)set(l,b,at,DraftBlock.of(SHEET,Direction.NORTH));
         set(l,b,AIRING_HOOK,TraceBlock.of(TraceBlock.Kind.HOOK,Direction.EAST));
         // The second room, wide: the louvre in its west wall, open, curtains either side; its own line of sheets; furniture under dust
@@ -153,7 +154,8 @@ public final class DraftRooms {
         for(int x=2;x<=9;x++)for(int y=0;y<=5;y++)set(l,b,new BlockPos(x,y,-19),plaster);
         set(l,b,LOUVRE,DraftBlock.of(DraftBlock.Kind.LOUVRE,Direction.EAST,solved?0:1));
         for(var at:LOUVRE_CURTAINS)set(l,b,at,DraftBlock.of(CURTAIN,Direction.EAST));
-        for(int x=-4;x<=4;x++)set(l,b,new BlockPos(x,3,-13),DraftBlock.of(LINE,Direction.NORTH));
+        // 0.4.263: both rooms' lines are tied to their walls; this one ran four blocks either way and ended in the middle of the room.
+        for(int x=-11;x<=11;x++)set(l,b,new BlockPos(x,3,-13),DraftBlock.of(LINE,Direction.NORTH));
         for(var at:B_SHEETS)set(l,b,at,DraftBlock.of(SHEET,Direction.NORTH));
         for(var at:List.of(new BlockPos(9,0,-11),new BlockPos(10,0,-11),new BlockPos(-10,0,-11),new BlockPos(10,0,-15)))set(l,b,at,TraceBlock.of(TraceBlock.Kind.SHEET,Direction.NORTH));
         set(l,b,AIRING_CHAIR,TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.EAST,1));

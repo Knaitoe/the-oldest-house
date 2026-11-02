@@ -145,6 +145,8 @@ public final class FuseRooms {
         set(l,b,-3,0,-14,Blocks.BARREL.defaultBlockState());set(l,b,3,0,-11,Blocks.BARREL.defaultBlockState());
         LabyrinthBuilder.entrance(l,b,mat("brick"),mat("floor"),mat("ceiling"));
         LabyrinthBuilder.doors(l,b,EARLY);
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.FUSE_ROOM);
     }
 
     public static void buildDeep(ServerLevel l,BlockPos b){
@@ -186,6 +188,8 @@ public final class FuseRooms {
         set(l,b,4,0,-2,Blocks.SMITHING_TABLE.defaultBlockState());set(l,b,4,0,-14,Blocks.BARREL.defaultBlockState());set(l,b,3,0,-14,Blocks.BARREL.defaultBlockState());
         LabyrinthBuilder.entrance(l,b,mat("brick"),mat("floor"),mat("ceiling"));
         LabyrinthBuilder.doors(l,b,DEEP);
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.FUSE_ROOMS);
     }
     static void door(ServerLevel l,BlockPos b,BlockPos at,DoorHingeSide hinge,boolean open){
         var s=Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.HINGE,hinge).setValue(DoorBlock.OPEN,open);

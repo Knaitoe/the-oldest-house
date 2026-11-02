@@ -137,7 +137,7 @@ public final class NightOperator {
         LabyrinthBuilder.entrance(l,b,plaster,dado,plaster);
         LabyrinthBuilder.doors(l,b,PLACE);
         farDoor(l,b,solved);
-        var old=operator(l);if(old!=null)old.discard();
+        var old=operator(l);if(old!=null)old.discard();RoomActors.clear(l,RoomActors.box(b,PLACE),NightOperator::isOperator);RoomActors.settlePanes(l,b,PLACE);
         var s=new CompoundTag();if(solved)s.putInt("Phase",FINISHED);save(l,s);
     }
     /** The far door, iron with no handle on this side. */
@@ -154,6 +154,7 @@ public final class NightOperator {
     static void callerLamp(ServerLevel l,BlockPos b,boolean lit){var pos=b.offset(CALLER);var st=l.getBlockState(pos);if(ExchangeBlock.is(st,ExchangeBlock.Kind.CALLER))l.setBlock(pos,st.setValue(ExchangeBlock.STAGE,lit?1:0),FLAGS);}
 
     // ------------------------------------------------------------------ the operator and the caller
+    static boolean isOperator(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&(a.phase()==OPERATOR||a.phase()==OPERATOR_BARE);}
     @Nullable static LiteraryActor operator(ServerLevel l){var s=state(l);if(!s.hasUUID("Operator"))return null;return l.getEntity(s.getUUID("Operator")) instanceof LiteraryActor a&&a.isAlive()?a:null;}
     static LiteraryActor spawn(ServerLevel l,BlockPos b,boolean bare){
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
@@ -178,9 +179,11 @@ public final class NightOperator {
 
     /** The room's turn, every tick while anyone is in it. */
     static void tick(ServerLevel l,BlockPos b){
+        // 0.4.263 (as the window cleaner's room): wait for the room's entities, then keep the one operator and let any other go.
+        var box=RoomActors.box(b,PLACE);if(!RoomActors.ready(l,box))return;
         var s=state(l);long now=l.getGameTime();int phase=s.getInt("Phase");
-        if(s.contains("Quiet")&&now>s.getLong("Quiet")){var a=operator(l);if(a!=null){a.setCustomName(null);a.setCustomNameVisible(false);}s.remove("Quiet");save(l,s);s=state(l);}
-        var a=operator(l);
+        if(s.contains("Quiet")&&now>s.getLong("Quiet")){RoomActors.hush(l,box,NightOperator::isOperator);s.remove("Quiet");save(l,s);s=state(l);}
+        var a=RoomActors.one(l,box,s,"Operator",NightOperator::isOperator);save(l,s);s=state(l);
         if(a==null){a=spawn(l,b,phase>=DOOR&&s.getInt("Door")>=2||phase==FINISHED);if(a==null)return;s=state(l);}
         // The operator sits at the board, turning to whoever is nearest only to speak to them.
         face(a,90);var r=nearest(l,a.position());if(r!=null&&s.contains("Quiet"))look(a,r.getEyePosition());

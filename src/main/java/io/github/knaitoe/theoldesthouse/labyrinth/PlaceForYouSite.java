@@ -191,6 +191,8 @@ public final class PlaceForYouSite {
         for(int z=-30;z<=-5;z++)for(int x:new int[]{-18,-17,-16,16,17,18})if(Math.floorMod(x+z*5,4)!=0||x==18||x==-18)box(l,b,x,0,z,x,3+(z&1),z,leaves(Blocks.SPRUCE_LEAVES));
         for(var at:new int[][]{{-16,-8},{-16,-24},{17,-12},{17,-26},{-6,-32},{7,-32}}){box(l,b,at[0],0,at[1],at[0],4,at[1],Blocks.SPRUCE_LOG.defaultBlockState());box(l,b,at[0]-1,5,at[1]-1,at[0]+1,6,at[1]+1,leaves(Blocks.SPRUCE_LEAVES));set(l,b,at[0],7,at[1],leaves(Blocks.SPRUCE_LEAVES));}
         reset(l,b,new CompoundTag());
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.PLACE_FOR_YOU);
     }
 
     /** The hall glass as the reader's snapshot left it: as it hangs (0), turned to the wallpaper (1) or covered with a cloth (2). */

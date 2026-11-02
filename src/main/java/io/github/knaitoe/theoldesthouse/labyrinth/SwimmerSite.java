@@ -136,6 +136,8 @@ public final class SwimmerSite {
         for(var at:LAMPS)set(l,b,at,SwimmerBlock.of(LAMP,Direction.NORTH,0));
         // Panes join the way they would have been fitted.
         BuildBlocks.after(l,()->{for(var at:List.of(new BlockPos(-5,1,-4)))join(l,b.offset(at));for(int x=-11;x<=-7;x++)for(int y=1;y<=2;y++)join(l,b.offset(x,y,-9));});
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.LAST_SWIMMER);
     }
     private static void join(ServerLevel l,BlockPos at){var s=l.getBlockState(at);if(!(s.getBlock() instanceof IronBarsBlock))return;for(var d:Direction.Plane.HORIZONTAL)s=s.updateShape(d,l.getBlockState(at.relative(d)),l,at,at.relative(d));l.setBlock(at,s,F);}
 

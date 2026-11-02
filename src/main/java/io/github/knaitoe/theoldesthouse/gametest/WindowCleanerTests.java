@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.gametest.*;
@@ -22,8 +23,9 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_exploration") @PrefixGameTestTemplate(false)
 public final class WindowCleanerTests {
     private WindowCleanerTests(){}
-    private static LiteraryTests.Fixture active;
+    private static LiteraryTests.Fixture active,activeOne;
     @AfterBatch(batch="window_cleaner") public static void done(ServerLevel l){if(active!=null){for(var a:active.in.getEntitiesOfClass(LiteraryActor.class,room(active.base(WindowCleaner.PLACE),WindowCleaner.PLACE)))a.discard();active.close();active=null;}}
+    @AfterBatch(batch="window_cleaner_one") public static void doneOne(ServerLevel l){if(activeOne!=null){for(var a:activeOne.in.getEntitiesOfClass(LiteraryActor.class,room(activeOne.base(WindowCleaner.PLACE),WindowCleaner.PLACE)))a.discard();activeOne.close();activeOne=null;}}
     /** The room's own space, and nobody else's slot. */
     static AABB room(BlockPos b,LabyrinthPlace place){var r=place.room();return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+r.maxZ()+1);}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
@@ -91,6 +93,33 @@ public final class WindowCleanerTests {
                 h.assertTrue(opened(l,far)&&opened(l,inner)&&WindowCleaner.cradle(l)==WindowCleaner.BOTTOM&&WindowCleaner.stage(l)==WindowCleaner.GONE&&l.getBlockState(brake).getValue(WinchBlock.STAGE)==1,"built again, the doors stand open and the empty cradle is at the bottom");
                 h.assertTrue(WinchBlock.is(l.getBlockState(b.offset(WindowCleaner.CRADLE_X,WindowCleaner.BOTTOM,WindowCleaner.CRADLE_Z)),WinchBlock.Kind.CRADLE),"the cradle is drawn at the bottom");
             })
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.263 (the owner: "the glass panels aren't appropriately faced. NPCs are jumbled together."). The windows are glass joined across
+     * their openings, not bare posts; and a second cleaner standing in the cradle, as the old one did when its entities arrived after
+     * the room had made a new one, is let go, leaving one cleaner with one line over one head.
+     */
+    @GameTest(template="empty",batch="window_cleaner_one",timeoutTicks=600)
+    public static void theRoomKeepsOneCleanerAndItsWindowsAreGlassAcross(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);activeOne=f;var place=WindowCleaner.PLACE;var b=f.base(place);var l=f.in;hold(f,place);
+        var p=NativeTestPlayers.survival(h,"cleaner_counter");f.players.add(p);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room is resident"))
+            .thenExecute(()->{
+                WindowCleaner.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                for(int y:new int[]{5,6,9,10,13,14}){var pane=l.getBlockState(b.offset(2,y,-6));h.assertTrue(pane.is(Blocks.GLASS_PANE)&&pane.getValue(IronBarsBlock.NORTH)&&pane.getValue(IronBarsBlock.SOUTH),"the well's window at "+y+" is glass across its opening: "+pane);}
+                var big=l.getBlockState(b.offset(8,12,-6));h.assertTrue(big.is(Blocks.GLASS_PANE)&&big.getValue(IronBarsBlock.NORTH)&&big.getValue(IronBarsBlock.SOUTH),"the plant room's window is one run of glass: "+big);
+                var stair=l.getBlockState(b.offset(5,4,-11));h.assertTrue(stair.is(Blocks.GLASS_PANE)&&stair.getValue(IronBarsBlock.EAST)&&stair.getValue(IronBarsBlock.WEST),"the stair's window is glass across: "+stair);
+                stand(p,l,b,10.5,WindowCleaner.ROOM_FLOOR,-6.5,90);})
+            .thenWaitUntil(()->h.assertTrue(WindowCleaner.cleanerFor(l)!=null,"the cleaner is out there in the cradle"))
+            .thenExecute(()->{
+                var a=WindowCleaner.cleanerFor(l);var extra=LiteraryRegistry.ACTOR.get().create(l);h.assertTrue(extra!=null,"a second cleaner can be made");
+                extra.bind(place,null);extra.appearance(LiteraryActor.STRANGER,WindowCleaner.CLEANER);extra.setNoGravity(true);extra.moveTo(a.getX(),a.getY(),a.getZ(),90,0);
+                extra.say("There's an emergency winch by your window.");h.assertTrue(l.addFreshEntity(extra),"the second cleaner stands in the cradle");})
+            .thenWaitUntil(()->{
+                var all=l.getEntitiesOfClass(LiteraryActor.class,room(b,place),x->x.isAlive()&&x.role()==LiteraryActor.STRANGER&&x.phase()==WindowCleaner.CLEANER);
+                h.assertTrue(all.size()==1&&all.getFirst()==WindowCleaner.cleanerFor(l),"one cleaner in the cradle, the room's own: "+all.size());})
             .thenSucceed();
     }
 }

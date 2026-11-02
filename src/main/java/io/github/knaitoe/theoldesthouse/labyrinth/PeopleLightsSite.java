@@ -197,6 +197,8 @@ public final class PeopleLightsSite {
         box(l,b,10,-1,-9,13,2,-9,air);set(l,b,12,2,-13,barrett(BarrettHomeBlock.Kind.CEILING_LIGHT,Direction.NORTH,true));
         set(l,b,14,-1,-12,barrett(BarrettHomeBlock.Kind.SHELVES,Direction.WEST,false));set(l,b,14,-1,-14,barrett(BarrettHomeBlock.Kind.BOXES,Direction.WEST,false));
         box(l,b,WAY_X-1,-1,WAY_Z,WAY_X+1,2,WAY_Z,siding);
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.PEOPLE_LIGHTS);
     }
 
     /** Puts the house back as it was before the evening: the mirror up, the runner down, the case on the desk, the spare chair upstairs, no offer, no cards. */
