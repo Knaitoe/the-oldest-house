@@ -90,8 +90,17 @@ public final class JournalScreen extends Screen {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN,1));
         rebuildWidgets();
     }
+    /** 0.4.265: unsent writing also goes back while the screen is open, a second after the hand stops and every five seconds while it goes on. */
+    private final io.github.knaitoe.theoldesthouse.journal.WritingClock clock=new io.github.knaitoe.theoldesthouse.journal.WritingClock();
+    @Override public void tick(){
+        super.tick();
+        String[] now=new String[2],sent=new String[2];
+        for(int side=0;side<2;side++)if(editors[side]!=null){now[side]=editors[side].value();sent[side]=page(index(side)).text();}
+        if(clock.tick(now,sent))send();
+    }
     /** Every page changed since it was last sent goes back to the server, as it is now. */
-    private void send(){
+    private void send(){clock.sent();sendNow();}
+    private void sendNow(){
         for(int side=0;side<2;side++)if(editors[side]!=null){int i=index(side);if(!editors[side].value().equals(page(i).text()))setPage(side,editors[side].value());}
         if(proof||Minecraft.getInstance().getConnection()==null){dirty.clear();return;}
         for(int i:dirty){var t=new CompoundTag();t.putString("Text",page(i).text());PacketDistributor.sendToServer(new JournalEditPayload(i,t));}
