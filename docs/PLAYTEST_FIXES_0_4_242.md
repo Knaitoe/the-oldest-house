@@ -49,8 +49,12 @@ at the plates says the same. The draw check is in the quick gate. The day-two su
 
 ## The seventh day
 
-- **"cut recording dialogue from the seventh day."** The show is over: Barry's closing line about keeping the tape is gone, and
-  nobody asks about the camera or the frame.
+- **"cut recording dialogue from the seventh day."** The show is over and nobody on the last day talks about filming: Barry's
+  closing line about keeping the tape is gone; the idle chatter is household talk; Merry and Sarah no longer bring up what the
+  episode kept of them; Barry's call on arrival is about collecting the gear (and he says nothing once he has gone), his second
+  line is about the cable on the stairs, and his menu offers "Stay for supper" with no camera log. The arrival header is "Day 7",
+  and the cooker, tripod and monitor are described as the crew packing up. `GhostsSetTests#theLastDayHasNoTalkOfFilming` checks
+  every scripted, idle, talk and arrival line of the day against a list of filming words.
 - **"ensure all npcs properly leave the house too."** Barry and Father Wanderly walk out of the front door and are gone, not left
   standing in the hall; so is Merry once she runs out. They come back only when a day is staged again.
 - **"don't require the player to witness the death of the family to have it concluded."** Once the last day's take has begun it
@@ -86,6 +90,6 @@ Barretts on seven days" and no longer closes on an aphorism.
 
 ## Tests
 
-The twenty-two `GhostsSetTests` cases and the saved-seat case (`Vignette0492Tests`) pass locally; the broadcast-story case now looks
+The twenty-three `GhostsSetTests` cases (one new) and the saved-seat case (`Vignette0492Tests`) pass locally; the broadcast-story case now looks
 for the rewritten lead. The meal case checks both last-supper plates. Quick-gate checks pass: textures, character art (with Merry's
 record), model particles, the Barrett home and supper drawings, and the painted sheets.

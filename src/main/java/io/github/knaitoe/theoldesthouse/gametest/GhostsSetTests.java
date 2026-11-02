@@ -183,6 +183,19 @@ public final class GhostsSetTests {
     }
     @GameTest(template="empty",batch="ghosts_lead",timeoutTicks=200)
     public static void TheLongestCentredSubjectChangesTheBroadcastStory(GameTestHelper h){var a=new CompoundTag();var l=new CompoundTag();l.putInt("Frames_Marjorie",40);l.putInt("Frames_Sarah",40);l.putInt("LeadTicks_Sarah",30);a.put("FilmLog2",l);String first=words(GhostsSet.edit("reader",a,2,false));l.putInt("LeadTicks_Marjorie",60);a.put("FilmLog2",l);String second=words(GhostsSet.edit("reader",a,2,false));h.assertTrue(first.contains("worry about the doctors")&&second.contains("possession story")&&!first.equals(second),"centring a different face changes the production's lead, even when both appear in the footage");h.succeed();}
+    /** 0.4.242 (owner: "cut recording dialogue from the seventh day"): nothing anyone says on the last day is about filming. */
+    @GameTest(template="empty",batch="ghosts_lead",timeoutTicks=200)
+    public static void theLastDayHasNoTalkOfFilming(GameTestHelper h){
+        var filming=java.util.regex.Pattern.compile("(?i)\\b(film|filming|camera|shoot|shot|roll|rolling|frame|tape|episode|the take|footage|rushes|in the can|reconstruct)");
+        var own=new CompoundTag();own.putInt("FilmDay",GhostsSet.DAYS);own.putBoolean("Filming0485",true);own.putInt("AcceptedScene131",GhostsSet.DAYS*2);
+        var said=new ArrayList<String>(GhostsSet.script(GhostsSet.DAYS));
+        for(int n=0;n<8;n++)said.add(GhostsSet.idleLine(own,n));
+        for(int i=0;i<6;i++)for(int n=0;n<4;n++)said.add(GhostsConversations.line(own,i));
+        said.add(GhostsSet.callOver(own));own.putBoolean("DayDone",true);said.add(GhostsSet.callOver(own));
+        for(var line:said)h.assertFalse(filming.matcher(line).find(),"day seven talks about filming: "+line);
+        own.putInt("FilmDay",3);h.assertTrue(filming.matcher(GhostsSet.callOver(own)+GhostsSet.idleLine(own,1)).find(),"earlier days still talk about the take");
+        h.succeed();
+    }
     @GameTest(template="empty",batch="ghosts_full_take",timeoutTicks=12000)
     public static void SevenActualTakesReachThePrivateCollapseMechanismAndHeldJump(GameTestHelper h){
         var f=fixture(h);var p=f.player("ghost_full_take",P);f.source(p,P);var b=f.base(P);

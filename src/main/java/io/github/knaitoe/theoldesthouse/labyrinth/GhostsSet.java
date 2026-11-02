@@ -89,14 +89,20 @@ public final class GhostsSet {
         own.putBoolean("FilmDoorExit",false);own.remove("FrameNonce");
         if(newDay){for(String key:List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490","LightsOut0242"))own.remove(key);}
         LiteraryVignettes.reward(p,PLACE,own,"Camcorder",new ItemStack(LiteraryRegistry.CAMCORDER.get()));
-        p.displayClientMessage(Component.literal("Filming day "+day(own)+": "+TITLES[day(own)-1]+"."),false);
+        p.displayClientMessage(Component.literal((day(own)==DAYS?"Day ":"Filming day ")+day(own)+": "+TITLES[day(own)-1]+"."),false);
         // 0.4.199 (owner: "the director should address the player as soon as they enter so they know to seek him out"): Barry
         // calls the camera operator over from the video village the moment they come in.
+        // 0.4.242: on the last day, once Barry has gone out of the front door, nobody calls the reader over.
+        if(day(own)==DAYS&&own.getBoolean("DayDone"))return;
         p.displayClientMessage(Component.literal("Barry: "+VignetteTailoring.crew(p,callOver(own))),false);
         p.displayClientMessage(Component.literal("Barry is in the den, by the monitors.").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
     }
     /** What Barry calls out as the reader comes in: the first morning, a later one, or a day already in the can. */
-    static String callOver(CompoundTag own){
+    /** Every scripted line of a day, as spoken. */
+    public static List<String> script(int day){return LINES.get(day-1).stream().map(l->PEOPLE[l.speaker()]+": "+l.text()).toList();}
+    public static String callOver(CompoundTag own){
+        // 0.4.242 (owner: "cut recording dialogue from the seventh day"): on the last day the crew are only collecting their gear.
+        if(day(own)==DAYS)return "We're only here for the gear. Come and find me in the den.";
         if(own.getBoolean("DayDone"))return "That's today in the can. Come and find me in the den if you want to see it.";
         return day(own)==1?"You're the camera? Good. Over here, in the den, by the monitors. Come and see me before we roll."
                 :"Morning. Come and find me in the den before we roll.";
@@ -260,14 +266,16 @@ public final class GhostsSet {
     }
     public static boolean cameraCrawl(ServerPlayer p,BlockPos b){double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();return Math.abs(p.getY()-b.getY())<1&&(p.isShiftKeyDown()&&x>=-4&&x<=5&&z>=-22&&z<=-17||x>=-1.4&&x<=2.4&&z>=-20.5&&z<=-18&&!p.serverLevel().noCollision(p,new AABB(p.getX()-.3,p.getY(),p.getZ()-.3,p.getX()+.3,p.getY()+1.8,p.getZ()+.3)));}
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own) {
-        if(!own.getBoolean("Filming0485"))return;
+        if(!own.getBoolean("Filming0485")||a.isInvisible())return;
         if(a.role()==LiteraryActor.GHOST_PRODUCER){
             p.displayClientMessage(Component.literal("Barry: "+VignetteTailoring.crew(p,GhostsConversations.line(own,4))),true);
             var icons=new HashMap<Integer,ItemStack>();
-            icons.put(0,LiteraryChoiceMenu.icon(Items.REDSTONE,own.getBoolean("DayDone")?"Review the edited episode":"Ready for today's filming"));
-            icons.put(4,LiteraryChoiceMenu.icon(Items.PAPER,"Review the unedited camera log"));
+            // 0.4.242: there is no take to call on the last day; the reader stays for supper while the crew packs.
+            boolean last=day(own)==DAYS&&!own.getBoolean("DayDone");
+            icons.put(0,LiteraryChoiceMenu.icon(Items.REDSTONE,own.getBoolean("DayDone")?"Review the edited episode":last?"Stay for supper":"Ready for today's filming"));
+            if(!last)icons.put(4,LiteraryChoiceMenu.icon(Items.PAPER,"Review the unedited camera log"));
             icons.put(8,LiteraryChoiceMenu.icon(Items.OAK_DOOR,own.getBoolean("DayDone")?"Leave until the following day":"Leave this day unfinished"));
-            LiteraryChoiceMenu.open(p,"Filming day "+day(own),icons,()->LiteraryVignettes.inside(p,PLACE)&&p.distanceToSqr(a)<36,slot->{
+            LiteraryChoiceMenu.open(p,(last?"Day ":"Filming day ")+day(own),icons,()->LiteraryVignettes.inside(p,PLACE)&&p.distanceToSqr(a)<36,slot->{
                 var data=LabyrinthData.get(p.server);var now=LiteraryVignettes.personal(data,p.getUUID(),PLACE);
                 if(slot==0&&now.getBoolean("DayDone"))LiteraryVignettes.open(p,PLACE,"Episode"+day(now),edit(p,now,day(now),false),a.blockPosition());
                 else if(slot==0){if(!start(p,now))p.displayClientMessage(Component.literal("Read the call sheet first."),true);}
@@ -280,7 +288,7 @@ public final class GhostsSet {
         int i=Arrays.stream(ROLES).boxed().toList().indexOf(a.role());if(i<0)return;
         p.displayClientMessage(Component.literal(PEOPLE[i]+": "+GhostsConversations.line(own,i)),true);
         if(day(own)==4&&i==0&&!recording(p))own.putBoolean("RespectedPrivacy",true);
-        if(day(own)>1){var prev=own.getCompound("FilmLog"+(day(own)-1));if(prev.getInt("Frames_Merry")>=20&&i==1)p.displayClientMessage(Component.literal("Merry: They kept my face in the episode. People at school saw it."),true);if(prev.getInt("Frames_Sarah")>=20&&i==3)p.displayClientMessage(Component.literal("Sarah: They used my crying. The part where I asked them to stop is gone."),true);}
+        if(day(own)>1&&day(own)<DAYS){var prev=own.getCompound("FilmLog"+(day(own)-1));if(prev.getInt("Frames_Merry")>=20&&i==1)p.displayClientMessage(Component.literal("Merry: They kept my face in the episode. People at school saw it."),true);if(prev.getInt("Frames_Sarah")>=20&&i==3)p.displayClientMessage(Component.literal("Sarah: They used my crying. The part where I asked them to stop is gone."),true);}
     }
     private static void capture(ServerPlayer p,CompoundTag own,String subject,Vec3 at) {
         if(!recording(p)||!framed(p,lensEye(p,own),lensLook(p,own),at))return;

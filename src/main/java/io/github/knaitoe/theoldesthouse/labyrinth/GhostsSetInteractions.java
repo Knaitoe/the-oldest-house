@@ -15,7 +15,7 @@ public final class GhostsSetInteractions {
         var state=p.serverLevel().getBlockState(b.offset(rel));
         if(rel.equals(GhostsSetRooms.MONITOR_AT.above())&&(BarrettHomeBlock.is(state,BarrettHomeBlock.Kind.FIELD_MONITOR)||state.is(LiteraryRegistry.PROP.get())&&state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.TELEVISION)){
             if(own.getBoolean("DayDone")){int day=Math.max(1,Math.min(7,own.getInt("FilmDay")));boolean raw=p.isShiftKeyDown();LiteraryVignettes.open(p,GhostsSet.PLACE,own,(raw?"Rushes":"Episode")+day,GhostsSet.edit(p,own,day,raw),b.offset(rel));}
-            else p.displayClientMessage(Component.literal("The feed from the crew's camera. The day's cut is reviewed here after the take."),true);
+            else p.displayClientMessage(Component.literal(own.getInt("FilmDay")>=GhostsSet.DAYS?"The monitor is switched off, its cable coiled on top, ready to go out to the van.":"The feed from the crew's camera. The day's cut is reviewed here after the take."),true);
             return true;
         }
         // 0.4.202 (owner: "i really need you to flesh out the personality of each vignette you touch"): the family's own things
@@ -38,10 +38,10 @@ public final class GhostsSetInteractions {
             case HAT->"The sequins catch the light. Nothing about the hat is different when you lift its brim.";
             case BOLTS->"You feel the rough metal beneath the table edge. The rusty fitting is ordinary, and sharp.";
             case JUG->"The jug is heavy enough to hurt someone if it falls. You set it back where it was.";
-            case CAMERA->"The crew's tripod is locked. Your own handheld lens can keep what their angle leaves out.";
+            case CAMERA->own.getInt("FilmDay")>=GhostsSet.DAYS?"The tripod is folded and strapped, waiting to go out to the van.":"The crew's tripod is locked. Your own handheld lens can keep what their angle leaves out.";
             case CASE->"An old camera case. The latch is stiff.";
             case SINK->"The tap runs briefly into the stained basin.";
-            case COOKER->"The cooker is warm. A family meal waits for the cameras to be ready.";
+            case COOKER->own.getInt("FilmDay")>=GhostsSet.DAYS?"The cooker is still warm. The pan of sauce is on the back ring.":"The cooker is warm. A family meal waits for the cameras to be ready.";
             case DRAWER,DRAWER_RIG->"The drawer's metalwork is visible. Touching it cannot tell you who put it there.";
             case PLAYHOUSE,TORN_CARD->"The cardboard still carries the sisters' pictures. Its creases are softened by handling.";
             case BED_HEAD,BED_FOOT->"The bedding smells of a room that has been kept shut.";
