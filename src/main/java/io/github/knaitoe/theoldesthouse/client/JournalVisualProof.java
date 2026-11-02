@@ -27,13 +27,15 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class JournalVisualProof {
     private static int state=-1,frames;
-    static final int JOURNAL=7,FOLDERS=io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.FOLDERS,LIFTED=3,STATES=JOURNAL+FOLDERS+LIFTED;
+    static final int JOURNAL=7,FOLDERS=io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.FOLDERS,LIFTED=3,HEARD=JOURNAL+FOLDERS+LIFTED,STATES=HEARD+1;
     /** Leaf 3 is taken from the second folder; the third folder's struck Minotaur is red and the eighth folder's house is blue. */
     static final int TAKEN=1<<3,RED_FOLDER=2,BLUE_FOLDER=7;
     private JournalVisualProof(){}
     static void begin(){state=0;frames=0;show();}
     private static void show(){
         var mc=Minecraft.getInstance();
+        // 0.4.266: last, the journal turned to what was said (labyrinth/TalkHistory): two kept conversations, a reply in the reader's own ink.
+        if(state==HEARD){mc.setScreen(JournalScreen.proofHeard(sample(0),heard()));return;}
         if(state>=JOURNAL){int c=state-JOURNAL;
             mc.setScreen(c<FOLDERS?ZampanoScreen.proof(c,-1,TAKEN,0,false):switch(c-FOLDERS){case 0->ZampanoScreen.proof(2,5,0,0,true);case 1->ZampanoScreen.proof(3,7,0,2,false);default->ZampanoScreen.proof(7,15,0,1,false);});return;}
         mc.setScreen(switch(state){case 0->JournalScreen.proof(sample(0),0);case 1->JournalScreen.proof(sample(2),1);case 2->JournalScreen.proof(sample(4),1);case 3->JournalScreen.proof(sample(1),2);case 4->JournalScreen.proof(sample(1),3);case 5->JournalScreen.proof(torn(),1);default->TornPageScreen.proof("OTHProof",io.github.knaitoe.theoldesthouse.journal.JournalPage.load(sample(0).getCompound("Pages").getCompound("1")));});
@@ -42,6 +44,17 @@ public final class JournalVisualProof {
     static CompoundTag page(String text,String begun,int day,CompoundTag... runs){var t=new CompoundTag();t.putString("Text",text);var list=new ListTag();for(var r:runs)list.add(r);t.put("Placed",list);t.putString("Begun",begun);t.putInt("Day",day);t.putBoolean("House",true);return t;}
     static ListTag rubbings(String id,float angle){var r=new CompoundTag();r.putString("Id",id);r.putFloat("X",io.github.knaitoe.theoldesthouse.journal.Journals.RUBBING_X);r.putFloat("Y",io.github.knaitoe.theoldesthouse.journal.Journals.RUBBING_Y);r.putFloat("Angle",angle);var list=new ListTag();list.add(r);return list;}
     static CompoundTag note(String mark,String text,String word,int use,float x,float y){var t=new CompoundTag();t.putString("Mark",mark);if(!text.isEmpty())t.putString("Text",text);if(!word.isEmpty()){t.putString("Word",word);t.putInt("Use",use);}t.putFloat("X",x);t.putFloat("Y",y);return t;}
+    /** Two kept conversations, as the server sends them: a welcome with the reader's answer, and a longer one. */
+    static CompoundTag heard(){
+        var talks=new ListTag();
+        talks.add(talk(1,"The man",1,"",new String[][]{{"The man","It shuts on people. I don't know who set it like that."},{"The man","What was behind you?"},{"","I'd rather not."},{"The man","All right. You don't owe me it."}}));
+        talks.add(talk(2,"Johnny",3,"the frozen lake",new String[][]{{"Johnny","You said maybe."},{"Johnny","Last time it was the frozen lake."},{"Johnny","What did you find?"},{"","Tell him about the frozen lake."},{"Johnny","The frozen lake."},{"Johnny","How did you get out?"},{"","The way I came in."},{"Johnny","That door doesn't always stay. You were lucky."}}));
+        var t=new CompoundTag();t.put("Talks",talks);return t;
+    }
+    static CompoundTag talk(int n,String who,long day,String where,String[][] lines){
+        var t=new CompoundTag();t.putInt("N",n);t.putString("Who",who);t.putLong("Day",day);t.putString("Where",where);var list=new ListTag();
+        for(var l:lines){var line=new CompoundTag();line.putString("S",l[0]);line.putString("T",l[1]);list.add(line);}t.put("Lines",list);return t;
+    }
     /** The sample journal with its second page torn out. */
     static CompoundTag torn(){var journal=sample(0);journal.getCompound("Pages").remove("2");journal.putIntArray("Torn",new int[]{2});return journal;}
     static CompoundTag sample(int wear){
@@ -67,12 +80,14 @@ public final class JournalVisualProof {
             if(state==3){int missing=0;for(int y=0;y<image.getHeight();y++)for(int x=0;x<image.getWidth();x++){int c=image.getPixelRGBA(x,y);if((c&255)>200&&(c>>8&255)<60&&(c>>16&255)>200)missing++;}
                 if(missing>10)throw new IllegalStateException("The rubbings must draw their own charcoal, not the missing texture: "+missing);}
             if(state==6&&ink<40)throw new IllegalStateException("The torn page must carry its writing: ink="+ink);
+            if(state==HEARD){int you=0;for(int y=0;y<image.getHeight();y++)for(int x=0;x<image.getWidth();x++){int c=image.getPixelRGBA(x,y);if(near(c&255,c>>8&255,c>>16&255,JournalScreen.YOU_INK&0xFFFFFF))you++;}
+                if(ink<40||you<10)throw new IllegalStateException("What was said must be printed, the reader's own replies in their ink: ink="+ink+" replies="+you);}
             if(state==4&&other<60)throw new IllegalStateException("The other hand must leave its ink: a stroke, an answer and a written page: "+other);
             if(state==1&&(blue<8||red<8))throw new IllegalStateException("The journal page must show the blue House word and the red Minotaur: blue="+blue+" red="+red);
             if(state>=JOURNAL&&ink<40)throw new IllegalStateException("Zampano's page "+(state-JOURNAL)+" must carry his writing: ink="+ink);
             if(state==JOURNAL+RED_FOLDER&&red<8)throw new IllegalStateException("Zampano's struck Minotaur must be red: red="+red);
             if(state==JOURNAL+BLUE_FOLDER&&blue<8)throw new IllegalStateException("Zampano's house must be blue: blue="+blue);
-            image.writeToFile(folder.resolve(state<JOURNAL?"native-journal-"+state+".png":"native-courtyard-"+(state-JOURNAL)+".png"));
+            image.writeToFile(folder.resolve(state==HEARD?"native-journal-heard.png":state<JOURNAL?"native-journal-"+state+".png":"native-courtyard-"+(state-JOURNAL)+".png"));
         }
         frames=0;state++;
         if(state<STATES){show();return;}

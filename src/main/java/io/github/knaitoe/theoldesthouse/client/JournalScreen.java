@@ -60,6 +60,8 @@ public final class JournalScreen extends Screen {
     }
     public static void open(CompoundTag journal){Minecraft.getInstance().setScreen(new JournalScreen(journal,journal.getInt("Spread"),false));}
     static JournalScreen proof(CompoundTag journal,int spread){return new JournalScreen(journal,spread,true);}
+    /** 0.4.266: the proof's journal turned to what was said, with these kept conversations. */
+    static JournalScreen proofHeard(CompoundTag journal,CompoundTag history){var j=new JournalScreen(journal,0,true);j.heardMode=true;j.pendingHeard=history;return j;}
 
     int index(int side){return spread*2+side;}
     JournalPage page(int index){return pages.getOrDefault(index,JournalPage.BLANK);}
@@ -68,6 +70,7 @@ public final class JournalScreen extends Screen {
     boolean editable(int side){int i=index(side);return i>=1&&i<=Journals.PAGES&&!torn.contains(i);}
 
     @Override protected void init(){
+        if(heardMode){initHeard();return;}
         tell(spread);
         for(int side=0;side<2;side++){
             // Kept while its page is open, so rebuilding the buttons never loses what is being written.
@@ -78,6 +81,87 @@ public final class JournalScreen extends Screen {
         int y=pageY()+JournalPageRenderer.H+6,left=pageX(0),right=pageX(1)+JournalPageRenderer.W;
         addRenderableWidget(Button.builder(Component.literal("<"),b->turn(-1)).bounds(left,y,20,18).build()).active=spread>0;
         addRenderableWidget(Button.builder(Component.literal(">"),b->turn(1)).bounds(right-20,y,20,18).build()).active=spread<Journals.PAGES/2;
+        // 0.4.266: the ribbon to what was said to this reader (labyrinth/TalkHistory), printed, behind their own pages.
+        if(!proof)addRenderableWidget(Button.builder(Component.literal("What was said"),b->showHeard(true)).bounds((left+right)/2-50,y,100,18).build());
+    }
+
+    // ------------------------------------------------------------------ 0.4.266, what was said
+    /**
+     * The owner's second quality-of-life note ("Let players revisit conversations they actually heard, especially their own promises and
+     * answers"), and then: "i'm okay with the conversation history being integrated into the player's journal". Behind the ribbon,
+     * every conversation the panel showed this reader, newest first: who, the day and where, then each line, the reader's own replies
+     * set in. Printed small in plain type, not in the reader's hand; it takes none of their pages and cannot be written on or torn.
+     */
+    private boolean heardMode,heardAsked;
+    private int heardSpread;
+    private java.util.List<java.util.List<Object[]>> heardPages;
+    static final float SMALL=.75F;
+    static final int HEARD_ROWS=20,YOU_INK=0xFF2E4A66;
+    public static void heard(io.github.knaitoe.theoldesthouse.network.TalkHistoryPayload payload){if(Minecraft.getInstance().screen instanceof JournalScreen j)j.loadHeard(payload.history());}
+    private void showHeard(boolean on){
+        if(on==heardMode)return;
+        if(on){send();focused=-1;holding=-1;
+            if(!heardAsked&&!proof&&Minecraft.getInstance().getConnection()!=null){heardAsked=true;PacketDistributor.sendToServer(new io.github.knaitoe.theoldesthouse.network.TalkHistoryRequestPayload());}}
+        heardMode=on;rebuildWidgets();
+    }
+    private CompoundTag pendingHeard;
+    private void initHeard(){
+        if(pendingHeard!=null){var h=pendingHeard;pendingHeard=null;layHeard(h);}
+        int y=pageY()+JournalPageRenderer.H+6,left=pageX(0),right=pageX(1)+JournalPageRenderer.W;int last=heardPages==null?0:Math.max(0,(heardPages.size()-1)/2);
+        heardSpread=Mth.clamp(heardSpread,0,last);
+        addRenderableWidget(Button.builder(Component.literal("<"),b->turnHeard(-1)).bounds(left,y,20,18).build()).active=heardSpread>0;
+        addRenderableWidget(Button.builder(Component.literal(">"),b->turnHeard(1)).bounds(right-20,y,20,18).build()).active=heardSpread<last;
+        addRenderableWidget(Button.builder(Component.literal("My pages"),b->showHeard(false)).bounds((left+right)/2-50,y,100,18).build());
+    }
+    private void turnHeard(int by){
+        int last=heardPages==null?0:Math.max(0,(heardPages.size()-1)/2);int next=Mth.clamp(heardSpread+by,0,last);if(next==heardSpread)return;heardSpread=next;
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN,1));rebuildWidgets();
+    }
+    /** The reader's kept conversations, laid out into printed pages: newest first, a conversation's heading never left alone at a page's foot. */
+    void loadHeard(CompoundTag history){layHeard(history);if(heardMode)rebuildWidgets();}
+    private void layHeard(CompoundTag history){
+        var talks=history.getList("Talks",net.minecraft.nbt.Tag.TAG_COMPOUND);int wrap=(int)(JournalPageRenderer.TEXT_W/SMALL);
+        var pagesOut=new java.util.ArrayList<java.util.List<Object[]>>();var page=new java.util.ArrayList<Object[]>();
+        page.add(new Object[]{Component.literal("What was said").getVisualOrderText(),JournalPageRenderer.FAINT,0});page.add(null);
+        for(int t=talks.size()-1;t>=0;t--){
+            var talk=talks.getCompound(t);var block=new java.util.ArrayList<Object[]>();
+            String where=talk.getString("Where");String head=talk.getString("Who")+" \u00b7 day "+talk.getLong("Day")+(where.isEmpty()?"":" \u00b7 "+where);
+            for(var seq:font.split(Component.literal(head),wrap))block.add(new Object[]{seq,JournalPageRenderer.FAINT,0});int heading=block.size();
+            for(var tag:talk.getList("Lines",net.minecraft.nbt.Tag.TAG_COMPOUND)){
+                var line=(CompoundTag)tag;String speaker=line.getString("S"),text=line.getString("T");boolean you=speaker.isEmpty();
+                for(var seq:font.split(Component.literal(you?"\u2014 "+text:speaker+": "+text),wrap-(you?8:0)))block.add(new Object[]{seq,you?YOU_INK:JournalPageRenderer.INK,you?8:0});
+            }
+            block.add(null);
+            for(int i=0;i<block.size();i++){
+                // A heading starts a page rather than sitting alone at the foot of one.
+                if(i==0&&page.size()+heading+1>HEARD_ROWS&&!page.isEmpty()){pagesOut.add(page);page=new java.util.ArrayList<>();}
+                if(page.size()>=HEARD_ROWS){pagesOut.add(page);page=new java.util.ArrayList<>();}
+                if(block.get(i)==null&&page.isEmpty())continue;
+                page.add(block.get(i));
+            }
+        }
+        if(talks.isEmpty())page.add(new Object[]{Component.literal("Nothing has been said to you yet.").getVisualOrderText(),JournalPageRenderer.FAINT,0});
+        pagesOut.add(page);heardPages=pagesOut;
+    }
+    /** For tests: the printed pages as text, one string a page. */
+    java.util.List<String> heardText(){
+        var out=new java.util.ArrayList<String>();if(heardPages==null)return out;
+        for(var page:heardPages){var b=new StringBuilder();for(var row:page){if(row==null){b.append('\n');continue;}((net.minecraft.util.FormattedCharSequence)row[0]).accept((i,style,cp)->{b.appendCodePoint(cp);return true;});b.append('\n');}out.add(b.toString());}
+        return out;
+    }
+    private void renderHeard(GuiGraphics g,int mouseX,int mouseY,float partial){
+        super.render(g,mouseX,mouseY,partial);
+        int top=pageY();
+        for(int side=0;side<2;side++){
+            int x=pageX(side),n=heardSpread*2+side;
+            JournalPageRenderer.paper(g,x,top,side==0,false,wear,1000+n);
+            if(heardPages==null){if(side==0)g.drawString(font,"\u2026",x+JournalPageRenderer.TEXT_X,top+JournalPageRenderer.TEXT_Y,JournalPageRenderer.FAINT,false);continue;}
+            if(n>=heardPages.size())continue;
+            var pose=g.pose();pose.pushPose();pose.translate(x+JournalPageRenderer.TEXT_X,top+JournalPageRenderer.TEXT_Y,0);pose.scale(SMALL,SMALL,1);
+            int row=0;for(var r:heardPages.get(n)){if(r!=null)g.drawString(font,(net.minecraft.util.FormattedCharSequence)r[0],(int)r[2],row*JournalPageRenderer.LINE,(int)r[1],false);row++;}
+            pose.popPose();
+            JournalPageRenderer.number(g,font,x,top,n+1);
+        }
     }
     private void setPage(int side,String text){int i=index(side);pages.put(i,page(i).withWriting(text,page(i).placed()));dirty.add(i);}
     String currentText(int side){return editors[side]!=null?editors[side].value():page(index(side)).text();}
@@ -112,6 +196,7 @@ public final class JournalScreen extends Screen {
 
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){g.fill(0,0,width,height,0xE01E1A16);}
     @Override public void render(GuiGraphics g,int mouseX,int mouseY,float partial){
+        if(heardMode){renderHeard(g,mouseX,mouseY,partial);return;}
         super.render(g,mouseX,mouseY,partial);
         int top=pageY();boolean hint=false;
         for(int side=0;side<2;side++){
@@ -177,6 +262,7 @@ public final class JournalScreen extends Screen {
     int sideAt(double mx,double my){for(int side=0;side<2;side++){int x=pageX(side),y=pageY();if(mx>=x&&mx<x+JournalPageRenderer.W&&my>=y&&my<y+JournalPageRenderer.H)return side;}return -1;}
     @Override public boolean mouseClicked(double mx,double my,int button){
         if(super.mouseClicked(mx,my,button))return true;
+        if(heardMode)return false;
         int side=sideAt(mx,my);
         if(button==1&&side>=0){int i=index(side);
             // A right-click on the stub takes the page back; held on a written page, it lifts the corner to tear it out.
@@ -196,6 +282,7 @@ public final class JournalScreen extends Screen {
         return super.mouseDragged(mx,my,button,dx,dy);
     }
     @Override public boolean mouseScrolled(double mx,double my,double sx,double sy){
+        if(sy!=0&&heardMode){turnHeard(sy>0?-1:1);return true;}
         if(sy!=0&&focused<0){turn(sy>0?-1:1);return true;}
         return super.mouseScrolled(mx,my,sx,sy);
     }

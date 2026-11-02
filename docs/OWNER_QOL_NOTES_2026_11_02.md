@@ -25,3 +25,7 @@ for word; each is built in its own release, in the owner's order.
 > 7. Consistent visual-comfort controls. Several scenes respect vanilla effect settings already. Make that behavior consistent:
 >    `WayOutClient`, for example, clamps the effects multiplier to at least `0.3`, and its ending static bypasses that multiplier. A
 >    player selecting zero should get predictable results for cosmetic effects. [client/WayOutClient.java#L98]
+
+And on the second, while it was being built:
+
+> i'm okay with the conversation history being integrated into the player's journal
