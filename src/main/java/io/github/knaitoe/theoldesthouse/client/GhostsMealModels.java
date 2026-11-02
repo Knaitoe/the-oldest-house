@@ -27,14 +27,14 @@ public final class GhostsMealModels {
             var meals=new EnumMap<GhostsSetBlock.Kind,BakedModel>(GhostsSetBlock.Kind.class);
             for(var kind:GhostsSetBlock.Kind.values())if(kind.name().startsWith("MEAL_")){var model=event.getModels().get(BlockModelShaper.stateToModelLocation(GhostsSetBlock.of(kind,facing)));if(model!=null)meals.put(kind,model);}
             for(var kind:List.of(GhostsSetBlock.Kind.PLATE,GhostsSetBlock.Kind.PLAIN_PLATE)){
-                var key=BlockModelShaper.stateToModelLocation(GhostsSetBlock.of(kind,facing));var original=event.getModels().get(key);if(original!=null)event.getModels().put(key,new Meal(original,meals));
+                var key=BlockModelShaper.stateToModelLocation(GhostsSetBlock.of(kind,facing));var original=event.getModels().get(key);if(original!=null)event.getModels().put(key,new Meal(original,meals,kind==GhostsSetBlock.Kind.PLAIN_PLATE));
             }
         }
     }
     private static final class Meal extends BakedModelWrapper<BakedModel>{
-        private final Map<GhostsSetBlock.Kind,BakedModel> meals;
-        Meal(BakedModel original,Map<GhostsSetBlock.Kind,BakedModel> meals){super(original);this.meals=Map.copyOf(meals);}
-        private BakedModel shown(){return meals.getOrDefault(GhostsSetBlock.meal(GhostsTakeClient.day()),originalModel);}
+        private final Map<GhostsSetBlock.Kind,BakedModel> meals;private final boolean merrys;
+        Meal(BakedModel original,Map<GhostsSetBlock.Kind,BakedModel> meals,boolean merrys){super(original);this.meals=Map.copyOf(meals);this.merrys=merrys;}
+        private BakedModel shown(){return meals.getOrDefault(GhostsSetBlock.meal(GhostsTakeClient.day(),merrys),originalModel);}
         @Override public List<BakedQuad> getQuads(@Nullable BlockState s,@Nullable Direction side,RandomSource random){return shown().getQuads(s,side,random);}
         @Override public List<BakedQuad> getQuads(@Nullable BlockState s,@Nullable Direction side,RandomSource random,ModelData data,@Nullable RenderType render){return shown().getQuads(s,side,random,data,render);}
     }

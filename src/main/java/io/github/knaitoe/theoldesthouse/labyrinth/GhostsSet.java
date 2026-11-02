@@ -27,7 +27,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class GhostsSet {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.GHOSTS_SET;
     public static final String STATE="ghosts_set_0485";
-    public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9,LEAP=10,EATING=11,CHOKING=12,DEAD=13,PRAY=14,FALL=15,IMPACT=16,HELP=17;
+    public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9,LEAP=10,EATING=11,CHOKING=12,DEAD=13,PRAY=14,FALL=15,IMPACT=16,HELP=17,SLIP=18,WARY=19;
     public static final String[] PEOPLE={"Marjorie","Merry","John","Sarah","Barry","Father Wanderly"};
     public static final int[] ROLES={LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_MERRY,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH,LiteraryActor.GHOST_PRODUCER,LiteraryActor.GHOST_PRIEST};
     public static final String[] TITLES={"The interviews and reconstructions","The family dinner","The upstairs reconstruction","The private conversation","The evaluation","The exorcism","The final pickup"};
@@ -36,48 +36,48 @@ public final class GhostsSet {
     private record Line(int tick,int speaker,String text) {}
     // Original adaptation dialogue. Recollections and recreated incidents are explicitly distinguished from documentary takes.
     private static final List<List<Line>> LINES=List.of(
-        List.of(new Line(5,4,"We start with interviews. The bedroom shots are reconstructions of what the girls told us."),
-            new Line(100,1,"We used to put our own stories in the books. Now she puts things in them I don't want to read."),
-            new Line(220,0,"A story can know what you haven't said yet. Ask Merry about the sisters and the vines."),
-            new Line(360,1,"I tied the door shut. I balanced a jug over it. In the morning there was a note on me."),
-            new Line(520,3,"You can film the books. Please give them back when you're done."),new Line(660,2,"We agreed to a documentary. Tell people that we are trying to help her.")),
-        List.of(new Line(5,4,"Keep rolling through supper. Let them talk to one another."),
+        List.of(new Line(5,4,"Interviews first. The bedroom stuff we're reconstructing from what the girls told us."),
+            new Line(100,1,"We used to make up our own stories in the books. Now she puts things in them I don't want to read."),
+            new Line(220,0,"Ask Merry about the sisters and the vines. Go on. She loves that one."),
+            new Line(360,1,"I tied my door shut and put a jug on top of it. In the morning there was a note on my pillow."),
+            new Line(520,3,"You can film the books. Please give them back after."),new Line(660,2,"We said yes to a documentary. We're trying to help her. Make sure people know that.")),
+        List.of(new Line(5,4,"Keep rolling through supper. Let them talk."),
             new Line(100,1,"Could I borrow your sparkly hat for school tomorrow?"),
             new Line(280,3,"Marjorie? Are you feeling sick?"),
             new Line(400,0,"You will die, Merry. So will everyone sitting here. My hat isn't for dead things."),
-            new Line(500,2,"Take my hand. We can pray together."),new Line(650,3,"Come out, sweetheart. We can go upstairs. I'll stay with you."),
+            new Line(500,2,"Everybody take hands. Let's pray."),new Line(650,3,"Come out, sweetheart. We'll go upstairs. I'll stay with you."),
             new Line(760,0,"Your hand, Dad. Down here."),new Line(880,2,"Ah! My hand—"),
-            new Line(1000,0,"Look at the old fittings underneath. You reached into them. You hurt yourself."),new Line(1140,0,"Merry isn't the only one who can change her voice.")),
-        List.of(new Line(5,4,"An upstairs pickup. The wall incident happened before we arrived. Keep the damaged plaster in the shot."),
+            new Line(1000,0,"You put your hand in the old metal under there, Dad. You did that yourself."),new Line(1140,0,"Merry isn't the only one who can change her voice.")),
+        List.of(new Line(5,4,"Upstairs pickup. We missed the wall thing, so get the plaster in."),
             new Line(180,0,"They are inside my head. I can't get away from them."),new Line(340,3,"John, be careful. Help her down."),
             new Line(540,0,"Merry, you keep telling people things. What would you tell them with no tongue?"),
             new Line(680,1,"I don't want to do this part again."),new Line(840,3,"That's enough. Give them a minute.")),
-        List.of(new Line(5,0,"Down here. Could you put the camera down? Just for this conversation."),
-            new Line(170,0,"I know what they want to see. I can give them that. It doesn't mean everything in my head has stopped."),
-            new Line(320,0,"The show pays. Dad hasn't found work. Everyone acts as if I'm the only person who needs help."),
+        List.of(new Line(5,0,"Down here. Can you put the camera down? Just for this."),
+            new Line(170,0,"I know what they want. I can do it when they ask. That doesn't mean the rest of it stops."),
+            new Line(320,0,"The show pays. Dad still hasn't found anything. And everyone acts like I'm the only one who needs help."),
             new Line(470,1,"Then why are you still scaring me?"),new Line(620,4,"We need one more bedroom pickup tonight. Merry has her little camera."),
             new Line(660,1,"That's my house. You won't fit, Marjorie."),new Line(745,0,"There's room. There's always room in here."),
             new Line(780,1,"Stop! That's my house!"),new Line(1030,0,"Did you get it? All of it?")),
-        List.of(new Line(5,5,"We need to establish what we are dealing with."),new Line(170,0,"With cameras in the room? You know your own rules forbid that."),
+        List.of(new Line(5,5,"We need to establish what we are dealing with."),new Line(170,0,"With cameras in the room? Your own rules say no."),
             new Line(330,2,"How could she know these things?"),new Line(480,3,"She can read, John. She can use the internet. She's a person."),
-            new Line(650,0,"One voice asks for help. Another makes good television. Which one are you waiting for?"),
-            new Line(840,4,"Hold on the father's reaction. We can use that.")),
+            new Line(650,0,"You keep the camera on the scary voice. When I ask for help, you look away."),
+            new Line(840,4,"Stay on the dad. We can use that.")),
         List.of(new Line(5,3,"If you want me to stop this, say so."),new Line(150,0,"I'm cold. Please. Someone help me."),
             new Line(330,5,"Keep your places. Do not answer it."),new Line(510,0,"The drawer! I didn't do that."),
-            new Line(660,0,"There's a mechanism in it. Who put this here?"),new Line(705,1,"You said you were pretending!"),
+            new Line(660,0,"There's something inside it. Who put that there?"),new Line(705,1,"You said you were pretending!"),
             new Line(715,3,"Marjorie!")),
-        List.of(new Line(5,4,"The show is over. We're collecting the equipment. This visit wasn't on the call sheet."),
-            new Line(180,3,"We're having supper. You can put the case by the door."),new Line(300,0,"No sauce for Merry. Nothing messy. Nothing she doesn't already know."),
+        List.of(new Line(5,4,"Show's wrapped. We're just picking up the gear. This isn't on any call sheet."),
+            new Line(180,3,"We're having supper. You can leave the case by the door."),new Line(300,0,"I made the sauce tonight. Merry has hers plain, the way she likes it."),
             new Line(390,0,"Look. I'm eating mine. You wanted us to have supper together, didn't you?"),
             new Line(480,1,"You said you weren't going to eat it."),new Line(550,0,"What did you think was going to happen, Merry?"),
             new Line(645,1,"Marjorie? Say it's only pretending."),new Line(740,1,"Mum? Dad? How long until you wake up?"),
-            new Line(900,1,"I can't stay here."),new Line(1380,4,"She went through the front door. Don't turn that into an answer. Keep the tape.")));
+            new Line(900,1,"I can't stay here.")));
     private static final Map<ServerLevel,BuildBlocks.Plan> REPAIRS=new IdentityHashMap<>();
     private static final Map<ServerLevel,Set<BlockPos>> REPAIR_CELLS=new IdentityHashMap<>();
     private GhostsSet() {}
     public static boolean built(LabyrinthData d,BlockPos b) { return d.state(STATE).getBoolean(Long.toString(b.asLong())); }
     public static void markBuilt(LabyrinthData d,BlockPos b) {var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);t.remove("Repair_"+b.asLong());d.setState(STATE,t);}
-    public static void clearAll() { REPAIRS.clear();REPAIR_CELLS.clear(); }
+    public static void clearAll() { REPAIRS.clear();REPAIR_CELLS.clear();GhostsLights.clearAll(); }
     private static int day(CompoundTag own) { return Math.max(1,Math.min(DAYS,own.getInt("FilmDay"))); }
     public static void arrive(ServerPlayer p,CompoundTag own) {
         if(own.getBoolean("Completed")||own.getBoolean("Ready")&&!own.getBoolean("Filming0485"))return;
@@ -87,7 +87,7 @@ public final class GhostsSet {
             own.putInt("FilmDay",day(own)+1);own.putInt("ShotClock",0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);newDay=true;
         }
         own.putBoolean("FilmDoorExit",false);own.remove("FrameNonce");
-        if(newDay){for(String key:List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490"))own.remove(key);}
+        if(newDay){for(String key:List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490","LightsOut0242"))own.remove(key);}
         LiteraryVignettes.reward(p,PLACE,own,"Camcorder",new ItemStack(LiteraryRegistry.CAMCORDER.get()));
         p.displayClientMessage(Component.literal("Filming day "+day(own)+": "+TITLES[day(own)-1]+"."),false);
         // 0.4.199 (owner: "the director should address the player as soon as they enter so they know to seek him out"): Barry
@@ -103,7 +103,7 @@ public final class GhostsSet {
     }
     /** Every key one filming day leaves behind, cleared when another day begins. */
     private static final List<String> DAY_KEYS=List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","GhostVoiceId","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490",
-        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490");
+        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490","LightsOut0242");
     /**
      * 0.4.172 (owner: "add a command to trigger specific film days for testing"): puts one reader at the start of a filming
      * day, as a fresh arrival on that day would be, with the cast restaged and that day's log and frames cleared; with
@@ -132,6 +132,13 @@ public final class GhostsSet {
     /** Called only by the physical doorway departure hook, never by logout, a death or a scene timer. */
     public static void depart(ServerPlayer p) {
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
+        // 0.4.242: walking out during the last day's supper still ends the day. What happened at the table happened; the reader
+        // finds the house dark and the three of them still there when they come back.
+        if(day(own)==DAYS&&objectiveAccepted(own)&&!own.getBoolean("DayDone")){
+            own.putInt("ShotClock",LENGTH[DAYS-1]);own.putBoolean("DayDone",true);own.putBoolean("Rolling",false);own.putBoolean("MerryLeft0488",true);
+            own.putInt("MerryExitStep0488",MERRY_EXIT.length);own.putInt("CrewExit0490_4",CREW_EXIT.length);own.putInt("CrewExit0490_5",CREW_EXIT.length);
+            own.putInt("FilmedDays",own.getInt("FilmedDays")|(1<<(DAYS-1)));own.putInt("Beat",own.getInt("Visit"));
+        }
         own.putBoolean("FilmDoorExit",true);own.remove("FrameNonce");LiteraryVignettes.save(d,p.getUUID(),PLACE,own);
     }
     /** Click to roll, click to stop: the reader's own camera, in hand and rolling, on the set. */
@@ -182,25 +189,41 @@ public final class GhostsSet {
     private static void face(LiteraryActor a,Vec3 at){
         GhostsMotion.look(a,at);
     }
+    /** 0.4.242: the day-two grace; Merry gives Sarah her hand at this tick of the take. */
+    static final int GRACE_MERRY=545;
+    /** Turn to face the table once arrived, rather than the way the actor last walked. */
+    private static void settle(LiteraryActor a,BlockPos b,double x,double z,float yaw){
+        if(Math.abs(a.getX()-b.getX()-x)>.1||Math.abs(a.getZ()-b.getZ()-z)>.1)return;
+        a.setYRot(net.minecraft.util.Mth.approachDegrees(a.getYRot(),yaw,30));a.setYBodyRot(a.getYRot());a.setYHeadRot(net.minecraft.util.Mth.approachDegrees(a.getYHeadRot(),yaw,30));
+    }
     private static void waiting(ServerPlayer p,CompoundTag own,LiteraryActor[] cast){
+        if(day(own)==DAYS&&own.getBoolean("DayDone"))return;
         long now=p.level().getGameTime();if(own.contains("FilmIdle0490")&&now-own.getLong("FilmIdle0490")<260)return;
         int next=own.getInt("FilmIdleLine0490"),speaker=next%4;var a=cast[speaker];if(p.distanceToSqr(a)>14*14)return;
-        p.displayClientMessage(Component.literal(idleLine(own,next)),false);own.putLong("FilmIdle0490",now);own.putInt("FilmIdleLine0490",next+1);
+        p.displayClientMessage(Component.literal(idleLine(own,next)),true);own.putLong("FilmIdle0490",now);own.putInt("FilmIdleLine0490",next+1);
     }
     private static int objective(CompoundTag own){return day(own)*2+(day(own)==4&&own.getBoolean("BedroomPickup")?1:0);}
     public static boolean objectiveAccepted(CompoundTag own){return own.contains("AcceptedScene131")&&own.getInt("AcceptedScene131")==objective(own);}
     public static String idleLine(CompoundTag own,int next){
-        String[] words=objectiveAccepted(own)?new String[]{"Marjorie: Like this?","Merry: Are you getting this?","Sarah: Do you need us back where we were?","John: Is everyone in the frame?"}:new String[]{"Marjorie: Merry, did you move my book?","Merry: I left it where you put it.","Sarah: Mind the glasses, please.","John: That bulb's going again."};return words[Math.floorMod(next,words.length)];
+        // 0.4.242 (owner: "cut recording dialogue from the seventh day"): the show is over on day seven; nobody asks about the camera.
+        String[] words=objectiveAccepted(own)&&day(own)!=DAYS?new String[]{"Marjorie: Like this?","Merry: Are you getting this?","Sarah: Do you need us back where we were?","John: Is everyone in the frame?"}:new String[]{"Marjorie: Merry, did you move my book?","Merry: I left it where you put it.","Sarah: Mind the glasses, please.","John: That bulb's going again."};return words[Math.floorMod(next,words.length)];
     }
+    /** 0.4.242 (owner: "Marjorie still halfway out of the bed"): where she lies so the bed pose puts her head on the pillow (z -23.9) and her feet at the foot. */
+    static final double BED_LIE_Z=-22.45;
     private static final double[][] CREW_EXIT={{7.5,0,-3.5},{7.5,0,-2.5},{4.5,0,-2.5},{2.5,0,-2.5},{1.5,0,-1.5}};
     private static boolean crewExit(BlockPos b,LiteraryActor[] cast,CompoundTag own){
-        boolean gone=true;for(int i=4;i<6;i++){String key="CrewExit0490_"+i;int step=own.getInt(key);if(step>=CREW_EXIT.length)continue;gone=false;var at=CREW_EXIT[step];pose(cast[i],STAND);toward(cast[i],b,at[0],at[1],at[2],.4);if(cast[i].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(at[0],at[1],at[2]))<.12)own.putInt(key,step+1);}
+        boolean gone=true;for(int i=4;i<6;i++){String key="CrewExit0490_"+i;int step=own.getInt(key);if(step>=CREW_EXIT.length){offstage(cast[i]);continue;}gone=false;var at=CREW_EXIT[step];pose(cast[i],STAND);toward(cast[i],b,at[0],at[1],at[2],.4);if(cast[i].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(at[0],at[1],at[2]))<.12){own.putInt(key,step+1);if(step+1==CREW_EXIT.length)offstage(cast[i]);}}
         return gone;
     }
+    /**
+     * 0.4.242 (owner: "ensure all npcs properly leave the house too"): someone who has gone out through the front door is gone, not
+     * standing in the hall. They are hidden where they went out and come back when a day is staged again.
+     */
+    private static void offstage(LiteraryActor a){if(a.isInvisible())return;GhostsMotion.stop(a);a.setDeltaMovement(Vec3.ZERO);a.setInvisible(true);}
     /** The thigh underside, rather than its centre joint, rests on the original ten-pixel seat. */
     public static double seatedHeight(float scale){return .625+(.125-.001)*scale;}
     public static boolean seatedPose(int role,int phase){return switch(phase){
-        case SIT,SLUMP,VOMIT,HAND,EATING,CHOKING,DEAD->true;
+        case SIT,SLUMP,VOMIT,HAND,EATING,CHOKING,DEAD,SLIP,WARY->true;
         case PRAY->role==LiteraryActor.GHOST_MERRY;
         default->false;
     };}
@@ -215,12 +238,12 @@ public final class GhostsSet {
         }
     }
     private static void stage(BlockPos b,LiteraryActor[] cast,int d) {
-        for(var actor:cast){GhostsMotion.stop(actor);GhostsJump.clear(actor);}
+        for(var actor:cast){GhostsMotion.stop(actor);GhostsJump.clear(actor);actor.setInvisible(false);}
         for(int i=0;i<4;i++){place(cast[i],b,i==0||i==2?-.4:2.4,seatedHeight(cast[i].getScale()),i<2?-19.5:-17.5,i==0||i==2?-90:90,SIT);cast[i].getPersistentData().putBoolean("GhostSeat0492",true);}
         // 0.4.220 (owner: "barry should be facing the monitor"): Barry sits in his director's chair, turned to the field monitor.
         place(cast[4],b,7.5,seatedHeight(cast[4].getScale()),-8.5,-153,SIT);cast[4].getPersistentData().putBoolean("GhostSeat0492",true);place(cast[5],b,7.5,0,-4.5,90,STAND);
         if(d==1){place(cast[0],b,-6,0,-14.5,90,STAND);place(cast[1],b,-9,0,-14.5,-90,STAND);}
-        if(d==3||d==6){place(cast[0],b,d==6?-6.5:-9.5,5,d==6?-23.5:-24,d==6?0:90,d==6?BED:STAND);place(cast[1],b,-3,5,-19,180,STAND);place(cast[2],b,-5,5,-25,-90,STAND);place(cast[3],b,-5,5,-20,180,STAND);place(cast[5],b,-8,5,-22,180,STAND);}
+        if(d==3||d==6){place(cast[0],b,d==6?-6.5:-9.5,5,d==6?BED_LIE_Z:-24,d==6?0:90,d==6?BED:STAND);place(cast[1],b,-3,5,-19,180,STAND);place(cast[2],b,-5,5,-25,-90,STAND);place(cast[3],b,-5,5,-20,180,STAND);place(cast[5],b,-8,5,-22,180,STAND);}
         if(d==4){place(cast[0],b,7,-4,-20,0,STAND);place(cast[1],b,7,-4,-23,180,STAND);}
         if(d==5){for(int i=1;i<4;i++)place(cast[i],b,-9+i*2,5,-24,0,STAND);place(cast[0],b,-6.5,5.125+seatedHeight(cast[0].getScale()),-23.5,0,SIT);place(cast[5],b,-5,5,-20,180,STAND);}
     }
@@ -239,7 +262,7 @@ public final class GhostsSet {
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own) {
         if(!own.getBoolean("Filming0485"))return;
         if(a.role()==LiteraryActor.GHOST_PRODUCER){
-            p.displayClientMessage(Component.literal("Barry: "+VignetteTailoring.crew(p,GhostsConversations.line(own,4))),false);
+            p.displayClientMessage(Component.literal("Barry: "+VignetteTailoring.crew(p,GhostsConversations.line(own,4))),true);
             var icons=new HashMap<Integer,ItemStack>();
             icons.put(0,LiteraryChoiceMenu.icon(Items.REDSTONE,own.getBoolean("DayDone")?"Review the edited episode":"Ready for today's filming"));
             icons.put(4,LiteraryChoiceMenu.icon(Items.PAPER,"Review the unedited camera log"));
@@ -255,9 +278,9 @@ public final class GhostsSet {
         }
         if((a.phase()==SLUMP||a.phase()==DEAD||a.phase()==CHOKING)&&a.role()<=LiteraryActor.GHOST_SARAH){p.displayClientMessage(Component.literal(PEOPLE[a.role()-LiteraryActor.GHOST_MARJORIE]+" does not answer."),false);return;}
         int i=Arrays.stream(ROLES).boxed().toList().indexOf(a.role());if(i<0)return;
-        p.displayClientMessage(Component.literal(PEOPLE[i]+": "+GhostsConversations.line(own,i)),false);
+        p.displayClientMessage(Component.literal(PEOPLE[i]+": "+GhostsConversations.line(own,i)),true);
         if(day(own)==4&&i==0&&!recording(p))own.putBoolean("RespectedPrivacy",true);
-        if(day(own)>1){var prev=own.getCompound("FilmLog"+(day(own)-1));if(prev.getInt("Frames_Merry")>=20&&i==1)p.displayClientMessage(Component.literal("Merry: They kept my face in the episode. People at school saw it."),false);if(prev.getInt("Frames_Sarah")>=20&&i==3)p.displayClientMessage(Component.literal("Sarah: They used my crying. The part where I asked them to stop is gone."),false);}
+        if(day(own)>1){var prev=own.getCompound("FilmLog"+(day(own)-1));if(prev.getInt("Frames_Merry")>=20&&i==1)p.displayClientMessage(Component.literal("Merry: They kept my face in the episode. People at school saw it."),true);if(prev.getInt("Frames_Sarah")>=20&&i==3)p.displayClientMessage(Component.literal("Sarah: They used my crying. The part where I asked them to stop is gone."),true);}
     }
     private static void capture(ServerPlayer p,CompoundTag own,String subject,Vec3 at) {
         if(!recording(p)||!framed(p,lensEye(p,own),lensLook(p,own),at))return;
@@ -318,6 +341,9 @@ public final class GhostsSet {
                 if(cast[1].position().distanceToSqr(new Vec3(b.getX()+at[0],b.getY()+at[1],b.getZ()+at[2]))<.18){own.putInt("MerryExitStep0488",step+1);if(step+1==MERRY_EXIT.length)own.putBoolean("MerryLeft0488",true);}
             }
         }
+        // 0.4.242 (owner: "if they see it through to the end - merry running out the door, the lights in the house should cut off. the
+        // family remains."): once she is through the front door she is gone, and the house goes dark around the three at the table.
+        if(own.getBoolean("MerryLeft0488")){offstage(cast[1]);GhostsLights.out(p,b,own);}
         if(t>=860&&!own.getBoolean("MerryLeft0488"))capture(p,own,"MerryDeparture",cast[1].getEyePosition());
         capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-19.5));
     }
@@ -339,9 +365,12 @@ public final class GhostsSet {
             // A day four begun at the upstairs pickup (jumpToDay) starts with both sisters where the stair walk leaves them.
             if(d==4&&own.getBoolean("BedroomPickup")&&pickupReady(own)){var end=PICKUP_ROUTE[PICKUP_ROUTE.length-1];for(int i=0;i<2;i++)place(cast[i],b,end[0]+i*.05,end[1],end[2],180,STAND);}}
         if(d==4&&own.getBoolean("BedroomPickup")&&(own.getInt("PickupStep0")<PICKUP_ROUTE.length||own.getInt("PickupStep1")<PICKUP_ROUTE.length)){pickup(b,cast,own);return;}
-        if(own.getBoolean("DayDone")) { if(d==7)finalDinner(p,b,cast,own,Math.max(own.getInt("ShotClock"),820));display(p,own,b); return; }
+        if(own.getBoolean("DayDone")) { if(d==7){if(own.getInt("CrewExit0490_4")>=CREW_EXIT.length)offstage(cast[4]);if(own.getInt("CrewExit0490_5")>=CREW_EXIT.length)offstage(cast[5]);finalDinner(p,b,cast,own,Math.max(own.getInt("ShotClock"),820));}display(p,own,b); return; }
         var here=d==4&&own.getBoolean("BedroomPickup")?Vec3.atBottomCenterOf(b.offset(GhostsSetRooms.MERRY_ROOM)):focus(b,d);
-        if(!p.isAlive()||p.isSpectator()||!own.getBoolean("Rolling")||!inRoom(p,b,d,own.getBoolean("BedroomPickup"))&&!GhostsJump.room(p,b,own)){for(var actor:cast)GhostsMotion.stop(actor);waiting(p,own,cast);display(p,own,b);return;}
+        // 0.4.242 (owner: "don't require the player to witness the death of the family to have it concluded"): once the last day's take
+        // has begun it plays out whether or not the camera is in the room or rolling.
+        boolean unattended=d==DAYS&&objectiveAccepted(own);
+        if(!p.isAlive()||p.isSpectator()||!unattended&&(!own.getBoolean("Rolling")||!inRoom(p,b,d,own.getBoolean("BedroomPickup"))&&!GhostsJump.room(p,b,own))){for(var actor:cast)GhostsMotion.stop(actor);waiting(p,own,cast);display(p,own,b);return;}
         // The evaluation takes place upstairs too; the utility conversation moves to the bedroom later in its day.
         boolean crewGone=d!=7||crewExit(b,cast,own);int previous=own.getInt("ShotClock");if(d==7&&previous>=615&&!crewGone){display(p,own,b);return;}int t=previous+5;
         if(d==6&&previous>=600&&!own.getBoolean("JumpFrozen0488")){
@@ -349,21 +378,32 @@ public final class GhostsSet {
             if(previous>=715&&(!ready||!GhostsJump.begin(cast[0])))t=715;
         }
         own.putInt("ShotClock",t);
-        for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){String words=PEOPLE[line.speaker()]+": "+line.text();if(line.speaker()==0&&d==2){own.putString("GhostVoice",words);own.putInt("GhostVoiceId",d*10000+line.tick());own.putLong("GhostVoiceUntil",p.level().getGameTime()+140);}else p.displayClientMessage(Component.literal(words),false);if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
+        for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){String words=PEOPLE[line.speaker()]+": "+line.text();if(line.speaker()==0&&d==2){own.putString("GhostVoice",words);own.putInt("GhostVoiceId",d*10000+line.tick());own.putLong("GhostVoiceUntil",p.level().getGameTime()+140);}else p.displayClientMessage(Component.literal(words),true);if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
         if(d==2) {
-            for(int i=1;i<4;i++)face(cast[i],cast[0].getEyePosition());
-            if(t>=480&&t<650){pose(cast[1],PRAY);pose(cast[2],PRAY);pose(cast[3],PRAY);toward(cast[2],b,-.4,0,-18.3,.15);toward(cast[3],b,2.4,0,-18.7,.15);}
+            // 0.4.242 (owner: "Parents asking to pray – holding hands, mary hesitant, Marjorie slipping from her seat and ducking
+            // beneath the table"): John and Sarah leave their chairs to stand by the girls and hold out a hand each. Merry holds back,
+            // watching her sister, then gives Sarah hers. Marjorie never takes John's: she slides off her chair and goes under the
+            // table, and John steps back from her.
+            boolean grace=t>=480&&t<650;
+            for(int i=1;i<4;i++)if(!grace||i==1&&t<GRACE_MERRY||i==2&&t>=520)face(cast[i],cast[0].getEyePosition());
+            if(grace){
+                pose(cast[3],PRAY);toward(cast[3],b,2.4,0,-18.65,.15);settle(cast[3],b,2.4,-18.65,90);
+                pose(cast[1],t<GRACE_MERRY?WARY:PRAY);
+                if(t<520){pose(cast[2],PRAY);toward(cast[2],b,-.4,0,-18.65,.15);settle(cast[2],b,-.4,-18.65,-90);}
+                else{pose(cast[2],STAND);toward(cast[2],b,-.4,0,-18.12,.1);}
+            }
             if(previous<520&&t>=520)cue(p,LiteraryRegistry.GHOST_SCRAPE,cast[0].position());
             if(t>=250&&t<520){pose(cast[0],VOMIT);if(t%20==0)p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.SPORE_BLOSSOM_AIR,false,b.getX()+.5,b.getY()+1.03,b.getZ()-19.5,2,.06,.02,.06,0);}
             if(t>=520&&t<950){
-                pose(cast[0],CRAWL);if(previous<520)own.putInt("CrawlChair04112",0);
+                if(previous<520)own.putInt("CrawlChair04112",0);
                 // Leave the seat at its side, lower to the floor, then go under.
                 // A diagonal from the nearer chair can natively step onto the top.
-                int leg=own.getInt("CrawlChair04112");double[][] route={{-.4,seatedHeight(cast[0].getScale()),-18.5},{-.4,0,-18.5},{.6,0,-18.5},{.6,0,-19.5}};var goal=route[Math.min(3,leg)];
-                toward(cast[0],b,goal[0],goal[1],goal[2],.24);
+                int leg=own.getInt("CrawlChair04112");double[][] route={{-.4,seatedHeight(cast[0].getScale()),-18.6},{-.4,0,-18.6},{.6,0,-18.6},{.6,0,-19.5}};var goal=route[Math.min(3,leg)];
+                // She slips off the chair still seated, then ducks under the table on all fours.
+                pose(cast[0],leg<2?SLIP:CRAWL);toward(cast[0],b,goal[0],goal[1],goal[2],leg<2?.12:.24);
                 if(leg<4&&cast[0].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(goal[0],goal[1],goal[2]))<.008)own.putInt("CrawlChair04112",leg+1);
             }
-            if(t>=650&&t<880){pose(cast[1],SIT);for(int i=2;i<4;i++){pose(cast[i],STAND);double seatY=seatedHeight(cast[i].getScale());toward(cast[i],b,i==2?-.4:2.4,seatY,-17.5,.16);if(cast[i].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(i==2?-.4:2.4,seatY,-17.5))<.04)pose(cast[i],SIT);}}
+            if(t>=650&&t<880){pose(cast[1],SIT);for(int i=2;i<4;i++){if(cast[i].phase()!=SIT)pose(cast[i],STAND);double seatY=seatedHeight(cast[i].getScale());toward(cast[i],b,i==2?-.4:2.4,seatY,-17.5,.16);if(cast[i].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(i==2?-.4:2.4,seatY,-17.5))<.04){pose(cast[i],SIT);settle(cast[i],b,i==2?-.4:2.4,-17.5,i==2?-90:90);}}}
             if(t>=880)pose(cast[2],HAND);
             if(t>=950){pose(cast[0],CRAWL);toward(cast[0],b,-.4,0,-24.5,.24);}
             if(t>=100&&t<500)capture(p,own,"HatExchange",cast[0].getEyePosition());
@@ -372,8 +412,8 @@ public final class GhostsSet {
         }
         if(d==3) {
             for(int i=1;i<4;i++)face(cast[i],cast[0].getEyePosition());
-            if(t<430){pose(cast[0],WALL);toward(cast[0],b,-9.5,7,-24,.16);if(t>=260){pose(cast[2],HELP);toward(cast[2],b,-8.4,5,-23.5,.19);}capture(p,own,"Handholds",Vec3.atLowerCornerOf(b).add(-10,7.4,-24));}
-            else if(cast[0].getY()>b.getY()+5.02){pose(cast[0],FALL);GhostsMotion.fall(cast[0],b.getY()+5);}
+            if(t<430){pose(cast[0],WALL);toward(cast[0],b,-9.7,7,-24,.16);if(t>=260){pose(cast[2],HELP);toward(cast[2],b,-8.4,5,-23.5,.19);}capture(p,own,"Handholds",Vec3.atLowerCornerOf(b).add(-10,7.4,-24));}
+            else if(cast[0].getY()>b.getY()+5.02){pose(cast[0],FALL);GhostsMotion.fall(cast[0],b.getY()+5);if(t>=490){GhostsMotion.stop(cast[0]);cast[0].moveTo(cast[0].getX(),b.getY()+5,cast[0].getZ());}}
             else{if(!own.contains("WallImpact0490")){GhostsMotion.stop(cast[0]);own.putInt("WallImpact0490",t);own.putLong("GhostShakeUntil",p.level().getGameTime()+12);cue(p,net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(net.minecraft.sounds.SoundEvents.PLAYER_BIG_FALL),cast[0].position());}pose(cast[0],t-own.getInt("WallImpact0490")<35?IMPACT:STAND);if(t-own.getInt("WallImpact0490")>=35)toward(cast[0],b,-4,5,-19,.24);if(t<750)capture(p,own,"Threat",cast[0].getEyePosition());}
         }
         if(d==4){
@@ -417,21 +457,21 @@ public final class GhostsSet {
     public static ItemStack edit(String name,CompoundTag own,int d,boolean raw) {
         var log=own.getCompound("FilmLog"+d);var text=new StringBuilder((raw?"CAMERA LOG":"THE POSSESSION — EDITED EPISODE")+"\n\nDay "+d+": "+TITLES[d-1]+"\n\n");
         var seen=new ArrayList<String>();for(var key:log.getAllKeys())if(key.startsWith("Frames_")&&log.getInt(key)>=20)seen.add(key.substring(7));Collections.sort(seen);
-        if(raw){text.append(seen.isEmpty()?"No sustained usable shot was recorded.\n\n":"Sustained shots: "+String.join(", ",seen)+".\n\n");}
+        if(raw){text.append(seen.isEmpty()?"You didn't hold a shot long enough to use.\n\n":"Shots you held: "+GhostsConversations.shotList(seen)+".\n\n");}
         else {
             String lead="";int held=0;for(int i=0;i<4;i++)if(log.getInt("LeadTicks_"+PEOPLE[i])>held){lead=PEOPLE[i];held=log.getInt("LeadTicks_"+lead);}
-            if(held>=20)text.append(switch(lead){case "Marjorie"->"Your longest centred subject is Marjorie. The production builds a possession story around her body and voice.\n\n";case "John"->"Your longest centred subject is John. The production makes this a father's struggle to save his family.\n\n";case "Sarah"->"Your longest centred subject is Sarah. Her medical concerns become the episode's story of a family losing trust.\n\n";default->"Your longest centred subject is Merry. The episode makes a child's frightened perspective its point of view.\n\n";});
+            if(held>=20)text.append(switch(lead){case "Marjorie"->"You kept Marjorie in the middle of the frame longest. Barry cut it as a possession story: her face, her voice.\n\n";case "John"->"You kept John in the middle of the frame longest. Barry cut it as a father trying to save his family.\n\n";case "Sarah"->"You kept Sarah in the middle of the frame longest. Barry cut it around her worry about the doctors, a family that has stopped trusting anyone.\n\n";default->"You kept Merry in the middle of the frame longest. Barry cut it from a scared kid's point of view.\n\n";});
         }
         text.append(GhostsConversations.review(own,d,raw,new HashSet<>(seen)));
-        if(raw)text.append("\n\nThe camera log records framing, not a diagnosis. No shot proves what happened outside it.");
+
         return HouseWriting.book(raw?"Unedited camera log — day "+d:"Edited episode — day "+d,name,HouseWriting.WritingStyle.WILL,pages(text.toString()));
     }
     /** Conservative pages for the real 114-pixel lectern, retaining every word and explicit line break. */
     public static List<String> pages(String text){var result=new ArrayList<String>();for(int start=0;start<text.length();){int end=Math.min(text.length(),start+120),breaks=0;for(int i=start;i<end;i++)if(text.charAt(i)=='\n'&&++breaks>4){end=i;break;}if(end<text.length()){int word=text.lastIndexOf(' ',end-1);if(word>start+40)end=word+1;}result.add(text.substring(start,end));start=end;}return result.isEmpty()?List.of(""):result;}
     public static String account(String name,CompoundTag own) {
-        var text=new StringBuilder("THE TAPE AND THE CUT\n\nI returned on seven filming days. The lens could keep one face while another person spoke. The production could make a silence last longer than it had.\n\n");
+        var text=new StringBuilder("THE TAPE AND THE CUT\n\nI filmed the Barretts on seven days. This is what's on my tape, day by day.\n\n");
         for(int d=1;d<=DAYS;d++){var book=edit(name,own,d,true).get(DataComponents.WRITTEN_BOOK_CONTENT);for(var page:book.pages())text.append(page.raw().getString());text.append("\n\n");}
-        text.append("MY ACCOUNT\n\n").append(own.getString("Confession")).append("\n\nThe record does not tell me whether Marjorie was possessed. It tells me what I kept looking at.");return text.toString();
+        text.append("MY ACCOUNT\n\n").append(own.getString("Confession"));return text.toString();
     }
     private static void display(ServerPlayer p,CompoundTag own,BlockPos b) {
         if(finished(own))LiteraryVignettes.ready(p,PLACE,own,"completed_the_filming_days_and_read_own_cut");

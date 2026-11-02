@@ -14,6 +14,8 @@ CATALOG=ROOT/'art/inventory/character_review_04100.json'
 PROP_REVIEW=ROOT/'art/inventory/devils_rock_props_0241.json'
 FAMILY_REVIEW=ROOT/'art/inventory/painted_family_04123.json'
 PORTRAIT_REVIEW=ROOT/'art/inventory/manor_portraits_04223.json'
+MERRY_REVIEW=ROOT/'art/inventory/ghosts_merry_04242.json'
+MERRY_PATH='src/main/resources/assets/the_oldest_house/textures/entity/ghosts_merry.png'
 FAMILY_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
               for role in ('father','mother','child') for phase in ('','_changed')}
 
@@ -27,7 +29,13 @@ def reviewed_repaints(review):
     for path,row in family.items():
         assert row['review_04100_sha256']==changed[path]['sha256'],('Historical family review changed',path)
         assert row['size']==changed[path]['size'] and row['alpha_sha256']==changed[path]['alpha_sha256'],('Family UV/alpha changed',path)
-    return {**changed,**family}
+    # 0.4.242: Merry's sheet, painted again with longer hair at the owner's request; it supersedes only her own 0.4.100 hash.
+    merry={r['path']:r for r in json.loads(MERRY_REVIEW.read_text())['repainted']}
+    assert set(merry)=={MERRY_PATH}
+    for path,row in merry.items():
+        assert row['review_04100_sha256']==changed[path]['sha256'],('Historical Merry review changed',path)
+        assert row['size']==changed[path]['size'] and row['alpha_sha256']==changed[path]['alpha_sha256'],('Merry UV/alpha changed',path)
+    return {**changed,**family,**merry}
 
 
 def main():
