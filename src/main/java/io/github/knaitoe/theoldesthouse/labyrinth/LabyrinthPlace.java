@@ -460,6 +460,17 @@ public enum LabyrinthPlace {
     AIRING_ROOMS("airing_rooms", Kind.GRAY, 155, new BoundingBox(-12,-1,-28,12,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(11,0,-28),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.250, the Folding Rooms (FoldingRooms, docs/FOLDING_ROOMS_0_4_250.md): a dining room cut in two by a partition of hinged panels on
+     * floor and ceiling tracks, standing in front of the far door, with the pantry round the side. An early puzzle room, family FOLD.
+     */
+    FOLDING_ROOM("folding_room", Kind.GRAY, 156, new BoundingBox(-9,-1,-17,4,5,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(4,0,-13),Direction.WEST,LabyrinthData.DEALT))),
+    /** The folding room's deep room: a long dining room in three by two partitions, a recess where the sideboard stands, and a morning room off it. */
+    FOLDED_ROOMS("folded_rooms", Kind.GRAY, 157, new BoundingBox(-9,-1,-26,3,5,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-26),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

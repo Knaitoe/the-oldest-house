@@ -1023,5 +1023,14 @@
   "subtitles.the_oldest_house.door.through_empty": "Nothing moving behind the door",
   "subtitles.the_oldest_house.door.through_kitchen": "A fridge hums and stops behind the door; a drip",
   "subtitles.the_oldest_house.door.through_pool": "A pace clock and a far turn at the wall, behind the door",
-  "item.the_oldest_house.ghosts_mug": "John's mug"
+  "item.the_oldest_house.ghosts_mug": "John's mug",
+  "block.the_oldest_house.fold_fitting": "Dining Room Fitting",
+  "block.the_oldest_house.fold_parquet": "Herringbone Parquet",
+  "block.the_oldest_house.fold_track": "Partition Track",
+  "block.the_oldest_house.fold_track_worn": "Worn Partition Track",
+  "block.the_oldest_house.fold_marks": "Worn Parquet",
+  "block.the_oldest_house.fold_panelling": "Dark Panelling",
+  "block.the_oldest_house.fold_paper": "Dining Room Paper",
+  "block.the_oldest_house.fold_ceiling": "Plaster Ceiling",
+  "block.the_oldest_house.fold_ceiling_track": "Ceiling Track"
 }

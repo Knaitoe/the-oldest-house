@@ -34,6 +34,13 @@ public final class PuzzleRegistry {
     public static Block draftMaterial(String name){var block=DRAFT_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<DraftBlock>> DRAFT_TYPE=CODECS.register("draft_fitting",()->DraftBlock.CODEC);
     public static final DeferredBlock<DraftBlock> DRAFT=BLOCKS.registerBlock("draft_fitting",DraftBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion());
+    /** 0.4.250: the Folding Rooms' herringbone parquet, the floor and ceiling tracks (plain and worn), the worn marks of furniture, panelling, paper and plaster, and their working parts (FoldBlock), drawn by tools/draw_fold_fittings.py. */
+    private static final java.util.Map<String,DeferredBlock<Block>> FOLD_MATERIALS=new java.util.LinkedHashMap<>();
+    public static final java.util.List<String> FOLD_MATERIAL_NAMES=java.util.List.of("parquet","track","track_worn","marks","panelling","paper","ceiling","ceiling_track");
+    static{for(String name:FOLD_MATERIAL_NAMES)FOLD_MATERIALS.put(name,BLOCKS.registerSimpleBlock("fold_"+name,fixed(Blocks.OAK_PLANKS)));}
+    public static Block foldMaterial(String name){var block=FOLD_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<FoldBlock>> FOLD_TYPE=CODECS.register("fold_fitting",()->FoldBlock.CODEC);
+    public static final DeferredBlock<FoldBlock> FOLD=BLOCKS.registerBlock("fold_fitting",FoldBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion());
     private PuzzleRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);}
 }
