@@ -151,7 +151,9 @@ public final class ArchitectureTests {
                         h.assertTrue(SceneDetailBlock.supported(level,at,s),scene.id()+" has no floating "+s.getValue(SceneDetailBlock.KIND));count++;
                     }else if(scene==LabyrinthPlace.MODEL_HOME&&s.is(HouseBlocks.TRACT_HOUSE.get()))count++; // 0.4.121: the tract house is furnished whole.
                 }
-                if(scene!=LabyrinthPlace.RED_ROOM){h.assertTrue(count>=2,scene.id()+" has intentional, grounded ambient detail");dressed++;props+=count;}
+                // 0.4.240 (owner: "random clutter decor in plains vignette"): the plain's only placed details were the survey rest, removed;
+                // its note stand and its acacias and dunes are what it has. The Red Room is a copy of the reader's own.
+                if(scene!=LabyrinthPlace.RED_ROOM&&scene!=LabyrinthPlace.PLAIN){h.assertTrue(count>=2,scene.id()+" has intentional, grounded ambient detail");dressed++;props+=count;}
                 for(var door:scene.doors()){
                     var at=base.offset(door.rel());h.assertTrue(level.getBlockState(at).getBlock() instanceof DoorBlock,scene.id()+" retains its actual door");
                     boolean accessible=false;
@@ -211,7 +213,7 @@ public final class ArchitectureTests {
             var newCamp=LabyrinthPlaces.base(origin,LabyrinthPlace.CAMP_BLOOD);var woods=HouseTestLevel.get(server,HouseDimensions.OUTSIDE);
             for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(var at:BlockPos.betweenClosed(newCamp.offset(x-7,0,z-6),newCamp.offset(x+7,10,z+6)))h.assertTrue(!woods.getBlockState(at).is(Blocks.SPRUCE_LEAVES)&&!woods.getBlockState(at).is(Blocks.SPRUCE_LOG),"the camp's forest cannot grow through a furnished cabin or roof");
             // The hotel and its grounds (0.4.105) are built whole by HotelRooms, the barn well's farm (0.4.164) by BarnWell, the night ward (0.4.199) by NightWard and Zampano's apartment court and Karen's room (0.4.201) by ZampanoApartment and KarenRoom, outside the generic dressing.
-            h.assertTrue(dressed==16&&props>=64,"all sixteen generically dressed scenes/camps receive supported detail (0.4.226: the model home and the copied Red Room are built whole): "+dressed+" / "+props);
+            h.assertTrue(dressed==15&&props>=60,"all fifteen generically dressed scenes/camps receive supported detail (0.4.226: the model home and the copied Red Room are built whole; 0.4.240: the plain keeps no clutter): "+dressed+" / "+props);
             shellsAndEdges(h,server,origin,data);
             composition(h,server,origin,data);
             frontsAndInteriors(h,server,origin,data);
