@@ -71,11 +71,14 @@ public final class KeepsakeTests {
         var p = NativeTestPlayers.survival(h, "keeper_world");
         for (int x = 0; x < 9; x++) for (int z = 0; z < 9; z++) h.setBlock(new BlockPos(x, 0, z), Blocks.GRASS_BLOCK);
         var at = h.absoluteVec(new Vec3(2.5, 1, 2.5));p.teleportTo(h.getLevel(), at.x, at.y, at.z, 0, 0);
-        var cow = h.spawn(EntityType.COW, new BlockPos(7, 1, 7));
+        var cows = new net.minecraft.world.entity.animal.Cow[]{h.spawn(EntityType.COW, new BlockPos(7, 1, 7))};
+        // Run 1397: the cow stands outside this one-block template, where a neighbouring test clearing its own area can remove it
+        // ("alive false"). A cow that is gone is put down again until one has settled.
         // Run 1351: the empty template keeps only its own corner loaded, and the cow can stand in the next chunk, where nothing
         // ticks it or finds it. Hold the corner's chunks and wait until the cow is ticking and has settled onto the grass.
         var chunks = new NativeTestChunks();chunks.hold(h.getLevel(), new net.minecraft.world.phys.AABB(h.absolutePos(BlockPos.ZERO)).inflate(16));
-        h.startSequence().thenWaitUntil(() -> h.assertTrue(h.getTick() >= 20 && chunks.ticking() && h.getLevel().isPositionEntityTicking(cow.blockPosition()) && cow.onGround(), "the cow is ticking and settled: tick " + h.getTick() + ", ticking " + h.getLevel().isPositionEntityTicking(cow.blockPosition()) + ", ground " + cow.onGround() + ", alive " + cow.isAlive() + " at " + h.relativePos(cow.blockPosition()))).thenExecute(() -> {
+        h.startSequence().thenWaitUntil(() -> { if (!cows[0].isAlive()) cows[0] = h.spawn(EntityType.COW, new BlockPos(7, 1, 7)); var cow = cows[0]; h.assertTrue(h.getTick() >= 20 && chunks.ticking() && h.getLevel().isPositionEntityTicking(cow.blockPosition()) && cow.onGround(), "the cow is ticking and settled: tick " + h.getTick() + ", ticking " + h.getLevel().isPositionEntityTicking(cow.blockPosition()) + ", ground " + cow.onGround() + ", alive " + cow.isAlive() + " at " + h.relativePos(cow.blockPosition())); }).thenExecute(() -> {
+            var cow = cows[0];
             try {
                 // The bulb: a light where they stand, then not again for a while.
                 var bulb = keepsake(p, LabyrinthPlace.ELK_FAN, "Lightbulb", new ItemStack(LiteraryRegistry.LIGHTBULB.get()));
