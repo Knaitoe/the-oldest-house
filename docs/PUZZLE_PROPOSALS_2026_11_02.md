@@ -82,6 +82,11 @@ materials, drawn by a new `tools/draw_fold_fittings.py`.
 > below. The cleaner steps off into that corridor. A moment later they come through your door carrying their equipment, thank you, and
 > leave. You can watch the entire return. The unease comes from seeing how those places apparently connect.
 
+Built in 0.4.251; canon is docs/WINDOW_CLEANER_0_4_251.md. It differs from the plan below in three ways:
+- The cleaner leaves by an inner staff door into a lobby. Once it has shut, nobody is behind it, and both it and the far door stand open.
+- The corridor has a lamp, a radiator and two small windows beside the casement, in place of the coat and print.
+- The winch's sounds are vanilla ones: a chain and a lever's ratchet, and a ladder's creak.
+
 **The building.**
 1. The entry door opens on a short corridor:
    - plaster;

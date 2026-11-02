@@ -109,6 +109,8 @@ LOOKS = {
     # The last swimmer (0.4.227): the pool's attendant, and the one still in the water.
     'literary_swimmer_attendant': Look('#c39a7c','#b8b4ac','receding','#e8e4d8','#2e3a4a','tee','#2a3a5a',eyes='#5a5e58',age=2,mark='whistle',sleeve=4),
     'literary_swimmer_swimmer': Look('#e4ddd6','#1e1c1e','short','#1c2230','#1c2230','swim','#d8dcd8',eyes='#2a2e32',mark='swim_cap',sleeve=0),
+    # The window cleaner (0.4.251): a navy boiler suit, a cloth cap, the harness's yellow straps over it.
+    'literary_window_cleaner': Look('#b68a6c','#3a2c22','short','#2e4a66','#24384e','crew','#d8b83a',eyes='#4a5650',age=1,beard='stubble',mark='movie_cap',sleeve=10),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
