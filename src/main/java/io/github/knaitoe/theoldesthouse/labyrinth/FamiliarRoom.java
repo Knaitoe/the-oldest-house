@@ -118,6 +118,11 @@ public final class FamiliarRoom {
         return WEIGHT;
     }
     public static boolean occupied(){return !IN.isEmpty();}
+    /** 0.4.239: the kitchen through its door: its clock, or, while somebody else is in it, someone moving about. */
+    public static DoorSounds.Through heard(UUID listener){
+        for(var other:IN)if(!other.equals(listener))return DoorSounds.Through.of(DoorSounds.Carry.SOMEONE);
+        return DoorSounds.Through.of(DoorSounds.Carry.CLOCK);
+    }
 
     // ------------------------------------------------------------------ the walk the window shows
     static net.minecraft.nbt.CompoundTag own(LabyrinthData data,UUID reader){return data.stateEntry(STATE,reader.toString());}

@@ -107,6 +107,11 @@ public final class LastSwimmer {
     /** For tests: whether the lights have wavered, and whether they are wavering now. */
     public static boolean waved(BlockPos b){var p=pool(b);return p!=null&&p.waved;}
     public static boolean wavering(BlockPos b){var p=pool(b);return p!=null&&p.waverUntil>p.tick;}
+    /** 0.4.239: the pool through its door: someone swimming lengths until the cover is on, then nothing moving. */
+    @Nullable public static DoorSounds.Through heard(@Nullable BlockPos b){
+        var p=b==null?null:pool(b);
+        return DoorSounds.Through.of(p!=null&&p.closed()?DoorSounds.Carry.EMPTY:DoorSounds.Carry.WATER);
+    }
     /** The stars still on the water: those the cover has not reached. */
     public static int stars(int hauls){int n=0;for(var s:STARS)if(!covered(hauls,s[0]))n++;return n;}
     static boolean covered(int hauls,int x){return x>SwimmerSite.POOL_X1-hauls;}

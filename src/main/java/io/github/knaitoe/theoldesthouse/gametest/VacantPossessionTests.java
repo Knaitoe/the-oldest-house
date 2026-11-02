@@ -52,6 +52,8 @@ public final class VacantPossessionTests {
             .thenWaitUntil(()->h.assertTrue(VacantPossession.tenantActor(l,b)!=null&&f.own(p,P).getBoolean("Flat228"),"someone is waiting in the flat, and greets the reader"))
             .thenExecute(()->{
                 h.assertTrue(click(f,p,VacantSite.CHAIR_PIECE.at())&&!carrying(f,p)&&VacantPossession.seat(b)==VacantPossession.STANDING,"the chair can wait");
+                // 0.4.239: through its door, the flat sounds of someone in there, as loud as they are.
+                var heard=VacantPossession.heard(b);h.assertTrue(heard!=null&&heard.carry()==DoorSounds.Carry.SOMEONE&&heard.volume()==1F,"through the door: someone in there: "+heard);
                 // The dresser, lifted: pencil marks behind it. Dropped from the reader's arms, it goes back where it stood.
                 h.assertTrue(click(f,p,new BlockPos(-2,0,-9))&&carrying(f,p)&&VacantBlock.is(l.getBlockState(b.offset(-2,0,-9)),VacantBlock.Kind.MARKS)&&VacantBlock.is(l.getBlockState(b.offset(-2,1,-9)),VacantBlock.Kind.MARKS),"the dresser in the reader's arms, the marks behind it");
                 h.assertTrue(p.getMainHandItem().is(VacantRegistry.PIECE.get()),"the dresser is in the reader's hands");
@@ -74,6 +76,7 @@ public final class VacantPossessionTests {
                 h.assertTrue(click(f,p,new BlockPos(-2,0,-9))&&f.own(p,P).getBoolean("Marks228"),"the pencil marks read");
                 h.assertTrue(click(f,p,new BlockPos(2,-1,-8))&&f.own(p,P).getBoolean("Floor228"),"the new boards read");
                 h.assertTrue(VacantPossession.seat(b)==VacantPossession.SITTING&&VacantBlock.is(l.getBlockState(b.offset(14,VacantSite.GROUND,-8)),VacantBlock.Kind.DRESSER),"everything on the list in the van, the dresser at the front");
+                var faint=VacantPossession.heard(b);h.assertTrue(faint!=null&&faint.carry()==DoorSounds.Carry.SOMEONE&&faint.volume()<1F,"through the door, they are fainter now too: "+faint);
                 at(f,p,12.5,VacantSite.GROUND,-3.5,0);})
             .thenWaitUntil(()->h.assertTrue(tenantSeated(f),"in the last chair"))
             .thenExecute(()->at(f,p,5.5,0,-8.5,-90))
@@ -89,6 +92,7 @@ public final class VacantPossessionTests {
             .thenExecute(()->{
                 h.assertTrue(click(f,p,VAN)&&VacantPossession.seat(b)==VacantPossession.GONE&&VacantPossession.tenantActor(l,b)==null,"the chair in the van, and nobody left in the flat");
                 h.assertTrue(l.getBlockState(b.offset(VacantSite.LIVING_BULB)).getValue(VacantBlock.STAGE)==1,"the window goes dark");
+                var heard=VacantPossession.heard(b);h.assertTrue(heard!=null&&heard.carry()==DoorSounds.Carry.EMPTY,"through the door now, nothing moving: "+heard);
                 var own=f.own(p,P);h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("carried_out_the_last_chair")&&!own.getBoolean("Completed"),"ready, not yet finished: "+own);
                 at(f,p,12.5,VacantSite.GROUND,-3.5,0);})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"on the street, it is over"))
@@ -106,6 +110,7 @@ public final class VacantPossessionTests {
                 h.assertTrue(click(f,p,VacantSite.CHAIR_PIECE.at().below())&&!carrying(f,p)&&VacantPossession.seat(b)==VacantPossession.KEPT,"the chair put back where it stood");
                 h.assertTrue(VacantBlock.is(l.getBlockState(b.offset(VacantSite.CHAIR_PIECE.at())),VacantBlock.Kind.CHAIR)&&tenantSeated(f),"they sit down in it again");
                 h.assertTrue(l.getBlockState(b.offset(VacantSite.LIVING_BULB)).getValue(VacantBlock.STAGE)==0,"the light is still on");
+                var heard=VacantPossession.heard(b);h.assertTrue(heard!=null&&heard.carry()==DoorSounds.Carry.SOMEONE,"and someone is still in there: "+heard);
                 var own=f.own(p,P);h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("put_the_chair_back"),"ready: "+own);
                 at(f,p,12.5,VacantSite.GROUND,-3.5,0);})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"on the street, it is over"))

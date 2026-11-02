@@ -45,7 +45,11 @@ public final class DoorSounds {
     /** What a room sounds like from the other side of its door. */
     public enum Carry {
         CLOCK("door.through_clock",40,"Through the door, faintly: a clock ticking."),WATER("door.through_water",50,"Through the door: water, moving."),
-        MUSIC("door.through_music",44,"Through the door: music, only the low part of it."),VOICES("door.through_voices",60,"Through the door: people talking. You can't make out the words.");
+        MUSIC("door.through_music",44,"Through the door: music, only the low part of it."),VOICES("door.through_voices",60,"Through the door: people talking. You can't make out the words."),
+        /** 0.4.239: one person in there, going about something ordinary. */
+        SOMEONE("door.through_someone",50,"Through the door: someone in there, moving about. A chair; a cup set down."),
+        /** 0.4.239: a room with nothing moving in it, nobody and nothing left to make a sound. */
+        EMPTY("door.through_empty",70,"Through the door, nothing: the hollow sound of a room with nothing moving in it.");
         final DeferredHolder<SoundEvent,SoundEvent> sound;final int every;final String line;
         Carry(String id,int every,String line){sound=sound(id);this.every=every;this.line=line;}
     }
@@ -65,6 +69,43 @@ public final class DoorSounds {
         for(var p:List.of(LabyrinthPlace.HOTEL,LabyrinthPlace.GOATMAN,LabyrinthPlace.SEANCE,LabyrinthPlace.GHOSTS_SET,LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.VACANT_POSSESSION))CARRIES.put(p,Carry.VOICES);
     }
     @Nullable public static Carry carries(@Nullable LabyrinthPlace p){return p==null?null:CARRIES.get(p);}
+
+    // ------------------------------------------------------------------------------------------------ what a room sounds like now
+    /**
+     * 0.4.239: a room sounds through its door as it is now, not as rooms of its kind sound. Ordinary sounds are to be trusted, so that
+     * the ones that cannot be are felt: a flat with its tenant in it sounds like someone moving about, and once it has been emptied it
+     * sounds of nothing; the pool is water until the cover is on; the kitchen is its clock until someone else is in it.
+     */
+    public record Through(Carry carry,float volume){
+        public Through{volume=Math.max(0F,Math.min(1F,volume));}
+        public static Through of(@Nullable Carry carry){return carry==null?null:new Through(carry,1F);}
+    }
+    /** What one room sounds like now, from behind its door, for this listener: its own copy, or the one room everyone shares. */
+    @FunctionalInterface public interface Source{@Nullable Through now(MinecraftServer server,LabyrinthData data,UUID listener,@Nullable BlockPos base);}
+    private static final Map<LabyrinthPlace,Source> SOURCES=new EnumMap<>(LabyrinthPlace.class);
+    static{
+        SOURCES.put(LabyrinthPlace.VACANT_POSSESSION,(server,data,listener,base)->VacantPossession.heard(base));
+        SOURCES.put(LabyrinthPlace.LAST_SWIMMER,(server,data,listener,base)->LastSwimmer.heard(base));
+        SOURCES.put(LabyrinthPlace.FAMILIAR_KITCHEN,(server,data,listener,base)->FamiliarRoom.heard(listener));
+        // The seventh room's clock, once this reader has stopped it, is stopped for them; and the party with it.
+        SOURCES.put(LabyrinthPlace.MASQUE,(server,data,listener,base)->LiteraryVignettes.personal(data,listener,LabyrinthPlace.MASQUE).getBoolean("ClockStopped0506")?null:Through.of(Carry.CLOCK));
+        // The study's clock; on the last visit the study is a funeral home, and people are talking low by the casket.
+        SOURCES.put(LabyrinthPlace.HARRIGAN,(server,data,listener,base)->Through.of(HarriganVignette.funeral(server,data,base)?Carry.VOICES:Carry.CLOCK));
+        // The family at the table until they are driven out; after that the house is empty.
+        SOURCES.put(LabyrinthPlace.SEANCE,(server,data,listener,base)->Through.of(ClassicsVignettes.familyGone(data)?Carry.EMPTY:Carry.VOICES));
+    }
+    /** What the room behind a door sounds like now for this listener, or nothing. Rooms with no state of their own sound as their kind does. */
+    @Nullable public static Through heard(MinecraftServer server,LabyrinthData data,UUID listener,@Nullable LabyrinthPlace place,@Nullable BlockPos base){
+        if(place==null)return null;var source=SOURCES.get(place);
+        return source!=null?source.now(server,data,listener,base):Through.of(CARRIES.get(place));
+    }
+    /** The base of the room a door's far side stands in for this listener: their own copy of a private scene, or the room's one base. */
+    @Nullable static BlockPos farBase(MinecraftServer server,@Nullable GlobalPos far,@Nullable LabyrinthPlace place){
+        if(place==null)return null;
+        if(SceneInstances.copyable(place)){int copy=far==null?0:Math.max(0,SceneInstances.at(server,place,far.dimension(),Vec3.atCenterOf(far.pos())));return SceneInstances.base(server,place,copy);}
+        var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(server).houseOrigin();
+        return origin==null?null:LabyrinthPlaces.base(origin,place);
+    }
 
     // ------------------------------------------------------------------------------------------------ where a door leads
     /** Where this door leads for this reader, as a place in the world: the door they would come out of. Nothing if it is undealt or locked. */
@@ -121,6 +162,9 @@ public final class DoorSounds {
         note("knock",GlobalPos.of(l.dimension(),door.lower),null);
         if(LabyrinthData.LOCKED.equals(door.destination)){String key=p.getUUID()+"|"+door.id;if(REPLIED.add(key))REPLIES.add(new Reply(door.globalPos(),now+REPLY_AFTER,p.getUUID()));return true;}
         var far=far(data,p.getUUID(),door);if(far==null)return true;
+        // 0.4.239: into a room people meet in whose entry a wedge holds for another hall, the knock comes out where the knocker would come in.
+        var lead=leadsTo(data,p.getUUID(),door);var entry=lead==null||lead.slot()<0?null:data.door(lead.entryDoorId());
+        if(entry!=null&&entry.globalPos().equals(far)){var in=Wedges.wouldComeIn(p.server,data,door,entry,lead);if(in==null)return true;far=in.globalPos();}
         var level=p.server.getLevel(far.dimension());if(level==null||!level.isLoaded(far.pos()))return true;
         level.playSound(null,far.pos().above(),KNOCK_FAR.get(),SoundSource.BLOCKS,1F,.9F+level.random.nextFloat()*.1F);
         note("knock_far",far,null);
@@ -172,10 +216,11 @@ public final class DoorSounds {
     /** A reader standing at a closed door hears the room behind it, faintly, if it is a room that carries. */
     public static boolean listen(ServerPlayer p,LabyrinthData data,long now){
         var door=nearestClosed(p,data);if(door==null)return false;
-        var place=farPlace(p.server,data,p.getUUID(),door);var carry=carries(place);if(carry==null)return false;
+        var place=farPlace(p.server,data,p.getUUID(),door);
+        var through=heard(p.server,data,p.getUUID(),place,farBase(p.server,far(data,p.getUUID(),door),place));if(through==null||through.volume()<=0)return false;var carry=through.carry();
         String key=p.getUUID()+"|"+door.id;Long last=LISTENING.get(key);if(last!=null&&now-last<carry.every)return false;LISTENING.put(key,now);
         var at=Vec3.atBottomCenterOf(door.lower).add(0,1.1,0);
-        p.connection.send(new ClientboundSoundPacket(Holder.direct(carry.sound.get()),SoundSource.AMBIENT,at.x,at.y,at.z,.55F,.95F,p.getRandom().nextLong()));
+        p.connection.send(new ClientboundSoundPacket(Holder.direct(carry.sound.get()),SoundSource.AMBIENT,at.x,at.y,at.z,.55F*through.volume(),.95F,p.getRandom().nextLong()));
         note("through_"+carry.name().toLowerCase(Locale.ROOT),GlobalPos.of(p.level().dimension(),door.lower),p.getUUID());
         // The first time a reader hears a kind of room through a door, they are told what it is.
         if(NOTICED.add(p.getUUID()+"|"+carry.name()))cue(p,carry.line);

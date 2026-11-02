@@ -83,4 +83,23 @@ public final class DoorSoundTests {
             });
         });
     }
+
+    /** 0.4.239: a room sounds as it is now. The séance house empty once the family is driven out; Masque's clock stopped for whoever stopped it; Harrigan's study a funeral on the last visit. */
+    @GameTest(template="empty")
+    public static void aRoomSoundsThroughItsDoorAsItIsNow(GameTestHelper h){
+        var server=h.getLevel().getServer();var data=new LabyrinthData();UUID a=UUID.randomUUID(),b=UUID.randomUUID();
+        h.assertTrue(DoorSounds.heard(server,data,a,null,null)==null&&DoorSounds.heard(server,data,a,LabyrinthPlace.GRAY_CORRIDOR,null)==null,"nowhere, and a plain corridor, carry nothing");
+        h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.NIGHTCLUB,null).carry()==DoorSounds.Carry.MUSIC,"a room with nothing of its own to change sounds as its kind does");
+        h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.SEANCE,null).carry()==DoorSounds.Carry.VOICES,"the family at the table");
+        var all=data.state(ClassicsVignettes.STATE);all.putBoolean("SittingEnded",true);all.putString("SharedOutcome","drove_the_family_out");data.setState(ClassicsVignettes.STATE,all);
+        h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.SEANCE,null).carry()==DoorSounds.Carry.EMPTY,"driven out, and the house empty");
+        h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.MASQUE,null).carry()==DoorSounds.Carry.CLOCK,"the clock in the seventh room");
+        var own=LiteraryVignettes.personal(data,a,LabyrinthPlace.MASQUE);own.putBoolean("ClockStopped0506",true);LiteraryVignettes.save(data,a,LabyrinthPlace.MASQUE,own);
+        h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.MASQUE,null)==null&&DoorSounds.heard(server,data,b,LabyrinthPlace.MASQUE,null).carry()==DoorSounds.Carry.CLOCK,"stopped for whoever stopped it, and only for them");
+        h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.HARRIGAN,null).carry()==DoorSounds.Carry.CLOCK,"the study's clock");
+        var room=data.state(LabyrinthPlace.HARRIGAN.id());room.putInt("Visit",HarriganVignette.FINAL_VISIT);data.setState(LabyrinthPlace.HARRIGAN.id(),room);
+        h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.HARRIGAN,null).carry()==DoorSounds.Carry.VOICES,"on the last visit, people talking low by the casket");
+        h.assertTrue(VacantPossession.heard(null).carry()==DoorSounds.Carry.SOMEONE&&LastSwimmer.heard(null).carry()==DoorSounds.Carry.WATER,"a flat and a pool nobody is in are as they were before anyone came");
+        h.succeed();
+    }
 }

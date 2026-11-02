@@ -24,6 +24,10 @@ public final class LabyrinthPacing {
     public static boolean quiet(LabyrinthPlace place) {
         return place==LabyrinthPlace.QUIET_ROOM || place==LabyrinthPlace.EXPLORER_CAMP;
     }
+    /** 0.4.239: rooms nothing frightening happens in: the quiet rooms, and the familiar kitchen, where readers meet. */
+    public static boolean calm(LabyrinthPlace place) {
+        return quiet(place) || place==LabyrinthPlace.FAMILIAR_KITCHEN;
+    }
     public static boolean physicalTrial(LabyrinthPlace place){if(HazardVariety.newKind(place))return true;place=HazardVariety.original(place);return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
     public static int trialChance(LabyrinthData data,UUID player){
         int depth=data.returnDepth(player);if(domestic(depth))return 0;

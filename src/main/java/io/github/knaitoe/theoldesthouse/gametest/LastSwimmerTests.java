@@ -119,7 +119,8 @@ public final class LastSwimmerTests {
         var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,new AABB(b.getX()-16,b.getY()-8,b.getZ()-47,b.getX()+16,b.getY()+11,b.getZ()+2)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the pool is resident"))
             .thenExecute(()->at(f,p,.5,-10.5,180))
-            .thenWaitUntil(()->h.assertTrue(LastSwimmer.tick(b)>5&&swimmers(l,b)==1,"the pool is closing: tick "+LastSwimmer.tick(b)+", swimmers "+swimmers(l,b)+", at "+p.position()));
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.tick(b)>5&&swimmers(l,b)==1,"the pool is closing: tick "+LastSwimmer.tick(b)+", swimmers "+swimmers(l,b)+", at "+p.position()))
+            .thenExecute(()->{var heard=LastSwimmer.heard(b);h.assertTrue(heard!=null&&heard.carry()==DoorSounds.Carry.WATER,"through the door, someone swimming: "+heard);});
         for(int i=0;i<LastSwimmer.WAVER_HAULS;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
         seq=seq.thenIdle(2).thenExecute(()->{
                 h.assertTrue(LastSwimmer.hauls(b)==LastSwimmer.WAVER_HAULS&&LastSwimmer.part(b)<LastSwimmer.SECOND_TALK,"a third covered, long before the radio's second spoken part: hauls "+LastSwimmer.hauls(b)+", part "+LastSwimmer.part(b));
@@ -129,7 +130,9 @@ public final class LastSwimmerTests {
                 h.assertTrue(LastSwimmer.hauls(b)==LastSwimmer.BREATH_HAULS&&LastSwimmer.part(b)<LastSwimmer.LAST_VERSE&&!LastSwimmer.closed(b),"two thirds covered, a lane still open, before the last verse: part "+LastSwimmer.part(b));
                 h.assertTrue(LastSwimmer.holding(b)&&f.own(p,P).getBoolean("Breath227")&&!LastSwimmer.wavering(b),"the splashing stops with the cover, and the lights steady");});
         for(int i=LastSwimmer.BREATH_HAULS;i<SwimmerSite.COLUMNS;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
-        seq.thenExecute(()->{h.assertTrue(LastSwimmer.closed(b),"the cover is on");LastSwimmer.hurry(b,LastSwimmer.STEPS_AFTER);})
+        seq.thenExecute(()->{h.assertTrue(LastSwimmer.closed(b),"the cover is on");
+                var heard=LastSwimmer.heard(b);h.assertTrue(heard!=null&&heard.carry()==DoorSounds.Carry.EMPTY,"through the door, nothing moving now: "+heard);
+                LastSwimmer.hurry(b,LastSwimmer.STEPS_AFTER);})
             .thenWaitUntil(()->h.assertTrue(LastSwimmer.held(b),"the attendant holds the fire door"))
             .thenExecute(()->at(f,p,SwimmerSite.EXIT_X+1.5,SwimmerSite.EXIT_Z+.5,90))
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"walking out is the ending"))

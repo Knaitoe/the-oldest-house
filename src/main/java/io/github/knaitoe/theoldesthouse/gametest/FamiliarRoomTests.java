@@ -24,6 +24,8 @@ public final class FamiliarRoomTests {
     @AfterBatch(batch="familiar_kitchen") public static void doneKitchen(ServerLevel l){close();}
     @AfterBatch(batch="familiar_window") public static void doneWindow(ServerLevel l){close();}
     @AfterBatch(batch="familiar_return") public static void doneReturn(ServerLevel l){close();}
+    @AfterBatch(batch="familiar_wedge") public static void doneWedge(ServerLevel l){close();}
+    @AfterBatch(batch="familiar_use") public static void doneUse(ServerLevel l){close();KitchenFittings.clearAll();}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
 
     @GameTest(template="empty",batch="familiar_kitchen",timeoutTicks=600)
@@ -55,6 +57,8 @@ public final class FamiliarRoomTests {
             .thenExecute(()->{
                 h.assertTrue(FamiliarRoom.weight(p.getUUID(),5)==FamiliarRoom.MEET,"with someone already in it, far more readily");
                 h.assertTrue(FamiliarRoom.weight(q.getUUID(),5)==FamiliarRoom.WEIGHT,"but not more readily for the one who is there");
+                // 0.4.239: through its door, someone in there for the reader outside; the clock for the one inside.
+                h.assertTrue(FamiliarRoom.heard(p.getUUID()).carry()==DoorSounds.Carry.SOMEONE&&FamiliarRoom.heard(q.getUUID()).carry()==DoorSounds.Carry.CLOCK,"someone in there, heard from outside; for them, the clock");
             })
             .thenSucceed();
     }
@@ -122,6 +126,112 @@ public final class FamiliarRoomTests {
                 FamiliarRoom.loggedOut(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));
                 FamiliarRoom.loggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
                 h.assertTrue(!FamiliarRoom.pending(id)&&FamiliarRoom.visits(f.data(),id)==2,"reconnecting elsewhere lays out nothing");
+            })
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.239: a wedge in the kitchen's entry still holds it on the hall it was set from, for its owner; a reader coming from anywhere
+     * else is not kept out of the room people meet in, but comes in by its side door, hears their knock come out there, and goes back
+     * out the way they came in.
+     */
+    @GameTest(template="empty",batch="familiar_wedge",timeoutTicks=600)
+    public static void aWedgedKitchenStillLetsOthersInByAnotherDoor(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.FAMILIAR_KITCHEN;var b=f.base(place);var l=f.in;hold(f,place);
+        var p=NativeTestPlayers.survival(h,"kitchen_wedger");f.players.add(p);var q=NativeTestPlayers.survival(h,"kitchen_comer");f.players.add(q);
+        // Two halls the kitchen is dealt behind, a little south of it in its own ground: the owner's and the other reader's.
+        var xAt=b.offset(-3,0,12);var yAt=b.offset(3,0,12);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the kitchen is resident"))
+            .thenExecute(()->{
+                FamiliarRoom.build(l,b);var data=f.data();LabyrinthBuilder.registerDoors(data,place,b);
+                for(var at:new BlockPos[]{xAt,yAt}){for(int x=-3;x<=3;x++)for(int z=-1;z<=3;z++)l.setBlock(at.offset(x,-1,z),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);LabyrinthBuilder.placeDoor(l,at,net.minecraft.core.Direction.SOUTH);}
+                var hallX=new LabyrinthData.Door("test/kitchen_x",l.dimension(),xAt,net.minecraft.core.Direction.SOUTH,"place:"+place.id(),false);
+                var hallY=new LabyrinthData.Door("test/kitchen_y",l.dimension(),yAt,net.minecraft.core.Direction.SOUTH,"place:"+place.id(),false);
+                data.putDoor(hallX);data.putDoor(hallY);
+                var entry=data.door(place.entryDoorId());var side=data.door(place.id()+"/side");h.assertTrue(entry!=null&&side!=null,"the kitchen's doors are known");
+                // The owner came in from hall X and wedges the entry behind them.
+                data.pushReturn(p.getUUID(),new LabyrinthData.Waypoint(l.dimension(),net.minecraft.world.phys.Vec3.atBottomCenterOf(xAt),0,true,false));
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,0,0);p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(TraceRegistry.WEDGE.get()));
+                h.assertTrue(Wedges.wedge(p,l,entry.lower)&&Wedges.at(l,entry.lower),"the wedge holds the kitchen's door on hall X");
+                h.assertTrue(Wedges.way(p,hallX,entry,place)==entry,"from hall X, in by the door as ever");
+                // From hall Y the knock comes out at the side door, where the reader would come in.
+                DoorSounds.clearAll();q.teleportTo(l,yAt.getX()+.5,yAt.getY(),yAt.getZ()+2.5,180,0);
+                h.assertTrue(DoorSounds.knock(q,data,hallY)&&DoorSounds.heard().stream().anyMatch(s->s.what().equals("knock_far")&&s.at().pos().equals(side.lower)),"knocking from hall Y, it is heard at the side door: "+DoorSounds.heard());
+                // Through hall Y's door: not kept out, but in by the side door, the wedge where it was.
+                LabyrinthDoors.use(q,hallY);
+                h.assertTrue(Wedges.cameInBy(q,side)&&Wedges.cameInOtherWay(data,q.getUUID(),place),"in by the side door");
+                h.assertTrue(q.getX()>b.getX()+6.5&&Math.abs(q.getZ()-(b.getZ()-5.5))<3.5&&LabyrinthPlaces.placeAt(f.origin,q.blockPosition())==place,"standing outside the side door, in the kitchen's own ground: "+q.position());
+                h.assertTrue(Wedges.at(l,entry.lower)&&l.getBlockState(entry.lower).getValue(net.minecraft.world.level.block.DoorBlock.OPEN),"the wedge still holds the entry open on hall X");
+                h.assertTrue(l.getBlockState(side.lower).getValue(net.minecraft.world.level.block.DoorBlock.OPEN),"the side door stands open for them");
+                // In, and back out the way they came: to hall Y.
+                q.teleportTo(l,b.getX()+3.5,b.getY(),b.getZ()-5.5,90,0);LabyrinthDoors.tickPlayer(q,f.origin);
+                q.teleportTo(l,b.getX()+8.5,b.getY(),b.getZ()-5.5,-90,0);LabyrinthDoors.tickPlayer(q,f.origin);
+            })
+            .thenWaitUntil(()->h.assertTrue(q.position().distanceTo(net.minecraft.world.phys.Vec3.atBottomCenterOf(yAt))<4&&!Wedges.cameInOtherWay(f.data(),q.getUUID(),place),"back out by the side door, they are at hall Y's door: "+q.position()))
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.239: the kitchen in ordinary use, and calm. A chair sat in from its seat and pulled by its back, and not pulled out from under
+     * someone; the tap filling a bottle and running over the hands; the stove cooking a little at a time and burning nothing; the fridge
+     * keeping what is left in it; the table keeping what is set on it, for anyone to take.
+     */
+    @GameTest(template="empty",batch="familiar_use",timeoutTicks=900)
+    public static void theKitchenIsForUseAndNothingFrightensAnyoneInIt(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.FAMILIAR_KITCHEN;var b=f.base(place);var l=f.in;hold(f,place);KitchenFittings.clearAll();
+        var p=NativeTestPlayers.survival(h,"kitchen_cook");f.players.add(p);var q=NativeTestPlayers.survival(h,"kitchen_guest");f.players.add(q);
+        var hand=net.minecraft.world.InteractionHand.MAIN_HAND;
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the kitchen is resident"))
+            .thenExecute(()->{
+                FamiliarRoom.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                h.assertTrue(LabyrinthPacing.calm(place)&&!LabyrinthPacing.quiet(place),"the kitchen is calm: no growls, no hesitating pets");
+                p.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-5.5,0,0);q.teleportTo(l,b.getX()+2.5,b.getY(),b.getZ()-9.5,0,0);
+                // A chair: sat in from the seat, facing the table; not pulled out from under anyone; pulled by its back once empty.
+                var chair=b.offset(FamiliarRoom.TABLE.south());
+                var seat=new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atBottomCenterOf(chair).add(0,TraceBlock.SEAT,0),net.minecraft.core.Direction.UP,chair,false);
+                var back=new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atBottomCenterOf(chair).add(0,1.1,.4),net.minecraft.core.Direction.SOUTH,chair,false);
+                h.assertTrue(TraceBlock.onSeat(chair,seat)&&!TraceBlock.onSeat(chair,back),"a hand on the seat sits; a hand on the back pulls");
+                h.assertTrue(TraceRooms.sitOn(p,chair)&&p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity,"sitting at the table");
+                h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(p.getYRot()-net.minecraft.core.Direction.NORTH.toYRot()))<1,"facing the table: "+p.getYRot());
+                h.assertTrue(TraceRooms.chair(q,chair,l.getBlockState(chair))&&TraceBlock.is(l.getBlockState(chair),TraceBlock.Kind.CHAIR),"nobody pulls it out from under them");
+                p.stopRiding();
+                p.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-5.5,0,0);
+                // The tap: a bottle filled; and run over the hands, it puts out anything burning on them.
+                p.setItemInHand(hand,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GLASS_BOTTLE));
+                h.assertTrue(KitchenFittings.use(p,l,b,KitchenFittings.Fitting.SINK,b.offset(FamiliarRoom.SINK),net.minecraft.world.phys.Vec3.atCenterOf(b.offset(FamiliarRoom.SINK))),"the tap");
+                h.assertTrue(p.getInventory().countItem(net.minecraft.world.item.Items.POTION)==1&&p.getInventory().countItem(net.minecraft.world.item.Items.GLASS_BOTTLE)==0,"a bottle of water");
+                p.setItemInHand(hand,net.minecraft.world.item.ItemStack.EMPTY);
+                p.igniteForSeconds(5);KitchenFittings.use(p,l,b,KitchenFittings.Fitting.SINK,b.offset(FamiliarRoom.SINK),net.minecraft.world.phys.Vec3.atCenterOf(b.offset(FamiliarRoom.SINK)));
+                h.assertTrue(!p.isOnFire(),"the water puts it out");
+                // The stove: four at a time.
+                p.setItemInHand(hand,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BEEF,6));
+                h.assertTrue(KitchenFittings.use(p,l,b,KitchenFittings.Fitting.STOVE,b.offset(KitchenFittings.STOVE),net.minecraft.world.phys.Vec3.ZERO)&&KitchenFittings.cooking(l.getServer())&&p.getMainHandItem().getCount()==2,"four on the stove, two left in hand");
+                h.assertTrue(!KitchenFittings.done(l),"not done at once");
+                p.setItemInHand(hand,net.minecraft.world.item.ItemStack.EMPTY);KitchenFittings.use(p,l,b,KitchenFittings.Fitting.STOVE,b.offset(KitchenFittings.STOVE),net.minecraft.world.phys.Vec3.ZERO);
+                h.assertTrue(p.getInventory().countItem(net.minecraft.world.item.Items.COOKED_BEEF)==0&&KitchenFittings.cooking(l.getServer()),"and not taken off before it is");
+                // The fridge keeps what is left in it, for whoever comes next, and as the House remembers it.
+                var fridge=KitchenFittings.store(l,"fridge",27,b.offset(FamiliarRoom.FRIDGE));fridge.setItem(4,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.MILK_BUCKET));
+                KitchenFittings.clearAll();
+                h.assertTrue(KitchenFittings.store(l,"fridge",27,b.offset(FamiliarRoom.FRIDGE)).getItem(4).is(net.minecraft.world.item.Items.MILK_BUCKET),"left in the fridge, it is there again");
+                KitchenFittings.use(q,l,b,KitchenFittings.Fitting.FRIDGE,b.offset(FamiliarRoom.FRIDGE),net.minecraft.world.phys.Vec3.ZERO);
+                h.assertTrue(q.containerMenu instanceof net.minecraft.world.inventory.ChestMenu menu&&menu.getContainer().getItem(4).is(net.minecraft.world.item.Items.MILK_BUCKET),"and for the other reader too");q.closeContainer();
+                // The table keeps what is set on it, for anyone to take.
+                var table=b.offset(FamiliarRoom.TABLE);var top=net.minecraft.world.phys.Vec3.atBottomCenterOf(table).add(0,1,0);
+                p.setItemInHand(hand,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD,2));
+                KitchenFittings.use(p,l,b,KitchenFittings.Fitting.TABLE,table,top);
+                h.assertTrue(p.getMainHandItem().isEmpty()&&KitchenFittings.lying(l,table).size()==1&&KitchenFittings.item(l,KitchenFittings.lying(l,table).get(0)).getCount()==2,"two loaves left on the table");
+                for(int i=0;i<4;i++){p.setItemInHand(hand,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.APPLE));KitchenFittings.use(p,l,b,KitchenFittings.Fitting.TABLE,table,top);}
+                h.assertTrue(KitchenFittings.lying(l,table).size()==KitchenFittings.TABLE_SPOTS.length&&p.getMainHandItem().is(net.minecraft.world.item.Items.APPLE),"no room left on the table, and the last apple still in hand");
+                q.setItemInHand(hand,net.minecraft.world.item.ItemStack.EMPTY);
+                var bread=KitchenFittings.lying(l,table).stream().filter(d->KitchenFittings.item(l,d).is(net.minecraft.world.item.Items.BREAD)).findFirst().orElseThrow();
+                KitchenFittings.use(q,l,b,KitchenFittings.Fitting.TABLE,table,bread.position());
+                h.assertTrue(q.getInventory().countItem(net.minecraft.world.item.Items.BREAD)==2&&KitchenFittings.lying(l,table).size()==KitchenFittings.TABLE_SPOTS.length-1,"the other reader takes the bread");
+            })
+            .thenIdle(KitchenFittings.COOK+20)
+            .thenExecute(()->{
+                h.assertTrue(KitchenFittings.done(l),"done");
+                p.setItemInHand(hand,net.minecraft.world.item.ItemStack.EMPTY);KitchenFittings.use(p,l,b,KitchenFittings.Fitting.STOVE,b.offset(KitchenFittings.STOVE),net.minecraft.world.phys.Vec3.ZERO);
+                h.assertTrue(p.getInventory().countItem(net.minecraft.world.item.Items.COOKED_BEEF)==4&&!KitchenFittings.cooking(l.getServer()),"four cooked, off the stove, and nothing burnt");
             })
             .thenSucceed();
     }

@@ -75,8 +75,13 @@ public final class TraceBlock extends HorizontalDirectionalBlock {
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         var kind=s.getValue(KIND);if(kind!=Kind.CHAIR&&kind!=Kind.HOOK)return InteractionResult.PASS;
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
+        // 0.4.239: a hand on the seat sits down in it; a hand on the back pulls it (and, crouching, turns it).
+        if(kind==Kind.CHAIR&&!p.isShiftKeyDown()&&onSeat(pos,hit))return TraceRooms.sitOn(p,pos)?InteractionResult.CONSUME:InteractionResult.PASS;
         return (kind==Kind.CHAIR?TraceRooms.chair(p,pos,s):TraceRooms.hook(p,pos))?InteractionResult.CONSUME:InteractionResult.PASS;
     }
+    /** The top of the loose chair's seat, in blocks: a hand at or below it is on the seat, above it on the back. */
+    public static final double SEAT=9/16.;
+    public static boolean onSeat(BlockPos pos,BlockHitResult hit){return hit.getLocation().y-pos.getY()<=SEAT+.03;}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
 }

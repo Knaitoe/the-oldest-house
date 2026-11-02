@@ -1,6 +1,7 @@
 """Original sounds for sound through connected doors (0.4.229): a knock struck on a House door; that knock heard faintly through
 the door it leads to; a door shutting heard as a dull thud from its other side; and four rooms as they sound through a closed door
-(a clock ticking, water, music, voices), all low and muffled, as if through wood.
+(a clock ticking, water, music, voices), all low and muffled, as if through wood. 0.4.239 adds two: someone moving about in
+there, and a room with nothing moving in it.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Run from the repository root.
 Existing files are kept, so the committed sounds only change when they are deleted first.
@@ -18,6 +19,9 @@ ROWS = {
     'through_water': ('Water behind the door', 6),
     'through_music': ('Music behind the door', 6),
     'through_voices': ('Voices behind the door', 6),
+    # 0.4.239: a room as it is now. One person going about something ordinary; and a room with nothing moving in it.
+    'through_someone': ('Someone moving about behind the door', 6),
+    'through_empty': ('Nothing moving behind the door', 5),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -30,7 +34,7 @@ def check():
         assert path.exists() and path.stat().st_size > 1000, path
         assert sounds[f'door.{name}'] == {'sounds': [{'name': f'the_oldest_house:door/{name}', 'attenuation_distance': reach}], 'subtitle': f'subtitles.the_oldest_house.door.{name}'}, name
         assert lang[f'subtitles.the_oldest_house.door.{name}'] == subtitle, name
-    print('Verified the doors\' seven original cues.')
+    print(f'Verified the doors\' {len(ROWS)} original cues.')
 
 
 if __name__ == '__main__' and '--check' in sys.argv:
@@ -129,8 +133,35 @@ def through_voices():
     return band(out * adsr(n, .2, .4), 90, 700)
 
 
+def through_someone():
+    # One person in a room beyond the door: two soft steps on boards, a chair drawn back, a cup set down; nothing said.
+    out = np.zeros(seconds(2.6))
+    for at in (.1, .55):
+        m = seconds(.2)
+        step = np.sin(2 * np.pi * 85 * times(m)) * envelope(m, .004, .05) + band(rng.standard_normal(m), 60, 300) * envelope(m, .002, .03) * .6
+        place(out, step * .8, at)
+    m = seconds(.45)
+    t = times(m)
+    scrape = band(rng.standard_normal(m), 250, 800) * (.5 + .5 * np.sin(2 * np.pi * 9 * t)) * adsr(m, .05, .25) * .55
+    place(out, scrape, 1.05)
+    m = seconds(.3)
+    cup = (np.sin(2 * np.pi * 820 * times(m)) * .5 + np.sin(2 * np.pi * 1310 * times(m)) * .25) * envelope(m, .001, .06)
+    cup += np.sin(2 * np.pi * 120 * times(m)) * envelope(m, .002, .03) * .6
+    place(out, cup * .7, 1.85)
+    return band(out, 55, 1100)
+
+
+def through_empty():
+    # A room with nothing moving in it, heard through a door: only the room itself, a low hollow air with a standing note in it.
+    n = seconds(2.8)
+    t = times(n)
+    air = band(rng.standard_normal(n), 35, 220) * (.7 + .3 * np.sin(2 * np.pi * .35 * t))
+    hollow = (np.sin(2 * np.pi * 68 * t) + .45 * np.sin(2 * np.pi * 137 * t)) * (.5 + .5 * np.sin(2 * np.pi * .2 * t + 1.1)) * .25
+    return band((air * .5 + hollow) * adsr(n, .7, 1.0), 30, 400)
+
+
 MAKERS = {'knock': knock, 'knock_far': knock_far, 'thud_far': thud_far, 'through_clock': through_clock, 'through_water': through_water,
-          'through_music': through_music, 'through_voices': through_voices}
+          'through_music': through_music, 'through_voices': through_voices, 'through_someone': through_someone, 'through_empty': through_empty}
 
 
 def main():

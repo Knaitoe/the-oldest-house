@@ -41,3 +41,5 @@ the next, the hall last walked, its floor seen from above at a third of its size
 the yard itself unchanged. `LabyrinthTests`: twenty-two gray places at the start.
 
 0.4.238: the window's yard is laid out again after a reconnect or when its chunk is sent afresh; see docs/REVIEW_FIXES_0_4_238.md.
+
+0.4.239: the kitchen in use (chairs to sit in, the tap, the stove, the fridge, the cupboards, the table) and calm; see docs/KITCHEN_AND_DOORS_0_4_239.md.

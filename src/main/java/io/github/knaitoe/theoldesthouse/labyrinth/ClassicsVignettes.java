@@ -38,6 +38,8 @@ public final class ClassicsVignettes {
     private static final double[][] STANDS={{.5,-13.5},{-1.5,-14.5},{1.5,-14.5},{.5,-16.5}};
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private ClassicsVignettes(){}
+    /** 0.4.239: whether the family has been driven out of the séance house; it is empty after that. */
+    public static boolean familyGone(LabyrinthData data){var all=data.state(STATE);return all.getBoolean("SittingEnded")&&"drove_the_family_out".equals(all.getString("SharedOutcome"));}
     public static boolean isClassic(LabyrinthPlace place){return place==LabyrinthPlace.SEANCE||place==LabyrinthPlace.WALLPAPER_NURSERY;}
     public static CompoundTag personal(LabyrinthData data,UUID reader){return data.stateEntry(STATE,reader.toString());}
     public static void save(LabyrinthData data,UUID reader,CompoundTag own){var all=data.state(STATE);all.put(reader.toString(),own.copy());data.setState(STATE,all);}
