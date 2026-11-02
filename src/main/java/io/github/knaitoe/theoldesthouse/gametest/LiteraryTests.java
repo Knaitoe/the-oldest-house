@@ -136,6 +136,61 @@ public final class LiteraryTests {
             .thenSucceed();
     }
     @AfterBatch(batch="literary_masque_after") public static void masqueAfterDone(ServerLevel l){close();}
+    /** 0.4.249: the cottage comes back to a reader who finished it as their thread's evening left it, theirs alone, and earns nothing. */
+    @GameTest(template="empty",batch="literary_paw_after",timeoutTicks=400)
+    public static void aFinishedCottageComesBackToTheTwoOfThemByTheFire(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.THREE_FINGERS;var p=f.player("paw_after",place);var fresh=f.player("paw_after_fresh",place);
+        apart(f,p);apart(f,fresh);String outcome="gave_the_paw_back_to_the_fire";
+        var thread=pawThread(f,p);var story=thread.getCompound("Story");
+        story.putInt("Stage",ThreeFingers.DONE);story.putInt(ThreeFingers.FINGERS,1);story.putString("Wish1",ThreeFingers.STORM);story.putString("Outcome",outcome);
+        story.putBoolean("SonGone",true);story.putBoolean("SergeantGone",true);story.putInt("Evening",thread.getInt("Visit"));
+        thread.put("Story",story);thread.putBoolean("Ended",true);thread.putString("Outcome",outcome);savePaw(f,p,thread);
+        var own=f.own(p,place);own.putBoolean("Ready",true);own.putBoolean("Completed",true);own.putString("Outcome",outcome);own.putString("Wish1",ThreeFingers.STORM);own.putInt("Beat",own.getInt("Visit"));LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()),outcome);int credit=WitnessAccount.count(f.data(),p.getUUID());
+        h.assertTrue(Aftermath.canDeal(f.data(),p.getUUID(),place)&&LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(place),"the cottage is offered back to the reader who finished it");
+        h.assertTrue(!Aftermath.canDeal(f.data(),fresh.getUUID(),place),"but never as an aftermath to a reader who has not");
+        var them=DoorSounds.heard(p.server,f.data(),fresh.getUUID(),place,null);
+        h.assertTrue(DoorSounds.heard(p.server,f.data(),p.getUUID(),place,null)==null&&them!=null&&them.carry()==DoorSounds.Carry.VOICES,"through the door: nothing for them, the family talking for the other");
+        f.arrive(p,place);
+        java.util.function.Function<String,LiteraryActor> cast=key->{var s=pawStory(f,p);return s.hasUUID(key)&&f.in.getEntity(s.getUUID(key)) instanceof LiteraryActor a?a:null;};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),place)==1&&cast.apply("CastFather")!=null&&cast.apply("CastMother")!=null,"the return is counted, and Walter and Ruth are by the fire"))
+            .thenExecute(()->{
+                var s=pawStory(f,p);String id=VignetteThreads.threadId(f.data(),place,p.getUUID());
+                h.assertTrue(s.getInt("Stage")==ThreeFingers.DONE&&cast.apply("CastSon")==null&&cast.apply("CastSergeant")==null&&cast.apply("CastMessenger")==null,"Will's chair is empty, and the sergeant and the man from the mill are gone");
+                h.assertTrue(VignetteThreads.sees(p,place.id(),id)&&!VignetteThreads.sees(fresh,place.id(),id),"the two of them are theirs, not the other reader's");
+                h.assertTrue(ThreeFingers.aftermath(s).startsWith("Nothing of the paw")&&ThreeFingers.aftermath(s).contains("not a breath of wind"),"the line says how it ended and what the first wish did: "+ThreeFingers.aftermath(s));
+                var mine=f.own(p,place);h.assertTrue(mine.getBoolean("Completed")&&outcome.equals(mine.getString("Outcome"))&&WitnessAccount.count(f.data(),p.getUUID())==credit,"nothing new is earned: "+mine);
+                h.assertTrue(Aftermath.canDeal(f.data(),p.getUUID(),place),"one more return is left");
+                f.arrive(p,place);})
+            .thenWaitUntil(()->h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),place)==2,"the next arrival is a return of its own"))
+            .thenExecute(()->h.assertTrue(!Aftermath.canDeal(f.data(),p.getUUID(),place)&&!LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(place),"and then it is not offered again"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_paw_after") public static void pawAfterDone(ServerLevel l){close();}
+    /** 0.4.249: the child's room comes back to a reader who finished it still shut, with the toys over the bed, and earns nothing. */
+    @GameTest(template="empty",batch="literary_child_after",timeoutTicks=400)
+    public static void aFinishedChildRoomComesBackShutWithTheToysOverTheBed(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.CHILD_ROOM;f.build(place);var b=f.base(place);var l=f.in;
+        for(int i=0;i<ChildRoom.EXITS.size();i++)h.assertTrue(ChildRoom.seal(l,b,i),"an exit goes while nobody is there to see it: "+i);
+        var world=LiteraryVignettes.shared(f.data(),place);world.putInt("Exits0474",ChildRoom.ALL);LiteraryVignettes.shared(f.data(),place,world);
+        var p=f.player("child_after",place);String outcome="examined_the_lost_exits_and_crawled_below_the_bed";
+        var own=f.own(p,place);own.putBoolean("Read_Source",true);own.putInt("ExitSeen0474",ChildRoom.ALL);own.putBoolean("AllSeen0474",true);own.putBoolean("Crawled0474",true);
+        own.putBoolean("Ready",true);own.putBoolean("Completed",true);own.putString("Outcome",outcome);own.putInt("Beat",own.getInt("Visit"));LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()),outcome);int credit=WitnessAccount.count(f.data(),p.getUUID());
+        h.assertTrue(Aftermath.canDeal(f.data(),p.getUUID(),place)&&LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(place),"the room is offered back to the reader who finished it");
+        f.arrive(p,place);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),place)==1,"the return is counted"))
+            .thenExecute(()->{
+                for(int i=0;i<ChildRoom.EXITS.size();i++){var ceiling=l.getBlockState(b.offset(ChildRoom.CEILING_SLOTS.get(i)));
+                    h.assertTrue(NurseryBlock.is(ceiling,ChildRoom.PAIRED.get(i))&&ceiling.getValue(NurseryBlock.STAGE)==NurseryBlock.CEILING,"the toy still hangs over the bed: "+i);
+                    for(var c:ChildRoom.EXITS.get(i)){var at=l.getBlockState(b.offset(c));h.assertTrue(!at.isAir()&&!(at.getBlock() instanceof DoorBlock)&&!at.is(Blocks.GLASS_PANE),"every way out is still wall: "+i);}}
+                var mine=f.own(p,place);h.assertTrue(mine.getBoolean("Completed")&&outcome.equals(mine.getString("Outcome"))&&!mine.getBoolean("DoorShut0119")&&WitnessAccount.count(f.data(),p.getUUID())==credit,"nothing new is earned, and the way back is open to them: "+mine);
+                f.arrive(p,place);})
+            .thenWaitUntil(()->h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),place)==2,"the next arrival is a return of its own"))
+            .thenExecute(()->h.assertTrue(!Aftermath.canDeal(f.data(),p.getUUID(),place),"and then it is not offered again"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_child_after") public static void childAfterDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_thin_structures",timeoutTicks=600)
     public static void theMasqueWindsByBrazierLightAndBlyKeepsItsCupboardsLineAndPond(GameTestHelper h){
         var f=new Fixture(h);var masque=LabyrinthPlace.MASQUE;var bly=LabyrinthPlace.BLY_ROUTE;f.build(masque);f.build(bly);var m=f.base(masque);var y=f.base(bly);var l=f.in;
