@@ -71,6 +71,17 @@ was still loading. Locally the case finishes in 12 seconds. Its budget is now 60
 Backseat and entrance cases already use), so the budget covers real time. A failed staging now says where each of the cast is, where
 they are going and what holds them (BorrascaCast.why).
 
+## Run 1411 (0.4.266)
+
+The literary job failed the same case again, and the new message gave the real cause. Nell and both men were standing at the taking,
+"watched", so the staging would not move them however long it waited. Nobody in that case was watching them. Every Borrasca case uses the
+same site on the same origin, and the strokes case (new in 0.4.262), which watches the men take Nell from close by, had no cleanup after
+its batch. Its reader was left standing there, looking at the taking spot, when the four-returns case ran next. The strokes batch now
+closes its fixture like every other Borrasca batch. The wall-clock rest above stays: it is still needed on a loaded runner.
+
+The same run failed the refinery case after two seconds of real time, waiting for its site's chunks on an 800-tick budget. Its budget
+is now 3000 ticks; its readiness check already rests five milliseconds while waiting.
+
 The native client check also caught the draft sheets' models: the folded sheet's elements were written as a list inside the element
 list, which the client's model reader refuses. tools/draw_draft_fittings.py now writes one flat list, and sheet_0/sheet_1 are
 regenerated from it. The selected-cases namespace gains the writing template (a copy of that namespace's empty structure), so the
