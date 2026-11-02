@@ -2154,9 +2154,11 @@ def m_pinboard():
 
 @spec('guitar', {'g': 'guitar', 'k': 'black'}, 'guitar')
 def m_guitar():
-    rot = {'origin': [8, 0, 14], 'axis': 'x', 'angle': 22.5}
-    return [dict(box((4, 0, 11.5), (12, 9, 14), 'g', uv=(4, 6, 12, 15)), rotation=rot), dict(box((7, 9, 12), (9, 24, 13), 'g', uv=(7, 0, 9, 6)), rotation=rot),
-            dict(box((6.5, 24, 11.8), (9.5, 27, 13.2), 'k'), rotation=rot)]
+    # Leaning against the wall (the model's south face): its foot stands out on the floor and the tilt brings the head back to rest
+    # on the wall at z 15.5. Pivoted at the wall, the 0.4.242 guitar had leaned its neck and head into the wall.
+    rot = {'origin': [8, 0, 4.75], 'axis': 'x', 'angle': 22.5}
+    return [dict(box((4, 0, 3.5), (12, 9, 6), 'g', uv=(4, 6, 12, 15)), rotation=rot), dict(box((7, 9, 4), (9, 24, 5), 'g', uv=(7, 0, 9, 6)), rotation=rot),
+            dict(box((6.5, 24, 3.8), (9.5, 27, 5.2), 'k'), rotation=rot)]
 
 
 @spec('boombox', {'b': 'boombox', 'k': 'black', 'c': 'chrome', 'p': 'paperback'}, 'boombox')

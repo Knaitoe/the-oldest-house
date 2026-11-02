@@ -77,7 +77,7 @@ public final class BarrettHomeBlock extends Block {
         case COVERED->Shapes.or(Block.box(0,0,1,16,9,16),Block.box(0,9,9,16,15,16));case SCHEDULE_BOARD->Block.box(1,2,14,15,15,16);
         case BACKPACKS->Block.box(1,1,12,15,12.5,16);case FRUIT_BOWL->Block.box(4,0,4,12,7,12);case STUFFED->Block.box(1,0,4,15,8,13);
         case CEILING_STARS->Block.box(0,15.8,0,16,16,16);case FAIRY_LIGHTS->Block.box(0,9,15.6,16,16,16);case POSTER_C->Block.box(2,1,15.6,14,15,16);
-        case GUITAR->Block.box(4,0,8,12,16,15);case BOOMBOX->Block.box(1,0,6,14,8,14.5);case LINEN_SHELVES->Block.box(0,0,7,16,16,16);
+        case GUITAR->Block.box(4,0,3,12,16,16);case BOOMBOX->Block.box(1,0,6,14,8,14.5);case LINEN_SHELVES->Block.box(0,0,7,16,16,16);
         case NIGHTSTAND_JOHN,NIGHTSTAND_SARAH->Block.box(.5,0,2.5,15.5,12,14.5);
         case COAT_HOOKS_B->Block.box(0,0,12.5,16,14.5,16);case SIDEBOARD_L,SIDEBOARD_R->Block.box(0,0,3,16,13,16);
         case RANGE->Block.box(0,0,1,16,15,16);case RANGE_HOOD->Block.box(0,0,7,16,16,16);case WALL_CABINET->Block.box(0,0,9,16,14,16);
