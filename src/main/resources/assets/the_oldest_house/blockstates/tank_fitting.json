@@ -1,0 +1,529 @@
+{
+  "variants": {
+    "facing=north,kind=platform,stage=0": {
+      "model": "the_oldest_house:block/tank/platform_0"
+    },
+    "facing=north,kind=platform,stage=1": {
+      "model": "the_oldest_house:block/tank/platform_0"
+    },
+    "facing=north,kind=platform,stage=2": {
+      "model": "the_oldest_house:block/tank/platform_0"
+    },
+    "facing=north,kind=platform,stage=3": {
+      "model": "the_oldest_house:block/tank/platform_0"
+    },
+    "facing=north,kind=platform,stage=4": {
+      "model": "the_oldest_house:block/tank/platform_0"
+    },
+    "facing=east,kind=platform,stage=0": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 90
+    },
+    "facing=east,kind=platform,stage=1": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 90
+    },
+    "facing=east,kind=platform,stage=2": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 90
+    },
+    "facing=east,kind=platform,stage=3": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 90
+    },
+    "facing=east,kind=platform,stage=4": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 90
+    },
+    "facing=south,kind=platform,stage=0": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 180
+    },
+    "facing=south,kind=platform,stage=1": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 180
+    },
+    "facing=south,kind=platform,stage=2": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 180
+    },
+    "facing=south,kind=platform,stage=3": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 180
+    },
+    "facing=south,kind=platform,stage=4": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 180
+    },
+    "facing=west,kind=platform,stage=0": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 270
+    },
+    "facing=west,kind=platform,stage=1": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 270
+    },
+    "facing=west,kind=platform,stage=2": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 270
+    },
+    "facing=west,kind=platform,stage=3": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 270
+    },
+    "facing=west,kind=platform,stage=4": {
+      "model": "the_oldest_house:block/tank/platform_0",
+      "y": 270
+    },
+    "facing=north,kind=valve,stage=0": {
+      "model": "the_oldest_house:block/tank/valve_0"
+    },
+    "facing=north,kind=valve,stage=1": {
+      "model": "the_oldest_house:block/tank/valve_1"
+    },
+    "facing=north,kind=valve,stage=2": {
+      "model": "the_oldest_house:block/tank/valve_0"
+    },
+    "facing=north,kind=valve,stage=3": {
+      "model": "the_oldest_house:block/tank/valve_0"
+    },
+    "facing=north,kind=valve,stage=4": {
+      "model": "the_oldest_house:block/tank/valve_0"
+    },
+    "facing=east,kind=valve,stage=0": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 90
+    },
+    "facing=east,kind=valve,stage=1": {
+      "model": "the_oldest_house:block/tank/valve_1",
+      "y": 90
+    },
+    "facing=east,kind=valve,stage=2": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 90
+    },
+    "facing=east,kind=valve,stage=3": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 90
+    },
+    "facing=east,kind=valve,stage=4": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 90
+    },
+    "facing=south,kind=valve,stage=0": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 180
+    },
+    "facing=south,kind=valve,stage=1": {
+      "model": "the_oldest_house:block/tank/valve_1",
+      "y": 180
+    },
+    "facing=south,kind=valve,stage=2": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 180
+    },
+    "facing=south,kind=valve,stage=3": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 180
+    },
+    "facing=south,kind=valve,stage=4": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 180
+    },
+    "facing=west,kind=valve,stage=0": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 270
+    },
+    "facing=west,kind=valve,stage=1": {
+      "model": "the_oldest_house:block/tank/valve_1",
+      "y": 270
+    },
+    "facing=west,kind=valve,stage=2": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 270
+    },
+    "facing=west,kind=valve,stage=3": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 270
+    },
+    "facing=west,kind=valve,stage=4": {
+      "model": "the_oldest_house:block/tank/valve_0",
+      "y": 270
+    },
+    "facing=north,kind=pump,stage=0": {
+      "model": "the_oldest_house:block/tank/pump_0"
+    },
+    "facing=north,kind=pump,stage=1": {
+      "model": "the_oldest_house:block/tank/pump_1"
+    },
+    "facing=north,kind=pump,stage=2": {
+      "model": "the_oldest_house:block/tank/pump_0"
+    },
+    "facing=north,kind=pump,stage=3": {
+      "model": "the_oldest_house:block/tank/pump_0"
+    },
+    "facing=north,kind=pump,stage=4": {
+      "model": "the_oldest_house:block/tank/pump_0"
+    },
+    "facing=east,kind=pump,stage=0": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 90
+    },
+    "facing=east,kind=pump,stage=1": {
+      "model": "the_oldest_house:block/tank/pump_1",
+      "y": 90
+    },
+    "facing=east,kind=pump,stage=2": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 90
+    },
+    "facing=east,kind=pump,stage=3": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 90
+    },
+    "facing=east,kind=pump,stage=4": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 90
+    },
+    "facing=south,kind=pump,stage=0": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 180
+    },
+    "facing=south,kind=pump,stage=1": {
+      "model": "the_oldest_house:block/tank/pump_1",
+      "y": 180
+    },
+    "facing=south,kind=pump,stage=2": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 180
+    },
+    "facing=south,kind=pump,stage=3": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 180
+    },
+    "facing=south,kind=pump,stage=4": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 180
+    },
+    "facing=west,kind=pump,stage=0": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 270
+    },
+    "facing=west,kind=pump,stage=1": {
+      "model": "the_oldest_house:block/tank/pump_1",
+      "y": 270
+    },
+    "facing=west,kind=pump,stage=2": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 270
+    },
+    "facing=west,kind=pump,stage=3": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 270
+    },
+    "facing=west,kind=pump,stage=4": {
+      "model": "the_oldest_house:block/tank/pump_0",
+      "y": 270
+    },
+    "facing=north,kind=outlet,stage=0": {
+      "model": "the_oldest_house:block/tank/outlet_0"
+    },
+    "facing=north,kind=outlet,stage=1": {
+      "model": "the_oldest_house:block/tank/outlet_1"
+    },
+    "facing=north,kind=outlet,stage=2": {
+      "model": "the_oldest_house:block/tank/outlet_0"
+    },
+    "facing=north,kind=outlet,stage=3": {
+      "model": "the_oldest_house:block/tank/outlet_0"
+    },
+    "facing=north,kind=outlet,stage=4": {
+      "model": "the_oldest_house:block/tank/outlet_0"
+    },
+    "facing=east,kind=outlet,stage=0": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 90
+    },
+    "facing=east,kind=outlet,stage=1": {
+      "model": "the_oldest_house:block/tank/outlet_1",
+      "y": 90
+    },
+    "facing=east,kind=outlet,stage=2": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 90
+    },
+    "facing=east,kind=outlet,stage=3": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 90
+    },
+    "facing=east,kind=outlet,stage=4": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 90
+    },
+    "facing=south,kind=outlet,stage=0": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 180
+    },
+    "facing=south,kind=outlet,stage=1": {
+      "model": "the_oldest_house:block/tank/outlet_1",
+      "y": 180
+    },
+    "facing=south,kind=outlet,stage=2": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 180
+    },
+    "facing=south,kind=outlet,stage=3": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 180
+    },
+    "facing=south,kind=outlet,stage=4": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 180
+    },
+    "facing=west,kind=outlet,stage=0": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 270
+    },
+    "facing=west,kind=outlet,stage=1": {
+      "model": "the_oldest_house:block/tank/outlet_1",
+      "y": 270
+    },
+    "facing=west,kind=outlet,stage=2": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 270
+    },
+    "facing=west,kind=outlet,stage=3": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 270
+    },
+    "facing=west,kind=outlet,stage=4": {
+      "model": "the_oldest_house:block/tank/outlet_0",
+      "y": 270
+    },
+    "facing=north,kind=gauge,stage=0": {
+      "model": "the_oldest_house:block/tank/gauge_0"
+    },
+    "facing=north,kind=gauge,stage=1": {
+      "model": "the_oldest_house:block/tank/gauge_1"
+    },
+    "facing=north,kind=gauge,stage=2": {
+      "model": "the_oldest_house:block/tank/gauge_2"
+    },
+    "facing=north,kind=gauge,stage=3": {
+      "model": "the_oldest_house:block/tank/gauge_3"
+    },
+    "facing=north,kind=gauge,stage=4": {
+      "model": "the_oldest_house:block/tank/gauge_4"
+    },
+    "facing=east,kind=gauge,stage=0": {
+      "model": "the_oldest_house:block/tank/gauge_0",
+      "y": 90
+    },
+    "facing=east,kind=gauge,stage=1": {
+      "model": "the_oldest_house:block/tank/gauge_1",
+      "y": 90
+    },
+    "facing=east,kind=gauge,stage=2": {
+      "model": "the_oldest_house:block/tank/gauge_2",
+      "y": 90
+    },
+    "facing=east,kind=gauge,stage=3": {
+      "model": "the_oldest_house:block/tank/gauge_3",
+      "y": 90
+    },
+    "facing=east,kind=gauge,stage=4": {
+      "model": "the_oldest_house:block/tank/gauge_4",
+      "y": 90
+    },
+    "facing=south,kind=gauge,stage=0": {
+      "model": "the_oldest_house:block/tank/gauge_0",
+      "y": 180
+    },
+    "facing=south,kind=gauge,stage=1": {
+      "model": "the_oldest_house:block/tank/gauge_1",
+      "y": 180
+    },
+    "facing=south,kind=gauge,stage=2": {
+      "model": "the_oldest_house:block/tank/gauge_2",
+      "y": 180
+    },
+    "facing=south,kind=gauge,stage=3": {
+      "model": "the_oldest_house:block/tank/gauge_3",
+      "y": 180
+    },
+    "facing=south,kind=gauge,stage=4": {
+      "model": "the_oldest_house:block/tank/gauge_4",
+      "y": 180
+    },
+    "facing=west,kind=gauge,stage=0": {
+      "model": "the_oldest_house:block/tank/gauge_0",
+      "y": 270
+    },
+    "facing=west,kind=gauge,stage=1": {
+      "model": "the_oldest_house:block/tank/gauge_1",
+      "y": 270
+    },
+    "facing=west,kind=gauge,stage=2": {
+      "model": "the_oldest_house:block/tank/gauge_2",
+      "y": 270
+    },
+    "facing=west,kind=gauge,stage=3": {
+      "model": "the_oldest_house:block/tank/gauge_3",
+      "y": 270
+    },
+    "facing=west,kind=gauge,stage=4": {
+      "model": "the_oldest_house:block/tank/gauge_4",
+      "y": 270
+    },
+    "facing=north,kind=pipe,stage=0": {
+      "model": "the_oldest_house:block/tank/pipe_0"
+    },
+    "facing=north,kind=pipe,stage=1": {
+      "model": "the_oldest_house:block/tank/pipe_1"
+    },
+    "facing=north,kind=pipe,stage=2": {
+      "model": "the_oldest_house:block/tank/pipe_2"
+    },
+    "facing=north,kind=pipe,stage=3": {
+      "model": "the_oldest_house:block/tank/pipe_0"
+    },
+    "facing=north,kind=pipe,stage=4": {
+      "model": "the_oldest_house:block/tank/pipe_0"
+    },
+    "facing=east,kind=pipe,stage=0": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 90
+    },
+    "facing=east,kind=pipe,stage=1": {
+      "model": "the_oldest_house:block/tank/pipe_1",
+      "y": 90
+    },
+    "facing=east,kind=pipe,stage=2": {
+      "model": "the_oldest_house:block/tank/pipe_2",
+      "y": 90
+    },
+    "facing=east,kind=pipe,stage=3": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 90
+    },
+    "facing=east,kind=pipe,stage=4": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 90
+    },
+    "facing=south,kind=pipe,stage=0": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 180
+    },
+    "facing=south,kind=pipe,stage=1": {
+      "model": "the_oldest_house:block/tank/pipe_1",
+      "y": 180
+    },
+    "facing=south,kind=pipe,stage=2": {
+      "model": "the_oldest_house:block/tank/pipe_2",
+      "y": 180
+    },
+    "facing=south,kind=pipe,stage=3": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 180
+    },
+    "facing=south,kind=pipe,stage=4": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 180
+    },
+    "facing=west,kind=pipe,stage=0": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 270
+    },
+    "facing=west,kind=pipe,stage=1": {
+      "model": "the_oldest_house:block/tank/pipe_1",
+      "y": 270
+    },
+    "facing=west,kind=pipe,stage=2": {
+      "model": "the_oldest_house:block/tank/pipe_2",
+      "y": 270
+    },
+    "facing=west,kind=pipe,stage=3": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 270
+    },
+    "facing=west,kind=pipe,stage=4": {
+      "model": "the_oldest_house:block/tank/pipe_0",
+      "y": 270
+    },
+    "facing=north,kind=transfer,stage=0": {
+      "model": "the_oldest_house:block/tank/transfer_0"
+    },
+    "facing=north,kind=transfer,stage=1": {
+      "model": "the_oldest_house:block/tank/transfer_1"
+    },
+    "facing=north,kind=transfer,stage=2": {
+      "model": "the_oldest_house:block/tank/transfer_2"
+    },
+    "facing=north,kind=transfer,stage=3": {
+      "model": "the_oldest_house:block/tank/transfer_0"
+    },
+    "facing=north,kind=transfer,stage=4": {
+      "model": "the_oldest_house:block/tank/transfer_0"
+    },
+    "facing=east,kind=transfer,stage=0": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 90
+    },
+    "facing=east,kind=transfer,stage=1": {
+      "model": "the_oldest_house:block/tank/transfer_1",
+      "y": 90
+    },
+    "facing=east,kind=transfer,stage=2": {
+      "model": "the_oldest_house:block/tank/transfer_2",
+      "y": 90
+    },
+    "facing=east,kind=transfer,stage=3": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 90
+    },
+    "facing=east,kind=transfer,stage=4": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 90
+    },
+    "facing=south,kind=transfer,stage=0": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 180
+    },
+    "facing=south,kind=transfer,stage=1": {
+      "model": "the_oldest_house:block/tank/transfer_1",
+      "y": 180
+    },
+    "facing=south,kind=transfer,stage=2": {
+      "model": "the_oldest_house:block/tank/transfer_2",
+      "y": 180
+    },
+    "facing=south,kind=transfer,stage=3": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 180
+    },
+    "facing=south,kind=transfer,stage=4": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 180
+    },
+    "facing=west,kind=transfer,stage=0": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 270
+    },
+    "facing=west,kind=transfer,stage=1": {
+      "model": "the_oldest_house:block/tank/transfer_1",
+      "y": 270
+    },
+    "facing=west,kind=transfer,stage=2": {
+      "model": "the_oldest_house:block/tank/transfer_2",
+      "y": 270
+    },
+    "facing=west,kind=transfer,stage=3": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 270
+    },
+    "facing=west,kind=transfer,stage=4": {
+      "model": "the_oldest_house:block/tank/transfer_0",
+      "y": 270
+    }
+  }
+}

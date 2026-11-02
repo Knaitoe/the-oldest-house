@@ -499,6 +499,18 @@ public enum LabyrinthPlace {
     FUSE_ROOMS("fuse_rooms", Kind.GRAY, 162, new BoundingBox(-6,-6,-30,6,5,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(0,0,-29),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.256, the Header Tank (HeaderTanks, docs/HEADER_TANK_0_4_256.md): a utility room with a flooded pit under an attic tank, a
+     * platform floating on the water, a valve and a pump; level with the gallery, the platform carries the reader to the doorway. An
+     * early puzzle room, family WATER.
+     */
+    HEADER_TANK("header_tank", Kind.GRAY, 163, new BoundingBox(-6,-7,-11,6,12,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-10),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The header tank's deep rooms: two pits in a row with a landing between, the far one deeper, the transfer valve on the landing. */
+    HEADER_TANKS("header_tanks", Kind.GRAY, 164, new BoundingBox(-6,-9,-17,6,12,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-16),Direction.SOUTH,LabyrinthData.DEALT))),
     /** 0.4.253, After the People Lights Have Gone Off (PeopleLights, PeopleLightsSite): a guest for one evening and night in the narrow, tall house Stan built, after the title story of Stephen Graham Jones's collection. Understanding, one visit. */
     PEOPLE_LIGHTS("people_lights",Kind.ONE_SHOT,160,new BoundingBox(-16,-3,-31,17,15,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */

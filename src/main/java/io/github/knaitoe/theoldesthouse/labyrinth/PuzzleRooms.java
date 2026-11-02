@@ -38,7 +38,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * counts toward the Witness.
  */
 public final class PuzzleRooms {
-    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER}
+    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER}
     public enum Puzzle {
         BORROWED_LIGHT(LabyrinthPlace.BORROWED_LIGHT,Family.LIGHT,false,"The door has no handle on this side. The sun beside it is cold."),
         SERVICE_LIFT(LabyrinthPlace.SERVICE_LIFT,Family.LIFT,false,null),
@@ -64,7 +64,10 @@ public final class PuzzleRooms {
         NIGHT_OPERATOR(LabyrinthPlace.NIGHT_OPERATOR,Family.LINE,false,"The door has no handle on this side."),
         // 0.4.254: the fuse board (FuseRooms, docs/FUSE_BOARD_0_4_254.md). The far doors are ordinary doors: the shutters are what wait.
         FUSE_ROOM(LabyrinthPlace.FUSE_ROOM,Family.POWER,false,null),
-        FUSE_ROOMS(LabyrinthPlace.FUSE_ROOMS,Family.POWER,true,null);
+        FUSE_ROOMS(LabyrinthPlace.FUSE_ROOMS,Family.POWER,true,null),
+        // 0.4.256: the header tank (HeaderTanks, docs/HEADER_TANK_0_4_256.md), early and deep.
+        HEADER_TANK(LabyrinthPlace.HEADER_TANK,Family.WATER,false,null),
+        HEADER_TANKS(LabyrinthPlace.HEADER_TANKS,Family.WATER,true,null);
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;
