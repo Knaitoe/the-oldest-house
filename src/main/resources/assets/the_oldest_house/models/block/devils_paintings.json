@@ -1,0 +1,214 @@
+{
+ "parent": "minecraft:block/block",
+ "ambientocclusion": false,
+ "textures": {
+  "t": "the_oldest_house:block/devils_paintings",
+  "particle": "the_oldest_house:block/devils_paintings"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    6,
+    15.7
+   ],
+   "to": [
+    6,
+    12,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      5,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      4,
+      0,
+      4.3,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      4,
+      0,
+      4.3,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      4,
+      0,
+      4.3,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      4,
+      0,
+      4.3,
+      6
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      4,
+      0,
+      4.3,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    6.5,
+    3,
+    15.7
+   ],
+   "to": [
+    11.5,
+    9,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      5,
+      0,
+      10,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      9,
+      0,
+      9.3,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      9,
+      0,
+      9.3,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      9,
+      0,
+      9.3,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      9,
+      0,
+      9.3,
+      6
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      9,
+      0,
+      9.3,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    12,
+    7,
+    15.7
+   ],
+   "to": [
+    16,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      10,
+      0,
+      14,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      13,
+      0,
+      13.3,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      13,
+      0,
+      13.3,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      13,
+      0,
+      13.3,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      13,
+      0,
+      13.3,
+      6
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      13,
+      0,
+      13.3,
+      6
+     ]
+    }
+   }
+  }
+ ]
+}

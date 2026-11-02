@@ -11,6 +11,7 @@ from character_art_catalog import entries
 
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=ROOT/'art/inventory/character_review_04100.json'
+PROP_REVIEW=ROOT/'art/inventory/devils_rock_props_0241.json'
 FAMILY_REVIEW=ROOT/'art/inventory/painted_family_04123.json'
 PORTRAIT_REVIEW=ROOT/'art/inventory/manor_portraits_04223.json'
 FAMILY_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
@@ -47,7 +48,15 @@ def main():
     # 0.4.223: the manor's five family portraits, repainted at the owner's request; each supersedes only its own historical hash.
     portraits={r['path']:r for r in json.loads(PORTRAIT_REVIEW.read_text())['repainted']}
     assert len(portraits)==5 and all(path.endswith('_portrait.png') for path in portraits)
+    # 0.4.241: Devil's Rock's generated prop crops, redrawn as pixel art at the owner's request (tools/draw_devils_rock_props.py).
+    props={r['path']:r for r in json.loads(PROP_REVIEW.read_text())['repainted']}
+    assert len(props)==4 and all('/review_' in path for path in props)
     for path,digest in review['unchanged_png_sha256'].items():
+        if path in props:
+            row=props[path];assert row['review_04100_sha256']==digest,('Historical prop review changed',path)
+            raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],('Devil\'s Rock prop changed since its redrawing',path)
+            assert list(Image.open(BytesIO(raw)).size)==row['size'],path
+            continue
         if path in portraits:
             row=portraits[path];assert row['review_04100_sha256']==digest,('Historical portrait review changed',path)
             raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],('Manor portrait changed since its repaint',path)

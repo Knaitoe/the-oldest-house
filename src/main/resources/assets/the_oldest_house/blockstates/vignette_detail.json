@@ -735,6 +735,294 @@
     "facing=west,kind=pennies": {
       "model": "the_oldest_house:block/devils_pennies",
       "y": 270
+    },
+    "facing=north,kind=sanderson_photo": {
+      "model": "the_oldest_house:block/devils_photo_family",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_photo": {
+      "model": "the_oldest_house:block/devils_photo_family",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_photo": {
+      "model": "the_oldest_house:block/devils_photo_family",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_photo": {
+      "model": "the_oldest_house:block/devils_photo_family",
+      "y": 270
+    },
+    "facing=north,kind=tommy_photo": {
+      "model": "the_oldest_house:block/devils_photo_tommy",
+      "y": 0
+    },
+    "facing=east,kind=tommy_photo": {
+      "model": "the_oldest_house:block/devils_photo_tommy",
+      "y": 90
+    },
+    "facing=south,kind=tommy_photo": {
+      "model": "the_oldest_house:block/devils_photo_tommy",
+      "y": 180
+    },
+    "facing=west,kind=tommy_photo": {
+      "model": "the_oldest_house:block/devils_photo_tommy",
+      "y": 270
+    },
+    "facing=north,kind=siblings_photo": {
+      "model": "the_oldest_house:block/devils_photo_siblings",
+      "y": 0
+    },
+    "facing=east,kind=siblings_photo": {
+      "model": "the_oldest_house:block/devils_photo_siblings",
+      "y": 90
+    },
+    "facing=south,kind=siblings_photo": {
+      "model": "the_oldest_house:block/devils_photo_siblings",
+      "y": 180
+    },
+    "facing=west,kind=siblings_photo": {
+      "model": "the_oldest_house:block/devils_photo_siblings",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_coats": {
+      "model": "the_oldest_house:block/devils_coats",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_coats": {
+      "model": "the_oldest_house:block/devils_coats",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_coats": {
+      "model": "the_oldest_house:block/devils_coats",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_coats": {
+      "model": "the_oldest_house:block/devils_coats",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_mail": {
+      "model": "the_oldest_house:block/devils_mail",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_mail": {
+      "model": "the_oldest_house:block/devils_mail",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_mail": {
+      "model": "the_oldest_house:block/devils_mail",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_mail": {
+      "model": "the_oldest_house:block/devils_mail",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_fridge_low": {
+      "model": "the_oldest_house:block/devils_fridge_low",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_fridge_low": {
+      "model": "the_oldest_house:block/devils_fridge_low",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_fridge_low": {
+      "model": "the_oldest_house:block/devils_fridge_low",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_fridge_low": {
+      "model": "the_oldest_house:block/devils_fridge_low",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_fridge_high": {
+      "model": "the_oldest_house:block/devils_fridge_high",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_fridge_high": {
+      "model": "the_oldest_house:block/devils_fridge_high",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_fridge_high": {
+      "model": "the_oldest_house:block/devils_fridge_high",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_fridge_high": {
+      "model": "the_oldest_house:block/devils_fridge_high",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_calendar": {
+      "model": "the_oldest_house:block/devils_calendar",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_calendar": {
+      "model": "the_oldest_house:block/devils_calendar",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_calendar": {
+      "model": "the_oldest_house:block/devils_calendar",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_calendar": {
+      "model": "the_oldest_house:block/devils_calendar",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_casseroles": {
+      "model": "the_oldest_house:block/devils_casseroles",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_casseroles": {
+      "model": "the_oldest_house:block/devils_casseroles",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_casseroles": {
+      "model": "the_oldest_house:block/devils_casseroles",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_casseroles": {
+      "model": "the_oldest_house:block/devils_casseroles",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_search_board": {
+      "model": "the_oldest_house:block/devils_search_board",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_search_board": {
+      "model": "the_oldest_house:block/devils_search_board",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_search_board": {
+      "model": "the_oldest_house:block/devils_search_board",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_search_board": {
+      "model": "the_oldest_house:block/devils_search_board",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_coffee_table": {
+      "model": "the_oldest_house:block/devils_coffee_table",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_coffee_table": {
+      "model": "the_oldest_house:block/devils_coffee_table",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_coffee_table": {
+      "model": "the_oldest_house:block/devils_coffee_table",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_coffee_table": {
+      "model": "the_oldest_house:block/devils_coffee_table",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_laundry": {
+      "model": "the_oldest_house:block/devils_laundry",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_laundry": {
+      "model": "the_oldest_house:block/devils_laundry",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_laundry": {
+      "model": "the_oldest_house:block/devils_laundry",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_laundry": {
+      "model": "the_oldest_house:block/devils_laundry",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_plant": {
+      "model": "the_oldest_house:block/devils_plant",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_plant": {
+      "model": "the_oldest_house:block/devils_plant",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_plant": {
+      "model": "the_oldest_house:block/devils_plant",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_plant": {
+      "model": "the_oldest_house:block/devils_plant",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_skateboard": {
+      "model": "the_oldest_house:block/devils_skateboard",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_skateboard": {
+      "model": "the_oldest_house:block/devils_skateboard",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_skateboard": {
+      "model": "the_oldest_house:block/devils_skateboard",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_skateboard": {
+      "model": "the_oldest_house:block/devils_skateboard",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_clothes": {
+      "model": "the_oldest_house:block/devils_clothes",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_clothes": {
+      "model": "the_oldest_house:block/devils_clothes",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_clothes": {
+      "model": "the_oldest_house:block/devils_clothes",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_clothes": {
+      "model": "the_oldest_house:block/devils_clothes",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_poster": {
+      "model": "the_oldest_house:block/devils_poster",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_poster": {
+      "model": "the_oldest_house:block/devils_poster",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_poster": {
+      "model": "the_oldest_house:block/devils_poster",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_poster": {
+      "model": "the_oldest_house:block/devils_poster",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_paintings": {
+      "model": "the_oldest_house:block/devils_paintings",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_paintings": {
+      "model": "the_oldest_house:block/devils_paintings",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_paintings": {
+      "model": "the_oldest_house:block/devils_paintings",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_paintings": {
+      "model": "the_oldest_house:block/devils_paintings",
+      "y": 270
+    },
+    "facing=north,kind=sanderson_paint_jars": {
+      "model": "the_oldest_house:block/devils_paint_jars",
+      "y": 0
+    },
+    "facing=east,kind=sanderson_paint_jars": {
+      "model": "the_oldest_house:block/devils_paint_jars",
+      "y": 90
+    },
+    "facing=south,kind=sanderson_paint_jars": {
+      "model": "the_oldest_house:block/devils_paint_jars",
+      "y": 180
+    },
+    "facing=west,kind=sanderson_paint_jars": {
+      "model": "the_oldest_house:block/devils_paint_jars",
+      "y": 270
     }
   }
 }

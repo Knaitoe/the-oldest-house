@@ -9,6 +9,9 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSET = ROOT / 'src/main/resources/assets/the_oldest_house'
+# 0.4.241: reading_wood, bear, pier and missing_notice (and the bear, missing notice and cassette models) are drawn as pixel art by
+# tools/draw_devils_rock_props.py now; this script leaves them alone.
+DRAWN = {'reading_wood','bear','pier','missing_notice'}
 NAMES = ['well_initials','reading_wood','chess','notice','bear','train','toy_blocks','doll',
          'scarecrow_face','scarecrow_cloth','straw','pier','missing_notice','diary','lake_map','child_wall']
 def box(material, *bounds): return material, list(bounds)
@@ -38,13 +41,14 @@ def run(sheet):
  for i,name in enumerate(NAMES):
   x,y=i%4,i//4
   tile=im.crop((round(im.width*x/4),round(im.height*y/4),round(im.width*(x+1)/4),round(im.height*(y+1)/4))).resize((64,64),Image.Resampling.NEAREST)
+  if name in DRAWN:continue
   tile.save(texture/f'review_{name}.png',optimize=True);tiles[name]=tile
  variants={}
  for name,cubes in PROPS.items():
   textures={m:('minecraft:block/black_concrete' if m=='black' else 'the_oldest_house:block/review_'+m) for m,_ in cubes}
   elements=[{'from':b[:3],'to':b[3:],'faces':{f:{'uv':[0,0,16,16],'texture':'#'+m} for f in ['north','south','east','west','up','down']}} for m,b in cubes]
   model={'ambientocclusion':True,'textures':dict(textures,particle=next(iter(textures.values()))),'elements':elements}
-  (ASSET/f'models/block/review_{name}.json').write_text(json.dumps(model,indent=2)+'\n')
+  if name not in ('bear','missing_notice','cassette'):(ASSET/f'models/block/review_{name}.json').write_text(json.dumps(model,indent=2)+'\n')
   for face,turn in [('north',0),('east',90),('south',180),('west',270)]: variants[f'facing={face},kind={name}']={'model':'the_oldest_house:block/review_'+name,'y':turn}
  (ASSET/'blockstates/vignette_detail.json').write_text(json.dumps({'variants':variants},indent=2)+'\n')
  # Keep the existing desk's exact native geometry, with its own new material.

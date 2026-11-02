@@ -1,0 +1,78 @@
+{
+ "parent": "minecraft:block/block",
+ "ambientocclusion": false,
+ "textures": {
+  "p": "the_oldest_house:block/devils_photo_tommy",
+  "particle": "the_oldest_house:block/devils_photo_tommy"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    3,
+    15.2
+   ],
+   "to": [
+    14,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#p",
+     "uv": [
+      2,
+      3,
+      14,
+      13
+     ]
+    },
+    "south": {
+     "texture": "#p",
+     "uv": [
+      2,
+      3,
+      14,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#p",
+     "uv": [
+      0,
+      3,
+      0.8,
+      13
+     ]
+    },
+    "west": {
+     "texture": "#p",
+     "uv": [
+      15.2,
+      3,
+      16,
+      13
+     ]
+    },
+    "up": {
+     "texture": "#p",
+     "uv": [
+      2,
+      15.2,
+      14,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#p",
+     "uv": [
+      2,
+      0,
+      14,
+      0.8
+     ]
+    }
+   }
+  }
+ ]
+}

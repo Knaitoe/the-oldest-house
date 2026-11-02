@@ -1,0 +1,78 @@
+{
+ "parent": "minecraft:block/block",
+ "ambientocclusion": false,
+ "textures": {
+  "t": "the_oldest_house:block/devils_fridge_high",
+  "particle": "the_oldest_house:block/devils_fridge_high"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    1
+   ],
+   "to": [
+    15,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      2,
+      14,
+      15
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      14,
+      0,
+      16,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      14,
+      0,
+      16,
+      13
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      14,
+      0,
+      16,
+      13
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      14,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      14,
+      1
+     ]
+    }
+   }
+  }
+ ]
+}
