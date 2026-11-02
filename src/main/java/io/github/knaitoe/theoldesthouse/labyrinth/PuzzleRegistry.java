@@ -53,5 +53,13 @@ public final class PuzzleRegistry {
     /** The lines, in NightOperator.Line's order. */
     public static final java.util.List<DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent>> LINES=java.util.Arrays.stream(new String[]{"water","fridge","boards","clock","rain","radio","kettle","quiet","exchange"}).map(n->sound("operator.line_"+n)).toList();
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> BUZZ=sound("operator.buzz");
+    /** 0.4.254: the Fuse Board's basement (whitewashed brick, painted concrete, a concrete soffit, steel plate) and its electrics (PowerBlock), drawn by tools/draw_power_fittings.py; the appliances' hum, the motors running, and the shutter's motor straining against its catch (tools/generate_power_audio.py). */
+    private static final java.util.Map<String,DeferredBlock<Block>> POWER_MATERIALS=new java.util.LinkedHashMap<>();
+    public static final java.util.List<String> POWER_MATERIAL_NAMES=java.util.List.of("floor","brick","ceiling","plate");
+    static{for(String name:POWER_MATERIAL_NAMES)POWER_MATERIALS.put(name,BLOCKS.registerSimpleBlock("power_"+name,fixed(name.equals("plate")?Blocks.IRON_BLOCK:Blocks.STONE)));}
+    public static Block powerMaterial(String name){var block=POWER_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PowerBlock>> POWER_TYPE=CODECS.register("power_fitting",()->PowerBlock.CODEC);
+    public static final DeferredBlock<PowerBlock> POWER=BLOCKS.registerBlock("power_fitting",PowerBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(PowerBlock::light));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> HUM=sound("power.hum"),MOTOR=sound("power.motor"),STRAIN=sound("power.strain");
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);}
 }

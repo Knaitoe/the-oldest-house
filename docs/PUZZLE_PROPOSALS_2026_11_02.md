@@ -24,12 +24,13 @@ The two encounters are early rooms of families of their own, with no deep room.
 | 157 | `FOLDED_ROOMS` | FOLD | deep |
 | 158 | `WINDOW_CLEANER` | WINCH | early |
 | 159 | `NIGHT_OPERATOR` | LINE | early |
-| 160 | `FUSE_ROOM` | POWER | early |
-| 161 | `FUSE_ROOMS` | POWER | deep |
-| 162 | `HEADER_TANK` | WATER | early |
-| 163 | `HEADER_TANKS` | WATER | deep |
+| 161 | `FUSE_ROOM` | POWER | early |
+| 162 | `FUSE_ROOMS` | POWER | deep |
+| 163 | `HEADER_TANK` | WATER | early |
+| 164 | `HEADER_TANKS` | WATER | deep |
 
-The layout version rises with each release that adds places, as it did for the airing rooms; the build is for new worlds only.
+The layout version rises with each release that adds places, as it did for the airing rooms; the build is for new worlds only. Slot 160 went to After the People Lights Have Gone Off (0.4.253), so the Fuse Board and the Header Tank sit one slot later than
+first planned.
 
 ## 1. The Folding Rooms (FOLD)
 
@@ -174,6 +175,11 @@ line loops band-limited like a telephone line, and the footsteps. Audio by a new
 > transfer the fuse to operate the shutter. Deeper versions combine limited power with doors you can wedge and equipment whose operation
 > is visible through adjoining windows. Wires physically lead to their appliances. Every change is reversible, so experimentation is
 > useful.
+
+Built in 0.4.254; canon is docs/FUSE_BOARD_0_4_254.md. It differs from the plan below in two ways:
+- In the deep rooms the hatch under the crate opens onto a ladder and a passage under the wall into the third room.
+- So that a fuse moved at the board can never shut anyone in, the latched door has a push bar on the second room's side. An iron
+  door with a handle only on the third room's side leads back into the second.
 
 **How the board works.**
 - **The board.** Holders on the wall, each labelled for its circuit in an old hand, and one spare clip. A hand on a holder with a fuse
