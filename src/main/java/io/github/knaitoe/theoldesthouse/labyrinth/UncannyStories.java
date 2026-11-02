@@ -83,6 +83,7 @@ public final class UncannyStories {
         if(!LiteraryVignettes.participant(p)||!LiteraryVignettes.inside(p,place))return;
         if(place==LabyrinthPlace.TUNNEL_PERIPHERY)reenter(p,b,own);
         arrive(p,place,own);observe(p,b,place,own);
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY)settle(p,b,own);
         if(place==LabyrinthPlace.MOTION_LIGHT){FoyerEncounter.tick(p,b,own);return;}
         UncannyReading.resolve(p,place,own);
         if(place==LabyrinthPlace.MOTION_LIGHT)FoyerMotion.dark(p.serverLevel(),b);
@@ -103,22 +104,44 @@ public final class UncannyStories {
     public static final int AWAY_TICKS=60;
     /**
      * 0.4.201 (owner: "The vignette also doesnt reset upon re-entry"): a reader who comes back into the tunnel after time away
-     * starts it over: the signals from the beginning, the woman folded at the far end, and a catch forgotten. A passage
+     * starts it over: the signals from the beginning, the woman waiting unseen at the start (0.4.272), and a catch forgotten. A passage
      * already made (ready or read) is kept. Being caught leaves the reader inside, so it resets only once they have left.
      */
     static void reenter(ServerPlayer p,BlockPos b,CompoundTag own){
         long now=p.serverLevel().getGameTime(),last=own.getLong("TunnelSeen201");own.putLong("TunnelSeen201",now);
         if(last==0||now-last<=AWAY_TICKS)return;
-        // 0.4.240 (owner: "bent necked woman doesnt properly reset once players exit the vignette"): she is folded at the far end
-        // again whenever the reader comes back, a passage made or not; only the reader's progress is kept once they are through.
+        // 0.4.240 (owner: "bent necked woman doesnt properly reset once players exit the vignette"): she is back at her place,
+        // unseen, whenever the reader comes back, a passage made or not; only the reader's progress is kept once they are through.
         var giant=actor(p,own,"CastGiant");
         if(giant!=null)TunnelStride.home(giant,giantHome(p.serverLevel(),b));
         if(own.getBoolean("Completed")||own.getBoolean("TunnelPassed130"))return;
-        for(var key:List.of("UncannyFailed","Failure","Ready","GreenSteps","LastX","LastZ","TunnelStarted127","UncannyStage"))own.remove(key);
+        for(var key:List.of("UncannyFailed","Failure","Ready","GreenSteps","LastX","LastZ","TunnelStarted127","UncannyStage",OUT))own.remove(key);
         own.putInt("UncannyAge",0);
     }
-    /** Where the bent-necked woman stands folded, at the tunnel's far end. */
-    static BlockPos giantHome(ServerLevel l,BlockPos b){return b.offset(0,0,TunnelPassage.extended(l,b)?TunnelPassage.WALL+2:-71);}
+    /**
+     * 0.4.272 (owner: "Bent-neck lady needs revamped – She needs to spawn invisible, untouchable, at start of hallway. Not teleport
+     * there after player has entered. She needs to give player 3 seconds of grace so as to not immediately, accidentally touch
+     * them/end the vignette. She also needs to properly reset after vignette has concluded"). Her place is the start of the tunnel,
+     * the first cell inside its mouth. She is made there when her reader first comes in, unseen and with nothing to touch (no hit, no
+     * push, nothing to aim at; LiteraryActor), and she comes out where she stands: nothing ever carries her up behind the reader.
+     */
+    public static final BlockPos GIANT_HOME=new BlockPos(0,0,-2);
+    public static BlockPos giantHome(ServerLevel l,BlockPos b){return b.offset(GIANT_HOME);}
+    /** Once she is out, how long (ticks of the reader's own clock) she stands before she may follow or touch them. */
+    public static final int GRACE=60;
+    /** The reader's own clock when she came out. */
+    public static final String OUT="TunnelOut272";
+    /** Whether she is still giving the reader their three seconds. */
+    public static boolean grace(CompoundTag own){int since=own.getInt("UncannyAge")-own.getInt(OUT);return own.contains(OUT)&&since>=0&&since<GRACE;}
+    /**
+     * Once the tunnel is over for this reader (caught, through, or read), she is back at her place, unseen, and stays there: a reader
+     * walking back the way they came never finds her standing where it ended.
+     */
+    static void settle(ServerPlayer p,BlockPos b,CompoundTag own){
+        if(!failed(own)&&!own.getBoolean("TunnelPassed130")&&!own.getBoolean("Completed"))return;
+        var giant=actor(p,own,"CastGiant");if(giant==null)return;var home=giantHome(p.serverLevel(),b);
+        if(giant.phase()!=0||giant.position().distanceToSqr(Vec3.atBottomCenterOf(home))>.01)TunnelStride.home(giant,home);
+    }
     static void ready(ServerPlayer p,LabyrinthPlace place,CompoundTag own,String outcome){if(LiteraryVignettes.participant(p)&&!failed(own)){LiteraryVignettes.ready(p,place,own,outcome);UncannyReading.resolve(p,place,own);}}
     private static boolean seen(ServerPlayer p,LiteraryActor a){return a!=null&&HouseWatchers.sees(p,a.getEyePosition());}
     private static void observe(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){
@@ -143,6 +166,8 @@ public final class UncannyStories {
         p.teleportTo(p.serverLevel(),safe.x,safe.y,safe.z,0,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();
         // 0.4.191: answering her, the reader leaves in her black frost.
         if(place==LabyrinthPlace.SECOND_WAITRESS)ContestTrades.blackFrost(p);
+        // 0.4.272: the touch ends it, and she is gone from where it happened, back at her place unseen.
+        if(place==LabyrinthPlace.TUNNEL_PERIPHERY){var giant=actor(p,own,"CastGiant");if(giant!=null)TunnelStride.home(giant,giantHome(p.serverLevel(),b));}
         cue(p,switch(place){case SECOND_WAITRESS->"The place setting in front of you is empty.";case TUNNEL_PERIPHERY->"A hand on the back of your neck.";case MISSING_SLEEP->"The monitor is still showing the empty bed.";case MOTION_LIGHT->"The buzzer stops.";case LAYERED_MAN->"Warm tallow closes over your boots.";default->"You are facing the painted sun again.";});
     }
     private static void boarded(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -222,37 +247,33 @@ public final class UncannyStories {
         var fake=actor(p,own,"CastFake");if(fake!=null)transformWaitress(p,fake,own,"meal");LiteraryVignettes.save(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS,own);
     }
     private static void tunnel(ServerPlayer p,BlockPos b,CompoundTag own){
-        int age=own.getInt("UncannyAge");var giant=actor(p,own,"CastGiant");if(age==0)return;
+        int age=own.getInt("UncannyAge");var giant=actor(p,own,"CastGiant");if(age==0||own.getBoolean("TunnelPassed130"))return;
         double moved=own.contains("LastX")?Math.hypot(p.getX()-own.getDouble("LastX"),p.getZ()-own.getDouble("LastZ")):0;
         if(green(own)&&own.contains("LastZ")&&p.getZ()<own.getDouble("LastZ")-.08)own.putInt("GreenSteps",own.getInt("GreenSteps")+1);
         own.putDouble("LastX",p.getX());own.putDouble("LastZ",p.getZ());
         // Moving through real green signals is a route, even if the reader never
         // gives the dormant woman an unseen opportunity to appear behind them.
         if(p.getZ()<b.getZ()+TunnelPassage.pass(p.serverLevel(),b)&&(own.getInt("GreenSteps")>=5||p.getZ()<b.getZ()+TunnelPassage.exit(p.serverLevel(),b)&&own.getInt("UncannyAge")>=160)){
-            own.putBoolean("TunnelPassed130",true);if(giant!=null){giant.appearance(LiteraryActor.UNCANNY_GIANT,0);giant.setDeltaMovement(Vec3.ZERO);}ready(p,LabyrinthPlace.TUNNEL_PERIPHERY,own,"passed_the_last_green_signal");return;
+            own.putBoolean("TunnelPassed130",true);if(giant!=null)TunnelStride.home(giant,giantHome(p.serverLevel(),b));ready(p,LabyrinthPlace.TUNNEL_PERIPHERY,own,"passed_the_last_green_signal");return;
         }
         if(giant==null)return;
         if(!own.getBoolean("TunnelStarted127")){
             if(giant.phase()>0&&own.contains("LastZ"))own.putBoolean("TunnelStarted127",true);
             else{
+                // 0.4.272: she has stood at the start of the tunnel all along, unseen. She comes out where she is, once the reader
+                // is well in and not looking her way; nothing carries her up behind them.
                 giant.appearance(LiteraryActor.UNCANNY_GIANT,0);
                 if(age<160||p.getZ()>b.getZ()-12)return;
-                Vec3 spot=null;
-                // The tall body needs a genuinely clear bay between the ceiling fittings.
-                // Try behind the reader; never make an appearance in their current view.
-                for(int offset=0;offset<=6;offset+=2){
-                    var candidate=new Vec3(b.getX()+.5,b.getY(),Math.min(b.getZ()-8.5,p.getZ()+10-offset));
-                    if(UncannySenses.angle(p,candidate.add(0,2.1,0))<UncannySenses.halfFov(p)&&UncannySenses.clear(p,candidate.add(0,2.1,0)))continue;
-                    if(p.serverLevel().noCollision(giant,giant.getBoundingBox().move(candidate.subtract(giant.position())))){spot=candidate;break;}
-                }
-                if(spot==null)return;
-                TunnelStride.placeOriginal(giant,spot);own.putBoolean("TunnelStarted127",true);
+                var eye=giant.getEyePosition();
+                if(UncannySenses.angle(p,eye)<UncannySenses.halfFov(p)&&UncannySenses.clear(p,eye))return;
+                own.putBoolean("TunnelStarted127",true);own.putInt(OUT,age);
             }
         }
-        int stage=green(own)?1:2;
+        int stage=green(own)?1:2;boolean grace=grace(own);
         if(own.getInt("UncannyStage")!=stage)heard(p,green(own)?SoundEvents.NOTE_BLOCK_HAT.value():SoundEvents.NOTE_BLOCK_BASS.value(),p.position().add(0,2,-4),.2F,green(own)?1.7F:.6F);
-        giant.appearance(LiteraryActor.UNCANNY_GIANT,stage);own.putInt("UncannyStage",stage);
-        if(green(own)){giant.setDeltaMovement(Vec3.ZERO);}
+        // For her first three seconds out she stands as she does at a green light, whatever the signal, and cannot touch anyone.
+        giant.appearance(LiteraryActor.UNCANNY_GIANT,grace?1:stage);own.putInt("UncannyStage",stage);
+        if(green(own)||grace){giant.setDeltaMovement(Vec3.ZERO);}
         else{
             TunnelStride.seek(giant,p.position().add(0,0,1));
             if(giant.distanceToSqr(p)<1.7&&age>120&&!own.getBoolean("Ready"))caught(p,b,LabyrinthPlace.TUNNEL_PERIPHERY,own,"paced_to_the_last_red_light");
@@ -280,7 +301,8 @@ public final class UncannyStories {
         var place=LiteraryVignettes.current(p);if(place==LabyrinthPlace.TUNNEL_PERIPHERY){
             // "They stopped flashing detour warnings ten minutes ago. Now they just flicker on and off, counting down how many steps I have left."
             // A blank (a space, not an empty line, which the sign renderer reads as the diner's own lettering) is the sign switched off.
-            int age=own.getInt("UncannyAge");if(age<120)return "DETOUR / USE OTHER CROSSING";if(age/10%4==3)return " ";
+            // 0.4.272: the count starts once she is out; before that the old warning, and once the reader is through or caught, nothing.
+            int age=own.getInt("UncannyAge");if(own.getBoolean("TunnelPassed130")||failed(own))return " ";if(age<120||!own.getBoolean("TunnelStarted127"))return "DETOUR / USE OTHER CROSSING";if(age/10%4==3)return " ";
             var giant=actor(p,own,"CastGiant");if(giant==null)return " ";
             return Math.max(0,(int)Math.ceil((Math.sqrt(giant.distanceToSqr(p))-1.3)/.8))+" STEPS";
         }

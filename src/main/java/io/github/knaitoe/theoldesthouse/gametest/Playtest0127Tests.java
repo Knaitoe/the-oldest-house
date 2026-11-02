@@ -110,7 +110,9 @@ public final class Playtest0127Tests {
 
     @GameTest(template="empty",batch="review127_hostile",timeoutTicks=500)
     public static void strikingTheActualTunnelWomanNeverUsesFriendlyDiscipline(GameTestHelper h){run(h,LabyrinthPlace.TUNNEL_PERIPHERY,(f,p)->{
-        var scene=LabyrinthPlace.TUNNEL_PERIPHERY;var own=f.own(p,scene);UncannyStories.arrive(p,scene,own);LiteraryVignettes.save(f.data(),p.getUUID(),scene,own);var a=UncannyStories.actor(p,own,"CastGiant");h.assertTrue(a!=null&&a.phase()==0,"the original begins dormant beyond the entrance");p.moveTo(a.position().add(0,0,1));
+        var scene=LabyrinthPlace.TUNNEL_PERIPHERY;var own=f.own(p,scene);UncannyStories.arrive(p,scene,own);LiteraryVignettes.save(f.data(),p.getUUID(),scene,own);var a=UncannyStories.actor(p,own,"CastGiant");h.assertTrue(a!=null&&a.phase()==0&&!a.isAttackable(),"the original begins unseen at the tunnel's start, where she cannot be struck at all");
+        // 0.4.272: out, she is a body that can be struck.
+        a.appearance(LiteraryActor.UNCANNY_GIANT,2);h.assertTrue(a.isAttackable(),"out, she can be struck");p.moveTo(a.position().add(0,0,1));
         for(int i=0;i<5;i++)p.attack(a);own=f.own(p,scene);h.assertTrue(!own.getBoolean("Interrupted")&&own.getInt("FriendlyStrikes127")==0&&LiteraryVignettes.inside(p,scene),"a hostile creature may be struck without any friendly warning or ejection");
     });}
     @AfterBatch(batch="review127_hostile") public static void hostileDone(ServerLevel l){close();}

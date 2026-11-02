@@ -20,12 +20,17 @@ public final class TunnelStride {
         if(a.level() instanceof ServerLevel l)l.getChunkSource().broadcast(a,new net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket(a));
     }
     public static void seek(LiteraryActor a,Vec3 at){GOALS.put(a,new Goal(at,a.level().getGameTime()+10));}
-    /** 0.4.240: where she stands folded, kept on her body so she can be put back while her reader is away. */
+    /** 0.4.240: where she waits, kept on her body so she can be put back while her reader is away. */
     static void remember(LiteraryActor a,BlockPos home){a.getPersistentData().putLong("TunnelHome240",home.asLong());}
-    /** Folded and still at her place at the far end, facing down the tunnel, every stride forgotten. */
+    /**
+     * Unseen and still at her place at the start of the tunnel (0.4.272), facing down it, every stride forgotten. The change to unseen
+     * goes to the reader's client before the move, so she is never drawn for a moment at her place in the pose she left.
+     */
     static void home(LiteraryActor a,BlockPos home){
         remember(a,home);GOALS.remove(a);STRIDES.remove(a);a.gesture(0);a.appearance(LiteraryActor.UNCANNY_GIANT,0);
-        a.setYRot(180);a.setYHeadRot(180);a.setYBodyRot(180);a.setXRot(0);placeOriginal(a,Vec3.atBottomCenterOf(home));
+        a.setYRot(180);a.setYHeadRot(180);a.setYBodyRot(180);a.setXRot(0);
+        if(a.level() instanceof ServerLevel l){var dirty=a.getEntityData().packDirty();if(dirty!=null)l.getChunkSource().broadcast(a,new net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket(a.getId(),dirty));}
+        placeOriginal(a,Vec3.atBottomCenterOf(home));
     }
     /** Whether her reader is in the tunnel now. */
     private static boolean attended(LiteraryActor a){
@@ -35,7 +40,7 @@ public final class TunnelStride {
     public static void tick(LiteraryActor a){
         if(a.role()!=LiteraryActor.UNCANNY_GIANT)return;
         // 0.4.240 (owner: "bent necked woman doesnt properly reset once players exit the vignette"): when her reader leaves, she goes
-        // back to her place at the far end, folded, rather than standing where the chase left her.
+        // back to her place, unseen, rather than standing where the chase left her.
         if(a.tickCount%10==0&&!attended(a)){var tag=a.getPersistentData();if(tag.contains("TunnelHome240")){var at=BlockPos.of(tag.getLong("TunnelHome240"));if(a.phase()!=0||a.blockPosition().distManhattan(at)>1)home(a,at);}else if(a.phase()!=0){GOALS.remove(a);a.appearance(LiteraryActor.UNCANNY_GIANT,0);}return;}
         var stride=STRIDES.computeIfAbsent(a,k->new Stride());long now=a.level().getGameTime(),echo=now-stride.impact;
         if(stride.at!=null&&(echo==3||echo==7||echo==11))sound(a,stride.at,echo==3?.36F:echo==7?.18F:.08F,.65F);
