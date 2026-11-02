@@ -1061,5 +1061,7 @@
   "subtitles.the_oldest_house.people.wheels_wood": "Wheels roll on boards",
   "subtitles.the_oldest_house.people.wheels_kitchen": "Wheels roll on kitchen tile",
   "subtitles.the_oldest_house.people.wheels_runner": "Wheels roll on a runner, softly",
-  "subtitles.the_oldest_house.people.pulling": "Someone pulls along the floor, breathing"
+  "subtitles.the_oldest_house.people.pulling": "Someone pulls along the floor, breathing",
+  "advancements.the_oldest_house.account.people_lights.title": "After the people lights",
+  "advancements.the_oldest_house.account.people_lights.description": "I was a guest for one evening and a night in a narrow, tall house."
 }
