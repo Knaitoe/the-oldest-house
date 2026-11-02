@@ -3367,5 +3367,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.door.through_empty"
+  },
+  "door.through_kitchen": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:door/through_kitchen",
+        "attenuation_distance": 6
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.door.through_kitchen"
+  },
+  "door.through_pool": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:door/through_pool",
+        "attenuation_distance": 6
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.door.through_pool"
   }
 }

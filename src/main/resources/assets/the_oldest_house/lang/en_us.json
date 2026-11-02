@@ -1020,5 +1020,7 @@
   "block.the_oldest_house.trace_plaster": "Stained Plaster",
   "item.the_oldest_house.door_wedge": "Door Wedge",
   "subtitles.the_oldest_house.door.through_someone": "Someone moving about behind the door",
-  "subtitles.the_oldest_house.door.through_empty": "Nothing moving behind the door"
+  "subtitles.the_oldest_house.door.through_empty": "Nothing moving behind the door",
+  "subtitles.the_oldest_house.door.through_kitchen": "A fridge hums and stops behind the door; a drip",
+  "subtitles.the_oldest_house.door.through_pool": "A pace clock and a far turn at the wall, behind the door"
 }

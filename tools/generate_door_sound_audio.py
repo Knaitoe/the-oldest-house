@@ -1,7 +1,7 @@
 """Original sounds for sound through connected doors (0.4.229): a knock struck on a House door; that knock heard faintly through
 the door it leads to; a door shutting heard as a dull thud from its other side; and four rooms as they sound through a closed door
 (a clock ticking, water, music, voices), all low and muffled, as if through wood. 0.4.239 adds two: someone moving about in
-there, and a room with nothing moving in it.
+there, and a room with nothing moving in it. 0.4.246 adds the rhythms of two familiar rooms: the kitchen and the pool.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Run from the repository root.
 Existing files are kept, so the committed sounds only change when they are deleted first.
@@ -22,6 +22,10 @@ ROWS = {
     # 0.4.239: a room as it is now. One person going about something ordinary; and a room with nothing moving in it.
     'through_someone': ('Someone moving about behind the door', 6),
     'through_empty': ('Nothing moving behind the door', 5),
+    # 0.4.246: rooms known by their own rhythm before the door is opened. The kitchen's fridge running and cutting out over its clock,
+    # then the tap dripping once; the pool's hall, its pace clock's hand clicking round, and far off a swimmer turning at the wall.
+    'through_kitchen': ('A fridge hums and stops behind the door; a drip', 6),
+    'through_pool': ('A pace clock and a far turn at the wall, behind the door', 6),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -160,8 +164,69 @@ def through_empty():
     return band((air * .5 + hollow) * adsr(n, .7, 1.0), 30, 400)
 
 
+def hall(x, length=.9, gain=.35):
+    # A big tiled room's answer to a sound: decaying noise convolved in, by FFT so a long sound stays quick to make.
+    k = seconds(length)
+    kernel = rng.standard_normal(k) * np.exp(-6 * times(k) / length)
+    kernel /= np.sqrt(np.sum(kernel ** 2))
+    n = len(x) + k
+    wet = np.fft.irfft(np.fft.rfft(x, n) * np.fft.rfft(kernel, n), n)[:len(x)]
+    return x + wet * gain
+
+
+def through_kitchen():
+    # A kitchen beyond the door: its clock ticking under everything; the fridge's motor starting, running with a little rattle in it,
+    # then cutting out with a shudder and a click; a moment's quiet; and the tap, dripping once into the sink.
+    n = seconds(4.6)
+    out = np.zeros(n)
+    for i in range(9):
+        m = seconds(.05)
+        tick = band(rng.standard_normal(m), 600, 2400) * envelope(m, .0005, .008) + np.sin(2 * np.pi * 900 * times(m)) * envelope(m, .0005, .01) * .4
+        place(out, tick * (.55 if i % 2 == 0 else .38), .1 + i * .5)
+    m = seconds(2.6)
+    t = times(m)
+    hum = sum(np.sin(2 * np.pi * f * t) * w for f, w in ((58, 1), (116, .55), (174, .3), (232, .12)))
+    hum *= 1 + .12 * np.sin(2 * np.pi * 1.7 * t)
+    rattle = band(rng.standard_normal(m), 110, 320) * (.5 + .5 * np.sin(2 * np.pi * 24 * t)) * .35
+    place(out, (hum * .28 + rattle * .6) * adsr(m, .18, .04), .3)
+    for at, g in ((2.9, .7), (2.98, .45)):
+        k = seconds(.12)
+        place(out, (np.sin(2 * np.pi * 70 * times(k)) + band(rng.standard_normal(k), 60, 250) * .6) * envelope(k, .002, .03) * g, at)
+    k = seconds(.03)
+    place(out, band(rng.standard_normal(k), 900, 2400) * envelope(k, .0005, .005) * .4, 3.02)
+    k = seconds(.25)
+    t = times(k)
+    drop = np.sin(2 * np.pi * (950 + 1400 * np.minimum(t, .03) / .03) * t) * envelope(k, .001, .035)
+    drop += np.sin(2 * np.pi * 160 * t) * envelope(k, .001, .012) * .35
+    place(out, drop * .8, 3.95)
+    return band(out, 45, 1800)
+
+
+def through_pool():
+    # A swimming pool beyond the door: the big room's hollow air and the water lapping at its edge; the pace clock's sweep hand
+    # clicking round, once a second; and far off, a swimmer's turn against the tiles, a dull knock of a push-off and the slap of
+    # water after it, the hall answering both.
+    n = seconds(4.8)
+    t = times(n)
+    out = band(rng.standard_normal(n), 70, 450) * (.55 + .45 * np.sin(2 * np.pi * .45 * t)) * .22
+    out += band(rng.standard_normal(n), 35, 140) * .12
+    for i in range(5):
+        m = seconds(.04)
+        click = band(rng.standard_normal(m), 1200, 3800) * envelope(m, .0003, .004) + np.sin(2 * np.pi * 1650 * times(m)) * envelope(m, .0003, .006) * .5
+        place(out, click * .5, .25 + i * .95)
+    m = seconds(.3)
+    push = (np.sin(2 * np.pi * 64 * times(m)) + band(rng.standard_normal(m), 50, 260) * .8) * envelope(m, .003, .06)
+    place(out, push * .7, 3.0)
+    m = seconds(.7)
+    slap = band(rng.standard_normal(m), 280, 1300) * envelope(m, .002, .05) * .55 + band(rng.standard_normal(m), 150, 700) * adsr(m, .05, .45) * .25
+    place(out, slap, 3.08)
+    out = hall(out, .9, .45)
+    return band(out * adsr(n, .3, .5), 40, 1400)
+
+
 MAKERS = {'knock': knock, 'knock_far': knock_far, 'thud_far': thud_far, 'through_clock': through_clock, 'through_water': through_water,
-          'through_music': through_music, 'through_voices': through_voices, 'through_someone': through_someone, 'through_empty': through_empty}
+          'through_music': through_music, 'through_voices': through_voices, 'through_someone': through_someone, 'through_empty': through_empty,
+          'through_kitchen': through_kitchen, 'through_pool': through_pool}
 
 
 def main():
