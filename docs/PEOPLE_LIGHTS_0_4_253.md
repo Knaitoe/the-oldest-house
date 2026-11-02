@@ -147,7 +147,8 @@ Each plan resolves the story for every unfinished reader in the house. They are 
 - how the night ended.
 
 It never names a cause, and keeps "It looked like her. That isn't the same as it being her." A last page credits the story it is
-after.
+after. The book is titled "The account: Stan's house" (the room's prose name, "the house Stan built", is one letter too long for a book
+title).
 
 The Witness line, the House of Leaves place name ("the house Stan built"), the co-op line and the miniature note follow the same
 facts.

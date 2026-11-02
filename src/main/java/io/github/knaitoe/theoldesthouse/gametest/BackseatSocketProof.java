@@ -54,7 +54,9 @@ public final class BackseatSocketProof {
         LabyrinthHalls.build(l,base,hall);LabyrinthBuilder.registerDoors(LabyrinthData.get(p.server),hall,base);
         var original=LabyrinthData.get(p.server).doorAt(l.dimension(),from);require(original!=null,"the source is an actual registered hallway door");original.destination=BackseatSites.SOURCE;
         p.setGameMode(GameType.SURVIVAL);p.setNoGravity(false);p.getAbilities().flying=false;p.getAbilities().mayfly=false;p.onUpdateAbilities();p.getInventory().clearContent();
-        var item=new ItemStack(Items.DIAMOND,3);item.set(DataComponents.CUSTOM_NAME,Component.literal("Original carried by "+p.getGameProfile().getName()));ITEMS.put(p.getUUID(),item.copy());p.getInventory().setItem(4,item);
+        var item=new ItemStack(Items.DIAMOND,3);item.set(DataComponents.CUSTOM_NAME,Component.literal("Original carried by "+p.getGameProfile().getName()));
+        // A House original (custom data), so the hall drawers (HouseKeeping, 0.4.255) let it in with the reader.
+        {var mark=new net.minecraft.nbt.CompoundTag();mark.putUUID("SocketOriginal",p.getUUID());item.set(DataComponents.CUSTOM_DATA,CustomData.of(mark));}ITEMS.put(p.getUUID(),item.copy());p.getInventory().setItem(4,item);
         p.teleportTo(l,from.getX()+.5,from.getY(),from.getZ()-2.5,0,0);p.setDeltaMovement(Vec3.ZERO);p.hasChangedDimension();
     }
     private static boolean both(ServerPlayer a,ServerPlayer b){return ACKS.contains(a.getUUID())&&ACKS.contains(b.getUUID());}
