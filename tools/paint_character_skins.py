@@ -111,6 +111,9 @@ LOOKS = {
     'literary_swimmer_swimmer': Look('#e4ddd6','#1e1c1e','short','#1c2230','#1c2230','swim','#d8dcd8',eyes='#2a2e32',mark='swim_cap',sleeve=0),
     # The window cleaner (0.4.251): a navy boiler suit, a cloth cap, the harness's yellow straps over it.
     'literary_window_cleaner': Look('#b68a6c','#3a2c22','short','#2e4a66','#24384e','crew','#d8b83a',eyes='#4a5650',age=1,beard='stubble',mark='movie_cap',sleeve=10),
+    # The Night Operator (0.4.252): a cardigan over a blouse, reading glasses, hair pinned back; in a switchboard headset, and with it hung up.
+    'literary_night_operator': Look('#c69c7e','#6a5a4c','bun','#5a4e5e','#33303a','cardigan','#d8ccb6',eyes='#4e5a58',age=2,glasses=True,mark='headset'),
+    'literary_night_operator_bare': Look('#c69c7e','#6a5a4c','bun','#5a4e5e','#33303a','cardigan','#d8ccb6',eyes='#4e5a58',age=2,glasses=True),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
@@ -811,6 +814,17 @@ def paint(look):
                 d.point((3,8),fill='#4a5058');d.point((10,8),fill='#4a5058')
             if side in ('left','right'):d.line((0,9,15,9),fill='#202226')
             if side=='back':d.line((0,9,15,9),fill='#202226')
+            put(box,art)
+    if look.mark=='headset':
+        # 0.4.252: a switchboard operator's headset on the hat layer: a black band over the crown, an earpiece over each ear, and the
+        # mouthpiece's arm from the right earpiece forward to the corner of the mouth.
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='top':d.rectangle((0,6,15,8),fill='#1e1e22');d.line((0,7,15,7),fill='#34343a')
+            elif side in ('left','right'):
+                d.rectangle((6,0,9,6),fill='#1e1e22');d.rectangle((4,7,11,12),fill='#26262a');d.rectangle((5,8,10,11),fill='#3a3a40')
+                if side=='right':d.line((11,11,15,13),fill='#26262a');d.line((11,12,15,14),fill='#26262a')
+            elif side=='front':d.rectangle((0,12,2,14),fill='#26262a');d.point((1,13),fill='#55555c')
             put(box,art)
     if look.mark=='movie_cap':
         # A flat cloth cap on the hat layer; its brim shades the front edge only.

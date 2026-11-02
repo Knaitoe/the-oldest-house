@@ -479,6 +479,14 @@ public enum LabyrinthPlace {
     WINDOW_CLEANER("window_cleaner", Kind.GRAY, 158, new BoundingBox(-2,-1,-14,17,18,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(17,11,-6),Direction.WEST,LabyrinthData.DEALT))),
+    /**
+     * 0.4.252, the Night Operator (NightOperator, docs/NIGHT_OPERATOR_0_4_252.md): a switchroom at night, where the reader listens on the
+     * jacks for the room a lost caller describes and puts them through, until their footsteps cross the room to the far door. A puzzle
+     * room, family LINE, early only.
+     */
+    NIGHT_OPERATOR("night_operator", Kind.GRAY, 159, new BoundingBox(-6,-1,-12,6,4,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-12),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

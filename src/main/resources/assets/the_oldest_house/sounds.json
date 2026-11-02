@@ -3385,5 +3385,95 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.door.through_pool"
+  },
+  "operator.line_water": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_water",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_water"
+  },
+  "operator.line_fridge": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_fridge",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_fridge"
+  },
+  "operator.line_boards": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_boards",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_boards"
+  },
+  "operator.line_clock": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_clock",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_clock"
+  },
+  "operator.line_rain": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_rain",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_rain"
+  },
+  "operator.line_radio": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_radio",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_radio"
+  },
+  "operator.line_kettle": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_kettle",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_kettle"
+  },
+  "operator.line_quiet": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_quiet",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_quiet"
+  },
+  "operator.line_exchange": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/line_exchange",
+        "attenuation_distance": 4
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.line_exchange"
+  },
+  "operator.buzz": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:operator/buzz",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.operator.buzz"
   }
 }

@@ -1033,5 +1033,16 @@
   "block.the_oldest_house.fold_paper": "Dining Room Paper",
   "block.the_oldest_house.fold_ceiling": "Plaster Ceiling",
   "block.the_oldest_house.fold_ceiling_track": "Ceiling Track",
-  "block.the_oldest_house.winch_fitting": "Winch Fitting"
+  "block.the_oldest_house.winch_fitting": "Winch Fitting",
+  "block.the_oldest_house.exchange_fitting": "Switchboard",
+  "subtitles.the_oldest_house.operator.line_water": "On the line: water running",
+  "subtitles.the_oldest_house.operator.line_fridge": "On the line: a fridge humming",
+  "subtitles.the_oldest_house.operator.line_boards": "On the line: footsteps on bare boards",
+  "subtitles.the_oldest_house.operator.line_clock": "On the line: a clock ticking",
+  "subtitles.the_oldest_house.operator.line_rain": "On the line: rain on a window",
+  "subtitles.the_oldest_house.operator.line_radio": "On the line: a radio between stations",
+  "subtitles.the_oldest_house.operator.line_kettle": "On the line: a kettle coming to the boil",
+  "subtitles.the_oldest_house.operator.line_quiet": "On the line: nothing",
+  "subtitles.the_oldest_house.operator.line_exchange": "On the line: a switchboard, and breathing",
+  "subtitles.the_oldest_house.operator.buzz": "A switchboard buzzes"
 }

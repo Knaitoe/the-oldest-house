@@ -131,6 +131,10 @@ ratchet and cradle-creak sound.
 > connection lets the caller continue. Their footsteps become progressively nearer. When they finally say they're outside, footsteps
 > cross your exchange toward its door. Nobody is visible. The operator removes their headset: "That's us finished."
 
+Built in 0.4.252; canon is docs/NIGHT_OPERATOR_0_4_252.md. It differs from the plan below in two ways:
+- The caller's footsteps are vanilla wood steps.
+- The ninth line is "nothing at all" alongside the exchange's own, so the board has nine jacks.
+
 **The exchange.** A small switchroom at night: one lamp, a cork board of shift notes, and a cord switchboard of numbered jacks, each
 with its own lamp. The operator sits at it, in a headset. A spare headset hangs on the board.
 
