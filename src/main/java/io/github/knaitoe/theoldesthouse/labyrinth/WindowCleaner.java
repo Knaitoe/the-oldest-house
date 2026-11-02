@@ -154,8 +154,10 @@ public final class WindowCleaner {
         LabyrinthBuilder.entrance(l,b,plaster,boards,plaster);
         LabyrinthBuilder.doors(l,b,PLACE);
         staff(l,b,PuzzleRooms.farDoor(PLACE),Direction.WEST,solved);
+        // 0.4.263: every pane joined to its neighbours (set by hand they stood as bare posts, not glass across the windows).
+        RoomActors.settlePanes(l,b,PLACE);
         // The cradle: at the top with the cleaner in it, or, once the cleaner has come down and gone, empty at the bottom.
-        var old=cleaner(l);if(old!=null)old.discard();
+        var old=cleaner(l);if(old!=null)old.discard();RoomActors.clear(l,RoomActors.box(b,PLACE),WindowCleaner::isCleaner);
         var s=new CompoundTag();int floor=solved?BOTTOM:TOP;s.putInt("Floor",floor);s.putInt("Stage",solved?GONE:WAITING);save(l,s);
         cradleAt(l,b,floor);
     }
@@ -208,6 +210,7 @@ public final class WindowCleaner {
     }
 
     // ------------------------------------------------------------------ the cleaner
+    static boolean isCleaner(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==CLEANER;}
     @Nullable static LiteraryActor cleaner(ServerLevel l){var s=state(l);if(!s.hasUUID("Cleaner"))return null;return l.getEntity(s.getUUID("Cleaner")) instanceof LiteraryActor a&&a.isAlive()?a:null;}
     static LiteraryActor spawn(ServerLevel l,BlockPos b,Vec3 rel,float yaw){
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
@@ -227,10 +230,12 @@ public final class WindowCleaner {
 
     /** The room's turn, every tick while anyone is in it (the cleaner walks a little each tick). */
     static void tick(ServerLevel l,BlockPos b){
+        // 0.4.263: nothing until the room's entities are in, so a cleaner already out there is found rather than made twice.
+        var box=RoomActors.box(b,PLACE);if(!RoomActors.ready(l,box))return;
         var s=state(l);int stage=s.getInt("Stage");long now=l.getGameTime();
-        if(s.contains("Quiet")&&now>s.getLong("Quiet")){var a=cleaner(l);if(a!=null){a.setCustomName(null);a.setCustomNameVisible(false);}s.remove("Quiet");save(l,s);}
-        if(stage>=GONE)return;
-        var a=cleaner(l);
+        if(s.contains("Quiet")&&now>s.getLong("Quiet")){RoomActors.hush(l,box,WindowCleaner::isCleaner);s.remove("Quiet");save(l,s);}
+        if(stage>=GONE){RoomActors.clear(l,box,WindowCleaner::isCleaner);return;}
+        s=state(l);var a=RoomActors.one(l,box,s,"Cleaner",WindowCleaner::isCleaner);save(l,s);
         if(a==null){
             Vec3 at=stage<=LOWERING||stage==RETURNING&&s.getInt("Leg")==0?inCradle(cradle(l)):stage==RETURNING?ROUTE.get(Math.min(ROUTE.size()-1,s.getInt("Leg")-1)):ROUTE.get(ROUTE.size()-1);
             a=spawn(l,b,at,90);if(a==null)return;s=state(l);

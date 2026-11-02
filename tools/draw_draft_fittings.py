@@ -172,6 +172,20 @@ def element(lo, hi, textures, uv=None):
     return {'from': lo, 'to': hi, 'faces': faces}
 
 
+def sheet_panel(x0, x1, y0, y1, z0, z1):
+    """A run of cloth, cut into pieces no taller than a block, each face mapped inside the sheet's own texture."""
+    out = []
+    y = y0
+    while y < y1:
+        top = min(y1, y + 16)
+        h = top - y
+        uv = {'north': [x0, 0, x1, h], 'south': [x0, 0, x1, h], 'east': [z0, 0, z1, h], 'west': [z0, 0, z1, h],
+              'up': [x0, z0, x1, z1], 'down': [x0, z0, x1, z1]}
+        out.append(element([x0, y, z0], [x1, top, z1], {'all': 's'}, uv))
+        y = top
+    return out
+
+
 def model(elements, textures, particle, render='cutout'):
     return {'ambientocclusion': False, 'render_type': 'minecraft:' + render, 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
 
@@ -185,9 +199,12 @@ def fitting_models():
     m['vent_0'] = cube('vent_0', 'plaster'); m['vent_1'] = cube('vent_1', 'plaster')
     m['sash_0'] = cube('sash_0', 'frame'); m['sash_1'] = cube('sash_1', 'frame')
     m['louvre_0'] = cube('louvre_0', 'plaster'); m['louvre_1'] = cube('louvre_1', 'plaster')
-    # A sheet hangs from the line above it, down past the bottom of its block; bellied, it curves out toward the way it faces.
-    m['sheet_0'] = model([element([0, -10, 7.5], [16, 16, 8.5], {'all': 's'})], {'s': 'sheet'}, 'sheet')
-    m['sheet_1'] = model([element([0, 8, 6.5], [16, 16, 7.5], {'all': 's'}), element([0, -2, 4], [16, 8, 5], {'all': 's'}), element([0, -10, 6], [16, -2, 7], {'all': 's'})], {'s': 'sheet'}, 'sheet')
+    # A sheet hangs over the line, which runs through the block above at 30 to 31 (0.4.263: it hung from the top of its own block, a
+    # block short of the line, and its faces were mapped past the edge of its texture, onto whatever lay next to it in the atlas). Folded
+    # over the line, it falls in front to below its block and a little way behind; bellied, its front curves out the way it faces.
+    fold = sheet_panel(0, 16, 31, 31.5, 7, 9) + sheet_panel(0, 16, 23, 31, 8.5, 9)
+    m['sheet_0'] = model(sheet_panel(0, 16, -10, 31, 7, 7.5) + fold, {'s': 'sheet'}, 'sheet')
+    m['sheet_1'] = model(sheet_panel(0, 16, 22, 31, 7, 7.5) + sheet_panel(0, 16, 12, 22, 5.5, 6) + sheet_panel(0, 16, 2, 12, 4, 4.5) + sheet_panel(0, 16, -10, 2, 5.5, 6) + fold, {'s': 'sheet'}, 'sheet')
     # A curtain on its rail before a wall; pulled, it lies flat against the wall behind it.
     m['curtain_0'] = model([element([1, 0, 12], [15, 16, 14], {'all': 'c'}), element([0, 15, 14], [16, 16, 15], {'all': 'l'})], {'c': 'curtain', 'l': 'line'}, 'curtain')
     m['curtain_1'] = model([element([1, 0, 15], [15, 16, 15.8], {'all': 'c'}), element([0, 15, 14], [16, 16, 15], {'all': 'l'})], {'c': 'curtain', 'l': 'line'}, 'curtain')

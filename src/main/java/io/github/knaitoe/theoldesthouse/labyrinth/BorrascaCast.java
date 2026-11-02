@@ -45,6 +45,18 @@ public final class BorrascaCast {
         boolean all=true;for(String key:KEYS){var a=own.hasUUID(key)&&level.getEntity(own.getUUID(key)) instanceof LiteraryActor actor?actor:null;all&=recall(level,a,base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:next)));if(a!=null)remember(own,key,a);}
         if(all){own.putInt("CastVisit",next);own.remove("CastNextVisit");release(p.getUUID());}LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.BORRASCA,own);return all;
     }
+    /** For a failed staging: where each of the cast is, where they are going, and what holds them back. */
+    public static String why(ServerPlayer p){
+        var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.BORRASCA);var base=BorrascaSites.base(p.server,p.getUUID());var level=p.server.getLevel(HouseDimensions.OUTSIDE);
+        if(base==null||level==null)return "no site";int next=own.getInt("CastNextVisit");var out=new StringBuilder("next="+next+" inside="+BorrascaSites.inside(p)+" here="+own.getBoolean("Here")+" leased="+leases.containsKey(p.getUUID()));
+        for(String key:KEYS){var a=own.hasUUID(key)&&level.getEntity(own.getUUID(key)) instanceof LiteraryActor actor?actor:null;var at=base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:next));
+            out.append(" | ").append(key).append(own.contains(key+"At")?" kept "+BlockPos.of(own.getLong(key+"At")).subtract(base).toShortString():" unkept");
+            if(a==null){out.append(own.hasUUID(key)?" not loaded":" no id");continue;}
+            out.append(" at ").append(a.blockPosition().subtract(base).toShortString()).append(" to ").append(at.subtract(base).toShortString());
+            if(LiteraryVignettes.watched(level,a.getEyePosition()))out.append(" watched");if(LiteraryVignettes.watched(level,at.getCenter()))out.append(" destination watched");
+            if(!level.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))out.append(" destination unloaded");}
+        return out.toString();
+    }
     public static boolean recall(ServerPlayer p,LiteraryActor a,BlockPos at){
         return recall(p.serverLevel(),a,at);
     }

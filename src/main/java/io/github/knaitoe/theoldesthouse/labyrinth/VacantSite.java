@@ -154,6 +154,8 @@ public final class VacantSite {
         reset(l,b,false);
         BuildBlocks.after(l,()->{for(int y=1;y<=2;y++)for(int z:new int[]{-8,-9,-14,-15})join(l,b.offset(8,y,z));for(int z=-9;z<=-5;z++)join(l,b.offset(15,GROUND+1,z));
             for(int z=-3;z<=-2;z++){var at=b.offset(-3,0,z);var s=l.getBlockState(at);for(var d:Direction.Plane.HORIZONTAL)s=s.updateShape(d,l.getBlockState(at.relative(d)),l,at,at.relative(d));l.setBlock(at,s,F);}});
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.VACANT_POSSESSION);
     }
     private static void join(ServerLevel l,BlockPos at){var s=l.getBlockState(at);if(!(s.getBlock() instanceof IronBarsBlock))return;for(var d:Direction.Plane.HORIZONTAL)s=s.updateShape(d,l.getBlockState(at.relative(d)),l,at,at.relative(d));l.setBlock(at,s,F);}
 

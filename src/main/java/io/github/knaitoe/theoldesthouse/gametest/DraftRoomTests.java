@@ -31,6 +31,11 @@ public final class DraftRoomTests {
     private static void door(ServerLevel l,BlockPos at,boolean open){for(var half:new BlockPos[]{at,at.above()}){var s=l.getBlockState(half);if(s.getBlock() instanceof DoorBlock)l.setBlock(half,s.setValue(DoorBlock.OPEN,open),3);}}
     private static int stage(ServerLevel l,BlockPos at){var s=l.getBlockState(at);return s.is(PuzzleRegistry.DRAFT.get())?s.getValue(DraftBlock.STAGE):-1;}
 
+    /** 0.4.263 (owner: "airing room has disconnected textures"): a washing line runs from wall to wall, solid at both ends, with nothing missing between. */
+    private static void tied(GameTestHelper h,ServerLevel l,BlockPos b,int x0,int x1,int y,int z){
+        for(int x=x0;x<=x1;x++)h.assertTrue(DraftBlock.is(l.getBlockState(b.offset(x,y,z)),DraftBlock.Kind.LINE),"the line is unbroken at "+x+","+y+","+z);
+        h.assertTrue(l.getBlockState(b.offset(x0-1,y,z)).isSolidRender(l,b.offset(x0-1,y,z))&&l.getBlockState(b.offset(x1+1,y,z)).isSolidRender(l,b.offset(x1+1,y,z)),"the line at z "+z+" is tied to a wall at each end");
+    }
     @GameTest(template="empty",batch="draft_rooms",timeoutTicks=600)
     public static void theDryingRoomsAirOpensTheFarDoorOnlyWhenItHasNowhereElseToGo(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.DRAFT_ROOM;var b=f.base(place);var l=f.in;hold(f,place);
@@ -38,7 +43,7 @@ public final class DraftRoomTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room is resident"))
             .thenExecute(()->{
                 h.assertTrue(PuzzleRooms.is(place)&&!PuzzleRooms.Puzzle.of(place).deep&&PuzzleRooms.Puzzle.of(place).family==PuzzleRooms.Family.AIR&&!place.isVignette()&&place.authored()&&WitnessAccount.Story.of(place.id())==null,"an early puzzle room of the air, built whole, and no story");
-                DraftRooms.buildDrying(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                DraftRooms.buildDrying(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);tied(h,l,b,-6,6,DraftRooms.LINE_Y,DraftRooms.LINE_Z);
                 p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-4.5,180,0);
                 var far=f.data().door(place.id()+"/far");var farAt=b.offset(PuzzleRooms.farDoor(place));
                 h.assertTrue(far!=null&&l.getBlockState(farAt).is(Blocks.IRON_DOOR)&&!l.getBlockState(farAt).getValue(DoorBlock.OPEN)&&PuzzleRooms.holds(p,far),"the far door is shut and has no handle on this side");
@@ -68,7 +73,7 @@ public final class DraftRoomTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the rooms are resident"))
             .thenExecute(()->{
                 h.assertTrue(PuzzleRooms.is(place)&&PuzzleRooms.Puzzle.of(place).deep&&PuzzleRooms.Puzzle.of(place).early().place==LabyrinthPlace.DRAFT_ROOM&&place.authored(),"the drying room's deep room, built whole");
-                DraftRooms.buildVents(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                DraftRooms.buildVents(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);tied(h,l,b,-4,4,3,-6);
                 p.teleportTo(l,b.getX()+5.5,b.getY(),b.getZ()-23.5,90,0);
                 var seam=b.offset(DraftRooms.SEAM);var farAt=b.offset(PuzzleRooms.farDoor(place));
                 h.assertTrue(stage(l,seam)==0&&l.getBlockState(seam).isCollisionShapeFullBlock(l,seam),"the seam is a wall like the plaster round it");
@@ -115,7 +120,7 @@ public final class DraftRoomTests {
                 PuzzleRooms.markSolved(data,LabyrinthPlace.PROPPED_DOOR);PuzzleRooms.markSolved(data,LabyrinthPlace.SPRUNG_ROOMS);
                 h.assertTrue(PuzzleRooms.weight(data,p.getUUID(),place,LabyrinthPacing.STRANGE_DEPTH+2)>0,"offered once both are");
 
-                DraftRooms.buildAiring(l,b);LabyrinthBuilder.registerDoors(data,place,b);
+                DraftRooms.buildAiring(l,b);LabyrinthBuilder.registerDoors(data,place,b);tied(h,l,b,-4,4,3,-6);tied(h,l,b,-11,11,3,-13);
                 p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-4.5,180,0);
                 var a=b.offset(DraftRooms.AB);var c=b.offset(DraftRooms.BC);var seam=b.offset(DraftRooms.SEAM);var farAt=b.offset(PuzzleRooms.farDoor(place));long now=l.getGameTime();
                 h.assertTrue(TraceRooms.spring(l,a)&&TraceRooms.spring(l,c),"both doors are on closers");

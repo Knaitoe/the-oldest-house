@@ -210,6 +210,8 @@ public final class QuietRooms {
         LabyrinthBuilder.hangLantern(l,b.offset(1,4,-8),false);LabyrinthBuilder.hangLantern(l,b.offset(1,4,-13),false);LabyrinthBuilder.hangLantern(l,b.offset(-1,4,-3),false);
         LabyrinthBuilder.entrance(l,b,panel,Blocks.DARK_OAK_PLANKS.defaultBlockState(),plaster);
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.QUIET_READING);
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.QUIET_READING);
     }
 
     /**
@@ -240,6 +242,8 @@ public final class QuietRooms {
         for(int z:new int[]{-5,-12,-17})LabyrinthBuilder.hangLantern(l,b.offset(0,3,z),false);
         LabyrinthBuilder.entrance(l,b,brick,tiles,plaster);
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.QUIET_BOOTROOM);
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.QUIET_BOOTROOM);
     }
 
     /**
@@ -270,6 +274,8 @@ public final class QuietRooms {
         set(l,b,7,0,-10,Blocks.POTTED_AZALEA.defaultBlockState());set(l,b,-7,0,-10,Blocks.POTTED_FERN.defaultBlockState());
         LabyrinthBuilder.entrance(l,b,plaster,Blocks.TERRACOTTA.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState());
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.QUIET_SUNROOM);
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.QUIET_SUNROOM);
     }
 
     /**
@@ -304,6 +310,8 @@ public final class QuietRooms {
         set(l,b,0,3,-5,fit(HouseReadPropBlock.Part.PENDANT,Direction.SOUTH));
         LabyrinthBuilder.entrance(l,b,paper,boards,plaster);
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.QUIET_SPARE);
+        // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
+        RoomActors.settlePanes(l,b,LabyrinthPlace.QUIET_SPARE);
     }
 
     /** For tests: whether a rest room's store still holds food, and the store itself. */
