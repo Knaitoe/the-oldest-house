@@ -391,6 +391,12 @@ public final class CoopTests {
                 at(nextFilmer,f.level(lake),shore.offset(0,0,-5));
                 h.assertTrue(PhoneCanoe.inside(nextFilmer)&&shore.equals(PhoneCanoe.base(nextFilmer))&&PhoneCanoe.inside(filmer)&&f.base(lake).equals(PhoneCanoe.base(filmer)),"each filmer's lake is where they are");
                 h.assertTrue(SceneInstances.copyAt(server,lake,shore)==1&&SceneInstances.copyAt(server,lake,f.base(lake))==0,"a copy is known by where it stands");
+            })
+            // Each canoe is staged once its entity section is loaded (LakeOriginals.ensure answers null until then), so wait for both.
+            .thenWaitUntil(()->{var theirs=PhoneCanoe.stage(f.level(lake),SceneInstances.base(server,lake,1));var original=PhoneCanoe.stage(f.level(lake),f.base(lake));
+                h.assertTrue(theirs!=null&&original!=null,"each lake's canoe is staged: the copy's "+theirs+", the original's "+original);})
+            .thenExecute(()->{
+                var shore=SceneInstances.base(server,lake,1);
                 var theirs=PhoneCanoe.stage(f.level(lake),shore);var original=PhoneCanoe.stage(f.level(lake),f.base(lake));
                 h.assertTrue(theirs!=null&&original!=null&&!theirs.getUUID().equals(original.getUUID())&&IndianLakeRooms.bounds(shore,lake).contains(theirs.position()),"each lake has its own canoe");
                 h.assertTrue(PhoneCanoe.stage(f.level(lake),shore)==theirs,"and a copy's canoe is the same canoe the next time it is looked for");

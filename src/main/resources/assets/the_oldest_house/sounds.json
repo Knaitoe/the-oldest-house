@@ -3583,5 +3583,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.tank.knock"
+  },
+  "borrasca.stroke": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.stroke",
+    "sounds": [
+      {
+        "name": "the_oldest_house:borrasca/stroke",
+        "attenuation_distance": 256
+      }
+    ]
   }
 }

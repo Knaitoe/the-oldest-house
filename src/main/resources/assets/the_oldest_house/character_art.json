@@ -42,6 +42,13 @@
     "phase": 0
   },
   {
+    "name": "borrasca_worker_two",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 5,
+    "phase": 0
+  },
+  {
     "name": "caged_child",
     "logical": 64,
     "model": "player",

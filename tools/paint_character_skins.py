@@ -56,6 +56,8 @@ LOOKS = {
     'borrasca_sheriff': Look('#caa17e','#8d897e','receding','#b09c71','#5f5543','shirt','#bdad70',eyes='#675a46',age=2,beard='moustache',mark='borrasca_sheriff',sleeve=10,logical=64),
     'borrasca_prescott': Look('#d5a38a','#aaa69c','receding','#88433b','#8a7d5c','flannel','#786049',eyes='#62717c',age=2,mark='borrasca_prescott',sleeve=10,logical=64),
     'borrasca_worker': Look('#bc9479','#4a3c31','close','#627174','#4a595d','crew','#be8748',eyes='#514e43',glasses=True,mark='borrasca_worker',sleeve=10,logical=64),
+    # 0.4.262 (owner: "the construction workers shouldn't have identical textures"): the second man, older and heavier, in a canvas chore coat and a white hard hat.
+    'borrasca_worker_two': Look('#a7765a','#2d2621','close','#6a5a3a','#3b4450','crew','#d7d2c2',eyes='#3f3a33',age=1,beard='short',mark='borrasca_worker_two',sleeve=10,logical=64),
     'uncanny_waitress': Look('#cba083','#795039','bun','#496d80','#496d80','dress','#e0d4b8',eyes='#596456',age=1,mark='diner_apron',sleeve=4,logical=64),
     'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_second',sleeve=4,logical=64),
     'uncanny_second_waitress_split': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_split',sleeve=4,logical=64),
@@ -572,6 +574,17 @@ def borrasca_cloth(im,look,side):
         if side in ('front','back'):
             for x in (2,w-4):d.line((x,2,x,12),fill='#c6c6ae')
             if side=='front':d.rectangle((w-6,7,w-3,10),outline='#85663e')
+    elif look.mark=='borrasca_worker_two':
+        # A canvas chore coat, buttoned, with two patch pockets and a reflective band low on the back; no vest.
+        coat=rgb(look.cloth);d.rectangle((0,h-3,w-1,h-1),fill=shade(coat,-18))
+        if side=='front':
+            d.line((mid,0,mid,h-1),fill=shade(coat,-26))
+            for y in (3,8,13):d.point((mid+1,y),fill='#2f2a22')
+            for x0 in (1,w-6):d.rectangle((x0,8,x0+4,12),outline=shade(coat,-22));d.line((x0,8,x0+4,8),fill=shade(coat,14))
+            d.line((1,1,mid-2,3),fill=shade(coat,16));d.line((w-2,1,mid+2,3),fill=shade(coat,16))
+        elif side=='back':
+            d.line((0,h-6,w-1,h-6),fill='#d8d8c6');d.line((0,h-5,w-1,h-5),fill='#a8aea2')
+            d.line((2,1,w-3,1),fill=shade(coat,-14))
     return im
 
 
@@ -856,13 +869,13 @@ def paint(look):
             d.rectangle((5,4,10,13),fill=rgb(look.hair));d.line((5,6,10,6),fill='#52615c');d.line((6,8,6,12),fill=shade(look.hair,14))
             put(net(32,0,8,8,8)['back'],art)
         else:
-            cap={'borrasca_kyle':'#51677b','borrasca_sheriff':'#97805a','borrasca_prescott':'#4d6650','borrasca_worker':'#bba158'}[look.mark]
+            cap={'borrasca_kyle':'#51677b','borrasca_sheriff':'#97805a','borrasca_prescott':'#4d6650','borrasca_worker':'#bba158','borrasca_worker_two':'#e2ddd0'}[look.mark]
             for side,box in net(32,0,8,8,8).items():
                 art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
                 if side=='top':
                     art=panel((16,16),cap,'cloth',side);d=ImageDraw.Draw(art)
                     d.line((7,1,7,14),fill=shade(cap,-16))
-                    if look.mark=='borrasca_worker':d.line((5,1,5,14),fill=shade(cap,18));d.line((10,1,10,14),fill=shade(cap,18))
+                    if look.mark in ('borrasca_worker','borrasca_worker_two'):d.line((5,1,5,14),fill=shade(cap,18));d.line((10,1,10,14),fill=shade(cap,18))
                 elif side!='bottom':
                     height=7 if look.mark=='borrasca_sheriff' else 5
                     d.rectangle((0,0,15,height),fill=rgb(cap));d.line((0,height,15,height),fill=shade(cap,-27));d.line((1,1,14,1),fill=shade(cap,14))

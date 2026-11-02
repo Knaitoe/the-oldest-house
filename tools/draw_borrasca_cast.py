@@ -10,7 +10,7 @@ from PIL import Image
 from paint_character_skins import LOOKS, paint
 
 ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house/textures/entity'
-PEOPLE = ('kyle', 'kimber', 'sheriff', 'prescott', 'worker')
+PEOPLE = ('kyle', 'kimber', 'sheriff', 'prescott', 'worker', 'worker_two')
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
                 assert stored.size == painting.size and stored.convert('RGBA').tobytes() == painting.tobytes(), name
         else:
             painting.save(path, optimize=True)
-    print(('Verified' if args.check else 'Painted') + ' 5 Drisking skins with the shared cast painter.')
+    print(('Verified' if args.check else 'Painted') + ' 6 Drisking skins with the shared cast painter.')
 
 
 if __name__ == '__main__':

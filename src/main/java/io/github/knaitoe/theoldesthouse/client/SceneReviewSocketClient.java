@@ -35,6 +35,16 @@ public final class SceneReviewSocketClient {
         // Along one axis at a time, but a small sideways error (a door's open leaf narrows its gap) is put right first.
         if(Math.abs(dx)>.15&&Math.abs(dz)>.06&&Math.abs(dz)<.6)dx=0;else if(Math.abs(dx)>.15)dz=0;else dx=0;mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);mc.options.keyUp.setDown(true);return false;
     }
+    /**
+     * Straight at a point, steering as it goes. The flat's door (0,0,-4) stands open with its leaf along the west side of the cell
+     * (x 0 to 3/16), so a reader a few hundredths west of the centre line catches its edge and stops (run 1409, carrying the dresser
+     * at 0.4.260's slower walk); the way through is aimed at DOOR_X, clear of the leaf and of the wall to the east.
+     */
+    private static boolean aim(Minecraft mc,Vec3 p,double tolerance){
+        double dx=p.x-mc.player.getX(),dz=p.z-mc.player.getZ();if(Math.hypot(dx,dz)<tolerance){mc.options.keyUp.setDown(false);return true;}
+        mc.player.setYRot((float)Math.toDegrees(Math.atan2(-dx,dz)));mc.player.setXRot(0);mc.options.keyUp.setDown(true);return false;
+    }
+    private static final double DOOR_X=.62;
     private static Vec3 at(BlockPos b,double x,double y,double z){return new Vec3(b.getX()+x,b.getY()+y,b.getZ()+z);}
     private static void look(Minecraft mc,Vec3 at){var eye=mc.player.getEyePosition();var d=at.subtract(eye);
         mc.player.setYRot((float)Math.toDegrees(Math.atan2(-d.x,d.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(d.y,Math.hypot(d.x,d.z))));}
@@ -91,8 +101,8 @@ public final class SceneReviewSocketClient {
             case 66->{
                 if(!a){
                     // Up the stair and into the living room, to watch the tenant and the last chair.
-                    Vec3[] up={at(b,-3.5,GROUND,-7.5),at(b,-3.5,0,-.5),at(b,.5,0,-.5),at(b,.5,0,-6.5),at(b,1.5,0,-6.5)};
-                    if(route<up.length){if(walk(mc,up[route],.3))route++;return false;}
+                    Vec3[] up={at(b,-3.5,GROUND,-7.5),at(b,-3.5,0,-.5),at(b,.5,0,-.5),at(b,DOOR_X,0,-5.4),at(b,.5,0,-6.5),at(b,1.5,0,-6.5)};
+                    if(route<up.length){if(route==3?aim(mc,up[route],.2):walk(mc,up[route],.3))route++;return false;}
                     stop(mc);var t=actor(mc,VacantPossession.TENANT);var chair=at(b,6.5,.8,-8.5);
                     look(mc,t!=null?t.position().add(0,1.2,0):chair);
                     boolean seated=t!=null&&flat(t.position(),at(b,6.5,0,-8.5))<.09,standing=t!=null&&flat(t.position(),at(b,6.5,0,-9.5))<.25;
@@ -111,14 +121,15 @@ public final class SceneReviewSocketClient {
 
     /** The dresser lifted, carried out of the flat, along the landing, down the stair, along the hall and out to the van. */
     private static boolean carry(Minecraft mc,BlockPos b,int age,BlockPos piece,String name){
-        var path=new Vec3[]{at(b,.5,0,-8.5),at(b,.5,0,-.5),at(b,-3.5,0,-.5),at(b,-3.5,GROUND,-6.5),at(b,6.5,GROUND,-6.4),at(b,9.5,GROUND,-6.4),at(b,10.4,GROUND,-6.4)};
+        // Leg 1 lines up on the door's clear side; leg 4 is the stair, leg 5 the hall.
+        var path=new Vec3[]{at(b,.5,0,-8.5),at(b,DOOR_X,0,-3.4),at(b,.5,0,-.5),at(b,-3.5,0,-.5),at(b,-3.5,GROUND,-6.5),at(b,6.5,GROUND,-6.4),at(b,9.5,GROUND,-6.4),at(b,10.4,GROUND,-6.4)};
         if(route==0){stop(mc);look(mc,b.offset(piece).getCenter());click(mc,b.offset(piece),age,20);if(carrying(mc))route=1;return false;}
         int leg=route-1;
         if(leg<path.length){
-            if(leg==3&&!flag){stop(mc);mc.player.setYRot(180);mc.player.setXRot(35);if(mark<0)mark=age;if(age-mark==4)shoot("A-flat-stair-top");if(age-mark>8){flag=true;mark=-1000;}return false;}
-            if(leg==3&&!flag2&&mc.player.getY()<b.getY()-2.4){flag2=true;shoot("A-flat-stair-middle");}
-            if(walk(mc,path[leg],.3)){route++;if(leg==3){stop(mc);mc.player.setYRot(-90);mc.player.setXRot(5);mark=age;}}
-            if(leg==4&&mark>0&&age-mark<6){mc.options.keyUp.setDown(false);mc.player.setYRot(-90);if(age-mark==3)shoot("A-flat-hall");}
+            if(leg==4&&!flag){stop(mc);mc.player.setYRot(180);mc.player.setXRot(35);if(mark<0)mark=age;if(age-mark==4)shoot("A-flat-stair-top");if(age-mark>8){flag=true;mark=-1000;}return false;}
+            if(leg==4&&!flag2&&mc.player.getY()<b.getY()-2.4){flag2=true;shoot("A-flat-stair-middle");}
+            if(leg==1?aim(mc,path[leg],.2):walk(mc,path[leg],.3)){route++;if(leg==4){stop(mc);mc.player.setYRot(-90);mc.player.setXRot(5);mark=age;}}
+            if(leg==5&&mark>0&&age-mark<6){mc.options.keyUp.setDown(false);mc.player.setYRot(-90);if(age-mark==3)shoot("A-flat-hall");}
             return false;
         }
         stop(mc);var van=b.offset(12,GROUND-1,-7);look(mc,van.getCenter().add(0,.5,0));
@@ -129,15 +140,15 @@ public final class SceneReviewSocketClient {
     /** Back up to the tenant; the chair, when they stand; down to the van with it; and the window from the street. */
     private static boolean chairDown(Minecraft mc,BlockPos b,int age){
         if(age<260){stop(mc);return false;}
-        var up=new Vec3[]{at(b,-3.5,GROUND,-6.5),at(b,-3.5,0,-.5),at(b,.5,0,-.5),at(b,.5,0,-8.5),at(b,4.5,0,-8.5)};
-        if(route<up.length){if(walk(mc,up[route],.3))route++;return false;}
+        var up=new Vec3[]{at(b,-3.5,GROUND,-6.5),at(b,-3.5,0,-.5),at(b,.5,0,-.5),at(b,DOOR_X,0,-5.4),at(b,.5,0,-8.5),at(b,4.5,0,-8.5)};
+        if(route<up.length){if(route==3?aim(mc,up[route],.2):walk(mc,up[route],.3))route++;return false;}
         var t=actor(mc,VacantPossession.TENANT);var chair=b.offset(VacantSite.CHAIR_PIECE.at());
         if(route==up.length){stop(mc);look(mc,t!=null?t.position().add(0,1.5,0):chair.getCenter());if(mark<0)mark=age;if(age-mark==25){shoot("A-flat-tenant-stands");route++;}return false;}
         if(route==up.length+1){stop(mc);look(mc,chair.getCenter());click(mc,chair,age,20);if(carrying(mc)){route++;mark=age;}return false;}
         if(route==up.length+2){stop(mc);look(mc,t!=null?t.position().add(0,1.5,0):chair.getCenter());if(age-mark==5){shoot("A-flat-chair-lifted");route++;}return false;}
-        var down=new Vec3[]{at(b,.5,0,-8.5),at(b,.5,0,-.5),at(b,-3.5,0,-.5),at(b,-3.5,GROUND,-6.5),at(b,6.5,GROUND,-6.4),at(b,9.5,GROUND,-6.4),at(b,10.4,GROUND,-6.4)};
+        var down=new Vec3[]{at(b,.5,0,-8.5),at(b,DOOR_X,0,-3.4),at(b,.5,0,-.5),at(b,-3.5,0,-.5),at(b,-3.5,GROUND,-6.5),at(b,6.5,GROUND,-6.4),at(b,9.5,GROUND,-6.4),at(b,10.4,GROUND,-6.4)};
         int leg=route-(up.length+3);
-        if(leg<down.length){if(leg==3&&!flag2&&mc.player.getY()<b.getY()-2.4){flag2=true;shoot("A-flat-chair-stair");}if(walk(mc,down[leg],.3))route++;return false;}
+        if(leg<down.length){if(leg==4&&!flag2&&mc.player.getY()<b.getY()-2.4){flag2=true;shoot("A-flat-chair-stair");}if(leg==1?aim(mc,down[leg],.2):walk(mc,down[leg],.3))route++;return false;}
         stop(mc);var van=b.offset(12,GROUND-1,-7);
         if(carrying(mc)){look(mc,van.getCenter().add(0,.5,0));click(mc,van,age,20);mark=age;return false;}
         // Out from behind the van and across the street, to look back up at the living room's window past the van's end.

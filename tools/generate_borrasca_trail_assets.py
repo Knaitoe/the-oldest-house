@@ -400,6 +400,102 @@ def cube(box, tile, rotation=None):
     return result
 
 
+COMPASS_PARTS = 'the_oldest_house:item/borrasca_compass_parts'
+# Where each colour lies on the parts sheet, in pixels.
+PART = {'brass': (0, 0, 4, 4), 'dark': (4, 0, 8, 4), 'bright': (8, 0, 12, 4), 'tape': (12, 0, 16, 4),
+        'dial': (0, 4, 8, 12), 'red': (8, 4, 10, 6), 'steel': (10, 4, 12, 6), 'pivot': (12, 4, 14, 6), 'shine': (14, 4, 16, 6)}
+
+
+def compass_parts():
+    """0.4.262 (owner: "compass needs a 3d model rather than a painted texture"): the colours the compass model is made of, and its dial."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    px = im.load()
+    r = random.Random(262)
+    def fill(key, colour, jitter=.05):
+        x0, y0, x1, y1 = PART[key]
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                px[x, y] = mul(rgb(colour), 1 + r.uniform(-jitter, jitter))
+    fill('brass', '#b48d46'); fill('dark', '#6f5428'); fill('bright', '#e2c27a', .03)
+    fill('tape', '#9a3b33')
+    for x in range(12, 16):
+        px[x, 1] = rgb('#b9493e'); px[x, 3] = rgb('#7d2f29')
+    px[13, 2] = rgb('#c7b28a')  # worn through to the brass
+    fill('red', '#b23a30', .02); fill('steel', '#56697a', .02); fill('pivot', '#2e2a22', .02); fill('shine', '#f2efe2', .02)
+    # The dial: cream, a ring, the four points marked, north in red.
+    for y in range(4, 12):
+        for x in range(0, 8):
+            px[x, y] = mul(rgb('#e6dfc4'), 1 + r.uniform(-.03, .03))
+    for i in range(8):
+        for x, y in ((i, 4), (i, 11), (0, 4 + i), (7, 4 + i)):
+            px[x, y] = rgb('#b9ae8c')
+    px[3, 5] = px[4, 5] = rgb('#a43c32')          # north
+    px[3, 10] = px[4, 10] = rgb('#4b463a')        # south
+    px[1, 7] = px[1, 8] = rgb('#4b463a')          # west
+    px[6, 7] = px[6, 8] = rgb('#4b463a')          # east
+    for x, y in ((2, 6), (5, 6), (2, 9), (5, 9)):
+        px[x, y] = rgb('#cfc5a3')
+    return im
+
+
+def part(key, faces=FACES, inset=.03):
+    x0, y0, x1, y1 = PART[key]
+    return {f: {'texture': '#parts', 'uv': [x0 + inset, y0 + inset, x1 - inset, y1 - inset]} for f in faces}
+
+
+def element(box, sides, top=None, bottom=None, rotation=None):
+    faces = part(sides, ('north', 'south', 'east', 'west'))
+    faces.update(part(top or sides, ('up',)))
+    faces.update(part(bottom or sides, ('down',)))
+    result = {'from': [round(v, 4) for v in box[:3]], 'to': [round(v, 4) for v in box[3:]], 'faces': faces}
+    if rotation:
+        result['rotation'] = rotation
+    return result
+
+
+def compass_model(k):
+    """Nell's compass lying face up: an eight-sided brass case, a raised bezel, the dial, the needle at position k of 16 (each a sixteenth
+    of a turn anticlockwise from north, seen from above), its pivot, the bow it hung from, and the red tape round its side."""
+    els = []
+    for box in ((4, 0, 2, 12, 2.5, 14), (2, 0, 4, 14, 2.5, 12), (3, 0, 3, 13, 2.5, 13)):
+        els.append(element(box, 'brass', 'brass', 'dark'))
+    els.append(element((4, 2.5, 4, 12, 2.55, 12), 'dark', 'dial'))
+    for box in ((4, 2.5, 3, 12, 3.3, 4), (4, 2.5, 12, 12, 3.3, 13), (3, 2.5, 4, 4, 3.3, 12), (12, 2.5, 4, 13, 3.3, 12)):
+        els.append(element(box, 'brass', 'bright'))
+    # The bow: a short stem and a loop off the north edge.
+    els.append(element((7.25, .6, .8, 8.75, 1.9, 2.2), 'brass', 'bright'))
+    for box in ((5.6, .8, -2.4, 6.6, 1.7, .9), (9.4, .8, -2.4, 10.4, 1.7, .9), (5.6, .8, -3.4, 10.4, 1.7, -2.4)):
+        els.append(element(box, 'brass', 'bright', 'dark'))
+    # The tape, wound round the east side and the south-east corner, worn thin.
+    for box in ((13.9, .7, 5, 14.2, 1.8, 11), (8.6, .7, 13.9, 12, 1.8, 14.2), (12.9, .7, 12, 13.2, 1.8, 13.2), (12, .7, 12.9, 13.2, 1.8, 13.2)):
+        els.append(element(box, 'tape'))
+    # The needle: red to the north, steel to the south, its pivot above both.
+    phi = k * 22.5
+    quarter = round(phi / 90) % 4
+    rest = phi - 90 * round(phi / 90)
+    def turn(box):
+        x0, y0, z0, x1, y1, z1 = box
+        pts = []
+        for x, z in ((x0, z0), (x1, z1)):
+            dx, dz = x - 8, z - 8
+            for _ in range(quarter):
+                dx, dz = dz, -dx      # a quarter turn anticlockwise seen from above: +x goes to -z
+            pts.append((8 + dx, 8 + dz))
+        (ax, az), (bx, bz) = pts
+        return (min(ax, bx), y0, min(az, bz), max(ax, bx), y1, max(az, bz))
+    rotation = {'origin': [8, 2.75, 8], 'axis': 'y', 'angle': rest} if rest else None
+    for box, colour in (((7.5, 2.6, 4.7, 8.5, 2.85, 8), 'red'), ((7.7, 2.6, 4.1, 8.3, 2.85, 4.7), 'red'),
+                        ((7.5, 2.6, 8, 8.5, 2.85, 11.3), 'steel'), ((7.7, 2.6, 11.3, 8.3, 2.85, 11.9), 'steel')):
+        els.append(element(turn(box), colour, rotation=rotation))
+    els.append(element((7.6, 2.85, 7.6, 8.4, 3.05, 8.4), 'pivot', 'shine'))
+    return {'textures': {'parts': COMPASS_PARTS, 'particle': COMPASS_PARTS}, 'gui_light': 'front', 'elements': els,
+            'display': {'gui': {'rotation': [72, 0, 0], 'translation': [0, 1.2, 0], 'scale': [1.05, 1.05, 1.05]},
+                        'fixed': {'rotation': [90, 0, 0], 'translation': [0, 0, -1], 'scale': [1, 1, 1]},
+                        'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [.55, .55, .55]},
+                        'thirdperson_righthand': {'rotation': [10, 0, 0], 'translation': [0, 2.5, 1.5], 'scale': [.45, .45, .45]},
+                        'firstperson_righthand': {'rotation': [38, -12, 0], 'translation': [1, 4.2, 0], 'scale': [.62, .62, .62]}}}
+
+
 def model(elements):
     return {'textures': {'atlas': ATLAS, 'particle': ATLAS}, 'elements': elements}
 
@@ -508,12 +604,17 @@ def outputs():
                'ground': {'rotation':[90,0,0],'translation':[0,1,0],'scale':[.5,.5,.5]},
                'thirdperson_righthand': {'rotation':[0,0,0],'translation':[0,2,0],'scale':[.5,.5,.5]},
                'firstperson_righthand': {'rotation':[0,-30,0],'translation':[0,2,0],'scale':[.8,.8,.8]}}
-    compass = model([cube((2,2,7,14,14,9),7),cube((6,14,7,10,16,9),8)])
+    compass = compass_model(0)
+    for k in range(1, 16):
+        out[f'models/item/borrasca_compass_{k}.json'] = compass_model(k)
     patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('NELL',2,6,7.35,.8,12,mirror=False)])
     flashlight = model([cube((6,0,6,10,12,10),5),cube((5.5,2,5.5,10.5,10,10.5),10),cube((4,10,4,12,16,12),14)])
-    for name, asset in (('compass',compass),('name_patch',patch),('flashlight',flashlight)):
+    for name, asset in (('name_patch',patch),('flashlight',flashlight)):
         asset['display'] = display
         out[f'models/item/borrasca_{name}.json'] = asset
+    compass['overrides'] = [{'predicate': {'the_oldest_house:needle': round((k - .5) / 16, 5)}, 'model': f'the_oldest_house:item/borrasca_compass_{k}'} for k in range(1, 16)]
+    compass['overrides'].append({'predicate': {'the_oldest_house:needle': round(15.5 / 16, 5)}, 'model': 'the_oldest_house:item/borrasca_compass'})
+    out['models/item/borrasca_compass.json'] = compass
     atlas_file = ROOT / 'src/main/resources/assets/minecraft/atlases/blocks.json'
     atlas = json.loads(atlas_file.read_text())
     source = {'type':'minecraft:single','resource':ATLAS,'sprite':ATLAS}
@@ -529,14 +630,15 @@ def outputs():
                  'item.the_oldest_house.borrasca_name_patch':"Nell's name patch",
                  'item.the_oldest_house.borrasca_flashlight':'County flashlight',
                  'subtitles.the_oldest_house.borrasca.triple_chime':'Metallic cry from the ridge',
+                 'subtitles.the_oldest_house.borrasca.stroke':'One stroke from the ridge',
                  'subtitles.the_oldest_house.borrasca.carve':'Knife scrapes wood',
                  'subtitles.the_oldest_house.borrasca.breaker':'Breaker drops',
                  'subtitles.the_oldest_house.borrasca.chain':'Chain rattles'})
     out['lang/en_us.json'] = lang
     sounds = json.loads((ASSETS / 'sounds.json').read_text())
-    for name in ('triple_chime','carve','breaker','chain'):
+    for name in ('triple_chime','stroke','carve','breaker','chain'):
         sounds['borrasca.'+name] = {'subtitle':'subtitles.the_oldest_house.borrasca.'+name,
-            'sounds':[{'name':'the_oldest_house:borrasca/'+name, 'attenuation_distance':256 if name=='triple_chime' else 24}]}
+            'sounds':[{'name':'the_oldest_house:borrasca/'+name, 'attenuation_distance':256 if name in ('triple_chime','stroke') else 24}]}
     out['sounds.json'] = sounds
     return out
 
@@ -548,6 +650,7 @@ def main():
     changed = []
     images = [(f'textures/entity/{name}.png', image) for name, image in (('borrasca_trail_atlas',paintings()),('borrasca_cast_pixels',cast_painting()))]
     images += [(f'textures/block/borrasca/{name}.png', image) for name, image in materials().items()]
+    images += [('textures/item/borrasca_compass_parts.png', compass_parts())]
     for name,image in images:
         path = ASSETS / name
         path.parent.mkdir(parents=True, exist_ok=True)
