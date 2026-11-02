@@ -65,6 +65,13 @@ The loose pages' landing cells, the gap between Elizabeth's chair and the end ta
 clear. `ModelUvProof` (`-PuvSmoke`) draws a second page, `native-devils-rock-props.png`, of every redrawn prop and household
 piece; `tools/draw_devils_rock_props.py --check` is in the quick gate.
 
+## Run 1396
+
+Seventeen of eighteen jobs passed. The build job's architecture case still asked every dressed scene for two placed details; the
+plain's only ones were the survey rest 0.4.240 removed at the owner's request, so the plain is exempt (with the copied Red Room)
+and the count is fifteen scenes. The client's writing check then found no page corpus, because the failed run stopped before
+writing it.
+
 ## Tests
 
 The Devil's Rock diary case, the Wheel case and the Movie Night audience case (`VignetteAnimationTests`) pass locally; the
