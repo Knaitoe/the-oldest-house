@@ -111,6 +111,31 @@ public final class LiteraryTests {
             .thenSucceed();
     }
     @AfterBatch(batch="literary_masque_own") public static void masqueOwnDone(ServerLevel l){close();}
+    /**
+     * 0.4.244, aftermath (docs/AFTERMATH_0_4_244.md): a reader who stopped the clock and finished comes back to the seven rooms as they
+     * left them: their dancers still and turned to them, the clock stopped for them, nothing asked of them and nothing earned. It is
+     * offered back twice; each return is its own visit, and a third is never offered.
+     */
+    @GameTest(template="empty",batch="literary_masque_after",timeoutTicks=600)
+    public static void aFinishedMasqueComesBackStillAsItWasLeft(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.MASQUE;var p=f.player("masque_after",place);
+        var own=f.own(p,place);own.putInt("Rooms",127);own.putBoolean("ClockStopped0506",true);own.putBoolean("Ready",true);own.putBoolean("Completed",true);own.putString("Outcome","stopped_the_seventh_room_clock");own.putInt("Beat",own.getInt("Visit"));LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.of(place.id()),"stopped_the_seventh_room_clock");int credit=WitnessAccount.count(f.data(),p.getUUID());
+        h.assertTrue(Aftermath.canDeal(f.data(),p.getUUID(),place)&&LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(place),"the finished rooms are offered back to the reader who stopped the clock");
+        f.arrive(p,place);
+        java.util.function.Supplier<LiteraryActor> dancer=()->{var world=LiteraryVignettes.shared(f.data(),place);String key="Dancer0_1_"+p.getUUID();return world.hasUUID(key)&&f.in.getEntity(world.getUUID(key)) instanceof LiteraryActor a?a:null;};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),place)==1&&dancer.get()!=null,"the return is counted, and their dancers are there"))
+            .thenExecute(()->{
+                h.assertTrue(dancer.get().phase()==0&&dancer.get().owner().orElseThrow().equals(p.getUUID()),"their dancers stand still");
+                var mine=f.own(p,place);h.assertTrue(mine.getBoolean("Completed")&&mine.getBoolean("ClockStopped0506")&&WitnessAccount.count(f.data(),p.getUUID())==credit,"nothing new is earned: "+mine);
+                h.assertTrue(DoorSounds.heard(p.server,f.data(),p.getUUID(),place,null)==null,"through the door, no clock for them");
+                h.assertTrue(Aftermath.canDeal(f.data(),p.getUUID(),place),"one more return is left");
+                f.arrive(p,place);})
+            .thenWaitUntil(()->h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),place)==2,"the next arrival is a return of its own"))
+            .thenExecute(()->h.assertTrue(!Aftermath.canDeal(f.data(),p.getUUID(),place)&&!LabyrinthDealer.vignettesAvailable(f.data(),p.getUUID()).contains(place),"and then it is not offered again"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_masque_after") public static void masqueAfterDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_thin_structures",timeoutTicks=600)
     public static void theMasqueWindsByBrazierLightAndBlyKeepsItsCupboardsLineAndPond(GameTestHelper h){
         var f=new Fixture(h);var masque=LabyrinthPlace.MASQUE;var bly=LabyrinthPlace.BLY_ROUTE;f.build(masque);f.build(bly);var m=f.base(masque);var y=f.base(bly);var l=f.in;

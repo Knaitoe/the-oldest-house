@@ -92,6 +92,8 @@ public final class LabyrinthDealer {
             WitnessAccount.Story story=WitnessAccount.Story.of(place.id());
             if(story!=null&&!LiteraryRooms.isLiterary(place)&&!NovelVignettes.isNovel(place)&&place.isFinishable()&&data.isCompleted(place.id())&&!WitnessAccount.has(data,player,story)&&!places.contains(place))places.add(place);
         }
+        // 0.4.244: a finished pool or flat comes back, as it was left, to the reader who finished it (Aftermath).
+        for(var site:Aftermath.PLACES)if(!places.contains(site)&&Aftermath.canDeal(data,player,site))places.add(site);
         // A recurring home copy needs an interval; a deliberate scent may still seek it.
         if(!data.hillaryScent(player))places.removeIf(p->p==LabyrinthPlace.RED_ROOM
                 && data.recentVisit(player,p)>=0 && data.recentVisit(player,p)<6);
@@ -499,7 +501,7 @@ public final class LabyrinthDealer {
             if (scent) {
                 List<LabyrinthPlace> unfound = new ArrayList<>();
                 for (LabyrinthPlace candidate : vignettes) {
-                    if (candidate.isFinishable()) {
+                    if (candidate.isFinishable() && !Aftermath.returning(data, player, candidate)) {
                         unfound.add(candidate);
                     }
                 }
@@ -624,7 +626,7 @@ public final class LabyrinthDealer {
         if (scent) {
             List<LabyrinthPlace> unfound = new ArrayList<>();
             for (LabyrinthPlace place : vignettes) {
-                if (place.isFinishable()) {
+                if (place.isFinishable() && !Aftermath.returning(data, player, place)) {
                     unfound.add(place);
                 }
             }

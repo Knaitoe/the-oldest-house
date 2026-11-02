@@ -79,7 +79,10 @@ public final class LastSwimmer {
         boolean stepping(){return closed()&&since()>=STEPS_AFTER;}
     }
     private static final Map<Long,Pool> POOLS=new HashMap<>();
-    public static void clearAll(){POOLS.clear();}
+    /** 0.4.244: pools with only finished readers in them, and how long they have been; dressed as their aftermath at {@link #AFTER_WAIT}. */
+    private static final Map<Long,Integer> AFTER=new HashMap<>();
+    public static final int AFTER_WAIT=20;
+    public static void clearAll(){POOLS.clear();AFTER.clear();}
     public static boolean swimmer(int phase){return phase==SWIMMER;}
 
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
@@ -112,6 +115,13 @@ public final class LastSwimmer {
         var p=b==null?null:pool(b);
         return DoorSounds.Through.of(p!=null&&p.closed()?DoorSounds.Carry.EMPTY:DoorSounds.Carry.WATER);
     }
+    /** 0.4.244: and for a reader who closed it, with no closing under way, what they would find: the cover on, nothing moving. */
+    @Nullable public static DoorSounds.Through heard(@Nullable BlockPos b,LabyrinthData data,UUID listener){
+        if((b==null||pool(b)==null)&&Aftermath.returning(data,listener,PLACE))return DoorSounds.Through.of(DoorSounds.Carry.EMPTY);
+        return heard(b);
+    }
+    /** For tests: whether this pool is standing as its aftermath. */
+    public static boolean after(BlockPos b){Integer w=AFTER.get(b.asLong());return w!=null&&w>=AFTER_WAIT;}
     /** The stars still on the water: those the cover has not reached. */
     public static int stars(int hauls){int n=0;for(var s:STARS)if(!covered(hauls,s[0]))n++;return n;}
     static boolean covered(int hauls,int x){return x>SwimmerSite.POOL_X1-hauls;}
@@ -125,6 +135,17 @@ public final class LastSwimmer {
         var l=p.serverLevel();var s=l.getBlockState(b.offset(rel));var kind=SwimmerBlock.kind(s);
         if(kind==null)return false;
         var pool=pool(b);
+        // 0.4.244: the pool as the reader left it, with no closing under way.
+        if(pool==null&&own.getBoolean("Completed")){
+            String line=switch(kind){
+                case COVER->SwimmerTexts.AFTER_COVER;
+                case PACE_CLOCK->SwimmerTexts.AFTER_CLOCK;
+                case RADIO->SwimmerTexts.AFTER_RADIO;
+                case LOCKERS->s.getValue(SwimmerBlock.STAGE)==1?SwimmerTexts.AFTER_LOCKER:null;
+                default->null;
+            };
+            if(line!=null){cue(p,line);return true;}
+        }
         switch(kind){
             case REEL_END,REEL->{if(p.isShiftKeyDown()){cue(p,SwimmerTexts.NO_REVERSE);return true;}if(rel.getZ()>=SwimmerSite.POOL_SOUTH)return haul(p,b,own,pool);cue(p,"The crank at this end turns with the other. Pull from the shallow end.");return true;}
             case COVER->{if(s.getValue(SwimmerBlock.STAGE)==2&&rel.getZ()>=SwimmerSite.POOL_SOUTH-2)return haul(p,b,own,pool);cue(p,pool!=null&&pool.closed()?"Taut. It doesn't give.":"Heavy, wet fabric. The strap is at the shallow end.");return true;}
@@ -189,6 +210,8 @@ public final class LastSwimmer {
         var s=spawn(l,SWIMMER,at(b,SwimmerSite.laneMiddle(pool.lane),SwimmerSite.SURFACE-.55,SwimmerSite.POOL_SOUTH+.5),180);pool.swimmer=s==null?null:s.getUUID();
         if(s!=null){s.setInvisible(true);s.setNoGravity(true);}
     }
+    /** 0.4.244: the pool as the reader left it: the cover on from wall to wall, every lamp off but the two by the fire door, nobody in it. */
+    static void aftermath(ServerLevel l,BlockPos b){clearActors(l,b);SwimmerSite.cover(l,b,SwimmerSite.COLUMNS);lights(l,b,SwimmerSite.LAMPS.size()-KEEP_LIT);door(l,b,false);}
     static void lights(ServerLevel l,BlockPos b,int out){
         var lamps=SwimmerSite.LAMPS;
         for(int i=0;i<lamps.size();i++){var at=b.offset(lamps.get(i));var s=l.getBlockState(at);if(!SwimmerBlock.is(s,SwimmerBlock.Kind.LAMP))continue;int stage=i<out?1:0;if(s.getValue(SwimmerBlock.STAGE)!=stage)l.setBlock(at,s.setValue(SwimmerBlock.STAGE,stage),F);}
@@ -206,14 +229,24 @@ public final class LastSwimmer {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();
         // Find the pools that have a reader in them, and every reader's pool.
-        var seen=new HashSet<Long>();
+        var seen=new HashSet<Long>();var finished=new HashMap<Long,List<ServerPlayer>>();
         for(var p:server.getPlayerList().getPlayers()){
             if(p.isSpectator()||!p.isAlive()||LiteraryVignettes.current(p)!=PLACE)continue;
             var b=LiteraryVignettes.base(p,PLACE);if(b==null||!SwimmerSite.inside(rel(p.position(),b)))continue;
-            var own=own(p);if(own.getBoolean("Completed"))continue;
+            var own=own(p);if(own.getBoolean("Completed")){finished.computeIfAbsent(b.asLong(),k->new ArrayList<>()).add(p);continue;}
             var pool=POOLS.computeIfAbsent(b.asLong(),k->new Pool(b));
             if(seen.add(b.asLong()))step(p.serverLevel(),pool);
             reader(p,b,own,pool);
+        }
+        // 0.4.244: a pool with only finished readers in it, and no closing under way, stands as they left it. It waits a second, so
+        // that a reader who has not finished it, coming in with them, starts the closing instead; a closing always starts from new.
+        AFTER.keySet().removeIf(k->!finished.containsKey(k)||POOLS.containsKey(k));
+        for(var entry:finished.entrySet()){
+            if(POOLS.containsKey(entry.getKey()))continue;
+            var first=entry.getValue().get(0);var l=first.serverLevel();var b=LiteraryVignettes.base(first,PLACE);if(b==null)continue;
+            int waited=AFTER.merge(entry.getKey(),1,Integer::sum);
+            if(waited==AFTER_WAIT){if(!peopleLoaded(l,b)){AFTER.put(entry.getKey(),AFTER_WAIT-1);continue;}aftermath(l,b);}
+            if(waited>=AFTER_WAIT)for(var r:entry.getValue())if(Aftermath.counted(r,PLACE))cue(r,SwimmerTexts.AFTERMATH);
         }
         // A pool is put back only when nobody is in it at all: a reader who has finished and lingers by the door still holds it (0.4.238).
         for(var it=POOLS.values().iterator();it.hasNext();){var pool=it.next();if(seen.contains(pool.base.asLong())||present(server,pool.base)){pool.empty=0;continue;}

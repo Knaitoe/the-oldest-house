@@ -50,6 +50,14 @@ public final class VacantPossession {
     /** One flat's moving day. */
     static final class Flat {
         final BlockPos base;long tick;int empty,seat=STANDING,sittingSince=-1;@Nullable UUID tenant;
+        /**
+         * 0.4.244: the flat coming back to readers who have all finished it, rather than moving day. The flat itself is as the last chair
+         * left it when carried down: empty to the walls, the bulbs off. Each reader who put the chair back sees it there, the light on, and
+         * the one who lived here in it: their own view and their own figure, so two readers who chose differently each find their own.
+         */
+        boolean after;
+        /** Each reader who put the chair back, and the figure in it only they see. */
+        final Map<UUID,UUID> shown=new HashMap<>();
         final EnumMap<VacantBlock.Kind,Integer> van=new EnumMap<>(VacantBlock.Kind.class);
         final EnumMap<VacantBlock.Kind,UUID> carried=new EnumMap<>(VacantBlock.Kind.class);
         Flat(BlockPos b){base=b;}
@@ -85,8 +93,21 @@ public final class VacantPossession {
         var f=b==null?null:flat(b);
         if(f==null)return new DoorSounds.Through(DoorSounds.Carry.SOMEONE,1F);
         if(f.seat==GONE)return new DoorSounds.Through(DoorSounds.Carry.EMPTY,1F);
+        if(f.after)return new DoorSounds.Through(DoorSounds.Carry.EMPTY,1F);
         return new DoorSounds.Through(DoorSounds.Carry.SOMEONE,Math.max(.3F,1F-f.loaded()*FADE_EACH/100F));
     }
+    /** 0.4.244: how faintly the one left in the kept chair is heard through the door, and how faintly they are drawn. */
+    public static final float KEPT_HEARD=.3F;public static final int KEPT_FADE=VacantSite.PIECES.size()*FADE_EACH-24;
+    /** 0.4.244: and for a reader who finished it, with nobody else emptying it, what they would find. */
+    @Nullable public static DoorSounds.Through heard(@Nullable BlockPos b,LabyrinthData data,UUID listener){
+        if((b==null||flat(b)==null||flat(b).after)&&Aftermath.returning(data,listener,PLACE))
+            return kept(LiteraryVignettes.personal(data,listener,PLACE).getString("Outcome"))?new DoorSounds.Through(DoorSounds.Carry.SOMEONE,KEPT_HEARD):new DoorSounds.Through(DoorSounds.Carry.EMPTY,1F);
+        return heard(b);
+    }
+    static boolean kept(@Nullable String outcome){return "put_the_chair_back".equals(outcome);}
+    /** For tests: whether this flat is standing as its aftermath, and the figure a reader who put the chair back sees in it. */
+    public static boolean after(BlockPos b){var f=flat(b);return f!=null&&f.after;}
+    @Nullable public static LiteraryActor shownTo(ServerLevel l,BlockPos b,UUID reader){var f=flat(b);return f==null?null:actor(l,f.shown.get(reader));}
 
     // ------------------------------------------------------------------------------------------------ the piece in the reader's arms
     /** The piece as an item in the reader's arms: drawn as itself, and marked as the tenant's and the reader's. */
@@ -145,7 +166,7 @@ public final class VacantPossession {
             case RADIATOR->{cue(p,"Cold. Turned off at the valve.");return true;}
             case HOOKS->{cue(p,"One coat on the hook by the door. It isn't on the list.");return true;}
             case MAILBOXES->{cue(p,"Four mailboxes. The one for the first floor has tape across its slot.");return true;}
-            case DOCKET->{cue(p,"A removal docket, clipped to a board on the van floor, half filled in.");return true;}
+            case DOCKET->{cue(p,own.getBoolean("Completed")?"The board on the van floor, where the docket was clipped.":"A removal docket, clipped to a board on the van floor, half filled in.");return true;}
             case VAN_DOOR->{cue(p,"The van's back doors, swung open against its sides.");return true;}
             case STREETLAMP,LIST->{return false;}
             default->{}
@@ -231,8 +252,45 @@ public final class VacantPossession {
     }
     static void start(ServerLevel l,Flat flat){
         var b=flat.base;clearActors(l,b);VacantSite.reset(l,b,true);
+        if(flat.after){aftermath(l,flat);return;}
         var a=LiteraryRegistry.ACTOR.get().create(l);
         if(a!=null){a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,TENANT);var at=Vec3.atBottomCenterOf(b.offset(VacantSite.TENANT_START));a.moveTo(at.x,at.y,at.z,90,0);if(l.addFreshEntity(a))flat.tenant=a.getUUID();}
+    }
+    /**
+     * 0.4.244: the flat as the reader left it. Everything on the list gone, with what it hid there to see. The chair carried down:
+     * nothing at all, and the bulbs off. The chair put back: the one who lived here in it, facing the window, no more there than when
+     * the reader left, and the light on. Nobody asks anything.
+     */
+    static void aftermath(ServerLevel l,Flat flat){
+        var b=flat.base;for(var piece:VacantSite.PIECES)VacantSite.lift(l,b,piece);
+        VacantSite.lift(l,b,VacantSite.CHAIR_PIECE);VacantSite.lights(l,b,false,true);flat.seat=GONE;
+    }
+    /** Whether a flat comes back as its aftermath: everyone in it has finished it. Otherwise it is moving day. */
+    static boolean afterOf(ServerLevel l,BlockPos b){return Aftermath.alone(readers(l,b),PLACE);}
+    /**
+     * Each reader in an aftermath flat who put the chair back has it back where it stood, the bulbs on, and the one who lived here in it,
+     * no more there than when they left: the chair and the bulbs sent to them alone (again every five seconds, so a section loaded
+     * afresh agrees), the figure seen by them alone. A reader who has gone takes their figure with them.
+     */
+    static void keptViews(ServerLevel l,Flat flat){
+        var b=flat.base;var here=new HashSet<UUID>();
+        for(var r:readers(l,b)){
+            var own=own(r);if(!own.getBoolean("Completed")||!kept(own.getString("Outcome")))continue;here.add(r.getUUID());
+            var figure=actor(l,flat.shown.get(r.getUUID()));
+            if(figure==null){
+                var a=LiteraryRegistry.ACTOR.get().create(l);
+                if(a!=null){a.bind(PLACE,r.getUUID());a.appearance(LiteraryActor.STRANGER,TENANT);a.fade(KEPT_FADE);sit(a,b);if(l.addFreshEntity(a)){flat.shown.put(r.getUUID(),a.getUUID());figure=a;}}
+                showKept(r,b);
+            }else if(flat.tick%100==0)showKept(r,b);
+            if(figure!=null)sit(figure,b);
+        }
+        for(var it=flat.shown.entrySet().iterator();it.hasNext();){var e=it.next();if(here.contains(e.getKey()))continue;var a=actor(l,e.getValue());if(a!=null)a.discard();it.remove();}
+    }
+    /** The chair where it stood and the flat's two bulbs on, for this reader's eyes only. */
+    static void showKept(ServerPlayer r,BlockPos b){
+        var chair=VacantSite.CHAIR_PIECE;
+        r.connection.send(new net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket(b.offset(chair.at()),VacantBlock.of(chair.kind(),chair.facing())));
+        for(var at:List.of(VacantSite.LIVING_BULB,VacantSite.BEDROOM_BULB))r.connection.send(new net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket(b.offset(at),VacantBlock.of(VacantBlock.Kind.BULB,net.minecraft.core.Direction.NORTH,0)));
     }
     static void sit(LiteraryActor a,BlockPos b){var at=Vec3.atBottomCenterOf(b.offset(VacantSite.CHAIR_PIECE.at()));a.moveTo(at.x,at.y,at.z,-90,0);a.setYHeadRot(-90);a.setYBodyRot(-90);a.setDeltaMovement(Vec3.ZERO);}
 
@@ -241,9 +299,12 @@ public final class VacantPossession {
         for(var p:server.getPlayerList().getPlayers()){
             if(p.isSpectator()||!p.isAlive()||LiteraryVignettes.current(p)!=PLACE)continue;
             var b=LiteraryVignettes.base(p,PLACE);if(b==null||!VacantSite.inside(rel(p.position(),b)))continue;
-            var flat=FLATS.computeIfAbsent(b.asLong(),k->new Flat(b));
+            var own=own(p);var flat=FLATS.computeIfAbsent(b.asLong(),k->new Flat(b));
+            // 0.4.244: someone who has not finished it comes into its aftermath: it is moving day again, from the beginning.
+            if(flat.after&&!own.getBoolean("Completed")){flat=new Flat(b);FLATS.put(b.asLong(),flat);}
             if(seen.add(b.asLong()))step(p.serverLevel(),flat);
-            var own=own(p);if(!own.getBoolean("Completed"))reader(p,b,own,flat);
+            if(!own.getBoolean("Completed"))reader(p,b,own,flat);
+            else if(flat.after&&Aftermath.counted(p,PLACE))cue(p,kept(own.getString("Outcome"))?VacantTexts.AFTER_KEPT:VacantTexts.AFTER_EMPTY);
         }
         for(var it=FLATS.values().iterator();it.hasNext();){var flat=it.next();if(seen.contains(flat.base.asLong())){flat.empty=0;continue;}
             if(++flat.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(flat.base)){clearActors(l,flat.base);VacantSite.reset(l,flat.base,true);}it.remove();}}
@@ -259,8 +320,9 @@ public final class VacantPossession {
     }
     static void step(ServerLevel l,Flat flat){
         var b=flat.base;
-        if(flat.tick==0)start(l,flat);
+        if(flat.tick==0){flat.after=afterOf(l,b);start(l,flat);}
         flat.tick++;
+        if(flat.after)keptViews(l,flat);
         var t=actor(l,flat.tenant);
         if(t!=null){
             switch(flat.seat){
