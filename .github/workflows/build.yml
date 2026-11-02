@@ -1541,6 +1541,37 @@ jobs:
             run-borrasca-live/*/logs/latest.log
             run-borrasca-live/*/crash-reports/
 
+  scene-review-clients:
+    needs: quick
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Two actual clients in the production pool and flat (0.4.240 scene review)
+        timeout-minutes: 20
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri
+          # The cover hauled from the strap, the attendant to the fire door, the dresser down the real stair,
+          # the tenant standing as the reader comes close, the chair carried down and the window gone dark.
+          LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expedition.py --scenes-only
+          test -s build/scene-review-live-proof/scene-review-passed.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scene-review-clients-${{ github.sha }}
+          path: |
+            build/scene-review-live-proof/
+            run-scene-review-live/*/logs/latest.log
+            run-scene-review-live/*/crash-reports/
+          if-no-files-found: warn
+
   foyer-gameplay:
     needs: quick
     runs-on: ubuntu-latest
