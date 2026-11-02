@@ -61,12 +61,14 @@ public final class HouseReadRemainingRooms {
     private static void waiting(ServerLevel l,BlockPos b){
         box(l,b,-11,-2,-18,11,6,3,Blocks.AIR.defaultBlockState());
         shell(l,b,7,-15,HouseReadRegistry.PANELS.get().defaultBlockState(),HouseReadRegistry.CARPET.get().defaultBlockState(),HouseReadRegistry.CEILING_TILE.get().defaultBlockState(),HouseReadRegistry.PANEL_DOOR.get());
-        // The reception partition: a counter, a lightly frosted window and the office door, with a ledge in front for the bell.
-        for(int x=-7;x<=7;x++){
+        // The reception partition: a counter, a lightly frosted window and the office door, with a ledge in front for the bell. It runs
+        // between the side walls (owner: "very small build error in the waiting room"): laid into the walls themselves, its end
+        // windows left each wall a thin pane with nothing behind it, open on the dark outside.
+        for(int x=-6;x<=6;x++){
             if(x==0)continue;
             if(Math.abs(x)==1){box(l,b,x,0,-12,x,3,-12,HouseReadRegistry.PANELS.get());continue;}
             put(l,b,x,0,-12,HouseReadRegistry.COUNTER.get().defaultBlockState());fit(l,b,x,1,-12,RECEPTION);box(l,b,x,2,-12,x,3,-12,HouseReadRegistry.PANELS.get());
-            if(Math.abs(x)<=6)put(l,b,x,0,-11,HouseReadRegistry.COUNTER.get().defaultBlockState());
+            put(l,b,x,0,-11,HouseReadRegistry.COUNTER.get().defaultBlockState());
         }
         HouseReadRooms.door(l,b,HouseReadMoments.exit(HouseReadSites.Room.WAITING),HouseReadRegistry.OFFICE_DOOR.get(),Direction.SOUTH);
         // 0.4.193 (owner: "This should be rotated"): the sign's strut is behind its face, so it faces north to show the room its lettering.
