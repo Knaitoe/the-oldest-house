@@ -204,6 +204,7 @@ public final class TraceRooms {
     /** A hand on the loose chair: pulled a block toward the reader, scoring the dust it leaves; turned, crouching. */
     public static boolean chair(ServerPlayer p,BlockPos pos,BlockState s){
         if(p.isSpectator())return false;var l=p.serverLevel();
+        if(seated(l,pos)){PuzzleRooms.say(p,"Someone is sitting in it.");return true;}
         if(p.isShiftKeyDown()){
             l.setBlock(pos,s.setValue(TraceBlock.FACING,s.getValue(TraceBlock.FACING).getClockWise()),FLAGS);
             l.playSound(null,pos,SoundEvents.WOOD_HIT,SoundSource.BLOCKS,.7F,.8F);return true;
@@ -226,6 +227,14 @@ public final class TraceRooms {
             chairs.put(place.id(),at);own.put("Chairs",chairs);save(data,p.getUUID(),own);
         }
         return true;
+    }
+    /** Whether anyone sits in the chair at {@code pos}. */
+    static boolean seated(ServerLevel l,BlockPos pos){return !l.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.house.SeatEntity.class,new AABB(pos)).isEmpty();}
+    /** 0.4.239: sitting down in a loose chair, facing the way it faces (at the table, the table). */
+    public static boolean sitOn(ServerPlayer p,BlockPos pos){
+        if(p.isSpectator())return false;
+        if(seated(p.serverLevel(),pos)){PuzzleRooms.say(p,"Someone is sitting in it.");return true;}
+        return io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,pos);
     }
     /** The table a chair at {@code at}, facing {@code facing}, is drawn up to, if any. */
     static @Nullable BlockPos tableFacing(ServerLevel l,BlockPos at,Direction facing){var t=at.relative(facing);return TraceBlock.is(l.getBlockState(t),TraceBlock.Kind.TABLE)?t:null;}

@@ -77,6 +77,16 @@ public final class VacantPossession {
     public static int seat(BlockPos b){var f=flat(b);return f==null?-1:f.seat;}
     public static boolean inVan(BlockPos b,VacantBlock.Kind kind){var f=flat(b);return f!=null&&f.van.containsKey(kind);}
     @Nullable public static LiteraryActor tenantActor(ServerLevel l,BlockPos b){var f=flat(b);return f==null?null:actor(l,f.tenant);}
+    /**
+     * 0.4.239: the flat through its door. With nobody in it, it is as it was before moving day: the tenant waiting, someone moving
+     * about. While it is being emptied, they are fainter with every piece that goes. Once the last chair has gone down, nothing.
+     */
+    @Nullable public static DoorSounds.Through heard(@Nullable BlockPos b){
+        var f=b==null?null:flat(b);
+        if(f==null)return new DoorSounds.Through(DoorSounds.Carry.SOMEONE,1F);
+        if(f.seat==GONE)return new DoorSounds.Through(DoorSounds.Carry.EMPTY,1F);
+        return new DoorSounds.Through(DoorSounds.Carry.SOMEONE,Math.max(.3F,1F-f.loaded()*FADE_EACH/100F));
+    }
 
     // ------------------------------------------------------------------------------------------------ the piece in the reader's arms
     /** The piece as an item in the reader's arms: drawn as itself, and marked as the tenant's and the reader's. */

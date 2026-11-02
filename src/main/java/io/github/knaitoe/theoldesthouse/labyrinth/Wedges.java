@@ -3,6 +3,8 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -161,13 +163,82 @@ public final class Wedges {
      * is knocked loose and they come in as ever. Returns whether they are kept out.
      */
     public static boolean blocks(ServerPlayer p,LabyrinthData.Door from,LabyrinthData.Door entry){
+        if(!held(p,from,entry))return false;
+        stops(p,from);
+        return true;
+    }
+    /** Whether a wedge holds this entry open on another hall than {@code from}'s. If whoever set it is not in the game, it is knocked loose and nothing holds it. */
+    static boolean held(ServerPlayer p,LabyrinthData.Door from,LabyrinthData.Door entry){
         var l=p.server.getLevel(entry.dimension);if(l==null)return false;var r=record(l,entry.lower);if(r==null||!r.getBoolean("House"))return false;
         if(from.id.equals(r.getString("From")))return false;
         var owner=r.hasUUID("Owner")?p.server.getPlayerList().getPlayer(r.getUUID("Owner")):null;
         if(owner==null){knockLoose(l,entry.lower);return false;}
+        return true;
+    }
+    static void stops(ServerPlayer p,LabyrinthData.Door from){
         p.serverLevel().playSound(null,from.lower,SoundEvents.WOODEN_DOOR_OPEN,SoundSource.BLOCKS,.6F,.7F);
         p.serverLevel().playSound(null,from.lower,SoundEvents.WOOD_HIT,SoundSource.BLOCKS,.8F,.6F);
         PuzzleRooms.say(p,"The door gives an inch and stops against something on the other side.");
-        return true;
     }
+
+    // ------------------------------------------------------------------ rooms people meet in (0.4.239)
+    /**
+     * The familiar kitchen is where readers find each other, so one reader's wedge must not shut it to everyone else. A reader whose
+     * way in is its wedged door, from another hall, comes in by another of its doors instead (the side door, else the far one): the
+     * wedge still holds the entry on the hall it was set from, and that hall still leads there for its owner. The door they came in by
+     * is their way back while they are in the room, as an entry is.
+     */
+    static final Map<LabyrinthPlace,List<String>> OTHER_WAYS=Map.of(LabyrinthPlace.FAMILIAR_KITCHEN,List.of("side","far"));
+    public static final String WAYS="wedge_ways_0239";
+    /** How far the hall a reader came from is laid behind the other door: a short stretch, inside the room's own ground. */
+    public static final int WAY_DEPTH=6,WAY_HALF_WIDTH=2;
+    /**
+     * The door a reader arriving through {@code from} comes in by: the entry as ever; another of the room's doors, if a wedge holds the
+     * entry against them and the room is one people meet in; or nothing, when they are kept out (the door gives an inch and stops).
+     */
+    public static @Nullable LabyrinthData.Door way(ServerPlayer p,LabyrinthData.Door from,LabyrinthData.Door entry,LabyrinthPlace place){
+        var data=LabyrinthData.get(p.server);
+        if(!held(p,from,entry)){forgetWay(data,p.getUUID());return entry;}
+        var other=otherWay(p.server,data,entry,place);
+        if(other!=null){var r=new CompoundTag();r.putString("Place",place.id());r.putString("Door",other.id);data.setStateEntry(WAYS,p.getUUID().toString(),r);return other;}
+        stops(p,from);
+        return null;
+    }
+    /** Another door into a room people meet in, as an entry: a real door of the room, not itself wedged, facing out. */
+    static @Nullable LabyrinthData.Door otherWay(net.minecraft.server.MinecraftServer server,LabyrinthData data,LabyrinthData.Door entry,LabyrinthPlace place){
+        var names=OTHER_WAYS.get(place);if(names==null)return null;int copy=SceneInstances.copyOf(entry.id);
+        for(var name:names){
+            var door=data.door(SceneInstances.doorId(place,copy,name));if(door==null)continue;
+            var l=server.getLevel(door.dimension);if(l==null||!l.isLoaded(door.lower)||at(l,door.lower)||!(l.getBlockState(door.lower).getBlock() instanceof DoorBlock))continue;
+            return asEntry(door);
+        }
+        return null;
+    }
+    /** A way on, taken as a way in: the same door, facing the side it is come at from. */
+    static LabyrinthData.Door asEntry(LabyrinthData.Door door){return new LabyrinthData.Door(door.id+"/in",door.dimension,door.lower,door.facing.getOpposite(),LabyrinthData.RETURN,false);}
+    /** Whether this is a way on taken as a way in (see {@link #asEntry}). */
+    public static boolean otherWay(LabyrinthData.Door door){return door.id.endsWith("/in")&&LabyrinthData.RETURN.equals(door.destination);}
+    /** Without changing anything: whether a wedge holds this entry against someone coming through {@code from}, with its owner in the game. */
+    static boolean holds(net.minecraft.server.MinecraftServer server,LabyrinthData.Door from,LabyrinthData.Door entry){
+        var l=server.getLevel(entry.dimension);if(l==null)return false;var r=record(l,entry.lower);if(r==null||!r.getBoolean("House")||from.id.equals(r.getString("From")))return false;
+        return r.hasUUID("Owner")&&server.getPlayerList().getPlayer(r.getUUID("Owner"))!=null;
+    }
+    /** Where someone coming through {@code from} would come out: the entry, or the other door of a room people meet in whose entry is held. */
+    public static @Nullable LabyrinthData.Door wouldComeIn(net.minecraft.server.MinecraftServer server,LabyrinthData data,LabyrinthData.Door from,LabyrinthData.Door entry,LabyrinthPlace place){
+        if(!holds(server,from,entry))return entry;return otherWay(server,data,entry,place);
+    }
+    /** Whether this door is one the reader came in by in place of a wedged entry (it is their way back, as an entry is). */
+    public static boolean cameInBy(ServerPlayer p,LabyrinthData.Door door){
+        var r=LabyrinthData.get(p.server).stateEntry(WAYS,p.getUUID().toString());return !r.isEmpty()&&(door.id+"/in").equals(r.getString("Door"));
+    }
+    /** The entry a reader in {@code place} goes back out by: the door they came in by, if it was not the entry. */
+    public static LabyrinthData.Door entryFor(ServerPlayer p,LabyrinthPlace place,LabyrinthData.Door entry){
+        var data=LabyrinthData.get(p.server);var r=data.stateEntry(WAYS,p.getUUID().toString());
+        if(r.isEmpty()||!place.id().equals(r.getString("Place")))return entry;
+        String id=r.getString("Door");if(!id.endsWith("/in"))return entry;var door=data.door(id.substring(0,id.length()-3));
+        return door==null?entry:asEntry(door);
+    }
+    /** Whether a reader came into this room by another door than its entry. */
+    public static boolean cameInOtherWay(LabyrinthData data,UUID reader,LabyrinthPlace place){var r=data.stateEntry(WAYS,reader.toString());return !r.isEmpty()&&place.id().equals(r.getString("Place"));}
+    public static void forgetWay(LabyrinthData data,UUID reader){if(!data.stateEntry(WAYS,reader.toString()).isEmpty())data.setStateEntry(WAYS,reader.toString(),new CompoundTag());}
 }

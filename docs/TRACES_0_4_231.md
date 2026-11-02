@@ -91,3 +91,5 @@ the chair pulled a block, then standing in the second doorway, both held, the fa
 refused; the entry wedged and held open; the route held for its owner only; reached another way, the junction's west door still
 leads to the shut-up rooms; from the east door the entry stops, from the west it opens; its owner gone from the game, knocked loose
 and lying by the door. `LabyrinthTests`: twenty-one gray places at the start, the shut-up rooms and the cloakroom among them.
+
+0.4.239: the familiar kitchen is not shut by a wedge: readers from other halls come in by its side door; a hand on a loose chair's seat sits in it, on its back pulls it. See docs/KITCHEN_AND_DOORS_0_4_239.md.

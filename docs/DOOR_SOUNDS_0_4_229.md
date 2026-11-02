@@ -61,3 +61,5 @@ somewhere else for another; from inside, back to the reader's own door and nobod
 loaded ground: a knock heard at the door and at the pool's door where it leads; one knock at a time; the water heard through the
 closed door by the reader standing at it alone, and not again at once; a door shutting heard at its far side; a resident knocking
 back from behind a locked door, once only.
+
+0.4.239: rooms are heard as they stand now (an emptied flat sounds of nothing; the kitchen of someone in it); see docs/KITCHEN_AND_DOORS_0_4_239.md.

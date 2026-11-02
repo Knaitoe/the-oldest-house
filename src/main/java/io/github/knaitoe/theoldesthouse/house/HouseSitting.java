@@ -29,8 +29,10 @@ public final class HouseSitting {
     public static void register(IEventBus bus) { TYPES.register(bus); }
     private static boolean wardSeat(BlockState state){return state.is(NovelRegistry.NIGHT_WARD.get())&&(state.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.CHAIR||state.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.STOOL);}
     private static boolean readChair(BlockState s){return s.is(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadRegistry.FITTING.get())&&switch(s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock.PART)){case ARMCHAIR,CHAIR,BENCH,SWING->true;default->false;};}
+    /** 0.4.239: the loose chairs (the familiar kitchen's, the shut-up rooms'), sat in from the seat; their own block decides by where the hand is. */
+    private static boolean looseChair(BlockState s){return io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.is(s,io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.Kind.CHAIR);}
     public static boolean isSeat(BlockState state) {
-        return readChair(state) || io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)
+        return readChair(state) || looseChair(state) || io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.WinchesterFittingBlock.seat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)
                 || state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.INTERIOR.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.KIND).seat()
@@ -55,6 +57,7 @@ public final class HouseSitting {
         double height=io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)? .5 : state.is(io.github.knaitoe.theoldesthouse.labyrinth.NightclubRegistry.BLOCK.get()) ? .5 : state.getBlock() instanceof CarpetBlock ? .07 : state.getBlock() instanceof HouseholdFurnitureBlock
                 ? state.getValue(HouseholdFurnitureBlock.KIND).seatHeight/16.0 : state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ROADHOUSE.get())?state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.RoadhouseBlock.KIND).seatHeight/16.0:.45;
         if(wardSeat(state))height=.5;
+        if(looseChair(state))height=io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.SEAT;
         // 0.4.223: the Winchester's chairs and settee; nobody sits where one of the house's people already is.
         if(io.github.knaitoe.theoldesthouse.labyrinth.WinchesterFittingBlock.seat(state)){
             if(!player.level().getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.class,new AABB(pos),a->a.isAlive()).isEmpty())return false;
@@ -76,6 +79,7 @@ public final class HouseSitting {
             float yaw=state.getValue(HouseholdFurnitureBlock.FACING).toYRot(); player.setYRot(yaw); player.setYHeadRot(yaw);
         }
         if(wardSeat(state)){float yaw=state.getValue(NightWardBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
+        if(looseChair(state)){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(io.github.knaitoe.theoldesthouse.labyrinth.WinchesterFittingBlock.seat(state)){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.WinchesterFittingBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.NightclubRegistry.BLOCK.get())){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.NightclubBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
@@ -90,6 +94,7 @@ public final class HouseSitting {
         if (event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND
                 || !event.getItemStack().isEmpty() || !(event.getEntity() instanceof ServerPlayer player)
                 || player.isShiftKeyDown()) return;
+        if (looseChair(event.getLevel().getBlockState(event.getPos()))) return;
         if (sit(player, event.getPos())) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);

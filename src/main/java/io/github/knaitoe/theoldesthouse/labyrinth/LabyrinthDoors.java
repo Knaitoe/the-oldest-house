@@ -154,7 +154,7 @@ public final class LabyrinthDoors {
             io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"door_resident",door.lower);
             return;
         }
-        if (LabyrinthData.RETURN.equals(door.destination) || LabyrinthData.HALLWAY_OR_RETURN.equals(door.destination)) {
+        if (LabyrinthData.RETURN.equals(door.destination) || LabyrinthData.HALLWAY_OR_RETURN.equals(door.destination) || Wedges.cameInBy(player, door)) {
             if(NovelVignettes.exitLocked(player,door)||VignetteGate.exitLocked(player,door)){setDoorOpen(player.serverLevel(),door.lower,false,player);VignetteGate.explain(player);return;}
             // An entry door, from inside: it just opens. Walking back out
             // through it is what takes the player back.
@@ -357,9 +357,10 @@ public final class LabyrinthDoors {
     }
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {arrive(player,from,suppliedEntry,place,false);}
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place,boolean fromRead) {
-        final LabyrinthData.Door entry=HotelVignette.destinationEntry(player,from,LakeHouse.destinationEntry(player,suppliedEntry,place),place);
-        // 0.4.231: a wedge holds this entry open on the hall it was set from; from anywhere else the door stops against it.
-        if(Wedges.blocks(player,from,entry))return;
+        // 0.4.231: a wedge holds this entry open on the hall it was set from; from anywhere else the door stops against it, except into
+        // a room people meet in, which takes them in by another of its doors (0.4.239).
+        final LabyrinthData.Door entry=Wedges.way(player,from,HotelVignette.destinationEntry(player,from,LakeHouse.destinationEntry(player,suppliedEntry,place),place),place);
+        if(entry==null)return;
         MinecraftServer server = player.server;
         ServerLevel fromLevel = fromRead?server.getLevel(from.dimension):player.serverLevel();
         ServerLevel toLevel = server.getLevel(entry.dimension);
@@ -376,7 +377,8 @@ public final class LabyrinthDoors {
         // for them, and the copied vestibule leaves the cells they occupy.
         if (!othersAtDoor(toLevel, entry.lower, player) && !Wedges.at(toLevel, entry.lower)) setDoorOpen(toLevel, entry.lower, false, null);
         // A door inside a standing room (the hotel's own 217) keeps the room as built: nothing is copied over its corridor.
-        if (!HotelVignette.withinRoom(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player);
+        if (Wedges.otherWay(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player, Wedges.WAY_HALF_WIDTH, 1, Wedges.WAY_DEPTH);
+        else if (!HotelVignette.withinRoom(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player);
         Vec3 target = fromRead?Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),3)):shifted(player.position(), from.lower, entry.lower, turn);
         float yaw = fromRead?entry.facing.getOpposite().toYRot():player.getYRot() + angle(turn);
 
@@ -465,6 +467,8 @@ public final class LabyrinthDoors {
         }
         LabyrinthData data = LabyrinthData.get(player.server);
         LabyrinthData.Door entry = place==LabyrinthPlace.SILO?SiloSites.entry(player):place==LabyrinthPlace.BACKSEAT?BackseatSites.entry(player):place==LabyrinthPlace.BORRASCA?BorrascaSites.entry(player):place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):SceneInstances.entryAt(player,place);
+        // 0.4.239: a reader who came in by another door, past a wedged entry, goes back out by that door.
+        if (entry != null) entry = Wedges.entryFor(player, place, entry);
         if (entry == null) {
             return true;
         }
@@ -587,6 +591,7 @@ public final class LabyrinthDoors {
         String correspondenceSource=io.github.knaitoe.theoldesthouse.house.HouseExperience.record(data,id).getString("CurrentPlace");
         Consumer<ServerPlayer> confirmedReturn=p->{
             if(!LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back))return;
+            Wedges.forgetWay(LabyrinthData.get(p.server),p.getUUID());
             UncannyDiner.returned(p,entry);
             FoyerEncounter.returned(p,entry);
             caveDeparture.accept(p);if(entry.id.equals("borrasca/"+p.getUUID()+"/entry"))BorrascaStory.returned(p);
@@ -912,6 +917,13 @@ public final class LabyrinthDoors {
     /** As above, copying only the columns within {@code halfWidth} of the door (a walled entry hall needs no more). */
     public static void copyVestibule(ServerLevel fromLevel, LabyrinthData.Door from, ServerLevel toLevel, LabyrinthData.Door entry, Rotation turn,
             @Nullable ServerPlayer arriving, int halfWidth) {
+        BoundingBox v = LabyrinthPlaces.localVestibule();
+        copyVestibule(fromLevel, from, toLevel, entry, turn, arriving, halfWidth, 0, v.maxZ() - v.minZ());
+    }
+
+    /** As above, copying only {@code kFrom} to {@code kTo} blocks out from the door (0.4.239: behind a room's own wall, a short stretch). */
+    public static void copyVestibule(ServerLevel fromLevel, LabyrinthData.Door from, ServerLevel toLevel, LabyrinthData.Door entry, Rotation turn,
+            @Nullable ServerPlayer arriving, int halfWidth, int kFrom, int kTo) {
         List<AABB> occupied = new ArrayList<>();
         for (ServerPlayer other : toLevel.players()) {
             if (other != arriving && !other.isSpectator() && other.distanceToSqr(Vec3.atCenterOf(entry.lower)) < 144.0D) {
@@ -927,7 +939,7 @@ public final class LabyrinthDoors {
         int top = LabyrinthPlace.ELK_CARCASSES.entryDoorId().equals(entry.id) ? ElkCarcassMap.ARRIVAL_TOP : v.maxY();
         for (int s = Math.max(v.minX(), -halfWidth); s <= Math.min(v.maxX(), halfWidth); s++) {
             for (int y = v.minY(); y <= top; y++) {
-                for (int k = 0; k <= v.maxZ() - v.minZ(); k++) {
+                for (int k = Math.max(0, kFrom); k <= Math.min(kTo, v.maxZ() - v.minZ()); k++) {
                     BlockPos src = from.lower.relative(f, k).relative(fSide, s).above(y);
                     BlockPos dst = entry.lower.relative(g, k).relative(gSide, s).above(y);
                     if (toLevel.isOutsideBuildHeight(dst) || !fromLevel.isLoaded(src)) {

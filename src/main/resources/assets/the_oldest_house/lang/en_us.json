@@ -1018,5 +1018,7 @@
   "block.the_oldest_house.trace_paper": "Faded Paper",
   "block.the_oldest_house.trace_panel": "Dark Panelling",
   "block.the_oldest_house.trace_plaster": "Stained Plaster",
-  "item.the_oldest_house.door_wedge": "Door Wedge"
+  "item.the_oldest_house.door_wedge": "Door Wedge",
+  "subtitles.the_oldest_house.door.through_someone": "Someone moving about behind the door",
+  "subtitles.the_oldest_house.door.through_empty": "Nothing moving behind the door"
 }

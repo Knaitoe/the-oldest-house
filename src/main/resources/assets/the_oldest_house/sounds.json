@@ -3349,5 +3349,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.door.through_voices"
+  },
+  "door.through_someone": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:door/through_someone",
+        "attenuation_distance": 6
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.door.through_someone"
+  },
+  "door.through_empty": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:door/through_empty",
+        "attenuation_distance": 5
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.door.through_empty"
   }
 }

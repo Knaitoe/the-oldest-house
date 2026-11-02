@@ -166,7 +166,7 @@ public final class CompanionOrders {
         if(room.equals(data.getString("CompanionLastRoom")))return;
         data.putString("CompanionLastRoom",room);
         int depth=LabyrinthData.get(player.server).returnDepth(player.getUUID());
-        int pause=place==null||LabyrinthPacing.quiet(place)?0:hesitationTicks(depth);
+        int pause=place==null||LabyrinthPacing.calm(place)?0:hesitationTicks(depth);
         if(pause>0) {
             data.putLong("CompanionFearUntil",player.serverLevel().getGameTime()+pause);
             if(pet instanceof Wolf wolf)wolf.setIsInterested(true);

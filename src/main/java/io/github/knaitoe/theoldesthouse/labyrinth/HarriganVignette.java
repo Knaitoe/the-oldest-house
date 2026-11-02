@@ -283,6 +283,11 @@ public final class HarriganVignette {
         }
     }
 
+    /** 0.4.239: whether the room at this base (the original or a copy) stands as the funeral home now; for what is heard through its door. */
+    public static boolean funeral(MinecraftServer server,LabyrinthData data,@Nullable BlockPos base){
+        int was=copy;try{copy=base==null?0:at(server,base);return visitFor(data)>=FINAL_VISIT;}finally{copy=was;}
+    }
+
     private static int visitFor(LabyrinthData data) {
         return completed(data) ? FINAL_VISIT : Math.max(1, data.state(room()).getInt("Visit"));
     }
