@@ -57,6 +57,32 @@ public final class JournalTests {
         h.succeed();
     }
 
+    /**
+     * 0.4.265 (the owner: "Save periodically while typing"): the journal screen's clock sends unsent writing a second after the hand
+     * stops and every five seconds while it keeps going, never when nothing is unsent, and starts over after any send.
+     */
+    @GameTest(template="empty",batch="journal_autosave",timeoutTicks=20)
+    public static void writingIsSentASecondAfterTheHandStopsAndEveryFiveSecondsWhileItGoesOn(GameTestHelper h){
+        var clock=new io.github.knaitoe.theoldesthouse.journal.WritingClock();
+        String[] sent={"",null};
+        for(int t=0;t<300;t++)h.assertTrue(!clock.tick(new String[]{"",null},sent),"nothing unsent, nothing sent");
+        // Typing a letter a tick on the left page: nothing until five seconds have passed, then once.
+        StringBuilder text=new StringBuilder();int first=-1;
+        for(int t=1;t<=io.github.knaitoe.theoldesthouse.journal.WritingClock.EVERY;t++){text.append('a');if(clock.tick(new String[]{text.toString(),null},sent)&&first<0)first=t;}
+        h.assertTrue(first==io.github.knaitoe.theoldesthouse.journal.WritingClock.EVERY,"while typing goes on, the writing waits at most five seconds: "+first);
+        sent[0]=text.toString();
+        // A few more letters, then the hand stops: sent a second later, and only once.
+        for(int t=0;t<5;t++){text.append('b');h.assertTrue(!clock.tick(new String[]{text.toString(),null},sent),"still typing");}
+        int pause=0,sends=0;
+        for(int t=1;t<=60;t++)if(clock.tick(new String[]{text.toString(),null},sent)){sends++;if(pause==0)pause=t;sent[0]=text.toString();}
+        h.assertTrue(pause==io.github.knaitoe.theoldesthouse.journal.WritingClock.SETTLE&&sends==1,"a second after the hand stops, once: "+pause+" "+sends);
+        // Writing on the right page counts too, and a page turn's own send starts the wait over.
+        for(int t=0;t<10;t++)h.assertTrue(!clock.tick(new String[]{text.toString(),"x".repeat(t+1)},sent),"the other page typing");
+        clock.sent();sent[1]="x".repeat(10);
+        for(int t=0;t<200;t++)h.assertTrue(!clock.tick(new String[]{text.toString(),"x".repeat(10)},sent),"sent by the turn, nothing more to send");
+        h.succeed();
+    }
+
     @GameTest(template="empty",batch="journal_edit",timeoutTicks=200)
     public static void editsAreKeptOnlyFromTheOwnerAndWithinWhatThePageHolds(GameTestHelper h){
         var p=NativeTestPlayers.survival(h,"journal_writer");var peer=NativeTestPlayers.survival(h,"journal_borrower");
