@@ -37,7 +37,7 @@ public final class FamiliarRoomTests {
                 h.assertTrue(place.authored()&&!place.isVignette()&&WitnessAccount.Story.of(place.id())==null&&!SceneInstances.copyable(place),"one kitchen, built whole, the same for everyone, and no story");
                 FamiliarRoom.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
                 h.assertTrue(f.data().door(place.id()+"/far")!=null&&f.data().door(place.id()+"/side")!=null,"two ways on besides the way in");
-                h.assertTrue(DoorSounds.carries(place)==DoorSounds.Carry.CLOCK,"its clock is heard through a door that leads to it");
+                h.assertTrue(DoorSounds.carries(place)==DoorSounds.Carry.KITCHEN,"its own rhythm is heard through a door that leads to it: the fridge, the clock, the drip");
                 h.assertTrue(!l.getEntitiesOfClass(ItemFrame.class,new AABB(b.offset(FamiliarRoom.CLOCK))).isEmpty(),"the clock hangs on the wall");
                 // The pantry: stocked once; what is taken stays taken, and what is left stays.
                 var pantry=(BarrelBlockEntity)l.getBlockEntity(b.offset(FamiliarRoom.PANTRY));
@@ -58,7 +58,7 @@ public final class FamiliarRoomTests {
                 h.assertTrue(FamiliarRoom.weight(p.getUUID(),5)==FamiliarRoom.MEET,"with someone already in it, far more readily");
                 h.assertTrue(FamiliarRoom.weight(q.getUUID(),5)==FamiliarRoom.WEIGHT,"but not more readily for the one who is there");
                 // 0.4.239: through its door, someone in there for the reader outside; the clock for the one inside.
-                h.assertTrue(FamiliarRoom.heard(p.getUUID()).carry()==DoorSounds.Carry.SOMEONE&&FamiliarRoom.heard(q.getUUID()).carry()==DoorSounds.Carry.CLOCK,"someone in there, heard from outside; for them, the clock");
+                h.assertTrue(FamiliarRoom.heard(p.getUUID()).carry()==DoorSounds.Carry.SOMEONE&&FamiliarRoom.heard(q.getUUID()).carry()==DoorSounds.Carry.KITCHEN,"someone in there, heard from outside; for them, the kitchen's own rhythm");
             })
             .thenSucceed();
     }

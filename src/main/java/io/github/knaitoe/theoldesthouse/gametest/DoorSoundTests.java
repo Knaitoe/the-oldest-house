@@ -35,7 +35,7 @@ public final class DoorSoundTests {
         var entry=data.door(LabyrinthPlace.LAST_SWIMMER.entryDoorId());h.assertTrue(entry!=null,"the pool's entry door exists");
         h.assertTrue(entry.globalPos().equals(DoorSounds.far(data,a,west)),"for a, the west door comes out at the pool's own door");
         h.assertTrue(DoorSounds.leadsTo(data,b,west)==LabyrinthPlace.GRAY_CORRIDOR,"for b it leads somewhere else");
-        h.assertTrue(DoorSounds.carries(LabyrinthPlace.LAST_SWIMMER)==DoorSounds.Carry.WATER&&DoorSounds.carries(LabyrinthPlace.GRAY_CORRIDOR)==null,"the pool carries its water; a plain corridor carries nothing");
+        h.assertTrue(DoorSounds.carries(LabyrinthPlace.LAST_SWIMMER)==DoorSounds.Carry.POOL&&DoorSounds.carries(LabyrinthPlace.GRAY_CORRIDOR)==null,"the pool carries its water; a plain corridor carries nothing");
         // From inside, a room's own door leads back the way the reader came.
         var back=new LabyrinthData.Waypoint(Level.OVERWORLD,Vec3.atBottomCenterOf(new BlockPos(5,64,5)),0,true,false);data.pushReturn(a,back);
         h.assertTrue(GlobalPos.of(Level.OVERWORLD,new BlockPos(5,64,5)).equals(DoorSounds.far(data,a,entry))&&DoorSounds.far(data,b,entry)==null,"from inside, back to the reader's own door, and nobody else's");
@@ -66,8 +66,8 @@ public final class DoorSoundTests {
         h.assertTrue(DoorSounds.heard().stream().anyMatch(s->s.what().equals("knock")&&s.at().pos().equals(hallAt)),"heard at the door struck");
         h.assertTrue(DoorSounds.heard().stream().anyMatch(s->s.what().equals("knock_far")&&s.at().pos().equals(poolAt)),"and faintly at the pool's door, where it leads: "+DoorSounds.heard());
         h.assertTrue(!DoorSounds.knock(p,data,hall),"one knock at a time from the same hand");
-        // Standing at the door, the reader hears the pool behind it: water, through the wood, for them alone.
-        h.assertTrue(DoorSounds.listen(p,data,10_000)&&DoorSounds.heard().stream().anyMatch(s->s.what().equals("through_water")&&p.getUUID().equals(s.only())),"the water behind the door, heard by the reader at it");
+        // Standing at the door, the reader hears the pool behind it, for them alone: 0.4.246, its own rhythm, the pace clock and a far turn at the wall.
+        h.assertTrue(DoorSounds.listen(p,data,10_000)&&DoorSounds.heard().stream().anyMatch(s->s.what().equals("through_pool")&&p.getUUID().equals(s.only())),"the pool behind the door, heard by the reader at it");
         h.assertTrue(!DoorSounds.listen(p,data,10_001),"not again at once");
         // A door shutting is heard on its far side; the pool's own door shutting a moment after (a crossing) carries nothing back.
         DoorSounds.used(p,hall);int before=(int)DoorSounds.heard().stream().filter(s->s.what().equals("thud_far")).count();
@@ -99,7 +99,7 @@ public final class DoorSoundTests {
         h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.HARRIGAN,null).carry()==DoorSounds.Carry.CLOCK,"the study's clock");
         var room=data.state(LabyrinthPlace.HARRIGAN.id());room.putInt("Visit",HarriganVignette.FINAL_VISIT);data.setState(LabyrinthPlace.HARRIGAN.id(),room);
         h.assertTrue(DoorSounds.heard(server,data,a,LabyrinthPlace.HARRIGAN,null).carry()==DoorSounds.Carry.VOICES,"on the last visit, people talking low by the casket");
-        h.assertTrue(VacantPossession.heard(null).carry()==DoorSounds.Carry.SOMEONE&&LastSwimmer.heard(null).carry()==DoorSounds.Carry.WATER,"a flat and a pool nobody is in are as they were before anyone came");
+        h.assertTrue(VacantPossession.heard(null).carry()==DoorSounds.Carry.SOMEONE&&LastSwimmer.heard(null).carry()==DoorSounds.Carry.POOL,"a flat and a pool nobody is in are as they were before anyone came");
         h.succeed();
     }
 }

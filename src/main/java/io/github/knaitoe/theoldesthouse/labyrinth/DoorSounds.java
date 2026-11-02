@@ -49,7 +49,14 @@ public final class DoorSounds {
         /** 0.4.239: one person in there, going about something ordinary. */
         SOMEONE("door.through_someone",50,"Through the door: someone in there, moving about. A chair; a cup set down."),
         /** 0.4.239: a room with nothing moving in it, nobody and nothing left to make a sound. */
-        EMPTY("door.through_empty",70,"Through the door, nothing: the hollow sound of a room with nothing moving in it.");
+        EMPTY("door.through_empty",70,"Through the door, nothing: the hollow sound of a room with nothing moving in it."),
+        /**
+         * 0.4.246: rooms known by their own rhythm before the door is opened. The kitchen: its clock, under the fridge's motor running and
+         * cutting out, and then the tap, dripping once. The pool: its tiled hall, the pace clock's hand clicking round, and far off a
+         * swimmer turning at the wall.
+         */
+        KITCHEN("door.through_kitchen",100,"Through the door: a fridge running, then cutting out. A clock. The tap, dripping once."),
+        POOL("door.through_pool",100,"Through the door: water lapping in a big tiled room, a clock's hand clicking round, and far off, someone turning at the wall.");
         final DeferredHolder<SoundEvent,SoundEvent> sound;final int every;final String line;
         Carry(String id,int every,String line){sound=sound(id);this.every=every;this.line=line;}
     }
@@ -63,10 +70,12 @@ public final class DoorSounds {
     /** The rooms that carry, and what they carry. A room not here is silent through its door. */
     private static final Map<LabyrinthPlace,Carry> CARRIES=new EnumMap<>(LabyrinthPlace.class);
     static{
-        for(var p:List.of(LabyrinthPlace.WINCHESTER,LabyrinthPlace.MASQUE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.CONFESSION,LabyrinthPlace.USHER,LabyrinthPlace.WHALE,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.READ_WAITING,LabyrinthPlace.READ_KITCHEN,LabyrinthPlace.FAMILIAR_KITCHEN))CARRIES.put(p,Carry.CLOCK);
-        for(var p:List.of(LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.FLOODED_PASSAGE,LabyrinthPlace.BARN_WELL,LabyrinthPlace.SHALLOWS,LabyrinthPlace.DROWNED_TOWN,LabyrinthPlace.BENT_CISTERN,LabyrinthPlace.READ_BATHROOM))CARRIES.put(p,Carry.WATER);
+        for(var p:List.of(LabyrinthPlace.WINCHESTER,LabyrinthPlace.MASQUE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.CONFESSION,LabyrinthPlace.USHER,LabyrinthPlace.WHALE,LabyrinthPlace.KAREN_ROOM,LabyrinthPlace.READ_WAITING,LabyrinthPlace.READ_KITCHEN))CARRIES.put(p,Carry.CLOCK);
+        for(var p:List.of(LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.FLOODED_PASSAGE,LabyrinthPlace.BARN_WELL,LabyrinthPlace.SHALLOWS,LabyrinthPlace.DROWNED_TOWN,LabyrinthPlace.BENT_CISTERN,LabyrinthPlace.READ_BATHROOM))CARRIES.put(p,Carry.WATER);
         for(var p:List.of(LabyrinthPlace.NIGHTCLUB,LabyrinthPlace.POLYBIUS,LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.ELK_LOT,LabyrinthPlace.DEAD_AIR))CARRIES.put(p,Carry.MUSIC);
         for(var p:List.of(LabyrinthPlace.HOTEL,LabyrinthPlace.GOATMAN,LabyrinthPlace.SEANCE,LabyrinthPlace.GHOSTS_SET,LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.VACANT_POSSESSION))CARRIES.put(p,Carry.VOICES);
+        // 0.4.246: the familiar kitchen and the pool, each with a rhythm of its own.
+        CARRIES.put(LabyrinthPlace.FAMILIAR_KITCHEN,Carry.KITCHEN);CARRIES.put(LabyrinthPlace.LAST_SWIMMER,Carry.POOL);
     }
     @Nullable public static Carry carries(@Nullable LabyrinthPlace p){return p==null?null:CARRIES.get(p);}
 

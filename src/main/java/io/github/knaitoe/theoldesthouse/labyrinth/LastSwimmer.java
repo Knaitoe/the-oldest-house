@@ -113,7 +113,7 @@ public final class LastSwimmer {
     /** 0.4.239: the pool through its door: someone swimming lengths until the cover is on, then nothing moving. */
     @Nullable public static DoorSounds.Through heard(@Nullable BlockPos b){
         var p=b==null?null:pool(b);
-        return DoorSounds.Through.of(p!=null&&p.closed()?DoorSounds.Carry.EMPTY:DoorSounds.Carry.WATER);
+        return DoorSounds.Through.of(p!=null&&p.closed()?DoorSounds.Carry.EMPTY:DoorSounds.Carry.POOL);
     }
     /** 0.4.244: and for a reader who closed it, with no closing under way, what they would find: the cover on, nothing moving. */
     @Nullable public static DoorSounds.Through heard(@Nullable BlockPos b,LabyrinthData data,UUID listener){

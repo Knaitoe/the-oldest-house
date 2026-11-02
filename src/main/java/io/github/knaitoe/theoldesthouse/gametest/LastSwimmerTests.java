@@ -120,7 +120,7 @@ public final class LastSwimmerTests {
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the pool is resident"))
             .thenExecute(()->at(f,p,.5,-10.5,180))
             .thenWaitUntil(()->h.assertTrue(LastSwimmer.tick(b)>5&&swimmers(l,b)==1,"the pool is closing: tick "+LastSwimmer.tick(b)+", swimmers "+swimmers(l,b)+", at "+p.position()))
-            .thenExecute(()->{var heard=LastSwimmer.heard(b);h.assertTrue(heard!=null&&heard.carry()==DoorSounds.Carry.WATER,"through the door, someone swimming: "+heard);});
+            .thenExecute(()->{var heard=LastSwimmer.heard(b);h.assertTrue(heard!=null&&heard.carry()==DoorSounds.Carry.POOL,"through the door, someone swimming: "+heard);});
         for(int i=0;i<LastSwimmer.WAVER_HAULS;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
         seq=seq.thenIdle(2).thenExecute(()->{
                 h.assertTrue(LastSwimmer.hauls(b)==LastSwimmer.WAVER_HAULS&&LastSwimmer.part(b)<LastSwimmer.SECOND_TALK,"a third covered, long before the radio's second spoken part: hauls "+LastSwimmer.hauls(b)+", part "+LastSwimmer.part(b));
@@ -175,7 +175,7 @@ public final class LastSwimmerTests {
                 h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"the return is counted");
                 h.assertTrue(LastSwimmer.click(p,b,new BlockPos(0,SwimmerSite.SURFACE,-25),f.own(p,P))&&LastSwimmer.hauls(b)==0,"the cover is taut, and nothing hauls it");
                 var through=LastSwimmer.heard(b,f.data(),p.getUUID());var other=LastSwimmer.heard(b,f.data(),stranger);
-                h.assertTrue(through!=null&&through.carry()==DoorSounds.Carry.EMPTY&&other!=null&&other.carry()==DoorSounds.Carry.WATER,"through its door: nothing moving for the reader who closed it, someone swimming for anyone else: "+through+" "+other);})
+                h.assertTrue(through!=null&&through.carry()==DoorSounds.Carry.EMPTY&&other!=null&&other.carry()==DoorSounds.Carry.POOL,"through its door: nothing moving for the reader who closed it, someone swimming for anyone else: "+through+" "+other);})
             .thenIdle(40)
             .thenExecute(()->{
                 h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"one visit counts once");
