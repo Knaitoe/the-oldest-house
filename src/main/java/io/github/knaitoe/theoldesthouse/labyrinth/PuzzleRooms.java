@@ -38,7 +38,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * counts toward the Witness.
  */
 public final class PuzzleRooms {
-    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD}
+    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH}
     public enum Puzzle {
         BORROWED_LIGHT(LabyrinthPlace.BORROWED_LIGHT,Family.LIGHT,false,"The door has no handle on this side. The sun beside it is cold."),
         SERVICE_LIFT(LabyrinthPlace.SERVICE_LIFT,Family.LIFT,false,null),
@@ -56,7 +56,10 @@ public final class PuzzleRooms {
         AIRING_ROOMS(LabyrinthPlace.AIRING_ROOMS,Family.AIR,true,"The door has no handle on this side. Cold air comes round its edges.",LabyrinthPlace.VENT_ROOMS,LabyrinthPlace.SPRUNG_ROOMS),
         // 0.4.250: partitions on floor and ceiling tracks (FoldingRooms, docs/FOLDING_ROOMS_0_4_250.md). The far doors are ordinary doors: only the partitions are in the way.
         FOLDING_ROOM(LabyrinthPlace.FOLDING_ROOM,Family.FOLD,false,null),
-        FOLDED_ROOMS(LabyrinthPlace.FOLDED_ROOMS,Family.FOLD,true,null);
+        FOLDED_ROOMS(LabyrinthPlace.FOLDED_ROOMS,Family.FOLD,true,null),
+        // 0.4.251: the window cleaner (WindowCleaner, docs/WINDOW_CLEANER_0_4_251.md), an encounter with no deep room. The far door is
+        // behind a staff door the reader cannot open; the cleaner leaves both standing open.
+        WINDOW_CLEANER(LabyrinthPlace.WINDOW_CLEANER,Family.WINCH,false,null);
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;

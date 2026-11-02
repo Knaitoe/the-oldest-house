@@ -471,6 +471,14 @@ public enum LabyrinthPlace {
     FOLDED_ROOMS("folded_rooms", Kind.GRAY, 157, new BoundingBox(-9,-1,-26,3,5,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(0,0,-26),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.251, the Window Cleaner (WindowCleaner, docs/WINDOW_CLEANER_0_4_251.md): a corridor, a stair up four storeys, and a plant room
+     * over a light well where a cleaner is stranded in a cradle; let down past lit windows to the corridor the reader came in by, the
+     * cleaner comes back round and leaves by the staff door. A puzzle room, family WINCH, early only.
+     */
+    WINDOW_CLEANER("window_cleaner", Kind.GRAY, 158, new BoundingBox(-2,-1,-14,17,18,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(17,11,-6),Direction.WEST,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

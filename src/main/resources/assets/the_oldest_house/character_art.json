@@ -1333,5 +1333,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 52
+  },
+  {
+    "name": "literary_window_cleaner",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 54
   }
 ]

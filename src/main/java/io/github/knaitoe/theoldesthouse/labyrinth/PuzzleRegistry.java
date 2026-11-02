@@ -41,6 +41,9 @@ public final class PuzzleRegistry {
     public static Block foldMaterial(String name){var block=FOLD_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<FoldBlock>> FOLD_TYPE=CODECS.register("fold_fitting",()->FoldBlock.CODEC);
     public static final DeferredBlock<FoldBlock> FOLD=BLOCKS.registerBlock("fold_fitting",FoldBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion());
+    /** 0.4.251: the Window Cleaner's winch, brake, cradle and casement (WinchBlock), drawn by tools/draw_winch_fittings.py. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<WinchBlock>> WINCH_TYPE=CODECS.register("winch_fitting",()->WinchBlock.CODEC);
+    public static final DeferredBlock<WinchBlock> WINCH=BLOCKS.registerBlock("winch_fitting",WinchBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
     private PuzzleRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);}
 }
