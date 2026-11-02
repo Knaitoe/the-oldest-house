@@ -227,6 +227,8 @@ public final class LabyrinthDealer {
         // 0.4.261: the quiet room and its four siblings, the rest rooms (QuietRooms): one each, none again within six rooms.
         gray.addAll(QuietRooms.FAMILY);
         int depth = data.returnDepth(player);
+        // 0.4.264: Johnny Truant's places, from the crossing where stories begin, none within six rooms of the last (TruantPlaces.weight).
+        if (depth >= TruantPlaces.FROM_DEPTH) gray.addAll(TruantPlaces.PLACES);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS, LabyrinthPlace.AIRING_ROOMS, LabyrinthPlace.FOLDED_ROOMS, LabyrinthPlace.FUSE_ROOMS, LabyrinthPlace.HEADER_TANKS));
         if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
@@ -545,6 +547,7 @@ public final class LabyrinthDealer {
     public static int grayWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int depth) {
         if (place == LabyrinthPlace.FAMILIAR_KITCHEN) return FamiliarRoom.weight(player, depth);
         if (QuietRooms.is(place)) return QuietRooms.weight(data, player, place);
+        if (TruantPlaces.is(place)) return TruantPlaces.weight(data, player, depth);
         return PuzzleRooms.is(place) ? PuzzleRooms.weight(data, player, place, depth) : grayWeight(place, depth);
     }
 
@@ -587,6 +590,7 @@ public final class LabyrinthDealer {
             case JUNCTION -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case GRAY_CORRIDOR -> depth < 4 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 2;
             case QUIET_ROOM, QUIET_READING, QUIET_BOOTROOM, QUIET_SUNROOM, QUIET_SPARE -> 1;
+            case TRUANT_DOOR, TRUANT_LEDGE, TRUANT_LAMP -> depth < TruantPlaces.FROM_DEPTH ? 0 : TruantPlaces.WEIGHT;
             case EXPLORER_CAMP -> depth < 3 ? 0 : 2;
             default -> depth < 4 ? 0 : place.grayWeight();
         };
