@@ -64,8 +64,9 @@ sword.
 
 A chest of drawers stands against the west wall of the front hall, two blocks in from the front door, facing the hall.
 
-**Opening.** A hand on it opens the reader's own drawer as a chest's six rows. Each reader sees only their own things. Beyond the
-first six rows the drawer keeps the rest out of sight until room is made.
+**Opening.** A hand on it opens the reader's own drawer as a chest's six rows. Each reader sees only their own things. Since 0.4.267 a
+drawer of more than six rows turns in pages, and a button takes everything back to the slots it came from
+(docs/DRAWER_RETRIEVAL_0_4_267.md); before that, the rest stayed out of sight until room was made.
 
 **Taking and putting back.** Anything can be taken out. Taken out, a thing the House would not let in goes on the loose list. Put
 back, it comes off. Every change is written straight back, so nothing is lost or doubled if the server stops with the drawer open.

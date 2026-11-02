@@ -8,6 +8,7 @@ import java.util.List;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -77,6 +78,56 @@ public final class HouseKeepingTests {
             // The lists survive a save.
             var tag=data.save(new CompoundTag(),h.getLevel().registryAccess());var loaded=HouseKeeping.load(tag,h.getLevel().registryAccess()).keep(p.getUUID());
             h.assertTrue(loaded.drawer.size()==keep.drawer.size()&&count(loaded.drawer,Items.COBBLESTONE)==32&&loaded.where==Where.MANOR,"saved and loaded, the drawer is as it was");
+            data.forget(p.getUUID());
+        }).thenSucceed();
+    }
+
+    /**
+     * 0.4.267 (the owner: "Add 'retrieve belongings', restore equipment to its previous slots where possible, and expose overflow
+     * through pages or an overflow count"): a drawer of more than six rows turns in pages; "Retrieve belongings" puts each thing back in
+     * the slot it was taken from, armour and the off hand included, then fills the free room, and leaves in the drawer only what will
+     * not fit; what comes out is loose; the slots survive a save.
+     */
+    @GameTest(template="empty",batch="hall_drawers_back",timeoutTicks=200)
+    public static void retrievingPutsThingsBackWhereTheyWereCarriedAndTheDrawerTurnsInPages(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"drawers_returner");var server=h.getLevel().getServer();var data=HouseKeeping.get(server);data.forget(p.getUUID());
+        h.startSequence().thenExecute(()->{
+            var inv=p.getInventory();inv.clearContent();
+            HouseKeeping.update(p,Where.OUTSIDE);
+            inv.setItem(0,new ItemStack(Items.COBBLESTONE,64));inv.setItem(1,new ItemStack(Items.COBBLESTONE,64));inv.setItem(4,new ItemStack(Items.IRON_SWORD));
+            inv.setItem(7,new ItemStack(Items.BREAD,3));inv.armor.set(3,new ItemStack(Items.IRON_HELMET));inv.offhand.set(0,new ItemStack(Items.SHIELD));
+            HouseKeeping.update(p,Where.MANOR);
+            var keep=HouseKeeping.of(p);
+            h.assertTrue(inv.getItem(4).isEmpty()&&inv.armor.get(3).isEmpty()&&inv.offhand.get(0).isEmpty()&&count(p,Items.BREAD)==3,"taken at the door, bread let in");
+            h.assertTrue(keep.homes.stream().anyMatch(o->o.slot==4&&o.like.is(Items.IRON_SWORD))&&keep.homes.stream().anyMatch(o->o.slot==39&&o.like.is(Items.IRON_HELMET))&&keep.homes.stream().anyMatch(o->o.slot==40&&o.like.is(Items.SHIELD)),"the House remembers where each thing was: "+keep.homes.size());
+            var loaded=HouseKeeping.load(data.save(new CompoundTag(),h.getLevel().registryAccess()),h.getLevel().registryAccess()).keep(p.getUUID());
+            h.assertTrue(loaded.homes.size()==keep.homes.size()&&loaded.homes.stream().anyMatch(o->o.slot==4&&o.count==1),"and still remembers after a save");
+            // Things put away on other days: sixty named stones, more than one page.
+            for(int i=0;i<60;i++){var stone=new ItemStack(Items.STONE,8);stone.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Stone "+i));keep.drawer.add(stone);}
+            int total=keep.drawer.size();
+            HouseKeeping.open(p,p.blockPosition());
+            h.assertTrue(p.containerMenu instanceof HouseKeeping.Drawer,"the drawer opens as its six rows");var menu=(HouseKeeping.Drawer)p.containerMenu;
+            h.assertTrue(menu.view().pages()==2&&menu.view().page()==0,"more than six rows turn into pages: "+menu.view().pages());
+            h.assertTrue(menu.clickMenuButton(p,HouseKeeping.NEXT)&&menu.view().page()==1,"the next page");
+            int shown=0;for(int i=0;i<HouseKeeping.SHOWN;i++)if(!menu.getSlot(i).getItem().isEmpty())shown++;
+            h.assertTrue(shown==total-HouseKeeping.SHOWN,"the second page shows the rest: "+shown);
+            h.assertTrue(!menu.clickMenuButton(p,HouseKeeping.NEXT)||menu.view().page()==1,"no page past the last");
+            h.assertTrue(menu.clickMenuButton(p,HouseKeeping.PREVIOUS)&&menu.view().page()==0,"and back");
+            h.assertTrue(keep.drawer.size()==total,"turning pages loses nothing");
+            // A slot taken up since: the second stack of stone goes where there is room.
+            inv.setItem(1,new ItemStack(Items.APPLE));
+            h.assertTrue(menu.clickMenuButton(p,HouseKeeping.RETRIEVE),"retrieve belongings");
+            h.assertTrue(inv.getItem(4).is(Items.IRON_SWORD),"the sword back in its own slot");
+            h.assertTrue(inv.armor.get(3).is(Items.IRON_HELMET),"the helmet back on");
+            h.assertTrue(inv.offhand.get(0).is(Items.SHIELD),"the shield back in the off hand");
+            h.assertTrue(inv.getItem(0).is(Items.COBBLESTONE)&&inv.getItem(0).getCount()==64&&count(p,Items.COBBLESTONE)==128&&inv.getItem(1).is(Items.APPLE),"the stone back where it was, the rest of it where there was room");
+            int free=0;for(int i=0;i<Inventory.INVENTORY_SIZE;i++)if(inv.getItem(i).isEmpty())free++;
+            h.assertTrue(free==0&&count(keep.drawer,Items.STONE)>0&&count(p,Items.STONE)>0,"the pockets are filled and what will not fit stays in the drawer");
+            h.assertTrue(count(keep.loose,Items.IRON_SWORD)==1&&count(keep.loose,Items.COBBLESTONE)==128&&count(keep.loose,Items.STONE)==count(p,Items.STONE),"what came out is loose, as if taken by hand");
+            h.assertTrue(keep.homes.stream().noneMatch(o->o.like.is(Items.IRON_SWORD)),"a slot gone back to is forgotten");
+            int inDrawer=0;for(int i=0;i<HouseKeeping.SHOWN;i++)if(!menu.getSlot(i).getItem().isEmpty())inDrawer++;
+            h.assertTrue(inDrawer==keep.drawer.size()&&menu.view().pages()==1,"the drawer shows what is left: "+inDrawer);
+            p.closeContainer();
             data.forget(p.getUUID());
         }).thenSucceed();
     }

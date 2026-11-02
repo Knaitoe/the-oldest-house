@@ -24,7 +24,10 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -65,7 +68,12 @@ public final class HouseKeeping extends SavedData {
     public static final Factory<HouseKeeping> FACTORY=new Factory<>(HouseKeeping::new,HouseKeeping::load);
     /** The chest of drawers in the front hall, against its west wall two blocks in from the front door, relative to the manor's origin. */
     public static final BlockPos DRAWERS=new BlockPos(HouseLayout.HALL_MIN_X,1,HouseLayout.FRONT_DOOR_Z+2);
+    /** Stacks to a page of the drawer: a chest's six rows. */
     public static final int SHOWN=54;
+    /** How many of a reader's taken stacks the House remembers the slots of (0.4.267); the oldest are forgotten first. */
+    static final int HOMES=256;
+    /** The drawer's buttons (0.4.267), sent as vanilla menu-button clicks. */
+    public static final int RETRIEVE=0,PREVIOUS=1,NEXT=2;
     /** How many stacks of its own things the House remembers a reader having carried out; the oldest are forgotten first. */
     static final int CARRIED_LIMIT=256;
     public enum Where{OUTSIDE,MANOR,BEYOND}
@@ -73,7 +81,14 @@ public final class HouseKeeping extends SavedData {
     /** One reader's lists, and where the House last saw them. */
     public static final class Keep {
         public final List<ItemStack> drawer=new ArrayList<>(),loose=new ArrayList<>(),carried=new ArrayList<>();
+        /** 0.4.267: where in the reader's inventory each thing was when the House took it, newest first, so it can go back there. */
+        public final List<Home> homes=new ArrayList<>();
         @Nullable public Where where;
+    }
+    /** A slot something was taken from (0.4.267): which thing, which inventory slot, and how many of it are still to go back there. */
+    public static final class Home {
+        public final ItemStack like;public final int slot;public int count;
+        Home(ItemStack like,int slot,int count){this.like=like.copyWithCount(1);this.slot=slot;this.count=count;}
     }
     private final Map<UUID,Keep> keeps=new HashMap<>();
     public static HouseKeeping get(MinecraftServer server){return server.overworld().getDataStorage().computeIfAbsent(FACTORY,DATA_NAME);}
@@ -145,8 +160,11 @@ public final class HouseKeeping extends SavedData {
         for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
             var s=c.getItem(i);if(allowed(s))continue;
             int ours=take(keep.carried,s,s.getCount());int theirs=s.getCount()-ours;if(theirs<=0)continue;
-            add(keep.drawer,s.copyWithCount(theirs));var left=s.copyWithCount(ours);c.setItem(i,left.isEmpty()?ItemStack.EMPTY:left);taken+=theirs;
+            add(keep.drawer,s.copyWithCount(theirs));
+            if(c==p.getInventory())keep.homes.add(0,new Home(s,i,theirs));
+            var left=s.copyWithCount(ours);c.setItem(i,left.isEmpty()?ItemStack.EMPTY:left);taken+=theirs;
         }
+        while(keep.homes.size()>HOMES)keep.homes.remove(keep.homes.size()-1);
         if(taken>0){data.setDirty();p.inventoryMenu.broadcastChanges();
             say(p,"What you carried in from outside, the House has put away in the chest of drawers in the front hall.");
             p.playNotifySound(SoundEvents.CHISELED_BOOKSHELF_INSERT,SoundSource.PLAYERS,.8F,.8F);}
@@ -188,29 +206,100 @@ public final class HouseKeeping extends SavedData {
     /** Opens the reader's own drawer: only their things, and only theirs to take. */
     public static void open(ServerPlayer p,BlockPos at){
         var view=new View(p,at);
-        p.openMenu(new SimpleMenuProvider((id,inv,pl)->ChestMenu.sixRows(id,inv,view),Component.literal("Kept for you")));
+        p.openMenu(new SimpleMenuProvider((id,inv,pl)->new Drawer(id,inv,view),Component.literal("Kept for you")));
+        view.tell();
         p.playNotifySound(SoundEvents.CHISELED_BOOKSHELF_PICKUP,SoundSource.BLOCKS,.7F,.9F);
     }
     /**
+     * The drawer's six rows (0.4.267), with three buttons beside them on the reader's screen: take everything back, and turn the
+     * drawer's pages. The buttons arrive as vanilla menu-button clicks, so nothing but the drawer's own reader can press them.
+     */
+    public static final class Drawer extends ChestMenu {
+        private final View view;
+        Drawer(int id,Inventory inv,View view){super(MenuType.GENERIC_9x6,id,inv,view,6);this.view=view;}
+        public View view(){return view;}
+        @Override public boolean clickMenuButton(Player p,int button){
+            // The button packet is handled only while the menu is still valid for its player (vanilla checks it first).
+            if(!(p instanceof ServerPlayer reader)||reader!=view.reader)return false;
+            switch(button){
+                case RETRIEVE->retrieve(reader,view);
+                case PREVIOUS->view.turn(-1);
+                case NEXT->view.turn(1);
+                default->{return false;}
+            }
+            broadcastChanges();return true;
+        }
+    }
+    /**
+     * Everything in the drawer back into the reader's pockets (0.4.267, the owner: "Add 'retrieve belongings', restore equipment to its
+     * previous slots where possible"). Each thing goes back to the slot it was taken from if that slot is empty, or holds the same thing
+     * with room (armour only to its own place); then to the inventory's free room; what still will not fit stays in the drawer. What
+     * comes out is loose, as if taken by hand. True if the drawer is empty after.
+     */
+    public static boolean retrieve(ServerPlayer p,@Nullable View view){
+        var data=get(p.server);var keep=data.keep(p.getUUID());var inv=p.getInventory();int moved=0;
+        var left=new ArrayList<ItemStack>();
+        for(var stack:keep.drawer){
+            var s=stack.copy();
+            for(var home:keep.homes){
+                if(s.isEmpty())break;if(home.count<=0||!same(home.like,s)||!fits(p,home.slot,s))continue;
+                var there=inv.getItem(home.slot);int room;
+                if(there.isEmpty())room=s.getMaxStackSize();
+                else if(ItemStack.isSameItemSameComponents(there,s))room=there.getMaxStackSize()-there.getCount();
+                else continue;
+                int n=Math.min(Math.min(room,home.count),s.getCount());if(n<=0)continue;
+                if(there.isEmpty())inv.setItem(home.slot,s.copyWithCount(n));else there.grow(n);
+                s.shrink(n);home.count-=n;moved+=n;if(!allowed(stack))add(keep.loose,stack.copyWithCount(n));
+            }
+            if(!s.isEmpty()){int before=s.getCount();inv.add(s);int n=before-s.getCount();if(n>0){moved+=n;if(!allowed(stack))add(keep.loose,stack.copyWithCount(n));}}
+            if(!s.isEmpty())left.add(s);
+        }
+        keep.drawer.clear();keep.drawer.addAll(left);keep.homes.removeIf(h->h.count<=0);data.setDirty();
+        p.inventoryMenu.broadcastChanges();if(view!=null)view.refresh();
+        if(moved>0){
+            say(p,left.isEmpty()?"Your things are back where you carried them.":"What would not fit is still in the drawer.");
+            p.playNotifySound(SoundEvents.CHISELED_BOOKSHELF_PICKUP_ENCHANTED,SoundSource.BLOCKS,.7F,.9F);
+        }else if(!left.isEmpty())say(p,"There is no room on you for any of it.");
+        return left.isEmpty();
+    }
+    /** Whether a thing may go back into an inventory slot: anything to the pockets and the off hand, armour only to its own place. */
+    static boolean fits(ServerPlayer p,int slot,ItemStack s){
+        if(slot<0||slot>=p.getInventory().getContainerSize())return false;
+        if(slot>=Inventory.INVENTORY_SIZE&&slot<Inventory.INVENTORY_SIZE+4){var to=p.getEquipmentSlotForItem(s);return to.getType()==EquipmentSlot.Type.HUMANOID_ARMOR&&to.getIndex()==slot-Inventory.INVENTORY_SIZE;}
+        return true;
+    }
+    /**
      * A reader's drawer as a chest's six rows. Every change is written straight back: what leaves the drawer is noted as loose (if the
-     * House would not have let it in), and what is put back is struck off the loose list. Beyond the first six rows the drawer keeps the
-     * rest out of sight until room is made.
+     * House would not have let it in), and what is put back is struck off the loose list. A drawer of more than six rows turns in pages
+     * of six (0.4.267); the pages before and after the open one are kept as they are.
      */
     public static final class View extends SimpleContainer {
         private final ServerPlayer reader;private final BlockPos at;private final HouseKeeping data;private final Keep keep;
-        private final List<ItemStack> hidden=new ArrayList<>();private List<ItemStack> last;
+        private final List<ItemStack> before=new ArrayList<>(),after=new ArrayList<>();private List<ItemStack> last;private int page;
         View(ServerPlayer reader,BlockPos at){
             super(SHOWN);this.reader=reader;this.at=at;data=get(reader.server);keep=data.keep(reader.getUUID());
-            for(int i=0;i<keep.drawer.size();i++){if(i<SHOWN)super.setItem(i,keep.drawer.get(i).copy());else hidden.add(keep.drawer.get(i).copy());}
-            last=snapshot();
+            refresh();
         }
+        /** The open page (from 0) and how many there are. */
+        public int page(){return page;}
+        public int pages(){return Math.max(1,(keep.drawer.size()+SHOWN-1)/SHOWN);}
+        /** Lays the open page out again from the drawer as it stands, without counting that as the reader's doing. */
+        void refresh(){
+            last=null;page=Math.max(0,Math.min(page,pages()-1));before.clear();after.clear();
+            for(int i=0;i<SHOWN;i++)super.setItem(i,ItemStack.EMPTY);
+            for(int i=0;i<keep.drawer.size();i++){var s=keep.drawer.get(i).copy();int k=i-page*SHOWN;if(k<0)before.add(s);else if(k<SHOWN)super.setItem(k,s);else after.add(s);}
+            last=snapshot();tell();
+        }
+        void turn(int by){int next=Math.max(0,Math.min(page+by,pages()-1));if(next==page)return;page=next;refresh();reader.playNotifySound(SoundEvents.CHISELED_BOOKSHELF_PICKUP,SoundSource.BLOCKS,.4F,1.2F);}
+        /** Tells the reader's screen which page is open, how many there are and how many stacks the drawer holds. */
+        void tell(){if(reader.containerMenu instanceof Drawer d&&d.view==this)io.github.knaitoe.theoldesthouse.network.HousePackets.send(reader,new io.github.knaitoe.theoldesthouse.network.KeptStatePayload(d.containerId,page,pages(),keep.drawer.size()));}
         private List<ItemStack> snapshot(){var out=new ArrayList<ItemStack>();for(int i=0;i<getContainerSize();i++)if(!getItem(i).isEmpty())out.add(getItem(i).copy());return out;}
         @Override public void setChanged(){
             super.setChanged();if(last==null)return;var now=snapshot();
             for(var s:merge(last)){int after=count(now,s);if(after<s.getCount()&&!allowed(s))add(keep.loose,s.copyWithCount(s.getCount()-after));}
             for(var s:merge(now)){int before=count(last,s);if(s.getCount()>before)take(keep.loose,s,s.getCount()-before);}
-            keep.drawer.clear();for(var s:now)keep.drawer.add(s.copy());for(var s:hidden)keep.drawer.add(s.copy());
-            last=now;data.setDirty();
+            keep.drawer.clear();for(var s:before)keep.drawer.add(s.copy());for(var s:now)keep.drawer.add(s.copy());for(var s:after)keep.drawer.add(s.copy());
+            last=now;data.setDirty();tell();
         }
         private static List<ItemStack> merge(List<ItemStack> list){var out=new ArrayList<ItemStack>();for(var s:list){boolean found=false;for(var o:out)if(same(o,s)){o.grow(s.getCount());found=true;break;}if(!found)out.add(s.copyWithCount(s.getCount()));}return out;}
         private static int count(List<ItemStack> list,ItemStack s){int n=0;for(var o:list)if(same(o,s))n+=o.getCount();return n;}
@@ -248,6 +337,7 @@ public final class HouseKeeping extends SavedData {
         var all=new CompoundTag();
         for(var en:keeps.entrySet()){var k=en.getValue();var t=new CompoundTag();
             t.put("Drawer",write(k.drawer,r));t.put("Loose",write(k.loose,r));t.put("Carried",write(k.carried,r));if(k.where!=null)t.putString("Where",k.where.name());
+            var homes=new ListTag();for(var h:k.homes){if(h.count<=0)continue;var e=new CompoundTag();e.put("Item",h.like.save(r));e.putInt("Slot",h.slot);e.putInt("Count",h.count);homes.add(e);}t.put("Homes",homes);
             all.put(en.getKey().toString(),t);}
         tag.put("Readers",all);return tag;
     }
@@ -256,7 +346,8 @@ public final class HouseKeeping extends SavedData {
         for(var key:all.getAllKeys()){UUID id;try{id=UUID.fromString(key);}catch(IllegalArgumentException ex){continue;}
             var t=all.getCompound(key);var k=data.keep(id);
             read(t.getList("Drawer",Tag.TAG_COMPOUND),k.drawer,r);read(t.getList("Loose",Tag.TAG_COMPOUND),k.loose,r);read(t.getList("Carried",Tag.TAG_COMPOUND),k.carried,r);
-            if(t.contains("Where"))try{k.where=Where.valueOf(t.getString("Where"));}catch(IllegalArgumentException ex){k.where=null;}}
+            if(t.contains("Where"))try{k.where=Where.valueOf(t.getString("Where"));}catch(IllegalArgumentException ex){k.where=null;}
+            var homes=t.getList("Homes",Tag.TAG_COMPOUND);for(int i=0;i<homes.size();i++){var e=homes.getCompound(i);var like=ItemStack.parseOptional(r,e.getCompound("Item"));if(!like.isEmpty()&&e.getInt("Count")>0)k.homes.add(new Home(like,e.getInt("Slot"),e.getInt("Count")));}}
         return data;
     }
 }
