@@ -206,6 +206,10 @@ final class HouseInteriors {
 
         c.set(HouseLayout.HALL_MAX_X, 1, 5, Blocks.POTTED_DEAD_BUSH.defaultBlockState());
 
+        // 0.4.255: the chest of drawers where the House keeps what each reader carried in from outside (HouseKeeping).
+        c.set(HouseKeeping.DRAWERS.getX(), HouseKeeping.DRAWERS.getY(), HouseKeeping.DRAWERS.getZ(),
+                HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS, Direction.EAST));
+
         // Porch lantern.
         c.set(axis, 5, 2, lantern(true));
     }
