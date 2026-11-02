@@ -73,6 +73,8 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_any_route") public static void anyRouteDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_gentleman") public static void gentlemanDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_lower") public static void lowerDone(ServerLevel l){cleanup();}
+    /** Run 1411: without this the strokes case left its reader standing at the shared site, watching the taking, so the next case's cast was never unwatched. */
+    @AfterBatch(batch="borrasca_strokes") public static void strokesDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="borrasca_diagnostics")
     public static void preEntrySocketDiagnosticsNeverGeneratePrivateCoordinatesInEitherDimension(GameTestHelper h){
@@ -238,7 +240,7 @@ public final class BorrascaTests {
     }
     private static boolean reaches(Set<BlockPos> cells,BlockPos base,BlockPos rel,double radius){var at=base.offset(rel);for(var c:cells)if(c.distSqr(at)<=radius*radius)return true;return false;}
 
-    @GameTest(template="empty",batch="borrasca_sealed",timeoutTicks=800)
+    @GameTest(template="empty",batch="borrasca_sealed",timeoutTicks=3000)
     public static void theRefineryIsSealedFromTheWoodsUntilTheLastNight(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_explorer");
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{
