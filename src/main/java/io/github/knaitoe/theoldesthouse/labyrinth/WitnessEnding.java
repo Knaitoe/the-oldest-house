@@ -54,6 +54,14 @@ public final class WitnessEnding {
         }
         if(player.getRespawnPosition()!=null)record.putLong("Base",player.getRespawnPosition().asLong());
         record.putString("BaseDimension",player.getRespawnDimension().location().toString());
+        // 0.4.243: the one the reader sees behind the bars is the one who leaves. Without this the release spawned a second
+        // child beside the first, which stayed in the cell watching. A wounded one left by an earlier reader goes as it is.
+        UUID prisoner=world.getBoolean("MinotaurWounded")&&world.hasUUID("WoundedCreature")?world.getUUID("WoundedCreature")
+                :world.hasUUID("CagedCreature")?world.getUUID("CagedCreature"):null;
+        if(prisoner!=null){
+            record.putUUID("Creature",prisoner);
+            if(player.serverLevel().getEntity(prisoner) instanceof MinotaurEntity boy&&boy.motion()!=MinotaurEntity.LOOSE){boy.owner(player.getUUID());boy.released();}
+        }
         FinaleProgress.save(player.server,player.getUUID(),record);
         keepSceneLoaded(player,origin);
         FinaleArchitecture.seal(player.serverLevel(),origin,true);FinaleArchitecture.openCell(player.serverLevel(),origin);
@@ -128,7 +136,12 @@ public final class WitnessEnding {
         unloadScene(player,origin);
         FinaleArchitecture.seal(player.serverLevel(),origin,false);FinaleProgress.save(player.server,player.getUUID(),record);
         FinaleController.releaseClaim(player.server,player.getUUID());
-        var world=FinaleProgress.world(player.server);world.putBoolean("CellReleased",true);LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
+        var world=FinaleProgress.world(player.server);world.putBoolean("CellReleased",true);
+        // The prisoner has gone up the stairs: the cell no longer holds it, wounded or not, and the next reader finds a new one.
+        UUID gone=creature.getUUID();
+        if(world.hasUUID("CagedCreature")&&world.getUUID("CagedCreature").equals(gone))world.remove("CagedCreature");
+        if(world.hasUUID("WoundedCreature")&&world.getUUID("WoundedCreature").equals(gone)){world.remove("WoundedCreature");world.remove("MinotaurWounded");}
+        LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
         FinaleController.words(player,FinaleArchitecture.base(origin).offset(0,FinaleArchitecture.ARENA+2,31),"The stairs lead back. The cell stays open.");
     }
     public static boolean returnWeapon(ServerPlayer player,CompoundTag record){
@@ -180,6 +193,34 @@ public final class WitnessEnding {
         player.teleportTo(player.server.overworld(),outside.x,outside.y,outside.z,180,0);player.resetFallDistance();
         for(var pet:companions)CompanionOrders.followAcross(pet,player);
         FinaleController.words(player,player.blockPosition().above(2),"Your belongings. Your companions. The door closes quietly.");
+    }
+    /**
+     * 0.4.243: another reader's escape is bringing the House down while this one is still climbing home from their own
+     * release. The release was done and the climb was under way, so the ending holds: the reader is set outside with the rest,
+     * the account comes home a day later, and a weapon still lying by the cell waits for them at the door. Before this the
+     * record stayed on the stairs for good, with no account and no way back to finish it.
+     */
+    public static void completeOnCollapse(net.minecraft.server.MinecraftServer server,Vec3 landing){
+        CompoundTag world=FinaleProgress.world(server);
+        for(String key:new ArrayList<>(world.getAllKeys())){
+            UUID id;try{id=UUID.fromString(key);}catch(IllegalArgumentException ignored){continue;}
+            CompoundTag record=FinaleProgress.player(server,id);if(FinaleProgress.phase(record)!=FinaleProgress.Phase.HOMEWARD)continue;
+            ServerPlayer reader=server.getPlayerList().getPlayer(id);
+            ItemStack weapon=ItemStack.EMPTY;var interior=server.getLevel(HouseDimensions.INTERIOR);
+            if(record.hasUUID("LaidDown")&&interior!=null){
+                interior.getChunkAt(BlockPos.of(record.getLong("LaidAt")));
+                if(interior.getEntity(record.getUUID("LaidDown")) instanceof ItemEntity item){weapon=item.getItem().copy();item.discard();}
+            }
+            record.remove("LaidDown");record.remove("LaidAt");record.remove("WeaponNeedsSpace");
+            record.putString("Phase",FinaleProgress.Phase.WITNESSED.name());record.putLong("EpilogueDue",server.overworld().getGameTime()+24000);
+            FinaleProgress.save(server,id,record);
+            io.github.knaitoe.theoldesthouse.journal.Quotes.ending(server,id);LabyrinthData.get(server).clearReturns(id);
+            if(!weapon.isEmpty()&&!(reader!=null&&reader.getInventory().add(weapon)&&weapon.isEmpty())){
+                ItemEntity left=new ItemEntity(server.overworld(),landing.x,landing.y,landing.z,weapon);
+                left.setUnlimitedLifetime();left.setTarget(id);server.overworld().addFreshEntity(left);
+            }
+            if(reader!=null)reader.displayClientMessage(net.minecraft.network.chat.Component.literal("The stairs give under you, and then you are standing outside. The door is gone."),true);
+        }
     }
     public static ItemStack epilogue(ServerPlayer player){
         return WitnessAccount.book(LabyrinthData.get(player.server),player.getUUID(),player.getGameProfile().getName(),true);

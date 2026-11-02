@@ -256,10 +256,8 @@ public final class PlaytestCommands {
             WitnessAccount.markRead(data, player.getUUID()); player.setShiftKeyDown(true);
             started = WitnessEnding.begin(player);
             if (!started) throw new IllegalStateException("The real peaceful release refused its prepared fixture.");
-            // The visible native prisoner is the departing actor, not a second spawned entity.
-            actor.owner(player.getUUID()); actor.released();
-            var record = FinaleProgress.player(player.server, player.getUUID()); record.putUUID("Creature", actor.getUUID());
-            FinaleProgress.save(player.server, player.getUUID(), record);
+            // The visible native prisoner is the departing actor, not a second spawned entity. The real release now chooses it
+            // itself (0.4.243), so this shortcut no longer patches the record afterwards and its test proves the real path.
         } finally {
             player.setShiftKeyDown(crouched);
             if (!started) {
