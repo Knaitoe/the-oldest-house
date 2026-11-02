@@ -59,6 +59,35 @@ public final class JournalTests {
     }
 
     /**
+     * 0.4.268 (the owner: "A ribbon bookmark, page-number jump, and search through the player's own writing"): the ribbon is laid in a
+     * page only by a reader carrying their own journal, stays there across a save, goes to the screen with the journal's pages, is
+     * held within the book, and comes out again. The page jump and the search are the screen's own (the native client proof's find
+     * view searches the sample journal and shows the ribbon).
+     */
+    @GameTest(template="empty",batch="journal_ribbon",timeoutTicks=40)
+    public static void theRibbonStaysInItsPageForTheReaderCarryingTheirJournal(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"journal_ribbon_reader");var other=NativeTestPlayers.survival(h,"journal_ribbon_other");
+        try{
+            var data=Journals.get(h.getLevel().getServer());
+            Journals.ribbon(p,12);
+            h.assertTrue(data.ribbon(p.getUUID())==0,"without their journal in hand or pack, nothing is laid in it");
+            h.assertTrue(data.grantIfNone(p)&&data.carries(p),"the reader has their journal");
+            Journals.ribbon(p,12);
+            h.assertTrue(data.ribbon(p.getUUID())==12&&data.contents(p.getUUID()).getInt("Ribbon")==12,"the ribbon lies in page 12 and goes to the screen with the pages");
+            Journals.ribbon(p,Journals.PAGES+40);
+            h.assertTrue(data.ribbon(p.getUUID())==Journals.PAGES,"it is held within the book");
+            Journals.ribbon(p,12);
+            var registries=h.getLevel().registryAccess();var back=Journals.load(data.save(new CompoundTag(),registries),registries);
+            h.assertTrue(back.ribbon(p.getUUID())==12,"saved and loaded, it is where it was laid");
+            Journals.ribbon(p,0);
+            h.assertTrue(data.ribbon(p.getUUID())==0&&!data.contents(p.getUUID()).contains("Ribbon"),"taken out, it is gone");
+            Journals.ribbon(other,5);
+            h.assertTrue(data.ribbon(other.getUUID())==0,"nobody lays a ribbon in a journal they do not carry");
+        }finally{NativeTestPlayers.remove(p);NativeTestPlayers.remove(other);}
+        h.succeed();
+    }
+
+    /**
      * 0.4.266 (the owner: "Let players revisit conversations they actually heard, especially their own promises and answers"; "i'm okay
      * with the conversation history being integrated into the player's journal"): every exchange the panel showed is kept with the
      * reader's own replies, past the panel's 48 lines and past the panel closing and the reader logging out; the last 48 exchanges and

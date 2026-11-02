@@ -27,7 +27,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class JournalVisualProof {
     private static int state=-1,frames;
-    static final int JOURNAL=7,FOLDERS=io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.FOLDERS,LIFTED=3,HEARD=JOURNAL+FOLDERS+LIFTED,STATES=HEARD+1;
+    static final int JOURNAL=7,FOLDERS=io.github.knaitoe.theoldesthouse.journal.ZampanoLeaves.FOLDERS,LIFTED=3,HEARD=JOURNAL+FOLDERS+LIFTED,FIND=HEARD+1,STATES=FIND+1;
     /** Leaf 3 is taken from the second folder; the third folder's struck Minotaur is red and the eighth folder's house is blue. */
     static final int TAKEN=1<<3,RED_FOLDER=2,BLUE_FOLDER=7;
     private JournalVisualProof(){}
@@ -36,6 +36,8 @@ public final class JournalVisualProof {
         var mc=Minecraft.getInstance();
         // 0.4.266: last, the journal turned to what was said (labyrinth/TalkHistory): two kept conversations, a reply in the reader's own ink.
         if(state==HEARD){mc.setScreen(JournalScreen.proofHeard(sample(0),heard()));return;}
+        // 0.4.268: the second row showing, the ribbon in page 5 and the search for "bell" turned to page 4.
+        if(state==FIND){var journal=sample(0);journal.putInt("Ribbon",5);mc.setScreen(JournalScreen.proofFind(journal,"bell"));return;}
         if(state>=JOURNAL){int c=state-JOURNAL;
             mc.setScreen(c<FOLDERS?ZampanoScreen.proof(c,-1,TAKEN,0,false):switch(c-FOLDERS){case 0->ZampanoScreen.proof(2,5,0,0,true);case 1->ZampanoScreen.proof(3,7,0,2,false);default->ZampanoScreen.proof(7,15,0,1,false);});return;}
         mc.setScreen(switch(state){case 0->JournalScreen.proof(sample(0),0);case 1->JournalScreen.proof(sample(2),1);case 2->JournalScreen.proof(sample(4),1);case 3->JournalScreen.proof(sample(1),2);case 4->JournalScreen.proof(sample(1),3);case 5->JournalScreen.proof(torn(),1);default->TornPageScreen.proof("OTHProof",io.github.knaitoe.theoldesthouse.journal.JournalPage.load(sample(0).getCompound("Pages").getCompound("1")));});
@@ -82,12 +84,15 @@ public final class JournalVisualProof {
             if(state==6&&ink<40)throw new IllegalStateException("The torn page must carry its writing: ink="+ink);
             if(state==HEARD){int you=0;for(int y=0;y<image.getHeight();y++)for(int x=0;x<image.getWidth();x++){int c=image.getPixelRGBA(x,y);if(near(c&255,c>>8&255,c>>16&255,JournalScreen.YOU_INK&0xFFFFFF))you++;}
                 if(ink<40||you<10)throw new IllegalStateException("What was said must be printed, the reader's own replies in their ink: ink="+ink+" replies="+you);}
+            if(state==FIND){int ribbon=0;for(int y=0;y<image.getHeight();y++)for(int x=0;x<image.getWidth();x++){int c=image.getPixelRGBA(x,y);if(near(c&255,c>>8&255,c>>16&255,JournalScreen.RIBBON&0xFFFFFF))ribbon++;}
+                int spread=mc.screen instanceof JournalScreen j?j.spreadOpen():-1;
+                if(spread!=2||ribbon<40||ink<40)throw new IllegalStateException("The search for \"bell\" must turn to page 4 with the ribbon in page 5: spread="+spread+" ribbon="+ribbon+" ink="+ink);}
             if(state==4&&other<60)throw new IllegalStateException("The other hand must leave its ink: a stroke, an answer and a written page: "+other);
             if(state==1&&(blue<8||red<8))throw new IllegalStateException("The journal page must show the blue House word and the red Minotaur: blue="+blue+" red="+red);
             if(state>=JOURNAL&&ink<40)throw new IllegalStateException("Zampano's page "+(state-JOURNAL)+" must carry his writing: ink="+ink);
             if(state==JOURNAL+RED_FOLDER&&red<8)throw new IllegalStateException("Zampano's struck Minotaur must be red: red="+red);
             if(state==JOURNAL+BLUE_FOLDER&&blue<8)throw new IllegalStateException("Zampano's house must be blue: blue="+blue);
-            image.writeToFile(folder.resolve(state==HEARD?"native-journal-heard.png":state<JOURNAL?"native-journal-"+state+".png":"native-courtyard-"+(state-JOURNAL)+".png"));
+            image.writeToFile(folder.resolve(state==FIND?"native-journal-find.png":state==HEARD?"native-journal-heard.png":state<JOURNAL?"native-journal-"+state+".png":"native-courtyard-"+(state-JOURNAL)+".png"));
         }
         frames=0;state++;
         if(state<STATES){show();return;}

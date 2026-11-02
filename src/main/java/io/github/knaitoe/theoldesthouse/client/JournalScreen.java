@@ -50,6 +50,15 @@ public final class JournalScreen extends Screen {
     private long lastScratch;
     /** The spread the server was last told is open, so it is told only when that changes. */
     private int told=JournalViewPayload.SHUT;
+    /**
+     * 0.4.268 (the owner: "A ribbon bookmark, page-number jump, and search through the player's own writing"): the page the ribbon
+     * lies in (0 for none), and the second row's find and page fields, kept across the screen's rebuilds.
+     */
+    private int ribbon;
+    private net.minecraft.client.gui.components.EditBox finder,jumper;
+    private String findText="",jumpText="";
+    private boolean findFocus,jumpFocus,notFound,controls;
+    static final int RIBBON=0xFF7A2430,RIBBON_DARK=0xFF54161F;
 
     JournalScreen(CompoundTag journal,int spread,boolean proof){
         super(Component.literal("Journal"));
@@ -57,16 +66,25 @@ public final class JournalScreen extends Screen {
         var all=journal.getCompound("Pages");for(String key:all.getAllKeys()){try{int i=Integer.parseInt(key);if(i>=1&&i<=Journals.PAGES)pages.put(i,JournalPage.load(all.getCompound(key)));}catch(NumberFormatException ignored){}}
         for(int i:journal.getIntArray("Torn"))if(i>=1&&i<=Journals.PAGES)torn.add(i);
         for(int i:journal.getIntArray("Soaked"))if(i>=1&&i<=Journals.PAGES)soaked.add(i);
+        ribbon=Mth.clamp(journal.getInt("Ribbon"),0,Journals.PAGES);
     }
     public static void open(CompoundTag journal){Minecraft.getInstance().setScreen(new JournalScreen(journal,journal.getInt("Spread"),false));}
     static JournalScreen proof(CompoundTag journal,int spread){return new JournalScreen(journal,spread,true);}
     /** 0.4.266: the proof's journal turned to what was said, with these kept conversations. */
     static JournalScreen proofHeard(CompoundTag journal,CompoundTag history){var j=new JournalScreen(journal,0,true);j.heardMode=true;j.pendingHeard=history;return j;}
+    /** 0.4.268: the proof's journal with its second row showing, searched for {@code query} from the first spread. */
+    static JournalScreen proofFind(CompoundTag journal,String query){var j=new JournalScreen(journal,0,true);j.controls=true;j.findText=query;j.searchOnOpen=true;return j;}
+    private boolean searchOnOpen;
+    /** The open spread (for the proofs). */
+    int spreadOpen(){return spread;}
 
     int index(int side){return spread*2+side;}
     JournalPage page(int index){return pages.getOrDefault(index,JournalPage.BLANK);}
     int pageX(int side){return (width-(2*JournalPageRenderer.W+6))/2+side*(JournalPageRenderer.W+6);}
-    int pageY(){return Math.max(6,(height-JournalPageRenderer.H)/2-12);}
+    /** The pages' top, leaving room under them for the two rows of controls even on the smallest screen. */
+    int pageY(){return Math.max(4,(height-(JournalPageRenderer.H+44))/2);}
+    /** The first row of controls under the pages, and the second (0.4.268). */
+    int rowY(){return pageY()+JournalPageRenderer.H+4;}
     boolean editable(int side){int i=index(side);return i>=1&&i<=Journals.PAGES&&!torn.contains(i);}
 
     @Override protected void init(){
@@ -78,11 +96,70 @@ public final class JournalScreen extends Screen {
             editors[side]=null;editing[side]=-1;if(!editable(side))continue;
             var field=new JournalTextField(font,JournalPageRenderer.TEXT_W);field.setCharacterLimit(JournalPage.MAX_TEXT);field.setValue(page(index(side)).text());field.seekCursor(Whence.END,0);editors[side]=field;editing[side]=index(side);
         }
-        int y=pageY()+JournalPageRenderer.H+6,left=pageX(0),right=pageX(1)+JournalPageRenderer.W;
+        int y=rowY(),left=pageX(0),right=pageX(1)+JournalPageRenderer.W;
         addRenderableWidget(Button.builder(Component.literal("<"),b->turn(-1)).bounds(left,y,20,18).build()).active=spread>0;
         addRenderableWidget(Button.builder(Component.literal(">"),b->turn(1)).bounds(right-20,y,20,18).build()).active=spread<Journals.PAGES/2;
         // 0.4.266: the ribbon to what was said to this reader (labyrinth/TalkHistory), printed, behind their own pages.
         if(!proof)addRenderableWidget(Button.builder(Component.literal("What was said"),b->showHeard(true)).bounds((left+right)/2-50,y,100,18).build());
+        // 0.4.268: the ribbon, a jump to a page by its number, and a search through the reader's own writing.
+        if(!proof||controls){
+            int y2=y+20;boolean here=ribbon>0&&ribbon/2==spread;
+            addRenderableWidget(Button.builder(Component.literal(here?"Ribbon out":"Ribbon here"),b->ribbon(here?0:Math.max(1,spread*2))).bounds(left,y2,62,16).build());
+            addRenderableWidget(Button.builder(Component.literal("To ribbon"),b->turnTo(ribbon/2)).bounds(left+64,y2,58,16).build()).active=ribbon>0&&!here;
+            finder=new net.minecraft.client.gui.components.EditBox(font,left+126,y2,right-left-126-40,16,Component.literal("Find"));
+            finder.setMaxLength(48);finder.setValue(findText);finder.setHint(Component.literal("Find in your writing").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+            finder.setTextColor(notFound?0xFFC87070:0xFFE0E0E0);finder.setResponder(t->{if(!t.equals(findText)){findText=t;notFound=false;finder.setTextColor(0xFFE0E0E0);}});addRenderableWidget(finder);
+            jumper=new net.minecraft.client.gui.components.EditBox(font,right-36,y2,36,16,Component.literal("Page"));
+            jumper.setMaxLength(2);jumper.setFilter(t->t.chars().allMatch(Character::isDigit));jumper.setValue(jumpText);jumper.setHint(Component.literal("Page").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+            jumper.setResponder(t->jumpText=t);addRenderableWidget(jumper);
+            if(findFocus)setFocused(finder);else if(jumpFocus)setFocused(jumper);
+        }else{finder=null;jumper=null;}
+        if(searchOnOpen){searchOnOpen=false;find();}
+    }
+
+    // ------------------------------------------------------------------ 0.4.268, the ribbon, the page number and the search
+    /** Lays the ribbon in a page (0 takes it out); the server keeps it with the journal. */
+    private void ribbon(int page){
+        ribbon=Mth.clamp(page,0,Journals.PAGES);
+        if(!proof&&Minecraft.getInstance().getConnection()!=null)PacketDistributor.sendToServer(new io.github.knaitoe.theoldesthouse.network.JournalRibbonPayload(ribbon));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN,1.4F,.5F));
+        rebuildWidgets();
+    }
+    /** Turns straight to a spread. */
+    private void turnTo(int target){turn(Mth.clamp(target,0,Journals.PAGES/2)-spread);}
+    /** The page number typed in the second row: its spread, if the journal has that page. */
+    private void jump(){
+        int n;try{n=Integer.parseInt(jumpText);}catch(NumberFormatException e){return;}
+        jumpText="";jumpFocus=false;if(n>=1&&n<=Journals.PAGES)turnTo(n/2);else rebuildWidgets();
+    }
+    /** What a page holds in the reader's own hand, as it stands on the screen. */
+    private String writing(int i){for(int side=0;side<2;side++)if(index(side)==i&&editors[side]!=null)return editors[side].value();return page(i).text();}
+    /**
+     * The next page after this spread whose writing holds what was typed, wrapping round to the start; only the reader's own writing
+     * is searched, not the House's lines or the other hand's. The spread turns to it and the words are picked out; nothing found turns
+     * the field's text a dull red.
+     */
+    private void find(){
+        String q=findText.strip().toLowerCase(java.util.Locale.ROOT);if(q.isEmpty())return;
+        int from=spread*2+2;
+        for(int k=0;k<Journals.PAGES;k++){
+            int i=1+Math.floorMod(from-1+k,Journals.PAGES);if(torn.contains(i))continue;
+            int at=writing(i).toLowerCase(java.util.Locale.ROOT).indexOf(q);if(at<0)continue;
+            findFocus=true;notFound=false;
+            if(i/2!=spread)turnTo(i/2);else rebuildWidgets();
+            var field=editors[i%2];if(field!=null&&editing[i%2]==i){field.seekCursor(Whence.ABSOLUTE,at);field.setSelecting(true);field.seekCursor(Whence.ABSOLUTE,at+q.length());field.setSelecting(false);}
+            return;
+        }
+        notFound=true;findFocus=true;rebuildWidgets();
+    }
+    /** The ribbon: down the page it lies in, out past its foot; elsewhere in the book, only its end shows at the spine. */
+    private void drawRibbon(GuiGraphics g){
+        if(ribbon<=0)return;int top=pageY(),foot=top+JournalPageRenderer.H;
+        if(ribbon/2==spread){
+            int side=ribbon%2,x=side==0?pageX(0)+JournalPageRenderer.W-12:pageX(1)+7;
+            g.fill(x,top-3,x+5,foot+3,RIBBON);g.fill(x+4,top-3,x+5,foot+3,RIBBON_DARK);
+            g.fill(x,foot+3,x+2,foot+5,RIBBON);g.fill(x+3,foot+3,x+5,foot+5,RIBBON);
+        }else{int x=pageX(0)+JournalPageRenderer.W+1;g.fill(x,foot-6,x+4,foot+3,RIBBON);g.fill(x+3,foot-6,x+4,foot+3,RIBBON_DARK);}
     }
 
     // ------------------------------------------------------------------ 0.4.266, what was said
@@ -107,7 +184,7 @@ public final class JournalScreen extends Screen {
     private CompoundTag pendingHeard;
     private void initHeard(){
         if(pendingHeard!=null){var h=pendingHeard;pendingHeard=null;layHeard(h);}
-        int y=pageY()+JournalPageRenderer.H+6,left=pageX(0),right=pageX(1)+JournalPageRenderer.W;int last=heardPages==null?0:Math.max(0,(heardPages.size()-1)/2);
+        int y=rowY(),left=pageX(0),right=pageX(1)+JournalPageRenderer.W;int last=heardPages==null?0:Math.max(0,(heardPages.size()-1)/2);
         heardSpread=Mth.clamp(heardSpread,0,last);
         addRenderableWidget(Button.builder(Component.literal("<"),b->turnHeard(-1)).bounds(left,y,20,18).build()).active=heardSpread>0;
         addRenderableWidget(Button.builder(Component.literal(">"),b->turnHeard(1)).bounds(right-20,y,20,18).build()).active=heardSpread<last;
@@ -219,6 +296,7 @@ public final class JournalScreen extends Screen {
             // pointer, and on the corner itself the hand is told how.
             else if(!proof&&sideAt(mouseX,mouseY)==side&&!currentText(side).isBlank()){curl(g,side,x,top,6);hint|=atCorner(side,mouseX,mouseY);}
         }
+        drawRibbon(g);
         if(hint)g.renderTooltip(font,net.minecraft.network.chat.Component.literal("Hold right-click to tear it out"),mouseX,mouseY);
     }
     /** Whether the pointer is on a page's bottom outer corner, the one that lifts. */
@@ -261,9 +339,14 @@ public final class JournalScreen extends Screen {
 
     int sideAt(double mx,double my){for(int side=0;side<2;side++){int x=pageX(side),y=pageY();if(mx>=x&&mx<x+JournalPageRenderer.W&&my>=y&&my<y+JournalPageRenderer.H)return side;}return -1;}
     @Override public boolean mouseClicked(double mx,double my,int button){
-        if(super.mouseClicked(mx,my,button))return true;
+        if(super.mouseClicked(mx,my,button)){
+            // A field in the second row takes the keys from the page being written.
+            if(getFocused()!=null&&(getFocused()==finder||getFocused()==jumper)){focused=-1;findFocus=getFocused()==finder;jumpFocus=getFocused()==jumper;}
+            return true;
+        }
         if(heardMode)return false;
         int side=sideAt(mx,my);
+        if(side>=0&&button==0){findFocus=false;jumpFocus=false;if(getFocused()==finder||getFocused()==jumper)setFocused(null);}
         if(button==1&&side>=0){int i=index(side);
             // A right-click on the stub takes the page back; held on a written page, it lifts the corner to tear it out.
             if(torn.contains(i)){if(!proof&&Minecraft.getInstance().getConnection()!=null)PacketDistributor.sendToServer(new io.github.knaitoe.theoldesthouse.network.JournalTearPayload(i,true));return true;}
@@ -287,6 +370,11 @@ public final class JournalScreen extends Screen {
         return super.mouseScrolled(mx,my,sx,sy);
     }
     @Override public boolean keyPressed(int key,int scan,int mods){
+        if(focused<0&&(key==257||key==335)){
+            if(finder!=null&&getFocused()==finder){find();return true;}
+            if(jumper!=null&&getFocused()==jumper){jump();return true;}
+        }
+        if(focused<0&&key==256&&(getFocused()==finder||getFocused()==jumper)&&getFocused()!=null){findFocus=false;jumpFocus=false;setFocused(null);return true;}
         if(focused>=0&&editors[focused]!=null&&key!=256){
             var field=editors[focused];String before=field.value();int cursor=field.cursor();
             if(field.keyPressed(key)){if(!fits(field)){field.setValue(before);field.seekCursor(Whence.ABSOLUTE,cursor);}else if(!before.equals(field.value()))scratch();return true;}
