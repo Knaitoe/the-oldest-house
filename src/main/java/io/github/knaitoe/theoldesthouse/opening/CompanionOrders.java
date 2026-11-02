@@ -65,7 +65,30 @@ public final class CompanionOrders {
         if(Hillary.introductionActive(pet)&&!Hillary.introductionConfirmed(pet)&&!compass) {
             pet(pet,player);return;
         }
-        if(compass)issue(pet,player,Order.EXIT);else HousePackets.send(player,new CompanionMenuPayload(pet.getId()));
+        if(compass)issue(pet,player,Order.EXIT);else HousePackets.send(player,menu(pet));
+    }
+    /** The wheel for one animal, with the order it is under now (0.4.269), so staying can be told from failing to follow. */
+    public static CompanionMenuPayload menu(TamableAnimal pet){return new CompanionMenuPayload(pet.getId(),order(pet).ordinal());}
+    /**
+     * 0.4.269 (the owner: "A rebindable nearby-companion key would remove that inventory shuffle"): the reader's own cat or dog the
+     * companion key means, whatever is in their hands. Of those close enough to command, the one most nearly in front of them, then the
+     * nearest; null if none is close enough.
+     */
+    @Nullable public static TamableAnimal nearest(ServerPlayer player){
+        if(player.isSpectator()||!player.isAlive())return null;
+        var look=player.getLookAngle();var eye=player.getEyePosition();TamableAnimal best=null;double score=Double.MAX_VALUE;
+        for(var pet:player.serverLevel().getEntitiesOfClass(TamableAnimal.class,player.getBoundingBox().inflate(6),e->canCommand(player,e))){
+            var to=pet.getBoundingBox().getCenter().subtract(eye);double d=to.length();double facing=d<1e-3?1:look.dot(to.scale(1/d));
+            double s=d*(2-facing);if(s<score){score=s;best=pet;}
+        }
+        return best;
+    }
+    /** The companion key: the wheel for the nearest of the reader's own animals, or a word that none is close enough. */
+    public static boolean openNearest(ServerPlayer player){
+        var pet=nearest(player);
+        if(pet==null){if(!player.isSpectator()&&player.isAlive())ExpeditionRhythm.refuse(player,player.blockPosition(),"companion_reach","Stand close to your own cat or dog to give it an order.");return false;}
+        if(Hillary.introductionActive(pet)&&!Hillary.introductionConfirmed(pet)){pet(pet,player);return true;}
+        HousePackets.send(player,menu(pet));return true;
     }
     /** Used by the serverbound packet; entity ids never confer ownership or unlimited reach. */
     public static boolean command(ServerPlayer player,int entityId,int value) {

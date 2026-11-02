@@ -7,9 +7,10 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record CompanionMenuPayload(int entityId) implements CustomPacketPayload {
+/** Opens the companion wheel for one of the reader's animals; since 0.4.269 it also says the order the animal is under now. */
+public record CompanionMenuPayload(int entityId,int order) implements CustomPacketPayload {
     public static final Type<CompanionMenuPayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"companion_menu"));
     public static final StreamCodec<ByteBuf,CompanionMenuPayload> STREAM_CODEC=StreamCodec.composite(
-            ByteBufCodecs.VAR_INT,CompanionMenuPayload::entityId,CompanionMenuPayload::new);
+            ByteBufCodecs.VAR_INT,CompanionMenuPayload::entityId,ByteBufCodecs.VAR_INT,CompanionMenuPayload::order,CompanionMenuPayload::new);
     @Override public Type<CompanionMenuPayload> type(){return TYPE;}
 }
