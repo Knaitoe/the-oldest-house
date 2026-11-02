@@ -49,12 +49,14 @@ reader:
 As it moves, a doorway in the side wall comes out from behind it while another goes behind it, so moving it opens one way through
 and closes another.
 
-**Early (`FOLDING_ROOM`).** One dining room cut in two by one partition:
-- **The far door.** It is in the side wall beyond the partition, seen over its top.
-- **The pantry.** A hatch through to the pantry is on the reader's side.
-- **The move.** Pushing the partition back past the far door brings the door onto the reader's side, and the partition comes to rest
-  across the pantry hatch.
-- **What it teaches.** That the panels slide, that the gap above shows where the way is, and that they slide back.
+**Early (`FOLDING_ROOM`).** Built in 0.4.250; canon is docs/FOLDING_ROOMS_0_4_250.md. One dining room cut in two by one partition:
+- **The partition.** It stands against its far stop, right in front of the far door in the side wall. From the dining room it will
+  not go.
+- **The pantry.** It runs along the side, with a doorway on either side of the partition.
+- **The move.** From the far side the partition pushes back off the door. It comes to rest across the serving hatch, and it pushes back
+  again from the dining room.
+- **What it teaches.** That the panels slide only away from whoever pushes them, that the gap above shows where the way is, and that
+  they slide back.
 
 **Deep (`FOLDED_ROOMS`).** A long suite of dining room, morning room and serving pantry with two partitions on tracks along its
 length:
