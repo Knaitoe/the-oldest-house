@@ -39,3 +39,5 @@ at the table pulled back and staying there; dealt from the third crossing, and f
 it, but not to the one who is. The window: an ordinary hall walked remembered and a puzzle room not; nothing shown the first visit;
 the next, the hall last walked, its floor seen from above at a third of its size and laid out in the nearest lane of the yard, with
 the yard itself unchanged. `LabyrinthTests`: twenty-two gray places at the start.
+
+0.4.238: the window's yard is laid out again after a reconnect or when its chunk is sent afresh; see docs/REVIEW_FIXES_0_4_238.md.

@@ -23,6 +23,7 @@ public final class FamiliarRoomTests {
     private static void close(){if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="familiar_kitchen") public static void doneKitchen(ServerLevel l){close();}
     @AfterBatch(batch="familiar_window") public static void doneWindow(ServerLevel l){close();}
+    @AfterBatch(batch="familiar_return") public static void doneReturn(ServerLevel l){close();}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
 
     @GameTest(template="empty",batch="familiar_kitchen",timeoutTicks=600)
@@ -79,6 +80,48 @@ public final class FamiliarRoomTests {
                 h.assertTrue(cells.size()>8,"the yard laid out like it: "+cells.size());
                 h.assertTrue(cells.stream().allMatch(c->c.getY()==FamiliarRoom.GROUND_Y&&c.getX()<=FamiliarRoom.YARD_EAST&&c.getX()>=FamiliarRoom.YARD_WEST&&c.getZ()<=-1&&c.getZ()>=-4),"on the ground below the window, in the nearest lane");
                 h.assertTrue(l.getBlockState(b.offset(cells.iterator().next())).is(net.minecraft.world.level.block.Blocks.DEEPSLATE_TILES),"for that reader alone: the yard itself is unchanged");
+            })
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.238: the window's yard is only on the reader's client, so a reader who reconnects in the kitchen, or whose client is sent the
+     * yard's chunk afresh, is shown it again; reconnecting is not a visit, and logging out forgets what was waiting to be shown.
+     */
+    @GameTest(template="empty",batch="familiar_return",timeoutTicks=600)
+    public static void theWindowIsShownAgainAfterAReconnect(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.FAMILIAR_KITCHEN;var b=f.base(place);var l=f.in;hold(f,place);hold(f,LabyrinthPlace.DUST_HALL);
+        var p=NativeTestPlayers.survival(h,"return_reader");f.players.add(p);var id=p.getUUID();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the kitchen and a hall are resident"))
+            .thenExecute(()->{
+                FamiliarRoom.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);TraceRooms.buildDust(l,f.base(LabyrinthPlace.DUST_HALL));
+                // A first visit (only the yard) already made; walking in again is the second, counted by the House's own room tracking.
+                FamiliarRoom.walked(p,LabyrinthPlace.DUST_HALL);FamiliarRoom.arrived(p);
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-4.5,0,0);
+            })
+            .thenWaitUntil(()->h.assertTrue(FamiliarRoom.visits(f.data(),id)==2&&FamiliarRoom.viewed(id)&&!FamiliarRoom.pending(id),"walking in is the second visit, and the yard is laid out at the window: visits "+FamiliarRoom.visits(f.data(),id)))
+            .thenExecute(()->{
+                // Logging out forgets the view; logging back in, still in the kitchen, lays it out again.
+                FamiliarRoom.loggedOut(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));
+                h.assertTrue(!FamiliarRoom.viewed(id)&&!FamiliarRoom.pending(id),"logging out forgets it");
+                FamiliarRoom.loggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
+                h.assertTrue(FamiliarRoom.pending(id),"logging back in at the window: shown again");
+            })
+            // Long enough for the room tracking to look again: the reconnect is not another visit.
+            .thenIdle(25)
+            .thenExecute(()->h.assertTrue(FamiliarRoom.viewed(id)&&!FamiliarRoom.pending(id)&&FamiliarRoom.visits(f.data(),id)==2,"laid out again after the reconnect, and not another visit: visits "+FamiliarRoom.visits(f.data(),id)))
+            .thenExecute(()->{
+                // The yard's chunk sent to the client afresh (it came back into view): the view goes with it, so it is laid out again.
+                FamiliarRoom.chunkSent(new net.neoforged.neoforge.event.level.ChunkWatchEvent.Sent(p,l.getChunkAt(b.offset(FamiliarRoom.YARD_EAST-4,FamiliarRoom.GROUND_Y,-3)),l));
+                h.assertTrue(FamiliarRoom.pending(id),"the yard's chunk sent again: laid out again");
+            })
+            .thenWaitUntil(()->h.assertTrue(FamiliarRoom.viewed(id)&&!FamiliarRoom.pending(id),"laid out after the chunk"))
+            .thenExecute(()->{
+                // Away from the kitchen, nothing is laid out.
+                p.teleportTo(l,f.base(LabyrinthPlace.DUST_HALL).getX()+.5,f.base(LabyrinthPlace.DUST_HALL).getY(),f.base(LabyrinthPlace.DUST_HALL).getZ()-3.5,0,0);
+                FamiliarRoom.loggedOut(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));
+                FamiliarRoom.loggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
+                h.assertTrue(!FamiliarRoom.pending(id)&&FamiliarRoom.visits(f.data(),id)==2,"reconnecting elsewhere lays out nothing");
             })
             .thenSucceed();
     }

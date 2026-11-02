@@ -22,6 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.ChunkWatchEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
@@ -199,4 +201,28 @@ public final class FamiliarRoom {
         if(now%120==40)l.playSound(null,b.offset(FRIDGE),NovelRegistry.WARD_HUM.get(),SoundSource.BLOCKS,.18F,.7F);
     }
     public static void forget(UUID reader){PENDING.remove(reader);SHOWN.remove(reader);IN.remove(reader);}
+
+    // ------------------------------------------------------------------ keeping the view on the reader's client
+    /** Whether a reader stands in the kitchen now. */
+    static boolean inKitchen(ServerPlayer p,BlockPos origin){return !p.isSpectator()&&p.level().dimension().equals(HouseDimensions.INTERIOR)&&LabyrinthPlaces.placeAt(origin,p.blockPosition())==KITCHEN;}
+    /**
+     * The window's yard lives only on the reader's client, so it is lost whenever the client is sent the yard's chunks afresh: on
+     * reconnecting, or when the chunk comes back into view. Lay it out again then. This is not a visit: arriving is counted only by
+     * walking in (TraceRooms keeps where a reader was across a reconnect for that reason).
+     */
+    public static void refresh(ServerPlayer p){var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null||!inKitchen(p,origin))return;PENDING.put(p.getUUID(),p.server.getTickCount()+2);}
+    /** Whether a chunk holds any of the yard below the window. */
+    static boolean underWindow(BlockPos b,net.minecraft.world.level.ChunkPos chunk){
+        int x0=b.getX()+YARD_WEST,x1=b.getX()+YARD_EAST,z0=b.getZ()-5*LANES+1,z1=b.getZ()-1;
+        return chunk.getMaxBlockX()>=x0&&chunk.getMinBlockX()<=x1&&chunk.getMaxBlockZ()>=z0&&chunk.getMinBlockZ()<=z1;
+    }
+    @SubscribeEvent public static void loggedIn(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p)refresh(p);}
+    @SubscribeEvent public static void loggedOut(PlayerEvent.PlayerLoggedOutEvent e){forget(e.getEntity().getUUID());}
+    @SubscribeEvent public static void chunkSent(ChunkWatchEvent.Sent e){
+        var p=e.getPlayer();if(!e.getLevel().dimension().equals(HouseDimensions.INTERIOR))return;var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return;
+        var b=LabyrinthPlaces.base(origin,KITCHEN);if(b!=null&&underWindow(b,e.getPos()))refresh(p);
+    }
+    /** For tests: whether a reader's view is waiting to be laid out, and whether it has been. */
+    public static boolean pending(UUID reader){return PENDING.containsKey(reader);}
+    public static boolean viewed(UUID reader){return SHOWN.containsKey(reader);}
 }

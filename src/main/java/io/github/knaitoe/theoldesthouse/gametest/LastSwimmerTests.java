@@ -107,4 +107,42 @@ public final class LastSwimmerTests {
             .thenSucceed();
     }
     @AfterBatch(batch="swim_radio") public static void radioDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.238: a reader who hauls the cover across as asked, without waiting on the radio, still sees the lights waver once a third of
+     * the pool is covered and hears the splashing stop at two thirds, while a lane is open; and a reader who has finished and lingers
+     * by the fire door keeps the pool as it is until they have gone.
+     */
+    @GameTest(template="empty",batch="swim_prompt",timeoutTicks=2400)
+    public static void aPromptCoverStillMeetsTheBeatsAndALingeringReaderKeepsThePool(GameTestHelper h){
+        var f=fixture(h);var p=f.player("swim_prompt",P);var b=f.base(P);var l=f.level(P);
+        var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,new AABB(b.getX()-16,b.getY()-8,b.getZ()-47,b.getX()+16,b.getY()+11,b.getZ()+2)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the pool is resident"))
+            .thenExecute(()->at(f,p,.5,-10.5,180))
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.tick(b)>5&&swimmers(l,b)==1,"the pool is closing: tick "+LastSwimmer.tick(b)+", swimmers "+swimmers(l,b)+", at "+p.position()));
+        for(int i=0;i<LastSwimmer.WAVER_HAULS;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
+        seq=seq.thenIdle(2).thenExecute(()->{
+                h.assertTrue(LastSwimmer.hauls(b)==LastSwimmer.WAVER_HAULS&&LastSwimmer.part(b)<LastSwimmer.SECOND_TALK,"a third covered, long before the radio's second spoken part: hauls "+LastSwimmer.hauls(b)+", part "+LastSwimmer.part(b));
+                h.assertTrue(LastSwimmer.waved(b)&&LastSwimmer.wavering(b)&&!LastSwimmer.holding(b),"the lights waver with the cover, not the song");});
+        for(int i=LastSwimmer.WAVER_HAULS;i<LastSwimmer.BREATH_HAULS;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
+        seq=seq.thenIdle(2).thenExecute(()->{
+                h.assertTrue(LastSwimmer.hauls(b)==LastSwimmer.BREATH_HAULS&&LastSwimmer.part(b)<LastSwimmer.LAST_VERSE&&!LastSwimmer.closed(b),"two thirds covered, a lane still open, before the last verse: part "+LastSwimmer.part(b));
+                h.assertTrue(LastSwimmer.holding(b)&&f.own(p,P).getBoolean("Breath227")&&!LastSwimmer.wavering(b),"the splashing stops with the cover, and the lights steady");});
+        for(int i=LastSwimmer.BREATH_HAULS;i<SwimmerSite.COLUMNS;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
+        seq.thenExecute(()->{h.assertTrue(LastSwimmer.closed(b),"the cover is on");LastSwimmer.hurry(b,LastSwimmer.STEPS_AFTER);})
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.held(b),"the attendant holds the fire door"))
+            .thenExecute(()->at(f,p,SwimmerSite.EXIT_X+1.5,SwimmerSite.EXIT_Z+.5,90))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"walking out is the ending"))
+            // Finished, the reader stays by the door reading the account: the pool is not put back around them.
+            .thenIdle(LastSwimmer.EMPTY_RESET+20)
+            .thenExecute(()->{
+                var door=l.getBlockState(b.offset(SwimmerSite.EXIT_X,0,SwimmerSite.EXIT_Z));
+                h.assertTrue(LastSwimmer.tick(b)>=0&&LastSwimmer.held(b)&&SwimmerBlock.is(l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-25)),SwimmerBlock.Kind.COVER)&&door.getValue(net.minecraft.world.level.block.DoorBlock.OPEN),"a finished reader lingering by the door keeps the pool as it is: tick "+LastSwimmer.tick(b)+", door "+door);
+                // Gone from the hall, the pool is put back.
+                at(f,p,.5,4.5,0);})
+            .thenIdle(LastSwimmer.EMPTY_RESET+20)
+            .thenExecute(()->h.assertTrue(LastSwimmer.tick(b)==-1&&!SwimmerBlock.is(l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-25)),SwimmerBlock.Kind.COVER),"with nobody left in the hall, the pool is put back: tick "+LastSwimmer.tick(b)))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="swim_prompt") public static void promptDone(ServerLevel l){close();}
 }

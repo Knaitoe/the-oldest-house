@@ -52,6 +52,12 @@ public final class LastSwimmer {
     public static final int SECOND_TALK=3,LAST_VERSE=4;
     /** How long the splashing stops when the last verse begins. */
     public static final int HELD_BREATH=100;
+    /**
+     * 0.4.238: the cover is pulled across in seventeen hauls, which a reader doing as asked can finish in ten seconds, long before the
+     * radio reaches its second spoken part. So each beat comes with the song or with the cover, whichever is first: the lights waver
+     * once a third of the pool is covered, and the splashing stops once two thirds are, while a lane is still open.
+     */
+    public static final int WAVER_HAULS=6,BREATH_HAULS=12,WAVER_TICKS=340;
     /** The stars the skylight lays on the water, as pool cells (x, z) under it: a handle of three and a bowl of four. */
     public static final int[][] STARS={{3,-21},{2,-22},{0,-23},{-1,-24},{-1,-26},{-3,-26},{-3,-24}};
     /** Deep water: from here north the floor is at its lowest. */
@@ -64,6 +70,8 @@ public final class LastSwimmer {
         @Nullable UUID attendant,swimmer;@Nullable BlockPos pressed,stepAt;int pressedUntil,lastStep,radio=-1;boolean held,cuedLane;
         /** 0.4.233: the radio's part now playing, the lamp that wavered and when it comes back, and when the held breath ends. */
         int part=-1,flicker=-1,flickerUntil,breathUntil=-1;
+        /** 0.4.238: whether each beat has come, and until when the lights waver. */
+        boolean waved,breathed;int waverUntil=-1;
         int song(){return radio<0?-1:(int)(tick-radio);}
         Pool(BlockPos b){base=b;}
         boolean closed(){return closedAt>=0;}
@@ -96,6 +104,9 @@ public final class LastSwimmer {
     /** For tests: the part of the song the radio is in (0 to 4, 5 once it has ended), and whether the swimmer is holding a breath. */
     public static int part(BlockPos b){var p=pool(b);return p==null?-1:p.part;}
     public static boolean holding(BlockPos b){var p=pool(b);return p!=null&&p.breathUntil>p.tick;}
+    /** For tests: whether the lights have wavered, and whether they are wavering now. */
+    public static boolean waved(BlockPos b){var p=pool(b);return p!=null&&p.waved;}
+    public static boolean wavering(BlockPos b){var p=pool(b);return p!=null&&p.waverUntil>p.tick;}
     /** The stars still on the water: those the cover has not reached. */
     public static int stars(int hauls){int n=0;for(var s:STARS)if(!covered(hauls,s[0]))n++;return n;}
     static boolean covered(int hauls,int x){return x>SwimmerSite.POOL_X1-hauls;}
@@ -199,8 +210,15 @@ public final class LastSwimmer {
             if(seen.add(b.asLong()))step(p.serverLevel(),pool);
             reader(p,b,own,pool);
         }
-        for(var it=POOLS.values().iterator();it.hasNext();){var pool=it.next();if(seen.contains(pool.base.asLong())){pool.empty=0;continue;}
+        // A pool is put back only when nobody is in it at all: a reader who has finished and lingers by the door still holds it (0.4.238).
+        for(var it=POOLS.values().iterator();it.hasNext();){var pool=it.next();if(seen.contains(pool.base.asLong())||present(server,pool.base)){pool.empty=0;continue;}
             if(++pool.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(pool.base)){clearActors(l,pool.base);SwimmerSite.cover(l,pool.base,0);lights(l,pool.base,0);door(l,pool.base,false);}it.remove();}}
+    }
+    /** Whether anyone at all is in the hall: every living player there who is not a spectator, finished or not. */
+    static boolean present(net.minecraft.server.MinecraftServer server,BlockPos b){
+        var l=server.getLevel(NovelRooms.dimension(PLACE));if(l==null)return false;
+        for(var p:l.players())if(!p.isSpectator()&&p.isAlive()&&SwimmerSite.inside(rel(p.position(),b)))return true;
+        return false;
     }
     static void step(ServerLevel l,Pool pool){
         var b=pool.base;
@@ -224,14 +242,15 @@ public final class LastSwimmer {
      * is still being pulled; the stars on the water go out as the cover reaches them.
      */
     static void song(ServerLevel l,Pool pool){
-        var b=pool.base;int part=part(pool.song());
-        if(part!=pool.part){
-            pool.part=part;
-            if(!pool.closed()&&part==SECOND_TALK)for(var r:readers(l,b))cue(r,SwimmerTexts.WAVER);
-            if(!pool.closed()&&part==LAST_VERSE){pool.breathUntil=(int)pool.tick+HELD_BREATH;for(var r:readers(l,b)){cue(r,SwimmerTexts.BREATH);var own=own(r);own.putBoolean("Breath227",true);save(r,own);}}
+        var b=pool.base;int part=part(pool.song());pool.part=part;
+        // Each beat once, with the song or with the cover, whichever comes first, and only while the cover is still being pulled.
+        if(!pool.closed()&&!pool.waved&&(part>=SECOND_TALK||pool.hauls>=WAVER_HAULS)){pool.waved=true;pool.waverUntil=(int)pool.tick+WAVER_TICKS;for(var r:readers(l,b))cue(r,SwimmerTexts.WAVER);}
+        if(!pool.closed()&&!pool.breathed&&(part>=LAST_VERSE||pool.hauls>=BREATH_HAULS)){
+            pool.breathed=true;pool.waverUntil=Math.min(pool.waverUntil,(int)pool.tick);pool.breathUntil=(int)pool.tick+HELD_BREATH;
+            for(var r:readers(l,b)){cue(r,SwimmerTexts.BREATH);var own=own(r);own.putBoolean("Breath227",true);save(r,own);}
         }
         if(pool.flicker>=0&&pool.tick>=pool.flickerUntil){lamp(l,b,pool.flicker,pool.closed()&&pool.flicker<pool.lightsOut?1:0);pool.flicker=-1;}
-        if(!pool.closed()&&part==SECOND_TALK&&pool.flicker<0&&pool.tick%9==0){
+        if(!pool.closed()&&pool.waverUntil>pool.tick&&pool.flicker<0&&pool.tick%9==0){
             int i=l.random.nextInt(SwimmerSite.LAMPS.size());pool.flicker=i;pool.flickerUntil=(int)pool.tick+3+l.random.nextInt(4);lamp(l,b,i,1);
             l.playSound(null,b.offset(SwimmerSite.LAMPS.get(i)),SoundEvents.REDSTONE_TORCH_BURNOUT,SoundSource.BLOCKS,.15F,1.6F);
         }
