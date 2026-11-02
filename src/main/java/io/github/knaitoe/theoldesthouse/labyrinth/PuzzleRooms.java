@@ -38,7 +38,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * counts toward the Witness.
  */
 public final class PuzzleRooms {
-    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH}
+    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE}
     public enum Puzzle {
         BORROWED_LIGHT(LabyrinthPlace.BORROWED_LIGHT,Family.LIGHT,false,"The door has no handle on this side. The sun beside it is cold."),
         SERVICE_LIFT(LabyrinthPlace.SERVICE_LIFT,Family.LIFT,false,null),
@@ -59,7 +59,9 @@ public final class PuzzleRooms {
         FOLDED_ROOMS(LabyrinthPlace.FOLDED_ROOMS,Family.FOLD,true,null),
         // 0.4.251: the window cleaner (WindowCleaner, docs/WINDOW_CLEANER_0_4_251.md), an encounter with no deep room. The far door is
         // behind a staff door the reader cannot open; the cleaner leaves both standing open.
-        WINDOW_CLEANER(LabyrinthPlace.WINDOW_CLEANER,Family.WINCH,false,null);
+        WINDOW_CLEANER(LabyrinthPlace.WINDOW_CLEANER,Family.WINCH,false,null),
+        // 0.4.252: the night operator (NightOperator, docs/NIGHT_OPERATOR_0_4_252.md), an encounter with no deep room.
+        NIGHT_OPERATOR(LabyrinthPlace.NIGHT_OPERATOR,Family.LINE,false,"The door has no handle on this side.");
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;

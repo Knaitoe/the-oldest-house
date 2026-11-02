@@ -1341,5 +1341,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 54
+  },
+  {
+    "name": "literary_night_operator",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 55
+  },
+  {
+    "name": "literary_night_operator_bare",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 56
   }
 ]

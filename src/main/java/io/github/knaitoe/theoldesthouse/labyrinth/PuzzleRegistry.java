@@ -45,5 +45,13 @@ public final class PuzzleRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<WinchBlock>> WINCH_TYPE=CODECS.register("winch_fitting",()->WinchBlock.CODEC);
     public static final DeferredBlock<WinchBlock> WINCH=BLOCKS.registerBlock("winch_fitting",WinchBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
     private PuzzleRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);}
+    /** 0.4.252: the Night Operator's cord switchboard (ExchangeBlock), drawn by tools/draw_exchange_fittings.py, and its sounds: the rooms its jacks reach, heard down the line, and its buzzer (tools/generate_operator_audio.py). */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ExchangeBlock>> EXCHANGE_TYPE=CODECS.register("exchange_fitting",()->ExchangeBlock.CODEC);
+    public static final DeferredBlock<ExchangeBlock> EXCHANGE=BLOCKS.registerBlock("exchange_fitting",ExchangeBlock::new,fixed(Blocks.DARK_OAK_PLANKS).noOcclusion().lightLevel(ExchangeBlock::light));
+    private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
+    /** The lines, in NightOperator.Line's order. */
+    public static final java.util.List<DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent>> LINES=java.util.Arrays.stream(new String[]{"water","fridge","boards","clock","rain","radio","kettle","quiet","exchange"}).map(n->sound("operator.line_"+n)).toList();
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> BUZZ=sound("operator.buzz");
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);}
 }

@@ -60,7 +60,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -97,4 +97,6 @@ def entries():
     rows.append({'name':'literary_swimmer_swimmer','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':52})
     # The window cleaner (0.4.251) on stranger phase fifty-four.
     rows.append({'name':'literary_window_cleaner','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':54})
+    rows.append({'name':'literary_night_operator','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':55})
+    rows.append({'name':'literary_night_operator_bare','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':56})
     return rows

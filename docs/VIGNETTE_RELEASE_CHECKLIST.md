@@ -1,3 +1,4 @@
+November 2 candidate 0.4.252 (docs/NIGHT_OPERATOR_0_4_252.md): the Night Operator, a new puzzle family (slot 159, early only, layout 81); not a vignette, no Witness, no source or quota change.
 November 2 candidate 0.4.251 (docs/WINDOW_CLEANER_0_4_251.md): the Window Cleaner, a new puzzle family (slot 158, early only, layout 80); not a vignette, no Witness, no source or quota change.
 November 2 candidate 0.4.250 (docs/FOLDING_ROOMS_0_4_250.md): the Folding Rooms, a new puzzle family (slots 156 early and 157 deep, layout 79); not vignettes, no Witness, no source or quota change.
 November 2 candidate 0.4.249 (docs/AFTERMATH_0_4_244.md): the finished cottage (Three Fingers, its thread's evening over, privately) and child's room (still shut, the toys over the bed) join the aftermath rooms. No room, source or quota change.

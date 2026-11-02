@@ -23,7 +23,9 @@ import net.neoforged.neoforge.gametest.*;
 public final class WindowCleanerTests {
     private WindowCleanerTests(){}
     private static LiteraryTests.Fixture active;
-    @AfterBatch(batch="window_cleaner") public static void done(ServerLevel l){if(active!=null){active.close();active=null;}}
+    @AfterBatch(batch="window_cleaner") public static void done(ServerLevel l){if(active!=null){for(var a:active.in.getEntitiesOfClass(LiteraryActor.class,room(active.base(WindowCleaner.PLACE),WindowCleaner.PLACE)))a.discard();active.close();active=null;}}
+    /** The room's own space, and nobody else's slot. */
+    static AABB room(BlockPos b,LabyrinthPlace place){var r=place.room();return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+r.maxZ()+1);}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static boolean press(ServerLevel l,ServerPlayer p,BlockPos at){return l.getBlockState(at).useWithoutItem(l,p,new BlockHitResult(at.getCenter(),Direction.UP,at,false)).consumesAction();}
     private static void stand(ServerPlayer p,ServerLevel l,BlockPos b,double x,double y,double z,float yaw){p.teleportTo(l,b.getX()+x,b.getY()+y,b.getZ()+z,yaw,0);p.setYRot(yaw);p.setYHeadRot(yaw);p.setXRot(0);p.setNoGravity(true);}
@@ -83,7 +85,7 @@ public final class WindowCleanerTests {
             .thenExecute(()->{
                 h.assertTrue(corridor[0]&&highest[0]>5,"the whole way round was walked: the corridor, then up the stair");
                 h.assertTrue(WindowCleaner.cleanerFor(l)==null&&WindowCleaner.stage(l)==WindowCleaner.GONE,"there is nobody behind the door");
-                h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(30)).isEmpty(),"nobody anywhere in the room");
+                h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,room(b,place)).isEmpty(),"nobody anywhere in the room");
                 h.assertTrue(opened(l,far)&&opened(l,inner),"both staff doors stand open");
                 WindowCleaner.build(l,b);
                 h.assertTrue(opened(l,far)&&opened(l,inner)&&WindowCleaner.cradle(l)==WindowCleaner.BOTTOM&&WindowCleaner.stage(l)==WindowCleaner.GONE&&l.getBlockState(brake).getValue(WinchBlock.STAGE)==1,"built again, the doors stand open and the empty cradle is at the bottom");
