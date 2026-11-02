@@ -1357,5 +1357,29 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 56
+  },
+  {
+    "name": "literary_people_kelly",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 57
+  },
+  {
+    "name": "literary_people_mark",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 61
+  },
+  {
+    "name": "literary_people_stan",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 62
   }
 ]

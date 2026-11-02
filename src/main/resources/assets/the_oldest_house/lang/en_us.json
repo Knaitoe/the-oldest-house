@@ -1044,5 +1044,22 @@
   "subtitles.the_oldest_house.operator.line_kettle": "On the line: a kettle coming to the boil",
   "subtitles.the_oldest_house.operator.line_quiet": "On the line: nothing",
   "subtitles.the_oldest_house.operator.line_exchange": "On the line: a switchboard, and breathing",
-  "subtitles.the_oldest_house.operator.buzz": "A switchboard buzzes"
+  "subtitles.the_oldest_house.operator.buzz": "A switchboard buzzes",
+  "block.the_oldest_house.people_fitting": "Household Fitting",
+  "block.the_oldest_house.people_tile_large": "Foyer Tile",
+  "block.the_oldest_house.people_tile_small": "Kitchen Tile",
+  "block.the_oldest_house.people_boards": "Oak Boards",
+  "block.the_oldest_house.people_carpet": "Carpet",
+  "block.the_oldest_house.people_plaster": "Painted Plaster",
+  "block.the_oldest_house.people_trim": "Gloss Trim",
+  "block.the_oldest_house.people_siding": "Lap Siding",
+  "block.the_oldest_house.people_shingle": "Asphalt Shingle",
+  "block.the_oldest_house.people_concrete": "Garage Concrete",
+  "block.the_oldest_house.people_drive": "Driveway",
+  "item.the_oldest_house.people_carried": "Something to Carry",
+  "subtitles.the_oldest_house.people.wheels_tile": "Wheels roll on tile",
+  "subtitles.the_oldest_house.people.wheels_wood": "Wheels roll on boards",
+  "subtitles.the_oldest_house.people.wheels_kitchen": "Wheels roll on kitchen tile",
+  "subtitles.the_oldest_house.people.wheels_runner": "Wheels roll on a runner, softly",
+  "subtitles.the_oldest_house.people.pulling": "Someone pulls along the floor, breathing"
 }

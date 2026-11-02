@@ -113,6 +113,7 @@ final class CoopAccounts {
         // 0.4.213: each reader's double is theirs alone; a peer sees an empty branch.
         // 0.4.218: each reader's replacement is their own; a peer sees nobody at their heels.
         // 0.4.228: readers who came in together empty the same flat, and take the other ends of the heavy things.
+        together(PEOPLE_LIGHTS,with("%s {was} a guest there too. Neither of us said much at supper; we both listened to the floor.")); // 0.4.253
         together(VACANT_POSSESSION,with("%s {was} there with me, taking the other end of the heavy things. On the stairs nobody said much."));
         // 0.4.227: two readers who came in together close the same pool; each pulls from the shallow end in turn.
         together(LAST_SWIMMER,party("%s {was} on the deck with me. We took turns at the strap. Neither of us said anything about the lane that was left.",

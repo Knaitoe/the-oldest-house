@@ -114,6 +114,10 @@ LOOKS = {
     # The Night Operator (0.4.252): a cardigan over a blouse, reading glasses, hair pinned back; in a switchboard headset, and with it hung up.
     'literary_night_operator': Look('#c69c7e','#6a5a4c','bun','#5a4e5e','#33303a','cardigan','#d8ccb6',eyes='#4e5a58',age=2,glasses=True,mark='headset'),
     'literary_night_operator_bare': Look('#c69c7e','#6a5a4c','bun','#5a4e5e','#33303a','cardigan','#d8ccb6',eyes='#4e5a58',age=2,glasses=True),
+    # After the People Lights (0.4.253): Kelly in her sweater and jeans, Mark in his work flannel, her father Stan in his jacket.
+    'literary_people_kelly': Look('#d4ae94','#5a3a26','long','#7a6a88','#38404e','knit','#d8d0c4',eyes='#4a5a62'),
+    'literary_people_mark': Look('#c09878','#2e241c','short','#5a4a3a','#2e3640','flannel','#8a3a30',eyes='#4a4a40',beard='stubble'),
+    'literary_people_stan': Look('#c8a088','#c2bcb2','receding','#5a5e48','#3a3a36','jacket','#a89a7a',eyes='#5a5c58',age=2),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),

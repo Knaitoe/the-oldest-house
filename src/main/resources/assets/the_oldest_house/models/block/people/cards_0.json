@@ -1,0 +1,71 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/people/cards_0",
+    "particle": "the_oldest_house:block/people/cards_0"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        0.25,
+        15
+      ],
+      "faces": {
+        "up": {
+          "texture": "#c",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        0.25,
+        5
+      ],
+      "to": [
+        11,
+        1,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            6,
+            5,
+            11,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}

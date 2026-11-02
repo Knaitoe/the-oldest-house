@@ -1,0 +1,49 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "m": "the_oldest_house:block/people/glass",
+    "f": "the_oldest_house:block/people/frame",
+    "particle": "the_oldest_house:block/people/glass"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        6,
+        15
+      ],
+      "to": [
+        13,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    }
+  ]
+}
