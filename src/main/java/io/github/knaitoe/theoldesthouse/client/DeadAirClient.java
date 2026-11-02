@@ -29,7 +29,7 @@ public final class DeadAirClient {
         @SubscribeEvent public static void register(RegisterGuiLayersEvent e){e.registerBelowAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"dead_air"),(g,d)->{
             if(channel<0)return;int w=g.guiWidth(),h=g.guiHeight();
             if(dead>0){g.fill(0,0,w,h,0x3000E5FF);
-                if(dead<=DeadAirGame.CREEP){float k=1-dead/(float)DeadAirGame.CREEP;int n=(int)(k*k*900);
+                if(dead<=DeadAirGame.CREEP){float k=(1-dead/(float)DeadAirGame.CREEP)*Comfort.effects();int n=(int)(k*k*900);
                     for(int i=0;i<n;i++){int x=SNOW.nextInt(w),y=SNOW.nextInt(h),v=SNOW.nextInt(256);g.fill(x,y,x+2,y+2,(int)(k*180)<<24|v<<16|v<<8|v);}}
                 return;}
             if(channel==DeadAirGame.STAGE)g.fill(0,0,w,h,0x14C8328C);else if(channel==DeadAirGame.MARSH)g.fill(0,0,w,h,0x1032CD32);

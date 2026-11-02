@@ -65,7 +65,7 @@ public final class ElkDragClient {
     @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){
         if(!active()||phase!=1)return;float k=(float)(t-ElkDrag.BLACKOUT+e.getPartialTick());
         float heave=Mth.sin(k/24F*Mth.PI);
-        e.setPitch(e.getPitch()+heave*heave*3.5F+Mth.sin(k*.9F)*.6F);e.setRoll(Mth.sin(k*.11F)*4F+Mth.sin(k*.37F)*1.2F);e.setYaw(e.getYaw()+Mth.sin(k*.07F)*5F);
+        float fx=Comfort.effects();e.setPitch(e.getPitch()+(heave*heave*3.5F+Mth.sin(k*.9F)*.6F)*fx);e.setRoll((Mth.sin(k*.11F)*4F+Mth.sin(k*.37F)*1.2F)*fx);e.setYaw(e.getYaw()+Mth.sin(k*.07F)*5F*fx);
     }
     @SubscribeEvent public static void still(MovementInputUpdateEvent e){
         if(!active())return;var in=e.getInput();in.forwardImpulse=0;in.leftImpulse=0;in.up=in.down=in.left=in.right=false;in.jumping=false;in.shiftKeyDown=false;

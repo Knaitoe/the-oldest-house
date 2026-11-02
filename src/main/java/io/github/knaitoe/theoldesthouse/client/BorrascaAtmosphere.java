@@ -51,7 +51,7 @@ public final class BorrascaAtmosphere {
         if(!active()||state.takingTicks()<=0||state.takingTicks()>60)return;var mc=Minecraft.getInstance();var camera=mc.gameRenderer.getMainCamera();var at=state.source().subtract(BorrascaRooms.MACHINE).offset(BorrascaRooms.LAMP).getCenter();var d=at.subtract(camera.getPosition());if(d.lengthSqr()<.01)return;
         var f=camera.getLookVector();double look=new Vec3(f.x(),f.y(),f.z()).dot(d.normalize());if(look<.7)return;
         var ray=mc.level.clip(new ClipContext(camera.getPosition(),at,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,mc.player));if(ray.getType()!=HitResult.Type.MISS&&ray.getLocation().distanceToSqr(at)>2)return;
-        double effects=mc.options.screenEffectScale().get();double rise=Math.sin(Math.PI*Math.min(60,state.takingTicks()+mc.level.getGameTime()-received)/60D);int alpha=(int)(225*Mth.clamp((look-.7)/.3,0,1)*Math.max(0,rise)*effects);if(alpha<=0)return;
+        double effects=Comfort.effects();double rise=Math.sin(Math.PI*Math.min(60,state.takingTicks()+mc.level.getGameTime()-received)/60D);int alpha=(int)(225*Mth.clamp((look-.7)/.3,0,1)*Math.max(0,rise)*effects);if(alpha<=0)return;
         e.getGuiGraphics().fill(0,0,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight(),alpha<<24|0xF1EEE6);
     }
     @SubscribeEvent public static void beams(RenderLevelStageEvent e){

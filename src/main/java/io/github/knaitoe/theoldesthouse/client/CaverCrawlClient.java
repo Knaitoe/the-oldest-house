@@ -86,10 +86,10 @@ public final class CaverCrawlClient {
         else if(!blackout()&&strain>.6F&&++beat>=Math.round(22-strain*10)){beat=0;mc.getSoundManager().play(SimpleSoundInstance.forUI(LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get(),.9F+strain*.2F,.35F+strain*.35F));}
     }
     /** The walls come in as the air goes, and further while choking. */
-    @SubscribeEvent public static void fov(ViewportEvent.ComputeFov e){if(active())e.setFOV(e.getFOV()*(.88-.16*strain()-.14*choking()));}
+    @SubscribeEvent public static void fov(ViewportEvent.ComputeFov e){if(active())e.setFOV(Comfort.narrow(e.getFOV(),.88-.16*strain()-.14*choking()));}
     /** Choking shakes the view, harder as it goes on; the accessibility setting for screen effects scales it, down to none. */
     @SubscribeEvent public static void shake(ViewportEvent.ComputeCameraAngles e){
-        if(!wheezing())return;var mc=Minecraft.getInstance();float scale=mc.options.screenEffectScale().get().floatValue();if(scale<=0)return;
+        if(!wheezing())return;var mc=Minecraft.getInstance();float scale=Comfort.effects();if(scale<=0)return;
         float c=choking(),t=player.tickCount+(float)e.getPartialTick(),a=(.35F+2.4F*c*c)*scale;
         e.setYaw(e.getYaw()+(Mth.sin(t*1.9F)+.5F*Mth.sin(t*4.7F+1.3F))*a*.5F);
         e.setPitch(e.getPitch()+(Mth.sin(t*2.6F+.7F)+.5F*Mth.sin(t*5.9F))*a*.45F);

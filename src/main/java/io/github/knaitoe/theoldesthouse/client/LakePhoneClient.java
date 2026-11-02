@@ -93,11 +93,12 @@ public final class LakePhoneClient {
         if(!bound()||phase<3)return;float t=sinceDrop((float)event.getPartialTick());
         if(t<TUMBLE){
             // Over and over as it falls: the sky, the canoe's side, the water, and the sky again.
-            float k=Math.max(0,t)/TUMBLE;event.setYaw(Mth.lerp(k,0,-310)+Mth.sin(t*.9F)*20);event.setPitch(Mth.lerp(k*k,20,-88)+Mth.sin(t*.7F)*55*(1-k));event.setRoll(Mth.lerp(k,0,520)%360);
+            // 0.4.271: the spin and the swing follow Distortion Effects; the fall itself, sky to water, does not (Comfort).
+            float k=Math.max(0,t)/TUMBLE,fx=Comfort.effects();event.setYaw((Mth.lerp(k,0,-310)+Mth.sin(t*.9F)*20)*fx);event.setPitch(Mth.lerp(k*k,20,-88)+Mth.sin(t*.7F)*55*(1-k)*fx);event.setRoll((Mth.lerp(k,0,520)*fx)%360);
             return;
         }
         // Lying on its back in the water, rocked by what is left of the wake.
-        float s=t-TUMBLE;event.setYaw(Mth.sin(s*.031F)*4);event.setPitch(-88+Mth.sin(s*.047F)*1.5F);event.setRoll(3+Mth.sin(s*.053F)*2.5F);
+        float s=t-TUMBLE,fx=Comfort.effects();event.setYaw(Mth.sin(s*.031F)*4*fx);event.setPitch(-88+Mth.sin(s*.047F)*1.5F*fx);event.setRoll((3+Mth.sin(s*.053F)*2.5F)*fx);
     }
 
     /** The phone's viewfinder, shared by the overlay and the native proof: frame corners, REC, timecode, battery, grain. */

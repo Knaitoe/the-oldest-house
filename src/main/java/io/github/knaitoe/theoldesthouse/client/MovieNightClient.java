@@ -26,7 +26,7 @@ public final class MovieNightClient {
         var mc=Minecraft.getInstance();if(mc.level==null)return;float age=(float)(mc.level.getGameTime()-rockStart+e.getPartialTick());
         if(age<0||age>rockTicks)return;float fade=1-age/rockTicks,lift=Mth.sin(Mth.clamp(age/6F,0,1)*Mth.PI);
         // A hard lift from under the hull, then the canoe rolling back and forth as it settles.
-        e.setRoll(e.getRoll()+Mth.sin(age*.55F)*7*fade*fade);e.setPitch(e.getPitch()-lift*4+Mth.sin(age*.4F+1)*2*fade);
+        float fx=Comfort.effects();e.setRoll(e.getRoll()+Mth.sin(age*.55F)*7*fade*fade*fx);e.setPitch(e.getPitch()+(-lift*4+Mth.sin(age*.4F+1)*2*fade)*fx);
     }
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){rockStart=-1000;flashAt=-1000;MovieFilm.release();}
 }

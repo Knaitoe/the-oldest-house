@@ -40,6 +40,7 @@ jobs:
           python3 -m pip install Pillow
           python3 tools/verify_writing_fonts.py
           python3 tools/verify_textures.py
+          python3 tools/verify_comfort.py
           python3 tools/paint_character_skins.py --check
           python3 tools/verify_character_art.py
           python3 tools/check_model_particles.py

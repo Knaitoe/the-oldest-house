@@ -62,7 +62,7 @@ public final class PolaroidClient {
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Layers {
         @SubscribeEvent public static void register(RegisterGuiLayersEvent e){e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"polaroid_flash"),(g,d)->{
-            if(flash<=0)return;float k=strength*(flash/(float)flashTotal);int a=(int)(Math.min(1,k*1.2F)*255);
+            if(flash<=0)return;float k=strength*(flash/(float)flashTotal)*Comfort.effects();if(k<=0)return;int a=(int)(Math.min(1,k*1.2F)*255);
             g.fill(0,0,g.guiWidth(),g.guiHeight(),a<<24|0xF4F8FF);
         });}
     }

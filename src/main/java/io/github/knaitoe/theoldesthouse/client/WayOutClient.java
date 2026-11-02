@@ -96,8 +96,8 @@ public final class WayOutClient {
                     return;
                 }
                 float s=thickness();if(s<=0)return;
-                float effects=mc.options==null?1F:Math.max(.3F,mc.options.screenEffectScale().get().floatValue());
-                float strength=ending>0?s:s*effects;
+                // 0.4.271: no floor under the setting, and the ending's static scales with it like the rest (Comfort).
+                float strength=s*Comfort.effects();if(strength<=0)return;
                 RenderSystem.enableBlend();
                 var r=RandomSource.create(net.minecraft.Util.getMillis()/40);
                 int cell=3;

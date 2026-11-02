@@ -233,7 +233,7 @@ public final class WorkPrintClient {
         @SubscribeEvent public static void register(RegisterGuiLayersEvent e){e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"work_print_grain"),(g,d)->{
             if(grain<=0&&flash<=0)return;int w=g.guiWidth(),h=g.guiHeight();var mc=Minecraft.getInstance();long t=mc.level==null?0:mc.level.getGameTime();
             if(flash>0&&flashLocation!=null&&flashFrame!=null){g.blit(flashLocation,0,0,w,h,0F,0F,WorkPrint.FW,WorkPrint.FH,WorkPrint.FW,WorkPrint.FH);}
-            float k=flash>0?.6F:Math.min(1,grain/20F)*.45F;seed=(int)(t*31+7);
+            float k=(flash>0?.6F:Math.min(1,grain/20F)*.45F)*Comfort.effects();seed=(int)(t*31+7);
             for(int y=0;y<h;y+=2)if(rand()<.5F)g.fill(0,y,w,y+1,(int)(k*60)<<24|0x0a0a0a);
             for(int i=0;i<w*h/90;i++){int x=(int)(rand()*w),y=(int)(rand()*h);int v=rand()<.5F?0xffffff:0x000000;g.fill(x,y,x+1,y+1,(int)(k*160)<<24|v);}
             int band=(int)((t*3)%(h+60))-30;g.fill(0,band,w,band+6,(int)(k*120)<<24|0xd8d8d8);
