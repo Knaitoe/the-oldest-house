@@ -856,7 +856,10 @@ public final class OpeningTests {
 
         // Real target chunks and their entity sections load asynchronously. A one-tick delay
         // does not guarantee they are ready, and the projection must never force a cold target.
-        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(domesticProjectionChunks.ready(),
+        // Loaded sections only answer entity queries once the chunk is promoted to entity ticking,
+        // which follows the load by a ticket-level update (run 1403 queried in between).
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(domesticProjectionChunks.entityTicking(interiorStandIn, inside)
+                && domesticProjectionChunks.entityTicking(overworld, inside),
                 "wait for actual entity sections: source="+interiorStandIn.areEntitiesLoaded(entityChunk.toLong())
                 +" target="+overworld.areEntitiesLoaded(entityChunk.toLong()))).thenExecute(() -> {
             try {
