@@ -34,6 +34,8 @@ public final class GroupCrossings {
         }
         var deal=data.deal(me,door);var place=deal==null?null:LabyrinthPlace.byId(deal.place());
         if(place==null||!place.isVignette())return;
+        // 0.4.244: a finished scene coming back as its aftermath is the returning reader's alone; the others keep their own doors.
+        if(Aftermath.returning(data,me,place))return;
         var group=companions(p,door);if(group.isEmpty())return;
         var thread=VignetteThreads.threadId(data,place,me);
         if(SharedVignettes.followable(place)&&group.stream().allMatch(q->canJoin(data,q.getUUID(),place,thread)))return;
@@ -47,6 +49,8 @@ public final class GroupCrossings {
     /** The first through a dealt door into a shared vignette holds it for the group. */
     public static void crossed(ServerPlayer p,LabyrinthData.Door door,@Nullable LabyrinthPlace place){
         if(p.isSpectator()||door.command||!SharedVignettes.followable(place))return;
+        // 0.4.244: nobody follows a reader into the aftermath of a scene they finished.
+        if(Aftermath.returning(LabyrinthData.get(p.server),p.getUUID(),place))return;
         int now=p.server.getTickCount();var led=RECENT.get(key(door));
         if(led==null||now-led.tick()>WINDOW||now<led.tick()||led.leader().equals(p.getUUID()))RECENT.put(key(door),new Crossing(p.getUUID(),place,now));
     }
@@ -54,6 +58,8 @@ public final class GroupCrossings {
     /** Whether this reader can go into the leader's scene with them: not finished, and no other thread of it. */
     public static boolean canJoin(LabyrinthData data,UUID reader,LabyrinthPlace place,@Nullable String leaderThread){
         if(!SharedVignettes.followable(place)||LabyrinthDealer.finishedFor(data,reader,place))return false;
+        // 0.4.244: a reader who finished it would find only its aftermath, which is theirs alone: they keep their own door.
+        if(Aftermath.returning(data,reader,place))return false;
         var mine=VignetteThreads.threadId(data,place,reader);
         if(mine!=null)return mine.equals(leaderThread);
         return LabyrinthDealer.vignettesAvailable(data,reader).contains(place);

@@ -118,4 +118,51 @@ public final class VacantPossessionTests {
             .thenSucceed();
     }
     @AfterBatch(batch="vacant_keep") public static void keepDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.244, aftermath (docs/AFTERMATH_0_4_244.md): the flat comes back to the readers who finished it as each of them left it.
+     * The flat itself is empty to the walls, every trace showing, the bulbs off, nobody: as the chair-carrier left it. A reader who put
+     * the chair back sees, in their own view, the chair where it stood, the light on and the one who lived here in it; the others do not.
+     * Nothing to do and nothing to earn; and a reader who has not finished it, coming in, starts moving day afresh.
+     */
+    @GameTest(template="empty",batch="vacant_after",timeoutTicks=900)
+    public static void aFinishedFlatComesBackEmptyOrLitAsItWasLeft(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);
+        var out=f.player("vacant_after_out",P);finish(f,out,"carried_out_the_last_chair");int credit=WitnessAccount.count(f.data(),out.getUUID());
+        ServerPlayer[] kept={null},fresh={null};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,new AABB(b.getX()-8,b.getY()-8,b.getZ()-20,b.getX()+19,b.getY()+9,b.getZ()+2)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the flat is resident"))
+            .thenExecute(()->at(f,out,3.5,0,-7.5,180))
+            .thenWaitUntil(()->h.assertTrue(VacantPossession.after(b),"the flat stands as its aftermath"))
+            .thenExecute(()->{
+                h.assertTrue(VacantBlock.is(l.getBlockState(b.offset(-2,0,-9)),VacantBlock.Kind.MARKS)&&l.getBlockState(b.offset(VacantSite.CHAIR_PIECE.at())).isAir(),"everything gone, the marks showing, the chair gone too");
+                h.assertTrue(l.getBlockState(b.offset(VacantSite.LIVING_BULB)).getValue(VacantBlock.STAGE)==1&&VacantPossession.tenantActor(l,b)==null&&VacantPossession.shownTo(l,b,out.getUUID())==null,"the bulbs off and nobody there");
+                var heard=VacantPossession.heard(b,f.data(),out.getUUID());h.assertTrue(heard!=null&&heard.carry()==DoorSounds.Carry.EMPTY,"through the door: nothing: "+heard);
+                h.assertTrue(Aftermath.returns(f.data(),out.getUUID(),P)==1&&WitnessAccount.count(f.data(),out.getUUID())==credit&&f.own(out,P).getBoolean("Completed"),"the return counted, nothing earned");
+                // A second reader, who put the chair back, comes in while the first is still there: the flat stays as it is.
+                kept[0]=f.player("vacant_after_kept",P);finish(f,kept[0],"put_the_chair_back");at(f,kept[0],3.5,0,-7.5,180);})
+            .thenWaitUntil(()->h.assertTrue(VacantPossession.shownTo(l,b,kept[0].getUUID())!=null,"the reader who put the chair back finds someone in it"))
+            .thenExecute(()->{
+                var figure=VacantPossession.shownTo(l,b,kept[0].getUUID());
+                h.assertTrue(VacantPossession.after(b)&&l.getBlockState(b.offset(VacantSite.CHAIR_PIECE.at())).isAir()&&l.getBlockState(b.offset(VacantSite.LIVING_BULB)).getValue(VacantBlock.STAGE)==1,"the flat itself is unchanged for everyone");
+                h.assertTrue(figure.owner().filter(kept[0].getUUID()::equals).isPresent()&&figure.broadcastToPlayer(kept[0])&&!figure.broadcastToPlayer(out),"only the one who put the chair back sees who is in it");
+                h.assertTrue(figure.fade()==VacantPossession.KEPT_FADE&&figure.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(VacantSite.CHAIR_PIECE.at())))<=.05,"no more there than when the reader left, and sitting where the chair stood");
+                h.assertTrue(VacantPossession.shownTo(l,b,out.getUUID())==null,"the chair-carrier has nobody");
+                var mine=VacantPossession.heard(b,f.data(),kept[0].getUUID());var theirs=VacantPossession.heard(b,f.data(),out.getUUID());
+                h.assertTrue(mine!=null&&mine.carry()==DoorSounds.Carry.SOMEONE&&mine.volume()==VacantPossession.KEPT_HEARD&&theirs!=null&&theirs.carry()==DoorSounds.Carry.EMPTY,"through the door: someone, faintly, for one; nothing for the other: "+mine+" "+theirs);
+                h.assertTrue(Aftermath.returns(f.data(),kept[0].getUUID(),P)==1&&f.own(kept[0],P).getBoolean("Completed"),"their return counted too");
+                // Neither reader is ever grouped into the other's crossing of it: an aftermath is each reader's own.
+                h.assertTrue(!GroupCrossings.canJoin(f.data(),kept[0].getUUID(),P,null)&&!GroupCrossings.canJoin(f.data(),out.getUUID(),P,null),"nobody follows into an aftermath");
+                kept[0].teleportTo(f.level(P),b.getX()+.5,b.getY()+30,b.getZ()+40,0,0);})
+            .thenWaitUntil(()->h.assertTrue(VacantPossession.shownTo(l,b,kept[0].getUUID())==null,"the figure goes with the reader who saw it"))
+            .thenExecute(()->{fresh[0]=f.player("vacant_after_fresh",P);at(f,fresh[0],3.5,0,-7.5,180);})
+            .thenWaitUntil(()->h.assertTrue(!VacantPossession.after(b)&&VacantPossession.seat(b)==VacantPossession.STANDING&&VacantBlock.is(l.getBlockState(b.offset(-2,0,-9)),VacantBlock.Kind.DRESSER)&&VacantPossession.tenantActor(l,b)!=null,"someone who has not finished it starts moving day afresh"))
+            .thenExecute(()->h.assertTrue(f.own(out,P).getBoolean("Completed")&&WitnessAccount.count(f.data(),out.getUUID())==credit,"the finished reader keeps their ending, and gains nothing"))
+            .thenSucceed();
+    }
+    private static void finish(LiteraryTests.Fixture f,ServerPlayer p,String outcome){
+        var own=f.own(p,P);own.putBoolean("Completed",true);own.putBoolean("Ready",true);own.putString("Outcome",outcome);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+        WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.of(P.id()),outcome);
+    }
+    @AfterBatch(batch="vacant_after") public static void afterDone(ServerLevel l){close();}
 }

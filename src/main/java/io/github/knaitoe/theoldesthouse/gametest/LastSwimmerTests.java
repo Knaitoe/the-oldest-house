@@ -148,4 +148,44 @@ public final class LastSwimmerTests {
             .thenSucceed();
     }
     @AfterBatch(batch="swim_prompt") public static void promptDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.244, aftermath (docs/AFTERMATH_0_4_244.md): a reader who closed the pool comes back to it as they left it. The cover on from
+     * wall to wall, the lamps off but the two by the fire door, nobody swimming and nobody to help; nothing to do, nothing to earn. The
+     * dealer offers it back at most twice and never within the reader's last eight crossings.
+     */
+    @GameTest(template="empty",batch="swim_after",timeoutTicks=600)
+    public static void aFinishedPoolComesBackCoveredAndClosed(GameTestHelper h){
+        var f=fixture(h);var p=f.player("swim_after",P);var b=f.base(P);var l=f.level(P);
+        // Finished before the pool's clock first sees them: they closed it on an earlier visit.
+        var own=f.own(p,P);own.putBoolean("Completed",true);own.putBoolean("Ready",true);own.putString("Outcome","held_the_door");LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+        WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.of(P.id()),"held_the_door");int credit=WitnessAccount.count(f.data(),p.getUUID());
+        var stranger=java.util.UUID.randomUUID();
+        h.startSequence().thenExecute(()->f.chunks.hold(l,new AABB(b.getX()-16,b.getY()-8,b.getZ()-47,b.getX()+16,b.getY()+11,b.getZ()+2)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the pool is resident"))
+            .thenExecute(()->at(f,p,.5,-10.5,180))
+            .thenWaitUntil(()->h.assertTrue(LastSwimmer.after(b),"the pool stands as the reader left it"))
+            .thenExecute(()->{
+                for(int x=SwimmerSite.POOL_X0;x<=SwimmerSite.POOL_X1;x++)h.assertTrue(SwimmerBlock.is(l.getBlockState(b.offset(x,SwimmerSite.SURFACE,-25)),SwimmerBlock.Kind.COVER),"the cover on from wall to wall: "+x);
+                var lamps=SwimmerSite.LAMPS;
+                for(int i=0;i<lamps.size();i++)h.assertTrue(l.getBlockState(b.offset(lamps.get(i))).getValue(SwimmerBlock.STAGE)==(i<lamps.size()-2?1:0),"every lamp off but the two by the fire door: "+i);
+                h.assertTrue(swimmers(l,b)==0&&l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-16,-8,-46)).minmax(new AABB(b.offset(16,11,2))),a->a.phase()==LastSwimmer.ATTENDANT).isEmpty(),"nobody swimming, and nobody to help");
+                h.assertTrue(LastSwimmer.tick(b)==-1&&LastSwimmer.hauls(b)==0,"no closing under way");
+                var mine=f.own(p,P);h.assertTrue(mine.getBoolean("Completed")&&"held_the_door".equals(mine.getString("Outcome"))&&WitnessAccount.count(f.data(),p.getUUID())==credit,"nothing new is earned: "+mine);
+                h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"the return is counted");
+                h.assertTrue(LastSwimmer.click(p,b,new BlockPos(0,SwimmerSite.SURFACE,-25),f.own(p,P))&&LastSwimmer.hauls(b)==0,"the cover is taut, and nothing hauls it");
+                var through=LastSwimmer.heard(b,f.data(),p.getUUID());var other=LastSwimmer.heard(b,f.data(),stranger);
+                h.assertTrue(through!=null&&through.carry()==DoorSounds.Carry.EMPTY&&other!=null&&other.carry()==DoorSounds.Carry.WATER,"through its door: nothing moving for the reader who closed it, someone swimming for anyone else: "+through+" "+other);})
+            .thenIdle(40)
+            .thenExecute(()->{
+                h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"one visit counts once");
+                // Offered back while the reader has returns left and has not been there in their last eight crossings.
+                h.assertTrue(Aftermath.canDeal(f.data(),p.getUUID(),P)&&!Aftermath.canDeal(f.data(),stranger,P),"a finished reader can be offered it back; a reader who never finished it is not");
+                var mine=f.own(p,P);mine.putInt(Aftermath.COUNT,Aftermath.RETURNS);LiteraryVignettes.save(f.data(),p.getUUID(),P,mine);
+                h.assertTrue(!Aftermath.canDeal(f.data(),p.getUUID(),P),"never more than twice");
+                mine.putInt(Aftermath.COUNT,1);LiteraryVignettes.save(f.data(),p.getUUID(),P,mine);f.data().visit(p.getUUID(),P);
+                h.assertTrue(!Aftermath.canDeal(f.data(),p.getUUID(),P),"never within the last eight crossings");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="swim_after") public static void afterDone(ServerLevel l){close();}
 }

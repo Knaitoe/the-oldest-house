@@ -84,8 +84,8 @@ public final class DoorSounds {
     @FunctionalInterface public interface Source{@Nullable Through now(MinecraftServer server,LabyrinthData data,UUID listener,@Nullable BlockPos base);}
     private static final Map<LabyrinthPlace,Source> SOURCES=new EnumMap<>(LabyrinthPlace.class);
     static{
-        SOURCES.put(LabyrinthPlace.VACANT_POSSESSION,(server,data,listener,base)->VacantPossession.heard(base));
-        SOURCES.put(LabyrinthPlace.LAST_SWIMMER,(server,data,listener,base)->LastSwimmer.heard(base));
+        SOURCES.put(LabyrinthPlace.VACANT_POSSESSION,(server,data,listener,base)->VacantPossession.heard(base,data,listener));
+        SOURCES.put(LabyrinthPlace.LAST_SWIMMER,(server,data,listener,base)->LastSwimmer.heard(base,data,listener));
         SOURCES.put(LabyrinthPlace.FAMILIAR_KITCHEN,(server,data,listener,base)->FamiliarRoom.heard(listener));
         // The seventh room's clock, once this reader has stopped it, is stopped for them; and the party with it.
         SOURCES.put(LabyrinthPlace.MASQUE,(server,data,listener,base)->LiteraryVignettes.personal(data,listener,LabyrinthPlace.MASQUE).getBoolean("ClockStopped0506")?null:Through.of(Carry.CLOCK));

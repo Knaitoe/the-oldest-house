@@ -376,10 +376,13 @@ public final class LiteraryVignettes {
         own.putInt("ExamineTicks",own.getInt("ExamineTicks")+5);if(own.getInt("ExamineTicks")>=60){own.putInt("ModelsExamined",Math.max(own.getInt("ModelsExamined"),own.getInt("Visit")));own.putInt("Beat",own.getInt("Visit"));if(own.getInt("ModelsExamined")>=3)ready(p,place,own,"examined_three_personal_model_arrangements");}
     }
     public static CompoundTag modelDisplay(ServerPlayer p,CompoundTag own){var t=new CompoundTag();t.put("Models",own.getList("Models",Tag.TAG_COMPOUND).copy());t.putUUID("Reader",p.getUUID());t.putString("Name",p.getGameProfile().getName());return t;}
+    public static final String MASQUE_AFTER="Nobody in the seven rooms has moved since you were here. The clock still has not struck.";
     private static void masque(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.MASQUE;int room=Math.max(0,Math.min(6,(-p.blockPosition().getZ()+b.getZ()-1)/11));own.putInt("Rooms",own.getInt("Rooms")|(1<<room));int time=(int)(p.serverLevel().getGameTime()%400);boolean chime=time<60;
         // 0.4.105: the party is each reader's own. Their dancers, the figure that scolds them and the chimes are private, and the hand
         // they put on the clock stops only their evening: a later reader finds the clock still going and the rooms still dancing.
         boolean stopped=own.getBoolean("ClockStopped0506");if(stopped&&time%100<5)MasqueSuite.stoppedView(p,b);
+        // 0.4.244: a reader who stopped it and finished, back in the rooms as they left them (Aftermath); nothing here asks anything of them.
+        if(stopped&&own.getBoolean("Completed")&&Aftermath.count(own))p.displayClientMessage(Component.literal(MASQUE_AFTER).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
         for(int i=0;i<7;i++)for(int side:new int[]{-1,1}){var dancer=actor(p,place,"Dancer"+i+"_"+side,LiteraryActor.DANCER,new BlockPos(side*5,0,-11*i-6),true);if(dancer!=null){dancer.appearance(LiteraryActor.DANCER,chime||stopped?0:1);
             // Once their clock has stopped, the still dancers turn to whoever stopped it.
             if(stopped){float yaw=(float)Math.toDegrees(Math.atan2(-(p.getX()-dancer.getX()),p.getZ()-dancer.getZ()));dancer.setYRot(yaw);dancer.setYBodyRot(yaw);dancer.setYHeadRot(yaw);}}}

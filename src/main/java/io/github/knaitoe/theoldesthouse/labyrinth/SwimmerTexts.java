@@ -93,4 +93,11 @@ public final class SwimmerTexts {
         pages.addAll(styled(HouseWriting.WritingStyle.PLAIN,afterwards(reader,own)));
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.LAST_SWIMMER),reader,pages);
     }
+
+    // 0.4.244: the pool coming back, as the reader left it (docs/AFTERMATH_0_4_244.md). Nothing to do here; nothing to earn.
+    public static final String AFTERMATH="The hall is dark but for the two lamps by the fire door. The cover is on, wall to wall, and nothing moves under it.";
+    public static final String AFTER_COVER="Taut from wall to wall. Nothing presses up under it.";
+    public static final String AFTER_CLOCK="The sweep hand has stopped.";
+    public static final String AFTER_RADIO="Switched off.";
+    public static final String AFTER_LOCKER="The open locker. The towel is still folded square, and the shoes are still dry.";
 }

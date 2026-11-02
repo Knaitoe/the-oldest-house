@@ -92,4 +92,8 @@ public final class VacantTexts {
         pages.addAll(styled(HouseWriting.WritingStyle.PLAIN,afterwards(reader,own)));
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.VACANT_POSSESSION),reader,pages);
     }
+
+    // 0.4.244: the flat coming back, as the reader left it (docs/AFTERMATH_0_4_244.md). Nobody asks anything.
+    public static final String AFTER_EMPTY="The door's open. The flat is empty to the walls, and the bulbs are off.";
+    public static final String AFTER_KEPT="The door's open. Everything's gone but the chair by the window. Someone is sitting in it, facing the street, and the light's on.";
 }
