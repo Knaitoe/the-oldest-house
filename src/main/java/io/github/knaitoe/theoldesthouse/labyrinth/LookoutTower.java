@@ -44,8 +44,12 @@ public final class LookoutTower {
     public static final BlockPos CRANK_HOOK=new BlockPos(CX+2,21,CZ+4),PENDULUM=new BlockPos(CX,24,CZ),LAMP=new BlockPos(CX-2,24,CZ-2),HATCH=new BlockPos(CX+2,ROOF,CZ+2);
     /** The two folded tarps for the third night, by the stove. */
     public static final List<BlockPos> TARPS=List.of(new BlockPos(CX+2,20,CZ+3),new BlockPos(CX+3,20,CZ+3));
-    /** The floor hatch to the stair: its two cells, and the stair's top tread in the floor beside them. */
-    public static final List<BlockPos> TRAPDOORS=List.of(new BlockPos(CX-1,FLOOR,CZ+4),new BlockPos(CX,FLOOR,CZ+4));
+    /**
+     * The floor hatch to the stair: its three cells, and the stair's top tread in the floor beside them. 0.4.258 (owner: "players
+     * still aren't able to enter"): with two cells the tread under the hatch's west edge rose while the reader's shoulders were still
+     * under the floor beside it, and their head met the boards; the opening now starts over the tread before it.
+     */
+    public static final List<BlockPos> TRAPDOORS=List.of(new BlockPos(CX-2,FLOOR,CZ+4),new BlockPos(CX-1,FLOOR,CZ+4),new BlockPos(CX,FLOOR,CZ+4));
     /** The shed's generator, the lamp over its door, and where it stands on the shed's roof. */
     public static final BlockPos GENERATOR=new BlockPos(-14,0,-26),SHED_LAMP=new BlockPos(-10,2,-26);
     public static final Vec3 SHED_ROOF=new Vec3(-12.5,4,-25.5);
@@ -177,6 +181,13 @@ public final class LookoutTower {
         }
         // The rails: both sides of every tread, where nothing else already stands. Where the next tread is a step up, the post
         // stands two high, so that it meets the next post at the height they share and the rail runs on unbroken up the flight.
+        // 0.4.258 (owner: "banisters are still disconnected"): the posts stood at walking height beside the treads with air under
+        // them, a rail floating free of the stair. Each now stands on a timber stringer level with its tread, and the stringer
+        // steps up with the flight, so every post joins the next post or the next piece of stringer.
+        // The stringer goes in whole first, so each post joins the stringer beside it as well as the posts.
+        for(var t:STAIR){if(t.h()<=0||t.h()>=FLOOR)continue;
+            for(var side:Direction.Plane.HORIZONTAL){int x=t.x()+side.getStepX(),z=t.z()+side.getStepZ();if(onStair(x,z))continue;
+                var foot=b.offset(x,t.h()-1,z);if(BuildBlocks.state(l,foot).isAir())BuildBlocks.set(l,foot,timber,F);}}
         for(int i=0;i<STAIR.size();i++){var t=STAIR.get(i);if(t.h()<=0||t.h()>=FLOOR)continue;
             boolean rises=i+1<STAIR.size()&&STAIR.get(i+1).h()>t.h();
             for(var side:Direction.Plane.HORIZONTAL){int x=t.x()+side.getStepX(),z=t.z()+side.getStepZ();if(onStair(x,z))continue;
@@ -227,13 +238,14 @@ public final class LookoutTower {
         put(l,b,STOVE,cz,LookoutBlock.of(LookoutBlock.Kind.STOVE,Direction.WEST,clearing?0:1));
         for(int y=21;y<=ROOF+1;y++)set(l,b,STOVE.getX(),y,cz+(STOVE.getZ()-CZ),Blocks.IRON_BARS.defaultBlockState());
         put(l,b,new BlockPos(CX-4,20,CZ),cz,LookoutBlock.of(LookoutBlock.Kind.COT,Direction.EAST,0));put(l,b,new BlockPos(CX-4,20,CZ+1),cz,LookoutBlock.of(LookoutBlock.Kind.COT,Direction.EAST,1));
-        // The hatch onto the stair, railed on its open sides; in the void, a hatch that will not lift.
+        // The hatch onto the stair, railed on its open sides (one straight rail and its corner, nothing joined only at a diagonal); in
+        // the void, a hatch that will not lift.
         // 0.4.220 (owner: "stairs that don't allow the player to reach the opening"): the clearing's hatch stands open against the
         // south wall, so the stair comes up into the cab through a railed opening rather than under a lid.
         for(var t:TRAPDOORS)put(l,b,t,cz,clearing?Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.FACING,Direction.NORTH).setValue(TrapDoorBlock.OPEN,true):LookoutBlock.of(LookoutBlock.Kind.HATCH,Direction.NORTH,0));
         if(clearing){
             var top=STAIR.get(STAIR.size()-1);set(l,b,top.x(),FLOOR,cz+(top.z()-CZ),Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
-            for(var at:new BlockPos[]{new BlockPos(CX-1,20,CZ+3),new BlockPos(CX,20,CZ+3),new BlockPos(CX-2,20,CZ+4)})put(l,b,at,cz,Blocks.SPRUCE_FENCE.defaultBlockState());
+            for(var at:new BlockPos[]{new BlockPos(CX-3,20,CZ+3),new BlockPos(CX-2,20,CZ+3),new BlockPos(CX-1,20,CZ+3),new BlockPos(CX,20,CZ+3),new BlockPos(CX-3,20,CZ+4)})put(l,b,at,cz,Blocks.SPRUCE_FENCE.defaultBlockState());
             put(l,b,CRANK_HOOK,cz,LookoutBlock.of(LookoutBlock.Kind.CRANK_HOOK,Direction.NORTH,0));
         }
     }
