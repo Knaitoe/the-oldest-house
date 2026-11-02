@@ -70,7 +70,7 @@ public final class NightclubTests {
                 f.at(player,10,-16);h.assertTrue(f.click(player,new BlockPos(11,0,-16),Direction.WEST).consumesAction()&&player.getVehicle() instanceof SeatEntity,"the bar stool is also a real usable seat");
             }).thenSucceed();
     }
-    @GameTest(template="empty",batch="nightclub_cast",timeoutTicks=320)
+    @GameTest(template="empty",batch="nightclub_cast",timeoutTicks=700)
     public static void originalBodiesKeepDancingWhenMutedAndSurviveReloadAndARevisitWithAnOpenExit(GameTestHelper h){
         var f=new Fixture(h);var player=f.player("club_dance");var peer=f.player("club_dance_peer");var identity=new HashSet<UUID>();var start=new HashMap<UUID,Vec3>();var previous=new HashMap<UUID,Vec3>();final int[] movingFrames={0};final boolean[] sample={false};
         h.onEachTick(()->{if(!sample[0])return;boolean moved=false;for(var a:f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base))){if(a.dj())continue;var before=previous.put(a.getUUID(),a.position());if(before==null)continue;double step=a.position().subtract(before).horizontalDistance();h.assertTrue(step<=.028,"every actual nightclub stride is a native-tick step, not a two-tick jump: "+step);moved|=step>.001;}if(moved)movingFrames[0]++;});
@@ -82,8 +82,14 @@ public final class NightclubTests {
             f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).forEach(a->{identity.add(a.getUUID());start.put(a.getUUID(),a.position());previous.put(a.getUUID(),a.position());});sample[0]=true;
             f.at(player,0,-40);f.click(player,Nightclub.MIXER,Direction.SOUTH);f.click(player,Nightclub.MIXER,Direction.SOUTH);
             h.assertTrue(f.level.getBlockState(f.base.offset(Nightclub.MIXER)).getValue(NightclubBlock.STAGE)==0,"the native mixer physically switches the shared speakers off");
-        }).thenIdle(90).thenExecute(()->{
+        }).thenIdle(30).thenExecute(()->{
+            // 0.4.240: the floor does not all turn at once; a second and a half in, some are still dancing.
+            var floor=f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().filter(a->!a.dj()).toList();
+            h.assertTrue(floor.stream().anyMatch(a->a.despair()<.2F)&&floor.stream().noneMatch(a->a.despair()==1),"dismay spreads over time, dancer by dancer: "+floor.stream().map(a->String.format("%.2f",a.despair())).toList());
+        }).thenIdle(60).thenExecute(()->{
             sample[0]=false;h.assertTrue(movingFrames[0]>=70,"the original dancers move between decisions on most actual native frames: "+movingFrames[0]);
+            h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().anyMatch(a->a.despair()>0&&a.despair()<1),"partway, some are between the music and dismay");
+        }).thenIdle(190).thenExecute(()->{
             h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().filter(a->!a.dj()).anyMatch(a->a.position().distanceTo(start.get(a.getUUID()))>.03),"actual native dancer bodies keep moving in silence");
             h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().allMatch(a->a.despair()==1),"the actual mixer pause has transformed every original body into synced despair");
             f.reload();f.at(player,0,5);f.at(peer,0,5);
@@ -95,7 +101,9 @@ public final class NightclubTests {
             var door=f.level.getBlockState(f.base.offset(entry));h.assertTrue(door.getBlock() instanceof DoorBlock&&door.getValue(DoorBlock.OPEN),"the original native return door opens after a prolonged visit with no timer or resolution lock");
             f.at(player,0,-40);f.click(player,Nightclub.MIXER,Direction.SOUTH);
         }).thenIdle(4).thenExecute(()->{
-            h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().allMatch(a->a.despair()==0),"restarting actual music immediately restores the same original dancers' passive or gleeful state");
+            h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().anyMatch(a->a.despair()>0),"the music back, the floor finds it again over a moment, not at once");
+        }).thenIdle(70).thenExecute(()->{
+            h.assertTrue(f.level.getEntitiesOfClass(NightclubActor.class,Nightclub.bounds(f.base)).stream().allMatch(a->a.despair()==0),"restarting actual music restores the same original dancers' passive or gleeful state within a few seconds");
         }).thenSucceed();
     }
 }

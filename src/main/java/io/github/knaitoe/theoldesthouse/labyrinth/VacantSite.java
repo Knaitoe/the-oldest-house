@@ -19,7 +19,7 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.VacantBlock.Kind.*;
 /**
  * 0.4.228, Vacant Possession (docs/VACANT_POSSESSION_0_4_228.md): a small flat on the first floor of a terrace, built whole. The
  * reader comes in at the front (the base) onto the upper landing (x -5 to 2, z -1 to -3); the flat's door is straight ahead in its
- * double wall (z -4 and -5), the stair down on the left (x -5 to -4, treads z -2 to -5). The flat (x -2 to 7, z -6 to -17) is a
+ * double wall (z -4 and -5), the stair down on the left (x -5 to -4, treads z -1 to -5). The flat (x -2 to 7, z -6 to -17) is a
  * living room and, through the partition at z -12, a bedroom; its windows look east onto the street. Downstairs the hall (x -5 to 7,
  * z -6 to -8, floor at y -6) runs east to the front door at x 8, which stands open onto the pavement. The van is parked at the kerb
  * with its back to the door (x 11 to 15, z -5 to -9), its load bay three by three. Every position is relative to the base.
@@ -99,9 +99,11 @@ public final class VacantSite {
         box(l,b,-5,GROUND,-8,7,GROUND+3,-6,air);
         box(l,b,-5,0,-3,2,3,-1,air);
         box(l,b,-2,0,-17,7,3,-6,air);
-        // The stair well, and its treads going down north from the landing, solid beneath.
-        box(l,b,-5,GROUND,-6,-4,3,-2,air);
-        for(int i=0;i<4;i++){int z=-2-i,y=-2-i;
+        // The stair well, and its treads going down north from the landing, solid beneath. Five treads for the five blocks between the
+        // landing and the hall (0.4.240: there were four, and the top one sat a whole block under the landing, so the stair could be
+        // walked down but not back up).
+        box(l,b,-5,GROUND,-6,-4,3,-1,air);
+        for(int i=0;i<5;i++){int z=-1-i,y=-1-i;
             for(int x=-5;x<=-4;x++){set(l,b,x,y,z,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));for(int under=GROUND;under<y;under++)set(l,b,x,under,z,plaster);}}
         // A rail along the landing's edge over the well.
         for(int z=-3;z<=-2;z++)set(l,b,-3,0,z,Blocks.SPRUCE_FENCE.defaultBlockState());
@@ -112,7 +114,9 @@ public final class VacantSite {
         // The building's front, brick on the street, the front door open onto the pavement, the flat's windows above.
         box(l,b,8,GROUND-1,-18,8,7,0,brick);
         door(l,b,8,GROUND,-7,Blocks.OAK_DOOR,Direction.EAST,true);
-        for(int y=1;y<=2;y++)for(int z:new int[]{-8,-9,-14,-15})set(l,b,8,y,z,Blocks.GLASS_PANE.defaultBlockState());
+        // 0.4.240 (the scene looked at in play): the living room's first window is straight over the van, seen from the pavement only
+        // by looking up and from across the street not at all; a second window past the van's end shows the room lit, then dark.
+        for(int y=1;y<=2;y++)for(int z:new int[]{-8,-9,-11,-14,-15})set(l,b,8,y,z,Blocks.GLASS_PANE.defaultBlockState());
         // The ground floor's other windows, onto rooms nobody is in.
         for(int y=GROUND+1;y<=GROUND+2;y++)for(int z:new int[]{-12,-15}){set(l,b,8,y,z,Blocks.GLASS_PANE.defaultBlockState());set(l,b,7,y,z,Blocks.BLACK_CONCRETE.defaultBlockState());}
         // The street: the pavement, the kerb, the road, the far pavement and the houses opposite, under the evening.

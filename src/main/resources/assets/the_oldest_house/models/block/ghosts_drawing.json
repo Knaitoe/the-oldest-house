@@ -1,6 +1,7 @@
 {
   "textures": {
-    "drawing": "the_oldest_house:block/ghosts/drawing"
+    "drawing": "the_oldest_house:block/ghosts/drawing",
+    "particle": "the_oldest_house:block/ghosts/drawing"
   },
   "elements": [
     {

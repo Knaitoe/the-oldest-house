@@ -18,6 +18,8 @@ public final class NightclubActor extends PathfinderMob {
     private float previousDespair,shownDespair;
     private boolean displayInitialized;
     private BlockPos base=BlockPos.ZERO;
+    /** How long this dancer has been in silence, or back in the music (server, not saved). */
+    private int quiet,heard;
     public NightclubActor(EntityType<? extends NightclubActor> type,Level l){super(type,l);setNoAi(true);setPersistenceRequired();setCanPickUpLoot(false);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,20).add(Attributes.MOVEMENT_SPEED,.2);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(SLOT,0);b.define(DESPAIR,0);}
@@ -26,12 +28,24 @@ public final class NightclubActor extends PathfinderMob {
     public int look(){return look(slot());}
     public float despair(){return entityData.get(DESPAIR)/20F;}
     public float despair(float partial){return level().isClientSide&&displayInitialized?net.minecraft.util.Mth.lerp(partial,previousDespair,shownDespair):despair();}
+    /** Ticks of silence before this dancer notices it: the DJ at once, the floor over the next few seconds. */
+    public int notice(){return dj()?0:20+Math.floorMod(slot()*53,100);}
+    /** Ticks a full change takes once noticed: six seconds into dismay. */
+    public static final int DISMAY_TICKS=120;
     public void bind(BlockPos base,int slot){this.base=base.immutable();entityData.set(SLOT,Math.max(0,Math.min(Nightclub.DANCERS,slot)));}
     private static final double[][] ANCHORS={{-7.8,-18.4},{-5.7,-19.6},{-2.2,-23.8},{.2,-24.5},{5.7,-17.4},{7.4,-19.2},{-8.5,-28.8},{-6.7,-30.1},{-2.8,-32.7},{-.7,-32.2},{4.8,-27.5},{7.2,-28.1},{-7.4,-36.4},{-4.8,-37.7},{-.9,-37.2},{1.4,-35.8},{6.5,-33.8},{8.4,-35.9}};
     public static Vec3 home(BlockPos b,int slot){if(slot==Nightclub.DANCERS)return new Vec3(b.getX()+.5,b.getY()+1,b.getZ()-44.5);var at=ANCHORS[Math.floorMod(slot,ANCHORS.length)];return new Vec3(b.getX()+at[0],b.getY(),b.getZ()+at[1]);}
-    @Override public void tick(){super.tick();if(level().isClientSide){if(!displayInitialized){shownDespair=previousDespair=despair();displayInitialized=true;}else{previousDespair=shownDespair;shownDespair=net.minecraft.util.Mth.approach(shownDespair,despair(),.1F);}return;}
+    @Override public void tick(){super.tick();if(level().isClientSide){if(!displayInitialized){shownDespair=previousDespair=despair();displayInitialized=true;}else{previousDespair=shownDespair;shownDespair=net.minecraft.util.Mth.approach(shownDespair,despair(),.06F);}return;}
         var mixer=level().getBlockState(base.offset(Nightclub.MIXER));
-        if(mixer.is(NightclubRegistry.BLOCK.get()))entityData.set(DESPAIR,mixer.getValue(NightclubBlock.STAGE)==0?Math.min(20,entityData.get(DESPAIR)+2):0);
+        // 0.4.240 (owner: "the dancers should gradually become dismayed rather than immediately switching their states"): each
+        // dancer notices the silence in their own time, one to six seconds in, then loses the dance over six more; when the bass
+        // comes back they find it again, quicker, each a beat apart.
+        if(mixer.is(NightclubRegistry.BLOCK.get())){
+            int d=entityData.get(DESPAIR);
+            if(mixer.getValue(NightclubBlock.STAGE)==0){heard=0;quiet++;if(quiet>notice()&&Math.floorMod(level().getGameTime()+slot(),6)==0)d=Math.min(20,d+1);}
+            else{quiet=0;heard++;if(heard>notice()/4&&d>0)d--;}
+            entityData.set(DESPAIR,d);
+        }
         double time=level().getGameTime(),seed=slot()*1.73;var anchor=home(base,slot());
         if(!dj()){var target=anchor.add(Math.sin(time*.06+seed)*.28,0,Math.cos(time*.047+seed)*.3);var delta=target.subtract(position()).multiply(1,0,1);double length=delta.length();if(length>.002)move(MoverType.SELF,delta.scale(Math.min(.0275,length)/length));var partner=home(base,slot()%2==0?slot()+1:slot()-1).subtract(anchor);float facing=(float)Math.toDegrees(Math.atan2(-partner.x,partner.z));setYRot(net.minecraft.util.Mth.approachDegrees(getYRot(),facing+(float)Math.sin(time*.024+seed)*22,2));}
         else setYRot(0);yBodyRot=getYRot();yHeadRot=getYRot();

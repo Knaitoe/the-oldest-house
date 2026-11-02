@@ -25,6 +25,14 @@ public final class NightclubScore {
         if(sound==null&&inside()&&volume()>0&&mc.options.getSoundSourceVolume(SoundSource.RECORDS)>0&&mc.options.getSoundSourceVolume(SoundSource.MASTER)>0){retry=0;mc.getMusicManager().stopPlaying();sound=new Score(mc.level,mc.player);mc.getSoundManager().play(sound);}
     }
     @SubscribeEvent public static void music(SelectMusicEvent e){if(inside())e.setMusic(null);}
+    /**
+     * 0.4.240 (owner: "overworld sounds are able to play in disco room. the music should pulse out on its own"): inside the club the
+     * game's own music, weather and ambience (the cave moods the dark brings on, a biome's additions) are not heard; only the room.
+     */
+    @SubscribeEvent public static void sounds(net.neoforged.neoforge.client.event.sound.PlaySoundEvent e){
+        var s=e.getSound();if(s==null||!inside()||!s.getLocation().getNamespace().equals("minecraft"))return;
+        var source=s.getSource();if(source==SoundSource.MUSIC||source==SoundSource.AMBIENT||source==SoundSource.WEATHER)e.setSound(null);
+    }
     private static final class Score extends AbstractTickableSoundInstance{
         final ClientLevel world;final LocalPlayer reader;
         Score(ClientLevel world,LocalPlayer reader){super(NightclubRegistry.BEAT.get(),SoundSource.RECORDS,RandomSource.create());this.world=world;this.reader=reader;looping=true;delay=0;relative=true;attenuation=Attenuation.NONE;volume=.7F;var b=LabyrinthPlaces.base(HouseSightlineState.origin(),LabyrinthPlace.NIGHTCLUB);x=0;y=0;z=0;}

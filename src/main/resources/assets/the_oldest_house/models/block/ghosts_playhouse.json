@@ -3,7 +3,8 @@
     "denim": "the_oldest_house:block/ghosts/materials_atlas",
     "cardboard": "the_oldest_house:block/ghosts/materials_atlas",
     "vines": "the_oldest_house:block/ghosts/equipment_atlas",
-    "red": "the_oldest_house:block/ghosts/materials_atlas"
+    "red": "the_oldest_house:block/ghosts/materials_atlas",
+    "particle": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {

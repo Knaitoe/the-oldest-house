@@ -55,7 +55,7 @@ public final class TraceBlock extends HorizontalDirectionalBlock {
             case DUST,GRIT->Block.box(0,0,0,16,.5,16);
             case CHAIR->Shapes.or(box(f,2,0,2,14,9,14),box(f,2,9,12,14,21,14));
             case TABLE->Block.box(1,0,1,15,15,15);
-            case SHEET->Block.box(0,0,0,16,14,16);
+            case SHEET->Block.box(0,0,0,16,s.getValue(STAGE)==1?16:14,16);
             case HOOK->box(f,4,4,12,12,15,16);
             case CLOSER->box(f,1,10,12,15,15,16);
         };

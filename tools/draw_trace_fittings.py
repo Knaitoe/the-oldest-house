@@ -173,12 +173,24 @@ def wood(base='#7a5a3a', seed=2341):
 
 
 def sheet():
+    # 0.4.240: the cloth hangs in uneven folds to a greyed, dusty hem; no line across the top, so a tall piece's two blocks meet
+    # without a seam.
     im = new(base='#d8d2c4', seed=2343, spread=3)
-    for x in (4, 10):
+    for x, lean in ((2, 0), (6, 1), (11, 0), (14, 1)):
         for y in range(16):
-            dot(im, x, y, '#c4bdae'); dot(im, x + 1, y, '#e2ddd1')
+            fx = x + (lean if y > 9 else 0)
+            dot(im, fx, y, '#c4bdae'); dot(im, fx + 1, y, '#e2ddd1')
     for x in range(16):
-        dot(im, x, 0, '#b9b2a2')
+        dot(im, x, 15, '#bab3a4'); dot(im, x, 14, '#c9c2b4' if x % 3 else '#bdb6a7')
+    return im
+
+
+def sheet_top():
+    # The top of a covered piece: the cloth gathered over it in creases running corner to corner.
+    im = new(base='#ddd8cb', seed=2347, spread=3)
+    for i in range(16):
+        dot(im, i, i, '#c8c1b2'); dot(im, (i + 5) % 16, i, '#e6e1d6')
+        dot(im, 15 - i, (i + 3) % 16, '#cbc4b5')
     return im
 
 
@@ -223,7 +235,7 @@ def textures():
     t = {'dust_0': dust(), 'dust_1': prints(), 'dust_2': other(), 'dust_3': both(), 'dust_4': dragged(),
          'grit_0': grit(), 'grit_1': prints(grit, STONE), 'grit_2': other(grit, '#888a89'), 'grit_3': both(grit, STONE, '#888a89'),
          'grit_4': dragged(grit, ('#8b8d8c', '#7e807f')),
-         'chair': wood(), 'table': wood('#6a4a30', 2349), 'table_top': wood('#74543a', 2351), 'sheet': sheet(),
+         'chair': wood(), 'table': wood('#6a4a30', 2349), 'table_top': wood('#74543a', 2351), 'sheet': sheet(), 'sheet_top': sheet_top(),
          'brass': brass(), 'metal': metal(), 'wedge_side': wedge_side()}
     out.update({f'block/trace/{k}.png': v for k, v in t.items()})
     out['item/door_wedge.png'] = wedge_item()
@@ -254,12 +266,25 @@ def fitting_models():
         m[f'grit_{stage}'] = model([element([0, 0, 0], [16, 0.25, 16], {'all': 'd'})], {'d': f'grit_{stage}'}, f'grit_{stage}')
     # The loose chair: four legs, a seat, a back of two posts and a rail, the sitter facing north.
     legs = [element([x, 0, z], [x + 2, 8, z + 2], {'all': 'w'}) for x in (2, 12) for z in (2, 12)]
+    # The back's posts rise above the block: their sides are mapped onto the texture's top eleven rows, not off it (0.4.240).
+    def post(x):
+        return element([x, 10, 12], [x + 2, 21, 14], {'all': 'w'}, {'north': [14 - x, 0, 16 - x, 11], 'south': [x, 0, x + 2, 11], 'east': [2, 0, 4, 11], 'west': [12, 0, 14, 11]})
     m['chair_0'] = model(legs + [element([2, 8, 2], [14, 10, 14], {'all': 'w'}),
-                                element([2, 10, 12], [4, 21, 14], {'all': 'w'}), element([12, 10, 12], [14, 21, 14], {'all': 'w'}),
-                                element([4, 15, 12.5], [12, 20, 13.5], {'all': 'w'})], {'w': 'chair'}, 'chair')
+                                post(2), post(12),
+                                element([4, 15, 12.5], [12, 20, 13.5], {'all': 'w'}, {'north': [4, 1, 12, 6], 'south': [4, 1, 12, 6], 'east': [12.5, 1, 13.5, 6], 'west': [12.5, 1, 13.5, 6]})],
+                         {'w': 'chair'}, 'chair')
     m['table_0'] = model([element([x, 0, z], [x + 2, 13, z + 2], {'all': 't'}) for x in (1.5, 12.5) for z in (1.5, 12.5)]
                          + [element([1, 13, 1], [15, 15, 15], {'all': 't', 'up': 'u'})], {'t': 'table', 'u': 'table_top'}, 'table')
-    m['sheet_0'] = model([element([0, 0, 0], [16, 13, 16], {'all': 's'}), element([1, 13, 1], [15, 14, 15], {'all': 's'})], {'s': 'sheet'}, 'sheet')
+    # Furniture under a dust sheet (0.4.240): one piece (stage 0), or a tall piece's lower block (1) and upper block (2), which meet
+    # as one cloth; the hem flares a quarter pixel at the floor. Faces that reach past the block are mapped onto the texture.
+    hem = element([-0.25, 0, -0.25], [16.25, 1, 16.25], {'north': 's', 'south': 's', 'east': 's', 'west': 's'},
+                  {f: [0, 15, 16, 16] for f in ('north', 'south', 'east', 'west')})
+    sides = {'north': 's', 'south': 's', 'east': 's', 'west': 's'}
+    m['sheet_0'] = model([element([0, 0, 0], [16, 13, 16], {**sides, 'up': 't'}), element([1, 13, 1], [15, 14, 15], {**sides, 'up': 't'}), hem],
+                         {'s': 'sheet', 't': 'sheet_top'}, 'sheet')
+    m['sheet_1'] = model([element([0, 0, 0], [16, 16, 16], sides), hem], {'s': 'sheet'}, 'sheet')
+    m['sheet_2'] = model([element([0, 0, 0], [16, 13, 16], {**sides, 'up': 't'}, {f: [0, 0, 16, 13] for f in sides}),
+                          element([1, 13, 1], [15, 14, 15], {**sides, 'up': 't'})], {'s': 'sheet', 't': 'sheet_top'}, 'sheet')
     # The hook: a brass plate on the wall behind, its arm, and the wedge hanging from it point down.
     m['hook_0'] = model([element([6, 12, 15], [10, 15, 16], {'all': 'b'}), element([7.5, 12.5, 13], [8.5, 13.5, 15], {'all': 'b'}),
                          element([4, 4, 13.5], [12, 14, 14.5], {'north': 'e', 'south': 'e'})], {'b': 'brass', 'e': 'wedge_side'}, 'brass')
@@ -269,7 +294,7 @@ def fitting_models():
 
 
 KINDS = ['dust', 'chair', 'table', 'sheet', 'hook', 'closer', 'grit']
-STAGES = {'dust': 5, 'grit': 5}
+STAGES = {'dust': 5, 'grit': 5, 'sheet': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 5
 NAMES = {'block.the_oldest_house.trace_fitting': 'Furniture', 'block.the_oldest_house.trace_boards': 'Grey Boards',

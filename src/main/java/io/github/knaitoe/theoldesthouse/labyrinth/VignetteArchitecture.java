@@ -188,9 +188,8 @@ public final class VignetteArchitecture {
             add(x,-1,z,Blocks.SANDSTONE);
             if(Math.abs(x)>=28)for(int y=0;y<=1+Math.floorMod(x+z,3);y++)add(x,y,z,Blocks.SANDSTONE);
         }
-        // A used survey rest at the edge; the figure's open horizon remains the composition.
-        add(-7,0,-8,Blocks.SMOOTH_SANDSTONE);add(-7,0,-9,Blocks.SMOOTH_SANDSTONE);
-        detail(-7,1,-8,SATCHEL);detail(-7,1,-9,TOOLS);detail(4,0,-8,ROPE_COIL);
+        // 0.4.240 (owner: "random clutter decor in plains vignette"): no survey rest, satchel or rope by the door; the plain is
+        // only its ground, its notes and the figure's open horizon.
         for(int z=-58;z<=-16;z+=11)for(int x:new int[]{-24,24}){
             trim(x,-1,z,Blocks.SANDSTONE);add(x,0,z,Blocks.SANDSTONE_SLAB);add(x+1,0,z-1,Blocks.DEAD_BUSH);
         }

@@ -26,7 +26,8 @@
     "InventorySelfMixin",
     "PlayerInfoSkinMixin",
     "ActionBarWrapMixin",
-    "TitleSplashMixin"
+    "TitleSplashMixin",
+    "ModelUvRangeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

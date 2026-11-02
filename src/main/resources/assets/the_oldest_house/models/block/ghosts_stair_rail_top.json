@@ -1,6 +1,7 @@
 {
   "textures": {
-    "white": "minecraft:block/quartz_block_side"
+    "white": "minecraft:block/quartz_block_side",
+    "particle": "minecraft:block/quartz_block_side"
   },
   "elements": [
     {

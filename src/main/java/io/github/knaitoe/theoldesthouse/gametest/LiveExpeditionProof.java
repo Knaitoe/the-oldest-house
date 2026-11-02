@@ -45,7 +45,7 @@ public final class LiveExpeditionProof {
     @SubscribeEvent public static void commands(RegisterCommandsEvent e) {
         if(!enabled())return;
         e.getDispatcher().register(Commands.literal("borrascaready").executes(c->{var p=c.getSource().getPlayerOrException();if(phase==54&&!role(p).isEmpty())BorrascaSocketProof.terrainReady(p);return 1;}));
-        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,62)).executes(c->{
+        e.getDispatcher().register(Commands.literal("othproof").then(Commands.argument("step",IntegerArgumentType.integer(1,70)).executes(c->{
             var p=c.getSource().getPlayerOrException();if(!role(p).isEmpty()&&IntegerArgumentType.getInteger(c,"step")==phase)ACKS.add(role(p));return 1;
         })));
     }
@@ -81,6 +81,9 @@ public final class LiveExpeditionProof {
         if(a!=null&&b!=null&&phase==54){BorrascaSocketProof.arrival(a,b);if(s.getTickCount()%20==0){marker(a,54,BorrascaSocketProof.source());marker(b,54,BorrascaSocketProof.source());}}
         if(a!=null&&b!=null&&(phase==56||phase==58))BorrascaSocketProof.observe(a,b,phase);
         if(a!=null&&b!=null&&phase>=54&&phase<=59&&s.getTickCount()%40==0)BorrascaSocketProof.status(a,b,phase);
+        // 0.4.240: the pool and the flat in play.
+        if(a!=null&&phase==SceneReviewSocketProof.CARRY)SceneReviewSocketProof.preload(a);
+        if(a!=null&&b!=null&&phase>=SceneReviewSocketProof.POOL&&phase<=SceneReviewSocketProof.CHAIR&&s.getTickCount()%40==0)SceneReviewSocketProof.status(a,b,phase);
         // Read on the tick the native return lands, before the reader's restored stride or the test
         // client's still-held walk key carries them on along the tread.
         if(phase==11&&a!=null&&!firstReturned&&!StaircaseLeaks.active(a)){
@@ -90,10 +93,12 @@ public final class LiveExpeditionProof {
             if(a==null||b==null)return;
             // The Borrasca source floor loads on the native workers first: no tick with both clients connected waits on worldgen.
             if(Boolean.getBoolean("the_oldest_house.borrascaSocketSmoke")&&!BorrascaSocketProof.ready(s,ORIGIN))return;
+            if(SceneReviewSocketProof.enabled()&&!SceneReviewSocketProof.ready(s,ORIGIN))return;
             var l=s.getLevel(HouseDimensions.INTERIOR);require(l!=null,"native House dimension loaded");
             var house=new HouseSavedData();house.markSpawned(ORIGIN);house.markInteriorInitialized();s.overworld().getDataStorage().set("the_oldest_house",house);
             var d=new LabyrinthData();d.setBuilt(LabyrinthBuilder.VERSION,ORIGIN);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",d);
             if(Boolean.getBoolean("the_oldest_house.borrascaSocketSmoke")){BorrascaSocketProof.begin(a,b,ORIGIN);step(s,54,BorrascaSocketProof.source());return;}
+            if(SceneReviewSocketProof.enabled()){SceneReviewSocketProof.begin(a,b);step(s,SceneReviewSocketProof.POOL,SceneReviewSocketProof.pool());return;}
             // Explicit proof fixture setup only; production retains its asynchronous, sliced carving.
             for(var hall:List.of(LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL)) {
                 var base=LabyrinthPlaces.base(ORIGIN,hall);LabyrinthHalls.build(l,base,hall);HouseFurnishings.decorate(l,base,hall);LabyrinthBuilder.registerDoors(d,hall,base);
@@ -433,6 +438,14 @@ public final class LiveExpeditionProof {
             HarriganSocketProof.advance(a,b,3);step(s,62,HarriganSocketProof.base());
         }else if(phase==62&&a!=null&&b!=null&&ACKS.size()==2&&HarriganSocketProof.renderedState(a,b,3)){
             HarriganSocketProof.finish();step(s,30,a.blockPosition());write("passed.txt","Two actual NeoForge socket clients: all original shared doors, personal leaves/burns/note scenes and two same-profile reconnects; one Stacy body and one three-second wooden-door break; real shared/private physical hunts, protected hiding peers and renderer ownership; both mine and crawl through persistent shattered portholes with protected hull; both use cameras, return actual rendered exposures, receive distinct locked native maps and independently earn their own Plains memory; a shared native ledger remains hidden for both, appears for the sole eligible reader and disappears after native menu collection without appearing for the peer; fresh trailer door arrivals track eight shared cousins and each private path girl; both clients render distinct fear and priority night dialogue and receive spatial knock events; native screenshots saved; new Borrasca source entry, original native records, positional sound/music exclusion, actual treehouse climb, crouched pipe and exact personal return also passed under the documented targeted fixture; no doubled clocks or transferred ending credit.\n");TheOldestHouse.LOGGER.info("LIVE EXPEDITION CHECK PASSED: persistent shattered portholes, two actual camera exposures, independent ending-book visibility, fresh trailer children and two reconnects");
+        }else if(phase==SceneReviewSocketProof.POOL&&a!=null&&b!=null&&ACKS.size()==2&&SceneReviewSocketProof.closed()){
+            SceneReviewSocketProof.attendant();step(s,SceneReviewSocketProof.ATTENDANT,SceneReviewSocketProof.pool());
+        }else if(phase==SceneReviewSocketProof.ATTENDANT&&a!=null&&b!=null&&ACKS.size()==2&&SceneReviewSocketProof.held()){
+            SceneReviewSocketProof.flat(a,b);step(s,SceneReviewSocketProof.CARRY,SceneReviewSocketProof.flat());
+        }else if(phase==SceneReviewSocketProof.CARRY&&a!=null&&b!=null&&ACKS.size()==2&&SceneReviewSocketProof.carried()){
+            step(s,SceneReviewSocketProof.CHAIR,SceneReviewSocketProof.flat());
+        }else if(phase==SceneReviewSocketProof.CHAIR&&a!=null&&b!=null&&ACKS.size()==2&&SceneReviewSocketProof.gone()){
+            SceneReviewSocketProof.finish();write("passed.txt","The pool and the flat looked at in play with two actual clients; see scene-review-passed.txt.\n");step(s,30,a.blockPosition());
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }
 

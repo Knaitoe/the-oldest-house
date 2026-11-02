@@ -1,7 +1,8 @@
 {
   "textures": {
     "wood": "the_oldest_house:block/ghosts/materials_atlas",
-    "white": "minecraft:block/quartz_block_side"
+    "white": "minecraft:block/quartz_block_side",
+    "particle": "the_oldest_house:block/ghosts/materials_atlas"
   },
   "elements": [
     {

@@ -22,7 +22,11 @@ public final class NightclubRenderers {
     public static final int LOOKS=9;
     private static final String[] SKINS={"dancer_male","dancer_female","dancer_vest","dancer_copper","dancer_mustard","dancer_silver","dancer_brick","dancer_braids","dj"};
     public static ResourceLocation skin(int look){return skin(look,false);}
-    public static ResourceLocation skin(int look,boolean despair){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/nightclub_"+SKINS[Math.floorMod(look,SKINS.length)]+(despair?"_despair":"")+".png");}
+    public static ResourceLocation skin(int look,boolean despair){return skin(look,despair?2:0);}
+    /** 0.4.240: three faces, dancing (0), unsure when the music has gone (1) and dismayed (2). */
+    public static ResourceLocation skin(int look,int face){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/nightclub_"+SKINS[Math.floorMod(look,SKINS.length)]+(face>=2?"_despair":face==1?"_unsure":"")+".png");}
+    /** Which face a dancer wears at this much dismay. */
+    public static int face(float despair){return despair>=.6F?2:despair>=.2F?1:0;}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,CastModel::layer);e.registerLayerDefinition(MALE,()->CastModel.layer(128,64));e.registerLayerDefinition(MALE_DESPAIR,()->CastModel.layer(128,64));}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(NightclubRegistry.ACTOR.get(),Renderer::new);}
     @SubscribeEvent public static void setup(FMLClientSetupEvent e){e.enqueueWork(()->{
@@ -48,7 +52,7 @@ public final class NightclubRenderers {
             return LayerDefinition.create(mesh,textureWidth,textureHeight);
         }
         public void preview(int slot,float time){preview(slot,time,0);}
-        public void preview(int slot,float time,float despair){for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);young=false;crouching=false;riding=false;pose(slot,time);morph(despair,time);}
+        public void preview(int slot,float time,float despair){for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);young=false;crouching=false;riding=false;pose(slot,time,1-Math.min(1,despair*1.4F));morph(despair,time);}
         private void morph(float despair,float time){
             if(despair<=0)return;
             float lean=.5F*despair;body.xRot=lean;body.y+=12*(1-(float)Math.cos(lean));body.z-=12*(float)Math.sin(lean);
@@ -59,9 +63,10 @@ public final class NightclubRenderers {
             leftElbow.xRot=net.minecraft.util.Mth.lerp(despair,leftElbow.xRot,-.08F);rightElbow.xRot=net.minecraft.util.Mth.lerp(despair,rightElbow.xRot,-.08F);
             leftWrist.xRot=despair*.23F;rightWrist.xRot=despair*.23F;hat.copyFrom(head);
         }
-        private void pose(int slot,float time){
+        /** The dance; {@code amp} is how much of it is left (0.4.240: it runs down as the dancer loses the music). */
+        private void pose(int slot,float time,float amp){
             int look=NightclubActor.look(slot);skirt.visible=look==1||look==7;head.visible=true;hat.visible=false;headphones.visible=look==8;
-            float beat=(float)Math.sin(time*Math.PI/5),sway=(float)Math.sin(time*Math.PI/20+slot*1.73);
+            float beat=(float)Math.sin(time*Math.PI/5)*amp,sway=(float)Math.sin(time*Math.PI/20+slot*1.73)*amp;
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y-=Math.abs(beat)*.45F;
             head.xRot+=beat*.075F;
             if(slot==Nightclub.DANCERS){
@@ -81,14 +86,17 @@ public final class NightclubRenderers {
         @Override public void setupAnim(NightclubActor a,float walk,float amount,float age,float yaw,float pitch){
             for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.getAllParts().forEach(ModelPart::resetPose);young=false;crouching=false;riding=false;
             head.yRot=yaw*(float)Math.PI/180;head.xRot=pitch*(float)Math.PI/180;
-            float time=(a.level().getGameTime()%24000)+(age-a.tickCount);pose(a.slot(),time);morph(a.despair(age-a.tickCount),time);
+            float time=(a.level().getGameTime()%24000)+(age-a.tickCount),despair=a.despair(age-a.tickCount);pose(a.slot(),time,1-Math.min(1,despair*1.4F));morph(despair,time);
+            // 0.4.240: partway, before the dismay settles, the head goes to the booth at the back, where the music came from.
+            if(!a.dj()&&despair>0){float toward=net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(180-a.yBodyRot)*(float)Math.PI/180,-1.1F,1.1F);
+                head.yRot+=toward*(float)Math.sin(Math.PI*net.minecraft.util.Mth.clamp((despair-.08F)/.72F,0,1));hat.copyFrom(head);}
         }
     }
     private static final class Renderer extends MobRenderer<NightclubActor,CastModel>{
         private final CastModel male,maleDespair,female;
         Renderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(MALE)),.2F);male=model;maleDespair=new CastModel(c.bakeLayer(MALE_DESPAIR));female=new CastModel(c.bakeLayer(CAST));}
-        @Override public void render(NightclubActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){model=a.look()==0?(a.despair(partial)>=.4F?maleDespair:male):female;super.render(a,yaw,partial,p,out,light);}
-        @Override public ResourceLocation getTextureLocation(NightclubActor a){return skin(a.look(),a.despair(1)>=.4F);}
+        @Override public void render(NightclubActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){model=a.look()==0?(face(a.despair(partial))==2?maleDespair:male):female;super.render(a,yaw,partial,p,out,light);}
+        @Override public ResourceLocation getTextureLocation(NightclubActor a){return skin(a.look(),face(a.despair(1)));}
         @Override protected boolean shouldShowName(NightclubActor a){return false;}
     }
 }

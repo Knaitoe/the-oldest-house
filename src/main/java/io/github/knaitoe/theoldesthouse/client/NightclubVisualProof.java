@@ -24,7 +24,7 @@ public final class NightclubVisualProof extends Screen {
     public NightclubVisualProof(){super(Component.literal("Nightclub — native materials, cast and motion"));}
     @Override protected void init(){
         var mc=Minecraft.getInstance();
-        for(int style=0;style<NightclubRenderers.LOOKS;style++)for(boolean despair:new boolean[]{false,true})try(var stream=mc.getResourceManager().getResource(NightclubRenderers.skin(style,despair)).orElseThrow().open();var image=NativeImage.read(stream)){
+        for(int style=0;style<NightclubRenderers.LOOKS;style++)for(int face=0;face<3;face++)try(var stream=mc.getResourceManager().getResource(NightclubRenderers.skin(style,face)).orElseThrow().open();var image=NativeImage.read(stream)){
             if(image.getWidth()!=image.getHeight()*2)throw new IllegalStateException("Unfitted club atlas "+style);
         }catch(java.io.IOException ex){throw new java.io.UncheckedIOException(ex);}
         for(var kind:NightclubBlock.Kind.values())for(var face:Direction.Plane.HORIZONTAL)for(int stage=0;stage<3;stage++){
@@ -40,11 +40,11 @@ public final class NightclubVisualProof extends Screen {
             int count=page==0?12:page==2?10:6,columns=page==0?4:page==2?5:3,rows=page==0?3:2;
             for(int n=0;n<count;n++){
                 int slot=page==0?(n<8?n:Nightclub.DANCERS):page==2?(n<8?n:n==8?Nightclub.DANCERS:0):new int[]{0,1,2,3,4,Nightclub.DANCERS}[n];
-                int look=NightclubActor.look(slot);float despair=page==2&&n<9?1:0;
+                int look=NightclubActor.look(slot);float despair=page==2?(n<9?new float[]{0,.35F,1}[n%3]:0):0;
                 boolean comparison=page==0&&(n==9||n==10);
                 net.minecraft.client.model.EntityModel<?> model;net.minecraft.resources.ResourceLocation skin;
                 if(comparison){var existing=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));int phase=n==9?5:4;existing.young=false;existing.pose(LiteraryActor.STRANGER,phase,frames);model=existing;skin=LiteraryRenderers.skin(LiteraryActor.STRANGER,phase);}
-                else{var club=new NightclubRenderers.CastModel(mc.getEntityModels().bakeLayer(look==0?(despair>=.4F?NightclubRenderers.MALE_DESPAIR:NightclubRenderers.MALE):NightclubRenderers.CAST));club.preview(slot,page==0?0:frames+partial,despair);model=club;skin=NightclubRenderers.skin(look,despair>=.4F);}
+                else{var club=new NightclubRenderers.CastModel(mc.getEntityModels().bakeLayer(look==0?(NightclubRenderers.face(despair)==2?NightclubRenderers.MALE_DESPAIR:NightclubRenderers.MALE):NightclubRenderers.CAST));club.preview(slot,page==0?0:frames+partial,despair);model=club;skin=NightclubRenderers.skin(look,NightclubRenderers.face(despair));}
                 int cx=20+(n%columns)*(width-40)/columns+(width-40)/columns/2,cy=46+(n/columns)*(height-75)/rows;float scale=page==0?33:page==2?43:53;
                 var pose=graphics.pose();pose.pushPose();pose.translate(cx,cy,190);pose.scale(scale,scale,scale);pose.mulPose(Axis.YP.rotationDegrees(page==0&&n==11?25:145));
                 var buffers=mc.renderBuffers().bufferSource();model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);buffers.endBatch();pose.popPose();

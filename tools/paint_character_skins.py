@@ -233,6 +233,9 @@ for role, look in CLUB:
     name='nightclub_'+('dj' if role=='dj' else 'dancer_'+role)
     LOOKS[name]=look
     LOOKS[name+'_despair']=replace(look,mark='despair')
+    # 0.4.240 (owner: "the dancers should gradually become dismayed ... their faces should reflect these changes too"): the face
+    # between dancing and dismay, when the music has stopped and they have not yet understood it.
+    LOOKS[name+'_unsure']=replace(look,mark='unsure')
 
 LOOKS['ghosts_marjorie_dinner']=replace(LOOKS['ghosts_marjorie'],mark='sauce')
 LOOKS['ghosts_john_hand']=replace(LOOKS['ghosts_john'],mark='hand')
@@ -435,6 +438,12 @@ def face(look):
             d.rectangle((x,7,x+2,8),fill='#e9e2ce')
             iris=x+(1 if x==3 or look.level_eyes else 0)
             d.line((iris,7,iris,8),fill=rgb(look.eyes));d.point((iris,8),fill='#343331')
+        if look.mark=='unsure':
+            # Brows lifted a pixel, eyes gone to one side (toward the booth), the mouth drawn in small.
+            for x in (3,10):
+                d.line((x,6,x+2,6),fill=skin);d.line((x,5,x+2,5),fill=shade(hair,-4))
+                d.rectangle((x,7,x+2,8),fill='#e9e2ce');d.line((x,7,x,8),fill=rgb(look.eyes));d.point((x,8),fill='#343331')
+            d.line((6,13,9,13),fill=skin);d.line((7,13,8,13),fill=shade(skin,-50))
         if look.mark=='despair':
             d.line((3,5,5,6),fill=hair);d.line((10,6,12,5),fill=hair)
             d.line((4,9,4,11),fill=shade(skin,-25));d.line((11,9,11,12),fill=shade(skin,-25))
@@ -993,7 +1002,7 @@ def paint(look):
             for box,c in [((64,30,96,64),look.cloth),((96,0,120,24),'#d7ccb2'),((96,24,103,32),look.skin),((104,24,116,42),'#c8ad70'),((116,24,128,42),'#4e6243'),((100,44,116,52),'#c7bea5')]:
                 put(box,panel((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),c))
         if look.style=='club_dress':fill_net(net(64,41,9,6,5),look.cloth)
-        if look in [v for _,v in CLUB] or look.mark=='despair':
+        if look in [v for _,v in CLUB] or look.mark in ('despair','unsure'):
             fill_net(net(96,0,1,3,3),'#333b3e')
             ImageDraw.Draw(im).rectangle((96*S,0,111*S,7*S),fill='#454b4b')
         if look in [LOOKS.get('seance_'+x) for x in ('medium','mother','father','daughter')]:

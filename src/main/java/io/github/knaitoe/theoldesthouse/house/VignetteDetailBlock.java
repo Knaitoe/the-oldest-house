@@ -19,7 +19,7 @@ public final class VignetteDetailBlock extends HorizontalDirectionalBlock {
     public static BlockState state(Kind kind,Direction facing){return HouseBlocks.VIGNETTE_DETAIL.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         double[][] boxes=switch(s.getValue(KIND)){
-            case PLAIN_NOTES -> new double[][]{{3,0,3,5,12,5},{11,0,11,13,12,13},{1,12,1,15,15,15},{1,15,12,15,22,14}};
+            case PLAIN_NOTES -> new double[][]{{2,0,2,4,12,4},{12,0,2,14,12,4},{2,0,12,4,12,14},{12,0,12,14,12,14},{1,12,1,15,15,15},{1,15,12,15,22,14}};
             // 0.4.201: Tommy's old pennies (Devil's Rock), a few coins flat on whatever they lie on.
             case PENNIES -> new double[][]{{4,0,4,12,1,12}};
             case FOUNTAIN_BOWL -> new double[][]{{2,0,2,14,3,14},{0,3,0,3,9,16},{13,3,0,16,9,16},{3,3,0,13,9,3},{3,3,13,13,9,16},{7,3,7,9,11,9}};

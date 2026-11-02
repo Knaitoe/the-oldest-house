@@ -599,6 +599,13 @@
     "phase": 1
   },
   {
+    "name": "nightclub_dancer_braids_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 7,
+    "phase": 0
+  },
+  {
     "name": "nightclub_dancer_brick",
     "logical": 128,
     "model": "club",
@@ -611,6 +618,13 @@
     "model": "club",
     "number": 6,
     "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_brick_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 6,
+    "phase": 0
   },
   {
     "name": "nightclub_dancer_copper",
@@ -627,6 +641,13 @@
     "phase": 1
   },
   {
+    "name": "nightclub_dancer_copper_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 3,
+    "phase": 0
+  },
+  {
     "name": "nightclub_dancer_female",
     "logical": 128,
     "model": "club",
@@ -639,6 +660,13 @@
     "model": "club",
     "number": 1,
     "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_female_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 1,
+    "phase": 0
   },
   {
     "name": "nightclub_dancer_male",
@@ -655,6 +683,13 @@
     "phase": 1
   },
   {
+    "name": "nightclub_dancer_male_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 0,
+    "phase": 0
+  },
+  {
     "name": "nightclub_dancer_mustard",
     "logical": 128,
     "model": "club",
@@ -667,6 +702,13 @@
     "model": "club",
     "number": 4,
     "phase": 1
+  },
+  {
+    "name": "nightclub_dancer_mustard_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 4,
+    "phase": 0
   },
   {
     "name": "nightclub_dancer_silver",
@@ -683,6 +725,13 @@
     "phase": 1
   },
   {
+    "name": "nightclub_dancer_silver_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 5,
+    "phase": 0
+  },
+  {
     "name": "nightclub_dancer_vest",
     "logical": 128,
     "model": "club",
@@ -697,6 +746,13 @@
     "phase": 1
   },
   {
+    "name": "nightclub_dancer_vest_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 2,
+    "phase": 0
+  },
+  {
     "name": "nightclub_dj",
     "logical": 128,
     "model": "club",
@@ -709,6 +765,13 @@
     "model": "club",
     "number": 8,
     "phase": 1
+  },
+  {
+    "name": "nightclub_dj_unsure",
+    "logical": 128,
+    "model": "club",
+    "number": 8,
+    "phase": 0
   },
   {
     "name": "seance_daughter",
