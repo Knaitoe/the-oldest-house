@@ -9,6 +9,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
@@ -135,4 +137,43 @@ public final class LookoutTests {
             .thenSucceed();
     }
     @AfterBatch(batch="lookout_north") public static void northDone(ServerLevel l){close();}
+
+    /**
+     * Owner, November 2: "players still aren't able to enter; the platform is too low". A reader walks from the foot of the stair
+     * up every tread, round the four landings and in through the opening onto the cab floor, with ordinary steps, gravity and
+     * collision (no jumping, no teleport), and ends standing on the boards inside the cab.
+     */
+    @GameTest(template="empty",batch="lookout_climb",timeoutTicks=2400)
+    public static void aReaderWalksUpTheStairIntoTheCab(GameTestHelper h){
+        var f=fixture(h);var p=f.player("lookout_climb",P);var b=f.base(P);var l=f.out;
+        var route=new java.util.ArrayList<Vec3>();for(var t:LookoutTower.STAIR)route.add(new Vec3(b.getX()+t.x()+.5,0,b.getZ()+t.z()+.5));
+        var top=LookoutTower.STAIR.get(LookoutTower.STAIR.size()-1);
+        route.add(new Vec3(b.getX()+top.x()+.5,0,b.getZ()+top.z()-1.5));route.add(new Vec3(b.getX()+LookoutTower.CX+2.5,0,b.getZ()+LookoutTower.CZ+1.5));
+        int[] at={1,0,0};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,new AABB(b.getX()-12,b.getY()-4,b.getZ()+LookoutTower.CZ-12,b.getX()+12,b.getY()+30,b.getZ()+LookoutTower.CZ+12)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the tower is resident"))
+            .thenExecute(()->{
+                // Every banister and rail joins whatever stands beside it: another post or a solid face. Owner: "banisters are still disconnected".
+                var loose=new java.util.ArrayList<String>();
+                for(var cell:BlockPos.betweenClosed(b.offset(LookoutTower.CX-6,0,LookoutTower.CZ-6),b.offset(LookoutTower.CX+6,LookoutTower.FLOOR+2,LookoutTower.CZ+6))){var s=l.getBlockState(cell);if(!(s.getBlock() instanceof net.minecraft.world.level.block.FenceBlock))continue;
+                    for(var d:Direction.Plane.HORIZONTAL){var n=cell.relative(d);var ns=l.getBlockState(n);boolean should=ns.getBlock() instanceof net.minecraft.world.level.block.FenceBlock||ns.isFaceSturdy(l,n,d.getOpposite());
+                        var side=switch(d){case NORTH->net.minecraft.world.level.block.CrossCollisionBlock.NORTH;case SOUTH->net.minecraft.world.level.block.CrossCollisionBlock.SOUTH;case EAST->net.minecraft.world.level.block.CrossCollisionBlock.EAST;default->net.minecraft.world.level.block.CrossCollisionBlock.WEST;};
+                        if(should&&!s.getValue(side))loose.add(cell.subtract(b).toShortString()+" "+d);}
+                    // A rail that meets another only corner to corner reads as broken: some post must join them along a side.
+                    for(int dx:new int[]{-1,1})for(int dz:new int[]{-1,1}){if(!(l.getBlockState(cell.offset(dx,0,dz)).getBlock() instanceof net.minecraft.world.level.block.FenceBlock))continue;
+                        var a1=l.getBlockState(cell.offset(dx,0,0));var a2=l.getBlockState(cell.offset(0,0,dz));
+                        if(!(a1.getBlock() instanceof net.minecraft.world.level.block.FenceBlock)&&!(a2.getBlock() instanceof net.minecraft.world.level.block.FenceBlock)&&!a1.isSolid()&&!a2.isSolid())loose.add(cell.subtract(b).toShortString()+" diagonal "+dx+","+dz);}}
+                h.assertTrue(loose.isEmpty(),"every banister joins its neighbours; loose: "+loose);
+                var foot=LookoutTower.STAIR.get(0);p.stopRiding();p.setNoGravity(false);p.teleportTo(l,b.getX()+foot.x()+.5,b.getY(),b.getZ()+foot.z()+.5,0,0);p.setDeltaMovement(Vec3.ZERO);})
+            .thenWaitUntil(()->{
+                var target=route.get(Math.min(at[0],route.size()-1));var d=target.subtract(p.position()).multiply(1,0,1);
+                if(d.lengthSqr()<.02&&at[0]<route.size()){at[0]++;at[1]=0;}else at[1]++;
+                if(at[0]<route.size()){var aim=route.get(at[0]).subtract(p.position()).multiply(1,0,1);var step=aim.lengthSqr()<.0256?aim:aim.normalize().scale(.16);
+                    double vertical=p.onGround()?0:(p.getDeltaMovement().y-.08)*.98;var v=new Vec3(step.x,vertical,step.z);p.setDeltaMovement(v);p.move(MoverType.SELF,v);if(p.verticalCollision)p.setDeltaMovement(step.x,0,step.z);}
+                var rel=p.position().subtract(b.getX(),b.getY(),b.getZ());
+                h.assertTrue(at[1]<120,"stuck on the way up at step "+at[0]+" of "+route.size()+" at "+rel+(at[0]<LookoutTower.STAIR.size()?" (tread "+LookoutTower.STAIR.get(at[0])+")":" (the cab floor)"));
+                h.assertTrue(at[0]>=route.size()&&LookoutTower.inCab(rel,LookoutTower.CZ)&&Math.abs(rel.y-(LookoutTower.FLOOR+1))<.01,"walking up: step "+at[0]+" of "+route.size()+" at "+rel);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lookout_climb") public static void climbDone(ServerLevel l){close();}
 }
