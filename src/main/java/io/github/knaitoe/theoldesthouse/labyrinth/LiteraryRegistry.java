@@ -27,6 +27,8 @@ public final class LiteraryRegistry {
     public static final DeferredBlock<GhostsCaseBlock> GHOST_CASE=BLOCKS.registerBlock("ghosts_case",GhostsCaseBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion().noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<GhostsCaseBlockEntity>> GHOST_CASE_ENTITY=BES.register("ghosts_case",()->BlockEntityType.Builder.of(GhostsCaseBlockEntity::new,GHOST_CASE.get()).build(null));
     public static final DeferredItem<CamcorderItem> CAMCORDER=ITEMS.registerItem("camcorder",CamcorderItem::new,new Item.Properties().stacksTo(1));
+    /** 0.4.247: the mug John goes back for between takes (GhostsErrands); drawn by tools/draw_ghosts_errands.py. Only ever in his hand. */
+    public static final DeferredItem<Item> GHOSTS_MUG=ITEMS.registerSimpleItem("ghosts_mug",new Item.Properties().stacksTo(1));
     /** A reader's own storm at the cabin (0.4.52): rain streaks and wind-torn leaves, drawn by their client only. */
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> CABIN_RAIN=PARTICLES.register("cabin_rain",()->new net.minecraft.core.particles.SimpleParticleType(false)),
         CABIN_LEAF=PARTICLES.register("cabin_leaf",()->new net.minecraft.core.particles.SimpleParticleType(false));

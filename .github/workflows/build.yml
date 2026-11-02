@@ -64,6 +64,7 @@ jobs:
           python3 tools/draw_winchester.py --check
           python3 tools/draw_barrett_home.py --check
           python3 tools/draw_ghosts_supper.py --check
+          python3 tools/draw_ghosts_errands.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
           python3 tools/draw_borrasca_cast.py --check
           python3 tools/draw_shiny_gentleman.py --check

@@ -87,7 +87,9 @@ public final class GhostsSet {
             own.putInt("FilmDay",day(own)+1);own.putInt("ShotClock",0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);newDay=true;
         }
         own.putBoolean("FilmDoorExit",false);own.remove("FrameNonce");
-        if(newDay){for(String key:List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490","LightsOut0242"))own.remove(key);}
+        if(newDay){for(String key:List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490","LightsOut0242"))own.remove(key);
+            // 0.4.247: yesterday's errands are over; the table is as it is.
+            var home=LiteraryVignettes.base(p,PLACE);if(home!=null)GhostsErrands.reset(p,home,own);else own.remove(GhostsErrands.KEY);}
         LiteraryVignettes.reward(p,PLACE,own,"Camcorder",new ItemStack(LiteraryRegistry.CAMCORDER.get()));
         p.displayClientMessage(Component.literal((day(own)==DAYS?"Day ":"Filming day ")+day(own)+": "+TITLES[day(own)-1]+"."),false);
         // 0.4.199 (owner: "the director should address the player as soon as they enter so they know to seek him out"): Barry
@@ -109,7 +111,7 @@ public final class GhostsSet {
     }
     /** Every key one filming day leaves behind, cleared when another day begins. */
     private static final List<String> DAY_KEYS=List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","GhostVoiceId","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490",
-        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490","LightsOut0242");
+        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490","LightsOut0242",GhostsErrands.KEY);
     /**
      * 0.4.172 (owner: "add a command to trigger specific film days for testing"): puts one reader at the start of a filming
      * day, as a fresh arrival on that day would be, with the cast restaged and that day's log and frames cleared; with
@@ -123,6 +125,7 @@ public final class GhostsSet {
         var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);
         if(own.getBoolean("Completed"))return "This reader has finished the filming. The shortcut does not reopen a finished account.";
         if(!own.getBoolean("Filming0485"))return "The filming has not begun for this reader.";
+        var home=LiteraryVignettes.base(p,PLACE);if(home!=null)GhostsErrands.reset(p,home,own);
         for(String key:DAY_KEYS)own.remove(key);
         own.putInt("FilmDay",day);own.putInt("ShotClock",pickup?575:0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);own.putBoolean("FilmDoorExit",false);
         own.remove("FilmLog"+day);own.remove("FramesDay"+day);own.putInt("FilmedDays",own.getInt("FilmedDays")&~(1<<(day-1)));
@@ -244,7 +247,7 @@ public final class GhostsSet {
         }
     }
     private static void stage(BlockPos b,LiteraryActor[] cast,int d) {
-        for(var actor:cast){GhostsMotion.stop(actor);GhostsJump.clear(actor);actor.setInvisible(false);}
+        for(var actor:cast){GhostsMotion.stop(actor);GhostsJump.clear(actor);actor.setInvisible(false);actor.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);}
         for(int i=0;i<4;i++){place(cast[i],b,i==0||i==2?-.4:2.4,seatedHeight(cast[i].getScale()),i<2?-19.5:-17.5,i==0||i==2?-90:90,SIT);cast[i].getPersistentData().putBoolean("GhostSeat0492",true);}
         // 0.4.220 (owner: "barry should be facing the monitor"): Barry sits in his director's chair, turned to the field monitor.
         place(cast[4],b,7.5,seatedHeight(cast[4].getScale()),-8.5,-153,SIT);cast[4].getPersistentData().putBoolean("GhostSeat0492",true);place(cast[5],b,7.5,0,-4.5,90,STAND);
@@ -378,7 +381,12 @@ public final class GhostsSet {
         // 0.4.242 (owner: "don't require the player to witness the death of the family to have it concluded"): once the last day's take
         // has begun it plays out whether or not the camera is in the room or rolling.
         boolean unattended=d==DAYS&&objectiveAccepted(own);
-        if(!p.isAlive()||p.isSpectator()||!unattended&&(!own.getBoolean("Rolling")||!inRoom(p,b,d,own.getBoolean("BedroomPickup"))&&!GhostsJump.room(p,b,own))){for(var actor:cast)GhostsMotion.stop(actor);waiting(p,own,cast);display(p,own,b);return;}
+        if(!p.isAlive()||p.isSpectator()||!unattended&&(!own.getBoolean("Rolling")||!inRoom(p,b,d,own.getBoolean("BedroomPickup"))&&!GhostsJump.room(p,b,own))){for(var actor:cast)GhostsMotion.stop(actor);
+            // 0.4.247: between takes on the earlier days, the family and Barry go about small errands of their own (GhostsErrands).
+            if(p.isAlive()&&!p.isSpectator())GhostsErrands.between(p,b,cast,own,d);
+            waiting(p,own,cast);display(p,own,b);return;}
+        // 0.4.247: the take is called with someone still out on an errand: they come back to their place first, and the take waits.
+        if(GhostsErrands.busy(own)){GhostsErrands.home(p,b,cast,own,d);display(p,own,b);return;}
         // The evaluation takes place upstairs too; the utility conversation moves to the bedroom later in its day.
         boolean crewGone=d!=7||crewExit(b,cast,own);int previous=own.getInt("ShotClock");if(d==7&&previous>=615&&!crewGone){display(p,own,b);return;}int t=previous+5;
         if(d==6&&previous>=600&&!own.getBoolean("JumpFrozen0488")){
