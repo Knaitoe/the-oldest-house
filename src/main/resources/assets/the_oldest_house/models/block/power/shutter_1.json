@@ -1,0 +1,76 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/power/slats_bottom",
+    "e": "the_oldest_house:block/power/steel",
+    "l": "the_oldest_house:block/power/light_line",
+    "particle": "the_oldest_house:block/power/slats_bottom"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        2,
+        6
+      ],
+      "to": [
+        16,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#e"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        9
+      ],
+      "to": [
+        15,
+        1,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l"
+        }
+      }
+    }
+  ]
+}

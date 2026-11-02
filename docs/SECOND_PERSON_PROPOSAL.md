@@ -8,6 +8,12 @@ would borrow from the other. Their proposal arrived in full while this draft was
 takes nothing from it on purpose, and the two had not been compared when this was committed. Having had it in view, I can't
 promise no influence at all; any resemblance in structure (an ending set, a decision table) is the shared shape of the form.
 
+## The owner's notes (2 November 2026)
+
+Approved for building after the puzzles and *A Place for You*: "Your proposition is great. The only notes are that violence is
+acceptable to show, it's a horror mod - use your judgement for what fits." Where this draft keeps harm off-screen or only implied,
+the build may show it when the scene is better for it; the judgement is per scene, not a licence to add violence for its own sake.
+
 ## The idea in one paragraph
 
 In the quiet rooms the House watched what the reader's hands did, and it has made somebody out of what it saw. It has given

@@ -487,6 +487,18 @@ public enum LabyrinthPlace {
     NIGHT_OPERATOR("night_operator", Kind.GRAY, 159, new BoundingBox(-6,-1,-12,6,4,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(0,0,-12),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.254, the Fuse Board (FuseRooms, docs/FUSE_BOARD_0_4_254.md): a basement workshop, dark but for a fuse board's pilot lamp and the
+     * light under a steel shutter; one fuse, a work light and the shutter, and a catch that can only be found in light. An early puzzle
+     * room, family POWER.
+     */
+    FUSE_ROOM("fuse_room", Kind.GRAY, 161, new BoundingBox(-6,-1,-16,6,5,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-15),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The fuse room's deep room: three rooms in a row with windows between, two fuses, four circuits, a latched door that can be wedged, a hoist over a hatch, and a shutter. */
+    FUSE_ROOMS("fuse_rooms", Kind.GRAY, 162, new BoundingBox(-6,-6,-30,6,5,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-29),Direction.SOUTH,LabyrinthData.DEALT))),
     /** 0.4.253, After the People Lights Have Gone Off (PeopleLights, PeopleLightsSite): a guest for one evening and night in the narrow, tall house Stan built, after the title story of Stephen Graham Jones's collection. Understanding, one visit. */
     PEOPLE_LIGHTS("people_lights",Kind.ONE_SHOT,160,new BoundingBox(-16,-3,-31,17,15,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
