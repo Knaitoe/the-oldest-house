@@ -99,3 +99,11 @@ record), model particles, the Barrett home and supper drawings, and the painted 
 Seventeen of eighteen jobs passed. In the full suite the keepsake case's cow, which stands outside its one-block template, was
 removed before it settled ("alive false"), most likely by a neighbouring test clearing its own area. A cow that is gone is now put
 down again until one has settled.
+
+## Run 1398
+
+- The build job's package check lists every Ghosts Set kind by hand and did not know the two supper plates; it does now.
+- The live two-client proof caught Marjorie stepping up onto her bed in a single tick on day six (0.58 blocks). She lies further
+  down the bed now, so her first move off it had a sideways part from inside the bed, and the step-up lifted her in one go. She
+  rises straight up from where she lies first, then walks along the bed as before (`GhostsJump`).
+  `GhostsSetTests#daySixWalkFromTheBedHasNoSingleTickJump` starts the day as the live proof does and fails without the change.
