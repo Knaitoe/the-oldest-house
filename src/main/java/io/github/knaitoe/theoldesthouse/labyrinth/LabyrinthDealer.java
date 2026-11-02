@@ -217,7 +217,7 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.QUIET_ROOM);
         int depth = data.returnDepth(player);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
-        if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS));
+        if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS, LabyrinthPlace.AIRING_ROOMS));
         if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
         if (depth >= LabyrinthPacing.ABYSS_DEPTH) gray.add(LabyrinthPlace.ABYSS_MAZE);
         // After seven forward crossings, newly discovered ordinary halls are stone.
@@ -555,7 +555,7 @@ public final class LabyrinthDealer {
             // 0.4.199 (owner: "one with a massive ceiling and one with a crumbled floor players have to 'parkour' across"): the
             // vaulted hall a little rarer than the others, so it stays a surprise; the crumbled hall never in the first three
             // crossings, so nobody's first steps in the House are a jump.
-            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS -> 0;
+            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS, AIRING_ROOMS -> 0;
             // 0.4.231: the shut-up rooms under dust, a plaster hall, from the third crossing until the halls turn to stone; a little more often than a plain hall.
             case DUST_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             // 0.4.232: without a reader (the shared hall cache), the kitchen at its ordinary weight.

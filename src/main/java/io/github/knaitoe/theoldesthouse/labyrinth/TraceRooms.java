@@ -260,10 +260,12 @@ public final class TraceRooms {
     // ------------------------------------------------------------------ doors on closers
     private static final Map<Long,Long> OPENED=new HashMap<>();
     /** The doors on closers, in a room's own coordinates. */
-    static List<BlockPos> springs(LabyrinthPlace place){return place==CLOAK?List.of(CLOAK_DOOR):place==SPRUNG?List.of(SPRUNG_A,SPRUNG_B):List.of();}
+    static List<BlockPos> springs(LabyrinthPlace place){return place==CLOAK?List.of(CLOAK_DOOR):place==SPRUNG?List.of(SPRUNG_A,SPRUNG_B):place==DraftRooms.AIRING?List.of(DraftRooms.AB,DraftRooms.BC):List.of();}
+    /** 0.4.245: the rooms whose doors are on closers: the cloakroom, the sprung rooms, and the airing rooms (whose far door the air opens, not the closers). */
+    static final LabyrinthPlace[] SPRING_ROOMS={CLOAK,SPRUNG,DraftRooms.AIRING};
     public static boolean spring(ServerLevel l,BlockPos lower){
         var origin=HouseSavedData.get(l.getServer()).houseOrigin();if(origin==null||!l.dimension().equals(HouseDimensions.INTERIOR))return false;
-        var place=LabyrinthPlaces.placeAt(origin,lower);if(place!=CLOAK&&place!=SPRUNG)return false;var b=LabyrinthPlaces.base(origin,place);
+        var place=LabyrinthPlaces.placeAt(origin,lower);if(place!=CLOAK&&place!=SPRUNG&&place!=DraftRooms.AIRING)return false;var b=LabyrinthPlaces.base(origin,place);
         for(var at:springs(place))if(b.offset(at).equals(lower))return true;return false;
     }
     /** Whether a door on a closer is held open: wedged, a chair in its way, or someone standing in it. */
@@ -287,7 +289,7 @@ public final class TraceRooms {
             long since=OPENED.computeIfAbsent(lower.asLong(),k->now);
             if(now-since>=SPRING_TICKS){shut(l,lower);OPENED.remove(lower.asLong());allOpen=false;}
         }
-        if(!allOpen||PuzzleRooms.solved(l.getServer(),place))return;
+        if(!allOpen||PuzzleRooms.solved(l.getServer(),place)||(place!=CLOAK&&place!=SPRUNG))return;
         var front=b.offset(place==CLOAK?CLOAK_FRONT:SPRUNG_FRONT);
         for(var p:l.players())if(!p.isSpectator()&&p.isAlive()&&p.position().distanceToSqr(front.getBottomCenter())<=1.6*1.6){
             PuzzleRooms.ironDoor(l,b,place,true);l.playSound(null,front,SoundEvents.IRON_DOOR_OPEN,SoundSource.BLOCKS,1F,.9F);
@@ -302,7 +304,7 @@ public final class TraceRooms {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();long now=server.getTickCount();var origin=HouseSavedData.get(server).houseOrigin();var l=server.getLevel(HouseDimensions.INTERIOR);
         if(origin==null||l==null)return;
-        if(now%5==0)for(var place:new LabyrinthPlace[]{CLOAK,SPRUNG}){
+        if(now%5==0)for(var place:SPRING_ROOMS){
             if(LabyrinthData.get(server).door(place.entryDoorId())==null)continue;
             var b=LabyrinthPlaces.base(origin,place);if(b==null||!l.isLoaded(b))continue;
             boolean someone=false;for(var p:l.players())if(PuzzleRooms.at(p)==place){someone=true;break;}

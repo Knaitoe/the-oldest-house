@@ -452,6 +452,14 @@ public enum LabyrinthPlace {
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("side",new BlockPos(4,0,-20),Direction.WEST,LabyrinthData.DEALT),
             new DoorSpec("far",new BlockPos(0,0,-40),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.245, the airing rooms (DraftRooms, TraceRooms): the vent rooms' draft, through two doors on closers under dust. A wedge or a
+     * chair dragged into a doorway holds each door, and the air goes where they let it, to a panel in plain plaster. A deep puzzle room
+     * offered only once the vent rooms and the sprung rooms are solved.
+     */
+    AIRING_ROOMS("airing_rooms", Kind.GRAY, 155, new BoundingBox(-12,-1,-28,12,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(11,0,-28),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
