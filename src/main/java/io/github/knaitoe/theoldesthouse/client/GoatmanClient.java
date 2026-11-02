@@ -76,7 +76,7 @@ public final class GoatmanClient {
             int center=g.guiWidth()/2,y=g.guiHeight()/2-25,span=rows.size()*13+25;
             g.fill(16,y-7,g.guiWidth()-16,y+span,0x66000000);
             g.drawCenteredString(font,"At the door",center,y,0xFFB1AAA1);
-            int shake=demand>=104&&tick%7==0?(tick/7%2==0?1:-1):0;
+            int shake=demand>=104&&tick%7==0&&Comfort.effects()>0?(tick/7%2==0?1:-1):0;
             for(int i=0;i<rows.size();i++){
                 if(demand>=104)g.drawCenteredString(font,rows.get(i),center-shake+1,y+15+i*13,0x66B99880);
                 g.drawCenteredString(font,rows.get(i),center+shake,y+14+i*13,0xFFF2EADF);

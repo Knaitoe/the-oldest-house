@@ -27,7 +27,7 @@ public final class HazardClient {
     private static void clear(){state=null;reader=null;level=null;lease=0;}
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){clear();}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(lease>0)lease--;if(!active()){clear();return;}if(state.mode()==2)reader.setDeltaMovement(reader.getDeltaMovement().add(state.view().getFloat("Push"),0,0));}
-    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(active()&&state.mode()==2)e.setRoll(e.getRoll()+state.view().getFloat("Tilt")*7*Minecraft.getInstance().options.screenEffectScale().get().floatValue());}
+    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(active()&&state.mode()==2)e.setRoll(e.getRoll()+state.view().getFloat("Tilt")*7*Comfort.effects());}
     public static PlayerModel<LocalPlayer> model(Minecraft mc,boolean slim){return new PlayerModel<>(mc.getEntityModels().bakeLayer(slim?ModelLayers.PLAYER_SLIM:ModelLayers.PLAYER),slim);}
     public static void pose(PlayerModel<LocalPlayer> model,float pitch,boolean crouch,float stride,float time){
         java.util.stream.Stream.of(model.head,model.hat,model.body,model.rightArm,model.leftArm,model.rightLeg,model.leftLeg,model.jacket,model.leftSleeve,model.rightSleeve,model.leftPants,model.rightPants).forEach(net.minecraft.client.model.geom.ModelPart::resetPose);

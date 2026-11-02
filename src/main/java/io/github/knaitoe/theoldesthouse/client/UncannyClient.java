@@ -56,7 +56,7 @@ public final class UncannyClient {
     @SubscribeEvent public static void rumble(ViewportEvent.ComputeCameraAngles event){
         if(!active()||UncannyCameras.recording())return;boolean tunnel=room().equals("tunnel_periphery");if(!tunnel&&!room().equals("layered_man"))return;
         double t=world.getGameTime()+event.getPartialTick();float left=(float)(view.getLong(tunnel?"TunnelQuakeUntil131":"RumbleUntil130")-t);if(left<=0)return;
-        float strength=Mth.clamp(left/(tunnel?12F:60F),0,1)*(float)(double)Minecraft.getInstance().options.screenEffectScale().get(),weight=tunnel?2.8F:1;
+        float strength=Mth.clamp(left/(tunnel?12F:60F),0,1)*Comfort.effects(),weight=tunnel?2.8F:1;
         event.setPitch(event.getPitch()+(float)Math.sin(t*1.91)*.24F*strength*weight);event.setYaw(event.getYaw()+(float)Math.sin(t*1.37)*.17F*strength*weight);event.setRoll(event.getRoll()+(float)Math.sin(t*2.13)*.19F*strength*weight);
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
@@ -74,7 +74,7 @@ public final class UncannyClient {
     }
     @SubscribeEvent public static void tunnelHue(RenderGuiEvent.Pre event){
         if(!active()||!room().equals("tunnel_periphery")||UncannyCameras.recording())return;var mc=Minecraft.getInstance();
-        int alpha=(int)(48*(double)mc.options.screenEffectScale().get());int rgb=green()?0x286a43:0x761c18;
+        int alpha=(int)(48*Comfort.effects());int rgb=green()?0x286a43:0x761c18;
         event.getGuiGraphics().fill(0,0,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight(),alpha<<24|rgb);
     }
     @SubscribeEvent public static void overlay(RenderGuiEvent.Post event){
@@ -85,7 +85,7 @@ public final class UncannyClient {
     }
     /** 0.4.201: when it reaches their room, the screen flashes red and the reader's view is spattered, fading over eight seconds. */
     static void slaughter(net.minecraft.client.gui.GuiGraphics g,int w,int h,long since){
-        if(since<0||since>=160)return;float scale=(float)(double)Minecraft.getInstance().options.screenEffectScale().get();
+        if(since<0||since>=160)return;float scale=Comfort.effects();
         float flash=Math.max(0,1-since/24F)*(.35F+.65F*scale);if(flash>0)g.fill(0,0,w,h,((int)(flash*180)<<24)|0xa80000);
         float blood=since<40?1:Math.max(0,1-(since-40)/120F);if(blood<=0)return;
         var texture=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/misc/blood_splatter.png");

@@ -29,3 +29,13 @@ for word; each is built in its own release, in the owner's order.
 And on the second, while it was being built:
 
 > i'm okay with the conversation history being integrated into the player's journal
+
+## Where each note went
+
+1. Journal autosave: 0.4.265, docs/JOURNAL_AUTOSAVE_0_4_265.md.
+2. Conversation history, in the journal: 0.4.266, docs/WHAT_WAS_SAID_0_4_266.md.
+3. Hall drawers: retrieval, slots and pages: 0.4.267, docs/DRAWER_RETRIEVAL_0_4_267.md.
+4. Journal ribbon, page number and search: 0.4.268, docs/JOURNAL_FINDING_0_4_268.md.
+5. Companion key and the wheel's current order: 0.4.269, docs/COMPANION_KEY_0_4_269.md.
+6. Group crossings: cues and reasons: 0.4.270, docs/GROUP_CROSSING_CUES_0_4_270.md.
+7. Visual comfort: 0.4.271, docs/COMFORT_CONTROLS_0_4_271.md.

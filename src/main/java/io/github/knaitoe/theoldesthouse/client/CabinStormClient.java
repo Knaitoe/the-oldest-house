@@ -80,7 +80,7 @@ public final class CabinStormClient {
         e.setRed(Mth.lerp(s,e.getRed(),.09F));e.setGreen(Mth.lerp(s,e.getGreen(),.1F));e.setBlue(Mth.lerp(s,e.getBlue(),.12F));}
     @SubscribeEvent public static void fog(ViewportEvent.RenderFog e){if(!active()||storm<=.05F||e.getMode()!=net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN)return;float s=level((float)e.getPartialTick());
         e.setFarPlaneDistance(Math.min(e.getFarPlaneDistance(),Mth.lerp(s,e.getFarPlaneDistance(),26)));e.setNearPlaneDistance(Math.min(e.getNearPlaneDistance(),Mth.lerp(s,e.getNearPlaneDistance(),2)));e.setCanceled(true);}
-    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(!active())return;var mc=Minecraft.getInstance();float effect=(float)(double)mc.options.screenEffectScale().get();double t=sceneTicks+e.getPartialTick();
+    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(!active())return;var mc=Minecraft.getInstance();float effect=Comfort.effects();double t=sceneTicks+e.getPartialTick();
         float roll=0,pitch=0;
         if(scene==HEART&&t<14){float k=(float)(1-t/14);roll+=(float)Math.sin(t*3.1)*2.2F*k;pitch+=(float)Math.sin(t*2.3)*1.6F*k;}
         if(scene==ARM){

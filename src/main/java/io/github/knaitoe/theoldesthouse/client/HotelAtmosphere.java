@@ -28,7 +28,7 @@ public final class HotelAtmosphere {
             e.registerAboveAll(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"hotel_weather"),(g,delta)->{var mc=Minecraft.getInstance();var scene=scene();
                 if(blind()&&lease>0&&cue!=null&&cue.mode()==1){String text=arrow(mc.player.position(),cue.source().getCenter(),mc.player.getYRot(),cue.lie())+"  A bell in the dark";int x=g.guiWidth()-mc.font.width(text)-16,y=g.guiHeight()-78;g.fill(x-5,y-3,g.guiWidth()-10,y+13,0xAA252525);g.drawString(mc.font,text,x,y,0xFFF1ECE1);}
                 if(scene==LabyrinthPlace.HOTEL_GROUNDS){int time=mc.player.tickCount;for(int i=0;i<85;i++){int x=Math.floorMod(i*79+time*2,g.guiWidth()),y=Math.floorMod(i*43+time*(2+i%3),g.guiHeight());g.fill(x,y,x+1+i%2,y+2,0xAADCDFE2);}}
-                if(scene==LabyrinthPlace.HOTEL&&flash>0){int alpha=(int)(170*flash/8F*(double)mc.options.screenEffectScale().get());g.fill(0,0,g.guiWidth(),g.guiHeight(),(alpha<<24)|0xFFFFFF);}
+                if(scene==LabyrinthPlace.HOTEL&&flash>0){int alpha=(int)(170*flash/8F*Comfort.effects());g.fill(0,0,g.guiWidth(),g.guiHeight(),(alpha<<24)|0xFFFFFF);}
             });}
     }
 }

@@ -55,7 +55,7 @@ public final class ClapGameClientEvents {
         float progress = Mth.clamp((ClapGameClientState.elapsed() - ClapGameClock.TWIST_TICK)
                 / (ClapGameClock.ENDING_TICKS - ClapGameClock.TWIST_TICK), 0, 1);
         progress = progress * progress * (3 - 2 * progress);
-        float effects = mc.options.fovEffectScale().get().floatValue();
+        float effects = Comfort.effects();
         event.setYaw(ClapGameClientState.yaw() + 45 * progress * effects);
         event.setPitch((ClapGameClientState.revealed()?24:32) + 26 * progress * effects);
         event.setRoll(75 * progress * effects);

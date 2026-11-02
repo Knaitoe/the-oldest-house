@@ -34,7 +34,7 @@ public final class BackseatClient {
     public static double cameraPullback(float partial){
         var mc=Minecraft.getInstance();var car=driving();if(car==null||!mc.options.getCameraType().isFirstPerson())return 0;
         float q=car.phase==BackseatCarBlock.Car.IMPACT?1:car.acceleration(partial);q=q*q*(3-2*q);
-        return .18*q*mc.options.screenEffectScale().get();
+        return .18*q*Comfort.effects();
     }
     private static BackseatCarBlock.Car nearby(){
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!mc.player.isAlive()||mc.player.isSpectator())return null;

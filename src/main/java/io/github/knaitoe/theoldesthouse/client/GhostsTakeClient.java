@@ -50,7 +50,7 @@ public final class GhostsTakeClient {
     @SubscribeEvent public static void input(MovementInputUpdateEvent e){if(!frozen())return;var input=e.getInput();input.forwardImpulse=input.leftImpulse=0;input.up=input.down=input.left=input.right=input.jumping=input.shiftKeyDown=false;e.getEntity().setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);}
     // A marker lens makes vanilla treat its operator as a third-person body. Keep the private held shot clear of reader bodies.
     @SubscribeEvent public static void operator(RenderPlayerEvent.Pre e){if(frozen())e.setCanceled(true);}
-    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(frozen()){e.setYaw(marker.getYRot());e.setPitch(marker.getXRot());e.setRoll(0);}if(privacyPitch!=null&&lease>0)e.setPitch(privacyPitch);if(shake>0){float wobble=(float)Math.sin((12-shake)*1.8)*shake/12F;e.setRoll(e.getRoll()+wobble*1.5F);e.setPitch(e.getPitch()+wobble*.7F);}}
+    @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){if(frozen()){e.setYaw(marker.getYRot());e.setPitch(marker.getXRot());e.setRoll(0);}if(privacyPitch!=null&&lease>0)e.setPitch(privacyPitch);if(shake>0){float wobble=(float)Math.sin((12-shake)*1.8)*shake/12F*Comfort.effects();e.setRoll(e.getRoll()+wobble*1.5F);e.setPitch(e.getPitch()+wobble*.7F);}}
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut ignored){clear();}
     @SubscribeEvent public static void caption(RenderGuiEvent.Post event){
         if(voiceTicks<=0||words.isEmpty()||Minecraft.getInstance().player==null)return;var mc=Minecraft.getInstance();var g=event.getGuiGraphics();int width=mc.getWindow().getGuiScaledWidth(),height=mc.getWindow().getGuiScaledHeight();

@@ -40,7 +40,7 @@ public final class GroundingClient {
         target=Mth.clamp(p.level(),0F,1F);if(target>level+.25F)level=target;
     }
     /** How strongly it shows now: what is left of it, times the screen-effects setting. */
-    static float strength(){var mc=Minecraft.getInstance();return mc.options==null?0:Grounding.strength(level,mc.options.screenEffectScale().get().floatValue());}
+    static float strength(){var mc=Minecraft.getInstance();return mc.options==null?0:Grounding.strength(level,Comfort.effects());}
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){level=target=0;settling=0;}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var mc=Minecraft.getInstance();
