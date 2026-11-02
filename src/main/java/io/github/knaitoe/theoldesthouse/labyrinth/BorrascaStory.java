@@ -276,7 +276,14 @@ public final class BorrascaStory {
     /** Where he stands for this reader now, or null when he is not there. */
     public static @Nullable Vec3 gentleman(CompoundTag own){return own.getInt("GentTicks")>0&&own.getInt("Visit")<=2?new Vec3(own.getDouble("GentX"),own.getDouble("GentY"),own.getDouble("GentZ")):null;}
     /** Whether the reader is looking straight at him, with nothing in the way. */
-    static boolean seesGentleman(ServerPlayer p,Vec3 at){var head=at.add(0,GENT_HEIGHT*.6,0);var eye=p.getEyePosition();var d=head.subtract(eye);if(p.getLookAngle().dot(d.normalize())<.95)return false;return p.level().clip(new ClipContext(eye,head,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS;}
+    // 0.4.242 (run 1399): where he stands is chosen with his head in clear sight; his middle can be behind a rock or a branch. Looking
+    // at him counts when either is in clear sight.
+    static boolean seesGentleman(ServerPlayer p,Vec3 at){
+        var eye=p.getEyePosition();var look=p.getLookAngle();
+        for(double h:new double[]{GENT_HEIGHT*.6,GENT_HEIGHT-.4}){var point=at.add(0,h,0);
+            if(look.dot(point.subtract(eye).normalize())>=.95&&p.level().clip(new ClipContext(eye,point,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS)return true;}
+        return false;
+    }
     /** She walks a route at her own pace; she waits only for a reader far behind her, and calls them once each time. True at its end. */
     private static boolean follow(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend,String key,BlockPos[] points){
         int i=own.getInt(key);if(i>=points.length){BorrascaCast.stop(friend);return true;}var at=Vec3.atBottomCenterOf(b.offset(points[i]));
