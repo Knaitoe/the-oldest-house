@@ -123,6 +123,10 @@ LOOKS = {
     # A Place for You (0.4.257): Mara in her cardigan over a work dress, her hair pinned up; Kit in a jacket for going.
     'literary_place_mara': Look('#cfa088','#5c4030','bun','#6a7a5c','#3c3632','cardigan','#d8cbb0',eyes='#4e5a4c',age=1),
     'literary_place_kit': Look('#d8b098','#2e2620','messy','#3a4c6a','#2e3238','jacket','#c89a44',eyes='#4a5a6a'),
+    # 0.4.264, Johnny Truant: tired skin, a worn face a little uneven, stubble, a worn jacket, ink on his hands. The leer is the same face
+    # with the eye on its showing side narrowed and that corner of the mouth pulled up, tight.
+    'literary_truant': Look('#c49a80','#3b2f28','messy','#4f4840','#33343a','jacket','#7d6f5c',eyes='#4f5650',age=1,beard='stubble',mark='truant'),
+    'literary_truant_leer': Look('#c49a80','#3b2f28','messy','#4f4840','#33343a','jacket','#7d6f5c',eyes='#4f5650',age=1,beard='stubble',mark='truant_leer'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
@@ -462,6 +466,17 @@ def face(look):
             d.line((3,5,5,6),fill=hair);d.line((10,6,12,5),fill=hair)
             d.line((4,9,4,11),fill=shade(skin,-25));d.line((11,9,11,12),fill=shade(skin,-25))
             d.line((6,13,7,12,8,12,9,13),fill=shade(skin,-44))
+    if look.mark in ('truant','truant_leer'):
+        # Tired: shadow under both eyes, one lid (the picture's left) heavier than the other, the mouth a pixel off true.
+        for x in (3,10):d.line((x,9,x+2,9),fill=shade(skin,-24))
+        d.line((3,7,5,7),fill=shade(skin,-14));d.point((3,8),fill=shade(skin,-30))
+        d.line((6,13,9,13),fill=shade(skin,-9));d.line((5,13,8,13),fill=shade(skin,-42))
+        if look.mark=='truant_leer':
+            # The leer, on the side that shows round a corner (his left, the picture's right): that eye narrowed to a slit under a
+            # lowered brow, and that corner of the mouth pulled up, tight.
+            d.rectangle((10,5,12,9),fill=skin);d.line((10,6,12,7),fill=shade(hair,-4));d.line((10,8,12,8),fill='#e9e2ce');d.point((11,8),fill=rgb(look.eyes))
+            d.line((10,9,12,9),fill=shade(skin,-24))
+            d.line((5,13,8,13),fill=shade(skin,-9));d.line((6,13,8,13),fill=shade(skin,-44));d.line((9,12,10,11),fill=shade(skin,-44));d.point((11,11),fill=shade(skin,-20))
     if look.age:
         d.line((5,3,10,3),fill=cheek)
         for x in (2,13):d.point((x,9),fill=dark)
@@ -909,6 +924,10 @@ def paint(look):
                     d.line((1,h-2,w-2,h-2),fill=shade(look.skin,-18));d.point((w-2,h-4),fill=shade(look.skin,7))
                     if side in ('left','right'):d.line((1,h-5,1,h-3),fill=shade(look.skin,-22))
             elif side=='bottom':art=panel((w,h),'#a48f64' if look.mark=='borrasca_worker' else look.skin,'skin',side)
+            if look.mark in ('truant','truant_leer') and side not in ('top','bottom'):
+                # Ink on his hands: a few dark blue marks across the knuckles and the back of the hand.
+                d=ImageDraw.Draw(art)
+                for x,y in ((1,h-3),(w-3,h-4),(w//2,h-2),(w//2+1,h-4)):d.point((min(w-1,x),y),fill='#2c3858')
             if look.mark=='borrasca_worker' and side not in ('top','bottom'):
                 d=ImageDraw.Draw(art);d.rectangle((0,h-4,w-1,h-1),fill='#a48f64');d.line((0,h-4,w-1,h-4),fill='#786b51')
             if look.mark=='borrasca_kyle' and side not in ('top','bottom'):

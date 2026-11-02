@@ -356,6 +356,12 @@ public final class LabyrinthData extends SavedData {
         return -1;
     }
 
+    /** 0.4.264: the ids of this player's last eight places, latest first. */
+    public List<String> recent(UUID player) {
+        PlayerDealer state = playerDealers.get(player);
+        return state == null ? List.of() : List.copyOf(state.recent);
+    }
+
     public Set<String> visited(UUID player) {
         PlayerDealer state = playerDealers.get(player);
         return state == null ? Set.of() : Set.copyOf(state.visited);

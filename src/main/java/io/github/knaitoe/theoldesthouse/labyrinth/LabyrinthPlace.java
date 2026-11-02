@@ -531,6 +531,18 @@ public enum LabyrinthPlace {
     QUIET_SPARE("quiet_spare", Kind.GRAY, 169, new BoundingBox(-5,-1,-12,5,6,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(3,0,-11),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.264, Johnny Truant's places (TruantPlaces, docs/TRUANT_0_4_264.md), each built whole. The held door: a service passage, a heavy door on a closer. */
+    TRUANT_DOOR("truant_door", Kind.GRAY, 170, new BoundingBox(-3,-1,-24,3,4,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-24),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The crossing: a ledge along a shaft wall, no rail. */
+    TRUANT_LEDGE("truant_ledge", Kind.GRAY, 171, new BoundingBox(-5,-9,-16,5,4,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-16),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The lamp: a low corridor round a corner to his alcove. */
+    TRUANT_LAMP("truant_lamp", Kind.GRAY, 172, new BoundingBox(-12,-1,-16,2,3,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(-10,0,-16),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

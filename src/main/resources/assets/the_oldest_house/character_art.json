@@ -1404,5 +1404,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 66
+  },
+  {
+    "name": "literary_truant",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 73
+  },
+  {
+    "name": "literary_truant_leer",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 74
   }
 ]
