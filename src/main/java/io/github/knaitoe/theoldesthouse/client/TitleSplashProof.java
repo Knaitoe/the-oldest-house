@@ -11,8 +11,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 
 /**
- * 0.4.240: the title screen's splash as it is drawn (HouseSplash), at a fixed moment and at a moment its correction has slipped. Run the
- * client with -PsplashSmoke; it saves build/font-smoke/title-splash-held.png and title-splash-slipped.png and closes.
+ * 0.4.240: the title screen's splash as it is drawn (HouseSplash), at a fixed moment. Run the client with -PsplashSmoke; it saves
+ * build/font-smoke/title-splash.png and closes.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class TitleSplashProof {
@@ -22,7 +22,6 @@ public final class TitleSplashProof {
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.splashSmoke")||!(mc.screen instanceof TitleScreen)||mc.getOverlay()!=null)return;
         frames++;var dir=Path.of("../build/font-smoke");
         if(frames==120)HouseSplash.fixed=3.3;
-        if(frames==130){Files.createDirectories(dir);try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("title-splash-held.png"));}HouseSplash.fixed=HouseSplash.SLIP_EVERY*3+.05;}
-        if(frames==140){try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("title-splash-slipped.png"));}HouseSplash.fixed=null;mc.stop();}
+        if(frames==130){Files.createDirectories(dir);try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("title-splash.png"));}HouseSplash.fixed=null;mc.stop();}
     }
 }

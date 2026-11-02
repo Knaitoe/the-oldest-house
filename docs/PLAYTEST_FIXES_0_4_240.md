@@ -39,6 +39,11 @@ own; "in it" goes away letter by letter, smaller and fainter; the whole line aga
 the page; the light it is drawn in fails for a quarter of a second here and there. `TitleSplashProof` (`-PsplashSmoke`) saves a held
 and a slipped frame.
 
+In 0.4.252 the owner asked to "just keep the mirrored, faded, barely visible this house has ghosts in it". Only the backwards, faint
+line is drawn now, where it was and at the same angle, scale and faintness, its "house" still in the blue and its light still failing
+now and then. The struck-out "had", the drifting "ghosts" and the receding "in it" are gone. The proof saves one frame,
+`title-splash.png`.
+
 ## Faces that took their pixels from beside their texture
 
 The owner, on the dust hall: "the blocks here might need to have their pixel maps adjusted." A model face with no `uv` of its own
