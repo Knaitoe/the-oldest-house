@@ -20,7 +20,9 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.247**: the Barretts between takes. On the first days of filming, before the camera rolls, the family and the director go about small things of their own. Sarah takes a plate to the sink, John goes back to the kitchen for the mug he forgot, and Barry crouches over a cable that's lifting while he talks you through the day. When the take is called, everyone goes back to their places first. By the fifth day nobody is doing anything like that any more. See [docs/GHOSTS_ERRANDS_0_4_247.md](docs/GHOSTS_ERRANDS_0_4_247.md).
+Development candidate **0.4.248**: the Barretts' house after the last day. If you finished the filming, the house can come back to you as you left it: dark, the three of them still at the table, Merry's chair empty, the crew gone. Through its door you hear nothing; anyone still filming hears voices. See [docs/AFTERMATH_0_4_244.md](docs/AFTERMATH_0_4_244.md).
+
+Previously, candidate **0.4.247**: the Barretts between takes. On the first days of filming, before the camera rolls, the family and the director go about small things of their own. Sarah takes a plate to the sink, John goes back to the kitchen for the mug he forgot, and Barry crouches over a cable that's lifting while he talks you through the day. When the take is called, everyone goes back to their places first. By the fifth day nobody is doing anything like that any more. See [docs/GHOSTS_ERRANDS_0_4_247.md](docs/GHOSTS_ERRANDS_0_4_247.md).
 
 Previously, candidate **0.4.246**: rooms you can know through the door. Stand at a door that leads to the kitchen and you hear its clock under the fridge running, then the fridge cutting out, then the tap dripping once. At the pool's door you hear water lapping in a big tiled room, the pace clock's hand clicking round, and far off someone turning at the wall. See [docs/ROOM_RHYTHMS_0_4_246.md](docs/ROOM_RHYTHMS_0_4_246.md).
 

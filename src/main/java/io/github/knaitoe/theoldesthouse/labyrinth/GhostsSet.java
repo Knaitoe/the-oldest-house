@@ -358,6 +358,7 @@ public final class GhostsSet {
         if(t>=860&&!own.getBoolean("MerryLeft0488"))capture(p,own,"MerryDeparture",cast[1].getEyePosition());
         capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-19.5));
     }
+    public static final String AFTERMATH="The house is dark. The three of them are still at the table, and Merry's chair is empty. The crew's things are gone.";
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own) {
         if(!own.getBoolean("Filming0485")||!built(LabyrinthData.get(p.server),b))return;
         if(!own.contains("AcceptedScene131")&&own.getBoolean("Rolling"))own.putInt("AcceptedScene131",objective(own));
@@ -365,7 +366,12 @@ public final class GhostsSet {
             // Fit only saved originals; a concluded take must never create or restage a missing actor.
             var saved=new LiteraryActor[6];var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE);
             for(int i=0;i<6;i++){String key="Film"+PEOPLE[i]+"_"+p.getUUID();if(world.hasUUID(key)&&p.serverLevel().getEntity(world.getUUID(key)) instanceof LiteraryActor a)saved[i]=a;}
-            fitSavedSeats(b,saved);return;
+            fitSavedSeats(b,saved);
+            // 0.4.248, aftermath (docs/AFTERMATH_0_4_244.md): the house as the last day left it, for this reader alone. The lights out,
+            // the three still at the table, Merry gone, the crew gone; nobody asks anything.
+            GhostsLights.out(p,b,own);if(saved[1]!=null)offstage(saved[1]);for(int i=4;i<6;i++)if(saved[i]!=null)offstage(saved[i]);
+            if(Aftermath.count(own))p.displayClientMessage(Component.literal(AFTERMATH).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
+            return;
         }
         var cast=new LiteraryActor[6];for(int i=0;i<6;i++){cast[i]=person(p,b,i);if(cast[i]==null)return;}
         if(own.getBoolean("CastPlaced"))fitSavedSeats(b,cast);

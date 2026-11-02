@@ -99,6 +99,36 @@ public final class GhostsSetTests {
             .thenSucceed();
     }
     @AfterBatch(batch="ghosts_errand_mug") public static void errandMugDone(ServerLevel ignored){if(active!=null){active.close();active=null;}}
+    /**
+     * 0.4.248, aftermath (docs/AFTERMATH_0_4_244.md): the Barretts' house comes back, to the reader who finished the filming, as the last
+     * day left it: dark, the three of them still at the table, Merry and the crew gone. It is offered back to them, nothing is earned,
+     * and through its door there is nothing moving for them while another reader still hears voices.
+     */
+    @GameTest(template="empty",batch="ghosts_after",timeoutTicks=600)
+    public static void aFinishedHouseComesBackDarkWithTheThreeStillAtTheTable(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_after",P);var peer=f.player("ghost_after_peer",P);var held=f.base(P);
+        f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(held.offset(-21,-5,-47)),Vec3.atLowerCornerOf(held.offset(22,13,1))));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the house is ready"))
+            .thenExecute(()->{var b=f.base(P);var own=f.own(p,P);own.putInt("FilmDay",7);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putInt("ShotClock",0);GhostsSet.reader(p,b,own);save(f,p,own);})
+            .thenWaitUntil(()->{actor(f,p,LiteraryActor.GHOST_MERRY);actor(f,p,LiteraryActor.GHOST_PRODUCER);})
+            .thenExecute(()->{
+                var b=f.base(P);var own=f.own(p,P);
+                for(int r:new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH})actor(f,p,r).appearance(r,GhostsSet.DEAD);
+                own.putBoolean("DayDone",true);own.putBoolean("MerryLeft0488",true);own.putInt("FilmedDays",(1<<GhostsSet.DAYS)-1);own.putString("Confession","The account.");own.putBoolean("Ready",true);own.putBoolean("Completed",true);own.putInt("Beat",own.getInt("Visit"));own.remove("LightsOut0242");
+                save(f,p,own);WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.of(P.id()),"completed_the_filming_days_and_read_own_cut");int credit=WitnessAccount.count(f.data(),p.getUUID());
+                h.assertTrue(Aftermath.canDeal(f.data(),p.getUUID(),P)&&!Aftermath.canDeal(f.data(),peer.getUUID(),P),"the finished house is offered back to the reader who finished it, and only to them");
+                own=f.own(p,P);GhostsSet.reader(p,b,own);save(f,p,own);
+                h.assertTrue(GhostsLights.out(own),"the lights are out for them");
+                h.assertTrue(actor(f,p,LiteraryActor.GHOST_MERRY).isInvisible()&&actor(f,p,LiteraryActor.GHOST_PRODUCER).isInvisible(),"Merry and the crew are gone");
+                for(int r:new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH})h.assertTrue(!actor(f,p,r).isInvisible()&&actor(f,p,r).phase()==GhostsSet.DEAD,"still at the table: "+r);
+                h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1&&WitnessAccount.count(f.data(),p.getUUID())==credit&&f.own(p,P).getBoolean("Completed"),"the return counted, nothing earned");
+                var mine=DoorSounds.heard(p.server,f.data(),p.getUUID(),P,null);var theirs=DoorSounds.heard(p.server,f.data(),peer.getUUID(),P,null);
+                h.assertTrue(mine!=null&&mine.carry()==DoorSounds.Carry.EMPTY&&theirs!=null&&theirs.carry()==DoorSounds.Carry.VOICES,"through the door: nothing for them, voices for anyone still filming: "+mine+" "+theirs);
+                h.assertTrue(!GhostsLights.out(f.own(peer,P)),"the other reader's house keeps its lights");
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="ghosts_after") public static void afterDone(ServerLevel ignored){if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="ghosts_home0121") public static void homeDone(ServerLevel ignored){if(active!=null){active.close();active=null;}}
     @GameTest(template="empty",batch="ghosts_home0121",timeoutTicks=300)
     public static void theBarrettsHouseIsAHomeWithTheCrewInItAndEveryFilmingRouteStaysClear(GameTestHelper h){

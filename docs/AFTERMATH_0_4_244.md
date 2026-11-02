@@ -89,6 +89,26 @@ Its aftermath needs no solitude, since another reader in the rooms still dances 
 (`LiteraryVignettes.MASQUE_AFTER`) is counted on the literary tick's own record with `Aftermath.count`, because that tick saves the copy
 it read afterwards.
 
+## The Ghosts Set (0.4.248)
+
+The Barretts' house is one house, but each reader films their own family, so its aftermath is private too, like the Masque's. A
+reader who finished the filming comes back to the house as the last day left it, in their own view:
+- the lights out (`GhostsLights.out`, as at the end of day seven);
+- the three of them still at the table (their saved originals, never restaged or replaced);
+- Merry gone, and Barry and the priest gone with their gear.
+
+The quiet line is "The house is dark. The three of them are still at the table, and Merry's chair is empty. The crew's things are
+gone." It is counted on the literary tick's own record. Through the house's door (a new `DoorSounds` source), a reader who finished
+hears nothing moving in there, and a reader still filming hears voices. The errands of the earlier days (0.4.247) have nothing to
+answer them here.
+
+Test: `GhostsSetTests#aFinishedHouseComesBackDarkWithTheThreeStillAtTheTable`:
+- offered back only to the reader who finished;
+- the lights out for them alone;
+- Merry and the crew gone, the three still at the table;
+- the return counted and nothing earned;
+- the door sound per listener.
+
 ## Joining the registry
 
 For a later scene to join:
