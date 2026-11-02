@@ -320,4 +320,85 @@ public final class WitnessTests {
             helper.assertTrue(!FinaleProgress.world(server).getBoolean("Ended"),"release never starts world demolition");helper.succeed();
         });
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.243 finale review
+    private static Fixture reviewFixture;
+    private static ServerPlayer reviewPlayer;
+    private static final List<Runnable> REVIEW_CLEANUP=new ArrayList<>();
+    private static void cleanReviewState(net.minecraft.server.level.ServerLevel level){
+        REVIEW_CLEANUP.forEach(Runnable::run);REVIEW_CLEANUP.clear();
+        if(reviewPlayer!=null){level.getServer().getPlayerList().remove(reviewPlayer);reviewPlayer=null;}
+        if(reviewFixture!=null){reviewFixture.close();reviewFixture=null;}FinaleController.clearAll();
+    }
+    @AfterBatch(batch="finale_review") public static void cleanReview(net.minecraft.server.level.ServerLevel level){cleanReviewState(level);}
+    @AfterBatch(batch="finale_review_guide") public static void cleanReviewGuide(net.minecraft.server.level.ServerLevel level){cleanReviewState(level);}
+    private static void hold(net.minecraft.server.level.ServerLevel level,BlockPos at){
+        var chunk=new net.minecraft.world.level.ChunkPos(at);level.getChunkAt(at);
+        level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL,chunk,3,at);
+        REVIEW_CLEANUP.add(()->level.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL,chunk,3,at));
+    }
+    private static ItemEntity laid(net.minecraft.server.level.ServerLevel level,BlockPos at,ItemStack stack){
+        ItemEntity item=new ItemEntity(level,at.getX()+.5,at.getY(),at.getZ()+.5,stack);item.setUnlimitedLifetime();item.setPickUpDelay(32767);level.addFreshEntity(item);
+        REVIEW_CLEANUP.add(item::discard);return item;
+    }
+    /** Another reader's escape takes the House down while this one is still climbing home from their own release. */
+    @GameTest(template="empty",batch="finale_review") public static void aReaderClimbingHomeKeepsTheirEndingWhenAnotherEscapeBringsTheHouseDown(GameTestHelper helper){
+        var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(5900,80,5900);
+        reviewFixture=new Fixture(server,origin);
+        BlockPos at=FinaleArchitecture.cell(origin).north(3),far=at.east(5);hold(level,at);hold(level,far);
+        level.setBlock(at.below(),Blocks.POLISHED_DEEPSLATE.defaultBlockState(),3);level.setBlock(far.below(),Blocks.POLISHED_DEEPSLATE.defaultBlockState(),3);
+        BlockPos door=origin.offset(0,1,-40);hold(server.overworld(),door);server.overworld().setBlock(door.below(),Blocks.STONE.defaultBlockState(),3);
+        Vec3 landing=Vec3.atBottomCenterOf(door);
+        reviewPlayer=helper.makeMockServerPlayerInLevel();ServerPlayer player=reviewPlayer;player.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,0,0);
+        UUID away=UUID.randomUUID(),descending=UUID.randomUUID();
+        ItemStack mine=new ItemStack(Items.IRON_SWORD);mine.setDamageValue(12);UUID mineId=WeaponHistory.stamp(mine);
+        ItemStack theirs=new ItemStack(Items.STONE_AXE);UUID theirsId=WeaponHistory.stamp(theirs);
+        ItemEntity mineLaid=laid(level,at,mine),theirsLaid=laid(level,far,theirs);
+        CompoundTag own=new CompoundTag();own.putString("Phase",FinaleProgress.Phase.HOMEWARD.name());own.putUUID("LaidDown",mineLaid.getUUID());own.putLong("LaidAt",at.asLong());FinaleProgress.save(server,player.getUUID(),own);
+        CompoundTag other=new CompoundTag();other.putString("Phase",FinaleProgress.Phase.HOMEWARD.name());other.putUUID("LaidDown",theirsLaid.getUUID());other.putLong("LaidAt",far.asLong());FinaleProgress.save(server,away,other);
+        CompoundTag stairs=new CompoundTag();stairs.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());FinaleProgress.save(server,descending,stairs);
+        REVIEW_CLEANUP.add(()->server.overworld().getEntitiesOfClass(ItemEntity.class,new AABB(door).inflate(3)).forEach(net.minecraft.world.entity.Entity::discard));
+        helper.runAfterDelay(40,()->{
+            long now=server.overworld().getGameTime();
+            WitnessEnding.completeOnCollapse(server,landing);
+            var mineAfter=FinaleProgress.player(server,player.getUUID());var theirsAfter=FinaleProgress.player(server,away);
+            helper.assertTrue(FinaleProgress.phase(mineAfter)==FinaleProgress.Phase.WITNESSED&&mineAfter.getLong("EpilogueDue")>=now+24000&&!mineAfter.hasUUID("LaidDown"),
+                    "the reader on the stairs keeps the release they did, and the account still comes home: "+mineAfter);
+            helper.assertTrue(player.getInventory().items.stream().anyMatch(s->WeaponHistory.wounds(s,mineId)&&s.getDamageValue()==12)&&mineLaid.isRemoved(),
+                    "the weapon laid by the cell goes with them, once, with its wear");
+            helper.assertTrue(FinaleProgress.phase(theirsAfter)==FinaleProgress.Phase.WITNESSED&&theirsLaid.isRemoved()
+                    &&server.overworld().getEntitiesOfClass(ItemEntity.class,new AABB(door).inflate(3),i->WeaponHistory.wounds(i.getItem(),theirsId)).size()==1,
+                    "one who is away keeps the ending too, and their weapon waits at the door");
+            helper.assertTrue(FinaleProgress.phase(server,descending)==FinaleProgress.Phase.STAIRCASE,"a reader who never opened the cell is not given an ending");
+            helper.succeed();
+        });
+    }
+    /** The companion the Mother lends for the escape is not left standing at the bottom, and never kept twice, when its reader falls. */
+    @GameTest(template="empty",batch="finale_review_guide") public static void aGuideLentForTheEscapeGoesBackToHerWhenTheReaderFalls(GameTestHelper helper){
+        var server=helper.getLevel().getServer();var level=HouseTestLevel.get(server);BlockPos origin=new BlockPos(6300,80,6300);
+        reviewFixture=new Fixture(server,origin);
+        var oldMother=MotherCollection.get(server);server.overworld().getDataStorage().set("the_oldest_house_mother",new MotherCollection());
+        REVIEW_CLEANUP.add(()->server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother));
+        BlockPos at=FinaleArchitecture.bottomStart(origin).south(2);hold(level,at);level.setBlock(at.below(),Blocks.POLISHED_DEEPSLATE.defaultBlockState(),3);level.setBlock(at.east(2).below(),Blocks.POLISHED_DEEPSLATE.defaultBlockState(),3);
+        reviewPlayer=helper.makeMockServerPlayerInLevel();ServerPlayer player=reviewPlayer;player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        // A mock player stays invulnerable while it is "changing dimension" until this is acknowledged, as a client would.
+        player.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,0,0);player.hasChangedDimension();
+        // As FinaleController.createGuide restores it: tame, ownerless, persistent (the House turns away any other animal) and tagged.
+        var guide=net.minecraft.world.entity.EntityType.WOLF.create(level);guide.setTame(true,false);guide.setPersistenceRequired();
+        guide.moveTo(Vec3.atBottomCenterOf(at.east(2)));guide.getPersistentData().putBoolean(FinaleController.GUIDE,true);level.addFreshEntity(guide);
+        REVIEW_CLEANUP.add(guide::discard);
+        CompoundTag contents=new CompoundTag();guide.saveWithoutId(contents);contents.putString("id","minecraft:wolf");
+        var entry=MotherCollection.get(server).keepPet(UUID.randomUUID(),contents,player.getUUID(),"Biscuit");
+        CompoundTag record=new CompoundTag();record.putString("Phase",FinaleProgress.Phase.ESCAPE.name());record.putBoolean("Descended",true);record.putBoolean("RescueAttempted",true);
+        record.putUUID("Guide",guide.getUUID());record.putUUID("GuideEntry",entry.id);record.putBoolean("Guided",true);FinaleProgress.save(server,player.getUUID(),record);
+        helper.runAfterDelay(40,()->{
+            helper.assertTrue(level.getEntity(guide.getUUID())==guide,"the guide is in the world before the fall");
+            player.hurt(player.damageSources().genericKill(),Float.MAX_VALUE);
+            var after=FinaleProgress.player(server,player.getUUID());var kept=MotherCollection.get(server).entry(entry.id);
+            helper.assertTrue(!player.isAlive()&&FinaleProgress.phase(after)==FinaleProgress.Phase.LOCKED_OUT,"a fall in the escape keeps its old outcome: "+FinaleProgress.phase(after));
+            helper.assertTrue(guide.isRemoved()&&!after.hasUUID("Guide")&&!after.getBoolean("Guided"),"the guide is not left standing in the dark at the bottom");
+            helper.assertTrue(kept!=null&&kept.sealed&&MotherCollection.get(server).all().stream().filter(e->e.pet).count()==1,"it is back on her shelf, once, and stays there");
+            helper.succeed();
+        });
+    }
 }

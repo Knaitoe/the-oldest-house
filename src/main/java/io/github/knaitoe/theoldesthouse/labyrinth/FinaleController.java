@@ -172,10 +172,14 @@ public final class FinaleController {
         var world=FinaleProgress.world(level.getServer());if(world.hasUUID("Owner")||world.getBoolean("MinotaurWounded")||world.getBoolean("CellReleased")||imprisoned(level.getServer()))return null;
         BlockPos cell=FinaleArchitecture.cell(origin);level.getChunkAt(cell);
         if(world.hasUUID("CagedCreature")){
-            var live=level.getEntity(world.getUUID("CagedCreature"));if(live instanceof MinotaurEntity m){CAGED.put(level.getServer(),m);return m;}
-            var queued=CAGED.get(level.getServer());if(queued!=null&&!queued.isRemoved()&&queued.getUUID().equals(world.getUUID("CagedCreature")))return queued;
-            // Wait for native entity loading before replacing any saved prisoner.
-            long first=MISSING_CREATURES.computeIfAbsent(world.getUUID("CagedCreature"),id->level.getGameTime());if(level.getGameTime()-first<100)return null;
+            var live=level.getEntity(world.getUUID("CagedCreature"));if(live instanceof MinotaurEntity m&&m.motion()!=MinotaurEntity.LOOSE){CAGED.put(level.getServer(),m);return m;}
+            // 0.4.243: a prisoner that has since got out is not the cell's prisoner any more.
+            if(live instanceof MinotaurEntity){world.remove("CagedCreature");LabyrinthData.get(level.getServer()).setState(FinaleProgress.STATE,world);}
+            else{
+                var queued=CAGED.get(level.getServer());if(queued!=null&&!queued.isRemoved()&&queued.getUUID().equals(world.getUUID("CagedCreature")))return queued;
+                // Wait for native entity loading before replacing any saved prisoner.
+                long first=MISSING_CREATURES.computeIfAbsent(world.getUUID("CagedCreature"),id->level.getGameTime());if(level.getGameTime()-first<100)return null;
+            }
         }
         var old=level.getEntitiesOfClass(MinotaurEntity.class,new AABB(cell).inflate(12),m->m.motion()==MinotaurEntity.CAGED);
         var boy=old.isEmpty()?FinaleRegistry.MINOTAUR.get().create(level):old.getFirst();if(boy==null)return null;
@@ -270,8 +274,14 @@ public final class FinaleController {
         ServerLevel level=player.serverLevel();BlockPos cell=FinaleArchitecture.cell(origin);level.getChunkAt(cell);
         // Entity lookup is only meaningful after the cell chunk is loaded.
         if(record.hasUUID("Creature")&&level.getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature){
-            if(creature.motion()==MinotaurEntity.CAGED){creature.owner(player.getUUID());if(FinaleProgress.phase(record)==FinaleProgress.Phase.RELEASE)creature.released();}
-            MISSING_CREATURES.remove(player.getUUID());return;
+            // 0.4.243: one loose on the stairs belongs to the one it killed and is nobody's prisoner; a new one is found instead.
+            if(creature.motion()!=MinotaurEntity.LOOSE){
+                // A release frees whatever is in the cell, the child or one an earlier reader wounded, and never a second.
+                if(FinaleProgress.phase(record)==FinaleProgress.Phase.RELEASE&&creature.motion()!=MinotaurEntity.RELEASED){creature.owner(player.getUUID());creature.released();}
+                else if(creature.motion()==MinotaurEntity.CAGED)creature.owner(player.getUUID());
+                MISSING_CREATURES.remove(player.getUUID());return;
+            }
+            record.remove("Creature");
         }
         if(record.hasUUID("Creature")){
             long first=MISSING_CREATURES.computeIfAbsent(player.getUUID(),ignored->level.getGameTime());
@@ -367,6 +377,13 @@ public final class FinaleController {
             var entry=MotherCollection.get(player.server).keepPet(pet.getUUID(),contents,player.getUUID(),pet.getName().getString());
             if(entry!=null){entry.sealed=true;MotherCollection.get(player.server).setDirty();}pet.discard();
         }
+        // 0.4.243: the companion the Mother lent for the escape is still hers until the exit. One who falls on the way does
+        // not leave it standing in the dark at the bottom while it also waits on her shelf: it goes back there, and stays.
+        if(record.hasUUID("Guide")&&player.serverLevel().getEntity(record.getUUID("Guide")) instanceof TamableAnimal guide&&guide.getPersistentData().getBoolean(GUIDE)){
+            guide.discard();record.remove("Guide");record.putBoolean("Guided",false);
+            var lent=record.hasUUID("GuideEntry")?MotherCollection.get(player.server).entry(record.getUUID("GuideEntry")):null;
+            if(lent!=null){lent.sealed=true;MotherCollection.get(player.server).setDirty();}
+        }
         FinaleProgress.save(player.server,player.getUUID(),record);LabyrinthData.get(player.server).clearReturns(player.getUUID());
         if(was!=FinaleProgress.Phase.IMPRISONED&&record.hasUUID("Creature")&&player.serverLevel().getEntity(record.getUUID("Creature")) instanceof MinotaurEntity creature&&creature.motion()!=MinotaurEntity.WOUNDED){
             // The one that killed them is out: it waits to see them wake behind the bars, then goes into the dark of the stairs.
@@ -434,6 +451,8 @@ public final class FinaleController {
         FinaleProgress.save(player.server,player.getUUID(),record);player.removeEffect(MobEffects.DARKNESS);
         // 0.4.199: the House's last page, in the reader's own journal: the first line they wrote in the House (Quotes).
         io.github.knaitoe.theoldesthouse.journal.Quotes.ending(player.server,player.getUUID());
+        // 0.4.243: a reader climbing home from their own release keeps that ending; the House coming down cannot strand it.
+        WitnessEnding.completeOnCollapse(player.server,landing);
         // Evacuate every resident before disabling the House's origin; no peer can be stranded.
         for(ServerPlayer other:player.server.getPlayerList().getPlayers())if(HouseDimensions.isHouseDimension(other.serverLevel().dimension())){HouseTransitionEvents.cancelPending(other,"the House is collapsing");outside(other,landing);}
         if(!player.serverLevel().dimension().equals(Level.OVERWORLD))outside(player,landing);
