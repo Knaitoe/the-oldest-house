@@ -34,7 +34,7 @@ public final class GhostsSetInteractions {
             LiteraryVignettes.open(p,GhostsSet.PLACE,own,key,HouseWriting.book(title,"Merry and Marjorie",HouseWriting.WritingStyle.WILL,pages),b.offset(rel));return true;
         }
         String text=switch(kind){
-            case PLATE,PLAIN_PLATE,MEAL_STEW,MEAL_SANDWICH,MEAL_SOUP,MEAL_ROAST,MEAL_POTATOES->meal(own.getInt("FilmDay"),kind==GhostsSetBlock.Kind.PLAIN_PLATE);
+            case PLATE,PLAIN_PLATE,MEAL_STEW,MEAL_SANDWICH,MEAL_SOUP,MEAL_ROAST,MEAL_POTATOES,MEAL_SPAGHETTI,MEAL_SPAGHETTI_PLAIN->meal(own.getInt("FilmDay"),kind==GhostsSetBlock.Kind.PLAIN_PLATE);
             case HAT->"The sequins catch the light. Nothing about the hat is different when you lift its brim.";
             case BOLTS->"You feel the rough metal beneath the table edge. The rusty fitting is ordinary, and sharp.";
             case JUG->"The jug is heavy enough to hurt someone if it falls. You set it back where it was.";
@@ -127,5 +127,5 @@ public final class GhostsSetInteractions {
         case FOLDING_TABLE->"Tape, markers and spare call sheets.";
         default->null;
     };}
-    private static String meal(int day,boolean plain){return switch(day){case 1->"Stew waits in the bowls while the crew finishes the interviews.";case 3->"Sandwiches, cut before anyone asked whether the girls were hungry.";case 4->"Soup has gone cool during the private conversation.";case 5->"Roast and vegetables, served around another upstairs evaluation.";case 6->"Potatoes and peas. The equipment is already being carried upstairs.";case 7->plain?"Merry's spaghetti has no sauce. Her plate looks ordinary.":"Spaghetti again. The family is eating after the programme has ended.";default->plain?"Plain spaghetti on Merry's plate.":"Spaghetti, eaten under the crew's lights.";};}
+    private static String meal(int day,boolean plain){return switch(day){case 1->"Stew waits in the bowls while the crew finishes the interviews.";case 3->"Sandwiches, cut before anyone asked whether the girls were hungry.";case 4->"Soup has gone cool during the private conversation.";case 5->"Roast and vegetables, served around another upstairs evaluation.";case 6->"Potatoes and peas. The equipment is already being carried upstairs.";case 7->plain?"Merry's spaghetti is plain. She never eats the sauce.":"Spaghetti with red sauce. Marjorie made it.";default->plain?"Plain spaghetti on Merry's plate.":"Spaghetti, eaten under the crew's lights.";};}
 }

@@ -306,6 +306,9 @@
   "facing=north,kind=rug_shag": {
    "model": "the_oldest_house:block/barrett/rug_shag"
   },
+  "facing=north,kind=rug_runner_cable": {
+   "model": "the_oldest_house:block/barrett/rug_runner_cable"
+  },
   "facing=north,kind=merry_rug": {
    "model": "the_oldest_house:block/barrett/merry_rug_nw"
   },
@@ -715,6 +718,10 @@
   },
   "facing=east,kind=rug_shag": {
    "model": "the_oldest_house:block/barrett/rug_shag",
+   "y": 90
+  },
+  "facing=east,kind=rug_runner_cable": {
+   "model": "the_oldest_house:block/barrett/rug_runner_cable",
    "y": 90
   },
   "facing=east,kind=merry_rug": {
@@ -1128,6 +1135,10 @@
    "model": "the_oldest_house:block/barrett/rug_shag",
    "y": 180
   },
+  "facing=south,kind=rug_runner_cable": {
+   "model": "the_oldest_house:block/barrett/rug_runner_cable",
+   "y": 180
+  },
   "facing=south,kind=merry_rug": {
    "model": "the_oldest_house:block/barrett/merry_rug_se"
   },
@@ -1537,6 +1548,10 @@
   },
   "facing=west,kind=rug_shag": {
    "model": "the_oldest_house:block/barrett/rug_shag",
+   "y": 270
+  },
+  "facing=west,kind=rug_runner_cable": {
+   "model": "the_oldest_house:block/barrett/rug_runner_cable",
    "y": 270
   },
   "facing=west,kind=merry_rug": {

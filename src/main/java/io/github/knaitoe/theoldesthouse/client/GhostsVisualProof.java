@@ -41,14 +41,18 @@ public final class GhostsVisualProof extends Screen {
         }else if(page==15){
             for(int n=0;n<12;n++){var pose=g.pose();pose.pushPose();pose.translate(24+(n%6+.5F)*(width-48)/6,52+(n/6+.6F)*(height-72)/2,190);pose.scale(32,-32,32);pose.mulPose(Axis.XP.rotationDegrees(18));pose.mulPose(Axis.YP.rotationDegrees(145));GhostsPropRenderer.preview(n<6?LiteraryActor.GHOST_DRAWER:LiteraryActor.GHOST_PLAYHOUSE,(n%6)*.4F,pose,buffers,LightTexture.FULL_BRIGHT);buffers.endBatch();pose.popPose();}
         }else if(page==4||page==5){
-            var p=g.pose();p.pushPose();p.translate(width/2.,height*.72,180);p.scale(48,-48,48);p.mulPose(Axis.XP.rotationDegrees(18));p.mulPose(Axis.YP.rotationDegrees(-35));
+            // Page 5 is drawn from both sides of the table, close enough to see the hands.
+            for(int view=0;view<(page==5?2:1);view++){
+            var p=g.pose();p.pushPose();if(page==5){p.translate(width*(view==0?.27:.73),height*.8,180);p.scale(96,-96,96);p.mulPose(Axis.XP.rotationDegrees(32));p.mulPose(Axis.YP.rotationDegrees(view==0?70:-110));}else{p.translate(width/2.,height*.72,180);p.scale(48,-48,48);p.mulPose(Axis.XP.rotationDegrees(18));p.mulPose(Axis.YP.rotationDegrees(-35));}
             for(int bx=0;bx<=1;bx++)for(int z=-1;z<=1;z++){p.pushPose();p.translate(bx-.5,0,z);mc.getBlockRenderer().renderSingleBlock(GhostsSetRooms.tableState(bx,z+GhostsSetRooms.TABLE.getZ()),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();}
-            for(int i=0;i<4;i++){boolean left=i==0||i==2;int row=i<2?-1:1;
+            for(int i=0;i<4;i++){boolean left=i==0||i==2;int row=i<2?-1:1;if(page==5&&left!=(view==1))continue;
                 p.pushPose();p.translate(left?-1.5:1.5,0,row);mc.getBlockRenderer().renderSingleBlock(GhostsSetBlock.of(GhostsSetBlock.Kind.CHAIR,left?Direction.EAST:Direction.WEST),p,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);p.popPose();
-                int role=GhostsSet.ROLES[i],phase=page==5&&role==LiteraryActor.GHOST_MERRY?GhostsSet.PRAY:GhostsSet.SIT;float size=i==0?.86F:i==1?.58F:1F;var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(role,phase,frames);
-                if(Math.abs(model.leftLeg.xRot+(float)Math.PI/2)>.001||Math.abs(model.leftLeg.getChild("knee").xRot-(float)Math.PI/2)>.001)throw new IllegalStateException("Seated thighs and knees must fit the actual chair, including Merry's prayer pose");
-                p.pushPose();p.translate(left?-.9:1.9,GhostsSet.seatedHeight(size),row+.5);p.mulPose(Axis.YP.rotationDegrees(left?270:90));p.scale(-size,-size,size);p.translate(0,-1.501,0);model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(GhostsCastModel.skin(role,phase))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
-            }buffers.endBatch();p.popPose();g.drawCenteredString(font,page==5?"Native dining chairs / Merry praying on her original seat":"Native dining chairs / four actual cast scales and seated poses",width/2,34,0xffe7dbc3);
+                // 0.4.242: page 5 is the grace: Sarah and John standing by the girls, hands held out, Merry giving hers, Marjorie slipping off her chair.
+                int role=GhostsSet.ROLES[i],phase=page==5?(i==0?GhostsSet.SLIP:GhostsSet.PRAY):GhostsSet.SIT;float size=i==0?.86F:i==1?.58F:1F;var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(role,phase,frames);
+                boolean seated=GhostsSet.seatedPose(role,phase)&&phase!=GhostsSet.SLIP;
+                if(seated&&(Math.abs(model.leftLeg.xRot+(float)Math.PI/2)>.001||Math.abs(model.leftLeg.getChild("knee").xRot-(float)Math.PI/2)>.001))throw new IllegalStateException("Seated thighs and knees must fit the actual chair, including Merry's prayer pose");
+                p.pushPose();p.translate(left?-.9:1.9,GhostsSet.seatedPose(role,phase)?GhostsSet.seatedHeight(size):0,GhostsSet.seatedPose(role,phase)?row+.5:-.5+.85);p.mulPose(Axis.YP.rotationDegrees(left?270:90));p.scale(-size,-size,size);p.translate(0,-1.501,0);model.renderToBuffer(p,buffers.getBuffer(RenderType.entityCutoutNoCull(GhostsCastModel.skin(role,phase))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
+            }buffers.endBatch();p.popPose();}g.drawCenteredString(font,page==5?"Grace / the parents hold out their hands, Merry gives hers, Marjorie slips off her chair":"Native dining chairs / four actual cast scales and seated poses",width/2,34,0xffe7dbc3);
         }else if(page==0||page==3){
             for(int n=0;n<(page==0?17:12);n++){
                 int role=page==3?new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH}[n%3]:n<6?GhostsSet.ROLES[n]:n==15?LiteraryActor.GHOST_JOHN:LiteraryActor.GHOST_MARJORIE,phase=page==3?(n<3?GhostsSet.EATING:n<6?GhostsSet.CHOKING:GhostsSet.DEAD):n<6?GhostsSet.STAND:n-6;
@@ -73,7 +77,7 @@ public final class GhostsVisualProof extends Screen {
         }
     }
     private void reviewCast(GuiGraphics g,net.minecraft.client.renderer.MultiBufferSource.BufferSource buffers){
-        var mc=Minecraft.getInstance();int count=page<=8?18:page==9?24:12;
+        var mc=Minecraft.getInstance();int count=page<=8?20:page==9?24:12;
         for(int n=0;n<count;n++){
             int role=page<=8||page==10?LiteraryActor.GHOST_MARJORIE:page==9?n>=21?LiteraryActor.GHOST_JOHN:GhostsSet.ROLES[(n/3)%6]:new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH}[n%3];
             int phase=page<=8?n:page==9?(n/3==6?GhostsSet.VOMIT:n/3==7?GhostsSet.HAND:GhostsSet.STAND):page==10?(n<6?GhostsSet.STAND:GhostsSet.VOMIT):(n<3?GhostsSet.CHOKING:n<6?GhostsSet.DEAD:n<9?GhostsSet.HELP:GhostsSet.FALL);
@@ -93,6 +97,6 @@ public final class GhostsVisualProof extends Screen {
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!(Boolean.getBoolean("the_oldest_house.fontSmoke")||Boolean.getBoolean("the_oldest_house.ghostsSmoke"))||!(mc.screen instanceof GhostsVisualProof proof)||++proof.frames<24)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-ghosts-"+pageName(proof.page)+".png"));}
-        if(++proof.page<17){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Seventeen native views: all eighteen human poses from front/side/back, eight unchanged painted atlases, normal/dinner blink and jaw frames, helping/falling/distinct deaths and mouth strands/drops, all four fixture orientations, drawer/cardboard transitions, case lids, four fitted call-sheet orientations, native caption and four fitted dining chairs including Merry's prayer pose, and the full connected native staircase from two angles rendered.\n");if(Boolean.getBoolean("the_oldest_house.ghostsSmoke"))mc.stop();else mc.setScreen(new LastStopCastVisualProof());
+        if(++proof.page<17){proof.frames=0;return;}Files.writeString(dir.resolve("ghosts-passed.txt"),"Seventeen native views: all twenty human poses from front/side/back, eight painted atlases, normal/dinner blink and jaw frames, helping/falling/distinct deaths and mouth strands/drops, all four fixture orientations, drawer/cardboard transitions, case lids, four fitted call-sheet orientations, native caption and four fitted dining chairs and the grace held from both sides of the table, and the full connected native staircase from two angles rendered.\n");if(Boolean.getBoolean("the_oldest_house.ghostsSmoke"))mc.stop();else mc.setScreen(new LastStopCastVisualProof());
     }
 }

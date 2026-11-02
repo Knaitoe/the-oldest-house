@@ -18,9 +18,11 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     private final ModelPart rightElbow,leftElbow,rightKnee,leftKnee,jaw,lids;
     private int currentRole,currentPhase;
     private float blink;
+    /** 0.4.242: brow lift, brow tilt (inner ends up is worry, down is anger) and mouth corners, each -1..1. */
+    private final float[] face=new float[3];
     private final java.util.List<ModelPart> joints;
     private final java.util.WeakHashMap<LiteraryActor,Tween> transitions=new java.util.WeakHashMap<>();
-    private static final class Tween {int phase;float started;float[] from,last;Tween(int phase){this.phase=phase;}}
+    private static final class Tween {int phase;float started;float[] from,last,faceFrom,faceLast;Tween(int phase){this.phase=phase;}}
     public GhostsCastModel(ModelPart root){super(root);rightElbow=rightArm.getChild("elbow");leftElbow=leftArm.getChild("elbow");rightKnee=rightLeg.getChild("knee");leftKnee=leftLeg.getChild("knee");jaw=head.getChild("jaw");lids=head.getChild("lids");joints=root.getAllParts().toList();}
     public static LayerDefinition layer(){
         var mesh=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=mesh.getRoot();
@@ -50,8 +52,11 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     private void blend(LiteraryActor actor,float age){
         var state=transitions.computeIfAbsent(actor,a->new Tween(a.phase()));
         // A newly visible apex must freeze in its complete leap, even if its earlier phase was last rendered off-camera.
-        if(GhostsTakeClient.frozen()&&actor.phase()==GhostsSet.LEAP){state.phase=actor.phase();state.from=null;state.last=snapshot();return;}
-        if(state.phase!=actor.phase()){state.from=state.last;state.started=age;state.phase=actor.phase();}
+        if(GhostsTakeClient.frozen()&&actor.phase()==GhostsSet.LEAP){state.phase=actor.phase();state.from=null;state.last=snapshot();state.faceLast=face.clone();return;}
+        if(state.phase!=actor.phase()){state.from=state.last;state.faceFrom=state.faceLast;state.started=age;state.phase=actor.phase();}
+        // A face changes over a second or so, not in a cut.
+        if(state.faceFrom!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/22F,0,1);t=t*t*(3-2*t);for(int i=0;i<3;i++)face[i]=net.minecraft.util.Mth.lerp(t,state.faceFrom[i],face[i]);if(t==1)state.faceFrom=null;}
+        state.faceLast=face.clone();
         if(state.from!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/(actor.phase()==GhostsSet.LEAP?5F:8F),0,1);t=t*t*(3-2*t);int i=0;
             for(var p:joints){p.x=net.minecraft.util.Mth.lerp(t,state.from[i++],p.x);p.y=net.minecraft.util.Mth.lerp(t,state.from[i++],p.y);p.z=net.minecraft.util.Mth.lerp(t,state.from[i++],p.z);p.xRot=angle(state.from[i++],p.xRot,t);p.yRot=angle(state.from[i++],p.yRot,t);p.zRot=angle(state.from[i++],p.zRot,t);}if(t==1)state.from=null;
         }state.last=snapshot();
@@ -61,7 +66,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
         var fitted=GhostsSkinMesh.fit(out,currentRole,currentPhase);
         super.renderToBuffer(p,fitted,light,overlay,colour);
-        GhostsSkinMesh.head(head,jaw,blink,p,fitted,light,overlay,colour);
+        GhostsSkinMesh.head(head,jaw,blink,face,p,fitted,light,overlay,colour);
     }
     private void seatLegs(){
         for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=12;
@@ -69,7 +74,8 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     }
     private void pose(int phase,float scale,float step,float age){
         currentPhase=phase;float cycle=(age+currentRole*13)%93;
-        blink=phase==GhostsSet.DEAD||phase==GhostsSet.PRAY?1:phase!=GhostsSet.LEAP&&cycle<6?(float)Math.sin(Math.PI*cycle/6):0;lids.visible=blink>0;
+        blink=phase==GhostsSet.DEAD||phase==GhostsSet.PRAY?1:phase!=GhostsSet.LEAP&&phase!=GhostsSet.SLIP&&cycle<6?(float)Math.sin(Math.PI*cycle/6):0;lids.visible=blink>0;
+        expression(phase,age);
         switch(phase){
             case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.VOMIT,GhostsSet.HAND,GhostsSet.EATING,GhostsSet.CHOKING,GhostsSet.DEAD->{
                 seatLegs();leftArm.xRot=-.7F;rightArm.xRot=-.8F;leftElbow.xRot=-.65F;rightElbow.xRot=-.6F;
@@ -95,7 +101,18 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             case GhostsSet.BED->{leftElbow.xRot=rightElbow.xRot=-.3F;leftArm.zRot=-.3F;rightArm.zRot=.3F;leftKnee.xRot=.2F;rightKnee.xRot=.08F;head.yRot=.12F;}
             case GhostsSet.FLINCH->{body.zRot=.15F;head.xRot=-.2F;rightArm.xRot=-1.25F;rightElbow.xRot=-1.4F;leftArm.xRot=-.7F;leftElbow.xRot=-1.1F;rightKnee.xRot=.35F;}
             case GhostsSet.LEAP->{body.xRot=-.12F;leftArm.xRot=-1.05F;rightArm.xRot=-.85F;leftArm.zRot=-.05F;rightArm.zRot=.05F;leftElbow.xRot=-.45F;rightElbow.xRot=-.65F;leftLeg.xRot=-.55F;rightLeg.xRot=.2F;leftKnee.xRot=.95F;rightKnee.xRot=.75F;}
-            case GhostsSet.PRAY->{if(currentRole==LiteraryActor.GHOST_MERRY)seatLegs();head.xRot=.35F;leftArm.xRot=rightArm.xRot=-.65F;leftArm.yRot=.67F;rightArm.yRot=-.67F;leftArm.zRot=rightArm.zRot=0;leftElbow.xRot=rightElbow.xRot=-.8F;}
+            // 0.4.242: grace is said holding hands. Sarah stands at Merry's right and reaches down for her left hand; John stands at
+            // Marjorie's right and holds out his left, which she never takes. Heads bowed, eyes shut.
+            case GhostsSet.PRAY->{
+                if(currentRole==LiteraryActor.GHOST_MERRY){seatLegs();head.xRot=.3F;leftArm.xRot=-.5F;leftArm.zRot=-.95F;leftElbow.xRot=-.25F;rightArm.xRot=-.7F;rightElbow.xRot=-.65F;}
+                else if(currentRole==LiteraryActor.GHOST_SARAH){head.xRot=.4F;head.yRot=-.25F;rightArm.xRot=-.3F;rightArm.zRot=.12F;rightElbow.xRot=-.3F;leftArm.xRot=-.1F;leftElbow.xRot=-.25F;}
+                else if(currentRole==LiteraryActor.GHOST_JOHN){head.xRot=.3F;head.yRot=.3F;leftArm.xRot=-.55F;leftArm.zRot=-.35F;leftElbow.xRot=-.2F;rightArm.xRot=-.1F;rightElbow.xRot=-.25F;}
+                else{head.xRot=.35F;leftArm.xRot=rightArm.xRot=-.65F;leftArm.yRot=.67F;rightArm.yRot=-.67F;leftElbow.xRot=rightElbow.xRot=-.8F;}
+            }
+            // Merry holding back from the grace: forearms drawn up to her chest, hunched, watching her sister.
+            case GhostsSet.WARY->{seatLegs();body.xRot=.1F;head.xRot=.12F;leftArm.xRot=rightArm.xRot=-.55F;leftArm.zRot=.18F;rightArm.zRot=-.18F;leftElbow.xRot=rightElbow.xRot=-1.75F;}
+            // Marjorie sliding off her chair, boneless: thighs tipping down, leaning back, arms trailing, head on one side.
+            case GhostsSet.SLIP->{seatLegs();leftLeg.xRot=rightLeg.xRot=-1.15F;leftKnee.xRot=rightKnee.xRot=1.05F;body.xRot=-.3F;head.xRot=.3F;head.zRot=.28F;leftArm.xRot=rightArm.xRot=.15F;leftArm.zRot=-.18F;rightArm.zRot=.18F;leftElbow.xRot=rightElbow.xRot=-.1F;}
             case GhostsSet.HELP->{head.xRot=-.35F;body.xRot=-.14F;leftArm.xRot=-2.25F;rightArm.xRot=-2.4F;leftElbow.xRot=-.4F;rightElbow.xRot=-.45F;}
             case GhostsSet.FALL->{body.xRot=.16F;head.xRot=-.2F;leftArm.zRot=-.8F;rightArm.zRot=.8F;leftLeg.xRot=-.18F;rightLeg.xRot=.15F;leftKnee.xRot=.6F;rightKnee.xRot=.5F;}
             case GhostsSet.IMPACT->{body.xRot=.45F;head.xRot=.2F;leftLeg.xRot=rightLeg.xRot=-.7F;leftKnee.xRot=rightKnee.xRot=1.4F;leftArm.xRot=-.4F;rightArm.xRot=-.5F;}
@@ -103,6 +120,37 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         }
         if(phase!=GhostsSet.CRAWL)HumanoidMotion.connect(this);hat.copyFrom(head);
     }
+    /**
+     * 0.4.242 (owner: "Shifting facial expressions"): the brows lift, draw together or knit and the mouth's corners turn, by what a
+     * person is doing, by how far into the filming the family is, and now and then on their own between lines.
+     */
+    private void expression(int phase,float age){
+        float lift=0,tilt=0,mouth=0;int day=GhostsTakeClient.day();
+        boolean marjorie=currentRole==LiteraryActor.GHOST_MARJORIE,family=currentRole==LiteraryActor.GHOST_JOHN||currentRole==LiteraryActor.GHOST_SARAH||currentRole==LiteraryActor.GHOST_MERRY;
+        float worn=net.minecraft.util.Mth.clamp((day-1)/6F,0,1);
+        if(family){tilt=.45F*worn;mouth=-.3F*worn;}
+        if(marjorie&&day>=2){lift=-.2F;tilt=-.25F;}
+        lift+=.55F*bump((age+currentRole*37)%140F,22);mouth-=.45F*bump((age+currentRole*53)%170F,34);
+        if(marjorie)mouth+=.9F*bump((age+11)%210F,40);
+        switch(phase){
+            case GhostsSet.PRAY->{lift=.2F;tilt=.55F;mouth=-.25F;}
+            case GhostsSet.WARY->{lift=.7F;tilt=.85F;mouth=-.65F;}
+            case GhostsSet.SLIP,GhostsSet.CRAWL->{lift=-.45F;tilt=-.7F;mouth=.55F;}
+            case GhostsSet.VOMIT->{lift=-.25F;tilt=-.4F;mouth=0;}
+            case GhostsSet.FLINCH->{lift=1;tilt=.6F;mouth=-.5F;}
+            case GhostsSet.HAND->{lift=.3F;tilt=.95F;mouth=-.85F;}
+            case GhostsSet.CHOKING->{lift=.85F;tilt=.9F;mouth=-.45F;}
+            case GhostsSet.DEAD->{lift=-.35F;tilt=.1F;mouth=-.35F;}
+            case GhostsSet.SLUMP->{lift=-.2F;tilt=.5F;mouth=-.6F;}
+            case GhostsSet.HELP->{lift=1;tilt=1;mouth=-.75F;}
+            case GhostsSet.WALL,GhostsSet.BED->{if(marjorie){lift=-.3F;tilt=-.8F;mouth=.5F;}}
+            case GhostsSet.LEAP,GhostsSet.FALL,GhostsSet.IMPACT->{if(marjorie){lift=-.4F;tilt=-.6F;mouth=.3F;}else{lift=.9F;tilt=.35F;mouth=-.3F;}}
+            default->{}
+        }
+        face[0]=net.minecraft.util.Mth.clamp(lift,-1,1);face[1]=net.minecraft.util.Mth.clamp(tilt,-1,1);face[2]=net.minecraft.util.Mth.clamp(mouth,-1,1);
+    }
+    private static float bump(float x,float length){float t=x/length;return t<=0||t>=1?0:(float)Math.sin(Math.PI*t);}
+    float[] face(){return face.clone();}
     public static ResourceLocation skin(LiteraryActor a){return skin(a.role(),a.phase());}
     public static ResourceLocation skin(int role,int phase){String name=GhostsSet.PEOPLE[Math.max(0,Math.min(5,role-LiteraryActor.GHOST_MARJORIE))].toLowerCase(java.util.Locale.ROOT).replace(' ','_');if(role==LiteraryActor.GHOST_MARJORIE&&(phase==GhostsSet.VOMIT||phase==GhostsSet.EATING||phase==GhostsSet.CHOKING||phase==GhostsSet.DEAD))name+="_dinner";if(role==LiteraryActor.GHOST_JOHN&&(phase==GhostsSet.FLINCH||phase==GhostsSet.HAND))name+="_hand";return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/ghosts_"+name+".png");}
     public static final class Renderer extends MobRenderer<LiteraryActor,GhostsCastModel>{

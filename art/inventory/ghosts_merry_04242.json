@@ -1,0 +1,15 @@
+{
+  "note": "0.4.242: the owner, 2 November 2026: \"Merry needs longer hair.\" Merry's sheet is painted again by tools/paint_character_skins.py with the long cut; the face, clothes, size and alpha are unchanged. This record supersedes only her 0.4.100 hash.",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_merry.png",
+      "review_04100_sha256": "c019d6af4fafd4788df80f2923f605b79535fee0426c62f76a8f4397d62eaf4d",
+      "sha256": "26964831eb550b6fe144399b0fdb4aebf613ecace8f0fd33ebf817d744e7caf6",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    }
+  ]
+}

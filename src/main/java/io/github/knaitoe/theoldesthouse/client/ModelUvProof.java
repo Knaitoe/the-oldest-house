@@ -27,11 +27,14 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * stand, a dining chair and the trailer's chair. Run the client with -PuvSmoke; it saves build/font-smoke/native-model-uvs.png.
  * 0.4.241: a second page, native-devils-rock-props.png, draws Devil's Rock's props redrawn as pixel art and the Sandersons'
  * household (tools/draw_devils_rock_props.py).
+ * 0.4.242: a third page, native-ghosts-set-props.png: the Barretts' fruit bowl, the last supper's two plates (the family's spaghetti
+ * with red sauce and Merry's plain, tools/draw_ghosts_supper.py), the fairy lights and the hall runner with the camera cable taped
+ * across it.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class ModelUvProof extends Screen {
     private int frames,page;
-    static final String[] PAGES={"native-model-uvs.png","native-devils-rock-props.png"};
+    static final String[] PAGES={"native-model-uvs.png","native-devils-rock-props.png","native-ghosts-set-props.png"};
     public ModelUvProof(){super(Component.literal("Model faces on their textures"));}
     private static BlockState dr(VignetteDetailBlock.Kind k){return VignetteDetailBlock.state(k,Direction.NORTH);}
     private static List<BlockState[]> devilsRock(){
@@ -44,8 +47,14 @@ public final class ModelUvProof extends Screen {
         all.add(new BlockState[]{dr(VignetteDetailBlock.Kind.SANDERSON_FRIDGE_LOW),dr(VignetteDetailBlock.Kind.SANDERSON_FRIDGE_HIGH)});
         return all;
     }
+    private static List<BlockState[]> ghostsSet(){
+        return List.of(new BlockState[]{BarrettHomeBlock.of(BarrettHomeBlock.Kind.FRUIT_BOWL)},new BlockState[]{GhostsSetBlock.of(GhostsSetBlock.Kind.MEAL_SPAGHETTI,Direction.NORTH)},
+            new BlockState[]{GhostsSetBlock.of(GhostsSetBlock.Kind.MEAL_SPAGHETTI_PLAIN,Direction.NORTH)},new BlockState[]{BarrettHomeBlock.of(BarrettHomeBlock.Kind.RUG_RUNNER_CABLE)},
+            new BlockState[]{BarrettHomeBlock.of(BarrettHomeBlock.Kind.FAIRY_LIGHTS,Direction.NORTH)});
+    }
     private List<BlockState[]> columns(){
         if(page==1)return devilsRock();
+        if(page==2)return ghostsSet();
         return List.of(new BlockState[]{TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.EAST)},new BlockState[]{TraceBlock.of(TraceBlock.Kind.SHEET,Direction.NORTH,0)},
             new BlockState[]{TraceBlock.of(TraceBlock.Kind.SHEET,Direction.NORTH,1),TraceBlock.of(TraceBlock.Kind.SHEET,Direction.NORTH,2)},
             new BlockState[]{VignetteDetailBlock.state(VignetteDetailBlock.Kind.PLAIN_NOTES,Direction.SOUTH)},
@@ -53,11 +62,11 @@ public final class ModelUvProof extends Screen {
             new BlockState[]{GoatmanRegistry.CHAIR.get().defaultBlockState()});
     }
     @Override public void render(GuiGraphics g,int mx,int my,float partial){
-        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff2a2724);g.drawString(font,page==1?"Devil's Rock: the props and the Sandersons' household":"Model faces on their own textures",10,8,0xffddd5c8,false);
+        var mc=Minecraft.getInstance();g.fill(0,0,width,height,0xff2a2724);g.drawString(font,page==2?"The Barretts: fruit bowl, supper plates, taped cable, fairy lights":page==1?"Devil's Rock: the props and the Sandersons' household":"Model faces on their own textures",10,8,0xffddd5c8,false);
         var cols=columns();int rows=page==1?2:1,per=(cols.size()+rows-1)/rows;float cell=(width-40F)/per;
         for(int i=0;i<cols.size();i++){
             int col=i%per,row=i/per;float rowY=rows==1?height*.62F:height*(.42F+.42F*row);
-            var stack=cols.get(i);var pose=g.pose();pose.pushPose();float zoom=page==1?.72F:.42F;pose.translate(20+cell*(col+.5F),rowY,200);pose.scale(cell*zoom,-cell*zoom,cell*zoom);
+            var stack=cols.get(i);var pose=g.pose();pose.pushPose();float zoom=page==2?.6F:page==1?.72F:.42F;pose.translate(20+cell*(col+.5F),rowY,200);pose.scale(cell*zoom,-cell*zoom,cell*zoom);
             pose.mulPose(Axis.XP.rotationDegrees(24));pose.mulPose(Axis.YP.rotationDegrees(215));pose.translate(-.5,0,-.5);
             for(int y=0;y<stack.length;y++){pose.pushPose();pose.translate(0,y,0);mc.getBlockRenderer().renderSingleBlock(stack[y],pose,mc.renderBuffers().bufferSource(),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();}
             pose.popPose();

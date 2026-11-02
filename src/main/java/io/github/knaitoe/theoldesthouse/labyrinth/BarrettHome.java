@@ -101,8 +101,10 @@ public final class BarrettHome {
         put(l, b, 2, 1, -11, Kind.PHOTO_MERRY, Direction.SOUTH);
         put(l, b, 0, 6, -1, Kind.PORTRAIT, Direction.NORTH);
         // 0.4.220: a runner of the hall's own, its border down both outer edges.
-        for (int x = 1; x <= 2; x++) for (int z = -8; z <= -1; z++) set(l, b, x, 0, z, BarrettHomeBlock.of(Kind.RUG_RUNNER, x == 1 ? Direction.NORTH : Direction.SOUTH));
-        cable(l, b, 1, 0, -3, 4, -3);
+        // 0.4.242 (owner: "Unconnected camera tracks. Camera tracks breaking rug."): the cable lies across the runner rather than
+        // replacing two of its cells, and runs on through the opening to the den without a gap.
+        for (int x = 1; x <= 2; x++) for (int z = -8; z <= -1; z++) set(l, b, x, 0, z, BarrettHomeBlock.of(z == -3 ? Kind.RUG_RUNNER_CABLE : Kind.RUG_RUNNER, x == 1 ? Direction.NORTH : Direction.SOUTH));
+        cable(l, b, 3, 0, -3, 5, -3);
         put(l, b, 0, 0, -3, Kind.CABLE_CORNER, Direction.NORTH);
         cable(l, b, 0, 0, -11, 0, -4);
         cable(l, b, 0, 0, -17, 0, -13);
@@ -148,7 +150,8 @@ public final class BarrettHome {
         put(l, b, 5, 0, -10, Kind.VILLAGE_CART, Direction.EAST);
         put(l, b, 7, 0, -9, Kind.DIRECTORS_CHAIR, Direction.NORTH);
         put(l, b, 9, 0, -9, Kind.DIRECTORS_CHAIR, Direction.NORTH);
-        cable(l, b, 6, 0, -10, 6, -3);
+        cable(l, b, 6, 0, -10, 6, -4);
+        put(l, b, 6, 0, -3, Kind.CABLE_CORNER, Direction.WEST);
     }
 
     /** The utility strip behind the den: the stair down, the washer and dryer, the pantry shelves and the water heater. */
@@ -281,7 +284,9 @@ public final class BarrettHome {
         put(l, b, -3, 7, -20, Kind.POSTER_A, Direction.WEST);
         put(l, b, -10, 7, -21, Kind.POSTER_C, Direction.EAST);
         put(l, b, -3, 6, -24, Kind.PINBOARD, Direction.WEST);
-        for (int z = -24; z <= -16; z++) put(l, b, -3, 8, z, Kind.FAIRY_LIGHTS, Direction.WEST);
+        // 0.4.242 (owner: "lights should span all of marjorie's room"): the string goes round all four walls under the ceiling.
+        for (int z = -24; z <= -16; z++) { put(l, b, -3, 8, z, Kind.FAIRY_LIGHTS, Direction.WEST); put(l, b, -10, 8, z, Kind.FAIRY_LIGHTS, Direction.EAST); }
+        for (int x = -9; x <= -4; x++) { put(l, b, x, 8, -25, Kind.FAIRY_LIGHTS, Direction.SOUTH); put(l, b, x, 8, -15, Kind.FAIRY_LIGHTS, Direction.NORTH); }
         put(l, b, -10, 5, -21, Kind.GUITAR, Direction.EAST);
         put(l, b, -4, 5, -23, Kind.BOOMBOX, Direction.WEST);
         put(l, b, -5, 5, -21, Kind.CLOTHES, Direction.NORTH);

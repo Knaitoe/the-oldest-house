@@ -1372,6 +1372,26 @@ def fruit():
     return img
 
 
+def fruit_bowl():
+    """0.4.242 (owner: "try to make those actually look like fruit"): a red apple, a green apple with its leaf, an orange with its
+    dimpled skin, a banana going brown at the ends, and the stems."""
+    img = canvas()
+    def fill(x0, y0, x1, y1, c):
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                px(img, x, y, c)
+    fill(0, 0, 4, 4, (196, 40, 36)); fill(2, 2, 4, 4, (150, 28, 26)); px(img, 1, 1, (236, 110, 96)); px(img, 3, 1, (176, 34, 30))
+    fill(4, 0, 8, 4, (130, 186, 60)); fill(6, 2, 8, 4, (94, 140, 40)); px(img, 5, 1, (190, 226, 120)); px(img, 7, 0, (110, 166, 50))
+    fill(8, 0, 12, 4, (236, 140, 30))
+    for x, y in ((8, 1), (10, 0), (11, 2), (9, 3), (10, 2)):
+        px(img, x, y, (210, 116, 20))
+    px(img, 9, 1, (250, 190, 90))
+    fill(0, 4, 8, 6, (238, 206, 70)); fill(0, 5, 8, 6, (210, 176, 50)); px(img, 0, 4, (110, 80, 40)); px(img, 0, 5, (110, 80, 40)); px(img, 7, 4, (90, 70, 40)); px(img, 7, 5, (90, 70, 40))
+    fill(0, 6, 8, 8, (240, 212, 80)); fill(1, 7, 7, 8, (226, 194, 62)); px(img, 0, 6, (110, 80, 40)); px(img, 7, 6, (90, 70, 40)); px(img, 3, 6, (196, 150, 60))
+    fill(12, 0, 13, 2, (90, 60, 30)); fill(13, 0, 15, 1, (80, 140, 50))
+    return img
+
+
 def stuffed():
     """Merry's stuffed animals: a brown bear, a white lamb, a green frog."""
     img = canvas()
@@ -1576,7 +1596,7 @@ TEXTURES.update({
     'print_whale_r': half(print_whale, True), 'curtain_fish': curtain_fish, 'tile_floor': tile_floor, 'wall_tile': wall_tile,
     'toothbrushes': toothbrushes, 'towels': towels, 'towel_heap': towel_heap, 'sorter': sorter, 'bath_mat': bath_mat,
     'coloring': coloring, 'lamp_shade': lamp_shade, 'toys': toys, 'dust_sheet': dust_sheet, 'schedule': schedule, 'cork': cork,
-    'backpacks': backpacks, 'fruit': fruit, 'stuffed': stuffed, 'stars': stars, 'drawings': drawings, 'fairy': fairy,
+    'backpacks': backpacks, 'fruit': fruit, 'fruit_bowl': fruit_bowl, 'stuffed': stuffed, 'stars': stars, 'drawings': drawings, 'fairy': fairy,
     'band_poster': band_poster, 'pinboard': pinboard, 'guitar': guitar, 'boombox': boombox, 'linen': linen,
     'nightstand_top': nightstand_top, 'bible': bible, 'paperback': paperback, 'plaster_crack': plaster_crack,
     'case_shell': case_shell, 'case_label': case_label})
@@ -2086,10 +2106,18 @@ def m_backpacks():
     return [box((0, 11, 15), (16, 12.5, 16), 'o'), box((1, 2, 12), (7, 11, 15.5), 'b', uv=(0, 2, 6, 11)), box((9, 1, 12.5), (15, 10, 15.5), 'b', uv=(9, 2, 15, 11))]
 
 
-@spec('fruit_bowl', {'m': 'ceramic', 'f': 'fruit'}, 'fruit')
+@spec('fruit_bowl', {'m': 'ceramic', 'f': 'fruit_bowl'}, 'fruit_bowl')
 def m_fruit_bowl():
-    return [box((4, 0, 4), (12, 2, 12), 'm'), box((5, 2, 5), (8, 5, 8), 'f', uv=(0, 0, 3, 3)), box((8, 2, 6), (11, 5, 9), 'f', uv=(4, 4, 7, 7)),
-            box((6, 2, 8), (9, 4.5, 11), 'f', uv=(8, 0, 11, 3)), box((7, 4.5, 6.5), (10, 7, 9.5), 'f', uv=(0, 4, 3, 7))]
+    """0.4.242: two apples with stems (and a leaf), an orange, and a banana laid across them, each from its own part of fruit_bowl."""
+    banana = box((6, 5, 7), (11.5, 6.2, 8.2), 'f', uv=(0, 4, 5.5, 5.2), rot={'origin': [8.75, 5.6, 7.6], 'axis': 'y', 'angle': 22.5})
+    for d in ('up', 'down'):
+        banana['faces'][d]['uv'] = [0, 6, 5.5, 7.2]
+    return [box((4, 0, 4), (12, 2, 12), 'm'),
+            box((4.5, 2, 4.5), (7.5, 5, 7.5), 'f', uv=(0, 0, 3, 3)), box((5.75, 5, 5.75), (6.25, 5.8, 6.25), 'f', uv=(12, 0, 12.5, 1.6)),
+            box((8.5, 2, 4.6), (11.5, 5, 7.6), 'f', uv=(4, 0, 7, 3)), box((9.75, 5, 5.85), (10.25, 5.6, 6.35), 'f', uv=(12, 0, 12.5, 1.2)),
+            box((10.25, 5.3, 5.85), (11.25, 5.4, 6.6), 'f', uv=(13, 0, 15, 1)),
+            box((5, 2, 8.4), (8.2, 5.2, 11.6), 'f', uv=(8, 0, 11.2, 3.2)),
+            banana]
 
 
 @spec('stuffed', {'s': 'stuffed'}, 'stuffed')
@@ -2521,6 +2549,13 @@ rug('rug_runner', 'rug_runner')
 rug('rug_runner_narrow', 'rug_runner_narrow')
 rug('rug_living', 'rug_living')
 rug('rug_shag', 'rug_shag')
+
+
+@spec('rug_runner_cable', {'r': 'rug_runner', 'c': 'cable'}, 'rug_runner')
+def m_rug_runner_cable():
+    """0.4.242 (owner: "camera tracks breaking rug"): the runner, and the crew's taped cable lying across it."""
+    return [box((0, 0, 0), (16, .5, 16), 'r', faces=('up', 'north', 'south', 'east', 'west'), uv=(0, 0, 16, 16)),
+            box((0, .5, 0), (16, .75, 16), 'c', faces=('up',))]
 # Merry's rug: one kind, its quarter chosen by the block's facing (see files()); each quarter is drawn unturned.
 for _i, _q in enumerate(('nw', 'ne', 'se', 'sw')):
     spec(f'merry_rug_{_q}', {'r': f'merry_rug_{_i}'}, f'merry_rug_{_i}')(lambda: [box((0, 0, 0), (16, .5, 16), 'r', faces=('up', 'north', 'south', 'east', 'west'), uv=(0, 0, 16, 16))])
