@@ -77,13 +77,13 @@ public final class UncannyBranchTests {
         var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("tunnel_home_reader",place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(f.base(place),place));
         final LiteraryActor[] giant={null};final BlockPos[] home={null};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual tunnel and her body loaded")).thenExecute(()->{
-            step(f,p,place);giant[0]=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(giant[0]!=null,"she stands folded at the far end");home[0]=giant[0].blockPosition();
+            step(f,p,place);giant[0]=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(giant[0]!=null,"she waits unseen at the start of the tunnel");home[0]=giant[0].blockPosition();
             // Mid-chase, the reader walks out.
             giant[0].appearance(LiteraryActor.UNCANNY_GIANT,2);TunnelStride.placeOriginal(giant[0],Vec3.atBottomCenterOf(f.base(place).offset(0,0,-40)));
             p.teleportTo(f.level(place),f.base(place).getX()+.5,f.base(place).getY(),f.base(place).getZ()+60,0,0);
         }).thenIdle(25).thenExecute(()->{
-            h.assertTrue(giant[0].phase()==0&&giant[0].blockPosition().distManhattan(home[0])<=1,"with her reader gone she is back at the far end, folded: "+giant[0].position()+" phase "+giant[0].phase()+" home "+home[0]);
-            // Through, then out and back some time later: she is folded at the far end again, the passage kept.
+            h.assertTrue(giant[0].phase()==0&&giant[0].blockPosition().distManhattan(home[0])<=1,"with her reader gone she is back at her place, unseen: "+giant[0].position()+" phase "+giant[0].phase()+" home "+home[0]);
+            // Through, then out and back some time later: she is at her place again, unseen, the passage kept.
             var own=f.own(p,place);own.putBoolean("TunnelPassed130",true);own.putBoolean("Completed",true);own.putLong("TunnelSeen201",f.level(place).getGameTime()-200);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
             f.at(p,place,.5,0,-6);giant[0].appearance(LiteraryActor.UNCANNY_GIANT,2);TunnelStride.placeOriginal(giant[0],Vec3.atBottomCenterOf(f.base(place).offset(0,0,-40)));
             own=step(f,p,place);
@@ -91,6 +91,39 @@ public final class UncannyBranchTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="branch_tunnel_home") public static void tunnelHomeDone(ServerLevel l){close();}
+    /**
+     * 0.4.272 (owner: "She needs to give player 3 seconds of grace so as to not immediately, accidentally touch them/end the
+     * vignette. She also needs to properly reset after vignette has concluded").
+     */
+    @GameTest(template="empty",batch="branch_tunnel_grace",timeoutTicks=600) public static void theBentNeckedWomanGivesThreeSecondsAndIsGoneOnceItEnds(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("tunnel_grace_reader",place);var b=f.base(place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(b,place));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual tunnel and her body loaded")).thenExecute(()->{
+            var own=step(f,p,place);var giant=UncannyStories.actor(p,own,"CastGiant");var home=Vec3.atBottomCenterOf(UncannyStories.giantHome(f.level(place),b));
+            h.assertTrue(giant!=null&&giant.phase()==0&&giant.position().distanceTo(home)<.01,"she waits unseen at the start");
+            // Well in, looking down the tunnel, at a red light: she comes out behind the reader.
+            f.at(p,place,.5,0,-14.5);p.setYRot(180);p.setYHeadRot(180);p.setXRot(0);age(f,p,place,240);own=step(f,p,place);
+            h.assertTrue(giant.phase()>0&&own.contains(UncannyStories.OUT),"she is out: phase "+giant.phase());
+            // The reader turns back and walks straight into her inside her three seconds: nothing ends.
+            f.at(p,place,.5,0,-2.2);
+            for(int i=0;i*5<UncannyStories.GRACE-5;i++){own=step(f,p,place);h.assertTrue(!UncannyStories.failed(own)&&UncannyStories.grace(own)&&giant.phase()==1,"no touch inside the three seconds: step "+i+" age "+own.getInt("UncannyAge"));}
+            // The three seconds are up, the light is red, and they are still within reach.
+            own=step(f,p,place);
+            h.assertTrue(UncannyStories.failed(own)&&own.getString("Failure").equals("paced_to_the_last_red_light"),"after them, at red, her touch ends it: "+own);
+            h.assertTrue(giant.phase()==0&&giant.position().distanceTo(home)<.01&&!giant.isPickable(),"and she is gone from where it ended, back at her place unseen: "+giant.position()+" phase "+giant.phase());
+            own=step(f,p,place);h.assertTrue(giant.phase()==0&&giant.position().distanceTo(home)<.01,"she stays there while the caught reader is still inside");
+            // Back after time away: a fresh attempt. Mid-chase they make the last green signal; she is at her place at once.
+            own.putLong("TunnelSeen201",f.level(place).getGameTime()-UncannyStories.AWAY_TICKS-20);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
+            h.assertTrue(!UncannyStories.failed(own),"coming back starts it over");
+            own.putBoolean("TunnelStarted127",true);own.putInt("GreenSteps",5);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            giant.appearance(LiteraryActor.UNCANNY_GIANT,2);TunnelStride.placeOriginal(giant,Vec3.atBottomCenterOf(b.offset(0,0,-120)));
+            f.at(p,place,.5,0,-139.5);own=step(f,p,place);
+            h.assertTrue(own.getBoolean("TunnelPassed130")&&giant.phase()==0&&giant.position().distanceTo(home)<.01,"through the last green, she is back at her place unseen: "+giant.position()+" phase "+giant.phase()+" "+own);
+            // Walking back the way they came, they never find her standing anywhere.
+            f.at(p,place,.5,0,-6);giant.appearance(LiteraryActor.UNCANNY_GIANT,2);TunnelStride.placeOriginal(giant,Vec3.atBottomCenterOf(b.offset(0,0,-40)));own=step(f,p,place);
+            h.assertTrue(giant.phase()==0&&giant.position().distanceTo(home)<.01,"once it is over she stays at her place, unseen: "+giant.position()+" phase "+giant.phase());
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="branch_tunnel_grace") public static void tunnelGraceDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="branch_bedroom",timeoutTicks=300) public static void directSightAllowsEarlyDoorInterventionWithoutAFourFeedChecklist(GameTestHelper h){run(h,LabyrinthPlace.MISSING_SLEEP,(f,p)->{
         var place=LabyrinthPlace.MISSING_SLEEP;var peer=f.player("branch_sleep_peer",place);f.click(p,place,UncannyRooms.BED_AT);f.click(p,place,UncannyRooms.BED_AT);
         var doll=UncannyStories.actor(p,f.own(p,place),"CastDoll");f.at(p,place,1.5,5,-23);look(p,doll);var own=step(f,p,place);h.assertTrue(own.getBoolean("MarionetteSeen")&&!own.getBoolean("OwnFaceSeen"),"direct physical view is its own branch");

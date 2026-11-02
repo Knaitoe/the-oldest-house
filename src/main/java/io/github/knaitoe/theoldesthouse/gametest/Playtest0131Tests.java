@@ -78,7 +78,9 @@ public final class Playtest0131Tests {
             .thenExecute(()->{
                 var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a!=null&&a.getBbWidth()<=.81&&a.getBbHeight()>=2.7&&a.getBbHeight()<3,"the physical body is slim, tall and below the three-block ceiling");id[0]=a.getUUID();
                 for(int z:new int[]{-6,-20,-36,-52})h.assertTrue(l.getBlockState(b.offset(0,3,z)).is(UncannyRegistry.FURNITURE.get())&&l.getBlockState(b.offset(0,3,z)).getValue(UncannyFurnitureBlock.KIND)==UncannyFurnitureBlock.Kind.FLUSH_LIGHT&&l.isEmptyBlock(b.offset(0,2,z)),"the actual ceiling lamp is recessed above the full passage at "+z);
-                f.at(p,place,40,0,40);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-3.5,180,0);a.appearance(LiteraryActor.UNCANNY_GIANT,2);a.setNoGravity(false);woman[0]=a;
+                // 0.4.272: with her reader away she would go back to her place at the tunnel's start (which used to be its far end, and
+                // let this case pass without a step being walked). Unbound, she belongs to no reader's absence or story while she walks.
+                f.at(p,place,40,0,40);a.bind(place,null);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-3.5,180,0);a.appearance(LiteraryActor.UNCANNY_GIANT,2);a.setNoGravity(false);woman[0]=a;
             }).thenWaitUntil(()->h.assertTrue(woman[0].getZ()<b.getZ()-59,"native every-tick walking passes the complete lamp route: "+woman[0].position().subtract(Vec3.atLowerCornerOf(b))))
             .thenExecute(()->{h.assertTrue(passed.size()==4&&Math.abs(woman[0].getY()-b.getY())<.02,"ordinary walking clears all four lamps on the real floor without a collision bypass or intervening teleport");woman[0]=null;}).thenSucceed();
     }

@@ -110,9 +110,10 @@ public final class UncannyTests {
         var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("great_stride",place);var b=f.base(place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(b,place));UUID[] id={null};Vec3[] stopped={null},stale={null},paired={null};int[] impacts={0},actorId={0};
         var packets=new ArrayList<net.minecraft.network.protocol.Packet<?>>();
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual tunnel and its recessed lamps are loaded")).thenExecute(()->{
-            f.source(p,place);f.at(p,place,.5,0,-50);var own=f.own(p,place);UncannyStories.arrive(p,place,own);var a=UncannyStories.actor(p,own,"CastGiant");
+            // 0.4.272: she waits at the tunnel's start, so she is staged forty in and the reader eighty, the same forty apart as before.
+            f.source(p,place);f.at(p,place,.5,0,-80);var own=f.own(p,place);UncannyStories.arrive(p,place,own);var a=UncannyStories.actor(p,own,"CastGiant");
             var tracker=new ServerEntity(f.level(place),a,3,true,p.connection::send);stale[0]=a.position();
-            TunnelStride.placeOriginal(a,new Vec3(b.getX()+.5,b.getY(),b.getZ()-10));a.appearance(LiteraryActor.UNCANNY_GIANT,2);NativeTestPlayers.packets(p);tracker.addPairing(p);
+            TunnelStride.placeOriginal(a,new Vec3(b.getX()+.5,b.getY(),b.getZ()-40));a.appearance(LiteraryActor.UNCANNY_GIANT,2);NativeTestPlayers.packets(p);tracker.addPairing(p);
             paired[0]=a.position();actorId[0]=a.getId();id[0]=a.getUUID();
         }).thenWaitUntil(()->{
             // A native send can be queued under full-suite load. Accumulate its actual
@@ -139,7 +140,7 @@ public final class UncannyTests {
             h.assertTrue(a.getUUID().equals(id[0]),"the delivered pairing belongs to the same native original");
             var own=f.own(p,place);own.putBoolean("TunnelStarted127",true);own.putInt("UncannyAge",245);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
         }).thenWaitUntil(()->{var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getPersistentData().getInt("TunnelSteps131")>0,"the distant original covers a whole great stride before its impact");}).thenExecute(()->{
-            var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getUUID().equals(id[0])&&a.gesture()==1&&a.getZ()<b.getZ()-12.7&&f.level(place).noCollision(a,a.getBoundingBox().deflate(1e-7)),"the same colliding original catches up with the long-stride pose");
+            var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getUUID().equals(id[0])&&a.gesture()==1&&a.getZ()<b.getZ()-42.7&&f.level(place).noCollision(a,a.getBoundingBox().deflate(1e-7)),"the same colliding original catches up with the long-stride pose");
             h.assertTrue(UncannySenses.view(p).getLong("TunnelQuakeUntil131")>f.level(place).getGameTime(),"a real heavy step supplies the owning reader's short quake");age(f,p,place,160);step(f,p,place);stopped[0]=a.position();impacts[0]=a.getPersistentData().getInt("TunnelSteps131");
         }).thenIdle(30).thenExecute(()->{
             var a=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(a.getUUID().equals(id[0])&&a.phase()==1&&a.gesture()==0&&a.position().distanceToSqr(stopped[0])<.00001&&a.getPersistentData().getInt("TunnelSteps131")==impacts[0],"green freezes even the great-stride body without inventing further impacts");
@@ -157,11 +158,13 @@ public final class UncannyTests {
         // Caught, with the woman left halfway down the tunnel.
         own.putBoolean("UncannyFailed",true);own.putString("Failure","paced_to_the_last_red_light");own.putInt("UncannyAge",900);own.putInt("GreenSteps",3);own.putBoolean("TunnelStarted127",true);
         TunnelStride.placeOriginal(giant,Vec3.atBottomCenterOf(b.offset(0,0,-72)));giant.appearance(LiteraryActor.UNCANNY_GIANT,2);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
-        own=step(f,p,place);h.assertTrue(UncannyStories.failed(own)&&own.getBoolean("TunnelStarted127")&&giant.getZ()<b.getZ()-60,"while the reader stays in the tunnel nothing resets");
+        var home=Vec3.atBottomCenterOf(UncannyStories.giantHome(f.level(place),b));
+        own=step(f,p,place);h.assertTrue(UncannyStories.failed(own)&&own.getBoolean("TunnelStarted127"),"while the reader stays in the tunnel their attempt does not restart");
+        h.assertTrue(giant.position().distanceTo(home)<.01&&giant.phase()==0,"0.4.272: but it is over, so she is back at her place, unseen, not standing where it ended: "+giant.position()+" phase "+giant.phase());
         // Away for longer than the gap, then back in.
         own.putLong("TunnelSeen201",h.getLevel().getGameTime()-UncannyStories.AWAY_TICKS-20);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
         h.assertTrue(!UncannyStories.failed(own)&&own.getString("Failure").isEmpty()&&!own.getBoolean("TunnelStarted127")&&own.getInt("GreenSteps")==0&&own.getInt("UncannyAge")<=5,"coming back starts the tunnel over: "+own);
-        h.assertTrue(giant.isAlive()&&giant.getUUID().equals(id)&&giant.position().distanceTo(Vec3.atBottomCenterOf(b.offset(0,0,TunnelPassage.WALL+2)))<.01&&giant.phase()==0,"the same woman stands folded at the far end again: "+giant.position()+" phase "+giant.phase());
+        h.assertTrue(giant.isAlive()&&giant.getUUID().equals(id)&&giant.position().distanceTo(home)<.01&&giant.phase()==0,"the same woman waits unseen at the start again: "+giant.position()+" phase "+giant.phase());
         // A passage already made is kept.
         own.putBoolean("TunnelPassed130",true);own.putBoolean("Ready",true);own.putLong("TunnelSeen201",h.getLevel().getGameTime()-UncannyStories.AWAY_TICKS-20);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
         h.assertTrue(own.getBoolean("TunnelPassed130")&&own.getBoolean("Ready"),"a passage already made is not taken back: "+own);
@@ -318,11 +321,28 @@ public final class UncannyTests {
         var place=LabyrinthPlace.SECOND_WAITRESS;f.source(p,place);age(f,p,place,450);h.assertTrue(UncannyBreakfast.open(p,p.getMainHandItem())&&p.containerMenu instanceof LiteraryVignettes.Pages,"the original menu opens the actual reading UI");int age=f.own(p,place).getInt("UncannyAge");var original=f.own(p,place).getCompound("OriginalMeal").copy();for(int i=0;i<20;i++)step(f,p,place);h.assertTrue(f.own(p,place).getInt("UncannyAge")==age&&f.own(p,place).getCompound("OriginalMeal").equals(original),"menus pause danger without replacing finite custody");p.closeContainer();
     });}
     @AfterBatch(batch="uncanny_pause") public static void pauseDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="uncanny_presence",timeoutTicks=400) public static void theTunnelWomanStartsUnseenAfterTheFirstSignalWithoutReading(GameTestHelper h){run(h,LabyrinthPlace.TUNNEL_PERIPHERY,(f,p)->{
-        var place=LabyrinthPlace.TUNNEL_PERIPHERY;f.at(p,place,.5,0,-14.5);var own=f.own(p,place);own.putInt("UncannyAge",240);p.setYRot(180);p.setYHeadRot(180);p.setXRot(0);var giant=UncannyStories.actor(p,own,"CastGiant");h.assertTrue(giant!=null&&giant.phase()==0&&giant.getZ()<f.base(place).getZ()-60,"the same saved woman remains dormant away from the entrance");double before=giant.distanceToSqr(p);
-        for(int i=0;i<8;i++)UncannyStories.reader(p,f.base(place),place,own);
-        h.assertTrue(!own.getBoolean("Read_Source")&&giant.phase()==2&&giant.distanceToSqr(p)<before,"red-light pursuit works without a paper-reading gate");h.assertTrue(giant.getBbHeight()<=2.8&&giant.getY()>=f.base(place).getY()-.01,"the stooped collision body stays inside the actual tunnel");
-    });}
+    /**
+     * 0.4.272 (owner: "She needs to spawn invisible, untouchable, at start of hallway. Not teleport there after player has entered.
+     * She needs to give player 3 seconds of grace"). She is made at the tunnel's start, unseen and with nothing to touch; once the
+     * reader is well in and looking away she comes out where she stands, holds still for three seconds, then comes on at red.
+     */
+    @GameTest(template="empty",batch="uncanny_presence",timeoutTicks=900) public static void theTunnelWomanWaitsUnseenAtTheStartAndComesOutWhereSheStands(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);fixture=f;var place=LabyrinthPlace.TUNNEL_PERIPHERY;var p=f.player("uncanny_reader",place);var b=f.base(place);f.chunks.hold(f.level(place),IndianLakeRooms.bounds(b,place));
+        Vec3[] home={null};double[] before={0};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the actual tunnel and her body are loaded")).thenExecute(()->{
+            var own=f.own(p,place);UncannyStories.arrive(p,place,own);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+            var giant=UncannyStories.actor(p,own,"CastGiant");home[0]=Vec3.atBottomCenterOf(UncannyStories.giantHome(f.level(place),b));
+            h.assertTrue(giant!=null&&giant.phase()==0&&giant.position().distanceTo(home[0])<.01,"she is made at the start of the tunnel, unseen: "+(giant==null?"missing":giant.position()+" phase "+giant.phase()));
+            h.assertTrue(giant.waitingUnseen()&&!giant.isPickable()&&!giant.isAttackable()&&!giant.isPushable()&&!giant.canBeCollidedWith(),"waiting, she has nothing to aim at, strike, push or bump into");
+            f.at(p,place,.5,0,-14.5);p.setYRot(180);p.setYHeadRot(180);p.setXRot(0);own=f.own(p,place);own.putInt("UncannyAge",240);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);own=step(f,p,place);
+            h.assertTrue(own.getBoolean("TunnelStarted127")&&own.contains(UncannyStories.OUT)&&giant.phase()==1&&giant.position().distanceTo(home[0])<.01,"well in, looking away, at a red light: she comes out where she stood and stands still: "+giant.position()+" phase "+giant.phase());
+            h.assertTrue(!own.getBoolean("Read_Source")&&giant.isPickable(),"no paper-reading gate, and out she is a body again");before[0]=giant.distanceToSqr(p);
+        }).thenIdle(30).thenExecute(()->{
+            var own=f.own(p,place);var giant=UncannyStories.actor(p,own,"CastGiant");
+            h.assertTrue(UncannyStories.grace(own)&&giant.position().distanceTo(home[0])<.01&&!UncannyStories.failed(own),"inside her three seconds she has not moved: "+giant.position()+" age "+own.getInt("UncannyAge")+" out "+own.getInt(UncannyStories.OUT));
+        }).thenWaitUntil(()->{var giant=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(giant.phase()==2&&giant.distanceToSqr(p)<before[0]-1,"after them she comes on at red: "+giant.position()+" phase "+giant.phase()+" age "+f.own(p,place).getInt("UncannyAge"));})
+        .thenExecute(()->{var giant=UncannyStories.actor(p,f.own(p,place),"CastGiant");h.assertTrue(giant.getBbHeight()<=2.8&&giant.getY()>=b.getY()-.01,"the stooped collision body stays inside the actual tunnel");}).thenSucceed();
+    }
     @AfterBatch(batch="uncanny_presence") public static void presenceDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="uncanny_diner_exit",timeoutTicks=400) public static void theDinerHasTwoRealReachableExteriorDoors(GameTestHelper h){run(h,LabyrinthPlace.SECOND_WAITRESS,(f,p)->{
         var place=LabyrinthPlace.SECOND_WAITRESS;var l=f.level(place);var b=f.base(place);var staff=b.offset(-10,0,-6);h.assertTrue(l.getBlockState(b.offset(0,0,-3)).getBlock() instanceof DoorBlock&&l.getBlockState(staff).getBlock() instanceof DoorBlock,"the front and staff exits are separate native doorways");
