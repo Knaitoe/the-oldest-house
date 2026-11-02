@@ -15,9 +15,14 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-/** An ordinary first-person camera, actual GPU keyframes and a small record light; no stolen player camera or game mode. */
+/**
+ * An ordinary first-person camera, actual GPU keyframes and a small record light; no stolen player camera or game mode. While filming, the
+ * screen is the viewfinder: no hand, and none of the player's own HUD (hotbar, health, food, armour, air, experience, mount, the held
+ * item's name, effect icons). The crosshair stays to frame by, and the action bar, chat, titles and subtitles stay for the set's cues.
+ */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class CamcorderClient {
     private static UUID pending;private static Object world;private static int frames;private static CameraType previous;
@@ -27,6 +32,10 @@ public final class CamcorderClient {
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){var mc=Minecraft.getInstance();if(active()){if(previous==null)previous=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);}else{if(previous!=null)mc.options.setCameraType(previous);previous=null;pending=null;world=null;}}
     @SubscribeEvent public static void fov(ViewportEvent.ComputeFov e){if(active())e.setFOV(70);}
     @SubscribeEvent public static void hand(RenderHandEvent e){if(active())e.setCanceled(true);}
+    private static final java.util.Set<ResourceLocation> PLAYER_HUD=java.util.Set.of(VanillaGuiLayers.HOTBAR,VanillaGuiLayers.PLAYER_HEALTH,VanillaGuiLayers.FOOD_LEVEL,VanillaGuiLayers.ARMOR_LEVEL,
+        VanillaGuiLayers.AIR_LEVEL,VanillaGuiLayers.VEHICLE_HEALTH,VanillaGuiLayers.JUMP_METER,VanillaGuiLayers.EXPERIENCE_BAR,VanillaGuiLayers.EXPERIENCE_LEVEL,VanillaGuiLayers.SELECTED_ITEM_NAME,VanillaGuiLayers.EFFECTS);
+    public static boolean hidesLayer(ResourceLocation layer){return active()&&PLAYER_HUD.contains(layer);}
+    @SubscribeEvent public static void hud(RenderGuiLayerEvent.Pre e){if(hidesLayer(e.getName()))e.setCanceled(true);}
     @SubscribeEvent public static void capture(RenderLevelStageEvent e){
         if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_LEVEL||pending==null)return;var mc=Minecraft.getInstance();
         if(!active()||world!=mc.level){pending=null;return;}if(++frames<2)return;var nonce=pending;pending=null;
