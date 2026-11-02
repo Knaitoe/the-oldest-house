@@ -53,6 +53,8 @@ public final class Journals extends SavedData {
         int issue, wear; boolean lost; String name="";
         /** The House day the other hand last wrote here (CoAuthor). */
         int inked;
+        /** 0.4.268: the page the reader's ribbon lies in, or 0. */
+        int ribbon;
         final Map<Integer,JournalPage> pages=new HashMap<>();
         /** Which object each rubbing was taken from, and the page it went on. */
         final Map<String,Integer> rubbed=new HashMap<>();
@@ -132,8 +134,15 @@ public final class Journals extends SavedData {
         var b=book(id);var t=new CompoundTag();t.putString("Name",b.name);t.putInt("Wear",b.wear);
         var pages=new CompoundTag();for(var e:b.pages.entrySet())if(!e.getValue().empty()||!e.getValue().begun().isEmpty())pages.put(Integer.toString(e.getKey()),e.getValue().save());
         t.put("Pages",pages);t.putIntArray("Torn",b.torn.keySet().stream().mapToInt(Integer::intValue).sorted().toArray());
-        t.putIntArray("Soaked",b.soaked.stream().mapToInt(Integer::intValue).sorted().toArray());return t;
+        t.putIntArray("Soaked",b.soaked.stream().mapToInt(Integer::intValue).sorted().toArray());if(b.ribbon>0)t.putInt("Ribbon",b.ribbon);return t;
     }
+    /** 0.4.268: the reader lays their ribbon in a page (0 takes it out), if they carry their own journal. */
+    public static void ribbon(ServerPlayer p,int page){
+        var data=get(p.server);if(!data.carries(p))return;
+        var b=data.book(p.getUUID());int at=net.minecraft.util.Mth.clamp(page,0,PAGES);if(b.ribbon==at)return;b.ribbon=at;data.setDirty();
+    }
+    /** The page the reader's ribbon lies in, or 0. */
+    public int ribbon(UUID id){var b=books.get(id);return b==null?0:b.ribbon;}
 
     /**
      * 0.4.199: a line the House writes in a reader's journal, in the other hand, on the page after their last: the way out's
@@ -342,7 +351,7 @@ public final class Journals extends SavedData {
             b.tornSerial=t.getInt("TornSerial");var torn=t.getCompound("Torn");
             for(String k:torn.getAllKeys()){try{int i=Integer.parseInt(k);if(i>=1&&i<=PAGES)b.torn.put(i,TornPages.Torn.load(torn.getCompound(k)));}catch(NumberFormatException ignored){}}
             var lines=t.getList("Lines",net.minecraft.nbt.Tag.TAG_COMPOUND);for(int i=0;i<lines.size()&&b.lines.size()<Quotes.KEPT;i++){var l=Quotes.Line.load(lines.getCompound(i));if(l!=null)b.lines.add(l);}
-            b.lineOrder=t.getLong("LineOrder");b.copied=t.getBoolean("Copied");b.ended=t.getInt("Ended");
+            b.lineOrder=t.getLong("LineOrder");b.copied=t.getBoolean("Copied");b.ended=t.getInt("Ended");b.ribbon=net.minecraft.util.Mth.clamp(t.getInt("Ribbon"),0,PAGES);
             data.books.put(id,b);
         }
         data.tornOrder=tag.getLong("TornOrder");
@@ -357,7 +366,7 @@ public final class Journals extends SavedData {
             if(b.waiting>0)t.putInt("Waiting",b.waiting);if(!b.since.isEmpty())t.putIntArray("Since",b.since.stream().mapToInt(Integer::intValue).toArray());if(!b.soaked.isEmpty())t.putIntArray("Soaked",b.soaked.stream().mapToInt(Integer::intValue).toArray());
             if(!b.torn.isEmpty()){var torn=new CompoundTag();b.torn.forEach((i,page)->torn.put(Integer.toString(i),page.save()));t.put("Torn",torn);}
             if(!b.lines.isEmpty()){var lines=new net.minecraft.nbt.ListTag();for(var l:b.lines)lines.add(l.save());t.put("Lines",lines);}
-            if(b.lineOrder>0)t.putLong("LineOrder",b.lineOrder);if(b.copied)t.putBoolean("Copied",true);if(b.ended>0)t.putInt("Ended",b.ended);
+            if(b.lineOrder>0)t.putLong("LineOrder",b.lineOrder);if(b.copied)t.putBoolean("Copied",true);if(b.ended>0)t.putInt("Ended",b.ended);if(b.ribbon>0)t.putInt("Ribbon",b.ribbon);
             all.put(e.getKey().toString(),t);}
         tag.put("Books",all);if(tornOrder>0)tag.putLong("TornOrder",tornOrder);return tag;
     }
