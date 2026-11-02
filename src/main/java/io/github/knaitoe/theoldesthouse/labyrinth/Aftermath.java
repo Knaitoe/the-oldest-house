@@ -20,7 +20,7 @@ public final class Aftermath {
      * The scenes that come back. A scene joins by being listed here and dressing its own aftermath in its own controller:
      * <ul>
      * <li>it shows its aftermath only when {@link #alone} says everyone in it has finished it, and plays as always otherwise; a scene
-     *     whose every difference is already private to each reader (the Masque) needs no solitude;</li>
+     *     whose every difference is already private to each reader (the Masque, the Ghosts Set) needs no solitude;</li>
      * <li>what differs between readers' outcomes is shown to each reader alone (private actors and block views), never by
      *     changing the room for everyone;</li>
      * <li>it calls {@link #counted} once a visit for each finished reader it shows the aftermath to, with a quiet line;</li>
@@ -29,7 +29,7 @@ public final class Aftermath {
      * The House does the rest: dealing it back ({@link #canDeal}), keeping it solitary (GroupCrossings), keeping a deliberate scent
      * on unfinished stories (LabyrinthDealer), and never giving credit (the scenes' endings check Completed).
      */
-    public static final Set<LabyrinthPlace> PLACES=EnumSet.of(LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.MASQUE);
+    public static final Set<LabyrinthPlace> PLACES=EnumSet.of(LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.MASQUE,LabyrinthPlace.GHOSTS_SET);
     /** How many times a finished scene comes back to the reader who finished it. */
     public static final int RETURNS=2;
     /** Whether everyone in a scene has finished it, so that it can stand as its aftermath. No one in it is not alone. */

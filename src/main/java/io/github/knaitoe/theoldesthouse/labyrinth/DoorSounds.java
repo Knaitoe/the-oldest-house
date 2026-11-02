@@ -100,6 +100,8 @@ public final class DoorSounds {
         SOURCES.put(LabyrinthPlace.MASQUE,(server,data,listener,base)->LiteraryVignettes.personal(data,listener,LabyrinthPlace.MASQUE).getBoolean("ClockStopped0506")?null:Through.of(Carry.CLOCK));
         // The study's clock; on the last visit the study is a funeral home, and people are talking low by the casket.
         SOURCES.put(LabyrinthPlace.HARRIGAN,(server,data,listener,base)->Through.of(HarriganVignette.funeral(server,data,base)?Carry.VOICES:Carry.CLOCK));
+        // 0.4.248: the Barretts' house talks through its door while the filming goes on; to a reader who has finished it, nothing moves in there.
+        SOURCES.put(LabyrinthPlace.GHOSTS_SET,(server,data,listener,base)->Through.of(LiteraryVignettes.personal(data,listener,LabyrinthPlace.GHOSTS_SET).getBoolean("Completed")?Carry.EMPTY:Carry.VOICES));
         // The family at the table until they are driven out; after that the house is empty.
         SOURCES.put(LabyrinthPlace.SEANCE,(server,data,listener,base)->Through.of(ClassicsVignettes.familyGone(data)?Carry.EMPTY:Carry.VOICES));
     }
