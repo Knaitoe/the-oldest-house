@@ -196,6 +196,19 @@ public final class GhostsSetTests {
         own.putInt("FilmDay",3);h.assertTrue(filming.matcher(GhostsSet.callOver(own)+GhostsSet.idleLine(own,1)).find(),"earlier days still talk about the take");
         h.succeed();
     }
+    /** 0.4.242 (run 1398, the live proof): out of the bed she lies in on day six and across the room, no tick carries her more than a step. */
+    @GameTest(template="empty",batch="ghosts_bed_walk",timeoutTicks=1200)
+    public static void daySixWalkFromTheBedHasNoSingleTickJump(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_bed_walk",P);f.source(p,P);final Vec3[] prev={null};final int[] pose={-1};final double[] most={0};
+        h.startSequence().thenIdle(30).thenExecute(()->{
+            var own=f.own(p,P);own.putInt("FilmDay",6);own.putInt("ShotClock",590);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);own.putBoolean("DayDone",false);f.at(p,P,-4.5,5,-19.5);film(p,cam(p));save(f,p,own);
+        }).thenWaitUntil(()->{var own=f.own(p,P);
+            if(own.getBoolean("CastPlaced")){var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);
+                if(prev[0]!=null&&pose[0]==GhostsSet.STAND&&m.phase()==GhostsSet.STAND)most[0]=Math.max(most[0],m.position().distanceTo(prev[0]));
+                prev[0]=m.position();pose[0]=m.phase();}
+            h.assertTrue(most[0]<.151,"a single tick carried her "+most[0]);
+            h.assertTrue(own.getInt("JumpApproach0495")>=4,"she is out of the bed and across the room: "+status(f,p));}).thenSucceed();
+    }
     @GameTest(template="empty",batch="ghosts_full_take",timeoutTicks=12000)
     public static void SevenActualTakesReachThePrivateCollapseMechanismAndHeldJump(GameTestHelper h){
         var f=fixture(h);var p=f.player("ghost_full_take",P);f.source(p,P);var b=f.base(P);

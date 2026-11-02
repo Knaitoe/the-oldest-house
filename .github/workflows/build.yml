@@ -169,7 +169,7 @@ jobs:
                   assert name in z.namelist(), name
               assert f'version="{expected_version}"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               ghosts = json.loads(z.read('assets/the_oldest_house/blockstates/ghosts_set.json'))['variants']
-              expected_ghost_kinds = {'wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg','stair_rail','stair_rail_top'}
+              expected_ghost_kinds = {'wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg','stair_rail','stair_rail_top','meal_spaghetti','meal_spaghetti_plain'}
               assert len(ghosts) == len(expected_ghost_kinds)*4
               assert {frozenset(key.split(',')) for key in ghosts} == {frozenset((f'kind={kind}',f'facing={face}')) for kind in expected_ghost_kinds for face in ('north','east','south','west')}
               for variant in ghosts.values():
