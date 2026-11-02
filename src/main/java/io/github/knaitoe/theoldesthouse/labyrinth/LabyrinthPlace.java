@@ -513,6 +513,8 @@ public enum LabyrinthPlace {
             new DoorSpec("far",new BlockPos(0,0,-16),Direction.SOUTH,LabyrinthData.DEALT))),
     /** 0.4.253, After the People Lights Have Gone Off (PeopleLights, PeopleLightsSite): a guest for one evening and night in the narrow, tall house Stan built, after the title story of Stephen Graham Jones's collection. Understanding, one visit. */
     PEOPLE_LIGHTS("people_lights",Kind.ONE_SHOT,160,new BoundingBox(-16,-3,-31,17,15,0),literaryEntry()),
+    /** 0.4.257, A Place for You, the first slice (PlaceForYou, PlaceForYouSite): a private evening in Mara's house, which has prepared for the reader's return; the owner's own proposal. Understanding, one visit, built whole. */
+    PLACE_FOR_YOU("place_for_you",Kind.ONE_SHOT,165,new BoundingBox(-18,-3,-34,18,18,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

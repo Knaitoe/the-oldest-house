@@ -1,0 +1,29 @@
+{
+  "parent": "the_oldest_house:item/pfy_carried_bag",
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/pfy_carried_bag"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/pfy_carried_spoon"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "the_oldest_house:item/pfy_carried_plate"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "the_oldest_house:item/pfy_carried_cups"
+    }
+  ]
+}

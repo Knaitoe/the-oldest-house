@@ -1381,5 +1381,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 62
+  },
+  {
+    "name": "literary_place_mara",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 65
+  },
+  {
+    "name": "literary_place_kit",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 66
   }
 ]

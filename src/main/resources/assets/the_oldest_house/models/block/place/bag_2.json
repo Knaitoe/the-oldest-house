@@ -1,0 +1,106 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/place/folded",
+    "particle": "the_oldest_house:block/place/folded"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        4
+      ],
+      "to": [
+        13,
+        2,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        2,
+        5
+      ],
+      "to": [
+        12,
+        4,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        4,
+        6
+      ],
+      "to": [
+        11,
+        5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    }
+  ]
+}

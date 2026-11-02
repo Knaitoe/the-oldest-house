@@ -1,0 +1,33 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "i": "the_oldest_house:item/read_routine_2",
+    "particle": "the_oldest_house:item/read_routine_2"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        0.25,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#i",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

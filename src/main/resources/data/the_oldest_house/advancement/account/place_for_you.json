@@ -1,0 +1,28 @@
+{
+  "parent": "the_oldest_house:account/kind_understanding",
+  "display": {
+    "icon": {
+      "id": "minecraft:birch_fence_gate"
+    },
+    "title": {
+      "translate": "advancements.the_oldest_house.account.place_for_you.title"
+    },
+    "description": {
+      "translate": "advancements.the_oldest_house.account.place_for_you.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "house": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "house"
+    ]
+  ]
+}

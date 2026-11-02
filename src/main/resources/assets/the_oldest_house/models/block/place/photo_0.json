@@ -1,0 +1,82 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/place/theo",
+    "b": "the_oldest_house:block/place/card_back",
+    "f": "the_oldest_house:block/place/frame",
+    "particle": "the_oldest_house:block/place/theo"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        7
+      ],
+      "to": [
+        12,
+        10,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            4,
+            3,
+            12,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        0,
+        8
+      ],
+      "to": [
+        8.5,
+        6,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    }
+  ]
+}
