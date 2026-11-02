@@ -487,6 +487,8 @@ public enum LabyrinthPlace {
     NIGHT_OPERATOR("night_operator", Kind.GRAY, 159, new BoundingBox(-6,-1,-12,6,4,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(0,0,-12),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.253, After the People Lights Have Gone Off (PeopleLights, PeopleLightsSite): a guest for one evening and night in the narrow, tall house Stan built, after the title story of Stephen Graham Jones's collection. Understanding, one visit. */
+    PEOPLE_LIGHTS("people_lights",Kind.ONE_SHOT,160,new BoundingBox(-16,-3,-31,17,15,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

@@ -1,0 +1,17 @@
+{
+  "parent": "the_oldest_house:item/people_carried_case",
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/people_carried_case"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/people_carried_chair"
+    }
+  ]
+}

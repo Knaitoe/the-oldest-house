@@ -93,6 +93,8 @@ jobs:
           python3 tools/draw_fold_fittings.py --check
           python3 tools/draw_winch_fittings.py --check
           python3 tools/draw_exchange_fittings.py --check
+          python3 tools/draw_people_lights_art.py --check
+          python3 tools/generate_people_lights_audio.py --check
           python3 tools/generate_operator_audio.py --check
           python3 tools/draw_trace_fittings.py --check
           python3 tools/generate_staircase_leak_assets.py --check

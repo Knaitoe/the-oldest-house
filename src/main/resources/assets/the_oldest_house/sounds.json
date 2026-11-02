@@ -3475,5 +3475,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.operator.buzz"
+  },
+  "people.wheels_tile": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:people/wheels_tile",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.people.wheels_tile"
+  },
+  "people.wheels_wood": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:people/wheels_wood",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.people.wheels_wood"
+  },
+  "people.wheels_kitchen": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:people/wheels_kitchen",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.people.wheels_kitchen"
+  },
+  "people.wheels_runner": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:people/wheels_runner",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.people.wheels_runner"
+  },
+  "people.pulling": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:people/pulling",
+        "attenuation_distance": 6
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.people.pulling"
   }
 }

@@ -190,6 +190,7 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.OWN_LIGHT, "Two matchboxes laid side by side with a playing card standing on edge down the middle, a spent match in one and a whole one in the other, both pointing the same way."),
         Map.entry(LabyrinthPlace.POLYBIUS, "An arcade cabinet the size of a matchbox, painted black all over, with a screen no bigger than a fingernail and nothing written on it anywhere."),
         Map.entry(LabyrinthPlace.REPLACEMENT, "A street of matchbox houses, every window taped over but one house's, and on its door a collar no bigger than a ring."),
+        Map.entry(LabyrinthPlace.PEOPLE_LIGHTS, "A doll's house three storeys high and one room wide, a tiny wheelchair at the foot of its stair, and a pinhead figure at the top rail."),
         Map.entry(LabyrinthPlace.VACANT_POSSESSION, "A doll's-house flat with nothing left in it but one chair by the window, and the tiny bulb still lit."),
         Map.entry(LabyrinthPlace.LAST_SWIMMER, "A swimming pool no bigger than a soap dish, its cover painted on all but one lane, and in that lane, under the water, a pale stroke of paint."),
         Map.entry(LabyrinthPlace.LINE, "A cigar box painted black inside, a single cotton thread running from a pin at the lid across the dark to a rucksack the size of a pea."),
