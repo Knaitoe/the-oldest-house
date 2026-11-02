@@ -119,7 +119,7 @@ public final class BorrascaTests {
             else if(phase[0]==2&&p.getX()<f.base(p).getX()-26.5){h.assertTrue(p.getZ()<f.base(p).getZ()-207&&p.getZ()>f.base(p).getZ()-209.5,"the adult crouches west along the walled tunnel to the gate");phase[0]=3;}});
     }
 
-    @GameTest(template="empty",batch="borrasca_four",timeoutTicks=1500)
+    @GameTest(template="empty",batch="borrasca_four",timeoutTicks=2600)
     public static void fourConfirmedReturnsCarryTheOriginalAndRestoreTheScarWithoutASecondKind(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("name_beside_mine");var peer=f.player("earlier_reader");final UUID[] original={null};
         var s=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both private native sites loaded")).thenExecute(()->{f.enter(p);f.enter(peer);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Friend loaded"));
@@ -180,7 +180,7 @@ public final class BorrascaTests {
         var obstacle=BlockPos.containing(eye.lerp(lamp,.35));var before=f.out.getBlockState(obstacle);f.out.setBlock(obstacle,Blocks.STONE.defaultBlockState(),3);var covered=f.out.clip(new ClipContext(eye,lamp,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));f.h.assertTrue(covered.getType()==HitResult.Type.BLOCK&&covered.getBlockPos().equals(obstacle),"solid native cover still hides the taking light");f.out.setBlock(obstacle,before,3);
     }
 
-    @GameTest(template="empty",batch="borrasca_taking_walk",timeoutTicks=3200)
+    @GameTest(template="empty",batch="borrasca_taking_walk",timeoutTicks=4400)
     public static void theSameFriendWalksTheWholeSecondTrailAndBothReadersShelterBeforeTheTaking(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_taking_walk");final boolean[] walking={false};final Vec3[] previous={Vec3.ZERO};final int[] moved={0},detour={0};final UUID[] id={null};
         // Walk around the visible timber ends. Direct pursuit cuts inside a corner once
@@ -260,7 +260,7 @@ public final class BorrascaTests {
             .thenSucceed();
     }
 
-    @GameTest(template="empty",batch="borrasca_ahead_taking",timeoutTicks=4000)
+    @GameTest(template="empty",batch="borrasca_ahead_taking",timeoutTicks=5200)
     public static void aReaderWaitingAtTheClearingStillLosesHerThere(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_waiting");final double[] closest={99,99};final boolean[] watching={false};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the friend is at the first marker"))
@@ -272,6 +272,34 @@ public final class BorrascaTests {
                 h.assertTrue(BorrascaBelongings.dropOnce(p,own,"Compass",f.base(p).offset(BorrascaRooms.DROP))==false,"her one compass is already lying on the trail");})
             .thenSucceed();
         h.onEachTick(()->{if(!watching[0])return;var a=f.actor(p,"CastKimber");if(a==null||f.own(p).getInt("TakingTicks")==0)return;for(int i=0;i<2;i++){var w=f.actor(p,"Worker"+i);if(w!=null&&!w.isInvisible())closest[i]=Math.min(closest[i],w.distanceTo(a));}});
+    }
+
+    /**
+     * 0.4.262: the two men, each his own man, walk down the ridge road to her; three strokes are paced to them (the light, the turn down
+     * the lane, the hand on her arm); the Shiny Gentleman stands on the ridge behind them while they come; and they lead her back up the
+     * lane toward the road. Nobody is moved while the reader watches.
+     */
+    @GameTest(template="empty",batch="borrasca_strokes",timeoutTicks=3200)
+    public static void theMenComeDownTheRidgeRoadToThreeStrokesAndLeadHerOut(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_strokes");final double[] maxStep={0},gentFurther={-99};final Vec3[] last={null,null};final boolean[] watching={false},gentSeen={false};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is placed"))
+            .thenExecute(()->{
+                h.assertTrue(f.actor(p,"Worker0").phase()==BorrascaStory.WORKER&&f.actor(p,"Worker1").phase()==BorrascaStory.WORKER+1,"each of the two men has his own face");
+                f.read(p,BorrascaRooms.SOURCE,false);f.talk(p,"CastKimber");var own=f.own(p);own.putInt("TakingStep",Integer.MAX_VALUE);f.save(p,own);
+                f.actor(p,"CastKimber").moveTo(Vec3.atBottomCenterOf(f.base(p).offset(BorrascaRooms.TAKING)),180,0);f.at(p,0,9,-146);p.setYRot(180);watching[0]=true;})
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("TakingTicks")>0&&f.own(p).getInt("Strokes")>=1,"the light comes on with the first stroke"))
+            .thenExecute(()->{var own=f.own(p);h.assertTrue(own.getInt("Strokes")==1&&!own.getBoolean("Led"),"one stroke, and they are still coming: "+own.getInt("Strokes"));
+                for(int i=0;i<2;i++){var w=f.actor(p,"Worker"+i);h.assertTrue(w.position().distanceTo(f.actor(p,"CastKimber").position())>12,"they come from up on the ridge road, not beside her: "+w.position().subtract(Vec3.atLowerCornerOf(f.base(p))));}})
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Strokes")>=2,"the second stroke as they turn down toward her: "+f.actor(p,"Worker0").position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" step "+f.own(p).getInt("Taker0")))
+            .thenExecute(()->h.assertTrue(!f.own(p).getBoolean("Led"),"the second stroke comes before they reach her"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("Led")&&f.own(p).getInt("Strokes")==3,"the third stroke as a hand closes on her arm: "+f.actor(p,"Worker0").position().subtract(Vec3.atLowerCornerOf(f.base(p)))))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendMissing"),"her compass falls as she is led up the lane"))
+            .thenWaitUntil(()->{var w=f.actor(p,"Worker0");var own=f.own(p);h.assertTrue(own.getBoolean("Taker0Hidden")||w.getZ()<f.base(p).getZ()-157,"watched, they walk her back up the lane toward the road: "+w.position().subtract(Vec3.atLowerCornerOf(f.base(p))));})
+            .thenExecute(()->{watching[0]=false;h.assertTrue(maxStep[0]<.9,"nobody is moved while watched: "+maxStep[0]);h.assertTrue(gentSeen[0]&&gentFurther[0]>0,"the Gentleman stood on the ridge behind them while they came: "+gentFurther[0]);})
+            .thenSucceed();
+        h.onEachTick(()->{if(!watching[0])return;var own=f.own(p);if(own.getInt("TakingTicks")==0)return;p.setYRot(180);p.setXRot(-5);
+            for(int i=0;i<2;i++){var w=f.actor(p,"Worker"+i);if(w==null||w.isInvisible()){last[i]=null;continue;}if(last[i]!=null&&LiteraryVignettes.watched(f.out,w.getEyePosition()))maxStep[0]=Math.max(maxStep[0],w.position().distanceTo(last[i]));last[i]=w.position();}
+            var g=BorrascaStory.gentleman(own);var w=f.actor(p,"Worker0");if(g!=null&&own.getBoolean("GentBehind")&&!own.getBoolean("Led")&&w!=null&&!w.isInvisible()){gentSeen[0]=true;gentFurther[0]=Math.max(gentFurther[0],g.distanceTo(p.position())-w.position().distanceTo(p.position()));}});
     }
 
     /** 0.4.236: when the noise comes on a child visit, the Shiny Gentleman stands far off in the pines past the second marker, for that reader alone. */

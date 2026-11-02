@@ -101,7 +101,7 @@ def main():
             assert native.getchannel('A').crop(box).getextrema()==(255,255),('Unpainted creature face',name,face)
     runtime=json.loads(read('src/main/resources/assets/the_oldest_house/character_art.json'))
     assert runtime==entries(),'Native review catalog differs from the actual production mesh selection'
-    assert {r['name'] for r in runtime if r['model']=='borrasca'}=={'borrasca_'+p for p in ('kyle','kimber','sheriff','prescott','worker')}
+    assert {r['name'] for r in runtime if r['model']=='borrasca'}=={'borrasca_'+p for p in ('kyle','kimber','sheriff','prescott','worker','worker_two')}
     print(f"Verified {len(changed)} catalogued paintings including {len(FAMILY_PATHS)} refreshed family sheets, {len(runtime)} human model selections including Drisking, all opaque native base faces and {len(review['unchanged_png_sha256'])} unchanged historical PNGs.")
     if packaged:packaged.close()
 

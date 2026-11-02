@@ -23,9 +23,12 @@ public final class BorrascaNativeArt {
     public static final ResourceLocation ATLAS=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_cast_pixels.png");
     public static final ModelLayerLocation CAST=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca_cast"),"main");
     private BorrascaNativeArt(){}
-    private static final String[] PEOPLE={"kyle","kimber","sheriff","prescott"};
-    /** Shared cast painter: five 256-pixel exports on the original 64x64 humanoid UV layout. */
-    public static ResourceLocation skin(int person,boolean worker){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_"+(worker?"worker":PEOPLE[Math.max(0,Math.min(3,person))])+".png");}
+    private static final String[] PEOPLE={"kyle","kimber","sheriff","prescott","worker","worker_two"};
+    /** Shared cast painter: six 256-pixel exports on the original 64x64 humanoid UV layout; 4 and 5 are the two plant workers (0.4.262: no longer one face twice). */
+    public static ResourceLocation skin(int person){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_"+PEOPLE[Math.max(0,Math.min(PEOPLE.length-1,person))]+".png");}
+    public static ResourceLocation skin(int person,boolean worker){return skin(worker?4:Math.min(3,person));}
+    /** Which painting an actor wears: a worker's phase says which of the two men he is. */
+    public static int person(LiteraryActor a){return a.phase()>=BorrascaStory.WORKER?(a.phase()==BorrascaStory.WORKER+1?5:4):Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE));}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,BorrascaNativeArt::castLayer);}
     private static LayerDefinition castLayer(){
         var mesh=HumanoidModel.createMesh(CubeDeformation.NONE,0);
@@ -34,10 +37,24 @@ public final class BorrascaNativeArt {
         return LayerDefinition.create(mesh,64,64);
     }
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);}
-    public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{public CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.25F);addLayer(new ItemInHandLayer<>(this,c.getItemInHandRenderer()));}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE)),a.phase()>=BorrascaStory.WORKER);}@Override protected boolean shouldShowName(LiteraryActor a){return a.isCustomNameVisible()&&!a.isInvisible()&&super.shouldShowName(a);}}
+    public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{public CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.25F);addLayer(new ItemInHandLayer<>(this,c.getItemInHandRenderer()));}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(person(a));}@Override protected boolean shouldShowName(LiteraryActor a){return a.isCustomNameVisible()&&!a.isInvisible()&&super.shouldShowName(a);}}
     public static final class CastModel extends HumanoidModel<LiteraryActor>{public CastModel(ModelPart root){super(root);hat.visible=false;}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);young=false;super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
-            pose(a.gesture(),a.role()==LiteraryActor.BORRASCA_SHERIFF,age);HumanoidMotion.connect(this);RecentActorMotion.blend(a,age,this);}
+        /**
+         * 0.4.262 (owner: the workers "need proper walking animations"). The pose is eased between gestures as before, but the stride is laid
+         * on afterwards, so the easing never damps a step: before, it smoothed the leg swing away to a shuffle and the cadence was twice a
+         * walk's. Now a full stride takes about two blocks, the legs swing their whole way, and an arm a gesture is not using swings opposite
+         * its leg.
+         */
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);young=false;super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
+            pose(a.gesture(),a.role()==LiteraryActor.BORRASCA_SHERIFF,age);HumanoidMotion.connect(this);RecentActorMotion.blend(a,age,this);stride(a.gesture(),motion.phase()*.45F,motion.amount());}
+        /** Legs and free arms swinging with the distance actually walked; a sheltering crouch keeps its legs. */
+        void stride(int gesture,float phase,float amount){
+            if(amount<=.01F)return;float c=net.minecraft.util.Mth.cos(phase),swing=.72F*amount;
+            if(gesture!=5){rightLeg.xRot+=c*swing;leftLeg.xRot-=c*swing;}
+            boolean right=gesture==0||gesture==8,left=gesture!=3&&gesture!=5&&gesture!=8;
+            if(right)rightArm.xRot-=c*.5F*amount;if(left)leftArm.xRot+=c*.5F*amount;
+            float bob=-Math.abs(net.minecraft.util.Mth.sin(phase))*.22F*amount;for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=bob;
+        }
         private void pose(int gesture,boolean sheriff,float age){
             switch(gesture){
                 case 1->{rightArm.xRot=-2.1F;rightArm.zRot=-.25F;head.xRot+=.15F;}
@@ -49,6 +66,9 @@ public final class BorrascaNativeArt {
                 case 6->{rightArm.xRot=-1.25F;rightArm.zRot=.15F;leftArm.xRot=.35F;head.yRot=2.1F;head.xRot=-.1F;body.xRot=.08F;}
                 // A taker's hand held out, low, the other arm at his side.
                 case 7->{rightArm.xRot=-1.05F;rightArm.zRot=-.05F;body.xRot=.06F;head.xRot=.25F;}
+                // 0.4.262: walking her by the arm, his hand on her upper arm: she is on his left (8) or his right (9); his head turned to her.
+                case 8->{leftArm.xRot=-.62F;leftArm.zRot=-.3F;body.yRot=.1F;head.yRot=.35F;head.xRot=.12F;}
+                case 9->{rightArm.xRot=-.62F;rightArm.zRot=.3F;body.yRot=-.1F;head.yRot=-.35F;head.xRot=.12F;}
                 default->{}
             }}
         /** Keep the approved child review poses; adults use the same full-length body as their live renderer. */

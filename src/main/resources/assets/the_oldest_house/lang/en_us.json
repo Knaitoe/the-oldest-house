@@ -1095,5 +1095,6 @@
   "block.the_oldest_house.pfy_trim": "Cream Trim",
   "item.the_oldest_house.pfy_carried": "Something of the Household",
   "advancements.the_oldest_house.account.place_for_you.title": "A place for you",
-  "advancements.the_oldest_house.account.place_for_you.description": "I was expected at a house I had never lived in."
+  "advancements.the_oldest_house.account.place_for_you.description": "I was expected at a house I had never lived in.",
+  "subtitles.the_oldest_house.borrasca.stroke": "One stroke from the ridge"
 }

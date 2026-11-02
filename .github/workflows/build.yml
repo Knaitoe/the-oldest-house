@@ -204,7 +204,7 @@ jobs:
               assert 'assets/minecraft/atlases/blocks.json' in z.namelist()
               trail_png = z.read('assets/the_oldest_house/textures/entity/borrasca_trail_atlas.png')
               assert trail_png.startswith(b'\x89PNG') and trail_png[16:24] == bytes.fromhex('0000004000000040')
-              for person in ('kimber','kyle','sheriff','prescott','worker'):
+              for person in ('kimber','kyle','sheriff','prescott','worker','worker_two'):
                   skin = z.read(f'assets/the_oldest_house/textures/entity/borrasca_{person}.png')
                   assert skin.startswith(b'\x89PNG') and skin[16:24] == bytes.fromhex('0000010000000100'), person
               for material in ('timber','steel','rust','paper','notice','notice_frame','carving','drawers','drawers_side','belt','belt_frame','truck','machine'):
