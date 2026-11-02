@@ -59,6 +59,17 @@ public final class DraftRooms {
     public static final BlockPos[] LOUVRE_CURTAINS={new BlockPos(-11,1,-13),new BlockPos(-11,1,-15)};
     public static final BlockPos SEAM_CURTAIN=new BlockPos(9,1,-21);
 
+    // ------------------------------------------------------------------ the airing rooms (0.4.245)
+    /**
+     * The airing rooms keep the vent rooms' plan exactly (GRATE, AB, LOUVRE, BC, SEAM), so the air goes the same ways for the same
+     * reasons. What differs: both doors are on closers and swing shut unless something holds them (TraceRooms); the rooms are under
+     * dust, papered like the shut-up rooms, the last one plain plaster; the second room has a line of sheets of its own, so holding the
+     * first door shows at once what it does to the air next door; and there are a hook and one loose chair, in the second room.
+     */
+    public static final LabyrinthPlace AIRING=LabyrinthPlace.AIRING_ROOMS;
+    public static final BlockPos[] B_SHEETS={new BlockPos(-3,2,-13),new BlockPos(3,2,-13)};
+    public static final BlockPos AIRING_HOOK=new BlockPos(-4,1,-3),AIRING_CHAIR=new BlockPos(-4,0,-16);
+
     static BlockState mat(String name){return PuzzleRegistry.draftMaterial(name).defaultBlockState();}
     static void set(ServerLevel l,BlockPos b,BlockPos at,BlockState s){l.setBlock(b.offset(at),s,FLAGS);}
     static void door(ServerLevel l,BlockPos b,BlockPos at,Direction facing,boolean open){
@@ -127,6 +138,39 @@ public final class DraftRooms {
         PuzzleRooms.ironDoor(l,b,VENTS,solved);
     }
 
+    public static void buildAiring(ServerLevel l,BlockPos b){
+        TraceRooms.shell(l,b,AIRING);boolean solved=PuzzleRooms.solved(l.getServer(),AIRING);
+        var plaster=mat("plaster");var panel=TraceRooms.mat("panel");var paper=TraceRooms.mat("paper");
+        // The first room, narrow: the grate the air comes down through, two sheets on a line under it, the hook by the way in.
+        for(int x0:new int[]{-11,5})for(int x=x0;x<=x0+6;x++)for(int z=-8;z<=-1;z++)for(int y=0;y<=5;y++)set(l,b,new BlockPos(x,y,z),y<=1?panel:paper);
+        set(l,b,GRATE,DraftBlock.of(DraftBlock.Kind.GRATE,Direction.NORTH));
+        for(int x=-3;x<=3;x++)set(l,b,new BlockPos(x,3,-6),DraftBlock.of(LINE,Direction.NORTH));
+        for(var at:A_SHEETS)set(l,b,at,DraftBlock.of(SHEET,Direction.NORTH));
+        set(l,b,AIRING_HOOK,TraceBlock.of(TraceBlock.Kind.HOOK,Direction.EAST));
+        // The second room, wide: the louvre in its west wall, open, curtains either side; its own line of sheets; furniture under dust
+        // sheets; the loose chair. The wall at its far end is plaster, as the room behind it is.
+        TraceRooms.wall(l,b,-11,11,-9);TraceRooms.wall(l,b,-11,11,-19);
+        for(int x=2;x<=9;x++)for(int y=0;y<=5;y++)set(l,b,new BlockPos(x,y,-19),plaster);
+        set(l,b,LOUVRE,DraftBlock.of(DraftBlock.Kind.LOUVRE,Direction.EAST,solved?0:1));
+        for(var at:LOUVRE_CURTAINS)set(l,b,at,DraftBlock.of(CURTAIN,Direction.EAST));
+        for(int x=-4;x<=4;x++)set(l,b,new BlockPos(x,3,-13),DraftBlock.of(LINE,Direction.NORTH));
+        for(var at:B_SHEETS)set(l,b,at,DraftBlock.of(SHEET,Direction.NORTH));
+        for(var at:List.of(new BlockPos(9,0,-11),new BlockPos(10,0,-11),new BlockPos(-10,0,-11),new BlockPos(10,0,-15)))set(l,b,at,TraceBlock.of(TraceBlock.Kind.SHEET,Direction.NORTH));
+        set(l,b,AIRING_CHAIR,TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.EAST,1));
+        TraceRooms.springDoor(l,b,AB,Direction.SOUTH);TraceRooms.springDoor(l,b,BC,Direction.SOUTH);
+        // The third room: plain plaster all round, a curtain on a rail by the east wall; behind that wall the seam, the passage, the far door.
+        PuzzleRooms.fill(l,b,-11,0,-27,1,5,-20,plaster);PuzzleRooms.fill(l,b,10,0,-27,11,5,-20,plaster);
+        for(int x=2;x<=9;x++)for(int y=0;y<=5;y++)set(l,b,new BlockPos(x,y,-28),plaster);
+        set(l,b,SEAM_CURTAIN,DraftBlock.of(CURTAIN,Direction.WEST));
+        for(int y=0;y<=1;y++)set(l,b,SEAM.above(y),DraftBlock.of(DraftBlock.Kind.SEAM,Direction.WEST,solved?2:0));
+        PuzzleRooms.fill(l,b,11,0,-27,11,1,-24,Blocks.AIR.defaultBlockState());
+        for(var at:List.of(new BlockPos(-2,5,-7),new BlockPos(0,5,-16),new BlockPos(6,5,-24)))set(l,b,at,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
+        LabyrinthBuilder.entrance(l,b,paper,TraceRooms.mat("boards"),TraceRooms.mat("plaster"));
+        LabyrinthBuilder.doors(l,b,AIRING);
+        PuzzleRooms.ironDoor(l,b,AIRING,solved);
+        TraceRooms.dust(l,b,-11,-1,11,-27);
+    }
+
     // ------------------------------------------------------------------ the air
     /** Where the drying room's air goes. */
     public static Flow drying(ServerLevel l,BlockPos b){
@@ -178,6 +222,15 @@ public final class DraftRooms {
         }
         return flow;
     }
+    /**
+     * The airing rooms' air: the vent rooms' rule on the vent rooms' plan, and the second room's sheets showing it whenever it gets
+     * that far (held at the second door, out of the louvre, or on through).
+     */
+    public static Flow airAiring(ServerLevel l,BlockPos b,boolean particles){
+        var flow=airVents(l,b,particles);
+        for(var at:B_SHEETS)pull(l,b,at,SHEET,flow!=Flow.BLOCKED);
+        return flow;
+    }
     /** A sheet or curtain, hanging still or pulled by the air. */
     static void pull(ServerLevel l,BlockPos b,BlockPos rel,DraftBlock.Kind kind,boolean pulled){
         var at=b.offset(rel);var s=l.getBlockState(at);if(!DraftBlock.is(s,kind))return;int want=pulled?1:0;
@@ -198,7 +251,7 @@ public final class DraftRooms {
     public static boolean use(ServerPlayer p,BlockPos pos,BlockState s){
         if(p.isSpectator())return false;
         var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return false;
-        var place=LabyrinthPlaces.placeAt(origin,pos);if(place!=DRYING&&place!=VENTS)return false;
+        var place=LabyrinthPlaces.placeAt(origin,pos);if(place!=DRYING&&place!=VENTS&&place!=AIRING)return false;
         var b=LabyrinthPlaces.base(origin,place);var l=p.serverLevel();int stage=s.getValue(DraftBlock.STAGE);
         switch(s.getValue(DraftBlock.KIND)){
             case VENT->{l.setBlock(pos,s.setValue(DraftBlock.STAGE,stage==0?1:0),FLAGS);l.playSound(null,pos,SoundEvents.IRON_TRAPDOOR_OPEN,SoundSource.BLOCKS,.6F,stage==0?1.2F:.9F);
@@ -213,15 +266,16 @@ public final class DraftRooms {
                 // The air drawn into it: pressed now, the plaster gives.
                 for(int y=0;y<=1;y++){var at=b.offset(SEAM.above(y));var t=l.getBlockState(at);if(DraftBlock.is(t,DraftBlock.Kind.SEAM))l.setBlock(at,t.setValue(DraftBlock.STAGE,2),FLAGS);}
                 l.playSound(null,pos,SoundEvents.WOODEN_DOOR_OPEN,SoundSource.BLOCKS,.9F,.6F);
-                if(PuzzleRooms.solve(l,VENTS,"The plaster gives under your hand. It was never plaster: a panel, and it swings in on cold air.")){
-                    PuzzleRooms.ironDoor(l,b,VENTS,true);l.playSound(null,b.offset(PuzzleRooms.farDoor(VENTS)),SoundEvents.IRON_DOOR_OPEN,SoundSource.BLOCKS,.8F,.7F);}
+                if(PuzzleRooms.solve(l,place,place==AIRING?"The plaster gives under your hand: a panel, and it swings in on the air you let through."
+                        :"The plaster gives under your hand. It was never plaster: a panel, and it swings in on cold air.")){
+                    PuzzleRooms.ironDoor(l,b,place,true);l.playSound(null,b.offset(PuzzleRooms.farDoor(place)),SoundEvents.IRON_DOOR_OPEN,SoundSource.BLOCKS,.8F,.7F);}
             }
             case SHEET->PuzzleRooms.say(p,stage==1?"The sheet is bellied out on the line, pulled one way by the air.":"A sheet on the line, hanging still, nearly dry.");
             case CURTAIN->PuzzleRooms.say(p,stage==1?"The curtain is pulled flat against the wall behind it, as if the wall were breathing in.":"A curtain on a rail, hanging still.");
             case GRATE->PuzzleRooms.say(p,"A grate in the ceiling. Air comes down through it, cold, and never stops.");
             case LINE->{return false;}
         }
-        if(place==DRYING)airDrying(l,b,false);else airVents(l,b,false);
+        if(place==DRYING)airDrying(l,b,false);else if(place==AIRING)airAiring(l,b,false);else airVents(l,b,false);
         return true;
     }
 
@@ -229,9 +283,9 @@ public final class DraftRooms {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();long now=server.getTickCount();var origin=HouseSavedData.get(server).houseOrigin();var l=server.getLevel(HouseDimensions.INTERIOR);
         if(origin==null||l==null)return;
-        if(now%10==0)for(var place:new LabyrinthPlace[]{DRYING,VENTS}){
+        if(now%10==0)for(var place:new LabyrinthPlace[]{DRYING,VENTS,AIRING}){
             if(LabyrinthData.get(server).door(place.entryDoorId())==null)continue;
-            for(var p:l.players())if(PuzzleRooms.at(p)==place){var b=LabyrinthPlaces.base(origin,place);if(b!=null&&l.isLoaded(b)){if(place==DRYING)airDrying(l,b,true);else airVents(l,b,true);}break;}
+            for(var p:l.players())if(PuzzleRooms.at(p)==place){var b=LabyrinthPlaces.base(origin,place);if(b!=null&&l.isLoaded(b)){if(place==DRYING)airDrying(l,b,true);else if(place==AIRING)airAiring(l,b,true);else airVents(l,b,true);}break;}
         }
         if(now%20==5)halls(l,origin);
     }
@@ -251,4 +305,6 @@ public final class DraftRooms {
         }
     }
     @Nullable public static Flow flow(ServerLevel l,LabyrinthPlace place){var b=PuzzleRooms.base(l.getServer(),place);return b==null?null:place==DRYING?drying(l,b):vents(l,b);}
+    /** For tests: where the air goes in the room at {@code b}, by that room's own rule. */
+    public static Flow flowAt(ServerLevel l,BlockPos b,LabyrinthPlace place){return place==DRYING?drying(l,b):vents(l,b);}
 }

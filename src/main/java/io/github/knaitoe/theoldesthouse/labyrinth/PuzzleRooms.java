@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import java.util.UUID;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -25,7 +26,8 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * something out. Solving one should make the House feel briefly understandable." Five families (0.4.230 added the air, 0.4.231 doors held open), each an early room that
  * teaches one household mechanism and a deep room that combines it across spaces: Borrowed Light and the lamp rooms, the
  * Service Lift and the twin lifts, the Turning Landing and the turning stair, the drying room and the vent rooms,
- * the cloakroom and the sprung rooms.
+ * the cloakroom and the sprung rooms. 0.4.245: the airing rooms build on two deep rooms at once, the vent rooms' air and the sprung
+ * rooms' held doors, and are offered only once both are solved.
  *
  * One rhythm for all of them, so they stay rare: a reader is offered a puzzle only after resolving a story since their last
  * puzzle and walking a few halls past it; the offer is shared among the puzzles they could have, never more than one room's
@@ -49,11 +51,17 @@ public final class PuzzleRooms {
         VENT_ROOMS(LabyrinthPlace.VENT_ROOMS,Family.AIR,true,"The door has no handle on this side. Cold air comes round its edges."),
         // 0.4.231: doors that shut themselves, held (TraceRooms, Wedges).
         PROPPED_DOOR(LabyrinthPlace.PROPPED_DOOR,Family.HOLD,false,"The door has no handle on this side. It gives only while the way behind you stands open."),
-        SPRUNG_ROOMS(LabyrinthPlace.SPRUNG_ROOMS,Family.HOLD,true,"The door has no handle on this side. It gives only while the way behind you stands open, all of it.");
+        SPRUNG_ROOMS(LabyrinthPlace.SPRUNG_ROOMS,Family.HOLD,true,"The door has no handle on this side. It gives only while the way behind you stands open, all of it."),
+        // 0.4.245: the two together (docs/AIRING_ROOMS_0_4_245.md): doors held open by the wedge and a dragged chair, and the air they let through. Built on both deep rooms.
+        AIRING_ROOMS(LabyrinthPlace.AIRING_ROOMS,Family.AIR,true,"The door has no handle on this side. Cold air comes round its edges.",LabyrinthPlace.VENT_ROOMS,LabyrinthPlace.SPRUNG_ROOMS);
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;
-        Puzzle(LabyrinthPlace place,Family family,boolean deep,@Nullable String held){this.place=place;this.family=family;this.deep=deep;this.held=held;}
+        /** 0.4.245: the rooms that must be solved first, when not just its family's early room: what it builds on. */
+        final List<LabyrinthPlace> after;
+        Puzzle(LabyrinthPlace place,Family family,boolean deep,@Nullable String held,LabyrinthPlace... after){this.place=place;this.family=family;this.deep=deep;this.held=held;this.after=List.of(after);}
+        /** What must be solved before this room is offered: its family's early room, or (for a room built on others) those rooms. */
+        public List<LabyrinthPlace> builtOn(){return !deep?List.of():after.isEmpty()?List.of(early().place):after;}
         public static @Nullable Puzzle of(LabyrinthPlace place){for(var q:values())if(q.place==place)return q;return null;}
         public Puzzle early(){for(var q:values())if(q.family==family&&!q.deep)return q;return this;}
     }
@@ -75,11 +83,12 @@ public final class PuzzleRooms {
 
     // ------------------------------------------------------------------ pacing
     private static CompoundTag own(LabyrinthData data,UUID reader){return data.stateEntry(STATE,reader.toString());}
-    /** Whether this puzzle can be had at this depth at all: early rooms before the stone, deep ones from the strange depths once their family's early room is solved. */
+    /** Whether this puzzle can be had at this depth at all: early rooms before the stone, deep ones from the strange depths once what they build on is solved. */
     static boolean open(LabyrinthData data,Puzzle q,int depth){
         if(depth<AFTER)return false;
         if(q.deep?depth<LabyrinthPacing.STRANGE_DEPTH:depth>=LabyrinthPacing.STONE_DEPTH)return false;
-        return !q.deep||solved(data,q.early().place);
+        for(var first:q.builtOn())if(!solved(data,first))return false;
+        return true;
     }
     /** A reader's weight for a puzzle room among the gray places. */
     public static int weight(LabyrinthData data,UUID reader,LabyrinthPlace place,int depth){
