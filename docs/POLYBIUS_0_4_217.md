@@ -72,6 +72,19 @@ Nothing flashes. The colours drift slowly. A reader who hides lightning flashes 
 
 It keeps no table anyone can read. Its board over the cabinet is all question marks.
 
+**Playing it (fixed on 2 November).** The owner asked whether Polybius worked. It did not. The dot only moved when a key was held,
+while the line turned away under it, so it fell off within a few ticks unless D was held from the very first. After two times round,
+no key could keep up. A play that ended that soon was under the 100 ticks a play needs to count, so the three plays never began.
+Now:
+- the dot rides out along the line by itself;
+- after the first three seconds something starts pulling it off, a new way every two and a half seconds, eased into, and harder
+  each time round;
+- the pull is never more than a turn of the dot can answer;
+- three seconds off the line ends the game.
+
+Left alone, a play lasts long enough to count. Steered toward the line, the dot stays on it to the end. The screen's hint says "keep
+it on the line". Test: `PolybiusTests#theBlackCabinetsDotRidesTheLineAndCanBeKeptOnItToTheEnd`.
+
 **The men.** Two men in suits (new skins, stranger phases 41 and 42) stand either side of the black cabinet. They are the reader's
 own: no one else sees them. They watch the reader, and the screen while the reader plays. After each play, one of them writes
 something down. A play counts once it has lasted five seconds.

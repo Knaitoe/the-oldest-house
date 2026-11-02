@@ -100,7 +100,7 @@ public final class PolybiusScreen extends Screen {
         if(over&&game<3)table(g);
         g.pose().popPose();
         g.disableScissor();
-        String hint=over?(game<3?"GAME OVER   [Esc]":""):game==2?"[Space] hold   [Esc] leave":game==3?"[A] [D]":"[W][A][S][D]   [Esc] leave";
+        String hint=over?(game<3?"GAME OVER   [Esc]":""):game==2?"[Space] hold   [Esc] leave":game==3?"[A] [D]   keep it on the line":"[W][A][S][D]   [Esc] leave";
         if(!hint.isEmpty())g.drawString(font,hint,(width-font.width(hint))/2,y0+sh+10,0xFF8A80A0,false);
     }
     void text(GuiGraphics g,String s,int x,int y,int colour){g.drawString(font,s,x,y,colour,false);}

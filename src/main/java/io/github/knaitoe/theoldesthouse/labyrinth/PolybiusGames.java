@@ -119,25 +119,38 @@ public final class PolybiusGames {
     }
 
     // ------------------------------------------------------------------------------------------------ the black cabinet
-    /** A spiral that turns, and a dot that rides out along it; turn the dot to keep it on the line. */
+    /**
+     * A spiral that turns, and a dot that rides out along it; turn the dot to keep it on the line. 0.4.252 (owner: "are you sure that
+     * polybius works?"): the dot had stood still while the line turned away under it, so it fell off within a few ticks unless a key
+     * was held from the first, and after two times round no key could keep up; a play that short never counted. Now the dot rides the
+     * line by itself, and after a moment something starts pulling it off, more each time round, never harder than a turn of the dot
+     * can answer.
+     */
     public static final class Spiral extends Game{
         public static final float CX=100,CY=75,A=5,B=3.1F,TURNS=3;
-        public float rot,speed=.012F,r=8,phi;public int offLine,score,loop;
+        /** How fast the reader turns the dot; the most the pull can ever be; the quiet ticks before it starts; how long off the line ends it. */
+        public static final float TURN=.07F,PULL_MOST=.05F;public static final int GRACE=60,OFF_LIMIT=60;
+        public float rot,speed=.012F,r=8,phi,pull,aim;public int offLine,score,loop;
         public String word;public int wordAt=-1,nextWord=90;
         final String[] words;final boolean taken;
         Spiral(long seed,Sound sound,String name,boolean taken){super(seed,sound);this.taken=taken;words=new String[]{"OBEY","NO THOUGHT","STAY","SLEEP","CONSUME","PLAY AGAIN",name.toUpperCase(Locale.ROOT)};phi=line(r);}
         float line(float radius){return (radius-A)/B+rot;}
         void step(){
             if(taken&&ticks>=90)return;
+            float before=line(r);
             rot+=speed;r+=.16F;
             if(r>A+B*TURNS*Mth.TWO_PI-2){r=8;loop++;speed+=.004F;phi=line(r);}
-            if(left())phi-=.07F;if(right())phi+=.07F;
+            else phi+=line(r)-before;
+            // Something pulls the dot off the line: a new way every so often, eased into, harder each time round.
+            if(ticks>=GRACE&&ticks%50==0)aim=(random.nextFloat()*2-1)*Math.min(PULL_MOST,.02F+loop*.008F);
+            pull+=(aim-pull)*.05F;phi+=pull;
+            if(left())phi-=TURN;if(right())phi+=TURN;
             float d=Mth.wrapDegrees((phi-line(r))*Mth.RAD_TO_DEG)*Mth.DEG_TO_RAD;
             if(Math.abs(d)<.26F){offLine=0;score++;}else offLine++;
             if(ticks%20==0)sound.play(BASS,.5F+loop*.05F);
             if(ticks>=nextWord){word=words[random.nextInt(words.length)];wordAt=ticks;nextWord=ticks+70+random.nextInt(60);}
         }
         public boolean taken(){return taken;}
-        public int score(){return score;}public boolean over(){return !taken&&(offLine>40||ticks>=1400);}
+        public int score(){return score;}public boolean over(){return !taken&&(offLine>OFF_LIMIT||ticks>=1400);}
     }
 }

@@ -234,4 +234,28 @@ public final class PolybiusTests {
             .thenSucceed();
     }
     @AfterBatch(batch="poly_fourth") public static void fourthDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.252 (owner: "are you sure that polybius works?"): the black cabinet is played, not only drawn. Left alone, the dot rides the
+     * line long enough for the play to count; a reader steering toward the line keeps it on through every time round to the end; and
+     * the pull is never more than a turn of the dot can answer.
+     */
+    @GameTest(template="empty")
+    public static void theBlackCabinetsDotRidesTheLineAndCanBeKeptOnItToTheEnd(GameTestHelper h){
+        for(long seed:new long[]{1,7,2024,-99,123456789}){
+            var idle=(PolybiusGames.Spiral)PolybiusGames.of(PolybiusSite.BLACK,seed,"reader",false,null);
+            int t=0;while(!idle.over()&&t<2000){idle.tick(0);t++;}
+            h.assertTrue(t>=Polybius.MIN_PLAY,"left alone, a play lasts long enough to count ("+t+" ticks, seed "+seed+")");
+            var play=(PolybiusGames.Spiral)PolybiusGames.of(PolybiusSite.BLACK,seed,"reader",false,null);
+            int worst=0;
+            while(!play.over()){
+                float line=(play.r-PolybiusGames.Spiral.A)/PolybiusGames.Spiral.B+play.rot;
+                float d=net.minecraft.util.Mth.wrapDegrees((play.phi-line)*net.minecraft.util.Mth.RAD_TO_DEG)*net.minecraft.util.Mth.DEG_TO_RAD;
+                play.tick(d>.05F?PolybiusGames.LEFT:d<-.05F?PolybiusGames.RIGHT:0);worst=Math.max(worst,play.offLine);
+                h.assertTrue(Math.abs(play.pull)<=PolybiusGames.Spiral.TURN,"the pull never outruns a turn of the dot");
+            }
+            h.assertTrue(play.ticks>=1400&&play.loop>=3&&worst==0,"steered toward the line, the dot stays on it every time round to the end (seed "+seed+": "+play.ticks+" ticks, "+play.loop+" loops, worst "+worst+")");
+        }
+        h.succeed();
+    }
 }
