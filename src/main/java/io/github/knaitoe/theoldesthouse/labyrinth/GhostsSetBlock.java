@@ -49,6 +49,8 @@ public final class GhostsSetBlock extends Block {
             case DRAWING -> Block.box(2,2,15,14,14,16);
             case LAMP,LAMP_OFF -> Shapes.or(Block.box(3,6,3,13,12,13),Block.box(7,12,7,9,16,9));
             case RUG -> Block.box(0,0,0,16,1,16);
+            // The crew's camera (2 November): its tripod's spread and the body on top (tools/draw_ghosts_camera.py).
+            case CAMERA -> Shapes.or(Block.box(3,0,3,13,16,13),Block.box(5,16,-2,11,24,15));
             case BED_HEAD, BED_FOOT -> Shapes.or(Block.box(0,6,0,16,12,16), Block.box(1,0,1,3,6,3), Block.box(13,0,13,15,6,15));
             default -> Shapes.block();
         };
