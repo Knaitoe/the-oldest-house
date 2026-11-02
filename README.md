@@ -20,7 +20,9 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.237**: the rooms under the depot. On Borrasca's last night, a hatch in the depot leads down to a corridor of rooms bolted from the outside, a book of nights approved by the Sheriff's office and counted by three generations of Prescotts, a letter home that was never sent, and numbers in the ground behind the shed. What the trailhead note warns of is in the vignette now, found afterwards and never shown or described. See [docs/BORRASCA_LOWER_ROOMS_0_4_237.md](docs/BORRASCA_LOWER_ROOMS_0_4_237.md).
+Development candidate **0.4.238**: fixes from review. A reader who has finished at the pool and stays by the fire door keeps it as it is; it is put back only once nobody is in the hall. The pool's wavering lights and held breath now come with the cover as well as the song, so a reader who pulls it across promptly still meets them. The familiar kitchen's window shows its remembered passages again after a reconnect. See [docs/REVIEW_FIXES_0_4_238.md](docs/REVIEW_FIXES_0_4_238.md).
+
+Previously, candidate **0.4.237**: the rooms under the depot. On Borrasca's last night, a hatch in the depot leads down to a corridor of rooms bolted from the outside, a book of nights approved by the Sheriff's office and counted by three generations of Prescotts, a letter home that was never sent, and numbers in the ground behind the shed. What the trailhead note warns of is in the vignette now, found afterwards and never shown or described. See [docs/BORRASCA_LOWER_ROOMS_0_4_237.md](docs/BORRASCA_LOWER_ROOMS_0_4_237.md).
 
 Previously, candidate **0.4.236**: the Shiny Gentleman. On Borrasca's child visits, when the noise comes off the ridge, you may see him: far off in the pines past the second marker, four and a half blocks tall, thin, faceless and shining like wet metal, standing only as long as the strokes last. Only you see him, and the grown visits never do. See [docs/BORRASCA_GENTLEMAN_0_4_236.md](docs/BORRASCA_GENTLEMAN_0_4_236.md).
 

@@ -56,3 +56,5 @@ Nothing changes in how the story is played or resolved: the same cover, the same
 3:40; the stars going out with the cover; the note's "since last summer"; the crank refusing to turn back; the radio reaching its
 second spoken part; the last verse holding the splashing and the swimmer unseen, remembered for the reader in the hall; under the
 water at the deep end, the voices, and the account remembering them. The 0.4.227 case is unchanged.
+
+0.4.238: the waver and the held breath also come with the cover (a third and two thirds pulled), whichever is first; see docs/REVIEW_FIXES_0_4_238.md.
