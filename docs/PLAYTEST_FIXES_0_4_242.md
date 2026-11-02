@@ -107,3 +107,9 @@ down again until one has settled.
   down the bed now, so her first move off it had a sideways part from inside the bed, and the step-up lifted her in one go. She
   rises straight up from where she lies first, then walks along the bed as before (`GhostsJump`).
   `GhostsSetTests#daySixWalkFromTheBedHasNoSingleTickJump` starts the day as the live proof does and fails without the change.
+
+## Run 1399
+
+The Borrasca Shiny Gentleman case failed once in the literary job: where he stands is chosen with his head in clear sight, but the
+look counted only a clear line to his middle, which a rock or a branch could hide. Looking at him now counts when his middle or his
+head is in clear sight while looked at (`BorrascaStory.seesGentleman`).
