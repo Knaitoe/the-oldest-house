@@ -61,7 +61,7 @@ public final class GhostsConversations {
             {"She said we'd go together. She wasn't supposed to eat it.","I thought they were going to sleep. Why won't they wake up?"},
             {"The show's done. Can we just have dinner?","Take the cases out the front. Mind the kitchen."},
             {"Spaghetti. Sit down, everyone, before it goes cold.","Sit down, John. We'll sort the equipment out after."},
-            {"Show's wrapped. We're just picking up the gear.","There's no next episode. Keep what you shoot."},
+            {"Show's wrapped. We're just picking up the gear.","Mind the cable on the stairs. That's the last of it."},
             {"There's nothing scheduled here today.","The show finishing doesn't make any of this finish."}
         }
     };
