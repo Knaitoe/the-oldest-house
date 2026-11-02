@@ -243,7 +243,9 @@ public final class EntrancePlaytestTests {
     /** Every ordinary hall a way on can lead into before the stone depth, the plain halls (0.4.197, 0.4.199) included: a fixture that builds fewer can be dealt one it never built. */
     static final java.util.List<LabyrinthPlace> HALLS=ordinaryHalls();
     static java.util.List<LabyrinthPlace> ordinaryHalls(){
-        var out=new java.util.ArrayList<>(java.util.List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING,LabyrinthPlace.QUIET_ROOM));
+        var out=new java.util.ArrayList<>(java.util.List.of(LabyrinthPlace.GRAY_CORRIDOR,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.ALCOVE_HALL,LabyrinthPlace.OFFSET_HALL,LabyrinthPlace.SERVICE_LANDING));
+        // 0.4.261: the quiet room and its siblings, the rest rooms.
+        out.addAll(QuietRooms.FAMILY);
         for(var place:LabyrinthPlace.values())if(HallVariations.plain(place))out.add(place);
         return java.util.List.copyOf(out);
     }

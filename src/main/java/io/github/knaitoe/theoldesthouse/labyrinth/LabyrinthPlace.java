@@ -515,6 +515,22 @@ public enum LabyrinthPlace {
     PEOPLE_LIGHTS("people_lights",Kind.ONE_SHOT,160,new BoundingBox(-16,-3,-31,17,15,0),literaryEntry()),
     /** 0.4.257, A Place for You, the first slice (PlaceForYou, PlaceForYouSite): a private evening in Mara's house, which has prepared for the reader's return; the owner's own proposal. Understanding, one visit, built whole. */
     PLACE_FOR_YOU("place_for_you",Kind.ONE_SHOT,165,new BoundingBox(-18,-3,-34,18,18,0),literaryEntry()),
+    /** 0.4.261, the rest rooms (QuietRooms, docs/REST_ROOMS_0_4_261.md): the quiet room's siblings, each built whole. The reading room, round a cold hearth. */
+    QUIET_READING("quiet_reading", Kind.GRAY, 166, new BoundingBox(-6,-1,-16,6,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(0,0,-16),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The boot room: long and low, coats on the hooks, the sink and the machine. */
+    QUIET_BOOTROOM("quiet_bootroom", Kind.GRAY, 167, new BoundingBox(-4,-1,-20,4,5,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(-2,0,-20),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** The garden room: frosted panes and plants on the sill, cane chairs round a table; the way on in its west wall. */
+    QUIET_SUNROOM("quiet_sunroom", Kind.GRAY, 168, new BoundingBox(-8,-1,-13,8,7,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(-8,0,-6),Direction.EAST,LabyrinthData.DEALT))),
+    /** The spare room under the eaves, the bed made up. */
+    QUIET_SPARE("quiet_spare", Kind.GRAY, 169, new BoundingBox(-5,-1,-12,5,6,0), List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("far",new BlockPos(3,0,-11),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

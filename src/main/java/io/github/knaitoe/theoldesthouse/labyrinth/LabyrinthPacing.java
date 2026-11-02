@@ -22,7 +22,7 @@ public final class LabyrinthPacing {
                 || place==LabyrinthPlace.OFFSET_HALL || place==LabyrinthPlace.SERVICE_LANDING || HallVariations.plain(place) || StoneHalls.isStone(place) || DarkHalls.isDark(place) || place==LabyrinthPlace.DUST_HALL;
     }
     public static boolean quiet(LabyrinthPlace place) {
-        return place==LabyrinthPlace.QUIET_ROOM || place==LabyrinthPlace.EXPLORER_CAMP;
+        return QuietRooms.is(place) || place==LabyrinthPlace.EXPLORER_CAMP;
     }
     /** 0.4.239: rooms nothing frightening happens in: the quiet rooms, and the familiar kitchen, where readers meet. */
     public static boolean calm(LabyrinthPlace place) {

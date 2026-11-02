@@ -224,7 +224,8 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.HEADER_TANK);
         // 0.4.232: the familiar room, from the third crossing, and far more readily while someone is in it (FamiliarRoom.weight).
         gray.add(LabyrinthPlace.FAMILIAR_KITCHEN);
-        gray.add(LabyrinthPlace.QUIET_ROOM);
+        // 0.4.261: the quiet room and its four siblings, the rest rooms (QuietRooms): one each, none again within six rooms.
+        gray.addAll(QuietRooms.FAMILY);
         int depth = data.returnDepth(player);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS, LabyrinthPlace.AIRING_ROOMS, LabyrinthPlace.FOLDED_ROOMS, LabyrinthPlace.FUSE_ROOMS, LabyrinthPlace.HEADER_TANKS));
@@ -543,6 +544,7 @@ public final class LabyrinthDealer {
     /** A reader's weight for a gray place: the puzzle rooms go by the reader's own pacing, everything else by depth. */
     public static int grayWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int depth) {
         if (place == LabyrinthPlace.FAMILIAR_KITCHEN) return FamiliarRoom.weight(player, depth);
+        if (QuietRooms.is(place)) return QuietRooms.weight(data, player, place);
         return PuzzleRooms.is(place) ? PuzzleRooms.weight(data, player, place, depth) : grayWeight(place, depth);
     }
 
@@ -584,7 +586,7 @@ public final class LabyrinthDealer {
             case LONG_HALLWAY, HOTEL_HALLWAY, SPIRAL_STAIR, DUPLICATE_PASSAGE -> 1;
             case JUNCTION -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case GRAY_CORRIDOR -> depth < 4 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 2;
-            case QUIET_ROOM -> 3;
+            case QUIET_ROOM, QUIET_READING, QUIET_BOOTROOM, QUIET_SUNROOM, QUIET_SPARE -> 1;
             case EXPLORER_CAMP -> depth < 3 ? 0 : 2;
             default -> depth < 4 ? 0 : place.grayWeight();
         };
@@ -686,7 +688,7 @@ public final class LabyrinthDealer {
             } else if (door == restDoor) {
                 boolean camp = data.returnDepth(player) >= 3 && random.nextBoolean()
                         && data.recentVisit(player, LabyrinthPlace.EXPLORER_CAMP) < 0;
-                data.deal(player, door, (camp ? LabyrinthPlace.EXPLORER_CAMP : LabyrinthPlace.QUIET_ROOM).id(), false);
+                data.deal(player, door, (camp ? LabyrinthPlace.EXPLORER_CAMP : QuietRooms.rest(data, player, random)).id(), false);
             } else if (quietDoors.contains(door)) {
                 // The quiet room opens onto an ordinary hall, so the door is dealt one.
                 List<LabyrinthPlace> plain = gray.stream().filter(LabyrinthPacing::ordinary).toList();

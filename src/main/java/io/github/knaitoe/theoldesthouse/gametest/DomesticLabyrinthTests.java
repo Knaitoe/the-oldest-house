@@ -52,7 +52,7 @@ public final class DomesticLabyrinthTests {
                     var deal = data.deal(player, door);
                     var destination = LabyrinthPlace.byId(deal.place());
                     // The familiar kitchen (0.4.232) is dealt like a hall from the third crossing and holds no story.
-                    h.assertTrue(destination != null && (LabyrinthPacing.ordinary(destination) || destination == LabyrinthPlace.QUIET_ROOM || destination == LabyrinthPlace.FAMILIAR_KITCHEN),
+                    h.assertTrue(destination != null && (LabyrinthPacing.ordinary(destination) || QuietRooms.is(destination) || destination == LabyrinthPlace.FAMILIAR_KITCHEN),
                             "an established world's early doors stay domestic: " + depth + "/" + deal.place());
                     h.assertTrue(!deal.leak() && !deal.bark(), "no false story cues precede the ordinary approach");
                 }
