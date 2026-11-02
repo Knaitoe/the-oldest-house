@@ -8,6 +8,7 @@ import io.github.knaitoe.theoldesthouse.journal.Rubbings;
 import io.github.knaitoe.theoldesthouse.journal.TornPages;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.Talk;
 import io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount;
 import java.util.List;
 import net.minecraft.gametest.framework.GameTest;
@@ -54,6 +55,45 @@ public final class JournalTests {
             h.assertTrue(!data.returnLost(p),"it comes back once");
             data.markLost(first);h.assertTrue(!data.lost(p.getUUID()),"an old copy lost again changes nothing");
         }finally{NativeTestPlayers.remove(p);NativeTestPlayers.remove(peer);}
+        h.succeed();
+    }
+
+    /**
+     * 0.4.266 (the owner: "Let players revisit conversations they actually heard, especially their own promises and answers"; "i'm okay
+     * with the conversation history being integrated into the player's journal"): every exchange the panel showed is kept with the
+     * reader's own replies, past the panel's 48 lines and past the panel closing and the reader logging out; the last 48 exchanges and
+     * 120 lines of each are kept; nothing a scene never showed, and nothing for someone only watching.
+     */
+    @GameTest(template="empty",batch="talk_history",timeoutTicks=40)
+    public static void whatWasSaidIsKeptForTheReadersJournalWithTheirOwnReplies(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"talk_history_reader");var w=NativeTestPlayers.survival(h,"talk_history_watcher");
+        try{
+            var d=LabyrinthData.get(p.server);for(var who:List.of(p,w))d.setStateEntry(io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.STATE,who.getUUID().toString(),new CompoundTag());
+            Talk.begin(p,"test","The man");Talk.line(p,"The man","What was behind you?");
+            Talk.ask(p,Talk.reply("I'd rather not.",q->{Talk.line(q,"The man","All right. You don't owe me it.");Talk.end(q);}));
+            h.assertTrue(Talk.choose(p,"I'd rather not."),"the reader answers in the panel");
+            var talks=io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.conversations(p.server,p.getUUID());
+            h.assertTrue(talks.size()==1&&talks.getCompound(0).getString("Who").equals("The man")&&talks.getCompound(0).getLong("Day")>=1,"the exchange is kept, with who and the day: "+talks);
+            var lines=talks.getCompound(0).getList("Lines",net.minecraft.nbt.Tag.TAG_COMPOUND);
+            h.assertTrue(lines.size()==3&&lines.getCompound(1).getString("S").isEmpty()&&lines.getCompound(1).getString("T").equals("I'd rather not.")&&lines.getCompound(2).getString("T").startsWith("All right."),"line for line, the reader's own answer among them: "+lines);
+            Talk.close(p);Talk.clearAll();
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.conversations(p.server,p.getUUID()).size()==1,"kept after the panel is closed and the reader has gone");
+            Talk.begin(p,"long","Johnny");for(int i=0;i<100;i++)Talk.line(p,"Johnny","Line "+i);Talk.end(p);
+            talks=io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.conversations(p.server,p.getUUID());
+            h.assertTrue(Talk.lines(p).size()==Talk.MAX_LINES&&talks.getCompound(talks.size()-1).getList("Lines",net.minecraft.nbt.Tag.TAG_COMPOUND).size()==100,"past the panel's 48 lines, every line is kept");
+            for(int i=100;i<200;i++)Talk.line(p,"Johnny","Line "+i);Talk.end(p);
+            talks=io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.conversations(p.server,p.getUUID());var last=talks.getCompound(talks.size()-1).getList("Lines",net.minecraft.nbt.Tag.TAG_COMPOUND);
+            h.assertTrue(talks.size()==2&&last.size()==io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.LINES&&last.getCompound(last.size()-1).getString("T").equals("Line 199"),"the same exchange, its latest 120 lines");
+            Talk.begin(p,"unseen","Nobody");Talk.line(p,"Nobody","never shown");Talk.close(p);
+            talks=io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.conversations(p.server,p.getUUID());
+            h.assertTrue(talks.size()==2,"a line no panel ever showed is not kept");
+            for(int i=0;i<60;i++){Talk.begin(p,"k"+i,"Caller "+i);Talk.line(p,"Caller "+i,"hello "+i);Talk.end(p);}
+            talks=io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.conversations(p.server,p.getUUID());
+            h.assertTrue(talks.size()==io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.CONVERSATIONS&&talks.getCompound(talks.size()-1).getString("Who").equals("Caller 59")&&talks.getCompound(0).getString("Who").equals("Caller 12"),"the latest 48 exchanges are kept, oldest let go first");
+            w.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);Talk.begin(w,"watch","The man");Talk.line(w,"The man","hello");Talk.end(w);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.conversations(w.server,w.getUUID()).isEmpty(),"someone only watching keeps nothing");
+            Talk.close(p);Talk.close(w);
+        }finally{NativeTestPlayers.remove(p);NativeTestPlayers.remove(w);}
         h.succeed();
     }
 
