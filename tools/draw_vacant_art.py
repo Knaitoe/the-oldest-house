@@ -325,13 +325,28 @@ def bulb(lit):
 
 
 def van_door(upper):
+    # 0.4.260 (owner: "the van needs to be flipped around"): a removal van's back doors are plain steel, no glass, so they cannot be
+    # taken for the cab; a locking rod up the leaf, its handle on the lower half, a hinge strap top and bottom.
     im = materials()['van_panel'].copy()
-    if upper:
-        fill(im, 2, 2, 14, 10, '#2a3a44'); fill(im, 3, 3, 6, 5, '#5a6a74')
-    else:
-        fill(im, 12, 2, 14, 4, '#3a3a3c')
     for y in range(16):
-        dot(im, 0, y, '#a8a8a4')
+        dot(im, 0, y, '#a8a8a4'); dot(im, 11, y, '#8a8a88'); dot(im, 12, y, '#6a6a6a')
+    if upper:
+        fill(im, 1, 3, 5, 4, '#7a7a78'); fill(im, 10, 0, 14, 1, '#5a5a5a')
+    else:
+        fill(im, 1, 11, 5, 12, '#7a7a78'); fill(im, 9, 6, 14, 8, '#3a3a3c'); fill(im, 10, 15, 14, 16, '#5a5a5a')
+    return im
+
+
+def van_tyre():
+    im = new(base='#1e1e20', seed=2391, spread=2)
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d <= 4.6:
+                dot(im, x, y, '#8a8a8e' if d > 2.2 else '#5a5a5e')
+            elif d > 7.4:
+                dot(im, x, y, '#2a2a2c')
+    dot(im, 7, 7, '#2e2e30'); dot(im, 8, 8, '#2e2e30')
     return im
 
 
@@ -377,6 +392,7 @@ def textures():
         'marks_high': marks(1), 'scratches': scratches(), 'square_low': square(0), 'square_high': square(1), 'list': list_tex(),
         'docket': docket(), 'bulb_on': bulb(1), 'bulb_off': bulb(0), 'cord': new(base='#2a2a2a', seed=2376, spread=1),
         'van_door_low': van_door(0), 'van_door_high': van_door(1), 'metal': new(base='#5a6a6a', seed=2381, spread=2),
+        'van_tyre': van_tyre(), 'tyre_tread': new(base='#141416', seed=2392, spread=2),
         'mailboxes': mailboxes(), 'lamp_post': new(base='#2a3a32', seed=2385, spread=2), 'lamp_on': lamp_glass(1),
         'lamp_off': lamp_glass(0), 'radiator': radiator(), 'coat': coat(),
     }
@@ -443,6 +459,8 @@ def fitting_models():
         m[f'square_{n}'] = model([element([0, 0, 15.6], [16, 16, 16], {'north': 't'})], {'t': ('square_low', 'square_high')[n]}, ('square_low', 'square_high')[n])
         m[f'bulb_{n}'] = model([element([7.5, 12, 7.5], [8.5, 16, 8.5], {'all': 'c'}), element([6.5, 8, 6.5], [9.5, 12, 9.5], {'all': 'b'})], {'c': 'cord', 'b': ('bulb_on', 'bulb_off')[n]}, 'cord')
         m[f'van_door_{n}'] = model([element([0, 0, 13], [16, 16, 16], {'all': 'p', 'north': 'd', 'south': 'd'})], {'p': 'van_panel', 'd': ('van_door_low', 'van_door_high')[n]}, 'van_panel')
+    # A wheel stands out from the van's side: its face outward, its tread round the rim, its back against the panel.
+    m['van_wheel_0'] = model([element([1, 0, 13], [15, 14, 16], {'all': 't', 'north': 'w'})], {'t': 'tyre_tread', 'w': 'van_tyre'}, 'van_tyre')
     m['scratches_0'] = model([element([0, 0, 0], [16, 0.25, 16], {'up': 't'})], {'t': 'scratches'}, 'scratches')
     m['list_0'] = model([element([4, 2, 15.5], [12, 14, 16], {'north': 't', 'south': 't'}, {'north': [4, 2, 12, 14], 'south': [4, 2, 12, 14]})], {'t': 'list'}, 'list')
     m['docket_0'] = model([element([3, 0, 3], [13, 1, 13], {'all': 'w', 'up': 't'}, {'up': [3, 1, 13, 15]})], {'w': 'wood', 't': 'docket'}, 'docket')
@@ -454,7 +472,7 @@ def fitting_models():
     return m
 
 
-KINDS = ['dresser', 'rug', 'bed', 'wardrobe', 'table', 'armchair', 'boxes', 'lamp', 'chair', 'marks', 'scratches', 'square', 'list', 'docket', 'bulb', 'van_door', 'mailboxes', 'streetlamp', 'radiator', 'hooks']
+KINDS = ['dresser', 'rug', 'bed', 'wardrobe', 'table', 'armchair', 'boxes', 'lamp', 'chair', 'marks', 'scratches', 'square', 'list', 'docket', 'bulb', 'van_door', 'mailboxes', 'streetlamp', 'radiator', 'hooks', 'van_wheel']
 STAGES = {'rug': 2, 'bed': 3, 'wardrobe': 2, 'lamp': 2, 'marks': 2, 'square': 2, 'bulb': 2, 'van_door': 2, 'streetlamp': 2}
 PIECES = ['dresser', 'rug', 'bed', 'wardrobe', 'table', 'armchair', 'boxes', 'lamp', 'chair']
 # The piece in the reader's arms is drawn as it goes into the van: the rug rolled, the bed on end, the lamp off.

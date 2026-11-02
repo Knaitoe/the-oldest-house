@@ -150,6 +150,9 @@ public final class WhaleInstitute {
         // Headroom is cut after attic railings are installed, so no railing or ceiling closes the stairwell again.
     }
     private static void board(ServerLevel l,BlockPos at,Direction facing,InstituteSignBlock.Kind kind){BuildBlocks.set(l,at,InstituteSignBlock.of(kind,facing),F);}
+    /** The attic stair's well in the attic floor, and the banister round it. */
+    public static final java.util.List<BlockPos> WELL=java.util.List.of(new BlockPos(-8,5,-30),new BlockPos(-9,5,-30),new BlockPos(-10,5,-30),new BlockPos(-8,5,-31),new BlockPos(-9,5,-31),new BlockPos(-10,5,-31));
+    public static final java.util.List<BlockPos> RAIL=java.util.List.of(new BlockPos(-10,6,-29),new BlockPos(-9,6,-29),new BlockPos(-8,6,-29),new BlockPos(-7,6,-29),new BlockPos(-7,6,-30),new BlockPos(-7,6,-31));
     static void stairHeadroom(ServerLevel l,BlockPos b){for(int i=0;i<=5;i++)for(int z:new int[]{-31,-30})for(int y=i+1;y<=i+3;y++)set(l,b,-6-i,y,z,Blocks.AIR);}
     private static void attics(ServerLevel l,BlockPos b){
         // Three attics under one roof. They insist there have always been three.
@@ -160,7 +163,9 @@ public final class WhaleInstitute {
         NovelRooms.box(l,b,-4,6,-31,-4,9,-26,boards);NovelRooms.box(l,b,4,6,-31,4,9,-26,boards);
         NovelRooms.door(l,b.offset(-4,6,-28),Direction.EAST,Blocks.BIRCH_DOOR,true);
         NovelRooms.door(l,b.offset(4,6,-28),Direction.EAST,Blocks.IRON_DOOR,false);
-        for(var at:new int[][]{{-10,-29},{-9,-29},{-8,-29},{-8,-30},{-8,-31}})set(l,b,at[0],6,at[1],Blocks.SPRUCE_FENCE);
+        // 0.4.260: the banister stands on the floor round the whole well, its south side and its east end, rather than over the
+        // well's east column: the top tread at x -11 is the way in from the stair.
+        for(var at:RAIL)set(l,b,at.getX(),at.getY(),at.getZ(),Blocks.SPRUCE_FENCE);
         set(l,b,-12,6,-27,Blocks.BARREL);set(l,b,-11,6,-27,Blocks.BARREL);set(l,b,-12,7,-27,Blocks.BARREL);
         NovelRooms.furniture(l,b.offset(-7,6,-27),HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH);
         // The middle attic: one chair at a painted-over window, and an undated letter.
@@ -193,12 +198,23 @@ public final class WhaleInstitute {
             BuildBlocks.set(l,b.offset(x,y-1,out),frame,F);BuildBlocks.set(l,b.offset(x,y+2,out),frame,F);
         }
     }
-    /** A clock in a fixed frame, turned so that no two in the building agree. */
-    private static void clock(ServerLevel l,BlockPos b,int x,int y,int z,Direction facing,int rotation){
-        BuildBlocks.after(l,()->{var frame=new ItemFrame(l,b.offset(x,y,z),facing);frame.setItem(new ItemStack(Items.CLOCK),false);frame.setRotation(rotation);
-            var tag=new CompoundTag();frame.saveWithoutId(tag);tag.putBoolean("Fixed",true);tag.putBoolean("Invulnerable",true);frame.load(tag);
-            frame.addTag(CLOCK_TAG);l.addFreshEntity(frame);});
+    /**
+     * 0.4.260: a wall clock with real hands (the quiet rooms' clock, ClockHands), each keeping its own hour so that no two in the
+     * building agree: they run from the hour given here, at their own minutes past, from when they are first seen; the dayroom's, by
+     * the stair to the attics, has stopped at seven. They replace the framed clocks that only turned the item.
+     */
+    private static void clock(ServerLevel l,BlockPos b,int x,int y,int z,Direction facing,int hour){
+        var at=b.offset(x,y,z);
+        BuildBlocks.set(l,at,HouseReadRooms.part(HouseReadPropBlock.Part.WALL_CLOCK).setValue(HorizontalDirectionalBlock.FACING,facing),F);
+        BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof HouseReadPropBlock.Fitting f){f.setRead(clockRead(hour));}});
     }
+    /** Minutes past for each hour a clock is set to; seven is stopped on the hour. */
+    private static final int[] PAST={0,20,35,50,5,10,45,0};
+    public static final int STOPPED_HOUR=7;
+    /** What a clock set to this hour carries for its hands. */
+    public static CompoundTag clockRead(int hour){var t=new CompoundTag();t.putInt("From",hour*3600+PAST[hour]*60);if(hour==STOPPED_HOUR)t.putBoolean("Stopped",true);return t;}
+    /** For tests: where each clock hangs and the hour it was set to. */
+    public static final java.util.Map<BlockPos,Integer> CLOCKS=java.util.Map.of(new BlockPos(-6,3,-1),2,new BlockPos(8,3,-1),5,new BlockPos(1,2,-12),3,new BlockPos(-1,2,-16),1,new BlockPos(1,2,-20),6,new BlockPos(-1,2,-24),4,new BlockPos(12,2,-29),STOPPED_HOUR);
     /** Before a carve: a frame whose wall is taken away would drop its clock. */
     public static void clearClocks(ServerLevel l,BlockPos b){
         var r=LabyrinthPlace.WHALE.room();var box=new AABB(b.getX()+r.minX()-1,b.getY()+r.minY()-1,b.getZ()+r.minZ()-1,b.getX()+r.maxX()+2,b.getY()+r.maxY()+2,b.getZ()+r.maxZ()+2);
