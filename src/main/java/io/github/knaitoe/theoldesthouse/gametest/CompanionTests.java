@@ -153,6 +153,37 @@ public final class CompanionTests {
         remove(owner);helper.succeed();
     }
 
+    /**
+     * 0.4.269 (the owner: "A rebindable nearby-companion key ... The wheel should also highlight the current order"): the companion key
+     * means the reader's own cat or dog within reach, the one in front before a nearer one behind, never another reader's or one out of
+     * reach, whatever is in the reader's hands; the wheel it opens carries the order the animal is under now.
+     */
+    @GameTest(template="empty",batch="companions")
+    public static void theCompanionKeyFindsTheReadersOwnAnimalAndTheWheelKnowsItsOrder(GameTestHelper helper) {
+        var level=helper.getLevel();var owner=mock(helper);var stranger=mock(helper);
+        BlockPos at=helper.absolutePos(new BlockPos(4,2,4));
+        owner.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,0,0);stranger.moveTo(owner.position().add(0,0,-3));
+        owner.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.TORCH));
+        var level0=level;
+        java.util.function.BiFunction<net.minecraft.server.level.ServerPlayer,net.minecraft.world.phys.Vec3,net.minecraft.world.entity.animal.Wolf> wolf=(who,where)->{
+            var w=net.minecraft.world.entity.EntityType.WOLF.create(level0);w.moveTo(where.x,where.y,where.z);w.tame(who);w.setPersistenceRequired();level0.addFreshEntity(w);return w;};
+        helper.assertTrue(CompanionOrders.nearest(owner)==null,"with no animal close, the key finds nothing");
+        // Facing south (+z): one in front four blocks off, a nearer one behind, a stranger's right beside, one of theirs out of reach.
+        var ahead=wolf.apply(owner,owner.position().add(0,0,4));var behind=wolf.apply(owner,owner.position().add(0,0,-2.5));
+        var theirs=wolf.apply(stranger,owner.position().add(1,0,1));var far=wolf.apply(owner,owner.position().add(0,0,9));
+        helper.assertTrue(CompanionOrders.nearest(owner)==ahead,"the reader's own animal in front, though a torch is in hand: "+CompanionOrders.nearest(owner));
+        owner.setYRot(180);owner.setYHeadRot(180);
+        helper.assertTrue(CompanionOrders.nearest(owner)==behind,"turned round, the one now in front");
+        ahead.discard();behind.discard();
+        helper.assertTrue(CompanionOrders.nearest(owner)==null,"never another reader's animal, nor one of theirs out of reach");
+        var cat=net.minecraft.world.entity.EntityType.CAT.create(level);cat.moveTo(owner.position().add(1,0,0));cat.tame(owner);level.addFreshEntity(cat);
+        helper.assertTrue(CompanionOrders.nearest(owner)==cat,"a cat too");
+        helper.assertTrue(CompanionOrders.menu(cat).order()==CompanionOrders.Order.FOLLOW.ordinal(),"an animal never given an order is following");
+        helper.assertTrue(CompanionOrders.command(owner,cat.getId(),CompanionOrders.Order.STAY.ordinal())&&CompanionOrders.menu(cat).order()==CompanionOrders.Order.STAY.ordinal(),"told to stay, the wheel says so");
+        helper.assertTrue(CompanionOrders.openNearest(owner),"the key opens the wheel for it");
+        theirs.discard();far.discard();cat.discard();remove(owner);remove(stranger);helper.succeed();
+    }
+
     @GameTest(template="empty",batch="companions")
     public static void commandWheelChecksOwnerReachAndSavesStay(GameTestHelper helper) {
         var level=helper.getLevel();var owner=mock(helper);var stranger=mock(helper);

@@ -1096,5 +1096,7 @@
   "item.the_oldest_house.pfy_carried": "Something of the Household",
   "advancements.the_oldest_house.account.place_for_you.title": "A place for you",
   "advancements.the_oldest_house.account.place_for_you.description": "I was expected at a house I had never lived in.",
-  "subtitles.the_oldest_house.borrasca.stroke": "One stroke from the ridge"
+  "subtitles.the_oldest_house.borrasca.stroke": "One stroke from the ridge",
+  "key.categories.the_oldest_house": "This House Has Ghosts in It",
+  "key.the_oldest_house.companion": "Companion orders"
 }
