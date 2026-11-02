@@ -13,7 +13,7 @@ os.chdir(ROOT)
 borrasca_only = "--borrasca-only" in sys.argv[1:]
 uncanny_only = "--uncanny-only" in sys.argv[1:]
 backseat_only = "--backseat-only" in sys.argv[1:]
-# 0.4.240: the pool and the flat looked at in play (a review aid, not a CI gate).
+# 0.4.240: the pool and the flat looked at in play; a CI gate since 0.4.244 (the scene-review-clients job).
 scenes_only = "--scenes-only" in sys.argv[1:]
 proof_flags = ["-PsceneReviewSocketSmoke"] if scenes_only else ["-PbackseatSocketSmoke"] if backseat_only else (["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else []))
 proof_root = ROOT / ("run-scene-review-live" if scenes_only else "run-backseat-live" if backseat_only else ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live")))
@@ -158,7 +158,17 @@ try:
         wait_for(lambda: (report / "passed.txt").exists(), 900, "the pool and the flat in play")
         for p in processes:
             p.wait(timeout=90)
+            assert p.returncode == 0, p.returncode
         assert (report / "scene-review-passed.txt").is_file()
+        # Every moment the review looks at was captured by an actual connected client (0.4.244).
+        for shot in ("A-pool-hauling", "B-pool-swimmer", "A-flat-hall", "A-flat-stair-top", "A-flat-stair-middle", "A-flat-van",
+                     "B-flat-stair-watch", "B-flat-tenant-seated", "A-flat-tenant-stands", "B-flat-tenant-stands",
+                     "A-flat-chair-lifted", "A-flat-chair-stair", "A-flat-window-dark", "B-flat-empty"):
+            assert (report / f"{shot}.png").stat().st_size > 500, shot
+        attendant = list(report.glob("*-pool-attendant-*.png"))
+        assert attendant and all(shot.stat().st_size > 500 for shot in attendant), attendant
+        native_log = (server / "logs/latest.log").read_text(errors="replace")
+        assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
         print((report / "passed.txt").read_text(), flush=True)
         raise SystemExit(0)
     if borrasca_only:
