@@ -61,5 +61,13 @@ public final class PuzzleRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PowerBlock>> POWER_TYPE=CODECS.register("power_fitting",()->PowerBlock.CODEC);
     public static final DeferredBlock<PowerBlock> POWER=BLOCKS.registerBlock("power_fitting",PowerBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(PowerBlock::light));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> HUM=sound("power.hum"),MOTOR=sound("power.motor"),STRAIN=sound("power.strain");
+    /** 0.4.256, the Header Tank (HeaderTanks): the utility room's materials, its waterworks, and their sounds. */
+    private static final java.util.Map<String,DeferredBlock<Block>> TANK_MATERIALS=new java.util.LinkedHashMap<>();
+    public static final java.util.List<String> TANK_MATERIAL_NAMES=java.util.List.of("tiles","brick","mark","faint","plate","boards");
+    static{for(String name:TANK_MATERIAL_NAMES)TANK_MATERIALS.put(name,BLOCKS.registerSimpleBlock("tank_"+name,fixed(name.equals("plate")?Blocks.IRON_BLOCK:name.equals("boards")?Blocks.OAK_PLANKS:Blocks.STONE)));}
+    public static Block tankMaterial(String name){var block=TANK_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TankBlock>> TANK_TYPE=CODECS.register("tank_fitting",()->TankBlock.CODEC);
+    public static final DeferredBlock<TankBlock> TANK=BLOCKS.registerBlock("tank_fitting",TankBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> VALVE=sound("tank.valve"),RUN=sound("tank.run"),PUMP=sound("tank.pump"),KNOCK=sound("tank.knock");
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);}
 }

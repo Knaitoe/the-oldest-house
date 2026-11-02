@@ -215,6 +215,13 @@ drawn by a new `tools/draw_power_fittings.py`, with a hum and the shutter's moto
 > version uses two linked chambers: raising one platform lowers another, so you have to establish a route through both. Old watermarks,
 > visible pipes and the movement of the floats communicate what each valve does.
 
+Built in 0.4.256; canon is docs/HEADER_TANK_0_4_256.md. It differs from the plan below in four ways:
+- The deep pits are in a row rather than side by side: the near pit, the landing across the room, then the far pit and the doorway.
+  The transfer valve is on the landing, so it can be reached only after crossing the near pit.
+- The valves run a layer every half second rather than every second, and the pump sends one layer up per stroke.
+- The platform covers the whole of its pit, so nobody can get into the water or swim round it.
+- A ladder in each pit's near wall lets anyone on a low platform climb out.
+
 **How it works.**
 - **Water levels.** A chamber's water is whole layers of still water, one level at a time.
 - **The platform.** A slatted wooden platform floats on the top layer, and anyone standing on it rides it up or down with the water.

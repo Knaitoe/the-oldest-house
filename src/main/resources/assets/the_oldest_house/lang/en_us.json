@@ -1071,5 +1071,16 @@
   "subtitles.the_oldest_house.power.motor": "A motor runs",
   "subtitles.the_oldest_house.power.strain": "A motor strains, and stops",
   "advancements.the_oldest_house.account.people_lights.title": "After the people lights",
-  "advancements.the_oldest_house.account.people_lights.description": "I was a guest for one evening and a night in a narrow, tall house."
+  "advancements.the_oldest_house.account.people_lights.description": "I was a guest for one evening and a night in a narrow, tall house.",
+  "subtitles.the_oldest_house.tank.valve": "A valve wheel turns",
+  "subtitles.the_oldest_house.tank.run": "Water runs in a pipe",
+  "subtitles.the_oldest_house.tank.pump": "A hand pump gulps",
+  "subtitles.the_oldest_house.tank.knock": "Boards knock on a wall",
+  "block.the_oldest_house.tank_fitting": "Waterworks",
+  "block.the_oldest_house.tank_tiles": "Quarry Tiles",
+  "block.the_oldest_house.tank_brick": "Glazed Brick",
+  "block.the_oldest_house.tank_mark": "Watermarked Brick",
+  "block.the_oldest_house.tank_faint": "Faintly Watermarked Brick",
+  "block.the_oldest_house.tank_plate": "Galvanized Plate",
+  "block.the_oldest_house.tank_boards": "Attic Boards"
 }
