@@ -323,6 +323,9 @@ public final class ThreeFingers {
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         MillLetterItem.upgrade(p);
         var n=night(p);if(n==null)return;legacy(n,p,own);
+        // 0.4.249: a reader who finished it comes back to the two of them by the fire as the story left them (Aftermath).
+        if(stage(n.story)==DONE&&own.getBoolean("Completed")&&Aftermath.count(own))
+            p.displayClientMessage(Component.literal(aftermath(n.story)).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
         // Everyone keeps the cast seated and their speech current; the clock and the beats move once a tick.
         long now=n.l.getGameTime();if(n.story.getLong("Driven")==now){cast(n);n.save();return;}n.story.putLong("Driven",now);
         var holder=n.holderHere();if(holder!=null)n.thread.putLong("HolderSince",n.l.getServer().overworld().getGameTime());
@@ -597,6 +600,25 @@ public final class ThreeFingers {
         tellAll(n,"She gets the bolt back. Nobody is on the step: only the road, and the lamp guttering in the rain.");
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
         end(n,p,own,"made_the_last_wish_before_the_door");LiteraryVignettes.save(d,p.getUUID(),PLACE,own);
+    }
+
+    // ------------------------------------------------------------------------------------------------ the aftermath (0.4.249)
+    /**
+     * What a reader who finished the story finds when the cottage comes back to them: their thread's evening, over. Walter and
+     * Ruth by the fire, Will's chair empty, the sergeant and the man from the mill gone, the paw finished with all of them.
+     */
+    public static String aftermath(CompoundTag story){
+        String first=switch(story.getString("Wish1")){case STORM->" Outside, not a breath of wind.";case HEARTH->" The fire has not gone out.";default->"";};
+        String start=switch(story.getString("Outcome")){
+            case "opened_the_door_onto_the_empty_road"->"The bolt is drawn back on the front door.";
+            case "gave_the_paw_back_to_the_fire"->"Nothing of the paw is left in the grate.";
+            default->"Nothing knocks.";};
+        return start+" Will's chair is still empty. Neither of them looks up."+first;
+    }
+    /** Through the cottage door: the family talking, or, for a listener whose evening there is over, nothing. */
+    public static @Nullable DoorSounds.Through heard(LabyrinthData d,UUID listener){
+        var thread=VignetteThreads.thread(d,PLACE,listener);
+        return Aftermath.returning(d,listener,PLACE)&&thread.getCompound("Story").getInt("Stage")==DONE?null:DoorSounds.Through.of(DoorSounds.Carry.VOICES);
     }
 
     // ------------------------------------------------------------------------------------------------ the account

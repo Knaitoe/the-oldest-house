@@ -213,10 +213,16 @@ public final class ChildRoom {
                 var at=Vec3.atCenterOf(b.offset(i==3||i==5?GAP:new BlockPos(0,-2,-12)));p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.7F,.8F,p.getRandom().nextLong()));break;}
         }
         if(mask==ALL)dinnerbone(p,b,l);
+        // 0.4.249: a reader who finished it comes back to the room as it was left (Aftermath): every way out still wall, the toys
+        // still over the bed. Nothing above the bed speaks to them now, and the parents have nothing more to say.
+        boolean after=own.getBoolean("Completed");
+        if(after&&Aftermath.count(own))p.displayClientMessage(Component.literal(AFTERMATH).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
         // Once the room is shut, something above the bed speaks now and then. Only the reader hears it.
-        if(mask==ALL&&own.getInt("Present")%600==300&&!inBasement(p,b)){var at=Vec3.atCenterOf(b.offset(0,5,-21));
+        if(mask==ALL&&!after&&own.getInt("Present")%600==300&&!inBasement(p,b)){var at=Vec3.atCenterOf(b.offset(0,5,-21));
             p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.55F,.9F+p.getRandom().nextFloat()*.15F,p.getRandom().nextLong()));}
     }
+    /** What a reader who finished it is told when the room comes back to them. */
+    public static final String AFTERMATH="The windows and the doors are still wall, and the toys still hang over the bed.";
     // ------------------------------------------------------------------------------------------------ the account
     /** The account as it read before several readers could share the room, kept for readers who finished before 0.4.149. */
     static final String ALONE="The windows went first. Then the doors. I crawled beneath the bed and found a strip of floor that still led somewhere. I stood up only after I had left it.";

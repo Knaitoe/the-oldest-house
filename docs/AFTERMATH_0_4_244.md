@@ -5,7 +5,7 @@ The owner asked for finished scenes to come back as quiet aftermath rooms:
 > Let some finished scenes return as quiet aftermath rooms. The pool is covered and closed. Vacant Possession is empty—or its window
 > remains lit because you returned the chair. No new objective or Witness credit; players recognize the consequences of what they did.
 
-Three scenes come back in this release: the Last Swimmer, Vacant Possession and the Masque. Neither adds a protocol, layout, Witness, source-kind or
+Three scenes come back in this release: the Last Swimmer, Vacant Possession and the Masque. The Ghosts Set followed in 0.4.248, and the cottage and the child's room in 0.4.249. Neither adds a protocol, layout, Witness, source-kind or
 quota change. Witness still derives from `WitnessAccount.Story`. An aftermath is not a story and earns nothing.
 
 ## How a finished scene comes back
@@ -108,6 +108,53 @@ Test: `GhostsSetTests#aFinishedHouseComesBackDarkWithTheThreeStillAtTheTable`:
 - Merry and the crew gone, the three still at the table;
 - the return counted and nothing earned;
 - the door sound per listener.
+
+## The cottage and the child's room (0.4.249)
+
+**Three Fingers.** Each party's evening in the cottage is its own thread (VignetteThreads), with its own family seen by that party
+alone, so its aftermath needs no solitude either. A reader who finished it comes back to their thread's evening as it ended:
+- Walter and Ruth by the fire, the son's chair empty, the sergeant and the man from the mill gone. The thread's cast already stands so
+  once its story is done, and they already answer "Leave me be a while" and "Go. Please go."
+- No knocking, and the storm still gone if that was the first wish.
+
+The quiet line (`ThreeFingers.aftermath`) says how it ended, then that Will's chair is still empty and neither of them looks up:
+- "The bolt is drawn back on the front door" for the door opened onto the empty road;
+- "Nothing of the paw is left in the grate" for the paw given back to the fire;
+- "Nothing knocks" for the last wish.
+
+It adds "Outside, not a breath of wind" after the storm wish, or "The fire has not gone out" after the fire wish. It is counted on the
+literary tick's own record.
+
+Through the cottage door (a new `DoorSounds` source, `ThreeFingers.heard`), anyone whose evening is not over hears the family talking.
+A listener who finished it, with their thread's story done, hears nothing.
+
+**The child's room.** Its windows and doors go to wall once, for good, so a reader who finished it always comes back to the room as
+they left it: every way out wall, the four toys hanging over the bed, the doorway back to the House open to them. That already
+stands in the room for everyone, so nothing needs dressing. For a reader who finished it:
+- nothing above the bed whispers any more, and the parents already have nothing more to say;
+- the quiet line (`ChildRoom.AFTERMATH`) is "The windows and the doors are still wall, and the toys still hang over the bed."
+
+Its door stays silent for everyone, as before.
+
+Not added, for now:
+- **Usher**: a reader who fled as the house fell already never finds its door again (0.4.185).
+- **Harrigan**: keeps its finish per copy rather than per reader, and a new reader in a finished copy starts the story afresh. It
+  needs its own design.
+- **Movie Night and the Goatman**: their consequences are shared actors and clocks that an unfinished reader with them still needs.
+  Each would need private views of its own.
+
+Tests:
+- `LiteraryTests#aFinishedCottageComesBackToTheTwoOfThemByTheFire`:
+  - offered back only to the reader who finished;
+  - the door silent for them and voices for another reader;
+  - the two of them by the fire, seen only by the reader's own thread, Will, the sergeant and the man from the mill gone;
+  - the line naming the ending and the first wish;
+  - each return its own visit, nothing earned, and no third offer.
+- `LiteraryTests#aFinishedChildRoomComesBackShutWithTheToysOverTheBed`:
+  - offered back;
+  - every exit still wall and every toy over the bed;
+  - the way back open, nothing earned;
+  - two returns and no third.
 
 ## Joining the registry
 

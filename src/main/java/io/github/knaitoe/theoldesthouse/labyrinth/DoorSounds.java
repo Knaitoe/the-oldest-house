@@ -103,6 +103,8 @@ public final class DoorSounds {
         // 0.4.248: the Barretts' house talks through its door while the filming goes on; to a reader who has finished it, nothing moves in there.
         SOURCES.put(LabyrinthPlace.GHOSTS_SET,(server,data,listener,base)->Through.of(LiteraryVignettes.personal(data,listener,LabyrinthPlace.GHOSTS_SET).getBoolean("Completed")?Carry.EMPTY:Carry.VOICES));
         // The family at the table until they are driven out; after that the house is empty.
+        // 0.4.249: the cottage, its family talking until a listener's own evening there is over.
+        SOURCES.put(LabyrinthPlace.THREE_FINGERS,(server,data,listener,base)->ThreeFingers.heard(data,listener));
         SOURCES.put(LabyrinthPlace.SEANCE,(server,data,listener,base)->Through.of(ClassicsVignettes.familyGone(data)?Carry.EMPTY:Carry.VOICES));
     }
     /** What the room behind a door sounds like now for this listener, or nothing. Rooms with no state of their own sound as their kind does. */
