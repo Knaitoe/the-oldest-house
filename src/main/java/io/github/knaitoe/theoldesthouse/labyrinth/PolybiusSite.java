@@ -26,8 +26,12 @@ public final class PolybiusSite {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.POLYBIUS;
     public static final int SIDE=8,HIGH=5,FAR=-22,FRONT=-3;
     public static final int MOTHLIGHT=0,UNDERTOW=1,SIGNAL=2,BLACK=3,GAMES=4;
-    /** Each game's cabinet (its lower block) and the way its front faces. */
-    public static final List<BlockPos> CABINETS=List.of(new BlockPos(-8,0,-6),new BlockPos(-8,0,-12),new BlockPos(8,0,-6),new BlockPos(0,0,-20));
+    /**
+     * Each game's cabinet (its lower block) and the way its front faces. 0.4.252 (owner: "its current placement makes it look real
+     * cramped"): the east wall's three cabinets moved up toward the door, into the empty stretch there, so they no longer crowd the pizza
+     * counter.
+     */
+    public static final List<BlockPos> CABINETS=List.of(new BlockPos(-8,0,-6),new BlockPos(-8,0,-12),new BlockPos(8,0,-4),new BlockPos(0,0,-20));
     public static final List<Direction> FACING=List.of(Direction.EAST,Direction.EAST,Direction.WEST,Direction.SOUTH);
     /** The notice board by the door (the source) and the clipboard on the change machine (the account). */
     public static final BlockPos NOTICE=new BlockPos(8,1,-2),CHANGE=new BlockPos(-8,0,-2),CLIPBOARD=new BlockPos(-8,1,-2);
@@ -40,8 +44,8 @@ public final class PolybiusSite {
      * where each of them stands; and the shelf's eight prize cells, lower row first.
      */
     public static final BlockPos BRAWL=new BlockPos(-8,0,-16),BRAWL_RIGHT=new BlockPos(-8,0,-17);
-    public static final List<BlockPos> OTHERS=List.of(new BlockPos(-8,0,-9),new BlockPos(8,0,-9),new BlockPos(8,0,-12));
-    public static final List<BlockPos> REGULARS=List.of(new BlockPos(-7,0,-9),new BlockPos(7,0,-9),new BlockPos(7,0,-12));
+    public static final List<BlockPos> OTHERS=List.of(new BlockPos(-8,0,-9),new BlockPos(8,0,-7),new BlockPos(8,0,-10));
+    public static final List<BlockPos> REGULARS=List.of(new BlockPos(-7,0,-9),new BlockPos(7,0,-7),new BlockPos(7,0,-10));
     /**
      * 0.4.224 (owner: "add a pizza and soda booth/vendor, too! ... staffed by a teenager with a poor attitude"): the pizza counter on
      * the east wall, in the taped-up cabinet's old place: the counter with its warmer and napkins, the back counter with the soda
@@ -79,7 +83,8 @@ public final class PolybiusSite {
         set(l,b,SODA,PolybiusBlock.of(PolybiusBlock.Kind.SODA,Direction.WEST));set(l,b,8,1,-15,PolybiusBlock.of(PolybiusBlock.Kind.PIZZA_BOXES,Direction.WEST));
         set(l,b,8,1,-16,PolybiusBlock.of(PolybiusBlock.Kind.PIZZA_OVEN,Direction.WEST));set(l,b,8,2,-15,PolybiusBlock.of(PolybiusBlock.Kind.MENU_BOARD,Direction.WEST));
         for(int[] d:dead){var f=d[0]<0?Direction.EAST:Direction.WEST;set(l,b,d[0],0,d[1],PolybiusBlock.of(DEAD,f,d[2]));set(l,b,d[0],1,d[1],PolybiusBlock.of(DEAD_SCREEN,f,d[2]));}
-        set(l,b,-7,0,-6,PolybiusBlock.of(STOOL,Direction.NORTH));set(l,b,-7,0,-12,PolybiusBlock.of(STOOL,Direction.NORTH));set(l,b,7,0,-6,PolybiusBlock.of(STOOL,Direction.NORTH));
+        // A stool in front of each of the three that work.
+        for(int g=0;g<BLACK;g++)set(l,b,CABINETS.get(g).relative(FACING.get(g)),PolybiusBlock.of(STOOL,Direction.NORTH));
         // By the door: the change machine with the clipboard's place on top, and the notice board opposite.
         set(l,b,CHANGE,PolybiusBlock.of(PolybiusBlock.Kind.CHANGE,Direction.EAST));set(l,b,CLIPBOARD,PolybiusBlock.of(PolybiusBlock.Kind.CLIPBOARD,Direction.EAST));
         set(l,b,NOTICE,PolybiusBlock.of(PolybiusBlock.Kind.NOTICE,Direction.WEST));
@@ -87,9 +92,10 @@ public final class PolybiusSite {
         for(int x=5;x<=8;x++){set(l,b,x,0,-19,PolybiusBlock.of(COUNTER,Direction.SOUTH));set(l,b,x,0,FAR,PolybiusBlock.of(PRIZES,Direction.SOUTH,x-5));set(l,b,x,1,FAR,PolybiusBlock.of(PRIZES,Direction.SOUTH,x-1));}
         set(l,b,-7,0,-21,PolybiusBlock.of(BIN,Direction.NORTH));
         // Neon along both walls and the back, posters between the cabinets.
-        for(int z=-4;z>=FAR+2;z-=3){set(l,b,-SIDE,3,z,PolybiusBlock.of(NEON,Direction.EAST,(-z/3)%3));set(l,b,SIDE,3,z,PolybiusBlock.of(NEON,Direction.WEST,(-z/3+1)%3));}
+        // The east wall's strips sit a block further back than the west's, clear of its cabinets' high-score tables.
+        for(int z=-4;z>=FAR+2;z-=3){set(l,b,-SIDE,3,z,PolybiusBlock.of(NEON,Direction.EAST,(-z/3)%3));set(l,b,SIDE,3,z-1,PolybiusBlock.of(NEON,Direction.WEST,(-z/3+1)%3));}
         for(int x=-6;x<=6;x+=4)if(x!=-6)set(l,b,x,3,FAR,PolybiusBlock.of(NEON,Direction.SOUTH,(x+6)/4%3));
-        set(l,b,-8,2,-8,PolybiusBlock.of(POSTER,Direction.EAST,0));set(l,b,8,2,-11,PolybiusBlock.of(POSTER,Direction.WEST,1));set(l,b,-8,2,-14,PolybiusBlock.of(POSTER,Direction.EAST,2));
+        set(l,b,-8,2,-8,PolybiusBlock.of(POSTER,Direction.EAST,0));set(l,b,8,2,-12,PolybiusBlock.of(POSTER,Direction.WEST,1));set(l,b,-8,2,-14,PolybiusBlock.of(POSTER,Direction.EAST,2));
         // The ceiling's lights, and the dead one over the black cabinet.
         for(int[] at:new int[][]{{0,-4},{0,-10},{-5,-13},{5,-13}})set(l,b,at[0],HIGH-1,at[1],PolybiusBlock.of(LIGHT,Direction.NORTH,0));
         set(l,b,0,HIGH-1,-20,PolybiusBlock.of(LIGHT,Direction.NORTH,1));

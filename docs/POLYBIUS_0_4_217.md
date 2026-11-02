@@ -72,6 +72,11 @@ Nothing flashes. The colours drift slowly. A reader who hides lightning flashes 
 
 It keeps no table anyone can read. Its board over the cabinet is all question marks.
 
+**The east wall (2 November).** The owner found the east wall cramped: the pizza counter stood a block from the regular at the
+cabinet beside it, while the wall toward the door stood empty. That wall's three cabinets (Undertow and the two the regulars play)
+now stand up toward the door, at z -4, -7 and -10, leaving three clear blocks before the counter. The stools follow their cabinets,
+the east neon strips sit a block further back, clear of the high-score table, and the poster hangs in the new gap.
+
 **Playing it (fixed on 2 November).** The owner asked whether Polybius worked. It did not. The dot only moved when a key was held,
 while the line turned away under it, so it fell off within a few ticks unless D was held from the very first. After two times round,
 no key could keep up. A play that ended that soon was under the 100 ticks a play needs to count, so the three plays never began.
