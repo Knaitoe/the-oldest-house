@@ -75,7 +75,19 @@ public final class UncannySocketProof {
         var arrival=ARRIVING.get(p.getUUID());tag.putBoolean("TerrainPending",arrival!=null);if(arrival!=null){tag.putString("ArrivalDimension",NovelRooms.dimension(arrival.place).location().toString());tag.putDouble("ArrivalX",arrival.at.x);tag.putDouble("ArrivalY",arrival.at.y);tag.putDouble("ArrivalZ",arrival.at.z);}
         var stick=new ItemStack(Items.STICK);stick.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));p.getInventory().setItem(8,stick);p.inventoryMenu.broadcastChanges();
     }
-    private static void step(MinecraftServer s,int next){phase=next;changed=s.getTickCount();ACKS.clear();for(var p:s.getPlayerList().getPlayers())marker(p,next);TheOldestHouse.LOGGER.info("UNCANNY SOCKET phase {}",next);}
+    /**
+     * Run 1424: the bedroom's ground floor had lost a plank under the phase-12 arrival, though reader A had walked over that
+     * cell at phase 5 and nothing in the room's story writes there. Every phase now logs the holes in that floor once it is
+     * built, so a recurrence shows when the plank went and which cells went with it.
+     */
+    private static String floorHoles(MinecraftServer s){
+        if(!BUILT.contains(LabyrinthPlace.MISSING_SLEEP))return "not built";
+        var l=s.getLevel(NovelRooms.dimension(LabyrinthPlace.MISSING_SLEEP));var b=base(LabyrinthPlace.MISSING_SLEEP);var out=new StringBuilder();
+        for(int x=-8;x<=8;x++)for(int z=-2;z>=-28;z--){var at=b.offset(x,-1,z);var state=l.getBlockState(at);
+            if(state.getCollisionShape(l,at).isEmpty())out.append(" (").append(x).append(',').append(z).append(")=").append(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath());}
+        return out.length()==0?"none":out.toString().trim();
+    }
+    private static void step(MinecraftServer s,int next){phase=next;changed=s.getTickCount();ACKS.clear();for(var p:s.getPlayerList().getPlayers())marker(p,next);TheOldestHouse.LOGGER.info("UNCANNY SOCKET phase {}; bedroom ground floor holes: {}",next,floorHoles(s));}
     private static void build(MinecraftServer s,LabyrinthPlace place){
         var l=s.getLevel(NovelRooms.dimension(place));CHUNKS.hold(l,IndianLakeRooms.bounds(base(place),place));
         if(place==LabyrinthPlace.TUNNEL_PERIPHERY){var room=IndianLakeRooms.bounds(base(place),place);int reach=16*Math.max(0,s.getPlayerList().getViewDistance()+1-2);if(reach>0)CORRIDOR.request(l,room.inflate(reach,0,0).expandTowards(0,0,-reach));}
@@ -84,7 +96,7 @@ public final class UncannySocketProof {
     private static void at(ServerPlayer p,LabyrinthPlace place,double x,double y,double z){
         build(p.server,place);p.closeContainer();p.stopUsingItem();p.stopRiding();p.setGameMode(GameType.SURVIVAL);p.setHealth(20);p.setInvulnerable(false);p.setNoGravity(false);p.getFoodData().setFoodLevel(20);
         var b=base(place);var feet=BlockPos.containing(b.getX()+x,b.getY()+y,b.getZ()+z);
-        require(!p.server.getLevel(NovelRooms.dimension(place)).getBlockState(feet.below()).getCollisionShape(p.server.getLevel(NovelRooms.dimension(place)),feet.below()).isEmpty(),"supported fixture arrival in "+place.id()+" at "+feet+"; floor="+p.server.getLevel(NovelRooms.dimension(place)).getBlockState(feet.below()));
+        require(!p.server.getLevel(NovelRooms.dimension(place)).getBlockState(feet.below()).getCollisionShape(p.server.getLevel(NovelRooms.dimension(place)),feet.below()).isEmpty(),"supported fixture arrival in "+place.id()+" at "+feet+"; floor="+p.server.getLevel(NovelRooms.dimension(place)).getBlockState(feet.below())+"; bedroom ground floor holes: "+floorHoles(p.server)+"; floor chunk inhabited "+p.server.getLevel(NovelRooms.dimension(place)).getChunkAt(feet.below()).getInhabitedTime()+" ticks");
         boolean changing=!p.serverLevel().dimension().equals(NovelRooms.dimension(place));
         if(changing)ARRIVING.put(p.getUUID(),new Arrival(place,new Vec3(b.getX()+x,b.getY()+y,b.getZ()+z)));
         p.teleportTo(p.server.getLevel(NovelRooms.dimension(place)),b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
