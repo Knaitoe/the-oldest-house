@@ -24,7 +24,7 @@ final class GhostsSkinMesh {
             quad(p,v,light,overlay,colour,new float[][]{{x0,0,-4},{x1,0,-4},{x1,y1,-4},{x0,y0,-4}},x0+12,14.65F,x1+12,16,0,0,-1);
             if(open>0&&(weight[i]>0||weight[i+1]>0))quad(p,v,light,overlay,0xff362122,new float[][]{{x0,y0,-3.998F},{x1,y1,-3.998F},{x1,lip,-3.998F},{x0,lip,-3.998F}},65,.5F,75,2.5F,0,0,-1);
         }
-        if(face!=null)expression(p,v,light,overlay,colour,face[0],face[1],face[2]);
+        if(face!=null)expression(p,v,light,overlay,colour,face[0],face[1],face[2],1);
         if(blink>0){
             for(float x:new float[]{-3.05F,.55F}){
                 for(int i=0;i<10;i++){
@@ -43,17 +43,22 @@ final class GhostsSkinMesh {
      * lowered: all of them by the lift, the inner ones further by the tilt. Mouth corners are one lip-coloured pixel either side of the
      * lip, above for a smile and below for a frown. Every colour is sampled from the reader's own painted sheet.
      */
-    private static void expression(PoseStack p,VertexConsumer v,int light,int overlay,int colour,float lift,float tilt,float mouth){
+    static void standardExpression(ModelPart head,PoseStack p,VertexConsumer v,int light,int overlay,int colour,float lift,float tilt,float mouth){
+        p.pushPose();head.translateAndRotate(p);
+        expression(p,v,light,overlay,colour,lift,tilt,mouth,2);
+        p.popPose();
+    }
+    private static void expression(PoseStack p,VertexConsumer v,int light,int overlay,int colour,float lift,float tilt,float mouth,float uScale){
         if(Math.abs(lift)<.04F&&Math.abs(tilt)<.04F&&Math.abs(mouth)<.3F)return;
-        for(float x0:new float[]{-2.5F,1F})quad(p,v,light,overlay,colour,rect(x0,-5,x0+1.5F,-4.5F,-4.02F),11F,10.5F,12F,11F,0,0,-1);
+        for(float x0:new float[]{-2.5F,1F})quad(p,v,light,overlay,colour,rect(x0,-5,x0+1.5F,-4.5F,-4.02F),11F*uScale,10.5F,12F*uScale,11F,0,0,-1);
         for(int side=0;side<2;side++){
             float x0=side==0?-2.5F:1F;
             for(int i=0;i<3;i++){
                 float inner=side==0?i/2F:(2-i)/2F,y=-5-lift*.5F-tilt*.5F*inner,x=x0+i*.5F;
-                quad(p,v,light,overlay,colour,rect(x,y,x+.5F,y+.5F,-4.03F),10F,11F,10.5F,11.5F,0,0,-1);
+                quad(p,v,light,overlay,colour,rect(x,y,x+.5F,y+.5F,-4.03F),10F*uScale,11F,10.5F*uScale,11.5F,0,0,-1);
             }
         }
-        if(Math.abs(mouth)>=.3F){float y=mouth>0?-2F:-1F;for(float x:new float[]{-1.5F,1F})quad(p,v,light,overlay,colour,rect(x,y,x+.5F,y+.5F,-4.03F),11.5F,14.5F,12F,15F,0,0,-1);}
+        if(Math.abs(mouth)>=.3F){float y=mouth>0?-2F:-1F;for(float x:new float[]{-1.5F,1F})quad(p,v,light,overlay,colour,rect(x,y,x+.5F,y+.5F,-4.03F),11.5F*uScale,14.5F,12F*uScale,15F,0,0,-1);}
     }
     private static float[][] rect(float x0,float y0,float x1,float y1,float z){return new float[][]{{x0,y1,z},{x1,y1,z},{x1,y0,z},{x0,y0,z}};}
     private static void walls(PoseStack p,VertexConsumer v,int light,int overlay,int colour,float top,float bottom,float uvTop,float uvBottom){

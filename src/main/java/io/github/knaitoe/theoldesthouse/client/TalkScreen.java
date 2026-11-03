@@ -24,16 +24,37 @@ public final class TalkScreen extends Screen {
     private static final int PAD=8,GAP=3,PANEL=0xD8141210,EDGE=0xFF6a5c48,WHO=0xFFE2C98E,SAID=0xFFE8E2D6,YOU=0xFF9FB4C2,REPLY=0xFFD8D0C0,HOVER=0xFFFFF2C8,FAINT=0xFF8a8070;
     private CompoundTag state;
     private boolean sent;
+    private int revealed,delay;
     private int scroll,px,py,pw,ph;
     private final List<int[]> replyBoxes=new ArrayList<>();
 
-    private TalkScreen(CompoundTag state){super(Component.literal(state.getString("Who")));this.state=state;}
+    private TalkScreen(CompoundTag state){
+        super(Component.literal(state.getString("Who")));this.state=state;
+        revealed=Math.max(0,lineCount()-5);
+        delay=8;
+    }
+    private int lineCount(){return state.getList("Lines",Tag.TAG_COMPOUND).size();}
+    private boolean feeding(){return revealed<lineCount();}
+    private void update(CompoundTag next){
+        var before=state.getList("Lines",Tag.TAG_COMPOUND);
+        var after=next.getList("Lines",Tag.TAG_COMPOUND);
+        int shared=0;
+        while(shared<Math.min(before.size(),after.size())&&before.get(shared).equals(after.get(shared)))shared++;
+        revealed=Math.min(revealed,shared);
+        state=next;sent=false;scroll=0;
+        if(feeding()&&delay<=0)delay=8;
+    }
+    @Override public void tick(){
+        if(!feeding()||--delay>0)return;
+        var line=state.getList("Lines",Tag.TAG_COMPOUND).getCompound(revealed++);
+        delay=Mth.clamp(12+line.getString("T").length()/4,16,40);
+    }
 
     /** A state from the server: open the panel, bring an open one up to date, or (with no token) close it. */
     public static void accept(TalkPayload payload){
         var mc=Minecraft.getInstance();var state=payload.state();
         if(!state.contains("Token")){if(mc.screen instanceof TalkScreen)mc.setScreen(null);return;}
-        if(mc.screen instanceof TalkScreen talk){talk.state=state;talk.sent=false;talk.scroll=0;}
+        if(mc.screen instanceof TalkScreen talk)talk.update(state);
         else if(payload.open())mc.setScreen(new TalkScreen(state));
     }
 
@@ -45,7 +66,9 @@ public final class TalkScreen extends Screen {
     /** Every line of the exchange, wrapped to the panel, with its colour: speakers by name, the reader's own replies indented. */
     private List<Object[]> wrapped(int width){
         var out=new ArrayList<Object[]>();
+        int index=0;
         for(Tag tag:state.getList("Lines",Tag.TAG_COMPOUND)){
+            if(index++>=revealed)break;
             var line=(CompoundTag)tag;String speaker=line.getString("S"),text=line.getString("T");boolean you=speaker.isEmpty();
             String shown=you?"— "+text:speaker+": "+text;
             for(var seq:font.split(Component.literal(shown),width-(you?12:0)))out.add(new Object[]{seq,you?YOU:SAID,you?12:0});
@@ -69,6 +92,7 @@ public final class TalkScreen extends Screen {
         if(maxScroll>0)g.drawString(font,scroll<maxScroll?"▲":" ",px+pw-PAD-6,py+PAD,FAINT,false);
         y=py+PAD+font.lineHeight+GAP+historyHeight+GAP;g.fill(px+PAD,y,px+pw-PAD,y+1,EDGE);y+=GAP+1;
         replyBoxes.clear();
+        if(feeding()){g.drawString(font,"…",px+PAD,y,FAINT,false);return;}
         if(ended){g.drawString(font,"Esc to step away",px+PAD,y,FAINT,false);return;}
         for(int i=0;i<replyLines.size();i++){
             int h=replyLines.get(i).size()*(font.lineHeight+1)+2;boolean over=!sent&&mouseX>=px+PAD&&mouseX<px+pw-PAD&&mouseY>=y&&mouseY<y+h;
@@ -79,7 +103,7 @@ public final class TalkScreen extends Screen {
     }
 
     private void choose(int index){
-        if(sent||index<0||index>=replies().size())return;sent=true;
+        if(sent||feeding()||index<0||index>=replies().size())return;sent=true;
         PacketDistributor.sendToServer(new TalkReplyPayload(state.getInt("Token"),index));
     }
     @Override public boolean mouseClicked(double mouseX,double mouseY,int button){

@@ -15,10 +15,20 @@ public final class BorrascaCarvingRenderer implements BlockEntityRenderer<Borras
         draw(font,e.friend(),e.reader(),state.getValue(BorrascaCarvingBlock.STAGE),p,buffers,light);
     }
     public static void draw(Font font,String friend,String reader,int stage,PoseStack p,MultiBufferSource buffers,int light){
-        if(stage==0)return;
-        p.pushPose();p.translate(.5,.70,1.003);p.scale(.009F,-.009F,.009F);
-        if(stage!=3)line(font,friend,0,stage==4?0xFFE4B47D:0xFFBE9662,p,buffers,light);
-        if(stage>=2)line(font,reader,32,0xFFBE9662,p,buffers,light);
+        p.pushPose();p.translate(.5,.82,1.003);p.scale(.008F,-.008F,.008F);
+        cut(font,"DANA",-19,-2,0xFFAF9369,p,buffers,light);
+        cut(font,"JESS + M",18,12,0xFF927B58,p,buffers,light);
+        cut(font,"LEE",-24,28,0xFF9D855C,p,buffers,light);
+        if(stage>=1&&stage!=3)cut(font,friend,2,56,stage==4?0xFFF0C18A:0xFFC4A078,p,buffers,light);
+        if(stage>=2)cut(font,reader,0,78,0xFFC4A078,p,buffers,light);
+        p.popPose();
+    }
+    private static void cut(Font font,String name,float x,float y,int colour,PoseStack p,MultiBufferSource buffers,int light){
+        p.pushPose();p.translate(x,0,0);p.mulPose(com.mojang.math.Axis.ZP.rotationDegrees((x%7)*.7F));
+        p.pushPose();p.translate(.8,-.9,-.03);
+        line(font,name,y,0xFF2C2116,p,buffers,light);
+        p.popPose();
+        line(font,name,y,colour,p,buffers,light);
         p.popPose();
     }
     /** 0.4.237: names scratched into a cell wall with something small and hard: pale, a little uneven, in capitals. */

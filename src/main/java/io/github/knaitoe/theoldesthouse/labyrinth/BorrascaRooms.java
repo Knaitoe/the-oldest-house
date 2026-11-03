@@ -90,6 +90,7 @@ public final class BorrascaRooms {
         BorrascaLand.road(l,b);
         BorrascaTown.town(l,b);BorrascaDressing.town(l,b);
         BorrascaLand.forest(l,b);
+        for(int height=0;height<3;height++)BuildBlocks.set(l,b.offset(BorrascaPlay.HIDING_TREE.above(height)),Blocks.OAK_LOG.defaultBlockState(),F);
         furniture(l,b,SOURCE.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);furniture(l,b,ACCOUNT.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);
         LiteraryRooms.paper(l,b,SOURCE,BorrascaTexts.source(),LiteraryRooms.holder(LabyrinthPlace.BORRASCA));LiteraryRooms.prop(l,b,ACCOUNT,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.SPRUCE_PLANKS.defaultBlockState(),Blocks.STONE_BRICKS.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
