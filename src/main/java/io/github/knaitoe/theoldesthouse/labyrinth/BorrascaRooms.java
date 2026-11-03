@@ -52,6 +52,15 @@ public final class BorrascaRooms {
     static void fit(ServerLevel l,BlockPos b,BlockPos at,BorrascaFittingBlock.Kind k,Direction d){BuildBlocks.set(l,b.offset(at),BorrascaFittingBlock.of(k,d),F);}
     private static void furniture(ServerLevel l,BlockPos b,BlockPos at,HouseholdFurnitureBlock.Kind k){NovelRooms.furniture(l,b.offset(at),k,Direction.SOUTH);}
     private static void sign(ServerLevel l,BlockPos b,BlockPos at,String... words){NovelRooms.sign(l,b.offset(at),Direction.SOUTH,words);}
+    private static int mix(int x,int z){int h=x*73856093^z*83492791^0x2b1;h^=h>>>13;h*=0x5bd1e995;return (h^h>>>15)&0x7fffffff;}
+    /** 0.4.276: a walked surface: packed earth where feet go (out to one off the line), the needles coming back at its edge. */
+    static net.minecraft.world.level.block.state.BlockState walked(int x,int z,int off){
+        int k=mix(x,z)%10;
+        if(off<=1)return Blocks.DIRT_PATH.defaultBlockState();
+        return (k<2?Blocks.COARSE_DIRT:k<8?Blocks.PODZOL:Blocks.DIRT_PATH).defaultBlockState();
+    }
+    /** A timber riser where a path climbs a block. */
+    static net.minecraft.world.level.block.state.BlockState riser(Direction up){return Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,up);}
     public static int trailX(int z){return z>=-100?0:(int)Math.round(4*Math.sin((-z-100)*.08));}
     public static int trailY(int z){return Math.min(12,Math.max(0,(-z-100)/5));}
     public static BlockPos trail(int z){return new BlockPos(trailX(z),trailY(z),z);}
@@ -59,27 +68,29 @@ public final class BorrascaRooms {
         box(l,b,-44,-5,-220,44,26,2,Blocks.AIR);box(l,b,-44,-5,-220,44,-2,2,Blocks.STONE);box(l,b,-44,-1,-220,44,-1,2,Blocks.GRASS_BLOCK);
         // 0.4.262: the valley, not a staircase of full-width terraces with walls down both sides (BorrascaLand).
         BorrascaLand.terrain(l,b);
-        for(int z=-8;z>=-166;z--){var p=trail(z);box(l,b,p.getX()-2,p.getY(),z,p.getX()+2,p.getY()+3,z,Blocks.AIR);for(int dx=-2;dx<=2;dx++)fit(l,b,p.offset(dx,-1,0),BorrascaFittingBlock.Kind.TRAIL,Direction.NORTH);if(z<-101&&(-z-100)%5==0)for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(p.offset(dx,-1,0)),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);}
-        BorrascaTown.fort(l,b);gully(l,b);compound(l,b);serviceDescent(l,b);lowerRooms(l,b);graves(l,b);
+        // 0.4.276: a walked path, not a painted strip: packed earth down the middle, its edges giving way to the needles, and a timber
+        // riser at each rise.
+        for(int z=-8;z>=-166;z--){var p=trail(z);box(l,b,p.getX()-2,p.getY(),z,p.getX()+2,p.getY()+3,z,Blocks.AIR);for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(p.offset(dx,-1,0)),walked(p.getX()+dx,z,Math.abs(dx)),F);if(z<-101&&(-z-100)%5==0)for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(p.offset(dx,-1,0)),riser(Direction.NORTH),F);}
+        BorrascaTown.fort(l,b);BorrascaDressing.tree(l,b);gully(l,b);compound(l,b);BorrascaDressing.yard(l,b);serviceDescent(l,b);lowerRooms(l,b);graves(l,b);
         marker(l,b,MARKER_ONE,BorrascaFittingBlock.Kind.MARKER_ONE);marker(l,b,MARKER_TWO,BorrascaFittingBlock.Kind.MARKER_TWO);marker(l,b,MARKER_THREE,BorrascaFittingBlock.Kind.MARKER_THREE);marker(l,b,MARKER_FOUR,BorrascaFittingBlock.Kind.MARKER_FOUR);
         path(l,b,trail(-125),SHELTER_TWO);path(l,b,SHELTER_TWO,new BlockPos(1,6,-131));path(l,b,new BlockPos(1,6,-131),trail(-141));
         // The shelter branch starts on this rise; its floor must not replace the main trail's half-step.
-        for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(trail(-125).offset(dx,-1,0)),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
+        for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(trail(-125).offset(dx,-1,0)),riser(Direction.NORTH),F);
         for(var at:new BlockPos[]{new BlockPos(1,2,-115),new BlockPos(-5,6,-132)})box(l,b,at.getX(),at.getY(),at.getZ(),at.getX()+4,at.getY(),at.getZ(),Blocks.SPRUCE_LOG);
         BorrascaLand.clearing(l,b);
-        for(int x=-3;x<=1;x++)BuildBlocks.set(l,b.offset(x,8,-144),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
+        for(int x=-3;x<=1;x++)BuildBlocks.set(l,b.offset(x,8,-144),riser(Direction.NORTH),F);
         // The lane up from the clearing to the wire, the way the men come down and go back up: a step at each rise, so it can be walked both ways.
-        for(int z=-151;z>=-163;z--){int y=trailY(z);for(int x=0;x<=4;x++)fit(l,b,new BlockPos(x,y-1,z),BorrascaFittingBlock.Kind.TRAIL,Direction.NORTH);box(l,b,0,y,z,4,y+3,z,Blocks.AIR);}
-        for(int z:new int[]{-150,-155,-160})for(int x=0;x<=4;x++)BuildBlocks.set(l,b.offset(x,trailY(z)-1,z),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),F);
+        for(int z=-151;z>=-163;z--){int y=trailY(z);for(int x=0;x<=4;x++)BuildBlocks.set(l,b.offset(x,y-1,z),walked(x,z,Math.abs(x-2)),F);box(l,b,0,y,z,4,y+3,z,Blocks.AIR);}
+        for(int z:new int[]{-150,-155,-160})for(int x=0;x<=4;x++)BuildBlocks.set(l,b.offset(x,trailY(z)-1,z),riser(Direction.NORTH),F);
         BorrascaLand.road(l,b);
-        BorrascaTown.town(l,b);
+        BorrascaTown.town(l,b);BorrascaDressing.town(l,b);
         BorrascaLand.forest(l,b);
         furniture(l,b,SOURCE.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);furniture(l,b,ACCOUNT.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);
         LiteraryRooms.paper(l,b,SOURCE,BorrascaTexts.source(),LiteraryRooms.holder(LabyrinthPlace.BORRASCA));LiteraryRooms.prop(l,b,ACCOUNT,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.SPRUCE_PLANKS.defaultBlockState(),Blocks.STONE_BRICKS.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
     }
     private static void gully(ServerLevel l,BlockPos b){
-        for(int i=0;i<GULLY.length-1;i++)path(l,b,GULLY[i],GULLY[i+1]);for(var at:GULLY){set(l,b,at.getX()-2,at.getY(),at.getZ(),Blocks.FERN);set(l,b,at.getX()+2,at.getY(),at.getZ(),Blocks.FERN);}
+        // 0.4.276: the gully's bed, banks and steps come with the ground (BorrascaLand.terrain), as one channel the water cut.
         for(int x=-17;x<=-15;x++)for(int z=-120;z<=-118;z++)BuildBlocks.set(l,b.offset(x,4,z),Blocks.MOSSY_COBBLESTONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);
         BorrascaLand.rock(l,b,-6.5,7.4,-122,2.2,2.1,2.6,null,null);box(l,b,-15,4,-130,-13,4,-129,Blocks.SPRUCE_LOG);
     }
@@ -105,7 +116,6 @@ public final class BorrascaRooms {
     private static void serviceDescent(ServerLevel l,BlockPos b){
         box(l,b,-17,12,-204,-17,13,-204,Blocks.AIR);
         box(l,b,-18,12,-207,-14,15,-206,Blocks.STONE_BRICKS);NovelRooms.door(l,b.offset(SERVICE_DOOR),Direction.NORTH,Blocks.IRON_DOOR,false);
-        for(int i=0;i<RETURN_ROUTE.length-1;i++)path(l,b,RETURN_ROUTE[i],RETURN_ROUTE[i+1]);
         // The tunnel: two blocks wide, roofed low enough that an adult must crouch, walled on both sides.
         box(l,b,-30,11,-210,-16,14,-207,Blocks.STONE_BRICKS);
         box(l,b,-29,12,-209,-17,12,-208,Blocks.AIR);
@@ -160,6 +170,6 @@ public final class BorrascaRooms {
         }
     }
     private static void marker(ServerLevel l,BlockPos b,BlockPos at,BorrascaFittingBlock.Kind k){box(l,b,at.getX(),at.getY(),at.getZ()-1,at.getX(),at.getY()+1,at.getZ()-1,Blocks.SPRUCE_LOG);fit(l,b,at.above(),k,Direction.SOUTH);}
-    private static void path(ServerLevel l,BlockPos b,BlockPos a,BlockPos c){int n=Math.max(Math.abs(a.getX()-c.getX()),Math.abs(a.getZ()-c.getZ()));int previous=a.getY();for(int i=0;i<=n;i++){double t=n==0?0:(double)i/n;int x=(int)Math.round(a.getX()+(c.getX()-a.getX())*t),y=(int)Math.round(a.getY()+(c.getY()-a.getY())*t),z=(int)Math.round(a.getZ()+(c.getZ()-a.getZ())*t);box(l,b,x-1,y-2,z,x+1,y-1,z,Blocks.STONE);box(l,b,x-1,y,z,x+1,y+2,z,Blocks.AIR);for(int dx=-1;dx<=1;dx++){fit(l,b,new BlockPos(x+dx,y-1,z),BorrascaFittingBlock.Kind.TRAIL,Direction.NORTH);if(y!=previous){Direction facing=Math.abs(c.getZ()-a.getZ())>=Math.abs(c.getX()-a.getX())?(c.getZ()<a.getZ()?Direction.NORTH:Direction.SOUTH):(c.getX()<a.getX()?Direction.WEST:Direction.EAST);if(y<previous)facing=facing.getOpposite();BuildBlocks.set(l,b.offset(x+dx,y>previous?y-1:y,z),Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,facing),F);}}previous=y;}}
+    private static void path(ServerLevel l,BlockPos b,BlockPos a,BlockPos c){int n=Math.max(Math.abs(a.getX()-c.getX()),Math.abs(a.getZ()-c.getZ()));int previous=a.getY();for(int i=0;i<=n;i++){double t=n==0?0:(double)i/n;int x=(int)Math.round(a.getX()+(c.getX()-a.getX())*t),y=(int)Math.round(a.getY()+(c.getY()-a.getY())*t),z=(int)Math.round(a.getZ()+(c.getZ()-a.getZ())*t);box(l,b,x-1,y-2,z,x+1,y-1,z,Blocks.STONE);box(l,b,x-1,y,z,x+1,y+2,z,Blocks.AIR);for(int dx=-1;dx<=1;dx++){BuildBlocks.set(l,b.offset(x+dx,y-1,z),walked(x+dx,z,Math.abs(dx)),F);if(y!=previous){Direction facing=Math.abs(c.getZ()-a.getZ())>=Math.abs(c.getX()-a.getX())?(c.getZ()<a.getZ()?Direction.NORTH:Direction.SOUTH):(c.getX()<a.getX()?Direction.WEST:Direction.EAST);if(y<previous)facing=facing.getOpposite();BuildBlocks.set(l,b.offset(x+dx,y>previous?y-1:y,z),riser(facing),F);}}previous=y;}}
     static void join(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z){for(var rel:BlockPos.betweenClosed(x,y,z,X,Y,Z)){var at=b.offset(rel).immutable();BuildBlocks.after(l,()->{var s=l.getBlockState(at);if(!(s.getBlock() instanceof FenceBlock||s.getBlock() instanceof IronBarsBlock))return;for(var d:Direction.Plane.HORIZONTAL)s=s.updateShape(d,l.getBlockState(at.relative(d)),l,at,at.relative(d));l.setBlock(at,s,F);});}}
 }
