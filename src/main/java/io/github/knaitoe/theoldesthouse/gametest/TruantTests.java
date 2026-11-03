@@ -100,7 +100,13 @@ public final class TruantTests {
                 var a=Truant.body(l);Truant.talk(reader,a);
                 h.assertTrue(Talk.lines(reader).stream().anyMatch(line->line.contains("Which door did bread_friend take?")),"he asks about the actual companion");
                 h.assertTrue(Talk.choose(reader,"I'm not telling you.")&&said(l).contains("did I ask why you were alone"),"he makes the accusation aloud");
+                witness.connection.resumeFlushing();
+                h.assertTrue(NativeTestPlayers.messages(witness).stream().anyMatch(line->line.contains("did I ask why you were alone")),
+                        "the witness hears the same accusation");
                 h.assertTrue(Talk.choose(reader,"Call out to warn them."),"the reader can call through to the companion");
+                companion.connection.resumeFlushing();
+                h.assertTrue(NativeTestPlayers.messages(companion).stream().anyMatch(line->line.contains("Johnny's coming")),
+                        "the warning reaches the companion on the other side");
             }).thenWaitUntil(()->h.assertTrue(Truant.body(l).getX()<lamp.getX()-5.6,"Johnny walks toward the actual far door"))
             .thenExecute(()->{
                 var a=Truant.body(l);stand(witness,l,lamp,a.getX()-lamp.getX(),0,-7.4,180);Truant.talk(witness,a);
