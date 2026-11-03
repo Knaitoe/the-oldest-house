@@ -38,7 +38,7 @@ public final class BorrascaLand {
     /** The turning bay at the top of the road, behind the shoulder. */
     static final int BAY_X0=32,BAY_X1=39,BAY_Z0=-207,BAY_Z1=-195;
     private record Route(BlockPos[] points,double half,double bank){}
-    private static final Route[] ROUTES={new Route(BorrascaRooms.GULLY,1.7,1.0),new Route(BorrascaRooms.RETURN_ROUTE,1.7,.9),new Route(ROAD,2.3,2.4)};
+    private static final Route[] ROUTES={new Route(BorrascaRooms.GULLY,1.7,1.4),new Route(BorrascaRooms.RETURN_ROUTE,1.7,.9),new Route(ROAD,2.3,2.4)};
     /** Places kept at their own level, with the ground easing back to the slope over the margin. */
     private record Flat(int x0,int z0,int x1,int z1,int h,int margin){}  // margin: kept for reading; the easing is a cone
     private static final Flat[] FLATS={
@@ -109,11 +109,11 @@ public final class BorrascaLand {
     private static BlockState top(int x,int z,int h,boolean steep){
         if(steep||h>=19)return rock(x,h,z);
         if(z>-72&&Math.abs(x)<38)return Blocks.GRASS_BLOCK.defaultBlockState();
-        double m=Math.sin(x*.11+z*.07)+.7*Math.sin(z*.15-x*.09+1.3)+.4*unit(x,0,z);
-        if(m>1.15)return Blocks.MOSS_BLOCK.defaultBlockState();
-        if(m<-1.2)return Blocks.COARSE_DIRT.defaultBlockState();
-        if(hash(x,1,z)%23==0)return Blocks.ROOTED_DIRT.defaultBlockState();
-        if(z>-110&&m<-.4)return Blocks.GRASS_BLOCK.defaultBlockState();
+        // 0.4.276: broad patches a walker would notice, not a speckle: needles, with moss in the hollows and bare earth on the rises.
+        double m=Math.sin(x*.07+z*.045)+.7*Math.sin(z*.09-x*.05+1.3)+.12*unit(x,0,z);
+        if(m>1.25)return Blocks.MOSS_BLOCK.defaultBlockState();
+        if(m<-1.3)return Blocks.COARSE_DIRT.defaultBlockState();
+        if(z>-110&&m<-.3)return Blocks.GRASS_BLOCK.defaultBlockState();
         return Blocks.PODZOL.defaultBlockState();
     }
     private static BlockState rock(int x,int y,int z){int k=hash(x,y,z)%20;return (k<9?Blocks.STONE:k<13?Blocks.ANDESITE:k<16?Blocks.COBBLESTONE:k<18?Blocks.MOSSY_COBBLESTONE:Blocks.TUFF).defaultBlockState();}
@@ -121,12 +121,53 @@ public final class BorrascaLand {
     /** The ground itself, every column but the front strip the station and the House's door stand on. */
     static void terrain(ServerLevel l,BlockPos b){
         for(int x=-44;x<=44;x++)for(int z=-220;z<=-1;z++){
-            int h=ground(x,z);boolean steep=steep(x,z,h);var top=top(x,z,h,steep);
-            if(h<=0){if(h==0&&!top.is(Blocks.GRASS_BLOCK))BuildBlocks.set(l,b.offset(x,-1,z),top,F);continue;}
+            int h=ground(x,z);boolean steep=steep(x,z,h);int route=routeFloor(x,z,h);boolean bank=!steep?false:gullyBank(x,z);
+            var top=route==1?bed(x,z):route==2?BorrascaRooms.walked(x,z,near(ROUTES[1],x,z)[0]<=.9?0:2):bank?earth(x,h,z):top(x,z,h,steep);
+            if(h<=0){if(h==0&&!top.is(Blocks.GRASS_BLOCK))BuildBlocks.set(l,b.offset(x,-1,z),top,F);step(l,b,x,z,h,route);continue;}
             if(h>=3)LiteraryRooms.box(l,b,x,0,z,x,h-3,z,Blocks.STONE);
-            if(h>=2)BuildBlocks.set(l,b.offset(x,h-2,z),steep?rock(x,h-2,z):Blocks.DIRT.defaultBlockState(),F);
+            if(h>=2)BuildBlocks.set(l,b.offset(x,h-2,z),steep&&!bank?rock(x,h-2,z):Blocks.DIRT.defaultBlockState(),F);
             BuildBlocks.set(l,b.offset(x,h-1,z),top,F);
+            step(l,b,x,z,h,route);
         }
+        gullyEdges(l,b);
+    }
+    /**
+     * 0.4.276: which way a column's own floor belongs to: 1 the gully's bed, 2 the way down the far side, 0 neither. Only where the
+     * way's own level set the ground (the wire, the lane and the cliffs keep theirs).
+     */
+    static int routeFloor(int x,int z,int h){
+        if(chebyshev(x,z,YARD_X0,YARD_Z0,YARD_X1,YARD_Z1)<=1)return 0;
+        for(int i=0;i<2;i++){var n=near(ROUTES[i],x,z);if(n[0]<=ROUTES[i].half()&&h==(int)Math.round(clamp(n[1],-1,25)))return i+1;}
+        return 0;
+    }
+    /** A step up along a way: a riser where its floor climbs a block from the column before, facing the climb. */
+    private static void step(ServerLevel l,BlockPos b,int x,int z,int h,int route){
+        if(route==0||h<0)return;
+        for(var d:Direction.Plane.HORIZONTAL){int nx=x-d.getStepX(),nz=z-d.getStepZ();int nh=ground(nx,nz);
+            if(nh==h-1&&routeFloor(nx,nz,nh)==route){
+                var stair=route==1?(hash(x,9,z)%3==0?Blocks.MOSSY_COBBLESTONE_STAIRS:Blocks.COBBLESTONE_STAIRS).defaultBlockState().setValue(StairBlock.FACING,d):BorrascaRooms.riser(d);
+                BuildBlocks.set(l,b.offset(x,h-1,z),stair,F);return;}
+        }
+    }
+    /** The gully's bed: gravel the water left, with its stones. */
+    private static BlockState bed(int x,int z){int k=hash(x,8,z)%20;return (k<11?Blocks.GRAVEL:k<15?Blocks.COBBLESTONE:k<17?Blocks.MOSSY_COBBLESTONE:k<19?Blocks.COARSE_DIRT:Blocks.ANDESITE).defaultBlockState();}
+    /** Within a few blocks of the gully a steep face is its cut bank, earth with roots and the odd stone, not bare rock. */
+    private static boolean gullyBank(int x,int z){return near(ROUTES[0],x,z)[0]<=ROUTES[0].half()+4.5;}
+    private static BlockState earth(int x,int y,int z){int k=hash(x,y,z)%12;return (k<5?Blocks.COARSE_DIRT:k<8?Blocks.ROOTED_DIRT:k<10?Blocks.DIRT:k<11?Blocks.MOSSY_COBBLESTONE:Blocks.PACKED_MUD).defaultBlockState();}
+    /** Ferns along the top of the gully's banks, and one trunk fallen across it high enough to walk under. */
+    private static void gullyEdges(ServerLevel l,BlockPos b){
+        var r=ROUTES[0];
+        for(int x=-26;x<=4;x++)for(int z=-148;z<=-92;z++){
+            double d=near(r,x,z)[0];if(d<=r.half()+.3||d>r.half()+2.6)continue;int h=ground(x,z);if(steep(x,z,h)||chebyshev(x,z,-12,-108,11,-78)<=0)continue;
+            int k=hash(x,33,z)%10;var at=b.offset(x,h,z);
+            if(k<3)BuildBlocks.set(l,at,Blocks.FERN.defaultBlockState(),F);
+            else if(k<4){BuildBlocks.set(l,at,Blocks.LARGE_FERN.defaultBlockState().setValue(DoublePlantBlock.HALF,DoubleBlockHalf.LOWER),F);BuildBlocks.set(l,at.above(),Blocks.LARGE_FERN.defaultBlockState().setValue(DoublePlantBlock.HALF,DoubleBlockHalf.UPPER),F);}
+        }
+        // The fallen trunk: across the channel at z -122, three above its bed, its ends on the banks.
+        int z=-122;var n=near(r,-15,z);int bedY=(int)Math.round(n[1]),y=bedY+3;int x0=Integer.MIN_VALUE,x1=Integer.MIN_VALUE;
+        for(int x=-15;x>=-24;x--)if(ground(x,z)>=y){x0=x;break;}
+        for(int x=-15;x<=-6;x++)if(ground(x,z)>=y){x1=x;break;}
+        if(x0!=Integer.MIN_VALUE&&x1!=Integer.MIN_VALUE)for(int x=x0;x<=x1;x++){BuildBlocks.set(l,b.offset(x,Math.max(y,ground(x,z)),z),Blocks.SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X),F);if(hash(x,35,z)%2==0)BuildBlocks.set(l,b.offset(x,Math.max(y,ground(x,z))+1,z),Blocks.MOSS_CARPET.defaultBlockState(),F);}
     }
 
     // ---- Rocks -----------------------------------------------------------------------------------------------------
@@ -155,15 +196,23 @@ public final class BorrascaLand {
      * light) is kept.
      */
     static void clearing(ServerLevel l,BlockPos b){
+        // 0.4.276: the needles worn through to earth where people stood, not a smear of red: bare and trodden at the middle, packed
+        // where it is wettest, the needles coming back at its edges.
         for(int x=-14;x<=7;x++)for(int z=-154;z<=-144;z++){
-            double e=Math.min(Math.min(x+14,7-x),Math.min(z+154,-144-z))+unit(x,3,z)*1.3;double clay=Math.sin(x*.4+z*.3)+unit(x,4,z)*.6;
-            var s=e<.8?Blocks.PODZOL:e<1.8&&clay<0?Blocks.COARSE_DIRT:clay>.9?Blocks.TERRACOTTA:clay<-.9?Blocks.PACKED_MUD:Blocks.RED_TERRACOTTA;
+            double e=Math.min(Math.min(x+14,7-x),Math.min(z+154,-144-z))+unit(x,3,z)*1.1;double worn=Math.hypot(x-(-1.5),(z+149)*1.2)+unit(x,4,z)*1.2;double wet=Math.sin(x*.35+z*.28);
+            var s=e<1.2?Blocks.PODZOL:worn<3.2?(wet>.5?Blocks.PACKED_MUD:Blocks.COARSE_DIRT):worn<5.5?(hash(x,5,z)%3==0?Blocks.ROOTED_DIRT:Blocks.COARSE_DIRT):hash(x,6,z)%4==0?Blocks.COARSE_DIRT:Blocks.PODZOL;
             BuildBlocks.set(l,b.offset(x,8,z),s.defaultBlockState(),F);
         }
         LiteraryRooms.box(l,b,-14,9,-154,7,13,-144,Blocks.AIR);
         // The crag, west of the gap a reader can stand in.
         rock(l,b,-15,11,-151.5,2.6,4.2,6.5,x->x>=-12,null);
-        for(int z=-157;z<=-146;z++)BuildBlocks.set(l,b.offset(-16,8,z),Blocks.RED_TERRACOTTA.defaultBlockState(),F);
+        for(int z=-157;z<=-146;z++)BuildBlocks.set(l,b.offset(-16,8,z),(hash(-16,7,z)%2==0?Blocks.COARSE_DIRT:Blocks.PODZOL).defaultBlockState(),F);
+        // The woods close round it on the side away from the ridge (the line up to the lamp stays open), ferns at its rim.
+        for(int[] t:new int[][]{{-17,-142,6},{-13,-139,7},{-19,-147,5},{-9,-139,5}})spruce(l,b,t[0],ground(t[0],t[1]),t[1],t[2]);
+        for(int x=-14;x<=7;x++)for(int z=-154;z<=-144;z++){double e=Math.min(Math.min(x+14,7-x),Math.min(z+154,-144-z));if(e>=1.5||hash(x,7,z)%4!=0||x<-11&&z<-145)continue;BuildBlocks.set(l,b.offset(x,9,z),Blocks.FERN.defaultBlockState(),F);}
+        // Broken brush at its edges: dead stems and two saplings snapped off a block up.
+        for(int[] at:new int[][]{{-12,-145},{5,-153},{6,-146},{-13,-153},{3,-144}})BuildBlocks.set(l,b.offset(at[0],9,at[1]),Blocks.DEAD_BUSH.defaultBlockState(),F);
+        for(int[] at:new int[][]{{-11,-146},{6,-151}}){BuildBlocks.set(l,b.offset(at[0],9,at[1]),Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(),F);}
         // The stump: three trunks' width of grey wood, broken off at uneven heights, roots splayed over the clay.
         for(int x=-9;x<=-7;x++)for(int z=-153;z<=-151;z++){int top=10+hash(x,9,z)%4;for(int y=9;y<=top;y++)BuildBlocks.set(l,b.offset(x,y,z),Blocks.SPRUCE_WOOD.defaultBlockState(),F);if(hash(x,2,z)%2==0)BuildBlocks.set(l,b.offset(x,top+1,z),Blocks.MOSS_CARPET.defaultBlockState(),F);}
         BuildBlocks.set(l,b.offset(-8,13,-152),Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(),F);
@@ -215,7 +264,9 @@ public final class BorrascaLand {
     static void forest(ServerLevel l,BlockPos b){
         var rocky=new HashSet<Long>();
         // Cover beside the trail, where the old blocks stood (a reader still has somewhere to keep out of the Sheriff's light).
-        for(int z:new int[]{-106,-117,-128,-139}){int y=BorrascaRooms.trailY(z);rock(l,b,-6,y+.9,z+1.6,2.3,1.9,2.5,null,rocky);rock(l,b,9.6,y+.9,z+1.6,2.5,1.9,2.4,null,rocky);}
+        // 0.4.276: not a pair at every eleventh block: one side then the other, at different sizes and distances from the path.
+        double[][] cover={{-106,-6.4,1.4,2.3,1.9,2.5},{-108,10.4,-1.2,1.6,1.3,1.7},{-117,9.8,1.0,2.5,1.9,2.4},{-120,-7.6,-1.4,1.5,1.2,1.6},{-128,-6.8,1.5,2.6,2.0,2.8},{-139,9.2,1.6,2.3,1.8,2.4},{-141,-6.2,.2,1.3,1.0,1.4}};
+        for(var c:cover){int z=(int)c[0];int y=BorrascaRooms.trailY(z);rock(l,b,c[1],y+.9-(c[4]<1.5?.3:0),z+c[2],c[3],c[4],c[5],null,rocky);}
         // Boulders on the slopes, half sunk.
         for(int i=0,placed=0;i<400&&placed<26;i++){
             int x=-34+hash(i,11,7)%69,z=-212+hash(i,13,5)%138;if(clear(x,z,3)||edge(x,z)>=-4)continue;int h=ground(x,z);if(h>18)continue;
@@ -227,7 +278,8 @@ public final class BorrascaLand {
             if(clear(x,z,2)||rocky.contains(ChunkPos.asLong(x,z)))continue;int h=ground(x,z);if(h>16&&Math.abs(x)<37&&z>-217)continue;
             // Young spruce can be climbed like a stair, so near the cliffs only tall pines grow.
             int kind=edge(x,z)>=-6?0:hash(x,3,z)%10;
-            if(kind<7)pine(l,b,x,h,z,13+hash(x,4,z)%7);else spruce(l,b,x,h,z,5+hash(x,5,z)%4);
+            // 0.4.276: the lower slopes are mixed, an oak among the pines.
+            if(kind>=5&&kind<7&&z>-135&&edge(x,z)<-6)oak(l,b,x,h,z,5+hash(x,6,z)%3);else if(kind<7)pine(l,b,x,h,z,13+hash(x,4,z)%7);else spruce(l,b,x,h,z,5+hash(x,5,z)%4);
             trunks.add(ChunkPos.asLong(x,z));
         }
         // Fallen trunks, only where the ground lies level along their whole length.
@@ -258,6 +310,15 @@ public final class BorrascaLand {
             for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++){if(dx*dx+dz*dz>r*r+(r>1?1:0))continue;if(dx==0&&dz==0&&crown+k<height)continue;if(r>=2&&hash(x+dx,yy,z+dz)%5==0)continue;BuildBlocks.set(l,b.offset(x+dx,yy,z+dz),leaves(),F);}
         }
         BuildBlocks.set(l,b.offset(x,y+height,z),leaves(),F);BuildBlocks.set(l,b.offset(x,y+height+1,z),leaves(),F);
+    }
+    /** 0.4.276: an oak: a short trunk and a rounded, broken crown. */
+    static void oak(ServerLevel l,BlockPos b,int x,int y,int z,int height){
+        LiteraryRooms.box(l,b,x,y,z,x,y+height-1,z,Blocks.OAK_LOG);
+        double cy=y+height-.5,r=2.6;
+        for(int dx=-3;dx<=3;dx++)for(int dz=-3;dz<=3;dz++)for(int dy=-2;dy<=2;dy++){
+            double d=dx*dx/(r*r)+dz*dz/(r*r)+dy*dy/(2.0*2.0);if(d>1+.25*unit(x+dx,y+dy,z+dz))continue;if(dx==0&&dz==0&&dy<1)continue;if(hash(x+dx,y+dy+40,z+dz)%7==0)continue;
+            BuildBlocks.set(l,b.offset(x+dx,(int)Math.floor(cy)+dy,z+dz),Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true),F);
+        }
     }
     /** A young spruce: thick with needles nearly to the ground. */
     static void spruce(ServerLevel l,BlockPos b,int x,int y,int z,int height){

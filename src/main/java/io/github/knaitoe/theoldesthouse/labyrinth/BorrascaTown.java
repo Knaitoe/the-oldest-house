@@ -160,7 +160,7 @@ final class BorrascaTown {
     private static void edge(ServerLevel l,BlockPos b){
         for(int x=-44;x<=44;x++){if(Math.abs(x)<=8)continue;set(l,b,x,0,1,Blocks.SPRUCE_FENCE);if(hash(x,0,0)%3!=0)set(l,b,x,0,0,leaves());}
         BorrascaRooms.join(l,b,-44,0,1,44,0,1);
-        for(int[] at:new int[][]{{-36,-22},{-34,-34},{-10,-32},{36,-24},{34,-36},{22,-38}})pine(l,b,at[0],at[1],0,9+hash(at[0],0,at[1])%4);
+        for(int[] at:new int[][]{{-36,-22},{36,-24}})pine(l,b,at[0],at[1],0,9+hash(at[0],0,at[1])%4);
     }
     private static void pine(ServerLevel l,BlockPos b,int x,int z,int y,int h){box(l,b,x,y,z,x,y+h,z,log(Blocks.SPRUCE_LOG,Direction.Axis.Y));for(int k=0;k<6;k++){int w=k<2?3:k<4?2:1;for(int dx=-w;dx<=w;dx++)for(int dz=-w;dz<=w;dz++)if(Math.abs(dx)+Math.abs(dz)<=w+1&&!(dx==0&&dz==0&&k<5))set(l,b,x+dx,y+h-4+k,z+dz,leaves());}set(l,b,x,y+h+2,z,leaves());}
 
