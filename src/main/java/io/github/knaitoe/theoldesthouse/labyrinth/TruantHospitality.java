@@ -178,9 +178,8 @@ final class TruantHospitality {
                 if(e.ticks<28)return true;
                 var origin=Vec3.atLowerCornerOf(b);
                 var to=origin.add(TO_DOOR[e.leg]);
-                var step=to.subtract(a.position());
-                if(e.leg>0&&readers.stream().anyMatch(q->q.distanceToSqr(a)<2.25
-                        &&q.position().subtract(a.position()).dot(step)>0)){
+                var direction=to.subtract(a.position()).normalize();
+                if(e.leg>0&&readers.stream().anyMatch(q->inHisWay(a,q,direction))){
                     finish(e,a);Truant.say(a,"All right. Leave it.");return true;
                 }
                 Truant.gesture(a,Truant.LAMP);Truant.face(a,to);Truant.walk(a,to,.10);
@@ -217,6 +216,12 @@ final class TruantHospitality {
             default->{return false;}
         }
         return true;
+    }
+
+    private static boolean inHisWay(LiteraryActor a,ServerPlayer p,Vec3 direction){
+        var offset=p.position().subtract(a.position());
+        double ahead=offset.dot(direction);
+        return ahead>.45&&ahead<1.5&&offset.subtract(direction.scale(ahead)).lengthSqr()<.36;
     }
 
     private static void finish(Encounter e,LiteraryActor a){

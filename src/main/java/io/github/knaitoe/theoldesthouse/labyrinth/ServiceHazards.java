@@ -90,9 +90,9 @@ final class ServiceHazards {
                 fill(level, base, -4, -4, end, 4, -2, end, wall);
             for (int bank : new int[]{-1, 1}) {
                 fill(level, base, bank * 4, -4, z - 1, bank * 4, -2, z + 1, wall);
-                // Full steps give each side of the bay a route up to the stone bank.
+                // Steps stay along the back edge so the floor in front clears a falling reader.
                 for (int step = 1; step <= 3; step++)
-                    fill(level, base, bank * step, -4, z, bank * step, -5 + step, z, wall);
+                    fill(level, base, bank * step, -4, z - 1, bank * step, -5 + step, z - 1, wall);
                 set(level, base, bank, -1, z + 1, Blocks.CRACKED_STONE_BRICKS.defaultBlockState());
             }
             fill(level, base, 0, -4, z - 1, 0, -1, z + 1, timber);
