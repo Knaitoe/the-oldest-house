@@ -63,7 +63,7 @@ public final class ProofrockTown {
             set(x,top,z,top<=-10?(hash(x,z)%5==0?Blocks.CLAY:Blocks.GRAVEL):Blocks.SAND);
             if(top<-1)fill(x,top+1,z,x,-1,z,Blocks.WATER);}
         roads();forest();
-        shopsWest();shopsEast();houses();garage();motel();green();beach();
+        shopsWest();shopsEast();houses();garage();motel();green();beach();mountains();
         IndianLakeHigh.build(l,b);
         drowned();
         // Shop awnings and the lane's lawn are authored after the roads. Install
@@ -81,6 +81,10 @@ public final class ProofrockTown {
         // The beaches: the north shore and the bay's western shore.
         fill(-HALF+1,-1,-91,41,-1,-89,Blocks.SAND);fill(38,-1,-91,41,-1,-34,Blocks.SAND);
         fill(-HALF+1,-2,-91,41,-2,-89,Blocks.SANDSTONE);fill(38,-2,-91,41,-2,-34,Blocks.SANDSTONE);
+        // 0.4.281: the far ends of the north beach and the bay's shore are a mountain lake's gravel and sand. The beach by the
+        // furnace, the shore body, the pier, the picnic tables and the boathouse stays sand.
+        for(int x=-HALF+1;x<=-38;x++)for(int z=-91;z<=-89;z++)set(x,-1,z,IdahoShore.shore(x,z));
+        for(int x=38;x<=41;x++)for(int z=-80;z<=-34;z++)set(x,-1,z,IdahoShore.shore(x,z));
     }
 
     // ------------------------------------------------------------------------------------------------ streets
@@ -175,12 +179,16 @@ public final class ProofrockTown {
         set(48,0,-18,Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT,false));
         for(var log:new int[][]{{46,-18},{50,-18},{48,-16}})set(log[0],0,log[1],Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,log[1]==-16?Direction.Axis.X:Direction.Axis.Z));
     }
+    /**
+     * 0.4.281: one of Idaho's trees. In town only lodgepole pine and aspen, whose crowns start well above a reader's head and reach
+     * no further than the old spruce's did, so nothing changes about who fits where or what a crown can reach into; out in the
+     * eastern woods, Douglas fir as well. Aspen stand by the water.
+     */
     private void tree(int x,int z){
-        if(water(x,z))return;int h=5+Math.floorMod(hash(x,z),3);
-        for(int y=0;y<h;y++)set(x,y,z,Blocks.SPRUCE_LOG);
-        for(int y=3;y<=Math.min(8,h+2);y++){int r=y>=h?0:y>=h-2?1:2;
-            for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++)if((dx!=0||dz!=0||y>=h)&&Math.abs(dx)+Math.abs(dz)<=r+1&&Math.abs(x+dx)<HALF&&z+dz>NORTH&&z+dz<0)
-                setIfAir(x+dx,y,z+dz,Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));}
+        if(water(x,z))return;int k=hash(x,z)%10;boolean wet=x>=38&&z<=-24||z<=-80,woods=x>=40;
+        if(wet&&k<4||k==9)IdahoShore.aspen(l,b,x,0,z,6+k%3);
+        else if(woods&&k>=5)IdahoShore.fir(l,b,x,0,z,8+k%3);
+        else IdahoShore.lodgepole(l,b,x,0,z,10+k%3);
     }
 
     // ------------------------------------------------------------------------------------------------ Main Street's shops
@@ -407,6 +415,44 @@ public final class ProofrockTown {
             if(dx!=1)set(x+dx,0,-90,fence(Blocks.SPRUCE_FENCE,null));}
         set(-32,0,-90,Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT,false));
         lamp(-5,-88,Direction.EAST);lamp(37,-60,Direction.WEST);
+    }
+
+    // ------------------------------------------------------------------------------------------------ the mountains round the lake
+    /** How high the slope stands at a column this far past the town's edge. */
+    static int slope(int x,int z,int out){
+        // The first two rows past the edge, which a reader can still walk onto, rise a step at a time, so nothing there is
+        // higher than she can follow; past them the slope steepens fast.
+        if(out<=2)return out-1;
+        double d=out-2;return (int)Math.min(12,Math.round(1+d*1.3+d*d*.12+.8*Math.sin(x*.17+z*.11)+.5*Math.sin(z*.23-x*.07)));
+    }
+    /**
+     * 0.4.281: Indian Lake is a mountain lake. Past the town's west, north and east edges, and behind it on either side of the road
+     * in, the ground climbs steeply into lodgepole pine, Douglas and subalpine fir and aspen, with granite where it is too steep for
+     * soil and boulders on the slopes. None of it is inside the town, so every street, yard and floor is as level as it was, and the
+     * lake's rim still holds its water. The arrival and the way up to it are left as they are.
+     */
+    private void mountains(){
+        int reach=9;
+        for(int x=-HALF-reach;x<=HALF+reach;x++)for(int z=NORTH-reach;z<=reach+3;z++){
+            int out=Math.max(Math.max(-HALF-x,x-HALF),Math.max(NORTH-z,z));if(out<=0||z>0&&Math.abs(x)<=12)continue;
+            int h=slope(x,z,out);boolean steep=false;
+            for(int[] n:new int[][]{{1,0},{-1,0},{0,1},{0,-1}}){int nx=x+n[0],nz=z+n[1];int o=Math.max(Math.max(-HALF-nx,nx-HALF),Math.max(NORTH-nz,nz));
+                int nh=o<=0||nz>0&&Math.abs(nx)<=12?0:slope(nx,nz,o);if(Math.abs(nh-h)>=2)steep=true;}
+            for(int y=-5;y<h-1;y++)set(x,y,z,y<h-3||steep?IdahoShore.rock(x,y,z):Blocks.DIRT.defaultBlockState());
+            set(x,h-1,z,steep?IdahoShore.rock(x,h,z):IdahoShore.floor(x,z));
+            int k=hash(x,z)%40;if(out<3)continue;
+            if(k<1&&BuildBlocks.state(l,b.offset(x,h,z)).isAir())IdahoShore.boulder(l,b,x,h,z,1+hash(z,x)%3);
+            else if(k<4&&BuildBlocks.state(l,b.offset(x,h,z)).isAir()&&!steep)set(x,h,z,k<2?Blocks.FERN:Blocks.SHORT_GRASS);
+        }
+        // The forest on the slopes, its crowns kept within the ground the builder has ready.
+        for(int x=-HALF-reach;x<=HALF+reach;x+=3)for(int z=NORTH-reach;z<=reach+3;z+=3){
+            int hh=hash(x*3+1,z*7+2);int tx=x+hh%3-1,tz=z+(hh/3)%3-1;
+            int out=Math.max(Math.max(-HALF-tx,tx-HALF),Math.max(NORTH-tz,tz));
+            if(out<3||out>reach-3||tz>0&&Math.abs(tx)<=15||hh%7==0)continue;int h=slope(tx,tz,out);
+            if(!BuildBlocks.state(l,b.offset(tx,h,tz)).isAir())continue;
+            boolean wet=tz<NORTH||tx>HALF&&tz<=-34&&tz>=-92;
+            IdahoShore.tree(l,b,tx,h,tz,h+15,wet);
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ the old town under the lake
