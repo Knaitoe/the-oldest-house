@@ -276,7 +276,8 @@ public final class LiteraryVignettes {
                         slot -> slot == 8 || slot == 0 && commitRabbit(p));
             } else HolyRabbitDialogue.talk(p,actor,own);
         }
-        else if(place==LabyrinthPlace.CONFESSION)actor.say("Bring a blank book. Sit where you can hear me.");
+        // 0.4.275: turning back to him with his question open brings it up again.
+        else if(place==LabyrinthPlace.CONFESSION){if(!(own.getBoolean("Asked")&&!own.contains("Answer")&&(Talk.resume(p,ConfessionAnswers.key(own.getInt("Chapter")))||reask(p,own))))actor.say("Bring a blank book. Sit where you can hear me.");}
         else if(place==LabyrinthPlace.ELK_LOT)ElkLotNight.talk(p,actor,own);
         else if(place==LabyrinthPlace.MOVIE_NIGHT)MovieNightCast.talk(p,actor,own);
         else if(place==LabyrinthPlace.COSTUME_NIGHT)CostumeNight.talk(p,actor,own);
@@ -453,6 +454,7 @@ public final class LiteraryVignettes {
     }
     private static void mapping(ServerPlayer p,BlockPos b,CompoundTag own){if(own.getBoolean("Read_Source"))MappingNights.floorPlan(p,b,own);MappingNights.reader(p,b,own);}
     private static void rabbit(ServerPlayer p,BlockPos b,CompoundTag own){HolyRabbit.reader(p,b,own);}
+    private static boolean reask(ServerPlayer p,CompoundTag own){if(own.getList("Offers",Tag.TAG_COMPOUND).isEmpty())return false;ConfessionAnswers.offer(p,own,own.getInt("Chapter"));return true;}
     private static void confession(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.CONFESSION;
         int chapter=own.getInt("Chapter");if(chapter>=LiteraryTexts.CONFESSION.length){if(own.getInt("Visit")>own.getInt("SealedVisit")&&own.getBoolean("Read_Journal"))ready(p,place,own,"read_the_sealed_journal_signed_with_own_name");return;}
         var visitor=actor(p,place,"Visitor",LiteraryActor.VISITOR,new BlockPos(1,0,-22),false);if(visitor==null||p.distanceToSqr(visitor)>64||!HouseWatchers.sees(p,visitor.getEyePosition()))return;

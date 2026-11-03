@@ -68,7 +68,9 @@ public final class Talk {
     /** A reply from the panel: honoured once, for the offer it was made to, and only while that offer stands. */
     public static void reply(ServerPlayer p,int token,int index){
         var e=OPEN.get(p.getUUID());if(e==null||e.token!=token||index<0||index>=e.replies.size())return;
-        var chosen=e.replies.get(index);e.replies=List.of();e.token=tokens++;e.lines.add(new String[]{"",chosen.label()});e.all.add(new String[]{"",chosen.label()});
+        var chosen=e.replies.get(index);e.replies=List.of();e.token=tokens++;e.lines.add(new String[]{"",chosen.label()});
+        // 0.4.275: kept marked as the reader's own reply, so it is never taken for a line of narration (the listener offers it back).
+        e.all.add(new String[]{"",chosen.label(),"R"});
         chosen.then().accept(p);
         // A reply that asked nothing further leaves the exchange to be read.
         var now=OPEN.get(p.getUUID());if(now==e&&e.replies.isEmpty()&&!e.ended){e.ended=true;send(p,e,false);}
