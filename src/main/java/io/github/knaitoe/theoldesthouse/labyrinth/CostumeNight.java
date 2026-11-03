@@ -307,11 +307,33 @@ public final class CostumeNight {
         s.fill(r.minX(),-6,r.minZ(),r.maxX(),-6,r.maxZ(),Blocks.STONE);
         for(int x=r.minX();x<=r.maxX();x++)for(int z=r.minZ();z<=r.maxZ();z++){
             if(lake(x,z)){int depth=x<=15||z>=-8||z<=-72?2:4;s.fill(x,-5,z,x,-2-depth,z,Blocks.SANDSTONE);s.set(x,-1-depth,z,Blocks.SAND);s.fill(x,-depth,z,x,-1,z,Blocks.WATER);continue;}
-            if(woods(x,z)){s.fill(x,-5,z,x,-2,z,Blocks.DIRT);s.set(x,-1,z,Math.floorMod(x*31+z*17,3)==0?Blocks.COARSE_DIRT:Blocks.PODZOL);continue;}
+            if(woods(x,z)){
+                // 0.4.278: the banks of an Idaho lake: the ground climbs into the forest, needles and duff, granite where it is steep.
+                int h=bank(x,z);boolean steep=false;for(int[] d:new int[][]{{1,0},{-1,0},{0,1},{0,-1}})if(woods(x+d[0],z+d[1])&&Math.abs(bank(x+d[0],z+d[1])-h)>=2)steep=true;
+                for(int y=-5;y<h-1;y++)s.set(x,y,z,y<h-3||steep?IdahoShore.rock(x,y,z):Blocks.DIRT.defaultBlockState());
+                s.set(x,h-1,z,steep?IdahoShore.rock(x,h,z):IdahoShore.floor(x,z));continue;}
             if(park(x,z)){s.fill(x,-5,z,x,-2,z,Blocks.DIRT);s.set(x,-1,z,Blocks.GRASS_BLOCK);continue;}
             s.fill(x,-5,z,x,-2,z,Blocks.SANDSTONE);s.set(x,-1,z,Blocks.SAND);
         }
-        trees(s);park(s);party(s);
+        shoreline(s);trees(s);park(s);party(s);
+    }
+    /** 0.4.278: how high the woods' ground stands: climbing steeply from the lake's east bank, the west dunes and the far end. */
+    static int bank(int x,int z){
+        double d=x>=31?x-30:x<=-28?-27-x:z<=-76?-75-z:0;if(d<=0)return 0;
+        double h=Math.min(7,d*.9+d*d*.12);if(z>-4)h*=Math.max(0,(-z+1)/5.0);
+        return (int)Math.max(0,Math.round(h+.6*IdahoShore.unit(x,9,z)*Math.min(1,h)));
+    }
+    /**
+     * 0.4.278: the lake's far shore as a mountain lake's is: its two east corners rounded into gravel, and granite boulders along the
+     * east bank, some under the water and some breaking it. The west edge, where she waits off the sand, is left exactly as it was.
+     */
+    private static void shoreline(Site s){
+        for(int[] c:new int[][]{{25,-11},{25,-69}})for(int x=c[0];x<=30;x++)for(int z=c[1]-6;z<=c[1]+6;z++){
+            if(!lake(x,z)||(c[1]>-40?z<=c[1]:z>=c[1]))continue;double d=Math.hypot(x-c[0],z-c[1])+.7*IdahoShore.unit(x,10,z);if(d<=5)continue;
+            s.fill(x,-5,z,x,-2,z,Blocks.SANDSTONE);s.set(x,-1,z,IdahoShore.shore(x,z));
+        }
+        for(int z=-12;z>=-68;z--){int k=IdahoShore.hash(30,11,z)%7;if(k>1)continue;int x=29+IdahoShore.hash(30,12,z)%2;if(!s.at(x,-1,z).is(Blocks.WATER))continue;
+            IdahoShore.boulder(s.l(),s.b(),x,k==0?-1:-2,z,k==0?3:2);}
     }
     private static BlockState leaves(Block b){return b.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true);}
     private static void spruce(Site s,int x,int z,int height){
@@ -322,10 +344,24 @@ public final class CostumeNight {
         for(int h=height-2;h<=height+1;h++){int w=h>=height+1?1:2;for(int dx=-w;dx<=w;dx++)for(int dz=-w;dz<=w;dz++){if(Math.abs(dx)==w&&Math.abs(dz)==w&&(h==height+1||(x+z+h)%2==0))continue;if(s.at(x+dx,h,z+dz).isAir())s.set(x+dx,h,z+dz,leaves(Blocks.OAK_LEAVES));}}
         s.fill(x,0,z,x,height-1,z,Blocks.OAK_LOG);
     }
+    /**
+     * The woods along the west dunes, the lake's east bank and the far end (0.4.278: the northern Rockies' own, lodgepole pine, Douglas
+     * and subalpine fir, aspen by the water, granite boulders, thin grass and fern); nothing grows in the lake, on the sand or in the
+     * park.
+     */
     private static void trees(Site s){
-        // Dark spruce along the west dunes and the far bank; nothing grows in the lake or on the sand.
-        for(int z=-4;z>=-74;z-=5){spruce(s,-31,z+Math.floorMod(z,3)-1,6+Math.floorMod(z,4));if(z<=-8)spruce(s,32,z-2,5+Math.floorMod(z,3));}
-        for(int x=-26;x<=26;x+=7)spruce(s,x,-76,6+Math.floorMod(x,3));
+        var r=PLACE.room();
+        for(int x=r.minX();x<=r.maxX();x+=3)for(int z=r.minZ();z<=-3;z+=3){
+            int h=Math.floorMod(x*734287+z*912931,1000);int tx=Math.max(r.minX(),Math.min(r.maxX(),x+h%3-1)),tz=Math.max(r.minZ(),Math.min(-3,z+(h/3)%3-1));
+            if(!woods(tx,tz)||h%9==0)continue;int y=bank(tx,tz);if(!s.at(tx,y,tz).isAir())continue;
+            IdahoShore.tree(s.l(),s.b(),tx,y,tz,r.maxY(),tx>=31&&tx<=32);
+        }
+        for(int x=r.minX();x<=r.maxX();x++)for(int z=r.minZ();z<=-3;z++){
+            if(!woods(x,z))continue;int y=bank(x,z);if(!s.at(x,y,z).isAir())continue;int k=Math.floorMod(x*48271+z*16807,200);
+            if(k<3){IdahoShore.boulder(s.l(),s.b(),x,y,z,1+k);continue;}
+            if(k>=22)continue;var below=s.at(x,y-1,z);if(!below.is(Blocks.PODZOL)&&!below.is(Blocks.GRASS_BLOCK)&&!below.is(Blocks.COARSE_DIRT)&&!below.is(Blocks.MOSS_BLOCK))continue;
+            s.set(x,y,z,k<12?Blocks.SHORT_GRASS:k<17?Blocks.FERN:Blocks.MOSS_CARPET);
+        }
     }
     private static void park(Site s){
         // A row of low posts where the sand ends, with gaps to walk through; oaks, a bench and a lamp on the grass.

@@ -332,36 +332,82 @@ public final class MovieNight {
         var s=new Site(l,b);var r=PLACE.room();
         s.fill(r.minX(),-5,r.minZ(),r.maxX(),-5,r.maxZ(),Blocks.STONE);
         s.fill(r.minX(),-4,r.minZ(),r.maxX(),-2,r.maxZ(),Blocks.DIRT);
-        // Ground: sand on the near beach and along the water, grass behind; the woods rise a little toward the edges.
+        // Ground: sand on the near beach, a gravel shore round the water, then (0.4.278) the banks of an Idaho mountain lake rising
+        // steeply into the forest at the sides and the far end: needles and duff, granite where it is too steep to hold soil. The
+        // corridor to the ticket hut stays level.
         for(int x=r.minX();x<=r.maxX();x++)for(int z=r.minZ();z<=r.maxZ();z++){
-            int edge=Math.min(Math.min(x-r.minX(),r.maxX()-x),z-r.minZ());
-            boolean sand=z>=-12||Math.abs(x)<=30&&z>=-75;
-            s.set(x,-1,z,sand?Blocks.SAND:Blocks.GRASS_BLOCK);
-            if(!sand&&edge<=2)s.set(x,0,z,Blocks.GRASS_BLOCK);
+            int h=bank(x,z);boolean steep=false;for(int[] d:new int[][]{{1,0},{-1,0},{0,1},{0,-1}})if(Math.abs(bank(x+d[0],z+d[1])-h)>=2)steep=true;
+            BlockState top=z>=-12?Blocks.SAND.defaultBlockState():Math.abs(x)<=30&&z>=-75||coveRim(x,z)?IdahoShore.shore(x,z):steep?IdahoShore.rock(x,h,z):IdahoShore.floor(x,z);
+            for(int y=-1;y<h-1;y++)s.set(x,y,z,y<h-3||steep?IdahoShore.rock(x,y,z):Blocks.DIRT.defaultBlockState());
+            s.set(x,h-1,z,top);
         }
         // The lake: shelves near the edges and a deep middle, over clay.
         for(int x=-28;x<=28;x++)for(int z=-72;z<=-13;z++){
             int edge=Math.min(Math.min(x+28,28-x),Math.min(z+72,-13-z));int floor=edge<2?-3:edge<4?-6:-12;
             s.fill(x,-12,z,x,floor-1,z,Blocks.CLAY);s.set(x,floor,z,edge<4?Blocks.SAND:Blocks.CLAY);s.fill(x,floor+1,z,x,-1,z,Blocks.WATER);
         }
-        woods(s);beach(s);dock(s);screen(s);barge(s);pier(s);hut(s);
+        shoreline(s);woods(s);beach(s);dock(s);screen(s);barge(s);pier(s);hut(s);
     }
+    /**
+     * 0.4.278: how high a column's ground stands above the beach: level on the beach, on the shore round the water and along the
+     * corridor to the ticket hut; beyond them the banks climb steeply, as a mountain lake's do, to six or seven blocks at the scene's
+     * edge.
+     */
+    static int bank(int x,int z){
+        if(z>=-11||coveRim(x,z))return 0;
+        double d=Math.max(Math.abs(x)-30,-76-z);if(d<=0)return 0;
+        double h=Math.min(7,d*.9+d*d*.09);
+        if(z<-72){double c=(Math.abs(x)-7)/4.0;if(c<1)h*=Math.max(0,c);}
+        if(z>-17)h*=Math.max(0,(-11-z)/6.0);
+        return (int)Math.max(0,Math.round(h+.6*IdahoShore.unit(x,9,z)*Math.min(1,h)));
+    }
+    /** 0.4.278: two small coves cut back into the banks, one each side, so the long shores do not run straight. */
+    static double coveDistance(int x,int z){return Math.min(Math.hypot((x+31)/2.6,(z+33)/4.2),Math.hypot((x-31)/2.6,(z+55)/4.6));}
+    static boolean cove(int x,int z){return Math.abs(x)>=29&&coveDistance(x,z)<=1;}
+    static boolean coveRim(int x,int z){return Math.abs(x)>=29&&coveDistance(x,z)<=1.7;}
+    /**
+     * 0.4.278: the lake's edge as a mountain lake's is, not a ruler's: its four corners rounded into gravel shore, and granite boulders
+     * along the sides and the far end, some under the water, some breaking it. The dock, the pier, the barge and the screen's water
+     * are untouched.
+     */
+    private static void shoreline(Site s){
+        for(int x=-35;x<=35;x++)for(int z=-72;z<=-13;z++)if(cove(x,z)){s.fill(x,-12,z,x,-4,z,Blocks.CLAY);s.set(x,-3,z,IdahoShore.shore(x,z));s.fill(x,-2,z,x,-1,z,Blocks.WATER);s.fill(x,0,z,x,8,z,Blocks.AIR);}
+        int[][] corners={{-23,-18},{23,-18},{-23,-67},{23,-67}};
+        for(var c:corners)for(int x=c[0]-6;x<=c[0]+6;x++)for(int z=c[1]-6;z<=c[1]+6;z++){
+            if(x<-28||x>28||z<-72||z>-13)continue;boolean outX=c[0]<0?x<c[0]:x>c[0],outZ=c[1]>-40?z>c[1]:z<c[1];if(!outX||!outZ)continue;
+            double d=Math.hypot(x-c[0],z-c[1])+.7*IdahoShore.unit(x,10,z);if(d<=5)continue;
+            s.fill(x,-12,z,x,-2,z,Blocks.CLAY);s.set(x,-1,z,IdahoShore.shore(x,z));
+        }
+        for(int z=-17;z>=-68;z--)for(int side:new int[]{-1,1}){
+            int k=IdahoShore.hash(side,11,z)%9;if(k>1)continue;int x=side*(27+IdahoShore.hash(side,12,z)%2);
+            if(!s.at(x,-1,z).is(Blocks.WATER))continue;boolean breaks=k==0;
+            IdahoShore.boulder(s.l(),s.b(),x,breaks?-1:-2,z,breaks?3:2);
+        }
+        for(int x=-26;x<=26;x++){if(Math.abs(x)<=3||x>=13&&x<=20)continue;int k=IdahoShore.hash(x,13,-71)%8;if(k>1)continue;int z=-71-IdahoShore.hash(x,14,0)%2;
+            if(!s.at(x,-1,z).is(Blocks.WATER))continue;IdahoShore.boulder(s.l(),s.b(),x,k==0?-1:-2,z,k==0?3:2);}
+        // A lodgepole down off the west bank, half in the water.
+        for(int x=-33;x<=-26;x++)s.set(x,x<=-31?bank(x,-46):-1,-46,Blocks.SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
+    }
+    /**
+     * The woods on the banks (0.4.278: the northern Rockies' own): lodgepole pine, Douglas fir and subalpine fir up the slopes, aspen
+     * in pale groves down by the water, granite boulders, needles and thin grass under them. The beach, the shore and the corridor to
+     * the ticket hut stay open.
+     */
     private static void woods(Site s){
         var r=PLACE.room();
-        for(int x=r.minX()+3;x<=r.maxX()-3;x+=4)for(int z=r.minZ()+3;z<-6;z+=4){
-            int h=Math.floorMod(x*734287+z*912931,1000);int ox=h%3-1,oz=(h/3)%3-1,tx=Math.max(r.minX()+3,Math.min(r.maxX()-3,x+ox)),tz=Math.max(r.minZ()+3,z+oz);
-            boolean side=Math.abs(tx)>=32,far=tz<=-78&&(Math.abs(tx)>=9||tz<-90);
-            if(!side&&!far||h%7==0)continue;
-            if(Math.abs(tx)<=6&&tz>=-89)continue;
-            int y=s.at(tx,0,tz).is(Blocks.GRASS_BLOCK)?1:0;
-            switch(h%5){case 0,1->spruce(s,tx,y,tz,6+h%4);case 2,3->broad(s,tx,y,tz,Blocks.OAK_LOG,Blocks.OAK_LEAVES,4+h%3);default->broad(s,tx,y,tz,Blocks.BIRCH_LOG,Blocks.BIRCH_LEAVES,5+h%3);}
+        for(int x=r.minX()+1;x<=r.maxX()-1;x+=3)for(int z=r.minZ()+1;z<=-12;z+=3){
+            int h=Math.floorMod(x*734287+z*912931,1000);int tx=Math.max(r.minX()+1,Math.min(r.maxX()-1,x+h%3-1)),tz=Math.max(r.minZ()+1,Math.min(-12,z+(h/3)%3-1));
+            if(!(Math.abs(tx)>=31||tz<=-76)||Math.abs(tx)<=7&&tz>=-91||h%9==0)continue;
+            int y=bank(tx,tz);if(!s.at(tx,y,tz).isAir()||s.at(tx,y-1,tz).is(Blocks.WATER))continue;
+            IdahoShore.tree(s.l(),s.b(),tx,y,tz,PLACE.room().maxY(),Math.abs(tx)<=33&&tz>-76||tz>=-80&&Math.abs(tx)<=30);
         }
-        // Undergrowth along the woods' edge.
-        for(int x=-34;x<=34;x+=3)for(int z=-92;z<=-4;z+=3){
-            int h=Math.floorMod(x*48271+z*16807,100);int tx=x+h%2,tz=z+(h/2)%2;
-            if(!(Math.abs(tx)>=30||tz<=-76)||Math.abs(tx)<=6&&tz>=-90)continue;int y=s.at(tx,0,tz).is(Blocks.GRASS_BLOCK)?1:0;
-            if(!s.at(tx,y-1,tz).is(Blocks.GRASS_BLOCK)||!s.at(tx,y,tz).isAir())continue;
-            s.set(tx,y,tz,h<45?Blocks.FERN:h<70?Blocks.SHORT_GRASS:h<80?Blocks.MOSS_CARPET:Blocks.AIR);
+        // Boulders and undergrowth: grass and fern, moss in the damp, a little sage on the dry slopes nearest the beach.
+        for(int x=r.minX()+1;x<=r.maxX()-1;x++)for(int z=r.minZ()+1;z<=-12;z++){
+            if(!(Math.abs(x)>=31||z<=-76)||Math.abs(x)<=7&&z>=-91)continue;int y=bank(x,z);if(!s.at(x,y,z).isAir())continue;
+            int k=Math.floorMod(x*48271+z*16807,200);
+            if(k<3){IdahoShore.boulder(s.l(),s.b(),x,y,z,1+k);continue;}
+            if(k>=24)continue;var below=s.at(x,y-1,z);if(!below.is(Blocks.PODZOL)&&!below.is(Blocks.GRASS_BLOCK)&&!below.is(Blocks.COARSE_DIRT)&&!below.is(Blocks.MOSS_BLOCK))continue;
+            s.set(x,y,z,k<12?Blocks.SHORT_GRASS:k<17?Blocks.FERN:k<20&&z>-35?Blocks.DEAD_BUSH:Blocks.MOSS_CARPET);
         }
     }
     private static BlockState leaves(Block b){return b.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true);}
