@@ -289,7 +289,7 @@ final class BorrascaTown {
         door(l,b,6,12,-172,Direction.NORTH,Blocks.SPRUCE_DOOR);
         box(l,b,3,15,-173,9,15,-168,slab(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,SlabType.BOTTOM));
         furniture(l,b,5,12,-170,HouseholdFurnitureBlock.Kind.READING_DESK,Direction.EAST);furniture(l,b,6,12,-170,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
-        fitAt(l,b,new BlockPos(5,13,-170),BorrascaFittingBlock.Kind.PAPER,Direction.EAST);set(l,b,7,14,-170,hanging());
+        fitAt(l,b,BorrascaRooms.GATE_LOG,BorrascaFittingBlock.Kind.PAPER,Direction.EAST);set(l,b,7,14,-170,hanging());
         BorrascaRooms.join(l,b,4,13,-172,8,13,-168);
     }
     /** Yard clutter, kept off the trail-to-lamp line, the workers' and Prescott's marks, the county pickup and the breaker. */

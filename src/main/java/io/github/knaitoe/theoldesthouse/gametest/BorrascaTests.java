@@ -347,6 +347,9 @@ public final class BorrascaTests {
                 h.assertTrue(door.is(Blocks.IRON_DOOR)&&lever.is(Blocks.LEVER)&&door.getValue(DoorBlock.OPEN)==(room==BorrascaRooms.NELL_ROOM),"room "+room+": an iron door, bolted from the corridor"+(room==BorrascaRooms.NELL_ROOM?"; hers stands open":""));}
             var lever=b.offset(BorrascaRooms.roomLever(BorrascaRooms.MARA_ROOM));((LeverBlock)Blocks.LEVER).pull(l.getBlockState(lever),l,lever,p);
             h.assertTrue(l.getBlockState(b.offset(BorrascaRooms.roomDoor(BorrascaRooms.MARA_ROOM))).getValue(DoorBlock.OPEN),"throwing the bolt opens the door");
+            f.at(p,6,12,-170);
+            h.assertTrue(title(opened(f,p,BorrascaRooms.GATE_LOG,"the gate hut paper")).equals("Ridge gate log"),
+                    "right-clicking the gate hut desk sheet opens its own document");
             f.read(p,BorrascaRooms.NIGHT_BOOK,false);f.read(p,BorrascaRooms.LETTER,false);var own=f.own(p);
             h.assertTrue(own.getBoolean("LedgerRead")&&own.getBoolean("LetterRead"),"the night book and the letter are read on the desk");
             var book=String.join(" ",BorrascaTexts.document("Ledger").get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList());
@@ -375,6 +378,9 @@ public final class BorrascaTests {
             h.assertTrue(f.own(p).getBoolean("HeardDenial")&&sheriff.getCustomName()!=null&&sheriff.getCustomName().getString().contains("Marker Three"),"he gives himself away as soon as he sees the reader, ten blocks off");
             // The long way round through the woods to the west: never in his light.
             f.at(p,-27,0,-131);f.refresh(p);h.assertTrue(f.own(p).getInt("Suspicion")==0&&!f.own(p).getBoolean("Escorting"),"a reader in the woods to the west is not seen");
+            var gate=f.base(p).offset(BorrascaRooms.LOCK);
+            h.assertTrue(f.out.getBlockState(gate).getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.LOCKED_FENCE,
+                    "the lock is mounted on the closed gate panel");
             f.at(p,5,12,-163);f.refresh(p);var own=f.own(p);h.assertTrue(own.getBoolean("PerimeterSeen")&&own.getInt("Beat")==3&&own.getInt("GullyStep")==0,"the wire is reached by a route that never used the gully, and the visit is done");
         }).thenSucceed();
     }
@@ -414,17 +420,25 @@ public final class BorrascaTests {
     }
 
     @GameTest(template="empty",batch="borrasca_escort",timeoutTicks=1800)
-    public static void flashlightObeysSolidCoverAndTheSheriffWalksTheReaderBack(GameTestHelper h){
+    public static void flashlightObeysSolidCoverAndTheSheriffEnforcesTheTape(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_escort");final int[] phase={0},still={0},moved={0};final Vec3[] previous={Vec3.ZERO};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,3);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Sheriff loaded")).thenExecute(()->{
             var a=f.actor(p,"CastSheriff");f.at(p,2,4,-114);h.assertTrue(BorrascaStory.flashlightSees(a,p,0),"the actual eye ray and cone see the reader");var cover=f.base(p).offset(2,5,-118);f.out.setBlock(cover,Blocks.STONE.defaultBlockState(),3);h.assertTrue(!BorrascaStory.flashlightSees(a,p,0),"solid native cover blocks the flashlight");f.out.setBlock(cover,Blocks.AIR.defaultBlockState(),3);
             var own=f.own(p);own.putInt("TrailClock",20);h.assertTrue(BorrascaStory.masking(own),"the dust pulse masks footsteps");own.putInt("TrailClock",90);h.assertTrue(!BorrascaStory.masking(own),"quiet intervals expose footsteps");
             own.putInt("Suspicion",10);own.putFloat("BeamYaw",37);h.assertTrue(BorrascaStory.flashlightYaw(own)==37,"once it has found someone the beam holds on them");own.putInt("Suspicion",0);h.assertTrue(BorrascaStory.flashlightYaw(own)!=37||true,"and sweeps again once they are out of it");
-            own.putBoolean("Escorting",true);f.save(p,own);f.at(p,2,5,-125);p.setNoGravity(false);previous[0]=p.position();phase[0]=1;
+            own.putBoolean("Escorting",true);own.putInt("EscortTicks",0);f.save(p,own);f.at(p,2,5,-125);p.setNoGravity(false);previous[0]=p.position();phase[0]=1;
         }).thenWaitUntil(()->h.assertTrue(phase[0]==2,"the reader stands still on the far side for a while"))
           .thenExecute(()->{var a=f.actor(p,"CastSheriff");h.assertTrue(f.own(p).getBoolean("Escorting")&&moved[0]==0,"standing still, the reader is not pushed or moved: the Sheriff waits");h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().contains("Keep walking"),"and tells them to keep walking");phase[0]=3;})
           .thenWaitUntil(()->h.assertTrue(!f.own(p).getBoolean("Escorting")&&p.getZ()>=f.base(p).getZ()-119.5,"walking, the reader reaches the near side of the tape and he lets them go: "+p.position()))
-          .thenExecute(()->{phase[0]=0;h.assertTrue(p.getHealth()==p.getMaxHealth(),"no damage and no jump cut");}).thenSucceed();
+          .thenExecute(()->{
+              phase[0]=0;
+              var own=f.own(p);own.putBoolean("Escorting",true);own.putInt("EscortTicks",0);f.save(p,own);
+              f.at(p,2,5,-125);
+          })
+          .thenWaitUntil(()->h.assertTrue(!f.own(p).getBoolean("Escorting")&&p.getZ()>=f.base(p).getZ()-119.5,
+                  "the Sheriff returns a reader who refuses to walk back"))
+          .thenExecute(()->h.assertTrue(p.getHealth()==p.getMaxHealth()&&BorrascaSites.inside(p),
+                  "the enforced return keeps the reader in Borrasca without damage")).thenSucceed();
         h.onEachTick(()->{if(phase[0]==0)return;double distance=p.position().distanceTo(previous[0]);h.assertTrue(distance<.85,"the escort never relocates the reader between ticks");previous[0]=p.position();
             if(phase[0]==1){p.travel(Vec3.ZERO);if(distance>.02&&still[0]>5)moved[0]++;if(++still[0]>=80)phase[0]=2;}
             else if(phase[0]==3){p.setYRot(0);p.travel(new Vec3(0,0,1));}else p.travel(Vec3.ZERO);});

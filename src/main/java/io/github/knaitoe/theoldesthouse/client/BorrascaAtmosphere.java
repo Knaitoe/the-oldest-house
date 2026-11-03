@@ -34,6 +34,8 @@ public final class BorrascaAtmosphere {
     private static Loop clear,muffled,wind;
     private static int retry;
     private static long received;
+    private record SheriffLens(Vec3 position,Vec3 direction){}
+    private static SheriffLens sheriffLens;
     private BorrascaAtmosphere(){}
     public static void accept(BorrascaViewPayload p){var mc=Minecraft.getInstance();state=p;world=mc.level;received=world==null?0:world.getGameTime();if(!p.active())stop();}
     public static boolean active(){var mc=Minecraft.getInstance();if(state==null||!state.active()||mc.level==null||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.level.dimension()!=HouseDimensions.OUTSIDE)return false;var b=state.source().subtract(BorrascaRooms.MACHINE);return BorrascaSites.bounds(b).contains(mc.player.position());}
@@ -54,9 +56,19 @@ public final class BorrascaAtmosphere {
         double effects=Comfort.effects();double rise=Math.sin(Math.PI*Math.min(60,state.takingTicks()+mc.level.getGameTime()-received)/60D);int alpha=(int)(225*Mth.clamp((look-.7)/.3,0,1)*Math.max(0,rise)*effects);if(alpha<=0)return;
         e.getGuiGraphics().fill(0,0,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight(),alpha<<24|0xF1EEE6);
     }
+    static boolean rendersSheriffBeam(LiteraryActor actor){
+        return actor.role()==LiteraryActor.BORRASCA_SHERIFF&&actor.gesture()==4&&!actor.isInvisible()
+                &&actor.scene().equals(LabyrinthPlace.BORRASCA.id())&&active()&&state.visit()==3
+                &&actor.owner().filter(Minecraft.getInstance().player.getUUID()::equals).isPresent();
+    }
+    static void sheriffLens(Vec3 position,Vec3 direction){sheriffLens=new SheriffLens(position,direction);}
     @SubscribeEvent public static void beams(RenderLevelStageEvent e){
-        if(!active()||e.getStage()!=RenderLevelStageEvent.Stage.AFTER_PARTICLES)return;var mc=Minecraft.getInstance();var b=state.source().subtract(BorrascaRooms.MACHINE);
-        if(state.visit()==3){double clock=state.clock()+mc.level.getGameTime()-received;double yaw=Math.toRadians(180+55*Math.sin(clock*.018));Vec3 start=state.sheriff().getCenter().add(0,1,0);for(var entity:mc.level.entitiesForRendering())if(entity instanceof LiteraryActor a&&a.role()==LiteraryActor.BORRASCA_SHERIFF&&a.scene().equals(LabyrinthPlace.BORRASCA.id())&&a.owner().filter(mc.player.getUUID()::equals).isPresent()){yaw=Math.toRadians(a.getYRot());start=a.getEyePosition();break;}beam(e,start,new Vec3(-Math.sin(yaw),-.03,Math.cos(yaw)),22,5.8,.065F);}
+        if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_PARTICLES)return;
+        var lens=sheriffLens;sheriffLens=null;
+        if(!active())return;
+        var b=state.source().subtract(BorrascaRooms.MACHINE);
+        if(state.visit()==3&&lens!=null)
+            beam(e,lens.position().add(lens.direction().scale(.015)),lens.direction(),22,5.8,.065F);
         if(state.takingTicks()>0||state.visit()==4&&state.running()){var direction=b.offset(BorrascaRooms.TAKING).getCenter().subtract(b.offset(BorrascaRooms.LAMP).getCenter()).normalize();beam(e,b.offset(BorrascaRooms.LAMP).getCenter().add(direction.scale(.65)),direction,48,8,.09F);}
     }
     /** 0.4.236: the Shiny Gentleman, where the server says he stands for this reader, for as long as the strokes last. */

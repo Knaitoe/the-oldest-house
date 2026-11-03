@@ -12,7 +12,7 @@ public final class BorrascaRooms {
     public static final BlockPos MARKER_ONE=new BlockPos(5,0,-76),MARKER_TWO=new BlockPos(7,4,-123),MARKER_THREE=new BlockPos(5,9,-148),MARKER_FOUR=new BlockPos(5,12,-165);
     public static final BlockPos SHERIFF=new BlockPos(2,4,-122),TAPE=new BlockPos(2,5,-125),TAKING=new BlockPos(-2,9,-148),DROP=new BlockPos(1,10,-151),HIDE=new BlockPos(-12,9,-151);
     public static final BlockPos SHELTER_ONE=new BlockPos(3,2,-114),SHELTER_TWO=new BlockPos(-2,6,-131);
-    public static final BlockPos GATE=new BlockPos(0,12,-169),LOCK=new BlockPos(0,13,-168),PACK=new BlockPos(-24,13,-195);
+    public static final BlockPos GATE=new BlockPos(0,12,-169),LOCK=new BlockPos(0,13,-167),GATE_LOG=new BlockPos(5,13,-170),PACK=new BlockPos(-24,13,-195);
     public static final BlockPos EVIDENCE=new BlockPos(-26,13,-195),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169),LAMP=new BlockPos(0,17,-184);
     public static final BlockPos[] GULLY={new BlockPos(-9,0,-97),new BlockPos(-15,0,-107),new BlockPos(-16,2,-117),new BlockPos(-13,4,-128),new BlockPos(-8,6,-137),new BlockPos(-2,8,-143)};
     /**
@@ -101,7 +101,7 @@ public final class BorrascaRooms {
         box(l,b,-30,11,-214,27,11,-165,Blocks.GRAVEL);box(l,b,-30,12,-214,27,24,-166,Blocks.AIR);
         for(int x=-30;x<=27;x++)for(int y=12;y<=15;y++){fit(l,b,new BlockPos(x,y,-167),BorrascaFittingBlock.Kind.FENCE,Direction.SOUTH);fit(l,b,new BlockPos(x,y,-214),BorrascaFittingBlock.Kind.FENCE,Direction.SOUTH);}
         for(int z=-213;z<=-168;z++)for(int y=12;y<=15;y++)for(int x:new int[]{-30,27})fit(l,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.FENCE,Direction.EAST);
-        for(int x:new int[]{-2,2})box(l,b,x,12,-167,x,16,-167,Blocks.IRON_BLOCK);for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)fit(l,b,new BlockPos(x,y,-167),BorrascaFittingBlock.Kind.FENCE,Direction.SOUTH);fit(l,b,LOCK,BorrascaFittingBlock.Kind.LOCK,Direction.SOUTH);
+        for(int x:new int[]{-2,2})box(l,b,x,12,-167,x,16,-167,Blocks.IRON_BLOCK);for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)fit(l,b,new BlockPos(x,y,-167),BorrascaFittingBlock.Kind.FENCE,Direction.SOUTH);fit(l,b,LOCK,BorrascaFittingBlock.Kind.LOCKED_FENCE,Direction.SOUTH);
         BorrascaTown.depot(l,b);
         for(int z=-178;z>=-200;z--)fit(l,b,new BlockPos(0,12,z),BorrascaFittingBlock.Kind.BELT,Direction.NORTH);
         for(int y=13;y<=16;y++)for(int x=-2;x<=2;x++)for(int z=-191;z<=-187;z++)if(Math.abs(x)==2||z==-191||z==-187)fit(l,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.POLISHED,Direction.NORTH);

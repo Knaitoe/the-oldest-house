@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.*;
 import net.minecraft.client.model.geom.*;
 import net.minecraft.client.model.geom.builders.*;
@@ -12,6 +13,12 @@ import net.minecraft.client.renderer.blockentity.*;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -37,7 +44,52 @@ public final class BorrascaNativeArt {
         return LayerDefinition.create(mesh,64,64);
     }
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);}
-    public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{public CastRenderer(EntityRendererProvider.Context c){super(c,new CastModel(c.bakeLayer(CAST)),.25F);addLayer(new ItemInHandLayer<>(this,c.getItemInHandRenderer()));}@Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(person(a));}@Override protected boolean shouldShowName(LiteraryActor a){return a.isCustomNameVisible()&&!a.isInvisible()&&super.shouldShowName(a);}}
+    public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{
+        private Matrix4f renderToEntity;
+        private Vec3 entityPosition;
+
+        public CastRenderer(EntityRendererProvider.Context c){
+            super(c,new CastModel(c.bakeLayer(CAST)),.25F);
+            addLayer(new ItemInHandLayer<LiteraryActor,CastModel>(this,c.getItemInHandRenderer()){
+                @Override public void render(PoseStack pose,MultiBufferSource buffers,int light,LiteraryActor a,
+                                             float walk,float amount,float partial,float age,float yaw,float pitch){
+                    super.render(pose,buffers,light,a,walk,amount,partial,age,yaw,pitch);
+                    ItemStack stack=a.getMainHandItem();
+                    if(renderToEntity==null||!stack.is(BorrascaRegistry.FLASHLIGHT.get()))return;
+
+                    // The lens is at the top centre of the model. Follow the same hand and item transforms as the held mesh.
+                    HumanoidArm arm=a.getMainArm();
+                    boolean left=arm==HumanoidArm.LEFT;
+                    var context=left?ItemDisplayContext.THIRD_PERSON_LEFT_HAND:ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+                    pose.pushPose();
+                    getParentModel().translateToHand(arm,pose);
+                    pose.mulPose(Axis.XP.rotationDegrees(-90));
+                    pose.mulPose(Axis.YP.rotationDegrees(180));
+                    pose.translate((left?-1:1)/16F,.125F,-.625F);
+                    var item=Minecraft.getInstance().getItemRenderer().getModel(stack,a.level(),a,a.getId()+context.ordinal());
+                    item.getTransforms().getTransform(context).apply(left,pose);
+                    var toWorld=new Matrix4f(renderToEntity).mul(pose.last().pose());
+                    var lens=toWorld.transformPosition(0,.5F,0,new Vector3f());
+                    var forward=toWorld.transformDirection(0,1,0,new Vector3f());
+                    pose.popPose();
+                    BorrascaAtmosphere.sheriffLens(entityPosition.add(lens.x,lens.y,lens.z),
+                            new Vec3(forward.x,forward.y,forward.z).normalize());
+                }
+            });
+        }
+
+        @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
+            if(BorrascaAtmosphere.rendersSheriffBeam(a)){
+                renderToEntity=new Matrix4f(pose.last().pose()).invert();
+                entityPosition=a.getPosition(partial);
+            }
+            try{super.render(a,yaw,partial,pose,buffers,light);}
+            finally{renderToEntity=null;}
+        }
+
+        @Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(person(a));}
+        @Override protected boolean shouldShowName(LiteraryActor a){return a.isCustomNameVisible()&&!a.isInvisible()&&super.shouldShowName(a);}
+    }
     public static final class CastModel extends HumanoidModel<LiteraryActor>{public CastModel(ModelPart root){super(root);hat.visible=false;}
         /**
          * 0.4.262 (owner: the workers "need proper walking animations"). The pose is eased between gestures as before, but the stride is laid

@@ -138,6 +138,7 @@ public final class BorrascaStory {
         if(rel.equals(BorrascaRooms.TRAIL_MAP)){LiteraryVignettes.open(p,PLACE,own,"Map",BorrascaTexts.document("Map"),b.offset(rel));return true;}
         if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.boardKey(visit),BorrascaTexts.board(visit),b.offset(rel));return true;}
         if(rel.equals(BorrascaRooms.NOTES)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.notesKey(visit>=3),BorrascaTexts.notes(visit>=3),b.offset(rel));return true;}
+        if(rel.equals(BorrascaRooms.GATE_LOG)){LiteraryVignettes.open(p,PLACE,own,"GateLog",BorrascaTexts.document("GateLog"),b.offset(rel));return true;}
         // 0.4.237: the desk under the depot, and the numbers behind the shed.
         if(rel.equals(BorrascaRooms.NIGHT_BOOK)){LiteraryVignettes.open(p,PLACE,own,"Ledger",BorrascaTexts.document("Ledger"),b.offset(rel));return true;}
         if(rel.equals(BorrascaRooms.LETTER)){LiteraryVignettes.open(p,PLACE,own,"Letter",BorrascaTexts.document("Letter"),b.offset(rel));return true;}
@@ -489,16 +490,27 @@ public final class BorrascaStory {
         // The beam holds on whoever it found until they are out of it.
         if(caught)own.putFloat("BeamYaw",toward(sheriff,p));
         if(caught&&suspicion==10)say(p,sheriff,"Hold it. I can see you.");
-        if(suspicion>=40){own.putBoolean("Escorting",true);own.putInt("Suspicion",0);own.putInt("EscortStill",0);own.remove("EscortX");sheriff.gesture(2);say(p,sheriff,"Back to the tape. Walk.");}
+        if(suspicion>=40){own.putBoolean("Escorting",true);own.putInt("Suspicion",0);own.putInt("EscortStill",0);own.putInt("EscortTicks",0);own.remove("EscortX");sheriff.gesture(2);say(p,sheriff,"Back to the tape. Walk.");}
     }
-    /** He walks the reader back behind them, the light on them; he waits when they stop and tells them to keep going. */
+    /** He walks behind the reader with the light on them, and enforces the boundary if they refuse to go. */
     private static void escort(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor sheriff){
-        var end=Vec3.atBottomCenterOf(b.offset(2,4,-119));
+        var end=Vec3.atBottomCenterOf(b.offset(2,BorrascaLand.ground(2,-119),-119));
         float yaw=toward(sheriff,p);own.putFloat("BeamYaw",yaw);sheriff.setYRot(yaw);sheriff.setYBodyRot(yaw);sheriff.setYHeadRot(yaw);sheriff.gesture(4);
-        if(p.getZ()>=end.z-1){own.putBoolean("Escorting",false);own.putInt("CaughtCooldown",80);BorrascaCast.stop(sheriff);say(p,sheriff,"Stay this side.");return;}
+        if(p.getZ()>=end.z-1){finishEscort(p,own,sheriff);return;}
+        int elapsed=own.getInt("EscortTicks")+5;own.putInt("EscortTicks",elapsed);
+        if(elapsed>=160){
+            p.teleportTo(p.serverLevel(),end.x,end.y,end.z,0,0);
+            p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();p.connection.resetPosition();
+            finishEscort(p,own,sheriff);
+            return;
+        }
         var behind=p.position().add(0,0,-2.2);if(sheriff.distanceToSqr(p)>3.5*3.5)BorrascaCast.walk(sheriff,behind,.7);else BorrascaCast.stop(sheriff);
         double moved=own.contains("EscortX")?Math.hypot(p.getX()-own.getDouble("EscortX"),p.getZ()-own.getDouble("EscortZ")):1;own.putDouble("EscortX",p.getX());own.putDouble("EscortZ",p.getZ());
-        int still=moved<.08?own.getInt("EscortStill")+5:0;own.putInt("EscortStill",still);if(still==40||still>40&&still%160==40)say(p,sheriff,"Keep walking.");
+        int still=moved<.08?own.getInt("EscortStill")+5:0;own.putInt("EscortStill",still);if(still==40)say(p,sheriff,"Keep walking.");
+    }
+    private static void finishEscort(ServerPlayer p,CompoundTag own,LiteraryActor sheriff){
+        own.putBoolean("Escorting",false);own.putInt("CaughtCooldown",80);
+        BorrascaCast.stop(sheriff);say(p,sheriff,"Stay this side.");
     }
     static float toward(LiteraryActor from,ServerPlayer to){var d=to.position().subtract(from.position());return (float)Math.toDegrees(Math.atan2(-d.x,d.z));}
     public static float flashlightYaw(CompoundTag own){return own.getInt("Suspicion")>0||own.getBoolean("Escorting")?own.getFloat("BeamYaw"):180+55*(float)Math.sin(own.getInt("TrailClock")*.018);}
@@ -538,7 +550,7 @@ public final class BorrascaStory {
         if(visit<=2&&pack.is(BorrascaRegistry.FITTING.get())&&pack.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.PACK)p.serverLevel().setBlock(b.offset(BorrascaRooms.PACK),Blocks.AIR.defaultBlockState(),F);
         if(visit>=3&&pack.isAir())fit(p,b,BorrascaRooms.PACK,BorrascaFittingBlock.Kind.PACK);
         if(visit==2){p.serverLevel().setBlock(b.offset(2,0,-98),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,3),F);var source=b.offset(BorrascaRooms.SOURCE);if(p.serverLevel().getBlockEntity(source) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){lectern.setBook(BorrascaTexts.contentNote());lectern.setChanged();p.serverLevel().sendBlockUpdated(source,lectern.getBlockState(),lectern.getBlockState(),F);}}
-        if(visit==4){for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)p.serverLevel().setBlock(b.offset(x,y,-167),Blocks.AIR.defaultBlockState(),F);p.serverLevel().setBlock(b.offset(BorrascaRooms.LOCK),Blocks.AIR.defaultBlockState(),F);fit(p,b,new BlockPos(2,12,-168),BorrascaFittingBlock.Kind.LOCK);openDoor(p.serverLevel(),b.offset(BorrascaRooms.FACTORY_DOOR),true);}
+        if(visit==4){for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)p.serverLevel().setBlock(b.offset(x,y,-167),Blocks.AIR.defaultBlockState(),F);fit(p,b,new BlockPos(2,12,-168),BorrascaFittingBlock.Kind.LOCK);openDoor(p.serverLevel(),b.offset(BorrascaRooms.FACTORY_DOOR),true);}
         own.putInt("SceneryVisit",visit);
     }
     private static void bark(ServerPlayer p,BlockPos b,int stage){var at=b.offset(BorrascaRooms.CARVING);var s=p.serverLevel().getBlockState(at);if(s.is(BorrascaRegistry.CARVING.get())&&s.getValue(BorrascaCarvingBlock.STAGE)!=stage)p.serverLevel().setBlock(at,s.setValue(BorrascaCarvingBlock.STAGE,stage),F);BorrascaCarvingEntity.names(p.serverLevel(),at,p.getGameProfile().getName());}
