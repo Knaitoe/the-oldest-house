@@ -31,7 +31,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
  *
  * <p>0.4.235 (docs/BORRASCA_MODULAR_0_4_235.md): the owner, 1 November: "the vignette needs to be more modular, rather than assuming
  * the player isn't going to go explore the entire map as soon as they enter." Every beat now waits for its place, not for a sequence.
- * The friend goes to the Tree at her own pace and tells the legend whenever the reader is there with her; the taking fires whenever both
+ * The friend goes to the Tree at her own pace and tells the legend once the reader is in the fort with her; the taking fires whenever both
  * of them reach the clearing, and she calls the reader back if they wander off; the gouge is noticed by looking at it; the blockade is
  * passed by any route the Sheriff does not see, and he gives himself away as soon as he has the reader in sight. The refinery is
  * sealed until the last night. Men come down the ridge road in the light and lead her away. The friend is a new child, Nell: the owner, 1 November, "the vignette was supposed to occupy a separate cast in the same environment... the events of borrasca had to have played out for many, many casts of kids." Only the Sheriff and the Prescott family last across the generations. People speak above their heads and on
@@ -56,6 +56,7 @@ public final class BorrascaStory {
     public static final int LED=6,TAKING_HAND=7,HOLD_LEFT=8,HOLD_RIGHT=9,CARRIED=11,CARRY=12,WARNING=13,SCARED=14;
     /** How long a spoken line stays over the speaker's head. */
     public static final int SPEECH_TICKS=100;
+    private static final int FORT_LISTEN_TICKS=100; // The chime lasts 70 ticks. Leave a beat of silence after it.
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static final BlockPos FRONT_LEVER=new BlockPos(-15,13,-168);
     private static final BlockPos[] CHILD_WALK={new BlockPos(1,0,-35),new BlockPos(1,0,-60),new BlockPos(3,0,-86),new BlockPos(3,6,-88),new BlockPos(1,6,-94)};
@@ -85,7 +86,7 @@ public final class BorrascaStory {
 
     public static void arrive(ServerPlayer p,CompoundTag own){
         int visit=own.getInt("Visit");if(visit==0)visit=1;else if(own.getBoolean("BorrascaDeparted")&&(own.getInt("ConfirmedVisits")&(1<<(visit-1)))!=0)visit=Math.min(4,visit+1);
-        own.putInt("Visit",visit);own.putBoolean("BorrascaDeparted",false);own.putBoolean("Here",true);own.putBoolean("Interrupted",false);own.remove("ExitEligible");own.remove("DepartVisit");own.putInt("Present",0);own.putInt("TrailClock",0);own.putBoolean("CastRecalled",false);
+        own.putInt("Visit",visit);own.putBoolean("BorrascaDeparted",false);own.putBoolean("Here",true);own.putBoolean("Interrupted",false);own.remove("ExitEligible");own.remove("DepartVisit");p.getPersistentData().remove("BorrascaSpeechAt");own.putInt("Present",0);own.putInt("TrailClock",0);own.putBoolean("CastRecalled",false);
         cue(p,switch(visit){case 1->"The pine trail. Someone is waiting at the sign.";case 2->FRIEND+" is waiting by the first marker. A note is waiting by the door.";case 3->"Years later. You remember the way to the three trees.";default->"The ridge after dark. The way back stays open.";});
         send(p,own);
     }
@@ -107,7 +108,7 @@ public final class BorrascaStory {
         int visit=own.getInt("Visit");
         if(rel.equals(BorrascaRooms.CARVING)){
             if(visit==1){
-                if(!own.getBoolean("FriendCarved")){cue(p,own.getBoolean("MetFriend")?"Old names at the foot of the three trunks. "+FRIEND+" said this is where the names go.":"Old names at the foot of the three trunks, worn soft.");return true;}
+                if(!own.getBoolean("FriendCarved")){cue(p,"Some names are only grooves now. There are old scars between them.");return true;}
                 if(!own.getBoolean("PactCarved")){
                     own.putBoolean("PactCarved",true);own.putInt("Beat",1);bark(p,b,2);heard(p,BorrascaRegistry.CARVE.get(),b.offset(rel),.55F);
                     var friend=actor(p,own,"CastKimber");if(friend!=null){friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);friend.gesture(2);say(p,friend,"There. Now it has to keep a place for both of us.");}
@@ -180,10 +181,8 @@ public final class BorrascaStory {
             if(own.getBoolean("FriendMissing")||visit>=3)return;
             if(visit==1){
                 if(!own.getBoolean("MetFriend")){own.putBoolean("MetFriend",true);return;}
-                if(!own.getBoolean("PlayDone")&&own.getInt("ChildStep")==0){
-                    if(own.getInt("PlayBeat")==1&&own.getInt("HideLeg")>=2)say(p,a,"Found me. I could hear you trying to be quiet.");
-                    return;
-                }
+                if(!own.getBoolean("PlayDone")&&own.getInt("ChildStep")==0)return;
+                if(own.getBoolean("KimberAtFort")&&!own.getBoolean("LegendDone"))return;
                 idleFriend(p,a,own);
             }
             else if(own.getBoolean("Read_ContentNote")){
@@ -219,16 +218,19 @@ public final class BorrascaStory {
         String key=(eli?"Eli":"Wren")+"Talk"+visit;
         int said=own.getInt(key);
         String[] lines=eli?new String[]{
-            "My brother says count to three when it starts. If you hear a fourth one, that's somebody coming down.",
-            "He used to count from the porch. Then the Sheriff told him there wasn't anything to count.",
-            "I said I'd wait at Marker Two. If I get there first I'm leaving my bike at the store."
+            "I can ride all the way to the fort. Wren says pushing on the steep part doesn't count.",
+            "My brother and I count the knocks from our porch. If we get four he says the last one's somebody coming down.",
+            "The Sheriff heard us counting once. He said it was a truck backing up. My brother asked him why it never got any closer.",
+            "If my bike's still at the store, I'm up by the second marker. Tell Wren I'll wait."
         }:visit==1?new String[]{
-            "Dana's mom used to put her picture back on the store board every time it came down.",
-            "Dana wrote her name where the trunks join. If you find it, leave it alone. Her mom still goes to look.",
-            "Eli's taking his bike up there again. If he asks, tell him I said the chain's going to come off."
+            "If Eli says he rode all the way up, ask him to show you his knees.",
+            "Dana taught me how to get the chain back on. You turn the bike over first so it looks like it's dead.",
+            "Her mom still goes up to the tree. She puts her thumb in the D where the trunks join. I watched her do it once.",
+            "The store took Dana's picture down when school started. Her mom put it right back up."
         }:new String[]{
-            "Eli said he'd wait by the marker. His mom put his bike in the shed. They keep saying he went to his dad's.",
+            "They keep saying he went to his dad's. His bike was still at the store. I walked it back to his mom.",
             "I went to his dad's. He asked me if I'd seen Eli.",
+            "I used to think if your name was up there, you'd always know where to come back to.",
             "I'm going to the tree. If he comes back he'll look for his name first."
         };
         if(eli)own.putBoolean("MetEli",true);
@@ -260,7 +262,11 @@ public final class BorrascaStory {
             String key=child.phase()==ELI?"EliTrailGreeting":"WrenTrailGreeting"+visit;
             if(own.getBoolean(key))continue;
             own.putBoolean(key,true);
-            talkTownChild(p,child,own,visit);
+            if(recentSpeech(p)){
+                // Still let a passing reader meet the child without replacing Nell's current subtitle.
+                child.say(visit==2?"I'm waiting for Eli.":child.phase()==ELI?"Nell's down by the sign.":"Hi. Watch out for Eli's bike.");
+                child.getPersistentData().putInt("BorrascaSaid",child.tickCount);
+            }else talkTownChild(p,child,own,visit);
             return;
         }
     }
@@ -298,7 +304,6 @@ public final class BorrascaStory {
         scene(p,b,own);
         if(!own.getBoolean("CastRecalled"))return;
         cast(own,visit,prescott,w0,w1);
-        greetChildren(p,own,visit,eli,wren);
         if(visit<=2&&sheriff!=null&&own.getInt("HatTicks")>0){
             int hat=Math.max(0,own.getInt("HatTicks")-5);
             own.putInt("HatTicks",hat);
@@ -310,6 +315,7 @@ public final class BorrascaStory {
             case 3->visitThree(p,b,own,friend,sheriff);
             default->visitFour(p,b,own,friend,sheriff);
         }
+        if(visit!=1||!own.getBoolean("KimberAtFort")||own.getBoolean("LegendDone"))greetChildren(p,own,visit,eli,wren);
         boolean light=lit(own);if(own.getInt("Present")%20==0||light||light!=own.getBoolean("LightSent")){own.putBoolean("LightSent",light);send(p,own);}
     }
     /** The ridge light is on from the moment she sees someone until she is gone. */
@@ -328,7 +334,7 @@ public final class BorrascaStory {
         if(friend==null)return;
         friend.setInvisible(false);friend.appearance(LiteraryActor.BORRASCA_KIMBER,0);if(!own.getBoolean("CompassIssued"))friend.setItemSlot(EquipmentSlot.OFFHAND,BorrascaBelongings.original(p,own,"Compass"));
         pastMarkerTwo(p,b,own,friend);
-        childhoodEcho(p,b,own,friend);
+        if(!own.getBoolean("KimberAtFort")||own.getBoolean("LegendDone"))childhoodEcho(p,b,own,friend);
         pact(p,b,own,friend);
     }
     private static boolean inFort(ServerPlayer p,BlockPos b){return p.getY()>=b.getY()+5.9&&p.getZ()<b.getZ()-89&&p.getZ()>b.getZ()-100&&Math.abs(p.getX()-b.getX())<6;}
@@ -344,24 +350,13 @@ public final class BorrascaStory {
         if(BorrascaPlay.tick(p,b,own,friend))return;
         // She goes to the Tree at her own pace, whether the reader is beside her, behind her or already there.
         if(!own.getBoolean("KimberAtFort")){if(!follow(p,b,own,friend,"ChildStep",CHILD_WALK))return;own.putBoolean("KimberAtFort",true);}
-        // The legend, whenever the reader is at the Tree with her: in the fort or at its foot.
         if(!own.getBoolean("LegendDone")){
-            if(!near(p,b.offset(FORT),9)){BorrascaCast.stop(friend);return;}
-            int t=own.getInt("LegendTicks")+5;own.putInt("LegendTicks",t);
-            if(t==5&&!own.getBoolean("HeardPlayEcho")){
-                echo(p,b,own,.55F);own.putBoolean("HeardPlayEcho",true);
+            BorrascaCast.stop(friend);
+            if(inFort(p,b))fort(p,b,own,friend);
+            else if(!own.getBoolean("TreeReached")&&!own.getBoolean("CalledUp")&&near(p,b.offset(FORT),12)){
+                own.putBoolean("CalledUp",true);say(p,friend,"Up here! There's a ladder around the other side.");
             }
-            String line=switch(t){
-                case 20->"This is the front room. You can have the window. The compass is our clock, even though it doesn't tell time.";
-                case 105->"When we carve our names, it means we got up here on our own. If you come back after someone, you can leave a mark beside theirs.";
-                case 195->"That sound was the Shiny Gentleman. He lives past the second marker. Three knocks, like someone hitting a pipe.";
-                case 280->"Dana Pruitt went up to look for him. They said she moved away. Her name's still here. Her mom comes up to see it.";
-                case 370->"If you hear him again, we both come down. Follow me! I'll show you where our names can go.";
-                default->null;
-            };
-            if(line!=null)say(p,friend,line);
-            if(t>=410)own.putBoolean("LegendDone",true);
-            BorrascaCast.stop(friend);return;
+            return;
         }
         // Down the ladder to the trunk; she carves once the reader is near enough to see it.
         if(!own.getBoolean("FriendCarved")){
@@ -371,20 +366,61 @@ public final class BorrascaStory {
             if(n>=40){own.putBoolean("FriendCarved",true);bark(p,b,1);friend.gesture(4);heard(p,BorrascaRegistry.CARVE.get(),b.offset(BorrascaRooms.CARVING),.5F);say(p,friend,"Your turn. Right there, next to mine.");}
         }
     }
+    /** The room belongs to them for a little while before the ridge intrudes. */
+    private static void fort(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
+        int play=own.getInt("FortPlayTicks");
+        if(play<320&&!own.getBoolean("FortEcho")){
+            play+=5;own.putInt("FortPlayTicks",play);
+            if(play==5)say(p,friend,"This is our house. Pick a window. I'll see which way it faces.");
+            double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();
+            if(!own.getBoolean("SharedWindow")&&play>=100&&play<=220&&z>=-97&&z<-93&&(x<-3||x>4)){
+                own.putBoolean("SharedWindow",true);
+                friend.gesture(BorrascaPlay.COMPASS);
+                say(p,friend,x<-3
+                        ?"West. We can leave a lamp there. If you come up after me, I'll leave it on."
+                        :"East. That's your window, then. If you come up after me, I'll wait right there.");
+            }else if(play==220&&!own.getBoolean("SharedWindow")){
+                friend.gesture(BorrascaPlay.COMPASS);
+                say(p,friend,"I'll leave a lamp in the window. That way you'll know if I'm here first.");
+            }
+            return;
+        }
+        if(!own.getBoolean("FortEcho")){
+            friend.gesture(0);
+            echo(p,b,own,.85F);own.putBoolean("FortEcho",true);
+            return;
+        }
+        int t=own.getInt("LegendTicks")+5;own.putInt("LegendTicks",t);
+        String line=switch(t){
+            case FORT_LISTEN_TICKS->"That's the Shiny Gentleman. The bigger kids say he waits past the second marker. I only ever hear him.";
+            case FORT_LISTEN_TICKS+110->"You're supposed to put your name on the tree the first time you come up. So the next kid knows you were here.";
+            case FORT_LISTEN_TICKS+220->"Some of those names were there when my mom was little. She says the bark grows around them.";
+            case FORT_LISTEN_TICKS+320->"Follow me! There's room for both of us down by the roots.";
+            default->null;
+        };
+        if(line!=null)say(p,friend,line);
+        if(t>=FORT_LISTEN_TICKS+420)own.putBoolean("LegendDone",true);
+    }
     /** A child who goes past the second marker hears it, the noise echoing off the ridge; the friend has something to say about it later. */
     private static void pastMarkerTwo(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
         int visit=own.getInt("Visit");if(visit>2||own.getBoolean("FriendMissing"))return;
         if(p.getZ()<b.getZ()+MARKER_TWO_Z&&!own.getBoolean("PastTwo"+visit)){own.putBoolean("PastTwo"+visit,true);echo(p,b,own,.9F);}
-        if(own.getBoolean("PastTwo"+visit)&&!own.getBoolean("WarnedTwo"+visit)&&p.getZ()>b.getZ()+MARKER_TWO_Z+3&&near(p,friend.blockPosition(),8)){own.putBoolean("WarnedTwo"+visit,true);say(p,friend,"You went past the second marker? Don't. That's where he is.");}
+        if(own.getBoolean("PastTwo"+visit)&&!own.getBoolean("WarnedTwo"+visit)&&p.getZ()>b.getZ()+MARKER_TWO_Z+3&&near(p,friend.blockPosition(),8)){own.putBoolean("WarnedTwo"+visit,true);say(p,friend,"You went past the second marker? Don't go that far again.");}
     }
     /** The noise from the ridge: three strokes, heard wherever the reader is, the dust lifting with it. */
     private static void childhoodEcho(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
         int clock=own.getInt("TrailClock");
         if(clock<240||p.distanceToSqr(friend)>100||Math.floorMod(clock-own.getInt("EchoAt"),60000)<360)return;
-        echo(p,b,own,.5F);own.putBoolean("HeardPlayEcho",true);
+        if(recentSpeech(p))return;
+        echo(p,b,own,.65F);
     }
 
-    private static void echo(ServerPlayer p,BlockPos b,CompoundTag own,float volume){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),volume);dust(p);own.putInt("Echoes",own.getInt("Echoes")+1);own.putInt("EchoAt",own.getInt("TrailClock"));if(own.getInt("Visit")<=2)glimpse(p,b,own);}
+    private static void echo(ServerPlayer p,BlockPos b,CompoundTag own,float volume){
+        // Keep the ridge's bearing, within the client's positional sound range even from town.
+        var ridge=b.offset(BorrascaRooms.MACHINE).getCenter();
+        var offset=ridge.subtract(p.position());
+        var source=offset.lengthSqr()>36?p.position().add(offset.normalize().scale(6)):ridge;
+        heard(p,BorrascaRegistry.CHIME.get(),BlockPos.containing(source),volume);dust(p);own.putInt("Echoes",own.getInt("Echoes")+1);own.putInt("EchoAt",own.getInt("TrailClock"));if(own.getInt("Visit")<=2)glimpse(p,b,own);}
     /** 0.4.236: while the strokes last, a child may see him standing in the pines past the second marker. Only that reader sees him. */
     private static void glimpse(ServerPlayer p,BlockPos b,CompoundTag own){
         var at=gentlemanSpot(p,b);if(at==null)return;
@@ -814,7 +850,11 @@ public final class BorrascaStory {
     private static void fit(ServerPlayer p,BlockPos b,BlockPos rel,BorrascaFittingBlock.Kind kind){p.serverLevel().setBlock(b.offset(rel),BorrascaFittingBlock.of(kind,Direction.SOUTH),F);}
     private static boolean near(ServerPlayer p,BlockPos at,double distance){return at!=null&&p.distanceToSqr(Vec3.atBottomCenterOf(at))<distance*distance;}
     /** A person speaks: over their head, and on the reader's action bar. Never in chat. */
-    static void say(ServerPlayer p,LiteraryActor a,String words){a.say(words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.displayClientMessage(Component.literal(speaker(a)+": "+words),true);}
+    private static boolean recentSpeech(ServerPlayer p){
+        int elapsed=p.tickCount-p.getPersistentData().getInt("BorrascaSpeechAt");
+        return p.getPersistentData().contains("BorrascaSpeechAt")&&elapsed>=0&&elapsed<SPEECH_TICKS;
+    }
+    static void say(ServerPlayer p,LiteraryActor a,String words){a.say(words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.getPersistentData().putInt("BorrascaSpeechAt",p.tickCount);p.displayClientMessage(Component.literal(speaker(a)+": "+words),true);}
     static String speaker(LiteraryActor a){if(townChild(a.role(),a.phase()))return a.phase()==ELI?"Eli":"Wren";return a.role()==LiteraryActor.BORRASCA_KIMBER?FRIEND:a.role()==LiteraryActor.BORRASCA_SHERIFF?"Sheriff":a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER?"Prescott":"A man";}
     /** What the reader notices, on the action bar. */
     private static void cue(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}

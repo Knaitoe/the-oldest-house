@@ -118,7 +118,8 @@ public final class BorrascaTests {
                 f.at(p,1,0,-28);
             })
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("TaggedNell"),"catching up tags Nell before the Tree"))
-            .thenExecute(()->f.at(p,3,0,-35))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("HideLeg")==2,"Nell reaches one of the two hiding places"))
+            .thenExecute(()->f.at(p,f.own(p).getInt("HideSide"),0,-35))
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FoundNell")&&f.own(p).getBoolean("PlayDone"),
                     "finding her on the far side of the hiding tree finishes the games"))
             .thenExecute(()->h.assertTrue(!f.own(p).getBoolean("KimberAtFort"),"the play took place before she reached the fort"))
@@ -290,7 +291,31 @@ public final class BorrascaTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place"))
             .thenExecute(()->{f.at(p,1,6,-92);f.refresh(p);h.assertTrue(f.own(p).getBoolean("TreeReached")&&f.own(p).getBoolean("CalledAfter"),"the reader is in the fort before meeting her, and she calls after them");})
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("KimberAtFort"),"she comes up to the Tree on her own: "+f.actor(p,"CastKimber").position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" step="+f.own(p).getInt("ChildStep")))
+            .thenExecute(()->{
+                int before=f.own(p).getInt("FortPlayTicks");
+                f.at(p,1,0,-92);f.refresh(p);
+                h.assertTrue(f.own(p).getInt("FortPlayTicks")==before&&!f.own(p).getBoolean("FortEcho"),
+                        "standing under the treehouse cannot start the scene");
+                f.at(p,-4,6,-94);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("SharedWindow"),"the reader picks a window and Nell checks her compass"))
+            .thenExecute(()->NativeTestPlayers.packets(p))
+            .thenWaitUntil(()->{
+                var own=f.own(p);
+                h.assertTrue(own.getBoolean("FortEcho"),"the window game ends with an interruption from the ridge");
+                var echo=NativeTestPlayers.sounds(p).stream()
+                        .filter(sound->sound.getSound().value()==BorrascaRegistry.CHIME.get()).findFirst().orElse(null);
+                h.assertTrue(echo!=null,"a native chime packet reaches the reader after the window game");
+                h.assertTrue(p.distanceToSqr(echo.getX(),echo.getY(),echo.getZ())<64,
+                        "the positional echo is in audible range");
+                h.assertTrue(own.getInt("LegendTicks")<100,"Nell gives the chime time to finish before naming it");
+            })
+            .thenWaitUntil(()->{
+                var name=f.actor(p,"CastKimber").getCustomName();
+                h.assertTrue(name!=null&&name.getString().contains("Shiny Gentleman"),"Nell names the sound after the chime");
+            })
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("LegendDone"),"she tells the legend with the reader there"))
+            .thenExecute(()->f.at(p,1,6,-92))
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendCarved"),"she climbs down and carves where the reader can see: downStep="+f.own(p).getInt("DownStep")))
             .thenExecute(()->{f.use(p,BorrascaRooms.CARVING);var own=f.own(p);h.assertTrue(own.getBoolean("PactCarved")&&own.getInt("Beat")==1,"the pact is made, in the order the reader came to it");})
             .thenSucceed();

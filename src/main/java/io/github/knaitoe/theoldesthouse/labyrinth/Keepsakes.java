@@ -128,7 +128,7 @@ public final class Keepsakes {
             case "usher/RegisterLeaf" -> "Your name among those carried down. The dead read it too.";
             case "elk_lot/Cap" -> "Worn, the herd takes you for one of its own.";
             case "plain/Photo" -> "Held still, nothing far off can keep its eyes on you. The bird waited the same way.";
-            case "borrasca/Compass" -> "It found the missing. Away from the House it points to where you last fell; inside, to where lost things are kept.";
+            case "borrasca/Compass" -> "She kept it close so she could find her way back. Away from the House it points to where you last fell; inside, to where lost things are kept.";
             case "borrasca/Patch" -> "Her name, sewn in. Once a day, if you fall away from the House, what is in your hand stays with you.";
             default -> Artifacts.line(place, key);
         };

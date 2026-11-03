@@ -86,8 +86,8 @@ public final class BorrascaTexts {
         "TRIPLE TREE FORT\n\nRules:\nNo grown-ups.\nPassword changes on Sundays.\nNobody goes past Marker Two.",
         "My mom says the fort was here when she was little, and the rules were the same. She won't say anything else about it.",
         "If you hear it, you come down. You don't wait for anybody. You don't look back up.",
-        "THE SHINY GENTLEMAN\nHe only comes past the second marker. He shines because he is metal or because he is wearing it.",
-        "Dana Pruitt said she saw him. Then Dana moved away.",
+        "Someone put a chair at the window to watch the ridge. We keep putting it back even though it wobbles.",
+        "Dana's name is where the trunks join. Her mom showed me which one.",
         "The big kids call the top of the ridge Borrasca. Nobody will say what it means. Dad says it doesn't mean anything.",
         "The sound is like somebody hitting a pipe a long way off, three times. It comes when the wind turns. Mr. Prescott's trucks go up after.",
         "Kept here: the flashlight (dead), this.\nMy compass stays on me. The red tape is mine. If I lose it I'll never find the fort. That's a joke. It's three trees."};
@@ -103,12 +103,13 @@ public final class BorrascaTexts {
     /** The account, from what this reader did and heard. */
     public static String account(){return account(new CompoundTag());}
     public static String account(CompoundTag own){
-        return (own.getBoolean("FoundNell")?"We played hide-and-seek on the way up. She kept the compass. ":"")
+        return (own.getBoolean("FoundNell")?"She called out which way to look when we played hide-and-seek. ":"")
+            +(own.getBoolean("SharedWindow")?"In the fort she let me pick a window. We were still up there when the ridge rang. ":"")
             +"We cut our names into the three trees, mine beside hers."+(own.getBoolean("Sheltered6")||own.getBoolean("Sheltered10")?" When the noise came she pulled me down behind the timber.":"")
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
-            +(own.getBoolean("Read_WrenPoster")?" Wren had gone looking for Eli. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Wren said his mom had put his bike away.":"")
+            +(own.getBoolean("Read_WrenPoster")?" Wren had gone looking for Eli. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Wren walked Eli's bike back to his mom.":"")
             +" At the ridge, his office's papers and Prescott's signature lay beside her things."
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
             +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine. The room was empty.":"")
@@ -123,5 +124,5 @@ public final class BorrascaTexts {
     }
     public static ItemStack accountBook(String reader,CompoundTag own){return book("The name beside mine",reader,account(own));}
     public static String restored(){return "I cut her name beside mine again. The gouges were still there.";}
-    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("Read_WrenPoster")?" Wren went looking for Eli. Both names were on the store wall.":"")+(own.getBoolean("SheriffYielded")?" The Sheriff put his light down and let me pass.":own.getBoolean("HeardSheriffShutdown")?" When the machine stopped, he was still there.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
+    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("SharedWindow")?" We picked out a window before the ridge rang.":"")+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("Read_WrenPoster")?" Wren went looking for Eli. Both names were on the store wall.":"")+(own.getBoolean("SheriffYielded")?" The Sheriff put his light down and let me pass.":own.getBoolean("HeardSheriffShutdown")?" When the machine stopped, he was still there.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
 }
