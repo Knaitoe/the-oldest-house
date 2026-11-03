@@ -31,6 +31,7 @@ public final class HouseReadTests {
     @AfterBatch(batch="read_shelter") public static void shelterDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_kitchen") public static void kitchenDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_closet") public static void closetDone(ServerLevel ignored){close();}
+    @AfterBatch(batch="read_manual_card") public static void manualCardDone(ServerLevel ignored){close();}
     private static void close(){HouseReadSites.clear();if(active!=null){active.close();active=null;}}
     private static LiteraryTests.Fixture fixture(GameTestHelper h){active=new LiteraryTests.Fixture(h);return active;}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).markEntered();p.setNoGravity(true);return p;}
@@ -43,6 +44,65 @@ public final class HouseReadTests {
     private static boolean ready(ServerPlayer p,HouseReadSites.Room room){boolean ready=HouseReadSites.prepare(p,room)!=null;if(!ready)java.util.concurrent.locks.LockSupport.parkNanos(2_000_000L);return ready;}
     private static CompoundTag visit(ServerPlayer p,HouseReadSites.Room room){return HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());}
     private static boolean said(java.util.List<net.minecraft.network.protocol.Packet<?>> packets,String words){return packets.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat&&chat.content().getString().contains(words));}
+
+    @GameTest(template="empty",batch="read_manual_card",timeoutTicks=6000)
+    public static void manualStoryCardsHoldOnlyTheirReaderAndReleaseOnDone(GameTestHelper h){
+        var f=fixture(h);
+        var p=player(h,f,"manual_card");
+        var peer=player(h,f,"timed_card");
+        var at=f.origin.offset(0,0,-5);
+        var kitchen=HouseReadSites.Room.KITCHEN;
+        f.chunks.hold(f.in,new AABB(at).inflate(8));
+        int[] opening={0},closing={0},age={0};
+        h.onEachTick(()->{transition(p);transition(peer);});
+        h.startSequence()
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"source loaded"))
+            .thenExecute(()->{
+                var from=source(f);
+                for(var reader:List.of(p,peer)){
+                    stand(reader,f.in,at,.5,0,2);
+                    HouseReadSites.owe(f.data(),reader.getUUID(),from.id);
+                    h.assertTrue(HouseReadSites.offer(reader,from,LabyrinthPlace.GRAY_CORRIDOR),"the door offers a private kitchen");
+                }
+            })
+            .thenWaitUntil(()->{
+                var card=HouseReadStory.last(p.getUUID());
+                h.assertTrue(card!=null&&HouseReadStory.holding(p),"the opening card is showing");
+                opening[0]=card.token();
+            })
+            .thenExecute(()->{
+                age[0]=visit(p,kitchen).getInt("Age");
+                HouseReadStory.cardAction(p,opening[0],false);
+                HouseReadStory.cardAction(peer,opening[0],false);
+                HouseReadStory.cardAction(p,opening[0]+17,true);
+            })
+            .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(peer)==kitchen&&visit(peer,kitchen).getInt("Age")>0,
+                    "the other reader's timed card lifts and their kitchen continues"))
+            .thenIdle(400)
+            .thenExecute(()->{
+                h.assertTrue(HouseReadStory.holding(p)&&visit(p,kitchen).getInt("Age")==age[0],"the manual card and its room are still held after their normal deadline");
+                HouseReadStory.cardAction(p,opening[0],true);
+                h.assertTrue(!HouseReadStory.holding(p),"Done releases the opening hold");
+                var own=HouseReadSites.state(p.server,p.getUUID());
+                var visit=own.getCompound(kitchen.key());visit.putBoolean("Hung",true);own.put(kitchen.key(),visit);
+                f.data().setStateEntry(HouseReadSites.STATE,p.getUUID().toString(),own);
+                var door=f.data().door("house_read/"+p.getUUID()+"/kitchen/entry");
+                stand(p,f.in,door.lower,.5,0,-1.5);
+                h.assertTrue(HouseReadSites.door(p,door)&&HouseReadStory.closing(p),"the completed room's entry starts its closing card");
+                closing[0]=HouseReadStory.last(p.getUUID()).token();
+                HouseReadStory.cardAction(p,closing[0],false);
+                HouseReadStory.cardAction(p,opening[0],true);
+            })
+            .thenIdle(250)
+            .thenExecute(()->{
+                h.assertTrue(HouseReadSites.inside(p)==kitchen&&HouseReadStory.closing(p),"the previous card's Done cannot release the closing transition");
+                HouseReadStory.cardAction(p,closing[0],true);
+                HouseReadStory.cardAction(p,closing[0],true);
+            })
+            .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&!HouseReadStory.closing(p),
+                    "Done releases the native closing transition once"))
+            .thenSucceed();
+    }
 
     /** The tin's crayons, as the reader's own copy of the kitchen holds them: the left half's ten, then the right half's. */
     private static int[] tin(ServerLevel l,BlockPos b,BlockPos half){return l.getBlockEntity(b.offset(half)) instanceof HouseReadPropBlock.Fitting t?t.read().getIntArray("Colours"):new int[0];}

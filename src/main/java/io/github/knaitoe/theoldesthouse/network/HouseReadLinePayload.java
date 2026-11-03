@@ -9,8 +9,9 @@ import net.minecraft.resources.ResourceLocation;
  * Pages are separated by a form feed; {@code sound} (a sound id, or empty) is heard as the room cuts off; {@code title} draws
  * the last page large, as the House's own warning.
  */
-public record HouseReadLinePayload(String text,String sound,boolean title) implements CustomPacketPayload {
+public record HouseReadLinePayload(String text,String sound,boolean title,int token,boolean manual) implements CustomPacketPayload {
+    public HouseReadLinePayload(String text,String sound,boolean title){this(text,sound,title,0,false);}
     public static final Type<HouseReadLinePayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"house_read_line"));
-    public static final StreamCodec<ByteBuf,HouseReadLinePayload> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.STRING_UTF8,HouseReadLinePayload::text,ByteBufCodecs.STRING_UTF8,HouseReadLinePayload::sound,ByteBufCodecs.BOOL,HouseReadLinePayload::title,HouseReadLinePayload::new);
+    public static final StreamCodec<ByteBuf,HouseReadLinePayload> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.STRING_UTF8,HouseReadLinePayload::text,ByteBufCodecs.STRING_UTF8,HouseReadLinePayload::sound,ByteBufCodecs.BOOL,HouseReadLinePayload::title,ByteBufCodecs.VAR_INT,HouseReadLinePayload::token,ByteBufCodecs.BOOL,HouseReadLinePayload::manual,HouseReadLinePayload::new);
     @Override public Type<HouseReadLinePayload> type(){return TYPE;}
 }

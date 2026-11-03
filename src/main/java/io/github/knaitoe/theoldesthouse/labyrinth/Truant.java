@@ -448,24 +448,32 @@ public final class Truant {
     }
     /** Right-clicking him. */
     public static void talk(ServerPlayer p,LiteraryActor a){
-        if(!reader(p)||!a.isAlive()||p.distanceToSqr(a)>25)return;
+        if(!reader(p)||!a.isAlive()||p.level()!=a.level()||p.distanceToSqr(a)>25)return;
         if(withdrawn(p)||scene!=null&&a.level().getGameTime()<scene.flinchUntil)return;
         // 0.4.282: waiting at the crossing to come up behind someone, he will not be drawn into talk.
         if(scene!=null&&scene.turn==Turn.SHOVE){say(a,TruantTexts.BEHIND);return;}
+        met(p,a,a.level().getGameTime());
+        boolean interrupted=Talk.interrupted(p,KEY);
         if(Talk.resume(p,KEY))return;
-        if(WITH.get(p.getUUID())==null)met(p,a,a.level().getGameTime());
         var own=record(p.server,p.getUUID());
-        if(own.getInt("Talked")>=meeting(own)){say(a,TruantTexts.again(own));return;}
+        if(own.getInt("Talked")>=meeting(own)){say(a,interrupted?TruantTexts.INTERRUPTED:TruantTexts.again(own));return;}
         ASKED.remove(p.getUUID());converse(p,a);
     }
     static void line(ServerPlayer p,LiteraryActor a,String who,String text){Talk.line(p,who,text);say(a,text);}
     static String who(CompoundTag own){return own.getBoolean("Named")?"Johnny":"The man";}
+    private static void beginTalk(ServerPlayer p,LiteraryActor a,String who,int meeting){
+        var here=scene;
+        Talk.beginResumable(p,KEY,who,q->reader(q)&&a.isAlive()&&!a.isRemoved()&&q.level()==a.level()
+                &&q.distanceToSqr(a)<=25&&scene==here&&!withdrawn(q)
+                &&meeting(record(q.server,q.getUUID()))==meeting);
+    }
+
     /** The exchange: what he remembers, his question, and the replies. */
     static void open(ServerPlayer p,LiteraryActor a){
         var server=p.server;var id=p.getUUID();var own=record(server,id);int meeting=meeting(own);
         if(harmed(own)){afterHarm(p,a);return;}
         boolean first=own.getInt("Talked")==0;own.putInt("Talked",meeting);record(server,id,own);
-        String who=who(own);Talk.begin(p,KEY,who);
+        String who=who(own);beginTalk(p,a,who,meeting);
         var place=LabyrinthPlace.byId(a.scene());
         for(var said:TruantTexts.remembers(own,first,place))line(p,a,who,said);
         // 0.4.282: past twenty, he is wearing: he repeats a question already answered, tells their story as his, misremembers.
@@ -799,7 +807,7 @@ public final class Truant {
      */
     static void claim(ServerPlayer p,LiteraryActor a){
         var server=p.server;var id=p.getUUID();var own=record(server,id);int meeting=meeting(own);
-        own.putInt("Talked",meeting);String who=who(own);Talk.begin(p,KEY,who);
+        own.putInt("Talked",meeting);String who=who(own);beginTalk(p,a,who,meeting);
         var sc=scene;var place=LabyrinthPlace.byId(a.scene());
         if(sc!=null&&sc.turn==Turn.DOORWAY&&!sc.aside)line(p,a,who,TruantTexts.NOT_YET);
         var page=TruantTexts.page(own);boolean read=page!=null&&(place==TruantPlaces.LAMP||worn(own)>=2);
@@ -874,7 +882,7 @@ public final class Truant {
     static void afterHarm(ServerPlayer p,LiteraryActor a){
         var server=p.server;var id=p.getUUID();var own=record(server,id);int meeting=meeting(own);
         own.putInt("Talked",meeting);own.putInt("ForboreAt",meeting);own.putInt("AfterHarm",own.getInt("AfterHarm")+1);own.putInt("HisPromise",meeting);record(server,id,own);
-        String who=who(own);Talk.begin(p,KEY,who);
+        String who=who(own);beginTalk(p,a,who,meeting);
         for(var said:TruantTexts.afterHarm(own))line(p,a,who,said);
         Talk.end(p);
     }

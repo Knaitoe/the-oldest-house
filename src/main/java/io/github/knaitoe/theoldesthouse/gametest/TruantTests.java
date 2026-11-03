@@ -35,10 +35,12 @@ public final class TruantTests {
     private TruantTests(){}
     private static LiteraryTests.Fixture active;
     @AfterBatch(batch="truant") public static void done(ServerLevel l){
+        Talk.clearAll();
         if(active!=null){for(var place:TruantPlaces.PLACES)for(var a:active.in.getEntitiesOfClass(LiteraryActor.class,room(active.base(place),place)))a.discard();active.close();active=null;}
         Truant.fresh();Truant.apart();Truant.force(null);
     }
     @AfterBatch(batch="truant_after") public static void doneAfter(ServerLevel l){done(l);}
+    @AfterBatch(batch="truant_reconnect") public static void doneReconnect(ServerLevel l){done(l);}
     static AABB room(BlockPos b,LabyrinthPlace place){var r=place.room();return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+r.maxZ()+1);}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static void stand(ServerPlayer p,ServerLevel l,BlockPos b,double x,double y,double z,float yaw){p.teleportTo(l,b.getX()+x,b.getY()+y,b.getZ()+z,yaw,0);p.setYRot(yaw);p.setYHeadRot(yaw);p.setXRot(0);p.setNoGravity(true);p.setDeltaMovement(Vec3.ZERO);}
@@ -58,6 +60,68 @@ public final class TruantTests {
     }
     private static void deepest(LiteraryTests.Fixture f,ServerPlayer p,int depth){var d=f.data();var exp=HouseExperience.record(d,p.getUUID());exp.putInt("Deepest",depth);HouseExperience.save(d,p.getUUID(),exp);}
     private static boolean lit(ServerLevel l,BlockPos lamp){return l.getBlockState(lamp.offset(TruantPlaces.LAMP_LIGHT)).is(Blocks.LANTERN);}
+
+    @GameTest(template="empty",batch="truant_reconnect",timeoutTicks=2500)
+    public static void johnnyResumesAnInterruptedQuestionWithTheSameReader(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;
+        var door=f.base(TruantPlaces.DOOR);
+        hold(f,TruantPlaces.DOOR);
+        var id=java.util.UUID.randomUUID();
+        var a=new ServerPlayer[]{NativeTestPlayers.survival(h,"truant_rejoin",id)};
+        var b=NativeTestPlayers.survival(h,"truant_peer");
+        f.players.add(a[0]);f.players.add(b);
+        int[] prior=new int[1];
+        h.startSequence()
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the held door is resident"))
+            .thenExecute(()->{
+                Truant.fresh();Truant.apart();Truant.force(Truant.Turn.HELP);
+                TruantPlaces.build(f.in,door,TruantPlaces.DOOR);
+                LabyrinthBuilder.registerDoors(f.data(),TruantPlaces.DOOR,door);
+                stand(a[0],f.in,door,2.5,0,-12.5,180);
+                stand(b,f.in,door,2.5,0,-13.5,180);
+            })
+            .thenWaitUntil(()->h.assertTrue(Truant.body(f.in)!=null,"Johnny is by the held door"))
+            .thenExecute(()->{
+                Truant.talk(a[0],Truant.body(f.in));
+                Truant.talk(b,Truant.body(f.in));
+                h.assertTrue(Talk.replies(a[0]).contains("Who are you?")&&Talk.waiting(b),"both readers have their own live question");
+                prior[0]=Talk.token(a[0]);
+                f.players.remove(a[0]);NativeTestPlayers.remove(a[0]);
+                h.assertTrue(Talk.choose(b,"Who are you?"),"the other reader can still answer while the first is disconnected");
+            })
+            .thenIdle(5)
+            .thenExecute(()->{
+                a[0]=NativeTestPlayers.survival(h,"truant_rejoin",id);f.players.add(a[0]);
+                stand(a[0],f.in,door,2.5,0,-12.5,180);
+                Talk.reply(a[0],prior[0],1);
+                h.assertTrue(!Truant.record(f.in.getServer(),id).getBoolean("Named"),"the disconnected offer rejects a late answer");
+                Truant.talk(a[0],Truant.body(f.in));
+                h.assertTrue(Talk.token(a[0])!=prior[0]&&Talk.replies(a[0]).contains("Who are you?"),"same question, fresh token");
+                Talk.reply(a[0],prior[0],1);
+                h.assertTrue(!Truant.record(f.in.getServer(),id).getBoolean("Named"),"the previous token still cannot answer after reopening");
+                h.assertTrue(Talk.choose(a[0],"Who are you?")&&Talk.choose(a[0],"Nothing I can put into words."),"the recovered question can be answered");
+                h.assertTrue(Talk.choose(a[0],"Maybe.")&&!Talk.waiting(a[0]),"the reply commits the promise");
+                f.players.remove(a[0]);NativeTestPlayers.remove(a[0]);
+            })
+            .thenIdle(5)
+            .thenExecute(()->{
+                a[0]=NativeTestPlayers.survival(h,"truant_rejoin",id);f.players.add(a[0]);
+                stand(a[0],f.in,door,2.5,0,-12.5,180);
+                Truant.talk(a[0],Truant.body(f.in));
+                var own=Truant.record(f.in.getServer(),id);
+                h.assertTrue(!Talk.waiting(a[0])&&Talk.lines(a[0]).contains("you: Maybe.")&&own.getString("Promise").equals("maybe")&&own.getInt("Declined")==1,"an answer already accepted reopens as the finished exchange");
+                h.assertTrue(TalkHistory.conversations(f.in.getServer(),id).size()==1,"recovery keeps one transcript");
+                h.assertTrue(Talk.waiting(b),"the other reader's reply remains independent");
+                var peerId=b.getUUID();
+                f.players.remove(b);NativeTestPlayers.remove(b);
+                Truant.fresh();
+                var peer=NativeTestPlayers.survival(h,"truant_peer",peerId);f.players.add(peer);
+                stand(peer,f.in,door,2.5,0,-13.5,180);
+                Truant.talk(peer,Truant.body(f.in));
+                h.assertTrue(!Talk.waiting(peer)&&said(f.in).equals(TruantTexts.INTERRUPTED),"an expired meeting's offer stays closed");
+            })
+            .thenSucceed();
+    }
 
     @GameTest(template="empty",batch="truant_after",timeoutTicks=5000)
     public static void pastTwentyHeClaimsCollectsAndShovesButStillHelps(GameTestHelper h){
