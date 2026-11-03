@@ -127,6 +127,9 @@ LOOKS = {
     # with the eye on its showing side narrowed and that corner of the mouth pulled up, tight.
     'literary_truant': Look('#c49a80','#3b2f28','messy','#4f4840','#33343a','jacket','#7d6f5c',eyes='#4f5650',age=1,beard='stubble',mark='truant'),
     'literary_truant_leer': Look('#c49a80','#3b2f28','messy','#4f4840','#33343a','jacket','#7d6f5c',eyes='#4f5650',age=1,beard='stubble',mark='truant_leer'),
+    # Second Person (0.4.274): Iris Dunne across the landing, in her cardigan and glasses, her grey hair pinned; Sam from the resident's work, in a jacket for an evening out.
+    'literary_flat_iris': Look('#d9b39e','#bab4ac','bun','#7a5468','#4a4440','cardigan','#d3c8b2',eyes='#5a6070',age=2,glasses=True),
+    'literary_flat_sam': Look('#8e5f45','#221a16','close','#4d6a78','#2c3038','jacket','#d8d0c0',eyes='#3a3029'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),

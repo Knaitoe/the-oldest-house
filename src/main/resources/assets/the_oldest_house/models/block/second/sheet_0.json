@@ -1,0 +1,36 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/second/sheet",
+    "particle": "the_oldest_house:block/second/sheet"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        2
+      ],
+      "to": [
+        13,
+        0.25,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

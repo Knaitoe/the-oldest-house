@@ -8,8 +8,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.228, Vacant Possession: 71 / 54 / 48.
  0.4.253, After the People Lights Have Gone Off: 72 / 54 / 49.
  0.4.257, A Place for You: 73 / 55 / 50.
+ 0.4.274, Second Person: 74 / 56 / 51.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=73,REQUIRED=55,LITERARY=50;
+    static final int SOURCES=74,REQUIRED=56,LITERARY=51;
 }

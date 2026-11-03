@@ -36,6 +36,7 @@ public final class SceneClock {
             case LEFT_RIGHT->9; // 0.4.205: two in the morning at the toll
             case REPLACEMENT->9; // 0.4.218: midnight on the street
             case PLACE_FOR_YOU->9; // 0.4.257: one evening in Mara's house
+            case SECOND_PERSON->15; // 0.4.274: the flat's own year and hour, from the reader's record (SecondPersonClient)
             case PEOPLE_LIGHTS->9; // 0.4.253: the evening and the night, the people lights going off
             case VACANT_POSSESSION->3; // 0.4.228: moving day, the light going over the street
             case LAST_SWIMMER->9; // 0.4.227: closing time at the pool, dark over the skylight
@@ -46,6 +47,6 @@ public final class SceneClock {
     }
     public static long time(int mode,int elapsed,long nativeTime){return switch(mode){
         case 1->21000;case 3,10->12500;case 7,8,9->18000;case 4->6000;
-        case 11->1000;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
+        case 11->1000;case 15->7000;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
     };}
 }

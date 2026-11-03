@@ -1420,5 +1420,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 74
+  },
+  {
+    "name": "literary_flat_iris",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 75
+  },
+  {
+    "name": "literary_flat_sam",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 76
   }
 ]

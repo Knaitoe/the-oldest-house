@@ -28,6 +28,8 @@ public final class LiteraryActor extends PathfinderMob {
     public static final int UNCANNY_PARENT=44;
     /** 0.4.202, the Whistlers in the Pines: the thing in the woods (phase is its tier, 0 to 3); and the figures in the eight towers round tower four, drawn in the reader's own body (phase 1 crouching; gesture 1 binoculars up). */
     public static final int WHISTLER=45,LOOKOUT_DOUBLE=46;
+    /** 0.4.274, Second Person: the resident, drawn in the reader's own House body, coat and hair; never sees the reader, never pushes or is pushed (gesture is their pose, SecondPersonRenderers). */
+    public static final int SP_RESIDENT=47;
     public static boolean dareKid(int role){return role==DARE_KID_A||role==DARE_KID_B;}
     /** The lake house partner, whichever of the two they are. */
     public static boolean lakePartner(int role){return role==LAKE_TESS||role==LAKE_THEO;}
@@ -99,9 +101,9 @@ public final class LiteraryActor extends PathfinderMob {
     /** 0.4.272: the tunnel woman before she comes out: nothing to aim at, strike or be pushed by (UncannyStories.GIANT_HOME). */
     public boolean waitingUnseen(){return role()==UNCANNY_GIANT&&phase()==0;}
     @Override public boolean isAttackable(){return !waitingUnseen()&&super.isAttackable();}
-    @Override protected void pushEntities(){if(!waitingUnseen())super.pushEntities();}
+    @Override protected void pushEntities(){if(!waitingUnseen()&&role()!=SP_RESIDENT)super.pushEntities();}
     @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(HouseReadShelter.role(role())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HouseReadShelter.take(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&Truant.phase(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)Truant.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){if(p instanceof ServerPlayer s)CamcorderItem.toggle(s,p.getItemInHand(hand));p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
-    @Override public boolean hurt(DamageSource source,float amount){if(role()==STRANGER&&Truant.phase(phase())){if(source.getEntity() instanceof ServerPlayer p)Truant.struck(p,this);return false;}if(source.getEntity() instanceof ServerPlayer p){if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
+    @Override public boolean hurt(DamageSource source,float amount){if(role()==SP_RESIDENT||role()==STRANGER&&SecondPerson.cast(phase())){if(source.getEntity() instanceof ServerPlayer p)SecondPerson.touched(p,this);return false;}if(role()==STRANGER&&Truant.phase(phase())){if(source.getEntity() instanceof ServerPlayer p)Truant.struck(p,this);return false;}if(source.getEntity() instanceof ServerPlayer p){if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
     @Override public boolean broadcastToPlayer(ServerPlayer p){
         // Match the renderer's privacy rule at native tracking too. A hidden peer's
         // overlapping cast must not remain on this client and intercept its entity pick.
