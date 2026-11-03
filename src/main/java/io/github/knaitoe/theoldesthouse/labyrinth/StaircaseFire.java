@@ -131,7 +131,14 @@ public final class StaircaseFire {
         var phase=FinaleProgress.phase(player.server,player.getUUID());if(phase!=FinaleProgress.Phase.STAIRCASE&&phase!=FinaleProgress.Phase.UNSEEN)return false;
         var record=FinaleProgress.player(player.server,player.getUUID());int index=braziers(origin).indexOf(at);
         if(index<0||!player.serverLevel().getBlockState(at).is(Blocks.CAMPFIRE))return false;
-        if(index<flames(record)){player.displayClientMessage(Component.literal("This fire already burns for you."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_already_lit",at);return false;}
+        if(index<flames(record)){
+            var level=player.serverLevel();
+            var hearth=level.getBlockState(at);
+            if(!hearth.getValue(CampfireBlock.LIT)&&StaircaseStory.burned(StaircaseStory.record(player))>index)
+                level.setBlock(at,hearth.setValue(CampfireBlock.LIT,true),F);
+            io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_already_lit",at);
+            return false;
+        }
         if(index>flames(record)){player.displayClientMessage(Component.literal("An earlier fire is still cold for you."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_earlier_cold",at);return false;}
         // Both finite originals can stay in the pack, including after the cabin takes the off-hand arm.
         boolean oneHand=BodyLoss.oneArmed(player);ItemStack flame=lighter(player,oneHand);
@@ -152,7 +159,7 @@ public final class StaircaseFire {
         if(!StaircaseStory.burn(player,fuel,index))return false;
         flame.hurtAndBreak(1,player.serverLevel(),player,item->{});
         player.serverLevel().setBlock(at,player.serverLevel().getBlockState(at).setValue(CampfireBlock.LIT,true),F);
-        record.putInt("StairFires",index+1);record.putBoolean("StairFireVersion",true);
+        record.putInt("StairFires",index+1);
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(player,"fire_lit","index",index);
         FinaleProgress.save(player.server,player.getUUID(),record);
         HousePackets.send(player,embers);
@@ -172,24 +179,13 @@ public final class StaircaseFire {
         for(int i=0;i<player.getInventory().getContainerSize();i++){var stack=player.getInventory().getItem(i);if(StaircaseStory.isCurrent(player,stack))return stack;}
         return ItemStack.EMPTY;
     }
-    /** A saved visit already deep in the old staircase stays traversable on upgrade. */
-    private static final class LegacyDepth {
-        // The height is independent of manor coordinates. Rebuilding the zero-origin
-        // route for each unsaved first-visit tick evicts the live manor's route cache.
-        private static final int OPEN_BELOW=landings(BlockPos.ZERO).getLast().getY()-4;
-    }
-    public static void initialize(CompoundTag record,double y){
-        if(record.getBoolean("StairFireVersion"))return;
-        if(y<LegacyDepth.OPEN_BELOW)record.putInt("StairFires",REQUIRED);
-        record.putBoolean("StairFireVersion",true);
-    }
     public static boolean tick(ServerPlayer player,BlockPos origin,CompoundTag record){
         if(record.getBoolean("OperatorCellVisit")){
             var base=FinaleArchitecture.base(origin);
             if(player.getY()>=FinaleArchitecture.ARENA-1&&player.getY()<=FinaleArchitecture.ARENA+16&&Math.abs(player.getX()-base.getX())<=16&&player.getZ()>=base.getZ()+30&&player.getZ()<=base.getZ()+73)return false;
             record.remove("OperatorCellVisit");
         }
-        initialize(record,player.getY());if(player.isCreative())return false;
+        if(player.isCreative())return false;
         int fires=flames(record);BlockPos edge=edge(origin,record);
         boolean blocked=!open(record)&&player.getY()<edge.getY()-.75;
         if(blocked){

@@ -14,6 +14,9 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.ModelHome;
 import io.github.knaitoe.theoldesthouse.labyrinth.RedRoom;
 import io.github.knaitoe.theoldesthouse.labyrinth.TellTaleFloorboards;
+import io.github.knaitoe.theoldesthouse.labyrinth.StaircaseNotes;
+import io.github.knaitoe.theoldesthouse.labyrinth.StaircaseWriting;
+import java.util.Locale;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -39,6 +42,28 @@ public final class LabyrinthCommands {
         door.then(Commands.literal(LabyrinthData.DEALT).executes(context -> placeDoor(context.getSource(), LabyrinthData.DEALT)));
         door.then(Commands.literal("remove").executes(context -> removeDoor(context.getSource())));
         return door;
+    }
+
+    public static LiteralArgumentBuilder<CommandSourceStack> note() {
+        LiteralArgumentBuilder<CommandSourceStack> note = Commands.literal("note");
+        for (int index = 0; index < StaircaseNotes.TEXTS.size(); index++) {
+            if (!StaircaseWriting.hasScene(index)) continue;
+            int sheet = index;
+            String title = StaircaseNotes.TEXTS.get(index).lines().findFirst().orElseThrow();
+            String id = title.toLowerCase(Locale.ROOT).replace(' ', '_');
+            note.then(Commands.literal(id).executes(context -> {
+                var source = context.getSource();
+                String error = StaircaseWriting.placeTestNote(source.getPlayerOrException(), sheet);
+                if (error != null) {
+                    source.sendFailure(Component.literal(error));
+                    return 0;
+                }
+                source.sendSuccess(() -> Component.literal("Placed " + title
+                        + ". Read to the end, pause on the last page, then close it and stand still."), false);
+                return 1;
+            }));
+        }
+        return note;
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> labyrinth() {

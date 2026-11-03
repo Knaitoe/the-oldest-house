@@ -27,7 +27,8 @@ public final class HazardMaps {
             case COLD_STORE->cold(l,b,p);case LISTING_HALL->listing(l,b,p);case QUIET_HALL->quiet(l,b,p);case UNWATCHED_MAZE->maze(l,b,p);
             case MIRROR_HALL->mirror(l,b,p);case HEAVY_AND_LIGHT->weight(l,b,p);case NESTED_ROOMS->nested(l,b,p);case COUNTING_STAIR->counting(l,b,p);
             case BENT_CISTERN->cistern(l,b,p);case SPIRAL_WALKWAY->spiral(l,b,p);case CORNER_PRESSURE->pressure(l,b,p);case RECEDING_HALL->receding(l,b,p);
-            case LAST_SCONCE->sconce(l,b,p);case WATCHED_THRESHOLD->threshold(l,b,p);case DUPLICATE_ROOMS->duplicates(l,b,p);case TURNING_GRAVITY->gravity(l,b,p);default->throw new IllegalArgumentException(p.id());}
+            case LAST_SCONCE->sconce(l,b,p);case WATCHED_THRESHOLD->threshold(l,b,p);case DUPLICATE_ROOMS->duplicates(l,b,p);case TURNING_GRAVITY->gravity(l,b,p);
+            case RETURN_AIR,SETTLING_CELLAR->ServiceHazards.build(l,b,p);default->throw new IllegalArgumentException(p.id());}
         LabyrinthBuilder.entrance(l,b,WALL,FLOOR,Blocks.STONE.defaultBlockState());
         if(p==LabyrinthPlace.WATCHED_THRESHOLD){LabyrinthBuilder.placeDoor(l,b.offset(0,0,1),Direction.SOUTH);var d=p.doors().get(1);LabyrinthBuilder.placeDoor(l,b.offset(d.rel()),d.facing());}
         else LabyrinthBuilder.doors(l,b,p);

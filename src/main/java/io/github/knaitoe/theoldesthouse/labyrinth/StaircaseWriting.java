@@ -12,8 +12,44 @@ import java.util.*;
 /** Finite personal loose pages, bound once from actual in-game losses and resolutions. */
 public final class StaircaseWriting {
     public static final String ID="staircase_pages_0427";
+    private static final String TEST_NOTES="staircase_test_notes";
     private StaircaseWriting(){}
+
+    public static boolean hasScene(int index){
+        return StaircaseLeakRooms.kind(index)!=null||StaircaseHousehold.room(index)!=null;
+    }
+
+    /** Operator sheets have their own address and never consume a descent original. */
+    public static String placeTestNote(ServerPlayer p,int index){
+        if(!StaircaseLeaks.canTest(p))return "Stand inside the House, outside any crossing or private scene.";
+        if(!hasScene(index))return "That sheet has no private scene.";
+        var level=p.serverLevel();
+        var at=p.blockPosition().relative(p.getDirection(),2);
+        if(!level.getBlockState(at).isAir()||!NoteSurfaceBlock.supported(level,at))
+            return "A test sheet needs clear space and a flat surface two blocks ahead.";
+        var record=new net.minecraft.nbt.CompoundTag();
+        record.putUUID("Owner",p.getUUID());
+        record.putInt("Index",index);
+        if(!level.setBlock(at,NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,p.getDirection().getOpposite()),3))
+            return "Could not place the test sheet.";
+        LabyrinthData.get(p.server).setStateEntry(TEST_NOTES,Long.toString(at.asLong()),record);
+        return null;
+    }
+    public static void forgetTestNote(net.minecraft.server.level.ServerLevel level,BlockPos pos){
+        if(!level.dimension().equals(HouseDimensions.INTERIOR))return;
+        var data=LabyrinthData.get(level.getServer());
+        String key=Long.toString(pos.asLong());
+        if(!data.stateEntry(TEST_NOTES,key).isEmpty())data.setStateEntry(TEST_NOTES,key,new net.minecraft.nbt.CompoundTag());
+    }
     public static boolean open(ServerPlayer p,BlockPos pos){
+        if(p.serverLevel().dimension().equals(HouseDimensions.INTERIOR)){
+            var test=LabyrinthData.get(p.server).stateEntry(TEST_NOTES,Long.toString(pos.asLong()));
+            if(test.hasUUID("Owner")&&p.serverLevel().getBlockState(pos).is(HouseBlocks.NOTE_SURFACE.get())){
+                if(test.getUUID("Owner").equals(p.getUUID())&&StaircaseLeaks.canTest(p))
+                    p.openMenu(new SimpleMenuProvider((id,inv,player)->new PageMenu(id,p,pos,test.getInt("Index")),Component.literal("A page on the stairs")));
+                return true;
+            }
+        }
         BlockPos origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null||!FinaleArchitecture.contains(origin,pos))return false;
         if(StaircaseLeaves.open(p,pos))return true;
         p.openMenu(new SimpleMenuProvider((id,inv,player)->new PageMenu(id,p,pos),Component.literal("A page on the stairs")));return true;
@@ -66,15 +102,16 @@ public final class StaircaseWriting {
         }data.setState(ID,all);
     }
     private static final class PageMenu extends LecternMenu {
-        private final ServerPlayer reader;private final BlockPos pos;private final ItemStack book,original;private final int pages;
+        private final ServerPlayer reader;private final BlockPos pos;private final ItemStack book,original;private final int pages,testIndex;
         private long lastPageAt;
-        PageMenu(int id,ServerPlayer p,BlockPos pos){this(id,p,pos,new SimpleContainer(1));}
-        PageMenu(int id,ServerPlayer p,BlockPos pos,SimpleContainer display){super(id,display,new SimpleContainerData(1));reader=p;this.pos=pos.immutable();original=original(p,pos);book=StaircaseHousehold.withAccount(p,pos,original);display.setItem(0,book.copy());pages=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().size();lastPageAt=pages==1?p.serverLevel().getGameTime():-1;}
-        @Override public void removed(Player p){boolean full=p==reader&&stillValid(p)&&getPage()==pages-1&&lastPageAt>=0&&reader.serverLevel().getGameTime()-lastPageAt>=20;super.removed(p);if(full)StaircaseLeaks.offer(reader,pos,original);}
+        PageMenu(int id,ServerPlayer p,BlockPos pos){this(id,p,pos,-1);}
+        PageMenu(int id,ServerPlayer p,BlockPos pos,int testIndex){this(id,p,pos,testIndex,new SimpleContainer(1));}
+        PageMenu(int id,ServerPlayer p,BlockPos pos,int testIndex,SimpleContainer display){super(id,display,new SimpleContainerData(1));reader=p;this.pos=pos.immutable();this.testIndex=testIndex;original=testIndex<0?original(p,pos):StaircaseNotes.specimen(testIndex);book=testIndex<0?StaircaseHousehold.withAccount(p,pos,original):original;display.setItem(0,book.copy());pages=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().size();lastPageAt=pages==1?p.serverLevel().getGameTime():-1;}
+        @Override public void removed(Player p){boolean full=p==reader&&stillValid(p)&&getPage()==pages-1&&lastPageAt>=0&&reader.serverLevel().getGameTime()-lastPageAt>=20;super.removed(p);if(full){if(testIndex<0)StaircaseLeaks.offer(reader,pos,original);else StaircaseLeaks.offerTest(reader,pos,testIndex);}}
         @Override public boolean stillValid(Player p){return p==reader&&reader.isAlive()&&reader.distanceToSqr(pos.getCenter())<25&&reader.level().getBlockState(pos).is(HouseBlocks.NOTE_SURFACE.get());}
         @Override public boolean clickMenuButton(Player p,int button){
             if(!stillValid(p))return false;
-            if(button==3){if(reader.isSpectator())return false;var data=LabyrinthData.get(reader.server);var own=data.stateEntry(ID,reader.getUUID().toString());var taken=own.getCompound("Taken");String key=Long.toString(pos.asLong());if(taken.getBoolean(key))return false;
+            if(button==3){if(testIndex>=0||reader.isSpectator())return false;var data=LabyrinthData.get(reader.server);var own=data.stateEntry(ID,reader.getUUID().toString());var taken=own.getCompound("Taken");String key=Long.toString(pos.asLong());if(taken.getBoolean(key))return false;
                 taken.putBoolean(key,true);own.put("Taken",taken);data.setStateEntry(ID,reader.getUUID().toString(),own);var item=book.copy();if(!reader.getInventory().add(item))reader.drop(item,false);reader.inventoryMenu.broadcastChanges();return true;}
             if(button>=100){if(button-100>=pages)return false;}else if(button==1){if(getPage()<=0)return false;}else if(button==2){if(getPage()>=pages-1)return false;}else return false;
             boolean result=super.clickMenuButton(p,button);if(result)lastPageAt=getPage()==pages-1?reader.serverLevel().getGameTime():-1;return result;

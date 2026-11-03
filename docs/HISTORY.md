@@ -2,6 +2,8 @@
 
 This is the running log that lived in `AGENTS.md` until October 31, 2026, newest first, kept word for word. The current working notes for agents are in `AGENTS.md`; the design canon is `docs/DESIGN_DOCUMENT.md`.
 
+November 3 candidate 0.4.291, service hazards and staircase testing (docs/SERVICE_HAZARDS_0_4_291.md). Return Air, Settling Cellar, operator test sheets and a supported Great Staircase arrival. Layout 91.
+
 November 3 candidate 0.4.288, reading and reconnecting (docs/READING_AND_RECONNECT_0_4_288.md). Johnny keeps his current exchange for the reader to reopen after a disconnect. The private story cards offer manual page turns and hold that reader's transition until Done. Protocol 128.
 
 November 3 candidate 0.4.287, the plain in the Sahel (docs/PLAIN_SAHEL_0_4_287.md; owner: "Consider actual regional landscaping and architecture"). PlainSahel.dress, called at the end of Landscapes.plain: redden() turns sand, sandstone, smooth sandstone and sandstone slabs (slab type kept) into their red forms over x -46..46, z -180..16, y -6..12, except the vestibule (|x| <= 10, z >= 0); ground() (|x| <= 20, z -62..-3) lays coarse dirt where Landscapes.noise(2x,2z,173) < -0.45 and dead bushes (5%) or short grass (1%) on open red sand; seven termite mounds (red sandstone spires two or three high with a red sandstone wall tip, a lump and a slab at the foot) at |x| 13..19; two thorn trees (acacia, leaning trunk, flat crown radius 3, a side-limb crown) at (-14,-31) and (16,-13). Landscapes.dune() also knows the red blocks. ScenePolish.border: a red sand top gets red sandstone under it, and the plain's far ridge is red. The dunes keep every rise two or more. No Witness, layout, protocol or story change: 74 / 56 / two kinds / three endings.

@@ -47,7 +47,8 @@ public final class LabyrinthPlaces {
     // 0.4.202's lookout (slot 128) needs a seventeenth column at common manor heights; earlier slots never move.
     // 0.4.203's video shop (slot 129) can need an eighteenth at the lowest manor heights; earlier slots never move.
     // 0.4.217's arcade (slot 144) needs a nineteenth at manor heights 80-100; twenty-two leaves room for what comes after.
-    private static final int MAX_COLUMNS = 22;
+    // Slots 179 and 180 need the twenty-third column at common manor heights.
+    private static final int MAX_COLUMNS = 23;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 

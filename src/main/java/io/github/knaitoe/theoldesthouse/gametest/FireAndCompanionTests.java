@@ -68,7 +68,11 @@ public final class FireAndCompanionTests {
                 h.assertTrue(StaircaseFire.ignite(p,origin,at),"the actual hearth accepts its ordered leaf "+i);
                 h.assertTrue(level.getBlockState(at).getValue(CampfireBlock.LIT),"a real native fire lights");
                 h.assertTrue(StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID()))==i+1,"the reader advances once");
-                h.assertTrue(!StaircaseFire.ignite(p,origin,at),"the same fire cannot consume another leaf or count twice");
+                level.setBlock(at,level.getBlockState(at).setValue(CampfireBlock.LIT,false),3);
+                h.assertTrue(!StaircaseFire.ignite(p,origin,at)
+                        &&level.getBlockState(at).getValue(CampfireBlock.LIT)
+                        &&StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID()))==i+1,
+                        "an extinguished hearth restores its flame without spending another leaf");
             }
             h.assertTrue(p.getOffhandItem().isEmpty()&&p.getMainHandItem().getDamageValue()==5,"the fifth leaf consumes the book and five uses of the striker");
             var data=LabyrinthData.get(p.server);var loaded=LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(),level.registryAccess()),level.registryAccess());
@@ -82,7 +86,7 @@ public final class FireAndCompanionTests {
     public static void unlitDepthStopsAdvanceAndOldDeepVisitsRemainOpen(GameTestHelper h){
         var p=NativeTestPlayers.survival(h,"stair_dark_walker");var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);
         BlockPos origin=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+230000,0,230000);
-        var record=new CompoundTag();StaircaseFire.initialize(record,FinaleArchitecture.TOP);
+        var record=new CompoundTag();
         var safe=StaircaseFire.landings(origin).getFirst();var edge=StaircaseFire.edge(origin,record);
         level.getChunkAt(safe);level.setBlock(safe.below(),Blocks.STONE.defaultBlockState(),3);
         try{
@@ -94,8 +98,10 @@ public final class FireAndCompanionTests {
             h.assertTrue(!StaircaseFire.tick(p,origin,record),"movement back toward the entry remains available");
             record.putInt("StairFires",5);p.moveTo(safe.getX()+.5,FinaleArchitecture.ARENA,safe.getZ()+.5);
             h.assertTrue(!StaircaseFire.tick(p,origin,record),"five fires allow the full physical descent");
-            var old=new CompoundTag();StaircaseFire.initialize(old,FinaleArchitecture.ARENA);
-            h.assertTrue(StaircaseFire.open(old),"an existing deep visit is not trapped by the upgrade");
+            var fresh=new CompoundTag();
+            p.moveTo(safe.getX()+.5,FinaleArchitecture.ARENA,safe.getZ()+.5);
+            h.assertTrue(StaircaseFire.tick(p,origin,fresh)&&StaircaseFire.flames(fresh)==0,
+                    "a fall to the arena does not award any personal fires");
             h.assertTrue(!WitnessAccount.ready(LabyrinthData.get(p.server),p.getUUID()),"lighting is no additional Witness source");
         }finally{level.setBlock(safe.below(),Blocks.AIR.defaultBlockState(),3);remove(p);}
         h.succeed();

@@ -35,6 +35,11 @@ public final class NoteSurfaceBlock extends HorizontalDirectionalBlock {
         if(shape.isEmpty() || shape.max(Direction.Axis.Y)<1) return false;
         return !Shapes.joinIsNotEmpty(Block.box(2,0,2,14,16,14),shape.getFaceShape(Direction.UP),BooleanOp.ONLY_FIRST);
     }
+    @Override protected void onRemove(BlockState old,net.minecraft.world.level.Level level,BlockPos pos,BlockState next,boolean moved){
+        super.onRemove(old,level,pos,next,moved);
+        if(!next.is(this)&&old.getValue(THREAD)==HouseMarginalia.Thread.POEMS&&level instanceof net.minecraft.server.level.ServerLevel server)
+            io.github.knaitoe.theoldesthouse.labyrinth.StaircaseWriting.forgetTestNote(server,pos);
+    }
     @Override protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) { return supported(level,pos); }
     @Override protected BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING,rotation.rotate(state.getValue(FACING))); }
     @Override protected BlockState mirror(BlockState state, Mirror mirror) { return rotate(state,mirror.getRotation(state.getValue(FACING))); }

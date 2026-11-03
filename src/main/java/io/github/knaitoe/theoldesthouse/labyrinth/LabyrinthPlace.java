@@ -549,6 +549,8 @@ public enum LabyrinthPlace {
      * story over several visits, built whole, a copy for each reader.
      */
     SECOND_PERSON("second_person",Kind.ONE_SHOT,173,new BoundingBox(-17,-3,-31,17,12,0),literaryEntry()),
+    RETURN_AIR("return_air",Kind.GRAY,179,new BoundingBox(-6,-1,-33,6,4,0),grayDoors(0,0,-33)),
+    SETTLING_CELLAR("settling_cellar",Kind.GRAY,180,new BoundingBox(-6,-5,-36,6,4,0),grayDoors(0,0,-36)),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
