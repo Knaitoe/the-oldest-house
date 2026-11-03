@@ -119,8 +119,21 @@ public final class LiteraryActor extends PathfinderMob {
         return super.broadcastToPlayer(p);
     }
     @Override public boolean removeWhenFarAway(double d){return false;}
+    /**
+     * Run 1419: a body its scene has hidden stays hidden. Vanilla's first tick of any living entity (effectsDirty starts true), and every
+     * change to its effects, sets the invisible flag from its effects alone, so an actor hidden as it was added could show for the tick
+     * its chunk began ticking. The scene's own flag is kept apart from the effects': the body is hidden while either hides it, and an
+     * invisibility potion on an actor still wears off.
+     */
+    private boolean sceneHidden,fromEffects;
+    @Override public void setInvisible(boolean hidden){if(!fromEffects)sceneHidden=hidden;super.setInvisible(hidden);}
+    @Override protected void updateInvisibilityStatus(){
+        fromEffects=true;
+        try{super.updateInvisibilityStatus();}finally{fromEffects=false;}
+        if(sceneHidden&&!isInvisible())super.setInvisible(true);
+    }
     @Override public boolean isPushable(){return role()==UNCANNY_FALSE_WAITRESS&&phase()>=2;}
     @Override public boolean canBeCollidedWith(){if(role()==UNCANNY_FALSE_WAITRESS)return phase()>=2;return super.canBeCollidedWith();}
-    @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putInt("Role",role());t.putInt("Phase",phase());t.putInt("Gesture0491",gesture());t.putString("Scene",scene);if(fade()>0)t.putInt("Fade0228",fade());owner().ifPresent(id->t.putUUID("Reader",id));}
-    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);scene=t.getString("Scene");entityData.set(OWNER,t.hasUUID("Reader")?Optional.of(t.getUUID("Reader")):Optional.empty());appearance(t.getInt("Role"),t.getInt("Phase"));gesture(t.getInt("Gesture0491"));fade(t.getInt("Fade0228"));}
+    @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putInt("Role",role());t.putInt("Phase",phase());t.putInt("Gesture0491",gesture());t.putString("Scene",scene);if(fade()>0)t.putInt("Fade0228",fade());if(sceneHidden)t.putBoolean("SceneHidden",true);owner().ifPresent(id->t.putUUID("Reader",id));}
+    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);scene=t.getString("Scene");entityData.set(OWNER,t.hasUUID("Reader")?Optional.of(t.getUUID("Reader")):Optional.empty());appearance(t.getInt("Role"),t.getInt("Phase"));gesture(t.getInt("Gesture0491"));fade(t.getInt("Fade0228"));sceneHidden=t.getBoolean("SceneHidden");}
 }
