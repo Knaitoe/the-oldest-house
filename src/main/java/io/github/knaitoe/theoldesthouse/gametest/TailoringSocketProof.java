@@ -69,6 +69,11 @@ public final class TailoringSocketProof {
             read(a,"HAIR","WRAPPED");read(b,"HAIR","BRUSHED_DRY");initialized=true;
         }
         if(phase==0){sink(a,.75);sink(b,-.75);step(s,1);return;}
+        if(phase==1){
+            var sink=target().getCenter();
+            for(var reader:List.of(a,b))require(reader.serverLevel().dimension().equals(HouseDimensions.INTERIOR)
+                    &&reader.distanceToSqr(sink)<16,"the hotel sink keeps "+reader.getGameProfile().getName()+" in the room at "+reader.position());
+        }
         require(s.getTickCount()-changed<2400,"both actual rendered clients complete phase "+phase+" within two minutes");
         if(phase==2&&offline&&!reconnected){sink(b,-.75);reconnected=true;marker(a);marker(b);write("reconnect-originals.txt","A="+SINKS.get(a.getUUID())+"\nB="+SINKS.get(b.getUUID())+"\nThe native same-profile B connection reuses its original selected item and entity UUID.\n");}
         if(!ACKS.containsAll(List.of(a.getUUID(),b.getUUID())))return;
