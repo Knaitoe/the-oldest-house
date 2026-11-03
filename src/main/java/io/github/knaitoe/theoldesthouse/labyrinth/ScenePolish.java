@@ -545,7 +545,7 @@ public final class ScenePolish {
                 int distance = Math.max(Math.max(r.minX() - x, x - r.maxX()), Math.max(r.minZ() - z, z - r.maxZ()));
                 // Already standing ground here (an earlier ring, or the scene's own skirt) is left alone.
                 if (!level.getBlockState(base.offset(x, surface, z)).isAir()) continue;
-                BlockState under = top.is(Blocks.SAND) ? Blocks.SANDSTONE.defaultBlockState()
+                BlockState under = top.is(Blocks.RED_SAND) ? Blocks.RED_SANDSTONE.defaultBlockState() : top.is(Blocks.SAND) ? Blocks.SANDSTONE.defaultBlockState()
                         : top.is(Blocks.SNOW_BLOCK) ? Blocks.SNOW_BLOCK.defaultBlockState() : Blocks.DIRT.defaultBlockState();
                 for (int y = surface - 4; y < surface; y++) level.setBlock(base.offset(x, y, z), under, FLAGS);
                 level.setBlock(base.offset(x, surface, z), top, FLAGS);
@@ -564,7 +564,7 @@ public final class ScenePolish {
                         // The far edge is a dune too high to see over, in steps.
                         int ridge = 6 + Math.floorMod(x + z, 3) + (distance >= BORDER ? 2 : 0);
                         for (int y = surface + 1; y <= surface + ridge; y++)
-                            level.setBlock(base.offset(x, y, z), (y == surface + ridge ? Blocks.SAND : Blocks.SANDSTONE).defaultBlockState(), FLAGS);
+                            level.setBlock(base.offset(x, y, z), (place == LabyrinthPlace.PLAIN ? (y == surface + ridge ? Blocks.RED_SAND : Blocks.RED_SANDSTONE) : y == surface + ridge ? Blocks.SAND : Blocks.SANDSTONE).defaultBlockState(), FLAGS);
                         changed += ridge;
                         continue;
                     }

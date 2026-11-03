@@ -93,11 +93,14 @@ public final class Landscapes {
             }
             if (h > 0 && hash(x, z, 3) % 23 == 0 && get(l, b, x, h, z).isAir()) set(l, b, x, h, z, Blocks.DEAD_BUSH.defaultBlockState());
         }
+        // 0.4.287: the Sahel's red qoz rather than the Sahara's pale sand, in the same shapes (docs/PLAIN_SAHEL_0_4_287.md).
+        PlainSahel.dress(l, b);
     }
 
     private static boolean dune(BlockState st) {
         return st.is(Blocks.SANDSTONE) || st.is(Blocks.SAND) || st.is(Blocks.SANDSTONE_SLAB) || st.is(Blocks.DEAD_BUSH)
-                || st.is(Blocks.SMOOTH_SANDSTONE) || st.is(Blocks.BARRIER);
+                || st.is(Blocks.SMOOTH_SANDSTONE) || st.is(Blocks.BARRIER)
+                || st.is(Blocks.RED_SANDSTONE) || st.is(Blocks.RED_SAND) || st.is(Blocks.RED_SANDSTONE_SLAB) || st.is(Blocks.SMOOTH_RED_SANDSTONE);
     }
 
     // ------------------------------------------------------------------
