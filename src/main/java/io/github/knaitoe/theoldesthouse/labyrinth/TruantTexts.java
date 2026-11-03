@@ -168,6 +168,7 @@ public final class TruantTexts {
             case "shove"->List.of("The ledge.","I don't know what that was. I've gone over it and I don't know.",nothing);
             case "doorway"->List.of("I stood in your way, last time. I won't today.",nothing);
             case "cover"->List.of("I put your light out. I had hold of you.","I shouldn't have.",nothing);
+            case "coffee"->List.of("You could have gone. I should have let you.",nothing);
             default->List.of(nothing);
         };
     }
