@@ -53,11 +53,14 @@ public final class BorrascaRooms {
     private static void furniture(ServerLevel l,BlockPos b,BlockPos at,HouseholdFurnitureBlock.Kind k){NovelRooms.furniture(l,b.offset(at),k,Direction.SOUTH);}
     private static void sign(ServerLevel l,BlockPos b,BlockPos at,String... words){NovelRooms.sign(l,b.offset(at),Direction.SOUTH,words);}
     private static int mix(int x,int z){int h=x*73856093^z*83492791^0x2b1;h^=h>>>13;h*=0x5bd1e995;return (h^h>>>15)&0x7fffffff;}
-    /** 0.4.276: a walked surface: packed earth where feet go (out to one off the line), the needles coming back at its edge. */
+    /**
+     * 0.4.276: a walked surface: packed earth where feet go (out to one off the line). 0.4.277: at its edge the Ozark woods' floor comes
+     * back, leaves and grass, not taiga needles.
+     */
     static net.minecraft.world.level.block.state.BlockState walked(int x,int z,int off){
         int k=mix(x,z)%10;
         if(off<=1)return Blocks.DIRT_PATH.defaultBlockState();
-        return (k<2?Blocks.COARSE_DIRT:k<8?Blocks.PODZOL:Blocks.DIRT_PATH).defaultBlockState();
+        return (k<4?Blocks.COARSE_DIRT:k<8?Blocks.GRASS_BLOCK:Blocks.DIRT_PATH).defaultBlockState();
     }
     /** A timber riser where a path climbs a block. */
     static net.minecraft.world.level.block.state.BlockState riser(Direction up){return Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,up);}
