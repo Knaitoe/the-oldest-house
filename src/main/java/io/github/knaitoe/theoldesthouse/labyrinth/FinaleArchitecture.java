@@ -33,8 +33,16 @@ public final class FinaleArchitecture {
     private FinaleArchitecture() {}
     public static BlockPos base(BlockPos manor) { return new BlockPos(manor.getX() + HouseLayout.CENTER_X + 512, 0, manor.getZ() + HouseLayout.CENTER_Z); }
     public static boolean contains(BlockPos manor, BlockPos pos) {
-        BlockPos b = base(manor); return pos.getX() >= b.getX()-82 && pos.getX() <= b.getX()+82
-                && pos.getZ() >= b.getZ()-SHAFT_RADIUS-1 && pos.getZ() <= b.getZ()+122 && pos.getY() >= LOOP_BOTTOM-2 && pos.getY() <= TOP+16;
+        BlockPos b=base(manor);
+        int dx=pos.getX()-b.getX(), x=Math.abs(dx), y=pos.getY(), z=pos.getZ()-b.getZ();
+        // The side mazes are the only rooms beyond the shaft's east and west walls.
+        if(x>SHAFT_RADIUS+1)return StaircaseMazes.inArea(b,pos);
+        if(z>=-SHAFT_RADIUS-1&&z<=SHAFT_RADIUS+1&&y>=LOOP_BOTTOM-2&&y<=TOP+16)return true;
+        // South of the shaft: the preparation chamber, the chute and the lower escape.
+        return (x<=18&&z>SHAFT_RADIUS+1&&z<=70&&y>=ARENA-2&&y<=ARENA+14)
+                ||(dx>=-24&&dx<=-17&&z>=62&&z<=80&&y>=3&&y<=ARENA+6)
+                ||(x<=32&&z>=69&&z<=122&&y>=-28&&y<=23)
+                ||StaircaseMazes.inArea(b,pos);
     }
     public static BlockPos entry(BlockPos manor){return base(manor).offset(0,TOP,STAIR_RADIUS+2);}
     public static BlockPos cell(BlockPos manor) { return base(manor).offset(0, ARENA, 59); }

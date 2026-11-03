@@ -36,7 +36,11 @@ public final class StaircaseLeakTests {
         for(int x=-3;x<=3;x++)for(int z=-2;z<=3;z++)for(int y=-1;y<=2;y++)f.put(f.level,at.offset(x,y,z),(y==-1?Blocks.STONE:Blocks.AIR).defaultBlockState());
         f.put(f.level,at,NoteSurfaceBlock.state(HouseMarginalia.Thread.HOUSEKEEPING,Direction.NORTH));
         p.teleportTo(f.level,at.getX()+.5+Math.max(0,f.players.indexOf(p))*1.2,at.getY(),at.getZ()+1.5,37,11);p.hasChangedDimension();p.connection.resetPosition();p.setDeltaMovement(Vec3.ZERO);
-        FinaleProgress.phase(p.server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);
+        // These cases start deep in the descent after the fires, so they can exercise the sheets and rooms.
+        var progress=FinaleProgress.player(p.server,p.getUUID());
+        progress.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());
+        progress.putInt("StairFires",StaircaseFire.REQUIRED);
+        FinaleProgress.save(p.server,p.getUUID(),progress);
         var own=f.data().stateEntry(StaircaseWriting.ID,p.getUUID().toString());var books=own.getCompound("Books");var indices=own.getCompound("Indices");var key=Long.toString(at.asLong());
         books.put(key,StaircaseNotes.specimen(index).save(p.registryAccess()));indices.putInt(key,index);own.put("Books",books);own.put("Indices",indices);f.data().setStateEntry(StaircaseWriting.ID,p.getUUID().toString(),own);
         StaircaseWriting.open(p,at);var book=p.containerMenu.getSlot(0).getItem();int last=book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()-1;
@@ -54,7 +58,7 @@ public final class StaircaseLeakTests {
     @GameTest(template="empty",batch="test_stair_note",timeoutTicks=1800)
     public static void anOperatorNoteRunsTheRealPrivateSceneWithoutSpendingTheDescent(GameTestHelper h){
         run(h,521000,(f,state)->{
-            var source=f.source.south(2);
+            var source=FinaleArchitecture.entry(f.origin).south(2);
             var at=source.south(2);
             if(state[0]==0){
                 var reader=f.player(h,"test_note_reader");
