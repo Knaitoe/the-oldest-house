@@ -243,6 +243,16 @@ public final class TruantTests {
                 h.assertTrue(l.getBlockState(door.offset(TruantPlaces.DOOR_LAMP)).is(Blocks.LANTERN)&&l.getBlockState(lamp.offset(TruantPlaces.LAMP_LIGHT)).is(Blocks.LANTERN),"his lamps are lit in the recess and the alcove");
                 h.assertTrue(!l.getBlockState(ledge.offset(TruantPlaces.LEDGE_X,-1,-8)).isAir()&&l.getBlockState(ledge.offset(TruantPlaces.LEDGE_X-1,-1,-8)).isAir()&&!l.getBlockState(ledge.offset(0,TruantPlaces.LOWER-1,-8)).isAir(),"a one-block ledge along the wall over a drop to a lower landing");
                 h.assertTrue(TruantPlaces.weight(f.data(),a.getUUID(),5)==0&&TruantPlaces.weight(f.data(),a.getUUID(),6)==TruantPlaces.WEIGHT,"his places are dealt from the crossing where stories begin");
+                var walker=java.util.UUID.randomUUID();
+                for(int i=0;i<4;i++)f.data().visit(walker,LabyrinthPlace.STRAIGHT_HALL);
+                h.assertTrue(TruantPlaces.weight(f.data(),walker,8)==TruantPlaces.WEIGHT,"four halls keep the base weight");
+                f.data().visit(walker,LabyrinthPlace.BENT_HALL);
+                int boosted=TruantPlaces.weight(f.data(),walker,8);
+                h.assertTrue(boosted>TruantPlaces.WEIGHT,"the fifth hall raises Johnny's weight");
+                for(int i=0;i<20;i++)f.data().visit(walker,LabyrinthPlace.ALCOVE_HALL);
+                h.assertTrue(TruantPlaces.weight(f.data(),walker,8)>boosted,"a longer dry spell raises it further");
+                f.data().visit(walker,TruantPlaces.DOOR);
+                h.assertTrue(TruantPlaces.weight(f.data(),walker,8)==0,"a Truant hall cannot immediately follow another");
                 f.data().visit(a.getUUID(),LabyrinthPlace.WINTER_LAKE);
                 // The first sight of him: the lamp, looking up the corridor at the corner.
                 stand(a,l,lamp,.5,0,-2.5,180);a.lookAt(EntityAnchorArgument.Anchor.EYES,Vec3.atLowerCornerOf(lamp).add(TruantPlaces.PEEK_SPOT.x+.33,1.55,TruantPlaces.PEEK_SPOT.z));
@@ -251,10 +261,12 @@ public final class TruantTests {
             .thenExecute(()->h.assertTrue(TruantPlaces.weight(f.data(),a.getUUID(),8)==TruantPlaces.WEIGHT,"no recent visit to his places yet in the dealer's record"))
             .thenWaitUntil(()->h.assertTrue(Truant.lampStage()>=1&&Truant.record(server,a.getUUID()).getInt("Peeked")==1,"looked at, the face draws back, and the reader's record has seen it: "+where(f)))
             .thenWaitUntil(()->h.assertTrue(Truant.lampStage()==3&&Truant.body(l).phase()==Truant.FACE&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(lamp).add(TruantPlaces.LAMP_SPOT))<.2,"round the corner, at his lamp, with his ordinary face: "+where(f)))
-            .thenExecute(()->stand(a,l,lamp,-4.5,0,-7.6,0))
+            .thenExecute(()->{a.getFoodData().setFoodLevel(10);stand(a,l,lamp,-4.5,0,-7.6,0);})
             .thenWaitUntil(()->h.assertTrue((Truant.record(server,a.getUUID()).getInt("Help")&Truant.HELP_LAMP)!=0&&said(l).equals(TruantTexts.LAMP),"he makes room at his lamp: "+where(f)))
             .thenWaitUntil(()->h.assertTrue(Talk.key(a).equals(Truant.KEY)&&Talk.waiting(a),"after helping, he asks, in the panel"))
             .thenExecute(()->{
+                h.assertTrue(Talk.replies(a).contains("Take some bread.")&&Talk.choose(a,"Take the coffee."),"hungry at his lamp, the reader can accept coffee");
+                h.assertTrue(a.getFoodData().getFoodLevel()==12&&Truant.record(server,a.getUUID()).getString("LastRefreshment").equals("coffee"),"coffee restores a little hunger and records the choice");
                 var lines=Talk.lines(a);
                 h.assertTrue(lines.contains("The man: "+TruantTexts.ASK)&&Talk.replies(a).contains("Tell him about the frozen lake.")&&Talk.replies(a).contains("Who are you?"),"what did you find, with the last story to tell him about: "+lines+" "+Talk.replies(a));
                 h.assertTrue(Talk.choose(a,"Who are you?")&&Truant.record(server,a.getUUID()).getBoolean("Named")&&Talk.lines(a).contains("The man: Johnny."),"he gives Johnny and no more");
