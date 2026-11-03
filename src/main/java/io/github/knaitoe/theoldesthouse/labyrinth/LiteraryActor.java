@@ -51,7 +51,10 @@ public final class LiteraryActor extends PathfinderMob {
      */
     public int gesture(){return entityData.get(GESTURE);}public void gesture(int value){entityData.set(GESTURE,Math.max(0,Math.min(31,value)));}
     @Override public net.minecraft.world.phys.Vec3 getVehicleAttachmentPoint(Entity vehicle){if(lakePartner(role())&&vehicle instanceof LakeHouseCanoe)return net.minecraft.world.entity.player.Player.DEFAULT_VEHICLE_ATTACHMENT;if(vehicle instanceof LakeCanoeEntity&&MovieNightCast.teen(this))return net.minecraft.world.entity.player.Player.DEFAULT_VEHICLE_ATTACHMENT;return super.getVehicleAttachmentPoint(vehicle);}
-    @Override protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,EntityDimensions dimensions,float partial){if(role()==FATHER&&passenger instanceof net.minecraft.world.entity.animal.Rabbit)return new net.minecraft.world.phys.Vec3(0,.8,.4).yRot(-getYRot()*(float)Math.PI/180);return super.getPassengerAttachmentPoint(passenger,dimensions,partial);}
+    @Override protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,EntityDimensions dimensions,float partial){if(role()==FATHER&&passenger instanceof net.minecraft.world.entity.animal.Rabbit)return new net.minecraft.world.phys.Vec3(0,.8,.4).yRot(-getYRot()*(float)Math.PI/180);if(scene.equals(BorrascaStory.PLACE.id())&&BorrascaStory.worker(role(),phase())
+            &&passenger instanceof LiteraryActor child&&child.role()==BORRASCA_KIMBER)
+        return new net.minecraft.world.phys.Vec3(0,.92,.48).yRot(-getYRot()*(float)Math.PI/180);
+        return super.getPassengerAttachmentPoint(passenger,dimensions,partial);}
     public int role(){return entityData.get(ROLE);}public int phase(){return entityData.get(PHASE);}public Optional<UUID> owner(){return entityData.get(OWNER);}public String scene(){return scene;}
     @Override public void lerpTo(double x,double y,double z,float yaw,float pitch,int steps){
         // A late pairing can first spawn the unseen woman at the tracker's old far-end

@@ -53,7 +53,7 @@ public final class BorrascaStory {
     /** 0.4.236: the Shiny Gentleman stands as long as the strokes last, between these distances from a child, this tall. */
     public static final int GENT_TICKS=70;public static final double GENT_NEAR=28,GENT_FAR=70,GENT_HEIGHT=4.5;
     /** 0.4.235 gestures: the friend led by the arm, and a taker's hand held out to her; 0.4.262: a man's hand on her arm, his left or his right. */
-    public static final int LED=6,TAKING_HAND=7,HOLD_LEFT=8,HOLD_RIGHT=9;
+    public static final int LED=6,TAKING_HAND=7,HOLD_LEFT=8,HOLD_RIGHT=9,CARRIED=11,CARRY=12,WARNING=13,SCARED=14;
     /** How long a spoken line stays over the speaker's head. */
     public static final int SPEECH_TICKS=100;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
@@ -107,7 +107,7 @@ public final class BorrascaStory {
         int visit=own.getInt("Visit");
         if(rel.equals(BorrascaRooms.CARVING)){
             if(visit==1){
-                if(!own.getBoolean("FriendCarved")){cue(p,own.getBoolean("MetFriend")?"Smooth bark at the foot of the three trunks. "+FRIEND+" said this is where the names go.":"Smooth bark at the foot of the three trunks. Old names, worn soft.");return true;}
+                if(!own.getBoolean("FriendCarved")){cue(p,own.getBoolean("MetFriend")?"Old names at the foot of the three trunks. "+FRIEND+" said this is where the names go.":"Old names at the foot of the three trunks, worn soft.");return true;}
                 if(!own.getBoolean("PactCarved")){
                     own.putBoolean("PactCarved",true);own.putInt("Beat",1);bark(p,b,2);heard(p,BorrascaRegistry.CARVE.get(),b.offset(rel),.55F);
                     var friend=actor(p,own,"CastKimber");if(friend!=null){friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);friend.gesture(2);say(p,friend,"There. Now it has to keep a place for both of us.");}
@@ -178,14 +178,25 @@ public final class BorrascaStory {
         int visit=own.getInt("Visit");
         if(a.role()==LiteraryActor.BORRASCA_KIMBER){
             if(own.getBoolean("FriendMissing")||visit>=3)return;
-            if(visit==1){own.putBoolean("MetFriend",true);say(p,a,own.getBoolean("LegendDone")?"Don't go past the second marker. I mean it.":own.getBoolean("KimberAtFort")?"Up here. Come and sit.":"Come on. I'll show you where the three trees meet.");}
-            else if(own.getBoolean("Read_ContentNote")){own.putBoolean("FollowAgain",true);say(p,a,"Someone scratched another name out. Come and see. Then we'll find where the sound starts.");}
+            if(visit==1){
+                if(!own.getBoolean("MetFriend")){own.putBoolean("MetFriend",true);return;}
+                if(!own.getBoolean("PlayDone")&&own.getInt("ChildStep")==0){
+                    if(own.getInt("PlayBeat")==1&&own.getInt("HideLeg")>=2)say(p,a,"Found me. I could hear you trying to be quiet.");
+                    return;
+                }
+                idleFriend(p,a,own);
+            }
+            else if(own.getBoolean("Read_ContentNote")){
+                if(!own.getBoolean("FollowAgain")){
+                    own.putBoolean("FollowAgain",true);say(p,a,"Someone scratched another name out. Come and see. Then we'll find where the sound starts.");
+                }else if(own.getInt("TakingTicks")==0)idleFriend(p,a,own);
+            }
             else{say(p,a,"I'll wait here.");house(p,"A note is waiting by the door.");}
         }else if(townChild(a.role(),a.phase())){
             talkTownChild(p,a,own,visit);
         }else if(a.role()==LiteraryActor.BORRASCA_SHERIFF){
             if(visit<3){
-                a.gesture(1);say(p,a,"You two keep this side of Marker Two when the wind comes up.");
+                a.gesture(1);own.putInt("HatTicks",40);say(p,a,"You two keep this side of Marker Two when the wind comes up.");
                 own.putBoolean("MetSheriff",true);
             }else if(visit==3){
                 denial(p,a,own);if(presentingCompass(p,own))compassChoice(p);
@@ -196,24 +207,62 @@ public final class BorrascaStory {
         }
         else if(a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER){own.putBoolean("MetPrescott",true);say(p,a,visit==1?"Evening. Tell your folks the delivery's at the trailhead.":"This is a work entrance.");}
     }
+    public static boolean worker(int role,int phase){return role==LiteraryActor.BORRASCA_KYLE&&(phase==WORKER||phase==WORKER+1);}
+
     public static boolean townChild(int role,int phase){
         return role==LiteraryActor.BORRASCA_KYLE&&(phase==ELI||phase==WREN);
     }
 
     private static void talkTownChild(ServerPlayer p,LiteraryActor child,CompoundTag own,int visit){
         if(child.isInvisible())return;
-        if(child.phase()==ELI&&visit==1){
-            own.putBoolean("MetEli",true);
-            say(p,child,"My brother says count to three when it starts. If you hear a fourth one, that's somebody coming down.");
-        }else if(child.phase()==WREN&&visit==1){
-            own.putBoolean("MetWren",true);
-            say(p,child,"See the holes in that board? There was a picture of Dana there. Her mom used to put it back every time it came down.");
-        }else if(child.phase()==WREN&&visit==2){
-            own.putBoolean("WrenRememberedEli",true);
-            say(p,child,"Eli said he'd wait by the marker. His mom put his bike in the shed. They keep saying he went to his dad's.");
-        }
+        boolean eli=child.phase()==ELI;
+        String key=(eli?"Eli":"Wren")+"Talk"+visit;
+        int said=own.getInt(key);
+        String[] lines=eli?new String[]{
+            "My brother says count to three when it starts. If you hear a fourth one, that's somebody coming down.",
+            "He used to count from the porch. Then the Sheriff told him there wasn't anything to count.",
+            "I said I'd wait at Marker Two. If I get there first I'm leaving my bike at the store."
+        }:visit==1?new String[]{
+            "Dana's mom used to put her picture back on the store board every time it came down.",
+            "Dana wrote her name where the trunks join. If you find it, leave it alone. Her mom still goes to look.",
+            "Eli's taking his bike up there again. If he asks, tell him I said the chain's going to come off."
+        }:new String[]{
+            "Eli said he'd wait by the marker. His mom put his bike in the shed. They keep saying he went to his dad's.",
+            "I went to his dad's. He asked me if I'd seen Eli.",
+            "I'm going to the tree. If he comes back he'll look for his name first."
+        };
+        if(eli)own.putBoolean("MetEli",true);
+        else own.putBoolean(visit==1?"MetWren":"WrenRememberedEli",true);
+        own.putInt(key,(said+1)%lines.length);
+        say(p,child,lines[said%lines.length]);
         float yaw=toward(child,p);
         child.setYRot(yaw);child.setYBodyRot(yaw);child.setYHeadRot(yaw);
+    }
+
+    private static void idleFriend(ServerPlayer p,LiteraryActor friend,CompoundTag own){
+        String[] lines=own.getBoolean("KimberAtFort")?new String[]{
+            "If you get here first, save me the window side.",
+            "I can tell where the store is from here. You can't see the road, but I know where it bends.",
+            "If somebody sees both our names, they'll know we made it up here together."
+        }:new String[]{
+            "When I get lost, I pick one thing I remember passing. Then I go back to that.",
+            "You can hold the compass when we come back. I know this part.",
+            "Eli says he can ride all the way up. I want to see him try that with his chain the way it is."
+        };
+        int line=own.getInt("NellSmallTalk")%lines.length;
+        own.putInt("NellSmallTalk",line+1);say(p,friend,lines[line]);
+    }
+
+    private static void greetChildren(ServerPlayer p,CompoundTag own,int visit,@Nullable LiteraryActor eli,@Nullable LiteraryActor wren){
+        if(visit>2||visit==2&&own.getInt("TakingTicks")>0)return;
+        for(var child:new LiteraryActor[]{eli,wren}){
+            if(child==null||child.isInvisible()||p.distanceToSqr(child)>36||!p.hasLineOfSight(child))continue;
+            String key=child.phase()==ELI?"EliTrailGreeting":"WrenTrailGreeting"+visit;
+            if(own.getBoolean(key))continue;
+            own.putBoolean(key,true);
+            talkTownChild(p,child,own,visit);
+            return;
+        }
     }
 
     private static boolean presentingCompass(ServerPlayer p,CompoundTag own){return BorrascaBelongings.valid(p,own,"Compass",p.getMainHandItem())||BorrascaBelongings.valid(p,own,"Compass",p.getOffhandItem());}
@@ -249,6 +298,12 @@ public final class BorrascaStory {
         scene(p,b,own);
         if(!own.getBoolean("CastRecalled"))return;
         cast(own,visit,prescott,w0,w1);
+        greetChildren(p,own,visit,eli,wren);
+        if(visit<=2&&sheriff!=null&&own.getInt("HatTicks")>0){
+            int hat=Math.max(0,own.getInt("HatTicks")-5);
+            own.putInt("HatTicks",hat);
+            if(hat==0)sheriff.gesture(0);
+        }
         switch(visit){
             case 1->visitOne(p,b,own,friend,sheriff,prescott);
             case 2->visitTwo(p,b,own,friend,w0,w1);
@@ -268,12 +323,12 @@ public final class BorrascaStory {
 
     // ------------------------------------------------------------------ the first visit: the pact
     private static void visitOne(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff,@Nullable LiteraryActor prescott){
-        if(sheriff!=null&&!own.getBoolean("MetSheriff")&&near(p,sheriff.blockPosition(),8)){talk(p,sheriff,own);own.putInt("HatTicks",40);}
-        if(sheriff!=null&&own.getInt("HatTicks")>0){int hat=Math.max(0,own.getInt("HatTicks")-5);own.putInt("HatTicks",hat);if(hat==0)sheriff.gesture(0);}
+        if(sheriff!=null&&!own.getBoolean("MetSheriff")&&near(p,sheriff.blockPosition(),8))talk(p,sheriff,own);
         if(prescott!=null&&!own.getBoolean("MetPrescott")&&p.getZ()<b.getZ()-22&&p.getZ()>b.getZ()-34&&near(p,prescott.blockPosition(),13))talk(p,prescott,own);
         if(friend==null)return;
         friend.setInvisible(false);friend.appearance(LiteraryActor.BORRASCA_KIMBER,0);if(!own.getBoolean("CompassIssued"))friend.setItemSlot(EquipmentSlot.OFFHAND,BorrascaBelongings.original(p,own,"Compass"));
         pastMarkerTwo(p,b,own,friend);
+        childhoodEcho(p,b,own,friend);
         pact(p,b,own,friend);
     }
     private static boolean inFort(ServerPlayer p,BlockPos b){return p.getY()>=b.getY()+5.9&&p.getZ()<b.getZ()-89&&p.getZ()>b.getZ()-100&&Math.abs(p.getX()-b.getX())<6;}
@@ -285,21 +340,27 @@ public final class BorrascaStory {
             else if(ahead&&!own.getBoolean("CalledAfter")){own.putBoolean("CalledAfter",true);say(p,friend,"Hey! Wait for me!");}
             if(!own.getBoolean("MetFriend")&&!ahead){BorrascaCast.stop(friend);return;}
         }
+        if(ahead)own.putBoolean("PlayDone",true);
+        if(BorrascaPlay.tick(p,b,own,friend))return;
         // She goes to the Tree at her own pace, whether the reader is beside her, behind her or already there.
         if(!own.getBoolean("KimberAtFort")){if(!follow(p,b,own,friend,"ChildStep",CHILD_WALK))return;own.putBoolean("KimberAtFort",true);}
         // The legend, whenever the reader is at the Tree with her: in the fort or at its foot.
         if(!own.getBoolean("LegendDone")){
             if(!near(p,b.offset(FORT),9)){BorrascaCast.stop(friend);return;}
             int t=own.getInt("LegendTicks")+5;own.putInt("LegendTicks",t);
+            if(t==5&&!own.getBoolean("HeardPlayEcho")){
+                echo(p,b,own,.55F);own.putBoolean("HeardPlayEcho",true);
+            }
             String line=switch(t){
-                case 5->"They call him the Shiny Gentleman. He lives past the second marker.";
-                case 65->"You hear him before you see him. Three times, like somebody hitting a pipe a long way off.";
-                case 125->"Dana Pruitt went up past the marker to look at him. Then she moved away. That's what they said.";
-                case 185->"So if you hear him, you come down. You don't wait for anybody, and you don't look back up.";
+                case 20->"This is the front room. You can have the window. The compass is our clock, even though it doesn't tell time.";
+                case 105->"When we carve our names, it means we got up here on our own. If you come back after someone, you can leave a mark beside theirs.";
+                case 195->"That sound was the Shiny Gentleman. He lives past the second marker. Three knocks, like someone hitting a pipe.";
+                case 280->"Dana Pruitt went up to look for him. They said she moved away. Her name's still here. Her mom comes up to see it.";
+                case 370->"If you hear him again, we both come down. Follow me! I'll show you where our names can go.";
                 default->null;
             };
             if(line!=null)say(p,friend,line);
-            if(t>=245)own.putBoolean("LegendDone",true);
+            if(t>=410)own.putBoolean("LegendDone",true);
             BorrascaCast.stop(friend);return;
         }
         // Down the ladder to the trunk; she carves once the reader is near enough to see it.
@@ -317,6 +378,12 @@ public final class BorrascaStory {
         if(own.getBoolean("PastTwo"+visit)&&!own.getBoolean("WarnedTwo"+visit)&&p.getZ()>b.getZ()+MARKER_TWO_Z+3&&near(p,friend.blockPosition(),8)){own.putBoolean("WarnedTwo"+visit,true);say(p,friend,"You went past the second marker? Don't. That's where he is.");}
     }
     /** The noise from the ridge: three strokes, heard wherever the reader is, the dust lifting with it. */
+    private static void childhoodEcho(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
+        int clock=own.getInt("TrailClock");
+        if(clock<240||p.distanceToSqr(friend)>100||Math.floorMod(clock-own.getInt("EchoAt"),60000)<360)return;
+        echo(p,b,own,.5F);own.putBoolean("HeardPlayEcho",true);
+    }
+
     private static void echo(ServerPlayer p,BlockPos b,CompoundTag own,float volume){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),volume);dust(p);own.putInt("Echoes",own.getInt("Echoes")+1);own.putInt("EchoAt",own.getInt("TrailClock"));if(own.getInt("Visit")<=2)glimpse(p,b,own);}
     /** 0.4.236: while the strokes last, a child may see him standing in the pines past the second marker. Only that reader sees him. */
     private static void glimpse(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -364,6 +431,7 @@ public final class BorrascaStory {
     // ------------------------------------------------------------------ the second visit: the taking
     private static void visitTwo(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1){
         if(own.getBoolean("FriendMissing")){
+            if(own.getInt("TakingTicks")>0&&!own.getBoolean("TakingReturned")&&accost(p,b,own,new LiteraryActor[]{w0,w1}))return;
             if(friend!=null)gone(p,b,own,friend,"FriendHidden",0);
             if(w0!=null)gone(p,b,own,w0,"Taker0Hidden",-1);if(w1!=null)gone(p,b,own,w1,"Taker1Hidden",1);
             if(BorrascaBelongings.has(p,own,"Compass")){own.putBoolean("CompassExamined",true);own.putInt("Beat",2);}
@@ -373,6 +441,7 @@ public final class BorrascaStory {
         friend.setInvisible(false);friend.appearance(LiteraryActor.BORRASCA_KIMBER,0);if(!own.getBoolean("CompassIssued"))friend.setItemSlot(EquipmentSlot.OFFHAND,BorrascaBelongings.original(p,own,"Compass"));
         friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
         pastMarkerTwo(p,b,own,friend);
+        if(own.getInt("TakingTicks")==0)childhoodEcho(p,b,own,friend);
         taking(p,b,own,friend,w0,w1);
     }
     private static void taking(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1){
@@ -389,7 +458,7 @@ public final class BorrascaStory {
         if(!follow(p,b,own,friend,"TakingStep",TAKING_WALK))return;
         // At the clearing she waits for the reader, wherever they have got to, and calls for them.
         if(!near(p,b.offset(BorrascaRooms.TAKING),20)){int w=own.getInt("ClearingWait")+5;own.putInt("ClearingWait",w);if(w%200==5)say(p,friend,p.getGameProfile().getName()+"? Where'd you go?");return;}
-        own.putInt("TakingTicks",1);friend.gesture(2);say(p,friend,"Wait. Is that someone—");comeDown(p,b,own,w0,w1);stroke(p,b,own,1,w0,w1);send(p,own);
+        own.putInt("TakingTicks",1);friend.gesture(SCARED);say(p,friend,"Wait. Is that someone—");comeDown(p,b,own,w0,w1);stroke(p,b,own,1,w0,w1);send(p,own);
     }
     /**
      * The men come down the ridge road in the light (0.4.262). They are somewhere along the cutting outside the east wire where nobody can
@@ -460,7 +529,13 @@ public final class BorrascaStory {
         int i=Math.min(EXIT.length-1,own.getInt("ExitF"));var heading=Vec3.atBottomCenterOf(b.offset(EXIT[i])).subtract(friend.position()).multiply(1,0,1);if(heading.lengthSqr()<.04)heading=Vec3.atBottomCenterOf(b.offset(EXIT[Math.min(EXIT.length-1,i+1)])).subtract(friend.position()).multiply(1,0,1);if(heading.lengthSqr()<.01)heading=new Vec3(1,0,0);heading=heading.normalize();
         return friend.position().add(new Vec3(-heading.z,0,heading.x).scale(side*.78)).subtract(heading.scale(.12));
     }
-    private static void footsteps(ServerPlayer p,CompoundTag own,LiteraryActor w,int clock){if(w.getPersistentData().contains("BorrascaSpeed")&&(clock%10==1||clock%10==6))LiteraryVignettes.heard(p,SoundEvents.GRAVEL_STEP,w.blockPosition(),1.2F,.55F);}
+    private static void footsteps(ServerPlayer p,LiteraryActor w,int clock){
+        if(!w.getPersistentData().contains("BorrascaSpeed")||clock%10!=1&&clock%10!=6)return;
+        var level=p.serverLevel();
+        var sound=level.getBlockState(w.blockPosition().below()).getSoundType().getStepSound();
+        LiteraryVignettes.heard(p,sound,w.blockPosition(),.7F+w.getRandom().nextFloat()*.35F,
+                .58F+w.getRandom().nextFloat()*.35F);
+    }
     /**
      * They walk down to her side by side, take her by the arms, and lead her back up the lane and along the ridge road toward their truck.
      * She calls the reader's name once. Her compass falls where she is pulled up the lane.
@@ -468,38 +543,84 @@ public final class BorrascaStory {
     private static void taken(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1){
         int clock=Math.min(TAKEN_BY+LED_FOR+1,own.getInt("TakingTicks")+5);own.putInt("TakingTicks",clock);
         var men=new LiteraryActor[]{w0,w1};
+        if(accost(p,b,own,men))return;
         if(!own.getBoolean("Led")){
-            BorrascaCast.stop(friend);if(clock>40)friend.gesture(0);friend.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,men[0]!=null?men[0].getEyePosition():Vec3.atCenterOf(b.offset(BorrascaRooms.LAMP)));
+            BorrascaCast.stop(friend);friend.gesture(SCARED);friend.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,men[0]!=null?men[0].getEyePosition():Vec3.atCenterOf(b.offset(BorrascaRooms.LAMP)));
             boolean reached=false,turned=false;
             for(int i=0;i<2;i++){
                 var w=men[i];if(w==null)continue;w.setInvisible(false);int side=i==0?-1:1;String key="Taker"+i;
                 double near=w.distanceTo(friend);
                 if(own.getInt(key)<APPROACH.length&&near>3.2){route(p,b,own,w,key,APPROACH,side*.6,TAKER_PACE);w.gesture(0);}
                 else{var at=beside(b,own,friend,side);BorrascaCast.walk(w,at,.45);w.gesture(near<2.6?TAKING_HAND:0);if(near<1.9||w.position().subtract(at).horizontalDistance()<.45)reached=true;}
-                if(own.getInt(key)>LANE_HEAD)turned=true;footsteps(p,own,w,clock);
+                if(own.getInt(key)>LANE_HEAD)turned=true;footsteps(p,w,clock);
             }
             if(own.getInt("Strokes")<2&&(turned||clock>=TAKEN_BY*2/3))stroke(p,b,own,2,w0,w1);
             if(own.getInt("Strokes")<3&&own.getBoolean("GentBehind")&&own.getInt("GentTicks")>0)own.putInt("GentTicks",GENT_TICKS);
             if(reached||clock>=TAKEN_BY){own.putBoolean("Led",true);own.putInt("LedAt",clock);own.putInt("ExitF",0);friend.gesture(LED);say(p,friend,p.getGameProfile().getName()+"!");stroke(p,b,own,3,w0,w1);}
             return;
         }
-        // Led: she is walked up the lane between them, a hand on each arm, her head turned back over her shoulder.
-        friend.gesture(LED);route(p,b,own,friend,"ExitF",EXIT,0,LED_PACE);
-        for(int i=0;i<2;i++){var w=men[i];if(w==null)continue;int side=i==0?-1:1;BorrascaCast.walk(w,beside(b,own,friend,side),.75);w.gesture(side>0?HOLD_LEFT:HOLD_RIGHT);footsteps(p,own,w,clock);}
+        var carrier=friend.getVehicle() instanceof LiteraryActor w?w:null;
+        if(carrier==null){
+            for(var worker:men)if(worker!=null&&worker.distanceToSqr(friend)<6.25&&friend.startRiding(worker,true)){
+                carrier=worker;BorrascaCast.stop(friend);break;
+            }
+        }
+        friend.gesture(carrier==null?LED:CARRIED);
+        route(p,b,own,carrier==null?friend:carrier,"ExitF",EXIT,0,LED_PACE);
+        for(int i=0;i<2;i++){
+            var w=men[i];if(w==null)continue;
+            if(w==carrier)w.gesture(CARRY);
+            else{int side=i==0?-1:1;BorrascaCast.walk(w,beside(b,own,friend,side),.75);w.gesture(side>0?HOLD_LEFT:HOLD_RIGHT);}
+            footsteps(p,w,clock);
+        }
         if(clock>=own.getInt("LedAt")+LED_FOR){
             own.putBoolean("FriendMissing",true);friend.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);BorrascaBelongings.dropOnce(p,own,"Compass",b.offset(BorrascaRooms.DROP));
             fit(p,b,BorrascaRooms.DROP.below(),BorrascaFittingBlock.Kind.TRAIL);for(int i=0;i<8;i++)fit(p,b,new BlockPos(1,BorrascaRooms.trailY(-152-i),-152-i),BorrascaFittingBlock.Kind.TRACKS);
             for(int i=0;i<2;i++)if(!own.contains("Exit"+i))own.putInt("Exit"+i,own.getInt("ExitF"));
         }
     }
+    private static boolean accost(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor[] workers){
+        double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();
+        if(x<-.5||x>5.5||z>-152||z<-167)return false;
+        LiteraryActor guard=null;
+        for(var worker:workers)if(worker!=null&&!worker.isInvisible()&&worker.distanceToSqr(p)<64
+                &&(guard==null||worker.distanceToSqr(p)<guard.distanceToSqr(p)))guard=worker;
+        if(guard==null)return false;
+        if(!own.getBoolean("TakingWarned")){
+            own.putBoolean("TakingWarned",true);own.putInt("TakingWarnAt",own.getInt("TrailClock"));
+            say(p,guard,"That's far enough. Go back down.");
+            return false;
+        }
+        if(z>-154||Math.floorMod(own.getInt("TrailClock")-own.getInt("TakingWarnAt"),60000)<35
+                ||guard.distanceToSqr(p)>25)return false;
+        if(!LabyrinthDoors.sendBack(p,9,18,22,BorrascaStory::returned))return false;
+        guard.gesture(WARNING);guard.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        say(p,guard,"I told you to go back.");
+        p.hurt(p.damageSources().mobAttack(guard),2);
+        // The attack ends this attempt. The abduction still leaves its evidence on the ridge.
+        own.putBoolean("TakingReturned",true);
+        own.putBoolean("FriendMissing",true);
+        BorrascaBelongings.dropOnce(p,own,"Compass",b.offset(BorrascaRooms.DROP));
+        own.putBoolean("Here",false);own.remove("DepartVisit");own.remove("ExitEligible");
+        return true;
+    }
+
     /**
      * After the taking: whoever is still in view walks on up the lane, along the ridge road and up the cutting to the truck, she between
      * them; once nobody is looking, they are gone. Nobody vanishes while watched.
      */
     private static void gone(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor a,String key,int side){
         if(a.role()==LiteraryActor.BORRASCA_KIMBER){a.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);}
-        if(own.getBoolean(key)||a.isInvisible()&&!own.contains(key)||!LiteraryVignettes.watched(p.serverLevel(),a.getEyePosition())){a.setInvisible(true);own.putBoolean(key,true);BorrascaCast.stop(a);return;}
-        if(side==0){a.gesture(LED);route(p,b,own,a,"ExitF",EXIT,0,LED_PACE);return;}
+        if(own.getBoolean(key)||a.isInvisible()&&!own.contains(key)||!LiteraryVignettes.watched(p.serverLevel(),a.getEyePosition())){
+            a.stopRiding();a.ejectPassengers();a.setInvisible(true);own.putBoolean(key,true);BorrascaCast.stop(a);return;
+        }
+        if(side==0){
+            if(a.getVehicle() instanceof LiteraryActor carrier){
+                a.gesture(CARRIED);carrier.gesture(CARRY);route(p,b,own,carrier,"ExitF",EXIT,0,LED_PACE);
+            }else{a.gesture(LED);route(p,b,own,a,"ExitF",EXIT,0,LED_PACE);}
+            return;
+        }
+        if(a.isVehicle())return;
         String step="Exit"+(side<0?0:1);if(!own.contains(step))own.putInt(step,own.getInt("ExitF"));
         var friend=actor(p,own,"CastKimber");
         if(friend!=null&&!friend.isInvisible()&&a.distanceTo(friend)<4){BorrascaCast.walk(a,beside(b,own,friend,side),.75);a.gesture(side>0?HOLD_LEFT:HOLD_RIGHT);own.putInt(step,own.getInt("ExitF"));}
@@ -508,7 +629,7 @@ public final class BorrascaStory {
 
     // ------------------------------------------------------------------ the third visit: the denial
     private static void visitThree(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff){
-        if(friend!=null){friend.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);friend.setInvisible(true);BorrascaCast.stop(friend);}
+        if(friend!=null){friend.stopRiding();friend.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);friend.setInvisible(true);BorrascaCast.stop(friend);}
         // The gouge is seen when it is looked at, from close enough to read the bark; no hand is needed.
         if(!own.getBoolean("GougeSeen")&&looksAt(p,b.offset(BorrascaRooms.CARVING),7))noticeGouge(p,own);
         if(sheriff!=null){sheriff.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(BorrascaRegistry.FLASHLIGHT.get()));blockade(p,b,own,sheriff);}
@@ -568,7 +689,7 @@ public final class BorrascaStory {
 
     // ------------------------------------------------------------------ the fourth visit: the names
     private static void visitFour(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff){
-        if(friend!=null){friend.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);friend.setInvisible(true);BorrascaCast.stop(friend);}
+        if(friend!=null){friend.stopRiding();friend.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);friend.setInvisible(true);BorrascaCast.stop(friend);}
         if(sheriff!=null)patrolRefinery(p,b,own,sheriff);
         if(!own.getBoolean("PowerOff")&&own.getInt("TrailClock")%200==0)heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),1);
         if(!own.getBoolean("GougeSeen")&&looksAt(p,b.offset(BorrascaRooms.CARVING),7))noticeGouge(p,own);
@@ -693,7 +814,7 @@ public final class BorrascaStory {
     private static void fit(ServerPlayer p,BlockPos b,BlockPos rel,BorrascaFittingBlock.Kind kind){p.serverLevel().setBlock(b.offset(rel),BorrascaFittingBlock.of(kind,Direction.SOUTH),F);}
     private static boolean near(ServerPlayer p,BlockPos at,double distance){return at!=null&&p.distanceToSqr(Vec3.atBottomCenterOf(at))<distance*distance;}
     /** A person speaks: over their head, and on the reader's action bar. Never in chat. */
-    private static void say(ServerPlayer p,LiteraryActor a,String words){a.say(words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.displayClientMessage(Component.literal(speaker(a)+": "+words),true);}
+    static void say(ServerPlayer p,LiteraryActor a,String words){a.say(words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.displayClientMessage(Component.literal(speaker(a)+": "+words),true);}
     static String speaker(LiteraryActor a){if(townChild(a.role(),a.phase()))return a.phase()==ELI?"Eli":"Wren";return a.role()==LiteraryActor.BORRASCA_KIMBER?FRIEND:a.role()==LiteraryActor.BORRASCA_SHERIFF?"Sheriff":a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER?"Prescott":"A man";}
     /** What the reader notices, on the action bar. */
     private static void cue(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}

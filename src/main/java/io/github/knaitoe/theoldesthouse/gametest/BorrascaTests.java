@@ -102,6 +102,29 @@ public final class BorrascaTests {
     // Run 1416: with the ladder fixed both bodies climb, descend and carve, but the climb, the legend (245 ticks) and the descent left
     // too little of 1800 ticks on a slower runner, where loading the site and its cast takes more ticks. The budget doubles; nothing it
     // checks is loosened.
+    @AfterBatch(batch="borrasca_play") public static void playDone(ServerLevel level){cleanup();}
+    @GameTest(template="empty",batch="borrasca_play",timeoutTicks=1800)
+    public static void nellPlaysBeforeTheTreeAndTheTrailChildrenHaveMoreToSay(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_play");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded"))
+            .thenExecute(()->{f.enter(p);f.at(p,1,0,-18);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("MetFriend"),"Nell starts the game at the trailhead"))
+            .thenExecute(()->{
+                var b=f.base(p);var eli=f.actor(p,"TownEli");var wren=f.actor(p,"TownWren");
+                h.assertTrue(eli.blockPosition().equals(b.offset(-2,0,-24))
+                        &&wren.blockPosition().equals(b.offset(-2,0,-32)),"both children are on the main trail");
+                f.talk(p,"TownEli");f.talk(p,"TownEli");
+                h.assertTrue(f.own(p).getInt("EliTalk1")>=2,"Eli has a second conversation about the Sheriff");
+                f.at(p,1,0,-28);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("TaggedNell"),"catching up tags Nell before the Tree"))
+            .thenExecute(()->f.at(p,3,0,-35))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FoundNell")&&f.own(p).getBoolean("PlayDone"),
+                    "finding her on the far side of the hiding tree finishes the games"))
+            .thenExecute(()->h.assertTrue(!f.own(p).getBoolean("KimberAtFort"),"the play took place before she reached the fort"))
+            .thenSucceed();
+    }
+
     @GameTest(template="empty",batch="borrasca_motion",timeoutTicks=3600)
     public static void nativeChildAndTheOriginalFriendClimbTheActualFortWithoutRelocation(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("triple_tree_climber");final boolean[] moving={false};final int[] rises={0},friendRises={0},playerRoute={0};final double[] last={0,0};
