@@ -42,7 +42,7 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--jar',action='store_true');args=parser.parse_args()
     review=json.loads(CATALOG.read_text());changed=reviewed_repaints(review)
     # Preserve the historical 0.4.100 inventory, including its original machine atlas.
-    # The five later Drisking human sheets are now explicitly included in LOOKS below.
+    # The later Drisking human sheets are explicitly included in LOOKS.
     assert review['excluded']==['Borrasca']
     assert set(changed).isdisjoint(review['unchanged_png_sha256'])
     assert len(changed)+len(review['unchanged_png_sha256'])==review['png_count']==769
@@ -101,7 +101,7 @@ def main():
             assert native.getchannel('A').crop(box).getextrema()==(255,255),('Unpainted creature face',name,face)
     runtime=json.loads(read('src/main/resources/assets/the_oldest_house/character_art.json'))
     assert runtime==entries(),'Native review catalog differs from the actual production mesh selection'
-    assert {r['name'] for r in runtime if r['model']=='borrasca'}=={'borrasca_'+p for p in ('kyle','kimber','sheriff','prescott','worker','worker_two')}
+    assert {r['name'] for r in runtime if r['model']=='borrasca'}=={'borrasca_'+p for p in ('kyle','kimber','sheriff','prescott','worker','worker_two','eli','wren')}
     print(f"Verified {len(changed)} catalogued paintings including {len(FAMILY_PATHS)} refreshed family sheets, {len(runtime)} human model selections including Drisking, all opaque native base faces and {len(review['unchanged_png_sha256'])} unchanged historical PNGs.")
     if packaged:packaged.close()
 

@@ -124,7 +124,7 @@ public final class BorrascaNativeArt {
                 default->{}
             }}
         /** Keep the approved child review poses; adults use the same full-length body as their live renderer. */
-        public void preview(int person,float age,float stride){HumanoidMotion.reset(this);young=person<2;crouching=false;riding=false;attackTime=0;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
+        public void preview(int person,float age,float stride){HumanoidMotion.reset(this);young=person<2||person>=6;crouching=false;riding=false;attackTime=0;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
         public void previewPose(int person,int gesture,float age){preview(person,age,0);pose(gesture,person==2,age);HumanoidMotion.connect(this);}
     }
     public static void cube(PoseStack p,VertexConsumer out,float x0,float y0,float z0,float x1,float y1,float z1,int tile,int light,int overlay,int colour){

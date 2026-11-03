@@ -133,6 +133,8 @@ public final class Truant {
         // Favours taken on this meeting, by reader; the side of the ledge they took it on; the lamp put out for him.
         final Map<UUID,String> favour=new HashMap<>();final Map<UUID,Integer> favourSide=new HashMap<>();boolean dark,saidOut;
         boolean handsOff;
+        @Nullable TruantHospitality.Departure mealDeparture;
+        @Nullable TruantHospitality.Encounter hospitality;
     }
     static @Nullable Scene scene;
     /** Each reader's last time with him (for meetings), the readers he has helped this meeting, those he keeps his distance from, and their time close to him (for the panel). */
@@ -198,6 +200,7 @@ public final class Truant {
             if(now>scene.quietAt&&scene.quietAt>=0&&a.hasCustomName()){a.setCustomName(null);a.setCustomNameVisible(false);scene.quietAt=-1;}
             if(now<scene.flinchUntil){if(a.gesture()!=FLINCH)a.gesture(FLINCH);continue;}
             if(a.gesture()==FLINCH)a.gesture(0);
+            if(TruantHospitality.tick(l,b,a,readers,scene))continue;
             switch(place){
                 case TRUANT_DOOR->{if(scene.turn==Turn.DOORWAY&&!scene.aside)doorway(l,b,a,readers);else door(l,b,a,readers,now);}
                 case TRUANT_LEDGE->{if(scene.turn==Turn.SHOVE)shove(l,b,a,readers);else ledge(l,b,a,readers);}
@@ -453,6 +456,7 @@ public final class Truant {
     public static void talk(ServerPlayer p,LiteraryActor a){
         if(!reader(p)||!a.isAlive()||p.level()!=a.level()||p.distanceToSqr(a)>25)return;
         if(withdrawn(p)||scene!=null&&a.level().getGameTime()<scene.flinchUntil)return;
+        if(scene!=null&&TruantHospitality.interrupt(p,a,scene))return;
         // 0.4.282: waiting at the crossing to come up behind someone, he will not be drawn into talk.
         if(scene!=null&&scene.turn==Turn.SHOVE){say(a,TruantTexts.BEHIND);return;}
         met(p,a,a.level().getGameTime());
@@ -502,6 +506,7 @@ public final class Truant {
             p.getFoodData().eat(coffee?2:4,coffee?.2F:.45F);
             if(coffee)p.playSound(SoundEvents.GENERIC_DRINK,.6F,1);
             own.putString("LastRefreshment",choice);
+            own.putInt(coffee?"CoffeeGiftAt":"BreadGiftAt",meeting(own));
             record(p.server,p.getUUID(),own);
             line(p,a,who,coffee?TruantTexts.COFFEE:TruantTexts.BREAD);
         }
@@ -565,6 +570,7 @@ public final class Truant {
         if(scene!=null){scene.flinchUntil=a.level().getGameTime()+WITHDRAW;if(p.getUUID().equals(scene.steadied)){scene.steadied=null;scene.crossing=3;scene.leg=1;}
             // 0.4.282: struck, he gives up whatever he was doing to them: steps out of the doorway, lets go of the wrist, stops coming.
             var sc=scene;
+            TruantHospitality.struck(a,sc);
             if(sc.turn==Turn.DOORWAY&&!sc.aside){sc.aside=true;sc.holding=false;}
             if(sc.turn==Turn.COVER&&sc.cover>0&&sc.cover<4&&a.level() instanceof ServerLevel l){var b=base(l,TruantPlaces.LAMP);if(b!=null)release(l,b,a,sc.target==null?null:l.getServer().getPlayerList().getPlayer(sc.target));}
             if(sc.turn==Turn.SHOVE&&sc.shove>=1&&sc.shove<=2){sc.shove=4;sc.shoveTicks=0;}}
@@ -836,6 +842,8 @@ public final class Truant {
     static void claim(ServerPlayer p,LiteraryActor a){
         var server=p.server;var id=p.getUUID();var own=record(server,id);int meeting=meeting(own);
         own.putInt("Talked",meeting);String who=who(own);beginTalk(p,a,who,meeting);
+        record(server,id,own);
+        if(TruantHospitality.offer(p,a))return;
         var sc=scene;var place=LabyrinthPlace.byId(a.scene());
         if(sc!=null&&sc.turn==Turn.DOORWAY&&!sc.aside)line(p,a,who,TruantTexts.NOT_YET);
         var page=TruantTexts.page(own);boolean read=page!=null&&(place==TruantPlaces.LAMP||worn(own)>=2);

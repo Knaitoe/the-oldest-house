@@ -61,6 +61,70 @@ public final class TruantTests {
     private static void deepest(LiteraryTests.Fixture f,ServerPlayer p,int depth){var d=f.data();var exp=HouseExperience.record(d,p.getUUID());exp.putInt("Deepest",depth);HouseExperience.save(d,p.getUUID(),exp);}
     private static boolean lit(ServerLevel l,BlockPos lamp){return l.getBlockState(lamp.offset(TruantPlaces.LAMP_LIGHT)).is(Blocks.LANTERN);}
 
+    @AfterBatch(batch="truant_hospitality") public static void doneHospitality(ServerLevel l){done(l);}
+    @GameTest(template="empty",batch="truant_hospitality",timeoutTicks=1800)
+    public static void johnnyUsesPrivateHospitalityAgainstTheReader(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;
+        var l=f.in;var server=l.getServer();var lamp=f.base(TruantPlaces.LAMP);
+        hold(f,TruantPlaces.LAMP);hold(f,TruantPlaces.DOOR);
+        var reader=NativeTestPlayers.survival(h,"bread_reader");
+        var witness=NativeTestPlayers.survival(h,"bread_witness");
+        var companion=NativeTestPlayers.survival(h,"bread_friend");
+        f.players.add(reader);f.players.add(witness);f.players.add(companion);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"Johnny's lamp and the far destination are resident"))
+            .thenExecute(()->{
+                for(var place:java.util.List.of(TruantPlaces.LAMP,TruantPlaces.DOOR)){
+                    TruantPlaces.build(l,f.base(place),place);
+                    LabyrinthBuilder.registerDoors(f.data(),place,f.base(place));
+                }
+                for(var p:f.players)deepest(f,p,25);
+                var own=history();own.putInt("BreadGiftAt",3);own.putInt("CoffeeGiftAt",3);
+                Truant.remember(server,reader.getUUID(),own);
+                Truant.force(Truant.Turn.CLAIM);
+                stand(reader,l,lamp,-2.8,0,-7.7,90);
+                stand(witness,l,lamp,-2.6,0,-8.6,90);
+                stand(companion,l,lamp,-9.5,0,-15.5,180);
+            }).thenWaitUntil(()->h.assertTrue(Truant.lampStage()==3&&Truant.turn()==Truant.Turn.CLAIM,"he has come to the lamp"))
+            .thenExecute(()->{
+                var far=f.data().door(TruantPlaces.LAMP.id()+"/far");
+                f.data().deal(companion.getUUID(),far,TruantPlaces.DOOR.id(),false);
+                stand(companion,l,lamp,-9.5,0,-18.4,180);
+                LabyrinthDoors.use(companion,far);
+                stand(reader,l,lamp,-4.5,0,-7.9,180);
+                stand(witness,l,lamp,-3.9,0,-8.6,180);
+            }).thenWaitUntil(()->h.assertTrue(room(f.base(TruantPlaces.DOOR),TruantPlaces.DOOR).contains(companion.position()),
+                    "the companion actually took the lamp hall's far door"))
+            .thenWaitUntil(()->h.assertTrue(Truant.body(l).distanceToSqr(Vec3.atLowerCornerOf(lamp).add(TruantPlaces.LAMP_SPOT))<.04,
+                    "Johnny is in talking range at his lamp"))
+            .thenExecute(()->{
+                var a=Truant.body(l);Truant.talk(reader,a);
+                h.assertTrue(Talk.lines(reader).stream().anyMatch(line->line.contains("Which door did bread_friend take?")),"he asks about the actual companion");
+                h.assertTrue(Talk.choose(reader,"I'm not telling you.")&&said(l).contains("did I ask why you were alone"),"he makes the accusation aloud");
+                h.assertTrue(Talk.choose(reader,"Call out to warn them."),"the reader can call through to the companion");
+            }).thenWaitUntil(()->h.assertTrue(Truant.body(l).getX()<lamp.getX()-5.6,"Johnny walks toward the actual far door"))
+            .thenExecute(()->{
+                var a=Truant.body(l);stand(witness,l,lamp,a.getX()-lamp.getX(),0,-7.4,180);Truant.talk(witness,a);
+                h.assertTrue(said(l).equals("All right. Leave it."),"a witness can intervene");
+                Talk.close(reader);Truant.apart();Truant.fresh();
+                stand(reader,l,lamp,-2.8,0,-7.7,90);
+                stand(witness,l,lamp,-2.6,0,-8.6,90);
+            }).thenWaitUntil(()->h.assertTrue(Truant.lampStage()==3&&Truant.turn()==Truant.Turn.CLAIM,"later he comes to the lamp again"))
+            .thenExecute(()->stand(reader,l,lamp,-4.5,0,-7.9,180))
+            .thenWaitUntil(()->h.assertTrue(Truant.body(l).distanceToSqr(Vec3.atLowerCornerOf(lamp).add(TruantPlaces.LAMP_SPOT))<.04,
+                    "Johnny returns to his lamp"))
+            .thenExecute(()->{
+                Truant.talk(reader,Truant.body(l));
+                h.assertTrue(Talk.choose(reader,"Take the cup.")&&Talk.choose(reader,"Set the cup down and go."),"the second cup can be set down to leave");
+                h.assertTrue(said(l).equals("You said you'd wait with me.")&&!reader.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),"he reaches before the grab");
+            }).thenWaitUntil(()->h.assertTrue(Truant.record(server,reader.getUUID()).getInt("CoffeeHeld")==1
+                    &&reader.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),"he catches the reader's wrist"))
+            .thenExecute(()->{
+                stand(witness,l,lamp,-4,0,-8.4,180);Truant.talk(witness,Truant.body(l));
+                h.assertTrue(said(l).equals("All right. Leave it."),"a companion can make him let go");
+            }).thenWaitUntil(()->h.assertTrue(!reader.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),"the grip expires immediately after the interruption"))
+            .thenSucceed();
+    }
+
     @GameTest(template="empty",batch="truant_reconnect",timeoutTicks=2500)
     public static void johnnyResumesAnInterruptedQuestionWithTheSameReader(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);active=f;

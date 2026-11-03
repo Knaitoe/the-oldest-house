@@ -389,7 +389,10 @@ public final class LabyrinthDoors {
         LabyrinthData.Waypoint leftFrom = leaving == null ? null : data.peekReturn(player.getUUID());
         LabyrinthData.Door leavingEntry = leaving == null ? null : SceneInstances.entryOf(data, leaving, from);
         if (leaving != null) depart(player, leaving);
+        boolean fromTruantLamp=TruantHospitality.farDoor(from);
+        long truantRoute=fromTruantLamp?data.nodeKey(player.getUUID(),TruantPlaces.LAMP):0;
         Consumer<ServerPlayer> arrived = p -> {
+            if(fromTruantLamp)TruantHospitality.departed(p,from,truantRoute);
             var current = LabyrinthData.get(p.server);
             if(fromRead)HouseReadSites.left(p);
             if(leftFrom!=null&&leavingEntry!=null)VignetteGate.departed(p,leftFrom,leavingEntry);
