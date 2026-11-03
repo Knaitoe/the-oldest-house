@@ -81,9 +81,10 @@ public final class SceneCraft {
     // The elk carcasses (0.4.50) author their own two-stage woods, stream and shore, the Last Stop (0.4.78) its own road,
     // lot, field and woods, Movie Night (0.4.102) its own banks, woods and piers, Costume Night (0.4.103) its beach, lake and
     // park, and Winter Lake (0.4.104) its frozen lake and snowy banks: nothing generic is planted over them. The barn well's
-    // farm (0.4.164) is built whole by BarnWell, its barn, shed, well and wood with it.
+    // farm (0.4.164) is built whole by BarnWell, its barn, shed, well and wood with it. The Shallows and the phone's lake (0.4.280)
+    // get their Idaho banks and woods from LakeLandscape as they are built.
     static final Set<LabyrinthPlace> GROUNDS = EnumSet.of(LabyrinthPlace.HOLY_RABBIT,
-            LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN, LabyrinthPlace.SHALLOWS, LabyrinthPlace.PHONE_CANOE,
+            LabyrinthPlace.CAMP_BLOOD, LabyrinthPlace.END_WORLD_CABIN,
             LabyrinthPlace.GOATMAN, LabyrinthPlace.EXPLORER_CAMP);
     /** How far outside its room box a scene's banks and woods reach. */
     private static final int REACH = 6;
@@ -1070,7 +1071,7 @@ public final class SceneCraft {
             case HOLY_RABBIT -> { fellGrid(); woods(5, new int[]{75, 20, 0, 0, 5}, true); undergrowth(); }
             case CAMP_BLOOD -> { fellGrid(); woods(5, new int[]{30, 0, 40, 30, 0}, false); undergrowth(); cabins(); campGround(); }
             case END_WORLD_CABIN -> { fellGrid(); woods(5, new int[]{55, 10, 10, 25, 0}, false); undergrowth(); endCabin(); }
-            case SHALLOWS, PHONE_CANOE, DROWNED_TOWN -> banks();
+            case DROWNED_TOWN -> banks();
             case GOATMAN -> thicket();
             case EXPLORER_CAMP -> camp();
             default -> { }

@@ -372,7 +372,9 @@ public final class ArchitectureTests {
         }
         var shallows=LabyrinthPlaces.base(origin,LabyrinthPlace.SHALLOWS);var sr=LabyrinthPlace.SHALLOWS.room();int steps=0,runs=0,previous=Integer.MIN_VALUE;
         for(int z=sr.minZ()+4;z<=-6;z++){
-            int top=Integer.MIN_VALUE;for(int y=8;y>=-3;y--)if(outside.getBlockState(shallows.offset(sr.minX(),y,z)).is(Blocks.PODZOL)){top=y;break;}
+            // 0.4.280: the Idaho bank's top is needles, moss, grass or granite; trunks and boughs are not ground.
+            int top=Integer.MIN_VALUE;for(int y=8;y>=-3;y--){var at=shallows.offset(sr.minX(),y,z);var s=outside.getBlockState(at);
+                if(s.isCollisionShapeFullBlock(outside,at)&&!s.is(net.minecraft.tags.BlockTags.LOGS)&&!s.is(net.minecraft.tags.BlockTags.LEAVES)){top=y;break;}}
             if(top==Integer.MIN_VALUE){previous=Integer.MIN_VALUE;continue;}
             if(previous!=Integer.MIN_VALUE){runs++;if(top!=previous)steps++;}
             previous=top;

@@ -20,7 +20,8 @@ public final class LakeSettlement {
     private LakeSettlement(ServerLevel l,BlockPos b,LabyrinthPlace site){this.l=l;this.b=b;this.site=site;}
     public static void decorateOnce(ServerLevel l,BlockPos b,LabyrinthPlace site){
         // 0.4.67: Proofrock authors its own streets and woods.
-        if(!LakeLandscape.isLake(site)||site==LabyrinthPlace.DROWNED_TOWN)return;
+        // 0.4.280: the Shallows and the phone's lake are given their Idaho banks and woods as they are built.
+        if(!LakeLandscape.isLake(site)||site==LabyrinthPlace.DROWNED_TOWN||site==LabyrinthPlace.SHALLOWS||site==LabyrinthPlace.PHONE_CANOE)return;
         var data=LabyrinthData.get(l.getServer());var state=data.state(STATE);String key=b.asLong()+":"+site.id();
         if(state.getBoolean(key))return;
         // A periodic repair is not permission to generate an undealt lake. Check the saved
