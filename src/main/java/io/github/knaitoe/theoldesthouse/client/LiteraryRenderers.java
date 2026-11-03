@@ -268,7 +268,8 @@ public final class LiteraryRenderers {
         /**
          * 0.4.264, Johnny Truant's gestures (labyrinth/Truant): a hand out to his right on a door he is holding; a hand forward at
          * shoulder height, between someone's shoulders; his lamp lifted; the lean round a corner, his head and shoulder out to his left
-         * and that hand on the jamb; and both arms up, flinching.
+         * and that hand on the jamb; and both arms up, flinching. 0.4.282 adds the push, looking over an edge, the reach across his lamp,
+         * a page held close, and a hand up on a door frame.
          */
         public void truant(int gesture,float age){
             switch(gesture){
@@ -277,6 +278,13 @@ public final class LiteraryRenderers {
                 case io.github.knaitoe.theoldesthouse.labyrinth.Truant.LAMP->{rightArm.xRot=-1.85F+net.minecraft.util.Mth.sin(age*.08F)*.03F;rightArm.yRot=-.3F;head.xRot+=.08F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.Truant.PEEK->{body.zRot=.2F;head.x+=2.6F;head.y+=.7F;head.zRot=.3F;leftArm.x+=1.4F;leftArm.zRot=.2F;leftArm.xRot=-1.55F;leftArm.yRot=-.3F;rightArm.zRot=.2F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.Truant.FLINCH->{leftArm.xRot=rightArm.xRot=-2.1F;leftArm.yRot=.55F;rightArm.yRot=-.55F;body.xRot-=.1F;head.xRot+=.35F;}
+                // 0.4.282: both hands forward, the push; bent over an edge, looking down; reaching across his lamp, a hand out for a wrist;
+                // bent over a page held in both hands; a hand up on a door frame.
+                case io.github.knaitoe.theoldesthouse.labyrinth.Truant.PUSH->{leftArm.xRot=rightArm.xRot=-1.6F;leftArm.yRot=.16F;rightArm.yRot=-.16F;body.xRot+=.3F;head.xRot+=.1F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.Truant.OVER->{body.xRot+=.45F;head.xRot+=.8F;leftArm.xRot=rightArm.xRot=.25F;leftArm.zRot=-.14F;rightArm.zRot=.14F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.Truant.REACH->{leftArm.xRot=-1.45F;leftArm.yRot=.65F;rightArm.xRot=-1.1F;rightArm.yRot=-.12F;body.xRot+=.1F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.Truant.PAGE->{rightArm.xRot=leftArm.xRot=-.95F;rightArm.yRot=-.32F;leftArm.yRot=.32F;head.xRot+=.5F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.Truant.FRAME->{rightArm.xRot=-2.65F;rightArm.yRot=.2F;rightArm.zRot=.28F;leftArm.xRot=-.15F;body.yRot-=.08F;}
                 default->{}
             }
             hat.copyFrom(head);

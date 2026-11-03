@@ -6,7 +6,11 @@ import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
@@ -22,6 +26,9 @@ import net.neoforged.neoforge.gametest.*;
  * behind them with his question; a hand on the crossing that catches a slip and says "There." at the far end; the door's closer on its
  * own, shoving a reader in the doorway back while he is with someone else; and a later meeting that remembers the "maybe" and the place,
  * counts the promise kept when a new story is told, and notes twenty passes.
+ * <p>
+ * 0.4.282, the second slice (docs/TRUANT_0_4_282.md): a reader past twenty with a history with him meets the claimant and the
+ * collector, and a reader under twenty standing with them keeps every meeting free of anything hostile.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_exploration") @PrefixGameTestTemplate(false)
 public final class TruantTests {
@@ -29,8 +36,9 @@ public final class TruantTests {
     private static LiteraryTests.Fixture active;
     @AfterBatch(batch="truant") public static void done(ServerLevel l){
         if(active!=null){for(var place:TruantPlaces.PLACES)for(var a:active.in.getEntitiesOfClass(LiteraryActor.class,room(active.base(place),place)))a.discard();active.close();active=null;}
-        Truant.fresh();Truant.apart();
+        Truant.fresh();Truant.apart();Truant.force(null);
     }
+    @AfterBatch(batch="truant_after") public static void doneAfter(ServerLevel l){done(l);}
     static AABB room(BlockPos b,LabyrinthPlace place){var r=place.room();return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+r.maxZ()+1);}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static void stand(ServerPlayer p,ServerLevel l,BlockPos b,double x,double y,double z,float yaw){p.teleportTo(l,b.getX()+x,b.getY()+y,b.getZ()+z,yaw,0);p.setYRot(yaw);p.setYHeadRot(yaw);p.setXRot(0);p.setNoGravity(true);p.setDeltaMovement(Vec3.ZERO);}
@@ -40,6 +48,121 @@ public final class TruantTests {
     private static int truants(ServerLevel l,BlockPos b,LabyrinthPlace place){return l.getEntitiesOfClass(LiteraryActor.class,room(b,place),a->a.isAlive()&&Truant.isTruant(a)).size();}
     private static String said(ServerLevel l){var a=Truant.body(l);return a==null||!a.hasCustomName()?"":a.getCustomName().getString();}
     private static String where(LiteraryTests.Fixture f){var a=Truant.body(f.in);if(a==null)return "nobody; "+Truant.debug(f.in.getServer());var at=Truant.at(f.in.getServer());var b=at==null?BlockPos.ZERO:f.base(at);return String.format("at %.2f %.2f %.2f in %s gesture %d phase %d; ",a.getX()-b.getX(),a.getY()-b.getY(),a.getZ()-b.getZ(),at,a.gesture(),a.phase())+Truant.debug(f.in.getServer());}
+
+    /** A veteran's history with him: three meetings, all three kinds of help, a promise made and kept, one place told and answered, twenty passes noted at the second meeting, his name. */
+    private static CompoundTag history(){
+        var own=new CompoundTag();own.putInt("Meetings",3);own.putInt("Talked",3);own.putInt("Help",Truant.HELP_DOOR|Truant.HELP_STEADY|Truant.HELP_LAMP);
+        own.putString("Promise","agreed");own.putInt("PromisedAt",1);own.putBoolean("Kept",true);own.putString("KeptPlace","winter_lake");own.putInt("KeptAt",2);own.putBoolean("Thanked",true);
+        var told=new ListTag();told.add(StringTag.valueOf("winter_lake"));own.put("Told",told);var answers=new CompoundTag();answers.putInt("winter_lake",0);own.put("Answers",answers);
+        own.putBoolean("Twenty",true);own.putInt("TwentyAt",2);own.putBoolean("Named",true);return own;
+    }
+    private static void deepest(LiteraryTests.Fixture f,ServerPlayer p,int depth){var d=f.data();var exp=HouseExperience.record(d,p.getUUID());exp.putInt("Deepest",depth);HouseExperience.save(d,p.getUUID(),exp);}
+    private static boolean lit(ServerLevel l,BlockPos lamp){return l.getBlockState(lamp.offset(TruantPlaces.LAMP_LIGHT)).is(Blocks.LANTERN);}
+
+    @GameTest(template="empty",batch="truant_after",timeoutTicks=5000)
+    public static void pastTwentyHeClaimsCollectsAndShovesButStillHelps(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var l=f.in;var server=l.getServer();
+        var door=f.base(TruantPlaces.DOOR);var ledge=f.base(TruantPlaces.LEDGE);var lamp=f.base(TruantPlaces.LAMP);
+        for(var place:TruantPlaces.PLACES)hold(f,place);
+        var a=NativeTestPlayers.survival(h,"truant_veteran");var b=NativeTestPlayers.survival(h,"truant_early");f.players.add(a);f.players.add(b);
+        int[] at=new int[1];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"his three places are resident"))
+            .thenExecute(()->{
+                Truant.fresh();Truant.apart();
+                for(var place:TruantPlaces.PLACES){TruantPlaces.build(l,f.base(place),place);LabyrinthBuilder.registerDoors(f.data(),place,f.base(place));}
+                deepest(f,a,25);deepest(f,b,5);Truant.remember(server,a.getUUID(),history());f.data().visit(a.getUUID(),LabyrinthPlace.CAMP_BLOOD);
+                // The gate: with a reader under twenty beside them, the covered light becomes a claim, and nothing hostile happens.
+                Truant.force(Truant.Turn.COVER);
+                stand(a,l,lamp,.5,0,-2.5,180);a.lookAt(EntityAnchorArgument.Anchor.EYES,Vec3.atLowerCornerOf(lamp).add(TruantPlaces.PEEK_SPOT.x+.33,1.55,TruantPlaces.PEEK_SPOT.z));
+                stand(b,l,lamp,.5,0,-1.5,180);
+            })
+            .thenWaitUntil(()->h.assertTrue(Truant.turn()==Truant.Turn.CLAIM&&Truant.record(server,a.getUUID()).getInt("Revealed")==4,"with an early reader there, he is a claimant, not the covered light: "+where(f)))
+            .thenWaitUntil(()->h.assertTrue(said(l).equals(TruantTexts.LEAN),"the half smile leans further out before it draws back: "+where(f)))
+            .thenWaitUntil(()->h.assertTrue(Truant.lampStage()==3&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(lamp).add(TruantPlaces.LAMP_SPOT))<.2,"then to his lamp: "+where(f)))
+            .thenExecute(()->{stand(a,l,lamp,-4.5,0,-7.6,0);stand(b,l,lamp,-3.5,0,-7.6,0);})
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(a)&&Talk.waiting(b)&&Talk.key(a).equals(Truant.KEY),"he helps both, and asks: "+where(f)))
+            .thenExecute(()->{
+                var lines=Talk.lines(a);
+                h.assertTrue(lines.contains("you: "+TruantTexts.PAGE_NOTE)&&lines.stream().anyMatch(x->x.startsWith("Johnny: \"")&&x.contains("frozen lake")),"his papers: the reader's own place, in the first person: "+lines);
+                h.assertTrue(lines.contains("Johnny: You didn't tell me what you left behind."),"a kept promise still leaves what he claims: "+lines);
+                var own=Truant.record(server,a.getUUID());var claims=own.getList("Claims",Tag.TAG_COMPOUND);
+                h.assertTrue(claims.getCompound(claims.size()-1).getString("Claim").equals("the_rest")&&own.getString("Promise").equals("agreed")&&own.getBoolean("Kept")&&own.getList("Papers",Tag.TAG_STRING).getString(0).equals("winter_lake"),"what he claims, what was said and what he wrote are kept apart: "+own);
+                h.assertTrue(Talk.replies(a).contains("Tell him about Camp Blood.")&&Talk.replies(a).contains("I already told you that.")&&Talk.replies(a).contains("That's all you get."),"the reader can tell, challenge or set a limit: "+Talk.replies(a));
+                h.assertTrue(Talk.choose(a,"That happened to me.")&&Truant.record(server,a.getUUID()).getInt("Corrected")==1&&Talk.lines(a).contains("Johnny: Put the lamp out. I want to see what's past it."),"corrected, he keeps it, and asks a favour: "+Talk.lines(a));
+                h.assertTrue(Talk.choose(a,"No.")&&Talk.lines(a).contains("Johnny: "+TruantTexts.STILL_MINE)&&Truant.record(server,a.getUUID()).getList("Favours",Tag.TAG_COMPOUND).getCompound(0).getString("Answer").equals("refused"),"refused, and the refusal kept as said");
+                var early=Truant.record(server,b.getUUID());
+                h.assertTrue((early.getInt("Help")&Truant.HELP_LAMP)!=0&&early.getList("Claims",Tag.TAG_COMPOUND).isEmpty()&&Talk.lines(b).contains("The man: "+TruantTexts.ASK),"the early reader meets the man they know: "+early+" "+Talk.lines(b));
+                h.assertTrue(lit(l,lamp)&&!a.hasEffect(MobEffects.BLINDNESS),"the lamp stayed lit");
+                Talk.close(a);Talk.close(b);away(b,f);Truant.apart();Truant.fresh();
+                stand(a,l,lamp,.5,0,-6.5,180);
+            })
+            // The covered light, alone.
+            .thenWaitUntil(()->h.assertTrue(Truant.turn()==Truant.Turn.COVER&&Truant.lampStage()==3&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(lamp).add(TruantPlaces.LAMP_SPOT))<.2,"alone, at his lamp: "+where(f)))
+            .thenExecute(()->stand(a,l,lamp,-4.5,0,-7.6,0))
+            .thenWaitUntil(()->h.assertTrue(!lit(l,lamp)&&a.hasEffect(MobEffects.BLINDNESS),"he reaches across his lamp and it goes out: "+where(f)))
+            .thenWaitUntil(()->h.assertTrue(Truant.coverStage()==3&&said(l).equals(TruantTexts.WRIST)&&a.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)&&Truant.body(l).distanceTo(a)<1.6,"across the path, a hand on the wrist: "+where(f)))
+            .thenExecute(()->{var own=Truant.record(server,a.getUUID());at[0]=own.getInt("Meetings");h.assertTrue(own.getInt("Covered")==1&&own.getInt("HarmAt")==at[0]&&own.getString("Harm").equals("cover"),"the harm is kept: "+own);})
+            .thenWaitUntil(()->h.assertTrue(Truant.coverStage()==4&&lit(l,lamp)&&!a.hasEffect(MobEffects.BLINDNESS)&&!a.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),"he lets go and the lamp is lit again: "+where(f)))
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(a),"then he asks: "+where(f)))
+            .thenExecute(()->{
+                h.assertTrue(Talk.choose(a,"That's all you get.")&&Truant.record(server,a.getUUID()).getInt("Limited")==1&&!Talk.waiting(a),"a limit set, and he lets it end");
+                Talk.close(a);Truant.apart();Truant.fresh();Truant.force(Truant.Turn.HELP);stand(a,l,lamp,.5,0,-6.5,180);
+            })
+            // Help after harm.
+            .thenWaitUntil(()->h.assertTrue(Truant.lampStage()==3&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(lamp).add(TruantPlaces.LAMP_SPOT))<.2,"at his lamp again: "+where(f)))
+            .thenExecute(()->stand(a,l,lamp,-4.5,0,-7.6,0))
+            .thenWaitUntil(()->h.assertTrue(Talk.key(a).equals(Truant.KEY)&&Talk.lines(a).contains("Johnny: Sit, if you want. I'm not asking you for anything."),"after harm he helps, and asks for nothing: "+Talk.lines(a)))
+            .thenExecute(()->{
+                var lines=Talk.lines(a);var own=Truant.record(server,a.getUUID());
+                h.assertTrue(lines.contains("Johnny: I put your light out. I had hold of you.")&&!lines.contains("Johnny: "+TruantTexts.PROMISE)&&!Talk.waiting(a),"he says what he did, and there is no question and no promise: "+lines);
+                h.assertTrue(own.getInt("AfterHarm")==1&&own.getInt("ForboreAt")==own.getInt("Meetings")&&own.getInt("HisPromise")==own.getInt("Meetings"),"forbearance and his own promise are kept as his: "+own);
+                Talk.close(a);Truant.apart();Truant.fresh();Truant.force(Truant.Turn.DOORWAY);stand(a,l,door,.5,0,-6.5,180);
+            })
+            // The hand in the doorway.
+            .thenWaitUntil(()->h.assertTrue(Truant.at(server)==TruantPlaces.DOOR&&Truant.turn()==Truant.Turn.DOORWAY&&Truant.body(l)!=null&&Truant.body(l).gesture()==Truant.FRAME&&Truant.body(l).phase()==Truant.LEER&&open(l,door)&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(door).add(TruantPlaces.IN_DOORWAY))<.2,"he stands in the doorway he once held, a hand on the frame: "+where(f)))
+            .thenExecute(()->stand(a,l,door,.5,0,-8.5,180))
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(a)&&Talk.lines(a).contains("Johnny: "+TruantTexts.NOT_YET)&&Talk.lines(a).contains("Johnny: I said I wouldn't ask. I know I said it."),"not yet; and he remembers saying he wouldn't ask: "+Talk.lines(a)))
+            .thenExecute(()->{Talk.close(a);stand(a,l,door,.5,0,-10.5,180);})
+            .thenWaitUntil(()->h.assertTrue(a.getZ()-door.getZ()>-10&&Truant.record(server,a.getUUID()).getInt("Struggled")==1&&!Truant.steppedAside(),"pushed past, the first time he shoves them back out of the doorway: reader at "+a.position().subtract(Vec3.atLowerCornerOf(door))+" "+where(f)))
+            .thenExecute(()->stand(a,l,door,.5,0,-10.5,180))
+            .thenWaitUntil(()->h.assertTrue(Truant.steppedAside()&&said(l).equals(TruantTexts.GIVE_WAY)&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(door).add(TruantPlaces.DOOR_SPOT))<.2,"the second time he gives way: "+where(f)))
+            .thenExecute(()->{
+                Talk.close(a);Truant.apart();Truant.fresh();Truant.force(Truant.Turn.SHOVE);
+                stand(a,l,ledge,2.5,0,-2.5,180);stand(b,l,ledge,.5,0,-1.5,180);
+            })
+            // The gate again, at the crossing: an early reader there, and he only helps.
+            .thenWaitUntil(()->h.assertTrue(Truant.at(server)==TruantPlaces.LEDGE&&Truant.turn()==Truant.Turn.CLAIM&&Truant.shoveStage()==0&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(ledge).add(TruantPlaces.LEDGE_SPOT))<.2,"at the crossing with an early reader, no shove: "+where(f)))
+            .thenExecute(()->{
+                away(b,f);deepest(f,b,22);Truant.apart();Truant.fresh();
+                stand(a,l,ledge,2.5,0,-2.5,180);stand(b,l,ledge,2.5,0,-14.5,0);
+            })
+            .thenWaitUntil(()->h.assertTrue(Truant.turn()==Truant.Turn.SHOVE&&Truant.shoveStage()==0&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(ledge).add(TruantPlaces.SHOVE_WAIT))<.2,"in the dark end of the near landing: "+where(f)))
+            .thenExecute(()->stand(a,l,ledge,4.5,0,-6.5,180))
+            .thenWaitUntil(()->h.assertTrue(Truant.shoveStage()==1,"a few steps out on the ledge, he starts coming: "+where(f)))
+            .thenWaitUntil(()->{var t=Truant.body(l);if(t!=null)a.lookAt(EntityAnchorArgument.Anchor.EYES,t.getEyePosition());
+                h.assertTrue(Truant.shoveStage()>=4&&Truant.record(server,a.getUUID()).getString("StoppedBy").equals("turned")&&Truant.record(server,a.getUUID()).getInt("Shoved")==0,"turning to look at him stops him, hand still up: "+where(f));})
+            .thenExecute(()->{
+                h.assertTrue(said(l).equals(TruantTexts.STEADY),"caught coming, he says what he said the first time");
+                stand(a,l,ledge,2.5,0,-2.5,180);Truant.apart();Truant.fresh();
+            })
+            .thenWaitUntil(()->h.assertTrue(Truant.turn()==Truant.Turn.SHOVE&&Truant.shoveStage()==0,"waiting again: "+where(f)))
+            .thenExecute(()->stand(a,l,ledge,4.5,0,-6.5,180))
+            .thenWaitUntil(()->h.assertTrue(Truant.record(server,a.getUUID()).getInt("Shoved")==1,"his hands land between their shoulders: "+where(f)))
+            .thenExecute(()->{
+                var own=Truant.record(server,a.getUUID());var w=Truant.record(server,b.getUUID());
+                h.assertTrue(a.getDeltaMovement().x<-.5&&a.getDeltaMovement().y>.2&&Truant.shoveStage()==3,"pushed west over the drop and off their feet: "+a.getDeltaMovement()+" "+where(f));
+                h.assertTrue(own.getString("Harm").equals("shove")&&own.getInt("ShovedAt")==own.getInt("Meetings")&&w.getInt("Witnessed")==1&&w.getInt("Shoved")==0,"the shove is the target's; the friend on the far landing saw it: "+own+" / "+w);
+                stand(a,l,ledge,2.5,TruantPlaces.LOWER,-8.5,180);
+            })
+            .thenWaitUntil(()->h.assertTrue(said(l).equals(TruantTexts.CAREFUL)&&Truant.body(l).gesture()==Truant.OVER,"he looks over and says one word: "+where(f)))
+            .thenWaitUntil(()->h.assertTrue(Truant.shoveStage()==6&&Truant.body(l).position().distanceTo(Vec3.atLowerCornerOf(ledge).add(TruantPlaces.SHOVE_WAIT))<.2,"and goes back the way he came: "+where(f)))
+            .thenExecute(()->{
+                var own=Truant.record(server,a.getUUID());
+                h.assertTrue(own.getString("Promise").equals("agreed")&&own.getBoolean("Kept")&&own.getList("Told",Tag.TAG_STRING).size()==1,"through all of it, what the reader said stays as said: "+own);
+                h.assertTrue(Truant.body(l).isAlive(),"he is still there");
+            })
+            .thenSucceed();
+    }
 
     @GameTest(template="empty",batch="truant",timeoutTicks=2400)
     public static void johnnyHelpsAtHisThreePlacesAndRemembersWhatEachReaderSaid(GameTestHelper h){
