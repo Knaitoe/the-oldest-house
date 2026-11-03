@@ -200,6 +200,15 @@ public final class LastSwimmer {
     static void clearActors(ServerLevel l,BlockPos b){
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-16,-8,-46)).minmax(new AABB(b.offset(16,11,2))),a->a.role()==LiteraryActor.STRANGER&&(a.phase()==ATTENDANT||a.phase()==SWIMMER)))a.discard();
     }
+    /** The hall's one swimmer: the pool's own if it is found, else the one already there; every other swimmer in the hall is put away. */
+    @Nullable static LiteraryActor one(ServerLevel l,BlockPos b,Pool pool,@Nullable LiteraryActor own){
+        var keep=own;
+        for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-16,-8,-46)).minmax(new AABB(b.offset(16,11,2))),a->a.isAlive()&&a.role()==LiteraryActor.STRANGER&&a.phase()==SWIMMER)){
+            if(keep==null){keep=a;pool.swimmer=a.getUUID();continue;}
+            if(a!=keep)a.discard();
+        }
+        return keep;
+    }
     static boolean peopleLoaded(ServerLevel l,BlockPos b){
         for(int x=(b.getX()-16)>>4;x<=(b.getX()+16)>>4;x++)for(int z=(b.getZ()-46)>>4;z<=(b.getZ()+2)>>4;z++)if(!l.areEntitiesLoaded(ChunkPos.asLong(x,z)))return false;
         return true;
@@ -310,6 +319,9 @@ public final class LastSwimmer {
         }
         double frac=(t+1)/(double)LENGTH_TICKS;double z=north?SwimmerSite.POOL_SOUTH+.5-(SwimmerSite.POOL_SOUTH-SwimmerSite.POOL_NORTH)*frac:SwimmerSite.POOL_NORTH+.5+(SwimmerSite.POOL_SOUTH-SwimmerSite.POOL_NORTH)*frac;
         var pos=at(b,swimX(pool),SwimmerSite.SURFACE-.55,z);
+        // Run 1417: one swimmer, always. A lookup that misses (the body's section not visible for a moment) adopts the body already in the
+        // hall instead of adding a second one; any other swimmer found there is put away, here and every two seconds.
+        if(s==null||pool.tick%40==0)s=one(l,b,pool,s);
         if(s==null&&l.areEntitiesLoaded(ChunkPos.asLong(BlockPos.containing(pos)))){s=spawn(l,SWIMMER,pos,north?180:0);pool.swimmer=s==null?null:s.getUUID();if(s!=null)s.setNoGravity(true);}
         if(s!=null){
             s.moveTo(pos.x,pos.y,pos.z,north?180:0,0);s.setYHeadRot(north?180:0);s.setDeltaMovement(Vec3.ZERO);
