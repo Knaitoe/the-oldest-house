@@ -556,6 +556,8 @@ public final class ScenePolish {
                 // (sandstone, red sand; a lake's sand beach keeps its pine woods) grows flat-topped acacias and dead brush, and ends in
                 // a dune ridge rather than a wall of spruce.
                 boolean dry = place == LabyrinthPlace.PLAIN || top.is(Blocks.SANDSTONE) || top.is(Blocks.RED_SAND);
+                // 0.4.284: Camp Blood stands in the Pine Barrens: its edge is pitch pine over a scrub-oak thicket, not spruce.
+                boolean barrens = place == LabyrinthPlace.CAMP_BLOOD;
                 int hash = Math.floorMod(x * 734287 + z * 912931 + place.ordinal() * 31, 97);
                 if (distance >= BORDER - 1) {
                     if (dry) {
@@ -567,6 +569,14 @@ public final class ScenePolish {
                         continue;
                     }
                     // The far edge is undergrowth too thick to see through.
+                    if (barrens) {
+                        // Scrub oak to head height, the pines' needles over it, and a ragged top.
+                        int wall = 8 + Math.floorMod(hash, 3);
+                        BlockState scrub = Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+                        for (int y = surface + 1; y <= surface + wall; y++) level.setBlock(base.offset(x, y, z), y <= surface + 3 ? scrub : leaves, FLAGS);
+                        changed += wall;
+                        continue;
+                    }
                     for (int y = surface + 1; y <= surface + 9; y++) level.setBlock(base.offset(x, y, z), leaves, FLAGS);
                     changed += 9;
                     continue;
@@ -576,6 +586,18 @@ public final class ScenePolish {
                     if (distance >= 2 && hash < 5) changed += acacia(level, root, 4 + hash % 2, hash);
                     else if (distance >= 1 && hash > 82 && level.getBlockState(root).isAir())
                         level.setBlock(root, Blocks.DEAD_BUSH.defaultBlockState(), FLAGS);
+                    continue;
+                }
+                if (barrens) {
+                    BlockPos root = base.offset(x, surface + 1, z);
+                    if (distance >= 2 && hash < 13) changed += pitchPine(level, root, 8 + hash % 4, hash, leaves);
+                    else if (distance >= 1 && hash >= 13 && hash < 40 && level.getBlockState(root).isAir()) {
+                        BlockState scrub = Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+                        level.setBlock(root, scrub, FLAGS);
+                        if (hash % 3 != 0 && level.getBlockState(root.above()).isAir()) level.setBlock(root.above(), scrub, FLAGS);
+                        changed += 2;
+                    } else if (distance >= 1 && hash > 80 && level.getBlockState(root).isAir())
+                        level.setBlock(root, (hash % 2 == 0 ? Blocks.FERN : Blocks.SHORT_GRASS).defaultBlockState(), FLAGS);
                     continue;
                 }
                 if (distance >= 2 && hash < 11 && !top.is(Blocks.SAND)) changed += spruce(level, base.offset(x, surface + 1, z), 6 + hash % 5, leaves);
@@ -610,6 +632,37 @@ public final class ScenePolish {
     }
 
     /** A spruce of the ordinary shape: a straight trunk in narrowing rings of needles. */
+    /**
+     * 0.4.284, a pitch pine at Camp Blood's edge: a bare trunk under an open, flat-topped crown, with a crooked arm or two below it
+     * ending in a tuft of needles. Grows only into open air.
+     */
+    private static int pitchPine(ServerLevel level, BlockPos root, int height, int hash, BlockState needles) {
+        for (int y = 0; y <= height + 1; y++) if (!level.getBlockState(root.above(y)).canBeReplaced()) return 0;
+        int changed = 0;
+        for (int y = 0; y < height; y++) { level.setBlock(root.above(y), Blocks.SPRUCE_LOG.defaultBlockState(), FLAGS); changed++; }
+        for (int y = height - 2; y <= height; y++) {
+            int radius = y == height ? 1 : 2;
+            for (int dx = -radius; dx <= radius; dx++) for (int dz = -radius; dz <= radius; dz++) {
+                int d2 = dx * dx + dz * dz;
+                if (d2 > radius * radius + (radius > 1 ? 1 : 0) || d2 >= radius * radius && Math.floorMod(hash + dx * 7 + dz * 13 + y * 5, 3) == 0) continue;
+                BlockPos at = root.offset(dx, y, dz);
+                if (level.getBlockState(at).isAir()) { level.setBlock(at, needles, FLAGS); changed++; }
+            }
+        }
+        for (int i = 0; i < 1 + hash % 2; i++) {
+            int y = height - 4 - i * 2;
+            if (y < 4) break;
+            Direction side = Direction.from2DDataValue(Math.floorMod(hash + i * 3, 4));
+            BlockPos arm = root.relative(side).above(y), tuft = arm.relative(side);
+            if (!level.getBlockState(arm).isAir() || !level.getBlockState(tuft).isAir()) continue;
+            level.setBlock(arm, Blocks.SPRUCE_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, side.getAxis()), FLAGS);
+            level.setBlock(tuft, needles, FLAGS);
+            if (level.getBlockState(tuft.above()).isAir()) level.setBlock(tuft.above(), needles, FLAGS);
+            changed += 3;
+        }
+        return changed;
+    }
+
     private static int spruce(ServerLevel level, BlockPos root, int height, BlockState leaves) {
         int changed = 0;
         for (int y = 0; y < height; y++) {
