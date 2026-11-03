@@ -63,7 +63,7 @@ public final class LiteraryActor extends PathfinderMob {
         super.lerpTo(x,y,z,yaw,pitch,steps);
     }
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE||key==GESTURE)refreshDimensions();}
-    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase)||ClosingHall.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT?2.5:role==WHISTLER?1.12:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
+    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||BorrascaStory.townChild(role,phase)||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase)||ClosingHall.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT?2.5:role==WHISTLER?1.12:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
     @Override public void startSeenByPlayer(ServerPlayer p){
         super.startSeenByPlayer(p);
@@ -103,7 +103,17 @@ public final class LiteraryActor extends PathfinderMob {
     @Override public boolean isAttackable(){return !waitingUnseen()&&super.isAttackable();}
     @Override protected void pushEntities(){if(!waitingUnseen()&&role()!=SP_RESIDENT)super.pushEntities();}
     @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(HouseReadShelter.role(role())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HouseReadShelter.take(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&Truant.phase(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)Truant.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){if(p instanceof ServerPlayer s)CamcorderItem.toggle(s,p.getItemInHand(hand));p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
-    @Override public boolean hurt(DamageSource source,float amount){if(role()==SP_RESIDENT||role()==STRANGER&&SecondPerson.cast(phase())){if(source.getEntity() instanceof ServerPlayer p)SecondPerson.touched(p,this);return false;}if(role()==STRANGER&&Truant.phase(phase())){if(source.getEntity() instanceof ServerPlayer p)Truant.struck(p,this);return false;}if(source.getEntity() instanceof ServerPlayer p){if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
+    @Override public boolean hurt(DamageSource source,float amount){if(role()==SP_RESIDENT||role()==STRANGER&&SecondPerson.cast(phase())){if(source.getEntity() instanceof ServerPlayer p)SecondPerson.touched(p,this);return false;}if(role()==STRANGER&&Truant.phase(phase())){if(source.getEntity() instanceof ServerPlayer p)Truant.struck(p,this);return false;}if(source.getEntity() instanceof ServerPlayer p){
+        if(role()==BORRASCA_SHERIFF){
+            var fight=BorrascaStory.sheriffFight(p,this);
+            if(fight!=null){
+                if(fight.getBoolean("SheriffYielded")||amount<=0)return false;
+                boolean hit=super.hurt(source,Math.min(5,amount));
+                if(hit)BorrascaStory.sheriffStruck(p,this,fight);
+                return hit;
+            }
+        }
+        if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
     @Override public boolean broadcastToPlayer(ServerPlayer p){
         // Match the renderer's privacy rule at native tracking too. A hidden peer's
         // overlapping cast must not remain on this client and intercept its entity pick.

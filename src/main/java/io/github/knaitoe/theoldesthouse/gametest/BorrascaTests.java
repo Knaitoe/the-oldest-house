@@ -419,6 +419,61 @@ public final class BorrascaTests {
         }).thenSucceed();
     }
 
+    @AfterBatch(batch="borrasca_town_children") public static void townChildrenDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_town_children",timeoutTicks=1800)
+    public static void townChildrenBecomeReadableMissingPosters(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_town");
+        var eliPoster=new BlockPos(-15,1,-24);var wrenPoster=new BlockPos(-15,1,-22);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded"))
+          .thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"town cast recalled"))
+          .thenExecute(()->{
+              f.talk(p,"TownEli");f.talk(p,"TownWren");
+              h.assertTrue(f.own(p).getBoolean("MetEli")&&f.own(p).getBoolean("MetWren"),"both children can tell their part of the legend");
+              h.assertTrue(f.out.getBlockState(f.base(p).offset(eliPoster)).isAir(),"Eli's poster goes up only after he disappears");
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"second visit cast recalled"))
+          .thenExecute(()->{
+              h.assertTrue(f.actor(p,"TownEli").isInvisible()&&!f.actor(p,"TownWren").isInvisible(),"Eli is missing while Wren is still in town");
+              f.talk(p,"TownWren");h.assertTrue(f.own(p).getBoolean("WrenRememberedEli"),"Wren remembers Eli's bicycle");
+              f.read(p,eliPoster,false);
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult visit cast recalled"))
+          .thenExecute(()->{
+              h.assertTrue(f.actor(p,"TownWren").isInvisible(),"Wren is missing on the adult return");
+              f.read(p,wrenPoster,false);
+              h.assertTrue(f.own(p).getBoolean("Read_WrenPoster")&&f.own(p).getBoolean("Read_EliPoster"),"both posters have readable pages");
+          }).thenSucceed();
+    }
+
+    @AfterBatch(batch="borrasca_sheriff_patrol") public static void sheriffPatrolDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_sheriff_patrol",timeoutTicks=1800)
+    public static void theFourthVisitSheriffPatrolsAndCanYield(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_patrol");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded"))
+          .thenExecute(()->{f.enter(p);f.stage(p,4);f.at(p,0,12,-170);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"fourth visit cast recalled"))
+          .thenWaitUntil(()->h.assertTrue(f.actor(p,"CastSheriff").getZ()<f.base(p).getZ()-176,"the sheriff walks his yard route"))
+          .thenExecute(()->f.use(p,BorrascaRooms.POWER))
+          .thenWaitUntil(()->{
+              var a=f.actor(p,"CastSheriff");var b=f.base(p);
+              h.assertTrue(a.distanceToSqr(Vec3.atBottomCenterOf(b.offset(5,12,-182)))<.1&&a.gesture()==4,"he goes to inspect the stopped machine");
+          })
+          .thenExecute(()->hitSheriff(f,p)).thenIdle(12)
+          .thenExecute(()->hitSheriff(f,p)).thenIdle(12)
+          .thenExecute(()->{
+              hitSheriff(f,p);
+              var a=f.actor(p,"CastSheriff");
+              h.assertTrue(a.isAlive()&&a.getMainHandItem().isEmpty()&&f.own(p).getBoolean("SheriffYielded"),
+                      "three landed hits disarm him and end the confrontation");
+              h.assertTrue(BorrascaSites.inside(p)&&!f.own(p).getBoolean("Interrupted"),"the player can continue the visit");
+          }).thenSucceed();
+    }
+
+    private static void hitSheriff(Fixture f,ServerPlayer p){
+        var a=f.actor(p,"CastSheriff");
+        f.h.assertTrue(a.hurt(p.damageSources().playerAttack(p),4),"the fourth-visit sheriff takes a hit");
+    }
+
     @GameTest(template="empty",batch="borrasca_escort",timeoutTicks=1800)
     public static void flashlightObeysSolidCoverAndTheSheriffEnforcesTheTape(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_escort");final int[] phase={0},still={0},moved={0};final Vec3[] previous={Vec3.ZERO};

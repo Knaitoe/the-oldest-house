@@ -2,6 +2,8 @@
 
 This is the running log that lived in `AGENTS.md` until October 31, 2026, newest first, kept word for word. The current working notes for agents are in `AGENTS.md`; the design canon is `docs/DESIGN_DOCUMENT.md`.
 
+November 3 candidate 0.4.297, Drisking and the fourth visit (docs/BORRASCA_TOWN_0_4_297.md). Eli and Wren meet the reader before they go missing. The Sheriff patrols the refinery, checks the shutdown and can be made to yield. CI for 0.4.296 stopped at a punctuation error in the gate log. Corrected here.
+
 November 3 candidate 0.4.296, Borrasca gate and Sheriff (docs/BORRASCA_GATE_0_4_296.md). The padlock sits on the near face of the gate. The beam starts at the Sheriff’s flashlight lens. He returns the reader downhill if they refuse to leave. The gate hut sheet opens as a gate log.
 
 November 3 candidate 0.4.291, service hazards and staircase testing (docs/SERVICE_HAZARDS_0_4_291.md). Return Air, Settling Cellar, operator test sheets and a supported Great Staircase arrival. Layout 91.
