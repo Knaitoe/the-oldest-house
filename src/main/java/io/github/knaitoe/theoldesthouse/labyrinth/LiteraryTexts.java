@@ -127,7 +127,7 @@ public final class LiteraryTexts {
             yield nights+water+(free?" Years later I still pace a room out when I come into it. Some nights I can see the old walls rising around me.":" Years later I still have it. Some nights I can see the old walls rising around me, and I know who is walking in them.");
         }
         case HOLY_RABBIT->rabbitAccount(own);
-        case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\n"+confessionLast(own)+"The signature was mine. The chair opposite me had not changed.";
+        case CONFESSION->"The last chapter addressed the person holding the pen.\n\n"+own.getString("Statistics")+"\n\n"+confessionLast(own)+confessionCorrected(own)+"The signature was mine. The chair opposite me had not changed.";
         case ELK_CARCASSES->"I held still beneath the hides. His boots passed the opening twice and did not slow: nobody looks twice at a pile of things already dead. When the boots stopped coming back, I followed the service path. The smell of the hides came with me.";
         case COSTUME_NIGHT->CostumeNight.account(own);
         case MOVIE_NIGHT->MovieNight.account(own);
@@ -219,6 +219,15 @@ public final class LiteraryTexts {
     private static String number(int n){String[] words={"one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"};return n>=1&&n<=12?words[n-1]:Integer.toString(n);}
     /** 0.4.121: the account ends on the reader's own last answer, or on the line that says they gave none. */
     static String confessionLast(CompoundTag own){String last=ConfessionAnswers.last(own);if(last.isEmpty())return "";return last.equals(ConfessionAnswers.SILENCE)?"Under his last question, the line said I did not answer.\n\n":"Under his last question, in my hand: \u201c"+(last.length()>90?last.substring(0,90)+"\u2026":last)+"\u201d\n\n";}
+    /**
+     * 0.4.275: how many of the reader's answers had a line in another hand under them, where the House remembered otherwise; nothing
+     * when the journal predates the questions' memory or every answer stood.
+     */
+    static String confessionCorrected(CompoundTag own){
+        if(!own.contains("Corrections"))return "";int n=ConfessionAnswers.corrected(own);
+        if(n==0)return "Nothing I said had another hand under it.\n\n";
+        return (n==1?"Under one of my answers":"Under "+number(n)+" of my answers")+" was a line I had not written. It was right"+(n==1?"":" each time")+".\n\n";
+    }
     public static final String[] CONFESSION={"I came to a town that had room for another name. ","I learned which doors would open when I knocked, and which people would step aside. ","I mistook those things for permission. ","The first account left out everyone who could no longer answer it. ","I kept a chair for a listener. I thought the distance between our chairs would keep the story mine. ","Now I want you to put down the pen and count with your own hands. ","There are names the world remembers without a witness. There are numbers it remembers without a name. ","This chapter belongs to the person who has been writing. "};
     public static ItemStack diary(int i){String[] pages={"We went up to the rock before dark, the three of us. I told them the path would still be there when we came back.","Arnold says the rock is split because something sat down on it once and it couldn't hold the weight. He says he can see things before they happen. Luis laughed. I didn't.","Arnold says a missing person never knows they're missing. Everybody else does the missing for them.","I left a page by the door so someone would know where I stopped looking.","I drew the shadow man again. He's in the corner of the picture, crouched down, like he's hiding from whoever is looking at it.","If the camera saw me, it saw the room I was in. The time on the picture is later than the time on my watch.","I'm putting the pages down where you'll find them. I don't know how to put myself there.","This is the last page. If you see him, tell him the path was still there. I went back for it, and it was."};return book("Loose diary page "+(i+1),"T.",pages[Math.floorMod(i,pages.length)]);}
     public static ItemStack cylinder(int i){return book("Cylinder transcript "+(i+1),"A former wife",new String[]{"I thought the roof was being repaired. The snow came through it the next winter too. I learned to move my chair before it fell.","He kept the house warm in the rooms where people were expected. I walked farther to find a room where I could speak without being heard.","I have left this voice where a hand might find it. Listen to the whole cylinder. Do not let him tell you what I meant."}[i]);}

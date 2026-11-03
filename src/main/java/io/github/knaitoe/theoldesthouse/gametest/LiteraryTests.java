@@ -611,13 +611,18 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     public static void theActualCarriedQuillResumesAcrossVisitsAndTheSealedJournalIsReadPersonally(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.CONFESSION;var p=f.player("quill_reader",place);f.source(p,place);p.getInventory().add(new ItemStack(Items.WRITABLE_BOOK));f.at(p,place,1,0,-18);f.look(p,f.base(place).offset(1,1,-22));journalChapter(h,f,p,0);}
     /**
      * 0.4.121: each chapter ends in the listener's question. The reader answers by actual chat, which never reaches public
-     * chat; the fourth question is left in silence and goes down as unanswered.
+     * chat; the fourth question is left in silence and goes down as unanswered. 0.4.275: he asks in the panel, with answers from
+     * what the House remembers; the second question is answered there truly and the sixth untruly, which the House writes under.
      */
     private static void journalChapter(GameTestHelper h,Fixture f,ServerPlayer p,int chapter){answerWhenAsked(h,f,p,chapter,0);}
     private static void answerWhenAsked(GameTestHelper h,Fixture f,ServerPlayer p,int chapter,int waited){h.runAfterDelay(15,()->{var place=LabyrinthPlace.CONFESSION;var own=f.own(p,place);
         if(!own.getBoolean("Asked")){h.assertTrue(waited<700,"the listener reaches chapter "+chapter+"'s question while the reader stays before him");answerWhenAsked(h,f,p,chapter,waited+15);return;}
         h.assertTrue(own.getInt("Chapter")==chapter,"he waits on the question before the chapter is done");
+        h.assertTrue(Talk.waiting(p,ConfessionAnswers.key(chapter))&&Talk.lines(p).contains("The listener: "+ConfessionAnswers.QUESTIONS[chapter])&&ConfessionMemory.SAY_NOTHING.equals(Talk.replies(p).getLast()),"he asks in the reader's own panel, and saying nothing is always offered: "+Talk.replies(p));
         if(chapter==3){own.putInt("AskTicks",ConfessionAnswers.SILENCE_TICKS-15);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);}
+        else if(chapter==1){h.assertTrue(Talk.choose(p,"The front door"),"with no quiet rooms behind them, the reader is offered the front door: "+Talk.replies(p));}
+        else if(chapter==5){h.assertTrue(Talk.replies(p).getFirst().equals("None.")&&Talk.choose(p,"I stopped counting"),"a reader whose hands are empty is offered the true count first: "+Talk.replies(p));
+            h.assertTrue(f.own(p,place).getString("Correction").equals("None."),"the House knows the count and will write it under the answer");}
         else{var early=new net.neoforged.neoforge.event.ServerChatEvent(p,"My answer to "+chapter+": the cellar door was open.",net.minecraft.network.chat.Component.literal("answer"));NeoForge.EVENT_BUS.post(early);
             h.assertTrue(early.isCanceled(),"the answer to the listener never reaches public chat");h.assertTrue(f.own(p,place).getString("Answer").startsWith("My answer to "+chapter),"his question takes the reader's own words");}
         afterAnswer(h,f,p,chapter,own.getInt("Visit"),0);});}
@@ -625,7 +630,9 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     private static void afterAnswer(GameTestHelper h,Fixture f,ServerPlayer p,int chapter,int visit,int waited){h.runAfterDelay(5,()->{var place=LabyrinthPlace.CONFESSION;var after=f.own(p,place);
             if(after.getInt("Chapter")==chapter){h.assertTrue(waited<80,"the answer, or the silence, completes the chapter");afterAnswer(h,f,p,chapter,visit,waited+5);return;}
             h.assertTrue(after.getInt("Chapter")==chapter+1,"the answer, or the silence, completes the chapter");
-            h.assertTrue(after.getString("JournalText").contains(ConfessionAnswers.QUESTIONS[chapter])&&after.getString("JournalText").contains(chapter==3?ConfessionAnswers.SILENCE:"My answer to "+chapter),"the journal takes down his question and the reply exactly");
+            String said=chapter==3?ConfessionAnswers.SILENCE:chapter==1?"The front door.":chapter==5?"I stopped counting.\n"+ConfessionMemory.under("None."):"My answer to "+chapter;
+            h.assertTrue(after.getString("JournalText").contains(ConfessionAnswers.QUESTIONS[chapter])&&after.getString("JournalText").contains(said),"the journal takes down his question and the reply exactly: "+after.getString("JournalText"));
+            h.assertTrue(chapter!=1||!after.getString("JournalText").contains(ConfessionMemory.under("")),"a true answer has nothing written under it");
             if(chapter<7){h.assertTrue(p.getInventory().countItem(Items.WRITABLE_BOOK)==1,"the same carried native quill remains through the spoken chapters");
                 h.assertTrue(after.getInt("RestTicks")>0&&after.getInt("Visit")==visit,"he rests a moment and goes on in the same sitting, without waiting for a return");
                 var idle=new net.neoforged.neoforge.event.ServerChatEvent(p,"hello, anyone",net.minecraft.network.chat.Component.literal("hello"));NeoForge.EVENT_BUS.post(idle);h.assertTrue(!idle.isCanceled(),"between chapters, ordinary chat is the reader's own again");
@@ -636,6 +643,9 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             var journal=ItemStack.parseOptional(p.registryAccess(),after.getCompound("SignedJournal")).get(DataComponents.WRITTEN_BOOK_CONTENT);String pages=journal==null?"":journal.pages().stream().map(page->page.raw().getString()).collect(java.util.stream.Collectors.joining("\n"));
             h.assertTrue(pages.contains("My answer to 0")&&pages.contains("My answer to 7")&&pages.contains(ConfessionAnswers.SILENCE)&&pages.contains(ConfessionAnswers.QUESTIONS[5]),"the sealed journal is made of his questions and the reader's own answers: "+pages);
             h.assertTrue(ConfessionAnswers.last(after).startsWith("My answer to 7"),"the account will end on the reader's last answer");
+            h.assertTrue(pages.contains(ConfessionMemory.under("None."))&&ConfessionAnswers.corrected(after)==1,"the sealed journal keeps the House's one line under the untrue answer");
+            var account=LiteraryTexts.ending(p,place,after).get(DataComponents.WRITTEN_BOOK_CONTENT);String told=account==null?"":account.pages().stream().map(page->page.raw().getString()).collect(java.util.stream.Collectors.joining(" "));
+            h.assertTrue(told.contains("Under one of my answers was a line I had not written"),"the account says the House wrote under one answer: "+told);
             f.arrive(p,place);f.read(p,place,new BlockPos(10,1,-29));h.runAfterDelay(10,()->{h.assertTrue(f.own(p,place).getBoolean("Read_Journal")&&f.own(p,place).getBoolean("Ready"),"personally reading the exact sealed journal resolves the later return");f.read(p,place,LiteraryRooms.ending(place));h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.CONFESSION),"the owned final account yields this one source");h.succeed();});});}
     @GameTest(template="empty",batch="literary_confession_words",timeoutTicks=100)
     public static void theListenerRepeatsAFragmentOfTheReadersOwnWords(GameTestHelper h){
@@ -647,6 +657,57 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         h.succeed();
     }
     @AfterBatch(batch="literary_confession") public static void confessionDone(ServerLevel l){close();}
+    /**
+     * 0.4.275: the listener's answers come from what the House remembers of this reader alone: the first quiet room, the coat off the
+     * peg, the companion it saw them lose, who they have talked to and their own words. An untrue answer carries the House's line;
+     * a true one and a silence carry none; another reader is offered nothing of theirs.
+     */
+    @GameTest(template="empty",batch="literary_confession_memory",timeoutTicks=200)
+    public static void theListenersAnswersComeFromWhatTheHouseRemembers(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.CONFESSION;var p=f.player("memory_reader",place);var other=f.player("memory_peer",place);
+        h.runAfterDelay(5,()->{
+            HouseRead.see(p,HouseReadSites.Room.KITCHEN,t->{t.putBoolean("Hung",true);t.putInt("Mood",1);});
+            HouseRead.see(p,HouseReadSites.Room.COATROOM,t->t.putString("CoatId","wool"));
+            var hotel=HotelVignette.personal(f.data(),p.getUUID());var lost=new net.minecraft.nbt.ListTag();var moss=new CompoundTag();moss.putString("Name","Moss");lost.add(moss);hotel.put("LostPets",lost);HotelVignette.save(f.data(),p.getUUID(),hotel);
+            Talk.begin(p,"memory_kit","Kit");Talk.line(p,"Kit","Will you come back for the keys?");Talk.ask(p,Talk.reply("I'll come back for the keys tomorrow.",q->{}));
+            h.assertTrue(Talk.choose(p,"I'll come back"),"the reader answers someone else first");Talk.close(p);
+            var kept=TalkHistory.conversations(p.server,p.getUUID());var lines=kept.getCompound(kept.size()-1).getList("Lines",net.minecraft.nbt.Tag.TAG_COMPOUND);
+            h.assertTrue(lines.getCompound(lines.size()-1).getBoolean("R")&&!lines.getCompound(0).getBoolean("R"),"the history marks the reader's own reply apart from what was said to them");
+
+            var name=ConfessionMemory.offers(p,0);
+            h.assertTrue(name.get(0).written().equals("memory_reader.")&&name.get(0).correction().isEmpty()&&name.get(1).correction().equals("memory_reader."),"the name: the true one stands, the other has the name written under it: "+name);
+            var first=ConfessionMemory.offers(p,1);
+            h.assertTrue(first.get(0).label().equals("The kitchen.")&&first.get(0).written().contains("I drew myself smiling, at the kitchen table")&&first.get(0).correction().isEmpty(),"the first door is the first quiet room, told in the reader's own first person: "+first);
+            h.assertTrue(first.get(1).label().equals("I don't remember.")&&first.get(1).correction().startsWith("You drew yourself smiling"),"not remembering has the House's memory written under it: "+first);
+            var taken=ConfessionMemory.offers(p,2);
+            h.assertTrue(taken.get(0).written().startsWith("The wool overcoat off the peg.")&&taken.get(1).correction().equals("You took the wool overcoat off the peg."),"what was taken is the coat off the peg: "+taken);
+            var missing=ConfessionMemory.offers(p,3);
+            h.assertTrue(missing.get(0).written().equals("Moss.")&&missing.get(1).written().equals("Nobody.")&&missing.get(1).correction().equals("Moss."),"who is missing is the companion the House saw them lose: "+missing);
+            var told=ConfessionMemory.offers(p,4);
+            h.assertTrue(told.get(0).written().equals("Kit.")&&told.get(1).correction().contains("Kit"),"who they tell it to is who they have talked to: "+told);
+            var count=ConfessionMemory.offers(p,5);
+            h.assertTrue(count.get(0).written().equals("None.")&&count.stream().noneMatch(o->o.label().equals("None.")&&!o.correction().isEmpty()),"empty hands: the true count is none, and saying none is not corrected: "+count);
+            var names=ConfessionMemory.offers(p,6);
+            h.assertTrue(names.get(0).label().equals("Kit's.")&&names.stream().allMatch(o->o.correction().isEmpty()),"a name the reader would keep out is a wish, and the House corrects no wish: "+names);
+            var own=ConfessionMemory.offers(p,7);
+            h.assertTrue(own.get(0).written().equals("I'll come back for the keys tomorrow.")&&own.stream().anyMatch(o->o.label().equals("I'll tell it as it happened.")&&o.written().startsWith("I drew myself"))
+                &&own.stream().anyMatch(o->o.label().equals("I did what I was told.")&&o.correction().startsWith("You drew yourself")),"their own words are offered back, with the House's account of them: "+own);
+            for(int chapter=0;chapter<ConfessionAnswers.QUESTIONS.length;chapter++){var offers=ConfessionMemory.offers(p,chapter);var last=offers.getLast();
+                h.assertTrue(last.label().equals(ConfessionMemory.SAY_NOTHING)&&last.written().equals(ConfessionAnswers.SILENCE)&&last.correction().isEmpty(),"saying nothing is always offered, and the House never fills a silence");}
+
+            h.assertTrue(ConfessionMemory.offers(other,1).get(0).written().equals("The front door.")&&ConfessionMemory.offers(other,3).get(0).written().equals("Nobody.")&&ConfessionMemory.offers(other,4).get(0).written().equals("You.")
+                &&ConfessionMemory.offers(other,2).stream().allMatch(o->o.correction().isEmpty()),"another reader is offered nothing of this reader's, and is corrected on nothing the House did not see");
+            var pages=ConfessionAnswers.pages(withCorrection(),"Counts.","Reader");
+            h.assertTrue(pages.get(1).contains(ConfessionMemory.under("You took the wool overcoat off the peg."))&&!pages.get(0).contains("another hand"),"the sealed journal shows the House's line under the answer it corrected, and only there");
+            h.succeed();
+        });
+    }
+    private static CompoundTag withCorrection(){var own=new CompoundTag();var answers=new net.minecraft.nbt.ListTag();var corrections=new net.minecraft.nbt.ListTag();
+        answers.add(net.minecraft.nbt.StringTag.valueOf("memory_reader."));corrections.add(net.minecraft.nbt.StringTag.valueOf(""));
+        answers.add(net.minecraft.nbt.StringTag.valueOf("Nothing."));corrections.add(net.minecraft.nbt.StringTag.valueOf("You took the wool overcoat off the peg."));
+        own.put("Answers",answers);own.put("Corrections",corrections);return own;}
+    @AfterBatch(batch="literary_confession_memory") public static void confessionMemoryDone(ServerLevel l){close();}
+
 
 
     /** 0.4.74: posts a reader's own click where they stand, as the client sends it. */

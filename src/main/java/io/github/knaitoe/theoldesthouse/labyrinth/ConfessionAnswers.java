@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -15,6 +16,10 @@ import net.minecraft.server.level.ServerPlayer;
  * the fragment he repeats while he writes it down. Thirty seconds of silence in front of him is written down as that. The
  * sealed journal is made of the questions and the reader's own answers. 0.4.123: once a question is settled he rests a
  * moment and goes on to the next chapter in the same sitting, rather than falling silent until the reader's next visit.
+ * 0.4.275 (docs/CONFESSION_0_4_275.md): he asks in the conversation panel, and the answers offered come from what the House
+ * remembers of the reader (ConfessionMemory). A true one is written as it is said. An untrue one is written too, and where the
+ * House knows better a line in another hand appears under it. Saying nothing is always offered. Typed chat is still heard, as
+ * the reader's own words, and the House corrects nothing it did not see.
  */
 public final class ConfessionAnswers {
     private ConfessionAnswers() {}
@@ -53,14 +58,49 @@ public final class ConfessionAnswers {
         if (!engaged(own)) return false;
         String answer = clean(raw);
         if (answer.isEmpty()) return true;
-        p.displayClientMessage(Component.literal("You, quietly: “" + answer + "”").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
         if (!own.getBoolean("Asked") || own.contains("Answer")) {
-            p.displayClientMessage(Component.literal("The listener lifts a finger from the page: not yet."), false);
+            p.displayClientMessage(Component.literal("The listener lifts a finger from the page: not yet.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
             return true;
         }
+        // Typed words are the reader's own: written as said, with nothing under them.
         own.putString("Answer", answer);
-        p.displayClientMessage(Component.literal("The listener, writing: “…" + fragment(answer) + "…”"), false);
+        own.putString("Correction", "");
+        String key = key(own.getInt("Chapter"));
+        if (!Talk.key(p).equals(key)) Talk.begin(p, key, ConfessionMemory.LISTENER);
+        Talk.line(p, "", answer);
         return true;
+    }
+
+    /** The panel's key for one chapter's question. */
+    public static String key(int chapter) { return "confession_" + chapter; }
+
+    /** Opens (or reopens) the chapter's question in the panel from the answers offered when he asked it. */
+    static void offer(ServerPlayer p, CompoundTag own, int chapter) {
+        String question = QUESTIONS[Math.min(chapter, QUESTIONS.length - 1)];
+        var offers = own.getList("Offers", Tag.TAG_COMPOUND);
+        var replies = new ArrayList<Talk.Reply>();
+        for (int i = 0; i < offers.size(); i++) {
+            var offer = ConfessionMemory.Offer.load(offers.getCompound(i));
+            replies.add(Talk.reply(offer.label(), q -> choose(q, chapter, offer)));
+        }
+        Talk.begin(p, key(chapter), ConfessionMemory.LISTENER);
+        Talk.line(p, ConfessionMemory.LISTENER, question);
+        Talk.ask(p, replies);
+    }
+
+    /** A reply chosen in the panel: taken down at his next pen stroke, with the House's line if it has one. */
+    private static void choose(ServerPlayer p, int chapter, ConfessionMemory.Offer offer) {
+        var d = LabyrinthData.get(p.server);
+        var own = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.CONFESSION);
+        if (own.getInt("Chapter") != chapter || !own.getBoolean("Asked") || own.contains("Answer")) return;
+        own.putString("Answer", offer.written());
+        own.putString("Correction", offer.correction());
+        LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.CONFESSION, own);
+    }
+
+    /** Whether the reader's own Talk panel is open on this chapter's question. */
+    public static boolean asking(ServerPlayer p, CompoundTag own) {
+        return own.getBoolean("Asked") && !own.contains("Answer") && Talk.waiting(p, key(own.getInt("Chapter")));
     }
 
     /**
@@ -72,34 +112,52 @@ public final class ConfessionAnswers {
         if (!own.getBoolean("Asked")) {
             own.putBoolean("Asked", true);
             own.putInt("AskTicks", 0);
+            var offers = new ListTag();
+            for (var offer : ConfessionMemory.offers(p, chapter)) offers.add(offer.save());
+            own.put("Offers", offers);
             visitor.say(question);
-            p.displayClientMessage(Component.literal("The listener: “" + question + "”"), false);
+            offer(p, own, chapter);
             if (!own.getBoolean("AnswerHint")) {
                 own.putBoolean("AnswerHint", true);
-                p.displayClientMessage(Component.literal("Answer him in chat. Only he will hear it.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
+                p.displayClientMessage(Component.literal("Choose an answer, or type your own in chat. Only he will hear it.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
             }
             return false;
         }
         if (!own.contains("Answer")) {
+            // The panel was closed by something else, or the server restarted: he asks again where he was.
+            if (!Talk.waiting(p, key(chapter)) && !Talk.key(p).equals(key(chapter))) offer(p, own, chapter);
             int waited = own.getInt("AskTicks") + 15;
             own.putInt("AskTicks", waited);
             if (waited < SILENCE_TICKS) return false;
             own.putString("Answer", SILENCE);
-            p.displayClientMessage(Component.literal("He waits a while longer. Then he writes down that you did not answer."), false);
+            own.putString("Correction", "");
+            if (!Talk.key(p).equals(key(chapter))) Talk.begin(p, key(chapter), ConfessionMemory.LISTENER);
+            Talk.line(p, "", "He waits a while longer. Then he writes down that you did not answer.");
         }
         String answer = own.getString("Answer");
+        String correction = answer.equals(SILENCE) ? "" : own.getString("Correction");
         // The question leaves his name tag as he writes; then a short rest before he goes on.
         String written = answer.equals(SILENCE) ? "" : fragment(answer);
         visitor.say(written.isEmpty() ? "…" : "…" + written + "…");
+        if (Talk.key(p).equals(key(chapter))) {
+            Talk.line(p, ConfessionMemory.LISTENER, written.isEmpty() ? "…" : "…" + written + "…");
+            if (!correction.isEmpty()) Talk.line(p, "", "Under your answer, in the book, a line appears in another hand: \u201c" + correction + "\u201d");
+            Talk.end(p);
+        }
         own.putInt("RestTicks", REST_TICKS);
-        own.putString("JournalText", own.getString("JournalText") + "\n\n“" + question + "”\n" + answer + "\n\n");
+        own.putString("JournalText", own.getString("JournalText") + "\n\n“" + question + "”\n" + answer + (correction.isEmpty() ? "" : "\n" + ConfessionMemory.under(correction)) + "\n\n");
         var answers = own.getList("Answers", Tag.TAG_STRING);
+        var corrections = own.getList("Corrections", Tag.TAG_STRING);
         while (answers.size() < chapter) answers.add(StringTag.valueOf(SILENCE));
-        if (answers.size() == chapter) answers.add(StringTag.valueOf(answer));
+        while (corrections.size() < answers.size()) corrections.add(StringTag.valueOf(""));
+        if (answers.size() == chapter) { answers.add(StringTag.valueOf(answer)); corrections.add(StringTag.valueOf(correction)); }
         own.put("Answers", answers);
+        own.put("Corrections", corrections);
         own.remove("Asked");
         own.remove("Answer");
+        own.remove("Correction");
         own.remove("AskTicks");
+        own.remove("Offers");
         return true;
     }
 
@@ -108,8 +166,11 @@ public final class ConfessionAnswers {
         var pages = new ArrayList<String>();
         if (!own.getString("InitialWriting").isBlank()) pages.add(own.getString("InitialWriting"));
         var answers = own.getList("Answers", Tag.TAG_STRING);
-        for (int i = 0; i < QUESTIONS.length; i++)
-            pages.add("“" + QUESTIONS[i] + "”\n\n" + (i < answers.size() ? answers.getString(i) : SILENCE));
+        var corrections = own.getList("Corrections", Tag.TAG_STRING);
+        for (int i = 0; i < QUESTIONS.length; i++) {
+            String correction = i < corrections.size() ? corrections.getString(i) : "";
+            pages.add("“" + QUESTIONS[i] + "”\n\n" + (i < answers.size() ? answers.getString(i) : SILENCE) + (correction.isEmpty() ? "" : "\n\n" + ConfessionMemory.under(correction)));
+        }
         pages.add(counts + "\n\nSigned: " + name);
         return pages;
     }
@@ -118,6 +179,14 @@ public final class ConfessionAnswers {
     public static String last(CompoundTag own) {
         var answers = own.getList("Answers", Tag.TAG_STRING);
         return answers.isEmpty() ? "" : answers.getString(answers.size() - 1);
+    }
+
+    /** How many of the reader's answers the House wrote under (0.4.275). */
+    public static int corrected(CompoundTag own) {
+        var corrections = own.getList("Corrections", Tag.TAG_STRING);
+        int n = 0;
+        for (int i = 0; i < corrections.size(); i++) if (!corrections.getString(i).isEmpty()) n++;
+        return n;
     }
 
     /** The few words he repeats while he writes: the longest word of the answer and the two after it. */

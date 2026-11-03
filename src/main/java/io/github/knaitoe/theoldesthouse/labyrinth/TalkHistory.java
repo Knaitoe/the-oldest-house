@@ -49,14 +49,14 @@ public final class TalkHistory {
         for(int i=0;i<all.size();i++)if(all.getCompound(i).getInt("N")==number){talk=all.getCompound(i);at=i;break;}
         if(talk==null){talk=new CompoundTag();talk.putInt("N",number);talk.putString("Who",who);talk.putString("Where",where);talk.putLong("Day",day);}
         var kept=new ListTag();
-        for(int i=Math.max(0,lines.size()-LINES);i<lines.size();i++){var l=new CompoundTag();l.putString("S",lines.get(i)[0]);l.putString("T",lines.get(i)[1]);kept.add(l);}
+        for(int i=Math.max(0,lines.size()-LINES);i<lines.size();i++){var l=new CompoundTag();l.putString("S",lines.get(i)[0]);l.putString("T",lines.get(i)[1]);if(lines.get(i).length>2)l.putBoolean("R",true);kept.add(l);}
         talk.put("Lines",kept);
         if(at>=0)all.set(at,talk);else all.add(talk);
         while(all.size()>CONVERSATIONS)all.remove(0);
         t.put("Talks",all);own(p.server,p.getUUID(),t);
     }
 
-    /** Every exchange this reader has kept, oldest first (each {@code N}, {@code Who}, {@code Where}, {@code Day}, {@code Lines}). */
+    /** Every exchange this reader has kept, oldest first (each {@code N}, {@code Who}, {@code Where}, {@code Day}, {@code Lines}; a line the reader chose carries {@code R}, 0.4.275). */
     public static ListTag conversations(MinecraftServer s,UUID id){return own(s,id).getList("Talks",Tag.TAG_COMPOUND);}
     /** Sends the reader their own history, for the journal's section. */
     public static void send(ServerPlayer p){var t=new CompoundTag();t.put("Talks",conversations(p.server,p.getUUID()));HousePackets.send(p,new TalkHistoryPayload(t));}
