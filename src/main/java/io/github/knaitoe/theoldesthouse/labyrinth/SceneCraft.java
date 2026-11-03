@@ -160,7 +160,8 @@ public final class SceneCraft {
     private record Rect(int x0, int x1, int z0, int z1, int y, int h) {
         boolean inside(int x, int yy, int z) { return x > x0 && x < x1 && z > z0 && z < z1 && yy >= y && yy < y + h; }
     }
-    private enum Tree { SPRUCE, PINE, OAK, BIRCH, SNAG }
+    /** PITCH and SCRUB (0.4.284) are Camp Blood's pitch pine and scrub oak; other scenes' mixes stop at SNAG. */
+    private enum Tree { SPRUCE, PINE, OAK, BIRCH, SNAG, PITCH, SCRUB }
 
     private final ServerLevel l;
     private final BlockPos b;
@@ -1069,7 +1070,7 @@ public final class SceneCraft {
             case ELK_LOT -> { fellGrid(); meadow(); woods(5, new int[]{70, 0, 0, 30, 0}, false); undergrowth(); bar(); }
             case MAPPING_INTERIOR -> { fellGrid(); woods(5, new int[]{60, 20, 0, 20, 0}, false); undergrowth(); lodge(); }
             case HOLY_RABBIT -> { fellGrid(); woods(5, new int[]{75, 20, 0, 0, 5}, true); undergrowth(); }
-            case CAMP_BLOOD -> { fellGrid(); woods(5, new int[]{30, 0, 40, 30, 0}, false); undergrowth(); cabins(); campGround(); }
+            case CAMP_BLOOD -> { fellGrid(); barrensFloor(); woods(4, new int[]{0, 0, 20, 10, 5, 50, 15}, false); undergrowth(); cabins(); campGround(); }
             case END_WORLD_CABIN -> { fellGrid(); woods(5, new int[]{55, 10, 10, 25, 0}, false); undergrowth(); endCabin(); }
             case DROWNED_TOWN -> banks();
             case GOATMAN -> thicket();
@@ -1107,7 +1108,8 @@ public final class SceneCraft {
         for (int y = 10; y >= -6; y--) {
             BlockState s = at(x, y, z);
             if (s.isAir() || plant(s)) continue;
-            return natural(s) ? y : Integer.MIN_VALUE;
+            // 0.4.284: Camp Blood's pines and cover grow out of its bare sand too, as they do in the Barrens.
+            return natural(s) || scene == LabyrinthPlace.CAMP_BLOOD && s.is(Blocks.SAND) ? y : Integer.MIN_VALUE;
         }
         return Integer.MIN_VALUE;
     }
@@ -1182,6 +1184,8 @@ public final class SceneCraft {
                     case OAK -> 4 + (h >> 4) % 3;
                     case BIRCH -> 5 + (h >> 4) % 3;
                     case SNAG -> 4 + (h >> 4) % 4;
+                    case PITCH -> 8 + (h >> 4) % 5;
+                    case SCRUB -> 1 + (h >> 4) % 2;
                 };
                 if (grow(x, z, kind, height, snowy, h)) roots.add(new int[]{x, z});
             }
@@ -1199,8 +1203,9 @@ public final class SceneCraft {
             BlockState s = at(x, g + y, z);
             if (!s.isAir() && !(y == 1 && plant(s))) return false;
         }
-        Block log = kind == Tree.BIRCH ? Blocks.BIRCH_LOG : kind == Tree.OAK ? Blocks.OAK_LOG : Blocks.SPRUCE_LOG;
-        Block leaf = kind == Tree.BIRCH ? Blocks.BIRCH_LEAVES : kind == Tree.OAK ? Blocks.OAK_LEAVES : Blocks.SPRUCE_LEAVES;
+        boolean oak = kind == Tree.OAK || kind == Tree.SCRUB;
+        Block log = kind == Tree.BIRCH ? Blocks.BIRCH_LOG : oak ? Blocks.OAK_LOG : Blocks.SPRUCE_LOG;
+        Block leaf = kind == Tree.BIRCH ? Blocks.BIRCH_LEAVES : oak ? Blocks.OAK_LEAVES : Blocks.SPRUCE_LEAVES;
         if (plant(at(x, g + 1, z))) remove(p(x, g + 1, z));
         if (at(x, g, z).is(Blocks.GRASS_BLOCK)) set(p(x, g, z), Blocks.DIRT.defaultBlockState());
         for (int y = 1; y <= height; y++) tree(p(x, g + y, z), log.defaultBlockState());
@@ -1234,6 +1239,13 @@ public final class SceneCraft {
                 Direction side = Direction.from2DDataValue(seed & 3);
                 put(x + side.getStepX(), g + height - 1, z + side.getStepZ(), fence(Blocks.SPRUCE_FENCE, side.getOpposite()));
             }
+            case PITCH -> pitchPine(x, g, z, height, seed, crown);
+            case SCRUB -> {
+                // Scrub oak: a thicket on a stub of trunk, never above a reader's reach.
+                if (height >= 2) crown.add(new int[]{1, 1});
+                crown.add(new int[]{height, 2});
+                crown.add(new int[]{height + 1, 1});
+            }
         }
         for (int[] ring : crown) {
             int y = ring[0], radius = ring[1];
@@ -1257,6 +1269,75 @@ public final class SceneCraft {
         return true;
     }
 
+    /**
+     * 0.4.284, a pitch pine: a bare trunk under an open, flat-topped crown rather than a spire, two or three crooked branch arms
+     * below it each ending in a tuft of needles, and now and then a sprout of needles out of the trunk itself, as pitch pine puts
+     * out after a fire. Arms and sprouts start four blocks up, over a reader's head.
+     */
+    private void pitchPine(int x, int g, int z, int height, int seed, List<int[]> crown) {
+        crown.add(new int[]{height - 1, 2});
+        crown.add(new int[]{height, 2});
+        crown.add(new int[]{height + 1, 1});
+        BlockState needles = leaves(Blocks.SPRUCE_LEAVES);
+        int arms = 2 + Math.floorMod(seed >> 3, 2);
+        for (int i = 0; i < arms; i++) {
+            int y = height - 3 - i * 2 + ((seed >> (5 + i)) & 1);
+            if (y < 4) break;
+            Direction side = Direction.from2DDataValue(Math.floorMod((seed >> (2 * i)) + i, 4));
+            int reach = 1 + ((seed >> (9 + i)) & 1);
+            for (int k = 1; k <= reach; k++) tree(p(x + side.getStepX() * k, g + y, z + side.getStepZ() * k), log(Blocks.SPRUCE_LOG, side.getAxis()));
+            int tx = x + side.getStepX() * (reach + 1), tz = z + side.getStepZ() * (reach + 1);
+            tree(p(tx, g + y, tz), needles);
+            tree(p(tx, g + y + 1, tz), needles);
+            for (Direction d : Direction.Plane.HORIZONTAL) if (d != side.getOpposite() && Math.floorMod(seed + d.ordinal() + i, 3) != 0) tree(p(tx + d.getStepX(), g + y, tz + d.getStepZ()), needles);
+        }
+        if (seed % 3 == 0 && height >= 9) {
+            int y = 4 + Math.floorMod(seed >> 6, height - 8);
+            Direction d = Direction.from2DDataValue(Math.floorMod(seed >> 4, 4));
+            tree(p(x + d.getStepX(), g + y, z + d.getStepZ()), needles);
+        }
+    }
+
+    /**
+     * 0.4.284, Camp Blood's floor in the Pine Barrens: the planted podzol becomes needle and oak-leaf litter over sand, podzol where
+     * the litter is deep and coarse sandy dirt where it is thin, with patches of bare white sand out in the woods. Only the top of natural ground changes; cabins, decks, paths and the story's ground are left as they are.
+     */
+    private void barrensFloor() {
+        int seed = 131 + scene.ordinal();
+        for (int x = r.minX() + 1; x < r.maxX(); x++)
+            for (int z = r.minZ() + 1; z < -1; z++) {
+                if (!at(x, -1, z).is(Blocks.PODZOL) || !(at(x, 0, z).isAir() || plant(at(x, 0, z))) || nearStory(x, z, 3)) continue;
+                double litter = Landscapes.noise(x, z, seed), sand = Landscapes.noise(x, z, seed + 7);
+                boolean woods = !open(x, z) && !LiteraryRooms.buildingClearing(scene, x, z);
+                if (woods && sand < -0.62) {
+                    if (plant(at(x, 0, z))) remove(p(x, 0, z));
+                    set(p(x, -1, z), Blocks.SAND.defaultBlockState());
+                } else if (litter < -0.2) set(p(x, -1, z), Blocks.COARSE_DIRT.defaultBlockState());
+            }
+    }
+
+    /**
+     * 0.4.284, the Pine Barrens' ground cover: bracken and sparse grass on the litter, lichen and moss in patches, a dead bush on
+     * bare sand, and low huckleberry and scrub out in the woods. No boulders: the Barrens are sand, with no stone to turn up.
+     */
+    private void barrensCover(int x, int g, int z, BlockState top, int h, boolean feature) {
+        // The sand road keeps its two ruts bare; a little grass grows on its crown.
+        if (Math.abs(x) <= 2 && z <= -8) {
+            if (x == 0 && h < 120) put(x, g + 1, z, Blocks.SHORT_GRASS);
+            return;
+        }
+        if (top.is(Blocks.SAND)) {
+            if (h < 25) put(x, g + 1, z, Blocks.DEAD_BUSH);
+            else if (h < 40) put(x, g + 1, z, Blocks.SHORT_GRASS);
+            return;
+        }
+        if (h < 75) put(x, g + 1, z, Blocks.FERN);
+        else if (h < 100) put(x, g + 1, z, Blocks.SHORT_GRASS);
+        else if (h < 118) put(x, g + 1, z, Blocks.MOSS_CARPET);
+        else if (h < 124) put(x, g + 1, z, Blocks.DEAD_BUSH);
+        else if (feature && h < 150) bush(x, g, z, Blocks.OAK_LEAVES, h);
+    }
+
     /** Ground cover by what the ground is: grasses and flowers, ferns and fungus, drifted snow; now and then a bush, a boulder or a fallen trunk. */
     private void undergrowth() {
         for (int x = r.minX() + 1; x < r.maxX(); x++)
@@ -1266,6 +1347,11 @@ public final class SceneCraft {
                 BlockState top = at(x, g, z);
                 int h = hash(x, z, 307) % 1000;
                 boolean feature = !open(x, z);
+                if (scene == LabyrinthPlace.CAMP_BLOOD) {
+                    if (feature && h >= 988) fallen(x, g, z, h);
+                    else barrensCover(x, g, z, top, h, feature);
+                    continue;
+                }
                 if (feature && h >= 990) {
                     boulder(x, g, z, h);
                     continue;
@@ -1520,10 +1606,10 @@ public final class SceneCraft {
                 for (int x : new int[]{cx - 8, cx + 8}) for (int z : new int[]{cz - 7, cz + 7})
                     for (int y = 0; y <= 4; y++) wallTrim(x, y, z, log(Blocks.SPRUCE_LOG, Direction.Axis.Y), Blocks.SPRUCE_PLANKS);
                 for (int x = cx - 8; x <= cx + 8; x++) for (int z = cz - 7; z <= cz + 7; z++)
-                    if (x == cx - 8 || x == cx + 8 || z == cz - 7 || z == cz + 7) wallTrim(x, 0, z, (n % 2 == 0 ? Blocks.MOSSY_COBBLESTONE : Blocks.COBBLESTONE).defaultBlockState(), Blocks.SPRUCE_PLANKS, Blocks.DARK_OAK_PLANKS);
+                    if (x == cx - 8 || x == cx + 8 || z == cz - 7 || z == cz + 7) wallTrim(x, 0, z, Blocks.POLISHED_ANDESITE.defaultBlockState(), Blocks.SPRUCE_PLANKS, Blocks.DARK_OAK_PLANKS);
                 Block[] boards = {Blocks.SPRUCE_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.BIRCH_PLANKS};
                 roof(cx - 8, cx + 8, cz - 7, cz + 7, 5, n % 2 == 1 ? Blocks.DARK_OAK_SLAB : Blocks.SPRUCE_SLAB, boards[n % 3], Blocks.STRIPPED_SPRUCE_LOG);
-                if (n == 1 || n == 4) chimney(cx - 1, cz + 8, 13, Blocks.COBBLESTONE, Blocks.COBBLESTONE_WALL);
+                if (n == 1 || n == 4) chimney(cx - 1, cz + 8, 13, Blocks.BRICKS, Blocks.BRICK_WALL);
                 if (n == 3 || n == 6) woodshed(cx - 8 * s, cz, -s);
             }
     }
@@ -1713,7 +1799,7 @@ public final class SceneCraft {
     private void campGround() {
         for (int x = 5; x <= 7; x++)
             for (int z = -46; z <= -44; z++)
-                if ((x != 6 || z != -45) && natural(at(x, -1, z))) set(p(x, -1, z), (Math.floorMod(x + z, 2) == 0 ? Blocks.COBBLESTONE : Blocks.STONE).defaultBlockState());
+                if ((x != 6 || z != -45) && natural(at(x, -1, z))) set(p(x, -1, z), (Math.floorMod(x + z, 2) == 0 ? Blocks.PACKED_MUD : Blocks.GRANITE).defaultBlockState());
         for (int x = 5; x <= 7; x++) { put(x, 0, -48, log(Blocks.OAK_LOG, Direction.Axis.X)); put(x, 0, -42, log(Blocks.OAK_LOG, Direction.Axis.X)); }
         for (int z = -46; z <= -44; z++) { put(3, 0, z, log(Blocks.OAK_LOG, Direction.Axis.Z)); put(9, 0, z, log(Blocks.OAK_LOG, Direction.Axis.Z)); }
         for (int x = 11; x <= 13; x++) {
