@@ -53,10 +53,11 @@ final class IdahoShore {
     }
     /** A Douglas fir: dark, broad at the base of its crown and tapering to a point. */
     static void fir(ServerLevel l,BlockPos b,int x,int y,int z,int height){
-        for(int k=0;k<height;k++)set(l,b,x,y+k,z,Blocks.SPRUCE_LOG.defaultBlockState());
-        for(int k=2;k<=height;k++){int r=Math.max(0,(height-k+1)/3+((k%2==0)?0:-1));if(k>=height-1)r=0;if(r>3)r=3;
-            for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++){if(dx*dx+dz*dz>r*r+1)continue;if(dx==0&&dz==0&&k<height)continue;leafAt(l,b,x+dx,y+k,z+dz,Blocks.SPRUCE_LEAVES);}}
-        leafAt(l,b,x,y+height,z,Blocks.SPRUCE_LEAVES);leafAt(l,b,x,y+height+1,z,Blocks.SPRUCE_LEAVES);
+        // 0.4.279: needled all the way up: every layer of the crown has at least a ring, and the top two cells are needles, not trunk.
+        for(int k=0;k<height-1;k++)set(l,b,x,y+k,z,Blocks.SPRUCE_LOG.defaultBlockState());
+        for(int k=2;k<=height;k++){int r=k>=height-1?0:Math.max(1,Math.min(3,(height-k+1)/3+((k%2==0)?0:-1)));
+            for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++){if(dx*dx+dz*dz>r*r+1)continue;if(dx==0&&dz==0&&k<height-1)continue;leafAt(l,b,x+dx,y+k,z+dz,Blocks.SPRUCE_LEAVES);}}
+        leafAt(l,b,x,y+height+1,z,Blocks.SPRUCE_LEAVES);
     }
     /** A subalpine fir: a narrow dark spire, needled nearly to the ground. */
     static void spire(ServerLevel l,BlockPos b,int x,int y,int z,int height){
@@ -72,10 +73,25 @@ final class IdahoShore {
             for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++){if(Math.abs(dx)+Math.abs(dz)>r+(r==2?0:1))continue;if(dx==0&&dz==0&&k<height)continue;if(hash(x+dx,y+k,z+dz)%5==0)continue;leafAt(l,b,x+dx,y+k,z+dz,Blocks.BIRCH_LEAVES);}}
         leafAt(l,b,x,y+height+1,z,Blocks.BIRCH_LEAVES);
     }
+    /** A quaking aspen in winter: the pale trunk bare, a few grey twigs at its top. */
+    static void bareAspen(ServerLevel l,BlockPos b,int x,int y,int z,int height){
+        for(int k=0;k<height;k++)set(l,b,x,y+k,z,Blocks.BIRCH_LOG.defaultBlockState());
+        int k=hash(x,y,z)%4;int dx=k==0?1:k==1?-1:0,dz=k==2?1:k==3?-1:0;
+        if(air(l,b,x+dx,y+height-2,z+dz))set(l,b,x+dx,y+height-2,z+dz,Blocks.BIRCH_FENCE.defaultBlockState());if(air(l,b,x-dz,y+height-1,z+dx))set(l,b,x-dz,y+height-1,z+dx,Blocks.BIRCH_FENCE.defaultBlockState());
+    }
+    /** Snow lying on whatever is highest in a column between {@code fromY} and {@code ceiling}: on needles, rock and ground alike, never above the ceiling. */
+    static void snowCap(ServerLevel l,BlockPos b,int x,int z,int fromY,int ceiling){
+        for(int y=ceiling-1;y>=fromY;y--){var s=BuildBlocks.state(l,b.offset(x,y,z));if(s.isAir())continue;
+            if((s.is(Blocks.SPRUCE_LEAVES)||s.isSolidRender(l,b.offset(x,y,z)))&&air(l,b,x,y+1,z))set(l,b,x,y+1,z,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,1+hash(x,y,z)%2));
+            return;}
+    }
     /** One of the forest's trees for a spot, its top kept at or under {@code ceiling}; near water an aspen is likelier. */
-    static void tree(ServerLevel l,BlockPos b,int x,int y,int z,int ceiling,boolean nearWater){
+    static void tree(ServerLevel l,BlockPos b,int x,int y,int z,int ceiling,boolean nearWater){tree(l,b,x,y,z,ceiling,nearWater,false);}
+    /** The same, in winter: the aspens stand bare. */
+    static void tree(ServerLevel l,BlockPos b,int x,int y,int z,int ceiling,boolean nearWater,boolean winter){
         int k=hash(x,y,z)%10;int room=ceiling-y-1;if(room<5)return;
-        if(nearWater&&k<4||k==9)aspen(l,b,x,y,z,Math.min(room,6+hash(x,4,z)%3));
+        if((nearWater&&k<4||k==9)&&winter)bareAspen(l,b,x,y,z,Math.min(room,6+hash(x,4,z)%3));
+        else if(nearWater&&k<4||k==9)aspen(l,b,x,y,z,Math.min(room,6+hash(x,4,z)%3));
         else if(k<3)lodgepole(l,b,x,y,z,Math.min(room,10+hash(x,5,z)%4));
         else if(k<7)fir(l,b,x,y,z,Math.min(room,8+hash(x,6,z)%4));
         else spire(l,b,x,y,z,Math.min(room,7+hash(x,7,z)%3));

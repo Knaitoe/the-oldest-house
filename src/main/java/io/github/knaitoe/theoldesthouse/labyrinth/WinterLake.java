@@ -387,8 +387,11 @@ public final class WinterLake {
         for(int x=r.minX();x<=r.maxX();x++)for(int z=r.minZ();z<=r.maxZ();z++){
             if(lake(x,z)){s.fill(x,r.minY(),z,x,-9,z,Blocks.CLAY);s.fill(x,-8,z,x,-7,z,Blocks.SAND);s.fill(x,-6,z,x,-2,z,Blocks.WATER);
                 s.set(x,-1,z,hole(x,z)?Blocks.WATER.defaultBlockState():shanty(x,z)?Blocks.SPRUCE_PLANKS.defaultBlockState():WinterPropBlock.of(surface(x,z)));continue;}
-            s.fill(x,r.minY(),z,x,-2,z,Blocks.DIRT);s.set(x,-1,z,Blocks.SNOW_BLOCK);
-            if(Math.floorMod(x*7+z*3,5)!=0)s.set(x,0,z,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,1));
+            // 0.4.279: the banks of an Idaho lake in winter, climbing steeply into the forest; granite shows where it is too steep for drift.
+            int h=bank(x,z);boolean steep=false;for(int[] d:new int[][]{{1,0},{-1,0},{0,1},{0,-1}})if(!lake(x+d[0],z+d[1])&&Math.abs(bank(x+d[0],z+d[1])-h)>=2)steep=true;
+            s.fill(x,r.minY(),z,x,-2,z,Blocks.DIRT);for(int y=-1;y<h-1;y++)s.set(x,y,z,y<h-3||steep?IdahoShore.rock(x,y,z):Blocks.DIRT.defaultBlockState());
+            s.set(x,h-1,z,steep?IdahoShore.rock(x,h,z):Blocks.SNOW_BLOCK.defaultBlockState());
+            if(Math.floorMod(x*7+z*3,5)!=0)s.set(x,h,z,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,1));
         }
         // A faint light down under the hole that never froze, for anyone in the water looking for the way up.
         s.set(HOLE.getX(),-4,HOLE.getZ(),Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,7).setValue(BlockStateProperties.WATERLOGGED,true));
@@ -396,16 +399,43 @@ public final class WinterLake {
             if(q>=5&&q<=10&&Math.floorMod(x*7+z*13,3)!=0)s.set(x,0,z,WinterPropBlock.of(WinterPropBlock.Kind.CATTAILS));}
         trees(s);bank(s);shanty(s);
     }
-    private static BlockState leaves(Block b){return b.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true);}
-    private static void spruce(Site s,int x,int z,int height){
-        for(int h=2;h<=height+1;h++){int w=h>=height?0:Math.max(0,(height-h)/2+(h%2));for(int dx=-w;dx<=w;dx++)for(int dz=-w;dz<=w;dz++)if(Math.abs(dx)+Math.abs(dz)<=w+1&&s.at(x+dx,h,z+dz).canBeReplaced())s.set(x+dx,h,z+dz,leaves(Blocks.SPRUCE_LEAVES));}
-        s.fill(x,0,z,x,height-1,z,Blocks.SPRUCE_LOG);s.set(x,height+1,z,leaves(Blocks.SPRUCE_LEAVES));s.set(x,height+2,z,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,2));
+    /**
+     * 0.4.279: how high a bank column stands: the near bank where the boys keep their fire stays level; the side banks and the far end
+     * climb steeply, as a mountain lake's do, to six or seven blocks at the scene's edge. The far corners are rounded, and the foot of
+     * the slope wanders a block or two either way, so the banks are not a rectangle round the ice.
+     */
+    static int bank(int x,int z){
+        if(z>=-11)return 0;double dx=Math.abs(x)-28,dz=-73-z;double d=dx>0&&dz>0?Math.hypot(dx,dz):Math.max(dx,dz);
+        d+=1.1*Math.sin(z*.21+x*.17+(x>0?1.7:0))+.4*IdahoShore.unit(x,8,z);if(d<=0)return 0;
+        double h=Math.min(7,d*.9+d*d*.09);if(z>-17)h*=Math.max(0,(-11-z)/6.0);
+        return (int)Math.max(0,Math.round(h+.6*IdahoShore.unit(x,9,z)*Math.min(1,h)));
     }
+    /**
+     * The woods on both side banks and along the far bank (0.4.279: the northern Rockies' own, lodgepole pine and Douglas and subalpine
+     * fir with snow on their boughs, bare aspen by the shore, granite boulders under drift); nothing grows on the ice or the near bank.
+     */
     private static void trees(Site s){
-        // Dark spruce on both side banks and along the far bank; nothing grows on the ice or the near bank.
-        for(int z=-4;z>=-84;z-=5){spruce(s,-31,z+Math.floorMod(z,3)-1,6+Math.floorMod(z,4));if(z<=-16)spruce(s,32,z-2,5+Math.floorMod(z,3));}
-        for(int x=-26;x<=26;x+=6)spruce(s,x,-78-Math.floorMod(x,3),6+Math.floorMod(x,3));
-        for(int x=-23;x<=23;x+=8)spruce(s,x,-84,7);
+        var r=PLACE.room();
+        for(int x=r.minX()+1;x<=r.maxX()-1;x+=3)for(int z=r.minZ()+1;z<=-4;z+=3){
+            int h=Math.floorMod(x*734287+z*912931,1000);int tx=Math.max(r.minX()+1,Math.min(r.maxX()-1,x+h%3-1)),tz=Math.max(r.minZ()+1,Math.min(-4,z+(h/3)%3-1));
+            if(lake(tx,tz)||!(Math.abs(tx)>=30||tz<=-75)||h%9==0)continue;int y=bank(tx,tz);
+            if(!s.at(tx,y,tz).canBeReplaced())continue;s.set(tx,y,tz,Blocks.AIR);
+            IdahoShore.tree(s.l(),s.b(),tx,y,tz,r.maxY(),Math.abs(tx)<=31&&tz>-74||tz>=-77&&Math.abs(tx)<=28,true);
+        }
+        for(int x=r.minX()+1;x<=r.maxX()-1;x++)for(int z=r.minZ()+1;z<=-4;z++){
+            if(lake(x,z)||!(Math.abs(x)>=30||z<=-75))continue;int y=bank(x,z);int k=Math.floorMod(x*48271+z*16807,200);
+            if(k<3&&s.at(x,y,z).canBeReplaced()){s.set(x,y,z,Blocks.AIR);IdahoShore.boulder(s.l(),s.b(),x,y,z,1+k);}
+        }
+        // Granite at the water's edge along the side and far banks, half under the drift: never on the near bank, where the boys go
+        // out onto the ice.
+        for(int x=r.minX()+1;x<=r.maxX()-1;x++)for(int z=-70;z>=r.minZ()+1;z--){
+            if(lake(x,z)||!(lake(x+1,z)||lake(x-1,z)||lake(x,z+1)||lake(x,z-1)))continue;int k=IdahoShore.hash(x,11,z)%9;
+            int y=bank(x,z);if(k<2&&s.at(x,y,z).canBeReplaced()){s.set(x,y,z,Blocks.AIR);IdahoShore.boulder(s.l(),s.b(),x,y,z,1+k);}
+        }
+        for(int z=-16;z>=-69;z--)for(int x:new int[]{X0-1,X1+1}){int k=IdahoShore.hash(x,11,z)%9;int y=bank(x,z);
+            if(k<2&&s.at(x,y,z).canBeReplaced()){s.set(x,y,z,Blocks.AIR);IdahoShore.boulder(s.l(),s.b(),x,y,z,1+k);}}
+        // Snow on every bough, boulder and drift.
+        for(int x=r.minX();x<=r.maxX();x++)for(int z=r.minZ();z<=-4;z++)if(!lake(x,z)&&(Math.abs(x)>=29||z<=-74))IdahoShore.snowCap(s.l(),s.b(),x,z,bank(x,z),r.maxY());
     }
     private static void bank(Site s){
         // The boys' fire, with logs to sit on; their sled, with the account beside it; a stump with Bud's note on it; a lantern.
