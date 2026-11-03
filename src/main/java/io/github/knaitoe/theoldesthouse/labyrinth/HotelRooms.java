@@ -489,6 +489,8 @@ public final class HotelRooms {
         fill(l,b,-25,4,-26,-17,4,-17,Blocks.SPRUCE_PLANKS);fill(l,b,-25,5,-26,-17,5,-17,Blocks.SNOW);
         furniture(l,b,-23,0,-23,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.EAST);detail(l,b,-23,1,-23,SceneDetailBlock.Kind.TOOLS,Direction.EAST);
         detail(l,b,-19,0,-19,SceneDetailBlock.Kind.ROPE_COIL,Direction.NORTH);
+        // 0.4.285: under Lumpy Ridge: drifted banks with granite through them, ponderosa and blue spruce, bare aspen by the shed.
+        StanleyGrounds.dress(l,b);
         LabyrinthBuilder.doors(l,b,LabyrinthPlace.HOTEL_GROUNDS);
     }
 
