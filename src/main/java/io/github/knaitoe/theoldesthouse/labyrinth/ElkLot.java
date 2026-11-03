@@ -75,6 +75,16 @@ public final class ElkLot {
         void lantern(int x,int y,int z){set(x,y,z,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));}
         void leaves(int x,int y,int z,Block leaf){var r=b.offset(x,y,z).subtract(b);if(Math.abs(r.getX())<=35&&r.getZ()<=0&&r.getZ()>=-113&&at(x,y,z).isAir())set(x,y,z,leaf.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));}
         void spruce(int x,int z,int h){for(int y=0;y<h;y++)set(x,y,z,Blocks.SPRUCE_LOG);for(int y=2;y<=h;y++){int r=y>=h-1?(y==h?0:1):y%2==0?2:1;for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++)if((dx!=0||dz!=0||y>=h)&&Math.abs(dx)+Math.abs(dz)<=r+1)leaves(x+dx,y,z+dz,Blocks.SPRUCE_LEAVES);}}
+        /** 0.4.286: an eastern red cedar of a prairie windbreak: a dense, narrow cone of dark needles from near the ground. */
+        void cedar(int x,int z,int h){for(int y=0;y<h-1;y++)set(x,y,z,Blocks.SPRUCE_LOG);for(int y=1;y<=h;y++){int r=y>=h-1?0:1;for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++)if((dx!=0||dz!=0||y>=h-1)&&Math.abs(dx)+Math.abs(dz)<=(y<h/2&&y>1?2:1))leaves(x+dx,y,z+dz,Blocks.SPRUCE_LEAVES);}}
+        /** 0.4.286: a plains cottonwood: a thick grey trunk under a broad, high, loose crown. */
+        void cottonwood(int x,int z,int h){for(int y=0;y<h;y++)set(x,y,z,Blocks.OAK_LOG);for(int y=h-2;y<=h+1;y++){int r=y==h+1?2:3;for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++){int d2=dx*dx+dz*dz;if(d2>r*r||(dx==0&&dz==0&&y<h))continue;if(d2>=r*r-1&&hash(x+dx*7,z+dz*5+y)%3==0)continue;leaves(x+dx,y,z+dz,Blocks.OAK_LEAVES);}}}
+        /** 0.4.286: a creosoted power pole in the right-of-way fence, its crossarm across the line it carries along the road. */
+        void pole(int x,int z){for(int y=0;y<=6;y++)set(x,y,z,Blocks.DARK_OAK_LOG);for(int dz:new int[]{-1,1})set(x,6,z+dz,Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.Z));}
+        /** 0.4.286: a corrugated steel grain bin, five across, under a shallow cone with a cap. */
+        void bin(int cx,int cz){for(int dx=-2;dx<=2;dx++)for(int dz=-2;dz<=2;dz++){int d2=dx*dx+dz*dz;if(d2>5)continue;boolean wall=d2>=4;
+            for(int y=0;y<=5;y++)if(wall||y==0)set(cx+dx,y,cz+dz,Blocks.IRON_BLOCK);if(d2<=2)set(cx+dx,6,cz+dz,Blocks.SMOOTH_STONE_SLAB);}
+            set(cx,7,cz,Blocks.LIGHTNING_ROD);set(cx-2,1,cz,Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.WEST).setValue(TrapDoorBlock.OPEN,true));}
         void oak(int x,int z,int h){for(int y=0;y<h;y++)set(x,y,z,Blocks.OAK_LOG);for(int y=h-2;y<=h+1;y++){int r=y>=h+1?1:2;for(int dx=-r;dx<=r;dx++)for(int dz=-r;dz<=r;dz++)if((dx!=0||dz!=0||y>=h)&&!(Math.abs(dx)==2&&Math.abs(dz)==2))leaves(x+dx,y,z+dz,Blocks.OAK_LEAVES);}}
     }
 
@@ -210,25 +220,31 @@ public final class ElkLot {
                 if(h%9==0)s.r(x,0,z,Kind.STUBBLE,Direction.from2DDataValue(h%4));
                 else if(h%13!=0){s.r(x,0,z,Kind.STALKS,Direction.from2DDataValue(h%4));if(h%3!=0)s.r(x,1,z,Kind.STALKS_TOP,Direction.from2DDataValue(h%4));}
             }
-            // Treelines both sides, planted only well inside the repeat so no crown crosses its seam.
+            // Windbreaks both sides, as the plains plant them: a close row of red cedar outside, green ash inside it, planted only
+            // well inside the repeat so no crown crosses its seam (0.4.286: they were spruce and oak at random).
             for(int side:new int[]{-1,1})for(int x=31;x<=35;x++){int xx=side*x;s.set(xx,-1,z,Blocks.PODZOL);}
-            if(k>=3&&k<=30)for(int side:new int[]{-1,1}){int h=hash(side,k);if(h%3==0){int xx=side*(32+h%3);if(h%2==0)s.spruce(xx,z,6+h%3);else s.oak(xx,z,4+h%2);}}
+            if(k>=3&&k<=30)for(int side:new int[]{-1,1}){int h=hash(side,k);if(k%3==0)s.cedar(side*34,z,5+h%2);if(k%8==5)s.oak(side*32,z,5+h%2);}
         }
     }
     /** The trodden lane the elk left, wandering a little as it goes north. */
     public static int lane(int k){return 3+(k%17<6?0:k%17<11?1:k%17<14?2:1);}
 
     private static void edges(Site s){
-        // Woods close the scene on both sides of the lot and road; the field ends in a hedge nobody ever reaches.
-        for(int z=-1;z>=-44;z-=3)for(int side:new int[]{-1,1}){int h=hash(side*7,z);int x=side*(33+h%2);if(side<0&&z<=-12&&z>=-31)x=-35;if(h%2==0)s.spruce(x,z,6+h%4);else s.oak(x,z,4+h%3);}
+        // A windbreak closes the scene on both sides of the lot and road, as on any North Dakota roadside (0.4.286: these were
+        // spruce and oak woods): a close row of red cedar along the edge, and old cottonwoods inside it; the field ends in a hedge
+        // nobody ever reaches.
+        for(int z=-2;z>=-44;z-=2)for(int side:new int[]{-1,1}){int h=hash(side*7,z);int x=side*34;if(side<0&&z<=-12&&z>=-31)x=-35;s.cedar(x,z,5+h%2);}
+        s.cottonwood(-31,-36,7);s.cottonwood(32,-12,8);s.cottonwood(32,-33,7);
         // Hedgerows: nothing walks out past the woods. The road runs on into them at both ends.
         for(int z=0;z>=-44;z--)for(int side:new int[]{-1,1})for(int y=0;y<=2;y++)s.leaves(side*35,y,z,Blocks.SPRUCE_LEAVES);
         for(int z=FIELD_START;z>=-113;z--)for(int side:new int[]{-1,1})for(int y=0;y<=1;y++)s.leaves(side*31,y,z,Blocks.OAK_LEAVES);
         for(int x=-35;x<=35;x++)for(int y=0;y<=2;y++)s.leaves(x,y,-113,Blocks.SPRUCE_LEAVES);
         // Scrub east of the lot.
         for(int x=27;x<=31;x++)for(int z=-38;z<=-11;z++)if(hash(x,z)%5==0&&s.at(x,0,z).isAir())s.set(x,0,z,hash(z,x)%3==0?Blocks.FERN:Blocks.SHORT_GRASS);
-        // A few young spruce along the road's far side, either side of the reader's door.
-        for(int x:new int[]{-30,-22,-14,12,17,31})s.spruce(x,0,4+hash(x,0)%2);
+        // Power poles along the road's near side, either side of the reader's door (0.4.286: young spruce stood here).
+        for(int x:new int[]{-29,-15,15,29})s.pole(x,-1);
+        // Two steel grain bins past the lot's east end.
+        s.bin(29,-18);s.bin(29,-25);
     }
 
     // ------------------------------------------------------------------------------------------------ saved worlds
