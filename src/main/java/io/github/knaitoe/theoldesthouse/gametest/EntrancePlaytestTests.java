@@ -82,6 +82,10 @@ public final class EntrancePlaytestTests {
             .thenIdle(24).thenExecute(()->{
                 h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.KITCHEN&&HouseReadSites.contains(peer)&&!HouseTransitionEvents.isPending(p)&&!HouseTransitionEvents.isPending(peer),"idle owner and observer remain in recognized House space after the fade");
                 h.assertTrue(p.isAlive()&&p.getHealth()==20&&peer.isAlive()&&peer.getHealth()==20,"the full boundary tick neither ejects nor kills either native player");
+            })
+            // Run 1422: since 0.4.288 a room's doors wait while that reader's card is up, so the way on is tried once it lifts.
+            .thenWaitUntil(()->h.assertTrue(!HouseReadStory.holding(p),"the first room's opening card has lifted"))
+            .thenExecute(()->{
                 f.reload();at(peer,f.in,junction.offset(0,0,-3));proceed(h,f,p,HouseReadSites.Room.KITCHEN);
             })
             .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.GRAY_CORRIDOR,"the first quiet room's way on is the hall its junction door was dealt, not another quiet room"))
@@ -106,8 +110,9 @@ public final class EntrancePlaytestTests {
                 var visit=HouseReadSites.state(p.server,p.getUUID()).getCompound(HouseReadSites.Room.WAITING.key());
                 h.assertTrue(owed[0].id.equals(visit.getString("SourceDoor"))&&LabyrinthPlace.JUNCTION.id().equals(visit.getString("NextPlace"))&&!visit.contains("Chain"),"the room keeps the door it came from and the hall that door was dealt");
                 h.assertTrue(HouseReadSites.state(p.server,p.getUUID()).getList("Owed",net.minecraft.nbt.Tag.TAG_STRING).isEmpty(),"entering it settles every owed door");
-                proceed(h,f,p,HouseReadSites.Room.WAITING);
             })
+            .thenWaitUntil(()->h.assertTrue(!HouseReadStory.holding(p),"the second room's opening card has lifted"))
+            .thenExecute(()->proceed(h,f,p,HouseReadSites.Room.WAITING))
             .thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p)&&p.serverLevel()==f.in&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.JUNCTION,"the second quiet room also ends in its own dealt hall"))
             .thenExecute(()->{
                 h.assertTrue(HouseReadSites.next(p.server,p.getUUID())==HouseReadSites.Room.BATHROOM,"the rooms still come in their order");
