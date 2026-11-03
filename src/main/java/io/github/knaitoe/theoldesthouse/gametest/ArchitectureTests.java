@@ -603,6 +603,7 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.TURNING_LANDING)maxY=7;if(scene==LabyrinthPlace.TWIN_LIFT||scene==LabyrinthPlace.TURNING_STAIR)maxY=11; // 0.4.199: the tall puzzle rooms, up to their upper floors
         if(HallVariations.added(scene))maxY=HallVariations.roof(scene);if(scene==LabyrinthPlace.CRUMBLED_HALL)minY=HallVariations.PIT_FLOOR;
         if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;if(LiteraryRooms.isLiterary(scene)){minY=Math.max(scene.room().minY(),-6);maxY=NovelRooms.outside(scene)?Math.min(7,scene.room().maxY()):Math.min(4,scene.room().maxY());if(scene==LabyrinthPlace.WINCHESTER)maxY=10;if(scene==LabyrinthPlace.DEVILS_ROCK)maxY=3;}
+        if(scene==LabyrinthPlace.COSTUME_NIGHT||scene==LabyrinthPlace.MOVIE_NIGHT||scene==LabyrinthPlace.WINTER_LAKE)maxY=Math.min(17,r.maxY()-1); // 0.4.279: the Idaho banks climb to seven blocks and their pines stand well above the outdoor cut
         if(scene==LabyrinthPlace.WORK_PRINT)maxY=3;
         if(scene==LabyrinthPlace.OWN_LIGHT){minX=-5;maxX=5;minZ=-50;maxZ=0;minY=-1;maxY=4;} // 0.4.213: the lobby, the branches and the far room
         if(scene==LabyrinthPlace.LINE){minX=-25;maxX=25;minZ=-90;maxZ=0;minY=-1;maxY=6;} // 0.4.212: the hall, the frame and the space
