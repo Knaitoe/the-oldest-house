@@ -169,6 +169,8 @@ public final class SecondPersonSite {
         set(l,b,BEDSIDE,furniture(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.EAST));set(l,b,CHEST,furniture(HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.WEST));set(l,b,-6,UP+2,-26,light());
         // The airing cupboard: its tank in the back wall, warm.
         set(l,b,TANK,fit(SecondPersonBlock.Kind.TANK,Direction.SOUTH,0));set(l,b,TANK.above(),fit(SecondPersonBlock.Kind.TANK,Direction.SOUTH,1));
+        // 0.4.283: the street as a British terrace (SecondPersonStreet).
+        SecondPersonStreet.dress(l,b);
         reset(l,b,new CompoundTag(),"");
         RoomActors.settlePanes(l,b,PLACE);
     }
@@ -188,7 +190,8 @@ public final class SecondPersonSite {
     /** The street through the window: in leaf (0), autumn with leaves down (1), the last morning, bare (2). */
     public static void season(ServerLevel l,BlockPos b,int season){
         var crown=season==0?leaves(Blocks.OAK_LEAVES):season==1?leaves(Blocks.DARK_OAK_LEAVES):Blocks.AIR.defaultBlockState();
-        for(int x=-2;x<=0;x++)for(int z=-11;z<=-9;z++)for(int y=3;y<=5;y++){if(x==-1&&z==-10&&y==3)continue;boolean edge=Math.abs(x+1)+Math.abs(z+10)+Math.abs(y-4)>2;set(l,b,x,y,z,season==1&&edge&&Math.floorMod(x*7+z*3+y,3)==0?Blocks.AIR.defaultBlockState():crown);}
+        // 0.4.283: the crown rounded, its eight corners left open.
+        for(int x=-2;x<=0;x++)for(int z=-11;z<=-9;z++)for(int y=3;y<=5;y++){if(x==-1&&z==-10&&y==3)continue;if(x!=-1&&z!=-10&&y!=4){set(l,b,x,y,z,Blocks.AIR.defaultBlockState());continue;}boolean edge=Math.abs(x+1)+Math.abs(z+10)+Math.abs(y-4)>2;set(l,b,x,y,z,season==1&&edge&&Math.floorMod(x*7+z*3+y,3)==0?Blocks.AIR.defaultBlockState():crown);}
         for(int x=-4;x<=3;x++)for(int z=-11;z<=-9;z++)if(x!=-1||z!=-10){var at=b.offset(x,0,z);if(l.getBlockState(at).isAir()||l.getBlockState(at).is(Blocks.BROWN_CARPET))set(l,b,x,0,z,season==1&&Math.floorMod(x*5+z*3,4)==0?Blocks.BROWN_CARPET.defaultBlockState():Blocks.AIR.defaultBlockState());}
         // Inside: the rota on the kitchen wall and the radio on the counter from autumn; the boxes flattened and put out of the way.
         set(l,b,ROTA,season>=1?fit(SecondPersonBlock.Kind.ROTA,Direction.NORTH,0):Blocks.AIR.defaultBlockState());
