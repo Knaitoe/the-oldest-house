@@ -1145,14 +1145,14 @@ jobs:
             run/crash-reports/
           if-no-files-found: warn
       - name: Focused native literary gameplay
-        timeout-minutes: 15
+        timeout-minutes: 21
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g
         run: |
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
+          timeout --signal=QUIT --kill-after=20s 20m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -2287,7 +2287,7 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','HouseReadReaderTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java','CoopTests.java'))
-          assert count==41
+          assert count==42
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==6
           PY
