@@ -225,21 +225,6 @@
       "model": "the_oldest_house:block/borrasca_trail_patch",
       "y": 270
     },
-    "kind=lock,facing=north": {
-      "model": "the_oldest_house:block/borrasca_trail_lock"
-    },
-    "kind=lock,facing=east": {
-      "model": "the_oldest_house:block/borrasca_trail_lock",
-      "y": 90
-    },
-    "kind=lock,facing=south": {
-      "model": "the_oldest_house:block/borrasca_trail_lock",
-      "y": 180
-    },
-    "kind=lock,facing=west": {
-      "model": "the_oldest_house:block/borrasca_trail_lock",
-      "y": 270
-    },
     "kind=lamp,facing=north": {
       "model": "the_oldest_house:block/borrasca_trail_lamp"
     },
@@ -328,6 +313,36 @@
     },
     "kind=fence,facing=west": {
       "model": "the_oldest_house:block/borrasca_trail_fence",
+      "y": 270
+    },
+    "kind=lock,facing=north": {
+      "model": "the_oldest_house:block/borrasca_trail_lock"
+    },
+    "kind=lock,facing=east": {
+      "model": "the_oldest_house:block/borrasca_trail_lock",
+      "y": 90
+    },
+    "kind=lock,facing=south": {
+      "model": "the_oldest_house:block/borrasca_trail_lock",
+      "y": 180
+    },
+    "kind=lock,facing=west": {
+      "model": "the_oldest_house:block/borrasca_trail_lock",
+      "y": 270
+    },
+    "kind=locked_fence,facing=north": {
+      "model": "the_oldest_house:block/borrasca_trail_locked_fence"
+    },
+    "kind=locked_fence,facing=east": {
+      "model": "the_oldest_house:block/borrasca_trail_locked_fence",
+      "y": 90
+    },
+    "kind=locked_fence,facing=south": {
+      "model": "the_oldest_house:block/borrasca_trail_locked_fence",
+      "y": 180
+    },
+    "kind=locked_fence,facing=west": {
+      "model": "the_oldest_house:block/borrasca_trail_locked_fence",
       "y": 270
     },
     "kind=marker_one,facing=north": {

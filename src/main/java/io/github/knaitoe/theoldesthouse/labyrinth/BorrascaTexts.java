@@ -47,6 +47,9 @@ public final class BorrascaTexts {
             "I'm not allowed to say the rest and I don't want to.",
             "Please come up past the marker. Please tell Ellie not to go to the fort.\n\nDana",
             "WITHHELD\nNot to be posted.\nW. P.");
+        case "GateLog"->typed("Ridge gate log","Prescott Ore Services",
+            "RIDGE DEPOT\nGATE LOG\n\nAfter dusk, admit county vehicles on the Sheriff's word. Keep the chain on between trucks.",
+            "Vehicle 17. In 6:48 pm. One passenger.\nOut 6:52 pm. Driver only.\n\nNo mileage recorded. County account."),
         case "Map"->typed("Pine trail map","County Trails",
             "OZARK PINE TRAIL\n\nTrailhead to Triple Tree: one mile, Marker 1.\nTriple Tree to Marker 2: the public walk ends here.",
             "Beyond Marker 2: county property, no public access. Markers 3 and 4 are maintenance markers on the ridge road.",

@@ -205,10 +205,16 @@ def paintings():
     t = tile('#2e3633', 100)
     for y in range(0, 16, 3):
         t.rect(0, y, 15, y, '#435049'); t.rect(0, y + 1, 15, y + 1, '#222927')
-    # 11 Padlock: brass body, keyhole, a worn rim.
-    t = tile('#8a6b33', 110)
-    t.rect(1, 1, 14, 14, '#b08a42'); t.rect(1, 1, 14, 1, '#d8b56c'); t.rect(1, 1, 1, 14, '#c9a35a'); t.rect(1, 14, 14, 14, '#6e5428')
-    t.rect(7, 5, 8, 8, '#2c2a22'); t.rect(7, 8, 8, 11, '#2c2a22'); t.rect(6, 5, 9, 6, '#2c2a22'); t.jitter(.04)
+    # 11 Padlock: tarnished brass, worn at the shoulders and around the keyway.
+    t = tile('#716142', 110)
+    t.rect(1, 1, 14, 14, '#9a8150')
+    t.rect(1, 1, 14, 1, '#beaa74'); t.rect(1, 2, 1, 13, '#ad955e')
+    t.rect(1, 14, 14, 14, '#574a33')
+    t.rect(2, 2, 5, 3, '#aa925c'); t.rect(10, 11, 13, 13, '#8c744b')
+    t.speck(15, ['#8b7652', '#a28b5b'], 2, 2, 13, 13)
+    t.rect(7, 7, 8, 12, '#5b4c32'); t.rect(6, 6, 9, 9, '#6f5a38')
+    t.rect(7, 7, 8, 11, '#2b2923'); t.rect(6, 7, 9, 8, '#2b2923')
+    t.set(7, 12, '#b29a63'); t.jitter(.035)
     # 12 Enamel plate behind the marker digits and letters.
     t = tile('#d6cfb2', 120)
     t.outline(0, 0, 15, 15, '#5f5a48'); t.rect(1, 1, 14, 1, '#ebe5cb'); t.speck(4, ['#8a8574', '#a8a28c'], 1, 1, 14, 14)
@@ -561,7 +567,6 @@ def outputs():
         'polished': (6, [(0,0,0,16,16,16)]),
         'pack': (8, [(3,0,3,13,10,13),(5,10,5,11,12,7),(4,3,2,12,7,3)]),
         'patch': (9, [(1,0,1,15,1,15)]),
-        'lock': (11, [(5,2,6,11,9,10),(5,9,7,6,13,9),(10,9,7,11,13,9),(6,12,7,10,13,9)]),
         'lamp': (14, [(0,2,3,16,14,13)]),
         'lamp_off': (5, [(0,2,3,16,14,13)]),
         'breaker': (15, [(0,0,0,16,16,16)]),
@@ -576,6 +581,27 @@ def outputs():
         for angle in (-45,45):
             wire.append(cube((1,y,7.75,15,y+.35,8.25),5,{'origin':[8,y+.175,8],'axis':'z','angle':angle,'rescale':False}))
     out['models/block/borrasca_trail_fence.json'] = model(wire)
+    body = cube((5.25, 3, 3, 10.75, 9, 6), 11)
+    for face in FACES:
+        if face != 'north':
+            body['faces'][face]['uv'] = [12.53, 8.53, 13.47, 11.47]
+    shackle = [cube(b, 5) for b in ((5.75,9,4,7,12,5.25), (9,9,4,10.25,12,5.25),
+                                    (6.5,12.75,4,9.5,13.5,5.25), (6,12,4,7.5,12.75,5.25),
+                                    (8.5,12,4,10,12.75,5.25))]
+    for piece in shackle:
+        for face in piece['faces'].values():
+            face['uv'] = [4.03, 4.03, 7.97, 5.72]
+    # The latch is on the near side of the wire, with its eye through the shackle.
+    latch = [cube((.6,10.25,6,15.4,11.25,8.55), 5), cube((7.5,10.25,3.75,8.5,11.25,6), 5)]
+    loose_lock = []
+    for piece in (body, *shackle):
+        translated = dict(piece)
+        for end in ('from', 'to'):
+            x, y, z = piece[end]
+            translated[end] = [x, y - 3, z + 2]
+        loose_lock.append(translated)
+    out['models/block/borrasca_trail_lock.json'] = model(loose_lock)
+    out['models/block/borrasca_trail_locked_fence.json'] = model([*wire, *latch, body, *shackle])
     for name, number in zip(('one','two','three','four'),'1234'):
         # Base model faces north. The state rotations keep visible digits and native selection aligned.
         digit = letters(number,5.5,2.7,13.8,1.45,12)
@@ -583,7 +609,7 @@ def outputs():
     old = ('timber','steel','rust','paper','notice','carving','drawers','belt','truck')
     for name, value in town_models().items():
         out[f'models/block/borrasca_{name}.json'] = value
-    new = tuple(kinds) + ('fence','marker_one','marker_two','marker_three','marker_four')
+    new = tuple(kinds) + ('fence','lock','locked_fence','marker_one','marker_two','marker_three','marker_four')
     states = {}
     for name in (*old,*new):
         for facing, angle in (('north',0),('east',90),('south',180),('west',270)):
@@ -608,10 +634,19 @@ def outputs():
     for k in range(1, 16):
         out[f'models/item/borrasca_compass_{k}.json'] = compass_model(k)
     patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('NELL',2,6,7.35,.8,12,mirror=False)])
-    flashlight = model([cube((6,0,6,10,12,10),5),cube((5.5,2,5.5,10.5,10,10.5),10),cube((4,10,4,12,16,12),14)])
+    lens = cube((5, 15.9, 5, 11, 16, 11), 14)
+    lens['faces'] = {'up': lens['faces']['up']}
+    lens['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
+    lens['shade'] = False
+    bezel = [cube(b, 10) for b in ((4,14,4,5,16,12), (11,14,4,12,16,12),
+                                   (5,14,4,11,16,5), (5,14,11,11,16,12))]
+    flashlight = model([cube((6,0,6,10,2,10),5), cube((5.5,2,5.5,10.5,12,10.5),10),
+                        cube((4,11,4,12,14,12),10), *bezel, lens])
     for name, asset in (('name_patch',patch),('flashlight',flashlight)):
         asset['display'] = display
         out[f'models/item/borrasca_{name}.json'] = asset
+    flashlight['display'] = {**display, 'thirdperson_righthand': {
+        **display['thirdperson_righthand'], 'rotation': [-77,0,0]}}
     compass['overrides'] = [{'predicate': {'the_oldest_house:needle': round((k - .5) / 16, 5)}, 'model': f'the_oldest_house:item/borrasca_compass_{k}'} for k in range(1, 16)]
     compass['overrides'].append({'predicate': {'the_oldest_house:needle': round(15.5 / 16, 5)}, 'model': 'the_oldest_house:item/borrasca_compass'})
     out['models/item/borrasca_compass.json'] = compass

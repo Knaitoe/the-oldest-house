@@ -20,7 +20,8 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.291** adds Return Air and Settling Cellar, operator staircase test sheets and a supported arrival at the Great Staircase. See [docs/SERVICE_HAZARDS_0_4_291.md](docs/SERVICE_HAZARDS_0_4_291.md).
+Development candidate **0.4.296** fixes the Borrasca padlock and flashlight, enforces the Sheriff’s blockade, and makes the gate hut log readable. See [docs/BORRASCA_GATE_0_4_296.md](docs/BORRASCA_GATE_0_4_296.md).
+Previous candidate **0.4.291** adds Return Air and Settling Cellar, operator staircase test sheets and a supported arrival at the Great Staircase. See [docs/SERVICE_HAZARDS_0_4_291.md](docs/SERVICE_HAZARDS_0_4_291.md).
 
 Previous candidate **0.4.288** lets a reader resume Johnny's current conversation after reconnecting. The private story cards offer **Read at my pace** with page controls. See [docs/READING_AND_RECONNECT_0_4_288.md](docs/READING_AND_RECONNECT_0_4_288.md).
 
