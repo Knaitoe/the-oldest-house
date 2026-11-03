@@ -20,7 +20,9 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.288** lets a reader resume Johnny's current conversation after reconnecting. The private story cards offer **Read at my pace** with page controls. See [docs/READING_AND_RECONNECT_0_4_288.md](docs/READING_AND_RECONNECT_0_4_288.md).
+Development candidate **0.4.291** adds Return Air and Settling Cellar, operator staircase test sheets and a supported arrival at the Great Staircase. See [docs/SERVICE_HAZARDS_0_4_291.md](docs/SERVICE_HAZARDS_0_4_291.md).
+
+Previous candidate **0.4.288** lets a reader resume Johnny's current conversation after reconnecting. The private story cards offer **Read at my pace** with page controls. See [docs/READING_AND_RECONNECT_0_4_288.md](docs/READING_AND_RECONNECT_0_4_288.md).
 
 Previous candidate **0.4.287**: the plain, in the Sahel. The plain keeps a photograph taken in the Sudanese Sahel, but its landscape was Saharan: pale sand dunes. Now its dunes and ground are the red sand of the Sahel's old grassed dunes, in exactly the same shapes. The ground between them has patches of bare baked earth and dry brush. Termite mounds stand out to either side, and two flat-crowned thorn trees stand alone on it. Nothing in the story moves, and nothing stands across the line to the figure. See [docs/PLAIN_SAHEL_0_4_287.md](docs/PLAIN_SAHEL_0_4_287.md).
 

@@ -51,6 +51,48 @@ public final class StaircaseLeakTests {
         h.runAfterDelay(limit,()->{if(!f.finished){String detail="Staircase scene stage "+state[0]+": "+f.players.stream().map(p->p.getGameProfile().getName()+" pos="+p.position()+" active="+StaircaseLeaks.active(p)+" offered="+StaircaseLeaks.offered(p)+" hurt="+p.hurtTime).toList();f.finished=true;cleanup.run();h.fail(detail);}});
         h.onEachTick(()->{if(f.finished||!f.chunks.ready())return;try{if(!f.started){f.start();StaircaseLeaks.clearForServer(f.level.getServer());}for(var player:new ArrayList<>(f.players))if(!player.isRemoved())player.doTick();step.accept(f,state);if(state[1]!=state[0]){TheOldestHouse.LOGGER.info("STAIRCASE LEAK native fixture {} stage {}",f.origin,state[0]);state[1]=state[0];}if(state[0]==99){f.finished=true;cleanup.run();h.succeed();}}catch(RuntimeException|Error ex){f.finished=true;cleanup.run();throw ex;}});
     }
+    @GameTest(template="empty",batch="test_stair_note",timeoutTicks=1800)
+    public static void anOperatorNoteRunsTheRealPrivateSceneWithoutSpendingTheDescent(GameTestHelper h){
+        run(h,521000,(f,state)->{
+            var source=f.source.south(2);
+            var at=source.south(2);
+            if(state[0]==0){
+                var reader=f.player(h,"test_note_reader");
+                var peer=f.player(h,"test_note_peer");
+                f.put(f.level,at,Blocks.AIR.defaultBlockState());
+                reader.teleportTo(f.level,source.getX()+.5,source.getY(),source.getZ()+.5,0,0);
+                peer.teleportTo(f.level,source.getX()+1.5,source.getY(),source.getZ()+.5,0,0);
+                reader.hasChangedDimension();peer.hasChangedDimension();
+                try{
+                    var dispatcher=reader.server.getCommands().getDispatcher();
+                    h.assertTrue(dispatcher.execute("ghosthouse note breakfast",reader.createCommandSourceStack().withPermission(2))==1,
+                            "the registered command places the selected household sheet");
+                }catch(com.mojang.brigadier.exceptions.CommandSyntaxException e){throw new IllegalStateException(e);}
+                h.assertTrue(StaircaseWriting.open(peer,at)&&peer.containerMenu==peer.inventoryMenu,
+                        "the other reader cannot read the test sheet");
+                h.assertTrue(StaircaseWriting.open(reader,at),"the owner gets the normal native reader");
+                var menu=reader.containerMenu;
+                var content=menu.getSlot(0).getItem().get(DataComponents.WRITTEN_BOOK_CONTENT);
+                int last=content.pages().size()-1;
+                if(last>0)menu.clickMenuButton(reader,100+last);
+                state[0]=1;h.runAfterDelay(24,reader::closeContainer);
+                return;
+            }
+            var reader=f.players.getFirst();
+            if(state[0]==1&&StaircaseLeaks.active(reader)){
+                h.assertTrue(StaircaseLeaks.activeKind(reader)==StaircaseLeakRooms.Kind.DAWN,
+                        "the full reading enters the real dawn room");
+                StaircaseLeaks.returnAfterBeat(reader,1);state[0]=2;
+            }else if(state[0]==2&&!StaircaseLeaks.active(reader)){
+                h.assertTrue(reader.blockPosition().equals(source)
+                        &&!StaircaseLeaks.done(reader,3)&&StaircaseHousehold.own(reader).isEmpty(),
+                        "return restores the test position without scoring or spending the real sheet");
+                state[0]=99;
+            }
+        });
+    }
+    @AfterBatch(batch="test_stair_note") public static void cleanTestStairNote(ServerLevel level){cleanup();}
+
     @AfterBatch(batch="leak_ownership") public static void cleanOwnership(ServerLevel l){cleanup();}
     @AfterBatch(batch="leak_chores") public static void cleanChores(ServerLevel l){cleanup();}
     @AfterBatch(batch="leak_recovery") public static void cleanRecovery(ServerLevel l){cleanup();}

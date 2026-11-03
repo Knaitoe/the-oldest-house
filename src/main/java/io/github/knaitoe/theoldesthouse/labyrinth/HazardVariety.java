@@ -63,17 +63,17 @@ public final class HazardVariety {
     private static String key(BlockPos b){return Long.toString(b.asLong());}
     private static String readerKey(ServerPlayer p,LabyrinthPlace place){return p.getUUID()+":"+place.id();}
     private static Engine engine(MinecraftServer s){var e=ENGINES.get(s);var origin=HouseSavedData.get(s).houseOrigin();if(e==null||e.data!=LabyrinthData.get(s)||!Objects.equals(e.origin,origin)){if(e!=null)for(var r:e.readers.values())clear(r.player);e=new Engine(s);ENGINES.put(s,e);}return e;}
-    public static boolean added(LabyrinthPlace p){return p!=null&&p.slot()>=78&&p.slot()<=93;}
-    public static boolean newKind(LabyrinthPlace p){return added(p)&&p.slot()<=85;}
-    public static boolean sibling(LabyrinthPlace p){return added(p)&&p.slot()>=86;}
+    public static boolean added(LabyrinthPlace p){return p!=null&&(p.slot()>=78&&p.slot()<=93||ServiceHazards.is(p));}
+    public static boolean newKind(LabyrinthPlace p){return added(p)&&!sibling(p);}
+    public static boolean sibling(LabyrinthPlace p){return p!=null&&p.slot()>=86&&p.slot()<=93;}
     public static LabyrinthPlace original(LabyrinthPlace p){if(p==null)return null;return switch(p){
         case BENT_CISTERN->LabyrinthPlace.FLOODED_PASSAGE;case SPIRAL_WALKWAY->LabyrinthPlace.FRACTURED_WALKWAY;case CORNER_PRESSURE->LabyrinthPlace.COMPRESSION_PASSAGE;
         case RECEDING_HALL->LabyrinthPlace.FALSE_DISTANCE;case LAST_SCONCE->LabyrinthPlace.LIGHT_SINK;case WATCHED_THRESHOLD->LabyrinthPlace.MOVING_THRESHOLD;
         case DUPLICATE_ROOMS->LabyrinthPlace.DUPLICATE_PASSAGE;case TURNING_GRAVITY->LabyrinthPlace.GRAVITY_DRIFT;default->p;};}
     public static int tier(LabyrinthPlace p){return switch(p){
         case COLD_STORE,LISTING_HALL,QUIET_HALL,BENT_CISTERN,RECEDING_HALL->1;
-        case UNWATCHED_MAZE,MIRROR_HALL,HEAVY_AND_LIGHT,SPIRAL_WALKWAY,LAST_SCONCE,WATCHED_THRESHOLD->2;
-        case NESTED_ROOMS,COUNTING_STAIR,CORNER_PRESSURE,DUPLICATE_ROOMS,TURNING_GRAVITY->3;default->0;};}
+        case UNWATCHED_MAZE,MIRROR_HALL,HEAVY_AND_LIGHT,SPIRAL_WALKWAY,LAST_SCONCE,WATCHED_THRESHOLD,RETURN_AIR->2;
+        case NESTED_ROOMS,COUNTING_STAIR,CORNER_PRESSURE,DUPLICATE_ROOMS,TURNING_GRAVITY,SETTLING_CELLAR->3;default->0;};}
     public static LabyrinthPlace routeVariant(LabyrinthPlace p,long route,LabyrinthData data){var a=switch(original(p)){
         case FLOODED_PASSAGE->LabyrinthPlace.BENT_CISTERN;case FRACTURED_WALKWAY->LabyrinthPlace.SPIRAL_WALKWAY;case COMPRESSION_PASSAGE->LabyrinthPlace.CORNER_PRESSURE;
         case FALSE_DISTANCE->LabyrinthPlace.RECEDING_HALL;case LIGHT_SINK->LabyrinthPlace.LAST_SCONCE;case MOVING_THRESHOLD->LabyrinthPlace.WATCHED_THRESHOLD;
@@ -108,7 +108,9 @@ public final class HazardVariety {
                 case NESTED_ROOMS->nested(b,here);case COUNTING_STAIR->counting(b,clock,here);case BENT_CISTERN->{if(clock%40==0)here.forEach(r->r.player.causeFoodExhaustion(.16F));}
                 case SPIRAL_WALKWAY->spiral(b,clock,here);case CORNER_PRESSURE->pressure(l,b,clock,here);case RECEDING_HALL->receding(l,b,world,here);
                 case LAST_SCONCE->{if(clock%20==0)sconce(l,b,world);}case WATCHED_THRESHOLD->{if(clock%70==0)threshold(l,b,world);}
-                case TURNING_GRAVITY->gravity(l,b,clock,here);default->{}
+                case TURNING_GRAVITY->gravity(l,b,clock,here);
+                case RETURN_AIR,SETTLING_CELLAR->ServiceHazards.tick(l,b,place,world,clock,here.stream().map(r->r.player).toList());
+                default->{}
             }
             for(var r:here){r.lastZ=r.player.getZ();if(clock%20==0)save(e,r);}if(clock%20==0)e.data.setStateEntry(ROOMS,key(b),world);
         }

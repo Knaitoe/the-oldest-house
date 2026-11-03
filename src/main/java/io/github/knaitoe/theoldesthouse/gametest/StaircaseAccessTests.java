@@ -133,25 +133,16 @@ public final class StaircaseAccessTests {
         });
     }
 
-    @GameTest(template="empty",batch="staircase_depth_cache",timeoutTicks=40)
-    public static void firstVisitDepthChecksKeepTheLiveStaircaseRouteCached(GameTestHelper h){
-        // Warm the origin-independent legacy cutoff before measuring the live manor cache.
-        StaircaseFire.initialize(new CompoundTag(),FinaleArchitecture.TOP);
-        var origin=new BlockPos(513000,0,514000);
-        var route=FinaleArchitecture.staircaseRoute(origin);
-        int cutoff=StaircaseFire.landings(BlockPos.ZERO).getLast().getY()-4;
-        route=FinaleArchitecture.staircaseRoute(origin);
-        for(int i=0;i<64;i++){
-            var record=new CompoundTag();record.putString("KeptOriginal","reader "+i);
-            StaircaseFire.initialize(record,i%2==0?cutoff-1:cutoff);
-            h.assertTrue(FinaleArchitecture.staircaseRoute(origin)==route,"independent first visits retain the actual warmed staircase route");
-            h.assertTrue(record.getInt("StairFires")== (i%2==0?StaircaseFire.REQUIRED:0)&&record.getBoolean("StairFireVersion"),"legacy depth alone preserves the existing opening cutoff");
-            h.assertTrue(record.getString("KeptOriginal").equals("reader "+i),"initialization preserves unrelated personal records");
-            var saved=record.copy();StaircaseFire.initialize(record,cutoff-100);
-            h.assertTrue(record.equals(saved),"an initialized saved visit is never reclassified");
-        }
-        h.succeed();
-    }
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void aDoorLandsOnTheFirstSupportedTread(GameTestHelper h){run(h,513250,f->{
+        var reader=f.player(h,"supported_arrival");
+        f.enter(reader);
+        var tread=FinaleArchitecture.staircaseRoute(f.origin).getFirst();
+        h.assertTrue(reader.position().distanceToSqr(Vec3.atBottomCenterOf(tread))<.01,
+                "the real crossing puts the reader on the first tread");
+        h.assertTrue(f.level.getBlockState(tread.below()).isFaceSturdy(f.level,tread.below(),Direction.UP),
+                "the native arrival has a full support block");
+    });}
 
     // The complete suite loads several native dimensions before this batch. Allow its
     // asynchronous entity-section preparation to finish; every gameplay assertion remains required.

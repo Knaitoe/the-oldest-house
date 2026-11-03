@@ -80,13 +80,16 @@ public final class FinaleController {
         ServerLevel target=player.server.getLevel(HouseDimensions.INTERIOR);if(entry==null||target==null)return;
         var turn=LabyrinthDoors.rotationFrom(from.facing,entry.facing);
         LabyrinthDoors.copyVestibule(player.serverLevel(),from,target,entry,turn,player,FinaleArchitecture.HALL_HALF_WIDTH);
-        BlockPos manor=HouseSavedData.get(player.server).houseOrigin();if(manor!=null)FinaleArchitecture.closeHall(target,manor);
-        Vec3 destination=LabyrinthDoors.shifted(player.position(),from.lower,entry.lower,turn);
+        BlockPos manor=HouseSavedData.get(player.server).houseOrigin();
+        if(manor==null)return;
+        FinaleArchitecture.closeHall(target,manor);
+        // Source-door offsets can place the reader off the narrow destination platform.
+        Vec3 destination=Vec3.atBottomCenterOf(FinaleArchitecture.staircaseRoute(manor).getFirst());
         var back=new LabyrinthData.Waypoint(from.dimension,Vec3.atBottomCenterOf(from.lower),from.facing.toYRot(),true);
         java.util.function.Consumer<ServerPlayer> arrived=p->{
             LabyrinthData.get(p.server).pushReturn(p.getUUID(),back);
             CompoundTag record=FinaleProgress.player(p.server,p.getUUID());record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());
-            StaircaseFire.initialize(record,FinaleArchitecture.TOP);
+            p.resetFallDistance();
             if(p.gameMode.getGameModeForPlayer()!=net.minecraft.world.level.GameType.SPECTATOR)record.putBoolean("Discovered",true);
             record.putBoolean("Inside",false);FinaleProgress.save(p.server,p.getUUID(),record);
             LabyrinthDoors.setDoorOpen(target,entry.lower,true,p);NovelVignettes.staircaseArrival(p);

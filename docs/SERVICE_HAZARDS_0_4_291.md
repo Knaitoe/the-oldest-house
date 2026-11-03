@@ -1,0 +1,6 @@
+# Service hazards and staircase testing
+
+- Return Air joins the middle hazard tier. Three grilles knock and draw dust before pulling across alternating sections of the hall. Crouching holds your footing. Masonry recesses give you a place to wait.
+- Settling Cellar joins the deepest hazard tier. Floor panels crack as readers load them. Sprinting and crowding spend a panel faster. A panel that gives way stays open for everyone, and its catch bay has steps back to the bank. The joists and banks carry the long route.
+- Operators can stand on a flat floor in the House and use `/ghosthouse note <sheet_title>`. Tab lists the sheets that open scenes. Try `/ghosthouse note the_last_plate` or `/ghosthouse note breakfast`. Read through the sheet, pause on its last page, then close the book and stand still. The scene returns you to the sheet without consuming the real staircase original or recording a household result. The household test sheets lead straight to their rooms.
+- Great Staircase crossings land on the first supported tread. A fall alone grants no personal fire progress. Clicking an extinguished hearth that has already burned one of your leaves restores its visible flame without taking another leaf.

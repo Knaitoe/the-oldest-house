@@ -118,4 +118,48 @@ public final class HazardVarietyTests {
     @GameTest(template="empty",batch="hazard_pressure",timeoutTicks=260) public static void cornerPressureCostsHealthButNeverClosesOnAReaderOrTakesTheirLastThreeHearts(GameTestHelper h){var f=new Fixture(h);var p=f.player("pressure_reader",LabyrinthPlace.CORNER_PRESSURE);var b=f.base(LabyrinthPlace.CORNER_PRESSURE);f.at(p,LabyrinthPlace.CORNER_PRESSURE,1.15,0,-11.5);p.setHealth(10);h.onEachTick(()->p.moveTo(b.getX()+1.15,b.getY(),b.getZ()-11.5));
         h.runAfterDelay(200,()->{h.assertTrue(p.getHealth()<10&&p.getHealth()>=6,"native compression retains its health cost and three-heart floor");h.assertTrue(f.level.getBlockState(b.offset(1,0,-12)).isAir()&&f.level.noCollision(p,p.getBoundingBox()),"the closing native cells remain clear around an occupied reader");for(var at:HazardMaps.pressureRoute())f.body(b,at.getX()+.5,0,at.getZ()+.5,1,"the retreat lane around the corner after compression at "+at);h.succeed();});}
     @AfterBatch(batch="hazard_pressure") public static void pressureDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="return_air",timeoutTicks=500)
+    public static void returnAirPullsAnExposedReaderWhileASecondBraces(GameTestHelper h){
+        var f=new Fixture(h);
+        var place=LabyrinthPlace.RETURN_AIR;
+        var reader=f.player("air_exposed",place);
+        var peer=f.player("air_braced",place);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"return air is loaded"))
+                .thenExecute(()->{
+                    f.at(reader,place,.5,0,-8.5);
+                    f.at(peer,place,1.5,0,-8.5);
+                    peer.setShiftKeyDown(true);
+                })
+                .thenWaitUntil(()->h.assertTrue(reader.getDeltaMovement().x>.1,"the open floor pulls toward the first grille"))
+                .thenExecute(()->h.assertTrue(Math.abs(peer.getDeltaMovement().x)<.01&&reader.getHealth()==20,
+                        "crouching anchors the peer and the draft costs ground"))
+                .thenSucceed();
+    }
+    @AfterBatch(batch="return_air") public static void returnAirDone(ServerLevel level){close();}
+
+    @GameTest(template="empty",batch="settling_cellar",timeoutTicks=500)
+    public static void sharedWearOpensOnlyTheLoadedFloorPanel(GameTestHelper h){
+        var f=new Fixture(h);
+        var place=LabyrinthPlace.SETTLING_CELLAR;
+        var reader=f.player("cellar_runner",place);
+        var peer=f.player("cellar_bank",place);
+        var base=f.base(place);
+        var seam=base.offset(1,-1,-8);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the settling cellar is loaded"))
+                .thenExecute(()->{
+                    f.at(reader,place,1.5,0,-8.5);
+                    reader.setSprinting(true);
+                    f.at(peer,place,4.5,0,-8.5);
+                })
+                .thenWaitUntil(()->h.assertTrue(f.level.getBlockState(seam).isAir(),"a loaded panel gives way"))
+                .thenExecute(()->{
+                    h.assertTrue(f.level.getBlockState(base.offset(-1,-1,-8)).is(Blocks.CRACKED_STONE_BRICKS)
+                            &&f.level.getBlockState(base.offset(0,-1,-8)).is(Blocks.STRIPPED_DARK_OAK_WOOD)
+                            &&f.level.getBlockState(base.offset(4,-1,-8)).is(Blocks.DARK_OAK_PLANKS),
+                            "the facing panel, joist and bank stay in place for everyone");
+                    f.body(base,1.5,-4,-8.5,1,"the bottom of the catch bay");
+                }).thenSucceed();
+    }
+    @AfterBatch(batch="settling_cellar") public static void settlingCellarDone(ServerLevel level){close();}
+
 }
