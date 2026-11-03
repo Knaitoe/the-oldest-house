@@ -127,8 +127,8 @@ public final class TruantTests {
             .thenExecute(()->{
                 stand(witness,l,lamp,-4,0,-8.4,180);Truant.talk(witness,Truant.body(l));
                 h.assertTrue(said(l).equals("All right. Leave it."),"a companion can make him let go");
-            }).thenWaitUntil(()->h.assertTrue(!reader.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),"the grip expires immediately after the interruption"))
-            .thenSucceed();
+                h.assertTrue(!reader.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),"the grip releases in the same tick as the interruption");
+            }).thenSucceed();
     }
 
     @GameTest(template="empty",batch="truant_reconnect",timeoutTicks=2500)
