@@ -37,15 +37,21 @@ public final class TruantPlaces {
     public static final BlockPos HEAVY_DOOR=new BlockPos(0,0,-11);
     public static final Vec3 DOOR_SPOT=new Vec3(1.45,0,-12.3);
     public static final BlockPos DOOR_LAMP=new BlockPos(2,1,-14);
+    /** 0.4.282: where he stands in the doorway itself, a hand up on the frame, facing the way readers come (the hand in the doorway). */
+    public static final Vec3 IN_DOORWAY=new Vec3(.5,0,-10.5);
     /** The crossing: the ledge's column and its run over the drop, the lower landing's floor, where he waits at the near end. */
     public static final int LEDGE_X=4,LEDGE_NEAR=-4,LEDGE_FAR=-12,LOWER=-7;
     public static final Vec3 LEDGE_SPOT=new Vec3(3.5,0,-2.5),FAR_SPOT=new Vec3(3.4,0,-13.6);
+    /** 0.4.282: the dark west end of the near landing, where he waits before he comes up behind someone on the ledge (the shove). */
+    public static final Vec3 SHOVE_WAIT=new Vec3(-3.4,0,-2.6);
     /**
      * The lamp: where he stands to look round the inner corner of the turn (behind it from the north leg, all but the edge of his
      * face), where he waits back to the wall round the corner, and the alcove where he stands at his lamp.
      */
     public static final Vec3 PEEK_SPOT=new Vec3(-1.25,0,-6.68),WALL_SPOT=new Vec3(-3.5,0,-6.72),LAMP_SPOT=new Vec3(-4.5,0,-9.55);
     public static final BlockPos LAMP_LIGHT=new BlockPos(-6,1,-10);
+    /** 0.4.282: the far leg past the alcove, where he goes to look into the dark once his lamp has been put out for him. */
+    public static final Vec3 DARK_SPOT=new Vec3(-10,0,-13.5);
 
     /**
      * How often each of his places is dealt among the halls: from the crossing where stories begin (the opening stays domestic), and
