@@ -29,7 +29,8 @@ final class BorrascaTown {
     private static BlockState stair(Block block,Direction facing,Half half){return block.defaultBlockState().setValue(StairBlock.FACING,facing).setValue(StairBlock.HALF,half);}
     private static BlockState log(Block block,Direction.Axis axis){return block.defaultBlockState().setValue(RotatedPillarBlock.AXIS,axis);}
     private static BlockState hanging(){return Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true);}
-    private static BlockState leaves(){return Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true);}
+    /** 0.4.277: oak leaves, for the Triple Tree's crowns and the hedgerow along the back of the town. */
+    private static BlockState leaves(){return Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true);}
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction d){NovelRooms.furniture(l,b.offset(x,y,z),k,d);}
     private static void sign(ServerLevel l,BlockPos b,int x,int y,int z,Direction d,String... lines){NovelRooms.sign(l,b.offset(x,y,z),d,lines);}
     private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction d,Block block){NovelRooms.door(l,b.offset(x,y,z),d,block,false);}
@@ -100,11 +101,11 @@ final class BorrascaTown {
         for(int x:new int[]{-25,-19})box(l,b,x,1,-16,x,2,-16,Blocks.GLASS_PANE);
         // Porch: a raised deck, posts and a lean-to roof; the board hangs between the door and the north window.
         // 0.4.202: the porch boards lie flush with the store's door, so nobody steps up under its lintel on the way out.
-        box(l,b,-15,-1,-29,-13,-1,-17,Blocks.SPRUCE_PLANKS);
-        for(int z:new int[]{-29,-17})box(l,b,-13,0,z,-13,3,z,Blocks.SPRUCE_FENCE);
-        box(l,b,-15,4,-29,-13,4,-17,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
+        box(l,b,-15,-1,-29,-13,-1,-17,Blocks.OAK_PLANKS);
+        for(int z:new int[]{-29,-17})box(l,b,-13,0,z,-13,3,z,Blocks.OAK_FENCE);
+        box(l,b,-15,4,-29,-13,4,-17,slab(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,SlabType.BOTTOM));
         for(var at:BorrascaRooms.BOARD)fitAt(l,b,at,BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
-        set(l,b,-14,0,-29,Blocks.BARREL);set(l,b,-15,0,-27,stair(Blocks.SPRUCE_STAIRS,Direction.WEST,Half.BOTTOM));set(l,b,-15,0,-26,stair(Blocks.SPRUCE_STAIRS,Direction.WEST,Half.BOTTOM));
+        set(l,b,-14,0,-29,Blocks.BARREL);set(l,b,-15,0,-27,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));set(l,b,-15,0,-26,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));
         // Inside: counter and till by the door, stock behind it, two aisles, the cooler along the back.
         for(int z=-27;z<=-25;z++)road(l,b,-19,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);road(l,b,-19,1,-26,RoadhouseBlock.Kind.REGISTER,Direction.EAST);
         for(int z=-28;z<=-25;z++)road(l,b,-17,0,z,RoadhouseBlock.Kind.SHELF,Direction.WEST);
@@ -151,28 +152,27 @@ final class BorrascaTown {
 
     /** The gravel lot between them, with the county pickup and Prescott's truck nosed in. */
     private static void lot(ServerLevel l,BlockPos b){
-        box(l,b,5,-1,-27,16,-1,-14,Blocks.GRAVEL);for(int z:new int[]{-28,-19,-15})set(l,b,16,0,z,log(Blocks.SPRUCE_LOG,Direction.Axis.Y));
+        box(l,b,5,-1,-27,16,-1,-14,Blocks.GRAVEL);for(int z:new int[]{-28,-19,-15})set(l,b,16,0,z,log(Blocks.OAK_LOG,Direction.Axis.Y));
         pickup(l,b,8,0,-19,2);sign(l,b,9,0,-13,Direction.SOUTH,"COUNTY 17","Sheriff's","office","");
         pickup(l,b,12,0,-26,3);sign(l,b,13,0,-20,Direction.SOUTH,"PRESCOTT ORE","SERVICES","D-417","");
     }
 
-    /** The town's back edge: a rail fence and hedge either side of the station, and pines behind the buildings. */
+    /** The town's back edge: a rail fence and a hedgerow either side of the station, and big oaks behind the buildings. */
     private static void edge(ServerLevel l,BlockPos b){
-        for(int x=-44;x<=44;x++){if(Math.abs(x)<=8)continue;set(l,b,x,0,1,Blocks.SPRUCE_FENCE);if(hash(x,0,0)%3!=0)set(l,b,x,0,0,leaves());}
+        for(int x=-44;x<=44;x++){if(Math.abs(x)<=8)continue;set(l,b,x,0,1,Blocks.OAK_FENCE);if(hash(x,0,0)%3!=0)set(l,b,x,0,0,leaves());}
         BorrascaRooms.join(l,b,-44,0,1,44,0,1);
-        for(int[] at:new int[][]{{-36,-22},{36,-24}})pine(l,b,at[0],at[1],0,9+hash(at[0],0,at[1])%4);
+        for(int[] at:new int[][]{{-36,-22},{36,-24}})BorrascaLand.tallOak(l,b,at[0],0,at[1],10+hash(at[0],0,at[1])%3,false);
     }
-    private static void pine(ServerLevel l,BlockPos b,int x,int z,int y,int h){box(l,b,x,y,z,x,y+h,z,log(Blocks.SPRUCE_LOG,Direction.Axis.Y));for(int k=0;k<6;k++){int w=k<2?3:k<4?2:1;for(int dx=-w;dx<=w;dx++)for(int dz=-w;dz<=w;dz++)if(Math.abs(dx)+Math.abs(dz)<=w+1&&!(dx==0&&dz==0&&k<5))set(l,b,x+dx,y+h-4+k,z+dz,leaves());}set(l,b,x,y+h+2,z,leaves());}
 
     // ---- The fort in the Triple Tree ------------------------------------------------------------------------------
 
     /** The three trunks grown into one root; the fort is built in their crotch, above the first marker's walk. */
     static void fort(ServerLevel l,BlockPos b){
-        box(l,b,-8,-1,-104,7,-1,-82,Blocks.PODZOL);box(l,b,-8,0,-104,7,18,-82,AIR);
+        box(l,b,-8,-1,-104,7,-1,-82,Blocks.COARSE_DIRT);box(l,b,-8,0,-104,7,18,-82,AIR);
         for(int[] at:new int[][]{{-4,-101},{-2,-102},{1,-101},{-5,-97},{3,-101},{-1,-97}})set(l,b,at[0],-1,at[1],Blocks.ROOTED_DIRT);
         // The burl: one mass of bark from which the trunks part. The trail forks round it, at x -4 and x 3.
-        box(l,b,-3,0,-100,2,2,-98,log(Blocks.SPRUCE_WOOD,Direction.Axis.Y));box(l,b,-3,3,-100,1,4,-99,log(Blocks.SPRUCE_WOOD,Direction.Axis.Y));
-        set(l,b,3,3,-99,log(Blocks.SPRUCE_WOOD,Direction.Axis.X));
+        box(l,b,-3,0,-100,2,2,-98,log(Blocks.OAK_WOOD,Direction.Axis.Y));box(l,b,-3,3,-100,1,4,-99,log(Blocks.OAK_WOOD,Direction.Axis.Y));
+        set(l,b,3,3,-99,log(Blocks.OAK_WOOD,Direction.Axis.X));
         set(l,b,-4,-1,-98,Blocks.MOSS_BLOCK);set(l,b,-5,0,-98,Blocks.FERN);set(l,b,4,0,-97,Blocks.FERN);set(l,b,-1,0,-102,Blocks.FERN);
         // Platform, posts and braces.
         box(l,b,-5,5,-100,5,5,-88,Blocks.SPRUCE_PLANKS);for(int[] at:new int[][]{{-2,-95},{1,-97},{3,-92},{-4,-91},{2,-99}})set(l,b,at[0],5,at[1],hash(at[0],5,at[1])%2==0?Blocks.BIRCH_PLANKS:Blocks.OAK_PLANKS);
@@ -198,8 +198,8 @@ final class BorrascaTown {
         fitAt(l,b,BorrascaRooms.NOTES,BorrascaFittingBlock.Kind.NOTICE,Direction.SOUTH);
         set(l,b,0,11,-94,hanging());
         // The three trunks run up through the floor, wall and roof, and crown together above it.
-        for(int[] t:new int[][]{{-3,-100,3},{0,-100,5},{4,-99,0}}){box(l,b,t[0],t[2],t[1],t[0],17,t[1],log(Blocks.SPRUCE_LOG,Direction.Axis.Y));crown(l,b,t[0],t[1],17);}
-        for(int[] limb:new int[][]{{-5,14,-100},{-4,14,-100},{5,15,-99},{6,15,-99}})set(l,b,limb[0],limb[1],limb[2],log(Blocks.SPRUCE_LOG,Direction.Axis.X));
+        for(int[] t:new int[][]{{-3,-100,3},{0,-100,5},{4,-99,0}}){box(l,b,t[0],t[2],t[1],t[0],17,t[1],log(Blocks.OAK_LOG,Direction.Axis.Y));crown(l,b,t[0],t[1],17);}
+        for(int[] limb:new int[][]{{-5,14,-100},{-4,14,-100},{5,15,-99},{6,15,-99}})set(l,b,limb[0],limb[1],limb[2],log(Blocks.OAK_LOG,Direction.Axis.X));
         BuildBlocks.set(l,b.offset(BorrascaRooms.CARVING),BorrascaRegistry.CARVING.get().defaultBlockState(),F);
         BorrascaRooms.join(l,b,-6,6,-101,6,8,-87);
     }
