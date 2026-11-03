@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.*;
 
 /**
@@ -98,8 +99,8 @@ public final class LastSwimmerTests {
             .thenWaitUntil(()->h.assertTrue(LastSwimmer.holding(b),"the last verse: the splashing stops"))
             .thenExecute(()->{
                 h.assertTrue(f.own(p,P).getBoolean("Breath227"),"the reader in the hall heard it stop");
-                var swimmer=l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-16,-8,-46)).minmax(new AABB(b.offset(16,11,2))),a->a.phase()==LastSwimmer.SWIMMER).stream().findFirst();
-                h.assertTrue(swimmer.isPresent()&&swimmer.get().isInvisible(),"and nothing comes up");
+                var all=l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(-16,-8,-46)).minmax(new AABB(b.offset(16,11,2))),a->a.role()==LiteraryActor.STRANGER&&a.phase()==LastSwimmer.SWIMMER);
+                h.assertTrue(all.size()==1&&all.get(0).isInvisible(),"and nothing comes up: "+all.stream().map(a->a.getUUID().toString().substring(0,8)+(a.isInvisible()?" unseen":" SEEN")+" at "+a.position().subtract(Vec3.atLowerCornerOf(b))).toList()+", tick "+LastSwimmer.tick(b));
                 // Under the water at the deep end.
                 at(f,p,-6.5,-33.5,0);p.teleportTo(l,p.getX(),b.getY()-4,p.getZ(),0,0);})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Voices227"),"under the water at the deep end, voices: eyes in "+l.getBlockState(BlockPos.containing(p.getEyePosition()))))
