@@ -58,7 +58,7 @@ public final class BorrascaAtmosphere {
     }
     static boolean rendersSheriffBeam(LiteraryActor actor){
         return actor.role()==LiteraryActor.BORRASCA_SHERIFF&&actor.gesture()==4&&!actor.isInvisible()
-                &&actor.scene().equals(LabyrinthPlace.BORRASCA.id())&&active()&&state.visit()==3
+                &&actor.scene().equals(LabyrinthPlace.BORRASCA.id())&&active()&&(state.visit()==3||state.visit()==4)
                 &&actor.owner().filter(Minecraft.getInstance().player.getUUID()::equals).isPresent();
     }
     static void sheriffLens(Vec3 position,Vec3 direction){sheriffLens=new SheriffLens(position,direction);}
@@ -67,7 +67,7 @@ public final class BorrascaAtmosphere {
         var lens=sheriffLens;sheriffLens=null;
         if(!active())return;
         var b=state.source().subtract(BorrascaRooms.MACHINE);
-        if(state.visit()==3&&lens!=null)
+        if(lens!=null)
             beam(e,lens.position().add(lens.direction().scale(.015)),lens.direction(),22,5.8,.065F);
         if(state.takingTicks()>0||state.visit()==4&&state.running()){var direction=b.offset(BorrascaRooms.TAKING).getCenter().subtract(b.offset(BorrascaRooms.LAMP).getCenter()).normalize();beam(e,b.offset(BorrascaRooms.LAMP).getCenter().add(direction.scale(.65)),direction,48,8,.09F);}
     }

@@ -47,9 +47,15 @@ public final class BorrascaTexts {
             "I'm not allowed to say the rest and I don't want to.",
             "Please come up past the marker. Please tell Ellie not to go to the fort.\n\nDana",
             "WITHHELD\nNot to be posted.\nW. P.");
+        case "EliPoster"->typed("Missing poster for Eli","The Maddox family",
+            "MISSING\nELI MADDOX\n\nLast seen at Marker Two. His bicycle was found behind the store. Please call the Maddox house.",
+            "Written along the bottom in pencil\nEli, your bike is in the shed. I put it away for you. Mom");
+        case "WrenPoster"->typed("Missing poster for Wren","The Bell family",
+            "MISSING\nWREN BELL\n\nLast seen on the ridge road. She was looking for Eli Maddox. Please call the Bell house.",
+            "The phone number is crossed out. The sheet underneath has Eli's name and the same staple holes.");
         case "GateLog"->typed("Ridge gate log","Prescott Ore Services",
             "RIDGE DEPOT\nGATE LOG\n\nAfter dusk, admit county vehicles on the Sheriff's word. Keep the chain on between trucks.",
-            "Vehicle 17. In 6:48 pm. One passenger.\nOut 6:52 pm. Driver only.\n\nNo mileage recorded. County account."),
+            "Vehicle 17. In 6:48 pm. One passenger.\nOut 6:52 pm. Driver only.\n\nNo mileage recorded. County account.");
         case "Map"->typed("Pine trail map","County Trails",
             "OZARK PINE TRAIL\n\nTrailhead to Triple Tree: one mile, Marker 1.\nTriple Tree to Marker 2: the public walk ends here.",
             "Beyond Marker 2: county property, no public access. Markers 3 and 4 are maintenance markers on the ridge road.",
@@ -101,6 +107,7 @@ public final class BorrascaTexts {
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
+            +(own.getBoolean("Read_WrenPoster")?" Wren had gone looking for Eli. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Wren said his mom had put his bike away.":"")
             +" At the ridge, his office's papers and Prescott's signature lay beside her things."
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
             +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine. The room was empty.":"")
@@ -108,10 +115,12 @@ public final class BorrascaTexts {
             +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Beside her number it said transfer, and nothing after.":"")
             +(own.getBoolean("LetterRead")?" A girl had written home from down there. Her letter was never sent.":"")
             +(own.getBoolean("GravesSeen")?" Behind the shed there were numbers in the ground.":"")
-            +" I stopped the machine. The wind was still in the pines."
+            +" I stopped the machine."
+            +(own.getBoolean("SheriffYielded")?" He lowered his hand and told me to go.":own.getBoolean("HeardSheriffShutdown")?" The Sheriff said he would make the call.":"")
+            +" The wind was still in the pines."
             +(own.getBoolean("NameReturned")||own.getBoolean("RestoredName")?" "+restored():" I carried her name out in the cloth.");
     }
     public static ItemStack accountBook(String reader,CompoundTag own){return book("The name beside mine",reader,account(own));}
     public static String restored(){return "I cut her name beside mine again. The gouges were still there.";}
-    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
+    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("Read_WrenPoster")?" Wren went looking for Eli. Both names were on the store wall.":"")+(own.getBoolean("SheriffYielded")?" The Sheriff put his light down and let me pass.":own.getBoolean("HeardSheriffShutdown")?" When the machine stopped, he was still there.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
 }
