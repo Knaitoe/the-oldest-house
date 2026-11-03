@@ -191,7 +191,7 @@ final class BorrascaTown {
         box(l,b,3,-1,-88,3,-1,-86,Blocks.SPRUCE_PLANKS);box(l,b,3,0,-89,3,7,-89,log(Blocks.SPRUCE_LOG,Direction.Axis.Y));
         for(int y=0;y<=6;y++)set(l,b,3,y,-88,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH));
         set(l,b,3,6,-88,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.OPEN,true));box(l,b,3,7,-88,3,8,-88,AIR);
-        sign(l,b,0,7,-88,Direction.SOUTH,"TRIPLE TREE","FORT","NO GROWN-UPS","password: shiny");
+        sign(l,b,0,7,-88,Direction.SOUTH,"TRIPLE TREE","FORT","NO GROWN-UPS","knock first");
         // Inside.
         furniture(l,b,-3,6,-95,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);set(l,b,-3,6,-99,Blocks.BARREL);set(l,b,4,6,-91,Blocks.BARREL);set(l,b,-4,6,-90,Blocks.BOOKSHELF);
         box(l,b,-2,6,-97,0,6,-93,Blocks.RED_CARPET);set(l,b,-4,6,-99,Blocks.CANDLE.defaultBlockState());

@@ -177,7 +177,7 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.NIGHTCLUB, "The dance floor is a square of foil, and every figure on it is turned the same way."),
         Map.entry(LabyrinthPlace.LAKE_HOUSE, "A whole house under a dome of water, with a light on in the bathroom."),
         Map.entry(LabyrinthPlace.LAKE_HOUSE_EMPTY, "The same house, high and dry, emptied down to the last chair."),
-        Map.entry(LabyrinthPlace.BORRASCA, "Three pins grown from one root, a fort lashed between the three, and a name scratched small on the bark."),
+        Map.entry(LabyrinthPlace.BORRASCA, "Three trunks grown from one root. A fort between them, and old names where the bark folds together."),
         Map.entry(LabyrinthPlace.PAINTED_INTERIOR, "Every surface has been painted over, and the paint is still tacky."),
         Map.entry(LabyrinthPlace.SECOND_WAITRESS, "Two waitresses behind the counter, the same down to the pencil behind the ear."),
         Map.entry(LabyrinthPlace.TUNNEL_PERIPHERY, "A tunnel of rolled paper. At the very edge of the far end, someone is standing."),
