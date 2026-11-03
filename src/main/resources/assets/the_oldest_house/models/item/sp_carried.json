@@ -1,0 +1,119 @@
+{
+  "parent": "the_oldest_house:item/sp_carried_coat",
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_0"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_5"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_6"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_7"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_8"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_9"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 11
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_10"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 12
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_11"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_12"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 14
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_13"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 15
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_14"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 16
+      },
+      "model": "the_oldest_house:item/sp_carried_routine_15"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 17
+      },
+      "model": "the_oldest_house:item/sp_carried_coat"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 18
+      },
+      "model": "the_oldest_house:item/sp_carried_sheet"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 19
+      },
+      "model": "the_oldest_house:item/sp_carried_photo"
+    }
+  ]
+}

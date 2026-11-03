@@ -543,6 +543,12 @@ public enum LabyrinthPlace {
     TRUANT_LAMP("truant_lamp", Kind.GRAY, 172, new BoundingBox(-12,-1,-16,2,3,0), List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("far",new BlockPos(-10,0,-16),Direction.SOUTH,LabyrinthData.DEALT))),
+    /**
+     * 0.4.274, Second Person, the first slice (SecondPerson, SecondPersonSite, docs/SECOND_PERSON_0_4_274.md): a street and the flat above a
+     * closed launderette, where somebody moves in who cannot see the reader. Late summer, autumn and a last morning. Understanding, one
+     * story over several visits, built whole, a copy for each reader.
+     */
+    SECOND_PERSON("second_person",Kind.ONE_SHOT,173,new BoundingBox(-17,-3,-31,17,12,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

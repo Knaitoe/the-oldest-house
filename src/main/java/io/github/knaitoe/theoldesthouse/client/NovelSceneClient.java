@@ -41,7 +41,7 @@ public final class NovelSceneClient {
     /** Read-only spatial clock; late packets may expire a cue, but never the scene's sky. */
     public static long sceneTime(net.minecraft.world.level.Level level,long nativeTime){
         var mc=Minecraft.getInstance();if(level!=mc.level||mc.player==null)return nativeTime;
-        return HouseReadClient.time(level,BackseatClient.time(level,BorrascaAtmosphere.time(RabbitSceneClient.time(level,LakeHouseAtmosphere.time(SceneClock.time(clockMode(level),elapsed,nativeTime))))));
+        return SecondPersonClient.time(level,HouseReadClient.time(level,BackseatClient.time(level,BorrascaAtmosphere.time(RabbitSceneClient.time(level,LakeHouseAtmosphere.time(SceneClock.time(clockMode(level),elapsed,nativeTime)))))));
     }
     public static int clockMode(net.minecraft.world.level.Level level){
         var mc=Minecraft.getInstance();if(level!=mc.level||mc.player==null)return 0;

@@ -1098,5 +1098,21 @@
   "advancements.the_oldest_house.account.place_for_you.description": "I was expected at a house I had never lived in.",
   "subtitles.the_oldest_house.borrasca.stroke": "One stroke from the ridge",
   "key.categories.the_oldest_house": "This House Has Ghosts in It",
-  "key.the_oldest_house.companion": "Companion orders"
+  "key.the_oldest_house.companion": "Companion orders",
+  "block.the_oldest_house.sp_fitting": "Things in the Flat",
+  "block.the_oldest_house.sp_brick": "Stock Brick",
+  "block.the_oldest_house.sp_paving": "Paving Slab",
+  "block.the_oldest_house.sp_road": "Road",
+  "block.the_oldest_house.sp_kerb": "Kerb",
+  "block.the_oldest_house.sp_shopfront": "Painted Shopfront",
+  "block.the_oldest_house.sp_paper": "Faded Wallpaper",
+  "block.the_oldest_house.sp_kitchen": "Kitchen Tiles",
+  "block.the_oldest_house.sp_carpet": "Worn Carpet",
+  "block.the_oldest_house.sp_lino": "Chequered Lino",
+  "block.the_oldest_house.sp_tile": "Avocado Tile",
+  "block.the_oldest_house.sp_ceiling": "Artex Ceiling",
+  "block.the_oldest_house.sp_launderette": "Launderette Floor",
+  "item.the_oldest_house.sp_carried": "Something of Theirs",
+  "advancements.the_oldest_house.account.second_person.title": "Second person",
+  "advancements.the_oldest_house.account.second_person.description": "Somebody moved into a flat I was already standing in."
 }
