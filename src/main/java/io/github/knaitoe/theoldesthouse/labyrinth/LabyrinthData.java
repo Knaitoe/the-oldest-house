@@ -128,6 +128,7 @@ public final class LabyrinthData extends SavedData {
         final Map<String, Deal> deals = new LinkedHashMap<>();
         final Set<String> visited = new LinkedHashSet<>();
         final Deque<String> recent = new ArrayDeque<>();
+        int truantHallGap;
         int dryDeals;
         boolean hillaryScent;
         /** The doors of each place this player has stood in, keyed by the way they came: their map of the labyrinth. */
@@ -340,8 +341,22 @@ public final class LabyrinthData extends SavedData {
         PlayerDealer state = playerDealer(player);
         state.visited.add(place.id());
         state.recent.addFirst(place.id());
+        if (place.isGray() && !TruantPlaces.is(place) && state.truantHallGap < TruantPlaces.MAX_HALL_GAP) state.truantHallGap++;
         while (state.recent.size() > 8) state.recent.removeLast();
         setDirty();
+    }
+
+    int truantHallGap(UUID player) {
+        PlayerDealer state = playerDealers.get(player);
+        return state == null ? 0 : state.truantHallGap;
+    }
+
+    void sawTruant(UUID player) {
+        PlayerDealer state = playerDealers.get(player);
+        if (state != null && state.truantHallGap > 0) {
+            state.truantHallGap = 0;
+            setDirty();
+        }
     }
 
     /** Zero is the latest visit; -1 means outside the last eight crossings. */
@@ -654,6 +669,7 @@ public final class LabyrinthData extends SavedData {
             CompoundTag p = playerDealerList.getCompound(i);
             PlayerDealer state = new PlayerDealer();
             state.dryDeals = p.getInt("DryDeals");
+            state.truantHallGap = p.getInt("TruantHallGap");
             state.hillaryScent = p.getBoolean("HillaryScent");
             ListTag deals = p.getList("Deals", Tag.TAG_COMPOUND);
             for (int j = 0; j < deals.size(); j++) {
@@ -738,6 +754,7 @@ public final class LabyrinthData extends SavedData {
             p.putUUID("Player", entry.getKey());
             PlayerDealer state = entry.getValue();
             p.putInt("DryDeals", state.dryDeals);
+            p.putInt("TruantHallGap", state.truantHallGap);
             p.putBoolean("HillaryScent", state.hillaryScent);
             ListTag deals = new ListTag();
             for (Map.Entry<String, Deal> dealt : state.deals.entrySet()) {

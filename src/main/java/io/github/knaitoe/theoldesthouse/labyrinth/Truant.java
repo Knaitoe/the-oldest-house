@@ -190,7 +190,10 @@ public final class Truant {
             if(a==null)a=spawn(l,b,place,s);
             if(!Objects.equals(before,s.hasUUID("Body")?s.getUUID("Body"):null))save(server,s);
             if(a==null)continue;
-            for(var p:readers)met(p,a,now);
+            for(var p:readers){
+                met(p,a,now);
+                if(p.distanceToSqr(a)<=64&&p.hasLineOfSight(a))LabyrinthData.get(server).sawTruant(p.getUUID());
+            }
             if(scene.turn==null&&!readers.isEmpty())choose(scene,readers,l.random);
             if(now>scene.quietAt&&scene.quietAt>=0&&a.hasCustomName()){a.setCustomName(null);a.setCustomNameVisible(false);scene.quietAt=-1;}
             if(now<scene.flinchUntil){if(a.gesture()!=FLINCH)a.gesture(FLINCH);continue;}
@@ -453,6 +456,7 @@ public final class Truant {
         // 0.4.282: waiting at the crossing to come up behind someone, he will not be drawn into talk.
         if(scene!=null&&scene.turn==Turn.SHOVE){say(a,TruantTexts.BEHIND);return;}
         met(p,a,a.level().getGameTime());
+        LabyrinthData.get(p.server).sawTruant(p.getUUID());
         boolean interrupted=Talk.interrupted(p,KEY);
         if(Talk.resume(p,KEY))return;
         var own=record(p.server,p.getUUID());
@@ -480,7 +484,31 @@ public final class Truant {
         if(!first&&collecting(own,deepest(server,id))){var worn=TruantTexts.worn(own,worn(own));if(worn!=null)line(p,a,who,worn);}
         // A kept promise is thanked for once.
         if(own.getBoolean("Kept")&&!own.getBoolean("Thanked")){own=record(server,id);own.putBoolean("Thanked",true);record(server,id,own);}
-        line(p,a,who,place==TruantPlaces.DOOR?TruantTexts.ASK_DOOR:TruantTexts.ASK);
+        if(place==TruantPlaces.LAMP&&scene!=null&&scene.turn==Turn.HELP&&scene.lamp>=3&&p.getFoodData().getFoodLevel()<=16){
+            line(p,a,who,TruantTexts.REFRESHMENT);
+            Talk.ask(p,
+                    Talk.reply("Take some bread.",q->refreshment(q,a,"bread")),
+                    Talk.reply("Take the coffee.",q->refreshment(q,a,"coffee")),
+                    Talk.reply("I'm all right.",q->refreshment(q,a,"")));
+            return;
+        }
+        askAboutTheHouse(p,a,who);
+    }
+    private static void refreshment(ServerPlayer p,LiteraryActor a,String choice){
+        var own=record(p.server,p.getUUID());
+        String who=who(own);
+        if(!choice.isEmpty()){
+            boolean coffee=choice.equals("coffee");
+            p.getFoodData().eat(coffee?2:4,coffee?.2F:.45F);
+            if(coffee)p.playSound(SoundEvents.GENERIC_DRINK,.6F,1);
+            own.putString("LastRefreshment",choice);
+            record(p.server,p.getUUID(),own);
+            line(p,a,who,coffee?TruantTexts.COFFEE:TruantTexts.BREAD);
+        }
+        askAboutTheHouse(p,a,who);
+    }
+    private static void askAboutTheHouse(ServerPlayer p,LiteraryActor a,String who){
+        line(p,a,who,LabyrinthPlace.byId(a.scene())==TruantPlaces.DOOR?TruantTexts.ASK_DOOR:TruantTexts.ASK);
         ask(p,a);
     }
     static void ask(ServerPlayer p,LiteraryActor a){

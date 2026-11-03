@@ -227,7 +227,7 @@ public final class LabyrinthDealer {
         // 0.4.261: the quiet room and its four siblings, the rest rooms (QuietRooms): one each, none again within six rooms.
         gray.addAll(QuietRooms.FAMILY);
         int depth = data.returnDepth(player);
-        // 0.4.264: Johnny Truant's places, from the crossing where stories begin, none within six rooms of the last (TruantPlaces.weight).
+        // 0.4.264: Johnny Truant's places, from the crossing where stories begin, weighted by the reader's time without him.
         if (depth >= TruantPlaces.FROM_DEPTH) gray.addAll(TruantPlaces.PLACES);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS, LabyrinthPlace.AIRING_ROOMS, LabyrinthPlace.FOLDED_ROOMS, LabyrinthPlace.FUSE_ROOMS, LabyrinthPlace.HEADER_TANKS));

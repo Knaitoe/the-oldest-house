@@ -54,14 +54,16 @@ public final class TruantPlaces {
     public static final Vec3 DARK_SPOT=new Vec3(-10,0,-13.5);
 
     /**
-     * How often each of his places is dealt among the halls: from the crossing where stories begin (the opening stays domestic), and
-     * none of them within six rooms of the last.
+     * New deals grow more likely after five hall crossings without seeing him.
+     * A recent Truant hall still spaces out consecutive deals, even when he was elsewhere.
      */
-    public static final int WEIGHT=3,FROM_DEPTH=LabyrinthPacing.STORY_DEPTH,REPEAT=6;
+    public static final int WEIGHT=3,FROM_DEPTH=LabyrinthPacing.STORY_DEPTH,REPEAT=2;
+    static final int MAX_HALL_GAP=9;
     public static int weight(LabyrinthData data,UUID player,int depth){
         if(depth<FROM_DEPTH)return 0;
         for(var place:PLACES){int age=data.recentVisit(player,place);if(age>=0&&age<REPEAT)return 0;}
-        return WEIGHT;
+        int gap=data.truantHallGap(player);
+        return gap<5?WEIGHT:WEIGHT+3+(gap-5);
     }
 
     // ------------------------------------------------------------------ building

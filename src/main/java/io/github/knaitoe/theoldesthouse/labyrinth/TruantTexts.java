@@ -17,6 +17,9 @@ import net.minecraft.nbt.Tag;
  */
 public final class TruantTexts {
     private TruantTexts(){}
+    static final String REFRESHMENT="I've got bread. Coffee's still hot if you'd rather. The cap's a cup.";
+    static final String COFFEE="Hold it by the rim. I always forget how hot the bottom gets.";
+    static final String BREAD="Here. I tore off the part I'd already touched.";
     // ------------------------------------------------------------------ what he says while he helps
     public static final String HOLDING="Go on. I've got it.";
     public static final String STEADY="Easy. I've got you.";
