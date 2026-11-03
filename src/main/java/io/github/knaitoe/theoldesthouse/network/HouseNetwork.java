@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("127")
+        event.registrar("128")
                 .playToServer(CompanionNearbyPayload.TYPE,CompanionNearbyPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.opening.CompanionOrders.openNearest(p);}))
                 .playToServer(JournalRibbonPayload.TYPE,JournalRibbonPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.journal.Journals.ribbon(p,payload.page());}))
                 .playToClient(SourceMarkPayload.TYPE,SourceMarkPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.SourceMarkClient.accept(payload)))
@@ -41,6 +41,10 @@ public final class HouseNetwork {
                 .playToClient(ZampanoFolderPayload.TYPE,ZampanoFolderPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.ZampanoScreen.open(payload.folder(),payload.leaf(),payload.pulled())))
                 .playToServer(ZampanoDrawerActionPayload.TYPE,ZampanoDrawerActionPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.ZampanoDrawers.act(p,payload.leaf());}))
                 .playToClient(DareStatePayload.TYPE,DareStatePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.DareClient.accept(payload)))
+                .playToServer(HouseReadCardActionPayload.TYPE,HouseReadCardActionPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{
+                    if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)
+                        io.github.knaitoe.theoldesthouse.labyrinth.HouseReadStory.cardAction(p,payload.token(),payload.finished());
+                }))
                 .playToClient(HouseReadLinePayload.TYPE,HouseReadLinePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseReadLineScreen.show(payload)))
                 .playToClient(HouseReadLookPayload.TYPE,HouseReadLookPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseReadLookClient.accept(payload)))
                 .playToClient(HouseBodiesPayload.TYPE,HouseBodiesPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HouseBodyClient.accept(payload)))

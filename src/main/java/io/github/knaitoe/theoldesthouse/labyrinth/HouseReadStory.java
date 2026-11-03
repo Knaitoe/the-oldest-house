@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.network.HouseReadLinePayload;
 import java.util.*;
@@ -7,6 +8,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 0.4.166: the quiet rooms as a story the House tells about the reader (owner: "Make a story about the player. A line should
@@ -16,6 +21,7 @@ import net.minecraft.sounds.SoundEvents;
  * and the last room ends on the warning. The doors stay locked until the room has what the House came for (owner: "The doors
  * can also just be locked ... Until the vignettes are completed."). Nothing here names what the House read.
  */
+@EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HouseReadStory {
     private HouseReadStory(){}
     /** Pages within one card. */
@@ -77,37 +83,85 @@ public final class HouseReadStory {
         p.displayClientMessage(Component.literal(room==HouseReadSites.Room.KITCHEN?HouseReadKitchen.waiting(p):"The door won't open."),true);HouseReadSites.sound(p,SoundEvents.CHEST_LOCKED,at,.6f);
     }
 
-    /** A card on screen: until when, and for a closing card the room, the way out and when the reader is taken on. */
-    private record Card(long until,@org.jetbrains.annotations.Nullable HouseReadSites.Room closing,boolean forward,long goAt){}
+    private record Card(HouseReadLinePayload line,HouseReadSites.Room room,boolean closing,boolean forward,
+                        long until,long goAt) {
+        boolean manual(){return line.manual();}
+        Card released(long now){
+            return new Card(new HouseReadLinePayload(line.text(),line.sound(),line.title(),line.token(),false),
+                    room,closing,forward,now,now);
+        }
+    }
     private static final Map<UUID,Card> CARDS=new HashMap<>();
-
-    /** On arrival: the House's line on black, the welcome before the first room. The room waits until it lifts. */
-    static void open(ServerPlayer p,HouseReadSites.Room room,boolean first){
-        String text=(first?WELCOME+PAGE:"")+opening(room);
-        show(p,text,"",false);CARDS.put(p.getUUID(),new Card(p.serverLevel().getGameTime()+ticks(text),null,false,0));
-    }
-    /**
-     * The room is cut off: black at once, its sound, its closing line, and after the last room the warning. The reader is
-     * taken on near the end of the card ({@link #tick}), so the hall is there when it lifts.
-     */
-    static void close(ServerPlayer p,HouseReadSites.Room room,boolean forward,boolean last){
-        var card=CARDS.get(p.getUUID());if(card!=null&&card.closing()!=null)return;
-        String text=closing(room)+(last?PAGE+HAUNTED+PAGE+WARNING_LEAD+PAGE+WARNING:"");int ticks=ticks(text);long now=p.serverLevel().getGameTime();
-        show(p,text,cut(room),last);CARDS.put(p.getUUID(),new Card(now+ticks,room,forward,now+Math.max(10,ticks-20)));
-    }
-    /** While a card holds the reader, the room does not go on around them. */
-    static boolean holding(ServerPlayer p){var card=CARDS.get(p.getUUID());return card!=null&&(card.closing()!=null||p.serverLevel().getGameTime()<card.until());}
-    /** Takes a reader on once their closing card has run; forgets cards for readers no longer in a quiet room. */
-    static void tick(ServerPlayer p,@org.jetbrains.annotations.Nullable HouseReadSites.Room inside){
-        var card=CARDS.get(p.getUUID());if(card==null)return;long now=p.serverLevel().getGameTime();
-        if(inside==null||card.closing()!=null&&card.closing()!=inside){CARDS.remove(p.getUUID());return;}
-        if(card.closing()==null){if(now>=card.until())CARDS.remove(p.getUUID());return;}
-        if(now>=card.goAt()&&!LabyrinthDoors.isBusy(p)){CARDS.remove(p.getUUID());HouseReadSites.depart(p,card.forward());}
-    }
-    public static boolean closing(ServerPlayer p){var card=CARDS.get(p.getUUID());return card!=null&&card.closing()!=null;}
-    static void clear(){CARDS.clear();LAST.clear();}
     private static final Map<UUID,HouseReadLinePayload> LAST=new HashMap<>();
+    private static int nextToken=1;
+
+    /** On arrival, the room waits while the reader sees the opening card. */
+    static void open(ServerPlayer p,HouseReadSites.Room room,boolean first){
+        show(p,room,(first?WELCOME+PAGE:"")+opening(room),"",false,false,false);
+    }
+
+    /** The closing card covers the transition out of the room. */
+    static void close(ServerPlayer p,HouseReadSites.Room room,boolean forward,boolean last){
+        if(closing(p))return;
+        String text=closing(room)+(last?PAGE+HAUNTED+PAGE+WARNING_LEAD+PAGE+WARNING:"");
+        show(p,room,text,cut(room),last,true,forward);
+    }
+
+    private static void show(ServerPlayer p,HouseReadSites.Room room,String text,String sound,boolean title,boolean closing,boolean forward){
+        var line=new HouseReadLinePayload(text,sound,title,nextToken++,false);
+        long now=p.serverLevel().getGameTime();
+        int length=ticks(text);
+        CARDS.put(p.getUUID(),new Card(line,room,closing,forward,now+length,now+Math.max(10,length-20)));
+        LAST.put(p.getUUID(),line);
+        if(p.connection!=null)HousePackets.send(p,line);
+    }
+
+    /** Only the player holding this card can extend it or release its transition. */
+    public static void cardAction(ServerPlayer p,int token,boolean finished){
+        var id=p.getUUID();
+        var card=CARDS.get(id);
+        if(card==null||card.line().token()!=token||HouseReadSites.inside(p)!=card.room()||!p.isAlive()||p.isSpectator())return;
+        long now=p.serverLevel().getGameTime();
+        if(finished){
+            if(card.manual())CARDS.put(id,card.released(now));
+            return;
+        }
+        if(card.manual()||now>=(card.closing()?card.goAt():card.until()))return;
+        var old=card.line();
+        var line=new HouseReadLinePayload(old.text(),"",old.title(),token,true);
+        CARDS.put(id,new Card(line,card.room(),card.closing(),card.forward(),card.until(),card.goAt()));
+        if(p.connection!=null)HousePackets.send(p,line);
+    }
+
+    /** While a card holds the reader, the room does not go on around them. */
+    public static boolean holding(ServerPlayer p){
+        var card=CARDS.get(p.getUUID());
+        return card!=null&&(card.manual()||card.closing()||p.serverLevel().getGameTime()<card.until());
+    }
+
+    static void tick(ServerPlayer p,@Nullable HouseReadSites.Room inside){
+        var card=CARDS.get(p.getUUID());
+        if(card==null)return;
+        if(inside!=card.room()||!p.isAlive()||p.isSpectator()){CARDS.remove(p.getUUID());return;}
+        if(card.manual())return;
+        long now=p.serverLevel().getGameTime();
+        if(!card.closing()){
+            if(now>=card.until())CARDS.remove(p.getUUID());
+        }else if(now>=card.goAt()&&!LabyrinthDoors.isBusy(p)){
+            CARDS.remove(p.getUUID());
+            HouseReadSites.depart(p,card.forward());
+        }
+    }
+
+    @SubscribeEvent
+    public static void logout(PlayerEvent.PlayerLoggedOutEvent event){
+        if(!(event.getEntity() instanceof ServerPlayer p))return;
+        var card=CARDS.get(p.getUUID());
+        if(card!=null&&card.manual())CARDS.put(p.getUUID(),card.released(p.serverLevel().getGameTime()));
+    }
+
+    public static boolean closing(ServerPlayer p){var card=CARDS.get(p.getUUID());return card!=null&&card.closing();}
+    static void clear(){CARDS.clear();LAST.clear();}
     /** The last card this reader was shown, for tests and diagnostics. */
-    public static @org.jetbrains.annotations.Nullable HouseReadLinePayload last(UUID reader){return LAST.get(reader);}
-    private static void show(ServerPlayer p,String text,String sound,boolean title){var line=new HouseReadLinePayload(text,sound,title);LAST.put(p.getUUID(),line);if(p.connection!=null)HousePackets.send(p,line);}
+    public static @Nullable HouseReadLinePayload last(UUID reader){return LAST.get(reader);}
 }

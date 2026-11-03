@@ -144,6 +144,7 @@ public final class HouseReadSites {
     public static boolean door(ServerPlayer p,LabyrinthData.Door door){
         if(HouseReadEntrance.room(door)!=null){p.displayClientMessage(Component.literal("The door is locked."),true);return true;}
         if(!door.id.startsWith("house_read/"))return false;var room=inside(p);if(room==null||!door.id.startsWith("house_read/"+p.getUUID()+"/"+room.key()+"/")||p.level().dimension()!=door.dimension||p.distanceToSqr(door.lower.getCenter())>36)return true;
+        if(HouseReadStory.holding(p))return true;
         // 0.4.166 (owner: "The doors can also just be locked ... Until the vignettes are completed."): both ways stay shut until
         // the House has what the room is for.
         if(!HouseReadStory.ready(p,room)){HouseReadStory.locked(p,room,door.lower);return true;}
@@ -151,7 +152,7 @@ public final class HouseReadSites {
     }
     /** Leaves a complete room: the House's closing line on black first, then {@link #depart}. */
     static void leave(ServerPlayer p,boolean forward){
-        var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p)||!HouseReadStory.ready(p,room))return;
+        var room=inside(p);if(room==null||LabyrinthDoors.isBusy(p)||HouseReadStory.holding(p)||!HouseReadStory.ready(p,room))return;
         HouseReadStory.close(p,room,forward,next(p.server,p.getUUID())==null&&!state(p.server,p.getUUID()).getCompound(room.key()).getBoolean("Late"));
     }
     static void depart(ServerPlayer p,boolean forward){

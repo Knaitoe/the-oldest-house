@@ -40,6 +40,7 @@ public final class TruantTexts {
         };
     }
     /** Turned to again once the meeting's talk is done. */
+    public static final String INTERRUPTED="You were gone a while. We can leave it there.";
     public static String again(CompoundTag own){return own.getString("Promise").equals("agreed")&&!own.getBoolean("Kept")?"Go on. You know where I am.":"Go on. I'll be about.";}
 
     /**
