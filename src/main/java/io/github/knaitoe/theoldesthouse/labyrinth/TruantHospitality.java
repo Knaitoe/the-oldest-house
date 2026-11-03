@@ -25,6 +25,7 @@ final class TruantHospitality {
 
     private static final int DEPARTURE_WINDOW=600;
     private static final int GRIP_TICKS=30;
+    private static final int GRIP_EFFECT_TICKS=3,GRIP_AMPLIFIER=5;
     private static final Vec3[] TO_DOOR={new Vec3(-4.5,0,-8.5),new Vec3(-9.5,0,-8.5),new Vec3(-9.5,0,-14.9)};
     private enum Beat{BREAD_QUESTION,BREAD_WALK,COFFEE_QUESTION,CUP,REACH,GRIP,DONE}
     record Departure(UUID companion,long route,Vec3 landing,long tick,BlockPos door){}
@@ -34,6 +35,7 @@ final class TruantHospitality {
         private Beat beat;
         private int ticks,leg;
         private Vec3 cupAt;
+        private @Nullable MobEffectInstance gripEffect;
         Encounter(UUID reader,Beat beat,@Nullable Departure departure){this.reader=reader;this.beat=beat;this.departure=departure;}
     }
 
@@ -209,7 +211,7 @@ final class TruantHospitality {
                         Truant.harm(p,"coffee","CoffeeHeld");
                         Truant.say(a,"Just till I finish.");
                     }
-                    p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,3,5,false,false,false));
+                    hold(e,p);
                     if(++e.ticks>=GRIP_TICKS)finish(e,a);
                 }
             }
@@ -224,7 +226,24 @@ final class TruantHospitality {
         return ahead>.45&&ahead<1.5&&offset.subtract(direction.scale(ahead)).lengthSqr()<.36;
     }
 
+    private static void hold(Encounter e,ServerPlayer p){
+        var current=p.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        if(current!=null&&!ownsGrip(e,current))return;
+        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,GRIP_EFFECT_TICKS,GRIP_AMPLIFIER,false,false,false));
+        e.gripEffect=p.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+    }
+
+    private static boolean ownsGrip(Encounter e,MobEffectInstance effect){
+        return effect!=null&&effect==e.gripEffect&&effect.getAmplifier()==GRIP_AMPLIFIER
+                &&effect.getDuration()<=GRIP_EFFECT_TICKS;
+    }
+
     private static void finish(Encounter e,LiteraryActor a){
+        if(e.gripEffect!=null&&a.level() instanceof ServerLevel level){
+            var p=level.getServer().getPlayerList().getPlayer(e.reader);
+            if(p!=null&&ownsGrip(e,p.getEffect(MobEffects.MOVEMENT_SLOWDOWN)))p.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            e.gripEffect=null;
+        }
         e.beat=Beat.DONE;
         Truant.gesture(a,0);
     }
