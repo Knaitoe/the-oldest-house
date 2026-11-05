@@ -20,7 +20,9 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.307**: Johnny Truant in the service halls. At a junction he chalks you an arrow; at a blind elbow he knocks on the steam main to tell you it's clear; at a service lift he holds the brake until everyone's aboard. Later, past twenty passes, he may turn the arrow toward the drop, knock just as the pipe starts to shiver, or let go of the brake as you cross the sill. The pipes, the shiver and the car's own brake are always there to read. See [docs/TRUANT_SERVICE_0_4_307.md](docs/TRUANT_SERVICE_0_4_307.md).
+Development candidate **0.4.308**: the spiral walkway's recovery ladders now stand at z −24 on both pit walls and stop at the walks they serve (heights 3 and 6), so a fall always has a way back up. Operators can build and visit any hall with `/ghosthouse labyrinth place <id>`. See [docs/SPIRAL_WALKWAY_LADDERS_0_4_308.md](docs/SPIRAL_WALKWAY_LADDERS_0_4_308.md).
+
+Previous candidate **0.4.307**: Johnny Truant in the service halls. At a junction he chalks you an arrow; at a blind elbow he knocks on the steam main to tell you it's clear; at a service lift he holds the brake until everyone's aboard. Later, past twenty passes, he may turn the arrow toward the drop, knock just as the pipe starts to shiver, or let go of the brake as you cross the sill. The pipes, the shiver and the car's own brake are always there to read. See [docs/TRUANT_SERVICE_0_4_307.md](docs/TRUANT_SERVICE_0_4_307.md).
 
 Previous candidate **0.4.306**: the Sphinx's first crossing. A voice from above three latched doors asks which of them opens into the room you just left. Drag the umbrella stand between its marked tiles and look through the letter flaps: only one view follows it. Lift the right latch and you step back into the vestibule through a wall that was solid. Lift a wrong one and she tells you to leave it shut. Pull the pin she warned you about and she comes. See [docs/SPHINX_0_4_306.md](docs/SPHINX_0_4_306.md).
 

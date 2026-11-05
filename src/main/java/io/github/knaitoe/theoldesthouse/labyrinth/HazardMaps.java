@@ -83,13 +83,18 @@ public final class HazardMaps {
         for(var at:airPockets()){box(l,b,at.getX()-1,2,at.getZ()-1,at.getX()+2,5,at.getZ()+1,AIR);for(int x=-1;x<=2;x++)set(l,b,at.getX()+x,6,at.getZ(),Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,x<1?Direction.EAST:Direction.WEST));lamp(l,b,at.getX(),5,at.getZ());}
         box(l,b,-1,0,-4,2,2,-1,AIR);box(l,b,-1,0,-40,2,2,-37,AIR);box(l,b,-1,-1,-40,2,-1,-37,FLOOR);
     }
+    /** 0.4.308: the row both recovery ladders stand in. */
+    public static final int SPIRAL_LADDER_Z=-24;
+    /** The height of the walk beside a recovery ladder on the east (x 11) or west (x -11) wall: where the route passes x 9 or -9 at z -24. */
+    public static int spiralLadderTop(int wallX){var path=spiralRoute();int x=wallX<0?-9:9;for(int i=0;i<path.size();i++){var at=path.get(i);if(at.getX()==x&&at.getZ()==SPIRAL_LADDER_Z)return Math.min(10,i/8);}throw new IllegalStateException("no walk at the ladder");}
     public static List<BlockPos> spiralRoute(){return line(new int[][]{{0,-3},{9,-3},{9,-25},{-9,-25},{-9,-3},{0,-3},{0,-29}});}
     private static void spiral(ServerLevel l,BlockPos b,LabyrinthPlace p){room(l,b,p,HazardBlock.of(PIT_STONE));box(l,b,-11,-3,-29,11,15,-2,AIR);box(l,b,-11,-4,-29,11,-4,-2,HazardBlock.of(PIT_STONE));var path=spiralRoute();
         for(int i=0;i<path.size();i++){var at=path.get(i);int y=Math.min(10,i/8);boolean vertical=i+1<path.size()?path.get(i+1).getZ()!=at.getZ():true;
             for(int across=-1;across<=1;across++)set(l,b,at.getX()+(vertical?across:0),y-1,at.getZ()+(vertical?0:across),Blocks.STONE_BRICKS.defaultBlockState());}
         // Cut the gaps last so overlapping corners cannot silently fill them back in.
         for(int i:new int[]{12,13,43,44,70,71}){var at=path.get(i);int y=Math.min(10,i/8);boolean vertical=path.get(i+1).getZ()!=at.getZ();for(int across=-1;across<=1;across++)set(l,b,at.getX()+(vertical?across:0),y-1,at.getZ()+(vertical?0:across),AIR);}
-        for(int z:new int[]{-9,-19,-27})for(int x:new int[]{-11,11})for(int y=-3;y<=10;y++)set(l,b,x,y,z,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,x<0?Direction.EAST:Direction.WEST));
+        // 0.4.308: one recovery ladder each side at z -24, where both walks pass the pit wall; each climbs from the pit floor and stops at its walk's height (3 east, 6 west): the top rung is a block below it, because a climber's feet rise a block past the last rung, so they come off level with the walk.
+        for(int x:new int[]{-11,11}){int top=spiralLadderTop(x);for(int y=-3;y<top;y++)set(l,b,x,y,SPIRAL_LADDER_Z,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,x<0?Direction.EAST:Direction.WEST));}
         box(l,b,-1,9,-29,1,9,-24,FLOOR);box(l,b,-1,-1,-3,1,-1,-1,FLOOR);lamp(l,b,0,underCeiling(p),-14);
     }
     public static List<BlockPos> pressureRoute(){return line(new int[][]{{0,-2},{0,-14},{-18,-14}});}
