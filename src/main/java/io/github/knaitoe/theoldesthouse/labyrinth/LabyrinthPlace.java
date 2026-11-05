@@ -565,6 +565,8 @@ public enum LabyrinthPlace {
     TRUANT_LIFT("truant_lift",Kind.GRAY,185,new BoundingBox(-6,-1,-17,6,13,0),grayDoors(0,0,-16)),
     /** 0.4.309, the House's yard, first connector (YardRooms, docs/YARD_TURNAROUND_0_4_309.md): the gravel turn-around behind the back door, outside. */
     YARD_TURNAROUND("yard_turnaround",Kind.GRAY,186,new BoundingBox(-20,-4,-40,48,14,4),grayDoors(-7,0,-34)),
+    /** 0.4.310, A Deer in the Road (DeerRoad, docs/DEER_ROAD_0_4_310.md): a county road at night, a doe, and the bent-neck woman twice. Outside, shared, after the tunnel. */
+    DEER_ROAD("deer_road",Kind.ONE_SHOT,187,new BoundingBox(-24,-5,-94,14,15,0),literaryEntry()),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

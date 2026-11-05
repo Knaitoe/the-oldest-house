@@ -1,0 +1,69 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "m": "the_oldest_house:block/deer_road/post",
+    "particle": "the_oldest_house:block/deer_road/post"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        14,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            4,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            4,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            4,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            4,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            4,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

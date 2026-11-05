@@ -1,3 +1,5 @@
+November 5 candidate 0.4.310 (docs/DEER_ROAD_0_4_310.md): A Deer in the Road, slot 187, layout 96, Witness 75 / 57 / 52 / two kinds / three endings; resolved on leaving the road (service door or drainage gate), account handed over on the way out; dealt only after the tunnel. Require DeerRoadTests (literary) and tools/draw_deer_road_art.py --check.
+
 November 3 candidate 0.4.274 (docs/SECOND_PERSON_0_4_274.md): Second Person, slot 173, layout 88, Witness 74 / 56 / two kinds / three endings. Its first paper is the book's opening (LiteraryRooms.source is the book; after it is read the book opens at its latest page, SecondPerson.book); its ending is the book on the bus-stop bench, readied only on the last morning.
 
 November 2 candidate 0.4.273 (docs/LITERATURE_MARK_0_4_273.md): every ordinary literary vignette's first paper is outlined, breathing, for each reader until they read it (SourceMark, SourceMarkClient, network 126). A new vignette whose account waits on its source needs nothing more than its LiteraryRooms.source; one that should not be marked joins SourceMark.waits' exclusions. No room, layout, Witness, source or quota change.

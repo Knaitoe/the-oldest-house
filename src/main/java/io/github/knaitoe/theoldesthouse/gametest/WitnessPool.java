@@ -9,8 +9,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.253, After the People Lights Have Gone Off: 72 / 54 / 49.
  0.4.257, A Place for You: 73 / 55 / 50.
  0.4.274, Second Person: 74 / 56 / 51.
+ 0.4.310, A Deer in the Road: 75 / 57 / 52.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=74,REQUIRED=56,LITERARY=51;
+    static final int SOURCES=75,REQUIRED=57,LITERARY=52;
 }

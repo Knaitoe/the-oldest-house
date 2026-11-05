@@ -1,0 +1,214 @@
+{
+  "variants": {
+    "facing=north,kind=notice,stage=0": {
+      "model": "the_oldest_house:block/deer_road/notice_0"
+    },
+    "facing=north,kind=notice,stage=1": {
+      "model": "the_oldest_house:block/deer_road/notice_0"
+    },
+    "facing=east,kind=notice,stage=0": {
+      "model": "the_oldest_house:block/deer_road/notice_0",
+      "y": 90
+    },
+    "facing=east,kind=notice,stage=1": {
+      "model": "the_oldest_house:block/deer_road/notice_0",
+      "y": 90
+    },
+    "facing=south,kind=notice,stage=0": {
+      "model": "the_oldest_house:block/deer_road/notice_0",
+      "y": 180
+    },
+    "facing=south,kind=notice,stage=1": {
+      "model": "the_oldest_house:block/deer_road/notice_0",
+      "y": 180
+    },
+    "facing=west,kind=notice,stage=0": {
+      "model": "the_oldest_house:block/deer_road/notice_0",
+      "y": 270
+    },
+    "facing=west,kind=notice,stage=1": {
+      "model": "the_oldest_house:block/deer_road/notice_0",
+      "y": 270
+    },
+    "facing=north,kind=sign,stage=0": {
+      "model": "the_oldest_house:block/deer_road/sign_0"
+    },
+    "facing=north,kind=sign,stage=1": {
+      "model": "the_oldest_house:block/deer_road/sign_0"
+    },
+    "facing=east,kind=sign,stage=0": {
+      "model": "the_oldest_house:block/deer_road/sign_0",
+      "y": 90
+    },
+    "facing=east,kind=sign,stage=1": {
+      "model": "the_oldest_house:block/deer_road/sign_0",
+      "y": 90
+    },
+    "facing=south,kind=sign,stage=0": {
+      "model": "the_oldest_house:block/deer_road/sign_0",
+      "y": 180
+    },
+    "facing=south,kind=sign,stage=1": {
+      "model": "the_oldest_house:block/deer_road/sign_0",
+      "y": 180
+    },
+    "facing=west,kind=sign,stage=0": {
+      "model": "the_oldest_house:block/deer_road/sign_0",
+      "y": 270
+    },
+    "facing=west,kind=sign,stage=1": {
+      "model": "the_oldest_house:block/deer_road/sign_0",
+      "y": 270
+    },
+    "facing=north,kind=marker,stage=0": {
+      "model": "the_oldest_house:block/deer_road/marker_0"
+    },
+    "facing=north,kind=marker,stage=1": {
+      "model": "the_oldest_house:block/deer_road/marker_0"
+    },
+    "facing=east,kind=marker,stage=0": {
+      "model": "the_oldest_house:block/deer_road/marker_0",
+      "y": 90
+    },
+    "facing=east,kind=marker,stage=1": {
+      "model": "the_oldest_house:block/deer_road/marker_0",
+      "y": 90
+    },
+    "facing=south,kind=marker,stage=0": {
+      "model": "the_oldest_house:block/deer_road/marker_0",
+      "y": 180
+    },
+    "facing=south,kind=marker,stage=1": {
+      "model": "the_oldest_house:block/deer_road/marker_0",
+      "y": 180
+    },
+    "facing=west,kind=marker,stage=0": {
+      "model": "the_oldest_house:block/deer_road/marker_0",
+      "y": 270
+    },
+    "facing=west,kind=marker,stage=1": {
+      "model": "the_oldest_house:block/deer_road/marker_0",
+      "y": 270
+    },
+    "facing=north,kind=grate,stage=0": {
+      "model": "the_oldest_house:block/deer_road/grate_0"
+    },
+    "facing=north,kind=grate,stage=1": {
+      "model": "the_oldest_house:block/deer_road/grate_1"
+    },
+    "facing=east,kind=grate,stage=0": {
+      "model": "the_oldest_house:block/deer_road/grate_0",
+      "y": 90
+    },
+    "facing=east,kind=grate,stage=1": {
+      "model": "the_oldest_house:block/deer_road/grate_1",
+      "y": 90
+    },
+    "facing=south,kind=grate,stage=0": {
+      "model": "the_oldest_house:block/deer_road/grate_0",
+      "y": 180
+    },
+    "facing=south,kind=grate,stage=1": {
+      "model": "the_oldest_house:block/deer_road/grate_1",
+      "y": 180
+    },
+    "facing=west,kind=grate,stage=0": {
+      "model": "the_oldest_house:block/deer_road/grate_0",
+      "y": 270
+    },
+    "facing=west,kind=grate,stage=1": {
+      "model": "the_oldest_house:block/deer_road/grate_1",
+      "y": 270
+    },
+    "facing=north,kind=triangle,stage=0": {
+      "model": "the_oldest_house:block/deer_road/triangle_0"
+    },
+    "facing=north,kind=triangle,stage=1": {
+      "model": "the_oldest_house:block/deer_road/triangle_0"
+    },
+    "facing=east,kind=triangle,stage=0": {
+      "model": "the_oldest_house:block/deer_road/triangle_0",
+      "y": 90
+    },
+    "facing=east,kind=triangle,stage=1": {
+      "model": "the_oldest_house:block/deer_road/triangle_0",
+      "y": 90
+    },
+    "facing=south,kind=triangle,stage=0": {
+      "model": "the_oldest_house:block/deer_road/triangle_0",
+      "y": 180
+    },
+    "facing=south,kind=triangle,stage=1": {
+      "model": "the_oldest_house:block/deer_road/triangle_0",
+      "y": 180
+    },
+    "facing=west,kind=triangle,stage=0": {
+      "model": "the_oldest_house:block/deer_road/triangle_0",
+      "y": 270
+    },
+    "facing=west,kind=triangle,stage=1": {
+      "model": "the_oldest_house:block/deer_road/triangle_0",
+      "y": 270
+    },
+    "facing=north,kind=carcass,stage=0": {
+      "model": "the_oldest_house:block/deer_road/carcass_0"
+    },
+    "facing=north,kind=carcass,stage=1": {
+      "model": "the_oldest_house:block/deer_road/carcass_0"
+    },
+    "facing=east,kind=carcass,stage=0": {
+      "model": "the_oldest_house:block/deer_road/carcass_0",
+      "y": 90
+    },
+    "facing=east,kind=carcass,stage=1": {
+      "model": "the_oldest_house:block/deer_road/carcass_0",
+      "y": 90
+    },
+    "facing=south,kind=carcass,stage=0": {
+      "model": "the_oldest_house:block/deer_road/carcass_0",
+      "y": 180
+    },
+    "facing=south,kind=carcass,stage=1": {
+      "model": "the_oldest_house:block/deer_road/carcass_0",
+      "y": 180
+    },
+    "facing=west,kind=carcass,stage=0": {
+      "model": "the_oldest_house:block/deer_road/carcass_0",
+      "y": 270
+    },
+    "facing=west,kind=carcass,stage=1": {
+      "model": "the_oldest_house:block/deer_road/carcass_0",
+      "y": 270
+    },
+    "facing=north,kind=lamp,stage=0": {
+      "model": "the_oldest_house:block/deer_road/lamp_0"
+    },
+    "facing=north,kind=lamp,stage=1": {
+      "model": "the_oldest_house:block/deer_road/lamp_0"
+    },
+    "facing=east,kind=lamp,stage=0": {
+      "model": "the_oldest_house:block/deer_road/lamp_0",
+      "y": 90
+    },
+    "facing=east,kind=lamp,stage=1": {
+      "model": "the_oldest_house:block/deer_road/lamp_0",
+      "y": 90
+    },
+    "facing=south,kind=lamp,stage=0": {
+      "model": "the_oldest_house:block/deer_road/lamp_0",
+      "y": 180
+    },
+    "facing=south,kind=lamp,stage=1": {
+      "model": "the_oldest_house:block/deer_road/lamp_0",
+      "y": 180
+    },
+    "facing=west,kind=lamp,stage=0": {
+      "model": "the_oldest_house:block/deer_road/lamp_0",
+      "y": 270
+    },
+    "facing=west,kind=lamp,stage=1": {
+      "model": "the_oldest_house:block/deer_road/lamp_0",
+      "y": 270
+    }
+  }
+}
