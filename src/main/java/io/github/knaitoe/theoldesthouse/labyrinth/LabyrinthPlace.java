@@ -563,6 +563,8 @@ public enum LabyrinthPlace {
     TRUANT_CHALK("truant_chalk",Kind.GRAY,183,new BoundingBox(-8,-5,-20,8,4,0),grayDoors(-5,0,-19)),
     TRUANT_KNOCK("truant_knock",Kind.GRAY,184,new BoundingBox(-9,-2,-22,3,4,0),grayDoors(-6,0,-21)),
     TRUANT_LIFT("truant_lift",Kind.GRAY,185,new BoundingBox(-6,-1,-17,6,13,0),grayDoors(0,0,-16)),
+    /** 0.4.309, the House's yard, first connector (YardRooms, docs/YARD_TURNAROUND_0_4_309.md): the gravel turn-around behind the back door, outside. */
+    YARD_TURNAROUND("yard_turnaround",Kind.GRAY,186,new BoundingBox(-20,-4,-40,48,14,4),grayDoors(-7,0,-34)),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

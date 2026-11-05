@@ -91,5 +91,13 @@ public final class PuzzleRegistry {
     public static final DeferredBlock<TruantFittingBlock> TRUANT_FITTING=BLOCKS.registerBlock("truant_fitting",TruantFittingBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> TRUANT_CHALK=sound("truant_service.chalk"),TRUANT_KNOCK=sound("truant_service.knock"),TRUANT_RATTLE=sound("truant_service.rattle"),
         TRUANT_HISS=sound("truant_service.hiss"),TRUANT_BRAKE=sound("truant_service.brake"),TRUANT_LURCH=sound("truant_service.lurch");
+    /** 0.4.309, the House's yard (YardRooms): clapboard, wet gravel and the garage door; the porch bulb and the station wagon (YardBlock), drawn by tools/draw_yard_fittings.py; the engine, a passing car, a crow and the creek (tools/generate_yard_audio.py). */
+    private static final java.util.Map<String,DeferredBlock<Block>> YARD_MATERIALS=new java.util.LinkedHashMap<>();
+    public static final java.util.List<String> YARD_MATERIAL_NAMES=java.util.List.of("clapboard","wet_gravel","garage_door");
+    static{for(String name:YARD_MATERIAL_NAMES)YARD_MATERIALS.put(name,BLOCKS.registerSimpleBlock("yard_"+name,fixed(name.equals("wet_gravel")?Blocks.GRAVEL:name.equals("garage_door")?Blocks.DARK_OAK_PLANKS:Blocks.BIRCH_PLANKS)));}
+    public static Block yardMaterial(String name){var block=YARD_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<YardBlock>> YARD_TYPE=CODECS.register("yard_fitting",()->YardBlock.CODEC);
+    public static final DeferredBlock<YardBlock> YARD=BLOCKS.registerBlock("yard_fitting",YardBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(YardBlock::light));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> YARD_IDLE=sound("yard.idle"),YARD_TRAFFIC=sound("yard.traffic"),YARD_CROW=sound("yard.crow"),YARD_CREEK=sound("yard.creek");
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);}
 }
