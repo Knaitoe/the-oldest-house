@@ -1141,5 +1141,14 @@
   "subtitles.the_oldest_house.truant_service.rattle": "A pipe shivers",
   "subtitles.the_oldest_house.truant_service.hiss": "Steam vents",
   "subtitles.the_oldest_house.truant_service.brake": "A lift brake grinds",
-  "subtitles.the_oldest_house.truant_service.lurch": "A lift car lurches"
+  "subtitles.the_oldest_house.truant_service.lurch": "A lift car lurches",
+  "block.the_oldest_house.yard_fitting": "Yard Fittings",
+  "block.the_oldest_house.yard_clapboard": "Clapboard",
+  "block.the_oldest_house.yard_wet_gravel": "Wet Gravel",
+  "block.the_oldest_house.yard_garage_door": "Garage Door",
+  "subtitles.the_oldest_house.yard.idle": "An engine idles",
+  "subtitles.the_oldest_house.yard.traffic": "A car passes beyond the trees",
+  "subtitles.the_oldest_house.yard.crow": "A crow calls",
+  "subtitles.the_oldest_house.yard.creek": "A creek runs high",
+  "block.the_oldest_house.sphinx_dark": "Dark Plaster"
 }

@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.*;
 
 /**
@@ -44,6 +45,10 @@ public final class SphinxTests {
                 Sphinx.clearAll();Sphinx.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
                 live[0]=Sphinx.live(l);wrong[0]=(live[0]+1)%3;
                 h.assertTrue(!Sphinx.jibOpen(l,b)&&!Sphinx.solved(l),"the vestibule's south wall is plain wall beside its door");
+                // The vestibule is an ordinary room; the hall is not: its north wall stops, and over it and back from it is her dark.
+                h.assertTrue(!l.getBlockState(b.offset(0,4,-3)).isAir(),"the vestibule has a ceiling");
+                h.assertTrue(l.getBlockState(b.offset(0,Sphinx.TOP-1,-8)).isAir()&&!l.getBlockState(b.offset(0,Sphinx.WALL_TOP,Sphinx.DOOR_Z)).isAir()&&l.getBlockState(b.offset(0,Sphinx.WALL_TOP+1,Sphinx.DOOR_Z)).isAir()&&l.getBlockState(b.offset(0,Sphinx.EYE_Y,Sphinx.EYE_Z-3)).isAir(),"the hall rises into the dark, and over its north wall the dark goes back");
+                h.assertTrue(l.getBlockState(b.offset(-9,Sphinx.TOP-2,-8)).is(PuzzleRegistry.sphinxMaterial("dark"))||l.getBlockState(b.offset(-10,Sphinx.TOP-2,-8)).is(PuzzleRegistry.sphinxMaterial("dark")),"the walls go dark above head height");
                 for(int i=0;i<3;i++){
                     h.assertTrue(l.getBlockState(b.offset(Sphinx.door(i))).getBlock() instanceof DoorBlock&&!Sphinx.doorOpen(l,b,i),"three shut doors");
                     h.assertTrue(SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.pin(i))))==0,"each pin hidden in its stop");
@@ -74,12 +79,24 @@ public final class SphinxTests {
                 press(l,p,b.offset(Sphinx.latch(wrong[0])),false);
                 h.assertTrue(!Sphinx.doorOpen(l,b,wrong[0])&&Sphinx.warned(l,wrong[0]),"the wrong door catches at its stop and she warns it off");
                 h.assertTrue(SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.pin(wrong[0]))))==1,"its stop pin is exposed");
-                h.assertTrue(Sphinx.record(l,p.getUUID()).getInt("First")==2,"the reader's first answer is kept: wrong");})
+                h.assertTrue(Sphinx.record(l,p.getUUID()).getInt("First")==2,"the reader's first answer is kept: wrong");
+                h.assertTrue(Sphinx.eyeOpen(l,b,wrong[0]),"with the warning, an eye opens in the dark over that door");
+                // Looking up from anywhere in the hall finds it over the wall.
+                var eyeAt=new Vec3(b.getX()+Sphinx.DOORS[wrong[0]]+1,b.getY()+Sphinx.EYE_Y-.05,b.getZ()+Sphinx.EYE_Z+1);
+                var back=new Vec3(b.getX()+Sphinx.DOORS[wrong[0]]+1,b.getY()+1.62,b.getZ()-7.6);var close=new Vec3(b.getX()+Sphinx.DOORS[wrong[0]]+1,b.getY()+1.62,b.getZ()-8.7);
+                var fromBack=l.clip(new net.minecraft.world.level.ClipContext(back,eyeAt,net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,p));
+                var fromDoor=l.clip(new net.minecraft.world.level.ClipContext(close,eyeAt,net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,p));
+                h.assertTrue(fromBack.getLocation().distanceTo(eyeAt)<.7,"from the back of the hall the eye is in sight over the wall: "+fromBack.getLocation().subtract(Vec3.atLowerCornerOf(b)));
+                // Not a knife-edge: from the middle of the hall, and with the line raised or lowered a little, it is still in sight.
+                var mid=new Vec3(b.getX()+Sphinx.DOORS[wrong[0]]+.6,b.getY()+1.62,b.getZ()-8.2);
+                for(double dy:new double[]{-.6,0,.6})h.assertTrue(l.clip(new net.minecraft.world.level.ClipContext(mid,eyeAt.add(0,dy,0),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,p)).getLocation().distanceTo(eyeAt.add(0,dy,0))<.7,"from the middle of the hall too, offset "+dy);})
+            .thenWaitUntil(()->h.assertTrue(!Sphinx.eyeOpen(l,b,wrong[0]),"and closes again"))
+            .thenExecute(()->{})
             .thenIdle(5)
             .thenExecute(()->{
                 press(l,p,b.offset(Sphinx.latch(live[0])),false);
                 h.assertTrue(Sphinx.doorOpen(l,b,live[0])&&Sphinx.record(l,p.getUUID()).getBoolean("Solved")&&Sphinx.record(l,p.getUUID()).getInt("First")==2,"a clean retry opens the live door; the first answer still counts as it was");
-                stand(p,l,b,Sphinx.DOORS[live[0]]+.5,-9.85,180);})
+                stand(p,l,b,Sphinx.DOORS[live[0]]+.5,-10.5,180);})
             .thenWaitUntil(()->h.assertTrue(Sphinx.solved(l)&&p.getZ()-b.getZ()>-1.5&&p.getZ()-b.getZ()<1&&Math.abs(p.getX()-b.getX()-(Sphinx.JIB_IN.getX()+.5))<.6,
                 "through the live door and out of the vestibule's south wall: "+(p.getX()-b.getX())+","+(p.getZ()-b.getZ())))
             .thenExecute(()->{
@@ -97,13 +114,15 @@ public final class SphinxTests {
                 q.setHealth(q.getMaxHealth());q.hasChangedDimension();q.invulnerableTime=0;
                 press(l,q,b.offset(Sphinx.pin(wrong[0])),false);
                 h.assertTrue(Sphinx.provoked(l)==wrong[0]&&Sphinx.record(l,q.getUUID()).getBoolean("Forced")&&!Sphinx.record(l,p.getUUID()).getBoolean("Forced"),"the one who pulled the pin owns it");
-                stand(q,l,b,Sphinx.DOORS[wrong[0]]+.5,-8.5,180);stand(p,l,b,.5,-3.5,0);})
-            .thenWaitUntil(()->h.assertTrue(SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).offset(0,2,1)),SphinxBlock.Kind.FINGERS)&&Sphinx.doorOpen(l,b,wrong[0]),"her fingers fold over the frame and the door bows open"))
+                stand(q,l,b,Sphinx.DOORS[wrong[0]]+.5,-9.4,180);stand(p,l,b,.5,-3.5,0);})
+            .thenWaitUntil(()->h.assertTrue(Sphinx.eyeOpen(l,b,wrong[0])&&SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).above(Sphinx.WALL_TOP+1)),SphinxBlock.Kind.FINGERS),"the eye opens and stays; her fingers come over the top of the wall"))
+            .thenWaitUntil(()->h.assertTrue(SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).offset(0,2,1)),SphinxBlock.Kind.FINGERS)&&Sphinx.doorOpen(l,b,wrong[0]),"down the wall to fold over the frame, and the door bows open"))
             .thenWaitUntil(()->h.assertTrue(q.getHealth()<q.getMaxHealth(),"whoever stays in her reach is struck, after the warning breath"))
             .thenExecute(()->{
                 h.assertTrue(p.getHealth()==p.getMaxHealth(),"nobody past the sill is touched");
+                h.assertTrue(!Sphinx.sealed(l,wrong[0])&&q.getZ()-b.getZ()>Sphinx.DOOR_Z+.5,"standing right at her door is not going through it: only walking in is");
                 stand(q,l,b,.5,-3.5,0);})
-            .thenWaitUntil(()->h.assertTrue(Sphinx.provoked(l)<0&&!SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).offset(0,2,1)),SphinxBlock.Kind.FINGERS),"the hall empty, she withdraws"))
+            .thenWaitUntil(()->h.assertTrue(Sphinx.provoked(l)<0&&!SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).offset(0,2,1)),SphinxBlock.Kind.FINGERS)&&!Sphinx.eyeOpen(l,b,wrong[0])&&!SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).above(Sphinx.WALL_TOP+1)),SphinxBlock.Kind.FINGERS),"the hall empty, she withdraws into the dark"))
             .thenExecute(()->{
                 h.assertTrue(!Sphinx.doorOpen(l,b,wrong[0])&&SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.pin(wrong[0]))))==0&&!Sphinx.sealed(l,wrong[0]),"the door back on its stop, the pin back in: the room is its question again");
                 Sphinx.build(l,b);

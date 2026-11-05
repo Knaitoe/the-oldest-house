@@ -74,8 +74,13 @@ def seam():
     return im
 
 
+def dark():
+    # Plaster the lamplight never reaches: almost black, the faintest mottle, so walls are walls and then are not.
+    return noisy(['#141312', '#181715', '#11100f', '#1b1a18'], 3067, [4, 3, 2, 1])
+
+
 def materials():
-    return {'tile': tile(), 'marked': marked(), 'plaster': plaster(), 'ceiling': ceiling(), 'seam': seam()}
+    return {'tile': tile(), 'marked': marked(), 'plaster': plaster(), 'ceiling': ceiling(), 'seam': seam(), 'dark': dark()}
 
 
 # ------------------------------------------------------------------------------------------------ fittings
@@ -148,10 +153,72 @@ def nail():
     return im
 
 
+def eye_tiles():
+    # Her eye, 64 by 32 pixels across eight blocks: sandstone lids with a painted kohl line that runs out past the outer corner,
+    # a yellowed white, an amber iris with a darker rim, a round black pupil and one highlight. Recognizable from the one eye.
+    import math
+    W, H = 64, 32
+    big = Image.new('RGBA', (W, H)); rnd = random.Random(3077)
+    for y in range(H):
+        for x in range(W):
+            big.putpixel((x, y), shade(rnd.choice(['#b38a50', '#a8804a', '#bc9258', '#9e7844']), 0))
+    cx, cy, rx, ry = 31.5, 16.5, 27.5, 12.0
+    for y in range(H):
+        for x in range(W):
+            if ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1:
+                big.putpixel((x, y), shade('#e2d6b0', rnd.randint(-8, 4)))
+    for y in range(H):
+        for x in range(W):
+            d = math.hypot(x - cx, y - cy)
+            if d <= 10.5 and ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1:
+                c = '#0c0a08' if d <= 4.5 else ('#6a4410' if d > 9.2 else '#b07a1e')
+                big.putpixel((x, y), shade(c, 0 if d <= 4.5 else rnd.randint(-10, 10)))
+    # Beyond the lids the skin falls away into the dark, then nothing: no edge of a block, only the eye.
+    for y in range(H):
+        for x in range(W):
+            e = ((x - cx) / (rx + 1.2)) ** 2 + ((y - cy) / (ry + 1.6)) ** 2
+            if e > 1.9:
+                big.putpixel((x, y), (0, 0, 0, 0))
+            elif e > 1.0:
+                big.putpixel((x, y), shade(rnd.choice(['#3e3220', '#352a1b', '#2c2316']), int(-24 * (e - 1.0))))
+    for x, y in ((27, 12), (28, 12), (27, 13)):
+        big.putpixel((x, y), (250, 245, 220, 255))
+    for x in range(2, 62):
+        t = (x - cx) / (rx + .5)
+        yt = int(round(cy - (ry + .6) * math.sqrt(max(0, 1 - t * t))))
+        yb = int(round(cy + (ry + .4) * math.sqrt(max(0, 1 - t * t))))
+        for k in range(3):
+            big.putpixel((x, max(0, yt - k)), shade('#1a1c2c', 0))
+        big.putpixel((x, min(H - 1, yb)), shade('#3a2c1e', 0))
+    for i in range(8):
+        big.putpixel((min(W - 1, 58 + i // 2), max(0, 15 - i)), shade('#1a1c2c', 0)); big.putpixel((min(W - 1, 59 + i // 2), max(0, 15 - i)), shade('#1a1c2c', 0))
+    return [big.crop((c * 16, r * 16, c * 16 + 16, r * 16 + 16)) for r in range(2) for c in range(4)]
+
+
+def skin_dark():
+    # The rest of her face in the dark: the same sandstone, unlit, no painted band; half seen.
+    return noisy(['#4a3c26', '#433622', '#52432a', '#3c3020'], 3079, [4, 3, 2, 2])
+
+
+def reach():
+    # Her fingers coming down a wall: four long sandstone digits, the painted band at the knuckle.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(3078)
+    for x0 in (0, 4, 8, 12):
+        for x in range(x0, x0 + 3):
+            for y in range(16):
+                dot(im, x, y, shade(rnd.choice(['#cfa86a', '#c49c5e', '#d8b476']), 0)[:3])
+        for y in range(16):
+            dot(im, x0 + 2, y, '#a07a44')
+        dot(im, x0, 7, '#5a7a96'); dot(im, x0 + 1, 7, '#5a7a96')
+    return im
+
+
 def textures():
     out = {f'block/sphinx_{k}.png': v for k, v in materials().items()}
     t = {'iron': iron(), 'brass': brass(), 'pot': pot(), 'umbrella': umbrella(), 'flap': flap(), 'latch_0': latch(False), 'latch_1': latch(True),
-         'grille': grille(), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066)}
+         'grille': grille(), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark()}
+    for i, q in enumerate(eye_tiles()):
+        t[f'eye_{i}'] = q
     out.update({f'block/sphinx/{k}.png': v for k, v in t.items()})
     return out
 
@@ -184,15 +251,20 @@ def fitting_models():
         els.append(element([x, low, 10], [x + 3, 16, 16], {'all': 's'}))
         els.append(element([x + .5, low, 9.4], [x + 2.5, low + 2, 10], {'north': 'n'}))
     m['fingers_0'] = model(els, {'s': 'skin', 'n': 'nail'}, 'skin')
+    for i in range(8):
+        # Face down: the eye is on the underside, read from the hall below with north at the top.
+        m[f'eye_{i}'] = model([element([0, 0, 0], [16, 1, 16], {'down': 'e', 'up': 'k'}, uv={'down': [0, 0, 16, 16]})], {'e': f'eye_{i}', 'k': 'skin_dark'}, f'eye_{i}')
+    m['face_0'] = model([element([0, 0, 0], [16, 1, 16], {'down': 's', 'up': 's'})], {'s': 'skin_dark'}, 'skin_dark')
+    m['reach_0'] = model([element([0, 0, 12], [16, 16, 14], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r'})], {'r': 'reach'}, 'reach')
     return m
 
 
-KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers']
-STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1}
+KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'eye', 'face', 'reach']
+STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'eye': 8, 'face': 1, 'reach': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
-MAX_STAGE = 3
+MAX_STAGE = 8
 NAMES = {'sphinx_fitting': 'Vestibule Fittings', 'sphinx_tile': 'Quarry Tiles', 'sphinx_marked': 'Marked Tile', 'sphinx_plaster': 'Limewash Plaster',
-         'sphinx_ceiling': 'Spruce Ceiling', 'sphinx_seam': 'Cracked Plaster'}
+         'sphinx_ceiling': 'Spruce Ceiling', 'sphinx_seam': 'Cracked Plaster', 'sphinx_dark': 'Dark Plaster'}
 
 
 def files():

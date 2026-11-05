@@ -26,19 +26,22 @@ import net.minecraft.world.phys.shapes.*;
  * <li>The stop pin by a door's frame: hidden in the stop (0), exposed (1), pulled out (2).</li>
  * <li>A grille high in a wall, the gap her voice comes through.</li>
  * <li>Her fingers folded over a door frame.</li>
+ * <li>Her eye, high in the dark, four blocks wide and two deep: one eighth of it (stage 0-7), faintly lit; the painted skin of her face round it; her fingers reaching down a wall.</li>
  * </ul>
  */
 public final class SphinxBlock extends HorizontalDirectionalBlock {
+    /** Her eye shows faintly in the dark it looks down from. */
+    public static int light(BlockState s){return s.getValue(KIND)==Kind.EYE?8:0;}
     public static final MapCodec<SphinxBlock> CODEC=simpleCodec(SphinxBlock::new);
     public enum Kind implements StringRepresentable {
-        STAND,FLAP,LATCH,PIN,GRILLE,FINGERS;
+        STAND,FLAP,LATCH,PIN,GRILLE,FINGERS,EYE,FACE,REACH;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
-    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,2);
+    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,7);
     public SphinxBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.STAND).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
-    public static BlockState of(Kind kind,Direction facing,int stage){return PuzzleRegistry.SPHINX.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(2,stage)));}
+    public static BlockState of(Kind kind,Direction facing,int stage){return PuzzleRegistry.SPHINX.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(7,stage)));}
     public static boolean is(BlockState s,Kind kind){return s.is(PuzzleRegistry.SPHINX.get())&&s.getValue(KIND)==kind;}
     public static int stage(BlockState s){return s.is(PuzzleRegistry.SPHINX.get())?s.getValue(STAGE):-1;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
@@ -52,9 +55,11 @@ public final class SphinxBlock extends HorizontalDirectionalBlock {
             // Open, the flap is a frame round a real hole: the shape leaves the middle clear so the room beyond can be seen and pointed at.
             case FLAP->s.getValue(STAGE)==1?Shapes.or(box(f,0,0,0,16,4,16),box(f,0,12,0,16,16,16),box(f,0,0,0,3,16,16),box(f,13,0,0,16,16,16)):Shapes.block();
             case LATCH->box(f,5,3,13,11,13,16);
-            case PIN->box(f,6,6,s.getValue(STAGE)==1?10:14,10,10,16);
+            case PIN->box(f,3,3,10,13,13,16); // the whole stop plate answers a hand, not just the pin's head
             case GRILLE->box(f,1,1,14,15,15,16);
             case FINGERS->box(f,0,4,9,16,16,16);
+            case EYE,FACE->Block.box(0,0,0,16,1,16);
+            case REACH->box(f,0,0,10,16,16,16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
