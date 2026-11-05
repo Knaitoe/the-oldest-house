@@ -5,6 +5,7 @@ tyres and hubs, the dash, the rear belt's webbing, and lamps (low beam, amber, t
 face, the wound, the eyeshine. The next vehicle's paint and dark glass. The roadside: the hatched shoulder, the ditch's mud, the
 county's notice and the crossing sign, the marker post, the culvert grate (with fingers through it), the triangle and its case, the
 pump-house lamp, and the drainage gate's two halves. Models and block states for the fittings, materials, anchor, cells and gate.
+Advancement text is generated from the Witness account by generate_advancements.py.
 --check verifies everything.
 """
 from pathlib import Path
@@ -332,8 +333,6 @@ def main():
     names = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
     names['item.the_oldest_house.deer_road_triangle'] = 'Warning Triangle'
     names['entity.the_oldest_house.deer_road_seat'] = 'Seat'
-    names['advancements.the_oldest_house.account.deer_road.title'] = 'A deer in the road'
-    names['advancements.the_oldest_house.account.deer_road.description'] = 'A woman climbed out of her and stood up.'
     for key, name in names.items():
         if check:
             assert lang.get(key) == name, key
