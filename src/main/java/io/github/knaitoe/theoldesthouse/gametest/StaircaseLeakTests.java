@@ -57,6 +57,8 @@ public final class StaircaseLeakTests {
     }
     @GameTest(template="empty",batch="test_stair_note",timeoutTicks=1800)
     public static void anOperatorNoteRunsTheRealPrivateSceneWithoutSpendingTheDescent(GameTestHelper h){
+        CompoundTag[] descent={null};
+        Vec3[] returnPosition={null};
         run(h,521000,(f,state)->{
             var source=FinaleArchitecture.entry(f.origin).south(2);
             var at=source.south(2);
@@ -74,22 +76,32 @@ public final class StaircaseLeakTests {
                 }catch(com.mojang.brigadier.exceptions.CommandSyntaxException e){throw new IllegalStateException(e);}
                 h.assertTrue(StaircaseWriting.open(peer,at)&&peer.containerMenu==peer.inventoryMenu,
                         "the other reader cannot read the test sheet");
+                state[0]=1;
+                return;
+            }
+            var reader=f.players.getFirst();
+            if(state[0]==1){
+                // The ordinary staircase tick records this descent before the test sheet is read.
+                var current=StaircaseHousehold.own(reader);
+                if(!current.getBoolean("Inside"))return;
+                descent[0]=current;
+                returnPosition[0]=reader.position();
+                h.assertTrue(reader.blockPosition().equals(source),"the reader is still at the test sheet's source");
                 h.assertTrue(StaircaseWriting.open(reader,at),"the owner gets the normal native reader");
                 var menu=reader.containerMenu;
                 var content=menu.getSlot(0).getItem().get(DataComponents.WRITTEN_BOOK_CONTENT);
                 int last=content.pages().size()-1;
                 if(last>0)menu.clickMenuButton(reader,100+last);
-                state[0]=1;h.runAfterDelay(24,reader::closeContainer);
+                state[0]=2;h.runAfterDelay(24,reader::closeContainer);
                 return;
             }
-            var reader=f.players.getFirst();
-            if(state[0]==1&&StaircaseLeaks.active(reader)){
+            if(state[0]==2&&StaircaseLeaks.active(reader)){
                 h.assertTrue(StaircaseLeaks.activeKind(reader)==StaircaseLeakRooms.Kind.DAWN,
                         "the full reading enters the real dawn room");
-                StaircaseLeaks.returnAfterBeat(reader,1);state[0]=2;
-            }else if(state[0]==2&&!StaircaseLeaks.active(reader)){
-                h.assertTrue(reader.blockPosition().equals(source)
-                        &&!StaircaseLeaks.done(reader,3)&&StaircaseHousehold.own(reader).isEmpty(),
+                StaircaseLeaks.returnAfterBeat(reader,1);state[0]=3;
+            }else if(state[0]==3&&!StaircaseLeaks.active(reader)){
+                h.assertTrue(reader.serverLevel()==f.level&&reader.position().distanceToSqr(returnPosition[0])<1e-6
+                        &&!StaircaseLeaks.done(reader,3)&&StaircaseHousehold.own(reader).equals(descent[0]),
                         "return restores the test position without scoring or spending the real sheet");
                 state[0]=99;
             }
