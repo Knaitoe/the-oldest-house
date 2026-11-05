@@ -828,6 +828,15 @@ public final class LabyrinthDoors {
         return travelAbsolute(player, insideRoom(junction),p->{LabyrinthData.get(p.server).pushReturn(p.getUUID(),back);INSIDE.add(p.getUUID());});
     }
 
+    /** 0.4.306: an operator's playtest shortcut: two blocks inside a place's entry door, the way back kept as for the junction. */
+    public static boolean goToPlace(ServerPlayer player, LabyrinthPlace place) {
+        if (isBusy(player)) return false;
+        LabyrinthData.Door entry = LabyrinthData.get(player.server).door(place.entryDoorId());
+        if (entry == null) return false;
+        var back = new LabyrinthData.Waypoint(player.serverLevel().dimension(), player.position(), player.getYRot(), false);
+        return travelAbsolute(player, insideRoom(entry),p->{LabyrinthData.get(p.server).pushReturn(p.getUUID(),back);INSIDE.add(p.getUUID());});
+    }
+
     /** Two blocks inside a place from its entry door, facing into the room. */
     private static LabyrinthData.Waypoint insideRoom(LabyrinthData.Door entry) {
         Direction toRoom = entry.facing.getOpposite();

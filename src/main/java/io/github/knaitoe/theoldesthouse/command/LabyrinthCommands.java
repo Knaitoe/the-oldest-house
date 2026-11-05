@@ -83,6 +83,21 @@ public final class LabyrinthCommands {
                             : "The Navidsons' house must exist first."), true);
                     return started ? 1 : 0;
                 }))
+                // 0.4.306: playtest a puzzle room directly: build it now and stand inside its entry. Its solved state is the world's own.
+                .then(Commands.literal("puzzle").then(Commands.argument("room", com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .suggests((c, b) -> net.minecraft.commands.SharedSuggestionProvider.suggest(java.util.Arrays.stream(io.github.knaitoe.theoldesthouse.labyrinth.PuzzleRooms.Puzzle.values()).map(q -> q.place.id()), b))
+                        .executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayerOrException();
+                            String id = com.mojang.brigadier.arguments.StringArgumentType.getString(context, "room");
+                            var puzzle = java.util.Arrays.stream(io.github.knaitoe.theoldesthouse.labyrinth.PuzzleRooms.Puzzle.values()).filter(q -> q.place.id().equals(id)).findFirst().orElse(null);
+                            if (puzzle == null) { context.getSource().sendFailure(Component.literal("No puzzle room called " + id + ".")); return 0; }
+                            if (!LabyrinthBuilder.buildOne(player.server, puzzle.place) || !LabyrinthDoors.goToPlace(player, puzzle.place)) {
+                                context.getSource().sendFailure(Component.literal("The Navidsons' house must exist first."));
+                                return 0;
+                            }
+                            context.getSource().sendSuccess(() -> Component.literal("Built " + id + " and brought you inside its entry."), false);
+                            return 1;
+                        })))
                 .then(Commands.literal("status").executes(context -> {
                     ServerPlayer viewer = context.getSource().getEntity() instanceof ServerPlayer p ? p : null;
                     for (String line : LabyrinthDoors.describe(context.getSource().getServer(), viewer)) {

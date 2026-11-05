@@ -551,6 +551,12 @@ public enum LabyrinthPlace {
     SECOND_PERSON("second_person",Kind.ONE_SHOT,173,new BoundingBox(-17,-3,-31,17,12,0),literaryEntry()),
     RETURN_AIR("return_air",Kind.GRAY,179,new BoundingBox(-6,-1,-33,6,4,0),grayDoors(0,0,-33)),
     SETTLING_CELLAR("settling_cellar",Kind.GRAY,180,new BoundingBox(-6,-5,-36,6,4,0),grayDoors(0,0,-36)),
+    /**
+     * 0.4.306, the Tension Room (TensionRooms, docs/TENSION_ROOM_0_4_306.md): a low utility loft, one cable from an entry wheel over a
+     * counterweight's shaft, through a cleat, to a far wheel and the pin that holds a platform down in front of the far door. An early
+     * puzzle room, family TENSION.
+     */
+    TENSION_ROOM("tension_room",Kind.GRAY,181,new BoundingBox(-6,-5,-16,6,5,0),grayDoors(0,0,-15)),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 
