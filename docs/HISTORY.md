@@ -2,6 +2,8 @@
 
 This is the running log that lived in `AGENTS.md` until October 31, 2026, newest first, kept word for word. The current working notes for agents are in `AGENTS.md`; the design canon is `docs/DESIGN_DOCUMENT.md`.
 
+November 5 CI repair for 0.4.310: run 42117835973 on f39821b compiled and packaged, then failed the asset gate because `generate_advancements.py` lacked the `deer_road` icon entry. Register its warning triangle and regenerate its advancement description from the Witness account. Remove the conflicting advancement-text entries from the art generator so it cannot overwrite or reject the canonical description. The complete asset gate and journey-measurement unit tests pass locally; full exact-commit CI and live client review remain pending.
+
 November 5 candidate 0.4.310, A Deer in the Road (docs/DEER_ROAD_0_4_310.md): slot 187, layout 96, one new understanding source (Witness 75 / 57 / 52), dealt after the tunnel, shared road, the drive and the beat, two births, the next vehicle and the triangle, two exits, catch as failure. Tests: DeerRoadTests (2), architecture, advancement, co-op and quota cases. Not yet reviewed on a live client.
 
 November 5 candidate 0.4.308, the spiral walkway's ladders (docs/SPIRAL_WALKWAY_LADDERS_0_4_308.md): one recovery ladder each side at z -24, tops taken from the route (walk heights 3 east, 6 west), top rung a block below the walk so a climber comes off level with it; the old ladders that ran to y 10 (and the pair at z -27 by no walk) are gone. Verified in the native layout case and by climbing both ladders with a real client, which caught a one-block overshoot in the first version. Also /ghosthouse labyrinth place <id> for operators: build any gray place now and stand inside its entry.

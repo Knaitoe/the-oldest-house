@@ -53,3 +53,11 @@ the account checked; and a reader caught by the second woman. Architecture, adva
 ## Not yet verified
 No live client pass has been made on this slice: the car, doe and the woman's emergence poses are drawn but unreviewed on screen.
 Next: a client playtest of the drive and both births, generated audio, the co-op passenger beat, the tuning of the hold.
+
+## First CI repair
+Run 42117835973 on f39821b compiled and packaged successfully, then stopped in `generate_advancements.py --check` with
+`KeyError: 'deer_road'`: the checked-in advancement had not been added to the generator's icon table. Register the warning
+triangle there and regenerate the advancement text from the Witness account so the resources and their generator agree.
+The art generator also asserted a different advancement description; it now leaves advancement text to the canonical generator.
+The complete asset gate and journey-measurement unit tests pass locally.
+Full exact-commit CI and the live client review remain pending.

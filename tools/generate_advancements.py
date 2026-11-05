@@ -100,6 +100,7 @@ STORY_ICONS = {
     'motion_light': 'minecraft:redstone_lamp', 'backseat': 'minecraft:iron_door', 'silo': 'minecraft:yellow_dye',
     'dare_in_the_dark': NS + ':candle_stub', 'feet_up': 'minecraft:ladder', 'whistlers': NS + ':lookout_crank',
     'work_print': NS + ':work_print_tape', 'polaroid_trail': NS + ':polaroid_walkie', 'left_right': NS + ':left_right_flare', 'dead_air': NS + ':dead_air_tube', 'closing_hall': 'minecraft:pink_dye', 'storeroom': 'minecraft:ink_sac', 'stillness': 'minecraft:goat_horn', 'line': 'minecraft:fishing_rod', 'own_light': 'minecraft:torch', 'household': 'minecraft:flower_pot', 'polybius': 'minecraft:redstone_lamp', 'replacement': 'minecraft:lead', 'last_swimmer': 'minecraft:water_bucket', 'vacant_possession': NS + ':vacant_piece', 'people_lights': 'minecraft:oak_stairs', 'place_for_you': 'minecraft:birch_fence_gate', 'second_person': NS + ':sp_carried',
+    'deer_road': NS + ':deer_road_triangle',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 
