@@ -3619,5 +3619,68 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.tension.pin"
+  },
+  "sphinx.voice": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:sphinx/voice",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.sphinx.voice"
+  },
+  "sphinx.breath": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:sphinx/breath",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.sphinx.breath"
+  },
+  "sphinx.latch": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:sphinx/latch",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.sphinx.latch"
+  },
+  "sphinx.catch": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:sphinx/catch",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.sphinx.catch"
+  },
+  "sphinx.pin": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:sphinx/pin",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.sphinx.pin"
+  },
+  "sphinx.strike": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:sphinx/strike",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.sphinx.strike"
+  },
+  "sphinx.scrape": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:sphinx/scrape",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.sphinx.scrape"
   }
 }

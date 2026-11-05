@@ -2,6 +2,8 @@
 
 This is the running log that lived in `AGENTS.md` until October 31, 2026, newest first, kept word for word. The current working notes for agents are in `AGENTS.md`; the design canon is `docs/DESIGN_DOCUMENT.md`.
 
+November 5 candidate 0.4.306, the Sphinx, first slice (docs/SPHINX_0_4_306.md): her first crossing, "the room you just left". SPHINX_VESTIBULE slot 182, gray, rare detour (weight 2, crossings 3 to stone), layout 93. A vestibule with a movable stand; three latched doors with letter flaps and stop pins; one live chamber mirrors the stand; the live latch brings the reader back out of the vestibule's south wall; a wrong latch is caught and warned; a pulled pin brings her fingers over the frame and strikes within reach until the hall empties. Shared room state, separate per-reader records for the later crossings and the dream. SphinxBlock and materials by tools/draw_sphinx_fittings.py, seven cues by tools/generate_sphinx_audio.py, both checked in CI. SphinxTests (exploration); 102 exploration cases pass locally. No Witness change. (The parked Tension Room commit before it carries layout 92 and slot 181, and is finished later as the puzzle document's turn.)
+
 November 3 candidate 0.4.297, Drisking and the fourth visit (docs/BORRASCA_TOWN_0_4_297.md). Eli and Wren meet the reader before they go missing. The Sheriff patrols the refinery, checks the shutdown and can be made to yield. CI for 0.4.296 stopped at a punctuation error in the gate log. Corrected here.
 
 November 3 candidate 0.4.296, Borrasca gate and Sheriff (docs/BORRASCA_GATE_0_4_296.md). The padlock sits on the near face of the gate. The beam starts at the Sheriff’s flashlight lens. He returns the reader downhill if they refuse to leave. The gate hut sheet opens as a gate log.

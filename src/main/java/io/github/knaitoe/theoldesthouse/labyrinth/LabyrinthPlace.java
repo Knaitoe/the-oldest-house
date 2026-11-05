@@ -557,6 +557,8 @@ public enum LabyrinthPlace {
      * puzzle room, family TENSION.
      */
     TENSION_ROOM("tension_room",Kind.GRAY,181,new BoundingBox(-6,-5,-16,6,5,0),grayDoors(0,0,-15)),
+    /** 0.4.306, the Sphinx's first crossing (Sphinx, docs/SPHINX_0_4_306.md): a tiled vestibule and a hall of three latched doors; a rare detour, the way onward always open past the hall. */
+    SPHINX_VESTIBULE("sphinx_vestibule",Kind.GRAY,182,new BoundingBox(-12,-1,-22,12,6,0),grayDoors(10,0,-21)),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

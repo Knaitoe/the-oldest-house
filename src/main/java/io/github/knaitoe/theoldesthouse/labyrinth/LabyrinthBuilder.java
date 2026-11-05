@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 92;
+    public static final int VERSION = 93;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -151,7 +151,7 @@ public final class LabyrinthBuilder {
             case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING, STONE_DUST -> LabyrinthPacing.STONE_DEPTH;
             // 0.4.199: the early puzzle rooms stand with the halls, ready before anyone can be offered them (PuzzleRooms.weight paces them);
             // the deep ones are built ahead of the strange depths they are offered from.
-            case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, DRAFT_ROOM, DUST_HALL, PROPPED_DOOR, FAMILIAR_KITCHEN, FOLDING_ROOM, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, HEADER_TANK, TENSION_ROOM, QUIET_READING, QUIET_BOOTROOM, QUIET_SUNROOM, QUIET_SPARE -> 0;
+            case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, DRAFT_ROOM, DUST_HALL, PROPPED_DOOR, FAMILIAR_KITCHEN, FOLDING_ROOM, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, HEADER_TANK, TENSION_ROOM, SPHINX_VESTIBULE, QUIET_READING, QUIET_BOOTROOM, QUIET_SUNROOM, QUIET_SPARE -> 0;
             case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, VENT_ROOMS, SPRUNG_ROOMS, AIRING_ROOMS, FOLDED_ROOMS, FUSE_ROOMS, HEADER_TANKS, WAY_OUT -> LabyrinthPacing.STRANGE_DEPTH;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
@@ -571,6 +571,7 @@ public final class LabyrinthBuilder {
             case HEADER_TANK -> HeaderTanks.buildEarly(level, base);
             case HEADER_TANKS -> HeaderTanks.buildDeep(level, base);
             case TENSION_ROOM -> TensionRooms.build(level, base);
+            case SPHINX_VESTIBULE -> Sphinx.build(level, base);
             case FAMILIAR_KITCHEN -> FamiliarRoom.build(level, base);
             // 0.4.261: the rest rooms, the quiet room's siblings (QuietRooms).
             case QUIET_READING -> QuietRooms.buildReading(level, base);

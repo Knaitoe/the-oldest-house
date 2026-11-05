@@ -20,7 +20,9 @@ Java 21 and Gradle 9.2.1. `gradle build` makes the jar; `gradle runGameTestServe
 
 ## Release notes
 
-Development candidate **0.4.297** adds two Drisking children and their missing notices, and gives the Sheriff a patrol and confrontation on the fourth Borrasca visit. See [docs/BORRASCA_TOWN_0_4_297.md](docs/BORRASCA_TOWN_0_4_297.md).
+Development candidate **0.4.306**: the Sphinx's first crossing. A voice from above three latched doors asks which of them opens into the room you just left. Drag the umbrella stand between its marked tiles and look through the letter flaps: only one view follows it. Lift the right latch and you step back into the vestibule through a wall that was solid. Lift a wrong one and she tells you to leave it shut. Pull the pin she warned you about and she comes. See [docs/SPHINX_0_4_306.md](docs/SPHINX_0_4_306.md).
+
+Previous candidate **0.4.297** adds two Drisking children and their missing notices, and gives the Sheriff a patrol and confrontation on the fourth Borrasca visit. See [docs/BORRASCA_TOWN_0_4_297.md](docs/BORRASCA_TOWN_0_4_297.md).
 Previous candidate **0.4.296** fixes the Borrasca padlock and flashlight, enforces the Sheriff’s blockade, and makes the gate hut log readable. See [docs/BORRASCA_GATE_0_4_296.md](docs/BORRASCA_GATE_0_4_296.md).
 Previous candidate **0.4.291** adds Return Air and Settling Cellar, operator staircase test sheets and a supported arrival at the Great Staircase. See [docs/SERVICE_HAZARDS_0_4_291.md](docs/SERVICE_HAZARDS_0_4_291.md).
 
