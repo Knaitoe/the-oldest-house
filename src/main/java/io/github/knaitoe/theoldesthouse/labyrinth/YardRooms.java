@@ -77,7 +77,7 @@ public final class YardRooms {
         for(int z=-4;z>=-7;z--)for(int x=-1;x<=1;x++)set(l,b,x,-1,z,x==0?Blocks.GRASS_BLOCK.defaultBlockState():mat("wet_gravel"));
         for(int x=-APRON_R-1;x<=APRON_R+1;x++)for(int z=APRON.getZ()-APRON_R-1;z<=APRON.getZ()+APRON_R+1;z++){
             double d=Math.hypot(x,z-APRON.getZ());if(d>APRON_R+.5)continue;
-            box(l,b,x,0,z,x,5,z,air());set(l,b,x,-1,z,d>APRON_R-1.5||rnd.nextInt(5)==0?Blocks.GRAVEL.defaultBlockState():mat("wet_gravel"));
+            box(l,b,x,0,z,x,SKY_CLEAR,z,air());set(l,b,x,-1,z,d>APRON_R-1.5||rnd.nextInt(5)==0?Blocks.GRAVEL.defaultBlockState():mat("wet_gravel"));
         }
         // The garage on the west side: dark boards, a shallow roof, its door facing the apron.
         clear(l,b,-14,-22,-8,-15,6);
@@ -107,26 +107,44 @@ public final class YardRooms {
         set(l,b,DEAD_TREE.getX(),5,DEAD_TREE.getZ()+1,Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.Z));
         // The road out east between the cedar banks, branches knitting over it twice, to the swollen creek and the cedars past it.
         for(int x=APRON_R;x<=ROAD_END;x++){
-            box(l,b,x,0,ROAD_Z-1,x,4,ROAD_Z+1,air());
+            box(l,b,x,0,ROAD_Z-1,x,SKY_CLEAR,ROAD_Z+1,air());
             for(int z=ROAD_Z-1;z<=ROAD_Z+1;z++)set(l,b,x,-1,z,z==ROAD_Z?Blocks.GRASS_BLOCK.defaultBlockState():mat("wet_gravel"));
             if(x>=18&&x<=24||x>=30&&x<=33)box(l,b,x,4,ROAD_Z-1,x,5,ROAD_Z+1,leaves());
         }
         for(int z=ROAD_Z-2;z<=ROAD_Z+2;z++){box(l,b,ROAD_END-1,-1,z,ROAD_END,-1,z,Blocks.MUD.defaultBlockState());box(l,b,ROAD_END-1,0,z,ROAD_END,3,z,air());}
-        for(int x=CREEK_X0;x<=CREEK_X1;x++)for(int z=ROAD_Z-3;z<=ROAD_Z+3;z++){box(l,b,x,-3,z,x,-1,z,Blocks.WATER.defaultBlockState());set(l,b,x,-4,z,Blocks.MUD.defaultBlockState());box(l,b,x,0,z,x,3,z,air());}
+        for(int x=CREEK_X0;x<=CREEK_X1;x++)for(int z=ROAD_Z-3;z<=ROAD_Z+3;z++){box(l,b,x,-3,z,x,-1,z,Blocks.WATER.defaultBlockState());set(l,b,x,-4,z,Blocks.MUD.defaultBlockState());box(l,b,x,0,z,x,SKY_CLEAR,z,air());}
+        // Branches reach out over the road and the creek's edges.
+        overhang(l,b,rnd,APRON_R+2,ROAD_Z-1,ROAD_END-2,ROAD_Z+1);
+        // And over the apron's rim, so the clearing's edge is branches against the sky, not a wall.
+        for(int x=-APRON_R;x<=APRON_R;x++)for(int z=APRON.getZ()-APRON_R;z<=APRON.getZ()+APRON_R;z++){
+            double d=Math.hypot(x,z-APRON.getZ());if(d<APRON_R-.6||d>APRON_R+.5||rnd.nextInt(10)>=4)continue;
+            for(int y=3+rnd.nextInt(2);y<=5+rnd.nextInt(3);y++)if(l.getBlockState(b.offset(x,y,z)).isAir())set(l,b,x,y,z,leaves());
+        }
         // The sky over the crowns, where passing headlights sweep.
         box(l,b,-20,SWEEP_Y,-40,48,14,-26,air());
         doors(l,b);
     }
     /** The cedars: trunks and dense dark leaf mass up to the canopy, the edges ragged; the yard's spaces are cleared out of them after. */
     static void cedars(ServerLevel l,BlockPos b,Random rnd,int x0,int z0,int x1,int z1){
+        // Crowns in patches of different heights, each patch peaking where its trunk is, so the treeline makes a ragged silhouette.
         for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++){
-            boolean trunk=(Math.floorMod(x*7+z*13,11)==0);
-            int top=CANOPY-(rnd.nextInt(3)==0?1:0);
+            long cell=(Math.floorDiv(x,3)*73856093L)^(Math.floorDiv(z,3)*19349663L);
+            int patch=6+(int)Math.floorMod(cell,5);
+            boolean trunk=Math.floorMod(x,3)==1&&Math.floorMod(z,3)==1&&Math.floorMod(cell>>3,3)!=0;
+            int top=trunk?patch+1:patch-(rnd.nextInt(3)==0?1:0);
             for(int y=0;y<=top;y++)set(l,b,x,y,z,trunk&&y<top-1?Blocks.SPRUCE_LOG.defaultBlockState():leaves());
         }
     }
-    /** Clears a space out of the cedars, up to a height, leaving the ground. */
-    static void clear(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1,int h){box(l,b,x0,0,z0,x1,h,z1,air());}
+    /** Clears a space out of the cedars, open to the sky, leaving the ground; branches reach out over its edges above head height. */
+    static void clear(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1,int h){box(l,b,x0,0,z0,x1,Math.max(h,SKY_CLEAR),z1,air());}
+    static final int SKY_CLEAR=14;
+    /** Branches overhanging a clearing's edge: leaves reaching out a block over it, above head height only, so no new way through opens. */
+    static void overhang(ServerLevel l,BlockPos b,Random rnd,int x0,int z0,int x1,int z1){
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++){
+            if(x!=x0&&x!=x1&&z!=z0&&z!=z1)continue;
+            if(rnd.nextInt(10)<4)for(int y=3+rnd.nextInt(2);y<=5+rnd.nextInt(3);y++)if(l.getBlockState(b.offset(x,y,z)).isAir())set(l,b,x,y,z,leaves());
+        }
+    }
     static void doors(ServerLevel l,BlockPos b){
         for(var spec:TURNAROUND.doors()){
             var at=b.offset(spec.rel());var d=Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,spec.facing()).setValue(DoorBlock.HINGE,DoorHingeSide.LEFT).setValue(DoorBlock.OPEN,false);
