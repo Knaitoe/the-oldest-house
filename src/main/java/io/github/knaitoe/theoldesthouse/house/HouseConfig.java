@@ -84,7 +84,7 @@ public final class HouseConfig {
         STORY_BASE_CHANCE = builder.comment("Story chance on a new route at depth 10 or more.").defineInRange("storyBaseChance", 44, 0, 100);
         STORY_CHANCE_STEP = builder.comment("Added chance per eligible new route without a story; backtracking adds nothing.").defineInRange("storyChanceStep", 12, 0, 100);
         STORY_SPACING = builder.comment("Ordinary visits between stories. Deliberate scent and a living-pet rescue bypass this interval.").defineInRange("storySpacing", 2, 0, 8);
-        STORY_DRY_GUARANTEE = builder.comment("Guarantee a story after this many eligible dry deals, once the spacing is satisfied.").defineInRange("storyDryGuarantee", 5, 1, 100);
+        STORY_DRY_GUARANTEE = builder.comment("Guarantee a story after this many eligible dry deals, once the spacing is satisfied.").defineInRange("storyDryGuarantee", 4, 1, 100);
         HAZARD_EARLY_CHANCE = builder.comment("Physical-hazard chance at depths 6-9, only when this arrival offers no story or anomaly.").defineInRange("hazardEarlyChance", 28, 0, 100);
         HAZARD_MIDDLE_CHANCE = builder.comment("Physical-hazard chance at depths 10-15.").defineInRange("hazardMiddleChance", 42, 0, 100);
         HAZARD_DEEP_CHANCE = builder.comment("Physical-hazard chance at depth 16 or more.").defineInRange("hazardDeepChance", 54, 0, 100);
