@@ -102,6 +102,8 @@ jobs:
           python3 tools/generate_power_audio.py --check
           python3 tools/draw_tank_fittings.py --check
           python3 tools/generate_tank_audio.py --check
+          python3 tools/draw_tension_fittings.py --check
+          python3 tools/generate_tension_audio.py --check
           python3 tools/generate_operator_audio.py --check
           python3 tools/draw_trace_fittings.py --check
           python3 tools/generate_staircase_leak_assets.py --check

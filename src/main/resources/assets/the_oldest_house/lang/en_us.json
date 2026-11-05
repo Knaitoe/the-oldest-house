@@ -1114,5 +1114,12 @@
   "block.the_oldest_house.sp_launderette": "Launderette Floor",
   "item.the_oldest_house.sp_carried": "Something of Theirs",
   "advancements.the_oldest_house.account.second_person.title": "Second person",
-  "advancements.the_oldest_house.account.second_person.description": "Somebody moved into a flat I was already standing in."
+  "advancements.the_oldest_house.account.second_person.description": "Somebody moved into a flat I was already standing in.",
+  "block.the_oldest_house.tension_fitting": "Cable Gear",
+  "block.the_oldest_house.tension_plaster": "Limewashed Plaster",
+  "block.the_oldest_house.tension_boards": "Painted Loft Boards",
+  "block.the_oldest_house.tension_mark": "Marked Plaster",
+  "subtitles.the_oldest_house.tension.wheel": "A wheel turns against weight",
+  "subtitles.the_oldest_house.tension.take": "Cable takes up",
+  "subtitles.the_oldest_house.tension.pin": "A pin draws free"
 }

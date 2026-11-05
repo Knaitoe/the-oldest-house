@@ -69,5 +69,13 @@ public final class PuzzleRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TankBlock>> TANK_TYPE=CODECS.register("tank_fitting",()->TankBlock.CODEC);
     public static final DeferredBlock<TankBlock> TANK=BLOCKS.registerBlock("tank_fitting",TankBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> VALVE=sound("tank.valve"),RUN=sound("tank.run"),PUMP=sound("tank.pump"),KNOCK=sound("tank.knock");
+    /** 0.4.306, the Tension Room (TensionRooms): the loft's limewashed plaster, painted boards and the mark on the shaft, its cable gear (TensionBlock), drawn by tools/draw_tension_fittings.py, and its sounds (tools/generate_tension_audio.py). */
+    private static final java.util.Map<String,DeferredBlock<Block>> TENSION_MATERIALS=new java.util.LinkedHashMap<>();
+    public static final java.util.List<String> TENSION_MATERIAL_NAMES=java.util.List.of("plaster","boards","mark");
+    static{for(String name:TENSION_MATERIAL_NAMES)TENSION_MATERIALS.put(name,BLOCKS.registerSimpleBlock("tension_"+name,fixed(name.equals("boards")?Blocks.SPRUCE_PLANKS:Blocks.STONE)));}
+    public static Block tensionMaterial(String name){var block=TENSION_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TensionBlock>> TENSION_TYPE=CODECS.register("tension_fitting",()->TensionBlock.CODEC);
+    public static final DeferredBlock<TensionBlock> TENSION=BLOCKS.registerBlock("tension_fitting",TensionBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> TENSION_WHEEL=sound("tension.wheel"),TENSION_TAKE=sound("tension.take"),TENSION_PIN=sound("tension.pin");
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);}
 }

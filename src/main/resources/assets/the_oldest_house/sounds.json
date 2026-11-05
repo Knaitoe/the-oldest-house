@@ -3592,5 +3592,32 @@
         "attenuation_distance": 256
       }
     ]
+  },
+  "tension.wheel": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:tension/wheel",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.tension.wheel"
+  },
+  "tension.take": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:tension/take",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.tension.take"
+  },
+  "tension.pin": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:tension/pin",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.tension.pin"
   }
 }
