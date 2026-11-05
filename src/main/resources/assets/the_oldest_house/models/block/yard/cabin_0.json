@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "the_oldest_house:block/yard/window",
+    "r": "the_oldest_house:block/yard/roof",
+    "p": "the_oldest_house:block/yard/paint",
+    "particle": "the_oldest_house:block/yard/roof"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    }
+  ]
+}

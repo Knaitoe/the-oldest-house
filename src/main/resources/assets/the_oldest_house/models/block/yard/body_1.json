@@ -1,0 +1,84 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/yard/side",
+    "p": "the_oldest_house:block/yard/paint",
+    "w": "the_oldest_house:block/yard/wheel",
+    "particle": "the_oldest_house:block/yard/paint"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        3,
+        0
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.5,
+        0,
+        3
+      ],
+      "to": [
+        0.5,
+        9,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        15.5,
+        0,
+        3
+      ],
+      "to": [
+        16.5,
+        9,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        }
+      }
+    }
+  ]
+}
