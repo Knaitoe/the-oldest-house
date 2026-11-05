@@ -77,8 +77,10 @@ public final class DomesticLabyrinthTests {
         h.assertTrue(data.dryDeals(newcomer) == 0, "quiet exploration cannot bank a guaranteed vignette");
         deepen(data, newcomer, 6);
         h.assertTrue(LabyrinthDealer.vignetteChance(data, newcomer) == 28, "the modest first eligible story chance leaves room for ordinary exploration");
-        data.setDryDeals(newcomer, 12);
-        h.assertTrue(LabyrinthDealer.vignetteChance(data, newcomer) == 100, "eligible dry spells still guarantee a story");
+        data.setDryDeals(newcomer, 3);
+        h.assertTrue(LabyrinthDealer.vignetteChance(data, newcomer) == 64, "three eligible misses still leave a chance of another ordinary deal");
+        data.setDryDeals(newcomer, 4);
+        h.assertTrue(LabyrinthDealer.vignetteChance(data, newcomer) == 100, "four eligible misses guarantee a story on the next eligible deal");
         CompoundTag state = data.state(MotherOfStrays.ID), owners = new CompoundTag();
         owners.putBoolean(owner.toString(), true); state.put("LivingPetOwners", owners); data.setState(MotherOfStrays.ID, state);
         h.assertTrue(LabyrinthDealer.vignetteChance(data, owner) == 65, "urgent rescue bypasses the quiet approach");

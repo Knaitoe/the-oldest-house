@@ -209,9 +209,13 @@ public final class HouseReadTests {
     }
 
     @GameTest(template="empty",batch="read_wardrobe",timeoutTicks=5000)
-    public static void actualBorrowingRetreatRestoresFullInventoryAndTheOriginalGearAfterReload(GameTestHelper h){
-        var f=fixture(h);var p=player(h,f,"coat_reader");var peer=player(h,f,"coat_observer");var sourceAt=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(sourceAt).inflate(8));BlockPos[] b={null};LabyrinthData.Door[] from={null};ItemStack[] gear={null,null};h.onEachTick(()->transition(p));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native source is resident")).thenExecute(()->{from[0]=source(f);stand(p,f.in,sourceAt,.5,0,2.5);HouseReadSites.prepare(p,HouseReadSites.Room.COATROOM);})
+    public static void coatroomScreenLeadsOnAndRestoresOriginalGearAfterReload(GameTestHelper h){
+        var f=fixture(h);var p=player(h,f,"coat_reader");var peer=player(h,f,"coat_observer");var sourceAt=f.origin.offset(0,0,-5);var hall=LabyrinthPlace.GRAY_CORRIDOR;var target=f.base(hall);
+        f.chunks.hold(f.in,new AABB(sourceAt).inflate(8));f.chunks.hold(f.in,new AABB(target).inflate(8));BlockPos[] b={null};LabyrinthData.Door[] from={null};ItemStack[] gear={null,null};h.onEachTick(()->transition(p));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the native source and onward hall are resident")).thenExecute(()->{
+              from[0]=source(f);LabyrinthBuilder.buildCorridor(f.in,target);LabyrinthBuilder.registerDoors(f.data(),hall,target);
+              stand(p,f.in,sourceAt,.5,0,2.5);HouseReadSites.prepare(p,HouseReadSites.Room.COATROOM);
+          })
           .thenWaitUntil(()->h.assertTrue(ready(p,HouseReadSites.Room.COATROOM),"the bounded production coatroom finishes"))
           .thenExecute(()->{
               b[0]=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.COATROOM);HouseReadAudit.check(h,f.in,b[0],HouseReadSites.Room.COATROOM);seed(p,HouseReadSites.Room.COATROOM,from[0]);stand(p,f.in,b[0],.5,0,.5);stand(peer,f.in,b[0],2.5,0,.5);
@@ -238,10 +242,11 @@ public final class HouseReadTests {
               f.reload();h.assertTrue(visit(p,HouseReadSites.Room.COATROOM).getBoolean("CapturedChest")&&visit(p,HouseReadSites.Room.COATROOM).getBoolean("Written"),"native saved-data reload preserves gear custody and the unseen writing");
               HouseReadExport.save(f.in,b[0],HouseReadSites.Room.COATROOM,"coatroom");var entry=LabyrinthData.get(p.server).door("house_read/"+p.getUUID()+"/coatroom/entry");stand(p,f.in,b[0],.5,0,1);click(p,entry.lower);
               var shown=HouseReadStory.last(p.getUUID());h.assertTrue(shown!=null&&shown.text().equals(HouseReadStory.closing(HouseReadSites.Room.COATROOM))&&!shown.sound().isEmpty()&&!shown.title()&&HouseReadSites.inside(p)==HouseReadSites.Room.COATROOM&&HouseReadStory.closing(p),"the complete room's door opens onto the House's closing line on black, heard cut off, before the reader is taken: "+shown);
-          }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"after the closing line the original door takes the reader back"))
+          }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"after the closing line the screen door takes the reader out"))
           .thenExecute(()->{
               h.assertTrue(ItemStack.matches(gear[0],p.getItemBySlot(EquipmentSlot.CHEST))&&ItemStack.matches(gear[1],p.getItemBySlot(EquipmentSlot.FEET)),"the exact original gear, names and damage return to their original slots");for(int i=0;i<36;i++)h.assertTrue(p.getInventory().getItem(i).is(Items.COBBLESTONE)&&p.getInventory().getItem(i).getCount()==64,"a full original pack is unchanged");
-              h.assertTrue(f.data().returnCount(p.getUUID())==0&&p.getHealth()==20,"a quiet retreat consumes no story return, health or reward");
+              h.assertTrue(p.serverLevel()==f.in&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==hall,"the screen door leads into the dealt hall, keeping the reader off the original side of the source door");
+              var back=f.data().peekReturn(p.getUUID());h.assertTrue(f.data().returnCount(p.getUUID())==1&&back!=null&&back.pos().equals(Vec3.atBottomCenterOf(sourceAt))&&p.getHealth()==20,"the quiet room preserves one real crossing and the exact original way back");
           }).thenSucceed();
     }
 
