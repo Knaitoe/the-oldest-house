@@ -1,0 +1,33 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/truant_service/arrow_2",
+    "particle": "the_oldest_house:block/truant_service/arrow_2"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15.9
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

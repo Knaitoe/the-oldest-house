@@ -232,7 +232,7 @@ public final class LabyrinthDealer {
         gray.addAll(QuietRooms.FAMILY);
         int depth = data.returnDepth(player);
         // 0.4.264: Johnny Truant's places, from the crossing where stories begin, weighted by the reader's time without him.
-        if (depth >= TruantPlaces.FROM_DEPTH) gray.addAll(TruantPlaces.PLACES);
+        gray.addAll(TruantPlaces.dealt(depth));
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS, LabyrinthPlace.AIRING_ROOMS, LabyrinthPlace.FOLDED_ROOMS, LabyrinthPlace.FUSE_ROOMS, LabyrinthPlace.HEADER_TANKS));
         if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
@@ -597,6 +597,7 @@ public final class LabyrinthDealer {
             case GRAY_CORRIDOR -> depth < 4 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 2;
             case QUIET_ROOM, QUIET_READING, QUIET_BOOTROOM, QUIET_SUNROOM, QUIET_SPARE -> 1;
             case TRUANT_DOOR, TRUANT_LEDGE, TRUANT_LAMP -> depth < TruantPlaces.FROM_DEPTH ? 0 : TruantPlaces.WEIGHT;
+            case TRUANT_CHALK, TRUANT_KNOCK, TRUANT_LIFT -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : TruantPlaces.WEIGHT;
             case EXPLORER_CAMP -> depth < 3 ? 0 : 2;
             default -> depth < 4 ? 0 : place.grayWeight();
         };

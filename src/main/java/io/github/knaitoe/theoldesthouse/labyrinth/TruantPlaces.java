@@ -25,7 +25,9 @@ import net.minecraft.world.phys.Vec3;
 public final class TruantPlaces {
     private TruantPlaces(){}
     public static final LabyrinthPlace DOOR=LabyrinthPlace.TRUANT_DOOR,LEDGE=LabyrinthPlace.TRUANT_LEDGE,LAMP=LabyrinthPlace.TRUANT_LAMP;
-    public static final List<LabyrinthPlace> PLACES=List.of(DOOR,LEDGE,LAMP);
+    /** 0.4.307: with his three service-hall places (TruantService), dealt only from the stone halls. */
+    public static final List<LabyrinthPlace> PLACES=List.of(DOOR,LEDGE,LAMP,LabyrinthPlace.TRUANT_CHALK,LabyrinthPlace.TRUANT_KNOCK,LabyrinthPlace.TRUANT_LIFT);
+    public static List<LabyrinthPlace> dealt(int depth){return depth<FROM_DEPTH?List.of():depth<LabyrinthPacing.STONE_DEPTH?List.of(DOOR,LEDGE,LAMP):PLACES;}
     public static boolean is(LabyrinthPlace place){return place!=null&&PLACES.contains(place);}
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
@@ -148,7 +150,7 @@ public final class TruantPlaces {
             case TRUANT_DOOR->buildDoor(l,b);
             case TRUANT_LEDGE->buildLedge(l,b);
             case TRUANT_LAMP->buildLamp(l,b);
-            default->{}
+            default->TruantService.build(l,b,place);
         }
     }
 }

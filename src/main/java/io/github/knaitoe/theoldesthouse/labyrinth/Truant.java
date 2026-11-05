@@ -82,7 +82,8 @@ public final class Truant {
      */
     public static final int PUSH=15,OVER=16,REACH=17,PAGE=18,FRAME=19;
     /** 0.4.282: what he is at a meeting. */
-    public enum Turn{HELP,CLAIM,DOORWAY,COVER,SHOVE}
+    /** 0.4.307: and the service halls' turns (TruantService): the arrow turned, the knock at the wrong time, the brake let go. */
+    public enum Turn{HELP,CLAIM,DOORWAY,COVER,SHOVE,ARROW,KNOCK,BRAKE}
     /** The shove: how long he must have been coming before his hands can land, how long they rest there first, how long the reader must look back at him to stop him, how long he looks over. */
     public static final int APPROACH=24,HANDS=6,TURN_BACK=4,LOOK_OVER=30;
     /** The covered light: how long the lamp is out at most, and how long he holds the wrist. */
@@ -186,7 +187,7 @@ public final class Truant {
             var readers=entry.getValue().stream().filter(Truant::reader).toList();
             if(place==TruantPlaces.DOOR)closer(l,b,readers,place==at);
             if(place!=at){RoomActors.clear(l,box,Truant::isTruant);continue;}
-            if(scene==null||scene.place!=place)scene=new Scene(place);
+            if(scene==null||scene.place!=place){scene=new Scene(place);TruantService.newScene();}
             s=state(server);var before=s.hasUUID("Body")?s.getUUID("Body"):null;var a=RoomActors.one(l,box,s,"Body",Truant::isTruant);
             if(a!=null&&!box.contains(a.position())){a.bind(place,null);place(a,b,home(place),0);}
             if(a==null)a=spawn(l,b,place,s);
@@ -205,13 +206,13 @@ public final class Truant {
                 case TRUANT_DOOR->{if(scene.turn==Turn.DOORWAY&&!scene.aside)doorway(l,b,a,readers);else door(l,b,a,readers,now);}
                 case TRUANT_LEDGE->{if(scene.turn==Turn.SHOVE)shove(l,b,a,readers);else ledge(l,b,a,readers);}
                 case TRUANT_LAMP->lamp(l,b,a,readers);
-                default->{}
+                default->{if(TruantService.is(place))TruantService.tick(l,b,a,readers,scene);}
             }
             favours(l,b,a,readers);
             panel(a,readers);
         }
     }
-    static Vec3 home(LabyrinthPlace place){return switch(place){case TRUANT_DOOR->TruantPlaces.DOOR_SPOT;case TRUANT_LEDGE->TruantPlaces.LEDGE_SPOT;default->TruantPlaces.PEEK_SPOT;};}
+    static Vec3 home(LabyrinthPlace place){if(TruantService.is(place))return TruantService.home(place);return switch(place){case TRUANT_DOOR->TruantPlaces.DOOR_SPOT;case TRUANT_LEDGE->TruantPlaces.LEDGE_SPOT;default->TruantPlaces.PEEK_SPOT;};}
     static @Nullable LiteraryActor spawn(ServerLevel l,BlockPos b,LabyrinthPlace place,CompoundTag s){
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(place,null);a.appearance(LiteraryActor.STRANGER,place==TruantPlaces.LAMP?LEER:FACE);a.setNoGravity(true);
@@ -608,7 +609,7 @@ public final class Truant {
         for(var p:readers){if(withdrawn(p))continue;var own=record(p.server,p.getUUID());if(!collecting(own,deepest(p.server,p.getUUID())))continue;if(tOwn==null||meeting(own)>meeting(tOwn)){target=p;tOwn=own;}}
         if(target==null)return;
         var place=sc.place;
-        Turn hostile=place==TruantPlaces.DOOR?Turn.DOORWAY:place==TruantPlaces.LAMP?Turn.COVER:Turn.SHOVE;
+        Turn hostile=switch(place){case TRUANT_DOOR->Turn.DOORWAY;case TRUANT_LAMP->Turn.COVER;case TRUANT_CHALK->Turn.ARROW;case TRUANT_KNOCK->Turn.KNOCK;case TRUANT_LIFT->Turn.BRAKE;default->Turn.SHOVE;};
         Turn want;
         if(FORCED!=null)want=FORCED;
         else if(tOwn.getInt("Revealed")==0)want=place==TruantPlaces.DOOR?Turn.DOORWAY:Turn.CLAIM;

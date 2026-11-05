@@ -1,0 +1,125 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "i": "the_oldest_house:block/truant_service/iron",
+    "g": "the_oldest_house:block/truant_service/grip",
+    "particle": "the_oldest_house:block/truant_service/iron"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        10
+      ],
+      "to": [
+        11,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        1,
+        12
+      ],
+      "to": [
+        9,
+        14,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          1,
+          13
+        ],
+        "axis": "x",
+        "angle": 22.5
+      }
+    },
+    {
+      "from": [
+        6.5,
+        12,
+        11.5
+      ],
+      "to": [
+        9.5,
+        15,
+        14.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          1,
+          13
+        ],
+        "axis": "x",
+        "angle": 22.5
+      }
+    }
+  ]
+}
