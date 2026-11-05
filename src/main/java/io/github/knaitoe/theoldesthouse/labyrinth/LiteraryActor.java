@@ -35,6 +35,8 @@ public final class LiteraryActor extends PathfinderMob {
     public static boolean lakePartner(int role){return role==LAKE_TESS||role==LAKE_THEO;}
     private static final EntityDataAccessor<Integer> ROLE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT),PHASE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> GESTURE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
+    /** 0.4.309: ticks left of the line this person is speaking, so their mouth moves while their words are on screen. */
+    private static final EntityDataAccessor<Integer> SPEECH=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> OWNER=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.OPTIONAL_UUID);
     /** 0.4.228: how far the actor has faded, 0 (solid) to 100 (gone); the tenant in Vacant Possession thins as the flat empties. */
     private static final EntityDataAccessor<Integer> FADE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
@@ -43,7 +45,10 @@ public final class LiteraryActor extends PathfinderMob {
     private final KillerNavigation privateHunt=new KillerNavigation();
     public LiteraryActor(EntityType<? extends LiteraryActor> type,Level l){super(type,l);setPersistenceRequired();setNoAi(true);setCanPickUpLoot(false);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,40).add(Attributes.MOVEMENT_SPEED,.24).add(Attributes.SCALE,1);}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(OWNER,Optional.empty());b.define(FADE,0);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(SPEECH,0);b.define(OWNER,Optional.empty());b.define(FADE,0);}
+    public int speaking(){return entityData.get(SPEECH);}
+    /** Sets them talking for about as long as the line takes to say. */
+    public void speaks(String line){entityData.set(SPEECH,Math.min(110,14+line.length()*2));}
     public int fade(){return entityData.get(FADE);}public void fade(int value){entityData.set(FADE,Math.max(0,Math.min(100,value)));}
     /**
      * 0.4.262: up to 15. It was held to 5, so Borrasca's led and reaching gestures (6 and 7, since 0.4.235) and the men's hands on her
@@ -78,6 +83,7 @@ public final class LiteraryActor extends PathfinderMob {
     public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);}
     @Override public void tick(){
         boolean privateKiller=!level().isClientSide&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent();
+        if(!level().isClientSide&&entityData.get(SPEECH)>0)entityData.set(SPEECH,entityData.get(SPEECH)-1);
         var before=position();boolean active=!privateKiller||privateHunt.prepare(this);if(!level().isClientSide)BorrascaStory.actorTick(this);super.tick();
         if(!level().isClientSide){DomesticGlimpses.actorTick(this);GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);TunnelStride.tick(this);HouseReadShelter.tick(this);}
         if(lakePartner(role()))setAirSupply(getMaxAirSupply());

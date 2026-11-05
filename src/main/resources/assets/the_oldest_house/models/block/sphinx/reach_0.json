@@ -2,33 +2,39 @@
   "ambientocclusion": true,
   "render_type": "minecraft:cutout",
   "textures": {
-    "r": "the_oldest_house:block/sphinx/reach",
-    "particle": "the_oldest_house:block/sphinx/reach"
+    "f": "the_oldest_house:block/sphinx/fur",
+    "particle": "the_oldest_house:block/sphinx/fur"
   },
   "elements": [
     {
       "from": [
+        1,
         0,
-        0,
-        12
+        9
       ],
       "to": [
+        15,
         16,
-        16,
-        14
+        16
       ],
       "faces": {
         "north": {
-          "texture": "#r"
+          "texture": "#f"
         },
         "south": {
-          "texture": "#r"
+          "texture": "#f"
         },
         "east": {
-          "texture": "#r"
+          "texture": "#f"
         },
         "west": {
-          "texture": "#r"
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
         }
       }
     }

@@ -153,7 +153,7 @@ def nail():
     return im
 
 
-def eye_tiles():
+def eye_tiles(look=7):
     # Her eye, 64 by 32 pixels across eight blocks: sandstone lids with a painted kohl line that runs out past the outer corner,
     # a yellowed white, an amber iris with a darker rim, a round black pupil and one highlight. Recognizable from the one eye.
     import math
@@ -167,9 +167,13 @@ def eye_tiles():
         for x in range(W):
             if ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1:
                 big.putpixel((x, y), shade('#e2d6b0', rnd.randint(-8, 4)))
+    # The pupil turned by the gaze: left/middle/right across, and (seen from below, where the picture's top is the hall side) toward
+    # the hall upward, under her in the middle, away from it downward.
+    col, row = look % 3, look // 3
+    px, py = cx + (col - 1) * 9, cy + (1 - row) * 4
     for y in range(H):
         for x in range(W):
-            d = math.hypot(x - cx, y - cy)
+            d = math.hypot(x - px, y - py)
             if d <= 10.5 and ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1:
                 c = '#0c0a08' if d <= 4.5 else ('#6a4410' if d > 9.2 else '#b07a1e')
                 big.putpixel((x, y), shade(c, 0 if d <= 4.5 else rnd.randint(-10, 10)))
@@ -181,7 +185,7 @@ def eye_tiles():
                 big.putpixel((x, y), (0, 0, 0, 0))
             elif e > 1.0:
                 big.putpixel((x, y), shade(rnd.choice(['#3e3220', '#352a1b', '#2c2316']), int(-24 * (e - 1.0))))
-    for x, y in ((27, 12), (28, 12), (27, 13)):
+    for x, y in ((int(px) - 4, int(py) - 4), (int(px) - 3, int(py) - 4), (int(px) - 4, int(py) - 3)):
         big.putpixel((x, y), (250, 245, 220, 255))
     for x in range(2, 62):
         t = (x - cx) / (rx + .5)
@@ -200,6 +204,30 @@ def skin_dark():
     return noisy(['#4a3c26', '#433622', '#52432a', '#3c3020'], 3079, [4, 3, 2, 2])
 
 
+def fur(seed=3080):
+    # Her coat: tawny, coarse, the hairs running down.
+    im = noisy(['#b8904e', '#a8803f', '#c49c58', '#9c7438'], seed, [4, 3, 2, 2]); rnd = random.Random(seed + 1)
+    for _ in range(18):
+        x, y = rnd.randrange(16), rnd.randrange(15)
+        dot(im, x, y, '#86622e'); dot(im, x, y + 1, '#86622e')
+    return im
+
+
+def claw():
+    # A claw: dark keratin, paler at the root, a hard highlight along its curve.
+    im = noisy(['#2a2420', '#221d1a', '#332b25'], 3082)
+    for y in range(16):
+        dot(im, 2, y, '#5a4e42')
+    for y in range(12, 16):
+        for x in range(16):
+            dot(im, x, y, '#6e5c48')
+    return im
+
+
+def pad():
+    return noisy(['#3a2c26', '#33261f', '#43332b'], 3083)
+
+
 def reach():
     # Her fingers coming down a wall: four long sandstone digits, the painted band at the knuckle.
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(3078)
@@ -215,10 +243,11 @@ def reach():
 
 def textures():
     out = {f'block/sphinx_{k}.png': v for k, v in materials().items()}
-    t = {'iron': iron(), 'brass': brass(), 'pot': pot(), 'umbrella': umbrella(), 'flap': flap(), 'latch_0': latch(False), 'latch_1': latch(True),
+    t = {'fur': fur(), 'claw': claw(), 'pad': pad(), 'iron': iron(), 'brass': brass(), 'pot': pot(), 'umbrella': umbrella(), 'flap': flap(), 'latch_0': latch(False), 'latch_1': latch(True),
          'grille': grille(), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark()}
-    for i, q in enumerate(eye_tiles()):
-        t[f'eye_{i}'] = q
+    for look in range(9):
+        for i, q in enumerate(eye_tiles(look)):
+            t[f'eye_{look}_{i}'] = q
     out.update({f'block/sphinx/{k}.png': v for k, v in t.items()})
     return out
 
@@ -245,26 +274,28 @@ def fitting_models():
             els.append(element([6.5, 6.5, depth], [9.5, 9.5, 15.5], {'all': 'b'}))
         m[f'pin_{s}'] = model(els, {'i': 'iron', 'b': 'brass'}, 'iron')
     m['grille_0'] = model([element([1, 1, 15], [15, 15, 16], {'all': 'i', 'north': 'g'}, uv={'north': [0, 0, 16, 16]})], {'i': 'iron', 'g': 'grille'}, 'grille')
-    els = []
-    for i, x in enumerate((0.5, 4.5, 8.5, 12.5)):
-        low = 4 if i in (1, 2) else 6
-        els.append(element([x, low, 10], [x + 3, 16, 16], {'all': 's'}))
-        els.append(element([x + .5, low, 9.4], [x + 2.5, low + 2, 10], {'north': 'n'}))
-    m['fingers_0'] = model(els, {'s': 'skin', 'n': 'nail'}, 'skin')
-    for i in range(8):
-        # Face down: the eye is on the underside, read from the hall below with north at the top.
-        m[f'eye_{i}'] = model([element([0, 0, 0], [16, 1, 16], {'down': 'e', 'up': 'k'}, uv={'down': [0, 0, 16, 16]})], {'e': f'eye_{i}', 'k': 'skin_dark'}, f'eye_{i}')
-    m['face_0'] = model([element([0, 0, 0], [16, 1, 16], {'down': 's', 'up': 's'})], {'s': 'skin_dark'}, 'skin_dark')
-    m['reach_0'] = model([element([0, 0, 12], [16, 16, 14], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r'})], {'r': 'reach'}, 'reach')
+    # Her paw hooked over the frame: the heel of it on top, four heavy toes over the edge, each with a claw curling down into the wood.
+    els = [element([0, 9, 9], [16, 16, 16], {'all': 'f', 'down': 'd'})]
+    for x in (0.5, 4.5, 8.5, 12.5):
+        els.append(element([x, 5, 8], [x + 3.2, 11, 13.5], {'all': 'f', 'down': 'd'}))
+        els.append(element([x + .9, 3, 6.6], [x + 2.3, 7, 8.2], {'all': 'c'}))
+        els.append(element([x + 1.1, 0, 6.4], [x + 2.1, 3.2, 7.4], {'all': 'c'}))
+    m['fingers_0'] = model(els, {'f': 'fur', 'c': 'claw', 'd': 'pad'}, 'fur')
+    # Her foreleg down the wall: a thick furred limb against the plaster, a darker ridge down its front.
+    m['reach_0'] = model([element([1, 0, 9], [15, 16, 16], {'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f', 'up': 'f', 'down': 'f'})], {'f': 'fur'}, 'fur')
+    for look in range(9):
+        for i in range(8):
+            # Face down: the eye is on the underside, read from the hall below.
+            m[f'eye_{look}_{i}'] = model([element([0, 0, 0], [16, 1, 16], {'down': 'e', 'up': 'k'}, uv={'down': [0, 0, 16, 16]})], {'e': f'eye_{look}_{i}', 'k': 'skin_dark'}, f'eye_{look}_{i}')
     return m
 
 
-KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'eye', 'face', 'reach']
-STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'eye': 8, 'face': 1, 'reach': 1}
+KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach']
+STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'reach': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
-MAX_STAGE = 8
+MAX_STAGE = 3
 NAMES = {'sphinx_fitting': 'Vestibule Fittings', 'sphinx_tile': 'Quarry Tiles', 'sphinx_marked': 'Marked Tile', 'sphinx_plaster': 'Limewash Plaster',
-         'sphinx_ceiling': 'Spruce Ceiling', 'sphinx_seam': 'Cracked Plaster', 'sphinx_dark': 'Dark Plaster'}
+         'sphinx_ceiling': 'Spruce Ceiling', 'sphinx_seam': 'Cracked Plaster', 'sphinx_dark': 'Dark Plaster', 'sphinx_eye': 'Eye in the Dark'}
 
 
 def files():
@@ -284,6 +315,7 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/sphinx_fitting.json'] = {'variants': variants}
+    out['blockstates/sphinx_eye.json'] = {'variants': {f'look={look},tile={i}': {'model': NS + f'block/sphinx/eye_{look}_{i}'} for look in range(9) for i in range(8)}}
     return out
 
 
@@ -294,6 +326,9 @@ def main():
     for kind in KINDS:
         for stage in range(STAGES[kind]):
             assert f'{kind}_{stage}' in models, (kind, stage)
+    for look in range(9):
+        for i in range(8):
+            assert f'eye_{look}_{i}' in models, (look, i)
     for key, obj in models.items():
         for tex in obj['textures'].values():
             assert f'block/sphinx/{tex.split("sphinx/")[1]}.png' in images, (key, tex)

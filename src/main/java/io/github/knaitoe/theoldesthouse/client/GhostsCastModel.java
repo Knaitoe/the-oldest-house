@@ -52,7 +52,8 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         if(a.phase()==GhostsSet.STAND)HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());
         var tw=transitions.get(a);since=tw==null||tw.phase!=a.phase()?0:age-tw.started;
         // A new line over someone's head starts them talking, for about as long as the line takes to say.
-        speech=0;if(tw!=null&&a.hasCustomName()&&a.isCustomNameVisible()){String line=a.getCustomName().getString();if(!line.equals(tw.line)){tw.line=line;tw.lineAt=age;}
+        // While their words are on screen (the server's speaking timer), or a new line goes up over them, they are talking.
+        speech=a.speaking()>0?1:0;if(speech==0&&tw!=null&&a.hasCustomName()&&a.isCustomNameVisible()){String line=a.getCustomName().getString();if(!line.equals(tw.line)){tw.line=line;tw.lineAt=age;}
             float length=Math.min(90,12+line.length()*1.6F),t=(age-tw.lineAt)/length;speech=t<0||t>1?0:1;}
         moving=motion.amount()>.15F;
         pose(a.phase(),a.getScale(),step,age);
@@ -64,8 +65,8 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         // A newly visible apex must freeze in its complete leap, even if its earlier phase was last rendered off-camera.
         if(GhostsTakeClient.frozen()&&actor.phase()==GhostsSet.LEAP){state.phase=actor.phase();state.from=null;state.last=snapshot();state.faceLast=face.clone();return;}
         if(state.phase!=actor.phase()){state.from=state.last;state.faceFrom=state.faceLast;state.started=age;state.phase=actor.phase();}
-        // A face changes over a second or so, not in a cut.
-        if(state.faceFrom!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/22F,0,1);t=t*t*(3-2*t);for(int i=0;i<3;i++)face[i]=net.minecraft.util.Mth.lerp(t,state.faceFrom[i],face[i]);if(t==1)state.faceFrom=null;}
+        // A face changes over two seconds or more, not in a cut: feeling arrives and settles.
+        if(state.faceFrom!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/48F,0,1);t=t*t*(3-2*t);for(int i=0;i<3;i++)face[i]=net.minecraft.util.Mth.lerp(t,state.faceFrom[i],face[i]);if(t==1)state.faceFrom=null;}
         state.faceLast=face.clone();
         if(state.from!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/blendLength(actor.phase()),0,1);t=t*t*(3-2*t);int i=0;
             for(var p:joints){p.x=net.minecraft.util.Mth.lerp(t,state.from[i++],p.x);p.y=net.minecraft.util.Mth.lerp(t,state.from[i++],p.y);p.z=net.minecraft.util.Mth.lerp(t,state.from[i++],p.z);p.xRot=angle(state.from[i++],p.xRot,t);p.yRot=angle(state.from[i++],p.yRot,t);p.zRot=angle(state.from[i++],p.zRot,t);}if(t==1)state.from=null;
@@ -166,6 +167,18 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             for(var arm:new ModelPart[]{leftArm,rightArm})arm.y-=breath*.22F;
             head.y-=breath*.18F;
         }
+        // Day one at the table: John and Sarah now and then drink or take a bite, each on their own slow cycle, never in step, never mid-line.
+        if(phase==GhostsSet.SIT&&GhostsTakeClient.day()==1&&speech==0&&(r==LiteraryActor.GHOST_JOHN||r==LiteraryActor.GHOST_SARAH)){
+            float period=r==LiteraryActor.GHOST_JOHN?520:610,t=(age+(r==LiteraryActor.GHOST_JOHN?90:340))%period;
+            if(t<80){
+                float up=t<20?ease(t/20F):t<50?1:1-ease((t-50)/30F);
+                rightArm.xRot=net.minecraft.util.Mth.lerp(up,rightArm.xRot,-1.8F);rightArm.yRot=net.minecraft.util.Mth.lerp(up,rightArm.yRot,-.42F);rightArm.zRot=net.minecraft.util.Mth.lerp(up,rightArm.zRot,0);
+                rightElbow.xRot=net.minecraft.util.Mth.lerp(up,rightElbow.xRot,-1.6F);
+                if(t>=22&&t<44)head.xRot-=.12F*bump(t-22,22);
+                if(t>=46)jaw.xRot=Math.max(jaw.xRot,.04F+Math.max(0,(float)Math.sin(age*.6F))*.12F*(1-(t-46)/34F));
+                return;
+            }
+        }
         // The head drifts and glances, unless the pose has the head doing something.
         boolean headBusy=phase==GhostsSet.HAND||phase==GhostsSet.VOMIT||phase==GhostsSet.PRAY||phase==GhostsSet.EATING||phase==GhostsSet.CHOKING||phase==GhostsSet.SLUMP||phase==GhostsSet.LEAP;
         if(!headBusy&&!moving){
@@ -174,9 +187,11 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         }
         // Speaking: the jaw in syllables, a small nod, and an adult's hand.
         if(speech>0){
-            float syllable=Math.max(0,(float)Math.sin(age*.95F))*(float)(.5+.5*Math.sin(age*.23F+r));
-            jaw.xRot=Math.max(jaw.xRot,.05F+syllable*.17F);
-            head.xRot+=(float)Math.sin(age*.42F)*.035F;
+            // Big enough to see across a table which of them is talking: the jaw drops on each syllable, with pauses between phrases.
+            float phrase=(float)Math.sin(age*.19F+r)>-.45F?1:.15F;
+            float syllable=Math.max(0,(float)Math.sin(age*1.05F))*(.55F+.45F*(float)Math.sin(age*.31F+r))*phrase;
+            jaw.xRot=Math.max(jaw.xRot,.06F+syllable*.3F);
+            head.xRot+=(float)Math.sin(age*.42F)*.05F;head.yRot+=(float)Math.sin(age*.27F+r)*.04F;
             boolean adult=r==LiteraryActor.GHOST_JOHN||r==LiteraryActor.GHOST_SARAH||r==LiteraryActor.GHOST_PRODUCER||r==LiteraryActor.GHOST_PRIEST;
             if(adult&&(phase==GhostsSet.STAND||phase==GhostsSet.SIT)&&!moving){float g=.5F+.5F*(float)Math.sin(age*.14F+r);rightArm.xRot-=.35F*g;rightElbow.xRot-=.5F*g;rightArm.yRot-=.15F*g;}
         }
@@ -199,8 +214,9 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         float worn=net.minecraft.util.Mth.clamp((day-1)/6F,0,1);
         if(family){tilt=.45F*worn;mouth=-.3F*worn;}
         if(marjorie&&day>=2){lift=-.2F;tilt=-.25F;}
-        lift+=.55F*bump((age+currentRole*37)%140F,22);mouth-=.45F*bump((age+currentRole*53)%170F,34);
-        if(marjorie)mouth+=.9F*bump((age+11)%210F,40);
+        // The passing looks between lines hold for a few seconds once they come, and come seldom enough to read as reactions.
+        lift+=.55F*hold((age+currentRole*37)%360F,110);mouth-=.45F*hold((age+currentRole*53)%430F,130);
+        if(marjorie)mouth+=.9F*hold((age+11)%520F,150);
         switch(phase){
             case GhostsSet.PRAY->{lift=.2F;tilt=.55F;mouth=-.25F;}
             case GhostsSet.WARY->{lift=.7F;tilt=.85F;mouth=-.65F;}
@@ -218,6 +234,9 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         }
         face[0]=net.minecraft.util.Mth.clamp(lift,-1,1);face[1]=net.minecraft.util.Mth.clamp(tilt,-1,1);face[2]=net.minecraft.util.Mth.clamp(mouth,-1,1);
     }
+    /** A held expression: eases in over a fifth of its length, holds, and eases out over the last quarter. */
+    private static float hold(float x,float length){if(x<=0||x>=length)return 0;float in=length*.2F,out=length*.25F;return x<in?ease(x/in):x>length-out?ease((length-x)/out):1;}
+    private static float ease(float t){t=net.minecraft.util.Mth.clamp(t,0,1);return t*t*(3-2*t);}
     private static float bump(float x,float length){float t=x/length;return t<=0||t>=1?0:(float)Math.sin(Math.PI*t);}
     float[] face(){return face.clone();}
     public static ResourceLocation skin(LiteraryActor a){return skin(a.role(),a.phase());}

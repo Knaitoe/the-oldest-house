@@ -87,3 +87,15 @@ the skin round it read as a blocky panel; a two-second look was over before anyo
 at height 4; standing at a bowed door carried a reader through it; the stop pin's hit box was too small to find. Each is fixed, and the
 exploration case now checks the eye is in sight from the middle and the back of the hall with margin, that standing in her doorway is
 struck but not carried through, and that the eye opens on a warning and closes again.
+
+## Second review (owner): she moves, she does not wound; claws; a following eye
+
+- **She never hurts anyone.** A reader who stays in the hall within her reach is warned (her breath, grit falling on them), then her
+  foreleg comes down out of the dark over them and her paw sweeps them back through the doorway to the corridor sill, the line she
+  stops at. Recorded per reader as `Swept`. The sill is still her limit; she keeps it by moving people, not wounding them.
+- **A paw, not fingers.** She is lion-bodied. Over the door frame comes a paw: a furred heel, four heavy toes, and dark hooked claws
+  curling down into the wood. Down the wall comes a thick furred foreleg.
+- **Her pupil follows the reader.** The eye is its own block (`SphinxEyeBlock`): a tile (one of eight) and a gaze (one of nine:
+  left/middle/right by away/under/toward the hall). The whole picture is drawn once per gaze. While it is open, the server turns it every
+  four ticks toward the nearest reader, so wherever someone stands in the hall she is looking at them. The exploration case walks a reader
+  west and then east along the hall and requires the pupil to follow.

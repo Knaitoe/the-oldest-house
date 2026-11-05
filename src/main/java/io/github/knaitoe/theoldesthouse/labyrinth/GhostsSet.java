@@ -209,7 +209,7 @@ public final class GhostsSet {
         if(day(own)==DAYS&&own.getBoolean("DayDone"))return;
         long now=p.level().getGameTime();if(own.contains("FilmIdle0490")&&now-own.getLong("FilmIdle0490")<260)return;
         int next=own.getInt("FilmIdleLine0490"),speaker=next%4;var a=cast[speaker];if(p.distanceToSqr(a)>14*14)return;
-        p.displayClientMessage(Component.literal(idleLine(own,next)),true);own.putLong("FilmIdle0490",now);own.putInt("FilmIdleLine0490",next+1);
+        p.displayClientMessage(Component.literal(idleLine(own,next)),true);a.speaks(idleLine(own,next));own.putLong("FilmIdle0490",now);own.putInt("FilmIdleLine0490",next+1);
     }
     private static int objective(CompoundTag own){return day(own)*2+(day(own)==4&&own.getBoolean("BedroomPickup")?1:0);}
     public static boolean objectiveAccepted(CompoundTag own){return own.contains("AcceptedScene131")&&own.getInt("AcceptedScene131")==objective(own);}
@@ -289,7 +289,7 @@ public final class GhostsSet {
         }
         if((a.phase()==SLUMP||a.phase()==DEAD||a.phase()==CHOKING)&&a.role()<=LiteraryActor.GHOST_SARAH){p.displayClientMessage(Component.literal(PEOPLE[a.role()-LiteraryActor.GHOST_MARJORIE]+" does not answer."),false);return;}
         int i=Arrays.stream(ROLES).boxed().toList().indexOf(a.role());if(i<0)return;
-        p.displayClientMessage(Component.literal(PEOPLE[i]+": "+GhostsConversations.line(own,i)),true);
+        p.displayClientMessage(Component.literal(PEOPLE[i]+": "+GhostsConversations.line(own,i)),true);a.speaks(GhostsConversations.line(own,i));
         if(day(own)==4&&i==0&&!recording(p))own.putBoolean("RespectedPrivacy",true);
         if(day(own)>1&&day(own)<DAYS){var prev=own.getCompound("FilmLog"+(day(own)-1));if(prev.getInt("Frames_Merry")>=20&&i==1)p.displayClientMessage(Component.literal("Merry: They kept my face in the episode. People at school saw it."),true);if(prev.getInt("Frames_Sarah")>=20&&i==3)p.displayClientMessage(Component.literal("Sarah: They used my crying. The part where I asked them to stop is gone."),true);}
     }
@@ -400,7 +400,7 @@ public final class GhostsSet {
             if(previous>=715&&(!ready||!GhostsJump.begin(cast[0])))t=715;
         }
         own.putInt("ShotClock",t);
-        for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){String words=PEOPLE[line.speaker()]+": "+line.text();if(line.speaker()==0&&d==2){own.putString("GhostVoice",words);own.putInt("GhostVoiceId",d*10000+line.tick());own.putLong("GhostVoiceUntil",p.level().getGameTime()+140);}else p.displayClientMessage(Component.literal(words),true);if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
+        for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){String words=PEOPLE[line.speaker()]+": "+line.text();if(line.speaker()==0&&d==2){own.putString("GhostVoice",words);own.putInt("GhostVoiceId",d*10000+line.tick());own.putLong("GhostVoiceUntil",p.level().getGameTime()+140);}else{p.displayClientMessage(Component.literal(words),true);cast[line.speaker()].speaks(line.text());}if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
         if(d==2) {
             // 0.4.242 (owner: "Parents asking to pray – holding hands, mary hesitant, Marjorie slipping from her seat and ducking
             // beneath the table"): John and Sarah leave their chairs to stand by the girls and hold out a hand each. Merry holds back,
