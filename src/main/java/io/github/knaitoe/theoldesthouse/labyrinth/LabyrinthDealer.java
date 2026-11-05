@@ -577,10 +577,10 @@ public final class LabyrinthDealer {
             // vaulted hall a little rarer than the others, so it stays a surprise; the crumbled hall never in the first three
             // crossings, so nobody's first steps in the House are a jump.
             case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS, AIRING_ROOMS, FOLDING_ROOM, FOLDED_ROOMS, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, FUSE_ROOMS, HEADER_TANK, HEADER_TANKS, TENSION_ROOM -> 0;
-            // 0.4.306: the Sphinx's vestibule, rare, from the third crossing until the halls turn to stone.
-            case SPHINX_VESTIBULE -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 2;
-            // 0.4.309: the yard, an outdoor breather between interior halls, from the third crossing.
-            case YARD_TURNAROUND -> depth < 3 ? 0 : 6;
+            // 0.4.306: the Sphinx's vestibule, rare. She is frightening, so never in the domestic opening (before the story depth); a domestic crossing, so not past the deep halls.
+            case SPHINX_VESTIBULE -> depth < LabyrinthPacing.STORY_DEPTH || depth >= LabyrinthPacing.DEEP_DEPTH ? 0 : 2;
+            // 0.4.309: the yard, an outdoor breather during an expedition: after the domestic opening, from the story depth.
+            case YARD_TURNAROUND -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 6;
             // 0.4.231: the shut-up rooms under dust, a plaster hall, from the third crossing until the halls turn to stone; a little more often than a plain hall.
             case DUST_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             // 0.4.232: without a reader (the shared hall cache), the kitchen at its ordinary weight.
