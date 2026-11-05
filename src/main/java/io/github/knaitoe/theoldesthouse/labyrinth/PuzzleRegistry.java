@@ -86,5 +86,10 @@ public final class PuzzleRegistry {
     public static final DeferredBlock<SphinxBlock> SPHINX=BLOCKS.registerBlock("sphinx_fitting",SphinxBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion());
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> SPHINX_VOICE=sound("sphinx.voice"),SPHINX_BREATH=sound("sphinx.breath"),SPHINX_LATCH=sound("sphinx.latch"),
         SPHINX_CATCH=sound("sphinx.catch"),SPHINX_PIN=sound("sphinx.pin"),SPHINX_STRIKE=sound("sphinx.strike"),SPHINX_SCRAPE=sound("sphinx.scrape");
+    /** 0.4.307, Johnny Truant's service halls (TruantService): the chalk arrow, steam main, lift brakes and car (TruantFittingBlock), drawn by tools/draw_truant_service_fittings.py; their sounds (tools/generate_truant_service_audio.py). */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TruantFittingBlock>> TRUANT_FITTING_TYPE=CODECS.register("truant_fitting",()->TruantFittingBlock.CODEC);
+    public static final DeferredBlock<TruantFittingBlock> TRUANT_FITTING=BLOCKS.registerBlock("truant_fitting",TruantFittingBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> TRUANT_CHALK=sound("truant_service.chalk"),TRUANT_KNOCK=sound("truant_service.knock"),TRUANT_RATTLE=sound("truant_service.rattle"),
+        TRUANT_HISS=sound("truant_service.hiss"),TRUANT_BRAKE=sound("truant_service.brake"),TRUANT_LURCH=sound("truant_service.lurch");
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);}
 }

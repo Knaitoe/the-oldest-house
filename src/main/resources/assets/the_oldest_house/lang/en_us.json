@@ -1134,5 +1134,12 @@
   "subtitles.the_oldest_house.sphinx.catch": "A door catches at its stop",
   "subtitles.the_oldest_house.sphinx.pin": "A pin comes free",
   "subtitles.the_oldest_house.sphinx.strike": "A huge hand comes down",
-  "subtitles.the_oldest_house.sphinx.scrape": "Something scrapes on tile"
+  "subtitles.the_oldest_house.sphinx.scrape": "Something scrapes on tile",
+  "block.the_oldest_house.truant_fitting": "Service Fittings",
+  "subtitles.the_oldest_house.truant_service.chalk": "Chalk scrapes on a wall",
+  "subtitles.the_oldest_house.truant_service.knock": "Three knocks on a pipe",
+  "subtitles.the_oldest_house.truant_service.rattle": "A pipe shivers",
+  "subtitles.the_oldest_house.truant_service.hiss": "Steam vents",
+  "subtitles.the_oldest_house.truant_service.brake": "A lift brake grinds",
+  "subtitles.the_oldest_house.truant_service.lurch": "A lift car lurches"
 }
