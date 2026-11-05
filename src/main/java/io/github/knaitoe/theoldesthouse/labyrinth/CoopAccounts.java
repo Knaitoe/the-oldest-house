@@ -115,6 +115,9 @@ final class CoopAccounts {
         // 0.4.228: readers who came in together empty the same flat, and take the other ends of the heavy things.
         together(PEOPLE_LIGHTS,with("%s {was} a guest there too. Neither of us said much at supper; we both listened to the floor.")); // 0.4.253
         together(SECOND_PERSON,with("%s {was} in a flat of their own above the same shut launderette, as unseen there as I was. When we compared what we had moved, none of it was the same.")); // 0.4.274
+        // 0.4.310: one wreck for the party; each says what they saw from where they stood.
+        together(DEER_ROAD,party("%s {was} on the road with me. We did not see the same things, and neither of us was wrong.",
+            "%s {was} still on the road when I left it."));
         together(PLACE_FOR_YOU,with("%s {was} expected there too, at another table. Afterwards we compared our cards: the names were different and the handwriting was the same.")); // 0.4.257
         together(VACANT_POSSESSION,with("%s {was} there with me, taking the other end of the heavy things. On the stairs nobody said much."));
         // 0.4.227: two readers who came in together close the same pool; each pulls from the shallow end in turn.

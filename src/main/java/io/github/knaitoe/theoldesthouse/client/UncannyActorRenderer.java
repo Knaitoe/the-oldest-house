@@ -66,7 +66,8 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         if(!visible(a)||UncannyCameras.maskDoll()&&a.getId()==UncannyClient.doll())return;
         var mc=Minecraft.getInstance();boolean feed=a.role()==LiteraryActor.UNCANNY_MARIONETTE&&UncannyCameras.recording()&&!UncannyClient.mirror();
         var body=houseBody(a)?houseSkin():null;
-        model=body!=null&&body.model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:a.role()==LiteraryActor.UNCANNY_GIANT?bent:wide;
+        model=body!=null&&body.model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:a.role()==LiteraryActor.UNCANNY_GIANT||a.role()==LiteraryActor.ROAD_WOMAN?bent:wide;
+        if(a.role()==LiteraryActor.ROAD_WOMAN)model.road=DeerRoadPoses.progress(a,partial);
         model.feed=feed;
         if(a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS&&a.phase()<2){
             if(a.phase()==0&&!UncannyClient.mirror()&&!UncannyClient.outline(a))return;
@@ -81,6 +82,7 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
     }
     @Override public ResourceLocation getTextureLocation(LiteraryActor a){
         if(houseBody(a)){var body=houseSkin();if(body!=null)return body.texture();}
+        if(a.role()==LiteraryActor.ROAD_WOMAN)return UncannyTextures.skin(LiteraryActor.UNCANNY_GIANT,1);
         return UncannyTextures.skin(a.role()==LiteraryActor.UNCANNY_PARENT?LiteraryActor.UNCANNY_MARIONETTE:a.role(),a.phase());
     }
     @Override protected RenderType getRenderType(LiteraryActor a,boolean body,boolean translucent,boolean glowing){
@@ -88,15 +90,18 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
         return super.getRenderType(a,body,translucent,glowing);
     }
     @Override protected boolean shouldShowName(LiteraryActor a){return false;}
-    @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){if(!visible(a))return false;return a.role()==LiteraryActor.UNCANNY_GIANT?a.shouldRender(x,y,z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
+    @Override protected void setupRotations(LiteraryActor a,PoseStack p,float bob,float yaw,float partial,float scale){super.setupRotations(a,p,bob,yaw,partial,scale);if(a.role()==LiteraryActor.ROAD_WOMAN)DeerRoadPoses.body(a,p,DeerRoadPoses.progress(a,partial),scale);}
+    @Override public boolean shouldRender(LiteraryActor a,net.minecraft.client.renderer.culling.Frustum f,double x,double y,double z){if(!visible(a))return false;return a.role()==LiteraryActor.UNCANNY_GIANT||a.role()==LiteraryActor.ROAD_WOMAN?a.shouldRender(x,y,z)&&f.isVisible(a.getBoundingBox().inflate(2,1,3)):super.shouldRender(a,f,x,y,z);}
     public static final class Model extends PlayerModel<LiteraryActor> {
         /** The giant's natural-proportion pose drawn smaller about her feet, to stoop under the tunnel's ceiling. */
         static final float SHRINK=.56F;
-        boolean feed;public final ModelPart neck,neckUpper;
+        /** 0.4.310: out on the county road, under no ceiling, she stands at her height. */
+        public static final float ROAD=.68F;
+        boolean feed;float road;public final ModelPart neck,neckUpper;
         public Model(ModelPart part,boolean slim){super(part,slim);neck=part.hasChild("bent_neck")?part.getChild("bent_neck"):null;neckUpper=part.hasChild("bent_neck_upper")?part.getChild("bent_neck_upper"):null;}
         private java.util.List<ModelPart> necks(){var out=new java.util.ArrayList<ModelPart>(2);if(neck!=null)out.add(neck);if(neckUpper!=null)out.add(neckUpper);return out;}
         @Override protected Iterable<ModelPart> bodyParts(){return neck==null?super.bodyParts():com.google.common.collect.Iterables.concat(super.bodyParts(),necks());}
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){boolean great=a.role()==LiteraryActor.UNCANNY_GIANT&&a.gesture()==1;if(a.role()==LiteraryActor.UNCANNY_GIANT){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/(great?6F:2.5F);amount=motion.amount();
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){boolean great=(a.role()==LiteraryActor.UNCANNY_GIANT||a.role()==LiteraryActor.ROAD_WOMAN&&a.phase()==io.github.knaitoe.theoldesthouse.labyrinth.DeerRoad.STRIDE)&&a.gesture()==1;if(a.role()==LiteraryActor.UNCANNY_GIANT||a.role()==LiteraryActor.ROAD_WOMAN){var motion=HumanoidMotion.sample(a,age-a.tickCount);walk=motion.phase()/(great?6F:2.5F);amount=motion.amount();
             // 0.4.172 (owner: "ensure her head is tilted back, so her attention is towards the player"): her face is aimed at
             // whoever is looking at her, from where her head hangs at the end of the bent neck.
             var eye=net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();var from=a.position().add(0,a.getBbHeight()*.93,0);
@@ -113,14 +118,14 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
             if(role==LiteraryActor.UNCANNY_PROPPED){body.zRot=.08F;head.zRot=-.16F;leftArm.zRot=-.12F;rightArm.zRot=.12F;leftLeg.xRot=rightLeg.xRot=0;}
             if(role==LiteraryActor.UNCANNY_WAITRESS){head.xRot+=.025F;body.xRot=0;leftArm.xRot=step*.7F;rightArm.xRot=-step*.7F;}
             if(role==LiteraryActor.UNCANNY_FALSE_WAITRESS){leftArm.xRot=rightArm.xRot=phase>=3?-1.1F:-.15F;head.zRot=.025F*Mth.sin(age*.04F);}
-            if(role==LiteraryActor.UNCANNY_GIANT){
+            if(role==LiteraryActor.UNCANNY_GIANT||role==LiteraryActor.ROAD_WOMAN){boolean roadside=role==LiteraryActor.ROAD_WOMAN;
                 // 0.4.171 (owner: "the bend should be more subtle ... like the classic bent-neck woman ... like bending
                 // through a doorway"): she is only a little too tall for the tunnel, so she ducks the way a tall person ducks
                 // under a doorframe. A slight lean from the hips, knees soft, long arms hanging, and the bend in her neck:
                 // her head bowed and tipped to one side on top of her shoulders. Posed at natural proportions, then drawn at
                 // SHRINK about her feet so her crown stays just under the three-block ceiling.
-                float gait=phase==2?Mth.sin(walk)*Math.min(1,amount*2):0,bob=Mth.abs(gait)*(great?.3F:.18F);
-                float lean=.32F+Mth.abs(gait)*.02F,length=12*.95F,hipY=12+bob,hipZ=.8F;
+                float gait=(roadside?phase==io.github.knaitoe.theoldesthouse.labyrinth.DeerRoad.STRIDE:phase==2)?Mth.sin(walk)*Math.min(1,amount*2):0,bob=Mth.abs(gait)*(great?.3F:.18F);
+                float lean=(roadside?.07F:.32F)+Mth.abs(gait)*.02F,length=12*.95F,hipY=12+bob,hipZ=.8F;
                 body.xScale=.62F;body.yScale=.95F;body.zScale=1F;body.xRot=lean;body.zRot=gait*.03F;
                 body.y=hipY-length*Mth.cos(lean);body.z=hipZ-length*Mth.sin(lean);
                 leftLeg.x=1.3F;rightLeg.x=-1.3F;leftLeg.y=rightLeg.y=hipY;leftLeg.z=rightLeg.z=hipZ;
@@ -147,8 +152,10 @@ public final class UncannyActorRenderer extends MobRenderer<LiteraryActor,Uncann
                 var aim=new org.joml.Quaternionf().rotationYXZ(Mth.clamp(yaw,-70,70)*Mth.DEG_TO_RAD,Mth.clamp(pitch*Mth.DEG_TO_RAD-.12F,-.6F,.55F)+gait*.02F,.85F+gait*.02F).getEulerAnglesZYX(new org.joml.Vector3f());
                 head.xRot=aim.x;head.yRot=aim.y;head.zRot=aim.z;
                 var shrunk=new java.util.ArrayList<ModelPart>(java.util.List.of(head,body,leftArm,rightArm,leftLeg,rightLeg));shrunk.addAll(necks());
+                if(roadside)DeerRoadPoses.limbs(this,phase,road);
+                float shrink=roadside?ROAD:SHRINK;
                 for(var part:shrunk){
-                    part.x*=SHRINK;part.y=24-(24-part.y)*SHRINK;part.z*=SHRINK;part.xScale*=SHRINK;part.yScale*=SHRINK;part.zScale*=SHRINK;
+                    part.x*=shrink;part.y=24-(24-part.y)*shrink;part.z*=shrink;part.xScale*=shrink;part.yScale*=shrink;part.zScale*=shrink;
                 }
             }
             if(role==LiteraryActor.UNCANNY_MARIONETTE&&!feed){

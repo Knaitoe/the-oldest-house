@@ -55,6 +55,7 @@ final class OnwardPlacements {
         r.put(POLYBIUS,PolybiusSite.EXIT_X,0,PolybiusSite.EXIT_Z,SOUTH,OnwardRegistry.PANEL); // 0.4.217: the arcade's fire door, back left
         r.put(REPLACEMENT,ReplacementSite.EXIT_X,0,ReplacementSite.EXIT_Z,SOUTH,OnwardRegistry.PANEL); // 0.4.218: the open house's kitchen door
         r.put(PEOPLE_LIGHTS,PeopleLightsSite.WAY_X,PeopleLightsSite.YARD,PeopleLightsSite.WAY_Z,NORTH,()->Blocks.SPRUCE_DOOR); // 0.4.253: a door at the back of the garage
+        r.put(DEER_ROAD,-4,-2,-84,SOUTH,DeerRoadRegistry.GATE); // 0.4.310: the drainage gate at the head of the ditch
         r.put(SECOND_PERSON,-6,0,0,NORTH,()->Blocks.DARK_OAK_DOOR); // 0.4.274: a neighbour's front door in the terrace, opened from the street
         r.put(PLACE_FOR_YOU,8,0,0,NORTH,()->Blocks.SPRUCE_DOOR); // 0.4.257: a second door in the garden wall, further along the road, opened from the road
         r.put(VACANT_POSSESSION,VacantSite.BACK_X,VacantSite.GROUND,VacantSite.BACK_Z,EAST,()->Blocks.SPRUCE_DOOR); // 0.4.228: the back door at the end of the downstairs hall

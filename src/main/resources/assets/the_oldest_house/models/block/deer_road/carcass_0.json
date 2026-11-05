@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "the_oldest_house:block/deer_road/fur"
+  },
+  "elements": []
+}

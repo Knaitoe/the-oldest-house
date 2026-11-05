@@ -1151,5 +1151,15 @@
   "subtitles.the_oldest_house.yard.crow": "A crow calls",
   "subtitles.the_oldest_house.yard.creek": "A creek runs high",
   "block.the_oldest_house.sphinx_dark": "Dark Plaster",
-  "block.the_oldest_house.sphinx_eye": "Eye in the Dark"
+  "block.the_oldest_house.sphinx_eye": "Eye in the Dark",
+  "block.the_oldest_house.deer_road_fitting": "Roadside Fittings",
+  "block.the_oldest_house.deer_road_hatch": "Hatched Shoulder",
+  "block.the_oldest_house.deer_road_mud": "Ditch Mud",
+  "block.the_oldest_house.deer_road_anchor": "Road",
+  "block.the_oldest_house.deer_road_car": "Car",
+  "block.the_oldest_house.deer_road_gate": "Drainage Gate",
+  "item.the_oldest_house.deer_road_triangle": "Warning Triangle",
+  "entity.the_oldest_house.deer_road_seat": "Seat",
+  "advancements.the_oldest_house.account.deer_road.title": "A deer in the road",
+  "advancements.the_oldest_house.account.deer_road.description": "A woman climbed out of her and stood up."
 }
