@@ -17,7 +17,7 @@ import net.neoforged.neoforge.gametest.*;
  * 0.4.306, the Sphinx's first crossing (docs/SPHINX_0_4_306.md), played with two readers' hands: the question when the hall is entered;
  * the stand moved and only the live chamber's view following it; a wrong latch catching at its stop with a warning and an exposed pin;
  * the right latch opening on the vestibule and the step through coming out of the vestibule's own south wall; each reader's first answer
- * kept apart; the pin pulled, her fingers on the frame, a strike for whoever stays in her reach and none past the sill; the hall left
+ * kept apart; the pin pulled, her paw over the frame, whoever stays in her reach swept back past the sill and nobody hurt; the hall left
  * empty and the room settling back into its question; and the open way kept when the room is built again.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_exploration") @PrefixGameTestTemplate(false)
@@ -90,6 +90,10 @@ public final class SphinxTests {
                 // Not a knife-edge: from the middle of the hall, and with the line raised or lowered a little, it is still in sight.
                 var mid=new Vec3(b.getX()+Sphinx.DOORS[wrong[0]]+.6,b.getY()+1.62,b.getZ()-8.2);
                 for(double dy:new double[]{-.6,0,.6})h.assertTrue(l.clip(new net.minecraft.world.level.ClipContext(mid,eyeAt.add(0,dy,0),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,p)).getLocation().distanceTo(eyeAt.add(0,dy,0))<.7,"from the middle of the hall too, offset "+dy);})
+            .thenExecute(()->{stand(q,l,b,.5,-3.5,0);stand(p,l,b,Sphinx.DOORS[wrong[0]]-2.5,-8.5,180);})
+            .thenWaitUntil(()->h.assertTrue(l.getBlockState(b.offset(Sphinx.eye(wrong[0]))).getValue(SphinxEyeBlock.LOOK)%3==0,"her pupil follows the reader along the hall: to the west"))
+            .thenExecute(()->stand(p,l,b,Sphinx.DOORS[wrong[0]]+4.5,-8.5,180))
+            .thenWaitUntil(()->h.assertTrue(l.getBlockState(b.offset(Sphinx.eye(wrong[0]))).getValue(SphinxEyeBlock.LOOK)%3==2,"and to the east"))
             .thenWaitUntil(()->h.assertTrue(!Sphinx.eyeOpen(l,b,wrong[0]),"and closes again"))
             .thenExecute(()->{})
             .thenIdle(5)
@@ -117,9 +121,9 @@ public final class SphinxTests {
                 stand(q,l,b,Sphinx.DOORS[wrong[0]]+.5,-9.4,180);stand(p,l,b,.5,-3.5,0);})
             .thenWaitUntil(()->h.assertTrue(Sphinx.eyeOpen(l,b,wrong[0])&&SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).above(Sphinx.WALL_TOP+1)),SphinxBlock.Kind.FINGERS),"the eye opens and stays; her fingers come over the top of the wall"))
             .thenWaitUntil(()->h.assertTrue(SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).offset(0,2,1)),SphinxBlock.Kind.FINGERS)&&Sphinx.doorOpen(l,b,wrong[0]),"down the wall to fold over the frame, and the door bows open"))
-            .thenWaitUntil(()->h.assertTrue(q.getHealth()<q.getMaxHealth(),"whoever stays in her reach is struck, after the warning breath"))
+            .thenWaitUntil(()->h.assertTrue(q.getZ()-b.getZ()>Sphinx.HALL_Z0+.5&&Sphinx.record(l,q.getUUID()).getInt("Swept")==1,"whoever stays in her reach is swept back by her paw, out past the sill"))
             .thenExecute(()->{
-                h.assertTrue(p.getHealth()==p.getMaxHealth(),"nobody past the sill is touched");
+                h.assertTrue(q.getHealth()==q.getMaxHealth()&&p.getHealth()==p.getMaxHealth(),"she hurts nobody");
                 h.assertTrue(!Sphinx.sealed(l,wrong[0])&&q.getZ()-b.getZ()>Sphinx.DOOR_Z+.5,"standing right at her door is not going through it: only walking in is");
                 stand(q,l,b,.5,-3.5,0);})
             .thenWaitUntil(()->h.assertTrue(Sphinx.provoked(l)<0&&!SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).offset(0,2,1)),SphinxBlock.Kind.FINGERS)&&!Sphinx.eyeOpen(l,b,wrong[0])&&!SphinxBlock.is(l.getBlockState(b.offset(Sphinx.door(wrong[0])).above(Sphinx.WALL_TOP+1)),SphinxBlock.Kind.FINGERS),"the hall empty, she withdraws into the dark"))

@@ -39,7 +39,7 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.SphinxBlock.Kind.*;
  * <p>
  * A wrong latch catches at its stop and she says to leave that door shut; the pin shows. Pulling it is a second, distinct act, and the
  * one thing that brings her: grit, a breath too big for the room, then her fingers fold over that door's frame and it bows toward the
- * hall. Anyone in the hall within her reach can be struck, after warning. The corridor sill back to the vestibule is as far as she
+ * hall. Anyone who stays in the hall within her reach is warned, then swept back by her paw to the corridor; she never hurts anyone. The corridor sill back to the vestibule is as far as she
  * reaches. Once the hall is empty she withdraws and the room settles back into its question. Pressing through her door brings a reader
  * out on the far side, and seals that door behind them.
  * <p>
@@ -61,7 +61,8 @@ public final class Sphinx {
     /** The two marked tiles in the vestibule (x -1 and 1, z -3); the jib beside the entry and the jib on the way onward. */
     public static final BlockPos TILE_A=new BlockPos(-1,0,-3),TILE_B=new BlockPos(1,0,-3),JIB_IN=new BlockPos(-2,0,0),JIB_ON=new BlockPos(3,0,-3),GRILLE_AT=new BlockPos(-1,1,-7);
     /** The onward corridor's column, and how far she reaches across the hall from her door. */
-    public static final int ONWARD_X=10,REACH=6;
+    /** The onward corridor's column; how far she reaches across the hall from her door; where she sweeps a reader back to, just past the corridor's sill. */
+    public static final int ONWARD_X=10,REACH=6;public static final double SILL_Z=-6.4;
     /**
      * Her scale, fixed here for every crossing: an eye four blocks across and two deep, fingers two blocks long, a hand that comes down from five above.
      * The hall rises into the dark; its north wall stops at WALL_TOP, and over it and back from it is her space, the dark over the
@@ -210,8 +211,8 @@ public final class Sphinx {
             }
             case LATCH->{if(i>=0)latch(l,b,p,i);}
             case PIN->{if(i>=0)pull(l,b,p,i);}
-            case FINGERS,SphinxBlock.Kind.REACH->PuzzleRooms.say(p,"Fingers, each as long as you are tall, come down out of the dark. The skin is painted like stone.");
-            case EYE,FACE->PuzzleRooms.say(p,"High up in the dark, an eye the size of a door looks down at you.");
+            case FINGERS->PuzzleRooms.say(p,"A paw hooked over the frame, each toe as big as your head, the claws curled into the wood.");
+            case SphinxBlock.Kind.REACH->PuzzleRooms.say(p,"A foreleg, coming down out of the dark. Coarse fur over a body you cannot see the rest of.");
         }
         return true;
     }
@@ -271,6 +272,8 @@ public final class Sphinx {
     private static final long[] EMPTY={0};
     static void update(ServerLevel l,BlockPos b){
         var readers=readers(l);var r=room(l);int live=live(l);long now=l.getGameTime();
+        // Wherever a reader goes, an open eye follows them.
+        if(now%4==0){if(r.contains("Peek"))follow(l,b,r.getInt("Peek"));if(r.contains("Provoked"))follow(l,b,r.getInt("Provoked"));}
         if(r.contains("Peek")&&r.getLong("PeekUntil")<=now){closeEye(l,b,r.getInt("Peek"));r.remove("Peek");room(l,r);}
         else if(r.contains("Peek")&&now%4==0){
             // While she looks, grit runs off the top of the wall over that door, down in front of whoever is at it: look up.
@@ -341,9 +344,12 @@ public final class Sphinx {
                 if(t==0){STRIKES.put(p.getUUID(),now+25);l.playSound(null,p.blockPosition(),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,1F,1.3F);
                     l.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST,Blocks.SAND.defaultBlockState()),p.getX(),p.getY()+2.6,p.getZ(),12,.4,.1,.4,0);}
                 else if(t<=now){STRIKES.put(p.getUUID(),now+40);
-                    p.hurt(l.damageSources().generic(),6F);p.knockback(.9,0,1);p.hurtMarked=true;
+                    // She does not hurt anyone. Her paw comes down out of the dark and sweeps them back through the doorway to the sill she stops at.
                     var col=p.blockPosition();for(int y=3;y<=7;y++){var at=col.above(y);if(l.getBlockState(at).isAir()){l.setBlock(at,SphinxBlock.of(SphinxBlock.Kind.REACH,Direction.SOUTH),FLAGS);HAND.put(at.immutable(),now+12);}}
-                    l.playSound(null,p.blockPosition(),PuzzleRegistry.SPHINX_STRIKE.get(),SoundSource.HOSTILE,1F,1F);}
+                    l.playSound(null,p.blockPosition(),PuzzleRegistry.SPHINX_STRIKE.get(),SoundSource.HOSTILE,1F,1F);
+                    HouseInternalTeleport.translate(p,b.getX()+.5-p.getX(),0,b.getZ()+SILL_Z-p.getZ());STRIKES.remove(p.getUUID());
+                    var rec2=record(l,p.getUUID());rec2.putInt("Swept",rec2.getInt("Swept")+1);record(l,p.getUUID(),rec2);
+                    PuzzleRooms.say(p,"Her paw comes down out of the dark and sweeps you back through the doorway.");}
             }
             for(var p:readers)if(!inHall(p,b))STRIKES.remove(p.getUUID());
             if(anyone)EMPTY[0]=0;else if(++EMPTY[0]>=50)withdraw(l,b);
@@ -353,11 +359,27 @@ public final class Sphinx {
     static void openEye(ServerLevel l,BlockPos b,int i){
         var e=eye(i);
         // Four by two, lying face down: seen from below its rows swap, so the north row carries the lower half of the picture. Nothing else of her is lit.
-        for(int dx=0;dx<4;dx++)for(int dz=0;dz<2;dz++)set(l,b,e.offset(dx,0,dz),SphinxBlock.of(EYE,Direction.NORTH,(dz==0?4:0)+dx));
+        int look=lookAt(l,b,i);
+        for(int dx=0;dx<4;dx++)for(int dz=0;dz<2;dz++)set(l,b,e.offset(dx,0,dz),SphinxEyeBlock.of((dz==0?4:0)+dx,look));
         l.playSound(null,b.offset(e).above(),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,.9F,1.1F);
     }
-    static void closeEye(ServerLevel l,BlockPos b,int i){var e=eye(i);for(int dx=0;dx<4;dx++)for(int dz=0;dz<2;dz++){var at=e.offset(dx,0,dz);var st=l.getBlockState(b.offset(at));if(SphinxBlock.is(st,EYE)||SphinxBlock.is(st,FACE))set(l,b,at,Blocks.AIR.defaultBlockState());}}
-    public static boolean eyeOpen(ServerLevel l,BlockPos b,int i){return SphinxBlock.is(l.getBlockState(b.offset(eye(i))),EYE)&&SphinxBlock.is(l.getBlockState(b.offset(eye(i)).offset(3,0,1)),EYE);}
+    static void closeEye(ServerLevel l,BlockPos b,int i){var e=eye(i);for(int dx=0;dx<4;dx++)for(int dz=0;dz<2;dz++){var at=e.offset(dx,0,dz);if(SphinxEyeBlock.is(l.getBlockState(b.offset(at))))set(l,b,at,Blocks.AIR.defaultBlockState());}}
+    public static boolean eyeOpen(ServerLevel l,BlockPos b,int i){return SphinxEyeBlock.is(l.getBlockState(b.offset(eye(i))))&&SphinxEyeBlock.is(l.getBlockState(b.offset(eye(i)).offset(3,0,1)));}
+    /** Where her pupil turns: toward the nearest reader in the place, left/middle/right and away/under/toward the hall. */
+    public static int lookAt(ServerLevel l,BlockPos b,int i){
+        double cx=b.getX()+DOORS[i]+1,cz=b.getZ()+EYE_Z+1;ServerPlayer near=null;double best=Double.MAX_VALUE;
+        for(var p:readers(l)){double d=Math.pow(p.getX()-cx,2)+Math.pow(p.getZ()-cz,2);if(d<best){best=d;near=p;}}
+        if(near==null)return SphinxEyeBlock.AHEAD;
+        double dx=near.getX()-cx,dz=near.getZ()-cz;
+        int col=dx<-1.2?0:dx>1.2?2:1,row=dz<-.4?0:dz>1.0?2:1;
+        return col+3*row;
+    }
+    /** Turns an open eye's pupil, all eight blocks together. */
+    static void follow(ServerLevel l,BlockPos b,int i){
+        if(!eyeOpen(l,b,i))return;int look=lookAt(l,b,i);var e=eye(i);
+        if(l.getBlockState(b.offset(e)).getValue(SphinxEyeBlock.LOOK)==look)return;
+        for(int dx=0;dx<4;dx++)for(int dz=0;dz<2;dz++){var at=b.offset(e).offset(dx,0,dz);var st=l.getBlockState(at);if(SphinxEyeBlock.is(st))l.setBlock(at,st.setValue(SphinxEyeBlock.LOOK,look),FLAGS);}
+    }
     /** Her fingers down the wall from the dark, reaching to {@code down} blocks below her eye (0 withdrawn). */
     static void reach(ServerLevel l,BlockPos b,int i,int down){
         for(int dx=-1;dx<=1;dx++){var over=door(i).offset(dx,WALL_TOP+1,0);var st=l.getBlockState(b.offset(over));

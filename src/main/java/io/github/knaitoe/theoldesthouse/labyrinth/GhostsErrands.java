@@ -155,9 +155,9 @@ public final class GhostsErrands {
             case SARAH_PLATE->{
                 // She reaches over and takes the plate on her side of the table; it is gone from it.
                 a.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(GoatmanRegistry.PLATE.get()));e.putBoolean("Plate",true);hidePlate(p,b);
-                sound(p,a,SoundEvents.DECORATED_POT_HIT,.35F,1.7F);say(p,own,"Sarah: I'll just get these out of the way before you start.");
+                sound(p,a,SoundEvents.DECORATED_POT_HIT,.35F,1.7F);say(p,own,"Sarah: I'll just get these out of the way before you start.",a);
             }
-            case JOHN_MUG->say(p,own,"John: Hang on. Where did I put my coffee?");
+            case JOHN_MUG->say(p,own,"John: Hang on. Where did I put my coffee?",a);
             case BARRY_CABLE->{}
         }
     }
@@ -186,6 +186,8 @@ public final class GhostsErrands {
     private static void say(ServerPlayer p,CompoundTag own,String line){
         p.displayClientMessage(Component.literal(line),true);own.putLong("FilmIdle0490",p.level().getGameTime());
     }
+    /** As above, with the speaker's mouth moving while the line is up. */
+    private static void say(ServerPlayer p,CompoundTag own,String line,LiteraryActor speaker){say(p,own,line);if(speaker!=null)speaker.speaks(line);}
     private static void sound(ServerPlayer p,LiteraryActor a,net.minecraft.sounds.SoundEvent sound,float volume,float pitch){
         p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.NEUTRAL,a.getX(),a.getY()+1,a.getZ(),volume,pitch,p.getRandom().nextLong()));
     }

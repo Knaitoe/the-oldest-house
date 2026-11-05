@@ -38,8 +38,27 @@ Looking at the cast as a viewer, before any code:
 - **Timing by weight.** A flinch, a fall or a landing blends in three ticks. Sitting, slumping, grace, wariness and death take fourteen.
   Everything else keeps eight; the leap keeps five.
 
+## Owner follow-ups
+
+- **Mouths that show who is speaking.**
+  - The cast speak in the action bar with their name tags hidden, so nothing on the bodies said who was talking.
+  - Each person now carries a synced speaking timer (`LiteraryActor.speaks`), set whenever one of their lines goes up: the scripted takes,
+    talking to someone, the errands, and the lines between takes. It is sized to the line.
+  - While it runs the jaw drops on each syllable, with pauses between phrases, wide enough to see across the table, with a nod and a slight
+    turn.
+  - Marjorie's day-two dinner lines are the exception: they stay a voice from somewhere, while her mouth hangs slowly open.
+- **Day one at the table, the parents eat and drink.** John and Sarah each, on their own slow cycle (about every twenty-six and thirty
+  seconds, never in step, never mid-line), lift a hand to the mouth, tip the head back a little for a sip, then lower it while they chew.
+- **Faces that stay.**
+  - A change of feeling arrives over two and a half seconds, not one.
+  - The small passing looks between lines ease in, hold for several seconds, and ease out, and come about half as often, so each one reads
+    as a reaction.
+
 ## Verification
 
 - The native visual proof was rendered and the seating view inspected.
-- The scene walk with a real client is still to do.
+- Day one in a real client: John's posture, his head moving between frames, and his hand coming up both for a sip and as a gesture while
+  his line was on screen were seen.
+- The mouth's motion has not yet been seen front-on in the scene.
+- All 27 Ghosts cases pass locally.
 - Pending CI.

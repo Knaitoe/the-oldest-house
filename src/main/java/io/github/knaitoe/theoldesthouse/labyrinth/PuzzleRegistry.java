@@ -83,7 +83,9 @@ public final class PuzzleRegistry {
     static{for(String name:SPHINX_MATERIAL_NAMES)SPHINX_MATERIALS.put(name,BLOCKS.registerSimpleBlock("sphinx_"+name,fixed(name.equals("ceiling")?Blocks.SPRUCE_PLANKS:Blocks.STONE)));}
     public static Block sphinxMaterial(String name){var block=SPHINX_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SphinxBlock>> SPHINX_TYPE=CODECS.register("sphinx_fitting",()->SphinxBlock.CODEC);
-    public static final DeferredBlock<SphinxBlock> SPHINX=BLOCKS.registerBlock("sphinx_fitting",SphinxBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().lightLevel(SphinxBlock::light));
+    public static final DeferredBlock<SphinxBlock> SPHINX=BLOCKS.registerBlock("sphinx_fitting",SphinxBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SphinxEyeBlock>> SPHINX_EYE_TYPE=CODECS.register("sphinx_eye",()->SphinxEyeBlock.CODEC);
+    public static final DeferredBlock<SphinxEyeBlock> SPHINX_EYE=BLOCKS.registerBlock("sphinx_eye",SphinxEyeBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().noCollission().lightLevel(s->8));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> SPHINX_VOICE=sound("sphinx.voice"),SPHINX_BREATH=sound("sphinx.breath"),SPHINX_LATCH=sound("sphinx.latch"),
         SPHINX_CATCH=sound("sphinx.catch"),SPHINX_PIN=sound("sphinx.pin"),SPHINX_STRIKE=sound("sphinx.strike"),SPHINX_SCRAPE=sound("sphinx.scrape");
     /** 0.4.307, Johnny Truant's service halls (TruantService): the chalk arrow, steam main, lift brakes and car (TruantFittingBlock), drawn by tools/draw_truant_service_fittings.py; their sounds (tools/generate_truant_service_audio.py). */

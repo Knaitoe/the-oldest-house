@@ -1150,5 +1150,6 @@
   "subtitles.the_oldest_house.yard.traffic": "A car passes beyond the trees",
   "subtitles.the_oldest_house.yard.crow": "A crow calls",
   "subtitles.the_oldest_house.yard.creek": "A creek runs high",
-  "block.the_oldest_house.sphinx_dark": "Dark Plaster"
+  "block.the_oldest_house.sphinx_dark": "Dark Plaster",
+  "block.the_oldest_house.sphinx_eye": "Eye in the Dark"
 }
