@@ -57,6 +57,10 @@ neoForge {
                 systemProperty 'the_oldest_house.characterArtSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
             }
+            if (providers.gradleProperty('ghostsFilmstrip').isPresent()) {
+                systemProperty 'the_oldest_house.ghostsFilmstrip', 'true'
+                programArguments.addAll '--width', '1200', '--height', '800'
+            }
             if (providers.gradleProperty('ghostsSmoke').isPresent()) {
                 systemProperty 'the_oldest_house.ghostsSmoke', 'true'
                 programArguments.addAll '--width', '1200', '--height', '800'
