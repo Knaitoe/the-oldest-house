@@ -172,7 +172,8 @@ public final class Sphinx {
     // ------------------------------------------------------------------ her voice
     static void voice(ServerLevel l,BlockPos b,BlockPos from,String line,List<ServerPlayer> to){
         l.playSound(null,b.offset(from),PuzzleRegistry.SPHINX_VOICE.get(),SoundSource.HOSTILE,1F,1F);
-        for(var p:to)p.displayClientMessage(Component.literal("A voice: “"+line+"”").withStyle(ChatFormatting.GOLD),false);
+        // Speech is never chat: her words come in the action bar, quoted, as the House's other unseen voices do, with the sound from where she is.
+        for(var p:to)p.displayClientMessage(Component.literal("“"+line+"”").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
     }
     static void ask(ServerLevel l,BlockPos b,ServerPlayer p){
         voice(l,b,door(1).above(2),QUESTION,List.of(p));
@@ -234,7 +235,7 @@ public final class Sphinx {
             set(l,b,pin(i),SphinxBlock.of(PIN,Direction.SOUTH,1));
             voice(l,b,eye(i),"Not that one. Leave that one shut.",readers(l));
             if(provoked(l)<0){openEye(l,b,i);r=room(l);r.putInt("Peek",i);r.putLong("PeekUntil",l.getGameTime()+PEEK);room(l,r);}
-            PuzzleRooms.say(p,"The door gives a finger's width and catches at its stop. A pin shows in the stop.");
+            // Her warning stands alone in the action bar; the catch is heard and the pin is there to be seen.
         }
     }
     /** The latch drops back after a caught answer. */
