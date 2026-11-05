@@ -108,6 +108,8 @@ jobs:
           python3 tools/generate_sphinx_audio.py --check
           python3 tools/draw_truant_service_fittings.py --check
           python3 tools/generate_truant_service_audio.py --check
+          python3 tools/draw_yard_fittings.py --check
+          python3 tools/generate_yard_audio.py --check
           python3 tools/generate_operator_audio.py --check
           python3 tools/draw_trace_fittings.py --check
           python3 tools/generate_staircase_leak_assets.py --check
