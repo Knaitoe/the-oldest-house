@@ -54,11 +54,44 @@ Looking at the cast as a viewer, before any code:
   - The small passing looks between lines ease in, hold for several seconds, and ease out, and come about half as often, so each one reads
     as a reaction.
 
+## The filmstrips, and what they changed
+
+`GhostsFilmstrip` (`gradle runClient -PghostsFilmstrip`) renders motion as images, using the very model the scene uses. Each row is one person
+in one pose, each column the same pose a few ticks later; it writes build/font-smoke/ghosts-film-*.png. Pages:
+- strain: fall, landing, wall, flinch, helping;
+- story beats: crawl, the slide off the chair, leap, choking;
+- speaking faces against a silent one;
+- the day-one table;
+- the four walks;
+- standing idle, with Marjorie at dinner beside John.
+
+The first strips showed:
+- what read: the fall, the landing, the sips, choking, and faintly the mouths;
+- what did not: the wall (a tremor on a held pose), the slide (static), standing (dead straight), the flinch and helping (too subtle),
+  the crawl (rigid), the mouths (too small).
+
+Changed:
+- **The wall** is a hand-over-hand climb: arms trade high and low, the opposite knee drives up, the head follows the reaching hand,
+  slow and deliberate.
+- **The slide off the chair** sinks and tips back over about two seconds, boneless, the head lolling.
+- **Standing** shifts the weight from leg to leg with a knee easing, the arms a little bent and swaying.
+- **The flinch** jolts back with the arms coming up before the tremble.
+- **Helping** hands grab upward in turn.
+- **Marjorie's crawl** cocks her head over and bobs with each placed hand.
+- **Mouths** open wide enough on each syllable to tell from the strip who is talking.
+- **Each walks as themselves**, scaling the shared gait:
+  - John heavier, leaning in, arms swinging less;
+  - Sarah brisk, arms close;
+  - Merry quick, arms swinging wide;
+  - Marjorie wrong: arms all but still, head level, leaning back as if carried.
+
+The second strips show each of these.
+
 ## Verification
 
 - The native visual proof was rendered and the seating view inspected.
 - Day one in a real client: John's posture, his head moving between frames, and his hand coming up both for a sip and as a gesture while
   his line was on screen were seen.
-- The mouth's motion has not yet been seen front-on in the scene.
+- The mouths are seen front-on in the speaking filmstrip, open on syllables against a shut silent face; not yet front-on in the scene.
 - All 27 Ghosts cases pass locally.
 - Pending CI.

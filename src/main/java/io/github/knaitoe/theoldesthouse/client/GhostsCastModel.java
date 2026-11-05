@@ -49,7 +49,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);
         currentRole=a.role();crouching=false;riding=false;super.setupAnim(a,walk,amount,age,yaw,pitch);hat.visible=false;jaw.visible=true;
         var motion=HumanoidMotion.sample(a,partial);float step=(float)Math.sin(motion.phase());
-        if(a.phase()==GhostsSet.STAND)HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());
+        if(a.phase()==GhostsSet.STAND){HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());walkLike(a.role(),motion.amount());}
         var tw=transitions.get(a);since=tw==null||tw.phase!=a.phase()?0:age-tw.started;
         // A new line over someone's head starts them talking, for about as long as the line takes to say.
         // While their words are on screen (the server's speaking timer), or a new line goes up over them, they are talking.
@@ -72,11 +72,32 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             for(var p:joints){p.x=net.minecraft.util.Mth.lerp(t,state.from[i++],p.x);p.y=net.minecraft.util.Mth.lerp(t,state.from[i++],p.y);p.z=net.minecraft.util.Mth.lerp(t,state.from[i++],p.z);p.xRot=angle(state.from[i++],p.xRot,t);p.yRot=angle(state.from[i++],p.yRot,t);p.zRot=angle(state.from[i++],p.zRot,t);}if(t==1)state.from=null;
         }state.last=snapshot();
     }
+    /**
+     * Each walks as themselves (scaling the shared gait): John heavier, leaning in, his arms swinging less; Sarah brisk, arms close;
+     * Merry quick, her arms swinging wide; Marjorie wrong, her arms all but still and her head level, leaning back as if carried.
+     */
+    private void walkLike(int role,float amount){
+        if(amount<.05F)return;float k=net.minecraft.util.Mth.clamp(amount*2,0,1);
+        float arms,legs,lean;
+        switch(role){
+            case LiteraryActor.GHOST_JOHN->{arms=.65F;legs=1;lean=.08F;}
+            case LiteraryActor.GHOST_SARAH->{arms=.75F;legs=.9F;lean=.03F;leftArm.zRot-=.06F*k;rightArm.zRot+=.06F*k;}
+            case LiteraryActor.GHOST_MERRY->{arms=1.35F;legs=.85F;lean=.02F;}
+            case LiteraryActor.GHOST_MARJORIE->{arms=.12F;legs=.7F;lean=-.06F;head.xRot*=.2F;head.yRot*=.2F;}
+            default->{return;}
+        }
+        leftArm.xRot*=net.minecraft.util.Mth.lerp(k,1,arms);rightArm.xRot*=net.minecraft.util.Mth.lerp(k,1,arms);
+        leftLeg.xRot*=net.minecraft.util.Mth.lerp(k,1,legs);rightLeg.xRot*=net.minecraft.util.Mth.lerp(k,1,legs);
+        body.xRot+=lean*k;head.xRot-=lean*k*.5F;
+    }
     /** A flinch or a landing is fast; sitting down or settling into grace takes the body's weight. */
     private static float blendLength(int phase){return switch(phase){case GhostsSet.LEAP->5F;case GhostsSet.FLINCH,GhostsSet.IMPACT,GhostsSet.FALL->3F;case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.PRAY,GhostsSet.WARY,GhostsSet.DEAD->14F;default->8F;};}
     private boolean moving;
     private static float angle(float from,float to,float t){return from+net.minecraft.util.Mth.wrapDegrees((to-from)*net.minecraft.util.Mth.RAD_TO_DEG)*net.minecraft.util.Mth.DEG_TO_RAD*t;}
-    public void preview(int role,int phase,float age){since=age;speech=0;moving=false;for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);currentRole=role;young=false;crouching=false;riding=false;hat.visible=false;jaw.visible=true;pose(phase,role==LiteraryActor.GHOST_MERRY?.58F:role==LiteraryActor.GHOST_MARJORIE?.86F:1,(float)Math.sin(age*.08F),age);}
+    /** For the native proofs: render as if speaking, and as if on a given filming day (0 keeps the client's own day). */
+    public static boolean previewSpeaking;public static int previewDay;
+    private static int day(){return previewDay>0?previewDay:GhostsTakeClient.day();}
+    public void preview(int role,int phase,float age){since=age;speech=previewSpeaking?1:0;moving=false;for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);currentRole=role;young=false;crouching=false;riding=false;hat.visible=false;jaw.visible=true;if(phase<0){moving=true;phase=GhostsSet.STAND;HumanoidMotion.gait(this,age*.55F,1,false);walkLike(role,1);}pose(phase,role==LiteraryActor.GHOST_MERRY?.58F:role==LiteraryActor.GHOST_MARJORIE?.86F:1,(float)Math.sin(age*.08F),age);}
     @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
         var fitted=GhostsSkinMesh.fit(out,currentRole,currentPhase);
         super.renderToBuffer(p,fitted,light,overlay,colour);
@@ -149,7 +170,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         if(phase!=GhostsSet.CRAWL)HumanoidMotion.connect(this);hat.copyFrom(head);
     }
     /** Marjorie from the second day, seated at dinner or staring: the one body in the room that does not breathe, drift or look about. */
-    private boolean stillAtDinner(int phase){return currentRole==LiteraryActor.GHOST_MARJORIE&&GhostsTakeClient.day()>=2&&(phase==GhostsSet.SIT||phase==GhostsSet.VOMIT);}
+    private boolean stillAtDinner(int phase){return currentRole==LiteraryActor.GHOST_MARJORIE&&day()>=2&&(phase==GhostsSet.SIT||phase==GhostsSet.VOMIT);}
     /**
      * 0.4.309: the living layer over every living pose. Breath at each person's own rate (the chest and shoulders, the head with them),
      * the head drifting and now and then glancing aside; the jaw and a nod while a line is spoken, and an adult's hand with it; the fall's
@@ -168,7 +189,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             head.y-=breath*.18F;
         }
         // Day one at the table: John and Sarah now and then drink or take a bite, each on their own slow cycle, never in step, never mid-line.
-        if(phase==GhostsSet.SIT&&GhostsTakeClient.day()==1&&speech==0&&(r==LiteraryActor.GHOST_JOHN||r==LiteraryActor.GHOST_SARAH)){
+        if(phase==GhostsSet.SIT&&day()==1&&speech==0&&(r==LiteraryActor.GHOST_JOHN||r==LiteraryActor.GHOST_SARAH)){
             float period=r==LiteraryActor.GHOST_JOHN?520:610,t=(age+(r==LiteraryActor.GHOST_JOHN?90:340))%period;
             if(t<80){
                 float up=t<20?ease(t/20F):t<50?1:1-ease((t-50)/30F);
@@ -190,7 +211,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             // Big enough to see across a table which of them is talking: the jaw drops on each syllable, with pauses between phrases.
             float phrase=(float)Math.sin(age*.19F+r)>-.45F?1:.15F;
             float syllable=Math.max(0,(float)Math.sin(age*1.05F))*(.55F+.45F*(float)Math.sin(age*.31F+r))*phrase;
-            jaw.xRot=Math.max(jaw.xRot,.06F+syllable*.3F);
+            jaw.xRot=Math.max(jaw.xRot,.08F+syllable*.42F);
             head.xRot+=(float)Math.sin(age*.42F)*.05F;head.yRot+=(float)Math.sin(age*.27F+r)*.04F;
             boolean adult=r==LiteraryActor.GHOST_JOHN||r==LiteraryActor.GHOST_SARAH||r==LiteraryActor.GHOST_PRODUCER||r==LiteraryActor.GHOST_PRIEST;
             if(adult&&(phase==GhostsSet.STAND||phase==GhostsSet.SIT)&&!moving){float g=.5F+.5F*(float)Math.sin(age*.14F+r);rightArm.xRot-=.35F*g;rightElbow.xRot-=.5F*g;rightArm.yRot-=.15F*g;}
@@ -198,9 +219,25 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         switch(phase){
             case GhostsSet.FALL->{float f=age*.85F;leftArm.zRot+=(float)Math.sin(f)*.45F;rightArm.zRot+=(float)Math.sin(f+1.9F)*.45F;leftArm.xRot+=(float)Math.sin(f*.7F)*.4F;rightArm.xRot+=(float)Math.sin(f*.7F+2)*.4F;leftLeg.xRot+=(float)Math.sin(f*.9F)*.25F;rightLeg.xRot+=(float)Math.sin(f*.9F+1.5F)*.25F;}
             case GhostsSet.IMPACT->{float k=(float)Math.exp(-since/7F);body.xRot+=.35F*k;head.xRot+=.3F*k;leftKnee.xRot+=.4F*k;rightKnee.xRot+=.4F*k;}
-            case GhostsSet.WALL->{float g=(float)Math.sin(age*.05F+r);leftArm.xRot+=g*.08F;rightArm.xRot-=g*.08F;leftLeg.xRot-=g*.05F;rightLeg.xRot+=g*.05F;float shake=(float)Math.sin(age*1.7F)*.012F;leftArm.zRot+=shake;rightArm.zRot-=shake;}
-            case GhostsSet.FLINCH->{float tremble=(float)Math.sin(age*2.1F)*.02F*(1-net.minecraft.util.Mth.clamp(since/60F,0,.7F));body.zRot+=tremble;rightArm.xRot+=tremble*2;}
-            case GhostsSet.HELP->{float reach=(float)Math.sin(age*.3F);leftArm.xRot+=reach*.06F;rightArm.xRot-=reach*.06F;}
+            // On the wall she climbs hand over hand: one arm reaches high while the other pulls down, the opposite knee drives up, the head
+            // follows the reaching hand. Slow and deliberate, with a tremor in the hold.
+            case GhostsSet.WALL->{float g=(float)Math.sin(age*.13F+r);leftArm.xRot+=g*.42F;rightArm.xRot-=g*.42F;leftElbow.xRot-=Math.max(0,-g)*.6F;rightElbow.xRot-=Math.max(0,g)*.6F;
+                leftLeg.xRot-=Math.max(0,-g)*.45F;rightLeg.xRot-=Math.max(0,g)*.45F;leftKnee.xRot+=Math.max(0,-g)*.55F;rightKnee.xRot+=Math.max(0,g)*.55F;head.yRot+=g*.18F;head.xRot-=.15F*Math.abs(g);
+                float shake=(float)Math.sin(age*1.7F)*.015F;leftArm.zRot+=shake;rightArm.zRot-=shake;}
+            // A flinch: a jolt back with the arms coming up, then a tremble that eases off.
+            case GhostsSet.FLINCH->{float jolt=(float)Math.exp(-since/5F);body.xRot-=.28F*jolt;head.xRot-=.25F*jolt;rightArm.xRot-=.45F*jolt;leftArm.xRot-=.35F*jolt;
+                float tremble=(float)Math.sin(age*2.1F)*.05F*(1-net.minecraft.util.Mth.clamp(since/60F,0,.7F));body.zRot+=tremble;rightArm.xRot+=tremble*2;leftArm.zRot-=tremble;}
+            // Helping: both hands up and grabbing at nothing, reaching higher in turn.
+            case GhostsSet.HELP->{float reach=(float)Math.sin(age*.35F);leftArm.xRot+=reach*.3F;rightArm.xRot-=reach*.3F;leftElbow.xRot+=Math.max(0,reach)*.3F;rightElbow.xRot+=Math.max(0,-reach)*.3F;body.xRot-=Math.abs(reach)*.06F;}
+            // The slide off the chair: boneless and slow, the thighs tipping, the body sinking and leaning back, the head lolling.
+            case GhostsSet.SLIP->{float t=ease(since/45F);body.xRot-=.3F*t;head.zRot+=.25F*t;head.xRot+=.15F*t;leftLeg.xRot+=.45F*t;rightLeg.xRot+=.42F*t;
+                for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=3.5F*t;leftArm.xRot+=.3F*t;rightArm.xRot+=.25F*t;}
+            // The crawl, wrong: the head cocked over, the body bobbing with each placed hand.
+            case GhostsSet.CRAWL->{if(r==LiteraryActor.GHOST_MARJORIE){head.zRot+=.32F;head.xRot-=.12F;float bob=(float)Math.sin(age*.5F);body.y+=bob*.35F;head.y+=bob*.45F;}}
+            // Standing between lines: the weight shifting from one leg to the other, a knee easing, the arms a little bent and swaying.
+            case GhostsSet.STAND->{if(!moving){float w=(float)Math.sin(age*.025F+r*1.9F);body.zRot+=w*.035F;head.zRot-=w*.02F;
+                (w>0?leftKnee:rightKnee).xRot+=Math.abs(w)*.18F;(w>0?leftLeg:rightLeg).xRot-=Math.abs(w)*.06F;
+                float sway=(float)Math.sin(age*.04F+r);leftElbow.xRot-=.12F+sway*.04F;rightElbow.xRot-=.12F-sway*.04F;leftArm.zRot-=.03F+w*.02F;rightArm.zRot+=.03F-w*.02F;}}
             default->{}
         }
     }
@@ -209,7 +246,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
      * person is doing, by how far into the filming the family is, and now and then on their own between lines.
      */
     private void expression(int phase,float age){
-        float lift=0,tilt=0,mouth=0;int day=GhostsTakeClient.day();
+        float lift=0,tilt=0,mouth=0;int day=day();
         boolean marjorie=currentRole==LiteraryActor.GHOST_MARJORIE,family=currentRole==LiteraryActor.GHOST_JOHN||currentRole==LiteraryActor.GHOST_SARAH||currentRole==LiteraryActor.GHOST_MERRY;
         float worn=net.minecraft.util.Mth.clamp((day-1)/6F,0,1);
         if(family){tilt=.45F*worn;mouth=-.3F*worn;}
