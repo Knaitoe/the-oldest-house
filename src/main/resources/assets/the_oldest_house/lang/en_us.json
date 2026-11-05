@@ -1121,5 +1121,18 @@
   "block.the_oldest_house.tension_mark": "Marked Plaster",
   "subtitles.the_oldest_house.tension.wheel": "A wheel turns against weight",
   "subtitles.the_oldest_house.tension.take": "Cable takes up",
-  "subtitles.the_oldest_house.tension.pin": "A pin draws free"
+  "subtitles.the_oldest_house.tension.pin": "A pin draws free",
+  "block.the_oldest_house.sphinx_fitting": "Vestibule Fittings",
+  "block.the_oldest_house.sphinx_tile": "Quarry Tiles",
+  "block.the_oldest_house.sphinx_marked": "Marked Tile",
+  "block.the_oldest_house.sphinx_plaster": "Limewash Plaster",
+  "block.the_oldest_house.sphinx_ceiling": "Spruce Ceiling",
+  "block.the_oldest_house.sphinx_seam": "Cracked Plaster",
+  "subtitles.the_oldest_house.sphinx.voice": "A voice asks a question",
+  "subtitles.the_oldest_house.sphinx.breath": "Something vast draws breath",
+  "subtitles.the_oldest_house.sphinx.latch": "A latch lifts",
+  "subtitles.the_oldest_house.sphinx.catch": "A door catches at its stop",
+  "subtitles.the_oldest_house.sphinx.pin": "A pin comes free",
+  "subtitles.the_oldest_house.sphinx.strike": "A huge hand comes down",
+  "subtitles.the_oldest_house.sphinx.scrape": "Something scrapes on tile"
 }
