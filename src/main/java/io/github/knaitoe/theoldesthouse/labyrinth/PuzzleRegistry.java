@@ -79,11 +79,11 @@ public final class PuzzleRegistry {
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> TENSION_WHEEL=sound("tension.wheel"),TENSION_TAKE=sound("tension.take"),TENSION_PIN=sound("tension.pin");
     /** 0.4.306, the Sphinx (Sphinx): the vestibule's tiles and plaster, the hall's ceiling, the cracked seam of a sealed door, and her crossing's fittings (SphinxBlock), drawn by tools/draw_sphinx_fittings.py; her voice, breath, grit and the latches (tools/generate_sphinx_audio.py). */
     private static final java.util.Map<String,DeferredBlock<Block>> SPHINX_MATERIALS=new java.util.LinkedHashMap<>();
-    public static final java.util.List<String> SPHINX_MATERIAL_NAMES=java.util.List.of("tile","marked","plaster","ceiling","seam");
+    public static final java.util.List<String> SPHINX_MATERIAL_NAMES=java.util.List.of("tile","marked","plaster","ceiling","seam","dark");
     static{for(String name:SPHINX_MATERIAL_NAMES)SPHINX_MATERIALS.put(name,BLOCKS.registerSimpleBlock("sphinx_"+name,fixed(name.equals("ceiling")?Blocks.SPRUCE_PLANKS:Blocks.STONE)));}
     public static Block sphinxMaterial(String name){var block=SPHINX_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SphinxBlock>> SPHINX_TYPE=CODECS.register("sphinx_fitting",()->SphinxBlock.CODEC);
-    public static final DeferredBlock<SphinxBlock> SPHINX=BLOCKS.registerBlock("sphinx_fitting",SphinxBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion());
+    public static final DeferredBlock<SphinxBlock> SPHINX=BLOCKS.registerBlock("sphinx_fitting",SphinxBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().lightLevel(SphinxBlock::light));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> SPHINX_VOICE=sound("sphinx.voice"),SPHINX_BREATH=sound("sphinx.breath"),SPHINX_LATCH=sound("sphinx.latch"),
         SPHINX_CATCH=sound("sphinx.catch"),SPHINX_PIN=sound("sphinx.pin"),SPHINX_STRIKE=sound("sphinx.strike"),SPHINX_SCRAPE=sound("sphinx.scrape");
     /** 0.4.307, Johnny Truant's service halls (TruantService): the chalk arrow, steam main, lift brakes and car (TruantFittingBlock), drawn by tools/draw_truant_service_fittings.py; their sounds (tools/generate_truant_service_audio.py). */
