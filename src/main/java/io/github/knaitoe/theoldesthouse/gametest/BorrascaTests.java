@@ -220,13 +220,36 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_taking_walk",timeoutTicks=4400)
     public static void theSameFriendWalksTheWholeSecondTrailAndBothReadersShelterBeforeTheTaking(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_taking_walk");final boolean[] walking={false};final Vec3[] previous={Vec3.ZERO};final int[] moved={0},detour={0};final UUID[] id={null};
+        LiteraryActor[] carrier={null};
         // Walk around the visible timber ends. Direct pursuit cuts inside a corner once
         // the friend has rounded it; a human reader can see and take these clear passages.
         var timberEnds=new BlockPos[]{new BlockPos(6,2,-114),new BlockPos(6,3,-117),new BlockPos(1,6,-131),new BlockPos(1,6,-134)};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);p.setYRot(0);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Friend recalled off camera for explicit second-visit staging")).thenExecute(()->{assertTakingSightline(f,p);f.read(p,BorrascaRooms.SOURCE,false);f.talk(p,"CastKimber");id[0]=f.actor(p,"CastKimber").getUUID();f.at(p,1,0,-72);p.setNoGravity(false);previous[0]=f.actor(p,"CastKimber").position();walking[0]=true;}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendMissing"),"the real Friend and child walk the second route, shelter and reach the taking: body="+p.position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" friend="+f.actor(p,"CastKimber").position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" step="+f.own(p).getInt("TakingStep"))).thenExecute(()->{
             walking[0]=false;var own=f.own(p);h.assertTrue(own.getBoolean("Sheltered6")&&own.getBoolean("Sheltered10")&&moved[0]>100,"both actual crouched shelter beats precede the taking after continuous native walking");h.assertTrue(f.actor(p,"CastKimber").getUUID().equals(id[0])&&own.getBoolean("CompassIssued"),"the same original departs and drops her finite compass");long originals=f.out.getEntitiesOfClass(ItemEntity.class,BorrascaSites.bounds(f.base(p))).stream().filter(e->BorrascaBelongings.valid(p,own,"Compass",e.getItem())).count();h.assertTrue(originals+(BorrascaBelongings.has(p,own,"Compass")?1:0)==1,"one physical original remains after the look-away taking");
         }).thenSucceed();
-        h.onEachTick(()->{if(!walking[0])return;var a=f.actor(p,"CastKimber");var own=f.own(p);double movedBy=a.position().distanceTo(previous[0]);h.assertTrue(movedBy<.7,"the Friend never relocates along the taking route");if(movedBy>.005)moved[0]++;previous[0]=a.position();if(own.getInt("TakingTicks")>0){p.setYRot(0);p.travel(Vec3.ZERO);return;}boolean shelter=a.gesture()==5;p.setShiftKeyDown(shelter);p.setPose(shelter?Pose.CROUCHING:Pose.STANDING);
+        h.onEachTick(()->{
+            if(!walking[0])return;
+            var own=f.own(p);
+            if(own.getBoolean("FriendMissing"))return;
+            var a=f.actor(p,"CastKimber");
+            if(a.getVehicle() instanceof LiteraryActor worker){
+                h.assertTrue(own.getBoolean("Led")&&(worker==f.actor(p,"Worker0")||worker==f.actor(p,"Worker1")),"a real worker carries the original Friend after reaching her");
+                if(carrier[0]==worker){
+                    h.assertTrue(worker.position().distanceTo(previous[0])<.7,"the worker walks continuously while carrying the Friend");
+                }else{
+                    // Native mounting raises the passenger to the worker's arms. Check the pickup distance before switching to the carrier's stride.
+                    h.assertTrue(carrier[0]==null&&worker.position().distanceTo(previous[0])<2.7,"the worker picks the Friend up within reach");
+                    carrier[0]=worker;
+                }
+                h.assertTrue(a.distanceTo(worker)<2.7,"the Friend stays with the worker carrying her");
+                previous[0]=worker.position();
+            }else{
+                double movedBy=a.position().distanceTo(previous[0]);
+                h.assertTrue(carrier[0]==null&&movedBy<.7,"the Friend never relocates on foot along the taking route: "+movedBy);
+                if(own.getInt("TakingTicks")==0&&movedBy>.005)moved[0]++;
+                previous[0]=a.position();
+            }
+            if(own.getInt("TakingTicks")>0){p.setYRot(0);p.travel(Vec3.ZERO);return;}boolean shelter=a.gesture()==5;p.setShiftKeyDown(shelter);p.setPose(shelter?Pose.CROUCHING:Pose.STANDING);
             int corner=detour[0];boolean rounding=corner<timberEnds.length&&own.getInt("TakingStep")>=(corner<2?6:10);var target=rounding?Vec3.atBottomCenterOf(f.base(p).offset(timberEnds[corner])):a.position();var d=target.subtract(p.position());
             if(rounding&&d.horizontalDistance()<.2){detour[0]++;p.travel(Vec3.ZERO);}else if(d.horizontalDistance()>(rounding?.2:2)){p.setYRot((float)Math.toDegrees(Math.atan2(-d.x,d.z)));p.travel(new Vec3(0,0,1));}else p.travel(Vec3.ZERO);
         });
