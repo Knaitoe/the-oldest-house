@@ -669,6 +669,22 @@
     "kind=stair_rail_top,facing=west": {
       "model": "the_oldest_house:block/ghosts_stair_rail_top",
       "y": 270
+    },
+    "kind=writing_desk,facing=north": {
+      "model": "the_oldest_house:block/ghosts_writing_desk",
+      "y": 0
+    },
+    "kind=writing_desk,facing=east": {
+      "model": "the_oldest_house:block/ghosts_writing_desk",
+      "y": 90
+    },
+    "kind=writing_desk,facing=south": {
+      "model": "the_oldest_house:block/ghosts_writing_desk",
+      "y": 180
+    },
+    "kind=writing_desk,facing=west": {
+      "model": "the_oldest_house:block/ghosts_writing_desk",
+      "y": 270
     }
   }
 }

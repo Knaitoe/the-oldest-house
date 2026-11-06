@@ -108,7 +108,7 @@ public final class PersonalityTailoringTests {
         }).thenIdle(3).thenExecute(()->{
             var day=f.own(a,LabyrinthPlace.GHOSTS_SET);var first=panels(a);var peer=panels(b);
             h.assertTrue(first.stream().anyMatch(panel->panel.open()&&panel.state().getString("Who").equals("Barry")&&panel.state().getList("Lines",Tag.TAG_COMPOUND).stream().map(CompoundTag.class::cast).anyMatch(line->line.getString("S").equals("Barry")&&line.getString("T").startsWith("All right, man. ")))&&peer.isEmpty(),"Barry's actual native panel delivers the personal greeting only to its reader: A="+first+", B="+peer);
-            h.assertTrue(Talk.waiting(a,"ghosts/barry/2")&&Talk.replies(a).contains(GhostsConversations.question(2).prompt())&&Talk.key(b).isEmpty(),"the personal greeting opens the day's real replies without opening an exchange for the friend");
+            h.assertTrue(Talk.waiting(a,"ghosts/barry/2")&&Talk.replies(a).contains("Ready for today's filming")&&Talk.key(b).isEmpty(),"the personal greeting opens the day's real replies without opening an exchange for the friend");
             h.assertTrue(day.getInt("FilmDay")==2&&day.getInt("ShotClock")==520&&day.getInt("GhostTalk_2_4")==1&&!day.getBoolean("DayDone"),"the crew line changes no consent, shot, day or film progress");
             var lines=Talk.lines(a);int token=Talk.token(a);producer[0].interact(b,InteractionHand.MAIN_HAND);producer[0].interact(a,InteractionHand.MAIN_HAND);
             h.assertTrue(Talk.lines(a).equals(lines)&&Talk.token(a)==token&&f.own(a,LabyrinthPlace.GHOSTS_SET).getInt("GhostTalk_2_4")==1,"reopening the same offered conversation keeps its line, reply token and original dialogue cursor");

@@ -34,7 +34,6 @@ public final class GhostsJump {
         var target=Vec3.atLowerCornerOf(base).add(APPROACH[step][0],APPROACH[step][1],APPROACH[step][2]);
         GhostsMotion.toward(actor,target,.5);
         if(actor.position().distanceToSqr(target)<.012)own.putInt("JumpApproach0495",step+1);
-        if(!own.getBoolean("JumpLandingLine0495")){player.displayClientMessage(net.minecraft.network.chat.Component.literal("Barry: Follow her to the landing. Keep the railing in frame."),false);own.putBoolean("JumpLandingLine0495",true);}
         return false;
     }
     static boolean begin(LiteraryActor actor){

@@ -49,7 +49,7 @@ public final class CamcorderItem extends Item {
         if(!on&&!rolling(s)){p.displayClientMessage(Component.literal("There is nothing here to film."),true);return;}
         setRolling(s,on);
         p.serverLevel().playSound(null,p.blockPosition(),DrownedTownRegistry.PHONE_RECORD.get(),SoundSource.PLAYERS,.55F,on?1F:.75F);
-        p.displayClientMessage(Component.literal(on?"Recording.":"Stopped recording."),true);
+        // The viewfinder record light and click report this without replacing the family's words.
     }
     /** Whether this living reader has their own camera in hand, rolling. */
     public static boolean filming(Player p){

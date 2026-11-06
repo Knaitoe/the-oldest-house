@@ -162,7 +162,7 @@ LOOKS = {
     'lake_preacher': Look('#c2a185','#9a9584','receding','#333837','#303533','cleric','#ded5ba',age=2,logical=64),
     'lake_witch_memory': Look('#c49a80','#48332a','long','#50687a','#3b4b58','dress','#8b9da1',logical=64),
     'lake_witch': Look('#969d82','#2c2c25','long','#425358','#343f42','ragged','#7d8a7c',mark='witch',logical=64),
-    'ghosts_marjorie': Look('#dfb79f','#573a2d','long','#887091','#3b4b5a','knit','#ae99ae',eyes='#6c765a',sleeve=8),
+    'ghosts_marjorie': Look('#dfb79f','#573a2d','long','#887091','#3b4b5a','tee','#ae99ae',eyes='#6c765a',sleeve=11,face_style='young_teen',level_eyes=True),
     'ghosts_merry': Look('#ddba9b','#805a38','long','#ac5847','#47657a','tee','#d5b890',eyes='#72837d',sleeve=4),
     'ghosts_john': Look('#c29b7d','#68482e','part','#727c50','#554d40','flannel','#b1b38b',age=1),
     'ghosts_sarah': Look('#d4ad91','#644a36','bun','#56738a','#454f59','cardigan','#c4ba9e'),
@@ -435,7 +435,7 @@ def hollow_face(look):
 
 
 def face(look):
-    if look.face_style:return hollow_face(look)
+    if look.face_style and look.face_style!='young_teen':return hollow_face(look)
     if look.mark.startswith('family_'):return family_face(look)
     im=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(im)
     skin=rgb(look.skin);dark=shade(look.skin,-36);cheek=shade(look.skin,-12)
@@ -482,6 +482,15 @@ def face(look):
             d.rectangle((10,5,12,9),fill=skin);d.line((10,6,12,7),fill=shade(hair,-4));d.line((10,8,12,8),fill='#e9e2ce');d.point((11,8),fill=rgb(look.eyes))
             d.line((10,9,12,9),fill=shade(skin,-24))
             d.line((5,13,8,13),fill=shade(skin,-9));d.line((6,13,8,13),fill=shade(skin,-44));d.line((9,12,10,11),fill=shade(skin,-44));d.point((11,11),fill=shade(skin,-20))
+    if look.face_style=='young_teen':
+        # A child's plain, fuller face; no adult cheek hollows, heavy brow or painted lip.
+        d.rectangle((1,9,2,14),fill=skin);d.rectangle((13,9,14,14),fill=skin)
+        d.rectangle((7,8,8,11),fill=skin);d.point((7,9),fill=shade(skin,7));d.point((8,10),fill=shade(skin,-13))
+        for x in (3,10):
+            d.line((x,6,x+2,6),fill=shade(hair,7));d.rectangle((x,7,x+2,9),fill='#e9e2ce')
+            d.line((x+1,7,x+1,9),fill=rgb(look.eyes));d.point((x+1,8),fill='#343331')
+        d.rectangle((5,12,10,15),fill=skin);d.line((6,13,9,13),fill=shade(skin,-24))
+        d.point((4,10),fill=shade(skin,-7));d.point((11,10),fill=shade(skin,-7))
     if look.age:
         d.line((5,3,10,3),fill=cheek)
         for x in (2,13):d.point((x,9),fill=dark)
@@ -908,6 +917,9 @@ def paint(look):
         d.rectangle((5,5,11,11),fill=rgb(look.hair));d.line((6,5,10,5),fill=shade(look.hair,13))
         d.line((5,7,5,10),fill=shade(look.hair,-13));d.point((11,8),fill=shade(look.hair,8))
         put(net(32,0,8,8,8)['back'],art)
+    if look.face_style=='young_teen':
+        for u,v,w,h,depth in ((80,0,8,6,1),(80,8,8,10,1),(101,0,2,10,1),(111,0,2,9,1)):
+            fill_net(net(u,v,w,h,depth),look.hair,'hair')
     torso=net(16,16,8,12,4)
     for side,box in torso.items():put(box,cloth_face((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look,side))
     # Classic humanoids mirror one arm/leg; player models have the two extra left nets.

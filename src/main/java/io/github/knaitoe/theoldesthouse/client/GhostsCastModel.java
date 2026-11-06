@@ -15,7 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 /** Connected elbows, knees and jaw on the six domestic characters; each pose remains a possible human movement. */
 public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"ghosts_cast"),"main");
-    private final ModelPart rightElbow,leftElbow,rightKnee,leftKnee,jaw,lids;
+    private final ModelPart rightElbow,leftElbow,rightKnee,leftKnee,jaw,lids,hair,hairEnds,hairLeft,hairRight;
     private int currentRole,currentPhase;
     private float blink;
     /** 0.4.242: brow lift, brow tilt (inner ends up is worry, down is anger) and mouth corners, each -1..1. */
@@ -28,7 +28,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
      * impact's settling), how far through speaking a line they are (0 silent), and the per-pose blend length.
      */
     private float since=1000,speech;
-    public GhostsCastModel(ModelPart root){super(root);rightElbow=rightArm.getChild("elbow");leftElbow=leftArm.getChild("elbow");rightKnee=rightLeg.getChild("knee");leftKnee=leftLeg.getChild("knee");jaw=head.getChild("jaw");lids=head.getChild("lids");joints=root.getAllParts().toList();}
+    public GhostsCastModel(ModelPart root){super(root);rightElbow=rightArm.getChild("elbow");leftElbow=leftArm.getChild("elbow");rightKnee=rightLeg.getChild("knee");leftKnee=leftLeg.getChild("knee");jaw=head.getChild("jaw");lids=head.getChild("lids");hair=head.getChild("long_hair");hairEnds=hair.getChild("ends");hairLeft=hair.getChild("left_lock");hairRight=hair.getChild("right_lock");joints=root.getAllParts().toList();}
     public static LayerDefinition layer(){
         var mesh=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=mesh.getRoot();
         for(boolean left:new boolean[]{false,true}){
@@ -41,6 +41,11 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         var head=r.addOrReplaceChild("head",CubeListBuilder.create(),PartPose.ZERO);
         head.addOrReplaceChild("jaw",CubeListBuilder.create(),PartPose.offset(0,-2,0));
         head.addOrReplaceChild("lids",CubeListBuilder.create(),PartPose.ZERO);
+        // Her own long hair: a back curtain to the waist and loose, uneven locks beside the face.
+        var hair=head.addOrReplaceChild("long_hair",CubeListBuilder.create().texOffs(80,0).addBox(-4,-5.5F,3.8F,8,6,1),PartPose.ZERO);
+        hair.addOrReplaceChild("ends",CubeListBuilder.create().texOffs(80,8).addBox(-4,0,0,8,7,1).addBox(-4,6,0,2,4,1).addBox(-2,6,0,4,4.5F,1).addBox(2,6,0,2,3,1),PartPose.offset(0,.5F,3.8F));
+        hair.addOrReplaceChild("left_lock",CubeListBuilder.create().texOffs(101,0).addBox(-1,0,0,2,10,1),PartPose.offset(-3.1F,-4,-4.2F));
+        hair.addOrReplaceChild("right_lock",CubeListBuilder.create().texOffs(111,0).addBox(-1,0,0,2,9,1),PartPose.offset(3.1F,-3,-4.15F));
         return LayerDefinition.create(mesh,128,64);
     }
     @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){
@@ -167,6 +172,12 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             default->{leftElbow.xRot=-.12F;rightElbow.xRot=-.12F;}
         }
         living(phase,age,stillOne);
+        hair.visible=currentRole==LiteraryActor.GHOST_MARJORIE;
+        if(hair.visible){
+            hairEnds.xRot=.04F+(float)Math.sin(age*.035F)*.025F;hairLeft.xRot=-.035F;hairRight.xRot=.04F;
+            if(phase==GhostsSet.CRAWL){hairEnds.xRot=1.4F;hairLeft.xRot=1.05F;hairRight.xRot=1.05F;}
+            else if(phase==GhostsSet.BED){hairEnds.xRot=-.75F;hairLeft.zRot=-.18F;hairRight.zRot=.18F;}
+        }
         if(phase!=GhostsSet.CRAWL)HumanoidMotion.connect(this);hat.copyFrom(head);
     }
     /** Marjorie from the second day, seated at dinner or staring: the one body in the room that does not breathe, drift or look about. */
@@ -265,7 +276,8 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             case GhostsSet.DEAD->{lift=-.35F;tilt=.1F;mouth=-.35F;}
             case GhostsSet.SLUMP->{lift=-.2F;tilt=.5F;mouth=-.6F;}
             case GhostsSet.HELP->{lift=1;tilt=1;mouth=-.75F;}
-            case GhostsSet.WALL,GhostsSet.BED->{if(marjorie){lift=-.3F;tilt=-.8F;mouth=.5F;}}
+            case GhostsSet.WALL->{if(marjorie){lift=-.3F;tilt=-.8F;mouth=.5F;}}
+            case GhostsSet.BED->{if(marjorie){lift=.8F;tilt=.95F;mouth=-.8F;}}
             case GhostsSet.LEAP,GhostsSet.FALL,GhostsSet.IMPACT->{if(marjorie){lift=-.4F;tilt=-.6F;mouth=.3F;}else{lift=.9F;tilt=.35F;mouth=-.3F;}}
             default->{}
         }
