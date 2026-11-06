@@ -168,6 +168,9 @@ public final class TruantTexts {
             case "shove"->List.of("The ledge.","I don't know what that was. I've gone over it and I don't know.",nothing);
             case "doorway"->List.of("I stood in your way, last time. I won't today.",nothing);
             case "cover"->List.of("I put your light out. I had hold of you.","I shouldn't have.",nothing);
+            case "shed"->List.of("I dropped the hasp. I heard you trying it.","The wedge is staying in today.",nothing);
+            case "false_wind_signal"->List.of("You could see the trees. I knew you were watching my hand instead.","I won't do that again.",nothing);
+            case "stock_gate"->List.of("I let the chain go while you were in there.","Go ahead. I'll hold it this time.",nothing);
             case "coffee"->List.of("You could have gone. I should have let you.",nothing);
             default->List.of(nothing);
         };
@@ -190,6 +193,9 @@ public final class TruantTexts {
         return switch(what){
             case "go_back"->List.of("Then do something for me.","Go back through. Shut it behind you, and tell me what's on the other side when it's shut.");
             case "cross_alone"->List.of("Then do something for me.","Go back over on your own. I want to watch how you do it.");
+            case "shed_hasp"->List.of("Lift the hasp for me before you go. From out there, you can reach it.");
+            case "read_wind"->List.of("Look at those leaves for me. Let me know when it's dropped.");
+            case "stock_chain"->List.of("Put the chain back through when you're clear. Don't leave them a gap.");
             default->List.of("Then do something for me.","Put the lamp out. I want to see what's past it.");
         };
     }

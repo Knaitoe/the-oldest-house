@@ -9,69 +9,83 @@ public final class GhostsConversations {
     // 0.4.242 (owner: "try to cut the ai-isms from the vignette"): people talking, not summing up.
     private static final String[][][] WORDS={
         {
-            {"You keep looking at me through that thing. Is it on now?","Ask Merry about the story with the vines. She tells it better. She tells it wrong, but better."},
-            {"Can you leave the pictures? Mum said they're ours.","I put the jug over my door. That wasn't in the story. I just did it."},
-            {"We need people to see what this has been like for us.","I'm not working right now. That's not why we said yes. Okay, it's part of it."},
-            {"You can film her books. Just put them back where she had them.","She saw a doctor before you lot turned up. Write that down somewhere."},
-            {"Interviews today, then the bedroom reconstruction. Label your tapes.","If she goes quiet, keep rolling. We can cut it down later."},
-            {"I've spoken with John. I haven't seen her properly yet.","I'd like to hear it from Merry. Not from the tape."}
+            {"Merry gets to veto the ending. That's the arrangement. She gives terrible notes.","Ask her about the ants. She'll say it was her idea. Let her."},
+            {"I already know where the little bug is on every page. I'm checking that he hasn't moved.","She tells it and I write it in. If I don't like the ending, she has to fix it."},
+            {"Can you get both of them together? Before you ask about all the other stuff.","I'm home for now. They keep asking when I'm going back, like I wouldn't go tomorrow if I could."},
+            {"Those are Merry's actual books. Please don't carry them off with the other things.","Her appointments don't stop because you're here. Someone needs to remember that."},
+            {"Let Merry finish her answer. Don't feed her the thing her sister just said.","The bedroom happened before we arrived. Put that on the log before anybody forgets."},
+            {"John asked me to come. I haven't examined his daughter yet.","I need to hear what they saw separately. A conversation round the table isn't that."}
         },
         {
-            {"Merry wants my hat. Merry always wants my stuff.","Keep the table in, if you're filming. Watch where his hand goes."},
-            {"It was just a hat. I only wanted it for school.","She can do voices. She's always been able to do voices."},
-            {"We were praying. We were just holding hands and praying.","My hand still hurts. Please don't get it close up again."},
-            {"She needs some water. Let me get to her.","If she's under the table, leave her be. She'll come out."},
-            {"Keep the table in frame. If she moves, go with her.","Get his face when he shouts. And get Merry."},
-            {"I wasn't at your supper. I can't tell you what hurt his hand.","Ask what each of them saw. Then ask what they think happened."}
+            {"You'd think I'd promised her a crown. It's a hat, Merry.","Are you watching me or Dad? Pick one. You'll miss the other."},
+            {"Butter and cheese on mine. Mom knows. Everybody knows. They still ask.","She said I could borrow it. Well, she didn't actually say yes. She didn't say no either."},
+            {"We can manage one meal together. Sit down, Merry. It'll be all right.","Don't come any closer with that. I can see my own hand, thanks."},
+            {"John, let her eat before you start. We can talk afterwards.","Move the chair. I want to sit beside her. You're all standing over her."},
+            {"Keep them all in if you can. Don't run round the table looking for the best face.","If you go low, stay back from the legs. There are fittings underneath."},
+            {"I wasn't at that meal. I won't pretend a recording puts me there.","John has told me about his hand. I still need to speak with his daughter."}
         },
         {
-            {"The plaster was like that already. You weren't here for it.","Film it if you want. It's not the same as last night."},
-            {"I don't want to tell the tongue thing again.","Do they have to show me being scared?"},
-            {"I was trying to get her down. I wasn't looking at the wall.","Can we finish before the neighbours get home?"},
-            {"She shouldn't have to do it again just because you missed it.","Look at the holes in the plaster. That's her fingers."},
-            {"It's a reconstruction. Mark it as one.","Get the plaster in. Give them something to look at."},
-            {"I didn't see her climb. Neither did your camera.","Nobody has given permission for an exorcism. Not yet."}
+            {"You want it again? How high was I supposed to get last time? Ask Dad.","Merry. I'm talking to you. You can stop staring at the floor."},
+            {"Can I stay by the door? I can hear you from there.","When we do it again, am I supposed to be scared at the same bit?"},
+            {"I had hold of her. That's what I remember. I wasn't counting the marks in the wall.","I'm right here, Marjorie. Nobody's asking you to fall."},
+            {"No, Merry doesn't need to stand there again. You can get her from here.","She used her fingers on that plaster. Show that as well, if you're showing the rest."},
+            {"This is a pickup. We have their accounts, not a missing second camera.","Leave the holes in the edge of the picture. Don't tighten past them."},
+            {"A reconstruction can't answer the questions I have about that night.","John, this isn't permission for the next thing. We haven't finished talking."}
         },
         {
-            {"It doesn't stop because you're watching. Sometimes I just get to pick what you see.","I asked you to put it down. You still can."},
-            {"She talks normal when nobody's asking her to do stuff.","The cardboard house is mine. It's not for the show."},
-            {"The money's keeping the lights on. I'm not going to pretend it isn't.","She says she can control some of it. Listen to the rest."},
-            {"She shouldn't have to ask you for privacy.","She has a doctor. Put that in, when you cut this."},
-            {"Basement first, then the bedroom pickup.","If she won't let you film, log that. Don't make something up."},
-            {"She said it to the camera. I'd still like to hear the rest.","One afternoon on tape isn't her whole illness."}
+            {"I can put on a voice. That doesn't mean I can make the other ones shut up.","Merry knows when I'm kidding. Usually. Look, just give us a minute."},
+            {"I know when she's doing the voice for me. Not always. I used to know.","She can come in my house if she asks. She can't just climb on it."},
+            {"The bills still turn up. I know you think about that when I say we're doing this for her.","I heard her laughing down there. I hadn't heard that for a while."},
+            {"The girls are downstairs together. Let them be downstairs together.","I'll put the food away. Apparently supper can wait as long as you need it to."},
+            {"She asked for a private conversation. Ask again before you turn anything back on.","We're meant to get the bedroom after this. I'll wait till they come up."},
+            {"Someone saying they can perform doesn't tell us why they need to.","I'd rather hear her finish than start another argument over the first thing she said."}
         },
         {
-            {"I read your rules. There's not supposed to be a camera in here.","When I answer quietly, you wait for me to say it louder."},
-            {"Nobody asked me if I wanted him in her room.","She knows stuff because she reads. I read too."},
-            {"I want an answer. We can't keep going appointment to appointment.","If you film me scared, film what I'm scared of."},
-            {"She can read, John. She can use the internet. She's a person.","Keep the bit where I object. That goes in too."},
-            {"Keep the question with the answer.","Get the mum as well as the priest."},
-            {"There are rules for an evaluation. Your crew being here is one of my objections.","She answered before he'd finished asking. Who told her the question?"}
+            {"I read the rules. Do I get a turn to ask you anything? No? Thought not.","When I say something boring, nobody asks me to repeat it."},
+            {"I can go in the little room when they ask me. When I want to talk, it's always later.","I read things too. She doesn't have to tell me everything."},
+            {"We've tried the appointments. I can't keep watching her get worse and do nothing.","Don't make it sound like I'm glad any of this is happening."},
+            {"She has a computer, John. You know she has a computer. You bought it.","If you use his question, use my answer. Don't just leave me looking angry beside him."},
+            {"Question, then answer. Keep them together, even if there's a long wait between them.","Sarah's speaking. Don't swing away because the priest's started over her."},
+            {"An examination isn't a performance. I object to the crew being here too.","I need her own answer, John. Please stop answering for her."}
         },
         {
-            {"I'm cold. Stay where I can see you.","I didn't touch that drawer. Don't stop filming if it moves."},
-            {"She told me she was pretending. I don't know which bits.","Don't make me say it into the microphone again."},
-            {"I thought this would help. It has to help.","If Sarah says stop, we stop. Promise me."},
-            {"If she wants it to stop, I'll stop it.","Stay by the door. Let me get to her."},
-            {"Get the drawer and everyone near enough to reach it.","Keep it steady when she moves."},
-            {"Don't answer every voice like it's someone new.","Keep the way to the bed clear. It's still a child's room."}
+            {"Could somebody sit here? You can pray sitting down, can't you?","I didn't pull it. Look at where my hands are."},
+            {"She said some of it was pretend. She didn't tell me which bits I was in.","If she asks me something, can I answer her? Mom?"},
+            {"She's my daughter. I'm standing right here, whatever she says.","I thought we'd know by now. I thought somebody would know what to do."},
+            {"Look at me, Marjorie. You can tell me to stop.","John, move. I need to get beside her."},
+            {"Keep the drawer and their hands together. Don't give me a close-up I can't place.","Leave the stairs clear. Everybody stop trying to get ahead of her."},
+            {"Stay where she can see you. Don't all crowd the bed.","John, let me speak. We've already gone too far to start shouting at each other."}
         },
         {
-            {"I did the sauce tonight. Eat it while it's hot.","I'm eating mine. Why are you looking at my plate?"},
-            {"She said we'd go together. She wasn't supposed to eat it.","I thought they were going to sleep. Why won't they wake up?"},
-            {"The show's done. Can we just have dinner?","Take the cases out the front. Mind the kitchen."},
-            {"Spaghetti. Sit down, everyone, before it goes cold.","Sit down, John. We'll sort the equipment out after."},
-            {"Show's wrapped. We're just picking up the gear.","Mind the cable on the stairs. That's the last of it."},
-            {"There's nothing scheduled here today.","The show finishing doesn't make any of this finish."}
+            {"Pass the pan over, will you? There's enough for me.","All that cheese and you won't try a little sauce? You're impossible, Merry."},
+            {"NO.","WHY?"},
+            {"Dinner first. You can shift the cases afterwards.","I'll pass it. You eat yours before it gets cold."},
+            {"Butter on yours, Merry? There. The cheese is beside Dad.","Leave her plate alone. She'll ask if she wants anything else."},
+            {"We're nearly out of your way. Last case, then the front door.","Don't get up. We can carry it round."},
+            {"I can't stay for dinner. Thank you, Sarah.","I'll let you have the house to yourselves."}
         }
     };
     public static String line(CompoundTag own,int speaker){
         int day=Math.max(1,Math.min(7,own.getInt("FilmDay")))-1;
         if(speaker<0||speaker>=6)return "";
         String key="GhostTalk_"+(day+1)+"_"+speaker;int n=own.getInt(key);own.putInt(key,(n+1)%WORDS[day][speaker].length);
+        if(day==6&&speaker==1&&own.getInt("ShotClock")>=630&&own.getInt("ShotClock")<820)return n%2==0?"You said we were going together.":"How long do I have to wait for you to wake up?";
         if(day==6&&speaker==1&&own.getInt("ShotClock")>=820)return own.getBoolean("MerryLeft0488")?"I can't go back into that room.":"Please. I need to get out of this house.";
         return WORDS[day][speaker][n%WORDS[day][speaker].length];
     }
+    /** The last supper's cards precede Merry speaking again after the collapse. */
+    public static boolean written(CompoundTag own,int speaker){return own.getInt("FilmDay")==7&&speaker==1&&own.getInt("ShotClock")<630;}
+    public record Question(String prompt,String answer){}
+    private static final Question[] QUESTIONS={
+        new Question("Which interview comes first?","Merry's, if she'll have us. Let her tell it before she hears everyone else's version."),
+        new Question("Where do you want me during supper?","Across from the family. You can move, but keep enough of the table to see who's reaching where."),
+        new Question("Did you see the wall incident?","No. This is them showing us what they remember. Mark it that way."),
+        new Question("Can we leave their conversation private?","Yes. Put yours down too. Don't tell me it was private and bring me a sound track."),
+        new Question("What about Sarah's objection?","Keep it with what she's objecting to. She's in the room, same as him."),
+        new Question("Why keep the drawer in view?","So we can see who could reach it. If we lose the hands, we lose that."),
+        new Question("Are you all leaving?","Yes. Last case. We won't keep you from supper.")
+    };
+    public static Question question(int day){return QUESTIONS[Math.max(1,Math.min(7,day))-1];}
     private record Shot(String subject,String raw,String cut) {}
     private static final List<List<Shot>> SHOTS=List.of(
         List.of(
@@ -117,16 +131,16 @@ public final class GhostsConversations {
             new Shot("DrawerMechanism","The open drawer and what's inside it, before the leap.","The broadcast cuts away from the drawer. Your tape still has it."),
             new Shot("FrozenLeap","Marjorie in the air, and her head turning to the camera. The tape ends there.","The episode ends on the leap, over and over.")),
         List.of(
-            new Shot("Marjorie","Marjorie eating and talking to Merry.","Barry's unaired cut stays on Marjorie eating and teasing."),
-            new Shot("Merry","Merry's questions at the last supper.","The unaired cut watches the supper through Merry not understanding."),
-            new Shot("John","John at the last supper.","The unaired cut follows John's dinner talk up to when he goes down."),
-            new Shot("Sarah","Sarah at the last supper.","The unaired cut puts Sarah's fussing next to the stillness after."),
-            new Shot("DinnerMouth","Marjorie's mouth, messy with sauce, while she teases Merry.","Barry holds the sauce and spit on Marjorie's mouth under her words to Merry."),
-            new Shot("FinalMeal","The last supper, after the show had wrapped.","Barry put the supper in an unaired cut. There was never a seventh episode."),
-            new Shot("MerryPlate","Merry's plate, untouched.","A close-up of Merry's full plate, as if it explains something."),
-            new Shot("FamilyConvulsions","The family choking and shaking, then going still.","Barry squeezes the three of them into one quick sequence."),
-            new Shot("MouthLeak","Blood and spit at their mouths after they stop moving.","The unaired cut leaves their mouths sooner than your tape does."),
-            new Shot("MerryDeparture","Merry getting up and walking out the front door.","The unaired cut ends with Merry leaving and skips the time she sat with them."))
+            new Shot("Marjorie","Marjorie eating and talking to Merry.","The assembly stays on Marjorie eating and teasing."),
+            new Shot("Merry","Merry's questions at the last supper.","The assembly stays beside Merry, watching her sister eat."),
+            new Shot("John","John at the last supper.","The assembly follows John's dinner talk until he goes still."),
+            new Shot("Sarah","Sarah at the last supper.","The assembly cuts from Sarah passing the food to her stillness after."),
+            new Shot("DinnerMouth","Marjorie's mouth, messy with sauce, while she teases Merry.","The assembly holds Marjorie's messy mouth while she teases Merry."),
+            new Shot("FinalMeal","The last supper, after the show had wrapped.","This last supper is the House's reconstruction after the show had finished. There was no seventh episode."),
+            new Shot("MerryPlate","Merry's buttered pasta, without the sauce.","The assembly holds on the plain plate without showing how long Merry has eaten that way."),
+            new Shot("FamilyConvulsions","The family choking and shaking, then going still.","The assembly squeezes the three of them into one quick sequence."),
+            new Shot("MouthLeak","Blood and spit at their mouths after they stop moving.","The assembly leaves their mouths sooner than your recording does."),
+            new Shot("MerryDeparture","Merry getting up and walking out the front door.","The assembly ends with Merry leaving. This departure belongs to the House's reconstruction."))
     );
     /** 0.4.242 (owner, of "Sustained shots: HatExchange, InjuredHand": "That's not right."): what each kept shot is called on the log. */
     private static final Map<String,String> SHOT_NAMES=Map.ofEntries(
@@ -149,6 +163,7 @@ public final class GhostsConversations {
         var text=new StringBuilder();
         for(var shot:SHOTS.get(day-1))if(seen.contains(shot.subject()))text.append(raw?shot.raw():shot.cut()).append("\n\n");
         if(day==4&&own.getBoolean("RespectedPrivacy"))text.append(raw?"You put the camera down for part of it. There's nothing on tape for that part.\n\n":"Barry fills the part you didn't film with narration.\n\n");
+        if(text.isEmpty()&&day==7)return raw?"You kept none of the House's last visit on the recording.":"There is no supper material to assemble. The show had already ended.";
         if(text.isEmpty())text.append(raw?"You didn't get today on tape.":"You didn't get today on tape. Barry covers it with narration and a reconstruction.");
         return text.toString();
     }

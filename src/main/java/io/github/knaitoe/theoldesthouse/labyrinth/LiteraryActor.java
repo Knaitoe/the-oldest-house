@@ -51,6 +51,7 @@ public final class LiteraryActor extends PathfinderMob {
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(SPEECH,0);b.define(OWNER,Optional.empty());b.define(FADE,0);}
     public int speaking(){return entityData.get(SPEECH);}
     /** Sets them talking for about as long as the line takes to say. */
+    public void silent(){entityData.set(SPEECH,0);}
     public void speaks(String line){entityData.set(SPEECH,Math.min(110,14+line.length()*2));}
     public int fade(){return entityData.get(FADE);}public void fade(int value){entityData.set(FADE,Math.max(0,Math.min(100,value)));}
     /**

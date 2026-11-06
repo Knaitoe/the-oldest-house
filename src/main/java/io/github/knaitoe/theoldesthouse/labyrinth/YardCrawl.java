@@ -22,8 +22,9 @@ public final class YardCrawl {
     private YardCrawl(){}
     private record Lease(ServerPlayer player,Pose forced,Pose pose){}
     private static final Map<UUID,Lease> ACTIVE=new HashMap<>();
-    private static BlockPos base(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();return o==null||!p.level().dimension().equals(HouseDimensions.OUTSIDE)||LabyrinthPlaces.placeAt(o,p.blockPosition())!=LabyrinthPlace.YARD_DITCH?null:LabyrinthPlaces.base(o,LabyrinthPlace.YARD_DITCH);}
-    private static boolean atMouth(ServerPlayer p,BlockPos b){double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();return x>-.1&&x<1.1&&(z>-14&&z<-11||z>-25&&z<-22);}
+    private static BlockPos base(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();if(o==null||!p.level().dimension().equals(HouseDimensions.OUTSIDE))return null;var place=LabyrinthPlaces.placeAt(o,p.blockPosition());return place==LabyrinthPlace.YARD_DITCH||place==TruantYard.SHED?LabyrinthPlaces.base(o,place):null;}
+    private static boolean shed(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();return o!=null&&LabyrinthPlaces.placeAt(o,p.blockPosition())==TruantYard.SHED;}
+    private static boolean atMouth(ServerPlayer p,BlockPos b){double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();return shed(p)?x>2.7&&x<6.3&&z> -21.1&&z< -19.9:x>-.1&&x<1.1&&(z> -14&&z< -11||z> -25&&z< -22);}
     public static boolean start(ServerPlayer p){
         var b=base(p);if(b==null||!atMouth(p,b)||!p.isAlive()||p.isSpectator())return false;
         return take(p);
@@ -47,13 +48,13 @@ public final class YardCrawl {
             if(!active){
                 if(b!=null&&p.isAlive()&&!p.isSpectator()){
                     double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();
-                    boolean pipe=x>0&&x<1&&z>-22&&z<-12&&Math.abs(p.getY()-b.getY())<.2;
+                    boolean pipe=(shed(p)?x>4&&x<5&&z> -21&&z< -20:x>0&&x<1&&z> -22&&z< -12)&&Math.abs(p.getY()-b.getY())<.2;
                     if(pipe||p.isShiftKeyDown()&&atMouth(p,b))take(p);
                 }
                 continue;
             }
             if(b==null||!p.isAlive()||p.isSpectator()){clear(p);continue;}
-            double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();boolean in=x>-.1&&x<1.1&&z>-24&&z<-11;
+            double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();boolean in=shed(p)?x>2.7&&x<6.3&&z> -21.1&&z< -19.9:x>-.1&&x<1.1&&z> -24&&z< -11;
             var standing=new AABB(p.getX()-.3,p.getY()+.01,p.getZ()-.3,p.getX()+.3,p.getY()+1.8,p.getZ()+.3);
             if(!in&&p.serverLevel().noCollision(p,standing)){clear(p);continue;}
             if(e.getServer().getTickCount()%10==0)HousePackets.send(p,new YardCrawlPayload(true));

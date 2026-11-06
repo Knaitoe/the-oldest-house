@@ -129,6 +129,7 @@ public final class HouseKeepingTests {
             h.assertTrue(inDrawer==keep.drawer.size()&&menu.view().pages()==1,"the drawer shows what is left: "+inDrawer);
             p.closeContainer();
             data.forget(p.getUUID());
+            NativeTestPlayers.remove(p);
         }).thenSucceed();
     }
 }

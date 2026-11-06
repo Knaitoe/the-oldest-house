@@ -665,7 +665,7 @@
   "advancements.the_oldest_house.account.wheel.title": "The numbered doors",
   "advancements.the_oldest_house.account.wheel.description": "Every numbered room had measured me against her.",
   "advancements.the_oldest_house.account.ghosts_set.title": "The tape and the cut",
-  "advancements.the_oldest_house.account.ghosts_set.description": "I returned to film the family.",
+  "advancements.the_oldest_house.account.ghosts_set.description": "I returned to the family between takes.",
   "advancements.the_oldest_house.account.end_world_cabin.title": "The visitors at dusk",
   "advancements.the_oldest_house.account.end_world_cabin.description": "I answered the visitors for myself.",
   "advancements.the_oldest_house.account.family_copy.title": "The house they remembered",
@@ -1162,5 +1162,6 @@
   "entity.the_oldest_house.deer_road_seat": "Seat",
   "advancements.the_oldest_house.account.deer_road.title": "A deer in the road",
   "advancements.the_oldest_house.account.deer_road.description": "I hit a doe on a county road in the rain.",
-  "subtitles.the_oldest_house.yard.follow": "Footsteps"
+  "subtitles.the_oldest_house.yard.follow": "Footsteps",
+  "subtitles.the_oldest_house.yard.wind": "Wind bends the trees"
 }

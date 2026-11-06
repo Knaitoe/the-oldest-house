@@ -177,6 +177,7 @@ public final class ArchitectureTests {
             h.assertTrue(looseAndSteps.isEmpty(),"every scene sets its small things on something and has nothing to climb inside a doorway: "+looseAndSteps);
             for(var hazard:LabyrinthPlace.values())if(HazardVariety.added(hazard))export(interior,LabyrinthPlaces.base(origin,hazard),hazard);
             for(var connector:List.of(LabyrinthPlace.TENSION_ROOMS,LabyrinthPlace.YARD_DITCH,LabyrinthPlace.YARD_CLOTHESLINE,LabyrinthPlace.YARD_SURVEY,LabyrinthPlace.YARD_FLOOD,LabyrinthPlace.YARD_REUNION))export(HouseTestLevel.get(server,NovelRooms.dimension(connector)),LabyrinthPlaces.base(origin,connector),connector);
+            for(var yard:TruantYard.PLACES)export(HouseTestLevel.get(server,NovelRooms.dimension(yard)),LabyrinthPlaces.base(origin,yard),yard);
             Nightclub.build(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.NIGHTCLUB));
             LabyrinthBuilder.registerDoors(LabyrinthData.get(server),LabyrinthPlace.NIGHTCLUB,LabyrinthPlaces.base(origin,LabyrinthPlace.NIGHTCLUB));
             export(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.NIGHTCLUB),LabyrinthPlace.NIGHTCLUB);

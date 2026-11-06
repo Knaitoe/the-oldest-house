@@ -18,12 +18,9 @@ public final class GhostsSetRooms {
     public static final BlockPos TABLE=new BlockPos(0,0,-19),MARJORIE_ROOM=new BlockPos(-7,5,-24),
             MERRY_ROOM=new BlockPos(7,5,-23),BASEMENT=new BlockPos(7,-4,-18),MONITOR_AT=new BlockPos(8,0,-11);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
-    private static java.util.Set<BlockPos> protectedCells=java.util.Set.of();
-    private static java.util.function.BooleanSupplier repairGuard;
     private GhostsSetRooms() {}
-    static void set(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s) {var at=b.offset(x,y,z);if(protectedCells.contains(at))return;if(repairGuard!=null)BuildBlocks.protectedSet(l,at,s,F,repairGuard,protectedCells);else BuildBlocks.set(l,at,s,F);}
-    static void fill(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,BlockState s) {if(repairGuard==null)BuildBlocks.box(l,b.offset(x0,y0,z0),b.offset(x1,y1,z1),s,F);else for(var c:BlockPos.betweenClosed(x0,y0,z0,x1,y1,z1))set(l,b,c.getX(),c.getY(),c.getZ(),s);}
-    static void repair(ServerLevel l,BlockPos b,java.util.Set<BlockPos> keep,java.util.function.BooleanSupplier guard){protectedCells=keep;repairGuard=guard;try{build(l,b);}finally{protectedCells=java.util.Set.of();repairGuard=null;}}
+    static void set(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s){BuildBlocks.set(l,b.offset(x,y,z),s,F);}
+    static void fill(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,BlockState s){BuildBlocks.box(l,b.offset(x0,y0,z0),b.offset(x1,y1,z1),s,F);}
     static void prop(ServerLevel l,BlockPos b,int x,int y,int z,GhostsSetBlock.Kind k,Direction f) { set(l,b,x,y,z,k==CASE?LiteraryRegistry.GHOST_CASE.get().defaultBlockState().setValue(GhostsCaseBlock.FACING,f):GhostsSetBlock.of(k,f)); }
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction f) {set(l,b,x,y,z,HouseBlocks.HOUSEHOLD_FURNITURE.get().defaultBlockState().setValue(HouseholdFurnitureBlock.KIND,k).setValue(HouseholdFurnitureBlock.FACING,f));}
     private static void literary(ServerLevel l,BlockPos b,BlockPos rel,LiteraryPropBlock.Kind k,Direction f){set(l,b,rel.getX(),rel.getY(),rel.getZ(),LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,k).setValue(LiteraryPropBlock.FACING,f));}
