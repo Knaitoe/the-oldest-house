@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
+import io.github.knaitoe.theoldesthouse.network.TalkPayload;
 import java.util.*;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
@@ -20,7 +21,7 @@ import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID+"_tailoring") @PrefixGameTestTemplate(false)
 public final class PersonalityTailoringTests {
     private static LiteraryTests.Fixture active;
-    private static void close(){if(active!=null){active.close();active=null;}}
+    private static void close(){Talk.clearAll();if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="tailoring_read") public static void readDone(ServerLevel l){close();}
     @AfterBatch(batch="tailoring_card") public static void cardDone(ServerLevel l){close();}
     @AfterBatch(batch="tailoring_words") public static void wordsDone(ServerLevel l){close();}
@@ -30,6 +31,15 @@ public final class PersonalityTailoringTests {
     private static void profile(ServerPlayer p,HouseRead.Trait trait,String value,String strength){var d=LabyrinthData.get(p.server);var own=d.stateEntry(HouseRead.STATE,p.getUUID().toString());var read=new CompoundTag();read.putString("Value",value);read.putString("Strength",strength);own.put(trait.name(),read);d.setStateEntry(HouseRead.STATE,p.getUUID().toString(),own);}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos b,double x,double y,double z){p.stopRiding();p.teleportTo(l,b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();}
     private static List<String> pages(ItemStack book){return book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).toList();}
+    private static List<TalkPayload> panels(ServerPlayer p){
+        var out=new ArrayList<TalkPayload>();var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));
+        while(!queue.isEmpty()){
+            var packet=queue.removeFirst();
+            if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);
+            else if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof TalkPayload talk)out.add(talk);
+        }
+        return out;
+    }
     private static LiteraryActor literary(LiteraryTests.Fixture f,LabyrinthPlace place,int role,int phase,UUID owner,BlockPos at){var a=LiteraryRegistry.ACTOR.get().create(f.level(place));a.appearance(role,phase);a.bind(place,owner);a.setNoGravity(true);a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5);f.level(place).addFreshEntity(a);f.extras.add(a);return a;}
     private static HotelActor hotel(LiteraryTests.Fixture f,int role,BlockPos at){var a=HotelRegistry.ACTOR.get().create(f.in);a.appearance(role,false);a.setNoGravity(true);a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5);f.in.addFreshEntity(a);f.extras.add(a);return a;}
 
@@ -96,7 +106,14 @@ public final class PersonalityTailoringTests {
             var peer=NativeTestPlayers.messages(b);var first=NativeTestPlayers.messages(a);h.assertTrue(peer.stream().anyMatch(s->s.startsWith("The porter:")&&s.contains("ma’am"))&&first.stream().noneMatch(s->s.startsWith("The porter:")),"the same original porter keeps its delivered peer reply private");
             var gb=f.base(LabyrinthPlace.GHOSTS_SET);at(a,f.in,gb,.5,0,-2.5);at(b,f.in,gb,1.5,0,-2.5);producer[0]=literary(f,LabyrinthPlace.GHOSTS_SET,LiteraryActor.GHOST_PRODUCER,GhostsSet.STAND,a.getUUID(),gb.offset(0,0,-4));var day=f.own(a,LabyrinthPlace.GHOSTS_SET);day.putBoolean("Filming0485",true);day.putInt("FilmDay",2);day.putInt("ShotClock",520);LiteraryVignettes.save(f.data(),a.getUUID(),LabyrinthPlace.GHOSTS_SET,day);NativeTestPlayers.messages(a);NativeTestPlayers.messages(b);producer[0].interact(a,InteractionHand.MAIN_HAND);
         }).thenIdle(3).thenExecute(()->{
-            var day=f.own(a,LabyrinthPlace.GHOSTS_SET);var first=NativeTestPlayers.messages(a);var peer=NativeTestPlayers.messages(b);h.assertTrue(first.stream().anyMatch(s->s.contains("Barry: All right, man."))&&peer.stream().noneMatch(s->s.startsWith("Barry:")),"Barry's actual owner-bound conversation is delivered privately");h.assertTrue(day.getInt("FilmDay")==2&&day.getInt("ShotClock")==520&&day.getInt("GhostTalk_2_4")==1&&!day.getBoolean("DayDone"),"the crew line changes no consent, shot, day or film progress");a.closeContainer();
+            var day=f.own(a,LabyrinthPlace.GHOSTS_SET);var first=panels(a);var peer=panels(b);
+            h.assertTrue(first.stream().anyMatch(panel->panel.open()&&panel.state().getString("Who").equals("Barry")&&panel.state().getList("Lines",Tag.TAG_COMPOUND).stream().map(CompoundTag.class::cast).anyMatch(line->line.getString("S").equals("Barry")&&line.getString("T").startsWith("All right, man. ")))&&peer.isEmpty(),"Barry's actual native panel delivers the personal greeting only to its reader: A="+first+", B="+peer);
+            h.assertTrue(Talk.waiting(a,"ghosts/barry/2")&&Talk.replies(a).contains(GhostsConversations.question(2).prompt())&&Talk.key(b).isEmpty(),"the personal greeting opens the day's real replies without opening an exchange for the friend");
+            h.assertTrue(day.getInt("FilmDay")==2&&day.getInt("ShotClock")==520&&day.getInt("GhostTalk_2_4")==1&&!day.getBoolean("DayDone"),"the crew line changes no consent, shot, day or film progress");
+            var lines=Talk.lines(a);int token=Talk.token(a);producer[0].interact(b,InteractionHand.MAIN_HAND);producer[0].interact(a,InteractionHand.MAIN_HAND);
+            h.assertTrue(Talk.lines(a).equals(lines)&&Talk.token(a)==token&&f.own(a,LabyrinthPlace.GHOSTS_SET).getInt("GhostTalk_2_4")==1,"reopening the same offered conversation keeps its line, reply token and original dialogue cursor");
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(panels(a).stream().anyMatch(TalkPayload::open)&&panels(b).isEmpty()&&Talk.key(b).isEmpty()&&f.own(b,LabyrinthPlace.GHOSTS_SET).getInt("GhostTalk_2_4")==0,"the owner's panel resumes, while the friend's click cannot borrow that producer or private conversation");Talk.close(a);a.closeContainer();
         }).thenSucceed();
     }
 

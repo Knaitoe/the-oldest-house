@@ -30,3 +30,7 @@ The occupancy requirements and gameplay behavior are unchanged. This repairs the
 ## Local evidence
 
 All 29 focused Ghosts cases and all 121 exploration cases pass. Exploration includes the four new yard cases, the existing interior Truant cases and the earlier yard crossings. The toolshed case exercises the actual door route, two trapping meetings, the friend's hasp and the reader's native hatch crawl; the stock-gate case walks the step. The fitting and six-cue asset checks pass. The four leaking source cases and the two affected cases were rerun together on a fresh native world: all six pass. Native cases do not constitute a complete graphical playthrough, and exact-commit CI remains pending.
+
+## Exact-commit result
+
+Build 1449 failed on one older Barry interaction assertion in both the Structure and house-read-rooms jobs. The fixture leak repairs passed. See [the 0.4.317 repair](BARRY_PANEL_CHECK_0_4_317.md); 0.4.316 is not a verified candidate.
