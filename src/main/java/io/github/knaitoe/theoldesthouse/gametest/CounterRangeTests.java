@@ -5,7 +5,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.TallyCounterItem;
 import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.*;
-import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
+import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.server.level.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
@@ -40,7 +40,7 @@ public final class CounterRangeTests {
                 h.assertTrue(counted.size()==3&&counted.containsAll(List.of(mobs.get(1),mobs.get(2),mobs.get(4)))&&!counted.contains(mobs.get(0)),"inside and exact horizontal/vertical boundaries count; the diagonal corner, dead mob and animal do not");
                 p.setItemInHand(InteractionHand.MAIN_HAND,TallyCounterItem.forReader(p.getUUID()));
                 TallyCounterItem.click(p,p.getMainHandItem());
-                h.assertTrue(NativeTestPlayers.packets(p).stream().anyMatch(packet->packet instanceof ClientboundSystemChatPacket chat&&chat.content().getString().equals("Click. Three out there.")),"the actual counter reports the radial count to its keeper");
+                h.assertTrue(NativeTestPlayers.packets(p).stream().anyMatch(packet->packet instanceof ClientboundSetActionBarTextPacket bar&&bar.getText().getString().equals("Click. Three out there.")),"the actual counter reports the radial count to its keeper through the action bar");
                 // The sleeping watch uses the same distance rule at its smaller radius.
                 for(var z:mobs)z.moveTo(p.getX()+30,p.getY(),p.getZ()+30);
                 mobs.get(0).moveTo(p.getX()+8,p.getY(),p.getZ()+8);

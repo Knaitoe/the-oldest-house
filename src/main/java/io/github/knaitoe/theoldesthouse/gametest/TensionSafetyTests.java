@@ -30,8 +30,8 @@ public final class TensionSafetyTests {
         f.chunks.hold(l,new AABB(bounds.minX(),bounds.minY(),bounds.minZ(),bounds.maxX()+1,bounds.maxY()+1,bounds.maxZ()+1));
         var p=NativeTestPlayers.survival(h,"tension_turner");var peer=NativeTestPlayers.survival(h,"tension_rider");f.players.addAll(List.of(p,peer));
         var wheel=b.offset(TensionRooms.ENTRY_WHEEL);var cleat=b.offset(TensionRooms.CLEAT_AT);var far=b.offset(TensionRooms.FAR_WHEEL);
-        var bird=EntityType.CHICKEN.create(l);bird.setNoAi(true);bird.setNoGravity(true);f.extras.add(bird);
-        var pig=EntityType.PIG.create(l);pig.setNoAi(true);pig.setNoGravity(true);f.extras.add(pig);
+        var bird=EntityType.CHICKEN.create(l);bird.setPersistenceRequired();bird.setNoAi(true);bird.setNoGravity(true);f.extras.add(bird);
+        var pig=EntityType.PIG.create(l);pig.setPersistenceRequired();pig.setNoAi(true);pig.setNoGravity(true);f.extras.add(pig);
         var seq=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the loft and its native entity sections are resident"))
             .thenExecute(()->{
                 TensionRooms.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
@@ -54,14 +54,17 @@ public final class TensionSafetyTests {
                 stand(p,l,b,-3.5,0,-11.5);press(l,p,far);
             }).thenIdle(5).thenExecute(()->{
                 press(l,p,far);h.assertTrue(TensionRooms.pin(l,b)==1,"the first turn draws the pin halfway");
-                bird.moveTo(b.getX()-4.5,b.getY()+3,b.getZ()-6.5);l.addFreshEntity(bird);
+                bird.moveTo(b.getX()-4.5,b.getY()+3,b.getZ()-6.5);h.assertTrue(l.addFreshEntity(bird),"the persistent obstruction animal is admitted to the House");
+            }).thenWaitUntil(()->h.assertTrue(l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new AABB(b.offset(TensionRooms.SHAFT.above(3)))).contains(bird),"the animal occupies the shaft's native entity lookup"))
+            .thenExecute(()->{
                 press(l,p,cleat);
-                h.assertTrue(TensionRooms.fast(l,b)&&TensionRooms.weight(l,b)==4&&TensionRooms.pin(l,b)==1,"an animal below the weight prevents casting off without losing any cable state");
+                h.assertTrue(TensionRooms.fast(l,b)&&TensionRooms.weight(l,b)==4&&TensionRooms.pin(l,b)==1,"an animal below the weight prevents casting off without losing any cable state: weight="+TensionRooms.weight(l,b)+", pin="+TensionRooms.pin(l,b)+", cleat="+TensionRooms.fast(l,b));
                 bird.moveTo(b.getX()+3.5,b.getY(),b.getZ()-4.5);
                 stand(peer,l,b,.5,TensionRooms.DOWN_Y+1,-12.5);
-                pig.moveTo(b.getX()-.5,b.getY()+TensionRooms.DOWN_Y+1,b.getZ()-13.5);l.addFreshEntity(pig);
+                pig.moveTo(b.getX()-.5,b.getY()+TensionRooms.DOWN_Y+1,b.getZ()-13.5);h.assertTrue(l.addFreshEntity(pig),"the persistent rider is admitted to the House");
                 l.setBlock(b.offset(1,-1,-14),Blocks.STONE.defaultBlockState(),2);
-            }).thenIdle(5).thenExecute(()->{
+            }).thenWaitUntil(()->h.assertTrue(l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new AABB(b.offset(-1,-3,-14),b.offset(2,1,-12))).contains(pig),"the platform's animal occupies its native entity lookup"))
+            .thenIdle(5).thenExecute(()->{
                 press(l,p,far);
                 h.assertTrue(!TensionRooms.platformUp(l,b)&&TensionRooms.drum(l,b)==1&&l.getBlockState(b.offset(1,-1,-14)).is(Blocks.STONE),"a solid obstruction in the lift's path is neither overwritten nor passed through");
                 l.setBlock(b.offset(1,-1,-14),Blocks.AIR.defaultBlockState(),2);

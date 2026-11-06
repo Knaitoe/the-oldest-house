@@ -35,3 +35,7 @@ The new pipe, clockwork and cold-pantry rooms and the deep Tension rooms remain 
 - Whitespace checks passed.
 - The quick CI gate retains its existing native smoke and additionally runs the original Tension Room case and both new regression cases before the larger suites.
 - Compilation, packaged-JAR validation and native execution are pending on this exact commit. This is a development candidate, not a verified release or a claimed client playthrough.
+
+### First CI result and fixture correction
+
+Run [42159474934](https://github.com/Knaitoe/the-oldest-house/actions/runs/42159474934) compiled and packaged the candidate, passed the asset and journey gates and existing native smoke, and passed the original Tension Room mechanical case. The new count's geometric assertions passed, but its message check expected a system-chat packet instead of the actual action-bar packet. The animal obstruction fixture used an ambient animal, which the House correctly rejects. The follow-up checks the correct native action-bar packet, makes the intended animal occupants persistent (as with existing animal fixtures), asserts their actual admission and waits for each to appear in the spatial entity query before operating the mechanism. It keeps every range, obstruction, unchanged-state, rider and persistence assertion. Exact-commit rerun is pending.
