@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate 0.4.311 corrects the outdoor tally counter's distance and makes the Tension Room's machinery stop for occupied space. Its sprung platform carries living riders to the landing. See [the interaction notes](docs/INTERACTION_SAFETY_0_4_311.md) for scope and validation; exact-commit CI is pending.
+
 ## Playing it
 
 - **Install.** NeoForge 21.1 for Minecraft 1.21.1, then the mod jar in `mods/`. On a server, the clients and the server must run the same mod version.

@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseInternalTeleport;
 import java.util.*;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -9,8 +10,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import static io.github.knaitoe.theoldesthouse.labyrinth.TensionBlock.Kind.*;
 
 /**
@@ -120,20 +123,50 @@ public final class TensionRooms {
 
     // ------------------------------------------------------------------ the cable
     /** Shows the room as the cable now stands: the weight, the slack loop, the pin and the platform, and solves it if the pin is free. */
-    static void show(ServerLevel l,BlockPos b,int h,int f){
+    static boolean show(ServerLevel l,BlockPos b,int h,int f){
+        int old=weight(l,b);
+        if(old!=h){
+            // Keep the query on the weight's actual column, not the reader standing at the wheel beside it.
+            var shaft=new AABB(b.getX()+SHAFT.getX()+3/16D,b.getY()+Math.min(old,h),b.getZ()+SHAFT.getZ()+3/16D,
+                b.getX()+SHAFT.getX()+13/16D,b.getY()+Math.max(old,h)+14/16D,b.getZ()+SHAFT.getZ()+13/16D);
+            if(!l.getEntitiesOfClass(LivingEntity.class,shaft,e->e.isAlive()&&!e.isSpectator()).isEmpty())return false;
+        }
+        int d=Math.max(0,Math.min(FREE,h+f-SLACK));
+        var riders=new ArrayList<LivingEntity>();
+        if(d>=FREE&&!platformUp(l,b)){
+            for(int x=PIT_X0;x<=PIT_X1;x++)for(int z=PIT_Z1;z<=PIT_Z0;z++)for(int y=DOWN_Y+1;y<=UP_Y;y++){
+                var cell=l.getBlockState(b.offset(x,y,z));
+                if(!cell.isAir()&&!cell.is(Blocks.LADDER))return false;
+            }
+            double top=b.getY()+DOWN_Y+1,dy=UP_Y-DOWN_Y;
+            var sweep=new AABB(b.getX()+PIT_X0,top-.05,b.getZ()+PIT_Z1,b.getX()+PIT_X1+1,b.getY()+UP_Y+1,b.getZ()+PIT_Z0+1);
+            for(var e:l.getEntitiesOfClass(LivingEntity.class,sweep,e->e.isAlive()&&!e.isSpectator())){
+                if(Math.abs(e.getY()-top)>.15||e.isPassenger()||!l.noCollision(e,e.getBoundingBox().move(0,dy,0)))return false;
+                riders.add(e);
+            }
+            // A reader who has climbed above the platform must not be caught beneath it either.
+            var landing=new AABB(b.getX()+PIT_X0,b.getY()+UP_Y+.5,b.getZ()+PIT_Z1,b.getX()+PIT_X1+1,b.getY()+UP_Y+1,b.getZ()+PIT_Z0+1);
+            if(!l.getEntitiesOfClass(LivingEntity.class,landing,e->e.isAlive()&&!e.isSpectator()&&!riders.contains(e)).isEmpty())return false;
+        }
         set(l,b,weight(h));
         var w=l.getBlockState(b.offset(FAR_WHEEL));if(TensionBlock.is(w,WHEEL))set(l,b,FAR_WHEEL,w.setValue(TensionBlock.STAGE,f));
-        int s=Math.max(0,SLACK-h-f),d=Math.max(0,Math.min(FREE,h+f-SLACK));
+        int s=Math.max(0,SLACK-h-f);
         loop(l,b,s);
-        var p=l.getBlockState(b.offset(PIN_AT));
-        if(TensionBlock.is(p,PIN)&&p.getValue(TensionBlock.STAGE)!=d){
-            set(l,b,PIN_AT,p.setValue(TensionBlock.STAGE,d));
+        var pinState=l.getBlockState(b.offset(PIN_AT));
+        if(TensionBlock.is(pinState,PIN)&&pinState.getValue(TensionBlock.STAGE)!=d){
+            set(l,b,PIN_AT,pinState.setValue(TensionBlock.STAGE,d));
             l.playSound(null,b.offset(PIN_AT),PuzzleRegistry.TENSION_PIN.get(),SoundSource.BLOCKS,.8F,d>=FREE?1F:.8F);
         }
         if(d>=FREE&&!platformUp(l,b)){
+            for(var e:riders){
+                if(e instanceof ServerPlayer p)HouseInternalTeleport.translate(p,0,UP_Y-DOWN_Y,0);
+                else e.teleportTo(e.getX(),e.getY()+UP_Y-DOWN_Y,e.getZ());
+                e.fallDistance=0;
+            }
             setPlatform(l,b,true);
-            PuzzleRooms.solve(l,EARLY,"The pin draws free. The platform rises on its springs, level with the floor, and a catch holds it there.");
+            PuzzleRooms.solve(l,EARLY,"The pin draws free. The platform lifts whoever is standing on it, level with the floor, and a catch holds it there.");
         }else if(d<FREE&&platformUp(l,b)&&!solved(l))setPlatform(l,b,false);
+        return true;
     }
 
     // ------------------------------------------------------------------ hands on
@@ -170,35 +203,41 @@ public final class TensionRooms {
                         if(h<=0){PuzzleRooms.say(p,"The weight is on the bottom. The wheel only lets out slack.");return true;}
                         h--;
                     }
+                    if(!show(l,b,h,f)){PuzzleRooms.say(p,"The cable pulls tight against an obstruction. The weight and platform stay where they are.");return true;}
                     l.setBlock(pos,s.setValue(TensionBlock.STAGE,(s.getValue(TensionBlock.STAGE)+1)%3),FLAGS);
                     l.playSound(null,pos,PuzzleRegistry.TENSION_WHEEL.get(),SoundSource.BLOCKS,.8F,back?.85F:1F);
                     l.playSound(null,b.offset(SHAFT.above(h)),PuzzleRegistry.TENSION_TAKE.get(),SoundSource.BLOCKS,.7F,back?.9F:1.05F);
-                    show(l,b,h,f);
                     PuzzleRooms.say(p,(back?"You pay out. ":"You take up. ")+"The counterweight is "+HEIGHT[h]+".");
                 }else if(rel.equals(FAR_WHEEL)){
                     if(told(l,p,"ToldFar","A hand-wheel on a small drum. The cable from the cleat winds onto it, and goes on down to the pin under the platform."))return true;
+                    String line;
                     if(!back){
                         if(f>=DRUM){PuzzleRooms.say(p,pin(l,b)>0?"The drum is full. The pin is only half out.":"The drum is full of slack cable.");return true;}
-                        if(slack>0){f++;PuzzleRooms.say(p,"You wind in the slack. The loop under the ceiling shortens.");}
-                        else if(fast){f++;PuzzleRooms.say(p,"The cable is held at the cleat. It pulls on the pin.");}
-                        else if(h>0){h--;f++;PuzzleRooms.say(p,"The cable runs back through the cleat. Across the loft the counterweight sinks.");}
+                        if(slack>0){f++;line="You wind in the slack. The loop under the ceiling shortens.";}
+                        else if(fast){f++;line="The cable is held at the cleat. It pulls on the pin.";}
+                        else if(h>0){h--;f++;line="The cable runs back through the cleat. Across the loft the counterweight sinks.";}
                         else{PuzzleRooms.say(p,"The cable is taut. It won't come.");return true;}
                     }else{
                         if(f<=0){PuzzleRooms.say(p,"The drum is empty.");return true;}
-                        f--;PuzzleRooms.say(p,"You pay out from the drum.");
+                        f--;line="You pay out from the drum.";
                     }
+                    boolean wasSolved=solved(l);
+                    if(!show(l,b,h,f)){PuzzleRooms.say(p,"The cable pulls tight against an obstruction. The weight and platform stay where they are.");return true;}
                     l.playSound(null,pos,PuzzleRegistry.TENSION_WHEEL.get(),SoundSource.BLOCKS,.8F,back?.85F:1F);
                     l.playSound(null,pos,PuzzleRegistry.TENSION_TAKE.get(),SoundSource.BLOCKS,.6F,1F);
-                    show(l,b,h,f);
+                    if(wasSolved||!solved(l))PuzzleRooms.say(p,line);
                 }
             }
             case CLEAT->{
                 if(told(l,p,"ToldCleat","A cleat beside the shaft. Made fast, it holds the cable where it is, on both sides."))return true;
+                int d=pin(l,b);
+                if(fast&&d>0&&!solved(l)&&!show(l,b,h-d,f)){
+                    PuzzleRooms.say(p,"The weight cannot drop. The cleat holds until its path is clear.");return true;
+                }
                 l.setBlock(pos,s.setValue(TensionBlock.STAGE,fast?0:1),FLAGS);
                 l.playSound(null,pos,PuzzleRegistry.TENSION_TAKE.get(),SoundSource.BLOCKS,.6F,fast?.8F:1.2F);
                 if(fast){
-                    int d=pin(l,b);
-                    if(d>0&&!solved(l)){h-=d;show(l,b,h,f);PuzzleRooms.say(p,"You cast off. The pin snaps back into its seat and the counterweight drops.");}
+                    if(d>0&&!solved(l)){PuzzleRooms.say(p,"You cast off. The pin snaps back into its seat and the counterweight drops.");}
                     else PuzzleRooms.say(p,"You cast the cable off the cleat.");
                 }else PuzzleRooms.say(p,"You make the cable fast round the cleat.");
             }

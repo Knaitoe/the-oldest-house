@@ -67,9 +67,14 @@ public final class TallyCounterItem extends Item {
             for(var e:present)if(pretending(e,p))e.addEffect(new MobEffectInstance(MobEffects.GLOWING,100,0,false,false));
             p.displayClientMessage(Component.literal("Click. "+words(present.size())+"."),true);
         }else{
-            int out=p.serverLevel().getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(OUT_THERE),m->m.isAlive()&&m instanceof Enemy).size();
+            int out=nearbyHostiles(p,OUT_THERE).size();
             p.displayClientMessage(Component.literal("Click. "+words(out)+" out there."),true);
         }
+    }
+    /** The box is only the broad search; the number is a distance from the keeper, including height. */
+    public static List<Mob> nearbyHostiles(ServerPlayer p,double range){
+        return p.serverLevel().getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(range),
+            m->m.isAlive()&&m instanceof Enemy&&m.distanceToSqr(p)<=range*range);
     }
     /** Everything alive that is really here with its keeper, the keeper included; another reader's private visions are not. */
     public static List<LivingEntity> present(ServerPlayer p,double range){
@@ -111,7 +116,7 @@ public final class TallyCounterItem extends Item {
             }
         }else if(p.isSleeping()){
             if(now-last<WATCH_EVERY)return;
-            var near=p.serverLevel().getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(WATCH_RANGE),m->m.isAlive()&&m instanceof Enemy&&m.distanceToSqr(p)<=WATCH_RANGE*WATCH_RANGE);
+            var near=nearbyHostiles(p,WATCH_RANGE);
             if(near.isEmpty())return;
             LAST.put(p.getUUID(),now);
             near.stream().min(Comparator.comparingDouble(m->m.distanceToSqr(p))).ifPresent(m->m.addEffect(new MobEffectInstance(MobEffects.GLOWING,100,0,false,false)));
