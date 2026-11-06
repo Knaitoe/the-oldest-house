@@ -81,7 +81,7 @@ public final class GhostsSet {
     public static boolean built(LabyrinthData d,BlockPos b) { return d.state(STATE).getBoolean(Long.toString(b.asLong())); }
     public static void markBuilt(LabyrinthData d,BlockPos b) {var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,t);}
     public static void clearAll() { GhostsLights.clearAll(); }
-    private static int day(CompoundTag own) { return Math.max(1,Math.min(DAYS,own.getInt("FilmDay"))); }
+    static int day(CompoundTag own) { return Math.max(1,Math.min(DAYS,own.getInt("FilmDay"))); }
     public static void arrive(ServerPlayer p,CompoundTag own) {
         if(own.getBoolean("Completed")||own.getBoolean("Ready")&&!own.getBoolean("Filming0485"))return;
         boolean newDay=false;
@@ -350,7 +350,7 @@ public final class GhostsSet {
         if(done&&d<DAYS)replies.add(Talk.reply("Review the unedited camera log",q->{if(!producerHere(q,a,d))return;Talk.close(q);var now=LiteraryVignettes.personal(LabyrinthData.get(q.server),q.getUUID(),PLACE);LiteraryVignettes.open(q,PLACE,"Rushes"+d,edit(q,now,d,true),a.blockPosition());}));
         replies.add(Talk.reply(done?"I'll leave until tomorrow.":"I'll leave it for now.",Talk::close));Talk.ask(p,replies);
     }
-    private static void capture(ServerPlayer p,CompoundTag own,String subject,Vec3 at) {
+    static void capture(ServerPlayer p,CompoundTag own,String subject,Vec3 at) {
         if(!recording(p)||!framed(p,lensEye(p,own),lensLook(p,own),at))return;
         var log=own.getCompound("FilmLog"+day(own));String k="Frames_"+subject;log.putInt(k,Math.min(72000,log.getInt(k)+5));own.put("FilmLog"+day(own),log);
     }
@@ -422,6 +422,7 @@ public final class GhostsSet {
     public static final String AFTERMATH="The house is dark. The three of them are still at the table, and Merry's chair is empty. The crew's things are gone.";
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own) {
         if(!own.getBoolean("Filming0485")||!built(LabyrinthData.get(p.server),b))return;
+        GhostsLore.reader(p,b,own);
         if(!own.contains("AcceptedScene131")&&own.getBoolean("Rolling"))own.putInt("AcceptedScene131",objective(own));
         if(own.getBoolean("Completed")){
             // Fit only saved originals; a concluded take must never create or restage a missing actor.
@@ -432,6 +433,7 @@ public final class GhostsSet {
             // the three still at the table, Merry gone, the crew gone; nobody asks anything.
             GhostsLights.out(p,b,own);if(saved[1]!=null)offstage(saved[1]);for(int i=4;i<6;i++)if(saved[i]!=null)offstage(saved[i]);
             if(Aftermath.count(own))p.displayClientMessage(Component.literal(AFTERMATH).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
+            display(p,own,b);
             return;
         }
         var cast=new LiteraryActor[6];for(int i=0;i<6;i++){cast[i]=person(p,b,i);if(cast[i]==null)return;}
@@ -558,12 +560,13 @@ public final class GhostsSet {
     public static List<String> pages(String text){var result=new ArrayList<String>();for(int start=0;start<text.length();){int end=Math.min(text.length(),start+120),breaks=0;for(int i=start;i<end;i++)if(text.charAt(i)=='\n'&&++breaks>4){end=i;break;}if(end<text.length()){int word=text.lastIndexOf(' ',end-1);if(word>start+40)end=word+1;}result.add(text.substring(start,end));start=end;}return result.isEmpty()?List.of(""):result;}
     public static String account(String name,CompoundTag own) {
         var text=new StringBuilder("THE TAPE AND THE CUT\n\nI came back to the Barretts seven times. The early incidents were reconstructions. The show had finished before the last supper. The House let me stay for it.\n\nBetween takes the girls talked about their books and their things. Before the prayers Marjorie said she was cold. Someone had covered her desk with a white cloth. What reached my tape depended on where I stood and when I put the camera down.\n\nMerry had eaten her pasta without sauce long before that night. Watching the plate did not tell me what her sister had promised her. This is what I kept, visit by visit.\n\n");
+        text.append(GhostsLore.account(own));
         for(int d=1;d<=DAYS;d++){var book=edit(name,own,d,true).get(DataComponents.WRITTEN_BOOK_CONTENT);for(var page:book.pages())text.append(page.raw().getString());text.append("\n\n");}
         text.append("MY ACCOUNT\n\n").append(own.getString("Confession"));return text.toString();
     }
     private static void display(ServerPlayer p,CompoundTag own,BlockPos b) {
         if(finished(own))LiteraryVignettes.ready(p,PLACE,own,"completed_the_filming_days_and_read_own_cut");
-        var model=new CompoundTag();var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);
+        var model=new CompoundTag();model.putBoolean("GhostEffigy",GhostsLore.throughLens(p,b,own));var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);
         if(!frames.isEmpty()){int n=(p.server.getTickCount()/60)%frames.size();model.putIntArray("Screen",frames.getCompound(n).getIntArray("Pixels"));}
         model.putUUID("Reader",p.getUUID());model.putInt("GhostDay",day(own));model.putLong("GhostBase",b.asLong());boolean frozen=day(own)==6&&own.getBoolean("JumpFrozen0488")&&!own.getBoolean("DayDone");model.putBoolean("GhostFreeze",frozen);model.putInt("GhostFreezeTarget",frozen?own.getInt("GhostFreezeTarget"):-1);for(String key:List.of("GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","GhostActorX","GhostActorY","GhostActorZ"))if(own.contains(key))model.put(key,own.get(key).copy());int voice=(int)Math.max(0,Math.min(140,own.getLong("GhostVoiceUntil")-p.level().getGameTime()));model.putInt("GhostVoiceRemaining",voice);if(voice>0){model.putString("GhostVoice",own.getString("GhostVoice"));model.putInt("GhostVoiceId",own.getInt("GhostVoiceId"));}
         model.putInt("GhostShake",(int)Math.max(0,Math.min(12,own.getLong("GhostShakeUntil")-p.level().getGameTime())));model.putBoolean("GhostPrivacyPull",privacyPull(p,own));model.putBoolean("ScreenDark",frames.isEmpty());HousePackets.send(p,new LiteraryViewPayload(-1,20,0,model));

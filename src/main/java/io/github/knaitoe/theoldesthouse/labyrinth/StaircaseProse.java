@@ -157,6 +157,10 @@ public final class StaircaseProse {
             "{n|door|doors} down. The House remembers every threshold you crossed.",
             "You opened your way {n|door|doors} into the House. These stairs are the deepest door."),
         // 0.4.194: what the rooms did afterwards (the owner: "Ensure you're updating literature too").
+        new Kind("ghosts_lore","house",2.3,3,"At the Barretts: {x}",
+            "You remember {x} from the Barretts' house.",
+            "In the Barretts' house, you found {x}.",
+            "What you found at the Barretts': {x}."),
         new Kind("followed","house",2.8,1,"Followed home: {x}",
             "{X} followed you home. Out there, in your own world, it still knows where you are.",
             "Something came home with you from the House: {x}.",

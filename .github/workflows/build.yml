@@ -68,6 +68,7 @@ jobs:
           python3 tools/draw_ghosts_errands.py --check
           python3 tools/draw_ghosts_camera.py --check
           python3 tools/draw_ghosts_writing_desk.py --check
+          python3 tools/draw_ghosts_lore.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
           python3 tools/draw_borrasca_cast.py --check
           python3 tools/draw_shiny_gentleman.py --check
@@ -207,7 +208,7 @@ jobs:
                   assert name in z.namelist(), name
               assert f'version="{expected_version}"' in z.read('META-INF/neoforge.mods.toml').decode().replace(' ', '')
               ghosts = json.loads(z.read('assets/the_oldest_house/blockstates/ghosts_set.json'))['variants']
-              expected_ghost_kinds = {'wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg','stair_rail','stair_rail_top','meal_spaghetti','meal_spaghetti_plain','writing_desk'}
+              expected_ghost_kinds = {'wallpaper','floor','ceiling','tile','panel','table','chair','counter','sink','cooker','plate','hat','books','jug','bolts','camera','case','monitor','drawing','lamp','bed_head','bed_foot','plain_plate','playhouse','torn_card','drawer','drawer_rig','plaster','meal_stew','meal_sandwich','meal_soup','meal_roast','meal_potatoes','lamp_off','rug','stair','rail','table_leg','stair_rail','stair_rail_top','meal_spaghetti','meal_spaghetti_plain','writing_desk','bank_slips','laptop_closed','laptop_study','basement_effigy','stored_cross'}
               assert len(ghosts) == len(expected_ghost_kinds)*4
               assert {frozenset(key.split(',')) for key in ghosts} == {frozenset((f'kind={kind}',f'facing={face}')) for kind in expected_ghost_kinds for face in ('north','east','south','west')}
               for variant in ghosts.values():
@@ -1938,6 +1939,13 @@ jobs:
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PghostsSmoke --no-daemon
           test -s build/font-smoke/ghosts-passed.txt
           for view in cast fixtures paper-and-cases final-dinner seating seating-prayer all-poses-front all-poses-side all-poses-back eight-atlases-and-closed-eyes marjorie-blink-and-jaw help-fall-and-death fixtures-east fixtures-south fixtures-west prop-transitions; do test -s build/font-smoke/native-ghosts-$view.png; done
+          python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
+      - name: Native Ghosts family papers and camera image
+        timeout-minutes: 5
+        run: |
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PghostsLoreSmoke --no-daemon
+          test -s build/font-smoke/ghosts-lore-passed.txt
+          for view in diary-early diary-crew diary-bank diary-california contact-slip bank-notice bank-production study articles bookmarks sister-cats sister-vines narrow-study narrow-drawing desk-closed desk-study stored-cross lens-effigy; do test -s build/font-smoke/native-ghosts-lore-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - name: Native complete vignette phase and texture review
         timeout-minutes: 5

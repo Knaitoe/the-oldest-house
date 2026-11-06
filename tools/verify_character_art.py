@@ -20,6 +20,7 @@ MARJORIE_REVIEW=ROOT/'art/inventory/ghosts_marjorie_04318.json'
 MARJORIE_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/ghosts_marjorie'+phase+'.png' for phase in ('','_dinner')}
 MARJORIE_HAIR_NETS=((80,0,8,6,1),(80,8,8,10,1),(101,0,2,10,1),(111,0,2,9,1))
 SISTERS_REVIEW=ROOT/'art/inventory/ghosts_sisters_04320.json'
+FRECKLES_REVIEW=ROOT/'art/inventory/ghosts_merry_04321.json'
 MERRY_HAIR_NETS=((80,0,3,7,3),(96,0,2,3,2),(110,0,4,2,3))
 FAMILY_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
               for role in ('father','mother','child') for phase in ('','_changed')}
@@ -53,7 +54,13 @@ def reviewed_repaints(review):
         assert row['previous_sha256']==previous[path]['sha256'] and row['previous_alpha_sha256']==previous[path]['alpha_sha256'],('Previous sisters review changed',path)
         assert row['size']==previous[path]['size'],('Sisters atlas size changed',path)
         if path in MARJORIE_PATHS:assert row['alpha_sha256']==previous[path]['alpha_sha256'],('Marjorie alpha changed',path)
-    return {**previous,**sisters}
+    current={**previous,**sisters}
+    freckles={r['path']:r for r in json.loads(FRECKLES_REVIEW.read_text())['repainted']}
+    assert set(freckles)=={MERRY_PATH}
+    row=freckles[MERRY_PATH];prior=current[MERRY_PATH]
+    assert row['review_04320_sha256']==prior['sha256'] and row['review_04320_alpha_sha256']==prior['alpha_sha256'], 'Previous Merry review changed'
+    assert row['size']==prior['size'] and row['alpha_sha256']==prior['alpha_sha256'], 'Merry UV/alpha changed with freckles'
+    return {**current,**freckles}
 
 
 def main():

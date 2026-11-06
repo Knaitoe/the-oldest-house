@@ -163,7 +163,7 @@ LOOKS = {
     'lake_witch_memory': Look('#c49a80','#48332a','long','#50687a','#3b4b58','dress','#8b9da1',logical=64),
     'lake_witch': Look('#969d82','#2c2c25','long','#425358','#343f42','ragged','#7d8a7c',mark='witch',logical=64),
     'ghosts_marjorie': Look('#dfb79f','#573a2d','long','#887091','#3b4b5a','tee','#ae99ae',eyes='#6c765a',sleeve=11,face_style='young_teen',level_eyes=True),
-    'ghosts_merry': Look('#ddba9b','#805a38','ponytail','#ac5847','#47657a','tee','#d5b890',eyes='#72837d',sleeve=4,face_style='child',level_eyes=True),
+    'ghosts_merry': Look('#ddba9b','#805a38','ponytail','#ac5847','#47657a','tee','#d5b890',eyes='#72837d',mark='freckles',sleeve=4,face_style='child',level_eyes=True),
     'ghosts_john': Look('#c29b7d','#68482e','part','#727c50','#554d40','flannel','#b1b38b',age=1),
     'ghosts_sarah': Look('#d4ad91','#644a36','bun','#56738a','#454f59','cardigan','#c4ba9e'),
     'ghosts_barry': Look('#b89578','#3e3229','close','#394e65','#3a434d','crew','#c7c5ad',age=1),

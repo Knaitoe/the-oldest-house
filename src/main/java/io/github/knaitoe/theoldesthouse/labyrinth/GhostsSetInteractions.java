@@ -12,6 +12,7 @@ import net.minecraft.sounds.*;
 public final class GhostsSetInteractions {
     private GhostsSetInteractions(){}
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        if(GhostsLore.click(p,b,rel,own))return true;
         var state=p.serverLevel().getBlockState(b.offset(rel));
         if(rel.equals(GhostsSetRooms.MONITOR_AT.above())&&(BarrettHomeBlock.is(state,BarrettHomeBlock.Kind.FIELD_MONITOR)||state.is(LiteraryRegistry.PROP.get())&&state.getValue(LiteraryPropBlock.KIND)==LiteraryPropBlock.Kind.TELEVISION)){
             if(own.getBoolean("DayDone")){int day=Math.max(1,Math.min(7,own.getInt("FilmDay")));boolean raw=p.isShiftKeyDown();LiteraryVignettes.open(p,GhostsSet.PLACE,own,(raw?"Rushes":"Episode")+day,GhostsSet.edit(p,own,day,raw),b.offset(rel));}
