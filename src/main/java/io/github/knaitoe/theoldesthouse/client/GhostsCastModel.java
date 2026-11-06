@@ -15,9 +15,9 @@ import net.minecraft.resources.ResourceLocation;
 /** Connected elbows, knees and jaw on the six domestic characters; each pose remains a possible human movement. */
 public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"ghosts_cast"),"main");
-    private final ModelPart rightElbow,leftElbow,rightKnee,leftKnee,jaw,lids,hair,hairEnds,hairLeft,hairRight;
+    private final ModelPart rightElbow,leftElbow,rightKnee,leftKnee,jaw,lids,hair,hairEnds,hairLeft,hairRight,ponytail,ponyEnds;
     private int currentRole,currentPhase;
-    private float blink;
+    private float blink,hairMotion;
     /** 0.4.242: brow lift, brow tilt (inner ends up is worry, down is anger) and mouth corners, each -1..1. */
     private final float[] face=new float[3];
     private final java.util.List<ModelPart> joints;
@@ -28,7 +28,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
      * impact's settling), how far through speaking a line they are (0 silent), and the per-pose blend length.
      */
     private float since=1000,speech;
-    public GhostsCastModel(ModelPart root){super(root);rightElbow=rightArm.getChild("elbow");leftElbow=leftArm.getChild("elbow");rightKnee=rightLeg.getChild("knee");leftKnee=leftLeg.getChild("knee");jaw=head.getChild("jaw");lids=head.getChild("lids");hair=head.getChild("long_hair");hairEnds=hair.getChild("ends");hairLeft=hair.getChild("left_lock");hairRight=hair.getChild("right_lock");joints=root.getAllParts().toList();}
+    public GhostsCastModel(ModelPart root){super(root);rightElbow=rightArm.getChild("elbow");leftElbow=leftArm.getChild("elbow");rightKnee=rightLeg.getChild("knee");leftKnee=leftLeg.getChild("knee");jaw=head.getChild("jaw");lids=head.getChild("lids");hair=head.getChild("long_hair");hairEnds=hair.getChild("ends");hairLeft=hair.getChild("left_lock");hairRight=hair.getChild("right_lock");ponytail=head.getChild("ponytail");ponyEnds=ponytail.getChild("tail");joints=root.getAllParts().toList();}
     public static LayerDefinition layer(){
         var mesh=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=mesh.getRoot();
         for(boolean left:new boolean[]{false,true}){
@@ -46,6 +46,9 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         hair.addOrReplaceChild("ends",CubeListBuilder.create().texOffs(80,8).addBox(-4,0,0,8,7,1).addBox(-4,6,0,2,4,1).addBox(-2,6,0,4,4.5F,1).addBox(2,6,0,2,3,1),PartPose.offset(0,.5F,3.8F));
         hair.addOrReplaceChild("left_lock",CubeListBuilder.create().texOffs(101,0).addBox(-1,0,0,2,10,1),PartPose.offset(-3.1F,-4,-4.2F));
         hair.addOrReplaceChild("right_lock",CubeListBuilder.create().texOffs(111,0).addBox(-1,0,0,2,9,1),PartPose.offset(3.1F,-3,-4.15F));
+        var ponytail=head.addOrReplaceChild("ponytail",CubeListBuilder.create().texOffs(110,0).addBox(-2,-.25F,0,4,2,3),PartPose.offset(0,-3,4));
+        ponytail.addOrReplaceChild("tail",CubeListBuilder.create().texOffs(80,0).addBox(-1.5F,0,0,3,7,3)
+                .texOffs(96,0).addBox(-1,6,.3F,2,3,2),PartPose.offset(0,1,1));
         return LayerDefinition.create(mesh,128,64);
     }
     @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){
@@ -60,7 +63,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         // While their words are on screen (the server's speaking timer), or a new line goes up over them, they are talking.
         speech=a.speaking()>0?1:0;if(speech==0&&tw!=null&&a.hasCustomName()&&a.isCustomNameVisible()){String line=a.getCustomName().getString();if(!line.equals(tw.line)){tw.line=line;tw.lineAt=age;}
             float length=Math.min(90,12+line.length()*1.6F),t=(age-tw.lineAt)/length;speech=t<0||t>1?0:1;}
-        moving=motion.amount()>.15F;
+        moving=motion.amount()>.15F;hairMotion=net.minecraft.util.Mth.clamp(motion.amount(),0,1);
         pose(a.phase(),a.getScale(),step,age);
         blend(a,age);
     }
@@ -102,7 +105,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     /** For the native proofs: render as if speaking, and as if on a given filming day (0 keeps the client's own day). */
     public static boolean previewSpeaking;public static int previewDay;
     private static int day(){return previewDay>0?previewDay:GhostsTakeClient.day();}
-    public void preview(int role,int phase,float age){since=age;speech=previewSpeaking?1:0;moving=false;for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);currentRole=role;young=false;crouching=false;riding=false;hat.visible=false;jaw.visible=true;if(phase<0){moving=true;phase=GhostsSet.STAND;HumanoidMotion.gait(this,age*.55F,1,false);walkLike(role,1);}pose(phase,role==LiteraryActor.GHOST_MERRY?.58F:role==LiteraryActor.GHOST_MARJORIE?.86F:1,(float)Math.sin(age*.08F),age);}
+    public void preview(int role,int phase,float age){since=age;speech=previewSpeaking?1:0;moving=false;hairMotion=phase<0?1:0;for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);currentRole=role;young=false;crouching=false;riding=false;hat.visible=false;jaw.visible=true;if(phase<0){moving=true;phase=GhostsSet.STAND;HumanoidMotion.gait(this,age*.55F,1,false);walkLike(role,1);}pose(phase,role==LiteraryActor.GHOST_MERRY?.58F:role==LiteraryActor.GHOST_MARJORIE?.86F:1,(float)Math.sin(age*.08F),age);}
     @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
         var fitted=GhostsSkinMesh.fit(out,currentRole,currentPhase);
         super.renderToBuffer(p,fitted,light,overlay,colour);
@@ -177,6 +180,12 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             hairEnds.xRot=.04F+(float)Math.sin(age*.035F)*.025F;hairLeft.xRot=-.035F;hairRight.xRot=.04F;
             if(phase==GhostsSet.CRAWL){hairEnds.xRot=1.4F;hairLeft.xRot=1.05F;hairRight.xRot=1.05F;}
             else if(phase==GhostsSet.BED){hairEnds.xRot=-.75F;hairLeft.zRot=-.18F;hairRight.zRot=.18F;}
+        }
+        ponytail.visible=currentRole==LiteraryActor.GHOST_MERRY;
+        if(ponytail.visible){
+            ponyEnds.xRot=.12F+hairMotion*.18F;ponyEnds.zRot=step*hairMotion*.07F+(float)Math.sin(age*.035F)*.015F;
+            if(phase==GhostsSet.FLINCH)ponyEnds.xRot+=.16F;
+            else if(phase==GhostsSet.BED)ponyEnds.xRot=-.7F;
         }
         if(phase!=GhostsSet.CRAWL)HumanoidMotion.connect(this);hat.copyFrom(head);
     }

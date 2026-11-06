@@ -56,7 +56,15 @@ public final class GhostsFilmstrip extends Screen {
             new Row("Long hair, back",M,GhostsSet.STAND,0,false,1,0,4,false),
             new Row("Long hair, side",M,GhostsSet.STAND,90,false,1,0,4,false),
             new Row("Crawl and hair",M,GhostsSet.CRAWL,90,false,2,0,4,false),
-            new Row("Frightened, bed",M,GhostsSet.BED,180,false,6,0,4,true))));
+            new Row("Frightened, bed",M,GhostsSet.BED,180,false,6,0,4,true))),
+        new Page("merry","Merry: ponytail and movement; both sisters' faces",List.of(
+            new Row("Merry, front",Y,GhostsSet.STAND,180,false,1,0,4,false),
+            new Row("Ponytail, back",Y,GhostsSet.STAND,0,false,1,0,4,false),
+            new Row("Ponytail, side",Y,GhostsSet.STAND,90,false,1,0,4,false),
+            new Row("Merry walks",Y,-1,90,false,1,0,3,false),
+            new Row("Merry, face",Y,GhostsSet.STAND,180,false,1,0,4,true),
+            new Row("Marjorie, face",M,GhostsSet.STAND,180,false,1,0,4,true))),
+        new Page("sisters","Merry's ponytail / Marjorie's smaller eyes",List.of()));
     static final int FRAMES=8;
     private int page,frames;private static boolean launched;
     public GhostsFilmstrip(){super(Component.literal("The Barrett home: filmstrips"));}
@@ -68,6 +76,7 @@ public final class GhostsFilmstrip extends Screen {
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         var mc=Minecraft.getInstance();var p=PAGES.get(page);var buffers=mc.renderBuffers().bufferSource();
         g.fill(0,0,width,height,0xff292821);g.drawString(font,"Filmstrip / "+p.title(),10,8,0xffe7dbc3,false);g.flush();
+        if(p.name().equals("sisters")){sisters(g,buffers);return;}
         int rows=p.rows().size();float rowH=(height-30)/(float)rows,colW=(width-110)/(float)FRAMES;
         for(int r=0;r<rows;r++){
             var row=p.rows().get(r);float cy=26+(r+.5F)*rowH;
@@ -77,7 +86,7 @@ public final class GhostsFilmstrip extends Screen {
                 GhostsCastModel.previewSpeaking=row.speaking();GhostsCastModel.previewDay=row.day();
                 var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(row.role(),row.phase(),age);
                 GhostsCastModel.previewSpeaking=false;GhostsCastModel.previewDay=0;
-                if(row.face()){model.body.visible=model.leftArm.visible=model.rightArm.visible=model.leftLeg.visible=model.rightLeg.visible=false;model.head.x=model.head.y=model.head.z=0;model.head.yRot=0;model.head.getChild("long_hair").visible=false;}
+                if(row.face()){model.body.visible=model.leftArm.visible=model.rightArm.visible=model.leftLeg.visible=model.rightLeg.visible=false;model.head.x=model.head.y=model.head.z=0;model.head.yRot=0;model.head.getChild("long_hair").visible=false;model.head.getChild("ponytail").visible=false;}
                 var pose=g.pose();pose.pushPose();
                 float scale=row.face()?Math.min(rowH*.85F,colW*.85F):rowH*.32F*(row.role()==Y?.58F:row.role()==M?.86F:1);
                 pose.translate(100+(f+.5F)*colW,cy+(row.face()?0:rowH*.36F),190);pose.scale(scale,scale,scale);
@@ -88,6 +97,29 @@ public final class GhostsFilmstrip extends Screen {
                 if(r==0)g.drawCenteredString(font,"+"+(int)(f*row.step()),(int)(100+(f+.5F)*colW),18,0xff9a9282);
             }
         }
+    }
+    private void sisters(GuiGraphics g,MultiBufferSource.BufferSource buffers){
+        var mc=Minecraft.getInstance();float col=(width-40)/4F;
+        for(int n=0;n<4;n++){
+            int role=n==3?M:Y;float yaw=n==1?0:n==2?90:180,cx=20+(n+.5F)*col;
+            for(boolean detail:new boolean[]{false,true}){
+                GhostsCastModel.previewDay=1;
+                var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(role,GhostsSet.STAND,40);
+                GhostsCastModel.previewDay=0;
+                if(detail){
+                    model.body.visible=model.leftArm.visible=model.rightArm.visible=model.leftLeg.visible=model.rightLeg.visible=false;
+                    model.head.x=model.head.y=model.head.z=model.head.xRot=model.head.yRot=model.head.zRot=0;
+                    model.head.getChild("long_hair").visible=false;model.head.getChild("ponytail").visible=n==1||n==2;
+                }
+                var pose=g.pose();pose.pushPose();pose.translate(cx,height*(detail?.83F:.61F),190);
+                float size=detail?90:120*(role==Y?.58F:.86F);pose.scale(size,size,size);pose.mulPose(Axis.YP.rotationDegrees(yaw));
+                pose.translate(0,detail?.25:-1.5,0);
+                model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(GhostsCastModel.skin(role,GhostsSet.STAND))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
+                buffers.endBatch();pose.popPose();
+            }
+            g.drawCenteredString(font,n==0?"Merry / front":n==1?"Merry / back":n==2?"Merry / side":"Marjorie",(int)cx,(int)(height*.65F),0xffe7dbc3);
+        }
+        g.flush();
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.ghostsFilmstrip")||!(mc.screen instanceof GhostsFilmstrip film)||++film.frames<12)return;

@@ -163,7 +163,7 @@ LOOKS = {
     'lake_witch_memory': Look('#c49a80','#48332a','long','#50687a','#3b4b58','dress','#8b9da1',logical=64),
     'lake_witch': Look('#969d82','#2c2c25','long','#425358','#343f42','ragged','#7d8a7c',mark='witch',logical=64),
     'ghosts_marjorie': Look('#dfb79f','#573a2d','long','#887091','#3b4b5a','tee','#ae99ae',eyes='#6c765a',sleeve=11,face_style='young_teen',level_eyes=True),
-    'ghosts_merry': Look('#ddba9b','#805a38','long','#ac5847','#47657a','tee','#d5b890',eyes='#72837d',sleeve=4),
+    'ghosts_merry': Look('#ddba9b','#805a38','ponytail','#ac5847','#47657a','tee','#d5b890',eyes='#72837d',sleeve=4,face_style='child',level_eyes=True),
     'ghosts_john': Look('#c29b7d','#68482e','part','#727c50','#554d40','flannel','#b1b38b',age=1),
     'ghosts_sarah': Look('#d4ad91','#644a36','bun','#56738a','#454f59','cardigan','#c4ba9e'),
     'ghosts_barry': Look('#b89578','#3e3229','close','#394e65','#3a434d','crew','#c7c5ad',age=1),
@@ -435,7 +435,7 @@ def hollow_face(look):
 
 
 def face(look):
-    if look.face_style and look.face_style!='young_teen':return hollow_face(look)
+    if look.face_style and look.face_style not in ('young_teen','child'):return hollow_face(look)
     if look.mark.startswith('family_'):return family_face(look)
     im=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(im)
     skin=rgb(look.skin);dark=shade(look.skin,-36);cheek=shade(look.skin,-12)
@@ -482,13 +482,13 @@ def face(look):
             d.rectangle((10,5,12,9),fill=skin);d.line((10,6,12,7),fill=shade(hair,-4));d.line((10,8,12,8),fill='#e9e2ce');d.point((11,8),fill=rgb(look.eyes))
             d.line((10,9,12,9),fill=shade(skin,-24))
             d.line((5,13,8,13),fill=shade(skin,-9));d.line((6,13,8,13),fill=shade(skin,-44));d.line((9,12,10,11),fill=shade(skin,-44));d.point((11,11),fill=shade(skin,-20))
-    if look.face_style=='young_teen':
+    if look.face_style in ('young_teen','child'):
         # A child's plain, fuller face; no adult cheek hollows, heavy brow or painted lip.
         d.rectangle((1,9,2,14),fill=skin);d.rectangle((13,9,14,14),fill=skin)
         d.rectangle((7,8,8,11),fill=skin);d.point((7,9),fill=shade(skin,7));d.point((8,10),fill=shade(skin,-13))
         for x in (3,10):
-            d.line((x,6,x+2,6),fill=shade(hair,7));d.rectangle((x,7,x+2,9),fill='#e9e2ce')
-            d.line((x+1,7,x+1,9),fill=rgb(look.eyes));d.point((x+1,8),fill='#343331')
+            d.line((x,6,x+2,6),fill=shade(hair,7));d.rectangle((x,7,x+2,8),fill='#ded8c5')
+            d.line((x+1,7,x+1,8),fill=rgb(look.eyes));d.point((x+1,8),fill='#343331')
         d.rectangle((5,12,10,15),fill=skin);d.line((6,13,9,13),fill=shade(skin,-24))
         d.point((4,10),fill=shade(skin,-7));d.point((11,10),fill=shade(skin,-7))
     if look.age:
@@ -516,6 +516,11 @@ def face(look):
         d.line((1,0,3,0),fill=hhi);d.line((12,0,14,0),fill=hhi)
     elif look.cut=='close':
         d.rectangle((0,0,15,1),fill=hair);d.line((0,2,2,2),fill=hlo);d.line((13,2,15,2),fill=hlo)
+    elif look.cut=='ponytail':
+        # Hair swept off her face, with a short side fringe and the ears left clear.
+        d.rectangle((0,0,15,2),fill=hair);d.polygon([(0,2),(7,2),(4,4),(2,5),(2,9),(1,12),(0,12)],fill=hair)
+        d.polygon([(11,2),(15,2),(15,12),(14,10),(13,4)],fill=hair)
+        d.line((1,2,4,2),fill=hhi);d.line((14,2,14,5),fill=hhi)
     elif look.cut in ('long','bun','braids'):
         d.rectangle((0,0,15,2),fill=hair);d.polygon([(0,2),(6,2),(4,4),(2,5),(2,13),(0,14)],fill=hair)
         d.polygon([(9,2),(15,2),(15,14),(13,12),(13,4)],fill=hair)
@@ -807,6 +812,11 @@ def paint(look):
             d.rectangle((front+3,7,front+5,11),fill=shade(look.skin,-16));d.line((front+4,8,front+4,10),fill=shade(look.skin,-34))
             if look.glasses:d.line((front,7,front+5,7),fill='#666250')
         put(head[side],art)
+    if look.cut=='ponytail':
+        art=panel((16,16),look.hair,'hair','back');d=ImageDraw.Draw(art)
+        d.polygon([(0,10),(3,12),(6,13),(9,13),(12,12),(15,10),(15,15),(0,15)],fill=rgb(look.skin))
+        d.line((1,5,5,9,7,10),fill=shade(look.hair,12));d.line((14,5,11,9,9,10),fill=shade(look.hair,-11))
+        put(head['back'],art)
     if look.cut=='coils':
         for side in ('top','back','left','right'):
             art=coil_panel((16,16),look.hair);d=ImageDraw.Draw(art)
@@ -920,6 +930,9 @@ def paint(look):
     if look.face_style=='young_teen':
         for u,v,w,h,depth in ((80,0,8,6,1),(80,8,8,10,1),(101,0,2,10,1),(111,0,2,9,1)):
             fill_net(net(u,v,w,h,depth),look.hair,'hair')
+    if look.cut=='ponytail':
+        for dims in ((80,0,3,7,3),(96,0,2,3,2)):fill_net(net(*dims),look.hair,'hair')
+        fill_net(net(110,0,4,2,3),'#b77986','cloth')
     torso=net(16,16,8,12,4)
     for side,box in torso.items():put(box,cloth_face((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look,side))
     # Classic humanoids mirror one arm/leg; player models have the two extra left nets.
