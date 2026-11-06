@@ -224,10 +224,12 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.HEADER_TANK);
         // 0.4.306: the tension room (TensionRooms), a puzzle room.
         gray.add(LabyrinthPlace.TENSION_ROOM);
+        gray.add(LabyrinthPlace.TENSION_ROOMS);
         // 0.4.306: the Sphinx's first crossing (Sphinx), a rare detour in the domestic halls.
         gray.add(LabyrinthPlace.SPHINX_VESTIBULE);
         // 0.4.309: the yard's turn-around (YardRooms), an outdoor breather, from the third crossing.
         gray.add(LabyrinthPlace.YARD_TURNAROUND);
+        gray.add(LabyrinthPlace.YARD_DITCH);gray.add(LabyrinthPlace.YARD_CLOTHESLINE);
         // 0.4.232: the familiar room, from the third crossing, and far more readily while someone is in it (FamiliarRoom.weight).
         gray.add(LabyrinthPlace.FAMILIAR_KITCHEN);
         // 0.4.261: the quiet room and its four siblings, the rest rooms (QuietRooms): one each, none again within six rooms.
@@ -576,11 +578,11 @@ public final class LabyrinthDealer {
             // 0.4.199 (owner: "one with a massive ceiling and one with a crumbled floor players have to 'parkour' across"): the
             // vaulted hall a little rarer than the others, so it stays a surprise; the crumbled hall never in the first three
             // crossings, so nobody's first steps in the House are a jump.
-            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS, AIRING_ROOMS, FOLDING_ROOM, FOLDED_ROOMS, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, FUSE_ROOMS, HEADER_TANK, HEADER_TANKS, TENSION_ROOM -> 0;
+            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS, AIRING_ROOMS, FOLDING_ROOM, FOLDED_ROOMS, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, FUSE_ROOMS, HEADER_TANK, HEADER_TANKS, TENSION_ROOM, TENSION_ROOMS -> 0;
             // 0.4.306: the Sphinx's vestibule, rare. She is frightening, so never in the domestic opening (before the story depth); a domestic crossing, so not past the deep halls.
             case SPHINX_VESTIBULE -> depth < LabyrinthPacing.STORY_DEPTH || depth >= LabyrinthPacing.DEEP_DEPTH ? 0 : 2;
             // 0.4.309: the yard, an outdoor breather during an expedition: after the domestic opening, from the story depth.
-            case YARD_TURNAROUND -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 6;
+            case YARD_TURNAROUND, YARD_DITCH, YARD_CLOTHESLINE -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 2;
             // 0.4.231: the shut-up rooms under dust, a plaster hall, from the third crossing until the halls turn to stone; a little more often than a plain hall.
             case DUST_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             // 0.4.232: without a reader (the shared hall cache), the kitchen at its ordinary weight.

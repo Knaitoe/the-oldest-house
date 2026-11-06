@@ -111,7 +111,14 @@ def bulb():
 
 def textures():
     out = {'block/yard_clapboard.png': clapboard(), 'block/yard_wet_gravel.png': wet_gravel(), 'block/yard_garage_door.png': garage_door()}
-    t = {'paint': paint(), 'side': side(), 'grille_lit': grille(True), 'window': window(), 'roof': roof(), 'tailgate': tailgate(), 'wheel': wheel(), 'bulb': bulb()}
+    linen = noisy(['#c9c6b6', '#d4d0c2', '#bdbbac'], 3131, [5, 3, 1])
+    for x in (3, 10, 14):
+        for y in range(16):
+            dot(linen, x, y, '#b3b1a2' if (x+y) % 5 else '#c0bdaf')
+    concrete = noisy(['#81847f', '#8c8f88', '#737771'], 3132, [5, 3, 1])
+    for x in range(16):
+        dot(concrete, x, 14, '#535b52'); dot(concrete, x, 15, '#485248')
+    t = {'paint': paint(), 'side': side(), 'grille_lit': grille(True), 'window': window(), 'roof': roof(), 'tailgate': tailgate(), 'wheel': wheel(), 'bulb': bulb(), 'linen': linen, 'concrete': concrete}
     out.update({f'block/yard/{k}.png': v for k, v in t.items()})
     return out
 
@@ -130,11 +137,14 @@ def fitting_models():
     m['nose_0'] = model([element([0, 3, 0], [16, 12, 16], {'north': 'g', 'south': 'p', 'east': 's', 'west': 's', 'up': 'p', 'down': 'p'})], {'g': 'grille_lit', 's': 'side', 'p': 'paint'}, 'paint')
     m['cabin_0'] = model([element([0, 0, 0], [16, 11, 16], {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'r', 'down': 'p'})], {'w': 'window', 'r': 'roof', 'p': 'paint'}, 'roof')
     m['tail_0'] = model([element([0, 3, 0], [16, 14, 16], {'south': 't', 'north': 'p', 'east': 's', 'west': 's', 'up': 'p', 'down': 'p'})], {'t': 'tailgate', 's': 'side', 'p': 'paint'}, 'paint')
+    m['sheet_0'] = model([element([0, 0, 7], [16, 16, 8], {'all': 'l'})], {'l': 'linen'}, 'linen')
+    m['sheet_1'] = model([element([0, 0, 7], [4, 16, 9], {'all': 'l'}), element([3, 0, 6], [5, 16, 8], {'all': 'l'})], {'l': 'linen'}, 'linen')
+    m['pipe_lip_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'c'})], {'c': 'concrete'}, 'concrete')
     return m
 
 
-KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail']
-STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1}
+KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip']
+STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'yard_fitting': 'Yard Fittings', 'yard_clapboard': 'Clapboard', 'yard_wet_gravel': 'Wet Gravel', 'yard_garage_door': 'Garage Door'}
 

@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate 0.4.312 ties a rail grip to the actual reachable rail, with tactile sound and action-bar feedback. It also corrects two broad-run verification failures from 0.4.311 while retaining its radial counter and occupied Tension machinery. See [the rail and verification notes](docs/RAIL_GRIPS_0_4_312.md); exact-commit CI is pending.
+Development candidate **0.4.313** completes the picture/fridge hair choice, adds the three deep cable rooms and two ordinary yard connectors (a culvert crawl and yielding clotheslines), and waits for native readiness in hazard fixtures. See [the candidate notes](docs/CABLE_AND_YARD_0_4_313.md). Exact-commit verification is pending.
 
 ## Playing it
 

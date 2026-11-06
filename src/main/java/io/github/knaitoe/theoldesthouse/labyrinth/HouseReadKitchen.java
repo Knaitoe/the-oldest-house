@@ -348,7 +348,9 @@ public final class HouseReadKitchen {
         boolean alike=read.getInt("Face")>=0&&read.getInt("Face")==read.getInt("Hands");
         HouseRead.see(p,KITCHEN,s->{s.putBoolean("Hung",true);if(alike)s.putBoolean("Alike",true);for(var r:Region.values())if(read.getInt(key(r))>=0)s.putBoolean("Drew"+key(r),true);
             // 0.4.196: the body and the face as they went up on the fridge.
-            if(read.getInt("Body")>0)s.putInt("Body",read.getInt("Body"));if(read.getInt("Mood")>0)s.putInt("Mood",read.getInt("Mood"));});
+            if(read.getInt("Body")>0)s.putInt("Body",read.getInt("Body"));if(read.getInt("Mood")>0)s.putInt("Mood",read.getInt("Mood"));
+            if(read.contains("Hair"))s.putInt("Hair",read.getInt("Hair"));else s.remove("Hair");});
+        HouseBodies.sync(p.server);
         HouseReadSites.sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,top,.5f);HouseReadSites.act(p,KITCHEN,"put the picture up on the fridge");
         unlock(p,b);
     }
@@ -382,5 +384,5 @@ public final class HouseReadKitchen {
     /** 0.4.196: the face the reader drew, 1 to 5 in {@link #FACES}, or 0 for none drawn. */
     public static int mood(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return 0;return Mth.clamp(HouseRead.seen(d,reader).getCompound(KITCHEN.key()).getInt("Mood"),0,FACES.size());}
     /** The hair colour the House's body wears: the drawing's hair, if it was drawn in a colour hair can be, or -1. */
-    public static int hair(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return -1;var s=HouseRead.seen(d,reader).getCompound(KITCHEN.key());return s.contains("Hair")&&hairColour(s.getInt("Hair"))?rgb(s.getInt("Hair")):-1;}
+    public static int hair(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return -1;var s=HouseRead.seen(d,reader).getCompound(KITCHEN.key());return s.getBoolean("Hung")&&s.contains("Hair")&&hairColour(s.getInt("Hair"))?rgb(s.getInt("Hair")):-1;}
 }

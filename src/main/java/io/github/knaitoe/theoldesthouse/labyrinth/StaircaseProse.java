@@ -28,12 +28,13 @@ public final class StaircaseProse {
      * What the five quiet rooms saw the reader do (0.4.159), as observations only: the first routine item ({@code -1} for none),
      * the coat, the hall glass, who they stood by in the shelter, the porch door, the way out, and HOME for the last leaf.
      */
-    public record Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home, boolean drewHands, String drawn) {
+    public record Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home, boolean drewHands, String drawn, boolean drewHair) {
         public static final Read NONE = new Read(-1, "", "", "", false, false, "", "", "");
         /** Before the kitchen table (0.4.168): nothing drawn. */
         public Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home) { this(routine, coat, mirror, shelter, song, older, door, out, home, false, ""); }
         /** Before the pencil (0.4.196): no face or body drawn. */
         public Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home, boolean drewHands) { this(routine, coat, mirror, shelter, song, older, door, out, home, drewHands, ""); }
+        public Read(int routine, String coat, String mirror, String shelter, boolean song, boolean older, String door, String out, String home, boolean drewHands, String drawn) { this(routine, coat, mirror, shelter, song, older, door, out, home, drewHands, drawn, false); }
     }
 
     // ---------------------------------------------------------------- facts
@@ -339,7 +340,7 @@ public final class StaircaseProse {
         if (!item.isEmpty()) return "Before bed your hands went to " + item + " first. The writer drew it in the margin.";
         if (!coat.isEmpty()) return turned ? "In the cold hall your hands found " + coat + ", and turned the glass to the wall." : "In the cold hall your hands went through the hangers to " + coat + ".";
         // 0.4.168: the kitchen table, when nothing else fills the leaf; 0.4.196: with the face and the body the pencil drew.
-        if (r.drewHands) return "You drew yourself once at a kitchen table" + (r.drawn.isEmpty() ? "" : ", " + r.drawn) + ", and pressed hard on the hands.";
+        if (r.drewHands || r.drewHair) return "You drew yourself once at a kitchen table" + (r.drawn.isEmpty() ? "" : ", " + r.drawn) + (r.drewHands ? ", and pressed hard on the hands" : "") + (r.drewHair ? (r.drewHands ? " and filled in the hair" : ", and filled in the hair") : "") + ".";
         if (!r.drawn.isEmpty()) return "You drew yourself once at a kitchen table, " + r.drawn + ".";
         return "";
     }

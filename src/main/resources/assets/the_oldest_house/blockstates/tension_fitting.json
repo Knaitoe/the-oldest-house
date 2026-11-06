@@ -524,6 +524,81 @@
     "facing=west,kind=platform,stage=4": {
       "model": "the_oldest_house:block/tension/platform_0",
       "y": 270
+    },
+    "facing=north,kind=release_bar,stage=0": {
+      "model": "the_oldest_house:block/tension/release_bar_0"
+    },
+    "facing=north,kind=release_bar,stage=1": {
+      "model": "the_oldest_house:block/tension/release_bar_0"
+    },
+    "facing=north,kind=release_bar,stage=2": {
+      "model": "the_oldest_house:block/tension/release_bar_0"
+    },
+    "facing=north,kind=release_bar,stage=3": {
+      "model": "the_oldest_house:block/tension/release_bar_0"
+    },
+    "facing=north,kind=release_bar,stage=4": {
+      "model": "the_oldest_house:block/tension/release_bar_0"
+    },
+    "facing=east,kind=release_bar,stage=0": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 90
+    },
+    "facing=east,kind=release_bar,stage=1": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 90
+    },
+    "facing=east,kind=release_bar,stage=2": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 90
+    },
+    "facing=east,kind=release_bar,stage=3": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 90
+    },
+    "facing=east,kind=release_bar,stage=4": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 90
+    },
+    "facing=south,kind=release_bar,stage=0": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 180
+    },
+    "facing=south,kind=release_bar,stage=1": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 180
+    },
+    "facing=south,kind=release_bar,stage=2": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 180
+    },
+    "facing=south,kind=release_bar,stage=3": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 180
+    },
+    "facing=south,kind=release_bar,stage=4": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 180
+    },
+    "facing=west,kind=release_bar,stage=0": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 270
+    },
+    "facing=west,kind=release_bar,stage=1": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 270
+    },
+    "facing=west,kind=release_bar,stage=2": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 270
+    },
+    "facing=west,kind=release_bar,stage=3": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 270
+    },
+    "facing=west,kind=release_bar,stage=4": {
+      "model": "the_oldest_house:block/tension/release_bar_0",
+      "y": 270
     }
   }
 }

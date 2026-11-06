@@ -32,7 +32,7 @@ import net.minecraft.world.phys.shapes.*;
 public final class TensionBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<TensionBlock> CODEC=simpleCodec(TensionBlock::new);
     public enum Kind implements StringRepresentable {
-        WHEEL,CLEAT,WEIGHT,PIN,CABLE,SHEAVE,PLATFORM;
+        WHEEL,CLEAT,WEIGHT,PIN,CABLE,SHEAVE,PLATFORM,RELEASE_BAR;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -53,6 +53,7 @@ public final class TensionBlock extends HorizontalDirectionalBlock {
         return switch(s.getValue(KIND)){
             case WHEEL->box(f,1,1,11,15,15,16);
             case CLEAT->box(f,3,4,11,13,12,16);
+            case RELEASE_BAR->box(f,1,5,11,15,11,16);
             case WEIGHT->Block.box(3,0,3,13,14,13);
             case PIN->box(f,5,5,8,11,11,16);
             case CABLE->s.getValue(STAGE)==RISE?box(f,7,0,7,9,16,9):box(f,0,7,7,16,9,9);
@@ -69,6 +70,7 @@ public final class TensionBlock extends HorizontalDirectionalBlock {
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
+        if(DeepTensionRooms.use(p,pos,s))return InteractionResult.CONSUME;
         return TensionRooms.use(p,pos,s)?InteractionResult.CONSUME:InteractionResult.PASS;
     }
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}

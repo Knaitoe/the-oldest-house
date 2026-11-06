@@ -156,6 +156,8 @@ def fitting_models():
         m[f'cleat_{stage}'] = model([element([3, 4, 14], [13, 12, 16], {'all': 'i', 'north': 'c'}, uv={'north': [0, 0, 16, 16]})],
                                     {'i': 'iron', 'c': f'cleat_{stage}'}, 'iron')
     m['weight_0'] = model([element([3, 0, 3], [13, 12, 13], {'all': 'w'}), element([7, 12, 7], [9, 16, 9], {'all': 'i'})], {'w': 'weight', 'i': 'iron'}, 'weight')
+    m['release_bar_0'] = model([element([1, 5, 14], [15, 11, 16], {'all': 'i'}),
+                                element([2, 7, 11], [14, 9, 14], {'all': 'b'})], {'i': 'iron', 'b': 'brass'}, 'iron')
     for stage in range(3):
         out = stage * 5  # seated, the pin reaches out across into the platform frame; drawn, back in its housing
         m[f'pin_{stage}'] = model([element([4, 4, 15], [12, 12, 16], {'all': 'i'}), element([6, 6, out], [10, 10, 15], {'all': 'b'})], {'i': 'iron', 'b': 'brass'}, 'brass')
@@ -170,8 +172,8 @@ def fitting_models():
     return m
 
 
-KINDS = ['wheel', 'cleat', 'weight', 'pin', 'cable', 'sheave', 'platform']
-STAGES = {'wheel': 3, 'cleat': 2, 'weight': 1, 'pin': 3, 'cable': 2, 'sheave': 1, 'platform': 1}
+KINDS = ['wheel', 'cleat', 'weight', 'pin', 'cable', 'sheave', 'platform', 'release_bar']
+STAGES = {'wheel': 3, 'cleat': 2, 'weight': 1, 'pin': 3, 'cable': 2, 'sheave': 1, 'platform': 1, 'release_bar': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 5
 NAMES = {'tension_fitting': 'Cable Gear', 'tension_plaster': 'Limewashed Plaster', 'tension_boards': 'Painted Loft Boards', 'tension_mark': 'Marked Plaster'}

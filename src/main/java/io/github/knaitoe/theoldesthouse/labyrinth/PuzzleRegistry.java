@@ -101,5 +101,6 @@ public final class PuzzleRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<YardBlock>> YARD_TYPE=CODECS.register("yard_fitting",()->YardBlock.CODEC);
     public static final DeferredBlock<YardBlock> YARD=BLOCKS.registerBlock("yard_fitting",YardBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(YardBlock::light));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> YARD_IDLE=sound("yard.idle"),YARD_TRAFFIC=sound("yard.traffic"),YARD_CROW=sound("yard.crow"),YARD_CREEK=sound("yard.creek");
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> YARD_FOLLOW=sound("yard.follow");
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);}
 }
