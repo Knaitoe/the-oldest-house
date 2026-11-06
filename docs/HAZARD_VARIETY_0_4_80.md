@@ -23,6 +23,8 @@ Sixteen new gray slots append after 77. The stack capacity expands from ten to t
 | 92 | Duplicate rooms | 14 | Three furnished rooms in a row. One omits its clock. Only that room's door is real; wrong doors return to the start without changing the route stack. |
 | 93 | Turning gravity | 14 | Four directions of pull, turning each twenty occupied seconds. A cross of ledges, shallow trenches, rails and supported ladders offers shelter. |
 
+The 0.4.312 [physical grip follow-up](RAIL_GRIPS_0_4_312.md) requires the held rail to remain present and within reach. A fresh grip gives a quiet contact sound and action-bar confirmation; holding Use does not repeat that confirmation. Crouching remains independent of the rail.
+
 Shared clocks pause while no eligible reader occupies a room. Spectators watch but cannot advance puzzles. Runtime engines belong to their server and saved origin, so test servers and replacement worlds do not share state. Environmental freezing, falls, drowning and pressure damage in these maps cannot reduce health below three hearts. Ordinary unrelated damage retains its native behavior.
 
 Movement and scale use distinct transient modifier IDs. Leaving, death, logout, clone, login and server shutdown remove only the owned modifiers; unrelated equipment and mod effects remain. Private mirror packets use short leases, clear on exit and logout, and spawn no networked reflected entity.
