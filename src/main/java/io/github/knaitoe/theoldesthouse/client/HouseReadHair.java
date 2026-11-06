@@ -92,6 +92,7 @@ public final class HouseReadHair {
     private static final Map<ResourceLocation,Integer> COLOURS=new HashMap<>();
     /** The reader's hair colour: the commonest colour on the crown of their skin (the hat layer if they drew hair there). */
     public static int colour(AbstractClientPlayer reader){
+        if(HouseBodyClient.wearing(reader.getUUID()))return HouseBodyClient.hair(reader.getUUID());
         var texture=reader.getSkin().texture();var known=COLOURS.get(texture);if(known!=null)return known;
         var mc=Minecraft.getInstance();var tex=mc.getTextureManager().getTexture(texture);RenderSystem.bindTexture(tex.getId());
         int w=GlStateManager._getTexLevelParameter(GL11.GL_TEXTURE_2D,0,GL11.GL_TEXTURE_WIDTH),h=GlStateManager._getTexLevelParameter(GL11.GL_TEXTURE_2D,0,GL11.GL_TEXTURE_HEIGHT);

@@ -10,6 +10,7 @@ ROWS = {
     'traffic': ('A car passes beyond the trees', 48),
     'crow': ('A crow calls', 32),
     'creek': ('A creek runs high', 16),
+    'follow': ('Footsteps', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -82,7 +83,18 @@ def creek():
     return out
 
 
-MAKERS = {'idle': idle, 'traffic': traffic, 'crow': crow, 'creek': creek}
+def follow():
+    out = np.zeros(seconds(.8))
+    for at in (.02, .43):
+        k = seconds(.18)
+        t = times(k)
+        sole = band(rng.standard_normal(k), 80, 700) * envelope(k, .008, .1)
+        grit = band(rng.standard_normal(k), 1300, 5500) * np.exp(-t * 27)
+        place(out, sole * .7 + grit * .25, at)
+    return out
+
+
+MAKERS = {'idle': idle, 'traffic': traffic, 'crow': crow, 'creek': creek, 'follow': follow}
 
 
 def main():

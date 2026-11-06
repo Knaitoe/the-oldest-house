@@ -3772,5 +3772,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.yard.creek"
+  },
+  "yard.follow": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:yard/follow",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.yard.follow"
   }
 }

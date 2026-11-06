@@ -149,6 +149,66 @@
     "facing=west,kind=tail,stage=1": {
       "model": "the_oldest_house:block/yard/tail_0",
       "y": 270
+    },
+    "facing=north,kind=sheet,stage=0": {
+      "model": "the_oldest_house:block/yard/sheet_0"
+    },
+    "facing=north,kind=sheet,stage=1": {
+      "model": "the_oldest_house:block/yard/sheet_1"
+    },
+    "facing=east,kind=sheet,stage=0": {
+      "model": "the_oldest_house:block/yard/sheet_0",
+      "y": 90
+    },
+    "facing=east,kind=sheet,stage=1": {
+      "model": "the_oldest_house:block/yard/sheet_1",
+      "y": 90
+    },
+    "facing=south,kind=sheet,stage=0": {
+      "model": "the_oldest_house:block/yard/sheet_0",
+      "y": 180
+    },
+    "facing=south,kind=sheet,stage=1": {
+      "model": "the_oldest_house:block/yard/sheet_1",
+      "y": 180
+    },
+    "facing=west,kind=sheet,stage=0": {
+      "model": "the_oldest_house:block/yard/sheet_0",
+      "y": 270
+    },
+    "facing=west,kind=sheet,stage=1": {
+      "model": "the_oldest_house:block/yard/sheet_1",
+      "y": 270
+    },
+    "facing=north,kind=pipe_lip,stage=0": {
+      "model": "the_oldest_house:block/yard/pipe_lip_0"
+    },
+    "facing=north,kind=pipe_lip,stage=1": {
+      "model": "the_oldest_house:block/yard/pipe_lip_0"
+    },
+    "facing=east,kind=pipe_lip,stage=0": {
+      "model": "the_oldest_house:block/yard/pipe_lip_0",
+      "y": 90
+    },
+    "facing=east,kind=pipe_lip,stage=1": {
+      "model": "the_oldest_house:block/yard/pipe_lip_0",
+      "y": 90
+    },
+    "facing=south,kind=pipe_lip,stage=0": {
+      "model": "the_oldest_house:block/yard/pipe_lip_0",
+      "y": 180
+    },
+    "facing=south,kind=pipe_lip,stage=1": {
+      "model": "the_oldest_house:block/yard/pipe_lip_0",
+      "y": 180
+    },
+    "facing=west,kind=pipe_lip,stage=0": {
+      "model": "the_oldest_house:block/yard/pipe_lip_0",
+      "y": 270
+    },
+    "facing=west,kind=pipe_lip,stage=1": {
+      "model": "the_oldest_house:block/yard/pipe_lip_0",
+      "y": 270
     }
   }
 }

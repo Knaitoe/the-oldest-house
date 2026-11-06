@@ -151,8 +151,8 @@ public final class HouseReadTests {
               pick(p,f.in,b[0],9);draw(p,f.in,b[0],8,5);h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).strength()==HouseRead.Strength.UNCERTAIN,"a face coloured again in another crayon disagrees");
               draw(p,f.in,b[0],1,10);h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).equals(new HouseRead.Category(HouseReadKitchen.hex(9),HouseRead.Strength.SETTLED)),"hands in the face's crayon settle it");
               pick(p,f.in,b[0],19);draw(p,f.in,b[0],7,1);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==-1,"green hair is play: the House's body keeps the account's own hair colour");
-              pick(p,f.in,b[0],12);draw(p,f.in,b[0],6,2);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==HouseReadKitchen.rgb(12),"hair drawn in a hair colour is kept");
-              var body=HouseBodies.body(f.data(),p.getUUID());h.assertTrue(body.tone()==HouseReadKitchen.rgb(9)&&body.hair()==HouseReadKitchen.rgb(12),"the House's body wears the face and the hair as the reader drew them");
+              pick(p,f.in,b[0],12);draw(p,f.in,b[0],6,2);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==-1,"the hair on the table is a preview until the picture is hung");
+              var body=HouseBodies.body(f.data(),p.getUUID());h.assertTrue(body.tone()==HouseReadKitchen.rgb(9)&&body.hair()==-1,"the House keeps the previous hair while the picture is on the table");
               var sheet=(HouseReadPropBlock.Fitting)f.in.getBlockEntity(b[0].offset(HouseReadKitchen.SHEET_AT));h.assertTrue(sheet.read().getInt("Face")==9&&sheet.read().getInt("Hands")==9&&sheet.read().getInt("Hair")==12&&sheet.read().getInt("Clothes")<0,"the drawing keeps each part's colour for the client to draw: "+sheet.read());
               // 0.4.196: the pencil down the margin draws the face and the body, a child's way, and the House keeps what was drawn.
               h.assertTrue(sheet.read().getInt("Mood")==0&&sheet.read().getInt("Body")==0&&!sheet.read().getBoolean("PencilTaken"),"the drawing begins with no face and nothing below the shirt, the pencil in the margin");
@@ -164,8 +164,12 @@ public final class HouseReadTests {
               h.assertTrue(sheet.read().getInt("Body")==2&&drawnBody.presentation()==2&&drawnBody.face()==2&&drawnBody.tone()==HouseReadKitchen.rgb(9),"again, a dress: the House's body is the one drawn, with the face drawn: "+drawnBody);
               draw(p,f.in,b[0],7,1);h.assertTrue(sheet.read().getInt("Body")==2&&sheet.read().getInt("Mood")==2,"the pencil on the hair only goes over the lines");
               var worn=HouseBodies.worn(p);h.assertTrue(worn!=null&&worn.presentation()==2&&worn.face()==2&&worn.tone()==HouseReadKitchen.rgb(9),"the reader wears the drawn tone, body and face on the House's body: "+worn);
-              // 0.4.201: the pencil goes back to the margin; the fridge takes the picture only from the reader's hand.
-              draw(p,f.in,b[0],14,4);h.assertTrue(HouseReadKitchen.held(p)<0&&!HouseReadKitchen.carrying(p),"the pencil goes back to the margin");
+              // The last crayon wins; a reader can change their mind before hanging the sheet.
+              pick(p,f.in,b[0],16);draw(p,f.in,b[0],6,2);
+              h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==-1,"changing the drawn hair still leaves the body unchanged before the fridge");
+              // The crayon goes back to the tin; the fridge takes the picture only from the reader's hand.
+              pick(p,f.in,b[0],16);
+              h.assertTrue(HouseReadKitchen.held(p)<0&&!HouseReadKitchen.carrying(p),"the crayon goes back to the tin");
               stand(p,f.in,b[0],3.5,0,-8.5);click(p,b[0].offset(HouseReadKitchen.FRIDGE_AT));h.assertTrue(!visit(p,K).getBoolean("Hung"),"the fridge waits for the picture to be brought over");
               // 0.4.202: a door tried before the picture is up says what it is waiting for.
               h.assertTrue(HouseReadKitchen.waiting(p).contains("still on the table"),"a drawn picture left on the table: the door says where it should go: "+HouseReadKitchen.waiting(p));
@@ -176,10 +180,12 @@ public final class HouseReadTests {
               // Up on the fridge: the picture leaves the hand, the doors open.
               stand(p,f.in,b[0],3.5,0,-8.5);click(p,b[0].offset(HouseReadKitchen.FRIDGE_AT));
               var top=(HouseReadPropBlock.Fitting)f.in.getBlockEntity(b[0].offset(HouseReadKitchen.FRIDGE_AT.above()));
+              h.assertTrue(top.read().getInt("Hair")==16&&HouseReadKitchen.hair(f.data(),p.getUUID())==HouseReadKitchen.rgb(16)&&HouseBodies.body(f.data(),p.getUUID()).hair()==HouseReadKitchen.rgb(16),"the fridge commits the final drawn hair to the body");
+              h.assertTrue(HouseReadProse.kitchen(HouseRead.seen(f.data(),p.getUUID()).getCompound("kitchen")).contains("filled in the hair"),"the account remembers the act without naming a colour");
               h.assertTrue(visit(p,K).getBoolean("Hung")&&f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.FRIDGE_AT.above())).getValue(HouseReadPropBlock.TURNED)&&top.read().getInt("Face")==9,"the picture goes up on the fridge door and leaves the table");
               h.assertTrue(HouseReadStory.ready(p,K)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.EXIT)).getValue(DoorBlock.OPEN),"with the picture up, the hall door past the fridge opens");
               h.assertTrue(ItemStack.matches(own[0],p.getMainHandItem()),"the picture leaves the hand and the reader's own item comes back");
-              var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("kitchen");h.assertTrue(HouseReadProse.kitchen(seen).equals("drew yourself sad, with a tear, in a dress, at the kitchen table, face and hands alike, and put the picture up on the fridge")&&StaircaseAccount.read(f.data(),p.getUUID()).drewHands()&&StaircaseAccount.read(f.data(),p.getUUID()).drawn().equals("sad, with a tear, in a dress"),"the account and the book recite the act and what the pencil drew, never a colour: "+HouseReadProse.kitchen(seen));
+              var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("kitchen");h.assertTrue(HouseReadProse.kitchen(seen).equals("drew yourself sad, with a tear, in a dress, at the kitchen table, face and hands alike, and filled in the hair and put the picture up on the fridge")&&StaircaseAccount.read(f.data(),p.getUUID()).drewHands()&&StaircaseAccount.read(f.data(),p.getUUID()).drewHair()&&StaircaseProse.hands(StaircaseAccount.read(f.data(),p.getUUID())).contains("filled in the hair")&&StaircaseAccount.read(f.data(),p.getUUID()).drawn().equals("sad, with a tear, in a dress"),"the account and the book recite the act and what the pencil drew, never a colour: "+HouseReadProse.kitchen(seen));
               h.assertTrue(!sheet.read().getBoolean("PencilTaken"),"the pencil goes back with the picture up");
               HouseReadExport.save(f.in,b[0],K,"kitchen_picture_up");
           })

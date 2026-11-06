@@ -87,7 +87,23 @@ public final class HouseReadReaderTests {
         h.assertTrue(told.size()==1&&told.getFirst().bodies().stream().anyMatch(e->e.reader().equals(q.getUUID())&&e.body().tone()==drawn),"every reader is told the body in that tone: "+told);
         stand(q,h.getLevel(),h.absolutePos(BlockPos.ZERO).above(),2,0,0);
         h.assertTrue(HouseBodies.worn(q)==null,"outside the House their own skin returns");
-        h.succeed();
+        // A hung picture is personal, survives a save, and reaches both observers through the native payload.
+        HouseRead.see(p,HouseReadSites.Room.KITCHEN,t->{t.putBoolean("Hung",true);t.putInt("Hair",16);});
+        HouseRead.see(q,HouseReadSites.Room.KITCHEN,t->{t.putBoolean("Hung",true);t.putInt("Hair",17);});
+        var loaded=LabyrinthData.FACTORY.deserializer().apply(d.save(new CompoundTag(),f.in.registryAccess()),f.in.registryAccess());
+        h.assertTrue(HouseBodies.body(loaded,p.getUUID()).hair()==HouseReadKitchen.rgb(16)&&HouseBodies.body(loaded,q.getUUID()).hair()==HouseReadKitchen.rgb(17),"the saved drawing keeps the two readers' hair colours apart");
+        stand(p,f.out,f.origin,0,0,0);stand(q,f.out,f.origin,2,0,0);
+        bodies(p);bodies(q);HouseBodies.sync(p.server);
+        var observed=new HashMap<UUID,HouseBodiesPayload>();
+        SceneReady.when(h,()->{
+            for(var observer:List.of(p,q))for(var message:bodies(observer))observed.put(observer.getUUID(),message);
+            for(var observer:List.of(p,q)){
+                var message=observed.get(observer.getUUID());
+                if(message==null||message.bodies().stream().noneMatch(e->e.reader().equals(p.getUUID())&&e.body().hair()==HouseReadKitchen.rgb(16))
+                    ||message.bodies().stream().noneMatch(e->e.reader().equals(q.getUUID())&&e.body().hair()==HouseReadKitchen.rgb(17)))return "both drawn hair colours at "+observer.getGameProfile().getName();
+            }
+            return null;
+        },2,100,h::succeed);
     }
 
     /** Every observation each room's clause can be written from: all its branches. */

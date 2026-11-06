@@ -81,7 +81,7 @@ public final class HouseReadProse {
     public static String kitchen(CompoundTag t){
         if(!t.getBoolean("Hung"))return "";
         String drawn=drawn(t);
-        return "drew yourself"+(drawn.isEmpty()?"":" "+drawn+",")+" at the kitchen table"+(t.getBoolean("Alike")?", face and hands alike,":"")+" and put the picture up on the fridge";
+        return "drew yourself"+(drawn.isEmpty()?"":" "+drawn+",")+" at the kitchen table"+(t.getBoolean("Alike")?", face and hands alike,":"")+(t.getBoolean("DrewHair")?" and filled in the hair":"")+" and put the picture up on the fridge";
     }
     /** 0.4.196: the face and the body the pencil drew, in the room's words ("smiling, in a dress"), or nothing for neither. */
     public static String drawn(CompoundTag t){

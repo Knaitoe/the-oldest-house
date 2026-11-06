@@ -30,7 +30,7 @@ import net.minecraft.world.phys.shapes.*;
 public final class YardBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<YardBlock> CODEC=simpleCodec(YardBlock::new);
     public enum Kind implements StringRepresentable {
-        BULB,NOSE,BODY,CABIN,TAIL;
+        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -46,12 +46,17 @@ public final class YardBlock extends HorizontalDirectionalBlock {
         return switch(s.getValue(KIND)){
             case BULB->Block.box(6,6,6,10,16,10);
             case CABIN->Block.box(0,0,0,16,12,16);
+            case SHEET->s.getValue(STAGE)==0?Block.box(0,0,7,16,16,9):Block.box(0,0,7,5,16,9);
+            case PIPE_LIP->Block.box(0,0,0,16,16,16);
             default->Block.box(0,0,0,16,14,16);
         };
     }
-    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.BULB?Shapes.empty():getShape(s,l,p,c);}
+    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.BULB||s.getValue(KIND)==Kind.SHEET?Shapes.empty():getShape(s,l,p,c);}
+    @Override protected void entityInside(BlockState s,Level l,BlockPos at,net.minecraft.world.entity.Entity e){if(e instanceof ServerPlayer p&&s.getValue(KIND)==Kind.SHEET)YardConnectors.brush(p,at);}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
+        if(s.getValue(KIND)==Kind.SHEET){YardConnectors.brush(p,pos);return InteractionResult.CONSUME;}
+        if(s.getValue(KIND)==Kind.PIPE_LIP){if(YardCrawl.start(p))PuzzleRooms.say(p,"You get down onto the dry concrete lip.");return InteractionResult.CONSUME;}
         PuzzleRooms.say(p,switch(s.getValue(KIND)){
             case BULB->"A bare bulb over the back step. Someone leaves it on.";
             case NOSE->"The engine ticks over. Warm air comes off the grille. Nobody is at the wheel.";
