@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.316** revises the Ghosts Set against the uploaded novel and adds Johnny Truant's three outside encounter pairs. The Ghosts pass fixes skipped dialogue, gives Barry a conversation panel, and corrects the sisters' shared stories, supper and post-production reconstruction. See [the Ghosts revision](docs/GHOSTS_NOVEL_0_4_315.md) and [the outside encounters and CI repairs](docs/TRUANT_YARD_0_4_316.md). Focused native checks pass; exact-commit CI remains pending.
+Development candidate **0.4.317** retains the 0.4.316 changes and repairs the older Barry integration check to inspect his native conversation panel. See [the failed run and repair](docs/BARRY_PANEL_CHECK_0_4_317.md). The included work revises the Ghosts Set against the uploaded novel and adds Johnny Truant's three outside encounter pairs. The Ghosts pass fixes skipped dialogue, gives Barry a conversation panel, and corrects the sisters' shared stories, supper and post-production reconstruction. See [the Ghosts revision](docs/GHOSTS_NOVEL_0_4_315.md) and [the outside encounters and CI repairs](docs/TRUANT_YARD_0_4_316.md). Exact-commit CI remains pending.
 
 ## Playing it
 
