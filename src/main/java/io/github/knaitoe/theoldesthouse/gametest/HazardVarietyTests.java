@@ -29,7 +29,7 @@ public final class HazardVarietyTests {
     private static final class Fixture implements AutoCloseable {
         final GameTestHelper h;final ServerLevel level;final BlockPos origin=new BlockPos(92000,80,92000);final HouseSavedData house;final LabyrinthData data;
         final NativeTestChunks chunks=new NativeTestChunks();final List<ServerPlayer> players=new ArrayList<>();final Set<LabyrinthPlace> built=new HashSet<>();
-        Fixture(GameTestHelper h){this.h=h;level=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.INTERIOR);house=HouseSavedData.get(level.getServer());data=LabyrinthData.get(level.getServer());var ownHouse=new HouseSavedData();ownHouse.markSpawned(origin);var store=level.getServer().overworld().getDataStorage();store.set("the_oldest_house",ownHouse);store.set("the_oldest_house_labyrinth",new LabyrinthData());d().setBuilt(LabyrinthBuilder.VERSION,origin);active=this;}
+        Fixture(GameTestHelper h){this.h=h;level=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.INTERIOR);house=HouseSavedData.get(level.getServer());data=LabyrinthData.get(level.getServer());var ownHouse=new HouseSavedData();ownHouse.markSpawned(origin);ownHouse.markInteriorInitialized();var store=level.getServer().overworld().getDataStorage();store.set("the_oldest_house",ownHouse);store.set("the_oldest_house_labyrinth",new LabyrinthData());d().setBuilt(LabyrinthBuilder.VERSION,origin);active=this;}
         LabyrinthData d(){return LabyrinthData.get(level.getServer());}BlockPos base(LabyrinthPlace p){return LabyrinthPlaces.base(origin,p);}
         void build(LabyrinthPlace p){if(built.contains(p))return;var b=base(p);h.assertTrue(b!=null,"appended native slot fits: "+p);built.add(p);var bounds=LabyrinthPlaces.placeBounds(origin,p);chunks.hold(level,new AABB(bounds.minX(),bounds.minY(),bounds.minZ(),bounds.maxX()+1,bounds.maxY()+1,bounds.maxZ()+1));HazardMaps.build(level,b,p);LabyrinthBuilder.registerDoors(d(),p,b);d().setReady(p.id(),true);}
         ServerPlayer player(String name,LabyrinthPlace p){build(p);var reader=NativeTestPlayers.survival(h,name);players.add(reader);at(reader,p,.5,0,-2.5);reader.setNoGravity(true);HazardVariety.onArrive(reader,p);return reader;}
@@ -111,10 +111,40 @@ public final class HazardVarietyTests {
     @GameTest(template="empty",batch="hazard_listing",timeoutTicks=1000) public static void nativeListingSlidesDroppedItemsAndCrouchingOrHoldingTheRailStopsTheReader(GameTestHelper h){var f=new Fixture(h);var p=f.player("ship_reader",LabyrinthPlace.LISTING_HALL);f.at(p,LabyrinthPlace.LISTING_HALL,0,0,-18);p.setShiftKeyDown(true);var b=f.base(LabyrinthPlace.LISTING_HALL);final ItemEntity[] dropped={null};
         // The list is a sine on the hall's own occupied clock (a 600-tick swing), which starts once its chunks and entity sections are loaded
         // and may already be partway through a swing; drop the item early in a rising half, so it is still rising when the drift is measured.
-        h.startSequence().thenWaitUntil(()->{long swing=Math.floorMod(f.room(LabyrinthPlace.LISTING_HALL).getLong("Clock"),600);h.assertTrue(swing>=20&&swing<=150,"wait for the listing hall's clock to start a rising swing: "+swing);}).thenExecute(()->{dropped[0]=new ItemEntity(f.level,b.getX()+.5,b.getY()+1,b.getZ()-18.5,new ItemStack(Items.PAPER));dropped[0].setNoGravity(true);dropped[0].setPickUpDelay(100);h.assertTrue(f.level.addFreshEntity(dropped[0]),"a real dropped item registers in the occupied corridor");var item=dropped[0];
+        h.startSequence().thenWaitUntil(()->{long swing=Math.floorMod(f.room(LabyrinthPlace.LISTING_HALL).getLong("Clock"),600);h.assertTrue(swing>=20&&swing<=150,"wait for the listing hall's clock to start a rising swing: "+swing);}).thenExecute(()->{dropped[0]=new ItemEntity(f.level,b.getX()+.5,b.getY()+1,b.getZ()-18.5,new ItemStack(Items.PAPER));dropped[0].setNoGravity(true);dropped[0].setDeltaMovement(Vec3.ZERO);dropped[0].setPickUpDelay(100);h.assertTrue(f.level.addFreshEntity(dropped[0]),"a real dropped item registers in the occupied corridor");var item=dropped[0];
         h.runAfterDelay(55,()->{h.assertTrue(item.getX()>b.getX()+.6,"native dropped items drift with the listing corridor");h.assertTrue(Math.abs(p.getDeltaMovement().x)<.01,"crouching holds the reader against the list");p.setShiftKeyDown(false);var at=b.offset(2,0,-18);f.at(p,LabyrinthPlace.LISTING_HALL,1.5,0,-18);HazardVariety.rail(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.WEST,at,false)));});
         h.runAfterDelay(70,()->{h.assertTrue(Math.abs(p.getDeltaMovement().x)<.01,"a native rail interaction holds footing");h.succeed();});});}
     @AfterBatch(batch="hazard_listing") public static void listingDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="hazard_listing_grip",timeoutTicks=1000)
+    public static void aListingHallRailHoldsOnlyItsReaderWithinReachWhileItStillStands(GameTestHelper h){railAnchor(h,LabyrinthPlace.LISTING_HALL);}
+    @AfterBatch(batch="hazard_listing_grip") public static void listingGripDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="hazard_gravity_grip",timeoutTicks=1000)
+    public static void aTurningGravityRailAlsoLetsGoWhenItsReaderWalksAway(GameTestHelper h){railAnchor(h,LabyrinthPlace.TURNING_GRAVITY);}
+    @AfterBatch(batch="hazard_gravity_grip") public static void gravityGripDone(ServerLevel l){close();}
+    private static void railAnchor(GameTestHelper h,LabyrinthPlace place){
+        var f=new Fixture(h);var p=f.player("rail_reader",place);var peer=f.player("rail_peer",place);var b=f.base(place);var l=f.level;
+        boolean listing=place==LabyrinthPlace.LISTING_HALL;
+        var at=b.offset(listing?2:11,0,listing?-18:-6);double nearX=listing?1.5:10.5,farX=nearX-3,z=listing?-18:-5.5;
+        f.at(p,place,nearX,0,z);f.at(peer,place,farX,0,z);
+        final long[] heldAt={0};
+        Runnable grip=()->{var event=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.WEST,at,false));HazardVariety.rail(event);h.assertTrue(event.isCanceled(),"the actual nearby rail accepts the reader's hand");heldAt[0]=h.getTick();};
+        h.startSequence().thenWaitUntil(()->{long clock=f.room(place).getLong("Clock");h.assertTrue(clock>=40&&clock<=140,"a loaded room's first sustained pull: "+clock);})
+            .thenExecute(()->{p.setDeltaMovement(Vec3.ZERO);peer.setDeltaMovement(Vec3.ZERO);grip.run();})
+            .thenIdle(10).thenExecute(()->{
+                h.assertTrue(Math.abs(p.getDeltaMovement().x)<.01&&peer.getDeltaMovement().x>.01,"holding the rail secures only that reader, not their peer");
+                f.at(p,place,farX,0,z);
+            }).thenWaitUntil(()->h.assertTrue(p.getDeltaMovement().x>.01,"walking beyond reach releases the grip before its forty-tick lease expires"))
+            .thenExecute(()->{h.assertTrue(h.getTick()-heldAt[0]<40,"walking away must release the grip before ordinary expiry");f.at(p,place,nearX,0,z);})
+            .thenWaitUntil(()->h.assertTrue(p.getDeltaMovement().x>.01,"returning within reach still requires taking hold again"))
+            .thenExecute(()->{h.assertTrue(h.getTick()-heldAt[0]<40,"a released grip cannot silently return within the old lease");f.at(p,place,nearX,0,z);grip.run();})
+            .thenIdle(5).thenExecute(()->{
+                h.assertTrue(Math.abs(p.getDeltaMovement().x)<.01,"the same real rail can be gripped again");
+                l.setBlock(at,Blocks.AIR.defaultBlockState(),2);
+            }).thenWaitUntil(()->h.assertTrue(p.getDeltaMovement().x>.01,"a removed rail no longer holds the reader"))
+            .thenExecute(()->{h.assertTrue(h.getTick()-heldAt[0]<40,"removing the rail must release the grip before ordinary expiry");p.setShiftKeyDown(true);p.setDeltaMovement(Vec3.ZERO);})
+            .thenIdle(5).thenExecute(()->h.assertTrue(Math.abs(p.getDeltaMovement().x)<.01,"crouching remains an independent way to secure footing"))
+            .thenSucceed();
+    }
     @GameTest(template="empty",batch="hazard_receding",timeoutTicks=300) public static void backingAwayBringsTheActualDoorIntoReachWithoutChangingItsSavedDeal(GameTestHelper h){var f=new Fixture(h);var p=f.player("receding_reader",LabyrinthPlace.RECEDING_HALL);var b=f.base(LabyrinthPlace.RECEDING_HALL);f.at(p,LabyrinthPlace.RECEDING_HALL,.5,0,-10);var door=f.door(LabyrinthPlace.RECEDING_HALL,0);f.d().deal(p.getUUID(),door,LabyrinthPlace.JUNCTION.id(),false);var saved=f.d().deal(p.getUUID(),door);final int[] phase={1},away={-34};
         p.setYRot(180);h.onEachTick(()->{if(phase[0]==2&&p.position().distanceTo(f.door(LabyrinthPlace.RECEDING_HALL,0).lower.getCenter())<3.1)phase[0]=0;if(phase[0]>0)p.moveTo(p.getX(),p.getY(),p.getZ()+(phase[0]==1?-.08:.08));});
         h.runAfterDelay(65,()->{away[0]=f.room(LabyrinthPlace.RECEDING_HALL).getInt("DoorZ");h.assertTrue(away[0]<-34,"walking at the far door physically recedes it");phase[0]=2;p.setYRot(180);});

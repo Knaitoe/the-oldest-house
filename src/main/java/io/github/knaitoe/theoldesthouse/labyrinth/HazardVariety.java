@@ -138,8 +138,25 @@ public final class HazardVariety {
             if(warm)r.frost=Math.max(0,r.frost-8);else if(!together||clock%2==0)r.frost=Math.min(240,r.frost+1);p.setTicksFrozen(r.frost);modifier(p,Attributes.MOVEMENT_SPEED,COLD,-.25*Math.min(1,r.frost/140.));
             if(!warm&&r.frost>=140&&clock%40==0&&p.getHealth()>6)p.hurt(p.damageSources().freeze(),1);}
     }
-    private static boolean holding(Reader r,long clock){return r.player.isShiftKeyDown()||r.own.getLong("RailUntil")>=clock&&r.own.contains("RailUntil");}
-    @SubscribeEvent public static void rail(PlayerInteractEvent.RightClickBlock e){if(e.getHand()!=InteractionHand.MAIN_HAND||!(e.getEntity() instanceof ServerPlayer p)||!HazardBlock.is(p.level().getBlockState(e.getPos()),HazardBlock.Kind.RAIL))return;var w=engine(p.server);var r=w.readers.get(p.getUUID());if(r!=null&&r.place!=null&&(r.place==LabyrinthPlace.LISTING_HALL||r.place==LabyrinthPlace.TURNING_GRAVITY)&&p.distanceToSqr(e.getPos().getCenter())<9){r.own.putLong("RailUntil",w.room(r.place).getLong("Clock")+40);e.setCanceled(true);}}
+    /** A grip belongs to an actual rail within reach, not a free-standing grace period after walking away. */
+    private static boolean gripping(Reader r,long clock){
+        if(!r.own.contains("RailAt")||!r.own.contains("RailUntil"))return false;
+        var at=BlockPos.of(r.own.getLong("RailAt"));var p=r.player;
+        boolean held=r.own.getLong("RailUntil")>=clock&&p.distanceToSqr(at.getCenter())<9&&p.serverLevel().hasChunkAt(at)&&HazardBlock.is(p.level().getBlockState(at),HazardBlock.Kind.RAIL);
+        if(!held){r.own.remove("RailAt");r.own.remove("RailUntil");}
+        return held;
+    }
+    private static boolean holding(Reader r,long clock){boolean grip=gripping(r,clock);return r.player.isShiftKeyDown()||grip;}
+    @SubscribeEvent public static void rail(PlayerInteractEvent.RightClickBlock e){
+        if(e.getHand()!=InteractionHand.MAIN_HAND||!(e.getEntity() instanceof ServerPlayer p)||!HazardBlock.is(p.level().getBlockState(e.getPos()),HazardBlock.Kind.RAIL))return;
+        var w=engine(p.server);var r=w.readers.get(p.getUUID());
+        if(r!=null&&r.place!=null&&(r.place==LabyrinthPlace.LISTING_HALL||r.place==LabyrinthPlace.TURNING_GRAVITY)&&p.distanceToSqr(e.getPos().getCenter())<9){
+            long clock=w.room(r.place).getLong("Clock");boolean held=gripping(r,clock);
+            r.own.putLong("RailAt",e.getPos().asLong());r.own.putLong("RailUntil",clock+40);
+            if(!held){PuzzleRooms.say(p,"You take hold of the rail.");sound(p.serverLevel(),e.getPos(),SoundEvents.CHAIN_HIT,.35F,1.1F);}
+            e.setCanceled(true);
+        }
+    }
     public static double list(long clock){return Math.sin(clock*Math.PI/300);}
     private static void listing(ServerLevel l,BlockPos b,long clock,List<Reader> here){double tilt=list(clock);if(clock%5!=0)return;for(var r:here){HousePackets.send(r.player,HazardViewPayload.list(b,(float)tilt,holding(r,clock)?0:(float)(tilt*.012)));if(Math.abs(tilt)>.16&&!holding(r,clock))push(r.player,tilt*.06,0);}
         if(Math.abs(tilt)>.16)for(var item:l.getEntitiesOfClass(ItemEntity.class,area(b,LabyrinthPlace.LISTING_HALL)))item.setDeltaMovement(item.getDeltaMovement().add(tilt*.04,0,0));if(clock%300==150)sound(l,b.offset(0,2,-22),SoundEvents.WOODEN_DOOR_CLOSE,.7F,.5F);}

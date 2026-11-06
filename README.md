@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate 0.4.311 corrects the outdoor tally counter's distance and makes the Tension Room's machinery stop for occupied space. Its sprung platform carries living riders to the landing. See [the interaction notes](docs/INTERACTION_SAFETY_0_4_311.md) for scope and validation; exact-commit CI is pending.
+Development candidate 0.4.312 ties a rail grip to the actual reachable rail, with tactile sound and action-bar feedback. It also corrects two broad-run verification failures from 0.4.311 while retaining its radial counter and occupied Tension machinery. See [the rail and verification notes](docs/RAIL_GRIPS_0_4_312.md); exact-commit CI is pending.
 
 ## Playing it
 
