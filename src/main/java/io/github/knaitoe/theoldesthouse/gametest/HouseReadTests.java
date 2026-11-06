@@ -29,6 +29,7 @@ public final class HouseReadTests {
     @AfterBatch(batch="read_routine") public static void routineDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_light") public static void lightDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_shelter") public static void shelterDone(ServerLevel ignored){close();}
+    @AfterBatch(batch="read_shelter_ends") public static void shelterEndsDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_kitchen") public static void kitchenDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_closet") public static void closetDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_manual_card") public static void manualCardDone(ServerLevel ignored){close();}

@@ -53,7 +53,7 @@ public final class YardFields {
             put(l,b,column,0,z,Blocks.STRIPPED_OAK_LOG.defaultBlockState());
             put(l,b,column,1,z,YardBlock.of(YardBlock.Kind.SURVEY_SLOT,Direction.NORTH,0));
         }
-        for(int col=-14;col<=14;col++)put(l,b,col,0,-25,Blocks.OAK_FENCE.defaultBlockState());
+        for(int col=-14;col<=14;col++)put(l,b,col,0,-25,Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.EAST,true).setValue(FenceBlock.WEST,true));
         for(int gate:GATES){
             put(l,b,gate,0,-25,Blocks.OAK_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.NORTH));
             put(l,b,gate+1,1,-24,YardBlock.of(YardBlock.Kind.GATE_LATCH,Direction.SOUTH,0));

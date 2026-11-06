@@ -81,7 +81,7 @@ public final class WitnessAccount {
         CAMP_BLOOD("camp_blood","The service road","survival","The essay had remembered an ordinary summer. I escaped beyond the last cabin before that summer returned."),
         DEVILS_ROCK("devils_rock","The eight loose pages","memory","I read the eight pages in order and went out to the rock. Something in his shape ran from me, then after me, until I could not say which of us was chasing. It swam to the island, and his pennies were there."),
         WHEEL("wheel","The numbered doors","memory","Every numbered room had measured me against her. Beyond them, Mother was the size I remembered, and the front door opened onto an outside where I could stand up."),
-        GHOSTS_SET("ghosts_set","The tape and the cut","connection","I returned to film the family. My frame kept some things and missed others. I left my own account beside the production's cut."),
+        GHOSTS_SET("ghosts_set","The tape and the cut","connection","I returned to the family between takes. The girls had their own stories before the show. My recording and its cut did not settle what happened to them."),
         END_WORLD_CABIN("end_world_cabin","The visitors at dusk","release","I answered the visitors for myself. The screen held the consequence after my answer."),
         FAMILY_COPY("family_copy","The house they remembered","memory","They welcomed me into a house I had actually lived in, and thanked me at the door for looking after it."),
         THREE_FINGERS("three_fingers","The last finger","release","I took the paw out of the fire and wished on it. Every wish came true in the worst way it could. I chose how the last finger fell."),

@@ -363,6 +363,7 @@ public final class JournalTests {
             h.assertTrue(six!=null&&six.text().equals("The words written last."),"the torn page holds the words written just before it was torn: "+(six==null?null:six.text()));
             h.assertTrue(seven!=null&&seven.text().equals("A page begun and torn at once."),"and so does the page begun and torn at once: "+(seven==null?null:seven.text()));
             h.assertTrue(Journals.edit(p,6,page("over the stub"))==Journals.Edit.TORN&&TornPages.tear(p,6)==TornPages.Tear.ALREADY,"with nothing on its way, the stub answers at once");
+            TornPages.clear(server,id);NativeTestPlayers.remove(p);
         }).thenSucceed();
     }
 

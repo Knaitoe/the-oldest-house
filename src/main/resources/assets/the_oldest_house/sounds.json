@@ -3781,5 +3781,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.yard.follow"
+  },
+  "yard.wind": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:yard/wind",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.yard.wind"
   }
 }

@@ -578,7 +578,10 @@ public enum LabyrinthPlace {
         new DoorSpec("arrival_right",new BlockPos(6,0,1),Direction.SOUTH,LabyrinthData.RETURN),
         new DoorSpec("exit",new BlockPos(-7,0,-34),Direction.NORTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
-    HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
+    HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of()),
+    TRUANT_SHED("truant_shed",Kind.GRAY,194,new BoundingBox(-10,-3,-35,10,12,0),grayDoors(0,0,-34)),
+    TRUANT_LANTERN("truant_lantern",Kind.GRAY,195,new BoundingBox(-10,-4,-38,12,14,0),grayDoors(0,0,-37)),
+    TRUANT_STOCK_GATE("truant_stock_gate",Kind.GRAY,196,new BoundingBox(-10,-3,-39,10,12,0),grayDoors(0,0,-38));
 
     /** What a place is to the dealer. */
     public enum Kind {

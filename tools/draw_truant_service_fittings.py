@@ -82,7 +82,7 @@ def boards():
 
 def textures():
     t = {f'arrow_{d}': arrow(d) for d in range(3)}
-    t.update({'pipe_0': iron_pipe(0), 'pipe_1': iron_pipe(1), 'plume': plume(), 'iron': lever_iron(), 'grip': grip(), 'boards': boards()})
+    t.update({'pipe_0': iron_pipe(0), 'pipe_1': iron_pipe(1), 'plume': plume(), 'iron': lever_iron(), 'grip': grip(), 'boards': boards(), 'leaf': noisy(['#324228','#3d502e','#4a5c36'],3161)})
     return {f'block/truant_service/{k}.png': v for k, v in t.items()}
 
 
@@ -111,11 +111,21 @@ def fitting_models():
         m[f'car_brake_{s}'] = model(lever(s == 1), {'i': 'iron', 'g': 'grip'}, 'iron')
     m['platform_0'] = model([element([0, 13, 0], [16, 16, 16], {'all': 'b'}), element([0, 10, 0], [16, 13, 2], {'all': 'i'}), element([0, 10, 14], [16, 13, 16], {'all': 'i'})],
                             {'b': 'boards', 'i': 'iron'}, 'boards')
+    for stage in range(2):
+        m[f'hasp_{stage}'] = model([element([4, 5, 14], [12, 8, 16], {'all':'i'}),element([7, 1 if stage else 8, 12], [9, 8 if stage else 15, 14], {'all':'i'})], {'i':'iron'}, 'iron')
+        m[f'wedge_{stage}'] = model([] if stage == 0 else [element([2,0,2],[13,1,14],{'all':'b'}),element([4,1,6],[12,3,14],{'all':'b'})], {'b':'boards'}, 'boards')
+        m[f'hatch_{stage}'] = model([element([0,0,13],[16,16,16],{'all':'b'})] if stage == 0 else [element([0,13,0],[16,16,3],{'all':'b'})], {'b':'boards'}, 'boards')
+        m[f'stock_chain_{stage}'] = model([element([2,7,14],[14,9,16],{'all':'i'})] if stage == 0 else [element([6,0,14],[8,13,16],{'all':'i'})], {'i':'iron'}, 'iron')
+    m['split_0'] = model([element([0,0,13],[7,16,16],{'all':'b'}),element([9,0,13],[16,16,16],{'all':'b'})], {'b':'boards'}, 'boards')
+    for stage in range(3):
+        e=element([0,0,7],[16,16,9],{'all':'l'})
+        if stage:e['rotation']={'origin':[8,0,8],'axis':'z','angle':-22.5 if stage==2 else 22.5,'rescale':False}
+        m[f'bough_{stage}']=model([e],{'l':'leaf'},'leaf')
     return m
 
 
-KINDS = ['arrow', 'pipe', 'brake', 'car_brake', 'platform']
-STAGES = {'arrow': 3, 'pipe': 3, 'brake': 2, 'car_brake': 2, 'platform': 1}
+KINDS = ['arrow', 'pipe', 'brake', 'car_brake', 'platform', 'hasp', 'wedge', 'hatch', 'split', 'stock_chain', 'bough']
+STAGES = {'arrow': 3, 'pipe': 3, 'brake': 2, 'car_brake': 2, 'platform': 1, 'hasp': 2, 'wedge': 2, 'hatch': 2, 'split': 1, 'stock_chain': 2, 'bough': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
 

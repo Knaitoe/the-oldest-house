@@ -11,6 +11,7 @@ ROWS = {
     'crow': ('A crow calls', 32),
     'creek': ('A creek runs high', 16),
     'follow': ('Footsteps', 12),
+    'wind': ('Wind bends the trees', 24),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -94,7 +95,15 @@ def follow():
     return out
 
 
-MAKERS = {'idle': idle, 'traffic': traffic, 'crow': crow, 'creek': creek, 'follow': follow}
+def wind():
+    n = seconds(3.5)
+    t = times(n)
+    breath = band(rng.standard_normal(n), 70, 2400)
+    leaves = band(rng.standard_normal(n), 1600, 5500) * (.45 + .2 * np.sin(2 * np.pi * 3.7 * t))
+    return (breath * .65 + leaves * .18) * envelope(n, .35, .45)
+
+
+MAKERS = {'idle' : idle, 'traffic': traffic, 'crow': crow, 'creek': creek, 'follow': follow, 'wind': wind}
 
 
 def main():

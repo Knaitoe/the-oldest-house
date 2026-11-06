@@ -197,11 +197,6 @@ public final class LiteraryRooms {
         room(l,b,5,11,-74,-66,0,5,Blocks.SPRUCE_PLANKS,Blocks.SPRUCE_PLANKS);door(l,b,5,0,-70,Direction.WEST,true);for(int zz=-75;zz<=-65;zz++)box(l,b,4,5,zz,12,5,zz,Blocks.SPRUCE_SLAB);roof(l,b,5,11,-74,-66,5);window(l,b,8,-74,false);light(l,b,7,3,-67);
         CampBloodDecor.build(l,b);CampSession.build(l,b);
     }
-    static void legacyGhostSet(ServerLevel l,BlockPos b){
-        room(l,b,-20,20,-46,0,0,10,Blocks.CALCITE,Blocks.OAK_PLANKS);room(l,b,-16,9,-39,-14,0,5,Blocks.CALCITE,Blocks.OAK_PLANKS);door(l,b,0,0,-14,Direction.SOUTH,true);room(l,b,12,18,-42,-31,0,4,Blocks.DARK_OAK_PLANKS,Blocks.DARK_OAK_PLANKS);door(l,b,12,0,-36,Direction.EAST,true);
-        prop(l,b,CAMERA,LiteraryPropBlock.Kind.TRIPOD,Direction.SOUTH);for(int x:new int[]{-17,17})for(int z:new int[]{-9,-25})prop(l,b,new BlockPos(x,0,z),LiteraryPropBlock.Kind.LIGHT_STAND,Direction.SOUTH);
-        for(int x:new int[]{-5,0,5})prop(l,b,new BlockPos(x,0,-20),LiteraryPropBlock.Kind.TAPE_X,Direction.SOUTH);furniture(l,b,-8,0,-30,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);furniture(l,b,2,0,-35,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);NovelRooms.bed(l,b.offset(5,0,-34),Blocks.WHITE_BED,Direction.NORTH);prop(l,b,BOOTH,LiteraryPropBlock.Kind.RECEIVER,Direction.SOUTH);light(l,b,0,5,-8);
-    }
     /**
      * A lake cabin at dusk (0.4.52). A front door onto a deep porch; a bedroom with two beds against the lake; a kitchen;
      * a living room with the television, the hearth and the dining table where the account will lie; windows on every
