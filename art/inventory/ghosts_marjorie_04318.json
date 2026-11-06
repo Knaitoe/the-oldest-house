@@ -1,0 +1,27 @@
+{
+  "note": "0.4.318: the owner requested longer hair and a younger face for fourteen-year-old Marjorie. Both normal and dinner sheets are drawn by tools/paint_character_skins.py. This supersedes only these two historical image hashes. The dimensions and every original alpha pixel are preserved; additional opacity belongs only to the four dedicated long-hair UV nets.",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_marjorie.png",
+      "review_04100_sha256": "0696e3c2c5a10d4c3f68a1655b5bcb9b1f7165f6354e031f77f658262fbcba0a",
+      "review_04100_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "7b87f30576bf6346d8e7fac71180d5ecd4d235de22a6bbb1e16c3c5c90f1b94b",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "11db717e1343ed22c514c32356d227081c5c07a0c81a6acc360cf7afc63e70c7"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/ghosts_marjorie_dinner.png",
+      "review_04100_sha256": "98af0bbca8c4de803d535429f8d83c40d6bb3655f2d892b4903e998457a6ded0",
+      "review_04100_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "c04f8f25db07cc38ddc7ddb6a7e316c455667bcaba5046c9a0cfec2798b02d71",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "11db717e1343ed22c514c32356d227081c5c07a0c81a6acc360cf7afc63e70c7"
+    }
+  ]
+}

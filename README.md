@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.318** addresses the Ghosts Set playtest: Marjorie's long hair, younger face and frightened bed expression; clearer bedroom furniture and drawer staging; finite helping and family pursuit; separate sister marks; recording-dependent camera pressure; family dialogue kept in the journal; music suppression; and revised Barry/Merry dialogue. Barry's panel now contains production, review and leave actions rather than the seven padded question branches. See [the playtest fixes and source references](docs/GHOSTS_PLAYTEST_0_4_318.md). The earlier Truant outside encounters and personal progression remain included. Full exact-commit CI is pending.
+Development candidate **0.4.319** retains the Ghosts playtest fixes from 0.4.318 and repairs the asset-reference failure in build 1451. The requested Marjorie repaint now has an explicit two-sheet review record, checked in source and in the playable JAR while retaining all historical references and original opacity outside the new hair UVs. See [the failure and repair](docs/MARJORIE_ART_CHECK_0_4_319.md) and [the Ghosts playtest fixes](docs/GHOSTS_PLAYTEST_0_4_318.md). Full exact-commit CI is pending.
 
 ## Playing it
 

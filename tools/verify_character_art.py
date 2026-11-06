@@ -16,6 +16,9 @@ FAMILY_REVIEW=ROOT/'art/inventory/painted_family_04123.json'
 PORTRAIT_REVIEW=ROOT/'art/inventory/manor_portraits_04223.json'
 MERRY_REVIEW=ROOT/'art/inventory/ghosts_merry_04242.json'
 MERRY_PATH='src/main/resources/assets/the_oldest_house/textures/entity/ghosts_merry.png'
+MARJORIE_REVIEW=ROOT/'art/inventory/ghosts_marjorie_04318.json'
+MARJORIE_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/ghosts_marjorie'+phase+'.png' for phase in ('','_dinner')}
+MARJORIE_HAIR_NETS=((80,0,8,6,1),(80,8,8,10,1),(101,0,2,10,1),(111,0,2,9,1))
 FAMILY_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
               for role in ('father','mother','child') for phase in ('','_changed')}
 
@@ -35,7 +38,13 @@ def reviewed_repaints(review):
     for path,row in merry.items():
         assert row['review_04100_sha256']==changed[path]['sha256'],('Historical Merry review changed',path)
         assert row['size']==changed[path]['size'] and row['alpha_sha256']==changed[path]['alpha_sha256'],('Merry UV/alpha changed',path)
-    return {**changed,**family,**merry}
+    # The requested younger face and long hair supersede only Marjorie's normal and dinner paintings.
+    marjorie={r['path']:r for r in json.loads(MARJORIE_REVIEW.read_text())['repainted']}
+    assert set(marjorie)==MARJORIE_PATHS
+    for path,row in marjorie.items():
+        assert row['review_04100_sha256']==changed[path]['sha256'],('Historical Marjorie review changed',path)
+        assert row['size']==changed[path]['size'] and row['review_04100_alpha_sha256']==changed[path]['alpha_sha256'],('Marjorie baseline changed',path)
+    return {**changed,**family,**merry,**marjorie}
 
 
 def main():
@@ -75,6 +84,12 @@ def main():
         raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],path
         im=Image.open(BytesIO(raw)).convert('RGBA');assert list(im.size)==row['size'],path
         assert hashlib.sha256(im.getchannel('A').tobytes()).hexdigest()==row['alpha_sha256'],path
+        if path in MARJORIE_PATHS:
+            # Only the newly occupied hair nets may extend the historical opacity mask.
+            alpha=im.getchannel('A')
+            for dims in MARJORIE_HAIR_NETS:
+                for box in net(*dims).values():alpha.paste(0,tuple(round(v*4) for v in box))
+            assert hashlib.sha256(alpha.tobytes()).hexdigest()==row['review_04100_alpha_sha256'],('Marjorie original UV/alpha changed',path)
     for name,look in LOOKS.items():
         path='src/main/resources/assets/the_oldest_house/textures/entity/'+name+'.png'
         im=Image.open(BytesIO(read(path))).convert('RGBA')
