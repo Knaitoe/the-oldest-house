@@ -19,6 +19,8 @@ MERRY_PATH='src/main/resources/assets/the_oldest_house/textures/entity/ghosts_me
 MARJORIE_REVIEW=ROOT/'art/inventory/ghosts_marjorie_04318.json'
 MARJORIE_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/ghosts_marjorie'+phase+'.png' for phase in ('','_dinner')}
 MARJORIE_HAIR_NETS=((80,0,8,6,1),(80,8,8,10,1),(101,0,2,10,1),(111,0,2,9,1))
+SISTERS_REVIEW=ROOT/'art/inventory/ghosts_sisters_04320.json'
+MERRY_HAIR_NETS=((80,0,3,7,3),(96,0,2,3,2),(110,0,4,2,3))
 FAMILY_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
               for role in ('father','mother','child') for phase in ('','_changed')}
 
@@ -44,7 +46,14 @@ def reviewed_repaints(review):
     for path,row in marjorie.items():
         assert row['review_04100_sha256']==changed[path]['sha256'],('Historical Marjorie review changed',path)
         assert row['size']==changed[path]['size'] and row['review_04100_alpha_sha256']==changed[path]['alpha_sha256'],('Marjorie baseline changed',path)
-    return {**changed,**family,**merry,**marjorie}
+    previous={**changed,**family,**merry,**marjorie}
+    sisters={r['path']:r for r in json.loads(SISTERS_REVIEW.read_text())['repainted']}
+    assert set(sisters)==MARJORIE_PATHS|{MERRY_PATH}
+    for path,row in sisters.items():
+        assert row['previous_sha256']==previous[path]['sha256'] and row['previous_alpha_sha256']==previous[path]['alpha_sha256'],('Previous sisters review changed',path)
+        assert row['size']==previous[path]['size'],('Sisters atlas size changed',path)
+        if path in MARJORIE_PATHS:assert row['alpha_sha256']==previous[path]['alpha_sha256'],('Marjorie alpha changed',path)
+    return {**previous,**sisters}
 
 
 def main():
@@ -90,6 +99,11 @@ def main():
             for dims in MARJORIE_HAIR_NETS:
                 for box in net(*dims).values():alpha.paste(0,tuple(round(v*4) for v in box))
             assert hashlib.sha256(alpha.tobytes()).hexdigest()==row['review_04100_alpha_sha256'],('Marjorie original UV/alpha changed',path)
+        if path==MERRY_PATH:
+            alpha=im.getchannel('A')
+            for dims in MERRY_HAIR_NETS:
+                for box in net(*dims).values():alpha.paste(0,tuple(round(v*4) for v in box))
+            assert hashlib.sha256(alpha.tobytes()).hexdigest()==row['previous_alpha_sha256'],('Merry original UV/alpha changed',path)
     for name,look in LOOKS.items():
         path='src/main/resources/assets/the_oldest_house/textures/entity/'+name+'.png'
         im=Image.open(BytesIO(read(path))).convert('RGBA')

@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.319** retains the Ghosts playtest fixes from 0.4.318 and repairs the asset-reference failure in build 1451. The requested Marjorie repaint now has an explicit two-sheet review record, checked in source and in the playable JAR while retaining all historical references and original opacity outside the new hair UVs. See [the failure and repair](docs/MARJORIE_ART_CHECK_0_4_319.md) and [the Ghosts playtest fixes](docs/GHOSTS_PLAYTEST_0_4_318.md). Full exact-commit CI is pending.
+Development candidate **0.4.320** gives Merry a gathered ponytail with a small dusty-rose tie and reduces Marjorie's oversized eyes to the cast's usual height. Both sisters retain their established clothing and palettes; Marjorie keeps her younger face, long hair and frightened bed expression. The three generated paintings have an explicit review record checked in source and the playable JAR. See [the sisters' appearance pass](docs/GHOSTS_SISTERS_0_4_320.md). Full exact-commit CI is pending.
 
 ## Playing it
 
