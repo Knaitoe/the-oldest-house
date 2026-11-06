@@ -63,7 +63,7 @@ public final class TensionSafetyTests {
                 stand(peer,l,b,.5,TensionRooms.DOWN_Y+1,-12.5);
                 pig.moveTo(b.getX()-.5,b.getY()+TensionRooms.DOWN_Y+1,b.getZ()-13.5);h.assertTrue(l.addFreshEntity(pig),"the persistent rider is admitted to the House");
                 l.setBlock(b.offset(1,-1,-14),Blocks.STONE.defaultBlockState(),2);
-            }).thenWaitUntil(()->h.assertTrue(l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new AABB(b.offset(-1,-3,-14),b.offset(2,1,-12))).contains(pig),"the platform's animal occupies its native entity lookup"))
+            }).thenWaitUntil(()->h.assertTrue(l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new AABB(b.getX()-1,b.getY()-3,b.getZ()-14,b.getX()+2,b.getY()+1,b.getZ()-12)).contains(pig),"the platform's animal occupies its native entity lookup"))
             .thenIdle(5).thenExecute(()->{
                 press(l,p,far);
                 h.assertTrue(!TensionRooms.platformUp(l,b)&&TensionRooms.drum(l,b)==1&&l.getBlockState(b.offset(1,-1,-14)).is(Blocks.STONE),"a solid obstruction in the lift's path is neither overwritten nor passed through");
