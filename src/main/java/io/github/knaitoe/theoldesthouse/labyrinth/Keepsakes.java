@@ -118,7 +118,7 @@ public final class Keepsakes {
      */
     public static String line(LabyrinthPlace place, String key) {
         return switch (place.id() + "/" + key) {
-            case "ghosts_set/Film" -> "Their voices, before and after the cut. Played, they still do not agree.";
+            case "ghosts_set/Film" -> "Played, it brings back the girls between takes, the prayers and the drawer. The show used less of it.";
             case "elk_fan/Tooth" -> "Heavier than it looks. In your other hand it keeps your feet under you.";
             case "elk_fan/Lightbulb" -> "It still lights for a little while, if you ask it.";
             case "holy_rabbit/Knife" -> "Father wasted nothing he killed.";

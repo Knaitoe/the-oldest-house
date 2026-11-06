@@ -36,6 +36,7 @@ public final class TalkHistory {
     static String where(ServerPlayer p){
         String id="";var place=LiteraryVignettes.current(p);if(place!=null)id=place.id();
         if(id.isEmpty()&&HouseDimensions.isHouseDimension(p.level().dimension())){var origin=HouseSavedData.get(p.server).houseOrigin();if(origin!=null){var at=LabyrinthPlaces.placeAt(origin,p.blockPosition());if(at!=null)id=at.id();}}
+        if(place==GhostsSet.PLACE){var state=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),place);return "the Barrett house, filming day "+Math.max(1,Math.min(7,state.getInt("FilmDay")));}
         return StaircaseProse.named(id)?StaircaseProse.place(id):"";
     }
     /** The day it is, counted the way the reader's own pages count it. */
@@ -54,6 +55,18 @@ public final class TalkHistory {
         if(at>=0)all.set(at,talk);else all.add(talk);
         while(all.size()>CONVERSATIONS)all.remove(0);
         t.put("Talks",all);own(p.server,p.getUUID(),t);
+    }
+
+    /** A scene's actually delivered speech, grouped across its saved visit; never invents replies for the reader. */
+    public static void heard(ServerPlayer p,String scene,String who,String where,String text){
+        if(p.isSpectator()||text.isBlank())return;
+        var t=own(p.server,p.getUUID());var all=t.getList("Talks",Tag.TAG_COMPOUND);CompoundTag talk=null;
+        for(int i=0;i<all.size();i++)if(all.getCompound(i).getString("Scene").equals(scene)){talk=all.getCompound(i);break;}
+        if(talk==null){int number=t.getInt("Next")+1;t.putInt("Next",number);talk=new CompoundTag();talk.putInt("N",number);talk.putString("Scene",scene);talk.putString("Who","The Barretts");talk.putString("Where",where);talk.putLong("Day",day(p));all.add(talk);}
+        var lines=talk.getList("Lines",Tag.TAG_COMPOUND);
+        if(!lines.isEmpty()){var last=lines.getCompound(lines.size()-1);if(last.getString("S").equals(who)&&last.getString("T").equals(text))return;}
+        var line=new CompoundTag();line.putString("S",who);line.putString("T",text);lines.add(line);while(lines.size()>LINES)lines.remove(0);talk.put("Lines",lines);
+        while(all.size()>CONVERSATIONS)all.remove(0);t.put("Talks",all);own(p.server,p.getUUID(),t);
     }
 
     /** Every exchange this reader has kept, oldest first (each {@code N}, {@code Who}, {@code Where}, {@code Day}, {@code Lines}; a line the reader chose carries {@code R}, 0.4.275). */

@@ -169,7 +169,7 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.CAMP_BLOOD, "Bunks of balsa and a mess-hall bell made from a sequin. One cabin door stands open."),
         Map.entry(LabyrinthPlace.DEVILS_ROCK, "A pebble painted to look like a far larger rock, with a thread of red down one side."),
         Map.entry(LabyrinthPlace.WHEEL, "Six tiny rooms on a turntable, each with the same chair in it at a different size."),
-        Map.entry(LabyrinthPlace.GHOSTS_SET, "A family's house cut open like a set, with tape marks on every floor."),
+        Map.entry(LabyrinthPlace.GHOSTS_SET, "A family's house, with the crew's cases in the den and a white cloth on an upstairs desk."),
         Map.entry(LabyrinthPlace.END_WORLD_CABIN, "A cabin in a drift of salt; inside, a television glows from one grain of glass."),
         Map.entry(LabyrinthPlace.FAMILY_COPY, "A house exactly like another, down to the scratch beside the door."),
         Map.entry(LabyrinthPlace.OLD_CABIN, "A cabin of twigs with a lamp lit in the window."),

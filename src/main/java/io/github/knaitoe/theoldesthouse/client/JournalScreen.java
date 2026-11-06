@@ -173,7 +173,7 @@ public final class JournalScreen extends Screen {
     private int heardSpread;
     private java.util.List<java.util.List<Object[]>> heardPages;
     static final float SMALL=.75F;
-    static final int HEARD_ROWS=20,YOU_INK=0xFF2E4A66;
+    static final int HEARD_ROWS=18,HEARD_LINE=12,YOU_INK=0xFF2E4A66;
     public static void heard(io.github.knaitoe.theoldesthouse.network.TalkHistoryPayload payload){if(Minecraft.getInstance().screen instanceof JournalScreen j)j.loadHeard(payload.history());}
     private void showHeard(boolean on){
         if(on==heardMode)return;
@@ -235,7 +235,7 @@ public final class JournalScreen extends Screen {
             if(heardPages==null){if(side==0)g.drawString(font,"\u2026",x+JournalPageRenderer.TEXT_X,top+JournalPageRenderer.TEXT_Y,JournalPageRenderer.FAINT,false);continue;}
             if(n>=heardPages.size())continue;
             var pose=g.pose();pose.pushPose();pose.translate(x+JournalPageRenderer.TEXT_X,top+JournalPageRenderer.TEXT_Y,0);pose.scale(SMALL,SMALL,1);
-            int row=0;for(var r:heardPages.get(n)){if(r!=null)g.drawString(font,(net.minecraft.util.FormattedCharSequence)r[0],(int)r[2],row*JournalPageRenderer.LINE,(int)r[1],false);row++;}
+            int row=0;for(var r:heardPages.get(n)){if(r!=null)g.drawString(font,(net.minecraft.util.FormattedCharSequence)r[0],(int)r[2],row*HEARD_LINE,(int)r[1],false);row++;}
             pose.popPose();
             JournalPageRenderer.number(g,font,x,top,n+1);
         }

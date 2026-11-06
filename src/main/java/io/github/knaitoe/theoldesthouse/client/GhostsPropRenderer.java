@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
@@ -30,16 +31,25 @@ public final class GhostsPropRenderer extends EntityRenderer<LiteraryActor> {
             house(state.phase>=2?1:Mth.clamp(since/20,0,1)*(state.phase==1?1:0),state.phase>=2?Mth.clamp(since/36,0,1):0,age,p,out,light);return;
         }
         float t=Mth.clamp((age-state.start)/8,0,1);t=t*t*(3-2*t);state.value=Mth.lerp(t,state.from,state.phase);
-        preview(a.role(),state.value,p,out,light);
+        p.pushPose();p.mulPose(Axis.YP.rotationDegrees(180));drawer(state.value,p,out,light,false);p.popPose();
     }
     /** The playhouse at 0 (standing) to 1 (bulging with her inside), then 1 to 2 (torn open and flat); the drawer opening. */
     static void preview(int role,float phase,PoseStack p,MultiBufferSource out,int light){
         if(role==LiteraryActor.GHOST_PLAYHOUSE){house(Mth.clamp(phase,0,1),Mth.clamp(phase-1,0,1),7,p,out,light);return;}
+        drawer(phase,p,out,light,true);
+    }
+    private static ModelPart ritualCloth;
+    private static void drawer(float phase,PoseStack p,MultiBufferSource out,int light,boolean preview){
         p.pushPose();p.translate(-.5,0,-.5);
-        block(GhostsSetBlock.Kind.COUNTER,p,out,light);
+        if(preview)block(GhostsSetBlock.Kind.WRITING_DESK,p,out,light);
         float extension=phase<=1?-.24F*phase:-.24F-.18F*(phase-1);
         p.pushPose();p.translate(0,.48,extension);block(GhostsSetBlock.Kind.DRAWER,p,out,light);p.popPose();
-        if(phase>1){p.translate(0,.48,extension);block(GhostsSetBlock.Kind.DRAWER_RIG,p,out,light);}
+        if(phase>1){p.pushPose();p.translate(0,.48,extension);block(GhostsSetBlock.Kind.DRAWER_RIG,p,out,light);p.popPose();}
+        if(GhostsTakeClient.day()==6||preview){
+            if(ritualCloth==null){var mesh=new MeshDefinition();mesh.getRoot().addOrReplaceChild("cloth",CubeListBuilder.create().texOffs(0,0).addBox(0,15.1F,0,16,.2F,16).addBox(0,8,-.1F,16,7.3F,.2F).addBox(-.1F,4,0,.2F,11.2F,16).addBox(15.9F,4,0,.2F,11.2F,16),PartPose.ZERO);ritualCloth=LayerDefinition.create(mesh,16,16).bakeRoot();}
+            p.pushPose();p.translate(0,0,extension*.35);ritualCloth.render(p,out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.fromNamespaceAndPath("the_oldest_house","textures/block/ghosts/white.png"))),light,OverlayTexture.NO_OVERLAY,0xffffffff);p.popPose();
+            p.pushPose();p.translate(.2,.96,.45);Minecraft.getInstance().getBlockRenderer().renderSingleBlock(net.minecraft.world.level.block.Blocks.WHITE_CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.LIT,true),p,out,light,OverlayTexture.NO_OVERLAY);p.popPose();
+        }
         p.popPose();
     }
 

@@ -16,7 +16,7 @@ public final class GhostsSetRooms {
     /** The column the stair's banister stands in: the treads' open (east) edge. */
     public static final int STAIR_RAIL_X=-1;
     public static final BlockPos TABLE=new BlockPos(0,0,-19),MARJORIE_ROOM=new BlockPos(-7,5,-24),
-            MERRY_ROOM=new BlockPos(7,5,-23),BASEMENT=new BlockPos(7,-4,-18),MONITOR_AT=new BlockPos(8,0,-11);
+            MERRY_ROOM=new BlockPos(7,5,-23),BASEMENT=new BlockPos(7,-4,-18),MONITOR_AT=new BlockPos(8,0,-11),MARJORIE_NIGHTSTAND=new BlockPos(-4,5,-25),EXORCISM_DESK=new BlockPos(-4,5,-22);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private GhostsSetRooms() {}
     static void set(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s){BuildBlocks.set(l,b.offset(x,y,z),s,F);}
@@ -74,7 +74,9 @@ public final class GhostsSetRooms {
         prop(l,b,-7,5,-24,BED_HEAD,Direction.NORTH);prop(l,b,-7,5,-23,BED_FOOT,Direction.NORTH);
         prop(l,b,9,5,-25,BED_HEAD,Direction.NORTH);prop(l,b,9,5,-24,BED_FOOT,Direction.NORTH);
         // 0.4.220: bedroom furniture rather than kitchen counters, a chest of drawers and a nightstand at the bed's head.
-        furniture(l,b,-10,5,-25,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(l,b,-10,6,-25,BOOKS,Direction.SOUTH);furniture(l,b,-8,5,-24,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,-8,6,-24,HAT,Direction.SOUTH);
+        furniture(l,b,-10,5,-25,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(l,b,-10,6,-25,BOOKS,Direction.SOUTH);
+        furniture(l,b,MARJORIE_NIGHTSTAND.getX(),MARJORIE_NIGHTSTAND.getY(),MARJORIE_NIGHTSTAND.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,MARJORIE_NIGHTSTAND.getX(),MARJORIE_NIGHTSTAND.getY()+1,MARJORIE_NIGHTSTAND.getZ(),HAT,Direction.SOUTH);
+        var desk=EXORCISM_DESK;prop(l,b,desk.getX(),desk.getY(),desk.getZ(),WRITING_DESK,Direction.SOUTH);
         furniture(l,b,6,5,-25,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(l,b,6,6,-25,BOOKS,Direction.SOUTH);prop(l,b,4,6,-21,DRAWING,Direction.EAST);
         // 0.4.220 (owner: "what even is that"): the heavy jug stood in the wall over Merry's door, a hole through to the corridor;
         // it is on top of her bookshelf by the door now, where it could fall.

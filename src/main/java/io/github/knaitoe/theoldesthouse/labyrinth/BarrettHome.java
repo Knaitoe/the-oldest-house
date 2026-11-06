@@ -101,13 +101,7 @@ public final class BarrettHome {
         put(l, b, 2, 1, -11, Kind.PHOTO_MERRY, Direction.SOUTH);
         put(l, b, 0, 6, -1, Kind.PORTRAIT, Direction.NORTH);
         // 0.4.220: a runner of the hall's own, its border down both outer edges.
-        // 0.4.242 (owner: "Unconnected camera tracks. Camera tracks breaking rug."): the cable lies across the runner rather than
-        // replacing two of its cells, and runs on through the opening to the den without a gap.
-        for (int x = 1; x <= 2; x++) for (int z = -8; z <= -1; z++) set(l, b, x, 0, z, BarrettHomeBlock.of(z == -3 ? Kind.RUG_RUNNER_CABLE : Kind.RUG_RUNNER, x == 1 ? Direction.NORTH : Direction.SOUTH));
-        cable(l, b, 3, 0, -3, 5, -3);
-        put(l, b, 0, 0, -3, Kind.CABLE_CORNER, Direction.NORTH);
-        cable(l, b, 0, 0, -11, 0, -4);
-        cable(l, b, 0, 0, -17, 0, -13);
+        for (int x = 1; x <= 2; x++) for (int z = -8; z <= -1; z++) set(l, b, x, 0, z, BarrettHomeBlock.of(Kind.RUG_RUNNER, x == 1 ? Direction.NORTH : Direction.SOUTH));
     }
 
     /** 0.4.202 (owner: "two living/lounging spaces in the house"): the front room is the one living room. The set is on (a
@@ -223,7 +217,6 @@ public final class BarrettHome {
         for (int y = 5; y <= 6; y++) for (int z = -13; z <= -12; z++) put(l, b, 10, y, z, Kind.LINEN_SHELVES, Direction.WEST);
         put(l, b, 3, 5, -11, Kind.PLANT, Direction.WEST);
         put(l, b, 5, 6, -13, Kind.MERRY_DRAWING, Direction.SOUTH);
-        cable(l, b, -6, 5, -13, -1, -13);
         for (int x = -9; x <= 8; x++) set(l, b, x, 5, -12, BarrettHomeBlock.of(Kind.RUG_RUNNER_NARROW, Direction.EAST));
     }
 
@@ -279,8 +272,7 @@ public final class BarrettHome {
         // Marjorie's room, fourteen: fairy lights strung along the wall, a band poster with half its faces scratched out, her
         // pinboard of photo-booth strips and ticket stubs over the desk, the guitar she was learning, the boombox and its CDs on
         // the floor, clothes where she dropped them, and a softbox in the corner for the reconstructions.
-        put(l, b, -3, 5, -25, Kind.DESK, Direction.WEST);
-        put(l, b, -4, 5, -25, Kind.OFFICE_CHAIR, Direction.EAST);
+        put(l, b, -3, 5, -24, Kind.OFFICE_CHAIR, Direction.WEST);
         put(l, b, -3, 7, -20, Kind.POSTER_A, Direction.WEST);
         put(l, b, -10, 7, -21, Kind.POSTER_C, Direction.EAST);
         put(l, b, -3, 6, -24, Kind.PINBOARD, Direction.WEST);

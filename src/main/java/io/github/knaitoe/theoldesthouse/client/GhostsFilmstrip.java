@@ -49,7 +49,14 @@ public final class GhostsFilmstrip extends Screen {
         new Page("idle","Standing idle (every 25 ticks), and Marjorie at dinner beside John",List.of(
             new Row("John standing",J,GhostsSet.STAND,180,false,3,0,25,false),new Row("Sarah standing",S,GhostsSet.STAND,180,false,3,0,25,false),
             new Row("Merry standing",Y,GhostsSet.STAND,180,false,3,0,25,false),new Row("Marjorie at dinner",M,GhostsSet.SIT,180,false,2,0,25,false),
-            new Row("John at dinner",J,GhostsSet.SIT,180,false,2,0,25,false))));
+            new Row("John at dinner",J,GhostsSet.SIT,180,false,2,0,25,false))),
+        new Page("marjorie","Marjorie: young face, long hair, floor clearance and fear",List.of(
+            new Row("Marjorie, face",M,GhostsSet.STAND,180,false,1,0,4,true),
+            new Row("Long hair, front",M,GhostsSet.STAND,180,false,1,0,4,false),
+            new Row("Long hair, back",M,GhostsSet.STAND,0,false,1,0,4,false),
+            new Row("Long hair, side",M,GhostsSet.STAND,90,false,1,0,4,false),
+            new Row("Crawl and hair",M,GhostsSet.CRAWL,90,false,2,0,4,false),
+            new Row("Frightened, bed",M,GhostsSet.BED,180,false,6,0,4,true))));
     static final int FRAMES=8;
     private int page,frames;private static boolean launched;
     public GhostsFilmstrip(){super(Component.literal("The Barrett home: filmstrips"));}
@@ -70,7 +77,7 @@ public final class GhostsFilmstrip extends Screen {
                 GhostsCastModel.previewSpeaking=row.speaking();GhostsCastModel.previewDay=row.day();
                 var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.preview(row.role(),row.phase(),age);
                 GhostsCastModel.previewSpeaking=false;GhostsCastModel.previewDay=0;
-                if(row.face()){model.body.visible=model.leftArm.visible=model.rightArm.visible=model.leftLeg.visible=model.rightLeg.visible=false;model.head.x=model.head.y=model.head.z=0;model.head.yRot=0;}
+                if(row.face()){model.body.visible=model.leftArm.visible=model.rightArm.visible=model.leftLeg.visible=model.rightLeg.visible=false;model.head.x=model.head.y=model.head.z=0;model.head.yRot=0;model.head.getChild("long_hair").visible=false;}
                 var pose=g.pose();pose.pushPose();
                 float scale=row.face()?Math.min(rowH*.85F,colW*.85F):rowH*.32F*(row.role()==Y?.58F:row.role()==M?.86F:1);
                 pose.translate(100+(f+.5F)*colW,cy+(row.face()?0:rowH*.36F),190);pose.scale(scale,scale,scale);

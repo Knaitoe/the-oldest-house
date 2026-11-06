@@ -38,7 +38,7 @@ public final class GhostsSetTests {
             h.assertTrue(own.getInt("ShotClock")==0&&!GhostsSet.inRoom(p,b,3,false),"the matching downstairs coordinates cannot advance an upstairs reconstruction");
             f.at(p,P,-4,5,-19);GhostsSet.reader(p,b,own);h.assertTrue(own.getInt("ShotClock")==5&&GhostsSet.inRoom(p,b,3,false),"entering the real upstairs bedroom starts its occupied take: "+status(f,p));
             h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).getScale()<actor(f,p,LiteraryActor.GHOST_JOHN).getScale(),"the teenager's native model and collider are smaller than the adults");
-            var father=actor(f,p,LiteraryActor.GHOST_JOHN);own.putInt("ShotClock",335);GhostsSet.reader(p,b,own);h.assertTrue(father.phase()==GhostsSet.HELP,"the original father reaches up to help his struggling daughter");save(f,p,own);
+            var father=actor(f,p,LiteraryActor.GHOST_JOHN);own.putInt("ShotClock",335);GhostsSet.reader(p,b,own);h.assertTrue(father.phase()==GhostsSet.STAND,"the original father must walk around the bed before raising his arms to help");save(f,p,own);
             var idle=own.copy();idle.remove("AcceptedScene131");idle.putBoolean("Rolling",false);h.assertTrue(!GhostsSet.objectiveAccepted(idle)&&GhostsSet.idleLine(idle,3).equals("John: That bulb's going again."),"before acceptance the actual idle pool concerns the household");
             h.assertTrue(GhostsSet.start(p,idle)&&GhostsSet.objectiveAccepted(idle)&&GhostsSet.idleLine(idle,3).equals("John: Is everyone in the frame?"),"accepting this exact take enables its filming-wait dialogue");
             idle.putInt("FilmDay",4);h.assertTrue(!GhostsSet.objectiveAccepted(idle),"a different day's objective is not accepted by an earlier take");GhostsSet.start(p,idle);idle.putBoolean("BedroomPickup",true);h.assertTrue(!GhostsSet.objectiveAccepted(idle),"the bedroom pickup requires its own accepted objective after the basement scene");
@@ -141,7 +141,7 @@ public final class GhostsSetTests {
             h.assertTrue(LiteraryRooms.source(P).getY()==0&&in.getBlockState(b.offset(LiteraryRooms.source(P)).below()).is(LiteraryRegistry.GHOST_SET.get())&&BarrettHomeBlock.is(in.getBlockState(b.offset(8,0,-1)),BarrettHomeBlock.Kind.FOLDING_TABLE)&&in.getBlockEntity(b.offset(LiteraryRooms.source(P))) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity,"0.4.220: the call sheet's stand stands on the den floor, the folding table beside it");
             h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(GhostsSetRooms.MONITOR_AT.above())),BarrettHomeBlock.Kind.FIELD_MONITOR)&&BarrettHomeBlock.is(in.getBlockState(b.offset(-5,0,-25)),BarrettHomeBlock.Kind.RANGE)&&BarrettHomeBlock.is(in.getBlockState(b.offset(3,1,-6)),BarrettHomeBlock.Kind.COAT_HOOKS_B)&&BarrettHomeBlock.is(in.getBlockState(b.offset(4,0,-21)),BarrettHomeBlock.Kind.SIDEBOARD_L)&&BarrettHomeBlock.is(in.getBlockState(b.offset(5,5,-17)),BarrettHomeBlock.Kind.MERRY_RUG)&&!in.getBlockState(b.offset(6,8,-14)).is(LiteraryRegistry.GHOST_SET.get()),"0.4.220: the field monitor, the stove, the second coat rail, the sideboard, Merry's own rug, and no jug in the wall over her door");
             h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(-10,1,-25)),BarrettHomeBlock.Kind.FRIDGE_TOP)&&BarrettHomeBlock.is(in.getBlockState(b.offset(3,0,-8)),BarrettHomeBlock.Kind.CONSOLE)&&BarrettHomeBlock.is(in.getBlockState(b.offset(10,0,-20)),BarrettHomeBlock.Kind.WASHER),"the fridge, the mail on the console and the washer: somebody lives here");
-            h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(5,0,-10)),BarrettHomeBlock.Kind.VILLAGE_CART)&&BarrettHomeBlock.is(in.getBlockState(b.offset(0,0,-15)),BarrettHomeBlock.Kind.CABLE)&&in.getBlockState(b.offset(0,0,-15)).getCollisionShape(in,b.offset(0,0,-15)).isEmpty(),"the crew's monitors in the den and their cables on the floor, which nobody trips on");
+            h.assertTrue(BarrettHomeBlock.is(in.getBlockState(b.offset(5,0,-10)),BarrettHomeBlock.Kind.VILLAGE_CART)&&!BarrettHomeBlock.is(in.getBlockState(b.offset(0,0,-15)),BarrettHomeBlock.Kind.CABLE)&&!BarrettHomeBlock.is(in.getBlockState(b.offset(-5,5,-13)),BarrettHomeBlock.Kind.CABLE),"the crew's monitors remain in their workroom and unused halls are free of cable props");
             // Models drawn past their block have bodies in every cell they cover.
             int windows=0,missing=0;
             for(var at:BlockPos.betweenClosed(b.offset(-20,-5,-46),b.offset(20,11,0))){var s=in.getBlockState(at);if(!s.is(LiteraryRegistry.BARRETT_HOME.get()))continue;var kind=s.getValue(BarrettHomeBlock.KIND);
@@ -277,7 +277,7 @@ public final class GhostsSetTests {
         for(int i=0;i<6;i++)for(int n=0;n<4;n++)said.add(GhostsConversations.line(own,i));
         said.add(GhostsSet.callOver(own));own.putBoolean("DayDone",true);said.add(GhostsSet.callOver(own));
         for(var line:said)h.assertFalse(filming.matcher(line).find(),"day seven talks about filming: "+line);
-        own.putInt("FilmDay",3);h.assertTrue(filming.matcher(GhostsSet.callOver(own)+GhostsSet.idleLine(own,1)).find(),"earlier days still talk about the take");
+        h.assertTrue(java.util.stream.IntStream.range(1,GhostsSet.DAYS).anyMatch(d->GhostsSet.script(d).stream().anyMatch(line->filming.matcher(line).find())),"the earlier scripted takes still contain production dialogue");
         h.succeed();
     }
     /** 0.4.242 (run 1398, the live proof): out of the bed she lies in on day six and across the room, no tick carries her more than a step. */
@@ -391,7 +391,7 @@ public final class GhostsSetTests {
             for(int day=1;day<=7;day++){own.putInt("FilmDay",day);peer.putInt("FilmDay",day);String first=GhostsConversations.line(own,speaker),next=GhostsConversations.line(own,speaker);
                 h.assertTrue(seen.add(first)&&seen.add(next),"each actual speaker has new conversation on each day, role "+speaker+", day "+day);
                 h.assertTrue(GhostsConversations.line(peer,speaker).equals(first),"one reader's conversation does not advance a peer's cursor");
-                h.assertTrue(GhostsConversations.line(own.copy(),speaker).equals(first),"the saved native tag retains the speaker's own dialogue cursor");
+                var saved=own.copy();String following=GhostsConversations.line(own,speaker);h.assertTrue(GhostsConversations.line(saved,speaker).equals(following),"the saved native tag retains the speaker's current dialogue cursor, whatever the pool length");
             }
         }h.succeed();
     }
