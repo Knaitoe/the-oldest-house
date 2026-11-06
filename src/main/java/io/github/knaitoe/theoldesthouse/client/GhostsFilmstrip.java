@@ -74,6 +74,7 @@ public final class GhostsFilmstrip extends Screen {
     }
     @Override public void renderBackground(GuiGraphics g,int x,int y,float d){}
     @Override public void render(GuiGraphics g,int x,int y,float partial){
+        if(page>=PAGES.size())return;
         var mc=Minecraft.getInstance();var p=PAGES.get(page);var buffers=mc.renderBuffers().bufferSource();
         g.fill(0,0,width,height,0xff292821);g.drawString(font,"Filmstrip / "+p.title(),10,8,0xffe7dbc3,false);g.flush();
         if(p.name().equals("sisters")){sisters(g,buffers);return;}
@@ -122,7 +123,7 @@ public final class GhostsFilmstrip extends Screen {
         g.flush();
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.ghostsFilmstrip")||!(mc.screen instanceof GhostsFilmstrip film)||++film.frames<12)return;
+        var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.ghostsFilmstrip")||!(mc.screen instanceof GhostsFilmstrip film)||film.page>=PAGES.size()||++film.frames<12)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("ghosts-film-"+PAGES.get(film.page).name()+".png"));}
         if(++film.page<PAGES.size()){film.frames=0;return;}

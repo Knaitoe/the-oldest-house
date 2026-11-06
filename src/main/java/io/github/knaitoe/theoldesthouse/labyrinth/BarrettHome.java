@@ -85,6 +85,7 @@ public final class BarrettHome {
         bathrooms(l, b);
         girlsRooms(l, b);
         basement(l, b);
+        GhostsLore.build(l,b);
     }
 
     /** The front hall: coats and shoes by the door, the mail on the console under the beach picture, the girls' school portraits

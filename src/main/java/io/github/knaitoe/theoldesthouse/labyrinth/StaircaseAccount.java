@@ -80,6 +80,8 @@ public final class StaircaseAccount {
         if (!followers.isEmpty()) StaircaseProse.fact("followed", followers.size(), followers.getFirst()).ifPresent(out::add);
         var kept = remembered(d, p.getUUID());
         if (!kept.isEmpty()) StaircaseProse.fact("remembered", kept.size(), kept.getFirst()).ifPresent(out::add);
+        var barrett=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.GHOSTS_SET);
+        if(GhostsLore.found(barrett)>0)StaircaseProse.fact("ghosts_lore",GhostsLore.found(barrett),GhostsLore.fragment(barrett)).ifPresent(out::add);
         count(out, "unwound", d.stateEntry(ContestTrades.STATE, p.getStringUUID()).getInt("Unwound"));
         // 0.4.201: the rooms the Winchester's upper ledger kept for this reader's dead.
         var ledger = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.WINCHESTER).getString("Ledger201");

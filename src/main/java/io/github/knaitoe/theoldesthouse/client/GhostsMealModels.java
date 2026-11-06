@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.client;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.GhostsSetBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore;
 import java.util.*;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -29,7 +30,17 @@ public final class GhostsMealModels {
             for(var kind:List.of(GhostsSetBlock.Kind.PLATE,GhostsSetBlock.Kind.PLAIN_PLATE)){
                 var key=BlockModelShaper.stateToModelLocation(GhostsSetBlock.of(kind,facing));var original=event.getModels().get(key);if(original!=null)event.getModels().put(key,new Meal(original,meals,kind==GhostsSetBlock.Kind.PLAIN_PLATE));
             }
+            var closed=BlockModelShaper.stateToModelLocation(GhostsSetBlock.of(GhostsSetBlock.Kind.LAPTOP_CLOSED,facing));
+            var study=event.getModels().get(BlockModelShaper.stateToModelLocation(GhostsSetBlock.of(GhostsSetBlock.Kind.LAPTOP_STUDY,facing)));
+            var original=event.getModels().get(closed);if(original!=null&&study!=null)event.getModels().put(closed,new Laptop(original,study));
         }
+    }
+    private static final class Laptop extends BakedModelWrapper<BakedModel>{
+        private final BakedModel study;
+        Laptop(BakedModel original,BakedModel study){super(original);this.study=study;}
+        private BakedModel shown(){return GhostsLore.laptop(GhostsTakeClient.day())==GhostsSetBlock.Kind.LAPTOP_STUDY?study:originalModel;}
+        @Override public List<BakedQuad> getQuads(@Nullable BlockState s,@Nullable Direction side,RandomSource random){return GhostsLore.laptop(GhostsTakeClient.day())==null?List.of():shown().getQuads(s,side,random);}
+        @Override public List<BakedQuad> getQuads(@Nullable BlockState s,@Nullable Direction side,RandomSource random,ModelData data,@Nullable RenderType render){return GhostsLore.laptop(GhostsTakeClient.day())==null?List.of():shown().getQuads(s,side,random,data,render);}
     }
     private static final class Meal extends BakedModelWrapper<BakedModel>{
         private final Map<GhostsSetBlock.Kind,BakedModel> meals;private final boolean merrys;

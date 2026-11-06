@@ -685,6 +685,86 @@
     "kind=writing_desk,facing=west": {
       "model": "the_oldest_house:block/ghosts_writing_desk",
       "y": 270
+    },
+    "kind=bank_slips,facing=north": {
+      "model": "the_oldest_house:block/ghosts_bank_slips",
+      "y": 0
+    },
+    "kind=bank_slips,facing=east": {
+      "model": "the_oldest_house:block/ghosts_bank_slips",
+      "y": 90
+    },
+    "kind=bank_slips,facing=south": {
+      "model": "the_oldest_house:block/ghosts_bank_slips",
+      "y": 180
+    },
+    "kind=bank_slips,facing=west": {
+      "model": "the_oldest_house:block/ghosts_bank_slips",
+      "y": 270
+    },
+    "kind=laptop_closed,facing=north": {
+      "model": "the_oldest_house:block/ghosts_laptop_closed",
+      "y": 0
+    },
+    "kind=laptop_closed,facing=east": {
+      "model": "the_oldest_house:block/ghosts_laptop_closed",
+      "y": 90
+    },
+    "kind=laptop_closed,facing=south": {
+      "model": "the_oldest_house:block/ghosts_laptop_closed",
+      "y": 180
+    },
+    "kind=laptop_closed,facing=west": {
+      "model": "the_oldest_house:block/ghosts_laptop_closed",
+      "y": 270
+    },
+    "kind=laptop_study,facing=north": {
+      "model": "the_oldest_house:block/ghosts_laptop_study",
+      "y": 0
+    },
+    "kind=laptop_study,facing=east": {
+      "model": "the_oldest_house:block/ghosts_laptop_study",
+      "y": 90
+    },
+    "kind=laptop_study,facing=south": {
+      "model": "the_oldest_house:block/ghosts_laptop_study",
+      "y": 180
+    },
+    "kind=laptop_study,facing=west": {
+      "model": "the_oldest_house:block/ghosts_laptop_study",
+      "y": 270
+    },
+    "kind=stored_cross,facing=north": {
+      "model": "the_oldest_house:block/ghosts_stored_cross",
+      "y": 0
+    },
+    "kind=stored_cross,facing=east": {
+      "model": "the_oldest_house:block/ghosts_stored_cross",
+      "y": 90
+    },
+    "kind=stored_cross,facing=south": {
+      "model": "the_oldest_house:block/ghosts_stored_cross",
+      "y": 180
+    },
+    "kind=stored_cross,facing=west": {
+      "model": "the_oldest_house:block/ghosts_stored_cross",
+      "y": 270
+    },
+    "kind=basement_effigy,facing=north": {
+      "model": "the_oldest_house:block/ghosts_basement_effigy",
+      "y": 0
+    },
+    "kind=basement_effigy,facing=east": {
+      "model": "the_oldest_house:block/ghosts_basement_effigy",
+      "y": 90
+    },
+    "kind=basement_effigy,facing=south": {
+      "model": "the_oldest_house:block/ghosts_basement_effigy",
+      "y": 180
+    },
+    "kind=basement_effigy,facing=west": {
+      "model": "the_oldest_house:block/ghosts_basement_effigy",
+      "y": 270
     }
   }
 }

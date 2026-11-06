@@ -22,7 +22,8 @@ public final class GhostsSetBlock extends Block {
         WALLPAPER, FLOOR, CEILING, TILE, PANEL, TABLE, CHAIR, COUNTER, SINK, COOKER,
         PLATE, HAT, BOOKS, JUG, BOLTS, CAMERA, CASE, MONITOR, DRAWING, LAMP, BED_HEAD, BED_FOOT,
         PLAIN_PLATE, PLAYHOUSE, TORN_CARD, DRAWER, DRAWER_RIG, PLASTER,
-        MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, LAMP_OFF, RUG, STAIR, RAIL, TABLE_LEG, STAIR_RAIL, STAIR_RAIL_TOP, MEAL_SPAGHETTI, MEAL_SPAGHETTI_PLAIN, WRITING_DESK;
+        MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, LAMP_OFF, RUG, STAIR, RAIL, TABLE_LEG, STAIR_RAIL, STAIR_RAIL_TOP, MEAL_SPAGHETTI, MEAL_SPAGHETTI_PLAIN, WRITING_DESK,
+        BANK_SLIPS, LAPTOP_CLOSED, LAPTOP_STUDY, BASEMENT_EFFIGY, STORED_CROSS;
         @Override public String getSerializedName() { return name().toLowerCase(java.util.Locale.ROOT); }
         public boolean cube() { return ordinal() <= PANEL.ordinal(); }
     }
@@ -46,6 +47,11 @@ public final class GhostsSetBlock extends Block {
             case CHAIR -> Shapes.or(Block.box(2,8,2,14,10,14), Block.box(2,0,2,4,8,4), Block.box(12,0,2,14,8,4), Block.box(2,0,12,4,8,14), Block.box(12,0,12,14,8,14), Block.box(2,4,2,14,6,4), Block.box(2,10,12,14,22,14));
             case BOLTS -> Shapes.or(Block.box(0,15,0,16,16,16),Block.box(4,9,6,12,13,9),Block.box(1,0,1,3,15,3));
             case PLATE, PLAIN_PLATE, MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, MEAL_SPAGHETTI, MEAL_SPAGHETTI_PLAIN, HAT, BOOKS -> Block.box(3,0,3,13,3,13);
+            case BANK_SLIPS -> Block.box(2,0,3,15,1,14);
+            case LAPTOP_CLOSED -> Block.box(2,-1,4,14,1,14);
+            case LAPTOP_STUDY -> Shapes.or(Block.box(2,-1,4,14,0,14),Block.box(2,0,12,14,9,16));
+            case BASEMENT_EFFIGY -> Shapes.empty();
+            case STORED_CROSS -> Shapes.or(Block.box(7,0,8,9,32,10),Block.box(-2,23,8,18,26,10));
             case JUG -> Block.box(5,0,5,11,9,11);
             case DRAWING -> Block.box(2,2,15,14,14,16);
             case LAMP,LAMP_OFF -> Shapes.or(Block.box(3,6,3,13,12,13),Block.box(7,12,7,9,16,9));
@@ -71,7 +77,7 @@ public final class GhostsSetBlock extends Block {
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c) { return shape(s); }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c) {
-        return switch(s.getValue(KIND)){case DRAWING,PLATE,PLAIN_PLATE,MEAL_STEW,MEAL_SANDWICH,MEAL_SOUP,MEAL_ROAST,MEAL_POTATOES,MEAL_SPAGHETTI,MEAL_SPAGHETTI_PLAIN,HAT,BOOKS,RUG->Shapes.empty();default->shape(s);};
+        return switch(s.getValue(KIND)){case DRAWING,PLATE,PLAIN_PLATE,MEAL_STEW,MEAL_SANDWICH,MEAL_SOUP,MEAL_ROAST,MEAL_POTATOES,MEAL_SPAGHETTI,MEAL_SPAGHETTI_PLAIN,HAT,BOOKS,RUG,BANK_SLIPS,LAPTOP_CLOSED,LAPTOP_STUDY,BASEMENT_EFFIGY->Shapes.empty();default->shape(s);};
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p) { return s.getValue(KIND).cube()?Shapes.block():Shapes.empty(); }
     public static int light(BlockState s) { return s.getValue(KIND)==Kind.LAMP?12:0; }

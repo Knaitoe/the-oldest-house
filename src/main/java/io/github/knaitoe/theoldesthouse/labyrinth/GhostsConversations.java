@@ -153,6 +153,7 @@ public final class GhostsConversations {
         Map.entry("PrivateConfession","the basement conversation"),Map.entry("Playhouse","the cardboard house"),Map.entry("Evaluation","the evaluation"),
         Map.entry("MotherObjection","Sarah's objection"),Map.entry("DrawerMechanism","the drawer"),Map.entry("FrozenLeap","the leap"),
         Map.entry("DinnerMouth","Marjorie eating"),Map.entry("FinalMeal","the last supper"),Map.entry("MerryPlate","Merry's plate"),
+        Map.entry("SarahDiary","Sarah's diary"),Map.entry("BankSlips","the kitchen papers"),Map.entry("LaptopStudy","Marjorie's saved study"),Map.entry("BasementEffigy","the basement camera image"),
         Map.entry("FamilyConvulsions","the family choking"),Map.entry("MouthLeak","their mouths"),Map.entry("MerryDeparture","Merry leaving"));
     public static String shotName(String key){return SHOT_NAMES.getOrDefault(key,key);}
     /** The kept shots in plain words, in the day's order: "Marjorie, Merry and John's hand". */
@@ -165,6 +166,7 @@ public final class GhostsConversations {
     public static String review(CompoundTag own,int day,boolean raw,Set<String> seen){
         var text=new StringBuilder();
         for(var shot:SHOTS.get(day-1))if(seen.contains(shot.subject()))text.append(raw?shot.raw():shot.cut()).append("\n\n");
+        for(String subject:List.of("SarahDiary","BankSlips","LaptopStudy","BasementEffigy"))if(seen.contains(subject))text.append(GhostsLore.footage(subject,raw,day)).append("\n\n");
         if(day==4&&own.getBoolean("RespectedPrivacy"))text.append(raw?"You put the camera down for part of it. There's nothing on tape for that part.\n\n":"Barry fills the part you didn't film with narration.\n\n");
         if(text.isEmpty()&&day==7)return raw?"You kept none of the House's last visit on the recording.":"There is no supper material to assemble. The show had already ended.";
         if(text.isEmpty())text.append(raw?"You didn't get today on tape.":"You didn't get today on tape. Barry covers it with narration and a reconstruction.");
