@@ -6,6 +6,7 @@ import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.server.level.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
@@ -26,9 +27,9 @@ public final class CounterRangeTests {
         f.chunks.hold(l,new AABB(at).inflate(40));
         var p=NativeTestPlayers.survival(h,"counter_radius");f.players.add(p);
         p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,0,0);p.setNoGravity(true);
+        var mobs=new ArrayList<Zombie>();var messages=new ArrayList<String>();var packetKinds=new HashSet<String>();
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the whole count radius is loaded"))
             .thenExecute(()->{
-                var mobs=new ArrayList<Zombie>();
                 for(var offset:List.of(new BlockPos(30,0,30),new BlockPos(32,0,0),new BlockPos(0,32,0),new BlockPos(0,33,0),new BlockPos(31,0,0))){
                     var z=EntityType.ZOMBIE.create(l);z.setNoAi(true);z.setNoGravity(true);
                     z.moveTo(p.getX()+offset.getX(),p.getY()+offset.getY(),p.getZ()+offset.getZ());
@@ -39,8 +40,16 @@ public final class CounterRangeTests {
                 var counted=TallyCounterItem.nearbyHostiles(p,TallyCounterItem.OUT_THERE);
                 h.assertTrue(counted.size()==3&&counted.containsAll(List.of(mobs.get(1),mobs.get(2),mobs.get(4)))&&!counted.contains(mobs.get(0)),"inside and exact horizontal/vertical boundaries count; the diagonal corner, dead mob and animal do not");
                 p.setItemInHand(InteractionHand.MAIN_HAND,TallyCounterItem.forReader(p.getUUID()));
+                NativeTestPlayers.packets(p);
                 TallyCounterItem.click(p,p.getMainHandItem());
-                h.assertTrue(NativeTestPlayers.packets(p).stream().anyMatch(packet->packet instanceof ClientboundSetActionBarTextPacket bar&&bar.text().getString().equals("Click. Three out there.")),"the actual counter reports the radial count to its keeper through the action bar");
+            }).thenWaitUntil(()->{
+                for(var packet:NativeTestPlayers.packets(p)){
+                    packetKinds.add(packet.getClass().getSimpleName());
+                    if(packet instanceof ClientboundSetActionBarTextPacket bar)messages.add(bar.text().getString());
+                    if(packet instanceof ClientboundSystemChatPacket chat&&chat.overlay())messages.add(chat.content().getString());
+                }
+                h.assertTrue(messages.contains("Click. Three out there."),"the actual counter reports the radial count through the native action bar: "+messages+" packets="+packetKinds);
+            }).thenExecute(()->{
                 // The sleeping watch uses the same distance rule at its smaller radius.
                 for(var z:mobs)z.moveTo(p.getX()+30,p.getY(),p.getZ()+30);
                 mobs.get(0).moveTo(p.getX()+8,p.getY(),p.getZ()+8);
