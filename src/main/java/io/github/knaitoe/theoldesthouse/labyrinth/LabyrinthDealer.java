@@ -230,6 +230,7 @@ public final class LabyrinthDealer {
         // 0.4.309: the yard's turn-around (YardRooms), an outdoor breather, from the third crossing.
         gray.add(LabyrinthPlace.YARD_TURNAROUND);
         gray.add(LabyrinthPlace.YARD_DITCH);gray.add(LabyrinthPlace.YARD_CLOTHESLINE);
+        gray.add(LabyrinthPlace.YARD_SURVEY);gray.add(LabyrinthPlace.YARD_FLOOD);
         // 0.4.232: the familiar room, from the third crossing, and far more readily while someone is in it (FamiliarRoom.weight).
         gray.add(LabyrinthPlace.FAMILIAR_KITCHEN);
         // 0.4.261: the quiet room and its four siblings, the rest rooms (QuietRooms): one each, none again within six rooms.
@@ -583,6 +584,8 @@ public final class LabyrinthDealer {
             case SPHINX_VESTIBULE -> depth < LabyrinthPacing.STORY_DEPTH || depth >= LabyrinthPacing.DEEP_DEPTH ? 0 : 2;
             // 0.4.309: the yard, an outdoor breather during an expedition: after the domestic opening, from the story depth.
             case YARD_TURNAROUND, YARD_DITCH, YARD_CLOTHESLINE -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 2;
+            case YARD_SURVEY, YARD_REUNION -> 0;
+            case YARD_FLOOD -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 3;
             // 0.4.231: the shut-up rooms under dust, a plaster hall, from the third crossing until the halls turn to stone; a little more often than a plain hall.
             case DUST_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             // 0.4.232: without a reader (the shared hall cache), the kitchen at its ordinary weight.

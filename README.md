@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.313** completes the picture/fridge hair choice, adds the three deep cable rooms and two ordinary yard connectors (a culvert crawl and yielding clotheslines), and waits for native readiness in hazard fixtures. See [the candidate notes](docs/CABLE_AND_YARD_0_4_313.md). Exact-commit verification is pending.
+Development candidate **0.4.314** adds shared yard returns after private quiet rooms, Survey Stakes and Flood Cut. Original personal continuations and returns are retained. See [the candidate notes](docs/YARD_FIELDS_0_4_314.md), including the five failures found in 0.4.313's broad suite. Exact-commit verification is pending.
 
 ## Playing it
 

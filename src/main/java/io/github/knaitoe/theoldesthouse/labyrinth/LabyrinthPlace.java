@@ -570,6 +570,13 @@ public enum LabyrinthPlace {
     TENSION_ROOMS("tension_rooms",Kind.GRAY,188,new BoundingBox(-6,-5,-40,6,5,0),grayDoors(0,0,-39)),
     YARD_DITCH("yard_ditch",Kind.GRAY,189,new BoundingBox(-7,-2,-36,7,10,0),grayDoors(0,0,-35)),
     YARD_CLOTHESLINE("yard_clothesline",Kind.GRAY,190,new BoundingBox(-7,-2,-36,7,10,0),grayDoors(0,0,-35)),
+    YARD_SURVEY("yard_survey",Kind.GRAY,191,new BoundingBox(-16,-3,-43,16,10,0),grayDoors(8,0,-42)),
+    YARD_FLOOD("yard_flood",Kind.GRAY,192,new BoundingBox(-8,-3,-39,8,10,0),grayDoors(0,0,-38)),
+    YARD_REUNION("yard_reunion",Kind.GRAY,193,new BoundingBox(-20,-4,-40,48,14,4),List.of(
+        new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("arrival_left",new BlockPos(-6,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("arrival_right",new BlockPos(6,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("exit",new BlockPos(-7,0,-34),Direction.NORTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of());
 

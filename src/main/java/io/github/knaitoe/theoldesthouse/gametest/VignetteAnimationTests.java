@@ -298,7 +298,7 @@ public final class VignetteAnimationTests {
             f.out.setBlock(cracked,WinterPropBlock.of(WinterPropBlock.Kind.SPLIT),3);
             for(var r:java.util.List.of(p,peer)){r.stopRiding();r.teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+1,f.origin.getZ()+.5,0,0);}});
         h.runAfterDelay(260,()->{var w=LiteraryVignettes.shared(f.data(),place);
-            h.assertTrue(!w.getBoolean("Fled")&&!w.contains("Night")&&!w.contains("Changed")&&WinterPropBlock.kind(f.out.getBlockState(cracked))==WinterPropBlock.Kind.BLACK_ICE,"once the lake is empty and unwatched, the night starts over and the ice is whole: "+w);
+            h.assertTrue(!w.getBoolean("Fled")&&!w.contains("Night")&&!w.contains("Changed")&&WinterPropBlock.kind(f.out.getBlockState(cracked))==WinterPropBlock.Kind.BLACK_ICE,"once the lake is empty and unwatched, the night starts over and the ice is whole: "+w+" readers="+f.out.getServer().getPlayerList().getPlayers().stream().filter(r->LiteraryVignettes.inside(r,place)).map(r->r.getGameProfile().getName()+"#"+r.getId()+" at "+r.position()).toList());
             for(var who:WinterLake.BOYS){var a=WinterLake.cast(f.out,who);h.assertTrue(!a.isInvisible()&&a.position().distanceTo(who.home(b))<.5,"the boys are back by the fire: "+who.name());}
             h.assertTrue(f.out.getBlockState(b.offset(WinterLake.BONFIRE)).getValue(net.minecraft.world.level.block.CampfireBlock.LIT),"and the fire is lit");
             var witch=WinterLake.witch(f.out);var start=Vec3.atBottomCenterOf(b.offset(WinterLake.WITCH_START));

@@ -260,8 +260,16 @@ public final class LiteraryTests {
         });
     }
     @AfterBatch(batch="literary_usher181") public static void usherDone(ServerLevel l){close();}
-    @GameTest(template="empty",batch="literary_coffin",timeoutTicks=230)
-    public static void nativeCoffinChoiceRequiresAReturnAndKeepsTheSameWoman(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("coffin_reader",place);f.source(p,place);h.runAfterDelay(10,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.hasUUID("Woman"),"the living native body is present before the decision");p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"closing the physical lid grants no ending by itself");f.arrive(p,place);f.at(p,place,2,-3,-29);});h.runAfterDelay(150,()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.getInt("Cracks")==1&&UsherStory.ownStorm(f.own(p,place),world)&&!f.own(p,place).getBoolean("Ready"),"the next native visit brings a local crack and the storm night; the ending waits for the reading (0.4.182)");h.assertTrue(f.in.getEntity(world.getUUID("Woman")) instanceof LiteraryActor,"the same woman's native UUID survives the return");h.succeed();});}
+    @GameTest(template="empty",batch="literary_coffin",timeoutTicks=1200)
+    public static void nativeCoffinChoiceRequiresAReturnAndKeepsTheSameWoman(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("coffin_reader",place);f.source(p,place);var b=f.base(place);
+        f.chunks.hold(f.in,IndianLakeRooms.bounds(b,place));java.util.UUID[] woman={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Woman"),"the living native body and its sections are present before the decision"))
+            .thenExecute(()->{woman[0]=LiteraryVignettes.shared(f.data(),place).getUUID("Woman");p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);
+                h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"closing the physical lid grants no ending by itself");f.arrive(p,place);f.at(p,place,2,-3,-29);})
+            .thenWaitUntil(()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.getInt("Cracks")==1&&UsherStory.ownStorm(f.own(p,place),world),"the actual return brings its local crack and the storm night");})
+            .thenExecute(()->{h.assertTrue(!f.own(p,place).getBoolean("Ready"),"the ending waits for the reading");h.assertTrue(f.in.getEntity(woman[0]) instanceof LiteraryActor&&woman[0].equals(LiteraryVignettes.shared(f.data(),place).getUUID("Woman")),"the original woman's native UUID survives the return");}).thenSucceed();
+    }
     /** 0.4.182: Roderick in his chair, the storm night's reading answered from the vault, her at the doors, the fall, and the flight over the causeway. */
     @GameTest(template="empty",batch="literary_usher_fall182",timeoutTicks=1000)
     public static void theStormNightsReadingIsAnsweredFromTheVaultAndTheReaderFleesAsTheHouseFalls(GameTestHelper h){
