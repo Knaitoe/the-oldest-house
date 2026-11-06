@@ -97,8 +97,10 @@ public final class PolaroidTrailTests {
     public static void lookingAtTheFlashPutsTheReaderBackOnThePorchWithTheVisitToDoAgain(GameTestHelper h){
         var f=fixture(h);var p=f.player("polaroid_caught",P);var b=f.base(P);
         h.startSequence()
-            .thenExecute(()->{f.chunks.hold(f.out,new AABB(b).inflate(30,8,44).move(0,0,-22));stand(f,p,-13.5,-1,-15.5,180,0);})
-            .thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&state(f,p,"creek")>=0,"the camera is charging in the culvert"))
+            .thenExecute(()->f.chunks.hold(f.out,new AABB(b).inflate(30,8,44).move(0,0,-22)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the creek's native sections are resident before entering the flash trigger"))
+            .thenExecute(()->stand(f,p,-13.5,-1,-15.5,0,0))
+            .thenWaitUntil(()->h.assertTrue(state(f,p,"creek")>=0,"the camera is charging while the reader faces away"))
             .thenExecute(()->{p.lookAt(EntityAnchorArgument.Anchor.EYES,PolaroidTrail.at(b,PolaroidTrail.shot("creek").node()));due(f,p,"creek");})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("Caught204")==1,"looking at the flash as it goes off is caught"))
             .thenExecute(()->{var own=f.own(p,P);

@@ -118,7 +118,17 @@ def textures():
     concrete = noisy(['#81847f', '#8c8f88', '#737771'], 3132, [5, 3, 1])
     for x in range(16):
         dot(concrete, x, 14, '#535b52'); dot(concrete, x, 15, '#485248')
-    t = {'paint': paint(), 'side': side(), 'grille_lit': grille(True), 'window': window(), 'roof': roof(), 'tailgate': tailgate(), 'wheel': wheel(), 'bulb': bulb(), 'linen': linen, 'concrete': concrete}
+    stake = noisy(['#8e7553', '#9d825d', '#7a6448'], 3140, [5, 2, 1])
+    for x in (2, 7, 12):
+        for y in range(16):
+            dot(stake, x, y, '#6e5b42')
+    t = {'paint': paint(), 'side': side(), 'grille_lit': grille(True), 'window': window(), 'roof': roof(), 'tailgate': tailgate(), 'wheel': wheel(), 'bulb': bulb(), 'linen': linen, 'concrete': concrete, 'stake': stake}
+    for stage in range(4):
+        grate = Image.new('RGBA', (16, 16))
+        frame(grate, 0, 0, 16, 16, '#555c58')
+        for x in (3, 7, 11): fill(grate, x, 1, x+2, 15, '#646c65')
+        for i in range(stage): line(grate, 2, 5+i*4, 13, 3+i*4, '#68513b')
+        t[f'grate_{stage}'] = grate
     out.update({f'block/yard/{k}.png': v for k, v in t.items()})
     return out
 
@@ -140,11 +150,15 @@ def fitting_models():
     m['sheet_0'] = model([element([0, 0, 7], [16, 16, 8], {'all': 'l'})], {'l': 'linen'}, 'linen')
     m['sheet_1'] = model([element([0, 0, 7], [4, 16, 9], {'all': 'l'}), element([3, 0, 6], [5, 16, 8], {'all': 'l'})], {'l': 'linen'}, 'linen')
     m['pipe_lip_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'c'})], {'c': 'concrete'}, 'concrete')
+    m['survey_slot_0'] = model([element([0, 0, 7], [5, 16, 9], {'all': 's'}), element([11, 0, 7], [16, 16, 9], {'all': 's'}),
+                                element([5, 0, 7], [11, 2, 9], {'all': 's'}), element([5, 14, 7], [11, 16, 9], {'all': 's'})], {'s': 'stake'}, 'stake')
+    m['gate_latch_0'] = model([element([3, 5, 14], [13, 11, 16], {'all': 'p'}), element([5, 7, 12], [11, 9, 14], {'all': 'm'})], {'p': 'stake', 'm': 'grille_lit'}, 'stake')
+    for stage in range(4): m[f'flood_grate_{stage}'] = model([element([0, 0, 14], [16, 16, 15], {'north': 'g', 'south': 'g'})], {'g': f'grate_{stage}'}, f'grate_{stage}')
     return m
 
 
-KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip']
-STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1}
+KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate']
+STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'yard_fitting': 'Yard Fittings', 'yard_clapboard': 'Clapboard', 'yard_wet_gravel': 'Wet Gravel', 'yard_garage_door': 'Garage Door'}
 
@@ -158,7 +172,7 @@ def files():
     variants = {}
     for kind in KINDS:
         for facing, y in FACING_Y.items():
-            for stage in range(2):
+            for stage in range(4):
                 drawn = stage if stage < STAGES[kind] else 0
                 v = {'model': NS + f'block/yard/{kind}_{drawn}'}
                 if y:

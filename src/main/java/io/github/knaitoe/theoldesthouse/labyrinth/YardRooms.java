@@ -57,6 +57,9 @@ public final class YardRooms {
 
     // ------------------------------------------------------------------ building
     public static void build(ServerLevel l,BlockPos b){
+        build(l,b,TURNAROUND);
+    }
+    public static void build(ServerLevel l,BlockPos b,LabyrinthPlace place){
         var rnd=new Random(b.asLong());
         // The ground, and everything above it the cedars' dense mass: the yard is cut out of it.
         box(l,b,-20,-3,-40,48,-2,4,Blocks.DIRT.defaultBlockState());box(l,b,-20,-1,-40,48,-1,4,Blocks.GRASS_BLOCK.defaultBlockState());
@@ -122,7 +125,11 @@ public final class YardRooms {
         }
         // The sky over the crowns, where passing headlights sweep.
         box(l,b,-20,SWEEP_Y,-40,48,14,-26,air());
-        doors(l,b);
+        if(place==YardReturns.PLACE)for(int x:new int[]{-6,6}){
+            box(l,b,x-1,0,-11,x+1,3,0,air());box(l,b,x-1,-1,-11,x+1,-1,0,mat("wet_gravel"));
+            set(l,b,x+1,2,0,YardBlock.of(BULB,Direction.NORTH,0));
+        }
+        doors(l,b,place);
     }
     /** The cedars: trunks and dense dark leaf mass up to the canopy, the edges ragged; the yard's spaces are cleared out of them after. */
     static void cedars(ServerLevel l,BlockPos b,Random rnd,int x0,int z0,int x1,int z1){
@@ -146,7 +153,10 @@ public final class YardRooms {
         }
     }
     static void doors(ServerLevel l,BlockPos b){
-        for(var spec:TURNAROUND.doors()){
+        doors(l,b,TURNAROUND);
+    }
+    static void doors(ServerLevel l,BlockPos b,LabyrinthPlace place){
+        for(var spec:place.doors()){
             var at=b.offset(spec.rel());var d=Blocks.DARK_OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING,spec.facing()).setValue(DoorBlock.HINGE,DoorHingeSide.LEFT).setValue(DoorBlock.OPEN,false);
             l.setBlock(at,d.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER),FLAGS);l.setBlock(at.above(),d.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER),FLAGS);
             l.setBlock(at.below(),Blocks.SPRUCE_PLANKS.defaultBlockState(),FLAGS);

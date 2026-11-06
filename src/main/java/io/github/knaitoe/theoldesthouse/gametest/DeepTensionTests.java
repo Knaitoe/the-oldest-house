@@ -87,7 +87,7 @@ public final class DeepTensionTests {
         var f=fixture(h);var l=f.in;var b=f.base(DeepTensionRooms.PLACE);var p=reader(h,f,"deep_wheel");var q=reader(h,f,"deep_rider");Pig[] pig={null};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the safety fixture's native sections are ready"))
             .thenExecute(()->{
-                build(f,b);pig[0]=EntityType.PIG.create(l);h.assertTrue(pig[0]!=null,"the persistent animal exists");pig[0].setPersistenceRequired();pig[0].setNoGravity(true);
+                build(f,b);pig[0]=EntityType.PIG.create(l);h.assertTrue(pig[0]!=null,"the persistent animal exists");pig[0].setPersistenceRequired();pig[0].setNoGravity(true);f.extras.add(pig[0]);
                 pig[0].moveTo(b.getX()-4.5,b.getY(),b.getZ()-7.5);h.assertTrue(l.addFreshEntity(pig[0]),"the persistent pig is admitted");
             })
             .thenWaitUntil(()->h.assertTrue(l.getEntitiesOfClass(LivingEntity.class,new AABB(b.offset(DeepTensionRooms.SHAFT)).inflate(.1)).contains(pig[0]),"the animal occupies the shaft"))

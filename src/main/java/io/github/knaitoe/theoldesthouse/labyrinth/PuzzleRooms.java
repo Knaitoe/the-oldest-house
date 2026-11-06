@@ -38,7 +38,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * counts toward the Witness.
  */
 public final class PuzzleRooms {
-    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER,TENSION}
+    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER,TENSION,SURVEY}
     public enum Puzzle {
         BORROWED_LIGHT(LabyrinthPlace.BORROWED_LIGHT,Family.LIGHT,false,"The door has no handle on this side. The sun beside it is cold."),
         SERVICE_LIFT(LabyrinthPlace.SERVICE_LIFT,Family.LIFT,false,null),
@@ -70,7 +70,8 @@ public final class PuzzleRooms {
         HEADER_TANKS(LabyrinthPlace.HEADER_TANKS,Family.WATER,true,null),
         // 0.4.306: the tension room (TensionRooms, docs/TENSION_ROOM_0_4_306.md), early only for now. The far door is ordinary: the pit is what waits.
         TENSION_ROOM(LabyrinthPlace.TENSION_ROOM,Family.TENSION,false,null),
-        TENSION_ROOMS(LabyrinthPlace.TENSION_ROOMS,Family.TENSION,true,null);
+        TENSION_ROOMS(LabyrinthPlace.TENSION_ROOMS,Family.TENSION,true,null),
+        YARD_SURVEY(LabyrinthPlace.YARD_SURVEY,Family.SURVEY,false,null);
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;

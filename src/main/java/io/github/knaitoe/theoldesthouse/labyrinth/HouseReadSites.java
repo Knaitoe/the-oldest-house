@@ -82,7 +82,6 @@ public final class HouseReadSites {
     public static @Nullable LabyrinthData.Door prepare(ServerPlayer p,Room room){
         var d=LabyrinthData.get(p.server);if(store!=d){rebind();store=d;}var own=state(p.server,p.getUUID());
         if(!own.contains("Index")){var world=d.stateEntry(STATE,"World");int index=world.getInt("NextIndex");if(index>=4096)return null;own.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(STATE,"World",world);save(p.server,p.getUUID(),own);}
-        var stale=own.getCompound(room.key());if(stale.getBoolean("Built")&&!stale.getBoolean("Entered")&&stale.getInt("Layout")<LAYOUT){stale.remove("Built");own.put(room.key(),stale);save(p.server,p.getUUID(),own);}
         var b=base(p.server,p.getUUID(),room);var l=p.server.getLevel(room.dimension());
         if(l!=null&&own.getCompound(room.key()).getBoolean("Built")&&l.getChunkSource().getChunkNow(b.getX()>>4,b.getZ()>>4)!=null&&l.areEntitiesLoaded(ChunkPos.asLong(b)))return d.door(doorId(p.getUUID(),room,"entry"));
         var job=new Job(p.getUUID(),room);if(!job.equals(building))WAITING.add(job);return null;
@@ -126,6 +125,7 @@ public final class HouseReadSites {
         var d=LabyrinthData.get(p.server);var from=d.door(request.door());boolean away=from==null||p.level().dimension()!=from.dimension||p.distanceToSqr(from.lower.getCenter())>36;
         if(away||LabyrinthDoors.isBusy(p)){PENDING.remove(p.getUUID());return;}
         var doorway=prepare(p,request.room());if(doorway==null)return;PENDING.remove(p.getUUID());
+        YardReturns.reserve(p,from);
         var room=request.room();var b=base(p.server,p.getUUID(),room);var landing=b.offset(room==Room.PORCH?new BlockPos(0,0,10):BlockPos.ZERO);
         HouseTransitionEvents.beginDoorTransition(p,room.dimension(),null,arrived->{
             var own=state(arrived.server,arrived.getUUID());if(!own.getString("Active").isEmpty()){left(arrived);own=state(arrived.server,arrived.getUUID());}
@@ -164,7 +164,7 @@ public final class HouseReadSites {
         // A retired 0.4.142 hallway door still has a way back: the far door's hallway side.
         var from=d.door(t.getString("SourceDoor"));if(from==null)from=d.door("hallway_end");if(from==null)return;var next=LabyrinthPlace.byId(t.getString("NextPlace"));
         // 0.4.160: no room leads straight into the next; the way on is always the hall its door was dealt.
-        if(forward&&!t.getBoolean("Entrance")){if(next!=null)LabyrinthDoors.continueFromRead(p,from,next);}
+        if(forward&&!t.getBoolean("Entrance")){if(next!=null&&!YardReturns.departQuiet(p,from,next))LabyrinthDoors.continueFromRead(p,from,next);}
         else HouseTransitionEvents.beginDoorTransition(p,from.dimension,null,HouseReadSites::left,Vec3.atBottomCenterOf(from.lower.relative(from.facing,2)),from.facing.toYRot());
     }
     public static void left(ServerPlayer p){

@@ -126,6 +126,7 @@ public final class LabyrinthDoors {
         // 0.4.229: whoever last used a door is who its shutting is heard for, on their far side.
         DoorSounds.used(player,door);
         if(HouseReadSites.door(player,door))return;
+        if(!YardReturns.mayReturn(player,door)){setDoorOpen(player.serverLevel(),door.lower,false,player);return;}
         if(HazardVariety.blocksDoor(player,door))return;
         if(PuzzleRooms.holds(player,door))return;
         var hotelRoute=HotelVignette.route(player,door);if(hotelRoute!=null)door=hotelRoute;
@@ -353,6 +354,7 @@ public final class LabyrinthDoors {
     static void continueFromRead(ServerPlayer player,LabyrinthData.Door from,LabyrinthPlace place) {
         if(HouseReadSites.inside(player)==null)return;
         var entry=LabyrinthData.get(player.server).door(place.entryDoorId());
+        var reunion=YardReturns.entry(player,place);if(reunion!=null)entry=reunion;
         if(SceneInstances.copyable(place)){var chosen=SceneInstances.enter(player,place);if(chosen.door()==null){if(chosen.waiting())readying(player,place);else if(chosen.waitsFor()!=null)LakeHousePairs.waits(player,chosen.waitsFor());else taken(player,place);return;}entry=chosen.door();}
         if(entry!=null)arrive(player,from,entry,place,true);
     }
@@ -379,7 +381,7 @@ public final class LabyrinthDoors {
         if (!othersAtDoor(toLevel, entry.lower, player) && !Wedges.at(toLevel, entry.lower)) setDoorOpen(toLevel, entry.lower, false, null);
         // A door inside a standing room (the hotel's own 217) keeps the room as built: nothing is copied over its corridor.
         if (Wedges.otherWay(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player, Wedges.WAY_HALF_WIDTH, 1, Wedges.WAY_DEPTH);
-        else if (!HotelVignette.withinRoom(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player);
+        else if (!HotelVignette.withinRoom(entry)&&!YardReturns.fixedEntrance(entry)) copyVestibule(fromLevel, from, toLevel, entry, turn, player);
         Vec3 target = fromRead?Vec3.atBottomCenterOf(entry.lower.relative(entry.facing.getOpposite(),3)):shifted(player.position(), from.lower, entry.lower, turn);
         float yaw = fromRead?entry.facing.getOpposite().toYRot():player.getYRot() + angle(turn);
 
@@ -409,6 +411,7 @@ public final class LabyrinthDoors {
                 io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"arrive","place",place.id(),"kind",place.kind().name().toLowerCase(java.util.Locale.ROOT),"story",WitnessAccount.Story.of(place.id())!=null,"depth",current.returnDepth(p.getUUID()));}
             LabyrinthDealer.arriveAt(current, p.getUUID(), place, manor == null ? 0L : manor.asLong(),
                     p.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.SPECTATOR);
+            YardReturns.arrived(p,place);
             if(p.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR){LabyrinthMaze.forget(p.getUUID());LabyrinthDoorLeaks.send(p);return;}
             RedRoom.prepareIfDealt(p, place);
             VignetteThreads.arrived(p, place);
@@ -472,6 +475,7 @@ public final class LabyrinthDoors {
         LabyrinthData data = LabyrinthData.get(player.server);
         LabyrinthData.Door entry = place==LabyrinthPlace.SILO?SiloSites.entry(player):place==LabyrinthPlace.BACKSEAT?BackseatSites.entry(player):place==LabyrinthPlace.BORRASCA?BorrascaSites.entry(player):place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.entry(player,place):SceneInstances.entryAt(player,place);
         // 0.4.239: a reader who came in by another door, past a wedged entry, goes back out by that door.
+        var reunion=YardReturns.entry(player,place);if(reunion!=null)entry=reunion;
         if (entry != null) entry = Wedges.entryFor(player, place, entry);
         if (entry == null) {
             return true;
@@ -562,6 +566,7 @@ public final class LabyrinthDoors {
             String name = SceneInstances.doorId(place, copy, spec.name());
             if (spec.name().equals("entry") || !LabyrinthData.RETURN.equals(spec.destination())) continue;
             var gate = data.door(name);
+            if(gate!=null&&!YardReturns.mayReturn(player,gate))continue;
             if (gate == null || !gate.dimension.equals(player.level().dimension())) continue;
             var state = player.serverLevel().getBlockState(gate.lower);
             if (!(state.getBlock() instanceof DoorBlock) || !state.getValue(DoorBlock.OPEN)) continue;

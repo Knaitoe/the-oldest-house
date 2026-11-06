@@ -55,7 +55,7 @@ public final class OctoberFollowupTests {
         var wolf=EntityType.WOLF.create(real);h.assertTrue(wolf!=null,"the native original wolf creates");wolf.moveTo(sourceAt.getCenter());wolf.setNoGravity(true);wolf.setPersistenceRequired();real.addFreshEntity(wolf);f.extras.add(wolf);
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"source and observer entity sections are ready"))
             .thenIdle(360).thenExecute(()->{
-                h.assertTrue(real.players().isEmpty(),"the real source world has no resident player to keep it active");
+                h.assertTrue(real.players().isEmpty(),"the real source world has no resident player to keep it active: "+real.players().stream().map(r->r.getGameProfile().getName()+"#"+r.getId()+" at "+r.position()).toList());
                 h.assertTrue(wolf.tickCount>=320&&wolf.isAlive()&&!HouseExteriorEntityMirror.isProjection(wolf),"the actual source mob keeps ticking beyond the native fifteen-second empty-world suspension");
                 h.assertTrue(f.in.getEntitiesOfClass(Mob.class,new AABB(sourceAt).inflate(8),HouseExteriorEntityMirror::isProjection).stream().anyMatch(p->p.getType()==wolf.getType()&&p.isNoAi()&&p.isInvulnerable()),"the tracked visual projection still has no gameplay authority");
                 watcher.teleportTo(f.out,eye.getX()+.5,eye.getY(),eye.getZ()+.5,0,0);watcher.hasChangedDimension();

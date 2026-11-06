@@ -30,13 +30,13 @@ import net.minecraft.world.phys.shapes.*;
 public final class YardBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<YardBlock> CODEC=simpleCodec(YardBlock::new);
     public enum Kind implements StringRepresentable {
-        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP;
+        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
-    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,1);
+    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
     public YardBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.BODY).setValue(STAGE,0));}
-    public static BlockState of(Kind kind,Direction facing,int stage){return PuzzleRegistry.YARD.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(1,stage)));}
+    public static BlockState of(Kind kind,Direction facing,int stage){return PuzzleRegistry.YARD.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(3,stage)));}
     public static boolean is(BlockState s,Kind kind){return s.is(PuzzleRegistry.YARD.get())&&s.getValue(KIND)==kind;}
     public static int light(BlockState s){return switch(s.getValue(KIND)){case BULB->14;case NOSE->12;case TAIL->4;default->0;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
@@ -48,6 +48,9 @@ public final class YardBlock extends HorizontalDirectionalBlock {
             case CABIN->Block.box(0,0,0,16,12,16);
             case SHEET->s.getValue(STAGE)==0?Block.box(0,0,7,16,16,9):Block.box(0,0,7,5,16,9);
             case PIPE_LIP->Block.box(0,0,0,16,16,16);
+            case SURVEY_SLOT->Shapes.or(Block.box(0,0,7,5,16,9),Block.box(11,0,7,16,16,9),Block.box(5,0,7,11,2,9),Block.box(5,14,7,11,16,9));
+            case GATE_LATCH->WorkPrintBlock.box(s.getValue(FACING),3,5,12,13,11,16);
+            case FLOOD_GRATE->WorkPrintBlock.box(s.getValue(FACING),0,0,14,16,16,16);
             default->Block.box(0,0,0,16,14,16);
         };
     }
@@ -55,6 +58,7 @@ public final class YardBlock extends HorizontalDirectionalBlock {
     @Override protected void entityInside(BlockState s,Level l,BlockPos at,net.minecraft.world.entity.Entity e){if(e instanceof ServerPlayer p&&s.getValue(KIND)==Kind.SHEET)YardConnectors.brush(p,at);}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
+        if(YardFields.use(p,pos,s))return InteractionResult.CONSUME;
         if(s.getValue(KIND)==Kind.SHEET){YardConnectors.brush(p,pos);return InteractionResult.CONSUME;}
         if(s.getValue(KIND)==Kind.PIPE_LIP){if(YardCrawl.start(p))PuzzleRooms.say(p,"You get down onto the dry concrete lip.");return InteractionResult.CONSUME;}
         PuzzleRooms.say(p,switch(s.getValue(KIND)){
