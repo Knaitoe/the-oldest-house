@@ -306,6 +306,91 @@ def reflector():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.336, what the road leaves
+BLOOD = ['#5e0a0a', '#6e0e0e', '#4a0707', '#7c1212']
+
+
+def blood_pool():
+    # A puddle spreading under the body on wet tar: ragged edge, thick and dark at the middle, one wet glint.
+    im = blank(); rnd = random.Random(3361)
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) / 7.2) ** 2 + ((y - 7.5) / 5.8) ** 2 + rnd.uniform(-.25, .25)
+            if d < 1:
+                im.putpixel((x, y), shade(rnd.choice(BLOOD), 0)[:3] + (int(255 * min(1, (1.15 - d) * 2)),))
+    dot(im, 6, 6, '#b04040'); dot(im, 7, 6, '#902828')
+    return im
+
+
+def blood_smear():
+    # Dragged along the lane: streaks running the length of it, broken, thinning to the sides.
+    im = blank(); rnd = random.Random(3362)
+    for y in range(3, 13):
+        edge = abs(y - 7.5) / 5.0
+        for x in range(16):
+            if rnd.random() > .25 + edge * .6:
+                im.putpixel((x, y), shade(rnd.choice(BLOOD), 0)[:3] + (int(255 * (1 - edge * .7)),))
+    return im
+
+
+def shoe():
+    # A canvas shoe come off on the tar: worn dark canvas, a white rubber sole, the laces still tied.
+    im = noisy(['#2e3440', '#343a48', '#283038'], 3363)
+    for x in range(16):
+        dot(im, x, 13, '#d8d4c8'); dot(im, x, 14, '#c4c0b4'); dot(im, x, 15, '#9a968c')
+    for x in (5, 7, 9):
+        dot(im, x, 4, '#d8d4c8'); dot(im, x + 1, 6, '#d8d4c8')
+    return im
+
+
+def wounds():
+    # Laid over a reader's skin, the House's body included, in the skin's own layout: blood from the hairline and the mouth, the road's
+    # rash down the back and one side where they were dragged, the clothes torn and soaked across the chest and at a knee. Base and
+    # outer layers alike, so it shows over whatever the body wears.
+    im = Image.new('RGBA', (64, 64), (0, 0, 0, 0)); rnd = random.Random(3364)
+
+    def splotch(x0, y0, x1, y1, n, r=1.6):
+        for _ in range(n):
+            cx, cy = rnd.uniform(x0, x1 - 1), rnd.uniform(y0, y1 - 1)
+            for y in range(int(cy - r - 1), int(cy + r + 2)):
+                for x in range(int(cx - r - 1), int(cx + r + 2)):
+                    if x0 <= x < x1 and y0 <= y < y1 and (x - cx) ** 2 + (y - cy) ** 2 <= r * r + rnd.uniform(-1, 1):
+                        im.putpixel((x, y), shade(rnd.choice(BLOOD), 0)[:3] + (rnd.choice([220, 240, 255]),))
+
+    def rash(x0, y0, x1, y1, n):
+        for _ in range(n):
+            x, y = rnd.randrange(x0, x1), rnd.randrange(y0, y1)
+            for k in range(rnd.randint(2, 5)):
+                if y + k < y1:
+                    im.putpixel((x, y + k), shade(rnd.choice(['#7a3a30', '#6a2e26', '#5a5550', '#8a4236']), 0)[:3] + (230,))
+
+    def run(x, y0, y1):
+        for y in range(y0, y1):
+            im.putpixel((x, y), shade(rnd.choice(BLOOD), 0)[:3] + (255,))
+
+    for ox, oy in ((0, 0), (32, 0)):          # head and hat
+        splotch(ox + 8, oy + 8, ox + 16, oy + 11, 3, 1.2)   # hairline
+        run(ox + 10, oy + 9, oy + 16); run(ox + 11, oy + 12, oy + 16)   # down the face from a cut, and from the mouth
+        rash(ox + 0, oy + 8, ox + 8, oy + 16, 10)           # one side of the head on the tar
+        splotch(ox + 8, oy + 0, ox + 16, oy + 8, 2, 1.4)    # crown
+    for oy in (16, 32):                                       # body and jacket
+        splotch(20, oy + 4, 28, oy + 16, 7, 1.8)             # chest soaked
+        for x in range(20, 28):                               # torn across
+            if rnd.random() > .3:
+                im.putpixel((x, oy + 9 + rnd.randint(-1, 1)), (40, 6, 6, 255))
+        rash(32, oy + 4, 40, oy + 16, 22)                    # back dragged
+        rash(16, oy + 4, 20, oy + 16, 6)
+    for x0, oy in ((40, 16), (40, 32)):                      # right arm and sleeve
+        rash(x0, oy + 4, x0 + 16, oy + 16, 14); splotch(x0 + 4, oy + 10, x0 + 8, oy + 16, 2, 1.2)
+    for x0, y0 in ((32, 48), (48, 48)):                      # left arm and sleeve
+        splotch(x0, y0 + 4, x0 + 16, y0 + 16, 4, 1.3)
+    for x0, y0 in ((0, 16), (0, 32)):                        # right leg and pants: the knee
+        splotch(x0 + 4, y0 + 8, x0 + 8, y0 + 12, 3, 1.5); rash(x0, y0 + 4, x0 + 16, y0 + 16, 6)
+    for x0, y0 in ((16, 48), (0, 48)):                       # left leg and pants: torn and soaked
+        splotch(x0 + 4, y0 + 4, x0 + 8, y0 + 16, 4, 1.4)
+    return im
+
+
 def textures():
     t = {'asphalt': asphalt(), 'paint_0': paint(0), 'paint_1': paint(1), 'paint_2': paint(2), 'paint_3': paint(3), 'paint_4': paint(4),
          'paint_5': paint(5), 'cab': cab(), 'trailer': trailer(), 'logs': logs(), 'log_end': log_end(), 'wagon': wagon(),
@@ -315,7 +400,8 @@ def textures():
          'flag_0': flag(True), 'flag_1': flag(False), 'post': post(), 'shield_0': shield(False), 'shield_1': shield(True),
          'mile_0': mile(False), 'mile_1': mile(True), 'pole': pole(), 'lamp_0': lamp(True), 'lamp_1': lamp(False),
          'chain_0': chain(False), 'chain_1': chain(True), 'guard_0': guard(True), 'guard_1': guard(False), 'corn_0': corn(0), 'corn_1': corn(1),
-         'gate_lower': gate('lower'), 'gate_upper': gate('upper'), 'galvanized': galvanized(3349)}
+         'gate_lower': gate('lower'), 'gate_upper': gate('upper'), 'galvanized': galvanized(3349),
+         'blood_pool': blood_pool(), 'blood_smear': blood_smear(), 'shoe': shoe(), 'wounds': wounds()}
     out = {f'block/state_route/{k}.png': v for k, v in t.items()}
     out['block/state_route_asphalt.png'] = asphalt()
     out['block/state_route_edge_white_s.png'] = edge('#d8dcdc', (13, 14), 3331)
@@ -406,7 +492,7 @@ def main():
     check = argparse.ArgumentParser(); check.add_argument('--check', action='store_true'); check = check.parse_args().check
     images, data = textures(), files()
     for rel, im in images.items():
-        assert im.size == (16, 16)
+        assert im.size == ((64, 64) if rel.endswith('/wounds.png') else (16, 16)), rel
         path = A / 'textures' / rel
         if check:
             with Image.open(path) as actual:
@@ -422,6 +508,8 @@ def main():
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     names = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
     names.update({f'item.the_oldest_house.{k}': v for k, v in ITEMS.items()})
+    # 0.4.336: the road's own death message.
+    names['death.attack.the_oldest_house.route_vehicle'] = '%1$s was struck on the 9'
     for key, name in names.items():
         if check:
             assert lang.get(key) == name, key

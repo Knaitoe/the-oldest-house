@@ -19,6 +19,8 @@ ROWS = {
     'tick': ('Engines tick over at a crawl', 16),
     'chord': ('Every horn on the highway sounds at once', 96),
     'padlock': ('A padlock rattles on its chain', 16),
+    # 0.4.336: a body struck at speed.
+    'impact': ('A heavy impact on the road', 40),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -151,7 +153,23 @@ def padlock():
     return out
 
 
-MAKERS = {'diesel': diesel, 'hiss': hiss, 'horn': horn, 'pass': pass_, 'wake': wake, 'screech': screech, 'tick': tick, 'chord': chord, 'padlock': padlock}
+def impact():
+    # A body hit at speed: one deep blunt thud with no ring to it, a crack inside it, glass going, and then nothing but rain.
+    n = seconds(1.6)
+    out = np.zeros(n)
+    k = seconds(.35)
+    tk = times(k)
+    place(out, (np.sin(2 * np.pi * 48 * tk) * 1.0 + band(rng.standard_normal(k), 60, 400) * .9) * envelope(k, .002, .12), 0.0)
+    k = seconds(.08)
+    place(out, band(rng.standard_normal(k), 900, 4000) * envelope(k, .0005, .02) * .7, .01)
+    k = seconds(.9)
+    tk = times(k)
+    glass = band(rng.standard_normal(k), 3500, 9500) * (rng.random(k) > .985) * np.exp(-tk * 3)
+    place(out, glass * .8, .05)
+    return out
+
+
+MAKERS = {'impact': impact, 'diesel': diesel, 'hiss': hiss, 'horn': horn, 'pass': pass_, 'wake': wake, 'screech': screech, 'tick': tick, 'chord': chord, 'padlock': padlock}
 
 
 def main():

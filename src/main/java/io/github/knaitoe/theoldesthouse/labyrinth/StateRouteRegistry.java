@@ -48,6 +48,8 @@ public final class StateRouteRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> DIESEL=sound("route.diesel"),HISS=sound("route.hiss"),HORN=sound("route.horn"),PASS=sound("route.pass"),WAKE=sound("route.wake");
     /** Brakes and the blackout; engines ticking in the rain at a crawl; every horn on the highway at once; the padlock. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SCREECH=sound("route.screech"),TICK=sound("route.tick"),CHORD=sound("route.chord"),PADLOCK=sound("route.padlock");
+    /** 0.4.336: a body struck at speed. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> IMPACT=sound("route.impact");
     private StateRouteRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);BES.register(bus);SOUNDS.register(bus);}
 }

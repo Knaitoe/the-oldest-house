@@ -23,6 +23,7 @@ import net.minecraft.world.phys.*;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
@@ -53,6 +54,17 @@ public final class StateRoute {
     public static final int CONVOY_DELAY=40,CONVOY_LENGTH=110;
     /** Struck squarely: a car's harm, a semi's; a pickup's knock. Never more than the reader has to lose, short of an impact that would kill. */
     public static final float CAR_HARM=8,SEMI_HARM=12,PICKUP_HARM=4,WAKE_HARM=2;
+    /**
+     * 0.4.336 (owner: "getting hit renders the player's corpse, injured and torn by the vehicles. It frames it for a few seconds then
+     * spawns them in their bed"; "items should be dropped as per normal death, so the mother of strays can collect"): how long the
+     * reader's own camera holds on what is left of them before they wake at home; how long the body stays on the tar for everyone else;
+     * how long they lie in their bed before they wake.
+     */
+    public static final int FRAME=90,WRECK_LIFE=1200,ABED=50;
+    /** The road's own way of killing: a vehicle at speed, through armour and everything else. */
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> VEHICLE=net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"route_vehicle"));
+    /** Readers killed on the road and not yet woken at home, and readers lying in their own bed until they wake. */
+    private static final Map<UUID,Long> WRECKED=new HashMap<>(),ABED_UNTIL=new HashMap<>();
     public static final ResourceLocation RUNAWAY_SPEED=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"route_runaway");
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     /** A vehicle not yet out of the hedge: its lane, kind, speed and the tick it comes out. Server only. */
@@ -66,7 +78,8 @@ public final class StateRoute {
     private static final Set<UUID> REFLECTOR=new HashSet<>();
     private static long medianEmptySince=-1,wagonNext=-1,flickerAt=-1;
     private StateRoute(){}
-    public static void clearAll(){PLANS.clear();HIT.clear();WOKEN.clear();HORNED.clear();CALLED.clear();RUNNING.clear();medianEmptySince=-1;wagonNext=-1;flickerAt=-1;}
+    public static boolean wrecked(UUID reader){return WRECKED.containsKey(reader);}
+    public static void clearAll(){WRECKED.clear();ABED_UNTIL.clear();PLANS.clear();HIT.clear();WOKEN.clear();HORNED.clear();CALLED.clear();RUNNING.clear();medianEmptySince=-1;wagonNext=-1;flickerAt=-1;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();REFLECTOR.clear();}
 
     // ------------------------------------------------------------------ finding the road
@@ -104,6 +117,7 @@ public final class StateRoute {
     public static void tick(StateRouteScene s){
         if(!(s.getLevel() instanceof ServerLevel l))return;long now=l.getGameTime();
         var here=readers(s);
+        if(now%20==0&&s.wrecks.removeIf(w->now-w.at()>WRECK_LIFE||now<w.at()))s.sync();
         if(now%20==0){prune(s,l);if(here.isEmpty()&&s.party.isEmpty()){if(++s.emptyTicks>=5&&(s.mode!=StateRouteScene.FAST||s.keyOut||!s.traffic.isEmpty()))reset(s,l);}else s.emptyTicks=0;}
         if(here.isEmpty())return;
         boolean changed=false;
@@ -201,7 +215,7 @@ public final class StateRoute {
         return new AABB(b.getX()+v.x-half-grow,b.getY()-.5,b.getZ()+z-1.2-grow,b.getX()+v.x+half+grow,b.getY()+StateRouteSite.height(v.kind),b.getZ()+z+1.2+grow);
     }
     private static void touch(StateRouteScene s,ServerLevel l,ServerPlayer p,long now){
-        if(LabyrinthDoors.isBusy(p)||p.isSpectator())return;
+        if(LabyrinthDoors.isBusy(p)||p.isSpectator()||p.isCreative()||p.isDeadOrDying())return;
         var r=rel(s,p);
         for(var v:List.copyOf(s.traffic)){
             if(box(s,v,.05).intersects(p.getBoundingBox())){
@@ -226,18 +240,58 @@ public final class StateRoute {
         var o=own(p);o.putInt("RoutePickup",o.getInt("RoutePickup")+1);save(p,o);
         say(p,"The pickup clips you and puts you down on the tar.");
     }
-    /** Struck squarely: black, a screech, and the starting shoulder; an impact that would have killed sends them back into the House. */
+    /**
+     * Struck squarely by a car or a semi: dead on the tar. The body is carried a little way along the lane and left at its edge, twisted
+     * and torn, and stays there a minute for everyone on the road to see. The reader's own camera holds on it for a few seconds; then
+     * they wake in their own bed (or wherever the world would put them). It is an ordinary death: whatever they carried falls where the
+     * body lies, for the Mother of Strays as any death in the House, except the key, which goes back into the mailbox.
+     */
     static void struck(StateRouteScene s,ServerLevel l,ServerPlayer p,StateRouteScene.Vehicle v){
-        float want=v.kind==StateRouteScene.SEMI?SEMI_HARM:CAR_HARM;boolean fatal=p.getHealth()<=want;
-        sound(s,p.position(),StateRouteRegistry.SCREECH.get(),2F,1F);
-        HousePackets.send(p,new HouseFadePayload(2,30,20));
-        var o=own(p);
-        if(fatal){o.putInt("RouteFatal",o.getInt("RouteFatal")+1);save(p,o);dropKey(s,l,p);s.party.remove(p.getUUID());LabyrinthDoors.sendBack(p,2,30,20);return;}
-        o.putInt("RouteStruck",o.getInt("RouteStruck")+1);save(p,o);
-        dropKey(s,l,p);
-        hit(p,harm(p,want));
-        var spot=at(s,Mth.clamp(rel(s,p).x,-40,40),0,StateRouteSite.SHOULDER.z);
-        p.teleportTo(l,spot.x,spot.y,spot.z,180,0);p.setDeltaMovement(Vec3.ZERO);p.fallDistance=0;
+        long now=l.getGameTime();var r=rel(s,p);boolean semi=v.kind==StateRouteScene.SEMI;
+        sound(s,p.position(),StateRouteRegistry.SCREECH.get(),2F,1F);sound(s,p.position(),StateRouteRegistry.IMPACT.get(),1.8F,semi?.8F:1F);
+        var o=own(p);o.putInt("RouteStruck",o.getInt("RouteStruck")+1);o.putString("RouteStruckBy",semi?"semi":"car");save(p,o);
+        dropKey(s,l,p);s.party.remove(p.getUUID());s.partySeen.remove(p.getUUID());
+        // Carried along the lane and thrown to its edge, further by a semi.
+        double laneZ=StateRouteSite.LANE_Z[v.lane];double x=Mth.clamp(r.x+v.dir()*(semi?7:3.5),-StateRouteSite.HEDGE+2,StateRouteSite.HEDGE-2);
+        double z=laneZ+(r.z>=laneZ?1.0:-1.0);float yaw=(v.dir()>0?-90:90)+(float)(l.random.nextGaussian()*25);
+        var body=io.github.knaitoe.theoldesthouse.house.HouseConfig.houseBodies()?HouseBodies.body(LabyrinthData.get(l.getServer()),p.getUUID()):null;
+        s.wrecks.removeIf(w->w.reader().equals(p.getUUID()));s.wrecks.add(new StateRouteScene.Wreck(p.getUUID(),x,z,yaw,now,v.kind,body));while(s.wrecks.size()>6)s.wrecks.remove(0);s.sync();
+        // Everyone else on the road sees it.
+        for(var q:readers(s)){if(q==p||q.distanceToSqr(p)>36*36)continue;var oq=own(q);oq.putString("RouteSawWreck",p.getGameProfile().getName());oq.putInt("RouteSawWrecks",oq.getInt("RouteSawWrecks")+1);save(q,oq);}
+        // The reader's last sight of the road, then home.
+        WRECKED.put(p.getUUID(),now);
+        var at=at(s,x,0,z);
+        HousePackets.send(p,new StateRouteWreckPayload(at.x,at.y,at.z,yaw,FRAME));
+        p.stopRiding();p.teleportTo(l,at.x,at.y,at.z,yaw,0);p.setDeltaMovement(Vec3.ZERO);
+        p.hurt(new net.minecraft.world.damagesource.DamageSource(l.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(VEHICLE)),Float.MAX_VALUE);
+        if(!p.isDeadOrDying())WRECKED.remove(p.getUUID());
+    }
+    /** Woken at home: in their own bed, lying in it a moment first, or standing where the world put them. */
+    @SubscribeEvent public static void respawn(PlayerEvent.PlayerRespawnEvent e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||e.isEndConquered()||WRECKED.remove(p.getUUID())==null)return;
+        var bed=p.getRespawnPosition();var l=p.serverLevel();
+        if(bed!=null&&p.getRespawnDimension().equals(l.dimension())){var st=l.getBlockState(bed);
+            if(st.getBlock() instanceof BedBlock){var head=st.getValue(BedBlock.PART)==net.minecraft.world.level.block.state.properties.BedPart.HEAD?bed:bed.relative(st.getValue(BedBlock.FACING));
+                p.teleportTo(l,head.getX()+.5,head.getY()+.6,head.getZ()+.5,p.getYRot(),0);p.startSleeping(head);ABED_UNTIL.put(p.getUUID(),l.getGameTime()+ABED);
+                var o=own(p);o.putInt("RouteAbed",o.getInt("RouteAbed")+1);save(p,o);
+                say(p,"You wake in your own bed. Your clothes are wet through, and there is grit in your hair.");return;}}
+        say(p,"You wake on cold ground, wet through, with grit in your hair.");
+    }
+    static{
+        // A reader put to bed after the road stays lying there for their moment even by day; the event's package moved between NeoForge versions.
+        for(String name:new String[]{"net.neoforged.neoforge.event.entity.living.CanContinueSleepingEvent","net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent"}){
+            try{@SuppressWarnings("unchecked") var type=(Class<net.neoforged.bus.api.Event>)Class.forName(name);var allow=type.getMethod("setContinueSleeping",boolean.class);
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOW,false,type,event->{
+                    if(event instanceof net.neoforged.neoforge.event.entity.living.LivingEvent living&&living.getEntity() instanceof ServerPlayer p&&ABED_UNTIL.containsKey(p.getUUID()))
+                        try{allow.invoke(event,true);}catch(ReflectiveOperationException ignored){}});
+                break;}catch(ReflectiveOperationException|ClassCastException ignored){}
+        }
+    }
+    /** Up out of bed when their moment is over. */
+    static void wakeAbed(MinecraftServer server){
+        if(ABED_UNTIL.isEmpty())return;
+        for(var it=ABED_UNTIL.entrySet().iterator();it.hasNext();){var e=it.next();var p=server.getPlayerList().getPlayer(e.getKey());
+            if(p==null){it.remove();continue;}if(p.serverLevel().getGameTime()<e.getValue())continue;it.remove();if(p.isSleeping())p.stopSleepInBed(false,true);}
     }
     private static void wake(StateRouteScene s,ServerPlayer p,StateRouteScene.Vehicle v,Vec3 r){
         double z=StateRouteSite.LANE_Z[v.lane],dz=Math.abs(r.z-z);
@@ -464,7 +518,7 @@ public final class StateRoute {
         for(var item:l.getEntitiesOfClass(ItemEntity.class,area,e->e.getItem().is(StateRouteRegistry.KEY.get())))item.discard();
         PLANS.clear();WOKEN.clear();HORNED.clear();medianEmptySince=-1;wagonNext=-1;
         s.mode=StateRouteScene.FAST;s.modeAt=l.getGameTime();s.traffic.clear();s.coming.clear();Arrays.fill(s.nextSpawn,0);s.keyOut=false;s.keyHolder=null;
-        s.convoyAt=-1;s.convoyDone=false;s.releasedAt=-1;s.releasedBy=null;s.party.clear();s.partySeen.clear();s.unseen.clear();s.emptyTicks=0;
+        s.convoyAt=-1;s.convoyDone=false;s.releasedAt=-1;s.releasedBy=null;s.party.clear();s.partySeen.clear();s.unseen.clear();s.emptyTicks=0;s.wrecks.clear();
         s.sync();
     }
 
@@ -477,7 +531,7 @@ public final class StateRoute {
         say(p,"The wind off a trailer takes the pearl out of the air. It drops in the median.");
     }
     @SubscribeEvent public static void serverTick(ServerTickEvent.Post e){
-        var server=e.getServer();if(server.getTickCount()%20!=0)return;
+        var server=e.getServer();wakeAbed(server);if(server.getTickCount()%20!=0)return;
         // Who carries the reflector off the road.
         REFLECTOR.clear();for(var p:server.getPlayerList().getPlayers()){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(StateRouteRegistry.REFLECTOR.get())){REFLECTOR.add(p.getUUID());break;}}
         for(var id:List.copyOf(RUNNING)){var p=server.getPlayerList().getPlayer(id);if(p==null){RUNNING.remove(id);continue;}if(!onRoad(p))runaway(p,false);}
@@ -492,3 +546,4 @@ public final class StateRoute {
     static boolean isMailbox(BlockPos rel){return rel.equals(StateRouteSite.MAILBOX);}
     private static final class Mth{static double clamp(double v,double a,double b){return v<a?a:v>b?b:v;}}
 }
+

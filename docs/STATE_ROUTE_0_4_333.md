@@ -23,9 +23,8 @@ Each lane has its own traffic, and a vehicle's lights alone do not tell a reader
 
 - **Pickup.** Slow. Its diesel chugs ("A distant diesel engine chugs steadily") and its headlights throw short, warm pools on the tar. It clips a reader rather than running them down: two hearts and onto the tar, not sent back.
 - **Car.** Quick. It rushes past in the spray.
-- **Semi.** A logging rig. Three seconds before it comes out of the hedge, its tires hiss on the wet tar ("High-speed tires hiss on wet asphalt") and a white shine slides down its lane ahead of it. Its air horn sounds as it goes by. Struck squarely by a car or a semi:
-  - the screen goes black to a screech, and the reader comes to on the starting shoulder, hurt but never down to less than a heart;
-  - an impact that would have killed them sends them back into the House instead. They can be dealt the road again.
+- **Semi.** A logging rig. Three seconds before it comes out of the hedge, its tires hiss on the wet tar ("High-speed tires hiss on wet asphalt") and a white shine slides down its lane ahead of it. Its air horn sounds as it goes by.
+- **Struck squarely by a car or a semi.** Since 0.4.336 this is a real death: the body is left torn on the tar, and the reader's own camera holds on it before they wake in their bed. See docs/STATE_ROUTE_WRECK_0_4_336.md.
 - **The wind off a trailer.** A semi that misses still pulls at a reader within a block and a half of its lane: a heart, half a block toward the tires, and a shudder of the view (scaled to the screen-effects setting).
 
 ## Beat 2: the median

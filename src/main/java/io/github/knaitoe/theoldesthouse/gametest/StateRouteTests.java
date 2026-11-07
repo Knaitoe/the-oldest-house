@@ -17,9 +17,9 @@ import net.neoforged.neoforge.gametest.*;
 
 /**
  * 0.4.333, State Route 9, with real readers. The road built whole and dealt only after the yard; the traffic coming out of the hedges;
- * a car squarely (black, back on the starting shoulder, harmed but alive), a pickup's knock (down on the tar, not sent back), a semi's
- * wake on a reader beside its lane, and a semi going by a reader crouched in the median who is not touched by it; the convoy called by
- * the first reader into the median. Then two readers: one calls the gap from the fence, aloud over their head; the other takes the key
+ * a pickup's knock (down on the tar, alive), a semi's wake on a reader beside its lane, and a semi going by a reader crouched in the
+ * median who is not touched by it; the convoy called by the first reader into the median; then a car squarely (0.4.336): a death, the
+ * body left torn at the lane's edge with what they carried fallen round it, seen by the reader on the shoulder. Then two readers: one calls the gap from the fence, aloud over their head; the other takes the key
  * from the mailbox and the whole road drops to a crawl with the wagon in it; the wagon is looked into; a companion walked onto the road
  * is put back behind the fence; the key in the padlock opens the gate, darkens the road and gives each reader their own account (crossed
  * for the key; watched from the fence, with the gaps they called) and the reflector; the road set back after.
@@ -61,24 +61,16 @@ public final class StateRouteTests {
             .thenExecute(()->{var p=f.player("route_crosser",P);f.at(p,P,.5,0,-3.9);})
             .thenWaitUntil(()->h.assertTrue(!scene(f).traffic.isEmpty(),"traffic comes out of the hedges"))
             .thenExecute(()->{var s=scene(f);var p=f.players.get(0);hush(s,l.getGameTime());
-                // A car squarely, in the near lane.
-                p.setHealth(20);f.at(p,P,10.5,0,-6.5);put(s,StateRouteScene.CAR,0,10.5-2.3,StateRoute.CAR_SPEED);})
-            .thenWaitUntil(()->h.assertTrue(f.own(f.players.get(0),P).getInt("RouteStruck")==1,"struck squarely by a car"))
-            .thenExecute(()->{var p=f.players.get(0);var r=p.position().subtract(Vec3.atLowerCornerOf(b));
-                h.assertTrue(StateRouteSite.onStart(r)&&p.isAlive()&&p.getHealth()<20&&p.getHealth()>=1,"black, then back on the starting shoulder, hurt and alive: "+r+" health "+p.getHealth());
-                hush(scene(f),l.getGameTime());})
-            .thenIdle(25)
-            .thenExecute(()->{var s=scene(f);var p=f.players.get(0);
-                // A pickup's knock in the far lane, once the last blow has passed.
+                // A pickup's knock in the far lane.
                 p.setHealth(20);f.at(p,P,-6.5,0,-17.5);put(s,StateRouteScene.PICKUP,3,-6.5+2.4,StateRoute.PICKUP_SPEED);})
             .thenWaitUntil(()->h.assertTrue(f.own(f.players.get(0),P).getInt("RoutePickup")==1,"the pickup knocks them down"))
             .thenExecute(()->{var p=f.players.get(0);var r=p.position().subtract(Vec3.atLowerCornerOf(b));
-                h.assertTrue(!StateRouteSite.onStart(r)&&f.own(p,P).getInt("RouteStruck")==1,"a pickup puts them down on the tar, it does not send them back");
+                h.assertTrue(p.isAlive()&&!StateRouteSite.onStart(r)&&f.own(p,P).getInt("RouteStruck")==0,"a pickup puts them down on the tar, alive");
                 var s=scene(f);hush(s,l.getGameTime());
                 // A semi in the near lane, a reader in the next lane beside it.
                 p.setHealth(20);f.at(p,P,0.5,0,-9.0);p.setDeltaMovement(Vec3.ZERO);put(s,StateRouteScene.SEMI,0,0.5-8,StateRoute.SEMI_SPEED);})
             .thenWaitUntil(()->h.assertTrue(f.own(f.players.get(0),P).getInt("RouteWake")==1,"the wind off the trailer takes hold of them"))
-            .thenExecute(()->{var p=f.players.get(0);h.assertTrue(p.getHealth()<20&&f.own(p,P).getInt("RouteStruck")==1,"a heart of buffeting, not a strike");
+            .thenExecute(()->{var p=f.players.get(0);h.assertTrue(p.getHealth()<20&&f.own(p,P).getInt("RouteStruck")==0,"a heart of buffeting, not a strike");
                 var s=scene(f);hush(s,l.getGameTime());
                 // Down in the median's weeds: the convoy is called, and a semi going by does not touch them.
                 p.setHealth(20);f.at(p,P,0.5,-1,-12);p.setShiftKeyDown(true);p.setPose(Pose.CROUCHING);})
@@ -87,7 +79,28 @@ public final class StateRouteTests {
             .thenWaitUntil(()->h.assertTrue(f.own(f.players.get(0),P).getBoolean("RouteCrouched"),"crouched in the weeds as the semi goes by"))
             .thenExecute(()->{var p=f.players.get(0);var o=f.own(p,P);
                 h.assertTrue(o.getInt("RouteWake")==1&&!o.getBoolean("RouteStood")&&p.getHealth()==20,"the wind goes over a reader down in the median: "+o);
-                p.setShiftKeyDown(false);})
+                p.setShiftKeyDown(false);p.setPose(Pose.STANDING);hush(scene(f),l.getGameTime());})
+            .thenIdle(25)
+            .thenExecute(()->{var s=scene(f);var p=f.players.get(0);hush(s,l.getGameTime());
+                // A car squarely, in the near lane, with someone watching from the shoulder and bread in the crosser's pocket.
+                var witness=f.player("route_witness",P);f.at(witness,P,6.5,0,-3.9);
+                p.getInventory().add(new ItemStack(Items.BREAD,3));
+                p.setHealth(20);f.at(p,P,10.5,0,-6.5);p.setDeltaMovement(Vec3.ZERO);put(s,StateRouteScene.CAR,0,10.5-2.3,StateRoute.CAR_SPEED);})
+            .thenWaitUntil(()->h.assertTrue(f.own(f.players.get(0),P).getInt("RouteStruck")==1,"struck squarely by a car"))
+            .thenExecute(()->{var s=scene(f);var p=f.players.get(0);var witness=f.players.get(1);var r=p.position().subtract(Vec3.atLowerCornerOf(b));
+                h.assertTrue(p.isDeadOrDying(),"a car squarely is a death: health "+p.getHealth());
+                var w=s.wrecks.stream().filter(x->x.reader().equals(p.getUUID())).findFirst().orElse(null);
+                double laneZ=StateRouteSite.LANE_Z[0];
+                h.assertTrue(w!=null&&Math.abs(Math.abs(w.z()-laneZ)-1.0)<1e-6&&w.kind()==StateRouteScene.CAR,"the body is left at the lane's edge for everyone to see: "+s.wrecks);
+                h.assertTrue(Math.abs(r.x-w.x())<.75&&Math.abs(r.z-w.z())<.75&&Math.abs(w.x()-10.5)>2,"carried along the lane to where it lies: "+r+" wreck "+w);
+                var spot=p.position();var bread=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(spot,spot).inflate(3),e->e.getItem().is(Items.BREAD));
+                h.assertTrue(!bread.isEmpty()&&!holds(p,Items.BREAD),"what they carried falls where the body lies, as any death: "+bread);
+                var o=f.own(p,P);h.assertTrue(o.getString("RouteStruckBy").equals("car")&&StateRoute.wrecked(p.getUUID()),"recorded, and their own camera holds on the body until they wake");
+                var ow=f.own(witness,P);h.assertTrue(ow.getString("RouteSawWreck").equals(p.getGameProfile().getName())&&ow.getInt("RouteSawWrecks")==1,"the reader on the shoulder saw it: "+ow);
+                var text=String.join(" ",StateRouteTexts.account(p.getGameProfile().getName(),o).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(text.contains("looking down at myself on the tar")&&text.contains("woke on cold ground"),"the account remembers the body and the waking: "+text);
+                var seen=String.join(" ",StateRouteTexts.account(witness.getGameProfile().getName(),ow).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(seen.contains("I saw what the road left of "+p.getGameProfile().getName()),"and the witness's remembers what they saw: "+seen);})
             .thenSucceed();
     }
     @AfterBatch(batch="state_route") public static void done(ServerLevel l){close();}

@@ -45,6 +45,50 @@ public final class StateRouteClient {
             float near=(float)(1-Math.max(0,dz)/3)*(float)(1-Math.max(0,dx)/2);amount=Math.max(amount,near*(v.kind==StateRouteScene.SEMI?1:.35F));}
         return amount;
     }
+    // ------------------------------------------------------------------ 0.4.336, struck: what is left on the tar, then home
+    private static net.minecraft.world.entity.Entity marker;private static int shotLeft,shotLength;private static net.minecraft.world.phys.Vec3 corpse;private static float corpseYaw;private static boolean hidGui;
+    /** Whether this client is holding on the body: no death screen, no hand, no HUD. */
+    public static boolean framing(){return shotLeft>0;}
+    /** The reader has been struck: hold the camera on where the body lies, coming in a little, in place of the death screen. */
+    public static void wreck(io.github.knaitoe.theoldesthouse.network.StateRouteWreckPayload payload){
+        var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null)return;
+        corpse=new net.minecraft.world.phys.Vec3(payload.x(),payload.y(),payload.z());corpseYaw=payload.yaw();shotLength=shotLeft=Math.max(20,payload.ticks());
+        if(marker==null)marker=net.minecraft.world.entity.EntityType.MARKER.create(mc.level);if(marker==null){shotLeft=0;return;}
+        place(0,true);mc.setCameraEntity(marker);
+        if(!mc.options.hideGui){mc.options.hideGui=true;hidGui=true;}
+    }
+    /** Above and to one side of the body, looking down at it, closing in over the shot (t from 0 to 1). */
+    private static void place(float t,boolean jump){
+        double ang=Math.toRadians(corpseYaw+135),dist=net.minecraft.util.Mth.lerp(t,4.6,2.8),high=net.minecraft.util.Mth.lerp(t,3.4,2.0);
+        double cx=corpse.x+Math.sin(ang)*dist,cz=corpse.z+Math.cos(ang)*dist,cy=corpse.y+high;
+        double dx=corpse.x-cx,dy=corpse.y+.2-cy,dz=corpse.z-cz;
+        float yaw=(float)Math.toDegrees(Math.atan2(-dx,dz)),pitch=(float)-Math.toDegrees(Math.atan2(dy,Math.hypot(dx,dz)));
+        if(jump){marker.moveTo(cx,cy,cz,yaw,pitch);return;}
+        marker.xo=marker.getX();marker.yo=marker.getY();marker.zo=marker.getZ();marker.yRotO=marker.getYRot();marker.xRotO=marker.getXRot();
+        marker.setPos(cx,cy,cz);marker.setYRot(yaw);marker.setXRot(pitch);
+    }
+    private static void endShot(){
+        var mc=Minecraft.getInstance();shotLeft=0;
+        if(marker!=null){if(mc.getCameraEntity()==marker&&mc.player!=null)mc.setCameraEntity(mc.player);marker.discard();marker=null;}
+        if(hidGui){mc.options.hideGui=false;hidGui=false;}
+    }
+    @SubscribeEvent public static void shot(ClientTickEvent.Post e){
+        if(shotLeft<=0)return;var mc=Minecraft.getInstance();
+        if(mc.level==null||mc.player==null||marker==null){endShot();return;}
+        shotLeft--;place(1-shotLeft/(float)shotLength,false);
+        // A strike that did not kill (refused, or a totem) ends the shot at once.
+        if(shotLength-shotLeft>10&&!mc.player.isDeadOrDying()){endShot();return;}
+        if(shotLeft==16)HouseFadeState.begin(14,40,30);
+        if(shotLeft<=0){if(mc.player.isDeadOrDying())mc.player.respawn();endShot();}
+    }
+    /** No death screen while the camera holds on the body: the reader is respawned when it is over. */
+    @SubscribeEvent public static void deathScreen(ScreenEvent.Opening e){if(shotLeft>0&&e.getNewScreen() instanceof net.minecraft.client.gui.screens.DeathScreen)e.setCanceled(true);}
+    /** The dying body is not drawn where the road has left its own: the wreck stands in for it, for everyone. */
+    @SubscribeEvent public static void dying(RenderPlayerEvent.Pre e){
+        var player=e.getEntity();if(!player.isDeadOrDying())return;var s=scene();if(s==null)return;
+        for(var w:s.wrecks)if(w.reader().equals(player.getUUID())){e.setCanceled(true);return;}
+    }
+    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){endShot();}
     @SubscribeEvent public static void camera(ViewportEvent.ComputeCameraAngles e){
         if(!onRoad())return;float amount=shudder((float)e.getPartialTick())*Comfort.effects();if(amount<=0)return;
         var mc=Minecraft.getInstance();double t=mc.player.tickCount+e.getPartialTick();

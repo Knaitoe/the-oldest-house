@@ -38,6 +38,20 @@ public final class HouseBodyClient {
         WORN.entrySet().removeIf(e->{if(e.getValue().body().equals(next.get(e.getKey())))return false;release(e.getKey());return true;});
         BODIES.clear();BODIES.putAll(next);
     }
+    private static final Map<UUID,Worn> KEPT=new HashMap<>();
+    /**
+     * 0.4.336: a reader's House body as it was when they died on State Route 9, for what is left of them on the tar after they have
+     * woken at home and taken their own skin back: drawn from the body the road kept, never from their own skin.
+     */
+    public static @Nullable PlayerSkin kept(UUID reader,HouseBodies.Body body){
+        if(!RenderSystem.isOnRenderThread())return null;
+        var worn=WORN.get(reader);if(worn!=null&&worn.body().equals(body))return worn.skin();
+        var kept=KEPT.get(reader);if(kept!=null&&kept.body().equals(body))return kept.skin();
+        var at=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"house_body/kept/"+reader);
+        try{Minecraft.getInstance().getTextureManager().register(at,new DynamicTexture(painted(body,defaults(reader))));
+            var skin=new PlayerSkin(at,null,null,null,PlayerSkin.Model.WIDE,true);KEPT.put(reader,new Worn(body,skin));return skin;
+        }catch(IOException|RuntimeException e){TheOldestHouse.LOGGER.warn("The House's body {} could not be drawn",body.sheet(),e);return null;}
+    }
     /** Whether a reader wears the House's body. */
     public static boolean wearing(UUID reader){return BODIES.containsKey(reader);}
     /** The skin to draw for a reader: their House body, or null for their own. */
@@ -168,5 +182,6 @@ public final class HouseBodyClient {
         return counts.entrySet().stream().max(Map.Entry.<Integer,Integer>comparingByValue().thenComparing(Map.Entry.comparingByKey())).map(Map.Entry::getKey).orElse(fallback);
     }
 
-    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){BODIES.clear();WORN.keySet().forEach(HouseBodyClient::release);WORN.clear();}
+    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){BODIES.clear();WORN.keySet().forEach(HouseBodyClient::release);WORN.clear();
+        KEPT.keySet().forEach(id->Minecraft.getInstance().getTextureManager().release(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"house_body/kept/"+id)));KEPT.clear();}
 }

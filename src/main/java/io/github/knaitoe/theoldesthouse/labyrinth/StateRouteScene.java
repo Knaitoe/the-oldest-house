@@ -29,6 +29,12 @@ public final class StateRouteScene extends BlockEntity {
     }
     /** A semi already announced: its lane and the tick its nose reaches the middle of the road. */
     public record Coming(int lane,long arrives){}
+    /**
+     * 0.4.336: what a car or a semi left of a reader on the tar, for everyone on the road to see a while: whose, where, which way it lies,
+     * when, what hit it, and the House's body they were wearing (null when the House's bodies are off and their own skin is drawn).
+     */
+    public record Wreck(UUID reader,double x,double z,float yaw,long at,int kind,@Nullable HouseBodies.Body body){}
+    public final List<Wreck> wrecks=new ArrayList<>();
     public int mode=FAST;public long modeAt;
     public final List<Vehicle> traffic=new ArrayList<>();
     public final List<Coming> coming=new ArrayList<>();
@@ -61,6 +67,8 @@ public final class StateRouteScene extends BlockEntity {
         var p=new ListTag();for(var id:party){var e=new CompoundTag();e.putUUID("Id",id);e.putLong("Seen",partySeen.getOrDefault(id,0L));p.add(e);}t.put("Party",p);
         var u=new ListTag();for(var id:unseen){var e=new CompoundTag();e.putUUID("Id",id);u.add(e);}t.put("Unseen",u);
         t.putInt("Empty",emptyTicks);
+        var w=new ListTag();for(var x:wrecks){var e=new CompoundTag();e.putUUID("Id",x.reader());e.putDouble("X",x.x());e.putDouble("Z",x.z());e.putFloat("Yaw",x.yaw());e.putLong("At",x.at());e.putInt("Kind",x.kind());
+            if(x.body()!=null){var bd=x.body();e.putIntArray("Body",new int[]{bd.age(),bd.presentation(),bd.cut(),bd.tone(),bd.hair(),bd.face()});}w.add(e);}t.put("Wrecks",w);
     }
     @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){
         super.loadAdditional(t,r);
@@ -71,6 +79,8 @@ public final class StateRouteScene extends BlockEntity {
         party.clear();partySeen.clear();for(var e:t.getList("Party",Tag.TAG_COMPOUND)){var c=(CompoundTag)e;if(c.hasUUID("Id")){party.add(c.getUUID("Id"));partySeen.put(c.getUUID("Id"),c.getLong("Seen"));}}
         unseen.clear();for(var e:t.getList("Unseen",Tag.TAG_COMPOUND)){var c=(CompoundTag)e;if(c.hasUUID("Id"))unseen.add(c.getUUID("Id"));}
         emptyTicks=t.getInt("Empty");
+        wrecks.clear();for(var e:t.getList("Wrecks",Tag.TAG_COMPOUND)){var c=(CompoundTag)e;if(!c.hasUUID("Id"))continue;var bd=c.getIntArray("Body");
+            wrecks.add(new Wreck(c.getUUID("Id"),c.getDouble("X"),c.getDouble("Z"),c.getFloat("Yaw"),c.getLong("At"),c.getInt("Kind"),bd.length==6?new HouseBodies.Body(bd[0],bd[1],bd[2],bd[3],bd[4],bd[5]):null));}
         if(level!=null&&level.isClientSide)syncedAt=level.getGameTime();
     }
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider r){var t=new CompoundTag();saveAdditional(t,r);t.remove("Party");return t;}
