@@ -93,13 +93,32 @@ On the counter by the door lies the kitchen's book, "What was eaten here", for a
 
 This is how the kitchen keeps what its readers cook.
 
-## Art
+## How often (0.4.332)
+
+The owner: "the kitchen should have a weighted frequency for appearance too."
+
+**The kitchen.** It used to be dealt at a flat weight of 4 from the third crossing, at every depth (4 is small beside the ordinary halls, which add up to well over a hundred). Now its weight depends on the reader:
+
+- **Not straight back.** For the first four crossings after a visit it isn't dealt at all.
+- **Back by degrees.** Over the next six it returns to its ordinary weight.
+- **Twice as likely** once a reader has gone twenty-four crossings without it.
+- **Three times as likely** while the reader is hungry (food at 12 or less) or hurt (half health or less). The safe room tends to come when it is needed.
+- **Half as likely** in the deep halls, from the twelfth depth on.
+
+A reader who has never found it gets its ordinary weight. Someone already in the kitchen still makes it far likelier for everyone else (weight 40), so readers keep meeting there.
+
+**The visitors.** They no longer come in turn. Each has a weight: someone passing through 4, Johnny 3, Holloway and the tenant 2. A visitor nobody in the kitchen has fed yet counts double, so a group gets to meet all of them. Whoever just left does not come straight back while anyone else could.
+
 
 - `tools/draw_kitchen_dishes.py`: five sixteen-pixel dishes and their item model.
 - `literary_kitchen_holloway`: Holloway on the cast's layout, painted from his own look by `tools/paint_character_skins.py` and catalogued on stranger phase 101. Johnny, the tenant and the traveller wear Johnny's, the tenant's and a stranger's existing skins.
 - The kitchen's chairs now seat an actor: the seat is ten pixels up.
 
 ## Validation
+
+- `KitchenTests#theKitchenAndItsVisitorsComeByWeight` (0.4.332) checks:
+  - the kitchen's weight never found, straight after a visit, coming back, back, long after, for a hungry reader and in the deep halls;
+  - each visitor's weight, doubled while unmet, ordinary once met, and none for whoever just left.
 
 - `KitchenTests#aPanOfMoreThanOneThingIsADishByItsStrokes` checks:
   - the strokes on their own (underdone chicken with sugar, a muddled pan, a burnt creamy one, a tie);
