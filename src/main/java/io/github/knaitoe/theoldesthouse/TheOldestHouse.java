@@ -101,6 +101,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.PlaceForYouRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.SecondPersonRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.DeerRoadRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.StateRouteRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.DoorSounds.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.HallRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.ArtifactRegistry.register(modEventBus);

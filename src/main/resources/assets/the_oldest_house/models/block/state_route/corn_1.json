@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cross",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "cross": "the_oldest_house:block/state_route/corn_1",
+    "particle": "the_oldest_house:block/state_route/corn_1"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "g": "the_oldest_house:block/state_route/guard_1",
+    "b": "the_oldest_house:block/state_route/galvanized",
+    "particle": "the_oldest_house:block/state_route/galvanized"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        14,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        }
+      }
+    }
+  ]
+}

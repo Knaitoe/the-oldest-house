@@ -235,7 +235,7 @@ public final class LabyrinthDoors {
         if(place==LabyrinthPlace.GOATMAN&&!GoatmanVignette.canEnter(player)){if(reroute(player,door))return;locked(player);return;}
         if(place==LabyrinthPlace.TED_CAVER&&!CaverVignette.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}
         GroupCrossings.crossed(player, door, place);
-        if(OnwardDoors.isOnward(door))DeerRoad.onward(player,door);
+        if(OnwardDoors.isOnward(door)){DeerRoad.onward(player,door);StateRoute.onward(player,door);}
         arrive(player, door, entry, place);
     }
 
@@ -604,6 +604,7 @@ public final class LabyrinthDoors {
             UncannyDiner.returned(p,entry);
             FoyerEncounter.returned(p,entry);
             DeerRoad.returned(p,entry);
+            StateRoute.returned(p,entry);
             caveDeparture.accept(p);if(entry.id.equals("borrasca/"+p.getUUID()+"/entry"))BorrascaStory.returned(p);
             INSIDE.remove(p.getUUID());
             io.github.knaitoe.theoldesthouse.house.HouseExperience.returned(p);

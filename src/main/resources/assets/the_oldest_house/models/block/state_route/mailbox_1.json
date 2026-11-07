@@ -1,0 +1,97 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "the_oldest_house:block/state_route/post",
+    "f": "the_oldest_house:block/state_route/mailbox_front_1",
+    "s": "the_oldest_house:block/state_route/mailbox_side",
+    "g": "the_oldest_house:block/state_route/flag_1",
+    "particle": "the_oldest_house:block/state_route/mailbox_side"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        8,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        8,
+        2
+      ],
+      "to": [
+        12,
+        14,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        9,
+        6
+      ],
+      "to": [
+        12.5,
+        16,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        }
+      }
+    }
+  ]
+}
