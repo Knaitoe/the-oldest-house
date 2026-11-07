@@ -25,7 +25,7 @@ public final class SphinxEyeBlock extends Block {
     public static final IntegerProperty TILE=IntegerProperty.create("tile",0,7),LOOK=IntegerProperty.create("look",0,8);
     /**
      * Which way she looks: face down from above (0, the vestibule), face up from below (1, 0.4.335, through the gap between the stair's
-     * flights), or upright facing south (2, 0.4.336, her face turned sideways to see under the shelf's overhang).
+     * flights), or upright facing south (2, 0.4.338, her face turned sideways to see under the shelf's overhang).
      */
     public static final IntegerProperty FACE=IntegerProperty.create("face",0,2);
     public static final int DOWN=0,UP=1,SOUTH=2;
