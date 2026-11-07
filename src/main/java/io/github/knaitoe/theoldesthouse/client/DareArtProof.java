@@ -33,7 +33,7 @@ import net.neoforged.neoforge.client.event.*;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class DareArtProof extends Screen {
-    private static final String[] NAMES={"kids","fittings","faces","third-count","borrowed-light"};
+    private static final String[] NAMES={"kids","fittings","faces","third-count","borrowed-light","sphinx-face"};
     private static final Path FOLDER=Path.of("../build/dare-art");
     private static boolean launched;
     private int page,frames;
@@ -107,6 +107,20 @@ public final class DareArtProof extends Screen {
                 BorrowedLightRenderer.draw(p,out,List.of(new Vec3(3.5,1.5,.5),new Vec3(-.5,1.5,.5),new Vec3(-.5,1.5,-3.5)),0);out.endBatch();p.popPose();
                 g.drawString(font,"Borrowed Light: every part and state, then the beam laid on the sun",10,height-18,0xffe9e2cf,false);
             }
+            case 5->{
+                // 0.4.337, the Sphinx's whole face over the first crossing's hall: face on, looking up at her from the middle of the hall
+                // (her eyes turned down toward the reader, mid-blink on the right), and half risen out of the dark.
+                var face=Sphinx.faceAt(Sphinx.FACE_PX_W/2.0,Sphinx.FACE_PX_H/2.0);
+                float[][] gazes={{0,-.2F,0,-.2F},{-.5F,-.3F,-.4F,-.3F},{0,0,0,0}};float[] closed={0,.6F,0};float[] risen={1,1,.5F};float[] tilt={0,50,0};
+                for(int view=0;view<3;view++){
+                    float cx=(view+.5F)*width/3F,cy=height*.55F,s=width/3F/21F;
+                    g.fill((int)(cx-width/6F)+4,30,(int)(cx+width/6F)-4,height-26,0xff0c0a08);
+                    p.pushPose();p.translate(cx,cy,150);p.scale(s,-s,s);p.mulPose(Axis.XP.rotationDegrees(tilt[view]));
+                    SphinxFaceRenderer.draw(p,out,face.scale(-1),risen[view],gazes[view],closed[view],LightTexture.FULL_BRIGHT);
+                    out.endBatch();p.popPose();
+                    g.drawCenteredString(font,new String[]{"face on","from the hall below","rising out of the dark"}[view],(int)cx,height-20,0xffe9e2cf);
+                }
+            }
             default->{
                 // As the glass shows it: the reflection facing the reader, the woman over its left shoulder (the image's right).
                 var body=new PlayerModel<AbstractClientPlayer>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);body.young=false;
@@ -133,7 +147,7 @@ public final class DareArtProof extends Screen {
             if(colors.size()<12)throw new IllegalStateException("Blank or untextured dare view "+NAMES[proof.page]+": "+colors.size());
         }
         if(++proof.page<NAMES.length){proof.frames=0;return;}
-        Files.writeString(FOLDER.resolve("passed.txt"),"Four native views of the third floor: the sheeted kids waiting, giggling and silent; every fitting state, the glass whole and shattered, both doors and the seven materials; the reader's face at each count as the glass changes it; and the third count as the glass shows it. And one of the first puzzle room, Borrowed Light: every working part in each state, its three materials, and the beam turned by the mirror onto the lit sun.\n");
+        Files.writeString(FOLDER.resolve("passed.txt"),"Four native views of the third floor: the sheeted kids waiting, giggling and silent; every fitting state, the glass whole and shattered, both doors and the seven materials; the reader's face at each count as the glass changes it; and the third count as the glass shows it. And one of the first puzzle room, Borrowed Light: every working part in each state, its three materials, and the beam turned by the mirror onto the lit sun. And the Sphinx's whole face: face on, from the hall below, and rising out of the dark.\n");
         mc.stop();
     }
 }
