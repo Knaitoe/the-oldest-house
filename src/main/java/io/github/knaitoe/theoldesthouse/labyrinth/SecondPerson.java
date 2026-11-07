@@ -574,7 +574,7 @@ public final class SecondPerson {
         sound(p,PhoneSounds.PICKUP.get(),b,PHONE,1,1);
         Talk.begin(p,"sp_call_"+call,SecondPersonStory.caller(own));
         for(var line:SecondPersonStory.call(own,call))Talk.line(p,SecondPersonStory.caller(own),line);
-        Talk.ask(p,Talk.reply("Put the receiver down.",q->answer(q,b,call,"put_down")),Talk.reply("Leave it off the hook.",q->answer(q,b,call,"off")),Talk.reply("Listen.",q->answer(q,b,call,"lifted")));
+        Talk.ask(p,Talk.act("Put the receiver down.",q->answer(q,b,call,"put_down")),Talk.act("Leave it off the hook.",q->answer(q,b,call,"off")),Talk.act("Listen.",q->answer(q,b,call,"lifted")));
     }
     /** A receiver lifted and the panel stepped away from: after a while it counts as having listened, and is put back. */
     static void unanswered(ServerPlayer p,CompoundTag own,int call){
@@ -634,7 +634,7 @@ public final class SecondPerson {
         if(!ready){cue(p,mirror?"The glass is dry. Nothing would hold.":"The glass is too warm to hold a breath.");return true;}
         String surface=mirror?"mirror":"window";if(own.contains("Word_"+surface)){cue(p,"There is a word on it already.");return true;}
         Talk.begin(p,"sp_word","Breath on the glass");Talk.line(p,"","You lean close and breathe, and the glass clouds. One word.");
-        var replies=new ArrayList<Talk.Reply>();for(var w:SecondPersonStory.WORDS)replies.add(Talk.reply(w,q->word(q,b,surface,w)));replies.add(Talk.reply("Nothing.",Talk::close));
+        var replies=new ArrayList<Talk.Reply>();for(var w:SecondPersonStory.WORDS)replies.add(Talk.act(w,q->word(q,b,surface,w)));replies.add(Talk.act("Nothing.",Talk::close));
         Talk.ask(p,replies);return true;
     }
     static void word(ServerPlayer p,BlockPos b,String surface,String word){

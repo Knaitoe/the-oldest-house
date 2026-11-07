@@ -360,13 +360,13 @@ public final class GhostsSet {
     private static void producerOffers(ServerPlayer p,LiteraryActor a,int d){
         var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);var replies=new ArrayList<Talk.Reply>();
         boolean done=own.getBoolean("DayDone"),last=d==DAYS&&!done;
-        replies.add(Talk.reply(done?"Review the edited episode":last?"Stay for supper":"Ready for today's filming",q->{
+        replies.add(Talk.act(done?"Review the edited episode":last?"Stay for supper":"Ready for today's filming",q->{
             if(!producerHere(q,a,d))return;Talk.close(q);var data=LabyrinthData.get(q.server);var now=LiteraryVignettes.personal(data,q.getUUID(),PLACE);
             if(now.getBoolean("DayDone"))LiteraryVignettes.open(q,PLACE,"Episode"+d,edit(q,now,d,false),a.blockPosition());
             else if(!start(q,now))q.displayClientMessage(Component.literal("Read the call sheet first."),true);
             LiteraryVignettes.save(data,q.getUUID(),PLACE,now);
         }));
-        if(done&&d<DAYS)replies.add(Talk.reply("Review the unedited camera log",q->{if(!producerHere(q,a,d))return;Talk.close(q);var now=LiteraryVignettes.personal(LabyrinthData.get(q.server),q.getUUID(),PLACE);LiteraryVignettes.open(q,PLACE,"Rushes"+d,edit(q,now,d,true),a.blockPosition());}));
+        if(done&&d<DAYS)replies.add(Talk.act("Review the unedited camera log",q->{if(!producerHere(q,a,d))return;Talk.close(q);var now=LiteraryVignettes.personal(LabyrinthData.get(q.server),q.getUUID(),PLACE);LiteraryVignettes.open(q,PLACE,"Rushes"+d,edit(q,now,d,true),a.blockPosition());}));
         replies.add(Talk.reply(done?"I'll leave until tomorrow.":"I'll leave it for now.",Talk::close));Talk.ask(p,replies);
     }
     static void capture(ServerPlayer p,CompoundTag own,String subject,Vec3 at) {
@@ -634,11 +634,13 @@ public final class GhostsSet {
         for(int d=1;d<=DAYS;d++){var book=edit(name,own,d,true).get(DataComponents.WRITTEN_BOOK_CONTENT);for(var page:book.pages())text.append(page.raw().getString());text.append("\n\n");}
         text.append("MY ACCOUNT\n\n").append(own.getString("Confession"));return text.toString();
     }
+    /** 0.4.329: John has cut his hand once day 2's supper is past the cut (or the day is done), and on every day after; the cast draws it. */
+    public static boolean johnHurt(CompoundTag own){int d=day(own);return d>2||d==2&&(own.getBoolean("DayDone")||own.getInt("ShotClock")>=880);}
     private static void display(ServerPlayer p,CompoundTag own,BlockPos b) {
         if(finished(own))LiteraryVignettes.ready(p,PLACE,own,"completed_the_filming_days_and_read_own_cut");
         var model=new CompoundTag();model.putBoolean("GhostEffigy",GhostsLore.throughLens(p,b,own));model.putBoolean("GhostJar",own.getBoolean(MERRY_JAR));var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);
         if(!frames.isEmpty()){int n=(p.server.getTickCount()/60)%frames.size();model.putIntArray("Screen",frames.getCompound(n).getIntArray("Pixels"));}
-        model.putUUID("Reader",p.getUUID());model.putInt("GhostDay",day(own));model.putLong("GhostBase",b.asLong());boolean frozen=day(own)==6&&own.getBoolean("JumpFrozen0488")&&!own.getBoolean("DayDone");model.putBoolean("GhostFreeze",frozen);model.putInt("GhostFreezeTarget",frozen?own.getInt("GhostFreezeTarget"):-1);for(String key:List.of("GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","GhostActorX","GhostActorY","GhostActorZ"))if(own.contains(key))model.put(key,own.get(key).copy());int voice=(int)Math.max(0,Math.min(140,own.getLong("GhostVoiceUntil")-p.level().getGameTime()));model.putInt("GhostVoiceRemaining",voice);if(voice>0){model.putString("GhostVoice",own.getString("GhostVoice"));model.putInt("GhostVoiceId",own.getInt("GhostVoiceId"));}
+        model.putUUID("Reader",p.getUUID());model.putInt("GhostDay",day(own));model.putBoolean("JohnHurt",johnHurt(own));model.putLong("GhostBase",b.asLong());boolean frozen=day(own)==6&&own.getBoolean("JumpFrozen0488")&&!own.getBoolean("DayDone");model.putBoolean("GhostFreeze",frozen);model.putInt("GhostFreezeTarget",frozen?own.getInt("GhostFreezeTarget"):-1);for(String key:List.of("GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","GhostActorX","GhostActorY","GhostActorZ"))if(own.contains(key))model.put(key,own.get(key).copy());int voice=(int)Math.max(0,Math.min(140,own.getLong("GhostVoiceUntil")-p.level().getGameTime()));model.putInt("GhostVoiceRemaining",voice);if(voice>0){model.putString("GhostVoice",own.getString("GhostVoice"));model.putInt("GhostVoiceId",own.getInt("GhostVoiceId"));}
         model.putInt("GhostShake",(int)Math.max(0,Math.min(12,own.getLong("GhostShakeUntil")-p.level().getGameTime())));model.putBoolean("GhostPrivacyPull",privacyPull(p,own));model.putBoolean("ScreenDark",frames.isEmpty());HousePackets.send(p,new LiteraryViewPayload(-1,20,0,model));
     }
     @SubscribeEvent public static void finishJump(ServerTickEvent.Post event){for(var p:event.getServer().getPlayerList().getPlayers()){if(!LiteraryVignettes.inside(p,PLACE)||LabyrinthDoors.isBusy(p))continue;var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);if(!own.getBoolean("JumpEject0488")||!own.getBoolean("DayDone"))continue;if(LabyrinthDoors.finishTakeAndReturn(p,PLACE)){own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);own.remove("JumpEject0488");LiteraryVignettes.save(data,p.getUUID(),PLACE,own);}}}

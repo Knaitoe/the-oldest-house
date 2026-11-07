@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("136")
+        event.registrar("137")
                 .playToClient(GhostsLorePayload.TYPE,GhostsLorePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.GhostsLoreScreen.open(payload)))
                 .playToClient(YardCrawlPayload.TYPE,YardCrawlPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.YardCrawlClient.accept(payload)))
                 .playToServer(CompanionNearbyPayload.TYPE,CompanionNearbyPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.opening.CompanionOrders.openNearest(p);}))
@@ -53,6 +53,7 @@ public final class HouseNetwork {
                 .playToClient(UncannyViewPayload.TYPE,UncannyViewPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.UncannyClient.accept(payload)))
                 .playToServer(UncannyCameraPayload.TYPE,UncannyCameraPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.UncannySenses.camera(p,payload);}))
                 .playToClient(TalkPayload.TYPE,TalkPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.TalkScreen.accept(payload)))
+                .playToClient(SpokenPayload.TYPE,SpokenPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.SpokenClient.accept(payload)))
                 .playToClient(TalkHistoryPayload.TYPE,TalkHistoryPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.JournalScreen.heard(payload)))
                 .playToServer(TalkHistoryRequestPayload.TYPE,TalkHistoryRequestPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p&&io.github.knaitoe.theoldesthouse.journal.Journals.get(p.server).carries(p))io.github.knaitoe.theoldesthouse.labyrinth.TalkHistory.send(p);}))
                 .playToServer(TalkReplyPayload.TYPE,TalkReplyPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.Talk.reply(p,payload.token(),payload.reply());}))

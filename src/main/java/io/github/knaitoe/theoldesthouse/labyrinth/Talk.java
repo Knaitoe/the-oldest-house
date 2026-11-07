@@ -24,9 +24,14 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Talk {
     private Talk(){}
-    /** A reply: what it says (its intention, in the reader's words) and what happens when it is chosen. */
-    public record Reply(String label,Consumer<ServerPlayer> then){}
-    public static Reply reply(String label,Consumer<ServerPlayer> then){return new Reply(label,then);}
+    /** A reply: what it says (its intention, in the reader's words), what happens when it is chosen, and whether it is said aloud. */
+    public record Reply(String label,Consumer<ServerPlayer> then,boolean spoken){
+        public Reply(String label,Consumer<ServerPlayer> then){this(label,then,true);}
+    }
+    /** Something the reader says: chosen, it shows over their head for anyone near enough to hear (0.4.329, Spoken). */
+    public static Reply reply(String label,Consumer<ServerPlayer> then){return new Reply(label,then,true);}
+    /** Something the reader does rather than says (take the cup, keep walking, write a word): nobody hears it. */
+    public static Reply act(String label,Consumer<ServerPlayer> then){return new Reply(label,then,false);}
     /** The most lines one exchange keeps for the panel; older ones drop off the top. */
     public static final int MAX_LINES=48;
 
@@ -96,6 +101,7 @@ public final class Talk {
         var chosen=e.replies.get(index);e.replies=List.of();e.token=tokens++;e.lines.add(new String[]{"",chosen.label()});
         // 0.4.275: kept marked as the reader's own reply, so it is never taken for a line of narration (the listener offers it back).
         e.all.add(new String[]{"",chosen.label(),"R"});
+        if(chosen.spoken())Spoken.say(p,chosen.label());
         chosen.then().accept(p);
         // A reply that asked nothing further leaves the exchange to be read.
         var now=OPEN.get(p.getUUID());if(now==e&&e.replies.isEmpty()&&!e.ended){e.ended=true;send(p,e,false);}

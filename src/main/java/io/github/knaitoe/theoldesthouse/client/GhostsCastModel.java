@@ -16,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"ghosts_cast"),"main");
     private final ModelPart rightElbow,leftElbow,rightKnee,leftKnee,jaw,lids,hair,hairEnds,hairLeft,hairRight,ponytail,ponyEnds;
-    private int currentRole,currentPhase,currentDay;
+    private int currentRole,currentPhase,currentDay;private boolean currentHurt;
     private float blink,hairMotion;
     /** 0.4.242: brow lift, brow tilt (inner ends up is worry, down is anger) and mouth corners, each -1..1. */
     private final float[] face=new float[3];
@@ -215,14 +215,15 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         GhostsSkinMesh.head(head,jaw,blink,face,p,fitted,light,overlay,colour);
         if(currentRole==LiteraryActor.GHOST_JOHN&&(currentPhase==GhostsSet.FLINCH||currentPhase==GhostsSet.HAND))GhostsSkinMesh.coverLeftHandMark(leftArm,leftElbow,p,fitted,light,overlay,colour);
         // 0.4.328: hurt on the second day, at supper, and bandaged from the third.
-        if(currentRole==LiteraryActor.GHOST_JOHN){int d=currentDay;if(d>=3||d==2&&currentPhase==GhostsSet.HAND)GhostsSkinMesh.rightHand(rightArm,rightElbow,p,fitted,light,overlay,colour,d>=3);}
+        // The cut from the moment he makes it on day 2 (his hand pose, or the take past it once he has put the hand down), the bandage on days 3 to 7.
+        if(currentRole==LiteraryActor.GHOST_JOHN){int d=currentDay;if(d>=3||d==2&&(currentPhase==GhostsSet.HAND||currentHurt))GhostsSkinMesh.rightHand(rightArm,rightElbow,p,fitted,light,overlay,colour,d>=3);}
     }
     private void seatLegs(){
         for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=12;
         leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftKnee.xRot=rightKnee.xRot=(float)Math.PI/2;
     }
     private void pose(int phase,float scale,float step,float age){
-        currentPhase=phase;currentDay=day();boolean stillOne=stillAtDinner(phase);float cycle=(age+currentRole*13)%(stillOne?311:93);
+        currentPhase=phase;currentDay=day();currentHurt=previewDay<=0&&GhostsTakeClient.johnHurt();boolean stillOne=stillAtDinner(phase);float cycle=(age+currentRole*13)%(stillOne?311:93);
         blink=phase==GhostsSet.DEAD||phase==GhostsSet.PRAY?1:phase!=GhostsSet.LEAP&&phase!=GhostsSet.SLIP&&cycle<6?(float)Math.sin(Math.PI*cycle/6):0;lids.visible=blink>0;
         expression(phase,age);
         switch(phase){

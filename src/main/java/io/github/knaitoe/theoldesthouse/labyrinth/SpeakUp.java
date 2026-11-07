@@ -231,7 +231,7 @@ public final class SpeakUp {
     static void ask(ServerPlayer p){
         var d=LabyrinthData.get(p.server);var replies=new ArrayList<Talk.Reply>();
         for(var r:List.of(WATER,FINE,LEAVE))replies.add(Talk.reply(r,who->answer(who,r)));
-        if(HouseRead.value(d,p.getUUID(),HouseRead.Trait.SELF,true).equals("UNSEEN"))replies.add(Talk.reply(NOTHING,who->answer(who,NOTHING)));
+        if(HouseRead.value(d,p.getUUID(),HouseRead.Trait.SELF,true).equals("UNSEEN"))replies.add(Talk.act(NOTHING,who->answer(who,NOTHING)));
         Talk.ask(p,replies);
     }
     /** The reader's first answer in the House, and what the table does with it. */
