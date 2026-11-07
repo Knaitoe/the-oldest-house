@@ -27,12 +27,13 @@ import net.minecraft.world.phys.shapes.*;
  * <li>A grille high in a wall, the gap her voice comes through.</li>
  * <li>Her paw hooked over a door frame: heavy toes and dark hooked claws.</li>
  * <li>Her foreleg coming down a wall out of the dark (her eye is {@link SphinxEyeBlock}).</li>
+ * <li>0.4.334: a survey socket on the wall beside a choice, empty (0), with one reader's pin in it (1), or with two or more (2).</li>
  * </ul>
  */
 public final class SphinxBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<SphinxBlock> CODEC=simpleCodec(SphinxBlock::new);
     public enum Kind implements StringRepresentable {
-        STAND,FLAP,LATCH,PIN,GRILLE,FINGERS,REACH;
+        STAND,FLAP,LATCH,PIN,GRILLE,FINGERS,REACH,SURVEY;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -57,6 +58,7 @@ public final class SphinxBlock extends HorizontalDirectionalBlock {
             case GRILLE->box(f,1,1,14,15,15,16);
             case FINGERS->box(f,0,4,9,16,16,16);
             case REACH->box(f,0,0,10,16,16,16);
+            case SURVEY->box(f,4,3,11,12,13,16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

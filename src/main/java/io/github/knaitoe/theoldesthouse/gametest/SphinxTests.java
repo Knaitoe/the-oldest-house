@@ -18,13 +18,15 @@ import net.neoforged.neoforge.gametest.*;
  * the stand moved and only the live chamber's view following it; a wrong latch catching at its stop with a warning and an exposed pin;
  * the right latch opening on the vestibule and the step through coming out of the vestibule's own south wall; each reader's first answer
  * kept apart; the pin pulled, her paw over the frame, whoever stays in her reach swept back past the sill and nobody hurt; the hall left
- * empty and the room settling back into its question; and the open way kept when the room is built again.
+ * empty and the room settling back into its question; and the open way kept when the room is built again. 0.4.334: the co-op survey
+ * pins (docs/SPHINX_0_4_334.md).
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_exploration") @PrefixGameTestTemplate(false)
 public final class SphinxTests {
     private SphinxTests(){}
     private static LiteraryTests.Fixture active;
     @AfterBatch(batch="sphinx_vestibule") public static void done(ServerLevel l){if(active!=null){active.close();active=null;}Sphinx.clearAll();}
+    @AfterBatch(batch="sphinx_pins") public static void donePins(ServerLevel l){done(l);}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static boolean press(ServerLevel l,ServerPlayer p,BlockPos at,boolean crouch){
         p.setShiftKeyDown(crouch);
@@ -139,6 +141,58 @@ public final class SphinxTests {
                 Sphinx.build(l,b);
                 h.assertTrue(Sphinx.doorOpen(l,b,live[0])&&Sphinx.jibOpen(l,b),"built again: the live door and the walls she opened stay open, for everyone");
                 h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"and nothing counts toward the Witness");})
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.334, the co-op survey pins: a reader pins one door and a friend another while the latches are shut; the first latch lifted locks both
+     * pins as their answers (the friend at the right door is credited though a wrong latch was pulled), every pin comes out, a second
+     * latch on the same tick is refused, and a reader who walks out with a pin set takes it with them unanswered.
+     */
+    @GameTest(template="empty",batch="sphinx_pins",timeoutTicks=600)
+    public static void surveyPinsLockEachReadersAnswerAtTheFirstLatch(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=Sphinx.PLACE;var b=f.base(place);var l=f.in;hold(f,place);
+        var p=NativeTestPlayers.survival(h,"sphinx_pinner");f.players.add(p);
+        var q=NativeTestPlayers.survival(h,"sphinx_pinfriend");f.players.add(q);
+        var w=NativeTestPlayers.survival(h,"sphinx_wanderer");f.players.add(w);
+        int[] live={-1},wrong={-1},other={-1};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room is resident"))
+            .thenExecute(()->{
+                Sphinx.clearAll();Sphinx.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                live[0]=Sphinx.live(l);wrong[0]=(live[0]+1)%3;other[0]=(live[0]+2)%3;
+                for(int i=0;i<3;i++)h.assertTrue(SphinxBlock.is(l.getBlockState(b.offset(Sphinx.survey(i))),SphinxBlock.Kind.SURVEY)&&SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.survey(i))))==0,"an empty survey socket beside every latch");
+                stand(p,l,b,.5,-8.5,180);stand(q,l,b,1.5,-8.5,180);stand(w,l,b,-1.5,-8.5,180);})
+            .thenWaitUntil(()->h.assertTrue(Sphinx.record(l,p.getUUID()).getBoolean("Heard")&&Sphinx.record(l,q.getUUID()).getBoolean("Heard")&&Sphinx.record(l,w.getUUID()).getBoolean("Heard"),"all three hear the question"))
+            .thenExecute(()->{
+                h.assertTrue(press(l,p,b.offset(Sphinx.survey(wrong[0])),false)&&press(l,q,b.offset(Sphinx.survey(live[0])),false),"each reader sets a pin");
+                h.assertTrue(SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.survey(wrong[0]))))==1&&SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.survey(live[0]))))==1,"each socket shows its pin to everyone");
+                h.assertTrue(!Sphinx.record(l,p.getUUID()).contains("First")&&!Sphinx.record(l,q.getUUID()).contains("First"),"a pin is not yet an answer");
+                // The wanderer pins too, moves it, and then walks out with it.
+                press(l,w,b.offset(Sphinx.survey(other[0])),false);})
+            .thenIdle(5)
+            .thenExecute(()->press(l,w,b.offset(Sphinx.survey(wrong[0])),false))
+            .thenIdle(2)
+            .thenExecute(()->{
+                h.assertTrue(SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.survey(wrong[0]))))==2&&SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.survey(other[0]))))==0,"a pin moved: two in one socket, the other empty");
+                w.teleportTo(l.getServer().overworld(),.5,120,.5,0,0);})
+            .thenWaitUntil(()->h.assertTrue(SphinxCore.pinOf(l,Sphinx.ROOM,w.getUUID())<0&&SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.survey(wrong[0]))))==1,"a reader who leaves takes their pin with them"))
+            .thenWaitUntil(()->h.assertTrue(!Sphinx.record(l,w.getUUID()).contains("First")&&Sphinx.record(l,w.getUUID()).getInt("Walked")>=0,"and has not answered"))
+            .thenExecute(()->{
+                // Two latches on the same tick: one attempt.
+                press(l,p,b.offset(Sphinx.latch(wrong[0])),false);press(l,q,b.offset(Sphinx.latch(other[0])),false);
+                h.assertTrue(Sphinx.warned(l,wrong[0])&&!Sphinx.warned(l,other[0]),"the second latch, still moving behind the first, does nothing");
+                var rp=Sphinx.record(l,p.getUUID());var rq=Sphinx.record(l,q.getUUID());
+                h.assertTrue(rp.getInt("First")==2&&!rp.getBoolean("Solved"),"the puller's pin was wrong: their answer is wrong");
+                h.assertTrue(rq.getInt("First")==1&&rq.getBoolean("Solved")&&rq.getInt("Pinned")==live[0]+1,"the friend pinned the right door: credited, though a wrong latch was pulled");
+                h.assertTrue(SphinxCore.pins(l,Sphinx.ROOM).isEmpty(),"the attempt over, every pin comes out");
+                for(int i=0;i<3;i++)h.assertTrue(SphinxBlock.stage(l.getBlockState(b.offset(Sphinx.survey(i))))==0,"and every socket is empty again");
+                h.assertTrue(!Sphinx.doorOpen(l,b,live[0]),"a wrong latch does not open the right door");})
+            .thenIdle(6)
+            .thenExecute(()->{
+                // Solo again: with no pin, the hands on the latch answer.
+                press(l,q,b.offset(Sphinx.latch(live[0])),false);
+                h.assertTrue(Sphinx.doorOpen(l,b,live[0])&&Sphinx.record(l,q.getUUID()).getInt("First")==1,"the right latch opens; the friend's first answer stays as it was");
+                h.assertTrue(WitnessAccount.count(f.data(),q.getUUID())==0,"and nothing counts toward the Witness");})
             .thenSucceed();
     }
 }

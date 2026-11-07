@@ -75,6 +75,10 @@ public final class Sphinx {
     public static BlockPos flap(int i){return new BlockPos(DOORS[i]-1,0,DOOR_Z);}
     public static BlockPos latch(int i){return new BlockPos(DOORS[i]+1,1,HALL_Z1);}
     public static BlockPos pin(int i){return new BlockPos(DOORS[i]-1,1,HALL_Z1);}
+    /** 0.4.334: the survey socket beside each latch, where a reader sets a pin at their pick before anyone commits (SphinxCore). */
+    public static BlockPos survey(int i){return new BlockPos(DOORS[i]+2,1,HALL_Z1);}
+    public static final String ROOM="Room";
+    static final String[] WHERE={"by the left door","by the middle door","by the right door"};
     /** Where a chamber's stand stands on the tile matching the vestibule's A or B. */
     public static BlockPos chamberTile(int i,boolean a){return new BlockPos(DOORS[i]+(a?-1:1),0,CHAMBER_MID);}
 
@@ -98,10 +102,8 @@ public final class Sphinx {
     public static boolean warned(ServerLevel l,int i){return (room(l).getInt("Warned")&(1<<i))!=0;}
 
     /** One reader's record of this riddle: Heard, First (1 right, 2 wrong), Solved, Walked, Forced. */
-    public static CompoundTag record(ServerLevel l,UUID reader){return LabyrinthData.get(l.getServer()).stateEntry(STATE,reader.toString()).getCompound(RIDDLE);}
-    static void record(ServerLevel l,UUID reader,CompoundTag rec){
-        var data=LabyrinthData.get(l.getServer());var all=data.state(STATE);var own=all.getCompound(reader.toString());own.put(RIDDLE,rec);all.put(reader.toString(),own);data.setState(STATE,all);
-    }
+    public static CompoundTag record(ServerLevel l,UUID reader){return SphinxCore.record(l,reader,RIDDLE);}
+    static void record(ServerLevel l,UUID reader,CompoundTag rec){SphinxCore.record(l,reader,RIDDLE,rec);}
 
     // ------------------------------------------------------------------ building
     public static void build(ServerLevel l,BlockPos b){
@@ -140,6 +142,7 @@ public final class Sphinx {
             set(l,b,flap(i),SphinxBlock.of(FLAP,Direction.SOUTH));
             set(l,b,latch(i),SphinxBlock.of(LATCH,Direction.SOUTH,i==live&&solved?1:0));
             set(l,b,pin(i),SphinxBlock.of(PIN,Direction.SOUTH));
+            set(l,b,survey(i),SphinxBlock.of(SURVEY,Direction.SOUTH,SphinxCore.pinCount(l,ROOM,i)));
         }
         // The way onward: past the hall's east end and up the corridor, and from the vestibule's east wall once it has opened.
         box(l,b,ONWARD_X,0,-3,ONWARD_X,2,-20,air);
@@ -185,7 +188,7 @@ public final class Sphinx {
     private static final Set<UUID> ASKED=new HashSet<>();
     private static final Map<UUID,Long> LAST=new HashMap<>();
     public static void clearAll(){ASKED.clear();LAST.clear();STRIKES.clear();HAND.clear();EMPTY[0]=0;}
-    static int doorOf(BlockPos rel){for(int i=0;i<3;i++)if(rel.equals(latch(i))||rel.equals(pin(i))||rel.equals(flap(i))||rel.equals(door(i))||rel.equals(door(i).above()))return i;return -1;}
+    static int doorOf(BlockPos rel){for(int i=0;i<3;i++)if(rel.equals(latch(i))||rel.equals(pin(i))||rel.equals(flap(i))||rel.equals(survey(i))||rel.equals(door(i))||rel.equals(door(i).above()))return i;return -1;}
 
     public static boolean use(ServerPlayer p,BlockPos pos,BlockState s){
         if(p.isSpectator())return false;var l=p.serverLevel();var b=base(p.server);if(b==null||!here(p))return false;
@@ -211,8 +214,10 @@ public final class Sphinx {
             }
             case LATCH->{if(i>=0)latch(l,b,p,i);}
             case PIN->{if(i>=0)pull(l,b,p,i);}
+            case SURVEY->{if(i>=0)survey(l,b,p,i);}
             case FINGERS->PuzzleRooms.say(p,"A paw hooked over the frame, each toe as big as your head, the claws curled into the wood.");
             case SphinxBlock.Kind.REACH->PuzzleRooms.say(p,"A foreleg, coming down out of the dark. Coarse fur over a body you cannot see the rest of.");
+            default->{}
         }
         return true;
     }
@@ -221,15 +226,18 @@ public final class Sphinx {
     static void latch(ServerLevel l,BlockPos b,ServerPlayer p,int i){
         if(sealed(l,i)){PuzzleRooms.say(p,"There is no door there now. The plaster is cracked in a door's shape.");return;}
         if(provoked(l)==i){PuzzleRooms.say(p,"The latch is bent up against the frame. Something is leaning on the door.");return;}
-        var rec=record(l,p.getUUID());boolean right=i==live(l);
-        if(!rec.contains("First"))rec.putInt("First",right?1:2);
+        // 0.4.334: one latch moving at a time; lifting it locks every survey pin set in the hall as its reader's answer.
+        if(!SphinxCore.begin(l,ROOM)){PuzzleRooms.say(p,"Another latch is still moving.");return;}
+        int live=live(l);boolean right=i==live;
+        var answered=SphinxCore.commit(l,ROOM,RIDDLE,p,i,live);
+        for(int k=0;k<3;k++)SphinxCore.socket(l,b.offset(survey(k)),Direction.SOUTH,0);
+        for(var uuid:answered.keySet()){if(uuid.equals(p.getUUID()))continue;var other=l.getServer().getPlayerList().getPlayer(uuid);
+            if(other!=null)PuzzleRooms.say(other,"A latch lifts. Your pin "+WHERE[answered.get(uuid)]+" is your answer.");}
         var latch=l.getBlockState(b.offset(latch(i)));l.setBlock(b.offset(latch(i)),latch.setValue(SphinxBlock.STAGE,1),FLAGS);
         if(right){
-            rec.putBoolean("Solved",true);record(l,p.getUUID(),rec);
             doorAt(l,b,i,true);l.playSound(null,b.offset(door(i)),PuzzleRegistry.SPHINX_LATCH.get(),SoundSource.BLOCKS,.9F,1F);
             PuzzleRooms.say(p,"The latch lifts clean. The door swings in on the vestibule.");
         }else{
-            record(l,p.getUUID(),rec);
             l.scheduleTick(b.offset(latch(i)),PuzzleRegistry.SPHINX.get(),20);
             l.playSound(null,b.offset(door(i)),PuzzleRegistry.SPHINX_CATCH.get(),SoundSource.BLOCKS,1F,1F);
             var r=room(l);r.putInt("Warned",r.getInt("Warned")|(1<<i));room(l,r);
@@ -240,6 +248,19 @@ public final class Sphinx {
             if(provoked(l)<0){openEye(l,b,i);r=room(l);r.putLong(peek(i),l.getGameTime()+PEEK);room(l,r);}
             // Her warning stands alone in the action bar; the catch is heard and the pin is there to be seen.
         }
+    }
+    /** 0.4.334: a survey pin set, moved or taken back out at a door. Nothing is answered until a latch is lifted. */
+    static void survey(ServerLevel l,BlockPos b,ServerPlayer p,int i){
+        if(sealed(l,i)){PuzzleRooms.say(p,"The socket is cracked through with the plaster.");return;}
+        int was=SphinxCore.pinOf(l,ROOM,p.getUUID());int now=SphinxCore.pin(l,ROOM,p.getUUID(),i);
+        if(was>=0)SphinxCore.socket(l,b.offset(survey(was)),Direction.SOUTH,SphinxCore.pinCount(l,ROOM,was));
+        SphinxCore.socket(l,b.offset(survey(i)),Direction.SOUTH,SphinxCore.pinCount(l,ROOM,i));
+        SphinxCore.pinned(l,p,b.offset(survey(i)),now,WHERE[i]);
+    }
+    /** A reader's pin comes out with them when they leave or go offline: unanswered. */
+    static void unpin(ServerLevel l,BlockPos b,UUID reader){
+        int was=SphinxCore.pinOf(l,ROOM,reader);if(was<0)return;SphinxCore.unpin(l,ROOM,reader);
+        SphinxCore.socket(l,b.offset(survey(was)),Direction.SOUTH,SphinxCore.pinCount(l,ROOM,was));
     }
     /** The latch drops back after a caught answer. */
     public static void latchDown(ServerLevel l,BlockPos pos,BlockState s){if(SphinxBlock.is(s,LATCH))l.setBlock(pos,s.setValue(SphinxBlock.STAGE,0),FLAGS);}
@@ -287,6 +308,8 @@ public final class Sphinx {
             if(until-now==PEEK-40)l.playSound(null,b.offset(eye(i)),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,1.1F,.85F);
         }
         for(var it=HAND.entrySet().iterator();it.hasNext();){var e=it.next();if(e.getValue()<=now){if(SphinxBlock.is(l.getBlockState(e.getKey()),SphinxBlock.Kind.REACH))l.setBlock(e.getKey(),Blocks.AIR.defaultBlockState(),FLAGS);it.remove();}}
+        // A pin whose reader has gone (out of the place, or offline) comes out: unanswered.
+        if(now%20<2)for(var uuid:SphinxCore.pins(l,ROOM).keySet()){var q=l.getServer().getPlayerList().getPlayer(uuid);if(q==null||!here(q))unpin(l,b,uuid);}
         for(var p:readers){
             // The question, the first time a reader comes into the hall at a meeting.
             if(inHall(p,b)&&!ASKED.contains(p.getUUID())&&provoked(l)<0)ask(l,b,p);
@@ -315,9 +338,9 @@ public final class Sphinx {
         }
         for(var uuid:new ArrayList<>(ASKED)){
             var p=l.getServer().getPlayerList().getPlayer(uuid);
-            if(p==null){ASKED.remove(uuid);continue;}
+            if(p==null){ASKED.remove(uuid);unpin(l,b,uuid);continue;}
             if(!here(p)){
-                ASKED.remove(uuid);var rec=record(l,uuid);
+                ASKED.remove(uuid);unpin(l,b,uuid);var rec=record(l,uuid);
                 if(rec.getBoolean("Retreated")){rec.remove("Retreated");record(l,uuid,rec);}
                 else if(!rec.contains("First")&&provoked(l)<0){rec.putInt("Walked",rec.getInt("Walked")+1);record(l,uuid,rec);}
             }
@@ -410,7 +433,7 @@ public final class Sphinx {
         var server=e.getServer();if(server.getTickCount()%2!=0)return;
         var l=server.getLevel(HouseDimensions.INTERIOR);var b=base(server);if(l==null||b==null||!l.isLoaded(b))return;
         if(LabyrinthData.get(server).door(PLACE.entryDoorId())==null)return;
-        boolean any=!ASKED.isEmpty()||provoked(l)>=0||peeking(room(l))||!HAND.isEmpty();if(!any)for(var p:l.players())if(here(p)){any=true;break;}
+        boolean any=!ASKED.isEmpty()||provoked(l)>=0||peeking(room(l))||!HAND.isEmpty()||room(l).contains("Pins");if(!any)for(var p:l.players())if(here(p)){any=true;break;}
         if(any)update(l,b);
     }
 }
