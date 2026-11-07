@@ -111,14 +111,16 @@ public final class DareArtProof extends Screen {
                 // 0.4.337, the Sphinx's whole face over the first crossing's hall: face on, looking up at her from the middle of the hall
                 // (her eyes turned down toward the reader, mid-blink on the right), and half risen out of the dark.
                 var face=Sphinx.faceAt(Sphinx.FACE_PX_W/2.0,Sphinx.FACE_PX_H/2.0);
-                float[][] gazes={{0,-.2F,0,-.2F},{-.5F,-.3F,-.4F,-.3F},{0,0,0,0}};float[] closed={0,.6F,0};float[] risen={1,1,.5F};float[] tilt={0,50,0};
-                for(int view=0;view<3;view++){
-                    float cx=(view+.5F)*width/3F,cy=height*.55F,s=width/3F/21F;
-                    g.fill((int)(cx-width/6F)+4,30,(int)(cx+width/6F)-4,height-26,0xff0c0a08);
+                // 0.4.340: the last two as she is in the hall, her stone in its dim light and only her eyes lit.
+                float[][] gazes={{0,-.2F,0,-.2F},{-.5F,-.3F,-.4F,-.3F},{0,0,0,0},{.3F,-.3F,.3F,-.3F}};float[] closed={0,.6F,0,0};float[] risen={1,1,.5F,1};float[] tilt={0,50,0,40};
+                int dim=LightTexture.pack(SphinxFaceRenderer.STONE_LIGHT,0),eyes=LightTexture.pack(SphinxFaceRenderer.EYE_LIGHT,0);
+                for(int view=0;view<4;view++){
+                    float cx=(view+.5F)*width/4F,cy=height*.55F,s=width/4F/21F;boolean dark=view>=2;
+                    g.fill((int)(cx-width/8F)+4,30,(int)(cx+width/8F)-4,height-26,0xff0c0a08);
                     p.pushPose();p.translate(cx,cy,150);p.scale(s,-s,s);p.mulPose(Axis.XP.rotationDegrees(tilt[view]));
-                    SphinxFaceRenderer.draw(p,out,face.scale(-1),risen[view],gazes[view],closed[view],LightTexture.FULL_BRIGHT);
+                    SphinxFaceRenderer.draw(p,out,face.scale(-1),risen[view],gazes[view],closed[view],dark?dim:LightTexture.FULL_BRIGHT,dark?eyes:LightTexture.FULL_BRIGHT);
                     out.endBatch();p.popPose();
-                    g.drawCenteredString(font,new String[]{"face on","from the hall below","rising out of the dark"}[view],(int)cx,height-20,0xffe9e2cf);
+                    g.drawCenteredString(font,new String[]{"face on","from the hall below","rising out of the dark","in the hall's dark"}[view],(int)cx,height-20,0xffe9e2cf);
                 }
             }
             default->{

@@ -38,8 +38,13 @@ public final class SphinxFaceRenderer implements BlockEntityRenderer<SphinxFaceB
     static final float RISE=30;
     /** How far she starts below and behind where she looks from, in blocks. */
     static final double SINK_DOWN=2.5,SINK_BACK=2.0;
-    /** Half the size of each eye's white, its iris, and how far the iris turns, in blocks across and up the face. */
-    static final double WHITE_W=1.85,WHITE_H=.82,IRIS_R=.8,TURN_X=.8,TURN_Y=.3;
+    /** Half the size of each eye's white, its iris, and how far the iris turns, in blocks across and up the face (0.4.340: as large as the first crossing's one eye). */
+    static final double WHITE_W=2.0,WHITE_H=.85,IRIS_R=.94,TURN_X=1.0,TURN_Y=.35;
+    /**
+     * 0.4.340 (the owner: "something that should instill fear when it presses down out of the dark"): her stone takes the hall's own
+     * light, never brighter than a little above dark; her eyes are always lit, so they are what is seen first as she leans down.
+     */
+    public static final int STONE_LIGHT=5,EYE_LIGHT=14;
     public SphinxFaceRenderer(BlockEntityRendererProvider.Context ignored){}
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(PuzzleRegistry.SPHINX_FACE_BE.get(),SphinxFaceRenderer::new);}
 
@@ -54,14 +59,15 @@ public final class SphinxFaceRenderer implements BlockEntityRenderer<SphinxFaceB
         Player near=nearest(level,base);
         for(int k=0;k<2;k++){var centre=Sphinx.faceAt(Sphinx.FACE_EYES[k][0],Sphinx.FACE_EYES[k][1]);gaze(face,k,near==null?null:near.getEyePosition(partial).subtract(base.add(centre)),right,up,n,now);}
         face.gazeAt=now;
-        draw(pose,out,base.subtract(corner),a,face.gaze,blink(face,now),Math.max(light,LightTexture.pack(11,0)));
+        draw(pose,out,base.subtract(corner),a,face.gaze,blink(face,now),Math.max(light,LightTexture.pack(STONE_LIGHT,0)),Math.max(light,LightTexture.pack(EYE_LIGHT,0)));
     }
     static Vec3 up(){return Sphinx.faceAt(0,0).subtract(Sphinx.faceAt(0,Sphinx.FACE_PX_H)).normalize();}
     /**
      * Draws her face with the room's base at {@code rel} in the pose's frame: risen {@code a} (0 to 1, sliding up and forward out of the dark
-     * as it brightens), each iris turned by {@code gaze} (across and up the face, two numbers an eye) and her lids {@code closed} (0 to 1).
+     * as it brightens), each iris turned by {@code gaze} (across and up the face, two numbers an eye) and her lids {@code closed} (0 to 1);
+     * her stone and lids lit by {@code stone}, the whites and irises of her eyes by {@code eyes}.
      */
-    public static void draw(PoseStack pose,MultiBufferSource out,Vec3 rel,float a,float[] gaze,float closed,int lit){
+    public static void draw(PoseStack pose,MultiBufferSource out,Vec3 rel,float a,float[] gaze,float closed,int stone,int eyes){
         if(a<=.002F)return;
         var right=new Vec3(1,0,0);var up=up();var n=Sphinx.faceNormal();
         float e=1-a;rel=rel.add(up.scale(-SINK_DOWN*e)).add(n.scale(-SINK_BACK*e));
@@ -69,16 +75,16 @@ public final class SphinxFaceRenderer implements BlockEntityRenderer<SphinxFaceB
         // Her face.
         var tl=Sphinx.faceAt(0,0).add(rel);var tr=Sphinx.faceAt(Sphinx.FACE_PX_W,0).add(rel);var br=Sphinx.faceAt(Sphinx.FACE_PX_W,Sphinx.FACE_PX_H).add(rel);var bl=Sphinx.faceAt(0,Sphinx.FACE_PX_H).add(rel);
         var buf=out.getBuffer(RenderType.entityCutoutNoCull(FACE));
-        vertex(buf,m,tl,0,0,c,lit);vertex(buf,m,bl,0,1,c,lit);vertex(buf,m,br,1,1,c,lit);vertex(buf,m,tr,1,0,c,lit);
+        vertex(buf,m,tl,0,0,c,stone);vertex(buf,m,bl,0,1,c,stone);vertex(buf,m,br,1,1,c,stone);vertex(buf,m,tr,1,0,c,stone);
         // Her eyes, behind the holes: the whites, the irises, and the lids when she blinks.
         for(int k=0;k<2;k++){
             var at=Sphinx.faceAt(Sphinx.FACE_EYES[k][0],Sphinx.FACE_EYES[k][1]).add(rel);
-            quad(out.getBuffer(RenderType.entityCutoutNoCull(WHITE)),m,at.add(n.scale(-.06)),right,up,WHITE_W,WHITE_H,0,0,1,1,c,lit);
+            quad(out.getBuffer(RenderType.entityCutoutNoCull(WHITE)),m,at.add(n.scale(-.06)),right,up,WHITE_W,WHITE_H,0,0,1,1,c,eyes);
             var iris=at.add(n.scale(-.04)).add(right.scale(gaze[k*2])).add(up.scale(gaze[k*2+1]));
-            quad(out.getBuffer(RenderType.entityCutoutNoCull(IRIS)),m,iris,right,up,IRIS_R,IRIS_R,0,0,1,1,c,lit);
+            quad(out.getBuffer(RenderType.entityCutoutNoCull(IRIS)),m,iris,right,up,IRIS_R,IRIS_R,0,0,1,1,c,eyes);
             if(closed>.01F){
                 double h=WHITE_H*closed;var lid=at.add(n.scale(-.02)).add(up.scale(WHITE_H-h));
-                quad(out.getBuffer(RenderType.entityCutoutNoCull(LID)),m,lid,right,up,WHITE_W,h,0,1-closed,1,1,c,lit);
+                quad(out.getBuffer(RenderType.entityCutoutNoCull(LID)),m,lid,right,up,WHITE_W,h,0,1-closed,1,1,c,stone);
             }
         }
     }
