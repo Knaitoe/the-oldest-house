@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/kitchen_dish"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/kitchen_dish_bowl"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/kitchen_dish_creamy"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "the_oldest_house:item/kitchen_dish_burnt"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "the_oldest_house:item/kitchen_dish_bowl_burnt"
+    }
+  ]
+}

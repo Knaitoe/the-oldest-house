@@ -66,7 +66,7 @@ public final class KitchenFittings {
     @Nullable static BlockPos base(net.minecraft.server.MinecraftServer server){var o=HouseSavedData.get(server).houseOrigin();return o==null?null:LabyrinthPlaces.base(o,KITCHEN);}
 
     /** Which of the kitchen's things a block is, kitchen-relative; nothing if it is none of them. */
-    public enum Fitting{SINK,STOVE,FRIDGE,CUPBOARD,TABLE}
+    public enum Fitting{SINK,STOVE,FRIDGE,CUPBOARD,TABLE,BOOK}
     @Nullable static Fitting fitting(ServerLevel l,BlockPos b,BlockPos at){
         var rel=at.subtract(b);var s=l.getBlockState(at);
         if(rel.equals(FamiliarRoom.SINK)&&TractHouseBlock.is(s,TractHouseBlock.Kind.COUNTER_SINK))return Fitting.SINK;
@@ -74,6 +74,8 @@ public final class KitchenFittings {
         if((rel.equals(FamiliarRoom.FRIDGE)&&TractHouseBlock.is(s,TractHouseBlock.Kind.FRIDGE_LOWER))||(rel.equals(FamiliarRoom.FRIDGE.above())&&TractHouseBlock.is(s,TractHouseBlock.Kind.FRIDGE_UPPER)))return Fitting.FRIDGE;
         if(CUPBOARDS.contains(rel)&&TractHouseBlock.is(s,TractHouseBlock.Kind.WALL_CABINET))return Fitting.CUPBOARD;
         if(rel.equals(FamiliarRoom.TABLE)&&TraceBlock.is(s,TraceBlock.Kind.TABLE))return Fitting.TABLE;
+        // 0.4.331: the counter by the door, where the kitchen keeps its book of what was eaten here.
+        if(rel.equals(KitchenVisitors.BOOK)&&TractHouseBlock.is(s,TractHouseBlock.Kind.COUNTER))return Fitting.BOOK;
         return null;
     }
 
@@ -94,6 +96,7 @@ public final class KitchenFittings {
             case FRIDGE->open(p,l,"fridge",27,b.offset(FamiliarRoom.FRIDGE),"Fridge");
             case CUPBOARD->open(p,l,"cupboard"+CUPBOARDS.indexOf(at.subtract(b)),9,at,"Cupboard");
             case TABLE->table(p,l,b,hit);
+            case BOOK->KitchenVisitors.read(p);
         };
     }
 
@@ -123,22 +126,72 @@ public final class KitchenFittings {
     /** Whether something is on the stove, and whether it is done. */
     public static boolean cooking(net.minecraft.server.MinecraftServer server){return hob(server).contains("Done");}
     public static boolean done(ServerLevel l){var t=hob(l.getServer());return t.contains("Done")&&l.getGameTime()>=t.getLong("Ready");}
-    /** On the stove: whatever cooks, up to four at a time; off it when it is done. Nothing left on it burns. */
+    /**
+     * On the stove: whatever cooks, up to four at a time; off it when it is done. Nothing left on it alone burns.
+     * <p>0.4.331: put anything else in with it (another kind of food, a bottle of water, milk, a seasoning) and it is a pan with a dish
+     * in it ({@link KitchenCooking}). A pan comes off whenever a hand takes it, done or not; left on, it goes from underdone to cooked
+     * through to well done, and then burns, and the ring clicks off.
+     */
     static boolean stove(ServerPlayer p,ServerLevel l,BlockPos b){
-        var t=hob(p.server);var top=Vec3.atBottomCenterOf(b.offset(STOVE)).add(0,1.01,0);
+        var t=hob(p.server);var top=Vec3.atBottomCenterOf(b.offset(STOVE)).add(0,1.01,0);var hand=p.getMainHandItem();
+        if(t.contains("Pan"))return pan(p,l,b,t,hand);
         if(t.contains("Done")){
+            if(!hand.isEmpty()&&KitchenCooking.ingredient(hand)!=null&&!ItemStack.isSameItemSameComponents(hand,ItemStack.parseOptional(l.registryAccess(),t.getCompound("Raw")))){
+                // Something else goes in with it: the ring's four become the start of a pan, timed from when they went on.
+                var raw=ItemStack.parseOptional(l.registryAccess(),t.getCompound("Raw"));var pan=new ListTag();
+                for(int i=0;i<raw.getCount();i++)pan.add(raw.copyWithCount(1).save(l.registryAccess()));
+                var started=new CompoundTag();started.put("Pan",pan);started.putLong("Lit",t.getLong("Ready")-COOK);
+                return pan(p,l,b,started,hand);
+            }
             if(l.getGameTime()<t.getLong("Ready")){say(p,"It isn't done yet.");return true;}
             give(p,ItemStack.parseOptional(l.registryAccess(),t.getCompound("Done")));
             clearHob(l,b);hob(p.server,new CompoundTag());
             l.playSound(null,b.offset(STOVE),SoundEvents.ITEM_PICKUP,SoundSource.PLAYERS,.4F,1F);say(p,"You take it off the stove.");return true;
         }
-        var hand=p.getMainHandItem();var out=cooked(l,hand);
-        if(out.isEmpty()){say(p,hand.isEmpty()?"The stove is cold. It would cook something, if you had something to cook.":"That isn't something to cook.");return true;}
+        var out=cooked(l,hand);
+        if(out.isEmpty()){
+            if(KitchenCooking.ingredient(hand)!=null)return pan(p,l,b,new CompoundTag(),hand);
+            say(p,hand.isEmpty()?"The stove is cold. It would cook something, if you had something to cook.":"That isn't something to cook.");return true;
+        }
         int n=Math.min(HOB,hand.getCount());var raw=hand.copyWithCount(n);hand.shrink(n);
         t=new CompoundTag();t.put("Raw",raw.save(l.registryAccess()));t.put("Done",out.copyWithCount(Math.min(out.getMaxStackSize(),out.getCount()*n)).save(l.registryAccess()));t.putLong("Ready",l.getGameTime()+COOK);
         hob(p.server,t);clearHob(l,b);lay(l,top,raw,0,HOB_TAG,.45F);
         l.playSound(null,b.offset(STOVE),SoundEvents.FIRECHARGE_USE,SoundSource.BLOCKS,.25F,1.8F);
         say(p,"You light the ring and put it on.");return true;
+    }
+    /** How many things a pan takes. */
+    public static final int PAN=6;
+    public static List<ItemStack> pan(ServerLevel l){var out=new ArrayList<ItemStack>();for(var tag:hob(l.getServer()).getList("Pan",net.minecraft.nbt.Tag.TAG_COMPOUND))out.add(ItemStack.parseOptional(l.registryAccess(),(CompoundTag)tag));return out;}
+    /** How long the pan has been on the ring since the last thing that needed cooking went in, stopping when it burnt. */
+    public static int panTicks(ServerLevel l){var t=hob(l.getServer());if(!t.contains("Pan"))return 0;long end=t.getBoolean("Off")?t.getLong("OffAt"):l.getGameTime();return (int)Math.max(0,end-t.getLong("Lit"));}
+    static boolean pan(ServerPlayer p,ServerLevel l,BlockPos b,CompoundTag t,ItemStack hand){
+        var at=b.offset(STOVE);var list=t.getList("Pan",net.minecraft.nbt.Tag.TAG_COMPOUND);
+        if(hand.isEmpty()){
+            var pan=pan(l);if(!t.contains("Pan"))pan=new ArrayList<>();
+            if(!KitchenCooking.hasMain(pan)){for(var s:pan)give(p,s);say(p,"There was nothing in the pan to eat. You take the things back out.");}
+            else{var dish=KitchenCooking.dish(pan,panTicks(l),p.getGameProfile().getName());give(p,KitchenCooking.stack(dish));say(p,"You take it off the stove: "+dish.strokes()+".");}
+            clearHob(l,b);hob(p.server,new CompoundTag());
+            l.playSound(null,at,SoundEvents.ITEM_PICKUP,SoundSource.PLAYERS,.4F,1F);return true;
+        }
+        var ing=KitchenCooking.ingredient(hand);
+        if(ing==null){say(p,"That doesn't go in the pan.");return true;}
+        if(t.getBoolean("Off")){say(p,"It's burnt. Take it off first.");return true;}
+        if(list.size()>=PAN){say(p,"The pan is full.");return true;}
+        boolean fresh=list.isEmpty();
+        list.add(hand.copyWithCount(1).save(l.registryAccess()));t.put("Pan",list);
+        // Raw food restarts the clock; a seasoning or water does not.
+        if(fresh||ing.main()&&!t.contains("Lit"))t.putLong("Lit",l.getGameTime());else if(ing.main())t.putLong("Lit",Math.max(t.getLong("Lit"),l.getGameTime()-KitchenCooking.ready(KitchenCooking.Texture.CRISP)/4));
+        var left=KitchenCooking.leftover(hand);hand.shrink(1);give(p,left);
+        t.remove("Raw");t.remove("Done");t.remove("Ready");t.remove("Smelled");
+        hob(p.server,t);showPan(l,b);
+        l.playSound(null,at,fresh?SoundEvents.FIRECHARGE_USE:SoundEvents.GENERIC_SPLASH,SoundSource.BLOCKS,.25F,fresh?1.8F:1.6F);
+        say(p,fresh?"You light the ring and put it in the pan.":"You put it in with the rest.");return true;
+    }
+    /** The pan on the ring, drawn as the dish it is becoming. */
+    static void showPan(ServerLevel l,BlockPos b){
+        var pan=pan(l);if(pan.isEmpty())return;var texture=KitchenCooking.texture(pan);
+        var look=new ItemStack(KitchenRegistry.DISH.get());look.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(KitchenCooking.model(texture,KitchenCooking.cook(texture,panTicks(l)))));
+        clearHob(l,b);lay(l,Vec3.atBottomCenterOf(b.offset(STOVE)).add(0,1.01,0),look,0,HOB_TAG,.5F);
     }
     static void clearHob(ServerLevel l,BlockPos b){for(var d:l.getEntitiesOfClass(Display.ItemDisplay.class,new AABB(b.offset(STOVE)).inflate(.5,1,.5),d->d.getTags().contains(HOB_TAG)))d.discard();}
 
@@ -205,7 +258,9 @@ public final class KitchenFittings {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();if(server.getTickCount()%10!=0||!FamiliarRoom.occupied())return;
         var l=server.getLevel(HouseDimensions.INTERIOR);var b=base(server);if(l==null||b==null||!l.isLoaded(b.offset(STOVE)))return;
-        var t=hob(server);if(!t.contains("Done"))return;var at=b.offset(STOVE);
+        var t=hob(server);var at=b.offset(STOVE);
+        if(t.contains("Pan")){tickPan(server,l,b,t);return;}
+        if(!t.contains("Done"))return;
         if(l.getGameTime()<t.getLong("Ready")){
             // It cooks: a little smoke and the sound of it.
             l.sendParticles(ParticleTypes.SMOKE,at.getX()+.5,at.getY()+1.1,at.getZ()+.5,1,.12,.02,.12,.005);
@@ -217,6 +272,20 @@ public final class KitchenFittings {
             clearHob(l,b);lay(l,Vec3.atBottomCenterOf(at).add(0,1.01,0),ItemStack.parseOptional(l.registryAccess(),t.getCompound("Done")),0,HOB_TAG,.45F);
             t.putBoolean("Off",true);hob(server,t);
             for(var p:l.players())if(FamiliarRoom.inKitchen(p,HouseSavedData.get(server).houseOrigin()))say(p,"Whatever is on the stove is done; the ring clicks off.");
+        }
+    }
+    /** A pan on the ring: it cooks, it smells done, it starts to catch, and then it burns and the ring clicks off. */
+    static void tickPan(net.minecraft.server.MinecraftServer server,ServerLevel l,BlockPos b,CompoundTag t){
+        if(t.getBoolean("Off"))return;var at=b.offset(STOVE);var pan=pan(l);var texture=KitchenCooking.texture(pan);int ticks=panTicks(l);
+        l.sendParticles(ticks>KitchenCooking.ready(texture)*1.5?ParticleTypes.LARGE_SMOKE:ParticleTypes.SMOKE,at.getX()+.5,at.getY()+1.1,at.getZ()+.5,1,.12,.02,.12,.005);
+        if(server.getTickCount()%40==0)l.playSound(null,at,texture==KitchenCooking.Texture.CRISP?SoundEvents.CAMPFIRE_CRACKLE:SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT,SoundSource.BLOCKS,.35F,1.2F);
+        int stage=ticks>=KitchenCooking.burnsAt(texture)?3:ticks>=KitchenCooking.ready(texture)*1.5?2:ticks>=KitchenCooking.ready(texture)?1:0;
+        if(stage>t.getInt("Smelled")){
+            t.putInt("Smelled",stage);
+            String line=switch(stage){case 1->"Whatever is in the pan smells done.";case 2->"The pan is starting to catch.";default->"The pan has burnt; the ring clicks off.";};
+            if(stage==3){t.putBoolean("Off",true);t.putLong("OffAt",l.getGameTime());}
+            hob(server,t);showPan(l,b);
+            for(var p:l.players())if(FamiliarRoom.inKitchen(p,HouseSavedData.get(server).houseOrigin()))say(p,line);
         }
     }
     public static void clearAll(){STORES.clear();}
