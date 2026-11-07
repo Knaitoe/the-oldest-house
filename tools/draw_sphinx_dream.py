@@ -362,10 +362,59 @@ def files():
     out['models/item/dream_stela.json'] = {
         'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/sphinx/dream_stela_smooth'},
         'overrides': [{'predicate': {'custom_model_data': i + 1}, 'model': NS + f'item/sphinx/{name}'} for i, (_, _, name) in enumerate(variants())]}
+    out.update(fill_files())
     return out
 
 
-NAMES = {'item.the_oldest_house.dream_stela': 'Piece of the Dream Stela', 'entity.the_oldest_house.sphinx_dream': 'The Sphinx'}
+# 0.4.343, loose fill held aside by the stone (StelaFillBlock), in the fill's own texture, its passage along z (turned for x).
+FILLS = {'sand': 'minecraft:block/sand', 'red_sand': 'minecraft:block/red_sand', 'gravel': 'minecraft:block/gravel', 'drift': NS + 'block/sphinx/drift'}
+
+
+def face(cull=None):
+    f = {'texture': '#f'}
+    if cull:
+        f['cullface'] = cull
+    return f
+
+
+def box(lo, hi, culls=()):
+    """An element whose faces on the block's edge are culled against a solid neighbour (which draws its own face there instead)."""
+    faces = {}
+    for d in ('north', 'south', 'east', 'west', 'up', 'down'):
+        faces[d] = face(d if d in culls else None)
+    return {'from': lo, 'to': hi, 'faces': faces}
+
+
+def fill_elements(phase):
+    if phase == 0:
+        # The narrow crack: the fill drawn aside to a slit down the passage's length, solid to a body but clear to the eye.
+        return [box([0, 0, 0], [6, 16, 16], ('west', 'up', 'down')), box([10, 0, 0], [16, 16, 16], ('east', 'up', 'down')),
+                box([6, 0, 0], [10, 2, 16], ('down',)), box([6, 14, 0], [10, 16, 16], ('up',))]
+    skin = [box([0, 0, 0], [16, 1, 16], ('down', 'east', 'west'))]
+    if phase == 1:
+        return skin
+    # Shedding: grit hanging from the roof of the passage before it closes.
+    return skin + [box([3, 13, 4], [4, 16, 5], ('up',)), box([9, 12, 10], [10, 16, 11], ('up',)), box([12, 14, 2], [13, 16, 3], ('up',)), box([6, 15, 7], [8, 16, 9], ('up',))]
+
+
+def fill_files():
+    out = {}
+    variants = {}
+    for name, tex in FILLS.items():
+        for phase in range(3):
+            out[f'models/block/stela_fill/{name}_{phase}.json'] = {'ambientocclusion': False, 'render_type': 'minecraft:cutout',
+                                                                  'textures': {'f': tex, 'particle': tex}, 'elements': fill_elements(phase)}
+            for axis in ('x', 'z'):
+                v = {'model': NS + f'block/stela_fill/{name}_{phase}'}
+                if axis == 'x':
+                    v['y'] = 90
+                variants[f'axis={axis},fill={name},phase={phase}'] = v
+    out['blockstates/stela_fill.json'] = {'variants': variants}
+    return out
+
+
+NAMES = {'item.the_oldest_house.dream_stela': 'Piece of the Dream Stela', 'entity.the_oldest_house.sphinx_dream': 'The Sphinx',
+         'block.the_oldest_house.stela_fill': 'Parted Fill'}
 
 
 def main():

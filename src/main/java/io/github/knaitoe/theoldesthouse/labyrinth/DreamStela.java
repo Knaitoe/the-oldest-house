@@ -18,7 +18,7 @@ import net.minecraft.world.item.component.ItemLore;
  * Between the Paws"). The stone carries what the dream fixed when it began: how far it reaches through loose fill (three, five or eight
  * blocks, from the reader's accuracy), how it opens (patient, dismissive or hostile, from their conduct), and one small carving from the
  * riddle they most recently solved themselves, or a face worn smooth where a carving would be. A hostile dream leaves a corner freshly
- * chipped. Its use against buried passages comes with 0.4.343.
+ * chipped. 0.4.343: pressed against loose fill, it parts a passage through it (StelaPassage, docs/STELA_PASSAGE_0_4_343.md).
  */
 public final class DreamStela {
     private DreamStela(){}
