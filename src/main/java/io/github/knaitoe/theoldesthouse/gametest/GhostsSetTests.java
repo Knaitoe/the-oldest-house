@@ -411,6 +411,35 @@ public final class GhostsSetTests {
     }
     @AfterBatch(batch="ghosts_final_death0488") public static void finalDeathDone(ServerLevel l){close();}
     /**
+     * 0.4.325 (owner: "the story reads that merry runs to the basement right? Maybe have her interact with the basement effigy in some
+     * way"; "Merry will need dialogue if the player tries to interact with her in the basement"): after the others are still, Merry
+     * gets up with the empty jar, goes down the actual basement stair to the cross, sets the jar down in front of it and sits on the
+     * floor, answers a reader who talks to her there, then goes back up and out of the front door. The jar stays.
+     */
+    @GameTest(template="empty",batch="ghosts_merry_basement325",timeoutTicks=4000)
+    public static void merryTakesTheEmptyJarDownToTheCrossSitsThereAndTalksThenLeaves(GameTestHelper h){
+        var f=fixture(h);var p=f.player("ghost_basement",P);f.source(p,P);var b=f.base(P);
+        h.startSequence().thenIdle(30).thenWaitUntil(()->{
+            var own=f.own(p,P);own.putInt("FilmDay",7);own.putInt("ShotClock",295);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,-4,0,-15);GhostsSet.reader(p,b,own);save(f,p,own);
+            h.assertTrue(actor(f,p,LiteraryActor.GHOST_MERRY)!=null,"the last day's cast is placed");
+        }).thenWaitUntil(()->{var own=f.own(p,P);h.assertTrue(own.getInt("CrewExit0490_4")>=5&&own.getInt("CrewExit0490_5")>=5,"the crew leave before supper");}).thenExecute(()->{
+            var own=f.own(p,P);own.putInt("ShotClock",855);GhostsSet.reader(p,b,own);save(f,p,own);
+        }).thenWaitUntil(()->{var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(merry.getMainHandItem().is(Items.GLASS_BOTTLE)&&merry.phase()==GhostsSet.STAND&&merry.getY()<b.getY()+.1,"she gets up off her chair onto the floor with the empty jar: phase "+merry.phase()+" y "+(merry.getY()-b.getY()));})
+          .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("MerryExitStep0488")>=12,"she walks down the actual basement stair: step "+f.own(p,P).getInt("MerryExitStep0488")+" at "+actor(f,p,LiteraryActor.GHOST_MERRY).position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))))
+          .thenExecute(()->{
+            var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(merry.getY()<b.getY()-3.5,"she is down on the basement floor");
+            var own=f.own(p,P);f.at(p,P,7,-4,-20);GhostsSet.talk(p,merry,own);save(f,p,own);h.assertTrue(own.getInt("MerryLineA0325")==1&&!own.getBoolean(GhostsSet.MERRY_JAR),"talking to her down there before the jar is set down gets her first basement line");
+        }).thenWaitUntil(()->{var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(merry.phase()==GhostsSet.FLOOR&&f.own(p,P).getBoolean(GhostsSet.MERRY_JAR),"she sets the jar down at the cross and sits on the floor: phase "+merry.phase()+" step "+f.own(p,P).getInt("MerryExitStep0488"));})
+          .thenExecute(()->{
+            var merry=actor(f,p,LiteraryActor.GHOST_MERRY);var at=merry.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b));
+            h.assertTrue(merry.getMainHandItem().isEmpty()&&Math.abs(at.x-5.5)<.35&&Math.abs(at.z+22.2)<.35&&Math.abs(at.y+4)<.1,"she sits at the cross, the jar out of her hand: "+at);
+            var own=f.own(p,P);GhostsSet.talk(p,merry,own);GhostsSet.talk(p,merry,own);save(f,p,own);h.assertTrue(own.getInt("MerryLineB0325")==2,"once the jar is down she says the other lines");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("MerryLeft0488"),"after sitting a while she goes back up and out of the front door: step "+f.own(p,P).getInt("MerryExitStep0488")))
+          .thenExecute(()->{var own=f.own(p,P);h.assertTrue(own.getBoolean(GhostsSet.MERRY_JAR)&&GhostsLore.account(own).contains("empty jar"),"the empty jar stays in front of the cross and the account says so");})
+          .thenSucceed();
+    }
+    @AfterBatch(batch="ghosts_merry_basement325") public static void merryBasementDone(ServerLevel l){close();}
+    /**
      * 0.4.172 (owner: "add a command to trigger specific film days for testing"; "improve Marjorie's crawl into and destruction
      * of the cardboard box"): the shortcut starts day four at the upstairs pickup without filming the days before it, and in
      * native time Marjorie crawls in through the house's doorway, the house bulges round her, splits as she rises with her

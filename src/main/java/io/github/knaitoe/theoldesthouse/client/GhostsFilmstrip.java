@@ -65,7 +65,8 @@ public final class GhostsFilmstrip extends Screen {
             new Row("Merry, face",Y,GhostsSet.STAND,180,false,1,0,4,true),
             new Row("Marjorie, face",M,GhostsSet.STAND,180,false,1,0,4,true))),
         new Page("sisters","Merry's ponytail / Marjorie's smaller eyes",List.of()),
-        new Page("seat","Sitting down and getting up, carried between floor and seat (0.4.324)",List.of()));
+        new Page("seat","Sitting down and getting up, carried between floor and seat (0.4.324)",List.of()),
+        new Page("floor","Merry in the basement: crouching with the jar, sitting on the floor, getting up (0.4.325)",List.of()));
     static final int FRAMES=8;
     private int page,frames;private static boolean launched;
     public GhostsFilmstrip(){super(Component.literal("The Barrett home: filmstrips"));}
@@ -79,7 +80,8 @@ public final class GhostsFilmstrip extends Screen {
         var mc=Minecraft.getInstance();var p=PAGES.get(page);var buffers=mc.renderBuffers().bufferSource();
         g.fill(0,0,width,height,0xff292821);g.drawString(font,"Filmstrip / "+p.title(),10,8,0xffe7dbc3,false);g.flush();
         if(p.name().equals("sisters")){sisters(g,buffers);return;}
-        if(p.name().equals("seat")){seat(g,buffers);return;}
+        if(p.name().equals("seat")){seat(g,buffers,SEATS,true);return;}
+        if(p.name().equals("floor")){seat(g,buffers,FLOORS,false);return;}
         int rows=p.rows().size();float rowH=(height-30)/(float)rows,colW=(width-110)/(float)FRAMES;
         for(int r=0;r<rows;r++){
             var row=p.rows().get(r);float cy=26+(r+.5F)*rowH;
@@ -112,16 +114,19 @@ public final class GhostsFilmstrip extends Screen {
         new SeatRow("Sarah sits, front",S,GhostsSet.STAND,GhostsSet.SIT,180,.95F),new SeatRow("Sarah gets up, front",S,GhostsSet.SIT,GhostsSet.STAND,180,.95F),
         new SeatRow("Merry gets up",Y,GhostsSet.SIT,GhostsSet.STAND,90,0),new SeatRow("Marjorie gets up",M,GhostsSet.SIT,GhostsSet.STAND,90,0),
         new SeatRow("Barry gets up",LiteraryActor.GHOST_PRODUCER,GhostsSet.SIT,GhostsSet.STAND,180,0));
-    private void seat(GuiGraphics g,MultiBufferSource.BufferSource buffers){
-        var mc=Minecraft.getInstance();int rows=SEATS.size();float rowH=(height-30)/(float)rows,colW=(width-110)/(float)FRAMES,base=rowH*.32F;
+    static final List<SeatRow> FLOORS=List.of(
+        new SeatRow("Merry sets the jar down",Y,GhostsSet.STAND,GhostsSet.CROUCH,90,0),new SeatRow("Merry sits on the floor",Y,GhostsSet.CROUCH,GhostsSet.FLOOR,90,0),
+        new SeatRow("On the floor, front",Y,GhostsSet.FLOOR,GhostsSet.FLOOR,180,0),new SeatRow("Merry gets up off the floor",Y,GhostsSet.FLOOR,GhostsSet.STAND,90,0));
+    private void seat(GuiGraphics g,MultiBufferSource.BufferSource buffers,List<SeatRow> list,boolean chair){
+        var mc=Minecraft.getInstance();var SEATS=list;int rows=SEATS.size();float rowH=(height-30)/(float)rows,colW=(width-110)/(float)FRAMES,base=rowH*.32F;
         for(int r=0;r<rows;r++){
             var row=SEATS.get(r);float cy=26+(r+.5F)*rowH,floor=cy+rowH*.36F;float scale=row.role()==Y?.58F:row.role()==M?.86F:1;
-            boolean down=GhostsCastModel.seatChange(row.role(),row.from(),row.to())>0;double seatH=GhostsSet.seatedHeight(scale);
+            boolean down=GhostsCastModel.seatChange(row.role(),row.from(),row.to())>0;double seatH=chair?GhostsSet.seatedHeight(scale):0;
             g.drawString(font,row.label(),6,(int)cy,0xffe7dbc3,false);
             for(int f=0;f<FRAMES;f++){
                 float t=f/(float)(FRAMES-1),eased=t*t*(3-2*t),onSeat=down?eased:1-eased;float cx=100+(f+.5F)*colW;
                 float seatX=cx+row.side()*base;
-                g.fill((int)(seatX-.5F*base),(int)(floor-.625F*base),(int)(seatX+.5F*base),(int)(floor-.55F*base),0xff6b5440);
+                if(chair)g.fill((int)(seatX-.5F*base),(int)(floor-.625F*base),(int)(seatX+.5F*base),(int)(floor-.55F*base),0xff6b5440);
                 g.fill((int)(cx-.6F*base),(int)floor,(int)(cx+.6F*base+row.side()*base),(int)floor+1,0xff5a5448);g.flush();
                 GhostsCastModel.previewDay=1;
                 var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.previewSeat(row.role(),row.from(),row.to(),t,40,.37F+r*.11F);

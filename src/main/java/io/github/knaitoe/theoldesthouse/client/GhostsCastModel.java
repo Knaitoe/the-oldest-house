@@ -31,7 +31,13 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
      */
     static boolean upright(int role,int phase){return phase==GhostsSet.STAND||phase==GhostsSet.HELP||phase==GhostsSet.PRAY&&role!=LiteraryActor.GHOST_MERRY;}
     static boolean seated(int role,int phase){return GhostsSet.seatedPose(role,phase)&&phase!=GhostsSet.SLIP&&phase!=GhostsSet.DEAD;}
-    public static int seatChange(int role,int from,int to){return upright(role,from)&&seated(role,to)?1:seated(role,from)&&upright(role,to)?-1:0;}
+    public static int seatChange(int role,int from,int to){
+        // 0.4.325: down onto the floor (2) and up off it (-2), for Merry in the basement.
+        if(upright(role,from)&&to==GhostsSet.FLOOR)return 2;if(from==GhostsSet.FLOOR&&upright(role,to))return -2;
+        return upright(role,from)&&seated(role,to)?1:seated(role,from)&&upright(role,to)?-1:0;
+    }
+    /** How long each kind of sitting down or getting up takes, in ticks. */
+    static float seatTicks(int seat){return seat==1?GhostsMotion.SIT_TICKS:seat==-1?GhostsMotion.RISE_TICKS:24;}
     /**
      * 0.4.309, the living layer (docs/GHOSTS_ANIMATION_0_4_309.md): how long the person has held this pose (for a fall's flailing and an
      * impact's settling), how far through speaking a line they are (0 silent), and the per-pose blend length.
@@ -88,7 +94,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         // A face changes over two seconds or more, not in a cut: feeling arrives and settles.
         if(state.faceFrom!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/48F,0,1);t=t*t*(3-2*t);for(int i=0;i<3;i++)face[i]=net.minecraft.util.Mth.lerp(t,state.faceFrom[i],face[i]);if(t==1)state.faceFrom=null;}
         state.faceLast=face.clone();
-        if(state.from!=null){float raw=net.minecraft.util.Mth.clamp((age-state.started)/(state.seat>0?GhostsMotion.SIT_TICKS:state.seat<0?GhostsMotion.RISE_TICKS:blendLength(actor.phase())),0,1);
+        if(state.from!=null){float raw=net.minecraft.util.Mth.clamp((age-state.started)/(state.seat!=0?seatTicks(state.seat):blendLength(actor.phase())),0,1);
             lerpFrom(state.from,raw,state.seat,state.seed);
             if(raw==1){state.from=null;state.seat=0;}
         }state.last=snapshot();
@@ -101,10 +107,11 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
      * goes on top (seatBend).
      */
     private void lerpFrom(float[] from,float raw,int seat,float seed){
-        float t=ease(raw),legs=seat==0?t:seat>0?legsSeated(seat,raw):1-legsSeated(seat,raw);int i=0;
+        // On and off the floor the legs move with the rest of the body; only a chair holds them back.
+        float t=ease(raw),legs=seat==0||Math.abs(seat)==2?t:seat>0?legsSeated(seat,raw):1-legsSeated(seat,raw);int i=0;
         for(var p:joints){float r=seat!=0&&(p==leftLeg||p==rightLeg||p==leftKnee||p==rightKnee)?legs:t;
             p.x=net.minecraft.util.Mth.lerp(t,from[i++],p.x);p.y=net.minecraft.util.Mth.lerp(t,from[i++],p.y);p.z=net.minecraft.util.Mth.lerp(t,from[i++],p.z);p.xRot=angle(from[i++],p.xRot,r);p.yRot=angle(from[i++],p.yRot,r);p.zRot=angle(from[i++],p.zRot,r);}
-        if(seat!=0)seatBend(seat,raw,seed);
+        if(seat!=0)seatBend(Integer.signum(seat),raw,seed,Math.abs(seat)==2);
     }
     /**
      * Each walks as themselves (scaling the shared gait): John heavier, leaning in, his arms swinging less; Sarah brisk, arms close;
@@ -160,14 +167,17 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
      * the hands press down off the thighs, then the hips rise under it and the back straightens last. The head stays level. Each person
      * has their own way of doing it (style), and each time differs a little (seed): how far they lean, which hand leads, the head's turn.
      */
-    void seatBend(int dir,float raw,float seed){
+    void seatBend(int dir,float raw,float seed,boolean floor){
         var st=style(currentRole);float r1=seed,r2=frac(seed*7.13F+.31F),r3=frac(seed*13.7F+.57F);
         float k=(float)Math.sin(Math.PI*Math.pow(raw,(dir>0?1.2:.6)*(.9+.2*r2)));if(k<=0)return;
-        float down=1-legsSeated(dir,raw),give=.6F*k*down,dip=12*(1-net.minecraft.util.Mth.cos(give));
-        for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=dip;
-        float step=.32F*net.minecraft.util.Mth.sin((float)Math.PI*raw)*down*(r2<.5F?1:-1);
-        leftLeg.xRot-=give-step;rightLeg.xRot-=give+step;leftKnee.xRot+=2*give;rightKnee.xRot+=2*give;
-        float lean=(dir>0?.5F:.62F)*k*st.lean()*(.9F+.2F*r1);
+        if(!floor){
+            float down=1-legsSeated(dir,raw),give=.6F*k*down,dip=12*(1-net.minecraft.util.Mth.cos(give));
+            for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=dip;
+            float step=.32F*net.minecraft.util.Mth.sin((float)Math.PI*raw)*down*(r2<.5F?1:-1);
+            leftLeg.xRot-=give-step;rightLeg.xRot-=give+step;leftKnee.xRot+=2*give;rightKnee.xRot+=2*give;
+        }
+        // Up off a floor the body has to come right forward over its feet before it can stand.
+        float lean=(floor?(dir>0?.45F:.85F):(dir>0?.5F:.62F))*k*st.lean()*(.9F+.2F*r1);
         // The arms do work (owner, 7 November: "use their arms as they get up too"). Getting up: the hands come off the table onto the
         // thighs, elbows bent, then press down, the elbows straightening as the hips lift; they let go once the body is over its feet.
         // Sitting down: as the seat takes the weight the hands go back to it either side, braking. Angles are as seen in the room, so
@@ -175,7 +185,9 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         boolean leftLeads=r2<.5F;
         for(int side=0;side<2;side++){
             boolean lead=(side==0)==leftLeads;float late=lead?0:st.lag()+.04F*r3,share=lead?1:1-st.oneHand(),at=raw-late,arms,world,bend;
-            if(dir<0){float press=ease((at-.12F-st.late())/.3F);arms=ease(at/.18F)*(1-ease((raw-.5F-st.late())/.3F));world=net.minecraft.util.Mth.lerp(press,-.55F,st.world());bend=net.minecraft.util.Mth.lerp(press,-.9F,-.1F);}
+            if(floor&&dir<0){float press=ease((at-.05F)/.35F);arms=ease(at/.12F)*(1-ease((raw-.45F)/.3F));world=net.minecraft.util.Mth.lerp(press,.38F,.12F);bend=net.minecraft.util.Mth.lerp(press,-.7F,-.05F);}
+            else if(floor){arms=ease((at-.2F)/.3F)*(1-ease((raw-.75F)/.25F));world=.32F;bend=-.3F;}
+            else if(dir<0){float press=ease((at-.12F-st.late())/.3F);arms=ease(at/.18F)*(1-ease((raw-.5F-st.late())/.3F));world=net.minecraft.util.Mth.lerp(press,-.55F,st.world());bend=net.minecraft.util.Mth.lerp(press,-.9F,-.1F);}
             else{arms=ease((at-.3F)/.25F)*(1-ease((raw-.8F)/.2F))*(1-st.drop()*.5F);world=.22F+Math.max(0,st.world())*.3F;bend=-.45F;}
             arms*=share;if(arms<=0)continue;
             var arm=side==0?leftArm:rightArm;var elbow=side==0?leftElbow:rightElbow;float out=(side==0?-1:1)*(st.out()+(dir>0?.1F:0)+.04F*(r1-.5F));
@@ -186,7 +198,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         hat.copyFrom(head);
     }
     /** A flinch or a landing is fast; sitting down or settling into grace takes the body's weight. */
-    private static float blendLength(int phase){return switch(phase){case GhostsSet.LEAP->5F;case GhostsSet.FLINCH,GhostsSet.IMPACT,GhostsSet.FALL->3F;case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.PRAY,GhostsSet.WARY,GhostsSet.DEAD->14F;default->8F;};}
+    private static float blendLength(int phase){return switch(phase){case GhostsSet.LEAP->5F;case GhostsSet.FLINCH,GhostsSet.IMPACT,GhostsSet.FALL->3F;case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.PRAY,GhostsSet.WARY,GhostsSet.DEAD->14F;case GhostsSet.FLOOR->20F;default->8F;};}
     private boolean moving;
     private static float angle(float from,float to,float t){return from+net.minecraft.util.Mth.wrapDegrees((to-from)*net.minecraft.util.Mth.RAD_TO_DEG)*net.minecraft.util.Mth.DEG_TO_RAD*t;}
     /** For the native proofs: render as if speaking, and as if on a given filming day (0 keeps the client's own day). */
@@ -236,6 +248,10 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
                 // The dinner is an unnaturally still stare and a slowly opening mouth, without a retching body loop.
                 if(phase==GhostsSet.VOMIT){head.yRot=.55F;head.xRot=.03F;jaw.xRot=.25F+(float)Math.sin(age*.035F)*.025F;}
             }
+            // 0.4.325: Merry on the basement floor after the supper: knees drawn up, her arms round them, looking over them at the cross.
+            case GhostsSet.FLOOR->{for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=11;
+                leftLeg.xRot=rightLeg.xRot=-2.35F;leftKnee.xRot=rightKnee.xRot=2.3F;leftLeg.yRot=.14F;rightLeg.yRot=-.14F;
+                body.xRot=.42F;head.xRot=-.5F;leftArm.xRot=rightArm.xRot=-.95F;leftArm.yRot=.55F;rightArm.yRot=-.55F;leftArm.zRot=-.12F;rightArm.zRot=.12F;leftElbow.xRot=rightElbow.xRot=-1.05F;}
             case GhostsSet.CROUCH->{body.xRot=.3F;head.xRot=.2F;leftLeg.xRot=rightLeg.xRot=-.5F;leftKnee.xRot=rightKnee.xRot=.8F;leftElbow.xRot=rightElbow.xRot=-.9F;}
             case GhostsSet.CRAWL->{
                 body.y=17.8F;body.z=1;body.xRot=1.43F;head.y=21;head.z=-2.8F;head.xRot=-.1F;
@@ -411,7 +427,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){
             var g=GLIDES.computeIfAbsent(a,k->new Glide());float now=GhostsTakeClient.poseAge(a,a.tickCount+partial);var at=a.getPosition(partial);
             if(g.known&&g.phase!=a.phase()){int change=seatChange(a.role(),g.phase,a.phase());
-                if(change!=0&&g.last!=null&&now-g.seen<3&&g.last.distanceToSqr(at)<9){g.anchor=g.last;g.anchorYaw=g.lastYaw;g.start=now;g.length=change>0?GhostsMotion.SIT_TICKS:GhostsMotion.RISE_TICKS;}}
+                if(Math.abs(change)==1&&g.last!=null&&now-g.seen<3&&g.last.distanceToSqr(at)<9){g.anchor=g.last;g.anchorYaw=g.lastYaw;g.start=now;g.length=seatTicks(change);}}
             g.known=true;g.phase=a.phase();g.k=0;
             if(g.anchor!=null){float t=net.minecraft.util.Mth.clamp((now-g.start)/g.length,0,1);g.k=1-t*t*(3-2*t);if(t>=1)g.anchor=null;}
             var shift=g.anchor==null?net.minecraft.world.phys.Vec3.ZERO:g.anchor.subtract(at).scale(g.k);g.last=at.add(shift);g.seen=now;

@@ -28,6 +28,7 @@ public final class GhostsLoreTests {
     @AfterBatch(batch="ghosts_lore_papers321") public static void papersDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_lore_lens321") public static void lensDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_lore_aftermath321") public static void aftermathDone(ServerLevel l){close();}
+    @AfterBatch(batch="ghosts_plan325") public static void planDone(ServerLevel l){close();}
     private static void save(LiteraryTests.Fixture f,ServerPlayer p,CompoundTag own){LiteraryVignettes.save(f.data(),p.getUUID(),P,own);}
     private static boolean resident(LiteraryTests.Fixture f,ServerPlayer p){return f.chunks.ready()&&f.own(p,P).getBoolean("CastPlaced");}
     private static void collect(Packet<?> packet,List<GhostsLorePayload> out){
@@ -100,6 +101,36 @@ public final class GhostsLoreTests {
                 f.at(p,P,5.5,-4,-21.5);var cam=camera(h,p);p.setItemInHand(InteractionHand.MAIN_HAND,cam);toggle(p,cam);int credits=WitnessAccount.count(f.data(),p.getUUID());
                 for(int i=0;i<3;i++)GhostsSet.reader(p,b,own);
                 h.assertTrue(GhostsLore.throughLens(p,b,own)&&before.stream().allMatch(id->f.in.getEntity(id) instanceof LiteraryActor)&&WitnessAccount.count(f.data(),p.getUUID())==credits,"the post-completion view cue preserves every original, including the offstage family and crew, without another credit");
+            }).thenSucceed();
+    }
+
+    /**
+     * 0.4.325 (owner: "Some evidence of merry and Marjorie's plot to 'save' their parents should be evident"; "maybe have the shrine
+     * appear on day 5"): the pad and the open canisters are there to find only on the last day, from the actual anchors the new build
+     * places, and the camera's shrine shows from the fifth day with the jar on its bench until the last.
+     */
+    @GameTest(template="empty",batch="ghosts_plan325",timeoutTicks=1800)
+    public static void theSistersPlanIsInTheHouseOnTheLastDayAndTheShrineFromTheFifth(GameTestHelper h){
+        var f=fixture(h);var p=f.player("plan_reader",P);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(resident(f,p),"the new set and original cast are resident"))
+            .thenExecute(()->{
+                papers(p);
+                h.assertTrue(f.in.getBlockState(b.offset(GhostsLore.PAD_AT)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.PLAN_PAD&&f.in.getBlockState(b.offset(GhostsLore.CANISTERS_AT)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.CANISTERS,"the new build places the pad and canister anchors");
+                h.assertTrue(!GhostsLore.lensImage(4,true,true)&&GhostsLore.lensImage(5,true,true)&&GhostsLore.lensImage(6,true,true)&&GhostsLore.lensImage(7,true,true)&&!GhostsLore.lensImage(5,false,true)&&!GhostsLore.lensImage(5,true,false),"the shrine shows only through the reader's own rolling camera in the basement, from the fifth day");
+                h.assertTrue(GhostsLore.shrine(5)==GhostsSetBlock.Kind.BASEMENT_EFFIGY_JAR&&GhostsLore.shrine(6)==GhostsSetBlock.Kind.BASEMENT_EFFIGY_JAR&&GhostsLore.shrine(7)==GhostsSetBlock.Kind.BASEMENT_EFFIGY,"the jar stands on the shrine's bench until the last day");
+                h.assertTrue(GhostsLore.pad(6)==null&&GhostsLore.pad(7)==GhostsSetBlock.Kind.PLAN_PAD&&GhostsLore.canisters(6)==GhostsSetBlock.Kind.CANISTERS&&GhostsLore.canisters(7)==GhostsSetBlock.Kind.CANISTERS_OPEN,"the pad appears and the canisters stand open only on the last day");
+                f.click(p,P,GhostsLore.PAD_AT);f.click(p,P,GhostsLore.CANISTERS_AT);
+            }).thenIdle(3).thenExecute(()->{
+                h.assertTrue(papers(p).isEmpty()&&!f.own(p,P).getBoolean("LorePad")&&!f.own(p,P).getBoolean("LoreCanisters"),"on an early day there is no pad to read and the canisters are only canisters");
+                h.assertTrue(GhostsSet.jumpToDay(p,7,false)==null,"the real shortcut selects the last day");
+                f.click(p,P,GhostsLore.PAD_AT);f.click(p,P,GhostsLore.CANISTERS_AT);
+            }).thenIdle(3).thenExecute(()->{
+                var late=papers(p);h.assertTrue(late.size()==2&&late.stream().anyMatch(a->a.kind()==GhostsLore.PAD)&&late.stream().anyMatch(a->a.kind()==GhostsLore.CANISTERS),"the last day's actual inputs open the pad and the counter: "+late);
+                var own=f.own(p,P);String account=GhostsLore.account(own);
+                h.assertTrue(own.getBoolean("LorePad")&&own.getBoolean("LoreCanisters")&&GhostsLore.found(own)==2,"both discoveries are kept");
+                h.assertTrue(account.contains("the plan")&&account.contains("Nobody had been baking"),"the account carries the plan and the canisters: "+account);
+                h.assertTrue(String.join("\n",GhostsLore.pages(GhostsLore.PAD,7)).contains("JAR TO POLICE")&&GhostsLore.pages(GhostsLore.LAPTOP,7).size()==4,"the pad holds the plan in Merry's capitals and the laptop has its image search");
+                f.reload();h.assertTrue(f.own(p,P).getBoolean("LorePad")&&f.own(p,P).getBoolean("LoreCanisters")&&!f.own(p,P).getBoolean("Completed"),"they survive reload and complete nothing");
             }).thenSucceed();
     }
 }

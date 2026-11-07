@@ -42,7 +42,15 @@ public final class GhostsLoreProof {
         new View("desk-closed",0,1,0,2,1),
         new View("desk-study",0,7,0,2,2),
         new View("stored-cross",0,7,0,2,3),
-        new View("lens-effigy",0,7,0,2,4));
+        new View("lens-effigy",0,7,0,2,4),
+        // 0.4.325: the sisters' plan, the image search, the shrine with its jar on the fifth day, and the new props together.
+        new View("images",GhostsLore.LAPTOP,7,3,2,0),
+        new View("pad-question",GhostsLore.PAD,7,0,2,0),
+        new View("pad-signs",GhostsLore.PAD,7,1,2,0),
+        new View("pad-plan",GhostsLore.PAD,7,2,2,0),
+        new View("counter",GhostsLore.CANISTERS,7,0,2,0),
+        new View("lens-effigy-jar",0,5,0,2,4),
+        new View("plan-props",0,7,0,2,5));
     private static boolean launched;private static int index,frames;
     private GhostsLoreProof(){}
     @SubscribeEvent public static void launch(ClientTickEvent.Post ignored){var mc=Minecraft.getInstance();if(Boolean.getBoolean("the_oldest_house.ghostsLoreSmoke")&&!launched&&mc.screen!=null&&mc.getOverlay()==null){launched=true;show();}}
@@ -70,17 +78,21 @@ public final class GhostsLoreProof {
         @Override public void render(GuiGraphics g,int mx,int my,float partial){
             g.fill(0,0,width,height,0xff302b27);g.drawCenteredString(font,"Ghosts / "+view.name,width/2,15,0xffeee3c9);g.flush();
             var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();var pose=g.pose();pose.pushPose();
-            pose.translate(width/2F,height*.65F,400);float scale=Math.min(width,height)*(view.scene>=3?.24F:.31F);pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(18));pose.mulPose(Axis.YP.rotationDegrees(-25));pose.translate(-.5,0,-.5);
+            pose.translate(width/2F,height*.65F,400);float scale=Math.min(width,height)*(view.scene==3||view.scene==4?.24F:.31F);pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(18));pose.mulPose(Axis.YP.rotationDegrees(-25));pose.translate(-.5,0,-.5);
             block(g,buffers,GhostsSetBlock.Kind.FLOOR,-1,-1,0);block(g,buffers,GhostsSetBlock.Kind.FLOOR,0,-1,0);block(g,buffers,GhostsSetBlock.Kind.FLOOR,1,-1,0);
             if(view.scene<=2){
                 block(g,buffers,GhostsSetBlock.Kind.WRITING_DESK,0,0,0);
                 block(g,buffers,view.scene==1?GhostsSetBlock.Kind.LAPTOP_CLOSED:GhostsSetBlock.Kind.LAPTOP_STUDY,0,1,0);
                 block(g,buffers,GhostsSetBlock.Kind.BANK_SLIPS,1,0,0);
+            }else if(view.scene==5){
+                GhostsMealModels.previewDay=view.day;
+                block(g,buffers,GhostsSetBlock.Kind.CANISTERS,-1,0,0);block(g,buffers,GhostsSetBlock.Kind.CANISTERS_OPEN,0,0,0);
+                block(g,buffers,GhostsSetBlock.Kind.PLAN_PAD,1,0,0);block(g,buffers,GhostsSetBlock.Kind.EMPTY_JAR,0,0,1);
             }else{
                 block(g,buffers,GhostsSetBlock.Kind.STORED_CROSS,0,0,0);
-                if(GhostsLore.lensImage(view.day,view.scene==4,true))GhostsLoreRenderer.image(pose,buffers,LightTexture.FULL_BRIGHT);
+                if(GhostsLore.lensImage(view.day,view.scene==4,true))GhostsLoreRenderer.image(pose,buffers,LightTexture.FULL_BRIGHT,view.day);
             }
-            buffers.endBatch();pose.popPose();
+            buffers.endBatch();GhostsMealModels.previewDay=0;pose.popPose();
         }
     }
 }
