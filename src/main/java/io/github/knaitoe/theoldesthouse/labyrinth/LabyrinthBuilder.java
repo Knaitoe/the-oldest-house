@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 107;
+    public static final int VERSION = 108;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -147,7 +147,7 @@ public final class LabyrinthBuilder {
         return switch (place) {
             case FOLDED_MAZE -> LabyrinthPacing.STRANGE_DEPTH;
             case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
-            case DEEP_MAZE, YARD_WINDBREAK -> LabyrinthPacing.DEEP_DEPTH;
+            case DEEP_MAZE, YARD_WINDBREAK, YARD_STORM_FIELD -> LabyrinthPacing.DEEP_DEPTH;
             case STONE_GALLERY, STONE_CROSSING, STONE_DESCENT, STONE_ARCADE, STONE_BEND, STONE_LANDING, STONE_DUST -> LabyrinthPacing.STONE_DEPTH;
             // 0.4.199: the early puzzle rooms stand with the halls, ready before anyone can be offered them (PuzzleRooms.weight paces them);
             // the deep ones are built ahead of the strange depths they are offered from.
@@ -531,6 +531,7 @@ public final class LabyrinthBuilder {
         if(place==LabyrinthPlace.SPHINX_FIELD){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){SphinxField.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(YardStock.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardStock.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(YardWind.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardWind.build(site,base);registerDoors(dataFor(server),place,base);}return;}
+        if(YardStorm.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardStorm.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(YardCrossings.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardCrossings.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.BACKSEAT){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){BackseatRooms.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(HouseReadSites.kind(place)!=null)return; // Only owner copies are ever constructed.

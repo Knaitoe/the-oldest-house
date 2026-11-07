@@ -28,7 +28,7 @@ public final class LabyrinthPacing {
     public static boolean calm(LabyrinthPlace place) {
         return quiet(place) || place==LabyrinthPlace.FAMILIAR_KITCHEN || place==LabyrinthPlace.YARD_REUNION;
     }
-    public static boolean physicalTrial(LabyrinthPlace place){if(HazardVariety.newKind(place)||place==LabyrinthPlace.YARD_FLOOD||place==LabyrinthPlace.YARD_WINDBREAK||place==LabyrinthPlace.YARD_DITCH_FLOOD)return true;place=HazardVariety.original(place);return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
+    public static boolean physicalTrial(LabyrinthPlace place){if(HazardVariety.newKind(place)||place==LabyrinthPlace.YARD_FLOOD||place==LabyrinthPlace.YARD_WINDBREAK||place==LabyrinthPlace.YARD_DITCH_FLOOD||place==LabyrinthPlace.YARD_STORM_FIELD)return true;place=HazardVariety.original(place);return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
     public static int trialChance(LabyrinthData data,UUID player){
         int depth=data.returnDepth(player);if(domestic(depth))return 0;
         for(var place:LabyrinthPlace.values()){int age=data.recentVisit(player,place);if(physicalTrial(place)&&age>=0&&age<HouseConfig.setting(HouseConfig.HAZARD_SPACING))return 0;}

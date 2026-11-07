@@ -49,7 +49,8 @@ public final class LabyrinthPlaces {
     // 0.4.217's arcade (slot 144) needs a nineteenth at manor heights 80-100; twenty-two leaves room for what comes after.
     // Slots 179 and 180 need the twenty-third column at common manor heights.
     // 0.4.307: Truant's service halls (slots 183-185) need a twenty-fourth at the lowest manor heights.
-    private static final int MAX_COLUMNS = 26;
+    // 0.4.347: the storm field (slot 208) is the first slot past the twenty-sixth column at eight to a column; thirty leaves room again.
+    private static final int MAX_COLUMNS = 30;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 
