@@ -214,11 +214,13 @@ def fur(seed=3080):
 
 
 def claw():
-    # A claw: dark keratin, paler at the root, a hard highlight along its curve.
+    # A claw: dark keratin, paler where it grows out of the toe (the top rows), a hard highlight along its curve. 0.4.330 (owner: "one
+    # nail per finger"): the pale root band was at the bottom, so each of a claw's two pieces showed its own band and read as two nails;
+    # the root is at the top now, drawn once, on the upper piece only.
     im = noisy(['#2a2420', '#221d1a', '#332b25'], 3082)
     for y in range(16):
         dot(im, 2, y, '#5a4e42')
-    for y in range(12, 16):
+    for y in range(0, 3):
         for x in range(16):
             dot(im, x, y, '#6e5c48')
     return im
@@ -278,8 +280,10 @@ def fitting_models():
     els = [element([0, 9, 9], [16, 16, 16], {'all': 'f', 'down': 'd'})]
     for x in (0.5, 4.5, 8.5, 12.5):
         els.append(element([x, 5, 8], [x + 3.2, 11, 13.5], {'all': 'f', 'down': 'd'}))
-        els.append(element([x + .9, 3, 6.6], [x + 2.3, 7, 8.2], {'all': 'c'}))
-        els.append(element([x + 1.1, 0, 6.4], [x + 2.1, 3.2, 7.4], {'all': 'c'}))
+        # One claw to a toe: a thicker root out of the toe and a narrower tip below it, mapped as one nail (pale root, dark tip).
+        sides = ('north', 'south', 'east', 'west')
+        els.append(element([x + .9, 3, 6.6], [x + 2.3, 7, 8.2], {'all': 'c'}, uv={**{f: [0, 0, 16, 10] for f in sides}, 'up': [0, 0, 16, 3], 'down': [4, 10, 12, 16]}))
+        els.append(element([x + 1.1, 0, 6.4], [x + 2.1, 3.2, 7.4], {'all': 'c'}, uv={**{f: [4, 10, 12, 16] for f in sides}, 'up': [4, 10, 12, 16], 'down': [4, 12, 12, 16]}))
     m['fingers_0'] = model(els, {'f': 'fur', 'c': 'claw', 'd': 'pad'}, 'fur')
     # Her foreleg down the wall: a thick furred limb against the plaster, a darker ridge down its front.
     m['reach_0'] = model([element([1, 0, 9], [15, 16, 16], {'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f', 'up': 'f', 'down': 'f'})], {'f': 'fur'}, 'fur')

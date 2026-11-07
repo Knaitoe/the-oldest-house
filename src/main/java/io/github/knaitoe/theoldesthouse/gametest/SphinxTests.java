@@ -90,11 +90,18 @@ public final class SphinxTests {
                 // Not a knife-edge: from the middle of the hall, and with the line raised or lowered a little, it is still in sight.
                 var mid=new Vec3(b.getX()+Sphinx.DOORS[wrong[0]]+.6,b.getY()+1.62,b.getZ()-8.2);
                 for(double dy:new double[]{-.6,0,.6})h.assertTrue(l.clip(new net.minecraft.world.level.ClipContext(mid,eyeAt.add(0,dy,0),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,p)).getLocation().distanceTo(eyeAt.add(0,dy,0))<.7,"from the middle of the hall too, offset "+dy);})
+            .thenIdle(5)
+            .thenExecute(()->{
+                // 0.4.330 (owner: a second eye left the first open for good): the third door warned too opens a second eye, and both look.
+                press(l,p,b.offset(Sphinx.latch((live[0]+2)%3)),false);
+                h.assertTrue(Sphinx.eyeOpen(l,b,wrong[0])&&Sphinx.eyeOpen(l,b,(live[0]+2)%3),"a second warning opens a second eye, and the first stays open with it");})
             .thenExecute(()->{stand(q,l,b,.5,-3.5,0);stand(p,l,b,Sphinx.DOORS[wrong[0]]-2.5,-8.5,180);})
             .thenWaitUntil(()->h.assertTrue(l.getBlockState(b.offset(Sphinx.eye(wrong[0]))).getValue(SphinxEyeBlock.LOOK)%3==0,"her pupil follows the reader along the hall: to the west"))
+            .thenWaitUntil(()->{int o=(live[0]+2)%3;h.assertTrue(l.getBlockState(b.offset(Sphinx.eye(o))).getValue(SphinxEyeBlock.LOOK)==Sphinx.lookAt(l,b,o),"the second eye follows too");})
             .thenExecute(()->stand(p,l,b,Sphinx.DOORS[wrong[0]]+4.5,-8.5,180))
             .thenWaitUntil(()->h.assertTrue(l.getBlockState(b.offset(Sphinx.eye(wrong[0]))).getValue(SphinxEyeBlock.LOOK)%3==2,"and to the east"))
-            .thenWaitUntil(()->h.assertTrue(!Sphinx.eyeOpen(l,b,wrong[0]),"and closes again"))
+            .thenWaitUntil(()->{int o=(live[0]+2)%3;h.assertTrue(l.getBlockState(b.offset(Sphinx.eye(o))).getValue(SphinxEyeBlock.LOOK)==Sphinx.lookAt(l,b,o),"and so does the second");})
+            .thenWaitUntil(()->h.assertTrue(!Sphinx.eyeOpen(l,b,wrong[0])&&!Sphinx.eyeOpen(l,b,(live[0]+2)%3),"and both close again"))
             .thenExecute(()->{})
             .thenIdle(5)
             .thenExecute(()->{

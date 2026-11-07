@@ -235,7 +235,9 @@ public final class Sphinx {
             var r=room(l);r.putInt("Warned",r.getInt("Warned")|(1<<i));room(l,r);
             set(l,b,pin(i),SphinxBlock.of(PIN,Direction.SOUTH,1));
             voice(l,b,eye(i),"Not that one. Leave that one shut.",readers(l));
-            if(provoked(l)<0){openEye(l,b,i);r=room(l);r.putInt("Peek",i);r.putLong("PeekUntil",l.getGameTime()+PEEK);room(l,r);}
+            // 0.4.330 (owner: a second eye opening left the first open for good): each door keeps its own look, so two or three eyes can be
+            // open at once, all following the reader, each closing when its own time is up.
+            if(provoked(l)<0){openEye(l,b,i);r=room(l);r.putLong(peek(i),l.getGameTime()+PEEK);room(l,r);}
             // Her warning stands alone in the action bar; the catch is heard and the pin is there to be seen.
         }
     }
@@ -248,7 +250,7 @@ public final class Sphinx {
         if(SphinxBlock.stage(s)==0){PuzzleRooms.say(p,"The door's stop. Something small is set into it, flush.");return;}
         if(SphinxBlock.stage(s)==2||provoked(l)>=0){PuzzleRooms.say(p,"The pin is out.");return;}
         set(l,b,pin(i),s.setValue(SphinxBlock.STAGE,2));
-        var r=room(l);r.putInt("Provoked",i);r.putLong("Emerged",l.getGameTime()+40);r.remove("Peek");room(l,r);
+        var r=room(l);r.putInt("Provoked",i);r.putLong("Emerged",l.getGameTime()+40);r.remove(peek(i));room(l,r);
         var rec=record(l,p.getUUID());rec.putBoolean("Forced",true);record(l,p.getUUID(),rec);
         l.playSound(null,b.offset(pin(i)),PuzzleRegistry.SPHINX_PIN.get(),SoundSource.BLOCKS,1F,1F);
         l.playSound(null,b.offset(door(i)).above(3),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,1.4F,1F);
@@ -273,13 +275,16 @@ public final class Sphinx {
     static void update(ServerLevel l,BlockPos b){
         var readers=readers(l);var r=room(l);int live=live(l);long now=l.getGameTime();
         // Wherever a reader goes, an open eye follows them.
-        if(now%4==0){if(r.contains("Peek"))follow(l,b,r.getInt("Peek"));if(r.contains("Provoked"))follow(l,b,r.getInt("Provoked"));}
-        if(r.contains("Peek")&&r.getLong("PeekUntil")<=now){closeEye(l,b,r.getInt("Peek"));r.remove("Peek");room(l,r);}
-        else if(r.contains("Peek")&&now%4==0){
+        if(now%4==0&&r.contains("Provoked"))follow(l,b,r.getInt("Provoked"));
+        for(int i=0;i<3;i++){
+            if(!r.contains(peek(i)))continue;long until=r.getLong(peek(i));
+            if(until<=now){closeEye(l,b,i);r.remove(peek(i));room(l,r);continue;}
+            if(now%4!=0)continue;
+            follow(l,b,i);
             // While she looks, grit runs off the top of the wall over that door, down in front of whoever is at it: look up.
-            var top=b.offset(door(r.getInt("Peek"))).above(WALL_TOP+1);
+            var top=b.offset(door(i)).above(WALL_TOP+1);
             l.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST,Blocks.SAND.defaultBlockState()),top.getX()+.5,top.getY()+.1,top.getZ()+1.1,3,.8,.05,.1,0);
-            if(r.getLong("PeekUntil")-now==PEEK-40)l.playSound(null,b.offset(eye(r.getInt("Peek"))),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,1.1F,.85F);
+            if(until-now==PEEK-40)l.playSound(null,b.offset(eye(i)),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,1.1F,.85F);
         }
         for(var it=HAND.entrySet().iterator();it.hasNext();){var e=it.next();if(e.getValue()<=now){if(SphinxBlock.is(l.getBlockState(e.getKey()),SphinxBlock.Kind.REACH))l.setBlock(e.getKey(),Blocks.AIR.defaultBlockState(),FLAGS);it.remove();}}
         for(var p:readers){
@@ -355,6 +360,9 @@ public final class Sphinx {
             if(anyone)EMPTY[0]=0;else if(++EMPTY[0]>=50)withdraw(l,b);
         }
     }
+    /** The room's record of when the eye over door i, opened at a warning, closes again. */
+    static String peek(int i){return "PeekUntil"+i;}
+    static boolean peeking(CompoundTag r){for(int i=0;i<3;i++)if(r.contains(peek(i)))return true;return false;}
     /** Her eye opens high in the dark above door i: two by two, the painted skin of her face round it. */
     static void openEye(ServerLevel l,BlockPos b,int i){
         var e=eye(i);
@@ -402,7 +410,7 @@ public final class Sphinx {
         var server=e.getServer();if(server.getTickCount()%2!=0)return;
         var l=server.getLevel(HouseDimensions.INTERIOR);var b=base(server);if(l==null||b==null||!l.isLoaded(b))return;
         if(LabyrinthData.get(server).door(PLACE.entryDoorId())==null)return;
-        boolean any=!ASKED.isEmpty()||provoked(l)>=0||room(l).contains("Peek")||!HAND.isEmpty();if(!any)for(var p:l.players())if(here(p)){any=true;break;}
+        boolean any=!ASKED.isEmpty()||provoked(l)>=0||peeking(room(l))||!HAND.isEmpty();if(!any)for(var p:l.players())if(here(p)){any=true;break;}
         if(any)update(l,b);
     }
 }
