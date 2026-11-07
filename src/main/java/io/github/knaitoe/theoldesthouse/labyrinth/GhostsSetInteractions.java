@@ -29,11 +29,12 @@ public final class GhostsSetInteractions {
             p.serverLevel().playSound(null,b.offset(rel),SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.3F,kind==GhostsSetBlock.Kind.LAMP?.7F:.95F);
             own.putInt("LampSwitches0488",Math.min(999,own.getInt("LampSwitches0488")+1));return true;
         }
-        if(kind==GhostsSetBlock.Kind.BOOKS||kind==GhostsSetBlock.Kind.DRAWING){
-            String key="GirlsPaper0488_"+rel.asLong();String title=kind==GhostsSetBlock.Kind.DRAWING?"The sisters' drawing":"The sisters' storybook";
-            var pages=kind==GhostsSetBlock.Kind.DRAWING?List.of("Two girls in a house, drawn inside a cardboard house. Marjorie has a sword. Small animals fill the rooms around them.","Merry has put herself beside her sister in every picture, even the ones with no room left."):List.of("Stories fill the spaces between the printed animals. Merry has copied them down and put her own glasses on the characters. Most end with someone being rescued.","A story about an animal trapped on a road has a little row of rescuers drawn under it. The handwriting stops where Merry ran out of room. It begins again along the next edge.","In a different book a whole city has been scribbled over. The person caught in this story does not get a rescue. Someone has pressed hard enough to mark the next page.");
-            LiteraryVignettes.open(p,GhostsSet.PLACE,own,key,HouseWriting.book(title,"Merry and Marjorie",HouseWriting.WritingStyle.WILL,pages),b.offset(rel));return true;
+        if(kind==GhostsSetBlock.Kind.DRAWING){
+            var pages=List.of("Two girls in a house, drawn inside a cardboard house. Marjorie has a sword. Small animals fill the rooms around them.","Merry has put herself beside her sister in every picture, even the ones with no room left.");
+            LiteraryVignettes.open(p,GhostsSet.PLACE,own,"GirlsPaper0488_"+rel.asLong(),HouseWriting.book("The sisters' drawing","Merry and Marjorie",HouseWriting.WritingStyle.WILL,pages),b.offset(rel));return true;
         }
+        var pile=books(kind);
+        if(pile!=null){LiteraryVignettes.open(p,GhostsSet.PLACE,own,"GirlsPaper0488_"+rel.asLong(),HouseWriting.book(pile.title(),pile.author(),HouseWriting.WritingStyle.WILL,pile.pages()),b.offset(rel));return true;}
         String text=switch(kind){
             case PLATE,PLAIN_PLATE,MEAL_STEW,MEAL_SANDWICH,MEAL_SOUP,MEAL_ROAST,MEAL_POTATOES,MEAL_SPAGHETTI,MEAL_SPAGHETTI_PLAIN->meal(own.getInt("FilmDay"),kind==GhostsSetBlock.Kind.PLAIN_PLATE||kind==GhostsSetBlock.Kind.MEAL_SPAGHETTI_PLAIN);
             case HAT->"The sequins catch the light. Nothing about the hat is different when you lift its brim.";
@@ -55,6 +56,30 @@ public final class GhostsSetInteractions {
         if(kind==GhostsSetBlock.Kind.SINK&&p.serverLevel().getGameTime()>=own.getLong("SinkNext0488")){own.putLong("SinkNext0488",p.serverLevel().getGameTime()+40);p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.SPLASH,false,b.getX()+rel.getX()+.5,b.getY()+rel.getY()+1.02,b.getZ()+rel.getZ()+.5,8,.1,.02,.1,.02);p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.WATER_AMBIENT),SoundSource.BLOCKS,b.getX()+rel.getX()+.5,b.getY()+rel.getY()+1,b.getZ()+rel.getZ()+.5,.25F,1,p.getRandom().nextLong()));}
         own.putBoolean("Handled0488_"+kind.getSerializedName(),true);p.displayClientMessage(Component.literal(text),true);return true;
     }
+    /** 0.4.326 (owner: "give different text and textures to the piles of books in merry's room"): each pile is its own. */
+    public record Pile(String title,String author,List<String> pages){}
+    public static Pile books(GhostsSetBlock.Kind kind){return switch(kind){
+        case BOOKS_PICTURE->new Pile("Merry's picture books","Merry",List.of(
+            "Stories fill the spaces between the printed animals. Merry has copied them down and put her own glasses on the characters. Most end with someone being rescued.",
+            "A story about an animal trapped on a road has a little row of rescuers drawn under it. The handwriting stops where Merry ran out of room. It begins again along the next edge.",
+            "In a different book a whole city has been scribbled over. The person caught in this story does not get a rescue. Someone has pressed hard enough to mark the next page."));
+        case BOOKS_LIBRARY->new Pile("Three library books","the school library",List.of(
+            "Three hardbacks from the school library, a week overdue. The slip in the top one is stamped with Marjorie's name, not Merry's.",
+            "In the top one two sisters run away to live in a lighthouse. A corner is folded down at the page where they pack: a torch, crackers, a jar of coins, a blanket.",
+            "The other two are about the sea. Neither has been opened. On the back of the slip, in pencil, in Merry's letters: M + M."));
+        case BOOKS_PAPERBACK->new Pile("Marjorie's paperbacks","Marjorie",List.of(
+            "Paperbacks with their spines cracked white. A horror novel with the cover torn off, a school copy of a play, a book of saints with her grandmother's name inside.",
+            "The horror novel falls open at the same place every time. Those pages are soft from being read.",
+            "Inside its back cover is a list in Marjorie's hand. Some of the lines are ticked. The page has been torn halfway out, then pressed flat again."));
+        case BOOKS_COOK->new Pile("Sarah's cookbooks","Sarah",List.of(
+            "Two cookbooks swollen with steam, and a ring binder of recipes cut out of magazines.",
+            "The binder falls open at the spaghetti sauce, on an index card in Sarah's writing. The card is spattered. Underlined at the bottom: a spoonful of sugar to take the edge off.",
+            "Beside it, in pencil, someone has drawn a face with its tongue out and written MERRY. She has never liked the sauce."));
+        case BOOKS->new Pile("A box of old books","nobody in particular",List.of(
+            "Paperbacks swollen with damp, in a box marked for the church sale. A gardening book, a road atlas, puzzle magazines with every answer filled in.",
+            "A hymn book with someone else's family name in the front. Nobody has written in it since."));
+        default->null;
+    };}
     /** What each of the Barretts' things tells a hand that picks it up or looks close. */
     static String family(BarrettHomeBlock.Kind kind){return switch(kind){
         case TV_STAND->"A cartoon, the sound turned low. Merry knows all the words to the song.";

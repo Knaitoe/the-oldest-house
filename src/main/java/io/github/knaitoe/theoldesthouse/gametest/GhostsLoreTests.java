@@ -29,6 +29,7 @@ public final class GhostsLoreTests {
     @AfterBatch(batch="ghosts_lore_lens321") public static void lensDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_lore_aftermath321") public static void aftermathDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_plan325") public static void planDone(ServerLevel l){close();}
+    @AfterBatch(batch="ghosts_bedrooms326") public static void bedroomsDone(ServerLevel l){close();}
     private static void save(LiteraryTests.Fixture f,ServerPlayer p,CompoundTag own){LiteraryVignettes.save(f.data(),p.getUUID(),P,own);}
     private static boolean resident(LiteraryTests.Fixture f,ServerPlayer p){return f.chunks.ready()&&f.own(p,P).getBoolean("CastPlaced");}
     private static void collect(Packet<?> packet,List<GhostsLorePayload> out){
@@ -131,6 +132,34 @@ public final class GhostsLoreTests {
                 h.assertTrue(account.contains("the plan")&&account.contains("Nobody had been baking"),"the account carries the plan and the canisters: "+account);
                 h.assertTrue(String.join("\n",GhostsLore.pages(GhostsLore.PAD,7)).contains("JAR TO POLICE")&&GhostsLore.pages(GhostsLore.LAPTOP,7).size()==4,"the pad holds the plan in Merry's capitals and the laptop has its image search");
                 f.reload();h.assertTrue(f.own(p,P).getBoolean("LorePad")&&f.own(p,P).getBoolean("LoreCanisters")&&!f.own(p,P).getBoolean("Completed"),"they survive reload and complete nothing");
+            }).thenSucceed();
+    }
+
+    /**
+     * 0.4.326 (owner's notes, 7 November): "Give different text and textures to the piles of books in merry's room"; "Drawer should
+     * not begin opened. Should also be rotated and placed against wall." Every pile in the house is its own kind with its own book,
+     * and Marjorie's desk stands against her east wall facing the bed, its drawer shut until the sixth day's take.
+     */
+    @GameTest(template="empty",batch="ghosts_bedrooms326",timeoutTicks=1800)
+    public static void eachPileOfBooksIsItsOwnAndMarjoriesDeskStandsAgainstHerWall(GameTestHelper h){
+        var f=fixture(h);var p=f.player("pile_reader",P);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));
+        var picture=new BlockPos(6,6,-25);var library=new BlockPos(9,5,-17);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(resident(f,p),"the new set and original cast are resident"))
+            .thenExecute(()->{
+                var kinds=Map.of(picture,GhostsSetBlock.Kind.BOOKS_PICTURE,library,GhostsSetBlock.Kind.BOOKS_LIBRARY,new BlockPos(-10,6,-25),GhostsSetBlock.Kind.BOOKS_PAPERBACK,new BlockPos(-4,1,-25),GhostsSetBlock.Kind.BOOKS_COOK,new BlockPos(5,-4,-25),GhostsSetBlock.Kind.BOOKS);
+                for(var e:kinds.entrySet()){var state=f.in.getBlockState(b.offset(e.getKey()));h.assertTrue(state.is(LiteraryRegistry.GHOST_SET.get())&&state.getValue(GhostsSetBlock.KIND)==e.getValue(),"the pile at "+e.getKey()+" is "+e.getValue()+": "+state);}
+                var titles=new HashSet<String>();for(var k:kinds.values())titles.add(GhostsSetInteractions.books(k).title());
+                h.assertTrue(titles.size()==5,"every pile has its own book: "+titles);
+                var desk=f.in.getBlockState(b.offset(GhostsSetRooms.EXORCISM_DESK));var wall=f.in.getBlockState(b.offset(GhostsSetRooms.EXORCISM_DESK).relative(GhostsSetRooms.EXORCISM_FACING.getOpposite()));
+                h.assertTrue(desk.is(LiteraryRegistry.GHOST_SET.get())&&desk.getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.WRITING_DESK&&desk.getValue(GhostsSetBlock.FACING)==GhostsSetRooms.EXORCISM_FACING,"the desk faces the bed: "+desk);
+                h.assertTrue(wall.isCollisionShapeFullBlock(f.in,b.offset(GhostsSetRooms.EXORCISM_DESK).relative(GhostsSetRooms.EXORCISM_FACING.getOpposite())),"its back is against the wall: "+wall);
+                h.assertTrue(f.in.getBlockState(b.offset(GhostsLore.LAPTOP_AT)).getValue(GhostsSetBlock.FACING)==GhostsSetRooms.EXORCISM_FACING,"the laptop on it faces the same way");
+                var drawers=f.in.getEntitiesOfClass(LiteraryActor.class,new net.minecraft.world.phys.AABB(b.offset(GhostsSetRooms.EXORCISM_DESK)).inflate(1),a->a.role()==LiteraryActor.GHOST_DRAWER);
+                h.assertTrue(drawers.size()==1&&drawers.get(0).phase()==0,"the reader's drawer starts shut: "+drawers);
+                f.at(p,P,7.5,5,-20.5);f.click(p,P,picture);
+            }).thenIdle(2).thenExecute(()->f.click(p,P,library)).thenIdle(2).thenExecute(()->{
+                var own=f.own(p,P);String a=own.getCompound("Original_GirlsPaper0488_"+picture.asLong()).toString(),c=own.getCompound("Original_GirlsPaper0488_"+library.asLong()).toString();
+                h.assertTrue(a.contains("picture books")&&c.contains("library books")&&c.contains("lighthouse"),"the two piles in Merry's room open different books: "+a.length()+" / "+c.length());
             }).thenSucceed();
     }
 }

@@ -273,15 +273,16 @@ public final class BarrettHome {
         // Marjorie's room, fourteen: fairy lights strung along the wall, a band poster with half its faces scratched out, her
         // pinboard of photo-booth strips and ticket stubs over the desk, the guitar she was learning, the boombox and its CDs on
         // the floor, clothes where she dropped them, and a softbox in the corner for the reconstructions.
-        put(l, b, -3, 5, -24, Kind.OFFICE_CHAIR, Direction.WEST);
+        // 0.4.326: her desk is against this wall now (GhostsSetRooms.EXORCISM_DESK), the pinboard over it and her chair pulled out.
+        put(l, b, -4, 5, -23, Kind.OFFICE_CHAIR, Direction.EAST);
         put(l, b, -3, 7, -20, Kind.POSTER_A, Direction.WEST);
         put(l, b, -10, 7, -21, Kind.POSTER_C, Direction.EAST);
-        put(l, b, -3, 6, -24, Kind.PINBOARD, Direction.WEST);
+        put(l, b, -3, 7, -22, Kind.PINBOARD, Direction.WEST);
         // 0.4.242 (owner: "lights should span all of marjorie's room"): the string goes round all four walls under the ceiling.
         for (int z = -24; z <= -16; z++) { put(l, b, -3, 8, z, Kind.FAIRY_LIGHTS, Direction.WEST); put(l, b, -10, 8, z, Kind.FAIRY_LIGHTS, Direction.EAST); }
         for (int x = -9; x <= -4; x++) { put(l, b, x, 8, -25, Kind.FAIRY_LIGHTS, Direction.SOUTH); put(l, b, x, 8, -15, Kind.FAIRY_LIGHTS, Direction.NORTH); }
         put(l, b, -10, 5, -21, Kind.GUITAR, Direction.EAST);
-        put(l, b, -4, 5, -23, Kind.BOOMBOX, Direction.WEST);
+        put(l, b, -3, 5, -24, Kind.BOOMBOX, Direction.WEST);
         put(l, b, -5, 5, -21, Kind.CLOTHES, Direction.NORTH);
         put(l, b, -8, 5, -20, Kind.CLOTHES, Direction.EAST);
         put(l, b, -3, 5, -16, Kind.SOFTBOX, Direction.WEST);

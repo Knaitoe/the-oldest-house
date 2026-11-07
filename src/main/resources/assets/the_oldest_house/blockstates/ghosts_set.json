@@ -845,6 +845,70 @@
     "kind=empty_jar,facing=west": {
       "model": "the_oldest_house:block/ghosts_empty_jar",
       "y": 270
+    },
+    "kind=books_picture,facing=north": {
+      "model": "the_oldest_house:block/ghosts_books_picture",
+      "y": 0
+    },
+    "kind=books_picture,facing=east": {
+      "model": "the_oldest_house:block/ghosts_books_picture",
+      "y": 90
+    },
+    "kind=books_picture,facing=south": {
+      "model": "the_oldest_house:block/ghosts_books_picture",
+      "y": 180
+    },
+    "kind=books_picture,facing=west": {
+      "model": "the_oldest_house:block/ghosts_books_picture",
+      "y": 270
+    },
+    "kind=books_library,facing=north": {
+      "model": "the_oldest_house:block/ghosts_books_library",
+      "y": 0
+    },
+    "kind=books_library,facing=east": {
+      "model": "the_oldest_house:block/ghosts_books_library",
+      "y": 90
+    },
+    "kind=books_library,facing=south": {
+      "model": "the_oldest_house:block/ghosts_books_library",
+      "y": 180
+    },
+    "kind=books_library,facing=west": {
+      "model": "the_oldest_house:block/ghosts_books_library",
+      "y": 270
+    },
+    "kind=books_paperback,facing=north": {
+      "model": "the_oldest_house:block/ghosts_books_paperback",
+      "y": 0
+    },
+    "kind=books_paperback,facing=east": {
+      "model": "the_oldest_house:block/ghosts_books_paperback",
+      "y": 90
+    },
+    "kind=books_paperback,facing=south": {
+      "model": "the_oldest_house:block/ghosts_books_paperback",
+      "y": 180
+    },
+    "kind=books_paperback,facing=west": {
+      "model": "the_oldest_house:block/ghosts_books_paperback",
+      "y": 270
+    },
+    "kind=books_cook,facing=north": {
+      "model": "the_oldest_house:block/ghosts_books_cook",
+      "y": 0
+    },
+    "kind=books_cook,facing=east": {
+      "model": "the_oldest_house:block/ghosts_books_cook",
+      "y": 90
+    },
+    "kind=books_cook,facing=south": {
+      "model": "the_oldest_house:block/ghosts_books_cook",
+      "y": 180
+    },
+    "kind=books_cook,facing=west": {
+      "model": "the_oldest_house:block/ghosts_books_cook",
+      "y": 270
     }
   }
 }

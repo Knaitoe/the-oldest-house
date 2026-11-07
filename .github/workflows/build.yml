@@ -69,6 +69,7 @@ jobs:
           python3 tools/draw_ghosts_camera.py --check
           python3 tools/draw_ghosts_writing_desk.py --check
           python3 tools/draw_ghosts_lore.py --check
+          python3 tools/draw_ghosts_bedrooms.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
           python3 tools/draw_borrasca_cast.py --check
           python3 tools/draw_shiny_gentleman.py --check
@@ -1945,7 +1946,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PghostsLoreSmoke --no-daemon
           test -s build/font-smoke/ghosts-lore-passed.txt
-          for view in diary-early diary-crew diary-bank diary-california contact-slip bank-notice bank-production study articles bookmarks sister-cats sister-vines narrow-study narrow-drawing desk-closed desk-study stored-cross lens-effigy images pad-question pad-signs pad-plan counter lens-effigy-jar plan-props; do test -s build/font-smoke/native-ghosts-lore-$view.png; done
+          for view in diary-early diary-crew diary-bank diary-california contact-slip bank-notice bank-production study articles bookmarks sister-cats sister-vines narrow-study narrow-drawing desk-closed desk-study stored-cross lens-effigy images pad-question pad-signs pad-plan counter lens-effigy-jar plan-props bedrooms; do test -s build/font-smoke/native-ghosts-lore-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - name: Native complete vignette phase and texture review
         timeout-minutes: 5

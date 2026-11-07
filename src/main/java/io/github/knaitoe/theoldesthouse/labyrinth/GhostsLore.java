@@ -23,7 +23,7 @@ public final class GhostsLore {
     private GhostsLore(){}
     public static void build(ServerLevel level,BlockPos base){
         level.setBlock(base.offset(BANK_AT),GhostsSetBlock.of(GhostsSetBlock.Kind.BANK_SLIPS,Direction.SOUTH),2);
-        level.setBlock(base.offset(LAPTOP_AT),GhostsSetBlock.of(GhostsSetBlock.Kind.LAPTOP_CLOSED,Direction.SOUTH),2);
+        level.setBlock(base.offset(LAPTOP_AT),GhostsSetBlock.of(GhostsSetBlock.Kind.LAPTOP_CLOSED,GhostsSetRooms.EXORCISM_FACING),2);
         level.setBlock(base.offset(EFFIGY_AT),GhostsSetBlock.of(GhostsSetBlock.Kind.STORED_CROSS,Direction.SOUTH),2);
         level.setBlock(base.offset(PAD_AT),GhostsSetBlock.of(GhostsSetBlock.Kind.PLAN_PAD,Direction.SOUTH),2);
         level.setBlock(base.offset(CANISTERS_AT),GhostsSetBlock.of(GhostsSetBlock.Kind.CANISTERS,Direction.SOUTH),2);

@@ -50,7 +50,9 @@ public final class GhostsLoreProof {
         new View("pad-plan",GhostsLore.PAD,7,2,2,0),
         new View("counter",GhostsLore.CANISTERS,7,0,2,0),
         new View("lens-effigy-jar",0,5,0,2,4),
-        new View("plan-props",0,7,0,2,5));
+        new View("plan-props",0,7,0,2,5),
+        // 0.4.326: the beds on four corner legs, the five piles of books, and Marjorie's desk with its drawer shut.
+        new View("bedrooms",0,1,0,2,6));
     private static boolean launched;private static int index,frames;
     private GhostsLoreProof(){}
     @SubscribeEvent public static void launch(ClientTickEvent.Post ignored){var mc=Minecraft.getInstance();if(Boolean.getBoolean("the_oldest_house.ghostsLoreSmoke")&&!launched&&mc.screen!=null&&mc.getOverlay()==null){launched=true;show();}}
@@ -78,12 +80,18 @@ public final class GhostsLoreProof {
         @Override public void render(GuiGraphics g,int mx,int my,float partial){
             g.fill(0,0,width,height,0xff302b27);g.drawCenteredString(font,"Ghosts / "+view.name,width/2,15,0xffeee3c9);g.flush();
             var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();var pose=g.pose();pose.pushPose();
-            pose.translate(width/2F,height*.65F,400);float scale=Math.min(width,height)*(view.scene==3||view.scene==4?.24F:.31F);pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(18));pose.mulPose(Axis.YP.rotationDegrees(-25));pose.translate(-.5,0,-.5);
+            pose.translate(width/2F,height*.65F,400);float scale=Math.min(width,height)*(view.scene==3||view.scene==4||view.scene==6?.24F:.31F);pose.scale(scale,-scale,scale);pose.mulPose(Axis.XP.rotationDegrees(18));pose.mulPose(Axis.YP.rotationDegrees(-25));pose.translate(-.5,0,-.5);
             block(g,buffers,GhostsSetBlock.Kind.FLOOR,-1,-1,0);block(g,buffers,GhostsSetBlock.Kind.FLOOR,0,-1,0);block(g,buffers,GhostsSetBlock.Kind.FLOOR,1,-1,0);
             if(view.scene<=2){
                 block(g,buffers,GhostsSetBlock.Kind.WRITING_DESK,0,0,0);
                 block(g,buffers,view.scene==1?GhostsSetBlock.Kind.LAPTOP_CLOSED:GhostsSetBlock.Kind.LAPTOP_STUDY,0,1,0);
                 block(g,buffers,GhostsSetBlock.Kind.BANK_SLIPS,1,0,0);
+            }else if(view.scene==6){
+                for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++)if(z!=0)block(g,buffers,GhostsSetBlock.Kind.FLOOR,x,-1,z);
+                block(g,buffers,GhostsSetBlock.Kind.BED_FOOT,-1,0,0);block(g,buffers,GhostsSetBlock.Kind.BED_HEAD,-1,0,1);
+                pose.pushPose();pose.translate(.5,0,-.5);pose.mulPose(Axis.YP.rotationDegrees(180));GhostsPropRenderer.preview(LiteraryActor.GHOST_DRAWER,0,pose,buffers,LightTexture.FULL_BRIGHT);pose.popPose();
+                block(g,buffers,GhostsSetBlock.Kind.BOOKS_PICTURE,1,0,-1);block(g,buffers,GhostsSetBlock.Kind.BOOKS_LIBRARY,1,0,0);block(g,buffers,GhostsSetBlock.Kind.BOOKS_PAPERBACK,1,0,1);
+                block(g,buffers,GhostsSetBlock.Kind.BOOKS_COOK,0,0,1);block(g,buffers,GhostsSetBlock.Kind.BOOKS,0,0,0);
             }else if(view.scene==5){
                 GhostsMealModels.previewDay=view.day;
                 block(g,buffers,GhostsSetBlock.Kind.CANISTERS,-1,0,0);block(g,buffers,GhostsSetBlock.Kind.CANISTERS_OPEN,0,0,0);

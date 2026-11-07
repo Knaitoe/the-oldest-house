@@ -13,7 +13,7 @@ public final class GhostsConversations {
             {"I already know where the little bug is on every page. I'm checking that he hasn't moved.","She tells it and I write it in. If I don't like the ending, she has to fix it.","Do you know what a narwhal is? Dad thought I'd made it up.","I put him in the corner on purpose. You're supposed to look for him.","If you take that book, bring it back. She writes in it.","I can do the interview here. I don't want everybody watching."},
             {"Can you get both of them together? Before you ask about all the other stuff.","I'm home for now. They keep asking when I'm going back, like I wouldn't go tomorrow if I could."},
             {"Those are Merry's actual books. Please don't carry them off with the other things.","Her appointments don't stop because you're here. Someone needs to remember that."},
-            {"Can you get Merry over here? We can do her bit while they finish upstairs.","If she looks at you, just let her. We can ask it again."},
+            {"Can you get Merry over here? We can do her bit while they finish upstairs.","If Merry looks into the lens, keep rolling. We can always ask her again."},
             {"John asked me to come. I haven't examined his daughter yet.","I need to hear what they saw separately. A conversation round the table isn't that."}
         },
         {

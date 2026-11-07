@@ -66,7 +66,10 @@ public final class GhostsFilmstrip extends Screen {
             new Row("Marjorie, face",M,GhostsSet.STAND,180,false,1,0,4,true))),
         new Page("sisters","Merry's ponytail / Marjorie's smaller eyes",List.of()),
         new Page("seat","Sitting down and getting up, carried between floor and seat (0.4.324)",List.of()),
-        new Page("floor","Merry in the basement: crouching with the jar, sitting on the floor, getting up (0.4.325)",List.of()));
+        new Page("floor","Merry in the basement: crouching with the jar, sitting on the floor, getting up (0.4.325)",List.of()),
+        new Page("hand","John's injured hand: only the right (0.4.326)",List.of(
+            new Row("John, hand, front",J,GhostsSet.HAND,180,false,2,0,10,false),new Row("John, hand, right side",J,GhostsSet.HAND,270,false,2,0,10,false),
+            new Row("John, hand, left side",J,GhostsSet.HAND,90,false,2,0,10,false),new Row("John flinches",J,GhostsSet.FLINCH,180,false,2,0,3,false))));
     static final int FRAMES=8;
     private int page,frames;private static boolean launched;
     public GhostsFilmstrip(){super(Component.literal("The Barrett home: filmstrips"));}
