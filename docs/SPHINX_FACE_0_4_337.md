@@ -12,7 +12,7 @@ The face is one picture, eighteen blocks across and fifteen tall (288 by 240 pix
 - a striped blue and gold headcloth falling to either side, with a band and a small cobra at her brow;
 - kohl round each eye, running out to the temples, and painted brows;
 - a long straight nose;
-- closed lips with the corners just lifted.
+- lips pressed in a slight grimace (0.4.340, below).
 
 Beyond her outline the picture is empty, and its lower edge falls away into the dark, so no block or frame shows.
 
@@ -75,3 +75,30 @@ The native art proof (`-PdareSmoke`, the silo-native job) adds a sixth view, `na
 
 - `tools/sphinx_face_art.py`: the face, the whites, the iris and the lid, under `textures/entity/sphinx/` (`tools/draw_sphinx_fittings.py` writes and checks them).
 - `sphinx_face`: an invisible block with a block entity, drawn by `SphinxFaceRenderer`.
+
+## 0.4.340: out of the dark
+
+The owner asked for her to be "a bit more ominous, its default state should be a slight grimace. It looks too friendly", then for "the
+same large eyes from the original vignette" and "her mouth slightly opened by default and small, sharp teeth inside", because "the design
+is really important. It's something that should instill fear when it presses down out of the dark", and last to "make the cowl thinner".
+
+Her face now:
+
+- **Her eyes.** As large and wide open as the one eye that looked over a warned door before 0.4.337: each about four blocks across and
+  a block and a half tall, staring, with a large amber iris. The whites and irises behind the holes are drawn bigger to fill them, and
+  the irises turn further.
+- **Her mouth.** A slight grimace, wider than before and a little crooked: the corners dragged down and back, the lips just parted on a
+  dark mouth and two rows of small, sharp teeth, the upper ones hanging from the top lip and the lower ones rising between them. Tight
+  creases at each corner run down toward the jaw, and her chin is drawn up under them.
+- **Her brows.** Low and nearly straight above the wide eyes, slanting down hard toward her nose, with two short furrows between them.
+- **Her nose.** Broken away, as hers at Giza is: the bridge ends in a ragged edge, and below it the break is rougher and darker, with only
+  the holes of the nostrils left.
+- **Her stone.** Older and darker, deep in the sockets round her eyes and hollow under her cheekbones. The kohl has run in streaks down
+  her cheeks from under each eye, and cracks run through the stone, one through her left eye's socket. Everything away from her eyes and
+  the middle of her face sinks toward black, so she comes up out of the dark.
+- **Her headcloth.** Thinner: it now runs a little over a block and three-quarters beyond her face on each side, where it once ran out to
+  the edge of the picture, its paint faded and worn through to stone.
+
+In the hall her stone takes the hall's own light, never brighter than a little above dark, while her eyes are always lit, so they are
+what is seen first as she leans down (`SphinxFaceRenderer.STONE_LIGHT` and `EYE_LIGHT`). The client proof's face page adds two views as
+she is in the hall's dark. The same face is used wherever she shows it, the dream included. Nothing else about the crossing changes.
