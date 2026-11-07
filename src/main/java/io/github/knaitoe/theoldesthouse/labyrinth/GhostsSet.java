@@ -233,6 +233,18 @@ public final class GhostsSet {
     }
     /** 0.4.242: the day-two grace; Merry gives Sarah her hand at this tick of the take. */
     static final int GRACE_MERRY=545;
+    /** 0.4.324: up off a seat onto the floor beside it, in one move the client carries out as standing up (GhostsMotion.rise). */
+    private static void riseTo(LiteraryActor a,BlockPos b,double x,double z,int phase){
+        if(seatedPose(a.role(),a.phase())&&!seatedPose(a.role(),phase)&&a.getY()-b.getY()>.1)GhostsMotion.rise(a,Vec3.atLowerCornerOf(b).add(x,0,z));
+        pose(a,phase);
+    }
+    /** 0.4.324: back to a seat on foot at floor height to the spot beside it, then down onto it in one move (GhostsMotion.sit). */
+    private static void sitBack(LiteraryActor a,BlockPos b,double standX,double standZ,double seatX,double seatZ,float yaw){
+        if(a.phase()==SIT)return;
+        var stand=Vec3.atLowerCornerOf(b).add(standX,0,standZ);
+        if(a.position().distanceToSqr(stand)>.03){pose(a,STAND);GhostsMotion.toward(a,stand,.16);return;}
+        pose(a,SIT);GhostsMotion.sit(a,Vec3.atLowerCornerOf(b).add(seatX,seatedHeight(a.getScale()),seatZ),yaw);
+    }
     /** Turn to face the table once arrived, rather than the way the actor last walked. */
     private static void settle(LiteraryActor a,BlockPos b,double x,double z,float yaw){
         if(Math.abs(a.getX()-b.getX()-x)>.1||Math.abs(a.getZ()-b.getZ()-z)>.1)return;
@@ -473,9 +485,9 @@ public final class GhostsSet {
             boolean grace=t>=480&&t<650;
             for(int i=1;i<4;i++)if(!grace||i==1&&t<GRACE_MERRY||i==2&&t>=520)face(cast[i],cast[0].getEyePosition());
             if(grace){
-                pose(cast[3],PRAY);toward(cast[3],b,2.4,0,-18.65,.15);settle(cast[3],b,2.4,-18.65,90);
+                riseTo(cast[3],b,2.4,-18.65,PRAY);toward(cast[3],b,2.4,0,-18.65,.15);settle(cast[3],b,2.4,-18.65,90);
                 pose(cast[1],t<GRACE_MERRY?WARY:PRAY);
-                if(t<520){pose(cast[2],PRAY);toward(cast[2],b,-.4,0,-18.65,.15);settle(cast[2],b,-.4,-18.65,-90);}
+                if(t<520){riseTo(cast[2],b,-.4,-18.65,PRAY);toward(cast[2],b,-.4,0,-18.65,.15);settle(cast[2],b,-.4,-18.65,-90);}
                 else{pose(cast[2],STAND);toward(cast[2],b,-.4,0,-18.12,.1);}
             }
             if(previous<520&&t>=520)cue(p,LiteraryRegistry.GHOST_SCRAPE,cast[0].position());
@@ -490,7 +502,8 @@ public final class GhostsSet {
                 if(leg<4&&cast[0].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(goal[0],goal[1],goal[2]))<.008)own.putInt("CrawlChair04112",leg+1);
                 if(leg>=4){var delta=cast[2].position().subtract(cast[0].position());float yaw=(float)Math.toDegrees(Math.atan2(-delta.x,delta.z));cast[0].setYRot(net.minecraft.util.Mth.approachDegrees(cast[0].getYRot(),yaw,22));cast[0].setYBodyRot(cast[0].getYRot());face(cast[0],cast[2].getEyePosition());}
             }
-            if(t>=650&&t<880){pose(cast[1],SIT);for(int i=2;i<4;i++){if(cast[i].phase()!=SIT)pose(cast[i],STAND);double seatY=seatedHeight(cast[i].getScale());toward(cast[i],b,i==2?-.4:2.4,seatY,-17.5,.16);if(cast[i].position().distanceToSqr(Vec3.atLowerCornerOf(b).add(i==2?-.4:2.4,seatY,-17.5))<.04){pose(cast[i],SIT);settle(cast[i],b,i==2?-.4:2.4,-17.5,i==2?-90:90);}}}
+            // 0.4.324: back to their chairs on foot, from where each stood for grace, and down onto them.
+            if(t>=650&&t<880){pose(cast[1],SIT);sitBack(cast[2],b,-.4,-18.12,-.4,-17.5,-90);sitBack(cast[3],b,2.4,-18.12,2.4,-17.5,90);}
             if(t>=880)pose(cast[2],HAND);
             if(t>=950){pose(cast[0],CRAWL);toward(cast[0],b,-.4,0,-24.5,.24);}
             if(t>=100&&t<500)capture(p,own,"HatExchange",cast[0].getEyePosition());

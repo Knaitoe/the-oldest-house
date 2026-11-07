@@ -22,7 +22,16 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     private final float[] face=new float[3];
     private final java.util.List<ModelPart> joints;
     private final java.util.WeakHashMap<LiteraryActor,Tween> transitions=new java.util.WeakHashMap<>();
-    private static final class Tween {int phase;float started;float[] from,last,faceFrom,faceLast;String line="";float lineAt=-1000;Tween(int phase){this.phase=phase;}}
+    private static final class Tween {int phase,seat;float started,seed;float[] from,last,faceFrom,faceLast;String line="";float lineAt=-1000;Tween(int phase){this.phase=phase;}}
+    /**
+     * 0.4.324 (owner: "a better sitting/standing animation for npcs, particularly in the ghost set"): sitting down and standing up.
+     * Which poses stand, which sit at a table, and whether a change of pose is someone sitting down (1), getting up (-1) or neither (0).
+     * The server moves the body between the seat and the floor beside it in the same tick (GhostsMotion.sit and rise); the renderer
+     * carries it across over the same time as the blend here, and the blend bends at the hips and knees on the way.
+     */
+    static boolean upright(int role,int phase){return phase==GhostsSet.STAND||phase==GhostsSet.HELP||phase==GhostsSet.PRAY&&role!=LiteraryActor.GHOST_MERRY;}
+    static boolean seated(int role,int phase){return GhostsSet.seatedPose(role,phase)&&phase!=GhostsSet.SLIP&&phase!=GhostsSet.DEAD;}
+    public static int seatChange(int role,int from,int to){return upright(role,from)&&seated(role,to)?1:seated(role,from)&&upright(role,to)?-1:0;}
     /**
      * 0.4.309, the living layer (docs/GHOSTS_ANIMATION_0_4_309.md): how long the person has held this pose (for a fall's flailing and an
      * impact's settling), how far through speaking a line they are (0 silent), and the per-pose blend length.
@@ -57,13 +66,16 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);
         currentRole=a.role();crouching=false;riding=false;super.setupAnim(a,walk,amount,age,yaw,pitch);hat.visible=false;jaw.visible=true;
         var motion=HumanoidMotion.sample(a,partial);float step=(float)Math.sin(motion.phase());
-        if(a.phase()==GhostsSet.STAND){HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());walkLike(a.role(),motion.amount());}
-        var tw=transitions.get(a);since=tw==null||tw.phase!=a.phase()?0:age-tw.started;
+        var tw=transitions.get(a);
+        // Getting up or sitting down carries the body a step between floor and seat: that is not a walk, so no stride plays over it.
+        boolean seatMove=tw!=null&&(tw.phase!=a.phase()?seatChange(a.role(),tw.phase,a.phase())!=0:tw.seat!=0&&tw.from!=null);
+        if(a.phase()==GhostsSet.STAND&&!seatMove){HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());walkLike(a.role(),motion.amount());}
+        since=tw==null||tw.phase!=a.phase()?0:age-tw.started;
         // A new line over someone's head starts them talking, for about as long as the line takes to say.
         // While their words are on screen (the server's speaking timer), or a new line goes up over them, they are talking.
         speech=a.speaking()>0?1:0;if(speech==0&&tw!=null&&a.hasCustomName()&&a.isCustomNameVisible()){String line=a.getCustomName().getString();if(!line.equals(tw.line)){tw.line=line;tw.lineAt=age;}
             float length=Math.min(90,12+line.length()*1.6F),t=(age-tw.lineAt)/length;speech=t<0||t>1?0:1;}
-        moving=motion.amount()>.15F;hairMotion=net.minecraft.util.Mth.clamp(motion.amount(),0,1);
+        moving=motion.amount()>.15F&&!seatMove;hairMotion=net.minecraft.util.Mth.clamp(motion.amount(),0,1);
         pose(a.phase(),a.getScale(),step,age);
         blend(a,age);
     }
@@ -72,13 +84,27 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         var state=transitions.computeIfAbsent(actor,a->new Tween(a.phase()));
         // A newly visible apex must freeze in its complete leap, even if its earlier phase was last rendered off-camera.
         if(GhostsTakeClient.frozen()&&actor.phase()==GhostsSet.LEAP){state.phase=actor.phase();state.from=null;state.last=snapshot();state.faceLast=face.clone();return;}
-        if(state.phase!=actor.phase()){state.from=state.last;state.faceFrom=state.faceLast;state.started=age;state.phase=actor.phase();}
+        if(state.phase!=actor.phase()){state.seat=seatChange(actor.role(),state.phase,actor.phase());state.seed=new java.util.Random(actor.getId()*31L+(long)age).nextFloat();state.from=state.last;state.faceFrom=state.faceLast;state.started=age;state.phase=actor.phase();}
         // A face changes over two seconds or more, not in a cut: feeling arrives and settles.
         if(state.faceFrom!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/48F,0,1);t=t*t*(3-2*t);for(int i=0;i<3;i++)face[i]=net.minecraft.util.Mth.lerp(t,state.faceFrom[i],face[i]);if(t==1)state.faceFrom=null;}
         state.faceLast=face.clone();
-        if(state.from!=null){float t=net.minecraft.util.Mth.clamp((age-state.started)/blendLength(actor.phase()),0,1);t=t*t*(3-2*t);int i=0;
-            for(var p:joints){p.x=net.minecraft.util.Mth.lerp(t,state.from[i++],p.x);p.y=net.minecraft.util.Mth.lerp(t,state.from[i++],p.y);p.z=net.minecraft.util.Mth.lerp(t,state.from[i++],p.z);p.xRot=angle(state.from[i++],p.xRot,t);p.yRot=angle(state.from[i++],p.yRot,t);p.zRot=angle(state.from[i++],p.zRot,t);}if(t==1)state.from=null;
+        if(state.from!=null){float raw=net.minecraft.util.Mth.clamp((age-state.started)/(state.seat>0?GhostsMotion.SIT_TICKS:state.seat<0?GhostsMotion.RISE_TICKS:blendLength(actor.phase())),0,1);
+            lerpFrom(state.from,raw,state.seat,state.seed);
+            if(raw==1){state.from=null;state.seat=0;}
         }state.last=snapshot();
+    }
+    /** How far the legs are from standing to seated, raw of the way through sitting down (1) or getting up (-1). */
+    private static float legsSeated(int seat,float raw){return seat>0?ease((raw-.55F)/.45F):1-ease(raw/.45F);}
+    /**
+     * Every joint from a snapshot toward the pose now set, raw of the way. 0.4.324: while sitting down or getting up the legs keep their
+     * own time, so the feet stay on the floor until the seat has the weight and come back down to it before the push up, and the bend
+     * goes on top (seatBend).
+     */
+    private void lerpFrom(float[] from,float raw,int seat,float seed){
+        float t=ease(raw),legs=seat==0?t:seat>0?legsSeated(seat,raw):1-legsSeated(seat,raw);int i=0;
+        for(var p:joints){float r=seat!=0&&(p==leftLeg||p==rightLeg||p==leftKnee||p==rightKnee)?legs:t;
+            p.x=net.minecraft.util.Mth.lerp(t,from[i++],p.x);p.y=net.minecraft.util.Mth.lerp(t,from[i++],p.y);p.z=net.minecraft.util.Mth.lerp(t,from[i++],p.z);p.xRot=angle(from[i++],p.xRot,r);p.yRot=angle(from[i++],p.yRot,r);p.zRot=angle(from[i++],p.zRot,r);}
+        if(seat!=0)seatBend(seat,raw,seed);
     }
     /**
      * Each walks as themselves (scaling the shared gait): John heavier, leaning in, his arms swinging less; Sarah brisk, arms close;
@@ -98,6 +124,67 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         leftLeg.xRot*=net.minecraft.util.Mth.lerp(k,1,legs);rightLeg.xRot*=net.minecraft.util.Mth.lerp(k,1,legs);
         body.xRot+=lean*k;head.xRot-=lean*k*.5F;
     }
+    /**
+     * 0.4.324: the bend through sitting down or getting up, at its deepest partway and gone at either end. The seat here is as high as
+     * a standing hip, so the body perches: while the feet are down the knees give and the hips lower just as far as keeps them on the
+     * floor, with one short step as the body comes round to the seat. Sitting down: weight forward over the feet, the hands going out
+     * for balance, then the seat takes the weight and the legs come up. Getting up: the feet come down first, the lean comes early and
+     * hardest with the hands pressed down for a push, then the hips rise under it and the back straightens last. The head stays level.
+     */
+    /**
+     * 0.4.324 (owner: "ensure subtle variances between standing animations"): how each of them gets up and sits down. lean: how far
+     * forward; late: how late the press comes; out: how wide the hands go; world: where the hands press, as seen in the room; lag: how
+     * far the second hand trails the first; oneHand: how little the second hand does (0 both alike, 1 not at all); drop: how heavily
+     * they come down onto a seat, braking less.
+     */
+    record Style(float lean,float late,float out,float world,float lag,float oneHand,float drop){}
+    static Style style(int role){return switch(role){
+        // John: heavy, both hands flat on his thighs and a hard push; he drops onto a seat more than he lowers onto it.
+        case LiteraryActor.GHOST_JOHN->new Style(1.2F,0,.14F,-.22F,.04F,0,.6F);
+        // Sarah: upright, one hand on the table's edge or her knee doing the work, the other barely leaving her lap.
+        case LiteraryActor.GHOST_SARAH->new Style(.82F,-.03F,.1F,-.14F,.1F,.65F,0);
+        // Merry: small; her hands go either side onto the seat's edge and she slides off it or climbs back onto it.
+        case LiteraryActor.GHOST_MERRY->new Style(.5F,.02F,.34F,.3F,0,0,0);
+        // Marjorie: slow, hands on her knees, the press late and long.
+        case LiteraryActor.GHOST_MARJORIE->new Style(.8F,.08F,.08F,-.38F,.06F,0,.2F);
+        // Barry: pushes off the arms of his director's chair, hands wide.
+        case LiteraryActor.GHOST_PRODUCER->new Style(.9F,-.02F,.42F,.05F,.03F,0,.3F);
+        default->new Style(1,0,.14F,-.18F,.05F,0,0);
+    };}
+    private static float frac(float x){return x-(float)Math.floor(x);}
+    /**
+     * 0.4.324: the bend through sitting down or getting up, at its deepest partway and gone at either end. The seat here is as high as
+     * a standing hip, so the body perches: while the feet are down the knees give and the hips lower just as far as keeps them on the
+     * floor, with one short step as the body comes round to the seat. Sitting down: weight forward over the feet, then the seat takes
+     * the weight, the hands go back to it and the legs come up. Getting up: the feet come down first, the lean comes early and hardest,
+     * the hands press down off the thighs, then the hips rise under it and the back straightens last. The head stays level. Each person
+     * has their own way of doing it (style), and each time differs a little (seed): how far they lean, which hand leads, the head's turn.
+     */
+    void seatBend(int dir,float raw,float seed){
+        var st=style(currentRole);float r1=seed,r2=frac(seed*7.13F+.31F),r3=frac(seed*13.7F+.57F);
+        float k=(float)Math.sin(Math.PI*Math.pow(raw,(dir>0?1.2:.6)*(.9+.2*r2)));if(k<=0)return;
+        float down=1-legsSeated(dir,raw),give=.6F*k*down,dip=12*(1-net.minecraft.util.Mth.cos(give));
+        for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=dip;
+        float step=.32F*net.minecraft.util.Mth.sin((float)Math.PI*raw)*down*(r2<.5F?1:-1);
+        leftLeg.xRot-=give-step;rightLeg.xRot-=give+step;leftKnee.xRot+=2*give;rightKnee.xRot+=2*give;
+        float lean=(dir>0?.5F:.62F)*k*st.lean()*(.9F+.2F*r1);
+        // The arms do work (owner, 7 November: "use their arms as they get up too"). Getting up: the hands come off the table onto the
+        // thighs, elbows bent, then press down, the elbows straightening as the hips lift; they let go once the body is over its feet.
+        // Sitting down: as the seat takes the weight the hands go back to it either side, braking. Angles are as seen in the room, so
+        // the lean added afterwards is taken off here. One hand leads; the other follows a little behind, or hardly at all.
+        boolean leftLeads=r2<.5F;
+        for(int side=0;side<2;side++){
+            boolean lead=(side==0)==leftLeads;float late=lead?0:st.lag()+.04F*r3,share=lead?1:1-st.oneHand(),at=raw-late,arms,world,bend;
+            if(dir<0){float press=ease((at-.12F-st.late())/.3F);arms=ease(at/.18F)*(1-ease((raw-.5F-st.late())/.3F));world=net.minecraft.util.Mth.lerp(press,-.55F,st.world());bend=net.minecraft.util.Mth.lerp(press,-.9F,-.1F);}
+            else{arms=ease((at-.3F)/.25F)*(1-ease((raw-.8F)/.2F))*(1-st.drop()*.5F);world=.22F+Math.max(0,st.world())*.3F;bend=-.45F;}
+            arms*=share;if(arms<=0)continue;
+            var arm=side==0?leftArm:rightArm;var elbow=side==0?leftElbow:rightElbow;float out=(side==0?-1:1)*(st.out()+(dir>0?.1F:0)+.04F*(r1-.5F));
+            arm.xRot=net.minecraft.util.Mth.lerp(arms,arm.xRot,world-lean);arm.yRot=net.minecraft.util.Mth.lerp(arms,arm.yRot,0);arm.zRot=net.minecraft.util.Mth.lerp(arms,arm.zRot,out);
+            elbow.xRot=net.minecraft.util.Mth.lerp(arms,elbow.xRot,bend);
+        }
+        HumanoidMotion.lean(this,lean);head.xRot-=lean*.75F;head.yRot+=(r3-.5F)*.36F*k;
+        hat.copyFrom(head);
+    }
     /** A flinch or a landing is fast; sitting down or settling into grace takes the body's weight. */
     private static float blendLength(int phase){return switch(phase){case GhostsSet.LEAP->5F;case GhostsSet.FLINCH,GhostsSet.IMPACT,GhostsSet.FALL->3F;case GhostsSet.SIT,GhostsSet.SLUMP,GhostsSet.PRAY,GhostsSet.WARY,GhostsSet.DEAD->14F;default->8F;};}
     private boolean moving;
@@ -105,6 +192,10 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
     /** For the native proofs: render as if speaking, and as if on a given filming day (0 keeps the client's own day). */
     public static boolean previewSpeaking;public static int previewDay;
     private static int day(){return previewDay>0?previewDay:GhostsTakeClient.day();}
+    /** 0.4.324, for the filmstrip: t (0 to 1) of the way through sitting down or getting up, blended and bent as the scene does it. */
+    public void previewSeat(int role,int from,int to,float t,float age,float seed){
+        preview(role,from,age);var start=snapshot();preview(role,to,age);lerpFrom(start,t,seatChange(role,from,to),seed);
+    }
     public void preview(int role,int phase,float age){since=age;speech=previewSpeaking?1:0;moving=false;hairMotion=phase<0?1:0;for(var part:new ModelPart[]{head,hat,body,rightArm,leftArm,rightLeg,leftLeg})part.getAllParts().forEach(ModelPart::resetPose);currentRole=role;young=false;crouching=false;riding=false;hat.visible=false;jaw.visible=true;if(phase<0){moving=true;phase=GhostsSet.STAND;HumanoidMotion.gait(this,age*.55F,1,false);walkLike(role,1);}pose(phase,role==LiteraryActor.GHOST_MERRY?.58F:role==LiteraryActor.GHOST_MARJORIE?.86F:1,(float)Math.sin(age*.08F),age);}
     @Override public void renderToBuffer(PoseStack p,VertexConsumer out,int light,int overlay,int colour){
         var fitted=GhostsSkinMesh.fit(out,currentRole,currentPhase);
@@ -304,7 +395,27 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
             // 0.4.247: what someone is carrying between takes (a plate to the sink, a mug back to the table) is drawn in their hand.
             addLayer(new net.minecraft.client.renderer.entity.layers.ItemInHandLayer<>(this,c.getItemInHandRenderer()));}
         @Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(a);}
-        @Override protected void setupRotations(LiteraryActor a,PoseStack p,float age,float yaw,float partial,float scale){super.setupRotations(a,p,age,yaw,partial,scale);if(a.phase()==GhostsSet.BED)LiteraryRenderers.bedPose(p,1);}
-        @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){super.render(a,yaw,partial,p,out,light);}
+        /**
+         * 0.4.324: where the body is drawn while someone sits down or gets up. The server moves it between the seat and the floor beside
+         * it in one tick; from where it was last drawn, the body is carried there, and turned to its new facing, over the same time as
+         * the model's bend (GhostsMotion.SIT_TICKS and RISE_TICKS), so it lowers onto the seat or rises off it instead of jumping.
+         */
+        private static final java.util.WeakHashMap<LiteraryActor,Glide> GLIDES=new java.util.WeakHashMap<>();
+        private static final class Glide {boolean known;int phase;net.minecraft.world.phys.Vec3 last,anchor;float lastYaw,anchorYaw,start,length,seen=-1000,k;}
+        /** How far through carrying the body from its old place it is, 0 when it is where the server has it (for the native proofs). */
+        public static float carry(LiteraryActor a){var g=GLIDES.get(a);return g==null||g.anchor==null?0:g.k;}
+        @Override protected void setupRotations(LiteraryActor a,PoseStack p,float age,float yaw,float partial,float scale){
+            var g=GLIDES.get(a);float body=g!=null&&g.anchor!=null?yaw+net.minecraft.util.Mth.wrapDegrees(g.anchorYaw-yaw)*g.k:yaw;if(g!=null)g.lastYaw=body;
+            super.setupRotations(a,p,age,body,partial,scale);if(a.phase()==GhostsSet.BED)LiteraryRenderers.bedPose(p,1);
+        }
+        @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){
+            var g=GLIDES.computeIfAbsent(a,k->new Glide());float now=GhostsTakeClient.poseAge(a,a.tickCount+partial);var at=a.getPosition(partial);
+            if(g.known&&g.phase!=a.phase()){int change=seatChange(a.role(),g.phase,a.phase());
+                if(change!=0&&g.last!=null&&now-g.seen<3&&g.last.distanceToSqr(at)<9){g.anchor=g.last;g.anchorYaw=g.lastYaw;g.start=now;g.length=change>0?GhostsMotion.SIT_TICKS:GhostsMotion.RISE_TICKS;}}
+            g.known=true;g.phase=a.phase();g.k=0;
+            if(g.anchor!=null){float t=net.minecraft.util.Mth.clamp((now-g.start)/g.length,0,1);g.k=1-t*t*(3-2*t);if(t>=1)g.anchor=null;}
+            var shift=g.anchor==null?net.minecraft.world.phys.Vec3.ZERO:g.anchor.subtract(at).scale(g.k);g.last=at.add(shift);g.seen=now;
+            p.pushPose();p.translate(shift.x,shift.y,shift.z);try{super.render(a,yaw,partial,p,out,light);}finally{p.popPose();}
+        }
     }
 }
