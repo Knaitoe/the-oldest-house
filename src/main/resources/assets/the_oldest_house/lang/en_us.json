@@ -1207,5 +1207,6 @@
   "subtitles.the_oldest_house.route.impact": "A heavy impact on the road",
   "block.the_oldest_house.sphinx_face": "Her Face in the Dark",
   "item.the_oldest_house.dream_stela": "Piece of the Dream Stela",
-  "entity.the_oldest_house.sphinx_dream": "The Sphinx"
+  "entity.the_oldest_house.sphinx_dream": "The Sphinx",
+  "block.the_oldest_house.stela_fill": "Parted Fill"
 }

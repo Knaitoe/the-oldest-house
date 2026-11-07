@@ -1,0 +1,88 @@
+{
+  "variants": {
+    "axis=x,fill=sand,phase=0": {
+      "model": "the_oldest_house:block/stela_fill/sand_0",
+      "y": 90
+    },
+    "axis=z,fill=sand,phase=0": {
+      "model": "the_oldest_house:block/stela_fill/sand_0"
+    },
+    "axis=x,fill=sand,phase=1": {
+      "model": "the_oldest_house:block/stela_fill/sand_1",
+      "y": 90
+    },
+    "axis=z,fill=sand,phase=1": {
+      "model": "the_oldest_house:block/stela_fill/sand_1"
+    },
+    "axis=x,fill=sand,phase=2": {
+      "model": "the_oldest_house:block/stela_fill/sand_2",
+      "y": 90
+    },
+    "axis=z,fill=sand,phase=2": {
+      "model": "the_oldest_house:block/stela_fill/sand_2"
+    },
+    "axis=x,fill=red_sand,phase=0": {
+      "model": "the_oldest_house:block/stela_fill/red_sand_0",
+      "y": 90
+    },
+    "axis=z,fill=red_sand,phase=0": {
+      "model": "the_oldest_house:block/stela_fill/red_sand_0"
+    },
+    "axis=x,fill=red_sand,phase=1": {
+      "model": "the_oldest_house:block/stela_fill/red_sand_1",
+      "y": 90
+    },
+    "axis=z,fill=red_sand,phase=1": {
+      "model": "the_oldest_house:block/stela_fill/red_sand_1"
+    },
+    "axis=x,fill=red_sand,phase=2": {
+      "model": "the_oldest_house:block/stela_fill/red_sand_2",
+      "y": 90
+    },
+    "axis=z,fill=red_sand,phase=2": {
+      "model": "the_oldest_house:block/stela_fill/red_sand_2"
+    },
+    "axis=x,fill=gravel,phase=0": {
+      "model": "the_oldest_house:block/stela_fill/gravel_0",
+      "y": 90
+    },
+    "axis=z,fill=gravel,phase=0": {
+      "model": "the_oldest_house:block/stela_fill/gravel_0"
+    },
+    "axis=x,fill=gravel,phase=1": {
+      "model": "the_oldest_house:block/stela_fill/gravel_1",
+      "y": 90
+    },
+    "axis=z,fill=gravel,phase=1": {
+      "model": "the_oldest_house:block/stela_fill/gravel_1"
+    },
+    "axis=x,fill=gravel,phase=2": {
+      "model": "the_oldest_house:block/stela_fill/gravel_2",
+      "y": 90
+    },
+    "axis=z,fill=gravel,phase=2": {
+      "model": "the_oldest_house:block/stela_fill/gravel_2"
+    },
+    "axis=x,fill=drift,phase=0": {
+      "model": "the_oldest_house:block/stela_fill/drift_0",
+      "y": 90
+    },
+    "axis=z,fill=drift,phase=0": {
+      "model": "the_oldest_house:block/stela_fill/drift_0"
+    },
+    "axis=x,fill=drift,phase=1": {
+      "model": "the_oldest_house:block/stela_fill/drift_1",
+      "y": 90
+    },
+    "axis=z,fill=drift,phase=1": {
+      "model": "the_oldest_house:block/stela_fill/drift_1"
+    },
+    "axis=x,fill=drift,phase=2": {
+      "model": "the_oldest_house:block/stela_fill/drift_2",
+      "y": 90
+    },
+    "axis=z,fill=drift,phase=2": {
+      "model": "the_oldest_house:block/stela_fill/drift_2"
+    }
+  }
+}

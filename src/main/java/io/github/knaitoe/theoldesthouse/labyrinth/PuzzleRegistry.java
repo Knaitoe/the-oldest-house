@@ -84,6 +84,9 @@ public final class PuzzleRegistry {
     public static Block sphinxMaterial(String name){var block=SPHINX_MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SphinxBlock>> SPHINX_TYPE=CODECS.register("sphinx_fitting",()->SphinxBlock.CODEC);
     public static final DeferredBlock<SphinxBlock> SPHINX=BLOCKS.registerBlock("sphinx_fitting",SphinxBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion());
+    /** 0.4.343, loose fill held aside by a piece of the Dream Stela (StelaPassage). */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<StelaFillBlock>> STELA_FILL_TYPE=CODECS.register("stela_fill",()->StelaFillBlock.CODEC);
+    public static final DeferredBlock<StelaFillBlock> STELA_FILL=BLOCKS.registerBlock("stela_fill",StelaFillBlock::new,fixed(Blocks.SAND).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).isSuffocating((st,l,pos)->false).isViewBlocking((st,l,pos)->false).isRedstoneConductor((st,l,pos)->false));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SphinxEyeBlock>> SPHINX_EYE_TYPE=CODECS.register("sphinx_eye",()->SphinxEyeBlock.CODEC);
     public static final DeferredBlock<SphinxEyeBlock> SPHINX_EYE=BLOCKS.registerBlock("sphinx_eye",SphinxEyeBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().noCollission().lightLevel(s->8));
     /** 0.4.337: her whole face over the first crossing's hall, drawn by its renderer. */
@@ -114,6 +117,6 @@ public final class PuzzleRegistry {
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<SphinxDreamEntity>> SPHINX_DREAM=TYPES.register("sphinx_dream",
         ()->net.minecraft.world.entity.EntityType.Builder.<SphinxDreamEntity>of(SphinxDreamEntity::new,net.minecraft.world.entity.MobCategory.MISC).sized(10F,6F).noSave().clientTrackingRange(20).updateInterval(1).build("sphinx_dream"));
-    public static final DeferredItem<net.minecraft.world.item.Item> DREAM_STELA=ITEMS.registerSimpleItem("dream_stela",new net.minecraft.world.item.Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON).fireResistant());
+    public static final DeferredItem<DreamStelaItem> DREAM_STELA=ITEMS.registerItem("dream_stela",DreamStelaItem::new,new net.minecraft.world.item.Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON).fireResistant());
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);TYPES.register(bus);ITEMS.register(bus);}
 }
