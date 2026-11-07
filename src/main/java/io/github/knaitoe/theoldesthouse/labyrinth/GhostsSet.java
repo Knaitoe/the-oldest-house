@@ -587,7 +587,7 @@ public final class GhostsSet {
         if(d==6){
             if(t<600)pose(cast[0],BED);
             if(t>=550&&t<600&&t%25==0)cue(p,net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(net.minecraft.sounds.SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR),Vec3.atLowerCornerOf(b).add(-6.5,5.3,-23));
-            if(t>=510){pose(drawer,t>=660?2:((t-510)/20)%2==0?1:0);if(t<820)capture(p,own,"DrawerMechanism",drawer.position().add(0,.6,.7));}
+            if(t>=510){pose(drawer,t>=660?2:((t-510)/20)%2==0?1:0);if(t<820)capture(p,own,"DrawerMechanism",drawer.position().add(GhostsSetRooms.EXORCISM_FACING.getStepX()*.7,.6,GhostsSetRooms.EXORCISM_FACING.getStepZ()*.7));}
             if(t>=720&&t<780){
                 if(!own.getBoolean("JumpFrozen0488")){var eye=p.getEyePosition();pose(cast[0],LEAP);own.putBoolean("JumpFrozen0488",true);own.putDouble("GhostEyeX",eye.x);own.putDouble("GhostEyeY",eye.y);own.putDouble("GhostEyeZ",eye.z);var aim=cast[0].getEyePosition().subtract(eye);own.putFloat("GhostYaw",(float)(Math.toDegrees(Math.atan2(aim.z,aim.x))-90));own.putFloat("GhostPitch",(float)-Math.toDegrees(Math.atan2(aim.y,Math.sqrt(aim.x*aim.x+aim.z*aim.z))));own.putFloat("JumpBodyYaw",cast[0].getYRot());}
                 pose(cast[0],LEAP);cast[0].setDeltaMovement(Vec3.ZERO);cast[0].setNoGravity(true);var toCamera=new Vec3(own.getDouble("GhostEyeX"),own.getDouble("GhostEyeY"),own.getDouble("GhostEyeZ")).subtract(cast[0].getEyePosition());float head=(float)(Math.toDegrees(Math.atan2(toCamera.z,toCamera.x))-90);

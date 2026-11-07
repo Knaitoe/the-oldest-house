@@ -16,7 +16,10 @@ public final class GhostsSetRooms {
     /** The column the stair's banister stands in: the treads' open (east) edge. */
     public static final int STAIR_RAIL_X=-1;
     public static final BlockPos TABLE=new BlockPos(0,0,-19),MARJORIE_ROOM=new BlockPos(-7,5,-24),
-            MERRY_ROOM=new BlockPos(7,5,-23),BASEMENT=new BlockPos(7,-4,-18),MONITOR_AT=new BlockPos(8,0,-11),MARJORIE_NIGHTSTAND=new BlockPos(-4,5,-25),EXORCISM_DESK=new BlockPos(-4,5,-22);
+            MERRY_ROOM=new BlockPos(7,5,-23),BASEMENT=new BlockPos(7,-4,-18),MONITOR_AT=new BlockPos(8,0,-11),MARJORIE_NIGHTSTAND=new BlockPos(-4,5,-25),EXORCISM_DESK=new BlockPos(-3,5,-22);
+    /** 0.4.326 (owner: "drawer should not begin opened. Should also be rotated and placed against wall"): Marjorie's desk stands against
+     *  her room's east wall under her pinboard, its drawer facing the bed. */
+    public static final Direction EXORCISM_FACING=Direction.WEST;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private GhostsSetRooms() {}
     static void set(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s){BuildBlocks.set(l,b.offset(x,y,z),s,F);}
@@ -68,19 +71,19 @@ public final class GhostsSetRooms {
         for(int x:new int[]{-1,2})for(int z:new int[]{-20,-18})prop(l,b,x,0,z,CHAIR,x<0?Direction.EAST:Direction.WEST);
         // The kitchen along the back wall, either side of the back door.
         for(int x=-9;x<=-4;x++)prop(l,b,x,0,-25,x==-7?SINK:x==-5?COOKER:COUNTER,Direction.SOUTH);
-        prop(l,b,-9,1,-25,JUG,Direction.SOUTH);prop(l,b,-4,1,-25,BOOKS,Direction.SOUTH);
+        prop(l,b,-9,1,-25,JUG,Direction.SOUTH);prop(l,b,-4,1,-25,BOOKS_COOK,Direction.SOUTH);
         // 0.4.202: the day-one interviews are shot in the living room now, its two armchairs facing each other (BarrettHome).
         // Distinct, lived-in bedrooms rather than a bed on the stage: books, the borrowed hat, a jug trap and the sisters' pictures.
         prop(l,b,-7,5,-24,BED_HEAD,Direction.NORTH);prop(l,b,-7,5,-23,BED_FOOT,Direction.NORTH);
         prop(l,b,9,5,-25,BED_HEAD,Direction.NORTH);prop(l,b,9,5,-24,BED_FOOT,Direction.NORTH);
         // 0.4.220: bedroom furniture rather than kitchen counters, a chest of drawers and a nightstand at the bed's head.
-        furniture(l,b,-10,5,-25,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(l,b,-10,6,-25,BOOKS,Direction.SOUTH);
+        furniture(l,b,-10,5,-25,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(l,b,-10,6,-25,BOOKS_PAPERBACK,Direction.SOUTH);
         furniture(l,b,MARJORIE_NIGHTSTAND.getX(),MARJORIE_NIGHTSTAND.getY(),MARJORIE_NIGHTSTAND.getZ(),HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.SOUTH);prop(l,b,MARJORIE_NIGHTSTAND.getX(),MARJORIE_NIGHTSTAND.getY()+1,MARJORIE_NIGHTSTAND.getZ(),HAT,Direction.SOUTH);
-        var desk=EXORCISM_DESK;prop(l,b,desk.getX(),desk.getY(),desk.getZ(),WRITING_DESK,Direction.SOUTH);
-        furniture(l,b,6,5,-25,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(l,b,6,6,-25,BOOKS,Direction.SOUTH);prop(l,b,4,6,-21,DRAWING,Direction.EAST);
+        var desk=EXORCISM_DESK;prop(l,b,desk.getX(),desk.getY(),desk.getZ(),WRITING_DESK,EXORCISM_FACING);
+        furniture(l,b,6,5,-25,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);prop(l,b,6,6,-25,BOOKS_PICTURE,Direction.SOUTH);prop(l,b,4,6,-21,DRAWING,Direction.EAST);
         // 0.4.220 (owner: "what even is that"): the heavy jug stood in the wall over Merry's door, a hole through to the corridor;
         // it is on top of her bookshelf by the door now, where it could fall.
-        prop(l,b,4,6,-17,JUG,Direction.EAST);prop(l,b,9,5,-17,BOOKS,Direction.NORTH);
+        prop(l,b,4,6,-17,JUG,Direction.EAST);prop(l,b,9,5,-17,BOOKS_LIBRARY,Direction.NORTH);
         // Basement beneath the dining room and the utility strip, reached by an enclosed stair at the strip's front.
         fill(l,b,3,-5,-26,11,-5,-13,GhostsSetBlock.of(TILE,Direction.NORTH));
         for(int y=-4;y<=-2;y++) {

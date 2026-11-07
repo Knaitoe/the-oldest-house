@@ -213,6 +213,7 @@ public final class GhostsCastModel extends HumanoidModel<LiteraryActor> {
         var fitted=GhostsSkinMesh.fit(out,currentRole,currentPhase);
         super.renderToBuffer(p,fitted,light,overlay,colour);
         GhostsSkinMesh.head(head,jaw,blink,face,p,fitted,light,overlay,colour);
+        if(currentRole==LiteraryActor.GHOST_JOHN&&(currentPhase==GhostsSet.FLINCH||currentPhase==GhostsSet.HAND))GhostsSkinMesh.coverLeftHandMark(leftArm,leftElbow,p,fitted,light,overlay,colour);
     }
     private void seatLegs(){
         for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=12;

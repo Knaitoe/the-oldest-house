@@ -70,7 +70,9 @@ public final class TalkScreen extends Screen {
         for(Tag tag:state.getList("Lines",Tag.TAG_COMPOUND)){
             if(index++>=revealed)break;
             var line=(CompoundTag)tag;String speaker=line.getString("S"),text=line.getString("T");boolean you=speaker.isEmpty();
-            String shown=you?"— "+text:speaker+": "+text;
+            // 0.4.326 (owner: the panel said "Barry" over "Barry: ..."): the header already names whoever the exchange is with, so
+            // only someone else's lines are prefixed with a name.
+            String shown=you?"— "+text:speaker.equals(state.getString("Who"))?text:speaker+": "+text;
             for(var seq:font.split(Component.literal(shown),width-(you?12:0)))out.add(new Object[]{seq,you?YOU:SAID,you?12:0});
         }
         return out;

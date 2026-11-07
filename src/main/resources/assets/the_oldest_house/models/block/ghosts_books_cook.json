@@ -1,0 +1,216 @@
+{
+  "textures": {
+    "pages": "the_oldest_house:block/ghosts_books/pages",
+    "cook_gingham": "the_oldest_house:block/ghosts_books/cook_gingham",
+    "cook_green": "the_oldest_house:block/ghosts_books/cook_green",
+    "binder_red": "the_oldest_house:block/ghosts_books/binder_red",
+    "particle": "the_oldest_house:block/ghosts_books/pages"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        12,
+        2,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            10,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#cook_green",
+          "uv": [
+            0,
+            14,
+            10,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            13,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            13,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#cook_green",
+          "uv": [
+            0,
+            0,
+            10,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#cook_green",
+          "uv": [
+            0,
+            0,
+            10,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        2,
+        1
+      ],
+      "to": [
+        13,
+        4,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            10,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            10,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            13,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#cook_gingham",
+          "uv": [
+            0,
+            14,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#cook_gingham",
+          "uv": [
+            0,
+            0,
+            10,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#cook_gingham",
+          "uv": [
+            0,
+            0,
+            10,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        4,
+        3
+      ],
+      "to": [
+        14,
+        6.5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            11.5,
+            2.5
+          ]
+        },
+        "south": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            11.5,
+            2.5
+          ]
+        },
+        "east": {
+          "texture": "#binder_red",
+          "uv": [
+            0,
+            13.5,
+            12,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#pages",
+          "uv": [
+            0,
+            0,
+            12,
+            2.5
+          ]
+        },
+        "up": {
+          "texture": "#binder_red",
+          "uv": [
+            0,
+            0,
+            11.5,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#binder_red",
+          "uv": [
+            0,
+            0,
+            11.5,
+            12
+          ]
+        }
+      }
+    }
+  ],
+  "ambientocclusion": true
+}

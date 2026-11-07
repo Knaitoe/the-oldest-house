@@ -60,6 +60,17 @@ final class GhostsSkinMesh {
         }
         if(Math.abs(mouth)>=.3F){float y=mouth>0?-2F:-1F;for(float x:new float[]{-1.5F,1F})quad(p,v,light,overlay,colour,rect(x,y,x+.5F,y+.5F,-4.03F),11.5F*uScale,14.5F,12F*uScale,15F,0,0,-1);}
     }
+    /**
+     * 0.4.326 (owner: "Both of the dad's hands are injured, which isn't accurate to events"): both arms sample one painted net, so the
+     * injury painted on John's right hand showed on his left as well. On the left forearm the two marked pixels are covered with clean
+     * skin from the same rows of his own sheet; the right hand keeps the injury.
+     */
+    static void coverLeftHandMark(ModelPart arm,ModelPart elbow,PoseStack p,VertexConsumer v,int light,int overlay,int colour){
+        if(!arm.visible)return;p.pushPose();arm.translateAndRotate(p);elbow.translateAndRotate(p);
+        quad(p,v,light,overlay,colour,rect(0,3,2,4,-2.02F),47.25F,29.25F,47.75F,29.75F,0,0,-1);
+        quad(p,v,light,overlay,colour,rect(0,4,2,5,-2.02F),47.25F,30.25F,47.75F,30.75F,0,0,-1);
+        p.popPose();
+    }
     private static float[][] rect(float x0,float y0,float x1,float y1,float z){return new float[][]{{x0,y1,z},{x1,y1,z},{x1,y0,z},{x0,y0,z}};}
     private static void walls(PoseStack p,VertexConsumer v,int light,int overlay,int colour,float top,float bottom,float uvTop,float uvBottom){
         quad(p,v,light,overlay,colour,new float[][]{{-4,bottom,4},{-4,bottom,-4},{-4,top,-4},{-4,top,4}},0,uvTop,8,uvBottom,-1,0,0);
