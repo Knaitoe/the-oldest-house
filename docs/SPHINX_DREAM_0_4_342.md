@@ -95,7 +95,7 @@ The reader wakes again in their real bed, lying in it a moment, and the night pa
 
 - **The front door.** This is the door they have used most, if it is near the bed; otherwise the nearest door. It taps against its frame, open, though only they can see it open. It does this through that morning while they are near.
 - **The stone.** The piece of the Dream Stela sits on the floor just inside that door, in a palm-sized piece of granite with sand still in its cuts. With no door near the bed, it sits on the floor beside the bed.
-- **The claim.** Only the dreamer can pick the stone up. It never despawns and can't be destroyed. If it is lost from the sill, it is put back the next time they come near.
+- **The claim.** Only the dreamer can pick the stone up. It never despawns and can't be destroyed. If it is lost from the sill, it is put back the next time they come near. It is laid, and looked for, only once the sill's chunk has loaded its entities as well as its blocks, so a stone still loading is never mistaken for a lost one and laid a second time.
 
 Taking the stone ends the dream.
 
