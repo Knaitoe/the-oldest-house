@@ -1205,5 +1205,7 @@
   "block.the_oldest_house.sphinx_rock_seam": "Closed Rock",
   "death.attack.the_oldest_house.route_vehicle": "%1$s was struck on the 9",
   "subtitles.the_oldest_house.route.impact": "A heavy impact on the road",
-  "block.the_oldest_house.sphinx_face": "Her Face in the Dark"
+  "block.the_oldest_house.sphinx_face": "Her Face in the Dark",
+  "item.the_oldest_house.dream_stela": "Piece of the Dream Stela",
+  "entity.the_oldest_house.sphinx_dream": "The Sphinx"
 }

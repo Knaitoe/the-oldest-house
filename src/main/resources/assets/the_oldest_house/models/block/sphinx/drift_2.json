@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "d": "the_oldest_house:block/sphinx/drift",
+    "particle": "the_oldest_house:block/sphinx/drift"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d"
+        },
+        "south": {
+          "texture": "#d"
+        },
+        "east": {
+          "texture": "#d"
+        },
+        "west": {
+          "texture": "#d"
+        },
+        "up": {
+          "texture": "#d"
+        },
+        "down": {
+          "texture": "#d"
+        }
+      }
+    }
+  ]
+}

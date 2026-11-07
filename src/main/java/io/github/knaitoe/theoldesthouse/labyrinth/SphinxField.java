@@ -286,6 +286,9 @@ public final class SphinxField {
         if(brushedRoad)lines.add(Component.literal("You know where the road paint ran under the soil.").withStyle(net.minecraft.ChatFormatting.DARK_GRAY,net.minecraft.ChatFormatting.ITALIC));
         s.set(DataComponents.LORE,new ItemLore(lines));return s;
     }
+    /** 0.4.342: a reader's own survey, with their brushed line if they found the old road, wherever they are given it. */
+    public static ItemStack surveyFor(ServerPlayer p){var l=p.server.overworld();return survey(p,(record(l,p.getUUID()).getInt("Brushed")&(1<<live(l)))!=0);}
+    public static @Nullable UUID surveyOwner(ItemStack s){var d=s.get(DataComponents.CUSTOM_DATA);if(!isSurvey(s)||d==null)return null;var t=d.copyTag();return t.hasUUID("Owner")?t.getUUID("Owner"):null;}
     public static boolean isSurvey(ItemStack s){var d=s.get(DataComponents.CUSTOM_DATA);return s.is(Items.PAPER)&&d!=null&&d.copyTag().getBoolean("SphinxSurvey");}
     public static boolean carries(ServerPlayer p){for(var s:p.getInventory().items)if(isSurvey(s))return true;return isSurvey(p.getOffhandItem());}
 

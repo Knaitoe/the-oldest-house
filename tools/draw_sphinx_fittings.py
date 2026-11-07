@@ -429,12 +429,23 @@ def tin():
     return im
 
 
+def drift():
+    # 0.4.342, the dream: sand drifted in against a door from a dry yard, pale and fine, a few darker grains and a ripple or two.
+    im = noisy(['#d8c494', '#cfba88', '#e0cc9c', '#c6b07c'], 3119, [4, 3, 2, 2]); rnd = random.Random(3120)
+    for row in (4, 10):
+        for x in range(16):
+            dot(im, x, (row + x // 5) % 16, '#b89c68')
+    for _ in range(7):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#8a7450')
+    return im
+
+
 def textures():
     out = {f'block/sphinx_{k}.png': v for k, v in materials().items()}
     t = {'fur': fur(), 'claw': claw(), 'pad': pad(), 'iron': iron(), 'brass': brass(), 'pot': pot(), 'umbrella': umbrella(), 'flap': flap(), 'latch_0': latch(False), 'latch_1': latch(True),
          'grille': grille(), 'socket': socket(), 'tag': tag(), 'rail': rail(), 'chip': chip(), 'tray': tray(), 'grate': grate(), 'ashlar': ashlar(3098),
          'shelf': shelf(), 'peg': peg(), 'wood': wood(), 'rock': rock(3106), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark(),
-         'earth': earth(), 'soil_0': soil(0), 'soil_1': soil(1), 'soil_2': soil(2), 'flat_corn': flat_corn(), 'tin': tin()}
+         'earth': earth(), 'soil_0': soil(0), 'soil_1': soil(1), 'soil_2': soil(2), 'flat_corn': flat_corn(), 'tin': tin(), 'drift': drift()}
     for look in range(9):
         for i, q in enumerate(eye_tiles(look)):
             t[f'eye_{look}_{i}'] = q
@@ -531,6 +542,9 @@ def fitting_models():
     m['flat_0'] = model([element([0, 0, 0], [16, 2, 16], {'all': 'f'})], {'f': 'flat_corn'}, 'flat_corn')
     m['box_0'] = model([element([7, 0, 7], [9, 10, 9], {'all': 'w'}), element([4, 10, 5], [12, 15, 11], {'all': 't'}), element([3.5, 15, 4.5], [12.5, 16, 11.5], {'all': 't'})],
                        {'w': 'wood', 't': 'tin'}, 'tin')
+    # 0.4.342, the dream: sand drifted against the front door, heaped, shallower and a skin of it.
+    for st, h in ((0, 6), (1, 3), (2, 1)):
+        m[f'drift_{st}'] = model([element([0, 0, 0], [16, h, 16], {'all': 'd'})], {'d': 'drift'}, 'drift')
     for look in range(9):
         for i in range(8):
             # 0.4.336: her face turned sideways to see under the overhang: the eye upright, facing south, the picture's top upward.
@@ -547,9 +561,9 @@ def fitting_models():
     return m
 
 
-KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach', 'survey', 'rail', 'tray', 'chip', 'grate', 'limb', 'shelf', 'peg', 'ladder', 'span', 'soil', 'flat', 'box']
+KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach', 'survey', 'rail', 'tray', 'chip', 'grate', 'limb', 'shelf', 'peg', 'ladder', 'span', 'soil', 'flat', 'box', 'drift']
 STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'reach': 1, 'survey': 3, 'rail': 3, 'tray': 1, 'chip': 1, 'grate': 2, 'limb': 1,
-          'shelf': 2, 'peg': 1, 'ladder': 3, 'span': 1, 'soil': 3, 'flat': 1, 'box': 1}
+          'shelf': 2, 'peg': 1, 'ladder': 3, 'span': 1, 'soil': 3, 'flat': 1, 'box': 1, 'drift': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 3
 NAMES = {'sphinx_fitting': 'Vestibule Fittings', 'sphinx_tile': 'Quarry Tiles', 'sphinx_marked': 'Marked Tile', 'sphinx_plaster': 'Limewash Plaster',

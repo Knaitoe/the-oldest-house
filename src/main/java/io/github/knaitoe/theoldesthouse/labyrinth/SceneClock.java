@@ -16,6 +16,8 @@ public final class SceneClock {
             var plain=LabyrinthPlaces.base(origin,LabyrinthPlace.PLAIN);
             if(plain!=null&&IndianLakeRooms.bounds(plain,LabyrinthPlace.PLAIN).contains(net.minecraft.world.phys.Vec3.atCenterOf(position)))place=LabyrinthPlace.PLAIN;
         }
+        // 0.4.342: the Sphinx's dream is in the morning.
+        if(place==null&&dimension.equals(HouseDimensions.OUTSIDE)&&SphinxDream.dreamSite(origin,position))return 11;
         if(place==null||!dimension.equals(NovelRooms.dimension(place)))return 0;
         return switch(place){
             case ZAMPANO_COURTYARD->1;

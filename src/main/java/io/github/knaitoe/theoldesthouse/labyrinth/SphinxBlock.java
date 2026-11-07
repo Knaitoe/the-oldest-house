@@ -34,12 +34,13 @@ import net.minecraft.world.phys.shapes.*;
  * <li>0.4.334: a survey socket on the wall beside a choice, empty (0), with one reader's pin in it (1), or with two or more (2).</li>
  * <li>0.4.339, the field: the loose soil at a gap's mouth, brushed to footprints (1) or to the old road (2); corn pressed flat under
  * her forearm; the surveyor's tin box on its post.</li>
+ * <li>0.4.342, the dream: sand drifted against the dream's front door.</li>
  * </ul>
  */
 public final class SphinxBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<SphinxBlock> CODEC=simpleCodec(SphinxBlock::new);
     public enum Kind implements StringRepresentable {
-        STAND,FLAP,LATCH,PIN,GRILLE,FINGERS,REACH,SURVEY,RAIL,TRAY,CHIP,GRATE,LIMB,SHELF,PEG,LADDER,SPAN,SOIL,FLAT,BOX;
+        STAND,FLAP,LATCH,PIN,GRILLE,FINGERS,REACH,SURVEY,RAIL,TRAY,CHIP,GRATE,LIMB,SHELF,PEG,LADDER,SPAN,SOIL,FLAT,BOX,DRIFT;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -77,6 +78,8 @@ public final class SphinxBlock extends HorizontalDirectionalBlock {
             case SOIL->Shapes.block();
             case FLAT->Block.box(0,0,0,16,2,16);
             case BOX->Shapes.or(Block.box(7,0,7,9,10,9),Block.box(4,10,5,12,16,11));
+            // 0.4.342, the dream: sand drifted against the front door, heaped (0), shallower (1), a skin of it (2).
+            case DRIFT->Block.box(0,0,0,16,switch(s.getValue(STAGE)){case 0->6;case 1->3;default->1;},16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
@@ -85,7 +88,7 @@ public final class SphinxBlock extends HorizontalDirectionalBlock {
             case FLAP->getShape(s,l,p,c);
             // Shut, a stair's gate is as tall as a fence to a body: nobody steps over it.
             case RAIL->s.getValue(STAGE)==0?Shapes.or(getShape(s,l,p,c),box(s.getValue(FACING),0,16,7,16,24,9)):Shapes.empty();
-            case TRAY,GRATE,SHELF,SPAN,SOIL,BOX->getShape(s,l,p,c);
+            case TRAY,GRATE,SHELF,SPAN,SOIL,BOX,DRIFT->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }

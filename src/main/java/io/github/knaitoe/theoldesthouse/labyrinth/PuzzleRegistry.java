@@ -109,5 +109,11 @@ public final class PuzzleRegistry {
     public static final DeferredBlock<YardBlock> YARD=BLOCKS.registerBlock("yard_fitting",YardBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(YardBlock::light));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> YARD_IDLE=sound("yard.idle"),YARD_TRAFFIC=sound("yard.traffic"),YARD_CROW=sound("yard.crow"),YARD_CREEK=sound("yard.creek");
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> YARD_FOLLOW=sound("yard.follow"),YARD_WIND=sound("yard.wind");
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);}
+    // 0.4.342, the Sphinx's dream: her whole body, and the piece of the stela she leaves at the door.
+    private static final DeferredRegister<net.minecraft.world.entity.EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<SphinxDreamEntity>> SPHINX_DREAM=TYPES.register("sphinx_dream",
+        ()->net.minecraft.world.entity.EntityType.Builder.<SphinxDreamEntity>of(SphinxDreamEntity::new,net.minecraft.world.entity.MobCategory.MISC).sized(10F,6F).noSave().clientTrackingRange(20).updateInterval(1).build("sphinx_dream"));
+    public static final DeferredItem<net.minecraft.world.item.Item> DREAM_STELA=ITEMS.registerSimpleItem("dream_stela",new net.minecraft.world.item.Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON).fireResistant());
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);TYPES.register(bus);ITEMS.register(bus);}
 }
