@@ -30,12 +30,14 @@ import net.minecraft.world.phys.shapes.*;
  * top rail painted, across the arm it faces along (YardStock).</li>
  * <li>0.4.345: a sheet of corrugated barn roofing, rust at its laps: on a roof (stage 0), its east edge lifted by the wind (1), and fallen
  * flat on the ground (2) (YardWind).</li>
+ * <li>0.4.347: corn three high, the stalk (stage 0), the stalk and its ear (1), the tassel (2), and the same corn pushed over flat the way a
+ * reader went through it (3); no collision, slow to push through (YardStorm). A windsock on its hoop: slack (0), lifting (1), full (2).</li>
  * </ul>
  */
 public final class YardBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<YardBlock> CODEC=simpleCodec(YardBlock::new);
     public enum Kind implements StringRepresentable {
-        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE,PRINT,STOCK_LEAF,ROOF_SHEET;
+        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE,PRINT,STOCK_LEAF,ROOF_SHEET,STALK,WINDSOCK;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -58,13 +60,24 @@ public final class YardBlock extends HorizontalDirectionalBlock {
             case FLOOD_GRATE->WorkPrintBlock.box(s.getValue(FACING),0,0,14,16,16,16);
             case STOCK_LEAF->WorkPrintBlock.box(s.getValue(FACING),0,0,7,16,16,9);
             case ROOF_SHEET->Block.box(0,0,0,16,s.getValue(STAGE)==2?1:2,16);
+            case STALK->s.getValue(STAGE)==3?Block.box(0,0,0,16,3,16):Block.box(3,0,3,13,16,13);
+            case WINDSOCK->Block.box(4,4,4,12,14,12);
             default->Block.box(0,0,0,16,14,16);
         };
     }
-    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(KIND)==Kind.BULB||s.getValue(KIND)==Kind.SHEET?Shapes.empty():getShape(s,l,p,c);}
-    @Override protected void entityInside(BlockState s,Level l,BlockPos at,net.minecraft.world.entity.Entity e){if(e instanceof ServerPlayer p&&s.getValue(KIND)==Kind.SHEET)YardConnectors.brush(p,at);}
+    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var k=s.getValue(KIND);return k==Kind.BULB||k==Kind.SHEET||k==Kind.STALK||k==Kind.WINDSOCK?Shapes.empty():getShape(s,l,p,c);}
+    @Override protected void entityInside(BlockState s,Level l,BlockPos at,net.minecraft.world.entity.Entity e){
+        if(e instanceof ServerPlayer p&&s.getValue(KIND)==Kind.SHEET)YardConnectors.brush(p,at);
+        // Standing corn holds a body back until it goes over; once flat it is a track anyone can follow at a walk.
+        if(s.getValue(KIND)==Kind.STALK&&s.getValue(STAGE)<3&&e instanceof net.minecraft.world.entity.LivingEntity){
+            e.makeStuckInBlock(s,new net.minecraft.world.phys.Vec3(.8,1,.8));
+            // It goes over once the reader has pushed halfway into the row.
+            if(l instanceof net.minecraft.server.level.ServerLevel level&&e instanceof ServerPlayer p&&s.getValue(STAGE)==0&&p.blockPosition().equals(at))YardStorm.bend(level,at,s,p);
+        }
+    }
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
+        if(YardStorm.use(p,pos,s))return InteractionResult.CONSUME;
         if(YardFields.use(p,pos,s))return InteractionResult.CONSUME;
         if(YardStock.use(p,pos,s))return InteractionResult.CONSUME;
         if(s.getValue(KIND)==Kind.SHEET){YardConnectors.brush(p,pos);return InteractionResult.CONSUME;}

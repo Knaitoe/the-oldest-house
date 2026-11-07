@@ -4,7 +4,8 @@
 rain; a garage door of dark vertical boards with a handle; a bare bulb on its cord; and the wagon: faded green paint over wood-grain
 panelling, its grille and lit headlights, windows, roof rack, tailgate and tail-lamps, wheels. 0.4.322: soft mud, clear or with a reader's
 footprints pressed into it. 0.4.345: a stockyard swing gate's leaf in three heights, galvanised tube rails on oak stiles, the top rail
-painted so the gates read from the loading platform; a sheet of corrugated barn roofing, rusted at its laps. --check verifies everything.
+painted so the gates read from the loading platform; a sheet of corrugated barn roofing, rusted at its laps. 0.4.347: field corn three
+high (the stalk, the ear, the tassel) and the same corn pushed flat; a windsock, slack, lifting and full. --check verifies everything.
 """
 from pathlib import Path
 import argparse
@@ -170,6 +171,83 @@ def roof_sheet():
     return im
 
 
+STALK = ['#6f8a3a', '#7a9640', '#62792f']
+LEAF = ['#7f9c45', '#8aa64c', '#6d8a3a', '#9aa956']
+DRY = ['#a89a5a', '#b4a664', '#9a8c50']
+
+
+def corn(stage, seed):
+    # 0.4.347: late-summer field corn, a third of its height to each stage: the stalk with its long leaves arching out; the stalk with an
+    # ear in its husk and silk; the top of the stalk with its tassel; and (3) seen from above, stalks pushed flat, all leaning one way.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(seed)
+    if stage == 3:
+        for x in (1, 4, 6, 9, 12, 14):
+            col = STALK[x % 3]
+            for y in range(rnd.randrange(0, 3), 16 - rnd.randrange(0, 3)):
+                dot(im, x, y, col); dot(im, x + 1, y, '#566a2a') if x < 15 and y % 5 else None
+        for _ in range(26):
+            x, y = rnd.randrange(16), rnd.randrange(16)
+            dot(im, x, y, rnd.choice(LEAF + DRY))
+        for x, y in ((3, 4), (10, 11), (13, 2)):
+            dot(im, x, y, '#c9b35c')
+        return im
+    if stage < 2:
+        def blade(side, y0, length, k):
+            # A long leaf: two pixels thick out of the node, rising, then arching over and drooping to a dry tip.
+            rise = [0, -1, -2, -2, -3, -3, -3, -2, -1, 0]
+            for i in range(1, length + 1):
+                x = (7 - i) if side < 0 else (8 + i)
+                y = y0 + rise[min(i, len(rise) - 1)]
+                if not (0 <= x < 16):
+                    break
+                tip = i >= length - 1
+                if 0 <= y < 16: dot(im, x, y, DRY[(i + k) % 3] if tip else LEAF[(i + k) % 4])
+                if not tip and 0 <= y + 1 < 16: dot(im, x, y + 1, LEAF[(i + k + 2) % 4] if i % 3 else '#5f7a30')
+        nodes = ((-1, 14, 7), (1, 11, 7), (-1, 7, 6), (1, 4, 6)) if stage == 0 else ((1, 13, 7), (-1, 10, 7), (-1, 4, 6))
+        for k, (side, y0, length) in enumerate(nodes):
+            blade(side, y0, length, k)
+        for y in range(16):
+            dot(im, 7, y, STALK[(y + stage) % 3]); dot(im, 8, y, '#566a2a')
+            if y % 6 == 2: dot(im, 7, y, '#8aa04a'); dot(im, 8, y, '#8aa04a')
+        if stage == 1:
+            # The ear, in its husk, leaning out from the stalk, silk at its tip.
+            for i, (x, y) in enumerate(((9, 9), (10, 8), (10, 7), (11, 6), (11, 5), (12, 4))):
+                dot(im, x, y, '#8fa64e' if i % 2 else '#7f9a44'); dot(im, x + 1, y + 1, '#a3b45e') if i < 5 else None
+                dot(im, x - 1, y, '#9aae58') if i > 0 else None
+            for x, y in ((12, 3), (13, 2), (12, 2), (13, 3), (14, 2)):
+                dot(im, x, y, '#c9a85a')
+        return im
+    # The tassel: the stalk's last joint and its spikes, pale and dry, fanning out.
+    for y in range(8, 16):
+        dot(im, 7, y, STALK[y % 3]); dot(im, 8, y, '#566a2a')
+    for i in range(6):
+        dot(im, 4 - i // 2 if i < 4 else 2, 13 - i, LEAF[i % 4]); dot(im, 11 + i // 2 if i < 4 else 13, 12 - i, LEAF[(i + 2) % 4])
+    for y in range(1, 9):
+        dot(im, 7, y, DRY[y % 3]); dot(im, 8, y, DRY[(y + 1) % 3])
+    for side in (-1, 1):
+        for b in range(3):
+            for i in range(4):
+                x = (7 if side < 0 else 8) + side * (i + 1)
+                y = 3 + b * 2 + i // 2
+                if 0 <= x < 16: dot(im, x, y, DRY[(i + b) % 3])
+    for x, y in ((7, 0), (8, 0), (5, 1), (10, 1)):
+        dot(im, x, y, '#c4b06a')
+    return im
+
+
+def windsock():
+    # 0.4.347: a windsock's cloth, bands alternating along its length, darker at the seams; a galvanised hoop.
+    im = Image.new('RGBA', (16, 16)); rnd = random.Random(3471)
+    for y in range(16):
+        band = (y // 4) % 2
+        for x in range(16):
+            base = ['#d8743a', '#e07e40', '#cc6c34'] if band == 0 else ['#e6e2d6', '#dcd8cc', '#ece8de']
+            dot(im, x, y, rnd.choice(base))
+        if y % 4 == 3:
+            for x in range(16): dot(im, x, y, '#9a5226' if band == 0 else '#b8b4a8')
+    return im
+
+
 def textures():
     out = {'block/yard_clapboard.png': clapboard(), 'block/yard_wet_gravel.png': wet_gravel(), 'block/yard_garage_door.png': garage_door()}
     linen = noisy(['#c9c6b6', '#d4d0c2', '#bdbbac'], 3131, [5, 3, 1])
@@ -193,6 +271,10 @@ def textures():
         t[f'grate_{stage}'] = grate
     for stage in range(3): t[f'leaf_{stage}'] = leaf(stage)
     t['roof_sheet'] = roof_sheet()
+    for stage in range(4): t[f'corn_{stage}'] = corn(stage, 3470 + stage)
+    t['windsock'] = windsock()
+    hoop = noisy(['#9aa3a6', '#aab3b5', '#868f92'], 3472, [3, 2, 2])
+    t['hoop'] = hoop
     out.update({f'block/yard/{k}.png': v for k, v in t.items()})
     return out
 
@@ -225,12 +307,33 @@ def fitting_models():
     lifted['rotation'] = {'angle': 22.5, 'axis': 'x', 'origin': [8, 1, 16]}
     m['roof_sheet_1'] = model([lifted], {'r': 'roof_sheet'}, 'roof_sheet')
     m['roof_sheet_2'] = model([element([0, 0, 0], [16, 1, 16], sheet, uv={f: [0, 0, 16, 1] for f in ('north', 'south', 'east', 'west')})], {'r': 'roof_sheet'}, 'roof_sheet')
+    for stage in range(3):
+        planes = [{'from': [0.8, 0, 8], 'to': [15.2, 16, 8], 'rotation': {'origin': [8, 8, 8], 'axis': 'y', 'angle': 45, 'rescale': True}, 'shade': False,
+                   'faces': {'north': {'uv': [0, 0, 16, 16], 'texture': '#c'}, 'south': {'uv': [0, 0, 16, 16], 'texture': '#c'}}},
+                  {'from': [8, 0, 0.8], 'to': [8, 16, 15.2], 'rotation': {'origin': [8, 8, 8], 'axis': 'y', 'angle': 45, 'rescale': True}, 'shade': False,
+                   'faces': {'east': {'uv': [0, 0, 16, 16], 'texture': '#c'}, 'west': {'uv': [0, 0, 16, 16], 'texture': '#c'}}}]
+        m[f'stalk_{stage}'] = {**model(planes, {'c': f'corn_{stage}'}, f'corn_{stage}'), 'ambientocclusion': False}
+    flat = {'from': [0, 0.6, 0], 'to': [16, 0.6, 16], 'shade': False, 'faces': {'up': {'uv': [0, 0, 16, 16], 'texture': '#c'}, 'down': {'uv': [0, 0, 16, 16], 'texture': '#c'}}}
+    leaning = {'from': [1, 0.5, 0], 'to': [15, 0.5, 15], 'rotation': {'origin': [8, 0.5, 15], 'axis': 'x', 'angle': -22.5}, 'shade': False,
+               'faces': {'up': {'uv': [1, 0, 15, 15], 'texture': '#c'}, 'down': {'uv': [1, 0, 15, 15], 'texture': '#c'}}}
+    m['stalk_3'] = {**model([flat, leaning], {'c': 'corn_3'}, 'corn_3'), 'ambientocclusion': False}
+    # The windsock: its hoop on a short arm from the pole (to the south, model north being where it points), the cloth slack, lifting, full.
+    hoop = element([5.5, 9, 15], [10.5, 14, 16], {'all': 'h'}, uv={f: [0, 0, 5, 5] for f in ('north', 'south', 'east', 'west', 'up', 'down')})
+    full = [element([6, 9.5, 8], [10, 13.5, 15], {'all': 'w'}, uv={'east': [0, 0, 7, 4], 'west': [0, 0, 7, 4], 'up': [0, 0, 4, 7], 'down': [0, 0, 4, 7], 'north': [0, 0, 4, 4], 'south': [0, 0, 4, 4]}),
+            element([6.75, 10.25, 1], [9.25, 12.75, 8], {'all': 'w'}, uv={'east': [7, 0, 14, 3], 'west': [7, 0, 14, 3], 'up': [4, 7, 7, 14], 'down': [4, 7, 7, 14], 'north': [4, 0, 7, 3], 'south': [4, 0, 7, 3]})]
+    lifting = []
+    for el in full:
+        el = json.loads(json.dumps(el)); el['rotation'] = {'angle': -22.5, 'axis': 'x', 'origin': [8, 11.5, 16]}; lifting.append(el)
+    slack = [element([6, 3, 11.5], [10, 9.5, 15.5], {'all': 'w'}, uv={'north': [0, 0, 4, 7], 'south': [0, 0, 4, 7], 'east': [0, 0, 4, 7], 'west': [0, 0, 4, 7], 'up': [0, 0, 4, 4], 'down': [0, 0, 4, 4]}),
+             element([6.75, 0, 12.25], [9.25, 3, 14.75], {'all': 'w'}, uv={'north': [4, 7, 7, 10], 'south': [4, 7, 7, 10], 'east': [4, 7, 7, 10], 'west': [4, 7, 7, 10], 'up': [4, 0, 7, 3], 'down': [4, 0, 7, 3]})]
+    for stage, els in enumerate((slack, lifting, full)):
+        m[f'windsock_{stage}'] = model([hoop] + els, {'h': 'hoop', 'w': 'windsock'}, 'windsock')
     for stage in range(3): m[f'stock_leaf_{stage}'] = model([element([0, 0, 7], [16, 16, 9], {'north': 'l', 'south': 'l', 'east': 'l', 'west': 'l', 'up': 'l', 'down': 'l'}, uv={'east': [14, 0, 16, 16], 'west': [0, 0, 2, 16], 'up': [0, 0, 16, 2], 'down': [0, 14, 16, 16]})], {'l': f'leaf_{stage}'}, f'leaf_{stage}')
     return m
 
 
-KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print', 'stock_leaf', 'roof_sheet']
-STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3}
+KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print', 'stock_leaf', 'roof_sheet', 'stalk', 'windsock']
+STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3, 'stalk': 4, 'windsock': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'yard_fitting': 'Yard Fittings', 'yard_clapboard': 'Clapboard', 'yard_wet_gravel': 'Wet Gravel', 'yard_garage_door': 'Garage Door'}
 

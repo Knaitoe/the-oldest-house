@@ -603,7 +603,9 @@ public enum LabyrinthPlace {
     /** 0.4.345, the Windbreak (YardWind, docs/YARD_STOCK_0_4_345.md): an open field under a west wind, a line of shelter, ruts, and a lean-to coming apart. Outside; the yard's deep hazard. */
     YARD_WINDBREAK("yard_windbreak",Kind.GRAY,206,new BoundingBox(-14,-3,-46,14,14,0),grayDoors(0,0,-45)),
     /** 0.4.346, the drainage ditch in flood (YardFlash, docs/YARD_DITCH_FLOOD_0_4_346.md): the quiet ditch with rain, a rising stream, a surge through the culvert and two cuts up the bank. Outside; a hazard. */
-    YARD_DITCH_FLOOD("yard_ditch_flood",Kind.GRAY,207,new BoundingBox(-7,-2,-36,7,10,0),grayDoors(0,0,-35));
+    YARD_DITCH_FLOOD("yard_ditch_flood",Kind.GRAY,207,new BoundingBox(-7,-2,-36,7,10,0),grayDoors(0,0,-35)),
+    /** 0.4.347, the storm field (YardStorm, docs/YARD_STORM_0_4_347.md): a rise, corn over the head, a ditch that fills, an open edge under a power line, a dry shed midway, the farmhouse's back door. Outside; a hazard. */
+    YARD_STORM_FIELD("yard_storm_field",Kind.GRAY,208,new BoundingBox(-22,-4,-72,22,18,0),grayDoors(0,0,-62));
 
     /** What a place is to the dealer. */
     public enum Kind {

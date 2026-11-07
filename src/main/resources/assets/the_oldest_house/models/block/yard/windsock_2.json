@@ -1,0 +1,215 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "h": "the_oldest_house:block/yard/hoop",
+    "w": "the_oldest_house:block/yard/windsock",
+    "particle": "the_oldest_house:block/yard/windsock"
+  },
+  "elements": [
+    {
+      "from": [
+        5.5,
+        9,
+        15
+      ],
+      "to": [
+        10.5,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h",
+          "uv": [
+            0,
+            0,
+            5,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#h",
+          "uv": [
+            0,
+            0,
+            5,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#h",
+          "uv": [
+            0,
+            0,
+            5,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#h",
+          "uv": [
+            0,
+            0,
+            5,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#h",
+          "uv": [
+            0,
+            0,
+            5,
+            5
+          ]
+        },
+        "down": {
+          "texture": "#h",
+          "uv": [
+            0,
+            0,
+            5,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        9.5,
+        8
+      ],
+      "to": [
+        10,
+        13.5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            7,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            7,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            4,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            4,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.75,
+        10.25,
+        1
+      ],
+      "to": [
+        9.25,
+        12.75,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w",
+          "uv": [
+            4,
+            0,
+            7,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#w",
+          "uv": [
+            4,
+            0,
+            7,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#w",
+          "uv": [
+            7,
+            0,
+            14,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#w",
+          "uv": [
+            7,
+            0,
+            14,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#w",
+          "uv": [
+            4,
+            7,
+            7,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#w",
+          "uv": [
+            4,
+            7,
+            7,
+            14
+          ]
+        }
+      }
+    }
+  ]
+}
