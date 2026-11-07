@@ -601,7 +601,9 @@ public enum LabyrinthPlace {
     /** 0.4.345, the Stock Gate (YardStock, docs/YARD_STOCK_0_4_345.md): a loading platform over a stockyard's chutes, swing gates and a herd in its pen. Outside; the yard's middle puzzle, after Survey Stakes. */
     YARD_STOCK("yard_stock",Kind.GRAY,205,new BoundingBox(-12,-3,-39,12,12,0),grayDoors(0,0,-38)),
     /** 0.4.345, the Windbreak (YardWind, docs/YARD_STOCK_0_4_345.md): an open field under a west wind, a line of shelter, ruts, and a lean-to coming apart. Outside; the yard's deep hazard. */
-    YARD_WINDBREAK("yard_windbreak",Kind.GRAY,206,new BoundingBox(-14,-3,-46,14,14,0),grayDoors(0,0,-45));
+    YARD_WINDBREAK("yard_windbreak",Kind.GRAY,206,new BoundingBox(-14,-3,-46,14,14,0),grayDoors(0,0,-45)),
+    /** 0.4.346, the drainage ditch in flood (YardFlash, docs/YARD_DITCH_FLOOD_0_4_346.md): the quiet ditch with rain, a rising stream, a surge through the culvert and two cuts up the bank. Outside; a hazard. */
+    YARD_DITCH_FLOOD("yard_ditch_flood",Kind.GRAY,207,new BoundingBox(-7,-2,-36,7,10,0),grayDoors(0,0,-35));
 
     /** What a place is to the dealer. */
     public enum Kind {
