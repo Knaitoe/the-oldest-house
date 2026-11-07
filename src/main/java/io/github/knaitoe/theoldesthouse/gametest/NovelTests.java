@@ -42,7 +42,7 @@ public final class NovelTests {
             chunks.close();var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);s.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);s.overworld().setDayTime(oldDayTime);LabyrinthBuilder.clearAll();}
     }
     private static Fixture courtyard,whale,well,plain,ward,karen,upgrade,signRepair;
-    private static Fixture hospitalStyle,hospitalSave,hospitalWriting,hospitalInterrupted;
+    private static Fixture hospitalStyle,hospitalSave,hospitalWriting,hospitalInterrupted,wardNight;
     @AfterBatch(batch="novel_hospital_style0470") public static void hospitalStyleDone(ServerLevel l){if(hospitalStyle!=null){hospitalStyle.close();hospitalStyle=null;}}
     @AfterBatch(batch="novel_hospital_writing0470") public static void hospitalWritingDone(ServerLevel l){if(hospitalWriting!=null){hospitalWriting.close();hospitalWriting=null;}}
     @GameTest(template="empty",batch="novel_hospital_style0470",timeoutTicks=240)
@@ -97,6 +97,7 @@ public final class NovelTests {
     @AfterBatch(batch="novel_plain") public static void c4(ServerLevel l){if(plain!=null){plain.close();plain=null;}}
     @AfterBatch(batch="novel_ward") public static void c5(ServerLevel l){if(ward!=null){ward.close();ward=null;}}
     @AfterBatch(batch="novel_karen") public static void c6(ServerLevel l){if(karen!=null){karen.close();karen=null;}}
+    @AfterBatch(batch="novel_ward_night") public static void c7(ServerLevel l){if(wardNight!=null){wardNight.close();wardNight=null;}}
     @GameTest(template="empty") public static void novelSitesAppendAndOutdoorEntriesUseTheirRealDimension(GameTestHelper h){
         for(int y:new int[]{65,80,150,250})for(var place:NovelVignettes.PLACES){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,place);var slot=LabyrinthPlaces.slotBounds(origin,place);var r=place.room();
             h.assertTrue(b!=null&&slot.isInside(b.offset(r.minX(),r.minY(),r.minZ()))&&slot.isInside(b.offset(r.maxX(),r.maxY(),r.maxZ())),"the appended scene fits its native height at "+y+": "+place.id());}
@@ -296,7 +297,7 @@ public final class NovelTests {
     @GameTest(template="empty",batch="novel_ward",timeoutTicks=180) public static void wardDepartureResetsNightAndOnlyPresentDawnReadingCounts(GameTestHelper h){
         ward=new Fixture(h,33500,LabyrinthPlace.HOSPITAL);var f=ward;var p=f.player();var peer=f.player();
         h.runAfterDelay(12,()->{f.at(p,4.5,0,-13.5);f.click(p,NovelRooms.BUTTON);h.assertTrue(f.own(p).getInt("WardCalls")==1&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOSPITAL),"an actual call changes the chart but is no resolution");f.at(p,30,0,-3);});
-        h.runAfterDelay(35,()->{h.assertTrue(f.own(p).getInt("WardTicks")==0,"leaving begins a fresh attempt");f.at(p,.5,0,-10.5);var own=f.own(p);own.putInt("WardTicks",NovelVignettes.WARD_NIGHT-1);NovelVignettes.save(f.data(),p.getUUID(),own);});
+        h.runAfterDelay(35,()->{h.assertTrue(f.own(p).getInt("WardTicks")==0&&!f.own(p).contains("WardWalk"),"leaving begins a fresh attempt, and the answer walking is forgotten");f.at(p,.5,0,-10.5);var own=f.own(p);own.putInt("WardTicks",NovelVignettes.WARD_NIGHT-1);NovelVignettes.save(f.data(),p.getUUID(),own);});
         h.runAfterDelay(65,()->{h.assertTrue(f.own(p).getBoolean("WardFinished"),"a present final tick completes the compressed night");f.at(p,-3.5,0,-13.5);f.click(p,NovelRooms.WARD_NOTE);var menu=(NovelVignettes.NovelBookMenu)p.containerMenu;
             h.assertTrue(menu.book().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().get(0).raw().getStyle().getColor()!=null&&menu.clickMenuButton(p,101),"the authored purple dawn page opens in a native book");
             h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOSPITAL)&&!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.HOSPITAL),"a second player still has their own unfinished night");peer.gameMode.changeGameModeForPlayer(GameType.SPECTATOR);f.at(peer,-3.5,0,-13.5);h.assertTrue(!NovelVignettes.inside(peer,f.place),"a real spectator cannot inherit the dawn");f.reload();h.assertTrue(f.own(p).getBoolean("WardFinished"),"the dawn survives reload");h.succeed();});}
@@ -308,5 +309,37 @@ public final class NovelTests {
         h.runAfterDelay(65,()->{h.assertTrue(f.own(p).getList("Record",Tag.TAG_COMPOUND).size()==1,"the bounded real photograph renderer stores this explorer's visited room");f.at(p,.5,0,-4.5);f.click(p,NovelRooms.PROJECTOR);
             var photo=ItemStack.parseOptional(p.registryAccess(),f.own(p).getList("Record",Tag.TAG_COMPOUND).getCompound(0));h.assertTrue(photo.has(DataComponents.MAP_ID)&&f.l.getMapData(photo.get(DataComponents.MAP_ID))!=null,"the private projector's original is an actual captured native map");
             h.assertTrue(f.l.getEntitiesOfClass(net.minecraft.world.entity.decoration.ItemFrame.class,IndianLakeRooms.bounds(f.b,f.place)).isEmpty(),"a private projection creates no shared frame that reveals another player's photograph");h.assertTrue(!new SecretPhotographs.Album(1,p.getInventory(),p).getSlot(0).getItem().isEmpty(),"the original is available for native album pickup");h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==0,"a navigation anchor grants no Witness evidence");h.succeed();});}
+
+    /** 0.4.330: each press is answered by footsteps that come further every quarter; the ward closes in, privately; dawn shows it whole. */
+    @GameTest(template="empty",batch="novel_ward_night",timeoutTicks=260) public static void theNightWardAnswersEachCallCloserAndClosesIn(GameTestHelper h){
+        wardNight=new Fixture(h,40300,LabyrinthPlace.HOSPITAL);var f=wardNight;var p=f.player();
+        java.util.function.Consumer<java.util.function.Consumer<net.minecraft.nbt.CompoundTag>> edit=c->{var own=f.own(p);c.accept(own);NovelVignettes.save(f.data(),p.getUUID(),own);};
+        h.runAfterDelay(12,()->{f.at(p,4.5,0,-13.5);p.setXRot(-90);f.click(p,NovelRooms.BUTTON);var own=f.own(p);var to=NightWardNight.walkTarget(own);
+            h.assertTrue(own.getInt("WardCalls")==1&&to!=null&&to.z>1.5&&Math.abs(to.x-.5)<.01,"the first quarter's answer walks up to the door from outside and no further: "+to);
+            h.assertTrue(own.getString("Cue").contains("past the door"),"the press is heard answered: "+own.getString("Cue"));});
+        h.runAfterDelay(70,()->{var own=f.own(p);var stop=own.getCompound("WardLastStop");
+            h.assertTrue(!own.contains("WardWalk")&&stop.getInt("Q")==0&&stop.getDouble("Z")>1.5,"the footsteps stopped outside the door");
+            h.assertTrue(own.getString("Cue").contains("Nobody comes in"),"and nobody came in: "+own.getString("Cue"));
+            edit.accept(o->o.putInt("WardTicks",2*NightWardNight.QUARTER-5));});
+        h.runAfterDelay(100,()->{var own=f.own(p);int shut=own.getInt("WardShut");var views=NightWardNight.views(own,own.getInt("WardTicks"));
+            h.assertTrue(shut==7,"the first three open bays have been drawn while the reader looked away: "+Integer.toBinaryString(shut));
+            h.assertTrue(views.size()==13&&views.get(new BlockPos(-6,NightWard.CEILING_Y,-3)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.LIGHT_OFF,"the station light is out and the drawn curtains are this reader's own view");
+            h.assertTrue(f.l.getBlockState(f.b.offset(-5,0,-7)).isAir()&&f.l.getBlockState(f.b.offset(-6,NightWard.CEILING_Y,-3)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.LIGHT,"the ward itself is unchanged for everyone else");
+            h.assertTrue(own.getBoolean("Alarm"),"the monitor is calling again");f.click(p,NovelRooms.BUTTON);var to=NightWardNight.walkTarget(f.own(p));
+            h.assertTrue(to!=null&&Math.abs(to.x-6.5)<.01&&Math.abs(to.z+15.5)<.01,"in the third quarter they walk to the drawn bay nearest the reader: "+to);
+            edit.accept(o->o.getCompound("WardWalk").putInt("T",150));});
+        h.runAfterDelay(125,()->{var own=f.own(p);
+            h.assertTrue(!own.contains("WardWalk")&&own.getCompound("WardLastStop").getInt("Q")==2&&own.getString("Cue").contains("behind a curtain"),"they stopped behind the curtain: "+own.getString("Cue"));
+            edit.accept(o->{o.putInt("WardTicks",3*NightWardNight.QUARTER+5);o.putBoolean("Alarm",true);o.putInt("NextAlarm",NovelVignettes.WARD_NIGHT);o.putInt("AlarmSince",3*NightWardNight.QUARTER+5-NightWardNight.UNANSWERED);});});
+        h.runAfterDelay(130,()->{var own=f.own(p);var w=own.getCompound("WardWalk");var to=NightWardNight.walkTarget(own);
+            h.assertTrue(own.getBoolean("WardRan")&&w.getBoolean("Run")&&to!=null&&to.distanceTo(new net.minecraft.world.phys.Vec3(4.5,0,-12.2))<.05,"a call left ringing late in the night brings them running to just behind the reader: "+to);
+            edit.accept(o->o.getCompound("WardWalk").putInt("T",400));});
+        h.runAfterDelay(140,()->{var own=f.own(p);
+            h.assertTrue(own.getCompound("WardLastStop").getBoolean("Run")&&own.contains("WardFlicker")&&NightWardNight.views(own,own.getInt("WardTicks")).get(new BlockPos(0,NightWard.CEILING_Y,-14)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.LIGHT_OFF,"they stop behind the reader and the incubator light goes out a moment");
+            h.assertTrue(own.getString("Cue").contains("behind you")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOSPITAL),"none of it is a resolution");
+            edit.accept(o->o.putInt("WardTicks",NovelVignettes.WARD_NIGHT-1));});
+        h.runAfterDelay(150,()->{var own=f.own(p);
+            h.assertTrue(own.getBoolean("WardFinished")&&!own.contains("WardShut")&&!own.contains("WardWalk")&&!own.contains("WardFlicker"),"dawn shows the ward whole again and forgets the night");h.succeed();});
+    }
 
 }

@@ -1163,5 +1163,8 @@
   "advancements.the_oldest_house.account.deer_road.title": "A deer in the road",
   "advancements.the_oldest_house.account.deer_road.description": "I hit a doe on a county road in the rain.",
   "subtitles.the_oldest_house.yard.follow": "Footsteps",
-  "subtitles.the_oldest_house.yard.wind": "Wind bends the trees"
+  "subtitles.the_oldest_house.yard.wind": "Wind bends the trees",
+  "subtitles.the_oldest_house.ward.pulse": "The monitor beeps",
+  "subtitles.the_oldest_house.ward.step": "Footsteps",
+  "subtitles.the_oldest_house.ward.curtain": "A curtain is drawn"
 }

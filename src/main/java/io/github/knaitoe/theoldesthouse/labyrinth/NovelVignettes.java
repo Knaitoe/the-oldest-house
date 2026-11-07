@@ -65,7 +65,7 @@ public final class NovelVignettes {
         }
         if(place==LabyrinthPlace.WHALE)WhaleInstitute.arrive(p,own);
         if(place==LabyrinthPlace.PLAIN)HousePackets.send(p,new NovelScenePayload(4,0,"",0,0));
-        if(place==LabyrinthPlace.HOSPITAL&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("WardCalls",0);own.putBoolean("Alarm",false);}
+        if(place==LabyrinthPlace.HOSPITAL&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("WardCalls",0);own.putBoolean("Alarm",false);NightWardNight.reset(own);}
         if(place==LabyrinthPlace.KAREN_ROOM){showRecord(p,own);p.displayClientMessage(Component.literal("The bed remembers your place. Use the projector to change photographs; sneak-use it to take your originals."),false);}
         save(data,p.getUUID(),own);
     }
@@ -125,7 +125,7 @@ public final class NovelVignettes {
         else if(place==LabyrinthPlace.PLAIN&&rel.equals(NovelRooms.APOLOGY))open(p,place,PlaytestScenes0488.plainOriginal(p.serverLevel(),b),"Apology",false,own);
         else if(place==LabyrinthPlace.PLAIN&&rel.equals(new BlockPos(3,0,-7)))reward(p,own,"Camera0464",new ItemStack(NovelRegistry.CAMERA.get()));
         else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.BUTTON)){
-            if(own.getBoolean("Alarm")){own.putBoolean("Alarm",false);own.putInt("WardCalls",own.getInt("WardCalls")+1);cue(p,own,"The button clicks. No footsteps follow.");}
+            if(own.getBoolean("Alarm")){own.putBoolean("Alarm",false);own.putInt("WardCalls",own.getInt("WardCalls")+1);NightWardNight.answer(p,b,own);}
         }else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.WARD_NOTE)){
             open(p,place,own.getBoolean("WardFinished")?NovelTexts.hospitalLast():NovelTexts.hospitalOpening(),own.getBoolean("WardFinished")?"WardLast":"WardOpening",own.getBoolean("WardFinished"),own);
         }else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.PROJECTOR)){if(p.isShiftKeyDown())SecretPhotographs.open(p);else{own.putInt("Projection",own.getInt("Projection")+1);showRecord(p,own);}}
@@ -155,14 +155,15 @@ public final class NovelVignettes {
                 else if(place==LabyrinthPlace.PLAIN)tickPlain(p,b,own);
                 else if(place==LabyrinthPlace.HOSPITAL&&!own.getBoolean("WardFinished")){
                     int ticks=own.getInt("WardTicks")+1;own.putInt("WardTicks",ticks);int gap=Math.max(80,240-ticks/24);
-                    if(ticks==1||ticks>=own.getInt("NextAlarm")){own.putBoolean("Alarm",true);own.putInt("NextAlarm",ticks+gap);p.playNotifySound(NovelRegistry.MONITOR.get(),SoundSource.BLOCKS,.45F,1);cue(p,own,ticks>WARD_NIGHT-500?"The monitor calls sooner. The door stays shut.":"The monitor calls. The button is beside the incubator.");}
+                    if(ticks==1||ticks>=own.getInt("NextAlarm")){if(!own.getBoolean("Alarm"))own.putInt("AlarmSince",ticks);own.putBoolean("Alarm",true);own.putInt("NextAlarm",ticks+gap);p.playNotifySound(NovelRegistry.MONITOR.get(),SoundSource.BLOCKS,.45F,1);cue(p,own,ticks>WARD_NIGHT-500?"The monitor calls sooner. The door stays shut.":"The monitor calls. The button is beside the incubator.");}
                     if(ticks==1200||ticks==2600){p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.35F,.8F);cue(p,own,"Tom, over the radio: Is anybody there? I need—");}
-                    if(ticks>=WARD_NIGHT){own.putBoolean("WardFinished",true);own.putBoolean("Alarm",false);cue(p,own,"Dawn. The alarms stop. The chart has a final page.");}
+                    NightWardNight.tick(p,b,own,ticks);
+                    if(ticks>=WARD_NIGHT){own.putBoolean("WardFinished",true);own.putBoolean("Alarm",false);NightWardNight.end(p,b,own);cue(p,own,"Dawn. The alarms stop. The chart has a final page.");}
                 }
                 if(p.tickCount%20==0||own.getBoolean("CueFresh")){own.remove("CueFresh");boolean same=place.id().equals(own.getString("CuePlace"));int remaining=same?(int)Math.max(0,own.getLong("CueUntil")-p.serverLevel().getGameTime()):0;boolean covered=place==LabyrinthPlace.BARN_WELL&&coveredWait(p,own);
                     boolean descending=place==LabyrinthPlace.BARN_WELL&&WellSequence.shaft(p,b);
                     HousePackets.send(p,new NovelScenePayload(covered?14:descending?WellSequence.DESCENDING_MODE:PLACES.indexOf(place)+1,covered?own.getInt("WellTicks"):own.getInt("WardTicks"),remaining>0?own.getString("Cue"):"",remaining,0));}
-            }else if(own.getInt("WardTicks")>0&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("NextAlarm",0);own.putBoolean("Alarm",false);}
+            }else if(own.getInt("WardTicks")>0&&!own.getBoolean("WardFinished")){own.putInt("WardTicks",0);own.putInt("NextAlarm",0);own.putBoolean("Alarm",false);NightWardNight.end(p,base(p,LabyrinthPlace.HOSPITAL),own);}
             var pending=PENDING_PHOTOS.get(p.getUUID());
             if(pending!=null&&p.tickCount>=pending.due()&&participant(p)){
                 var site=pending.place();var b=LabyrinthPlaces.base(origin,site);var r=site.room();
