@@ -366,11 +366,75 @@ def wood():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.339, the field
+def earth():
+    # Field earth in the side of a cut: vanilla dirt's browns, a pebble or two.
+    im = noisy(['#6e4f35', '#634631', '#7a593c', '#5a3f2b'], 3110, [4, 3, 2, 2]); rnd = random.Random(3111)
+    for _ in range(4):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#8a8478')
+    return im
+
+
+def soil(stage):
+    # The loose soil at a gap's mouth, and what brushing it away shows: packed dirt with footprints in it, or cracked asphalt with the
+    # edge of an old painted line, soil still in the cracks.
+    rnd = random.Random(3112 + stage)
+    if stage == 0:
+        im = noisy(['#4a3424', '#53392a', '#3f2c1f', '#5c4230'], 3113, [4, 3, 3, 2])
+        for _ in range(9):
+            x, y = rnd.randrange(15), rnd.randrange(16)
+            dot(im, x, y, '#b8a868'); dot(im, x + 1, y, '#9c8c50')
+        return im
+    if stage == 1:
+        im = noisy(['#7a5c40', '#735538', '#806246', '#6c5034'], 3114, [4, 3, 2, 2])
+        for ox, oy in ((3, 2), (9, 8)):
+            for y in range(oy, oy + 6):
+                for x in range(ox, ox + 3):
+                    dot(im, x, y, '#4e3826')
+            for y in range(oy + 1, oy + 6, 2):
+                dot(im, ox + 1, y, '#3a2a1c')
+        return im
+    im = noisy(['#3a3a3c', '#333335', '#424244', '#2e2e30'], 3115, [4, 3, 2, 2])
+    for y in range(16):
+        dot(im, 2, y, '#b89a3a' if rnd.random() < .8 else '#5a5a50'); dot(im, 3, y, '#a88c34' if rnd.random() < .7 else '#4a4a48')
+    x, y = 6, 0
+    for _ in range(22):
+        dot(im, x, y, '#1c1c1e'); x = max(4, min(15, x + rnd.choice((-1, 0, 1)))); y = min(15, y + rnd.choice((0, 1, 1)))
+    for _ in range(6):
+        dot(im, rnd.randrange(4, 16), rnd.randrange(16), '#5c4230')
+    for x in range(12, 16):
+        for y in range(12, 16):
+            if x + y > 25:
+                dot(im, x, y, '#53392a')
+    return im
+
+
+def flat_corn():
+    # Corn pressed flat under her forearm: broken stalks lying one way, pale where they split, the dirt between them.
+    im = noisy(['#4a3424', '#53392a'], 3116); rnd = random.Random(3117)
+    for row in range(0, 16, 3):
+        for x in range(16):
+            y = (row + x // 3) % 16
+            dot(im, x, y, rnd.choice(['#b8a868', '#a89858', '#8c8a48'])); dot(im, x, (y + 1) % 16, '#6c7a38')
+    return im
+
+
+def tin():
+    # The surveyor's tin box: grey-green paint dented and chipped, a paper label gone soft with damp.
+    im = noisy(['#5c6a58', '#566452', '#627060'], 3118)
+    fill(im, 3, 4, 13, 11, '#ddd2b4'); frame(im, 3, 4, 13, 11, '#a89c7e')
+    for y in (6, 8):
+        line(im, 5, y, 11, y, '#6a6250')
+    dot(im, 1, 2, '#8a6a4a'); dot(im, 14, 13, '#8a6a4a')
+    return im
+
+
 def textures():
     out = {f'block/sphinx_{k}.png': v for k, v in materials().items()}
     t = {'fur': fur(), 'claw': claw(), 'pad': pad(), 'iron': iron(), 'brass': brass(), 'pot': pot(), 'umbrella': umbrella(), 'flap': flap(), 'latch_0': latch(False), 'latch_1': latch(True),
          'grille': grille(), 'socket': socket(), 'tag': tag(), 'rail': rail(), 'chip': chip(), 'tray': tray(), 'grate': grate(), 'ashlar': ashlar(3098),
-         'shelf': shelf(), 'peg': peg(), 'wood': wood(), 'rock': rock(3106), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark()}
+         'shelf': shelf(), 'peg': peg(), 'wood': wood(), 'rock': rock(3106), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark(),
+         'earth': earth(), 'soil_0': soil(0), 'soil_1': soil(1), 'soil_2': soil(2), 'flat_corn': flat_corn(), 'tin': tin()}
     for look in range(9):
         for i, q in enumerate(eye_tiles(look)):
             t[f'eye_{look}_{i}'] = q
@@ -460,6 +524,13 @@ def fitting_models():
     m['ladder_1'] = model(hinge, {'w': 'wood', 'p': 'peg'}, 'wood')
     m['ladder_2'] = model(hinge, {'w': 'wood', 'p': 'peg'}, 'wood')
     m['span_0'] = model(hook, {'w': 'wood'}, 'wood')
+    # 0.4.339, the field: the loose soil at a gap's mouth, brushed to footprints (1) or to the old road (2); corn pressed flat; the
+    # surveyor's tin box on its post at the turnout.
+    for st in range(3):
+        m[f'soil_{st}'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'e', 'up': 's'})], {'e': 'earth', 's': f'soil_{st}'}, f'soil_{st}')
+    m['flat_0'] = model([element([0, 0, 0], [16, 2, 16], {'all': 'f'})], {'f': 'flat_corn'}, 'flat_corn')
+    m['box_0'] = model([element([7, 0, 7], [9, 10, 9], {'all': 'w'}), element([4, 10, 5], [12, 15, 11], {'all': 't'}), element([3.5, 15, 4.5], [12.5, 16, 11.5], {'all': 't'})],
+                       {'w': 'wood', 't': 'tin'}, 'tin')
     for look in range(9):
         for i in range(8):
             # 0.4.336: her face turned sideways to see under the overhang: the eye upright, facing south, the picture's top upward.
@@ -476,9 +547,9 @@ def fitting_models():
     return m
 
 
-KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach', 'survey', 'rail', 'tray', 'chip', 'grate', 'limb', 'shelf', 'peg', 'ladder', 'span']
+KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach', 'survey', 'rail', 'tray', 'chip', 'grate', 'limb', 'shelf', 'peg', 'ladder', 'span', 'soil', 'flat', 'box']
 STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'reach': 1, 'survey': 3, 'rail': 3, 'tray': 1, 'chip': 1, 'grate': 2, 'limb': 1,
-          'shelf': 2, 'peg': 1, 'ladder': 3, 'span': 1}
+          'shelf': 2, 'peg': 1, 'ladder': 3, 'span': 1, 'soil': 3, 'flat': 1, 'box': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 3
 NAMES = {'sphinx_fitting': 'Vestibule Fittings', 'sphinx_tile': 'Quarry Tiles', 'sphinx_marked': 'Marked Tile', 'sphinx_plaster': 'Limewash Plaster',

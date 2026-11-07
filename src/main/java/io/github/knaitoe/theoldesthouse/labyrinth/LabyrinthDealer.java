@@ -241,6 +241,7 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.SPHINX_STAIR);
         // 0.4.338: her third crossing (SphinxShelf), a rare detour in the dark halls, the staircase approach included.
         gray.add(LabyrinthPlace.SPHINX_SHELF);
+        gray.add(LabyrinthPlace.SPHINX_FIELD);
         // 0.4.309: the yard's turn-around (YardRooms), an outdoor breather, from the third crossing.
         gray.add(LabyrinthPlace.YARD_TURNAROUND);
         gray.add(LabyrinthPlace.YARD_DITCH);gray.add(LabyrinthPlace.YARD_CLOTHESLINE);
@@ -576,6 +577,7 @@ public final class LabyrinthDealer {
         if (QuietRooms.is(place)) return QuietRooms.weight(data, player, place);
         if (TruantPlaces.is(place)) return TruantPlaces.weight(data, player, depth);
         if (YardCrossings.is(place)) return YardCrossings.weight(data, player, place, depth);
+        if (place == LabyrinthPlace.SPHINX_FIELD) return SphinxField.weight(data, player, depth);
         return PuzzleRooms.is(place) ? PuzzleRooms.weight(data, player, place, depth) : grayWeight(place, depth);
     }
 
@@ -605,6 +607,8 @@ public final class LabyrinthDealer {
             case SPHINX_STAIR -> depth < LabyrinthPacing.DEEP_DEPTH || depth >= DarkHalls.DARK_DEPTH ? 0 : 2;
             // 0.4.338: the shelf, as rare, from the dark halls on, down to the staircase.
             case SPHINX_SHELF -> depth < DarkHalls.DARK_DEPTH ? 0 : 2;
+            // 0.4.339: the field, per reader (SphinxField.weight); without a reader, never.
+            case SPHINX_FIELD -> 0;
             // 0.4.309: the yard, an outdoor breather during an expedition: after the domestic opening, from the story depth.
             case YARD_TURNAROUND, YARD_DITCH, YARD_CLOTHESLINE -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 2;
             case YARD_SURVEY, YARD_REUNION, YARD_LONG_DRIVE, YARD_PORCH_TURN, YARD_JOISTS -> 0;

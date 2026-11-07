@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 104;
+    public static final int VERSION = 105;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -528,6 +528,7 @@ public final class LabyrinthBuilder {
         if(TruantYard.is(place)){var yard=server.getLevel(HouseDimensions.OUTSIDE);if(yard!=null){TruantYard.build(yard,base,place);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.YARD_REUNION||YardFields.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){if(place==LabyrinthPlace.YARD_REUNION)YardRooms.build(site,base,place);else YardFields.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
         if(YardConnectors.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardConnectors.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
+        if(place==LabyrinthPlace.SPHINX_FIELD){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){SphinxField.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(YardCrossings.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardCrossings.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.BACKSEAT){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){BackseatRooms.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(HouseReadSites.kind(place)!=null)return; // Only owner copies are ever constructed.

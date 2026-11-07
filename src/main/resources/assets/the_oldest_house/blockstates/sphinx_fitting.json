@@ -764,6 +764,141 @@
     "facing=west,kind=span,stage=2": {
       "model": "the_oldest_house:block/sphinx/span_0",
       "y": 270
+    },
+    "facing=north,kind=soil,stage=0": {
+      "model": "the_oldest_house:block/sphinx/soil_0"
+    },
+    "facing=north,kind=soil,stage=1": {
+      "model": "the_oldest_house:block/sphinx/soil_1"
+    },
+    "facing=north,kind=soil,stage=2": {
+      "model": "the_oldest_house:block/sphinx/soil_2"
+    },
+    "facing=east,kind=soil,stage=0": {
+      "model": "the_oldest_house:block/sphinx/soil_0",
+      "y": 90
+    },
+    "facing=east,kind=soil,stage=1": {
+      "model": "the_oldest_house:block/sphinx/soil_1",
+      "y": 90
+    },
+    "facing=east,kind=soil,stage=2": {
+      "model": "the_oldest_house:block/sphinx/soil_2",
+      "y": 90
+    },
+    "facing=south,kind=soil,stage=0": {
+      "model": "the_oldest_house:block/sphinx/soil_0",
+      "y": 180
+    },
+    "facing=south,kind=soil,stage=1": {
+      "model": "the_oldest_house:block/sphinx/soil_1",
+      "y": 180
+    },
+    "facing=south,kind=soil,stage=2": {
+      "model": "the_oldest_house:block/sphinx/soil_2",
+      "y": 180
+    },
+    "facing=west,kind=soil,stage=0": {
+      "model": "the_oldest_house:block/sphinx/soil_0",
+      "y": 270
+    },
+    "facing=west,kind=soil,stage=1": {
+      "model": "the_oldest_house:block/sphinx/soil_1",
+      "y": 270
+    },
+    "facing=west,kind=soil,stage=2": {
+      "model": "the_oldest_house:block/sphinx/soil_2",
+      "y": 270
+    },
+    "facing=north,kind=flat,stage=0": {
+      "model": "the_oldest_house:block/sphinx/flat_0"
+    },
+    "facing=north,kind=flat,stage=1": {
+      "model": "the_oldest_house:block/sphinx/flat_0"
+    },
+    "facing=north,kind=flat,stage=2": {
+      "model": "the_oldest_house:block/sphinx/flat_0"
+    },
+    "facing=east,kind=flat,stage=0": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 90
+    },
+    "facing=east,kind=flat,stage=1": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 90
+    },
+    "facing=east,kind=flat,stage=2": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 90
+    },
+    "facing=south,kind=flat,stage=0": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 180
+    },
+    "facing=south,kind=flat,stage=1": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 180
+    },
+    "facing=south,kind=flat,stage=2": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 180
+    },
+    "facing=west,kind=flat,stage=0": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 270
+    },
+    "facing=west,kind=flat,stage=1": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 270
+    },
+    "facing=west,kind=flat,stage=2": {
+      "model": "the_oldest_house:block/sphinx/flat_0",
+      "y": 270
+    },
+    "facing=north,kind=box,stage=0": {
+      "model": "the_oldest_house:block/sphinx/box_0"
+    },
+    "facing=north,kind=box,stage=1": {
+      "model": "the_oldest_house:block/sphinx/box_0"
+    },
+    "facing=north,kind=box,stage=2": {
+      "model": "the_oldest_house:block/sphinx/box_0"
+    },
+    "facing=east,kind=box,stage=0": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 90
+    },
+    "facing=east,kind=box,stage=1": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 90
+    },
+    "facing=east,kind=box,stage=2": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 90
+    },
+    "facing=south,kind=box,stage=0": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 180
+    },
+    "facing=south,kind=box,stage=1": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 180
+    },
+    "facing=south,kind=box,stage=2": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 180
+    },
+    "facing=west,kind=box,stage=0": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 270
+    },
+    "facing=west,kind=box,stage=1": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 270
+    },
+    "facing=west,kind=box,stage=2": {
+      "model": "the_oldest_house:block/sphinx/box_0",
+      "y": 270
     }
   }
 }

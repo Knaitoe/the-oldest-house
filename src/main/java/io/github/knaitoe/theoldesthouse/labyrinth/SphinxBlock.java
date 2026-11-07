@@ -32,12 +32,14 @@ import net.minecraft.world.phys.shapes.*;
  * <li>0.4.338, the shelf: a stone shelf, settled (0) or lifted as she breathes (1); an iron survey pin in the far wall; the short ladder
  * stowed (0), lowered (1) or dropped toward a false shelf (2); the ladder lying across the gap.</li>
  * <li>0.4.334: a survey socket on the wall beside a choice, empty (0), with one reader's pin in it (1), or with two or more (2).</li>
+ * <li>0.4.339, the field: the loose soil at a gap's mouth, brushed to footprints (1) or to the old road (2); corn pressed flat under
+ * her forearm; the surveyor's tin box on its post.</li>
  * </ul>
  */
 public final class SphinxBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<SphinxBlock> CODEC=simpleCodec(SphinxBlock::new);
     public enum Kind implements StringRepresentable {
-        STAND,FLAP,LATCH,PIN,GRILLE,FINGERS,REACH,SURVEY,RAIL,TRAY,CHIP,GRATE,LIMB,SHELF,PEG,LADDER,SPAN;
+        STAND,FLAP,LATCH,PIN,GRILLE,FINGERS,REACH,SURVEY,RAIL,TRAY,CHIP,GRATE,LIMB,SHELF,PEG,LADDER,SPAN,SOIL,FLAT,BOX;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -72,6 +74,9 @@ public final class SphinxBlock extends HorizontalDirectionalBlock {
             case PEG->box(f,5,0,3,11,3,16);
             case LADDER->s.getValue(STAGE)==0?box(f,2,0,11,14,16,13):box(f,1,0,10,15,2,16);
             case SPAN->Block.box(0,13,0,16,16,16);
+            case SOIL->Shapes.block();
+            case FLAT->Block.box(0,0,0,16,2,16);
+            case BOX->Shapes.or(Block.box(7,0,7,9,10,9),Block.box(4,10,5,12,16,11));
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
@@ -80,14 +85,14 @@ public final class SphinxBlock extends HorizontalDirectionalBlock {
             case FLAP->getShape(s,l,p,c);
             // Shut, a stair's gate is as tall as a fence to a body: nobody steps over it.
             case RAIL->s.getValue(STAGE)==0?Shapes.or(getShape(s,l,p,c),box(s.getValue(FACING),0,16,7,16,24,9)):Shapes.empty();
-            case TRAY,GRATE,SHELF,SPAN->getShape(s,l,p,c);
+            case TRAY,GRATE,SHELF,SPAN,SOIL,BOX->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
-        return Sphinx.use(p,pos,s)||SphinxStair.use(p,pos,s)||SphinxShelf.use(p,pos,s)?InteractionResult.CONSUME:InteractionResult.PASS;
+        return Sphinx.use(p,pos,s)||SphinxStair.use(p,pos,s)||SphinxShelf.use(p,pos,s)||SphinxField.use(p,pos,s)?InteractionResult.CONSUME:InteractionResult.PASS;
     }
     /** A caught latch drops back. */
     @Override protected void tick(BlockState s,net.minecraft.server.level.ServerLevel l,BlockPos p,net.minecraft.util.RandomSource r){Sphinx.latchDown(l,p,s);}
