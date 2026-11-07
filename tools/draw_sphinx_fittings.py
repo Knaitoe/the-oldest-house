@@ -13,6 +13,7 @@ import random
 from PIL import Image
 
 from draw_tank_fittings import shade, fill, dot, frame, line, element
+import sphinx_face_art
 
 ROOT = Path(__file__).resolve().parents[1]
 A = ROOT / 'src/main/resources/assets/the_oldest_house'
@@ -481,7 +482,7 @@ STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 3
 NAMES = {'sphinx_fitting': 'Vestibule Fittings', 'sphinx_tile': 'Quarry Tiles', 'sphinx_marked': 'Marked Tile', 'sphinx_plaster': 'Limewash Plaster',
-         'sphinx_ceiling': 'Spruce Ceiling', 'sphinx_seam': 'Cracked Plaster', 'sphinx_dark': 'Dark Plaster', 'sphinx_eye': 'Eye in the Dark',
+         'sphinx_ceiling': 'Spruce Ceiling', 'sphinx_seam': 'Cracked Plaster', 'sphinx_dark': 'Dark Plaster', 'sphinx_eye': 'Eye in the Dark', 'sphinx_face': 'Her Face in the Dark',
          'sphinx_ashlar': 'Dressed Stone', 'sphinx_flags': 'Worn Flagstones', 'sphinx_ashlar_seam': 'Cracked Masonry', 'sphinx_rock': 'Dark Rock', 'sphinx_rock_seam': 'Closed Rock'}
 
 
@@ -505,6 +506,9 @@ def files():
     faces = {0: '', 1: 'up_', 2: 'side_'}
     out['blockstates/sphinx_eye.json'] = {'variants': {f'face={face},look={look},tile={i}': {'model': NS + f'block/sphinx/eye_{prefix}{look}_{i}'}
                                                        for look in range(9) for i in range(8) for face, prefix in faces.items()}}
+    # 0.4.337: her face over the first crossing's hall is drawn by its renderer; the block itself shows nothing.
+    out['models/block/sphinx/face_anchor.json'] = {'textures': {'particle': P + 'skin_dark'}}
+    out['blockstates/sphinx_face.json'] = {'multipart': [{'apply': {'model': NS + 'block/sphinx/face_anchor'}}]}
     return out
 
 
@@ -529,6 +533,15 @@ def main():
                 assert actual.convert('RGBA').tobytes() == im.tobytes(), rel
         else:
             path.parent.mkdir(parents=True, exist_ok=True); im.save(path, optimize=True)
+    # Her face and its eyes: pictures for the renderer, not block textures.
+    face = sphinx_face_art.pictures()
+    for rel, im in face.items():
+        path = A / 'textures' / rel
+        if check:
+            with Image.open(path) as actual:
+                assert actual.convert('RGBA').tobytes() == im.tobytes(), rel
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True); im.save(path, optimize=True)
     for rel, obj in data.items():
         path = A / rel
         if check:
@@ -543,7 +556,7 @@ def main():
             lang[key] = name
     if not check:
         lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
-    print(('Verified' if check else 'Drew') + f' the Sphinx\'s vestibule: {len(images)} textures, {len(data)} models and states.')
+    print(('Verified' if check else 'Drew') + f' the Sphinx\'s vestibule: {len(images)} textures, {len(face)} pictures of her face, {len(data)} models and states.')
 
 
 if __name__ == '__main__':

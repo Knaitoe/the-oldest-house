@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "the_oldest_house:block/sphinx/face_anchor"
+      }
+    }
+  ]
+}

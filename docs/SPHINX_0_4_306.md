@@ -72,7 +72,7 @@ contain": she is not in the hall. She lies in the dark over the chambers, on the
   above. The later crossings use the same proportions.
 - **The eye looks down.** It lies face down over the top of the wall, its front row leaning out over the hall, so looking up from anywhere
   in the hall finds it face-on. Only the eye is lit (light 8); beyond the lids its skin fades into the dark and then nothing, so no block
-  edge shows. One eye, no face.
+  edge shows. One eye, no face. (Since 0.4.337 her whole face rises over the wall instead: docs/SPHINX_FACE_0_4_337.md.)
 - **Paced reveal.** On entering the hall: her voice from over the frames, nothing seen. A wrong latch: the warning, and the eye opens over
   that door and looks down for seven seconds while grit runs off the wall top in front of whoever is at the latch, and her breath comes
   from above; then it closes. Pulling the pin: grit, the eye opens and stays, her fingers come over the top of the wall and down its hall

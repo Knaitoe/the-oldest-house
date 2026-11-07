@@ -86,6 +86,10 @@ public final class PuzzleRegistry {
     public static final DeferredBlock<SphinxBlock> SPHINX=BLOCKS.registerBlock("sphinx_fitting",SphinxBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SphinxEyeBlock>> SPHINX_EYE_TYPE=CODECS.register("sphinx_eye",()->SphinxEyeBlock.CODEC);
     public static final DeferredBlock<SphinxEyeBlock> SPHINX_EYE=BLOCKS.registerBlock("sphinx_eye",SphinxEyeBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().noCollission().lightLevel(s->8));
+    /** 0.4.337: her whole face over the first crossing's hall, drawn by its renderer. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SphinxFaceBlock>> SPHINX_FACE_TYPE=CODECS.register("sphinx_face",()->SphinxFaceBlock.CODEC);
+    public static final DeferredBlock<SphinxFaceBlock> SPHINX_FACE=BLOCKS.registerBlock("sphinx_face",SphinxFaceBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().noCollission());
+    public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<SphinxFaceBlock.Face>> SPHINX_FACE_BE=BES.register("sphinx_face",()->BlockEntityType.Builder.of(SphinxFaceBlock.Face::new,SPHINX_FACE.get()).build(null));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> SPHINX_VOICE=sound("sphinx.voice"),SPHINX_BREATH=sound("sphinx.breath"),SPHINX_LATCH=sound("sphinx.latch"),
         SPHINX_CATCH=sound("sphinx.catch"),SPHINX_PIN=sound("sphinx.pin"),SPHINX_STRIKE=sound("sphinx.strike"),SPHINX_SCRAPE=sound("sphinx.scrape"),
         // 0.4.335: the later crossings, the dream and the stone.

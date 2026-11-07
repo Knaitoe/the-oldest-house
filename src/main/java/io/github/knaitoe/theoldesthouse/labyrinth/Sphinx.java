@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -55,23 +56,40 @@ public final class Sphinx {
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
     // ------------------------------------------------------------------ the plan
-    /** The three doors' columns along the hall's north wall (z -10); their chambers run north of it, z -11..-15. */
+    /**
+     * The three doors' columns along the hall's north wall (z -14); their chambers run north of it, z -15..-19. 0.4.337: the hall is six deep
+     * (z -8..-13), so that from most of it her whole face can be seen over the wall.
+     */
     public static final int[] DOORS={-6,0,6};
-    public static final int DOOR_Z=-10,HALL_Z0=-8,HALL_Z1=-9,CHAMBER_MID=-13;
+    public static final int DOOR_Z=-14,HALL_Z0=-8,HALL_Z1=-13,CHAMBER_MID=-17;
     /** The two marked tiles in the vestibule (x -1 and 1, z -3); the jib beside the entry and the jib on the way onward. */
     public static final BlockPos TILE_A=new BlockPos(-1,0,-3),TILE_B=new BlockPos(1,0,-3),JIB_IN=new BlockPos(-2,0,0),JIB_ON=new BlockPos(3,0,-3),GRILLE_AT=new BlockPos(-1,1,-7);
     /** The onward corridor's column, and how far she reaches across the hall from her door. */
     /** The onward corridor's column; how far she reaches across the hall from her door; where she sweeps a reader back to, just past the corridor's sill. */
     public static final int ONWARD_X=10,REACH=6;public static final double SILL_Z=-6.4;
     /**
-     * Her scale, fixed here for every crossing: an eye four blocks across and two deep, fingers two blocks long, a hand that comes down from five above.
      * The hall rises into the dark; its north wall stops at WALL_TOP, and over it and back from it is her space, the dark over the
-     * chambers, CAVITY_Z0..CAVITY_Z1 deep, up to TOP. Her eye sits back in it, EYE_Z, at EYE_Y, looking over the wall.
+     * chambers, CAVITY_Z0..CAVITY_Z1 deep, up to TOP (0.4.337: the room stands one block into its slot, so the dark goes up to 22).
      */
-    public static final int DARK_FROM=5,TOP=18,WALL_TOP=4,CAVITY_Z0=-11,CAVITY_Z1=-17,EYE_Y=10,EYE_Z=-10,PEEK=140;
+    public static final int DARK_FROM=5,TOP=22,WALL_TOP=4,CAVITY_Z0=-15,CAVITY_Z1=-21,PEEK=140;
     public static BlockPos door(int i){return new BlockPos(DOORS[i],0,DOOR_Z);}
-    /** Her eye, face down, leaning out over the top of the wall above door i and looking straight down into the hall: its north-west block. Four wide (x c-1..c+2), two deep (z EYE_Z, EYE_Z+1, the front row out over the hall). */
-    public static BlockPos eye(int i){return new BlockPos(DOORS[i]-1,EYE_Y,EYE_Z);}
+    /** Where her voice and breath come from over door i: the dark above the wall top. */
+    public static BlockPos over(int i){return new BlockPos(DOORS[i],WALL_TOP+3,DOOR_Z);}
+    /**
+     * 0.4.337 (owner: "The first sphinx vignette also needs a fully visible sphinx face"): her face, the whole of it, leaning out over the top
+     * of the hall wall and looking down. One block in the dark over the wall holds it ({@link SphinxFaceBlock}); its renderer draws the
+     * picture (tools/sphinx_face_art.py, 288 by 240 pixels, sixteen to a block) eighteen blocks across, from her chin just over the wall top
+     * to the crown of her headcloth leaning out over the back of the hall. Her eyes are each about three blocks across.
+     */
+    public static final BlockPos FACE=new BlockPos(0,14,DOOR_Z);
+    public static final int FACE_PX_W=288,FACE_PX_H=240;
+    public static final double FACE_X0=-8.5,CHIN_Y=7.0,CHIN_Z=DOOR_Z+.75,CROWN_Y=21.6,CROWN_Z=DOOR_Z+5.4;
+    /** Her eyes' centres in the picture. */
+    public static final double[][] FACE_EYES={{100,100},{188,100}};
+    /** A point of her face, relative to the room's base, from a pixel of the picture (x across from her right, y down from her crown). */
+    public static Vec3 faceAt(double px,double py){double f=py/FACE_PX_H;return new Vec3(FACE_X0+px*(18.0/FACE_PX_W),CROWN_Y+(CHIN_Y-CROWN_Y)*f,CROWN_Z+(CHIN_Z-CROWN_Z)*f);}
+    /** The way her face looks: out over the hall and down. */
+    public static Vec3 faceNormal(){return new Vec3(0,CHIN_Z-CROWN_Z,CROWN_Y-CHIN_Y).normalize();}
     public static BlockPos flap(int i){return new BlockPos(DOORS[i]-1,0,DOOR_Z);}
     public static BlockPos latch(int i){return new BlockPos(DOORS[i]+1,1,HALL_Z1);}
     public static BlockPos pin(int i){return new BlockPos(DOORS[i]-1,1,HALL_Z1);}
@@ -126,15 +144,17 @@ public final class Sphinx {
         box(l,b,-9,0,HALL_Z1,ONWARD_X-1,TOP-1,HALL_Z0,air);box(l,b,ONWARD_X,0,HALL_Z1,ONWARD_X,2,HALL_Z0,air);
         // Over the top of the hall's north wall, and back from it, the dark she lies in, over the chambers.
         box(l,b,-9,WALL_TOP+1,DOOR_Z,9,TOP-1,CAVITY_Z1,air);
+        // 0.4.337: where her face is, in the dark over the wall; it shows only while she looks.
+        set(l,b,FACE,SphinxFaceBlock.of(false,SphinxFaceBlock.AHEAD));
         // The lamps hang on chains that go up out of sight.
         for(int x:new int[]{-3,3}){set(l,b,x,2,HALL_Z0,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));for(int y=3;y<TOP;y++)set(l,b,x,y,HALL_Z0,Blocks.CHAIN.defaultBlockState());}
         // The chambers: each the vestibule again, seen from its hall door, the stand on one tile or the other.
         for(int i=0;i<3;i++){
             int c=DOORS[i];
-            box(l,b,c-2,0,-11,c+2,3,-15,air);box(l,b,c-2,4,-11,c+2,4,-15,ceiling);
+            box(l,b,c-2,0,DOOR_Z-1,c+2,3,DOOR_Z-5,air);box(l,b,c-2,4,DOOR_Z-1,c+2,4,DOOR_Z-5,ceiling);
             set(l,b,c-1,-1,CHAMBER_MID,mat("marked"));set(l,b,c+1,-1,CHAMBER_MID,mat("marked"));
-            set(l,b,c-2,0,-15,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
-            set(l,b,c+2,2,-11,Blocks.LANTERN.defaultBlockState());set(l,b,c+2,1,-11,Blocks.SPRUCE_FENCE.defaultBlockState());
+            set(l,b,c-2,0,DOOR_Z-5,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
+            set(l,b,c+2,2,DOOR_Z-1,Blocks.LANTERN.defaultBlockState());set(l,b,c+2,1,DOOR_Z-1,Blocks.SPRUCE_FENCE.defaultBlockState());
             boolean onA=i==live?!r.getBoolean("StandB"):staged(live,i);
             set(l,b,chamberTile(i,onA),SphinxBlock.of(STAND,Direction.NORTH));
             if(sealed(l,i)){set(l,b,door(i),mat("seam"));set(l,b,door(i).above(),mat("seam"));}
@@ -149,7 +169,7 @@ public final class Sphinx {
         box(l,b,4,0,-3,ONWARD_X,1,-3,air);
         set(l,b,JIB_ON,solved?air:wall);set(l,b,JIB_ON.above(),solved?air:wall);
         set(l,b,ONWARD_X,2,-14,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
-        r.remove("Provoked");r.remove("Emerged");r.putInt("Warned",0);room(l,r);
+        r.remove("Provoked");r.remove("Emerged");r.putInt("Warned",0);for(int i=0;i<3;i++)r.remove(peek(i));room(l,r);
         LabyrinthBuilder.entrance(l,b,wall,floor,ceiling);
         LabyrinthBuilder.doors(l,b,PLACE);
     }
@@ -242,10 +262,9 @@ public final class Sphinx {
             l.playSound(null,b.offset(door(i)),PuzzleRegistry.SPHINX_CATCH.get(),SoundSource.BLOCKS,1F,1F);
             var r=room(l);r.putInt("Warned",r.getInt("Warned")|(1<<i));room(l,r);
             set(l,b,pin(i),SphinxBlock.of(PIN,Direction.SOUTH,1));
-            voice(l,b,eye(i),"Not that one. Leave that one shut.",readers(l));
-            // 0.4.330 (owner: a second eye opening left the first open for good): each door keeps its own look, so two or three eyes can be
-            // open at once, all following the reader, each closing when its own time is up.
-            if(provoked(l)<0){openEye(l,b,i);r=room(l);r.putLong(peek(i),l.getGameTime()+PEEK);room(l,r);}
+            voice(l,b,over(i),"Not that one. Leave that one shut.",readers(l));
+            // 0.4.330: each door keeps its own look. 0.4.337: her face rises over the wall with the first and stays while any look lasts.
+            if(provoked(l)<0){showFace(l,b);r=room(l);r.putLong(peek(i),l.getGameTime()+PEEK);room(l,r);}
             // Her warning stands alone in the action bar; the catch is heard and the pin is there to be seen.
         }
     }
@@ -295,18 +314,20 @@ public final class Sphinx {
     private static final long[] EMPTY={0};
     static void update(ServerLevel l,BlockPos b){
         var readers=readers(l);var r=room(l);int live=live(l);long now=l.getGameTime();
-        // Wherever a reader goes, an open eye follows them.
-        if(now%4==0&&r.contains("Provoked"))follow(l,b,r.getInt("Provoked"));
+        // Wherever a reader goes, her eyes follow them.
+        if(now%4==0&&faceShown(l,b))follow(l,b);
+        boolean lapsed=false;
         for(int i=0;i<3;i++){
             if(!r.contains(peek(i)))continue;long until=r.getLong(peek(i));
-            if(until<=now){closeEye(l,b,i);r.remove(peek(i));room(l,r);continue;}
+            if(until<=now){r.remove(peek(i));room(l,r);lapsed=true;continue;}
             if(now%4!=0)continue;
-            follow(l,b,i);
             // While she looks, grit runs off the top of the wall over that door, down in front of whoever is at it: look up.
             var top=b.offset(door(i)).above(WALL_TOP+1);
             l.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST,Blocks.SAND.defaultBlockState()),top.getX()+.5,top.getY()+.1,top.getZ()+1.1,3,.8,.05,.1,0);
-            if(until-now==PEEK-40)l.playSound(null,b.offset(eye(i)),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,1.1F,.85F);
+            if(until-now==PEEK-40)l.playSound(null,b.offset(over(i)),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,1.1F,.85F);
         }
+        // The last look over: her face sinks back into the dark, unless she has been brought.
+        if(lapsed&&!peeking(r)&&provoked(l)<0)hideFace(l,b);
         for(var it=HAND.entrySet().iterator();it.hasNext();){var e=it.next();if(e.getValue()<=now){if(SphinxBlock.is(l.getBlockState(e.getKey()),SphinxBlock.Kind.REACH))l.setBlock(e.getKey(),Blocks.AIR.defaultBlockState(),FLAGS);it.remove();}}
         // A pin whose reader has gone (out of the place, or offline) comes out: unanswered.
         if(now%20<2)for(var uuid:SphinxCore.pins(l,ROOM).keySet()){var q=l.getServer().getPlayerList().getPlayer(uuid);if(q==null||!here(q))unpin(l,b,uuid);}
@@ -349,11 +370,11 @@ public final class Sphinx {
         if(forced>=0){
             var top=b.offset(door(forced)).above(2);
             if(r.getLong("Emerged")>now){
-                // Grit from the dark; the eye opens up there and looks down; then the fingers come down the wall.
+                // Grit from the dark; her face rises over the wall and looks down; then the paw comes over the wall top.
                 var high=b.offset(door(forced)).above(WALL_TOP+1);
                 l.sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST,Blocks.SAND.defaultBlockState()),high.getX()+.5,high.getY(),high.getZ()+.9,6,1.4,.1,.2,0);
                 long left=r.getLong("Emerged")-now;
-                if(left<=30&&!eyeOpen(l,b,forced))openEye(l,b,forced);
+                if(left<=30&&!faceShown(l,b))showFace(l,b);
                 if(left<=20)reach(l,b,forced,(int)Math.min(WALL_TOP-2,(20-left)/3+1));
                 return;
             }
@@ -383,35 +404,42 @@ public final class Sphinx {
             if(anyone)EMPTY[0]=0;else if(++EMPTY[0]>=50)withdraw(l,b);
         }
     }
-    /** The room's record of when the eye over door i, opened at a warning, closes again. */
+    /** The room's record of when her look over door i, begun at a warning, ends. */
     static String peek(int i){return "PeekUntil"+i;}
     static boolean peeking(CompoundTag r){for(int i=0;i<3;i++)if(r.contains(peek(i)))return true;return false;}
-    /** Her eye opens high in the dark above door i: two by two, the painted skin of her face round it. */
-    static void openEye(ServerLevel l,BlockPos b,int i){
-        var e=eye(i);
-        // Four by two, lying face down: seen from below its rows swap, so the north row carries the lower half of the picture. Nothing else of her is lit.
-        int look=lookAt(l,b,i);
-        for(int dx=0;dx<4;dx++)for(int dz=0;dz<2;dz++)set(l,b,e.offset(dx,0,dz),SphinxEyeBlock.of((dz==0?4:0)+dx,look));
-        l.playSound(null,b.offset(e).above(),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,.9F,1.1F);
+    /** Whether her face is up over the wall, looking. */
+    public static boolean faceShown(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(FACE));return SphinxFaceBlock.is(s)&&s.getValue(SphinxFaceBlock.SHOWN);}
+    /** Whether she is looking because of door i: its own warning still lasting, or it is the door she was brought to. */
+    public static boolean watching(ServerLevel l,BlockPos b,int i){return faceShown(l,b)&&(room(l).contains(peek(i))||provoked(l)==i);}
+    /** Her face rises out of the dark over the wall, looking at whoever is nearest. */
+    static void showFace(ServerLevel l,BlockPos b){
+        var s=l.getBlockState(b.offset(FACE));if(!SphinxFaceBlock.is(s)||s.getValue(SphinxFaceBlock.SHOWN))return;
+        l.setBlock(b.offset(FACE),s.setValue(SphinxFaceBlock.SHOWN,true).setValue(SphinxFaceBlock.LOOK,lookAt(l,b)),FLAGS);
+        l.playSound(null,b.offset(FACE),PuzzleRegistry.SPHINX_BREATH.get(),SoundSource.HOSTILE,1.2F,.9F);
     }
-    static void closeEye(ServerLevel l,BlockPos b,int i){var e=eye(i);for(int dx=0;dx<4;dx++)for(int dz=0;dz<2;dz++){var at=e.offset(dx,0,dz);if(SphinxEyeBlock.is(l.getBlockState(b.offset(at))))set(l,b,at,Blocks.AIR.defaultBlockState());}}
-    public static boolean eyeOpen(ServerLevel l,BlockPos b,int i){return SphinxEyeBlock.is(l.getBlockState(b.offset(eye(i))))&&SphinxEyeBlock.is(l.getBlockState(b.offset(eye(i)).offset(3,0,1)));}
-    /** Where her pupil turns: toward the nearest reader in the place, left/middle/right and away/under/toward the hall. */
-    public static int lookAt(ServerLevel l,BlockPos b,int i){
-        double cx=b.getX()+DOORS[i]+1,cz=b.getZ()+EYE_Z+1;ServerPlayer near=null;double best=Double.MAX_VALUE;
-        for(var p:readers(l)){double d=Math.pow(p.getX()-cx,2)+Math.pow(p.getZ()-cz,2);if(d<best){best=d;near=p;}}
-        if(near==null)return SphinxEyeBlock.AHEAD;
+    /** And sinks back into it. */
+    static void hideFace(ServerLevel l,BlockPos b){
+        var s=l.getBlockState(b.offset(FACE));if(SphinxFaceBlock.is(s)&&s.getValue(SphinxFaceBlock.SHOWN))l.setBlock(b.offset(FACE),s.setValue(SphinxFaceBlock.SHOWN,false),FLAGS);
+    }
+    /**
+     * Where her eyes turn: toward the nearest reader in the place, west/middle/east and right under her, the middle or the back of the hall.
+     * The renderer turns each iris smoothly toward that same reader.
+     */
+    public static int lookAt(ServerLevel l,BlockPos b){
+        double cx=b.getX()+.5,cz=b.getZ()+DOOR_Z+1;ServerPlayer near=null;double best=Double.MAX_VALUE;
+        // Whoever is in the hall below her first; only with the hall empty does she look toward someone further off.
+        for(var p:readers(l)){double d=Math.pow(p.getX()-cx,2)+Math.pow(p.getZ()-(cz+2.5),2)+(inHall(p,b)?0:10000);if(d<best){best=d;near=p;}}
+        if(near==null)return SphinxFaceBlock.AHEAD;
         double dx=near.getX()-cx,dz=near.getZ()-cz;
-        int col=dx<-1.2?0:dx>1.2?2:1,row=dz<-.4?0:dz>1.0?2:1;
+        int col=dx<-3?0:dx>3?2:1,row=dz<1.5?0:dz>4?2:1;
         return col+3*row;
     }
-    /** Turns an open eye's pupil, all eight blocks together. */
-    static void follow(ServerLevel l,BlockPos b,int i){
-        if(!eyeOpen(l,b,i))return;int look=lookAt(l,b,i);var e=eye(i);
-        if(l.getBlockState(b.offset(e)).getValue(SphinxEyeBlock.LOOK)==look)return;
-        for(int dx=0;dx<4;dx++)for(int dz=0;dz<2;dz++){var at=b.offset(e).offset(dx,0,dz);var st=l.getBlockState(at);if(SphinxEyeBlock.is(st))l.setBlock(at,st.setValue(SphinxEyeBlock.LOOK,look),FLAGS);}
+    /** Turns her eyes toward whoever is nearest now. */
+    static void follow(ServerLevel l,BlockPos b){
+        var s=l.getBlockState(b.offset(FACE));if(!SphinxFaceBlock.is(s)||!s.getValue(SphinxFaceBlock.SHOWN))return;int look=lookAt(l,b);
+        if(s.getValue(SphinxFaceBlock.LOOK)!=look)l.setBlock(b.offset(FACE),s.setValue(SphinxFaceBlock.LOOK,look),FLAGS);
     }
-    /** Her fingers down the wall from the dark, reaching to {@code down} blocks below her eye (0 withdrawn). */
+    /** Her paw over the wall top and her foreleg down its hall face, reaching {@code down} blocks (0 withdrawn). */
     static void reach(ServerLevel l,BlockPos b,int i,int down){
         for(int dx=-1;dx<=1;dx++){var over=door(i).offset(dx,WALL_TOP+1,0);var st=l.getBlockState(b.offset(over));
             if(down>0&&st.isAir())set(l,b,over,SphinxBlock.of(FINGERS,Direction.SOUTH));else if(down==0&&SphinxBlock.is(st,FINGERS))set(l,b,over,Blocks.AIR.defaultBlockState());}
@@ -422,7 +450,7 @@ public final class Sphinx {
     static void withdraw(ServerLevel l,BlockPos b){
         var r=room(l);int i=r.contains("Provoked")?r.getInt("Provoked"):-1;if(i<0)return;
         for(int dx=-1;dx<=1;dx++)set(l,b,door(i).offset(dx,2,1),Blocks.AIR.defaultBlockState());
-        closeEye(l,b,i);reach(l,b,i,0);
+        if(!peeking(r))hideFace(l,b);reach(l,b,i,0);
         if(!sealed(l,i))doorAt(l,b,i,false);
         set(l,b,pin(i),SphinxBlock.of(PIN,Direction.SOUTH));
         r.remove("Provoked");r.remove("Emerged");r.putInt("Warned",r.getInt("Warned")&~(1<<i));room(l,r);
