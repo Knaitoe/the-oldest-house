@@ -1,220 +1,652 @@
 {
   "variants": {
-    "look=0,tile=0": {
+    "face=0,look=0,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_0_0"
     },
-    "look=0,tile=1": {
+    "face=1,look=0,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_0_0"
+    },
+    "face=2,look=0,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_0_0"
+    },
+    "face=0,look=0,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_0_1"
     },
-    "look=0,tile=2": {
+    "face=1,look=0,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_0_1"
+    },
+    "face=2,look=0,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_0_1"
+    },
+    "face=0,look=0,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_0_2"
     },
-    "look=0,tile=3": {
+    "face=1,look=0,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_0_2"
+    },
+    "face=2,look=0,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_0_2"
+    },
+    "face=0,look=0,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_0_3"
     },
-    "look=0,tile=4": {
+    "face=1,look=0,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_0_3"
+    },
+    "face=2,look=0,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_0_3"
+    },
+    "face=0,look=0,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_0_4"
     },
-    "look=0,tile=5": {
+    "face=1,look=0,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_0_4"
+    },
+    "face=2,look=0,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_0_4"
+    },
+    "face=0,look=0,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_0_5"
     },
-    "look=0,tile=6": {
+    "face=1,look=0,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_0_5"
+    },
+    "face=2,look=0,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_0_5"
+    },
+    "face=0,look=0,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_0_6"
     },
-    "look=0,tile=7": {
+    "face=1,look=0,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_0_6"
+    },
+    "face=2,look=0,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_0_6"
+    },
+    "face=0,look=0,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_0_7"
     },
-    "look=1,tile=0": {
+    "face=1,look=0,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_0_7"
+    },
+    "face=2,look=0,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_0_7"
+    },
+    "face=0,look=1,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_1_0"
     },
-    "look=1,tile=1": {
+    "face=1,look=1,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_1_0"
+    },
+    "face=2,look=1,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_1_0"
+    },
+    "face=0,look=1,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_1_1"
     },
-    "look=1,tile=2": {
+    "face=1,look=1,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_1_1"
+    },
+    "face=2,look=1,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_1_1"
+    },
+    "face=0,look=1,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_1_2"
     },
-    "look=1,tile=3": {
+    "face=1,look=1,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_1_2"
+    },
+    "face=2,look=1,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_1_2"
+    },
+    "face=0,look=1,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_1_3"
     },
-    "look=1,tile=4": {
+    "face=1,look=1,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_1_3"
+    },
+    "face=2,look=1,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_1_3"
+    },
+    "face=0,look=1,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_1_4"
     },
-    "look=1,tile=5": {
+    "face=1,look=1,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_1_4"
+    },
+    "face=2,look=1,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_1_4"
+    },
+    "face=0,look=1,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_1_5"
     },
-    "look=1,tile=6": {
+    "face=1,look=1,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_1_5"
+    },
+    "face=2,look=1,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_1_5"
+    },
+    "face=0,look=1,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_1_6"
     },
-    "look=1,tile=7": {
+    "face=1,look=1,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_1_6"
+    },
+    "face=2,look=1,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_1_6"
+    },
+    "face=0,look=1,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_1_7"
     },
-    "look=2,tile=0": {
+    "face=1,look=1,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_1_7"
+    },
+    "face=2,look=1,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_1_7"
+    },
+    "face=0,look=2,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_2_0"
     },
-    "look=2,tile=1": {
+    "face=1,look=2,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_2_0"
+    },
+    "face=2,look=2,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_2_0"
+    },
+    "face=0,look=2,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_2_1"
     },
-    "look=2,tile=2": {
+    "face=1,look=2,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_2_1"
+    },
+    "face=2,look=2,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_2_1"
+    },
+    "face=0,look=2,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_2_2"
     },
-    "look=2,tile=3": {
+    "face=1,look=2,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_2_2"
+    },
+    "face=2,look=2,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_2_2"
+    },
+    "face=0,look=2,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_2_3"
     },
-    "look=2,tile=4": {
+    "face=1,look=2,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_2_3"
+    },
+    "face=2,look=2,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_2_3"
+    },
+    "face=0,look=2,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_2_4"
     },
-    "look=2,tile=5": {
+    "face=1,look=2,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_2_4"
+    },
+    "face=2,look=2,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_2_4"
+    },
+    "face=0,look=2,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_2_5"
     },
-    "look=2,tile=6": {
+    "face=1,look=2,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_2_5"
+    },
+    "face=2,look=2,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_2_5"
+    },
+    "face=0,look=2,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_2_6"
     },
-    "look=2,tile=7": {
+    "face=1,look=2,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_2_6"
+    },
+    "face=2,look=2,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_2_6"
+    },
+    "face=0,look=2,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_2_7"
     },
-    "look=3,tile=0": {
+    "face=1,look=2,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_2_7"
+    },
+    "face=2,look=2,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_2_7"
+    },
+    "face=0,look=3,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_3_0"
     },
-    "look=3,tile=1": {
+    "face=1,look=3,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_3_0"
+    },
+    "face=2,look=3,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_3_0"
+    },
+    "face=0,look=3,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_3_1"
     },
-    "look=3,tile=2": {
+    "face=1,look=3,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_3_1"
+    },
+    "face=2,look=3,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_3_1"
+    },
+    "face=0,look=3,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_3_2"
     },
-    "look=3,tile=3": {
+    "face=1,look=3,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_3_2"
+    },
+    "face=2,look=3,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_3_2"
+    },
+    "face=0,look=3,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_3_3"
     },
-    "look=3,tile=4": {
+    "face=1,look=3,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_3_3"
+    },
+    "face=2,look=3,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_3_3"
+    },
+    "face=0,look=3,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_3_4"
     },
-    "look=3,tile=5": {
+    "face=1,look=3,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_3_4"
+    },
+    "face=2,look=3,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_3_4"
+    },
+    "face=0,look=3,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_3_5"
     },
-    "look=3,tile=6": {
+    "face=1,look=3,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_3_5"
+    },
+    "face=2,look=3,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_3_5"
+    },
+    "face=0,look=3,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_3_6"
     },
-    "look=3,tile=7": {
+    "face=1,look=3,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_3_6"
+    },
+    "face=2,look=3,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_3_6"
+    },
+    "face=0,look=3,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_3_7"
     },
-    "look=4,tile=0": {
+    "face=1,look=3,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_3_7"
+    },
+    "face=2,look=3,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_3_7"
+    },
+    "face=0,look=4,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_4_0"
     },
-    "look=4,tile=1": {
+    "face=1,look=4,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_4_0"
+    },
+    "face=2,look=4,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_4_0"
+    },
+    "face=0,look=4,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_4_1"
     },
-    "look=4,tile=2": {
+    "face=1,look=4,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_4_1"
+    },
+    "face=2,look=4,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_4_1"
+    },
+    "face=0,look=4,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_4_2"
     },
-    "look=4,tile=3": {
+    "face=1,look=4,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_4_2"
+    },
+    "face=2,look=4,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_4_2"
+    },
+    "face=0,look=4,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_4_3"
     },
-    "look=4,tile=4": {
+    "face=1,look=4,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_4_3"
+    },
+    "face=2,look=4,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_4_3"
+    },
+    "face=0,look=4,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_4_4"
     },
-    "look=4,tile=5": {
+    "face=1,look=4,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_4_4"
+    },
+    "face=2,look=4,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_4_4"
+    },
+    "face=0,look=4,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_4_5"
     },
-    "look=4,tile=6": {
+    "face=1,look=4,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_4_5"
+    },
+    "face=2,look=4,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_4_5"
+    },
+    "face=0,look=4,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_4_6"
     },
-    "look=4,tile=7": {
+    "face=1,look=4,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_4_6"
+    },
+    "face=2,look=4,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_4_6"
+    },
+    "face=0,look=4,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_4_7"
     },
-    "look=5,tile=0": {
+    "face=1,look=4,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_4_7"
+    },
+    "face=2,look=4,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_4_7"
+    },
+    "face=0,look=5,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_5_0"
     },
-    "look=5,tile=1": {
+    "face=1,look=5,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_5_0"
+    },
+    "face=2,look=5,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_5_0"
+    },
+    "face=0,look=5,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_5_1"
     },
-    "look=5,tile=2": {
+    "face=1,look=5,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_5_1"
+    },
+    "face=2,look=5,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_5_1"
+    },
+    "face=0,look=5,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_5_2"
     },
-    "look=5,tile=3": {
+    "face=1,look=5,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_5_2"
+    },
+    "face=2,look=5,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_5_2"
+    },
+    "face=0,look=5,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_5_3"
     },
-    "look=5,tile=4": {
+    "face=1,look=5,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_5_3"
+    },
+    "face=2,look=5,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_5_3"
+    },
+    "face=0,look=5,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_5_4"
     },
-    "look=5,tile=5": {
+    "face=1,look=5,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_5_4"
+    },
+    "face=2,look=5,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_5_4"
+    },
+    "face=0,look=5,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_5_5"
     },
-    "look=5,tile=6": {
+    "face=1,look=5,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_5_5"
+    },
+    "face=2,look=5,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_5_5"
+    },
+    "face=0,look=5,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_5_6"
     },
-    "look=5,tile=7": {
+    "face=1,look=5,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_5_6"
+    },
+    "face=2,look=5,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_5_6"
+    },
+    "face=0,look=5,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_5_7"
     },
-    "look=6,tile=0": {
+    "face=1,look=5,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_5_7"
+    },
+    "face=2,look=5,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_5_7"
+    },
+    "face=0,look=6,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_6_0"
     },
-    "look=6,tile=1": {
+    "face=1,look=6,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_6_0"
+    },
+    "face=2,look=6,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_6_0"
+    },
+    "face=0,look=6,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_6_1"
     },
-    "look=6,tile=2": {
+    "face=1,look=6,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_6_1"
+    },
+    "face=2,look=6,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_6_1"
+    },
+    "face=0,look=6,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_6_2"
     },
-    "look=6,tile=3": {
+    "face=1,look=6,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_6_2"
+    },
+    "face=2,look=6,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_6_2"
+    },
+    "face=0,look=6,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_6_3"
     },
-    "look=6,tile=4": {
+    "face=1,look=6,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_6_3"
+    },
+    "face=2,look=6,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_6_3"
+    },
+    "face=0,look=6,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_6_4"
     },
-    "look=6,tile=5": {
+    "face=1,look=6,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_6_4"
+    },
+    "face=2,look=6,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_6_4"
+    },
+    "face=0,look=6,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_6_5"
     },
-    "look=6,tile=6": {
+    "face=1,look=6,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_6_5"
+    },
+    "face=2,look=6,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_6_5"
+    },
+    "face=0,look=6,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_6_6"
     },
-    "look=6,tile=7": {
+    "face=1,look=6,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_6_6"
+    },
+    "face=2,look=6,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_6_6"
+    },
+    "face=0,look=6,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_6_7"
     },
-    "look=7,tile=0": {
+    "face=1,look=6,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_6_7"
+    },
+    "face=2,look=6,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_6_7"
+    },
+    "face=0,look=7,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_7_0"
     },
-    "look=7,tile=1": {
+    "face=1,look=7,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_7_0"
+    },
+    "face=2,look=7,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_7_0"
+    },
+    "face=0,look=7,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_7_1"
     },
-    "look=7,tile=2": {
+    "face=1,look=7,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_7_1"
+    },
+    "face=2,look=7,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_7_1"
+    },
+    "face=0,look=7,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_7_2"
     },
-    "look=7,tile=3": {
+    "face=1,look=7,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_7_2"
+    },
+    "face=2,look=7,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_7_2"
+    },
+    "face=0,look=7,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_7_3"
     },
-    "look=7,tile=4": {
+    "face=1,look=7,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_7_3"
+    },
+    "face=2,look=7,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_7_3"
+    },
+    "face=0,look=7,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_7_4"
     },
-    "look=7,tile=5": {
+    "face=1,look=7,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_7_4"
+    },
+    "face=2,look=7,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_7_4"
+    },
+    "face=0,look=7,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_7_5"
     },
-    "look=7,tile=6": {
+    "face=1,look=7,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_7_5"
+    },
+    "face=2,look=7,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_7_5"
+    },
+    "face=0,look=7,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_7_6"
     },
-    "look=7,tile=7": {
+    "face=1,look=7,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_7_6"
+    },
+    "face=2,look=7,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_7_6"
+    },
+    "face=0,look=7,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_7_7"
     },
-    "look=8,tile=0": {
+    "face=1,look=7,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_7_7"
+    },
+    "face=2,look=7,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_7_7"
+    },
+    "face=0,look=8,tile=0": {
       "model": "the_oldest_house:block/sphinx/eye_8_0"
     },
-    "look=8,tile=1": {
+    "face=1,look=8,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_up_8_0"
+    },
+    "face=2,look=8,tile=0": {
+      "model": "the_oldest_house:block/sphinx/eye_side_8_0"
+    },
+    "face=0,look=8,tile=1": {
       "model": "the_oldest_house:block/sphinx/eye_8_1"
     },
-    "look=8,tile=2": {
+    "face=1,look=8,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_up_8_1"
+    },
+    "face=2,look=8,tile=1": {
+      "model": "the_oldest_house:block/sphinx/eye_side_8_1"
+    },
+    "face=0,look=8,tile=2": {
       "model": "the_oldest_house:block/sphinx/eye_8_2"
     },
-    "look=8,tile=3": {
+    "face=1,look=8,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_up_8_2"
+    },
+    "face=2,look=8,tile=2": {
+      "model": "the_oldest_house:block/sphinx/eye_side_8_2"
+    },
+    "face=0,look=8,tile=3": {
       "model": "the_oldest_house:block/sphinx/eye_8_3"
     },
-    "look=8,tile=4": {
+    "face=1,look=8,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_up_8_3"
+    },
+    "face=2,look=8,tile=3": {
+      "model": "the_oldest_house:block/sphinx/eye_side_8_3"
+    },
+    "face=0,look=8,tile=4": {
       "model": "the_oldest_house:block/sphinx/eye_8_4"
     },
-    "look=8,tile=5": {
+    "face=1,look=8,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_up_8_4"
+    },
+    "face=2,look=8,tile=4": {
+      "model": "the_oldest_house:block/sphinx/eye_side_8_4"
+    },
+    "face=0,look=8,tile=5": {
       "model": "the_oldest_house:block/sphinx/eye_8_5"
     },
-    "look=8,tile=6": {
+    "face=1,look=8,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_up_8_5"
+    },
+    "face=2,look=8,tile=5": {
+      "model": "the_oldest_house:block/sphinx/eye_side_8_5"
+    },
+    "face=0,look=8,tile=6": {
       "model": "the_oldest_house:block/sphinx/eye_8_6"
     },
-    "look=8,tile=7": {
+    "face=1,look=8,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_up_8_6"
+    },
+    "face=2,look=8,tile=6": {
+      "model": "the_oldest_house:block/sphinx/eye_side_8_6"
+    },
+    "face=0,look=8,tile=7": {
       "model": "the_oldest_house:block/sphinx/eye_8_7"
+    },
+    "face=1,look=8,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_up_8_7"
+    },
+    "face=2,look=8,tile=7": {
+      "model": "the_oldest_house:block/sphinx/eye_side_8_7"
     }
   }
 }

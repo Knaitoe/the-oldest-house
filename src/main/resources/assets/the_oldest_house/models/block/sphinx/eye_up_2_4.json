@@ -1,0 +1,37 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "e": "the_oldest_house:block/sphinx/eye_2_4",
+    "k": "the_oldest_house:block/sphinx/skin_dark",
+    "particle": "the_oldest_house:block/sphinx/eye_2_4"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        15,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#e",
+          "uv": [
+            0,
+            16,
+            16,
+            0
+          ]
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    }
+  ]
+}

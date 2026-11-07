@@ -237,6 +237,8 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.TENSION_ROOMS);
         // 0.4.306: the Sphinx's first crossing (Sphinx), a rare detour in the domestic halls.
         gray.add(LabyrinthPlace.SPHINX_VESTIBULE);
+        // 0.4.335: her second crossing (SphinxStair), a rare detour in the middle stone halls.
+        gray.add(LabyrinthPlace.SPHINX_STAIR);
         // 0.4.309: the yard's turn-around (YardRooms), an outdoor breather, from the third crossing.
         gray.add(LabyrinthPlace.YARD_TURNAROUND);
         gray.add(LabyrinthPlace.YARD_DITCH);gray.add(LabyrinthPlace.YARD_CLOTHESLINE);
@@ -597,6 +599,8 @@ public final class LabyrinthDealer {
             case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS, AIRING_ROOMS, FOLDING_ROOM, FOLDED_ROOMS, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, FUSE_ROOMS, HEADER_TANK, HEADER_TANKS, TENSION_ROOM, TENSION_ROOMS -> 0;
             // 0.4.306: the Sphinx's vestibule, rare. She is frightening, so never in the domestic opening (before the story depth); a domestic crossing, so not past the deep halls.
             case SPHINX_VESTIBULE -> depth < LabyrinthPacing.STORY_DEPTH || depth >= LabyrinthPacing.DEEP_DEPTH ? 0 : 2;
+            // 0.4.335: the stair, as rare, in the stone halls between the domestic crossing and the dark halls.
+            case SPHINX_STAIR -> depth < LabyrinthPacing.DEEP_DEPTH || depth >= DarkHalls.DARK_DEPTH ? 0 : 2;
             // 0.4.309: the yard, an outdoor breather during an expedition: after the domestic opening, from the story depth.
             case YARD_TURNAROUND, YARD_DITCH, YARD_CLOTHESLINE -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 2;
             case YARD_SURVEY, YARD_REUNION, YARD_LONG_DRIVE, YARD_PORCH_TURN, YARD_JOISTS -> 0;

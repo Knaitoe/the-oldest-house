@@ -1190,5 +1190,17 @@
   "subtitles.the_oldest_house.route.chord": "Every horn on the highway sounds at once",
   "subtitles.the_oldest_house.route.padlock": "A padlock rattles on its chain",
   "advancements.the_oldest_house.account.state_route.title": "The median",
-  "advancements.the_oldest_house.account.state_route.description": "I crossed four lanes of a state route on foot in the rain for a key in a mailbox, and came back between cars with nobody in them but one."
+  "advancements.the_oldest_house.account.state_route.description": "I crossed four lanes of a state route on foot in the rain for a key in a mailbox, and came back between cars with nobody in them but one.",
+  "subtitles.the_oldest_house.sphinx.rattle": "A stone chip rattles down a stair",
+  "subtitles.the_oldest_house.sphinx.grind": "Stone grinds against stone",
+  "subtitles.the_oldest_house.sphinx.rustle": "Corn rustles high overhead",
+  "subtitles.the_oldest_house.sphinx.wing": "A vast wing beats",
+  "subtitles.the_oldest_house.sphinx.sand": "Sand slides away",
+  "subtitles.the_oldest_house.sphinx.crack": "Packed fill cracks open",
+  "subtitles.the_oldest_house.sphinx.settle": "Loose fill settles",
+  "block.the_oldest_house.sphinx_ashlar": "Dressed Stone",
+  "block.the_oldest_house.sphinx_flags": "Worn Flagstones",
+  "block.the_oldest_house.sphinx_ashlar_seam": "Cracked Masonry",
+  "block.the_oldest_house.sphinx_rock": "Dark Rock",
+  "block.the_oldest_house.sphinx_rock_seam": "Closed Rock"
 }
