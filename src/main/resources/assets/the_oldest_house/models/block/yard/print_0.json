@@ -1,0 +1,67 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "m0": "the_oldest_house:block/yard/mud_0",
+    "s": "the_oldest_house:block/yard/mud_side",
+    "particle": "the_oldest_house:block/yard/mud_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            2,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            0,
+            2,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            2,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            0,
+            2,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#m0"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}
