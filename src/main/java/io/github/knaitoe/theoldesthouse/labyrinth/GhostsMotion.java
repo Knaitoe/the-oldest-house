@@ -15,6 +15,14 @@ public final class GhostsMotion {
     }
     private record Look(Vec3 at,long until){}
     private GhostsMotion(){}
+    /**
+     * 0.4.324 (owner: "a better sitting/standing animation"): getting up and sitting down are each one move, made in the tick the pose
+     * changes between seated and standing. The client carries the body between the seat and the floor beside it while it stands up or
+     * sits down (GhostsCastModel), so nobody walks up to seat height beside a chair and glides across onto it, or glides off it.
+     */
+    public static final int RISE_TICKS=18,SIT_TICKS=22;
+    static void rise(LiteraryActor actor,Vec3 floor){stop(actor);actor.moveTo(floor.x,floor.y,floor.z,actor.getYRot(),actor.getXRot());}
+    static void sit(LiteraryActor actor,Vec3 seat,float yaw){stop(actor);actor.moveTo(seat.x,seat.y,seat.z,yaw,0);actor.setYBodyRot(yaw);actor.setYHeadRot(yaw);}
     static void toward(LiteraryActor actor,Vec3 target,double fiveTickDistance){
         moves.put(actor,new Motion(target,fiveTickDistance/5,actor.level().getGameTime()+6));
     }

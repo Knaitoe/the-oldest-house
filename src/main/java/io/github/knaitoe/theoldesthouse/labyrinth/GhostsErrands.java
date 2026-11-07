@@ -39,7 +39,7 @@ public final class GhostsErrands {
     public static final int FIRST=120,BETWEEN=240;
     /** The plate Sarah clears: the near one on her side of the table. */
     static final BlockPos PLATE=new BlockPos(1,1,-18);
-    static final double WALK=.3,SIT=.16;
+    static final double WALK=.3;
 
     public enum Errand {
         /** Sarah: the plate to the sink, and the tap run over it. */
@@ -110,11 +110,12 @@ public final class GhostsErrands {
         double seatY=GhostsSet.seatedHeight(a.getScale());
         switch(phase){
             case 0->{
-                // Out: off the seat to the side first, at the seat's height, then down to the floor and on along the way.
+                // Out: up off the seat onto the floor beside it, standing a moment, then on along the way (0.4.324: no glide at seat height).
                 int s=e.getInt("Step");var at=errand.out[s];
+                if(s==0&&a.getY()-b.getY()>at[1]+.1){pose(a,GhostsSet.STAND);GhostsMotion.rise(a,Vec3.atLowerCornerOf(b).add(at[0],at[1],at[2]));e.putInt("Rise",GhostsMotion.RISE_TICKS);return;}
+                if(e.getInt("Rise")>0){e.putInt("Rise",e.getInt("Rise")-5);return;}
                 pose(a,GhostsSet.STAND);
-                double y=s==0&&horizontal(a,b,at)>.15&&a.getY()-b.getY()>.1?a.getY()-b.getY():at[1];
-                move(a,b,at[0],y,at[2],WALK);
+                move(a,b,at[0],at[1],at[2],WALK);
                 if(arrived(a,b,at[0],at[1],at[2])){
                     if(s==0)setOut(p,b,a,errand,own,e);
                     if(s+1>=errand.out.length){e.putInt("Phase",1);e.putInt("Work",0);pose(a,errand.workPose);atWork(p,b,a,errand,own,d);}
@@ -132,12 +133,10 @@ public final class GhostsErrands {
                 if(arrived(a,b,at[0],at[1],at[2])){if(s==0)e.putInt("Phase",3);else e.putInt("Step",s-1);}
             }
             case 3->{
-                // Back to the seat: up to its height where they left it, then onto it.
-                var first=errand.out[0];pose(a,GhostsSet.STAND);
-                // Barry's director's chair has its back right behind where he sits: he comes back onto the seat a hair in front of it.
-                if(a.getY()-b.getY()<seatY-.02)move(a,b,first[0],seatY,first[2],SIT);
-                else move(a,b,errand.seatX,seatY,errand.seatZ-(errand==Errand.BARRY_CABLE?.06:0),SIT);
-                if(a.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(errand.seatX,seatY,errand.seatZ))<.04){pose(a,GhostsSet.SIT);e.putInt("Phase",4);e.putInt("Hold",0);}
+                // Back to the seat: on foot to the floor beside it, where they got up, then down onto it (0.4.324).
+                var first=errand.out[0];pose(a,GhostsSet.STAND);move(a,b,first[0],first[1],first[2],WALK);
+                // Barry's director's chair has its back right behind where he sits: he sits a hair in front of it.
+                if(arrived(a,b,first[0],first[1],first[2])){pose(a,GhostsSet.SIT);GhostsMotion.sit(a,Vec3.atLowerCornerOf(b).add(errand.seatX,seatY,errand.seatZ-(errand==Errand.BARRY_CABLE?.06:0)),errand.seatYaw);e.putInt("Phase",4);e.putInt("Hold",0);}
             }
             default->{
                 pose(a,GhostsSet.SIT);a.setYRot(Mth.approachDegrees(a.getYRot(),errand.seatYaw,30));a.setYBodyRot(a.getYRot());a.setYHeadRot(Mth.approachDegrees(a.getYHeadRot(),errand.seatYaw,30));
@@ -181,7 +180,6 @@ public final class GhostsErrands {
     // ------------------------------------------------------------------ helpers
     private static void pose(LiteraryActor a,int phase){if(a.phase()!=phase)a.appearance(a.role(),phase);}
     private static void move(LiteraryActor a,BlockPos b,double x,double y,double z,double speed){GhostsMotion.toward(a,new Vec3(b.getX()+x,b.getY()+y,b.getZ()+z),speed);}
-    private static double horizontal(LiteraryActor a,BlockPos b,double[] at){double dx=a.getX()-b.getX()-at[0],dz=a.getZ()-b.getZ()-at[2];return Math.sqrt(dx*dx+dz*dz);}
     private static boolean arrived(LiteraryActor a,BlockPos b,double x,double y,double z){return a.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(x,y,z))<.02;}
     private static void say(ServerPlayer p,CompoundTag own,String line){
         p.displayClientMessage(Component.literal(line),true);own.putLong("FilmIdle0490",p.level().getGameTime());

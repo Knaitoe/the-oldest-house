@@ -64,7 +64,8 @@ public final class GhostsFilmstrip extends Screen {
             new Row("Merry walks",Y,-1,90,false,1,0,3,false),
             new Row("Merry, face",Y,GhostsSet.STAND,180,false,1,0,4,true),
             new Row("Marjorie, face",M,GhostsSet.STAND,180,false,1,0,4,true))),
-        new Page("sisters","Merry's ponytail / Marjorie's smaller eyes",List.of()));
+        new Page("sisters","Merry's ponytail / Marjorie's smaller eyes",List.of()),
+        new Page("seat","Sitting down and getting up, carried between floor and seat (0.4.324)",List.of()));
     static final int FRAMES=8;
     private int page,frames;private static boolean launched;
     public GhostsFilmstrip(){super(Component.literal("The Barrett home: filmstrips"));}
@@ -78,6 +79,7 @@ public final class GhostsFilmstrip extends Screen {
         var mc=Minecraft.getInstance();var p=PAGES.get(page);var buffers=mc.renderBuffers().bufferSource();
         g.fill(0,0,width,height,0xff292821);g.drawString(font,"Filmstrip / "+p.title(),10,8,0xffe7dbc3,false);g.flush();
         if(p.name().equals("sisters")){sisters(g,buffers);return;}
+        if(p.name().equals("seat")){seat(g,buffers);return;}
         int rows=p.rows().size();float rowH=(height-30)/(float)rows,colW=(width-110)/(float)FRAMES;
         for(int r=0;r<rows;r++){
             var row=p.rows().get(r);float cy=26+(r+.5F)*rowH;
@@ -96,6 +98,40 @@ public final class GhostsFilmstrip extends Screen {
                 model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(GhostsCastModel.skin(row.role(),row.phase()))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
                 buffers.endBatch();pose.popPose();
                 if(r==0)g.drawCenteredString(font,"+"+(int)(f*row.step()),(int)(100+(f+.5F)*colW),18,0xff9a9282);
+            }
+        }
+    }
+    /**
+     * 0.4.324: each row is one person sitting down or getting up, eight frames across the move. The body is drawn where the renderer
+     * carries it (GhostsCastModel.Renderer): from the floor to the seat's height, eased, and (front rows) across the step to the side.
+     * The bar is the seat.
+     */
+    record SeatRow(String label,int role,int from,int to,float yaw,float side){}
+    static final List<SeatRow> SEATS=List.of(
+        new SeatRow("John sits down",J,GhostsSet.STAND,GhostsSet.SIT,90,0),new SeatRow("John gets up",J,GhostsSet.SIT,GhostsSet.STAND,90,0),
+        new SeatRow("Sarah sits, front",S,GhostsSet.STAND,GhostsSet.SIT,180,.95F),new SeatRow("Sarah gets up, front",S,GhostsSet.SIT,GhostsSet.STAND,180,.95F),
+        new SeatRow("Merry gets up",Y,GhostsSet.SIT,GhostsSet.STAND,90,0),new SeatRow("Marjorie gets up",M,GhostsSet.SIT,GhostsSet.STAND,90,0),
+        new SeatRow("Barry gets up",LiteraryActor.GHOST_PRODUCER,GhostsSet.SIT,GhostsSet.STAND,180,0));
+    private void seat(GuiGraphics g,MultiBufferSource.BufferSource buffers){
+        var mc=Minecraft.getInstance();int rows=SEATS.size();float rowH=(height-30)/(float)rows,colW=(width-110)/(float)FRAMES,base=rowH*.32F;
+        for(int r=0;r<rows;r++){
+            var row=SEATS.get(r);float cy=26+(r+.5F)*rowH,floor=cy+rowH*.36F;float scale=row.role()==Y?.58F:row.role()==M?.86F:1;
+            boolean down=GhostsCastModel.seatChange(row.role(),row.from(),row.to())>0;double seatH=GhostsSet.seatedHeight(scale);
+            g.drawString(font,row.label(),6,(int)cy,0xffe7dbc3,false);
+            for(int f=0;f<FRAMES;f++){
+                float t=f/(float)(FRAMES-1),eased=t*t*(3-2*t),onSeat=down?eased:1-eased;float cx=100+(f+.5F)*colW;
+                float seatX=cx+row.side()*base;
+                g.fill((int)(seatX-.5F*base),(int)(floor-.625F*base),(int)(seatX+.5F*base),(int)(floor-.55F*base),0xff6b5440);
+                g.fill((int)(cx-.6F*base),(int)floor,(int)(cx+.6F*base+row.side()*base),(int)floor+1,0xff5a5448);g.flush();
+                GhostsCastModel.previewDay=1;
+                var model=new GhostsCastModel(mc.getEntityModels().bakeLayer(GhostsCastModel.LAYER));model.previewSeat(row.role(),row.from(),row.to(),t,40,.37F+r*.11F);
+                GhostsCastModel.previewDay=0;
+                var pose=g.pose();pose.pushPose();
+                pose.translate(cx+row.side()*base*onSeat,floor-(float)seatH*base*onSeat,190);pose.scale(base*scale,base*scale,base*scale);
+                pose.mulPose(Axis.YP.rotationDegrees(row.yaw()));pose.translate(0,-1.5,0);
+                model.renderToBuffer(pose,buffers.getBuffer(RenderType.entityCutoutNoCull(GhostsCastModel.skin(row.role(),GhostsSet.STAND))),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,0xffffffff);
+                buffers.endBatch();pose.popPose();
+                if(r==0)g.drawCenteredString(font,(int)(t*100)+"%",(int)cx,18,0xff9a9282);
             }
         }
     }

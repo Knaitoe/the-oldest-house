@@ -48,6 +48,18 @@ public final class HumanoidMotion {
         m.hat.copyFrom(m.head);
         if(m instanceof net.minecraft.client.model.PlayerModel<?> player){player.jacket.copyFrom(m.body);player.leftSleeve.copyFrom(m.leftArm);player.rightSleeve.copyFrom(m.rightArm);player.leftPants.copyFrom(m.leftLeg);player.rightPants.copyFrom(m.rightLeg);}
     }
+    /**
+     * 0.4.324: lean the torso, head and arms further forward together about the hips, after connect() has placed them, so a body
+     * bending to sit or to rise keeps its neck and shoulders on its trunk.
+     */
+    public static void lean(HumanoidModel<?> m,float angle){
+        float x=(m.leftLeg.x+m.rightLeg.x)/2,y=(m.leftLeg.y+m.rightLeg.y)/2,z=(m.leftLeg.z+m.rightLeg.z)/2;var q=new Quaternionf().rotationX(angle);
+        for(var p:new ModelPart[]{m.body,m.head,m.leftArm,m.rightArm}){
+            var v=q.transform(new Vector3f(p.x-x,p.y-y,p.z-z));p.setPos(x+v.x,y+v.y,z+v.z);
+            var r=new Quaternionf(q).mul(new Quaternionf().rotationZYX(p.zRot,p.yRot,p.xRot)).getEulerAnglesZYX(new Vector3f());p.xRot=r.x;p.yRot=r.y;p.zRot=r.z;
+        }
+        m.hat.copyFrom(m.head);
+    }
     private static void place(ModelPart p,Quaternionf q,float x,float y,float z,float dx,float dy,float dz,boolean inherit){
         var v=q.transform(new Vector3f(dx,dy,dz));p.setPos(x+v.x,y+v.y,z+v.z);
         if(inherit){var r=new Quaternionf(q).mul(new Quaternionf().rotationZYX(p.zRot,p.yRot,p.xRot)).getEulerAnglesZYX(new Vector3f());p.xRot=r.x;p.yRot=r.y;p.zRot=r.z;}
