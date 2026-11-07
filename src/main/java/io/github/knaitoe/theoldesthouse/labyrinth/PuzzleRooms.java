@@ -71,7 +71,9 @@ public final class PuzzleRooms {
         // 0.4.306: the tension room (TensionRooms, docs/TENSION_ROOM_0_4_306.md), early only for now. The far door is ordinary: the pit is what waits.
         TENSION_ROOM(LabyrinthPlace.TENSION_ROOM,Family.TENSION,false,null),
         TENSION_ROOMS(LabyrinthPlace.TENSION_ROOMS,Family.TENSION,true,null),
-        YARD_SURVEY(LabyrinthPlace.YARD_SURVEY,Family.SURVEY,false,null);
+        YARD_SURVEY(LabyrinthPlace.YARD_SURVEY,Family.SURVEY,false,null),
+        // 0.4.345: the Stock Gate (YardStock, docs/YARD_STOCK_0_4_345.md), reading the yard from above to set its gates from below. The far gate is ordinary: the herd is what waits.
+        YARD_STOCK(LabyrinthPlace.YARD_STOCK,Family.SURVEY,true,null);
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;

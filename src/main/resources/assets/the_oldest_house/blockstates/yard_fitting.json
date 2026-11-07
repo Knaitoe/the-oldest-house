@@ -659,6 +659,126 @@
     "facing=west,kind=print,stage=3": {
       "model": "the_oldest_house:block/yard/print_0",
       "y": 270
+    },
+    "facing=north,kind=stock_leaf,stage=0": {
+      "model": "the_oldest_house:block/yard/stock_leaf_0"
+    },
+    "facing=north,kind=stock_leaf,stage=1": {
+      "model": "the_oldest_house:block/yard/stock_leaf_1"
+    },
+    "facing=north,kind=stock_leaf,stage=2": {
+      "model": "the_oldest_house:block/yard/stock_leaf_2"
+    },
+    "facing=north,kind=stock_leaf,stage=3": {
+      "model": "the_oldest_house:block/yard/stock_leaf_0"
+    },
+    "facing=east,kind=stock_leaf,stage=0": {
+      "model": "the_oldest_house:block/yard/stock_leaf_0",
+      "y": 90
+    },
+    "facing=east,kind=stock_leaf,stage=1": {
+      "model": "the_oldest_house:block/yard/stock_leaf_1",
+      "y": 90
+    },
+    "facing=east,kind=stock_leaf,stage=2": {
+      "model": "the_oldest_house:block/yard/stock_leaf_2",
+      "y": 90
+    },
+    "facing=east,kind=stock_leaf,stage=3": {
+      "model": "the_oldest_house:block/yard/stock_leaf_0",
+      "y": 90
+    },
+    "facing=south,kind=stock_leaf,stage=0": {
+      "model": "the_oldest_house:block/yard/stock_leaf_0",
+      "y": 180
+    },
+    "facing=south,kind=stock_leaf,stage=1": {
+      "model": "the_oldest_house:block/yard/stock_leaf_1",
+      "y": 180
+    },
+    "facing=south,kind=stock_leaf,stage=2": {
+      "model": "the_oldest_house:block/yard/stock_leaf_2",
+      "y": 180
+    },
+    "facing=south,kind=stock_leaf,stage=3": {
+      "model": "the_oldest_house:block/yard/stock_leaf_0",
+      "y": 180
+    },
+    "facing=west,kind=stock_leaf,stage=0": {
+      "model": "the_oldest_house:block/yard/stock_leaf_0",
+      "y": 270
+    },
+    "facing=west,kind=stock_leaf,stage=1": {
+      "model": "the_oldest_house:block/yard/stock_leaf_1",
+      "y": 270
+    },
+    "facing=west,kind=stock_leaf,stage=2": {
+      "model": "the_oldest_house:block/yard/stock_leaf_2",
+      "y": 270
+    },
+    "facing=west,kind=stock_leaf,stage=3": {
+      "model": "the_oldest_house:block/yard/stock_leaf_0",
+      "y": 270
+    },
+    "facing=north,kind=roof_sheet,stage=0": {
+      "model": "the_oldest_house:block/yard/roof_sheet_0"
+    },
+    "facing=north,kind=roof_sheet,stage=1": {
+      "model": "the_oldest_house:block/yard/roof_sheet_1"
+    },
+    "facing=north,kind=roof_sheet,stage=2": {
+      "model": "the_oldest_house:block/yard/roof_sheet_2"
+    },
+    "facing=north,kind=roof_sheet,stage=3": {
+      "model": "the_oldest_house:block/yard/roof_sheet_0"
+    },
+    "facing=east,kind=roof_sheet,stage=0": {
+      "model": "the_oldest_house:block/yard/roof_sheet_0",
+      "y": 90
+    },
+    "facing=east,kind=roof_sheet,stage=1": {
+      "model": "the_oldest_house:block/yard/roof_sheet_1",
+      "y": 90
+    },
+    "facing=east,kind=roof_sheet,stage=2": {
+      "model": "the_oldest_house:block/yard/roof_sheet_2",
+      "y": 90
+    },
+    "facing=east,kind=roof_sheet,stage=3": {
+      "model": "the_oldest_house:block/yard/roof_sheet_0",
+      "y": 90
+    },
+    "facing=south,kind=roof_sheet,stage=0": {
+      "model": "the_oldest_house:block/yard/roof_sheet_0",
+      "y": 180
+    },
+    "facing=south,kind=roof_sheet,stage=1": {
+      "model": "the_oldest_house:block/yard/roof_sheet_1",
+      "y": 180
+    },
+    "facing=south,kind=roof_sheet,stage=2": {
+      "model": "the_oldest_house:block/yard/roof_sheet_2",
+      "y": 180
+    },
+    "facing=south,kind=roof_sheet,stage=3": {
+      "model": "the_oldest_house:block/yard/roof_sheet_0",
+      "y": 180
+    },
+    "facing=west,kind=roof_sheet,stage=0": {
+      "model": "the_oldest_house:block/yard/roof_sheet_0",
+      "y": 270
+    },
+    "facing=west,kind=roof_sheet,stage=1": {
+      "model": "the_oldest_house:block/yard/roof_sheet_1",
+      "y": 270
+    },
+    "facing=west,kind=roof_sheet,stage=2": {
+      "model": "the_oldest_house:block/yard/roof_sheet_2",
+      "y": 270
+    },
+    "facing=west,kind=roof_sheet,stage=3": {
+      "model": "the_oldest_house:block/yard/roof_sheet_0",
+      "y": 270
     }
   }
 }

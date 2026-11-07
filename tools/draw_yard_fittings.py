@@ -3,7 +3,8 @@
 16x16 textures from small palettes with per-pixel noise: white-painted clapboard with grey shadow lines; gravel darkened and glossed by
 rain; a garage door of dark vertical boards with a handle; a bare bulb on its cord; and the wagon: faded green paint over wood-grain
 panelling, its grille and lit headlights, windows, roof rack, tailgate and tail-lamps, wheels. 0.4.322: soft mud, clear or with a reader's
-footprints pressed into it. --check verifies everything.
+footprints pressed into it. 0.4.345: a stockyard swing gate's leaf in three heights, galvanised tube rails on oak stiles, the top rail
+painted so the gates read from the loading platform; a sheet of corrugated barn roofing, rusted at its laps. --check verifies everything.
 """
 from pathlib import Path
 import argparse
@@ -125,6 +126,50 @@ def mud_print():
     return im
 
 
+def leaf(stage):
+    # 0.4.345: a swing gate's leaf, a third of its height to each stage: tube rails between oak stiles, a brace in the middle, the top rail painted.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    tube = ['#9aa3a6', '#aab3b5', '#868f92']
+    fill(im, 0, 0, 2, 16, '#6b5235'); fill(im, 14, 0, 16, 16, '#6b5235')
+    for x in range(16):
+        dot(im, x if x < 2 or x > 13 else 0, 0, '#6b5235')
+    for y in ((3, 10) if stage < 2 else (10,)):
+        for x in range(2, 14):
+            dot(im, x, y, tube[(x * 3 + y) % 3]); dot(im, x, y + 1, '#6f777a')
+    if stage == 1:
+        for i in range(12):
+            dot(im, 2 + i, 15 - i, tube[i % 3]); dot(im, 2 + i, 14 - i, '#6f777a') if i < 11 else None
+    if stage == 2:
+        paint = ['#9c3a2a', '#a8442f', '#8a3224']
+        for x in range(0, 16):
+            for y in (0, 1, 2):
+                dot(im, x, y, paint[(x + y) % 3])
+            dot(im, x, 3, '#6e281d')
+        for x, y in ((4, 1), (9, 0), (12, 2)):
+            dot(im, x, y, '#aab3b5')
+    for y in range(4 if stage == 2 else 0, 16):
+        dot(im, 1, y, '#5a442c'); dot(im, 14, y, '#7a5f3f')
+    return im
+
+
+def roof_sheet():
+    # 0.4.345: corrugated iron, the ribs running north to south, rust bleeding down from the nail lines at the laps.
+    im = Image.new('RGBA', (16, 16))
+    rib = ['#98a1a3', '#8a9395', '#737c7e', '#80898b']
+    rng = random.Random(3460)
+    for x in range(16):
+        for y in range(16):
+            dot(im, x, y, rib[x % 4] if rng.random() > .12 else '#6a7274')
+    for y in (1, 14):
+        for x in range(1, 16, 4):
+            dot(im, x, y, '#4a3426')
+            for d in range(1, rng.randint(2, 5)):
+                if y + d < 16: dot(im, x, y + d, '#7a4a2a' if d < 3 else '#86634a')
+    for x, y in ((6, 7), (11, 9), (3, 11)):
+        dot(im, x, y, '#7a4a2a')
+    return im
+
+
 def textures():
     out = {'block/yard_clapboard.png': clapboard(), 'block/yard_wet_gravel.png': wet_gravel(), 'block/yard_garage_door.png': garage_door()}
     linen = noisy(['#c9c6b6', '#d4d0c2', '#bdbbac'], 3131, [5, 3, 1])
@@ -146,6 +191,8 @@ def textures():
         for x in (3, 7, 11): fill(grate, x, 1, x+2, 15, '#646c65')
         for i in range(stage): line(grate, 2, 5+i*4, 13, 3+i*4, '#68513b')
         t[f'grate_{stage}'] = grate
+    for stage in range(3): t[f'leaf_{stage}'] = leaf(stage)
+    t['roof_sheet'] = roof_sheet()
     out.update({f'block/yard/{k}.png': v for k, v in t.items()})
     return out
 
@@ -172,11 +219,18 @@ def fitting_models():
     m['gate_latch_0'] = model([element([3, 5, 14], [13, 11, 16], {'all': 'p'}), element([5, 7, 12], [11, 9, 14], {'all': 'm'})], {'p': 'stake', 'm': 'grille_lit'}, 'stake')
     for stage in range(2): m[f'print_{stage}'] = model([element([0, 0, 0], [16, 14, 16], {'up': f'm{stage}', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}, uv={f: [0, 2, 16, 16] for f in ('north', 'south', 'east', 'west')})], {f'm{stage}': f'mud_{stage}', 's': 'mud_side'}, 'mud_side')
     for stage in range(4): m[f'flood_grate_{stage}'] = model([element([0, 0, 14], [16, 16, 15], {'north': 'g', 'south': 'g'})], {'g': f'grate_{stage}'}, f'grate_{stage}')
+    sheet = {'up': 'r', 'down': 'r', 'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r'}
+    m['roof_sheet_0'] = model([element([0, 0, 0], [16, 2, 16], sheet, uv={f: [0, 0, 16, 2] for f in ('north', 'south', 'east', 'west')})], {'r': 'roof_sheet'}, 'roof_sheet')
+    lifted = element([0, 0, 0], [16, 2, 16], sheet, uv={f: [0, 0, 16, 2] for f in ('north', 'south', 'east', 'west')})
+    lifted['rotation'] = {'angle': 22.5, 'axis': 'x', 'origin': [8, 1, 16]}
+    m['roof_sheet_1'] = model([lifted], {'r': 'roof_sheet'}, 'roof_sheet')
+    m['roof_sheet_2'] = model([element([0, 0, 0], [16, 1, 16], sheet, uv={f: [0, 0, 16, 1] for f in ('north', 'south', 'east', 'west')})], {'r': 'roof_sheet'}, 'roof_sheet')
+    for stage in range(3): m[f'stock_leaf_{stage}'] = model([element([0, 0, 7], [16, 16, 9], {'north': 'l', 'south': 'l', 'east': 'l', 'west': 'l', 'up': 'l', 'down': 'l'}, uv={'east': [14, 0, 16, 16], 'west': [0, 0, 2, 16], 'up': [0, 0, 16, 2], 'down': [0, 14, 16, 16]})], {'l': f'leaf_{stage}'}, f'leaf_{stage}')
     return m
 
 
-KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print']
-STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2}
+KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print', 'stock_leaf', 'roof_sheet']
+STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'yard_fitting': 'Yard Fittings', 'yard_clapboard': 'Clapboard', 'yard_wet_gravel': 'Wet Gravel', 'yard_garage_door': 'Garage Door'}
 

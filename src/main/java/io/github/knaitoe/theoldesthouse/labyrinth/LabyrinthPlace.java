@@ -597,7 +597,11 @@ public enum LabyrinthPlace {
     /** 0.4.338, the Sphinx's third crossing (SphinxShelf, docs/SPHINX_0_4_338.md): a ledge under an overhang, three shelves across a cavern, a ladder to each. A rare detour in the dark halls and on the staircase approach. Floor 14 into its slot. */
     SPHINX_SHELF("sphinx_shelf",Kind.GRAY,203,new BoundingBox(-12,-14,-24,12,9,0),grayDoors(11,0,-23)),
     /** 0.4.339, the Sphinx's fourth crossing (SphinxField, docs/SPHINX_0_4_339.md): a ditch and a clearing at the edge of the corn, three gated paths in, the old road under one. Outside, at dusk; a rare detour after the yard. */
-    SPHINX_FIELD("sphinx_field",Kind.GRAY,204,new BoundingBox(-17,-4,-47,17,14,0),grayDoors(15,0,-46));
+    SPHINX_FIELD("sphinx_field",Kind.GRAY,204,new BoundingBox(-17,-4,-47,17,14,0),grayDoors(15,0,-46)),
+    /** 0.4.345, the Stock Gate (YardStock, docs/YARD_STOCK_0_4_345.md): a loading platform over a stockyard's chutes, swing gates and a herd in its pen. Outside; the yard's middle puzzle, after Survey Stakes. */
+    YARD_STOCK("yard_stock",Kind.GRAY,205,new BoundingBox(-12,-3,-39,12,12,0),grayDoors(0,0,-38)),
+    /** 0.4.345, the Windbreak (YardWind, docs/YARD_STOCK_0_4_345.md): an open field under a west wind, a line of shelter, ruts, and a lean-to coming apart. Outside; the yard's deep hazard. */
+    YARD_WINDBREAK("yard_windbreak",Kind.GRAY,206,new BoundingBox(-14,-3,-46,14,14,0),grayDoors(0,0,-45));
 
     /** What a place is to the dealer. */
     public enum Kind {
