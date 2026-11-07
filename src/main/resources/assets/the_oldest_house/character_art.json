@@ -1450,5 +1450,37 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 76
+  },
+  {
+    "name": "literary_supper_joan",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 90
+  },
+  {
+    "name": "literary_supper_pat",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 91
+  },
+  {
+    "name": "literary_supper_dell",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 92
+  },
+  {
+    "name": "literary_supper_ruth",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 93
   }
 ]

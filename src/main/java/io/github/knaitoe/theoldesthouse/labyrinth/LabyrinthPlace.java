@@ -587,7 +587,9 @@ public enum LabyrinthPlace {
     YARD_PORCH_TURN("yard_porch_turn",Kind.GRAY,198,new BoundingBox(-12,-4,-36,36,14,4),List.of(
         new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
         new DoorSpec("far",new BlockPos(24,0,1),Direction.NORTH,LabyrinthData.DEALT))),
-    YARD_JOISTS("yard_joists",Kind.GRAY,199,new BoundingBox(-16,-4,-48,16,18,0),grayDoors(0,0,-45));
+    YARD_JOISTS("yard_joists",Kind.GRAY,199,new BoundingBox(-16,-4,-48,16,18,0),grayDoors(0,0,-45)),
+    /** 0.4.327, Speak Up (SpeakUp, docs/SPEAK_UP_0_4_327.md): a dining room where everyone answers for the reader until one of them says "You can answer." Once to each reader, after the quiet rooms. */
+    SPEAK_UP("speak_up",Kind.GRAY,200,new BoundingBox(-6,-1,-13,6,6,0),grayDoors(1,0,-12));
 
     /** What a place is to the dealer. */
     public enum Kind {

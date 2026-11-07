@@ -132,6 +132,12 @@ LOOKS = {
     # Second Person (0.4.274): Iris Dunne across the landing, in her cardigan and glasses, her grey hair pinned; Sam from the resident's work, in a jacket for an evening out.
     'literary_flat_iris': Look('#d9b39e','#bab4ac','bun','#7a5468','#4a4440','cardigan','#d3c8b2',eyes='#5a6070',age=2,glasses=True),
     'literary_flat_sam': Look('#8e5f45','#221a16','close','#4d6a78','#2c3038','jacket','#d8d0c0',eyes='#3a3029'),
+    # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;
+    # Dell, stubbled, in flannel, sits in the chair across the way on; Ruth, opposite the guest, is the one who looks at them.
+    'literary_supper_joan': Look('#d6b098','#9a948c','short','#6a3a42','#3a3638','cardigan','#d8ccb6',eyes='#5a5a52',age=2),
+    'literary_supper_pat': Look('#c4987c','#4a3a2c','receding','#3e5a4a','#33363c','knit','#c9bc9f',eyes='#4e5a50',age=1,glasses=True),
+    'literary_supper_dell': Look('#9a6a4c','#241c18','short','#7a3a2a','#2e3238','flannel','#d0c4a8',eyes='#3a3028',age=1,beard='stubble'),
+    'literary_supper_ruth': Look('#e0bea2','#2a2220','long','#4a5a7a','#2e3440','shirt','#d8d0c0',eyes='#4a5a6a'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
