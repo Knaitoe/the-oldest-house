@@ -198,6 +198,8 @@ public final class Sphinx {
         l.playSound(null,b.offset(from),PuzzleRegistry.SPHINX_VOICE.get(),SoundSource.HOSTILE,1F,1F);
         // Speech is never chat: her words come in the action bar, quoted, as the House's other unseen voices do, with the sound from where she is.
         for(var p:to)p.displayClientMessage(Component.literal("“"+line+"”").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
+        // 0.4.341: whoever is in the hall hears her and sees her mouth move, whether or not the words were for them.
+        var hear=new LinkedHashSet<ServerPlayer>(to);hear.addAll(readers(l));for(var p:hear)SphinxCore.speaks(p,line);
     }
     static void ask(ServerLevel l,BlockPos b,ServerPlayer p){
         voice(l,b,door(1).above(2),QUESTION,List.of(p));

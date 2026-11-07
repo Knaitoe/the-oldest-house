@@ -111,16 +111,16 @@ public final class DareArtProof extends Screen {
                 // 0.4.337, the Sphinx's whole face over the first crossing's hall: face on, looking up at her from the middle of the hall
                 // (her eyes turned down toward the reader, mid-blink on the right), and half risen out of the dark.
                 var face=Sphinx.faceAt(Sphinx.FACE_PX_W/2.0,Sphinx.FACE_PX_H/2.0);
-                // 0.4.340: the last two as she is in the hall, her stone in its dim light and only her eyes lit.
-                float[][] gazes={{0,-.2F,0,-.2F},{-.5F,-.3F,-.4F,-.3F},{0,0,0,0},{.3F,-.3F,.3F,-.3F}};float[] closed={0,.6F,0,0};float[] risen={1,1,.5F,1};float[] tilt={0,50,0,40};
+                // 0.4.340: the last two as she is in the hall, her stone in its dim light and only her eyes lit. 0.4.341: speaking in the second and fourth.
+                float[][] gazes={{0,-.2F,0,-.2F},{-.5F,-.3F,-.4F,-.3F},{0,0,0,0},{.3F,-.3F,.3F,-.3F}};float[] closed={0,.6F,0,0};float[] risen={1,1,.5F,1};float[] tilt={0,50,0,40};int[] jaw={0,2,0,3};
                 int dim=LightTexture.pack(SphinxFaceRenderer.STONE_LIGHT,0),eyes=LightTexture.pack(SphinxFaceRenderer.EYE_LIGHT,0);
                 for(int view=0;view<4;view++){
                     float cx=(view+.5F)*width/4F,cy=height*.55F,s=width/4F/21F;boolean dark=view>=2;
                     g.fill((int)(cx-width/8F)+4,30,(int)(cx+width/8F)-4,height-26,0xff0c0a08);
                     p.pushPose();p.translate(cx,cy,150);p.scale(s,-s,s);p.mulPose(Axis.XP.rotationDegrees(tilt[view]));
-                    SphinxFaceRenderer.draw(p,out,face.scale(-1),risen[view],gazes[view],closed[view],dark?dim:LightTexture.FULL_BRIGHT,dark?eyes:LightTexture.FULL_BRIGHT);
+                    SphinxFaceRenderer.draw(p,out,face.scale(-1),risen[view],gazes[view],closed[view],jaw[view],dark?dim:LightTexture.FULL_BRIGHT,dark?eyes:LightTexture.FULL_BRIGHT);
                     out.endBatch();p.popPose();
-                    g.drawCenteredString(font,new String[]{"face on","from the hall below","rising out of the dark","in the hall's dark"}[view],(int)cx,height-20,0xffe9e2cf);
+                    g.drawCenteredString(font,new String[]{"face on","from the hall below, speaking","rising out of the dark","in the hall's dark, speaking"}[view],(int)cx,height-20,0xffe9e2cf);
                 }
             }
             default->{
@@ -149,7 +149,7 @@ public final class DareArtProof extends Screen {
             if(colors.size()<12)throw new IllegalStateException("Blank or untextured dare view "+NAMES[proof.page]+": "+colors.size());
         }
         if(++proof.page<NAMES.length){proof.frames=0;return;}
-        Files.writeString(FOLDER.resolve("passed.txt"),"Four native views of the third floor: the sheeted kids waiting, giggling and silent; every fitting state, the glass whole and shattered, both doors and the seven materials; the reader's face at each count as the glass changes it; and the third count as the glass shows it. And one of the first puzzle room, Borrowed Light: every working part in each state, its three materials, and the beam turned by the mirror onto the lit sun. And the Sphinx's whole face: face on, from the hall below, and rising out of the dark.\n");
+        Files.writeString(FOLDER.resolve("passed.txt"),"Four native views of the third floor: the sheeted kids waiting, giggling and silent; every fitting state, the glass whole and shattered, both doors and the seven materials; the reader's face at each count as the glass changes it; and the third count as the glass shows it. And one of the first puzzle room, Borrowed Light: every working part in each state, its three materials, and the beam turned by the mirror onto the lit sun. And the Sphinx's whole face: face on, from the hall below as she speaks, rising out of the dark, and speaking in the hall's dark.\n");
         mc.stop();
     }
 }

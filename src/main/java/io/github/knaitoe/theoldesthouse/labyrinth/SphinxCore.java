@@ -126,6 +126,17 @@ public final class SphinxCore {
         return best;
     }
 
+    // ------------------------------------------------------------------ her voice
+    /**
+     * 0.4.341 (the owner: "Ensure the mouth moves when she speaks too"): she is speaking to this reader for as long as the line takes to
+     * say, and wherever they can see her face her jaw works for that long.
+     */
+    public static void speaks(ServerPlayer p,String line){
+        io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.SphinxVoicePayload(speaking(line)));
+    }
+    /** How long a line takes her to say, in ticks: a little slower than a person reads it. */
+    public static int speaking(String line){return Math.max(20,Math.min(140,Math.round(line.length()*1.4F)+8));}
+
     // ------------------------------------------------------------------ small shared hands
     /** The socket beside a choice shows how many pins stand in it (none, one, more). */
     public static void socket(ServerLevel l,BlockPos at,Direction facing,int pins){

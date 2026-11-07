@@ -167,12 +167,12 @@ public final class SphinxField {
     private static final Map<UUID,Long> ECHO=new HashMap<>();
     static void ask(ServerLevel l,BlockPos b,ServerPlayer p){
         l.playSound(null,p.getX(),b.getY()-1,b.getZ()+SWEEP_Z,PuzzleRegistry.SPHINX_VOICE.get(),SoundSource.HOSTILE,1F,.95F);
-        p.displayClientMessage(Component.literal("“"+QUESTION+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
+        p.displayClientMessage(Component.literal("“"+QUESTION+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);SphinxCore.speaks(p,QUESTION);
         ECHO.put(p.getUUID(),l.getGameTime()+30);SphinxCore.heard(l,p.getUUID(),RIDDLE);ASKED.add(p.getUUID());
     }
     static void say(ServerLevel l,BlockPos b,String line,List<ServerPlayer> to){
         for(var p:to){l.playSound(null,p.getX(),p.getY()+7,b.getZ()+GATE_Z-4,PuzzleRegistry.SPHINX_VOICE.get(),SoundSource.HOSTILE,.85F,.9F);
-            p.displayClientMessage(Component.literal("“"+line+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);}
+            p.displayClientMessage(Component.literal("“"+line+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);SphinxCore.speaks(p,line);}
     }
     /** Tassels parting high over the corn: a rustle and chaff coming down, well above the reader's head. */
     static void tassels(ServerLevel l,double x,double y,double z,int n){

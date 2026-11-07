@@ -165,12 +165,12 @@ public final class SphinxStair {
     // ------------------------------------------------------------------ her voice, from under the step
     static void ask(ServerLevel l,ServerPlayer p){
         l.playSound(null,p.getX(),p.getY()-2.5,p.getZ(),PuzzleRegistry.SPHINX_VOICE.get(),SoundSource.HOSTILE,1F,.92F);
-        p.displayClientMessage(Component.literal("“"+QUESTION+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
+        p.displayClientMessage(Component.literal("“"+QUESTION+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);SphinxCore.speaks(p,QUESTION);
         SphinxCore.heard(l,p.getUUID(),RIDDLE);ASKED.add(p.getUUID());
     }
     static void say(ServerLevel l,BlockPos b,String line,List<ServerPlayer> to){
         for(var p:to){l.playSound(null,p.getX(),p.getY()-2.5,p.getZ(),PuzzleRegistry.SPHINX_VOICE.get(),SoundSource.HOSTILE,.8F,.92F);
-            p.displayClientMessage(Component.literal("“"+line+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);}
+            p.displayClientMessage(Component.literal("“"+line+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);SphinxCore.speaks(p,line);}
     }
 
     // ------------------------------------------------------------------ chips

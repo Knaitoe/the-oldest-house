@@ -86,7 +86,52 @@ def _lid_bottom(x, k):
     return ey + EYE_RY * 0.88 * max(0.0, 1 - t * t) ** 0.6
 
 
-def face():
+def _mouth(dx, y, c, k, gape, pick):
+    """Her mouth at one pixel: the top lip fixed, the jaw and the lower lip and teeth {@code gape} pixels lower at the middle."""
+    mw = 46
+    if abs(dx) <= mw:
+        t = dx / mw
+        w = max(0.0, 1 - t * t) ** 0.7
+        mid = 190 + 6.5 * t * t + 1.8 * t
+        oh = 4.2 * w
+        top, bottom = mid - oh, mid + oh + gape * w
+        if top - 4 + 2 * abs(t) <= y < top:
+            c, k = pick.choice(['#7e4e34', '#76482f', '#845236']), int(-10 * abs(t)) - 2
+        elif top <= y <= bottom:
+            c, k = pick.choice(['#0e0705', '#0a0504', '#120806']), 0
+            if abs(t) < .8:
+                # Upper teeth hang from the top lip, lower teeth rise from the bottom one between them: small, close-set
+                # points, yellowed, catching what light gets in.
+                for tx in range(-36, 37, 3):
+                    r = y - top
+                    if 0 <= r < 4 and abs(dx - tx) <= 1.3 - r * .42:
+                        c, k = pick.choice(['#cfc09a', '#c4b48c']), -int(16 * abs(t) + r * 7)
+                    r = bottom - y
+                    if 0 <= r < 3 and abs(dx - tx - 1.5) <= 1.2 - r * .45:
+                        c, k = pick.choice(['#c2b28a', '#b8a882']), -int(22 * abs(t) + r * 7) - 8
+        elif bottom < y <= bottom + 5 - 3 * abs(t):
+            c, k = pick.choice(['#93603c', '#8a5a3a', '#9a6640']), int(4 * (1 - abs(t))) - 4
+        elif bottom + 5 - 3 * abs(t) < y <= bottom + 9 and abs(t) < .75:
+            k -= 16
+    return c, k
+
+
+# 0.4.341: the part of her face that moves when she speaks, in picture pixels, and how far her jaw comes down in each frame.
+MOUTH_BOX = (CX - 50, 180, CX + 50, 240)
+GAPES = (2.5, 5.0, 7.5)
+
+
+def mouth():
+    """The frames of her speaking, one under another: the box round her mouth and chin with her jaw down a little, more, and most."""
+    x0, y0, x1, y1 = MOUTH_BOX
+    im = Image.new('RGBA', (x1 - x0, (y1 - y0) * len(GAPES)), (0, 0, 0, 0))
+    for i, g in enumerate(GAPES):
+        im.alpha_composite(face(g).crop(MOUTH_BOX), (0, i * (y1 - y0)))
+    return im
+
+
+
+def face(gape=0.0):
     rnd = random.Random(3370)
     im = Image.new('RGBA', (W, H), (0, 0, 0, 0)); px = im.load()
     for y in range(H):
@@ -161,40 +206,21 @@ def face():
                         k -= 20 if abs(y - fy) <= .8 else 10
                 # Her mouth: a slight grimace, the corners drawn down and back, the lips just parted on a dark mouth and two rows of
                 # small, sharp teeth (0.4.340, the owner: "her mouth slightly opened by default and small, sharp teeth inside").
-                mw = 46
-                if abs(dx) <= mw:
-                    t = dx / mw
-                    mid = 190 + 6.5 * t * t + 1.8 * t
-                    oh = 4.2 * max(0.0, 1 - t * t) ** 0.7
-                    if mid - oh - 4 + 2 * abs(t) <= y < mid - oh:
-                        c, k = rnd.choice(['#7e4e34', '#76482f', '#845236']), int(-10 * abs(t)) - 2
-                    elif mid - oh <= y <= mid + oh:
-                        c, k = rnd.choice(['#0e0705', '#0a0504', '#120806']), 0
-                        if abs(t) < .8:
-                            # Upper teeth hang from the top lip, lower teeth rise from the bottom one between them: small, close-set
-                            # points, yellowed, catching what light gets in.
-                            for tx in range(-36, 37, 3):
-                                r = y - (mid - oh)
-                                if 0 <= r < 4 and abs(dx - tx) <= 1.3 - r * .42:
-                                    c, k = rnd.choice(['#cfc09a', '#c4b48c']), -int(16 * abs(t) + r * 7)
-                                r = (mid + oh) - y
-                                if 0 <= r < 3 and abs(dx - tx - 1.5) <= 1.2 - r * .45:
-                                    c, k = rnd.choice(['#c2b28a', '#b8a882']), -int(22 * abs(t) + r * 7) - 8
-                    elif mid + oh < y <= mid + oh + 5 - 3 * abs(t):
-                        c, k = rnd.choice(['#93603c', '#8a5a3a', '#9a6640']), int(4 * (1 - abs(t))) - 4
-                    elif mid + oh + 5 - 3 * abs(t) < y <= mid + oh + 9 and abs(t) < .75:
-                        k -= 16
+                # 0.4.341 (the owner: "Ensure the mouth moves when she speaks too"): for the frames of her speaking, her jaw comes
+                # down {@code gape} pixels, drawn from their own small random so the stone round her mouth stays exactly as it is.
+                shut = _mouth(dx, y, c, k, 0.0, rnd)
+                c, k = _mouth(dx, y, c, k, gape, random.Random(x * 7919 + y * 104729)) if gape else shut
                 # Tight creases where the lips meet at each corner, pulled down toward the jaw.
                 for side in (-1, 1):
                     for i in range(9):
                         if abs(dx - side * (46 + i * .6)) <= .9 and abs(y - (197 + i + (2 if side > 0 else 0))) <= .6:
                             k -= 22
                 # Her chin drawn up under the grimace: a dimpled, shadowed knot of stone.
-                d = math.hypot(dx / 14.0, (y - 210) / 6.0)
+                d = math.hypot(dx / 14.0, (y - 210 - gape * .8) / 6.0)
                 if d < 1:
                     k -= int(8 * (1 - d))
                 # The chin, round and lit, and the dark under it.
-                d = math.hypot(dx / 18.0, (y - 220) / 12.0)
+                d = math.hypot(dx / 18.0, (y - 220 - gape * .6) / 12.0)
                 if d < 1:
                     k += int(8 * (1 - d))
                 if fh - abs(dx) < 4:
@@ -383,7 +409,8 @@ def lid():
 
 
 def pictures():
-    return {'entity/sphinx/face.png': face(), 'entity/sphinx/face_white.png': white(), 'entity/sphinx/face_iris.png': iris(), 'entity/sphinx/face_lid.png': lid()}
+    return {'entity/sphinx/face.png': face(), 'entity/sphinx/face_white.png': white(), 'entity/sphinx/face_iris.png': iris(), 'entity/sphinx/face_lid.png': lid(),
+            'entity/sphinx/face_mouth.png': mouth()}
 
 
 def preview(path, dark=False):

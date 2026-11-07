@@ -102,3 +102,27 @@ Her face now:
 In the hall her stone takes the hall's own light, never brighter than a little above dark, while her eyes are always lit, so they are
 what is seen first as she leans down (`SphinxFaceRenderer.STONE_LIGHT` and `EYE_LIGHT`). The client proof's face page adds two views as
 she is in the hall's dark. The same face is used wherever she shows it, the dream included. Nothing else about the crossing changes.
+
+## 0.4.341: her mouth
+
+The owner: "Ensure the mouth moves when she speaks too."
+
+Her face is stone, and her jaw moves like stone. While she speaks:
+
+- her jaw drops in three steps (`face_mouth.png`, three frames of the box round her mouth and chin);
+- her lower lip and the lower row of teeth come down with it, and her chin follows;
+- the top lip, the upper teeth and the rest of her face stay where they are;
+- the rhythm comes from two slow waves, one for syllables and one for phrases;
+- at the end of the line her jaw eases shut to the slight grimace she rests in.
+
+`tools/sphinx_face_art.py` draws the frames from the same face as the picture. The stone grain round her mouth is identical in every
+frame, so only her jaw moves, and the picture itself is unchanged byte for byte.
+
+The House works out how long each line takes her to say, a little slower than a person reads it (`SphinxCore.speaks`). It sends that
+time to each reader who hears the line (protocol 139, `sphinx_voice`):
+
+- **In the first crossing,** that is everyone in the hall, whoever the words were for, since they all hear her voice and see her face.
+- **In the stair, shelf and field crossings,** it is the reader she speaks to. Only her eye shows there, so nothing visible changes yet.
+- **In the dream,** the same clock will move her mouth as she asks her last question.
+
+The client proof's face page shows her speaking in two of its four views.
