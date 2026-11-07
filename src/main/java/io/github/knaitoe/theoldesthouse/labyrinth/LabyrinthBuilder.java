@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 102;
+    public static final int VERSION = 103;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -578,6 +578,7 @@ public final class LabyrinthBuilder {
             case TENSION_ROOM -> TensionRooms.build(level, base);
             case TENSION_ROOMS -> DeepTensionRooms.build(level, base);
             case SPHINX_VESTIBULE -> Sphinx.build(level, base);
+            case SPHINX_STAIR -> SphinxStair.build(level, base);
             case FAMILIAR_KITCHEN -> FamiliarRoom.build(level, base);
             // 0.4.261: the rest rooms, the quiet room's siblings (QuietRooms).
             case QUIET_READING -> QuietRooms.buildReading(level, base);

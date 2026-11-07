@@ -23,14 +23,21 @@ import net.minecraft.world.phys.shapes.*;
 public final class SphinxEyeBlock extends Block {
     public static final MapCodec<SphinxEyeBlock> CODEC=simpleCodec(SphinxEyeBlock::new);
     public static final IntegerProperty TILE=IntegerProperty.create("tile",0,7),LOOK=IntegerProperty.create("look",0,8);
+    /**
+     * Which way she looks: face down from above (0, the vestibule), face up from below (1, 0.4.335, through the gap between the stair's
+     * flights), or upright facing south (2, 0.4.336, her face turned sideways to see under the shelf's overhang).
+     */
+    public static final IntegerProperty FACE=IntegerProperty.create("face",0,2);
+    public static final int DOWN=0,UP=1,SOUTH=2;
     /** Looking straight down at the middle of the hall below her. */
     public static final int AHEAD=7;
-    public SphinxEyeBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(TILE,0).setValue(LOOK,AHEAD));}
-    public static BlockState of(int tile,int look){return PuzzleRegistry.SPHINX_EYE.get().defaultBlockState().setValue(TILE,tile).setValue(LOOK,look);}
+    public SphinxEyeBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(TILE,0).setValue(LOOK,AHEAD).setValue(FACE,DOWN));}
+    public static BlockState of(int tile,int look){return of(tile,look,DOWN);}
+    public static BlockState of(int tile,int look,int face){return PuzzleRegistry.SPHINX_EYE.get().defaultBlockState().setValue(TILE,tile).setValue(LOOK,look).setValue(FACE,face);}
     public static boolean is(BlockState s){return s.is(PuzzleRegistry.SPHINX_EYE.get());}
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(TILE,LOOK);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return Block.box(0,0,0,16,1,16);}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(TILE,LOOK,FACE);}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(FACE)){case UP->Block.box(0,15,0,16,16,16);case SOUTH->Block.box(0,0,15,16,16,16);default->Block.box(0,0,0,16,1,16);};}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return Shapes.empty();}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){

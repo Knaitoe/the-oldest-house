@@ -17,6 +17,14 @@ ROWS = {
     'pin': ('A pin comes free', 10),
     'strike': ('A huge hand comes down', 24),
     'scrape': ('Something scrapes on tile', 10),
+    # 0.4.335 onward: the later crossings, the dream and the stone.
+    'rattle': ('A stone chip rattles down a stair', 16),
+    'grind': ('Stone grinds against stone', 24),
+    'rustle': ('Corn rustles high overhead', 32),
+    'wing': ('A vast wing beats', 48),
+    'sand': ('Sand slides away', 10),
+    'crack': ('Packed fill cracks open', 16),
+    'settle': ('Loose fill settles', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -137,7 +145,84 @@ def scrape():
     return out
 
 
-MAKERS = {'voice': voice, 'breath': breath, 'latch': latch, 'catch': catch, 'pin': pin, 'strike': strike, 'scrape': scrape}
+def rattle():
+    # A chip going down a stair: a click on each tread, quickening, each one a little duller, and a last small skitter.
+    n = seconds(2.2)
+    out = np.zeros(n)
+    at, gap = 0.0, .2
+    for i in range(11):
+        k = seconds(.05)
+        tk = times(k)
+        click = band(rng.standard_normal(k), 1800, 6500) * envelope(k, .0008, .015) + np.sin(2 * np.pi * rng.uniform(900, 1300) * tk) * envelope(k, .0008, .01) * .4
+        place(out, click * (1 - i * .05), at)
+        at += gap
+        gap = max(.08, gap * .9)
+    k = seconds(.3)
+    place(out, band(rng.standard_normal(k), 2500, 7000) * envelope(k, .01, .12) * .2, at)
+    return hall(out, 1.2, .6)
+
+
+def grind():
+    # A slab moving a hand's width against its bed: a low dragging roar that catches and goes on, grit in it.
+    n = seconds(1.8)
+    t = times(n)
+    am = .55 + .45 * np.abs(np.sin(2 * np.pi * 3.1 * t + np.sin(2 * np.pi * .7 * t)))
+    out = band(rng.standard_normal(n), 60, 700) * am * adsr(n, .15, .35) * .9
+    out += band(rng.standard_normal(n), 2500, 8000) * (rng.random(n) > .985) * .5
+    return hall(out, 1.4, .7)
+
+
+def rustle():
+    # Stalks parting well above head height: dry leaves brushed in long swathes, swelling and passing.
+    n = seconds(2.0)
+    t = times(n)
+    swell = np.sin(np.pi * t / 2.0) ** 1.5
+    bursts = np.convolve(rng.random(n) > .996, np.hanning(seconds(.05)), 'same')
+    return band(rng.standard_normal(n), 1400, 7500) * (.3 + bursts) * swell * .6
+
+
+def wing():
+    # A wing as wide as a yard: two heavy pushes of air, a low thump in each, the rush trailing off.
+    n = seconds(2.0)
+    out = np.zeros(n)
+    for at in (0.0, .9):
+        k = seconds(.8)
+        tk = times(k)
+        push = np.sin(np.pi * tk / .8) ** 2
+        place(out, (band(rng.standard_normal(k), 40, 600) * 1.0 + np.sin(2 * np.pi * 38 * tk) * .7) * push, at)
+    return out * .8
+
+
+def sand():
+    # Fine sand sliding away from a door: a hiss that thins out.
+    n = seconds(1.3)
+    t = times(n)
+    return band(rng.standard_normal(n), 2200, 9000) * np.exp(-t * 2.2) * adsr(n, .03, .2) * .6
+
+
+def crack():
+    # Packed fill giving way at once: one hard crack, then grains pouring off the faces.
+    n = seconds(1.4)
+    out = np.zeros(n)
+    k = seconds(.12)
+    place(out, band(rng.standard_normal(k), 400, 4500) * envelope(k, .0005, .04) * 1.0, 0.0)
+    k = seconds(1.2)
+    tk = times(k)
+    trickle = band(rng.standard_normal(k), 1800, 7000) * (rng.random(k) > .97) * np.exp(-tk * 1.8)
+    place(out, trickle * .6, .08)
+    return hall(out, .9, .4)
+
+
+def settle():
+    # Loose fill sliding back into place behind someone: a soft pour and a few last grains.
+    n = seconds(1.6)
+    t = times(n)
+    pour = band(rng.standard_normal(n), 900, 5000) * np.sin(np.pi * np.minimum(1, t / 1.2)) ** 2 * .5
+    grains = band(rng.standard_normal(n), 3000, 8000) * (rng.random(n) > .992) * .4
+    return pour + grains
+
+
+MAKERS = {'rattle': rattle, 'grind': grind, 'rustle': rustle, 'wing': wing, 'sand': sand, 'crack': crack, 'settle': settle, 'voice': voice, 'breath': breath, 'latch': latch, 'catch': catch, 'pin': pin, 'strike': strike, 'scrape': scrape}
 
 
 def main():

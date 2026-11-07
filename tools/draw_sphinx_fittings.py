@@ -79,8 +79,59 @@ def dark():
     return noisy(['#141312', '#181715', '#11100f', '#1b1a18'], 3067, [4, 3, 2, 1])
 
 
+ASHLAR = ['#a9a28f', '#a09987', '#b2ab98', '#989180']
+
+
+def ashlar(seed=3091):
+    # 0.4.335, the stair: dressed limestone in long courses, two to a block and staggered, like vanilla's stone bricks but paler.
+    im = noisy(ASHLAR, seed, [4, 3, 2, 2])
+    for x in range(16):
+        dot(im, x, 7, '#6e695c'); dot(im, x, 15, '#6e695c')
+    for y in range(0, 7):
+        dot(im, 4, y, '#6e695c')
+    for y in range(8, 15):
+        dot(im, 12, y, '#6e695c')
+    return im
+
+
+def flags():
+    # Worn flagstones, irregular, darker in the joints and smoothed down the middle where feet go.
+    im = noisy(['#8c8778', '#857f71', '#938e7f', '#7d786a'], 3092, [4, 3, 2, 2])
+    for a, b in (((0, 5), (9, 4)), ((9, 4), (15, 6)), ((6, 4), (5, 15)), ((5, 11), (15, 12)), ((0, 13), (5, 13))):
+        line(im, a[0], a[1], b[0], b[1], '#5c584e')
+    return im
+
+
+def ashlar_seam():
+    # Ashlar cracked through in the shape of a stair mouth: her weight came down on it and it closed.
+    im = ashlar(3093)
+    for a, b in (((2, 16), (2, 4)), ((2, 4), (8, 1)), ((8, 1), (14, 4)), ((14, 4), (14, 16)), ((5, 10), (8, 8)), ((8, 8), (11, 11))):
+        line(im, a[0], a[1], b[0], b[1], '#3e3a33')
+    return im
+
+
+ROCK = ['#3a3836', '#33312f', '#42403d', '#2d2b29']
+
+
+def rock(seed=3101):
+    # 0.4.336, the shelf: the dark halls' raw rock, close-grained and fractured, a little damp.
+    im = noisy(ROCK, seed, [4, 3, 2, 2])
+    for a, b in (((0, 4), (6, 6)), ((6, 6), (10, 3)), ((3, 12), (11, 10)), ((11, 10), (16, 13))):
+        line(im, a[0], a[1], b[0], b[1], '#1f1e1c')
+    return im
+
+
+def rock_seam():
+    # Rock closed over where a ladder hooked: the crack runs across in a ladder's width.
+    im = rock(3102)
+    for a, b in (((4, 0), (5, 16)), ((11, 0), (10, 16)), ((5, 5), (10, 4)), ((5, 11), (10, 12))):
+        line(im, a[0], a[1], b[0], b[1], '#121110')
+    return im
+
+
 def materials():
-    return {'tile': tile(), 'marked': marked(), 'plaster': plaster(), 'ceiling': ceiling(), 'seam': seam(), 'dark': dark()}
+    return {'tile': tile(), 'marked': marked(), 'plaster': plaster(), 'ceiling': ceiling(), 'seam': seam(), 'dark': dark(),
+            'ashlar': ashlar(), 'flags': flags(), 'ashlar_seam': ashlar_seam(), 'rock': rock(), 'rock_seam': rock_seam()}
 
 
 # ------------------------------------------------------------------------------------------------ fittings
@@ -259,10 +310,66 @@ def tag():
     return im
 
 
+def rail():
+    # Wrought iron, blacked and worn bright at the top where hands go.
+    im = noisy(['#2c2c2e', '#323234', '#28282a'], 3094)
+    for x in range(16):
+        dot(im, x, 0, '#5e5e62'); dot(im, x, 1, '#48484c')
+    return im
+
+
+def chip():
+    return noisy(['#a49d8a', '#968f7d', '#b0a995', '#8a8372'], 3095, [3, 3, 2, 1])
+
+
+def tray():
+    # A shallow spruce tray, its rim darker, loose chips lying in it.
+    im = noisy(['#6b4d2e', '#735432', '#664a2c'], 3096)
+    frame(im, 0, 0, 16, 16, '#4f3a22'); rnd = random.Random(3097)
+    for _ in range(14):
+        x, y = rnd.randrange(2, 14), rnd.randrange(2, 14)
+        dot(im, x, y, rnd.choice(['#b0a995', '#968f7d', '#c2bba6'])); dot(im, x + 1, y, '#7d786a')
+    return im
+
+
+def grate():
+    # A landing of iron grating: flat bars on a square mesh, the gaps open so the stair below shows through.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for i in range(0, 16, 4):
+        for j in range(16):
+            dot(im, i, j, '#3a3a3c'); dot(im, j, i, '#3a3a3c'); dot(im, i + 1, j, '#2a2a2c')
+    return im
+
+
+def shelf():
+    # A shelf of pale stone, its top worn flat and a grey grit along its edge.
+    im = noisy(['#7d776c', '#746e63', '#868075', '#6c665b'], 3103, [4, 3, 2, 2])
+    for x in range(16):
+        dot(im, x, 0, '#9a9488'); dot(im, x, 1, '#8a8478')
+    return im
+
+
+def peg():
+    # An iron survey pin driven into the rock, a level line scored through its head.
+    im = noisy(['#5a5a5c', '#4e4e50', '#666668'], 3104)
+    for x in range(16):
+        dot(im, x, 7, '#e8e4d8'); dot(im, x, 8, '#b8b4a8')
+    return im
+
+
+def wood():
+    # The ladder's spruce, rubbed pale on the rungs.
+    im = noisy(['#7a5a36', '#6b4d2e', '#836240'], 3105)
+    for x in range(16):
+        dot(im, x, 0, '#9a7a52')
+    return im
+
+
 def textures():
     out = {f'block/sphinx_{k}.png': v for k, v in materials().items()}
     t = {'fur': fur(), 'claw': claw(), 'pad': pad(), 'iron': iron(), 'brass': brass(), 'pot': pot(), 'umbrella': umbrella(), 'flap': flap(), 'latch_0': latch(False), 'latch_1': latch(True),
-         'grille': grille(), 'socket': socket(), 'tag': tag(), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark()}
+         'grille': grille(), 'socket': socket(), 'tag': tag(), 'rail': rail(), 'chip': chip(), 'tray': tray(), 'grate': grate(), 'ashlar': ashlar(3098),
+         'shelf': shelf(), 'peg': peg(), 'wood': wood(), 'rock': rock(3106), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark()}
     for look in range(9):
         for i, q in enumerate(eye_tiles(look)):
             t[f'eye_{look}_{i}'] = q
@@ -312,6 +419,55 @@ def fitting_models():
     m['survey_0'] = model([plate], {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')
     m['survey_1'] = model([plate] + survey_pin(7.5, 7.5), {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')
     m['survey_2'] = model([plate] + survey_pin(6, 7.5) + survey_pin(9, 8.5), {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')
+    # 0.4.335, the stair: a stair mouth's iron gate, shut (balusters across the mouth), released (swung back along its post), bowed
+    # (bent out toward the gallery under her hand).
+    def gate(z0, sag):
+        els = [element([0, 13 - sag, z0], [16, 15 - sag, z0 + 2], {'all': 'r'}), element([0, 1, z0], [16, 3, z0 + 2], {'all': 'r'})]
+        for x in (1, 5, 9, 13):
+            els.append(element([x, 3, z0 + .5], [x + 1.5, 13 - sag, z0 + 1.5], {'all': 'r'}))
+        return els
+    m['rail_0'] = model(gate(7, 0), {'r': 'rail'}, 'rail')
+    m['rail_1'] = model([element([0, 13, 0], [2, 15, 16], {'all': 'r'}), element([0, 1, 0], [2, 3, 16], {'all': 'r'})]
+                        + [element([.25, 3, z], [1.75, 13, z + 1.5], {'all': 'r'}) for z in (1, 5, 9, 13)],
+                        {'r': 'rail'}, 'rail')
+    m['rail_2'] = model(gate(11, 4), {'r': 'rail'}, 'rail')
+    m['tray_0'] = model([element([6, 0, 6], [10, 9, 10], {'all': 'a'}), element([2, 9, 3], [14, 11, 13], {'all': 't'}, uv={'up': [0, 0, 16, 16]})],
+                        {'a': 'ashlar', 't': 'tray'}, 'tray')
+    m['chip_0'] = model([element([6, 0, 6], [9.5, 1.5, 9], {'all': 'c'}), element([8, 0, 7.5], [10, 1, 10], {'all': 'c'})], {'c': 'chip'}, 'chip')
+    m['grate_0'] = model([element([0, 13, 0], [16, 16, 16], {'all': 'g'}, uv={'up': [0, 0, 16, 16], 'down': [0, 0, 16, 16]})], {'g': 'grate'}, 'grate')
+    # The landing's edge: the same grating with a low stone lip along its south side, for a chip to stop against.
+    m['grate_1'] = model([element([0, 13, 0], [16, 16, 16], {'all': 'g'}, uv={'up': [0, 0, 16, 16], 'down': [0, 0, 16, 16]}), element([0, 16, 14], [16, 18, 16], {'all': 'a'})], {'g': 'grate', 'a': 'ashlar'}, 'grate')
+    # Her foreleg laid up a stair: thick, furred, the line of the bone under it.
+    m['limb_0'] = model([element([2, 0, 0], [14, 13, 16], {'all': 'f'})], {'f': 'fur'}, 'fur')
+    # 0.4.336, the shelf: a stone shelf, settled (0) or lifted past its pin as she breathes (1); the iron survey pin in the far wall, its
+    # top level with a settled shelf; the short ladder stowed upright at the near edge (0), lowered (1) or dropped toward a false shelf
+    # (2); the ladder lying across the gap.
+    m['shelf_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 's'})], {'s': 'shelf'}, 'shelf')
+    m['shelf_1'] = model([element([0, 4, 0], [16, 20, 16], {'all': 's'})], {'s': 'shelf'}, 'shelf')
+    m['peg_0'] = model([element([6, 0, 4], [10, 2, 16], {'all': 'p'}), element([5, -.5, 3], [11, 2.5, 4], {'all': 'p'})], {'p': 'peg'}, 'peg')
+    def ladder_up(tilt):
+        els = []
+        for x in (2, 12):
+            els.append(element([x, 0, 7 + tilt], [x + 2, 16, 9 + tilt], {'all': 'w'}))
+        for y in (3, 8, 13):
+            els.append(element([4, y, 7.5 + tilt], [12, y + 1.5, 8.5 + tilt], {'all': 'w'}))
+        return els
+    m['ladder_0'] = model(ladder_up(4), {'w': 'wood'}, 'wood')
+    hook = [element([2, 13, 0], [4, 16, 16], {'all': 'w'}), element([12, 13, 0], [14, 16, 16], {'all': 'w'})] + [element([4, 13.5, z], [12, 15, z + 1.5], {'all': 'w'}) for z in (2, 7, 12)]
+    # Lowered, all that is left at the edge is the hinge: the rails' ends lying on the rock, pinned to an iron staple.
+    hinge = [element([2, 0, 10], [4, 2, 16], {'all': 'w'}), element([12, 0, 10], [14, 2, 16], {'all': 'w'}), element([1, 0, 14], [15, 1, 15], {'all': 'p'})]
+    m['ladder_1'] = model(hinge, {'w': 'wood', 'p': 'peg'}, 'wood')
+    m['ladder_2'] = model(hinge, {'w': 'wood', 'p': 'peg'}, 'wood')
+    m['span_0'] = model(hook, {'w': 'wood'}, 'wood')
+    for look in range(9):
+        for i in range(8):
+            # 0.4.336: her face turned sideways to see under the overhang: the eye upright, facing south, the picture's top upward.
+            m[f'eye_side_{look}_{i}'] = model([element([0, 0, 15], [16, 16, 16], {'south': 'e', 'north': 'k', 'up': 'k', 'down': 'k', 'east': 'k', 'west': 'k'}, uv={'south': [0, 0, 16, 16]})], {'e': f'eye_{look}_{i}', 'k': 'skin_dark'}, f'eye_{look}_{i}')
+    for look in range(9):
+        for i in range(8):
+            # 0.4.335: face up, looking up through the gap between two flights; flipped so the hall side (the gallery) is the
+            # picture's top, as it is face down.
+            m[f'eye_up_{look}_{i}'] = model([element([0, 15, 0], [16, 16, 16], {'up': 'e', 'down': 'k'}, uv={'up': [0, 16, 16, 0]})], {'e': f'eye_{look}_{i}', 'k': 'skin_dark'}, f'eye_{look}_{i}')
     for look in range(9):
         for i in range(8):
             # Face down: the eye is on the underside, read from the hall below.
@@ -319,12 +475,14 @@ def fitting_models():
     return m
 
 
-KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach', 'survey']
-STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'reach': 1, 'survey': 3}
+KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach', 'survey', 'rail', 'tray', 'chip', 'grate', 'limb', 'shelf', 'peg', 'ladder', 'span']
+STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'reach': 1, 'survey': 3, 'rail': 3, 'tray': 1, 'chip': 1, 'grate': 2, 'limb': 1,
+          'shelf': 2, 'peg': 1, 'ladder': 3, 'span': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 3
 NAMES = {'sphinx_fitting': 'Vestibule Fittings', 'sphinx_tile': 'Quarry Tiles', 'sphinx_marked': 'Marked Tile', 'sphinx_plaster': 'Limewash Plaster',
-         'sphinx_ceiling': 'Spruce Ceiling', 'sphinx_seam': 'Cracked Plaster', 'sphinx_dark': 'Dark Plaster', 'sphinx_eye': 'Eye in the Dark'}
+         'sphinx_ceiling': 'Spruce Ceiling', 'sphinx_seam': 'Cracked Plaster', 'sphinx_dark': 'Dark Plaster', 'sphinx_eye': 'Eye in the Dark',
+         'sphinx_ashlar': 'Dressed Stone', 'sphinx_flags': 'Worn Flagstones', 'sphinx_ashlar_seam': 'Cracked Masonry', 'sphinx_rock': 'Dark Rock', 'sphinx_rock_seam': 'Closed Rock'}
 
 
 def files():
@@ -344,7 +502,9 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/sphinx_fitting.json'] = {'variants': variants}
-    out['blockstates/sphinx_eye.json'] = {'variants': {f'look={look},tile={i}': {'model': NS + f'block/sphinx/eye_{look}_{i}'} for look in range(9) for i in range(8)}}
+    faces = {0: '', 1: 'up_', 2: 'side_'}
+    out['blockstates/sphinx_eye.json'] = {'variants': {f'face={face},look={look},tile={i}': {'model': NS + f'block/sphinx/eye_{prefix}{look}_{i}'}
+                                                       for look in range(9) for i in range(8) for face, prefix in faces.items()}}
     return out
 
 

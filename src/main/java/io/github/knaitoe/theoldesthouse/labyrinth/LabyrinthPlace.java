@@ -591,7 +591,9 @@ public enum LabyrinthPlace {
     /** 0.4.327, Speak Up (SpeakUp, docs/SPEAK_UP_0_4_327.md): a dining room where everyone answers for the reader until one of them says "You can answer." Once to each reader, after the quiet rooms. */
     SPEAK_UP("speak_up",Kind.GRAY,200,new BoundingBox(-6,-1,-13,6,6,0),grayDoors(1,0,-12)),
     /** 0.4.333, State Route 9 (StateRoute, docs/STATE_ROUTE_0_4_333.md): a four-lane highway at night, a key in a mailbox across it, a padlocked gate on this side. Outside, shared, after the yard. */
-    STATE_ROUTE("state_route",Kind.ONE_SHOT,201,new BoundingBox(-58,-5,-29,58,14,0),literaryEntry());
+    STATE_ROUTE("state_route",Kind.ONE_SHOT,201,new BoundingBox(-58,-5,-29,58,14,0),literaryEntry()),
+    /** 0.4.335, the Sphinx's second crossing (SphinxStair, docs/SPHINX_0_4_335.md): a gallery at the head of a shaft, three flights down, a grated landing overhead. A rare detour in the middle stone halls. Floor 14 into its slot, for the shaft. */
+    SPHINX_STAIR("sphinx_stair",Kind.GRAY,202,new BoundingBox(-12,-14,-24,13,9,0),grayDoors(11,0,-23));
 
     /** What a place is to the dealer. */
     public enum Kind {
