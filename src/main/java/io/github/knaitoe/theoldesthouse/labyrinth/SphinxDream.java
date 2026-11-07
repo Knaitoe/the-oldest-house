@@ -502,8 +502,13 @@ public final class SphinxDream {
         BlockPos sill;
         if(door!=null){var f=ow.getBlockState(door).getValue(DoorBlock.FACING);var a=door.relative(f);var c=door.relative(f.getOpposite());sill=a.distSqr(bed)<c.distSqr(bed)?a:c;r.putLong("Door",door.asLong());}
         else{sill=beside(ow,bed,bed);if(sill==null)sill=bed.above();r.remove("Door");}
-        r.putLong("Sill",sill.asLong());placeStone(ow,p,r);
+        r.putLong("Sill",sill.asLong());if(ready(ow,sill))placeStone(ow,p,r);
     }
+    /**
+     * Whether the stone can be looked for and laid at {@code at}: its chunk and the chunk's entities both loaded. Entities load after the
+     * blocks, and a stone laid or missed before them would be a second stone once the first loads.
+     */
+    static boolean ready(ServerLevel ow,BlockPos at){return ow.isLoaded(at)&&ow.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at));}
     static BlockPos lower(ServerLevel l,BlockPos at){var s=l.getBlockState(at);return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?at.below():at;}
     static boolean outdoorSide(ServerLevel l,BlockPos door){for(var d:Direction.Plane.HORIZONTAL)if(l.canSeeSky(door.relative(d).above()))return true;return false;}
     static void placeStone(ServerLevel ow,ServerPlayer p,CompoundTag r){
@@ -530,7 +535,7 @@ public final class SphinxDream {
         if(st!=WAITING&&st!=SECOND)return;
         if(carriesStone(p,r)){taken(p,r);return;}
         var ow=s.overworld();var sill=BlockPos.of(r.getLong("Sill"));
-        if(p.blockPosition().distSqr(sill)<48*48&&ow.isLoaded(sill)){
+        if(p.blockPosition().distSqr(sill)<48*48&&ready(ow,sill)){
             var e=r.hasUUID("Stone")?ow.getEntity(r.getUUID("Stone")):null;
             if(e==null||!e.isAlive()){placeStone(ow,p,r);record(s,u,r);}
         }

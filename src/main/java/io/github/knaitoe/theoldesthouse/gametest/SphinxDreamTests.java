@@ -69,6 +69,9 @@ public final class SphinxDreamTests {
         for(var e:ow.getEntitiesOfClass(ItemEntity.class,new AABB(sill).inflate(1.5)))if(DreamStela.is(e.getItem())&&p.getUUID().equals(DreamStela.ownerOf(e.getItem())))return e;
         return null;
     }
+    private static long stones(ServerLevel ow,ServerPlayer p){
+        return ow.getEntitiesOfClass(ItemEntity.class,new AABB(p.blockPosition()).inflate(64)).stream().filter(e->DreamStela.is(e.getItem())&&p.getUUID().equals(DreamStela.ownerOf(e.getItem()))).count();
+    }
     private static SphinxDreamEntity her(ServerPlayer p){
         for(var e:p.serverLevel().getEntitiesOfClass(SphinxDreamEntity.class,new AABB(p.blockPosition()).inflate(300)))if(p.getUUID().equals(e.owner()))return e;
         return null;
@@ -157,7 +160,12 @@ public final class SphinxDreamTests {
             .thenWaitUntil(()->h.assertTrue(her(a)==null||her(a).phase()==SphinxDreamEntity.FLYING,"looked at, she lifts off"))
             .thenWaitUntil(()->{var her=her(e);if(her!=null)e.lookAt(EntityAnchorArgument.Anchor.EYES,SphinxDream.regard(her));h.assertTrue(stage(h,e)>=SphinxDream.SECOND,"the dismissive reader looks up at her over the far field; she goes; the second waking");})
             .thenWaitUntil(()->h.assertTrue(stage(h,a)>=SphinxDream.SECOND&&stage(h,b)>=SphinxDream.SECOND,"the others wake again too"))
+            // The stone is laid once the sill's entities have loaded, which can be a few ticks after the reader is back in their bed.
+            .thenWaitUntil(()->{var sill=BlockPos.of(SphinxDream.record(s,b.getUUID()).getLong("Sill"));
+                h.assertTrue(stone(ow,a)!=null&&stone(ow,b)!=null,"the stones on their sills (hostile sill entities loaded: "+ow.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(sill))+")");})
+            .thenIdle(20)
             .thenExecute(()->{
+                h.assertTrue(stones(ow,a)==1&&stones(ow,b)==1,"one stone each, never a second laid while the first was loading: "+stones(ow,a)+", "+stones(ow,b));
                 h.assertTrue(a.level().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)&&a.blockPosition().distSqr(beds[0])<9,"back in their real bed");
                 var stone=stone(ow,a);h.assertTrue(stone!=null,"the stone on their sill");
                 h.assertTrue(BlockPos.of(SphinxDream.record(s,a.getUUID()).getLong("Door")).equals(o.offset(2,1,5)),"at their own door");
