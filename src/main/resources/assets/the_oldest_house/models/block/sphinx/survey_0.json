@@ -1,0 +1,50 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/sphinx/socket",
+    "i": "the_oldest_house:block/sphinx/iron",
+    "t": "the_oldest_house:block/sphinx/tag",
+    "particle": "the_oldest_house:block/sphinx/socket"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        3,
+        15.5
+      ],
+      "to": [
+        12,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

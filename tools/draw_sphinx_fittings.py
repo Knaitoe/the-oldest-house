@@ -243,10 +243,26 @@ def reach():
     return im
 
 
+def socket():
+    # 0.4.334: a survey socket, a brass plate screwed to the plaster with a bored hole for a pin, its rim worn bright.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 4, 3, 12, 13, '#b8932e'); frame(im, 4, 3, 12, 13, '#7a5e1c')
+    dot(im, 5, 4, '#f2dc6e'); dot(im, 10, 11, '#5e4614'); dot(im, 5, 11, '#5e4614'); dot(im, 10, 4, '#5e4614')
+    fill(im, 7, 7, 9, 9, '#1e1a10'); dot(im, 6, 7, '#f2dc6e'); dot(im, 6, 8, '#d6b24a'); dot(im, 9, 9, '#8e6e22')
+    return im
+
+
+def tag():
+    # A strip of surveyor's cloth tied below a pin's ring, a pencil tick on it.
+    im = noisy(['#e4dccb', '#dcd3c0', '#ece6d6'], 3090)
+    line(im, 4, 9, 6, 11, '#3a3a3a'); line(im, 6, 11, 11, 5, '#3a3a3a')
+    return im
+
+
 def textures():
     out = {f'block/sphinx_{k}.png': v for k, v in materials().items()}
     t = {'fur': fur(), 'claw': claw(), 'pad': pad(), 'iron': iron(), 'brass': brass(), 'pot': pot(), 'umbrella': umbrella(), 'flap': flap(), 'latch_0': latch(False), 'latch_1': latch(True),
-         'grille': grille(), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark()}
+         'grille': grille(), 'socket': socket(), 'tag': tag(), 'skin': skin(), 'nail': nail(), 'plaster': plaster(3066), 'reach': reach(), 'skin_dark': skin_dark()}
     for look in range(9):
         for i, q in enumerate(eye_tiles(look)):
             t[f'eye_{look}_{i}'] = q
@@ -287,6 +303,15 @@ def fitting_models():
     m['fingers_0'] = model(els, {'f': 'fur', 'c': 'claw', 'd': 'pad'}, 'fur')
     # Her foreleg down the wall: a thick furred limb against the plaster, a darker ridge down its front.
     m['reach_0'] = model([element([1, 0, 9], [15, 16, 16], {'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f', 'up': 'f', 'down': 'f'})], {'f': 'fur'}, 'fur')
+    # 0.4.334: the survey socket, empty, with one pin set in it, and with two or more (a second pin beside the first).
+    def survey_pin(x, y):
+        return [element([x, y, 9.5], [x + 1, y + 1, 15.5], {'all': 'i'}),
+                element([x - .5, y - .5, 9], [x + 1.5, y + 1.5, 9.5], {'all': 'i'}),
+                element([x - .25, y - 3, 10], [x + 1.25, y - .5, 10.5], {'all': 't'}, uv={f: [3, 3, 13, 13] for f in ('north', 'south', 'east', 'west', 'up', 'down')})]
+    plate = element([4, 3, 15.5], [12, 13, 16], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}, uv={'north': [0, 0, 16, 16]})
+    m['survey_0'] = model([plate], {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')
+    m['survey_1'] = model([plate] + survey_pin(7.5, 7.5), {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')
+    m['survey_2'] = model([plate] + survey_pin(6, 7.5) + survey_pin(9, 8.5), {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')
     for look in range(9):
         for i in range(8):
             # Face down: the eye is on the underside, read from the hall below.
@@ -294,8 +319,8 @@ def fitting_models():
     return m
 
 
-KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach']
-STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'reach': 1}
+KINDS = ['stand', 'flap', 'latch', 'pin', 'grille', 'fingers', 'reach', 'survey']
+STAGES = {'stand': 1, 'flap': 2, 'latch': 2, 'pin': 3, 'grille': 1, 'fingers': 1, 'reach': 1, 'survey': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 3
 NAMES = {'sphinx_fitting': 'Vestibule Fittings', 'sphinx_tile': 'Quarry Tiles', 'sphinx_marked': 'Marked Tile', 'sphinx_plaster': 'Limewash Plaster',
