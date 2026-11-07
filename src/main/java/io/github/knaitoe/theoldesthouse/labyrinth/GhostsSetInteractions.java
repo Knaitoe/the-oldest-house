@@ -62,22 +62,22 @@ public final class GhostsSetInteractions {
         case BOOKS_PICTURE->new Pile("Merry's picture books","Merry",List.of(
             "Stories fill the spaces between the printed animals. Merry has copied them down and put her own glasses on the characters. Most end with someone being rescued.",
             "A story about an animal trapped on a road has a little row of rescuers drawn under it. The handwriting stops where Merry ran out of room. It begins again along the next edge.",
-            "In a different book a whole city has been scribbled over. The person caught in this story does not get a rescue. Someone has pressed hard enough to mark the next page."));
+            "In a different book a whole city has been scribbled over. There are no rescuers drawn under this one. The pencil went through to the next page."));
         case BOOKS_LIBRARY->new Pile("Three library books","the school library",List.of(
             "Three hardbacks from the school library, a week overdue. The slip in the top one is stamped with Marjorie's name, not Merry's.",
             "In the top one two sisters run away to live in a lighthouse. A corner is folded down at the page where they pack: a torch, crackers, a jar of coins, a blanket.",
             "The other two are about the sea. Neither has been opened. On the back of the slip, in pencil, in Merry's letters: M + M."));
         case BOOKS_PAPERBACK->new Pile("Marjorie's paperbacks","Marjorie",List.of(
             "Paperbacks with their spines cracked white. A horror novel with the cover torn off, a school copy of a play, a book of saints with her grandmother's name inside.",
-            "The horror novel falls open at the same place every time. Those pages are soft from being read.",
+            "The horror novel falls open at the same place every time. The pages there have gone soft.",
             "Inside its back cover is a list in Marjorie's hand. Some of the lines are ticked. The page has been torn halfway out, then pressed flat again."));
         case BOOKS_COOK->new Pile("Sarah's cookbooks","Sarah",List.of(
             "Two cookbooks swollen with steam, and a ring binder of recipes cut out of magazines.",
             "The binder falls open at the spaghetti sauce, on an index card in Sarah's writing. The card is spattered. Underlined at the bottom: a spoonful of sugar to take the edge off.",
-            "Beside it, in pencil, someone has drawn a face with its tongue out and written MERRY. She has never liked the sauce."));
+            "Beside it, in pencil, someone has drawn a face with its tongue out and written MERRY."));
         case BOOKS->new Pile("A box of old books","nobody in particular",List.of(
             "Paperbacks swollen with damp, in a box marked for the church sale. A gardening book, a road atlas, puzzle magazines with every answer filled in.",
-            "A hymn book with someone else's family name in the front. Nobody has written in it since."));
+            "A hymn book with someone else's family name in the front."));
         default->null;
     };}
     /** What each of the Barretts' things tells a hand that picks it up or looks close. */
