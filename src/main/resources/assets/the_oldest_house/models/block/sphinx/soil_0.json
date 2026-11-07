@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "e": "the_oldest_house:block/sphinx/earth",
+    "s": "the_oldest_house:block/sphinx/soil_0",
+    "particle": "the_oldest_house:block/sphinx/soil_0"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    }
+  ]
+}

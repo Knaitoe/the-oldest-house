@@ -595,7 +595,9 @@ public enum LabyrinthPlace {
     /** 0.4.335, the Sphinx's second crossing (SphinxStair, docs/SPHINX_0_4_335.md): a gallery at the head of a shaft, three flights down, a grated landing overhead. A rare detour in the middle stone halls. Floor 14 into its slot, for the shaft. */
     SPHINX_STAIR("sphinx_stair",Kind.GRAY,202,new BoundingBox(-12,-14,-24,13,9,0),grayDoors(11,0,-23)),
     /** 0.4.338, the Sphinx's third crossing (SphinxShelf, docs/SPHINX_0_4_338.md): a ledge under an overhang, three shelves across a cavern, a ladder to each. A rare detour in the dark halls and on the staircase approach. Floor 14 into its slot. */
-    SPHINX_SHELF("sphinx_shelf",Kind.GRAY,203,new BoundingBox(-12,-14,-24,12,9,0),grayDoors(11,0,-23));
+    SPHINX_SHELF("sphinx_shelf",Kind.GRAY,203,new BoundingBox(-12,-14,-24,12,9,0),grayDoors(11,0,-23)),
+    /** 0.4.339, the Sphinx's fourth crossing (SphinxField, docs/SPHINX_0_4_339.md): a ditch and a clearing at the edge of the corn, three gated paths in, the old road under one. Outside, at dusk; a rare detour after the yard. */
+    SPHINX_FIELD("sphinx_field",Kind.GRAY,204,new BoundingBox(-17,-4,-47,17,14,0),grayDoors(15,0,-46));
 
     /** What a place is to the dealer. */
     public enum Kind {
