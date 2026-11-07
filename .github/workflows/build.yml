@@ -110,6 +110,7 @@ jobs:
           python3 tools/draw_sphinx_fittings.py --check
           python3 tools/generate_sphinx_audio.py --check
           python3 tools/generate_night_ward_audio.py --check
+          python3 tools/draw_kitchen_dishes.py --check
           python3 tools/draw_truant_service_fittings.py --check
           python3 tools/generate_truant_service_audio.py --check
           python3 tools/draw_yard_fittings.py --check

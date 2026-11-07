@@ -60,7 +60,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -114,4 +114,6 @@ def entries():
     # Speak Up (0.4.327): Joan, Pat, Dell and Ruth on stranger phases ninety to ninety-three.
     for name,phase in (('joan',90),('pat',91),('dell',92),('ruth',93)):
         rows.append({'name':'literary_supper_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # The familiar kitchen's visitors (0.4.331): Holloway on stranger phase one hundred and one (the others wear Johnny's, the tenant's and a stranger's).
+    rows.append({'name':'literary_kitchen_holloway','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':101})
     return rows

@@ -138,6 +138,8 @@ LOOKS = {
     'literary_supper_pat': Look('#c4987c','#4a3a2c','receding','#3e5a4a','#33363c','knit','#c9bc9f',eyes='#4e5a50',age=1,glasses=True),
     'literary_supper_dell': Look('#9a6a4c','#241c18','short','#7a3a2a','#2e3238','flannel','#d0c4a8',eyes='#3a3028',age=1,beard='short'),
     'literary_supper_ruth': Look('#e0bea2','#2a2220','long','#4a5a7a','#2e3440','shirt','#d8d0c0',eyes='#4a5a6a'),
+    # The familiar kitchen's visitors (0.4.331): Holloway at the table, his own look on the cast's layout.
+    'literary_kitchen_holloway': Look('#b98b69','#5a4230','part','#5b6148','#51483a','field','#b49355',age=1,beard='chinstrap'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
