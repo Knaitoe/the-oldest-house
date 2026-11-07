@@ -46,7 +46,7 @@ public final class HazardVariety {
     private static final Map<MinecraftServer,Engine> ENGINES=new WeakHashMap<>();
     private record Sample(double x,double y,double z,float yaw,float pitch,boolean crouch,float stride){}
     private static final class Reader {
-        final ServerPlayer player;LabyrinthPlace place;CompoundTag own;double lastZ;int frost,restore;double restoreFrom;
+        final ServerPlayer player;LabyrinthPlace place;CompoundTag own;double lastZ;int frost,restore;double restoreFrom;long ladderAt=-1000;
         final ArrayDeque<Sample> trail=new ArrayDeque<>();
         Reader(ServerPlayer p){player=p;lastZ=p.getZ();}
     }
@@ -193,7 +193,12 @@ public final class HazardVariety {
     private static void nested(BlockPos b,List<Reader> here){for(var r:here)modifier(r.player,Attributes.SCALE,SCALE,nestedScale(r.player.getZ()-b.getZ())-1);}
     public static int landingAt(Vec3 pos,BlockPos b){for(int i=1;i<=7;i++){var at=b.offset(HazardMaps.landing(i));if(Math.abs(pos.y-at.getY())<.8&&Math.abs(pos.z-at.getZ())<2.1&&pos.x-b.getX()>-2.4&&pos.x-b.getX()<6.5)return i;}return 0;}
     private static void counting(BlockPos b,long clock,List<Reader> here){for(var r:here){int at=landingAt(r.player.position(),b);if(at>0&&at!=r.own.getInt("LastLanding")){int count=r.own.getInt("Landings");if(at==count+1){r.own.putInt("Landings",count+1);r.player.causeFoodExhaustion(.3F);}r.own.putInt("LastLanding",at);}else if(at==0)r.own.putInt("LastLanding",0);if(clock%400==0)r.player.causeFoodExhaustion(.25F);}}
-    private static void spiral(BlockPos b,long clock,List<Reader> here){if(clock%5!=0)return;for(var r:here){var p=r.player;double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();if(p.getY()>b.getY()+.5&&Math.abs(x)>7)push(p,Math.signum(x)*.026,0);else if(p.getY()>b.getY()+.5&&(z<-23||z>-5))push(p,0,z<-23?-.026:.026);}}
+    /**
+     * The walk pulls outward, toward the drop. 0.4.323 (owner: "it binds a player to the ladders"): the pull also ran on the recovery
+     * ladders, pressing a climber into the wall or along it, so they climbed whether they meant to or not and could not step off onto
+     * the walk. A reader on a ladder, and for half a second after leaving one, is not pulled.
+     */
+    private static void spiral(BlockPos b,long clock,List<Reader> here){for(var r:here)if(r.player.onClimbable())r.ladderAt=clock;if(clock%5!=0)return;for(var r:here){var p=r.player;if(clock-r.ladderAt<=10)continue;double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();if(p.getY()>b.getY()+.5&&Math.abs(x)>7)push(p,Math.signum(x)*.026,0);else if(p.getY()>b.getY()+.5&&(z<-23||z>-5))push(p,0,z<-23?-.026:.026);}}
     private static boolean vacant(ServerLevel l,List<BlockPos> cells,boolean cameras){for(var at:cells)if(!l.hasChunkAt(at)||l.getBlockEntity(at)!=null||!l.getEntities(null,new AABB(at).inflate(.12)).isEmpty()||cameras&&watched(l,at))return false;return true;}
     private static void pressure(ServerLevel l,BlockPos b,long clock,List<Reader> here){if(clock%12!=0||here.stream().noneMatch(r->r.player.getZ()-b.getZ()<-5))return;int reach=(int)Math.min(26,(clock%800)/12);var route=HazardMaps.pressureRoute();var lane=new HashSet<>(route);for(int n=0;n<Math.min(reach,route.size());n++){int at=Math.max(0,12+n/2*(n%2==0?1:-1));if(at>=route.size())continue;var center=route.get(at);boolean horizontal=at>=12;var cells=new ArrayList<BlockPos>();for(int side:new int[]{-1,1}){var edge=center.offset(horizontal?0:side,0,horizontal?side:0);if(lane.contains(edge))continue;for(int y=0;y<=2;y++)cells.add(b.offset(edge).above(y));}
             for(var r:here)if(cells.stream().anyMatch(pos->l.getBlockState(pos).isAir()&&r.player.getBoundingBox().intersects(new AABB(pos)))){if(clock>=r.own.getLong("PressureHit")){r.player.hurt(l.damageSources().inWall(),1);r.player.causeFoodExhaustion(.4F);r.own.putLong("PressureHit",clock+20);}double pull=(horizontal?b.getZ()+center.getZ()+.5-r.player.getZ():b.getX()+center.getX()+.5-r.player.getX());push(r.player,horizontal?.08:Math.clamp(pull,-.22,.22),horizontal?Math.clamp(pull,-.22,.22):.08);}
