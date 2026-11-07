@@ -153,12 +153,12 @@ public final class SphinxShelf {
     private static final Map<UUID,Long> ECHO=new HashMap<>();
     static void ask(ServerLevel l,ServerPlayer p){
         l.playSound(null,p.getX(),p.getY()-7,p.getZ()-4,PuzzleRegistry.SPHINX_VOICE.get(),SoundSource.HOSTILE,1F,.95F);
-        p.displayClientMessage(Component.literal("“"+QUESTION+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
+        p.displayClientMessage(Component.literal("“"+QUESTION+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);SphinxCore.speaks(p,QUESTION);
         ECHO.put(p.getUUID(),l.getGameTime()+30);SphinxCore.heard(l,p.getUUID(),RIDDLE);ASKED.add(p.getUUID());
     }
     static void say(ServerLevel l,String line,List<ServerPlayer> to){
         for(var p:to){l.playSound(null,p.getX(),p.getY()+6,p.getZ()-5,PuzzleRegistry.SPHINX_VOICE.get(),SoundSource.HOSTILE,.85F,.9F);
-            p.displayClientMessage(Component.literal("“"+line+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);}
+            p.displayClientMessage(Component.literal("“"+line+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);SphinxCore.speaks(p,line);}
     }
     /** Her breath: two shelves lift past their pins, grit running off their edges, and settle again. */
     static void breathe(ServerLevel l,BlockPos b){

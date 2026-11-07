@@ -28,12 +28,14 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
  * leaning out over the wall and looking down, with holes where her eyes are. Behind each hole: the white, an iris that turns smoothly
  * toward whoever is nearest (the same reader the server's look names), and a lid that comes down when she blinks. She rises out of the
  * dark over a second and a half when she starts to look, sliding up and forward from behind the wall as she brightens, and sinks the same
- * way.
+ * way. 0.4.341: while she speaks to this reader her jaw works (SphinxMouth).
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class SphinxFaceRenderer implements BlockEntityRenderer<SphinxFaceBlock.Face> {
     static ResourceLocation tex(String name){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/sphinx/"+name+".png");}
-    public static final ResourceLocation FACE=tex("face"),WHITE=tex("face_white"),IRIS=tex("face_iris"),LID=tex("face_lid");
+    public static final ResourceLocation FACE=tex("face"),WHITE=tex("face_white"),IRIS=tex("face_iris"),LID=tex("face_lid"),MOUTH=tex("face_mouth");
+    /** 0.4.341: the box round her mouth and chin in the picture's pixels, and how many frames of her speaking the mouth picture holds. */
+    public static final int MOUTH_X0=94,MOUTH_Y0=180,MOUTH_W=100,MOUTH_H=60,MOUTH_FRAMES=3;
     /** Ticks for her face to rise out of the dark, or sink back into it. */
     static final float RISE=30;
     /** How far she starts below and behind where she looks from, in blocks. */
@@ -59,7 +61,7 @@ public final class SphinxFaceRenderer implements BlockEntityRenderer<SphinxFaceB
         Player near=nearest(level,base);
         for(int k=0;k<2;k++){var centre=Sphinx.faceAt(Sphinx.FACE_EYES[k][0],Sphinx.FACE_EYES[k][1]);gaze(face,k,near==null?null:near.getEyePosition(partial).subtract(base.add(centre)),right,up,n,now);}
         face.gazeAt=now;
-        draw(pose,out,base.subtract(corner),a,face.gaze,blink(face,now),Math.max(light,LightTexture.pack(STONE_LIGHT,0)),Math.max(light,LightTexture.pack(EYE_LIGHT,0)));
+        draw(pose,out,base.subtract(corner),a,face.gaze,blink(face,now),SphinxMouth.frame(now),Math.max(light,LightTexture.pack(STONE_LIGHT,0)),Math.max(light,LightTexture.pack(EYE_LIGHT,0)));
     }
     static Vec3 up(){return Sphinx.faceAt(0,0).subtract(Sphinx.faceAt(0,Sphinx.FACE_PX_H)).normalize();}
     /**
@@ -67,7 +69,9 @@ public final class SphinxFaceRenderer implements BlockEntityRenderer<SphinxFaceB
      * as it brightens), each iris turned by {@code gaze} (across and up the face, two numbers an eye) and her lids {@code closed} (0 to 1);
      * her stone and lids lit by {@code stone}, the whites and irises of her eyes by {@code eyes}.
      */
-    public static void draw(PoseStack pose,MultiBufferSource out,Vec3 rel,float a,float[] gaze,float closed,int stone,int eyes){
+    public static void draw(PoseStack pose,MultiBufferSource out,Vec3 rel,float a,float[] gaze,float closed,int stone,int eyes){draw(pose,out,rel,a,gaze,closed,0,stone,eyes);}
+    /** As above, with her jaw down {@code mouth} frames (0 at rest, up to {@link #MOUTH_FRAMES}) while she speaks. */
+    public static void draw(PoseStack pose,MultiBufferSource out,Vec3 rel,float a,float[] gaze,float closed,int mouth,int stone,int eyes){
         if(a<=.002F)return;
         var right=new Vec3(1,0,0);var up=up();var n=Sphinx.faceNormal();
         float e=1-a;rel=rel.add(up.scale(-SINK_DOWN*e)).add(n.scale(-SINK_BACK*e));
@@ -76,6 +80,14 @@ public final class SphinxFaceRenderer implements BlockEntityRenderer<SphinxFaceB
         var tl=Sphinx.faceAt(0,0).add(rel);var tr=Sphinx.faceAt(Sphinx.FACE_PX_W,0).add(rel);var br=Sphinx.faceAt(Sphinx.FACE_PX_W,Sphinx.FACE_PX_H).add(rel);var bl=Sphinx.faceAt(0,Sphinx.FACE_PX_H).add(rel);
         var buf=out.getBuffer(RenderType.entityCutoutNoCull(FACE));
         vertex(buf,m,tl,0,0,c,stone);vertex(buf,m,bl,0,1,c,stone);vertex(buf,m,br,1,1,c,stone);vertex(buf,m,tr,1,0,c,stone);
+        // Her jaw while she speaks: the frame of her mouth and chin laid just over the picture.
+        if(mouth>0){
+            float v0=(float)(Math.min(mouth,MOUTH_FRAMES)-1)/MOUTH_FRAMES,v1=v0+1F/MOUTH_FRAMES;var lift=n.scale(.012);
+            var mtl=Sphinx.faceAt(MOUTH_X0,MOUTH_Y0).add(rel).add(lift);var mtr=Sphinx.faceAt(MOUTH_X0+MOUTH_W,MOUTH_Y0).add(rel).add(lift);
+            var mbr=Sphinx.faceAt(MOUTH_X0+MOUTH_W,MOUTH_Y0+MOUTH_H).add(rel).add(lift);var mbl=Sphinx.faceAt(MOUTH_X0,MOUTH_Y0+MOUTH_H).add(rel).add(lift);
+            var mb=out.getBuffer(RenderType.entityCutoutNoCull(MOUTH));
+            vertex(mb,m,mtl,0,v0,c,stone);vertex(mb,m,mbl,0,v1,c,stone);vertex(mb,m,mbr,1,v1,c,stone);vertex(mb,m,mtr,1,v0,c,stone);
+        }
         // Her eyes, behind the holes: the whites, the irises, and the lids when she blinks.
         for(int k=0;k<2;k++){
             var at=Sphinx.faceAt(Sphinx.FACE_EYES[k][0],Sphinx.FACE_EYES[k][1]).add(rel);
