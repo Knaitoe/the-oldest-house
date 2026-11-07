@@ -1,0 +1,166 @@
+{
+  "textures": {
+    "paper": "the_oldest_house:block/ghosts_lore/paper",
+    "keyboard": "the_oldest_house:block/ghosts_lore/keyboard",
+    "screen": "the_oldest_house:block/ghosts_lore/screen",
+    "pewter": "the_oldest_house:block/ghosts_lore/pewter",
+    "cloth": "the_oldest_house:block/ghosts_lore/cloth",
+    "pad": "the_oldest_house:block/ghosts_lore/pad",
+    "jar_full": "the_oldest_house:block/ghosts_lore/jar_full",
+    "jar_empty": "the_oldest_house:block/ghosts_lore/jar_empty",
+    "canister_sugar": "the_oldest_house:block/ghosts_lore/canister_sugar",
+    "canister_flour": "the_oldest_house:block/ghosts_lore/canister_flour",
+    "powder": "the_oldest_house:block/ghosts_lore/powder",
+    "altar_wood": "the_oldest_house:block/ghosts_lore/altar_wood",
+    "shroud": "the_oldest_house:block/ghosts_lore/shroud",
+    "tarnish": "the_oldest_house:block/ghosts_lore/tarnish",
+    "rag": "the_oldest_house:block/ghosts_lore/rag",
+    "icon_knife": "the_oldest_house:block/ghosts_lore/icon_knife",
+    "icon_lamb": "the_oldest_house:block/ghosts_lore/icon_lamb",
+    "wax": "the_oldest_house:block/ghosts_lore/wax",
+    "picture": "the_oldest_house:block/ghosts_lore/picture",
+    "wood": "minecraft:block/spruce_planks",
+    "dark": "minecraft:block/gray_concrete",
+    "black": "minecraft:block/black_concrete",
+    "particle": "the_oldest_house:block/ghosts_lore/pewter"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        0,
+        3
+      ],
+      "to": [
+        9.5,
+        3.5,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#jar_empty",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#jar_empty",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#jar_empty",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#jar_empty",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#jar_empty",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#jar_empty",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.3,
+        3.5,
+        2.8
+      ],
+      "to": [
+        9.7,
+        4.3,
+        6.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "ambientocclusion": true
+}

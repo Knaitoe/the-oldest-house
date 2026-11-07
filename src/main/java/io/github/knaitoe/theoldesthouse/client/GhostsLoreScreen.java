@@ -12,13 +12,13 @@ import net.minecraft.network.chat.Component;
 /** The family's private papers and a saved browser page, with no replies or completion buttons. */
 public final class GhostsLoreScreen extends Screen {
     final int kind,day;private final List<String> pages;private int page,scroll,maxScroll;
-    public GhostsLoreScreen(int kind,int day){super(Component.literal(kind==GhostsLore.DIARY?"Sarah's diary":kind==GhostsLore.BANK?"Kitchen papers":kind==GhostsLore.DRAWING?"Inside Merry's book":"Marjorie's laptop"));this.kind=kind;this.day=day;pages=GhostsLore.pages(kind,day);}
-    public static void open(GhostsLorePayload p){if(p.kind()>=0&&p.kind()<=GhostsLore.DRAWING)Minecraft.getInstance().setScreen(new GhostsLoreScreen(p.kind(),Math.max(1,Math.min(7,p.day()))));}
+    public GhostsLoreScreen(int kind,int day){super(Component.literal(kind==GhostsLore.DIARY?"Sarah's diary":kind==GhostsLore.BANK?"Kitchen papers":kind==GhostsLore.DRAWING?"Inside Merry's book":kind==GhostsLore.PAD?"Merry's pad":kind==GhostsLore.CANISTERS?"The kitchen counter":"Marjorie's laptop"));this.kind=kind;this.day=day;pages=GhostsLore.pages(kind,day);}
+    public static void open(GhostsLorePayload p){if(p.kind()>=0&&p.kind()<=GhostsLore.CANISTERS)Minecraft.getInstance().setScreen(new GhostsLoreScreen(p.kind(),Math.max(1,Math.min(7,p.day()))));}
     void proofPage(int selected){page=Math.max(0,Math.min(pages.size()-1,selected));scroll=0;}
     private int w(){return Math.min(500,width-24);}private int h(){return Math.min(330,height-24);}private int x(){return (width-w())/2;}private int y(){return (height-h())/2;}
     @Override protected void init(){
         addRenderableWidget(Button.builder(Component.literal("Close"),b->onClose()).bounds(x()+w()-66,y()+h()-25,56,18).build());
-        if(kind==GhostsLore.LAPTOP){String[] labels={"Study","Saved articles","Bookmarks"};int tab=(w()-24)/3;
+        if(kind==GhostsLore.LAPTOP){String[] labels={"Study","Saved articles","Bookmarks","Images"};int tab=(w()-24)/4;
             for(int n=0;n<labels.length;n++){final int selected=n;addRenderableWidget(Button.builder(Component.literal(labels[n]),b->{page=selected;scroll=0;}).bounds(x()+12+n*tab,y()+28,tab-3,18).build());}
         }else if(pages.size()>1){
             addRenderableWidget(Button.builder(Component.literal("<"),b->{page=Math.max(0,page-1);scroll=0;}).bounds(x()+12,y()+h()-25,25,18).build());

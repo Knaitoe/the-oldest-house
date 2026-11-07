@@ -23,7 +23,9 @@ public final class GhostsSetBlock extends Block {
         PLATE, HAT, BOOKS, JUG, BOLTS, CAMERA, CASE, MONITOR, DRAWING, LAMP, BED_HEAD, BED_FOOT,
         PLAIN_PLATE, PLAYHOUSE, TORN_CARD, DRAWER, DRAWER_RIG, PLASTER,
         MEAL_STEW, MEAL_SANDWICH, MEAL_SOUP, MEAL_ROAST, MEAL_POTATOES, LAMP_OFF, RUG, STAIR, RAIL, TABLE_LEG, STAIR_RAIL, STAIR_RAIL_TOP, MEAL_SPAGHETTI, MEAL_SPAGHETTI_PLAIN, WRITING_DESK,
-        BANK_SLIPS, LAPTOP_CLOSED, LAPTOP_STUDY, BASEMENT_EFFIGY, STORED_CROSS;
+        BANK_SLIPS, LAPTOP_CLOSED, LAPTOP_STUDY, BASEMENT_EFFIGY, STORED_CROSS,
+        // 0.4.325: the sisters' plan (Merry's pad, the canisters left open), the shrine's jar and the empty jar Merry brings back down.
+        PLAN_PAD, CANISTERS, CANISTERS_OPEN, BASEMENT_EFFIGY_JAR, EMPTY_JAR;
         @Override public String getSerializedName() { return name().toLowerCase(java.util.Locale.ROOT); }
         public boolean cube() { return ordinal() <= PANEL.ordinal(); }
     }
@@ -50,7 +52,9 @@ public final class GhostsSetBlock extends Block {
             case BANK_SLIPS -> Block.box(2,0,3,15,1,14);
             case LAPTOP_CLOSED -> Block.box(2,-1,4,14,1,14);
             case LAPTOP_STUDY -> Shapes.or(Block.box(2,-1,4,14,0,14),Block.box(2,0,12,14,9,16));
-            case BASEMENT_EFFIGY -> Shapes.empty();
+            case BASEMENT_EFFIGY, BASEMENT_EFFIGY_JAR, EMPTY_JAR -> Shapes.empty();
+            case PLAN_PAD -> Block.box(4,0,5,11,1,13);
+            case CANISTERS, CANISTERS_OPEN -> Block.box(2,0,5,14,9,12);
             case STORED_CROSS -> Shapes.or(Block.box(7,0,8,9,32,10),Block.box(-2,23,8,18,26,10));
             case JUG -> Block.box(5,0,5,11,9,11);
             case DRAWING -> Block.box(2,2,15,14,14,16);
@@ -77,7 +81,7 @@ public final class GhostsSetBlock extends Block {
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c) { return shape(s); }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c) {
-        return switch(s.getValue(KIND)){case DRAWING,PLATE,PLAIN_PLATE,MEAL_STEW,MEAL_SANDWICH,MEAL_SOUP,MEAL_ROAST,MEAL_POTATOES,MEAL_SPAGHETTI,MEAL_SPAGHETTI_PLAIN,HAT,BOOKS,RUG,BANK_SLIPS,LAPTOP_CLOSED,LAPTOP_STUDY,BASEMENT_EFFIGY->Shapes.empty();default->shape(s);};
+        return switch(s.getValue(KIND)){case DRAWING,PLATE,PLAIN_PLATE,MEAL_STEW,MEAL_SANDWICH,MEAL_SOUP,MEAL_ROAST,MEAL_POTATOES,MEAL_SPAGHETTI,MEAL_SPAGHETTI_PLAIN,HAT,BOOKS,RUG,BANK_SLIPS,LAPTOP_CLOSED,LAPTOP_STUDY,BASEMENT_EFFIGY,PLAN_PAD,CANISTERS,CANISTERS_OPEN,BASEMENT_EFFIGY_JAR,EMPTY_JAR->Shapes.empty();default->shape(s);};
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p) { return s.getValue(KIND).cube()?Shapes.block():Shapes.empty(); }
     public static int light(BlockState s) { return s.getValue(KIND)==Kind.LAMP?12:0; }

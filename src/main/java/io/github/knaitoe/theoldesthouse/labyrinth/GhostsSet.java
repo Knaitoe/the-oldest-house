@@ -26,7 +26,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class GhostsSet {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.GHOSTS_SET;
     public static final String STATE="ghosts_set_0485";
-    public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9,LEAP=10,EATING=11,CHOKING=12,DEAD=13,PRAY=14,FALL=15,IMPACT=16,HELP=17,SLIP=18,WARY=19;
+    public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9,LEAP=10,EATING=11,CHOKING=12,DEAD=13,PRAY=14,FALL=15,IMPACT=16,HELP=17,SLIP=18,WARY=19,
+        /** 0.4.325: sitting on the floor, knees drawn up, arms round them (Merry in the basement after the supper). */
+        FLOOR=20;
     public static final String[] PEOPLE={"Marjorie","Merry","John","Sarah","Barry","Father Wanderly"};
     public static final int[] ROLES={LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_MERRY,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH,LiteraryActor.GHOST_PRODUCER,LiteraryActor.GHOST_PRIEST};
     public static final String[] TITLES={"The interviews and reconstructions","The family dinner","The upstairs reconstruction","The private conversation","The evaluation","The exorcism","The final pickup"};
@@ -113,7 +115,7 @@ public final class GhostsSet {
     }
     /** Every key one filming day leaves behind, cleared when another day begins. */
     private static final List<String> DAY_KEYS=List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","GhostVoiceId","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490","WallHelpStep","RiteSetupClock","RiteSetupDone","FamilyShoved","FamilyShoveAt","FamilyFollow2","FamilyFollow3","FamilyFollow5",
-        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490","LightsOut0242",GhostsErrands.KEY);
+        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","MerryBasement0325","MerryWait0325","MerryJar0325","MerryLineA0325","MerryLineB0325","CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490","LightsOut0242",GhostsErrands.KEY);
     /**
      * 0.4.172 (owner: "add a command to trigger specific film days for testing"): puts one reader at the start of a filming
      * day, as a fresh arrival on that day would be, with the cast restaged and that day's log and frames cleared; with
@@ -146,7 +148,7 @@ public final class GhostsSet {
         // 0.4.242: walking out during the last day's supper still ends the day. What happened at the table happened; the reader
         // finds the house dark and the three of them still there when they come back.
         if(day(own)==DAYS&&objectiveAccepted(own)&&!own.getBoolean("DayDone")){
-            own.putInt("ShotClock",LENGTH[DAYS-1]);own.putBoolean("DayDone",true);own.putBoolean("Rolling",false);own.putBoolean("MerryLeft0488",true);
+            own.putInt("ShotClock",LENGTH[DAYS-1]);own.putBoolean("DayDone",true);own.putBoolean("Rolling",false);own.putBoolean("MerryLeft0488",true);own.putBoolean(MERRY_JAR,true);
             own.putInt("MerryExitStep0488",MERRY_EXIT.length);own.putInt("CrewExit0490_4",CREW_EXIT.length);own.putInt("CrewExit0490_5",CREW_EXIT.length);
             own.putInt("FilmedDays",own.getInt("FilmedDays")|(1<<(DAYS-1)));own.putInt("Beat",own.getInt("Visit"));
         }
@@ -341,6 +343,11 @@ public final class GhostsSet {
             Talk.beginResumable(p,key,"Barry",q->producerHere(q,a,d));
             String line=VignetteTailoring.crew(p,GhostsConversations.line(own,4));Talk.line(p,"Barry",line);a.speaks(line);producerOffers(p,a,d);return;
         }
+        if(a.role()==LiteraryActor.GHOST_MERRY&&day(own)==DAYS&&merryDownstairs(own.getInt("MerryExitStep0488"))&&!own.getBoolean("MerryLeft0488")){
+            boolean after=own.getBoolean(MERRY_JAR);var lines=after?MERRY_BASEMENT_AFTER:MERRY_BASEMENT_BEFORE;String key=after?"MerryLineB0325":"MerryLineA0325";
+            int i=own.getInt(key);String line=lines[Math.min(i,lines.length-1)];own.putInt(key,i+1);
+            p.displayClientMessage(Component.literal("Merry: "+line),true);heard(p,own,"Merry",line);a.speaks(line);GhostsMotion.look(a,p.getEyePosition());return;
+        }
         if((a.phase()==SLUMP||a.phase()==DEAD||a.phase()==CHOKING)&&a.role()<=LiteraryActor.GHOST_SARAH){p.displayClientMessage(Component.literal(PEOPLE[a.role()-LiteraryActor.GHOST_MARJORIE]+" does not answer."),true);return;}
         int i=Arrays.stream(ROLES).boxed().toList().indexOf(a.role());if(i<0)return;
         String line=GhostsConversations.line(own,i);boolean written=GhostsConversations.written(own,i);
@@ -401,8 +408,51 @@ public final class GhostsSet {
         if(previous<815&&t>=815)cue(p,LiteraryRegistry.GHOST_CARD,house.add(.3,.3,0));
         capture(p,own,"Playhouse",house.add(0,t>=800?.1:.5,0));
     }
-    private static final double[][] MERRY_EXIT={{2.4,.625,-18.6},{3.6,.625,-18.6},{4.5,0,-16.5},{.5,0,-16.5},{.5,0,-13.5},{.5,0,-10.5},{1.5,0,-8.5},{1.5,0,-2.5}};
-    /** The surviving original walks round the table and through the ordinary native front door. */
+    /**
+     * 0.4.325 (owner: "the story reads that merry runs to the basement right? Maybe have her interact with the basement effigy"): once
+     * the others are still, Merry gets up off her chair onto the floor behind it, goes out of the dining room and down the basement
+     * stair to the cross, then back up and out through the ordinary native front door. In the novel she goes down with two flashlights
+     * to see whether anything her sister told her was true, finds only the stored cross by the shelves with a rag over its head, and
+     * sits on the floor to wait for the growing things.
+     */
+    private static final double[][] MERRY_EXIT={{4.5,0,-16.5},{.5,0,-16.5},{.5,0,-13.5},{.5,0,-12.5},{2.5,0,-12.5},{8.5,0,-12.5},{8.5,0,-13.5},
+            {8.5,-1,-14.5},{8.5,-2,-15.5},{8.5,-3,-16.5},{8.5,-4,-17.5},{8.5,-4,-18.5},{6.5,-4,-21.2},{5.5,-4,-22.2},
+            {6.5,-4,-21.2},{8.5,-4,-18.5},{8.5,-4,-17.5},{8.5,-3,-16.5},{8.5,-2,-15.5},{8.5,-1,-14.5},{8.5,0,-13.5},{8.5,0,-12.5},{2.5,0,-12.5},
+            {.5,0,-12.5},{.5,0,-11.5},{.5,0,-10.5},{1.5,0,-8.5},{1.5,0,-2.5}};
+    /** The step reached on arriving at the cross, and the step whose walk passes through the family's door to the hall. */
+    static final int MERRY_AT_CROSS=14,MERRY_THROUGH_DOOR=22;
+    /** Steps at which she is downstairs in the basement (the foot of the stair to the cross and back). */
+    static boolean merryDownstairs(int step){return step>=11&&step<=17;}
+    /** 0.4.325: the empty jar is on the basement floor in front of the cross, for this reader. */
+    public static final String MERRY_JAR="MerryJar0325";
+    /** How long she sits on the basement floor before she gets up and goes. */
+    static final int MERRY_FLOOR_TICKS=240;
+    private static ItemStack emptyJar(){var jar=new ItemStack(Items.GLASS_BOTTLE);jar.set(DataComponents.CUSTOM_NAME,Component.literal("Empty jar"));return jar;}
+    /** At the cross: down on her heels to set the jar on the floor, then sitting there, then up again (stages 0 to 4). */
+    private static void merryAtCross(ServerPlayer p,BlockPos b,LiteraryActor merry,CompoundTag own,int stage){
+        merry.setYRot(180);merry.setYBodyRot(180);
+        switch(stage){
+            case 0->{pose(merry,CROUCH);merry.setYHeadRot(180);own.putInt("MerryWait0325",15);}
+            case 1->{merry.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);own.putBoolean(MERRY_JAR,true);
+                cue(p,net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(net.minecraft.sounds.SoundEvents.GLASS_PLACE),Vec3.atCenterOf(b.offset(GhostsLore.JAR_AT)));own.putInt("MerryWait0325",15);}
+            case 2->{pose(merry,FLOOR);own.putInt("MerryWait0325",MERRY_FLOOR_TICKS);}
+            default->{pose(merry,STAND);own.putInt("MerryWait0325",25);}
+        }
+        own.putInt("MerryBasement0325",stage+1);
+    }
+    /**
+     * 0.4.325 (owner: "Merry will need dialogue if the player tries to interact with her in the basement"): what she says down there,
+     * before she has set the jar down and after. Each list stops on its last line. Original adaptation writing, not quotations.
+     */
+    static final String[] MERRY_BASEMENT_BEFORE={
+            "She said it was all down here. Sheets hanging up, and pictures, and a table made out of the old bench.",
+            "There's only the cross. Somebody put a rag over his face.",
+            "I was supposed to take the jar to the police. I don't know where the police are."};
+    static final String[] MERRY_BASEMENT_AFTER={
+            "I put it back where she said it was. It's empty now.",
+            "How long does it take to wear off? She said it would wear off.",
+            "She said things grow up out of the floor down here. I'm going to wait and see.",
+            "I'm going to wait a little longer."};
     private static void finalDinner(ServerPlayer p,BlockPos b,LiteraryActor[] cast,CompoundTag own,int t){
         if(t<630){
             String words=t<390?"NO":"WHY?";var held=cast[1].getMainHandItem();
@@ -416,18 +466,25 @@ public final class GhostsSet {
         }
         if(t>=300&&t<645)capture(p,own,"DinnerMouth",cast[0].getEyePosition());
         if(t>=860&&!own.getBoolean("MerryLeft0488")){
-            int step=own.getInt("MerryExitStep0488");
-            if(step<MERRY_EXIT.length){var at=MERRY_EXIT[step];pose(cast[1],STAND);cast[1].setOnGround(true);
+            int step=own.getInt("MerryExitStep0488"),stage=own.getInt("MerryBasement0325"),wait=own.getInt("MerryWait0325");
+            if(wait>0)own.putInt("MerryWait0325",wait-5);
+            else if(step==0&&seatedPose(cast[1].role(),cast[1].phase())){
+                // Off her chair onto the floor behind it, the empty jar in her hand.
+                cast[1].setItemSlot(EquipmentSlot.MAINHAND,emptyJar());riseTo(cast[1],b,3.5,-19.5,STAND);own.putInt("MerryWait0325",GhostsMotion.RISE_TICKS+2);
+            }
+            else if(step==MERRY_AT_CROSS&&stage<4)merryAtCross(p,b,cast[1],own,stage);
+            else if(step<MERRY_EXIT.length){var at=MERRY_EXIT[step];pose(cast[1],STAND);cast[1].setOnGround(true);
+                if(step<MERRY_AT_CROSS&&!cast[1].getMainHandItem().is(Items.GLASS_BOTTLE))cast[1].setItemSlot(EquipmentSlot.MAINHAND,emptyJar());
                 // Only open this authored door; never replace an edited block or a native block entity.
                 var door=b.offset(0,0,-12);var state=p.serverLevel().getBlockState(door);
-                if(step>=3&&state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!state.getValue(net.minecraft.world.level.block.DoorBlock.OPEN))((net.minecraft.world.level.block.DoorBlock)state.getBlock()).setOpen(cast[1],p.serverLevel(),state,door,true);
+                if(step>=MERRY_THROUGH_DOOR&&state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!state.getValue(net.minecraft.world.level.block.DoorBlock.OPEN))((net.minecraft.world.level.block.DoorBlock)state.getBlock()).setOpen(cast[1],p.serverLevel(),state,door,true);
                 toward(cast[1],b,at[0],at[1],at[2],.42);
                 if(cast[1].position().distanceToSqr(new Vec3(b.getX()+at[0],b.getY()+at[1],b.getZ()+at[2]))<.18){own.putInt("MerryExitStep0488",step+1);if(step+1==MERRY_EXIT.length)own.putBoolean("MerryLeft0488",true);}
             }
         }
         // 0.4.242 (owner: "if they see it through to the end - merry running out the door, the lights in the house should cut off. the
         // family remains."): once she is through the front door she is gone, and the house goes dark around the three at the table.
-        if(own.getBoolean("MerryLeft0488")){offstage(cast[1]);GhostsLights.out(p,b,own);}
+        if(own.getBoolean("MerryLeft0488")){offstage(cast[1]);own.putBoolean(MERRY_JAR,true);GhostsLights.out(p,b,own);}
         if(t>=860&&!own.getBoolean("MerryLeft0488"))capture(p,own,"MerryDeparture",cast[1].getEyePosition());
         capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-19.5));
     }
@@ -579,7 +636,7 @@ public final class GhostsSet {
     }
     private static void display(ServerPlayer p,CompoundTag own,BlockPos b) {
         if(finished(own))LiteraryVignettes.ready(p,PLACE,own,"completed_the_filming_days_and_read_own_cut");
-        var model=new CompoundTag();model.putBoolean("GhostEffigy",GhostsLore.throughLens(p,b,own));var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);
+        var model=new CompoundTag();model.putBoolean("GhostEffigy",GhostsLore.throughLens(p,b,own));model.putBoolean("GhostJar",own.getBoolean(MERRY_JAR));var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);
         if(!frames.isEmpty()){int n=(p.server.getTickCount()/60)%frames.size();model.putIntArray("Screen",frames.getCompound(n).getIntArray("Pixels"));}
         model.putUUID("Reader",p.getUUID());model.putInt("GhostDay",day(own));model.putLong("GhostBase",b.asLong());boolean frozen=day(own)==6&&own.getBoolean("JumpFrozen0488")&&!own.getBoolean("DayDone");model.putBoolean("GhostFreeze",frozen);model.putInt("GhostFreezeTarget",frozen?own.getInt("GhostFreezeTarget"):-1);for(String key:List.of("GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","GhostActorX","GhostActorY","GhostActorZ"))if(own.contains(key))model.put(key,own.get(key).copy());int voice=(int)Math.max(0,Math.min(140,own.getLong("GhostVoiceUntil")-p.level().getGameTime()));model.putInt("GhostVoiceRemaining",voice);if(voice>0){model.putString("GhostVoice",own.getString("GhostVoice"));model.putInt("GhostVoiceId",own.getInt("GhostVoiceId"));}
         model.putInt("GhostShake",(int)Math.max(0,Math.min(12,own.getLong("GhostShakeUntil")-p.level().getGameTime())));model.putBoolean("GhostPrivacyPull",privacyPull(p,own));model.putBoolean("ScreenDark",frames.isEmpty());HousePackets.send(p,new LiteraryViewPayload(-1,20,0,model));

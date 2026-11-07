@@ -23,11 +23,13 @@ import net.neoforged.neoforge.client.event.*;
 public final class GhostsTakeClient {
     private static ClientLevel world;private static Entity marker;private static CameraType oldCamera;
     private static volatile int lease,day;private static BlockPos base;private static CompoundTag pendingFreeze;
-    private static int voiceId=-1,voiceTicks,voiceAge,shake;private static boolean privacyPull,effigy;private static String words="";
+    private static int voiceId=-1,voiceTicks,voiceAge,shake;private static boolean privacyPull,effigy,jar;private static String words="";
     private static final java.util.WeakHashMap<LiteraryActor,Float> heldAges=new java.util.WeakHashMap<>();
     private GhostsTakeClient(){}
     public static int day(){return lease>0&&Minecraft.getInstance().level==world?day:0;}
     public static boolean onSet(){var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!mc.level.dimension().equals(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR))return false;if(lease>0&&world==mc.level&&base!=null&&io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(base,LabyrinthPlace.GHOSTS_SET).contains(mc.player.position()))return true;return HouseSightlineState.hasOrigin()&&LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())==LabyrinthPlace.GHOSTS_SET;}
+    /** 0.4.325: where Merry's empty jar stands in front of the cross for this reader, once she has set it down; null otherwise. */
+    static BlockPos jar(){var mc=Minecraft.getInstance();return jar&&lease>0&&mc.level==world&&base!=null?base.offset(io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore.JAR_AT):null;}
     static BlockPos effigy(){
         var mc=Minecraft.getInstance();
         if(!effigy||lease<=0||mc.level!=world||mc.player==null||base==null||mc.getCameraEntity()!=mc.player||!mc.options.getCameraType().isFirstPerson())return null;
@@ -40,7 +42,7 @@ public final class GhostsTakeClient {
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!take.hasUUID("Reader")||!take.getUUID("Reader").equals(mc.player.getUUID())||!take.contains("GhostDay"))return;
         if(world!=null&&world!=mc.level)clear();int previous=day;world=mc.level;day=Math.max(1,Math.min(7,take.getInt("GhostDay")));lease=20;base=BlockPos.of(take.getLong("GhostBase"));if(previous!=day){dirtyMeals();voiceId=-1;voiceTicks=0;words="";}
         if(take.getInt("GhostVoiceRemaining")>0&&take.getInt("GhostVoiceId")!=voiceId){voiceId=take.getInt("GhostVoiceId");words=take.getString("GhostVoice");voiceTicks=Math.min(140,take.getInt("GhostVoiceRemaining"));voiceAge=0;}
-        shake=take.getInt("GhostShake");privacyPull=take.getBoolean("GhostPrivacyPull");effigy=take.getBoolean("GhostEffigy");
+        shake=take.getInt("GhostShake");privacyPull=take.getBoolean("GhostPrivacyPull");effigy=take.getBoolean("GhostEffigy");jar=take.getBoolean("GhostJar");
         pendingFreeze=take.getBoolean("GhostFreeze")?take.copy():null;if(pendingFreeze==null)restore();else applyFreeze();
     }
     private static void applyFreeze(){
@@ -51,8 +53,8 @@ public final class GhostsTakeClient {
         }
     }
     private static void restore(){var mc=Minecraft.getInstance();if(marker!=null){if(mc.getCameraEntity()==marker&&mc.player!=null)mc.setCameraEntity(mc.player);marker.discard();marker=null;if(oldCamera!=null)mc.options.setCameraType(oldCamera);oldCamera=null;}heldAges.clear();}
-    private static void dirtyMeals(){var mc=Minecraft.getInstance();if(base!=null&&mc.level==world){mc.levelRenderer.setBlocksDirty(base.getX()-1,base.getY()+1,base.getZ()-29,base.getX()+1,base.getY()+1,base.getZ()-28);var laptop=base.offset(io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore.LAPTOP_AT);mc.levelRenderer.setBlocksDirty(laptop.getX(),laptop.getY(),laptop.getZ(),laptop.getX(),laptop.getY(),laptop.getZ());}}
-    public static void clear(){pendingFreeze=null;restore();privacyPull=false;effigy=false;shake=0;int old=day;lease=day=voiceTicks=voiceAge=0;if(old!=0)dirtyMeals();world=null;base=null;voiceId=-1;words="";}
+    private static void dirtyMeals(){var mc=Minecraft.getInstance();if(base!=null&&mc.level==world){mc.levelRenderer.setBlocksDirty(base.getX()-1,base.getY()+1,base.getZ()-29,base.getX()+1,base.getY()+1,base.getZ()-28);for(var rel:new BlockPos[]{io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore.LAPTOP_AT,io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore.PAD_AT,io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore.CANISTERS_AT}){var at=base.offset(rel);mc.levelRenderer.setBlocksDirty(at.getX(),at.getY(),at.getZ(),at.getX(),at.getY(),at.getZ());}}}
+    public static void clear(){pendingFreeze=null;restore();privacyPull=false;effigy=false;jar=false;shake=0;int old=day;lease=day=voiceTicks=voiceAge=0;if(old!=0)dirtyMeals();world=null;base=null;voiceId=-1;words="";}
     @SubscribeEvent public static void tick(ClientTickEvent.Post ignored){var mc=Minecraft.getInstance();if(onSet())mc.getMusicManager().stopPlaying();if(lease>0)--lease;if(shake>0)--shake;if(voiceTicks>0){--voiceTicks;++voiceAge;}if(lease>0&&pendingFreeze!=null)applyFreeze();if(lease==0||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.player.isSpectator()||HouseSightlineState.hasOrigin()&&LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())!=LabyrinthPlace.GHOSTS_SET)clear();else if(privacyPull&&!frozen()&&CamcorderClient.active()&&mc.getCameraEntity()==mc.player&&mc.player.getXRot()<55){
         // Native input adds a small turn; the mouse can overcome it, and stopping/stowing the camera ends it immediately.
         float step=Math.min(.16F*Comfort.effects(),55-mc.player.getXRot());mc.player.turn(0,step/.15F);
