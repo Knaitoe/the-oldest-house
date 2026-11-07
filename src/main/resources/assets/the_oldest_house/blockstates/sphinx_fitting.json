@@ -899,6 +899,51 @@
     "facing=west,kind=box,stage=2": {
       "model": "the_oldest_house:block/sphinx/box_0",
       "y": 270
+    },
+    "facing=north,kind=drift,stage=0": {
+      "model": "the_oldest_house:block/sphinx/drift_0"
+    },
+    "facing=north,kind=drift,stage=1": {
+      "model": "the_oldest_house:block/sphinx/drift_1"
+    },
+    "facing=north,kind=drift,stage=2": {
+      "model": "the_oldest_house:block/sphinx/drift_2"
+    },
+    "facing=east,kind=drift,stage=0": {
+      "model": "the_oldest_house:block/sphinx/drift_0",
+      "y": 90
+    },
+    "facing=east,kind=drift,stage=1": {
+      "model": "the_oldest_house:block/sphinx/drift_1",
+      "y": 90
+    },
+    "facing=east,kind=drift,stage=2": {
+      "model": "the_oldest_house:block/sphinx/drift_2",
+      "y": 90
+    },
+    "facing=south,kind=drift,stage=0": {
+      "model": "the_oldest_house:block/sphinx/drift_0",
+      "y": 180
+    },
+    "facing=south,kind=drift,stage=1": {
+      "model": "the_oldest_house:block/sphinx/drift_1",
+      "y": 180
+    },
+    "facing=south,kind=drift,stage=2": {
+      "model": "the_oldest_house:block/sphinx/drift_2",
+      "y": 180
+    },
+    "facing=west,kind=drift,stage=0": {
+      "model": "the_oldest_house:block/sphinx/drift_0",
+      "y": 270
+    },
+    "facing=west,kind=drift,stage=1": {
+      "model": "the_oldest_house:block/sphinx/drift_1",
+      "y": 270
+    },
+    "facing=west,kind=drift,stage=2": {
+      "model": "the_oldest_house:block/sphinx/drift_2",
+      "y": 270
     }
   }
 }

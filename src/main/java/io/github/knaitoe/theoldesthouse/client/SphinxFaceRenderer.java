@@ -47,6 +47,8 @@ public final class SphinxFaceRenderer implements BlockEntityRenderer<SphinxFaceB
      * light, never brighter than a little above dark; her eyes are always lit, so they are what is seen first as she leans down.
      */
     public static final int STONE_LIGHT=5,EYE_LIGHT=14;
+    /** 0.4.342: one of the eye sizes above (for her face eighteen blocks across) for a face {@code width} units across, as the dream's body draws it. */
+    public static float eyeScale(double size,float width){return (float)(size/18.0*width);}
     public SphinxFaceRenderer(BlockEntityRendererProvider.Context ignored){}
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(PuzzleRegistry.SPHINX_FACE_BE.get(),SphinxFaceRenderer::new);}
 

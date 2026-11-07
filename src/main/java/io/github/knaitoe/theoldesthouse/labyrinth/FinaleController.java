@@ -118,6 +118,8 @@ public final class FinaleController {
             }
         }
         if(!lockedOut(player))return false;
+        // 0.4.342: the Sphinx's dream comes only to a reader the House is closed to, on a site of its own in the outside dimension.
+        if(SphinxDream.dreaming(player)||SphinxDream.inSite(player))return false;
         if(HouseTransitionEvents.isPending(player))HouseTransitionEvents.cancelPending(player,"the House no longer admits this player");
         BlockPos origin=HouseSavedData.get(player.server).housePosition().orElse(null);
         if(origin!=null&&(HouseDimensions.isHouseDimension(player.serverLevel().dimension())

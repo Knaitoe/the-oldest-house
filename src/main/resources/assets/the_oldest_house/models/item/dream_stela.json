@@ -1,0 +1,68 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/sphinx/dream_stela_smooth"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_early"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_early_chipped"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_stair"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_stair_chipped"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_shelf"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_shelf_chipped"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_field"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_field_chipped"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_smooth"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "the_oldest_house:item/sphinx/dream_stela_smooth_chipped"
+    }
+  ]
+}
