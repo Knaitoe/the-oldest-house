@@ -127,29 +127,36 @@ public final class DareArtProof extends Screen {
             case 6->{
                 // 0.4.342, her whole body in the dream as the reader's own screen shows it (owner: "It should be so large as to occupy
                 // most of the player's screen"): seventy-degree views from the reader's eye in the staged dream site, the house, yard and
-                // fields drawn plainly around her. In the yard under her; from the gate; under her wing over the yard; and
+                // fields drawn plainly around her. In the yard under her; from the gate; from the gate as she comes over it; and
                 // from the doorstep, holding over the far field.
                 var h=SphinxDream.house(null);float perch=h.ridgeY()+1;var paws=new Vec3((h.x0()+h.x1())/2.0+.5,perch,h.ridgeZ()+.5);
                 int dismissive=SphinxCore.Conduct.DISMISSIVE.ordinal();
-                var yard=paws.add(SphinxDream.flight(dismissive,44));var far=paws.add(SphinxDream.flight(dismissive,150));
+                // Over the yard twenty ticks after she rises, coming over the gate; and holding over the far field. In flight her pitch is
+                // her heading's, held within thirty degrees as her entity holds it.
+                var over=paws.add(SphinxDream.flight(dismissive,20));var far=paws.add(SphinxDream.flight(dismissive,150));
+                var u=SphinxDream.flight(dismissive,21).subtract(SphinxDream.flight(dismissive,19));
+                float overPitch=net.minecraft.util.Mth.clamp((float)-Math.toDegrees(Math.atan2(u.y,Math.hypot(u.x,u.z))),-30,30);
                 var v=SphinxDream.flight(dismissive,151).subtract(SphinxDream.flight(dismissive,149));
                 float flyYaw=(float)Math.toDegrees(Math.atan2(-v.x,v.z)),flyPitch=(float)-Math.toDegrees(Math.atan2(v.y,Math.hypot(v.x,v.z)));
                 Object[][] views={
                     {new Vec3(.5,1.62,16),paws,0F,"in the yard, under her"},
                     {new Vec3(.5,1.62,23.5),paws,0F,"from the gate"},
-                    {new Vec3(.5,1.62,12),yard,1F,"over the yard, under her wing"},
+                    {new Vec3(.5,1.62,23.5),over,1F,"coming over the gate: her face, her eyes ahead"},
                     {new Vec3(.5,1.62,2.6),far,1F,"over the far field, from the doorstep"}};
                 int pw=(width-30)/2,ph=pw*9/16;if(ph>(height-44)/2){ph=(height-44)/2;pw=ph*16/9;}
                 for(int view=0;view<4;view++){
                     int x=view%2==0?width/2-pw-5:width/2+5,y=24+(view/2)*(ph+8);var eye=(Vec3)views[view][0];var at=(Vec3)views[view][1];float fly=(float)views[view][2];
                     // Looking up at her face from the doorstep; from the gate, at the house and her over it; at her body when she flies.
-                    var look=(fly>0?at:view==0?at.add(0,35.8,13.9):new Vec3(.5,24,0)).subtract(eye);
+                    // Coming over the gate, at her face, tipped down to the reader under her, her eyes on where she is going (her face's
+                    // centre is 32 blocks over her forepaws and 4.5 ahead of them as she climbs).
+                    var look=(fly>0?(view==2?at.add(0,32.1,4.5):at):view==0?at.add(0,35.8,13.9):new Vec3(.5,24,0)).subtract(eye);
                     float yaw=(float)Math.toDegrees(Math.atan2(-look.x,look.z)),pitch=(float)-Math.toDegrees(Math.atan2(look.y,Math.hypot(look.x,look.z)));
+                    float herYaw=fly>0?(view==2?0:flyYaw):0,herPitch=fly>0?(view==2?overPitch:flyPitch):0;
                     g.fill(x,y,x+pw,y+ph,0xff9fc0dc);
                     perspective(g,x,y,pw,ph,eye,yaw,pitch,pose->{
                         dreamSite(pose,out,h);
                         pose.pushPose();pose.translate(at.x,at.y,at.z);
-                        SphinxDreamRenderer.drawAt(pose,out,LightTexture.FULL_BRIGHT,36,fly,perch,fly>0?flyYaw:0,fly>0?flyPitch:0);
+                        SphinxDreamRenderer.drawAt(pose,out,LightTexture.FULL_BRIGHT,36,fly,perch,herYaw,herPitch);
                         pose.popPose();
                     });
                     g.drawString(font,(String)views[view][3],x+4,y+ph-11,0xffffffff,true);
@@ -162,7 +169,7 @@ public final class DareArtProof extends Screen {
                 // {x0, x1, y0, y1} of each panel as parts of the page, then its turn, size, flight and ridge.
                 float[][] panels={{0,.5F,0,.5F},{.5F,1,0,.5F},{0,.5F,.5F,1},{.5F,1,.5F,1}};
                 float[][] views={{-14,-38,.95F,0,8},{-4,-90,.95F,0,8},{4,-90,.8F,1,8},{-60,0,.42F,1,8}};
-                String[] labels={"on the roof, from the yard","on the roof, from the side","flying, from the side: paws hanging, toes down","from under her open wings"};
+                String[] labels={"on the roof, from the yard","on the roof, from the side","flying, from the side: neck forward, toes down","from under her open wings"};
                 for(int view=0;view<4;view++){
                     var r=panels[view];int x0=(int)(4+r[0]*(width-8)),x1=(int)(4+r[1]*(width-8)),y0=(int)(24+r[2]*(height-76)),y1=(int)(24+r[3]*(height-76));var v=views[view];
                     g.fill(x0+2,y0+2,x1-2,y1-2,0xff8aa0b4);

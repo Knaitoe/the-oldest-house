@@ -92,6 +92,8 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
     static final float FEMUR=15,TIBIA=16,META=12,HIP_Y=-2,HIP_Z=-54,STANCE=38;
     /** Each wing's two segments along the span, and how far each swings as she beats. */
     static final float INNER_SPAN=42,OUTER_SPAN=46,BEAT=24,LAG=16;
+    /** In flight, how far below the level her face turns (her head holding it against her climb), so it shows to readers below. */
+    static final float FLIGHT_TILT=80;
 
     public SphinxDreamRenderer(EntityRendererProvider.Context ctx){super(ctx);shadowRadius=0;}
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(PuzzleRegistry.SPHINX_DREAM.get(),SphinxDreamRenderer::new);}
@@ -113,7 +115,7 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
         pose.mulPose(Axis.YP.rotationDegrees(-yaw));
         pose.mulPose(Axis.XP.rotationDegrees(pitch*fly));
         pose.scale(SCALE,SCALE,SCALE);
-        draw(pose,out,light,now,fly,perch,true);
+        draw(pose,out,light,now,fly,perch,true,pitch*fly);
         pose.popPose();
     }
 
@@ -122,6 +124,10 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
      * the height of the ridge under her paws in blocks, {@code look} turning her head toward the camera.
      */
     public static void draw(PoseStack pose,MultiBufferSource out,int light,float now,float fly,float perch,boolean look){
+        draw(pose,out,light,now,fly,perch,look,0);
+    }
+    /** As {@link #draw(PoseStack,MultiBufferSource,int,float,float,float,boolean)}, her body pitched by {@code bodyPitch} (nose up below 0). */
+    public static void draw(PoseStack pose,MultiBufferSource out,int light,float now,float fly,float perch,boolean look,float bodyPitch){
         var b=out.getBuffer(RenderType.entityCutoutNoCull(BODY));
         float breathe=Mth.sin(now*.06F)*(1-fly);
         // How her body slopes back from the shoulders: enough that her hind legs stand easily on the ground behind the house.
@@ -131,7 +137,7 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
         // The collar, neck and head, from the shoulders. Her face is drawn with its own pictures, which ends the body's batch.
         pose.pushPose();pose.translate(0,SHOULDER_Y,SHOULDER_Z);
         collar(pose,b,light);
-        neck(pose,out,b,light,now,fly,breathe,look);
+        neck(pose,out,b,light,now,fly,breathe,look,bodyPitch);
         pose.popPose();
         b=out.getBuffer(RenderType.entityCutoutNoCull(BODY));
         // The body, sloping back from the shoulders, with the hind legs, tail and wings.
@@ -220,8 +226,10 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
         box(pose,b,-10.5F,4.6F,-4,10.5F,8,6,BEADS,light);
     }
     /** The neck, under the headcloth falling behind it, the lappets down in front of her shoulders; then her head. */
-    static void neck(PoseStack pose,MultiBufferSource out,VertexConsumer b,int light,float now,float fly,float breathe,boolean look){
-        pose.pushPose();pose.translate(0,8,3);pose.mulPose(Axis.XP.rotationDegrees(12));
+    static void neck(PoseStack pose,MultiBufferSource out,VertexConsumer b,int light,float now,float fly,float breathe,boolean look,float bodyPitch){
+        // 0.4.344: in flight her neck stretches forward, and her head tips down so that her whole face shows to anyone below.
+        float lean=12+58*fly;
+        pose.pushPose();pose.translate(0,8,3);pose.mulPose(Axis.XP.rotationDegrees(lean));
         box(pose,b,-8.5F,-4,-7,8.5F,12,8,COAT,light);
         box(pose,b,-7,10,-6,7,19+breathe*.5F,7,COAT,light);
         // The headcloth falls behind the head over the nape and down the neck in a plait; the lappets hang in front of the shoulders.
@@ -234,17 +242,19 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
             box(pose,b,x0,-6,5,x1,20,8.5F,CLOTH,light);
             box(pose,b,x0+.4F,-13,5.5F,x1-.4F,-5,8.6F,CLOTH,light);
         }
-        pose.translate(0,18,0);pose.mulPose(Axis.XP.rotationDegrees(-12));
-        // Perched, her head turns to the reader and bows to look down at them; in flight it looks ahead.
-        float headPitch=25*(1-fly)+6*fly,headYaw=0;
+        pose.translate(0,18,0);pose.mulPose(Axis.XP.rotationDegrees(-lean));
+        // Perched, her head turns to the reader and bows to look down at them. In flight it holds its tilt against her climb, as a
+        // bird's head holds still while its body pitches, so her face stays turned to the ground under her.
+        float tilt=Math.min(FLIGHT_TILT-bodyPitch,100);
+        float headPitch=25*(1-fly)+tilt*fly,headYaw=0;
         if(look){var cam=camera(pose);if(cam!=null){headYaw=Mth.clamp((float)Math.toDegrees(Math.atan2(cam.x,cam.z)),-35,35)*(1-fly);
-            float down=(float)Math.toDegrees(Math.atan2(-cam.y,Math.hypot(cam.x,cam.z)));headPitch=Mth.clamp(down,10,70)*(1-fly)+6*fly;}}
+            float down=(float)Math.toDegrees(Math.atan2(-cam.y,Math.hypot(cam.x,cam.z)));headPitch=Mth.clamp(down,10,70)*(1-fly)+tilt*fly;}}
         pose.mulPose(Axis.YP.rotationDegrees(headYaw));pose.mulPose(Axis.XP.rotationDegrees(headPitch));
         // Her head: the headcloth's crown drawn tight over it, its sides flaring out behind her face.
         box(pose,b,-11,-6,-8,11,14,10,HEAD,light);
         box(pose,b,-11.6F,13,-8.6F,11.6F,15.6F,9.4F,CLOTH,light);
         for(int side=-1;side<=1;side+=2){float x0=side>0?11:-13.6F,x1=side>0?13.6F:-11;box(pose,b,x0,-8,-7,x1,12.5F,8.6F,CLOTH,light);box(pose,b,x0,-12,-5,x1,-8,6,CLOTH,light);}
-        face(pose,out,light,now);
+        face(pose,out,light,now,fly,headPitch);
         pose.popPose();
     }
 
@@ -359,9 +369,18 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
 
     // ------------------------------------------------------------------ her face
     /** The face of the first crossing on the front of her head, with its eyes behind the holes and her mouth when she speaks. */
-    static void face(PoseStack pose,MultiBufferSource out,int light,float now){
+    static void face(PoseStack pose,MultiBufferSource out,int light,float now){face(pose,out,light,now,0,0);}
+    /**
+     * Her face; {@code fly} her flight and {@code pitch} how far her head is tipped down. Perched, her eyes are on the camera. Flying, they
+     * look ahead along her flight, toward the horizon past the reader under her: she has been let out into the world.
+     */
+    static void face(PoseStack pose,MultiBufferSource out,int light,float now,float fly,float pitch){
         var m=pose.last();
         float hw=FACE_W/2,y0=FACE_Y-FACE_H/2,y1=FACE_Y+FACE_H/2;
+        // Tipped down over the reader in flight, her face would fall into the shadow every downward face takes, and her stone is dark:
+        // lit as if it faced the sky, it shows whole to the one under her.
+        var n=new Vector3f(0,0,1);
+        if(fly>0){var nm=new org.joml.Matrix3f(m.normal());if(Math.abs(nm.determinant())>1e-9){nm.invert();n.lerp(nm.transform(new Vector3f(0,1,0)).normalize(),fly).normalize();}}
         // The eyes, behind the face's holes, turned toward the camera.
         var cam=camera(pose);
         float ww=SphinxFaceRenderer.eyeScale(SphinxFaceRenderer.WHITE_W,FACE_W),wh=SphinxFaceRenderer.eyeScale(SphinxFaceRenderer.WHITE_H,FACE_W),ir=SphinxFaceRenderer.eyeScale(SphinxFaceRenderer.IRIS_R,FACE_W);
@@ -369,17 +388,19 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
             float ex=px(Sphinx_EYES[k][0]),ey=py(Sphinx_EYES[k][1]);
             float gx=0,gy=0;
             if(cam!=null){var d=new Vector3f(cam).sub(ex,ey,FACE_Z);float len=d.length();if(len>1e-3){gx=Mth.clamp(d.x/len*1.6F,-1,1)*ww*.5F;gy=Mth.clamp(d.y/len*1.3F,-1,1)*wh*.4F;}}
-            rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.WHITE)),ex-ww,ey-wh,ex+ww,ey+wh,FACE_Z-.15F,0,0,1,1,light);
-            rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.IRIS)),ex+gx-ir,ey+gy-ir,ex+gx+ir,ey+gy+ir,FACE_Z-.1F,0,0,1,1,light);
+            // Ahead, in the frame of a head tipped down by pitch, is up the face: her eyes roll up toward where she is going.
+            float ahead=Mth.clamp(Mth.sin(pitch*Mth.DEG_TO_RAD)*1.3F,-1,1)*wh*.4F;gx=Mth.lerp(fly,gx,0);gy=Mth.lerp(fly,gy,ahead);
+            rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.WHITE)),ex-ww,ey-wh,ex+ww,ey+wh,FACE_Z-.15F,0,0,1,1,light,n);
+            rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.IRIS)),ex+gx-ir,ey+gy-ir,ex+gx+ir,ey+gy+ir,FACE_Z-.1F,0,0,1,1,light,n);
             float closed=blink(now);
-            if(closed>.01F){float h=wh*2*closed;rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.LID)),ex-ww,ey+wh-h,ex+ww,ey+wh,FACE_Z-.05F,0,1-closed,1,1,light);}
+            if(closed>.01F){float h=wh*2*closed;rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.LID)),ex-ww,ey+wh-h,ex+ww,ey+wh,FACE_Z-.05F,0,1-closed,1,1,light,n);}
         }
-        rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.FACE)),hw,y1,-hw,y0,FACE_Z,0,0,1,1,light);
+        rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.FACE)),hw,y1,-hw,y0,FACE_Z,0,0,1,1,light,n);
         int mouth=SphinxMouth.frame(clientTime());
         if(mouth>0){
             float v0=(float)(mouth-1)/SphinxFaceRenderer.MOUTH_FRAMES,v1=v0+1F/SphinxFaceRenderer.MOUTH_FRAMES;
             int mx=SphinxFaceRenderer.MOUTH_X0,my=SphinxFaceRenderer.MOUTH_Y0;
-            rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.MOUTH)),px(mx),py(my),px(mx+SphinxFaceRenderer.MOUTH_W),py(my+SphinxFaceRenderer.MOUTH_H),FACE_Z+.02F,0,v0,1,v1,light);
+            rect(m,out.getBuffer(RenderType.entityCutoutNoCull(SphinxFaceRenderer.MOUTH)),px(mx),py(my),px(mx+SphinxFaceRenderer.MOUTH_W),py(my+SphinxFaceRenderer.MOUTH_H),FACE_Z+.02F,0,v0,1,v1,light,n);
         }
     }
     static final int[][] Sphinx_EYES={{100,100},{188,100}};
@@ -408,9 +429,11 @@ public final class SphinxDreamRenderer extends EntityRenderer<SphinxDreamEntity>
         v(m,b,ax,ay,az,uv[0],uv[1],nx,ny,nz,light);v(m,b,bx,by,bz,uv[0],uv[3],nx,ny,nz,light);v(m,b,cx,cy,cz,uv[2],uv[3],nx,ny,nz,light);v(m,b,dx,dy,dz,uv[2],uv[1],nx,ny,nz,light);
     }
     /** A flat picture facing +z, from (x0, y0) at its top left to (x1, y1), at depth z. */
-    static void rect(PoseStack.Pose m,VertexConsumer b,float x0,float y0,float x1,float y1,float z,float u0,float v0,float u1,float v1,int light){
+    static void rect(PoseStack.Pose m,VertexConsumer b,float x0,float y0,float x1,float y1,float z,float u0,float v0,float u1,float v1,int light){rect(m,b,x0,y0,x1,y1,z,u0,v0,u1,v1,light,new Vector3f(0,0,1));}
+    /** The same, lit as if facing along {@code n}. */
+    static void rect(PoseStack.Pose m,VertexConsumer b,float x0,float y0,float x1,float y1,float z,float u0,float v0,float u1,float v1,int light,Vector3f n){
         float top=Math.max(y0,y1),bottom=Math.min(y0,y1);
-        v(m,b,x0,top,z,u0,v0,0,0,1,light);v(m,b,x0,bottom,z,u0,v1,0,0,1,light);v(m,b,x1,bottom,z,u1,v1,0,0,1,light);v(m,b,x1,top,z,u1,v0,0,0,1,light);
+        v(m,b,x0,top,z,u0,v0,n.x,n.y,n.z,light);v(m,b,x0,bottom,z,u0,v1,n.x,n.y,n.z,light);v(m,b,x1,bottom,z,u1,v1,n.x,n.y,n.z,light);v(m,b,x1,top,z,u1,v0,n.x,n.y,n.z,light);
     }
     static void v(PoseStack.Pose m,VertexConsumer b,float x,float y,float z,float u,float vv,float nx,float ny,float nz,int light){
         b.addVertex(m,x,y,z).setColor(255,255,255,255).setUv(u,vv).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(m,nx,ny,nz);

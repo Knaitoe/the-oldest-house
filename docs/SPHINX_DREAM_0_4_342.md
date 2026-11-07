@@ -11,6 +11,7 @@ The owner, on who dreams it:
 - "The dream should build the sphinx's whole body as a massive entity. As described in the document."
 - "It should be so large as to occupy most of the player's screen."
 - "Do you have her feet angled downwards while in flight? You should also match the tone with her face."
+- "Final suggestion; have her neck leaned forward so the tilt has her full face visible when flying overhead. Either have her 1) looking forward - she's flying and has been released into the world or 2) smiling, a terrible smile" (0.4.344 takes the first: she looks ahead.)
 
 ## Who dreams it
 
@@ -133,6 +134,7 @@ The owner: "Please give more attention to its body. Give it more detail ... you 
 
   Folded, the hand lies back along the arm, and the feathers lie back toward her tail along her flank, their tips crossing her rump. She flies high enough over the yard that the wingtips clear the fields.
 - **Legs in flight.** Her forelegs swing back and down under her chest, and her hind legs trail back and down from the hip. All four paws hang with their toes angled down.
+- **Neck and head in flight (0.4.344).** Her neck stretches forward from the shoulders, and her head tips down until her face looks eighty degrees below the level. Her head holds that tilt as her body climbs or dives, as a bird's head holds still, though it never bends more than a hundred degrees from her body's line. Anyone under her or ahead of her sees her whole face from below, and the face is lit as if it faced the sky, so it doesn't fall into shadow. Her eyes no longer follow the camera. They look ahead, up the face toward where she is going: she has been let out into the world.
 
 `tools/draw_sphinx_dream.py` draws her body on one picture:
 
@@ -191,7 +193,7 @@ Every sound is one already made for her, apart from vanilla door, page and dust 
 
 The client proof has two pages for the dream:
 
-- **The dream page** shows her as the reader's own screen does: seventy-degree views from the yard under her, from the gate, under her wing over the yard, and from the doorstep as she holds over the far field.
-- **The stela page** shows her body as a model and the stela's ten pieces. The model is shown four ways: perched from the yard, perched from the side, flying from the side with her paws hanging, and flying from under her wings.
+- **The dream page** shows her as the reader's own screen does: seventy-degree views from the yard under her, from the gate, from the gate as she comes over it (her whole face, her eyes ahead), and from the doorstep as she holds over the far field.
+- **The stela page** shows her body as a model and the stela's ten pieces. The model is shown four ways: perched from the yard, perched from the side, flying from the side with her neck forward and her paws hanging, and flying from under her wings.
 
 Next, 0.4.343: what the stone does against loose fill.
