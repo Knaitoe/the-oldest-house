@@ -576,12 +576,18 @@ public enum LabyrinthPlace {
         new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
         new DoorSpec("arrival_left",new BlockPos(-6,0,1),Direction.SOUTH,LabyrinthData.RETURN),
         new DoorSpec("arrival_right",new BlockPos(6,0,1),Direction.SOUTH,LabyrinthData.RETURN),
-        new DoorSpec("exit",new BlockPos(-7,0,-34),Direction.NORTH,LabyrinthData.DEALT))),
+        new DoorSpec("exit",new BlockPos(-7,0,-34),Direction.SOUTH,LabyrinthData.DEALT))),
     /** The far end of the impossible hallway, in the manor itself. */
     HALLWAY_END("hallway_end", Kind.HALLWAY, -1, null, List.of()),
     TRUANT_SHED("truant_shed",Kind.GRAY,194,new BoundingBox(-10,-3,-35,10,12,0),grayDoors(0,0,-34)),
     TRUANT_LANTERN("truant_lantern",Kind.GRAY,195,new BoundingBox(-10,-4,-38,12,14,0),grayDoors(0,0,-37)),
-    TRUANT_STOCK_GATE("truant_stock_gate",Kind.GRAY,196,new BoundingBox(-10,-3,-39,10,12,0),grayDoors(0,0,-38));
+    TRUANT_STOCK_GATE("truant_stock_gate",Kind.GRAY,196,new BoundingBox(-10,-3,-39,10,12,0),grayDoors(0,0,-38)),
+    /** 0.4.322, the yard's exceptional crossings (YardCrossings, docs/YARD_CROSSINGS_0_4_322.md): the long drive round the property and back to the wagon, the turn that puts the porch ahead, and the joists over the state route. Outside; each once to a reader. */
+    YARD_LONG_DRIVE("yard_long_drive",Kind.GRAY,197,new BoundingBox(-20,-4,-72,64,14,4),grayDoors(-11,0,-22)),
+    YARD_PORCH_TURN("yard_porch_turn",Kind.GRAY,198,new BoundingBox(-12,-4,-36,36,14,4),List.of(
+        new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("far",new BlockPos(24,0,1),Direction.NORTH,LabyrinthData.DEALT))),
+    YARD_JOISTS("yard_joists",Kind.GRAY,199,new BoundingBox(-16,-4,-48,16,18,0),grayDoors(0,0,-45));
 
     /** What a place is to the dealer. */
     public enum Kind {

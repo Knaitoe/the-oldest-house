@@ -25,12 +25,13 @@ import net.minecraft.world.phys.shapes.*;
  * <li>A length of the wagon's body: paint over wood-grain panelling, a wheel (stage 1) or none (0).</li>
  * <li>A length of the cabin: windows all round, the roof rack.</li>
  * <li>The tail: the tailgate and its lamps.</li>
+ * <li>0.4.322: soft mud (stage 0), and the same mud with a reader's footprints pressed into it (stage 1), toes the way they walked.</li>
  * </ul>
  */
 public final class YardBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<YardBlock> CODEC=simpleCodec(YardBlock::new);
     public enum Kind implements StringRepresentable {
-        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE;
+        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE,PRINT;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -63,6 +64,7 @@ public final class YardBlock extends HorizontalDirectionalBlock {
         if(s.getValue(KIND)==Kind.PIPE_LIP){if(YardCrawl.start(p))PuzzleRooms.say(p,"You get down onto the dry concrete lip.");return InteractionResult.CONSUME;}
         PuzzleRooms.say(p,switch(s.getValue(KIND)){
             case BULB->"A bare bulb over the back step. Someone leaves it on.";
+            case PRINT->s.getValue(STAGE)==0?"Soft mud. Nothing has been through it.":"Footprints in the mud, the size of your own.";
             case NOSE->"The engine ticks over. Warm air comes off the grille. Nobody is at the wheel.";
             case CABIN->"Through the glass: a blanket on the back seat, a map folded wrong, the keys in the ignition.";
             case TAIL->"The tailgate is up. The driver's door, round the side, stands ajar.";

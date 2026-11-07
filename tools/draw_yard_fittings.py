@@ -2,7 +2,8 @@
 
 16x16 textures from small palettes with per-pixel noise: white-painted clapboard with grey shadow lines; gravel darkened and glossed by
 rain; a garage door of dark vertical boards with a handle; a bare bulb on its cord; and the wagon: faded green paint over wood-grain
-panelling, its grille and lit headlights, windows, roof rack, tailgate and tail-lamps, wheels. --check verifies everything.
+panelling, its grille and lit headlights, windows, roof rack, tailgate and tail-lamps, wheels. 0.4.322: soft mud, clear or with a reader's
+footprints pressed into it. --check verifies everything.
 """
 from pathlib import Path
 import argparse
@@ -109,6 +110,21 @@ def bulb():
     return im
 
 
+def mud(seed):
+    return noisy(['#3e3734', '#48403b', '#352f2c', '#524943'], seed, [4, 3, 2, 1])
+
+
+def mud_print():
+    # 0.4.322: two footprints pressed into the mud, toes to the north (the fitting's facing turns them), a little water in each.
+    im = mud(3151)
+    for x0, y0 in ((3, 1), (9, 7)):
+        fill(im, x0, y0, x0 + 4, y0 + 4, '#272220'); fill(im, x0 + 1, y0 + 5, x0 + 3, y0 + 8, '#272220')
+        dot(im, x0 + 1, y0 + 1, '#5d6266'); dot(im, x0 + 2, y0 + 6, '#4d5256')
+        for x in range(x0, x0 + 4):
+            dot(im, x, y0 - 1, '#5c534c')
+    return im
+
+
 def textures():
     out = {'block/yard_clapboard.png': clapboard(), 'block/yard_wet_gravel.png': wet_gravel(), 'block/yard_garage_door.png': garage_door()}
     linen = noisy(['#c9c6b6', '#d4d0c2', '#bdbbac'], 3131, [5, 3, 1])
@@ -122,7 +138,8 @@ def textures():
     for x in (2, 7, 12):
         for y in range(16):
             dot(stake, x, y, '#6e5b42')
-    t = {'paint': paint(), 'side': side(), 'grille_lit': grille(True), 'window': window(), 'roof': roof(), 'tailgate': tailgate(), 'wheel': wheel(), 'bulb': bulb(), 'linen': linen, 'concrete': concrete, 'stake': stake}
+    t = {'mud_0': mud(3150), 'mud_1': mud_print(), 'mud_side': noisy(['#3a3431', '#433b37', '#2f2a27'], 3152, [4, 3, 2]),
+         'paint': paint(), 'side': side(), 'grille_lit': grille(True), 'window': window(), 'roof': roof(), 'tailgate': tailgate(), 'wheel': wheel(), 'bulb': bulb(), 'linen': linen, 'concrete': concrete, 'stake': stake}
     for stage in range(4):
         grate = Image.new('RGBA', (16, 16))
         frame(grate, 0, 0, 16, 16, '#555c58')
@@ -153,12 +170,13 @@ def fitting_models():
     m['survey_slot_0'] = model([element([0, 0, 7], [5, 16, 9], {'all': 's'}), element([11, 0, 7], [16, 16, 9], {'all': 's'}),
                                 element([5, 0, 7], [11, 2, 9], {'all': 's'}), element([5, 14, 7], [11, 16, 9], {'all': 's'})], {'s': 'stake'}, 'stake')
     m['gate_latch_0'] = model([element([3, 5, 14], [13, 11, 16], {'all': 'p'}), element([5, 7, 12], [11, 9, 14], {'all': 'm'})], {'p': 'stake', 'm': 'grille_lit'}, 'stake')
+    for stage in range(2): m[f'print_{stage}'] = model([element([0, 0, 0], [16, 14, 16], {'up': f'm{stage}', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}, uv={f: [0, 2, 16, 16] for f in ('north', 'south', 'east', 'west')})], {f'm{stage}': f'mud_{stage}', 's': 'mud_side'}, 'mud_side')
     for stage in range(4): m[f'flood_grate_{stage}'] = model([element([0, 0, 14], [16, 16, 15], {'north': 'g', 'south': 'g'})], {'g': f'grate_{stage}'}, f'grate_{stage}')
     return m
 
 
-KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate']
-STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4}
+KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print']
+STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'yard_fitting': 'Yard Fittings', 'yard_clapboard': 'Clapboard', 'yard_wet_gravel': 'Wet Gravel', 'yard_garage_door': 'Garage Door'}
 

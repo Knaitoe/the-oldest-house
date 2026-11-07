@@ -181,7 +181,8 @@ public final class YardRooms {
         if(any&&now%40==0)l.playSound(null,b.offset(NOSE_AT),PuzzleRegistry.YARD_IDLE.get(),SoundSource.AMBIENT,1F,1F);
         if(any&&now%60==10)l.playSound(null,b.offset(CREEK_X0+2,0,ROAD_Z),PuzzleRegistry.YARD_CREEK.get(),SoundSource.AMBIENT,.9F,1F);
         if(nextCar<0)nextCar=now+200;if(nextCrow<0)nextCrow=now+300;
-        if(any&&now>=nextCar&&sweep==-1000){sweep=-20;nextCar=now+360+l.getRandom().nextInt(240);l.playSound(null,b.offset(6,SWEEP_Y-2,SWEEP_Z),PuzzleRegistry.YARD_TRAFFIC.get(),SoundSource.AMBIENT,1.4F,1F);}
+        // 0.4.322: a sweep cut off by a stopped server leaves its light behind; each new car clears the row first.
+        if(any&&now>=nextCar&&sweep==-1000){for(int x=-20;x<=48;x++){var at=b.offset(x,SWEEP_Y,SWEEP_Z);if(l.getBlockState(at).is(Blocks.LIGHT))l.setBlock(at,air(),FLAGS);}sweep=-20;nextCar=now+360+l.getRandom().nextInt(240);l.playSound(null,b.offset(6,SWEEP_Y-2,SWEEP_Z),PuzzleRegistry.YARD_TRAFFIC.get(),SoundSource.AMBIENT,1.4F,1F);}
         if(any&&now>=nextCrow){nextCrow=now+500+l.getRandom().nextInt(400);l.playSound(null,b.offset(DEAD_TREE).above(6),PuzzleRegistry.YARD_CROW.get(),SoundSource.AMBIENT,.9F,1F);}
         if(sweep!=-1000){
             // The light moves along the crowns two blocks a tick, west to east, leaving the dark behind it.

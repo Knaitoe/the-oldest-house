@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.321** adds Sarah's changing bedroom diary and California contact slip, clipped kitchen financial papers, Marjorie's late laptop research and Merry's sister-cats drawing. A stored basement cross gains a contradictory shrine image only through the player's own rolling camera. Optional discoveries enter personal writing and actual framed footage; they grant no filming credit. Merry keeps her approved ponytail and gains subtle freckles. See [the Ghosts lore update](docs/GHOSTS_LORE_0_4_321.md) and [the sisters' appearance pass](docs/GHOSTS_SISTERS_0_4_320.md). Full exact-commit CI is pending; the preceding pushed art-reference repair passed every job.
+Development candidate **0.4.322** adds the yard's three exceptional crossings: a long drive that loops round the property and brings the reader back to the same wagon, their own prints in the mud beside it, with the garage door gone up behind them; a porch turn that puts the porch ahead of someone walking away from it; and a ditch under floor joists, where a passing car's headlights catch the ceiling over the state route. Each comes once, after the ordinary yard. See [the yard's exceptional crossings](docs/YARD_CROSSINGS_0_4_322.md). Full exact-commit CI is pending; 0.4.321 passed every job.
 
 ## Playing it
 

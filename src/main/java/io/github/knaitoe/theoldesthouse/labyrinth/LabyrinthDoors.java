@@ -411,7 +411,7 @@ public final class LabyrinthDoors {
                 io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"arrive","place",place.id(),"kind",place.kind().name().toLowerCase(java.util.Locale.ROOT),"story",WitnessAccount.Story.of(place.id())!=null,"depth",current.returnDepth(p.getUUID()));}
             LabyrinthDealer.arriveAt(current, p.getUUID(), place, manor == null ? 0L : manor.asLong(),
                     p.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.SPECTATOR);
-            YardReturns.arrived(p,place);
+            YardReturns.arrived(p,place);YardCrossings.arrived(p,place);
             if(p.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR){LabyrinthMaze.forget(p.getUUID());LabyrinthDoorLeaks.send(p);return;}
             RedRoom.prepareIfDealt(p, place);
             VignetteThreads.arrived(p, place);
