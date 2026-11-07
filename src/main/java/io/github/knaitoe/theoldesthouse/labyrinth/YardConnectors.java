@@ -28,7 +28,7 @@ public final class YardConnectors {
     public static final BlockPos LIP=new BlockPos(0,1,-13),FAR_LIP=new BlockPos(0,1,-22);
     private static final Map<UUID,Walk> WALKERS=new HashMap<>();
     private static final class Walk {double x,z;long next;boolean done;Walk(ServerPlayer p,long now){x=p.getX();z=p.getZ();next=now+35;}}
-    public static boolean is(LabyrinthPlace p){return p==LabyrinthPlace.YARD_DITCH||p==LabyrinthPlace.YARD_CLOTHESLINE;}
+    public static boolean is(LabyrinthPlace p){return p==LabyrinthPlace.YARD_DITCH||p==LabyrinthPlace.YARD_CLOTHESLINE||p==LabyrinthPlace.YARD_DITCH_FLOOD;}
     public static boolean any(LabyrinthPlace p){return p==LabyrinthPlace.YARD_TURNAROUND||is(p);}
     private static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,BlockState s){YardRooms.box(l,b,x0,y0,z0,x1,y1,z1,s);}
     private static void put(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s){YardRooms.set(l,b,x,y,z,s);}
@@ -39,7 +39,9 @@ public final class YardConnectors {
         // A lane cut into tall hedges; its back door and porch bulb remain a reliable bearing.
         box(l,b,-3,0,-2,3,4,0,PuzzleRegistry.yardMaterial("clapboard").defaultBlockState());
         box(l,b,-1,0,-2,1,3,-1,air);put(l,b,2,2,-2,YardBlock.of(YardBlock.Kind.BULB,Direction.NORTH,0));
-        if(p==LabyrinthPlace.YARD_DITCH)ditch(l,b);else clothesline(l,b);
+        if(p==LabyrinthPlace.YARD_CLOTHESLINE)clothesline(l,b);else ditch(l,b);
+        // 0.4.346: the same ditch in flood, with its cuts up the east bank (YardFlash).
+        if(p==LabyrinthPlace.YARD_DITCH_FLOOD)YardFlash.dress(l,b);
         LabyrinthBuilder.entrance(l,b,PuzzleRegistry.yardMaterial("clapboard").defaultBlockState(),grass,Blocks.DARK_OAK_SLAB.defaultBlockState());
         LabyrinthBuilder.doors(l,b,p);
     }

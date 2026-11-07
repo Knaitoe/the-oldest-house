@@ -22,7 +22,7 @@ public final class YardCrawl {
     private YardCrawl(){}
     private record Lease(ServerPlayer player,Pose forced,Pose pose){}
     private static final Map<UUID,Lease> ACTIVE=new HashMap<>();
-    private static BlockPos base(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();if(o==null||!p.level().dimension().equals(HouseDimensions.OUTSIDE))return null;var place=LabyrinthPlaces.placeAt(o,p.blockPosition());return place==LabyrinthPlace.YARD_DITCH||place==TruantYard.SHED?LabyrinthPlaces.base(o,place):null;}
+    private static BlockPos base(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();if(o==null||!p.level().dimension().equals(HouseDimensions.OUTSIDE))return null;var place=LabyrinthPlaces.placeAt(o,p.blockPosition());return place==LabyrinthPlace.YARD_DITCH||place==LabyrinthPlace.YARD_DITCH_FLOOD||place==TruantYard.SHED?LabyrinthPlaces.base(o,place):null;}
     private static boolean shed(ServerPlayer p){var o=HouseSavedData.get(p.server).houseOrigin();return o!=null&&LabyrinthPlaces.placeAt(o,p.blockPosition())==TruantYard.SHED;}
     private static boolean atMouth(ServerPlayer p,BlockPos b){double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();return shed(p)?x>2.7&&x<6.3&&z> -21.1&&z< -19.9:x>-.1&&x<1.1&&(z> -14&&z< -11||z> -25&&z< -22);}
     public static boolean start(ServerPlayer p){

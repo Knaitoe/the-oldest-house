@@ -250,6 +250,8 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.YARD_STOCK);
         // 0.4.345: the Windbreak (YardWind), a hazard in the deep halls.
         gray.add(LabyrinthPlace.YARD_WINDBREAK);
+        // 0.4.346: the ditch in flood (YardFlash), a hazard from the strange depths.
+        gray.add(LabyrinthPlace.YARD_DITCH_FLOOD);
         // 0.4.322: the yard's exceptional crossings (YardCrossings), each once to a reader who has learned the ordinary yard.
         gray.addAll(YardCrossings.PLACES);
         // 0.4.232: the familiar room, from the third crossing, and far more readily while someone is in it (FamiliarRoom.weight).
@@ -618,6 +620,7 @@ public final class LabyrinthDealer {
             case YARD_SURVEY, YARD_STOCK, YARD_REUNION, YARD_LONG_DRIVE, YARD_PORCH_TURN, YARD_JOISTS -> 0;
             case YARD_FLOOD -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 3;
             case YARD_WINDBREAK -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : 3;
+            case YARD_DITCH_FLOOD -> depth < LabyrinthPacing.STRANGE_DEPTH ? 0 : 3;
             // 0.4.231: the shut-up rooms under dust, a plaster hall, from the third crossing until the halls turn to stone; a little more often than a plain hall.
             case DUST_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 12;
             // 0.4.232: without a reader (the shared hall cache), the kitchen at its ordinary weight.
